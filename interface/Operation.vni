@@ -1,0 +1,14 @@
+package mmx;
+
+class Operation {
+	
+	int version;
+	
+	hash_t address;
+	
+	Solution* solution;
+	
+	
+	hash_t calc_hash() const;
+	
+}

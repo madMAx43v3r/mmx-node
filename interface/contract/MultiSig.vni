@@ -1,0 +1,15 @@
+package mmx.contract;
+
+import mmx.hash_t;
+
+class MultiSig extends mmx.Contract {
+	
+	uchar hash_salt[32];
+	
+	vector<hash_t> pubkey_hashes;
+	
+	
+	hash_t calc_hash() const;
+	
+}
+

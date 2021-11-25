@@ -1,0 +1,10 @@
+package mmx;
+
+class Contract {
+	
+	int version;
+	
+	
+	hash_t calc_hash() const;
+	
+}

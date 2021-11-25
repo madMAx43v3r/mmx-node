@@ -1,9 +1,0 @@
-package mmx;
-
-struct txout_t {
-	
-	hash_t dst_addr;
-	
-	ulong amount;
-	
-}

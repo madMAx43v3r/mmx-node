@@ -1,0 +1,20 @@
+package mmx.contract;
+
+import mmx.hash_t;
+
+class Token extends mmx.Contract {
+	
+	string name;
+	
+	string symbol;
+	
+	string website;
+	
+	string icon_url;
+	
+	mmx.Contract* owner;
+	
+	
+	hash_t calc_hash() const;
+	
+}

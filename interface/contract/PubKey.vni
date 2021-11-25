@@ -1,0 +1,9 @@
+package mmx.contract;
+
+import mmx.hash_t;
+
+class PubKey extends mmx.Contract {
+	
+	hash_t pubkey_hash;
+	
+}

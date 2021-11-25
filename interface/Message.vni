@@ -1,0 +1,11 @@
+package mmx;
+
+class Message {
+	
+	string channel;
+	
+	vnx.Value* payload;
+	
+	vector<ulong> path;
+	
+}

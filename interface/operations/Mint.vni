@@ -1,0 +1,12 @@
+package mmx.operations;
+
+import mmx.hash_t;
+
+class Mint extends mmx.Operation {
+	
+	ulong amount;
+	
+	
+	hash_t calc_hash() const;
+	
+}

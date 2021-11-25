@@ -4,10 +4,17 @@ class Transaction {
 	
 	hash_t id;
 	
-	vector<txin_t> inputs;
+	int version;
 	
-	vector<txout_t> outputs;
+	vector<tx_in_t> inputs;
 	
-	signature_t signature;
+	vector<tx_out_t> outputs;
+	
+	vector<Operation*> execute;
+	
+	
+	void finalize();
+	
+	hash_t calc_hash() const;
 	
 }

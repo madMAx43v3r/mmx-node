@@ -1,0 +1,9 @@
+package mmx.solution;
+
+class PubKey extends Solution {
+	
+	pubkey_t pubkey;
+	
+	signature_t signature;
+	
+}

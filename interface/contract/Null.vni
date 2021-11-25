@@ -1,0 +1,7 @@
+package mmx.contract;
+
+class Null extends mmx.Contract {
+	
+	hash_t calc_hash() const;
+	
+}

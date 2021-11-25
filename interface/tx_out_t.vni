@@ -1,0 +1,11 @@
+package mmx;
+
+struct tx_out_t {
+	
+	hash_t address;
+	
+	hash_t contract;
+	
+	ulong amount;
+	
+}

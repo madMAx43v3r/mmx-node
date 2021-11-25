@@ -1,0 +1,22 @@
+package mmx;
+
+class Block {
+	
+	hash_t hash;
+	
+	hash_t prev;
+	
+	int version;
+	
+	long time_ms;			// UTC [ms]
+	
+	ulong next_diff;
+	
+	Transaction* coin_base;
+	
+	vector<Transaction*> tx_list;
+	
+	
+	void finalize();
+	
+}
