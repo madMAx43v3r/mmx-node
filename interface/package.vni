@@ -1,0 +1,7 @@
+package mmx;
+
+extern hash_t = {11, 32, 1};
+
+extern skey_t = {11, 32, 1};
+extern pubkey_t = {11, 48, 1};
+extern signature_t = {11, 96, 1};

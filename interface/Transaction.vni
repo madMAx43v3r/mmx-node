@@ -1,0 +1,13 @@
+package mmx;
+
+class Transaction {
+	
+	hash_t id;
+	
+	vector<txin_t> inputs;
+	
+	vector<txout_t> outputs;
+	
+	signature_t signature;
+	
+}

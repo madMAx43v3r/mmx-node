@@ -1,0 +1,9 @@
+package mmx;
+
+struct txin_t {
+	
+	hash_t src_tx;
+	
+	int index;
+	
+}
