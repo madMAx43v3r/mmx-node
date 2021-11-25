@@ -3,7 +3,6 @@ project(mmx-node C CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(ENV{RELIC_MAIN} "1")
 add_subdirectory(bls-signatures)
 
 #add_subdirectory(libbech32)
