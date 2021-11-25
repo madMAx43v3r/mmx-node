@@ -10,13 +10,13 @@ add_subdirectory(bls-signatures)
 find_package(Threads REQUIRED)
 
 if(APPLE)
-find_package(sodium REQUIRED)
+	find_package(sodium REQUIRED)
 endif()
 
 if(SODIUM_FOUND)
-  message(STATUS "Found libsodium")
-  message(STATUS "Sodium include dir = ${sodium_INCLUDE_DIR}")
-  include_directories(${sodium_INCLUDE_DIR})
+	message(STATUS "Found libsodium")
+	message(STATUS "Sodium include dir = ${sodium_INCLUDE_DIR}")
+	include_directories(${sodium_INCLUDE_DIR})
 endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function")
