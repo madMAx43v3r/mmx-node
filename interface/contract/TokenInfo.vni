@@ -2,11 +2,15 @@ package mmx.contract;
 
 import mmx.hash_t;
 
-class MultiSig extends mmx.Contract {
+class TokenInfo extends Delegated {
 	
-	int num_required;
+	string name;
 	
-	vector<hash_t> pubkey_hashes;
+	string symbol;
+	
+	string website;
+	
+	string icon_url;
 	
 	
 	bool is_valid() const;
@@ -14,4 +18,3 @@ class MultiSig extends mmx.Contract {
 	hash_t calc_hash() const;
 	
 }
-

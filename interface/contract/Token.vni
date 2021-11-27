@@ -2,18 +2,12 @@ package mmx.contract;
 
 import mmx.hash_t;
 
-class Token extends mmx.Contract {
+class Token extends Delegated {
 	
-	string name;
+	hash_t info_addr;
 	
-	string symbol;
 	
-	string website;
-	
-	string icon_url;
-	
-	mmx.Contract* owner;
-	
+	bool is_valid() const;
 	
 	hash_t calc_hash() const;
 	

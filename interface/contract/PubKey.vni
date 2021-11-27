@@ -6,4 +6,9 @@ class PubKey extends mmx.Contract {
 	
 	hash_t pubkey_hash;
 	
+	
+	bool is_valid() const;
+	
+	hash_t calc_hash() const;
+	
 }

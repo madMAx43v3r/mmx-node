@@ -1,6 +1,9 @@
 package mmx.contract;
 
-class Null extends mmx.Contract {
+class Delegated extends mmx.Contract {
+	
+	mmx.Contract* owner;
+	
 	
 	bool is_valid() const;
 	

@@ -19,4 +19,8 @@ class Block {
 	
 	void finalize();
 	
+	bool is_valid() const;
+	
+	hash_t calc_hash() const;
+	
 }

@@ -5,6 +5,8 @@ class Contract {
 	int version;
 	
 	
+	bool is_valid() const;
+	
 	hash_t calc_hash() const;
 	
 }

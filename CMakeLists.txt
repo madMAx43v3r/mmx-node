@@ -25,6 +25,9 @@ file(GLOB GENERATED_SOURCE_FILES generated/src/*.cpp)
 
 add_library(mmx_iface SHARED
 	${GENERATED_SOURCE_FILES}
+	src/Block.cpp
+	src/Transaction.cpp
+	src/Operation.cpp
 )
 
 target_include_directories(mmx_iface

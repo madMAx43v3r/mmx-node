@@ -2,8 +2,6 @@ package mmx;
 
 class Transaction {
 	
-	hash_t id;
-	
 	int version;
 	
 	vector<tx_in_t> inputs;
@@ -12,8 +10,6 @@ class Transaction {
 	
 	vector<Operation*> execute;
 	
-	
-	void finalize();
 	
 	hash_t calc_hash() const;
 	

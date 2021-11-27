@@ -32,32 +32,36 @@ bls::PrivateKey skey_t::to_bls() const
 	return bls::PrivateKey::FromBytes(bls::Bytes(bytes.data(), bytes.size()));
 }
 
+} //mmx
+
+
+namespace vnx {
+
 inline
-void read(vnx::TypeInput& in, skey_t& value, const vnx::TypeCode* type_code, const uint16_t* code) {
+void read(vnx::TypeInput& in, mmx::skey_t& value, const vnx::TypeCode* type_code, const uint16_t* code) {
 	vnx::read(in, value.bytes, type_code, code);
 }
 
 inline
-void write(vnx::TypeOutput& out, const skey_t& value, const vnx::TypeCode* type_code = nullptr, const uint16_t* code = nullptr) {
+void write(vnx::TypeOutput& out, const mmx::skey_t& value, const vnx::TypeCode* type_code = nullptr, const uint16_t* code = nullptr) {
 	vnx::write(out, value.bytes, type_code, code);
 }
 
 inline
-void read(std::istream& in, skey_t& value) {
+void read(std::istream& in, mmx::skey_t& value) {
 	vnx::read(in, value.bytes);
 }
 
 inline
-void write(std::ostream& out, const skey_t& value) {
+void write(std::ostream& out, const mmx::skey_t& value) {
 	vnx::write(out, value.bytes);
 }
 
 inline
-void accept(vnx::Visitor& visitor, const skey_t& value) {
+void accept(vnx::Visitor& visitor, const mmx::skey_t& value) {
 	vnx::accept(visitor, value.bytes);
 }
 
-
-} // mmx
+} // vnx
 
 #endif /* INCLUDE_MMX_SKEY_T_HPP_ */
