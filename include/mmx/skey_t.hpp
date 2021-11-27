@@ -8,28 +8,51 @@
 #ifndef INCLUDE_MMX_SKEY_T_HPP_
 #define INCLUDE_MMX_SKEY_T_HPP_
 
-#include <vnx/Input.hpp>
-#include <vnx/Output.hpp>
-
 #include <array>
 #include <bls.hpp>
+
+#include <vnx/Input.hpp>
+#include <vnx/Output.hpp>
 
 
 namespace mmx {
 
 struct skey_t {
 
-	std::array<uint8_t, 32> bytes;
+	std::array<uint8_t, 32> bytes = {};
+
+	skey_t() = default;
+
+	skey_t(const bls::PrivateKey& key);
 
 	bls::PrivateKey to_bls() const;
+
+	bool operator==(const skey_t& other) const {
+		return bytes == other.bytes;
+	}
+
+	bool operator!=(const skey_t& other) const {
+		return bytes != other.bytes;
+	}
 
 };
 
 
 inline
+skey_t::skey_t(const bls::PrivateKey& key)
+{
+	key.Serialize(bytes.data());
+}
+
+inline
 bls::PrivateKey skey_t::to_bls() const
 {
 	return bls::PrivateKey::FromBytes(bls::Bytes(bytes.data(), bytes.size()));
+}
+
+inline
+std::ostream& operator<<(std::ostream& out, const skey_t& key) {
+	return out << "0x" << bls::Util::HexStr(key.bytes.data(), key.bytes.size());
 }
 
 } //mmx

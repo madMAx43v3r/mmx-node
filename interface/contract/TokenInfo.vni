@@ -13,8 +13,8 @@ class TokenInfo extends Delegated {
 	string icon_url;
 	
 	
-	bool is_valid() const;
+//	bool is_valid() const;
 	
-	hash_t calc_hash() const;
+//	hash_t calc_hash() const;
 	
 }

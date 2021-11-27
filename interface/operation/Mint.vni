@@ -1,4 +1,4 @@
-package mmx.operations;
+package mmx.operation;
 
 import mmx.hash_t;
 
@@ -7,6 +7,6 @@ class Mint extends mmx.Operation {
 	ulong amount;
 	
 	
-	hash_t calc_hash() const;
+//	hash_t calc_hash() const;
 	
 }

@@ -1,6 +1,9 @@
 package mmx.solution;
 
-class PubKey extends Solution {
+import mmx.pubkey_t;
+import mmx.signature_t;
+
+class PubKey extends mmx.Solution {
 	
 	pubkey_t pubkey;
 	

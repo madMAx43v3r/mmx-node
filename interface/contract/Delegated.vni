@@ -1,12 +1,14 @@
 package mmx.contract;
 
+import mmx.hash_t;
+
 class Delegated extends mmx.Contract {
 	
 	mmx.Contract* owner;
 	
 	
-	bool is_valid() const;
+//	bool is_valid() const;
 	
-	hash_t calc_hash() const;
+//	hash_t calc_hash() const;
 	
 }

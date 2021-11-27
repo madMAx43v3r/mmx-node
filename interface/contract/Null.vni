@@ -2,8 +2,8 @@ package mmx.contract;
 
 class Null extends mmx.Contract {
 	
-	bool is_valid() const;
+//	bool is_valid() const;
 	
-	hash_t calc_hash() const;
+//	mmx.hash_t calc_hash() const;
 	
 }

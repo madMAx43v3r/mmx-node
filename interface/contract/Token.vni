@@ -4,11 +4,13 @@ import mmx.hash_t;
 
 class Token extends Delegated {
 	
+	int decimals;
+	
 	hash_t info_addr;
 	
 	
-	bool is_valid() const;
+//	bool is_valid() const;
 	
-	hash_t calc_hash() const;
+//	hash_t calc_hash() const;
 	
 }

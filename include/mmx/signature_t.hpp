@@ -19,17 +19,44 @@ namespace mmx {
 
 struct signature_t {
 
-	std::array<uint8_t, 96> bytes;
+	std::array<uint8_t, 96> bytes = {};
+
+	signature_t() = default;
+
+	signature_t(const bls::G2Element& sig);
 
 	bls::G2Element to_bls() const;
+
+	bool operator==(const signature_t& other) const {
+		return bytes == other.bytes;
+	}
+
+	bool operator!=(const signature_t& other) const {
+		return bytes != other.bytes;
+	}
 
 };
 
 
 inline
+signature_t::signature_t(const bls::G2Element& sig)
+{
+	const auto tmp = sig.Serialize();
+	if(tmp.size() != bytes.size()) {
+		throw std::logic_error("signature size mismatch");
+	}
+	::memcpy(bytes.data(), tmp.data(), tmp.size());
+}
+
+inline
 bls::G2Element signature_t::to_bls() const
 {
 	return bls::G2Element::FromBytes(bls::Bytes(bytes.data(), bytes.size()));
+}
+
+inline
+std::ostream& operator<<(std::ostream& out, const signature_t& sig) {
+	return out << "0x" << bls::Util::HexStr(sig.bytes.data(), sig.bytes.size());
 }
 
 } // mmx
