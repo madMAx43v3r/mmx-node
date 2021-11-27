@@ -19,7 +19,7 @@ if(SODIUM_FOUND)
 	include_directories(${sodium_INCLUDE_DIR})
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -Wall -Wno-unused-function")
 
 file(GLOB GENERATED_SOURCE_FILES
 	generated/src/*.cpp

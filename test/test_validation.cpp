@@ -21,6 +21,10 @@ std::unordered_map<hash_t, std::shared_ptr<const Contract>> contract_map;
 
 std::unordered_map<hash_t, std::unordered_map<size_t, tx_out_t>> utxo_map;
 
+int64_t total_tx_count = 0;
+int64_t total_verify_time = 0;
+int64_t total_process_time = 0;
+
 
 hash_t validate(std::shared_ptr<const Transaction> tx, bool is_base = false)
 {
@@ -122,10 +126,13 @@ void process(std::shared_ptr<const Transaction> tx, const hash_t& tx_id, bool is
 	for(size_t i = 0; i < tx->outputs.size(); ++i) {
 		entry[i] = tx->outputs[i];
 	}
+	total_tx_count++;
 }
 
 void process(std::shared_ptr<const Block> block)
 {
+	const auto begin = vnx::get_wall_time_micros();
+
 	if(!block->is_valid()) {
 		throw std::logic_error("invalid block hash");
 	}
@@ -135,20 +142,25 @@ void process(std::shared_ptr<const Block> block)
 	}
 	std::vector<hash_t> tx_id(block->tx_list.size());
 
+	const auto verify_begin = vnx::get_wall_time_micros();
+
 #pragma omp parallel for
 	for(size_t i = 0; i < block->tx_list.size(); ++i) {
 		tx_id[i] = validate(block->tx_list[i]);
 	}
+	total_verify_time += vnx::get_wall_time_micros() - verify_begin;
+
 	for(size_t i = 0; i < block->tx_list.size(); ++i) {
 		process(block->tx_list[i], tx_id[i]);
 	}
+	total_process_time += vnx::get_wall_time_micros() - begin;
 }
 
 int main(int argc, char** argv)
 {
 	vnx::init("test_validation", argc, argv);
 
-	int num_keys = 1024;
+	int num_keys = 10;
 	int num_blocks = 10;
 	vnx::read_config("nkeys", num_keys);
 	vnx::read_config("nblocks", num_blocks);
@@ -197,6 +209,55 @@ int main(int argc, char** argv)
 	process(genesis);
 
 	auto prev = genesis;
+	{
+		auto block = Block::create();
+		block->prev = prev->hash;
+
+		const auto prev_tx = genesis->coin_base->calc_hash();
+
+		for(const auto& utxo : utxo_map[prev_tx])
+		{
+			auto tx = Transaction::create();
+			std::vector<std::shared_ptr<solution::PubKey>> to_sign;
+
+			{
+				const auto dst_addr = addrs[rand() % addrs.size()];
+				{
+					tx_out_t out;
+					out.address = dst_addr;
+					out.amount = utxo.second.amount;
+					tx->outputs.push_back(out);
+				}
+				{
+					tx_in_t in;
+					in.prev_tx = prev_tx;
+					in.index = utxo.first;
+					{
+						auto sol = solution::PubKey::create();
+						sol->pubkey = pubkey_map[utxo.second.address];
+						in.solution = sol;
+						to_sign.push_back(sol);
+					}
+					tx->inputs.push_back(in);
+				}
+			}
+			const auto id = tx->calc_hash();
+
+			for(const auto& sol : to_sign)
+			{
+				sol->signature = MPL.Sign(skey_map[sol->pubkey].to_bls(), bls::Bytes(id.bytes.data(), id.bytes.size()));
+			}
+			block->tx_list.push_back(tx);
+		}
+		block->finalize();
+
+		std::cout << "Block: hash=" << block->hash << " ntx=" << block->tx_list.size() << std::endl;
+
+		process(block);
+
+		prev = block;
+	}
+
 	for(int b = 0; b < num_blocks; ++b)
 	{
 		auto block = Block::create();
@@ -205,38 +266,51 @@ int main(int argc, char** argv)
 		for(const auto& entry : utxo_map)
 		{
 			auto tx = Transaction::create();
-			const auto& src = entry.second.at(0);
-			const auto dst_addr = addrs[rand() % addrs.size()];
+			std::vector<std::shared_ptr<solution::PubKey>> to_sign;
+
+			for(const auto& utxo : entry.second)
 			{
-				tx_out_t out;
-				out.address = dst_addr;
-				out.amount = src.amount;
-				tx->outputs.push_back(out);
-			}
-			{
-				tx_in_t in;
-				in.prev_tx = entry.first;
-				in.index = 0;
-				tx->inputs.push_back(in);
+				const auto dst_addr = addrs[rand() % addrs.size()];
+				{
+					tx_out_t out;
+					out.address = dst_addr;
+					out.amount = utxo.second.amount;
+					tx->outputs.push_back(out);
+				}
+				{
+					tx_in_t in;
+					in.prev_tx = entry.first;
+					in.index = utxo.first;
+					{
+						auto sol = solution::PubKey::create();
+						sol->pubkey = pubkey_map[utxo.second.address];
+						in.solution = sol;
+						to_sign.push_back(sol);
+					}
+					tx->inputs.push_back(in);
+				}
 			}
 			const auto id = tx->calc_hash();
 
-			for(auto& in : tx->inputs)
+			for(const auto& sol : to_sign)
 			{
-				auto sol = solution::PubKey::create();
-				sol->pubkey = pubkey_map[src.address];
 				sol->signature = MPL.Sign(skey_map[sol->pubkey].to_bls(), bls::Bytes(id.bytes.data(), id.bytes.size()));
-				in.solution = sol;
 			}
+			block->tx_list.push_back(tx);
 		}
 		block->finalize();
 
-		std::cout << "Block hash: " << block->hash << std::endl;
+		std::cout << "Block: hash=" << block->hash << " ntx=" << block->tx_list.size() << std::endl;
 
 		process(block);
 
 		prev = block;
 	}
+
+	std::cout << "total_tx_count = " << total_tx_count << std::endl;
+	std::cout << "total_verify_time = " << total_verify_time / 1000 << " ms" << std::endl;
+	std::cout << "total_process_time = " << total_process_time / 1000 << " ms" << std::endl;
+	std::cout << "tps = " << 1e6 / (total_process_time / total_tx_count) << std::endl;
 
 	vnx::close();
 

@@ -4,7 +4,7 @@ struct tx_in_t {
 	
 	hash_t prev_tx;
 	
-	int index;
+	uint index;
 	
 	Solution* solution;
 	
