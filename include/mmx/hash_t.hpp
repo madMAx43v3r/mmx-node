@@ -14,7 +14,6 @@
 #include <vnx/Output.hpp>
 
 #include <bls.hpp>
-#include <iostream>
 
 
 namespace mmx {
@@ -23,6 +22,18 @@ inline
 hash_t::hash_t(const void* data, const size_t num_bytes)
 {
 	bls::Util::Hash256(bytes.data(), (const uint8_t*)data, num_bytes);
+}
+
+inline
+hash_t::hash_t(const std::array<uint8_t, 32>& data)
+	:	hash_t(data.data(), data.size())
+{
+}
+
+inline
+const uint8_t* hash_t::data() const
+{
+	return bytes.data();
 }
 
 inline

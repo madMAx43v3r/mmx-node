@@ -8,10 +8,14 @@
 #ifndef INCLUDE_MMX_SIGNATURE_T_HPP_
 #define INCLUDE_MMX_SIGNATURE_T_HPP_
 
+#include <mmx/hash_t.hpp>
+#include <mmx/skey_t.hpp>
+#include <mmx/pubkey_t.hpp>
+#include <mmx/secp256k1.hpp>
+
 #include <vnx/Input.hpp>
 #include <vnx/Output.hpp>
 
-#include <array>
 #include <bls.hpp>
 
 
@@ -19,13 +23,15 @@ namespace mmx {
 
 struct signature_t {
 
-	std::array<uint8_t, 96> bytes = {};
+	std::array<uint8_t, 64> bytes = {};
 
 	signature_t() = default;
 
-	signature_t(const bls::G2Element& sig);
+	signature_t(const secp256k1_ecdsa_signature& sig);
 
-	bls::G2Element to_bls() const;
+	bool verify(const pubkey_t& pubkey, const hash_t& hash) const;
+
+	secp256k1_ecdsa_signature to_secp256k1() const;
 
 	bool operator==(const signature_t& other) const {
 		return bytes == other.bytes;
@@ -35,23 +41,43 @@ struct signature_t {
 		return bytes != other.bytes;
 	}
 
+	static signature_t sign(const skey_t& skey, const hash_t& hash);
+
 };
 
 
 inline
-signature_t::signature_t(const bls::G2Element& sig)
+signature_t::signature_t(const secp256k1_ecdsa_signature& sig)
 {
-	const auto tmp = sig.Serialize();
-	if(tmp.size() != bytes.size()) {
-		throw std::logic_error("signature size mismatch");
-	}
-	::memcpy(bytes.data(), tmp.data(), tmp.size());
+	secp256k1_ecdsa_signature_serialize_compact(g_secp256k1, bytes.data(), &sig);
 }
 
 inline
-bls::G2Element signature_t::to_bls() const
+bool signature_t::verify(const pubkey_t& pubkey, const hash_t& hash) const
 {
-	return bls::G2Element::FromBytes(bls::Bytes(bytes.data(), bytes.size()));
+	const auto sig = to_secp256k1();
+	const auto key = pubkey.to_secp256k1();
+	return secp256k1_ecdsa_verify(g_secp256k1, &sig, hash.data(), &key);
+}
+
+inline
+secp256k1_ecdsa_signature signature_t::to_secp256k1() const
+{
+	secp256k1_ecdsa_signature res;
+	if(!secp256k1_ecdsa_signature_parse_compact(g_secp256k1, &res, bytes.data())) {
+		throw std::logic_error("secp256k1_ecdsa_signature_parse_compact() failed");
+	}
+	return res;
+}
+
+inline
+signature_t signature_t::sign(const skey_t& skey, const hash_t& hash)
+{
+	secp256k1_ecdsa_signature sig;
+	if(!secp256k1_ecdsa_sign(g_secp256k1, &sig, hash.data(), skey.bytes.data(), NULL, NULL)) {
+		throw std::logic_error("secp256k1_ecdsa_sign() failed");
+	}
+	return signature_t(sig);
 }
 
 inline

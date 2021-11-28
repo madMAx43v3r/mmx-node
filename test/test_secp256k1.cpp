@@ -1,9 +1,10 @@
 /*
- * test_validation.cpp
+ * test_secp256k1.cpp
  *
- *  Created on: Nov 27, 2021
+ *  Created on: Nov 28, 2021
  *      Author: mad
  */
+
 
 #include <mmx/Block.hxx>
 #include <mmx/skey_t.hpp>
@@ -11,15 +12,25 @@
 #include <mmx/solution/PubKey.hxx>
 
 #include <vnx/vnx.h>
+#include <unordered_map>
+
+
+namespace std {
+	template<> struct hash<std::pair<mmx::hash_t, size_t>> {
+		size_t operator()(const std::pair<mmx::hash_t, size_t>& x) const {
+			return std::hash<mmx::hash_t>{}(x.first) xor x.second;
+		}
+	};
+} // std
 
 using namespace mmx;
 
 
 static constexpr uint64_t COIN = 1000000;
 
-std::unordered_map<hash_t, std::shared_ptr<const Contract>> contract_map;
+std::unordered_map<std::pair<mmx::hash_t, size_t>, mmx::tx_out_t> utxo_map;
 
-std::unordered_map<hash_t, std::unordered_map<size_t, tx_out_t>> utxo_map;
+std::unordered_map<hash_t, std::shared_ptr<const Contract>> contract_map;
 
 int64_t total_tx_count = 0;
 int64_t total_verify_time = 0;
@@ -30,23 +41,16 @@ hash_t validate(std::shared_ptr<const Transaction> tx, bool is_base = false)
 {
 	const auto id = tx->calc_hash();
 
-	bls::AugSchemeMPL MPL;
 	uint64_t base_amount = 0;
 	std::unordered_map<hash_t, uint64_t> amounts;
 
 	for(const auto& in : tx->inputs)
 	{
-		auto iter = utxo_map.find(in.prev_tx);
+		auto iter = utxo_map.find(std::make_pair(in.prev_tx, in.index));
 		if(iter == utxo_map.end()) {
-			throw std::logic_error("invalid prev_tx");
+			throw std::logic_error("invalid prev_tx + index");
 		}
-		const auto& entry = iter->second;
-
-		auto iter2 = entry.find(in.index);
-		if(iter2 == entry.end()) {
-			throw std::logic_error("invalid index");
-		}
-		const auto& out = iter2->second;
+		const auto& out = iter->second;
 
 		// verify signature
 		if(!in.solution) {
@@ -61,13 +65,10 @@ hash_t validate(std::shared_ptr<const Transaction> tx, bool is_base = false)
 			else if(auto sol = std::dynamic_pointer_cast<const solution::PubKey>(in.solution))
 			{
 				if(sol->pubkey.get_addr() != out.address) {
-					throw std::logic_error("wrong pubkey");
+					throw std::logic_error("invalid pubkey");
 				}
-				const auto G1 = sol->pubkey.to_bls();
-				const auto G2 = sol->signature.to_bls();
-
-				if(!MPL.Verify(G1, bls::Bytes(id.bytes.data(), id.bytes.size()), G2)) {
-					throw std::logic_error("wrong signature");
+				if(!sol->signature.verify(sol->pubkey, id)) {
+					throw std::logic_error("invalid signature");
 				}
 			}
 			else {
@@ -107,23 +108,15 @@ void process(std::shared_ptr<const Transaction> tx, const hash_t& tx_id, bool is
 {
 	for(const auto& in : tx->inputs)
 	{
-		auto iter = utxo_map.find(in.prev_tx);
+		auto iter = utxo_map.find(std::make_pair(in.prev_tx, in.index));
 		if(iter != utxo_map.end()) {
-			auto& entry = iter->second;
-			auto iter2 = entry.find(in.index);
-			if(iter2 != entry.end()) {
-				entry.erase(iter2);
-			}
-			if(entry.empty()) {
-				utxo_map.erase(iter);
-			}
+			utxo_map.erase(iter);
+		} else {
+			throw std::logic_error("no such utxo");
 		}
 	}
-	auto& entry = utxo_map[tx_id];
-	entry.reserve(tx->outputs.size());
-
 	for(size_t i = 0; i < tx->outputs.size(); ++i) {
-		entry[i] = tx->outputs[i];
+		utxo_map[std::make_pair(tx_id, i)] = tx->outputs[i];
 	}
 	total_tx_count++;
 }
@@ -164,22 +157,27 @@ int main(int argc, char** argv)
 	vnx::read_config("nkeys", num_keys);
 	vnx::read_config("nblocks", num_blocks);
 
+	mmx::secp256k1_init();
+
 	vector<uint8_t> seed(32);
 
-	bls::AugSchemeMPL MPL;
-	const bls::PrivateKey master_sk = MPL.KeyGen(seed);
-
-	std::vector<bls::PrivateKey> keys;
-	for(int i = 0; i < num_keys; ++i) {
-		keys.push_back(MPL.DeriveChildSk(master_sk, i));
+	std::vector<skey_t> skeys;
+	{
+		hash_t state(seed.data(), seed.size());
+		for(int i = 0; i < num_keys; ++i) {
+			skey_t key;
+			key.bytes = state.bytes;
+			state = hash_t(state.bytes);
+			skeys.push_back(key);
+		}
 	}
 
 	std::vector<pubkey_t> pubkeys;
 	std::unordered_map<pubkey_t, skey_t> skey_map;
-	for(const auto& key : keys) {
-		const auto G1 = key.GetG1Element();
-		skey_map[G1] = key;
-		pubkeys.emplace_back(G1);
+	for(const auto& skey : skeys) {
+		const auto pubkey = pubkey_t::from_skey(skey);
+		skey_map[pubkey] = skey;
+		pubkeys.push_back(pubkey);
 	}
 
 	std::vector<hash_t> addrs;
@@ -208,54 +206,6 @@ int main(int argc, char** argv)
 	process(genesis);
 
 	auto prev = genesis;
-	{
-		auto block = Block::create();
-		block->prev = prev->hash;
-
-		const auto prev_tx = genesis->coin_base->calc_hash();
-
-		for(const auto& utxo : utxo_map[prev_tx])
-		{
-			auto tx = Transaction::create();
-			std::vector<std::shared_ptr<solution::PubKey>> to_sign;
-			{
-				const auto dst_addr = addrs[rand() % addrs.size()];
-				{
-					tx_out_t out;
-					out.address = dst_addr;
-					out.amount = utxo.second.amount;
-					tx->outputs.push_back(out);
-				}
-				{
-					tx_in_t in;
-					in.prev_tx = prev_tx;
-					in.index = utxo.first;
-					{
-						auto sol = solution::PubKey::create();
-						sol->pubkey = pubkey_map[utxo.second.address];
-						in.solution = sol;
-						to_sign.push_back(sol);
-					}
-					tx->inputs.push_back(in);
-				}
-			}
-			const auto id = tx->calc_hash();
-
-			for(const auto& sol : to_sign)
-			{
-				sol->signature = MPL.Sign(skey_map[sol->pubkey].to_bls(), bls::Bytes(id.bytes.data(), id.bytes.size()));
-			}
-			block->tx_list.push_back(tx);
-		}
-		block->finalize();
-
-		std::cout << "Block: hash=" << block->hash << " ntx=" << block->tx_list.size() << std::endl;
-
-		process(block);
-
-		prev = block;
-	}
-
 	for(int b = 0; b < num_blocks; ++b)
 	{
 		auto block = Block::create();
@@ -264,35 +214,31 @@ int main(int argc, char** argv)
 		for(const auto& entry : utxo_map)
 		{
 			auto tx = Transaction::create();
-			std::vector<std::shared_ptr<solution::PubKey>> to_sign;
+			std::shared_ptr<solution::PubKey> to_sign;
 
-			for(const auto& utxo : entry.second)
+			const auto dst_addr = addrs[rand() % addrs.size()];
 			{
-				const auto dst_addr = addrs[rand() % addrs.size()];
+				tx_out_t out;
+				out.address = dst_addr;
+				out.amount = entry.second.amount;
+				tx->outputs.push_back(out);
+			}
+			{
+				tx_in_t in;
+				in.prev_tx = entry.first.first;
+				in.index = entry.first.second;
 				{
-					tx_out_t out;
-					out.address = dst_addr;
-					out.amount = utxo.second.amount;
-					tx->outputs.push_back(out);
+					auto sol = solution::PubKey::create();
+					sol->pubkey = pubkey_map[entry.second.address];
+					in.solution = sol;
+					to_sign = sol;
 				}
-				{
-					tx_in_t in;
-					in.prev_tx = entry.first;
-					in.index = utxo.first;
-					{
-						auto sol = solution::PubKey::create();
-						sol->pubkey = pubkey_map[utxo.second.address];
-						in.solution = sol;
-						to_sign.push_back(sol);
-					}
-					tx->inputs.push_back(in);
-				}
+				tx->inputs.push_back(in);
 			}
 			const auto id = tx->calc_hash();
 
-			for(const auto& sol : to_sign)
-			{
-				sol->signature = MPL.Sign(skey_map[sol->pubkey].to_bls(), bls::Bytes(id.bytes.data(), id.bytes.size()));
+			if(to_sign) {
+				to_sign->signature = signature_t::sign(skey_map[to_sign->pubkey], id);
 			}
 			block->tx_list.push_back(tx);
 		}
@@ -312,9 +258,10 @@ int main(int argc, char** argv)
 
 	vnx::close();
 
+	mmx::secp256k1_free();
+
 	return 0;
 }
-
 
 
 

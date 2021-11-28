@@ -1,7 +1,15 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.11)
 project(mmx-node C CXX)
 
 set(CMAKE_CXX_STANDARD 11)
+
+include(FetchContent)
+
+FetchContent_Declare(
+	secp256k1
+	GIT_REPOSITORY https://github.com/bitcoin-core/secp256k1.git
+	GIT_TAG        fecf436d5327717801da84beb3066f5a9b80ea8e
+)
 
 add_subdirectory(bls-signatures)
 
@@ -34,6 +42,7 @@ add_library(mmx_iface SHARED
 	src/Transaction.cpp
 	src/Operation.cpp
 	src/Contract.cpp
+	src/secp256k1.cpp
 )
 
 target_include_directories(mmx_iface
@@ -45,10 +54,10 @@ target_include_directories(mmx_iface
 		generated/solution/include
 )
 
-target_link_libraries(mmx_iface bls vnx_base)
+target_link_libraries(mmx_iface secp256k1 bls vnx_base)
 
 
-add_executable(test_validation test/test_validation.cpp)
+add_executable(test_secp256k1 test/test_secp256k1.cpp)
 
-target_link_libraries(test_validation mmx_iface)
+target_link_libraries(test_secp256k1 mmx_iface)
 
