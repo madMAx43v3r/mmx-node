@@ -2,9 +2,7 @@ package mmx;
 
 struct tx_in_t {
 	
-	hash_t prev_tx;
-	
-	uint index;
+	utxo_key_t prev;
 	
 	Solution* solution;
 	

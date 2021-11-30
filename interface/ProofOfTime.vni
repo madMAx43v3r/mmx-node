@@ -1,0 +1,10 @@
+package mmx;
+
+class ProofOfTime {
+	
+	ulong num_iters;
+	
+	
+	hash_t calc_hash() const;
+	
+}

@@ -17,7 +17,7 @@ hash_t Transaction::calc_hash() const
 	vnx::VectorOutputStream stream(&buffer);
 	vnx::OutputBuffer out(&stream);
 
-	buffer.reserve(16 * 1024);
+	buffer.reserve(4 * 1024);
 
 	mmx::write_bytes(out, version);
 
@@ -34,7 +34,7 @@ hash_t Transaction::calc_hash() const
 	}
 	out.flush();
 
-	return hash_t(buffer.data(), buffer.size());
+	return hash_t(buffer);
 }
 
 

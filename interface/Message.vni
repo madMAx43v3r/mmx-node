@@ -6,6 +6,6 @@ class Message {
 	
 	vnx.Value* payload;
 	
-	vector<ulong> path;
+	vector<vnx.Hash64> path;
 	
 }

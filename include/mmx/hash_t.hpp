@@ -25,6 +25,12 @@ hash_t::hash_t(const void* data, const size_t num_bytes)
 }
 
 inline
+hash_t::hash_t(const std::vector<uint8_t>& data)
+	:	hash_t(data.data(), data.size())
+{
+}
+
+inline
 hash_t::hash_t(const std::array<uint8_t, 32>& data)
 	:	hash_t(data.data(), data.size())
 {
@@ -43,8 +49,26 @@ bool hash_t::is_zero() const
 }
 
 inline
+std::string hash_t::to_string() const
+{
+	return bls::Util::HexStr(bytes.data(), bytes.size());
+}
+
+inline
+hash_t hash_t::from_string(const std::string& str)
+{
+	hash_t res;
+	const auto bytes = bls::Util::HexToBytes(str);
+	if(bytes.size() != res.bytes.size()) {
+		throw std::logic_error("hash size mismatch");
+	}
+	::memcpy(res.bytes.data(), bytes.data(), bytes.size());
+	return res;
+}
+
+inline
 std::ostream& operator<<(std::ostream& out, const hash_t& hash) {
-	return out << "0x" << bls::Util::HexStr(hash.bytes.data(), hash.bytes.size());
+	return out << "0x" << hash.to_string();
 }
 
 } // mmx
@@ -64,12 +88,14 @@ void write(vnx::TypeOutput& out, const mmx::hash_t& value, const vnx::TypeCode* 
 
 inline
 void read(std::istream& in, mmx::hash_t& value) {
-	vnx::read(in, value.bytes);
+	std::string tmp;
+	vnx::read(in, tmp);
+	value = mmx::hash_t::from_string(tmp);
 }
 
 inline
 void write(std::ostream& out, const mmx::hash_t& value) {
-	vnx::write(out, value.bytes);
+	vnx::write(out, value.to_string());
 }
 
 inline

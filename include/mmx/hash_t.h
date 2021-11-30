@@ -9,6 +9,7 @@
 #define INCLUDE_MMX_HASH_T_H_
 
 #include <array>
+#include <vector>
 #include <functional>
 
 
@@ -22,11 +23,15 @@ struct hash_t {
 
 	hash_t(const void* data, const size_t num_bytes);
 
+	explicit hash_t(const std::vector<uint8_t>& data);
+
 	explicit hash_t(const std::array<uint8_t, 32>& data);
 
 	const uint8_t* data() const;
 
 	bool is_zero() const;
+
+	std::string to_string() const;
 
 	bool operator==(const hash_t& other) const {
 		return bytes == other.bytes;
@@ -35,6 +40,8 @@ struct hash_t {
 	bool operator!=(const hash_t& other) const {
 		return bytes != other.bytes;
 	}
+
+	static hash_t from_string(const std::string& str);
 
 };
 

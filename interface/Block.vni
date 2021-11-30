@@ -1,18 +1,6 @@
 package mmx;
 
-class Block {
-	
-	hash_t hash;
-	
-	hash_t prev;
-	
-	int version;
-	
-	long time_ms;			// UTC [ms]
-	
-	ulong next_diff;
-	
-	Transaction* coin_base;
+class Block extends BlockHeader {
 	
 	vector<Transaction*> tx_list;
 	
@@ -21,6 +9,6 @@ class Block {
 	
 	bool is_valid() const;
 	
-	hash_t calc_hash() const;
+	hash_t calc_tx_hash() const;
 	
 }

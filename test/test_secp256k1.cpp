@@ -9,26 +9,18 @@
 #include <mmx/Block.hxx>
 #include <mmx/skey_t.hpp>
 #include <mmx/pubkey_t.hpp>
+#include <mmx/utxo_key_t.hpp>
 #include <mmx/solution/PubKey.hxx>
 
 #include <vnx/vnx.h>
 #include <unordered_map>
-
-
-namespace std {
-	template<> struct hash<std::pair<mmx::hash_t, size_t>> {
-		size_t operator()(const std::pair<mmx::hash_t, size_t>& x) const {
-			return std::hash<mmx::hash_t>{}(x.first) xor x.second;
-		}
-	};
-} // std
 
 using namespace mmx;
 
 
 static constexpr uint64_t COIN = 1000000;
 
-std::unordered_map<std::pair<mmx::hash_t, size_t>, mmx::tx_out_t> utxo_map;
+std::unordered_map<mmx::utxo_key_t, mmx::tx_out_t> utxo_map;
 
 std::unordered_map<hash_t, std::shared_ptr<const Contract>> contract_map;
 
@@ -46,7 +38,7 @@ hash_t validate(std::shared_ptr<const Transaction> tx, bool is_base = false)
 
 	for(const auto& in : tx->inputs)
 	{
-		auto iter = utxo_map.find(std::make_pair(in.prev_tx, in.index));
+		auto iter = utxo_map.find(in.prev);
 		if(iter == utxo_map.end()) {
 			throw std::logic_error("invalid prev_tx + index");
 		}
@@ -104,11 +96,11 @@ hash_t validate(std::shared_ptr<const Transaction> tx, bool is_base = false)
 	return id;
 }
 
-void process(std::shared_ptr<const Transaction> tx, const hash_t& tx_id, bool is_base = false)
+void process(std::shared_ptr<const Transaction> tx, const hash_t& txid, bool is_base = false)
 {
 	for(const auto& in : tx->inputs)
 	{
-		auto iter = utxo_map.find(std::make_pair(in.prev_tx, in.index));
+		auto iter = utxo_map.find(in.prev);
 		if(iter != utxo_map.end()) {
 			utxo_map.erase(iter);
 		} else {
@@ -116,7 +108,10 @@ void process(std::shared_ptr<const Transaction> tx, const hash_t& tx_id, bool is
 		}
 	}
 	for(size_t i = 0; i < tx->outputs.size(); ++i) {
-		utxo_map[std::make_pair(tx_id, i)] = tx->outputs[i];
+		utxo_key_t key;
+		key.txid = txid;
+		key.index = i;
+		utxo_map[key] = tx->outputs[i];
 	}
 	total_tx_count++;
 }
@@ -225,8 +220,7 @@ int main(int argc, char** argv)
 			}
 			{
 				tx_in_t in;
-				in.prev_tx = entry.first.first;
-				in.index = entry.first.second;
+				in.prev = entry.first;
 				{
 					auto sol = solution::PubKey::create();
 					sol->pubkey = pubkey_map[entry.second.address];

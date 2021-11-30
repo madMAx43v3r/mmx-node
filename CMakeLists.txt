@@ -39,9 +39,12 @@ file(GLOB GENERATED_SOURCE_FILES
 add_library(mmx_iface SHARED
 	${GENERATED_SOURCE_FILES}
 	src/Block.cpp
+	src/BlockHeader.cpp
 	src/Transaction.cpp
 	src/Operation.cpp
 	src/Contract.cpp
+	src/ProofOfTime.cpp
+	src/ProofOfSpace.cpp
 	src/secp256k1.cpp
 )
 

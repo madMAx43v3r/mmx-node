@@ -1,0 +1,14 @@
+package mmx;
+
+class ProofOfSpace {
+	
+	int k_size;
+	
+	vnx.Buffer proof_bytes;
+	
+	
+	bool is_valid(ulong y7_value) const;
+	
+	hash_t calc_hash() const;
+	
+}

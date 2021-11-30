@@ -22,6 +22,8 @@ struct skey_t {
 
 	skey_t() = default;
 
+	std::string to_string() const;
+
 	bool operator==(const skey_t& other) const {
 		return bytes == other.bytes;
 	}
@@ -30,12 +32,32 @@ struct skey_t {
 		return bytes != other.bytes;
 	}
 
+	static skey_t from_string(const std::string& str);
+
 };
 
 
 inline
+std::string skey_t::to_string() const
+{
+	return bls::Util::HexStr(bytes.data(), bytes.size());
+}
+
+inline
+skey_t skey_t::from_string(const std::string& str)
+{
+	skey_t res;
+	const auto bytes = bls::Util::HexToBytes(str);
+	if(bytes.size() != res.bytes.size()) {
+		throw std::logic_error("key size mismatch");
+	}
+	::memcpy(res.bytes.data(), bytes.data(), bytes.size());
+	return res;
+}
+
+inline
 std::ostream& operator<<(std::ostream& out, const skey_t& key) {
-	return out << "0x" << bls::Util::HexStr(key.bytes.data(), key.bytes.size());
+	return out << "0x" << key.to_string();
 }
 
 } //mmx
@@ -55,12 +77,14 @@ void write(vnx::TypeOutput& out, const mmx::skey_t& value, const vnx::TypeCode* 
 
 inline
 void read(std::istream& in, mmx::skey_t& value) {
-	vnx::read(in, value.bytes);
+	std::string tmp;
+	vnx::read(in, tmp);
+	value = mmx::skey_t::from_string(tmp);
 }
 
 inline
 void write(std::ostream& out, const mmx::skey_t& value) {
-	vnx::write(out, value.bytes);
+	vnx::write(out, value.to_string());
 }
 
 inline

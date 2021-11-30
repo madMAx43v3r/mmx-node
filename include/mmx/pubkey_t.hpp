@@ -31,6 +31,8 @@ struct pubkey_t {
 
 	hash_t get_addr() const;
 
+	std::string to_string() const;
+
 	secp256k1_pubkey to_secp256k1() const;
 
 	bool operator==(const pubkey_t& other) const {
@@ -43,6 +45,8 @@ struct pubkey_t {
 
 	static pubkey_t from_skey(const skey_t& key);
 
+	static pubkey_t from_string(const std::string& str);
+
 };
 
 
@@ -54,6 +58,12 @@ pubkey_t::pubkey_t(const secp256k1_pubkey& key)
 	if(len != 33) {
 		throw std::logic_error("secp256k1_ec_pubkey_serialize(): length != 33");
 	}
+}
+
+inline
+std::string pubkey_t::to_string() const
+{
+	return bls::Util::HexStr(bytes.data(), bytes.size());
 }
 
 inline
@@ -83,8 +93,20 @@ pubkey_t pubkey_t::from_skey(const skey_t& key)
 }
 
 inline
+pubkey_t pubkey_t::from_string(const std::string& str)
+{
+	pubkey_t res;
+	const auto bytes = bls::Util::HexToBytes(str);
+	if(bytes.size() != res.bytes.size()) {
+		throw std::logic_error("key size mismatch");
+	}
+	::memcpy(res.bytes.data(), bytes.data(), bytes.size());
+	return res;
+}
+
+inline
 std::ostream& operator<<(std::ostream& out, const pubkey_t& key) {
-	return out << "0x" << bls::Util::HexStr(key.bytes.data(), key.bytes.size());
+	return out << "0x" << key.to_string();
 }
 
 } // mmx
@@ -104,12 +126,14 @@ void write(vnx::TypeOutput& out, const mmx::pubkey_t& value, const vnx::TypeCode
 
 inline
 void read(std::istream& in, mmx::pubkey_t& value) {
-	vnx::read(in, value.bytes);
+	std::string tmp;
+	vnx::read(in, tmp);
+	value = mmx::pubkey_t::from_string(tmp);
 }
 
 inline
 void write(std::ostream& out, const mmx::pubkey_t& value) {
-	vnx::write(out, value.bytes);
+	vnx::write(out, value.to_string());
 }
 
 inline

@@ -15,6 +15,7 @@ namespace mmx {
 
 void Block::finalize()
 {
+	tx_hash = calc_tx_hash();
 	hash = calc_hash();
 }
 
@@ -23,7 +24,7 @@ vnx::bool_t Block::is_valid() const
 	return calc_hash() == hash;
 }
 
-mmx::hash_t Block::calc_hash() const
+mmx::hash_t Block::calc_tx_hash() const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
@@ -31,20 +32,12 @@ mmx::hash_t Block::calc_hash() const
 
 	buffer.reserve(1024 * 1024);
 
-	write_bytes(out, prev);
-	write_bytes(out, version);
-	write_bytes(out, time_ms);
-	write_bytes(out, next_diff);
-
-	if(auto tx = coin_base) {
-		write_bytes(out, tx->calc_hash());
-	}
 	for(const auto& tx : tx_list) {
 		write_bytes(out, tx->calc_hash());
 	}
 	out.flush();
 
-	return hash_t(buffer.data(), buffer.size());
+	return hash_t(buffer);
 }
 
 

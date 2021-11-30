@@ -31,6 +31,8 @@ struct signature_t {
 
 	bool verify(const pubkey_t& pubkey, const hash_t& hash) const;
 
+	std::string to_string() const;
+
 	secp256k1_ecdsa_signature to_secp256k1() const;
 
 	bool operator==(const signature_t& other) const {
@@ -40,6 +42,8 @@ struct signature_t {
 	bool operator!=(const signature_t& other) const {
 		return bytes != other.bytes;
 	}
+
+	static signature_t from_string(const std::string& str);
 
 	static signature_t sign(const skey_t& skey, const hash_t& hash);
 
@@ -61,12 +65,30 @@ bool signature_t::verify(const pubkey_t& pubkey, const hash_t& hash) const
 }
 
 inline
+std::string signature_t::to_string() const
+{
+	return bls::Util::HexStr(bytes.data(), bytes.size());
+}
+
+inline
 secp256k1_ecdsa_signature signature_t::to_secp256k1() const
 {
 	secp256k1_ecdsa_signature res;
 	if(!secp256k1_ecdsa_signature_parse_compact(g_secp256k1, &res, bytes.data())) {
 		throw std::logic_error("secp256k1_ecdsa_signature_parse_compact() failed");
 	}
+	return res;
+}
+
+inline
+signature_t signature_t::from_string(const std::string& str)
+{
+	signature_t res;
+	const auto bytes = bls::Util::HexToBytes(str);
+	if(bytes.size() != res.bytes.size()) {
+		throw std::logic_error("signature size mismatch");
+	}
+	::memcpy(res.bytes.data(), bytes.data(), bytes.size());
 	return res;
 }
 
@@ -82,7 +104,7 @@ signature_t signature_t::sign(const skey_t& skey, const hash_t& hash)
 
 inline
 std::ostream& operator<<(std::ostream& out, const signature_t& sig) {
-	return out << "0x" << bls::Util::HexStr(sig.bytes.data(), sig.bytes.size());
+	return out << "0x" << sig.to_string();
 }
 
 } // mmx
@@ -102,12 +124,14 @@ void write(vnx::TypeOutput& out, const mmx::signature_t& value, const vnx::TypeC
 
 inline
 void read(std::istream& in, mmx::signature_t& value) {
-	vnx::read(in, value.bytes);
+	std::string tmp;
+	vnx::read(in, tmp);
+	value = mmx::signature_t::from_string(tmp);
 }
 
 inline
 void write(std::ostream& out, const mmx::signature_t& value) {
-	vnx::write(out, value.bytes);
+	vnx::write(out, value.to_string());
 }
 
 inline
