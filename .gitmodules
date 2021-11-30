@@ -4,3 +4,9 @@
 [submodule "secp256k1"]
 	path = secp256k1
 	url = https://github.com/bitcoin-core/secp256k1.git
+[submodule "chiavdf"]
+	path = chiavdf
+	url = https://github.com/Chia-Network/chiavdf.git
+[submodule "chiapos"]
+	path = chiapos
+	url = https://github.com/Chia-Network/chiapos.git
