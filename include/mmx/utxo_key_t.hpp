@@ -22,7 +22,8 @@ bool operator==(const utxo_key_t& lhs, const utxo_key_t& rhs) {
 
 
 namespace std {
-	template<> struct hash<mmx::utxo_key_t> {
+	template<>
+	struct hash<mmx::utxo_key_t> {
 		size_t operator()(const mmx::utxo_key_t& x) const {
 			return std::hash<mmx::hash_t>{}(x.txid) xor x.index;
 		}

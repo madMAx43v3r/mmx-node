@@ -1,0 +1,19 @@
+package mmx;
+
+class ChainParams {
+	
+	int plot_filter = 10;
+	int target_quality_fraction = 8;
+	
+	int challenge_delay = 2;				// VDF iters required for challenge [blocks]
+	int challenge_blocks = 4;				// challenge is for Nth block in future
+	
+	ulong reward_factor = 1000;				// reward = (diff * factor) / fraction;
+	ulong reward_fraction = 1;
+	
+	ulong initial_time_diff = 100000;		// [iters/sec]
+	ulong initial_space_diff = 1000;		// quality modulo
+	
+	double target_block_time = 10;			// [sec]
+	
+}

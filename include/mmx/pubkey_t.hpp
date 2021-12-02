@@ -8,44 +8,24 @@
 #ifndef INCLUDE_MMX_PUBKEY_T_HPP_
 #define INCLUDE_MMX_PUBKEY_T_HPP_
 
-#include <mmx/hash_t.h>
+#include <mmx/hash_t.hpp>
 #include <mmx/skey_t.hpp>
 #include <mmx/secp256k1.hpp>
-
-#include <vnx/Input.hpp>
-#include <vnx/Output.hpp>
-
-#include <bls.hpp>
 
 
 namespace mmx {
 
-struct pubkey_t {
-
-	std::array<uint8_t, 33> bytes = {};
+struct pubkey_t : bytes_t<33> {
 
 	pubkey_t() = default;
-
 
 	pubkey_t(const secp256k1_pubkey& key);
 
 	hash_t get_addr() const;
 
-	std::string to_string() const;
-
 	secp256k1_pubkey to_secp256k1() const;
 
-	bool operator==(const pubkey_t& other) const {
-		return bytes == other.bytes;
-	}
-
-	bool operator!=(const pubkey_t& other) const {
-		return bytes != other.bytes;
-	}
-
 	static pubkey_t from_skey(const skey_t& key);
-
-	static pubkey_t from_string(const std::string& str);
 
 };
 
@@ -58,12 +38,6 @@ pubkey_t::pubkey_t(const secp256k1_pubkey& key)
 	if(len != 33) {
 		throw std::logic_error("secp256k1_ec_pubkey_serialize(): length != 33");
 	}
-}
-
-inline
-std::string pubkey_t::to_string() const
-{
-	return bls::Util::HexStr(bytes.data(), bytes.size());
 }
 
 inline
@@ -92,22 +66,6 @@ pubkey_t pubkey_t::from_skey(const skey_t& key)
 	return pubkey_t(pubkey);
 }
 
-inline
-pubkey_t pubkey_t::from_string(const std::string& str)
-{
-	pubkey_t res;
-	const auto bytes = bls::Util::HexToBytes(str);
-	if(bytes.size() != res.bytes.size()) {
-		throw std::logic_error("key size mismatch");
-	}
-	::memcpy(res.bytes.data(), bytes.data(), bytes.size());
-	return res;
-}
-
-inline
-std::ostream& operator<<(std::ostream& out, const pubkey_t& key) {
-	return out << "0x" << key.to_string();
-}
 
 } // mmx
 
@@ -128,7 +86,7 @@ inline
 void read(std::istream& in, mmx::pubkey_t& value) {
 	std::string tmp;
 	vnx::read(in, tmp);
-	value = mmx::pubkey_t::from_string(tmp);
+	value.from_string(tmp);
 }
 
 inline
@@ -141,14 +99,14 @@ void accept(vnx::Visitor& visitor, const mmx::pubkey_t& value) {
 	vnx::accept(visitor, value.bytes);
 }
 
-
 } // vnx
 
 
 namespace std {
-	template<> struct hash<mmx::pubkey_t> {
+	template<>
+	struct hash<typename mmx::pubkey_t> {
 		size_t operator()(const mmx::pubkey_t& x) const {
-			return *((const size_t*)x.bytes.data());
+			return std::hash<mmx::bytes_t<33>>{}(x);
 		}
 	};
 } // std

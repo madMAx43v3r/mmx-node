@@ -11,17 +11,10 @@
 #include <mmx/hash_t.hpp>
 #include <mmx/bls_pubkey_t.hpp>
 
-#include <vnx/Input.hpp>
-#include <vnx/Output.hpp>
-
-#include <bls.hpp>
-
 
 namespace mmx {
 
-struct bls_signature_t {
-
-	std::array<uint8_t, 96> bytes = {};
+struct bls_signature_t : bytes_t<96> {
 
 	bls_signature_t() = default;
 
@@ -29,19 +22,7 @@ struct bls_signature_t {
 
 	bool verify(const bls_pubkey_t& pubkey, const hash_t& hash) const;
 
-	std::string to_string() const;
-
 	bls::G2Element to_bls() const;
-
-	bool operator==(const bls_signature_t& other) const {
-		return bytes == other.bytes;
-	}
-
-	bool operator!=(const bls_signature_t& other) const {
-		return bytes != other.bytes;
-	}
-
-	static bls_signature_t from_string(const std::string& str);
 
 	static bls_signature_t sign(const bls::PrivateKey& skey, const hash_t& hash);
 
@@ -66,27 +47,9 @@ bool bls_signature_t::verify(const bls_pubkey_t& pubkey, const hash_t& hash) con
 }
 
 inline
-std::string bls_signature_t::to_string() const
-{
-	return bls::Util::HexStr(bytes.data(), bytes.size());
-}
-
-inline
 bls::G2Element bls_signature_t::to_bls() const
 {
 	return bls::G2Element::FromBytes(bls::Bytes(bytes.data(), bytes.size()));
-}
-
-inline
-bls_signature_t bls_signature_t::from_string(const std::string& str)
-{
-	bls_signature_t res;
-	const auto bytes = bls::Util::HexToBytes(str);
-	if(bytes.size() != res.bytes.size()) {
-		throw std::logic_error("signature size mismatch");
-	}
-	::memcpy(res.bytes.data(), bytes.data(), bytes.size());
-	return res;
 }
 
 inline
@@ -94,11 +57,6 @@ bls_signature_t bls_signature_t::sign(const bls::PrivateKey& skey, const hash_t&
 {
 	bls::AugSchemeMPL MPL;
 	return MPL.Sign(skey, bls::Bytes(hash.bytes.data(), hash.bytes.size()));
-}
-
-inline
-std::ostream& operator<<(std::ostream& out, const bls_signature_t& sig) {
-	return out << "0x" << sig.to_string();
 }
 
 } // mmx
@@ -120,7 +78,7 @@ inline
 void read(std::istream& in, mmx::bls_signature_t& value) {
 	std::string tmp;
 	vnx::read(in, tmp);
-	value = mmx::bls_signature_t::from_string(tmp);
+	value.from_string(tmp);
 }
 
 inline

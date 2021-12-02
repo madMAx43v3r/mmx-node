@@ -8,21 +8,23 @@
 #ifndef INCLUDE_MMX_HASH_T_HPP_
 #define INCLUDE_MMX_HASH_T_HPP_
 
-#include <mmx/hash_t.h>
-
-#include <vnx/Input.hpp>
-#include <vnx/Output.hpp>
-
-#include <bls.hpp>
+#include <mmx/bytes_t.hpp>
 
 
 namespace mmx {
 
-inline
-hash_t::hash_t(const void* data, const size_t num_bytes)
-{
-	bls::Util::Hash256(bytes.data(), (const uint8_t*)data, num_bytes);
-}
+struct hash_t : bytes_t<32> {
+
+	hash_t() = default;
+
+	explicit hash_t(const std::vector<uint8_t>& data);
+
+	explicit hash_t(const std::array<uint8_t, 32>& data);
+
+	explicit hash_t(const void* data, const size_t num_bytes);
+
+};
+
 
 inline
 hash_t::hash_t(const std::vector<uint8_t>& data)
@@ -37,39 +39,11 @@ hash_t::hash_t(const std::array<uint8_t, 32>& data)
 }
 
 inline
-const uint8_t* hash_t::data() const
+hash_t::hash_t(const void* data, const size_t num_bytes)
 {
-	return bytes.data();
+	bls::Util::Hash256(bytes.data(), (const uint8_t*)data, num_bytes);
 }
 
-inline
-bool hash_t::is_zero() const
-{
-	return *this == hash_t();
-}
-
-inline
-std::string hash_t::to_string() const
-{
-	return bls::Util::HexStr(bytes.data(), bytes.size());
-}
-
-inline
-hash_t hash_t::from_string(const std::string& str)
-{
-	hash_t res;
-	const auto bytes = bls::Util::HexToBytes(str);
-	if(bytes.size() != res.bytes.size()) {
-		throw std::logic_error("hash size mismatch");
-	}
-	::memcpy(res.bytes.data(), bytes.data(), bytes.size());
-	return res;
-}
-
-inline
-std::ostream& operator<<(std::ostream& out, const hash_t& hash) {
-	return out << "0x" << hash.to_string();
-}
 
 } // mmx
 
@@ -90,7 +64,7 @@ inline
 void read(std::istream& in, mmx::hash_t& value) {
 	std::string tmp;
 	vnx::read(in, tmp);
-	value = mmx::hash_t::from_string(tmp);
+	value.from_string(tmp);
 }
 
 inline
@@ -104,5 +78,15 @@ void accept(vnx::Visitor& visitor, const mmx::hash_t& value) {
 }
 
 } // vnx
+
+
+namespace std {
+	template<>
+	struct hash<typename mmx::hash_t> {
+		size_t operator()(const mmx::hash_t& x) const {
+			return std::hash<mmx::bytes_t<32>>{}(x);
+		}
+	};
+} // std
 
 #endif /* INCLUDE_MMX_HASH_T_HPP_ */
