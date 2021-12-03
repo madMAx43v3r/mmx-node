@@ -1,0 +1,14 @@
+package mmx.contract;
+
+class Locked extends mmx.Contract {
+	
+	input_e type;
+	
+	ulong threshold;
+	
+	
+//	bool is_valid() const;
+	
+//	hash_t calc_hash() const;
+	
+}

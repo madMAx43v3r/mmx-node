@@ -1,0 +1,8 @@
+package mmx;
+
+struct uint_fraction_t {
+	
+	uint value;
+	uint inverse;
+	
+}

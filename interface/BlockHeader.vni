@@ -12,13 +12,11 @@ class BlockHeader {
 	
 	long time_ms;			// UTC [ms]
 	
-	ulong next_time_diff;
+	ulong time_diff;
+	ulong space_diff;
 	
-	ulong next_space_diff;
-	
-	ProofOfTime* interval_proof;
-	
-	ProofOfTime* challenge_proof;
+	ProofOfTime* proof_of_time;
+	ProofOfTime* proof_of_challenge;
 	
 	ProofOfSpace* proof_of_space;
 	

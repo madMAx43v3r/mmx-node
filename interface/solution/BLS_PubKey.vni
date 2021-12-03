@@ -1,0 +1,15 @@
+package mmx.solution;
+
+import mmx.hash_type_e;
+import mmx.bls_pubkey_t;
+import mmx.bls_signature_t;
+
+class BLS_PubKey extends mmx.Solution {
+	
+	hash_type_e hash_type;
+	
+	bls_pubkey_t pubkey;
+	
+	bls_signature_t signature;
+	
+}

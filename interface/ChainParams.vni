@@ -2,18 +2,25 @@ package mmx;
 
 class ChainParams {
 	
+	double block_time = 10;					// [sec]
+	
 	int plot_filter = 10;
-	int target_quality_fraction = 8;
+	int adjust_delay = 6;					// blocks until difficulty applies (including deficit)
+	int challenge_delay = 4;				// blocks until next challenge is active (including deficit)
+	int challenge_interval = 64;			// challenge is for next N blocks
+	int diff_target_log = 3;				// 1 / 2^x (how many blocks are created per sp)
 	
-	int challenge_delay = 2;				// VDF iters required for challenge [blocks]
-	int challenge_blocks = 4;				// challenge is for Nth block in future
+	ulong_fraction_t reward_factor;			// reward = (diff * value) / inverse;
 	
-	ulong reward_factor = 1000;				// reward = (diff * factor) / fraction;
-	ulong reward_fraction = 1;
+	ulong time_diff_constant = 1000;
+	ulong space_diff_constant = 1000;
 	
-	ulong initial_time_diff = 100000;		// [iters/sec]
-	ulong initial_space_diff = 1000;		// quality modulo
+	ulong initial_time_diff = 1;			// [iters/sec]
+	ulong initial_space_diff = 1;			// quality modulo
 	
-	double target_block_time = 10;			// [sec]
+	ulong coin_decimals = 6;				// 1 coin = 10^x mojo
+	
+	ulong min_tx_fee_bls = 3000;			// per input / output
+	ulong min_tx_fee_ecdsa = 1000;			// per input / output
 	
 }

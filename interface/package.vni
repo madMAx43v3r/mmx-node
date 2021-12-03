@@ -8,3 +8,5 @@ extern signature_t = {11, 64, 1};
 
 extern bls_pubkey_t = {11, 48, 1};
 extern bls_signature_t = {11, 96, 1};
+
+extern vdf_form_t = {11, 96, 100};

@@ -1,9 +1,12 @@
 package mmx.solution;
 
 import mmx.pubkey_t;
+import mmx.hash_type_e;
 import mmx.signature_t;
 
 class PubKey extends mmx.Solution {
+	
+	hash_type_e hash_type;
 	
 	pubkey_t pubkey;
 	

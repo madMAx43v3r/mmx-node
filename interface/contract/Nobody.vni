@@ -1,6 +1,6 @@
 package mmx.contract;
 
-class Null extends mmx.Contract {
+class Nobody extends mmx.Contract {
 	
 //	bool is_valid() const;
 	

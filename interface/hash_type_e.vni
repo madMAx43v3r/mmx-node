@@ -1,0 +1,9 @@
+package mmx;
+
+enum hash_type_e {
+	
+	SHA2_256,
+	SHA3_256,
+	KECCAK_256
+	
+}

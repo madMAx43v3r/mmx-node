@@ -2,6 +2,10 @@ package mmx;
 
 class ProofOfTime {
 	
+	vdf_form_t x;
+	vdf_form_t y;
+	vdf_form_t proof;
+	
 	ulong num_iters;
 	
 	

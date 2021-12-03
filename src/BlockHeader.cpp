@@ -30,13 +30,13 @@ mmx::hash_t BlockHeader::calc_hash() const
 	write_bytes(out, version);
 	write_bytes(out, deficit);
 	write_bytes(out, time_ms);
-	write_bytes(out, next_time_diff);
-	write_bytes(out, next_space_diff);
+	write_bytes(out, time_diff);
+	write_bytes(out, space_diff);
 
-	if(auto proof = interval_proof) {
+	if(auto proof = proof_of_time) {
 		write_bytes(out, proof->calc_hash());
 	}
-	if(auto proof = challenge_proof) {
+	if(auto proof = proof_of_challenge) {
 		write_bytes(out, proof->calc_hash());
 	}
 	if(auto proof = proof_of_space) {
