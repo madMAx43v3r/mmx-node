@@ -35,6 +35,8 @@ struct bytes_t {
 
 	const uint8_t* data() const;
 
+	size_t size() const;
+
 	bool is_zero() const;
 
 	std::string to_string() const;
@@ -82,6 +84,12 @@ bytes_t<N>::bytes_t(const std::array<uint8_t, N>& data)
 template<int N>
 const uint8_t* bytes_t<N>::data() const {
 	return bytes.data();
+}
+
+template<int N>
+size_t bytes_t<N>::size() const
+{
+	return N;
 }
 
 template<int N>

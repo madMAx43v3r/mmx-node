@@ -6,9 +6,9 @@ class BlockHeader {
 	
 	hash_t prev;
 	
-	int version;
+	uint version;
 	
-	int deficit;			// number of missed blocks before this one
+	uint deficit;			// number of missed blocks before this one
 	
 	long time_ms;			// UTC [ms]
 	
@@ -16,13 +16,14 @@ class BlockHeader {
 	ulong space_diff;
 	
 	ProofOfTime* proof_of_time;
-	ProofOfTime* proof_of_challenge;
 	
 	ProofOfSpace* proof_of_space;
 	
 	Transaction* coin_base;
 	
 	hash_t tx_hash;
+	
+	bls_signature_t farmer_sig;
 	
 	
 	bool is_valid() const;

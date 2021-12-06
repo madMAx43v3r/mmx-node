@@ -1,6 +1,7 @@
 package mmx.contract;
 
 import mmx.hash_t;
+import mmx.ulong_fraction_t;
 
 class Token extends Delegated {
 	

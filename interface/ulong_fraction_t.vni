@@ -3,6 +3,6 @@ package mmx;
 struct ulong_fraction_t {
 	
 	ulong value;
-	ulong inverse;
+	ulong inverse = 1;
 	
 }

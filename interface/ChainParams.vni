@@ -5,22 +5,24 @@ class ChainParams {
 	double block_time = 10;					// [sec]
 	
 	int plot_filter = 10;
-	int adjust_delay = 6;					// blocks until difficulty applies (including deficit)
-	int challenge_delay = 4;				// blocks until next challenge is active (including deficit)
-	int challenge_interval = 64;			// challenge is for next N blocks
-	int diff_target_log = 3;				// 1 / 2^x (how many blocks are created per sp)
+	int finality_delay = 6;					// (not including deficit)
 	
+	int challenge_delay = 6;				// blocks until next challenge is active (including deficit)
+	int challenge_interval = 30;			// challenge is for next N blocks
+	
+	int num_vdf_segments = 192;
+	int space_diff_target_log = 3;			// 1 / 2^x (defines how many competing blocks are created per sp)
+	
+	ulong min_block_reward = 250000;
 	ulong_fraction_t reward_factor;			// reward = (diff * value) / inverse;
 	
 	ulong time_diff_constant = 1000;
 	ulong space_diff_constant = 1000;
 	
-	ulong initial_time_diff = 1;			// [iters/sec]
-	ulong initial_space_diff = 1;			// quality modulo
+	ulong initial_time_diff = 1000;			// [iters/sec]
+	ulong initial_space_diff = 1000;		// quality modulo
 	
-	ulong coin_decimals = 6;				// 1 coin = 10^x mojo
-	
-	ulong min_tx_fee_bls = 3000;			// per input / output
-	ulong min_tx_fee_ecdsa = 1000;			// per input / output
+	ulong min_tx_fee_bls = 5000;			// per input / output
+	ulong min_tx_fee_ecdsa = 2000;			// per input / output
 	
 }

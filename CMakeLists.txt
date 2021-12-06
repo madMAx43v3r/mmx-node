@@ -17,10 +17,6 @@ add_subdirectory(bls-signatures)
 
 find_package(Threads REQUIRED)
 
-if(APPLE)
-	find_package(sodium REQUIRED)
-endif()
-
 if(SODIUM_FOUND)
 	message(STATUS "Found libsodium")
 	message(STATUS "Sodium include dir = ${sodium_INCLUDE_DIR}")
@@ -48,6 +44,10 @@ add_library(mmx_iface SHARED
 	src/secp256k1.cpp
 )
 
+add_library(mmx_modules SHARED
+	src/TimeLord.cpp
+)
+
 target_include_directories(mmx_iface
 	PUBLIC
 		include
@@ -58,9 +58,15 @@ target_include_directories(mmx_iface
 )
 
 target_link_libraries(mmx_iface secp256k1 bls vnx_base)
+target_link_libraries(mmx_modules mmx_iface)
 
+add_executable(mmx_timelord src/mmx_timelord.cpp)
 
 add_executable(test_secp256k1 test/test_secp256k1.cpp)
+add_executable(test_hash_vdl test/test_hash_vdl.cpp)
+
+target_link_libraries(mmx_timelord mmx_modules)
 
 target_link_libraries(test_secp256k1 mmx_iface)
+target_link_libraries(test_hash_vdl mmx_iface)
 

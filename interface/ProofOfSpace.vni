@@ -4,7 +4,14 @@ class ProofOfSpace {
 	
 	int k_size;
 	
+	hash_t plot_id;
+	
 	vnx.Buffer proof_bytes;
+	
+	bls_pubkey_t local_key;
+	bls_pubkey_t farmer_key;
+	
+	bls_signature_t local_sig;
 	
 	
 	bool is_valid(ulong y7_value) const;

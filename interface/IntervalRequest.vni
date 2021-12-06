@@ -1,0 +1,10 @@
+package mmx;
+
+class IntervalRequest {
+	
+	ulong begin;
+	ulong end;
+	
+	uint interval;		// segment interval [usec]
+	
+}

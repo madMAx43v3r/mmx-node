@@ -2,11 +2,10 @@ package mmx;
 
 class ProofOfTime {
 	
-	vdf_form_t x;
-	vdf_form_t y;
-	vdf_form_t proof;
+	ulong begin;
+	ulong end;
 	
-	ulong num_iters;
+	vector<time_segment_t> segments;
 	
 	
 	hash_t calc_hash() const;

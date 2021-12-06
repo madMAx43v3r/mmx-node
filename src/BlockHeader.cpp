@@ -15,7 +15,19 @@ namespace mmx {
 
 vnx::bool_t BlockHeader::is_valid() const
 {
-	return calc_hash() == hash;
+	if(version > 0) {
+		return false;
+	}
+	if(calc_hash() != hash) {
+		return false;
+	}
+	if(auto proof = proof_of_space) {
+		bls::AugSchemeMPL MPL;
+		if(!MPL.Verify(proof->farmer_key.to_bls(), bls::Bytes(hash.data(), hash.size()), farmer_sig.to_bls())) {
+			return false;
+		}
+	}
+	return true;
 }
 
 mmx::hash_t BlockHeader::calc_hash() const
@@ -24,7 +36,7 @@ mmx::hash_t BlockHeader::calc_hash() const
 	vnx::VectorOutputStream stream(&buffer);
 	vnx::OutputBuffer out(&stream);
 
-	buffer.reserve(4 * 1024);
+	buffer.reserve(64 * 1024);
 
 	write_bytes(out, prev);
 	write_bytes(out, version);
@@ -34,9 +46,6 @@ mmx::hash_t BlockHeader::calc_hash() const
 	write_bytes(out, space_diff);
 
 	if(auto proof = proof_of_time) {
-		write_bytes(out, proof->calc_hash());
-	}
-	if(auto proof = proof_of_challenge) {
 		write_bytes(out, proof->calc_hash());
 	}
 	if(auto proof = proof_of_space) {

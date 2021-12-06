@@ -17,10 +17,11 @@ mmx::hash_t ProofOfTime::calc_hash() const
 	vnx::VectorOutputStream stream(&buffer);
 	vnx::OutputBuffer out(&stream);
 
-	buffer.reserve(1024);
+	buffer.reserve(16 * 1024);
 
-	write_bytes(out, num_iters);
-	// TODO
+	for(const auto& seg : segments) {
+		write_bytes(out, seg.output);
+	}
 	out.flush();
 
 	return hash_t(buffer);

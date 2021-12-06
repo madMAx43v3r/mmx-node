@@ -17,6 +17,8 @@ struct hash_t : bytes_t<32> {
 
 	hash_t() = default;
 
+	explicit hash_t(const std::string& data);
+
 	explicit hash_t(const std::vector<uint8_t>& data);
 
 	explicit hash_t(const std::array<uint8_t, 32>& data);
@@ -25,6 +27,12 @@ struct hash_t : bytes_t<32> {
 
 };
 
+
+inline
+hash_t::hash_t(const std::string& data)
+	:	hash_t(data.data(), data.size())
+{
+}
 
 inline
 hash_t::hash_t(const std::vector<uint8_t>& data)
