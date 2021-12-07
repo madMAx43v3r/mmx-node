@@ -1,0 +1,20 @@
+package mmx;
+
+module Node {
+	
+	vnx.TopicPtr input_blocks = "network.blocks";
+	vnx.TopicPtr input_transactions = "network.transactions";
+	vnx.TopicPtr input_time_proof = "timelord.proof";
+	
+	vnx.TopicPtr output_blocks = "node.blocks";
+	vnx.TopicPtr output_verified_points = "node.verified_points";
+	vnx.TopicPtr output_interval_request = "timelord.requests";
+	
+	
+	
+	
+	void handle(Block value);
+	void handle(Transaction value);
+	void handle(ProofOfTime value);
+	
+}

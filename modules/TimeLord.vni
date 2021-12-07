@@ -2,7 +2,7 @@ package mmx;
 
 module TimeLord {
 	
-	vnx.TopicPtr input_points = "timelord.verified_points";
+	vnx.TopicPtr input_points = "node.verified_points";
 	vnx.TopicPtr input_request = "timelord.requests";
 	
 	vnx.TopicPtr output_proof = "timelord.proof";
@@ -11,8 +11,6 @@ module TimeLord {
 	uint max_history = 65536;
 	
 	uint checkpoint_interval = 50000;				// [usec]
-	
-	string genesis_string;
 	
 	bool self_test;
 	

@@ -21,7 +21,11 @@ void Block::finalize()
 
 vnx::bool_t Block::is_valid() const
 {
-	return calc_hash() == hash;
+	if(calc_hash() != hash) {
+		return false;
+	}
+	// TODO: check farmer_sig
+	return true;
 }
 
 mmx::hash_t Block::calc_tx_hash() const

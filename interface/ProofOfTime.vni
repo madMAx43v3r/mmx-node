@@ -2,12 +2,15 @@ package mmx;
 
 class ProofOfTime {
 	
-	ulong begin;
-	ulong end;
+	ulong start;		// [iters]
 	
 	vector<time_segment_t> segments;
 	
 	
 	hash_t calc_hash() const;
+	
+	hash_t get_output() const;
+	
+	ulong get_num_iters() const;
 	
 }

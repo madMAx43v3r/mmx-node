@@ -40,24 +40,34 @@ mmx::hash_t BlockHeader::calc_hash() const
 
 	write_bytes(out, prev);
 	write_bytes(out, version);
-	write_bytes(out, deficit);
 	write_bytes(out, time_ms);
 	write_bytes(out, time_diff);
 	write_bytes(out, space_diff);
+	write_bytes(out, total_weight);
 
-	if(auto proof = proof_of_time) {
-		write_bytes(out, proof->calc_hash());
+	for(auto proof : proof_of_time) {
+		if(proof) {
+			write_bytes(out, proof->calc_hash());
+		}
 	}
 	if(auto proof = proof_of_space) {
 		write_bytes(out, proof->calc_hash());
 	}
-	if(auto tx = coin_base) {
+	if(auto tx = tx_base) {
 		write_bytes(out, tx->calc_hash());
 	}
 	write_bytes(out, tx_hash);
 	out.flush();
 
 	return hash_t(buffer);
+}
+
+mmx::hash_t BlockHeader::get_vdf_output() const
+{
+	if(!proof_of_time.empty()) {
+		return proof_of_time.back()->get_output();
+	}
+	return hash_t();
 }
 
 

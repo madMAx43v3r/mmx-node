@@ -20,11 +20,30 @@ mmx::hash_t ProofOfTime::calc_hash() const
 	buffer.reserve(16 * 1024);
 
 	for(const auto& seg : segments) {
+		write_bytes(out, seg.num_iters);
 		write_bytes(out, seg.output);
 	}
 	out.flush();
 
 	return hash_t(buffer);
+}
+
+mmx::hash_t ProofOfTime::get_output() const
+{
+	hash_t res;
+	if(!segments.empty()) {
+		res = segments.back().output;
+	}
+	return res;
+}
+
+uint64_t ProofOfTime::get_num_iters() const
+{
+	uint64_t sum = 0;
+	for(const auto& seg : segments) {
+		sum += seg.num_iters;
+	}
+	return sum;
 }
 
 

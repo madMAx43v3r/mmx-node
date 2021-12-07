@@ -3,23 +3,22 @@ package mmx;
 class BlockHeader {
 	
 	hash_t hash;
-	
 	hash_t prev;
 	
 	uint version;
+	uint height;
+	uint deficit;
 	
-	uint deficit;			// number of missed blocks before this one
-	
-	long time_ms;			// UTC [ms]
+	long time_ms;							// UTC [ms]
 	
 	ulong time_diff;
 	ulong space_diff;
 	
-	ProofOfTime* proof_of_time;
+	ulong vdf_iters;
 	
-	ProofOfSpace* proof_of_space;
+	ProofOfSpace* proof;
 	
-	Transaction* coin_base;
+	Transaction* tx_base;
 	
 	hash_t tx_hash;
 	

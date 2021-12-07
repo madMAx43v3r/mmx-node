@@ -123,7 +123,7 @@ void process(std::shared_ptr<const Block> block)
 	if(!block->is_valid()) {
 		throw std::logic_error("invalid block hash");
 	}
-	if(auto tx = block->coin_base) {
+	if(auto tx = block->tx_base) {
 		const auto id = validate(tx, true);
 		process(tx, id, true);
 	}
@@ -192,7 +192,7 @@ int main(int argc, char** argv)
 			out.amount = 1 * COIN;
 			base->outputs.push_back(out);
 		}
-		genesis->coin_base = base;
+		genesis->tx_base = base;
 	}
 	genesis->finalize();
 

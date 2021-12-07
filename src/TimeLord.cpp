@@ -8,6 +8,8 @@
 #include <mmx/TimeLord.h>
 #include <mmx/ProofOfTime.hxx>
 
+#include <vnx/Config.hpp>
+
 
 namespace mmx {
 
@@ -27,9 +29,11 @@ void TimeLord::main()
 	if(self_test) {
 		pending.emplace(10 * 1000 * 1000, 0);
 	}
+	std::string seed;
+	vnx::read_config("chain.params.vdf_seed", seed);
 
 	TimePoint begin;
-	begin.output = hash_t(genesis_string);
+	begin.output = hash_t(seed);
 
 	vdf_thread = std::thread(&TimeLord::vdf_loop, this, begin);
 
@@ -142,14 +146,16 @@ void TimeLord::vdf_loop(TimePoint point)
 		{
 			std::lock_guard<std::mutex> lock(mutex);
 
+			if(latest_point && latest_point->num_iters > point.num_iters) {
+				// somebody else is faster
+				point = *latest_point;
+				pending.clear();
+			}
 			while(history.size() >= max_history) {
 				history.erase(history.begin());
 			}
 			history.emplace(point.num_iters, point.output);
 
-			if(latest_point && latest_point->num_iters > point.num_iters) {
-				point = *latest_point;
-			}
 			for(const auto& entry : pending) {
 				if(entry.first > point.num_iters) {
 					next_target = entry.first;
