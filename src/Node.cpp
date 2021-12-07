@@ -21,25 +21,26 @@ void Node::init()
 {
 	subscribe(input_blocks);
 	subscribe(input_transactions);
-	subscribe(input_time_proof);
+	subscribe(input_proof_of_time);
 }
 
 void Node::main()
 {
-	vnx::read_config("chain.params", params);
-
+	{
+		auto tmp = ChainParams::create();
+		vnx::read_config("chain.params", tmp);
+		params = tmp;
+	}
 	auto genesis = Block::create();
 	genesis->time_ms = vnx::get_time_millis();
-	genesis->time_diff = params.initial_time_diff;
-	genesis->space_diff = params.initial_space_diff;
+	genesis->time_diff = params->initial_time_diff;
+	genesis->space_diff = params->initial_space_diff;
 	genesis->finalize();
 
-	curr_peak = genesis;
-	history[genesis->height] = genesis;
-
-	verified_vdfs[0] = hash_t(params.vdf_seed);
-
 	apply(genesis);
+
+	history[genesis->height] = genesis;
+	verified_vdfs[0] = hash_t(params->vdf_seed);
 
 	Super::main();
 }
@@ -108,7 +109,7 @@ void Node::verify(std::shared_ptr<const Block> block) const
 	if(!block->proof) {
 		throw std::logic_error("missing proof");
 	}
-	auto diff_block = find_prev_header(block, params.finality_delay);
+	auto diff_block = find_prev_header(block, params->finality_delay);
 	if(!diff_block) {
 		diff_block = history.begin()->second;
 	}
@@ -153,55 +154,41 @@ void Node::verify(std::shared_ptr<const ProofOfTime> proof, const hash_t& begin)
 
 void Node::apply(std::shared_ptr<const Block> block) noexcept
 {
-	if(block->prev != curr_peak->hash) {
+	if(block->prev != state_hash) {
 		return;
 	}
+	const auto log = std::make_shared<DiffLog>();
+
 	if(auto tx = block->tx_base) {
-		apply(tx);
+		apply(*log, tx);
 	}
 	for(auto tx : block->tx_list) {
-		apply(tx);
+		apply(*log, tx);
 	}
-	fork_tree[block->hash] = block;
-	curr_peak = block;
+	state_hash = block->hash;
+	diff_log[block->hash] = log;
 }
 
-void Node::apply(std::shared_ptr<const Transaction> tx) noexcept
+void Node::apply(DiffLog& log, std::shared_ptr<const Transaction> tx) noexcept
 {
 	// TODO
 }
 
-void Node::revert(std::shared_ptr<const Transaction> tx) noexcept
+bool Node::revert() noexcept
 {
+	if(diff_log.empty()) {
+		return false;
+	}
+	const auto log = diff_log.back();
+
 	// TODO
+
+	diff_log.pop_back();
+	state_hash = log->prev_hash;
+	return true;
 }
 
-std::shared_ptr<const Block> Node::revert() noexcept
-{
-	auto block = curr_peak;
-	auto iter = fork_tree.find(curr_peak->prev);
-	if(iter != fork_tree.end()) {
-		curr_peak = iter->second;
-	}
-	else if(auto root = get_root()) {
-		if(root->hash == curr_peak->prev) {
-			curr_peak = root;
-		}
-	}
-	if(block->prev == curr_peak->hash)
-	{
-		for(auto tx : block->tx_list) {
-			revert(tx);
-		}
-		if(auto tx = block->tx_base) {
-			revert(tx);
-		}
-		fork_tree.erase(block->hash);
-	}
-	return block;
-}
-
-std::shared_ptr<const Block> Node::get_root() const
+std::shared_ptr<const BlockHeader> Node::get_root() const
 {
 	if(history.empty()) {
 		return nullptr;

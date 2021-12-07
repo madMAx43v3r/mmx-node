@@ -30,6 +30,10 @@ protected:
 	void handle(std::shared_ptr<const ProofOfTime> proof);
 
 private:
+	struct DiffLog {
+		hash_t prev_hash;
+	};
+
 	void check_forks();
 
 	void verify(std::shared_ptr<const Block> block) const;
@@ -41,13 +45,11 @@ private:
 
 	void apply(std::shared_ptr<const Block> block) noexcept;
 
-	void apply(std::shared_ptr<const Transaction> tx) noexcept;
+	void apply(DiffLog& log, std::shared_ptr<const Transaction> tx) noexcept;
 
-	void revert(std::shared_ptr<const Transaction> tx) noexcept;
+	bool revert() noexcept;
 
-	std::shared_ptr<const Block> revert() noexcept;
-
-	std::shared_ptr<const Block> get_root() const;
+	std::shared_ptr<const BlockHeader> get_root() const;
 
 	std::shared_ptr<const Block> find_block(const hash_t& hash) const;
 
@@ -58,9 +60,8 @@ private:
 	std::shared_ptr<const BlockHeader> find_prev_header(std::shared_ptr<const BlockHeader> block, const size_t distance) const;
 
 private:
-	ChainParams params;
-
-	std::shared_ptr<const Block> curr_peak;
+	hash_t state_hash;
+	std::vector<std::shared_ptr<const DiffLog>> diff_log;
 
 	std::map<hash_t, size_t> finalized;								// [block hash => height]
 	std::map<size_t, std::shared_ptr<const BlockHeader>> history;	// [height => block]
@@ -75,6 +76,8 @@ private:
 
 	std::unordered_map<uint64_t, hash_t> verified_vdfs;				// [iters => output]
 	std::unordered_map<hash_t, uint64_t> verified_blocks;			// [hash => quality]
+
+	std::shared_ptr<const ChainParams> params;
 
 };
 
