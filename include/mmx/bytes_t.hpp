@@ -41,9 +41,9 @@ struct bytes_t {
 
 	std::string to_string() const;
 
-	void from_string(const std::string& str);
+	std::vector<uint8_t> to_vector() const;
 
-	bytes_t& operator=(const bytes_t&) = default;
+	void from_string(const std::string& str);
 
 	bool operator==(const bytes_t& other) const {
 		return bytes == other.bytes;
@@ -103,6 +103,13 @@ std::string bytes_t<N>::to_string() const {
 }
 
 template<int N>
+std::vector<uint8_t> bytes_t<N>::to_vector() const {
+	std::vector<uint8_t> res(N);
+	::memcpy(res.data(), bytes.data(), N);
+	return res;
+}
+
+template<int N>
 void bytes_t<N>::from_string(const std::string& str)
 {
 	const auto tmp = bls::Util::HexToBytes(str);
@@ -115,6 +122,14 @@ void bytes_t<N>::from_string(const std::string& str)
 template<int N>
 std::ostream& operator<<(std::ostream& out, const bytes_t<N>& hash) {
 	return out << "0x" << hash.to_string();
+}
+
+template<int N, int M>
+std::vector<uint8_t> operator+(const bytes_t<N>& lhs, const bytes_t<M>& rhs) {
+	std::vector<uint8_t> res(N + M);
+	::memcpy(res.data(), lhs.bytes.data(), N);
+	::memcpy(res.data() + N, rhs.bytes.data(), M);
+	return res;
 }
 
 } // mmx

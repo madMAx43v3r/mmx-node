@@ -23,7 +23,7 @@ if(SODIUM_FOUND)
 	include_directories(${sodium_INCLUDE_DIR})
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -Wall -Wno-unused-function")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -fopenmp -Wall -Wno-unused-function")
 
 file(GLOB GENERATED_SOURCE_FILES
 	generated/src/*.cpp
@@ -46,6 +46,12 @@ add_library(mmx_iface SHARED
 
 add_library(mmx_modules SHARED
 	src/TimeLord.cpp
+	src/Node.cpp
+)
+
+add_library(uint256_t STATIC
+	uint256_t/uint128_t.cpp
+	uint256_t/uint256_t.cpp
 )
 
 target_include_directories(mmx_iface
@@ -57,7 +63,9 @@ target_include_directories(mmx_iface
 		generated/solution/include
 )
 
-target_link_libraries(mmx_iface secp256k1 bls vnx_base)
+target_include_directories(uint256_t PUBLIC uint256_t)
+
+target_link_libraries(mmx_iface uint256_t secp256k1 bls vnx_base)
 target_link_libraries(mmx_modules mmx_iface)
 
 add_executable(mmx_timelord src/mmx_timelord.cpp)

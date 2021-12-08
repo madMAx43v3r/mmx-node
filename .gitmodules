@@ -10,3 +10,6 @@
 [submodule "chiapos"]
 	path = chiapos
 	url = https://github.com/Chia-Network/chiapos.git
+[submodule "uint256_t"]
+	path = uint256_t
+	url = https://github.com/calccrypto/uint256_t.git

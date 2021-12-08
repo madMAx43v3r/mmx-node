@@ -10,6 +10,7 @@
 
 #include <mmx/NodeBase.hxx>
 #include <mmx/ChainParams.hxx>
+#include <mmx/utxo_key_t.hpp>
 
 
 namespace mmx {
@@ -30,22 +31,23 @@ protected:
 	void handle(std::shared_ptr<const ProofOfTime> proof);
 
 private:
-	struct DiffLog {
-		hash_t prev_hash;
+	struct ChangeLog {
+		hash_t prev_state_hash;
 	};
 
-	void check_forks();
+	void update();
+
+	bool calc_fork_weight(std::shared_ptr<const Block> block, uint64_t& total_score);
 
 	void verify(std::shared_ptr<const Block> block) const;
 
-	void verify(std::shared_ptr<const ProofOfSpace> proof,
-				const hash_t& challenge, const uint64_t difficulty, uint64_t& quality) const;
+	uint64_t verify_proof(std::shared_ptr<const Block> block, const hash_t& vdf_output) const;
 
-	void verify(std::shared_ptr<const ProofOfTime> proof, const hash_t& begin) const;
+	bool verify(std::shared_ptr<const ProofOfTime> proof, const hash_t& begin) const;
 
 	void apply(std::shared_ptr<const Block> block) noexcept;
 
-	void apply(DiffLog& log, std::shared_ptr<const Transaction> tx) noexcept;
+	void apply(ChangeLog& log, std::shared_ptr<const Transaction> tx) noexcept;
 
 	bool revert() noexcept;
 
@@ -55,15 +57,18 @@ private:
 
 	std::shared_ptr<const BlockHeader> find_header(const hash_t& hash) const;
 
-	std::shared_ptr<const Block> find_prev_block(std::shared_ptr<const Block> block, const size_t distance) const;
+	std::shared_ptr<const Block> find_prev_block(std::shared_ptr<const Block> block, const size_t distance = 1) const;
 
-	std::shared_ptr<const BlockHeader> find_prev_header(std::shared_ptr<const BlockHeader> block, const size_t distance) const;
+	std::shared_ptr<const BlockHeader> find_prev_header(
+			std::shared_ptr<const BlockHeader> block, const size_t distance = 1, bool clamp_to_genesis = false) const;
+
+	hash_t get_challenge(std::shared_ptr<const BlockHeader> block) const;
 
 private:
 	hash_t state_hash;
-	std::vector<std::shared_ptr<const DiffLog>> diff_log;
+	std::vector<std::shared_ptr<const ChangeLog>> change_log;
 
-	std::map<hash_t, size_t> finalized;								// [block hash => height]
+	std::unordered_map<hash_t, size_t> finalized;					// [block hash => height]
 	std::map<size_t, std::shared_ptr<const BlockHeader>> history;	// [height => block]
 
 	std::unordered_map<hash_t, hash_t> tx_block_map;				// [txid => block hash]
@@ -75,7 +80,8 @@ private:
 	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_pool;
 
 	std::unordered_map<uint64_t, hash_t> verified_vdfs;				// [iters => output]
-	std::unordered_map<hash_t, uint64_t> verified_blocks;			// [hash => quality]
+	std::unordered_map<hash_t, uint64_t> verified_proofs;			// [block hash => score]
+	std::unordered_set<hash_t> verified_blocks;						// [block hash]
 
 	std::shared_ptr<const ChainParams> params;
 

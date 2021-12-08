@@ -21,11 +21,8 @@ vnx::bool_t BlockHeader::is_valid() const
 	if(calc_hash() != hash) {
 		return false;
 	}
-	if(auto proof = proof_of_space) {
-		bls::AugSchemeMPL MPL;
-		if(!MPL.Verify(proof->farmer_key.to_bls(), bls::Bytes(hash.data(), hash.size()), farmer_sig.to_bls())) {
-			return false;
-		}
+	if(!proof || !farmer_sig.verify(proof->farmer_key, hash)) {
+		return false;
 	}
 	return true;
 }
@@ -43,14 +40,10 @@ mmx::hash_t BlockHeader::calc_hash() const
 	write_bytes(out, time_ms);
 	write_bytes(out, time_diff);
 	write_bytes(out, space_diff);
-	write_bytes(out, total_weight);
+	write_bytes(out, vdf_iters);
+	write_bytes(out, vdf_output);
 
-	for(auto proof : proof_of_time) {
-		if(proof) {
-			write_bytes(out, proof->calc_hash());
-		}
-	}
-	if(auto proof = proof_of_space) {
+	if(proof) {
 		write_bytes(out, proof->calc_hash());
 	}
 	if(auto tx = tx_base) {
@@ -60,14 +53,6 @@ mmx::hash_t BlockHeader::calc_hash() const
 	out.flush();
 
 	return hash_t(buffer);
-}
-
-mmx::hash_t BlockHeader::get_vdf_output() const
-{
-	if(!proof_of_time.empty()) {
-		return proof_of_time.back()->get_output();
-	}
-	return hash_t();
 }
 
 

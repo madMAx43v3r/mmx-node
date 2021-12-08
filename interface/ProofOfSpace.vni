@@ -2,7 +2,7 @@ package mmx;
 
 class ProofOfSpace {
 	
-	int k_size;
+	uint ksize;
 	
 	hash_t plot_id;
 	
@@ -13,8 +13,6 @@ class ProofOfSpace {
 	
 	bls_signature_t local_sig;
 	
-	
-	bool is_valid(ulong y7_value) const;
 	
 	hash_t calc_hash() const;
 	

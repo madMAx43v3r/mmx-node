@@ -11,12 +11,6 @@
 
 namespace mmx {
 
-vnx::bool_t ProofOfSpace::is_valid(const uint64_t& y7_value) const
-{
-	// TODO
-	return true;
-}
-
 mmx::hash_t ProofOfSpace::calc_hash() const
 {
 	std::vector<uint8_t> buffer;
@@ -25,7 +19,7 @@ mmx::hash_t ProofOfSpace::calc_hash() const
 
 	buffer.reserve(1024);
 
-	write_bytes(out, k_size);
+	write_bytes(out, ksize);
 	write_bytes(out, proof_bytes);
 	out.flush();
 

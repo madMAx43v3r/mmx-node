@@ -7,7 +7,7 @@
 
 #include <mmx/Node.h>
 
-#include <vnx/Config.h>
+#include <vnx/vnx.h>
 
 
 namespace mmx {
@@ -50,6 +50,12 @@ void Node::handle(std::shared_ptr<const Block> block)
 	if(fork_tree.count(block->hash)) {
 		return;
 	}
+	if(!block->proof) {
+		return;
+	}
+	if(!find_prev_block(block)) {
+		return;
+	}
 	auto root = get_root();
 	if(block->height <= root->height) {
 		return;
@@ -59,7 +65,12 @@ void Node::handle(std::shared_ptr<const Block> block)
 	}
 	fork_tree[block->hash] = block;
 
-	check_forks();
+	update();
+}
+
+void Node::handle(std::shared_ptr<const Transaction> tx)
+{
+	// TODO
 }
 
 void Node::handle(std::shared_ptr<const ProofOfTime> proof)
@@ -80,53 +91,160 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 
 		log(INFO) << "Verified VDF at " << vdf_iters << " iterations";
 
-		check_forks();
+		update();
 	}
 }
 
-void Node::check_forks()
+void Node::update()
 {
-	std::unordered_map<hash_t, std::vector<std::shared_ptr<const Block>>> forward_map;
+	// verify proofs where possible
+	for(auto iter = fork_tree.begin(); iter != fork_tree.end();)
+	{
+		const auto& block = iter->second;
+		if(verified_proofs.count(block->hash)) {
+			continue;
+		}
+		{
+			auto iter2 = verified_vdfs.find(block->vdf_iters);
+			if(iter2 != verified_vdfs.end()) {
+				if(block->vdf_output != iter2->second) {
+					log(WARN) << "VDF verification failed for a block at height " << block->height;
+					iter = fork_tree.erase(iter);
+					continue;
+				}
+			} else {
+				iter++;
+				continue;
+			}
+		}
+		hash_t vdf_challenge;
+		{
+			auto prev = find_prev_header(block, params->challenge_delay, true);
+			auto iter2 = verified_vdfs.find(prev->vdf_iters + block->deficit * prev->time_diff);
+			if(iter2 != verified_vdfs.end()) {
+				vdf_challenge = iter2->second;
+			} else {
+				iter++;
+				continue;
+			}
+		}
+		try {
+			const auto score = verify_proof(block, vdf_challenge);
+			verified_proofs[block->hash] = score;
+		}
+		catch(const std::exception& ex) {
+			log(WARN) << "Proof verification failed for a block at height " << block->height << " with: " << ex.what();
+			iter = fork_tree.erase(iter);
+			continue;
+		}
+		iter++;
+	}
 
+	std::unordered_map<hash_t, size_t> node_degree;
 	for(const auto& entry : fork_tree) {
 		const auto& block = entry.second;
-		forward_map[block->prev].push_back(block);
+		node_degree[block->prev]++;
 	}
-	auto root = get_root();
 
-	// TODO
+	// find all blocks which don't have a child (those are fork heads)
+	std::vector<std::shared_ptr<const Block>> forks;
+	for(const auto& entry : fork_tree) {
+		const auto& block = entry.second;
+		if(!node_degree.count(block->hash)) {
+			forks.push_back(block);
+		}
+	}
+	uint64_t max_weight = 0;
+	std::shared_ptr<const Block> best_fork;
+
+	// find best fork
+	for(auto fork : forks) {
+		uint64_t weight = 0;
+		if(calc_fork_weight(fork, weight))
+		{
+			if(!best_fork || weight > max_weight || (weight == max_weight && fork->hash < best_fork->hash))
+			{
+				best_fork = fork;
+				max_weight = weight;
+			}
+		}
+	}
+
+	if(best_fork && best_fork->hash != state_hash)
+	{
+		// we have a new winner
+		// TODO
+	}
+}
+
+bool Node::calc_fork_weight(std::shared_ptr<const Block> block, uint64_t& total_weight)
+{
+	while(block) {
+		auto iter = verified_proofs.find(block->hash);
+		if(iter != verified_proofs.end()) {
+			total_weight += params->score_threshold - iter->second;
+		} else {
+			return false;
+		}
+		block = find_prev_block(block);
+	}
+	return true;
 }
 
 void Node::verify(std::shared_ptr<const Block> block) const
 {
-	auto prev = find_prev_block(block, 1);
+	auto prev = find_prev_block(block);
 	if(!prev) {
 		throw std::logic_error("invalid prev");
 	}
 	if(block->height != prev->height + 1) {
 		throw std::logic_error("invalid height");
 	}
-	if(!block->proof) {
-		throw std::logic_error("missing proof");
+	// TODO
+}
+
+uint64_t Node::verify_proof(std::shared_ptr<const Block> block, const hash_t& vdf_challenge) const
+{
+	auto prev = find_prev_block(block);
+	if(!prev) {
+		throw std::logic_error("invalid prev");
 	}
-	auto diff_block = find_prev_header(block, params->finality_delay);
-	if(!diff_block) {
-		diff_block = history.begin()->second;
-	}
+	auto diff_block = find_prev_header(block, params->finality_delay, true);
+
 	if(block->vdf_iters != prev->vdf_iters + diff_block->time_diff * (1 + block->deficit)) {
 		throw std::logic_error("invalid vdf_iters");
 	}
-	// TODO
+	// Note: vdf_output already verified to match vdf_iters
+
+	const hash_t block_challenge = get_challenge(block);
+	const hash_t challenge(block_challenge + vdf_challenge);
+
+	if(auto proof = block->proof)
+	{
+		if(proof->ksize < params->min_ksize) {
+			throw std::logic_error("ksize too small");
+		}
+		if(proof->ksize > params->max_ksize) {
+			throw std::logic_error("ksize too big");
+		}
+		uint256_t quality = 0;
+		// TODO
+		uint128_t modulo = uint128_t(diff_block->space_diff) * params->space_diff_constant;
+		modulo /= (2 * proof->ksize) + 1;
+		modulo >>= proof->ksize - 1;
+
+		const uint128_t score = quality % modulo;
+		if(score >= params->score_threshold) {
+			throw std::logic_error("invalid score");
+		}
+		return score;
+	}
+	else {
+		throw std::logic_error("missing proof");
+	}
 }
 
-void Node::verify(	std::shared_ptr<const ProofOfSpace> proof,
-					const hash_t& challenge, const uint64_t difficulty, uint64_t& quality) const
-{
-	// TODO
-	quality = 0;
-}
-
-void Node::verify(std::shared_ptr<const ProofOfTime> proof, const hash_t& begin) const
+bool Node::verify(std::shared_ptr<const ProofOfTime> proof, const hash_t& begin) const
 {
 	const auto& segments = proof->segments;
 	bool is_valid = !segments.empty();
@@ -147,9 +265,7 @@ void Node::verify(std::shared_ptr<const ProofOfTime> proof, const hash_t& begin)
 			is_valid = false;
 		}
 	}
-	if(!is_valid) {
-		throw std::logic_error("invalid proof of time");
-	}
+	return is_valid;
 }
 
 void Node::apply(std::shared_ptr<const Block> block) noexcept
@@ -157,7 +273,8 @@ void Node::apply(std::shared_ptr<const Block> block) noexcept
 	if(block->prev != state_hash) {
 		return;
 	}
-	const auto log = std::make_shared<DiffLog>();
+	const auto log = std::make_shared<ChangeLog>();
+	log->prev_state_hash = state_hash;
 
 	if(auto tx = block->tx_base) {
 		apply(*log, tx);
@@ -166,25 +283,25 @@ void Node::apply(std::shared_ptr<const Block> block) noexcept
 		apply(*log, tx);
 	}
 	state_hash = block->hash;
-	diff_log[block->hash] = log;
+	change_log.push_back(log);
 }
 
-void Node::apply(DiffLog& log, std::shared_ptr<const Transaction> tx) noexcept
+void Node::apply(ChangeLog& log, std::shared_ptr<const Transaction> tx) noexcept
 {
 	// TODO
 }
 
 bool Node::revert() noexcept
 {
-	if(diff_log.empty()) {
+	if(change_log.empty()) {
 		return false;
 	}
-	const auto log = diff_log.back();
+	const auto log = change_log.back();
 
 	// TODO
 
-	diff_log.pop_back();
-	state_hash = log->prev_hash;
+	change_log.pop_back();
+	state_hash = log->prev_state_hash;
 	return true;
 }
 
@@ -222,18 +339,35 @@ std::shared_ptr<const BlockHeader> Node::find_header(const hash_t& hash) const
 
 std::shared_ptr<const Block> Node::find_prev_block(std::shared_ptr<const Block> block, const size_t distance) const
 {
-	for(size_t i = 0; block && i < distance; ++i) {
+	for(size_t i = 0; block && i < distance; ++i)
+	{
 		block = find_block(block->prev);
 	}
 	return block;
 }
 
-std::shared_ptr<const BlockHeader> Node::find_prev_header(std::shared_ptr<const BlockHeader> block, const size_t distance) const
+std::shared_ptr<const BlockHeader> Node::find_prev_header(	std::shared_ptr<const BlockHeader> block,
+															const size_t distance, bool clamp_to_genesis) const
 {
-	for(size_t i = 0; block && i < distance; ++i) {
+	for(size_t i = 0; block && i < distance; ++i)
+	{
+		if(clamp_to_genesis && block->height == 0) {
+			break;
+		}
 		block = find_header(block->prev);
 	}
 	return block;
+}
+
+hash_t Node::get_challenge(std::shared_ptr<const BlockHeader> block) const
+{
+	uint32_t height = block->height > params->challenge_delay ? block->height - params->challenge_delay : 0;
+	height -= (height % params->challenge_interval);
+
+	if(auto prev = find_prev_header(block, block->height - height)) {
+		return prev->hash;
+	}
+	return hash_t();
 }
 
 

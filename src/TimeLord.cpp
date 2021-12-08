@@ -83,10 +83,9 @@ void TimeLord::update()
 			if(begin != history.end() && begin != end)
 			{
 				auto proof = ProofOfTime::create();
-				proof->begin = iters_begin;
-				proof->end = iters_end;
+				proof->start = iters_begin;
 
-				auto prev_iters = proof->begin;
+				auto prev_iters = iters_begin;
 				for(auto iter = begin; iter != end; ++iter) {
 					time_segment_t seg;
 					seg.num_iters = iter->first - prev_iters;
@@ -118,10 +117,12 @@ void TimeLord::update()
 				if(self_test) {
 					add_task([this, proof]() {
 						std::lock_guard<std::mutex> lock(mutex);
-						pending.emplace(proof->end + 10 * 1000 * 1000, proof->end);
+						const auto end = proof->start + proof->get_num_iters();
+						pending.emplace(end + 10 * 1000 * 1000, end);
 					});
 				}
-				log(INFO) << "Got proof from " << proof->begin << " to " << proof->end << " with " << proof->segments.size() << " segments";
+				log(INFO) << "Got proof from " << proof->start << " to " << proof->start + proof->get_num_iters()
+						<< " with " << proof->segments.size() << " segments";
 			} else {
 				// we don't have enough history
 			}
