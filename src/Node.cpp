@@ -6,6 +6,7 @@
  */
 
 #include <mmx/Node.h>
+#include <mmx/chiapos.h>
 
 #include <vnx/vnx.h>
 
@@ -42,18 +43,14 @@ void Node::main()
 	history[genesis->height] = genesis;
 	verified_vdfs[0] = hash_t(params->vdf_seed);
 
+	set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
+
 	Super::main();
 }
 
 void Node::handle(std::shared_ptr<const Block> block)
 {
 	if(fork_tree.count(block->hash)) {
-		return;
-	}
-	if(!block->proof) {
-		return;
-	}
-	if(!find_prev_block(block)) {
 		return;
 	}
 	auto root = get_root();
@@ -63,9 +60,10 @@ void Node::handle(std::shared_ptr<const Block> block)
 	if(!block->is_valid()) {
 		return;
 	}
-	fork_tree[block->hash] = block;
-
-	update();
+	auto fork = std::make_shared<fork_t>();
+	fork->block = block;
+	fork->prev = find_fork(block->prev);
+	fork_tree[block->hash] = fork;
 }
 
 void Node::handle(std::shared_ptr<const Transaction> tx)
@@ -80,7 +78,7 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 		return;
 	}
 	auto root = get_root();
-	if(proof->start < root->vdf_iters) {
+	if(vdf_iters <= root->vdf_iters) {
 		return;
 	}
 	auto iter = verified_vdfs.find(proof->start);
@@ -88,22 +86,20 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 	{
 		verify(proof, iter->second);
 		verified_vdfs[vdf_iters] = proof->get_output();
-
 		log(INFO) << "Verified VDF at " << vdf_iters << " iterations";
-
-		update();
 	}
 }
 
 void Node::update()
 {
-	// verify proofs where possible
+	// verify proof where possible
 	for(auto iter = fork_tree.begin(); iter != fork_tree.end();)
 	{
-		const auto& block = iter->second;
-		if(verified_proofs.count(block->hash)) {
+		const auto& fork = iter->second;
+		if(fork->is_proof_verified) {
 			continue;
 		}
+		const auto& block = fork->block;
 		{
 			auto iter2 = verified_vdfs.find(block->vdf_iters);
 			if(iter2 != verified_vdfs.end()) {
@@ -118,8 +114,8 @@ void Node::update()
 			}
 		}
 		hash_t vdf_challenge;
+		if(auto prev = find_prev_header(block, params->challenge_delay, true))
 		{
-			auto prev = find_prev_header(block, params->challenge_delay, true);
 			auto iter2 = verified_vdfs.find(prev->vdf_iters + block->deficit * prev->time_diff);
 			if(iter2 != verified_vdfs.end()) {
 				vdf_challenge = iter2->second;
@@ -129,8 +125,7 @@ void Node::update()
 			}
 		}
 		try {
-			const auto score = verify_proof(block, vdf_challenge);
-			verified_proofs[block->hash] = score;
+			fork->proof_score = verify_proof(block, vdf_challenge);
 		}
 		catch(const std::exception& ex) {
 			log(WARN) << "Proof verification failed for a block at height " << block->height << " with: " << ex.what();
@@ -139,56 +134,132 @@ void Node::update()
 		}
 		iter++;
 	}
+	bool did_fork = false;
+	bool did_update = false;
+	std::shared_ptr<const BlockHeader> forked_at;
 
-	std::unordered_map<hash_t, size_t> node_degree;
-	for(const auto& entry : fork_tree) {
-		const auto& block = entry.second;
-		node_degree[block->prev]++;
-	}
+	// choose best fork
+	while(true) {
+		const auto root = get_root();
 
-	// find all blocks which don't have a child (those are fork heads)
-	std::vector<std::shared_ptr<const Block>> forks;
-	for(const auto& entry : fork_tree) {
-		const auto& block = entry.second;
-		if(!node_degree.count(block->hash)) {
-			forks.push_back(block);
-		}
-	}
-	uint64_t max_weight = 0;
-	std::shared_ptr<const Block> best_fork;
+		// purge disconnected forks
+		purge_tree();
 
-	// find best fork
-	for(auto fork : forks) {
-		uint64_t weight = 0;
-		if(calc_fork_weight(fork, weight))
-		{
-			if(!best_fork || weight > max_weight || (weight == max_weight && fork->hash < best_fork->hash))
+		uint64_t max_weight = 0;
+		std::shared_ptr<fork_t> best_fork;
+
+		// find best fork
+		for(const auto& entry : fork_tree) {
+			const auto& fork = entry.second;
+
+			uint64_t weight = 0;
+			if(calc_fork_weight(root, fork, weight))
 			{
-				best_fork = fork;
-				max_weight = weight;
+				if(!best_fork || weight > max_weight || (weight == max_weight && fork->block->hash < best_fork->block->hash))
+				{
+					best_fork = fork;
+					max_weight = weight;
+				}
 			}
 		}
+		if(!best_fork || best_fork->block->hash == state_hash) {
+			// no change
+			break;
+		}
+
+		// we have a new winner
+		std::list<std::shared_ptr<fork_t>> fork_line;
+		{
+			auto fork = best_fork;
+			while(fork) {
+				fork_line.push_front(fork);
+				fork = fork->prev.lock();
+			}
+		}
+
+		// bring state back to the new fork
+		while(true) {
+			bool found = false;
+			for(const auto& fork : fork_line) {
+				const auto& block = fork->block;
+				if(block->hash == state_hash) {
+					found = true;
+					forked_at = block;
+					break;
+				}
+			}
+			if(found) {
+				break;
+			}
+			did_fork = true;
+
+			if(!revert()) {
+				forked_at = root;
+				break;
+			}
+		}
+
+		// verify and apply new fork
+		bool is_valid = true;
+		for(const auto& fork : fork_line)
+		{
+			const auto& block = fork->block;
+			if(block->prev != state_hash) {
+				// already verified and applied
+				continue;
+			}
+			if(!fork->is_verified) {
+				try {
+					verify(block);
+					fork->is_verified = true;
+				}
+				catch(const std::exception& ex) {
+					log(WARN) << "Block verification failed for height " << block->height << " with:" << ex.what();
+					fork_tree.erase(block->hash);
+					is_valid = false;
+					break;
+				}
+				publish(block, output_blocks);
+			}
+			apply(block);
+		}
+		if(!is_valid) {
+			// try again
+			continue;
+		}
+		did_update = true;
+
+		// commit to history
+		if(fork_line.size() > params->finality_delay) {
+			commit(fork_line.front()->block);
+		}
+		break;
 	}
 
-	if(best_fork && best_fork->hash != state_hash)
-	{
-		// we have a new winner
-		// TODO
+	if(did_update) {
+		if(auto peak = find_header(state_hash)) {
+			log(INFO) << "New peak at height " << peak->height
+					<< (did_fork && forked_at ? " (forked at " + std::to_string(forked_at->height) + ")" : "");
+		}
 	}
 }
 
-bool Node::calc_fork_weight(std::shared_ptr<const Block> block, uint64_t& total_weight)
+bool Node::calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<const fork_t> fork, uint64_t& total_weight)
 {
-	while(block) {
-		auto iter = verified_proofs.find(block->hash);
-		if(iter != verified_proofs.end()) {
-			total_weight += params->score_threshold - iter->second;
+	while(fork) {
+		const auto& block = fork->block;
+		if(fork->is_proof_verified && fork->proof_score < params->score_threshold) {
+			total_weight += params->score_threshold;
+			total_weight += params->score_threshold - fork->proof_score;
 		} else {
 			return false;
 		}
-		block = find_prev_block(block);
+		if(block->prev == root->hash) {
+			return true;
+		}
+		fork = fork->prev.lock();
 	}
-	return true;
+	return false;
 }
 
 void Node::verify(std::shared_ptr<const Block> block) const
@@ -197,13 +268,51 @@ void Node::verify(std::shared_ptr<const Block> block) const
 	if(!prev) {
 		throw std::logic_error("invalid prev");
 	}
+	if(state_hash != prev->hash) {
+		throw std::logic_error("state mismatch");
+	}
 	if(block->height != prev->height + 1) {
 		throw std::logic_error("invalid height");
 	}
 	// TODO
 }
 
-uint64_t Node::verify_proof(std::shared_ptr<const Block> block, const hash_t& vdf_challenge) const
+void Node::commit(std::shared_ptr<const Block> block) noexcept
+{
+	const auto root = get_root();
+	if(block->prev != root->hash) {
+		return;
+	}
+	finalized[block->hash] = block->height;
+	history[block->height] = block->get_header();
+
+	fork_tree.erase(block->hash);
+	purge_tree();
+}
+
+size_t Node::purge_tree()
+{
+	const auto root = get_root();
+	bool repeat = true;
+	size_t num_purged = 0;
+	while(repeat) {
+		repeat = false;
+		for(auto iter = fork_tree.begin(); iter != fork_tree.end();)
+		{
+			const auto& block = iter->second->block;
+			if(block->prev != root->hash && fork_tree.find(block->prev) == fork_tree.end()) {
+				iter = fork_tree.erase(iter);
+				repeat = true;
+				num_purged++;
+			} else {
+				iter++;
+			}
+		}
+	}
+	return num_purged;
+}
+
+uint32_t Node::verify_proof(std::shared_ptr<const Block> block, const hash_t& vdf_challenge) const
 {
 	auto prev = find_prev_block(block);
 	if(!prev) {
@@ -227,13 +336,12 @@ uint64_t Node::verify_proof(std::shared_ptr<const Block> block, const hash_t& vd
 		if(proof->ksize > params->max_ksize) {
 			throw std::logic_error("ksize too big");
 		}
-		uint256_t quality = 0;
-		// TODO
-		uint128_t modulo = uint128_t(diff_block->space_diff) * params->space_diff_constant;
-		modulo /= (2 * proof->ksize) + 1;
-		modulo >>= proof->ksize - 1;
+		// TODO: check plot filter
 
-		const uint128_t score = quality % modulo;
+		const auto quality = hash_t::from_bytes(chiapos::verify(
+				proof->ksize, proof->plot_id.bytes, challenge.bytes, proof->proof_bytes.data(), proof->proof_bytes.size()));
+
+		const auto score = calc_proof_score(proof->ksize, quality, diff_block->space_diff);
 		if(score >= params->score_threshold) {
 			throw std::logic_error("invalid score");
 		}
@@ -273,8 +381,8 @@ void Node::apply(std::shared_ptr<const Block> block) noexcept
 	if(block->prev != state_hash) {
 		return;
 	}
-	const auto log = std::make_shared<ChangeLog>();
-	log->prev_state_hash = state_hash;
+	const auto log = std::make_shared<change_log_t>();
+	log->prev_state = state_hash;
 
 	if(auto tx = block->tx_base) {
 		apply(*log, tx);
@@ -286,7 +394,7 @@ void Node::apply(std::shared_ptr<const Block> block) noexcept
 	change_log.push_back(log);
 }
 
-void Node::apply(ChangeLog& log, std::shared_ptr<const Transaction> tx) noexcept
+void Node::apply(change_log_t& log, std::shared_ptr<const Transaction> tx) noexcept
 {
 	// TODO
 }
@@ -301,7 +409,7 @@ bool Node::revert() noexcept
 	// TODO
 
 	change_log.pop_back();
-	state_hash = log->prev_state_hash;
+	state_hash = log->prev_state;
 	return true;
 }
 
@@ -313,11 +421,19 @@ std::shared_ptr<const BlockHeader> Node::get_root() const
 	return (--history.end())->second;
 }
 
-std::shared_ptr<const Block> Node::find_block(const hash_t& hash) const
+std::shared_ptr<Node::fork_t> Node::find_fork(const hash_t& hash) const
 {
 	auto iter = fork_tree.find(hash);
 	if(iter != fork_tree.end()) {
 		return iter->second;
+	}
+	return nullptr;
+}
+
+std::shared_ptr<const Block> Node::find_block(const hash_t& hash) const
+{
+	if(auto fork = find_fork(hash)) {
+		return fork->block;
 	}
 	return nullptr;
 }
@@ -368,6 +484,14 @@ hash_t Node::get_challenge(std::shared_ptr<const BlockHeader> block) const
 		return prev->hash;
 	}
 	return hash_t();
+}
+
+uint128_t Node::calc_proof_score(const uint8_t ksize, const hash_t& quality, const uint64_t difficulty) const
+{
+	uint128_t modulo = uint128_t(difficulty) * params->space_diff_constant;
+	modulo /= (2 * ksize) + 1;
+	modulo >>= ksize - 1;
+	return quality.to_uint256() % modulo;
 }
 
 

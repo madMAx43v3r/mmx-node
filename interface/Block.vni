@@ -11,4 +11,6 @@ class Block extends BlockHeader {
 	
 	hash_t calc_tx_hash() const;
 	
+	BlockHeader* get_header() const;
+	
 }

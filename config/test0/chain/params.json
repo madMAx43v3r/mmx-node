@@ -1,0 +1,9 @@
+{
+	"tcp_port": 12345,
+	"vdf_seed": "test0",
+	"reward_factor": {
+		"value": 10,
+		"inverse": 1
+	},
+	"initial_space_diff": 1
+}

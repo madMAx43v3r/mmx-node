@@ -33,6 +33,8 @@ struct bytes_t {
 
 	explicit bytes_t(const void* data, const size_t num_bytes);
 
+	uint8_t* data();
+
 	const uint8_t* data() const;
 
 	size_t size() const;
@@ -79,6 +81,11 @@ template<int N>
 bytes_t<N>::bytes_t(const std::array<uint8_t, N>& data)
 	:	bytes_t(data.data(), data.size())
 {
+}
+
+template<int N>
+uint8_t* bytes_t<N>::data() {
+	return bytes.data();
 }
 
 template<int N>

@@ -10,7 +10,7 @@ module Node {
 	vnx.TopicPtr output_verified_points = "node.verified_points";
 	vnx.TopicPtr output_interval_request = "timelord.requests";
 	
-	
+	int update_interval_ms = 1000;			// [ms]
 	
 	
 	void handle(Block value);

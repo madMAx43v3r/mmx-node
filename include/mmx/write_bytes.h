@@ -60,6 +60,10 @@ inline void write_bytes(vnx::OutputBuffer& out, const std::string& value) {
 	out.write(value.data(), value.size());
 }
 
+inline void write_bytes(vnx::OutputBuffer& out, const std::vector<uint8_t>& value) {
+	out.write(value.data(), value.size());
+}
+
 inline void write_bytes(vnx::OutputBuffer& out, const vnx::Buffer& value) {
 	out.write(value.data(), value.size());
 }

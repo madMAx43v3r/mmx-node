@@ -44,5 +44,12 @@ mmx::hash_t Block::calc_tx_hash() const
 	return hash_t(buffer);
 }
 
+std::shared_ptr<const BlockHeader> Block::get_header() const
+{
+	auto header = BlockHeader::create();
+	header->operator=(*this);
+	return header;
+}
+
 
 } // mmx

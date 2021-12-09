@@ -17,7 +17,7 @@ class ChainParams {
 	uint min_ksize = 30;
 	uint max_ksize = 42;
 	
-	ulong min_reward = 250000;
+	ulong min_reward = 100000;
 	ulong_fraction_t reward_factor;			// reward = (diff * value) / inverse;
 	
 	ulong time_diff_constant = 10000;

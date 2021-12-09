@@ -23,11 +23,14 @@ struct hash_t : bytes_t<32> {
 
 	explicit hash_t(const std::vector<uint8_t>& data);
 
-	explicit hash_t(const std::array<uint8_t, 32>& data);
+	template<size_t N>
+	explicit hash_t(const std::array<uint8_t, N>& data);
 
 	explicit hash_t(const void* data, const size_t num_bytes);
 
 	uint256_t to_uint256() const;
+
+	static hash_t from_bytes(const std::array<uint8_t, 32>& bytes);
 
 };
 
@@ -44,8 +47,8 @@ hash_t::hash_t(const std::vector<uint8_t>& data)
 {
 }
 
-inline
-hash_t::hash_t(const std::array<uint8_t, 32>& data)
+template<size_t N>
+hash_t::hash_t(const std::array<uint8_t, N>& data)
 	:	hash_t(data.data(), data.size())
 {
 }
@@ -60,6 +63,14 @@ inline
 uint256_t hash_t::to_uint256() const {
 	uint256_t res;
 	::memcpy(&res, bytes.data(), bytes.size());
+	return res;
+}
+
+inline
+hash_t hash_t::from_bytes(const std::array<uint8_t, 32>& bytes)
+{
+	hash_t res;
+	::memcpy(res.data(), bytes.data(), bytes.size());
 	return res;
 }
 
