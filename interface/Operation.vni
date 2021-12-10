@@ -2,7 +2,7 @@ package mmx;
 
 class Operation {
 	
-	int version;
+	uint version;
 	
 	hash_t address;
 	

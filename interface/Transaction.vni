@@ -4,7 +4,7 @@ class Transaction {
 	
 	hash_t id;
 	
-	int version;
+	uint version;
 	
 	vector<tx_in_t> inputs;
 	

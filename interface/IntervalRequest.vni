@@ -5,6 +5,6 @@ class IntervalRequest {
 	ulong begin;
 	ulong end;
 	
-	uint interval;		// segment interval [usec]
+	uint interval = 100000;		// segment interval [usec]
 	
 }

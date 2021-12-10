@@ -6,6 +6,8 @@
  */
 
 #include <mmx/Node.h>
+#include <mmx/TimePoint.hxx>
+#include <mmx/IntervalRequest.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/chiapos.h>
 
@@ -40,8 +42,8 @@ void Node::main()
 	genesis->finalize();
 
 	apply(genesis);
+	commit(genesis);
 
-	history[genesis->height] = genesis;
 	verified_vdfs[0] = hash_t(params->vdf_seed);
 
 	set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
@@ -69,7 +71,19 @@ void Node::handle(std::shared_ptr<const Block> block)
 
 void Node::handle(std::shared_ptr<const Transaction> tx)
 {
-	// TODO
+	if(tx_pool.count(tx->id)) {
+		return;
+	}
+	if(!tx->is_valid()) {
+		return;
+	}
+	try {
+		validate(tx);
+		tx_pool[tx->id] = tx;
+	}
+	catch(const std::exception& ex) {
+		log(WARN) << "TX validation failed with: " << ex.what();
+	}
 }
 
 void Node::handle(std::shared_ptr<const ProofOfTime> proof)
@@ -87,6 +101,12 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 	{
 		verify_vdf(proof, iter->second);
 		verified_vdfs[vdf_iters] = proof->get_output();
+		{
+			auto point = TimePoint::create();
+			point->num_iters = vdf_iters;
+			point->output = proof->get_output();
+			publish(point, output_verified_points, BLOCKING);
+		}
 		log(INFO) << "Verified VDF at " << vdf_iters << " iterations";
 	}
 }
@@ -135,9 +155,9 @@ void Node::update()
 			log(WARN) << "Proof verification failed for a block at height " << block->height << " with: " << ex.what();
 		}
 	}
+	const auto prev_peak = find_header(state_hash);
 
 	bool did_fork = false;
-	bool did_update = false;
 	std::shared_ptr<const BlockHeader> forked_at;
 
 	// choose best fork
@@ -156,7 +176,7 @@ void Node::update()
 			const auto& block = fork->block;
 
 			uint64_t weight = 0;
-			if(block->proof && calc_fork_weight(root, fork, weight))
+			if(calc_fork_weight(root, fork, weight))
 			{
 				if(!best_fork || weight > max_weight || (weight == max_weight && block->hash < best_fork->block->hash))
 				{
@@ -222,16 +242,20 @@ void Node::update()
 					is_valid = false;
 					break;
 				}
-				publish(block, output_verified, BLOCKING);
+				publish(block, output_verified_blocks, BLOCKING);
 			}
 			apply(block);
 		}
 		if(is_valid) {
 			// commit to history
 			if(fork_line.size() > params->finality_delay) {
-				commit(fork_line.front()->block);
+				const size_t num_blocks = fork_line.size() - params->finality_delay;
+
+				auto iter = fork_line.begin();
+				for(size_t i = 0; i < num_blocks; ++i, ++iter) {
+					commit((*iter)->block);
+				}
 			}
-			did_update = true;
 			break;
 		}
 		// try again
@@ -239,11 +263,56 @@ void Node::update()
 		forked_at = nullptr;
 	}
 
-	if(did_update) {
-		if(auto peak = find_header(state_hash)) {
-			log(INFO) << "New peak at height " << peak->height
-					<< (did_fork ? " (forked at " + std::to_string(forked_at ? forked_at->height : -1) + ")" : "");
+	const auto peak = find_header(state_hash);
+	if(!peak) {
+		log(WARN) << "Have no peak!";
+		return;
+	}
+
+	// request next time points
+	{
+		auto vdf_iters = peak->vdf_iters;
+		for(uint32_t i = 0; i <= params->finality_delay; ++i)
+		{
+			if(auto diff_block = find_prev_header(peak, params->finality_delay - i, true))
+			{
+				auto request = IntervalRequest::create();
+				request->begin = vdf_iters;
+				request->end = vdf_iters + diff_block->time_diff * params->time_diff_constant;
+
+				if(!verified_vdfs.count(request->end)) {
+					request->interval = (params->block_time * 1e6) / params->num_vdf_segments;
+					publish(request, output_interval_request);
+				}
+				vdf_iters = request->end;
+			}
 		}
+	}
+
+	// add dummy block in case no proof is found
+	{
+		const auto diff_block = get_diff_header(peak, true);
+		const auto vdf_iters = peak->vdf_iters + diff_block->time_diff * params->time_diff_constant;
+
+		hash_t vdf_output;
+		if(find_vdf_output(vdf_iters, vdf_output))
+		{
+			auto block = Block::create();
+			block->prev = peak->hash;
+			block->height = peak->height + 1;
+			block->time_diff = peak->time_diff;
+			block->space_diff = peak->space_diff;
+			block->vdf_iters = vdf_iters;
+			block->vdf_output = vdf_output;
+			block->finalize();
+			handle(block);
+		}
+	}
+
+	if(!prev_peak || peak->hash != prev_peak->hash)
+	{
+		log(INFO) << "New peak at height " << peak->height
+				<< (did_fork ? " (forked at " + std::to_string(forked_at ? forked_at->height : -1) + ")" : "");
 	}
 }
 
@@ -329,6 +398,10 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, bool is_base) con
 		if(!tx->execute.empty()) {
 			throw std::logic_error("coin base cannot have operations");
 		}
+	} else {
+		if(tx->inputs.empty()) {
+			throw std::logic_error("tx without input");
+		}
 	}
 	if(tx->outputs.size() >= params->max_tx_outputs) {
 		throw std::logic_error("too many tx outputs");
@@ -372,6 +445,9 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, bool is_base) con
 	}
 	for(const auto& out : tx->outputs)
 	{
+		if(out.amount == 0) {
+			throw std::logic_error("zero tx output");
+		}
 		if(is_base) {
 			if(out.contract != hash_t()) {
 				throw std::logic_error("invalid coin base output");
@@ -381,7 +457,7 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, bool is_base) con
 		else {
 			auto& value = amounts[out.contract];
 			if(out.amount > value) {
-				throw std::logic_error("output > input");
+				throw std::logic_error("tx over-spend");
 			}
 			value -= out.amount;
 		}
@@ -394,7 +470,7 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, bool is_base) con
 			(tx->inputs.size() + tx->outputs.size()) * params->min_txfee_inout
 			+ tx->execute.size() * params->min_txfee_exec;
 	if(fee_amount < fee_needed) {
-		throw std::logic_error("insufficient txfee");
+		throw std::logic_error("insufficient fee");
 	}
 	return fee_amount;
 }
@@ -402,7 +478,7 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, bool is_base) con
 void Node::commit(std::shared_ptr<const Block> block) noexcept
 {
 	const auto root = get_root();
-	if(block->prev != root->hash) {
+	if(root && block->prev != root->hash) {
 		return;
 	}
 	if(change_log.empty()) {
@@ -432,16 +508,21 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	}
 	for(const auto& txid : log->tx_added) {
 		tx_map.erase(txid);
+		tx_pool.erase(txid);
 	}
 
 	finalized[block->hash] = block->height;
 	history[block->height] = block->get_header();
-
 	change_log.pop_front();
+
+	const auto fork = find_fork(block->hash);
+	Node::log(INFO) << "Committed height " << block->height << ": ntx = " << block->tx_list.size()
+			<< ", score = " << (fork ? fork->proof_score : 0) << ", k = " << (block->proof ? block->proof->ksize : 0);
+
 	fork_tree.erase(block->hash);
 	purge_tree();
 
-	publish(block, output_commited, BLOCKING);
+	publish(block, output_committed_block, BLOCKING);
 }
 
 size_t Node::purge_tree()
@@ -455,7 +536,9 @@ size_t Node::purge_tree()
 		for(auto iter = fork_tree.begin(); iter != fork_tree.end();)
 		{
 			const auto& block = iter->second->block;
-			if(block->prev != root->hash && fork_tree.find(block->prev) == fork_tree.end()) {
+			if(block->prev != root->hash && fork_tree.find(block->prev) == fork_tree.end())
+			{
+				log(INFO) << "Purged block at height " << block->height;
 				iter = fork_tree.erase(iter);
 				repeat = true;
 				num_purged++;
@@ -475,7 +558,7 @@ uint32_t Node::verify_proof(std::shared_ptr<const Block> block, const hash_t& vd
 	}
 	const auto diff_block = get_diff_header(block);
 
-	if(block->vdf_iters != prev->vdf_iters + diff_block->time_diff) {
+	if(block->vdf_iters != prev->vdf_iters + diff_block->time_diff * params->time_diff_constant) {
 		throw std::logic_error("invalid vdf_iters");
 	}
 	// Note: vdf_output already verified to match vdf_iters
@@ -659,9 +742,9 @@ std::shared_ptr<const BlockHeader> Node::find_prev_header(	std::shared_ptr<const
 	return block;
 }
 
-std::shared_ptr<const BlockHeader> Node::get_diff_header(std::shared_ptr<const BlockHeader> block) const
+std::shared_ptr<const BlockHeader> Node::get_diff_header(std::shared_ptr<const BlockHeader> block, bool for_next) const
 {
-	if(auto header = find_prev_header(block, params->finality_delay + 1, true)) {
+	if(auto header = find_prev_header(block, params->finality_delay + (for_next ? 0 : 1), true)) {
 		return header;
 	}
 	throw std::logic_error("cannot find difficulty header");

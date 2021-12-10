@@ -29,6 +29,8 @@ protected:
 private:
 	void update();
 
+	void start_vdf(TimePoint begin);
+
 	void vdf_loop(TimePoint point);
 
 private:

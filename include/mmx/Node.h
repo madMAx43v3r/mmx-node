@@ -79,7 +79,7 @@ private:
 	std::shared_ptr<const BlockHeader> find_prev_header(
 			std::shared_ptr<const BlockHeader> block, const size_t distance = 1, bool clamp_to_genesis = false) const;
 
-	std::shared_ptr<const BlockHeader> get_diff_header(std::shared_ptr<const BlockHeader> block) const;
+	std::shared_ptr<const BlockHeader> get_diff_header(std::shared_ptr<const BlockHeader> block, bool for_next = false) const;
 
 	hash_t get_challenge(std::shared_ptr<const BlockHeader> block, const hash_t& vdf_challenge) const;
 

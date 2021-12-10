@@ -27,21 +27,24 @@ void TimeLord::init()
 void TimeLord::main()
 {
 	if(self_test) {
-		pending.emplace(10 * 1000 * 1000, 0);
+		auto request = IntervalRequest::create();
+		request->begin = 0;
+		request->end = 10 * 1000 * 1000;
+		request->interval = checkpoint_interval;
+		handle(request);
 	}
-	std::string seed;
-	vnx::read_config("chain.params.vdf_seed", seed);
-
-	TimePoint begin;
-	begin.output = hash_t(seed);
-
-	vdf_thread = std::thread(&TimeLord::vdf_loop, this, begin);
 
 	Super::main();
 
 	if(vdf_thread.joinable()) {
 		vdf_thread.join();
 	}
+}
+
+void TimeLord::start_vdf(TimePoint begin)
+{
+	log(INFO) << "Started VDF at " << begin.num_iters;
+	vdf_thread = std::thread(&TimeLord::vdf_loop, this, begin);
 }
 
 void TimeLord::handle(std::shared_ptr<const TimePoint> value)
@@ -51,7 +54,11 @@ void TimeLord::handle(std::shared_ptr<const TimePoint> value)
 	if(!latest_point || value->num_iters > latest_point->num_iters)
 	{
 		latest_point = value;
-		log(INFO) << "Got new verified peak at " << value->num_iters;
+		log(DEBUG) << "Got new verified peak at " << value->num_iters;
+	}
+	if(!vdf_thread.joinable())
+	{
+		start_vdf(*value);
 	}
 }
 
@@ -64,6 +71,16 @@ void TimeLord::handle(std::shared_ptr<const IntervalRequest> value)
 			pending.emplace(value->end, value->begin);
 		}
 		checkpoint_interval = value->interval;			// should be constant
+	}
+	if(!vdf_thread.joinable())
+	{
+		// start from seed
+		std::string seed;
+		vnx::read_config("chain.params.vdf_seed", seed);
+
+		TimePoint begin;
+		begin.output = hash_t(seed);
+		start_vdf(begin);
 	}
 	update();
 }
@@ -121,8 +138,6 @@ void TimeLord::update()
 						pending.emplace(end + 10 * 1000 * 1000, end);
 					});
 				}
-				log(INFO) << "Got proof from " << proof->start << " to " << proof->start + proof->get_num_iters()
-						<< " with " << proof->segments.size() << " segments";
 			} else {
 				// we don't have enough history
 			}
@@ -147,10 +162,12 @@ void TimeLord::vdf_loop(TimePoint point)
 		{
 			std::lock_guard<std::mutex> lock(mutex);
 
-			if(latest_point && latest_point->num_iters > point.num_iters) {
+			if(latest_point && latest_point->num_iters > point.num_iters)
+			{
 				// somebody else is faster
 				point = *latest_point;
 				pending.clear();
+				log(INFO) << "Restarting at " << point.num_iters;
 			}
 			while(history.size() >= max_history) {
 				history.erase(history.begin());

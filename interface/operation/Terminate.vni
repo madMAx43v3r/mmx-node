@@ -1,0 +1,9 @@
+package mmx.operation;
+
+import mmx.hash_t;
+
+class Terminate extends mmx.Operation {
+	
+//	hash_t calc_hash() const;
+	
+}
