@@ -167,7 +167,7 @@ void TimeLord::vdf_loop(TimePoint point)
 				// somebody else is faster
 				point = *latest_point;
 				pending.clear();
-				log(INFO) << "Restarting at " << point.num_iters;
+				log(INFO) << "Restarted VDF at " << point.num_iters;
 			}
 			while(history.size() >= max_history) {
 				history.erase(history.begin());

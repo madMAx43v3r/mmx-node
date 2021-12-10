@@ -1,0 +1,11 @@
+package mmx;
+
+class Challenge {
+	
+	uint height;
+	
+	ulong space_diff;
+	
+	hash_t challenge;
+	
+}

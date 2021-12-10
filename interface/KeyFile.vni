@@ -1,0 +1,7 @@
+package mmx;
+
+class KeyFile {
+	
+	hash_t seed_value;
+	
+}

@@ -10,6 +10,7 @@
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/chiapos.h>
+#include <mmx/utils.h>
 
 #include <vnx/vnx.h>
 #include <atomic>
@@ -64,8 +65,9 @@ void Node::handle(std::shared_ptr<const Block> block)
 		return;
 	}
 	auto fork = std::make_shared<fork_t>();
-	fork->block = block;
+	fork->recv_time = vnx_sample ? vnx_sample->recv_time : vnx::get_time_micros();
 	fork->prev = find_fork(block->prev);
+	fork->block = block;
 	fork_tree[block->hash] = fork;
 }
 
@@ -583,13 +585,13 @@ uint32_t Node::verify_proof(std::shared_ptr<const Block> block, const hash_t& vd
 	}
 	const auto challenge = get_challenge(block, vdf_challenge);
 
-	if(!check_plot_filter(challenge, proof->plot_id)) {
+	if(!check_plot_filter(params, challenge, proof->plot_id)) {
 		throw std::logic_error("plot filter failed");
 	}
 	const auto quality = hash_t::from_bytes(chiapos::verify(
 			proof->ksize, proof->plot_id.bytes, challenge.bytes, proof->proof_bytes.data(), proof->proof_bytes.size()));
 
-	const auto score = calc_proof_score(proof->ksize, quality, diff_block->space_diff);
+	const auto score = calc_proof_score(params, proof->ksize, quality, diff_block->space_diff);
 	if(score >= params->score_threshold) {
 		throw std::logic_error("invalid score");
 	}
@@ -780,27 +782,13 @@ bool Node::find_vdf_challenge(std::shared_ptr<const BlockHeader> block, hash_t& 
 	return false;
 }
 
-bool Node::check_plot_filter(const hash_t& challenge, const hash_t& plot_id) const
-{
-	return hash_t(challenge + plot_id).to_uint256() >> (256 - params->plot_filter);
-}
-
-uint128_t Node::calc_proof_score(const uint8_t ksize, const hash_t& quality, const uint64_t difficulty) const
-{
-	uint128_t modulo = uint128_t(difficulty) * params->space_diff_constant;
-	modulo /= (2 * ksize) + 1;
-	modulo >>= ksize - 1;
-	return quality.to_uint256() % modulo;
-}
-
 uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block) const
 {
 	if(!block->proof) {
 		return 0;
 	}
 	const auto diff_block = get_diff_header(block);
-	const auto block_reward = (diff_block->space_diff * params->reward_factor.value) / params->reward_factor.inverse;
-	return std::max(block_reward, params->min_reward);
+	return mmx::calc_block_reward(params, diff_block->space_diff);
 }
 
 

@@ -7,6 +7,7 @@
 
 #include <mmx/Node.h>
 #include <mmx/TimeLord.h>
+#include <mmx/secp256k1.hpp>
 
 #include <vnx/vnx.h>
 #include <vnx/Terminal.h>
@@ -14,6 +15,8 @@
 
 int main(int argc, char** argv)
 {
+	mmx::secp256k1_init();
+
 	vnx::init("mmx_node", argc, argv);
 
 	{
@@ -30,6 +33,8 @@ int main(int argc, char** argv)
 	}
 
 	vnx::wait();
+
+	mmx::secp256k1_free();
 
 	return 0;
 }

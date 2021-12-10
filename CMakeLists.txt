@@ -109,11 +109,15 @@ target_link_libraries(mmx_modules mmx_chiapos mmx_iface)
 add_executable(mmx_node src/mmx_node.cpp)
 add_executable(mmx_timelord src/mmx_timelord.cpp)
 
+add_executable(create_wallet src/create_wallet.cpp)
+
 add_executable(test_secp256k1 test/test_secp256k1.cpp)
 add_executable(test_hash_vdl test/test_hash_vdl.cpp)
 
 target_link_libraries(mmx_node mmx_modules)
 target_link_libraries(mmx_timelord mmx_modules)
+
+target_link_libraries(create_wallet mmx_iface sodium)
 
 target_link_libraries(test_secp256k1 mmx_iface)
 target_link_libraries(test_hash_vdl mmx_iface)

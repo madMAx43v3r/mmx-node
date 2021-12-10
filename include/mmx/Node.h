@@ -35,6 +35,7 @@ private:
 		bool is_verified = false;
 		bool is_proof_verified = false;
 		uint32_t proof_score = -1;
+		int64_t recv_time = 0;
 		std::weak_ptr<fork_t> prev;
 		std::shared_ptr<const Block> block;
 	};
@@ -86,10 +87,6 @@ private:
 	bool find_vdf_output(const uint64_t vdf_iters, hash_t& vdf_output) const;
 
 	bool find_vdf_challenge(std::shared_ptr<const BlockHeader> block, hash_t& vdf_challenge) const;
-
-	bool check_plot_filter(const hash_t& challenge, const hash_t& plot_id) const;
-
-	uint128_t calc_proof_score(const uint8_t ksize, const hash_t& quality, const uint64_t difficulty) const;
 
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block) const;
 

@@ -30,7 +30,11 @@
 *.exe
 *.out
 *.app
+*.dat
 
 /build
 /generated
+/.settings
+/.project
+/.cproject
 
