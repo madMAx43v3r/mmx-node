@@ -6,9 +6,11 @@
  */
 
 #include <mmx/Node.h>
+#include <mmx/contract/PubKey.hxx>
 #include <mmx/chiapos.h>
 
 #include <vnx/vnx.h>
+#include <atomic>
 
 
 namespace mmx {
@@ -84,7 +86,7 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 	auto iter = verified_vdfs.find(proof->start);
 	if(iter != verified_vdfs.end())
 	{
-		verify(proof, iter->second);
+		verify_vdf(proof, iter->second);
 		verified_vdfs[vdf_iters] = proof->get_output();
 		log(INFO) << "Verified VDF at " << vdf_iters << " iterations";
 	}
@@ -100,37 +102,28 @@ void Node::update()
 			continue;
 		}
 		const auto& block = fork->block;
+
+		hash_t vdf_output;
+		if(find_vdf_output(block->vdf_iters, vdf_output))
 		{
-			auto iter2 = verified_vdfs.find(block->vdf_iters);
-			if(iter2 != verified_vdfs.end()) {
-				if(block->vdf_output != iter2->second) {
-					log(WARN) << "VDF verification failed for a block at height " << block->height;
+			if(block->vdf_output != vdf_output) {
+				log(WARN) << "VDF verification failed for a block at height " << block->height;
+				iter = fork_tree.erase(iter);
+				continue;
+			}
+			hash_t vdf_challenge;
+			if(find_vdf_challenge(block, vdf_challenge))
+			{
+				try {
+					fork->proof_score = verify_proof(block, vdf_challenge);
+					fork->is_proof_verified = true;
+				}
+				catch(const std::exception& ex) {
+					log(WARN) << "Proof verification failed for a block at height " << block->height << " with: " << ex.what();
 					iter = fork_tree.erase(iter);
 					continue;
 				}
-			} else {
-				iter++;
-				continue;
 			}
-		}
-		hash_t vdf_challenge;
-		if(auto prev = find_prev_header(block, params->challenge_delay, true))
-		{
-			auto iter2 = verified_vdfs.find(prev->vdf_iters + block->deficit * prev->time_diff);
-			if(iter2 != verified_vdfs.end()) {
-				vdf_challenge = iter2->second;
-			} else {
-				iter++;
-				continue;
-			}
-		}
-		try {
-			fork->proof_score = verify_proof(block, vdf_challenge);
-		}
-		catch(const std::exception& ex) {
-			log(WARN) << "Proof verification failed for a block at height " << block->height << " with: " << ex.what();
-			iter = fork_tree.erase(iter);
-			continue;
 		}
 		iter++;
 	}
@@ -140,8 +133,6 @@ void Node::update()
 
 	// choose best fork
 	while(true) {
-		const auto root = get_root();
-
 		// purge disconnected forks
 		purge_tree();
 
@@ -149,6 +140,7 @@ void Node::update()
 		std::shared_ptr<fork_t> best_fork;
 
 		// find best fork
+		const auto root = get_root();
 		for(const auto& entry : fork_tree) {
 			const auto& fork = entry.second;
 
@@ -177,7 +169,7 @@ void Node::update()
 			}
 		}
 
-		// bring state back to the new fork
+		// bring state back in line with new fork
 		while(true) {
 			bool found = false;
 			for(const auto& fork : fork_line) {
@@ -210,7 +202,7 @@ void Node::update()
 			}
 			if(!fork->is_verified) {
 				try {
-					verify(block);
+					validate(block);
 					fork->is_verified = true;
 				}
 				catch(const std::exception& ex) {
@@ -223,23 +215,23 @@ void Node::update()
 			}
 			apply(block);
 		}
-		if(!is_valid) {
-			// try again
-			continue;
+		if(is_valid) {
+			// commit to history
+			if(fork_line.size() > params->finality_delay) {
+				commit(fork_line.front()->block);
+			}
+			did_update = true;
+			break;
 		}
-		did_update = true;
-
-		// commit to history
-		if(fork_line.size() > params->finality_delay) {
-			commit(fork_line.front()->block);
-		}
-		break;
+		// try again
+		did_fork = false;
+		forked_at = nullptr;
 	}
 
 	if(did_update) {
 		if(auto peak = find_header(state_hash)) {
 			log(INFO) << "New peak at height " << peak->height
-					<< (did_fork && forked_at ? " (forked at " + std::to_string(forked_at->height) + ")" : "");
+					<< (did_fork ? " (forked at " + std::to_string(forked_at ? forked_at->height : -1) + ")" : "");
 		}
 	}
 }
@@ -262,9 +254,9 @@ bool Node::calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared
 	return false;
 }
 
-void Node::verify(std::shared_ptr<const Block> block) const
+void Node::validate(std::shared_ptr<const Block> block) const
 {
-	auto prev = find_prev_block(block);
+	auto prev = find_prev_header(block);
 	if(!prev) {
 		throw std::logic_error("invalid prev");
 	}
@@ -274,7 +266,111 @@ void Node::verify(std::shared_ptr<const Block> block) const
 	if(block->height != prev->height + 1) {
 		throw std::logic_error("invalid height");
 	}
-	// TODO
+	// TODO: check time_diff + space_diff deltas
+
+	uint64_t base_spent = 0;
+	if(auto tx = block->tx_base) {
+		base_spent = validate(tx, true);
+	}
+	{
+		std::unordered_set<utxo_key_t> inputs;
+		for(const auto& tx : block->tx_list) {
+			for(const auto& in : tx->inputs) {
+				if(!inputs.insert(in.prev).second) {
+					throw std::logic_error("double spend");
+				}
+			}
+		}
+	}
+	std::atomic<uint64_t> total_fee {0};
+
+#pragma omp parallel for
+	for(const auto& tx : block->tx_list) {
+		total_fee += validate(tx);
+	}
+	const auto diff_block = get_diff_header(block);
+	const auto block_reward = (diff_block->space_diff * params->reward_factor.value) / params->reward_factor.inverse;
+	const auto base_allowed = std::max(std::max(block_reward, params->min_reward), uint64_t(total_fee));
+	if(base_spent > base_allowed) {
+		throw std::logic_error("coin base over-spend");
+	}
+}
+
+uint64_t Node::validate(std::shared_ptr<const Transaction> tx, bool is_base) const
+{
+	if(is_base) {
+		if(!tx->inputs.empty()) {
+			throw std::logic_error("coin base cannot have inputs");
+		}
+		if(!tx->execute.empty()) {
+			throw std::logic_error("coin base cannot have operations");
+		}
+	}
+	const auto txid = tx->calc_hash();
+
+	uint64_t base_amount = 0;
+	std::unordered_map<hash_t, uint64_t> amounts;
+
+	for(const auto& in : tx->inputs)
+	{
+		auto iter = utxo_map.find(in.prev);
+		if(iter == utxo_map.end()) {
+			throw std::logic_error("utxo not found");
+		}
+		const auto& out = iter->second;
+
+		// verify signature
+		if(!in.solution) {
+			throw std::logic_error("missing solution");
+		}
+		{
+			auto iter = contracts.find(out.address);
+			if(iter != contracts.end()) {
+				if(!iter->second->validate(in.solution, txid)) {
+					throw std::logic_error("invalid solution");
+				}
+			}
+			else {
+				contract::PubKey simple;
+				simple.pubkey_hash = out.address;
+				if(!simple.validate(in.solution, txid)) {
+					throw std::logic_error("invalid solution");
+				}
+			}
+		}
+		amounts[out.contract] += out.amount;
+	}
+	for(const auto& op : tx->execute)
+	{
+		// TODO
+	}
+	for(const auto& out : tx->outputs)
+	{
+		if(is_base) {
+			if(out.contract != hash_t()) {
+				throw std::logic_error("invalid coin base output");
+			}
+			base_amount += out.amount;
+		}
+		else {
+			auto& value = amounts[out.contract];
+			if(out.amount > value) {
+				throw std::logic_error("output > input");
+			}
+			value -= out.amount;
+		}
+	}
+	if(is_base) {
+		return base_amount;
+	}
+	const auto fee_amount = amounts[hash_t()];
+	const auto fee_needed =
+			(tx->inputs.size() + tx->outputs.size()) * params->min_txfee_inout
+			+ tx->execute.size() * params->min_txfee_exec;
+	if(fee_amount < fee_needed) {
+		throw std::logic_error("insufficient txfee");
+	}
+	return fee_amount;
 }
 
 void Node::commit(std::shared_ptr<const Block> block) noexcept
@@ -314,19 +410,16 @@ size_t Node::purge_tree()
 
 uint32_t Node::verify_proof(std::shared_ptr<const Block> block, const hash_t& vdf_challenge) const
 {
-	auto prev = find_prev_block(block);
+	auto prev = find_prev_header(block);
 	if(!prev) {
 		throw std::logic_error("invalid prev");
 	}
-	auto diff_block = find_prev_header(block, params->finality_delay, true);
+	auto diff_block = get_diff_header(block);
 
 	if(block->vdf_iters != prev->vdf_iters + diff_block->time_diff * (1 + block->deficit)) {
 		throw std::logic_error("invalid vdf_iters");
 	}
 	// Note: vdf_output already verified to match vdf_iters
-
-	const hash_t block_challenge = get_challenge(block);
-	const hash_t challenge(block_challenge + vdf_challenge);
 
 	if(auto proof = block->proof)
 	{
@@ -336,8 +429,15 @@ uint32_t Node::verify_proof(std::shared_ptr<const Block> block, const hash_t& vd
 		if(proof->ksize > params->max_ksize) {
 			throw std::logic_error("ksize too big");
 		}
-		// TODO: check plot filter
+		const auto plot_key = proof->local_key.to_bls() + proof->farmer_key.to_bls();
 
+		if(hash_t(proof->pool_key + bls_pubkey_t(plot_key)) != proof->plot_id) {
+			throw std::logic_error("invalid plot keys");
+		}
+		const auto challenge = get_challenge(block, vdf_challenge);
+		if(!check_plot_filter(challenge, proof->plot_id)) {
+			throw std::logic_error("plot filter failed");
+		}
 		const auto quality = hash_t::from_bytes(chiapos::verify(
 				proof->ksize, proof->plot_id.bytes, challenge.bytes, proof->proof_bytes.data(), proof->proof_bytes.size()));
 
@@ -352,7 +452,7 @@ uint32_t Node::verify_proof(std::shared_ptr<const Block> block, const hash_t& vd
 	}
 }
 
-bool Node::verify(std::shared_ptr<const ProofOfTime> proof, const hash_t& begin) const
+bool Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const hash_t& begin) const
 {
 	const auto& segments = proof->segments;
 	bool is_valid = !segments.empty();
@@ -453,18 +553,17 @@ std::shared_ptr<const BlockHeader> Node::find_header(const hash_t& hash) const
 	return nullptr;
 }
 
-std::shared_ptr<const Block> Node::find_prev_block(std::shared_ptr<const Block> block, const size_t distance) const
-{
-	for(size_t i = 0; block && i < distance; ++i)
-	{
-		block = find_block(block->prev);
-	}
-	return block;
-}
-
 std::shared_ptr<const BlockHeader> Node::find_prev_header(	std::shared_ptr<const BlockHeader> block,
 															const size_t distance, bool clamp_to_genesis) const
 {
+	if(distance > params->finality_delay)
+	{
+		const auto height = block->height > distance ? block->height - distance : 0;
+		auto iter = history.find(height);
+		if(iter != history.end()) {
+			return iter->second;
+		}
+	}
 	for(size_t i = 0; block && i < distance; ++i)
 	{
 		if(clamp_to_genesis && block->height == 0) {
@@ -475,15 +574,47 @@ std::shared_ptr<const BlockHeader> Node::find_prev_header(	std::shared_ptr<const
 	return block;
 }
 
-hash_t Node::get_challenge(std::shared_ptr<const BlockHeader> block) const
+std::shared_ptr<const BlockHeader> Node::get_diff_header(std::shared_ptr<const BlockHeader> block) const
+{
+	if(auto header = find_prev_header(block, params->finality_delay + 1, true)) {
+		return header;
+	}
+	throw std::logic_error("cannot find difficulty header");
+}
+
+hash_t Node::get_challenge(std::shared_ptr<const BlockHeader> block, const hash_t& vdf_challenge) const
 {
 	uint32_t height = block->height > params->challenge_delay ? block->height - params->challenge_delay : 0;
 	height -= (height % params->challenge_interval);
 
 	if(auto prev = find_prev_header(block, block->height - height)) {
-		return prev->hash;
+		return hash_t(prev->hash + vdf_challenge);
 	}
 	return hash_t();
+}
+
+bool Node::find_vdf_output(const uint64_t vdf_iters, hash_t& vdf_output) const
+{
+	auto iter = verified_vdfs.find(vdf_iters);
+	if(iter != verified_vdfs.end()) {
+		vdf_output = iter->second;
+		return true;
+	}
+	return false;
+}
+
+bool Node::find_vdf_challenge(std::shared_ptr<const BlockHeader> block, hash_t& vdf_challenge) const
+{
+	if(auto vdf_block = find_prev_header(block, params->challenge_delay, true))
+	{
+		return find_vdf_output(vdf_block->vdf_iters + block->deficit * vdf_block->time_diff, vdf_challenge);
+	}
+	return false;
+}
+
+bool Node::check_plot_filter(const hash_t& challenge, const hash_t& plot_id) const
+{
+	return hash_t(challenge + plot_id).to_uint256() >> (256 - params->plot_filter);
 }
 
 uint128_t Node::calc_proof_score(const uint8_t ksize, const hash_t& quality, const uint64_t difficulty) const

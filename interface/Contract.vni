@@ -9,4 +9,6 @@ class Contract {
 	
 	hash_t calc_hash() const;
 	
+	bool validate(mmx.Solution* solution, hash_t txid) const;
+	
 }

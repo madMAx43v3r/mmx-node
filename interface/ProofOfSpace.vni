@@ -10,6 +10,7 @@ class ProofOfSpace {
 	
 	bls_pubkey_t local_key;
 	bls_pubkey_t farmer_key;
+	bls_pubkey_t pool_key;
 	
 	bls_signature_t local_sig;
 	

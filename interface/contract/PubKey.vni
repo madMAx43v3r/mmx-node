@@ -11,4 +11,6 @@ class PubKey extends mmx.Contract {
 	
 //	hash_t calc_hash() const;
 	
+	bool validate(mmx.Solution* solution, hash_t txid) const;
+	
 }

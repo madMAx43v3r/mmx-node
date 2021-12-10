@@ -47,7 +47,9 @@ private:
 
 	bool calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<const fork_t> fork, uint64_t& total_weight);
 
-	void verify(std::shared_ptr<const Block> block) const;
+	void validate(std::shared_ptr<const Block> block) const;
+
+	uint64_t validate(std::shared_ptr<const Transaction> tx, bool is_base = false) const;
 
 	void commit(std::shared_ptr<const Block> block) noexcept;
 
@@ -55,7 +57,7 @@ private:
 
 	uint32_t verify_proof(std::shared_ptr<const Block> block, const hash_t& vdf_output) const;
 
-	bool verify(std::shared_ptr<const ProofOfTime> proof, const hash_t& begin) const;
+	bool verify_vdf(std::shared_ptr<const ProofOfTime> proof, const hash_t& begin) const;
 
 	void apply(std::shared_ptr<const Block> block) noexcept;
 
@@ -71,12 +73,18 @@ private:
 
 	std::shared_ptr<const BlockHeader> find_header(const hash_t& hash) const;
 
-	std::shared_ptr<const Block> find_prev_block(std::shared_ptr<const Block> block, const size_t distance = 1) const;
-
 	std::shared_ptr<const BlockHeader> find_prev_header(
 			std::shared_ptr<const BlockHeader> block, const size_t distance = 1, bool clamp_to_genesis = false) const;
 
-	hash_t get_challenge(std::shared_ptr<const BlockHeader> block) const;
+	std::shared_ptr<const BlockHeader> get_diff_header(std::shared_ptr<const BlockHeader> block) const;
+
+	hash_t get_challenge(std::shared_ptr<const BlockHeader> block, const hash_t& vdf_challenge) const;
+
+	bool find_vdf_output(const uint64_t vdf_iters, hash_t& vdf_output) const;
+
+	bool find_vdf_challenge(std::shared_ptr<const BlockHeader> block, hash_t& vdf_challenge) const;
+
+	bool check_plot_filter(const hash_t& challenge, const hash_t& plot_id) const;
 
 	uint128_t calc_proof_score(const uint8_t ksize, const hash_t& quality, const uint64_t difficulty) const;
 

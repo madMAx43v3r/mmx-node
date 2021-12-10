@@ -20,5 +20,10 @@ hash_t Contract::calc_hash() const
 	return hash_t();
 }
 
+vnx::bool_t Contract::validate(std::shared_ptr<const Solution> solution, const hash_t& txid) const
+{
+	return false;
+}
+
 
 } // mmx

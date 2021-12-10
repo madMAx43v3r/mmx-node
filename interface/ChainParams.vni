@@ -7,7 +7,7 @@ class ChainParams {
 	uint tcp_port;
 	uint plot_filter = 10;
 	uint finality_delay = 6;				// number of blocks until history is fixed
-	uint challenge_delay = 4;				// blocks until new challange is active
+	uint challenge_delay = 4;				// blocks until new challange is active (must be > 0)
 	uint challenge_interval = 64;			// challenge is for next N blocks
 	uint num_vdf_segments = 184;
 	
@@ -26,8 +26,8 @@ class ChainParams {
 	ulong initial_time_diff = 10000;		// [iters/sec]
 	ulong initial_space_diff = 256;			// quality modulo
 	
-	ulong min_tx_fee_bls = 5000;			// per input / output
-	ulong min_tx_fee_ecdsa = 2000;			// per input / output
+	ulong min_txfee_exec = 100000;			// per operation
+	ulong min_txfee_inout = 2000;			// per input / output
 	
 	string vdf_seed;
 	

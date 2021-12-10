@@ -24,7 +24,11 @@ vnx::bool_t Block::is_valid() const
 	if(calc_hash() != hash) {
 		return false;
 	}
-	// TODO: check farmer_sig
+	if(proof) {
+		if(!farmer_sig.verify(proof->farmer_key, hash)) {
+			return false;
+		}
+	}
 	return true;
 }
 
