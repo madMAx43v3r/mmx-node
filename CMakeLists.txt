@@ -35,6 +35,7 @@ add_library(mmx_iface SHARED
 	src/ProofOfSpace.cpp
 	src/secp256k1.cpp
 	src/contract/PubKey.cpp
+	src/contract/Delegated.cpp
 )
 
 add_library(mmx_modules SHARED

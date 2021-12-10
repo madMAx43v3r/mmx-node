@@ -5,11 +5,7 @@ class BlockHeader {
 	hash_t hash;
 	hash_t prev;
 	
-	uint version;
 	uint height;
-	uint deficit;
-	
-	long time_ms;							// UTC [ms]
 	
 	ulong time_diff;
 	ulong space_diff;
@@ -23,7 +19,7 @@ class BlockHeader {
 	
 	hash_t tx_hash;
 	
-	bls_signature_t farmer_sig;
+	optional<bls_signature_t> farmer_sig;
 	
 	
 	bool is_valid() const;

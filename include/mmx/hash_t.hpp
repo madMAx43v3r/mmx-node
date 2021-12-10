@@ -30,6 +30,8 @@ struct hash_t : bytes_t<32> {
 
 	uint256_t to_uint256() const;
 
+	static hash_t empty();
+
 	static hash_t from_bytes(const std::array<uint8_t, 32>& bytes);
 
 };
@@ -64,6 +66,11 @@ uint256_t hash_t::to_uint256() const {
 	uint256_t res;
 	::memcpy(&res, bytes.data(), bytes.size());
 	return res;
+}
+
+inline
+hash_t hash_t::empty() {
+	return hash_t(nullptr, 0);
 }
 
 inline

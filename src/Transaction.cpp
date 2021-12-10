@@ -11,6 +11,16 @@
 
 namespace mmx {
 
+void Transaction::finalize()
+{
+	id = calc_hash();
+}
+
+vnx::bool_t Transaction::is_valid() const
+{
+	return calc_hash() == id;
+}
+
 hash_t Transaction::calc_hash() const
 {
 	std::vector<uint8_t> buffer;
@@ -19,18 +29,16 @@ hash_t Transaction::calc_hash() const
 
 	buffer.reserve(4 * 1024);
 
-	mmx::write_bytes(out, version);
+	write_bytes(out, version);
 
 	for(const auto& tx : inputs) {
-		mmx::write_bytes(out, tx);
+		write_bytes(out, tx);
 	}
 	for(const auto& tx : outputs) {
-		mmx::write_bytes(out, tx);
+		write_bytes(out, tx);
 	}
 	for(const auto& op : execute) {
-		if(op) {
-			mmx::write_bytes(out, op->calc_hash());
-		}
+		write_bytes(out, op ? op->calc_hash() : hash_t());
 	}
 	out.flush();
 

@@ -8,8 +8,6 @@
 #include <mmx/Block.hxx>
 #include <mmx/write_bytes.h>
 
-#include <vnx/Output.hpp>
-
 
 namespace mmx {
 
@@ -17,19 +15,6 @@ void Block::finalize()
 {
 	tx_hash = calc_tx_hash();
 	hash = calc_hash();
-}
-
-vnx::bool_t Block::is_valid() const
-{
-	if(calc_hash() != hash) {
-		return false;
-	}
-	if(proof) {
-		if(!farmer_sig.verify(proof->farmer_key, hash)) {
-			return false;
-		}
-	}
-	return true;
 }
 
 mmx::hash_t Block::calc_tx_hash() const

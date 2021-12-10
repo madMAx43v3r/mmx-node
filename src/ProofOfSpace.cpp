@@ -17,9 +17,10 @@ mmx::hash_t ProofOfSpace::calc_hash() const
 	vnx::VectorOutputStream stream(&buffer);
 	vnx::OutputBuffer out(&stream);
 
-	buffer.reserve(1024);
+	buffer.reserve(4 * 1024);
 
 	write_bytes(out, ksize);
+	write_bytes(out, plot_id);
 	write_bytes(out, proof_bytes);
 	write_bytes(out, local_key);
 	write_bytes(out, farmer_key);

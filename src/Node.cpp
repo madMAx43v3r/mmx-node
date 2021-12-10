@@ -22,9 +22,9 @@ Node::Node(const std::string& _vnx_name)
 
 void Node::init()
 {
-	subscribe(input_blocks);
-	subscribe(input_transactions);
-	subscribe(input_proof_of_time);
+	subscribe(input_blocks, 1000);
+	subscribe(input_transactions, 1000);
+	subscribe(input_proof_of_time, 1000);
 }
 
 void Node::main()
@@ -35,7 +35,6 @@ void Node::main()
 		params = tmp;
 	}
 	auto genesis = Block::create();
-	genesis->time_ms = vnx::get_time_millis();
 	genesis->time_diff = params->initial_time_diff;
 	genesis->space_diff = params->initial_space_diff;
 	genesis->finalize();
@@ -95,38 +94,48 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 void Node::update()
 {
 	// verify proof where possible
+	std::vector<std::pair<std::shared_ptr<fork_t>, hash_t>> to_verify;
+
 	for(auto iter = fork_tree.begin(); iter != fork_tree.end();)
 	{
 		const auto& fork = iter->second;
-		if(fork->is_proof_verified) {
-			continue;
-		}
 		const auto& block = fork->block;
 
-		hash_t vdf_output;
-		if(find_vdf_output(block->vdf_iters, vdf_output))
+		if(!fork->is_proof_verified)
 		{
-			if(block->vdf_output != vdf_output) {
-				log(WARN) << "VDF verification failed for a block at height " << block->height;
-				iter = fork_tree.erase(iter);
-				continue;
-			}
-			hash_t vdf_challenge;
-			if(find_vdf_challenge(block, vdf_challenge))
+			hash_t vdf_output;
+			if(find_vdf_output(block->vdf_iters, vdf_output))
 			{
-				try {
-					fork->proof_score = verify_proof(block, vdf_challenge);
-					fork->is_proof_verified = true;
-				}
-				catch(const std::exception& ex) {
-					log(WARN) << "Proof verification failed for a block at height " << block->height << " with: " << ex.what();
+				if(block->vdf_output != vdf_output) {
+					log(WARN) << "VDF verification failed for a block at height " << block->height;
 					iter = fork_tree.erase(iter);
 					continue;
+				}
+				hash_t vdf_challenge;
+				if(find_vdf_challenge(block, vdf_challenge)) {
+					to_verify.emplace_back(fork, vdf_challenge);
 				}
 			}
 		}
 		iter++;
 	}
+
+#pragma omp parallel for
+	for(const auto& entry : to_verify)
+	{
+		const auto& fork = entry.first;
+		const auto& block = fork->block;
+		try {
+			fork->proof_score = verify_proof(block, entry.second);
+			fork->is_proof_verified = true;
+		}
+		catch(const std::exception& ex) {
+#pragma omp critical
+			fork_tree.erase(block->hash);
+			log(WARN) << "Proof verification failed for a block at height " << block->height << " with: " << ex.what();
+		}
+	}
+
 	bool did_fork = false;
 	bool did_update = false;
 	std::shared_ptr<const BlockHeader> forked_at;
@@ -141,13 +150,15 @@ void Node::update()
 
 		// find best fork
 		const auto root = get_root();
-		for(const auto& entry : fork_tree) {
+		for(const auto& entry : fork_tree)
+		{
 			const auto& fork = entry.second;
+			const auto& block = fork->block;
 
 			uint64_t weight = 0;
-			if(calc_fork_weight(root, fork, weight))
+			if(block->proof && calc_fork_weight(root, fork, weight))
 			{
-				if(!best_fork || weight > max_weight || (weight == max_weight && fork->block->hash < best_fork->block->hash))
+				if(!best_fork || weight > max_weight || (weight == max_weight && block->hash < best_fork->block->hash))
 				{
 					best_fork = fork;
 					max_weight = weight;
@@ -211,7 +222,7 @@ void Node::update()
 					is_valid = false;
 					break;
 				}
-				publish(block, output_blocks);
+				publish(block, output_verified, BLOCKING);
 			}
 			apply(block);
 		}
@@ -240,9 +251,8 @@ bool Node::calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared
 {
 	while(fork) {
 		const auto& block = fork->block;
-		if(fork->is_proof_verified && fork->proof_score < params->score_threshold) {
-			total_weight += params->score_threshold;
-			total_weight += params->score_threshold - fork->proof_score;
+		if(fork->is_proof_verified) {
+			total_weight += 2 * params->score_threshold - fork->proof_score;
 		} else {
 			return false;
 		}
@@ -256,24 +266,39 @@ bool Node::calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared
 
 void Node::validate(std::shared_ptr<const Block> block) const
 {
-	auto prev = find_prev_header(block);
+	const auto prev = find_prev_header(block);
 	if(!prev) {
 		throw std::logic_error("invalid prev");
 	}
-	if(state_hash != prev->hash) {
+	if(prev->hash != state_hash) {
 		throw std::logic_error("state mismatch");
 	}
 	if(block->height != prev->height + 1) {
 		throw std::logic_error("invalid height");
 	}
-	// TODO: check time_diff + space_diff deltas
-
+	if(auto proof = block->proof) {
+		if(!block->farmer_sig || !block->farmer_sig->verify(proof->farmer_key, block->hash)) {
+			throw std::logic_error("invalid farmer signature");
+		}
+		// TODO: check time_diff + space_diff deltas
+	} else {
+		if(block->tx_base || block->tx_hash != hash_t::empty()) {
+			throw std::logic_error("transactions not allowed");
+		}
+		if(block->time_diff != prev->time_diff || block->space_diff != prev->space_diff) {
+			throw std::logic_error("invalid difficulty");
+		}
+	}
+	if(block->tx_list.size() >= params->max_tx_count) {
+		throw std::logic_error("too many transactions");
+	}
 	uint64_t base_spent = 0;
-	if(auto tx = block->tx_base) {
+	if(const auto& tx = block->tx_base) {
 		base_spent = validate(tx, true);
 	}
 	{
 		std::unordered_set<utxo_key_t> inputs;
+		inputs.reserve(16 * 1024);
 		for(const auto& tx : block->tx_list) {
 			for(const auto& in : tx->inputs) {
 				if(!inputs.insert(in.prev).second) {
@@ -288,9 +313,8 @@ void Node::validate(std::shared_ptr<const Block> block) const
 	for(const auto& tx : block->tx_list) {
 		total_fee += validate(tx);
 	}
-	const auto diff_block = get_diff_header(block);
-	const auto block_reward = (diff_block->space_diff * params->reward_factor.value) / params->reward_factor.inverse;
-	const auto base_allowed = std::max(std::max(block_reward, params->min_reward), uint64_t(total_fee));
+
+	const auto base_allowed = std::max(calc_block_reward(block), uint64_t(total_fee));
 	if(base_spent > base_allowed) {
 		throw std::logic_error("coin base over-spend");
 	}
@@ -306,7 +330,9 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, bool is_base) con
 			throw std::logic_error("coin base cannot have operations");
 		}
 	}
-	const auto txid = tx->calc_hash();
+	if(tx->outputs.size() >= params->max_tx_outputs) {
+		throw std::logic_error("too many tx outputs");
+	}
 
 	uint64_t base_amount = 0;
 	std::unordered_map<hash_t, uint64_t> amounts;
@@ -326,14 +352,14 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, bool is_base) con
 		{
 			auto iter = contracts.find(out.address);
 			if(iter != contracts.end()) {
-				if(!iter->second->validate(in.solution, txid)) {
+				if(!iter->second->validate(in.solution, tx->id)) {
 					throw std::logic_error("invalid solution");
 				}
 			}
 			else {
 				contract::PubKey simple;
 				simple.pubkey_hash = out.address;
-				if(!simple.validate(in.solution, txid)) {
+				if(!simple.validate(in.solution, tx->id)) {
 					throw std::logic_error("invalid solution");
 				}
 			}
@@ -379,16 +405,49 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	if(block->prev != root->hash) {
 		return;
 	}
+	if(change_log.empty()) {
+		return;
+	}
+	const auto log = change_log.front();
+	{
+		std::vector<std::unordered_multimap<hash_t, utxo_key_t>::iterator> to_remove;
+#pragma omp parallel for
+		for(const auto& entry : log->utxo_removed)
+		{
+			const auto range = addr_map.equal_range(entry.second.address);
+			for(auto iter = range.first; iter != range.second; ++iter) {
+				if(iter->second == entry.first) {
+#pragma omp critical
+					to_remove.push_back(iter);
+				}
+			}
+		}
+		for(const auto& iter : to_remove) {
+			// other iterators are not invalidated by calling erase()
+			addr_map.erase(iter);
+		}
+	}
+	for(const auto& entry : log->utxo_added) {
+		addr_map.emplace(entry.second.address, entry.first);
+	}
+	for(const auto& txid : log->tx_added) {
+		tx_map.erase(txid);
+	}
+
 	finalized[block->hash] = block->height;
 	history[block->height] = block->get_header();
 
+	change_log.pop_front();
 	fork_tree.erase(block->hash);
 	purge_tree();
+
+	publish(block, output_commited, BLOCKING);
 }
 
 size_t Node::purge_tree()
 {
 	const auto root = get_root();
+
 	bool repeat = true;
 	size_t num_purged = 0;
 	while(repeat) {
@@ -410,50 +469,48 @@ size_t Node::purge_tree()
 
 uint32_t Node::verify_proof(std::shared_ptr<const Block> block, const hash_t& vdf_challenge) const
 {
-	auto prev = find_prev_header(block);
+	const auto prev = find_prev_header(block);
 	if(!prev) {
 		throw std::logic_error("invalid prev");
 	}
-	auto diff_block = get_diff_header(block);
+	const auto diff_block = get_diff_header(block);
 
-	if(block->vdf_iters != prev->vdf_iters + diff_block->time_diff * (1 + block->deficit)) {
+	if(block->vdf_iters != prev->vdf_iters + diff_block->time_diff) {
 		throw std::logic_error("invalid vdf_iters");
 	}
 	// Note: vdf_output already verified to match vdf_iters
 
-	if(auto proof = block->proof)
-	{
-		if(proof->ksize < params->min_ksize) {
-			throw std::logic_error("ksize too small");
-		}
-		if(proof->ksize > params->max_ksize) {
-			throw std::logic_error("ksize too big");
-		}
-		const auto plot_key = proof->local_key.to_bls() + proof->farmer_key.to_bls();
-
-		if(hash_t(proof->pool_key + bls_pubkey_t(plot_key)) != proof->plot_id) {
-			throw std::logic_error("invalid proof keys");
-		}
-		if(!proof->local_sig.verify(proof->local_key, proof->calc_hash())) {
-			throw std::logic_error("invalid proof signature");
-		}
-
-		const auto challenge = get_challenge(block, vdf_challenge);
-		if(!check_plot_filter(challenge, proof->plot_id)) {
-			throw std::logic_error("plot filter failed");
-		}
-		const auto quality = hash_t::from_bytes(chiapos::verify(
-				proof->ksize, proof->plot_id.bytes, challenge.bytes, proof->proof_bytes.data(), proof->proof_bytes.size()));
-
-		const auto score = calc_proof_score(proof->ksize, quality, diff_block->space_diff);
-		if(score >= params->score_threshold) {
-			throw std::logic_error("invalid score");
-		}
-		return score;
+	const auto& proof = block->proof;
+	if(!proof) {
+		return params->score_threshold;
 	}
-	else {
-		throw std::logic_error("missing proof");
+	if(proof->ksize < params->min_ksize) {
+		throw std::logic_error("ksize too small");
 	}
+	if(proof->ksize > params->max_ksize) {
+		throw std::logic_error("ksize too big");
+	}
+	const auto plot_key = proof->local_key.to_bls() + proof->farmer_key.to_bls();
+
+	if(hash_t(proof->pool_key + bls_pubkey_t(plot_key)) != proof->plot_id) {
+		throw std::logic_error("invalid proof keys");
+	}
+	if(!proof->local_sig.verify(proof->local_key, proof->calc_hash())) {
+		throw std::logic_error("invalid proof signature");
+	}
+	const auto challenge = get_challenge(block, vdf_challenge);
+
+	if(!check_plot_filter(challenge, proof->plot_id)) {
+		throw std::logic_error("plot filter failed");
+	}
+	const auto quality = hash_t::from_bytes(chiapos::verify(
+			proof->ksize, proof->plot_id.bytes, challenge.bytes, proof->proof_bytes.data(), proof->proof_bytes.size()));
+
+	const auto score = calc_proof_score(proof->ksize, quality, diff_block->space_diff);
+	if(score >= params->score_threshold) {
+		throw std::logic_error("invalid score");
+	}
+	return score;
 }
 
 bool Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const hash_t& begin) const
@@ -488,19 +545,36 @@ void Node::apply(std::shared_ptr<const Block> block) noexcept
 	const auto log = std::make_shared<change_log_t>();
 	log->prev_state = state_hash;
 
-	if(auto tx = block->tx_base) {
-		apply(*log, tx);
+	if(const auto& tx = block->tx_base) {
+		apply(block, tx, *log);
 	}
-	for(auto tx : block->tx_list) {
-		apply(*log, tx);
+	for(const auto& tx : block->tx_list) {
+		apply(block, tx, *log);
 	}
 	state_hash = block->hash;
 	change_log.push_back(log);
 }
 
-void Node::apply(change_log_t& log, std::shared_ptr<const Transaction> tx) noexcept
+void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx, change_log_t& log) noexcept
 {
-	// TODO
+	for(const auto& in : tx->inputs)
+	{
+		auto iter = utxo_map.find(in.prev);
+		if(iter != utxo_map.end()) {
+			log.utxo_removed.push_back(*iter);
+			utxo_map.erase(iter);
+		}
+	}
+	for(size_t i = 0; i < tx->outputs.size(); ++i)
+	{
+		utxo_key_t key;
+		key.txid = tx->id;
+		key.index = i;
+		utxo_map[key] = tx->outputs[i];
+		log.utxo_added.emplace_back(key, tx->outputs[i]);
+	}
+	tx_map[tx->id] = block->height;
+	log.tx_added.push_back(tx->id);
 }
 
 bool Node::revert() noexcept
@@ -510,8 +584,15 @@ bool Node::revert() noexcept
 	}
 	const auto log = change_log.back();
 
-	// TODO
-
+	for(const auto& entry : log->utxo_added) {
+		utxo_map.erase(entry.first);
+	}
+	for(const auto& entry : log->utxo_removed) {
+		utxo_map[entry.first] = entry.second;
+	}
+	for(const auto& txid : log->tx_added) {
+		tx_map.erase(txid);
+	}
 	change_log.pop_back();
 	state_hash = log->prev_state;
 	return true;
@@ -611,7 +692,7 @@ bool Node::find_vdf_challenge(std::shared_ptr<const BlockHeader> block, hash_t& 
 {
 	if(auto vdf_block = find_prev_header(block, params->challenge_delay, true))
 	{
-		return find_vdf_output(vdf_block->vdf_iters + block->deficit * vdf_block->time_diff, vdf_challenge);
+		return find_vdf_output(vdf_block->vdf_iters, vdf_challenge);
 	}
 	return false;
 }
@@ -627,6 +708,16 @@ uint128_t Node::calc_proof_score(const uint8_t ksize, const hash_t& quality, con
 	modulo /= (2 * ksize) + 1;
 	modulo >>= ksize - 1;
 	return quality.to_uint256() % modulo;
+}
+
+uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block) const
+{
+	if(!block->proof) {
+		return 0;
+	}
+	const auto diff_block = get_diff_header(block);
+	const auto block_reward = (diff_block->space_diff * params->reward_factor.value) / params->reward_factor.inverse;
+	return std::max(block_reward, params->min_reward);
 }
 
 
