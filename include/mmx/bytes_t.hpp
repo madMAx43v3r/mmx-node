@@ -20,7 +20,7 @@
 
 namespace mmx {
 
-template<int N>
+template<size_t N>
 struct bytes_t {
 
 	std::array<uint8_t, N> bytes = {};
@@ -62,7 +62,7 @@ struct bytes_t {
 };
 
 
-template<int N>
+template<size_t N>
 bytes_t<N>::bytes_t(const void* data, const size_t num_bytes)
 {
 	if(num_bytes > bytes.size()) {
@@ -71,52 +71,52 @@ bytes_t<N>::bytes_t(const void* data, const size_t num_bytes)
 	::memcpy(bytes.data(), data, num_bytes);
 }
 
-template<int N>
+template<size_t N>
 bytes_t<N>::bytes_t(const std::vector<uint8_t>& data)
 	:	bytes_t(data.data(), data.size())
 {
 }
 
-template<int N>
+template<size_t N>
 bytes_t<N>::bytes_t(const std::array<uint8_t, N>& data)
 	:	bytes_t(data.data(), data.size())
 {
 }
 
-template<int N>
+template<size_t N>
 uint8_t* bytes_t<N>::data() {
 	return bytes.data();
 }
 
-template<int N>
+template<size_t N>
 const uint8_t* bytes_t<N>::data() const {
 	return bytes.data();
 }
 
-template<int N>
+template<size_t N>
 size_t bytes_t<N>::size() const
 {
 	return N;
 }
 
-template<int N>
+template<size_t N>
 bool bytes_t<N>::is_zero() const {
 	return *this == bytes_t();
 }
 
-template<int N>
+template<size_t N>
 std::string bytes_t<N>::to_string() const {
 	return bls::Util::HexStr(bytes.data(), bytes.size());
 }
 
-template<int N>
+template<size_t N>
 std::vector<uint8_t> bytes_t<N>::to_vector() const {
 	std::vector<uint8_t> res(N);
 	::memcpy(res.data(), bytes.data(), N);
 	return res;
 }
 
-template<int N>
+template<size_t N>
 void bytes_t<N>::from_string(const std::string& str)
 {
 	const auto tmp = bls::Util::HexToBytes(str);
@@ -126,12 +126,12 @@ void bytes_t<N>::from_string(const std::string& str)
 	::memcpy(bytes.data(), tmp.data(), tmp.size());
 }
 
-template<int N>
+template<size_t N>
 std::ostream& operator<<(std::ostream& out, const bytes_t<N>& hash) {
 	return out << "0x" << hash.to_string();
 }
 
-template<int N, int M>
+template<size_t N, size_t M>
 std::vector<uint8_t> operator+(const bytes_t<N>& lhs, const bytes_t<M>& rhs) {
 	std::vector<uint8_t> res(N + M);
 	::memcpy(res.data(), lhs.bytes.data(), N);
@@ -144,29 +144,29 @@ std::vector<uint8_t> operator+(const bytes_t<N>& lhs, const bytes_t<M>& rhs) {
 
 namespace vnx {
 
-template<int N>
+template<size_t N>
 void read(vnx::TypeInput& in, mmx::bytes_t<N>& value, const vnx::TypeCode* type_code, const uint16_t* code) {
 	vnx::read(in, value.bytes, type_code, code);
 }
 
-template<int N>
+template<size_t N>
 void write(vnx::TypeOutput& out, const mmx::bytes_t<N>& value, const vnx::TypeCode* type_code = nullptr, const uint16_t* code = nullptr) {
 	vnx::write(out, value.bytes, type_code, code);
 }
 
-template<int N>
+template<size_t N>
 void read(std::istream& in, mmx::bytes_t<N>& value) {
 	std::string tmp;
 	vnx::read(in, tmp);
 	value.from_string(tmp);
 }
 
-template<int N>
+template<size_t N>
 void write(std::ostream& out, const mmx::bytes_t<N>& value) {
 	vnx::write(out, value.to_string());
 }
 
-template<int N>
+template<size_t N>
 void accept(vnx::Visitor& visitor, const mmx::bytes_t<N>& value) {
 	vnx::accept(visitor, value.bytes);
 }
@@ -175,7 +175,7 @@ void accept(vnx::Visitor& visitor, const mmx::bytes_t<N>& value) {
 
 
 namespace std {
-	template<int N>
+	template<size_t N>
 	struct hash<typename mmx::bytes_t<N>> {
 		size_t operator()(const mmx::bytes_t<N>& x) const {
 			return *((const size_t*)x.bytes.data());

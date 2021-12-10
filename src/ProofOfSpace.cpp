@@ -21,6 +21,9 @@ mmx::hash_t ProofOfSpace::calc_hash() const
 
 	write_bytes(out, ksize);
 	write_bytes(out, proof_bytes);
+	write_bytes(out, local_key);
+	write_bytes(out, farmer_key);
+	write_bytes(out, pool_key);
 	out.flush();
 
 	return hash_t(buffer);

@@ -432,8 +432,12 @@ uint32_t Node::verify_proof(std::shared_ptr<const Block> block, const hash_t& vd
 		const auto plot_key = proof->local_key.to_bls() + proof->farmer_key.to_bls();
 
 		if(hash_t(proof->pool_key + bls_pubkey_t(plot_key)) != proof->plot_id) {
-			throw std::logic_error("invalid plot keys");
+			throw std::logic_error("invalid proof keys");
 		}
+		if(!proof->local_sig.verify(proof->local_key, proof->calc_hash())) {
+			throw std::logic_error("invalid proof signature");
+		}
+
 		const auto challenge = get_challenge(block, vdf_challenge);
 		if(!check_plot_filter(challenge, proof->plot_id)) {
 			throw std::logic_error("plot filter failed");

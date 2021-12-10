@@ -52,7 +52,8 @@ inline void write_bytes(vnx::OutputBuffer& out, const uint8_t& value) {
 	write_bytes(out, uint64_t(value));
 }
 
-inline void write_bytes(vnx::OutputBuffer& out, const hash_t& value) {
+template<size_t N>
+void write_bytes(vnx::OutputBuffer& out, const bytes_t<N>& value) {
 	out.write(value.bytes.data(), value.bytes.size());
 }
 
