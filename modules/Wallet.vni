@@ -9,4 +9,6 @@ module Wallet {
 	
 	FarmerKeys* get_farmer_keys(uint index) const;
 	
+	vector<FarmerKeys*> get_all_farmer_keys() const;
+	
 }

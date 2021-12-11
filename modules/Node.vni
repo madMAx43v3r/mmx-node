@@ -4,7 +4,7 @@ module Node {
 	
 	vnx.TopicPtr input_blocks = "network.blocks";
 	vnx.TopicPtr input_transactions = "network.transactions";
-	vnx.TopicPtr input_proof_of_time = "timelord.proof";
+	vnx.TopicPtr input_proof_of_time = "timelord.proofs";
 	
 	vnx.TopicPtr output_verified_blocks = "node.verified_blocks";
 	vnx.TopicPtr output_committed_block = "node.committed_blocks";

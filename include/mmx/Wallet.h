@@ -27,6 +27,8 @@ protected:
 
 	std::shared_ptr<const FarmerKeys> get_farmer_keys(const uint32_t& index) const override;
 
+	std::vector<std::shared_ptr<const FarmerKeys>> get_all_farmer_keys() const override;
+
 private:
 	std::vector<std::shared_ptr<BLS_Wallet>> bls_wallets;
 

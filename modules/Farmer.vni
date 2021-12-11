@@ -1,0 +1,12 @@
+package mmx;
+
+module Farmer {
+	
+	string wallet_server = "Wallet";
+	
+	
+	vnx.Hash64 get_mac_addr() const;
+	
+	BlockHeader* sign_block(BlockHeader* block) const;
+	
+}

@@ -129,7 +129,7 @@ void TimeLord::update()
 				}
 				proof->segments.push_back(seg);
 
-				publish(proof, output_proof);
+				publish(proof, output_proofs);
 
 				if(self_test) {
 					add_task([this, proof]() {

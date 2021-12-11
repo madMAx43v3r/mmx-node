@@ -9,11 +9,45 @@
 #define MMX_NODE_CHIAPOS_CHIAPOS_H_
 
 #include <array>
+#include <memory>
+#include <string>
+#include <vector>
 #include <cstdint>
 
 
 namespace mmx {
 namespace chiapos {
+
+class Proof {
+public:
+	uint8_t k;
+	std::vector<uint8_t> id;
+	std::vector<uint8_t> proof;
+	std::vector<uint8_t> master_sk;
+	std::vector<uint8_t> farmer_key;
+	std::vector<uint8_t> pool_key;
+};
+
+
+class DiskProver {
+public:
+	DiskProver(const std::string& file_path);
+
+	~DiskProver();
+
+	uint8_t get_ksize() const;
+
+	std::vector<uint8_t> get_plot_id() const;
+
+	std::vector<std::array<uint8_t, 32>> get_qualities(const std::array<uint8_t, 32>& challenge) const;
+
+	std::shared_ptr<Proof> get_full_proof(const std::array<uint8_t, 32>& challenge, const size_t index) const;
+
+private:
+	void* impl = nullptr;
+
+};
+
 
 /*
  * Returns quality hash if valid.

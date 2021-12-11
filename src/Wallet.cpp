@@ -60,5 +60,16 @@ std::shared_ptr<const FarmerKeys> Wallet::get_farmer_keys(const uint32_t& index)
 	return nullptr;
 }
 
+std::vector<std::shared_ptr<const FarmerKeys>> Wallet::get_all_farmer_keys() const
+{
+	std::vector<std::shared_ptr<const FarmerKeys>> res;
+	for(auto wallet : bls_wallets) {
+		if(wallet) {
+			res.push_back(wallet->get_farmer_keys());
+		}
+	}
+	return res;
+}
+
 
 } // mmx

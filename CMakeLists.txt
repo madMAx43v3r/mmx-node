@@ -78,7 +78,7 @@ set(BLAKE3_SRC
 )
 ENDIF()
 
-add_library(mmx_chiapos STATIC
+add_library(mmx_chiapos SHARED
 	src/chiapos/chiapos.cpp
 	chiapos/src/chacha8.c
 	${BLAKE3_SRC}

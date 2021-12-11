@@ -1,0 +1,20 @@
+package mmx;
+
+module Harvester {
+	
+	vnx.TopicPtr input_challenges = "harvester.challenges";
+	
+	vnx.TopicPtr output_proofs = "harvester.proofs";
+	
+	vector<string> plot_dirs;
+	
+	int reload_interval = 3600;				// [sec]
+	
+	
+	uint get_plot_count() const;
+	
+	ulong get_total_space() const;			// [bytes]
+	
+	void handle(Challenge sample);
+	
+}

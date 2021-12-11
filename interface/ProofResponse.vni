@@ -1,0 +1,9 @@
+package mmx;
+
+class ProofResponse {
+	
+	vnx.Hash64 farmer_addr;
+	
+	ProofOfSpace* proof;
+	
+}

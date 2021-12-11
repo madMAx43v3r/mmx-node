@@ -1,0 +1,39 @@
+/*
+ * Harvester.h
+ *
+ *  Created on: Dec 11, 2021
+ *      Author: mad
+ */
+
+#ifndef INCLUDE_MMX_HARVESTER_H_
+#define INCLUDE_MMX_HARVESTER_H_
+
+#include <mmx/HarvesterBase.hxx>
+#include <mmx/chiapos.h>
+
+
+namespace mmx {
+
+class Harvester : public HarvesterBase {
+public:
+	Harvester(const std::string& _vnx_name);
+
+protected:
+	void main() override;
+
+	void handle(std::shared_ptr<const Challenge> value) override;
+
+private:
+	void update();
+
+private:
+	size_t total_bytes = 0;
+
+	std::unordered_map<std::string, std::shared_ptr<chiapos::DiskProver>> plot_map;
+
+};
+
+
+} // mmx
+
+#endif /* INCLUDE_MMX_HARVESTER_H_ */
