@@ -42,6 +42,7 @@ add_library(mmx_modules SHARED
 	src/TimeLord.cpp
 	src/Node.cpp
 	src/Wallet.cpp
+	src/Harvester.cpp
 )
 
 add_library(uint256_t STATIC

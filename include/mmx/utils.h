@@ -18,7 +18,7 @@ inline
 bool check_plot_filter(	std::shared_ptr<const ChainParams> params,
 						const hash_t& challenge, const hash_t& plot_id)
 {
-	return hash_t(challenge + plot_id).to_uint256() >> (256 - params->plot_filter);
+	return hash_t(challenge + plot_id).to_uint256() >> (256 - params->plot_filter) == 0;
 }
 
 inline

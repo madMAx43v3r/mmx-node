@@ -23,13 +23,22 @@ protected:
 
 	void handle(std::shared_ptr<const Challenge> value) override;
 
+	uint32_t get_plot_count() const override;
+
+	uint64_t get_total_space() const override;
+
 private:
 	void update();
+
+	void test_challenge();
 
 private:
 	size_t total_bytes = 0;
 
+	std::unordered_map<hash_t, std::string> id_map;
 	std::unordered_map<std::string, std::shared_ptr<chiapos::DiskProver>> plot_map;
+
+	std::shared_ptr<const ChainParams> params;
 
 };
 

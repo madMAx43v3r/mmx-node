@@ -34,6 +34,8 @@ struct hash_t : bytes_t<32> {
 
 	static hash_t empty();
 
+	static hash_t from_bytes(const std::vector<uint8_t>& bytes);
+
 	static hash_t from_bytes(const std::array<uint8_t, 32>& bytes);
 
 };
@@ -73,6 +75,17 @@ uint256_t hash_t::to_uint256() const {
 inline
 hash_t hash_t::empty() {
 	return hash_t(nullptr, 0);
+}
+
+inline
+hash_t hash_t::from_bytes(const std::vector<uint8_t>& bytes)
+{
+	hash_t res;
+	if(bytes.size() != res.size()) {
+		throw std::logic_error("hash size mismatch");
+	}
+	::memcpy(res.data(), bytes.data(), bytes.size());
+	return res;
 }
 
 inline

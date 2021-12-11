@@ -10,6 +10,8 @@ module Harvester {
 	
 	int reload_interval = 3600;				// [sec]
 	
+	bool self_test;
+	
 	
 	uint get_plot_count() const;
 	

@@ -8,5 +8,5 @@
 		"inverse": 1
 	},
 	"initial_time_diff": 4000,
-	"initial_space_diff": 1
+	"initial_space_diff": 16
 }
