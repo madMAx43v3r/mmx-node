@@ -21,12 +21,12 @@ int main(int argc, char** argv)
 
 	if(vnx::File(file_path).exists())
 	{
-		std::cerr << "Wallet file already exists." << std::endl;
+		std::cerr << "Wallet file '" << file_path << "' already exists." << std::endl;
 		vnx::close();
 		return -1;
 	}
 
-	std::vector<uint8_t> seed(1024);
+	std::vector<uint8_t> seed(4096);
 	randombytes_buf(seed.data(), seed.size());
 
 	mmx::KeyFile wallet;

@@ -1,6 +1,7 @@
 {
 	"tcp_port": 12345,
 	"plot_filter": 4,
+	"min_ksize": 26,
 	"vdf_seed": "test0",
 	"reward_factor": {
 		"value": 10,

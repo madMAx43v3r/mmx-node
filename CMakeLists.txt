@@ -41,6 +41,7 @@ add_library(mmx_iface SHARED
 add_library(mmx_modules SHARED
 	src/TimeLord.cpp
 	src/Node.cpp
+	src/Wallet.cpp
 )
 
 add_library(uint256_t STATIC

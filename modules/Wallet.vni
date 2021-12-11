@@ -1,0 +1,12 @@
+package mmx;
+
+module Wallet {
+	
+	vector<string> key_files;
+	
+	
+	void show_farmer_keys(uint index) const;
+	
+	FarmerKeys* get_farmer_keys(uint index) const;
+	
+}

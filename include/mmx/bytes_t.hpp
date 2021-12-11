@@ -128,7 +128,7 @@ void bytes_t<N>::from_string(const std::string& str)
 
 template<size_t N>
 std::ostream& operator<<(std::ostream& out, const bytes_t<N>& hash) {
-	return out << "0x" << hash.to_string();
+	return out << hash.to_string();
 }
 
 template<size_t N, size_t M>
@@ -145,8 +145,19 @@ std::vector<uint8_t> operator+(const bytes_t<N>& lhs, const bytes_t<M>& rhs) {
 namespace vnx {
 
 template<size_t N>
-void read(vnx::TypeInput& in, mmx::bytes_t<N>& value, const vnx::TypeCode* type_code, const uint16_t* code) {
-	vnx::read(in, value.bytes, type_code, code);
+void read(vnx::TypeInput& in, mmx::bytes_t<N>& value, const vnx::TypeCode* type_code, const uint16_t* code)
+{
+	switch(code[0]) {
+		case CODE_STRING:
+		case CODE_ALT_STRING: {
+			std::string tmp;
+			vnx::read(in, tmp, type_code, code);
+			value.from_string(tmp);
+			break;
+		}
+		default:
+			vnx::read(in, value.bytes, type_code, code);
+	}
 }
 
 template<size_t N>
@@ -168,7 +179,7 @@ void write(std::ostream& out, const mmx::bytes_t<N>& value) {
 
 template<size_t N>
 void accept(vnx::Visitor& visitor, const mmx::bytes_t<N>& value) {
-	vnx::accept(visitor, value.bytes);
+	vnx::accept(visitor, value.to_string());
 }
 
 } // vnx
