@@ -152,7 +152,11 @@ void read(vnx::TypeInput& in, mmx::bytes_t<N>& value, const vnx::TypeCode* type_
 		case CODE_ALT_STRING: {
 			std::string tmp;
 			vnx::read(in, tmp, type_code, code);
-			value.from_string(tmp);
+			try {
+				value.from_string(tmp);
+			} catch(...) {
+				value = mmx::bytes_t<N>();
+			}
 			break;
 		}
 		default:

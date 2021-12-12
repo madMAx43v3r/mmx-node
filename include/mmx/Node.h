@@ -24,6 +24,12 @@ protected:
 
 	void main() override;
 
+	uint64_t get_balance(const addr_t& address, const addr_t& contract) const override;
+
+	uint64_t get_total_balance(const std::vector<addr_t>& addresses, const addr_t& contract) const override;
+
+	std::vector<std::pair<utxo_key_t, tx_out_t>> get_utxo_list(const std::vector<addr_t>& addresses) const override;
+
 	void handle(std::shared_ptr<const Block> block);
 
 	void handle(std::shared_ptr<const Transaction> tx);
@@ -105,7 +111,7 @@ private:
 
 	std::unordered_map<hash_t, size_t> tx_map;									// [txid => block height] (only pending)
 	std::unordered_map<utxo_key_t, tx_out_t> utxo_map;							// [utxo key => utxo]
-	std::unordered_multimap<hash_t, utxo_key_t> addr_map;						// [addr => utxo keys] (only finalized)
+	std::unordered_multimap<addr_t, utxo_key_t> addr_map;						// [addr => utxo keys] (only finalized)
 
 	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;
 	std::unordered_map<hash_t, std::shared_ptr<const Contract>> contracts;

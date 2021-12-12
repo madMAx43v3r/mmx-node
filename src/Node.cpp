@@ -27,6 +27,8 @@ Node::Node(const std::string& _vnx_name)
 
 void Node::init()
 {
+	vnx::open_pipe(vnx_name, this, 1000);
+
 	subscribe(input_blocks, 1000);
 	subscribe(input_transactions, 1000);
 	subscribe(input_proof_of_time, 1000);
@@ -53,6 +55,39 @@ void Node::main()
 	set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
 
 	Super::main();
+}
+
+uint64_t Node::get_balance(const addr_t& address, const addr_t& contract) const
+{
+	return get_total_balance({address}, contract);
+}
+
+uint64_t Node::get_total_balance(const std::vector<addr_t>& addresses, const addr_t& contract) const
+{
+	uint64_t total = 0;
+	for(const auto& entry : get_utxo_list(addresses)) {
+		const auto& out = entry.second;
+		if(out.contract == contract) {
+			total += out.amount;
+		}
+	}
+	return total;
+}
+
+std::vector<std::pair<utxo_key_t, tx_out_t>> Node::get_utxo_list(const std::vector<addr_t>& addresses) const
+{
+	std::vector<std::pair<utxo_key_t, tx_out_t>> res;
+	for(const auto& addr : addresses) {
+		const auto range = addr_map.equal_range(addr);
+		for(auto iter = range.first; iter != range.second; ++iter) {
+			auto iter2 = utxo_map.find(iter->second);
+			if(iter2 != utxo_map.end()) {
+				const auto& out = iter2->second;
+				res.emplace_back(iter->second, out);
+			}
+		}
+	}
+	return res;
 }
 
 void Node::handle(std::shared_ptr<const Block> block)
@@ -601,7 +636,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	}
 	const auto log = change_log.front();
 	{
-		std::vector<std::unordered_multimap<hash_t, utxo_key_t>::iterator> to_remove;
+		std::vector<std::unordered_multimap<addr_t, utxo_key_t>::iterator> to_remove;
 #pragma omp parallel for
 		for(const auto& entry : log->utxo_removed)
 		{

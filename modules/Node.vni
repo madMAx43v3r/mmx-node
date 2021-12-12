@@ -18,6 +18,13 @@ module Node {
 	string storage_path;
 	
 	
+	ulong get_balance(addr_t address, addr_t contract) const;
+	
+	ulong get_total_balance(vector<addr_t> addresses, addr_t contract) const;
+	
+	vector<pair<utxo_key_t, tx_out_t>> get_utxo_list(vector<addr_t> addresses) const;
+	
+	
 	void handle(Block value);
 	void handle(Transaction value);
 	void handle(ProofOfTime value);

@@ -30,6 +30,8 @@ struct addr_t : hash_t {
 
 	std::string to_string() const;
 
+	void from_string(const std::string& addr);
+
 };
 
 
@@ -83,6 +85,12 @@ std::string addr_t::to_string() const
 	return bech32::encode("mmx", dp);
 }
 
+inline
+void addr_t::from_string(const std::string& addr)
+{
+	*this = addr_t(addr);
+}
+
 
 } //mmx
 
@@ -96,7 +104,11 @@ void read(vnx::TypeInput& in, mmx::addr_t& value, const vnx::TypeCode* type_code
 		case CODE_ALT_STRING: {
 			std::string tmp;
 			vnx::read(in, tmp, type_code, code);
-			value.from_string(tmp);
+			try {
+				value.from_string(tmp);
+			} catch(...) {
+				value = mmx::addr_t();
+			}
 			break;
 		}
 		default:
