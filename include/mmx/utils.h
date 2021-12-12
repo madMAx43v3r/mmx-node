@@ -34,7 +34,7 @@ uint128_t calc_proof_score(	std::shared_ptr<const ChainParams> params,
 inline
 uint64_t calc_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
 {
-	const uint64_t block_reward = (uint128_t(space_diff) * params->space_diff_constant * params->reward_factor.value) / params->reward_factor.inverse;
+	const uint64_t block_reward = ((uint128_t(space_diff) * params->space_diff_constant * params->reward_factor.value) << params->plot_filter) / params->reward_factor.inverse;
 	return std::max(block_reward, params->min_reward);
 }
 

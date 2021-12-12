@@ -5,6 +5,7 @@ class ChainParams {
 	double block_time = 10;					// [sec]
 	
 	uint tcp_port;
+	uint decimals = 6;
 	uint plot_filter = 10;
 	uint finality_delay = 6;				// number of blocks until history is fixed
 	uint challenge_delay = 4;				// blocks until new challange is active (must be > 0)

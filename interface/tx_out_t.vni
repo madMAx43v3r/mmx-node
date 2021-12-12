@@ -2,9 +2,9 @@ package mmx;
 
 struct tx_out_t {
 	
-	hash_t address;
+	addr_t address;
 	
-	hash_t contract;
+	addr_t contract;
 	
 	ulong amount;
 	

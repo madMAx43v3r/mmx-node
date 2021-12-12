@@ -45,5 +45,14 @@ hash_t Transaction::calc_hash() const
 	return hash_t(buffer);
 }
 
+std::map<addr_t, uint64_t> Transaction::get_output_amounts() const
+{
+	std::map<addr_t, uint64_t> res;
+	for(const auto& out : outputs) {
+		res[out.contract] += out.amount;
+	}
+	return res;
+}
+
 
 } // mmx

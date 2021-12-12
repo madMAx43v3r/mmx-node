@@ -15,8 +15,6 @@ module Node {
 	
 	int update_interval_ms = 1000;			// [ms]
 	
-	string reward_addr;
-	
 	string storage_path;
 	
 	

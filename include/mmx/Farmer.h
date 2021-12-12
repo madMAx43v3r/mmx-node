@@ -25,7 +25,8 @@ protected:
 
 	vnx::Hash64 get_mac_addr() const override;
 
-	bls_signature_t sign_block(std::shared_ptr<const BlockHeader> block) const override;
+	std::pair<std::shared_ptr<const Transaction>, bls_signature_t>
+	sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& reward_amount) const override;
 
 private:
 	std::unordered_map<bls_pubkey_t, skey_t> key_map;

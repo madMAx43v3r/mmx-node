@@ -19,4 +19,6 @@ class Transaction {
 	
 	hash_t calc_hash() const;
 	
+	map<addr_t, ulong> get_output_amounts() const;
+	
 }

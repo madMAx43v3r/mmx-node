@@ -3,6 +3,6 @@
 	"vdf_seed": "main",
 	"reward_factor": {
 		"value": 1,
-		"inverse": 10
+		"inverse": 100000000000
 	}
 }

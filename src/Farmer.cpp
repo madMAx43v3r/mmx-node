@@ -6,6 +6,7 @@
  */
 
 #include <mmx/Farmer.h>
+#include <mmx/Transaction.hxx>
 #include <mmx/WalletClient.hxx>
 
 
@@ -33,6 +34,15 @@ void Farmer::main()
 		}
 	}
 
+	if(!reward_addr) {
+		reward_addr = wallet.get_address(0, 0);
+	}
+	if(!reward_addr) {
+		log(ERROR) << "No reward address set!";
+		return;
+	}
+	log(INFO) << "Reward address: " << reward_addr->to_string();
+
 	Super::main();
 }
 
@@ -41,16 +51,39 @@ vnx::Hash64 Farmer::get_mac_addr() const
 	return vnx_get_id();
 }
 
-bls_signature_t Farmer::sign_block(std::shared_ptr<const BlockHeader> block) const
+std::pair<std::shared_ptr<const Transaction>, bls_signature_t>
+Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& reward_amount) const
 {
-	if(auto proof = block->proof) {
-		auto iter = key_map.find(proof->farmer_key);
-		if(iter != key_map.end()) {
-			return bls_signature_t::sign(iter->second, block->hash);
-		}
+	if(!block->proof) {
+		throw std::logic_error("invalid proof");
+	}
+	auto iter = key_map.find(block->proof->farmer_key);
+	if(iter == key_map.end()) {
 		throw std::logic_error("unknown farmer key");
 	}
-	throw std::logic_error("invalid proof");
+	auto copy = vnx::clone(block);
+
+	auto base = Transaction::create();
+	auto amount_left = reward_amount;
+	if(project_addr) {
+		tx_out_t out;
+		out.address = *project_addr;
+		out.amount = amount_left * devfee_ratio;
+		amount_left -= out.amount;
+		base->outputs.push_back(out);
+	}
+	if(reward_addr) {
+		tx_out_t out;
+		out.address = *reward_addr;
+		out.amount = amount_left;
+		amount_left -= out.amount;
+		base->outputs.push_back(out);
+	}
+	copy->tx_base = base;
+	copy->hash = copy->calc_hash();
+
+	const auto signature = bls_signature_t::sign(iter->second, copy->hash);
+	return std::make_pair(base, signature);
 }
 
 

@@ -408,19 +408,27 @@ void Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 	if(iter == proof_map.end()) {
 		return;
 	}
-	const auto proof = iter->second;
+	const auto response = iter->second;
+	block->proof = response->proof;
 
-	block->proof = proof->proof;
+	uint64_t total_fees = 0;
+	// TODO: transactions
+
 	block->finalize();
 
-	FarmerClient farmer(proof->farmer_addr);
-	block->farmer_sig = farmer.sign_block(block);
+	FarmerClient farmer(response->farmer_addr);
+	const auto total_reward = std::max(calc_block_reward(block), total_fees);
+	const auto result = farmer.sign_block(block, total_reward);
 
-	proof_map.erase(iter);
+	block->tx_base = result.first;
+	block->farmer_sig = result.second;
+	block->finalize();
 
 	handle(block);
+	proof_map.erase(iter);
 
-	log(INFO) << "Created block at height " << block->height << " with score " << proof->score;
+	log(INFO) << "Created block at height " << block->height << " with: score = " << response->score
+			<< ", reward = " << total_reward / pow(10, params->decimals) << " MMX";
 }
 
 bool Node::calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<const fork_t> fork, uint64_t& total_weight)
