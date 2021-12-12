@@ -14,11 +14,13 @@
 
 namespace mmx {
 
-struct bls_pubkey_t : public bytes_t<48> {
+struct bls_pubkey_t : bytes_t<48> {
 
 	typedef bytes_t<48> super_t;
 
 	bls_pubkey_t() = default;
+
+	bls_pubkey_t(const super_t& bytes);
 
 	bls_pubkey_t(const bls::G1Element& key);
 
@@ -28,6 +30,12 @@ struct bls_pubkey_t : public bytes_t<48> {
 
 };
 
+
+inline
+bls_pubkey_t::bls_pubkey_t(const super_t& bytes)
+	:	super_t(bytes)
+{
+}
 
 inline
 bls_pubkey_t::bls_pubkey_t(const bls::G1Element& key)
@@ -82,5 +90,15 @@ void accept(vnx::Visitor& visitor, const mmx::bls_pubkey_t& value) {
 }
 
 } // vnx
+
+
+namespace std {
+	template<>
+	struct hash<typename mmx::bls_pubkey_t> {
+		size_t operator()(const mmx::bls_pubkey_t& x) const {
+			return std::hash<mmx::bls_pubkey_t::super_t>{}(x);
+		}
+	};
+} // std
 
 #endif /* INCLUDE_MMX_BLS_PUBKEY_T_HPP_ */

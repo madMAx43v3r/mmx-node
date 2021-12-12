@@ -1,5 +1,5 @@
 {
-	"tcp_port": 12345,
+	"tcp_port": 12330,
 	"plot_filter": 4,
 	"min_ksize": 26,
 	"vdf_seed": "test0",
@@ -7,6 +7,6 @@
 		"value": 10,
 		"inverse": 1
 	},
-	"initial_time_diff": 4000,
+	"initial_time_diff": 1000,
 	"initial_space_diff": 16
 }

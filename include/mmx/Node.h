@@ -30,6 +30,8 @@ protected:
 
 	void handle(std::shared_ptr<const ProofOfTime> proof);
 
+	void handle(std::shared_ptr<const ProofResponse> value);
+
 private:
 	struct fork_t {
 		bool is_verified = false;
@@ -49,6 +51,8 @@ private:
 
 	void update();
 
+	void make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<uint64_t, hash_t>& vdf_point);
+
 	bool calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<const fork_t> fork, uint64_t& total_weight);
 
 	void validate(std::shared_ptr<const Block> block) const;
@@ -60,6 +64,8 @@ private:
 	size_t purge_tree();
 
 	uint32_t verify_proof(std::shared_ptr<const Block> block, const hash_t& vdf_output) const;
+
+	uint32_t verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, const uint64_t space_diff) const;
 
 	bool verify_vdf(std::shared_ptr<const ProofOfTime> proof, const hash_t& begin) const;
 
@@ -106,6 +112,8 @@ private:
 	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_pool;
 
 	std::unordered_map<uint64_t, hash_t> verified_vdfs;							// [iters => output]
+	std::unordered_map<hash_t, uint64_t> challange_diff;						// [challenge => space diff]
+	std::unordered_map<hash_t, std::shared_ptr<const ProofResponse>> proof_map;
 
 	std::shared_ptr<const ChainParams> params;
 

@@ -106,7 +106,7 @@ namespace std {
 	template<>
 	struct hash<typename mmx::pubkey_t> {
 		size_t operator()(const mmx::pubkey_t& x) const {
-			return std::hash<mmx::bytes_t<33>>{}(x);
+			return std::hash<mmx::pubkey_t::super_t>{}(x);
 		}
 	};
 } // std

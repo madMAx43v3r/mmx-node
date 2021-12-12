@@ -23,6 +23,8 @@ protected:
 
 	void handle(std::shared_ptr<const Challenge> value) override;
 
+	void reload() override;
+
 	uint32_t get_plot_count() const override;
 
 	uint64_t get_total_space() const override;
@@ -34,7 +36,9 @@ private:
 
 private:
 	size_t total_bytes = 0;
+	vnx::Hash64 farmer_addr;
 
+	std::unordered_set<hash_t> already_checked;
 	std::unordered_map<hash_t, std::string> id_map;
 	std::unordered_map<std::string, std::shared_ptr<chiapos::DiskProver>> plot_map;
 

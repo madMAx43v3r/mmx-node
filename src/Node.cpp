@@ -7,6 +7,8 @@
 
 #include <mmx/Node.h>
 #include <mmx/TimePoint.hxx>
+#include <mmx/Challenge.hxx>
+#include <mmx/FarmerClient.hxx>
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/chiapos.h>
@@ -28,6 +30,7 @@ void Node::init()
 	subscribe(input_blocks, 1000);
 	subscribe(input_transactions, 1000);
 	subscribe(input_proof_of_time, 1000);
+	subscribe(input_proof_of_space, 1000);
 }
 
 void Node::main()
@@ -110,6 +113,32 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 			publish(point, output_verified_points, BLOCKING);
 		}
 		log(INFO) << "Verified VDF at " << vdf_iters << " iterations";
+
+		update();
+	}
+}
+
+void Node::handle(std::shared_ptr<const ProofResponse> value)
+{
+	if(!value->proof) {
+		return;
+	}
+	auto& prev = proof_map[value->challenge];
+	if(!prev || value->score < prev->score)
+	{
+		auto iter = challange_diff.find(value->challenge);
+		if(iter != challange_diff.end()) {
+			try {
+				const auto score = verify_proof(value->proof, value->challenge, iter->second);
+				if(score == value->score) {
+					prev = value;
+				} else {
+					throw std::logic_error("score mismatch");
+				}
+			} catch(const std::exception& ex) {
+				log(WARN) << "Got invalid proof: " << ex.what();
+			}
+		}
 	}
 }
 
@@ -239,7 +268,7 @@ void Node::update()
 					fork->is_verified = true;
 				}
 				catch(const std::exception& ex) {
-					log(WARN) << "Block verification failed for height " << block->height << " with:" << ex.what();
+					log(WARN) << "Block verification failed for height " << block->height << " with: " << ex.what();
 					fork_tree.erase(block->hash);
 					is_valid = false;
 					break;
@@ -271,7 +300,9 @@ void Node::update()
 		return;
 	}
 
-	// request next time points
+	// request next time points and check for making a new block
+	std::pair<uint64_t, hash_t> next_vdf;
+	std::shared_ptr<const BlockHeader> next_prev;
 	{
 		auto vdf_iters = peak->vdf_iters;
 		for(uint32_t i = 0; i <= params->finality_delay; ++i)
@@ -282,7 +313,17 @@ void Node::update()
 				request->begin = vdf_iters;
 				request->end = vdf_iters + diff_block->time_diff * params->time_diff_constant;
 
-				if(!verified_vdfs.count(request->end)) {
+				auto iter = verified_vdfs.find(request->end);
+				if(iter != verified_vdfs.end()) {
+					// we can make a block here
+					if(auto prev = find_prev_header(peak, i)) {
+						try {
+							make_block(prev, *iter);
+						} catch(const std::exception& ex) {
+							log(WARN) << "Failed to create a block: " << ex.what();
+						}
+					}
+				} else {
 					request->interval = (params->block_time * 1e6) / params->num_vdf_segments;
 					publish(request, output_interval_request);
 				}
@@ -311,11 +352,73 @@ void Node::update()
 		}
 	}
 
+	// publish challenges for next blocks
+	{
+		auto block = peak;
+		for(uint32_t i = 0; block && i < params->challenge_delay; ++i)
+		{
+			auto value = Challenge::create();
+			value->height = block->height + params->challenge_delay;
+			{
+				const auto height = value->height - (value->height % params->challenge_interval);
+				if(auto prev = find_prev_header(block, block->height - height)) {
+					value->challenge = hash_t(prev->hash + block->vdf_output);
+				} else {
+					continue;
+				}
+			}
+			if(auto diff_block = find_prev_header(block, params->finality_delay - params->challenge_delay, true)) {
+				value->space_diff = diff_block->space_diff;
+			} else {
+				continue;
+			}
+			challange_diff[value->challenge] = value->space_diff;
+
+			publish(value, output_challanges);
+
+			block = find_prev_header(block);
+		}
+	}
+
 	if(!prev_peak || peak->hash != prev_peak->hash)
 	{
-		log(INFO) << "New peak at height " << peak->height
+		const auto fork = find_fork(peak->hash);
+		log(INFO) << "New peak at height " << peak->height << " with score " << (fork ? std::to_string(fork->proof_score) : "?")
 				<< (did_fork ? " (forked at " + std::to_string(forked_at ? forked_at->height : -1) + ")" : "");
 	}
+}
+
+void Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<uint64_t, hash_t>& vdf_point)
+{
+	auto block = Block::create();
+	block->prev = prev->hash;
+	block->height = prev->height + 1;
+	block->time_diff = prev->time_diff;
+	block->space_diff = prev->space_diff;
+	block->vdf_iters = vdf_point.first;
+	block->vdf_output = vdf_point.second;
+
+	hash_t vdf_challenge;
+	if(!find_vdf_challenge(block, vdf_challenge)) {
+		return;
+	}
+	const auto challenge = get_challenge(block, vdf_challenge);
+
+	auto iter = proof_map.find(challenge);
+	if(iter == proof_map.end()) {
+		return;
+	}
+	const auto proof = iter->second;
+
+	block->proof = proof->proof;
+	block->finalize();
+
+	FarmerClient farmer(proof->farmer_addr);
+	block->farmer_sig = farmer.sign_block(block);
+
+	handle(block);
+
+	log(INFO) << "Created block at height " << block->height << " with score " << proof->score;
 }
 
 bool Node::calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<const fork_t> fork, uint64_t& total_weight)
@@ -518,7 +621,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	change_log.pop_front();
 
 	const auto fork = find_fork(block->hash);
-	Node::log(INFO) << "Committed height " << block->height << ": ntx = " << block->tx_list.size()
+	Node::log(INFO) << "Committed height " << block->height << " with: ntx = " << block->tx_list.size()
 			<< ", score = " << (fork ? fork->proof_score : 0) << ", k = " << (block->proof ? block->proof->ksize : 0);
 
 	fork_tree.erase(block->hash);
@@ -540,7 +643,6 @@ size_t Node::purge_tree()
 			const auto& block = iter->second->block;
 			if(block->prev != root->hash && fork_tree.find(block->prev) == fork_tree.end())
 			{
-				log(INFO) << "Purged block at height " << block->height;
 				iter = fork_tree.erase(iter);
 				repeat = true;
 				num_purged++;
@@ -565,10 +667,16 @@ uint32_t Node::verify_proof(std::shared_ptr<const Block> block, const hash_t& vd
 	}
 	// Note: vdf_output already verified to match vdf_iters
 
-	const auto& proof = block->proof;
-	if(!proof) {
+	if(!block->proof) {
 		return params->score_threshold;
 	}
+	const auto challenge = get_challenge(block, vdf_challenge);
+
+	return verify_proof(block->proof, challenge, diff_block->space_diff);
+}
+
+uint32_t Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, const uint64_t space_diff) const
+{
 	if(proof->ksize < params->min_ksize) {
 		throw std::logic_error("ksize too small");
 	}
@@ -583,15 +691,13 @@ uint32_t Node::verify_proof(std::shared_ptr<const Block> block, const hash_t& vd
 	if(!proof->local_sig.verify(proof->local_key, proof->calc_hash())) {
 		throw std::logic_error("invalid proof signature");
 	}
-	const auto challenge = get_challenge(block, vdf_challenge);
-
 	if(!check_plot_filter(params, challenge, proof->plot_id)) {
 		throw std::logic_error("plot filter failed");
 	}
 	const auto quality = hash_t::from_bytes(chiapos::verify(
 			proof->ksize, proof->plot_id.bytes, challenge.bytes, proof->proof_bytes.data(), proof->proof_bytes.size()));
 
-	const auto score = calc_proof_score(params, proof->ksize, quality, diff_block->space_diff);
+	const auto score = calc_proof_score(params, proof->ksize, quality, space_diff);
 	if(score >= params->score_threshold) {
 		throw std::logic_error("invalid score");
 	}

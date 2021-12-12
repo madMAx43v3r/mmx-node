@@ -5,12 +5,13 @@ module Node {
 	vnx.TopicPtr input_blocks = "network.blocks";
 	vnx.TopicPtr input_transactions = "network.transactions";
 	vnx.TopicPtr input_proof_of_time = "timelord.proofs";
+	vnx.TopicPtr input_proof_of_space = "harvester.proofs";
 	
 	vnx.TopicPtr output_verified_blocks = "node.verified_blocks";
 	vnx.TopicPtr output_committed_block = "node.committed_blocks";
 	vnx.TopicPtr output_verified_points = "node.verified_points";
 	vnx.TopicPtr output_interval_request = "timelord.requests";
-	vnx.TopicPtr output_challanges = "farmer.challenges";
+	vnx.TopicPtr output_challanges = "harvester.challenges";
 	
 	int update_interval_ms = 1000;			// [ms]
 	
@@ -20,5 +21,6 @@ module Node {
 	void handle(Block value);
 	void handle(Transaction value);
 	void handle(ProofOfTime value);
+	void handle(ProofResponse value);
 	
 }

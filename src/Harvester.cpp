@@ -6,9 +6,13 @@
  */
 
 #include <mmx/Harvester.h>
+#include <mmx/FarmerClient.hxx>
+#include <mmx/ProofResponse.hxx>
 #include <mmx/utils.h>
 
 #include <vnx/Config.hpp>
+
+#include <bls.hpp>
 
 
 namespace mmx {
@@ -25,19 +29,26 @@ void Harvester::main()
 		vnx::read_config("chain.params", tmp);
 		params = tmp;
 	}
-	update();
+	subscribe(input_challenges, 1000);
 
-	set_timer_millis(int64_t(reload_interval) * 1000, std::bind(&Harvester::update, this));
+	set_timer_millis(1000, std::bind(&Harvester::update, this));
+	set_timer_millis(int64_t(reload_interval) * 1000, std::bind(&Harvester::reload, this));
 
 	if(self_test) {
 		set_timer_millis(1000, std::bind(&Harvester::test_challenge, this));
 	}
+
+	update();
+	reload();
 
 	Super::main();
 }
 
 void Harvester::handle(std::shared_ptr<const Challenge> value)
 {
+	if(already_checked.count(value->challenge)) {
+		return;
+	}
 	size_t num_passed = 0;
 	uint128_t best_score = -1;
 	std::shared_ptr<chiapos::Proof> best_proof;
@@ -68,6 +79,33 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 			num_passed++;
 		}
 	}
+	if(best_proof) {
+		auto out = ProofResponse::create();
+		out->height = value->height;
+		out->score = best_score;
+		out->challenge = value->challenge;
+		out->farmer_addr = farmer_addr;
+
+		bls::AugSchemeMPL MPL;
+		auto local_sk = bls::PrivateKey::FromBytes(bls::Bytes(best_proof->master_sk.data(), best_proof->master_sk.size()));
+
+		for(uint32_t i : {12381, 11337, 3, 0}) {
+			local_sk = MPL.DeriveChildSk(local_sk, i);
+		}
+		auto proof = ProofOfSpace::create();
+		proof->ksize = best_proof->k;
+		proof->plot_id = hash_t::from_bytes(best_proof->id);
+		proof->proof_bytes = best_proof->proof;
+		proof->local_key = local_sk.GetG1Element();
+		proof->farmer_key = bls_pubkey_t::super_t(best_proof->farmer_key);
+		proof->pool_key = bls_pubkey_t::super_t(best_proof->pool_key);
+		proof->local_sig = bls_signature_t::sign(local_sk, proof->calc_hash());
+
+		out->proof = proof;
+		publish(out, output_proofs);
+	}
+	already_checked.insert(value->challenge);
+
 	log(INFO) << num_passed << " plots were eligible for height " << value->height
 			<< ", best score was " << (best_score != -1 ? best_score.str() : "N/A");
 }
@@ -82,13 +120,14 @@ uint64_t Harvester::get_total_space() const
 	return total_bytes;
 }
 
-void Harvester::update()
+void Harvester::reload()
 {
 	id_map.clear();
 	plot_map.clear();
 	total_bytes = 0;
 
-	for(const auto& path : plot_dirs) {
+	for(const auto& path : plot_dirs)
+	{
 		vnx::Directory dir(path);
 		try {
 			dir.open();
@@ -111,6 +150,12 @@ void Harvester::update()
 		}
 	}
 	log(INFO) << "Loaded " << plot_map.size() << " plots, " << (total_bytes / 1024 / 1024) / pow(1024, 2) << " TiB total";
+}
+
+void Harvester::update()
+{
+	FarmerClient farmer(farmer_server);
+	farmer_addr = farmer.get_mac_addr();
 }
 
 void Harvester::test_challenge()

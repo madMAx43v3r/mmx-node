@@ -8,10 +8,14 @@ module Harvester {
 	
 	vector<string> plot_dirs;
 	
+	string farmer_server = "Farmer";
+	
 	int reload_interval = 3600;				// [sec]
 	
 	bool self_test;
 	
+	
+	void reload();
 	
 	uint get_plot_count() const;
 	

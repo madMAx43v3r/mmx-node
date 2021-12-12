@@ -9,6 +9,7 @@
 #define INCLUDE_MMX_BLS_bls_signature_t_HPP_
 
 #include <mmx/hash_t.hpp>
+#include <mmx/skey_t.hpp>
 #include <mmx/bls_pubkey_t.hpp>
 
 
@@ -25,6 +26,8 @@ struct bls_signature_t : bytes_t<96> {
 	bool verify(const bls_pubkey_t& pubkey, const hash_t& hash) const;
 
 	bls::G2Element to_bls() const;
+
+	static bls_signature_t sign(const skey_t& skey, const hash_t& hash);
 
 	static bls_signature_t sign(const bls::PrivateKey& skey, const hash_t& hash);
 
@@ -52,6 +55,13 @@ inline
 bls::G2Element bls_signature_t::to_bls() const
 {
 	return bls::G2Element::FromBytes(bls::Bytes(bytes.data(), bytes.size()));
+}
+
+inline
+bls_signature_t bls_signature_t::sign(const skey_t& skey, const hash_t& hash)
+{
+	const auto bls_skey = bls::PrivateKey::FromBytes(bls::Bytes(skey.data(), skey.size()));
+	return sign(bls_skey, hash);
 }
 
 inline

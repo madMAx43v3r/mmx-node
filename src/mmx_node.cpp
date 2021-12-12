@@ -8,6 +8,7 @@
 #include <mmx/Node.h>
 #include <mmx/Wallet.h>
 #include <mmx/TimeLord.h>
+#include <mmx/Farmer.h>
 #include <mmx/Harvester.h>
 #include <mmx/secp256k1.hpp>
 
@@ -31,6 +32,10 @@ int main(int argc, char** argv)
 	}
 	{
 		vnx::Handle<mmx::Wallet> module = new mmx::Wallet("Wallet");
+		module.start_detached();
+	}
+	{
+		vnx::Handle<mmx::Farmer> module = new mmx::Farmer("Farmer");
 		module.start_detached();
 	}
 	{

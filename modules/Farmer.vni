@@ -7,6 +7,6 @@ module Farmer {
 	
 	vnx.Hash64 get_mac_addr() const;
 	
-	BlockHeader* sign_block(BlockHeader* block) const;
+	bls_signature_t sign_block(BlockHeader* block) const;
 	
 }

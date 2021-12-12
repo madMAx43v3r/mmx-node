@@ -27,11 +27,11 @@ struct bytes_t {
 
 	bytes_t() = default;
 
-	explicit bytes_t(const std::vector<uint8_t>& data);
+	bytes_t(const std::vector<uint8_t>& data);
 
-	explicit bytes_t(const std::array<uint8_t, N>& data);
+	bytes_t(const std::array<uint8_t, N>& data);
 
-	explicit bytes_t(const void* data, const size_t num_bytes);
+	bytes_t(const void* data, const size_t num_bytes);
 
 	uint8_t* data();
 
