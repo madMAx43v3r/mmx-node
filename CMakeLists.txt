@@ -3,9 +3,10 @@ project(mmx-node C CXX ASM)
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_subdirectory(bls-signatures)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -fopenmp -Wall -Wno-unused-function")
 
-#add_subdirectory(libbech32)
+add_subdirectory(libbech32)
+add_subdirectory(bls-signatures)
 
 find_package(Threads REQUIRED)
 
@@ -14,8 +15,6 @@ if(SODIUM_FOUND)
 	message(STATUS "Sodium include dir = ${sodium_INCLUDE_DIR}")
 	include_directories(${sodium_INCLUDE_DIR})
 endif()
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -fopenmp -Wall -Wno-unused-function")
 
 file(GLOB GENERATED_SOURCE_FILES
 	generated/src/*.cpp
@@ -106,7 +105,7 @@ target_include_directories(mmx_chiapos
 	PRIVATE chiapos/src chiapos/lib/include
 )
 
-target_link_libraries(mmx_iface uint256_t secp256k1 bls vnx_base)
+target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_base)
 target_link_libraries(mmx_modules mmx_chiapos mmx_iface)
 
 add_executable(mmx_node src/mmx_node.cpp)

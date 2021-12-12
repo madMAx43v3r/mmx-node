@@ -1,6 +1,7 @@
 package mmx;
 
 extern hash_t = {11, 32, 1};
+extern addr_t = {11, 32, 1};
 
 extern skey_t = {11, 32, 1};
 extern pubkey_t = {11, 33, 1};

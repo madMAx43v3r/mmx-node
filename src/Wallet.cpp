@@ -28,14 +28,24 @@ void Wallet::main()
 	{
 		if(auto key_file = vnx::read_from_file<KeyFile>(file_path)) {
 			bls_wallets.push_back(std::make_shared<BLS_Wallet>(key_file, 11337));
+			ecdsa_wallets.push_back(std::make_shared<ECDSA_Wallet>(key_file));
 			log(INFO) << "Loaded wallet: " << file_path;
 		} else {
 			bls_wallets.push_back(nullptr);
+			ecdsa_wallets.push_back(nullptr);
 			log(ERROR) << "Failed to read wallet: " << file_path;
 		}
 	}
 
 	Super::main();
+}
+
+std::string Wallet::get_address(const uint32_t& index, const uint32_t& offset) const
+{
+	if(auto wallet = ecdsa_wallets.at(index)) {
+		return wallet->get_address(offset).to_string();
+	}
+	throw std::logic_error("no such wallet");
 }
 
 void Wallet::show_farmer_keys(const uint32_t& index) const

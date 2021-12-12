@@ -416,6 +416,8 @@ void Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 	FarmerClient farmer(proof->farmer_addr);
 	block->farmer_sig = farmer.sign_block(block);
 
+	proof_map.erase(iter);
+
 	handle(block);
 
 	log(INFO) << "Created block at height " << block->height << " with score " << proof->score;
@@ -456,7 +458,7 @@ void Node::validate(std::shared_ptr<const Block> block) const
 		}
 		// TODO: check time_diff + space_diff deltas
 	} else {
-		if(block->tx_base || block->tx_hash != hash_t::empty()) {
+		if(block->tx_base || !block->tx_list.empty()) {
 			throw std::logic_error("transactions not allowed");
 		}
 		if(block->time_diff != prev->time_diff || block->space_diff != prev->space_diff) {

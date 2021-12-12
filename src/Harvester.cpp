@@ -50,7 +50,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 		return;
 	}
 	size_t num_passed = 0;
-	uint128_t best_score = -1;
+	uint128_t best_score = ~uint128_0;
 	std::shared_ptr<chiapos::Proof> best_proof;
 
 	for(const auto& entry : id_map)
@@ -107,7 +107,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	already_checked.insert(value->challenge);
 
 	log(INFO) << num_passed << " plots were eligible for height " << value->height
-			<< ", best score was " << (best_score != -1 ? best_score.str() : "N/A");
+			<< ", best score was " << (best_score != ~uint128_0 ? best_score.str() : "N/A");
 }
 
 uint32_t Harvester::get_plot_count() const

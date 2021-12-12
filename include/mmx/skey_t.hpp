@@ -21,9 +21,18 @@ struct skey_t : bytes_t<32> {
 
 	skey_t() = default;
 
+	skey_t(const hash_t& hash);
+
 	skey_t(const bls::PrivateKey& key);
 
 };
+
+
+inline
+skey_t::skey_t(const hash_t& hash)
+	:	super_t(hash)
+{
+}
 
 inline
 skey_t::skey_t(const bls::PrivateKey& key)

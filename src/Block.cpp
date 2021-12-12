@@ -17,6 +17,11 @@ void Block::finalize()
 	hash = calc_hash();
 }
 
+vnx::bool_t Block::is_valid() const
+{
+	return BlockHeader::is_valid() && calc_tx_hash() == tx_hash;
+}
+
 mmx::hash_t Block::calc_tx_hash() const
 {
 	std::vector<uint8_t> buffer;

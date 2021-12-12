@@ -7,6 +7,8 @@ class Block extends BlockHeader {
 	
 	void finalize();
 	
+	bool is_valid() const;
+	
 	hash_t calc_tx_hash() const;
 	
 	BlockHeader* get_header() const;
