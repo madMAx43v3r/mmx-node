@@ -14,7 +14,6 @@
 #include <mmx/chiapos.h>
 #include <mmx/utils.h>
 
-#include <vnx/vnx.h>
 #include <atomic>
 
 
@@ -37,11 +36,8 @@ void Node::init()
 
 void Node::main()
 {
-	{
-		auto tmp = ChainParams::create();
-		vnx::read_config("chain.params", tmp);
-		params = tmp;
-	}
+	params = get_params();
+
 	auto genesis = Block::create();
 	genesis->time_diff = params->initial_time_diff;
 	genesis->space_diff = params->initial_space_diff;
@@ -55,6 +51,12 @@ void Node::main()
 	set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
 
 	Super::main();
+}
+
+void Node::add_transaction(std::shared_ptr<const Transaction> tx)
+{
+	validate(tx);
+	handle(tx);
 }
 
 uint64_t Node::get_balance(const addr_t& address, const addr_t& contract) const
@@ -616,9 +618,7 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, bool is_base) con
 		return base_amount;
 	}
 	const auto fee_amount = amounts[hash_t()];
-	const auto fee_needed =
-			(tx->inputs.size() + tx->outputs.size()) * params->min_txfee_inout
-			+ tx->execute.size() * params->min_txfee_exec;
+	const auto fee_needed = tx->calc_min_fee(params);
 	if(fee_amount < fee_needed) {
 		throw std::logic_error("insufficient fee");
 	}

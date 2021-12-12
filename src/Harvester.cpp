@@ -10,8 +10,6 @@
 #include <mmx/ProofResponse.hxx>
 #include <mmx/utils.h>
 
-#include <vnx/Config.hpp>
-
 #include <bls.hpp>
 
 
@@ -24,11 +22,8 @@ Harvester::Harvester(const std::string& _vnx_name)
 
 void Harvester::main()
 {
-	{
-		auto tmp = ChainParams::create();
-		vnx::read_config("chain.params", tmp);
-		params = tmp;
-	}
+	params = get_params();
+
 	subscribe(input_challenges, 1000);
 
 	set_timer_millis(1000, std::bind(&Harvester::update, this));

@@ -45,6 +45,14 @@ hash_t Transaction::calc_hash() const
 	return hash_t(buffer);
 }
 
+uint64_t Transaction::calc_min_fee(std::shared_ptr<const ChainParams> params) const
+{
+	if(!params) {
+		throw std::logic_error("params == nullptr");
+	}
+	return (inputs.size() + outputs.size()) * params->min_txfee_inout + execute.size() * params->min_txfee_exec;
+}
+
 std::map<addr_t, uint64_t> Transaction::get_output_amounts() const
 {
 	std::map<addr_t, uint64_t> res;

@@ -35,7 +35,7 @@ void Farmer::main()
 	}
 
 	if(!reward_addr) {
-		reward_addr = wallet.get_address(0, 0);
+		reward_addr = wallet.get_address(0);
 	}
 	if(!reward_addr) {
 		log(ERROR) << "No reward address set!";
@@ -65,20 +65,26 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& rew
 
 	auto base = Transaction::create();
 	auto amount_left = reward_amount;
-	if(project_addr) {
+	if(project_addr && amount_left > 0)
+	{
 		tx_out_t out;
 		out.address = *project_addr;
-		out.amount = amount_left * devfee_ratio;
-		amount_left -= out.amount;
-		base->outputs.push_back(out);
+		out.amount = double(amount_left) * devfee_ratio;
+		if(out.amount > 0) {
+			amount_left -= out.amount;
+			base->outputs.push_back(out);
+		}
 	}
-	if(reward_addr) {
+	if(reward_addr && amount_left > 0)
+	{
 		tx_out_t out;
 		out.address = *reward_addr;
 		out.amount = amount_left;
 		amount_left -= out.amount;
 		base->outputs.push_back(out);
 	}
+	base->finalize();
+
 	copy->tx_base = base;
 	copy->hash = copy->calc_hash();
 

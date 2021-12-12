@@ -24,6 +24,8 @@ protected:
 
 	void main() override;
 
+	void add_transaction(std::shared_ptr<const Transaction> tx) override;
+
 	uint64_t get_balance(const addr_t& address, const addr_t& contract) const override;
 
 	uint64_t get_total_balance(const std::vector<addr_t>& addresses, const addr_t& contract) const override;

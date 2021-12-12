@@ -18,6 +18,8 @@ module Node {
 	string storage_path;
 	
 	
+	void add_transaction(Transaction* tx);
+	
 	ulong get_balance(addr_t address, addr_t contract) const;
 	
 	ulong get_total_balance(vector<addr_t> addresses, addr_t contract) const;

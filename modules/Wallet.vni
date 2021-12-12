@@ -4,12 +4,29 @@ module Wallet {
 	
 	vector<string> key_files;
 	
+	string node_server = "Node";
 	
-	string get_address(uint index, uint offset) const;
+	uint num_addresses = 100;
 	
-	void show_farmer_keys(uint index) const;
+	uint default_wallet = 0;
 	
-	FarmerKeys* get_farmer_keys(uint index) const;
+	
+	void open_wallet(uint index, string passwd);
+	
+	void open_wallet_ex(uint index, uint num_addresses, string passwd);
+	
+	void close_wallet();
+	
+	hash_t send(ulong amount, addr_t dst_addr, addr_t contract) const;
+	
+	ulong get_balance(addr_t contract) const;
+	
+	string get_address(uint index) const;
+	
+	
+	void show_farmer_keys(uint wallet) const;
+	
+	FarmerKeys* get_farmer_keys(uint wallet) const;
 	
 	vector<FarmerKeys*> get_all_farmer_keys() const;
 	

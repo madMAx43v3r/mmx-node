@@ -19,6 +19,8 @@ class Transaction {
 	
 	hash_t calc_hash() const;
 	
+	ulong calc_min_fee(ChainParams* params) const;
+	
 	map<addr_t, ulong> get_output_amounts() const;
 	
 }

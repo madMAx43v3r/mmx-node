@@ -11,8 +11,18 @@
 #include <mmx/hash_t.hpp>
 #include <mmx/ChainParams.hxx>
 
+#include <vnx/Config.hpp>
+
 
 namespace mmx {
+
+inline
+std::shared_ptr<const ChainParams> get_params()
+{
+	auto params = ChainParams::create();
+	vnx::read_config("chain.params", params);
+	return params;
+}
 
 inline
 bool check_plot_filter(	std::shared_ptr<const ChainParams> params,
