@@ -44,36 +44,59 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	if(already_checked.count(value->challenge)) {
 		return;
 	}
-	size_t num_passed = 0;
+	const auto time_begin = vnx::get_time_micros();
+
+	uint32_t best_index = 0;
 	uint128_t best_score = ~uint128_0;
 	std::shared_ptr<chiapos::Proof> best_proof;
+	std::shared_ptr<chiapos::DiskProver> best_plot;
+	std::vector<std::shared_ptr<chiapos::DiskProver>> plots;
 
 	for(const auto& entry : id_map)
 	{
-		try {
-			if(check_plot_filter(params, value->challenge, entry.first)) {
-				if(auto prover = plot_map[entry.second])
-				{
-					const auto qualities = prover->get_qualities(value->challenge.bytes);
-					for(size_t i = 0; i < qualities.size(); ++i)
-					{
-						const auto score = calc_proof_score(
-								params, prover->get_ksize(), hash_t::from_bytes(qualities[i]), value->space_diff);
-						if(score < params->score_threshold) {
-							if(score < best_score) {
-								if(auto proof = prover->get_full_proof(value->challenge.bytes, i)) {
-									best_proof = proof;
-									log(DEBUG) << "Found proof for height " << value->height << " with score " << score;
-								}
-							}
-						}
-						if(score < best_score) {
-							best_score = score;
-						}
-					}
-				}
-				num_passed++;
+		if(check_plot_filter(params, value->challenge, entry.first)) {
+			if(auto prover = plot_map[entry.second]) {
+				plots.push_back(prover);
 			}
+		}
+	}
+	std::vector<std::vector<uint128_t>> scores(plots.size());
+
+#pragma omp parallel for
+	for(size_t i = 0; i < plots.size(); ++i)
+	{
+		const auto& prover = plots[i];
+		try {
+			const auto qualities = prover->get_qualities(value->challenge.bytes);
+			scores[i].resize(qualities.size());
+
+			for(size_t k = 0; k < qualities.size(); ++k) {
+				scores[i][k] = calc_proof_score(params, prover->get_ksize(), hash_t::from_bytes(qualities[k]), value->space_diff);
+			}
+		} catch(const std::exception& ex) {
+			log(WARN) << "Failed to fetch qualities: " << ex.what();
+		}
+	}
+
+	for(size_t i = 0; i < plots.size(); ++i)
+	{
+		for(size_t k = 0; k < scores[i].size(); ++k)
+		{
+			const auto& score = scores[i][k];
+			if(score < params->score_threshold) {
+				if(score < best_score) {
+					best_plot = plots[i];
+					best_index = k;
+				}
+			}
+			if(score < best_score) {
+				best_score = score;
+			}
+		}
+	}
+	if(best_plot) {
+		try {
+			best_proof = best_plot->get_full_proof(value->challenge.bytes, best_index);
 		} catch(const std::exception& ex) {
 			log(WARN) << "Failed to fetch proof: " << ex.what();
 		}
@@ -105,8 +128,9 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	}
 	already_checked.insert(value->challenge);
 
-	log(INFO) << num_passed << " plots were eligible for height " << value->height
-			<< ", best score was " << (best_score != ~uint128_0 ? best_score.str() : "N/A");
+	log(INFO) << plots.size() << " plots were eligible for height " << value->height
+			<< ", best score was " << (best_score != ~uint128_0 ? best_score.str() : "N/A")
+			<< ", took " << (vnx::get_time_micros() - time_begin) / 1e6 << " sec";
 }
 
 uint32_t Harvester::get_plot_count() const
