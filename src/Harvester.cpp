@@ -50,28 +50,32 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 
 	for(const auto& entry : id_map)
 	{
-		if(check_plot_filter(params, value->challenge, entry.first)) {
-			if(auto prover = plot_map[entry.second])
-			{
-				const auto qualities = prover->get_qualities(value->challenge.bytes);
-				for(size_t i = 0; i < qualities.size(); ++i)
+		try {
+			if(check_plot_filter(params, value->challenge, entry.first)) {
+				if(auto prover = plot_map[entry.second])
 				{
-					const auto score = calc_proof_score(
-							params, prover->get_ksize(), hash_t::from_bytes(qualities[i]), value->space_diff);
-					if(score < params->score_threshold) {
-						if(score < best_score) {
-							if(auto proof = prover->get_full_proof(value->challenge.bytes, i)) {
-								best_proof = proof;
-								log(INFO) << "Found proof with score " << score << " for height " << value->height;
+					const auto qualities = prover->get_qualities(value->challenge.bytes);
+					for(size_t i = 0; i < qualities.size(); ++i)
+					{
+						const auto score = calc_proof_score(
+								params, prover->get_ksize(), hash_t::from_bytes(qualities[i]), value->space_diff);
+						if(score < params->score_threshold) {
+							if(score < best_score) {
+								if(auto proof = prover->get_full_proof(value->challenge.bytes, i)) {
+									best_proof = proof;
+									log(INFO) << "Found proof with score " << score << " for height " << value->height;
+								}
 							}
 						}
-					}
-					if(score < best_score) {
-						best_score = score;
+						if(score < best_score) {
+							best_score = score;
+						}
 					}
 				}
+				num_passed++;
 			}
-			num_passed++;
+		} catch(const std::exception& ex) {
+			log(WARN) << "Failed to fetch proof: " << ex.what();
 		}
 	}
 	if(best_proof) {
