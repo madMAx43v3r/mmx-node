@@ -338,9 +338,8 @@ void Node::update()
 	}
 
 	// request next time points and check for making a new block
-	std::pair<uint64_t, hash_t> next_vdf;
-	std::shared_ptr<const BlockHeader> next_prev;
 	{
+		bool made_block = false;
 		auto vdf_iters = peak->vdf_iters;
 		for(uint32_t i = 0; i <= params->finality_delay; ++i)
 		{
@@ -355,8 +354,12 @@ void Node::update()
 					// we can make a block here
 					if(auto prev = find_prev_header(peak, i)) {
 						try {
-							make_block(prev, *iter);
-						} catch(const std::exception& ex) {
+							// only make one block at a time
+							if(!made_block) {
+								made_block = make_block(prev, *iter);
+							}
+						}
+						catch(const std::exception& ex) {
 							log(WARN) << "Failed to create a block: " << ex.what();
 						}
 					}
@@ -425,7 +428,7 @@ void Node::update()
 	}
 }
 
-void Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<uint64_t, hash_t>& vdf_point)
+bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<uint64_t, hash_t>& vdf_point)
 {
 	auto block = Block::create();
 	block->prev = prev->hash;
@@ -437,25 +440,67 @@ void Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 
 	hash_t vdf_challenge;
 	if(!find_vdf_challenge(block, vdf_challenge)) {
-		return;
+		return false;
 	}
 	const auto challenge = get_challenge(block, vdf_challenge);
 
 	auto iter = proof_map.find(challenge);
 	if(iter == proof_map.end()) {
-		return;
+		return false;
 	}
 	const auto response = iter->second;
 	block->proof = response->proof;
 
-	uint64_t total_fees = 0;
-	// TODO: transactions
+	std::atomic<uint64_t> total_fees {0};
+	std::unordered_set<hash_t> invalid;
+	std::unordered_set<utxo_key_t> spent;
+	std::vector<std::shared_ptr<const Transaction>> tx_list;
 
+	for(const auto& entry : tx_pool)
+	{
+		if(tx_map.find(entry.first) != tx_map.end()) {
+			// already included in a previous block
+			continue;
+		}
+		const auto& tx = entry.second;
+		try {
+			for(const auto& in : tx->inputs) {
+				if(!spent.insert(in.prev).second) {
+					throw std::logic_error("double spend");
+				}
+			}
+			tx_list.push_back(tx);
+		}
+		catch(const std::exception& ex) {
+			invalid.insert(entry.first);
+			log(WARN) << "TX validation failed with: " << ex.what();
+		}
+	}
+
+#pragma omp parallel for
+	for(const auto& tx : tx_list) {
+		try {
+			total_fees += validate(tx);
+		}
+		catch(const std::exception& ex) {
+#pragma omp critical
+			invalid.insert(tx->id);
+			log(WARN) << "TX validation failed with: " << ex.what();
+		}
+	}
+	for(const auto& tx : tx_list) {
+		if(!invalid.count(tx->id)) {
+			block->tx_list.push_back(tx);
+		}
+	}
+	for(const auto& id : invalid) {
+		tx_pool.erase(id);
+	}
 	block->finalize();
 
 	FarmerClient farmer(response->farmer_addr);
-	const auto total_reward = std::max(calc_block_reward(block), total_fees);
-	const auto result = farmer.sign_block(block, total_reward);
+	const auto final_reward = std::max(calc_block_reward(block), uint64_t(total_fees));
+	const auto result = farmer.sign_block(block, final_reward);
 
 	block->tx_base = result.first;
 	block->farmer_sig = result.second;
@@ -464,8 +509,9 @@ void Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 	handle(block);
 	proof_map.erase(iter);
 
-	log(INFO) << "Created block at height " << block->height << " with: score = " << response->score
-			<< ", reward = " << total_reward / pow(10, params->decimals) << " MMX";
+	log(INFO) << "Created block at height " << block->height << " with: ntx = " << block->tx_list.size()
+			<< ", score = " << response->score << ", reward = " << final_reward / pow(10, params->decimals) << " MMX";
+	return true;
 }
 
 bool Node::calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<const fork_t> fork, uint64_t& total_weight)
@@ -528,14 +574,23 @@ void Node::validate(std::shared_ptr<const Block> block) const
 			}
 		}
 	}
-	std::atomic<uint64_t> total_fee {0};
+	std::exception_ptr failed_ex;
+	std::atomic<uint64_t> total_fees {0};
 
 #pragma omp parallel for
 	for(const auto& tx : block->tx_list) {
-		total_fee += validate(tx);
+		try {
+			total_fees += validate(tx);
+		} catch(...) {
+#pragma omp critical
+			failed_ex = std::current_exception();
+		}
+	}
+	if(failed_ex) {
+		throw failed_ex;
 	}
 
-	const auto base_allowed = std::max(calc_block_reward(block), uint64_t(total_fee));
+	const auto base_allowed = std::max(calc_block_reward(block), uint64_t(total_fees));
 	if(base_spent > base_allowed) {
 		throw std::logic_error("coin base over-spend");
 	}
@@ -809,7 +864,7 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 		utxo_map[key] = tx->outputs[i];
 		log.utxo_added.emplace_back(key, tx->outputs[i]);
 	}
-	tx_map[tx->id] = block->height;
+	tx_map[tx->id] = block->hash;
 	log.tx_added.push_back(tx->id);
 }
 

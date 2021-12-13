@@ -186,13 +186,16 @@ hash_t Wallet::send(const uint64_t& amount, const addr_t& dst_addr, const addr_t
 		sol->signature = signature_t::sign(keys.first, tx->id);
 		in.solution = sol;
 	}
-
-	log(INFO) << "Sent: " << tx->to_string();
-
+	{
+		std::stringstream ss;
+		vnx::PrettyPrinter printer(ss);
+		tx->accept(printer);
+		log(INFO) << "Sent: " << ss.str();
+	}
 	node->add_transaction(tx);
 
 	// store used utxos
-	for(auto& in : tx->inputs) {
+	for(const auto& in : tx->inputs) {
 		sent_utxo_map[in.prev] = tx->id;
 	}
 	return tx->id;

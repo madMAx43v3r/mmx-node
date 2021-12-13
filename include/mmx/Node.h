@@ -59,7 +59,7 @@ private:
 
 	void update();
 
-	void make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<uint64_t, hash_t>& vdf_point);
+	bool make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<uint64_t, hash_t>& vdf_point);
 
 	bool calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<const fork_t> fork, uint64_t& total_weight);
 
@@ -111,7 +111,7 @@ private:
 	std::unordered_map<hash_t, size_t> finalized;								// [block hash => height]
 	std::map<size_t, std::shared_ptr<const BlockHeader>> history;				// [height => block]
 
-	std::unordered_map<hash_t, size_t> tx_map;									// [txid => block height] (only pending)
+	std::unordered_map<hash_t, hash_t> tx_map;									// [txid => block hash] (only pending)
 	std::unordered_map<utxo_key_t, tx_out_t> utxo_map;							// [utxo key => utxo]
 	std::unordered_multimap<addr_t, utxo_key_t> addr_map;						// [addr => utxo keys] (only finalized)
 
