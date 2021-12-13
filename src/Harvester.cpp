@@ -121,6 +121,9 @@ void Harvester::reload()
 	plot_map.clear();
 	total_bytes = 0;
 
+	std::vector<std::pair<std::shared_ptr<vnx::File>, std::shared_ptr<chiapos::DiskProver>>> plots;
+
+#pragma omp parallel for
 	for(const auto& path : plot_dirs)
 	{
 		vnx::Directory dir(path);
@@ -134,15 +137,22 @@ void Harvester::reload()
 			if(file && file->get_extension() == ".plot") {
 				try {
 					auto prover = std::make_shared<chiapos::DiskProver>(file->get_path());
-					id_map[hash_t::from_bytes(prover->get_plot_id())] = file->get_path();
-					plot_map[file->get_path()] = prover;
-					total_bytes += file->file_size();
+#pragma omp critical
+					plots.emplace_back(file, prover);
 				}
 				catch(const std::exception& ex) {
 					log(WARN) << "Failed to load plot " << file->get_path() << " due to: " << ex.what();
 				}
 			}
 		}
+	}
+	for(const auto& entry : plots)
+	{
+		const auto& file = entry.first;
+		const auto& prover = entry.second;
+		id_map[hash_t::from_bytes(prover->get_plot_id())] = file->get_path();
+		plot_map[file->get_path()] = prover;
+		total_bytes += file->file_size();
 	}
 	log(INFO) << "Loaded " << plot_map.size() << " plots, " << (total_bytes / 1024 / 1024) / pow(1024, 2) << " TiB total";
 }
