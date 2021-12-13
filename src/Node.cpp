@@ -337,58 +337,25 @@ void Node::update()
 		return;
 	}
 
-	// request next time points and check for making a new block
+	// request next time points
 	{
 		bool made_block = false;
 		auto vdf_iters = peak->vdf_iters;
 		for(uint32_t i = 0; i <= params->finality_delay; ++i)
 		{
-			if(auto diff_block = find_prev_header(peak, params->finality_delay - i, true))
-			{
-				auto request = IntervalRequest::create();
-				request->begin = vdf_iters;
-				request->end = vdf_iters + diff_block->time_diff * params->time_diff_constant;
-
-				auto iter = verified_vdfs.find(request->end);
-				if(iter != verified_vdfs.end()) {
-					// we can make a block here
-					if(auto prev = find_prev_header(peak, i)) {
-						try {
-							// only make one block at a time
-							if(!made_block) {
-								made_block = make_block(prev, *iter);
-							}
-						}
-						catch(const std::exception& ex) {
-							log(WARN) << "Failed to create a block: " << ex.what();
-						}
-					}
-				} else {
-					request->interval = (params->block_time * 1e6) / params->num_vdf_segments;
-					publish(request, output_interval_request);
-				}
-				vdf_iters = request->end;
+			auto diff_block = find_prev_header(peak, params->finality_delay - i, true);
+			if(!diff_block) {
+				break;
 			}
-		}
-	}
+			auto request = IntervalRequest::create();
+			request->begin = vdf_iters;
+			request->end = vdf_iters + diff_block->time_diff * params->time_diff_constant;
+			request->interval = (params->block_time * 1e6) / params->num_vdf_segments;
 
-	// add dummy block in case no proof is found
-	{
-		const auto diff_block = get_diff_header(peak, true);
-		const auto vdf_iters = peak->vdf_iters + diff_block->time_diff * params->time_diff_constant;
-
-		hash_t vdf_output;
-		if(find_vdf_output(vdf_iters, vdf_output))
-		{
-			auto block = Block::create();
-			block->prev = peak->hash;
-			block->height = peak->height + 1;
-			block->time_diff = peak->time_diff;
-			block->space_diff = peak->space_diff;
-			block->vdf_iters = vdf_iters;
-			block->vdf_output = vdf_output;
-			block->finalize();
-			handle(block);
+			if(!verified_vdfs.count(request->end)) {
+				publish(request, output_interval_request);
+			}
+			vdf_iters = request->end;
 		}
 	}
 
@@ -417,6 +384,53 @@ void Node::update()
 			publish(value, output_challanges);
 
 			block = find_prev_header(block);
+		}
+	}
+
+	// add dummy block in case no proof is found
+	{
+		const auto diff_block = get_diff_header(peak, true);
+		const auto vdf_iters = peak->vdf_iters + diff_block->time_diff * params->time_diff_constant;
+
+		hash_t vdf_output;
+		if(find_vdf_output(vdf_iters, vdf_output))
+		{
+			auto block = Block::create();
+			block->prev = peak->hash;
+			block->height = peak->height + 1;
+			block->time_diff = peak->time_diff;
+			block->space_diff = peak->space_diff;
+			block->vdf_iters = vdf_iters;
+			block->vdf_output = vdf_output;
+			block->finalize();
+			handle(block);
+		}
+	}
+
+	// try making a new block
+	{
+		auto vdf_iters = peak->vdf_iters;
+		for(uint32_t i = 0; i <= 1; ++i)
+		{
+			auto iter = verified_vdfs.find(vdf_iters);
+			if(iter != verified_vdfs.end()) {
+				// we can make a block here
+				if(auto prev = find_prev_header(peak, 1 - i)) {
+					try {
+						if(make_block(prev, *iter)) {
+							// update again right away
+							add_task(std::bind(&Node::update, this));
+							// only make one block at a time
+							break;
+						}
+					}
+					catch(const std::exception& ex) {
+						log(WARN) << "Failed to create a block: " << ex.what();
+					}
+				}
+			}
+			const auto diff_block = get_diff_header(peak, i > 0);
+			vdf_iters += diff_block->time_diff * params->time_diff_constant;
 		}
 	}
 
@@ -490,7 +504,11 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 	}
 	for(const auto& tx : tx_list) {
 		if(!invalid.count(tx->id)) {
-			block->tx_list.push_back(tx);
+			if(block->tx_list.size() < params->max_tx_count) {
+				block->tx_list.push_back(tx);
+			} else {
+				break;
+			}
 		}
 	}
 	for(const auto& id : invalid) {
@@ -764,6 +782,9 @@ uint32_t Node::verify_proof(std::shared_ptr<const Block> block, const hash_t& vd
 		throw std::logic_error("invalid prev");
 	}
 	const auto diff_block = get_diff_header(block);
+	if(!diff_block) {
+		throw std::logic_error("invalid prev");
+	}
 
 	if(block->vdf_iters != prev->vdf_iters + diff_block->time_diff * params->time_diff_constant) {
 		throw std::logic_error("invalid vdf_iters");
