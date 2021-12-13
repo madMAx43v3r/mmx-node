@@ -34,6 +34,8 @@ void TimeLord::main()
 		handle(request);
 	}
 
+	set_timer_millis(10000, std::bind(&TimeLord::print_info, this));
+
 	Super::main();
 
 	if(vdf_thread.joinable()) {
@@ -152,7 +154,7 @@ void TimeLord::update()
 void TimeLord::vdf_loop(TimePoint point)
 {
 	bool do_notify = false;
-	uint64_t checkpoint_iters = checkpoint_interval;
+	checkpoint_iters = checkpoint_interval;
 
 	while(vnx_do_run())
 	{
@@ -216,6 +218,11 @@ void TimeLord::vdf_loop(TimePoint point)
 			checkpoint_iters = (checkpoint_iters * 255 + interval) / 256;
 		}
 	}
+}
+
+void TimeLord::print_info()
+{
+	log(INFO) << double(checkpoint_iters) / checkpoint_interval << " M/s iterations";
 }
 
 

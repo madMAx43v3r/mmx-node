@@ -33,9 +33,12 @@ private:
 
 	void vdf_loop(TimePoint point);
 
+	void print_info();
+
 private:
 	std::mutex mutex;
 	std::thread vdf_thread;
+	uint64_t checkpoint_iters = 0;
 
 	std::map<uint64_t, hash_t> history;
 
