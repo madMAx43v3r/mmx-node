@@ -1,5 +1,6 @@
 {
 	"tcp_port": 12330,
+	"block_time": 2,
 	"plot_filter": 4,
 	"min_ksize": 26,
 	"vdf_seed": "test0",

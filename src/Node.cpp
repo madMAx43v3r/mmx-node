@@ -45,8 +45,12 @@ void Node::main()
 
 	apply(genesis);
 	commit(genesis);
-
-	verified_vdfs[0] = hash_t(params->vdf_seed);
+	{
+		vdf_point_t point;
+		point.output = hash_t(params->vdf_seed);
+		point.time = vnx::get_time_micros();
+		verified_vdfs[0] = point;
+	}
 
 	set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
 
@@ -141,15 +145,21 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 	auto iter = verified_vdfs.find(proof->start);
 	if(iter != verified_vdfs.end())
 	{
-		verify_vdf(proof, iter->second);
-		verified_vdfs[vdf_iters] = proof->get_output();
+		const auto& prev = iter->second;
+		verify_vdf(proof, prev.output);
+
+		vdf_point_t point;
+		point.output = proof->get_output();
+		point.time = vnx_sample ? vnx_sample->recv_time : vnx::get_time_micros();
+		verified_vdfs[vdf_iters] = point;
 		{
 			auto point = TimePoint::create();
 			point->num_iters = vdf_iters;
 			point->output = proof->get_output();
 			publish(point, output_verified_points, BLOCKING);
 		}
-		log(INFO) << "Verified VDF at " << vdf_iters << " iterations";
+		log(INFO) << "Verified VDF at " << vdf_iters << " iterations, delta = "
+				<< (point.time - prev.time) / 1e6 << " sec";
 
 		update();
 	}
@@ -429,7 +439,7 @@ void Node::update()
 					}
 				}
 			}
-			const auto diff_block = get_diff_header(peak, i > 0);
+			const auto diff_block = get_diff_header(peak, true);
 			vdf_iters += diff_block->time_diff * params->time_diff_constant;
 		}
 	}
@@ -442,7 +452,7 @@ void Node::update()
 	}
 }
 
-bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<uint64_t, hash_t>& vdf_point)
+bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<uint64_t, vdf_point_t>& vdf_point)
 {
 	auto block = Block::create();
 	block->prev = prev->hash;
@@ -450,7 +460,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 	block->time_diff = prev->time_diff;
 	block->space_diff = prev->space_diff;
 	block->vdf_iters = vdf_point.first;
-	block->vdf_output = vdf_point.second;
+	block->vdf_output = vdf_point.second.output;
 
 	hash_t vdf_challenge;
 	if(!find_vdf_challenge(block, vdf_challenge)) {
@@ -464,17 +474,28 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 	}
 	const auto response = iter->second;
 	{
+		// set new time difficulty
+		auto iter = verified_vdfs.find(prev->vdf_iters);
+		if(iter != verified_vdfs.end()) {
+			const int64_t delta = vdf_point.second.time - iter->second.time;
+			if(delta > 0) {
+				double new_diff = double(prev->time_diff * params->block_time * 1e6) / delta;
+				new_diff = prev->time_diff * (1 - diff_update_gain) + new_diff * diff_update_gain;
+				block->time_diff = std::max<int64_t>(new_diff, 1);
+			}
+		}
+	}
+	if(response->score != params->target_score)
+	{
 		// set new space difficulty
 		int64_t update = 0;
-		if(response->score != params->target_score) {
-			const double delta = prev->space_diff * ((response->score < params->target_score ? 1 : -1) * diff_update_gain);
-			if(delta > 0 && delta < 1) {
-				update = 1;
-			} else if(delta < 0 && delta > -1) {
-				update = -1;
-			} else {
-				update = delta;
-			}
+		const double delta = prev->space_diff * ((response->score < params->target_score ? 1 : -1) * diff_update_gain);
+		if(delta > 0 && delta < 1) {
+			update = 1;
+		} else if(delta < 0 && delta > -1) {
+			update = -1;
+		} else {
+			update = delta;
 		}
 		const int64_t new_diff = prev->space_diff + update;
 		block->space_diff = std::max<int64_t>(new_diff, 1);
@@ -1011,7 +1032,7 @@ bool Node::find_vdf_output(const uint64_t vdf_iters, hash_t& vdf_output) const
 {
 	auto iter = verified_vdfs.find(vdf_iters);
 	if(iter != verified_vdfs.end()) {
-		vdf_output = iter->second;
+		vdf_output = iter->second.output;
 		return true;
 	}
 	return false;

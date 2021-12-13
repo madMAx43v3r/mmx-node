@@ -50,6 +50,11 @@ private:
 		std::shared_ptr<const Block> block;
 	};
 
+	struct vdf_point_t {
+		hash_t output;
+		int64_t time = 0;
+	};
+
 	struct change_log_t {
 		hash_t prev_state;
 		std::vector<hash_t> tx_added;
@@ -59,7 +64,7 @@ private:
 
 	void update();
 
-	bool make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<uint64_t, hash_t>& vdf_point);
+	bool make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<uint64_t, vdf_point_t>& vdf_point);
 
 	bool calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<const fork_t> fork, uint64_t& total_weight);
 
@@ -119,7 +124,7 @@ private:
 	std::unordered_map<hash_t, std::shared_ptr<const Contract>> contracts;
 	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_pool;
 
-	std::unordered_map<uint64_t, hash_t> verified_vdfs;							// [iters => output]
+	std::unordered_map<uint64_t, vdf_point_t> verified_vdfs;					// [iters => output]
 	std::unordered_map<hash_t, uint64_t> challange_diff;						// [challenge => space diff]
 	std::unordered_map<hash_t, std::shared_ptr<const ProofResponse>> proof_map;
 
