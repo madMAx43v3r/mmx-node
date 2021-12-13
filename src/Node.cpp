@@ -170,15 +170,15 @@ void Node::handle(std::shared_ptr<const ProofResponse> value)
 	if(!value->proof) {
 		return;
 	}
-	auto& prev = proof_map[value->challenge];
-	if(!prev || value->score < prev->score)
+	auto iter = proof_map.find(value->challenge);
+	if(iter == proof_map.end() || value->score < iter->second->score)
 	{
 		auto iter = challange_diff.find(value->challenge);
 		if(iter != challange_diff.end()) {
 			try {
 				const auto score = verify_proof(value->proof, value->challenge, iter->second);
 				if(score == value->score) {
-					prev = value;
+					proof_map[value->challenge] = value;
 				} else {
 					throw std::logic_error("score mismatch");
 				}
