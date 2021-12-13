@@ -490,7 +490,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 	{
 		// set new space difficulty
 		int64_t update = 0;
-		const double delta = prev->space_diff * (double(response->score < params->target_score ? 1 : -1) / params->max_diff_adjust);
+		const double delta = diff_block->space_diff * (double(response->score < params->target_score ? 1 : -1) / params->max_diff_adjust);
 		if(delta > 0 && delta < 1) {
 			update = 1;
 		} else if(delta < 0 && delta > -1) {
