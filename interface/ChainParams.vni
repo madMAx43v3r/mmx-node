@@ -7,7 +7,7 @@ class ChainParams {
 	uint tcp_port;
 	uint decimals = 6;
 	uint plot_filter = 10;
-	uint finality_delay = 6;				// number of blocks until history is fixed
+	uint finality_delay = 6;				// number of blocks until history is fixed (must be >= challenge_delay)
 	uint challenge_delay = 4;				// blocks until new challange is active (must be > 0)
 	uint challenge_interval = 64;			// challenge is for next N blocks
 	uint num_vdf_segments = 184;

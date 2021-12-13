@@ -374,7 +374,7 @@ void Node::update()
 					continue;
 				}
 			}
-			if(auto diff_block = find_prev_header(block, params->finality_delay - params->challenge_delay, true)) {
+			if(auto diff_block = find_prev_header(block, 1 + (params->finality_delay - params->challenge_delay), true)) {
 				value->space_diff = diff_block->space_diff;
 			} else {
 				continue;
@@ -463,6 +463,22 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 		return false;
 	}
 	const auto response = iter->second;
+	{
+		// set new space difficulty
+		int64_t update = 0;
+		if(response->score != params->target_score) {
+			const double delta = prev->space_diff * ((response->score < params->target_score ? 1 : -1) * diff_update_gain);
+			if(delta > 0 && delta < 1) {
+				update = 1;
+			} else if(delta < 0 && delta > -1) {
+				update = -1;
+			} else {
+				update = delta;
+			}
+		}
+		const int64_t new_diff = prev->space_diff + update;
+		block->space_diff = std::max<int64_t>(new_diff, 1);
+	}
 	block->proof = response->proof;
 
 	std::atomic<uint64_t> total_fees {0};
@@ -743,7 +759,8 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 
 	const auto fork = find_fork(block->hash);
 	Node::log(INFO) << "Committed height " << block->height << " with: ntx = " << block->tx_list.size()
-			<< ", score = " << (fork ? fork->proof_score : 0) << ", k = " << (block->proof ? block->proof->ksize : 0);
+			<< ", score = " << (fork ? fork->proof_score : 0) << ", k = " << (block->proof ? block->proof->ksize : 0)
+			<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff;
 
 	fork_tree.erase(block->hash);
 	purge_tree();
@@ -782,9 +799,6 @@ uint32_t Node::verify_proof(std::shared_ptr<const Block> block, const hash_t& vd
 		throw std::logic_error("invalid prev");
 	}
 	const auto diff_block = get_diff_header(block);
-	if(!diff_block) {
-		throw std::logic_error("invalid prev");
-	}
 
 	if(block->vdf_iters != prev->vdf_iters + diff_block->time_diff * params->time_diff_constant) {
 		throw std::logic_error("invalid vdf_iters");
