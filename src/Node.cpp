@@ -465,6 +465,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 	if(!find_vdf_challenge(block, vdf_challenge)) {
 		return false;
 	}
+	const auto diff_block = get_diff_header(block);
 	const auto challenge = get_challenge(block, vdf_challenge);
 
 	auto iter = proof_map.find(challenge);
@@ -478,9 +479,9 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 		if(iter != verified_vdfs.end()) {
 			const int64_t delta = vdf_point.second.time - iter->second.time;
 			if(delta > 0) {
-				double new_diff = double(prev->time_diff * params->block_time * 1e6) / delta;
+				double new_diff = double(diff_block->time_diff * params->block_time * 1e6) / delta;
 				const double gain = 1. / params->max_diff_adjust;
-				new_diff = prev->time_diff * (1 - gain) + new_diff * gain;
+				new_diff = diff_block->time_diff * (1 - gain) + new_diff * gain;
 				block->time_diff = std::max<int64_t>(new_diff, 1);
 			}
 		}
