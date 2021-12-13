@@ -556,7 +556,7 @@ void Node::validate(std::shared_ptr<const Block> block) const
 			throw std::logic_error("invalid difficulty");
 		}
 	}
-	if(block->tx_list.size() >= params->max_tx_count) {
+	if(block->tx_list.size() > params->max_tx_count) {
 		throw std::logic_error("too many transactions");
 	}
 	uint64_t base_spent = 0;
@@ -598,6 +598,9 @@ void Node::validate(std::shared_ptr<const Block> block) const
 
 uint64_t Node::validate(std::shared_ptr<const Transaction> tx, bool is_base) const
 {
+	if(tx->id != tx->calc_hash()) {
+		throw std::logic_error("invalid tx id");
+	}
 	if(is_base) {
 		if(!tx->inputs.empty()) {
 			throw std::logic_error("coin base cannot have inputs");
@@ -610,7 +613,7 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, bool is_base) con
 			throw std::logic_error("tx without input");
 		}
 	}
-	if(tx->outputs.size() >= params->max_tx_outputs) {
+	if(tx->outputs.size() > params->max_tx_outputs) {
 		throw std::logic_error("too many tx outputs");
 	}
 
