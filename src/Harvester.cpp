@@ -117,10 +117,6 @@ uint64_t Harvester::get_total_space() const
 
 void Harvester::reload()
 {
-	id_map.clear();
-	plot_map.clear();
-	total_bytes = 0;
-
 	std::vector<std::pair<std::shared_ptr<vnx::File>, std::shared_ptr<chiapos::DiskProver>>> plots;
 
 #pragma omp parallel for
@@ -146,6 +142,10 @@ void Harvester::reload()
 			}
 		}
 	}
+	id_map.clear();
+	plot_map.clear();
+	total_bytes = 0;
+
 	for(const auto& entry : plots)
 	{
 		const auto& file = entry.first;
