@@ -349,7 +349,6 @@ void Node::update()
 
 	// request next time points
 	{
-		bool made_block = false;
 		auto vdf_iters = peak->vdf_iters;
 		for(uint32_t i = 0; i <= params->finality_delay; ++i)
 		{
@@ -480,7 +479,8 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 			const int64_t delta = vdf_point.second.time - iter->second.time;
 			if(delta > 0) {
 				double new_diff = double(prev->time_diff * params->block_time * 1e6) / delta;
-				new_diff = prev->time_diff * (1 - diff_update_gain) + new_diff * diff_update_gain;
+				const double gain = 1. / params->max_diff_adjust;
+				new_diff = prev->time_diff * (1 - gain) + new_diff * gain;
 				block->time_diff = std::max<int64_t>(new_diff, 1);
 			}
 		}
@@ -489,7 +489,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 	{
 		// set new space difficulty
 		int64_t update = 0;
-		const double delta = prev->space_diff * ((response->score < params->target_score ? 1 : -1) * diff_update_gain);
+		const double delta = prev->space_diff * (double(response->score < params->target_score ? 1 : -1) / params->max_diff_adjust);
 		if(delta > 0 && delta < 1) {
 			update = 1;
 		} else if(delta < 0 && delta > -1) {
@@ -499,6 +499,16 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 		}
 		const int64_t new_diff = prev->space_diff + update;
 		block->space_diff = std::max<int64_t>(new_diff, 1);
+	}
+	{
+		const auto max_update = std::max<uint64_t>(prev->time_diff >> params->max_diff_adjust, 1);
+		block->time_diff = std::min(block->time_diff, prev->time_diff + max_update);
+		block->time_diff = std::max(block->time_diff, prev->time_diff - max_update);
+	}
+	{
+		const auto max_update = std::max<uint64_t>(prev->space_diff >> params->max_diff_adjust, 1);
+		block->space_diff = std::min(block->space_diff, prev->space_diff + max_update);
+		block->space_diff = std::max(block->space_diff, prev->space_diff - max_update);
 	}
 	block->proof = response->proof;
 
@@ -598,17 +608,21 @@ void Node::validate(std::shared_ptr<const Block> block) const
 	if(block->height != prev->height + 1) {
 		throw std::logic_error("invalid height");
 	}
+	if(block->time_diff == 0 || block->space_diff == 0) {
+		throw std::logic_error("invalid difficulty");
+	}
 	if(auto proof = block->proof) {
 		if(!block->farmer_sig || !block->farmer_sig->verify(proof->farmer_key, block->hash)) {
 			throw std::logic_error("invalid farmer signature");
 		}
-		// TODO: check time_diff + space_diff deltas
+		validate_diff_adjust(block->time_diff, prev->time_diff);
+		validate_diff_adjust(block->space_diff, prev->space_diff);
 	} else {
 		if(block->tx_base || !block->tx_list.empty()) {
 			throw std::logic_error("transactions not allowed");
 		}
 		if(block->time_diff != prev->time_diff || block->space_diff != prev->space_diff) {
-			throw std::logic_error("invalid difficulty");
+			throw std::logic_error("invalid difficulty adjustment");
 		}
 	}
 	if(block->tx_list.size() > params->max_tx_count) {
@@ -736,6 +750,17 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, bool is_base) con
 		throw std::logic_error("insufficient fee");
 	}
 	return fee_amount;
+}
+
+void Node::validate_diff_adjust(const uint64_t& block, const uint64_t& prev) const
+{
+	const auto max_update = std::max<uint64_t>(prev >> params->max_diff_adjust, 1);
+	if(block > prev && block - prev > max_update) {
+		throw std::logic_error("invalid difficulty adjustment");
+	}
+	if(block < prev && prev - block > max_update) {
+		throw std::logic_error("invalid difficulty adjustment");
+	}
 }
 
 void Node::commit(std::shared_ptr<const Block> block) noexcept

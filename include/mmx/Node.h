@@ -72,6 +72,8 @@ private:
 
 	uint64_t validate(std::shared_ptr<const Transaction> tx, bool is_base = false) const;
 
+	void validate_diff_adjust(const uint64_t& block, const uint64_t& prev) const;
+
 	void commit(std::shared_ptr<const Block> block) noexcept;
 
 	size_t purge_tree();

@@ -1,7 +1,8 @@
 {
 	"tcp_port": 12330,
 	"block_time": 2,
-	"plot_filter": 4,
+	"plot_filter": 2,
+	"max_diff_adjust": 5,
 	"min_ksize": 26,
 	"vdf_seed": "test0",
 	"reward_factor": {

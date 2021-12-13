@@ -63,7 +63,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 							if(score < best_score) {
 								if(auto proof = prover->get_full_proof(value->challenge.bytes, i)) {
 									best_proof = proof;
-									log(INFO) << "Found proof with score " << score << " for height " << value->height;
+									log(DEBUG) << "Found proof for height " << value->height << " with score " << score;
 								}
 							}
 						}
