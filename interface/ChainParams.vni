@@ -31,7 +31,7 @@ class ChainParams {
 	ulong initial_space_diff = 256;			// quality modulo
 	
 	ulong min_txfee_exec = 100000;			// per operation
-	ulong min_txfee_inout = 2000;			// per input / output
+	ulong min_txfee_inout = 1000;			// per input / output
 	
 	string vdf_seed;
 	
