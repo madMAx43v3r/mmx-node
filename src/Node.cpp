@@ -465,7 +465,6 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 	if(!find_vdf_challenge(block, vdf_challenge)) {
 		return false;
 	}
-	const auto diff_block = get_diff_header(block);
 	const auto challenge = get_challenge(block, vdf_challenge);
 
 	auto iter = proof_map.find(challenge);
@@ -477,26 +476,33 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 		// set new time difficulty
 		auto iter = verified_vdfs.find(prev->vdf_iters);
 		if(iter != verified_vdfs.end()) {
-			const int64_t delta = vdf_point.second.time - iter->second.time;
-			if(delta > 0) {
-				double new_diff = double(diff_block->time_diff * params->block_time * 1e6) / delta;
-				const double gain = 1. / params->max_diff_adjust;
-				new_diff = diff_block->time_diff * (1 - gain) + new_diff * gain;
-				block->time_diff = std::max<int64_t>(new_diff, 1);
+			const int64_t time_delta = vdf_point.second.time - iter->second.time;
+			if(time_delta > 0) {
+				const double gain = 0.1;
+				double new_diff = params->block_time * ((block->vdf_iters - prev->vdf_iters) / params->time_diff_constant) / (time_delta * 1e-6);
+				new_diff = prev->time_diff * (1 - gain) + new_diff * gain;
+				block->time_diff = std::max<int64_t>(new_diff + 0.5, 1);
 			}
 		}
 	}
-	if(response->score != params->target_score)
 	{
 		// set new space difficulty
+		double delta = prev->space_diff;
+		if(response->score < params->target_score) {
+			delta *= (params->target_score - response->score);
+		} else {
+			delta *= -1 * double(response->score - params->target_score);
+		}
+		delta /= params->target_score;
+		delta /= (1 << params->max_diff_adjust);
+
 		int64_t update = 0;
-		const double delta = diff_block->space_diff * (double(response->score < params->target_score ? 1 : -1) / params->max_diff_adjust);
 		if(delta > 0 && delta < 1) {
 			update = 1;
 		} else if(delta < 0 && delta > -1) {
 			update = -1;
 		} else {
-			update = delta;
+			update = delta + 0.5;
 		}
 		const int64_t new_diff = prev->space_diff + update;
 		block->space_diff = std::max<int64_t>(new_diff, 1);
