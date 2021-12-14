@@ -10,10 +10,10 @@ class ChainParams {
 	uint finality_delay = 6;				// number of blocks until history is fixed (must be >= challenge_delay)
 	uint challenge_delay = 4;				// blocks until new challange is active (must be > 0)
 	uint challenge_interval = 64;			// challenge is for next N blocks
-	uint max_diff_adjust = 8;				// per block (1/2^x)
+	uint max_diff_adjust = 10;				// per block (1/2^x)
 	uint num_vdf_segments = 184;
-	uint score_threshold = 256;
-	uint target_score = 32;					// defines how many competing blocks are created
+	uint score_threshold = 1000;
+	uint target_score = 200;				// defines how many competing blocks are created (must be less than score_threshold)
 	
 	uint min_ksize = 30;
 	uint max_ksize = 42;

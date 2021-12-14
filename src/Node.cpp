@@ -571,7 +571,8 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 	block->finalize();
 
 	FarmerClient farmer(response->farmer_addr);
-	const auto final_reward = std::max(calc_block_reward(block), uint64_t(total_fees));
+	const auto block_reward = calc_block_reward(block);
+	const auto final_reward = std::max(std::max(block_reward, params->min_reward), uint64_t(total_fees));
 	const auto result = farmer.sign_block(block, final_reward);
 
 	block->tx_base = result.first;
@@ -582,7 +583,9 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 	proof_map.erase(iter);
 
 	log(INFO) << "Created block at height " << block->height << " with: ntx = " << block->tx_list.size()
-			<< ", score = " << response->score << ", reward = " << final_reward / pow(10, params->decimals) << " MMX";
+			<< ", score = " << response->score << ", reward = " << final_reward / pow(10, params->decimals) << " MMX"
+			<< ", nominal = " << block_reward / pow(10, params->decimals) << " MMX"
+			<< ", fees = " << total_fees / pow(10, params->decimals) << " MMX";
 	return true;
 }
 
@@ -666,7 +669,8 @@ void Node::validate(std::shared_ptr<const Block> block) const
 		throw failed_ex;
 	}
 
-	const auto base_allowed = std::max(calc_block_reward(block), uint64_t(total_fees));
+	const auto base_reward = calc_block_reward(block);
+	const auto base_allowed = std::max(std::max(base_reward, params->min_reward), uint64_t(total_fees));
 	if(base_spent > base_allowed) {
 		throw std::logic_error("coin base over-spend");
 	}
