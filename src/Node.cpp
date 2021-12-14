@@ -376,7 +376,7 @@ void Node::update()
 			auto value = Challenge::create();
 			value->height = block->height + params->challenge_delay;
 			{
-				const auto height = value->height - (value->height % params->challenge_interval);
+				const auto height = block->height - (block->height % params->challenge_interval);
 				if(auto prev = find_prev_header(block, block->height - height)) {
 					value->challenge = hash_t(prev->hash + block->vdf_output);
 				} else {
