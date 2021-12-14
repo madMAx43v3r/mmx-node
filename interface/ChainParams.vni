@@ -13,7 +13,7 @@ class ChainParams {
 	uint max_diff_adjust = 10;				// per block (1/2^x)
 	uint num_vdf_segments = 184;
 	uint score_threshold = 1000;
-	uint target_score = 200;				// defines how many competing blocks are created (must be less than score_threshold)
+	uint target_score = 125;				// defines how many competing blocks are created (must be less than score_threshold)
 	
 	uint min_ksize = 30;
 	uint max_ksize = 42;
