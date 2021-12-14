@@ -74,20 +74,22 @@ void Wallet::close_wallet()
 	wallet = nullptr;
 }
 
+static
 uint64_t gather_inputs(	std::shared_ptr<Transaction>tx,
-						const std::vector<std::pair<utxo_key_t, tx_out_t>>& utxo_list,
+						std::unordered_map<utxo_key_t, tx_out_t>& utxo_map,
 						const uint64_t amount, const addr_t& contract)
 {
 	uint64_t output = amount;
 	uint64_t change = 0;
 
-	for(const auto& entry : utxo_list)
+	for(auto iter = utxo_map.begin(); iter != utxo_map.end();)
 	{
 		if(output == 0) {
 			break;
 		}
-		const auto& out = entry.second;
+		const auto& out = iter->second;
 		if(out.contract != contract) {
+			iter++;
 			continue;
 		}
 		if(out.amount > output) {
@@ -97,8 +99,9 @@ uint64_t gather_inputs(	std::shared_ptr<Transaction>tx,
 			output -= out.amount;
 		}
 		tx_in_t in;
-		in.prev = entry.first;
+		in.prev = iter->first;
 		tx->inputs.push_back(in);
+		iter = utxo_map.erase(iter);
 	}
 	if(output != 0) {
 		throw std::logic_error("not enough funds");
@@ -118,18 +121,15 @@ hash_t Wallet::send(const uint64_t& amount, const addr_t& dst_addr, const addr_t
 	// get a list of all utxo we could use
 	const auto all_utxos = node->get_utxo_list(wallet->get_all_addresses());
 
-	// remove any utxo we have already consumed (but are possibly not finalized yet)
-	std::vector<std::pair<utxo_key_t, tx_out_t>> utxo_list;
-	for(const auto& entry : all_utxos) {
-		if(!sent_utxo_map.count(entry.first)) {
-			utxo_list.push_back(entry);
-		}
-	}
-
-	// create a map so we can later find the keys for an utxo
 	std::unordered_map<utxo_key_t, addr_t> addr_map;
-	for(const auto& entry : utxo_list) {
-		addr_map[entry.first] = entry.second.address;
+	std::unordered_map<utxo_key_t, tx_out_t> utxo_map;
+
+	// remove any utxo we have already consumed (but are possibly not finalized yet)
+	for(const auto& entry : all_utxos) {
+		if(!spent_utxo_map.count(entry.first)) {
+			utxo_map.insert(entry);
+			addr_map[entry.first] = entry.second.address;
+		}
 	}
 
 	auto tx = Transaction::create();
@@ -141,7 +141,7 @@ hash_t Wallet::send(const uint64_t& amount, const addr_t& dst_addr, const addr_t
 		out.amount = amount;
 		tx->outputs.push_back(out);
 	}
-	uint64_t change = gather_inputs(tx, utxo_list, amount, contract);
+	uint64_t change = gather_inputs(tx, utxo_map, amount, contract);
 
 	if(contract != addr_t() && change > 0)
 	{
@@ -158,7 +158,7 @@ hash_t Wallet::send(const uint64_t& amount, const addr_t& dst_addr, const addr_t
 	while(change < tx_fees + params->min_txfee_inout)
 	{
 		// gather inputs for tx fee
-		change += gather_inputs(tx, utxo_list, (tx_fees + params->min_txfee_inout) - change, addr_t());
+		change += gather_inputs(tx, utxo_map, (tx_fees + params->min_txfee_inout) - change, addr_t());
 		tx_fees = tx->calc_min_fee(params);
 	}
 	if(change > tx_fees + params->min_txfee_inout)
@@ -196,7 +196,7 @@ hash_t Wallet::send(const uint64_t& amount, const addr_t& dst_addr, const addr_t
 
 	// store used utxos
 	for(const auto& in : tx->inputs) {
-		sent_utxo_map[in.prev] = tx->id;
+		spent_utxo_map[in.prev] = tx->id;
 	}
 	return tx->id;
 }

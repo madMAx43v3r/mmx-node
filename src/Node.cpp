@@ -661,7 +661,7 @@ void Node::validate(std::shared_ptr<const Block> block) const
 	}
 	uint64_t base_spent = 0;
 	if(const auto& tx = block->tx_base) {
-		base_spent = validate(tx, true);
+		base_spent = validate(tx, block);
 	}
 	{
 		std::unordered_set<utxo_key_t> inputs;
@@ -697,17 +697,21 @@ void Node::validate(std::shared_ptr<const Block> block) const
 	}
 }
 
-uint64_t Node::validate(std::shared_ptr<const Transaction> tx, bool is_base) const
+uint64_t Node::validate(std::shared_ptr<const Transaction> tx, std::shared_ptr<const Block> block) const
 {
 	if(tx->id != tx->calc_hash()) {
 		throw std::logic_error("invalid tx id");
 	}
-	if(is_base) {
-		if(!tx->inputs.empty()) {
-			throw std::logic_error("coin base cannot have inputs");
-		}
+	if(block) {
 		if(!tx->execute.empty()) {
 			throw std::logic_error("coin base cannot have operations");
+		}
+		if(tx->inputs.size() != 1) {
+			throw std::logic_error("coin base must have one input");
+		}
+		const auto& in = tx->inputs[0];
+		if(in.prev.txid != block->prev || in.prev.index || in.solution) {
+			throw std::logic_error("invalid coin base input");
 		}
 	} else {
 		if(tx->inputs.empty()) {
@@ -721,45 +725,47 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, bool is_base) con
 	uint64_t base_amount = 0;
 	std::unordered_map<hash_t, uint64_t> amounts;
 
-	for(const auto& in : tx->inputs)
-	{
-		auto iter = utxo_map.find(in.prev);
-		if(iter == utxo_map.end()) {
-			throw std::logic_error("utxo not found");
-		}
-		const auto& out = iter->second;
-
-		// verify signature
-		if(!in.solution) {
-			throw std::logic_error("missing solution");
-		}
+	if(!block) {
+		for(const auto& in : tx->inputs)
 		{
-			auto iter = contracts.find(out.address);
-			if(iter != contracts.end()) {
-				if(!iter->second->validate(in.solution, tx->id)) {
-					throw std::logic_error("invalid solution");
+			auto iter = utxo_map.find(in.prev);
+			if(iter == utxo_map.end()) {
+				throw std::logic_error("utxo not found");
+			}
+			const auto& out = iter->second;
+
+			// verify signature
+			if(!in.solution) {
+				throw std::logic_error("missing solution");
+			}
+			{
+				auto iter = contracts.find(out.address);
+				if(iter != contracts.end()) {
+					if(!iter->second->validate(in.solution, tx->id)) {
+						throw std::logic_error("invalid solution");
+					}
+				}
+				else {
+					contract::PubKey simple;
+					simple.pubkey_hash = out.address;
+					if(!simple.validate(in.solution, tx->id)) {
+						throw std::logic_error("invalid solution");
+					}
 				}
 			}
-			else {
-				contract::PubKey simple;
-				simple.pubkey_hash = out.address;
-				if(!simple.validate(in.solution, tx->id)) {
-					throw std::logic_error("invalid solution");
-				}
-			}
+			amounts[out.contract] += out.amount;
 		}
-		amounts[out.contract] += out.amount;
-	}
-	for(const auto& op : tx->execute)
-	{
-		// TODO
+		for(const auto& op : tx->execute)
+		{
+			// TODO
+		}
 	}
 	for(const auto& out : tx->outputs)
 	{
 		if(out.amount == 0) {
 			throw std::logic_error("zero tx output");
 		}
-		if(is_base) {
+		if(block) {
 			if(out.contract != hash_t()) {
 				throw std::logic_error("invalid coin base output");
 			}
@@ -773,7 +779,7 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, bool is_base) con
 			value -= out.amount;
 		}
 	}
-	if(is_base) {
+	if(block) {
 		return base_amount;
 	}
 	const auto fee_amount = amounts[hash_t()];

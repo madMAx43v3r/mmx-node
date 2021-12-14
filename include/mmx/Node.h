@@ -70,7 +70,7 @@ private:
 
 	void validate(std::shared_ptr<const Block> block) const;
 
-	uint64_t validate(std::shared_ptr<const Transaction> tx, bool is_base = false) const;
+	uint64_t validate(std::shared_ptr<const Transaction> tx, std::shared_ptr<const Block> block = nullptr) const;
 
 	void validate_diff_adjust(const uint64_t& block, const uint64_t& prev) const;
 

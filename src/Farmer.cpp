@@ -65,6 +65,11 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& rew
 
 	auto base = Transaction::create();
 	auto amount_left = reward_amount;
+	{
+		tx_in_t in;
+		in.prev.txid = block->prev;
+		base->inputs.push_back(in);
+	}
 	if(project_addr && amount_left > 0)
 	{
 		tx_out_t out;

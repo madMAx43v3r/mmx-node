@@ -50,7 +50,7 @@ private:
 	std::shared_ptr<ECDSA_Wallet> wallet;
 	std::vector<std::shared_ptr<BLS_Wallet>> bls_wallets;
 
-	mutable std::unordered_map<utxo_key_t, hash_t> sent_utxo_map;
+	mutable std::unordered_map<utxo_key_t, hash_t> spent_utxo_map;
 
 	std::shared_ptr<const ChainParams> params;
 
