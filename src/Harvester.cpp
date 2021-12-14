@@ -170,9 +170,10 @@ void Harvester::reload()
 			}
 		}
 	}
+	total_bytes = 0;
 	id_map.clear();
 	plot_map.clear();
-	total_bytes = 0;
+	already_checked.clear();
 
 	for(const auto& entry : plots)
 	{
