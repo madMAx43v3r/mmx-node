@@ -21,7 +21,7 @@ class ChainParams {
 	uint max_tx_count = 16384;
 	uint max_tx_outputs = 65536;
 	
-	ulong min_reward = 100000;
+	ulong min_reward = 200000;
 	ulong_fraction_t reward_factor;			// reward = (diff * value) / inverse;
 	
 	ulong time_diff_constant = 10000;
@@ -31,7 +31,7 @@ class ChainParams {
 	ulong initial_space_diff = 256;			// quality modulo
 	
 	ulong min_txfee_exec = 100000;			// per operation
-	ulong min_txfee_inout = 1000;			// per input / output
+	ulong min_txfee_inout = 500;			// per input / output
 	
 	string vdf_seed;
 	
