@@ -710,7 +710,7 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, std::shared_ptr<c
 			throw std::logic_error("coin base must have one input");
 		}
 		const auto& in = tx->inputs[0];
-		if(in.prev.txid != block->prev || in.prev.index || in.solution) {
+		if(in.prev.txid != hash_t(block->prev) || in.prev.index || in.solution) {
 			throw std::logic_error("invalid coin base input");
 		}
 	} else {
