@@ -519,8 +519,8 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 	}
 	block->proof = response->proof;
 
-	std::atomic<uint64_t> total_fees {0};
 	std::unordered_set<hash_t> invalid;
+	std::unordered_set<hash_t> postpone;
 	std::unordered_set<utxo_key_t> spent;
 	std::vector<std::shared_ptr<const Transaction>> tx_list;
 
@@ -544,11 +544,26 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 			log(WARN) << "TX validation failed with: " << ex.what();
 		}
 	}
+	std::vector<uint64_t> tx_fees(tx_list.size());
 
 #pragma omp parallel for
-	for(const auto& tx : tx_list) {
+	for(size_t i = 0; i < tx_list.size(); ++i)
+	{
+		const auto& tx = tx_list[i];
+		// check if tx depends on another one which is not in a block yet
+		bool depends = false;
+		for(const auto& in : tx->inputs) {
+			if(tx_pool.count(in.prev.txid) && !tx_map.count(in.prev.txid)) {
+				depends = true;
+			}
+		}
+		if(depends) {
+#pragma omp critical
+			postpone.insert(tx->id);
+			continue;
+		}
 		try {
-			total_fees += validate(tx);
+			tx_fees[i] = validate(tx);
 		}
 		catch(const std::exception& ex) {
 #pragma omp critical
@@ -556,10 +571,16 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 			log(WARN) << "TX validation failed with: " << ex.what();
 		}
 	}
-	for(const auto& tx : tx_list) {
-		if(!invalid.count(tx->id)) {
+
+	uint64_t total_fees = 0;
+	for(size_t i = 0; i < tx_list.size(); ++i)
+	{
+		const auto& tx = tx_list[i];
+		if(!invalid.count(tx->id) && !postpone.count(tx->id))
+		{
 			if(block->tx_list.size() < params->max_tx_count) {
 				block->tx_list.push_back(tx);
+				total_fees += tx_fees[i];
 			} else {
 				break;
 			}
