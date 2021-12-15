@@ -43,6 +43,7 @@ void Node::main()
 		point.time = vnx::get_time_micros();
 		verified_vdfs[0] = point;
 	}
+	vnx::File fork_line(storage_path + "fork_line.dat");
 
 	vdf_chain = std::make_shared<vnx::File>(storage_path + "vdf_chain.dat");
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
@@ -67,9 +68,7 @@ void Node::main()
 				}
 			}
 			catch(const std::exception& ex) {
-				if(last_pos > 0) {
-					log(WARN) << "Failed to read VDF: " << ex.what();
-				}
+				log(WARN) << "Failed to read VDF: " << ex.what();
 				break;
 			}
 		}
@@ -98,21 +97,40 @@ void Node::main()
 				}
 			}
 			catch(const std::exception& ex) {
-				if(last_pos > 0) {
-					log(WARN) << "Failed to read block: " << ex.what();
-				}
+				log(WARN) << "Failed to read block: " << ex.what();
 				break;
 			}
 		}
 		block_chain->seek_to(last_pos);
-
-		if(auto block = find_header(state_hash)) {
-			log(INFO) << "Loaded " << block->height + 1 << " blocks from disk.";
-		}
 	} else {
 		block_chain->open("ab");
 	}
 
+	if(fork_line.exists())
+	{
+		fork_line.open("rb");
+		while(true) {
+			auto& in = fork_line.in;
+			try {
+				if(auto value = vnx::read(in)) {
+					if(auto block = std::dynamic_pointer_cast<Block>(value)) {
+						handle(block);
+						update();
+					}
+				} else {
+					break;
+				}
+			}
+			catch(const std::exception& ex) {
+				log(WARN) << "Failed to read block: " << ex.what();
+				break;
+			}
+		}
+	}
+
+	if(auto block = find_header(state_hash)) {
+		log(INFO) << "Loaded " << block->height + 1 << " blocks from disk.";
+	}
 	is_replay = false;
 
 	if(state_hash == hash_t())
@@ -138,6 +156,13 @@ void Node::main()
 	set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
 
 	Super::main();
+
+	fork_line.open("wb");
+	for(const auto& fork : get_fork_line()) {
+		vnx::write(fork_line.out, fork->block);
+	}
+	vnx::write(fork_line.out, nullptr);
+	fork_line.close();
 
 	vnx::write(vdf_chain->out, nullptr);
 	vnx::write(block_chain->out, nullptr);
@@ -362,14 +387,7 @@ void Node::update()
 		}
 
 		// we have a new winner
-		std::list<std::shared_ptr<fork_t>> fork_line;
-		{
-			auto fork = best_fork;
-			while(fork) {
-				fork_line.push_front(fork);
-				fork = fork->prev.lock();
-			}
-		}
+		const auto fork_line = get_fork_line(best_fork);
 
 		// bring state back in line with new fork
 		while(true) {
@@ -434,6 +452,9 @@ void Node::update()
 		forked_at = nullptr;
 	}
 
+	if(is_replay) {
+		return;
+	}
 	const auto peak = find_header(state_hash);
 	if(!peak) {
 		log(WARN) << "Have no peak!";
@@ -702,6 +723,17 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 			<< ", nominal = " << block_reward / pow(10, params->decimals) << " MMX"
 			<< ", fees = " << total_fees / pow(10, params->decimals) << " MMX";
 	return true;
+}
+
+std::list<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<fork_t> fork_head)
+{
+	std::list<std::shared_ptr<fork_t>> line;
+	auto fork = fork_head ? fork_head : find_fork(state_hash);
+	while(fork) {
+		line.push_front(fork);
+		fork = fork->prev.lock();
+	}
+	return line;
 }
 
 bool Node::calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<const fork_t> fork, uint64_t& total_weight)
