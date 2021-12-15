@@ -460,6 +460,11 @@ void Node::update()
 		log(WARN) << "Have no peak!";
 		return;
 	}
+	if(!prev_peak || peak->hash != prev_peak->hash) {
+		const auto fork = find_fork(peak->hash);
+		log(INFO) << "New peak at height " << peak->height << " with score " << (fork ? std::to_string(fork->proof_score) : "?")
+				<< (did_fork ? " (forked at " + std::to_string(forked_at ? forked_at->height : -1) + ")" : "");
+	}
 
 	// request next time points
 	{
@@ -485,7 +490,7 @@ void Node::update()
 	// publish challenges for next blocks
 	{
 		auto block = peak;
-		for(uint32_t i = 0; block && i < params->challenge_delay; ++i)
+		for(uint32_t i = 0; block && i <= params->challenge_delay; ++i)
 		{
 			auto value = Challenge::create();
 			value->height = block->height + params->challenge_delay;
@@ -555,13 +560,6 @@ void Node::update()
 			const auto diff_block = get_diff_header(peak, true);
 			vdf_iters += diff_block->time_diff * params->time_diff_constant;
 		}
-	}
-
-	if(!prev_peak || peak->hash != prev_peak->hash)
-	{
-		const auto fork = find_fork(peak->hash);
-		log(INFO) << "New peak at height " << peak->height << " with score " << (fork ? std::to_string(fork->proof_score) : "?")
-				<< (did_fork ? " (forked at " + std::to_string(forked_at ? forked_at->height : -1) + ")" : "");
 	}
 }
 
