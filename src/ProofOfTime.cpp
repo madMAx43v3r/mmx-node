@@ -46,5 +46,18 @@ uint64_t ProofOfTime::get_num_iters() const
 	return sum;
 }
 
+std::shared_ptr<const ProofOfTime> ProofOfTime::compressed() const
+{
+	auto out = ProofOfTime::create();
+	out->start = start;
+	{
+		time_segment_t seg;
+		seg.num_iters = get_num_iters();
+		seg.output = get_output();
+		out->segments.push_back(seg);
+	}
+	return out;
+}
+
 
 } // mmx

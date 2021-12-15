@@ -268,7 +268,7 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 		verified_vdfs[vdf_iters] = point;
 
 		if(!is_replay) {
-			vnx::write(vdf_chain->out, proof);
+			vnx::write(vdf_chain->out, proof->compressed());
 		}
 		{
 			auto point = TimePoint::create();
