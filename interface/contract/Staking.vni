@@ -1,0 +1,9 @@
+package mmx.contract;
+
+import mmx.addr_t;
+
+class Staking extends Locked {
+	
+	addr_t contract;		// contract being staked for
+	
+}

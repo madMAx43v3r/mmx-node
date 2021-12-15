@@ -2,9 +2,7 @@ package mmx.contract;
 
 enum input_e {
 	
-	CHAIN_HEIGHT,					// including deficits
-	CHAIN_TIME_WEIGHT,				// total time difficulty sum
-	CHAIN_SPACE_WEIGHT,				// total space difficulty sum
-	CHAIN_SPACETIME_WEIGHT,			// total space * time difficulty sum
+	CHAIN_HEIGHT,					// absolute height
+	DELTA_HEIGHT,					// relative time delay
 	
 }
