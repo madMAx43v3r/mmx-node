@@ -690,7 +690,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 		const auto& tx = tx_list[i];
 		if(!invalid.count(tx->id) && !postpone.count(tx->id))
 		{
-			if(block->tx_list.size() < params->max_tx_count) {
+			if(total_fees + tx_fees[i] < params->max_block_cost) {
 				block->tx_list.push_back(tx);
 				total_fees += tx_fees[i];
 			} else {
@@ -780,9 +780,6 @@ void Node::validate(std::shared_ptr<const Block> block) const
 			throw std::logic_error("invalid difficulty adjustment");
 		}
 	}
-	if(block->tx_list.size() > params->max_tx_count) {
-		throw std::logic_error("too many transactions");
-	}
 	uint64_t base_spent = 0;
 	if(const auto& tx = block->tx_base) {
 		base_spent = validate(tx, block);
@@ -813,6 +810,9 @@ void Node::validate(std::shared_ptr<const Block> block) const
 	if(failed_ex) {
 		throw failed_ex;
 	}
+	if(total_fees > params->max_block_cost) {
+		throw std::logic_error("block cost too high");
+	}
 
 	const auto base_reward = calc_block_reward(block);
 	const auto base_allowed = std::max(std::max(base_reward, params->min_reward), uint64_t(total_fees));
@@ -834,13 +834,16 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, std::shared_ptr<c
 			throw std::logic_error("coin base must have one input");
 		}
 		const auto& in = tx->inputs[0];
-		if(in.prev.txid != hash_t(block->prev) || in.prev.index || in.solution) {
+		if(in.prev.txid != hash_t(block->prev) || in.prev.index != 0) {
 			throw std::logic_error("invalid coin base input");
 		}
 	} else {
 		if(tx->inputs.empty()) {
 			throw std::logic_error("tx without input");
 		}
+	}
+	if(tx->inputs.size() > params->max_tx_inputs) {
+		throw std::logic_error("too many tx inputs");
 	}
 	if(tx->outputs.size() > params->max_tx_outputs) {
 		throw std::logic_error("too many tx outputs");
@@ -859,20 +862,21 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, std::shared_ptr<c
 			const auto& out = iter->second;
 
 			// verify signature
-			if(!in.solution) {
+			const auto solution = tx->get_solution(in.solution);
+			if(!solution) {
 				throw std::logic_error("missing solution");
 			}
 			{
 				auto iter = contracts.find(out.address);
 				if(iter != contracts.end()) {
-					if(!iter->second->validate(in.solution, tx->id)) {
+					if(!iter->second->validate(solution, tx->id)) {
 						throw std::logic_error("invalid solution");
 					}
 				}
 				else {
 					contract::PubKey simple;
 					simple.pubkey_hash = out.address;
-					if(!simple.validate(in.solution, tx->id)) {
+					if(!simple.validate(solution, tx->id)) {
 						throw std::logic_error("invalid solution");
 					}
 				}

@@ -75,7 +75,7 @@ void Wallet::close_wallet()
 }
 
 static
-uint64_t gather_inputs(	std::shared_ptr<Transaction>tx,
+uint64_t gather_inputs(	std::shared_ptr<Transaction> tx,
 						std::unordered_map<utxo_key_t, tx_out_t>& utxo_map,
 						const uint64_t amount, const addr_t& contract)
 {
@@ -172,6 +172,8 @@ hash_t Wallet::send(const uint64_t& amount, const addr_t& dst_addr, const addr_t
 	}
 	tx->finalize();
 
+	std::unordered_map<addr_t, uint32_t> solution_map;
+
 	for(auto& in : tx->inputs)
 	{
 		// sign all inputs
@@ -179,12 +181,21 @@ hash_t Wallet::send(const uint64_t& amount, const addr_t& dst_addr, const addr_t
 		if(iter == addr_map.end()) {
 			throw std::logic_error("cannot sign input");
 		}
+		auto iter2 = solution_map.find(iter->second);
+		if(iter2 != solution_map.end()) {
+			// re-use solution
+			in.solution = iter2->second;
+			continue;
+		}
 		const auto& keys = wallet->get_keypair(iter->second);
 
 		auto sol = solution::PubKey::create();
 		sol->pubkey = keys.second;
 		sol->signature = signature_t::sign(keys.first, tx->id);
-		in.solution = sol;
+
+		in.solution = tx->solutions.size();
+		solution_map[iter->second] = in.solution;
+		tx->solutions.push_back(sol);
 	}
 	{
 		std::stringstream ss;

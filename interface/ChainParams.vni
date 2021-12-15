@@ -18,8 +18,9 @@ class ChainParams {
 	uint min_ksize = 30;
 	uint max_ksize = 42;
 	
-	uint max_tx_count = 16384;
-	uint max_tx_outputs = 65536;
+	uint max_tx_inputs = 1048576;
+	uint max_tx_outputs = 1048576;
+	ulong max_block_cost = 1000000000;
 	
 	ulong min_reward = 200000;
 	ulong_fraction_t reward_factor;			// reward = (diff * value) / inverse;

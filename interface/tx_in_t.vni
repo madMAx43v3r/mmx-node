@@ -4,6 +4,6 @@ struct tx_in_t {
 	
 	utxo_key_t prev;
 	
-	Solution* solution;
+	uint solution = -1;
 	
 }

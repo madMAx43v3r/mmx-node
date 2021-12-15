@@ -4,6 +4,6 @@ struct utxo_key_t {
 	
 	hash_t txid;
 	
-	ushort index;
+	uint index;
 	
 }
