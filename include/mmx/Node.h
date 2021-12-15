@@ -52,7 +52,7 @@ private:
 
 	struct vdf_point_t {
 		hash_t output;
-		int64_t time = 0;
+		int64_t recv_time = 0;
 	};
 
 	struct change_log_t {

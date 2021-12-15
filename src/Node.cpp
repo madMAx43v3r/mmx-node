@@ -40,7 +40,7 @@ void Node::main()
 	{
 		vdf_point_t point;
 		point.output = hash_t(params->vdf_seed);
-		point.time = vnx::get_time_micros();
+		point.recv_time = vnx::get_time_micros();
 		verified_vdfs[0] = point;
 	}
 	vnx::File fork_line(storage_path + "fork_line.dat");
@@ -59,7 +59,7 @@ void Node::main()
 				if(auto value = vnx::read(in)) {
 					if(auto proof = std::dynamic_pointer_cast<ProofOfTime>(value)) {
 						vdf_point_t point;
-						point.time = vnx::get_time_micros();
+						point.recv_time = vnx::get_time_micros();
 						point.output = proof->get_output();
 						verified_vdfs[proof->start + proof->get_num_iters()] = point;
 					}
@@ -264,7 +264,7 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 
 		vdf_point_t point;
 		point.output = proof->get_output();
-		point.time = vnx_sample ? vnx_sample->recv_time : vnx::get_time_micros();
+		point.recv_time = vnx_sample ? vnx_sample->recv_time : vnx::get_time_micros();
 		verified_vdfs[vdf_iters] = point;
 
 		if(!is_replay) {
@@ -277,7 +277,7 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 			publish(point, output_verified_points, BLOCKING);
 		}
 		log(INFO) << "Verified VDF at " << vdf_iters << " iterations, delta = "
-				<< (point.time - prev.time) / 1e6 << " sec";
+				<< (point.recv_time - prev.recv_time) / 1e6 << " sec";
 
 		update();
 	}
@@ -588,7 +588,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 		// set new time difficulty
 		auto iter = verified_vdfs.find(prev->vdf_iters);
 		if(iter != verified_vdfs.end()) {
-			const int64_t time_delta = vdf_point.second.time - iter->second.time;
+			const int64_t time_delta = vdf_point.second.recv_time - iter->second.recv_time;
 			if(time_delta > 0) {
 				const double gain = 0.1;
 				double new_diff = params->block_time * ((block->vdf_iters - prev->vdf_iters) / params->time_diff_constant) / (time_delta * 1e-6);
