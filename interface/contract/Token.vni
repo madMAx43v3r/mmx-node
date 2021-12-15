@@ -10,7 +10,7 @@ class Token extends Delegated {
 	
 	addr_t info_addr;
 	
-	map<addr_t, ulong_fraction_t> stake_mint;
+	map<addr_t, ulong_fraction_t> stake_mint;			// [contract => mint factor]
 	
 	
 //	bool is_valid() const;

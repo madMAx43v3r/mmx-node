@@ -2,9 +2,7 @@ package mmx.contract;
 
 class Locked extends mmx.Contract {
 	
-	input_e type;
-	
-	ulong threshold;
+	Condition* condition;
 	
 	
 //	bool is_valid() const;
