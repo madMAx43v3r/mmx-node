@@ -6,4 +6,6 @@ class Staking extends Locked {
 	
 	addr_t contract;		// contract being staked for
 	
+	addr_t reward;			// reward address
+	
 }

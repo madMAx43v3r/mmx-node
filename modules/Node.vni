@@ -20,6 +20,16 @@ module Node {
 	string storage_path;
 	
 	
+	uint get_height() const;
+	
+	Block* get_block(hash_t hash) const;
+	
+	Block* get_block_at(uint height) const;
+	
+	hash_t get_block_hash(uint height) const;
+	
+	Transaction* get_transaction(hash_t id) const;
+	
 	void add_transaction(Transaction* tx);
 	
 	ulong get_balance(addr_t address, addr_t contract) const;

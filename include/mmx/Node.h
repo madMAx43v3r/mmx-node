@@ -24,6 +24,16 @@ protected:
 
 	void main() override;
 
+	uint32_t get_height() const override;
+
+	std::shared_ptr<const Block> get_block(const hash_t& hash) const override;
+
+	std::shared_ptr<const Block> get_block_at(const uint32_t& height) const override;
+
+	hash_t get_block_hash(const uint32_t& height) const override;
+
+	std::shared_ptr<const Transaction> get_transaction(const hash_t& id) const override;
+
 	void add_transaction(std::shared_ptr<const Transaction> tx) override;
 
 	uint64_t get_balance(const addr_t& address, const addr_t& contract) const override;
@@ -68,7 +78,7 @@ private:
 
 	bool calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<const fork_t> fork, uint64_t& total_weight);
 
-	std::list<std::shared_ptr<Node::fork_t>> get_fork_line(std::shared_ptr<fork_t> fork_head = nullptr);
+	std::vector<std::shared_ptr<Node::fork_t>> get_fork_line(std::shared_ptr<fork_t> fork_head = nullptr) const;
 
 	void validate(std::shared_ptr<const Block> block) const;
 
@@ -117,12 +127,13 @@ private:
 	hash_t state_hash;
 	std::list<std::shared_ptr<const change_log_t>> change_log;
 
-	std::unordered_map<hash_t, size_t> finalized;								// [block hash => height]
-	std::map<size_t, std::shared_ptr<const BlockHeader>> history;				// [height => block]
+	std::unordered_map<hash_t, uint32_t> hash_index;							// [block hash => height] (finalized only)
+	std::unordered_map<hash_t, std::pair<uint32_t, uint32_t>> tx_index;		// [tx hash => [height, index]] (finalized only)
+	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;				// [height => block header] (finalized only)
 
 	std::unordered_map<hash_t, hash_t> tx_map;									// [txid => block hash] (only pending)
 	std::unordered_map<utxo_key_t, tx_out_t> utxo_map;							// [utxo key => utxo]
-	std::unordered_multimap<addr_t, utxo_key_t> addr_map;						// [addr => utxo keys] (only finalized)
+	std::unordered_multimap<addr_t, utxo_key_t> addr_map;						// [addr => utxo keys] (finalized only)
 
 	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;
 	std::unordered_map<hash_t, std::shared_ptr<const Contract>> contracts;
@@ -135,6 +146,9 @@ private:
 	bool is_replay = true;
 	std::shared_ptr<vnx::File> vdf_chain;
 	std::shared_ptr<vnx::File> block_chain;
+
+	std::unordered_multimap<uint64_t, int64_t> vdf_index;						// [iters => file offset]
+	std::unordered_map<uint32_t, std::pair<int64_t, hash_t>> block_index;		// [height => [file offset, block hash]]
 
 	std::shared_ptr<const ChainParams> params;
 

@@ -15,6 +15,7 @@
 #include <mmx/utils.h>
 
 #include <atomic>
+#include <algorithm>
 
 
 namespace mmx {
@@ -61,7 +62,9 @@ void Node::main()
 						vdf_point_t point;
 						point.recv_time = vnx::get_time_micros();
 						point.output = proof->get_output();
-						verified_vdfs[proof->start + proof->get_num_iters()] = point;
+						const auto vdf_iters = proof->start + proof->get_num_iters();
+						verified_vdfs[vdf_iters] = point;
+						vdf_index.emplace(vdf_iters, last_pos);
 					}
 				} else {
 					break;
@@ -73,7 +76,6 @@ void Node::main()
 			}
 		}
 		vdf_chain->seek_to(last_pos);
-
 		log(INFO) << "Loaded " << verified_vdfs.size() << " VDFs from disk";
 	} else {
 		vdf_chain->open("ab");
@@ -91,6 +93,7 @@ void Node::main()
 					if(auto block = std::dynamic_pointer_cast<Block>(value)) {
 						apply(block);
 						commit(block);
+						block_index[block->height] = std::make_pair(last_pos, block->hash);
 					}
 				} else {
 					break;
@@ -169,6 +172,92 @@ void Node::main()
 
 	vdf_chain->close();
 	block_chain->close();
+}
+
+uint32_t Node::get_height() const
+{
+	if(auto block = find_header(state_hash)) {
+		return block->height;
+	}
+	throw std::logic_error("have no peak");
+}
+
+std::shared_ptr<const Block> Node::get_block(const hash_t& hash) const
+{
+	if(auto block = find_block(hash)) {
+		return block;
+	}
+	auto iter = hash_index.find(hash);
+	if(iter != hash_index.end()) {
+		auto iter2 = block_index.find(iter->second);
+		if(iter2 != block_index.end()) {
+			const auto prev_pos = block_chain->get_output_pos();
+			block_chain->seek_to(iter2->second.first);
+			std::shared_ptr<const Block> block;
+			try {
+				block = std::dynamic_pointer_cast<const Block>(vnx::read(block_chain->in));
+			} catch(...) {
+				// ignore
+			}
+			block_chain->seek_to(prev_pos);
+			return block;
+		}
+	}
+	return nullptr;
+}
+
+std::shared_ptr<const Block> Node::get_block_at(const uint32_t& height) const
+{
+	auto iter = block_index.find(height);
+	if(iter != block_index.end()) {
+		return get_block(iter->second.second);
+	}
+	const auto line = get_fork_line();
+	if(!line.empty()) {
+		const auto offset = line[0]->block->height;
+		if(height >= offset) {
+			const auto index = height - offset;
+			if(index < line.size()) {
+				return line[index]->block;
+			}
+		}
+	}
+	return nullptr;
+}
+
+hash_t Node::get_block_hash(const uint32_t& height) const
+{
+	auto iter = block_index.find(height);
+	if(iter != block_index.end()) {
+		return iter->second.second;
+	}
+	if(auto block = get_block_at(height)) {
+		return block->hash;
+	}
+	throw std::logic_error("no such height");
+}
+
+std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id) const
+{
+	{
+		auto iter = tx_pool.find(id);
+		if(iter != tx_pool.end()) {
+			return iter->second;
+		}
+	}
+	{
+		auto iter = tx_index.find(id);
+		if(iter != tx_index.end()) {
+			const auto& entry = iter->second;
+			if(auto block = get_block_at(entry.first)) {
+				if(entry.second == (typeof(entry.second))(-1)) {
+					return block->tx_base;
+				}
+				return block->tx_list.at(entry.second);
+			}
+		}
+	}
+	return nullptr;
 }
 
 void Node::add_transaction(std::shared_ptr<const Transaction> tx)
@@ -268,7 +357,9 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 		verified_vdfs[vdf_iters] = point;
 
 		if(!is_replay) {
+			vdf_index.emplace(vdf_iters, vdf_chain->get_output_pos());
 			vnx::write(vdf_chain->out, proof->compressed());
+			vdf_chain->flush();
 		}
 		{
 			auto point = TimePoint::create();
@@ -723,14 +814,15 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 	return true;
 }
 
-std::list<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<fork_t> fork_head)
+std::vector<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<fork_t> fork_head) const
 {
-	std::list<std::shared_ptr<fork_t>> line;
+	std::vector<std::shared_ptr<fork_t>> line;
 	auto fork = fork_head ? fork_head : find_fork(state_hash);
 	while(fork) {
-		line.push_front(fork);
+		line.push_back(fork);
 		fork = fork->prev.lock();
 	}
+	std::reverse(line.begin(), line.end());
 	return line;
 }
 
@@ -964,7 +1056,13 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 		tx_map.erase(txid);
 		tx_pool.erase(txid);
 	}
-	finalized[block->hash] = block->height;
+	for(size_t i = 0; i < block->tx_list.size(); ++i) {
+		tx_index[block->tx_list[i]->id] = std::make_pair(block->height, i);
+	}
+	if(const auto& tx = block->tx_base) {
+		tx_index[tx->id] = std::make_pair(block->height, -1);
+	}
+	hash_index[block->hash] = block->height;
 	history[block->height] = block->get_header();
 	change_log.pop_front();
 
@@ -974,7 +1072,6 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 		const auto iter = history.begin();
 		const auto& block = iter->second;
 		verified_vdfs.erase(block->vdf_iters);
-		finalized.erase(block->hash);
 		history.erase(iter);
 	}
 	if(!is_replay) {
@@ -987,7 +1084,9 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	purge_tree();
 
 	if(!is_replay) {
+		block_index[block->height] = std::make_pair(block_chain->get_output_pos(), block->hash);
 		vnx::write(block_chain->out, block);
+		block_chain->flush();
 	}
 	publish(block, output_committed_block, BLOCKING);
 }
@@ -1003,7 +1102,7 @@ size_t Node::purge_tree()
 		for(auto iter = fork_tree.begin(); iter != fork_tree.end();)
 		{
 			const auto& block = iter->second->block;
-			if(block->prev != root->hash && fork_tree.find(block->prev) == fork_tree.end())
+			if(block->prev != root->hash && !fork_tree.count(block->prev))
 			{
 				iter = fork_tree.erase(iter);
 				repeat = true;
@@ -1181,8 +1280,8 @@ std::shared_ptr<const BlockHeader> Node::find_header(const hash_t& hash) const
 	if(auto block = find_block(hash)) {
 		return block;
 	}
-	auto iter = finalized.find(hash);
-	if(iter != finalized.end()) {
+	auto iter = hash_index.find(hash);
+	if(iter != hash_index.end()) {
 		auto iter2 = history.find(iter->second);
 		if(iter2 != history.end()) {
 			return iter2->second;
