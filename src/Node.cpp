@@ -74,7 +74,7 @@ void Node::main()
 		}
 		vdf_chain->seek_to(last_pos);
 
-		log(INFO) << "Loaded " << verified_vdfs.size() << " VDFs from disk.";
+		log(INFO) << "Loaded " << verified_vdfs.size() << " VDFs from disk";
 	} else {
 		vdf_chain->open("ab");
 	}
@@ -129,7 +129,7 @@ void Node::main()
 	}
 
 	if(auto block = find_header(state_hash)) {
-		log(INFO) << "Loaded " << block->height + 1 << " blocks from disk.";
+		log(INFO) << "Loaded " << block->height + 1 << " blocks from disk";
 	}
 	is_replay = false;
 
