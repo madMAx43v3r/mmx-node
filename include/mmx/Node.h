@@ -126,9 +126,13 @@ private:
 	std::unordered_map<hash_t, std::shared_ptr<const Contract>> contracts;
 	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_pool;
 
-	std::unordered_map<uint64_t, vdf_point_t> verified_vdfs;					// [iters => output]
+	std::map<uint64_t, vdf_point_t> verified_vdfs;								// [iters => output]
 	std::unordered_map<hash_t, uint64_t> challange_diff;						// [challenge => space diff]
 	std::unordered_map<hash_t, std::shared_ptr<const ProofResponse>> proof_map;
+
+	bool is_replay = true;
+	std::shared_ptr<vnx::File> vdf_chain;
+	std::shared_ptr<vnx::File> block_chain;
 
 	std::shared_ptr<const ChainParams> params;
 

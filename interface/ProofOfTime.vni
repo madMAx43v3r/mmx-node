@@ -9,8 +9,8 @@ class ProofOfTime {
 	
 	hash_t calc_hash() const;
 	
-	hash_t get_output() const;
+	hash_t get_output() const;			// final segment output
 	
-	ulong get_num_iters() const;
+	ulong get_num_iters() const;		// relative (sum of segment iters)
 	
 }

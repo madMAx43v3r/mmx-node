@@ -1,13 +1,13 @@
 package mmx.contract;
 
 import mmx.hash_t;
-import mmx.ulong_fraction_t;
+import mmx.addr_t;
 
 class Token extends Delegated {
 	
 	int decimals;
 	
-	hash_t info_addr;
+	addr_t info_addr;
 	
 	
 //	bool is_valid() const;

@@ -21,7 +21,13 @@ int main(int argc, char** argv)
 {
 	mmx::secp256k1_init();
 
-	vnx::init("mmx_node", argc, argv);
+	std::map<std::string, std::string> options;
+	options["t"] = "timelord";
+
+	vnx::init("mmx_node", argc, argv, options);
+
+	bool with_timelord = true;
+	vnx::read_config("timelord", with_timelord);
 
 	{
 		vnx::Handle<vnx::Terminal> module = new vnx::Terminal("Terminal");
@@ -31,7 +37,7 @@ int main(int argc, char** argv)
 		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url(".mmx_node.sock"));
 		module.start_detached();
 	}
-	{
+	if(with_timelord) {
 		vnx::Handle<mmx::TimeLord> module = new mmx::TimeLord("TimeLord");
 		module.start_detached();
 	}

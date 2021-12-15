@@ -37,14 +37,6 @@ void Node::init()
 void Node::main()
 {
 	params = get_params();
-
-	auto genesis = Block::create();
-	genesis->time_diff = params->initial_time_diff;
-	genesis->space_diff = params->initial_space_diff;
-	genesis->finalize();
-
-	apply(genesis);
-	commit(genesis);
 	{
 		vdf_point_t point;
 		point.output = hash_t(params->vdf_seed);
@@ -52,9 +44,106 @@ void Node::main()
 		verified_vdfs[0] = point;
 	}
 
+	vdf_chain = std::make_shared<vnx::File>(storage_path + "vdf_chain.dat");
+	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
+
+	if(vdf_chain->exists())
+	{
+		vdf_chain->open("rb+");
+		int64_t last_pos = 0;
+		while(true) {
+			auto& in = vdf_chain->in;
+			try {
+				last_pos = in.get_input_pos();
+				if(auto value = vnx::read(in)) {
+					if(auto proof = std::dynamic_pointer_cast<ProofOfTime>(value)) {
+						vdf_point_t point;
+						point.time = vnx::get_time_micros();
+						point.output = proof->get_output();
+						verified_vdfs[proof->start + proof->get_num_iters()] = point;
+					}
+				} else {
+					break;
+				}
+			}
+			catch(const std::exception& ex) {
+				if(last_pos > 0) {
+					log(WARN) << "Failed to read VDF: " << ex.what();
+				}
+				break;
+			}
+		}
+		vdf_chain->seek_to(last_pos);
+
+		log(INFO) << "Loaded " << verified_vdfs.size() << " VDFs from disk.";
+	} else {
+		vdf_chain->open("ab");
+	}
+
+	if(block_chain->exists())
+	{
+		block_chain->open("rb+");
+		int64_t last_pos = 0;
+		while(true) {
+			auto& in = block_chain->in;
+			try {
+				last_pos = in.get_input_pos();
+				if(auto value = vnx::read(in)) {
+					if(auto block = std::dynamic_pointer_cast<Block>(value)) {
+						apply(block);
+						commit(block);
+					}
+				} else {
+					break;
+				}
+			}
+			catch(const std::exception& ex) {
+				if(last_pos > 0) {
+					log(WARN) << "Failed to read block: " << ex.what();
+				}
+				break;
+			}
+		}
+		block_chain->seek_to(last_pos);
+
+		if(auto block = find_header(state_hash)) {
+			log(INFO) << "Loaded " << block->height + 1 << " blocks from disk.";
+		}
+	} else {
+		block_chain->open("ab");
+	}
+
+	is_replay = false;
+
+	if(state_hash == hash_t())
+	{
+		auto genesis = Block::create();
+		genesis->time_diff = params->initial_time_diff;
+		genesis->space_diff = params->initial_space_diff;
+		genesis->finalize();
+
+		apply(genesis);
+		commit(genesis);
+	}
+
+	if(!verified_vdfs.empty())
+	{
+		const auto iter = --verified_vdfs.end();
+		auto point = TimePoint::create();
+		point->num_iters = iter->first;
+		point->output = iter->second.output;
+		publish(point, output_verified_points, BLOCKING);
+	}
+
 	set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
 
 	Super::main();
+
+	vnx::write(vdf_chain->out, nullptr);
+	vnx::write(block_chain->out, nullptr);
+
+	vdf_chain->close();
+	block_chain->close();
 }
 
 void Node::add_transaction(std::shared_ptr<const Transaction> tx)
@@ -152,6 +241,10 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 		point.output = proof->get_output();
 		point.time = vnx_sample ? vnx_sample->recv_time : vnx::get_time_micros();
 		verified_vdfs[vdf_iters] = point;
+
+		if(!is_replay) {
+			vnx::write(vdf_chain->out, proof);
+		}
 		{
 			auto point = TimePoint::create();
 			point->num_iters = vdf_iters;
@@ -841,14 +934,18 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	history[block->height] = block->get_header();
 	change_log.pop_front();
 
-	const auto fork = find_fork(block->hash);
-	Node::log(INFO) << "Committed height " << block->height << " with: ntx = " << block->tx_list.size()
-			<< ", score = " << (fork ? fork->proof_score : 0) << ", k = " << (block->proof ? block->proof->ksize : 0)
-			<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff;
-
+	if(!is_replay) {
+		const auto fork = find_fork(block->hash);
+		Node::log(INFO) << "Committed height " << block->height << " with: ntx = " << block->tx_list.size()
+				<< ", score = " << (fork ? fork->proof_score : 0) << ", k = " << (block->proof ? block->proof->ksize : 0)
+				<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff;
+	}
 	fork_tree.erase(block->hash);
 	purge_tree();
 
+	if(!is_replay) {
+		vnx::write(block_chain->out, block);
+	}
 	publish(block, output_committed_block, BLOCKING);
 }
 
