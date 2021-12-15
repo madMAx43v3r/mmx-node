@@ -15,6 +15,8 @@ module Node {
 	
 	int update_interval_ms = 1000;			// [ms]
 	
+	uint max_history = 1000;
+	
 	string storage_path;
 	
 	

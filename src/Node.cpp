@@ -266,8 +266,8 @@ void Node::handle(std::shared_ptr<const ProofResponse> value)
 	auto iter = proof_map.find(value->challenge);
 	if(iter == proof_map.end() || value->score < iter->second->score)
 	{
-		auto iter = challange_diff.find(value->challenge);
-		if(iter != challange_diff.end()) {
+		auto iter = challenge_diff.find(value->challenge);
+		if(iter != challenge_diff.end()) {
 			try {
 				const auto score = verify_proof(value->proof, value->challenge, iter->second);
 				if(score == value->score) {
@@ -481,7 +481,7 @@ void Node::update()
 			} else {
 				continue;
 			}
-			challange_diff[value->challenge] = value->space_diff;
+			challenge_diff[value->challenge] = value->space_diff;
 
 			publish(value, output_challanges);
 
@@ -695,6 +695,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 
 	handle(block);
 	proof_map.erase(iter);
+	challenge_diff.erase(challenge);
 
 	log(INFO) << "Created block at height " << block->height << " with: ntx = " << block->tx_list.size()
 			<< ", score = " << response->score << ", reward = " << final_reward / pow(10, params->decimals) << " MMX"
@@ -929,11 +930,19 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 		tx_map.erase(txid);
 		tx_pool.erase(txid);
 	}
-
 	finalized[block->hash] = block->height;
 	history[block->height] = block->get_header();
 	change_log.pop_front();
 
+	// purge history
+	while(history.size() > max_history)
+	{
+		const auto iter = history.begin();
+		const auto& block = iter->second;
+		verified_vdfs.erase(block->vdf_iters);
+		finalized.erase(block->hash);
+		history.erase(iter);
+	}
 	if(!is_replay) {
 		const auto fork = find_fork(block->hash);
 		Node::log(INFO) << "Committed height " << block->height << " with: ntx = " << block->tx_list.size()
