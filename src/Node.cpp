@@ -594,12 +594,14 @@ void Node::update()
 					add_block(block);
 				}
 				else {
-					auto infuse = TimeInfusion::create();
-					infuse->num_iters = request->end;
-					infuse->value = diff_block->hash;
-					vdf_infusions[infuse->num_iters] = infuse->value;
-
-					publish(infuse, output_timelord_infuse);
+					if(diff_block->height <= root->height)
+					{
+						auto infuse = TimeInfusion::create();
+						infuse->num_iters = request->end;
+						infuse->value = diff_block->hash;
+						vdf_infusions[infuse->num_iters] = infuse->value;
+						publish(infuse, output_timelord_infuse);
+					}
 					publish(request, output_interval_request);
 				}
 			}
