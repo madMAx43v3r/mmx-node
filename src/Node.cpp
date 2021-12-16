@@ -6,7 +6,6 @@
  */
 
 #include <mmx/Node.h>
-#include <mmx/TimePoint.hxx>
 #include <mmx/Challenge.hxx>
 #include <mmx/FarmerClient.hxx>
 #include <mmx/IntervalRequest.hxx>
@@ -150,10 +149,11 @@ void Node::main()
 	if(!verified_vdfs.empty())
 	{
 		const auto iter = --verified_vdfs.end();
-		auto point = TimePoint::create();
-		point->num_iters = iter->first;
-		point->output = iter->second.output;
-		publish(point, output_verified_points, BLOCKING);
+		auto proof = ProofOfTime::create();
+		proof->start = iter->first;
+		proof->segments.resize(1);
+		proof->segments[0].output = iter->second.output;
+		publish(proof, output_verified_vdfs, BLOCKING);
 	}
 
 	set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
@@ -366,12 +366,8 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 			vnx::write(vdf_chain->out, proof->compressed());
 			vdf_chain->flush();
 		}
-		{
-			auto point = TimePoint::create();
-			point->num_iters = vdf_iters;
-			point->output = proof->get_output();
-			publish(point, output_verified_points, BLOCKING);
-		}
+		publish(proof, output_verified_vdfs, BLOCKING);
+
 		log(INFO) << "Verified VDF at " << vdf_iters << " iterations, delta = "
 				<< (point.recv_time - prev.recv_time) / 1e6 << " sec";
 
@@ -1116,7 +1112,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 		vnx::write(block_chain->out, block);
 		block_chain->flush();
 	}
-	publish(block, output_committed_block, BLOCKING);
+	publish(block, output_committed_blocks, BLOCKING);
 }
 
 size_t Node::purge_tree()

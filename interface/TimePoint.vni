@@ -1,9 +1,0 @@
-package mmx;
-
-class TimePoint {
-	
-	ulong num_iters;
-	
-	hash_t output;
-	
-}

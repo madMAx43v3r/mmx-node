@@ -20,8 +20,8 @@ TimeLord::TimeLord(const std::string& _vnx_name)
 
 void TimeLord::init()
 {
-	subscribe(input_points);
-	subscribe(input_request);
+	subscribe(input_vdfs, 1000);
+	subscribe(input_request, 1000);
 }
 
 void TimeLord::main()
@@ -43,24 +43,39 @@ void TimeLord::main()
 	}
 }
 
-void TimeLord::start_vdf(TimePoint begin)
+void TimeLord::start_vdf(time_point_t begin)
 {
 	log(INFO) << "Started VDF at " << begin.num_iters;
 	vdf_thread = std::thread(&TimeLord::vdf_loop, this, begin);
 }
 
-void TimeLord::handle(std::shared_ptr<const TimePoint> value)
+void TimeLord::handle(std::shared_ptr<const ProofOfTime> value)
 {
 	std::lock_guard<std::mutex> lock(mutex);
 
-	if(!latest_point || value->num_iters > latest_point->num_iters)
+	time_point_t point;
+	point.num_iters = value->start + value->get_num_iters();
+	point.output = value->get_output();
+
+	if(!latest_point || point.num_iters > latest_point->num_iters)
 	{
-		latest_point = value;
-		log(DEBUG) << "Got new verified peak at " << value->num_iters;
+		auto num_iters = value->start;
+		for(const auto& seg : value->segments) {
+			num_iters += seg.num_iters;
+			if(!latest_point || num_iters > latest_point->num_iters) {
+				history[num_iters] = seg.output;
+			}
+		}
+		if(!latest_point) {
+			latest_point = std::make_shared<time_point_t>();
+		}
+		*latest_point = point;
+
+		log(DEBUG) << "Got new verified peak at " << point.num_iters;
 	}
 	if(!vdf_thread.joinable())
 	{
-		start_vdf(*value);
+		start_vdf(point);
 	}
 }
 
@@ -80,7 +95,7 @@ void TimeLord::handle(std::shared_ptr<const IntervalRequest> value)
 		std::string seed;
 		vnx::read_config("chain.params.vdf_seed", seed);
 
-		TimePoint begin;
+		time_point_t begin;
 		begin.output = hash_t(seed);
 		start_vdf(begin);
 	}
@@ -151,7 +166,7 @@ void TimeLord::update()
 	}
 }
 
-void TimeLord::vdf_loop(TimePoint point)
+void TimeLord::vdf_loop(time_point_t point)
 {
 	bool do_notify = false;
 	checkpoint_iters = checkpoint_interval;
@@ -168,14 +183,18 @@ void TimeLord::vdf_loop(TimePoint point)
 			{
 				// somebody else is faster
 				point = *latest_point;
-				pending.clear();
 				log(INFO) << "Restarted VDF at " << point.num_iters;
 			}
-			while(history.size() >= max_history) {
+			else {
+				history.emplace(point.num_iters, point.output);
+				if(!latest_point) {
+					latest_point = std::make_shared<time_point_t>();
+				}
+				*latest_point = point;
+			}
+			while(history.size() > max_history) {
 				history.erase(history.begin());
 			}
-			history.emplace(point.num_iters, point.output);
-
 			for(const auto& entry : pending) {
 				if(entry.first > point.num_iters) {
 					next_target = entry.first;
