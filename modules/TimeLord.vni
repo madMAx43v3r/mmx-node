@@ -3,6 +3,7 @@ package mmx;
 module TimeLord {
 	
 	vnx.TopicPtr input_vdfs = "node.verified_vdfs";
+	vnx.TopicPtr input_infuse = "timelord.infuse";
 	vnx.TopicPtr input_request = "timelord.requests";
 	
 	vnx.TopicPtr output_proofs = "timelord.proofs";
@@ -16,7 +17,7 @@ module TimeLord {
 	
 	
 	void handle(ProofOfTime sample);
-	
+	void handle(TimeInfusion sample);
 	void handle(IntervalRequest sample);
 	
 }

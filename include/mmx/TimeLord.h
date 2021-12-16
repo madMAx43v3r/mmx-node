@@ -24,6 +24,8 @@ protected:
 
 	void handle(std::shared_ptr<const ProofOfTime> value) override;
 
+	void handle(std::shared_ptr<const TimeInfusion> value) override;
+
 	void handle(std::shared_ptr<const IntervalRequest> value) override;
 
 private:
@@ -38,16 +40,18 @@ private:
 
 	void vdf_loop(time_point_t point);
 
+	hash_t compute(const hash_t& input, const uint64_t start, const uint64_t num_iters) const;
+
 	void print_info();
 
 private:
-	std::mutex mutex;
 	std::thread vdf_thread;
+	mutable std::recursive_mutex mutex;
 
 	uint64_t checkpoint_iters = 0;
 
+	std::map<uint64_t, hash_t> infuse;
 	std::map<uint64_t, hash_t> history;
-
 	std::set<std::pair<uint64_t, uint64_t>> pending;
 
 	std::shared_ptr<time_point_t> latest_point;

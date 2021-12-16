@@ -19,6 +19,10 @@ mmx::hash_t ProofOfTime::calc_hash() const
 
 	buffer.reserve(16 * 1024);
 
+	for(const auto& entry : infuse) {
+		write_bytes(out, entry.first);
+		write_bytes(out, entry.second);
+	}
 	for(const auto& seg : segments) {
 		write_bytes(out, seg.num_iters);
 		write_bytes(out, seg.output);

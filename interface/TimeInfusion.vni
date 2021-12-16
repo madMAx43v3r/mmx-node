@@ -1,0 +1,9 @@
+package mmx;
+
+class TimeInfusion {
+	
+	ulong num_iters;
+	
+	hash_t value;
+	
+}

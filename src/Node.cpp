@@ -8,6 +8,7 @@
 #include <mmx/Node.h>
 #include <mmx/Challenge.hxx>
 #include <mmx/FarmerClient.hxx>
+#include <mmx/TimeInfusion.hxx>
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/chiapos.h>
@@ -352,8 +353,30 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 	if(iter != verified_vdfs.end())
 	{
 		const auto& prev = iter->second;
-		verify_vdf(proof, prev.output);
-
+		try {
+			// check proper infusions
+			auto infused = proof->infuse;
+			for(auto iter = vdf_infusions.lower_bound(proof->start); iter != vdf_infusions.lower_bound(vdf_iters); ++iter)
+			{
+				auto iter2 = infused.find(iter->first);
+				if(iter2 != infused.end()) {
+					if(iter2->second != iter->second) {
+						throw std::logic_error("invalid infusion");
+					}
+					infused.erase(iter2);
+				} else {
+					throw std::logic_error("missing infusion");
+				}
+			}
+			if(!infused.empty()) {
+				throw std::logic_error("excess infusion");
+			}
+			verify_vdf(proof, prev.output);
+		}
+		catch(const std::exception& ex) {
+			log(WARN) << "VDF verification failed with: " << ex.what();
+			return;
+		}
 		vdf_point_t point;
 		point.output = proof->get_output();
 		point.recv_time = vnx_sample ? vnx_sample->recv_time : vnx::get_time_micros();
@@ -443,7 +466,6 @@ void Node::update()
 			log(WARN) << "Proof verification failed for a block at height " << block->height << " with: " << ex.what();
 		}
 	}
-	const auto root = get_root();
 	const auto prev_peak = find_header(state_hash);
 
 	bool did_fork = false;
@@ -454,6 +476,7 @@ void Node::update()
 		// purge disconnected forks
 		purge_tree();
 
+		const auto root = get_root();
 		const auto best_fork = find_best_fork(root);
 
 		if(!best_fork || best_fork->block->hash == state_hash) {
@@ -511,6 +534,11 @@ void Node::update()
 			apply(block);
 		}
 		if(is_valid) {
+			// commit to history
+			const auto line = get_fork_line();
+			for(size_t i = 0; i + params->finality_delay < line.size(); ++i) {
+				commit(line[i]->block);
+			}
 			break;
 		}
 		// try again
@@ -523,6 +551,7 @@ void Node::update()
 		log(WARN) << "Have no peak!";
 		return;
 	}
+	const auto root = get_root();
 
 	if(!prev_peak || peak->hash != prev_peak->hash)
 	{
@@ -565,6 +594,12 @@ void Node::update()
 					add_block(block);
 				}
 				else {
+					auto infuse = TimeInfusion::create();
+					infuse->num_iters = request->end;
+					infuse->value = diff_block->hash;
+					vdf_infusions[infuse->num_iters] = infuse->value;
+
+					publish(infuse, output_timelord_infuse);
 					publish(request, output_interval_request);
 				}
 			}
@@ -621,15 +656,6 @@ void Node::update()
 		if(auto diff_block = find_prev_header(peak, (params->finality_delay + 1) - i, true)) {
 			value->space_diff = diff_block->space_diff;
 			publish(value, output_challenges);
-		}
-	}
-
-	// commit mature blocks
-	const auto now = vnx::get_time_micros();
-	for(const auto& fork : get_fork_line()) {
-		const auto elapsed = 1e-6 * (now - fork->recv_time);
-		if(elapsed > params->block_time * params->finality_delay) {
-			commit(fork->block);
 		}
 	}
 }
@@ -1089,6 +1115,13 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	}
 	{
 		const auto begin = history.begin()->second;
+		for(auto iter = vdf_infusions.begin(); iter != vdf_infusions.end();) {
+			if(iter->first < begin->vdf_iters) {
+				iter = vdf_infusions.erase(iter);
+			} else {
+				break;
+			}
+		}
 		for(auto iter = verified_vdfs.begin(); iter != verified_vdfs.end();) {
 			if(iter->first < begin->vdf_iters) {
 				iter = verified_vdfs.erase(iter);
@@ -1188,10 +1221,19 @@ uint32_t Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const has
 	return score;
 }
 
-bool Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const hash_t& begin) const
+void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const hash_t& begin) const
 {
 	const auto& segments = proof->segments;
 	bool is_valid = !segments.empty();
+
+	std::vector<uint64_t> start_iters(segments.size());
+	for(size_t i = 0; i < segments.size(); ++i) {
+		if(i == 0) {
+			start_iters[i] = proof->start;
+		} else {
+			start_iters[i] = start_iters[i - 1] + segments[i - 1].num_iters;
+		}
+	}
 
 #pragma omp parallel for
 	for(size_t i = 0; i < segments.size(); ++i)
@@ -1202,6 +1244,12 @@ bool Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const hash_t& be
 		} else {
 			point = begin;
 		}
+		{
+			auto iter = proof->infuse.find(start_iters[i]);
+			if(iter != proof->infuse.end()) {
+				point = hash_t(point + iter->second);
+			}
+		}
 		for(size_t k = 0; k < segments[i].num_iters; ++k) {
 			point = hash_t(point.bytes);
 		}
@@ -1209,7 +1257,9 @@ bool Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const hash_t& be
 			is_valid = false;
 		}
 	}
-	return is_valid;
+	if(!is_valid) {
+		throw std::logic_error("invalid output");
+	}
 }
 
 void Node::apply(std::shared_ptr<const Block> block) noexcept
@@ -1315,7 +1365,8 @@ std::shared_ptr<const BlockHeader> Node::find_header(const hash_t& hash) const
 std::shared_ptr<const BlockHeader> Node::find_prev_header(	std::shared_ptr<const BlockHeader> block,
 															const size_t distance, bool clamp_to_genesis) const
 {
-	if(distance > params->finality_delay)
+	if(distance > params->finality_delay
+		&& (block->height >= distance || clamp_to_genesis))
 	{
 		const auto height = block->height > distance ? block->height - distance : 0;
 		auto iter = history.find(height);

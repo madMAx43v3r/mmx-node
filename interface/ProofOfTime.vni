@@ -4,6 +4,8 @@ class ProofOfTime {
 	
 	ulong start;		// [iters]
 	
+	map<ulong, hash_t> infuse;
+	
 	vector<time_segment_t> segments;
 	
 	
