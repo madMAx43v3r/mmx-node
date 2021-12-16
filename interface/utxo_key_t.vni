@@ -6,4 +6,7 @@ struct utxo_key_t {
 	
 	uint index;
 	
+	
+	static utxo_key_t create_ex(hash_t txid, uint index);
+	
 }

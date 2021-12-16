@@ -313,16 +313,15 @@ uint64_t Node::get_total_balance(const std::vector<addr_t>& addresses, const add
 	return total;
 }
 
-std::vector<std::pair<utxo_key_t, tx_out_t>> Node::get_utxo_list(const std::vector<addr_t>& addresses) const
+std::vector<std::pair<utxo_key_t, utxo_t>> Node::get_utxo_list(const std::vector<addr_t>& addresses) const
 {
-	std::vector<std::pair<utxo_key_t, tx_out_t>> res;
+	std::vector<std::pair<utxo_key_t, utxo_t>> res;
 	for(const auto& addr : addresses) {
 		const auto range = addr_map.equal_range(addr);
 		for(auto iter = range.first; iter != range.second; ++iter) {
 			auto iter2 = utxo_map.find(iter->second);
 			if(iter2 != utxo_map.end()) {
-				const auto& out = iter2->second;
-				res.emplace_back(iter->second, out);
+				res.emplace_back(iter->second, iter2->second);
 			}
 		}
 	}
@@ -1085,12 +1084,18 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	change_log.pop_front();
 
 	// purge history
-	while(history.size() > max_history)
+	while(history.size() > max_history) {
+		history.erase(history.begin());
+	}
 	{
-		const auto iter = history.begin();
-		const auto& block = iter->second;
-		verified_vdfs.erase(block->vdf_iters);
-		history.erase(iter);
+		const auto begin = history.begin()->second;
+		for(auto iter = verified_vdfs.begin(); iter != verified_vdfs.end();) {
+			if(iter->first < begin->vdf_iters) {
+				iter = verified_vdfs.erase(iter);
+			} else {
+				break;
+			}
+		}
 	}
 	if(!is_replay) {
 		const auto fork = find_fork(block->hash);
@@ -1237,11 +1242,10 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 	}
 	for(size_t i = 0; i < tx->outputs.size(); ++i)
 	{
-		utxo_key_t key;
-		key.txid = tx->id;
-		key.index = i;
-		utxo_map[key] = tx->outputs[i];
-		log.utxo_added.emplace_back(key, tx->outputs[i]);
+		const auto key = utxo_key_t::create_ex(tx->id, i);
+		const auto value = utxo_t::create_ex(tx->outputs[i], block->height);
+		utxo_map[key] = value;
+		log.utxo_added.emplace_back(key, value);
 	}
 	tx_map[tx->id] = block->hash;
 	log.tx_added.push_back(tx->id);

@@ -14,6 +14,15 @@
 namespace mmx {
 
 inline
+utxo_key_t utxo_key_t::create_ex(const ::mmx::hash_t& txid, const uint32_t& index)
+{
+	utxo_key_t key;
+	key.txid = txid;
+	key.index = index;
+	return key;
+}
+
+inline
 bool operator==(const utxo_key_t& lhs, const utxo_key_t& rhs) {
 	return lhs.txid == rhs.txid && lhs.index == rhs.index;
 }

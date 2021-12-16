@@ -10,6 +10,7 @@
 
 #include <mmx/NodeBase.hxx>
 #include <mmx/ChainParams.hxx>
+#include <mmx/utxo_t.hpp>
 #include <mmx/utxo_key_t.hpp>
 
 
@@ -42,7 +43,7 @@ protected:
 
 	uint64_t get_total_balance(const std::vector<addr_t>& addresses, const addr_t& contract) const override;
 
-	std::vector<std::pair<utxo_key_t, tx_out_t>> get_utxo_list(const std::vector<addr_t>& addresses) const override;
+	std::vector<std::pair<utxo_key_t, utxo_t>> get_utxo_list(const std::vector<addr_t>& addresses) const override;
 
 	void handle(std::shared_ptr<const Block> block);
 
@@ -71,8 +72,8 @@ private:
 	struct change_log_t {
 		hash_t prev_state;
 		std::vector<hash_t> tx_added;
-		std::vector<std::pair<utxo_key_t, tx_out_t>> utxo_added;
-		std::vector<std::pair<utxo_key_t, tx_out_t>> utxo_removed;
+		std::vector<std::pair<utxo_key_t, utxo_t>> utxo_added;
+		std::vector<std::pair<utxo_key_t, utxo_t>> utxo_removed;
 	};
 
 	void update();
@@ -137,7 +138,7 @@ private:
 	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;				// [height => block header] (finalized only)
 
 	std::unordered_map<hash_t, hash_t> tx_map;									// [txid => block hash] (only pending)
-	std::unordered_map<utxo_key_t, tx_out_t> utxo_map;							// [utxo key => utxo]
+	std::unordered_map<utxo_key_t, utxo_t> utxo_map;							// [utxo key => utxo]
 	std::unordered_multimap<addr_t, utxo_key_t> addr_map;						// [addr => utxo keys] (finalized only)
 
 	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;

@@ -1,0 +1,10 @@
+package mmx;
+
+struct utxo_t extends tx_out_t {
+	
+	uint height;
+	
+	
+	static utxo_t create_ex(tx_out_t out, uint height);
+	
+}

@@ -38,7 +38,7 @@ module Node {
 	
 	ulong get_total_balance(vector<addr_t> addresses, addr_t contract) const;
 	
-	vector<pair<utxo_key_t, tx_out_t>> get_utxo_list(vector<addr_t> addresses) const;
+	vector<pair<utxo_key_t, utxo_t>> get_utxo_list(vector<addr_t> addresses) const;
 	
 	
 	void handle(Block value);
