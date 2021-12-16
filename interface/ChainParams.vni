@@ -6,19 +6,21 @@ class ChainParams {
 	
 	uint tcp_port;
 	uint decimals = 6;
+	uint min_ksize = 30;
+	uint max_ksize = 42;
 	uint plot_filter = 10;
 	uint finality_delay = 6;				// number of blocks until history is fixed (must be >= challenge_delay)
-	uint challenge_delay = 4;				// blocks until new challange is active (must be > 0)
+	uint challenge_delay = 3;				// blocks until new challange is active (must be > 0)
 	uint challenge_interval = 64;			// challenge is for next N blocks
 	uint max_diff_adjust = 10;				// per block (1/2^x)
-	uint num_vdf_segments = 184;
+	
+	uint min_vdf_segments = 128;
+	uint num_vdf_segments = 188;
+	uint max_vdf_segments = 384;
 	
 	uint score_bits = 10;
 	uint score_threshold = 1000;			// should be <= 2^score_bits
 	uint target_score = 125;				// defines how many competing blocks are created (must be less than score_threshold)
-	
-	uint min_ksize = 30;
-	uint max_ksize = 42;
 	
 	uint max_tx_inputs = 1048576;
 	uint max_tx_outputs = 1048576;
