@@ -128,7 +128,7 @@ private:
 	std::list<std::shared_ptr<const change_log_t>> change_log;
 
 	std::unordered_map<hash_t, uint32_t> hash_index;							// [block hash => height] (finalized only)
-	std::unordered_map<hash_t, std::pair<uint32_t, uint32_t>> tx_index;		// [tx hash => [height, index]] (finalized only)
+	std::unordered_map<hash_t, std::pair<uint32_t, uint32_t>> tx_index;			// [tx hash => [height, index]] (finalized only)
 	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;				// [height => block header] (finalized only)
 
 	std::unordered_map<hash_t, hash_t> tx_map;									// [txid => block hash] (only pending)

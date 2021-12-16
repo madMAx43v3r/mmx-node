@@ -1056,11 +1056,11 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 		tx_map.erase(txid);
 		tx_pool.erase(txid);
 	}
-	for(size_t i = 0; i < block->tx_list.size(); ++i) {
-		tx_index[block->tx_list[i]->id] = std::make_pair(block->height, i);
-	}
 	if(const auto& tx = block->tx_base) {
 		tx_index[tx->id] = std::make_pair(block->height, -1);
+	}
+	for(size_t i = 0; i < block->tx_list.size(); ++i) {
+		tx_index[block->tx_list[i]->id] = std::make_pair(block->height, i);
 	}
 	hash_index[block->hash] = block->height;
 	history[block->height] = block->get_header();
