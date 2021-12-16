@@ -525,7 +525,6 @@ void Node::update()
 		log(WARN) << "Have no peak!";
 		return;
 	}
-	const auto fork_line = get_fork_line();
 
 	if(!prev_peak || peak->hash != prev_peak->hash)
 	{
