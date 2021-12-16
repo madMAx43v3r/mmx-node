@@ -1115,22 +1115,10 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	while(history.size() > max_history) {
 		history.erase(history.begin());
 	}
-	{
-		const auto begin = history.begin()->second;
-		for(auto iter = vdf_infusions.begin(); iter != vdf_infusions.end();) {
-			if(iter->first < begin->vdf_iters) {
-				iter = vdf_infusions.erase(iter);
-			} else {
-				break;
-			}
-		}
-		for(auto iter = verified_vdfs.begin(); iter != verified_vdfs.end();) {
-			if(iter->first < begin->vdf_iters) {
-				iter = verified_vdfs.erase(iter);
-			} else {
-				break;
-			}
-		}
+	if(!history.empty()) {
+		const auto begin = history.begin()->second->vdf_iters;
+		vdf_infusions.erase(vdf_infusions.begin(), vdf_infusions.upper_bound(begin));
+		verified_vdfs.erase(verified_vdfs.begin(), verified_vdfs.upper_bound(begin));
 	}
 	if(!is_replay) {
 		const auto fork = find_fork(block->hash);
