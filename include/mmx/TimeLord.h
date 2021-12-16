@@ -40,18 +40,19 @@ private:
 
 	void vdf_loop(time_point_t point);
 
-	hash_t compute(const hash_t& input, const uint64_t start, const uint64_t num_iters) const;
+	hash_t compute(const hash_t& input, const uint64_t start, const uint64_t num_iters);
 
 	void print_info();
 
 private:
 	std::thread vdf_thread;
-	mutable std::recursive_mutex mutex;
+	std::recursive_mutex mutex;
 
 	uint64_t checkpoint_iters = 0;
 
 	std::map<uint64_t, hash_t> infuse;
 	std::map<uint64_t, hash_t> history;
+	std::map<uint64_t, hash_t> infuse_history;
 	std::set<std::pair<uint64_t, uint64_t>> pending;
 
 	std::shared_ptr<time_point_t> latest_point;

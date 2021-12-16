@@ -126,7 +126,7 @@ void TimeLord::update()
 			{
 				auto proof = ProofOfTime::create();
 				proof->start = iters_begin;
-				proof->infuse.insert(infuse.lower_bound(iters_begin), infuse.lower_bound(iters_end));
+				proof->infuse.insert(infuse_history.lower_bound(iters_begin), infuse_history.lower_bound(iters_end));
 
 				auto prev_iters = iters_begin;
 				for(auto iter = begin; iter != end; ++iter) {
@@ -201,13 +201,8 @@ void TimeLord::vdf_loop(time_point_t point)
 			}
 			if(!history.empty()) {
 				const auto begin = history.begin()->first;
-				for(auto iter = infuse.begin(); iter != infuse.end();) {
-					if(iter->first < begin) {
-						iter = infuse.erase(iter);
-					} else {
-						break;
-					}
-				}
+				infuse.erase(infuse.begin(), infuse.upper_bound(begin));
+				infuse_history.erase(infuse_history.begin(), infuse_history.upper_bound(begin));
 			}
 			for(const auto& entry : infuse) {
 				if(entry.first > point.num_iters) {
@@ -257,7 +252,7 @@ void TimeLord::vdf_loop(time_point_t point)
 	}
 }
 
-hash_t TimeLord::compute(const hash_t& input, const uint64_t start, const uint64_t num_iters) const
+hash_t TimeLord::compute(const hash_t& input, const uint64_t start, const uint64_t num_iters)
 {
 	hash_t hash = input;
 	{
@@ -266,6 +261,7 @@ hash_t TimeLord::compute(const hash_t& input, const uint64_t start, const uint64
 		auto iter = infuse.find(start);
 		if(iter != infuse.end()) {
 			hash = hash_t(hash + iter->second);
+			infuse_history.insert(*iter);
 		}
 	}
 	for(uint64_t i = 0; i < num_iters; ++i) {
