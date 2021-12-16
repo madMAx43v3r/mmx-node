@@ -14,9 +14,9 @@ class ChainParams {
 	uint challenge_interval = 64;			// challenge is for next N blocks
 	uint max_diff_adjust = 10;				// per block (1/2^x)
 	
-	uint min_vdf_segments = 128;
-	uint num_vdf_segments = 188;
-	uint max_vdf_segments = 384;
+	uint min_vdf_segments = 256;
+	uint num_vdf_segments = 380;
+	uint max_vdf_segments = 1024;
 	
 	uint score_bits = 10;
 	uint score_threshold = 1000;			// should be <= 2^score_bits
