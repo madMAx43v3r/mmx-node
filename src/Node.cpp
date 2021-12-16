@@ -534,29 +534,8 @@ void Node::update()
 				<< (did_fork ? " (forked at " + std::to_string(forked_at ? forked_at->height : -1) + ")" : "");
 	}
 
-	// request next time points
-	{
-		// TODO: for all forks
-		auto vdf_iters = peak->vdf_iters;
-		for(uint32_t i = 0; i <= params->finality_delay; ++i)
-		{
-			auto diff_block = find_prev_header(peak, params->finality_delay - i, true);
-			if(!diff_block) {
-				break;
-			}
-			auto request = IntervalRequest::create();
-			request->begin = vdf_iters;
-			request->end = vdf_iters + diff_block->time_diff * params->time_diff_constant;
-			request->interval = (params->block_time * 1e6) / params->num_vdf_segments;
-
-			if(!verified_vdfs.count(request->end)) {
-				publish(request, output_interval_request);
-			}
-			vdf_iters = request->end;
-		}
-	}
-
 	// try to make a block
+	bool made_block = false;
 	for(uint32_t prev_height = root->height; prev_height <= peak->height; ++prev_height)
 	{
 		std::shared_ptr<const BlockHeader> prev;
@@ -566,6 +545,20 @@ void Node::update()
 			prev = fork->block;
 		} else {
 			continue;
+		}
+		auto diff_block = find_prev_header(prev, params->finality_delay, true);
+		if(!diff_block) {
+			continue;
+		}
+		{
+			// request proof of time
+			auto request = IntervalRequest::create();
+			request->begin = prev->vdf_iters;
+			request->end = prev->vdf_iters + diff_block->time_diff * params->time_diff_constant;
+			request->interval = (params->block_time * 1e6) / params->num_vdf_segments;
+			if(!verified_vdfs.count(request->end)) {
+				publish(request, output_interval_request);
+			}
 		}
 		hash_t vdf_challenge;
 		if(!find_vdf_challenge(prev, vdf_challenge, 1)) {
@@ -577,26 +570,24 @@ void Node::update()
 			auto value = Challenge::create();
 			value->height = prev->height + 1;
 			value->challenge = challenge;
-			if(auto diff_block = find_prev_header(prev, params->finality_delay, true)) {
-				value->space_diff = diff_block->space_diff;
-				publish(value, output_challenges);
-			}
+			value->space_diff = diff_block->space_diff;
+			publish(value, output_challenges);
 		}
-
-		// check if we can make a block
-		auto iter = proof_map.find(challenge);
-		if(iter != proof_map.end()) {
-			try {
-				if(make_block(prev, iter->second)) {
-					// update again right away
-					add_task(std::bind(&Node::update, this));
-					proof_map.erase(iter);
-					// only make one block at a time
-					break;
+		if(!made_block) {
+			auto iter = proof_map.find(challenge);
+			if(iter != proof_map.end()) {
+				try {
+					if(make_block(prev, iter->second)) {
+						// update again right away
+						add_task(std::bind(&Node::update, this));
+						// only make one block at a time
+						made_block = true;
+						proof_map.erase(iter);
+					}
 				}
-			}
-			catch(const std::exception& ex) {
-				log(WARN) << "Failed to create a block: " << ex.what();
+				catch(const std::exception& ex) {
+					log(WARN) << "Failed to create a block: " << ex.what();
+				}
 			}
 		}
 	}
