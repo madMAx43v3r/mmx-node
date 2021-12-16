@@ -978,7 +978,7 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, std::shared_ptr<c
 				}
 				else {
 					contract::PubKey simple;
-					simple.pubkey_hash = out.address;
+					simple.address = out.address;
 					if(!simple.validate(solution, tx->id)) {
 						throw std::logic_error("invalid solution");
 					}

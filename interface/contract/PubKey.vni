@@ -1,10 +1,11 @@
 package mmx.contract;
 
 import mmx.hash_t;
+import mmx.addr_t;
 
 class PubKey extends mmx.Contract {
 	
-	hash_t pubkey_hash;
+	addr_t address;
 	
 	
 //	bool is_valid() const;
