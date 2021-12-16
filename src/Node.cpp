@@ -387,6 +387,9 @@ void Node::handle(std::shared_ptr<const ProofResponse> value)
 		try {
 			const auto score = verify_proof(value->proof, challenge, value->request->space_diff);
 			if(score == value->score) {
+				if(iter == proof_map.end()) {
+					challenge_map.emplace(value->request->height, challenge);
+				}
 				proof_map[challenge] = value;
 			} else {
 				throw std::logic_error("score mismatch");
@@ -452,7 +455,7 @@ void Node::update()
 		// purge disconnected forks
 		purge_tree();
 
-		const auto best_fork = find_best_fork();
+		const auto best_fork = find_best_fork(root);
 
 		if(!best_fork || best_fork->block->hash == state_hash) {
 			// no change
@@ -530,72 +533,75 @@ void Node::update()
 	}
 
 	// try to make a block
-	bool made_block = false;
-	for(uint32_t prev_height = root->height; prev_height <= peak->height; ++prev_height)
 	{
-		std::shared_ptr<const BlockHeader> prev;
-		if(prev_height == root->height) {
-			prev = root;
-		} else if(auto fork = find_best_fork(&prev_height)) {
-			prev = fork->block;
-		} else {
-			continue;
-		}
-		auto diff_block = find_prev_header(prev, params->finality_delay, true);
-		if(!diff_block) {
-			continue;
-		}
+		bool made_block = false;
+		std::shared_ptr<const BlockHeader> prev = root;
+		for(uint32_t prev_height = root->height; prev_height <= peak->height; ++prev_height)
 		{
-			// request proof of time
-			auto request = IntervalRequest::create();
-			request->begin = prev->vdf_iters;
-			request->end = prev->vdf_iters + diff_block->time_diff * params->time_diff_constant;
-			request->interval = (params->block_time * 1e6) / params->num_vdf_segments;
+			if(auto fork = find_best_fork(prev, &prev_height)) {
+				prev = fork->block;
+			}
+			auto diff_block = find_prev_header(prev, params->finality_delay, true);
+			if(!diff_block) {
+				continue;
+			}
+			{
+				// request proof of time
+				auto request = IntervalRequest::create();
+				request->begin = prev->vdf_iters;
+				request->end = prev->vdf_iters + diff_block->time_diff * params->time_diff_constant;
+				request->interval = (params->block_time * 1e6) / params->num_vdf_segments;
 
-			auto iter = verified_vdfs.find(request->end);
-			if(iter != verified_vdfs.end()) {
-				// add dummy block in case no proof is found
-				auto block = Block::create();
-				block->prev = prev->hash;
-				block->height = prev->height + 1;
-				block->time_diff = prev->time_diff;
-				block->space_diff = prev->space_diff;
-				block->vdf_iters = iter->first;
-				block->vdf_output = iter->second.output;
-				block->finalize();
-				add_block(block);
-			}
-			else {
-				publish(request, output_interval_request);
-			}
-		}
-		hash_t vdf_challenge;
-		if(!find_vdf_challenge(prev, vdf_challenge, 1)) {
-			continue;
-		}
-		const auto challenge = get_challenge(prev, vdf_challenge, 1);
-		{
-			// publish challenge
-			auto value = Challenge::create();
-			value->height = prev->height + 1;
-			value->challenge = challenge;
-			value->space_diff = diff_block->space_diff;
-			publish(value, output_challenges);
-		}
-		if(!made_block) {
-			auto iter = proof_map.find(challenge);
-			if(iter != proof_map.end()) {
-				try {
-					if(make_block(prev, iter->second)) {
-						// update again right away
-						add_task(std::bind(&Node::update, this));
-						// only make one block at a time
-						made_block = true;
-						proof_map.erase(iter);
-					}
+				auto iter = verified_vdfs.find(request->end);
+				if(iter != verified_vdfs.end()) {
+					// add dummy block in case no proof is found
+					auto block = Block::create();
+					block->prev = prev->hash;
+					block->height = prev->height + 1;
+					block->time_diff = prev->time_diff;
+					block->space_diff = prev->space_diff;
+					block->vdf_iters = iter->first;
+					block->vdf_output = iter->second.output;
+					block->finalize();
+					add_block(block);
 				}
-				catch(const std::exception& ex) {
-					log(WARN) << "Failed to create a block: " << ex.what();
+				else {
+					publish(request, output_interval_request);
+				}
+			}
+			hash_t vdf_challenge;
+			if(!find_vdf_challenge(prev, vdf_challenge, 1)) {
+				continue;
+			}
+			const auto challenge = get_challenge(prev, vdf_challenge, 1);
+			{
+				// publish challenge
+				auto value = Challenge::create();
+				value->height = prev->height + 1;
+				value->challenge = challenge;
+				value->space_diff = diff_block->space_diff;
+				publish(value, output_challenges);
+			}
+			if(!made_block) {
+				auto iter = proof_map.find(challenge);
+				if(iter != proof_map.end()) {
+					const auto& proof = iter->second;
+					const auto next_height = prev->height + 1;
+					const auto best_fork = find_best_fork(prev, &next_height);
+					// check if we have a better proof
+					if(!best_fork || proof->score < best_fork->proof_score) {
+						try {
+							if(make_block(prev, proof)) {
+								// update again right away
+								add_task(std::bind(&Node::update, this));
+								// only make one block at a time
+								made_block = true;
+							}
+						}
+						catch(const std::exception& ex) {
+							log(WARN) << "Failed to create a block: " << ex.what();
+						}
+					}
 				}
 			}
 		}
@@ -787,16 +793,18 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	return true;
 }
 
-std::shared_ptr<Node::fork_t> Node::find_best_fork(const uint32_t* fork_height) const
+std::shared_ptr<Node::fork_t> Node::find_best_fork(std::shared_ptr<const BlockHeader> root, const uint32_t* fork_height) const
 {
 	uint128_t max_weight = 0;
 	std::shared_ptr<fork_t> best_fork;
 
-	const auto root = get_root();
 	for(const auto& entry : fork_tree)
 	{
 		const auto& fork = entry.second;
 		const auto& block = fork->block;
+		if(block->height <= root->height) {
+			continue;
+		}
 		if(fork_height && block->height != *fork_height) {
 			continue;
 		}
@@ -1064,6 +1072,13 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	}
 	for(size_t i = 0; i < block->tx_list.size(); ++i) {
 		tx_index[block->tx_list[i]->id] = std::make_pair(block->height, i);
+	}
+	{
+		const auto range = challenge_map.equal_range(block->height);
+		for(auto iter = range.first; iter != range.second; ++iter) {
+			proof_map.erase(iter->second);
+		}
+		challenge_map.erase(range.first, range.second);
 	}
 	hash_index[block->hash] = block->height;
 	history[block->height] = block->get_header();
