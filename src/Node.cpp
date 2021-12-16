@@ -281,8 +281,20 @@ void Node::add_block(std::shared_ptr<const Block> block)
 
 void Node::add_transaction(std::shared_ptr<const Transaction> tx)
 {
-	validate(tx);
-	handle(tx);
+	if(tx_pool.count(tx->id)) {
+		return;
+	}
+	if(!tx->is_valid()) {
+		return;
+	}
+	try {
+		validate(tx);
+		tx_pool[tx->id] = tx;
+	}
+	catch(const std::exception& ex) {
+		log(WARN) << "TX validation failed with: " << ex.what();
+		throw;
+	}
 }
 
 uint64_t Node::get_balance(const addr_t& address, const addr_t& contract) const
@@ -320,27 +332,12 @@ std::vector<std::pair<utxo_key_t, tx_out_t>> Node::get_utxo_list(const std::vect
 
 void Node::handle(std::shared_ptr<const Block> block)
 {
-	if(!block->proof) {
-		return;
-	}
 	add_block(block);
 }
 
 void Node::handle(std::shared_ptr<const Transaction> tx)
 {
-	if(tx_pool.count(tx->id)) {
-		return;
-	}
-	if(!tx->is_valid()) {
-		return;
-	}
-	try {
-		validate(tx);
-		tx_pool[tx->id] = tx;
-	}
-	catch(const std::exception& ex) {
-		log(WARN) << "TX validation failed with: " << ex.what();
-	}
+	add_transaction(tx);
 }
 
 void Node::handle(std::shared_ptr<const ProofOfTime> proof)
@@ -535,15 +532,6 @@ void Node::update()
 			apply(block);
 		}
 		if(is_valid) {
-			// commit to history
-			if(fork_line.size() > params->finality_delay) {
-				const size_t num_blocks = fork_line.size() - params->finality_delay;
-
-				auto iter = fork_line.begin();
-				for(size_t i = 0; i < num_blocks; ++i, ++iter) {
-					commit((*iter)->block);
-				}
-			}
 			break;
 		}
 		// try again
@@ -559,7 +547,10 @@ void Node::update()
 		log(WARN) << "Have no peak!";
 		return;
 	}
-	if(!prev_peak || peak->hash != prev_peak->hash) {
+	const auto fork_line = get_fork_line();
+
+	if(!prev_peak || peak->hash != prev_peak->hash)
+	{
 		const auto fork = find_fork(peak->hash);
 		log(INFO) << "New peak at height " << peak->height << " with score " << (fork ? std::to_string(fork->proof_score) : "?")
 				<< (did_fork ? " (forked at " + std::to_string(forked_at ? forked_at->height : -1) + ")" : "");
@@ -586,10 +577,22 @@ void Node::update()
 		}
 	}
 
-	// publish challenges for next blocks
+	// publish challenges for all fork blocks
 	{
-		auto block = peak;
-		for(uint32_t i = 0; block && i <= params->challenge_delay; ++i)
+		bool made_block = false;
+		std::vector<std::shared_ptr<const BlockHeader>> vdf_blocks;
+		{
+			auto block = get_root();
+			for(uint32_t i = 0; block && i < params->challenge_delay; ++i) {
+				vdf_blocks.push_back(block);
+				block = find_prev_header(block);
+			}
+			std::reverse(vdf_blocks.begin(), vdf_blocks.end());
+		}
+		for(const auto& fork : fork_line) {
+			vdf_blocks.push_back(fork->block);
+		}
+		for(const auto& block : vdf_blocks)
 		{
 			auto value = Challenge::create();
 			value->height = block->height + params->challenge_delay;
@@ -607,10 +610,30 @@ void Node::update()
 				continue;
 			}
 			challenge_diff[value->challenge] = value->space_diff;
+			publish(value, output_challenges);
 
-			publish(value, output_challanges);
-
-			block = find_prev_header(block);
+			// check if we can make a block
+			if(!made_block && value->height <= peak->height + 1)
+			{
+				auto iter = proof_map.find(value->challenge);
+				if(iter != proof_map.end()) {
+					try {
+						if(auto prev = find_prev_header(peak, (peak->height + 1) - value->height))
+						{
+							if(make_block(prev, iter->second)) {
+								// update again right away
+								add_task(std::bind(&Node::update, this));
+								// only make one block at a time
+								made_block = true;
+								proof_map.erase(iter);
+							}
+						}
+					}
+					catch(const std::exception& ex) {
+						log(WARN) << "Failed to create a block: " << ex.what();
+					}
+				}
+			}
 		}
 	}
 
@@ -634,60 +657,42 @@ void Node::update()
 		}
 	}
 
-	// try making a new block
-	{
-		auto vdf_iters = peak->vdf_iters;
-		for(uint32_t i = 0; i <= 1; ++i)
-		{
-			auto iter = verified_vdfs.find(vdf_iters);
-			if(iter != verified_vdfs.end()) {
-				// we can make a block here
-				if(auto prev = find_prev_header(peak, 1 - i)) {
-					try {
-						if(make_block(prev, *iter)) {
-							// update again right away
-							add_task(std::bind(&Node::update, this));
-							// only make one block at a time
-							break;
-						}
-					}
-					catch(const std::exception& ex) {
-						log(WARN) << "Failed to create a block: " << ex.what();
-					}
-				}
-			}
-			const auto diff_block = get_diff_header(peak, true);
-			vdf_iters += diff_block->time_diff * params->time_diff_constant;
+	// commit mature blocks
+	const auto now = vnx::get_time_micros();
+	for(const auto& fork : get_fork_line()) {
+		const auto elapsed = 1e-6 * (now - fork->recv_time);
+		if(elapsed > params->block_time * params->finality_delay) {
+			commit(fork->block);
 		}
 	}
 }
 
-bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<uint64_t, vdf_point_t>& vdf_point)
+bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response)
 {
 	auto block = Block::create();
 	block->prev = prev->hash;
 	block->height = prev->height + 1;
 	block->time_diff = prev->time_diff;
 	block->space_diff = prev->space_diff;
-	block->vdf_iters = vdf_point.first;
-	block->vdf_output = vdf_point.second.output;
 
-	hash_t vdf_challenge;
-	if(!find_vdf_challenge(block, vdf_challenge)) {
-		return false;
-	}
-	const auto challenge = get_challenge(block, vdf_challenge);
+	const auto diff_block = get_diff_header(block);
+	block->vdf_iters = prev->vdf_iters + diff_block->time_diff * params->time_diff_constant;
 
-	auto iter = proof_map.find(challenge);
-	if(iter == proof_map.end()) {
-		return false;
+	vdf_point_t vdf_point;
+	{
+		auto iter = verified_vdfs.find(block->vdf_iters);
+		if(iter != verified_vdfs.end()) {
+			vdf_point = iter->second;
+		} else {
+			return false;
+		}
 	}
-	const auto response = iter->second;
+	block->vdf_output = vdf_point.output;
 	{
 		// set new time difficulty
 		auto iter = verified_vdfs.find(prev->vdf_iters);
 		if(iter != verified_vdfs.end()) {
-			const int64_t time_delta = vdf_point.second.recv_time - iter->second.recv_time;
+			const int64_t time_delta = vdf_point.recv_time - iter->second.recv_time;
 			if(time_delta > 0) {
 				const double gain = 0.1;
 				double new_diff = params->block_time * ((block->vdf_iters - prev->vdf_iters) / params->time_diff_constant) / (time_delta * 1e-6);
@@ -811,9 +816,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<u
 	block->farmer_sig = result.second;
 	block->finalize();
 
-	handle(block);
-	proof_map.erase(iter);
-	challenge_diff.erase(challenge);
+	add_block(block);
 
 	log(INFO) << "Created block at height " << block->height << " with: ntx = " << block->tx_list.size()
 			<< ", score = " << response->score << ", reward = " << final_reward / pow(10, params->decimals) << " MMX"

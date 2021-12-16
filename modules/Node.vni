@@ -11,7 +11,7 @@ module Node {
 	vnx.TopicPtr output_committed_block = "node.committed_blocks";
 	vnx.TopicPtr output_verified_points = "node.verified_points";
 	vnx.TopicPtr output_interval_request = "timelord.requests";
-	vnx.TopicPtr output_challanges = "harvester.challenges";
+	vnx.TopicPtr output_challenges = "harvester.challenges";
 	
 	int update_interval_ms = 1000;			// [ms]
 	

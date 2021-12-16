@@ -76,7 +76,7 @@ private:
 
 	void update();
 
-	bool make_block(std::shared_ptr<const BlockHeader> prev, const std::pair<uint64_t, vdf_point_t>& vdf_point);
+	bool make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response);
 
 	bool calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<const fork_t> fork, uint64_t& total_weight);
 
