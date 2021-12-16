@@ -426,8 +426,7 @@ void Node::update()
 		iter++;
 	}
 
-// TODO: parallel is an issue
-//#pragma omp parallel for
+#pragma omp parallel for
 	for(const auto& entry : to_verify)
 	{
 		const auto& fork = entry.first;
