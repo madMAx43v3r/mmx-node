@@ -18,6 +18,8 @@ class ChainParams {
 	uint num_vdf_segments = 380;
 	uint max_vdf_segments = 1024;
 	
+	uint recursive_interval = 65536;		// number of blocks per iteration to approximate recursive functions
+	
 	uint score_bits = 10;
 	uint score_threshold = 1000;			// should be <= 2^score_bits
 	uint target_score = 125;				// defines how many competing blocks are created (must be less than score_threshold)
