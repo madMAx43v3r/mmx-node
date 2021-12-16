@@ -21,6 +21,9 @@ std::shared_ptr<const ChainParams> get_params()
 {
 	auto params = ChainParams::create();
 	vnx::read_config("chain.params", params);
+	if(params->challenge_delay < 1) {
+		throw std::logic_error("challenge_delay < 1");
+	}
 	if(params->challenge_delay > params->finality_delay) {
 		throw std::logic_error("challenge_delay > finality_delay");
 	}

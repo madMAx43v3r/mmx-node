@@ -79,7 +79,7 @@ private:
 
 	bool make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response);
 
-	std::shared_ptr<Node::fork_t> find_best_fork(const uint32_t max_height) const;
+	std::shared_ptr<Node::fork_t> find_best_fork(const uint32_t* fork_height = nullptr) const;
 
 	std::vector<std::shared_ptr<Node::fork_t>> get_fork_line(std::shared_ptr<fork_t> fork_head = nullptr) const;
 
@@ -120,11 +120,11 @@ private:
 
 	std::shared_ptr<const BlockHeader> get_diff_header(std::shared_ptr<const BlockHeader> block, bool for_next = false) const;
 
-	hash_t get_challenge(std::shared_ptr<const BlockHeader> block, const hash_t& vdf_challenge) const;
+	hash_t get_challenge(std::shared_ptr<const BlockHeader> block, const hash_t& vdf_challenge, uint32_t offset = 0) const;
+
+	bool find_vdf_challenge(std::shared_ptr<const BlockHeader> block, hash_t& vdf_challenge, uint32_t offset = 0) const;
 
 	bool find_vdf_output(const uint64_t vdf_iters, hash_t& vdf_output) const;
-
-	bool find_vdf_challenge(std::shared_ptr<const BlockHeader> block, hash_t& vdf_challenge) const;
 
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block) const;
 

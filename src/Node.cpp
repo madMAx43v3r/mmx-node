@@ -453,7 +453,7 @@ void Node::update()
 		// purge disconnected forks
 		purge_tree();
 
-		const auto best_fork = find_best_fork(-1);
+		const auto best_fork = find_best_fork();
 
 		if(!best_fork || best_fork->block->hash == state_hash) {
 			// no change
@@ -536,6 +536,7 @@ void Node::update()
 
 	// request next time points
 	{
+		// TODO: for all forks
 		auto vdf_iters = peak->vdf_iters;
 		for(uint32_t i = 0; i <= params->finality_delay; ++i)
 		{
@@ -555,77 +556,72 @@ void Node::update()
 		}
 	}
 
-	// publish challenges for all fork blocks
+	// try to make a block
+	for(uint32_t prev_height = root->height; prev_height <= peak->height; ++prev_height)
 	{
-		bool made_block = false;
-		std::vector<std::shared_ptr<const BlockHeader>> vdf_blocks;
-		{
-			auto block = get_root();
-			for(uint32_t i = 0; block && i < params->challenge_delay; ++i) {
-				vdf_blocks.push_back(block);
-				block = find_prev_header(block);
-			}
-			std::reverse(vdf_blocks.begin(), vdf_blocks.end());
+		std::shared_ptr<const BlockHeader> prev;
+		if(prev_height == root->height) {
+			prev = root;
+		} else if(auto fork = find_best_fork(&prev_height)) {
+			prev = fork->block;
+		} else {
+			continue;
 		}
-		for(const auto& fork : fork_line) {
-			vdf_blocks.push_back(fork->block);
+		hash_t vdf_challenge;
+		if(!find_vdf_challenge(prev, vdf_challenge, 1)) {
+			continue;
 		}
-		for(const auto& block : vdf_blocks)
+		const auto challenge = get_challenge(prev, vdf_challenge, 1);
 		{
+			// publish challenge
 			auto value = Challenge::create();
-			value->height = block->height + params->challenge_delay;
-			{
-				const auto height = block->height - (block->height % params->challenge_interval);
-				if(auto prev = find_prev_header(block, block->height - height)) {
-					value->challenge = hash_t(prev->hash + block->vdf_output);
-				} else {
-					continue;
-				}
-			}
-			if(auto diff_block = find_prev_header(block, 1 + (params->finality_delay - params->challenge_delay), true)) {
+			value->height = prev->height + 1;
+			value->challenge = challenge;
+			if(auto diff_block = find_prev_header(prev, params->finality_delay, true)) {
 				value->space_diff = diff_block->space_diff;
-			} else {
-				continue;
+				publish(value, output_challenges);
 			}
-			publish(value, output_challenges);
+		}
 
-			// check if we can make a block
-			if(!made_block && value->height <= peak->height + 1)
-			{
-				auto iter = proof_map.find(value->challenge);
-				if(iter != proof_map.end()) {
-					// find best fork to build on for this height
-					std::shared_ptr<const BlockHeader> prev;
-					if(value->height == root->height + 1) {
-						prev = root;
-					}
-					else if(auto fork = find_best_fork(value->height - 1))
-					{
-						if(fork->block->height == value->height - 1) {
-							prev = fork->block;
-						}
-					}
-					if(prev) {
-						try {
-							if(make_block(prev, iter->second)) {
-								// update again right away
-								add_task(std::bind(&Node::update, this));
-								// only make one block at a time
-								made_block = true;
-								proof_map.erase(iter);
-							}
-						}
-						catch(const std::exception& ex) {
-							log(WARN) << "Failed to create a block: " << ex.what();
-						}
-					}
+		// check if we can make a block
+		auto iter = proof_map.find(challenge);
+		if(iter != proof_map.end()) {
+			try {
+				if(make_block(prev, iter->second)) {
+					// update again right away
+					add_task(std::bind(&Node::update, this));
+					proof_map.erase(iter);
+					// only make one block at a time
+					break;
 				}
 			}
+			catch(const std::exception& ex) {
+				log(WARN) << "Failed to create a block: " << ex.what();
+			}
+		}
+	}
+
+	// publish advance challenges
+	for(uint32_t i = 2; i <= params->challenge_delay; ++i)
+	{
+		hash_t vdf_challenge;
+		if(!find_vdf_challenge(peak, vdf_challenge, i)) {
+			continue;
+		}
+		const auto challenge = get_challenge(peak, vdf_challenge, i);
+
+		auto value = Challenge::create();
+		value->height = peak->height + i;
+		value->challenge = challenge;
+		if(auto diff_block = find_prev_header(peak, (params->finality_delay + 1) - i, true)) {
+			value->space_diff = diff_block->space_diff;
+			publish(value, output_challenges);
 		}
 	}
 
 	// add dummy block in case no proof is found
 	{
+		// TODO: for all forks
 		const auto diff_block = get_diff_header(peak, true);
 		const auto vdf_iters = peak->vdf_iters + diff_block->time_diff * params->time_diff_constant;
 
@@ -812,7 +808,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	return true;
 }
 
-std::shared_ptr<Node::fork_t> Node::find_best_fork(const uint32_t max_height) const
+std::shared_ptr<Node::fork_t> Node::find_best_fork(const uint32_t* fork_height) const
 {
 	uint128_t max_weight = 0;
 	std::shared_ptr<fork_t> best_fork;
@@ -822,7 +818,7 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork(const uint32_t max_height) co
 	{
 		const auto& fork = entry.second;
 		const auto& block = fork->block;
-		if(block->height > max_height) {
+		if(fork_height && block->height != *fork_height) {
 			continue;
 		}
 		uint128_t weight = 0;
@@ -1347,9 +1343,13 @@ std::shared_ptr<const BlockHeader> Node::get_diff_header(std::shared_ptr<const B
 	throw std::logic_error("cannot find difficulty header");
 }
 
-hash_t Node::get_challenge(std::shared_ptr<const BlockHeader> block, const hash_t& vdf_challenge) const
+hash_t Node::get_challenge(std::shared_ptr<const BlockHeader> block, const hash_t& vdf_challenge, uint32_t offset) const
 {
-	uint32_t height = block->height > params->challenge_delay ? block->height - params->challenge_delay : 0;
+	if(offset > params->challenge_delay) {
+		throw std::logic_error("offset out of range");
+	}
+	uint32_t height = block->height + offset;
+	height -= std::min(params->challenge_delay, height);
 	height -= (height % params->challenge_interval);
 
 	if(auto prev = find_prev_header(block, block->height - height)) {
@@ -1358,21 +1358,24 @@ hash_t Node::get_challenge(std::shared_ptr<const BlockHeader> block, const hash_
 	return hash_t();
 }
 
+bool Node::find_vdf_challenge(std::shared_ptr<const BlockHeader> block, hash_t& vdf_challenge, uint32_t offset) const
+{
+	if(offset > params->challenge_delay) {
+		throw std::logic_error("offset out of range");
+	}
+	if(auto vdf_block = find_prev_header(block, params->challenge_delay - offset, true)) {
+		vdf_challenge = vdf_block->vdf_output;
+		return true;
+	}
+	return false;
+}
+
 bool Node::find_vdf_output(const uint64_t vdf_iters, hash_t& vdf_output) const
 {
 	auto iter = verified_vdfs.find(vdf_iters);
 	if(iter != verified_vdfs.end()) {
 		vdf_output = iter->second.output;
 		return true;
-	}
-	return false;
-}
-
-bool Node::find_vdf_challenge(std::shared_ptr<const BlockHeader> block, hash_t& vdf_challenge) const
-{
-	if(auto vdf_block = find_prev_header(block, params->challenge_delay, true))
-	{
-		return find_vdf_output(vdf_block->vdf_iters, vdf_challenge);
 	}
 	return false;
 }
