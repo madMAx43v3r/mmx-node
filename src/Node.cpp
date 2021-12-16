@@ -116,8 +116,7 @@ void Node::main()
 			try {
 				if(auto value = vnx::read(in)) {
 					if(auto block = std::dynamic_pointer_cast<Block>(value)) {
-						handle(block);
-						update();
+						add_block(block);
 					}
 				} else {
 					break;
@@ -427,7 +426,8 @@ void Node::update()
 		iter++;
 	}
 
-#pragma omp parallel for
+// TODO: parallel is an issue
+//#pragma omp parallel for
 	for(const auto& entry : to_verify)
 	{
 		const auto& fork = entry.first;
@@ -517,9 +517,6 @@ void Node::update()
 		forked_at = nullptr;
 	}
 
-	if(is_replay) {
-		return;
-	}
 	const auto peak = find_header(state_hash);
 	if(!peak) {
 		log(WARN) << "Have no peak!";
