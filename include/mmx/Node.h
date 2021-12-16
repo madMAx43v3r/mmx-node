@@ -60,6 +60,7 @@ private:
 		int64_t recv_time = 0;
 		std::weak_ptr<fork_t> prev;
 		std::shared_ptr<const Block> block;
+		std::shared_ptr<const BlockHeader> diff_block;
 	};
 
 	struct vdf_point_t {
@@ -82,7 +83,7 @@ private:
 
 	std::vector<std::shared_ptr<Node::fork_t>> get_fork_line(std::shared_ptr<fork_t> fork_head = nullptr) const;
 
-	bool calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<const fork_t> fork, uint64_t& total_weight) const;
+	bool calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<fork_t> fork, uint128_t& total_weight) const;
 
 	void validate(std::shared_ptr<const Block> block) const;
 
