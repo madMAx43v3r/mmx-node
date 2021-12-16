@@ -2,8 +2,6 @@ package mmx;
 
 class ChainParams {
 	
-	double block_time = 10;					// [sec]
-	
 	uint tcp_port;
 	uint decimals = 6;
 	uint min_ksize = 30;
@@ -39,6 +37,8 @@ class ChainParams {
 	
 	ulong min_txfee_exec = 100000;			// per operation
 	ulong min_txfee_inout = 500;			// per input / output
+	
+	double block_time = 10;					// [sec]
 	
 	string vdf_seed;
 	
