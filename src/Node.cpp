@@ -260,6 +260,25 @@ std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id) const
 	return nullptr;
 }
 
+void Node::add_block(std::shared_ptr<const Block> block)
+{
+	if(fork_tree.count(block->hash)) {
+		return;
+	}
+	auto root = get_root();
+	if(block->height <= root->height) {
+		return;
+	}
+	if(!block->is_valid()) {
+		return;
+	}
+	auto fork = std::make_shared<fork_t>();
+	fork->recv_time = vnx::get_time_micros();
+	fork->prev = find_fork(block->prev);
+	fork->block = block;
+	fork_tree[block->hash] = fork;
+}
+
 void Node::add_transaction(std::shared_ptr<const Transaction> tx)
 {
 	validate(tx);
@@ -301,21 +320,10 @@ std::vector<std::pair<utxo_key_t, tx_out_t>> Node::get_utxo_list(const std::vect
 
 void Node::handle(std::shared_ptr<const Block> block)
 {
-	if(fork_tree.count(block->hash)) {
+	if(!block->proof) {
 		return;
 	}
-	auto root = get_root();
-	if(block->height <= root->height) {
-		return;
-	}
-	if(!block->is_valid()) {
-		return;
-	}
-	auto fork = std::make_shared<fork_t>();
-	fork->recv_time = vnx_sample ? vnx_sample->recv_time : vnx::get_time_micros();
-	fork->prev = find_fork(block->prev);
-	fork->block = block;
-	fork_tree[block->hash] = fork;
+	add_block(block);
 }
 
 void Node::handle(std::shared_ptr<const Transaction> tx)
@@ -622,7 +630,7 @@ void Node::update()
 			block->vdf_iters = vdf_iters;
 			block->vdf_output = vdf_output;
 			block->finalize();
-			handle(block);
+			add_block(block);
 		}
 	}
 

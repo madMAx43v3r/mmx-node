@@ -34,6 +34,8 @@ protected:
 
 	std::shared_ptr<const Transaction> get_transaction(const hash_t& id) const override;
 
+	void add_block(std::shared_ptr<const Block> block) override;
+
 	void add_transaction(std::shared_ptr<const Transaction> tx) override;
 
 	uint64_t get_balance(const addr_t& address, const addr_t& contract) const override;

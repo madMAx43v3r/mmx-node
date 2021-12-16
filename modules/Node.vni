@@ -30,6 +30,8 @@ module Node {
 	
 	Transaction* get_transaction(hash_t id) const;
 	
+	void add_block(Block* block);
+	
 	void add_transaction(Transaction* tx);
 	
 	ulong get_balance(addr_t address, addr_t contract) const;
