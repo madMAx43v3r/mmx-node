@@ -556,7 +556,21 @@ void Node::update()
 			request->begin = prev->vdf_iters;
 			request->end = prev->vdf_iters + diff_block->time_diff * params->time_diff_constant;
 			request->interval = (params->block_time * 1e6) / params->num_vdf_segments;
-			if(!verified_vdfs.count(request->end)) {
+
+			auto iter = verified_vdfs.find(request->end);
+			if(iter != verified_vdfs.end()) {
+				// add dummy block in case no proof is found
+				auto block = Block::create();
+				block->prev = prev->hash;
+				block->height = prev->height + 1;
+				block->time_diff = prev->time_diff;
+				block->space_diff = prev->space_diff;
+				block->vdf_iters = iter->first;
+				block->vdf_output = iter->second.output;
+				block->finalize();
+				add_block(block);
+			}
+			else {
 				publish(request, output_interval_request);
 			}
 		}
@@ -607,27 +621,6 @@ void Node::update()
 		if(auto diff_block = find_prev_header(peak, (params->finality_delay + 1) - i, true)) {
 			value->space_diff = diff_block->space_diff;
 			publish(value, output_challenges);
-		}
-	}
-
-	// add dummy block in case no proof is found
-	{
-		// TODO: for all forks
-		const auto diff_block = get_diff_header(peak, true);
-		const auto vdf_iters = peak->vdf_iters + diff_block->time_diff * params->time_diff_constant;
-
-		hash_t vdf_output;
-		if(find_vdf_output(vdf_iters, vdf_output))
-		{
-			auto block = Block::create();
-			block->prev = peak->hash;
-			block->height = peak->height + 1;
-			block->time_diff = peak->time_diff;
-			block->space_diff = peak->space_diff;
-			block->vdf_iters = vdf_iters;
-			block->vdf_output = vdf_output;
-			block->finalize();
-			add_block(block);
 		}
 	}
 
