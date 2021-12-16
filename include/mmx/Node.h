@@ -78,9 +78,11 @@ private:
 
 	bool make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response);
 
-	bool calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<const fork_t> fork, uint64_t& total_weight);
+	std::shared_ptr<Node::fork_t> find_best_fork(const uint32_t max_height) const;
 
 	std::vector<std::shared_ptr<Node::fork_t>> get_fork_line(std::shared_ptr<fork_t> fork_head = nullptr) const;
+
+	bool calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<const fork_t> fork, uint64_t& total_weight) const;
 
 	void validate(std::shared_ptr<const Block> block) const;
 
@@ -142,7 +144,6 @@ private:
 	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_pool;
 
 	std::map<uint64_t, vdf_point_t> verified_vdfs;									// [iters => output]
-	std::unordered_map<hash_t, uint64_t> challenge_diff;							// [challenge => space diff]
 	std::unordered_map<hash_t, std::shared_ptr<const ProofResponse>> proof_map;		// [challenge => proof]
 
 	bool is_replay = true;

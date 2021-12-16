@@ -2,13 +2,11 @@ package mmx;
 
 class ProofResponse {
 	
-	uint height;
-	
-	uint score;
-	
-	hash_t challenge;
+	Challenge* request;
 	
 	ProofOfSpace* proof;
+	
+	uint score;
 	
 	vnx.Hash64 farmer_addr;
 	

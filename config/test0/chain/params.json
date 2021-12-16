@@ -7,8 +7,9 @@
 	"vdf_seed": "test0",
 	"reward_factor": {
 		"value": 1,
-		"inverse": 100000000
+		"inverse": 100000
 	},
 	"initial_time_diff": 500,
-	"initial_space_diff": 64
+	"initial_space_diff": 1,
+	"space_diff_constant": 1778384896
 }

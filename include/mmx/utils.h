@@ -38,10 +38,10 @@ inline
 uint128_t calc_proof_score(	std::shared_ptr<const ChainParams> params,
 							const uint8_t ksize, const hash_t& quality, const uint64_t space_diff)
 {
-	uint128_t modulo = uint128_t(space_diff) * params->space_diff_constant;
-	modulo /= (2 * ksize) + 1;
-	modulo >>= ksize - 1;
-	return quality.to_uint256() % modulo;
+	uint256_t divider = (uint256_1 << (256 - params->score_bits)) / (uint128_t(space_diff) * params->space_diff_constant);
+	divider *= (2 * ksize) + 1;
+	divider <<= ksize - 1;
+	return quality.to_uint256() / divider;
 }
 
 inline

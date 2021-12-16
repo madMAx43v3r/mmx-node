@@ -381,24 +381,23 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 
 void Node::handle(std::shared_ptr<const ProofResponse> value)
 {
-	if(!value->proof) {
+	if(!value->proof || !value->request || value->score >= params->score_threshold) {
 		return;
 	}
-	auto iter = proof_map.find(value->challenge);
+	const auto challenge = value->request->challenge;
+
+	auto iter = proof_map.find(challenge);
 	if(iter == proof_map.end() || value->score < iter->second->score)
 	{
-		auto iter = challenge_diff.find(value->challenge);
-		if(iter != challenge_diff.end()) {
-			try {
-				const auto score = verify_proof(value->proof, value->challenge, iter->second);
-				if(score == value->score) {
-					proof_map[value->challenge] = value;
-				} else {
-					throw std::logic_error("score mismatch");
-				}
-			} catch(const std::exception& ex) {
-				log(WARN) << "Got invalid proof: " << ex.what();
+		try {
+			const auto score = verify_proof(value->proof, challenge, value->request->space_diff);
+			if(score == value->score) {
+				proof_map[challenge] = value;
+			} else {
+				throw std::logic_error("score mismatch");
 			}
+		} catch(const std::exception& ex) {
+			log(WARN) << "Got invalid proof: " << ex.what();
 		}
 	}
 }
@@ -447,6 +446,7 @@ void Node::update()
 			log(WARN) << "Proof verification failed for a block at height " << block->height << " with: " << ex.what();
 		}
 	}
+	const auto root = get_root();
 	const auto prev_peak = find_header(state_hash);
 
 	bool did_fork = false;
@@ -457,26 +457,8 @@ void Node::update()
 		// purge disconnected forks
 		purge_tree();
 
-		uint64_t max_weight = 0;
-		std::shared_ptr<fork_t> best_fork;
+		const auto best_fork = find_best_fork(-1);
 
-		// find best fork
-		const auto root = get_root();
-		for(const auto& entry : fork_tree)
-		{
-			const auto& fork = entry.second;
-			const auto& block = fork->block;
-
-			uint64_t weight = 0;
-			if(calc_fork_weight(root, fork, weight))
-			{
-				if(!best_fork || weight > max_weight || (weight == max_weight && block->hash < best_fork->block->hash))
-				{
-					best_fork = fork;
-					max_weight = weight;
-				}
-			}
-		}
 		if(!best_fork || best_fork->block->hash == state_hash) {
 			// no change
 			break;
@@ -609,7 +591,6 @@ void Node::update()
 			} else {
 				continue;
 			}
-			challenge_diff[value->challenge] = value->space_diff;
 			publish(value, output_challenges);
 
 			// check if we can make a block
@@ -617,9 +598,19 @@ void Node::update()
 			{
 				auto iter = proof_map.find(value->challenge);
 				if(iter != proof_map.end()) {
-					try {
-						if(auto prev = find_prev_header(peak, (peak->height + 1) - value->height))
-						{
+					// find best fork to build on for this height
+					std::shared_ptr<const BlockHeader> prev;
+					if(value->height == root->height + 1) {
+						prev = root;
+					}
+					else if(auto fork = find_best_fork(value->height - 1))
+					{
+						if(fork->block->height == value->height - 1) {
+							prev = fork->block;
+						}
+					}
+					if(prev) {
+						try {
 							if(make_block(prev, iter->second)) {
 								// update again right away
 								add_task(std::bind(&Node::update, this));
@@ -628,9 +619,9 @@ void Node::update()
 								proof_map.erase(iter);
 							}
 						}
-					}
-					catch(const std::exception& ex) {
-						log(WARN) << "Failed to create a block: " << ex.what();
+						catch(const std::exception& ex) {
+							log(WARN) << "Failed to create a block: " << ex.what();
+						}
 					}
 				}
 			}
@@ -825,6 +816,32 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	return true;
 }
 
+std::shared_ptr<Node::fork_t> Node::find_best_fork(const uint32_t max_height) const
+{
+	uint64_t max_weight = 0;
+	std::shared_ptr<fork_t> best_fork;
+
+	const auto root = get_root();
+	for(const auto& entry : fork_tree)
+	{
+		const auto& fork = entry.second;
+		const auto& block = fork->block;
+		if(block->height > max_height) {
+			continue;
+		}
+		uint64_t weight = 0;
+		if(calc_fork_weight(root, fork, weight))
+		{
+			if(!best_fork || weight > max_weight || (weight == max_weight && block->hash < best_fork->block->hash))
+			{
+				best_fork = fork;
+				max_weight = weight;
+			}
+		}
+	}
+	return best_fork;
+}
+
 std::vector<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<fork_t> fork_head) const
 {
 	std::vector<std::shared_ptr<fork_t>> line;
@@ -837,7 +854,7 @@ std::vector<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<f
 	return line;
 }
 
-bool Node::calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<const fork_t> fork, uint64_t& total_weight)
+bool Node::calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<const fork_t> fork, uint64_t& total_weight) const
 {
 	while(fork) {
 		const auto& block = fork->block;

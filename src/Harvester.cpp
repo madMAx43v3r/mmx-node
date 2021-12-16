@@ -103,9 +103,8 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	}
 	if(best_proof) {
 		auto out = ProofResponse::create();
-		out->height = value->height;
+		out->request = value;
 		out->score = best_score;
-		out->challenge = value->challenge;
 		out->farmer_addr = farmer_addr;
 
 		bls::AugSchemeMPL MPL;

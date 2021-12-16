@@ -12,7 +12,9 @@ class ChainParams {
 	uint challenge_interval = 64;			// challenge is for next N blocks
 	uint max_diff_adjust = 10;				// per block (1/2^x)
 	uint num_vdf_segments = 184;
-	uint score_threshold = 1000;
+	
+	uint score_bits = 10;
+	uint score_threshold = 1000;			// should be <= 2^score_bits
 	uint target_score = 125;				// defines how many competing blocks are created (must be less than score_threshold)
 	
 	uint min_ksize = 30;
