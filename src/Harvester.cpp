@@ -22,6 +22,9 @@ Harvester::Harvester(const std::string& _vnx_name)
 
 void Harvester::main()
 {
+	if(!num_threads) {
+		num_threads = std::max<size_t>(plot_dirs.size(), 1);
+	}
 	params = get_params();
 
 	subscribe(input_challenges, 1000);
