@@ -916,7 +916,6 @@ void Node::validate(std::shared_ptr<const Block> block) const
 	}
 	{
 		std::unordered_set<utxo_key_t> inputs;
-		inputs.reserve(16 * 1024);
 		for(const auto& tx : block->tx_list) {
 			for(const auto& in : tx->inputs) {
 				if(!inputs.insert(in.prev).second) {
@@ -938,7 +937,7 @@ void Node::validate(std::shared_ptr<const Block> block) const
 		}
 	}
 	if(failed_ex) {
-		throw failed_ex;
+		std::rethrow_exception(failed_ex);
 	}
 	if(total_fees > params->max_block_cost) {
 		throw std::logic_error("block cost too high");
