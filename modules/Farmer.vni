@@ -12,6 +12,6 @@ module Farmer {
 	
 	vnx.Hash64 get_mac_addr() const;
 	
-	pair<Transaction*, bls_signature_t> sign_block(BlockHeader* block, ulong reward_amount) const;
+	BlockHeader* sign_block(BlockHeader* block, ulong reward_amount) const;
 	
 }

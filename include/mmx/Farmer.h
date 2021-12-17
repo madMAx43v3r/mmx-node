@@ -25,7 +25,7 @@ protected:
 
 	vnx::Hash64 get_mac_addr() const override;
 
-	std::pair<std::shared_ptr<const Transaction>, bls_signature_t>
+	std::shared_ptr<const BlockHeader>
 	sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& reward_amount) const override;
 
 private:

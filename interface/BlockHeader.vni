@@ -19,6 +19,7 @@ class BlockHeader {
 	
 	hash_t tx_hash;
 	
+	optional<bls_signature_t> pool_sig;
 	optional<bls_signature_t> farmer_sig;
 	
 	

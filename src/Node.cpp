@@ -775,8 +775,12 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	const auto final_reward = std::max(std::max(block_reward, params->min_reward), uint64_t(total_fees));
 	const auto result = farmer.sign_block(block, final_reward);
 
-	block->tx_base = result.first;
-	block->farmer_sig = result.second;
+	if(!result) {
+		throw std::logic_error("farmer refused");
+	}
+	block->tx_base = result->tx_base;
+	block->pool_sig = result->pool_sig;
+	block->farmer_sig = result->farmer_sig;
 	block->finalize();
 
 	add_block(block);
@@ -865,6 +869,9 @@ void Node::validate(std::shared_ptr<const Block> block) const
 		throw std::logic_error("invalid difficulty");
 	}
 	if(auto proof = block->proof) {
+		if(!block->pool_sig || !block->pool_sig->verify(proof->pool_key, block->hash)) {
+			throw std::logic_error("invalid pool signature");
+		}
 		if(!block->farmer_sig || !block->farmer_sig->verify(proof->farmer_key, block->hash)) {
 			throw std::logic_error("invalid farmer signature");
 		}
