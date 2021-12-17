@@ -220,8 +220,8 @@ void TimeLord::vdf_loop(time_point_t point)
 			}
 			if(!history.empty()) {
 				const auto begin = history.begin()->first;
-				infuse.erase(infuse.begin(), infuse.upper_bound(begin));
-				infuse_history.erase(infuse_history.begin(), infuse_history.upper_bound(begin));
+				infuse.erase(infuse.begin(), infuse.lower_bound(begin));
+				infuse_history.erase(infuse_history.begin(), infuse_history.lower_bound(begin));
 			}
 			{
 				auto iter = infuse.upper_bound(point.num_iters);

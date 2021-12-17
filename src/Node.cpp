@@ -110,21 +110,23 @@ void Node::main()
 		auto genesis = Block::create();
 		genesis->time_diff = params->initial_time_diff;
 		genesis->space_diff = params->initial_space_diff;
+		genesis->vdf_output = hash_t(params->vdf_seed);
 		genesis->finalize();
 
 		apply(genesis);
 		commit(genesis);
 	}
-
-	if(!verified_vdfs.empty())
-	{
+	if(!verified_vdfs.empty()) {
 		const auto iter = --verified_vdfs.end();
 		auto proof = ProofOfTime::create();
 		proof->start = iter->first;
 		proof->segments.resize(1);
 		proof->segments[0].output = iter->second.output;
 		publish(proof, output_verified_vdfs, BLOCKING);
+	} else {
+		log(WARN) << "Have no initital VDF point!";
 	}
+	update();
 
 	set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
 
@@ -1091,8 +1093,8 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	}
 	if(!history.empty()) {
 		const auto begin = history.begin()->second->vdf_iters;
-		vdf_infusions.erase(vdf_infusions.begin(), vdf_infusions.upper_bound(begin));
-		verified_vdfs.erase(verified_vdfs.begin(), verified_vdfs.upper_bound(begin));
+		vdf_infusions.erase(vdf_infusions.begin(), vdf_infusions.lower_bound(begin));
+		verified_vdfs.erase(verified_vdfs.begin(), verified_vdfs.lower_bound(begin));
 	}
 	if(!is_replay) {
 		const auto fork = find_fork(block->hash);
