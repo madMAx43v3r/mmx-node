@@ -54,6 +54,7 @@ std::shared_ptr<const ProofOfTime> ProofOfTime::compressed() const
 {
 	auto out = ProofOfTime::create();
 	out->start = start;
+	out->infuse = infuse;
 	{
 		time_segment_t seg;
 		seg.num_iters = get_num_iters();
