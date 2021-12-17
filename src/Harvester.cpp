@@ -62,7 +62,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	}
 	std::vector<std::vector<uint128_t>> scores(plots.size());
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(num_threads)
 	for(size_t i = 0; i < plots.size(); ++i)
 	{
 		const auto& prover = plots[i];
@@ -146,7 +146,7 @@ void Harvester::reload()
 {
 	std::vector<std::pair<std::shared_ptr<vnx::File>, std::shared_ptr<chiapos::DiskProver>>> plots;
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(num_threads)
 	for(const auto& path : plot_dirs)
 	{
 		vnx::Directory dir(path);

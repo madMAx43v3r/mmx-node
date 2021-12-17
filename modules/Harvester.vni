@@ -12,6 +12,8 @@ module Harvester {
 	
 	int reload_interval = 3600;				// [sec]
 	
+	uint num_threads = 16;
+	
 	bool self_test;
 	
 	
