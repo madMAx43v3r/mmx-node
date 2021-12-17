@@ -58,6 +58,20 @@ void TimeLord::handle(std::shared_ptr<const ProofOfTime> value)
 	point.num_iters = value->start + value->get_num_iters();
 	point.output = value->get_output();
 
+	// check if we forked
+	{
+		auto iter = history.find(point.num_iters);
+		if(iter != history.end()) {
+			if(iter->second != point.output) {
+				history.clear();
+				infuse_history.clear();
+				latest_point = nullptr;
+				do_restart = true;
+				log(WARN) << "Our VDF forked from the network, restarting...";
+			}
+		}
+	}
+
 	if(!latest_point || point.num_iters > latest_point->num_iters)
 	{
 		auto num_iters = value->start;
@@ -65,6 +79,11 @@ void TimeLord::handle(std::shared_ptr<const ProofOfTime> value)
 			num_iters += seg.num_iters;
 			if(!latest_point || num_iters > latest_point->num_iters) {
 				history[num_iters] = seg.output;
+			}
+		}
+		for(const auto& entry : value->infuse) {
+			if(!latest_point || entry.first > latest_point->num_iters) {
+				infuse_history.insert(entry);
 			}
 		}
 		if(!latest_point) {
@@ -183,9 +202,9 @@ void TimeLord::vdf_loop(time_point_t point)
 		{
 			std::lock_guard<std::recursive_mutex> lock(mutex);
 
-			if(latest_point && latest_point->num_iters > point.num_iters)
+			if(latest_point && (do_restart || latest_point->num_iters > point.num_iters))
 			{
-				// somebody else is faster
+				do_restart = false;
 				point = *latest_point;
 				log(INFO) << "Restarted VDF at " << point.num_iters;
 			}
@@ -204,19 +223,22 @@ void TimeLord::vdf_loop(time_point_t point)
 				infuse.erase(infuse.begin(), infuse.upper_bound(begin));
 				infuse_history.erase(infuse_history.begin(), infuse_history.upper_bound(begin));
 			}
-			for(const auto& entry : infuse) {
-				if(entry.first > point.num_iters) {
-					next_target = entry.first;
-					break;
+			{
+				auto iter = infuse.upper_bound(point.num_iters);
+				if(iter != infuse.end()) {
+					if(!next_target || iter->first < next_target) {
+						next_target = iter->first;
+					}
 				}
 			}
-			for(const auto& entry : pending) {
-				if(entry.first > point.num_iters) {
-					if(!next_target || entry.first < next_target) {
-						next_target = entry.first;
+			{
+				auto iter = pending.upper_bound(std::make_pair(point.num_iters, point.num_iters));
+				if(iter != pending.end()) {
+					if(!next_target || iter->first < next_target) {
+						next_target = iter->first;
 					}
-					break;
-				} else {
+				}
+				if(iter != pending.begin()) {
 					do_notify = true;
 				}
 			}
@@ -261,7 +283,9 @@ hash_t TimeLord::compute(const hash_t& input, const uint64_t start, const uint64
 		auto iter = infuse.find(start);
 		if(iter != infuse.end()) {
 			hash = hash_t(hash + iter->second);
-			infuse_history.insert(*iter);
+			if(!do_restart) {
+				infuse_history.insert(*iter);
+			}
 		}
 	}
 	for(uint64_t i = 0; i < num_iters; ++i) {

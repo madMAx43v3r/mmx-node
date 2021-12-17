@@ -48,6 +48,7 @@ private:
 	std::thread vdf_thread;
 	std::recursive_mutex mutex;
 
+	bool do_restart = false;
 	uint64_t checkpoint_iters = 0;
 
 	std::map<uint64_t, hash_t> infuse;
