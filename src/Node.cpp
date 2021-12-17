@@ -263,6 +263,9 @@ void Node::add_transaction(std::shared_ptr<const Transaction> tx)
 		log(WARN) << "TX validation failed with: " << ex.what();
 		throw;
 	}
+	if(!vnx_sample) {
+		publish(tx, output_transactions);
+	}
 }
 
 uint64_t Node::get_balance(const addr_t& address, const addr_t& contract) const
@@ -492,7 +495,9 @@ void Node::update()
 					is_valid = false;
 					break;
 				}
-				publish(block, output_verified_blocks, BLOCKING);
+				if(!is_replay) {
+					publish(block, output_verified_blocks, BLOCKING);
+				}
 			}
 			apply(block);
 		}

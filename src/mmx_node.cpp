@@ -11,10 +11,12 @@
 #include <mmx/Farmer.h>
 #include <mmx/Harvester.h>
 #include <mmx/secp256k1.hpp>
+#include <mmx/utils.h>
 
 #include <vnx/vnx.h>
 #include <vnx/Server.h>
 #include <vnx/Terminal.h>
+#include <vnx/TcpEndpoint.hxx>
 
 
 int main(int argc, char** argv)
@@ -26,6 +28,8 @@ int main(int argc, char** argv)
 
 	vnx::init("mmx_node", argc, argv, options);
 
+	const auto params = mmx::get_params();
+
 	bool with_timelord = true;
 	vnx::read_config("timelord", with_timelord);
 
@@ -34,7 +38,14 @@ int main(int argc, char** argv)
 		module.start_detached();
 	}
 	{
-		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url(".mmx_node.sock"));
+		vnx::Handle<vnx::Server> module = new vnx::Server("LocalServer", vnx::Endpoint::from_url(".mmx_node.sock"));
+		module.start_detached();
+	}
+	{
+		vnx::Handle<vnx::Server> module = new vnx::Server("NetworkServer", vnx::TcpEndpoint::create("0.0.0.0", params->tcp_port));
+		module->allow_login = false;
+		module->use_authentication = true;
+		module->default_access = "NETWORK";
 		module.start_detached();
 	}
 	if(with_timelord) {

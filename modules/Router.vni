@@ -1,0 +1,41 @@
+package mmx;
+
+module Router {
+	
+	vnx.TopicPtr input_vdfs = "timelord.proofs";
+	vnx.TopicPtr input_blocks = "node.verified_blocks";
+	vnx.TopicPtr input_transactions = "node.transactions";
+	
+	int update_interval_ms = 1000;			// [ms]
+	
+	uint msg_fanout = 2;					// how often to replicate a message
+	
+	uint min_peers_sync = 3;				// minimum peer count for synching
+	
+	uint num_peers_outgoing = 8;			// maximum outgoing connections to create
+	
+	vector<string> seed_peers;
+	
+	string node_server = "Node";
+	
+	
+	@Permission(permission_e.PUBLIC)
+	void on_block(Block* block);
+	
+	@Permission(permission_e.PUBLIC)
+	void on_vdf(ProofOfTime* proof);
+	
+	@Permission(permission_e.PUBLIC)
+	void on_transaction(Transaction* tx);
+	
+	@Permission(permission_e.PUBLIC)
+	vector<string> get_peers(uint max_count) const;
+	
+	vector<Block*> get_blocks_at(uint height) const;
+	
+	
+	void handle(Block sample);
+	void handle(Transaction sample);
+	void handle(ProofOfTime sample);
+	
+}

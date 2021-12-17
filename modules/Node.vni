@@ -10,6 +10,7 @@ module Node {
 	vnx.TopicPtr output_verified_vdfs = "node.verified_vdfs";
 	vnx.TopicPtr output_verified_blocks = "node.verified_blocks";
 	vnx.TopicPtr output_committed_blocks = "node.committed_blocks";
+	vnx.TopicPtr output_transactions = "node.transactions";
 	vnx.TopicPtr output_interval_request = "timelord.requests";
 	vnx.TopicPtr output_timelord_infuse = "timelord.infuse";
 	vnx.TopicPtr output_challenges = "harvester.challenges";
@@ -18,22 +19,28 @@ module Node {
 	
 	uint max_history = 1000;
 	
+	uint reload_height = -1;				// to limit reloading from disk and force resync
+	
 	string storage_path;
 	
 	
+	@Permission(permission_e.PUBLIC)
 	uint get_height() const;
 	
+	@Permission(permission_e.PUBLIC)
 	Block* get_block(hash_t hash) const;
 	
+	@Permission(permission_e.PUBLIC)
 	Block* get_block_at(uint height) const;
 	
+	@Permission(permission_e.PUBLIC)
 	hash_t get_block_hash(uint height) const;
-	
-	Transaction* get_transaction(hash_t id) const;
 	
 	void add_block(Block* block);
 	
 	void add_transaction(Transaction* tx);
+	
+	Transaction* get_transaction(hash_t id) const;
 	
 	ulong get_balance(addr_t address, addr_t contract) const;
 	

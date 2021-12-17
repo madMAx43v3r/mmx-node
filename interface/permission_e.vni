@@ -1,0 +1,7 @@
+package mmx;
+
+enum permission_e {
+	
+	PUBLIC
+	
+}
