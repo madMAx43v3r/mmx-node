@@ -151,10 +151,7 @@ private:
 	std::unordered_map<hash_t, std::shared_ptr<const ProofResponse>> proof_map;		// [challenge => proof]
 
 	bool is_replay = true;
-	std::shared_ptr<vnx::File> vdf_chain;
 	std::shared_ptr<vnx::File> block_chain;
-
-	std::unordered_multimap<uint64_t, int64_t> vdf_index;						// [iters => file offset]
 	std::unordered_map<uint32_t, std::pair<int64_t, hash_t>> block_index;		// [height => [file offset, block hash]]
 
 	std::shared_ptr<const ChainParams> params;

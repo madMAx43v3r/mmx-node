@@ -44,42 +44,7 @@ void Node::main()
 		point.recv_time = vnx::get_time_micros();
 		verified_vdfs[0] = point;
 	}
-	vnx::File fork_line(storage_path + "fork_line.dat");
-
-	vdf_chain = std::make_shared<vnx::File>(storage_path + "vdf_chain.dat");
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
-
-	if(vdf_chain->exists())
-	{
-		vdf_chain->open("rb+");
-		int64_t last_pos = 0;
-		while(true) {
-			auto& in = vdf_chain->in;
-			try {
-				last_pos = in.get_input_pos();
-				if(auto value = vnx::read(in)) {
-					if(auto proof = std::dynamic_pointer_cast<ProofOfTime>(value)) {
-						vdf_point_t point;
-						point.recv_time = vnx::get_time_micros();
-						point.output = proof->get_output();
-						const auto vdf_iters = proof->start + proof->get_num_iters();
-						verified_vdfs[vdf_iters] = point;
-						vdf_index.emplace(vdf_iters, last_pos);
-					}
-				} else {
-					break;
-				}
-			}
-			catch(const std::exception& ex) {
-				log(WARN) << "Failed to read VDF: " << ex.what();
-				break;
-			}
-		}
-		vdf_chain->seek_to(last_pos);
-		log(INFO) << "Loaded " << verified_vdfs.size() << " VDFs from disk";
-	} else {
-		vdf_chain->open("ab");
-	}
 
 	if(block_chain->exists())
 	{
@@ -109,6 +74,7 @@ void Node::main()
 		block_chain->open("ab");
 	}
 
+	vnx::File fork_line(storage_path + "fork_line.dat");
 	if(fork_line.exists())
 	{
 		fork_line.open("rb");
@@ -117,6 +83,10 @@ void Node::main()
 			try {
 				if(auto value = vnx::read(in)) {
 					if(auto block = std::dynamic_pointer_cast<Block>(value)) {
+						vdf_point_t point;
+						point.output = block->vdf_output;
+						point.recv_time = vnx::get_time_micros();
+						verified_vdfs[block->vdf_iters] = point;
 						add_block(block);
 					}
 				} else {
@@ -167,10 +137,8 @@ void Node::main()
 	vnx::write(fork_line.out, nullptr);
 	fork_line.close();
 
-	vnx::write(vdf_chain->out, nullptr);
 	vnx::write(block_chain->out, nullptr);
 
-	vdf_chain->close();
 	block_chain->close();
 }
 
@@ -382,11 +350,6 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 		point.recv_time = vnx_sample ? vnx_sample->recv_time : vnx::get_time_micros();
 		verified_vdfs[vdf_iters] = point;
 
-		if(!is_replay) {
-			vdf_index.emplace(vdf_iters, vdf_chain->get_output_pos());
-			vnx::write(vdf_chain->out, proof->compressed());
-			vdf_chain->flush();
-		}
 		publish(proof, output_verified_vdfs, BLOCKING);
 
 		log(INFO) << "Verified VDF at " << vdf_iters << " iterations, delta = "
