@@ -38,7 +38,7 @@ protected:
 
 private:
 	struct peer_t {
-		bool is_inbound = false;
+		bool is_outbound = false;
 		std::string address;
 		vnx::Buffer buffer;
 		uint32_t msg_size = 0;
@@ -82,7 +82,6 @@ private:
 	std::set<std::string> peer_set;
 	std::set<std::string> pending_peers;
 	std::unordered_set<hash_t> seen_hashes;
-	std::unordered_set<uint64_t> client_set;
 	std::unordered_map<uint64_t, peer_t> peer_map;
 
 	std::shared_ptr<NodeAsyncClient> node;

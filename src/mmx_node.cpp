@@ -39,7 +39,7 @@ int main(int argc, char** argv)
 		module.start_detached();
 	}
 	{
-		vnx::Handle<vnx::Server> module = new vnx::Server("LocalServer", vnx::Endpoint::from_url(".mmx_node.sock"));
+		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url(".mmx_node.sock"));
 		module.start_detached();
 	}
 	{

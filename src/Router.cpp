@@ -27,6 +27,9 @@ namespace mmx {
 Router::Router(const std::string& _vnx_name)
 	:	RouterBase(_vnx_name)
 {
+	params = get_params();
+//	port = params->tcp_port;
+	host = "0.0.0.0";
 }
 
 void Router::init()
@@ -41,7 +44,6 @@ void Router::main()
 	subscribe(input_verified_vdfs, 1000);
 	subscribe(input_transactions, 1000);
 
-	params = get_params();
 	peer_set = seed_peers;
 
 	node = std::make_shared<NodeAsyncClient>(node_server);
@@ -82,6 +84,7 @@ std::vector<std::shared_ptr<const Block>> Router::get_blocks_at(const uint32_t& 
 void Router::handle(std::shared_ptr<const Block> block)
 {
 	if(seen_hashes.insert(block->hash).second) {
+		log(INFO) << "Broadcasting block " << block->height;
 		send_all(block);
 	}
 }
@@ -89,6 +92,7 @@ void Router::handle(std::shared_ptr<const Block> block)
 void Router::handle(std::shared_ptr<const Transaction> tx)
 {
 	if(seen_hashes.insert(tx->id).second) {
+		log(INFO) << "Broadcasting transaction " << tx->id;
 		send_all(tx);
 	}
 }
@@ -100,6 +104,7 @@ void Router::handle(std::shared_ptr<const ProofOfTime> proof)
 	if(vnx_sample->topic == input_vdfs)
 	{
 		if(vdf_iters > verified_iters) {
+			log(INFO) << "Broadcasting VDF for " << vdf_iters;
 			send_all(proof);
 		}
 	}
@@ -147,6 +152,7 @@ void Router::add_peer(const std::string& address, const int sock)
 		const auto id = add_client(sock);
 
 		auto& peer = peer_map[id];
+		peer.is_outbound = true;
 		peer.address = address;
 
 		log(INFO) << "Connected to peer " << address;
@@ -176,10 +182,10 @@ void Router::connect_task(const std::string& address) noexcept
 
 void Router::print_stats()
 {
-	log(INFO) << "tps = " << float(tx_counter * 1000) / info_interval_ms
-			  << " / sec, vdfs = " << float(vdf_counter * 1000) / info_interval_ms
-			  << " / sec, blocks = " << float(block_counter * 1000) / info_interval_ms
-			  << " / sec, peers = " << peer_map.size() - client_set.size() << " / " << client_set.size() << " / " << peer_set.size();
+	log(INFO) << float(tx_counter * 1000) / info_interval_ms
+			  << " tx/s, " << float(vdf_counter * 1000) / info_interval_ms
+			  << " vdf/s, " << float(block_counter * 1000) / info_interval_ms
+			  << " blocks/s, " << peer_map.size() << " / " << peer_set.size() << " peers";
 	tx_counter = 0;
 	vdf_counter = 0;
 	block_counter = 0;
@@ -237,16 +243,16 @@ std::shared_ptr<vnx::Buffer> Router::serialize(std::shared_ptr<const vnx::Value>
 	if(buffer->size() > max_msg_size) {
 		return nullptr;
 	}
-	*((uint32_t*)buffer->data(2)) = buffer->size();
+	*((uint32_t*)buffer->data(2)) = buffer->size() - 6;
 	return buffer;
 }
 
 void Router::relay(uint64_t source, std::shared_ptr<const vnx::Value> msg)
 {
 	if(auto data = serialize(msg)) {
-		for(auto client : client_set) {
-			if(client != source) {
-				Super::send_to(client, data);
+		for(const auto& entry : peer_map) {
+			if(!entry.second.is_outbound && entry.first != source) {
+				Super::send_to(entry.first, data);
 			}
 		}
 	}
@@ -353,7 +359,7 @@ void Router::on_buffer(uint64_t client, void*& buffer, size_t& max_bytes)
 		peer.buffer.reserve(6);
 		max_bytes = 6 - offset;
 	} else {
-		max_bytes = peer.msg_size - offset;
+		max_bytes = (6 + peer.msg_size) - offset;
 	}
 	buffer = peer.buffer.data(offset);
 }
@@ -404,9 +410,7 @@ void Router::on_connect(uint64_t client)
 	if(!peer_map.count(client))
 	{
 		auto& peer = peer_map[client];
-		peer.is_inbound = true;
 		peer.address = "TODO";
-		client_set.insert(client);
 //		peer_set.insert(peer.address);
 
 		log(INFO) << "New peer connected from " << peer.address;
