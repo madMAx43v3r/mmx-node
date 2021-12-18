@@ -1,0 +1,9 @@
+package mmx;
+
+struct utxo_info_t {
+	
+	uint created_at;				// height
+	
+	optional<hash_t> spent_txid;
+	
+}

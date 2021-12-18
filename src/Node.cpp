@@ -210,6 +210,57 @@ hash_t Node::get_block_hash(const uint32_t& height) const
 	throw std::logic_error("no such height");
 }
 
+vnx::optional<tx_info_t> Node::get_tx_info(const hash_t& id) const
+{
+	{
+		auto iter = tx_map.find(id);
+		if(iter != tx_map.end()) {
+			return iter->second;
+		}
+	}
+	{
+		auto iter = tx_index.find(id);
+		if(iter != tx_index.end()) {
+			return iter->second;
+		}
+	}
+	return nullptr;
+}
+
+utxo_info_t Node::get_utxo_info(const utxo_key_t& key) const
+{
+	{
+		auto iter = utxo_map.find(key);
+		if(iter != utxo_map.end()) {
+			utxo_info_t info;
+			info.created_at = iter->second.height;
+			return info;
+		}
+	}
+	{
+		auto iter = utxo_index.find(key);
+		if(iter != utxo_index.end()) {
+			auto iter2 = tx_index.find(iter->second);
+			if(iter2 != tx_index.end()) {
+				utxo_info_t info;
+				info.created_at = iter2->second.height;
+				info.spent_txid = iter->second;
+				return info;
+			}
+		}
+	}
+	for(const auto& log : change_log) {
+		auto iter = log->utxo_removed.find(key);
+		if(iter != log->utxo_removed.end()) {
+			utxo_info_t info;
+			info.created_at = iter->second.second.height;
+			info.spent_txid = iter->second.first;
+			return info;
+		}
+	}
+	throw std::logic_error("no such utxo entry");
+}
+
 std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id) const
 {
 	{
@@ -222,11 +273,11 @@ std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id) const
 		auto iter = tx_index.find(id);
 		if(iter != tx_index.end()) {
 			const auto& entry = iter->second;
-			if(auto block = get_block_at(entry.first)) {
-				if(entry.second == (typeof(entry.second))(-1)) {
+			if(auto block = get_block_at(entry.height)) {
+				if(entry.index == 0) {
 					return block->tx_base;
 				}
-				return block->tx_list.at(entry.second);
+				return block->tx_list.at(entry.index - 1);
 			}
 		}
 	}
@@ -1049,35 +1100,37 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	}
 	const auto log = change_log.front();
 	{
-		std::vector<std::unordered_multimap<addr_t, utxo_key_t>::iterator> to_remove;
+		std::vector<std::pair<utxo_key_t, addr_t>> search;
+		for(const auto& entry : log->utxo_removed) {
+			search.emplace_back(entry.first, entry.second.second.address);
+		}
+		std::vector<std::unordered_multimap<addr_t, utxo_key_t>::iterator> remove;
 #pragma omp parallel for
-		for(const auto& entry : log->utxo_removed)
+		for(const auto& entry : search)
 		{
-			const auto range = addr_map.equal_range(entry.second.address);
+			const auto range = addr_map.equal_range(entry.second);
 			for(auto iter = range.first; iter != range.second; ++iter) {
 				if(iter->second == entry.first) {
 #pragma omp critical
-					to_remove.push_back(iter);
+					remove.push_back(iter);
 				}
 			}
 		}
-		for(const auto& iter : to_remove) {
+		for(const auto& iter : remove) {
 			// other iterators are not invalidated by calling erase()
 			addr_map.erase(iter);
 		}
 	}
 	for(const auto& entry : log->utxo_added) {
-		addr_map.emplace(entry.second.address, entry.first);
+		addr_map.emplace(entry.second.second.address, entry.first);
 	}
 	for(const auto& txid : log->tx_added) {
-		tx_map.erase(txid);
+		auto iter = tx_map.find(txid);
+		if(iter != tx_map.end()) {
+			tx_index[txid] = iter->second;
+			tx_map.erase(iter);
+		}
 		tx_pool.erase(txid);
-	}
-	if(const auto& tx = block->tx_base) {
-		tx_index[tx->id] = std::make_pair(block->height, -1);
-	}
-	for(size_t i = 0; i < block->tx_list.size(); ++i) {
-		tx_index[block->tx_list[i]->id] = std::make_pair(block->height, i);
 	}
 	{
 		const auto range = challenge_map.equal_range(block->height);
@@ -1240,22 +1293,22 @@ void Node::apply(std::shared_ptr<const Block> block) noexcept
 	log->prev_state = state_hash;
 
 	if(const auto& tx = block->tx_base) {
-		apply(block, tx, *log);
+		apply(block, tx, 0, *log);
 	}
-	for(const auto& tx : block->tx_list) {
-		apply(block, tx, *log);
+	for(size_t i = 0; i < block->tx_list.size(); ++i) {
+		apply(block, block->tx_list[i], 1 + i, *log);
 	}
 	state_hash = block->hash;
 	change_log.push_back(log);
 }
 
-void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx, change_log_t& log) noexcept
+void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx, size_t index, change_log_t& log) noexcept
 {
 	for(const auto& in : tx->inputs)
 	{
 		auto iter = utxo_map.find(in.prev);
 		if(iter != utxo_map.end()) {
-			log.utxo_removed.push_back(*iter);
+			log.utxo_removed.emplace(iter->first, std::make_pair(tx->id, iter->second));
 			utxo_map.erase(iter);
 		}
 	}
@@ -1264,9 +1317,12 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 		const auto key = utxo_key_t::create_ex(tx->id, i);
 		const auto value = utxo_t::create_ex(tx->outputs[i], block->height);
 		utxo_map[key] = value;
-		log.utxo_added.emplace_back(key, value);
+		log.utxo_added.emplace(key, std::make_pair(tx->id, value));
 	}
-	tx_map[tx->id] = block->hash;
+	tx_info_t info;
+	info.height = block->height;
+	info.index = index;
+	tx_map[tx->id] = info;
 	log.tx_added.push_back(tx->id);
 }
 
@@ -1281,7 +1337,7 @@ bool Node::revert() noexcept
 		utxo_map.erase(entry.first);
 	}
 	for(const auto& entry : log->utxo_removed) {
-		utxo_map[entry.first] = entry.second;
+		utxo_map.emplace(entry.first, entry.second.second);
 	}
 	for(const auto& txid : log->tx_added) {
 		tx_map.erase(txid);

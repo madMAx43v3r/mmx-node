@@ -25,17 +25,17 @@ module Node {
 	string storage_path;
 	
 	
-	@Permission(permission_e.PUBLIC)
 	uint get_height() const;
 	
-	@Permission(permission_e.PUBLIC)
 	Block* get_block(hash_t hash) const;
 	
-	@Permission(permission_e.PUBLIC)
 	Block* get_block_at(uint height) const;
 	
-	@Permission(permission_e.PUBLIC)
 	hash_t get_block_hash(uint height) const;
+	
+	utxo_info_t get_utxo_info(utxo_key_t key) const;
+	
+	optional<tx_info_t> get_tx_info(hash_t id) const;
 	
 	void add_block(Block* block);
 	

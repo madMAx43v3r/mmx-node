@@ -33,6 +33,10 @@ protected:
 
 	hash_t get_block_hash(const uint32_t& height) const override;
 
+	vnx::optional<tx_info_t> get_tx_info(const hash_t& id) const override;
+
+	utxo_info_t get_utxo_info(const utxo_key_t& key) const override;
+
 	std::shared_ptr<const Transaction> get_transaction(const hash_t& id) const override;
 
 	void add_block(std::shared_ptr<const Block> block) override;
@@ -72,8 +76,8 @@ private:
 	struct change_log_t {
 		hash_t prev_state;
 		std::vector<hash_t> tx_added;
-		std::vector<std::pair<utxo_key_t, utxo_t>> utxo_added;
-		std::vector<std::pair<utxo_key_t, utxo_t>> utxo_removed;
+		std::unordered_map<utxo_key_t, std::pair<hash_t, utxo_t>> utxo_added;
+		std::unordered_map<utxo_key_t, std::pair<hash_t, utxo_t>> utxo_removed;
 	};
 
 	void update();
@@ -104,7 +108,7 @@ private:
 
 	void apply(std::shared_ptr<const Block> block) noexcept;
 
-	void apply(std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx, change_log_t& log) noexcept;
+	void apply(std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx, size_t index, change_log_t& log) noexcept;
 
 	bool revert() noexcept;
 
@@ -134,12 +138,13 @@ private:
 	std::list<std::shared_ptr<const change_log_t>> change_log;
 
 	std::unordered_map<hash_t, uint32_t> hash_index;							// [block hash => height] (finalized only)
-	std::unordered_map<hash_t, std::pair<uint32_t, uint32_t>> tx_index;			// [tx hash => [height, index]] (finalized only)
+	std::unordered_map<hash_t, tx_info_t> tx_index;								// [txid => [height, index]] (finalized only)
+	std::unordered_map<utxo_key_t, hash_t> utxo_index;							// [utxo key => spent txid] (finalized + spent only)
+	std::unordered_multimap<addr_t, utxo_key_t> addr_map;						// [addr => utxo keys] (finalized + unspent only)
 	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;				// [height => block header] (finalized only)
 
-	std::unordered_map<hash_t, hash_t> tx_map;									// [txid => block hash] (only pending)
+	std::unordered_map<hash_t, tx_info_t> tx_map;								// [txid => [height, index]] (only pending)
 	std::unordered_map<utxo_key_t, utxo_t> utxo_map;							// [utxo key => utxo]
-	std::unordered_multimap<addr_t, utxo_key_t> addr_map;						// [addr => utxo keys] (finalized only)
 
 	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;
 	std::unordered_map<hash_t, std::shared_ptr<const Contract>> contracts;

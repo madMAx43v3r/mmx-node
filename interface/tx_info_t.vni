@@ -1,0 +1,9 @@
+package mmx;
+
+struct tx_info_t {
+	
+	uint height;
+	
+	uint index;
+	
+}
