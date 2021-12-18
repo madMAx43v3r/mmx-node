@@ -383,10 +383,8 @@ bool Router::on_read(uint64_t client, size_t num_bytes)
 	}
 	else if(peer.buffer.size() == 6 + peer.msg_size)
 	{
-		vnx::BufferInputStream stream(&peer.buffer);
-		vnx::TypeInput in(&stream);
-		in.read(6);
-		if(auto value = vnx::read(in)) {
+		peer.in.read(6);
+		if(auto value = vnx::read(peer.in)) {
 			try {
 				on_msg(client, value);
 			}
@@ -397,6 +395,7 @@ bool Router::on_read(uint64_t client, size_t num_bytes)
 			}
 		}
 		peer.buffer.clear();
+		peer.in_stream.reset();
 		peer.msg_size = 0;
 	}
 	return true;

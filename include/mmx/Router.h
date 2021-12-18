@@ -40,13 +40,15 @@ protected:
 private:
 	struct peer_t {
 		bool is_outbound = false;
-		std::string address;
-		vnx::Buffer buffer;
 		uint32_t msg_size = 0;
+		std::string address;
 		vnx::Memory data;
-		vnx::MemoryOutputStream stream;
+		vnx::Buffer buffer;
+		vnx::BufferInputStream in_stream;
+		vnx::MemoryOutputStream out_stream;
+		vnx::TypeInput in;
 		vnx::TypeOutput out;
-		peer_t() : stream(&data), out(&stream) {}
+		peer_t() : in_stream(&buffer), out_stream(&data), in(&in_stream), out(&out_stream) {}
 	};
 
 	void update();
