@@ -122,8 +122,9 @@ void Router::update()
 		for(const auto& entry : peer_map) {
 			peers.erase(entry.second.address);
 		}
-		peers.erase(pending_peers.begin(), pending_peers.end());
-
+		for(const auto& peer : pending_peers) {
+			peers.erase(peer);
+		}
 		std::unordered_set<std::string> new_peers;
 		const std::vector<std::string> tmp(peers.begin(), peers.end());
 		const auto new_count = num_peers - peer_map.size() - pending_peers.size();
@@ -287,7 +288,7 @@ void Router::relay(uint64_t source, std::shared_ptr<const vnx::Value> msg)
 void Router::send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg)
 {
 	if(auto data = serialize(msg)) {
-		send_type_code(client, peer_map[client], msg->get_type_code());
+		send_type_code(client, get_peer(client), msg->get_type_code());
 		Super::send_to(client, data);
 	}
 }
@@ -379,7 +380,7 @@ void Router::on_msg(uint64_t client, std::shared_ptr<const vnx::Value> msg)
 
 void Router::on_buffer(uint64_t client, void*& buffer, size_t& max_bytes)
 {
-	auto& peer = peer_map[client];
+	auto& peer = get_peer(client);
 	const auto offset = peer.buffer.size();
 	if(peer.msg_size == 0) {
 		if(offset > 6) {
@@ -395,7 +396,7 @@ void Router::on_buffer(uint64_t client, void*& buffer, size_t& max_bytes)
 
 bool Router::on_read(uint64_t client, size_t num_bytes)
 {
-	auto& peer = peer_map[client];
+	auto& peer = get_peer(client);
 	peer.buffer.resize(peer.buffer.size() + num_bytes);
 
 	if(peer.msg_size == 0) {
@@ -451,11 +452,25 @@ void Router::on_connect(uint64_t client)
 
 void Router::on_disconnect(uint64_t client)
 {
+	if(!vnx_task) {
+		// cannot modify peer_map in a nested loop
+		add_task(std::bind(&Router::on_disconnect, this, client));
+		return;
+	}
 	auto iter = peer_map.find(client);
 	if(iter != peer_map.end()) {
 		log(INFO) << "Peer " << iter->second.address << " disconnected";
 		peer_map.erase(iter);
 	}
+}
+
+Router::peer_t& Router::get_peer(uint64_t client)
+{
+	auto iter = peer_map.find(client);
+	if(iter != peer_map.end()) {
+		return iter->second;
+	}
+	throw std::logic_error("no such peer");
 }
 
 

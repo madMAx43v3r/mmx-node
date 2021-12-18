@@ -82,6 +82,8 @@ private:
 
 	void on_disconnect(uint64_t client) override;
 
+	peer_t& get_peer(uint64_t client);
+
 private:
 	std::set<std::string> peer_set;
 	std::set<std::string> pending_peers;
