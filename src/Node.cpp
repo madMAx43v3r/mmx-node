@@ -28,11 +28,6 @@ Node::Node(const std::string& _vnx_name)
 void Node::init()
 {
 	vnx::open_pipe(vnx_name, this, 1000);
-
-	subscribe(input_blocks, 1000);
-	subscribe(input_transactions, 1000);
-	subscribe(input_proof_of_time, 1000);
-	subscribe(input_proof_of_space, 1000);
 }
 
 void Node::main()
@@ -116,6 +111,7 @@ void Node::main()
 		apply(genesis);
 		commit(genesis);
 	}
+
 	if(!verified_vdfs.empty()) {
 		const auto iter = --verified_vdfs.end();
 		auto proof = ProofOfTime::create();
@@ -126,7 +122,14 @@ void Node::main()
 	} else {
 		log(WARN) << "Have no initital VDF point!";
 	}
+
 	update();
+
+	subscribe(input_vdfs, 1000);
+	subscribe(input_blocks, 1000);
+	subscribe(input_transactions, 1000);
+	subscribe(input_proof_of_time, 1000);
+	subscribe(input_proof_of_space, 1000);
 
 	set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
 

@@ -2,6 +2,7 @@ package mmx;
 
 module Node {
 	
+	vnx.TopicPtr input_vdfs = "network.vdfs";
 	vnx.TopicPtr input_blocks = "network.blocks";
 	vnx.TopicPtr input_transactions = "network.transactions";
 	vnx.TopicPtr input_proof_of_time = "timelord.proofs";

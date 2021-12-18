@@ -10,6 +10,7 @@
 #include <mmx/TimeLord.h>
 #include <mmx/Farmer.h>
 #include <mmx/Harvester.h>
+#include <mmx/Router.h>
 #include <mmx/secp256k1.hpp>
 #include <mmx/utils.h>
 
@@ -42,10 +43,7 @@ int main(int argc, char** argv)
 		module.start_detached();
 	}
 	{
-		vnx::Handle<vnx::Server> module = new vnx::Server("NetworkServer", vnx::TcpEndpoint::create("0.0.0.0", params->tcp_port));
-		module->allow_login = false;
-		module->use_authentication = true;
-		module->default_access = "NETWORK";
+		vnx::Handle<mmx::Router> module = new mmx::Router("Router");
 		module.start_detached();
 	}
 	if(with_timelord) {

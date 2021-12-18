@@ -1,32 +1,34 @@
 package mmx;
 
-module Router {
+module Router extends vnx.addons.TcpServer {
 	
 	vnx.TopicPtr input_vdfs = "timelord.proofs";
 	vnx.TopicPtr input_blocks = "node.verified_blocks";
+	vnx.TopicPtr input_verified_vdfs = "node.verified_vdfs";
 	vnx.TopicPtr input_transactions = "node.transactions";
 	
+	vnx.TopicPtr output_vdfs = "network.vdfs";
+	vnx.TopicPtr output_blocks = "network.blocks";
+	vnx.TopicPtr output_transactions = "network.transactions";
+	
+	int info_interval_ms = 60000;			// [ms]
 	int update_interval_ms = 1000;			// [ms]
 	
 	uint msg_fanout = 2;					// how often to replicate a message
+	uint discover_interval = 300;			// how often to search for new peers [sec]
 	
-	uint min_peers_sync = 3;				// minimum peer count for synching
+	uint min_peers = 8;
+	uint max_peers = 64;
 	
-	uint num_peers_outgoing = 8;			// maximum outgoing connections to create
+	uint min_sync_peers = 3;
+	uint max_sync_peers = 4;
+	
+	uint max_msg_size = 67108864;			// bytes
 	
 	vector<string> seed_peers;
 	
 	string node_server = "Node";
 	
-	
-	@Permission(permission_e.PUBLIC)
-	void on_block(Block* block);
-	
-	@Permission(permission_e.PUBLIC)
-	void on_vdf(ProofOfTime* proof);
-	
-	@Permission(permission_e.PUBLIC)
-	void on_transaction(Transaction* tx);
 	
 	@Permission(permission_e.PUBLIC)
 	vector<string> get_peers(uint max_count) const;

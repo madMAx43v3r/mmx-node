@@ -44,6 +44,7 @@ add_library(mmx_modules SHARED
 	src/Wallet.cpp
 	src/Farmer.cpp
 	src/Harvester.cpp
+	src/Router.cpp
 )
 
 add_library(uint256_t STATIC
@@ -106,7 +107,7 @@ target_include_directories(mmx_chiapos
 	PRIVATE chiapos/src chiapos/lib/include
 )
 
-target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_base)
+target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_addons vnx_base)
 target_link_libraries(mmx_modules mmx_chiapos mmx_iface)
 
 add_executable(mmx_node src/mmx_node.cpp)
