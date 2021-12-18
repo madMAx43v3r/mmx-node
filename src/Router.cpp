@@ -232,78 +232,42 @@ void Router::on_transaction(uint64_t client, std::shared_ptr<const Transaction> 
 	tx_counter++;
 }
 
-std::shared_ptr<vnx::Buffer> Router::serialize(std::shared_ptr<const vnx::Value> msg)
-{
-	vnx::Memory tmp;
-	{
-		vnx::MemoryOutputStream stream(&tmp);
-		vnx::TypeOutput out(&stream);
-		out.type_code_map[msg->get_type_code()->code_hash] = -1;
-		vnx::write(out, uint16_t(vnx::CODE_UINT32));
-		vnx::write(out, uint32_t(0));
-		vnx::write(out, msg);
-		out.flush();
-	}
-	auto buffer = std::make_shared<vnx::Buffer>(tmp);
-	if(buffer->size() > max_msg_size) {
-		return nullptr;
-	}
-	*((uint32_t*)buffer->data(2)) = buffer->size() - 6;
-	return buffer;
-}
-
-void Router::send_type_code(uint64_t client, peer_t& peer, const vnx::TypeCode* type_code)
-{
-	if(!peer.type_codes.insert(type_code->code_hash).second) {
-		return;
-	}
-	vnx::Memory tmp;
-	{
-		vnx::MemoryOutputStream stream(&tmp);
-		vnx::TypeOutput out(&stream);
-		vnx::write(out, uint16_t(vnx::CODE_UINT32));
-		vnx::write(out, uint32_t(0));
-		vnx::write(out, *type_code);
-		vnx::write(out, nullptr);
-		out.flush();
-	}
-	auto buffer = std::make_shared<vnx::Buffer>(tmp);
-	if(buffer->size() > max_msg_size) {
-		throw std::logic_error("type code too big");
-	}
-	*((uint32_t*)buffer->data(2)) = buffer->size() - 6;
-	Super::send_to(client, buffer);
-}
-
 void Router::relay(uint64_t source, std::shared_ptr<const vnx::Value> msg)
 {
-	if(auto data = serialize(msg)) {
-		const auto type_code = msg->get_type_code();
-		for(auto& entry : peer_map) {
-			if(!entry.second.is_outbound && entry.first != source) {
-				send_type_code(entry.first, entry.second, type_code);
-				Super::send_to(entry.first, data);
-			}
+	for(auto& entry : peer_map) {
+		if(!entry.second.is_outbound && entry.first != source) {
+			send_to(entry.first, entry.second, msg);
 		}
 	}
 }
 
 void Router::send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg)
 {
-	if(auto data = serialize(msg)) {
-		send_type_code(client, get_peer(client), msg->get_type_code());
-		Super::send_to(client, data);
+	send_to(client, get_peer(client), msg);
+}
+
+void Router::send_to(uint64_t client, peer_t& peer, std::shared_ptr<const vnx::Value> msg)
+{
+	auto& out = peer.out;
+	vnx::write(out, uint16_t(vnx::CODE_UINT32));
+	vnx::write(out, uint32_t(0));
+	vnx::write(out, msg);
+	out.flush();
+
+	auto buffer = std::make_shared<vnx::Buffer>(peer.data);
+	peer.data.clear();
+
+	if(buffer->size() > max_msg_size) {
+		return;
 	}
+	*((uint32_t*)buffer->data(2)) = buffer->size() - 6;
+	Super::send_to(client, buffer);
 }
 
 void Router::send_all(std::shared_ptr<const vnx::Value> msg)
 {
-	if(auto data = serialize(msg)) {
-		const auto type_code = msg->get_type_code();
-		for(auto& entry : peer_map) {
-			send_type_code(entry.first, entry.second, type_code);
-			Super::send_to(entry.first, data);
-		}
+	for(auto& entry : peer_map) {
+		send_to(entry.first, entry.second, msg);
 	}
 }
 

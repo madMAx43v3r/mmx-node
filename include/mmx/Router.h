@@ -43,7 +43,10 @@ private:
 		std::string address;
 		vnx::Buffer buffer;
 		uint32_t msg_size = 0;
-		std::unordered_set<vnx::Hash64> type_codes;
+		vnx::Memory data;
+		vnx::MemoryOutputStream stream;
+		vnx::TypeOutput out;
+		peer_t() : stream(&data), out(&stream) {}
 	};
 
 	void update();
@@ -62,13 +65,11 @@ private:
 
 	void on_transaction(uint64_t client, std::shared_ptr<const Transaction> tx);
 
-	std::shared_ptr<vnx::Buffer> serialize(std::shared_ptr<const vnx::Value> msg);
-
-	void send_type_code(uint64_t client, peer_t& peer, const vnx::TypeCode* type_code);
-
 	void relay(uint64_t source, std::shared_ptr<const vnx::Value> msg);
 
 	void send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg);
+
+	void send_to(uint64_t client, peer_t& peer, std::shared_ptr<const vnx::Value> msg);
 
 	void send_all(std::shared_ptr<const vnx::Value> msg);
 
