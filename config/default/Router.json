@@ -1,0 +1,5 @@
+{
+	"max_connections": 64,
+	"connection_timeout_ms": 60000,
+	"show_warnings": true
+}

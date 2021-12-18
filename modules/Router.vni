@@ -14,18 +14,16 @@ module Router extends vnx.addons.TcpServer {
 	int info_interval_ms = 60000;			// [ms]
 	int update_interval_ms = 1000;			// [ms]
 	
-	uint msg_fanout = 2;					// how often to replicate a message
 	uint discover_interval = 300;			// how often to search for new peers [sec]
 	
-	uint min_peers = 8;
-	uint max_peers = 64;
+	uint num_peers = 8;
 	
-	uint min_sync_peers = 3;
+	uint min_sync_peers = 2;
 	uint max_sync_peers = 4;
 	
 	uint max_msg_size = 67108864;			// bytes
 	
-	vector<string> seed_peers;
+	set<string> seed_peers;
 	
 	string node_server = "Node";
 	

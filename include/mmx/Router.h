@@ -82,6 +82,7 @@ private:
 	std::set<std::string> peer_set;
 	std::set<std::string> pending_peers;
 	std::unordered_set<hash_t> seen_hashes;
+	std::unordered_set<uint64_t> client_set;
 	std::unordered_map<uint64_t, peer_t> peer_map;
 
 	std::shared_ptr<NodeAsyncClient> node;
