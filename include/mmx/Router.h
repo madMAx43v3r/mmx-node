@@ -12,6 +12,7 @@
 #include <mmx/NodeAsyncClient.hxx>
 
 #include <vnx/Buffer.h>
+#include <vnx/Output.hpp>
 #include <vnx/ThreadPool.h>
 
 
@@ -42,6 +43,7 @@ private:
 		std::string address;
 		vnx::Buffer buffer;
 		uint32_t msg_size = 0;
+		std::unordered_set<vnx::Hash64> type_codes;
 	};
 
 	void update();
@@ -61,6 +63,8 @@ private:
 	void on_transaction(uint64_t client, std::shared_ptr<const Transaction> tx);
 
 	std::shared_ptr<vnx::Buffer> serialize(std::shared_ptr<const vnx::Value> msg);
+
+	void send_type_code(uint64_t client, peer_t& peer, const vnx::TypeCode* type_code);
 
 	void relay(uint64_t source, std::shared_ptr<const vnx::Value> msg);
 
