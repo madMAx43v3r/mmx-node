@@ -1,4 +1,5 @@
 {
 	"max_connections": 64,
+	"stats_interval_ms": 60000,
 	"connection_timeout_ms": 60000
 }
