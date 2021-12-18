@@ -13,3 +13,6 @@
 [submodule "libbech32"]
 	path = libbech32
 	url = https://github.com/dcdpr/libbech32.git
+[submodule "vnx-addons"]
+	path = vnx-addons
+	url = https://github.com/madMAx43v3r/vnx-addons.git
