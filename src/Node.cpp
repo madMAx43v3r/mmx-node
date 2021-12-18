@@ -118,7 +118,7 @@ void Node::main()
 		proof->start = iter->first;
 		proof->segments.resize(1);
 		proof->segments[0].output = iter->second.output;
-		publish(proof, output_verified_vdfs, BLOCKING);
+		publish(proof, output_verified_vdfs);
 	} else {
 		log(WARN) << "Have no initital VDF point!";
 	}
@@ -358,7 +358,7 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 		point.recv_time = vnx_sample ? vnx_sample->recv_time : vnx::get_time_micros();
 		verified_vdfs[vdf_iters] = point;
 
-		publish(proof, output_verified_vdfs, BLOCKING);
+		publish(proof, output_verified_vdfs);
 
 		log(INFO) << "Verified VDF at " << vdf_iters << " iterations, delta = "
 				<< (point.recv_time - prev.recv_time) / 1e6 << " sec";
@@ -501,7 +501,7 @@ void Node::update()
 					break;
 				}
 				if(!is_replay) {
-					publish(block, output_verified_blocks, BLOCKING);
+					publish(block, output_verified_blocks);
 				}
 			}
 			apply(block);
@@ -1113,7 +1113,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 		vnx::write(block_chain->out, block);
 		block_chain->flush();
 	}
-	publish(block, output_committed_blocks, BLOCKING);
+	publish(block, output_committed_blocks);
 }
 
 size_t Node::purge_tree()
