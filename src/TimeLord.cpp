@@ -74,6 +74,7 @@ void TimeLord::handle(std::shared_ptr<const ProofOfTime> value)
 
 	if(!latest_point || point.num_iters > latest_point->num_iters)
 	{
+		// copy to our history
 		auto num_iters = value->start;
 		for(const auto& seg : value->segments) {
 			num_iters += seg.num_iters;
@@ -91,10 +92,12 @@ void TimeLord::handle(std::shared_ptr<const ProofOfTime> value)
 		}
 		*latest_point = point;
 
+		update();
+
 		log(DEBUG) << "Got new verified peak at " << point.num_iters;
 	}
-	if(!vdf_thread.joinable())
-	{
+
+	if(!vdf_thread.joinable()) {
 		start_vdf(point);
 	}
 }
@@ -117,8 +120,7 @@ void TimeLord::handle(std::shared_ptr<const IntervalRequest> value)
 
 	update();
 
-	if(!vdf_thread.joinable())
-	{
+	if(!vdf_thread.joinable()) {
 		// start from seed
 		std::string seed;
 		vnx::read_config("chain.params.vdf_seed", seed);
