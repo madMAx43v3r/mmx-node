@@ -48,7 +48,6 @@ void Node::main()
 	{
 		block_chain->open("rb+");
 		int64_t last_pos = 0;
-		std::shared_ptr<Block> last_block;
 		while(true) {
 			auto& in = block_chain->in;
 			try {
@@ -57,7 +56,6 @@ void Node::main()
 					if(auto block = std::dynamic_pointer_cast<Block>(value)) {
 						apply(block);
 						commit(block);
-						last_block = block;
 						block_index[block->height] = std::make_pair(last_pos, block->hash);
 					}
 				} else {
@@ -69,26 +67,9 @@ void Node::main()
 				break;
 			}
 		}
-		if(last_block) {
-			vdf_point_t point;
-			point.output = last_block->vdf_output;
-			point.recv_time = vnx::get_time_micros();
-			verified_vdfs[last_block->vdf_iters] = point;
-		}
 		block_chain->seek_to(last_pos);
 	} else {
 		block_chain->open("ab");
-	}
-
-	if(!verified_vdfs.empty()) {
-		const auto iter = --verified_vdfs.end();
-		auto proof = ProofOfTime::create();
-		proof->start = iter->first;
-		proof->segments.resize(1);
-		proof->segments[0].output = iter->second.output;
-		publish(proof, output_verified_vdfs);
-	} else {
-		log(WARN) << "Have no initital VDF point!";
 	}
 
 	vnx::File fork_line(storage_path + "fork_line.dat");
