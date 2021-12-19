@@ -417,7 +417,6 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 				if(!block) {
 					throw std::logic_error("invalid infusion iters");
 				}
-				log(INFO) << "diff height = " << diff_block->height << ", block height = " << block->height;
 				if(diff_block->height + std::min(params->finality_delay + 1, block->height) != block->height) {
 					throw std::logic_error("invalid infusion block delta");
 				}
@@ -618,6 +617,10 @@ void Node::update()
 				<< (did_fork ? " (forked at " + std::to_string(forked_at ? forked_at->height : -1) + ")" : "");
 	}
 
+	if(!is_synced && sync_pos >= sync_peak && pending_syncs.empty()) {
+		is_synced = true;
+		log(INFO) << "Finished sync at height " << peak->height;
+	}
 	if(!is_synced) {
 		sync_more();
 		return;
@@ -933,12 +936,7 @@ void Node::sync_result(uint32_t height, const std::vector<std::shared_ptr<const 
 			log(INFO) << "Reached sync peak at height " << height - 1;
 		}
 	}
-	if(sync_pos >= sync_peak && pending_syncs.empty()) {
-		is_synced = true;
-		log(INFO) << "Finished sync at height " << sync_peak - 1;
-	} else {
-		sync_more();
-	}
+	sync_more();
 }
 
 std::shared_ptr<Node::fork_t> Node::find_best_fork(std::shared_ptr<const BlockHeader> root, const uint32_t* fork_height) const

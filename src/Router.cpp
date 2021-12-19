@@ -89,6 +89,9 @@ void Router::get_blocks_at_async(const uint32_t& height, const vnx::request_id_t
 
 void Router::handle(std::shared_ptr<const Block> block)
 {
+	if(!block->proof) {
+		return;
+	}
 	if(seen_hashes.insert(block->hash).second) {
 		log(INFO) << "Broadcasting block " << block->height;
 		send_all(block);
