@@ -80,6 +80,17 @@ void Node::main()
 		block_chain->open("ab");
 	}
 
+	if(!verified_vdfs.empty()) {
+		const auto iter = --verified_vdfs.end();
+		auto proof = ProofOfTime::create();
+		proof->start = iter->first;
+		proof->segments.resize(1);
+		proof->segments[0].output = iter->second.output;
+		publish(proof, output_verified_vdfs);
+	} else {
+		log(WARN) << "Have no initital VDF point!";
+	}
+
 	vnx::File fork_line(storage_path + "fork_line.dat");
 	if(fork_line.exists())
 	{
@@ -122,17 +133,6 @@ void Node::main()
 
 		apply(genesis);
 		commit(genesis);
-	}
-
-	if(!verified_vdfs.empty()) {
-		const auto iter = --verified_vdfs.end();
-		auto proof = ProofOfTime::create();
-		proof->start = iter->first;
-		proof->segments.resize(1);
-		proof->segments[0].output = iter->second.output;
-		publish(proof, output_verified_vdfs);
-	} else {
-		log(WARN) << "Have no initital VDF point!";
 	}
 
 	update();
@@ -393,21 +393,34 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 		const auto& prev = iter->second;
 		try {
 			// check proper infusions
-			auto infused = proof->infuse;
-			for(auto iter = vdf_infusions.lower_bound(proof->start); iter != vdf_infusions.lower_bound(vdf_iters); ++iter)
-			{
-				auto iter2 = infused.find(iter->first);
-				if(iter2 != infused.end()) {
-					if(iter2->second != iter->second) {
-						throw std::logic_error("invalid infusion");
-					}
-					infused.erase(iter2);
-				} else {
+			if(proof->start > 0) {
+				if(proof->infuse.empty()) {
 					throw std::logic_error("missing infusion");
 				}
-			}
-			if(!infused.empty()) {
-				throw std::logic_error("excess infusion");
+				if(proof->infuse.size() > 1) {
+					throw std::logic_error("excess infusion");
+				}
+				const auto entry = *proof->infuse.begin();
+				const auto diff_block = find_header(entry.second);
+				if(!diff_block) {
+					throw std::logic_error("invalid infusion value");
+				}
+				std::shared_ptr<const BlockHeader> block;
+				for(auto fork : get_fork_line()) {
+					if(fork->block->vdf_iters == entry.first) {
+						block = fork->block;
+					}
+				}
+				if(entry.first == root->vdf_iters) {
+					block = root;
+				}
+				if(!block) {
+					throw std::logic_error("invalid infusion iters");
+				}
+				log(INFO) << "diff height = " << diff_block->height << ", block height = " << block->height;
+				if(diff_block->height + std::min(params->finality_delay + 1, block->height) != block->height) {
+					throw std::logic_error("invalid infusion block delta");
+				}
 			}
 			verify_vdf(proof, prev.output);
 		}
@@ -627,6 +640,7 @@ void Node::update()
 				// request proof of time
 				auto request = IntervalRequest::create();
 				request->begin = prev->vdf_iters;
+				request->begin_hash = prev->vdf_output;
 				request->end = prev->vdf_iters + diff_block->time_diff * params->time_diff_constant;
 				request->interval = (params->block_time * 1e6) / params->num_vdf_segments;
 
@@ -642,17 +656,15 @@ void Node::update()
 					block->vdf_output = iter->second.output;
 					block->finalize();
 					add_block(block);
-				}
-				else {
-					if(diff_block->height <= root->height)
-					{
-						auto infuse = TimeInfusion::create();
-						infuse->num_iters = request->end;
-						infuse->value = diff_block->hash;
-						vdf_infusions[infuse->num_iters] = infuse->value;
-						publish(infuse, output_timelord_infuse);
-					}
+				} else {
 					publish(request, output_interval_request);
+				}
+				if(diff_block->height <= root->height)
+				{
+					auto infuse = TimeInfusion::create();
+					infuse->num_iters = request->end;
+					infuse->value = diff_block->hash;
+					publish(infuse, output_timelord_infuse);
 				}
 			}
 			hash_t vdf_challenge;
@@ -1230,7 +1242,6 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	}
 	if(!history.empty()) {
 		const auto begin = history.begin()->second->vdf_iters;
-		vdf_infusions.erase(vdf_infusions.begin(), vdf_infusions.lower_bound(begin));
 		verified_vdfs.erase(verified_vdfs.begin(), verified_vdfs.lower_bound(begin));
 	}
 	if(!is_replay) {
@@ -1329,6 +1340,7 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const hash_t& be
 {
 	const auto& segments = proof->segments;
 	bool is_valid = !segments.empty();
+	size_t invalid_segment = -1;
 
 	std::vector<uint64_t> start_iters(segments.size());
 	for(size_t i = 0; i < segments.size(); ++i) {
@@ -1359,10 +1371,11 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const hash_t& be
 		}
 		if(point != segments[i].output) {
 			is_valid = false;
+			invalid_segment = i;
 		}
 	}
 	if(!is_valid) {
-		throw std::logic_error("invalid output");
+		throw std::logic_error("invalid output at segment " + std::to_string(invalid_segment));
 	}
 }
 

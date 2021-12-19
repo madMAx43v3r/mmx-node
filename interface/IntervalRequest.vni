@@ -5,6 +5,8 @@ class IntervalRequest {
 	ulong begin;
 	ulong end;
 	
+	optional<hash_t> begin_hash;
+	
 	uint interval = 100000;		// segment interval [usec]
 	
 }

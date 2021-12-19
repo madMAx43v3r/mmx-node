@@ -157,7 +157,6 @@ private:
 	std::unordered_map<hash_t, std::shared_ptr<const Contract>> contracts;
 	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_pool;
 
-	std::map<uint64_t, hash_t> vdf_infusions;										// [iters => value]
 	std::map<uint64_t, vdf_point_t> verified_vdfs;									// [iters => output]
 	std::unordered_multimap<uint32_t, hash_t> challenge_map;						// [height => challenge]
 	std::unordered_map<hash_t, std::shared_ptr<const ProofResponse>> proof_map;		// [challenge => proof]

@@ -21,7 +21,6 @@ int main(int argc, char** argv)
 	}
 	{
 		vnx::Handle<mmx::TimeLord> module = new mmx::TimeLord("TimeLord");
-		module->self_test = true;
 		module.start_detached();
 	}
 

@@ -22,8 +22,6 @@ protected:
 
 	void main() override;
 
-	void handle(std::shared_ptr<const ProofOfTime> value) override;
-
 	void handle(std::shared_ptr<const TimeInfusion> value) override;
 
 	void handle(std::shared_ptr<const IntervalRequest> value) override;
