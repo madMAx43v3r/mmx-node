@@ -372,6 +372,7 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 	auto iter = verified_vdfs.find(proof->start);
 	if(iter != verified_vdfs.end())
 	{
+		const auto time_begin = vnx::get_wall_time_micros();
 		const auto& prev = iter->second;
 		try {
 			// check proper infusions
@@ -416,7 +417,8 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 		publish(proof, output_verified_vdfs);
 
 		log(INFO) << "Verified VDF at " << vdf_iters << " iterations, delta = "
-				<< (point.recv_time - prev.recv_time) / 1e6 << " sec";
+				<< (point.recv_time - prev.recv_time) / 1e6 << " sec, took "
+				<< (vnx::get_wall_time_micros() - time_begin) / 1e6 << " sec";
 
 		update();
 	}
@@ -430,8 +432,7 @@ void Node::handle(std::shared_ptr<const ProofResponse> value)
 	const auto challenge = value->request->challenge;
 
 	auto iter = proof_map.find(challenge);
-	if(iter == proof_map.end() || value->score < iter->second->score)
-	{
+	if(iter == proof_map.end() || value->score < iter->second->score) {
 		try {
 			const auto score = verify_proof(value->proof, challenge, value->request->space_diff);
 			if(score == value->score) {
