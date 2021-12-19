@@ -316,7 +316,7 @@ void Router::print_stats()
 			  << " tx/s, " << float(vdf_counter * 1000) / info_interval_ms
 			  << " vdf/s, " << float(block_counter * 1000) / info_interval_ms
 			  << " blocks/s, " << peer_map.size() << "/" << peer_set.size()
-			  << " peers, " << pending_sync.size() << " pending";
+			  << " peers, " << return_map.size() << " pending";
 	tx_counter = 0;
 	vdf_counter = 0;
 	block_counter = 0;
