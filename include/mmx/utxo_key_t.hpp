@@ -14,7 +14,7 @@
 namespace mmx {
 
 inline
-utxo_key_t utxo_key_t::create_ex(const ::mmx::hash_t& txid, const uint32_t& index)
+utxo_key_t utxo_key_t::create_ex(const hash_t& txid, const uint32_t& index)
 {
 	utxo_key_t key;
 	key.txid = txid;
@@ -25,6 +25,14 @@ utxo_key_t utxo_key_t::create_ex(const ::mmx::hash_t& txid, const uint32_t& inde
 inline
 bool operator==(const utxo_key_t& lhs, const utxo_key_t& rhs) {
 	return lhs.txid == rhs.txid && lhs.index == rhs.index;
+}
+
+inline
+bool operator<(const utxo_key_t& lhs, const utxo_key_t& rhs) {
+	if(lhs.txid == rhs.txid) {
+		return lhs.index < rhs.index;
+	}
+	return lhs.txid < rhs.txid;
 }
 
 } // mmx

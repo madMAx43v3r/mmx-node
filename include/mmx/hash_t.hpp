@@ -32,6 +32,8 @@ struct hash_t : bytes_t<32> {
 
 	uint256_t to_uint256() const;
 
+	static hash_t ones();
+
 	static hash_t empty();
 
 	static hash_t from_bytes(const std::vector<uint8_t>& bytes);
@@ -73,6 +75,13 @@ uint256_t hash_t::to_uint256() const {
 }
 
 inline
+hash_t hash_t::ones() {
+	hash_t res;
+	::memset(res.data(), -1, res.size());
+	return res;
+}
+
+inline
 hash_t hash_t::empty() {
 	return hash_t(nullptr, 0);
 }
@@ -98,7 +107,7 @@ hash_t hash_t::from_bytes(const std::array<uint8_t, 32>& bytes)
 
 inline
 bool operator<(const hash_t& lhs, const hash_t& rhs) {
-	return lhs.to_uint256() < rhs.to_uint256();
+	return ::memcmp(lhs.data(), rhs.data(), 32) < 0;
 }
 
 } // mmx

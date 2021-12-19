@@ -337,8 +337,9 @@ std::vector<std::pair<utxo_key_t, utxo_t>> Node::get_utxo_list(const std::vector
 {
 	std::vector<std::pair<utxo_key_t, utxo_t>> res;
 	for(const auto& addr : addresses) {
-		const auto range = addr_map.equal_range(addr);
-		for(auto iter = range.first; iter != range.second; ++iter) {
+		const auto begin = addr_map.lower_bound(std::make_pair(addr, utxo_key_t()));
+		const auto end   = addr_map.upper_bound(std::make_pair(addr, utxo_key_t::create_ex(hash_t::ones(), -1)));
+		for(auto iter = begin; iter != end; ++iter) {
 			auto iter2 = utxo_map.find(iter->second);
 			if(iter2 != utxo_map.end()) {
 				res.emplace_back(iter->second, iter2->second);
@@ -1177,27 +1178,9 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 		return;
 	}
 	const auto log = change_log.front();
-	{
-		std::vector<std::pair<utxo_key_t, addr_t>> search;
-		for(const auto& entry : log->utxo_removed) {
-			search.emplace_back(entry.first, entry.second.second.address);
-		}
-		std::vector<std::unordered_multimap<addr_t, utxo_key_t>::iterator> remove;
-//#pragma omp parallel for
-		for(const auto& entry : search)
-		{
-			const auto range = addr_map.equal_range(entry.second);
-			for(auto iter = range.first; iter != range.second; ++iter) {
-				if(iter->second == entry.first) {
-#pragma omp critical
-					remove.push_back(iter);
-				}
-			}
-		}
-		for(const auto& iter : remove) {
-			// other iterators are not invalidated by calling erase()
-			addr_map.erase(iter);
-		}
+
+	for(const auto& entry : log->utxo_removed) {
+		addr_map.erase(std::make_pair(entry.second.second.address, entry.first));
 	}
 	for(const auto& entry : log->utxo_added) {
 		addr_map.emplace(entry.second.second.address, entry.first);

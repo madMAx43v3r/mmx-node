@@ -79,8 +79,8 @@ private:
 	struct change_log_t {
 		hash_t prev_state;
 		std::vector<hash_t> tx_added;
-		std::unordered_map<utxo_key_t, std::pair<hash_t, utxo_t>> utxo_added;
-		std::unordered_map<utxo_key_t, std::pair<hash_t, utxo_t>> utxo_removed;
+		std::unordered_map<utxo_key_t, std::pair<hash_t, utxo_t>> utxo_added;		// [utxo key => [txid, utxo]]
+		std::unordered_map<utxo_key_t, std::pair<hash_t, utxo_t>> utxo_removed;		// [utxo key => [txid, utxo]]
 	};
 
 	void update();
@@ -147,7 +147,7 @@ private:
 	std::unordered_map<hash_t, uint32_t> hash_index;							// [block hash => height] (finalized only)
 	std::unordered_map<hash_t, tx_info_t> tx_index;								// [txid => [height, index]] (finalized only)
 	std::unordered_map<utxo_key_t, hash_t> utxo_index;							// [utxo key => spent txid] (finalized + spent only)
-	std::unordered_multimap<addr_t, utxo_key_t> addr_map;						// [addr => utxo keys] (finalized + unspent only)
+	std::set<std::pair<addr_t, utxo_key_t>> addr_map;							// [addr => utxo keys] (finalized + unspent only)
 	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;				// [height => block header] (finalized only)
 
 	std::unordered_map<hash_t, tx_info_t> tx_map;								// [txid => [height, index]] (only pending)
