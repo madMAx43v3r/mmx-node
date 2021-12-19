@@ -400,18 +400,20 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 				if(proof->infuse.size() > 1) {
 					throw std::logic_error("excess infusion");
 				}
-				const auto entry = *proof->infuse.begin();
-				const auto diff_block = find_header(entry.second);
+				const auto infused = *proof->infuse.begin();
+				const auto diff_block = find_header(infused.second);
 				if(!diff_block) {
 					throw std::logic_error("invalid infusion value");
 				}
 				std::shared_ptr<const BlockHeader> block;
-				for(auto fork : get_fork_line()) {
-					if(fork->block->vdf_iters == entry.first) {
+				for(const auto& entry : fork_tree) {
+					const auto& fork = entry.second;
+					if(fork->block->vdf_iters == infused.first) {
 						block = fork->block;
+						break;
 					}
 				}
-				if(entry.first == root->vdf_iters) {
+				if(infused.first == root->vdf_iters) {
 					block = root;
 				}
 				if(!block) {
