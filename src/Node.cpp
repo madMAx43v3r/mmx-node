@@ -382,26 +382,20 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 					throw std::logic_error("excess infusion");
 				}
 				const auto infused = *proof->infuse.begin();
-				const auto diff_block = find_header(infused.second);
-				if(!diff_block) {
+				const auto infused_block = find_header(infused.second);
+				if(!infused_block) {
 					throw std::logic_error("invalid infusion value");
 				}
-				std::shared_ptr<const BlockHeader> block;
-				for(const auto& entry : fork_tree) {
-					const auto& fork = entry.second;
-					if(fork->block->vdf_iters == infused.first) {
-						block = fork->block;
-						break;
+				uint64_t target_iters = infused_block->vdf_iters;
+				for(size_t i = 0; i <= params->finality_delay; ++i) {
+					if(auto block = find_prev_header(infused_block, params->finality_delay - i, true)) {
+						target_iters += block->time_diff * params->time_diff_constant;
+					} else {
+						throw std::logic_error("cannot verify");
 					}
 				}
-				if(infused.first == root->vdf_iters) {
-					block = root;
-				}
-				if(!block) {
-					throw std::logic_error("invalid infusion iters");
-				}
-				if(diff_block->height + std::min(params->finality_delay + 1, block->height) != block->height) {
-					throw std::logic_error("invalid infusion block delta");
+				if(infused.first != target_iters) {
+					throw std::logic_error("invalid infusion iters: " + std::to_string(infused.first) + " != " + std::to_string(target_iters));
 				}
 			}
 			verify_vdf(proof, prev.output);
