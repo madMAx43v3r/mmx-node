@@ -1183,7 +1183,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 			search.emplace_back(entry.first, entry.second.second.address);
 		}
 		std::vector<std::unordered_multimap<addr_t, utxo_key_t>::iterator> remove;
-#pragma omp parallel for
+//#pragma omp parallel for
 		for(const auto& entry : search)
 		{
 			const auto range = addr_map.equal_range(entry.second);
