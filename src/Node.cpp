@@ -459,32 +459,39 @@ void Node::update()
 {
 	// verify proof where possible
 	std::vector<std::pair<std::shared_ptr<fork_t>, hash_t>> to_verify;
-
-	for(auto iter = fork_tree.begin(); iter != fork_tree.end();)
 	{
-		const auto& fork = iter->second;
-		const auto& block = fork->block;
-
-		if(!fork->prev.lock()) {
-			fork->prev = find_fork(block->prev);
-		}
-		if(!fork->is_proof_verified && fork->prev.lock())
+		const auto root = get_root();
+		for(auto iter = fork_tree.begin(); iter != fork_tree.end();)
 		{
-			hash_t vdf_output;
-			if(find_vdf_output(block->vdf_iters, vdf_output))
-			{
-				if(block->vdf_output != vdf_output) {
-					log(WARN) << "VDF verification failed for a block at height " << block->height;
-					iter = fork_tree.erase(iter);
-					continue;
-				}
-				hash_t vdf_challenge;
-				if(find_vdf_challenge(block, vdf_challenge)) {
-					to_verify.emplace_back(fork, vdf_challenge);
+			const auto& fork = iter->second;
+			const auto& block = fork->block;
+
+			bool has_prev = true;
+			if(!fork->prev.lock()) {
+				if(auto prev = find_fork(block->prev)) {
+					fork->prev = prev;
+				} else {
+					has_prev = false;
 				}
 			}
+			if(!fork->is_proof_verified && (has_prev || block->prev == root->hash))
+			{
+				hash_t vdf_output;
+				if(find_vdf_output(block->vdf_iters, vdf_output))
+				{
+					if(block->vdf_output != vdf_output) {
+						log(WARN) << "VDF verification failed for a block at height " << block->height;
+						iter = fork_tree.erase(iter);
+						continue;
+					}
+					hash_t vdf_challenge;
+					if(find_vdf_challenge(block, vdf_challenge)) {
+						to_verify.emplace_back(fork, vdf_challenge);
+					}
+				}
+			}
+			iter++;
 		}
-		iter++;
 	}
 
 #pragma omp parallel for
