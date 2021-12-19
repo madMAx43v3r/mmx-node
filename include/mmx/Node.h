@@ -168,7 +168,9 @@ private:
 
 	uint32_t sync_pos = 0;
 	uint32_t sync_peak = -1;
+	uint32_t sync_update = 0;
 	std::set<uint32_t> pending_syncs;
+	std::shared_ptr<vnx::Timer> update_timer;
 
 	std::shared_ptr<RouterAsyncClient> router;
 	std::shared_ptr<const ChainParams> params;

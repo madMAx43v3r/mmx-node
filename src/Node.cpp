@@ -116,15 +116,15 @@ void Node::main()
 		commit(genesis);
 	}
 
-	update();
-
 	subscribe(input_vdfs, 1000);
 	subscribe(input_blocks, 1000);
 	subscribe(input_transactions, 1000);
 	subscribe(input_proof_of_time, 1000);
 	subscribe(input_proof_of_space, 1000);
 
-	set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
+	update_timer = set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
+
+	update();
 
 	Super::main();
 
@@ -602,6 +602,8 @@ void Node::update()
 		log(INFO) << "Finished sync at height " << peak->height;
 	}
 	if(!is_synced) {
+		update_timer->reset();
+		sync_update = sync_pos;
 		sync_more();
 		return;
 	}
@@ -873,6 +875,7 @@ void Node::start_sync()
 {
 	sync_pos = 0;
 	sync_peak = -1;
+	sync_update = 0;
 	is_synced = false;
 	sync_more();
 }
@@ -917,6 +920,10 @@ void Node::sync_result(uint32_t height, const std::vector<std::shared_ptr<const 
 		}
 	}
 	sync_more();
+
+	if(sync_pos - sync_update >= 32) {
+		update();
+	}
 }
 
 std::shared_ptr<Node::fork_t> Node::find_best_fork(std::shared_ptr<const BlockHeader> root, const uint32_t* fork_height) const
