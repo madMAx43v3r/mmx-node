@@ -54,9 +54,9 @@ void Router::main()
 	threads = std::make_shared<vnx::ThreadPool>(num_peers);
 
 	set_timer_millis(info_interval_ms, std::bind(&Router::print_stats, this));
+	set_timer_millis(update_interval_ms, std::bind(&Router::update, this));
 	set_timer_millis(connect_interval_ms, std::bind(&Router::connect, this));
 	set_timer_millis(discover_interval * 1000, std::bind(&Router::discover, this));
-	sync_timer = set_timer_millis(sync_interval_ms, std::bind(&Router::update, this));
 
 	connect();
 
@@ -84,7 +84,7 @@ void Router::get_blocks_at_async(const uint32_t& height, const vnx::request_id_t
 {
 	auto& job = pending_sync[request_id];
 	job.height = height;
-	sync_timer->deadline = 0;
+	((Router*)this)->update();
 }
 
 void Router::handle(std::shared_ptr<const Block> block)
@@ -476,7 +476,7 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 			auto iter = return_map.find(msg->id);
 			if(iter != return_map.end()) {
 				iter->second = result;
-				sync_timer->deadline = 0;
+				update();
 			}
 		}
 	}

@@ -12,7 +12,7 @@ module Router extends vnx.addons.TcpServer {
 	vnx.TopicPtr output_transactions = "network.transactions";
 	
 	int info_interval_ms = 60000;			// [ms]
-	int sync_interval_ms = 1000;			// [ms]
+	int update_interval_ms = 1000;			// [ms]
 	int connect_interval_ms = 10000;		// [ms]
 	
 	uint discover_interval = 300;			// how often to search for new peers [sec]
