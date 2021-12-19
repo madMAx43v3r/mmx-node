@@ -10,6 +10,7 @@
 
 #include <mmx/NodeBase.hxx>
 #include <mmx/ChainParams.hxx>
+#include <mmx/RouterAsyncClient.hxx>
 #include <mmx/utxo_t.hpp>
 #include <mmx/utxo_key_t.hpp>
 
@@ -49,6 +50,8 @@ protected:
 
 	std::vector<std::pair<utxo_key_t, utxo_t>> get_utxo_list(const std::vector<addr_t>& addresses) const override;
 
+	void start_sync() override;
+
 	void handle(std::shared_ptr<const Block> block);
 
 	void handle(std::shared_ptr<const Transaction> tx);
@@ -83,6 +86,10 @@ private:
 	void update();
 
 	bool make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response);
+
+	void sync_more();
+
+	void sync_result(uint32_t height, const std::vector<std::shared_ptr<const Block>>& blocks);
 
 	std::shared_ptr<Node::fork_t> find_best_fork(std::shared_ptr<const BlockHeader> root, const uint32_t* fork_height = nullptr) const;
 
@@ -156,9 +163,15 @@ private:
 	std::unordered_map<hash_t, std::shared_ptr<const ProofResponse>> proof_map;		// [challenge => proof]
 
 	bool is_replay = true;
+	bool is_synced = false;
 	std::shared_ptr<vnx::File> block_chain;
 	std::unordered_map<uint32_t, std::pair<int64_t, hash_t>> block_index;		// [height => [file offset, block hash]]
 
+	uint32_t sync_pos = 0;
+	uint32_t sync_peak = -1;
+	std::set<uint32_t> pending_syncs;
+
+	std::shared_ptr<RouterAsyncClient> router;
 	std::shared_ptr<const ChainParams> params;
 
 };

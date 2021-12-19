@@ -121,6 +121,7 @@ private:
 	std::unordered_map<uint64_t, peer_t> peer_map;
 	std::unordered_map<uint32_t, std::shared_ptr<const vnx::Value>> return_map;
 
+	std::shared_ptr<vnx::Timer> sync_timer;
 	mutable std::unordered_map<vnx::request_id_t, sync_job_t> pending_sync;
 
 	std::shared_ptr<NodeAsyncClient> node;

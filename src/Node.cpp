@@ -39,6 +39,9 @@ void Node::main()
 		point.recv_time = vnx::get_time_micros();
 		verified_vdfs[0] = point;
 	}
+	router = std::make_shared<RouterAsyncClient>(router_name);
+	add_async_client(router);
+
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
 
 	if(block_chain->exists())
@@ -99,6 +102,7 @@ void Node::main()
 		log(INFO) << "Loaded " << block->height + 1 << " blocks from disk";
 	}
 	is_replay = false;
+	is_synced = !do_sync;
 
 	if(state_hash == hash_t())
 	{
@@ -298,7 +302,6 @@ void Node::add_block(std::shared_ptr<const Block> block)
 	}
 	auto fork = std::make_shared<fork_t>();
 	fork->recv_time = vnx::get_time_micros();
-	fork->prev = find_fork(block->prev);
 	fork->block = block;
 	fork_tree[block->hash] = fork;
 }
@@ -454,7 +457,10 @@ void Node::update()
 		const auto& fork = iter->second;
 		const auto& block = fork->block;
 
-		if(!fork->is_proof_verified)
+		if(!fork->prev.lock()) {
+			fork->prev = find_fork(block->prev);
+		}
+		if(!fork->is_proof_verified && fork->prev.lock())
 		{
 			hash_t vdf_output;
 			if(find_vdf_output(block->vdf_iters, vdf_output))
@@ -551,7 +557,7 @@ void Node::update()
 					is_valid = false;
 					break;
 				}
-				if(!is_replay) {
+				if(!is_replay && is_synced) {
 					publish(block, output_verified_blocks);
 				}
 			}
@@ -582,6 +588,11 @@ void Node::update()
 		const auto fork = find_fork(peak->hash);
 		log(INFO) << "New peak at height " << peak->height << " with score " << (fork ? std::to_string(fork->proof_score) : "?")
 				<< (did_fork ? " (forked at " + std::to_string(forked_at ? forked_at->height : -1) + ")" : "");
+	}
+
+	if(!is_synced) {
+		sync_more();
+		return;
 	}
 
 	// try to make a block
@@ -846,6 +857,61 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 			<< ", nominal = " << block_reward / pow(10, params->decimals) << " MMX"
 			<< ", fees = " << total_fees / pow(10, params->decimals) << " MMX";
 	return true;
+}
+
+void Node::start_sync()
+{
+	sync_pos = 0;
+	sync_peak = -1;
+	is_synced = false;
+	sync_more();
+}
+
+void Node::sync_more()
+{
+	if(is_synced) {
+		return;
+	}
+	if(!sync_pos) {
+		sync_pos = get_root()->height + 1;
+		log(INFO) << "Starting sync at height " << sync_pos;
+	}
+	while(pending_syncs.size() < params->finality_delay)
+	{
+		if(sync_pos >= sync_peak) {
+			break;
+		}
+		const auto height = sync_pos++;
+		router->get_blocks_at(height, std::bind(&Node::sync_result, this, height, std::placeholders::_1));
+		pending_syncs.insert(height);
+	}
+}
+
+void Node::sync_result(uint32_t height, const std::vector<std::shared_ptr<const Block>>& blocks)
+{
+	pending_syncs.erase(height);
+
+	for(auto block : blocks) {
+		if(block) {
+			add_block(block);
+			vdf_point_t point;
+			point.output = block->vdf_output;
+			point.recv_time = vnx::get_time_micros();
+			verified_vdfs[block->vdf_iters] = point;
+		}
+	}
+	if(blocks.empty()) {
+		if(sync_peak == uint32_t(-1)) {
+			sync_peak = height;
+			log(INFO) << "Reached sync peak at height " << height - 1;
+		}
+	}
+	if(sync_pos >= sync_peak && pending_syncs.empty()) {
+		is_synced = true;
+		log(INFO) << "Finished sync at height " << sync_peak - 1;
+	} else {
+		sync_more();
+	}
 }
 
 std::shared_ptr<Node::fork_t> Node::find_best_fork(std::shared_ptr<const BlockHeader> root, const uint32_t* fork_height) const
@@ -1180,7 +1246,8 @@ size_t Node::purge_tree()
 		for(auto iter = fork_tree.begin(); iter != fork_tree.end();)
 		{
 			const auto& block = iter->second->block;
-			if(block->prev != root->hash && !fork_tree.count(block->prev))
+			if(block->prev != root->hash && !fork_tree.count(block->prev)
+				&& (is_synced || block->height <= root->height + 1))
 			{
 				iter = fork_tree.erase(iter);
 				repeat = true;

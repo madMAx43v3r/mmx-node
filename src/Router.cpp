@@ -54,11 +54,11 @@ void Router::main()
 	threads = std::make_shared<vnx::ThreadPool>(num_peers);
 
 	set_timer_millis(info_interval_ms, std::bind(&Router::print_stats, this));
-	set_timer_millis(sync_interval_ms, std::bind(&Router::update, this));
 	set_timer_millis(connect_interval_ms, std::bind(&Router::connect, this));
 	set_timer_millis(discover_interval * 1000, std::bind(&Router::discover, this));
+	sync_timer = set_timer_millis(sync_interval_ms, std::bind(&Router::update, this));
 
-	update();
+	connect();
 
 	Super::main();
 
@@ -84,6 +84,7 @@ void Router::get_blocks_at_async(const uint32_t& height, const vnx::request_id_t
 {
 	auto& job = pending_sync[request_id];
 	job.height = height;
+	sync_timer->deadline = 0;
 }
 
 void Router::handle(std::shared_ptr<const Block> block)
@@ -139,25 +140,26 @@ void Router::update()
 			// check for any returns
 			auto iter2 = return_map.find(iter->second);
 			if(iter2 != return_map.end()) {
-				const auto value = iter2->second;
-				return_map.erase(iter2);
-				if(auto ret = std::dynamic_pointer_cast<const Node_get_block_hash_return>(value)) {
-					if(auto hash = ret->_ret_0.get()) {
-						job.hash_map[*hash].insert(iter->first);
-					} else {
-						job.failed.insert(iter->first);
+				if(auto value = iter2->second) {
+					return_map.erase(iter2);
+					if(auto ret = std::dynamic_pointer_cast<const Node_get_block_hash_return>(value)) {
+						if(auto hash = ret->_ret_0.get()) {
+							job.hash_map[*hash].insert(iter->first);
+						} else {
+							job.failed.insert(iter->first);
+						}
+						iter = job.pending.erase(iter);
+						continue;
 					}
-					iter = job.pending.erase(iter);
-					continue;
-				}
-				if(auto ret = std::dynamic_pointer_cast<const Node_get_block_return>(value)) {
-					if(auto block = ret->_ret_0) {
-						job.blocks[block->hash] = block;
-					} else {
-						job.failed.insert(iter->first);
+					if(auto ret = std::dynamic_pointer_cast<const Node_get_block_return>(value)) {
+						if(auto block = ret->_ret_0) {
+							job.blocks[block->hash] = block;
+						} else {
+							job.failed.insert(iter->first);
+						}
+						iter = job.pending.erase(iter);
+						continue;
 					}
-					iter = job.pending.erase(iter);
-					continue;
 				}
 			}
 			iter++;
@@ -218,16 +220,16 @@ void Router::update()
 						if(num_pending >= min_sync_peers) {
 							break;
 						}
-						if(job.pending.count(client)) {
-							num_pending++;
+						if(job.failed.count(client)) {
+							continue;
 						}
-						else if(!job.failed.count(client))
+						if(!job.pending.count(client))
 						{
 							auto req = Node_get_block::create();
 							req->hash = entry.first;
 							job.pending[client] = send_request(client, req);
-							break;
 						}
+						num_pending++;
 					}
 				}
 			}
@@ -309,7 +311,8 @@ void Router::print_stats()
 	log(INFO) << float(tx_counter * 1000) / info_interval_ms
 			  << " tx/s, " << float(vdf_counter * 1000) / info_interval_ms
 			  << " vdf/s, " << float(block_counter * 1000) / info_interval_ms
-			  << " blocks/s, " << peer_map.size() << " / " << peer_set.size() << " peers";
+			  << " blocks/s, " << peer_map.size() << " / " << peer_set.size()
+			  << " peers, " << pending_sync.size() << " pending";
 	tx_counter = 0;
 	vdf_counter = 0;
 	block_counter = 0;
@@ -470,6 +473,7 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 			auto iter = return_map.find(msg->id);
 			if(iter != return_map.end()) {
 				iter->second = result;
+				sync_timer->deadline = 0;
 			}
 		}
 	}
