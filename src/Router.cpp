@@ -36,6 +36,7 @@ Router::Router(const std::string& _vnx_name)
 
 void Router::init()
 {
+	Super::init();
 	vnx::open_pipe(vnx_name, this, 1000);
 }
 
