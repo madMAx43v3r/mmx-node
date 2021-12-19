@@ -31,7 +31,7 @@ module Node {
 	
 	Block* get_block_at(uint height) const;
 	
-	hash_t get_block_hash(uint height) const;
+	optional<hash_t> get_block_hash(uint height) const;
 	
 	utxo_info_t get_utxo_info(utxo_key_t key) const;
 	

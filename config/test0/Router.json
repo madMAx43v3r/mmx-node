@@ -1,4 +1,5 @@
 {
+	"min_sync_peers": 1,
 	"show_warnings": true,
 	"port": 12330
 }

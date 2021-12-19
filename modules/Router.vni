@@ -12,7 +12,8 @@ module Router extends vnx.addons.TcpServer {
 	vnx.TopicPtr output_transactions = "network.transactions";
 	
 	int info_interval_ms = 60000;			// [ms]
-	int update_interval_ms = 1000;			// [ms]
+	int sync_interval_ms = 1000;			// [ms]
+	int connect_interval_ms = 10000;		// [ms]
 	
 	uint discover_interval = 300;			// how often to search for new peers [sec]
 	
@@ -28,10 +29,9 @@ module Router extends vnx.addons.TcpServer {
 	string node_server = "Node";
 	
 	
-	@Permission(permission_e.PUBLIC)
 	vector<string> get_peers(uint max_count) const;
 	
-	vector<Block*> get_blocks_at(uint height) const;
+	vector<Block*> get_blocks_at(uint height) const async;
 	
 	
 	void handle(Block sample);

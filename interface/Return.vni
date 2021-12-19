@@ -1,0 +1,9 @@
+package mmx;
+
+class Return {
+	
+	uint id;
+	
+	vnx.Value* result;
+	
+}

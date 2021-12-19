@@ -1,0 +1,9 @@
+package mmx;
+
+class Request {
+	
+	uint id;
+	
+	vnx.Value* method;
+	
+}

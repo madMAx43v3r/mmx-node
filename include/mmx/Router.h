@@ -29,7 +29,7 @@ protected:
 
 	std::vector<std::string> get_peers(const uint32_t& max_count) const override;
 
-	std::vector<std::shared_ptr<const Block>> get_blocks_at(const uint32_t& height) const override;
+	void get_blocks_at_async(const uint32_t& height, const vnx::request_id_t& request_id) const override;
 
 	void handle(std::shared_ptr<const Block> value);
 
@@ -51,7 +51,23 @@ private:
 		peer_t() : in_stream(&buffer), out_stream(&data), in(&in_stream), out(&out_stream) {}
 	};
 
+	enum sync_state_e {
+		FETCH_HASHES,
+		FETCH_BLOCKS
+	};
+
+	struct sync_job_t {
+		uint32_t height = 0;
+		sync_state_e state = FETCH_HASHES;
+		std::unordered_set<uint64_t> failed;
+		std::unordered_map<uint64_t, uint32_t> pending;					// [client => request id]
+		std::unordered_map<hash_t, std::set<uint64_t>> hash_map;		// [block hash => clients who have it]
+		std::unordered_map<hash_t, std::shared_ptr<const Block>> blocks;
+	};
+
 	void update();
+
+	void connect();
 
 	void discover();
 
@@ -60,6 +76,8 @@ private:
 	void connect_task(const std::string& peer) noexcept;
 
 	void print_stats();
+
+	uint32_t send_request(uint64_t client, std::shared_ptr<const vnx::Value> method);
 
 	void on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> proof);
 
@@ -74,6 +92,13 @@ private:
 	void send_to(uint64_t client, peer_t& peer, std::shared_ptr<const vnx::Value> msg);
 
 	void send_all(std::shared_ptr<const vnx::Value> msg);
+
+	template<typename R, typename T>
+	void send_result(uint64_t client, uint32_t id, const T& value);
+
+	void on_request(uint64_t client, std::shared_ptr<const Request> msg);
+
+	void on_return(uint64_t client, std::shared_ptr<const Return> msg);
 
 	void on_msg(uint64_t client, std::shared_ptr<const vnx::Value> msg);
 
@@ -91,12 +116,18 @@ private:
 	std::set<std::string> peer_set;
 	std::set<std::string> pending_peers;
 	std::unordered_set<hash_t> seen_hashes;
+
+	std::set<uint64_t> outgoing;
 	std::unordered_map<uint64_t, peer_t> peer_map;
+	std::unordered_map<uint32_t, std::shared_ptr<const vnx::Value>> return_map;
+
+	mutable std::unordered_map<vnx::request_id_t, sync_job_t> pending_sync;
 
 	std::shared_ptr<NodeAsyncClient> node;
 	std::shared_ptr<vnx::ThreadPool> threads;
 	std::shared_ptr<const ChainParams> params;
 
+	uint32_t next_request = 0;
 	uint64_t verified_iters = 0;
 
 	size_t tx_counter = 0;

@@ -198,7 +198,7 @@ std::shared_ptr<const Block> Node::get_block_at(const uint32_t& height) const
 	return nullptr;
 }
 
-hash_t Node::get_block_hash(const uint32_t& height) const
+vnx::optional<hash_t> Node::get_block_hash(const uint32_t& height) const
 {
 	auto iter = block_index.find(height);
 	if(iter != block_index.end()) {
@@ -207,7 +207,7 @@ hash_t Node::get_block_hash(const uint32_t& height) const
 	if(auto block = get_block_at(height)) {
 		return block->hash;
 	}
-	throw std::logic_error("no such height");
+	return nullptr;
 }
 
 vnx::optional<tx_info_t> Node::get_tx_info(const hash_t& id) const
