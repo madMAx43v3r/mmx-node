@@ -390,6 +390,9 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 				for(size_t i = 0; i <= params->finality_delay; ++i) {
 					if(auto block = find_prev_header(infused_block, params->finality_delay - i, true)) {
 						target_iters += block->time_diff * params->time_diff_constant;
+						if(infused_block->height == 0 && infused.first == target_iters) {
+							break;	// genesis case
+						}
 					} else {
 						throw std::logic_error("cannot verify");
 					}
