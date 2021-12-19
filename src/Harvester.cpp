@@ -156,7 +156,7 @@ void Harvester::reload()
 		try {
 			dir.open();
 		} catch(const std::exception& ex) {
-			log(WARN) << "Failed to open directory " << path << " due to: " << ex.what();
+			log(WARN) << ex.what();
 			continue;
 		}
 		for(const auto& file : dir.files()) {
@@ -167,7 +167,7 @@ void Harvester::reload()
 					plots.emplace_back(file, prover);
 				}
 				catch(const std::exception& ex) {
-					log(WARN) << "Failed to load plot " << file->get_path() << " due to: " << ex.what();
+					log(WARN) << "Failed to load plot '" << file->get_path() << "' due to: " << ex.what();
 				}
 			}
 		}
@@ -190,8 +190,13 @@ void Harvester::reload()
 
 void Harvester::update()
 {
-	FarmerClient farmer(farmer_server);
-	farmer_addr = farmer.get_mac_addr();
+	try {
+		FarmerClient farmer(farmer_server);
+		farmer_addr = farmer.get_mac_addr();
+	}
+	catch(const std::exception& ex) {
+		log(WARN) << "Failed to contact farmer: " << ex.what();
+	}
 }
 
 void Harvester::test_challenge()

@@ -25,19 +25,23 @@ void Farmer::init()
 
 void Farmer::main()
 {
-	WalletClient wallet(wallet_server);
+	try {
+		WalletClient wallet(wallet_server);
 
-	for(auto keys : wallet.get_all_farmer_keys()) {
-		if(keys) {
-			key_map[keys->pool_public_key] = keys->pool_private_key;
-			key_map[keys->farmer_public_key] = keys->farmer_private_key;
-			log(INFO) << "Got pool key:   " << keys->pool_public_key;
-			log(INFO) << "Got farmer key: " << keys->farmer_public_key;
+		for(auto keys : wallet.get_all_farmer_keys()) {
+			if(keys) {
+				key_map[keys->pool_public_key] = keys->pool_private_key;
+				key_map[keys->farmer_public_key] = keys->farmer_private_key;
+				log(INFO) << "Got pool key:   " << keys->pool_public_key;
+				log(INFO) << "Got farmer key: " << keys->farmer_public_key;
+			}
+		}
+		if(!reward_addr) {
+			reward_addr = wallet.get_address(0);
 		}
 	}
-
-	if(!reward_addr) {
-		reward_addr = wallet.get_address(0);
+	catch(const std::exception& ex) {
+		log(WARN) << "Failed to get keys from wallet: " << ex.what();
 	}
 	if(!reward_addr) {
 		log(ERROR) << "No reward address set!";
