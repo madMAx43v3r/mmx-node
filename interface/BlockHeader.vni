@@ -11,7 +11,7 @@ class BlockHeader {
 	ulong space_diff;
 	
 	ulong vdf_iters;
-	hash_t vdf_output;
+	hash_t vdf_output[2];
 	
 	ProofOfSpace* proof;
 	

@@ -2,8 +2,8 @@ package mmx;
 
 class TimeInfusion {
 	
-	ulong num_iters;
+	uint chain;
 	
-	hash_t value;
+	map<ulong, hash_t> values;			// [iters => hash]
 	
 }

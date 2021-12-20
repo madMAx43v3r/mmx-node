@@ -4,6 +4,6 @@ struct time_segment_t {
 	
 	uint num_iters;
 	
-	hash_t output;
+	hash_t output[2];
 	
 }

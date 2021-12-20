@@ -4,17 +4,21 @@ class ProofOfTime {
 	
 	ulong start;		// [iters]
 	
-	map<ulong, hash_t> infuse;
+	map<ulong, hash_t> infuse[2];
 	
 	vector<time_segment_t> segments;
+	
+	pubkey_t timelord_key;
+	
+	signature_t timelord_sig;
 	
 	
 	hash_t calc_hash() const;
 	
-	hash_t get_output() const;			// final segment output
+	hash_t get_output(uint chain) const;			// final segment output
 	
-	ulong get_num_iters() const;		// relative (sum of segment iters)
+	ulong get_num_iters() const;					// relative (sum of segment iters)
 	
-	ProofOfTime* compressed() const;	// get compressed proof with just one segment
+	ProofOfTime* compressed() const;				// get compressed proof with just one segment
 	
 }

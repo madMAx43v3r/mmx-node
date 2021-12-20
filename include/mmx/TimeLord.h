@@ -27,18 +27,18 @@ protected:
 	void handle(std::shared_ptr<const IntervalRequest> value) override;
 
 private:
-	struct time_point_t {
+	struct vdf_point_t {
 		uint64_t num_iters = 0;
-		hash_t output;
+		std::array<hash_t, 2> output;
 	};
 
 	void update();
 
-	void start_vdf(time_point_t begin);
+	void start_vdf(vdf_point_t begin);
 
-	void vdf_loop(time_point_t point);
+	void vdf_loop(vdf_point_t point);
 
-	hash_t compute(const hash_t& input, const uint64_t start, const uint64_t num_iters);
+	hash_t compute(const hash_t& input, const uint64_t start, const uint64_t num_iters, const uint32_t chain);
 
 	void print_info();
 
@@ -47,14 +47,16 @@ private:
 	std::recursive_mutex mutex;
 
 	bool do_restart = false;
+	bool is_running = false;
 	uint64_t checkpoint_iters = 0;
 
-	std::map<uint64_t, hash_t> infuse;
-	std::map<uint64_t, hash_t> history;
-	std::map<uint64_t, hash_t> infuse_history;
+	std::map<uint64_t, hash_t> infuse[2];
+	std::map<uint64_t, hash_t> infuse_history[2];
+	std::map<uint64_t, std::array<hash_t, 2>> history;
+
 	std::set<std::pair<uint64_t, uint64_t>> pending;
 
-	std::shared_ptr<time_point_t> latest_point;
+	std::shared_ptr<vdf_point_t> latest_point;
 
 };
 

@@ -72,7 +72,7 @@ private:
 	};
 
 	struct vdf_point_t {
-		hash_t output;
+		std::array<hash_t, 2> output;
 		int64_t recv_time = 0;
 	};
 
@@ -91,7 +91,7 @@ private:
 
 	void sync_result(uint32_t height, const std::vector<std::shared_ptr<const Block>>& blocks);
 
-	std::shared_ptr<Node::fork_t> find_best_fork(std::shared_ptr<const BlockHeader> root, const uint32_t* fork_height = nullptr) const;
+	std::shared_ptr<Node::fork_t> find_best_fork(std::shared_ptr<const BlockHeader> root, const uint32_t* at_height = nullptr) const;
 
 	std::vector<std::shared_ptr<Node::fork_t>> get_fork_line(std::shared_ptr<fork_t> fork_head = nullptr) const;
 
@@ -111,7 +111,9 @@ private:
 
 	uint32_t verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, const uint64_t space_diff) const;
 
-	void verify_vdf(std::shared_ptr<const ProofOfTime> proof, const hash_t& begin) const;
+	void verify_vdf(std::shared_ptr<const ProofOfTime> proof, const vdf_point_t& prev) const;
+
+	void verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain, const hash_t& begin) const;
 
 	void apply(std::shared_ptr<const Block> block) noexcept;
 
@@ -130,13 +132,11 @@ private:
 	std::shared_ptr<const BlockHeader> find_prev_header(
 			std::shared_ptr<const BlockHeader> block, const size_t distance = 1, bool clamped = false) const;
 
-	std::shared_ptr<const BlockHeader> get_diff_header(std::shared_ptr<const BlockHeader> block, bool for_next = false) const;
+	std::shared_ptr<const BlockHeader> find_diff_header(std::shared_ptr<const BlockHeader> block, uint32_t offset = 0) const;
 
 	hash_t get_challenge(std::shared_ptr<const BlockHeader> block, const hash_t& vdf_challenge, uint32_t offset = 0) const;
 
 	bool find_vdf_challenge(std::shared_ptr<const BlockHeader> block, hash_t& vdf_challenge, uint32_t offset = 0) const;
-
-	bool find_vdf_output(const uint64_t vdf_iters, hash_t& vdf_output) const;
 
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block) const;
 

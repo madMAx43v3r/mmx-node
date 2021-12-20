@@ -17,26 +17,35 @@ mmx::hash_t ProofOfTime::calc_hash() const
 	vnx::VectorOutputStream stream(&buffer);
 	vnx::OutputBuffer out(&stream);
 
-	buffer.reserve(16 * 1024);
+	buffer.reserve(64 * 1024);
 
-	for(const auto& entry : infuse) {
+	for(const auto& entry : infuse[0]) {
+		write_bytes(out, entry.first);
+		write_bytes(out, entry.second);
+	}
+	for(const auto& entry : infuse[1]) {
 		write_bytes(out, entry.first);
 		write_bytes(out, entry.second);
 	}
 	for(const auto& seg : segments) {
 		write_bytes(out, seg.num_iters);
-		write_bytes(out, seg.output);
+		write_bytes(out, seg.output[0]);
+		write_bytes(out, seg.output[1]);
 	}
+	write_bytes(out, timelord_key);
 	out.flush();
 
 	return hash_t(buffer);
 }
 
-mmx::hash_t ProofOfTime::get_output() const
+mmx::hash_t ProofOfTime::get_output(const uint32_t& chain) const
 {
+	if(chain > 1) {
+		throw std::logic_error("invalid chain");
+	}
 	hash_t res;
 	if(!segments.empty()) {
-		res = segments.back().output;
+		res = segments.back().output[chain];
 	}
 	return res;
 }
@@ -58,7 +67,8 @@ std::shared_ptr<const ProofOfTime> ProofOfTime::compressed() const
 	{
 		time_segment_t seg;
 		seg.num_iters = get_num_iters();
-		seg.output = get_output();
+		seg.output[0] = get_output(0);
+		seg.output[1] = get_output(1);
 		out->segments.push_back(seg);
 	}
 	return out;

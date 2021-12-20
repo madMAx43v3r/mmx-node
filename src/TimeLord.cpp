@@ -35,49 +35,55 @@ void TimeLord::main()
 	}
 }
 
-void TimeLord::start_vdf(time_point_t begin)
+void TimeLord::start_vdf(vdf_point_t begin)
 {
-	log(INFO) << "Started VDF at " << begin.num_iters;
-	vdf_thread = std::thread(&TimeLord::vdf_loop, this, begin);
+	if(!is_running) {
+		is_running = true;
+		log(INFO) << "Started VDF at " << begin.num_iters;
+		vdf_thread = std::thread(&TimeLord::vdf_loop, this, begin);
+	}
 }
 
 void TimeLord::handle(std::shared_ptr<const TimeInfusion> value)
 {
+	if(value->chain > 1) {
+		return;
+	}
 	std::lock_guard<std::recursive_mutex> lock(mutex);
 
-	if(!infuse.count(value->num_iters)) {
-		if(latest_point && value->num_iters < latest_point->num_iters) {
-			log(WARN) << "Missed infusion point at " << value->num_iters << " iterations";
+	for(const auto& entry : value->values) {
+		if(!infuse[value->chain].count(entry.first)) {
+			if(latest_point && entry.first < latest_point->num_iters) {
+				log(WARN) << "Missed infusion point at " << entry.first << " iterations";
+			}
+			log(DEBUG) << "Infusing at " << entry.first << " iterations: " << entry.second;
 		}
-		log(DEBUG) << "Infusing at " << value->num_iters << " iterations: " << value->value;
 	}
-	infuse[value->num_iters] = value->value;
+	infuse[value->chain] = value->values;
 }
 
-void TimeLord::handle(std::shared_ptr<const IntervalRequest> value)
+void TimeLord::handle(std::shared_ptr<const IntervalRequest> request)
 {
 	std::lock_guard<std::recursive_mutex> lock(mutex);
 
-	if(value->end > value->begin) {
-		pending.emplace(value->end, value->begin);
+	if(request->end > request->begin) {
+		pending.emplace(request->end, request->begin);
 	}
-	checkpoint_interval = value->interval;			// should be constant
+	checkpoint_interval = request->interval;			// should be constant
 
-	if(value->begin_hash) {
-		time_point_t begin;
-		begin.num_iters = value->begin;
-		begin.output = *value->begin_hash;
+	vdf_point_t begin;
+	begin.num_iters = request->begin;
+	begin.output = request->start_values;
 
-		if(!vdf_thread.joinable()) {
-			start_vdf(begin);
-		} else {
-			auto iter = history.find(value->begin);
-			if(iter != history.end()) {
-				if(iter->second != *value->begin_hash) {
-					do_restart = true;
-					latest_point = std::make_shared<time_point_t>(begin);
-					log(WARN) << "Our VDF forked from the network, restarting...";
-				}
+	if(!is_running) {
+		start_vdf(begin);
+	} else {
+		auto iter = history.find(request->begin);
+		if(iter != history.end()) {
+			if(iter->second != request->start_values) {
+				do_restart = true;
+				latest_point = std::make_shared<vdf_point_t>(begin);
+				log(WARN) << "Our VDF forked from the network, restarting...";
 			}
 		}
 	}
@@ -101,7 +107,10 @@ void TimeLord::update()
 			{
 				auto proof = ProofOfTime::create();
 				proof->start = iters_begin;
-				proof->infuse.insert(infuse_history.lower_bound(iters_begin), infuse_history.lower_bound(iters_end));
+
+				for(uint32_t k = 0; k < 2; ++k) {
+					proof->infuse[k].insert(infuse_history[k].lower_bound(iters_begin), infuse_history[k].lower_bound(iters_end));
+				}
 
 				auto prev_iters = iters_begin;
 				for(auto iter = begin; iter != end; ++iter) {
@@ -121,7 +130,9 @@ void TimeLord::update()
 					// need to recompute end point from previous checkpoint
 					auto prev = end; prev--;
 					seg.num_iters = iters_end - prev->first;
-					seg.output = compute(prev->second, prev->first, seg.num_iters);
+					for(uint32_t k = 0; k < 2; ++k) {
+						seg.output[k] = compute(prev->second[k], prev->first, seg.num_iters, k);
+					}
 				}
 				proof->segments.push_back(seg);
 
@@ -135,7 +146,7 @@ void TimeLord::update()
 	}
 }
 
-void TimeLord::vdf_loop(time_point_t point)
+void TimeLord::vdf_loop(vdf_point_t point)
 {
 	bool do_notify = false;
 	checkpoint_iters = checkpoint_interval;
@@ -152,7 +163,8 @@ void TimeLord::vdf_loop(time_point_t point)
 			{
 				if(do_restart) {
 					history.clear();
-					infuse_history.clear();
+					infuse_history[0].clear();
+					infuse_history[1].clear();
 				}
 				do_restart = false;
 				point = *latest_point;
@@ -160,26 +172,40 @@ void TimeLord::vdf_loop(time_point_t point)
 			}
 			else {
 				if(!latest_point) {
-					latest_point = std::make_shared<time_point_t>();
+					latest_point = std::make_shared<vdf_point_t>();
 				}
 				*latest_point = point;
 				history.emplace(point.num_iters, point.output);
 			}
+
 			// purge history
 			while(history.size() > max_history) {
 				history.erase(history.begin());
 			}
-			if(history.size() >= max_history) {
-				const auto begin = history.begin()->first;
-				infuse.erase(infuse.begin(), infuse.lower_bound(begin));
-				infuse_history.erase(infuse_history.begin(), infuse_history.lower_bound(begin));
-			}
+
+			for(uint32_t k = 0; k < 2; ++k)
 			{
-				// check for upcoming infusion point
-				auto iter = infuse.upper_bound(point.num_iters);
-				if(iter != infuse.end()) {
-					if(!next_target || iter->first < next_target) {
-						next_target = iter->first;
+				// purge history
+				if(history.size() >= max_history)
+				{
+					const auto begin = history.begin()->first;
+					infuse_history[k].erase(infuse_history[k].begin(), infuse_history[k].lower_bound(begin));
+				}
+				{
+					// apply infusions
+					auto iter = infuse[k].find(point.num_iters);
+					if(iter != infuse[k].end()) {
+						point.output[k] = hash_t(point.output[k] + iter->second);
+						infuse_history[k].insert(*iter);
+					}
+				}
+				{
+					// check for upcoming infusion point
+					auto iter = infuse[k].upper_bound(point.num_iters);
+					if(iter != infuse[k].end()) {
+						if(!next_target || iter->first < next_target) {
+							next_target = iter->first;
+						}
 					}
 				}
 			}
@@ -201,21 +227,29 @@ void TimeLord::vdf_loop(time_point_t point)
 		}
 		do_notify = false;
 
-		const auto next_checkpoint = point.num_iters + checkpoint_iters;
+		const auto checkpoint = point.num_iters + checkpoint_iters;
+
 		if(next_target <= point.num_iters) {
-			next_target = next_checkpoint;
+			next_target = checkpoint;
 		}
-		else if(next_target <= next_checkpoint) {
+		else if(next_target <= checkpoint) {
 			do_notify = true;
 		}
 		else {
-			next_target = next_checkpoint;
+			next_target = checkpoint;
 		}
 		const auto num_iters = next_target - point.num_iters;
 
-		point.output = compute(point.output, point.num_iters, num_iters);
-		point.num_iters = next_target;
-
+#pragma omp parallel for num_threads(2)
+		for(uint32_t k = 0; k < 2; ++k)
+		{
+			auto hash = point.output[k];
+			for(uint64_t i = 0; i < num_iters; ++i) {
+				hash = hash_t(hash.bytes);
+			}
+			point.output[k] = hash;
+			point.num_iters = next_target;
+		}
 		const auto time_end = vnx::get_wall_time_micros();
 
 		if(time_end > time_begin && num_iters > checkpoint_iters / 2)
@@ -227,16 +261,16 @@ void TimeLord::vdf_loop(time_point_t point)
 	}
 }
 
-hash_t TimeLord::compute(const hash_t& input, const uint64_t start, const uint64_t num_iters)
+hash_t TimeLord::compute(const hash_t& input, const uint64_t start, const uint64_t num_iters, const uint32_t chain)
 {
 	hash_t hash = input;
 	{
 		std::lock_guard<std::recursive_mutex> lock(mutex);
 
-		auto iter = infuse.find(start);
-		if(iter != infuse.end()) {
+		auto iter = infuse[chain].find(start);
+		if(iter != infuse[chain].end()) {
 			hash = hash_t(hash + iter->second);
-			infuse_history.insert(*iter);
+			infuse_history[chain].insert(*iter);
 		}
 	}
 	for(uint64_t i = 0; i < num_iters; ++i) {

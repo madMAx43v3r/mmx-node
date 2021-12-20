@@ -297,7 +297,7 @@ void Router::connect_task(const std::string& address) noexcept
 	try {
 		vnx::TcpEndpoint peer;
 		peer.host_name = address;
-		peer.port = params->tcp_port;
+		peer.port = params->port;
 		const auto sock = peer.open();
 		peer.connect(sock);
 		add_task(std::bind(&Router::add_peer, this, address, sock));

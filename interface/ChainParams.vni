@@ -2,14 +2,16 @@ package mmx;
 
 class ChainParams {
 	
-	uint tcp_port;
+	uint port;
 	uint decimals = 6;
 	uint min_ksize = 30;
 	uint max_ksize = 42;
 	uint plot_filter = 10;
-	uint finality_delay = 6;				// number of blocks until history is fixed (must be >= challenge_delay)
+	
+	uint commit_delay = 18;					// for writing to disk (must > finality_delay)
+	uint finality_delay = 6;				// for primary VDF infusion (must be > 0)
 	uint challenge_delay = 3;				// blocks until new challange is active (must be > 0)
-	uint challenge_interval = 64;			// challenge is for next N blocks
+	uint challenge_interval = 36;			// challenge (and difficulty) is for next N blocks (must be > finality_delay)
 	uint max_diff_adjust = 10;				// per block (1/2^x)
 	
 	uint min_vdf_segments = 256;
@@ -35,8 +37,9 @@ class ChainParams {
 	ulong initial_time_diff = 10000;		// [iters/sec]
 	ulong initial_space_diff = 256;			// quality modulo
 	
+	ulong min_txfee_io = 100;				// per input / output
+	ulong min_txfee_sign = 1000;			// per signature / solution
 	ulong min_txfee_exec = 100000;			// per operation
-	ulong min_txfee_inout = 500;			// per input / output
 	
 	double block_time = 10;					// [sec]
 	

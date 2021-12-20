@@ -155,18 +155,18 @@ hash_t Wallet::send(const uint64_t& amount, const addr_t& dst_addr, const addr_t
 	}
 	uint64_t tx_fees = tx->calc_min_fee(params);
 
-	while(change < tx_fees + params->min_txfee_inout)
+	while(change < tx_fees + params->min_txfee_io)
 	{
 		// gather inputs for tx fee
-		change += gather_inputs(tx, utxo_map, (tx_fees + params->min_txfee_inout) - change, addr_t());
+		change += gather_inputs(tx, utxo_map, (tx_fees + params->min_txfee_io) - change, addr_t());
 		tx_fees = tx->calc_min_fee(params);
 	}
-	if(change > tx_fees + params->min_txfee_inout)
+	if(change > tx_fees + params->min_txfee_io)
 	{
 		// add change output
 		tx_out_t out;
 		out.address = wallet->get_address(0);
-		out.amount = change - (tx_fees + params->min_txfee_inout);
+		out.amount = change - (tx_fees + params->min_txfee_io);
 		tx->outputs.push_back(out);
 		change = 0;
 	}
