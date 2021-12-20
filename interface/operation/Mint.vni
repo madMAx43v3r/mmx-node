@@ -1,8 +1,11 @@
 package mmx.operation;
 
 import mmx.hash_t;
+import mmx.addr_t;
 
 class Mint extends mmx.Operation {
+	
+	addr_t target;
 	
 	ulong amount;
 	

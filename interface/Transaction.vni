@@ -10,6 +10,8 @@ class Transaction {
 	
 	vector<tx_out_t> outputs;
 	
+	vector<tx_out_t> exec_outputs;
+	
 	vector<Operation*> execute;
 	
 	vector<Solution*> solutions;
