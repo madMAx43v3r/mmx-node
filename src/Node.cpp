@@ -668,7 +668,7 @@ void Node::update()
 		auto vdf_iters = peak->vdf_iters;
 		for(uint32_t i = 0; i <= params->finality_delay; ++i)
 		{
-			if(auto diff_block = find_diff_header(peak, i))
+			if(auto diff_block = find_diff_header(peak, i + 1))
 			{
 				if(auto prev = find_prev_header(peak, params->finality_delay - i, true))
 				{
@@ -1333,7 +1333,7 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const vdf_point_
 		}
 		uint64_t target_iters = infused_block->vdf_iters;
 		for(size_t i = 0; i < params->finality_delay; ++i) {
-			if(auto diff_block = find_diff_header(infused_block, i)) {
+			if(auto diff_block = find_diff_header(infused_block, i + 1)) {
 				target_iters += diff_block->time_diff * params->time_diff_constant;
 				if(infused_block->height == 0 && infused.first == target_iters) {
 					break;	// genesis case

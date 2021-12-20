@@ -56,7 +56,7 @@ void TimeLord::handle(std::shared_ptr<const TimeInfusion> value)
 			if(latest_point && entry.first < latest_point->num_iters) {
 				log(WARN) << "Missed infusion point at " << entry.first << " iterations";
 			}
-			log(DEBUG) << "Infusing at " << entry.first << " iterations: " << entry.second;
+			log(DEBUG) << "Infusing at " << entry.first << " iterations on chain " << value->chain << ": " << entry.second;
 		}
 	}
 	infuse[value->chain] = value->values;
