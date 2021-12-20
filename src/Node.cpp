@@ -978,7 +978,7 @@ void Node::sync_result(uint32_t height, const std::vector<std::shared_ptr<const 
 
 std::shared_ptr<Node::fork_t> Node::find_best_fork(std::shared_ptr<const BlockHeader> root, const uint32_t* at_height) const
 {
-	uint128_t max_weight = 0;
+	uint64_t max_weight = 0;
 	std::shared_ptr<fork_t> best_fork;
 
 	for(const auto& entry : fork_tree)
@@ -991,7 +991,7 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork(std::shared_ptr<const BlockHe
 		if(at_height && block->height != *at_height) {
 			continue;
 		}
-		uint128_t weight = 0;
+		uint64_t weight = 0;
 		if(calc_fork_weight(root, fork, weight))
 		{
 			if(!best_fork || weight > max_weight || (weight == max_weight && block->hash < best_fork->block->hash))
@@ -1016,16 +1016,15 @@ std::vector<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<f
 	return line;
 }
 
-bool Node::calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<fork_t> fork, uint128_t& total_weight) const
+bool Node::calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<fork_t> fork, uint64_t& total_weight) const
 {
 	while(fork) {
 		const auto& block = fork->block;
-		if(fork->is_proof_verified) {
-			const auto& diff_block = fork->diff_block;
-			total_weight += uint128_t(2 * params->score_threshold - fork->proof_score) * diff_block->time_diff * diff_block->space_diff;
-		} else {
+		if(!fork->is_proof_verified || fork->proof_score > params->score_threshold) {
 			return false;
 		}
+		total_weight += 2 * params->score_threshold - fork->proof_score;
+
 		if(block->prev == root->hash) {
 			return true;
 		}
