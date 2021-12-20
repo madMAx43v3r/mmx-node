@@ -134,7 +134,7 @@ void TimeLord::update()
 					auto prev = end; prev--;
 					seg.num_iters = iters_end - prev->first;
 					for(uint32_t k = 0; k < 2; ++k) {
-						seg.output[k] = compute(prev->second[k], prev->first, seg.num_iters, k);
+						seg.output[k] = compute(prev->second[k], seg.num_iters);
 					}
 				}
 				proof->segments.push_back(seg);
@@ -244,15 +244,11 @@ void TimeLord::vdf_loop(vdf_point_t point)
 		const auto num_iters = next_target - point.num_iters;
 
 #pragma omp parallel for num_threads(2)
-		for(uint32_t k = 0; k < 2; ++k)
-		{
-			auto hash = point.output[k];
-			for(uint64_t i = 0; i < num_iters; ++i) {
-				hash = hash_t(hash.bytes);
-			}
-			point.output[k] = hash;
-			point.num_iters = next_target;
+		for(uint32_t k = 0; k < 2; ++k) {
+			point.output[k] = compute(point.output[k], num_iters);
 		}
+		point.num_iters += num_iters;
+
 		const auto time_end = vnx::get_wall_time_micros();
 
 		if(time_end > time_begin && num_iters > checkpoint_iters / 2)
@@ -264,18 +260,9 @@ void TimeLord::vdf_loop(vdf_point_t point)
 	}
 }
 
-hash_t TimeLord::compute(const hash_t& input, const uint64_t start, const uint64_t num_iters, const uint32_t chain)
+hash_t TimeLord::compute(const hash_t& input, const uint64_t num_iters)
 {
 	hash_t hash = input;
-	{
-		std::lock_guard<std::recursive_mutex> lock(mutex);
-
-		auto iter = infuse[chain].find(start);
-		if(iter != infuse[chain].end()) {
-			hash = hash_t(hash + iter->second);
-			infuse_history[chain].insert(*iter);
-		}
-	}
 	for(uint64_t i = 0; i < num_iters; ++i) {
 		hash = hash_t(hash.bytes);
 	}

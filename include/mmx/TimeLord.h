@@ -38,7 +38,7 @@ private:
 
 	void vdf_loop(vdf_point_t point);
 
-	hash_t compute(const hash_t& input, const uint64_t start, const uint64_t num_iters, const uint32_t chain);
+	hash_t compute(const hash_t& input, const uint64_t num_iters);
 
 	void print_info();
 
