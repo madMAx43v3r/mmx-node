@@ -626,9 +626,8 @@ void Node::update()
 			}
 		}
 	}
-
-	// request next VDF proofs
 	{
+		// request next VDF proofs
 		auto vdf_iters = peak->vdf_iters;
 		for(uint32_t i = 0; i < params->finality_delay; ++i)
 		{

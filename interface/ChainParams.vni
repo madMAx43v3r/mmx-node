@@ -38,7 +38,7 @@ class ChainParams {
 	ulong initial_space_diff = 256;			// quality modulo
 	
 	ulong min_txfee_io = 100;				// per input / output
-	ulong min_txfee_sign = 1000;			// per signature / solution
+	ulong min_txfee_sign = 1000;			// per solution
 	ulong min_txfee_exec = 100000;			// per operation
 	
 	double block_time = 10;					// [sec]
