@@ -27,7 +27,7 @@ Node::Node(const std::string& _vnx_name)
 
 void Node::init()
 {
-	vnx::open_pipe(vnx_name, this, 1000);
+	vnx::open_pipe(vnx_name, this, max_queue_ms);
 }
 
 void Node::main()
@@ -122,11 +122,11 @@ void Node::main()
 		verified_vdfs[block->vdf_iters] = point;
 	}
 
-	subscribe(input_vdfs, 1000);
-	subscribe(input_blocks, 1000);
-	subscribe(input_transactions, 1000);
-	subscribe(input_timelord_vdfs, 1000);
-	subscribe(input_harvester_proof, 1000);
+	subscribe(input_vdfs, max_queue_ms);
+	subscribe(input_blocks, max_queue_ms);
+	subscribe(input_transactions, max_queue_ms);
+	subscribe(input_timelord_vdfs, max_queue_ms);
+	subscribe(input_harvester_proof, max_queue_ms);
 
 	update_timer = set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
 
@@ -599,9 +599,8 @@ void Node::update()
 		}
 	}
 	if(!is_synced) {
-		update_timer->reset();
-		sync_update = sync_pos;
 		sync_more();
+		update_timer->reset();
 		return;
 	}
 
@@ -928,7 +927,6 @@ void Node::start_sync()
 {
 	sync_pos = 0;
 	sync_peak = -1;
-	sync_update = 0;
 	sync_retry = 0;
 	is_synced = false;
 	sync_more();
@@ -941,6 +939,7 @@ void Node::sync_more()
 	}
 	if(!sync_pos) {
 		sync_pos = get_root()->height + 1;
+		sync_update = sync_pos;
 		log(INFO) << "Starting sync at height " << sync_pos;
 	}
 	while(sync_pending.size() < params->finality_delay)
@@ -972,7 +971,8 @@ void Node::sync_result(uint32_t height, const std::vector<std::shared_ptr<const 
 	sync_more();
 
 	if(sync_pos - sync_update >= 32) {
-		update();
+		sync_update = sync_pos;
+		add_task(std::bind(&Node::update, this));
 	}
 }
 

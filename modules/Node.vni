@@ -16,18 +16,16 @@ module Node {
 	vnx.TopicPtr output_timelord_infuse = "timelord.infuse";
 	vnx.TopicPtr output_challenges = "harvester.challenges";
 	
+	int max_queue_ms = 10000;				// [ms]
 	int update_interval_ms = 1000;			// [ms]
 	
 	uint max_history = 1000;
-	
 	uint reload_height = -1;				// to limit reloading from disk and force resync
-	
 	uint num_sync_retries = 3;				// how often to retry when reaching a peak
 	
 	bool do_sync = true;
 	
 	string storage_path;
-	
 	string router_name = "Router";
 	
 	

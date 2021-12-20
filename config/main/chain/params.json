@@ -1,5 +1,5 @@
 {
-	"tcp_port": 11337,
+	"port": 11337,
 	"vdf_seed": "main",
 	"reward_factor": {
 		"value": 1,

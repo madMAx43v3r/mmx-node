@@ -19,6 +19,8 @@ public:
 	Harvester(const std::string& _vnx_name);
 
 protected:
+	void init() override;
+
 	void main() override;
 
 	void handle(std::shared_ptr<const Challenge> value) override;

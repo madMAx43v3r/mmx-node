@@ -20,6 +20,11 @@ Harvester::Harvester(const std::string& _vnx_name)
 {
 }
 
+void Harvester::init()
+{
+	vnx::open_pipe(vnx_name, this, max_queue_ms);
+}
+
 void Harvester::main()
 {
 	if(!num_threads) {
@@ -27,7 +32,7 @@ void Harvester::main()
 	}
 	params = get_params();
 
-	subscribe(input_challenges, 1000);
+	subscribe(input_challenges, max_queue_ms);
 
 	set_timer_millis(1000, std::bind(&Harvester::update, this));
 	set_timer_millis(int64_t(reload_interval) * 1000, std::bind(&Harvester::reload, this));

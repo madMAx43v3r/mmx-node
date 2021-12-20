@@ -30,26 +30,26 @@ Router::Router(const std::string& _vnx_name)
 	:	RouterBase(_vnx_name)
 {
 	params = get_params();
-//	port = params->tcp_port;
-	host = "0.0.0.0";
+	port = params->port;
 }
 
 void Router::init()
 {
 	Super::init();
-	vnx::open_pipe(vnx_name, this, 1000);
+	vnx::open_pipe(vnx_name, this, max_queue_ms);
 }
 
 void Router::main()
 {
-	subscribe(input_vdfs, 1000);
-	subscribe(input_blocks, 1000);
-	subscribe(input_verified_vdfs, 1000);
-	subscribe(input_transactions, 1000);
+	subscribe(input_vdfs, max_queue_ms);
+	subscribe(input_blocks, max_queue_ms);
+	subscribe(input_verified_vdfs, max_queue_ms);
+	subscribe(input_transactions, max_queue_ms);
 
 	peer_set = seed_peers;
 
 	node = std::make_shared<NodeAsyncClient>(node_server);
+	node->vnx_set_non_blocking(true);
 	add_async_client(node);
 
 	threads = std::make_shared<vnx::ThreadPool>(num_peers);
@@ -174,7 +174,9 @@ void Router::update()
 		{
 			size_t num_blocks = 0;
 			for(const auto& entry : job.hash_map) {
-				num_blocks += entry.second.size();
+				if(entry.second.size() >= min_sync_peers) {
+					num_blocks += entry.second.size();
+				}
 			}
 			if(num_blocks < min_sync_peers && job.failed.size() < min_sync_peers)
 			{
@@ -200,7 +202,13 @@ void Router::update()
 		}
 		if(job.state == FETCH_BLOCKS)
 		{
-			if(job.blocks.size() >= job.hash_map.size() || job.failed.size() >= min_sync_peers)
+			size_t num_blocks = 0;
+			for(const auto& entry : job.hash_map) {
+				if(entry.second.size() >= min_sync_peers) {
+					num_blocks++;
+				}
+			}
+			if(job.blocks.size() >= num_blocks || job.failed.size() >= min_sync_peers)
 			{
 				// we are done with the job
 				std::vector<std::shared_ptr<const Block>> blocks;
@@ -216,26 +224,22 @@ void Router::update()
 				continue;
 			}
 			else {
-				for(const auto& entry : job.hash_map)
-				{
-					if(job.blocks.count(entry.first)) {
-						continue;
-					}
-					size_t num_pending = 0;
-					for(auto client : entry.second) {
-						if(num_pending >= min_sync_peers) {
-							break;
+				for(const auto& entry : job.hash_map) {
+					if(!job.blocks.count(entry.first))
+					{
+						size_t num_pending = 0;
+						for(auto client : entry.second) {
+							if(!job.failed.count(client)) {
+								if(!job.pending.count(client)) {
+									auto req = Node_get_block::create();
+									req->hash = entry.first;
+									job.pending[client] = send_request(client, req);
+								}
+								if(++num_pending >= min_sync_peers) {
+									break;
+								}
+							}
 						}
-						if(job.failed.count(client)) {
-							continue;
-						}
-						if(!job.pending.count(client))
-						{
-							auto req = Node_get_block::create();
-							req->hash = entry.first;
-							job.pending[client] = send_request(client, req);
-						}
-						num_pending++;
 					}
 				}
 			}
