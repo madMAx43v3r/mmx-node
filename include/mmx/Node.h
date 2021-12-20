@@ -79,8 +79,8 @@ private:
 	struct change_log_t {
 		hash_t prev_state;
 		std::vector<hash_t> tx_added;
-		std::unordered_map<txio_key_t, std::pair<txio_key_t, utxo_t>> utxo_added;		// [utxo key => [txio key, utxo]]
-		std::unordered_map<txio_key_t, std::pair<txio_key_t, utxo_t>> utxo_removed;		// [utxo key => [txio key, utxo]]
+		std::unordered_map<txio_key_t, utxo_t> utxo_added;								// [utxo key => utxo]
+		std::unordered_map<txio_key_t, std::pair<txio_key_t, utxo_t>> utxo_removed;		// [utxo key => [spent txio key, utxo]]
 	};
 
 	void update();

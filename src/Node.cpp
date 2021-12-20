@@ -1184,7 +1184,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 		addr_map.erase(std::make_pair(entry.second.second.address, entry.first));
 	}
 	for(const auto& entry : log->utxo_added) {
-		addr_map.emplace(entry.second.second.address, entry.first);
+		addr_map.emplace(entry.second.address, entry.first);
 	}
 	for(const auto& txid : log->tx_added) {
 		auto iter = tx_map.find(txid);
@@ -1382,7 +1382,7 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 		const auto key = txio_key_t::create_ex(tx->id, i);
 		const auto value = utxo_t::create_ex(tx->outputs[i], block->height);
 		utxo_map[key] = value;
-		log.utxo_added.emplace(key, std::make_pair(key, value));
+		log.utxo_added.emplace(key, value);
 	}
 	tx_key_t info;
 	info.height = block->height;
