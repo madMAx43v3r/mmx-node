@@ -295,7 +295,7 @@ void Node::add_block(std::shared_ptr<const Block> block)
 	if(!block->is_valid()) {
 		return;
 	}
-	if(is_replay) {
+	if(is_replay || !is_synced) {
 		vdf_point_t point;
 		point.output = block->vdf_output;
 		point.recv_time = vnx::get_time_micros();
@@ -707,29 +707,28 @@ void Node::update()
 				value->space_diff = diff_block->space_diff;
 				publish(value, output_challenges);
 			}
-			if(!made_block) {
-				auto iter = proof_map.find(challenge);
-				if(iter != proof_map.end()) {
-					const auto& proof = iter->second;
-					const auto next_height = prev->height + 1;
-					const auto best_fork = find_best_fork(prev, &next_height);
-					// check if we have a better proof
-					if(!best_fork || proof->score < best_fork->proof_score) {
-						try {
-							if(make_block(prev, proof)) {
-								// update again right away
-								add_task(std::bind(&Node::update, this));
-								// only make one block at a time
-								made_block = true;
-							}
+			auto iter = proof_map.find(challenge);
+			if(iter != proof_map.end()) {
+				const auto& proof = iter->second;
+				const auto next_height = prev->height + 1;
+				const auto best_fork = find_best_fork(prev, &next_height);
+				// check if we have a better proof
+				if(!best_fork || proof->score < best_fork->proof_score) {
+					try {
+						if(make_block(prev, proof)) {
+							made_block = true;
 						}
-						catch(const std::exception& ex) {
-							log(WARN) << "Failed to create a block: " << ex.what();
-						}
+					}
+					catch(const std::exception& ex) {
+						log(WARN) << "Failed to create a block: " << ex.what();
 					}
 				}
 			}
 			prev = find_prev_header(prev);
+		}
+		if(made_block) {
+			// update again right away
+			add_task(std::bind(&Node::update, this));
 		}
 	}
 
@@ -953,10 +952,6 @@ void Node::sync_result(uint32_t height, const std::vector<std::shared_ptr<const 
 	for(auto block : blocks) {
 		if(block) {
 			add_block(block);
-			vdf_point_t point;
-			point.output = block->vdf_output;
-			point.recv_time = vnx::get_time_micros();
-			verified_vdfs[block->vdf_iters] = point;
 		}
 	}
 	if(blocks.empty()) {
