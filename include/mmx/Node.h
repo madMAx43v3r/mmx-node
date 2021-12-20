@@ -170,6 +170,7 @@ private:
 	uint32_t sync_pos = 0;									// current sync height
 	uint32_t sync_peak = -1;								// max height we can sync
 	uint32_t sync_update = 0;								// height of last update
+	uint32_t sync_retry = 0;
 	std::set<uint32_t> sync_pending;						// set of heights
 	std::shared_ptr<vnx::Timer> update_timer;
 

@@ -300,6 +300,7 @@ void Node::add_block(std::shared_ptr<const Block> block)
 		point.output = block->vdf_output;
 		point.recv_time = vnx::get_time_micros();
 		verified_vdfs[block->vdf_iters] = point;
+		log(DEBUG) << "Added VDF at " << block->vdf_iters << " from block " << block->height;
 	}
 	auto fork = std::make_shared<fork_t>();
 	fork->recv_time = vnx::get_time_micros();
@@ -586,9 +587,16 @@ void Node::update()
 				<< (did_fork ? " (forked at " + std::to_string(forked_at ? forked_at->height : -1) + ")" : "");
 	}
 
-	if(!is_synced && sync_pos >= sync_peak && sync_pending.empty()) {
-		is_synced = true;
-		log(INFO) << "Finished sync at height " << peak->height;
+	if(!is_synced && sync_pos >= sync_peak && sync_pending.empty())
+	{
+		if(sync_retry < num_sync_retries) {
+			sync_pos = sync_peak;
+			sync_peak = -1;
+			sync_retry++;
+		} else {
+			is_synced = true;
+			log(INFO) << "Finished sync at height " << peak->height;
+		}
 	}
 	if(!is_synced) {
 		update_timer->reset();
@@ -921,6 +929,7 @@ void Node::start_sync()
 	sync_pos = 0;
 	sync_peak = -1;
 	sync_update = 0;
+	sync_retry = 0;
 	is_synced = false;
 	sync_more();
 }

@@ -22,6 +22,8 @@ module Node {
 	
 	uint reload_height = -1;				// to limit reloading from disk and force resync
 	
+	uint num_sync_retries = 3;				// how often to retry when reaching a peak
+	
 	bool do_sync = true;
 	
 	string storage_path;
