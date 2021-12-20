@@ -630,8 +630,8 @@ void Node::update()
 	// try to make a block
 	{
 		bool made_block = false;
-		std::shared_ptr<const BlockHeader> prev = root;
-		for(uint32_t prev_height = root->height; prev_height <= peak->height; ++prev_height)
+		auto prev = find_prev_header(peak, params->finality_delay, true);
+		for(uint32_t prev_height = prev->height + 1; prev_height <= peak->height; ++prev_height)
 		{
 			if(auto fork = find_best_fork(prev, &prev_height)) {
 				prev = fork->block;
