@@ -69,7 +69,7 @@ inline void write_bytes(vnx::OutputBuffer& out, const vnx::Buffer& value) {
 	out.write(value.data(), value.size());
 }
 
-inline void write_bytes(vnx::OutputBuffer& out, const utxo_key_t& value)
+inline void write_bytes(vnx::OutputBuffer& out, const txio_key_t& value)
 {
 	write_bytes(out, value.txid);
 	write_bytes(out, value.index);

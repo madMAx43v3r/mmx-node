@@ -1,6 +1,6 @@
 package mmx;
 
-struct tx_info_t {
+struct tx_key_t {
 	
 	uint height;
 	

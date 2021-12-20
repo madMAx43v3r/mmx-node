@@ -76,7 +76,7 @@ void Wallet::close_wallet()
 
 static
 uint64_t gather_inputs(	std::shared_ptr<Transaction> tx,
-						std::unordered_map<utxo_key_t, utxo_t>& utxo_map,
+						std::unordered_map<txio_key_t, utxo_t>& utxo_map,
 						const uint64_t amount, const addr_t& contract)
 {
 	uint64_t output = amount;
@@ -121,8 +121,8 @@ hash_t Wallet::send(const uint64_t& amount, const addr_t& dst_addr, const addr_t
 	// get a list of all utxo we could use
 	const auto all_utxos = node->get_utxo_list(wallet->get_all_addresses());
 
-	std::unordered_map<utxo_key_t, addr_t> addr_map;
-	std::unordered_map<utxo_key_t, utxo_t> utxo_map;
+	std::unordered_map<txio_key_t, addr_t> addr_map;
+	std::unordered_map<txio_key_t, utxo_t> utxo_map;
 
 	// remove any utxo we have already consumed (but are possibly not finalized yet)
 	for(const auto& entry : all_utxos) {
@@ -145,7 +145,7 @@ hash_t Wallet::send(const uint64_t& amount, const addr_t& dst_addr, const addr_t
 
 	if(contract != addr_t() && change > 0)
 	{
-		// non-native change cannot be used as tx fee
+		// token change cannot be used as tx fee
 		tx_out_t out;
 		out.address = wallet->get_address(0);
 		out.contract = contract;

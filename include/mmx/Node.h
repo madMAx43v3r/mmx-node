@@ -12,7 +12,7 @@
 #include <mmx/ChainParams.hxx>
 #include <mmx/RouterAsyncClient.hxx>
 #include <mmx/utxo_t.hpp>
-#include <mmx/utxo_key_t.hpp>
+#include <mmx/txio_key_t.hpp>
 
 
 namespace mmx {
@@ -34,9 +34,9 @@ protected:
 
 	vnx::optional<hash_t> get_block_hash(const uint32_t& height) const override;
 
-	vnx::optional<tx_info_t> get_tx_info(const hash_t& id) const override;
+	vnx::optional<tx_key_t> get_tx_key(const hash_t& id) const override;
 
-	utxo_info_t get_utxo_info(const utxo_key_t& key) const override;
+	txo_info_t get_txo_info(const txio_key_t& key) const override;
 
 	std::shared_ptr<const Transaction> get_transaction(const hash_t& id) const override;
 
@@ -48,7 +48,7 @@ protected:
 
 	uint64_t get_total_balance(const std::vector<addr_t>& addresses, const addr_t& contract) const override;
 
-	std::vector<std::pair<utxo_key_t, utxo_t>> get_utxo_list(const std::vector<addr_t>& addresses) const override;
+	std::vector<std::pair<txio_key_t, utxo_t>> get_utxo_list(const std::vector<addr_t>& addresses) const override;
 
 	void start_sync() override;
 
@@ -79,8 +79,8 @@ private:
 	struct change_log_t {
 		hash_t prev_state;
 		std::vector<hash_t> tx_added;
-		std::unordered_map<utxo_key_t, std::pair<hash_t, utxo_t>> utxo_added;		// [utxo key => [txid, utxo]]
-		std::unordered_map<utxo_key_t, std::pair<hash_t, utxo_t>> utxo_removed;		// [utxo key => [txid, utxo]]
+		std::unordered_map<txio_key_t, std::pair<txio_key_t, utxo_t>> utxo_added;		// [utxo key => [txio key, utxo]]
+		std::unordered_map<txio_key_t, std::pair<txio_key_t, utxo_t>> utxo_removed;		// [utxo key => [txio key, utxo]]
 	};
 
 	void update();
@@ -128,7 +128,7 @@ private:
 	std::shared_ptr<const BlockHeader> find_header(const hash_t& hash) const;
 
 	std::shared_ptr<const BlockHeader> find_prev_header(
-			std::shared_ptr<const BlockHeader> block, const size_t distance = 1, bool clamp_to_genesis = false) const;
+			std::shared_ptr<const BlockHeader> block, const size_t distance = 1, bool clamped = false) const;
 
 	std::shared_ptr<const BlockHeader> get_diff_header(std::shared_ptr<const BlockHeader> block, bool for_next = false) const;
 
@@ -145,16 +145,16 @@ private:
 	std::list<std::shared_ptr<const change_log_t>> change_log;
 
 	std::unordered_map<hash_t, uint32_t> hash_index;							// [block hash => height] (finalized only)
-	std::unordered_map<hash_t, tx_info_t> tx_index;								// [txid => [height, index]] (finalized only)
-	std::unordered_map<utxo_key_t, hash_t> utxo_index;							// [utxo key => spent txid] (finalized + spent only)
-	std::set<std::pair<addr_t, utxo_key_t>> addr_map;							// [addr => utxo keys] (finalized + unspent only)
+	std::unordered_map<hash_t, tx_key_t> tx_index;								// [txid => [height, index]] (finalized only)
+	std::unordered_map<txio_key_t, txio_key_t> stxo_index;						// [txo key => spent txio key] (finalized + spent only)
 	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;				// [height => block header] (finalized only)
 
-	std::unordered_map<hash_t, tx_info_t> tx_map;								// [txid => [height, index]] (only pending)
-	std::unordered_map<utxo_key_t, utxo_t> utxo_map;							// [utxo key => utxo]
+	std::unordered_map<hash_t, tx_key_t> tx_map;								// [txid => [height, index]] (pending only)
+	std::unordered_map<txio_key_t, utxo_t> utxo_map;							// [utxo key => utxo]
+	std::set<std::pair<addr_t, txio_key_t>> addr_map;							// [addr => utxo keys] (finalized + unspent only)
 
-	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;
-	std::unordered_map<hash_t, std::shared_ptr<const Contract>> contracts;
+	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;					// pending blocks
+	std::unordered_map<hash_t, std::shared_ptr<const Contract>> contracts;			// current contract state
 	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_pool;
 
 	std::map<uint64_t, vdf_point_t> verified_vdfs;									// [iters => output]
@@ -166,10 +166,10 @@ private:
 	std::shared_ptr<vnx::File> block_chain;
 	std::unordered_map<uint32_t, std::pair<int64_t, hash_t>> block_index;		// [height => [file offset, block hash]]
 
-	uint32_t sync_pos = 0;
-	uint32_t sync_peak = -1;
-	uint32_t sync_update = 0;
-	std::set<uint32_t> pending_syncs;
+	uint32_t sync_pos = 0;									// current sync height
+	uint32_t sync_peak = -1;								// max height we can sync
+	uint32_t sync_update = 0;								// height of last update
+	std::set<uint32_t> sync_pending;						// set of heights
 	std::shared_ptr<vnx::Timer> update_timer;
 
 	std::shared_ptr<RouterAsyncClient> router;

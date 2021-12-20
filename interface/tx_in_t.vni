@@ -2,7 +2,7 @@ package mmx;
 
 struct tx_in_t {
 	
-	utxo_key_t prev;
+	txio_key_t prev;
 	
 	uint solution = -1;
 	

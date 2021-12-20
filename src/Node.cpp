@@ -203,7 +203,7 @@ vnx::optional<hash_t> Node::get_block_hash(const uint32_t& height) const
 	return nullptr;
 }
 
-vnx::optional<tx_info_t> Node::get_tx_info(const hash_t& id) const
+vnx::optional<tx_key_t> Node::get_tx_key(const hash_t& id) const
 {
 	{
 		auto iter = tx_map.find(id);
@@ -220,24 +220,24 @@ vnx::optional<tx_info_t> Node::get_tx_info(const hash_t& id) const
 	return nullptr;
 }
 
-utxo_info_t Node::get_utxo_info(const utxo_key_t& key) const
+txo_info_t Node::get_txo_info(const txio_key_t& key) const
 {
 	{
 		auto iter = utxo_map.find(key);
 		if(iter != utxo_map.end()) {
-			utxo_info_t info;
+			txo_info_t info;
 			info.created_at = iter->second.height;
 			return info;
 		}
 	}
 	{
-		auto iter = utxo_index.find(key);
-		if(iter != utxo_index.end()) {
-			auto iter2 = tx_index.find(iter->second);
+		auto iter = stxo_index.find(key);
+		if(iter != stxo_index.end()) {
+			auto iter2 = tx_index.find(iter->second.txid);
 			if(iter2 != tx_index.end()) {
-				utxo_info_t info;
+				txo_info_t info;
 				info.created_at = iter2->second.height;
-				info.spent_txid = iter->second;
+				info.spent_on = iter->second;
 				return info;
 			}
 		}
@@ -245,13 +245,13 @@ utxo_info_t Node::get_utxo_info(const utxo_key_t& key) const
 	for(const auto& log : change_log) {
 		auto iter = log->utxo_removed.find(key);
 		if(iter != log->utxo_removed.end()) {
-			utxo_info_t info;
+			txo_info_t info;
 			info.created_at = iter->second.second.height;
-			info.spent_txid = iter->second.first;
+			info.spent_on = iter->second.first;
 			return info;
 		}
 	}
-	throw std::logic_error("no such utxo entry");
+	throw std::logic_error("no such txo entry");
 }
 
 std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id) const
@@ -333,12 +333,12 @@ uint64_t Node::get_total_balance(const std::vector<addr_t>& addresses, const add
 	return total;
 }
 
-std::vector<std::pair<utxo_key_t, utxo_t>> Node::get_utxo_list(const std::vector<addr_t>& addresses) const
+std::vector<std::pair<txio_key_t, utxo_t>> Node::get_utxo_list(const std::vector<addr_t>& addresses) const
 {
-	std::vector<std::pair<utxo_key_t, utxo_t>> res;
+	std::vector<std::pair<txio_key_t, utxo_t>> res;
 	for(const auto& addr : addresses) {
-		const auto begin = addr_map.lower_bound(std::make_pair(addr, utxo_key_t()));
-		const auto end   = addr_map.upper_bound(std::make_pair(addr, utxo_key_t::create_ex(hash_t::ones(), -1)));
+		const auto begin = addr_map.lower_bound(std::make_pair(addr, txio_key_t()));
+		const auto end   = addr_map.upper_bound(std::make_pair(addr, txio_key_t::create_ex(hash_t::ones(), -1)));
 		for(auto iter = begin; iter != end; ++iter) {
 			auto iter2 = utxo_map.find(iter->second);
 			if(iter2 != utxo_map.end()) {
@@ -599,7 +599,7 @@ void Node::update()
 				<< (did_fork ? " (forked at " + std::to_string(forked_at ? forked_at->height : -1) + ")" : "");
 	}
 
-	if(!is_synced && sync_pos >= sync_peak && pending_syncs.empty()) {
+	if(!is_synced && sync_pos >= sync_peak && sync_pending.empty()) {
 		is_synced = true;
 		log(INFO) << "Finished sync at height " << peak->height;
 	}
@@ -781,7 +781,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 
 	std::unordered_set<hash_t> invalid;
 	std::unordered_set<hash_t> postpone;
-	std::unordered_set<utxo_key_t> spent;
+	std::unordered_set<txio_key_t> spent;
 	std::vector<std::shared_ptr<const Transaction>> tx_list;
 
 	for(const auto& entry : tx_pool)
@@ -891,20 +891,20 @@ void Node::sync_more()
 		sync_pos = get_root()->height + 1;
 		log(INFO) << "Starting sync at height " << sync_pos;
 	}
-	while(pending_syncs.size() < params->finality_delay)
+	while(sync_pending.size() < params->finality_delay)
 	{
 		if(sync_pos >= sync_peak) {
 			break;
 		}
 		const auto height = sync_pos++;
 		router->get_blocks_at(height, std::bind(&Node::sync_result, this, height, std::placeholders::_1));
-		pending_syncs.insert(height);
+		sync_pending.insert(height);
 	}
 }
 
 void Node::sync_result(uint32_t height, const std::vector<std::shared_ptr<const Block>>& blocks)
 {
-	pending_syncs.erase(height);
+	sync_pending.erase(height);
 
 	for(auto block : blocks) {
 		if(block) {
@@ -1026,7 +1026,7 @@ void Node::validate(std::shared_ptr<const Block> block) const
 		base_spent = validate(tx, block);
 	}
 	{
-		std::unordered_set<utxo_key_t> inputs;
+		std::unordered_set<txio_key_t> inputs;
 		for(const auto& tx : block->tx_list) {
 			for(const auto& in : tx->inputs) {
 				if(!inputs.insert(in.prev).second) {
@@ -1368,22 +1368,23 @@ void Node::apply(std::shared_ptr<const Block> block) noexcept
 
 void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx, size_t index, change_log_t& log) noexcept
 {
-	for(const auto& in : tx->inputs)
+	for(size_t i = 0; i < tx->inputs.size(); ++i)
 	{
-		auto iter = utxo_map.find(in.prev);
+		auto iter = utxo_map.find(tx->inputs[i].prev);
 		if(iter != utxo_map.end()) {
-			log.utxo_removed.emplace(iter->first, std::make_pair(tx->id, iter->second));
+			const auto key = txio_key_t::create_ex(tx->id, i);
+			log.utxo_removed.emplace(iter->first, std::make_pair(key, iter->second));
 			utxo_map.erase(iter);
 		}
 	}
 	for(size_t i = 0; i < tx->outputs.size(); ++i)
 	{
-		const auto key = utxo_key_t::create_ex(tx->id, i);
+		const auto key = txio_key_t::create_ex(tx->id, i);
 		const auto value = utxo_t::create_ex(tx->outputs[i], block->height);
 		utxo_map[key] = value;
-		log.utxo_added.emplace(key, std::make_pair(tx->id, value));
+		log.utxo_added.emplace(key, std::make_pair(key, value));
 	}
-	tx_info_t info;
+	tx_key_t info;
 	info.height = block->height;
 	info.index = index;
 	tx_map[tx->id] = info;
@@ -1452,10 +1453,10 @@ std::shared_ptr<const BlockHeader> Node::find_header(const hash_t& hash) const
 }
 
 std::shared_ptr<const BlockHeader> Node::find_prev_header(	std::shared_ptr<const BlockHeader> block,
-															const size_t distance, bool clamp_to_genesis) const
+															const size_t distance, bool clamped) const
 {
 	if(distance > params->finality_delay
-		&& (block->height >= distance || clamp_to_genesis))
+		&& (block->height >= distance || clamped))
 	{
 		const auto height = block->height > distance ? block->height - distance : 0;
 		auto iter = history.find(height);
@@ -1465,7 +1466,7 @@ std::shared_ptr<const BlockHeader> Node::find_prev_header(	std::shared_ptr<const
 	}
 	for(size_t i = 0; block && i < distance; ++i)
 	{
-		if(clamp_to_genesis && block->height == 0) {
+		if(clamped && block->height == 0) {
 			break;
 		}
 		block = find_header(block->prev);

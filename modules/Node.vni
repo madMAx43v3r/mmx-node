@@ -37,9 +37,9 @@ module Node {
 	
 	optional<hash_t> get_block_hash(uint height) const;
 	
-	utxo_info_t get_utxo_info(utxo_key_t key) const;
+	txo_info_t get_txo_info(txio_key_t key) const;
 	
-	optional<tx_info_t> get_tx_info(hash_t id) const;
+	optional<tx_key_t> get_tx_key(hash_t id) const;
 	
 	void add_block(Block* block);
 	
@@ -51,7 +51,7 @@ module Node {
 	
 	ulong get_total_balance(vector<addr_t> addresses, addr_t contract) const;
 	
-	vector<pair<utxo_key_t, utxo_t>> get_utxo_list(vector<addr_t> addresses) const;
+	vector<pair<txio_key_t, utxo_t>> get_utxo_list(vector<addr_t> addresses) const;
 	
 	void start_sync();
 	

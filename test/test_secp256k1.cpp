@@ -9,7 +9,7 @@
 #include <mmx/Block.hxx>
 #include <mmx/skey_t.hpp>
 #include <mmx/pubkey_t.hpp>
-#include <mmx/utxo_key_t.hpp>
+#include <mmx/txio_key_t.hpp>
 #include <mmx/solution/PubKey.hxx>
 
 #include <vnx/vnx.h>
@@ -20,7 +20,7 @@ using namespace mmx;
 
 static constexpr uint64_t COIN = 1000000;
 
-std::unordered_map<mmx::utxo_key_t, mmx::tx_out_t> utxo_map;
+std::unordered_map<mmx::txio_key_t, mmx::tx_out_t> utxo_map;
 
 std::unordered_map<hash_t, std::shared_ptr<const Contract>> contract_map;
 
@@ -108,7 +108,7 @@ void process(std::shared_ptr<const Transaction> tx, const hash_t& txid, bool is_
 		}
 	}
 	for(size_t i = 0; i < tx->outputs.size(); ++i) {
-		utxo_key_t key;
+		txio_key_t key;
 		key.txid = txid;
 		key.index = i;
 		utxo_map[key] = tx->outputs[i];

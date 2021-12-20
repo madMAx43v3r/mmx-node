@@ -1,0 +1,12 @@
+package mmx;
+
+struct txio_key_t {
+	
+	hash_t txid;
+	
+	uint index;
+	
+	
+	static txio_key_t create_ex(hash_t txid, uint index);
+	
+}
