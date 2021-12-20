@@ -587,6 +587,46 @@ void Node::update()
 		return;
 	}
 
+	{
+		// publish time infusions for VDF 0
+		auto infuse = TimeInfusion::create();
+		infuse->chain = 0;
+		auto vdf_iters = peak->vdf_iters;
+		for(uint32_t i = 0; i <= params->finality_delay; ++i)
+		{
+			if(auto diff_block = find_diff_header(peak, i + 1))
+			{
+				if(auto prev = find_prev_header(peak, params->finality_delay - i, true))
+				{
+					if(vdf_iters > 0) {
+						infuse->values[vdf_iters] = prev->hash;
+					}
+				}
+				vdf_iters += diff_block->time_diff * params->time_diff_constant;
+			}
+		}
+		publish(infuse, output_timelord_infuse);
+	}
+	{
+		// publish next time infusion for VDF 1
+		uint32_t height = peak->height;
+		height -= (height % params->challenge_interval);
+		if(auto prev = find_prev_header(peak, peak->height - height))
+		{
+			if(prev->height >= params->challenge_interval)
+			{
+				if(auto diff_block = find_prev_header(prev, params->challenge_interval, true))
+				{
+					auto infuse = TimeInfusion::create();
+					infuse->chain = 1;
+					const auto vdf_iters = prev->vdf_iters + diff_block->time_diff * params->time_diff_constant * params->finality_delay;
+					infuse->values[vdf_iters] = prev->hash;
+					publish(infuse, output_timelord_infuse);
+				}
+			}
+		}
+	}
+
 	// try to make a block
 	{
 		bool made_block = false;
@@ -657,45 +697,6 @@ void Node::update()
 							log(WARN) << "Failed to create a block: " << ex.what();
 						}
 					}
-				}
-			}
-		}
-	}
-	{
-		// publish time infusions for VDF 0
-		auto infuse = TimeInfusion::create();
-		infuse->chain = 0;
-		auto vdf_iters = peak->vdf_iters;
-		for(uint32_t i = 0; i <= params->finality_delay; ++i)
-		{
-			if(auto diff_block = find_diff_header(peak, i + 1))
-			{
-				if(auto prev = find_prev_header(peak, params->finality_delay - i, true))
-				{
-					if(vdf_iters > 0) {
-						infuse->values[vdf_iters] = prev->hash;
-					}
-				}
-				vdf_iters += diff_block->time_diff * params->time_diff_constant;
-			}
-		}
-		publish(infuse, output_timelord_infuse);
-	}
-	{
-		// publish next time infusion for VDF 1
-		uint32_t height = peak->height;
-		height -= (height % params->challenge_interval);
-		if(auto prev = find_prev_header(peak, peak->height - height))
-		{
-			if(prev->height >= params->challenge_interval)
-			{
-				if(auto diff_block = find_prev_header(prev, params->challenge_interval, true))
-				{
-					auto infuse = TimeInfusion::create();
-					infuse->chain = 1;
-					const auto vdf_iters = prev->vdf_iters + diff_block->time_diff * params->time_diff_constant * params->finality_delay;
-					infuse->values[vdf_iters] = prev->hash;
-					publish(infuse, output_timelord_infuse);
 				}
 			}
 		}
