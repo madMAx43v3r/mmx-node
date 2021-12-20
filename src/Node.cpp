@@ -552,7 +552,7 @@ void Node::update()
 		if(is_valid) {
 			// commit to history
 			const auto line = get_fork_line();
-			for(size_t i = 0; i + params->finality_delay < line.size(); ++i) {
+			for(size_t i = 0; i + params->commit_delay < line.size(); ++i) {
 				commit(line[i]->block);
 			}
 			break;
