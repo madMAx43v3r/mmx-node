@@ -82,10 +82,6 @@ void Node::main()
 			try {
 				if(auto value = vnx::read(in)) {
 					if(auto block = std::dynamic_pointer_cast<Block>(value)) {
-						vdf_point_t point;
-						point.output = block->vdf_output;
-						point.recv_time = vnx::get_time_micros();
-						verified_vdfs[block->vdf_iters] = point;
 						add_block(block);
 					}
 				} else {
@@ -118,11 +114,19 @@ void Node::main()
 		commit(genesis);
 	}
 
+	if(auto block = find_header(state_hash))
+	{
+		vdf_point_t point;
+		point.output = block->vdf_output;
+		point.recv_time = vnx::get_time_micros();
+		verified_vdfs[block->vdf_iters] = point;
+	}
+
 	subscribe(input_vdfs, 1000);
 	subscribe(input_blocks, 1000);
 	subscribe(input_transactions, 1000);
-	subscribe(input_proof_of_time, 1000);
-	subscribe(input_proof_of_space, 1000);
+	subscribe(input_timelord_vdfs, 1000);
+	subscribe(input_harvester_proof, 1000);
 
 	update_timer = set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
 
@@ -291,6 +295,12 @@ void Node::add_block(std::shared_ptr<const Block> block)
 	if(!block->is_valid()) {
 		return;
 	}
+	if(is_replay) {
+		vdf_point_t point;
+		point.output = block->vdf_output;
+		point.recv_time = vnx::get_time_micros();
+		verified_vdfs[block->vdf_iters] = point;
+	}
 	auto fork = std::make_shared<fork_t>();
 	fork->recv_time = vnx::get_time_micros();
 	fork->block = block;
@@ -305,14 +315,8 @@ void Node::add_transaction(std::shared_ptr<const Transaction> tx)
 	if(!tx->is_valid()) {
 		return;
 	}
-	try {
-		validate(tx);
-		tx_pool[tx->id] = tx;
-	}
-	catch(const std::exception& ex) {
-		log(WARN) << "TX validation failed with: " << ex.what();
-		throw;
-	}
+	tx_pool[tx->id] = tx;
+
 	if(!vnx_sample) {
 		publish(tx, output_transactions);
 	}
@@ -367,8 +371,7 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 	if(verified_vdfs.count(vdf_iters)) {
 		return;
 	}
-	auto root = get_root();
-	if(vdf_iters <= root->vdf_iters) {
+	if(!requested_vdfs.count(std::make_pair(vdf_iters, proof->start))) {
 		return;
 	}
 	auto iter = verified_vdfs.find(proof->start);
@@ -377,7 +380,9 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 		const auto time_begin = vnx::get_wall_time_micros();
 		const auto& prev = iter->second;
 		try {
-			verify_vdf(proof, prev);
+			if(!vnx_sample || vnx_sample->topic != input_timelord_vdfs) {
+				verify_vdf(proof, prev);
+			}
 		}
 		catch(const std::exception& ex) {
 			log(WARN) << "VDF verification failed with: " << ex.what();
@@ -387,7 +392,9 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 		point.output[0] = proof->get_output(0);
 		point.output[1] = proof->get_output(1);
 		point.recv_time = vnx_sample ? vnx_sample->recv_time : vnx::get_time_micros();
+
 		verified_vdfs[vdf_iters] = point;
+		requested_vdfs.erase(std::make_pair(vdf_iters, proof->start));
 
 		publish(proof, output_verified_vdfs);
 
@@ -396,6 +403,9 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 				<< (vnx::get_wall_time_micros() - time_begin) / 1e6 << " sec";
 
 		update();
+	}
+	else {
+		log(WARN) << "Cannot verify VDF for " << vdf_iters << " due to missing start at " << proof->start;
 	}
 }
 
@@ -642,6 +652,7 @@ void Node::update()
 				vdf_iters += diff_block->time_diff * params->time_diff_constant;
 				request->end = vdf_iters;
 				request->interval = (params->block_time * 1e6) / params->num_vdf_segments;
+				requested_vdfs.emplace(vdf_iters, request->begin);
 				publish(request, output_interval_request);
 			}
 		}
@@ -649,16 +660,23 @@ void Node::update()
 
 	// try to make a block
 	{
+		auto prev = peak;
 		bool made_block = false;
-		auto prev = find_prev_header(peak, params->finality_delay, true);
-		for(uint32_t prev_height = prev->height + 1; prev_height <= peak->height; ++prev_height)
+		for(uint32_t i = 0; prev && i <= params->finality_delay; ++i)
 		{
-			if(auto fork = find_best_fork(prev, &prev_height)) {
-				prev = fork->block;
+			if(prev->height < root->height) {
+				break;
+			}
+			if(auto base = find_prev_header(prev)) {
+				// find best block at this height to build on
+				const auto prev_height = prev->height;
+				if(auto fork = find_best_fork(base, &prev_height)) {
+					prev = fork->block;
+				}
 			}
 			auto diff_block = find_diff_header(prev, 1);
 			if(!diff_block) {
-				continue;
+				break;
 			}
 			{
 				// add dummy block in case no proof is found
@@ -678,7 +696,7 @@ void Node::update()
 			}
 			hash_t vdf_challenge;
 			if(!find_vdf_challenge(prev, vdf_challenge, 1)) {
-				continue;
+				break;
 			}
 			const auto challenge = get_challenge(prev, vdf_challenge, 1);
 			{
@@ -711,6 +729,7 @@ void Node::update()
 					}
 				}
 			}
+			prev = find_prev_header(prev);
 		}
 	}
 
@@ -718,17 +737,17 @@ void Node::update()
 	for(uint32_t i = 2; i <= params->challenge_delay; ++i)
 	{
 		hash_t vdf_challenge;
-		if(!find_vdf_challenge(peak, vdf_challenge, i)) {
-			continue;
-		}
-		const auto challenge = get_challenge(peak, vdf_challenge, i);
+		if(find_vdf_challenge(peak, vdf_challenge, i))
+		{
+			const auto challenge = get_challenge(peak, vdf_challenge, i);
 
-		auto value = Challenge::create();
-		value->height = peak->height + i;
-		value->challenge = challenge;
-		if(auto diff_block = find_diff_header(peak, i)) {
-			value->space_diff = diff_block->space_diff;
-			publish(value, output_challenges);
+			auto value = Challenge::create();
+			value->height = peak->height + i;
+			value->challenge = challenge;
+			if(auto diff_block = find_diff_header(peak, i)) {
+				value->space_diff = diff_block->space_diff;
+				publish(value, output_challenges);
+			}
 		}
 	}
 }

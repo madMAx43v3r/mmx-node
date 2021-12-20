@@ -114,8 +114,10 @@ void Router::handle(std::shared_ptr<const ProofOfTime> proof)
 	if(vnx_sample->topic == input_vdfs)
 	{
 		if(vdf_iters > verified_iters) {
-			log(INFO) << "Broadcasting VDF for " << vdf_iters;
-			send_all(proof);
+			if(seen_hashes.insert(proof->calc_hash()).second) {
+				log(INFO) << "Broadcasting VDF for " << vdf_iters;
+				send_all(proof);
+			}
 		}
 	}
 	else if(vnx_sample->topic == input_verified_vdfs)
@@ -315,7 +317,7 @@ void Router::print_stats()
 	log(INFO) << float(tx_counter * 1000) / info_interval_ms
 			  << " tx/s, " << float(vdf_counter * 1000) / info_interval_ms
 			  << " vdf/s, " << float(block_counter * 1000) / info_interval_ms
-			  << " blocks/s, " << peer_map.size() << "/" << peer_set.size()
+			  << " blocks/s, " << peer_map.size() << " / " << peer_set.size()
 			  << " peers, " << return_map.size() << " pending";
 	tx_counter = 0;
 	vdf_counter = 0;

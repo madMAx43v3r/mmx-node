@@ -5,8 +5,8 @@ module Node {
 	vnx.TopicPtr input_vdfs = "network.vdfs";
 	vnx.TopicPtr input_blocks = "network.blocks";
 	vnx.TopicPtr input_transactions = "network.transactions";
-	vnx.TopicPtr input_proof_of_time = "timelord.proofs";
-	vnx.TopicPtr input_proof_of_space = "harvester.proofs";
+	vnx.TopicPtr input_timelord_vdfs = "timelord.proofs";
+	vnx.TopicPtr input_harvester_proof = "harvester.proofs";
 	
 	vnx.TopicPtr output_verified_vdfs = "node.verified_vdfs";
 	vnx.TopicPtr output_verified_blocks = "node.verified_blocks";
