@@ -89,6 +89,10 @@ void TimeLord::handle(std::shared_ptr<const IntervalRequest> request)
 					log(WARN) << "Our VDF forked from the network, restarting...";
 				}
 			}
+			else if(!latest_point || begin.num_iters > latest_point->num_iters) {
+				// another timelord is faster
+				latest_point = std::make_shared<vdf_point_t>(begin);
+			}
 		}
 	}
 }
