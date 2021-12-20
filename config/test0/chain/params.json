@@ -1,5 +1,5 @@
 {
-	"tcp_port": 12330,
+	"port": 12330,
 	"block_time": 2,
 	"plot_filter": 2,
 	"challenge_delay": 3,
@@ -10,7 +10,8 @@
 		"value": 1,
 		"inverse": 100000
 	},
-	"initial_time_diff": 500,
-	"initial_space_diff": 1,
-	"space_diff_constant": 1778384896
+	"initial_time_diff": 5000,
+	"initial_space_diff": 100,
+	"time_diff_constant": 1000,
+	"space_diff_constant": 17783848
 }
