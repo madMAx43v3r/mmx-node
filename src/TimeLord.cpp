@@ -71,23 +71,26 @@ void TimeLord::handle(std::shared_ptr<const IntervalRequest> request)
 	}
 	checkpoint_interval = request->interval;			// should be constant
 
-	vdf_point_t begin;
-	begin.num_iters = request->begin;
-	begin.output = request->start_values;
+	update();
 
-	if(!is_running) {
-		start_vdf(begin);
-	} else {
-		auto iter = history.find(request->begin);
-		if(iter != history.end()) {
-			if(iter->second != request->start_values) {
-				do_restart = true;
-				latest_point = std::make_shared<vdf_point_t>(begin);
-				log(WARN) << "Our VDF forked from the network, restarting...";
+	if(request->has_start) {
+		vdf_point_t begin;
+		begin.num_iters = request->begin;
+		begin.output = request->start_values;
+
+		if(!is_running) {
+			start_vdf(begin);
+		} else {
+			auto iter = history.find(request->begin);
+			if(iter != history.end()) {
+				if(iter->second != request->start_values) {
+					do_restart = true;
+					latest_point = std::make_shared<vdf_point_t>(begin);
+					log(WARN) << "Our VDF forked from the network, restarting...";
+				}
 			}
 		}
 	}
-	update();
 }
 
 void TimeLord::update()

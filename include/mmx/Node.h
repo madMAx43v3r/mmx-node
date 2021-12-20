@@ -105,7 +105,7 @@ private:
 
 	void commit(std::shared_ptr<const Block> block) noexcept;
 
-	size_t purge_tree();
+	void purge_tree();
 
 	uint32_t verify_proof(std::shared_ptr<const Block> block, const hash_t& vdf_output) const;
 

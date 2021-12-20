@@ -627,6 +627,27 @@ void Node::update()
 		}
 	}
 
+	// request next VDF proofs
+	{
+		auto vdf_iters = peak->vdf_iters;
+		for(uint32_t i = 0; i < params->finality_delay; ++i)
+		{
+			if(auto diff_block = find_diff_header(peak, i + 1))
+			{
+				auto request = IntervalRequest::create();
+				request->begin = vdf_iters;
+				if(i == 0) {
+					request->has_start = true;
+					request->start_values = peak->vdf_output;
+				}
+				vdf_iters += diff_block->time_diff * params->time_diff_constant;
+				request->end = vdf_iters;
+				request->interval = (params->block_time * 1e6) / params->num_vdf_segments;
+				publish(request, output_interval_request);
+			}
+		}
+	}
+
 	// try to make a block
 	{
 		bool made_block = false;
@@ -641,16 +662,10 @@ void Node::update()
 				continue;
 			}
 			{
-				// request proof of time
-				auto request = IntervalRequest::create();
-				request->begin = prev->vdf_iters;
-				request->start_values = prev->vdf_output;
-				request->end = prev->vdf_iters + diff_block->time_diff * params->time_diff_constant;
-				request->interval = (params->block_time * 1e6) / params->num_vdf_segments;
-
-				auto iter = verified_vdfs.find(request->end);
+				// add dummy block in case no proof is found
+				const auto vdf_iters = prev->vdf_iters + diff_block->time_diff * params->time_diff_constant;
+				auto iter = verified_vdfs.find(vdf_iters);
 				if(iter != verified_vdfs.end()) {
-					// add dummy block in case no proof is found
 					auto block = Block::create();
 					block->prev = prev->hash;
 					block->height = prev->height + 1;
@@ -660,8 +675,6 @@ void Node::update()
 					block->vdf_output = iter->second.output;
 					block->finalize();
 					add_block(block);
-				} else {
-					publish(request, output_interval_request);
 				}
 			}
 			hash_t vdf_challenge;
@@ -1240,29 +1253,18 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	publish(block, output_committed_blocks);
 }
 
-size_t Node::purge_tree()
+void Node::purge_tree()
 {
 	const auto root = get_root();
-
-	bool repeat = true;
-	size_t num_purged = 0;
-	while(repeat) {
-		repeat = false;
-		for(auto iter = fork_tree.begin(); iter != fork_tree.end();)
-		{
-			const auto& block = iter->second->block;
-			if(block->prev != root->hash && !fork_tree.count(block->prev)
-				&& (is_synced || block->height <= root->height + 1))
-			{
-				iter = fork_tree.erase(iter);
-				repeat = true;
-				num_purged++;
-			} else {
-				iter++;
-			}
+	for(auto iter = fork_tree.begin(); iter != fork_tree.end();)
+	{
+		const auto& block = iter->second->block;
+		if(block->height <= root->height) {
+			iter = fork_tree.erase(iter);
+		} else {
+			iter++;
 		}
 	}
-	return num_purged;
 }
 
 uint32_t Node::verify_proof(std::shared_ptr<const Block> block, const hash_t& vdf_challenge) const

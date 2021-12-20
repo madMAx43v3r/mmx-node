@@ -7,6 +7,8 @@ class IntervalRequest {
 	
 	hash_t start_values[2];
 	
+	bool has_start;				// if start_values are valid
+	
 	uint interval = 100000;		// segment interval [usec]
 	
 }
