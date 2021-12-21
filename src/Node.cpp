@@ -1106,7 +1106,9 @@ void Node::validate(std::shared_ptr<const Block> block) const
 	std::atomic<uint64_t> total_cost {0};
 
 #pragma omp parallel for
-	for(const auto& tx : block->tx_list) {
+	for(size_t i = 0; i < block->tx_list.size(); ++i)
+	{
+		const auto& tx = block->tx_list[i];
 		try {
 			total_fees += validate(tx);
 			total_cost += tx->calc_min_fee(params);
@@ -1121,7 +1123,6 @@ void Node::validate(std::shared_ptr<const Block> block) const
 	if(total_cost > params->max_block_cost) {
 		throw std::logic_error("block cost too high: " + std::to_string(uint64_t(total_cost)));
 	}
-
 	const auto base_reward = calc_block_reward(block);
 	const auto base_allowed = std::max(std::max(base_reward, params->min_reward), uint64_t(total_fees));
 	if(base_spent > base_allowed) {
