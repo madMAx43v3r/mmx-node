@@ -384,6 +384,9 @@ void Router::send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg)
 
 void Router::send_to(uint64_t client, peer_t& peer, std::shared_ptr<const vnx::Value> msg)
 {
+	if(peer.is_blocked) {
+		return;
+	}
 	auto& out = peer.out;
 	vnx::write(out, uint16_t(vnx::CODE_UINT32));
 	vnx::write(out, uint32_t(0));
@@ -403,7 +406,10 @@ void Router::send_to(uint64_t client, peer_t& peer, std::shared_ptr<const vnx::V
 void Router::send_all(std::shared_ptr<const vnx::Value> msg)
 {
 	for(auto& entry : peer_map) {
-		send_to(entry.first, entry.second, msg);
+		auto& peer = entry.second;
+		if(!peer.is_blocked) {
+			send_to(entry.first, peer, msg);
+		}
 	}
 }
 
@@ -575,6 +581,16 @@ bool Router::on_read(uint64_t client, size_t num_bytes)
 		peer.msg_size = 0;
 	}
 	return true;
+}
+
+void Router::on_pause(uint64_t client)
+{
+	get_peer(client).is_blocked = true;
+}
+
+void Router::on_resume(uint64_t client)
+{
+	get_peer(client).is_blocked = false;
 }
 
 void Router::on_connect(uint64_t client)

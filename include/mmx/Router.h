@@ -39,6 +39,7 @@ protected:
 
 private:
 	struct peer_t {
+		bool is_blocked = false;
 		bool is_outbound = false;
 		uint32_t msg_size = 0;
 		std::string address;
@@ -105,6 +106,10 @@ private:
 	void on_buffer(uint64_t client, void*& buffer, size_t& max_bytes) override;
 
 	bool on_read(uint64_t client, size_t num_bytes) override;
+
+	void on_pause(uint64_t client) override;
+
+	void on_resume(uint64_t client) override;
 
 	void on_connect(uint64_t client) override;
 
