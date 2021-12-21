@@ -175,6 +175,7 @@ void Router::update()
 					if(auto ret = std::dynamic_pointer_cast<const Node_get_block_hash_return>(value)) {
 						if(auto hash = ret->_ret_0.get()) {
 							job.hash_map[*hash].insert(iter->first);
+							job.succeeded.insert(iter->first);
 						} else {
 							job.failed.insert(iter->first);
 						}
@@ -184,6 +185,7 @@ void Router::update()
 					if(auto ret = std::dynamic_pointer_cast<const Node_get_block_return>(value)) {
 						if(auto block = ret->_ret_0) {
 							job.blocks[block->hash] = block;
+							job.succeeded.insert(iter->first);
 						} else {
 							job.failed.insert(iter->first);
 						}
@@ -194,21 +196,17 @@ void Router::update()
 			}
 			iter++;
 		}
+		const auto max_peers_try = std::min<size_t>(max_sync_peers, std::max<size_t>(outgoing.size(), min_sync_peers));
+
 		if(job.state == FETCH_HASHES)
 		{
-			size_t num_blocks = 0;
-			for(const auto& entry : job.hash_map) {
-				if(entry.second.size() >= min_sync_peers) {
-					num_blocks += entry.second.size();
-				}
-			}
-			if(num_blocks < min_sync_peers && job.failed.size() < min_sync_peers)
+			if(job.succeeded.size() < min_sync_peers && job.succeeded.size() + job.failed.size() < max_peers_try)
 			{
 				for(auto client : outgoing) {
-					if(job.pending.size() + job.failed.size() >= max_sync_peers) {
+					if(job.succeeded.size() + job.pending.size() + job.failed.size() >= max_sync_peers) {
 						break;
 					}
-					if(!job.pending.count(client) && !job.failed.count(client))
+					if(!job.succeeded.count(client) && !job.pending.count(client) && !job.failed.count(client))
 					{
 						auto req = Node_get_block_hash::create();
 						req->height = job.height;
@@ -221,39 +219,27 @@ void Router::update()
 				}
 				job.failed.clear();
 				job.pending.clear();
+				job.succeeded.clear();
 				job.state = FETCH_BLOCKS;
 			}
 		}
 		if(job.state == FETCH_BLOCKS)
 		{
-			size_t num_blocks = 0;
+			size_t num_fetch = 0;
 			for(const auto& entry : job.hash_map) {
 				if(entry.second.size() >= min_sync_peers) {
-					num_blocks++;
+					num_fetch++;
 				}
 			}
-			if(job.blocks.size() >= num_blocks || job.failed.size() >= min_sync_peers)
+			if(job.blocks.size() < num_fetch && job.succeeded.size() + job.failed.size() < max_peers_try)
 			{
-				// we are done with the job
-				std::vector<std::shared_ptr<const Block>> blocks;
-				for(const auto& entry : job.blocks) {
-					blocks.push_back(entry.second);
-				}
-				get_blocks_at_async_return(iter->first, blocks);
-
-				for(const auto& entry : job.pending) {
-					return_map.erase(entry.second);
-				}
-				iter = pending_sync.erase(iter);
-				continue;
-			}
-			else {
 				for(const auto& entry : job.hash_map) {
 					if(!job.blocks.count(entry.first))
 					{
 						size_t num_pending = 0;
 						for(auto client : entry.second) {
-							if(!job.failed.count(client)) {
+							if(!job.succeeded.count(client) && !job.failed.count(client))
+							{
 								if(!job.pending.count(client)) {
 									auto req = Node_get_block::create();
 									req->hash = entry.first;
@@ -266,6 +252,20 @@ void Router::update()
 						}
 					}
 				}
+			}
+			else {
+				// we are done with the job
+				std::vector<std::shared_ptr<const Block>> blocks;
+				for(const auto& entry : job.blocks) {
+					blocks.push_back(entry.second);
+				}
+				get_blocks_at_async_return(iter->first, blocks);
+
+				for(const auto& entry : job.pending) {
+					return_map.erase(entry.second);
+				}
+				iter = pending_sync.erase(iter);
+				continue;
 			}
 		}
 		iter++;

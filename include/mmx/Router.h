@@ -63,6 +63,7 @@ private:
 		uint32_t height = 0;
 		sync_state_e state = FETCH_HASHES;
 		std::unordered_set<uint64_t> failed;
+		std::unordered_set<uint64_t> succeeded;
 		std::unordered_map<uint64_t, uint32_t> pending;					// [client => request id]
 		std::unordered_map<hash_t, std::set<uint64_t>> hash_map;		// [block hash => clients who have it]
 		std::unordered_map<hash_t, std::shared_ptr<const Block>> blocks;
