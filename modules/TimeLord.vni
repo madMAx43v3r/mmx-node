@@ -8,9 +8,9 @@ module TimeLord {
 	vnx.TopicPtr output_proofs = "timelord.proofs";
 	
 	
-	uint max_history = 1048576;
+	uint max_history = 65536;
 	
-	uint restart_holdoff = 30000;					// [ms]
+	uint restart_holdoff = 60000;					// [ms]
 	
 	uint checkpoint_interval = 50000;				// [usec]
 	
