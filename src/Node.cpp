@@ -717,9 +717,15 @@ void Node::update()
 bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response)
 {
 	if(auto fork = find_fork(prev->hash)) {
+		// reset state to previous block
 		fork_to(fork);
-	} else {
-		throw std::logic_error("no such fork");
+	}
+	else if(prev->height == get_root()->height) {
+		// reset state to root block
+		while(revert());
+	}
+	else {
+		throw std::logic_error("cannot fork");
 	}
 	auto block = Block::create();
 	block->prev = prev->hash;
@@ -983,7 +989,9 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 			catch(const std::exception& ex) {
 				log(WARN) << "Block verification failed for height " << block->height << " with: " << ex.what();
 				fork_tree.erase(block->hash);
-				fork_to(prev_state);
+				if(prev_state) {
+					fork_to(prev_state);
+				}
 				throw;
 			}
 			if(!is_replay && is_synced) {
