@@ -284,14 +284,11 @@ void Router::add_peer(const std::string& address, const int sock)
 	pending_peers.erase(address);
 
 	if(sock >= 0) {
-		const auto id = add_client(sock);
+		const auto id = add_client(sock, address);
 
 		auto& peer = peer_map[id];
 		peer.is_outbound = true;
-		peer.address = address;
 		outgoing.insert(id);
-
-		log(INFO) << "Connected to peer " << address;
 	}
 	else if(!seed_peers.count(address)) {
 		peer_set.erase(address);
@@ -593,15 +590,15 @@ void Router::on_resume(uint64_t client)
 	get_peer(client).is_blocked = false;
 }
 
-void Router::on_connect(uint64_t client)
+void Router::on_connect(uint64_t client, const std::string& address)
 {
 	if(!peer_map.count(client))
 	{
 		auto& peer = peer_map[client];
-		peer.address = "TODO";
-//		peer_set.insert(peer.address);
+		peer.address = address;
+		peer_set.insert(address);
 
-		log(INFO) << "New peer connected from " << peer.address;
+		log(INFO) << "Connected to peer " << peer.address;
 	}
 	auto req = Router_get_peers::create();
 	req->max_count = num_peers;

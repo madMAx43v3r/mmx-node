@@ -111,7 +111,7 @@ private:
 
 	void on_resume(uint64_t client) override;
 
-	void on_connect(uint64_t client) override;
+	void on_connect(uint64_t client, const std::string& address) override;
 
 	void on_disconnect(uint64_t client) override;
 
