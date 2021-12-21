@@ -477,8 +477,9 @@ void Node::update()
 	}
 
 #pragma omp parallel for
-	for(const auto& entry : to_verify)
+	for(size_t i = 0; i < to_verify.size(); ++i)
 	{
+		const auto& entry = to_verify[i];
 		const auto& fork = entry.first;
 		const auto& block = fork->block;
 		try {

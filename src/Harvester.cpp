@@ -155,9 +155,9 @@ void Harvester::reload()
 	std::vector<std::pair<std::shared_ptr<vnx::File>, std::shared_ptr<chiapos::DiskProver>>> plots;
 
 #pragma omp parallel for num_threads(num_threads)
-	for(const auto& path : plot_dirs)
+	for(size_t i = 0; i < plot_dirs.size(); ++i)
 	{
-		vnx::Directory dir(path);
+		vnx::Directory dir(plot_dirs[i]);
 		try {
 			dir.open();
 		} catch(const std::exception& ex) {
