@@ -493,84 +493,35 @@ void Node::update()
 	}
 	const auto prev_peak = find_header(state_hash);
 
-	bool did_fork = false;
 	std::shared_ptr<const BlockHeader> forked_at;
 
 	// choose best fork
 	while(true) {
+		forked_at = nullptr;
+
 		// purge disconnected forks
 		purge_tree();
 
-		const auto root = get_root();
-		const auto best_fork = find_best_fork(root);
+		const auto best_fork = find_best_fork();
 
 		if(!best_fork || best_fork->block->hash == state_hash) {
-			// no change
-			break;
-		}
-
-		// we have a new winner
-		const auto fork_line = get_fork_line(best_fork);
-
-		// bring state back in line with new fork
-		while(true) {
-			bool found = false;
-			for(const auto& fork : fork_line) {
-				const auto& block = fork->block;
-				if(block->hash == state_hash) {
-					found = true;
-					forked_at = block;
-					break;
-				}
-			}
-			if(found) {
-				break;
-			}
-			did_fork = true;
-
-			if(!revert()) {
-				forked_at = root;
-				break;
-			}
+			break;	// no change
 		}
 
 		// verify and apply new fork
-		bool is_valid = true;
-		for(const auto& fork : fork_line)
-		{
-			const auto& block = fork->block;
-			if(block->prev != state_hash) {
-				// already verified and applied
-				continue;
-			}
-			if(!fork->is_verified) {
-				try {
-					validate(block);
-					fork->is_verified = true;
-				}
-				catch(const std::exception& ex) {
-					log(WARN) << "Block verification failed for height " << block->height << " with: " << ex.what();
-					fork_tree.erase(block->hash);
-					is_valid = false;
-					break;
-				}
-				if(!is_replay && is_synced) {
-					publish(block, output_verified_blocks);
-				}
-			}
-			apply(block);
+		try {
+			forked_at = fork_to(best_fork);
 		}
-		if(is_valid) {
-			// commit to history
-			const auto line = get_fork_line();
-			for(size_t i = 0; i + params->commit_delay < line.size(); ++i) {
-				commit(line[i]->block);
-			}
-			break;
+		catch(...) {
+			continue;	// try again
 		}
-		// try again
-		did_fork = false;
-		forked_at = nullptr;
+
+		// commit to history
+		const auto fork_line = get_fork_line();
+		for(size_t i = 0; i + params->commit_delay < fork_line.size(); ++i) {
+			commit(fork_line[i]->block);
+		}
+		break;
 	}
 
 	const auto peak = find_header(state_hash);
@@ -584,7 +535,7 @@ void Node::update()
 	{
 		const auto fork = find_fork(peak->hash);
 		log(INFO) << "New peak at height " << peak->height << " with score " << (fork ? std::to_string(fork->proof_score) : "?")
-				<< (did_fork ? " (forked at " + std::to_string(forked_at ? forked_at->height : -1) + ")" : "");
+				<< (forked_at ? " (forked at " + std::to_string(forked_at->height) + ")" : "");
 	}
 
 	if(!is_synced && sync_pos >= sync_peak && sync_pending.empty())
@@ -734,6 +685,10 @@ void Node::update()
 			prev = find_prev_header(prev);
 		}
 		if(made_block) {
+			// revert back to peak
+			if(auto fork = find_fork(peak->hash)) {
+				fork_to(fork);
+			}
 			// update again right away
 			add_task(std::bind(&Node::update, this));
 		}
@@ -760,6 +715,11 @@ void Node::update()
 
 bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response)
 {
+	if(auto fork = find_fork(prev->hash)) {
+		fork_to(fork);
+	} else {
+		throw std::logic_error("no such fork");
+	}
 	auto block = Block::create();
 	block->prev = prev->hash;
 	block->height = prev->height + 1;
@@ -976,11 +936,73 @@ void Node::sync_result(uint32_t height, const std::vector<std::shared_ptr<const 
 	}
 }
 
+std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_head)
+{
+	const auto prev_state = find_fork(state_hash);
+	const auto fork_line = get_fork_line(fork_head);
+
+	bool did_fork = false;
+	std::shared_ptr<const BlockHeader> forked_at;
+
+	// bring state back in line
+	while(true) {
+		bool found = false;
+		for(const auto& fork : fork_line)
+		{
+			const auto& block = fork->block;
+			if(block->hash == state_hash) {
+				found = true;
+				forked_at = block;
+				break;
+			}
+		}
+		if(found) {
+			break;
+		}
+		did_fork = true;
+
+		if(!revert()) {
+			forked_at = get_root();
+			break;
+		}
+	}
+
+	// verify and apply
+	for(const auto& fork : fork_line)
+	{
+		const auto& block = fork->block;
+		if(block->prev != state_hash) {
+			// already verified and applied
+			continue;
+		}
+		if(!fork->is_verified) {
+			try {
+				validate(block);
+				fork->is_verified = true;
+			}
+			catch(const std::exception& ex) {
+				log(WARN) << "Block verification failed for height " << block->height << " with: " << ex.what();
+				fork_tree.erase(block->hash);
+				fork_to(prev_state);
+				throw;
+			}
+			if(!is_replay && is_synced) {
+				publish(block, output_verified_blocks);
+			}
+		}
+		apply(block);
+	}
+	return did_fork ? forked_at : nullptr;
+}
+
 std::shared_ptr<Node::fork_t> Node::find_best_fork(std::shared_ptr<const BlockHeader> root, const uint32_t* at_height) const
 {
 	uint64_t max_weight = 0;
 	std::shared_ptr<fork_t> best_fork;
 
+	if(!root) {
+		root = get_root();
+	}
 	for(const auto& entry : fork_tree)
 	{
 		const auto& fork = entry.second;

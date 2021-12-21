@@ -91,9 +91,11 @@ private:
 
 	void sync_result(uint32_t height, const std::vector<std::shared_ptr<const Block>>& blocks);
 
-	std::shared_ptr<Node::fork_t> find_best_fork(std::shared_ptr<const BlockHeader> root, const uint32_t* at_height = nullptr) const;
+	std::shared_ptr<const BlockHeader> fork_to(std::shared_ptr<fork_t> fork_head);
 
-	std::vector<std::shared_ptr<Node::fork_t>> get_fork_line(std::shared_ptr<fork_t> fork_head = nullptr) const;
+	std::shared_ptr<fork_t> find_best_fork(std::shared_ptr<const BlockHeader> root = nullptr, const uint32_t* at_height = nullptr) const;
+
+	std::vector<std::shared_ptr<fork_t>> get_fork_line(std::shared_ptr<fork_t> fork_head = nullptr) const;
 
 	bool calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<fork_t> fork, uint64_t& total_weight) const;
 
