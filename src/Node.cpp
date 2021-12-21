@@ -1103,11 +1103,13 @@ void Node::validate(std::shared_ptr<const Block> block) const
 	}
 	std::exception_ptr failed_ex;
 	std::atomic<uint64_t> total_fees {0};
+	std::atomic<uint64_t> total_cost {0};
 
 #pragma omp parallel for
 	for(const auto& tx : block->tx_list) {
 		try {
 			total_fees += validate(tx);
+			total_cost += tx->calc_min_fee(params);
 		} catch(...) {
 #pragma omp critical
 			failed_ex = std::current_exception();
@@ -1116,8 +1118,8 @@ void Node::validate(std::shared_ptr<const Block> block) const
 	if(failed_ex) {
 		std::rethrow_exception(failed_ex);
 	}
-	if(total_fees > params->max_block_cost) {
-		throw std::logic_error("block cost too high");
+	if(total_cost > params->max_block_cost) {
+		throw std::logic_error("block cost too high: " + std::to_string(uint64_t(total_cost)));
 	}
 
 	const auto base_reward = calc_block_reward(block);
