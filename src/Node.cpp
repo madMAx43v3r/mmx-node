@@ -1272,20 +1272,22 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 		verified_vdfs.erase(verified_vdfs.begin(), verified_vdfs.lower_bound(begin));
 	}
 	if(!is_replay) {
+		// write to disk
+		const auto offset = block_chain->get_output_pos();
+		block_index[block->height] = std::make_pair(offset, block->hash);
+		vnx::write(block_chain->out, block);
+		block_chain->flush();
+
 		const auto fork = find_fork(block->hash);
+		const auto num_bytes = block_chain->get_output_pos() - offset;
 		Node::log(INFO) << "Committed height " << block->height << " with: ntx = " << block->tx_list.size()
 				<< ", score = " << (fork ? fork->proof_score : 0) << ", k = " << (block->proof ? block->proof->ksize : 0)
-				<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff;
+				<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff << ", bytes = " << num_bytes;
 	}
 	fork_tree.erase(block->hash);
 	purge_tree();
 
-	if(!is_replay) {
-		block_index[block->height] = std::make_pair(block_chain->get_output_pos(), block->hash);
-		vnx::write(block_chain->out, block);
-		block_chain->flush();
-	}
-	publish(block, output_committed_blocks);
+	publish(block, output_committed_blocks, is_replay ? BLOCKING : 0);
 }
 
 void Node::purge_tree()
