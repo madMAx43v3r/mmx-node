@@ -848,11 +848,10 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 		const auto& tx = tx_list[i];
 		if(!invalid.count(tx->id) && !postpone.count(tx->id))
 		{
-			if(total_fees + tx_fees[i] < params->max_block_cost) {
+			if(total_fees + tx_fees[i] < params->max_block_cost)
+			{
 				block->tx_list.push_back(tx);
 				total_fees += tx_fees[i];
-			} else {
-				break;
 			}
 		}
 	}
@@ -1148,13 +1147,6 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, std::shared_ptr<c
 			throw std::logic_error("tx without input");
 		}
 	}
-	if(tx->inputs.size() > params->max_tx_inputs) {
-		throw std::logic_error("too many tx inputs");
-	}
-	if(tx->outputs.size() > params->max_tx_outputs) {
-		throw std::logic_error("too many tx outputs");
-	}
-
 	uint64_t base_amount = 0;
 	std::unordered_map<hash_t, uint64_t> amounts;
 

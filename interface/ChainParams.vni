@@ -24,10 +24,6 @@ class ChainParams {
 	uint score_threshold = 1000;			// should be <= 2^score_bits
 	uint target_score = 125;				// defines how many competing blocks are created (must be less than score_threshold)
 	
-	uint max_tx_inputs = 1048576;
-	uint max_tx_outputs = 1048576;
-	ulong max_block_cost = 1000000000;
-	
 	ulong min_reward = 200000;
 	ulong_fraction_t reward_factor;			// reward = (diff * value) / inverse;
 	
@@ -40,6 +36,7 @@ class ChainParams {
 	ulong min_txfee_io = 100;				// per input / output
 	ulong min_txfee_sign = 1000;			// per solution
 	ulong min_txfee_exec = 100000;			// per operation
+	ulong max_block_cost = 10000000;
 	
 	double block_time = 10;					// [sec]
 	
