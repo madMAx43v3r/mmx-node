@@ -22,6 +22,7 @@
 #include <mmx/Node_get_block_hash_return.hxx>
 
 #include <vnx/vnx.h>
+#include <vnx/Generic.hxx>
 
 
 namespace mmx {
@@ -48,6 +49,24 @@ void Router::main()
 
 	peer_set = seed_peers;
 
+	vnx::File known_peers("known_peers.dat");
+	if(known_peers.exists())
+	{
+		std::vector<std::string> peers;
+		try {
+			known_peers.open("rb");
+			if(auto value = std::dynamic_pointer_cast<vnx::Generic>(vnx::read(known_peers.in))) {
+				value->data.to(peers);
+			}
+			known_peers.close();
+		}
+		catch(const std::exception& ex) {
+			log(WARN) << "Failed to read peers from file: " << ex.what();
+		}
+		peer_set.insert(peers.begin(), peers.end());
+	}
+	log(INFO) << "Loaded " << peer_set.size() << " known peers";
+
 	node = std::make_shared<NodeAsyncClient>(node_server);
 	node->vnx_set_non_blocking(true);
 	add_async_client(node);
@@ -62,6 +81,15 @@ void Router::main()
 	connect();
 
 	Super::main();
+
+	try {
+		known_peers.open("wb");
+		vnx::write(known_peers.out, vnx::Variant(peer_set));
+		known_peers.close();
+	}
+	catch(const std::exception& ex) {
+		log(WARN) << "Failed to write peers to file: " << ex.what();
+	}
 
 	threads->close();
 }
