@@ -67,7 +67,7 @@ void Router::main()
 	node->vnx_set_non_blocking(true);
 	add_async_client(node);
 
-	threads = std::make_shared<vnx::ThreadPool>(num_peers);
+	threads = std::make_shared<vnx::ThreadPool>(num_peers_out);
 
 	set_timer_millis(info_interval_ms, std::bind(&Router::print_stats, this));
 	set_timer_millis(update_interval_ms, std::bind(&Router::update, this));
@@ -274,7 +274,7 @@ void Router::update()
 
 void Router::connect()
 {
-	if(peer_map.size() + pending_peers.size() < num_peers)
+	if(outgoing.size() + pending_peers.size() < num_peers_out)
 	{
 		std::set<std::string> peers = peer_set;
 		for(const auto& entry : peer_map) {
@@ -285,7 +285,7 @@ void Router::connect()
 		}
 		std::unordered_set<std::string> new_peers;
 		const std::vector<std::string> tmp(peers.begin(), peers.end());
-		const auto new_count = num_peers - peer_map.size() - pending_peers.size();
+		const auto new_count = num_peers_out - outgoing.size() - pending_peers.size();
 		for(size_t i = 0; i < 2 * new_count && new_peers.size() < std::min(new_count, tmp.size()); ++i) {
 			new_peers.insert(tmp[size_t(::rand()) % tmp.size()]);
 		}
@@ -299,7 +299,7 @@ void Router::connect()
 void Router::discover()
 {
 	auto req = Router_get_peers::create();
-	req->max_count = num_peers;
+	req->max_count = num_peers_out;
 	send_all(req);
 }
 
@@ -625,7 +625,7 @@ void Router::on_connect(uint64_t client, const std::string& address)
 		log(INFO) << "Connected to peer " << peer.address;
 	}
 	auto req = Router_get_peers::create();
-	req->max_count = num_peers;
+	req->max_count = num_peers_out;
 	send_to(client, req);
 }
 
