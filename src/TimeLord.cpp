@@ -39,6 +39,7 @@ void TimeLord::start_vdf(vdf_point_t begin)
 {
 	if(!is_running) {
 		is_running = true;
+		last_restart = vnx::get_time_micros();
 		log(INFO) << "Started VDF at " << begin.num_iters;
 		vdf_thread = std::thread(&TimeLord::vdf_loop, this, begin);
 	}
@@ -91,7 +92,11 @@ void TimeLord::handle(std::shared_ptr<const IntervalRequest> request)
 			}
 			else if(!latest_point || begin.num_iters > latest_point->num_iters) {
 				// another timelord is faster
-				latest_point = std::make_shared<vdf_point_t>(begin);
+				const auto now = vnx::get_time_micros();
+				if((now - last_restart) / 1000 > restart_holdoff) {
+					last_restart = now;
+					latest_point = std::make_shared<vdf_point_t>(begin);
+				}
 			}
 		}
 	}

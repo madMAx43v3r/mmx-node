@@ -10,6 +10,8 @@ module TimeLord {
 	
 	uint max_history = 1048576;
 	
+	uint restart_holdoff = 30000;					// [ms]
+	
 	uint checkpoint_interval = 50000;				// [usec]
 	
 	
