@@ -345,7 +345,7 @@ void Router::print_stats()
 	log(INFO) << float(tx_counter * 1000) / info_interval_ms
 			  << " tx/s, " << float(vdf_counter * 1000) / info_interval_ms
 			  << " vdf/s, " << float(block_counter * 1000) / info_interval_ms
-			  << " blocks/s, " << peer_map.size() << " / " << peer_set.size()
+			  << " blocks/s, " << outgoing.size() << " / " <<  peer_map.size() << " / " << peer_set.size()
 			  << " peers, " << return_map.size() << " pending";
 	tx_counter = 0;
 	vdf_counter = 0;
