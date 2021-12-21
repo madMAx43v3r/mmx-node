@@ -35,6 +35,10 @@ protected:
 
 	hash_t send(const uint64_t& amount, const addr_t& dst_addr, const addr_t& contract) const override;
 
+	std::vector<std::pair<txio_key_t, utxo_t>> get_utxo_list() const override;
+
+	std::vector<std::pair<txio_key_t, utxo_t>> get_utxo_list_for(const addr_t& contract) const override;
+
 	uint64_t get_balance(const addr_t& contract) const override;
 
 	std::string get_address(const uint32_t& index) const override;

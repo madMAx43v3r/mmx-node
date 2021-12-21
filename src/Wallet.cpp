@@ -228,10 +228,40 @@ hash_t Wallet::send(const uint64_t& amount, const addr_t& dst_addr, const addr_t
 	return tx->id;
 }
 
+std::vector<std::pair<txio_key_t, utxo_t>> Wallet::get_utxo_list() const
+{
+	const auto all_utxo = node->get_utxo_list(wallet->get_all_addresses());
+
+	// remove any utxo we have already consumed
+	std::vector<std::pair<txio_key_t, utxo_t>> res;
+	for(const auto& entry : all_utxo) {
+		if(!spent_utxo_map.count(entry.first)) {
+			res.push_back(entry);
+		}
+	}
+	return res;
+}
+
+std::vector<std::pair<txio_key_t, utxo_t>> Wallet::get_utxo_list_for(const addr_t& contract) const
+{
+	std::vector<std::pair<txio_key_t, utxo_t>> res;
+	for(const auto& entry : get_utxo_list()) {
+		if(entry.second.contract == contract) {
+			res.push_back(entry);
+		}
+	}
+	return res;
+}
+
 uint64_t Wallet::get_balance(const addr_t& contract) const
 {
-	// TODO: subtract spent
-	return node->get_total_balance(wallet->get_all_addresses(), contract);
+	uint64_t total = 0;
+	for(const auto& entry : get_utxo_list()) {
+		if(entry.second.contract == contract) {
+			total += entry.second.amount;
+		}
+	}
+	return total;
 }
 
 std::string Wallet::get_address(const uint32_t& index) const
