@@ -143,8 +143,7 @@ hash_t Wallet::send(const uint64_t& amount, const addr_t& dst_addr, const addr_t
 	}
 	uint64_t change = gather_inputs(tx, utxo_map, amount, contract);
 
-	if(contract != addr_t() && change > 0)
-	{
+	if(contract != addr_t() && change > 0) {
 		// token change cannot be used as tx fee
 		tx_out_t out;
 		out.address = wallet->get_address(0);
@@ -153,22 +152,39 @@ hash_t Wallet::send(const uint64_t& amount, const addr_t& dst_addr, const addr_t
 		tx->outputs.push_back(out);
 		change = 0;
 	}
-	uint64_t tx_fees = tx->calc_min_fee(params);
 
-	while(change < tx_fees + params->min_txfee_io)
-	{
-		// gather inputs for tx fee
-		change += gather_inputs(tx, utxo_map, (tx_fees + params->min_txfee_io) - change, addr_t());
-		tx_fees = tx->calc_min_fee(params);
-	}
-	if(change > tx_fees + params->min_txfee_io)
-	{
-		// add change output
-		tx_out_t out;
-		out.address = wallet->get_address(0);
-		out.amount = change - (tx_fees + params->min_txfee_io);
-		tx->outputs.push_back(out);
-		change = 0;
+	// gather inputs for tx fee
+	while(true) {
+		// count number of solutions needed
+		std::unordered_set<addr_t> used_addr;
+		for(const auto& in : tx->inputs) {
+			auto iter = addr_map.find(in.prev);
+			if(iter == addr_map.end()) {
+				throw std::logic_error("cannot sign input");
+			}
+			used_addr.insert(iter->second);
+		}
+		const uint64_t tx_fees =
+				tx->calc_min_fee(params)
+				+ params->min_txfee_io	// for change output
+				+ used_addr.size() * params->min_txfee_sign;
+
+		if(change > tx_fees) {
+			// we got more than enough, add change output
+			tx_out_t out;
+			out.address = wallet->get_address(0);
+			out.amount = change - tx_fees;
+			tx->outputs.push_back(out);
+			change = 0;
+			break;
+		}
+		if(change == tx_fees) {
+			// perfect match
+			change = 0;
+			break;
+		}
+		// gather more
+		change += gather_inputs(tx, utxo_map, tx_fees - change, addr_t());
 	}
 	tx->finalize();
 
@@ -214,6 +230,7 @@ hash_t Wallet::send(const uint64_t& amount, const addr_t& dst_addr, const addr_t
 
 uint64_t Wallet::get_balance(const addr_t& contract) const
 {
+	// TODO: subtract spent
 	return node->get_total_balance(wallet->get_all_addresses(), contract);
 }
 

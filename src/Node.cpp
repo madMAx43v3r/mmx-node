@@ -1219,7 +1219,7 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, std::shared_ptr<c
 	const auto fee_amount = amounts[hash_t()];
 	const auto fee_needed = tx->calc_min_fee(params);
 	if(fee_amount < fee_needed) {
-		throw std::logic_error("insufficient fee");
+		throw std::logic_error("insufficient fee: " + std::to_string(fee_amount) + " < " + std::to_string(fee_needed));
 	}
 	return fee_amount;
 }
