@@ -30,6 +30,8 @@ module Router extends vnx.addons.TcpServer {
 	string node_server = "Node";
 	
 	
+	void discover();
+	
 	vector<string> get_peers(uint max_count) const;
 	
 	vector<Block*> get_blocks_at(uint height) const async;

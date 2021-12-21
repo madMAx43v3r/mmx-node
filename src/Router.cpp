@@ -152,7 +152,7 @@ void Router::handle(std::shared_ptr<const ProofOfTime> proof)
 
 uint32_t Router::send_request(uint64_t client, std::shared_ptr<const vnx::Value> method)
 {
-	auto req = std::make_shared<Request>();
+	auto req = Request::create();
 	req->id = next_request++;
 	req->method = method;
 	send_to(client, req);
@@ -298,8 +298,11 @@ void Router::connect()
 
 void Router::discover()
 {
-	auto req = Router_get_peers::create();
-	req->max_count = num_peers_out;
+	auto method = Router_get_peers::create();
+	method->max_count = num_peers_out;
+	auto req = Request::create();
+	req->id = next_request++;
+	req->method = method;
 	send_all(req);
 }
 
@@ -437,7 +440,7 @@ void Router::send_all(std::shared_ptr<const vnx::Value> msg)
 template<typename R, typename T>
 void Router::send_result(uint64_t client, uint32_t id, const T& value)
 {
-	auto ret = std::make_shared<Return>();
+	auto ret = Return::create();
 	ret->id = id;
 	auto result = R::create();
 	result->_ret_0 = value;
@@ -616,17 +619,11 @@ void Router::on_resume(uint64_t client)
 
 void Router::on_connect(uint64_t client, const std::string& address)
 {
-	if(!peer_map.count(client))
-	{
-		auto& peer = peer_map[client];
-		peer.address = address;
-		peer_set.insert(address);
+	auto& peer = peer_map[client];
+	peer.address = address;
+	peer_set.insert(address);
 
-		log(INFO) << "Connected to peer " << peer.address;
-	}
-	auto req = Router_get_peers::create();
-	req->max_count = num_peers_out;
-	send_to(client, req);
+	log(INFO) << "Connected to peer " << peer.address;
 }
 
 void Router::on_disconnect(uint64_t client)

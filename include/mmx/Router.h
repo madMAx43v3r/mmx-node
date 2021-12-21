@@ -27,6 +27,8 @@ protected:
 
 	void main() override;
 
+	void discover() override;
+
 	std::vector<std::string> get_peers(const uint32_t& max_count) const override;
 
 	void get_blocks_at_async(const uint32_t& height, const vnx::request_id_t& request_id) const override;
@@ -69,8 +71,6 @@ private:
 	void update();
 
 	void connect();
-
-	void discover();
 
 	void add_peer(const std::string& address, const int sock);
 
