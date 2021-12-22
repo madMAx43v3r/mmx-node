@@ -28,7 +28,7 @@ public:
 	int32_t info_interval_ms = 60000;
 	int32_t update_interval_ms = 1000;
 	int32_t connect_interval_ms = 10000;
-	uint32_t sync_loss_delay = 30;
+	uint32_t sync_loss_delay = 60;
 	uint32_t discover_interval = 60;
 	uint32_t num_peers_out = 8;
 	uint32_t min_sync_peers = 2;

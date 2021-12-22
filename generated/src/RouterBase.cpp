@@ -41,7 +41,7 @@ namespace mmx {
 
 
 const vnx::Hash64 RouterBase::VNX_TYPE_HASH(0x952c4ef2956f31c4ull);
-const vnx::Hash64 RouterBase::VNX_CODE_HASH(0x478c30ed57cb7473ull);
+const vnx::Hash64 RouterBase::VNX_CODE_HASH(0x1a1bc5f1660ece14ull);
 
 RouterBase::RouterBase(const std::string& _vnx_name)
 	:	TcpServer::TcpServer(_vnx_name)
@@ -453,7 +453,7 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Router";
 	type_code->type_hash = vnx::Hash64(0x952c4ef2956f31c4ull);
-	type_code->code_hash = vnx::Hash64(0x478c30ed57cb7473ull);
+	type_code->code_hash = vnx::Hash64(0x1a1bc5f1660ece14ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::RouterBase);
 	type_code->parents.resize(1);
@@ -628,7 +628,7 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 		auto& field = type_code->fields[22];
 		field.data_size = 4;
 		field.name = "sync_loss_delay";
-		field.value = vnx::to_string(30);
+		field.value = vnx::to_string(60);
 		field.code = {3};
 	}
 	{
