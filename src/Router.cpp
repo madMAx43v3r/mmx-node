@@ -394,7 +394,7 @@ void Router::on_transaction(uint64_t client, std::shared_ptr<const Transaction> 
 void Router::relay(uint64_t source, std::shared_ptr<const vnx::Value> msg)
 {
 	for(auto& entry : peer_map) {
-		if(!entry.second.is_outbound && entry.first != source) {
+		if(entry.first != source) {
 			send_to(entry.first, entry.second, msg);
 		}
 	}
@@ -429,10 +429,7 @@ void Router::send_to(uint64_t client, peer_t& peer, std::shared_ptr<const vnx::V
 void Router::send_all(std::shared_ptr<const vnx::Value> msg)
 {
 	for(auto& entry : peer_map) {
-		auto& peer = entry.second;
-		if(!peer.is_blocked) {
-			send_to(entry.first, peer, msg);
-		}
+		send_to(entry.first, entry.second, msg);
 	}
 }
 
