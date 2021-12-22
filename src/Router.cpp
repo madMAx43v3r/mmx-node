@@ -10,6 +10,8 @@
 
 #include <mmx/Return.hxx>
 #include <mmx/Request.hxx>
+#include <mmx/Router_get_id.hxx>
+#include <mmx/Router_get_id_return.hxx>
 #include <mmx/Router_get_peers.hxx>
 #include <mmx/Router_get_peers_return.hxx>
 #include <mmx/Node_get_height.hxx>
@@ -92,6 +94,11 @@ void Router::main()
 	}
 
 	threads->close();
+}
+
+vnx::Hash64 Router::get_id() const
+{
+	return vnx_get_id();
 }
 
 std::vector<std::string> Router::get_peers(const uint32_t& max_count) const
@@ -335,13 +342,14 @@ void Router::add_peer(const std::string& address, const int sock)
 	connecting_peers.erase(address);
 
 	if(sock >= 0) {
-		const auto id = add_client(sock, address);
+		const auto client = add_client(sock, address);
 
-		auto& peer = peer_map[id];
+		auto& peer = peer_map[client];
 		peer.is_outbound = true;
-		outgoing_peers.insert(id);
+		outgoing_peers.insert(client);
 
-		send_request(id, Node_get_synced_height::create());
+		send_request(client, Router_get_id::create());
+		send_request(client, Node_get_synced_height::create());
 	}
 	else if(!seed_peers.count(address)) {
 		peer_set.erase(address);
@@ -419,17 +427,19 @@ void Router::relay(uint64_t source, std::shared_ptr<const vnx::Value> msg)
 	for(auto& entry : peer_map) {
 		auto& peer = entry.second;
 		if(!peer.is_blocked && entry.first != source) {
-			send_to(entry.first, peer, msg);
+			send_to(peer, msg);
 		}
 	}
 }
 
 void Router::send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg)
 {
-	send_to(client, get_peer(client), msg);
+	if(auto peer = find_peer(client)) {
+		send_to(*peer, msg);
+	}
 }
 
-void Router::send_to(uint64_t client, peer_t& peer, std::shared_ptr<const vnx::Value> msg)
+void Router::send_to(peer_t& peer, std::shared_ptr<const vnx::Value> msg)
 {
 	auto& out = peer.out;
 	vnx::write(out, uint16_t(vnx::CODE_UINT32));
@@ -444,13 +454,13 @@ void Router::send_to(uint64_t client, peer_t& peer, std::shared_ptr<const vnx::V
 		return;
 	}
 	*((uint32_t*)buffer->data(2)) = buffer->size() - 6;
-	Super::send_to(client, buffer);
+	Super::send_to(peer.client, buffer);
 }
 
 void Router::send_all(std::shared_ptr<const vnx::Value> msg)
 {
 	for(auto& entry : peer_map) {
-		send_to(entry.first, entry.second, msg);
+		send_to(entry.second, msg);
 	}
 }
 
@@ -481,6 +491,11 @@ void Router::on_request(uint64_t client, std::shared_ptr<const Request> msg)
 	}
 	switch(method->get_type_hash())
 	{
+		case Router_get_id::VNX_TYPE_ID:
+			if(auto value = std::dynamic_pointer_cast<const Router_get_id>(method)) {
+				send_result<Router_get_id_return>(client, msg->id, get_id());
+			}
+			break;
 		case Router_get_peers::VNX_TYPE_ID:
 			if(auto value = std::dynamic_pointer_cast<const Router_get_peers>(method)) {
 				send_result<Router_get_peers_return>(client, msg->id, get_peers(value->max_count));
@@ -550,6 +565,19 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 	}
 	switch(result->get_type_hash())
 	{
+		case Router_get_id_return::VNX_TYPE_ID:
+			if(auto value = std::dynamic_pointer_cast<const Router_get_id_return>(result)) {
+				if(auto peer = find_peer(client)) {
+					peer->node_id = value->_ret_0;
+					if(value->_ret_0 == vnx_get_id()) {
+						log(INFO) << "Discovered our own address: " << peer->address;
+						self_addrs.insert(peer->address);
+						block_peers.insert(peer->address);
+						disconnect(client);
+					}
+				}
+			}
+			break;
 		case Router_get_peers_return::VNX_TYPE_ID:
 			if(auto value = std::dynamic_pointer_cast<const Router_get_peers_return>(result)) {
 				peer_set.insert(value->_ret_0.begin(), value->_ret_0.end());
@@ -557,26 +585,28 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 			break;
 		case Node_get_height_return::VNX_TYPE_ID:
 			if(auto value = std::dynamic_pointer_cast<const Node_get_height_return>(result)) {
-				auto& peer = get_peer(client);
-				peer.height = value->_ret_0;
-				last_receive_ms = vnx::get_wall_time_millis();
+				if(auto peer = find_peer(client)) {
+					peer->height = value->_ret_0;
+					last_receive_ms = vnx::get_wall_time_millis();
+				}
 			}
 			break;
 		case Node_get_synced_height_return::VNX_TYPE_ID:
 			if(auto value = std::dynamic_pointer_cast<const Node_get_synced_height_return>(result)) {
-				auto& peer = get_peer(client);
-				if(auto height = value->_ret_0.get()) {
-					peer.is_synced = true;
-					synced_peers.insert(client);
-					log(INFO) << "Peer " << peer.address << " is synced at height " << *height;
-				}
-				else if(peer.is_outbound) {
-					log(INFO) << "Disconnecting from peer " << peer.address << " who is not synced";
-					disconnect(client);
-				}
-				else {
-					peer.is_synced = false;
-					synced_peers.erase(client);
+				if(auto peer = find_peer(client)) {
+					if(auto height = value->_ret_0.get()) {
+						peer->is_synced = true;
+						synced_peers.insert(client);
+						log(INFO) << "Peer " << peer->address << " is synced at height " << *height;
+					}
+					else if(peer->is_outbound) {
+						log(INFO) << "Disconnecting from peer " << peer->address << " who is not synced";
+						disconnect(client);
+					}
+					else {
+						peer->is_synced = false;
+						synced_peers.erase(client);
+					}
 				}
 				return_map.erase(msg->id);
 			}
@@ -706,6 +736,7 @@ void Router::on_connect(uint64_t client, const std::string& address)
 		return;
 	}
 	auto& peer = peer_map[client];
+	peer.client = client;
 	peer.address = address;
 	peer_set.insert(address);
 
@@ -730,11 +761,19 @@ void Router::on_disconnect(uint64_t client)
 
 Router::peer_t& Router::get_peer(uint64_t client)
 {
-	auto iter = peer_map.find(client);
-	if(iter != peer_map.end()) {
-		return iter->second;
+	if(auto peer = find_peer(client)) {
+		return *peer;
 	}
 	throw std::logic_error("no such peer");
+}
+
+Router::peer_t* Router::find_peer(uint64_t client)
+{
+	auto iter = peer_map.find(client);
+	if(iter != peer_map.end()) {
+		return &iter->second;
+	}
+	return nullptr;
 }
 
 

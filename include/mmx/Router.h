@@ -29,6 +29,8 @@ protected:
 
 	void discover() override;
 
+	vnx::Hash64 get_id() const override;
+
 	std::vector<std::string> get_peers(const uint32_t& max_count) const override;
 
 	void get_blocks_at_async(const uint32_t& height, const vnx::request_id_t& request_id) const override;
@@ -46,6 +48,8 @@ private:
 		bool is_outbound = false;
 		uint32_t height = 0;
 		uint32_t msg_size = 0;
+		uint64_t client = 0;
+		vnx::Hash64 node_id;
 		std::string address;
 		vnx::Memory data;
 		vnx::Buffer buffer;
@@ -95,7 +99,7 @@ private:
 
 	void send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg);
 
-	void send_to(uint64_t client, peer_t& peer, std::shared_ptr<const vnx::Value> msg);
+	void send_to(peer_t& peer, std::shared_ptr<const vnx::Value> msg);
 
 	void send_all(std::shared_ptr<const vnx::Value> msg);
 
@@ -124,9 +128,12 @@ private:
 
 	peer_t& get_peer(uint64_t client);
 
+	peer_t* find_peer(uint64_t client);
+
 private:
 	bool is_connected = false;
 	std::set<std::string> peer_set;
+	std::set<std::string> self_addrs;
 	std::set<std::string> connecting_peers;
 
 	std::set<uint64_t> synced_peers;
