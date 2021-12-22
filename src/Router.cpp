@@ -196,11 +196,11 @@ void Router::update()
 			}
 			iter++;
 		}
-		const auto max_peers_try = std::min<size_t>(max_sync_peers, std::max<size_t>(outgoing.size(), min_sync_peers));
+		const auto num_peers_try = std::min<size_t>(max_sync_peers, std::max<size_t>(outgoing.size(), min_sync_peers));
 
 		if(job.state == FETCH_HASHES)
 		{
-			if(job.succeeded.size() < min_sync_peers && job.succeeded.size() + job.failed.size() < max_peers_try)
+			if((job.succeeded.size() < min_sync_peers) && (job.succeeded.size() + job.failed.size() < num_peers_try))
 			{
 				for(auto client : outgoing) {
 					if(job.succeeded.size() + job.pending.size() + job.failed.size() >= max_sync_peers) {
@@ -225,13 +225,8 @@ void Router::update()
 		}
 		if(job.state == FETCH_BLOCKS)
 		{
-			size_t num_fetch = 0;
-			for(const auto& entry : job.hash_map) {
-				if(entry.second.size() >= min_sync_peers) {
-					num_fetch++;
-				}
-			}
-			if(job.blocks.size() < num_fetch && job.succeeded.size() + job.failed.size() < max_peers_try)
+			if(job.blocks.size() < job.hash_map.size()
+				&& (job.succeeded.size() < min_sync_peers) && (job.succeeded.size() + job.failed.size() < num_peers_try))
 			{
 				for(const auto& entry : job.hash_map) {
 					if(!job.blocks.count(entry.first))
