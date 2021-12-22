@@ -27,6 +27,7 @@ module Router extends vnx.addons.TcpServer {
 	uint max_msg_size = 67108864;			// bytes
 	
 	set<string> seed_peers;
+	set<string> block_peers;
 	
 	string node_server = "Node";
 	

@@ -284,7 +284,7 @@ void Router::connect()
 		if(outgoing_peers.size() + connecting_peers.size() >= num_peers_out) {
 			break;
 		}
-		if(connecting_peers.count(address)) {
+		if(connecting_peers.count(address) || block_peers.count(address)) {
 			continue;
 		}
 		bool connected = false;
@@ -659,6 +659,10 @@ void Router::on_resume(uint64_t client)
 
 void Router::on_connect(uint64_t client, const std::string& address)
 {
+	if(block_peers.count(address)) {
+		disconnect(client);
+		return;
+	}
 	auto& peer = peer_map[client];
 	peer.address = address;
 	peer_set.insert(address);
