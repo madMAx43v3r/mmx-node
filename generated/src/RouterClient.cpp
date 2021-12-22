@@ -9,9 +9,12 @@
 #include <mmx/Router_discover_return.hxx>
 #include <mmx/Router_get_blocks_at.hxx>
 #include <mmx/Router_get_blocks_at_return.hxx>
+#include <mmx/Router_get_id.hxx>
+#include <mmx/Router_get_id_return.hxx>
 #include <mmx/Router_get_peers.hxx>
 #include <mmx/Router_get_peers_return.hxx>
 #include <mmx/Transaction.hxx>
+#include <vnx/Hash64.hpp>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_object.hxx>
@@ -164,6 +167,18 @@ void RouterClient::discover() {
 void RouterClient::discover_async() {
 	auto _method = ::mmx::Router_discover::create();
 	vnx_request(_method, true);
+}
+
+::vnx::Hash64 RouterClient::get_id() {
+	auto _method = ::mmx::Router_get_id::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Router_get_id_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<::vnx::Hash64>();
+	} else {
+		throw std::logic_error("RouterClient: invalid return value");
+	}
 }
 
 std::vector<std::string> RouterClient::get_peers(const uint32_t& max_count) {

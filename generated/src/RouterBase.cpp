@@ -10,9 +10,12 @@
 #include <mmx/Router_discover_return.hxx>
 #include <mmx/Router_get_blocks_at.hxx>
 #include <mmx/Router_get_blocks_at_return.hxx>
+#include <mmx/Router_get_id.hxx>
+#include <mmx/Router_get_id_return.hxx>
 #include <mmx/Router_get_peers.hxx>
 #include <mmx/Router_get_peers_return.hxx>
 #include <mmx/Transaction.hxx>
+#include <vnx/Hash64.hpp>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_object.hxx>
@@ -458,7 +461,7 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	type_code->native_size = sizeof(::mmx::RouterBase);
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::vnx::addons::TcpServerBase::static_get_type_code();
-	type_code->methods.resize(12);
+	type_code->methods.resize(13);
 	type_code->methods[0] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
 	type_code->methods[1] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
 	type_code->methods[2] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
@@ -469,8 +472,9 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	type_code->methods[7] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
 	type_code->methods[8] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
 	type_code->methods[9] = ::mmx::Router_discover::static_get_type_code();
-	type_code->methods[10] = ::mmx::Router_get_peers::static_get_type_code();
-	type_code->methods[11] = ::mmx::Router_get_blocks_at::static_get_type_code();
+	type_code->methods[10] = ::mmx::Router_get_id::static_get_type_code();
+	type_code->methods[11] = ::mmx::Router_get_peers::static_get_type_code();
+	type_code->methods[12] = ::mmx::Router_get_blocks_at::static_get_type_code();
 	type_code->fields.resize(31);
 	{
 		auto& field = type_code->fields[0];
@@ -769,6 +773,12 @@ std::shared_ptr<vnx::Value> RouterBase::vnx_call_switch(std::shared_ptr<const vn
 			auto _args = std::static_pointer_cast<const ::mmx::Router_discover>(_method);
 			auto _return_value = ::mmx::Router_discover_return::create();
 			discover();
+			return _return_value;
+		}
+		case 0xb9f7168b5ae94cd9ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Router_get_id>(_method);
+			auto _return_value = ::mmx::Router_get_id_return::create();
+			_return_value->_ret_0 = get_id();
 			return _return_value;
 		}
 		case 0x66d68bd91b462049ull: {

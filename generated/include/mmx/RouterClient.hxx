@@ -8,6 +8,7 @@
 #include <mmx/Block.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/Transaction.hxx>
+#include <vnx/Hash64.hpp>
 #include <vnx/TopicPtr.hpp>
 #include <vnx/addons/TcpServer.h>
 
@@ -49,6 +50,8 @@ public:
 	void discover();
 	
 	void discover_async();
+	
+	::vnx::Hash64 get_id();
 	
 	std::vector<std::string> get_peers(const uint32_t& max_count = 0);
 	
