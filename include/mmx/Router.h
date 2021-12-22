@@ -120,6 +120,7 @@ private:
 	peer_t& get_peer(uint64_t client);
 
 private:
+	bool is_connected = false;
 	std::set<std::string> peer_set;
 	std::set<std::string> connecting_peers;
 
@@ -138,6 +139,7 @@ private:
 
 	uint32_t next_request_id = 0;
 	uint64_t verified_vdf_iters = 0;
+	int64_t last_receive_ms = 0;
 
 	size_t tx_counter = 0;
 	size_t vdf_counter = 0;

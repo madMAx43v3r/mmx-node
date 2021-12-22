@@ -165,6 +165,14 @@ uint32_t Router::send_request(uint64_t client, std::shared_ptr<const vnx::Value>
 
 void Router::update()
 {
+	const auto now_ms = vnx::get_wall_time_millis();
+	if(is_connected && now_ms - last_receive_ms > sync_loss_delay * 1000)
+	{
+		log(WARN) << "Lost sync with network!";
+		is_connected = false;
+		node->start_sync();
+	}
+
 	for(auto iter = sync_jobs.begin(); iter != sync_jobs.end();)
 	{
 		auto& job = iter->second;
@@ -345,7 +353,7 @@ void Router::print_stats()
 			  << " tx/s, " << float(vdf_counter * 1000) / info_interval_ms
 			  << " vdf/s, " << float(block_counter * 1000) / info_interval_ms
 			  << " blocks/s, " << outgoing_peers.size() << " / " <<  peer_map.size() << " / " << peer_set.size()
-			  << " peers, " << upload_counter << " uploaded";
+			  << " peers, " << upload_counter << " blocks sent";
 	tx_counter = 0;
 	vdf_counter = 0;
 	block_counter = 0;
@@ -398,6 +406,8 @@ void Router::relay(uint64_t source, std::shared_ptr<const vnx::Value> msg)
 			send_to(entry.first, entry.second, msg);
 		}
 	}
+	is_connected = true;
+	last_receive_ms = vnx::get_wall_time_millis();
 }
 
 void Router::send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg)

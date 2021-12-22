@@ -16,7 +16,8 @@ module Router extends vnx.addons.TcpServer {
 	int update_interval_ms = 1000;			// [ms]
 	int connect_interval_ms = 10000;		// [ms]
 	
-	uint discover_interval = 300;			// how often to search for new peers [sec]
+	uint sync_loss_delay = 30;				// when to re-sync [sec]
+	uint discover_interval = 60;			// how often to search for new peers [sec]
 	
 	uint num_peers_out = 8;
 	
