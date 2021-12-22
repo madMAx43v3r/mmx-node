@@ -323,8 +323,27 @@ void Router::query()
 {
 	auto req = Request::create();
 	req->id = next_request_id++;
-	req->method = Node_get_height::create();
+	req->method = Node_get_synced_height::create();
 	send_all(req);
+
+	node->get_synced_height(
+		[this](const vnx::optional<uint32_t>& sync_height) {
+			if(sync_height) {
+				size_t num_ahead = 0;
+				const auto height = *sync_height;
+				for(const auto& entry : peer_map) {
+					const auto& peer = entry.second;
+					if(peer.is_synced && peer.height > height && peer.height - height > params->finality_delay) {
+						num_ahead++;
+					}
+				}
+				if(num_ahead >= synced_peers.size()) {
+					log(WARN) << "Lost sync with network due to height difference!";
+					is_connected = false;
+					node->start_sync();
+				}
+			}
+		});
 }
 
 void Router::discover()
@@ -595,6 +614,7 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 			if(auto value = std::dynamic_pointer_cast<const Node_get_synced_height_return>(result)) {
 				if(auto peer = find_peer(client)) {
 					if(auto height = value->_ret_0.get()) {
+						peer->height = *height;
 						peer->is_synced = true;
 						synced_peers.insert(client);
 						log(INFO) << "Peer " << peer->address << " is synced at height " << *height;
@@ -607,6 +627,7 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 						peer->is_synced = false;
 						synced_peers.erase(client);
 					}
+					last_receive_ms = vnx::get_wall_time_millis();
 				}
 				return_map.erase(msg->id);
 			}
