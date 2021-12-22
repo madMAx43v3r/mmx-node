@@ -5,9 +5,9 @@
 #define INCLUDE_mmx_contract_Token_HXX_
 
 #include <mmx/contract/package.hxx>
+#include <mmx/Contract.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/contract/Condition.hxx>
-#include <mmx/contract/Delegated.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/ulong_fraction_t.hxx>
 
@@ -15,16 +15,19 @@
 namespace mmx {
 namespace contract {
 
-class Token : public ::mmx::contract::Delegated {
+class Token : public ::mmx::Contract {
 public:
 	
+	std::string name;
+	std::string symbol;
+	std::string website;
+	std::string icon_url;
 	int32_t decimals = 0;
-	::mmx::addr_t info_addr;
 	::mmx::ulong_fraction_t time_factor;
 	std::shared_ptr<const ::mmx::contract::Condition> stake_condition;
 	std::map<::mmx::addr_t, ::mmx::ulong_fraction_t> stake_minting;
 	
-	typedef ::mmx::contract::Delegated Super;
+	typedef ::mmx::Contract Super;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
