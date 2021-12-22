@@ -4,11 +4,17 @@ import mmx.hash_t;
 import mmx.addr_t;
 import mmx.ulong_fraction_t;
 
-class Token extends Delegated {
+class Token extends mmx.Contract {
+	
+	string name;
+	
+	string symbol;
+	
+	string website;
+	
+	string icon_url;
 	
 	int decimals;
-	
-	addr_t info_addr;
 	
 	ulong_fraction_t time_factor;							// for inflation / deflation (factor applied per block)
 	
