@@ -364,8 +364,6 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> proof)
 	if(!seen_hashes.insert(proof->calc_hash()).second) {
 		return;
 	}
-	const auto vdf_iters = proof->start + proof->get_num_iters();
-
 	publish(proof, output_vdfs);
 	relay(client, proof);
 	vdf_counter++;
