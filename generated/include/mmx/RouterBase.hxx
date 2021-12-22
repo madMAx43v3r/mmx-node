@@ -25,7 +25,7 @@ public:
 	::vnx::TopicPtr output_blocks = "network.blocks";
 	::vnx::TopicPtr output_transactions = "network.transactions";
 	int32_t max_queue_ms = 1000;
-	int32_t info_interval_ms = 60000;
+	int32_t query_interval_ms = 10000;
 	int32_t update_interval_ms = 1000;
 	int32_t connect_interval_ms = 10000;
 	uint32_t sync_loss_delay = 60;
