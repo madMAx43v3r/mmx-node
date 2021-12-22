@@ -44,6 +44,7 @@ private:
 		bool is_synced = false;
 		bool is_blocked = false;
 		bool is_outbound = false;
+		uint32_t height = 0;
 		uint32_t msg_size = 0;
 		std::string address;
 		vnx::Memory data;
@@ -74,11 +75,13 @@ private:
 
 	void connect();
 
+	void query();
+
 	void add_peer(const std::string& address, const int sock);
 
 	void connect_task(const std::string& peer) noexcept;
 
-	void print_stats();
+	void print_stats() override;
 
 	uint32_t send_request(uint64_t client, std::shared_ptr<const vnx::Value> method);
 
@@ -139,8 +142,10 @@ private:
 	std::shared_ptr<vnx::ThreadPool> threads;
 	std::shared_ptr<const ChainParams> params;
 
-	uint32_t next_request_id = 0;
+	uint32_t node_height = 0;
 	uint64_t verified_vdf_iters = 0;
+
+	uint32_t next_request_id = 0;
 	int64_t last_receive_ms = 0;
 
 	size_t tx_counter = 0;

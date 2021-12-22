@@ -73,7 +73,7 @@ void Router::main()
 
 	threads = std::make_shared<vnx::ThreadPool>(num_peers_out);
 
-	set_timer_millis(info_interval_ms, std::bind(&Router::print_stats, this));
+	set_timer_millis(query_interval_ms, std::bind(&Router::query, this));
 	set_timer_millis(update_interval_ms, std::bind(&Router::update, this));
 	set_timer_millis(connect_interval_ms, std::bind(&Router::connect, this));
 	set_timer_millis(discover_interval * 1000, std::bind(&Router::discover, this));
@@ -118,13 +118,13 @@ void Router::get_blocks_at_async(const uint32_t& height, const vnx::request_id_t
 
 void Router::handle(std::shared_ptr<const Block> block)
 {
-	if(!block->proof) {
-		return;
-	}
 	if(seen_hashes.insert(block->hash).second) {
-		log(INFO) << "Broadcasting block " << block->height;
-		send_all(block);
+		if(block->proof) {
+			log(INFO) << "Broadcasting block " << block->height;
+			send_all(block);
+		}
 	}
+	node_height = block->height;
 }
 
 void Router::handle(std::shared_ptr<const Transaction> tx)
@@ -166,12 +166,18 @@ uint32_t Router::send_request(uint64_t client, std::shared_ptr<const vnx::Value>
 
 void Router::update()
 {
-	const auto now_ms = vnx::get_wall_time_millis();
-	if(is_connected && now_ms - last_receive_ms > sync_loss_delay * 1000)
-	{
-		log(WARN) << "Lost sync with network!";
-		is_connected = false;
-		node->start_sync();
+	if(last_receive_ms > 0) {
+		const auto now_ms = vnx::get_wall_time_millis();
+		if(now_ms - last_receive_ms > sync_loss_delay * 1000) {
+			if(is_connected) {
+				log(WARN) << "Lost sync with network due to timeout!";
+				is_connected = false;
+				node->start_sync();
+			}
+		}
+		else {
+			is_connected = true;
+		}
 	}
 
 	for(auto iter = sync_jobs.begin(); iter != sync_jobs.end();)
@@ -306,6 +312,14 @@ void Router::connect()
 	}
 }
 
+void Router::query()
+{
+	auto req = Request::create();
+	req->id = next_request_id++;
+	req->method = Node_get_height::create();
+	send_all(req);
+}
+
 void Router::discover()
 {
 	auto method = Router_get_peers::create();
@@ -354,9 +368,9 @@ void Router::connect_task(const std::string& address) noexcept
 
 void Router::print_stats()
 {
-	log(INFO) << float(tx_counter * 1000) / info_interval_ms
-			  << " tx/s, " << float(vdf_counter * 1000) / info_interval_ms
-			  << " vdf/s, " << float(block_counter * 1000) / info_interval_ms
+	log(INFO) << float(tx_counter * 1000) / stats_interval_ms
+			  << " tx/s, " << float(vdf_counter * 1000) / stats_interval_ms
+			  << " vdf/s, " << float(block_counter * 1000) / stats_interval_ms
 			  << " blocks/s, " << outgoing_peers.size() << " / " <<  peer_map.size() << " / " << peer_set.size()
 			  << " peers, " << upload_counter << " blocks sent";
 	tx_counter = 0;
@@ -408,8 +422,6 @@ void Router::relay(uint64_t source, std::shared_ptr<const vnx::Value> msg)
 			send_to(entry.first, peer, msg);
 		}
 	}
-	is_connected = true;
-	last_receive_ms = vnx::get_wall_time_millis();
 }
 
 void Router::send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg)
@@ -541,7 +553,13 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 		case Router_get_peers_return::VNX_TYPE_ID:
 			if(auto value = std::dynamic_pointer_cast<const Router_get_peers_return>(result)) {
 				peer_set.insert(value->_ret_0.begin(), value->_ret_0.end());
-				return_map.erase(msg->id);
+			}
+			break;
+		case Node_get_height_return::VNX_TYPE_ID:
+			if(auto value = std::dynamic_pointer_cast<const Node_get_height_return>(result)) {
+				auto& peer = get_peer(client);
+				peer.height = value->_ret_0;
+				last_receive_ms = vnx::get_wall_time_millis();
 			}
 			break;
 		case Node_get_synced_height_return::VNX_TYPE_ID:

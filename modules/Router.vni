@@ -12,7 +12,7 @@ module Router extends vnx.addons.TcpServer {
 	vnx.TopicPtr output_transactions = "network.transactions";
 	
 	int max_queue_ms = 1000;				// [ms]
-	int info_interval_ms = 60000;			// [ms]
+	int query_interval_ms = 10000;			// [ms]
 	int update_interval_ms = 1000;			// [ms]
 	int connect_interval_ms = 10000;		// [ms]
 	
