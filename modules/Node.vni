@@ -20,7 +20,10 @@ module Node {
 	int update_interval_ms = 1000;			// [ms]
 	
 	uint max_history = 1000;
+	
 	uint reload_height = -1;				// to limit reloading from disk and force resync
+	
+	uint max_sync_jobs = 64;				// number of parallel requests
 	uint num_sync_retries = 3;				// how often to retry when reaching a peak
 	
 	bool do_sync = true;
