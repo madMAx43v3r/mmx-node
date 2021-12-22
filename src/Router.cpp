@@ -614,10 +614,12 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 			if(auto value = std::dynamic_pointer_cast<const Node_get_synced_height_return>(result)) {
 				if(auto peer = find_peer(client)) {
 					if(auto height = value->_ret_0.get()) {
+						if(!peer->is_synced) {
+							log(INFO) << "Peer " << peer->address << " is synced at height " << *height;
+						}
 						peer->height = *height;
 						peer->is_synced = true;
 						synced_peers.insert(client);
-						log(INFO) << "Peer " << peer->address << " is synced at height " << *height;
 					}
 					else if(peer->is_outbound) {
 						log(INFO) << "Disconnecting from peer " << peer->address << " who is not synced";
