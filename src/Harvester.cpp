@@ -37,10 +37,6 @@ void Harvester::main()
 	set_timer_millis(1000, std::bind(&Harvester::update, this));
 	set_timer_millis(int64_t(reload_interval) * 1000, std::bind(&Harvester::reload, this));
 
-	if(self_test) {
-		set_timer_millis(1000, std::bind(&Harvester::test_challenge, this));
-	}
-
 	update();
 	reload();
 
@@ -202,15 +198,6 @@ void Harvester::update()
 	catch(const std::exception& ex) {
 		log(WARN) << "Failed to contact farmer: " << ex.what();
 	}
-}
-
-void Harvester::test_challenge()
-{
-	auto value = Challenge::create();
-	const auto nonce = ::rand();
-	value->challenge = hash_t(&nonce, sizeof(nonce));
-	value->space_diff = params->initial_space_diff;
-	handle(value);
 }
 
 

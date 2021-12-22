@@ -34,8 +34,6 @@ protected:
 private:
 	void update();
 
-	void test_challenge();
-
 private:
 	size_t total_bytes = 0;
 	vnx::Hash64 farmer_addr;
