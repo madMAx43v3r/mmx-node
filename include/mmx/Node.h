@@ -28,6 +28,8 @@ protected:
 
 	uint32_t get_height() const override;
 
+	vnx::optional<uint32_t> get_synced_height() const override;
+
 	std::shared_ptr<const Block> get_block(const hash_t& hash) const override;
 
 	std::shared_ptr<const Block> get_block_at(const uint32_t& height) const override;

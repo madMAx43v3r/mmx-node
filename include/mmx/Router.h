@@ -41,6 +41,7 @@ protected:
 
 private:
 	struct peer_t {
+		bool is_synced = false;
 		bool is_blocked = false;
 		bool is_outbound = false;
 		uint32_t msg_size = 0;

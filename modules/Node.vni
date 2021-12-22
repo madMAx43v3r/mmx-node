@@ -31,6 +31,8 @@ module Node {
 	
 	uint get_height() const;
 	
+	optional<uint> get_synced_height() const;
+	
 	Block* get_block(hash_t hash) const;
 	
 	Block* get_block_at(uint height) const;

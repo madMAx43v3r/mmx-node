@@ -14,6 +14,8 @@
 #include <mmx/Router_get_peers_return.hxx>
 #include <mmx/Node_get_height.hxx>
 #include <mmx/Node_get_height_return.hxx>
+#include <mmx/Node_get_synced_height.hxx>
+#include <mmx/Node_get_synced_height_return.hxx>
 #include <mmx/Node_get_block.hxx>
 #include <mmx/Node_get_block_return.hxx>
 #include <mmx/Node_get_block_at.hxx>
@@ -22,6 +24,7 @@
 #include <mmx/Node_get_block_hash_return.hxx>
 
 #include <vnx/vnx.h>
+#include <vnx/NoSuchMethod.hxx>
 
 
 namespace mmx {
@@ -196,13 +199,13 @@ void Router::update()
 			}
 			iter++;
 		}
-		const auto num_peers_try = std::min<size_t>(max_sync_peers, std::max<size_t>(outgoing_peers.size(), min_sync_peers));
+		const auto num_peers_try = std::min<size_t>(max_sync_peers, std::max<size_t>(synced_peers.size(), min_sync_peers));
 
 		if(job.state == FETCH_HASHES)
 		{
 			if((job.succeeded.size() < min_sync_peers) && (job.succeeded.size() + job.failed.size() < num_peers_try))
 			{
-				for(auto client : outgoing_peers) {
+				for(auto client : synced_peers) {
 					if(job.succeeded.size() + job.pending.size() + job.failed.size() >= max_sync_peers) {
 						break;
 					}
@@ -247,8 +250,7 @@ void Router::update()
 						}
 					}
 				}
-			}
-			else {
+			} else {
 				// we are done with the job
 				std::vector<std::shared_ptr<const Block>> blocks;
 				for(const auto& entry : job.blocks) {
@@ -311,6 +313,8 @@ void Router::add_peer(const std::string& address, const int sock)
 		auto& peer = peer_map[id];
 		peer.is_outbound = true;
 		outgoing_peers.insert(id);
+
+		send_request(id, Node_get_synced_height::create());
 	}
 	else if(!seed_peers.count(address)) {
 		peer_set.erase(address);
@@ -341,7 +345,7 @@ void Router::print_stats()
 			  << " tx/s, " << float(vdf_counter * 1000) / info_interval_ms
 			  << " vdf/s, " << float(block_counter * 1000) / info_interval_ms
 			  << " blocks/s, " << outgoing_peers.size() << " / " <<  peer_map.size() << " / " << peer_set.size()
-			  << " peers, " << return_map.size() << " pending";
+			  << " peers, " << upload_counter << " uploaded";
 	tx_counter = 0;
 	vdf_counter = 0;
 	block_counter = 0;
@@ -451,45 +455,59 @@ void Router::on_request(uint64_t client, std::shared_ptr<const Request> msg)
 	}
 	switch(method->get_type_hash())
 	{
-	case Router_get_peers::VNX_TYPE_ID:
-		if(auto value = std::dynamic_pointer_cast<const Router_get_peers>(method)) {
-			send_result<Router_get_peers_return>(client, msg->id, get_peers(value->max_count));
+		case Router_get_peers::VNX_TYPE_ID:
+			if(auto value = std::dynamic_pointer_cast<const Router_get_peers>(method)) {
+				send_result<Router_get_peers_return>(client, msg->id, get_peers(value->max_count));
+			}
+			break;
+		case Node_get_height::VNX_TYPE_ID:
+			if(auto value = std::dynamic_pointer_cast<const Node_get_height>(method)) {
+				node->get_height(
+						[=](const uint32_t& height) {
+							send_result<Node_get_height_return>(client, msg->id, height);
+						});
+			}
+			break;
+		case Node_get_synced_height::VNX_TYPE_ID:
+			if(auto value = std::dynamic_pointer_cast<const Node_get_synced_height>(method)) {
+				node->get_synced_height(
+						[=](const vnx::optional<uint32_t>& height) {
+							send_result<Node_get_synced_height_return>(client, msg->id, height);
+						});
+			}
+			break;
+		case Node_get_block::VNX_TYPE_ID:
+			if(auto value = std::dynamic_pointer_cast<const Node_get_block>(method)) {
+				node->get_block(value->hash,
+						[=](std::shared_ptr<const Block> block) {
+							upload_counter++;
+							send_result<Node_get_block_return>(client, msg->id, block);
+						});
+			}
+			break;
+		case Node_get_block_at::VNX_TYPE_ID:
+			if(auto value = std::dynamic_pointer_cast<const Node_get_block_at>(method)) {
+				node->get_block_at(value->height,
+						[=](std::shared_ptr<const Block> block) {
+							upload_counter++;
+							send_result<Node_get_block_at_return>(client, msg->id, block);
+						});
+			}
+			break;
+		case Node_get_block_hash::VNX_TYPE_ID:
+			if(auto value = std::dynamic_pointer_cast<const Node_get_block_hash>(method)) {
+				node->get_block_hash(value->height,
+						[=](const vnx::optional<hash_t>& hash) {
+							send_result<Node_get_block_hash_return>(client, msg->id, hash);
+						});
+			}
+			break;
+		default: {
+			auto ret = Return::create();
+			ret->id = msg->id;
+			ret->result = vnx::NoSuchMethod::create();
+			send_to(client, ret);
 		}
-		break;
-	case Node_get_height::VNX_TYPE_ID:
-		if(auto value = std::dynamic_pointer_cast<const Node_get_height>(method)) {
-			node->get_height(
-					[=](const uint32_t& height) {
-						send_result<Node_get_height_return>(client, msg->id, height);
-					});
-		}
-		break;
-	case Node_get_block::VNX_TYPE_ID:
-		if(auto value = std::dynamic_pointer_cast<const Node_get_block>(method)) {
-			node->get_block(value->hash,
-					[=](std::shared_ptr<const Block> block) {
-						upload_counter++;
-						send_result<Node_get_block_return>(client, msg->id, block);
-					});
-		}
-		break;
-	case Node_get_block_at::VNX_TYPE_ID:
-		if(auto value = std::dynamic_pointer_cast<const Node_get_block_at>(method)) {
-			node->get_block_at(value->height,
-					[=](std::shared_ptr<const Block> block) {
-						upload_counter++;
-						send_result<Node_get_block_at_return>(client, msg->id, block);
-					});
-		}
-		break;
-	case Node_get_block_hash::VNX_TYPE_ID:
-		if(auto value = std::dynamic_pointer_cast<const Node_get_block_hash>(method)) {
-			node->get_block_hash(value->height,
-					[=](const vnx::optional<hash_t>& hash) {
-						send_result<Node_get_block_hash_return>(client, msg->id, hash);
-					});
-		}
-		break;
 	}
 }
 
@@ -504,6 +522,26 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 		case Router_get_peers_return::VNX_TYPE_ID:
 			if(auto value = std::dynamic_pointer_cast<const Router_get_peers_return>(result)) {
 				peer_set.insert(value->_ret_0.begin(), value->_ret_0.end());
+				return_map.erase(msg->id);
+			}
+			break;
+		case Node_get_synced_height_return::VNX_TYPE_ID:
+			if(auto value = std::dynamic_pointer_cast<const Node_get_synced_height_return>(result)) {
+				auto& peer = get_peer(client);
+				if(auto height = value->_ret_0.get()) {
+					peer.is_synced = true;
+					synced_peers.insert(client);
+					log(INFO) << "Peer " << peer.address << " is synced at height " << *height;
+				}
+				else if(peer.is_outbound) {
+					log(INFO) << "Disconnecting from peer " << peer.address << " who is not synced";
+					disconnect(client);
+				}
+				else {
+					peer.is_synced = false;
+					synced_peers.erase(client);
+				}
+				return_map.erase(msg->id);
 			}
 			break;
 		default: {
@@ -635,6 +673,7 @@ void Router::on_disconnect(uint64_t client)
 		log(INFO) << "Peer " << iter->second.address << " disconnected";
 		peer_map.erase(iter);
 	}
+	synced_peers.erase(client);
 	outgoing_peers.erase(client);
 }
 

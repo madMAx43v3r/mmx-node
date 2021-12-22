@@ -154,6 +154,14 @@ uint32_t Node::get_height() const
 	throw std::logic_error("have no peak");
 }
 
+vnx::optional<uint32_t> Node::get_synced_height() const
+{
+	if(is_synced) {
+		return get_height();
+	}
+	return nullptr;
+}
+
 std::shared_ptr<const Block> Node::get_block(const hash_t& hash) const
 {
 	if(auto block = find_block(hash)) {
