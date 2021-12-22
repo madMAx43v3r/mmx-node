@@ -908,7 +908,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 
 void Node::start_sync()
 {
-	if(!is_synced) {
+	if(!is_synced || !do_sync) {
 		return;
 	}
 	sync_pos = 0;
