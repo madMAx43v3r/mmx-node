@@ -5,6 +5,8 @@
 #include <mmx/TimeLordAsyncClient.hxx>
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/TimeInfusion.hxx>
+#include <mmx/TimeLord_stop_vdf.hxx>
+#include <mmx/TimeLord_stop_vdf_return.hxx>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
@@ -154,6 +156,18 @@ uint64_t TimeLordAsyncClient::vnx_self_test(const std::function<void(const vnx::
 	return _request_id;
 }
 
+uint64_t TimeLordAsyncClient::stop_vdf(const std::function<void()>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+	auto _method = ::mmx::TimeLord_stop_vdf::create();
+	const auto _request_id = ++vnx_next_id;
+	{
+		std::lock_guard<std::mutex> _lock(vnx_mutex);
+		vnx_pending[_request_id] = 9;
+		vnx_queue_stop_vdf[_request_id] = std::make_pair(_callback, _error_callback);
+	}
+	vnx_request(_method, _request_id);
+	return _request_id;
+}
+
 int32_t TimeLordAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exception& _ex) {
 	std::unique_lock<std::mutex> _lock(vnx_mutex);
 	const auto _iter = vnx_pending.find(_request_id);
@@ -264,6 +278,18 @@ int32_t TimeLordAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::
 			if(_iter != vnx_queue_vnx_self_test.end()) {
 				const auto _callback = std::move(_iter->second.second);
 				vnx_queue_vnx_self_test.erase(_iter);
+				_lock.unlock();
+				if(_callback) {
+					_callback(_ex);
+				}
+			}
+			break;
+		}
+		case 9: {
+			const auto _iter = vnx_queue_stop_vdf.find(_request_id);
+			if(_iter != vnx_queue_stop_vdf.end()) {
+				const auto _callback = std::move(_iter->second.second);
+				vnx_queue_stop_vdf.erase(_iter);
 				_lock.unlock();
 				if(_callback) {
 					_callback(_ex);
@@ -428,6 +454,19 @@ int32_t TimeLordAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shar
 				} else {
 					throw std::logic_error("TimeLordAsyncClient: invalid return value");
 				}
+			}
+			break;
+		}
+		case 9: {
+			const auto _iter = vnx_queue_stop_vdf.find(_request_id);
+			if(_iter == vnx_queue_stop_vdf.end()) {
+				throw std::runtime_error("TimeLordAsyncClient: callback not found");
+			}
+			const auto _callback = std::move(_iter->second.first);
+			vnx_queue_stop_vdf.erase(_iter);
+			_lock.unlock();
+			if(_callback) {
+				_callback();
 			}
 			break;
 		}

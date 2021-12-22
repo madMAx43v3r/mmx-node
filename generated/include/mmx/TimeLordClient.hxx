@@ -45,6 +45,10 @@ public:
 	
 	vnx::bool_t vnx_self_test();
 	
+	void stop_vdf();
+	
+	void stop_vdf_async();
+	
 };
 
 

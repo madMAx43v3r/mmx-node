@@ -56,6 +56,7 @@ public:
 protected:
 	using Super::handle;
 	
+	virtual void stop_vdf() = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::TimeInfusion> _value) {}
 	virtual void handle(std::shared_ptr<const ::mmx::IntervalRequest> _value) {}
 	

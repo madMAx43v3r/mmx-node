@@ -39,12 +39,13 @@ public:
 	int32_t max_queue_ms = 10000;
 	int32_t update_interval_ms = 1000;
 	uint32_t max_history = 1000;
-	uint32_t reload_height = -1;
+	uint32_t replay_height = -1;
 	uint32_t max_sync_jobs = 64;
 	uint32_t num_sync_retries = 3;
 	vnx::bool_t do_sync = true;
 	std::string storage_path;
 	std::string router_name = "Router";
+	std::string timelord_name = "TimeLord";
 	
 	typedef ::vnx::Module Super;
 	

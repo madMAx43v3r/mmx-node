@@ -66,6 +66,8 @@
 #include <mmx/Solution.hxx>
 #include <mmx/TimeInfusion.hxx>
 #include <mmx/TimeLordBase.hxx>
+#include <mmx/TimeLord_stop_vdf.hxx>
+#include <mmx/TimeLord_stop_vdf_return.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/WalletBase.hxx>
 #include <mmx/Wallet_close_wallet.hxx>
@@ -595,6 +597,22 @@ void type<::mmx::TimeInfusion>::create_dynamic_code(std::vector<uint16_t>& code,
 	code.push_back(CODE_OBJECT);
 }
 
+void type<::mmx::TimeLord_stop_vdf>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::TimeLord_stop_vdf());
+}
+
+void type<::mmx::TimeLord_stop_vdf>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::TimeLord_stop_vdf& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+void type<::mmx::TimeLord_stop_vdf_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::TimeLord_stop_vdf_return());
+}
+
+void type<::mmx::TimeLord_stop_vdf_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::TimeLord_stop_vdf_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 void type<::mmx::Transaction>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Transaction());
 }
@@ -992,6 +1010,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Solution::static_create_type_code());
 	vnx::register_type_code(::mmx::TimeInfusion::static_create_type_code());
 	vnx::register_type_code(::mmx::TimeLordBase::static_create_type_code());
+	vnx::register_type_code(::mmx::TimeLord_stop_vdf::static_create_type_code());
+	vnx::register_type_code(::mmx::TimeLord_stop_vdf_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Transaction::static_create_type_code());
 	vnx::register_type_code(::mmx::WalletBase::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_close_wallet::static_create_type_code());
@@ -1099,6 +1119,8 @@ const vnx::TypeCode* const vnx_native_type_code_Router_get_peers_return = vnx::g
 const vnx::TypeCode* const vnx_native_type_code_Solution = vnx::get_type_code(vnx::Hash64(0x9f693babd1a91ccdull));
 const vnx::TypeCode* const vnx_native_type_code_TimeInfusion = vnx::get_type_code(vnx::Hash64(0x7c38bc7150b0d98bull));
 const vnx::TypeCode* const vnx_native_type_code_TimeLordBase = vnx::get_type_code(vnx::Hash64(0x311081636f6570efull));
+const vnx::TypeCode* const vnx_native_type_code_TimeLord_stop_vdf = vnx::get_type_code(vnx::Hash64(0xf7f78eb9f371e6e7ull));
+const vnx::TypeCode* const vnx_native_type_code_TimeLord_stop_vdf_return = vnx::get_type_code(vnx::Hash64(0x53e37fb500ea3a9full));
 const vnx::TypeCode* const vnx_native_type_code_Transaction = vnx::get_type_code(vnx::Hash64(0xce0462acdceaa5bcull));
 const vnx::TypeCode* const vnx_native_type_code_WalletBase = vnx::get_type_code(vnx::Hash64(0x62207fd96d3aead7ull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_close_wallet = vnx::get_type_code(vnx::Hash64(0x8fc9ee59cd8e9ac0ull));

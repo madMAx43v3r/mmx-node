@@ -78,6 +78,8 @@ class Router_get_peers_return;
 class Solution;
 class TimeInfusion;
 class TimeLordBase;
+class TimeLord_stop_vdf;
+class TimeLord_stop_vdf_return;
 class Transaction;
 class WalletBase;
 class Wallet_close_wallet;
@@ -185,6 +187,8 @@ extern const vnx::TypeCode* const vnx_native_type_code_Router_get_peers_return; 
 extern const vnx::TypeCode* const vnx_native_type_code_Solution; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_TimeInfusion; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_TimeLordBase; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_TimeLord_stop_vdf; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_TimeLord_stop_vdf_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Transaction; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_WalletBase; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Wallet_close_wallet; ///< \private
@@ -290,6 +294,8 @@ void read(TypeInput& in, ::mmx::Router_get_peers_return& value, const TypeCode* 
 void read(TypeInput& in, ::mmx::Solution& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::TimeInfusion& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::TimeLordBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::TimeLord_stop_vdf& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::TimeLord_stop_vdf_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Transaction& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::WalletBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Wallet_close_wallet& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -397,6 +403,8 @@ void write(TypeOutput& out, const ::mmx::Router_get_peers_return& value, const T
 void write(TypeOutput& out, const ::mmx::Solution& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::TimeInfusion& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::TimeLordBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::TimeLord_stop_vdf& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::TimeLord_stop_vdf_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Transaction& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::WalletBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Wallet_close_wallet& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -504,6 +512,8 @@ void read(std::istream& in, ::mmx::Router_get_peers_return& value); ///< \privat
 void read(std::istream& in, ::mmx::Solution& value); ///< \private
 void read(std::istream& in, ::mmx::TimeInfusion& value); ///< \private
 void read(std::istream& in, ::mmx::TimeLordBase& value); ///< \private
+void read(std::istream& in, ::mmx::TimeLord_stop_vdf& value); ///< \private
+void read(std::istream& in, ::mmx::TimeLord_stop_vdf_return& value); ///< \private
 void read(std::istream& in, ::mmx::Transaction& value); ///< \private
 void read(std::istream& in, ::mmx::WalletBase& value); ///< \private
 void read(std::istream& in, ::mmx::Wallet_close_wallet& value); ///< \private
@@ -611,6 +621,8 @@ void write(std::ostream& out, const ::mmx::Router_get_peers_return& value); ///<
 void write(std::ostream& out, const ::mmx::Solution& value); ///< \private
 void write(std::ostream& out, const ::mmx::TimeInfusion& value); ///< \private
 void write(std::ostream& out, const ::mmx::TimeLordBase& value); ///< \private
+void write(std::ostream& out, const ::mmx::TimeLord_stop_vdf& value); ///< \private
+void write(std::ostream& out, const ::mmx::TimeLord_stop_vdf_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Transaction& value); ///< \private
 void write(std::ostream& out, const ::mmx::WalletBase& value); ///< \private
 void write(std::ostream& out, const ::mmx::Wallet_close_wallet& value); ///< \private
@@ -718,6 +730,8 @@ void accept(Visitor& visitor, const ::mmx::Router_get_peers_return& value); ///<
 void accept(Visitor& visitor, const ::mmx::Solution& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::TimeInfusion& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::TimeLordBase& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::TimeLord_stop_vdf& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::TimeLord_stop_vdf_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Transaction& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::WalletBase& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Wallet_close_wallet& value); ///< \private
@@ -2178,6 +2192,50 @@ struct type<::mmx::TimeLordBase> {
 	void accept(Visitor& visitor, const ::mmx::TimeLordBase& value) {
 		vnx::accept(visitor, value);
 	}
+};
+
+/// \private
+template<>
+struct type<::mmx::TimeLord_stop_vdf> {
+	void read(TypeInput& in, ::mmx::TimeLord_stop_vdf& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::TimeLord_stop_vdf& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::TimeLord_stop_vdf& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::TimeLord_stop_vdf& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::TimeLord_stop_vdf& value) {
+		vnx::accept(visitor, value);
+	}
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::TimeLord_stop_vdf& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::TimeLord_stop_vdf_return> {
+	void read(TypeInput& in, ::mmx::TimeLord_stop_vdf_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::TimeLord_stop_vdf_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::TimeLord_stop_vdf_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::TimeLord_stop_vdf_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::TimeLord_stop_vdf_return& value) {
+		vnx::accept(visitor, value);
+	}
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::TimeLord_stop_vdf_return& value, bool special = false);
 };
 
 /// \private

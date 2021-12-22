@@ -41,7 +41,7 @@ namespace mmx {
 
 
 const vnx::Hash64 RouterBase::VNX_TYPE_HASH(0x952c4ef2956f31c4ull);
-const vnx::Hash64 RouterBase::VNX_CODE_HASH(0x5e3fb3120f061c55ull);
+const vnx::Hash64 RouterBase::VNX_CODE_HASH(0x478c30ed57cb7473ull);
 
 RouterBase::RouterBase(const std::string& _vnx_name)
 	:	TcpServer::TcpServer(_vnx_name)
@@ -57,12 +57,14 @@ RouterBase::RouterBase(const std::string& _vnx_name)
 	vnx::read_config(vnx_name + ".info_interval_ms", info_interval_ms);
 	vnx::read_config(vnx_name + ".update_interval_ms", update_interval_ms);
 	vnx::read_config(vnx_name + ".connect_interval_ms", connect_interval_ms);
+	vnx::read_config(vnx_name + ".sync_loss_delay", sync_loss_delay);
 	vnx::read_config(vnx_name + ".discover_interval", discover_interval);
 	vnx::read_config(vnx_name + ".num_peers_out", num_peers_out);
 	vnx::read_config(vnx_name + ".min_sync_peers", min_sync_peers);
 	vnx::read_config(vnx_name + ".max_sync_peers", max_sync_peers);
 	vnx::read_config(vnx_name + ".max_msg_size", max_msg_size);
 	vnx::read_config(vnx_name + ".seed_peers", seed_peers);
+	vnx::read_config(vnx_name + ".block_peers", block_peers);
 	vnx::read_config(vnx_name + ".node_server", node_server);
 }
 
@@ -103,13 +105,15 @@ void RouterBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[19], 19); vnx::accept(_visitor, info_interval_ms);
 	_visitor.type_field(_type_code->fields[20], 20); vnx::accept(_visitor, update_interval_ms);
 	_visitor.type_field(_type_code->fields[21], 21); vnx::accept(_visitor, connect_interval_ms);
-	_visitor.type_field(_type_code->fields[22], 22); vnx::accept(_visitor, discover_interval);
-	_visitor.type_field(_type_code->fields[23], 23); vnx::accept(_visitor, num_peers_out);
-	_visitor.type_field(_type_code->fields[24], 24); vnx::accept(_visitor, min_sync_peers);
-	_visitor.type_field(_type_code->fields[25], 25); vnx::accept(_visitor, max_sync_peers);
-	_visitor.type_field(_type_code->fields[26], 26); vnx::accept(_visitor, max_msg_size);
-	_visitor.type_field(_type_code->fields[27], 27); vnx::accept(_visitor, seed_peers);
-	_visitor.type_field(_type_code->fields[28], 28); vnx::accept(_visitor, node_server);
+	_visitor.type_field(_type_code->fields[22], 22); vnx::accept(_visitor, sync_loss_delay);
+	_visitor.type_field(_type_code->fields[23], 23); vnx::accept(_visitor, discover_interval);
+	_visitor.type_field(_type_code->fields[24], 24); vnx::accept(_visitor, num_peers_out);
+	_visitor.type_field(_type_code->fields[25], 25); vnx::accept(_visitor, min_sync_peers);
+	_visitor.type_field(_type_code->fields[26], 26); vnx::accept(_visitor, max_sync_peers);
+	_visitor.type_field(_type_code->fields[27], 27); vnx::accept(_visitor, max_msg_size);
+	_visitor.type_field(_type_code->fields[28], 28); vnx::accept(_visitor, seed_peers);
+	_visitor.type_field(_type_code->fields[29], 29); vnx::accept(_visitor, block_peers);
+	_visitor.type_field(_type_code->fields[30], 30); vnx::accept(_visitor, node_server);
 	_visitor.type_end(*_type_code);
 }
 
@@ -137,12 +141,14 @@ void RouterBase::write(std::ostream& _out) const {
 	_out << ", \"info_interval_ms\": "; vnx::write(_out, info_interval_ms);
 	_out << ", \"update_interval_ms\": "; vnx::write(_out, update_interval_ms);
 	_out << ", \"connect_interval_ms\": "; vnx::write(_out, connect_interval_ms);
+	_out << ", \"sync_loss_delay\": "; vnx::write(_out, sync_loss_delay);
 	_out << ", \"discover_interval\": "; vnx::write(_out, discover_interval);
 	_out << ", \"num_peers_out\": "; vnx::write(_out, num_peers_out);
 	_out << ", \"min_sync_peers\": "; vnx::write(_out, min_sync_peers);
 	_out << ", \"max_sync_peers\": "; vnx::write(_out, max_sync_peers);
 	_out << ", \"max_msg_size\": "; vnx::write(_out, max_msg_size);
 	_out << ", \"seed_peers\": "; vnx::write(_out, seed_peers);
+	_out << ", \"block_peers\": "; vnx::write(_out, block_peers);
 	_out << ", \"node_server\": "; vnx::write(_out, node_server);
 	_out << "}";
 }
@@ -178,19 +184,23 @@ vnx::Object RouterBase::to_object() const {
 	_object["info_interval_ms"] = info_interval_ms;
 	_object["update_interval_ms"] = update_interval_ms;
 	_object["connect_interval_ms"] = connect_interval_ms;
+	_object["sync_loss_delay"] = sync_loss_delay;
 	_object["discover_interval"] = discover_interval;
 	_object["num_peers_out"] = num_peers_out;
 	_object["min_sync_peers"] = min_sync_peers;
 	_object["max_sync_peers"] = max_sync_peers;
 	_object["max_msg_size"] = max_msg_size;
 	_object["seed_peers"] = seed_peers;
+	_object["block_peers"] = block_peers;
 	_object["node_server"] = node_server;
 	return _object;
 }
 
 void RouterBase::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "connect_interval_ms") {
+		if(_entry.first == "block_peers") {
+			_entry.second.to(block_peers);
+		} else if(_entry.first == "connect_interval_ms") {
 			_entry.second.to(connect_interval_ms);
 		} else if(_entry.first == "connection_timeout_ms") {
 			_entry.second.to(connection_timeout_ms);
@@ -242,6 +252,8 @@ void RouterBase::from_object(const vnx::Object& _object) {
 			_entry.second.to(show_warnings);
 		} else if(_entry.first == "stats_interval_ms") {
 			_entry.second.to(stats_interval_ms);
+		} else if(_entry.first == "sync_loss_delay") {
+			_entry.second.to(sync_loss_delay);
 		} else if(_entry.first == "tcp_keepalive") {
 			_entry.second.to(tcp_keepalive);
 		} else if(_entry.first == "tcp_no_delay") {
@@ -319,6 +331,9 @@ vnx::Variant RouterBase::get_field(const std::string& _name) const {
 	if(_name == "connect_interval_ms") {
 		return vnx::Variant(connect_interval_ms);
 	}
+	if(_name == "sync_loss_delay") {
+		return vnx::Variant(sync_loss_delay);
+	}
 	if(_name == "discover_interval") {
 		return vnx::Variant(discover_interval);
 	}
@@ -336,6 +351,9 @@ vnx::Variant RouterBase::get_field(const std::string& _name) const {
 	}
 	if(_name == "seed_peers") {
 		return vnx::Variant(seed_peers);
+	}
+	if(_name == "block_peers") {
+		return vnx::Variant(block_peers);
 	}
 	if(_name == "node_server") {
 		return vnx::Variant(node_server);
@@ -388,6 +406,8 @@ void RouterBase::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(update_interval_ms);
 	} else if(_name == "connect_interval_ms") {
 		_value.to(connect_interval_ms);
+	} else if(_name == "sync_loss_delay") {
+		_value.to(sync_loss_delay);
 	} else if(_name == "discover_interval") {
 		_value.to(discover_interval);
 	} else if(_name == "num_peers_out") {
@@ -400,6 +420,8 @@ void RouterBase::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(max_msg_size);
 	} else if(_name == "seed_peers") {
 		_value.to(seed_peers);
+	} else if(_name == "block_peers") {
+		_value.to(block_peers);
 	} else if(_name == "node_server") {
 		_value.to(node_server);
 	} else {
@@ -431,7 +453,7 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Router";
 	type_code->type_hash = vnx::Hash64(0x952c4ef2956f31c4ull);
-	type_code->code_hash = vnx::Hash64(0x5e3fb3120f061c55ull);
+	type_code->code_hash = vnx::Hash64(0x478c30ed57cb7473ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::RouterBase);
 	type_code->parents.resize(1);
@@ -449,7 +471,7 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	type_code->methods[9] = ::mmx::Router_discover::static_get_type_code();
 	type_code->methods[10] = ::mmx::Router_get_peers::static_get_type_code();
 	type_code->methods[11] = ::mmx::Router_get_blocks_at::static_get_type_code();
-	type_code->fields.resize(29);
+	type_code->fields.resize(31);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -605,46 +627,59 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	{
 		auto& field = type_code->fields[22];
 		field.data_size = 4;
-		field.name = "discover_interval";
-		field.value = vnx::to_string(300);
+		field.name = "sync_loss_delay";
+		field.value = vnx::to_string(30);
 		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[23];
+		field.data_size = 4;
+		field.name = "discover_interval";
+		field.value = vnx::to_string(60);
+		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[24];
 		field.data_size = 4;
 		field.name = "num_peers_out";
 		field.value = vnx::to_string(8);
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[24];
+		auto& field = type_code->fields[25];
 		field.data_size = 4;
 		field.name = "min_sync_peers";
 		field.value = vnx::to_string(2);
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[25];
+		auto& field = type_code->fields[26];
 		field.data_size = 4;
 		field.name = "max_sync_peers";
 		field.value = vnx::to_string(4);
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[26];
+		auto& field = type_code->fields[27];
 		field.data_size = 4;
 		field.name = "max_msg_size";
 		field.value = vnx::to_string(67108864);
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[27];
+		auto& field = type_code->fields[28];
 		field.is_extended = true;
 		field.name = "seed_peers";
 		field.code = {12, 32};
 	}
 	{
-		auto& field = type_code->fields[28];
+		auto& field = type_code->fields[29];
+		field.is_extended = true;
+		field.name = "block_peers";
+		field.code = {12, 32};
+	}
+	{
+		auto& field = type_code->fields[30];
 		field.is_extended = true;
 		field.name = "node_server";
 		field.value = vnx::to_string("Node");
@@ -841,18 +876,21 @@ void read(TypeInput& in, ::mmx::RouterBase& value, const TypeCode* type_code, co
 			vnx::read_value(_buf + _field->offset, value.connect_interval_ms, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[22]) {
-			vnx::read_value(_buf + _field->offset, value.discover_interval, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.sync_loss_delay, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[23]) {
-			vnx::read_value(_buf + _field->offset, value.num_peers_out, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.discover_interval, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[24]) {
-			vnx::read_value(_buf + _field->offset, value.min_sync_peers, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.num_peers_out, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[25]) {
-			vnx::read_value(_buf + _field->offset, value.max_sync_peers, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.min_sync_peers, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[26]) {
+			vnx::read_value(_buf + _field->offset, value.max_sync_peers, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[27]) {
 			vnx::read_value(_buf + _field->offset, value.max_msg_size, _field->code.data());
 		}
 	}
@@ -866,8 +904,9 @@ void read(TypeInput& in, ::mmx::RouterBase& value, const TypeCode* type_code, co
 			case 15: vnx::read(in, value.output_vdfs, type_code, _field->code.data()); break;
 			case 16: vnx::read(in, value.output_blocks, type_code, _field->code.data()); break;
 			case 17: vnx::read(in, value.output_transactions, type_code, _field->code.data()); break;
-			case 27: vnx::read(in, value.seed_peers, type_code, _field->code.data()); break;
-			case 28: vnx::read(in, value.node_server, type_code, _field->code.data()); break;
+			case 28: vnx::read(in, value.seed_peers, type_code, _field->code.data()); break;
+			case 29: vnx::read(in, value.block_peers, type_code, _field->code.data()); break;
+			case 30: vnx::read(in, value.node_server, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -886,7 +925,7 @@ void write(TypeOutput& out, const ::mmx::RouterBase& value, const TypeCode* type
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(67);
+	char* const _buf = out.write(71);
 	vnx::write_value(_buf + 0, value.port);
 	vnx::write_value(_buf + 4, value.max_connections);
 	vnx::write_value(_buf + 8, value.listen_queue_size);
@@ -901,11 +940,12 @@ void write(TypeOutput& out, const ::mmx::RouterBase& value, const TypeCode* type
 	vnx::write_value(_buf + 35, value.info_interval_ms);
 	vnx::write_value(_buf + 39, value.update_interval_ms);
 	vnx::write_value(_buf + 43, value.connect_interval_ms);
-	vnx::write_value(_buf + 47, value.discover_interval);
-	vnx::write_value(_buf + 51, value.num_peers_out);
-	vnx::write_value(_buf + 55, value.min_sync_peers);
-	vnx::write_value(_buf + 59, value.max_sync_peers);
-	vnx::write_value(_buf + 63, value.max_msg_size);
+	vnx::write_value(_buf + 47, value.sync_loss_delay);
+	vnx::write_value(_buf + 51, value.discover_interval);
+	vnx::write_value(_buf + 55, value.num_peers_out);
+	vnx::write_value(_buf + 59, value.min_sync_peers);
+	vnx::write_value(_buf + 63, value.max_sync_peers);
+	vnx::write_value(_buf + 67, value.max_msg_size);
 	vnx::write(out, value.host, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.input_vdfs, type_code, type_code->fields[11].code.data());
 	vnx::write(out, value.input_blocks, type_code, type_code->fields[12].code.data());
@@ -914,8 +954,9 @@ void write(TypeOutput& out, const ::mmx::RouterBase& value, const TypeCode* type
 	vnx::write(out, value.output_vdfs, type_code, type_code->fields[15].code.data());
 	vnx::write(out, value.output_blocks, type_code, type_code->fields[16].code.data());
 	vnx::write(out, value.output_transactions, type_code, type_code->fields[17].code.data());
-	vnx::write(out, value.seed_peers, type_code, type_code->fields[27].code.data());
-	vnx::write(out, value.node_server, type_code, type_code->fields[28].code.data());
+	vnx::write(out, value.seed_peers, type_code, type_code->fields[28].code.data());
+	vnx::write(out, value.block_peers, type_code, type_code->fields[29].code.data());
+	vnx::write(out, value.node_server, type_code, type_code->fields[30].code.data());
 }
 
 void read(std::istream& in, ::mmx::RouterBase& value) {

@@ -5,6 +5,8 @@
 #include <mmx/TimeLordClient.hxx>
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/TimeInfusion.hxx>
+#include <mmx/TimeLord_stop_vdf.hxx>
+#include <mmx/TimeLord_stop_vdf_return.hxx>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
@@ -147,6 +149,16 @@ vnx::bool_t TimeLordClient::vnx_self_test() {
 	} else {
 		throw std::logic_error("TimeLordClient: invalid return value");
 	}
+}
+
+void TimeLordClient::stop_vdf() {
+	auto _method = ::mmx::TimeLord_stop_vdf::create();
+	vnx_request(_method, false);
+}
+
+void TimeLordClient::stop_vdf_async() {
+	auto _method = ::mmx::TimeLord_stop_vdf::create();
+	vnx_request(_method, true);
 }
 
 

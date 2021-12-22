@@ -6,6 +6,8 @@
 #include <vnx/NoSuchMethod.hxx>
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/TimeInfusion.hxx>
+#include <mmx/TimeLord_stop_vdf.hxx>
+#include <mmx/TimeLord_stop_vdf_return.hxx>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
@@ -185,7 +187,7 @@ std::shared_ptr<vnx::TypeCode> TimeLordBase::static_create_type_code() {
 	type_code->code_hash = vnx::Hash64(0x8e3e134bd7916ce1ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::TimeLordBase);
-	type_code->methods.resize(9);
+	type_code->methods.resize(10);
 	type_code->methods[0] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
 	type_code->methods[1] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
 	type_code->methods[2] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
@@ -195,6 +197,7 @@ std::shared_ptr<vnx::TypeCode> TimeLordBase::static_create_type_code() {
 	type_code->methods[6] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
 	type_code->methods[7] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
 	type_code->methods[8] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
+	type_code->methods[9] = ::mmx::TimeLord_stop_vdf::static_get_type_code();
 	type_code->fields.resize(6);
 	{
 		auto& field = type_code->fields[0];
@@ -313,6 +316,12 @@ std::shared_ptr<vnx::Value> TimeLordBase::vnx_call_switch(std::shared_ptr<const 
 			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_self_test>(_method);
 			auto _return_value = ::vnx::ModuleInterface_vnx_self_test_return::create();
 			_return_value->_ret_0 = vnx_self_test();
+			return _return_value;
+		}
+		case 0xf7f78eb9f371e6e7ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::TimeLord_stop_vdf>(_method);
+			auto _return_value = ::mmx::TimeLord_stop_vdf_return::create();
+			stop_vdf();
 			return _return_value;
 		}
 	}
