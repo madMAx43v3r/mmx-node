@@ -2,4 +2,4 @@
 
 ## Dependencies
 
-cmake build-essential libsecp256k1-dev libsodium-dev
+cmake build-essential libsecp256k1-dev libsodium-dev zlib1g-dev
