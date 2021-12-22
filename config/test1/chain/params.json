@@ -1,0 +1,15 @@
+{
+	"port": 12331,
+	"block_time": 10,
+	"plot_filter": 4,
+	"min_ksize": 26,
+	"vdf_seed": "test1",
+	"reward_factor": {
+		"value": 1,
+		"inverse": 100000
+	},
+	"initial_time_diff": 5000,
+	"initial_space_diff": 100,
+	"time_diff_constant": 1000,
+	"space_diff_constant": 17783848
+}
