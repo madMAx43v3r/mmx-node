@@ -99,6 +99,8 @@ private:
 	template<typename R, typename T>
 	void send_result(uint64_t client, uint32_t id, const T& value);
 
+	void on_error(uint64_t client, uint32_t id, const vnx::exception& ex);
+
 	void on_request(uint64_t client, std::shared_ptr<const Request> msg);
 
 	void on_return(uint64_t client, std::shared_ptr<const Return> msg);

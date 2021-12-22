@@ -25,6 +25,7 @@
 
 #include <vnx/vnx.h>
 #include <vnx/NoSuchMethod.hxx>
+#include <vnx/OverflowException.hxx>
 
 
 namespace mmx {
@@ -190,19 +191,23 @@ void Router::update()
 						} else {
 							job.failed.insert(iter->first);
 						}
-						iter = job.pending.erase(iter);
-						continue;
 					}
-					if(auto ret = std::dynamic_pointer_cast<const Node_get_block_return>(value)) {
+					else if(auto ret = std::dynamic_pointer_cast<const Node_get_block_return>(value)) {
 						if(auto block = ret->_ret_0) {
 							job.blocks[block->hash] = block;
 							job.succeeded.insert(iter->first);
 						} else {
 							job.failed.insert(iter->first);
 						}
-						iter = job.pending.erase(iter);
-						continue;
 					}
+					else if(auto ret = std::dynamic_pointer_cast<const vnx::OverflowException>(value)) {
+						// try again
+					}
+					else {
+						job.failed.insert(iter->first);
+					}
+					iter = job.pending.erase(iter);
+					continue;
 				}
 			}
 			iter++;
@@ -398,8 +403,9 @@ void Router::on_transaction(uint64_t client, std::shared_ptr<const Transaction> 
 void Router::relay(uint64_t source, std::shared_ptr<const vnx::Value> msg)
 {
 	for(auto& entry : peer_map) {
-		if(entry.first != source) {
-			send_to(entry.first, entry.second, msg);
+		auto& peer = entry.second;
+		if(!peer.is_blocked && entry.first != source) {
+			send_to(entry.first, peer, msg);
 		}
 	}
 	is_connected = true;
@@ -413,9 +419,6 @@ void Router::send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg)
 
 void Router::send_to(uint64_t client, peer_t& peer, std::shared_ptr<const vnx::Value> msg)
 {
-	if(peer.is_blocked) {
-		return;
-	}
 	auto& out = peer.out;
 	vnx::write(out, uint16_t(vnx::CODE_UINT32));
 	vnx::write(out, uint32_t(0));
@@ -450,6 +453,14 @@ void Router::send_result(uint64_t client, uint32_t id, const T& value)
 	send_to(client, ret);
 }
 
+void Router::on_error(uint64_t client, uint32_t id, const vnx::exception& ex)
+{
+	auto ret = Return::create();
+	ret->id = id;
+	ret->result = ex.value();
+	send_to(client, ret);
+}
+
 void Router::on_request(uint64_t client, std::shared_ptr<const Request> msg)
 {
 	const auto method = msg->method;
@@ -468,7 +479,8 @@ void Router::on_request(uint64_t client, std::shared_ptr<const Request> msg)
 				node->get_height(
 						[=](const uint32_t& height) {
 							send_result<Node_get_height_return>(client, msg->id, height);
-						});
+						},
+						std::bind(&Router::on_error, this, client, msg->id, std::placeholders::_1));
 			}
 			break;
 		case Node_get_synced_height::VNX_TYPE_ID:
@@ -476,7 +488,8 @@ void Router::on_request(uint64_t client, std::shared_ptr<const Request> msg)
 				node->get_synced_height(
 						[=](const vnx::optional<uint32_t>& height) {
 							send_result<Node_get_synced_height_return>(client, msg->id, height);
-						});
+						},
+						std::bind(&Router::on_error, this, client, msg->id, std::placeholders::_1));
 			}
 			break;
 		case Node_get_block::VNX_TYPE_ID:
@@ -485,7 +498,8 @@ void Router::on_request(uint64_t client, std::shared_ptr<const Request> msg)
 						[=](std::shared_ptr<const Block> block) {
 							upload_counter++;
 							send_result<Node_get_block_return>(client, msg->id, block);
-						});
+						},
+						std::bind(&Router::on_error, this, client, msg->id, std::placeholders::_1));
 			}
 			break;
 		case Node_get_block_at::VNX_TYPE_ID:
@@ -494,7 +508,8 @@ void Router::on_request(uint64_t client, std::shared_ptr<const Request> msg)
 						[=](std::shared_ptr<const Block> block) {
 							upload_counter++;
 							send_result<Node_get_block_at_return>(client, msg->id, block);
-						});
+						},
+						std::bind(&Router::on_error, this, client, msg->id, std::placeholders::_1));
 			}
 			break;
 		case Node_get_block_hash::VNX_TYPE_ID:
@@ -502,7 +517,8 @@ void Router::on_request(uint64_t client, std::shared_ptr<const Request> msg)
 				node->get_block_hash(value->height,
 						[=](const vnx::optional<hash_t>& hash) {
 							send_result<Node_get_block_hash_return>(client, msg->id, hash);
-						});
+						},
+						std::bind(&Router::on_error, this, client, msg->id, std::placeholders::_1));
 			}
 			break;
 		default: {
@@ -647,12 +663,22 @@ bool Router::on_read(uint64_t client, size_t num_bytes)
 
 void Router::on_pause(uint64_t client)
 {
-	get_peer(client).is_blocked = true;
+	auto& peer = get_peer(client);
+	peer.is_blocked = true;
+
+	if(!peer.is_outbound) {
+		pause(client);		// pause incoming traffic
+	}
 }
 
 void Router::on_resume(uint64_t client)
 {
-	get_peer(client).is_blocked = false;
+	auto& peer = get_peer(client);
+	peer.is_blocked = false;
+
+	if(!peer.is_outbound) {
+		resume(client);		// resume incoming traffic
+	}
 }
 
 void Router::on_connect(uint64_t client, const std::string& address)
