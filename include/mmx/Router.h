@@ -120,25 +120,28 @@ private:
 
 private:
 	std::set<std::string> peer_set;
-	std::set<std::string> pending_peers;
-	std::unordered_set<hash_t> seen_hashes;
+	std::set<std::string> connecting_peers;
 
-	std::set<uint64_t> outgoing;
+	std::set<uint64_t> synced_peers;
+	std::set<uint64_t> outgoing_peers;
 	std::unordered_map<uint64_t, peer_t> peer_map;
+
+	std::unordered_set<hash_t> seen_hashes;
 	std::unordered_map<uint32_t, std::shared_ptr<const vnx::Value>> return_map;
 
-	mutable std::unordered_map<vnx::request_id_t, sync_job_t> pending_sync;
+	mutable std::unordered_map<vnx::request_id_t, sync_job_t> sync_jobs;
 
 	std::shared_ptr<NodeAsyncClient> node;
 	std::shared_ptr<vnx::ThreadPool> threads;
 	std::shared_ptr<const ChainParams> params;
 
-	uint32_t next_request = 0;
-	uint64_t verified_iters = 0;
+	uint32_t next_request_id = 0;
+	uint64_t verified_vdf_iters = 0;
 
 	size_t tx_counter = 0;
 	size_t vdf_counter = 0;
 	size_t block_counter = 0;
+	size_t upload_counter = 0;
 
 };
 

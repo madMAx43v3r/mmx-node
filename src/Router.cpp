@@ -107,7 +107,7 @@ std::vector<std::string> Router::get_peers(const uint32_t& max_count) const
 
 void Router::get_blocks_at_async(const uint32_t& height, const vnx::request_id_t& request_id) const
 {
-	auto& job = pending_sync[request_id];
+	auto& job = sync_jobs[request_id];
 	job.height = height;
 	((Router*)this)->update();
 }
@@ -137,7 +137,7 @@ void Router::handle(std::shared_ptr<const ProofOfTime> proof)
 
 	if(vnx_sample->topic == input_vdfs)
 	{
-		if(vdf_iters > verified_iters) {
+		if(vdf_iters > verified_vdf_iters) {
 			if(seen_hashes.insert(proof->calc_hash()).second) {
 				log(INFO) << "Broadcasting VDF for " << vdf_iters;
 				send_all(proof);
@@ -146,14 +146,14 @@ void Router::handle(std::shared_ptr<const ProofOfTime> proof)
 	}
 	else if(vnx_sample->topic == input_verified_vdfs)
 	{
-		verified_iters = std::max(vdf_iters, verified_iters);
+		verified_vdf_iters = std::max(vdf_iters, verified_vdf_iters);
 	}
 }
 
 uint32_t Router::send_request(uint64_t client, std::shared_ptr<const vnx::Value> method)
 {
 	auto req = Request::create();
-	req->id = next_request++;
+	req->id = next_request_id++;
 	req->method = method;
 	send_to(client, req);
 	return_map[req->id] = nullptr;
@@ -162,7 +162,7 @@ uint32_t Router::send_request(uint64_t client, std::shared_ptr<const vnx::Value>
 
 void Router::update()
 {
-	for(auto iter = pending_sync.begin(); iter != pending_sync.end();)
+	for(auto iter = sync_jobs.begin(); iter != sync_jobs.end();)
 	{
 		auto& job = iter->second;
 		for(auto iter = job.pending.begin(); iter != job.pending.end();)
@@ -196,13 +196,13 @@ void Router::update()
 			}
 			iter++;
 		}
-		const auto num_peers_try = std::min<size_t>(max_sync_peers, std::max<size_t>(outgoing.size(), min_sync_peers));
+		const auto num_peers_try = std::min<size_t>(max_sync_peers, std::max<size_t>(outgoing_peers.size(), min_sync_peers));
 
 		if(job.state == FETCH_HASHES)
 		{
 			if((job.succeeded.size() < min_sync_peers) && (job.succeeded.size() + job.failed.size() < num_peers_try))
 			{
-				for(auto client : outgoing) {
+				for(auto client : outgoing_peers) {
 					if(job.succeeded.size() + job.pending.size() + job.failed.size() >= max_sync_peers) {
 						break;
 					}
@@ -259,7 +259,7 @@ void Router::update()
 				for(const auto& entry : job.pending) {
 					return_map.erase(entry.second);
 				}
-				iter = pending_sync.erase(iter);
+				iter = sync_jobs.erase(iter);
 				continue;
 			}
 		}
@@ -269,25 +269,25 @@ void Router::update()
 
 void Router::connect()
 {
-	if(outgoing.size() + pending_peers.size() < num_peers_out)
+	for(const auto& address : get_peers(num_peers_out))
 	{
-		std::set<std::string> peers = peer_set;
+		if(outgoing_peers.size() + connecting_peers.size() >= num_peers_out) {
+			break;
+		}
+		if(connecting_peers.count(address)) {
+			continue;
+		}
+		bool connected = false;
 		for(const auto& entry : peer_map) {
-			peers.erase(entry.second.address);
+			if(address == entry.second.address) {
+				connected = true;
+			}
 		}
-		for(const auto& peer : pending_peers) {
-			peers.erase(peer);
+		if(connected) {
+			continue;
 		}
-		std::unordered_set<std::string> new_peers;
-		const std::vector<std::string> tmp(peers.begin(), peers.end());
-		const auto new_count = num_peers_out - outgoing.size() - pending_peers.size();
-		for(size_t i = 0; i < 2 * new_count && new_peers.size() < std::min(new_count, tmp.size()); ++i) {
-			new_peers.insert(tmp[size_t(::rand()) % tmp.size()]);
-		}
-		for(const auto& peer : new_peers) {
-			pending_peers.insert(peer);
-			threads->add_task(std::bind(&Router::connect_task, this, peer));
-		}
+		connecting_peers.insert(address);
+		threads->add_task(std::bind(&Router::connect_task, this, address));
 	}
 }
 
@@ -296,21 +296,21 @@ void Router::discover()
 	auto method = Router_get_peers::create();
 	method->max_count = num_peers_out;
 	auto req = Request::create();
-	req->id = next_request++;
+	req->id = next_request_id++;
 	req->method = method;
 	send_all(req);
 }
 
 void Router::add_peer(const std::string& address, const int sock)
 {
-	pending_peers.erase(address);
+	connecting_peers.erase(address);
 
 	if(sock >= 0) {
 		const auto id = add_client(sock, address);
 
 		auto& peer = peer_map[id];
 		peer.is_outbound = true;
-		outgoing.insert(id);
+		outgoing_peers.insert(id);
 	}
 	else if(!seed_peers.count(address)) {
 		peer_set.erase(address);
@@ -340,7 +340,7 @@ void Router::print_stats()
 	log(INFO) << float(tx_counter * 1000) / info_interval_ms
 			  << " tx/s, " << float(vdf_counter * 1000) / info_interval_ms
 			  << " vdf/s, " << float(block_counter * 1000) / info_interval_ms
-			  << " blocks/s, " << outgoing.size() << " / " <<  peer_map.size() << " / " << peer_set.size()
+			  << " blocks/s, " << outgoing_peers.size() << " / " <<  peer_map.size() << " / " << peer_set.size()
 			  << " peers, " << return_map.size() << " pending";
 	tx_counter = 0;
 	vdf_counter = 0;
@@ -354,7 +354,7 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> proof)
 	}
 	const auto vdf_iters = proof->start + proof->get_num_iters();
 
-	if(vdf_iters > verified_iters) {
+	if(vdf_iters > verified_vdf_iters) {
 		publish(proof, output_vdfs);
 	}
 	relay(client, proof);
@@ -468,6 +468,7 @@ void Router::on_request(uint64_t client, std::shared_ptr<const Request> msg)
 		if(auto value = std::dynamic_pointer_cast<const Node_get_block>(method)) {
 			node->get_block(value->hash,
 					[=](std::shared_ptr<const Block> block) {
+						upload_counter++;
 						send_result<Node_get_block_return>(client, msg->id, block);
 					});
 		}
@@ -476,6 +477,7 @@ void Router::on_request(uint64_t client, std::shared_ptr<const Request> msg)
 		if(auto value = std::dynamic_pointer_cast<const Node_get_block_at>(method)) {
 			node->get_block_at(value->height,
 					[=](std::shared_ptr<const Block> block) {
+						upload_counter++;
 						send_result<Node_get_block_at_return>(client, msg->id, block);
 					});
 		}
@@ -633,7 +635,7 @@ void Router::on_disconnect(uint64_t client)
 		log(INFO) << "Peer " << iter->second.address << " disconnected";
 		peer_map.erase(iter);
 	}
-	outgoing.erase(client);
+	outgoing_peers.erase(client);
 }
 
 Router::peer_t& Router::get_peer(uint64_t client)
