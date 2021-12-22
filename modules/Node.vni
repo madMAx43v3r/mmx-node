@@ -21,7 +21,7 @@ module Node {
 	
 	uint max_history = 1000;
 	
-	uint reload_height = -1;				// to limit reloading from disk and force resync
+	uint replay_height = -1;				// to limit reloading from disk and force resync
 	
 	uint max_sync_jobs = 64;				// number of parallel requests
 	uint num_sync_retries = 3;				// how often to retry when reaching a peak
@@ -30,6 +30,7 @@ module Node {
 	
 	string storage_path;
 	string router_name = "Router";
+	string timelord_name = "TimeLord";
 	
 	
 	uint get_height() const;

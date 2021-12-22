@@ -10,6 +10,7 @@
 #include <mmx/FarmerClient.hxx>
 #include <mmx/TimeInfusion.hxx>
 #include <mmx/IntervalRequest.hxx>
+#include <mmx/TimeLordClient.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/chiapos.h>
 #include <mmx/utils.h>
@@ -37,7 +38,7 @@ void Node::main()
 		vdf_point_t point;
 		point.output[0] = hash_t(params->vdf_seed);
 		point.output[1] = hash_t(params->vdf_seed);
-		point.recv_time = vnx::get_time_micros();
+		point.recv_time = vnx::get_wall_time_micros();
 		verified_vdfs[0] = point;
 	}
 	router = std::make_shared<RouterAsyncClient>(router_name);
@@ -55,6 +56,9 @@ void Node::main()
 				last_pos = in.get_input_pos();
 				if(auto value = vnx::read(in)) {
 					if(auto block = std::dynamic_pointer_cast<Block>(value)) {
+						if(block->height >= replay_height) {
+							break;
+						}
 						apply(block);
 						commit(block);
 						block_index[block->height] = std::make_pair(last_pos, block->hash);
@@ -82,7 +86,9 @@ void Node::main()
 			try {
 				if(auto value = vnx::read(in)) {
 					if(auto block = std::dynamic_pointer_cast<Block>(value)) {
-						add_block(block);
+						if(block->height < replay_height) {
+							add_block(block);
+						}
 					}
 				} else {
 					break;
@@ -118,7 +124,7 @@ void Node::main()
 	{
 		vdf_point_t point;
 		point.output = block->vdf_output;
-		point.recv_time = vnx::get_time_micros();
+		point.recv_time = vnx::get_wall_time_micros();
 		verified_vdfs[block->vdf_iters] = point;
 	}
 
@@ -306,12 +312,11 @@ void Node::add_block(std::shared_ptr<const Block> block)
 	if(is_replay || !is_synced) {
 		vdf_point_t point;
 		point.output = block->vdf_output;
-		point.recv_time = vnx::get_time_micros();
+		point.recv_time = vnx::get_wall_time_micros();
 		verified_vdfs[block->vdf_iters] = point;
-		log(DEBUG) << "Added VDF at " << block->vdf_iters << " from block " << block->height;
 	}
 	auto fork = std::make_shared<fork_t>();
-	fork->recv_time = vnx::get_time_micros();
+	fork->recv_time = vnx::get_wall_time_micros();
 	fork->block = block;
 	fork_tree[block->hash] = fork;
 }
@@ -380,18 +385,13 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 	if(verified_vdfs.count(vdf_iters)) {
 		return;
 	}
-	if(!requested_vdfs.count(std::make_pair(vdf_iters, proof->start))) {
-		return;
-	}
 	auto iter = verified_vdfs.find(proof->start);
 	if(iter != verified_vdfs.end())
 	{
 		const auto time_begin = vnx::get_wall_time_micros();
 		const auto& prev = iter->second;
 		try {
-			if(!vnx_sample || vnx_sample->topic != input_timelord_vdfs) {
-				verify_vdf(proof, prev);
-			}
+			verify_vdf(proof, prev);
 		}
 		catch(const std::exception& ex) {
 			log(WARN) << "VDF verification failed with: " << ex.what();
@@ -400,10 +400,8 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 		vdf_point_t point;
 		point.output[0] = proof->get_output(0);
 		point.output[1] = proof->get_output(1);
-		point.recv_time = vnx_sample ? vnx_sample->recv_time : vnx::get_time_micros();
-
+		point.recv_time = vnx_sample ? vnx_sample->recv_time : vnx::get_wall_time_micros();
 		verified_vdfs[vdf_iters] = point;
-		requested_vdfs.erase(std::make_pair(vdf_iters, proof->start));
 
 		publish(proof, output_verified_vdfs);
 
@@ -414,7 +412,8 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 		update();
 	}
 	else {
-		log(WARN) << "Cannot verify VDF for " << vdf_iters << " due to missing start at " << proof->start;
+		pending_vdfs.emplace(proof->start, proof);
+		log(INFO) << "Waiting on VDF for " << proof->start << " iterations";
 	}
 }
 
@@ -445,6 +444,17 @@ void Node::handle(std::shared_ptr<const ProofResponse> value)
 
 void Node::update()
 {
+	// check pending VDFs
+	for(auto iter = pending_vdfs.begin(); iter != pending_vdfs.end();) {
+		if(verified_vdfs.count(iter->first)) {
+			auto proof = iter->second;
+			add_task([this, proof]() { handle(proof); });
+			iter = pending_vdfs.erase(iter);
+			continue;
+		}
+		iter++;
+	}
+
 	// verify proof where possible
 	std::vector<std::pair<std::shared_ptr<fork_t>, hash_t>> to_verify;
 	{
@@ -550,6 +560,7 @@ void Node::update()
 	if(!is_synced && sync_pos >= sync_peak && sync_pending.empty())
 	{
 		if(sync_retry < num_sync_retries) {
+			log(INFO) << "Reached sync peak at height " << sync_peak - 1;
 			sync_pos = sync_peak;
 			sync_peak = -1;
 			sync_retry++;
@@ -563,7 +574,6 @@ void Node::update()
 		update_timer->reset();
 		return;
 	}
-
 	{
 		// publish time infusions for VDF 0
 		auto infuse = TimeInfusion::create();
@@ -619,7 +629,6 @@ void Node::update()
 				vdf_iters += diff_block->time_diff * params->time_diff_constant;
 				request->end = vdf_iters;
 				request->interval = (params->block_time * 1e6) / params->num_vdf_segments;
-				requested_vdfs.emplace(vdf_iters, request->begin);
 				publish(request, output_interval_request);
 			}
 		}
@@ -899,10 +908,25 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 
 void Node::start_sync()
 {
+	if(!is_synced) {
+		return;
+	}
 	sync_pos = 0;
 	sync_peak = -1;
 	sync_retry = 0;
 	is_synced = false;
+
+	// revert to root and clear all forks
+	while(revert());
+	fork_tree.clear();
+
+	try {
+		TimeLordClient timelord(timelord_name);
+		timelord.stop_vdf();
+		log(INFO) << "Stopped TimeLord";
+	} catch(...) {
+		// ignore
+	}
 	sync_more();
 }
 
@@ -937,9 +961,8 @@ void Node::sync_result(uint32_t height, const std::vector<std::shared_ptr<const 
 		}
 	}
 	if(blocks.empty()) {
-		if(sync_peak == uint32_t(-1)) {
+		if(height < sync_peak) {
 			sync_peak = height;
-			log(INFO) << "Reached sync peak at height " << height - 1;
 		}
 	}
 	sync_more();
@@ -1289,6 +1312,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	}
 	if(!history.empty()) {
 		const auto begin = history.begin()->second->vdf_iters;
+		pending_vdfs.erase(pending_vdfs.begin(), pending_vdfs.lower_bound(begin));
 		verified_vdfs.erase(verified_vdfs.begin(), verified_vdfs.lower_bound(begin));
 	}
 	if(!is_replay) {

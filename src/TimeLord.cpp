@@ -22,6 +22,8 @@ void TimeLord::init()
 {
 	subscribe(input_infuse, 1000);
 	subscribe(input_request, 1000);
+
+	vnx::open_pipe(vnx_name, this, 1000);
 }
 
 void TimeLord::main()
@@ -30,9 +32,7 @@ void TimeLord::main()
 
 	Super::main();
 
-	if(vdf_thread.joinable()) {
-		vdf_thread.join();
-	}
+	stop_vdf();
 }
 
 void TimeLord::start_vdf(vdf_point_t begin)
@@ -42,6 +42,17 @@ void TimeLord::start_vdf(vdf_point_t begin)
 		last_restart = vnx::get_time_micros();
 		log(INFO) << "Started VDF at " << begin.num_iters;
 		vdf_thread = std::thread(&TimeLord::vdf_loop, this, begin);
+	}
+}
+
+void TimeLord::stop_vdf()
+{
+	{
+		std::lock_guard<std::recursive_mutex> lock(mutex);
+		is_running = false;
+	}
+	if(vdf_thread.joinable()) {
+		vdf_thread.join();
 	}
 }
 
@@ -67,14 +78,8 @@ void TimeLord::handle(std::shared_ptr<const IntervalRequest> request)
 {
 	std::lock_guard<std::recursive_mutex> lock(mutex);
 
-	if(request->end > request->begin) {
-		pending.emplace(request->end, request->begin);
-	}
-	checkpoint_interval = request->interval;			// should be constant
-
-	update();
-
-	if(request->has_start) {
+	if(request->has_start)
+	{
 		vdf_point_t begin;
 		begin.num_iters = request->begin;
 		begin.output = request->start_values;
@@ -83,12 +88,15 @@ void TimeLord::handle(std::shared_ptr<const IntervalRequest> request)
 			start_vdf(begin);
 		} else {
 			auto iter = history.find(request->begin);
-			if(iter != history.end()) {
-				if(iter->second != request->start_values) {
-					do_restart = true;
-					latest_point = std::make_shared<vdf_point_t>(begin);
-					log(WARN) << "Our VDF forked from the network, restarting...";
-				}
+			if((iter != history.end() && iter->second != request->start_values)
+				|| (iter == history.end() && latest_point && latest_point->num_iters > request->begin))
+			{
+				do_restart = true;
+				history.clear();
+				infuse_history[0].clear();
+				infuse_history[1].clear();
+				latest_point = std::make_shared<vdf_point_t>(begin);
+				log(WARN) << "Our VDF forked from the network, restarting ...";
 			}
 			else if(!latest_point || begin.num_iters > latest_point->num_iters) {
 				// another timelord is faster
@@ -100,6 +108,13 @@ void TimeLord::handle(std::shared_ptr<const IntervalRequest> request)
 			}
 		}
 	}
+
+	if(request->end > request->begin) {
+		pending.emplace(request->end, request->begin);
+	}
+	checkpoint_interval = request->interval;			// should be constant
+
+	update();
 }
 
 void TimeLord::update()
@@ -171,13 +186,11 @@ void TimeLord::vdf_loop(vdf_point_t point)
 		{
 			std::lock_guard<std::recursive_mutex> lock(mutex);
 
+			if(!is_running) {
+				break;
+			}
 			if(latest_point && (do_restart || latest_point->num_iters > point.num_iters))
 			{
-				if(do_restart) {
-					history.clear();
-					infuse_history[0].clear();
-					infuse_history[1].clear();
-				}
 				do_restart = false;
 				point = *latest_point;
 				log(INFO) << "Restarted VDF at " << point.num_iters;
@@ -187,8 +200,8 @@ void TimeLord::vdf_loop(vdf_point_t point)
 					latest_point = std::make_shared<vdf_point_t>();
 				}
 				*latest_point = point;
-				history.emplace(point.num_iters, point.output);
 			}
+			history.emplace(point.num_iters, point.output);
 
 			// purge history
 			while(history.size() > max_history) {
@@ -280,7 +293,9 @@ hash_t TimeLord::compute(const hash_t& input, const uint64_t num_iters)
 
 void TimeLord::print_info()
 {
-	log(INFO) << double(checkpoint_iters) / checkpoint_interval << " M/s iterations";
+	if(is_running) {
+		log(INFO) << double(checkpoint_iters) / checkpoint_interval << " M/s iterations";
+	}
 }
 
 

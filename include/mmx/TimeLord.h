@@ -26,6 +26,8 @@ protected:
 
 	void handle(std::shared_ptr<const IntervalRequest> value) override;
 
+	void stop_vdf() override;
+
 private:
 	struct vdf_point_t {
 		uint64_t num_iters = 0;
