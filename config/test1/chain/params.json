@@ -8,7 +8,7 @@
 		"value": 1,
 		"inverse": 100000
 	},
-	"initial_time_diff": 5000,
+	"initial_time_diff": 20000,
 	"initial_space_diff": 100,
 	"time_diff_constant": 1000,
 	"space_diff_constant": 17783848
