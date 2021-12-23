@@ -36,7 +36,7 @@ namespace mmx {
 
 
 const vnx::Hash64 TimeLordBase::VNX_TYPE_HASH(0x311081636f6570efull);
-const vnx::Hash64 TimeLordBase::VNX_CODE_HASH(0x8e3e134bd7916ce1ull);
+const vnx::Hash64 TimeLordBase::VNX_CODE_HASH(0x51ac78b60bd85cb7ull);
 
 TimeLordBase::TimeLordBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -46,7 +46,6 @@ TimeLordBase::TimeLordBase(const std::string& _vnx_name)
 	vnx::read_config(vnx_name + ".output_proofs", output_proofs);
 	vnx::read_config(vnx_name + ".max_history", max_history);
 	vnx::read_config(vnx_name + ".restart_holdoff", restart_holdoff);
-	vnx::read_config(vnx_name + ".checkpoint_interval", checkpoint_interval);
 }
 
 vnx::Hash64 TimeLordBase::get_type_hash() const {
@@ -69,7 +68,6 @@ void TimeLordBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, output_proofs);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, max_history);
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, restart_holdoff);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, checkpoint_interval);
 	_visitor.type_end(*_type_code);
 }
 
@@ -80,7 +78,6 @@ void TimeLordBase::write(std::ostream& _out) const {
 	_out << ", \"output_proofs\": "; vnx::write(_out, output_proofs);
 	_out << ", \"max_history\": "; vnx::write(_out, max_history);
 	_out << ", \"restart_holdoff\": "; vnx::write(_out, restart_holdoff);
-	_out << ", \"checkpoint_interval\": "; vnx::write(_out, checkpoint_interval);
 	_out << "}";
 }
 
@@ -98,15 +95,12 @@ vnx::Object TimeLordBase::to_object() const {
 	_object["output_proofs"] = output_proofs;
 	_object["max_history"] = max_history;
 	_object["restart_holdoff"] = restart_holdoff;
-	_object["checkpoint_interval"] = checkpoint_interval;
 	return _object;
 }
 
 void TimeLordBase::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "checkpoint_interval") {
-			_entry.second.to(checkpoint_interval);
-		} else if(_entry.first == "input_infuse") {
+		if(_entry.first == "input_infuse") {
 			_entry.second.to(input_infuse);
 		} else if(_entry.first == "input_request") {
 			_entry.second.to(input_request);
@@ -136,9 +130,6 @@ vnx::Variant TimeLordBase::get_field(const std::string& _name) const {
 	if(_name == "restart_holdoff") {
 		return vnx::Variant(restart_holdoff);
 	}
-	if(_name == "checkpoint_interval") {
-		return vnx::Variant(checkpoint_interval);
-	}
 	return vnx::Variant();
 }
 
@@ -153,8 +144,6 @@ void TimeLordBase::set_field(const std::string& _name, const vnx::Variant& _valu
 		_value.to(max_history);
 	} else if(_name == "restart_holdoff") {
 		_value.to(restart_holdoff);
-	} else if(_name == "checkpoint_interval") {
-		_value.to(checkpoint_interval);
 	} else {
 		throw std::logic_error("no such field: '" + _name + "'");
 	}
@@ -184,7 +173,7 @@ std::shared_ptr<vnx::TypeCode> TimeLordBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.TimeLord";
 	type_code->type_hash = vnx::Hash64(0x311081636f6570efull);
-	type_code->code_hash = vnx::Hash64(0x8e3e134bd7916ce1ull);
+	type_code->code_hash = vnx::Hash64(0x51ac78b60bd85cb7ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::TimeLordBase);
 	type_code->methods.resize(10);
@@ -198,7 +187,7 @@ std::shared_ptr<vnx::TypeCode> TimeLordBase::static_create_type_code() {
 	type_code->methods[7] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
 	type_code->methods[8] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
 	type_code->methods[9] = ::mmx::TimeLord_stop_vdf::static_get_type_code();
-	type_code->fields.resize(6);
+	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -232,13 +221,6 @@ std::shared_ptr<vnx::TypeCode> TimeLordBase::static_create_type_code() {
 		field.data_size = 4;
 		field.name = "restart_holdoff";
 		field.value = vnx::to_string(60000);
-		field.code = {3};
-	}
-	{
-		auto& field = type_code->fields[5];
-		field.data_size = 4;
-		field.name = "checkpoint_interval";
-		field.value = vnx::to_string(50000);
 		field.code = {3};
 	}
 	type_code->build();
@@ -375,9 +357,6 @@ void read(TypeInput& in, ::mmx::TimeLordBase& value, const TypeCode* type_code, 
 		if(const auto* const _field = type_code->field_map[4]) {
 			vnx::read_value(_buf + _field->offset, value.restart_holdoff, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[5]) {
-			vnx::read_value(_buf + _field->offset, value.checkpoint_interval, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -402,10 +381,9 @@ void write(TypeOutput& out, const ::mmx::TimeLordBase& value, const TypeCode* ty
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(12);
+	char* const _buf = out.write(8);
 	vnx::write_value(_buf + 0, value.max_history);
 	vnx::write_value(_buf + 4, value.restart_holdoff);
-	vnx::write_value(_buf + 8, value.checkpoint_interval);
 	vnx::write(out, value.input_infuse, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.input_request, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.output_proofs, type_code, type_code->fields[2].code.data());

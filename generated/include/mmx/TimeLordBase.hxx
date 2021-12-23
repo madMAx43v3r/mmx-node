@@ -21,7 +21,6 @@ public:
 	::vnx::TopicPtr output_proofs = "timelord.proofs";
 	uint32_t max_history = 65536;
 	uint32_t restart_holdoff = 60000;
-	uint32_t checkpoint_interval = 50000;
 	
 	typedef ::vnx::Module Super;
 	

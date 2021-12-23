@@ -18,7 +18,7 @@ public:
 	uint64_t end = 0;
 	std::array<::mmx::hash_t, 2> start_values = {};
 	vnx::bool_t has_start = 0;
-	uint32_t interval = 100000;
+	uint32_t num_segments = 0;
 	
 	typedef ::vnx::Value Super;
 	

@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 IntervalRequest::VNX_TYPE_HASH(0xa4e39be061f13d71ull);
-const vnx::Hash64 IntervalRequest::VNX_CODE_HASH(0x411b6ad8dbc9f051ull);
+const vnx::Hash64 IntervalRequest::VNX_CODE_HASH(0x5c686ffc7142f175ull);
 
 vnx::Hash64 IntervalRequest::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -50,7 +50,7 @@ void IntervalRequest::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, end);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, start_values);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, has_start);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, interval);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, num_segments);
 	_visitor.type_end(*_type_code);
 }
 
@@ -60,7 +60,7 @@ void IntervalRequest::write(std::ostream& _out) const {
 	_out << ", \"end\": "; vnx::write(_out, end);
 	_out << ", \"start_values\": "; vnx::write(_out, start_values);
 	_out << ", \"has_start\": "; vnx::write(_out, has_start);
-	_out << ", \"interval\": "; vnx::write(_out, interval);
+	_out << ", \"num_segments\": "; vnx::write(_out, num_segments);
 	_out << "}";
 }
 
@@ -77,7 +77,7 @@ vnx::Object IntervalRequest::to_object() const {
 	_object["end"] = end;
 	_object["start_values"] = start_values;
 	_object["has_start"] = has_start;
-	_object["interval"] = interval;
+	_object["num_segments"] = num_segments;
 	return _object;
 }
 
@@ -89,8 +89,8 @@ void IntervalRequest::from_object(const vnx::Object& _object) {
 			_entry.second.to(end);
 		} else if(_entry.first == "has_start") {
 			_entry.second.to(has_start);
-		} else if(_entry.first == "interval") {
-			_entry.second.to(interval);
+		} else if(_entry.first == "num_segments") {
+			_entry.second.to(num_segments);
 		} else if(_entry.first == "start_values") {
 			_entry.second.to(start_values);
 		}
@@ -110,8 +110,8 @@ vnx::Variant IntervalRequest::get_field(const std::string& _name) const {
 	if(_name == "has_start") {
 		return vnx::Variant(has_start);
 	}
-	if(_name == "interval") {
-		return vnx::Variant(interval);
+	if(_name == "num_segments") {
+		return vnx::Variant(num_segments);
 	}
 	return vnx::Variant();
 }
@@ -125,8 +125,8 @@ void IntervalRequest::set_field(const std::string& _name, const vnx::Variant& _v
 		_value.to(start_values);
 	} else if(_name == "has_start") {
 		_value.to(has_start);
-	} else if(_name == "interval") {
-		_value.to(interval);
+	} else if(_name == "num_segments") {
+		_value.to(num_segments);
 	} else {
 		throw std::logic_error("no such field: '" + _name + "'");
 	}
@@ -156,7 +156,7 @@ std::shared_ptr<vnx::TypeCode> IntervalRequest::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.IntervalRequest";
 	type_code->type_hash = vnx::Hash64(0xa4e39be061f13d71ull);
-	type_code->code_hash = vnx::Hash64(0x411b6ad8dbc9f051ull);
+	type_code->code_hash = vnx::Hash64(0x5c686ffc7142f175ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::IntervalRequest);
@@ -189,8 +189,7 @@ std::shared_ptr<vnx::TypeCode> IntervalRequest::static_create_type_code() {
 	{
 		auto& field = type_code->fields[4];
 		field.data_size = 4;
-		field.name = "interval";
-		field.value = vnx::to_string(100000);
+		field.name = "num_segments";
 		field.code = {3};
 	}
 	type_code->build();
@@ -245,7 +244,7 @@ void read(TypeInput& in, ::mmx::IntervalRequest& value, const TypeCode* type_cod
 			vnx::read_value(_buf + _field->offset, value.has_start, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[4]) {
-			vnx::read_value(_buf + _field->offset, value.interval, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.num_segments, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
@@ -273,7 +272,7 @@ void write(TypeOutput& out, const ::mmx::IntervalRequest& value, const TypeCode*
 	vnx::write_value(_buf + 0, value.begin);
 	vnx::write_value(_buf + 8, value.end);
 	vnx::write_value(_buf + 16, value.has_start);
-	vnx::write_value(_buf + 17, value.interval);
+	vnx::write_value(_buf + 17, value.num_segments);
 	vnx::write(out, value.start_values, type_code, type_code->fields[2].code.data());
 }
 
