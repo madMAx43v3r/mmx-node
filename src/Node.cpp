@@ -619,7 +619,7 @@ void Node::update()
 				}
 				vdf_iters += diff_block->time_diff * params->time_diff_constant;
 				request->end = vdf_iters;
-				request->interval = (params->block_time * 1e6) / params->num_vdf_segments;
+				request->num_segments = params->num_vdf_segments;
 				publish(request, output_interval_request);
 			}
 		}
@@ -1393,6 +1393,14 @@ uint32_t Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const has
 
 void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const vdf_point_t& prev) const
 {
+	// check number of segments
+	if(proof->segments.size() < params->min_vdf_segments) {
+		throw std::logic_error("not enough segments: " + std::to_string(proof->segments.size()));
+	}
+	if(proof->segments.size() > params->max_vdf_segments) {
+		throw std::logic_error("too many segments: " + std::to_string(proof->segments.size()));
+	}
+
 	// check proper infusions
 	if(proof->start > 0) {
 		if(proof->infuse[0].size() != 1) {

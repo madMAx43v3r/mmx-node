@@ -51,7 +51,8 @@ private:
 	bool do_restart = false;
 	bool is_running = false;
 	int64_t last_restart = 0;
-	uint64_t checkpoint_iters = 0;
+	uint64_t checkpoint_iters = 1000;
+	uint64_t avg_iters_per_sec = 0;
 
 	std::map<uint64_t, hash_t> infuse[2];
 	std::map<uint64_t, hash_t> infuse_history[2];

@@ -12,8 +12,6 @@ module TimeLord {
 	
 	uint restart_holdoff = 60000;					// [ms]
 	
-	uint checkpoint_interval = 50000;				// [usec]
-	
 	
 	void stop_vdf();
 	

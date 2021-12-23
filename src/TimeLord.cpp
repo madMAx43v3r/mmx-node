@@ -78,6 +78,8 @@ void TimeLord::handle(std::shared_ptr<const IntervalRequest> request)
 {
 	std::lock_guard<std::recursive_mutex> lock(mutex);
 
+	checkpoint_iters = (request->end - request->begin) / request->num_segments;
+
 	if(request->has_start)
 	{
 		vdf_point_t begin;
@@ -112,8 +114,6 @@ void TimeLord::handle(std::shared_ptr<const IntervalRequest> request)
 	if(request->end > request->begin) {
 		pending.emplace(request->end, request->begin);
 	}
-	checkpoint_interval = request->interval;			// should be constant
-
 	update();
 }
 
@@ -176,7 +176,6 @@ void TimeLord::update()
 void TimeLord::vdf_loop(vdf_point_t point)
 {
 	bool do_notify = false;
-	checkpoint_iters = checkpoint_interval;
 
 	while(vnx_do_run())
 	{
@@ -275,9 +274,9 @@ void TimeLord::vdf_loop(vdf_point_t point)
 
 		if(time_end > time_begin && num_iters > checkpoint_iters / 2)
 		{
-			// update estimated number of iterations per checkpoint
-			const auto interval = (num_iters * checkpoint_interval) / (time_end - time_begin);
-			checkpoint_iters = (checkpoint_iters * 255 + interval) / 256;
+			// update estimated number of iterations per second
+			const auto speed = (num_iters * 1000000) / (time_end - time_begin);
+			avg_iters_per_sec = (avg_iters_per_sec * 255 + speed) / 256;
 		}
 	}
 }
@@ -294,7 +293,7 @@ hash_t TimeLord::compute(const hash_t& input, const uint64_t num_iters)
 void TimeLord::print_info()
 {
 	if(is_running) {
-		log(INFO) << double(checkpoint_iters) / checkpoint_interval << " M/s iterations";
+		log(INFO) << double(avg_iters_per_sec) / 1e6 << " M/s iterations";
 	}
 }
 

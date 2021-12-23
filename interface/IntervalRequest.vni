@@ -9,6 +9,6 @@ class IntervalRequest {
 	
 	bool has_start;				// if start_values are valid
 	
-	uint interval = 100000;		// segment interval [usec]
+	uint num_segments;			// target number of segments
 	
 }
