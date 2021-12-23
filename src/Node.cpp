@@ -56,6 +56,9 @@ void Node::main()
 			}
 			log(INFO) << "Using OpenCL GPU device: " << opencl_device;
 		}
+		else if(devices.size()) {
+			log(WARN) <<  "No such OpenCL GPU device: " << opencl_device;
+		}
 	}
 	catch(const std::exception& ex) {
 		log(INFO) << "No OpenCL GPU platform found: " << ex.what();
