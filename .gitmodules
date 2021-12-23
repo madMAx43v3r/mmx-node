@@ -16,3 +16,6 @@
 [submodule "vnx-addons"]
 	path = vnx-addons
 	url = https://github.com/madMAx43v3r/vnx-addons.git
+[submodule "basic-opencl"]
+	path = basic-opencl
+	url = https://github.com/automyinc/basic-opencl.git

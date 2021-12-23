@@ -8,6 +8,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -fopenmp -Wall -Wno-unused-functio
 add_subdirectory(vnx-addons)
 add_subdirectory(libbech32)
 add_subdirectory(bls-signatures)
+add_subdirectory(basic-opencl)
 
 find_package(Threads REQUIRED)
 
