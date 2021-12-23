@@ -15,6 +15,8 @@
 #include <mmx/chiapos.h>
 #include <mmx/utils.h>
 
+#include <vnx/vnx.h>
+
 #include <atomic>
 #include <algorithm>
 
@@ -41,6 +43,24 @@ void Node::main()
 		point.recv_time = vnx::get_wall_time_micros();
 		verified_vdfs[0] = point;
 	}
+
+	try {
+		std::string platform_name;
+		vnx::read_config("opencl.platform", platform_name);
+		automy::basic_opencl::create_context(CL_DEVICE_TYPE_GPU, platform_name);
+
+		const auto devices = automy::basic_opencl::get_devices();
+		if(opencl_device < devices.size()) {
+			for(int i = 0; i < 2; ++i) {
+				opencl_vdf[i] = std::make_shared<OCL_VDF>(opencl_device);
+			}
+			log(INFO) << "Using OpenCL GPU device: " << opencl_device;
+		}
+	}
+	catch(const std::exception& ex) {
+		log(INFO) << "No OpenCL GPU platform found: " << ex.what();
+	}
+
 	router = std::make_shared<RouterAsyncClient>(router_name);
 	add_async_client(router);
 
@@ -1409,8 +1429,18 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const vdf_point_
 			}
 		}
 	}
-	verify_vdf(proof, 0, prev.output[0]);
-	verify_vdf(proof, 1, prev.output[1]);
+	for(int i = 0; i < 2; ++i) {
+		if(opencl_vdf[i]) {
+			opencl_vdf[i]->compute(proof, i, prev.output[i]);
+		}
+	}
+	for(int i = 0; i < 2; ++i) {
+		if(opencl_vdf[i]) {
+			opencl_vdf[i]->verify(proof, i);
+		} else {
+			verify_vdf(proof, i, prev.output[i]);
+		}
+	}
 }
 
 void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain, const hash_t& begin) const

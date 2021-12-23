@@ -13,6 +13,7 @@
 #include <mmx/RouterAsyncClient.hxx>
 #include <mmx/utxo_t.hpp>
 #include <mmx/txio_key_t.hpp>
+#include <mmx/OCL_VDF.h>
 
 
 namespace mmx {
@@ -181,6 +182,7 @@ private:
 
 	std::shared_ptr<RouterAsyncClient> router;
 	std::shared_ptr<const ChainParams> params;
+	std::shared_ptr<OCL_VDF> opencl_vdf[2];
 
 };
 

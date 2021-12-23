@@ -45,6 +45,7 @@ add_library(mmx_modules SHARED
 	src/Farmer.cpp
 	src/Harvester.cpp
 	src/Router.cpp
+	src/OCL_VDF.cpp
 )
 
 add_library(uint256_t STATIC
@@ -108,7 +109,7 @@ target_include_directories(mmx_chiapos
 )
 
 target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_addons vnx_base)
-target_link_libraries(mmx_modules mmx_chiapos mmx_iface)
+target_link_libraries(mmx_modules automy_basic_opencl mmx_chiapos mmx_iface)
 
 add_executable(mmx_node src/mmx_node.cpp)
 add_executable(mmx_timelord src/mmx_timelord.cpp)

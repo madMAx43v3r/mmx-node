@@ -26,6 +26,8 @@ module Node {
 	uint max_sync_jobs = 64;				// number of parallel requests
 	uint num_sync_retries = 3;				// how often to retry when reaching a peak
 	
+	uint opencl_device = 0;					// device to use for VDF verification
+	
 	bool do_sync = true;
 	
 	string storage_path;
