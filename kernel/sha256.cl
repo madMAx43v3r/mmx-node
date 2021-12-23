@@ -35,6 +35,7 @@ void sha256(	const uint* msg,
 {
 	uint w[64];
 	
+	__attribute__((opencl_unroll_hint))
 	for(int i = 0; i < 16; ++i) {
 		w[i] = msg[i];
 	}
