@@ -77,30 +77,6 @@ void Node::main()
 		block_chain->open("ab");
 	}
 
-	vnx::File fork_line(storage_path + "fork_line.dat");
-	if(fork_line.exists())
-	{
-		fork_line.open("rb");
-		while(true) {
-			auto& in = fork_line.in;
-			try {
-				if(auto value = vnx::read(in)) {
-					if(auto block = std::dynamic_pointer_cast<Block>(value)) {
-						if(block->height < replay_height) {
-							add_block(block);
-						}
-					}
-				} else {
-					break;
-				}
-			}
-			catch(const std::exception& ex) {
-				log(WARN) << "Failed to read block: " << ex.what();
-				break;
-			}
-		}
-	}
-
 	if(auto block = find_header(state_hash)) {
 		log(INFO) << "Loaded " << block->height + 1 << " blocks from disk";
 	}
@@ -140,15 +116,7 @@ void Node::main()
 
 	Super::main();
 
-	fork_line.open("wb");
-	for(const auto& fork : get_fork_line()) {
-		vnx::write(fork_line.out, fork->block);
-	}
-	vnx::write(fork_line.out, nullptr);
-	fork_line.close();
-
 	vnx::write(block_chain->out, nullptr);
-
 	block_chain->close();
 }
 
