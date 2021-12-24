@@ -88,6 +88,11 @@ void addr_t::from_string(const std::string& addr)
 	::memcpy(data(), &bits, 32);
 }
 
+inline
+std::ostream& operator<<(std::ostream& out, const addr_t& addr) {
+	return out << addr.to_string();
+}
+
 
 } //mmx
 

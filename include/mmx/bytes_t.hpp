@@ -127,8 +127,8 @@ void bytes_t<N>::from_string(const std::string& str)
 }
 
 template<size_t N>
-std::ostream& operator<<(std::ostream& out, const bytes_t<N>& hash) {
-	return out << hash.to_string();
+std::ostream& operator<<(std::ostream& out, const bytes_t<N>& bytes) {
+	return out << bytes.to_string();
 }
 
 template<size_t N, size_t M>
