@@ -40,6 +40,7 @@ void Node::main()
 		vdf_point_t point;
 		point.output[0] = hash_t(params->vdf_seed);
 		point.output[1] = hash_t(params->vdf_seed);
+		point.height = 0;
 		point.recv_time = vnx::get_wall_time_micros();
 		verified_vdfs[0] = point;
 	}
@@ -123,6 +124,7 @@ void Node::main()
 	{
 		vdf_point_t point;
 		point.output = block->vdf_output;
+		point.height = block->height;
 		point.recv_time = vnx::get_wall_time_micros();
 		verified_vdfs[block->vdf_iters] = point;
 	}
@@ -303,6 +305,7 @@ void Node::add_block(std::shared_ptr<const Block> block)
 	if(is_replay || !is_synced) {
 		vdf_point_t point;
 		point.output = block->vdf_output;
+		point.height = block->height;
 		point.recv_time = vnx::get_wall_time_micros();
 		verified_vdfs[block->vdf_iters] = point;
 	}
@@ -391,6 +394,7 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 		vdf_point_t point;
 		point.output[0] = proof->get_output(0);
 		point.output[1] = proof->get_output(1);
+		point.height = proof->height;
 		point.recv_time = vnx_sample ? vnx_sample->recv_time : vnx::get_wall_time_micros();
 		verified_vdfs[vdf_iters] = point;
 
@@ -619,6 +623,7 @@ void Node::update()
 				}
 				vdf_iters += diff_block->time_diff * params->time_diff_constant;
 				request->end = vdf_iters;
+				request->height = peak->height + i + 1;
 				request->num_segments = params->num_vdf_segments;
 				publish(request, output_interval_request);
 			}
@@ -1393,6 +1398,11 @@ uint32_t Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const has
 
 void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const vdf_point_t& prev) const
 {
+	// check delta iters
+	if(proof->height != prev.height + 1) {
+		throw std::logic_error("invalid height: " + std::to_string(proof->height) + " != " + std::to_string(prev.height + 1));
+	}
+
 	// check number of segments
 	if(proof->segments.size() < params->min_vdf_segments) {
 		throw std::logic_error("not enough segments: " + std::to_string(proof->segments.size()));

@@ -58,7 +58,7 @@ private:
 	std::map<uint64_t, hash_t> infuse_history[2];
 	std::map<uint64_t, std::array<hash_t, 2>> history;
 
-	std::set<std::pair<uint64_t, uint64_t>> pending;
+	std::map<std::pair<uint64_t, uint64_t>, uint32_t> pending;		// [[end, start] => height]
 
 	std::shared_ptr<vdf_point_t> latest_point;
 

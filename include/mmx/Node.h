@@ -77,6 +77,7 @@ private:
 	struct vdf_point_t {
 		std::array<hash_t, 2> output;
 		int64_t recv_time = 0;
+		uint32_t height = -1;
 	};
 
 	struct change_log_t {

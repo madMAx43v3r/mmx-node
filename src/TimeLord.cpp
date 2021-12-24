@@ -112,7 +112,7 @@ void TimeLord::handle(std::shared_ptr<const IntervalRequest> request)
 	}
 
 	if(request->end > request->begin) {
-		pending.emplace(request->end, request->begin);
+		pending.emplace(std::make_pair(request->end, request->begin), request->height);
 	}
 	update();
 }
@@ -123,8 +123,8 @@ void TimeLord::update()
 
 	for(auto iter = pending.begin(); iter != pending.end();)
 	{
-		const auto iters_begin = iter->second;
-		const auto iters_end = iter->first;
+		const auto iters_begin = iter->first.second;
+		const auto iters_end = iter->first.first;
 
 		auto end = history.lower_bound(iters_end);
 		if(end != history.end())
@@ -134,6 +134,7 @@ void TimeLord::update()
 			{
 				auto proof = ProofOfTime::create();
 				proof->start = iters_begin;
+				proof->height = iter->second;
 
 				for(uint32_t k = 0; k < 2; ++k) {
 					proof->infuse[k].insert(infuse_history[k].lower_bound(iters_begin), infuse_history[k].lower_bound(iters_end));
@@ -237,8 +238,9 @@ void TimeLord::vdf_loop(vdf_point_t point)
 				// check for upcoming boundary point
 				auto iter = pending.upper_bound(std::make_pair(point.num_iters, point.num_iters));
 				if(iter != pending.end()) {
-					if(!next_target || iter->first < next_target) {
-						next_target = iter->first;
+					const auto iters_end = iter->first.first;
+					if(!next_target || iters_end < next_target) {
+						next_target = iters_end;
 					}
 				}
 				if(iter != pending.begin()) {

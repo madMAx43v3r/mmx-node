@@ -2,6 +2,8 @@ package mmx;
 
 class ProofOfTime {
 	
+	uint height;
+	
 	ulong start;		// [iters]
 	
 	map<ulong, hash_t> infuse[2];
