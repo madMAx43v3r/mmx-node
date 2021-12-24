@@ -115,11 +115,7 @@ add_executable(mmx src/mmx.cpp)
 add_executable(mmx_node src/mmx_node.cpp)
 add_executable(mmx_timelord src/mmx_timelord.cpp)
 
-add_executable(create_wallet src/create_wallet.cpp)
-
 target_link_libraries(mmx mmx_iface)
 target_link_libraries(mmx_node mmx_modules)
 target_link_libraries(mmx_timelord mmx_modules)
-
-target_link_libraries(create_wallet mmx_iface sodium)
 
