@@ -337,7 +337,8 @@ void Router::query()
 						num_ahead++;
 					}
 				}
-				if(num_ahead >= synced_peers.size()) {
+				if(num_ahead >= synced_peers.size() && synced_peers.size() > 0)
+				{
 					log(WARN) << "Lost sync with network due to height difference!";
 					is_connected = false;
 					node->start_sync();
