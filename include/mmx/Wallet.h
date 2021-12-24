@@ -51,6 +51,8 @@ protected:
 
 private:
 	std::shared_ptr<NodeClient> node;
+
+	ssize_t wallet_index = -1;
 	std::shared_ptr<ECDSA_Wallet> wallet;
 	std::vector<std::shared_ptr<BLS_Wallet>> bls_wallets;
 

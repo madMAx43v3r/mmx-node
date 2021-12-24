@@ -51,6 +51,9 @@ void Wallet::main()
 
 void Wallet::open_wallet(const uint32_t& index, const std::string& passwd)
 {
+	if(wallet_index == index) {
+		return;
+	}
 	open_wallet_ex(index, num_addresses, passwd);
 }
 
@@ -64,6 +67,7 @@ void Wallet::open_wallet_ex(const uint32_t& index, const uint32_t& num_addresses
 	if(auto key_file = vnx::read_from_file<KeyFile>(key_files[index]))
 	{
 		wallet = std::make_shared<ECDSA_Wallet>(key_file, num_addresses);
+		wallet_index = index;
 		log(INFO) << "Loaded wallet '" << key_files[index] << "' with " << num_addresses << " addresses";
 	}
 	else {
