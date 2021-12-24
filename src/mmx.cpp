@@ -6,6 +6,7 @@
  */
 
 #include <mmx/NodeClient.hxx>
+#include <mmx/RouterClient.hxx>
 #include <mmx/WalletClient.hxx>
 #include <mmx/KeyFile.hxx>
 #include <mmx/secp256k1.hpp>
@@ -81,7 +82,7 @@ int main(int argc, char** argv)
 	if(module != "wallet" || command != "create")
 	{
 		vnx::Handle<vnx::Proxy> module = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
-		module->forward_list = {"Wallet", "Node", "Farmer"};
+		module->forward_list = {"Wallet", "Node", "Farmer", "Router"};
 		module.start_detached();
 	}
 
@@ -188,6 +189,7 @@ int main(int argc, char** argv)
 		else if(module == "node")
 		{
 			mmx::NodeClient node("Node");
+			mmx::RouterClient router("Router");
 
 			if(command == "balance")
 			{
@@ -198,6 +200,37 @@ int main(int argc, char** argv)
 				}
 				const auto amount = node.get_balance(address, contract);
 				std::cout << "Balance: " << amount / pow(10, params->decimals) << " MMX (" << amount << ")" << std::endl;
+			}
+			else if(command == "info")
+			{
+				const auto height = node.get_height();
+				std::cout << "Synced: " << (node.get_synced_height() ? "Yes" : "No") << std::endl;
+				std::cout << "Height: " << height << std::endl;
+				for(uint32_t i = 0; i < 2 * params->finality_delay && i < height; ++i) {
+					const auto hash = node.get_block_hash(height - i);
+					std::cout << "[" << (height - i) << "] " << (hash ? *hash : mmx::hash_t()) << std::endl;
+				}
+			}
+			else if(command == "sync")
+			{
+				node.start_sync();
+				std::cout << "Started sync ..." << std::endl;
+				while(true) {
+					if(auto height = node.get_synced_height()) {
+						std::cout << "Finished sync at height: " << *height << std::endl;
+						break;
+					}
+					std::cout << node.get_height() << std::endl;
+					std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+				}
+			}
+			else if(command == "discover")
+			{
+				router.discover();
+				std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+				const auto peers = router.get_peers(-1);
+				std::cout << "Got " << peers.size() << " known peers" << std::endl;
 			}
 			else if(command == "tx")
 			{
@@ -242,6 +275,10 @@ int main(int argc, char** argv)
 					const auto amount = node.get_balance(address, contract);
 					std::cout << amount << std::endl;
 				}
+				else if(subject == "height")
+				{
+					std::cout << node.get_height() << std::endl;
+				}
 				else if(subject == "block" || subject == "header")
 				{
 					int64_t height = 0;
@@ -276,12 +313,35 @@ int main(int argc, char** argv)
 						std::cout << ss.str() << std::endl;
 					}
 				}
+				else if(subject == "peers")
+				{
+					int64_t max_count = 10;
+					vnx::read_config("$4", max_count);
+
+					const auto peers = router.get_peers(-1);
+					for(const auto& peer : router.get_peers(max_count)) {
+						std::cout << peer << std::endl;
+					}
+				}
 				else {
-					std::cerr << "Help: mmx node get [tx | balance | amount | block | header]" << std::endl;
+					std::cerr << "Help: mmx node get [height | tx | balance | amount | block | header | peers]" << std::endl;
+				}
+			}
+			else if(command == "show")
+			{
+				std::string subject;
+				vnx::read_config("$3", subject);
+
+				if(subject == "peers")
+				{
+					std::cout << "TODO" << std::endl;
+				}
+				else {
+					std::cerr << "Help: mmx node show [peers]" << std::endl;
 				}
 			}
 			else {
-				std::cerr << "Help: mmx node [tx | get | balance]" << std::endl;
+				std::cerr << "Help: mmx node [info | show | tx | get | balance | sync]" << std::endl;
 			}
 		}
 		else {
