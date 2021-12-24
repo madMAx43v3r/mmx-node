@@ -377,20 +377,21 @@ void Router::add_peer(const std::string& address, const int sock)
 
 void Router::connect_task(const std::string& address) noexcept
 {
+	vnx::TcpEndpoint peer;
+	peer.host_name = address;
+	peer.port = params->port;
+	auto sock = peer.open();
 	try {
-		vnx::TcpEndpoint peer;
-		peer.host_name = address;
-		peer.port = params->port;
-		const auto sock = peer.open();
 		peer.connect(sock);
-		add_task(std::bind(&Router::add_peer, this, address, sock));
 	}
 	catch(const std::exception& ex) {
 		if(show_warnings) {
 			log(WARN) << "Connecting to peer " << address << " failed with: " << ex.what();
 		}
-		add_task(std::bind(&Router::add_peer, this, address, -1));
+		peer.close(sock);
+		sock = -1;
 	}
+	add_task(std::bind(&Router::add_peer, this, address, sock));
 }
 
 void Router::print_stats()
