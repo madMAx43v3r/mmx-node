@@ -1,4 +1,9 @@
 {
 	"min_sync_peers": 2,
-	"show_warnings": true
+	"show_warnings": true,
+	"seed_peers": [
+		"65.108.106.243",
+		"34.133.60.120",
+		"34.136.242.115"
+	]
 }
