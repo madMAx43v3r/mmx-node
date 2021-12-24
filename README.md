@@ -20,8 +20,8 @@ sudo apt install intel-opencl-icd
 
 ### OpenCL for AMD iGPUs
 
-Linux:
-https://www.amd.com/en/support/kb/release-notes/rn-amdgpu-unified-linux-21-20
+Linux: \
+https://www.amd.com/en/support/kb/release-notes/rn-amdgpu-unified-linux-21-20 \
 https://www.amd.com/en/support/kb/release-notes/rn-amdgpu-unified-linux-21-30
 
 ```
@@ -32,5 +32,5 @@ Windows: https://google.com/search?q=amd+graphics+driver+download
 
 ### OpenCL for Nvidia GPUs
 
-Install CUDA, may the force be with you:
+Install CUDA, may the force be with you: \
 https://www.google.com/search?q=nvidia+cuda+download
