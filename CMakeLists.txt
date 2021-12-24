@@ -111,11 +111,13 @@ target_include_directories(mmx_chiapos
 target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_addons vnx_base)
 target_link_libraries(mmx_modules automy_basic_opencl mmx_chiapos mmx_iface)
 
+add_executable(mmx src/mmx.cpp)
 add_executable(mmx_node src/mmx_node.cpp)
 add_executable(mmx_timelord src/mmx_timelord.cpp)
 
 add_executable(create_wallet src/create_wallet.cpp)
 
+target_link_libraries(mmx mmx_iface)
 target_link_libraries(mmx_node mmx_modules)
 target_link_libraries(mmx_timelord mmx_modules)
 
