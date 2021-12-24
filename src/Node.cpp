@@ -397,7 +397,9 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 			verify_vdf(proof, prev);
 		}
 		catch(const std::exception& ex) {
-			log(WARN) << "VDF verification failed with: " << ex.what();
+			if(is_synced) {
+				log(WARN) << "VDF verification failed with: " << ex.what();
+			}
 			return;
 		}
 		vdf_point_t point;
