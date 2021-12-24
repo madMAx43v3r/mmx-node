@@ -12,7 +12,7 @@ namespace mmx {
 
 
 const vnx::Hash64 utxo_t::VNX_TYPE_HASH(0xb698d425571f5729ull);
-const vnx::Hash64 utxo_t::VNX_CODE_HASH(0xda7c45a62f915631ull);
+const vnx::Hash64 utxo_t::VNX_CODE_HASH(0x4ca5ddab2a2a97d2ull);
 
 vnx::Hash64 utxo_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -145,7 +145,7 @@ std::shared_ptr<vnx::TypeCode> utxo_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.utxo_t";
 	type_code->type_hash = vnx::Hash64(0xb698d425571f5729ull);
-	type_code->code_hash = vnx::Hash64(0xda7c45a62f915631ull);
+	type_code->code_hash = vnx::Hash64(0x4ca5ddab2a2a97d2ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::utxo_t);
 	type_code->parents.resize(1);
@@ -174,6 +174,7 @@ std::shared_ptr<vnx::TypeCode> utxo_t::static_create_type_code() {
 		auto& field = type_code->fields[3];
 		field.data_size = 4;
 		field.name = "height";
+		field.value = vnx::to_string(-1);
 		field.code = {3};
 	}
 	type_code->build();

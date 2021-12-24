@@ -13,7 +13,7 @@ namespace mmx {
 struct utxo_t : ::mmx::tx_out_t {
 	
 	
-	uint32_t height = 0;
+	uint32_t height = -1;
 	
 	typedef ::mmx::tx_out_t Super;
 	
@@ -28,7 +28,7 @@ struct utxo_t : ::mmx::tx_out_t {
 	std::string get_type_name() const;
 	const vnx::TypeCode* get_type_code() const;
 	
-	static ::mmx::utxo_t create_ex(const ::mmx::tx_out_t& out = ::mmx::tx_out_t(), const uint32_t& height = 0);
+	static ::mmx::utxo_t create_ex(const ::mmx::tx_out_t& out = ::mmx::tx_out_t(), const uint32_t& height = -1);
 	
 	static std::shared_ptr<utxo_t> create();
 	std::shared_ptr<utxo_t> clone() const;
