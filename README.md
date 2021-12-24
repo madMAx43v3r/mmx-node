@@ -1,6 +1,6 @@
 # mmx-node
 
-MMX is a blockchain written from scratch in C++ using Chia's Proof Of Space and a SHA256 VDF similar to Solana.
+MMX is a blockchain written from scratch using Chia's Proof Of Space and a SHA256 VDF similar to Solana.
 
 It's main features are as follows:
 - High performance (1000 transactions per second or more)
@@ -8,6 +8,7 @@ It's main features are as follows:
 - Consistent block times (every 10 seconds a block is created)
 - Native token support (swaps are possible with standard transactions)
 - Energy saving Proof of Space (same as Chia)
+- Standard ECDSA signatures for seamless integration (same as Bitcoin)
 
 The way MMX is desiged makes it a blockchain that can actually be used as a currency.
 
