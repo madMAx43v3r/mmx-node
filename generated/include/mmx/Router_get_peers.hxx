@@ -13,7 +13,7 @@ namespace mmx {
 class Router_get_peers : public ::vnx::Value {
 public:
 	
-	uint32_t max_count = 0;
+	uint32_t max_count = 10;
 	
 	typedef ::vnx::Value Super;
 	
