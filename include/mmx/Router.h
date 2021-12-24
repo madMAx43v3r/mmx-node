@@ -145,8 +145,8 @@ private:
 
 	mutable std::unordered_map<vnx::request_id_t, sync_job_t> sync_jobs;
 
+	vnx::ThreadPool* threads = nullptr;
 	std::shared_ptr<NodeAsyncClient> node;
-	std::shared_ptr<vnx::ThreadPool> threads;
 	std::shared_ptr<const ChainParams> params;
 
 	uint32_t node_height = 0;

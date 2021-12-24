@@ -73,7 +73,7 @@ void Router::main()
 	node->vnx_set_non_blocking(true);
 	add_async_client(node);
 
-	threads = std::make_shared<vnx::ThreadPool>(num_peers_out);
+	threads = new vnx::ThreadPool(num_peers_out);
 
 	set_timer_millis(query_interval_ms, std::bind(&Router::query, this));
 	set_timer_millis(update_interval_ms, std::bind(&Router::update, this));
@@ -92,8 +92,6 @@ void Router::main()
 	catch(const std::exception& ex) {
 		log(WARN) << "Failed to write peers to file: " << ex.what();
 	}
-
-	threads->close();
 }
 
 vnx::Hash64 Router::get_id() const
@@ -392,7 +390,9 @@ void Router::connect_task(const std::string& address) noexcept
 		peer.close(sock);
 		sock = -1;
 	}
-	add_task(std::bind(&Router::add_peer, this, address, sock));
+	if(vnx::do_run()) {
+		add_task(std::bind(&Router::add_peer, this, address, sock));
+	}
 }
 
 void Router::print_stats()
