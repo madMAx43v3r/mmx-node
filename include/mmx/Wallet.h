@@ -54,7 +54,8 @@ private:
 	std::shared_ptr<ECDSA_Wallet> wallet;
 	std::vector<std::shared_ptr<BLS_Wallet>> bls_wallets;
 
-	mutable std::unordered_map<txio_key_t, hash_t> spent_utxo_map;
+	mutable std::unordered_set<txio_key_t> spent_txo_set;
+	mutable std::unordered_map<txio_key_t, tx_out_t> change_utxo_map;
 
 	std::shared_ptr<const ChainParams> params;
 

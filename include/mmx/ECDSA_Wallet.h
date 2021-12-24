@@ -29,6 +29,7 @@ public:
 			keypair_map[addr] = keys;
 			keypairs.push_back(keys);
 			addresses.push_back(addr);
+			index_map[addr] = i;
 		}
 	}
 
@@ -50,6 +51,15 @@ public:
 	std::vector<addr_t> get_all_addresses() const
 	{
 		return addresses;
+	}
+
+	ssize_t find_address(const addr_t& address) const
+	{
+		auto iter = index_map.find(address);
+		if(iter != index_map.end()) {
+			return iter->second;
+		}
+		return -1;
 	}
 
 	std::pair<skey_t, pubkey_t> get_keypair(const uint32_t index) const
@@ -91,6 +101,7 @@ public:
 private:
 	skey_t master_sk;
 	std::vector<addr_t> addresses;
+	std::unordered_map<addr_t, size_t> index_map;
 	std::vector<std::pair<skey_t, pubkey_t>> keypairs;
 	std::unordered_map<addr_t, std::pair<skey_t, pubkey_t>> keypair_map;
 
