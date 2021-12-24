@@ -228,12 +228,6 @@ hash_t Wallet::send(const uint64_t& amount, const addr_t& dst_addr, const addr_t
 		solution_map[iter->second] = in.solution;
 		tx->solutions.push_back(sol);
 	}
-	{
-		std::stringstream ss;
-		vnx::PrettyPrinter printer(ss);
-		tx->accept(printer);
-		log(INFO) << "Sent: " << ss.str();
-	}
 	node->add_transaction(tx);
 
 	log(INFO) << "Sent " << amount << " with fee " << tx_fees << " / " << tx->calc_min_fee(params)
