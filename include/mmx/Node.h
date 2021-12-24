@@ -157,6 +157,7 @@ private:
 
 	std::unordered_map<hash_t, tx_key_t> tx_map;								// [txid => [height, index]] (pending only)
 	std::unordered_map<txio_key_t, utxo_t> utxo_map;							// [utxo key => utxo]
+	std::unordered_map<addr_t, std::unordered_set<txio_key_t>> taddr_map;		// [addr => utxo keys] (pending + unspent only)
 	std::set<std::pair<addr_t, txio_key_t>> addr_map;							// [addr => utxo keys] (finalized + unspent only)
 
 	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;					// pending blocks

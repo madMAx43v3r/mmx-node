@@ -356,7 +356,16 @@ std::vector<std::pair<txio_key_t, utxo_t>> Node::get_utxo_list(const std::vector
 		for(auto iter = begin; iter != end; ++iter) {
 			auto iter2 = utxo_map.find(iter->second);
 			if(iter2 != utxo_map.end()) {
-				res.emplace_back(iter->second, iter2->second);
+				res.push_back(*iter2);
+			}
+		}
+		auto iter = taddr_map.find(addr);
+		if(iter != taddr_map.end()) {
+			for(const auto& key : iter->second) {
+				auto iter2 = utxo_map.find(key);
+				if(iter2 != utxo_map.end()) {
+					res.push_back(*iter2);
+				}
 			}
 		}
 	}
@@ -1281,7 +1290,9 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 		addr_map.erase(std::make_pair(entry.second.second.address, entry.first));
 	}
 	for(const auto& entry : log->utxo_added) {
-		addr_map.emplace(entry.second.address, entry.first);
+		const auto& utxo = entry.second;
+		addr_map.emplace(utxo.address, entry.first);
+		taddr_map[utxo.address].erase(entry.first);
 	}
 	for(const auto& txid : log->tx_added) {
 		auto iter = tx_map.find(txid);
@@ -1290,6 +1301,15 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 			tx_map.erase(iter);
 		}
 		tx_pool.erase(txid);
+	}
+	if(block->height % 16 == 0) {
+		for(auto iter = taddr_map.begin(); iter != taddr_map.end();) {
+			if(iter->second.empty()) {
+				iter = taddr_map.erase(iter);
+			} else {
+				iter++;
+			}
+		}
 	}
 	{
 		const auto range = challenge_map.equal_range(block->height);
@@ -1532,21 +1552,24 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 		auto iter = utxo_map.find(tx->inputs[i].prev);
 		if(iter != utxo_map.end()) {
 			const auto key = txio_key_t::create_ex(tx->id, i);
-			log.utxo_removed.emplace(iter->first, std::make_pair(key, iter->second));
+			const auto& stxo = iter->second;
+			log.utxo_removed.emplace(iter->first, std::make_pair(key, stxo));
+			taddr_map[stxo.address].erase(iter->first);
 			utxo_map.erase(iter);
 		}
 	}
 	for(size_t i = 0; i < tx->outputs.size(); ++i)
 	{
 		const auto key = txio_key_t::create_ex(tx->id, i);
-		const auto value = utxo_t::create_ex(tx->outputs[i], block->height);
-		utxo_map[key] = value;
-		log.utxo_added.emplace(key, value);
+		const auto utxo = utxo_t::create_ex(tx->outputs[i], block->height);
+		utxo_map[key] = utxo;
+		taddr_map[utxo.address].insert(key);
+		log.utxo_added.emplace(key, utxo);
 	}
-	tx_key_t info;
-	info.height = block->height;
-	info.index = index;
-	tx_map[tx->id] = info;
+	tx_key_t key;
+	key.height = block->height;
+	key.index = index;
+	tx_map[tx->id] = key;
 	log.tx_added.push_back(tx->id);
 }
 
@@ -1558,10 +1581,14 @@ bool Node::revert() noexcept
 	const auto log = change_log.back();
 
 	for(const auto& entry : log->utxo_added) {
+		const auto& utxo = entry.second;
 		utxo_map.erase(entry.first);
+		taddr_map[utxo.address].erase(entry.first);
 	}
 	for(const auto& entry : log->utxo_removed) {
-		utxo_map.emplace(entry.first, entry.second.second);
+		const auto& utxo = entry.second.second;
+		utxo_map.emplace(entry.first, utxo);
+		taddr_map[utxo.address].insert(entry.first);
 	}
 	for(const auto& txid : log->tx_added) {
 		tx_map.erase(txid);
