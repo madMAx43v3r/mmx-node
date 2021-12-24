@@ -10,7 +10,7 @@ It's main features are as follows:
 - Energy saving Proof of Space (same as Chia)
 - Standard ECDSA signatures for seamless integration (same as Bitcoin)
 
-The way MMX is desiged makes it a blockchain that can actually be used as a currency.
+MMX is desiged to be a blockchain that can actually be used as a currency.
 
 For example the variable supply will stabilize the price, one of the key properties of any currency.
 
