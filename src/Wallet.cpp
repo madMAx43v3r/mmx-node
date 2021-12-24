@@ -130,7 +130,6 @@ hash_t Wallet::send(const uint64_t& amount, const addr_t& dst_addr, const addr_t
 	// create lookup map
 	std::unordered_map<txio_key_t, addr_t> addr_map;
 	for(const auto& entry : utxo_list) {
-		change_utxo_map.erase(entry.first);
 		addr_map[entry.first] = entry.second.address;
 	}
 
@@ -261,6 +260,7 @@ std::vector<std::pair<txio_key_t, utxo_t>> Wallet::get_utxo_list() const
 		if(!spent_txo_set.count(entry.first)) {
 			list.push_back(entry);
 		}
+		// remove confirmed change
 		change_utxo_map.erase(entry.first);
 	}
 	// add pending change outputs
