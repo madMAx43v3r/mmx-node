@@ -1,4 +1,4 @@
 #!/bin/bash
 
-export PATH=$PATH:$(dirname "$0")/build
+export PATH=$PATH:$PWD/build
 
