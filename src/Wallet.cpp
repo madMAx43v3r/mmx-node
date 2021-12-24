@@ -197,7 +197,9 @@ hash_t Wallet::send(const uint64_t& amount, const addr_t& dst_addr, const addr_t
 			break;
 		}
 		// gather more
-		change += gather_inputs(tx, spent_txo, utxo_list, tx_fees - change, addr_t());
+		const auto left = tx_fees - change;
+		change += gather_inputs(tx, spent_txo, utxo_list, left, addr_t());
+		change += left;
 	}
 	tx->finalize();
 
