@@ -42,6 +42,8 @@ To send coins: `mmx wallet send -a <amount> -t <address>`
 
 To use a non-default wallet specify `-j <index>` with above commands.
 
+To check on the node: `mmx node info`
+
 To check on a transaction: `mmx node tx <txid>`
 
 To check the balance of any address: `mmx node balance <address>`
@@ -51,6 +53,8 @@ To dump a transaction: `mmx node get tx <txid>`
 To dump a block: `mmx node get block <height>`
 
 To dump a block header: `mmx node get header <height>`
+
+To force a re-sync: `mmx node sync`
 
 ## Running a Node
 
