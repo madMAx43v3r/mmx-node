@@ -2,8 +2,8 @@ package mmx;
 
 struct tx_key_t {
 	
-	uint height;
+	uint height = -1;
 	
-	uint index;
+	uint index = -1;
 	
 }
