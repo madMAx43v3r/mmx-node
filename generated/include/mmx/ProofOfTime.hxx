@@ -17,6 +17,7 @@ namespace mmx {
 class ProofOfTime : public ::vnx::Value {
 public:
 	
+	uint32_t height = 0;
 	uint64_t start = 0;
 	std::array<std::map<uint64_t, ::mmx::hash_t>, 2> infuse = {};
 	std::vector<::mmx::time_segment_t> segments;
