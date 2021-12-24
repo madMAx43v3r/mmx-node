@@ -64,8 +64,8 @@ mmx_node -c config/test1/ config/local/
 To run a node in the background you can enter a `screen` session:
 ```
 screen -S node
-<start node as above>
-<ctrl+A> + D (to detach)
+(start node as above)
+<Ctrl+A> + D (to detach)
 screen -r node (to attach again)
 ```
 
