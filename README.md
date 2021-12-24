@@ -58,7 +58,7 @@ First perform the installation and setup steps below.
 
 To run a node for `testnet1`
 ```
-mmx-node -c config/test1/ config/local/
+mmx_node -c config/test1/ config/local/
 ```
 
 To run a node in the background you can enter a `screen` session:
