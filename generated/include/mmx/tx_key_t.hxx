@@ -13,8 +13,8 @@ namespace mmx {
 struct tx_key_t {
 	
 	
-	uint32_t height = 0;
-	uint32_t index = 0;
+	uint32_t height = -1;
+	uint32_t index = -1;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;

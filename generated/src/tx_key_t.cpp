@@ -11,7 +11,7 @@ namespace mmx {
 
 
 const vnx::Hash64 tx_key_t::VNX_TYPE_HASH(0xf873c24aa0c80c85ull);
-const vnx::Hash64 tx_key_t::VNX_CODE_HASH(0x278ca0f74254b806ull);
+const vnx::Hash64 tx_key_t::VNX_CODE_HASH(0x1a4b138b3d3f5b7ull);
 
 vnx::Hash64 tx_key_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -124,7 +124,7 @@ std::shared_ptr<vnx::TypeCode> tx_key_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.tx_key_t";
 	type_code->type_hash = vnx::Hash64(0xf873c24aa0c80c85ull);
-	type_code->code_hash = vnx::Hash64(0x278ca0f74254b806ull);
+	type_code->code_hash = vnx::Hash64(0x1a4b138b3d3f5b7ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::tx_key_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<tx_key_t>>(); };
@@ -133,12 +133,14 @@ std::shared_ptr<vnx::TypeCode> tx_key_t::static_create_type_code() {
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
 		field.name = "height";
+		field.value = vnx::to_string(-1);
 		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[1];
 		field.data_size = 4;
 		field.name = "index";
+		field.value = vnx::to_string(-1);
 		field.code = {3};
 	}
 	type_code->build();
