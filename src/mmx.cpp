@@ -78,6 +78,7 @@ int main(int argc, char** argv)
 		goto failed;
 	}
 
+	if(module != "wallet" || command != "create")
 	{
 		vnx::Handle<vnx::Proxy> module = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
 		module->forward_list = {"Wallet", "Node", "Farmer"};
@@ -89,7 +90,9 @@ int main(int argc, char** argv)
 		{
 			mmx::WalletClient wallet("Wallet");
 			try {
-				wallet.open_wallet(index);
+				if(command != "create") {
+					wallet.open_wallet(index);
+				}
 			}
 			catch(std::exception& ex) {
 				vnx::log_error() << "Failed to open wallet: " << ex.what();
