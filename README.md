@@ -56,6 +56,8 @@ To dump a block header: `mmx node get header <height>`
 
 To force a re-sync: `mmx node sync`
 
+To show some known peers: `mmx node get peers [count]`
+
 ## Running a Node
 
 First perform the installation and setup steps below.
