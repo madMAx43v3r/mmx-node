@@ -50,25 +50,7 @@ addr_t::addr_t(const pubkey_t& key)
 inline
 addr_t::addr_t(const std::string& addr)
 {
-	const auto res = bech32::decode(addr);
-	if(res.encoding != bech32::Bech32m) {
-		throw std::logic_error("invalid address: " + addr);
-	}
-	if(res.dp.size() != 52) {
-		throw std::logic_error("invalid address (size != 52): " + addr);
-	}
-	if(res.hrp != "mmx") {
-		throw std::logic_error("invalid address (prefix != mmx): " + addr);
-	}
-	uint256_t bits = 0;
-	for(int i = 0; i < 50; ++i) {
-		bits |= res.dp[i] & 0x1F;
-		bits <<= 5;
-	}
-	bits |= res.dp[50] & 0x1F;
-	bits <<= 1;
-	bits |= (res.dp[51] >> 4) & 1;
-	::memcpy(data(), &bits, 32);
+	from_string(addr);
 }
 
 inline
@@ -88,7 +70,22 @@ std::string addr_t::to_string() const
 inline
 void addr_t::from_string(const std::string& addr)
 {
-	*this = addr_t(addr);
+	const auto res = bech32::decode(addr);
+	if(res.encoding != bech32::Bech32m) {
+		throw std::logic_error("invalid address: " + addr);
+	}
+	if(res.dp.size() != 52) {
+		throw std::logic_error("invalid address (size != 52): " + addr);
+	}
+	uint256_t bits = 0;
+	for(int i = 0; i < 50; ++i) {
+		bits |= res.dp[i] & 0x1F;
+		bits <<= 5;
+	}
+	bits |= res.dp[50] & 0x1F;
+	bits <<= 1;
+	bits |= (res.dp[51] >> 4) & 1;
+	::memcpy(data(), &bits, 32);
 }
 
 
