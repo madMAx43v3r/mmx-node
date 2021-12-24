@@ -106,7 +106,7 @@ std::vector<std::string> Router::get_peers(const uint32_t& max_count) const
 		// return a random subset
 		const std::vector<std::string> tmp(peer_set.begin(), peer_set.end());
 		for(size_t i = 0; i < peer_set.size() && res.size() < max_count; ++i) {
-			res.insert(tmp[size_t(::rand()) % tmp.size()]);
+			res.insert(tmp[vnx::rand64() % tmp.size()]);
 		}
 	} else {
 		res = peer_set;
