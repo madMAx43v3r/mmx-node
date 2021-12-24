@@ -35,11 +35,11 @@ private:
 	using Buffer3D = automy::basic_opencl::Buffer3D<T>;
 
 	size_t width = 0;
-	std::vector<cl_uchar> hash;
-	std::vector<cl_uint> num_iters;
+	std::vector<uint8_t> hash;
+	std::vector<uint32_t> num_iters;
 
-	Buffer3D<cl_uchar> hash_buf;
-	Buffer3D<cl_uint> num_iters_buf;
+	Buffer3D<uint8_t> hash_buf;
+	Buffer3D<uint32_t> num_iters_buf;
 
 	std::shared_ptr<Kernel> kernel;
 	std::shared_ptr<CommandQueue> queue;
