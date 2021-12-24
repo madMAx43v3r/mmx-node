@@ -85,12 +85,11 @@ cd mmx-node
 
 ### Creating a Wallet
 
-The file name argument is optional, by default it is `wallet.dat`:
 ```
 mmx wallet create [-f filename]
 ```
 
-The default wallet file `wallet.dat` is already included in the default configuration.
+The file name argument is optional, by default it is `wallet.dat`, which is already included in the default configuration.
 
 To add more wallets add the paths to `key_files+` array in `config/local/Wallet.json`.
 
@@ -157,7 +156,7 @@ sudo apt update
 sudo apt install intel-opencl-icd
 ```
 
-### OpenCL for AMD iGPUs
+### OpenCL for AMD GPUs
 
 Linux: \
 https://www.amd.com/en/support/kb/release-notes/rn-amdgpu-unified-linux-21-20 \
