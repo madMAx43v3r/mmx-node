@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 ChainParams::VNX_TYPE_HASH(0x51bba8d28881e8e7ull);
-const vnx::Hash64 ChainParams::VNX_CODE_HASH(0x72a7ba7ccf4551a3ull);
+const vnx::Hash64 ChainParams::VNX_CODE_HASH(0x275bea7f3597f01cull);
 
 vnx::Hash64 ChainParams::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -396,7 +396,7 @@ std::shared_ptr<vnx::TypeCode> ChainParams::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.ChainParams";
 	type_code->type_hash = vnx::Hash64(0x51bba8d28881e8e7ull);
-	type_code->code_hash = vnx::Hash64(0x72a7ba7ccf4551a3ull);
+	type_code->code_hash = vnx::Hash64(0x275bea7f3597f01cull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ChainParams);
@@ -477,21 +477,21 @@ std::shared_ptr<vnx::TypeCode> ChainParams::static_create_type_code() {
 		auto& field = type_code->fields[10];
 		field.data_size = 4;
 		field.name = "min_vdf_segments";
-		field.value = vnx::to_string(256);
+		field.value = vnx::to_string(640);
 		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[11];
 		field.data_size = 4;
 		field.name = "num_vdf_segments";
-		field.value = vnx::to_string(380);
+		field.value = vnx::to_string(760);
 		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[12];
 		field.data_size = 4;
 		field.name = "max_vdf_segments";
-		field.value = vnx::to_string(1024);
+		field.value = vnx::to_string(2048);
 		field.code = {3};
 	}
 	{
