@@ -189,8 +189,10 @@ int main(int argc, char** argv)
 			if(command == "balance")
 			{
 				mmx::addr_t address;
-				vnx::read_config("$3", address);
-
+				if(!vnx::read_config("$3", address)) {
+					vnx::log_error() << "Missing address argument!";
+					goto failed;
+				}
 				const auto amount = node.get_balance(address, contract);
 				std::cout << "Balance: " << amount / pow(10, params->decimals) << " MMX (" << amount << ")" << std::endl;
 			}
