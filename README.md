@@ -137,6 +137,12 @@ wget https://github.com/automyinc/vnx-base/raw/master/x86_64/vnx-base-1.9.8-x86_
 sudo dpkg -i vnx-base-1.9.8-x86_64-ubuntu-20.04.deb
 ```
 
+Ubuntu 18.04
+```
+wget https://github.com/automyinc/vnx-base/raw/master/x86_64/vnx-base-1.9.8-x86_64-ubuntu-18.04.deb
+sudo dpkg -i vnx-base-1.9.8-x86_64-ubuntu-18.04.deb
+```
+
 Windows: coming soon, once I have a build machine
 
 ### Building
