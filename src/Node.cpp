@@ -1473,13 +1473,13 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const vdf_point_
 		}
 	}
 	for(int i = 0; i < 2; ++i) {
-		if(opencl_vdf[i]) {
-			opencl_vdf[i]->compute(proof, i, prev.output[i]);
+		if(auto engine = opencl_vdf[i]) {
+			engine->compute(proof, i, prev.output[i]);
 		}
 	}
 	for(int i = 0; i < 2; ++i) {
-		if(opencl_vdf[i]) {
-			opencl_vdf[i]->verify(proof, i);
+		if(auto engine = opencl_vdf[i]) {
+			engine->verify(proof, i);
 		} else {
 			verify_vdf(proof, i, prev.output[i]);
 		}
