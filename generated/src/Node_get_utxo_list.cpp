@@ -132,6 +132,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_utxo_list::static_create_type_code() {
 		field.name = "addresses";
 		field.code = {12, 11, 32, 1};
 	}
+	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();
 	return type_code;
 }

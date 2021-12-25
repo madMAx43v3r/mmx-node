@@ -131,6 +131,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_block_at::static_create_type_code() {
 		field.name = "height";
 		field.code = {3};
 	}
+	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();
 	return type_code;
 }

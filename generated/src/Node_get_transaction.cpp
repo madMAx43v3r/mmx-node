@@ -132,6 +132,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_transaction::static_create_type_code() {
 		field.name = "id";
 		field.code = {11, 32, 1};
 	}
+	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();
 	return type_code;
 }

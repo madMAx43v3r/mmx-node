@@ -134,6 +134,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_txo_info::static_create_type_code() {
 		field.name = "key";
 		field.code = {19, 0};
 	}
+	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();
 	return type_code;
 }

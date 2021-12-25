@@ -109,6 +109,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_synced_height::static_create_type_code()
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Node_get_synced_height>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Node_get_synced_height_return::static_get_type_code();
+	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();
 	return type_code;
 }
