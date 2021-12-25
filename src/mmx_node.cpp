@@ -45,7 +45,6 @@ int main(int argc, char** argv)
 	}
 	{
 		vnx::Handle<vnx::addons::HttpServer> module = new vnx::addons::HttpServer("HttpServer");
-		module->host = "localhost";
 		module->port = 8080;
 		module->default_access = "NETWORK";
 		module->components["/api/node/"] = "Node";
