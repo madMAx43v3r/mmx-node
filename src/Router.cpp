@@ -129,7 +129,6 @@ void Router::handle(std::shared_ptr<const Block> block)
 			send_all(block);
 		}
 	}
-	node_height = block->height;
 }
 
 void Router::handle(std::shared_ptr<const Transaction> tx)

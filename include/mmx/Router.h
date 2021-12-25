@@ -152,7 +152,6 @@ private:
 	std::shared_ptr<NodeAsyncClient> node;
 	std::shared_ptr<const ChainParams> params;
 
-	uint32_t node_height = 0;
 	uint32_t next_request_id = 0;
 	uint64_t verified_vdf_iters = 0;
 
