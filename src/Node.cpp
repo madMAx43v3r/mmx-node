@@ -44,6 +44,7 @@ void Node::main()
 		point.recv_time = vnx::get_wall_time_micros();
 		verified_vdfs[0] = point;
 	}
+	threads = std::make_shared<vnx::ThreadPool>(1);
 
 	try {
 		std::string platform_name;
@@ -145,6 +146,8 @@ void Node::main()
 
 	vnx::write(block_chain->out, nullptr);
 	block_chain->close();
+
+	threads->close();
 }
 
 uint32_t Node::get_height() const
@@ -405,31 +408,14 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 	auto iter = verified_vdfs.find(proof->start);
 	if(iter != verified_vdfs.end())
 	{
-		const auto time_begin = vnx::get_wall_time_micros();
-		const auto& prev = iter->second;
 		try {
-			verify_vdf(proof, prev);
+			verify_vdf(proof, iter->second);
 		}
 		catch(const std::exception& ex) {
 			if(is_synced) {
 				log(WARN) << "VDF verification failed with: " << ex.what();
 			}
-			return;
 		}
-		vdf_point_t point;
-		point.output[0] = proof->get_output(0);
-		point.output[1] = proof->get_output(1);
-		point.height = proof->height;
-		point.recv_time = vnx_sample ? vnx_sample->recv_time : vnx::get_wall_time_micros();
-		verified_vdfs[vdf_iters] = point;
-
-		publish(proof, output_verified_vdfs);
-
-		log(INFO) << "Verified VDF at " << vdf_iters << " iterations, delta = "
-				<< (point.recv_time - prev.recv_time) / 1e6 << " sec, took "
-				<< (vnx::get_wall_time_micros() - time_begin) / 1e6 << " sec";
-
-		update();
 	}
 	else {
 		pending_vdfs.emplace(proof->start, proof);
@@ -1486,18 +1472,7 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const vdf_point_
 			}
 		}
 	}
-	for(int i = 0; i < 2; ++i) {
-		if(auto engine = opencl_vdf[i]) {
-			engine->compute(proof, i, prev.output[i]);
-		}
-	}
-	for(int i = 0; i < 2; ++i) {
-		if(auto engine = opencl_vdf[i]) {
-			engine->verify(proof, i);
-		} else {
-			verify_vdf(proof, i, prev.output[i]);
-		}
-	}
+	threads->add_task(std::bind(&Node::verify_vdf_task, this, proof, prev));
 }
 
 void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain, const hash_t& begin) const
@@ -1540,6 +1515,53 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 	}
 	if(!is_valid) {
 		throw std::logic_error("invalid output at segment " + std::to_string(invalid_segment));
+	}
+}
+
+void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, const vdf_point_t& prev, const vdf_point_t& point)
+{
+	const auto vdf_iters = proof->start + proof->get_num_iters();
+	verified_vdfs[vdf_iters] = point;
+
+	log(INFO) << "Verified VDF at " << vdf_iters << " iterations, delta = "
+				<< (point.recv_time - prev.recv_time) / 1e6 << " sec, took "
+				<< (vnx::get_wall_time_micros() - point.recv_time) / 1e6 << " sec";
+
+	publish(proof, output_verified_vdfs);
+
+	update();
+}
+
+void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const vdf_point_t& prev) const noexcept
+{
+	std::lock_guard<std::mutex> lock(vdf_mutex);
+
+	const auto time_begin = vnx::get_wall_time_micros();
+	try {
+		for(int i = 0; i < 2; ++i) {
+			if(auto engine = opencl_vdf[i]) {
+				engine->compute(proof, i, prev.output[i]);
+			}
+		}
+		for(int i = 0; i < 2; ++i) {
+			if(auto engine = opencl_vdf[i]) {
+				engine->verify(proof, i);
+			} else {
+				verify_vdf(proof, i, prev.output[i]);
+			}
+		}
+		vdf_point_t point;
+		point.output[0] = proof->get_output(0);
+		point.output[1] = proof->get_output(1);
+		point.height = proof->height;
+		point.recv_time = time_begin;
+
+		add_task([this, proof, prev, point]() {
+			((Node*)this)->verify_vdf_success(proof, prev, point);
+		});
+	}
+	catch(const std::exception& ex) {
+		log(WARN) << "VDF verification failed with: " << ex.what();
 	}
 }
 

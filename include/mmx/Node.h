@@ -15,6 +15,7 @@
 #include <mmx/txio_key_t.hpp>
 #include <mmx/OCL_VDF.h>
 
+#include <vnx/ThreadPool.h>
 #include <vnx/addons/HttpInterface.h>
 
 
@@ -129,6 +130,10 @@ private:
 
 	void verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain, const hash_t& begin) const;
 
+	void verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, const vdf_point_t& prev, const vdf_point_t& point);
+
+	void verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const vdf_point_t& prev) const noexcept;
+
 	void apply(std::shared_ptr<const Block> block) noexcept;
 
 	void apply(std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx, size_t index, change_log_t& log) noexcept;
@@ -190,10 +195,13 @@ private:
 	std::set<uint32_t> sync_pending;						// set of heights
 	std::shared_ptr<vnx::Timer> update_timer;
 
-	std::shared_ptr<RouterAsyncClient> router;
 	std::shared_ptr<const ChainParams> params;
-	std::shared_ptr<OCL_VDF> opencl_vdf[2];
+	std::shared_ptr<RouterAsyncClient> router;
 	std::shared_ptr<vnx::addons::HttpInterface<Node>> http;
+
+	mutable std::mutex vdf_mutex;
+	std::shared_ptr<OCL_VDF> opencl_vdf[2];
+	std::shared_ptr<vnx::ThreadPool> threads;
 
 	friend class vnx::addons::HttpInterface<Node>;
 
