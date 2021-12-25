@@ -653,7 +653,7 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 		case Node_get_block_hash_return::VNX_TYPE_ID:
 			if(auto value = std::dynamic_pointer_cast<const Node_get_block_hash_return>(result)) {
 				if(auto peer = find_peer(client)) {
-					if(value->_ret_0) {
+					if(is_synced && value->_ret_0) {
 						const auto height = peer->height;
 						const auto peer_hash = *value->_ret_0;
 						node->get_block(peer_hash,
