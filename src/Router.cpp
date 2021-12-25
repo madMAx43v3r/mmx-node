@@ -171,6 +171,7 @@ void Router::update()
 {
 	const auto now_ms = vnx::get_wall_time_millis();
 
+	// check if we lost sync due to response timeout
 	size_t num_peers = 0;
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
@@ -187,11 +188,33 @@ void Router::update()
 	} else {
 		is_connected = true;
 	}
+
+	// check if we lost sync due to height difference
+	node->get_synced_height(
+		[this](const vnx::optional<uint32_t>& sync_height) {
+			if(sync_height) {
+				size_t num_ahead = 0;
+				const auto height = *sync_height;
+				for(const auto& entry : peer_map) {
+					const auto& peer = entry.second;
+					if(peer.is_synced && peer.height > height && peer.height - height > params->finality_delay) {
+						num_ahead++;
+					}
+				}
+				if(num_ahead >= std::min<size_t>(synced_peers.size(), 1)) {
+					log(WARN) << "Lost sync with network due to height difference!";
+					node->start_sync();
+				}
+			}
+			is_synced = sync_height;
+		});
+
 	process();
 }
 
-void Router::process(std::shared_ptr<const Return> ret)
+bool Router::process(std::shared_ptr<const Return> ret)
 {
+	bool did_consume = false;
 	for(auto iter = sync_jobs.begin(); iter != sync_jobs.end();)
 	{
 		auto& job = iter->second;
@@ -223,6 +246,7 @@ void Router::process(std::shared_ptr<const Return> ret)
 				}
 				job.pending.erase(iter->second);
 				job.request_map.erase(iter);
+				did_consume = true;
 			}
 		}
 		const auto num_peers_try = std::min<size_t>(max_sync_peers, std::max<size_t>(synced_peers.size(), min_sync_peers));
@@ -291,6 +315,7 @@ void Router::process(std::shared_ptr<const Return> ret)
 		}
 		iter++;
 	}
+	return did_consume;
 }
 
 void Router::connect()
@@ -323,26 +348,6 @@ void Router::query()
 	req->id = next_request_id++;
 	req->method = Node_get_synced_height::create();
 	send_all(req);
-
-	node->get_synced_height(
-		[this](const vnx::optional<uint32_t>& sync_height) {
-			if(sync_height) {
-				size_t num_ahead = 0;
-				const auto height = *sync_height;
-				for(const auto& entry : peer_map) {
-					const auto& peer = entry.second;
-					if(peer.is_synced && peer.height > height && peer.height - height > params->finality_delay) {
-						num_ahead++;
-					}
-				}
-				if(num_ahead >= synced_peers.size() && synced_peers.size() > 0)
-				{
-					log(WARN) << "Lost sync with network due to height difference!";
-					is_connected = false;
-					node->start_sync();
-				}
-			}
-		});
 }
 
 void Router::discover()
@@ -580,9 +585,11 @@ void Router::on_request(uint64_t client, std::shared_ptr<const Request> msg)
 
 void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 {
+	if(process(msg)) {
+		return;
+	}
 	const auto result = msg->result;
 	if(!result) {
-		process(msg);
 		return;
 	}
 	switch(result->get_type_hash())
@@ -616,13 +623,20 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 		case Node_get_synced_height_return::VNX_TYPE_ID:
 			if(auto value = std::dynamic_pointer_cast<const Node_get_synced_height_return>(result)) {
 				if(auto peer = find_peer(client)) {
-					if(auto height = value->_ret_0.get()) {
+					if(auto height = value->_ret_0) {
 						if(!peer->is_synced) {
 							log(INFO) << "Peer " << peer->address << " is synced at height " << *height;
 						}
 						peer->height = *height;
 						peer->is_synced = true;
 						synced_peers.insert(client);
+
+						if(is_synced) {
+							// check their block hash
+							auto req = Node_get_block_hash::create();
+							req->height = *height;
+							send_request(client, req);
+						}
 					}
 					else if(peer->is_outbound) {
 						log(INFO) << "Disconnecting from peer " << peer->address << " who is not synced";
@@ -636,8 +650,45 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 				}
 			}
 			break;
-		default:
-			process(msg);
+		case Node_get_block_hash_return::VNX_TYPE_ID:
+			if(auto value = std::dynamic_pointer_cast<const Node_get_block_hash_return>(result)) {
+				if(auto peer = find_peer(client)) {
+					if(value->_ret_0) {
+						const auto height = peer->height;
+						const auto peer_hash = *value->_ret_0;
+						node->get_block(peer_hash,
+							[this, client, height, peer_hash](std::shared_ptr<const Block> block) {
+								if(!block) {
+									auto req = Node_get_block::create();
+									req->hash = peer_hash;
+									send_request(client, req);
+									log(WARN) << "Fetching unknown block at height " << height << " with hash " << peer_hash;
+								}
+							});
+					}
+				}
+			}
+			break;
+		case Node_get_block_return::VNX_TYPE_ID:
+			if(auto value = std::dynamic_pointer_cast<const Node_get_block_return>(result)) {
+				if(auto block = value->_ret_0) {
+					if(is_synced) {
+						// check if we have previous block
+						const auto next = block;
+						node->get_block(block->prev,
+							[this, client, next](std::shared_ptr<const Block> block) {
+								if(!block) {
+									auto req = Node_get_block::create();
+									req->hash = next->prev;
+									send_request(client, req);
+									log(WARN) << "Fetching unknown block at height " << next->height - 1 << " with hash " << next->prev;
+								}
+							});
+					}
+					node->add_block(block);
+				}
+			}
+			break;
 	}
 }
 

@@ -79,7 +79,7 @@ private:
 
 	void update();
 
-	void process(std::shared_ptr<const Return> ret = nullptr);
+	bool process(std::shared_ptr<const Return> ret = nullptr);
 
 	void connect();
 
@@ -135,6 +135,7 @@ private:
 	peer_t* find_peer(uint64_t client);
 
 private:
+	bool is_synced = false;
 	bool is_connected = false;
 	std::set<std::string> peer_set;
 	std::set<std::string> self_addrs;
