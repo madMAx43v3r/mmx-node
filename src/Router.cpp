@@ -632,10 +632,11 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 						synced_peers.insert(client);
 
 						if(is_synced) {
-							// check their block hash
+							// check their previous block hash
 							auto req = Node_get_block_hash::create();
-							req->height = *height;
-							send_request(client, req);
+							req->height = *height - 1;
+							peer->hash_check.height = req->height;
+							peer->hash_check.request = send_request(client, req);
 						}
 					}
 					else if(peer->is_outbound) {
@@ -653,8 +654,9 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 		case Node_get_block_hash_return::VNX_TYPE_ID:
 			if(auto value = std::dynamic_pointer_cast<const Node_get_block_hash_return>(result)) {
 				if(auto peer = find_peer(client)) {
-					if(is_synced && value->_ret_0) {
-						const auto height = peer->height;
+					if(peer->hash_check.request == msg->id && value->_ret_0)
+					{
+						const auto height = peer->hash_check.height;
 						const auto peer_hash = *value->_ret_0;
 						node->get_block(peer_hash,
 							[this, client, height, peer_hash](std::shared_ptr<const Block> block) {
