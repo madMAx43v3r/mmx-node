@@ -6,6 +6,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Block.hxx>
+#include <mmx/BlockHeader.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
@@ -88,6 +89,7 @@ protected:
 	virtual vnx::optional<uint32_t> get_synced_height() const = 0;
 	virtual std::shared_ptr<const ::mmx::Block> get_block(const ::mmx::hash_t& hash) const = 0;
 	virtual std::shared_ptr<const ::mmx::Block> get_block_at(const uint32_t& height) const = 0;
+	virtual std::shared_ptr<const ::mmx::BlockHeader> get_header_at(const uint32_t& height) const = 0;
 	virtual vnx::optional<::mmx::hash_t> get_block_hash(const uint32_t& height) const = 0;
 	virtual ::mmx::txo_info_t get_txo_info(const ::mmx::txio_key_t& key) const = 0;
 	virtual vnx::optional<::mmx::tx_key_t> get_tx_key(const ::mmx::hash_t& id) const = 0;

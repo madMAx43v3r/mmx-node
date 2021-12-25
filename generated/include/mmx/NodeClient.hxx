@@ -6,6 +6,7 @@
 
 #include <vnx/Client.h>
 #include <mmx/Block.hxx>
+#include <mmx/BlockHeader.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
@@ -63,6 +64,8 @@ public:
 	std::shared_ptr<const ::mmx::Block> get_block(const ::mmx::hash_t& hash = ::mmx::hash_t());
 	
 	std::shared_ptr<const ::mmx::Block> get_block_at(const uint32_t& height = 0);
+	
+	std::shared_ptr<const ::mmx::BlockHeader> get_header_at(const uint32_t& height = 0);
 	
 	vnx::optional<::mmx::hash_t> get_block_hash(const uint32_t& height = 0);
 	
