@@ -209,6 +209,14 @@ std::shared_ptr<const Block> Node::get_block_at(const uint32_t& height) const
 	return nullptr;
 }
 
+std::shared_ptr<const BlockHeader> Node::get_header_at(const uint32_t& height) const
+{
+	if(auto block = get_block_at(height)) {
+		return block->get_header();
+	}
+	return nullptr;
+}
+
 vnx::optional<hash_t> Node::get_block_hash(const uint32_t& height) const
 {
 	auto iter = block_index.find(height);

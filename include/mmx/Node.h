@@ -38,6 +38,8 @@ protected:
 
 	std::shared_ptr<const Block> get_block_at(const uint32_t& height) const override;
 
+	std::shared_ptr<const BlockHeader> get_header_at(const uint32_t& height) const override;
+
 	vnx::optional<hash_t> get_block_hash(const uint32_t& height) const override;
 
 	vnx::optional<tx_key_t> get_tx_key(const hash_t& id) const override;
