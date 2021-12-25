@@ -1,0 +1,37 @@
+
+<table class="data">
+<tr>
+<td class="data">Hash</td>
+<td class="data"><%= block.hash %></td>
+</tr>
+<tr>
+<td class="data">Previous</td>
+<td class="data"><a href="block?hash=<%= block.prev %>"><%= block.prev %></a></td>
+</tr>
+<tr>
+<td class="data">Height</td>
+<td class="data"><%= block.height %></td>
+</tr>
+<tr>
+<td class="data">Next</td>
+<td class="data"><a href="block?height=<%= block.height+1 %>"><%= block.height+1 %></a></td>
+</tr>
+<tr>
+<td class="data">VDF Iterations</td>
+<td class="data"><%= block.vdf_iters %></td>
+</tr>
+<tr>
+<td class="data">K Size</td>
+<td class="data"><%= block.ksize %></td>
+</tr>
+<tr>
+<td class="data">Pool Key</td>
+<td class="data"><%= block.pool_key %></td>
+</tr>
+<tr>
+<td class="data">Farmer Key</td>
+<td class="data"><%= block.farmer_key %></td>
+</tr>
+
+</table>
+
