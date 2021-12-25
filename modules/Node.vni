@@ -1,6 +1,6 @@
 package mmx;
 
-module Node {
+module Node implements vnx.addons.HttpComponent {
 	
 	vnx.TopicPtr input_vdfs = "network.vdfs";
 	vnx.TopicPtr input_blocks = "network.blocks";
@@ -35,30 +35,41 @@ module Node {
 	string timelord_name = "TimeLord";
 	
 	
+	@Permission(permission_e.PUBLIC)
 	uint get_height() const;
 	
+	@Permission(permission_e.PUBLIC)
 	optional<uint> get_synced_height() const;
 	
+	@Permission(permission_e.PUBLIC)
 	Block* get_block(hash_t hash) const;
 	
+	@Permission(permission_e.PUBLIC)
 	Block* get_block_at(uint height) const;
 	
+	@Permission(permission_e.PUBLIC)
 	optional<hash_t> get_block_hash(uint height) const;
 	
+	@Permission(permission_e.PUBLIC)
 	txo_info_t get_txo_info(txio_key_t key) const;
 	
+	@Permission(permission_e.PUBLIC)
 	optional<tx_key_t> get_tx_key(hash_t id) const;
 	
 	void add_block(Block* block);
 	
 	void add_transaction(Transaction* tx);
 	
+	@Permission(permission_e.PUBLIC)
 	Transaction* get_transaction(hash_t id) const;
 	
+	@Permission(permission_e.PUBLIC)
 	ulong get_balance(addr_t address, addr_t contract) const;
 	
+	@Permission(permission_e.PUBLIC)
 	ulong get_total_balance(vector<addr_t> addresses, addr_t contract) const;
 	
+	@Permission(permission_e.PUBLIC)
 	vector<pair<txio_key_t, utxo_t>> get_utxo_list(vector<addr_t> addresses) const;
 	
 	void start_sync();

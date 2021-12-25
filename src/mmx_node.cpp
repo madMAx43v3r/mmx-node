@@ -18,6 +18,7 @@
 #include <vnx/Server.h>
 #include <vnx/Terminal.h>
 #include <vnx/TcpEndpoint.hxx>
+#include <vnx/addons/HttpServer.h>
 
 
 int main(int argc, char** argv)
@@ -40,6 +41,14 @@ int main(int argc, char** argv)
 	}
 	{
 		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url(".mmx_node.sock"));
+		module.start_detached();
+	}
+	{
+		vnx::Handle<vnx::addons::HttpServer> module = new vnx::addons::HttpServer("HttpServer");
+		module->host = "localhost";
+		module->port = 8080;
+		module->default_access = "NETWORK";
+		module->components["/api/node/"] = "Node";
 		module.start_detached();
 	}
 	{

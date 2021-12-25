@@ -66,7 +66,9 @@ void Node::main()
 	}
 
 	router = std::make_shared<RouterAsyncClient>(router_name);
+	http = std::make_shared<vnx::addons::HttpInterface<Node>>(this, vnx_name);
 	add_async_client(router);
+	add_async_client(http);
 
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
 
@@ -370,6 +372,18 @@ std::vector<std::pair<txio_key_t, utxo_t>> Node::get_utxo_list(const std::vector
 		}
 	}
 	return res;
+}
+
+void Node::http_request_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
+								const vnx::request_id_t& request_id) const
+{
+	http->http_request(request, sub_path, request_id);
+}
+
+void Node::http_request_chunk_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
+									const int64_t& offset, const int64_t& max_bytes, const vnx::request_id_t& request_id) const
+{
+	throw std::logic_error("not implemented");
 }
 
 void Node::handle(std::shared_ptr<const Block> block)

@@ -15,6 +15,8 @@
 #include <mmx/txio_key_t.hpp>
 #include <mmx/OCL_VDF.h>
 
+#include <vnx/addons/HttpInterface.h>
+
 
 namespace mmx {
 
@@ -54,6 +56,12 @@ protected:
 	std::vector<std::pair<txio_key_t, utxo_t>> get_utxo_list(const std::vector<addr_t>& addresses) const override;
 
 	void start_sync() override;
+
+	void http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
+							const vnx::request_id_t& request_id) const override;
+
+	void http_request_chunk_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
+									const int64_t& offset, const int64_t& max_bytes, const vnx::request_id_t& request_id) const override;
 
 	void handle(std::shared_ptr<const Block> block);
 
@@ -185,6 +193,9 @@ private:
 	std::shared_ptr<RouterAsyncClient> router;
 	std::shared_ptr<const ChainParams> params;
 	std::shared_ptr<OCL_VDF> opencl_vdf[2];
+	std::shared_ptr<vnx::addons::HttpInterface<Node>> http;
+
+	friend class vnx::addons::HttpInterface<Node>;
 
 };
 

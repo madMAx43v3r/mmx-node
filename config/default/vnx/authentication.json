@@ -1,0 +1,5 @@
+{
+	"permissions": {
+		"NETWORK": ["mmx.permission_e.PUBLIC"]
+	}
+}
