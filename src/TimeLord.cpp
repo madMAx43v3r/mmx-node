@@ -63,15 +63,19 @@ void TimeLord::handle(std::shared_ptr<const TimeInfusion> value)
 	}
 	std::lock_guard<std::recursive_mutex> lock(mutex);
 
+	auto& map = infuse[value->chain];
 	for(const auto& entry : value->values) {
-		if(!infuse[value->chain].count(entry.first)) {
+		if(!map.count(entry.first)) {
 			if(latest_point && entry.first < latest_point->num_iters) {
 				log(WARN) << "Missed infusion point at " << entry.first << " iterations";
 			}
-			log(DEBUG) << "Infusing at " << entry.first << " iterations on chain " << value->chain << ": " << entry.second;
+			log(DEBUG) << "Infusing at " << entry.first << " on chain " << value->chain << ": " << entry.second;
 		}
 	}
-	infuse[value->chain] = value->values;
+	if(!value->values.empty()) {
+		map.erase(map.lower_bound(value->values.begin()->first), map.end());
+	}
+	map.insert(value->values.begin(), value->values.end());
 }
 
 void TimeLord::handle(std::shared_ptr<const IntervalRequest> request)
