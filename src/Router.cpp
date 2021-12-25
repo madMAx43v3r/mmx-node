@@ -118,7 +118,7 @@ void Router::get_blocks_at_async(const uint32_t& height, const vnx::request_id_t
 {
 	auto& job = sync_jobs[request_id];
 	job.height = height;
-	((Router*)this)->update();
+	((Router*)this)->process();
 }
 
 void Router::handle(std::shared_ptr<const Block> block)
@@ -171,20 +171,29 @@ uint32_t Router::send_request(uint64_t client, std::shared_ptr<const vnx::Value>
 
 void Router::update()
 {
-	if(last_receive_ms > 0) {
-		const auto now_ms = vnx::get_wall_time_millis();
-		if(now_ms - last_receive_ms > sync_loss_delay * 1000) {
-			if(is_connected) {
-				log(WARN) << "Lost sync with network due to timeout!";
-				is_connected = false;
-				node->start_sync();
-			}
-		}
-		else {
-			is_connected = true;
+	const auto now_ms = vnx::get_wall_time_millis();
+
+	size_t num_peers = 0;
+	for(const auto& entry : peer_map) {
+		const auto& peer = entry.second;
+		if(peer.is_synced && now_ms - peer.last_receive_ms < sync_loss_delay * 1000) {
+			num_peers++;
 		}
 	}
+	if(num_peers < min_sync_peers) {
+		if(is_connected) {
+			log(WARN) << "Lost sync with network due to timeout!";
+			is_connected = false;
+			node->start_sync();
+		}
+	} else {
+		is_connected = true;
+	}
+	process();
+}
 
+void Router::process()
+{
 	for(auto iter = sync_jobs.begin(); iter != sync_jobs.end();)
 	{
 		auto& job = iter->second;
@@ -608,7 +617,7 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 			if(auto value = std::dynamic_pointer_cast<const Node_get_height_return>(result)) {
 				if(auto peer = find_peer(client)) {
 					peer->height = value->_ret_0;
-					last_receive_ms = vnx::get_wall_time_millis();
+					peer->last_receive_ms = vnx::get_wall_time_millis();
 				}
 			}
 			break;
@@ -631,7 +640,7 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 						peer->is_synced = false;
 						synced_peers.erase(client);
 					}
-					last_receive_ms = vnx::get_wall_time_millis();
+					peer->last_receive_ms = vnx::get_wall_time_millis();
 				}
 				return_map.erase(msg->id);
 			}
@@ -640,7 +649,7 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 			auto iter = return_map.find(msg->id);
 			if(iter != return_map.end()) {
 				iter->second = result;
-				update();
+				process();
 			}
 		}
 	}

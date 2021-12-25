@@ -48,6 +48,7 @@ private:
 		bool is_outbound = false;
 		uint32_t height = 0;
 		uint32_t msg_size = 0;
+		int64_t last_receive_ms = 0;
 		uint64_t client = 0;
 		vnx::Hash64 node_id;
 		std::string address;
@@ -76,6 +77,8 @@ private:
 	};
 
 	void update();
+
+	void process();
 
 	void connect();
 
@@ -150,10 +153,8 @@ private:
 	std::shared_ptr<const ChainParams> params;
 
 	uint32_t node_height = 0;
-	uint64_t verified_vdf_iters = 0;
-
 	uint32_t next_request_id = 0;
-	int64_t last_receive_ms = 0;
+	uint64_t verified_vdf_iters = 0;
 
 	size_t tx_counter = 0;
 	size_t vdf_counter = 0;
