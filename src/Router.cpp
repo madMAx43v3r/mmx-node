@@ -164,7 +164,6 @@ uint32_t Router::send_request(uint64_t client, std::shared_ptr<const vnx::Value>
 	req->id = next_request_id++;
 	req->method = method;
 	send_to(client, req);
-	return_map[req->id] = nullptr;
 	return req->id;
 }
 
@@ -191,45 +190,40 @@ void Router::update()
 	process();
 }
 
-void Router::process()
+void Router::process(std::shared_ptr<const Return> ret)
 {
 	for(auto iter = sync_jobs.begin(); iter != sync_jobs.end();)
 	{
 		auto& job = iter->second;
-		for(auto iter = job.pending.begin(); iter != job.pending.end();)
-		{
+		if(ret) {
 			// check for any returns
-			auto iter2 = return_map.find(iter->second);
-			if(iter2 != return_map.end()) {
-				if(auto value = iter2->second) {
-					return_map.erase(iter2);
-					if(auto ret = std::dynamic_pointer_cast<const Node_get_block_hash_return>(value)) {
-						if(auto hash = ret->_ret_0.get()) {
-							job.hash_map[*hash].insert(iter->first);
-							job.succeeded.insert(iter->first);
-						} else {
-							job.failed.insert(iter->first);
-						}
+			auto iter = job.request_map.find(ret->id);
+			if(iter != job.request_map.end()) {
+				if(auto result = std::dynamic_pointer_cast<const Node_get_block_hash_return>(ret->result)) {
+					if(auto hash = result->_ret_0) {
+						job.hash_map[*hash].insert(iter->second);
+						job.succeeded.insert(iter->second);
+					} else {
+						job.failed.insert(iter->second);
 					}
-					else if(auto ret = std::dynamic_pointer_cast<const Node_get_block_return>(value)) {
-						if(auto block = ret->_ret_0) {
-							job.blocks[block->hash] = block;
-							job.succeeded.insert(iter->first);
-						} else {
-							job.failed.insert(iter->first);
-						}
-					}
-					else if(auto ret = std::dynamic_pointer_cast<const vnx::OverflowException>(value)) {
-						// try again
-					}
-					else {
-						job.failed.insert(iter->first);
-					}
-					iter = job.pending.erase(iter);
-					continue;
 				}
+				else if(auto result = std::dynamic_pointer_cast<const Node_get_block_return>(ret->result)) {
+					if(auto block = result->_ret_0) {
+						job.blocks[block->hash] = block;
+						job.succeeded.insert(iter->second);
+					} else {
+						job.failed.insert(iter->second);
+					}
+				}
+				else if(auto result = std::dynamic_pointer_cast<const vnx::OverflowException>(ret->result)) {
+					// try again
+				}
+				else {
+					job.failed.insert(iter->second);
+				}
+				job.pending.erase(iter->second);
+				job.request_map.erase(iter);
 			}
-			iter++;
 		}
 		const auto num_peers_try = std::min<size_t>(max_sync_peers, std::max<size_t>(synced_peers.size(), min_sync_peers));
 
@@ -245,16 +239,16 @@ void Router::process()
 					{
 						auto req = Node_get_block_hash::create();
 						req->height = job.height;
-						job.pending[client] = send_request(client, req);
+						const auto id = send_request(client, req);
+						job.request_map[id] = client;
+						job.pending.insert(client);
 					}
 				}
 			} else {
-				for(const auto& entry : job.pending) {
-					return_map.erase(entry.second);
-				}
 				job.failed.clear();
 				job.pending.clear();
 				job.succeeded.clear();
+				job.request_map.clear();
 				job.state = FETCH_BLOCKS;
 			}
 		}
@@ -273,7 +267,9 @@ void Router::process()
 								if(!job.pending.count(client)) {
 									auto req = Node_get_block::create();
 									req->hash = entry.first;
-									job.pending[client] = send_request(client, req);
+									const auto id = send_request(client, req);
+									job.request_map[id] = client;
+									job.pending.insert(client);
 								}
 								if(++num_pending >= min_sync_peers) {
 									break;
@@ -289,10 +285,6 @@ void Router::process()
 					blocks.push_back(entry.second);
 				}
 				get_blocks_at_async_return(iter->first, blocks);
-
-				for(const auto& entry : job.pending) {
-					return_map.erase(entry.second);
-				}
 				iter = sync_jobs.erase(iter);
 				continue;
 			}
@@ -590,6 +582,7 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 {
 	const auto result = msg->result;
 	if(!result) {
+		process(msg);
 		return;
 	}
 	switch(result->get_type_hash())
@@ -641,16 +634,10 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 					}
 					peer->last_receive_ms = vnx::get_wall_time_millis();
 				}
-				return_map.erase(msg->id);
 			}
 			break;
-		default: {
-			auto iter = return_map.find(msg->id);
-			if(iter != return_map.end()) {
-				iter->second = result;
-				process();
-			}
-		}
+		default:
+			process(msg);
 	}
 }
 

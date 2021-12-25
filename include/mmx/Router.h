@@ -70,15 +70,16 @@ private:
 		uint32_t height = 0;
 		sync_state_e state = FETCH_HASHES;
 		std::unordered_set<uint64_t> failed;
+		std::unordered_set<uint64_t> pending;
 		std::unordered_set<uint64_t> succeeded;
-		std::unordered_map<uint64_t, uint32_t> pending;					// [client => request id]
+		std::unordered_map<uint32_t, uint64_t> request_map;				// [request id, client]
 		std::unordered_map<hash_t, std::set<uint64_t>> hash_map;		// [block hash => clients who have it]
 		std::unordered_map<hash_t, std::shared_ptr<const Block>> blocks;
 	};
 
 	void update();
 
-	void process();
+	void process(std::shared_ptr<const Return> ret = nullptr);
 
 	void connect();
 
@@ -144,7 +145,6 @@ private:
 	std::unordered_map<uint64_t, peer_t> peer_map;
 
 	std::unordered_set<hash_t> seen_hashes;
-	std::unordered_map<uint32_t, std::shared_ptr<const vnx::Value>> return_map;
 
 	mutable std::unordered_map<vnx::request_id_t, sync_job_t> sync_jobs;
 
