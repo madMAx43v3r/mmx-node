@@ -405,11 +405,16 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 	if(verified_vdfs.count(vdf_iters)) {
 		return;
 	}
+	if(vdf_iters == vdf_verify_pending) {
+		pending_vdfs.emplace(proof->start, proof);
+		return;
+	}
 	auto iter = verified_vdfs.find(proof->start);
 	if(iter != verified_vdfs.end())
 	{
 		try {
 			verify_vdf(proof, iter->second);
+			vdf_verify_pending = vdf_iters;
 		}
 		catch(const std::exception& ex) {
 			if(is_synced) {
@@ -448,18 +453,26 @@ void Node::handle(std::shared_ptr<const ProofResponse> value)
 	}
 }
 
-void Node::update()
+void Node::check_vdfs()
 {
-	// check pending VDFs
 	for(auto iter = pending_vdfs.begin(); iter != pending_vdfs.end();) {
 		if(verified_vdfs.count(iter->first)) {
-			auto proof = iter->second;
-			add_task([this, proof]() { handle(proof); });
-			iter = pending_vdfs.erase(iter);
-			continue;
+			const auto proof = iter->second;
+			if(proof->start + proof->get_num_iters() != vdf_verify_pending) {
+				add_task([this, proof]() {
+					handle(proof);
+				});
+				iter = pending_vdfs.erase(iter);
+				continue;
+			}
 		}
 		iter++;
 	}
+}
+
+void Node::update()
+{
+	check_vdfs();
 
 	// verify proof where possible
 	std::vector<std::pair<std::shared_ptr<fork_t>, hash_t>> to_verify;
@@ -1493,6 +1506,9 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 #pragma omp parallel for
 	for(size_t i = 0; i < segments.size(); ++i)
 	{
+		if(!is_valid) {
+			continue;
+		}
 		hash_t point;
 		if(i > 0) {
 			point = segments[i - 1].output[chain];
@@ -1522,6 +1538,7 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, const vd
 {
 	const auto vdf_iters = proof->start + proof->get_num_iters();
 	verified_vdfs[vdf_iters] = point;
+	vdf_verify_pending = 0;
 
 	log(INFO) << "Verified VDF at " << vdf_iters << " iterations, delta = "
 				<< (point.recv_time - prev.recv_time) / 1e6 << " sec, took "
@@ -1530,6 +1547,12 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, const vd
 	publish(proof, output_verified_vdfs);
 
 	update();
+}
+
+void Node::verify_vdf_failed(std::shared_ptr<const ProofOfTime> proof)
+{
+	vdf_verify_pending = 0;
+	check_vdfs();
 }
 
 void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const vdf_point_t& prev) const noexcept
@@ -1561,6 +1584,9 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const vdf_p
 		});
 	}
 	catch(const std::exception& ex) {
+		add_task([this, proof]() {
+			((Node*)this)->verify_vdf_failed(proof);
+		});
 		log(WARN) << "VDF verification failed with: " << ex.what();
 	}
 }

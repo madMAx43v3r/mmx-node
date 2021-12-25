@@ -98,6 +98,8 @@ private:
 
 	void update();
 
+	void check_vdfs();
+
 	bool make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response);
 
 	void sync_more();
@@ -131,6 +133,8 @@ private:
 	void verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain, const hash_t& begin) const;
 
 	void verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, const vdf_point_t& prev, const vdf_point_t& point);
+
+	void verify_vdf_failed(std::shared_ptr<const ProofOfTime> proof);
 
 	void verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const vdf_point_t& prev) const noexcept;
 
@@ -200,6 +204,7 @@ private:
 	std::shared_ptr<vnx::addons::HttpInterface<Node>> http;
 
 	mutable std::mutex vdf_mutex;
+	uint64_t vdf_verify_pending = 0;
 	std::shared_ptr<OCL_VDF> opencl_vdf[2];
 	std::shared_ptr<vnx::ThreadPool> threads;
 
