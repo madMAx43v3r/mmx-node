@@ -27,7 +27,7 @@ In addition the first application for MMX will be a decentralized exchange where
 To use the CLI:
 ```
 cd mmx-node
-. ./activate
+source ./activate.sh
 ```
 
 The node needs to be running, see below how to start it.
@@ -88,7 +88,7 @@ First finish the installtion step below.
 To continue enter the CLI environment:
 ```
 cd mmx-node
-. ./activate
+source ./activate.sh
 ```
 
 ### Creating a Wallet
