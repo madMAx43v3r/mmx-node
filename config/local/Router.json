@@ -1,3 +1,4 @@
 {
-	"seed_peers+": []
+	"seed_peers+": [],
+	"block_peers+": []
 }

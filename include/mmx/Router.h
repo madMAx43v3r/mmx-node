@@ -33,6 +33,10 @@ protected:
 
 	std::vector<std::string> get_peers(const uint32_t& max_count) const override;
 
+	std::vector<std::string> get_known_peers() const override;
+
+	std::vector<std::string> get_connected_peers() const override;
+
 	void get_blocks_at_async(const uint32_t& height, const vnx::request_id_t& request_id) const override;
 
 	void handle(std::shared_ptr<const Block> value);

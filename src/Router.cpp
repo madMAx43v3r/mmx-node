@@ -99,19 +99,55 @@ vnx::Hash64 Router::get_id() const
 	return vnx_get_id();
 }
 
-std::vector<std::string> Router::get_peers(const uint32_t& max_count) const
+static
+bool is_public_address(const std::string& addr)
+{
+	if(addr.substr(0, 3) == "10." || addr.substr(0, 4) == "127." || addr.substr(0, 8) == "192.168.") {
+		return false;
+	}
+	return true;
+}
+
+static
+std::vector<std::string> get_subset(const std::set<std::string>& peer_set, const uint32_t& max_count)
 {
 	std::set<std::string> res;
 	if(max_count < peer_set.size()) {
 		// return a random subset
 		const std::vector<std::string> tmp(peer_set.begin(), peer_set.end());
-		for(size_t i = 0; i < peer_set.size() && res.size() < max_count; ++i) {
+		for(size_t i = 0; i < 2 * peer_set.size() && res.size() < max_count; ++i) {
 			res.insert(tmp[vnx::rand64() % tmp.size()]);
 		}
 	} else {
 		res = peer_set;
 	}
 	return std::vector<std::string>(res.begin(), res.end());
+}
+
+std::vector<std::string> Router::get_peers(const uint32_t& max_count) const
+{
+	std::set<std::string> valid;
+	for(const auto& entry : peer_map) {
+		const auto& addr = entry.second.address;
+		if(is_public_address(addr)) {
+			valid.insert(addr);
+		}
+	}
+	return get_subset(valid, max_count);
+}
+
+std::vector<std::string> Router::get_known_peers() const
+{
+	return std::vector<std::string>(peer_set.begin(), peer_set.end());
+}
+
+std::vector<std::string> Router::get_connected_peers() const
+{
+	std::vector<std::string> res;
+	for(const auto& entry : peer_map) {
+		res.push_back(entry.second.address);
+	}
+	return res;
 }
 
 void Router::get_blocks_at_async(const uint32_t& height, const vnx::request_id_t& request_id) const
@@ -320,7 +356,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 
 void Router::connect()
 {
-	for(const auto& address : get_peers(num_threads))
+	for(const auto& address : peer_set)
 	{
 		if(outgoing_peers.size() >= num_peers_out || connecting_peers.size() >= num_threads) {
 			break;
