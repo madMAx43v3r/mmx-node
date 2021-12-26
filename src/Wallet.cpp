@@ -322,6 +322,7 @@ std::vector<wallet::tx_entry_t> Wallet::get_history() const
 		tx_map[entry.key.txid].outputs[entry.key.index] = entry.output;
 	}
 	for(const auto& entry : node->get_stxo_list(addresses)) {
+		tx_map[entry.key.txid].outputs[entry.key.index] = entry.output;
 		tx_map[entry.spent.txid].inputs[entry.spent.index] = entry;
 	}
 	std::multimap<uint32_t, wallet::tx_entry_t> list;
