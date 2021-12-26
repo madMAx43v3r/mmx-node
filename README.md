@@ -60,7 +60,7 @@ To force a re-sync: `mmx node sync`
 
 To show some known peers: `mmx node get peers [count]`
 
-To check on farm: `mmx farm info`
+To check on the farm: `mmx farm info`
 
 To get total space in bytes: `mmx farm get space`
 
@@ -181,6 +181,11 @@ git clone https://github.com/madMAx43v3r/mmx-node.git
 cd mmx-node
 git submodule update --init --recursive
 ./make_devel.sh
+```
+
+To update to latest version:
+```
+git pull && git submodule update && ./make_devel.sh
 ```
 
 ### Windows via WSL
