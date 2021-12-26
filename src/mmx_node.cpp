@@ -78,6 +78,7 @@ int main(int argc, char** argv)
 	vnx::wait();
 
 	mmx::secp256k1_free();
+	automy::basic_opencl::release_context();
 
 	return 0;
 }
