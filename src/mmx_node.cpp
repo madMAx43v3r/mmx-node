@@ -33,19 +33,20 @@ int main(int argc, char** argv)
 	const auto params = mmx::get_params();
 
 	bool with_timelord = true;
+	std::string endpoint = ":11331";
 	vnx::read_config("timelord", with_timelord);
+	vnx::read_config("endpoint", endpoint);
 
 	{
 		vnx::Handle<vnx::Terminal> module = new vnx::Terminal("Terminal");
 		module.start_detached();
 	}
 	{
-		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url(".mmx_node.sock"));
+		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url(endpoint));
 		module.start_detached();
 	}
 	{
 		vnx::Handle<vnx::addons::HttpServer> module = new vnx::addons::HttpServer("HttpServer");
-		module->port = 8080;
 		module->default_access = "NETWORK";
 		module->components["/api/node/"] = "Node";
 		module.start_detached();
