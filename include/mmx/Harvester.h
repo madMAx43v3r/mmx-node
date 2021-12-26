@@ -27,9 +27,9 @@ protected:
 
 	void reload() override;
 
-	uint32_t get_plot_count() const override;
+	uint64_t get_total_bytes() const override;
 
-	uint64_t get_total_space() const override;
+	std::shared_ptr<const FarmInfo> get_farm_info() const override;
 
 private:
 	void update();

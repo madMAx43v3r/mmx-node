@@ -8,6 +8,7 @@
 #include <mmx/NodeClient.hxx>
 #include <mmx/RouterClient.hxx>
 #include <mmx/WalletClient.hxx>
+#include <mmx/HarvesterClient.hxx>
 #include <mmx/KeyFile.hxx>
 #include <mmx/secp256k1.hpp>
 #include <mmx/utils.h>
@@ -82,7 +83,7 @@ int main(int argc, char** argv)
 	if(module != "wallet" || command != "create")
 	{
 		vnx::Handle<vnx::Proxy> module = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
-		module->forward_list = {"Wallet", "Node", "Farmer", "Router"};
+		module->forward_list = {"Wallet", "Node", "Farmer", "Harvester", "Router"};
 		module.start_detached();
 	}
 
@@ -356,6 +357,39 @@ int main(int argc, char** argv)
 			}
 			else {
 				std::cerr << "Help: mmx node [info | show | tx | get | balance | sync]" << std::endl;
+			}
+		}
+		else if(module == "farm") {
+			mmx::HarvesterClient harvester("Harvester");
+
+			auto info = harvester.get_farm_info();
+
+			if(command == "info") {
+				std::cout << "Total space: " << info->total_bytes / pow(1024, 4) << " TiB" << std::endl;
+				for(const auto& entry : info->plot_count) {
+					std::cout << "K" << int(entry.first) << ": " << entry.second << " plots" << std::endl;
+				}
+			}
+			else if(command == "get") {
+				std::string subject;
+				vnx::read_config("$3", subject);
+
+				if(subject == "space")
+				{
+					std::cout << info->total_bytes << std::endl;
+				}
+				else if(subject == "dirs")
+				{
+					for(const auto& entry : info->plot_dirs) {
+						std::cout << entry << std::endl;
+					}
+				}
+				else {
+					std::cerr << "Help: mmx farm get [space | dirs]" << std::endl;
+				}
+			}
+			else {
+				std::cerr << "Help: mmx farm [info]" << std::endl;
 			}
 		}
 		else {

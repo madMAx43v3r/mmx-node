@@ -60,6 +60,12 @@ To force a re-sync: `mmx node sync`
 
 To show some known peers: `mmx node get peers [count]`
 
+To check on farm: `mmx farm info`
+
+To get total space in bytes: `mmx farm get space`
+
+To show plot directories: `mmx farm get dirs`
+
 ## Running a Node
 
 First perform the installation and setup steps below.

@@ -136,14 +136,22 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 			<< ", took " << (vnx::get_time_micros() - time_begin) / 1e6 << " sec";
 }
 
-uint32_t Harvester::get_plot_count() const
-{
-	return plot_map.size();
-}
-
-uint64_t Harvester::get_total_space() const
+uint64_t Harvester::get_total_bytes() const
 {
 	return total_bytes;
+}
+
+std::shared_ptr<const FarmInfo> Harvester::get_farm_info() const
+{
+	auto info = FarmInfo::create();
+	info->plot_dirs = plot_dirs;
+	info->total_bytes = total_bytes;
+	for(const auto& entry : plot_map) {
+		if(auto prover = entry.second) {
+			info->plot_count[prover->get_ksize()]++;
+		}
+	}
+	return info;
 }
 
 void Harvester::reload()

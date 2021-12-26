@@ -19,9 +19,10 @@ module Harvester {
 	
 	void reload();
 	
-	uint get_plot_count() const;
+	FarmInfo* get_farm_info() const;
 	
-	ulong get_total_space() const;			// [bytes]
+	ulong get_total_bytes() const;			// [bytes]
+	
 	
 	void handle(Challenge sample);
 	

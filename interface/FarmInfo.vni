@@ -1,0 +1,11 @@
+package mmx;
+
+class FarmInfo {
+	
+	vector<string> plot_dirs;
+	
+	map<uchar, uint> plot_count;
+	
+	ulong total_bytes;
+	
+}
