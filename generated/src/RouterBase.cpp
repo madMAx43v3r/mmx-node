@@ -10,8 +10,12 @@
 #include <mmx/Router_discover_return.hxx>
 #include <mmx/Router_get_blocks_at.hxx>
 #include <mmx/Router_get_blocks_at_return.hxx>
+#include <mmx/Router_get_connected_peers.hxx>
+#include <mmx/Router_get_connected_peers_return.hxx>
 #include <mmx/Router_get_id.hxx>
 #include <mmx/Router_get_id_return.hxx>
+#include <mmx/Router_get_known_peers.hxx>
+#include <mmx/Router_get_known_peers_return.hxx>
 #include <mmx/Router_get_peers.hxx>
 #include <mmx/Router_get_peers_return.hxx>
 #include <mmx/Transaction.hxx>
@@ -472,7 +476,7 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	type_code->native_size = sizeof(::mmx::RouterBase);
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::vnx::addons::TcpServerBase::static_get_type_code();
-	type_code->methods.resize(13);
+	type_code->methods.resize(15);
 	type_code->methods[0] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
 	type_code->methods[1] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
 	type_code->methods[2] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
@@ -485,7 +489,9 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	type_code->methods[9] = ::mmx::Router_discover::static_get_type_code();
 	type_code->methods[10] = ::mmx::Router_get_id::static_get_type_code();
 	type_code->methods[11] = ::mmx::Router_get_peers::static_get_type_code();
-	type_code->methods[12] = ::mmx::Router_get_blocks_at::static_get_type_code();
+	type_code->methods[12] = ::mmx::Router_get_known_peers::static_get_type_code();
+	type_code->methods[13] = ::mmx::Router_get_connected_peers::static_get_type_code();
+	type_code->methods[14] = ::mmx::Router_get_blocks_at::static_get_type_code();
 	type_code->fields.resize(32);
 	{
 		auto& field = type_code->fields[0];
@@ -803,6 +809,18 @@ std::shared_ptr<vnx::Value> RouterBase::vnx_call_switch(std::shared_ptr<const vn
 			auto _args = std::static_pointer_cast<const ::mmx::Router_get_peers>(_method);
 			auto _return_value = ::mmx::Router_get_peers_return::create();
 			_return_value->_ret_0 = get_peers(_args->max_count);
+			return _return_value;
+		}
+		case 0xaa408b6bf4e8168dull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Router_get_known_peers>(_method);
+			auto _return_value = ::mmx::Router_get_known_peers_return::create();
+			_return_value->_ret_0 = get_known_peers();
+			return _return_value;
+		}
+		case 0x8682feb65fbb77feull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Router_get_connected_peers>(_method);
+			auto _return_value = ::mmx::Router_get_connected_peers_return::create();
+			_return_value->_ret_0 = get_connected_peers();
 			return _return_value;
 		}
 		case 0x1eb0c0d7eae3c33aull: {

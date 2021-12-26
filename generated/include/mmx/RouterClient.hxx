@@ -55,6 +55,10 @@ public:
 	
 	std::vector<std::string> get_peers(const uint32_t& max_count = 10);
 	
+	std::vector<std::string> get_known_peers();
+	
+	std::vector<std::string> get_connected_peers();
+	
 	std::vector<std::shared_ptr<const ::mmx::Block>> get_blocks_at(const uint32_t& height = 0);
 	
 };
