@@ -167,6 +167,19 @@ int main(int argc, char** argv)
 				std::cout << "Sent " << mojo / pow(10, params->decimals) << " " << currency << " to " << target << std::endl;
 				std::cout << "Transaction ID: " << txid << std::endl;
 			}
+			else if(command == "log")
+			{
+				for(const auto& entry : wallet.get_history()) {
+					std::cout << "[" << entry.height << "] ";
+					switch(entry.type) {
+						case mmx::wallet::tx_type_e::SEND:    std::cout << "SEND    "; break;
+						case mmx::wallet::tx_type_e::RECEIVE: std::cout << "RECEIVE "; break;
+						case mmx::wallet::tx_type_e::REWARD:  std::cout << "REWARD  "; break;
+						default: std::cout << "????    "; break;
+					}
+					std::cout << entry.amount / pow(10, params->decimals) << " MMX (" << entry.amount << ") -> " << entry.address << std::endl;
+				}
+			}
 			else if(command == "create")
 			{
 				if(file_name.empty()) {
@@ -198,7 +211,7 @@ int main(int argc, char** argv)
 						<< std::endl << wallet.seed_value << std::endl;
 			}
 			else {
-				std::cerr << "Help: mmx wallet [show | send | create]" << std::endl;
+				std::cerr << "Help: mmx wallet [show | log | send | create]" << std::endl;
 			}
 		}
 		else if(module == "node")

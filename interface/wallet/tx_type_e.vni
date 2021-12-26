@@ -3,6 +3,7 @@ package mmx.wallet;
 enum tx_type_e {
 	
 	SEND,
-	RECEIVE
+	RECEIVE,
+	REWARD
 	
 }

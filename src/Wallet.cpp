@@ -328,6 +328,7 @@ std::vector<wallet::tx_entry_t> Wallet::get_history() const
 
 	for(const auto& iter : tx_map) {
 		const auto& txio = iter.second;
+
 		std::unordered_map<hash_t, int64_t> amount;
 		for(const auto& entry : txio.outputs) {
 			const auto& utxo = entry.second;
@@ -337,12 +338,28 @@ std::vector<wallet::tx_entry_t> Wallet::get_history() const
 			const auto& utxo = entry.second.output;
 			amount[utxo.contract] -= utxo.amount;
 		}
-		wallet::tx_entry_t entry;
-//		if(amount > 0) {
-//			entry.type = wallet::tx_type_e::RECEIVE;
-//		}
+		for(const auto& delta : amount) {
+			if(delta.second > 0) {
+				for(const auto& entry : txio.outputs) {
+					const auto& utxo = entry.second;
+					if(utxo.contract == delta.first) {
+						wallet::tx_entry_t entry;
+						entry.height = utxo.height;
+						entry.type = wallet::tx_type_e::RECEIVE;
+						entry.contract = utxo.contract;
+						entry.address = utxo.address;
+						entry.amount = delta.second;
+						list.emplace(entry.height, entry);
+					}
+				}
+			}
+		}
 	}
-	return {};
+	std::vector<wallet::tx_entry_t> res;
+	for(const auto& entry : list) {
+		res.push_back(entry.second);
+	}
+	return res;
 }
 
 uint64_t Wallet::get_balance(const addr_t& contract) const
