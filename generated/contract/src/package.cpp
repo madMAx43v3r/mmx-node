@@ -8,6 +8,7 @@
 #include <mmx/contract/Nobody.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/contract/Staking.hxx>
+#include <mmx/contract/Symbol.hxx>
 #include <mmx/contract/Token.hxx>
 #include <mmx/contract/compare_e.hxx>
 #include <mmx/contract/condition_e.hxx>
@@ -75,6 +76,14 @@ void type<::mmx::contract::Staking>::create_dynamic_code(std::vector<uint16_t>& 
 	code.push_back(CODE_OBJECT);
 }
 
+void type<::mmx::contract::Symbol>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::Symbol());
+}
+
+void type<::mmx::contract::Symbol>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Symbol& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 void type<::mmx::contract::Token>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::contract::Token());
 }
@@ -123,6 +132,7 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::Nobody::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Staking::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::Symbol::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Token::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::compare_e::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::condition_e::static_create_type_code());
@@ -141,6 +151,7 @@ const vnx::TypeCode* const vnx_native_type_code_NFT = vnx::get_type_code(vnx::Ha
 const vnx::TypeCode* const vnx_native_type_code_Nobody = vnx::get_type_code(vnx::Hash64(0xe41a6e3df6d9e791ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey = vnx::get_type_code(vnx::Hash64(0x9b3cd508d7f41423ull));
 const vnx::TypeCode* const vnx_native_type_code_Staking = vnx::get_type_code(vnx::Hash64(0xf058a3326fc2e7dcull));
+const vnx::TypeCode* const vnx_native_type_code_Symbol = vnx::get_type_code(vnx::Hash64(0x52fce97e392e8710ull));
 const vnx::TypeCode* const vnx_native_type_code_Token = vnx::get_type_code(vnx::Hash64(0x2d8835d6429431b2ull));
 const vnx::TypeCode* const vnx_native_type_code_compare_e = vnx::get_type_code(vnx::Hash64(0xe27ffb2535efa133ull));
 const vnx::TypeCode* const vnx_native_type_code_condition_e = vnx::get_type_code(vnx::Hash64(0xd11073d2e6a56dd6ull));

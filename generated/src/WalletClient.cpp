@@ -16,6 +16,10 @@
 #include <mmx/Wallet_get_farmer_keys_return.hxx>
 #include <mmx/Wallet_get_master_seed.hxx>
 #include <mmx/Wallet_get_master_seed_return.hxx>
+#include <mmx/Wallet_get_stxo_list.hxx>
+#include <mmx/Wallet_get_stxo_list_return.hxx>
+#include <mmx/Wallet_get_stxo_list_for.hxx>
+#include <mmx/Wallet_get_stxo_list_for_return.hxx>
 #include <mmx/Wallet_get_utxo_list.hxx>
 #include <mmx/Wallet_get_utxo_list_return.hxx>
 #include <mmx/Wallet_get_utxo_list_for.hxx>
@@ -30,8 +34,8 @@
 #include <mmx/Wallet_show_farmer_keys_return.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
-#include <mmx/txio_key_t.hxx>
-#include <mmx/utxo_t.hxx>
+#include <mmx/stxo_entry_t.hxx>
+#include <mmx/utxo_entry_t.hxx>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
@@ -230,26 +234,51 @@ void WalletClient::close_wallet_async() {
 	}
 }
 
-std::vector<std::pair<::mmx::txio_key_t, ::mmx::utxo_t>> WalletClient::get_utxo_list() {
+std::vector<::mmx::utxo_entry_t> WalletClient::get_utxo_list() {
 	auto _method = ::mmx::Wallet_get_utxo_list::create();
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_utxo_list_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::vector<std::pair<::mmx::txio_key_t, ::mmx::utxo_t>>>();
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::utxo_entry_t>>();
 	} else {
 		throw std::logic_error("WalletClient: invalid return value");
 	}
 }
 
-std::vector<std::pair<::mmx::txio_key_t, ::mmx::utxo_t>> WalletClient::get_utxo_list_for(const ::mmx::addr_t& contract) {
+std::vector<::mmx::utxo_entry_t> WalletClient::get_utxo_list_for(const ::mmx::addr_t& contract) {
 	auto _method = ::mmx::Wallet_get_utxo_list_for::create();
 	_method->contract = contract;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_utxo_list_for_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::vector<std::pair<::mmx::txio_key_t, ::mmx::utxo_t>>>();
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::utxo_entry_t>>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
+std::vector<::mmx::stxo_entry_t> WalletClient::get_stxo_list() {
+	auto _method = ::mmx::Wallet_get_stxo_list::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_stxo_list_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::stxo_entry_t>>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
+std::vector<::mmx::stxo_entry_t> WalletClient::get_stxo_list_for(const ::mmx::addr_t& contract) {
+	auto _method = ::mmx::Wallet_get_stxo_list_for::create();
+	_method->contract = contract;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_stxo_list_for_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::stxo_entry_t>>();
 	} else {
 		throw std::logic_error("WalletClient: invalid return value");
 	}
@@ -268,14 +297,14 @@ uint64_t WalletClient::get_balance(const ::mmx::addr_t& contract) {
 	}
 }
 
-std::string WalletClient::get_address(const uint32_t& index) {
+::mmx::addr_t WalletClient::get_address(const uint32_t& index) {
 	auto _method = ::mmx::Wallet_get_address::create();
 	_method->index = index;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_address_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::string>();
+		return _return_value->get_field_by_index(0).to<::mmx::addr_t>();
 	} else {
 		throw std::logic_error("WalletClient: invalid return value");
 	}

@@ -3,6 +3,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Wallet_get_address_return.hxx>
+#include <mmx/addr_t.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -12,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_get_address_return::VNX_TYPE_HASH(0x4c76a08d8d85c4e4ull);
-const vnx::Hash64 Wallet_get_address_return::VNX_CODE_HASH(0x16f0a192175f1f3dull);
+const vnx::Hash64 Wallet_get_address_return::VNX_CODE_HASH(0xfd6ffc6bcfd8bc0cull);
 
 vnx::Hash64 Wallet_get_address_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -115,7 +116,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_address_return::static_create_type_cod
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.get_address.return";
 	type_code->type_hash = vnx::Hash64(0x4c76a08d8d85c4e4ull);
-	type_code->code_hash = vnx::Hash64(0x16f0a192175f1f3dull);
+	type_code->code_hash = vnx::Hash64(0xfd6ffc6bcfd8bc0cull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
@@ -126,7 +127,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_address_return::static_create_type_cod
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "_ret_0";
-		field.code = {32};
+		field.code = {11, 32, 1};
 	}
 	type_code->build();
 	return type_code;

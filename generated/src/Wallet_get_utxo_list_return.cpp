@@ -3,8 +3,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Wallet_get_utxo_list_return.hxx>
-#include <mmx/txio_key_t.hxx>
-#include <mmx/utxo_t.hxx>
+#include <mmx/utxo_entry_t.hxx>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -14,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_get_utxo_list_return::VNX_TYPE_HASH(0x5618c84cf0f02009ull);
-const vnx::Hash64 Wallet_get_utxo_list_return::VNX_CODE_HASH(0xee3250759f52b8bcull);
+const vnx::Hash64 Wallet_get_utxo_list_return::VNX_CODE_HASH(0xf5694df15232d91dull);
 
 vnx::Hash64 Wallet_get_utxo_list_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -117,21 +116,20 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_utxo_list_return::static_create_type_c
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.get_utxo_list.return";
 	type_code->type_hash = vnx::Hash64(0x5618c84cf0f02009ull);
-	type_code->code_hash = vnx::Hash64(0xee3250759f52b8bcull);
+	type_code->code_hash = vnx::Hash64(0xf5694df15232d91dull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
 	type_code->native_size = sizeof(::mmx::Wallet_get_utxo_list_return);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Wallet_get_utxo_list_return>(); };
-	type_code->depends.resize(2);
-	type_code->depends[0] = ::mmx::txio_key_t::static_get_type_code();
-	type_code->depends[1] = ::mmx::utxo_t::static_get_type_code();
+	type_code->depends.resize(1);
+	type_code->depends[0] = ::mmx::utxo_entry_t::static_get_type_code();
 	type_code->fields.resize(1);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "_ret_0";
-		field.code = {12, 23, 2, 4, 6, 19, 0, 19, 1};
+		field.code = {12, 19, 0};
 	}
 	type_code->build();
 	return type_code;

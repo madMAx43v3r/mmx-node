@@ -4,6 +4,7 @@
 #include <mmx/package.hxx>
 #include <mmx/txo_info_t.hxx>
 #include <mmx/txio_key_t.hxx>
+#include <mmx/utxo_t.hxx>
 
 #include <vnx/vnx.h>
 
@@ -12,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 txo_info_t::VNX_TYPE_HASH(0x41e366a847ba3fb4ull);
-const vnx::Hash64 txo_info_t::VNX_CODE_HASH(0xf587ff980dce9077ull);
+const vnx::Hash64 txo_info_t::VNX_CODE_HASH(0x9b1eec4b5321a21cull);
 
 vnx::Hash64 txo_info_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -45,15 +46,15 @@ void txo_info_t::write(vnx::TypeOutput& _out, const vnx::TypeCode* _type_code, c
 void txo_info_t::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_txo_info_t;
 	_visitor.type_begin(*_type_code);
-	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, created_at);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, spent_on);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, output);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, spent);
 	_visitor.type_end(*_type_code);
 }
 
 void txo_info_t::write(std::ostream& _out) const {
 	_out << "{";
-	_out << "\"created_at\": "; vnx::write(_out, created_at);
-	_out << ", \"spent_on\": "; vnx::write(_out, spent_on);
+	_out << "\"output\": "; vnx::write(_out, output);
+	_out << ", \"spent\": "; vnx::write(_out, spent);
 	_out << "}";
 }
 
@@ -66,36 +67,36 @@ void txo_info_t::read(std::istream& _in) {
 vnx::Object txo_info_t::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.txo_info_t";
-	_object["created_at"] = created_at;
-	_object["spent_on"] = spent_on;
+	_object["output"] = output;
+	_object["spent"] = spent;
 	return _object;
 }
 
 void txo_info_t::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "created_at") {
-			_entry.second.to(created_at);
-		} else if(_entry.first == "spent_on") {
-			_entry.second.to(spent_on);
+		if(_entry.first == "output") {
+			_entry.second.to(output);
+		} else if(_entry.first == "spent") {
+			_entry.second.to(spent);
 		}
 	}
 }
 
 vnx::Variant txo_info_t::get_field(const std::string& _name) const {
-	if(_name == "created_at") {
-		return vnx::Variant(created_at);
+	if(_name == "output") {
+		return vnx::Variant(output);
 	}
-	if(_name == "spent_on") {
-		return vnx::Variant(spent_on);
+	if(_name == "spent") {
+		return vnx::Variant(spent);
 	}
 	return vnx::Variant();
 }
 
 void txo_info_t::set_field(const std::string& _name, const vnx::Variant& _value) {
-	if(_name == "created_at") {
-		_value.to(created_at);
-	} else if(_name == "spent_on") {
-		_value.to(spent_on);
+	if(_name == "output") {
+		_value.to(output);
+	} else if(_name == "spent") {
+		_value.to(spent);
 	} else {
 		throw std::logic_error("no such field: '" + _name + "'");
 	}
@@ -125,24 +126,25 @@ std::shared_ptr<vnx::TypeCode> txo_info_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.txo_info_t";
 	type_code->type_hash = vnx::Hash64(0x41e366a847ba3fb4ull);
-	type_code->code_hash = vnx::Hash64(0xf587ff980dce9077ull);
+	type_code->code_hash = vnx::Hash64(0x9b1eec4b5321a21cull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::txo_info_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<txo_info_t>>(); };
-	type_code->depends.resize(1);
-	type_code->depends[0] = ::mmx::txio_key_t::static_get_type_code();
+	type_code->depends.resize(2);
+	type_code->depends[0] = ::mmx::utxo_t::static_get_type_code();
+	type_code->depends[1] = ::mmx::txio_key_t::static_get_type_code();
 	type_code->fields.resize(2);
 	{
 		auto& field = type_code->fields[0];
-		field.data_size = 4;
-		field.name = "created_at";
-		field.code = {3};
+		field.is_extended = true;
+		field.name = "output";
+		field.code = {19, 0};
 	}
 	{
 		auto& field = type_code->fields[1];
 		field.is_extended = true;
-		field.name = "spent_on";
-		field.code = {33, 19, 0};
+		field.name = "spent";
+		field.code = {33, 19, 1};
 	}
 	type_code->build();
 	return type_code;
@@ -184,15 +186,13 @@ void read(TypeInput& in, ::mmx::txo_info_t& value, const TypeCode* type_code, co
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
-		if(const auto* const _field = type_code->field_map[0]) {
-			vnx::read_value(_buf + _field->offset, value.created_at, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 1: vnx::read(in, value.spent_on, type_code, _field->code.data()); break;
+			case 0: vnx::read(in, value.output, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.spent, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -211,9 +211,8 @@ void write(TypeOutput& out, const ::mmx::txo_info_t& value, const TypeCode* type
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
-	vnx::write_value(_buf + 0, value.created_at);
-	vnx::write(out, value.spent_on, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.output, type_code, type_code->fields[0].code.data());
+	vnx::write(out, value.spent, type_code, type_code->fields[1].code.data());
 }
 
 void read(std::istream& in, ::mmx::txo_info_t& value) {

@@ -7,15 +7,17 @@
 #include <vnx/Client.h>
 #include <mmx/Block.hxx>
 #include <mmx/BlockHeader.hxx>
+#include <mmx/Contract.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
+#include <mmx/stxo_entry_t.hxx>
 #include <mmx/tx_key_t.hxx>
 #include <mmx/txio_key_t.hxx>
 #include <mmx/txo_info_t.hxx>
-#include <mmx/utxo_t.hxx>
+#include <mmx/utxo_entry_t.hxx>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
 #include <vnx/addons/HttpData.hxx>
@@ -83,11 +85,15 @@ public:
 	
 	std::shared_ptr<const ::mmx::Transaction> get_transaction(const ::mmx::hash_t& id = ::mmx::hash_t());
 	
+	std::shared_ptr<const ::mmx::Contract> get_contract(const ::mmx::addr_t& address = ::mmx::addr_t());
+	
 	uint64_t get_balance(const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::addr_t& contract = ::mmx::addr_t());
 	
 	uint64_t get_total_balance(const std::vector<::mmx::addr_t>& addresses = {}, const ::mmx::addr_t& contract = ::mmx::addr_t());
 	
-	std::vector<std::pair<::mmx::txio_key_t, ::mmx::utxo_t>> get_utxo_list(const std::vector<::mmx::addr_t>& addresses = {});
+	std::vector<::mmx::utxo_entry_t> get_utxo_list(const std::vector<::mmx::addr_t>& addresses = {});
+	
+	std::vector<::mmx::stxo_entry_t> get_stxo_list(const std::vector<::mmx::addr_t>& addresses = {});
 	
 	void start_sync();
 	

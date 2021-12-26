@@ -7,15 +7,17 @@
 #include <mmx/package.hxx>
 #include <mmx/Block.hxx>
 #include <mmx/BlockHeader.hxx>
+#include <mmx/Contract.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
+#include <mmx/stxo_entry_t.hxx>
 #include <mmx/tx_key_t.hxx>
 #include <mmx/txio_key_t.hxx>
 #include <mmx/txo_info_t.hxx>
-#include <mmx/utxo_t.hxx>
+#include <mmx/utxo_entry_t.hxx>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
 #include <vnx/addons/HttpData.hxx>
@@ -96,9 +98,11 @@ protected:
 	virtual void add_block(std::shared_ptr<const ::mmx::Block> block) = 0;
 	virtual void add_transaction(std::shared_ptr<const ::mmx::Transaction> tx) = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> get_transaction(const ::mmx::hash_t& id) const = 0;
+	virtual std::shared_ptr<const ::mmx::Contract> get_contract(const ::mmx::addr_t& address) const = 0;
 	virtual uint64_t get_balance(const ::mmx::addr_t& address, const ::mmx::addr_t& contract) const = 0;
 	virtual uint64_t get_total_balance(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& contract) const = 0;
-	virtual std::vector<std::pair<::mmx::txio_key_t, ::mmx::utxo_t>> get_utxo_list(const std::vector<::mmx::addr_t>& addresses) const = 0;
+	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list(const std::vector<::mmx::addr_t>& addresses) const = 0;
+	virtual std::vector<::mmx::stxo_entry_t> get_stxo_list(const std::vector<::mmx::addr_t>& addresses) const = 0;
 	virtual void start_sync() = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::Block> _value) {}
 	virtual void handle(std::shared_ptr<const ::mmx::Transaction> _value) {}

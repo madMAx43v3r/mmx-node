@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_contract_Token_HXX_
 
 #include <mmx/contract/package.hxx>
+#include <mmx/Solution.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/contract/Condition.hxx>
 #include <mmx/contract/NFT.hxx>
@@ -19,9 +20,10 @@ class Token : public ::mmx::contract::NFT {
 public:
 	
 	std::string name;
-	std::string symbol;
-	std::string website;
+	std::string web_url;
 	std::string icon_url;
+	::mmx::addr_t symbol;
+	std::shared_ptr<const ::mmx::Solution> symbol_sig;
 	int32_t decimals = 0;
 	::mmx::ulong_fraction_t time_factor;
 	std::shared_ptr<const ::mmx::contract::Condition> stake_condition;

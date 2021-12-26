@@ -5,8 +5,7 @@
 #define INCLUDE_mmx_Wallet_get_utxo_list_return_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/txio_key_t.hxx>
-#include <mmx/utxo_t.hxx>
+#include <mmx/utxo_entry_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -15,7 +14,7 @@ namespace mmx {
 class Wallet_get_utxo_list_return : public ::vnx::Value {
 public:
 	
-	std::vector<std::pair<::mmx::txio_key_t, ::mmx::utxo_t>> _ret_0;
+	std::vector<::mmx::utxo_entry_t> _ret_0;
 	
 	typedef ::vnx::Value Super;
 	

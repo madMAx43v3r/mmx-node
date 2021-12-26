@@ -8,8 +8,8 @@
 #include <mmx/FarmerKeys.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
-#include <mmx/txio_key_t.hxx>
-#include <mmx/utxo_t.hxx>
+#include <mmx/stxo_entry_t.hxx>
+#include <mmx/utxo_entry_t.hxx>
 #include <vnx/Module.h>
 
 
@@ -61,13 +61,17 @@ public:
 	
 	::mmx::hash_t send(const uint64_t& amount = 0, const ::mmx::addr_t& dst_addr = ::mmx::addr_t(), const ::mmx::addr_t& contract = ::mmx::addr_t());
 	
-	std::vector<std::pair<::mmx::txio_key_t, ::mmx::utxo_t>> get_utxo_list();
+	std::vector<::mmx::utxo_entry_t> get_utxo_list();
 	
-	std::vector<std::pair<::mmx::txio_key_t, ::mmx::utxo_t>> get_utxo_list_for(const ::mmx::addr_t& contract = ::mmx::addr_t());
+	std::vector<::mmx::utxo_entry_t> get_utxo_list_for(const ::mmx::addr_t& contract = ::mmx::addr_t());
+	
+	std::vector<::mmx::stxo_entry_t> get_stxo_list();
+	
+	std::vector<::mmx::stxo_entry_t> get_stxo_list_for(const ::mmx::addr_t& contract = ::mmx::addr_t());
 	
 	uint64_t get_balance(const ::mmx::addr_t& contract = ::mmx::addr_t());
 	
-	std::string get_address(const uint32_t& index = 0);
+	::mmx::addr_t get_address(const uint32_t& index = 0);
 	
 	::mmx::hash_t get_master_seed(const uint32_t& index = 0);
 	

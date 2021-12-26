@@ -6,6 +6,7 @@
 #include <vnx/NoSuchMethod.hxx>
 #include <mmx/Block.hxx>
 #include <mmx/BlockHeader.hxx>
+#include <mmx/Contract.hxx>
 #include <mmx/Node_add_block.hxx>
 #include <mmx/Node_add_block_return.hxx>
 #include <mmx/Node_add_transaction.hxx>
@@ -18,10 +19,14 @@
 #include <mmx/Node_get_block_at_return.hxx>
 #include <mmx/Node_get_block_hash.hxx>
 #include <mmx/Node_get_block_hash_return.hxx>
+#include <mmx/Node_get_contract.hxx>
+#include <mmx/Node_get_contract_return.hxx>
 #include <mmx/Node_get_header_at.hxx>
 #include <mmx/Node_get_header_at_return.hxx>
 #include <mmx/Node_get_height.hxx>
 #include <mmx/Node_get_height_return.hxx>
+#include <mmx/Node_get_stxo_list.hxx>
+#include <mmx/Node_get_stxo_list_return.hxx>
 #include <mmx/Node_get_synced_height.hxx>
 #include <mmx/Node_get_synced_height_return.hxx>
 #include <mmx/Node_get_total_balance.hxx>
@@ -41,10 +46,11 @@
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
+#include <mmx/stxo_entry_t.hxx>
 #include <mmx/tx_key_t.hxx>
 #include <mmx/txio_key_t.hxx>
 #include <mmx/txo_info_t.hxx>
-#include <mmx/utxo_t.hxx>
+#include <mmx/utxo_entry_t.hxx>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
@@ -418,7 +424,7 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	type_code->code_hash = vnx::Hash64(0xc10445207d1d4e71ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::NodeBase);
-	type_code->methods.resize(26);
+	type_code->methods.resize(28);
 	type_code->methods[0] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
 	type_code->methods[1] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
 	type_code->methods[2] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
@@ -439,12 +445,14 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	type_code->methods[17] = ::mmx::Node_add_block::static_get_type_code();
 	type_code->methods[18] = ::mmx::Node_add_transaction::static_get_type_code();
 	type_code->methods[19] = ::mmx::Node_get_transaction::static_get_type_code();
-	type_code->methods[20] = ::mmx::Node_get_balance::static_get_type_code();
-	type_code->methods[21] = ::mmx::Node_get_total_balance::static_get_type_code();
-	type_code->methods[22] = ::mmx::Node_get_utxo_list::static_get_type_code();
-	type_code->methods[23] = ::mmx::Node_start_sync::static_get_type_code();
-	type_code->methods[24] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
-	type_code->methods[25] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
+	type_code->methods[20] = ::mmx::Node_get_contract::static_get_type_code();
+	type_code->methods[21] = ::mmx::Node_get_balance::static_get_type_code();
+	type_code->methods[22] = ::mmx::Node_get_total_balance::static_get_type_code();
+	type_code->methods[23] = ::mmx::Node_get_utxo_list::static_get_type_code();
+	type_code->methods[24] = ::mmx::Node_get_stxo_list::static_get_type_code();
+	type_code->methods[25] = ::mmx::Node_start_sync::static_get_type_code();
+	type_code->methods[26] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
+	type_code->methods[27] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
 	type_code->fields.resize(23);
 	{
 		auto& field = type_code->fields[0];
@@ -755,6 +763,12 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 			_return_value->_ret_0 = get_transaction(_args->id);
 			return _return_value;
 		}
+		case 0xa28704c65a67a293ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_contract>(_method);
+			auto _return_value = ::mmx::Node_get_contract_return::create();
+			_return_value->_ret_0 = get_contract(_args->address);
+			return _return_value;
+		}
 		case 0x2e00172d0470479ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_balance>(_method);
 			auto _return_value = ::mmx::Node_get_balance_return::create();
@@ -771,6 +785,12 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_utxo_list>(_method);
 			auto _return_value = ::mmx::Node_get_utxo_list_return::create();
 			_return_value->_ret_0 = get_utxo_list(_args->addresses);
+			return _return_value;
+		}
+		case 0xb4e1314236d07ca2ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_stxo_list>(_method);
+			auto _return_value = ::mmx::Node_get_stxo_list_return::create();
+			_return_value->_ret_0 = get_stxo_list(_args->addresses);
 			return _return_value;
 		}
 		case 0x6c5be8aeb25ef3c8ull: {

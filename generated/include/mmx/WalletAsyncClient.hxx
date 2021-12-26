@@ -8,8 +8,8 @@
 #include <mmx/FarmerKeys.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
-#include <mmx/txio_key_t.hxx>
-#include <mmx/utxo_t.hxx>
+#include <mmx/stxo_entry_t.hxx>
+#include <mmx/utxo_entry_t.hxx>
 #include <vnx/Module.h>
 
 
@@ -74,11 +74,19 @@ public:
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_utxo_list(
-			const std::function<void(const std::vector<std::pair<::mmx::txio_key_t, ::mmx::utxo_t>>&)>& _callback = std::function<void(const std::vector<std::pair<::mmx::txio_key_t, ::mmx::utxo_t>>&)>(),
+			const std::function<void(const std::vector<::mmx::utxo_entry_t>&)>& _callback = std::function<void(const std::vector<::mmx::utxo_entry_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_utxo_list_for(const ::mmx::addr_t& contract = ::mmx::addr_t(), 
-			const std::function<void(const std::vector<std::pair<::mmx::txio_key_t, ::mmx::utxo_t>>&)>& _callback = std::function<void(const std::vector<std::pair<::mmx::txio_key_t, ::mmx::utxo_t>>&)>(),
+			const std::function<void(const std::vector<::mmx::utxo_entry_t>&)>& _callback = std::function<void(const std::vector<::mmx::utxo_entry_t>&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t get_stxo_list(
+			const std::function<void(const std::vector<::mmx::stxo_entry_t>&)>& _callback = std::function<void(const std::vector<::mmx::stxo_entry_t>&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t get_stxo_list_for(const ::mmx::addr_t& contract = ::mmx::addr_t(), 
+			const std::function<void(const std::vector<::mmx::stxo_entry_t>&)>& _callback = std::function<void(const std::vector<::mmx::stxo_entry_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_balance(const ::mmx::addr_t& contract = ::mmx::addr_t(), 
@@ -86,7 +94,7 @@ public:
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_address(const uint32_t& index = 0, 
-			const std::function<void(const std::string&)>& _callback = std::function<void(const std::string&)>(),
+			const std::function<void(const ::mmx::addr_t&)>& _callback = std::function<void(const ::mmx::addr_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_master_seed(const uint32_t& index = 0, 
@@ -124,10 +132,12 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_open_wallet_ex;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_close_wallet;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::hash_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_send;
-	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::pair<::mmx::txio_key_t, ::mmx::utxo_t>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_utxo_list;
-	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::pair<::mmx::txio_key_t, ::mmx::utxo_t>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_utxo_list_for;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::utxo_entry_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_utxo_list;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::utxo_entry_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_utxo_list_for;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::stxo_entry_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_stxo_list;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::stxo_entry_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_stxo_list_for;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const uint64_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_balance;
-	std::unordered_map<uint64_t, std::pair<std::function<void(const std::string&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_address;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::addr_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_address;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::hash_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_master_seed;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_show_farmer_keys;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::FarmerKeys>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_farmer_keys;
