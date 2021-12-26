@@ -7,6 +7,8 @@
 
 #include <mmx/Wallet.h>
 #include <mmx/utxo_t.hpp>
+#include <mmx/utxo_entry_t.hpp>
+#include <mmx/stxo_entry_t.hpp>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/utils.h>
 
@@ -78,42 +80,41 @@ void Wallet::open_wallet_ex(const uint32_t& index, const uint32_t& num_addresses
 void Wallet::close_wallet()
 {
 	wallet = nullptr;
+	wallet_index = -1;
 }
 
 static
 uint64_t gather_inputs(	std::shared_ptr<Transaction> tx,
 						std::unordered_set<txio_key_t>& spent_txo,
-						const std::vector<std::pair<txio_key_t, utxo_t>>& utxo_list,
-						const uint64_t amount, const addr_t& contract)
+						const std::vector<utxo_entry_t>& utxo_list,
+						uint64_t amount, const addr_t& contract)
 {
-	uint64_t output = amount;
 	uint64_t change = 0;
-
 	for(const auto& entry : utxo_list)
 	{
-		if(output == 0) {
+		if(amount == 0) {
 			break;
 		}
-		const auto& out = entry.second;
+		const auto& out = entry.output;
 		if(out.contract != contract) {
 			continue;
 		}
-		const auto& key = entry.first;
+		const auto& key = entry.key;
 		if(spent_txo.count(key)) {
 			continue;
 		}
-		if(out.amount > output) {
-			change += out.amount - output;
-			output = 0;
+		if(out.amount > amount) {
+			change += out.amount - amount;
+			amount = 0;
 		} else {
-			output -= out.amount;
+			amount -= out.amount;
 		}
 		tx_in_t in;
 		in.prev = key;
 		tx->inputs.push_back(in);
 		spent_txo.insert(key);
 	}
-	if(output != 0) {
+	if(amount != 0) {
 		throw std::logic_error("not enough funds");
 	}
 	return change;
@@ -122,7 +123,7 @@ uint64_t gather_inputs(	std::shared_ptr<Transaction> tx,
 hash_t Wallet::send(const uint64_t& amount, const addr_t& dst_addr, const addr_t& contract) const
 {
 	if(!wallet) {
-		throw std::logic_error("have no wallet");
+		throw std::logic_error("no wallet open");
 	}
 	if(amount == 0) {
 		throw std::logic_error("amount cannot be zero");
@@ -134,13 +135,13 @@ hash_t Wallet::send(const uint64_t& amount, const addr_t& dst_addr, const addr_t
 	// create lookup map
 	std::unordered_map<txio_key_t, addr_t> addr_map;
 	for(const auto& entry : utxo_list) {
-		addr_map[entry.first] = entry.second.address;
+		addr_map[entry.key] = entry.output.address;
 	}
 
 	// sort by height, such as to use oldest coins first (which are more likely to be spend-able right now)
 	std::sort(utxo_list.begin(), utxo_list.end(),
-		[](const std::pair<txio_key_t, utxo_t>& lhs, const std::pair<txio_key_t, utxo_t>& rhs) -> bool {
-			return lhs.second.height < rhs.second.height;
+		[](const utxo_entry_t& lhs, const utxo_entry_t& rhs) -> bool {
+			return lhs.output.height < rhs.output.height;
 		});
 
 	auto spent_txo = spent_txo_set;
@@ -250,31 +251,53 @@ hash_t Wallet::send(const uint64_t& amount, const addr_t& dst_addr, const addr_t
 	return tx->id;
 }
 
-std::vector<std::pair<txio_key_t, utxo_t>> Wallet::get_utxo_list() const
+std::vector<utxo_entry_t> Wallet::get_utxo_list() const
 {
+	if(!wallet) {
+		throw std::logic_error("no wallet open");
+	}
 	const auto all_utxo = node->get_utxo_list(wallet->get_all_addresses());
 
 	// remove any utxo we have already consumed
-	std::vector<std::pair<txio_key_t, utxo_t>> list;
+	std::vector<utxo_entry_t> list;
 	for(const auto& entry : all_utxo) {
-		if(!spent_txo_set.count(entry.first)) {
+		if(!spent_txo_set.count(entry.key)) {
 			list.push_back(entry);
 		}
 		// remove confirmed change
-		change_utxo_map.erase(entry.first);
+		change_utxo_map.erase(entry.key);
 	}
 	// add pending change outputs
 	for(const auto& entry : change_utxo_map) {
-		list.emplace_back(entry.first, utxo_t::create_ex(entry.second, -1));
+		list.push_back(utxo_entry_t::create_ex(entry.first, utxo_t::create_ex(entry.second, -1)));
 	}
 	return list;
 }
 
-std::vector<std::pair<txio_key_t, utxo_t>> Wallet::get_utxo_list_for(const addr_t& contract) const
+std::vector<utxo_entry_t> Wallet::get_utxo_list_for(const addr_t& contract) const
 {
-	std::vector<std::pair<txio_key_t, utxo_t>> res;
+	std::vector<utxo_entry_t> res;
 	for(const auto& entry : get_utxo_list()) {
-		if(entry.second.contract == contract) {
+		if(entry.output.contract == contract) {
+			res.push_back(entry);
+		}
+	}
+	return res;
+}
+
+std::vector<stxo_entry_t> Wallet::get_stxo_list() const
+{
+	if(!wallet) {
+		throw std::logic_error("no wallet open");
+	}
+	return node->get_stxo_list(wallet->get_all_addresses());
+}
+
+std::vector<stxo_entry_t> Wallet::get_stxo_list_for(const addr_t& contract) const
+{
+	std::vector<stxo_entry_t> res;
+	for(const auto& entry : get_stxo_list()) {
+		if(entry.output.contract == contract) {
 			res.push_back(entry);
 		}
 	}
@@ -285,19 +308,19 @@ uint64_t Wallet::get_balance(const addr_t& contract) const
 {
 	uint64_t total = 0;
 	for(const auto& entry : get_utxo_list()) {
-		if(entry.second.contract == contract) {
-			total += entry.second.amount;
+		if(entry.output.contract == contract) {
+			total += entry.output.amount;
 		}
 	}
 	return total;
 }
 
-std::string Wallet::get_address(const uint32_t& index) const
+addr_t Wallet::get_address(const uint32_t& index) const
 {
 	if(!wallet) {
-		throw std::logic_error("have no wallet");
+		throw std::logic_error("no wallet open");
 	}
-	return wallet->get_address(index).to_string();
+	return wallet->get_address(index);
 }
 
 void Wallet::show_farmer_keys(const uint32_t& index) const

@@ -2,8 +2,8 @@ package mmx;
 
 struct txo_info_t {
 	
-	uint created_at;				// height
+	utxo_t output;
 	
-	optional<txio_key_t> spent_on;
+	optional<txio_key_t> spent;
 	
 }

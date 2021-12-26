@@ -19,13 +19,17 @@ module Wallet {
 	
 	hash_t send(ulong amount, addr_t dst_addr, addr_t contract) const;
 	
-	vector<pair<txio_key_t, utxo_t>> get_utxo_list() const;
+	vector<utxo_entry_t> get_utxo_list() const;
 	
-	vector<pair<txio_key_t, utxo_t>> get_utxo_list_for(addr_t contract) const;
+	vector<utxo_entry_t> get_utxo_list_for(addr_t contract) const;
+	
+	vector<stxo_entry_t> get_stxo_list() const;
+	
+	vector<stxo_entry_t> get_stxo_list_for(addr_t contract) const;
 	
 	ulong get_balance(addr_t contract) const;
 	
-	string get_address(uint index) const;
+	addr_t get_address(uint index) const;
 	
 	hash_t get_master_seed(uint index) const;
 	

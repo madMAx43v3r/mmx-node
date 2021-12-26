@@ -12,6 +12,8 @@
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/TimeLordClient.hxx>
 #include <mmx/contract/PubKey.hxx>
+#include <mmx/utxo_entry_t.hpp>
+#include <mmx/stxo_entry_t.hpp>
 #include <mmx/chiapos.h>
 #include <mmx/utils.h>
 
@@ -252,28 +254,25 @@ txo_info_t Node::get_txo_info(const txio_key_t& key) const
 		auto iter = utxo_map.find(key);
 		if(iter != utxo_map.end()) {
 			txo_info_t info;
-			info.created_at = iter->second.height;
+			info.output = iter->second;
 			return info;
 		}
 	}
 	{
 		auto iter = stxo_index.find(key);
 		if(iter != stxo_index.end()) {
-			auto iter2 = tx_index.find(iter->second.txid);
-			if(iter2 != tx_index.end()) {
-				txo_info_t info;
-				info.created_at = iter2->second.height;
-				info.spent_on = iter->second;
-				return info;
-			}
+			txo_info_t info;
+			info.output = iter->second.output;
+			info.spent = iter->second.key;
+			return info;
 		}
 	}
 	for(const auto& log : change_log) {
 		auto iter = log->utxo_removed.find(key);
 		if(iter != log->utxo_removed.end()) {
 			txo_info_t info;
-			info.created_at = iter->second.second.height;
-			info.spent_on = iter->second.first;
+			info.output = iter->second.output;
+			info.spent = iter->second.key;
 			return info;
 		}
 	}
@@ -299,6 +298,15 @@ std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id) const
 				return block->tx_list.at(entry.index - 1);
 			}
 		}
+	}
+	return nullptr;
+}
+
+std::shared_ptr<const Contract> Node::get_contract(const addr_t& address) const
+{
+	auto iter = contracts.find(address);
+	if(iter != contracts.end()) {
+		return iter->second;
 	}
 	return nullptr;
 }
@@ -352,7 +360,7 @@ uint64_t Node::get_total_balance(const std::vector<addr_t>& addresses, const add
 {
 	uint64_t total = 0;
 	for(const auto& entry : get_utxo_list(addresses)) {
-		const auto& out = entry.second;
+		const auto& out = entry.output;
 		if(out.contract == contract) {
 			total += out.amount;
 		}
@@ -360,16 +368,16 @@ uint64_t Node::get_total_balance(const std::vector<addr_t>& addresses, const add
 	return total;
 }
 
-std::vector<std::pair<txio_key_t, utxo_t>> Node::get_utxo_list(const std::vector<addr_t>& addresses) const
+std::vector<utxo_entry_t> Node::get_utxo_list(const std::vector<addr_t>& addresses) const
 {
-	std::vector<std::pair<txio_key_t, utxo_t>> res;
+	std::vector<utxo_entry_t> res;
 	for(const auto& addr : addresses) {
 		const auto begin = addr_map.lower_bound(std::make_pair(addr, txio_key_t()));
 		const auto end   = addr_map.upper_bound(std::make_pair(addr, txio_key_t::create_ex(hash_t::ones(), -1)));
 		for(auto iter = begin; iter != end; ++iter) {
 			auto iter2 = utxo_map.find(iter->second);
 			if(iter2 != utxo_map.end()) {
-				res.push_back(*iter2);
+				res.push_back(utxo_entry_t::create_ex(iter2->first, iter2->second));
 			}
 		}
 		auto iter = taddr_map.find(addr);
@@ -377,8 +385,23 @@ std::vector<std::pair<txio_key_t, utxo_t>> Node::get_utxo_list(const std::vector
 			for(const auto& key : iter->second) {
 				auto iter2 = utxo_map.find(key);
 				if(iter2 != utxo_map.end()) {
-					res.push_back(*iter2);
+					res.push_back(utxo_entry_t::create_ex(iter2->first, iter2->second));
 				}
+			}
+		}
+	}
+	return res;
+}
+
+std::vector<stxo_entry_t> Node::get_stxo_list(const std::vector<addr_t>& addresses) const
+{
+	std::vector<stxo_entry_t> res;
+	for(const auto& addr : addresses) {
+		const auto range = saddr_map.equal_range(addr);
+		for(auto iter = range.first; iter != range.second; ++iter) {
+			auto iter2 = stxo_index.find(iter->second);
+			if(iter2 != stxo_index.end()) {
+				res.push_back(stxo_entry_t::create_ex(iter->second, iter2->second.output, iter2->second.key));
 			}
 		}
 	}
@@ -1310,7 +1333,10 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	const auto log = change_log.front();
 
 	for(const auto& entry : log->utxo_removed) {
-		addr_map.erase(std::make_pair(entry.second.second.address, entry.first));
+		const auto& stxo = entry.second.output;
+		stxo_index[entry.first] = entry.second;
+		saddr_map.emplace(stxo.address, entry.first);
+		addr_map.erase(std::make_pair(stxo.address, entry.first));
 	}
 	for(const auto& entry : log->utxo_added) {
 		const auto& utxo = entry.second;
@@ -1625,7 +1651,7 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 		if(iter != utxo_map.end()) {
 			const auto key = txio_key_t::create_ex(tx->id, i);
 			const auto& stxo = iter->second;
-			log.utxo_removed.emplace(iter->first, std::make_pair(key, stxo));
+			log.utxo_removed.emplace(iter->first, utxo_entry_t::create_ex(key, stxo));
 			taddr_map[stxo.address].erase(iter->first);
 			utxo_map.erase(iter);
 		}
@@ -1658,7 +1684,7 @@ bool Node::revert() noexcept
 		taddr_map[utxo.address].erase(entry.first);
 	}
 	for(const auto& entry : log->utxo_removed) {
-		const auto& utxo = entry.second.second;
+		const auto& utxo = entry.second.output;
 		utxo_map.emplace(entry.first, utxo);
 		taddr_map[utxo.address].insert(entry.first);
 	}

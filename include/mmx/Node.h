@@ -48,6 +48,8 @@ protected:
 
 	std::shared_ptr<const Transaction> get_transaction(const hash_t& id) const override;
 
+	std::shared_ptr<const Contract> get_contract(const addr_t& address) const override;
+
 	void add_block(std::shared_ptr<const Block> block) override;
 
 	void add_transaction(std::shared_ptr<const Transaction> tx) override;
@@ -56,7 +58,9 @@ protected:
 
 	uint64_t get_total_balance(const std::vector<addr_t>& addresses, const addr_t& contract) const override;
 
-	std::vector<std::pair<txio_key_t, utxo_t>> get_utxo_list(const std::vector<addr_t>& addresses) const override;
+	std::vector<utxo_entry_t> get_utxo_list(const std::vector<addr_t>& addresses) const override;
+
+	std::vector<stxo_entry_t> get_stxo_list(const std::vector<addr_t>& addresses) const override;
 
 	void start_sync() override;
 
@@ -94,8 +98,8 @@ private:
 	struct change_log_t {
 		hash_t prev_state;
 		std::vector<hash_t> tx_added;
-		std::unordered_map<txio_key_t, utxo_t> utxo_added;								// [utxo key => utxo]
-		std::unordered_map<txio_key_t, std::pair<txio_key_t, utxo_t>> utxo_removed;		// [utxo key => [spent txio key, utxo]]
+		std::unordered_map<txio_key_t, utxo_t> utxo_added;				// [utxo key => utxo]
+		std::unordered_map<txio_key_t, utxo_entry_t> utxo_removed;		// [utxo key => [txi key, utxo]]
 	};
 
 	void update();
@@ -169,18 +173,19 @@ private:
 	hash_t state_hash;
 	std::list<std::shared_ptr<const change_log_t>> change_log;
 
-	std::unordered_map<hash_t, uint32_t> hash_index;							// [block hash => height] (finalized only)
-	std::unordered_map<hash_t, tx_key_t> tx_index;								// [txid => [height, index]] (finalized only)
-	std::unordered_map<txio_key_t, txio_key_t> stxo_index;						// [txo key => spent txio key] (finalized + spent only)
-	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;				// [height => block header] (finalized only)
+	std::unordered_map<hash_t, uint32_t> hash_index;								// [block hash => height] (finalized only)
+	std::unordered_map<hash_t, tx_key_t> tx_index;									// [txid => [height, index]] (finalized only)
+	std::unordered_map<txio_key_t, utxo_entry_t> stxo_index;						// [stxo key => [txi key, stxo]] (finalized + spent only)
+	std::unordered_multimap<addr_t, txio_key_t> saddr_map;							// [addr => stxo key] (finalized + spent only)
+	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;					// [height => block header] (finalized only)
 
-	std::unordered_map<hash_t, tx_key_t> tx_map;								// [txid => [height, index]] (pending only)
-	std::unordered_map<txio_key_t, utxo_t> utxo_map;							// [utxo key => utxo]
-	std::unordered_map<addr_t, std::unordered_set<txio_key_t>> taddr_map;		// [addr => utxo keys] (pending + unspent only)
-	std::set<std::pair<addr_t, txio_key_t>> addr_map;							// [addr => utxo keys] (finalized + unspent only)
+	std::unordered_map<hash_t, tx_key_t> tx_map;									// [txid => [height, index]] (pending only)
+	std::unordered_map<txio_key_t, utxo_t> utxo_map;								// [utxo key => utxo]
+	std::set<std::pair<addr_t, txio_key_t>> addr_map;								// [addr => utxo keys] (finalized + unspent only)
+	std::unordered_map<addr_t, std::unordered_set<txio_key_t>> taddr_map;			// [addr => utxo keys] (pending + unspent only)
 
 	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;					// pending blocks
-	std::unordered_map<hash_t, std::shared_ptr<const Contract>> contracts;			// current contract state
+	std::unordered_map<addr_t, std::shared_ptr<const Contract>> contracts;			// current contract state
 	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_pool;
 
 	std::map<uint64_t, vdf_point_t> verified_vdfs;									// [end iters => output]
