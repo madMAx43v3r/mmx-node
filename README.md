@@ -156,7 +156,7 @@ git submodule update --init --recursive
 
 ### Windows via WSL
 
-To setup Ubuntu 20.04 in WLS on Windows you can follow the tutorial over here: \
+To setup Ubuntu 20.04 in WSL on Windows you can follow the tutorial over here: \
 https://docs.microsoft.com/en-us/learn/modules/get-started-with-windows-subsystem-for-linux/
 
 Make sure to install Ubuntu in step 2: https://www.microsoft.com/store/p/ubuntu/9nblggh4msv6
