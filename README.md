@@ -219,6 +219,11 @@ sudo apt update
 sudo apt install intel-opencl-icd
 ```
 
+For older Intel CPUs like `Ivy Bridge` or `Bay Trail` you need this package:
+```
+sudo apt install beignet-opencl-icd
+```
+
 ### OpenCL for AMD GPUs
 
 Linux: \
