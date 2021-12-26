@@ -645,11 +645,14 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 							peer->hash_check.request = send_request(client, req);
 						}
 					}
-					else if(peer->is_outbound) {
-						log(INFO) << "Disconnecting from peer " << peer->address << " who is not synced";
-						disconnect(client);
-					}
 					else {
+						if(peer->is_synced) {
+							log(INFO) << "Peer " << peer->address << " is not synced";
+						}
+						if(peer->is_outbound) {
+							peer->is_outbound = false;
+							outgoing_peers.erase(client);
+						}
 						peer->is_synced = false;
 						synced_peers.erase(client);
 					}
