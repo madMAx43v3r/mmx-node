@@ -346,8 +346,7 @@ int main(int argc, char** argv)
 					int64_t max_count = 10;
 					vnx::read_config("$4", max_count);
 
-					const auto peers = router.get_peers(-1);
-					for(const auto& peer : router.get_peers(max_count)) {
+					for(const auto& peer : router.get_connected_peers()) {
 						std::cout << peer << std::endl;
 					}
 				}
