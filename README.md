@@ -142,7 +142,7 @@ To add a plot directory add the path to `plot_dirs` array in `config/local/Harve
 To install the dependencies:
 ```
 sudo apt update
-sudo apt install git cmake build-essential libsecp256k1-dev libsodium-dev zlib1g-dev ocl-icd-opencl-dev clinfo
+sudo apt install git cmake build-essential libsecp256k1-dev libsodium-dev zlib1g-dev ocl-icd-opencl-dev clinfo screen
 ```
 
 OpenCL provides faster and more effient VDF verification using an integrated or dedicated GPU.
