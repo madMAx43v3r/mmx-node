@@ -69,6 +69,8 @@ To run a node for `testnet1`
 ./run_node.sh
 ```
 
+You can enable port forwaring on TCP port 12331 if you want to help out the network and accept incoming connections.
+
 To run a node in the background you can enter a `screen` session:
 ```
 screen -S node
