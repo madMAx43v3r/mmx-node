@@ -1,0 +1,15 @@
+package mmx.contract;
+
+import mmx.hash_t;
+import mmx.Contract;
+
+class NFT extends Contract {
+	
+	hash_t id;
+	
+	Contract* owner;
+	
+	
+//	hash_t calc_hash() const;
+	
+}

@@ -2,6 +2,6 @@ package mmx;
 
 class Solution {
 	
-	int version;
+	uint version;
 	
 }

@@ -2,7 +2,7 @@ package mmx.contract;
 
 import mmx.addr_t;
 
-class Staking extends Locked {
+class Staking extends mmx.Contract {
 	
 	addr_t contract;			// contract being staked for
 	
