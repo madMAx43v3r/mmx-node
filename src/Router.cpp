@@ -337,6 +337,8 @@ void Router::connect()
 		if(connected) {
 			continue;
 		}
+		log(INFO) << "Trying to connect to " << address;
+
 		connecting_peers.insert(address);
 		threads->add_task(std::bind(&Router::connect_task, this, address));
 	}
