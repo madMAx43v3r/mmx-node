@@ -73,7 +73,7 @@ void Router::main()
 	node->vnx_set_non_blocking(true);
 	add_async_client(node);
 
-	threads = new vnx::ThreadPool(num_peers_out);
+	threads = new vnx::ThreadPool(3 * num_peers_out);
 
 	set_timer_millis(query_interval_ms, std::bind(&Router::query, this));
 	set_timer_millis(update_interval_ms, std::bind(&Router::update, this));
@@ -322,7 +322,7 @@ void Router::connect()
 {
 	for(const auto& address : get_peers(num_peers_out))
 	{
-		if(outgoing_peers.size() + connecting_peers.size() >= num_peers_out) {
+		if(outgoing_peers.size() >= num_peers_out || connecting_peers.size() >= 3 * num_peers_out) {
 			break;
 		}
 		if(connecting_peers.count(address) || block_peers.count(address)) {
@@ -367,6 +367,10 @@ void Router::add_peer(const std::string& address, const int sock)
 	connecting_peers.erase(address);
 
 	if(sock >= 0) {
+		if(outgoing_peers.size() >= num_peers_out) {
+			vnx::TcpEndpoint().close(sock);
+			return;
+		}
 		const auto client = add_client(sock, address);
 
 		auto& peer = peer_map[client];
