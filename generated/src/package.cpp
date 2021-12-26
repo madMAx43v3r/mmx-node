@@ -84,6 +84,8 @@
 #include <mmx/Wallet_get_balance_return.hxx>
 #include <mmx/Wallet_get_farmer_keys.hxx>
 #include <mmx/Wallet_get_farmer_keys_return.hxx>
+#include <mmx/Wallet_get_master_seed.hxx>
+#include <mmx/Wallet_get_master_seed_return.hxx>
 #include <mmx/Wallet_get_utxo_list.hxx>
 #include <mmx/Wallet_get_utxo_list_return.hxx>
 #include <mmx/Wallet_get_utxo_list_for.hxx>
@@ -737,6 +739,22 @@ void type<::mmx::Wallet_get_farmer_keys_return>::create_dynamic_code(std::vector
 	code.push_back(CODE_OBJECT);
 }
 
+void type<::mmx::Wallet_get_master_seed>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Wallet_get_master_seed());
+}
+
+void type<::mmx::Wallet_get_master_seed>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_master_seed& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+void type<::mmx::Wallet_get_master_seed_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Wallet_get_master_seed_return());
+}
+
+void type<::mmx::Wallet_get_master_seed_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_master_seed_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 void type<::mmx::Wallet_get_utxo_list>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Wallet_get_utxo_list());
 }
@@ -1064,6 +1082,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Wallet_get_balance_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_get_farmer_keys::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_get_farmer_keys_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Wallet_get_master_seed::static_create_type_code());
+	vnx::register_type_code(::mmx::Wallet_get_master_seed_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_get_utxo_list::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_get_utxo_list_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_get_utxo_list_for::static_create_type_code());
@@ -1177,6 +1197,8 @@ const vnx::TypeCode* const vnx_native_type_code_Wallet_get_balance = vnx::get_ty
 const vnx::TypeCode* const vnx_native_type_code_Wallet_get_balance_return = vnx::get_type_code(vnx::Hash64(0xfa00e6f62563141full));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_get_farmer_keys = vnx::get_type_code(vnx::Hash64(0x44709e11ff3ff3eeull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_get_farmer_keys_return = vnx::get_type_code(vnx::Hash64(0x25479f868269fbb0ull));
+const vnx::TypeCode* const vnx_native_type_code_Wallet_get_master_seed = vnx::get_type_code(vnx::Hash64(0x8fddd77ece4d295bull));
+const vnx::TypeCode* const vnx_native_type_code_Wallet_get_master_seed_return = vnx::get_type_code(vnx::Hash64(0x8b0f38e742e132f0ull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_get_utxo_list = vnx::get_type_code(vnx::Hash64(0xa9416ad9f318f1feull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_get_utxo_list_return = vnx::get_type_code(vnx::Hash64(0x5618c84cf0f02009ull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_get_utxo_list_for = vnx::get_type_code(vnx::Hash64(0x8b3f02747642c28dull));

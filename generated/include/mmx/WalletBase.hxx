@@ -64,6 +64,7 @@ protected:
 	virtual std::vector<std::pair<::mmx::txio_key_t, ::mmx::utxo_t>> get_utxo_list_for(const ::mmx::addr_t& contract) const = 0;
 	virtual uint64_t get_balance(const ::mmx::addr_t& contract) const = 0;
 	virtual std::string get_address(const uint32_t& index) const = 0;
+	virtual ::mmx::hash_t get_master_seed(const uint32_t& index) const = 0;
 	virtual void show_farmer_keys(const uint32_t& wallet) const = 0;
 	virtual std::shared_ptr<const ::mmx::FarmerKeys> get_farmer_keys(const uint32_t& wallet) const = 0;
 	virtual std::vector<std::shared_ptr<const ::mmx::FarmerKeys>> get_all_farmer_keys() const = 0;

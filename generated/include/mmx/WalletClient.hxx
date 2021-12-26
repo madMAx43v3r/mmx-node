@@ -69,6 +69,8 @@ public:
 	
 	std::string get_address(const uint32_t& index = 0);
 	
+	::mmx::hash_t get_master_seed(const uint32_t& index = 0);
+	
 	void show_farmer_keys(const uint32_t& wallet = 0);
 	
 	void show_farmer_keys_async(const uint32_t& wallet = 0);
