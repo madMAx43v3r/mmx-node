@@ -73,7 +73,7 @@ void Router::main()
 	node->vnx_set_non_blocking(true);
 	add_async_client(node);
 
-	threads = new vnx::ThreadPool(3 * num_peers_out);
+	threads = new vnx::ThreadPool(num_threads);
 
 	set_timer_millis(query_interval_ms, std::bind(&Router::query, this));
 	set_timer_millis(update_interval_ms, std::bind(&Router::update, this));
@@ -320,9 +320,9 @@ bool Router::process(std::shared_ptr<const Return> ret)
 
 void Router::connect()
 {
-	for(const auto& address : get_peers(num_peers_out))
+	for(const auto& address : get_peers(num_threads))
 	{
-		if(outgoing_peers.size() >= num_peers_out || connecting_peers.size() >= 3 * num_peers_out) {
+		if(outgoing_peers.size() >= num_peers_out || connecting_peers.size() >= num_threads) {
 			break;
 		}
 		if(connecting_peers.count(address) || block_peers.count(address)) {
@@ -337,7 +337,7 @@ void Router::connect()
 		if(connected) {
 			continue;
 		}
-		log(INFO) << "Trying to connect to " << address;
+		log(DEBUG) << "Trying to connect to " << address;
 
 		connecting_peers.insert(address);
 		threads->add_task(std::bind(&Router::connect_task, this, address));
