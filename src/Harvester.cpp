@@ -182,11 +182,13 @@ void Harvester::reload()
 	{
 		const auto& file = entry.first;
 		const auto& prover = entry.second;
-		id_map[hash_t::from_bytes(prover->get_plot_id())] = file->get_path();
-		plot_map[file->get_path()] = prover;
+		const auto file_name = file->get_path();
+		const auto plot_id = hash_t::from_bytes(prover->get_plot_id());
+		id_map[plot_id] = file_name;
+		plot_map[file_name] = prover;
 		total_bytes += file->file_size();
 	}
-	log(INFO) << "Loaded " << plot_map.size() << " plots, " << (total_bytes / 1024 / 1024) / pow(1024, 2) << " TiB total";
+	log(INFO) << "Loaded " << plot_map.size() << " plots, " << total_bytes / pow(1024, 4) << " TiB total";
 }
 
 void Harvester::update()
