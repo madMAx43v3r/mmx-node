@@ -49,6 +49,8 @@ protected:
 
 	std::vector<std::shared_ptr<const FarmerKeys>> get_all_farmer_keys() const override;
 
+	hash_t get_master_seed(const uint32_t& index) const override;
+
 private:
 	std::shared_ptr<NodeClient> node;
 

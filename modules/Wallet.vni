@@ -27,6 +27,8 @@ module Wallet {
 	
 	string get_address(uint index) const;
 	
+	hash_t get_master_seed(uint index) const;
+	
 	
 	void show_farmer_keys(uint wallet) const;
 	

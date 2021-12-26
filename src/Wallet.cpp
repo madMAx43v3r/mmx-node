@@ -333,5 +333,16 @@ std::vector<std::shared_ptr<const FarmerKeys>> Wallet::get_all_farmer_keys() con
 	return res;
 }
 
+hash_t Wallet::get_master_seed(const uint32_t& index) const
+{
+	if(index >= key_files.size()) {
+		throw std::logic_error("invalid wallet index");
+	}
+	if(auto key_file = vnx::read_from_file<KeyFile>(key_files[index])) {
+		return key_file->seed_value;
+	}
+	throw std::logic_error("failed to read key file");
+}
+
 
 } // mmx

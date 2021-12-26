@@ -40,7 +40,9 @@ To get a specific receiving address: `mmx wallet get address [index]`
 
 To send coins: `mmx wallet send -a <amount> -t <address>`
 
-To use a non-default wallet specify `-j <index>` with above commands.
+To get the seed value from a wallet: `mmx wallet get seed`
+
+To use a non-default wallet specify `-j <index>` with above commands (at the end).
 
 To check on the node: `mmx node info`
 
@@ -97,7 +99,17 @@ mmx wallet create [-f filename]
 
 The file name argument is optional, by default it is `wallet.dat`, which is already included in the default configuration.
 
-To add more wallets add the paths to `key_files+` array in `config/local/Wallet.json`.
+To use more wallets add the paths to `key_files+` array in `config/local/Wallet.json`.
+
+To create a wallet with a known seed value:
+```
+mmx wallet create <seed> [-f filename]
+```
+
+To get the seed value from a wallet:
+```
+mmx wallet get seed [-j index]
+```
 
 ## Plotting
 

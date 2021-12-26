@@ -139,6 +139,10 @@ int main(int argc, char** argv)
 				{
 					std::cout << wallet.get_balance(contract) / pow(10, params->decimals) << std::endl;
 				}
+				else if(subject == "seed")
+				{
+					std::cout << wallet.get_master_seed(index) << std::endl;
+				}
 				else {
 					std::cerr << "Help: mmx wallet get [address | amount | balance]" << std::endl;
 				}
@@ -171,12 +175,22 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Wallet file '" << file_name << "' already exists";
 					goto failed;
 				}
-				std::vector<uint8_t> seed(4096);
-				randombytes_buf(seed.data(), seed.size());
+				std::string seed_str;
+				vnx::read_config("$3", seed_str);
 
 				mmx::KeyFile wallet;
-				wallet.seed_value = mmx::hash_t(seed);
-
+				if(seed_str.empty()) {
+					std::vector<uint8_t> seed(4096);
+					randombytes_buf(seed.data(), seed.size());
+					wallet.seed_value = mmx::hash_t(seed);
+				} else {
+					if(seed_str.size() == 64) {
+						wallet.seed_value.from_string(seed_str);
+					} else {
+						vnx::log_error() << "Invalid seed value: '" << seed_str << "'";
+						goto failed;
+					}
+				}
 				vnx::write_to_file(file_name, wallet);
 
 				std::cout << "Created wallet '" << file_name << "' with seed: "
