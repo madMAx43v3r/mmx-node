@@ -154,6 +154,19 @@ git submodule update --init --recursive
 ./make_devel.sh
 ```
 
+### Windows via WSL
+
+To setup Ubuntu 20.04 in WLS on Windows you can follow the tutorial over here: \
+https://docs.microsoft.com/en-us/learn/modules/get-started-with-windows-subsystem-for-linux/
+
+Make sure to install Ubuntu in step 2: https://www.microsoft.com/store/p/ubuntu/9nblggh4msv6
+
+Then type "Ubuntu" in the start menu and start it, you will be asked to setup a user and password.
+After that you can follow the normal instructions for Ubuntu 20.04.
+
+I think it requires Windows 10 or newer.
+Unfortunately it seems OpenCL is not yet supported int WSL2 (they are working on it though).
+
 ### OpenCL for Intel iGPUs
 
 Ubuntu 20.04, 21.04
