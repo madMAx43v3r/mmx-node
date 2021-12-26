@@ -187,7 +187,7 @@ git submodule update --init --recursive
 
 To update to latest version:
 ```
-git pull && git submodule update && ./make_devel.sh
+git pull && git submodule update --init --recursive && ./make_devel.sh
 ```
 
 ### Windows via WSL
