@@ -12,7 +12,7 @@ namespace wallet {
 
 
 const vnx::Hash64 tx_type_e::VNX_TYPE_HASH(0x253be3534b9b9756ull);
-const vnx::Hash64 tx_type_e::VNX_CODE_HASH(0xc66bb459510bfd95ull);
+const vnx::Hash64 tx_type_e::VNX_CODE_HASH(0x184deba80dc8f05cull);
 
 vnx::Hash64 tx_type_e::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -45,6 +45,7 @@ void tx_type_e::write(vnx::TypeOutput& _out, const vnx::TypeCode* _type_code, co
 vnx::bool_t tx_type_e::is_valid() const {
 	switch(value) {
 		case RECEIVE: return true;
+		case REWARD: return true;
 		case SEND: return true;
 	}
 	return false;
@@ -53,6 +54,7 @@ vnx::bool_t tx_type_e::is_valid() const {
 std::string tx_type_e::to_string() const {
 	switch(value) {
 		case RECEIVE: return "\"RECEIVE\"";
+		case REWARD: return "\"REWARD\"";
 		case SEND: return "\"SEND\"";
 	}
 	return std::to_string(value);
@@ -61,6 +63,7 @@ std::string tx_type_e::to_string() const {
 std::string tx_type_e::to_string_value() const {
 	switch(value) {
 		case RECEIVE: return "RECEIVE";
+		case REWARD: return "REWARD";
 		case SEND: return "SEND";
 	}
 	return std::to_string(value);
@@ -69,6 +72,7 @@ std::string tx_type_e::to_string_value() const {
 std::string tx_type_e::to_string_value_full() const {
 	switch(value) {
 		case RECEIVE: return "mmx.wallet.tx_type_e.RECEIVE";
+		case REWARD: return "mmx.wallet.tx_type_e.REWARD";
 		case SEND: return "mmx.wallet.tx_type_e.SEND";
 	}
 	return std::to_string(value);
@@ -85,6 +89,7 @@ void tx_type_e::from_string_value(const std::string& _name) {
 	vnx::from_string_value(_name, var);
 	if(var.is_string()) {
 		if(_name == "RECEIVE") value = RECEIVE;
+		else if(_name == "REWARD") value = REWARD;
 		else if(_name == "SEND") value = SEND;
 		else value = enum_t(vnx::hash64(_name));
 	} else {
@@ -96,6 +101,7 @@ void tx_type_e::accept(vnx::Visitor& _visitor) const {
 	std::string _name;
 	switch(value) {
 		case RECEIVE: _name = "RECEIVE"; break;
+		case REWARD: _name = "REWARD"; break;
 		case SEND: _name = "SEND"; break;
 	}
 	_visitor.enum_value(value, _name);
@@ -104,6 +110,7 @@ void tx_type_e::accept(vnx::Visitor& _visitor) const {
 void tx_type_e::write(std::ostream& _out) const {
 	switch(value) {
 		case RECEIVE: _out << "\"RECEIVE\""; break;
+		case REWARD: _out << "\"REWARD\""; break;
 		case SEND: _out << "\"SEND\""; break;
 		default: _out << value;
 	}
@@ -167,7 +174,7 @@ std::shared_ptr<vnx::TypeCode> tx_type_e::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.wallet.tx_type_e";
 	type_code->type_hash = vnx::Hash64(0x253be3534b9b9756ull);
-	type_code->code_hash = vnx::Hash64(0xc66bb459510bfd95ull);
+	type_code->code_hash = vnx::Hash64(0x184deba80dc8f05cull);
 	type_code->is_native = true;
 	type_code->is_enum = true;
 	type_code->native_size = sizeof(::mmx::wallet::tx_type_e);
@@ -180,6 +187,7 @@ std::shared_ptr<vnx::TypeCode> tx_type_e::static_create_type_code() {
 		field.code = {3};
 	}
 	type_code->enum_map[940023181] = "RECEIVE";
+	type_code->enum_map[3842121424] = "REWARD";
 	type_code->enum_map[521672984] = "SEND";
 	type_code->build();
 	return type_code;

@@ -15,6 +15,7 @@ struct tx_type_e {
 	
 	enum enum_t : uint32_t {
 		RECEIVE = 940023181l,
+		REWARD = 3842121424l,
 		SEND = 521672984l,
 	};
 	
