@@ -68,6 +68,8 @@ To get total space in bytes: `mmx farm get space`
 
 To show plot directories: `mmx farm get dirs`
 
+To reload plots: `mmx farm reload`
+
 ## Running a Node
 
 First perform the installation and setup steps below.

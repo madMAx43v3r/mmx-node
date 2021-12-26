@@ -383,6 +383,9 @@ int main(int argc, char** argv)
 					std::cout << "K" << int(entry.first) << ": " << entry.second << " plots" << std::endl;
 				}
 			}
+			else if(command == "reload") {
+				harvester.reload();
+			}
 			else if(command == "get") {
 				std::string subject;
 				vnx::read_config("$3", subject);
@@ -402,7 +405,7 @@ int main(int argc, char** argv)
 				}
 			}
 			else {
-				std::cerr << "Help: mmx farm [info]" << std::endl;
+				std::cerr << "Help: mmx farm [info | reload]" << std::endl;
 			}
 		}
 		else {
