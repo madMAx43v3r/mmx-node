@@ -77,7 +77,9 @@ screen -S node
 screen -r node (to attach again)
 ```
 
-To disable the `TimeLord` specify `--timelord 0` on the command line. If you have a slow CPU this is recommended.
+To disable the `TimeLord` specify `--timelord 0` on the command line.
+Alternatively, you can also disable it by default: `echo false > config/local/timelord`.
+If you have a slow CPU this is recommended and maybe even needed to stay in sync.
 
 To re-sync starting from a specific height: `--Node.replay_height <height>`
 
