@@ -23,6 +23,7 @@ file(GLOB GENERATED_SOURCE_FILES
 	generated/contract/src/*.cpp
 	generated/operation/src/*.cpp
 	generated/solution/src/*.cpp
+	generated/wallet/src/*.cpp
 )
 
 add_library(mmx_iface SHARED
@@ -99,6 +100,7 @@ target_include_directories(mmx_iface
 		generated/contract/include
 		generated/operation/include
 		generated/solution/include
+		generated/wallet/include
 )
 
 target_include_directories(uint256_t PUBLIC uint256_t)
