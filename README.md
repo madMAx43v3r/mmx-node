@@ -34,6 +34,8 @@ The node needs to be running, see below how to start it.
 
 To check your balance: `mmx wallet show`
 
+To show wallet activity: `mmx wallet log`
+
 To show the first 10 addresses: `mmx wallet show 10`
 
 To get a specific receiving address: `mmx wallet get address [index]`
