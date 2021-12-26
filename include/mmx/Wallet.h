@@ -43,6 +43,8 @@ protected:
 
 	std::vector<stxo_entry_t> get_stxo_list_for(const addr_t& contract) const override;
 
+	std::vector<wallet::tx_entry_t> get_history() const override;
+
 	uint64_t get_balance(const addr_t& contract) const override;
 
 	addr_t get_address(const uint32_t& index) const override;
