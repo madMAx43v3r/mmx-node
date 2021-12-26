@@ -130,7 +130,12 @@ Then use my plotter with `-x 11337` argument: https://github.com/madMAx43v3r/chi
 
 The minimum K size for mainnet will probably be k30, for testnets it is k26. The plots from testnets can be reused for mainnet later.
 
-To add a plot directory add the path to `plot_dirs` array in `config/local/Harvester.json`.
+To add a plot directory add the path to `plot_dirs` array in `config/local/Harvester.json`, for example:
+```
+{
+	"plot_dirs": ["/mnt/drive1/plots/", "/mnt/drive2/plots/"]
+}
+```
 
 ## Installation
 
