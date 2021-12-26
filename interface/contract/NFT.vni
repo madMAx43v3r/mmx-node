@@ -5,9 +5,11 @@ import mmx.Contract;
 
 class NFT extends Contract {
 	
-	hash_t id;
-	
 	Contract* owner;
+	
+	bool is_burnable;
+	
+	bool is_transferable;
 	
 	
 //	hash_t calc_hash() const;

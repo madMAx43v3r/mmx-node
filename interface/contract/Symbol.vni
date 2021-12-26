@@ -1,0 +1,10 @@
+package mmx.contract;
+
+class Symbol extends NFT {
+	
+	string text;
+	
+	
+//	hash_t calc_hash() const;
+	
+}
