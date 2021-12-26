@@ -14,7 +14,7 @@ namespace contract {
 
 
 const vnx::Hash64 Locked::VNX_TYPE_HASH(0xd0ff1b6e7bad1493ull);
-const vnx::Hash64 Locked::VNX_CODE_HASH(0xe6551b168f2b2eacull);
+const vnx::Hash64 Locked::VNX_CODE_HASH(0x8633f8655eaa1adcull);
 
 vnx::Hash64 Locked::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -127,7 +127,7 @@ std::shared_ptr<vnx::TypeCode> Locked::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.Locked";
 	type_code->type_hash = vnx::Hash64(0xd0ff1b6e7bad1493ull);
-	type_code->code_hash = vnx::Hash64(0xe6551b168f2b2eacull);
+	type_code->code_hash = vnx::Hash64(0x8633f8655eaa1adcull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::Locked);
@@ -139,7 +139,7 @@ std::shared_ptr<vnx::TypeCode> Locked::static_create_type_code() {
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
 		field.name = "version";
-		field.code = {7};
+		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[1];

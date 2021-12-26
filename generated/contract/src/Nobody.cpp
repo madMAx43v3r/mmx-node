@@ -13,7 +13,7 @@ namespace contract {
 
 
 const vnx::Hash64 Nobody::VNX_TYPE_HASH(0xe41a6e3df6d9e791ull);
-const vnx::Hash64 Nobody::VNX_CODE_HASH(0x6e610422dc60747eull);
+const vnx::Hash64 Nobody::VNX_CODE_HASH(0xe6f6c0f1d7ced5a5ull);
 
 vnx::Hash64 Nobody::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -116,7 +116,7 @@ std::shared_ptr<vnx::TypeCode> Nobody::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.Nobody";
 	type_code->type_hash = vnx::Hash64(0xe41a6e3df6d9e791ull);
-	type_code->code_hash = vnx::Hash64(0x6e610422dc60747eull);
+	type_code->code_hash = vnx::Hash64(0xe6f6c0f1d7ced5a5ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::Nobody);
@@ -128,7 +128,7 @@ std::shared_ptr<vnx::TypeCode> Nobody::static_create_type_code() {
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
 		field.name = "version";
-		field.code = {7};
+		field.code = {3};
 	}
 	type_code->build();
 	return type_code;

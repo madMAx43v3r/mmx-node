@@ -5,20 +5,20 @@
 #define INCLUDE_mmx_contract_Staking_HXX_
 
 #include <mmx/contract/package.hxx>
+#include <mmx/Contract.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/contract/Locked.hxx>
 
 
 namespace mmx {
 namespace contract {
 
-class Staking : public ::mmx::contract::Locked {
+class Staking : public ::mmx::Contract {
 public:
 	
 	::mmx::addr_t contract;
 	::mmx::addr_t reward_addr;
 	
-	typedef ::mmx::contract::Locked Super;
+	typedef ::mmx::Contract Super;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;

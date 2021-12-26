@@ -12,7 +12,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Solution::VNX_TYPE_HASH(0x9f693babd1a91ccdull);
-const vnx::Hash64 Solution::VNX_CODE_HASH(0x98eb75866602cb75ull);
+const vnx::Hash64 Solution::VNX_CODE_HASH(0x94524a146af7f5e7ull);
 
 vnx::Hash64 Solution::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -115,7 +115,7 @@ std::shared_ptr<vnx::TypeCode> Solution::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Solution";
 	type_code->type_hash = vnx::Hash64(0x9f693babd1a91ccdull);
-	type_code->code_hash = vnx::Hash64(0x98eb75866602cb75ull);
+	type_code->code_hash = vnx::Hash64(0x94524a146af7f5e7ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::Solution);
@@ -125,7 +125,7 @@ std::shared_ptr<vnx::TypeCode> Solution::static_create_type_code() {
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
 		field.name = "version";
-		field.code = {7};
+		field.code = {3};
 	}
 	type_code->build();
 	return type_code;

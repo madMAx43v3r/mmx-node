@@ -15,7 +15,7 @@ namespace mmx {
 class Contract : public ::vnx::Value {
 public:
 	
-	int32_t version = 0;
+	uint32_t version = 0;
 	
 	typedef ::vnx::Value Super;
 	

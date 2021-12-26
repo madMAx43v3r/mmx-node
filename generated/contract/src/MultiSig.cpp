@@ -15,7 +15,7 @@ namespace contract {
 
 
 const vnx::Hash64 MultiSig::VNX_TYPE_HASH(0x7d674c5f7297dedull);
-const vnx::Hash64 MultiSig::VNX_CODE_HASH(0x72ed88dc92c73ddfull);
+const vnx::Hash64 MultiSig::VNX_CODE_HASH(0x61686255918da380ull);
 
 vnx::Hash64 MultiSig::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -138,7 +138,7 @@ std::shared_ptr<vnx::TypeCode> MultiSig::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.MultiSig";
 	type_code->type_hash = vnx::Hash64(0x7d674c5f7297dedull);
-	type_code->code_hash = vnx::Hash64(0x72ed88dc92c73ddfull);
+	type_code->code_hash = vnx::Hash64(0x61686255918da380ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::MultiSig);
@@ -150,7 +150,7 @@ std::shared_ptr<vnx::TypeCode> MultiSig::static_create_type_code() {
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
 		field.name = "version";
-		field.code = {7};
+		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[1];

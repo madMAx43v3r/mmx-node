@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Contract::VNX_TYPE_HASH(0x26b896ae8c415285ull);
-const vnx::Hash64 Contract::VNX_CODE_HASH(0xe444c8dc1028618ull);
+const vnx::Hash64 Contract::VNX_CODE_HASH(0x2fd731fcdf7b88aull);
 
 vnx::Hash64 Contract::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -117,7 +117,7 @@ std::shared_ptr<vnx::TypeCode> Contract::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Contract";
 	type_code->type_hash = vnx::Hash64(0x26b896ae8c415285ull);
-	type_code->code_hash = vnx::Hash64(0xe444c8dc1028618ull);
+	type_code->code_hash = vnx::Hash64(0x2fd731fcdf7b88aull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::Contract);
@@ -127,7 +127,7 @@ std::shared_ptr<vnx::TypeCode> Contract::static_create_type_code() {
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
 		field.name = "version";
-		field.code = {7};
+		field.code = {3};
 	}
 	type_code->build();
 	return type_code;

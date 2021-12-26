@@ -16,7 +16,7 @@ namespace contract {
 
 
 const vnx::Hash64 PubKey::VNX_TYPE_HASH(0x9b3cd508d7f41423ull);
-const vnx::Hash64 PubKey::VNX_CODE_HASH(0xb92d0061c4f8dbbeull);
+const vnx::Hash64 PubKey::VNX_CODE_HASH(0xd94be3121579efceull);
 
 vnx::Hash64 PubKey::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -129,7 +129,7 @@ std::shared_ptr<vnx::TypeCode> PubKey::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.PubKey";
 	type_code->type_hash = vnx::Hash64(0x9b3cd508d7f41423ull);
-	type_code->code_hash = vnx::Hash64(0xb92d0061c4f8dbbeull);
+	type_code->code_hash = vnx::Hash64(0xd94be3121579efceull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::PubKey);
@@ -141,7 +141,7 @@ std::shared_ptr<vnx::TypeCode> PubKey::static_create_type_code() {
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
 		field.name = "version";
-		field.code = {7};
+		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[1];
