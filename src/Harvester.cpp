@@ -34,7 +34,7 @@ void Harvester::main()
 
 	subscribe(input_challenges, max_queue_ms);
 
-	set_timer_millis(1000, std::bind(&Harvester::update, this));
+	set_timer_millis(10000, std::bind(&Harvester::update, this));
 	set_timer_millis(int64_t(reload_interval) * 1000, std::bind(&Harvester::reload, this));
 
 	update();
