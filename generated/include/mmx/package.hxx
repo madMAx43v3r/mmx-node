@@ -6,6 +6,7 @@
 
 #include <vnx/Type.h>
 
+#include <mmx/wallet/package.hxx>
 #include <vnx/package.hxx>
 #include <vnx/addons/package.hxx>
 
@@ -18,6 +19,7 @@ class BlockHeader;
 class ChainParams;
 class Challenge;
 class Contract;
+class FarmInfo;
 class FarmerBase;
 class Farmer_get_mac_addr;
 class Farmer_get_mac_addr_return;
@@ -25,10 +27,10 @@ class Farmer_sign_block;
 class Farmer_sign_block_return;
 class FarmerKeys;
 class HarvesterBase;
-class Harvester_get_plot_count;
-class Harvester_get_plot_count_return;
-class Harvester_get_total_space;
-class Harvester_get_total_space_return;
+class Harvester_get_farm_info;
+class Harvester_get_farm_info_return;
+class Harvester_get_total_bytes;
+class Harvester_get_total_bytes_return;
 class Harvester_reload;
 class Harvester_reload_return;
 class IntervalRequest;
@@ -100,6 +102,8 @@ class Wallet_get_balance;
 class Wallet_get_balance_return;
 class Wallet_get_farmer_keys;
 class Wallet_get_farmer_keys_return;
+class Wallet_get_history;
+class Wallet_get_history_return;
 class Wallet_get_master_seed;
 class Wallet_get_master_seed_return;
 class Wallet_get_stxo_list;
@@ -143,6 +147,7 @@ extern const vnx::TypeCode* const vnx_native_type_code_BlockHeader; ///< \privat
 extern const vnx::TypeCode* const vnx_native_type_code_ChainParams; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Challenge; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Contract; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_FarmInfo; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_FarmerBase; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_mac_addr; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_mac_addr_return; ///< \private
@@ -150,10 +155,10 @@ extern const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_block; ///< \
 extern const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_block_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_FarmerKeys; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_HarvesterBase; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Harvester_get_plot_count; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Harvester_get_plot_count_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Harvester_get_total_space; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Harvester_get_total_space_return; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_Harvester_get_farm_info; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_Harvester_get_farm_info_return; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_Harvester_get_total_bytes; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_Harvester_get_total_bytes_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Harvester_reload; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Harvester_reload_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_IntervalRequest; ///< \private
@@ -225,6 +230,8 @@ extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_balance; ///< 
 extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_balance_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_farmer_keys; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_farmer_keys_return; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_history; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_history_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_master_seed; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_master_seed_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_stxo_list; ///< \private
@@ -266,6 +273,7 @@ void read(TypeInput& in, ::mmx::BlockHeader& value, const TypeCode* type_code, c
 void read(TypeInput& in, ::mmx::ChainParams& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Challenge& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Contract& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::FarmInfo& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::FarmerBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Farmer_get_mac_addr& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Farmer_get_mac_addr_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -273,10 +281,10 @@ void read(TypeInput& in, ::mmx::Farmer_sign_block& value, const TypeCode* type_c
 void read(TypeInput& in, ::mmx::Farmer_sign_block_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::FarmerKeys& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::HarvesterBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::Harvester_get_plot_count& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::Harvester_get_plot_count_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::Harvester_get_total_space& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::Harvester_get_total_space_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Harvester_get_farm_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Harvester_get_farm_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Harvester_get_total_bytes& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Harvester_get_total_bytes_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Harvester_reload& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Harvester_reload_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::IntervalRequest& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -348,6 +356,8 @@ void read(TypeInput& in, ::mmx::Wallet_get_balance& value, const TypeCode* type_
 void read(TypeInput& in, ::mmx::Wallet_get_balance_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Wallet_get_farmer_keys& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Wallet_get_farmer_keys_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Wallet_get_history& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Wallet_get_history_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Wallet_get_master_seed& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Wallet_get_master_seed_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Wallet_get_stxo_list& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -391,6 +401,7 @@ void write(TypeOutput& out, const ::mmx::BlockHeader& value, const TypeCode* typ
 void write(TypeOutput& out, const ::mmx::ChainParams& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Challenge& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Contract& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::FarmInfo& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::FarmerBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Farmer_get_mac_addr& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Farmer_get_mac_addr_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -398,10 +409,10 @@ void write(TypeOutput& out, const ::mmx::Farmer_sign_block& value, const TypeCod
 void write(TypeOutput& out, const ::mmx::Farmer_sign_block_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::FarmerKeys& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::HarvesterBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::Harvester_get_plot_count& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::Harvester_get_plot_count_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::Harvester_get_total_space& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::Harvester_get_total_space_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Harvester_get_farm_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Harvester_get_farm_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Harvester_get_total_bytes& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Harvester_get_total_bytes_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Harvester_reload& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Harvester_reload_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::IntervalRequest& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -473,6 +484,8 @@ void write(TypeOutput& out, const ::mmx::Wallet_get_balance& value, const TypeCo
 void write(TypeOutput& out, const ::mmx::Wallet_get_balance_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Wallet_get_farmer_keys& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Wallet_get_farmer_keys_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Wallet_get_history& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Wallet_get_history_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Wallet_get_master_seed& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Wallet_get_master_seed_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Wallet_get_stxo_list& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -516,6 +529,7 @@ void read(std::istream& in, ::mmx::BlockHeader& value); ///< \private
 void read(std::istream& in, ::mmx::ChainParams& value); ///< \private
 void read(std::istream& in, ::mmx::Challenge& value); ///< \private
 void read(std::istream& in, ::mmx::Contract& value); ///< \private
+void read(std::istream& in, ::mmx::FarmInfo& value); ///< \private
 void read(std::istream& in, ::mmx::FarmerBase& value); ///< \private
 void read(std::istream& in, ::mmx::Farmer_get_mac_addr& value); ///< \private
 void read(std::istream& in, ::mmx::Farmer_get_mac_addr_return& value); ///< \private
@@ -523,10 +537,10 @@ void read(std::istream& in, ::mmx::Farmer_sign_block& value); ///< \private
 void read(std::istream& in, ::mmx::Farmer_sign_block_return& value); ///< \private
 void read(std::istream& in, ::mmx::FarmerKeys& value); ///< \private
 void read(std::istream& in, ::mmx::HarvesterBase& value); ///< \private
-void read(std::istream& in, ::mmx::Harvester_get_plot_count& value); ///< \private
-void read(std::istream& in, ::mmx::Harvester_get_plot_count_return& value); ///< \private
-void read(std::istream& in, ::mmx::Harvester_get_total_space& value); ///< \private
-void read(std::istream& in, ::mmx::Harvester_get_total_space_return& value); ///< \private
+void read(std::istream& in, ::mmx::Harvester_get_farm_info& value); ///< \private
+void read(std::istream& in, ::mmx::Harvester_get_farm_info_return& value); ///< \private
+void read(std::istream& in, ::mmx::Harvester_get_total_bytes& value); ///< \private
+void read(std::istream& in, ::mmx::Harvester_get_total_bytes_return& value); ///< \private
 void read(std::istream& in, ::mmx::Harvester_reload& value); ///< \private
 void read(std::istream& in, ::mmx::Harvester_reload_return& value); ///< \private
 void read(std::istream& in, ::mmx::IntervalRequest& value); ///< \private
@@ -598,6 +612,8 @@ void read(std::istream& in, ::mmx::Wallet_get_balance& value); ///< \private
 void read(std::istream& in, ::mmx::Wallet_get_balance_return& value); ///< \private
 void read(std::istream& in, ::mmx::Wallet_get_farmer_keys& value); ///< \private
 void read(std::istream& in, ::mmx::Wallet_get_farmer_keys_return& value); ///< \private
+void read(std::istream& in, ::mmx::Wallet_get_history& value); ///< \private
+void read(std::istream& in, ::mmx::Wallet_get_history_return& value); ///< \private
 void read(std::istream& in, ::mmx::Wallet_get_master_seed& value); ///< \private
 void read(std::istream& in, ::mmx::Wallet_get_master_seed_return& value); ///< \private
 void read(std::istream& in, ::mmx::Wallet_get_stxo_list& value); ///< \private
@@ -641,6 +657,7 @@ void write(std::ostream& out, const ::mmx::BlockHeader& value); ///< \private
 void write(std::ostream& out, const ::mmx::ChainParams& value); ///< \private
 void write(std::ostream& out, const ::mmx::Challenge& value); ///< \private
 void write(std::ostream& out, const ::mmx::Contract& value); ///< \private
+void write(std::ostream& out, const ::mmx::FarmInfo& value); ///< \private
 void write(std::ostream& out, const ::mmx::FarmerBase& value); ///< \private
 void write(std::ostream& out, const ::mmx::Farmer_get_mac_addr& value); ///< \private
 void write(std::ostream& out, const ::mmx::Farmer_get_mac_addr_return& value); ///< \private
@@ -648,10 +665,10 @@ void write(std::ostream& out, const ::mmx::Farmer_sign_block& value); ///< \priv
 void write(std::ostream& out, const ::mmx::Farmer_sign_block_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::FarmerKeys& value); ///< \private
 void write(std::ostream& out, const ::mmx::HarvesterBase& value); ///< \private
-void write(std::ostream& out, const ::mmx::Harvester_get_plot_count& value); ///< \private
-void write(std::ostream& out, const ::mmx::Harvester_get_plot_count_return& value); ///< \private
-void write(std::ostream& out, const ::mmx::Harvester_get_total_space& value); ///< \private
-void write(std::ostream& out, const ::mmx::Harvester_get_total_space_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Harvester_get_farm_info& value); ///< \private
+void write(std::ostream& out, const ::mmx::Harvester_get_farm_info_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Harvester_get_total_bytes& value); ///< \private
+void write(std::ostream& out, const ::mmx::Harvester_get_total_bytes_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Harvester_reload& value); ///< \private
 void write(std::ostream& out, const ::mmx::Harvester_reload_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::IntervalRequest& value); ///< \private
@@ -723,6 +740,8 @@ void write(std::ostream& out, const ::mmx::Wallet_get_balance& value); ///< \pri
 void write(std::ostream& out, const ::mmx::Wallet_get_balance_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Wallet_get_farmer_keys& value); ///< \private
 void write(std::ostream& out, const ::mmx::Wallet_get_farmer_keys_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Wallet_get_history& value); ///< \private
+void write(std::ostream& out, const ::mmx::Wallet_get_history_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Wallet_get_master_seed& value); ///< \private
 void write(std::ostream& out, const ::mmx::Wallet_get_master_seed_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Wallet_get_stxo_list& value); ///< \private
@@ -766,6 +785,7 @@ void accept(Visitor& visitor, const ::mmx::BlockHeader& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ChainParams& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Challenge& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Contract& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::FarmInfo& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::FarmerBase& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Farmer_get_mac_addr& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Farmer_get_mac_addr_return& value); ///< \private
@@ -773,10 +793,10 @@ void accept(Visitor& visitor, const ::mmx::Farmer_sign_block& value); ///< \priv
 void accept(Visitor& visitor, const ::mmx::Farmer_sign_block_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::FarmerKeys& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::HarvesterBase& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::Harvester_get_plot_count& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::Harvester_get_plot_count_return& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::Harvester_get_total_space& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::Harvester_get_total_space_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Harvester_get_farm_info& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Harvester_get_farm_info_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Harvester_get_total_bytes& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Harvester_get_total_bytes_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Harvester_reload& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Harvester_reload_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::IntervalRequest& value); ///< \private
@@ -848,6 +868,8 @@ void accept(Visitor& visitor, const ::mmx::Wallet_get_balance& value); ///< \pri
 void accept(Visitor& visitor, const ::mmx::Wallet_get_balance_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Wallet_get_farmer_keys& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Wallet_get_farmer_keys_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Wallet_get_history& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Wallet_get_history_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Wallet_get_master_seed& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Wallet_get_master_seed_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Wallet_get_stxo_list& value); ///< \private
@@ -994,6 +1016,28 @@ struct type<::mmx::Contract> {
 	}
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Contract& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::FarmInfo> {
+	void read(TypeInput& in, ::mmx::FarmInfo& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::FarmInfo& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::FarmInfo& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::FarmInfo& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::FarmInfo& value) {
+		vnx::accept(visitor, value);
+	}
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::FarmInfo& value, bool special = false);
 };
 
 /// \private
@@ -1148,90 +1192,90 @@ struct type<::mmx::HarvesterBase> {
 
 /// \private
 template<>
-struct type<::mmx::Harvester_get_plot_count> {
-	void read(TypeInput& in, ::mmx::Harvester_get_plot_count& value, const TypeCode* type_code, const uint16_t* code) {
+struct type<::mmx::Harvester_get_farm_info> {
+	void read(TypeInput& in, ::mmx::Harvester_get_farm_info& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
 	}
-	void write(TypeOutput& out, const ::mmx::Harvester_get_plot_count& value, const TypeCode* type_code, const uint16_t* code) {
+	void write(TypeOutput& out, const ::mmx::Harvester_get_farm_info& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::write(out, value, type_code, code);
 	}
-	void read(std::istream& in, ::mmx::Harvester_get_plot_count& value) {
+	void read(std::istream& in, ::mmx::Harvester_get_farm_info& value) {
 		vnx::read(in, value);
 	}
-	void write(std::ostream& out, const ::mmx::Harvester_get_plot_count& value) {
+	void write(std::ostream& out, const ::mmx::Harvester_get_farm_info& value) {
 		vnx::write(out, value);
 	}
-	void accept(Visitor& visitor, const ::mmx::Harvester_get_plot_count& value) {
+	void accept(Visitor& visitor, const ::mmx::Harvester_get_farm_info& value) {
 		vnx::accept(visitor, value);
 	}
 	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Harvester_get_plot_count& value, bool special = false);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Harvester_get_farm_info& value, bool special = false);
 };
 
 /// \private
 template<>
-struct type<::mmx::Harvester_get_plot_count_return> {
-	void read(TypeInput& in, ::mmx::Harvester_get_plot_count_return& value, const TypeCode* type_code, const uint16_t* code) {
+struct type<::mmx::Harvester_get_farm_info_return> {
+	void read(TypeInput& in, ::mmx::Harvester_get_farm_info_return& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
 	}
-	void write(TypeOutput& out, const ::mmx::Harvester_get_plot_count_return& value, const TypeCode* type_code, const uint16_t* code) {
+	void write(TypeOutput& out, const ::mmx::Harvester_get_farm_info_return& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::write(out, value, type_code, code);
 	}
-	void read(std::istream& in, ::mmx::Harvester_get_plot_count_return& value) {
+	void read(std::istream& in, ::mmx::Harvester_get_farm_info_return& value) {
 		vnx::read(in, value);
 	}
-	void write(std::ostream& out, const ::mmx::Harvester_get_plot_count_return& value) {
+	void write(std::ostream& out, const ::mmx::Harvester_get_farm_info_return& value) {
 		vnx::write(out, value);
 	}
-	void accept(Visitor& visitor, const ::mmx::Harvester_get_plot_count_return& value) {
+	void accept(Visitor& visitor, const ::mmx::Harvester_get_farm_info_return& value) {
 		vnx::accept(visitor, value);
 	}
 	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Harvester_get_plot_count_return& value, bool special = false);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Harvester_get_farm_info_return& value, bool special = false);
 };
 
 /// \private
 template<>
-struct type<::mmx::Harvester_get_total_space> {
-	void read(TypeInput& in, ::mmx::Harvester_get_total_space& value, const TypeCode* type_code, const uint16_t* code) {
+struct type<::mmx::Harvester_get_total_bytes> {
+	void read(TypeInput& in, ::mmx::Harvester_get_total_bytes& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
 	}
-	void write(TypeOutput& out, const ::mmx::Harvester_get_total_space& value, const TypeCode* type_code, const uint16_t* code) {
+	void write(TypeOutput& out, const ::mmx::Harvester_get_total_bytes& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::write(out, value, type_code, code);
 	}
-	void read(std::istream& in, ::mmx::Harvester_get_total_space& value) {
+	void read(std::istream& in, ::mmx::Harvester_get_total_bytes& value) {
 		vnx::read(in, value);
 	}
-	void write(std::ostream& out, const ::mmx::Harvester_get_total_space& value) {
+	void write(std::ostream& out, const ::mmx::Harvester_get_total_bytes& value) {
 		vnx::write(out, value);
 	}
-	void accept(Visitor& visitor, const ::mmx::Harvester_get_total_space& value) {
+	void accept(Visitor& visitor, const ::mmx::Harvester_get_total_bytes& value) {
 		vnx::accept(visitor, value);
 	}
 	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Harvester_get_total_space& value, bool special = false);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Harvester_get_total_bytes& value, bool special = false);
 };
 
 /// \private
 template<>
-struct type<::mmx::Harvester_get_total_space_return> {
-	void read(TypeInput& in, ::mmx::Harvester_get_total_space_return& value, const TypeCode* type_code, const uint16_t* code) {
+struct type<::mmx::Harvester_get_total_bytes_return> {
+	void read(TypeInput& in, ::mmx::Harvester_get_total_bytes_return& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
 	}
-	void write(TypeOutput& out, const ::mmx::Harvester_get_total_space_return& value, const TypeCode* type_code, const uint16_t* code) {
+	void write(TypeOutput& out, const ::mmx::Harvester_get_total_bytes_return& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::write(out, value, type_code, code);
 	}
-	void read(std::istream& in, ::mmx::Harvester_get_total_space_return& value) {
+	void read(std::istream& in, ::mmx::Harvester_get_total_bytes_return& value) {
 		vnx::read(in, value);
 	}
-	void write(std::ostream& out, const ::mmx::Harvester_get_total_space_return& value) {
+	void write(std::ostream& out, const ::mmx::Harvester_get_total_bytes_return& value) {
 		vnx::write(out, value);
 	}
-	void accept(Visitor& visitor, const ::mmx::Harvester_get_total_space_return& value) {
+	void accept(Visitor& visitor, const ::mmx::Harvester_get_total_bytes_return& value) {
 		vnx::accept(visitor, value);
 	}
 	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Harvester_get_total_space_return& value, bool special = false);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Harvester_get_total_bytes_return& value, bool special = false);
 };
 
 /// \private
@@ -2786,6 +2830,50 @@ struct type<::mmx::Wallet_get_farmer_keys_return> {
 	}
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_farmer_keys_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Wallet_get_history> {
+	void read(TypeInput& in, ::mmx::Wallet_get_history& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Wallet_get_history& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Wallet_get_history& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Wallet_get_history& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Wallet_get_history& value) {
+		vnx::accept(visitor, value);
+	}
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_history& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Wallet_get_history_return> {
+	void read(TypeInput& in, ::mmx::Wallet_get_history_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Wallet_get_history_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Wallet_get_history_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Wallet_get_history_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Wallet_get_history_return& value) {
+		vnx::accept(visitor, value);
+	}
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_history_return& value, bool special = false);
 };
 
 /// \private

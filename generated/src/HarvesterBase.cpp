@@ -5,10 +5,11 @@
 #include <mmx/HarvesterBase.hxx>
 #include <vnx/NoSuchMethod.hxx>
 #include <mmx/Challenge.hxx>
-#include <mmx/Harvester_get_plot_count.hxx>
-#include <mmx/Harvester_get_plot_count_return.hxx>
-#include <mmx/Harvester_get_total_space.hxx>
-#include <mmx/Harvester_get_total_space_return.hxx>
+#include <mmx/FarmInfo.hxx>
+#include <mmx/Harvester_get_farm_info.hxx>
+#include <mmx/Harvester_get_farm_info_return.hxx>
+#include <mmx/Harvester_get_total_bytes.hxx>
+#include <mmx/Harvester_get_total_bytes_return.hxx>
 #include <mmx/Harvester_reload.hxx>
 #include <mmx/Harvester_reload_return.hxx>
 #include <vnx/Module.h>
@@ -212,8 +213,8 @@ std::shared_ptr<vnx::TypeCode> HarvesterBase::static_create_type_code() {
 	type_code->methods[7] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
 	type_code->methods[8] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
 	type_code->methods[9] = ::mmx::Harvester_reload::static_get_type_code();
-	type_code->methods[10] = ::mmx::Harvester_get_plot_count::static_get_type_code();
-	type_code->methods[11] = ::mmx::Harvester_get_total_space::static_get_type_code();
+	type_code->methods[10] = ::mmx::Harvester_get_farm_info::static_get_type_code();
+	type_code->methods[11] = ::mmx::Harvester_get_total_bytes::static_get_type_code();
 	type_code->fields.resize(7);
 	{
 		auto& field = type_code->fields[0];
@@ -343,16 +344,16 @@ std::shared_ptr<vnx::Value> HarvesterBase::vnx_call_switch(std::shared_ptr<const
 			reload();
 			return _return_value;
 		}
-		case 0xd2c9bc84b4b167c7ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Harvester_get_plot_count>(_method);
-			auto _return_value = ::mmx::Harvester_get_plot_count_return::create();
-			_return_value->_ret_0 = get_plot_count();
+		case 0x129f91b9ade2891full: {
+			auto _args = std::static_pointer_cast<const ::mmx::Harvester_get_farm_info>(_method);
+			auto _return_value = ::mmx::Harvester_get_farm_info_return::create();
+			_return_value->_ret_0 = get_farm_info();
 			return _return_value;
 		}
-		case 0xb80aeb4d605bf417ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Harvester_get_total_space>(_method);
-			auto _return_value = ::mmx::Harvester_get_total_space_return::create();
-			_return_value->_ret_0 = get_total_space();
+		case 0x36f2104b41d9a25cull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Harvester_get_total_bytes>(_method);
+			auto _return_value = ::mmx::Harvester_get_total_bytes_return::create();
+			_return_value->_ret_0 = get_total_bytes();
 			return _return_value;
 		}
 	}

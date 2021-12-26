@@ -14,6 +14,8 @@
 #include <mmx/Wallet_get_balance_return.hxx>
 #include <mmx/Wallet_get_farmer_keys.hxx>
 #include <mmx/Wallet_get_farmer_keys_return.hxx>
+#include <mmx/Wallet_get_history.hxx>
+#include <mmx/Wallet_get_history_return.hxx>
 #include <mmx/Wallet_get_master_seed.hxx>
 #include <mmx/Wallet_get_master_seed_return.hxx>
 #include <mmx/Wallet_get_stxo_list.hxx>
@@ -36,6 +38,7 @@
 #include <mmx/hash_t.hpp>
 #include <mmx/stxo_entry_t.hxx>
 #include <mmx/utxo_entry_t.hxx>
+#include <mmx/wallet/tx_entry_t.hxx>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
@@ -279,6 +282,18 @@ std::vector<::mmx::stxo_entry_t> WalletClient::get_stxo_list_for(const ::mmx::ad
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::vector<::mmx::stxo_entry_t>>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
+std::vector<::mmx::wallet::tx_entry_t> WalletClient::get_history() {
+	auto _method = ::mmx::Wallet_get_history::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_history_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::wallet::tx_entry_t>>();
 	} else {
 		throw std::logic_error("WalletClient: invalid return value");
 	}

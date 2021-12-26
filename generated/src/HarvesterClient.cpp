@@ -4,10 +4,11 @@
 #include <mmx/package.hxx>
 #include <mmx/HarvesterClient.hxx>
 #include <mmx/Challenge.hxx>
-#include <mmx/Harvester_get_plot_count.hxx>
-#include <mmx/Harvester_get_plot_count_return.hxx>
-#include <mmx/Harvester_get_total_space.hxx>
-#include <mmx/Harvester_get_total_space_return.hxx>
+#include <mmx/FarmInfo.hxx>
+#include <mmx/Harvester_get_farm_info.hxx>
+#include <mmx/Harvester_get_farm_info_return.hxx>
+#include <mmx/Harvester_get_total_bytes.hxx>
+#include <mmx/Harvester_get_total_bytes_return.hxx>
 #include <mmx/Harvester_reload.hxx>
 #include <mmx/Harvester_reload_return.hxx>
 #include <vnx/Module.h>
@@ -164,22 +165,22 @@ void HarvesterClient::reload_async() {
 	vnx_request(_method, true);
 }
 
-uint32_t HarvesterClient::get_plot_count() {
-	auto _method = ::mmx::Harvester_get_plot_count::create();
+std::shared_ptr<const ::mmx::FarmInfo> HarvesterClient::get_farm_info() {
+	auto _method = ::mmx::Harvester_get_farm_info::create();
 	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Harvester_get_plot_count_return>(_return_value)) {
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Harvester_get_farm_info_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<uint32_t>();
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::FarmInfo>>();
 	} else {
 		throw std::logic_error("HarvesterClient: invalid return value");
 	}
 }
 
-uint64_t HarvesterClient::get_total_space() {
-	auto _method = ::mmx::Harvester_get_total_space::create();
+uint64_t HarvesterClient::get_total_bytes() {
+	auto _method = ::mmx::Harvester_get_total_bytes::create();
 	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Harvester_get_total_space_return>(_return_value)) {
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Harvester_get_total_bytes_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<uint64_t>();

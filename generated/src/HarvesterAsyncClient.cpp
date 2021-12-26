@@ -4,10 +4,11 @@
 #include <mmx/package.hxx>
 #include <mmx/HarvesterAsyncClient.hxx>
 #include <mmx/Challenge.hxx>
-#include <mmx/Harvester_get_plot_count.hxx>
-#include <mmx/Harvester_get_plot_count_return.hxx>
-#include <mmx/Harvester_get_total_space.hxx>
-#include <mmx/Harvester_get_total_space_return.hxx>
+#include <mmx/FarmInfo.hxx>
+#include <mmx/Harvester_get_farm_info.hxx>
+#include <mmx/Harvester_get_farm_info_return.hxx>
+#include <mmx/Harvester_get_total_bytes.hxx>
+#include <mmx/Harvester_get_total_bytes_return.hxx>
 #include <mmx/Harvester_reload.hxx>
 #include <mmx/Harvester_reload_return.hxx>
 #include <vnx/Module.h>
@@ -171,25 +172,25 @@ uint64_t HarvesterAsyncClient::reload(const std::function<void()>& _callback, co
 	return _request_id;
 }
 
-uint64_t HarvesterAsyncClient::get_plot_count(const std::function<void(const uint32_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
-	auto _method = ::mmx::Harvester_get_plot_count::create();
+uint64_t HarvesterAsyncClient::get_farm_info(const std::function<void(std::shared_ptr<const ::mmx::FarmInfo>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+	auto _method = ::mmx::Harvester_get_farm_info::create();
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
 		vnx_pending[_request_id] = 10;
-		vnx_queue_get_plot_count[_request_id] = std::make_pair(_callback, _error_callback);
+		vnx_queue_get_farm_info[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
 	return _request_id;
 }
 
-uint64_t HarvesterAsyncClient::get_total_space(const std::function<void(const uint64_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
-	auto _method = ::mmx::Harvester_get_total_space::create();
+uint64_t HarvesterAsyncClient::get_total_bytes(const std::function<void(const uint64_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+	auto _method = ::mmx::Harvester_get_total_bytes::create();
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
 		vnx_pending[_request_id] = 11;
-		vnx_queue_get_total_space[_request_id] = std::make_pair(_callback, _error_callback);
+		vnx_queue_get_total_bytes[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
 	return _request_id;
@@ -325,10 +326,10 @@ int32_t HarvesterAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx:
 			break;
 		}
 		case 10: {
-			const auto _iter = vnx_queue_get_plot_count.find(_request_id);
-			if(_iter != vnx_queue_get_plot_count.end()) {
+			const auto _iter = vnx_queue_get_farm_info.find(_request_id);
+			if(_iter != vnx_queue_get_farm_info.end()) {
 				const auto _callback = std::move(_iter->second.second);
-				vnx_queue_get_plot_count.erase(_iter);
+				vnx_queue_get_farm_info.erase(_iter);
 				_lock.unlock();
 				if(_callback) {
 					_callback(_ex);
@@ -337,10 +338,10 @@ int32_t HarvesterAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx:
 			break;
 		}
 		case 11: {
-			const auto _iter = vnx_queue_get_total_space.find(_request_id);
-			if(_iter != vnx_queue_get_total_space.end()) {
+			const auto _iter = vnx_queue_get_total_bytes.find(_request_id);
+			if(_iter != vnx_queue_get_total_bytes.end()) {
 				const auto _callback = std::move(_iter->second.second);
-				vnx_queue_get_total_space.erase(_iter);
+				vnx_queue_get_total_bytes.erase(_iter);
 				_lock.unlock();
 				if(_callback) {
 					_callback(_ex);
@@ -522,18 +523,18 @@ int32_t HarvesterAsyncClient::vnx_callback_switch(uint64_t _request_id, std::sha
 			break;
 		}
 		case 10: {
-			const auto _iter = vnx_queue_get_plot_count.find(_request_id);
-			if(_iter == vnx_queue_get_plot_count.end()) {
+			const auto _iter = vnx_queue_get_farm_info.find(_request_id);
+			if(_iter == vnx_queue_get_farm_info.end()) {
 				throw std::runtime_error("HarvesterAsyncClient: callback not found");
 			}
 			const auto _callback = std::move(_iter->second.first);
-			vnx_queue_get_plot_count.erase(_iter);
+			vnx_queue_get_farm_info.erase(_iter);
 			_lock.unlock();
 			if(_callback) {
-				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Harvester_get_plot_count_return>(_value)) {
+				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Harvester_get_farm_info_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<uint32_t>());
+					_callback(_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::FarmInfo>>());
 				} else {
 					throw std::logic_error("HarvesterAsyncClient: invalid return value");
 				}
@@ -541,15 +542,15 @@ int32_t HarvesterAsyncClient::vnx_callback_switch(uint64_t _request_id, std::sha
 			break;
 		}
 		case 11: {
-			const auto _iter = vnx_queue_get_total_space.find(_request_id);
-			if(_iter == vnx_queue_get_total_space.end()) {
+			const auto _iter = vnx_queue_get_total_bytes.find(_request_id);
+			if(_iter == vnx_queue_get_total_bytes.end()) {
 				throw std::runtime_error("HarvesterAsyncClient: callback not found");
 			}
 			const auto _callback = std::move(_iter->second.first);
-			vnx_queue_get_total_space.erase(_iter);
+			vnx_queue_get_total_bytes.erase(_iter);
 			_lock.unlock();
 			if(_callback) {
-				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Harvester_get_total_space_return>(_value)) {
+				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Harvester_get_total_bytes_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
 					_callback(_value->get_field_by_index(0).to<uint64_t>());

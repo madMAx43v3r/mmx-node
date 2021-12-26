@@ -10,6 +10,7 @@
 #include <mmx/hash_t.hpp>
 #include <mmx/stxo_entry_t.hxx>
 #include <mmx/utxo_entry_t.hxx>
+#include <mmx/wallet/tx_entry_t.hxx>
 #include <vnx/Module.h>
 
 
@@ -68,6 +69,8 @@ public:
 	std::vector<::mmx::stxo_entry_t> get_stxo_list();
 	
 	std::vector<::mmx::stxo_entry_t> get_stxo_list_for(const ::mmx::addr_t& contract = ::mmx::addr_t());
+	
+	std::vector<::mmx::wallet::tx_entry_t> get_history();
 	
 	uint64_t get_balance(const ::mmx::addr_t& contract = ::mmx::addr_t());
 	

@@ -6,6 +6,7 @@
 
 #include <vnx/Client.h>
 #include <mmx/Challenge.hxx>
+#include <mmx/FarmInfo.hxx>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
 
@@ -48,9 +49,9 @@ public:
 	
 	void reload_async();
 	
-	uint32_t get_plot_count();
+	std::shared_ptr<const ::mmx::FarmInfo> get_farm_info();
 	
-	uint64_t get_total_space();
+	uint64_t get_total_bytes();
 	
 };
 

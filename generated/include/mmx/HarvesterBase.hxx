@@ -6,6 +6,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Challenge.hxx>
+#include <mmx/FarmInfo.hxx>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
 
@@ -57,8 +58,8 @@ protected:
 	using Super::handle;
 	
 	virtual void reload() = 0;
-	virtual uint32_t get_plot_count() const = 0;
-	virtual uint64_t get_total_space() const = 0;
+	virtual std::shared_ptr<const ::mmx::FarmInfo> get_farm_info() const = 0;
+	virtual uint64_t get_total_bytes() const = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::Challenge> _value) {}
 	
 	void vnx_handle_switch(std::shared_ptr<const vnx::Value> _value) override;
