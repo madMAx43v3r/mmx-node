@@ -150,8 +150,8 @@ int main(int argc, char** argv)
 			}
 			else if(command == "send")
 			{
-				const uint64_t mojo = amount * pow(10, params->decimals);
-				if(mojo <= 0) {
+				const int64_t mojo = amount * pow(10, params->decimals);
+				if(amount <= 0 || mojo <= 0) {
 					vnx::log_error() << "Invalid amount: " << amount;
 					goto failed;
 				}
