@@ -48,6 +48,8 @@ To use a non-default wallet specify `-j <index>` with above commands (at the end
 
 To check on the node: `mmx node info`
 
+To check on the peers: `mmx node peers`
+
 To check on a transaction: `mmx node tx <txid>`
 
 To check the balance of any address: `mmx node balance <address>`

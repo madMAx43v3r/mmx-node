@@ -37,6 +37,8 @@ protected:
 
 	std::vector<std::string> get_connected_peers() const override;
 
+	std::shared_ptr<const PeerInfo> get_peer_info() const override;
+
 	void get_blocks_at_async(const uint32_t& height, const vnx::request_id_t& request_id) const override;
 
 	void handle(std::shared_ptr<const Block> value);

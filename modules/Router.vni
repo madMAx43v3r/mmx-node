@@ -43,6 +43,8 @@ module Router extends vnx.addons.TcpServer {
 	
 	vector<string> get_connected_peers() const;
 	
+	PeerInfo* get_peer_info() const;
+	
 	vector<Block*> get_blocks_at(uint height) const async;
 	
 	

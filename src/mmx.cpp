@@ -239,6 +239,15 @@ int main(int argc, char** argv)
 					std::cout << "[" << (height - i) << "] " << (hash ? *hash : mmx::hash_t()) << std::endl;
 				}
 			}
+			else if(command == "peers")
+			{
+				auto info = router.get_peer_info();
+				for(const auto& peer : info->peers) {
+					std::cout << "[" << peer.address << "] height = " << peer.height
+							<< ", is_synced = " << peer.is_synced << ", is_blocked = " << peer.is_blocked
+							<< ", timeout = " << peer.recv_timeout_ms / 1e3 << " sec" << std::endl;
+				}
+			}
 			else if(command == "sync")
 			{
 				node.start_sync();
@@ -354,21 +363,8 @@ int main(int argc, char** argv)
 					std::cerr << "Help: mmx node get [height | tx | balance | amount | block | header | peers]" << std::endl;
 				}
 			}
-			else if(command == "show")
-			{
-				std::string subject;
-				vnx::read_config("$3", subject);
-
-				if(subject == "peers")
-				{
-					std::cout << "TODO" << std::endl;
-				}
-				else {
-					std::cerr << "Help: mmx node show [peers]" << std::endl;
-				}
-			}
 			else {
-				std::cerr << "Help: mmx node [info | show | tx | get | balance | sync]" << std::endl;
+				std::cerr << "Help: mmx node [info | peers | tx | get | balance | sync]" << std::endl;
 			}
 		}
 		else if(module == "farm") {

@@ -150,6 +150,24 @@ std::vector<std::string> Router::get_connected_peers() const
 	return res;
 }
 
+std::shared_ptr<const PeerInfo> Router::get_peer_info() const
+{
+	const auto now_ms = vnx::get_wall_time_millis();
+	auto info = PeerInfo::create();
+	for(const auto& entry : peer_map) {
+		const auto& state = entry.second;
+		peer_info_t peer;
+		peer.address = state.address;
+		peer.height = state.height;
+		peer.is_synced = state.is_synced;
+		peer.is_blocked = state.is_blocked;
+		peer.is_outbound = state.is_outbound;
+		peer.recv_timeout_ms = now_ms - state.last_receive_ms;
+		info->peers.push_back(peer);
+	}
+	return info;
+}
+
 void Router::get_blocks_at_async(const uint32_t& height, const vnx::request_id_t& request_id) const
 {
 	auto& job = sync_jobs[request_id];
