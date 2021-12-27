@@ -141,6 +141,7 @@ The node needs to be running for this command to work. (`-j` to specify the inde
 Then use my plotter with `-x 11337` argument: https://github.com/madMAx43v3r/chia-plotter
 
 The minimum K size for mainnet will probably be k30, for testnets it is k26. The plots from testnets can be reused for mainnet later.
+It's possible there will be a time limit for k30 and k31 though, something like 3 years for k30 and 6 years for k31, to prevent grinding attacks in the future.
 
 To add a plot directory add the path to `plot_dirs` array in `config/local/Harvester.json`, for example:
 ```
