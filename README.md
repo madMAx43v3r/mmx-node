@@ -62,7 +62,7 @@ To dump a block header: `mmx node get header <height>`
 
 To force a re-sync: `mmx node sync`
 
-To show some known peers: `mmx node get peers [count]`
+To get connected peers: `mmx node get peers`
 
 To check on the farm: `mmx farm info`
 
