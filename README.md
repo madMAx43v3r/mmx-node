@@ -189,8 +189,8 @@ Make sure to install Ubuntu in step 2: https://www.microsoft.com/store/p/ubuntu/
 Then type "Ubuntu" in the start menu and start it, you will be asked to setup a user and password.
 After that you can follow the normal instructions for Ubuntu 20.04.
 
-I think it requires Windows 10 or newer.
-Unfortunately it seems OpenCL is not yet supported int WSL2 (they are working on it though).
+To get OpenCL working in WSL:
+https://devblogs.microsoft.com/commandline/oneapi-l0-openvino-and-opencl-coming-to-the-windows-subsystem-for-linux-for-intel-gpus/
 
 ### OpenCL for Intel iGPUs
 
