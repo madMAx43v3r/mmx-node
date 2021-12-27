@@ -254,11 +254,11 @@ void Router::update()
 	node->get_synced_height(
 		[this](const vnx::optional<uint32_t>& sync_height) {
 			if(sync_height) {
+				node_height = *sync_height;
 				size_t num_ahead = 0;
-				const auto height = *sync_height;
 				for(const auto& entry : peer_map) {
 					const auto& peer = entry.second;
-					if(peer.is_synced && peer.height > height && peer.height - height > params->finality_delay) {
+					if(peer.is_synced && peer.height > node_height && peer.height - node_height > params->finality_delay) {
 						num_ahead++;
 					}
 				}
@@ -733,10 +733,13 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 						peer->is_synced = true;
 						synced_peers.insert(client);
 
-						if(is_synced) {
+						if(is_synced
+							&& peer->height >= node_height - 1
+							&& peer->height <= node_height + params->finality_delay)
+						{
 							// check their previous block hash
 							auto req = Node_get_block_hash::create();
-							req->height = *height - 1;
+							req->height = node_height - 1;
 							peer->hash_check.height = req->height;
 							peer->hash_check.request = send_request(client, req);
 						}
@@ -778,7 +781,8 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 		case Node_get_block_return::VNX_TYPE_ID:
 			if(auto value = std::dynamic_pointer_cast<const Node_get_block_return>(result)) {
 				if(auto block = value->_ret_0) {
-					if(is_synced) {
+					if(is_synced && block->height + params->finality_delay >= node_height)
+					{
 						// check if we have previous block
 						const auto next = block;
 						node->get_block(block->prev,
