@@ -79,6 +79,7 @@ private:
 	struct sync_job_t {
 		uint32_t height = 0;
 		sync_state_e state = FETCH_HASHES;
+		int64_t start_time_ms = 0;
 		std::unordered_set<uint64_t> failed;
 		std::unordered_set<uint64_t> pending;
 		std::unordered_set<uint64_t> succeeded;

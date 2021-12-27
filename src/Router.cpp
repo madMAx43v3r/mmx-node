@@ -172,6 +172,7 @@ void Router::get_blocks_at_async(const uint32_t& height, const vnx::request_id_t
 {
 	auto& job = sync_jobs[request_id];
 	job.height = height;
+	job.start_time_ms = vnx::get_wall_time_millis();
 	((Router*)this)->process();
 }
 
@@ -263,6 +264,16 @@ void Router::update()
 			is_synced = sync_height;
 		});
 
+	// check for sync job timeouts
+	for(auto& entry : sync_jobs) {
+		auto& job = entry.second;
+		if(now_ms - job.start_time_ms > fetch_timeout_ms) {
+			job.pending.clear();
+			job.start_time_ms = now_ms;
+			log(WARN) << "Timeout on sync job for height " << job.height << ", trying again ...";
+		}
+	}
+
 	process();
 }
 
@@ -328,6 +339,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				job.succeeded.clear();
 				job.request_map.clear();
 				job.state = FETCH_BLOCKS;
+				job.start_time_ms = vnx::get_wall_time_millis();
 			}
 		}
 		if(job.state == FETCH_BLOCKS)
