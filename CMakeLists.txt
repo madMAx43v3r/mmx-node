@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -fopenmp -Wall -Wno-unused-function")
 
+add_subdirectory(vnx-base)
 add_subdirectory(vnx-addons)
 add_subdirectory(libbech32)
 add_subdirectory(bls-signatures)

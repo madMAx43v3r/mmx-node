@@ -19,3 +19,6 @@
 [submodule "basic-opencl"]
 	path = basic-opencl
 	url = https://github.com/automyinc/basic-opencl.git
+[submodule "vnx-base"]
+	path = vnx-base
+	url = https://github.com/madMAx43v3r/vnx-base.git

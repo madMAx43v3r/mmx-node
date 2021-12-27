@@ -162,25 +162,6 @@ OpenCL provides faster and more effient VDF verification using an integrated or 
 A standard iGPU found in Intel CPUs with 192 shader cores is plenty fast enough.
 If you dont have a fast quad core CPU (>3 GHz) or higher core count CPU, it is required to have a GPU with OpenCL support.
 
-### VNX Middleware
-
-`mmx-node` depends on my middleware `VNX` which is free to use but closed source.
-It provides the communication over network, the storage on disk as well as RPC support and publish/subscribe.
-
-Ubuntu 20.04
-```
-wget https://github.com/automyinc/vnx-base/raw/master/x86_64/vnx-base-1.9.8-x86_64-ubuntu-20.04.deb
-sudo dpkg -i vnx-base-1.9.8-x86_64-ubuntu-20.04.deb
-```
-
-Ubuntu 18.04
-```
-wget https://github.com/automyinc/vnx-base/raw/master/x86_64/vnx-base-1.9.8-x86_64-ubuntu-18.04.deb
-sudo dpkg -i vnx-base-1.9.8-x86_64-ubuntu-18.04.deb
-```
-
-Windows: https://github.com/automyinc/vnx-base/raw/master/x86_64/vnx-base-1.9.8-x86_64-windows.7z
-
 ### Building
 
 ```
