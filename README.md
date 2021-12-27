@@ -208,6 +208,8 @@ For older Intel CPUs like `Ivy Bridge` or `Bay Trail` you need this package:
 sudo apt install beignet-opencl-icd
 ```
 
+Make sure your iGPU is not somehow disabled, like here for example: https://community.hetzner.com/tutorials/howto-enable-igpu
+
 ### OpenCL for AMD GPUs
 
 Linux: \
