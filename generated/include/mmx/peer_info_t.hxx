@@ -16,6 +16,8 @@ struct peer_info_t {
 	std::string address;
 	uint32_t height = 0;
 	int64_t recv_timeout_ms = 0;
+	uint64_t bytes_send = 0;
+	uint64_t bytes_recv = 0;
 	vnx::bool_t is_synced = 0;
 	vnx::bool_t is_blocked = 0;
 	vnx::bool_t is_outbound = 0;
