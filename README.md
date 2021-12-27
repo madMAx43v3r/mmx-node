@@ -111,9 +111,9 @@ mmx wallet get seed [-j index]
 
 ## Running a Node
 
-First perform the installation and setup steps below.
+First perform the installation and setup steps.
 
-To run a node for `testnet1`
+To run a node for current `testnet1`
 ```
 ./run_node.sh
 ```
