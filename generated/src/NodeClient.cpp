@@ -407,13 +407,15 @@ std::vector<::mmx::stxo_entry_t> NodeClient::get_stxo_list(const std::vector<::m
 	}
 }
 
-void NodeClient::start_sync() {
+void NodeClient::start_sync(const vnx::bool_t& force) {
 	auto _method = ::mmx::Node_start_sync::create();
+	_method->force = force;
 	vnx_request(_method, false);
 }
 
-void NodeClient::start_sync_async() {
+void NodeClient::start_sync_async(const vnx::bool_t& force) {
 	auto _method = ::mmx::Node_start_sync::create();
+	_method->force = force;
 	vnx_request(_method, true);
 }
 

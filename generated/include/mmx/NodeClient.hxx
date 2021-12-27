@@ -95,9 +95,9 @@ public:
 	
 	std::vector<::mmx::stxo_entry_t> get_stxo_list(const std::vector<::mmx::addr_t>& addresses = {});
 	
-	void start_sync();
+	void start_sync(const vnx::bool_t& force = 0);
 	
-	void start_sync_async();
+	void start_sync_async(const vnx::bool_t& force = 0);
 	
 	std::shared_ptr<const ::vnx::addons::HttpResponse> http_request(std::shared_ptr<const ::vnx::addons::HttpRequest> request = nullptr, const std::string& sub_path = "");
 	

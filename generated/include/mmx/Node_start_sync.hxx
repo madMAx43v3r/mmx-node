@@ -13,6 +13,7 @@ namespace mmx {
 class Node_start_sync : public ::vnx::Value {
 public:
 	
+	vnx::bool_t force = 0;
 	
 	typedef ::vnx::Value Super;
 	

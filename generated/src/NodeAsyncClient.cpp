@@ -414,8 +414,9 @@ uint64_t NodeAsyncClient::get_stxo_list(const std::vector<::mmx::addr_t>& addres
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::start_sync(const std::function<void()>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::start_sync(const vnx::bool_t& force, const std::function<void()>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_start_sync::create();
+	_method->force = force;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);

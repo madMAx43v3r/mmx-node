@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_start_sync::VNX_TYPE_HASH(0x6c5be8aeb25ef3c8ull);
-const vnx::Hash64 Node_start_sync::VNX_CODE_HASH(0xed849a419598e53aull);
+const vnx::Hash64 Node_start_sync::VNX_CODE_HASH(0x4dd801a35570131cull);
 
 vnx::Hash64 Node_start_sync::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -46,11 +46,13 @@ void Node_start_sync::write(vnx::TypeOutput& _out, const vnx::TypeCode* _type_co
 void Node_start_sync::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Node_start_sync;
 	_visitor.type_begin(*_type_code);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, force);
 	_visitor.type_end(*_type_code);
 }
 
 void Node_start_sync::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Node.start_sync\"";
+	_out << ", \"force\": "; vnx::write(_out, force);
 	_out << "}";
 }
 
@@ -63,18 +65,31 @@ void Node_start_sync::read(std::istream& _in) {
 vnx::Object Node_start_sync::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Node.start_sync";
+	_object["force"] = force;
 	return _object;
 }
 
 void Node_start_sync::from_object(const vnx::Object& _object) {
+	for(const auto& _entry : _object.field) {
+		if(_entry.first == "force") {
+			_entry.second.to(force);
+		}
+	}
 }
 
 vnx::Variant Node_start_sync::get_field(const std::string& _name) const {
+	if(_name == "force") {
+		return vnx::Variant(force);
+	}
 	return vnx::Variant();
 }
 
 void Node_start_sync::set_field(const std::string& _name, const vnx::Variant& _value) {
-	throw std::logic_error("no such field: '" + _name + "'");
+	if(_name == "force") {
+		_value.to(force);
+	} else {
+		throw std::logic_error("no such field: '" + _name + "'");
+	}
 }
 
 /// \private
@@ -101,13 +116,20 @@ std::shared_ptr<vnx::TypeCode> Node_start_sync::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.start_sync";
 	type_code->type_hash = vnx::Hash64(0x6c5be8aeb25ef3c8ull);
-	type_code->code_hash = vnx::Hash64(0xed849a419598e53aull);
+	type_code->code_hash = vnx::Hash64(0x4dd801a35570131cull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
 	type_code->native_size = sizeof(::mmx::Node_start_sync);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Node_start_sync>(); };
 	type_code->return_type = ::mmx::Node_start_sync_return::static_get_type_code();
+	type_code->fields.resize(1);
+	{
+		auto& field = type_code->fields[0];
+		field.data_size = 1;
+		field.name = "force";
+		field.code = {31};
+	}
 	type_code->build();
 	return type_code;
 }
@@ -148,8 +170,11 @@ void read(TypeInput& in, ::mmx::Node_start_sync& value, const TypeCode* type_cod
 			}
 		}
 	}
-	in.read(type_code->total_field_size);
+	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
+		if(const auto* const _field = type_code->field_map[0]) {
+			vnx::read_value(_buf + _field->offset, value.force, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -171,6 +196,8 @@ void write(TypeOutput& out, const ::mmx::Node_start_sync& value, const TypeCode*
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
+	char* const _buf = out.write(1);
+	vnx::write_value(_buf + 0, value.force);
 }
 
 void read(std::istream& in, ::mmx::Node_start_sync& value) {

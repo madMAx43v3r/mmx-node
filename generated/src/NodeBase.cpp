@@ -796,7 +796,7 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 		case 0x6c5be8aeb25ef3c8ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_start_sync>(_method);
 			auto _return_value = ::mmx::Node_start_sync_return::create();
-			start_sync();
+			start_sync(_args->force);
 			return _return_value;
 		}
 		case 0xe0b6c38f619bad92ull: {
