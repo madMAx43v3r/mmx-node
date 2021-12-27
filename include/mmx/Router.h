@@ -56,6 +56,8 @@ private:
 		uint32_t msg_size = 0;
 		int64_t last_receive_ms = 0;
 		uint64_t client = 0;
+		uint64_t bytes_send = 0;
+		uint64_t bytes_recv = 0;
 		vnx::Hash64 node_id;
 		std::string address;
 		vnx::Memory data;

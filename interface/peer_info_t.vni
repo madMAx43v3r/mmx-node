@@ -8,10 +8,11 @@ struct peer_info_t {
 	
 	long recv_timeout_ms;		// delta since last reply [ms]
 	
+	ulong bytes_send;
+	ulong bytes_recv;
+	
 	bool is_synced;
-	
 	bool is_blocked;
-	
 	bool is_outbound;
 	
 }

@@ -159,6 +159,8 @@ std::shared_ptr<const PeerInfo> Router::get_peer_info() const
 		peer_info_t peer;
 		peer.address = state.address;
 		peer.height = state.height;
+		peer.bytes_send = state.bytes_send;
+		peer.bytes_recv = state.bytes_recv;
 		peer.is_synced = state.is_synced;
 		peer.is_blocked = state.is_blocked;
 		peer.is_outbound = state.is_outbound;
@@ -574,6 +576,8 @@ void Router::send_to(peer_t& peer, std::shared_ptr<const vnx::Value> msg)
 		return;
 	}
 	*((uint32_t*)buffer->data(2)) = buffer->size() - 6;
+
+	peer.bytes_send += buffer->size();
 	Super::send_to(peer.client, buffer);
 }
 
@@ -841,6 +845,7 @@ void Router::on_buffer(uint64_t client, void*& buffer, size_t& max_bytes)
 bool Router::on_read(uint64_t client, size_t num_bytes)
 {
 	auto& peer = get_peer(client);
+	peer.bytes_recv += num_bytes;
 	peer.buffer.resize(peer.buffer.size() + num_bytes);
 
 	if(peer.msg_size == 0) {

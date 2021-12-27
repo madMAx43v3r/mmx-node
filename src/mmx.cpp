@@ -152,7 +152,7 @@ int main(int argc, char** argv)
 			{
 				const int64_t mojo = amount * pow(10, params->decimals);
 				if(amount <= 0 || mojo <= 0) {
-					vnx::log_error() << "Invalid amount: " << amount;
+					vnx::log_error() << "Invalid amount: " << amount << " (-a | --amount)";
 					goto failed;
 				}
 				if(target == mmx::addr_t()) {
@@ -223,7 +223,7 @@ int main(int argc, char** argv)
 			{
 				mmx::addr_t address;
 				if(!vnx::read_config("$3", address)) {
-					vnx::log_error() << "Missing address argument!";
+					vnx::log_error() << "Missing address argument! (node balance <address>)";
 					goto failed;
 				}
 				const auto amount = node.get_balance(address, contract);
@@ -243,9 +243,27 @@ int main(int argc, char** argv)
 			{
 				auto info = router.get_peer_info();
 				for(const auto& peer : info->peers) {
-					std::cout << "[" << peer.address << "] height = " << peer.height
-							<< ", synced = " << peer.is_synced << ", blocked = " << peer.is_blocked << ", outbound = " << peer.is_outbound
-							<< ", timeout = " << peer.recv_timeout_ms / 1e3 << " sec" << std::endl;
+					std::cout << "[" << peer.address << "]";
+					for(size_t i = peer.address.size(); i < 15; ++i) {
+						std::cout << " ";
+					}
+					std::cout << " height = ";
+					if(peer.is_synced) {
+						std::cout << " ";
+					} else {
+						std::cout << "!";
+					}
+					std::cout << peer.height;
+					std::cout << ", " << (peer.bytes_recv / 1024 / 256) / 4. << " MB recv";
+					std::cout << ", " << (peer.bytes_send / 1024 / 256) / 4. << " MB sent";
+					std::cout << ", timeout = " << (peer.recv_timeout_ms / 100) / 10. << " sec";
+					if(peer.is_outbound) {
+						std::cout << ", outbound";
+					}
+					if(peer.is_blocked) {
+						std::cout << ", blocked";
+					}
+					std::cout << std::endl;
 				}
 			}
 			else if(command == "sync")
@@ -266,7 +284,7 @@ int main(int argc, char** argv)
 				router.discover();
 				std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
-				const auto peers = router.get_peers(-1);
+				const auto peers = router.get_known_peers();
 				std::cout << "Got " << peers.size() << " known peers" << std::endl;
 			}
 			else if(command == "tx")
