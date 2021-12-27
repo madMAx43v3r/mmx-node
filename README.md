@@ -180,6 +180,8 @@ Make sure to be in the `video` group to be able to access a GPU:
 sudo adduser $USER video
 ```
 
+OpenCL version 1.2 or higher is needed.
+
 ### Building
 
 ```

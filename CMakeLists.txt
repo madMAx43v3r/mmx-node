@@ -13,6 +13,10 @@ add_subdirectory(basic-opencl)
 
 find_package(Threads REQUIRED)
 
+target_compile_definitions(automy_basic_opencl
+	PUBLIC CL_TARGET_OPENCL_VERSION=120
+)
+
 if(SODIUM_FOUND)
 	message(STATUS "Found libsodium")
 	include_directories(${SODIUM_INCLUDE_DIR})
