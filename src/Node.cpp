@@ -957,9 +957,9 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	return true;
 }
 
-void Node::start_sync()
+void Node::start_sync(const vnx::bool_t& force)
 {
-	if(!is_synced || !do_sync) {
+	if((!is_synced || !do_sync) && !force) {
 		return;
 	}
 	sync_pos = 0;

@@ -81,7 +81,7 @@ module Node implements vnx.addons.HttpComponent {
 	@Permission(permission_e.PUBLIC)
 	vector<stxo_entry_t> get_stxo_list(vector<addr_t> addresses) const;
 	
-	void start_sync();
+	void start_sync(bool force);
 	
 	
 	void handle(Block value);

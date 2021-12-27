@@ -62,7 +62,7 @@ protected:
 
 	std::vector<stxo_entry_t> get_stxo_list(const std::vector<addr_t>& addresses) const override;
 
-	void start_sync() override;
+	void start_sync(const vnx::bool_t& force) override;
 
 	void http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
 							const vnx::request_id_t& request_id) const override;

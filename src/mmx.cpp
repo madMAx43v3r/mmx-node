@@ -250,7 +250,7 @@ int main(int argc, char** argv)
 			}
 			else if(command == "sync")
 			{
-				node.start_sync();
+				node.start_sync(true);
 				std::cout << "Started sync ..." << std::endl;
 				while(true) {
 					if(auto height = node.get_synced_height()) {
