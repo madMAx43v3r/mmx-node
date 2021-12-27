@@ -79,33 +79,6 @@ To show plot directories: `mmx farm get dirs`
 
 To reload plots: `mmx farm reload`
 
-## Running a Node
-
-First perform the installation and setup steps below.
-
-To run a node for `testnet1`
-```
-./run_node.sh
-```
-
-You can enable port forwaring on TCP port 12331 if you want to help out the network and accept incoming connections.
-
-To run a node in the background you can enter a `screen` session:
-```
-screen -S node
-(start node as above)
-<Ctrl+A> + D (to detach)
-screen -r node (to attach again)
-```
-
-To disable the `TimeLord` specify `--timelord 0` on the command line.
-Alternatively, you can also disable it by default: `echo false > config/local/timelord`.
-If you have a slow CPU this is recommended and maybe even needed to stay in sync.
-
-To re-sync starting from a specific height: `--Node.replay_height <height>`.
-This is needed if for some reason you forked from the network.
-To re-sync from scratch delete `block_chain.dat`.
-
 ## Setup
 
 First finish the installtion step below.
@@ -136,6 +109,33 @@ To get the seed value from a wallet:
 mmx wallet get seed [-j index]
 ```
 
+## Running a Node
+
+First perform the installation and setup steps below.
+
+To run a node for `testnet1`
+```
+./run_node.sh
+```
+
+You can enable port forwaring on TCP port 12331 if you want to help out the network and accept incoming connections.
+
+To run a node in the background you can enter a `screen` session:
+```
+screen -S node
+(start node as above)
+<Ctrl+A> + D (to detach)
+screen -r node (to attach again)
+```
+
+To disable the `TimeLord` specify `--timelord 0` on the command line.
+Alternatively, you can also disable it by default: `echo false > config/local/timelord`.
+If you have a slow CPU this is recommended and maybe even needed to stay in sync.
+
+To re-sync starting from a specific height: `--Node.replay_height <height>`.
+This is needed if for some reason you forked from the network.
+To re-sync from scratch delete `block_chain.dat`.
+
 ## Plotting
 
 To get the farmer and pool keys for plotting:
@@ -159,10 +159,16 @@ To add a plot directory add the path to `plot_dirs` array in `config/local/Harve
 
 ## Installation
 
-To install the dependencies:
+Ubuntu Linux:
 ```
 sudo apt update
 sudo apt install git cmake build-essential libsecp256k1-dev libsodium-dev zlib1g-dev ocl-icd-opencl-dev clinfo screen
+```
+
+Arch Linux:
+```
+sudo pacman -Syu
+sudo pacman -S base-devel git cmake zlib libsecp256k1 libsodium ocl-icd clinfo screen
 ```
 
 OpenCL provides faster and more effient VDF verification using an integrated or dedicated GPU.
@@ -245,3 +251,8 @@ Windows: https://google.com/search?q=amd+graphics+driver+download
 
 Install CUDA, may the force be with you: \
 https://www.google.com/search?q=nvidia+cuda+download
+
+Arch Linux:
+```
+sudo pacman -S nvidia nvidia-utils opencl-nvidia
+```
