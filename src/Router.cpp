@@ -411,7 +411,7 @@ void Router::connect()
 {
 	for(const auto& address : peer_set)
 	{
-		if(outgoing_peers.size() >= num_peers_out || connecting_peers.size() >= num_threads) {
+		if(synced_peers.size() >= num_peers_out || connecting_peers.size() >= num_threads) {
 			break;
 		}
 		if(connecting_peers.count(address) || block_peers.count(address)) {
@@ -456,7 +456,7 @@ void Router::add_peer(const std::string& address, const int sock)
 	connecting_peers.erase(address);
 
 	if(sock >= 0) {
-		if(outgoing_peers.size() >= num_peers_out) {
+		if(synced_peers.size() >= num_peers_out) {
 			vnx::TcpEndpoint().close(sock);
 			return;
 		}
@@ -464,7 +464,6 @@ void Router::add_peer(const std::string& address, const int sock)
 
 		auto& peer = peer_map[client];
 		peer.is_outbound = true;
-		outgoing_peers.insert(client);
 
 		send_request(client, Router_get_id::create());
 		send_request(client, Node_get_synced_height::create());
@@ -500,7 +499,7 @@ void Router::print_stats()
 	log(INFO) << float(tx_counter * 1000) / stats_interval_ms
 			  << " tx/s, " << float(vdf_counter * 1000) / stats_interval_ms
 			  << " vdf/s, " << float(block_counter * 1000) / stats_interval_ms
-			  << " blocks/s, " << outgoing_peers.size() << " / " <<  peer_map.size() << " / " << peer_set.size()
+			  << " blocks/s, " << synced_peers.size() << " / " <<  peer_map.size() << " / " << peer_set.size()
 			  << " peers, " << upload_counter << " blocks sent";
 	tx_counter = 0;
 	vdf_counter = 0;
@@ -738,10 +737,6 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 						if(peer->is_synced) {
 							log(INFO) << "Peer " << peer->address << " is not synced";
 						}
-						if(peer->is_outbound) {
-							peer->is_outbound = false;
-							outgoing_peers.erase(client);
-						}
 						peer->is_synced = false;
 						synced_peers.erase(client);
 
@@ -930,7 +925,6 @@ void Router::on_disconnect(uint64_t client)
 		peer_map.erase(iter);
 	}
 	synced_peers.erase(client);
-	outgoing_peers.erase(client);
 }
 
 Router::peer_t& Router::get_peer(uint64_t client)

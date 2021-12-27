@@ -244,7 +244,7 @@ int main(int argc, char** argv)
 				auto info = router.get_peer_info();
 				for(const auto& peer : info->peers) {
 					std::cout << "[" << peer.address << "] height = " << peer.height
-							<< ", synced = " << peer.is_synced << ", blocked = " << peer.is_blocked
+							<< ", synced = " << peer.is_synced << ", blocked = " << peer.is_blocked << ", outbound = " << peer.is_outbound
 							<< ", timeout = " << peer.recv_timeout_ms / 1e3 << " sec" << std::endl;
 				}
 			}

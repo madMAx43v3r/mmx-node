@@ -153,7 +153,6 @@ private:
 	std::set<std::string> connecting_peers;
 
 	std::set<uint64_t> synced_peers;
-	std::set<uint64_t> outgoing_peers;
 	std::unordered_map<uint64_t, peer_t> peer_map;
 
 	std::unordered_set<hash_t> seen_hashes;
