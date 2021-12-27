@@ -22,7 +22,8 @@ In the future it is planned that anybody can create their own token on MMX using
 
 In addition the first application for MMX will be a decentralized exchange where users can trade MMX and tokens.
 
-The variable reward function is as follows: `reward = max(max(difficulty * const_factor, min_reward), TX fees)`.
+The variable reward function is as follows: \
+`reward = max(max(difficulty * const_factor, min_reward), TX fees)`. \
 Where `min_reward` and `const_factor` are fixed at launch.
 
 A mainnet launch is planned in ~6 months or so.
