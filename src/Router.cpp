@@ -167,6 +167,10 @@ std::shared_ptr<const PeerInfo> Router::get_peer_info() const
 		peer.recv_timeout_ms = now_ms - state.last_receive_ms;
 		info->peers.push_back(peer);
 	}
+	std::sort(info->peers.begin(), info->peers.end(),
+		[](const peer_info_t& lhs, const peer_info_t& rhs) -> bool {
+			return lhs.address < rhs.address;
+		});
 	return info;
 }
 
