@@ -6,6 +6,7 @@
 
 #include <vnx/Client.h>
 #include <mmx/Block.hxx>
+#include <mmx/PeerInfo.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/Transaction.hxx>
 #include <vnx/Hash64.hpp>
@@ -58,6 +59,8 @@ public:
 	std::vector<std::string> get_known_peers();
 	
 	std::vector<std::string> get_connected_peers();
+	
+	std::shared_ptr<const ::mmx::PeerInfo> get_peer_info();
 	
 	std::vector<std::shared_ptr<const ::mmx::Block>> get_blocks_at(const uint32_t& height = 0);
 	

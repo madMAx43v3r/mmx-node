@@ -6,6 +6,7 @@
 
 #include <vnx/AsyncClient.h>
 #include <mmx/Block.hxx>
+#include <mmx/PeerInfo.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/Transaction.hxx>
 #include <vnx/Hash64.hpp>
@@ -77,6 +78,10 @@ public:
 			const std::function<void(const std::vector<std::string>&)>& _callback = std::function<void(const std::vector<std::string>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
+	uint64_t get_peer_info(
+			const std::function<void(std::shared_ptr<const ::mmx::PeerInfo>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::PeerInfo>)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
 	uint64_t get_blocks_at(const uint32_t& height = 0, 
 			const std::function<void(const std::vector<std::shared_ptr<const ::mmx::Block>>&)>& _callback = std::function<void(const std::vector<std::shared_ptr<const ::mmx::Block>>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
@@ -101,6 +106,7 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::string>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_peers;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::string>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_known_peers;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::string>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_connected_peers;
+	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::PeerInfo>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_peer_info;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::shared_ptr<const ::mmx::Block>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_blocks_at;
 	
 };

@@ -4,6 +4,7 @@
 #include <mmx/package.hxx>
 #include <mmx/RouterClient.hxx>
 #include <mmx/Block.hxx>
+#include <mmx/PeerInfo.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/Router_discover.hxx>
 #include <mmx/Router_discover_return.hxx>
@@ -15,6 +16,8 @@
 #include <mmx/Router_get_id_return.hxx>
 #include <mmx/Router_get_known_peers.hxx>
 #include <mmx/Router_get_known_peers_return.hxx>
+#include <mmx/Router_get_peer_info.hxx>
+#include <mmx/Router_get_peer_info_return.hxx>
 #include <mmx/Router_get_peers.hxx>
 #include <mmx/Router_get_peers_return.hxx>
 #include <mmx/Transaction.hxx>
@@ -217,6 +220,18 @@ std::vector<std::string> RouterClient::get_connected_peers() {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::vector<std::string>>();
+	} else {
+		throw std::logic_error("RouterClient: invalid return value");
+	}
+}
+
+std::shared_ptr<const ::mmx::PeerInfo> RouterClient::get_peer_info() {
+	auto _method = ::mmx::Router_get_peer_info::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Router_get_peer_info_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::PeerInfo>>();
 	} else {
 		throw std::logic_error("RouterClient: invalid return value");
 	}

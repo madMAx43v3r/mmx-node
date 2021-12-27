@@ -58,6 +58,7 @@
 #include <mmx/Node_start_sync.hxx>
 #include <mmx/Node_start_sync_return.hxx>
 #include <mmx/Operation.hxx>
+#include <mmx/PeerInfo.hxx>
 #include <mmx/ProofOfSpace.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
@@ -74,6 +75,8 @@
 #include <mmx/Router_get_id_return.hxx>
 #include <mmx/Router_get_known_peers.hxx>
 #include <mmx/Router_get_known_peers_return.hxx>
+#include <mmx/Router_get_peer_info.hxx>
+#include <mmx/Router_get_peer_info_return.hxx>
 #include <mmx/Router_get_peers.hxx>
 #include <mmx/Router_get_peers_return.hxx>
 #include <mmx/Solution.hxx>
@@ -113,6 +116,7 @@
 #include <mmx/Wallet_send_return.hxx>
 #include <mmx/Wallet_show_farmer_keys.hxx>
 #include <mmx/Wallet_show_farmer_keys_return.hxx>
+#include <mmx/peer_info_t.hxx>
 #include <mmx/permission_e.hxx>
 #include <mmx/stxo_entry_t.hxx>
 #include <mmx/time_segment_t.hxx>
@@ -572,6 +576,14 @@ void type<::mmx::Operation>::create_dynamic_code(std::vector<uint16_t>& code, co
 	code.push_back(CODE_OBJECT);
 }
 
+void type<::mmx::PeerInfo>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::PeerInfo());
+}
+
+void type<::mmx::PeerInfo>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::PeerInfo& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 void type<::mmx::ProofOfSpace>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::ProofOfSpace());
 }
@@ -689,6 +701,22 @@ void type<::mmx::Router_get_known_peers_return>::create_dynamic_code(std::vector
 }
 
 void type<::mmx::Router_get_known_peers_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_known_peers_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+void type<::mmx::Router_get_peer_info>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Router_get_peer_info());
+}
+
+void type<::mmx::Router_get_peer_info>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_peer_info& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+void type<::mmx::Router_get_peer_info_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Router_get_peer_info_return());
+}
+
+void type<::mmx::Router_get_peer_info_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_peer_info_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -1020,6 +1048,14 @@ void type<::mmx::hash_t>::create_dynamic_code(std::vector<uint16_t>& code, const
 	const std::vector<int> tmp = {11, 32, 1};
 	code.insert(code.end(), tmp.begin(), tmp.end());}
 
+void type<::mmx::peer_info_t>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::peer_info_t());
+}
+
+void type<::mmx::peer_info_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::peer_info_t& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 void type<::mmx::permission_e>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::permission_e());
 }
@@ -1209,6 +1245,7 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Node_start_sync::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_start_sync_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Operation::static_create_type_code());
+	vnx::register_type_code(::mmx::PeerInfo::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofOfSpace::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofOfTime::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofResponse::static_create_type_code());
@@ -1225,6 +1262,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Router_get_id_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Router_get_known_peers::static_create_type_code());
 	vnx::register_type_code(::mmx::Router_get_known_peers_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Router_get_peer_info::static_create_type_code());
+	vnx::register_type_code(::mmx::Router_get_peer_info_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Router_get_peers::static_create_type_code());
 	vnx::register_type_code(::mmx::Router_get_peers_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Solution::static_create_type_code());
@@ -1264,6 +1303,7 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Wallet_send_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_show_farmer_keys::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_show_farmer_keys_return::static_create_type_code());
+	vnx::register_type_code(::mmx::peer_info_t::static_create_type_code());
 	vnx::register_type_code(::mmx::permission_e::static_create_type_code());
 	vnx::register_type_code(::mmx::stxo_entry_t::static_create_type_code());
 	vnx::register_type_code(::mmx::time_segment_t::static_create_type_code());
@@ -1341,6 +1381,7 @@ const vnx::TypeCode* const vnx_native_type_code_Node_get_utxo_list_return = vnx:
 const vnx::TypeCode* const vnx_native_type_code_Node_start_sync = vnx::get_type_code(vnx::Hash64(0x6c5be8aeb25ef3c8ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_start_sync_return = vnx::get_type_code(vnx::Hash64(0xe75b8e6a62d7e744ull));
 const vnx::TypeCode* const vnx_native_type_code_Operation = vnx::get_type_code(vnx::Hash64(0xfd69dd82e906e619ull));
+const vnx::TypeCode* const vnx_native_type_code_PeerInfo = vnx::get_type_code(vnx::Hash64(0xf7a37f624c94a121ull));
 const vnx::TypeCode* const vnx_native_type_code_ProofOfSpace = vnx::get_type_code(vnx::Hash64(0x9269760ad5fd0058ull));
 const vnx::TypeCode* const vnx_native_type_code_ProofOfTime = vnx::get_type_code(vnx::Hash64(0xa84a63942b8e5c6aull));
 const vnx::TypeCode* const vnx_native_type_code_ProofResponse = vnx::get_type_code(vnx::Hash64(0x816e898b36befae0ull));
@@ -1357,6 +1398,8 @@ const vnx::TypeCode* const vnx_native_type_code_Router_get_id = vnx::get_type_co
 const vnx::TypeCode* const vnx_native_type_code_Router_get_id_return = vnx::get_type_code(vnx::Hash64(0x3924146b7a803806ull));
 const vnx::TypeCode* const vnx_native_type_code_Router_get_known_peers = vnx::get_type_code(vnx::Hash64(0xaa408b6bf4e8168dull));
 const vnx::TypeCode* const vnx_native_type_code_Router_get_known_peers_return = vnx::get_type_code(vnx::Hash64(0xc08cde4fbf7f2abcull));
+const vnx::TypeCode* const vnx_native_type_code_Router_get_peer_info = vnx::get_type_code(vnx::Hash64(0x520a467ef9324cb3ull));
+const vnx::TypeCode* const vnx_native_type_code_Router_get_peer_info_return = vnx::get_type_code(vnx::Hash64(0xffff4ae0244281b5ull));
 const vnx::TypeCode* const vnx_native_type_code_Router_get_peers = vnx::get_type_code(vnx::Hash64(0x66d68bd91b462049ull));
 const vnx::TypeCode* const vnx_native_type_code_Router_get_peers_return = vnx::get_type_code(vnx::Hash64(0x595714f80f272d86ull));
 const vnx::TypeCode* const vnx_native_type_code_Solution = vnx::get_type_code(vnx::Hash64(0x9f693babd1a91ccdull));
@@ -1396,6 +1439,7 @@ const vnx::TypeCode* const vnx_native_type_code_Wallet_send = vnx::get_type_code
 const vnx::TypeCode* const vnx_native_type_code_Wallet_send_return = vnx::get_type_code(vnx::Hash64(0x5df7b911342a1e6full));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_show_farmer_keys = vnx::get_type_code(vnx::Hash64(0x67f27a0d9e1501acull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_show_farmer_keys_return = vnx::get_type_code(vnx::Hash64(0x9ad3d5f565a23b5dull));
+const vnx::TypeCode* const vnx_native_type_code_peer_info_t = vnx::get_type_code(vnx::Hash64(0xce0ff32e89625afbull));
 const vnx::TypeCode* const vnx_native_type_code_permission_e = vnx::get_type_code(vnx::Hash64(0x7d75a3f04c313898ull));
 const vnx::TypeCode* const vnx_native_type_code_stxo_entry_t = vnx::get_type_code(vnx::Hash64(0x7655c1e23969201bull));
 const vnx::TypeCode* const vnx_native_type_code_time_segment_t = vnx::get_type_code(vnx::Hash64(0x344b7baf0798fe2aull));
