@@ -242,18 +242,26 @@ int main(int argc, char** argv)
 			else if(command == "peers")
 			{
 				auto info = router.get_peer_info();
+				uint32_t max_height = 0;
+				for(const auto& peer : info->peers) {
+					max_height = std::max(max_height, peer.height);
+				}
 				for(const auto& peer : info->peers) {
 					std::cout << "[" << peer.address << "]";
 					for(size_t i = peer.address.size(); i < 15; ++i) {
 						std::cout << " ";
 					}
 					std::cout << " height = ";
+					const auto height = std::to_string(peer.height);
+					for(size_t i = height.size(); i < std::to_string(max_height).size(); ++i) {
+						std::cout << " ";
+					}
 					if(peer.is_synced) {
 						std::cout << " ";
 					} else {
 						std::cout << "!";
 					}
-					std::cout << peer.height;
+					std::cout << height;
 					std::cout << ", " << (peer.bytes_recv / 1024 / 256) / 4. << " MB recv";
 					std::cout << ", " << (peer.bytes_send / 1024 / 256) / 4. << " MB sent";
 					std::cout << ", timeout = " << (peer.recv_timeout_ms / 100) / 10. << " sec";
