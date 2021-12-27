@@ -25,6 +25,8 @@ In addition the first application for MMX will be a decentralized exchange where
 The variable reward function is as follows: `reward = max(max(difficulty * const_factor, min_reward), TX fees)`.
 Where `min_reward` and `const_factor` are fixed at launch.
 
+Currently we are running the *first testnet*, the coins farmed are not worth anything. A mainnet launch is planned in ~6 months or so.
+
 ## CLI
 
 To use the CLI:
