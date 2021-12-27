@@ -196,6 +196,18 @@ After that you can follow the normal instructions for Ubuntu 20.04.
 To get OpenCL working in WSL:
 https://devblogs.microsoft.com/commandline/oneapi-l0-openvino-and-opencl-coming-to-the-windows-subsystem-for-linux-for-intel-gpus/
 
+### Using packaged secp256k1
+
+If you don't have a system package for `libsecp256k1`:
+```
+cd mmx-node/secp256k1
+./autogen.sh
+./configure
+make -j8
+cd ..
+./make_devel.sh -DWITH_SECP256K1=1
+```
+
 ### OpenCL for Intel iGPUs
 
 Ubuntu 20.04, 21.04
