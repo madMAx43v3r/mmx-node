@@ -709,6 +709,9 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 						}
 						peer->is_synced = false;
 						synced_peers.erase(client);
+
+						// check their height
+						send_request(client, Node_get_height::create());
 					}
 					peer->last_receive_ms = vnx::get_wall_time_millis();
 				}
