@@ -506,7 +506,8 @@ void Router::print_stats()
 			  << " tx/s, " << float(vdf_counter * 1000) / stats_interval_ms
 			  << " vdf/s, " << float(block_counter * 1000) / stats_interval_ms
 			  << " blocks/s, " << synced_peers.size() << " / " <<  peer_map.size() << " / " << peer_set.size()
-			  << " peers, " << upload_counter << " blocks sent";
+			  << " peers, " << upload_counter << " upload, "
+			  << tx_drop_counter << " / " << vdf_drop_counter << " / " << block_drop_counter << " dropped";
 	tx_counter = 0;
 	vdf_counter = 0;
 	block_counter = 0;
@@ -552,7 +553,15 @@ void Router::relay(uint64_t source, std::shared_ptr<const vnx::Value> msg)
 {
 	for(auto& entry : peer_map) {
 		auto& peer = entry.second;
-		if(!peer.is_blocked && entry.first != source) {
+		if(peer.is_blocked) {
+			switch(msg->get_type_code()->type_hash) {
+				case Block::VNX_TYPE_ID: block_drop_counter++; break;
+				case Transaction::VNX_TYPE_ID: tx_drop_counter++; break;
+				case ProofOfTime::VNX_TYPE_ID: vdf_drop_counter++; break;
+			}
+			drop_counter++;
+		}
+		else if(entry.first != source) {
 			send_to(peer, msg);
 		}
 	}
