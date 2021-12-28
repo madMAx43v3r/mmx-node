@@ -214,7 +214,7 @@ private:
 	std::shared_ptr<vnx::addons::HttpInterface<Node>> http;
 
 	mutable std::mutex vdf_mutex;
-	uint64_t vdf_verify_pending = 0;
+	uint32_t vdf_verify_pending = 0;						// height
 	std::shared_ptr<OCL_VDF> opencl_vdf[2];
 	std::shared_ptr<vnx::ThreadPool> threads;
 

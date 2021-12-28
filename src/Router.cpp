@@ -208,7 +208,7 @@ void Router::handle(std::shared_ptr<const ProofOfTime> proof)
 	{
 		if(vdf_iters > verified_vdf_iters) {
 			if(seen_hashes.insert(proof->calc_hash()).second) {
-				log(INFO) << "Broadcasting VDF for " << vdf_iters;
+				log(INFO) << "Broadcasting VDF for height " << proof->height;
 				send_all(proof);
 			}
 		}

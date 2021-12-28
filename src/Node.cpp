@@ -429,7 +429,7 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 	if(verified_vdfs.count(vdf_iters)) {
 		return;
 	}
-	if(vdf_iters == vdf_verify_pending) {
+	if(proof->height == vdf_verify_pending) {
 		pending_vdfs.emplace(proof->start, proof);
 		return;
 	}
@@ -437,18 +437,19 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 	if(iter != verified_vdfs.end())
 	{
 		try {
+			vdf_verify_pending = proof->height;
 			verify_vdf(proof, iter->second);
-			vdf_verify_pending = vdf_iters;
 		}
 		catch(const std::exception& ex) {
 			if(is_synced) {
 				log(WARN) << "VDF verification failed with: " << ex.what();
 			}
+			vdf_verify_pending = 0;
 		}
 	}
 	else {
 		pending_vdfs.emplace(proof->start, proof);
-		log(INFO) << "Waiting on VDF for " << proof->start << " iterations";
+		log(INFO) << "Waiting on VDF for height " << proof->height - 1;
 	}
 }
 
@@ -482,7 +483,7 @@ void Node::check_vdfs()
 	for(auto iter = pending_vdfs.begin(); iter != pending_vdfs.end();) {
 		if(verified_vdfs.count(iter->first)) {
 			const auto proof = iter->second;
-			if(proof->start + proof->get_num_iters() != vdf_verify_pending) {
+			if(proof->height != vdf_verify_pending) {
 				add_task([this, proof]() {
 					handle(proof);
 				});
@@ -1482,17 +1483,30 @@ uint32_t Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const has
 
 void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const vdf_point_t& prev) const
 {
-	// check delta iters
-	if(proof->height != prev.height + 1) {
-		throw std::logic_error("invalid height: " + std::to_string(proof->height) + " != " + std::to_string(prev.height + 1));
-	}
-
 	// check number of segments
 	if(proof->segments.size() < params->min_vdf_segments) {
 		throw std::logic_error("not enough segments: " + std::to_string(proof->segments.size()));
 	}
 	if(proof->segments.size() > params->max_vdf_segments) {
 		throw std::logic_error("too many segments: " + std::to_string(proof->segments.size()));
+	}
+
+	// check delta iters
+	if(proof->height != prev.height + 1) {
+		throw std::logic_error("invalid height: " + std::to_string(proof->height) + " != " + std::to_string(prev.height + 1));
+	}
+	if(auto block = get_header_at(prev.height)) {
+		if(auto diff_block = find_diff_header(block, 1)) {
+			const auto num_iters = proof->get_num_iters();
+			const auto expected = diff_block->time_diff * params->time_diff_constant;
+			if(num_iters != expected) {
+				throw std::logic_error("wrong delta iters: " + std::to_string(num_iters) + " != " + std::to_string(expected));
+			}
+		} else {
+			throw std::logic_error("cannot verify: missing diff block");
+		}
+	} else {
+		throw std::logic_error("cannot verify: missing block");
 	}
 
 	// check proper infusions
@@ -1589,7 +1603,7 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, const vd
 	verified_vdfs[vdf_iters] = point;
 	vdf_verify_pending = 0;
 
-	log(INFO) << "Verified VDF at " << vdf_iters << " iterations, delta = "
+	log(INFO) << "Verified VDF for height " << proof->height << ", delta = "
 				<< (point.recv_time - prev.recv_time) / 1e6 << " sec, took "
 				<< (vnx::get_wall_time_micros() - point.recv_time) / 1e6 << " sec";
 
