@@ -175,9 +175,10 @@ OpenCL provides faster and more effient VDF verification using an integrated or 
 A standard iGPU found in Intel CPUs with 192 shader cores is plenty fast enough.
 If you dont have a fast quad core CPU (>3 GHz) or higher core count CPU, it is required to have a GPU with OpenCL support.
 
-Make sure to be in the `video` group to be able to access a GPU:
+Make sure to be in the `video` and or `render` group (depends on distribution) to be able to access a GPU:
 ```
 sudo adduser $USER video
+sudo adduser $USER render
 ```
 
 ### Building
