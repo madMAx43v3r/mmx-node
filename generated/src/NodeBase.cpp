@@ -86,7 +86,7 @@ namespace mmx {
 
 
 const vnx::Hash64 NodeBase::VNX_TYPE_HASH(0x289d7651582d76a3ull);
-const vnx::Hash64 NodeBase::VNX_CODE_HASH(0xc10445207d1d4e71ull);
+const vnx::Hash64 NodeBase::VNX_CODE_HASH(0xd21321697a91b11cull);
 
 NodeBase::NodeBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -421,7 +421,7 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node";
 	type_code->type_hash = vnx::Hash64(0x289d7651582d76a3ull);
-	type_code->code_hash = vnx::Hash64(0xc10445207d1d4e71ull);
+	type_code->code_hash = vnx::Hash64(0xd21321697a91b11cull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::NodeBase);
 	type_code->methods.resize(28);
@@ -585,7 +585,7 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 		field.data_size = 4;
 		field.name = "opencl_device";
 		field.value = vnx::to_string(0);
-		field.code = {3};
+		field.code = {7};
 	}
 	{
 		auto& field = type_code->fields[19];
