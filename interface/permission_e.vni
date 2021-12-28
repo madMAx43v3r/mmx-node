@@ -2,6 +2,7 @@ package mmx;
 
 enum permission_e {
 	
-	PUBLIC
+	PUBLIC,
+	SPENDING,
 	
 }

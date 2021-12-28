@@ -32,6 +32,9 @@ void Wallet::main()
 {
 	params = get_params();
 
+	http = std::make_shared<vnx::addons::HttpInterface<Wallet>>(this, vnx_name);
+	add_async_client(http);
+
 	for(const auto& file_path : key_files)
 	{
 		if(auto key_file = vnx::read_from_file<KeyFile>(file_path))
@@ -424,6 +427,18 @@ hash_t Wallet::get_master_seed(const uint32_t& index) const
 		return key_file->seed_value;
 	}
 	throw std::logic_error("failed to read key file");
+}
+
+void Wallet::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
+								const vnx::request_id_t& request_id) const
+{
+	http->http_request(request, sub_path, request_id);
+}
+
+void Wallet::http_request_chunk_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
+										const int64_t& offset, const int64_t& max_bytes, const vnx::request_id_t& request_id) const
+{
+	throw std::logic_error("not implemented");
 }
 
 

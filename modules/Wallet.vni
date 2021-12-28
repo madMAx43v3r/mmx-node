@@ -2,7 +2,7 @@ package mmx;
 
 import mmx.wallet.tx_entry_t;
 
-module Wallet {
+module Wallet implements vnx.addons.HttpComponent {
 	
 	vector<string> key_files;
 	
@@ -19,6 +19,7 @@ module Wallet {
 	
 	void close_wallet();
 	
+	@Permission(permission_e.SPENDING)
 	hash_t send(ulong amount, addr_t dst_addr, addr_t contract) const;
 	
 	vector<utxo_entry_t> get_utxo_list() const;

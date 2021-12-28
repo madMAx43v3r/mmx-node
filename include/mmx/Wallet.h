@@ -15,6 +15,8 @@
 #include <mmx/ECDSA_Wallet.h>
 #include <mmx/txio_key_t.hpp>
 
+#include <vnx/addons/HttpInterface.h>
+
 
 namespace mmx {
 
@@ -57,6 +59,12 @@ protected:
 
 	hash_t get_master_seed(const uint32_t& index) const override;
 
+	void http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
+							const vnx::request_id_t& request_id) const override;
+
+	void http_request_chunk_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
+									const int64_t& offset, const int64_t& max_bytes, const vnx::request_id_t& request_id) const override;
+
 private:
 	std::shared_ptr<NodeClient> node;
 
@@ -68,6 +76,9 @@ private:
 	mutable std::unordered_map<txio_key_t, tx_out_t> change_utxo_map;
 
 	std::shared_ptr<const ChainParams> params;
+	std::shared_ptr<vnx::addons::HttpInterface<Wallet>> http;
+
+	friend class vnx::addons::HttpInterface<Wallet>;
 
 };
 

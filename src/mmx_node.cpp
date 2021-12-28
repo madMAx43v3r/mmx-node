@@ -32,8 +32,10 @@ int main(int argc, char** argv)
 
 	const auto params = mmx::get_params();
 
+	bool with_farmer = true;
 	bool with_timelord = true;
 	std::string endpoint = ":11331";
+	vnx::read_config("farmer", with_farmer);
 	vnx::read_config("timelord", with_timelord);
 	vnx::read_config("endpoint", endpoint);
 
@@ -47,8 +49,8 @@ int main(int argc, char** argv)
 	}
 	{
 		vnx::Handle<vnx::addons::HttpServer> module = new vnx::addons::HttpServer("HttpServer");
-		module->default_access = "NETWORK";
 		module->components["/api/node/"] = "Node";
+		module->components["/api/wallet/"] = "Wallet";
 		module.start_detached();
 	}
 	{
@@ -63,11 +65,11 @@ int main(int argc, char** argv)
 		vnx::Handle<mmx::Wallet> module = new mmx::Wallet("Wallet");
 		module.start_detached();
 	}
-	{
+	if(with_farmer) {
 		vnx::Handle<mmx::Farmer> module = new mmx::Farmer("Farmer");
 		module.start_detached();
 	}
-	{
+	if(with_farmer) {
 		vnx::Handle<mmx::Harvester> module = new mmx::Harvester("Harvester");
 		module.start_detached();
 	}
