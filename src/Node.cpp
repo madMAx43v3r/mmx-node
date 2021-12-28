@@ -714,35 +714,9 @@ void Node::update()
 	{
 		auto prev = peak;
 		bool made_block = false;
-		for(uint32_t i = 0; prev && i <= params->finality_delay; ++i)
+		for(uint32_t i = 0; prev && i <= 1; ++i)
 		{
 			if(prev->height < root->height) {
-				break;
-			}
-			if(auto base = find_prev_header(prev)) {
-				// find best block at this height to build on
-				const auto prev_height = prev->height;
-				if(auto fork = find_best_fork(base, &prev_height)) {
-					prev = fork->block;
-				}
-			}
-			{
-				// add dummy block in case no proof is found
-				auto iter = verified_vdfs.find(prev->height + 1);
-				if(iter != verified_vdfs.end()) {
-					auto block = Block::create();
-					block->prev = prev->hash;
-					block->height = prev->height + 1;
-					block->time_diff = prev->time_diff;
-					block->space_diff = prev->space_diff;
-					block->vdf_iters = iter->second.iters;
-					block->vdf_output = iter->second.output;
-					block->finalize();
-					add_block(block);
-				}
-			}
-			auto diff_block = find_diff_header(prev, 1);
-			if(!diff_block) {
 				break;
 			}
 			hash_t vdf_challenge;
@@ -750,14 +724,7 @@ void Node::update()
 				break;
 			}
 			const auto challenge = get_challenge(prev, vdf_challenge, 1);
-			{
-				// publish challenge
-				auto value = Challenge::create();
-				value->height = prev->height + 1;
-				value->challenge = challenge;
-				value->space_diff = diff_block->space_diff;
-				publish(value, output_challenges);
-			}
+
 			auto iter = proof_map.find(challenge);
 			if(iter != proof_map.end()) {
 				const auto& proof = iter->second;
@@ -786,9 +753,24 @@ void Node::update()
 			add_task(std::bind(&Node::update, this));
 		}
 	}
+	{
+		// add dummy block in case no proof is found
+		auto iter = verified_vdfs.find(peak->height + 1);
+		if(iter != verified_vdfs.end()) {
+			auto block = Block::create();
+			block->prev = peak->hash;
+			block->height = peak->height + 1;
+			block->time_diff = peak->time_diff;
+			block->space_diff = peak->space_diff;
+			block->vdf_iters = iter->second.iters;
+			block->vdf_output = iter->second.output;
+			block->finalize();
+			add_block(block);
+		}
+	}
 
-	// publish advance challenges
-	for(uint32_t i = 2; i <= params->challenge_delay; ++i)
+	// publish challenges
+	for(uint32_t i = 0; i <= params->challenge_delay; ++i)
 	{
 		hash_t vdf_challenge;
 		if(find_vdf_challenge(peak, vdf_challenge, i))
