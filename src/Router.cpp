@@ -413,7 +413,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 
 void Router::connect()
 {
-	for(const auto& address : peer_set)
+	for(const auto& address : get_subset(peer_set, num_threads))
 	{
 		if(synced_peers.size() >= num_peers_out || connecting_peers.size() >= num_threads) {
 			break;
