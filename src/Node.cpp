@@ -585,9 +585,22 @@ void Node::update()
 		catch(...) {
 			continue;	// try again
 		}
+		const auto fork_line = get_fork_line();
+
+		// show finalized blocks
+		for(auto fork : fork_line) {
+			if(auto prev = find_prev_fork(fork, params->finality_delay)) {
+				if(!prev->is_finalized) {
+					prev->is_finalized = true;
+					const auto block = prev->block;
+					Node::log(INFO) << "Finalized height " << block->height << " with: ntx = " << block->tx_list.size()
+							<< ", score = " << (prev ? prev->proof_score : 0) << ", k = " << (block->proof ? block->proof->ksize : 0)
+							<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff;
+				}
+			}
+		}
 
 		// commit to history
-		const auto fork_line = get_fork_line();
 		for(size_t i = 0; i + params->commit_delay < fork_line.size(); ++i) {
 			commit(fork_line[i]->block);
 		}
@@ -1394,12 +1407,6 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 		block_index[block->height] = std::make_pair(offset, block->hash);
 		vnx::write(block_chain->out, block);
 		block_chain->flush();
-
-		const auto fork = find_fork(block->hash);
-		const auto num_bytes = block_chain->get_output_pos() - offset;
-		Node::log(INFO) << "Committed height " << block->height << " with: ntx = " << block->tx_list.size()
-				<< ", score = " << (fork ? fork->proof_score : 0) << ", k = " << (block->proof ? block->proof->ksize : 0)
-				<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff << ", bytes = " << num_bytes;
 	}
 	fork_tree.erase(block->hash);
 	purge_tree();
@@ -1742,6 +1749,14 @@ std::shared_ptr<const BlockHeader> Node::find_header(const hash_t& hash) const
 		}
 	}
 	return nullptr;
+}
+
+std::shared_ptr<Node::fork_t> Node::find_prev_fork(std::shared_ptr<fork_t> fork, const size_t distance) const
+{
+	for(size_t i = 0; fork && i < distance; ++i) {
+		fork = fork->prev.lock();
+	}
+	return fork;
 }
 
 std::shared_ptr<const BlockHeader> Node::find_prev_header(	std::shared_ptr<const BlockHeader> block,

@@ -81,6 +81,7 @@ protected:
 private:
 	struct fork_t {
 		bool is_verified = false;
+		bool is_finalized = false;
 		bool is_proof_verified = false;
 		uint32_t proof_score = -1;
 		int64_t recv_time = 0;
@@ -157,6 +158,8 @@ private:
 	std::shared_ptr<const Block> find_block(const hash_t& hash) const;
 
 	std::shared_ptr<const BlockHeader> find_header(const hash_t& hash) const;
+
+	std::shared_ptr<fork_t> find_prev_fork(std::shared_ptr<fork_t> fork, const size_t distance = 1) const;
 
 	std::shared_ptr<const BlockHeader> find_prev_header(
 			std::shared_ptr<const BlockHeader> block, const size_t distance = 1, bool clamped = false) const;
