@@ -435,6 +435,14 @@ void Router::connect()
 		connecting_peers.insert(address);
 		threads->add_task(std::bind(&Router::connect_task, this, address));
 	}
+	if(synced_peers.size() > num_peers_out) {
+		for(auto client : get_subset(synced_peers, synced_peers.size() - num_peers_out)) {
+			if(auto peer = find_peer(client)) {
+				log(INFO) << "Disconnecting from " << peer->address << " to reduce connections";
+			}
+			disconnect(client);
+		}
+	}
 }
 
 void Router::query()
