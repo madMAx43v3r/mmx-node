@@ -395,7 +395,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				}
 			} else {
 				if(!job.hash_map.empty()) {
-					log(INFO) << "Got " << job.blocks.size() << " / " << job.hash_map.size() << " blocks for height " << job.height << " by fetching "
+					log(DEBUG) << "Got " << job.blocks.size() << " / " << job.hash_map.size() << " blocks for height " << job.height << " by fetching "
 							<< job.succeeded.size() + job.pending.size() + job.failed.size() << " times, " << job.failed.size() << " failed";
 				}
 				// we are done with the job
