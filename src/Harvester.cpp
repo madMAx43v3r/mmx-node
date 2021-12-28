@@ -78,7 +78,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 				scores[i][k] = calc_proof_score(params, prover->get_ksize(), hash_t::from_bytes(qualities[k]), value->space_diff);
 			}
 		} catch(const std::exception& ex) {
-			log(WARN) << "Failed to fetch qualities: " << ex.what();
+			log(WARN) << "Failed to fetch qualities: " << ex.what() << " (" << prover->get_file_path() << ")";
 		}
 	}
 
@@ -102,7 +102,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 		try {
 			best_proof = best_plot->get_full_proof(value->challenge.bytes, best_index);
 		} catch(const std::exception& ex) {
-			log(WARN) << "Failed to fetch proof: " << ex.what();
+			log(WARN) << "Failed to fetch proof: " << ex.what() << " (" << best_plot->get_file_path() << ")";
 		}
 	}
 	if(best_proof) {
