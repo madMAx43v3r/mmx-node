@@ -509,6 +509,9 @@ void Router::print_stats()
 	tx_counter = 0;
 	vdf_counter = 0;
 	block_counter = 0;
+	tx_drop_counter = 0;
+	vdf_drop_counter = 0;
+	block_drop_counter = 0;
 }
 
 void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> proof)
