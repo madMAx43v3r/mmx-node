@@ -323,13 +323,6 @@ void Node::add_block(std::shared_ptr<const Block> block)
 	if(!block->is_valid()) {
 		return;
 	}
-	if(is_replay || !is_synced) {
-		vdf_point_t point;
-		point.output = block->vdf_output;
-		point.height = block->height;
-		point.recv_time = vnx::get_wall_time_micros();
-		verified_vdfs[block->vdf_iters] = point;
-	}
 	auto fork = std::make_shared<fork_t>();
 	fork->recv_time = vnx::get_wall_time_micros();
 	fork->block = block;
@@ -527,13 +520,21 @@ void Node::update()
 			}
 			if(!fork->is_proof_verified && fork->diff_block && (has_prev || block->prev == root->hash))
 			{
-				auto iter2 = verified_vdfs.find(block->vdf_iters);
-				if(iter2 != verified_vdfs.end()) {
-					if(block->vdf_output != iter2->second.output) {
-						log(WARN) << "VDF verification failed for a block at height " << block->height;
-						iter = fork_tree.erase(iter);
-						continue;
+				bool vdf_passed = false;
+				if(is_synced) {
+					auto iter2 = verified_vdfs.find(block->vdf_iters);
+					if(iter2 != verified_vdfs.end()) {
+						if(block->vdf_output == iter2->second.output) {
+							vdf_passed = true;
+						} else {
+							log(WARN) << "VDF verification failed for a block at height " << block->height;
+							iter = fork_tree.erase(iter);
+							continue;
+						}
 					}
+				}
+				if(!is_synced || vdf_passed)
+				{
 					hash_t vdf_challenge;
 					if(find_vdf_challenge(block, vdf_challenge)) {
 						to_verify.emplace_back(fork, vdf_challenge);
@@ -1076,8 +1077,15 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 				}
 				throw;
 			}
-			if(!is_replay && is_synced) {
+			if(is_synced) {
 				publish(block, output_verified_blocks);
+			}
+			else {
+				vdf_point_t point;
+				point.output = block->vdf_output;
+				point.height = block->height;
+				point.recv_time = vnx::get_wall_time_micros();
+				verified_vdfs[block->vdf_iters] = point;
 			}
 		}
 		apply(block);
