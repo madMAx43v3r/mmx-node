@@ -202,11 +202,9 @@ void Router::handle(std::shared_ptr<const Transaction> tx)
 
 void Router::handle(std::shared_ptr<const ProofOfTime> proof)
 {
-	const auto vdf_iters = proof->start + proof->get_num_iters();
-
 	if(vnx_sample->topic == input_vdfs)
 	{
-		if(vdf_iters > verified_vdf_iters) {
+		if(proof->height > verified_vdf_height) {
 			if(seen_hashes.insert(proof->calc_hash()).second) {
 				log(INFO) << "Broadcasting VDF for height " << proof->height;
 				send_all(proof);
@@ -215,7 +213,7 @@ void Router::handle(std::shared_ptr<const ProofOfTime> proof)
 	}
 	else if(vnx_sample->topic == input_verified_vdfs)
 	{
-		verified_vdf_iters = std::max(vdf_iters, verified_vdf_iters);
+		verified_vdf_height = std::max(proof->height, verified_vdf_height);
 	}
 }
 

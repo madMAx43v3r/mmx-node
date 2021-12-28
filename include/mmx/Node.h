@@ -92,6 +92,7 @@ private:
 
 	struct vdf_point_t {
 		std::array<hash_t, 2> output;
+		uint64_t iters = 0;
 		int64_t recv_time = 0;
 		uint32_t height = -1;
 	};
@@ -191,8 +192,8 @@ private:
 	std::unordered_map<addr_t, std::shared_ptr<const Contract>> contracts;			// current contract state
 	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_pool;
 
-	std::map<uint64_t, vdf_point_t> verified_vdfs;									// [end iters => output]
-	std::multimap<uint64_t, std::shared_ptr<const ProofOfTime>> pending_vdfs;		// [start iters => proof]
+	std::map<uint32_t, vdf_point_t> verified_vdfs;									// [height => output]
+	std::multimap<uint32_t, std::shared_ptr<const ProofOfTime>> pending_vdfs;		// [height => proof]
 
 	std::unordered_multimap<uint32_t, hash_t> challenge_map;						// [height => challenge]
 	std::unordered_map<hash_t, std::shared_ptr<const ProofResponse>> proof_map;		// [challenge => proof]

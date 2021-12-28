@@ -167,7 +167,7 @@ private:
 
 	uint32_t node_height = 0;
 	uint32_t next_request_id = 0;
-	uint64_t verified_vdf_iters = 0;
+	uint32_t verified_vdf_height = 0;
 
 	size_t tx_counter = 0;
 	size_t vdf_counter = 0;
