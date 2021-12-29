@@ -56,7 +56,7 @@ void Node::main()
 			automy::basic_opencl::create_context(CL_DEVICE_TYPE_GPU, platform_name);
 
 			const auto devices = automy::basic_opencl::get_devices();
-			if(opencl_device < devices.size()) {
+			if(size_t(opencl_device) < devices.size()) {
 				for(int i = 0; i < 2; ++i) {
 					opencl_vdf[i] = std::make_shared<OCL_VDF>(opencl_device);
 				}
@@ -78,8 +78,8 @@ void Node::main()
 
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
 
-	if(block_chain->exists())
-	{
+	if(block_chain->exists()) {
+		const auto time_begin = vnx::get_wall_time_millis();
 		block_chain->open("rb+");
 		int64_t last_pos = 0;
 		while(true) {
@@ -105,18 +105,18 @@ void Node::main()
 			}
 		}
 		block_chain->seek_to(last_pos);
+
+		if(auto block = find_header(state_hash)) {
+			log(INFO) << "Loaded " << block->height + 1 << " blocks from disk, took "
+					<< (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+		}
 	} else {
 		block_chain->open("ab");
-	}
-
-	if(auto block = find_header(state_hash)) {
-		log(INFO) << "Loaded " << block->height + 1 << " blocks from disk";
 	}
 	is_replay = false;
 	is_synced = !do_sync;
 
-	if(state_hash == hash_t())
-	{
+	if(state_hash == hash_t()) {
 		auto genesis = Block::create();
 		genesis->time_diff = params->initial_time_diff;
 		genesis->space_diff = params->initial_space_diff;
@@ -128,8 +128,7 @@ void Node::main()
 		commit(genesis);
 	}
 
-	if(auto block = find_header(state_hash))
-	{
+	if(auto block = find_header(state_hash)) {
 		vdf_point_t point;
 		point.height = block->height;
 		point.iters = block->vdf_iters;
