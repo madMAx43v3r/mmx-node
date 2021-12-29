@@ -389,8 +389,13 @@ int main(int argc, char** argv)
 						std::cout << peer << std::endl;
 					}
 				}
+				else if(subject == "netspace") {
+					const auto height = node.get_height();
+					const auto peak = node.get_header_at(height);
+					std::cout << mmx::calc_total_netspace(params, peak->space_diff) << std::endl;
+				}
 				else {
-					std::cerr << "Help: mmx node get [height | tx | balance | amount | block | header | peers]" << std::endl;
+					std::cerr << "Help: mmx node get [height | tx | balance | amount | block | header | peers | netspace]" << std::endl;
 				}
 			}
 			else {
