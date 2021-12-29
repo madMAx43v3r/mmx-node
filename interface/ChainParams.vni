@@ -14,9 +14,9 @@ class ChainParams {
 	uint challenge_interval = 36;			// challenge (and difficulty) is for next N blocks (must be > finality_delay)
 	uint max_diff_adjust = 10;				// per block (1/2^x)
 	
-	uint min_vdf_segments = 640;
+	uint min_vdf_segments = 320;
 	uint num_vdf_segments = 760;
-	uint max_vdf_segments = 2048;
+	uint max_vdf_segments = 1024;
 	
 	uint recursive_interval = 60480;		// number of blocks per iteration to approximate recursive functions
 	
