@@ -334,18 +334,26 @@ bool Router::process(std::shared_ptr<const Return> ret)
 			if(job.succeeded.size() < min_sync_peers
 				&& job.succeeded.size() + job.failed.size() < num_peers_try)
 			{
-				for(auto client : synced_peers) {
+				auto peers = synced_peers;
+				for(auto client : job.failed) {
+					peers.erase(client);
+				}
+				for(auto client : job.pending) {
+					peers.erase(client);
+				}
+				for(auto client : job.succeeded) {
+					peers.erase(client);
+				}
+				for(auto client : get_subset(peers, max_sync_peers))
+				{
 					if(job.succeeded.size() + job.pending.size() + job.failed.size() >= max_sync_peers) {
 						break;
 					}
-					if(!job.succeeded.count(client) && !job.pending.count(client) && !job.failed.count(client))
-					{
-						auto req = Node_get_block_hash::create();
-						req->height = job.height;
-						const auto id = send_request(client, req);
-						job.request_map[id] = client;
-						job.pending.insert(client);
-					}
+					auto req = Node_get_block_hash::create();
+					req->height = job.height;
+					const auto id = send_request(client, req);
+					job.request_map[id] = client;
+					job.pending.insert(client);
 				}
 			} else {
 				log(DEBUG) << "Got " << job.hash_map.size() << " block hashes for height "
