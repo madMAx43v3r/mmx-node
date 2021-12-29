@@ -15,7 +15,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/stxo_entry_t.hxx>
-#include <mmx/tx_key_t.hxx>
+#include <mmx/tx_entry_t.hxx>
 #include <mmx/txio_key_t.hxx>
 #include <mmx/txo_info_t.hxx>
 #include <mmx/utxo_entry_t.hxx>
@@ -96,10 +96,12 @@ protected:
 	virtual std::shared_ptr<const ::mmx::BlockHeader> get_header_at(const uint32_t& height) const = 0;
 	virtual vnx::optional<::mmx::hash_t> get_block_hash(const uint32_t& height) const = 0;
 	virtual ::mmx::txo_info_t get_txo_info(const ::mmx::txio_key_t& key) const = 0;
-	virtual vnx::optional<::mmx::tx_key_t> get_tx_key(const ::mmx::hash_t& id) const = 0;
+	virtual vnx::optional<uint32_t> get_tx_height(const ::mmx::hash_t& id) const = 0;
 	virtual void add_block(std::shared_ptr<const ::mmx::Block> block) = 0;
 	virtual void add_transaction(std::shared_ptr<const ::mmx::Transaction> tx) = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> get_transaction(const ::mmx::hash_t& id) const = 0;
+	virtual std::vector<std::shared_ptr<const ::mmx::Transaction>> get_transactions(const std::vector<::mmx::hash_t>& ids) const = 0;
+	virtual std::vector<::mmx::tx_entry_t> get_history_for(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_height) const = 0;
 	virtual std::shared_ptr<const ::mmx::Contract> get_contract(const ::mmx::addr_t& address) const = 0;
 	virtual uint64_t get_balance(const ::mmx::addr_t& address, const ::mmx::addr_t& contract) const = 0;
 	virtual uint64_t get_total_balance(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& contract) const = 0;

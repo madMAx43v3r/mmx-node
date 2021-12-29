@@ -37,8 +37,8 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/stxo_entry_t.hxx>
+#include <mmx/tx_entry_t.hxx>
 #include <mmx/utxo_entry_t.hxx>
-#include <mmx/wallet/tx_entry_t.hxx>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
@@ -300,8 +300,9 @@ uint64_t WalletAsyncClient::get_stxo_list_for(const ::mmx::addr_t& contract, con
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::get_history(const std::function<void(const std::vector<::mmx::wallet::tx_entry_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::get_history(const uint32_t& min_height, const std::function<void(const std::vector<::mmx::tx_entry_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_get_history::create();
+	_method->min_height = min_height;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
@@ -1046,7 +1047,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_history_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<std::vector<::mmx::wallet::tx_entry_t>>());
+					_callback(_value->get_field_by_index(0).to<std::vector<::mmx::tx_entry_t>>());
 				} else {
 					throw std::logic_error("WalletAsyncClient: invalid return value");
 				}
