@@ -37,7 +37,7 @@ void Node::init()
 
 void Node::main()
 {
-	params = get_params();
+	params = mmx::get_params();
 	{
 		vdf_point_t point;
 		point.height = 0;
@@ -153,6 +153,11 @@ void Node::main()
 	block_chain->close();
 
 	threads->close();
+}
+
+std::shared_ptr<const ChainParams> Node::get_params() const
+{
+	return params;
 }
 
 uint32_t Node::get_height() const

@@ -30,6 +30,8 @@ protected:
 
 	void main() override;
 
+	std::shared_ptr<const ChainParams> get_params() const override;
+
 	uint32_t get_height() const override;
 
 	vnx::optional<uint32_t> get_synced_height() const override;
