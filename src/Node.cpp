@@ -1833,5 +1833,18 @@ uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block) const
 	return 0;
 }
 
+void Node::setup_index(const vnx::Memory& block)
+{
+	vnx::MemoryInputStream stream(&block);
+	vnx::TypeInput in(&stream);
+}
+
+
+
+
+
+
+
+
 
 } // mmx

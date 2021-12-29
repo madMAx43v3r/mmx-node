@@ -175,6 +175,8 @@ private:
 
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block) const;
 
+	void setup_index(const vnx::Memory& block);
+
 private:
 	hash_t state_hash;
 	std::list<std::shared_ptr<const change_log_t>> change_log;
