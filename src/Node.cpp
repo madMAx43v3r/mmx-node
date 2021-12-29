@@ -895,6 +895,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 		}
 	}
 	std::vector<uint64_t> tx_fees(tx_list.size());
+	std::vector<uint64_t> tx_cost(tx_list.size());
 
 #pragma omp parallel for
 	for(size_t i = 0; i < tx_list.size(); ++i)
@@ -914,6 +915,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 		}
 		try {
 			tx_fees[i] = validate(tx);
+			tx_cost[i] = tx->calc_min_fee(params);
 		}
 		catch(const std::exception& ex) {
 #pragma omp critical
@@ -923,15 +925,17 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	}
 
 	uint64_t total_fees = 0;
+	uint64_t total_cost = 0;
 	for(size_t i = 0; i < tx_list.size(); ++i)
 	{
 		const auto& tx = tx_list[i];
 		if(!invalid.count(tx->id) && !postpone.count(tx->id))
 		{
-			if(total_fees + tx_fees[i] < params->max_block_cost)
+			if(total_cost + tx_cost[i] < params->max_block_cost)
 			{
 				block->tx_list.push_back(tx);
 				total_fees += tx_fees[i];
+				total_cost += tx_cost[i];
 			}
 		}
 	}
