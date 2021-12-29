@@ -13,10 +13,19 @@ add_subdirectory(basic-opencl)
 
 find_package(Threads REQUIRED)
 
+target_compile_definitions(automy_basic_opencl
+	PUBLIC CL_TARGET_OPENCL_VERSION=120
+)
+
 if(SODIUM_FOUND)
 	message(STATUS "Found libsodium")
-	message(STATUS "Sodium include dir = ${sodium_INCLUDE_DIR}")
-	include_directories(${sodium_INCLUDE_DIR})
+	include_directories(${SODIUM_INCLUDE_DIR})
+endif()
+
+if(WITH_SECP256K1)
+	message(STATUS "Using secp256k1")
+	include_directories(secp256k1/include)
+	link_directories(secp256k1/.libs)
 endif()
 
 file(GLOB GENERATED_SOURCE_FILES

@@ -7,6 +7,7 @@
 #include <mmx/package.hxx>
 #include <mmx/Block.hxx>
 #include <mmx/BlockHeader.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
@@ -48,7 +49,7 @@ public:
 	uint32_t replay_height = -1;
 	uint32_t max_sync_jobs = 64;
 	uint32_t num_sync_retries = 3;
-	uint32_t opencl_device = 0;
+	int32_t opencl_device = 0;
 	vnx::bool_t do_sync = true;
 	std::string storage_path;
 	std::string router_name = "Router";
@@ -87,6 +88,7 @@ public:
 protected:
 	using Super::handle;
 	
+	virtual std::shared_ptr<const ::mmx::ChainParams> get_params() const = 0;
 	virtual uint32_t get_height() const = 0;
 	virtual vnx::optional<uint32_t> get_synced_height() const = 0;
 	virtual std::shared_ptr<const ::mmx::Block> get_block(const ::mmx::hash_t& hash) const = 0;

@@ -15,6 +15,7 @@ namespace contract {
 
 
 class Condition;
+class Delegated;
 class Locked;
 class MultiSig;
 class NFT;
@@ -27,6 +28,7 @@ struct compare_e;
 struct condition_e;
 
 extern const vnx::TypeCode* const vnx_native_type_code_Condition; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_Delegated; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Locked; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_MultiSig; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_NFT; ///< \private
@@ -45,6 +47,7 @@ extern const vnx::TypeCode* const vnx_native_type_code_condition_e; ///< \privat
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::contract::Condition& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::Delegated& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Locked& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::NFT& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -57,6 +60,7 @@ void read(TypeInput& in, ::mmx::contract::compare_e& value, const TypeCode* type
 void read(TypeInput& in, ::mmx::contract::condition_e& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 
 void write(TypeOutput& out, const ::mmx::contract::Condition& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::Delegated& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Locked& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::NFT& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -69,6 +73,7 @@ void write(TypeOutput& out, const ::mmx::contract::compare_e& value, const TypeC
 void write(TypeOutput& out, const ::mmx::contract::condition_e& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 
 void read(std::istream& in, ::mmx::contract::Condition& value); ///< \private
+void read(std::istream& in, ::mmx::contract::Delegated& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Locked& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig& value); ///< \private
 void read(std::istream& in, ::mmx::contract::NFT& value); ///< \private
@@ -81,6 +86,7 @@ void read(std::istream& in, ::mmx::contract::compare_e& value); ///< \private
 void read(std::istream& in, ::mmx::contract::condition_e& value); ///< \private
 
 void write(std::ostream& out, const ::mmx::contract::Condition& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::Delegated& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Locked& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::NFT& value); ///< \private
@@ -93,6 +99,7 @@ void write(std::ostream& out, const ::mmx::contract::compare_e& value); ///< \pr
 void write(std::ostream& out, const ::mmx::contract::condition_e& value); ///< \private
 
 void accept(Visitor& visitor, const ::mmx::contract::Condition& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::Delegated& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Locked& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::NFT& value); ///< \private
@@ -124,6 +131,28 @@ struct type<::mmx::contract::Condition> {
 	}
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Condition& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::Delegated> {
+	void read(TypeInput& in, ::mmx::contract::Delegated& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::Delegated& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::Delegated& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::Delegated& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::Delegated& value) {
+		vnx::accept(visitor, value);
+	}
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Delegated& value, bool special = false);
 };
 
 /// \private

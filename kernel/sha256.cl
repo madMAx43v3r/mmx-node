@@ -35,12 +35,16 @@ void sha256(	const uint* msg,
 {
 	uint w[64];
 	
+#if __OPENCL_VERSION__ >= 200
 	__attribute__((opencl_unroll_hint(16)))
+#endif
 	for(int i = 0; i < 16; ++i) {
 		w[i] = msg[i];
 	}
 	
+#if __OPENCL_VERSION__ >= 200
 	__attribute__((opencl_unroll_hint(48)))
+#endif
 	for(int i = 16; i < 64; ++i)
 	{
 		const uint s0 = ZR25(w[i-15]);
@@ -57,7 +61,9 @@ void sha256(	const uint* msg,
 	uint g = s[6];
 	uint h = s[7];
 	
+#if __OPENCL_VERSION__ >= 200
 	__attribute__((opencl_unroll_hint(64)))
+#endif
 	for(int i = 0; i < 64; ++i)
 	{
 		const uint S1 = ZR26(e);

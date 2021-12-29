@@ -31,6 +31,11 @@ uint8_t DiskProver::get_ksize() const
 	return prover->GetSize();
 }
 
+std::string DiskProver::get_file_path() const {
+	auto* prover = (::DiskProver*)impl;
+	return prover->GetFilename();
+}
+
 std::vector<uint8_t> DiskProver::get_plot_id() const
 {
 	auto* prover = (::DiskProver*)impl;

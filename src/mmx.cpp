@@ -58,6 +58,10 @@ int main(int argc, char** argv)
 	vnx::read_config("target", target_addr);
 	vnx::read_config("contract", contract_addr);
 
+	mmx::NodeClient node("Node");
+	mmx::WalletClient wallet("Wallet");
+	mmx::RouterClient router("Router");
+
 	bool did_fail = false;
 	auto params = mmx::get_params();
 
@@ -85,12 +89,13 @@ int main(int argc, char** argv)
 		vnx::Handle<vnx::Proxy> module = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
 		module->forward_list = {"Wallet", "Node", "Farmer", "Harvester", "Router"};
 		module.start_detached();
+
+		params = node.get_params();
 	}
 
 	try {
 		if(module == "wallet")
 		{
-			mmx::WalletClient wallet("Wallet");
 			try {
 				if(command != "create") {
 					wallet.open_wallet(index);
@@ -216,9 +221,6 @@ int main(int argc, char** argv)
 		}
 		else if(module == "node")
 		{
-			mmx::NodeClient node("Node");
-			mmx::RouterClient router("Router");
-
 			if(command == "balance")
 			{
 				mmx::addr_t address;
@@ -232,11 +234,13 @@ int main(int argc, char** argv)
 			else if(command == "info")
 			{
 				const auto height = node.get_height();
+				const auto peak = node.get_header_at(height);
 				std::cout << "Synced: " << (node.get_synced_height() ? "Yes" : "No") << std::endl;
 				std::cout << "Height: " << height << std::endl;
+				std::cout << "Netspace: " << mmx::calc_total_netspace(params, peak->space_diff) / pow(1024, 4) << " TiB" << std::endl;
 				for(uint32_t i = 0; i < 2 * params->finality_delay && i < height; ++i) {
 					const auto hash = node.get_block_hash(height - i);
-					std::cout << "[" << (height - i) << "] " << (hash ? *hash : mmx::hash_t()) << std::endl;
+					std::cout << "Block[" << (height - i) << "] " << (hash ? *hash : mmx::hash_t()) << std::endl;
 				}
 			}
 			else if(command == "peers")
@@ -385,8 +389,13 @@ int main(int argc, char** argv)
 						std::cout << peer << std::endl;
 					}
 				}
+				else if(subject == "netspace") {
+					const auto height = node.get_height();
+					const auto peak = node.get_header_at(height);
+					std::cout << mmx::calc_total_netspace(params, peak->space_diff) << std::endl;
+				}
 				else {
-					std::cerr << "Help: mmx node get [height | tx | balance | amount | block | header | peers]" << std::endl;
+					std::cerr << "Help: mmx node get [height | tx | balance | amount | block | header | peers | netspace]" << std::endl;
 				}
 			}
 			else {

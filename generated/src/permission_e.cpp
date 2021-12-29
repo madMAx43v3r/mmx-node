@@ -11,7 +11,7 @@ namespace mmx {
 
 
 const vnx::Hash64 permission_e::VNX_TYPE_HASH(0x7d75a3f04c313898ull);
-const vnx::Hash64 permission_e::VNX_CODE_HASH(0x6a2a7ffdcd4c639bull);
+const vnx::Hash64 permission_e::VNX_CODE_HASH(0x25bd0a48710f5e44ull);
 
 vnx::Hash64 permission_e::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -44,6 +44,7 @@ void permission_e::write(vnx::TypeOutput& _out, const vnx::TypeCode* _type_code,
 vnx::bool_t permission_e::is_valid() const {
 	switch(value) {
 		case PUBLIC: return true;
+		case SPENDING: return true;
 	}
 	return false;
 }
@@ -51,6 +52,7 @@ vnx::bool_t permission_e::is_valid() const {
 std::string permission_e::to_string() const {
 	switch(value) {
 		case PUBLIC: return "\"PUBLIC\"";
+		case SPENDING: return "\"SPENDING\"";
 	}
 	return std::to_string(value);
 }
@@ -58,6 +60,7 @@ std::string permission_e::to_string() const {
 std::string permission_e::to_string_value() const {
 	switch(value) {
 		case PUBLIC: return "PUBLIC";
+		case SPENDING: return "SPENDING";
 	}
 	return std::to_string(value);
 }
@@ -65,6 +68,7 @@ std::string permission_e::to_string_value() const {
 std::string permission_e::to_string_value_full() const {
 	switch(value) {
 		case PUBLIC: return "mmx.permission_e.PUBLIC";
+		case SPENDING: return "mmx.permission_e.SPENDING";
 	}
 	return std::to_string(value);
 }
@@ -80,6 +84,7 @@ void permission_e::from_string_value(const std::string& _name) {
 	vnx::from_string_value(_name, var);
 	if(var.is_string()) {
 		if(_name == "PUBLIC") value = PUBLIC;
+		else if(_name == "SPENDING") value = SPENDING;
 		else value = enum_t(vnx::hash64(_name));
 	} else {
 		value = enum_t(std::stoul(_name.c_str(), nullptr, 0));
@@ -90,6 +95,7 @@ void permission_e::accept(vnx::Visitor& _visitor) const {
 	std::string _name;
 	switch(value) {
 		case PUBLIC: _name = "PUBLIC"; break;
+		case SPENDING: _name = "SPENDING"; break;
 	}
 	_visitor.enum_value(value, _name);
 }
@@ -97,6 +103,7 @@ void permission_e::accept(vnx::Visitor& _visitor) const {
 void permission_e::write(std::ostream& _out) const {
 	switch(value) {
 		case PUBLIC: _out << "\"PUBLIC\""; break;
+		case SPENDING: _out << "\"SPENDING\""; break;
 		default: _out << value;
 	}
 }
@@ -159,7 +166,7 @@ std::shared_ptr<vnx::TypeCode> permission_e::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.permission_e";
 	type_code->type_hash = vnx::Hash64(0x7d75a3f04c313898ull);
-	type_code->code_hash = vnx::Hash64(0x6a2a7ffdcd4c639bull);
+	type_code->code_hash = vnx::Hash64(0x25bd0a48710f5e44ull);
 	type_code->is_native = true;
 	type_code->is_enum = true;
 	type_code->native_size = sizeof(::mmx::permission_e);
@@ -172,6 +179,7 @@ std::shared_ptr<vnx::TypeCode> permission_e::static_create_type_code() {
 		field.code = {3};
 	}
 	type_code->enum_map[2166575688] = "PUBLIC";
+	type_code->enum_map[1957258863] = "SPENDING";
 	type_code->build();
 	return type_code;
 }

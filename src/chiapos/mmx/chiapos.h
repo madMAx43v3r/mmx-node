@@ -37,6 +37,8 @@ public:
 
 	uint8_t get_ksize() const;
 
+	std::string get_file_path() const;
+
 	std::vector<uint8_t> get_plot_id() const;
 
 	std::vector<std::array<uint8_t, 32>> get_qualities(const std::array<uint8_t, 32>& challenge) const;

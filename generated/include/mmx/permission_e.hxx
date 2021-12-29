@@ -14,6 +14,7 @@ struct permission_e {
 	
 	enum enum_t : uint32_t {
 		PUBLIC = 2166575688l,
+		SPENDING = 1957258863l,
 	};
 	
 	::mmx::permission_e::enum_t value = ::mmx::permission_e::enum_t(0);

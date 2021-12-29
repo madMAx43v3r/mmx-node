@@ -5,6 +5,7 @@
 #include <mmx/NodeClient.hxx>
 #include <mmx/Block.hxx>
 #include <mmx/BlockHeader.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/Node_add_block.hxx>
 #include <mmx/Node_add_block_return.hxx>
@@ -24,6 +25,8 @@
 #include <mmx/Node_get_header_at_return.hxx>
 #include <mmx/Node_get_height.hxx>
 #include <mmx/Node_get_height_return.hxx>
+#include <mmx/Node_get_params.hxx>
+#include <mmx/Node_get_params_return.hxx>
 #include <mmx/Node_get_stxo_list.hxx>
 #include <mmx/Node_get_stxo_list_return.hxx>
 #include <mmx/Node_get_synced_height.hxx>
@@ -196,6 +199,18 @@ vnx::bool_t NodeClient::vnx_self_test() {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<vnx::bool_t>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::shared_ptr<const ::mmx::ChainParams> NodeClient::get_params() {
+	auto _method = ::mmx::Node_get_params::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_params_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::ChainParams>>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}

@@ -1,4 +1,5 @@
 {
 	"port": 8080,
-	"stats_interval_ms": 60000
+	"stats_interval_ms": 60000,
+	"default_access": "NETWORK"
 }

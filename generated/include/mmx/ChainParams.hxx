@@ -24,9 +24,9 @@ public:
 	uint32_t challenge_delay = 3;
 	uint32_t challenge_interval = 36;
 	uint32_t max_diff_adjust = 10;
-	uint32_t min_vdf_segments = 640;
+	uint32_t min_vdf_segments = 320;
 	uint32_t num_vdf_segments = 760;
-	uint32_t max_vdf_segments = 2048;
+	uint32_t max_vdf_segments = 1024;
 	uint32_t recursive_interval = 60480;
 	uint32_t score_bits = 10;
 	uint32_t score_threshold = 1000;

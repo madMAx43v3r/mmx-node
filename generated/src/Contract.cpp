@@ -3,6 +3,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Contract.hxx>
+#include <mmx/Operation.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/hash_t.hpp>
 #include <vnx/Value.h>

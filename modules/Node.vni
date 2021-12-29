@@ -26,7 +26,7 @@ module Node implements vnx.addons.HttpComponent {
 	uint max_sync_jobs = 64;				// number of parallel requests
 	uint num_sync_retries = 3;				// how often to retry when reaching a peak
 	
-	uint opencl_device = 0;					// device to use for VDF verification
+	int opencl_device = 0;					// device to use for VDF verification (-1 to disable)
 	
 	bool do_sync = true;
 	
@@ -34,6 +34,9 @@ module Node implements vnx.addons.HttpComponent {
 	string router_name = "Router";
 	string timelord_name = "TimeLord";
 	
+	
+	@Permission(permission_e.PUBLIC)
+	ChainParams* get_params() const;
 	
 	@Permission(permission_e.PUBLIC)
 	uint get_height() const;
