@@ -1,7 +1,5 @@
 package mmx;
 
-import mmx.wallet.tx_entry_t;
-
 module Wallet implements vnx.addons.HttpComponent {
 	
 	vector<string> key_files;
@@ -30,7 +28,7 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	vector<stxo_entry_t> get_stxo_list_for(addr_t contract) const;
 	
-	vector<tx_entry_t> get_history() const;
+	vector<tx_entry_t> get_history(uint min_height) const;
 	
 	ulong get_balance(addr_t contract) const;
 	

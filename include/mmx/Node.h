@@ -44,11 +44,15 @@ protected:
 
 	vnx::optional<hash_t> get_block_hash(const uint32_t& height) const override;
 
-	vnx::optional<tx_key_t> get_tx_key(const hash_t& id) const override;
+	vnx::optional<uint32_t> get_tx_height(const hash_t& id) const override;
 
 	txo_info_t get_txo_info(const txio_key_t& key) const override;
 
 	std::shared_ptr<const Transaction> get_transaction(const hash_t& id) const override;
+
+	std::vector<std::shared_ptr<const Transaction>> get_transactions(const std::vector<hash_t>& ids) const override;
+
+	std::vector<tx_entry_t> get_history_for(const std::vector<addr_t>& addresses, const uint32_t& min_height) const override;
 
 	std::shared_ptr<const Contract> get_contract(const addr_t& address) const override;
 
@@ -175,7 +179,9 @@ private:
 
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block) const;
 
-	void setup_index(const vnx::Memory& block);
+	std::shared_ptr<const Block> read_block();
+
+	void write_block(std::shared_ptr<const Block> block);
 
 private:
 	hash_t state_hash;

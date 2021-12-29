@@ -1,4 +1,4 @@
-package mmx.wallet;
+package mmx;
 
 enum tx_type_e {
 	

@@ -10,4 +10,3 @@ vnxcppcodegen --cleanup generated/ mmx interface/ modules/ ${VNX_INTERFACE_DIR}/
 vnxcppcodegen --cleanup generated/contract/ mmx.contract interface/contract/ interface/ ${VNX_INTERFACE_DIR}/vnx/
 vnxcppcodegen --cleanup generated/operation/ mmx.operation interface/operation/ interface/ ${VNX_INTERFACE_DIR}/vnx/
 vnxcppcodegen --cleanup generated/solution/ mmx.solution interface/solution/ interface/ ${VNX_INTERFACE_DIR}/vnx/
-vnxcppcodegen --cleanup generated/wallet/ mmx.wallet interface/wallet/ interface/ ${VNX_INTERFACE_DIR}/vnx/
