@@ -7,6 +7,7 @@
 #include <mmx/package.hxx>
 #include <mmx/Block.hxx>
 #include <mmx/BlockHeader.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
@@ -87,6 +88,7 @@ public:
 protected:
 	using Super::handle;
 	
+	virtual std::shared_ptr<const ::mmx::ChainParams> get_params() const = 0;
 	virtual uint32_t get_height() const = 0;
 	virtual vnx::optional<uint32_t> get_synced_height() const = 0;
 	virtual std::shared_ptr<const ::mmx::Block> get_block(const ::mmx::hash_t& hash) const = 0;

@@ -41,6 +41,8 @@
 #include <mmx/Node_get_header_at_return.hxx>
 #include <mmx/Node_get_height.hxx>
 #include <mmx/Node_get_height_return.hxx>
+#include <mmx/Node_get_params.hxx>
+#include <mmx/Node_get_params_return.hxx>
 #include <mmx/Node_get_stxo_list.hxx>
 #include <mmx/Node_get_stxo_list_return.hxx>
 #include <mmx/Node_get_synced_height.hxx>
@@ -437,6 +439,22 @@ void type<::mmx::Node_get_height_return>::create_dynamic_code(std::vector<uint16
 }
 
 void type<::mmx::Node_get_height_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_height_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+void type<::mmx::Node_get_params>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_params());
+}
+
+void type<::mmx::Node_get_params>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_params& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+void type<::mmx::Node_get_params_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_params_return());
+}
+
+void type<::mmx::Node_get_params_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_params_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -1228,6 +1246,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Node_get_header_at_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_height::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_height_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_params::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_params_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_stxo_list::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_stxo_list_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_synced_height::static_create_type_code());
@@ -1364,6 +1384,8 @@ const vnx::TypeCode* const vnx_native_type_code_Node_get_header_at = vnx::get_ty
 const vnx::TypeCode* const vnx_native_type_code_Node_get_header_at_return = vnx::get_type_code(vnx::Hash64(0x4efc6897885ee521ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_height = vnx::get_type_code(vnx::Hash64(0x55f0d4ef7a117716ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_height_return = vnx::get_type_code(vnx::Hash64(0x5fb0ff1e11add033ull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_params = vnx::get_type_code(vnx::Hash64(0x6384b34900c2e465ull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_params_return = vnx::get_type_code(vnx::Hash64(0xd0a614f2ed037180ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_stxo_list = vnx::get_type_code(vnx::Hash64(0xb4e1314236d07ca2ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_stxo_list_return = vnx::get_type_code(vnx::Hash64(0x40ee223f3546f2a7ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_synced_height = vnx::get_type_code(vnx::Hash64(0xc4fb44ec3d1a8bb7ull));

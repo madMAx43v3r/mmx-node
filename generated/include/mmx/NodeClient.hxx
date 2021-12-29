@@ -7,6 +7,7 @@
 #include <vnx/Client.h>
 #include <mmx/Block.hxx>
 #include <mmx/BlockHeader.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
@@ -58,6 +59,8 @@ public:
 	void vnx_stop_async();
 	
 	vnx::bool_t vnx_self_test();
+	
+	std::shared_ptr<const ::mmx::ChainParams> get_params();
 	
 	uint32_t get_height();
 	
