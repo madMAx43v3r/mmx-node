@@ -269,16 +269,18 @@ void Router::update()
 		});
 
 	// check for sync job timeouts
-	for(auto& entry : sync_jobs) {
-		auto& job = entry.second;
-		if(now_ms - job.start_time_ms > fetch_timeout_ms) {
-			if(job.state == FETCH_BLOCKS) {
-				job.failed.clear();
-			}
-			job.pending.clear();
-			job.start_time_ms = now_ms;
-			if(synced_peers.size() >= min_sync_peers) {
-				log(WARN) << "Timeout on sync job for height " << job.height << ", trying again ...";
+	if(synced_peers.size() >= min_sync_peers) {
+		for(auto& entry : sync_jobs) {
+			auto& job = entry.second;
+			if(now_ms - job.start_time_ms > fetch_timeout_ms) {
+				if(job.state == FETCH_BLOCKS) {
+					job.failed.clear();
+				}
+				job.pending.clear();
+				job.start_time_ms = now_ms;
+				if(synced_peers.size() >= min_sync_peers) {
+					log(WARN) << "Timeout on sync job for height " << job.height << ", trying again ...";
+				}
 			}
 		}
 	}
