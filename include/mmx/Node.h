@@ -44,11 +44,15 @@ protected:
 
 	vnx::optional<hash_t> get_block_hash(const uint32_t& height) const override;
 
-	vnx::optional<tx_key_t> get_tx_key(const hash_t& id) const override;
+	vnx::optional<uint32_t> get_tx_height(const hash_t& id) const override;
 
 	txo_info_t get_txo_info(const txio_key_t& key) const override;
 
 	std::shared_ptr<const Transaction> get_transaction(const hash_t& id) const override;
+
+	std::vector<std::shared_ptr<const Transaction>> get_transactions(const std::vector<hash_t>& ids) const override;
+
+	std::vector<tx_entry_t> get_history_for(const std::vector<addr_t>& addresses, const uint32_t& min_height) const override;
 
 	std::shared_ptr<const Contract> get_contract(const addr_t& address) const override;
 
@@ -175,22 +179,25 @@ private:
 
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block) const;
 
+	std::shared_ptr<const Block> read_block();
+
+	void write_block(std::shared_ptr<const Block> block);
+
 private:
 	hash_t state_hash;
 	std::list<std::shared_ptr<const change_log_t>> change_log;
 
 	std::unordered_map<hash_t, uint32_t> hash_index;								// [block hash => height] (finalized only)
-	std::unordered_map<hash_t, tx_key_t> tx_index;									// [txid => [height, index]] (finalized only)
 	std::unordered_map<txio_key_t, utxo_entry_t> stxo_index;						// [stxo key => [txi key, stxo]] (finalized + spent only)
 	std::unordered_multimap<addr_t, txio_key_t> saddr_map;							// [addr => stxo key] (finalized + spent only)
-	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;					// [height => block header] (finalized only)
 
-	std::unordered_map<hash_t, tx_key_t> tx_map;									// [txid => [height, index]] (pending only)
+	std::unordered_map<hash_t, uint32_t> tx_map;									// [txid => height] (pending only)
 	std::unordered_map<txio_key_t, utxo_t> utxo_map;								// [utxo key => utxo]
 	std::set<std::pair<addr_t, txio_key_t>> addr_map;								// [addr => utxo keys] (finalized + unspent only)
 	std::unordered_map<addr_t, std::unordered_set<txio_key_t>> taddr_map;			// [addr => utxo keys] (pending + unspent only)
 
 	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;					// pending blocks
+	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;					// [height => block header] (finalized only)
 	std::unordered_map<addr_t, std::shared_ptr<const Contract>> contracts;			// current contract state
 	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_pool;
 
@@ -203,7 +210,8 @@ private:
 	bool is_replay = true;
 	bool is_synced = false;
 	std::shared_ptr<vnx::File> block_chain;
-	std::unordered_map<uint32_t, std::pair<int64_t, hash_t>> block_index;		// [height => [file offset, block hash]]
+	std::unordered_map<hash_t, std::pair<int64_t, uint32_t>> tx_index;				// [txid => [file offset, height]]
+	std::unordered_map<uint32_t, std::pair<int64_t, hash_t>> block_index;			// [height => [file offset, block hash]]
 
 	uint32_t sync_pos = 0;									// current sync height
 	uint32_t sync_peak = -1;								// max height we can sync

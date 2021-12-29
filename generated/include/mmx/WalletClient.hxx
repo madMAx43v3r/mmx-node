@@ -9,8 +9,8 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/stxo_entry_t.hxx>
+#include <mmx/tx_entry_t.hxx>
 #include <mmx/utxo_entry_t.hxx>
-#include <mmx/wallet/tx_entry_t.hxx>
 #include <vnx/Module.h>
 #include <vnx/addons/HttpData.hxx>
 #include <vnx/addons/HttpRequest.hxx>
@@ -73,7 +73,7 @@ public:
 	
 	std::vector<::mmx::stxo_entry_t> get_stxo_list_for(const ::mmx::addr_t& contract = ::mmx::addr_t());
 	
-	std::vector<::mmx::wallet::tx_entry_t> get_history();
+	std::vector<::mmx::tx_entry_t> get_history(const uint32_t& min_height = 0);
 	
 	uint64_t get_balance(const ::mmx::addr_t& contract = ::mmx::addr_t());
 	

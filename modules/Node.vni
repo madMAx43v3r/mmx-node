@@ -60,7 +60,7 @@ module Node implements vnx.addons.HttpComponent {
 	txo_info_t get_txo_info(txio_key_t key) const;
 	
 	@Permission(permission_e.PUBLIC)
-	optional<tx_key_t> get_tx_key(hash_t id) const;
+	optional<uint> get_tx_height(hash_t id) const;
 	
 	void add_block(Block* block);
 	
@@ -68,6 +68,12 @@ module Node implements vnx.addons.HttpComponent {
 	
 	@Permission(permission_e.PUBLIC)
 	Transaction* get_transaction(hash_t id) const;
+	
+	@Permission(permission_e.PUBLIC)
+	vector<Transaction*> get_transactions(vector<hash_t> ids) const;
+	
+	@Permission(permission_e.PUBLIC)
+	vector<tx_entry_t> get_history_for(vector<addr_t> addresses, uint min_height) const;
 	
 	@Permission(permission_e.PUBLIC)
 	Contract* get_contract(addr_t address) const;

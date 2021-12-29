@@ -174,12 +174,15 @@ int main(int argc, char** argv)
 			}
 			else if(command == "log")
 			{
-				for(const auto& entry : wallet.get_history()) {
+				int64_t min_height;
+				vnx::read_config("$3", min_height);
+
+				for(const auto& entry : wallet.get_history(min_height > 0 ? min_height : 0)) {
 					std::cout << "[" << entry.height << "] ";
 					switch(entry.type) {
-						case mmx::wallet::tx_type_e::SEND:    std::cout << "SEND    "; break;
-						case mmx::wallet::tx_type_e::RECEIVE: std::cout << "RECEIVE "; break;
-						case mmx::wallet::tx_type_e::REWARD:  std::cout << "REWARD  "; break;
+						case mmx::tx_type_e::SEND:    std::cout << "SEND    "; break;
+						case mmx::tx_type_e::RECEIVE: std::cout << "RECEIVE "; break;
+						case mmx::tx_type_e::REWARD:  std::cout << "REWARD  "; break;
 						default: std::cout << "????    "; break;
 					}
 					std::cout << entry.amount / pow(10, params->decimals) << " MMX (" << entry.amount << ") -> " << entry.address << std::endl;
@@ -309,10 +312,10 @@ int main(int argc, char** argv)
 					vnx::log_error() << "No such transaction: " << txid;
 					goto failed;
 				}
-				const auto info = node.get_tx_key(txid);
 				const auto height = node.get_height();
-				if(info) {
-					std::cout << "Confirmations: " << height - info->height + 1 << std::endl;
+				const auto tx_height = node.get_tx_height(txid);
+				if(tx_height) {
+					std::cout << "Confirmations: " << height - (*tx_height) + 1 << std::endl;
 				} else {
 					std::cout << "Confirmations: none yet" << std::endl;
 				}

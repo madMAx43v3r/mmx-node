@@ -307,63 +307,12 @@ std::vector<stxo_entry_t> Wallet::get_stxo_list_for(const addr_t& contract) cons
 	return res;
 }
 
-std::vector<wallet::tx_entry_t> Wallet::get_history() const
+std::vector<tx_entry_t> Wallet::get_history(const uint32_t& min_height) const
 {
 	if(!wallet) {
 		throw std::logic_error("no wallet open");
 	}
-	const auto addresses = wallet->get_all_addresses();
-
-	struct txio_t {
-		std::unordered_map<uint32_t, utxo_t> outputs;
-		std::unordered_map<uint32_t, stxo_entry_t> inputs;
-	};
-
-	std::unordered_map<hash_t, txio_t> tx_map;
-
-	for(const auto& entry : node->get_utxo_list(addresses)) {
-		tx_map[entry.key.txid].outputs[entry.key.index] = entry.output;
-	}
-	for(const auto& entry : node->get_stxo_list(addresses)) {
-		tx_map[entry.key.txid].outputs[entry.key.index] = entry.output;
-		tx_map[entry.spent.txid].inputs[entry.spent.index] = entry;
-	}
-	std::multimap<uint32_t, wallet::tx_entry_t> list;
-
-	for(const auto& iter : tx_map) {
-		const auto& txio = iter.second;
-
-		std::unordered_map<hash_t, int64_t> amount;
-		for(const auto& entry : txio.outputs) {
-			const auto& utxo = entry.second;
-			amount[utxo.contract] += utxo.amount;
-		}
-		for(const auto& entry : txio.inputs) {
-			const auto& utxo = entry.second.output;
-			amount[utxo.contract] -= utxo.amount;
-		}
-		for(const auto& delta : amount) {
-			if(delta.second > 0) {
-				for(const auto& entry : txio.outputs) {
-					const auto& utxo = entry.second;
-					if(utxo.contract == delta.first) {
-						wallet::tx_entry_t entry;
-						entry.height = utxo.height;
-						entry.type = wallet::tx_type_e::RECEIVE;
-						entry.contract = utxo.contract;
-						entry.address = utxo.address;
-						entry.amount = delta.second;
-						list.emplace(entry.height, entry);
-					}
-				}
-			}
-		}
-	}
-	std::vector<wallet::tx_entry_t> res;
-	for(const auto& entry : list) {
-		res.push_back(entry.second);
-	}
-	return res;
+	return node->get_history_for(wallet->get_all_addresses(), min_height);
 }
 
 uint64_t Wallet::get_balance(const addr_t& contract) const

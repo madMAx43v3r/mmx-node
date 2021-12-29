@@ -1,6 +1,4 @@
-package mmx.wallet;
-
-import mmx.addr_t;
+package mmx;
 
 struct tx_entry_t {
 	

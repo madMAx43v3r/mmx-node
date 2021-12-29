@@ -1,9 +1,0 @@
-package mmx;
-
-struct tx_key_t {
-	
-	uint height = -1;
-	
-	uint index = -1;
-	
-}

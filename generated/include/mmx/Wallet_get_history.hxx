@@ -13,6 +13,7 @@ namespace mmx {
 class Wallet_get_history : public ::vnx::Value {
 public:
 	
+	uint32_t min_height = 0;
 	
 	typedef ::vnx::Value Super;
 	

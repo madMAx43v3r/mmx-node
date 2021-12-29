@@ -35,6 +35,7 @@ public:
 	uint32_t discover_interval = 60;
 	uint32_t num_threads = 32;
 	uint32_t num_peers_out = 8;
+	uint32_t upload_divider = 1;
 	uint32_t min_sync_peers = 2;
 	uint32_t max_sync_peers = 4;
 	uint32_t max_msg_size = 67108864;
