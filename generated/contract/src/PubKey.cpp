@@ -4,6 +4,7 @@
 #include <mmx/contract/package.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/Contract.hxx>
+#include <mmx/Operation.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>

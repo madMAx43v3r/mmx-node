@@ -6,6 +6,7 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/Contract.hxx>
+#include <mmx/Operation.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
@@ -32,7 +33,7 @@ public:
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
 	
-	virtual vnx::bool_t validate(std::shared_ptr<const ::mmx::Solution> solution = nullptr, const ::mmx::hash_t& txid = ::mmx::hash_t()) const override;
+	virtual vnx::bool_t validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Solution> solution = nullptr, const ::mmx::hash_t& txid = ::mmx::hash_t()) const override;
 	
 	static std::shared_ptr<PubKey> create();
 	std::shared_ptr<vnx::Value> clone() const override;

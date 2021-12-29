@@ -6,6 +6,7 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/Contract.hxx>
+#include <mmx/contract/Condition.hxx>
 #include <mmx/hash_t.hpp>
 
 
@@ -16,6 +17,7 @@ class NFT : public ::mmx::Contract {
 public:
 	
 	std::shared_ptr<const ::mmx::Contract> owner;
+	std::shared_ptr<const ::mmx::contract::Condition> transfer_cond;
 	vnx::bool_t is_burnable = 0;
 	vnx::bool_t is_transferable = 0;
 	

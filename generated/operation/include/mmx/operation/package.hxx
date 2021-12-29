@@ -13,10 +13,12 @@ namespace mmx {
 namespace operation {
 
 
+class Delegate;
 class Deploy;
 class Mint;
 class Transfer;
 
+extern const vnx::TypeCode* const vnx_native_type_code_Delegate; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Deploy; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Mint; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Transfer; ///< \private
@@ -27,25 +29,52 @@ extern const vnx::TypeCode* const vnx_native_type_code_Transfer; ///< \private
 
 namespace vnx {
 
+void read(TypeInput& in, ::mmx::operation::Delegate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::operation::Deploy& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::operation::Mint& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::operation::Transfer& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 
+void write(TypeOutput& out, const ::mmx::operation::Delegate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::operation::Deploy& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::operation::Mint& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::operation::Transfer& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 
+void read(std::istream& in, ::mmx::operation::Delegate& value); ///< \private
 void read(std::istream& in, ::mmx::operation::Deploy& value); ///< \private
 void read(std::istream& in, ::mmx::operation::Mint& value); ///< \private
 void read(std::istream& in, ::mmx::operation::Transfer& value); ///< \private
 
+void write(std::ostream& out, const ::mmx::operation::Delegate& value); ///< \private
 void write(std::ostream& out, const ::mmx::operation::Deploy& value); ///< \private
 void write(std::ostream& out, const ::mmx::operation::Mint& value); ///< \private
 void write(std::ostream& out, const ::mmx::operation::Transfer& value); ///< \private
 
+void accept(Visitor& visitor, const ::mmx::operation::Delegate& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::operation::Deploy& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::operation::Mint& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::operation::Transfer& value); ///< \private
+
+/// \private
+template<>
+struct type<::mmx::operation::Delegate> {
+	void read(TypeInput& in, ::mmx::operation::Delegate& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::operation::Delegate& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::operation::Delegate& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::operation::Delegate& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::operation::Delegate& value) {
+		vnx::accept(visitor, value);
+	}
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Delegate& value, bool special = false);
+};
 
 /// \private
 template<>
