@@ -12,14 +12,18 @@
 namespace mmx {
 namespace contract {
 
-vnx::bool_t PubKey::validate(std::shared_ptr<const Solution> solution, const hash_t& txid) const
+vnx::bool_t PubKey::validate(	std::shared_ptr<const Operation> operation,
+								std::shared_ptr<const Solution> solution, const hash_t& txid) const
 {
-	if(auto sol = std::dynamic_pointer_cast<const solution::PubKey>(solution))
+	if(!operation)
 	{
-		if(sol->pubkey.get_addr() != address) {
-			return false;
+		if(auto sol = std::dynamic_pointer_cast<const solution::PubKey>(solution))
+		{
+			if(sol->pubkey.get_addr() != address) {
+				return false;
+			}
+			return sol->signature.verify(sol->pubkey, txid);
 		}
-		return sol->signature.verify(sol->pubkey, txid);
 	}
 	return false;
 }

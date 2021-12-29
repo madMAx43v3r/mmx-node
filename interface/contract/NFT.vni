@@ -7,6 +7,8 @@ class NFT extends Contract {
 	
 	Contract* owner;
 	
+	Condition* transfer_cond;
+	
 	bool is_burnable;
 	
 	bool is_transferable;

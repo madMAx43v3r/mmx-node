@@ -1270,14 +1270,14 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, std::shared_ptr<c
 			{
 				auto iter = contracts.find(out.address);
 				if(iter != contracts.end()) {
-					if(!iter->second->validate(solution, tx->id)) {
+					if(!iter->second->validate(nullptr, solution, tx->id)) {
 						throw std::logic_error("invalid solution");
 					}
 				}
 				else {
 					contract::PubKey simple;
 					simple.address = out.address;
-					if(!simple.validate(solution, tx->id)) {
+					if(!simple.validate(nullptr, solution, tx->id)) {
 						throw std::logic_error("invalid solution");
 					}
 				}
