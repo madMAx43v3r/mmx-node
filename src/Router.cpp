@@ -392,7 +392,18 @@ bool Router::process(std::shared_ptr<const Return> ret)
 		}
 		if(job.state == FETCH_BLOCKS)
 		{
-			if(job.blocks.size() < job.hash_map.size())
+			size_t num_clients = 0;
+			for(const auto& entry : job.hash_map) {
+				num_clients += entry.second.size();
+			}
+			if(num_clients > 0 && job.failed.size() >= num_clients) {
+				const auto height = job.height;
+				job = sync_job_t();
+				job.height = height;
+				job.start_time_ms = now_ms;
+				log(WARN) << "Fetching blocks from " << num_clients << " peers failed, trying again ...";
+			}
+			else if(job.blocks.size() < job.hash_map.size())
 			{
 				for(const auto& entry : job.hash_map) {
 					if(!job.blocks.count(entry.first))
