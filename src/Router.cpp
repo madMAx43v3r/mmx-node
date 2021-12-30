@@ -47,6 +47,23 @@ void Router::init()
 
 void Router::main()
 {
+	if(min_sync_peers < 1) {
+		throw std::logic_error("min_sync_peers < 1");
+	}
+	if(max_sync_peers < min_sync_peers) {
+		throw std::logic_error("max_sync_peers < min_sync_peers");
+	}
+	if(num_peers_out < min_sync_peers) {
+		throw std::logic_error("num_peers_out < min_sync_peers");
+	}
+	if(max_connections >= 0) {
+		if(num_peers_out > uint32_t(max_connections)) {
+			throw std::logic_error("num_peers_out > max_connections");
+		}
+		if(min_sync_peers > uint32_t(max_connections)) {
+			throw std::logic_error("min_sync_peers > max_connections");
+		}
+	}
 	subscribe(input_vdfs, max_queue_ms);
 	subscribe(input_blocks, max_queue_ms);
 	subscribe(input_verified_vdfs, max_queue_ms);
@@ -337,12 +354,9 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				did_consume = true;
 			}
 		}
-		const auto num_peers_try = std::min<size_t>(max_sync_peers, std::max<size_t>(synced_peers.size(), min_sync_peers));
-
 		if(job.state == FETCH_HASHES)
 		{
-			if(job.succeeded.size() < min_sync_peers
-				&& job.succeeded.size() + job.failed.size() < num_peers_try)
+			if(job.succeeded.size() < min_sync_peers && job.failed.size() < min_sync_peers)
 			{
 				auto peers = synced_peers;
 				for(auto client : job.failed) {
@@ -354,7 +368,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				for(auto client : job.succeeded) {
 					peers.erase(client);
 				}
-				for(auto client : get_subset(peers, max_sync_peers))
+				for(auto client : get_subset(peers, min_sync_peers))
 				{
 					if(job.succeeded.size() + job.pending.size() + job.failed.size() >= max_sync_peers) {
 						break;
@@ -378,8 +392,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 		}
 		if(job.state == FETCH_BLOCKS)
 		{
-			if(job.blocks.size() < job.hash_map.size()
-				&& (job.succeeded.size() + job.failed.size() < num_peers_try || job.blocks.empty()))
+			if(job.blocks.size() < job.hash_map.size())
 			{
 				for(const auto& entry : job.hash_map) {
 					if(!job.blocks.count(entry.first))
