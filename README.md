@@ -181,7 +181,7 @@ sudo apt install git cmake build-essential libsecp256k1-dev libsodium-dev zlib1g
 Arch Linux:
 ```
 sudo pacman -Syu
-sudo pacman -S base-devel git cmake zlib libsecp256k1 libsodium ocl-icd clinfo screen
+sudo pacman -S base-devel git cmake zlib libsecp256k1 libsodium opencl-headers ocl-icd clinfo screen
 ```
 
 OpenCL provides faster and more effient VDF verification using an integrated or dedicated GPU.
