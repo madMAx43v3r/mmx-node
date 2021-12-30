@@ -184,7 +184,7 @@ void Router::get_blocks_at_async(const uint32_t& height, const vnx::request_id_t
 
 void Router::handle(std::shared_ptr<const Block> block)
 {
-	if(seen_hashes.insert(block->hash).second) {
+	if(add_msg_hash(block->hash)) {
 		if(block->proof) {
 			log(INFO) << "Broadcasting block " << block->height;
 			send_all(block);
@@ -194,7 +194,7 @@ void Router::handle(std::shared_ptr<const Block> block)
 
 void Router::handle(std::shared_ptr<const Transaction> tx)
 {
-	if(seen_hashes.insert(tx->id).second) {
+	if(add_msg_hash(tx->id)) {
 		log(INFO) << "Broadcasting transaction " << tx->id;
 		send_all(tx);
 	}
@@ -205,7 +205,7 @@ void Router::handle(std::shared_ptr<const ProofOfTime> proof)
 	if(vnx_sample->topic == input_vdfs)
 	{
 		if(proof->height > verified_vdf_height) {
-			if(seen_hashes.insert(proof->calc_hash()).second) {
+			if(add_msg_hash(proof->calc_hash())) {
 				log(INFO) << "Broadcasting VDF for height " << proof->height;
 				send_all(proof);
 			}
@@ -229,6 +229,15 @@ uint32_t Router::send_request(uint64_t client, std::shared_ptr<const vnx::Value>
 void Router::update()
 {
 	const auto now_ms = vnx::get_wall_time_millis();
+
+	// clear seen hashes
+	if(seen_hashes.size() > max_hash_cache) {
+		const auto num_clear = seen_hashes.size() - max_hash_cache;
+		for(size_t i = 0; i < num_clear && !seen_hash_queue.empty(); ++i) {
+			seen_hashes.erase(seen_hash_queue.front());
+			seen_hash_queue.pop();
+		}
+	}
 
 	// check if we lost sync due to response timeout
 	size_t num_peers = 0;
@@ -539,7 +548,7 @@ void Router::print_stats()
 
 void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> proof)
 {
-	if(!seen_hashes.insert(proof->calc_hash()).second) {
+	if(!add_msg_hash(proof->calc_hash())) {
 		return;
 	}
 	publish(proof, output_vdfs);
@@ -549,7 +558,7 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> proof)
 
 void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 {
-	if(!seen_hashes.insert(block->hash).second) {
+	if(!add_msg_hash(block->hash)) {
 		return;
 	}
 	if(!block->is_valid()) {
@@ -562,7 +571,7 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 
 void Router::on_transaction(uint64_t client, std::shared_ptr<const Transaction> tx)
 {
-	if(!seen_hashes.insert(tx->id).second) {
+	if(!add_msg_hash(tx->id)) {
 		return;
 	}
 	if(!tx->is_valid()) {
@@ -988,6 +997,15 @@ Router::peer_t* Router::find_peer(uint64_t client)
 		return &iter->second;
 	}
 	return nullptr;
+}
+
+bool Router::add_msg_hash(const hash_t& hash)
+{
+	if(seen_hashes.insert(hash).second) {
+		seen_hash_queue.push(hash);
+		return true;
+	}
+	return false;
 }
 
 

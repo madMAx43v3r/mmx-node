@@ -147,6 +147,8 @@ private:
 
 	peer_t* find_peer(uint64_t client);
 
+	bool add_msg_hash(const hash_t& hash);
+
 private:
 	bool is_synced = false;
 	bool is_connected = false;
@@ -157,6 +159,7 @@ private:
 	std::set<uint64_t> synced_peers;
 	std::unordered_map<uint64_t, peer_t> peer_map;
 
+	std::queue<hash_t> seen_hash_queue;
 	std::unordered_set<hash_t> seen_hashes;
 
 	mutable std::unordered_map<vnx::request_id_t, sync_job_t> sync_jobs;

@@ -27,6 +27,7 @@ module Router extends vnx.addons.TcpServer {
 	uint max_sync_peers = 4;				// maximum peers to check for different blocks
 	
 	uint max_msg_size = 67108864;			// bytes
+	uint max_hash_cache = 1048576;
 	
 	set<string> seed_peers;
 	set<string> block_peers;
