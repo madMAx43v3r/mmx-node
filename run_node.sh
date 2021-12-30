@@ -1,6 +1,11 @@
 #!/bin/bash
 
-NETWORK=${NETWORK:-test1}
+if [ -f NETWORK ]; then
+	NETWORK=$(cat NETWORK)
+else
+	NETWORK=test1
+	echo ${NETWORK} > NETWORK
+fi
 
 echo NETWORK=${NETWORK}
 
