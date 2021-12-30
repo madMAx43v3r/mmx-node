@@ -3,6 +3,6 @@
 	"max_connections": 64,
 	"max_queue_ms": 5000,
 	"stats_interval_ms": 60000,
-	"connect_interval_ms": 60000,
+	"connect_interval_ms": 10000,
 	"connection_timeout_ms": 60000
 }

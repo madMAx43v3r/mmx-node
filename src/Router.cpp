@@ -458,29 +458,32 @@ bool Router::process(std::shared_ptr<const Return> ret)
 
 void Router::connect()
 {
-	for(const auto& address : get_subset(peer_set, num_threads))
+	if(synced_peers.size() < num_peers_out)
 	{
-		if(synced_peers.size() >= num_peers_out || connecting_peers.size() >= num_threads) {
-			break;
-		}
-		if(connecting_peers.count(address) || block_peers.count(address)) {
-			continue;
-		}
-		bool connected = false;
-		for(const auto& entry : peer_map) {
-			if(address == entry.second.address) {
-				connected = true;
+		std::set<std::string> peers;
+		for(const auto& address : peer_set) {
+			bool connected = false;
+			for(const auto& entry : peer_map) {
+				if(address == entry.second.address) {
+					connected = true;
+				}
+			}
+			if(!connected && !block_peers.count(address) && !connecting_peers.count(address)) {
+				peers.insert(address);
 			}
 		}
-		if(connected) {
-			continue;
-		}
-		log(DEBUG) << "Trying to connect to " << address;
+		for(const auto& address : get_subset(peers, num_peers_out))
+		{
+			if(connecting_peers.size() >= num_threads) {
+				break;
+			}
+			log(DEBUG) << "Trying to connect to " << address;
 
-		connecting_peers.insert(address);
-		threads->add_task(std::bind(&Router::connect_task, this, address));
+			connecting_peers.insert(address);
+			threads->add_task(std::bind(&Router::connect_task, this, address));
+		}
 	}
-	if(synced_peers.size() > num_peers_out)
+	else if(synced_peers.size() > num_peers_out)
 	{
 		for(auto client : get_subset(synced_peers, synced_peers.size() - num_peers_out)) {
 			if(auto peer = find_peer(client)) {
