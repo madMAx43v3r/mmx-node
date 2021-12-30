@@ -106,6 +106,7 @@ protected:
 	virtual std::shared_ptr<const ::mmx::Contract> get_contract(const ::mmx::addr_t& address) const = 0;
 	virtual uint64_t get_balance(const ::mmx::addr_t& address, const ::mmx::addr_t& contract) const = 0;
 	virtual uint64_t get_total_balance(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& contract) const = 0;
+	virtual uint64_t get_total_supply(const ::mmx::addr_t& contract) const = 0;
 	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list(const std::vector<::mmx::addr_t>& addresses) const = 0;
 	virtual std::vector<::mmx::stxo_entry_t> get_stxo_list(const std::vector<::mmx::addr_t>& addresses) const = 0;
 	virtual void start_sync(const vnx::bool_t& force) = 0;
