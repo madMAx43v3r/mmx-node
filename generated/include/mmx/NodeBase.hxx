@@ -49,6 +49,7 @@ public:
 	uint32_t replay_height = -1;
 	uint32_t max_sync_jobs = 64;
 	uint32_t num_sync_retries = 3;
+	uint32_t tx_pool_limit = 1000000;
 	int32_t opencl_device = 0;
 	vnx::bool_t do_sync = true;
 	std::string storage_path;

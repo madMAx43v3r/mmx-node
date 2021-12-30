@@ -51,7 +51,7 @@ namespace mmx {
 
 
 const vnx::Hash64 RouterBase::VNX_TYPE_HASH(0x952c4ef2956f31c4ull);
-const vnx::Hash64 RouterBase::VNX_CODE_HASH(0xc4606d795170e7d7ull);
+const vnx::Hash64 RouterBase::VNX_CODE_HASH(0xe5dbd983f38355feull);
 
 RouterBase::RouterBase(const std::string& _vnx_name)
 	:	TcpServer::TcpServer(_vnx_name)
@@ -496,7 +496,7 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Router";
 	type_code->type_hash = vnx::Hash64(0x952c4ef2956f31c4ull);
-	type_code->code_hash = vnx::Hash64(0xc4606d795170e7d7ull);
+	type_code->code_hash = vnx::Hash64(0xe5dbd983f38355feull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::RouterBase);
 	type_code->parents.resize(1);
@@ -724,14 +724,14 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 		auto& field = type_code->fields[29];
 		field.data_size = 4;
 		field.name = "max_msg_size";
-		field.value = vnx::to_string(67108864);
+		field.value = vnx::to_string(16777216);
 		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[30];
 		field.data_size = 4;
 		field.name = "max_hash_cache";
-		field.value = vnx::to_string(1048576);
+		field.value = vnx::to_string(1000000);
 		field.code = {3};
 	}
 	{

@@ -37,8 +37,8 @@ public:
 	uint32_t num_peers_out = 8;
 	uint32_t min_sync_peers = 2;
 	uint32_t max_sync_peers = 4;
-	uint32_t max_msg_size = 67108864;
-	uint32_t max_hash_cache = 1048576;
+	uint32_t max_msg_size = 16777216;
+	uint32_t max_hash_cache = 1000000;
 	std::set<std::string> seed_peers;
 	std::set<std::string> block_peers;
 	std::string node_server = "Node";
