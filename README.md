@@ -120,6 +120,17 @@ To run a node for current `testnet1`
 
 You can enable port forwarding on TCP port 12331 if you want to help out the network and accept incoming connections.
 
+If you have a slow internet connection or want to reduce traffic in general you can lower the number of connections in `config/local/Router.json`.
+For example to run at the bare recommended minimum:
+```
+{
+	"num_peers_out": 2,
+	"max_connections": 2
+}
+```
+`num_peers_out` is the maximum number of outgoing connections to synced peers. `max_connections` is the maximum total number of connections.
+Keep in mind this will increase your chances of losing sync.
+
 To run a node in the background you can enter a `screen` session:
 ```
 screen -S node

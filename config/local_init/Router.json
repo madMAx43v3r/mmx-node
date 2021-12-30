@@ -1,4 +1,6 @@
 {
+	"num_peers_out": 8,
+	"max_connections": 64,
 	"seed_peers+": [],
 	"block_peers+": []
 }
