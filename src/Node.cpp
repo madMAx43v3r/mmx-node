@@ -81,12 +81,14 @@ void Node::main()
 	if(block_chain->exists()) {
 		const auto time_begin = vnx::get_wall_time_millis();
 		block_chain->open("rb+");
-		while(auto block = read_block()) {
-			apply(block);
-			commit(block);
+		int64_t last_pos = 0;
+		while(auto block = read_block(true, &last_pos)) {
 			if(block->height >= replay_height) {
+				block_chain->seek_to(last_pos);
 				break;
 			}
+			apply(block);
+			commit(block);
 		}
 		if(auto block = find_header(state_hash)) {
 			log(INFO) << "Loaded " << block->height + 1 << " blocks from disk, took "
@@ -168,14 +170,10 @@ std::shared_ptr<const Block> Node::get_block(const hash_t& hash) const
 	if(iter != hash_index.end()) {
 		auto iter2 = block_index.find(iter->second);
 		if(iter2 != block_index.end()) {
+			std::shared_ptr<const Block> block;
 			const auto prev_pos = block_chain->get_output_pos();
 			block_chain->seek_to(iter2->second.first);
-			std::shared_ptr<const Block> block;
-			try {
-				block = std::dynamic_pointer_cast<const Block>(vnx::read(block_chain->in));
-			} catch(...) {
-				// ignore
-			}
+			block = ((Node*)this)->read_block();
 			block_chain->seek_to(prev_pos);
 			return block;
 		}
@@ -1911,15 +1909,20 @@ uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block) const
 	return 0;
 }
 
-std::shared_ptr<const Block> Node::read_block()
+std::shared_ptr<const Block> Node::read_block(bool is_replay, int64_t* file_offset)
 {
 	auto& in = block_chain->in;
 	const auto offset = in.get_input_pos();
+	if(file_offset) {
+		*file_offset = offset;
+	}
 	try {
 		if(auto value = vnx::read(in)) {
 			auto header = std::dynamic_pointer_cast<BlockHeader>(value);
 			if(header) {
-				block_index[header->height] = std::make_pair(offset, header->hash);
+				if(is_replay) {
+					block_index[header->height] = std::make_pair(offset, header->hash);
+				}
 			} else {
 				return nullptr;
 			}
@@ -1933,7 +1936,9 @@ std::shared_ptr<const Block> Node::read_block()
 				if(auto value = vnx::read(in)) {
 					if(auto tx = std::dynamic_pointer_cast<Transaction>(value)) {
 						block->tx_list.push_back(tx);
-						tx_index[tx->id] = std::make_pair(offset, block->height);
+						if(is_replay) {
+							tx_index[tx->id] = std::make_pair(offset, block->height);
+						}
 					}
 				} else {
 					break;

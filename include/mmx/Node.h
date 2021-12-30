@@ -179,7 +179,7 @@ private:
 
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block) const;
 
-	std::shared_ptr<const Block> read_block();
+	std::shared_ptr<const Block> read_block(bool is_replay = false, int64_t* file_offset = nullptr);
 
 	void write_block(std::shared_ptr<const Block> block);
 
