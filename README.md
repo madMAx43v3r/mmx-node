@@ -43,11 +43,13 @@ To check your balance: `mmx wallet show`
 
 To show wallet activity: `mmx wallet log`
 
+To send coins: `mmx wallet send -a 1.234 -t <address>`
+
 To show the first 10 addresses: `mmx wallet show 10`
 
-To get a specific receiving address: `mmx wallet get address [index]`
+To get a specific receiving address: `mmx wallet get address <index>`
 
-To send coins: `mmx wallet send -a <amount> -t <address>`
+To show wallet activity since height: `mmx wallet log <height>`
 
 To get the seed value from a wallet: `mmx wallet get seed`
 
