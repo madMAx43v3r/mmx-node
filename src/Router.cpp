@@ -575,7 +575,6 @@ void Router::on_transaction(uint64_t client, std::shared_ptr<const Transaction> 
 
 void Router::relay(uint64_t source, std::shared_ptr<const vnx::Value> msg)
 {
-	size_t num_sent = 0;
 	for(auto& entry : peer_map) {
 		auto& peer = entry.second;
 		if(peer.is_blocked) {
@@ -588,9 +587,6 @@ void Router::relay(uint64_t source, std::shared_ptr<const vnx::Value> msg)
 		}
 		else if(entry.first != source) {
 			send_to(peer, msg);
-			if(++num_sent >= peer_map.size() / upload_divider) {
-				break;
-			}
 		}
 	}
 }
