@@ -416,6 +416,9 @@ void Node::add_block(std::shared_ptr<const Block> block)
 
 void Node::add_transaction(std::shared_ptr<const Transaction> tx)
 {
+	if(tx_pool.size() >= tx_pool_limit) {
+		return;
+	}
 	if(tx_pool.count(tx->id)) {
 		return;
 	}
