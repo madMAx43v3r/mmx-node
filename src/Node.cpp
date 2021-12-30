@@ -449,6 +449,18 @@ uint64_t Node::get_total_balance(const std::vector<addr_t>& addresses, const add
 	return total;
 }
 
+uint64_t Node::get_total_supply(const addr_t& contract) const
+{
+	uint64_t total = 0;
+	for(const auto& entry : utxo_map) {
+		const auto& utxo = entry.second;
+		if(utxo.contract == contract) {
+			total += utxo.amount;
+		}
+	}
+	return total;
+}
+
 std::vector<utxo_entry_t> Node::get_utxo_list(const std::vector<addr_t>& addresses) const
 {
 	std::vector<utxo_entry_t> res;
