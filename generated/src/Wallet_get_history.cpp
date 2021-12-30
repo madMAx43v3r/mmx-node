@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_get_history::VNX_TYPE_HASH(0x921f73f3d97d2d4dull);
-const vnx::Hash64 Wallet_get_history::VNX_CODE_HASH(0x529c8302dc39a596ull);
+const vnx::Hash64 Wallet_get_history::VNX_CODE_HASH(0xe12a437b2770f9b7ull);
 
 vnx::Hash64 Wallet_get_history::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -46,12 +46,14 @@ void Wallet_get_history::write(vnx::TypeOutput& _out, const vnx::TypeCode* _type
 void Wallet_get_history::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Wallet_get_history;
 	_visitor.type_begin(*_type_code);
-	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, min_height);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, index);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, min_height);
 	_visitor.type_end(*_type_code);
 }
 
 void Wallet_get_history::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Wallet.get_history\"";
+	_out << ", \"index\": "; vnx::write(_out, index);
 	_out << ", \"min_height\": "; vnx::write(_out, min_height);
 	_out << "}";
 }
@@ -65,19 +67,25 @@ void Wallet_get_history::read(std::istream& _in) {
 vnx::Object Wallet_get_history::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Wallet.get_history";
+	_object["index"] = index;
 	_object["min_height"] = min_height;
 	return _object;
 }
 
 void Wallet_get_history::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "min_height") {
+		if(_entry.first == "index") {
+			_entry.second.to(index);
+		} else if(_entry.first == "min_height") {
 			_entry.second.to(min_height);
 		}
 	}
 }
 
 vnx::Variant Wallet_get_history::get_field(const std::string& _name) const {
+	if(_name == "index") {
+		return vnx::Variant(index);
+	}
 	if(_name == "min_height") {
 		return vnx::Variant(min_height);
 	}
@@ -85,7 +93,9 @@ vnx::Variant Wallet_get_history::get_field(const std::string& _name) const {
 }
 
 void Wallet_get_history::set_field(const std::string& _name, const vnx::Variant& _value) {
-	if(_name == "min_height") {
+	if(_name == "index") {
+		_value.to(index);
+	} else if(_name == "min_height") {
 		_value.to(min_height);
 	} else {
 		throw std::logic_error("no such field: '" + _name + "'");
@@ -116,7 +126,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_history::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.get_history";
 	type_code->type_hash = vnx::Hash64(0x921f73f3d97d2d4dull);
-	type_code->code_hash = vnx::Hash64(0x529c8302dc39a596ull);
+	type_code->code_hash = vnx::Hash64(0xe12a437b2770f9b7ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -124,9 +134,15 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_history::static_create_type_code() {
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Wallet_get_history>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Wallet_get_history_return::static_get_type_code();
-	type_code->fields.resize(1);
+	type_code->fields.resize(2);
 	{
 		auto& field = type_code->fields[0];
+		field.data_size = 4;
+		field.name = "index";
+		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[1];
 		field.data_size = 4;
 		field.name = "min_height";
 		field.code = {3};
@@ -174,6 +190,9 @@ void read(TypeInput& in, ::mmx::Wallet_get_history& value, const TypeCode* type_
 	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[0]) {
+			vnx::read_value(_buf + _field->offset, value.index, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[1]) {
 			vnx::read_value(_buf + _field->offset, value.min_height, _field->code.data());
 		}
 	}
@@ -197,8 +216,9 @@ void write(TypeOutput& out, const ::mmx::Wallet_get_history& value, const TypeCo
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
-	vnx::write_value(_buf + 0, value.min_height);
+	char* const _buf = out.write(8);
+	vnx::write_value(_buf + 0, value.index);
+	vnx::write_value(_buf + 4, value.min_height);
 }
 
 void read(std::istream& in, ::mmx::Wallet_get_history& value) {

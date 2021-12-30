@@ -13,7 +13,7 @@ namespace mmx {
 class Wallet_get_farmer_keys : public ::vnx::Value {
 public:
 	
-	uint32_t wallet = 0;
+	uint32_t index = 0;
 	
 	typedef ::vnx::Value Super;
 	

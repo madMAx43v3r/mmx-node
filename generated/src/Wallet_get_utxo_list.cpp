@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_get_utxo_list::VNX_TYPE_HASH(0xa9416ad9f318f1feull);
-const vnx::Hash64 Wallet_get_utxo_list::VNX_CODE_HASH(0x9cafb8a857629603ull);
+const vnx::Hash64 Wallet_get_utxo_list::VNX_CODE_HASH(0xc6a8167579f00fedull);
 
 vnx::Hash64 Wallet_get_utxo_list::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -46,11 +46,13 @@ void Wallet_get_utxo_list::write(vnx::TypeOutput& _out, const vnx::TypeCode* _ty
 void Wallet_get_utxo_list::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Wallet_get_utxo_list;
 	_visitor.type_begin(*_type_code);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, index);
 	_visitor.type_end(*_type_code);
 }
 
 void Wallet_get_utxo_list::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Wallet.get_utxo_list\"";
+	_out << ", \"index\": "; vnx::write(_out, index);
 	_out << "}";
 }
 
@@ -63,18 +65,31 @@ void Wallet_get_utxo_list::read(std::istream& _in) {
 vnx::Object Wallet_get_utxo_list::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Wallet.get_utxo_list";
+	_object["index"] = index;
 	return _object;
 }
 
 void Wallet_get_utxo_list::from_object(const vnx::Object& _object) {
+	for(const auto& _entry : _object.field) {
+		if(_entry.first == "index") {
+			_entry.second.to(index);
+		}
+	}
 }
 
 vnx::Variant Wallet_get_utxo_list::get_field(const std::string& _name) const {
+	if(_name == "index") {
+		return vnx::Variant(index);
+	}
 	return vnx::Variant();
 }
 
 void Wallet_get_utxo_list::set_field(const std::string& _name, const vnx::Variant& _value) {
-	throw std::logic_error("no such field: '" + _name + "'");
+	if(_name == "index") {
+		_value.to(index);
+	} else {
+		throw std::logic_error("no such field: '" + _name + "'");
+	}
 }
 
 /// \private
@@ -101,7 +116,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_utxo_list::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.get_utxo_list";
 	type_code->type_hash = vnx::Hash64(0xa9416ad9f318f1feull);
-	type_code->code_hash = vnx::Hash64(0x9cafb8a857629603ull);
+	type_code->code_hash = vnx::Hash64(0xc6a8167579f00fedull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -109,6 +124,13 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_utxo_list::static_create_type_code() {
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Wallet_get_utxo_list>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Wallet_get_utxo_list_return::static_get_type_code();
+	type_code->fields.resize(1);
+	{
+		auto& field = type_code->fields[0];
+		field.data_size = 4;
+		field.name = "index";
+		field.code = {3};
+	}
 	type_code->build();
 	return type_code;
 }
@@ -149,8 +171,11 @@ void read(TypeInput& in, ::mmx::Wallet_get_utxo_list& value, const TypeCode* typ
 			}
 		}
 	}
-	in.read(type_code->total_field_size);
+	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
+		if(const auto* const _field = type_code->field_map[0]) {
+			vnx::read_value(_buf + _field->offset, value.index, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -172,6 +197,8 @@ void write(TypeOutput& out, const ::mmx::Wallet_get_utxo_list& value, const Type
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
+	char* const _buf = out.write(4);
+	vnx::write_value(_buf + 0, value.index);
 }
 
 void read(std::istream& in, ::mmx::Wallet_get_utxo_list& value) {

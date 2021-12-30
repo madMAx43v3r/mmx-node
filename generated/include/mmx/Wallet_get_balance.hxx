@@ -14,6 +14,7 @@ namespace mmx {
 class Wallet_get_balance : public ::vnx::Value {
 public:
 	
+	uint32_t index = 0;
 	::mmx::addr_t contract;
 	
 	typedef ::vnx::Value Super;

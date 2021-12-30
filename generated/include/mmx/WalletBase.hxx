@@ -25,7 +25,6 @@ public:
 	std::vector<std::string> key_files;
 	std::string node_server = "Node";
 	uint32_t num_addresses = 100;
-	uint32_t default_wallet = 0;
 	int32_t utxo_timeout_ms = 1000;
 	
 	typedef ::vnx::Module Super;
@@ -61,20 +60,16 @@ public:
 protected:
 	using Super::handle;
 	
-	virtual void open_wallet(const uint32_t& index, const std::string& passwd) = 0;
-	virtual void open_wallet_ex(const uint32_t& index, const uint32_t& num_addresses, const std::string& passwd) = 0;
-	virtual void close_wallet() = 0;
-	virtual ::mmx::hash_t send(const uint64_t& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& contract) const = 0;
-	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list() const = 0;
-	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list_for(const ::mmx::addr_t& contract) const = 0;
-	virtual std::vector<::mmx::stxo_entry_t> get_stxo_list() const = 0;
-	virtual std::vector<::mmx::stxo_entry_t> get_stxo_list_for(const ::mmx::addr_t& contract) const = 0;
-	virtual std::vector<::mmx::tx_entry_t> get_history(const uint32_t& min_height) const = 0;
-	virtual uint64_t get_balance(const ::mmx::addr_t& contract) const = 0;
-	virtual ::mmx::addr_t get_address(const uint32_t& index) const = 0;
+	virtual ::mmx::hash_t send(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& contract) const = 0;
+	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list(const uint32_t& index) const = 0;
+	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list_for(const uint32_t& index, const ::mmx::addr_t& contract) const = 0;
+	virtual std::vector<::mmx::stxo_entry_t> get_stxo_list(const uint32_t& index) const = 0;
+	virtual std::vector<::mmx::stxo_entry_t> get_stxo_list_for(const uint32_t& index, const ::mmx::addr_t& contract) const = 0;
+	virtual std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index, const uint32_t& min_height) const = 0;
+	virtual uint64_t get_balance(const uint32_t& index, const ::mmx::addr_t& contract) const = 0;
+	virtual ::mmx::addr_t get_address(const uint32_t& index, const uint32_t& offset) const = 0;
 	virtual ::mmx::hash_t get_master_seed(const uint32_t& index) const = 0;
-	virtual void show_farmer_keys(const uint32_t& wallet) const = 0;
-	virtual std::shared_ptr<const ::mmx::FarmerKeys> get_farmer_keys(const uint32_t& wallet) const = 0;
+	virtual std::shared_ptr<const ::mmx::FarmerKeys> get_farmer_keys(const uint32_t& index) const = 0;
 	virtual std::vector<std::shared_ptr<const ::mmx::FarmerKeys>> get_all_farmer_keys() const = 0;
 	virtual void http_request_async(std::shared_ptr<const ::vnx::addons::HttpRequest> request, const std::string& sub_path, const vnx::request_id_t& _request_id) const = 0;
 	void http_request_async_return(const vnx::request_id_t& _request_id, const std::shared_ptr<const ::vnx::addons::HttpResponse>& _ret_0) const;

@@ -14,6 +14,7 @@ class Wallet_get_address : public ::vnx::Value {
 public:
 	
 	uint32_t index = 0;
+	uint32_t offset = 0;
 	
 	typedef ::vnx::Value Super;
 	

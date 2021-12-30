@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_get_farmer_keys::VNX_TYPE_HASH(0x44709e11ff3ff3eeull);
-const vnx::Hash64 Wallet_get_farmer_keys::VNX_CODE_HASH(0x351912d09342840full);
+const vnx::Hash64 Wallet_get_farmer_keys::VNX_CODE_HASH(0xd98cf205e4acc7c7ull);
 
 vnx::Hash64 Wallet_get_farmer_keys::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -46,13 +46,13 @@ void Wallet_get_farmer_keys::write(vnx::TypeOutput& _out, const vnx::TypeCode* _
 void Wallet_get_farmer_keys::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Wallet_get_farmer_keys;
 	_visitor.type_begin(*_type_code);
-	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, wallet);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, index);
 	_visitor.type_end(*_type_code);
 }
 
 void Wallet_get_farmer_keys::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Wallet.get_farmer_keys\"";
-	_out << ", \"wallet\": "; vnx::write(_out, wallet);
+	_out << ", \"index\": "; vnx::write(_out, index);
 	_out << "}";
 }
 
@@ -65,28 +65,28 @@ void Wallet_get_farmer_keys::read(std::istream& _in) {
 vnx::Object Wallet_get_farmer_keys::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Wallet.get_farmer_keys";
-	_object["wallet"] = wallet;
+	_object["index"] = index;
 	return _object;
 }
 
 void Wallet_get_farmer_keys::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "wallet") {
-			_entry.second.to(wallet);
+		if(_entry.first == "index") {
+			_entry.second.to(index);
 		}
 	}
 }
 
 vnx::Variant Wallet_get_farmer_keys::get_field(const std::string& _name) const {
-	if(_name == "wallet") {
-		return vnx::Variant(wallet);
+	if(_name == "index") {
+		return vnx::Variant(index);
 	}
 	return vnx::Variant();
 }
 
 void Wallet_get_farmer_keys::set_field(const std::string& _name, const vnx::Variant& _value) {
-	if(_name == "wallet") {
-		_value.to(wallet);
+	if(_name == "index") {
+		_value.to(index);
 	} else {
 		throw std::logic_error("no such field: '" + _name + "'");
 	}
@@ -116,7 +116,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_farmer_keys::static_create_type_code()
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.get_farmer_keys";
 	type_code->type_hash = vnx::Hash64(0x44709e11ff3ff3eeull);
-	type_code->code_hash = vnx::Hash64(0x351912d09342840full);
+	type_code->code_hash = vnx::Hash64(0xd98cf205e4acc7c7ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -128,7 +128,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_farmer_keys::static_create_type_code()
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
-		field.name = "wallet";
+		field.name = "index";
 		field.code = {3};
 	}
 	type_code->build();
@@ -174,7 +174,7 @@ void read(TypeInput& in, ::mmx::Wallet_get_farmer_keys& value, const TypeCode* t
 	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[0]) {
-			vnx::read_value(_buf + _field->offset, value.wallet, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.index, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
@@ -198,7 +198,7 @@ void write(TypeOutput& out, const ::mmx::Wallet_get_farmer_keys& value, const Ty
 		type_code = type_code->depends[code[1]];
 	}
 	char* const _buf = out.write(4);
-	vnx::write_value(_buf + 0, value.wallet);
+	vnx::write_value(_buf + 0, value.index);
 }
 
 void read(std::istream& in, ::mmx::Wallet_get_farmer_keys& value) {

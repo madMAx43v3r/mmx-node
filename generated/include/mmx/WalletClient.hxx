@@ -51,41 +51,25 @@ public:
 	
 	vnx::bool_t vnx_self_test();
 	
-	void open_wallet(const uint32_t& index = 0, const std::string& passwd = "");
+	::mmx::hash_t send(const uint32_t& index = 0, const uint64_t& amount = 0, const ::mmx::addr_t& dst_addr = ::mmx::addr_t(), const ::mmx::addr_t& contract = ::mmx::addr_t());
 	
-	void open_wallet_async(const uint32_t& index = 0, const std::string& passwd = "");
+	std::vector<::mmx::utxo_entry_t> get_utxo_list(const uint32_t& index = 0);
 	
-	void open_wallet_ex(const uint32_t& index = 0, const uint32_t& num_addresses = 0, const std::string& passwd = "");
+	std::vector<::mmx::utxo_entry_t> get_utxo_list_for(const uint32_t& index = 0, const ::mmx::addr_t& contract = ::mmx::addr_t());
 	
-	void open_wallet_ex_async(const uint32_t& index = 0, const uint32_t& num_addresses = 0, const std::string& passwd = "");
+	std::vector<::mmx::stxo_entry_t> get_stxo_list(const uint32_t& index = 0);
 	
-	void close_wallet();
+	std::vector<::mmx::stxo_entry_t> get_stxo_list_for(const uint32_t& index = 0, const ::mmx::addr_t& contract = ::mmx::addr_t());
 	
-	void close_wallet_async();
+	std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index = 0, const uint32_t& min_height = 0);
 	
-	::mmx::hash_t send(const uint64_t& amount = 0, const ::mmx::addr_t& dst_addr = ::mmx::addr_t(), const ::mmx::addr_t& contract = ::mmx::addr_t());
+	uint64_t get_balance(const uint32_t& index = 0, const ::mmx::addr_t& contract = ::mmx::addr_t());
 	
-	std::vector<::mmx::utxo_entry_t> get_utxo_list();
-	
-	std::vector<::mmx::utxo_entry_t> get_utxo_list_for(const ::mmx::addr_t& contract = ::mmx::addr_t());
-	
-	std::vector<::mmx::stxo_entry_t> get_stxo_list();
-	
-	std::vector<::mmx::stxo_entry_t> get_stxo_list_for(const ::mmx::addr_t& contract = ::mmx::addr_t());
-	
-	std::vector<::mmx::tx_entry_t> get_history(const uint32_t& min_height = 0);
-	
-	uint64_t get_balance(const ::mmx::addr_t& contract = ::mmx::addr_t());
-	
-	::mmx::addr_t get_address(const uint32_t& index = 0);
+	::mmx::addr_t get_address(const uint32_t& index = 0, const uint32_t& offset = 0);
 	
 	::mmx::hash_t get_master_seed(const uint32_t& index = 0);
 	
-	void show_farmer_keys(const uint32_t& wallet = 0);
-	
-	void show_farmer_keys_async(const uint32_t& wallet = 0);
-	
-	std::shared_ptr<const ::mmx::FarmerKeys> get_farmer_keys(const uint32_t& wallet = 0);
+	std::shared_ptr<const ::mmx::FarmerKeys> get_farmer_keys(const uint32_t& index = 0);
 	
 	std::vector<std::shared_ptr<const ::mmx::FarmerKeys>> get_all_farmer_keys();
 	

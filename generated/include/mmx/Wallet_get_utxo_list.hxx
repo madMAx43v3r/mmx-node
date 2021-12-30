@@ -13,6 +13,7 @@ namespace mmx {
 class Wallet_get_utxo_list : public ::vnx::Value {
 public:
 	
+	uint32_t index = 0;
 	
 	typedef ::vnx::Value Super;
 	
