@@ -8,40 +8,30 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	uint num_addresses = 100;
 	
-	uint default_wallet = 0;
-	
 	int utxo_timeout_ms = 1000;				// how often to update from node [ms]
 	
 	
-	void open_wallet(uint index, string passwd);
-	
-	void open_wallet_ex(uint index, uint num_addresses, string passwd);
-	
-	void close_wallet();
-	
 	@Permission(permission_e.SPENDING)
-	hash_t send(ulong amount, addr_t dst_addr, addr_t contract) const;
+	hash_t send(uint index, ulong amount, addr_t dst_addr, addr_t contract) const;
 	
-	vector<utxo_entry_t> get_utxo_list() const;
+	vector<utxo_entry_t> get_utxo_list(uint index) const;
 	
-	vector<utxo_entry_t> get_utxo_list_for(addr_t contract) const;
+	vector<utxo_entry_t> get_utxo_list_for(uint index, addr_t contract) const;
 	
-	vector<stxo_entry_t> get_stxo_list() const;
+	vector<stxo_entry_t> get_stxo_list(uint index) const;
 	
-	vector<stxo_entry_t> get_stxo_list_for(addr_t contract) const;
+	vector<stxo_entry_t> get_stxo_list_for(uint index, addr_t contract) const;
 	
-	vector<tx_entry_t> get_history(uint min_height) const;
+	vector<tx_entry_t> get_history(uint index, uint min_height) const;
 	
-	ulong get_balance(addr_t contract) const;
+	ulong get_balance(uint index, addr_t contract) const;
 	
-	addr_t get_address(uint index) const;
+	addr_t get_address(uint index, uint offset) const;
 	
 	hash_t get_master_seed(uint index) const;
 	
 	
-	void show_farmer_keys(uint wallet) const;
-	
-	FarmerKeys* get_farmer_keys(uint wallet) const;
+	FarmerKeys* get_farmer_keys(uint index) const;
 	
 	vector<FarmerKeys*> get_all_farmer_keys() const;
 	

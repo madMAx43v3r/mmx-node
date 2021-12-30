@@ -96,24 +96,15 @@ int main(int argc, char** argv)
 	try {
 		if(module == "wallet")
 		{
-			try {
-				if(command != "create") {
-					wallet.open_wallet(index);
-				}
-			}
-			catch(std::exception& ex) {
-				vnx::log_error() << "Failed to open wallet: " << ex.what();
-				goto failed;
-			}
 			if(command == "show")
 			{
 				int num_addrs = 1;
 				vnx::read_config("$3", num_addrs);
 
-				const auto amount = wallet.get_balance(contract);
+				const auto amount = wallet.get_balance(index, contract);
 				std::cout << "Balance: " << amount / pow(10, params->decimals) << " MMX (" << amount << ")" << std::endl;
 				for(int i = 0; i < num_addrs; ++i) {
-					std::cout << "Address[" << i << "]: " << wallet.get_address(i) << std::endl;
+					std::cout << "Address[" << i << "]: " << wallet.get_address(index, i) << std::endl;
 				}
 			}
 			else if(command == "keys")
@@ -129,21 +120,18 @@ int main(int argc, char** argv)
 
 				if(subject == "address")
 				{
-					vnx::read_config("$4", index);
-					if(index < 0) {
-						vnx::log_error() << "Invalid index: " << index;
-						goto failed;
-					}
-					const auto addr = wallet.get_address(index);
-					std::cout << addr << std::endl;
+					int64_t offset = 0;
+					vnx::read_config("$4", offset);
+
+					std::cout << wallet.get_address(index, offset) << std::endl;
 				}
 				else if(subject == "amount")
 				{
-					std::cout << wallet.get_balance(contract) << std::endl;
+					std::cout << wallet.get_balance(index, contract) << std::endl;
 				}
 				else if(subject == "balance")
 				{
-					std::cout << wallet.get_balance(contract) / pow(10, params->decimals) << std::endl;
+					std::cout << wallet.get_balance(index, contract) / pow(10, params->decimals) << std::endl;
 				}
 				else if(subject == "seed")
 				{
@@ -168,8 +156,8 @@ int main(int argc, char** argv)
 				if(contract != mmx::addr_t()) {
 					currency = "?";
 				}
-				const auto txid = wallet.send(mojo, target, contract);
-				std::cout << "Sent " << mojo / pow(10, params->decimals) << " " << currency << " to " << target << std::endl;
+				const auto txid = wallet.send(index, mojo, target, contract);
+				std::cout << "Sent " << mojo / pow(10, params->decimals) << " (" << mojo << ") " << currency << " to " << target << std::endl;
 				std::cout << "Transaction ID: " << txid << std::endl;
 			}
 			else if(command == "log")
@@ -177,7 +165,7 @@ int main(int argc, char** argv)
 				int64_t min_height;
 				vnx::read_config("$3", min_height);
 
-				for(const auto& entry : wallet.get_history(min_height > 0 ? min_height : 0)) {
+				for(const auto& entry : wallet.get_history(index, min_height > 0 ? min_height : 0)) {
 					std::cout << "[" << entry.height << "] ";
 					switch(entry.type) {
 						case mmx::tx_type_e::SEND:    std::cout << "SEND    "; break;

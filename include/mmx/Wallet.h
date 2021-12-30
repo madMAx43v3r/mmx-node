@@ -29,29 +29,21 @@ protected:
 
 	void main() override;
 
-	void open_wallet(const uint32_t& index, const std::string& passwd) override;
+	hash_t send(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& contract) const override;
 
-	void open_wallet_ex(const uint32_t& index, const uint32_t& num_addresses, const std::string& passwd) override;
+	std::vector<utxo_entry_t> get_utxo_list(const uint32_t& index) const override;
 
-	void close_wallet() override;
+	std::vector<utxo_entry_t> get_utxo_list_for(const uint32_t& index, const addr_t& contract) const override;
 
-	hash_t send(const uint64_t& amount, const addr_t& dst_addr, const addr_t& contract) const override;
+	std::vector<stxo_entry_t> get_stxo_list(const uint32_t& index) const override;
 
-	std::vector<utxo_entry_t> get_utxo_list() const override;
+	std::vector<stxo_entry_t> get_stxo_list_for(const uint32_t& index, const addr_t& contract) const override;
 
-	std::vector<utxo_entry_t> get_utxo_list_for(const addr_t& contract) const override;
+	std::vector<tx_entry_t> get_history(const uint32_t& index, const uint32_t& min_height) const override;
 
-	std::vector<stxo_entry_t> get_stxo_list() const override;
+	uint64_t get_balance(const uint32_t& index, const addr_t& contract) const override;
 
-	std::vector<stxo_entry_t> get_stxo_list_for(const addr_t& contract) const override;
-
-	std::vector<tx_entry_t> get_history(const uint32_t& min_height) const override;
-
-	uint64_t get_balance(const addr_t& contract) const override;
-
-	addr_t get_address(const uint32_t& index) const override;
-
-	void show_farmer_keys(const uint32_t& index) const override;
+	addr_t get_address(const uint32_t& index, const uint32_t& offset) const override;
 
 	std::shared_ptr<const FarmerKeys> get_farmer_keys(const uint32_t& index) const override;
 
@@ -66,17 +58,13 @@ protected:
 									const int64_t& offset, const int64_t& max_bytes, const vnx::request_id_t& request_id) const override;
 
 private:
+	std::shared_ptr<ECDSA_Wallet> get_wallet(const uint32_t& index) const;
+
+private:
 	std::shared_ptr<NodeClient> node;
 
-	ssize_t wallet_index = -1;
-	std::shared_ptr<ECDSA_Wallet> wallet;
+	std::vector<std::shared_ptr<ECDSA_Wallet>> wallets;
 	std::vector<std::shared_ptr<BLS_Wallet>> bls_wallets;
-
-	mutable int64_t last_utxo_update = 0;
-	mutable std::vector<utxo_entry_t> utxo_cache;
-	mutable std::unordered_map<txio_key_t, addr_t> addr_map;
-	mutable std::unordered_set<txio_key_t> spent_txo_set;
-	mutable std::unordered_map<txio_key_t, tx_out_t> utxo_change_cache;
 
 	std::shared_ptr<const ChainParams> params;
 	std::shared_ptr<vnx::addons::HttpInterface<Wallet>> http;
