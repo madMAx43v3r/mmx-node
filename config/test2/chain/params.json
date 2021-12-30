@@ -4,6 +4,7 @@
 	"plot_filter": 8,
 	"min_ksize": 26,
 	"vdf_seed": "test2",
+	"num_vdf_segments": 480,
 	"reward_factor": {
 		"value": 1,
 		"inverse": 1000000
