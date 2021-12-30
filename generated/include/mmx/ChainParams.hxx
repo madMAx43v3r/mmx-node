@@ -27,6 +27,7 @@ public:
 	uint32_t min_vdf_segments = 320;
 	uint32_t num_vdf_segments = 760;
 	uint32_t max_vdf_segments = 1024;
+	uint32_t max_tx_base_out = 10;
 	uint32_t recursive_interval = 60480;
 	uint32_t score_bits = 10;
 	uint32_t score_threshold = 1000;
