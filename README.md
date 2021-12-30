@@ -124,8 +124,8 @@ If you have a slow internet connection or want to reduce traffic in general you 
 For example to run at the bare recommended minimum:
 ```
 {
-	"num_peers_out": 2,
-	"max_connections": 2
+	"num_peers_out": 4,
+	"max_connections": 4
 }
 ```
 `num_peers_out` is the maximum number of outgoing connections to synced peers. `max_connections` is the maximum total number of connections.
