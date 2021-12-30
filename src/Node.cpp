@@ -1329,6 +1329,9 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, std::shared_ptr<c
 		if(!tx->execute.empty()) {
 			throw std::logic_error("coin base cannot have operations");
 		}
+		if(tx->outputs.size() > params->max_tx_base_out) {
+			throw std::logic_error("coin base has too many outputs");
+		}
 		if(tx->inputs.size() != 1) {
 			throw std::logic_error("coin base must have one input");
 		}

@@ -17,7 +17,8 @@ class ChainParams {
 	uint min_vdf_segments = 320;
 	uint num_vdf_segments = 760;
 	uint max_vdf_segments = 1024;
-	
+
+	uint max_tx_base_out = 10;
 	uint recursive_interval = 60480;		// number of blocks per iteration to approximate recursive functions
 	
 	uint score_bits = 10;
