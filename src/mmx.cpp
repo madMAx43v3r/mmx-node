@@ -162,7 +162,7 @@ int main(int argc, char** argv)
 			}
 			else if(command == "log")
 			{
-				int64_t min_height;
+				int64_t min_height = 0;
 				vnx::read_config("$3", min_height);
 
 				for(const auto& entry : wallet.get_history(index, min_height > 0 ? min_height : 0)) {
