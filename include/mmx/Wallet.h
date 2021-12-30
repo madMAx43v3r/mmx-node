@@ -72,6 +72,8 @@ private:
 	std::shared_ptr<ECDSA_Wallet> wallet;
 	std::vector<std::shared_ptr<BLS_Wallet>> bls_wallets;
 
+	mutable int64_t last_utxo_update = 0;
+	mutable std::vector<utxo_entry_t> utxo_cache;
 	mutable std::unordered_set<txio_key_t> spent_txo_set;
 	mutable std::unordered_map<txio_key_t, tx_out_t> change_utxo_map;
 

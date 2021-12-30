@@ -84,6 +84,8 @@ void Wallet::close_wallet()
 {
 	wallet = nullptr;
 	wallet_index = -1;
+	utxo_cache.clear();
+	last_utxo_update = 0;
 }
 
 static
@@ -259,22 +261,34 @@ std::vector<utxo_entry_t> Wallet::get_utxo_list() const
 	if(!wallet) {
 		throw std::logic_error("no wallet open");
 	}
-	const auto all_utxo = node->get_utxo_list(wallet->get_all_addresses());
+	const auto now = vnx::get_wall_time_millis();
 
-	// remove any utxo we have already consumed
-	std::vector<utxo_entry_t> list;
-	for(const auto& entry : all_utxo) {
-		if(!spent_txo_set.count(entry.key)) {
-			list.push_back(entry);
+	if(!last_utxo_update || now - last_utxo_update > utxo_timeout_ms)
+	{
+		const auto all_utxo = node->get_utxo_list(wallet->get_all_addresses());
+
+		utxo_cache.clear();
+		size_t num_spend_pending = 0;
+		for(const auto& entry : all_utxo) {
+			// remove any utxo we have already consumed
+			if(!spent_txo_set.count(entry.key)) {
+				utxo_cache.push_back(entry);
+			} else {
+				num_spend_pending++;
+			}
+			// remove confirmed change
+			change_utxo_map.erase(entry.key);
 		}
-		// remove confirmed change
-		change_utxo_map.erase(entry.key);
+		// add pending change outputs
+		for(const auto& entry : change_utxo_map) {
+			utxo_cache.push_back(utxo_entry_t::create_ex(entry.first, utxo_t::create_ex(entry.second, -1)));
+		}
+		last_utxo_update = now;
+
+		log(INFO) << "Updated UTXO cache: " << utxo_cache.size() << " entries, "
+				<< num_spend_pending << " pending spend, " << change_utxo_map.size() << " pending change";
 	}
-	// add pending change outputs
-	for(const auto& entry : change_utxo_map) {
-		list.push_back(utxo_entry_t::create_ex(entry.first, utxo_t::create_ex(entry.second, -1)));
-	}
-	return list;
+	return utxo_cache;
 }
 
 std::vector<utxo_entry_t> Wallet::get_utxo_list_for(const addr_t& contract) const

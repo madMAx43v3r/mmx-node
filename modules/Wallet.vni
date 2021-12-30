@@ -10,6 +10,8 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	uint default_wallet = 0;
 	
+	int utxo_timeout_ms = 1000;				// how often to update from node [ms]
+	
 	
 	void open_wallet(uint index, string passwd);
 	
