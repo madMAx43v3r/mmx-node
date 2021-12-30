@@ -84,6 +84,7 @@ void Wallet::close_wallet()
 {
 	wallet = nullptr;
 	wallet_index = -1;
+	addr_map.clear();
 	utxo_cache.clear();
 	utxo_change_cache.clear();
 	last_utxo_update = 0;
@@ -137,18 +138,6 @@ hash_t Wallet::send(const uint64_t& amount, const addr_t& dst_addr, const addr_t
 
 	// get a list of all utxo we could use
 	auto utxo_list = get_utxo_list();
-
-	// create lookup map
-	std::unordered_map<txio_key_t, addr_t> addr_map;
-	for(const auto& entry : utxo_list) {
-		addr_map[entry.key] = entry.output.address;
-	}
-
-	// sort by height, such as to use oldest coins first (which are more likely to be spend-able right now)
-	std::sort(utxo_list.begin(), utxo_list.end(),
-		[](const utxo_entry_t& lhs, const utxo_entry_t& rhs) -> bool {
-			return lhs.output.height < rhs.output.height;
-		});
 
 	auto spent_txo = spent_txo_set;
 
@@ -241,7 +230,12 @@ hash_t Wallet::send(const uint64_t& amount, const addr_t& dst_addr, const addr_t
 			<< " to " << dst_addr << " (" << tx->id << ")";
 
 	// store used utxos
-	spent_txo_set = spent_txo;
+	spent_txo_set = std::move(spent_txo);
+
+	// remove spent change
+	for(const auto& in : tx->inputs) {
+		utxo_change_cache.erase(in.prev);
+	}
 
 	// store change outputs
 	for(size_t i = 0; i < tx->outputs.size(); ++i) {
@@ -264,28 +258,34 @@ std::vector<utxo_entry_t> Wallet::get_utxo_list() const
 
 	if(!last_utxo_update || now - last_utxo_update > utxo_timeout_ms)
 	{
-		const auto all_utxo = node->get_utxo_list(wallet->get_all_addresses());
+		auto all_utxo = node->get_utxo_list(wallet->get_all_addresses());
 
-		utxo_cache.clear();
-		size_t num_spend_pending = 0;
+		// remove confirmed change
 		for(const auto& entry : all_utxo) {
-			// remove any utxo we have already consumed
-			if(!spent_txo_set.count(entry.key)) {
-				utxo_cache.push_back(entry);
-			} else {
-				num_spend_pending++;
-			}
-			// remove confirmed change
 			utxo_change_cache.erase(entry.key);
 		}
+		utxo_cache = std::move(all_utxo);
+
 		// add pending change outputs
 		for(const auto& entry : utxo_change_cache) {
 			utxo_cache.push_back(utxo_entry_t::create_ex(entry.first, utxo_t::create_ex(entry.second)));
 		}
+
+		// create lookup map
+		addr_map.clear();
+		for(const auto& entry : utxo_cache) {
+			addr_map[entry.key] = entry.output.address;
+		}
+
+		// sort by height, such as to use oldest coins first (which are more likely to be spend-able right now)
+		std::sort(utxo_cache.begin(), utxo_cache.end(),
+			[](const utxo_entry_t& lhs, const utxo_entry_t& rhs) -> bool {
+				return lhs.output.height < rhs.output.height;
+			});
+
 		last_utxo_update = now;
 
-		log(INFO) << "Updated UTXO cache: " << utxo_cache.size() << " entries, "
-				<< num_spend_pending << " pending spend, " << utxo_change_cache.size() << " pending change";
+		log(INFO) << "Updated UTXO cache: " << utxo_cache.size() << " entries, " << utxo_change_cache.size() << " pending change";
 	}
 	return utxo_cache;
 }

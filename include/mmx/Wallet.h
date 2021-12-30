@@ -74,6 +74,7 @@ private:
 
 	mutable int64_t last_utxo_update = 0;
 	mutable std::vector<utxo_entry_t> utxo_cache;
+	mutable std::unordered_map<txio_key_t, addr_t> addr_map;
 	mutable std::unordered_set<txio_key_t> spent_txo_set;
 	mutable std::unordered_map<txio_key_t, tx_out_t> utxo_change_cache;
 
