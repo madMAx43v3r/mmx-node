@@ -299,6 +299,9 @@ void Router::update()
 		for(auto& entry : sync_jobs) {
 			auto& job = entry.second;
 			if(now_ms - job.start_time_ms > fetch_timeout_ms) {
+				for(auto client : job.pending) {
+					synced_peers.erase(client);
+				}
 				if(job.state == FETCH_BLOCKS) {
 					const auto height = job.height;
 					job = sync_job_t();
