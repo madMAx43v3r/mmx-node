@@ -958,7 +958,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 
 	for(const auto& entry : tx_pool)
 	{
-		if(tx_map.find(entry.first) != tx_map.end()) {
+		if(tx_map.count(entry.first)) {
 			// already included in a previous block
 			continue;
 		}
