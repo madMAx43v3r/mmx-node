@@ -7,7 +7,7 @@
 	"num_vdf_segments": 480,
 	"reward_factor": {
 		"value": 1,
-		"inverse": 1000000
+		"inverse": 10000000
 	},
 	"min_reward": 200000,
 	"min_txfee_io": 500,
