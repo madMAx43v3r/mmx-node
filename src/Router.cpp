@@ -286,7 +286,7 @@ void Router::update()
 						num_ahead++;
 					}
 				}
-				if(num_ahead >= std::min<size_t>(synced_peers.size(), 1)) {
+				if(num_ahead >= std::max<size_t>(synced_peers.size(), 1)) {
 					log(WARN) << "Lost sync with network due to height difference!";
 					node->start_sync();
 				}
