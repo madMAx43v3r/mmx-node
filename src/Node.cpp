@@ -925,9 +925,9 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	block->vdf_output = vdf_point.output;
 	{
 		// set new time difficulty
-		auto iter = verified_vdfs.find(prev->height);
+		auto iter = verified_vdfs.find(block->height - params->finality_delay);
 		if(iter != verified_vdfs.end()) {
-			const int64_t time_delta = vdf_point.recv_time - iter->second.recv_time;
+			const int64_t time_delta = (vdf_point.recv_time - iter->second.recv_time) / params->finality_delay;
 			if(time_delta > 0) {
 				const double gain = 0.1;
 				double new_diff = params->block_time * ((block->vdf_iters - prev->vdf_iters) / params->time_diff_constant) / (time_delta * 1e-6);
