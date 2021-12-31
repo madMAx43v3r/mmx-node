@@ -76,8 +76,8 @@ void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 		num_iters[i] = proof->segments[i].num_iters;
 	}
 
-	hash_buf.upload(queue, hash, false);
-	num_iters_buf.upload(queue, num_iters, false);
+	hash_buf.upload(queue, hash, true);
+	num_iters_buf.upload(queue, num_iters, true);
 
 	kernel->set("hash", hash_buf);
 	kernel->set("num_iters", num_iters_buf);
