@@ -350,7 +350,7 @@ std::shared_ptr<vnx::Value> WalletBase::vnx_call_switch(std::shared_ptr<const vn
 		case 0x921f73f3d97d2d4dull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Wallet_get_history>(_method);
 			auto _return_value = ::mmx::Wallet_get_history_return::create();
-			_return_value->_ret_0 = get_history(_args->index, _args->min_height);
+			_return_value->_ret_0 = get_history(_args->index, _args->since);
 			return _return_value;
 		}
 		case 0x1bc2c2dd67ab2829ull: {

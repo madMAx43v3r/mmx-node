@@ -15,7 +15,7 @@ class Node_get_history_for : public ::vnx::Value {
 public:
 	
 	std::vector<::mmx::addr_t> addresses;
-	uint32_t min_height = 0;
+	int32_t since = 0;
 	
 	typedef ::vnx::Value Super;
 	

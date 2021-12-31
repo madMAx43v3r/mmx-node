@@ -256,10 +256,10 @@ uint64_t WalletAsyncClient::get_stxo_list_for(const uint32_t& index, const ::mmx
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::get_history(const uint32_t& index, const uint32_t& min_height, const std::function<void(const std::vector<::mmx::tx_entry_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::get_history(const uint32_t& index, const int32_t& since, const std::function<void(const std::vector<::mmx::tx_entry_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_get_history::create();
 	_method->index = index;
-	_method->min_height = min_height;
+	_method->since = since;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);

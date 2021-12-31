@@ -61,7 +61,7 @@ public:
 	
 	std::vector<::mmx::stxo_entry_t> get_stxo_list_for(const uint32_t& index = 0, const ::mmx::addr_t& contract = ::mmx::addr_t());
 	
-	std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index = 0, const uint32_t& min_height = 0);
+	std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index = 0, const int32_t& since = 0);
 	
 	uint64_t get_balance(const uint32_t& index = 0, const ::mmx::addr_t& contract = ::mmx::addr_t());
 	

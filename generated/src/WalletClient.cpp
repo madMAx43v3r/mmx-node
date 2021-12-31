@@ -251,10 +251,10 @@ std::vector<::mmx::stxo_entry_t> WalletClient::get_stxo_list_for(const uint32_t&
 	}
 }
 
-std::vector<::mmx::tx_entry_t> WalletClient::get_history(const uint32_t& index, const uint32_t& min_height) {
+std::vector<::mmx::tx_entry_t> WalletClient::get_history(const uint32_t& index, const int32_t& since) {
 	auto _method = ::mmx::Wallet_get_history::create();
 	_method->index = index;
-	_method->min_height = min_height;
+	_method->since = since;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_history_return>(_return_value)) {
 		return _result->_ret_0;

@@ -14,7 +14,7 @@ class Wallet_get_history : public ::vnx::Value {
 public:
 	
 	uint32_t index = 0;
-	uint32_t min_height = 0;
+	int32_t since = 0;
 	
 	typedef ::vnx::Value Super;
 	

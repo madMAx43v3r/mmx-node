@@ -65,7 +65,7 @@ protected:
 	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list_for(const uint32_t& index, const ::mmx::addr_t& contract) const = 0;
 	virtual std::vector<::mmx::stxo_entry_t> get_stxo_list(const uint32_t& index) const = 0;
 	virtual std::vector<::mmx::stxo_entry_t> get_stxo_list_for(const uint32_t& index, const ::mmx::addr_t& contract) const = 0;
-	virtual std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index, const uint32_t& min_height) const = 0;
+	virtual std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index, const int32_t& since) const = 0;
 	virtual uint64_t get_balance(const uint32_t& index, const ::mmx::addr_t& contract) const = 0;
 	virtual ::mmx::addr_t get_address(const uint32_t& index, const uint32_t& offset) const = 0;
 	virtual ::mmx::hash_t get_master_seed(const uint32_t& index) const = 0;

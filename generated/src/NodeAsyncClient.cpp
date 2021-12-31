@@ -381,10 +381,10 @@ uint64_t NodeAsyncClient::get_transactions(const std::vector<::mmx::hash_t>& ids
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_history_for(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_height, const std::function<void(const std::vector<::mmx::tx_entry_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_history_for(const std::vector<::mmx::addr_t>& addresses, const int32_t& since, const std::function<void(const std::vector<::mmx::tx_entry_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_history_for::create();
 	_method->addresses = addresses;
-	_method->min_height = min_height;
+	_method->since = since;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);

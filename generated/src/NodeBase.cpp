@@ -809,7 +809,7 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 		case 0x61588fcbc5a50893ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_history_for>(_method);
 			auto _return_value = ::mmx::Node_get_history_for_return::create();
-			_return_value->_ret_0 = get_history_for(_args->addresses, _args->min_height);
+			_return_value->_ret_0 = get_history_for(_args->addresses, _args->since);
 			return _return_value;
 		}
 		case 0xa28704c65a67a293ull: {
