@@ -16,7 +16,7 @@ For example the variable supply will stabilize the price, one of the key propert
 
 Furthermore, thanks to an efficient implementation and the avoidance of using a virtual machine, it will provide low transaction fees even at high throughput.
 
-Tokes can either be traditionally issued by the owner, or they can be owner-less and created by staking another token over time, in a decentralized manner governed by the blockchain.
+Tokens can either be traditionally issued by the owner, or they can be owner-less and created by staking another token over time, in a decentralized manner governed by the blockchain.
 
 In the future it is planned that anybody can create their own token on MMX using a simple web interface.
 
@@ -85,7 +85,7 @@ To reload plots: `mmx farm reload`
 
 ## Setup
 
-First finish the installtion step below.
+First finish the installation step below.
 
 To continue enter the CLI environment:
 ```
