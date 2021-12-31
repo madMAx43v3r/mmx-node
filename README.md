@@ -115,12 +115,12 @@ mmx wallet get seed [-j index]
 
 First perform the installation and setup steps.
 
-To run a node for current `testnet1`
+To run a node for current `testnet2`
 ```
 ./run_node.sh
 ```
 
-You can enable port forwarding on TCP port 12331 if you want to help out the network and accept incoming connections.
+You can enable port forwarding on TCP port 12332 if you want to help out the network and accept incoming connections.
 
 If you have a slow internet connection or want to reduce traffic in general you can lower the number of connections in `config/local/Router.json`.
 For example to run at the bare recommended minimum:
@@ -145,9 +145,20 @@ To disable the `TimeLord` specify `--timelord 0` on the command line.
 Alternatively, you can also disable it by default: `echo false > config/local/timelord`.
 If you have a slow CPU this is recommended and maybe even needed to stay in sync.
 
+### Recover from forking
+
 To re-sync starting from a specific height: `--Node.replay_height <height>`.
-This is needed if for some reason you forked from the network.
+This is needed if for some reason you forked from the network. Just subtract 500 or 1000 blocks from the current height you are stuck at.
 To re-sync from scratch delete `block_chain.dat`.
+
+### Switching to latest testnet
+
+After stopping the node:
+```
+./update.sh
+rm block_chain.dat known_peers.dat NETWORK
+./run_node.sh
+```
 
 ## Plotting
 
