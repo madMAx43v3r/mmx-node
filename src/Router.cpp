@@ -302,12 +302,10 @@ void Router::update()
 				for(auto client : job.pending) {
 					synced_peers.erase(client);
 				}
-				if(job.state == FETCH_BLOCKS) {
+				{
 					const auto height = job.height;
 					job = sync_job_t();
 					job.height = height;
-				} else {
-					job.pending.clear();
 				}
 				job.start_time_ms = now_ms;
 				log(WARN) << "Timeout on sync job for height " << job.height << ", trying again ...";
