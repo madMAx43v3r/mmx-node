@@ -3,7 +3,7 @@
 if [ -f NETWORK ]; then
 	NETWORK=$(cat NETWORK)
 else
-	NETWORK=test1
+	NETWORK=test2
 	echo ${NETWORK} > NETWORK
 fi
 
