@@ -149,7 +149,7 @@ If you have a slow CPU this is recommended and maybe even needed to stay in sync
 
 ### Recover from forking
 
-To re-sync starting from a specific height: `--Node.replay_height <height>`.
+To re-sync starting from a specific height: `./run_node.sh --Node.replay_height <height>`.
 This is needed if for some reason you forked from the network. Just subtract 500 or 1000 blocks from the current height you are stuck at.
 To re-sync from scratch delete `block_chain.dat`.
 
