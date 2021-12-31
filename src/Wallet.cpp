@@ -131,10 +131,10 @@ std::vector<stxo_entry_t> Wallet::get_stxo_list_for(const uint32_t& index, const
 	return res;
 }
 
-std::vector<tx_entry_t> Wallet::get_history(const uint32_t& index, const uint32_t& min_height) const
+std::vector<tx_entry_t> Wallet::get_history(const uint32_t& index, const int32_t& since) const
 {
 	const auto wallet = get_wallet(index);
-	return node->get_history_for(wallet->get_all_addresses(), min_height);
+	return node->get_history_for(wallet->get_all_addresses(), since);
 }
 
 uint64_t Wallet::get_balance(const uint32_t& index, const addr_t& contract) const

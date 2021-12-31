@@ -51,6 +51,8 @@ To get a specific receiving address: `mmx wallet get address <index>`
 
 To show wallet activity since height: `mmx wallet log <height>`
 
+To show wallet activity for last N heights: `mmx wallet log -N`
+
 To get the seed value from a wallet: `mmx wallet get seed`
 
 To use a non-default wallet specify `-j <index>` with above commands (at the end).

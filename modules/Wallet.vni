@@ -22,7 +22,7 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	vector<stxo_entry_t> get_stxo_list_for(uint index, addr_t contract) const;
 	
-	vector<tx_entry_t> get_history(uint index, uint min_height) const;
+	vector<tx_entry_t> get_history(uint index, int since) const;
 	
 	ulong get_balance(uint index, addr_t contract) const;
 	

@@ -315,8 +315,10 @@ std::vector<std::shared_ptr<const Transaction>> Node::get_transactions(const std
 	return list;
 }
 
-std::vector<tx_entry_t> Node::get_history_for(const std::vector<addr_t>& addresses, const uint32_t& min_height) const
+std::vector<tx_entry_t> Node::get_history_for(const std::vector<addr_t>& addresses, const int32_t& since) const
 {
+	const uint32_t height = get_height();
+	const uint32_t min_height = since >= 0 ? since : std::max<int32_t>(height + since, 0);
 	const std::unordered_set<addr_t> addr_set(addresses.begin(), addresses.end());
 
 	struct txio_t {

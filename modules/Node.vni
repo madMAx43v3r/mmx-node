@@ -75,7 +75,7 @@ module Node implements vnx.addons.HttpComponent {
 	vector<Transaction*> get_transactions(vector<hash_t> ids) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<tx_entry_t> get_history_for(vector<addr_t> addresses, uint min_height) const;
+	vector<tx_entry_t> get_history_for(vector<addr_t> addresses, int since) const;
 	
 	@Permission(permission_e.PUBLIC)
 	Contract* get_contract(addr_t address) const;

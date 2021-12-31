@@ -162,10 +162,10 @@ int main(int argc, char** argv)
 			}
 			else if(command == "log")
 			{
-				int64_t min_height = 0;
-				vnx::read_config("$3", min_height);
+				int64_t since = 0;
+				vnx::read_config("$3", since);
 
-				for(const auto& entry : wallet.get_history(index, min_height > 0 ? min_height : 0)) {
+				for(const auto& entry : wallet.get_history(index, since)) {
 					std::cout << "[" << entry.height << "] ";
 					switch(entry.type) {
 						case mmx::tx_type_e::SEND:    std::cout << "SEND    "; break;

@@ -39,7 +39,7 @@ protected:
 
 	std::vector<stxo_entry_t> get_stxo_list_for(const uint32_t& index, const addr_t& contract) const override;
 
-	std::vector<tx_entry_t> get_history(const uint32_t& index, const uint32_t& min_height) const override;
+	std::vector<tx_entry_t> get_history(const uint32_t& index, const int32_t& since) const override;
 
 	uint64_t get_balance(const uint32_t& index, const addr_t& contract) const override;
 
