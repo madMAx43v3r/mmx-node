@@ -12,7 +12,7 @@ module Harvester {
 	
 	int max_queue_ms = 10000;				// [ms]
 	
-	int reload_interval = 3600;				// [sec]
+	int reload_interval = 3600;				// (0 to disable) [sec]
 	
 	uint num_threads = 0;					// 0 = number of plot_dirs
 	
