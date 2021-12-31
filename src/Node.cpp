@@ -1706,9 +1706,15 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, const vd
 	verified_vdfs[proof->height] = point;
 	vdf_verify_pending = 0;
 
+	const auto elapsed = (vnx::get_wall_time_micros() - point.recv_time) / 1e6;
+	if(elapsed > params->block_time) {
+		log(WARN) << "VDF verification took more than block interval, unable to keep sync!";
+	}
+	else if(elapsed > params->block_time - 3) {
+		log(WARN) << "VDF verification took longer than recommended: " << elapsed << " sec";
+	}
 	log(INFO) << "Verified VDF for height " << proof->height << ", delta = "
-				<< (point.recv_time - prev.recv_time) / 1e6 << " sec, took "
-				<< (vnx::get_wall_time_micros() - point.recv_time) / 1e6 << " sec";
+				<< (point.recv_time - prev.recv_time) / 1e6 << " sec, took " << elapsed << " sec";
 
 	publish(proof, output_verified_vdfs);
 
