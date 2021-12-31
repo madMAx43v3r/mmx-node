@@ -402,7 +402,9 @@ void Node::add_block(std::shared_ptr<const Block> block)
 		return;
 	}
 	auto root = get_root();
-	if(block->height <= root->height) {
+	if(block->height <= root->height
+		|| (is_synced && block->height > get_height() + params->finality_delay))
+	{
 		return;
 	}
 	if(!block->is_valid()) {
@@ -535,6 +537,10 @@ void Node::handle(std::shared_ptr<const Transaction> tx)
 void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 {
 	if(verified_vdfs.count(proof->height)) {
+		return;
+	}
+	const auto height = get_height();
+	if(proof->height <= height || proof->height > height + params->finality_delay) {
 		return;
 	}
 	if(proof->height == vdf_verify_pending) {
