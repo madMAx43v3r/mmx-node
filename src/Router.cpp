@@ -274,28 +274,29 @@ void Router::update()
 		is_connected = true;
 	}
 
-	// check if we lost sync due to height difference
-	node->get_synced_height(
-		[this](const vnx::optional<uint32_t>& sync_height) {
-			if(sync_height) {
-				node_height = *sync_height;
-				size_t num_ahead = 0;
-				for(const auto& entry : peer_map) {
-					const auto& peer = entry.second;
-					if(peer.is_synced && peer.height > node_height && peer.height - node_height > params->finality_delay) {
-						num_ahead++;
+	if(synced_peers.size() >= min_sync_peers)
+	{
+		// check if we lost sync due to height difference
+		node->get_synced_height(
+			[this](const vnx::optional<uint32_t>& sync_height) {
+				if(sync_height) {
+					node_height = *sync_height;
+					size_t num_ahead = 0;
+					for(const auto& entry : peer_map) {
+						const auto& peer = entry.second;
+						if(peer.is_synced && peer.height > node_height && peer.height - node_height > params->finality_delay) {
+							num_ahead++;
+						}
+					}
+					if(num_ahead >= synced_peers.size()) {
+						log(WARN) << "Lost sync with network due to height difference!";
+						node->start_sync();
 					}
 				}
-				if(num_ahead >= std::max<size_t>(synced_peers.size(), 1)) {
-					log(WARN) << "Lost sync with network due to height difference!";
-					node->start_sync();
-				}
-			}
-			is_synced = sync_height;
-		});
+				is_synced = sync_height;
+			});
 
-	// check for sync job timeouts
-	if(synced_peers.size() >= min_sync_peers) {
+		// check for sync job timeouts
 		for(auto& entry : sync_jobs) {
 			auto& job = entry.second;
 			if(now_ms - job.start_time_ms > fetch_timeout_ms) {
