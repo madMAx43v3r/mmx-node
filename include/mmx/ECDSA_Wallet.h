@@ -113,11 +113,13 @@ public:
 
 	void update_cache(const std::vector<utxo_entry_t>& utxo_list)
 	{
-		// remove confirmed change
+		utxo_cache.clear();
 		for(const auto& entry : utxo_list) {
+			if(!spent_txo_set.count(entry.key)) {
+				utxo_cache.push_back(entry);
+			}
 			utxo_change_cache.erase(entry.key);
 		}
-		utxo_cache = std::move(utxo_list);
 
 		// add pending change outputs
 		for(const auto& entry : utxo_change_cache) {
@@ -143,6 +145,17 @@ public:
 			spent_txo_set.insert(in.prev);
 			utxo_change_cache.erase(in.prev);
 		}
+
+		// remove spent utxo from cache
+		std::vector<utxo_entry_t> utxo_list;
+		for(const auto& entry : utxo_cache) {
+			if(!spent_txo_set.count(entry.key)) {
+				utxo_list.push_back(entry);
+			}
+		}
+		utxo_cache = std::move(utxo_list);
+
+		// add change outputs to cache
 		for(size_t i = 0; i < tx->outputs.size(); ++i) {
 			const auto& out = tx->outputs[i];
 			if(find_address(out.address) >= 0) {
