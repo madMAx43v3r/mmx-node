@@ -427,6 +427,11 @@ void Node::add_transaction(std::shared_ptr<const Transaction> tx)
 	if(!tx->is_valid()) {
 		return;
 	}
+	const auto tx_cost = tx->calc_min_fee(params);
+	if(tx_cost > params->max_block_cost) {
+		log(WARN) << "Rejected over-size TX: cost = " << tx_cost;
+		return;
+	}
 	tx_pool[tx->id] = tx;
 
 	if(!vnx_sample) {
