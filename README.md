@@ -197,7 +197,7 @@ sudo pacman -Syu
 sudo pacman -S base-devel git cmake zlib libsecp256k1 libsodium opencl-headers ocl-icd clinfo screen
 ```
 
-OpenCL provides faster and more effient VDF verification using an integrated or dedicated GPU.
+OpenCL provides faster and more efficient VDF verification using an integrated or dedicated GPU.
 A standard iGPU found in Intel CPUs with 192 shader cores is plenty fast enough.
 If you dont have a fast quad core CPU (>3 GHz) or higher core count CPU, it is required to have a GPU with OpenCL support.
 
