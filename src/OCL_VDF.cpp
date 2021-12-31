@@ -72,8 +72,11 @@ void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 	}
 
 	num_iters.resize(width);
+	uint32_t max_num_iters = 0;
 	for(size_t i = 0; i < proof->segments.size(); ++i) {
-		num_iters[i] = proof->segments[i].num_iters;
+		const auto& seg = proof->segments[i];
+		num_iters[i] = seg.num_iters;
+		max_num_iters = std::max(max_num_iters, seg.num_iters);
 	}
 
 	hash_buf.upload(queue, hash, false);
@@ -82,7 +85,9 @@ void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 	kernel->set("hash", hash_buf);
 	kernel->set("num_iters", num_iters_buf);
 
-	kernel->enqueue(queue, width, local);
+	for(uint32_t k = 0; k < max_num_iters; k += 4096) {
+		kernel->enqueue(queue, width, local);
+	}
 	queue->flush();
 }
 
