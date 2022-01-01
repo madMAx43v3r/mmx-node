@@ -1626,6 +1626,13 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const vdf_point_
 		if(!infused_block) {
 			throw std::logic_error("invalid infusion value on chain 0");
 		}
+		if(auto block = get_header_at(infused_block->height)) {
+			if(infused_block->hash != block->hash) {
+				throw std::logic_error("invalid block infused on chain 0");
+			}
+		} else {
+			throw std::logic_error("cannot verify");
+		}
 		uint64_t target_iters = infused_block->vdf_iters;
 		for(size_t i = 0; i < params->finality_delay; ++i) {
 			if(auto diff_block = find_diff_header(infused_block, i + 1)) {
