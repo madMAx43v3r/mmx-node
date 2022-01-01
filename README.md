@@ -29,6 +29,8 @@ Where `min_reward` and `const_factor` are fixed at launch.
 A mainnet launch is planned in ~6 months or so.
 Currently we are running the _first testnet_, so the coins farmed right now are _not worth anything_.
 
+See `#mmx-news` and `#mmx-general` on discord: https://discord.gg/pQwkebKnPB
+
 ## CLI
 
 To use the CLI:
