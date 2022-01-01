@@ -404,9 +404,7 @@ void Node::add_block(std::shared_ptr<const Block> block)
 		return;
 	}
 	auto root = get_root();
-	if(block->height <= root->height
-		|| (is_synced && block->height > get_height() + params->finality_delay))
-	{
+	if(block->height <= root->height) {
 		return;
 	}
 	if(!block->is_valid()) {
@@ -547,7 +545,7 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 		return;
 	}
 	const auto height = get_height();
-	if(proof->height <= height || proof->height > height + params->finality_delay) {
+	if(proof->height < height || proof->height > height + params->commit_delay) {
 		return;
 	}
 	if(proof->height == vdf_verify_pending) {
@@ -1522,7 +1520,9 @@ void Node::purge_tree()
 	for(auto iter = fork_tree.begin(); iter != fork_tree.end();)
 	{
 		const auto& block = iter->second->block;
-		if(block->height <= root->height) {
+		if(block->height <= root->height
+			|| (is_synced && block->height > root->height + 2 * params->commit_delay))
+		{
 			iter = fork_tree.erase(iter);
 		} else {
 			iter++;
