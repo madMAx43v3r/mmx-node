@@ -863,21 +863,6 @@ void Node::update()
 			add_task(std::bind(&Node::update, this));
 		}
 	}
-	{
-		// add dummy block in case no proof is found
-		auto iter = verified_vdfs.find(peak->height + 1);
-		if(iter != verified_vdfs.end()) {
-			auto block = Block::create();
-			block->prev = peak->hash;
-			block->height = peak->height + 1;
-			block->time_diff = peak->time_diff;
-			block->space_diff = peak->space_diff;
-			block->vdf_iters = iter->second.iters;
-			block->vdf_output = iter->second.output;
-			block->finalize();
-			add_block(block);
-		}
-	}
 
 	// publish challenges
 	for(uint32_t i = 0; i <= params->challenge_delay; ++i)
@@ -1725,6 +1710,19 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, const vd
 
 	publish(proof, output_verified_vdfs);
 
+	if(auto prev = get_header_at(proof->height - 1))
+	{
+		// add dummy block in case no proof is found
+		auto block = Block::create();
+		block->prev = prev->hash;
+		block->height = proof->height;
+		block->time_diff = prev->time_diff;
+		block->space_diff = prev->space_diff;
+		block->vdf_iters = point.iters;
+		block->vdf_output = point.output;
+		block->finalize();
+		add_block(block);
+	}
 	update();
 }
 
