@@ -1599,8 +1599,8 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const vdf_point_
 	if(proof->height != prev.height + 1) {
 		throw std::logic_error("invalid height: " + std::to_string(proof->height) + " != " + std::to_string(prev.height + 1));
 	}
-	if(auto block = get_header_at(prev.height)) {
-		if(auto diff_block = find_diff_header(block, 1)) {
+	if(auto root = get_root()) {
+		if(auto diff_block = find_diff_header(root, proof->height - root->height)) {
 			const auto num_iters = proof->get_num_iters();
 			const auto expected = diff_block->time_diff * params->time_diff_constant;
 			if(num_iters != expected) {
@@ -1610,7 +1610,7 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const vdf_point_
 			throw std::logic_error("cannot verify: missing diff block");
 		}
 	} else {
-		throw std::logic_error("cannot verify: missing block");
+		throw std::logic_error("cannot verify: missing root");
 	}
 
 	// check proper infusions
