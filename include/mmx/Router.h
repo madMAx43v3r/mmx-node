@@ -66,10 +66,6 @@ private:
 		vnx::MemoryOutputStream out_stream;
 		vnx::TypeInput in;
 		vnx::TypeOutput out;
-		struct {
-			uint32_t height = -1;
-			uint32_t request = -1;
-		} hash_check;
 		peer_t() : in_stream(&buffer), out_stream(&data), in(&in_stream), out(&out_stream) {}
 	};
 

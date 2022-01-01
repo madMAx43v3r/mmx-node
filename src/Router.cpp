@@ -804,17 +804,6 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 						peer->height = *height;
 						peer->is_synced = true;
 						synced_peers.insert(client);
-
-						if(is_synced
-							&& peer->height >= node_height - 1
-							&& peer->height <= node_height + params->finality_delay)
-						{
-							// check their previous block hash
-							auto req = Node_get_block_hash::create();
-							req->height = node_height - 1;
-							peer->hash_check.height = req->height;
-							peer->hash_check.request = send_request(client, req);
-						}
 					}
 					else {
 						if(peer->is_synced) {
@@ -827,47 +816,6 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 						send_request(client, Node_get_height::create());
 					}
 					peer->last_receive_ms = vnx::get_wall_time_millis();
-				}
-			}
-			break;
-		case Node_get_block_hash_return::VNX_TYPE_ID:
-			if(auto value = std::dynamic_pointer_cast<const Node_get_block_hash_return>(result)) {
-				if(auto peer = find_peer(client)) {
-					if(peer->hash_check.request == msg->id && value->_ret_0)
-					{
-						const auto height = peer->hash_check.height;
-						const auto peer_hash = *value->_ret_0;
-						node->get_block(peer_hash,
-							[this, client, height, peer_hash](std::shared_ptr<const Block> block) {
-								if(!block) {
-									auto req = Node_get_block::create();
-									req->hash = peer_hash;
-									send_request(client, req);
-									log(WARN) << "Fetching unknown block at height " << height << " with hash " << peer_hash;
-								}
-							});
-					}
-				}
-			}
-			break;
-		case Node_get_block_return::VNX_TYPE_ID:
-			if(auto value = std::dynamic_pointer_cast<const Node_get_block_return>(result)) {
-				if(auto block = value->_ret_0) {
-					if(is_synced && block->height + params->finality_delay >= node_height)
-					{
-						// check if we have previous block
-						const auto next = block;
-						node->get_block(block->prev,
-							[this, client, next](std::shared_ptr<const Block> block) {
-								if(!block) {
-									auto req = Node_get_block::create();
-									req->hash = next->prev;
-									send_request(client, req);
-									log(WARN) << "Fetching unknown block at height " << next->height - 1 << " with hash " << next->prev;
-								}
-							});
-					}
-					node->add_block(block);
 				}
 			}
 			break;
