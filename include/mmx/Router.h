@@ -54,7 +54,10 @@ private:
 		bool is_outbound = false;
 		uint32_t height = 0;
 		uint32_t msg_size = 0;
+		int32_t ping_ms = 0;
+		int64_t last_query_ms = 0;
 		int64_t last_receive_ms = 0;
+		int64_t connected_since_ms = 0;
 		uint64_t client = 0;
 		uint64_t bytes_send = 0;
 		uint64_t bytes_recv = 0;

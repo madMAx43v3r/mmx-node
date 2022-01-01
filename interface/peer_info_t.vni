@@ -4,9 +4,12 @@ struct peer_info_t {
 	
 	string address;
 	
-	uint32 height;				// synced height
+	int ping_ms;
 	
-	long recv_timeout_ms;		// delta since last reply [ms]
+	uint height;
+	
+	long recv_timeout_ms;			// delta since last reply [ms]
+	long connect_time_ms;			// how long peer is connected [ms]
 	
 	ulong bytes_send;
 	ulong bytes_recv;

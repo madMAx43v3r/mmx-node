@@ -170,23 +170,26 @@ std::vector<std::string> Router::get_connected_peers() const
 std::shared_ptr<const PeerInfo> Router::get_peer_info() const
 {
 	const auto now_ms = vnx::get_wall_time_millis();
+
 	auto info = PeerInfo::create();
 	for(const auto& entry : peer_map) {
 		const auto& state = entry.second;
 		peer_info_t peer;
 		peer.address = state.address;
 		peer.height = state.height;
+		peer.ping_ms = state.ping_ms;
 		peer.bytes_send = state.bytes_send;
 		peer.bytes_recv = state.bytes_recv;
 		peer.is_synced = state.is_synced;
 		peer.is_blocked = state.is_blocked;
 		peer.is_outbound = state.is_outbound;
 		peer.recv_timeout_ms = now_ms - state.last_receive_ms;
+		peer.connect_time_ms = now_ms - state.connected_since_ms;
 		info->peers.push_back(peer);
 	}
 	std::sort(info->peers.begin(), info->peers.end(),
 		[](const peer_info_t& lhs, const peer_info_t& rhs) -> bool {
-			return lhs.address < rhs.address;
+			return lhs.connect_time_ms > rhs.connect_time_ms;
 		});
 	return info;
 }
@@ -500,10 +503,17 @@ void Router::connect()
 
 void Router::query()
 {
+	const auto now_ms = vnx::get_wall_time_millis();
+
 	auto req = Request::create();
 	req->id = next_request_id++;
 	req->method = Node_get_synced_height::create();
-	send_all(req);
+
+	for(auto& entry : peer_map) {
+		auto& peer = entry.second;
+		peer.last_query_ms = now_ms;
+		send_to(peer, req);
+	}
 }
 
 void Router::discover()
@@ -815,7 +825,11 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 						// check their height
 						send_request(client, Node_get_height::create());
 					}
-					peer->last_receive_ms = vnx::get_wall_time_millis();
+					const auto now_ms = vnx::get_wall_time_millis();
+					if(peer->last_query_ms) {
+						peer->ping_ms = now_ms - peer->last_query_ms;
+					}
+					peer->last_receive_ms = now_ms;
 				}
 			}
 			break;
@@ -940,6 +954,7 @@ void Router::on_connect(uint64_t client, const std::string& address)
 	auto& peer = peer_map[client];
 	peer.client = client;
 	peer.address = address;
+	peer.connected_since_ms = vnx::get_wall_time_millis();
 	peer_set.insert(address);
 
 	log(INFO) << "Connected to peer " << peer.address;

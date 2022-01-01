@@ -257,8 +257,10 @@ int main(int argc, char** argv)
 						std::cout << "!";
 					}
 					std::cout << height;
-					std::cout << ", " << (peer.bytes_recv / 1024 / 256) / 4. << " MB recv";
-					std::cout << ", " << (peer.bytes_send / 1024 / 256) / 4. << " MB sent";
+					std::cout << ", " << ((peer.bytes_recv / 1024) * 1000) / peer.connect_time_ms << " KB/s recv";
+					std::cout << ", " << ((peer.bytes_send / 1024) * 1000) / peer.connect_time_ms << " KB/s send";
+					std::cout << ", since " << (peer.connect_time_ms / 60000) << " min";
+					std::cout << ", ping = " << peer.ping_ms << " ms";
 					std::cout << ", timeout = " << (peer.recv_timeout_ms / 100) / 10. << " sec";
 					if(peer.is_outbound) {
 						std::cout << ", outbound";
