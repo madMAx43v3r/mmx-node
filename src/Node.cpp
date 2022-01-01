@@ -414,6 +414,20 @@ void Node::add_block(std::shared_ptr<const Block> block)
 	fork->recv_time = vnx::get_wall_time_micros();
 	fork->block = block;
 	fork_tree[block->hash] = fork;
+
+	// add dummy block in case no proof found
+	auto iter = verified_vdfs.find(block->height + 1);
+	if(iter != verified_vdfs.end()) {
+		auto next = Block::create();
+		next->prev = block->hash;
+		next->height = block->height + 1;
+		next->time_diff = block->time_diff;
+		next->space_diff = block->space_diff;
+		next->vdf_iters = iter->second.iters;
+		next->vdf_output = iter->second.output;
+		next->finalize();
+		add_block(next);
+	}
 }
 
 void Node::add_transaction(std::shared_ptr<const Transaction> tx)
@@ -1710,18 +1724,21 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, const vd
 
 	publish(proof, output_verified_vdfs);
 
-	if(auto prev = get_header_at(proof->height - 1))
-	{
-		// add dummy block in case no proof is found
-		auto block = Block::create();
-		block->prev = prev->hash;
-		block->height = proof->height;
-		block->time_diff = prev->time_diff;
-		block->space_diff = prev->space_diff;
-		block->vdf_iters = point.iters;
-		block->vdf_output = point.output;
-		block->finalize();
-		add_block(block);
+	// add dummy blocks in case no proof is found
+	for(const auto& entry : fork_tree) {
+		if(auto prev = entry.second->block) {
+			if(prev->height + 1 == proof->height) {
+				auto block = Block::create();
+				block->prev = prev->hash;
+				block->height = proof->height;
+				block->time_diff = prev->time_diff;
+				block->space_diff = prev->space_diff;
+				block->vdf_iters = point.iters;
+				block->vdf_output = point.output;
+				block->finalize();
+				add_block(block);
+			}
+		}
 	}
 	update();
 }
