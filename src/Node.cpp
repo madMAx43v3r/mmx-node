@@ -1566,8 +1566,9 @@ uint32_t Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const has
 	}
 	const auto plot_key = proof->local_key.to_bls() + proof->farmer_key.to_bls();
 
-	if(hash_t(proof->pool_key + bls_pubkey_t(plot_key)) != proof->plot_id) {
-		throw std::logic_error("invalid proof keys");
+	const uint32_t port = 11337;
+	if(hash_t(hash_t(proof->pool_key + bls_pubkey_t(plot_key)) + bytes_t<4>(&port, 4)) != proof->plot_id) {
+		throw std::logic_error("invalid proof keys or port");
 	}
 	if(!proof->local_sig.verify(proof->local_key, proof->calc_hash())) {
 		throw std::logic_error("invalid proof signature");
