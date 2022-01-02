@@ -50,24 +50,15 @@ void Node::main()
 	threads = std::make_shared<vnx::ThreadPool>(1);
 
 	if(opencl_device >= 0) {
-		try {
-			std::string platform_name;
-			vnx::read_config("opencl.platform", platform_name);
-			automy::basic_opencl::create_context(CL_DEVICE_TYPE_GPU, platform_name);
-
-			const auto devices = automy::basic_opencl::get_devices();
-			if(size_t(opencl_device) < devices.size()) {
-				for(int i = 0; i < 2; ++i) {
-					opencl_vdf[i] = std::make_shared<OCL_VDF>(opencl_device);
-				}
-				log(INFO) << "Using OpenCL GPU device: " << opencl_device;
+		const auto devices = automy::basic_opencl::get_devices();
+		if(size_t(opencl_device) < devices.size()) {
+			for(int i = 0; i < 2; ++i) {
+				opencl_vdf[i] = std::make_shared<OCL_VDF>(opencl_device);
 			}
-			else if(devices.size()) {
-				log(WARN) <<  "No such OpenCL GPU device: " << opencl_device;
-			}
+			log(INFO) << "Using OpenCL GPU device: " << opencl_device;
 		}
-		catch(const std::exception& ex) {
-			log(INFO) << "No OpenCL GPU platform found: " << ex.what();
+		else if(devices.size()) {
+			log(WARN) <<  "No such OpenCL GPU device: " << opencl_device;
 		}
 	}
 

@@ -39,6 +39,15 @@ int main(int argc, char** argv)
 	vnx::read_config("timelord", with_timelord);
 	vnx::read_config("endpoint", endpoint);
 
+	try {
+		std::string platform_name;
+		vnx::read_config("opencl.platform", platform_name);
+		automy::basic_opencl::create_context(CL_DEVICE_TYPE_GPU, platform_name);
+	}
+	catch(const std::exception& ex) {
+		vnx::log_info() << "No OpenCL GPU platform found: " << ex.what();
+	}
+
 	{
 		vnx::Handle<vnx::Terminal> module = new vnx::Terminal("Terminal");
 		module.start_detached();
