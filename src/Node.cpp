@@ -1729,19 +1729,30 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, const vd
 	publish(proof, output_verified_vdfs);
 
 	// add dummy blocks in case no proof is found
-	for(const auto& entry : fork_tree) {
-		if(auto prev = entry.second->block) {
-			if(prev->height + 1 == proof->height) {
-				auto block = Block::create();
-				block->prev = prev->hash;
-				block->height = proof->height;
-				block->time_diff = prev->time_diff;
-				block->space_diff = prev->space_diff;
-				block->vdf_iters = point.iters;
-				block->vdf_output = point.output;
-				block->finalize();
-				add_block(block);
+	{
+		std::vector<std::shared_ptr<const BlockHeader>> prev_blocks;
+		if(auto root = get_root()) {
+			if(root->height + 1 == proof->height) {
+				prev_blocks.push_back(root);
 			}
+		}
+		for(const auto& entry : fork_tree) {
+			if(auto block = entry.second->block) {
+				if(block->height + 1 == proof->height) {
+					prev_blocks.push_back(block);
+				}
+			}
+		}
+		for(auto prev : prev_blocks) {
+			auto block = Block::create();
+			block->prev = prev->hash;
+			block->height = proof->height;
+			block->time_diff = prev->time_diff;
+			block->space_diff = prev->space_diff;
+			block->vdf_iters = point.iters;
+			block->vdf_output = point.output;
+			block->finalize();
+			add_block(block);
 		}
 	}
 	update();
