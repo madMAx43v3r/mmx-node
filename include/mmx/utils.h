@@ -50,8 +50,7 @@ uint128_t calc_proof_score(	std::shared_ptr<const ChainParams> params,
 inline
 uint64_t calc_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
 {
-	// depends on score_bits
-	return ((uint128_t(space_diff) * params->space_diff_constant * params->reward_factor.value) << params->plot_filter)
+	return ((uint128_t(space_diff) * params->space_diff_constant * params->reward_factor.value) << (params->plot_filter + params->score_bits))
 			/ params->target_score / params->reward_factor.inverse;
 }
 
