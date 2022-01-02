@@ -679,6 +679,7 @@ void Node::update()
 			iter++;
 		}
 	}
+	std::vector<hash_t> invalid;
 
 #pragma omp parallel for
 	for(size_t i = 0; i < to_verify.size(); ++i)
@@ -692,9 +693,12 @@ void Node::update()
 		}
 		catch(const std::exception& ex) {
 #pragma omp critical
-			fork_tree.erase(block->hash);
+			invalid.push_back(block->hash);
 			log(WARN) << "Proof verification failed for a block at height " << block->height << " with: " << ex.what();
 		}
+	}
+	for(const auto& hash : invalid) {
+		fork_tree.erase(hash);
 	}
 	const auto prev_peak = find_header(state_hash);
 
