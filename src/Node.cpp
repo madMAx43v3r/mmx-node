@@ -575,7 +575,7 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 		}
 		catch(const std::exception& ex) {
 			if(is_synced) {
-				log(WARN) << "VDF verification failed with: " << ex.what();
+				log(WARN) << "VDF verification for height " << proof->height << " failed with: " << ex.what();
 			}
 			vdf_verify_pending = 0;
 		}
@@ -1798,7 +1798,7 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const vdf_p
 		add_task([this, proof]() {
 			((Node*)this)->verify_vdf_failed(proof);
 		});
-		log(WARN) << "VDF verification failed with: " << ex.what();
+		log(WARN) << "VDF verification for height " << proof->height << " failed with: " << ex.what();
 	}
 }
 
