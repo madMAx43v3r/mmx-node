@@ -894,32 +894,23 @@ void Node::update()
 
 bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response)
 {
-	if(auto fork = find_fork(prev->hash)) {
-		// reset state to previous block
-		fork_to(fork);
-	}
-	else if(prev->height == get_root()->height) {
-		// reset state to root block
-		while(revert());
-	}
-	else {
-		throw std::logic_error("cannot fork");
-	}
-	auto block = Block::create();
-	block->prev = prev->hash;
-	block->height = prev->height + 1;
-	block->time_diff = prev->time_diff;
-	block->space_diff = prev->space_diff;
-
 	vdf_point_t vdf_point;
 	{
-		auto iter = verified_vdfs.find(block->height);
+		auto iter = verified_vdfs.find(prev->height + 1);
 		if(iter != verified_vdfs.end()) {
 			vdf_point = iter->second;
 		} else {
 			return false;
 		}
 	}
+	// reset state to previous block
+	fork_to(prev->hash);
+
+	auto block = Block::create();
+	block->prev = prev->hash;
+	block->height = prev->height + 1;
+	block->time_diff = prev->time_diff;
+	block->space_diff = prev->space_diff;
 	block->vdf_iters = vdf_point.iters;
 	block->vdf_output = vdf_point.output;
 	{
@@ -1133,9 +1124,23 @@ void Node::sync_result(const uint32_t& height, const std::vector<std::shared_ptr
 	}
 }
 
+std::shared_ptr<const BlockHeader> Node::fork_to(const hash_t& state)
+{
+	if(auto fork = find_fork(state)) {
+		return fork_to(fork);
+	}
+	if(auto root = get_root()) {
+		if(state == root->hash) {
+			while(revert());
+			return nullptr;
+		}
+	}
+	throw std::logic_error("cannot fork");
+}
+
 std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_head)
 {
-	const auto prev_state = find_fork(state_hash);
+	const auto prev_state = state_hash;
 	const auto fork_line = get_fork_line(fork_head);
 
 	bool did_fork = false;
@@ -1180,9 +1185,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 			catch(const std::exception& ex) {
 				log(WARN) << "Block verification failed for height " << block->height << " with: " << ex.what();
 				fork_tree.erase(block->hash);
-				if(prev_state) {
-					fork_to(prev_state);
-				}
+				fork_to(prev_state);
 				throw;
 			}
 			if(is_synced) {

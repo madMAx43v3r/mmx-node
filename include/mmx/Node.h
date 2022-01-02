@@ -122,6 +122,8 @@ private:
 
 	void sync_result(const uint32_t& height, const std::vector<std::shared_ptr<const Block>>& blocks);
 
+	std::shared_ptr<const BlockHeader> fork_to(const hash_t& state);
+
 	std::shared_ptr<const BlockHeader> fork_to(std::shared_ptr<fork_t> fork_head);
 
 	std::shared_ptr<fork_t> find_best_fork(std::shared_ptr<const BlockHeader> root = nullptr, const uint32_t* at_height = nullptr) const;
