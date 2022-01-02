@@ -120,7 +120,7 @@ private:
 
 	void sync_more();
 
-	void sync_result(uint32_t height, const std::vector<std::shared_ptr<const Block>>& blocks);
+	void sync_result(const uint32_t& height, const std::vector<std::shared_ptr<const Block>>& blocks);
 
 	std::shared_ptr<const BlockHeader> fork_to(std::shared_ptr<fork_t> fork_head);
 

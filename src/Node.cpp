@@ -1116,7 +1116,7 @@ void Node::sync_more()
 	}
 }
 
-void Node::sync_result(uint32_t height, const std::vector<std::shared_ptr<const Block>>& blocks)
+void Node::sync_result(const uint32_t& height, const std::vector<std::shared_ptr<const Block>>& blocks)
 {
 	sync_pending.erase(height);
 
