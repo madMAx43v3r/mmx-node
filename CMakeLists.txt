@@ -129,3 +129,7 @@ target_link_libraries(mmx mmx_iface)
 target_link_libraries(mmx_node mmx_modules)
 target_link_libraries(mmx_timelord mmx_modules)
 
+add_executable(tx_bench src/tx_bench.cpp)
+
+target_link_libraries(tx_bench mmx_iface)
+
