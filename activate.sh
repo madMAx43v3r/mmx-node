@@ -7,3 +7,4 @@ fi
 
 export PATH=$PATH:$PWD/build
 
+mkdir -p testnet3
