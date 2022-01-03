@@ -40,7 +40,7 @@ namespace mmx {
 
 
 const vnx::Hash64 HarvesterBase::VNX_TYPE_HASH(0xc17118896cde1555ull);
-const vnx::Hash64 HarvesterBase::VNX_CODE_HASH(0xf5f15cfedad7f8e2ull);
+const vnx::Hash64 HarvesterBase::VNX_CODE_HASH(0x86474037a175a960ull);
 
 HarvesterBase::HarvesterBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -199,7 +199,7 @@ std::shared_ptr<vnx::TypeCode> HarvesterBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Harvester";
 	type_code->type_hash = vnx::Hash64(0xc17118896cde1555ull);
-	type_code->code_hash = vnx::Hash64(0xf5f15cfedad7f8e2ull);
+	type_code->code_hash = vnx::Hash64(0x86474037a175a960ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::HarvesterBase);
 	type_code->methods.resize(12);
@@ -227,7 +227,7 @@ std::shared_ptr<vnx::TypeCode> HarvesterBase::static_create_type_code() {
 		auto& field = type_code->fields[1];
 		field.is_extended = true;
 		field.name = "output_proofs";
-		field.value = vnx::to_string("harvester.proofs");
+		field.value = vnx::to_string("harvester.proof");
 		field.code = {12, 5};
 	}
 	{

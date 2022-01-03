@@ -47,6 +47,8 @@ protected:
 
 	void handle(std::shared_ptr<const ProofOfTime> value);
 
+	void handle(std::shared_ptr<const ProofResponse> value);
+
 private:
 	struct peer_t {
 		bool is_synced = false;
@@ -97,6 +99,8 @@ private:
 
 	void query();
 
+	void save_peers();
+
 	void add_peer(const std::string& address, const int sock);
 
 	void connect_task(const std::string& peer) noexcept;
@@ -108,6 +112,8 @@ private:
 	void on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> proof);
 
 	void on_block(uint64_t client, std::shared_ptr<const Block> block);
+
+	void on_proof(uint64_t client, std::shared_ptr<const ProofResponse> response);
 
 	void on_transaction(uint64_t client, std::shared_ptr<const Transaction> tx);
 
@@ -174,11 +180,13 @@ private:
 	size_t tx_counter = 0;
 	size_t vdf_counter = 0;
 	size_t block_counter = 0;
+	size_t proof_counter = 0;
 	size_t upload_counter = 0;
 
 	size_t drop_counter = 0;
 	size_t tx_drop_counter = 0;
 	size_t vdf_drop_counter = 0;
+	size_t proof_drop_counter = 0;
 	size_t block_drop_counter = 0;
 
 };

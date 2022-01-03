@@ -32,12 +32,31 @@ int main(int argc, char** argv)
 
 	const auto params = mmx::get_params();
 
+	if(params->vdf_seed == "test1" || params->vdf_seed == "test2") {
+		vnx::log_error() << "This version is not compatible with testnet1/2, please remove NETWORK file and try again to switch to testnet3.";
+		vnx::close();
+		return -1;
+	}
 	bool with_farmer = true;
 	bool with_timelord = true;
 	std::string endpoint = ":11331";
+	std::string root_path;
 	vnx::read_config("farmer", with_farmer);
 	vnx::read_config("timelord", with_timelord);
 	vnx::read_config("endpoint", endpoint);
+	vnx::read_config("root_path", root_path);
+
+	if(!root_path.empty()) {
+		vnx::Directory(root_path).create();
+	}
+	try {
+		std::string platform_name;
+		vnx::read_config("opencl.platform", platform_name);
+		automy::basic_opencl::create_context(CL_DEVICE_TYPE_GPU, platform_name);
+	}
+	catch(const std::exception& ex) {
+		vnx::log_info() << "No OpenCL GPU platform found: " << ex.what();
+	}
 
 	{
 		vnx::Handle<vnx::Terminal> module = new vnx::Terminal("Terminal");
@@ -55,6 +74,7 @@ int main(int argc, char** argv)
 	}
 	{
 		vnx::Handle<mmx::Router> module = new mmx::Router("Router");
+		module->storage_path = root_path + module->storage_path;
 		module.start_detached();
 	}
 	if(with_timelord) {
@@ -75,6 +95,7 @@ int main(int argc, char** argv)
 	}
 	{
 		vnx::Handle<mmx::Node> module = new mmx::Node("Node");
+		module->storage_path = root_path + module->storage_path;
 		module.start_detached();
 	}
 

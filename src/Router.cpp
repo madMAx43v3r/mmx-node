@@ -67,24 +67,26 @@ void Router::main()
 	subscribe(input_vdfs, max_queue_ms);
 	subscribe(input_blocks, max_queue_ms);
 	subscribe(input_verified_vdfs, max_queue_ms);
+	subscribe(input_verified_proof, max_queue_ms);
 	subscribe(input_transactions, max_queue_ms);
 
 	peer_set = seed_peers;
-
-	vnx::File known_peers("known_peers.dat");
-	if(known_peers.exists()) {
-		std::vector<std::string> peers;
-		try {
-			known_peers.open("rb");
-			vnx::read_generic(known_peers.in, peers);
-			known_peers.close();
+	{
+		vnx::File known_peers(storage_path + "known_peers.dat");
+		if(known_peers.exists()) {
+			std::vector<std::string> peers;
+			try {
+				known_peers.open("rb");
+				vnx::read_generic(known_peers.in, peers);
+				known_peers.close();
+			}
+			catch(const std::exception& ex) {
+				log(WARN) << "Failed to read peers from file: " << ex.what();
+			}
+			peer_set.insert(peers.begin(), peers.end());
 		}
-		catch(const std::exception& ex) {
-			log(WARN) << "Failed to read peers from file: " << ex.what();
-		}
-		peer_set.insert(peers.begin(), peers.end());
+		log(INFO) << "Loaded " << peer_set.size() << " known peers";
 	}
-	log(INFO) << "Loaded " << peer_set.size() << " known peers";
 
 	node = std::make_shared<NodeAsyncClient>(node_server);
 	node->vnx_set_non_blocking(true);
@@ -96,19 +98,13 @@ void Router::main()
 	set_timer_millis(update_interval_ms, std::bind(&Router::update, this));
 	set_timer_millis(connect_interval_ms, std::bind(&Router::connect, this));
 	set_timer_millis(discover_interval * 1000, std::bind(&Router::discover, this));
+	set_timer_millis(5 * discover_interval * 1000, std::bind(&Router::save_peers, this));
 
 	connect();
 
 	Super::main();
 
-	try {
-		known_peers.open("wb");
-		vnx::write_generic(known_peers.out, peer_set);
-		known_peers.close();
-	}
-	catch(const std::exception& ex) {
-		log(WARN) << "Failed to write peers to file: " << ex.what();
-	}
+	save_peers();
 }
 
 vnx::Hash64 Router::get_id() const
@@ -234,6 +230,16 @@ void Router::handle(std::shared_ptr<const ProofOfTime> proof)
 	else if(vnx_sample->topic == input_verified_vdfs)
 	{
 		verified_vdf_height = std::max(proof->height, verified_vdf_height);
+	}
+}
+
+void Router::handle(std::shared_ptr<const ProofResponse> value)
+{
+	if(auto proof = value->proof) {
+		if(add_msg_hash(proof->calc_hash())) {
+			log(INFO) << "Broadcasting proof for height " << value->request->height << " with score " << value->score;
+			send_all(value);
+		}
 	}
 }
 
@@ -526,6 +532,19 @@ void Router::discover()
 	send_all(req);
 }
 
+void Router::save_peers()
+{
+	vnx::File known_peers(storage_path + "known_peers.dat");
+	try {
+		known_peers.open("wb");
+		vnx::write_generic(known_peers.out, peer_set);
+		known_peers.close();
+	}
+	catch(const std::exception& ex) {
+		log(WARN) << "Failed to write peers to file: " << ex.what();
+	}
+}
+
 void Router::add_peer(const std::string& address, const int sock)
 {
 	connecting_peers.erase(address);
@@ -574,15 +593,18 @@ void Router::print_stats()
 	log(INFO) << float(tx_counter * 1000) / stats_interval_ms
 			  << " tx/s, " << float(vdf_counter * 1000) / stats_interval_ms
 			  << " vdf/s, " << float(block_counter * 1000) / stats_interval_ms
+			  << " proof/s, " << float(proof_counter * 1000) / stats_interval_ms
 			  << " blocks/s, " << synced_peers.size() << " / " <<  peer_map.size() << " / " << peer_set.size()
 			  << " peers, " << upload_counter << " upload, "
-			  << tx_drop_counter << " / " << vdf_drop_counter << " / " << block_drop_counter << " dropped";
+			  << tx_drop_counter << " / " << vdf_drop_counter << " / " << proof_drop_counter << " / " << block_drop_counter << " dropped";
 	tx_counter = 0;
 	vdf_counter = 0;
+	proof_counter = 0;
 	block_counter = 0;
 	upload_counter = 0;
 	tx_drop_counter = 0;
 	vdf_drop_counter = 0;
+	proof_drop_counter = 0;
 	block_drop_counter = 0;
 }
 
@@ -607,6 +629,17 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 	publish(block, output_blocks);
 	relay(client, block);
 	block_counter++;
+}
+
+void Router::on_proof(uint64_t client, std::shared_ptr<const ProofResponse> response)
+{
+	const auto proof = response->proof;
+	if(!proof || !add_msg_hash(proof->calc_hash())) {
+		return;
+	}
+	publish(response, output_proof);
+	relay(client, response);
+	proof_counter++;
 }
 
 void Router::on_transaction(uint64_t client, std::shared_ptr<const Transaction> tx)
@@ -843,6 +876,11 @@ void Router::on_msg(uint64_t client, std::shared_ptr<const vnx::Value> msg)
 	case ProofOfTime::VNX_TYPE_ID:
 		if(auto value = std::dynamic_pointer_cast<const ProofOfTime>(msg)) {
 			on_vdf(client, value);
+		}
+		break;
+	case ProofResponse::VNX_TYPE_ID:
+		if(auto value = std::dynamic_pointer_cast<const ProofResponse>(msg)) {
+			on_proof(client, value);
 		}
 		break;
 	case Block::VNX_TYPE_ID:

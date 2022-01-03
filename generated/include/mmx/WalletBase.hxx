@@ -23,6 +23,7 @@ class WalletBase : public ::vnx::Module {
 public:
 	
 	std::vector<std::string> key_files;
+	std::string storage_path;
 	std::string node_server = "Node";
 	uint32_t num_addresses = 100;
 	int32_t utxo_timeout_ms = 1000;

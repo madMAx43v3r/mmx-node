@@ -32,11 +32,13 @@ class NodeBase : public ::vnx::Module {
 public:
 	
 	::vnx::TopicPtr input_vdfs = "network.vdfs";
+	::vnx::TopicPtr input_proof = "network.proof";
 	::vnx::TopicPtr input_blocks = "network.blocks";
 	::vnx::TopicPtr input_transactions = "network.transactions";
 	::vnx::TopicPtr input_timelord_vdfs = "timelord.proofs";
-	::vnx::TopicPtr input_harvester_proof = "harvester.proofs";
+	::vnx::TopicPtr input_harvester_proof = "harvester.proof";
 	::vnx::TopicPtr output_verified_vdfs = "node.verified_vdfs";
+	::vnx::TopicPtr output_verified_proof = "node.verified_proof";
 	::vnx::TopicPtr output_verified_blocks = "node.verified_blocks";
 	::vnx::TopicPtr output_committed_blocks = "node.committed_blocks";
 	::vnx::TopicPtr output_transactions = "node.transactions";

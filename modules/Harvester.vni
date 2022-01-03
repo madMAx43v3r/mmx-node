@@ -4,7 +4,7 @@ module Harvester {
 	
 	vnx.TopicPtr input_challenges = "harvester.challenges";
 	
-	vnx.TopicPtr output_proofs = "harvester.proofs";
+	vnx.TopicPtr output_proofs = "harvester.proof";
 	
 	vector<string> plot_dirs;
 	

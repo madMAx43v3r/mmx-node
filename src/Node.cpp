@@ -50,24 +50,15 @@ void Node::main()
 	threads = std::make_shared<vnx::ThreadPool>(1);
 
 	if(opencl_device >= 0) {
-		try {
-			std::string platform_name;
-			vnx::read_config("opencl.platform", platform_name);
-			automy::basic_opencl::create_context(CL_DEVICE_TYPE_GPU, platform_name);
-
-			const auto devices = automy::basic_opencl::get_devices();
-			if(size_t(opencl_device) < devices.size()) {
-				for(int i = 0; i < 2; ++i) {
-					opencl_vdf[i] = std::make_shared<OCL_VDF>(opencl_device);
-				}
-				log(INFO) << "Using OpenCL GPU device: " << opencl_device;
+		const auto devices = automy::basic_opencl::get_devices();
+		if(size_t(opencl_device) < devices.size()) {
+			for(int i = 0; i < 2; ++i) {
+				opencl_vdf[i] = std::make_shared<OCL_VDF>(opencl_device);
 			}
-			else if(devices.size()) {
-				log(WARN) <<  "No such OpenCL GPU device: " << opencl_device;
-			}
+			log(INFO) << "Using OpenCL GPU device: " << opencl_device;
 		}
-		catch(const std::exception& ex) {
-			log(INFO) << "No OpenCL GPU platform found: " << ex.what();
+		else if(devices.size()) {
+			log(WARN) <<  "No such OpenCL GPU device: " << opencl_device;
 		}
 	}
 
@@ -123,6 +114,7 @@ void Node::main()
 	}
 
 	subscribe(input_vdfs, max_queue_ms);
+	subscribe(input_proof, max_queue_ms);
 	subscribe(input_blocks, max_queue_ms);
 	subscribe(input_transactions, max_queue_ms);
 	subscribe(input_timelord_vdfs, max_queue_ms);
@@ -575,7 +567,7 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 		}
 		catch(const std::exception& ex) {
 			if(is_synced) {
-				log(WARN) << "VDF verification failed with: " << ex.what();
+				log(WARN) << "VDF verification for height " << proof->height << " failed with: " << ex.what();
 			}
 			vdf_verify_pending = 0;
 		}
@@ -591,21 +583,36 @@ void Node::handle(std::shared_ptr<const ProofResponse> value)
 	if(!value->proof || !value->request || value->score >= params->score_threshold) {
 		return;
 	}
-	const auto challenge = value->request->challenge;
+	const auto root = get_root();
+	const auto request = value->request;
+	if(request->height <= root->height) {
+		return;
+	}
+	const auto challenge = request->challenge;
 
 	auto iter = proof_map.find(challenge);
 	if(iter == proof_map.end() || value->score < iter->second->score) {
 		try {
-			const auto score = verify_proof(value->proof, challenge, value->request->space_diff);
-			if(score == value->score) {
-				if(iter == proof_map.end()) {
-					challenge_map.emplace(value->request->height, challenge);
-				}
-				proof_map[challenge] = value;
-			} else {
+			const auto diff_block = find_diff_header(root, request->height - root->height);
+			if(!diff_block) {
+				throw std::logic_error("cannot verify");
+			}
+			if(request->space_diff != diff_block->space_diff) {
+				throw std::logic_error("invalid space_diff");
+			}
+			const auto score = verify_proof(value->proof, challenge, diff_block->space_diff);
+			if(score != value->score) {
 				throw std::logic_error("score mismatch");
 			}
-		} catch(const std::exception& ex) {
+			if(iter == proof_map.end()) {
+				challenge_map.emplace(request->height, challenge);
+			}
+			proof_map[challenge] = value;
+			publish(value, output_verified_proof);
+
+			log(DEBUG) << "Got new best proof for height " << request->height << " with score " << value->score;
+		}
+		catch(const std::exception& ex) {
 			log(WARN) << "Got invalid proof: " << ex.what();
 		}
 	}
@@ -855,28 +862,32 @@ void Node::update()
 
 			auto iter = proof_map.find(challenge);
 			if(iter != proof_map.end()) {
-				const auto& proof = iter->second;
-				const auto next_height = prev->height + 1;
-				const auto best_fork = find_best_fork(prev, &next_height);
-				// check if we have a better proof
-				if(!best_fork || proof->score < best_fork->proof_score) {
-					try {
-						if(make_block(prev, proof)) {
-							made_block = true;
+				const auto proof = iter->second;
+				// check if it's our proof
+				if(vnx::get_pipe(proof->farmer_addr))
+				{
+					const auto next_height = prev->height + 1;
+					const auto best_fork = find_best_fork(prev, &next_height);
+					// check if we have a better proof
+					if(!best_fork || proof->score < best_fork->proof_score) {
+						try {
+							if(make_block(prev, proof)) {
+								made_block = true;
+							}
 						}
-					}
-					catch(const std::exception& ex) {
-						log(WARN) << "Failed to create a block: " << ex.what();
+						catch(const std::exception& ex) {
+							log(WARN) << "Failed to create a block: " << ex.what();
+						}
+						// revert back to peak
+						if(auto fork = find_fork(peak->hash)) {
+							fork_to(fork);
+						}
 					}
 				}
 			}
 			prev = find_prev_header(prev);
 		}
 		if(made_block) {
-			// revert back to peak
-			if(auto fork = find_fork(peak->hash)) {
-				fork_to(fork);
-			}
 			// update again right away
 			add_task(std::bind(&Node::update, this));
 		}
@@ -903,32 +914,23 @@ void Node::update()
 
 bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response)
 {
-	if(auto fork = find_fork(prev->hash)) {
-		// reset state to previous block
-		fork_to(fork);
-	}
-	else if(prev->height == get_root()->height) {
-		// reset state to root block
-		while(revert());
-	}
-	else {
-		throw std::logic_error("cannot fork");
-	}
-	auto block = Block::create();
-	block->prev = prev->hash;
-	block->height = prev->height + 1;
-	block->time_diff = prev->time_diff;
-	block->space_diff = prev->space_diff;
-
 	vdf_point_t vdf_point;
 	{
-		auto iter = verified_vdfs.find(block->height);
+		auto iter = verified_vdfs.find(prev->height + 1);
 		if(iter != verified_vdfs.end()) {
 			vdf_point = iter->second;
 		} else {
 			return false;
 		}
 	}
+	// reset state to previous block
+	fork_to(prev->hash);
+
+	auto block = Block::create();
+	block->prev = prev->hash;
+	block->height = prev->height + 1;
+	block->time_diff = prev->time_diff;
+	block->space_diff = prev->space_diff;
 	block->vdf_iters = vdf_point.iters;
 	block->vdf_output = vdf_point.output;
 	{
@@ -946,12 +948,18 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	}
 	{
 		// set new space difficulty
-		double delta = prev->space_diff;
-		if(response->score < params->target_score) {
-			delta *= (params->target_score - response->score);
-		} else {
-			delta *= -1 * double(response->score - params->target_score);
+		double avg_score = response->score;
+		{
+			uint32_t counter = 1;
+			auto fork = find_fork(state_hash);
+			for(uint32_t i = 1; i < params->finality_delay && fork; ++i) {
+				avg_score += fork->proof_score;
+				counter++;
+				fork = fork->prev.lock();
+			}
+			avg_score /= counter;
 		}
+		double delta = prev->space_diff * (params->target_score - avg_score);
 		delta /= params->target_score;
 		delta /= (1 << params->max_diff_adjust);
 
@@ -1142,9 +1150,23 @@ void Node::sync_result(const uint32_t& height, const std::vector<std::shared_ptr
 	}
 }
 
+std::shared_ptr<const BlockHeader> Node::fork_to(const hash_t& state)
+{
+	if(auto fork = find_fork(state)) {
+		return fork_to(fork);
+	}
+	if(auto root = get_root()) {
+		if(state == root->hash) {
+			while(revert());
+			return nullptr;
+		}
+	}
+	throw std::logic_error("cannot fork");
+}
+
 std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_head)
 {
-	const auto prev_state = find_fork(state_hash);
+	const auto prev_state = state_hash;
 	const auto fork_line = get_fork_line(fork_head);
 
 	bool did_fork = false;
@@ -1189,9 +1211,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 			catch(const std::exception& ex) {
 				log(WARN) << "Block verification failed for height " << block->height << " with: " << ex.what();
 				fork_tree.erase(block->hash);
-				if(prev_state) {
-					fork_to(prev_state);
-				}
+				fork_to(prev_state);
 				throw;
 			}
 			if(is_synced) {
@@ -1553,7 +1573,18 @@ uint32_t Node::verify_proof(std::shared_ptr<const Block> block, const hash_t& vd
 	}
 	const auto challenge = get_challenge(block, vdf_challenge);
 
-	return verify_proof(block->proof, challenge, diff_block->space_diff);
+	const auto score = verify_proof(block->proof, challenge, diff_block->space_diff);
+	{
+		// check if block has the best score known
+		auto iter = proof_map.find(challenge);
+		if(iter != proof_map.end()) {
+			const auto response = iter->second;
+			if(score > response->score) {
+				throw std::logic_error("invalid score: " + std::to_string(score) + " > " + std::to_string(response->score));
+			}
+		}
+	}
+	return score;
 }
 
 uint32_t Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, const uint64_t space_diff) const
@@ -1564,10 +1595,11 @@ uint32_t Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const has
 	if(proof->ksize > params->max_ksize) {
 		throw std::logic_error("ksize too big");
 	}
-	const auto plot_key = proof->local_key.to_bls() + proof->farmer_key.to_bls();
+	const bls_pubkey_t plot_key = proof->local_key.to_bls() + proof->farmer_key.to_bls();
 
-	if(hash_t(proof->pool_key + bls_pubkey_t(plot_key)) != proof->plot_id) {
-		throw std::logic_error("invalid proof keys");
+	const uint32_t port = 11337;
+	if(hash_t(hash_t(proof->pool_key + plot_key) + bytes_t<4>(&port, 4)) != proof->plot_id) {
+		throw std::logic_error("invalid proof keys or port");
 	}
 	if(!proof->local_sig.verify(proof->local_key, proof->calc_hash())) {
 		throw std::logic_error("invalid proof signature");
@@ -1729,19 +1761,30 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, const vd
 	publish(proof, output_verified_vdfs);
 
 	// add dummy blocks in case no proof is found
-	for(const auto& entry : fork_tree) {
-		if(auto prev = entry.second->block) {
-			if(prev->height + 1 == proof->height) {
-				auto block = Block::create();
-				block->prev = prev->hash;
-				block->height = proof->height;
-				block->time_diff = prev->time_diff;
-				block->space_diff = prev->space_diff;
-				block->vdf_iters = point.iters;
-				block->vdf_output = point.output;
-				block->finalize();
-				add_block(block);
+	{
+		std::vector<std::shared_ptr<const BlockHeader>> prev_blocks;
+		if(auto root = get_root()) {
+			if(root->height + 1 == proof->height) {
+				prev_blocks.push_back(root);
 			}
+		}
+		for(const auto& entry : fork_tree) {
+			if(auto block = entry.second->block) {
+				if(block->height + 1 == proof->height) {
+					prev_blocks.push_back(block);
+				}
+			}
+		}
+		for(auto prev : prev_blocks) {
+			auto block = Block::create();
+			block->prev = prev->hash;
+			block->height = proof->height;
+			block->time_diff = prev->time_diff;
+			block->space_diff = prev->space_diff;
+			block->vdf_iters = point.iters;
+			block->vdf_output = point.output;
+			block->finalize();
+			add_block(block);
 		}
 	}
 	update();
@@ -1786,7 +1829,7 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const vdf_p
 		add_task([this, proof]() {
 			((Node*)this)->verify_vdf_failed(proof);
 		});
-		log(WARN) << "VDF verification failed with: " << ex.what();
+		log(WARN) << "VDF verification for height " << proof->height << " failed with: " << ex.what();
 	}
 }
 
@@ -1909,8 +1952,7 @@ std::shared_ptr<Node::fork_t> Node::find_prev_fork(std::shared_ptr<fork_t> fork,
 std::shared_ptr<const BlockHeader> Node::find_prev_header(	std::shared_ptr<const BlockHeader> block,
 															const size_t distance, bool clamped) const
 {
-	if(distance > params->finality_delay
-		&& (block->height >= distance || clamped))
+	if(distance > 1 && (block->height >= distance || clamped))
 	{
 		const auto height = block->height > distance ? block->height - distance : 0;
 		auto iter = history.find(height);

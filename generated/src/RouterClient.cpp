@@ -6,6 +6,7 @@
 #include <mmx/Block.hxx>
 #include <mmx/PeerInfo.hxx>
 #include <mmx/ProofOfTime.hxx>
+#include <mmx/ProofResponse.hxx>
 #include <mmx/Router_discover.hxx>
 #include <mmx/Router_discover_return.hxx>
 #include <mmx/Router_get_blocks_at.hxx>

@@ -8,6 +8,7 @@
 #include <mmx/Block.hxx>
 #include <mmx/PeerInfo.hxx>
 #include <mmx/ProofOfTime.hxx>
+#include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
 #include <vnx/Hash64.hpp>
 #include <vnx/TopicPtr.hpp>
@@ -22,8 +23,10 @@ public:
 	::vnx::TopicPtr input_vdfs = "timelord.proofs";
 	::vnx::TopicPtr input_blocks = "node.verified_blocks";
 	::vnx::TopicPtr input_verified_vdfs = "node.verified_vdfs";
+	::vnx::TopicPtr input_verified_proof = "node.verified_proof";
 	::vnx::TopicPtr input_transactions = "node.transactions";
 	::vnx::TopicPtr output_vdfs = "network.vdfs";
+	::vnx::TopicPtr output_proof = "network.proof";
 	::vnx::TopicPtr output_blocks = "network.blocks";
 	::vnx::TopicPtr output_transactions = "network.transactions";
 	int32_t max_queue_ms = 1000;
@@ -37,10 +40,11 @@ public:
 	uint32_t num_peers_out = 8;
 	uint32_t min_sync_peers = 2;
 	uint32_t max_sync_peers = 4;
-	uint32_t max_msg_size = 16777216;
+	uint32_t max_msg_size = 4194304;
 	uint32_t max_hash_cache = 1000000;
 	std::set<std::string> seed_peers;
 	std::set<std::string> block_peers;
+	std::string storage_path;
 	std::string node_server = "Node";
 	
 	typedef ::vnx::addons::TcpServer Super;
@@ -87,6 +91,7 @@ protected:
 	virtual void handle(std::shared_ptr<const ::mmx::Block> _value) {}
 	virtual void handle(std::shared_ptr<const ::mmx::Transaction> _value) {}
 	virtual void handle(std::shared_ptr<const ::mmx::ProofOfTime> _value) {}
+	virtual void handle(std::shared_ptr<const ::mmx::ProofResponse> _value) {}
 	
 	void vnx_handle_switch(std::shared_ptr<const vnx::Value> _value) override;
 	std::shared_ptr<vnx::Value> vnx_call_switch(std::shared_ptr<const vnx::Value> _method, const vnx::request_id_t& _request_id) override;
