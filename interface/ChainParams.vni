@@ -11,7 +11,7 @@ class ChainParams {
 	uint commit_delay = 18;					// for writing to disk (must > finality_delay)
 	uint finality_delay = 6;				// for primary VDF infusion (must be > 0)
 	uint challenge_delay = 3;				// blocks until new challange is active (must be > 0)
-	uint challenge_interval = 36;			// challenge (and difficulty) is for next N blocks (must be > finality_delay)
+	uint challenge_interval = 36;			// challenge (and difficulty) is for next N blocks (must be > commit_delay)
 	uint max_diff_adjust = 10;				// per block (1/2^x)
 	
 	uint min_vdf_segments = 320;

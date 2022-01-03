@@ -114,6 +114,7 @@ void Node::main()
 	}
 
 	subscribe(input_vdfs, max_queue_ms);
+	subscribe(input_proof, max_queue_ms);
 	subscribe(input_blocks, max_queue_ms);
 	subscribe(input_transactions, max_queue_ms);
 	subscribe(input_timelord_vdfs, max_queue_ms);
@@ -582,21 +583,36 @@ void Node::handle(std::shared_ptr<const ProofResponse> value)
 	if(!value->proof || !value->request || value->score >= params->score_threshold) {
 		return;
 	}
-	const auto challenge = value->request->challenge;
+	const auto root = get_root();
+	const auto request = value->request;
+	if(request->height <= root->height) {
+		return;
+	}
+	const auto challenge = request->challenge;
 
 	auto iter = proof_map.find(challenge);
 	if(iter == proof_map.end() || value->score < iter->second->score) {
 		try {
-			const auto score = verify_proof(value->proof, challenge, value->request->space_diff);
-			if(score == value->score) {
-				if(iter == proof_map.end()) {
-					challenge_map.emplace(value->request->height, challenge);
-				}
-				proof_map[challenge] = value;
-			} else {
+			const auto diff_block = find_diff_header(root, request->height - root->height);
+			if(!diff_block) {
+				throw std::logic_error("cannot verify");
+			}
+			if(request->space_diff != diff_block->space_diff) {
+				throw std::logic_error("invalid space_diff");
+			}
+			const auto score = verify_proof(value->proof, challenge, diff_block->space_diff);
+			if(score != value->score) {
 				throw std::logic_error("score mismatch");
 			}
-		} catch(const std::exception& ex) {
+			if(iter == proof_map.end()) {
+				challenge_map.emplace(request->height, challenge);
+			}
+			proof_map[challenge] = value;
+			publish(value, output_verified_proof);
+
+			log(DEBUG) << "Got new best proof for height " << request->height << " with score " << value->score;
+		}
+		catch(const std::exception& ex) {
 			log(WARN) << "Got invalid proof: " << ex.what();
 		}
 	}
@@ -846,7 +862,7 @@ void Node::update()
 
 			auto iter = proof_map.find(challenge);
 			if(iter != proof_map.end()) {
-				const auto& proof = iter->second;
+				const auto proof = iter->second;
 				// check if it's our proof
 				if(vnx::get_pipe(proof->farmer_addr))
 				{
@@ -1551,7 +1567,18 @@ uint32_t Node::verify_proof(std::shared_ptr<const Block> block, const hash_t& vd
 	}
 	const auto challenge = get_challenge(block, vdf_challenge);
 
-	return verify_proof(block->proof, challenge, diff_block->space_diff);
+	const auto score = verify_proof(block->proof, challenge, diff_block->space_diff);
+	{
+		// check if block has the best score known
+		auto iter = proof_map.find(challenge);
+		if(iter != proof_map.end()) {
+			const auto response = iter->second;
+			if(score > response->score) {
+				throw std::logic_error("invalid score: " + std::to_string(score) + " > " + std::to_string(response->score));
+			}
+		}
+	}
+	return score;
 }
 
 uint32_t Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, const uint64_t space_diff) const
@@ -1919,8 +1946,7 @@ std::shared_ptr<Node::fork_t> Node::find_prev_fork(std::shared_ptr<fork_t> fork,
 std::shared_ptr<const BlockHeader> Node::find_prev_header(	std::shared_ptr<const BlockHeader> block,
 															const size_t distance, bool clamped) const
 {
-	if(distance > params->finality_delay
-		&& (block->height >= distance || clamped))
+	if(distance > 1 && (block->height >= distance || clamped))
 	{
 		const auto height = block->height > distance ? block->height - distance : 0;
 		auto iter = history.find(height);
