@@ -71,21 +71,22 @@ void Router::main()
 	subscribe(input_transactions, max_queue_ms);
 
 	peer_set = seed_peers;
-
-	vnx::File known_peers("known_peers.dat");
-	if(known_peers.exists()) {
-		std::vector<std::string> peers;
-		try {
-			known_peers.open("rb");
-			vnx::read_generic(known_peers.in, peers);
-			known_peers.close();
+	{
+		vnx::File known_peers(storage_path + "known_peers.dat");
+		if(known_peers.exists()) {
+			std::vector<std::string> peers;
+			try {
+				known_peers.open("rb");
+				vnx::read_generic(known_peers.in, peers);
+				known_peers.close();
+			}
+			catch(const std::exception& ex) {
+				log(WARN) << "Failed to read peers from file: " << ex.what();
+			}
+			peer_set.insert(peers.begin(), peers.end());
 		}
-		catch(const std::exception& ex) {
-			log(WARN) << "Failed to read peers from file: " << ex.what();
-		}
-		peer_set.insert(peers.begin(), peers.end());
+		log(INFO) << "Loaded " << peer_set.size() << " known peers";
 	}
-	log(INFO) << "Loaded " << peer_set.size() << " known peers";
 
 	node = std::make_shared<NodeAsyncClient>(node_server);
 	node->vnx_set_non_blocking(true);
@@ -97,19 +98,13 @@ void Router::main()
 	set_timer_millis(update_interval_ms, std::bind(&Router::update, this));
 	set_timer_millis(connect_interval_ms, std::bind(&Router::connect, this));
 	set_timer_millis(discover_interval * 1000, std::bind(&Router::discover, this));
+	set_timer_millis(5 * discover_interval * 1000, std::bind(&Router::save_peers, this));
 
 	connect();
 
 	Super::main();
 
-	try {
-		known_peers.open("wb");
-		vnx::write_generic(known_peers.out, peer_set);
-		known_peers.close();
-	}
-	catch(const std::exception& ex) {
-		log(WARN) << "Failed to write peers to file: " << ex.what();
-	}
+	save_peers();
 }
 
 vnx::Hash64 Router::get_id() const
@@ -535,6 +530,19 @@ void Router::discover()
 	req->id = next_request_id++;
 	req->method = method;
 	send_all(req);
+}
+
+void Router::save_peers()
+{
+	vnx::File known_peers(storage_path + "known_peers.dat");
+	try {
+		known_peers.open("wb");
+		vnx::write_generic(known_peers.out, peer_set);
+		known_peers.close();
+	}
+	catch(const std::exception& ex) {
+		log(WARN) << "Failed to write peers to file: " << ex.what();
+	}
 }
 
 void Router::add_peer(const std::string& address, const int sock)

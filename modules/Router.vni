@@ -34,6 +34,7 @@ module Router extends vnx.addons.TcpServer {
 	set<string> seed_peers;
 	set<string> block_peers;
 	
+	string storage_path;
 	string node_server = "Node";
 	
 	

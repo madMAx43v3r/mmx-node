@@ -35,8 +35,10 @@ void Wallet::main()
 	http = std::make_shared<vnx::addons::HttpInterface<Wallet>>(this, vnx_name);
 	add_async_client(http);
 
-	for(const auto& file_path : key_files)
+	for(auto file_path : key_files)
 	{
+		file_path = storage_path + file_path;
+
 		if(auto key_file = vnx::read_from_file<KeyFile>(file_path))
 		{
 			wallets.push_back(std::make_shared<ECDSA_Wallet>(key_file, params, num_addresses));
@@ -178,7 +180,7 @@ hash_t Wallet::get_master_seed(const uint32_t& index) const
 	if(index >= key_files.size()) {
 		throw std::logic_error("invalid wallet index");
 	}
-	if(auto key_file = vnx::read_from_file<KeyFile>(key_files[index])) {
+	if(auto key_file = vnx::read_from_file<KeyFile>(storage_path + key_files[index])) {
 		return key_file->seed_value;
 	}
 	throw std::logic_error("failed to read key file");

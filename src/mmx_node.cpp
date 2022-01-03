@@ -35,10 +35,15 @@ int main(int argc, char** argv)
 	bool with_farmer = true;
 	bool with_timelord = true;
 	std::string endpoint = ":11331";
+	std::string root_path;
 	vnx::read_config("farmer", with_farmer);
 	vnx::read_config("timelord", with_timelord);
 	vnx::read_config("endpoint", endpoint);
+	vnx::read_config("root_path", root_path);
 
+	if(!root_path.empty()) {
+		vnx::Directory(root_path).create();
+	}
 	try {
 		std::string platform_name;
 		vnx::read_config("opencl.platform", platform_name);
@@ -64,6 +69,7 @@ int main(int argc, char** argv)
 	}
 	{
 		vnx::Handle<mmx::Router> module = new mmx::Router("Router");
+		module->storage_path = root_path + module->storage_path;
 		module.start_detached();
 	}
 	if(with_timelord) {
@@ -72,6 +78,7 @@ int main(int argc, char** argv)
 	}
 	{
 		vnx::Handle<mmx::Wallet> module = new mmx::Wallet("Wallet");
+		module->storage_path = root_path + module->storage_path;
 		module.start_detached();
 	}
 	if(with_farmer) {
@@ -84,6 +91,7 @@ int main(int argc, char** argv)
 	}
 	{
 		vnx::Handle<mmx::Node> module = new mmx::Node("Node");
+		module->storage_path = root_path + module->storage_path;
 		module.start_detached();
 	}
 

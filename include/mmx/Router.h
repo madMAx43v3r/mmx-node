@@ -99,6 +99,8 @@ private:
 
 	void query();
 
+	void save_peers();
+
 	void add_peer(const std::string& address, const int sock);
 
 	void connect_task(const std::string& peer) noexcept;

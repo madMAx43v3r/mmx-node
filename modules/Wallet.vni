@@ -4,6 +4,7 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	vector<string> key_files;
 	
+	string storage_path;
 	string node_server = "Node";
 	
 	uint num_addresses = 100;
