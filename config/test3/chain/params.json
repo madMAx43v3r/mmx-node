@@ -9,8 +9,8 @@
 	"min_ksize": 26,
 	"vdf_seed": "test3",
 	"reward_factor": {
-		"value": 1,
-		"inverse": 100000000000
+		"value": 3,
+		"inverse": 10000000000
 	},
 	"min_reward": 200000,
 	"min_txfee_io": 500,
