@@ -49,9 +49,12 @@ module Router extends vnx.addons.TcpServer {
 	
 	vector<Block*> get_blocks_at(uint height) const async;
 	
+	vector<ProofResponse*> get_proof_at(uint height) const async;
+	
 	
 	void handle(Block sample);
 	void handle(Transaction sample);
 	void handle(ProofOfTime sample);
+	void handle(ProofResponse sample);
 	
 }

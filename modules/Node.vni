@@ -59,6 +59,9 @@ module Node implements vnx.addons.HttpComponent {
 	optional<hash_t> get_block_hash(uint height) const;
 	
 	@Permission(permission_e.PUBLIC)
+	ProofResponse* get_proof_at(uint height) const;
+	
+	@Permission(permission_e.PUBLIC)
 	txo_info_t get_txo_info(txio_key_t key) const;
 	
 	@Permission(permission_e.PUBLIC)

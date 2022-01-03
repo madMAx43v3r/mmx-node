@@ -847,27 +847,31 @@ void Node::update()
 			auto iter = proof_map.find(challenge);
 			if(iter != proof_map.end()) {
 				const auto& proof = iter->second;
-				const auto next_height = prev->height + 1;
-				const auto best_fork = find_best_fork(prev, &next_height);
-				// check if we have a better proof
-				if(!best_fork || proof->score < best_fork->proof_score) {
-					try {
-						if(make_block(prev, proof)) {
-							made_block = true;
+				// check if it's our proof
+				if(vnx::get_pipe(proof->farmer_addr))
+				{
+					const auto next_height = prev->height + 1;
+					const auto best_fork = find_best_fork(prev, &next_height);
+					// check if we have a better proof
+					if(!best_fork || proof->score < best_fork->proof_score) {
+						try {
+							if(make_block(prev, proof)) {
+								made_block = true;
+							}
 						}
-					}
-					catch(const std::exception& ex) {
-						log(WARN) << "Failed to create a block: " << ex.what();
+						catch(const std::exception& ex) {
+							log(WARN) << "Failed to create a block: " << ex.what();
+						}
+						// revert back to peak
+						if(auto fork = find_fork(peak->hash)) {
+							fork_to(fork);
+						}
 					}
 				}
 			}
 			prev = find_prev_header(prev);
 		}
 		if(made_block) {
-			// revert back to peak
-			if(auto fork = find_fork(peak->hash)) {
-				fork_to(fork);
-			}
 			// update again right away
 			add_task(std::bind(&Node::update, this));
 		}
