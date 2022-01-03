@@ -83,7 +83,6 @@ int main(int argc, char** argv)
 	}
 	{
 		vnx::Handle<mmx::Wallet> module = new mmx::Wallet("Wallet");
-		module->storage_path = root_path + module->storage_path;
 		module.start_detached();
 	}
 	if(with_farmer) {
