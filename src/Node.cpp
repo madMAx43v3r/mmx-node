@@ -948,12 +948,18 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	}
 	{
 		// set new space difficulty
-		double delta = prev->space_diff;
-		if(response->score < params->target_score) {
-			delta *= (params->target_score - response->score);
-		} else {
-			delta *= -1 * double(response->score - params->target_score);
+		double avg_score = response->score;
+		{
+			uint32_t counter = 1;
+			auto fork = find_fork(state_hash);
+			for(uint32_t i = 0; i < params->finality_delay && fork; ++i) {
+				avg_score += fork->proof_score;
+				counter++;
+				fork = fork->prev.lock();
+			}
+			avg_score /= counter;
 		}
+		double delta = prev->space_diff * (params->target_score - avg_score);
 		delta /= params->target_score;
 		delta /= (1 << params->max_diff_adjust);
 
