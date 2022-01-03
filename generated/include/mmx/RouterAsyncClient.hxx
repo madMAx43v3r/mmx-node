@@ -8,6 +8,7 @@
 #include <mmx/Block.hxx>
 #include <mmx/PeerInfo.hxx>
 #include <mmx/ProofOfTime.hxx>
+#include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
 #include <vnx/Hash64.hpp>
 #include <vnx/TopicPtr.hpp>
