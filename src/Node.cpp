@@ -952,7 +952,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 		{
 			uint32_t counter = 1;
 			auto fork = find_fork(state_hash);
-			for(uint32_t i = 0; i < params->finality_delay && fork; ++i) {
+			for(uint32_t i = 1; i < params->finality_delay && fork; ++i) {
 				avg_score += fork->proof_score;
 				counter++;
 				fork = fork->prev.lock();
