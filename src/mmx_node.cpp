@@ -32,6 +32,11 @@ int main(int argc, char** argv)
 
 	const auto params = mmx::get_params();
 
+	if(params->vdf_seed == "test1" || params->vdf_seed == "test2") {
+		vnx::log_error() << "This version is not compatible with testnet1/2, please remove NETWORK file and try again to switch to testnet3.";
+		vnx::close();
+		return -1;
+	}
 	bool with_farmer = true;
 	bool with_timelord = true;
 	std::string endpoint = ":11331";
