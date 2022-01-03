@@ -27,7 +27,7 @@ The variable reward function is as follows: \
 Where `min_reward` and `const_factor` are fixed at launch.
 
 A mainnet launch is planned in ~6 months or so.
-Currently we are running _testnet2_, so the coins farmed right now are _not worth anything_.
+Currently we are running _testnet3_, so the coins farmed right now are _not worth anything_.
 
 See `#mmx-news` and `#mmx-general` on discord: https://discord.gg/pQwkebKnPB
 
@@ -119,12 +119,28 @@ mmx wallet get seed [-j index]
 
 First perform the installation and setup steps.
 
-To run a node for current `testnet2`
+To run a node for current `testnet3`
 ```
 ./run_node.sh
 ```
 
-You can enable port forwarding on TCP port 12332 if you want to help out the network and accept incoming connections.
+You can enable port forwarding on TCP port 12333 if you want to help out the network and accept incoming connections.
+
+To set a custom storage path for the blockchain, etc:
+```
+echo /my/path/ > config/local/root_path
+```
+
+To set a custom storage path for wallet files create/edit `config/local/Wallet.json`:
+```
+{
+	"storage_path": "/my/path/"
+}
+```
+
+Any config changes require a node restart to become effective.
+
+### Reducing network traffic
 
 If you have a slow internet connection or want to reduce traffic in general you can lower the number of connections in `config/local/Router.json`.
 For example to run at the bare recommended minimum:
@@ -136,6 +152,8 @@ For example to run at the bare recommended minimum:
 ```
 `num_peers_out` is the maximum number of outgoing connections to synced peers. `max_connections` is the maximum total number of connections.
 Keep in mind this will increase your chances of losing sync.
+
+### Running in background
 
 To run a node in the background you can enter a `screen` session:
 ```
@@ -160,9 +178,11 @@ To re-sync from scratch delete `block_chain.dat`.
 After stopping the node:
 ```
 ./update.sh
+rm config/local/mmx_node.json
 rm block_chain.dat known_peers.dat NETWORK
 ./run_node.sh
 ```
+`block_chain.dat`, `known_peers.dat` and `logs` are now stored in `testnet3` folder by default.
 
 ## Plotting
 
