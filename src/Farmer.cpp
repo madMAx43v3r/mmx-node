@@ -37,7 +37,7 @@ void Farmer::main()
 			}
 		}
 		if(!reward_addr) {
-			reward_addr = wallet.get_address(0);
+			reward_addr = wallet.get_address(default_wallet, default_address);
 		}
 	}
 	catch(const std::exception& ex) {

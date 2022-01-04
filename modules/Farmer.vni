@@ -2,6 +2,9 @@ package mmx;
 
 module Farmer {
 	
+	uint default_wallet = 0;						// for default reward address
+	uint default_address = 0;						// index for default reward address
+	
 	string wallet_server = "Wallet";
 	
 	optional<addr_t> reward_addr;					// default = first address of first wallet
