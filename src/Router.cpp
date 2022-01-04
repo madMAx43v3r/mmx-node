@@ -266,45 +266,47 @@ void Router::update()
 	}
 
 	// check if we lost sync due to response timeout
-	size_t num_peers = 0;
-	for(const auto& entry : peer_map) {
-		const auto& peer = entry.second;
-		if(peer.is_synced && now_ms - peer.last_receive_ms < sync_loss_delay * 1000) {
-			num_peers++;
+	{
+		size_t num_peers = 0;
+		for(const auto& entry : peer_map) {
+			const auto& peer = entry.second;
+			if(peer.is_synced && now_ms - peer.last_receive_ms < sync_loss_delay * 1000) {
+				num_peers++;
+			}
+		}
+		if(num_peers < min_sync_peers) {
+			if(is_connected) {
+				log(WARN) << "Lost sync with network due to timeout!";
+				is_connected = false;
+				node->start_sync();
+			}
+		} else {
+			is_connected = true;
 		}
 	}
-	if(num_peers < min_sync_peers) {
-		if(is_connected) {
-			log(WARN) << "Lost sync with network due to timeout!";
-			is_connected = false;
-			node->start_sync();
-		}
-	} else {
-		is_connected = true;
-	}
+
+	// check if we lost sync due to height difference
+	node->get_synced_height(
+		[this](const vnx::optional<uint32_t>& sync_height) {
+			if(sync_height) {
+				size_t num_ahead = 0;
+				const auto height = *sync_height;
+				for(const auto& entry : peer_map) {
+					const auto& peer = entry.second;
+					if(peer.is_synced && peer.height > height && peer.height - height > params->finality_delay) {
+						num_ahead++;
+					}
+				}
+				if(num_ahead > synced_peers.size() / 2 && synced_peers.size() >= min_sync_peers)
+				{
+					log(WARN) << "Lost sync with network due to height difference!";
+					node->start_sync();
+				}
+			}
+		});
 
 	if(synced_peers.size() >= min_sync_peers)
 	{
-		// check if we lost sync due to height difference
-		node->get_synced_height(
-			[this](const vnx::optional<uint32_t>& sync_height) {
-				if(sync_height) {
-					node_height = *sync_height;
-					size_t num_ahead = 0;
-					for(const auto& entry : peer_map) {
-						const auto& peer = entry.second;
-						if(peer.is_synced && peer.height > node_height && peer.height - node_height > params->finality_delay) {
-							num_ahead++;
-						}
-					}
-					if(num_ahead >= synced_peers.size()) {
-						log(WARN) << "Lost sync with network due to height difference!";
-						node->start_sync();
-					}
-				}
-				is_synced = sync_height;
-			});
-
 		// check for sync job timeouts
 		for(auto& entry : sync_jobs) {
 			auto& job = entry.second;

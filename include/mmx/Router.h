@@ -155,7 +155,6 @@ private:
 	bool add_msg_hash(const hash_t& hash);
 
 private:
-	bool is_synced = false;
 	bool is_connected = false;
 	std::set<std::string> peer_set;
 	std::set<std::string> self_addrs;
@@ -173,7 +172,6 @@ private:
 	std::shared_ptr<NodeAsyncClient> node;
 	std::shared_ptr<const ChainParams> params;
 
-	uint32_t node_height = 0;
 	uint32_t next_request_id = 0;
 	uint32_t verified_vdf_height = 0;
 
