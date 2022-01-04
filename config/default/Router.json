@@ -1,5 +1,7 @@
 {
 	"host": "0.0.0.0",
+	"min_sync_peers": 3,
+	"max_sync_peers": 8,
 	"max_connections": 64,
 	"max_queue_ms": 5000,
 	"stats_interval_ms": 60000,
