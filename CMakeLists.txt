@@ -5,6 +5,9 @@ set(CMAKE_CXX_STANDARD 11)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -fopenmp -Wall -Wno-unused-function")
 
+set(LIBBECH32_BUILD_GOOGLETEST OFF)
+set(LIBBECH32_BUILD_RAPIDCHECK OFF)
+
 add_subdirectory(vnx-base)
 add_subdirectory(vnx-addons)
 add_subdirectory(libbech32)
