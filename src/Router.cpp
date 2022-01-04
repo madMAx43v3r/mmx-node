@@ -532,6 +532,9 @@ void Router::query()
 						major_count = entry.second;
 					}
 				}
+				if(major_count > 0 && major_hash == fork_check.our_hash) {
+					log(INFO) << "A majority of " << major_count << " / " << fork_check.request_map.size() << " peers agree at height " << fork_check.height;
+				}
 				if(major_count >= min_sync_peers && major_hash != fork_check.our_hash)
 				{
 					log(WARN) << "We forked from the network, a majority of "
@@ -540,9 +543,6 @@ void Router::query()
 					fork_check.hash_count.clear();
 				}
 				else {
-					if(major_count) {
-						log(INFO) << "A majority of " << major_count << " / " << fork_check.request_map.size() << " peers agree at height " << fork_check.height;
-					}
 					const auto height = *sync_height - params->finality_delay;
 					node->get_block_hash(height,
 						[this, height](const vnx::optional<hash_t>& hash) {
