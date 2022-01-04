@@ -4,7 +4,7 @@ mkdir -p build
 
 cd build
 
-cmake -D CMAKE_CXX_FLAGS="-g -fmax-errors=1" -DARITH="easy" -DBUILD_BLS_PYTHON_BINDINGS=false $@ ..
+cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fmax-errors=1" $@ ..
 
 make -j8
 
