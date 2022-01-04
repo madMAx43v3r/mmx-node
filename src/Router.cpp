@@ -534,13 +534,14 @@ void Router::query()
 				}
 				if(major_count >= min_sync_peers && major_hash != fork_check.our_hash)
 				{
-					log(WARN) << "We forked from the network, a majority of " << major_count << " peers disagree at height " << fork_check.height << "!";
+					log(WARN) << "We forked from the network, a majority of "
+							<< major_count << " / " << fork_check.request_map.size() << " peers disagree at height " << fork_check.height << "!";
 					node->start_sync();
 					fork_check.hash_count.clear();
 				}
 				else {
 					if(major_count) {
-						log(INFO) << "A majority of " << major_count << " peers agree at height " << fork_check.height;
+						log(INFO) << "A majority of " << major_count << " / " << fork_check.request_map.size() << " peers agree at height " << fork_check.height;
 					}
 					const auto height = *sync_height - params->finality_delay;
 					node->get_block_hash(height,
