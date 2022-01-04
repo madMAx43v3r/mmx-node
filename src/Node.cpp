@@ -1095,10 +1095,6 @@ void Node::start_sync(const vnx::bool_t& force)
 	sync_retry = 0;
 	is_synced = false;
 
-	// revert to root and clear all forks
-	while(revert());
-	fork_tree.clear();
-
 	try {
 		TimeLordClient timelord(timelord_name);
 		timelord.stop_vdf();
