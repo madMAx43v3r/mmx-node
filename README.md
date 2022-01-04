@@ -138,6 +138,10 @@ To set a custom storage path for wallet files create/edit `config/local/Wallet.j
 }
 ```
 
+To disable the `TimeLord` specify `--timelord 0` on the command line.
+Alternatively, you can also disable it by default: `echo false > config/local/timelord`.
+If you have a slow CPU this is recommended and maybe even needed to stay in sync.
+
 Any config changes require a node restart to become effective.
 
 ### Reducing network traffic
@@ -162,10 +166,6 @@ screen -S node
 <Ctrl+A> + D (to detach)
 screen -r node (to attach again)
 ```
-
-To disable the `TimeLord` specify `--timelord 0` on the command line.
-Alternatively, you can also disable it by default: `echo false > config/local/timelord`.
-If you have a slow CPU this is recommended and maybe even needed to stay in sync.
 
 ### Recover from forking
 
