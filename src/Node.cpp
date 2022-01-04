@@ -613,7 +613,9 @@ void Node::handle(std::shared_ptr<const ProofResponse> value)
 			log(DEBUG) << "Got new best proof for height " << request->height << " with score " << value->score;
 		}
 		catch(const std::exception& ex) {
-			log(WARN) << "Got invalid proof: " << ex.what();
+			if(is_synced) {
+				log(WARN) << "Got invalid proof: " << ex.what();
+			}
 		}
 	}
 }
