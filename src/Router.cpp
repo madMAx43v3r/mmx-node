@@ -243,12 +243,12 @@ void Router::handle(std::shared_ptr<const ProofResponse> value)
 	}
 }
 
-uint32_t Router::send_request(uint64_t client, std::shared_ptr<const vnx::Value> method)
+uint32_t Router::send_request(uint64_t client, std::shared_ptr<const vnx::Value> method, bool reliable)
 {
 	auto req = Request::create();
 	req->id = next_request_id++;
 	req->method = method;
-	send_to(client, req);
+	send_to(client, req, reliable);
 	return req->id;
 }
 
@@ -512,16 +512,55 @@ void Router::connect()
 void Router::query()
 {
 	const auto now_ms = vnx::get_wall_time_millis();
-
-	auto req = Request::create();
-	req->id = next_request_id++;
-	req->method = Node_get_synced_height::create();
-
-	for(auto& entry : peer_map) {
-		auto& peer = entry.second;
-		peer.last_query_ms = now_ms;
-		send_to(peer, req);
+	{
+		auto req = Request::create();
+		req->id = next_request_id++;
+		req->method = Node_get_synced_height::create();
+		send_all(req, false);
 	}
+	last_query_ms = now_ms;
+
+	// check if we forked off
+	node->get_synced_height(
+		[this](const vnx::optional<uint32_t>& sync_height) {
+			if(sync_height) {
+				hash_t major_hash;
+				size_t major_count = 0;
+				for(const auto& entry : fork_check.hash_count) {
+					if(entry.second > major_count) {
+						major_hash = entry.first;
+						major_count = entry.second;
+					}
+				}
+				if(major_count >= min_sync_peers && major_hash != fork_check.our_hash)
+				{
+					log(WARN) << "We forked from the network, a majority of " << major_count << " peers disagree at height " << fork_check.height << "!";
+					node->start_sync();
+					fork_check.hash_count.clear();
+				}
+				else {
+					if(major_count) {
+						log(INFO) << "A majority of " << major_count << " peers agree at height " << fork_check.height;
+					}
+					const auto height = *sync_height - params->finality_delay;
+					node->get_block_hash(height,
+						[this, height](const vnx::optional<hash_t>& hash) {
+							if(hash) {
+								fork_check.height = height;
+								fork_check.our_hash = *hash;
+								fork_check.hash_count.clear();
+								fork_check.request_map.clear();
+								auto req = Node_get_block_hash::create();
+								req->height = height;
+								for(const auto client : synced_peers) {
+									const auto id = send_request(client, req);
+									fork_check.request_map[id] = client;
+								}
+							}
+						});
+				}
+			}
+		});
 }
 
 void Router::discover()
@@ -531,7 +570,7 @@ void Router::discover()
 	auto req = Request::create();
 	req->id = next_request_id++;
 	req->method = method;
-	send_all(req);
+	send_all(req, false);
 }
 
 void Router::save_peers()
@@ -661,29 +700,39 @@ void Router::relay(uint64_t source, std::shared_ptr<const vnx::Value> msg)
 {
 	for(auto& entry : peer_map) {
 		auto& peer = entry.second;
-		if(peer.is_blocked) {
-			switch(msg->get_type_code()->type_hash) {
-				case Block::VNX_TYPE_ID: block_drop_counter++; break;
-				case Transaction::VNX_TYPE_ID: tx_drop_counter++; break;
-				case ProofOfTime::VNX_TYPE_ID: vdf_drop_counter++; break;
-			}
-			drop_counter++;
-		}
-		else if(entry.first != source) {
-			send_to(peer, msg);
+		if(entry.first != source) {
+			send_to(peer, msg, false);
 		}
 	}
 }
 
-void Router::send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg)
+void Router::send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg, bool reliable)
 {
 	if(auto peer = find_peer(client)) {
-		send_to(*peer, msg);
+		send_to(*peer, msg, reliable);
 	}
 }
 
-void Router::send_to(peer_t& peer, std::shared_ptr<const vnx::Value> msg)
+void Router::send_to(peer_t& peer, std::shared_ptr<const vnx::Value> msg, bool reliable)
 {
+	if(peer.is_blocked && !reliable) {
+		switch(msg->get_type_code()->type_hash) {
+			case Block::VNX_TYPE_ID: block_drop_counter++; break;
+			case Transaction::VNX_TYPE_ID: tx_drop_counter++; break;
+			case ProofOfTime::VNX_TYPE_ID: vdf_drop_counter++; break;
+			case ProofResponse::VNX_TYPE_ID: proof_drop_counter++; break;
+			case Request::VNX_TYPE_ID:
+				if(auto req = std::dynamic_pointer_cast<const Request>(msg)) {
+					auto ret = Return::create();
+					ret->id = req->id;
+					ret->result = vnx::OverflowException::create();
+					add_task(std::bind(&Router::on_return, this, peer.client, ret));
+				}
+				break;
+		}
+		drop_counter++;
+		return;
+	}
 	auto& out = peer.out;
 	vnx::write(out, uint16_t(vnx::CODE_UINT32));
 	vnx::write(out, uint32_t(0));
@@ -702,10 +751,10 @@ void Router::send_to(peer_t& peer, std::shared_ptr<const vnx::Value> msg)
 	Super::send_to(peer.client, buffer);
 }
 
-void Router::send_all(std::shared_ptr<const vnx::Value> msg)
+void Router::send_all(std::shared_ptr<const vnx::Value> msg, bool reliable)
 {
 	for(auto& entry : peer_map) {
-		send_to(entry.second, msg);
+		send_to(entry.second, msg, reliable);
 	}
 }
 
@@ -861,10 +910,22 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 						send_request(client, Node_get_height::create());
 					}
 					const auto now_ms = vnx::get_wall_time_millis();
-					if(peer->last_query_ms) {
-						peer->ping_ms = now_ms - peer->last_query_ms;
+					if(last_query_ms) {
+						peer->ping_ms = now_ms - last_query_ms;
 					}
 					peer->last_receive_ms = now_ms;
+				}
+			}
+			break;
+		case Node_get_block_hash_return::VNX_TYPE_ID:
+			if(auto value = std::dynamic_pointer_cast<const Node_get_block_hash_return>(result)) {
+				auto iter = fork_check.request_map.find(msg->id);
+				if(iter != fork_check.request_map.end()) {
+					if(iter->second == client) {
+						if(auto hash = value->_ret_0) {
+							fork_check.hash_count[*hash]++;
+						}
+					}
 				}
 			}
 			break;

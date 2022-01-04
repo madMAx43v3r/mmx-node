@@ -57,7 +57,6 @@ private:
 		uint32_t height = 0;
 		uint32_t msg_size = 0;
 		int32_t ping_ms = 0;
-		int64_t last_query_ms = 0;
 		int64_t last_receive_ms = 0;
 		int64_t connected_since_ms = 0;
 		uint64_t client = 0;
@@ -107,7 +106,7 @@ private:
 
 	void print_stats() override;
 
-	uint32_t send_request(uint64_t client, std::shared_ptr<const vnx::Value> method);
+	uint32_t send_request(uint64_t client, std::shared_ptr<const vnx::Value> method, bool reliable = true);
 
 	void on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> proof);
 
@@ -119,11 +118,11 @@ private:
 
 	void relay(uint64_t source, std::shared_ptr<const vnx::Value> msg);
 
-	void send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg);
+	void send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg, bool reliable = true);
 
-	void send_to(peer_t& peer, std::shared_ptr<const vnx::Value> msg);
+	void send_to(peer_t& peer, std::shared_ptr<const vnx::Value> msg, bool reliable = true);
 
-	void send_all(std::shared_ptr<const vnx::Value> msg);
+	void send_all(std::shared_ptr<const vnx::Value> msg, bool reliable = true);
 
 	template<typename R, typename T>
 	void send_result(uint64_t client, uint32_t id, const T& value);
@@ -168,12 +167,20 @@ private:
 
 	mutable std::unordered_map<vnx::request_id_t, sync_job_t> sync_jobs;
 
+	struct {
+		uint32_t height = -1;
+		hash_t our_hash;
+		std::unordered_map<hash_t, size_t> hash_count;
+		std::unordered_map<uint32_t, uint64_t> request_map;
+	} fork_check;
+
 	vnx::ThreadPool* threads = nullptr;
 	std::shared_ptr<NodeAsyncClient> node;
 	std::shared_ptr<const ChainParams> params;
 
 	uint32_t next_request_id = 0;
 	uint32_t verified_vdf_height = 0;
+	int64_t last_query_ms = 0;
 
 	size_t tx_counter = 0;
 	size_t vdf_counter = 0;
