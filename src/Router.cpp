@@ -496,7 +496,7 @@ void Router::connect()
 			threads->add_task(std::bind(&Router::connect_task, this, address));
 		}
 	}
-	else if(synced_peers.size() > num_peers_out)
+	else if(synced_peers.size() > num_peers_out + 2)
 	{
 		for(auto client : get_subset(synced_peers, synced_peers.size() - num_peers_out)) {
 			if(auto peer = find_peer(client)) {
