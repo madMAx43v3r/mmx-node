@@ -47,7 +47,7 @@ void Node::main()
 		point.recv_time = vnx::get_wall_time_micros();
 		verified_vdfs[0] = point;
 	}
-	threads = std::make_shared<vnx::ThreadPool>(1);
+	vdf_threads = std::make_shared<vnx::ThreadPool>(1);
 
 	if(opencl_device >= 0) {
 		const auto devices = automy::basic_opencl::get_devices();
@@ -129,7 +129,7 @@ void Node::main()
 	vnx::write(block_chain->out, nullptr);
 	block_chain->close();
 
-	threads->close();
+	vdf_threads->close();
 }
 
 std::shared_ptr<const ChainParams> Node::get_params() const
@@ -1692,7 +1692,7 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const vdf_point_
 			}
 		}
 	}
-	threads->add_task(std::bind(&Node::verify_vdf_task, this, proof, prev));
+	vdf_threads->add_task(std::bind(&Node::verify_vdf_task, this, proof, prev));
 }
 
 void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain, const hash_t& begin) const
