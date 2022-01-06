@@ -355,7 +355,6 @@ void Router::update()
 				}
 			}
 			peer.tx_queue.pop();
-			continue;
 		}
 	}
 	for(auto& entry : farmer_credits) {
