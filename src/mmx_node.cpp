@@ -38,9 +38,11 @@ int main(int argc, char** argv)
 		return -1;
 	}
 	bool with_farmer = true;
+	bool with_wallet = true;
 	bool with_timelord = true;
 	std::string endpoint = ":11331";
 	std::string root_path;
+	vnx::read_config("wallet", with_wallet);
 	vnx::read_config("farmer", with_farmer);
 	vnx::read_config("timelord", with_timelord);
 	vnx::read_config("endpoint", endpoint);
@@ -81,7 +83,7 @@ int main(int argc, char** argv)
 		vnx::Handle<mmx::TimeLord> module = new mmx::TimeLord("TimeLord");
 		module.start_detached();
 	}
-	{
+	if(with_farmer || with_wallet) {
 		vnx::Handle<mmx::Wallet> module = new mmx::Wallet("Wallet");
 		module.start_detached();
 	}
