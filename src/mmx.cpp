@@ -43,7 +43,7 @@ int main(int argc, char** argv)
 
 	std::string module;
 	std::string command;
-	std::string node_url = "127.0.0.1:11331";
+	std::string node_url = ":11331";
 	std::string file_name;
 	std::string target_addr;
 	std::string contract_addr;
