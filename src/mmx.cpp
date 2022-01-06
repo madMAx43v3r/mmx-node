@@ -413,8 +413,44 @@ int main(int argc, char** argv)
 					std::cerr << "Help: mmx node get [height | tx | balance | amount | history | block | header | peers | netspace | supply]" << std::endl;
 				}
 			}
+			else if(command == "fetch")
+			{
+				std::string subject;
+				vnx::read_config("$3", subject);
+
+				if(subject == "block" || subject == "header")
+				{
+					int64_t height = 0;
+					std::string from_peer;
+					vnx::read_config("$4", from_peer);
+					vnx::read_config("$5", height);
+
+					if(from_peer.empty()) {
+						vnx::log_error() << "Missing peer argument: node fetch <peer> [height]";
+						goto failed;
+					}
+					if(height < 0) {
+						vnx::log_error() << "Invalid height: " << height;
+						goto failed;
+					}
+					const auto block = router.fetch_block_at(from_peer, height);
+					{
+						std::stringstream ss;
+						vnx::PrettyPrinter printer(ss);
+						if(subject == "header") {
+							vnx::accept(printer, block ? block->get_header() : nullptr);
+						} else {
+							vnx::accept(printer, block);
+						}
+						std::cout << ss.str() << std::endl;
+					}
+				}
+				else {
+					std::cerr << "Help: mmx node fetch [block | header]" << std::endl;
+				}
+			}
 			else {
-				std::cerr << "Help: mmx node [info | peers | tx | get | balance | sync]" << std::endl;
+				std::cerr << "Help: mmx node [info | peers | tx | get | fetch | balance | sync]" << std::endl;
 			}
 		}
 		else if(module == "farm") {
