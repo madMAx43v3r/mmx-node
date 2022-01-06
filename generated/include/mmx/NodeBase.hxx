@@ -47,6 +47,7 @@ public:
 	::vnx::TopicPtr output_challenges = "harvester.challenges";
 	int32_t max_queue_ms = 10000;
 	int32_t update_interval_ms = 1000;
+	int32_t sync_loss_delay = 60;
 	uint32_t max_history = 1000;
 	uint32_t replay_height = -1;
 	uint32_t max_sync_jobs = 64;
