@@ -70,6 +70,8 @@ protected:
 
 	std::vector<stxo_entry_t> get_stxo_list(const std::vector<addr_t>& addresses) const override;
 
+	void on_stuck_timeout();
+
 	void start_sync(const vnx::bool_t& force) override;
 
 	void http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
@@ -222,6 +224,8 @@ private:
 	uint32_t sync_update = 0;								// height of last update
 	uint32_t sync_retry = 0;
 	std::set<uint32_t> sync_pending;						// set of heights
+
+	std::shared_ptr<vnx::Timer> stuck_timer;
 	std::shared_ptr<vnx::Timer> update_timer;
 
 	std::shared_ptr<const ChainParams> params;

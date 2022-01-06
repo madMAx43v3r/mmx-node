@@ -121,6 +121,7 @@ void Node::main()
 	subscribe(input_harvester_proof, max_queue_ms);
 
 	update_timer = set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
+	stuck_timer = set_timer_millis(sync_loss_delay * 1000, std::bind(&Node::on_stuck_timeout, this));
 
 	update();
 
@@ -767,6 +768,7 @@ void Node::update()
 
 	if(!prev_peak || peak->hash != prev_peak->hash)
 	{
+		stuck_timer->reset();
 		const auto fork = find_fork(peak->hash);
 		log(INFO) << "New peak at height " << peak->height << " with score " << (fork ? std::to_string(fork->proof_score) : "?")
 				<< (forked_at ? " (forked at " + std::to_string(forked_at->height) + ")" : "");
@@ -1086,6 +1088,14 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 			<< ", nominal = " << block_reward / pow(10, params->decimals) << " MMX"
 			<< ", fees = " << total_fees / pow(10, params->decimals) << " MMX";
 	return true;
+}
+
+void Node::on_stuck_timeout()
+{
+	if(is_synced) {
+		log(WARN) << "Lost sync due to progress timeout!";
+	}
+	start_sync(false);
 }
 
 void Node::start_sync(const vnx::bool_t& force)

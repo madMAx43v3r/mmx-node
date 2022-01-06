@@ -391,26 +391,6 @@ void Router::update()
 		}
 	}
 
-	// check if we lost sync due to height difference
-	node->get_synced_height(
-		[this](const vnx::optional<uint32_t>& sync_height) {
-			if(sync_height) {
-				size_t num_ahead = 0;
-				const auto height = *sync_height;
-				for(const auto& entry : peer_map) {
-					const auto& peer = entry.second;
-					if(peer.is_synced && peer.height > height && peer.height - height > params->finality_delay) {
-						num_ahead++;
-					}
-				}
-				if(num_ahead > synced_peers.size() / 2 && synced_peers.size() >= min_sync_peers)
-				{
-					log(WARN) << "Lost sync with network due to height difference!";
-					node->start_sync();
-				}
-			}
-		});
-
 	if(synced_peers.size() >= min_sync_peers)
 	{
 		// check for sync job timeouts
