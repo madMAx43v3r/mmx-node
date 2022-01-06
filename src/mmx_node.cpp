@@ -93,13 +93,15 @@ int main(int argc, char** argv)
 		vnx::Handle<mmx::Harvester> module = new mmx::Harvester("Harvester");
 		module.start_detached();
 	}
+
+	while(vnx::do_run())
 	{
 		vnx::Handle<mmx::Node> module = new mmx::Node("Node");
 		module->storage_path = root_path + module->storage_path;
-		module.start_detached();
+		module.start();
+		module.wait();
 	}
-
-	vnx::wait();
+	vnx::close();
 
 	mmx::secp256k1_free();
 	automy::basic_opencl::release_context();

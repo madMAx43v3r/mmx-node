@@ -792,6 +792,13 @@ void Node::update()
 			sync_pos = sync_peak;
 			sync_peak = -1;
 			sync_retry++;
+		} else if(peak->height + params->finality_delay < sync_peak - 1) {
+			log(ERROR) << "Sync failed, it appears we have forked from the network a while ago.";
+			const auto replay_height = peak->height - std::min<uint32_t>(1000, peak->height);
+			vnx::write_config("Node.replay_height", replay_height);
+			log(INFO) << "Restarting with --Node.replay_height " << replay_height;
+			exit();
+			return;
 		} else {
 			is_synced = true;
 			log(INFO) << "Finished sync at height " << peak->height;
