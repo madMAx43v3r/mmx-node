@@ -29,7 +29,9 @@ protected:
 
 	void discover() override;
 
-	vnx::Hash64 get_id() const override;
+	hash_t get_id() const override;
+
+	std::pair<pubkey_t, signature_t> sign_msg(const hash_t& msg) const override;
 
 	std::vector<std::string> get_peers(const uint32_t& max_count) const override;
 
@@ -38,6 +40,8 @@ protected:
 	std::vector<std::string> get_connected_peers() const override;
 
 	std::shared_ptr<const PeerInfo> get_peer_info() const override;
+
+	std::vector<std::pair<std::string, uint32_t>> get_farmer_credits() const override;
 
 	void get_blocks_at_async(const uint32_t& height, const vnx::request_id_t& request_id) const override;
 
@@ -56,14 +60,19 @@ private:
 		bool is_outbound = false;
 		uint32_t height = 0;
 		uint32_t msg_size = 0;
+		uint32_t credits = 0;
+		uint32_t tx_credits = 0;
 		int32_t ping_ms = 0;
 		int64_t last_receive_ms = 0;
 		int64_t connected_since_ms = 0;
 		uint64_t client = 0;
 		uint64_t bytes_send = 0;
 		uint64_t bytes_recv = 0;
-		vnx::Hash64 node_id;
+		hash_t challenge;
 		std::string address;
+		vnx::optional<hash_t> node_id;
+		std::queue<std::shared_ptr<const Transaction>> tx_queue;
+
 		vnx::Memory data;
 		vnx::Buffer buffer;
 		vnx::BufferInputStream in_stream;
@@ -71,6 +80,13 @@ private:
 		vnx::TypeInput in;
 		vnx::TypeOutput out;
 		peer_t() : in_stream(&buffer), out_stream(&data), in(&in_stream), out(&out_stream) {}
+	};
+
+	struct hash_info_t {
+		std::vector<uint64_t> received_from;
+		bool is_valid = false;
+		bool is_rewarded = false;
+		bool did_relay = false;
 	};
 
 	enum sync_state_e {
@@ -98,7 +114,7 @@ private:
 
 	void query();
 
-	void save_peers();
+	void save_data();
 
 	void add_peer(const std::string& address, const int sock);
 
@@ -151,10 +167,16 @@ private:
 
 	peer_t* find_peer(uint64_t client);
 
-	bool add_msg_hash(const hash_t& hash);
+	bool relay_msg_hash(const hash_t& hash, uint32_t credits = 0);
+
+	bool receive_msg_hash(const hash_t& hash, uint64_t client, uint32_t credits = 0);
 
 private:
 	bool is_connected = false;
+
+	hash_t node_id;
+	skey_t node_sk;
+	pubkey_t node_key;
 	std::set<std::string> peer_set;
 	std::set<std::string> self_addrs;
 	std::set<std::string> connecting_peers;
@@ -162,8 +184,10 @@ private:
 	std::set<uint64_t> synced_peers;
 	std::unordered_map<uint64_t, peer_t> peer_map;
 
-	std::queue<hash_t> seen_hash_queue;
-	std::unordered_set<hash_t> seen_hashes;
+	std::queue<hash_t> hash_queue;
+	std::unordered_map<hash_t, hash_info_t> hash_info;
+
+	std::map<hash_t, uint32_t> farmer_credits;
 
 	mutable std::unordered_map<vnx::request_id_t, sync_job_t> sync_jobs;
 

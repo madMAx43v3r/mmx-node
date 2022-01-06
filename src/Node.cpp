@@ -580,7 +580,7 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 
 void Node::handle(std::shared_ptr<const ProofResponse> value)
 {
-	if(!value->proof || !value->request || value->score >= params->score_threshold) {
+	if(!value->proof || !value->request) {
 		return;
 	}
 	const auto root = get_root();
@@ -590,32 +590,35 @@ void Node::handle(std::shared_ptr<const ProofResponse> value)
 	}
 	const auto challenge = request->challenge;
 
-	auto iter = proof_map.find(challenge);
-	if(iter == proof_map.end() || value->score < iter->second->score) {
-		try {
-			const auto diff_block = find_diff_header(root, request->height - root->height);
-			if(!diff_block) {
-				throw std::logic_error("cannot verify");
-			}
-			if(request->space_diff != diff_block->space_diff) {
-				throw std::logic_error("invalid space_diff");
-			}
-			const auto score = verify_proof(value->proof, challenge, diff_block->space_diff);
-			if(score != value->score) {
-				throw std::logic_error("score mismatch");
-			}
+	try {
+		const auto diff_block = find_diff_header(root, request->height - root->height);
+		if(!diff_block) {
+			throw std::logic_error("cannot verify");
+		}
+		if(request->space_diff != diff_block->space_diff) {
+			throw std::logic_error("invalid space_diff");
+		}
+		auto response = vnx::clone(value);
+		response->score = verify_proof(value->proof, challenge, diff_block->space_diff);
+
+		if(response->score >= params->score_threshold) {
+			throw std::logic_error("invalid score");
+		}
+		auto iter = proof_map.find(challenge);
+		if(iter == proof_map.end() || response->score < iter->second->score)
+		{
 			if(iter == proof_map.end()) {
 				challenge_map.emplace(request->height, challenge);
 			}
-			proof_map[challenge] = value;
-			publish(value, output_verified_proof);
+			proof_map[challenge] = response;
 
-			log(DEBUG) << "Got new best proof for height " << request->height << " with score " << value->score;
+			log(DEBUG) << "Got new best proof for height " << request->height << " with score " << response->score;
 		}
-		catch(const std::exception& ex) {
-			if(is_synced) {
-				log(WARN) << "Got invalid proof: " << ex.what();
-			}
+		publish(response, output_verified_proof);
+	}
+	catch(const std::exception& ex) {
+		if(is_synced) {
+			log(WARN) << "Got invalid proof: " << ex.what();
 		}
 	}
 }

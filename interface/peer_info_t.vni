@@ -4,6 +4,8 @@ struct peer_info_t {
 	
 	string address;
 	
+	int credits;
+	int tx_credits;
 	int ping_ms;
 	
 	uint height;

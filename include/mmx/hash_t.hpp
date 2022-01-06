@@ -28,6 +28,9 @@ struct hash_t : bytes_t<32> {
 	template<size_t N>
 	explicit hash_t(const std::array<uint8_t, N>& data);
 
+	template<size_t N>
+	explicit hash_t(const bytes_t<N>& data);
+
 	explicit hash_t(const void* data, const size_t num_bytes);
 
 	uint256_t to_uint256() const;
@@ -35,6 +38,8 @@ struct hash_t : bytes_t<32> {
 	static hash_t ones();
 
 	static hash_t empty();
+
+	static hash_t random();
 
 	static hash_t from_bytes(const std::vector<uint8_t>& bytes);
 
@@ -57,6 +62,12 @@ hash_t::hash_t(const std::vector<uint8_t>& data)
 
 template<size_t N>
 hash_t::hash_t(const std::array<uint8_t, N>& data)
+	:	hash_t(data.data(), data.size())
+{
+}
+
+template<size_t N>
+hash_t::hash_t(const bytes_t<N>& data)
 	:	hash_t(data.data(), data.size())
 {
 }
