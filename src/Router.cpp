@@ -708,9 +708,12 @@ void Router::query()
 								fork_check.request_map.clear();
 								auto req = Node_get_block_hash::create();
 								req->height = height;
-								for(const auto client : synced_peers) {
-									const auto id = send_request(client, req);
-									fork_check.request_map[id] = client;
+								for(auto& entry : peer_map) {
+									auto& peer = entry.second;
+									if(peer.is_synced && peer.is_outbound) {
+										const auto id = send_request(peer, req);
+										fork_check.request_map[id] = peer.client;
+									}
 								}
 							}
 						});
