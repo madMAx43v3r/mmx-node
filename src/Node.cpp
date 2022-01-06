@@ -1139,7 +1139,8 @@ void Node::sync_more()
 		sync_update = sync_pos;
 		log(INFO) << "Starting sync at height " << sync_pos;
 	}
-	while(sync_pending.size() < max_sync_jobs)
+	const auto max_pending = !sync_retry ? max_sync_jobs : 1;
+	while(sync_pending.size() < max_pending)
 	{
 		if(sync_pos >= sync_peak) {
 			break;
