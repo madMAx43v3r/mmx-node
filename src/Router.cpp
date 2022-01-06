@@ -260,6 +260,15 @@ void Router::get_blocks_at_async(const uint32_t& height, const vnx::request_id_t
 	((Router*)this)->process();
 }
 
+void Router::fetch_block_at_async(const std::string& address, const uint32_t& height, const vnx::request_id_t& request_id) const
+{
+	auto& job = fetch_jobs[request_id];
+	job.height = height;
+	job.from_peer = address;
+	job.start_time_ms = vnx::get_wall_time_millis();
+	((Router*)this)->process();
+}
+
 void Router::handle(std::shared_ptr<const Block> block)
 {
 	if(!block->proof) {
@@ -319,6 +328,15 @@ void Router::handle(std::shared_ptr<const ProofResponse> value)
 		const auto farmer_id = hash_t(proof->farmer_key);
 		farmer_credits[farmer_id] += proof_credits;
 	}
+}
+
+uint32_t Router::send_request(peer_t& peer, std::shared_ptr<const vnx::Value> method, bool reliable)
+{
+	auto req = Request::create();
+	req->id = next_request_id++;
+	req->method = method;
+	send_to(peer, req, reliable);
+	return req->id;
 }
 
 uint32_t Router::send_request(uint64_t client, std::shared_ptr<const vnx::Value> method, bool reliable)
@@ -409,6 +427,17 @@ void Router::update()
 				log(WARN) << "Timeout on sync job for height " << job.height << ", trying again ...";
 			}
 		}
+	}
+
+	// check for fetch job timeouts
+	for(auto iter = fetch_jobs.begin(); iter != fetch_jobs.end();) {
+		const auto& job = iter->second;
+		if(now_ms - job.start_time_ms > fetch_timeout_ms) {
+			vnx_async_return_ex_what(iter->first, "fetch timeout");
+			iter = fetch_jobs.erase(iter);
+			continue;
+		}
+		iter++;
 	}
 
 	process();
@@ -549,6 +578,46 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				iter = sync_jobs.erase(iter);
 				continue;
 			}
+		}
+		iter++;
+	}
+	for(auto iter = fetch_jobs.begin(); iter != fetch_jobs.end();)
+	{
+		auto& job = iter->second;
+		if(ret) {
+			// check for any returns
+			if(job.request_map.count(ret->id)) {
+				if(auto result = std::dynamic_pointer_cast<const Node_get_block_at_return>(ret->result)) {
+					fetch_block_at_async_return(iter->first, result->_ret_0);
+				}
+				else if(auto result = std::dynamic_pointer_cast<const vnx::Exception>(ret->result)) {
+					vnx_async_return(iter->first, result);
+				}
+				else {
+					vnx_async_return_ex_what(iter->first, "request failed");
+				}
+				iter = fetch_jobs.erase(iter);
+				did_consume = true;
+				continue;
+			}
+		}
+		if(job.request_map.empty()) {
+			peer_t* peer = nullptr;
+			for(auto& entry : peer_map) {
+				if(entry.second.address == job.from_peer) {
+					peer = &entry.second;
+					break;
+				}
+			}
+			if(!peer) {
+				vnx_async_return_ex_what(iter->first, "no such peer");
+				iter = fetch_jobs.erase(iter);
+				continue;
+			}
+			auto req = Node_get_block_at::create();
+			req->height = job.height;
+			const auto id = send_request(*peer, req);
+			job.request_map[id] = peer->client;
 		}
 		iter++;
 	}
@@ -1249,12 +1318,12 @@ void Router::on_connect(uint64_t client, const std::string& address)
 	peer.connected_since_ms = vnx::get_wall_time_millis();
 	peer_set.insert(address);
 
-	send_request(client, Router_get_id::create());
-	send_request(client, Node_get_synced_height::create());
+	send_request(peer, Router_get_id::create());
+	send_request(peer, Node_get_synced_height::create());
 
 	auto req = Router_sign_msg::create();
 	req->msg = peer.challenge;
-	send_request(client, req);
+	send_request(peer, req);
 
 	log(INFO) << "Connected to peer " << peer.address;
 }

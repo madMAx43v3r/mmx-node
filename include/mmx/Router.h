@@ -45,6 +45,8 @@ protected:
 
 	void get_blocks_at_async(const uint32_t& height, const vnx::request_id_t& request_id) const override;
 
+	void fetch_block_at_async(const std::string& address, const uint32_t& height, const vnx::request_id_t& request_id) const override;
+
 	void handle(std::shared_ptr<const Block> value);
 
 	void handle(std::shared_ptr<const Transaction> value);
@@ -106,6 +108,14 @@ private:
 		std::unordered_map<hash_t, std::shared_ptr<const Block>> blocks;
 	};
 
+	struct fetch_job_t {
+		uint32_t height = 0;
+		std::string from_peer;
+		vnx::optional<hash_t> hash;
+		int64_t start_time_ms = 0;
+		std::unordered_map<uint32_t, uint64_t> request_map;				// [request id, client]
+	};
+
 	void update();
 
 	bool process(std::shared_ptr<const Return> ret = nullptr);
@@ -121,6 +131,8 @@ private:
 	void connect_task(const std::string& peer) noexcept;
 
 	void print_stats() override;
+
+	uint32_t send_request(peer_t& peer, std::shared_ptr<const vnx::Value> method, bool reliable = true);
 
 	uint32_t send_request(uint64_t client, std::shared_ptr<const vnx::Value> method, bool reliable = true);
 
@@ -190,6 +202,7 @@ private:
 	std::map<hash_t, uint32_t> farmer_credits;
 
 	mutable std::unordered_map<vnx::request_id_t, sync_job_t> sync_jobs;
+	mutable std::unordered_map<vnx::request_id_t, fetch_job_t> fetch_jobs;
 
 	struct {
 		uint32_t height = -1;
