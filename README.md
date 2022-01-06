@@ -51,7 +51,7 @@ To show the first 10 addresses: `mmx wallet show 10`
 
 To get a specific receiving address: `mmx wallet get address <index>`
 
-To show wallet activity since height: `mmx wallet log <height>`
+To show wallet activity since height: `mmx wallet log <since>`
 
 To show wallet activity for last N heights: `mmx wallet log -N`
 
@@ -65,7 +65,9 @@ To check on the peers: `mmx node peers`
 
 To check on a transaction: `mmx node tx <txid>`
 
-To check the balance of any address: `mmx node balance <address>`
+To check the balance of an address: `mmx node balance <address>`
+
+To check the history of an address: `mmx node history <address> [since]`
 
 To dump a transaction: `mmx node get tx <txid>`
 

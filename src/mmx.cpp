@@ -18,6 +18,21 @@
 #include <vnx/Proxy.h>
 
 
+void show_history(const std::vector<mmx::tx_entry_t>& history, std::shared_ptr<const mmx::ChainParams> params)
+{
+	for(const auto& entry : history) {
+		std::cout << "[" << entry.height << "] ";
+		switch(entry.type) {
+			case mmx::tx_type_e::SEND:    std::cout << "SEND    "; break;
+			case mmx::tx_type_e::RECEIVE: std::cout << "RECEIVE "; break;
+			case mmx::tx_type_e::REWARD:  std::cout << "REWARD  "; break;
+			default: std::cout << "????    "; break;
+		}
+		std::cout << entry.amount / pow(10, params->decimals) << " MMX (" << entry.amount << ") -> " << entry.address << std::endl;
+	}
+}
+
+
 int main(int argc, char** argv)
 {
 	mmx::secp256k1_init();
@@ -164,16 +179,7 @@ int main(int argc, char** argv)
 				int64_t since = 0;
 				vnx::read_config("$3", since);
 
-				for(const auto& entry : wallet.get_history(index, since)) {
-					std::cout << "[" << entry.height << "] ";
-					switch(entry.type) {
-						case mmx::tx_type_e::SEND:    std::cout << "SEND    "; break;
-						case mmx::tx_type_e::RECEIVE: std::cout << "RECEIVE "; break;
-						case mmx::tx_type_e::REWARD:  std::cout << "REWARD  "; break;
-						default: std::cout << "????    "; break;
-					}
-					std::cout << entry.amount / pow(10, params->decimals) << " MMX (" << entry.amount << ") -> " << entry.address << std::endl;
-				}
+				show_history(wallet.get_history(index, since), params);
 			}
 			else if(command == "create")
 			{
@@ -230,6 +236,18 @@ int main(int argc, char** argv)
 					const auto hash = node.get_block_hash(height - i);
 					std::cout << "Block[" << (height - i) << "] " << (hash ? *hash : mmx::hash_t()) << std::endl;
 				}
+			}
+			else if(command == "history")
+			{
+				mmx::addr_t address;
+				if(!vnx::read_config("$3", address)) {
+					vnx::log_error() << "Missing address argument! (node history <address> [since])";
+					goto failed;
+				}
+				int64_t since = 0;
+				vnx::read_config("$4", since);
+
+				show_history(node.get_history_for({address}, since), params);
 			}
 			else if(command == "peers")
 			{
@@ -392,7 +410,7 @@ int main(int argc, char** argv)
 					std::cout << node.get_total_supply(contract) << std::endl;
 				}
 				else {
-					std::cerr << "Help: mmx node get [height | tx | balance | amount | block | header | peers | netspace | supply]" << std::endl;
+					std::cerr << "Help: mmx node get [height | tx | balance | amount | history | block | header | peers | netspace | supply]" << std::endl;
 				}
 			}
 			else {
