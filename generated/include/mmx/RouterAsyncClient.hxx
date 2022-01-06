@@ -10,7 +10,9 @@
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
-#include <vnx/Hash64.hpp>
+#include <mmx/hash_t.hpp>
+#include <mmx/pubkey_t.hpp>
+#include <mmx/signature_t.hpp>
 #include <vnx/TopicPtr.hpp>
 #include <vnx/addons/TcpServer.h>
 
@@ -64,7 +66,11 @@ public:
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_id(
-			const std::function<void(const ::vnx::Hash64&)>& _callback = std::function<void(const ::vnx::Hash64&)>(),
+			const std::function<void(const ::mmx::hash_t&)>& _callback = std::function<void(const ::mmx::hash_t&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t sign_msg(const ::mmx::hash_t& msg = ::mmx::hash_t(), 
+			const std::function<void(const std::pair<::mmx::pubkey_t, ::mmx::signature_t>&)>& _callback = std::function<void(const std::pair<::mmx::pubkey_t, ::mmx::signature_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_peers(const uint32_t& max_count = 10, 
@@ -81,6 +87,10 @@ public:
 	
 	uint64_t get_peer_info(
 			const std::function<void(std::shared_ptr<const ::mmx::PeerInfo>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::PeerInfo>)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t get_farmer_credits(
+			const std::function<void(const std::vector<std::pair<std::string, uint32_t>>&)>& _callback = std::function<void(const std::vector<std::pair<std::string, uint32_t>>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_blocks_at(const uint32_t& height = 0, 
@@ -103,11 +113,13 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_vnx_stop;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const vnx::bool_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_vnx_self_test;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_discover;
-	std::unordered_map<uint64_t, std::pair<std::function<void(const ::vnx::Hash64&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_id;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::hash_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_id;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::pair<::mmx::pubkey_t, ::mmx::signature_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_sign_msg;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::string>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_peers;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::string>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_known_peers;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::string>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_connected_peers;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::PeerInfo>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_peer_info;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::pair<std::string, uint32_t>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_farmer_credits;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::shared_ptr<const ::mmx::Block>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_blocks_at;
 	
 };

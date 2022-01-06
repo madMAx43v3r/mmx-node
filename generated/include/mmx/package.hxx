@@ -91,6 +91,8 @@ class Router_get_blocks_at;
 class Router_get_blocks_at_return;
 class Router_get_connected_peers;
 class Router_get_connected_peers_return;
+class Router_get_farmer_credits;
+class Router_get_farmer_credits_return;
 class Router_get_id;
 class Router_get_id_return;
 class Router_get_known_peers;
@@ -99,6 +101,8 @@ class Router_get_peer_info;
 class Router_get_peer_info_return;
 class Router_get_peers;
 class Router_get_peers_return;
+class Router_sign_msg;
+class Router_sign_msg_return;
 class Solution;
 class TimeInfusion;
 class TimeLordBase;
@@ -228,6 +232,8 @@ extern const vnx::TypeCode* const vnx_native_type_code_Router_get_blocks_at; ///
 extern const vnx::TypeCode* const vnx_native_type_code_Router_get_blocks_at_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Router_get_connected_peers; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Router_get_connected_peers_return; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_Router_get_farmer_credits; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_Router_get_farmer_credits_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Router_get_id; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Router_get_id_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Router_get_known_peers; ///< \private
@@ -236,6 +242,8 @@ extern const vnx::TypeCode* const vnx_native_type_code_Router_get_peer_info; ///
 extern const vnx::TypeCode* const vnx_native_type_code_Router_get_peer_info_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Router_get_peers; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Router_get_peers_return; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_Router_sign_msg; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_Router_sign_msg_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Solution; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_TimeInfusion; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_TimeLordBase; ///< \private
@@ -363,6 +371,8 @@ void read(TypeInput& in, ::mmx::Router_get_blocks_at& value, const TypeCode* typ
 void read(TypeInput& in, ::mmx::Router_get_blocks_at_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Router_get_connected_peers& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Router_get_connected_peers_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Router_get_farmer_credits& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Router_get_farmer_credits_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Router_get_id& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Router_get_id_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Router_get_known_peers& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -371,6 +381,8 @@ void read(TypeInput& in, ::mmx::Router_get_peer_info& value, const TypeCode* typ
 void read(TypeInput& in, ::mmx::Router_get_peer_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Router_get_peers& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Router_get_peers_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Router_sign_msg& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Router_sign_msg_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Solution& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::TimeInfusion& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::TimeLordBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -500,6 +512,8 @@ void write(TypeOutput& out, const ::mmx::Router_get_blocks_at& value, const Type
 void write(TypeOutput& out, const ::mmx::Router_get_blocks_at_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Router_get_connected_peers& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Router_get_connected_peers_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Router_get_farmer_credits& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Router_get_farmer_credits_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Router_get_id& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Router_get_id_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Router_get_known_peers& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -508,6 +522,8 @@ void write(TypeOutput& out, const ::mmx::Router_get_peer_info& value, const Type
 void write(TypeOutput& out, const ::mmx::Router_get_peer_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Router_get_peers& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Router_get_peers_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Router_sign_msg& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Router_sign_msg_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Solution& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::TimeInfusion& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::TimeLordBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -637,6 +653,8 @@ void read(std::istream& in, ::mmx::Router_get_blocks_at& value); ///< \private
 void read(std::istream& in, ::mmx::Router_get_blocks_at_return& value); ///< \private
 void read(std::istream& in, ::mmx::Router_get_connected_peers& value); ///< \private
 void read(std::istream& in, ::mmx::Router_get_connected_peers_return& value); ///< \private
+void read(std::istream& in, ::mmx::Router_get_farmer_credits& value); ///< \private
+void read(std::istream& in, ::mmx::Router_get_farmer_credits_return& value); ///< \private
 void read(std::istream& in, ::mmx::Router_get_id& value); ///< \private
 void read(std::istream& in, ::mmx::Router_get_id_return& value); ///< \private
 void read(std::istream& in, ::mmx::Router_get_known_peers& value); ///< \private
@@ -645,6 +663,8 @@ void read(std::istream& in, ::mmx::Router_get_peer_info& value); ///< \private
 void read(std::istream& in, ::mmx::Router_get_peer_info_return& value); ///< \private
 void read(std::istream& in, ::mmx::Router_get_peers& value); ///< \private
 void read(std::istream& in, ::mmx::Router_get_peers_return& value); ///< \private
+void read(std::istream& in, ::mmx::Router_sign_msg& value); ///< \private
+void read(std::istream& in, ::mmx::Router_sign_msg_return& value); ///< \private
 void read(std::istream& in, ::mmx::Solution& value); ///< \private
 void read(std::istream& in, ::mmx::TimeInfusion& value); ///< \private
 void read(std::istream& in, ::mmx::TimeLordBase& value); ///< \private
@@ -774,6 +794,8 @@ void write(std::ostream& out, const ::mmx::Router_get_blocks_at& value); ///< \p
 void write(std::ostream& out, const ::mmx::Router_get_blocks_at_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Router_get_connected_peers& value); ///< \private
 void write(std::ostream& out, const ::mmx::Router_get_connected_peers_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Router_get_farmer_credits& value); ///< \private
+void write(std::ostream& out, const ::mmx::Router_get_farmer_credits_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Router_get_id& value); ///< \private
 void write(std::ostream& out, const ::mmx::Router_get_id_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Router_get_known_peers& value); ///< \private
@@ -782,6 +804,8 @@ void write(std::ostream& out, const ::mmx::Router_get_peer_info& value); ///< \p
 void write(std::ostream& out, const ::mmx::Router_get_peer_info_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Router_get_peers& value); ///< \private
 void write(std::ostream& out, const ::mmx::Router_get_peers_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Router_sign_msg& value); ///< \private
+void write(std::ostream& out, const ::mmx::Router_sign_msg_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Solution& value); ///< \private
 void write(std::ostream& out, const ::mmx::TimeInfusion& value); ///< \private
 void write(std::ostream& out, const ::mmx::TimeLordBase& value); ///< \private
@@ -911,6 +935,8 @@ void accept(Visitor& visitor, const ::mmx::Router_get_blocks_at& value); ///< \p
 void accept(Visitor& visitor, const ::mmx::Router_get_blocks_at_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Router_get_connected_peers& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Router_get_connected_peers_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Router_get_farmer_credits& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Router_get_farmer_credits_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Router_get_id& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Router_get_id_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Router_get_known_peers& value); ///< \private
@@ -919,6 +945,8 @@ void accept(Visitor& visitor, const ::mmx::Router_get_peer_info& value); ///< \p
 void accept(Visitor& visitor, const ::mmx::Router_get_peer_info_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Router_get_peers& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Router_get_peers_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Router_sign_msg& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Router_sign_msg_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Solution& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::TimeInfusion& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::TimeLordBase& value); ///< \private
@@ -2680,6 +2708,50 @@ struct type<::mmx::Router_get_connected_peers_return> {
 
 /// \private
 template<>
+struct type<::mmx::Router_get_farmer_credits> {
+	void read(TypeInput& in, ::mmx::Router_get_farmer_credits& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Router_get_farmer_credits& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Router_get_farmer_credits& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Router_get_farmer_credits& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Router_get_farmer_credits& value) {
+		vnx::accept(visitor, value);
+	}
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_farmer_credits& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Router_get_farmer_credits_return> {
+	void read(TypeInput& in, ::mmx::Router_get_farmer_credits_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Router_get_farmer_credits_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Router_get_farmer_credits_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Router_get_farmer_credits_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Router_get_farmer_credits_return& value) {
+		vnx::accept(visitor, value);
+	}
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_farmer_credits_return& value, bool special = false);
+};
+
+/// \private
+template<>
 struct type<::mmx::Router_get_id> {
 	void read(TypeInput& in, ::mmx::Router_get_id& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
@@ -2852,6 +2924,50 @@ struct type<::mmx::Router_get_peers_return> {
 	}
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_peers_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Router_sign_msg> {
+	void read(TypeInput& in, ::mmx::Router_sign_msg& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Router_sign_msg& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Router_sign_msg& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Router_sign_msg& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Router_sign_msg& value) {
+		vnx::accept(visitor, value);
+	}
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_sign_msg& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Router_sign_msg_return> {
+	void read(TypeInput& in, ::mmx::Router_sign_msg_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Router_sign_msg_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Router_sign_msg_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Router_sign_msg_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Router_sign_msg_return& value) {
+		vnx::accept(visitor, value);
+	}
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_sign_msg_return& value, bool special = false);
 };
 
 /// \private

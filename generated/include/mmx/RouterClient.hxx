@@ -10,7 +10,9 @@
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
-#include <vnx/Hash64.hpp>
+#include <mmx/hash_t.hpp>
+#include <mmx/pubkey_t.hpp>
+#include <mmx/signature_t.hpp>
 #include <vnx/TopicPtr.hpp>
 #include <vnx/addons/TcpServer.h>
 
@@ -53,7 +55,9 @@ public:
 	
 	void discover_async();
 	
-	::vnx::Hash64 get_id();
+	::mmx::hash_t get_id();
+	
+	std::pair<::mmx::pubkey_t, ::mmx::signature_t> sign_msg(const ::mmx::hash_t& msg = ::mmx::hash_t());
 	
 	std::vector<std::string> get_peers(const uint32_t& max_count = 10);
 	
@@ -62,6 +66,8 @@ public:
 	std::vector<std::string> get_connected_peers();
 	
 	std::shared_ptr<const ::mmx::PeerInfo> get_peer_info();
+	
+	std::vector<std::pair<std::string, uint32_t>> get_farmer_credits();
 	
 	std::vector<std::shared_ptr<const ::mmx::Block>> get_blocks_at(const uint32_t& height = 0);
 	

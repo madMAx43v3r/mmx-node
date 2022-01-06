@@ -14,6 +14,8 @@ struct peer_info_t {
 	
 	
 	std::string address;
+	int32_t credits = 0;
+	int32_t tx_credits = 0;
 	int32_t ping_ms = 0;
 	uint32_t height = 0;
 	int64_t recv_timeout_ms = 0;
