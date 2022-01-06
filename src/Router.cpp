@@ -160,7 +160,7 @@ hash_t Router::get_id() const
 
 std::pair<pubkey_t, signature_t> Router::sign_msg(const hash_t& msg) const
 {
-	return std::make_pair(node_key, signature_t::sign(node_sk, msg));
+	return std::make_pair(node_key, signature_t::sign(node_sk, hash_t(msg.bytes)));
 }
 
 static
@@ -1074,7 +1074,7 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 			if(auto value = std::dynamic_pointer_cast<const Router_sign_msg_return>(result)) {
 				if(auto peer = find_peer(client)) {
 					const auto& pair = value->_ret_0;
-					if(pair.second.verify(pair.first, peer->challenge)) {
+					if(pair.second.verify(pair.first, hash_t(peer->challenge.bytes))) {
 						peer->node_id = pair.first.get_addr();
 						// TODO: load credits
 					} else {
