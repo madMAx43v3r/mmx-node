@@ -818,7 +818,7 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 				block_counter++;
 			}
 		} else {
-			log(WARN) << "Farmer has insufficient credits to relay block at height " << block->height << ", verifying first.";
+			log(WARN) << "A farmer has insufficient credits to relay block at height " << block->height << ", verifying first.";
 		}
 	} else {
 		log(INFO) << "Got block from an unknown farmer at height " << block->height << ", verifying first.";
@@ -855,7 +855,7 @@ void Router::on_proof(uint64_t client, std::shared_ptr<const ProofResponse> resp
 				proof_counter++;
 			}
 		} else {
-			log(DEBUG) << "Farmer has insufficient credits to relay proof for height " << request->height << " with score " << response->score << ", verifying first.";
+			log(DEBUG) << "A farmer has insufficient credits to relay proof for height " << request->height << " with score " << response->score << ", verifying first.";
 		}
 	} else {
 		log(DEBUG) << "Got proof from an unknown farmer at height " << request->height << " with score " << response->score << ", verifying first.";
