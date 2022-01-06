@@ -703,6 +703,15 @@ void Node::update()
 		try {
 			fork->proof_score = verify_proof(block, entry.second);
 			fork->is_proof_verified = true;
+
+			// check if block has a weak proof
+			const auto challenge = get_challenge(block, entry.second);
+			const auto iter = proof_map.find(challenge);
+			if(iter != proof_map.end()) {
+				if(fork->proof_score > iter->second->score) {
+					fork->has_weak_proof = true;
+				}
+			}
 		}
 		catch(const std::exception& ex) {
 #pragma omp critical
@@ -740,14 +749,14 @@ void Node::update()
 		const auto fork_line = get_fork_line();
 
 		// show finalized blocks
-		for(auto fork : fork_line) {
-			if(auto prev = find_prev_fork(fork, params->finality_delay)) {
-				if(!prev->is_finalized) {
-					prev->is_finalized = true;
-					const auto block = prev->block;
+		for(const auto& fork : fork_line) {
+			if(fork->block->height + params->finality_delay < fork_line.back()->block->height) {
+				if(!fork->is_finalized) {
+					fork->is_finalized = true;
+					const auto block = fork->block;
 					Node::log(INFO) << "Finalized height " << block->height << " with: ntx = " << block->tx_list.size()
-							<< ", score = " << (prev ? prev->proof_score : 0) << ", k = " << (block->proof ? block->proof->ksize : 0)
-							<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff;
+							<< ", score = " << fork->proof_score << ", k = " << (block->proof ? block->proof->ksize : 0)
+							<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff << (fork->has_weak_proof ? ", weak proof" : "");
 				}
 			}
 		}
@@ -1244,7 +1253,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 
 std::shared_ptr<Node::fork_t> Node::find_best_fork(std::shared_ptr<const BlockHeader> root, const uint32_t* at_height) const
 {
-	uint64_t max_weight = 0;
+	int64_t max_weight = 0;
 	std::shared_ptr<fork_t> best_fork;
 
 	if(!root) {
@@ -1260,7 +1269,7 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork(std::shared_ptr<const BlockHe
 		if(at_height && block->height != *at_height) {
 			continue;
 		}
-		uint64_t weight = 0;
+		int64_t weight = 0;
 		if(calc_fork_weight(root, fork, weight))
 		{
 			if(!best_fork || weight > max_weight || (weight == max_weight && block->hash < best_fork->block->hash))
@@ -1285,15 +1294,18 @@ std::vector<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<f
 	return line;
 }
 
-bool Node::calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<fork_t> fork, uint64_t& total_weight) const
+bool Node::calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<fork_t> fork, int64_t& total_weight) const
 {
 	while(fork) {
 		const auto& block = fork->block;
 		if(!fork->is_proof_verified || fork->proof_score > params->score_threshold) {
 			return false;
 		}
-		total_weight += 2 * params->score_threshold - fork->proof_score;
-
+		if(fork->has_weak_proof) {
+			total_weight -= params->score_threshold;	// count as negative dummy
+		} else {
+			total_weight += 2 * params->score_threshold - fork->proof_score;
+		}
 		if(block->prev == root->hash) {
 			return true;
 		}
@@ -1584,18 +1596,7 @@ uint32_t Node::verify_proof(std::shared_ptr<const Block> block, const hash_t& vd
 	}
 	const auto challenge = get_challenge(block, vdf_challenge);
 
-	const auto score = verify_proof(block->proof, challenge, diff_block->space_diff);
-	{
-		// check if block has the best score known
-		auto iter = proof_map.find(challenge);
-		if(iter != proof_map.end()) {
-			const auto response = iter->second;
-			if(score > response->score) {
-				throw std::logic_error("invalid score: " + std::to_string(score) + " > " + std::to_string(response->score));
-			}
-		}
-	}
-	return score;
+	return verify_proof(block->proof, challenge, diff_block->space_diff);
 }
 
 uint32_t Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, const uint64_t space_diff) const

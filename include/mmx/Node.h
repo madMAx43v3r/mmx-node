@@ -93,6 +93,7 @@ private:
 		bool is_verified = false;
 		bool is_finalized = false;
 		bool is_proof_verified = false;
+		bool has_weak_proof = false;
 		uint32_t proof_score = -1;
 		int64_t recv_time = 0;
 		std::weak_ptr<fork_t> prev;
@@ -132,7 +133,7 @@ private:
 
 	std::vector<std::shared_ptr<fork_t>> get_fork_line(std::shared_ptr<fork_t> fork_head = nullptr) const;
 
-	bool calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<fork_t> fork, uint64_t& total_weight) const;
+	bool calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<fork_t> fork, int64_t& total_weight) const;
 
 	void validate(std::shared_ptr<const Block> block) const;
 
