@@ -82,8 +82,8 @@ void Node::main()
 			commit(block);
 		}
 		if(auto block = find_header(state_hash)) {
-			log(INFO) << "Loaded " << block->height + 1 << " blocks from disk, took "
-					<< (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+			log(INFO) << "Loaded " << block->height + 1 << " blocks with " << tx_index.size()
+					<< " transactions from disk, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 		}
 	} else {
 		block_chain->open("wb");
