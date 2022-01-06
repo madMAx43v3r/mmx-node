@@ -705,11 +705,13 @@ void Node::update()
 			fork->is_proof_verified = true;
 
 			// check if block has a weak proof
-			const auto challenge = get_challenge(block, entry.second);
-			const auto iter = proof_map.find(challenge);
-			if(iter != proof_map.end()) {
-				if(fork->proof_score > iter->second->score) {
-					fork->has_weak_proof = true;
+			if(block->proof) {
+				const auto challenge = get_challenge(block, entry.second);
+				const auto iter = proof_map.find(challenge);
+				if(iter != proof_map.end()) {
+					if(fork->proof_score > iter->second->score) {
+						fork->has_weak_proof = true;
+					}
 				}
 			}
 		}
