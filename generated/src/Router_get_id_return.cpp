@@ -3,7 +3,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Router_get_id_return.hxx>
-#include <vnx/Hash64.hpp>
+#include <mmx/hash_t.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Router_get_id_return::VNX_TYPE_HASH(0x3924146b7a803806ull);
-const vnx::Hash64 Router_get_id_return::VNX_CODE_HASH(0xbb8438dfaceea6bull);
+const vnx::Hash64 Router_get_id_return::VNX_CODE_HASH(0xf39def51a6cf1026ull);
 
 vnx::Hash64 Router_get_id_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -116,7 +116,7 @@ std::shared_ptr<vnx::TypeCode> Router_get_id_return::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Router.get_id.return";
 	type_code->type_hash = vnx::Hash64(0x3924146b7a803806ull);
-	type_code->code_hash = vnx::Hash64(0xbb8438dfaceea6bull);
+	type_code->code_hash = vnx::Hash64(0xf39def51a6cf1026ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
@@ -127,7 +127,7 @@ std::shared_ptr<vnx::TypeCode> Router_get_id_return::static_create_type_code() {
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "_ret_0";
-		field.code = {4};
+		field.code = {11, 32, 1};
 	}
 	type_code->build();
 	return type_code;

@@ -10,7 +10,9 @@
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
-#include <vnx/Hash64.hpp>
+#include <mmx/hash_t.hpp>
+#include <mmx/pubkey_t.hpp>
+#include <mmx/signature_t.hpp>
 #include <vnx/TopicPtr.hpp>
 #include <vnx/addons/TcpServer.h>
 
@@ -41,7 +43,18 @@ public:
 	uint32_t min_sync_peers = 2;
 	uint32_t max_sync_peers = 4;
 	uint32_t max_msg_size = 4194304;
-	uint32_t max_hash_cache = 1000000;
+	uint32_t max_hash_cache = 100000;
+	uint32_t tx_credits = 8;
+	uint32_t vdf_credits = 1024;
+	uint32_t block_credits = 256;
+	uint32_t proof_credits = 10;
+	uint32_t tx_relay_cost = 1;
+	uint32_t vdf_relay_cost = 768;
+	uint32_t proof_relay_cost = 2;
+	uint32_t block_relay_cost = 8;
+	uint32_t max_node_credits = 1024;
+	uint32_t max_node_tx_credits = 1024;
+	uint32_t max_farmer_credits = 32;
 	std::set<std::string> seed_peers;
 	std::set<std::string> block_peers;
 	std::string storage_path;
@@ -81,11 +94,13 @@ protected:
 	using Super::handle;
 	
 	virtual void discover() = 0;
-	virtual ::vnx::Hash64 get_id() const = 0;
+	virtual ::mmx::hash_t get_id() const = 0;
+	virtual std::pair<::mmx::pubkey_t, ::mmx::signature_t> sign_msg(const ::mmx::hash_t& msg) const = 0;
 	virtual std::vector<std::string> get_peers(const uint32_t& max_count) const = 0;
 	virtual std::vector<std::string> get_known_peers() const = 0;
 	virtual std::vector<std::string> get_connected_peers() const = 0;
 	virtual std::shared_ptr<const ::mmx::PeerInfo> get_peer_info() const = 0;
+	virtual std::vector<std::pair<std::string, uint32_t>> get_farmer_credits() const = 0;
 	virtual void get_blocks_at_async(const uint32_t& height, const vnx::request_id_t& _request_id) const = 0;
 	void get_blocks_at_async_return(const vnx::request_id_t& _request_id, const std::vector<std::shared_ptr<const ::mmx::Block>>& _ret_0) const;
 	virtual void handle(std::shared_ptr<const ::mmx::Block> _value) {}

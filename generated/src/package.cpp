@@ -79,6 +79,8 @@
 #include <mmx/Router_get_blocks_at_return.hxx>
 #include <mmx/Router_get_connected_peers.hxx>
 #include <mmx/Router_get_connected_peers_return.hxx>
+#include <mmx/Router_get_farmer_credits.hxx>
+#include <mmx/Router_get_farmer_credits_return.hxx>
 #include <mmx/Router_get_id.hxx>
 #include <mmx/Router_get_id_return.hxx>
 #include <mmx/Router_get_known_peers.hxx>
@@ -87,6 +89,8 @@
 #include <mmx/Router_get_peer_info_return.hxx>
 #include <mmx/Router_get_peers.hxx>
 #include <mmx/Router_get_peers_return.hxx>
+#include <mmx/Router_sign_msg.hxx>
+#include <mmx/Router_sign_msg_return.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/TimeInfusion.hxx>
 #include <mmx/TimeLordBase.hxx>
@@ -737,6 +741,22 @@ void type<::mmx::Router_get_connected_peers_return>::create_dynamic_code(std::ve
 	code.push_back(CODE_OBJECT);
 }
 
+void type<::mmx::Router_get_farmer_credits>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Router_get_farmer_credits());
+}
+
+void type<::mmx::Router_get_farmer_credits>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_farmer_credits& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+void type<::mmx::Router_get_farmer_credits_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Router_get_farmer_credits_return());
+}
+
+void type<::mmx::Router_get_farmer_credits_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_farmer_credits_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 void type<::mmx::Router_get_id>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Router_get_id());
 }
@@ -798,6 +818,22 @@ void type<::mmx::Router_get_peers_return>::create_dynamic_code(std::vector<uint1
 }
 
 void type<::mmx::Router_get_peers_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_peers_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+void type<::mmx::Router_sign_msg>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Router_sign_msg());
+}
+
+void type<::mmx::Router_sign_msg>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_sign_msg& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+void type<::mmx::Router_sign_msg_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Router_sign_msg_return());
+}
+
+void type<::mmx::Router_sign_msg_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_sign_msg_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -1279,6 +1315,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Router_get_blocks_at_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Router_get_connected_peers::static_create_type_code());
 	vnx::register_type_code(::mmx::Router_get_connected_peers_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Router_get_farmer_credits::static_create_type_code());
+	vnx::register_type_code(::mmx::Router_get_farmer_credits_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Router_get_id::static_create_type_code());
 	vnx::register_type_code(::mmx::Router_get_id_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Router_get_known_peers::static_create_type_code());
@@ -1287,6 +1325,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Router_get_peer_info_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Router_get_peers::static_create_type_code());
 	vnx::register_type_code(::mmx::Router_get_peers_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Router_sign_msg::static_create_type_code());
+	vnx::register_type_code(::mmx::Router_sign_msg_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Solution::static_create_type_code());
 	vnx::register_type_code(::mmx::TimeInfusion::static_create_type_code());
 	vnx::register_type_code(::mmx::TimeLordBase::static_create_type_code());
@@ -1416,6 +1456,8 @@ const vnx::TypeCode* const vnx_native_type_code_Router_get_blocks_at = vnx::get_
 const vnx::TypeCode* const vnx_native_type_code_Router_get_blocks_at_return = vnx::get_type_code(vnx::Hash64(0x70f0e9e7aa72b810ull));
 const vnx::TypeCode* const vnx_native_type_code_Router_get_connected_peers = vnx::get_type_code(vnx::Hash64(0x8682feb65fbb77feull));
 const vnx::TypeCode* const vnx_native_type_code_Router_get_connected_peers_return = vnx::get_type_code(vnx::Hash64(0x5c96b95e03d32e32ull));
+const vnx::TypeCode* const vnx_native_type_code_Router_get_farmer_credits = vnx::get_type_code(vnx::Hash64(0xb9a99acad3a2c7cbull));
+const vnx::TypeCode* const vnx_native_type_code_Router_get_farmer_credits_return = vnx::get_type_code(vnx::Hash64(0xbfe97d9411127cd3ull));
 const vnx::TypeCode* const vnx_native_type_code_Router_get_id = vnx::get_type_code(vnx::Hash64(0xb9f7168b5ae94cd9ull));
 const vnx::TypeCode* const vnx_native_type_code_Router_get_id_return = vnx::get_type_code(vnx::Hash64(0x3924146b7a803806ull));
 const vnx::TypeCode* const vnx_native_type_code_Router_get_known_peers = vnx::get_type_code(vnx::Hash64(0xaa408b6bf4e8168dull));
@@ -1424,6 +1466,8 @@ const vnx::TypeCode* const vnx_native_type_code_Router_get_peer_info = vnx::get_
 const vnx::TypeCode* const vnx_native_type_code_Router_get_peer_info_return = vnx::get_type_code(vnx::Hash64(0xffff4ae0244281b5ull));
 const vnx::TypeCode* const vnx_native_type_code_Router_get_peers = vnx::get_type_code(vnx::Hash64(0x66d68bd91b462049ull));
 const vnx::TypeCode* const vnx_native_type_code_Router_get_peers_return = vnx::get_type_code(vnx::Hash64(0x595714f80f272d86ull));
+const vnx::TypeCode* const vnx_native_type_code_Router_sign_msg = vnx::get_type_code(vnx::Hash64(0x88ede2fbb99ab63eull));
+const vnx::TypeCode* const vnx_native_type_code_Router_sign_msg_return = vnx::get_type_code(vnx::Hash64(0x67c8c37a7b5fc991ull));
 const vnx::TypeCode* const vnx_native_type_code_Solution = vnx::get_type_code(vnx::Hash64(0x9f693babd1a91ccdull));
 const vnx::TypeCode* const vnx_native_type_code_TimeInfusion = vnx::get_type_code(vnx::Hash64(0x7c38bc7150b0d98bull));
 const vnx::TypeCode* const vnx_native_type_code_TimeLordBase = vnx::get_type_code(vnx::Hash64(0x311081636f6570efull));

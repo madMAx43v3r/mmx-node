@@ -159,6 +159,13 @@ void read(vnx::TypeInput& in, mmx::bytes_t<N>& value, const vnx::TypeCode* type_
 			}
 			break;
 		}
+		case CODE_UINT64:
+		case CODE_ALT_UINT64: {
+			uint64_t tmp = 0;
+			vnx::read(in, tmp, type_code, code);
+			::memcpy(value.data(), &tmp, std::min(N, sizeof(tmp)));
+			break;
+		}
 		default:
 			vnx::read(in, value.bytes, type_code, code);
 	}

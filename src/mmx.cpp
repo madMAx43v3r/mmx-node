@@ -11,12 +11,11 @@
 #include <mmx/HarvesterClient.hxx>
 #include <mmx/KeyFile.hxx>
 #include <mmx/secp256k1.hpp>
+#include <mmx/hash_t.hpp>
 #include <mmx/utils.h>
 
 #include <vnx/vnx.h>
 #include <vnx/Proxy.h>
-
-#include <sodium.h>
 
 
 int main(int argc, char** argv)
@@ -190,9 +189,7 @@ int main(int argc, char** argv)
 
 				mmx::KeyFile wallet;
 				if(seed_str.empty()) {
-					std::vector<uint8_t> seed(4096);
-					randombytes_buf(seed.data(), seed.size());
-					wallet.seed_value = mmx::hash_t(seed);
+					wallet.seed_value = mmx::hash_t::random();
 				} else {
 					if(seed_str.size() == 64) {
 						wallet.seed_value.from_string(seed_str);
@@ -260,8 +257,10 @@ int main(int argc, char** argv)
 					std::cout << ", " << ((peer.bytes_recv / 1024) * 1000) / peer.connect_time_ms << " KB/s recv";
 					std::cout << ", " << ((peer.bytes_send / 1024) * 1000) / peer.connect_time_ms << " KB/s send";
 					std::cout << ", since " << (peer.connect_time_ms / 60000) << " min";
-					std::cout << ", ping = " << peer.ping_ms << " ms";
-					std::cout << ", timeout = " << (peer.recv_timeout_ms / 100) / 10. << " sec";
+					std::cout << ", " << peer.credits << " credits";
+					std::cout << ", " << peer.tx_credits << " tx credits";
+					std::cout << ", " << peer.ping_ms << " ms ping";
+					std::cout << ", " << (peer.recv_timeout_ms / 100) / 10. << " sec timeout";
 					if(peer.is_outbound) {
 						std::cout << ", outbound";
 					}
