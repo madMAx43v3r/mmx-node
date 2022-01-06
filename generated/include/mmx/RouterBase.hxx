@@ -103,6 +103,8 @@ protected:
 	virtual std::vector<std::pair<std::string, uint32_t>> get_farmer_credits() const = 0;
 	virtual void get_blocks_at_async(const uint32_t& height, const vnx::request_id_t& _request_id) const = 0;
 	void get_blocks_at_async_return(const vnx::request_id_t& _request_id, const std::vector<std::shared_ptr<const ::mmx::Block>>& _ret_0) const;
+	virtual void fetch_block_at_async(const std::string& address, const uint32_t& height, const vnx::request_id_t& _request_id) const = 0;
+	void fetch_block_at_async_return(const vnx::request_id_t& _request_id, const std::shared_ptr<const ::mmx::Block>& _ret_0) const;
 	virtual void handle(std::shared_ptr<const ::mmx::Block> _value) {}
 	virtual void handle(std::shared_ptr<const ::mmx::Transaction> _value) {}
 	virtual void handle(std::shared_ptr<const ::mmx::ProofOfTime> _value) {}

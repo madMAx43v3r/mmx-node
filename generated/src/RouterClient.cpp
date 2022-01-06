@@ -9,6 +9,8 @@
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Router_discover.hxx>
 #include <mmx/Router_discover_return.hxx>
+#include <mmx/Router_fetch_block_at.hxx>
+#include <mmx/Router_fetch_block_at_return.hxx>
 #include <mmx/Router_get_blocks_at.hxx>
 #include <mmx/Router_get_blocks_at_return.hxx>
 #include <mmx/Router_get_connected_peers.hxx>
@@ -277,6 +279,20 @@ std::vector<std::shared_ptr<const ::mmx::Block>> RouterClient::get_blocks_at(con
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::vector<std::shared_ptr<const ::mmx::Block>>>();
+	} else {
+		throw std::logic_error("RouterClient: invalid return value");
+	}
+}
+
+std::shared_ptr<const ::mmx::Block> RouterClient::fetch_block_at(const std::string& address, const uint32_t& height) {
+	auto _method = ::mmx::Router_fetch_block_at::create();
+	_method->address = address;
+	_method->height = height;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Router_fetch_block_at_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Block>>();
 	} else {
 		throw std::logic_error("RouterClient: invalid return value");
 	}
