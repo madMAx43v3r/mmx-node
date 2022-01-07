@@ -214,7 +214,7 @@ To run a remote harvester, while connecting to a remote farmer:
 ```
 Alternatively to set the farmer address permanently: `echo farmer.ip:11333 > config/local/node`
 
-### Remote TimeLord
+### Remote Timelord
 
 To run a remote timelord:
 ```
@@ -226,7 +226,7 @@ To disable the built-in timelord in the node: `echo false > config/local/timelor
 
 ### Remote / Light Wallet
 
-To run a remote  wallet:
+To run a remote wallet:
 ```
 ./run_wallet.sh -n node.ip:11330
 ```
