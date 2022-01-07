@@ -244,11 +244,11 @@ echo false > config/local/farmer
 
 To use the remote services over a public network such the internet you should use an SSH tunnel, instead of opening port `11330` to the world.
 
-To run an SSH tunnel to connect to a node from another machine (such as a remote farmer):
+To run an SSH tunnel to connect to a node from another machine (such as from a remote farmer):
 ```
 ssh -N -L 11330:localhost:11330 user@node.ip
 ```
-This will forward port `11330` to port `11330` on the node's machine.
+This will forward local port `11330` to port `11330` on the node's machine.
 
 The same can be done for port `11331`, which allows to use the normal CLI remotely:
 ```
