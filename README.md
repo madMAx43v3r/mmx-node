@@ -186,6 +186,73 @@ rm block_chain.dat known_peers.dat NETWORK
 ```
 `block_chain.dat`, `known_peers.dat` and `logs` are now stored in `testnet3` folder by default.
 
+### Remote Farmer
+
+To run a remote farmer with it's own wallet and harvester:
+```
+./run_farmer.sh -n node.ip:11330
+```
+Alternatively to set the node address permanently: `echo node.ip:11330 > config/local/node`
+
+To use the CLI with the remote farmer replace `farm` with `rfarm`, for example: `mmx rfarm info`
+
+To disable the built-in farmer in the node: `echo false > config/local/farmer`
+
+### Remote Harvester
+
+To run a remote harvester, while connecting to a node:
+```
+./run_harvester.sh -n node.ip:11330
+```
+Alternatively to set the node address permanently: `echo node.ip:11330 > config/local/node`
+
+To use the CLI with the remote harvester replace `farm` with `rfarm` and use port `11334`, for example: `mmx rfarm info -n :11334`
+
+To run a remote harvester, while connecting to a remote farmer:
+```
+./run_harvester.sh -n farmer.ip:11333
+```
+Alternatively to set the farmer address permanently: `echo farmer.ip:11333 > config/local/node`
+
+### Remote TimeLord
+
+To run a remote timelord:
+```
+./run_timelord.sh -n node.ip:11330
+```
+Alternatively to set the node address permanently: `echo node.ip:11330 > config/local/node`
+
+To disable the built-in timelord in the node: `echo false > config/local/timelord`
+
+### Remote / Light Wallet
+
+To run a remote  wallet:
+```
+./run_wallet.sh -n node.ip:11330
+```
+Alternatively to set the node address permanently: `echo node.ip:11330 > config/local/node`
+
+To use the remote wallet with the CLI replace `wallet` with `rwallet`, for example: `mmx rwallet show`
+
+To disable the built-in wallet in the node:
+```
+echo false > config/local/wallet
+echo false > config/local/farmer
+```
+
+### Remote connections over public networks
+
+To use the remote services over a public network such the internet you should use an SSH tunnel, instead of opening port `11330` to the world.
+
+To run an SSH tunnel to connect to a node from another machine (such as a remote farmer):
+```
+ssh -N -L 11330:localhost:11331 user@node.ip
+```
+This will forward port 11330 to port 11331 on the node's machine.
+
+Using port `11331` grants additional privileges such as being able to send coins, if there is a wallet running in the node.
+You can also use port `11330` if that's not required.
+
 ## Plotting
 
 To get the farmer and pool keys for plotting:
