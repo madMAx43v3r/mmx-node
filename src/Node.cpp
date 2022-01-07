@@ -643,6 +643,8 @@ void Node::check_vdfs()
 
 void Node::update()
 {
+	const auto time_begin = vnx::get_wall_time_micros();
+
 	check_vdfs();
 
 	// verify proof where possible
@@ -776,13 +778,14 @@ void Node::update()
 		return;
 	}
 	const auto root = get_root();
+	const auto elapsed = (vnx::get_wall_time_micros() - time_begin) / 1e6;
 
 	if(!prev_peak || peak->hash != prev_peak->hash)
 	{
 		stuck_timer->reset();
 		const auto fork = find_fork(peak->hash);
 		log(INFO) << "New peak at height " << peak->height << " with score " << (fork ? std::to_string(fork->proof_score) : "?")
-				<< (forked_at ? " (forked at " + std::to_string(forked_at->height) + ")" : "");
+				<< ", took " << elapsed << " sec" << (forked_at ? ", forked at " + std::to_string(forked_at->height) : "");
 	}
 
 	if(!is_synced && sync_pos >= sync_peak && sync_pending.empty())
@@ -939,6 +942,8 @@ void Node::update()
 
 bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response)
 {
+	const auto time_begin = vnx::get_wall_time_micros();
+
 	vdf_point_t vdf_point;
 	{
 		auto iter = verified_vdfs.find(prev->height + 1);
@@ -1101,10 +1106,12 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 
 	add_block(block);
 
+	const auto elapsed = (vnx::get_wall_time_micros() - time_begin) / 1e6;
 	log(INFO) << "Created block at height " << block->height << " with: ntx = " << block->tx_list.size()
 			<< ", score = " << response->score << ", reward = " << final_reward / pow(10, params->decimals) << " MMX"
 			<< ", nominal = " << block_reward / pow(10, params->decimals) << " MMX"
-			<< ", fees = " << total_fees / pow(10, params->decimals) << " MMX";
+			<< ", fees = " << total_fees / pow(10, params->decimals) << " MMX"
+			<< ", took " << elapsed << " sec";
 	return true;
 }
 
