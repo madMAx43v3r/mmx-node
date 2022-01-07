@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./activate.sh
+source ./activate.sh
 
-./build/mmx_harvester -c config/default/ config/harvester/ config/local/ $@
+./build/mmx_harvester -c config/${NETWORK}/ config/harvester/ config/local/ $@
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./activate.sh
+source ./activate.sh
 
-./build/mmx_farmer -c config/default/ config/farmer/ config/local/ $@
+./build/mmx_farmer -c config/${NETWORK}/ config/farmer/ config/local/ $@
 

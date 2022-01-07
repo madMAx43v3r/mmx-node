@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./activate.sh
+source ./activate.sh
 
-./build/mmx_timelord -c config/default/ config/timelord/ config/local/ $@
+./build/mmx_timelord -c config/${NETWORK}/ config/timelord/ config/local/ $@
 
