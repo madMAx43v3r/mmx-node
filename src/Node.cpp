@@ -783,9 +783,11 @@ void Node::update()
 	if(!prev_peak || peak->hash != prev_peak->hash)
 	{
 		stuck_timer->reset();
-		const auto fork = find_fork(peak->hash);
-		log(INFO) << "New peak at height " << peak->height << " with score " << (fork ? std::to_string(fork->proof_score) : "?")
-				<< ", took " << elapsed << " sec" << (forked_at ? ", forked at " + std::to_string(forked_at->height) : "");
+		if(auto fork = find_fork(peak->hash)) {
+			log(INFO) << "New peak at height " << peak->height << " with score " << std::to_string(fork->proof_score)
+					<< ", delay " << (fork->recv_time - verified_vdfs[peak->height].recv_time) / 1e6 << " sec"
+					<< ", took " << elapsed << " sec" << (forked_at ? ", forked at " + std::to_string(forked_at->height) : "");
+		}
 	}
 
 	if(!is_synced && sync_pos >= sync_peak && sync_pending.empty())
