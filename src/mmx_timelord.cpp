@@ -21,7 +21,7 @@ int main(int argc, char** argv)
 
 	vnx::init("mmx_timelord", argc, argv, options);
 
-	std::string node_url = ":11331";
+	std::string node_url = ":11330";
 	std::string endpoint = ":11332";
 
 	vnx::read_config("node", node_url);

@@ -41,11 +41,13 @@ int main(int argc, char** argv)
 	bool with_wallet = true;
 	bool with_timelord = true;
 	std::string endpoint = ":11331";
+	std::string public_endpoint = "0.0.0.0:11330";
 	std::string root_path;
 	vnx::read_config("wallet", with_wallet);
 	vnx::read_config("farmer", with_farmer);
 	vnx::read_config("timelord", with_timelord);
 	vnx::read_config("endpoint", endpoint);
+	vnx::read_config("public_endpoint", public_endpoint);
 	vnx::read_config("root_path", root_path);
 
 	if(!root_path.empty()) {
@@ -66,6 +68,10 @@ int main(int argc, char** argv)
 	}
 	{
 		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url(endpoint));
+		module.start_detached();
+	}
+	{
+		vnx::Handle<vnx::Server> module = new vnx::Server("PublicServer", vnx::Endpoint::from_url(public_endpoint));
 		module.start_detached();
 	}
 	{
