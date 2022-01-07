@@ -246,12 +246,14 @@ To use the remote services over a public network such the internet you should us
 
 To run an SSH tunnel to connect to a node from another machine (such as a remote farmer):
 ```
-ssh -N -L 11330:localhost:11331 user@node.ip
+ssh -N -L 11330:localhost:11330 user@node.ip
 ```
-This will forward port `11330` to port `11331` on the node's machine.
+This will forward port `11330` to port `11330` on the node's machine.
 
-Using port `11331` grants additional privileges such as being able to send coins, if there is a wallet running in the node.
-You can also use port `11330` if that's not required.
+The same can be done for port `11331`, which allows to use the normal CLI remotely:
+```
+ssh -N -L 11331:localhost:11331 user@node.ip
+```
 
 ## Plotting
 
