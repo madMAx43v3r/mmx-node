@@ -36,7 +36,7 @@ namespace mmx {
 
 
 const vnx::Hash64 TimeLordBase::VNX_TYPE_HASH(0x311081636f6570efull);
-const vnx::Hash64 TimeLordBase::VNX_CODE_HASH(0x51ac78b60bd85cb7ull);
+const vnx::Hash64 TimeLordBase::VNX_CODE_HASH(0xcc68a248bbb04277ull);
 
 TimeLordBase::TimeLordBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -46,6 +46,7 @@ TimeLordBase::TimeLordBase(const std::string& _vnx_name)
 	vnx::read_config(vnx_name + ".output_proofs", output_proofs);
 	vnx::read_config(vnx_name + ".max_history", max_history);
 	vnx::read_config(vnx_name + ".restart_holdoff", restart_holdoff);
+	vnx::read_config(vnx_name + ".node_server", node_server);
 }
 
 vnx::Hash64 TimeLordBase::get_type_hash() const {
@@ -68,6 +69,7 @@ void TimeLordBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, output_proofs);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, max_history);
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, restart_holdoff);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, node_server);
 	_visitor.type_end(*_type_code);
 }
 
@@ -78,6 +80,7 @@ void TimeLordBase::write(std::ostream& _out) const {
 	_out << ", \"output_proofs\": "; vnx::write(_out, output_proofs);
 	_out << ", \"max_history\": "; vnx::write(_out, max_history);
 	_out << ", \"restart_holdoff\": "; vnx::write(_out, restart_holdoff);
+	_out << ", \"node_server\": "; vnx::write(_out, node_server);
 	_out << "}";
 }
 
@@ -95,6 +98,7 @@ vnx::Object TimeLordBase::to_object() const {
 	_object["output_proofs"] = output_proofs;
 	_object["max_history"] = max_history;
 	_object["restart_holdoff"] = restart_holdoff;
+	_object["node_server"] = node_server;
 	return _object;
 }
 
@@ -106,6 +110,8 @@ void TimeLordBase::from_object(const vnx::Object& _object) {
 			_entry.second.to(input_request);
 		} else if(_entry.first == "max_history") {
 			_entry.second.to(max_history);
+		} else if(_entry.first == "node_server") {
+			_entry.second.to(node_server);
 		} else if(_entry.first == "output_proofs") {
 			_entry.second.to(output_proofs);
 		} else if(_entry.first == "restart_holdoff") {
@@ -130,6 +136,9 @@ vnx::Variant TimeLordBase::get_field(const std::string& _name) const {
 	if(_name == "restart_holdoff") {
 		return vnx::Variant(restart_holdoff);
 	}
+	if(_name == "node_server") {
+		return vnx::Variant(node_server);
+	}
 	return vnx::Variant();
 }
 
@@ -144,6 +153,8 @@ void TimeLordBase::set_field(const std::string& _name, const vnx::Variant& _valu
 		_value.to(max_history);
 	} else if(_name == "restart_holdoff") {
 		_value.to(restart_holdoff);
+	} else if(_name == "node_server") {
+		_value.to(node_server);
 	} else {
 		throw std::logic_error("no such field: '" + _name + "'");
 	}
@@ -173,7 +184,7 @@ std::shared_ptr<vnx::TypeCode> TimeLordBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.TimeLord";
 	type_code->type_hash = vnx::Hash64(0x311081636f6570efull);
-	type_code->code_hash = vnx::Hash64(0x51ac78b60bd85cb7ull);
+	type_code->code_hash = vnx::Hash64(0xcc68a248bbb04277ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::TimeLordBase);
 	type_code->methods.resize(10);
@@ -187,7 +198,7 @@ std::shared_ptr<vnx::TypeCode> TimeLordBase::static_create_type_code() {
 	type_code->methods[7] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
 	type_code->methods[8] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
 	type_code->methods[9] = ::mmx::TimeLord_stop_vdf::static_get_type_code();
-	type_code->fields.resize(5);
+	type_code->fields.resize(6);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -222,6 +233,13 @@ std::shared_ptr<vnx::TypeCode> TimeLordBase::static_create_type_code() {
 		field.name = "restart_holdoff";
 		field.value = vnx::to_string(60000);
 		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[5];
+		field.is_extended = true;
+		field.name = "node_server";
+		field.value = vnx::to_string("Node");
+		field.code = {32};
 	}
 	type_code->build();
 	return type_code;
@@ -363,6 +381,7 @@ void read(TypeInput& in, ::mmx::TimeLordBase& value, const TypeCode* type_code, 
 			case 0: vnx::read(in, value.input_infuse, type_code, _field->code.data()); break;
 			case 1: vnx::read(in, value.input_request, type_code, _field->code.data()); break;
 			case 2: vnx::read(in, value.output_proofs, type_code, _field->code.data()); break;
+			case 5: vnx::read(in, value.node_server, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -387,6 +406,7 @@ void write(TypeOutput& out, const ::mmx::TimeLordBase& value, const TypeCode* ty
 	vnx::write(out, value.input_infuse, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.input_request, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.output_proofs, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.node_server, type_code, type_code->fields[5].code.data());
 }
 
 void read(std::istream& in, ::mmx::TimeLordBase& value) {

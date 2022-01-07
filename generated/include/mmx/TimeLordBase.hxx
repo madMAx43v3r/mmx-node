@@ -21,6 +21,7 @@ public:
 	::vnx::TopicPtr output_proofs = "timelord.proofs";
 	uint32_t max_history = 65536;
 	uint32_t restart_holdoff = 60000;
+	std::string node_server = "Node";
 	
 	typedef ::vnx::Module Super;
 	
