@@ -54,7 +54,7 @@ public:
 	uint32_t block_relay_cost = 8;
 	uint32_t max_node_credits = 1024;
 	uint32_t max_node_tx_credits = 1024;
-	uint32_t max_farmer_credits = 32;
+	uint32_t max_farmer_credits = 64;
 	std::set<std::string> seed_peers;
 	std::set<std::string> block_peers;
 	std::string storage_path;
