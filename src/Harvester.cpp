@@ -134,9 +134,11 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	}
 	already_checked.insert(value->challenge);
 
-	log(INFO) << plots.size() << " plots were eligible for height " << value->height
-			<< ", best score was " << (best_score != ~uint128_0 ? best_score.str() : "N/A")
-			<< ", took " << (vnx::get_time_micros() - time_begin) / 1e6 << " sec";
+	if(!id_map.empty()) {
+		log(INFO) << plots.size() << " plots were eligible for height " << value->height
+				<< ", best score was " << (best_score != ~uint128_0 ? best_score.str() : "N/A")
+				<< ", took " << (vnx::get_time_micros() - time_begin) / 1e6 << " sec";
+	}
 }
 
 uint64_t Harvester::get_total_bytes() const
