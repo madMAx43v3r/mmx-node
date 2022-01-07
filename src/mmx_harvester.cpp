@@ -28,7 +28,7 @@ int main(int argc, char** argv)
 	vnx::read_config("endpoint", endpoint);
 
 	vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
-	proxy->forward_list = {"Farmer"};
+	proxy->forward_list = {"Node", "Farmer"};
 
 	{
 		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url(endpoint));
