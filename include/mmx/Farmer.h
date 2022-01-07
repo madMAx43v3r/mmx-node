@@ -28,6 +28,9 @@ protected:
 	std::shared_ptr<const BlockHeader>
 	sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& reward_amount) const override;
 
+protected:
+	void update();
+
 private:
 	std::unordered_map<bls_pubkey_t, skey_t> key_map;
 

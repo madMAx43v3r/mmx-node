@@ -93,10 +93,12 @@ target_link_libraries(mmx_modules automy_basic_opencl mmx_chiapos mmx_iface)
 
 add_executable(mmx src/mmx.cpp)
 add_executable(mmx_node src/mmx_node.cpp)
+add_executable(mmx_farmer src/mmx_farmer.cpp)
 add_executable(mmx_timelord src/mmx_timelord.cpp)
 
 target_link_libraries(mmx mmx_iface)
 target_link_libraries(mmx_node mmx_modules)
+target_link_libraries(mmx_farmer mmx_modules)
 target_link_libraries(mmx_timelord mmx_modules)
 
 add_executable(tx_bench src/tx_bench.cpp)

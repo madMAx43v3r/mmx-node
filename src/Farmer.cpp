@@ -49,12 +49,21 @@ void Farmer::main()
 	}
 	log(INFO) << "Reward address: " << reward_addr->to_string();
 
+	set_timer_millis(10000, std::bind(&Farmer::update, this));
+
+	update();
+
 	Super::main();
 }
 
 vnx::Hash64 Farmer::get_mac_addr() const
 {
 	return vnx_get_id();
+}
+
+void Farmer::update()
+{
+	vnx::open_flow(vnx::get_pipe(node_server), vnx::get_pipe(vnx_get_id()));
 }
 
 std::shared_ptr<const BlockHeader>
