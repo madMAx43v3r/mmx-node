@@ -18,6 +18,7 @@ public:
 	
 	uint32_t default_wallet = 0;
 	uint32_t default_address = 0;
+	std::string node_server = "Node";
 	std::string wallet_server = "Wallet";
 	vnx::optional<::mmx::addr_t> reward_addr;
 	vnx::optional<::mmx::addr_t> project_addr;
