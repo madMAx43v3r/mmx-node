@@ -12,6 +12,8 @@ module TimeLord {
 	
 	uint restart_holdoff = 60000;					// [ms]
 	
+	string node_server = "Node";
+	
 	
 	void stop_vdf();
 	
