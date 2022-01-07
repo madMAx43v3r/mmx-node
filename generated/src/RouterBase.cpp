@@ -60,7 +60,7 @@ namespace mmx {
 
 
 const vnx::Hash64 RouterBase::VNX_TYPE_HASH(0x952c4ef2956f31c4ull);
-const vnx::Hash64 RouterBase::VNX_CODE_HASH(0x58f62158c9dc2e47ull);
+const vnx::Hash64 RouterBase::VNX_CODE_HASH(0xf42389273e3acd48ull);
 
 RouterBase::RouterBase(const std::string& _vnx_name)
 	:	TcpServer::TcpServer(_vnx_name)
@@ -659,7 +659,7 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Router";
 	type_code->type_hash = vnx::Hash64(0x952c4ef2956f31c4ull);
-	type_code->code_hash = vnx::Hash64(0x58f62158c9dc2e47ull);
+	type_code->code_hash = vnx::Hash64(0xf42389273e3acd48ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::RouterBase);
 	type_code->parents.resize(1);
@@ -988,7 +988,7 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 		auto& field = type_code->fields[43];
 		field.data_size = 4;
 		field.name = "max_farmer_credits";
-		field.value = vnx::to_string(64);
+		field.value = vnx::to_string(32);
 		field.code = {3};
 	}
 	{
