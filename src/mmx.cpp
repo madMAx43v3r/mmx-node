@@ -57,7 +57,6 @@ int main(int argc, char** argv)
 
 	std::string module;
 	std::string command;
-	std::string node_url = ":11331";
 	std::string file_name;
 	std::string target_addr;
 	std::string contract_addr;
@@ -65,7 +64,6 @@ int main(int argc, char** argv)
 	double amount = 0;
 	vnx::read_config("$1", module);
 	vnx::read_config("$2", command);
-	vnx::read_config("node", node_url);
 	vnx::read_config("file", file_name);
 	vnx::read_config("index", index);
 	vnx::read_config("amount", amount);
@@ -98,8 +96,33 @@ int main(int argc, char** argv)
 		goto failed;
 	}
 
-	if(module != "wallet" || command != "create")
+	if(module == "rwallet")
 	{
+		std::string node_url = ":11335";
+		vnx::read_config("node", node_url);
+
+		vnx::Handle<vnx::Proxy> module = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
+		module->forward_list = {"Wallet", "Node"};
+		module.start_detached();
+
+		params = node.get_params();
+	}
+	else if(module == "rfarm")
+	{
+		std::string node_url = ":11333";
+		vnx::read_config("node", node_url);
+
+		vnx::Handle<vnx::Proxy> module = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
+		module->forward_list = {"Node", "Farmer", "Harvester"};
+		module.start_detached();
+
+		params = node.get_params();
+	}
+	else if(module != "wallet" || command != "create")
+	{
+		std::string node_url = ":11331";
+		vnx::read_config("node", node_url);
+
 		vnx::Handle<vnx::Proxy> module = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
 		module->forward_list = {"Wallet", "Node", "Farmer", "Harvester", "Router"};
 		module.start_detached();
@@ -108,7 +131,7 @@ int main(int argc, char** argv)
 	}
 
 	try {
-		if(module == "wallet")
+		if(module == "wallet" || module == "rwallet")
 		{
 			if(command == "show")
 			{
@@ -453,7 +476,8 @@ int main(int argc, char** argv)
 				std::cerr << "Help: mmx node [info | peers | tx | get | fetch | balance | sync]" << std::endl;
 			}
 		}
-		else if(module == "farm") {
+		else if(module == "farm" || module == "rfarm")
+		{
 			mmx::HarvesterClient harvester("Harvester");
 
 			auto info = harvester.get_farm_info();
