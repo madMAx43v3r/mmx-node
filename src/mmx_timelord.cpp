@@ -50,8 +50,6 @@ int main(int argc, char** argv)
 
 	vnx::wait();
 
-	vnx::wait();
-
 	return 0;
 }
 
