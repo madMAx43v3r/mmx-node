@@ -224,7 +224,7 @@ Alternatively to set the node address permanently: `echo node.ip:11330 > config/
 
 To disable the built-in timelord in the node: `echo false > config/local/timelord`
 
-### Remote / Light Wallet
+### Remote Wallet
 
 To run a remote wallet:
 ```
