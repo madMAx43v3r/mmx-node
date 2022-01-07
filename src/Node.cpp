@@ -1699,19 +1699,8 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const vdf_point_
 		} else {
 			throw std::logic_error("cannot verify");
 		}
-		uint64_t target_iters = infused_block->vdf_iters;
-		for(size_t i = 0; i < params->finality_delay; ++i) {
-			if(auto diff_block = find_diff_header(infused_block, i + 1)) {
-				target_iters += diff_block->time_diff * params->time_diff_constant;
-				if(infused_block->height == 0 && infused.first == target_iters) {
-					break;	// genesis case
-				}
-			} else {
-				throw std::logic_error("cannot verify");
-			}
-		}
-		if(infused.first != target_iters) {
-			throw std::logic_error("invalid infusion point on chain 0: " + std::to_string(infused.first) + " != " + std::to_string(target_iters));
+		if(infused_block->height + std::min(params->finality_delay + 1, proof->height) != proof->height) {
+			throw std::logic_error("invalid block height infused on chain 0");
 		}
 		const bool need_second = infused_block->height >= params->challenge_interval
 				&& infused_block->height % params->challenge_interval == 0;
