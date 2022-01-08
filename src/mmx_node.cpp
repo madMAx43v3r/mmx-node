@@ -40,12 +40,14 @@ int main(int argc, char** argv)
 	bool with_farmer = true;
 	bool with_wallet = true;
 	bool with_timelord = true;
+	bool with_harvester = true;
 	std::string endpoint = ":11331";
 	std::string public_endpoint = "0.0.0.0:11330";
 	std::string root_path;
 	vnx::read_config("wallet", with_wallet);
 	vnx::read_config("farmer", with_farmer);
 	vnx::read_config("timelord", with_timelord);
+	vnx::read_config("harvester", with_harvester);
 	vnx::read_config("endpoint", endpoint);
 	vnx::read_config("public_endpoint", public_endpoint);
 	vnx::read_config("root_path", root_path);
@@ -60,6 +62,13 @@ int main(int argc, char** argv)
 	}
 	catch(const std::exception& ex) {
 		vnx::log_info() << "No OpenCL GPU platform found: " << ex.what();
+	}
+
+	if(with_harvester) {
+		with_farmer = true;
+	}
+	if(with_farmer) {
+		with_wallet = true;
 	}
 
 	{
@@ -93,7 +102,7 @@ int main(int argc, char** argv)
 			module.start_detached();
 		}
 	}
-	if(with_farmer || with_wallet) {
+	if(with_wallet) {
 		vnx::Handle<mmx::Wallet> module = new mmx::Wallet("Wallet");
 		module.start_detached();
 		{
@@ -109,7 +118,7 @@ int main(int argc, char** argv)
 			module.start_detached();
 		}
 	}
-	if(with_farmer) {
+	if(with_harvester) {
 		vnx::Handle<mmx::Harvester> module = new mmx::Harvester("Harvester");
 		module.start_detached();
 	}
