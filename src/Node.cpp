@@ -1610,17 +1610,24 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 void Node::purge_tree()
 {
 	const auto root = get_root();
-	for(auto iter = fork_tree.begin(); iter != fork_tree.end();)
-	{
-		const auto& block = iter->second->block;
-		if(block->height <= root->height
-			|| (is_synced && block->height > root->height + 2 * params->commit_delay))
+	bool repeat = true;
+	do {
+		repeat = false;
+		for(auto iter = fork_tree.begin(); iter != fork_tree.end();)
 		{
-			iter = fork_tree.erase(iter);
-		} else {
-			iter++;
+			const auto& fork = iter->second;
+			const auto& block = fork->block;
+			if(block->height <= root->height
+				|| (block->prev != root->hash && !fork->prev.lock())
+				|| (is_synced && block->height > root->height + 2 * params->commit_delay))
+			{
+				iter = fork_tree.erase(iter);
+				repeat = true;
+			} else {
+				iter++;
+			}
 		}
-	}
+	} while(repeat);
 }
 
 uint32_t Node::verify_proof(std::shared_ptr<const Block> block, const hash_t& vdf_challenge) const
