@@ -1611,16 +1611,17 @@ void Node::purge_tree()
 {
 	const auto root = get_root();
 	bool repeat = true;
+	std::unordered_set<hash_t> purged;
 	do {
 		repeat = false;
 		for(auto iter = fork_tree.begin(); iter != fork_tree.end();)
 		{
 			const auto& fork = iter->second;
 			const auto& block = fork->block;
-			if(block->height <= root->height
-				|| (is_synced && block->prev != root->hash && !fork->prev.lock())
+			if(block->height <= root->height || purged.count(block->prev)
 				|| (is_synced && block->height > root->height + 2 * params->commit_delay))
 			{
+				purged.insert(block->hash);
 				iter = fork_tree.erase(iter);
 				repeat = true;
 			} else {
