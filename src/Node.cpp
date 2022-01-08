@@ -1618,7 +1618,7 @@ void Node::purge_tree()
 			const auto& fork = iter->second;
 			const auto& block = fork->block;
 			if(block->height <= root->height
-				|| (block->prev != root->hash && !fork->prev.lock())
+				|| (is_synced && block->prev != root->hash && !fork->prev.lock())
 				|| (is_synced && block->height > root->height + 2 * params->commit_delay))
 			{
 				iter = fork_tree.erase(iter);
