@@ -812,8 +812,9 @@ void Node::update()
 		stuck_timer->reset();
 		if(auto fork = find_fork(peak->hash)) {
 			log(INFO) << "New peak at height " << peak->height << " with score " << std::to_string(fork->proof_score)
+					<< (forked_at ? ", forked at " + std::to_string(forked_at->height) : "")
 					<< ", delay " << (fork->recv_time - verified_vdfs[peak->height].recv_time) / 1e6 << " sec"
-					<< ", took " << elapsed << " sec" << (forked_at ? ", forked at " + std::to_string(forked_at->height) : "");
+					<< ", took " << elapsed << " sec, " << fork_tree.size() << " blocks";
 		}
 	}
 
