@@ -284,7 +284,16 @@ std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id) const
 				block_chain->seek_to(entry.first);
 				auto value = vnx::read(block_chain->in);
 				block_chain->seek_to(last_pos);
-				return std::dynamic_pointer_cast<Transaction>(value);
+				if(auto tx = std::dynamic_pointer_cast<Transaction>(value)) {
+					return tx;
+				}
+				if(auto header = std::dynamic_pointer_cast<BlockHeader>(value)) {
+					if(auto tx = header->tx_base) {
+						if(tx->id == id) {
+							return tx;
+						}
+					}
+				}
 			}
 			catch(...) {
 				block_chain->seek_to(last_pos);
@@ -2044,15 +2053,14 @@ std::shared_ptr<const Block> Node::read_block(bool is_replay, int64_t* file_offs
 	try {
 		if(auto value = vnx::read(in)) {
 			auto header = std::dynamic_pointer_cast<BlockHeader>(value);
-			if(header) {
-				if(is_replay) {
-					block_index[header->height] = std::make_pair(offset, header->hash);
-				}
-			} else {
+			if(!header) {
 				return nullptr;
 			}
-			if(auto block = std::dynamic_pointer_cast<Block>(value)) {
-				return block;
+			if(is_replay) {
+				if(auto tx = header->tx_base) {
+					tx_index[tx->id] = std::make_pair(offset, header->height);
+				}
+				block_index[header->height] = std::make_pair(offset, header->hash);
 			}
 			auto block = Block::create();
 			block->BlockHeader::operator=(*header);
@@ -2082,6 +2090,9 @@ void Node::write_block(std::shared_ptr<const Block> block)
 {
 	auto& out = block_chain->out;
 	const auto offset = out.get_output_pos();
+	if(auto tx = block->tx_base) {
+		tx_index[tx->id] = std::make_pair(offset, block->height);
+	}
 	block_index[block->height] = std::make_pair(offset, block->hash);
 	vnx::write(out, block->get_header());
 
