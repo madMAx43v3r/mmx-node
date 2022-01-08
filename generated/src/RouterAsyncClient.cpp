@@ -19,6 +19,8 @@
 #include <mmx/Router_get_farmer_credits_return.hxx>
 #include <mmx/Router_get_id.hxx>
 #include <mmx/Router_get_id_return.hxx>
+#include <mmx/Router_get_info.hxx>
+#include <mmx/Router_get_info_return.hxx>
 #include <mmx/Router_get_known_peers.hxx>
 #include <mmx/Router_get_known_peers_return.hxx>
 #include <mmx/Router_get_peer_info.hxx>
@@ -29,6 +31,7 @@
 #include <mmx/Router_sign_msg_return.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/hash_t.hpp>
+#include <mmx/node_info_t.hxx>
 #include <mmx/pubkey_t.hpp>
 #include <mmx/signature_t.hpp>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
@@ -204,13 +207,25 @@ uint64_t RouterAsyncClient::get_id(const std::function<void(const ::mmx::hash_t&
 	return _request_id;
 }
 
+uint64_t RouterAsyncClient::get_info(const std::function<void(const ::mmx::node_info_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+	auto _method = ::mmx::Router_get_info::create();
+	const auto _request_id = ++vnx_next_id;
+	{
+		std::lock_guard<std::mutex> _lock(vnx_mutex);
+		vnx_pending[_request_id] = 11;
+		vnx_queue_get_info[_request_id] = std::make_pair(_callback, _error_callback);
+	}
+	vnx_request(_method, _request_id);
+	return _request_id;
+}
+
 uint64_t RouterAsyncClient::sign_msg(const ::mmx::hash_t& msg, const std::function<void(const std::pair<::mmx::pubkey_t, ::mmx::signature_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Router_sign_msg::create();
 	_method->msg = msg;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 11;
+		vnx_pending[_request_id] = 12;
 		vnx_queue_sign_msg[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -223,7 +238,7 @@ uint64_t RouterAsyncClient::get_peers(const uint32_t& max_count, const std::func
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 12;
+		vnx_pending[_request_id] = 13;
 		vnx_queue_get_peers[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -235,7 +250,7 @@ uint64_t RouterAsyncClient::get_known_peers(const std::function<void(const std::
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 13;
+		vnx_pending[_request_id] = 14;
 		vnx_queue_get_known_peers[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -247,7 +262,7 @@ uint64_t RouterAsyncClient::get_connected_peers(const std::function<void(const s
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 14;
+		vnx_pending[_request_id] = 15;
 		vnx_queue_get_connected_peers[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -259,7 +274,7 @@ uint64_t RouterAsyncClient::get_peer_info(const std::function<void(std::shared_p
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 15;
+		vnx_pending[_request_id] = 16;
 		vnx_queue_get_peer_info[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -271,7 +286,7 @@ uint64_t RouterAsyncClient::get_farmer_credits(const std::function<void(const st
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 16;
+		vnx_pending[_request_id] = 17;
 		vnx_queue_get_farmer_credits[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -284,7 +299,7 @@ uint64_t RouterAsyncClient::get_blocks_at(const uint32_t& height, const std::fun
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 17;
+		vnx_pending[_request_id] = 18;
 		vnx_queue_get_blocks_at[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -298,7 +313,7 @@ uint64_t RouterAsyncClient::fetch_block_at(const std::string& address, const uin
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 18;
+		vnx_pending[_request_id] = 19;
 		vnx_queue_fetch_block_at[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -447,6 +462,18 @@ int32_t RouterAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			break;
 		}
 		case 11: {
+			const auto _iter = vnx_queue_get_info.find(_request_id);
+			if(_iter != vnx_queue_get_info.end()) {
+				const auto _callback = std::move(_iter->second.second);
+				vnx_queue_get_info.erase(_iter);
+				_lock.unlock();
+				if(_callback) {
+					_callback(_ex);
+				}
+			}
+			break;
+		}
+		case 12: {
 			const auto _iter = vnx_queue_sign_msg.find(_request_id);
 			if(_iter != vnx_queue_sign_msg.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -458,7 +485,7 @@ int32_t RouterAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 12: {
+		case 13: {
 			const auto _iter = vnx_queue_get_peers.find(_request_id);
 			if(_iter != vnx_queue_get_peers.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -470,7 +497,7 @@ int32_t RouterAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 13: {
+		case 14: {
 			const auto _iter = vnx_queue_get_known_peers.find(_request_id);
 			if(_iter != vnx_queue_get_known_peers.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -482,7 +509,7 @@ int32_t RouterAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 14: {
+		case 15: {
 			const auto _iter = vnx_queue_get_connected_peers.find(_request_id);
 			if(_iter != vnx_queue_get_connected_peers.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -494,7 +521,7 @@ int32_t RouterAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 15: {
+		case 16: {
 			const auto _iter = vnx_queue_get_peer_info.find(_request_id);
 			if(_iter != vnx_queue_get_peer_info.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -506,7 +533,7 @@ int32_t RouterAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 16: {
+		case 17: {
 			const auto _iter = vnx_queue_get_farmer_credits.find(_request_id);
 			if(_iter != vnx_queue_get_farmer_credits.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -518,7 +545,7 @@ int32_t RouterAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 17: {
+		case 18: {
 			const auto _iter = vnx_queue_get_blocks_at.find(_request_id);
 			if(_iter != vnx_queue_get_blocks_at.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -530,7 +557,7 @@ int32_t RouterAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 18: {
+		case 19: {
 			const auto _iter = vnx_queue_fetch_block_at.find(_request_id);
 			if(_iter != vnx_queue_fetch_block_at.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -735,6 +762,25 @@ int32_t RouterAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			break;
 		}
 		case 11: {
+			const auto _iter = vnx_queue_get_info.find(_request_id);
+			if(_iter == vnx_queue_get_info.end()) {
+				throw std::runtime_error("RouterAsyncClient: callback not found");
+			}
+			const auto _callback = std::move(_iter->second.first);
+			vnx_queue_get_info.erase(_iter);
+			_lock.unlock();
+			if(_callback) {
+				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Router_get_info_return>(_value)) {
+					_callback(_result->_ret_0);
+				} else if(_value && !_value->is_void()) {
+					_callback(_value->get_field_by_index(0).to<::mmx::node_info_t>());
+				} else {
+					throw std::logic_error("RouterAsyncClient: invalid return value");
+				}
+			}
+			break;
+		}
+		case 12: {
 			const auto _iter = vnx_queue_sign_msg.find(_request_id);
 			if(_iter == vnx_queue_sign_msg.end()) {
 				throw std::runtime_error("RouterAsyncClient: callback not found");
@@ -753,7 +799,7 @@ int32_t RouterAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 12: {
+		case 13: {
 			const auto _iter = vnx_queue_get_peers.find(_request_id);
 			if(_iter == vnx_queue_get_peers.end()) {
 				throw std::runtime_error("RouterAsyncClient: callback not found");
@@ -772,7 +818,7 @@ int32_t RouterAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 13: {
+		case 14: {
 			const auto _iter = vnx_queue_get_known_peers.find(_request_id);
 			if(_iter == vnx_queue_get_known_peers.end()) {
 				throw std::runtime_error("RouterAsyncClient: callback not found");
@@ -791,7 +837,7 @@ int32_t RouterAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 14: {
+		case 15: {
 			const auto _iter = vnx_queue_get_connected_peers.find(_request_id);
 			if(_iter == vnx_queue_get_connected_peers.end()) {
 				throw std::runtime_error("RouterAsyncClient: callback not found");
@@ -810,7 +856,7 @@ int32_t RouterAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 15: {
+		case 16: {
 			const auto _iter = vnx_queue_get_peer_info.find(_request_id);
 			if(_iter == vnx_queue_get_peer_info.end()) {
 				throw std::runtime_error("RouterAsyncClient: callback not found");
@@ -829,7 +875,7 @@ int32_t RouterAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 16: {
+		case 17: {
 			const auto _iter = vnx_queue_get_farmer_credits.find(_request_id);
 			if(_iter == vnx_queue_get_farmer_credits.end()) {
 				throw std::runtime_error("RouterAsyncClient: callback not found");
@@ -848,7 +894,7 @@ int32_t RouterAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 17: {
+		case 18: {
 			const auto _iter = vnx_queue_get_blocks_at.find(_request_id);
 			if(_iter == vnx_queue_get_blocks_at.end()) {
 				throw std::runtime_error("RouterAsyncClient: callback not found");
@@ -867,7 +913,7 @@ int32_t RouterAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 18: {
+		case 19: {
 			const auto _iter = vnx_queue_fetch_block_at.find(_request_id);
 			if(_iter == vnx_queue_fetch_block_at.end()) {
 				throw std::runtime_error("RouterAsyncClient: callback not found");

@@ -70,6 +70,8 @@ public:
 	
 	std::shared_ptr<const ::mmx::Block> get_block_at(const uint32_t& height = 0);
 	
+	std::shared_ptr<const ::mmx::BlockHeader> get_header(const ::mmx::hash_t& hash = ::mmx::hash_t());
+	
 	std::shared_ptr<const ::mmx::BlockHeader> get_header_at(const uint32_t& height = 0);
 	
 	vnx::optional<::mmx::hash_t> get_block_hash(const uint32_t& height = 0);
@@ -77,6 +79,8 @@ public:
 	::mmx::txo_info_t get_txo_info(const ::mmx::txio_key_t& key = ::mmx::txio_key_t());
 	
 	vnx::optional<uint32_t> get_tx_height(const ::mmx::hash_t& id = ::mmx::hash_t());
+	
+	std::vector<::mmx::hash_t> get_tx_ids_at(const uint32_t& height = 0);
 	
 	void add_block(std::shared_ptr<const ::mmx::Block> block = nullptr);
 	

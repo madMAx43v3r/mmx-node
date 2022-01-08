@@ -11,6 +11,7 @@
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/hash_t.hpp>
+#include <mmx/node_info_t.hxx>
 #include <mmx/pubkey_t.hpp>
 #include <mmx/signature_t.hpp>
 #include <vnx/TopicPtr.hpp>
@@ -56,6 +57,8 @@ public:
 	void discover_async();
 	
 	::mmx::hash_t get_id();
+	
+	::mmx::node_info_t get_info();
 	
 	std::pair<::mmx::pubkey_t, ::mmx::signature_t> sign_msg(const ::mmx::hash_t& msg = ::mmx::hash_t());
 	

@@ -19,6 +19,8 @@
 #include <mmx/Router_get_farmer_credits_return.hxx>
 #include <mmx/Router_get_id.hxx>
 #include <mmx/Router_get_id_return.hxx>
+#include <mmx/Router_get_info.hxx>
+#include <mmx/Router_get_info_return.hxx>
 #include <mmx/Router_get_known_peers.hxx>
 #include <mmx/Router_get_known_peers_return.hxx>
 #include <mmx/Router_get_peer_info.hxx>
@@ -29,6 +31,7 @@
 #include <mmx/Router_sign_msg_return.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/hash_t.hpp>
+#include <mmx/node_info_t.hxx>
 #include <mmx/pubkey_t.hpp>
 #include <mmx/signature_t.hpp>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
@@ -192,6 +195,18 @@ void RouterClient::discover_async() {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<::mmx::hash_t>();
+	} else {
+		throw std::logic_error("RouterClient: invalid return value");
+	}
+}
+
+::mmx::node_info_t RouterClient::get_info() {
+	auto _method = ::mmx::Router_get_info::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Router_get_info_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<::mmx::node_info_t>();
 	} else {
 		throw std::logic_error("RouterClient: invalid return value");
 	}
