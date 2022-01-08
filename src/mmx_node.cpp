@@ -64,11 +64,10 @@ int main(int argc, char** argv)
 		vnx::log_info() << "No OpenCL GPU platform found: " << ex.what();
 	}
 
-	if(with_harvester) {
-		with_farmer = true;
-	}
 	if(with_farmer) {
 		with_wallet = true;
+	} else {
+		with_harvester = false;
 	}
 
 	{
