@@ -45,6 +45,8 @@ module Router extends vnx.addons.TcpServer {
 	uint max_node_tx_credits = 1024;
 	uint max_farmer_credits = 32;
 	
+	uint node_version = 100;
+	
 	set<string> seed_peers;
 	set<string> block_peers;
 	
@@ -55,6 +57,8 @@ module Router extends vnx.addons.TcpServer {
 	void discover();
 	
 	hash_t get_id() const;
+	
+	node_info_t get_info() const;
 	
 	pair<pubkey_t, signature_t> sign_msg(hash_t msg) const;
 	

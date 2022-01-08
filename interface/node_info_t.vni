@@ -1,0 +1,11 @@
+package mmx;
+
+struct node_info_t {
+	
+	hash_t id;
+	
+	uint version;
+	
+	node_type_e type;
+	
+}

@@ -57,6 +57,9 @@ module Node implements vnx.addons.HttpComponent {
 	Block* get_block_at(uint height) const;
 	
 	@Permission(permission_e.PUBLIC)
+	BlockHeader* get_header(hash_t hash) const;
+	
+	@Permission(permission_e.PUBLIC)
 	BlockHeader* get_header_at(uint height) const;
 	
 	@Permission(permission_e.PUBLIC)
@@ -67,6 +70,9 @@ module Node implements vnx.addons.HttpComponent {
 	
 	@Permission(permission_e.PUBLIC)
 	optional<uint> get_tx_height(hash_t id) const;
+	
+	@Permission(permission_e.PUBLIC)
+	vector<hash_t> get_tx_ids_at(uint height) const;
 	
 	void add_block(Block* block);
 	

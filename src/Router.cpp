@@ -15,6 +15,8 @@
 #include <mmx/Request.hxx>
 #include <mmx/Router_get_id.hxx>
 #include <mmx/Router_get_id_return.hxx>
+#include <mmx/Router_get_info.hxx>
+#include <mmx/Router_get_info_return.hxx>
 #include <mmx/Router_sign_msg.hxx>
 #include <mmx/Router_sign_msg_return.hxx>
 #include <mmx/Router_get_peers.hxx>
@@ -23,12 +25,20 @@
 #include <mmx/Node_get_height_return.hxx>
 #include <mmx/Node_get_synced_height.hxx>
 #include <mmx/Node_get_synced_height_return.hxx>
+#include <mmx/Node_get_header.hxx>
+#include <mmx/Node_get_header_return.hxx>
+#include <mmx/Node_get_header_at.hxx>
+#include <mmx/Node_get_header_at_return.hxx>
 #include <mmx/Node_get_block.hxx>
 #include <mmx/Node_get_block_return.hxx>
 #include <mmx/Node_get_block_at.hxx>
 #include <mmx/Node_get_block_at_return.hxx>
 #include <mmx/Node_get_block_hash.hxx>
 #include <mmx/Node_get_block_hash_return.hxx>
+#include <mmx/Node_get_tx_ids_at.hxx>
+#include <mmx/Node_get_tx_ids_at_return.hxx>
+#include <mmx/Node_get_history_for.hxx>
+#include <mmx/Node_get_history_for_return.hxx>
 
 #include <vnx/vnx.h>
 #include <vnx/NoSuchMethod.hxx>
@@ -158,6 +168,15 @@ hash_t Router::get_id() const
 	return node_id;
 }
 
+node_info_t Router::get_info() const
+{
+	node_info_t info;
+	info.id = node_id;
+	info.version = node_version;
+	info.type = node_type_e::FULL_NODE;
+	return info;
+}
+
 std::pair<pubkey_t, signature_t> Router::sign_msg(const hash_t& msg) const
 {
 	return std::make_pair(node_key, signature_t::sign(node_sk, hash_t(msg.bytes)));
@@ -222,8 +241,10 @@ std::shared_ptr<const PeerInfo> Router::get_peer_info() const
 	for(const auto& entry : peer_map) {
 		const auto& state = entry.second;
 		peer_info_t peer;
+		peer.type = state.info.type;
 		peer.address = state.address;
 		peer.height = state.height;
+		peer.version = state.info.version;
 		peer.credits = state.credits;
 		peer.tx_credits = state.tx_credits;
 		peer.ping_ms = state.ping_ms;
@@ -948,7 +969,7 @@ void Router::relay(uint64_t source, std::shared_ptr<const vnx::Value> msg)
 {
 	for(auto& entry : peer_map) {
 		auto& peer = entry.second;
-		if(entry.first != source) {
+		if(peer.info.type == node_type_e::FULL_NODE && entry.first != source) {
 			send_to(peer, msg, false);
 		}
 	}
@@ -1002,7 +1023,10 @@ void Router::send_to(peer_t& peer, std::shared_ptr<const vnx::Value> msg, bool r
 void Router::send_all(std::shared_ptr<const vnx::Value> msg, bool reliable)
 {
 	for(auto& entry : peer_map) {
-		send_to(entry.second, msg, reliable);
+		auto& peer = entry.second;
+		if(peer.info.type == node_type_e::FULL_NODE) {
+			send_to(peer, msg, reliable);
+		}
 	}
 }
 
@@ -1036,6 +1060,11 @@ void Router::on_request(uint64_t client, std::shared_ptr<const Request> msg)
 		case Router_get_id::VNX_TYPE_ID:
 			if(auto value = std::dynamic_pointer_cast<const Router_get_id>(method)) {
 				send_result<Router_get_id_return>(client, msg->id, get_id());
+			}
+			break;
+		case Router_get_info::VNX_TYPE_ID:
+			if(auto value = std::dynamic_pointer_cast<const Router_get_info>(method)) {
+				send_result<Router_get_info_return>(client, msg->id, get_info());
 			}
 			break;
 		case Router_get_peers::VNX_TYPE_ID:
@@ -1090,6 +1119,42 @@ void Router::on_request(uint64_t client, std::shared_ptr<const Request> msg)
 						std::bind(&Router::on_error, this, client, msg->id, std::placeholders::_1));
 			}
 			break;
+		case Node_get_header::VNX_TYPE_ID:
+			if(auto value = std::dynamic_pointer_cast<const Node_get_header>(method)) {
+				node->get_header(value->hash,
+						[=](std::shared_ptr<const BlockHeader> block) {
+							send_result<Node_get_header_return>(client, msg->id, block);
+						},
+						std::bind(&Router::on_error, this, client, msg->id, std::placeholders::_1));
+			}
+			break;
+		case Node_get_header_at::VNX_TYPE_ID:
+			if(auto value = std::dynamic_pointer_cast<const Node_get_header_at>(method)) {
+				node->get_header_at(value->height,
+						[=](std::shared_ptr<const BlockHeader> block) {
+							send_result<Node_get_header_at_return>(client, msg->id, block);
+						},
+						std::bind(&Router::on_error, this, client, msg->id, std::placeholders::_1));
+			}
+			break;
+		case Node_get_tx_ids_at::VNX_TYPE_ID:
+			if(auto value = std::dynamic_pointer_cast<const Node_get_tx_ids_at>(method)) {
+				node->get_tx_ids_at(value->height,
+						[=](const std::vector<hash_t>& ids) {
+							send_result<Node_get_tx_ids_at_return>(client, msg->id, ids);
+						},
+						std::bind(&Router::on_error, this, client, msg->id, std::placeholders::_1));
+			}
+			break;
+		case Node_get_history_for::VNX_TYPE_ID:
+			if(auto value = std::dynamic_pointer_cast<const Node_get_history_for>(method)) {
+				node->get_history_for(value->addresses, value->since,
+						[=](const std::vector<tx_entry_t>& entries) {
+							send_result<Node_get_history_for_return>(client, msg->id, entries);
+						},
+						std::bind(&Router::on_error, this, client, msg->id, std::placeholders::_1));
+			}
+			break;
 		default: {
 			auto ret = Return::create();
 			ret->id = msg->id;
@@ -1119,6 +1184,13 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 						block_peers.insert(peer->address);
 					}
 					disconnect(client);
+				}
+			}
+			break;
+		case Router_get_info_return::VNX_TYPE_ID:
+			if(auto value = std::dynamic_pointer_cast<const Router_get_info_return>(result)) {
+				if(auto peer = find_peer(client)) {
+					peer->info = value->_ret_0;
 				}
 			}
 			break;
@@ -1317,11 +1389,13 @@ void Router::on_connect(uint64_t client, const std::string& address)
 	auto& peer = peer_map[client];
 	peer.client = client;
 	peer.address = address;
+	peer.info.type = node_type_e::FULL_NODE;	// assume full node
 	peer.challenge = hash_t(&seed, sizeof(seed));
 	peer.connected_since_ms = vnx::get_wall_time_millis();
 	peer_set.insert(address);
 
 	send_request(peer, Router_get_id::create());
+	send_request(peer, Router_get_info::create());
 	send_request(peer, Node_get_synced_height::create());
 
 	auto req = Router_sign_msg::create();

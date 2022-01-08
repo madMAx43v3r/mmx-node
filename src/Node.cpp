@@ -161,15 +161,7 @@ std::shared_ptr<const Block> Node::get_block(const hash_t& hash) const
 	}
 	auto iter = hash_index.find(hash);
 	if(iter != hash_index.end()) {
-		auto iter2 = block_index.find(iter->second);
-		if(iter2 != block_index.end()) {
-			std::shared_ptr<const Block> block;
-			const auto prev_pos = block_chain->get_output_pos();
-			block_chain->seek_to(iter2->second.first);
-			block = ((Node*)this)->read_block();
-			block_chain->seek_to(prev_pos);
-			return block;
-		}
+		return get_block_at(iter->second);
 	}
 	return nullptr;
 }
@@ -178,7 +170,11 @@ std::shared_ptr<const Block> Node::get_block_at(const uint32_t& height) const
 {
 	auto iter = block_index.find(height);
 	if(iter != block_index.end()) {
-		return get_block(iter->second.second);
+		const auto prev_pos = block_chain->get_output_pos();
+		block_chain->seek_to(iter->second.first);
+		const auto block = ((Node*)this)->read_block();
+		block_chain->seek_to(prev_pos);
+		return block;
 	}
 	const auto line = get_fork_line();
 	if(!line.empty()) {
@@ -189,6 +185,17 @@ std::shared_ptr<const Block> Node::get_block_at(const uint32_t& height) const
 				return line[index]->block;
 			}
 		}
+	}
+	return nullptr;
+}
+
+std::shared_ptr<const BlockHeader> Node::get_header(const hash_t& hash) const
+{
+	if(auto header = find_header(hash)) {
+		return header;
+	}
+	if(auto block = get_block(hash)) {
+		return block->get_header();
 	}
 	return nullptr;
 }
@@ -217,6 +224,17 @@ vnx::optional<hash_t> Node::get_block_hash(const uint32_t& height) const
 		return block->hash;
 	}
 	return nullptr;
+}
+
+std::vector<hash_t> Node::get_tx_ids_at(const uint32_t& height) const
+{
+	std::vector<hash_t> list;
+	if(auto block = get_block_at(height)) {
+		for(const auto& tx : block->tx_list) {
+			list.push_back(tx->id);
+		}
+	}
+	return list;
 }
 
 vnx::optional<uint32_t> Node::get_tx_height(const hash_t& id) const

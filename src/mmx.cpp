@@ -295,6 +295,7 @@ int main(int argc, char** argv)
 						std::cout << "!";
 					}
 					std::cout << height;
+					std::cout << ", " << vnx::to_string_value(peer.type) << " (" << peer.version / 100 << "." << peer.version % 100 << ")";
 					std::cout << ", " << ((peer.bytes_recv / 1024) * 1000) / peer.connect_time_ms << " KB/s recv";
 					std::cout << ", " << ((peer.bytes_send / 1024) * 1000) / peer.connect_time_ms << " KB/s send";
 					std::cout << ", since " << (peer.connect_time_ms / 60000) << " min";
@@ -379,24 +380,29 @@ int main(int argc, char** argv)
 				{
 					std::cout << node.get_height() << std::endl;
 				}
-				else if(subject == "block" || subject == "header")
+				else if(subject == "block")
 				{
 					int64_t height = 0;
 					vnx::read_config("$4", height);
 
-					if(height < 0) {
-						vnx::log_error() << "Invalid height: " << height;
-						goto failed;
-					}
 					const auto block = node.get_block_at(height);
 					{
 						std::stringstream ss;
 						vnx::PrettyPrinter printer(ss);
-						if(subject == "header") {
-							vnx::accept(printer, block ? block->get_header() : nullptr);
-						} else {
-							vnx::accept(printer, block);
-						}
+						vnx::accept(printer, block);
+						std::cout << ss.str() << std::endl;
+					}
+				}
+				else if(subject == "header")
+				{
+					int64_t height = 0;
+					vnx::read_config("$4", height);
+
+					const auto header = node.get_header_at(height);
+					{
+						std::stringstream ss;
+						vnx::PrettyPrinter printer(ss);
+						vnx::accept(printer, header);
 						std::cout << ss.str() << std::endl;
 					}
 				}

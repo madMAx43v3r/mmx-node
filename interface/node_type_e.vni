@@ -1,0 +1,9 @@
+package mmx;
+
+enum node_type_e {
+	
+	FULL_NODE,
+	SPV_WALLET,
+	API_CLIENT,
+	
+}

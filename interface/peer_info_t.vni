@@ -4,11 +4,14 @@ struct peer_info_t {
 	
 	string address;
 	
+	node_type_e type;
+	
 	int credits;
 	int tx_credits;
 	int ping_ms;
 	
 	uint height;
+	uint version;
 	
 	long recv_timeout_ms;			// delta since last reply [ms]
 	long connect_time_ms;			// how long peer is connected [ms]

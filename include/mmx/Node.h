@@ -40,11 +40,15 @@ protected:
 
 	std::shared_ptr<const Block> get_block_at(const uint32_t& height) const override;
 
+	std::shared_ptr<const BlockHeader> get_header(const hash_t& hash) const override;
+
 	std::shared_ptr<const BlockHeader> get_header_at(const uint32_t& height) const override;
 
 	vnx::optional<hash_t> get_block_hash(const uint32_t& height) const override;
 
 	vnx::optional<uint32_t> get_tx_height(const hash_t& id) const override;
+
+	std::vector<hash_t> get_tx_ids_at(const uint32_t& height) const override;
 
 	txo_info_t get_txo_info(const txio_key_t& key) const override;
 

@@ -31,6 +31,8 @@ protected:
 
 	hash_t get_id() const override;
 
+	node_info_t get_info() const override;
+
 	std::pair<pubkey_t, signature_t> sign_msg(const hash_t& msg) const override;
 
 	std::vector<std::string> get_peers(const uint32_t& max_count) const override;
@@ -71,6 +73,7 @@ private:
 		uint64_t bytes_send = 0;
 		uint64_t bytes_recv = 0;
 		hash_t challenge;
+		node_info_t info;
 		std::string address;
 		vnx::optional<hash_t> node_id;
 		std::queue<std::shared_ptr<const Transaction>> tx_queue;
