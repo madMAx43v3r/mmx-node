@@ -67,11 +67,11 @@ int main(int argc, char** argv)
 		module.start_detached();
 	}
 	{
-		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url(endpoint));
+		vnx::Handle<vnx::Server> module = new vnx::Server("Server0", vnx::Endpoint::from_url(public_endpoint));
 		module.start_detached();
 	}
 	{
-		vnx::Handle<vnx::Server> module = new vnx::Server("PublicServer", vnx::Endpoint::from_url(public_endpoint));
+		vnx::Handle<vnx::Server> module = new vnx::Server("Server1", vnx::Endpoint::from_url(endpoint));
 		module.start_detached();
 	}
 	{
@@ -88,14 +88,26 @@ int main(int argc, char** argv)
 	if(with_timelord) {
 		vnx::Handle<mmx::TimeLord> module = new mmx::TimeLord("TimeLord");
 		module.start_detached();
+		{
+			vnx::Handle<vnx::Server> module = new vnx::Server("Server2", vnx::Endpoint::from_url(":11332"));
+			module.start_detached();
+		}
 	}
 	if(with_farmer || with_wallet) {
 		vnx::Handle<mmx::Wallet> module = new mmx::Wallet("Wallet");
 		module.start_detached();
+		{
+			vnx::Handle<vnx::Server> module = new vnx::Server("Server5", vnx::Endpoint::from_url(":11335"));
+			module.start_detached();
+		}
 	}
 	if(with_farmer) {
 		vnx::Handle<mmx::Farmer> module = new mmx::Farmer("Farmer");
 		module.start_detached();
+		{
+			vnx::Handle<vnx::Server> module = new vnx::Server("Server3", vnx::Endpoint::from_url(":11333"));
+			module.start_detached();
+		}
 	}
 	if(with_farmer) {
 		vnx::Handle<mmx::Harvester> module = new mmx::Harvester("Harvester");

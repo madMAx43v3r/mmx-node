@@ -70,12 +70,10 @@ int main(int argc, char** argv)
 	vnx::read_config("target", target_addr);
 	vnx::read_config("contract", contract_addr);
 
-	mmx::NodeClient node("Node");
-	mmx::WalletClient wallet("Wallet");
-	mmx::RouterClient router("Router");
-
 	bool did_fail = false;
 	auto params = mmx::get_params();
+
+	mmx::NodeClient node("Node");
 
 	mmx::addr_t target;
 	mmx::addr_t contract;
@@ -96,43 +94,24 @@ int main(int argc, char** argv)
 		goto failed;
 	}
 
-	if(module == "rwallet")
-	{
-		std::string node_url = ":11335";
-		vnx::read_config("node", node_url);
-
-		vnx::Handle<vnx::Proxy> module = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
-		module->forward_list = {"Wallet", "Node"};
-		module.start_detached();
-
-		params = node.get_params();
-	}
-	else if(module == "rfarm")
-	{
-		std::string node_url = ":11333";
-		vnx::read_config("node", node_url);
-
-		vnx::Handle<vnx::Proxy> module = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
-		module->forward_list = {"Node", "Farmer", "Harvester"};
-		module.start_detached();
-
-		params = node.get_params();
-	}
-	else if(module != "wallet" || command != "create")
-	{
-		std::string node_url = ":11331";
-		vnx::read_config("node", node_url);
-
-		vnx::Handle<vnx::Proxy> module = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
-		module->forward_list = {"Wallet", "Node", "Farmer", "Harvester", "Router"};
-		module.start_detached();
-
-		params = node.get_params();
-	}
-
 	try {
-		if(module == "wallet" || module == "rwallet")
+		if(module == "wallet")
 		{
+			std::string node_url = ":11335";
+			vnx::read_config("node", node_url);
+
+			if(command != "create") {
+				vnx::Handle<vnx::Proxy> module = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
+				module->forward_list = {"Wallet", "Node"};
+				module.start_detached();
+				try {
+					params = node.get_params();
+				} catch(...) {
+					// ignore
+				}
+			}
+			mmx::WalletClient wallet("Wallet");
+
 			if(command == "show")
 			{
 				int num_addrs = 1;
@@ -238,6 +217,19 @@ int main(int argc, char** argv)
 		}
 		else if(module == "node")
 		{
+			std::string node_url = ":11331";
+			vnx::read_config("node", node_url);
+
+			vnx::Handle<vnx::Proxy> module = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
+			module->forward_list = {"Router", "Node"};
+			module.start_detached();
+			try {
+				params = node.get_params();
+			} catch(...) {
+				// ignore
+			}
+			mmx::RouterClient router("Router");
+
 			if(command == "balance")
 			{
 				mmx::addr_t address;
@@ -482,8 +474,19 @@ int main(int argc, char** argv)
 				std::cerr << "Help: mmx node [info | peers | tx | get | fetch | balance | sync]" << std::endl;
 			}
 		}
-		else if(module == "farm" || module == "rfarm")
+		else if(module == "farm")
 		{
+			std::string node_url = ":11333";
+			vnx::read_config("node", node_url);
+
+			vnx::Handle<vnx::Proxy> module = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
+			module->forward_list = {"Farmer", "Harvester", "Node"};
+			module.start_detached();
+			try {
+				params = node.get_params();
+			} catch(...) {
+				// ignore
+			}
 			mmx::HarvesterClient harvester("Harvester");
 
 			auto info = harvester.get_farm_info();
