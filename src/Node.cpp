@@ -1811,6 +1811,7 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, const vd
 	else if(elapsed > params->block_time - 3) {
 		log(WARN) << "VDF verification took longer than recommended: " << elapsed << " sec";
 	}
+	log(INFO) << "-------------------------------------------------------------------------------";
 	log(INFO) << "Verified VDF for height " << proof->height << ", delta = "
 				<< (point.recv_time - prev.recv_time) / 1e6 << " sec, took " << elapsed << " sec";
 
