@@ -4,7 +4,7 @@
 #include <mmx/package.hxx>
 #include <mmx/BlockHeader.hxx>
 #include <mmx/ProofOfSpace.hxx>
-#include <mmx/Transaction.hxx>
+#include <mmx/TransactionBase.hxx>
 #include <mmx/bls_signature_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <vnx/Value.h>

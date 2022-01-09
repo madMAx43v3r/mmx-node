@@ -6,7 +6,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/ProofOfSpace.hxx>
-#include <mmx/Transaction.hxx>
+#include <mmx/TransactionBase.hxx>
 #include <mmx/bls_signature_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <vnx/Value.h>
@@ -25,7 +25,7 @@ public:
 	uint64_t vdf_iters = 0;
 	std::array<::mmx::hash_t, 2> vdf_output = {};
 	std::shared_ptr<const ::mmx::ProofOfSpace> proof;
-	std::shared_ptr<const ::mmx::Transaction> tx_base;
+	std::shared_ptr<const ::mmx::TransactionBase> tx_base;
 	::mmx::hash_t tx_hash;
 	vnx::optional<::mmx::bls_signature_t> pool_sig;
 	vnx::optional<::mmx::bls_signature_t> farmer_sig;

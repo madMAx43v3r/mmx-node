@@ -313,7 +313,7 @@ std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id) const
 					return tx;
 				}
 				if(auto header = std::dynamic_pointer_cast<BlockHeader>(value)) {
-					if(auto tx = header->tx_base) {
+					if(auto tx = std::dynamic_pointer_cast<const Transaction>(header->tx_base)) {
 						if(tx->id == id) {
 							return tx;
 						}
@@ -425,6 +425,31 @@ std::shared_ptr<const Contract> Node::get_contract(const addr_t& address) const
 	return nullptr;
 }
 
+bool Node::include_transaction(std::shared_ptr<const Transaction> tx)
+{
+	for(const auto& in : tx->inputs) {
+		if(utxo_map.count(in.prev)) {
+			return true;
+		}
+	}
+	for(const auto& out : tx->outputs) {
+		if(light_address_set.count(out.address)) {
+			return true;
+		}
+	}
+	for(const auto& out : tx->exec_outputs) {
+		if(light_address_set.count(out.address)) {
+			return true;
+		}
+	}
+	for(const auto& op : tx->execute) {
+		if(light_address_set.count(op->address)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void Node::add_block(std::shared_ptr<const Block> block)
 {
 	if(fork_tree.count(block->hash)) {
@@ -439,30 +464,16 @@ void Node::add_block(std::shared_ptr<const Block> block)
 	}
 	if(light_mode) {
 		auto copy = vnx::clone(block);
+		if(auto tx = std::dynamic_pointer_cast<const Transaction>(copy->tx_base)) {
+			if(!include_transaction(tx)) {
+				auto dummy = TransactionBase::create();
+				dummy->id = tx->id;
+				copy->tx_base = dummy;
+			}
+		}
 		for(auto& base : copy->tx_list) {
 			if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
-				bool filter = true;
-				for(const auto& in : tx->inputs) {
-					if(utxo_map.count(in.prev)) {
-						filter = false; break;
-					}
-				}
-				for(const auto& out : tx->outputs) {
-					if(light_address_set.count(out.address)) {
-						filter = false; break;
-					}
-				}
-				for(const auto& out : tx->exec_outputs) {
-					if(light_address_set.count(out.address)) {
-						filter = false; break;
-					}
-				}
-				for(const auto& op : tx->execute) {
-					if(light_address_set.count(op->address)) {
-						filter = false; break;
-					}
-				}
-				if(filter) {
+				if(!include_transaction(tx)) {
 					auto dummy = TransactionBase::create();
 					dummy->id = tx->id;
 					base = dummy;
@@ -1437,7 +1448,7 @@ void Node::validate(std::shared_ptr<const Block> block) const
 		}
 	}
 	uint64_t base_spent = 0;
-	if(const auto& tx = block->tx_base) {
+	if(auto tx = std::dynamic_pointer_cast<const Transaction>(block->tx_base)) {
 		base_spent = validate(tx, block);
 	}
 	{
@@ -1959,7 +1970,7 @@ void Node::apply(std::shared_ptr<const Block> block) noexcept
 	const auto log = std::make_shared<change_log_t>();
 	log->prev_state = state_hash;
 
-	if(const auto& tx = block->tx_base) {
+	if(auto tx = std::dynamic_pointer_cast<const Transaction>(block->tx_base)) {
 		apply(block, tx, 0, *log);
 	}
 	for(size_t i = 0; i < block->tx_list.size(); ++i) {
@@ -2148,7 +2159,7 @@ std::shared_ptr<const Block> Node::read_block(bool is_replay, int64_t* file_offs
 				return nullptr;
 			}
 			if(is_replay) {
-				if(auto tx = header->tx_base) {
+				if(auto tx = std::dynamic_pointer_cast<const Transaction>(header->tx_base)) {
 					tx_index[tx->id] = std::make_pair(offset, header->height);
 				}
 				block_index[header->height] = std::make_pair(offset, header->hash);
@@ -2181,7 +2192,7 @@ void Node::write_block(std::shared_ptr<const Block> block)
 {
 	auto& out = block_chain->out;
 	const auto offset = out.get_output_pos();
-	if(auto tx = block->tx_base) {
+	if(auto tx = std::dynamic_pointer_cast<const Transaction>(block->tx_base)) {
 		tx_index[tx->id] = std::make_pair(offset, block->height);
 	}
 	block_index[block->height] = std::make_pair(offset, block->hash);
@@ -2189,7 +2200,9 @@ void Node::write_block(std::shared_ptr<const Block> block)
 
 	for(const auto& tx : block->tx_list) {
 		const auto offset = out.get_output_pos();
-		tx_index[tx->id] = std::make_pair(offset, block->height);
+		if(std::dynamic_pointer_cast<const Transaction>(tx)) {
+			tx_index[tx->id] = std::make_pair(offset, block->height);
+		}
 		vnx::write(out, tx);
 	}
 	vnx::write(out, nullptr);

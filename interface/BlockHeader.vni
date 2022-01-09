@@ -15,7 +15,7 @@ class BlockHeader {
 	
 	ProofOfSpace* proof;
 	
-	Transaction* tx_base;
+	TransactionBase* tx_base;
 	
 	hash_t tx_hash;
 	

@@ -124,6 +124,8 @@ private:
 
 	void check_vdfs();
 
+	bool include_transaction(std::shared_ptr<const Transaction> tx);
+
 	bool make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response);
 
 	void sync_more();
