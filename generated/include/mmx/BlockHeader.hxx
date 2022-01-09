@@ -26,6 +26,7 @@ public:
 	std::array<::mmx::hash_t, 2> vdf_output = {};
 	std::shared_ptr<const ::mmx::ProofOfSpace> proof;
 	std::shared_ptr<const ::mmx::TransactionBase> tx_base;
+	uint32_t tx_count = 0;
 	::mmx::hash_t tx_hash;
 	vnx::optional<::mmx::bls_signature_t> pool_sig;
 	vnx::optional<::mmx::bls_signature_t> farmer_sig;

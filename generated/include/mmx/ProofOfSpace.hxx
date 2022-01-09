@@ -17,6 +17,7 @@ class ProofOfSpace : public ::vnx::Value {
 public:
 	
 	uint8_t ksize = 0;
+	uint64_t score = 0;
 	::mmx::hash_t plot_id;
 	std::vector<uint8_t> proof_bytes;
 	::mmx::bls_pubkey_t local_key;
