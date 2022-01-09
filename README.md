@@ -146,6 +146,19 @@ If you have a slow CPU this is recommended and maybe even needed to stay in sync
 
 Any config changes require a node restart to become effective.
 
+### Light Node
+
+The node can be run in a "light mode" which filters out any transactions which don't concern your addresses, in addition to disabling message relaying, VDF verification and transaction verification.
+A light node relies on other full nodes to validate transactions and only checks that transactions of interest were included in blocks with valid proof (aka SPV, Simplified Payment Verification). 
+
+To run a light node:
+```
+./run_light_node.sh
+```
+Light node data will end up in `testnet3/light_node/` by default, there is no conflict with data from a full node.
+
+Note: You cannot add a new wallet afterwards (or increase the number of addresses), if you do so you have to re-sync from scratch.
+
 ### Reducing network traffic
 
 If you have a slow internet connection or want to reduce traffic in general you can lower the number of connections in `config/local/Router.json`.
