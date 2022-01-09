@@ -291,6 +291,8 @@ To add a plot directory add the path to `plot_dirs` array in `config/local/Harve
 
 ## Installation
 
+Note: OpenCL packages are optional, ie. `ocl-icd-opencl-dev`, etc.
+
 Ubuntu Linux:
 ```
 sudo apt update

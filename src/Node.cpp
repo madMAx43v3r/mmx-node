@@ -42,6 +42,7 @@ void Node::main()
 		vnx::read_config("light_address_set", light_address_set);
 		log(INFO) << "Got " << light_address_set.size() << " addresses for light mode.";
 	} else {
+#ifdef WITH_OPENCL
 		if(opencl_device >= 0) {
 			const auto devices = automy::basic_opencl::get_devices();
 			if(size_t(opencl_device) < devices.size()) {
@@ -54,6 +55,7 @@ void Node::main()
 				log(WARN) <<  "No such OpenCL GPU device: " << opencl_device;
 			}
 		}
+#endif
 		vdf_threads = std::make_shared<vnx::ThreadPool>(1);
 	}
 

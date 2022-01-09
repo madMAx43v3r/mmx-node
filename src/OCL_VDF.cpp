@@ -12,11 +12,13 @@
 
 namespace mmx {
 
+#ifdef WITH_OPENCL
+
 std::mutex OCL_VDF::g_mutex;
 std::shared_ptr<OCL_VDF::Program> OCL_VDF::g_program;
 
 
-OCL_VDF::OCL_VDF(cl_uint device)
+OCL_VDF::OCL_VDF(uint32_t device)
 {
 	std::lock_guard<std::mutex> lock(g_mutex);
 
@@ -104,6 +106,14 @@ void OCL_VDF::verify(std::shared_ptr<const ProofOfTime> proof, const uint32_t ch
 	}
 }
 
+#else
 
+OCL_VDF::OCL_VDF(uint32_t device) {}
+
+void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain, const hash_t& begin) {}
+
+void OCL_VDF::verify(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain) {}
+
+#endif // WITH_OPENCL
 
 } // mmx

@@ -60,6 +60,7 @@ int main(int argc, char** argv)
 		with_timelord = false;
 		root_path += "light_node/";
 	} else {
+#ifdef WITH_OPENCL
 		try {
 			std::string platform_name;
 			vnx::read_config("opencl.platform", platform_name);
@@ -68,6 +69,7 @@ int main(int argc, char** argv)
 		catch(const std::exception& ex) {
 			vnx::log_info() << "No OpenCL GPU platform found: " << ex.what();
 		}
+#endif
 	}
 	if(!root_path.empty()) {
 		vnx::Directory(root_path).create();
@@ -155,7 +157,10 @@ int main(int argc, char** argv)
 	vnx::close();
 
 	mmx::secp256k1_free();
+
+#ifdef WITH_OPENCL
 	automy::basic_opencl::release_context();
+#endif
 
 	return 0;
 }

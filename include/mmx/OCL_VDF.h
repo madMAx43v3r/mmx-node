@@ -10,23 +10,25 @@
 
 #include <mmx/ProofOfTime.hxx>
 
+#ifdef WITH_OPENCL
 #include <automy/basic_opencl/Context.h>
 #include <automy/basic_opencl/Program.h>
 #include <automy/basic_opencl/Kernel.h>
 #include <automy/basic_opencl/Buffer3D.h>
-
+#endif
 
 namespace mmx {
 
 class OCL_VDF {
 public:
-	OCL_VDF(cl_uint device);
+	OCL_VDF(uint32_t device);
 
 	void compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain, const hash_t& begin);
 
 	void verify(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain);
 
 private:
+#ifdef WITH_OPENCL
 	using Kernel = automy::basic_opencl::Kernel;
 	using Program = automy::basic_opencl::Program;
 	using CommandQueue = automy::basic_opencl::CommandQueue;
@@ -46,6 +48,7 @@ private:
 
 	static std::mutex g_mutex;
 	static std::shared_ptr<Program> g_program;
+#endif
 
 };
 

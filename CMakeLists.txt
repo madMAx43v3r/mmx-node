@@ -15,15 +15,18 @@ add_subdirectory(vnx-base)
 add_subdirectory(vnx-addons)
 add_subdirectory(libbech32)
 add_subdirectory(bls-signatures)
-add_subdirectory(basic-opencl)
 
+find_package(OpenCL)
 find_package(Threads REQUIRED)
 
 include(chiapos.cmake)
 
-target_compile_definitions(automy_basic_opencl
-	PUBLIC CL_TARGET_OPENCL_VERSION=120
-)
+if(OpenCL_FOUND)
+	add_subdirectory(basic-opencl)
+	target_compile_definitions(automy_basic_opencl
+		PUBLIC CL_TARGET_OPENCL_VERSION=120
+	)
+endif()
 
 if(SODIUM_FOUND)
 	message(STATUS "Found libsodium")
@@ -89,7 +92,12 @@ target_include_directories(mmx_chiapos
 )
 
 target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_addons vnx_base)
-target_link_libraries(mmx_modules automy_basic_opencl mmx_chiapos mmx_iface)
+target_link_libraries(mmx_modules mmx_chiapos mmx_iface)
+
+if(OpenCL_FOUND)
+	target_link_libraries(mmx_modules automy_basic_opencl)
+	target_compile_definitions(mmx_modules PUBLIC WITH_OPENCL)
+endif()
 
 add_executable(mmx src/mmx.cpp)
 add_executable(mmx_node src/mmx_node.cpp)
