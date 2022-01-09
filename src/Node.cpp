@@ -781,7 +781,7 @@ void Node::update()
 
 		// show finalized blocks
 		for(const auto& fork : fork_line) {
-			if(fork->block->height + params->finality_delay < fork_line.back()->block->height) {
+			if(fork->block->height + params->finality_delay + 1 < fork_line.back()->block->height) {
 				if(!fork->is_finalized) {
 					fork->is_finalized = true;
 					const auto block = fork->block;
