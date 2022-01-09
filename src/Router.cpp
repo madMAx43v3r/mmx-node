@@ -1197,6 +1197,10 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 				if(auto peer = find_peer(client)) {
 					peer->info = value->_ret_0;
 					if(peer->info.type != node_type_e::FULL_NODE) {
+						if(peer->is_outbound) {
+							disconnect(peer->client);
+						}
+						peer_set.erase(peer->address);
 						synced_peers.erase(peer->client);
 					}
 				}
