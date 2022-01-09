@@ -436,13 +436,6 @@ void Node::add_block(std::shared_ptr<const Block> block)
 		return;
 	}
 	if(light_mode) {
-		if(is_synced && !fork_tree.count(block->prev)) {
-			const auto height = block->height - 1;
-			if(!sync_pending.count(height)) {
-				router->get_blocks_at(height, std::bind(&Node::sync_result, this, height, std::placeholders::_1));
-				sync_pending.insert(height);
-			}
-		}
 		auto copy = vnx::clone(block);
 		for(auto& base : copy->tx_list) {
 			if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
@@ -493,6 +486,17 @@ void Node::add_block(std::shared_ptr<const Block> block)
 		next->vdf_output = iter->second.output;
 		next->finalize();
 		add_block(next);
+	}
+
+	// fetch missing previous
+	if(is_synced && !fork_tree.count(block->prev))
+	{
+		const auto height = block->height - 1;
+		if(!sync_pending.count(height)) {
+			router->get_blocks_at(height, std::bind(&Node::sync_result, this, height, std::placeholders::_1));
+			sync_pending.insert(height);
+			log(INFO) << "Fetching missed block at height " << height << " with hash " << block->prev;
+		}
 	}
 }
 
@@ -724,14 +728,17 @@ void Node::update()
 	std::vector<std::pair<std::shared_ptr<fork_t>, hash_t>> to_verify;
 	{
 		const auto root = get_root();
-		for(auto iter = fork_tree.begin(); iter != fork_tree.end();)
+		for(const auto& entry : fork_tree)
 		{
-			const auto& fork = iter->second;
+			const auto& fork = entry.second;
 			const auto& block = fork->block;
 
 			bool has_prev = true;
 			if(!fork->prev.lock()) {
 				if(auto prev = find_fork(block->prev)) {
+					if(prev->is_invalid) {
+						fork->is_invalid = true;
+					}
 					fork->prev = prev;
 				} else {
 					has_prev = false;
@@ -740,7 +747,7 @@ void Node::update()
 			if(!fork->diff_block) {
 				fork->diff_block = find_diff_header(block);
 			}
-			if(!fork->is_proof_verified && fork->diff_block && (has_prev || block->prev == root->hash))
+			if(!fork->is_invalid && !fork->is_proof_verified && fork->diff_block && (has_prev || block->prev == root->hash))
 			{
 				bool vdf_passed = light_mode;
 				if(is_synced) {
@@ -750,9 +757,8 @@ void Node::update()
 						if(block->vdf_iters == point.iters && block->vdf_output == point.output) {
 							vdf_passed = true;
 						} else {
+							fork->is_invalid = true;
 							log(WARN) << "VDF verification failed for a block at height " << block->height;
-							iter = fork_tree.erase(iter);
-							continue;
 						}
 					}
 				}
@@ -764,10 +770,8 @@ void Node::update()
 					}
 				}
 			}
-			iter++;
 		}
 	}
-	std::vector<hash_t> invalid;
 
 #pragma omp parallel for
 	for(size_t i = 0; i < to_verify.size(); ++i)
@@ -779,13 +783,9 @@ void Node::update()
 			verify_proof(fork, entry.second);
 		}
 		catch(const std::exception& ex) {
-#pragma omp critical
-			invalid.push_back(block->hash);
+			fork->is_invalid = true;
 			log(WARN) << "Proof verification failed for a block at height " << block->height << " with: " << ex.what();
 		}
-	}
-	for(const auto& hash : invalid) {
-		fork_tree.erase(hash);
 	}
 	const auto prev_peak = find_header(state_hash);
 
@@ -1318,7 +1318,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 			}
 			catch(const std::exception& ex) {
 				log(WARN) << "Block verification failed for height " << block->height << " with: " << ex.what();
-				fork_tree.erase(block->hash);
+				fork->is_invalid = true;
 				fork_to(prev_state);
 				throw;
 			}
@@ -1351,7 +1351,7 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork(std::shared_ptr<const BlockHe
 	{
 		const auto& fork = entry.second;
 		const auto& block = fork->block;
-		if(block->height <= root->height) {
+		if(fork->is_invalid || block->height <= root->height) {
 			continue;
 		}
 		if(at_height && block->height != *at_height) {
@@ -1386,7 +1386,7 @@ bool Node::calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared
 {
 	while(fork) {
 		const auto& block = fork->block;
-		if(!fork->is_proof_verified || fork->proof_score > params->score_threshold) {
+		if(fork->is_invalid || !fork->is_proof_verified || fork->proof_score > params->score_threshold) {
 			return false;
 		}
 		if(fork->has_weak_proof) {

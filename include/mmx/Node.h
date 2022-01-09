@@ -94,6 +94,7 @@ protected:
 
 private:
 	struct fork_t {
+		bool is_invalid = false;
 		bool is_verified = false;
 		bool is_finalized = false;
 		bool is_proof_verified = false;
