@@ -170,21 +170,21 @@ void Harvester::reload()
 		vnx::Directory dir(plot_dirs[i]);
 		try {
 			dir.open();
+			for(const auto& file : dir.files()) {
+				if(file && file->get_extension() == ".plot") {
+					try {
+						auto prover = std::make_shared<chiapos::DiskProver>(file->get_path());
+#pragma omp critical
+						plots.emplace_back(file, prover);
+					}
+					catch(const std::exception& ex) {
+						log(WARN) << "Failed to load plot '" << file->get_path() << "' due to: " << ex.what();
+					}
+				}
+			}
 		} catch(const std::exception& ex) {
 			log(WARN) << ex.what();
 			continue;
-		}
-		for(const auto& file : dir.files()) {
-			if(file && file->get_extension() == ".plot") {
-				try {
-					auto prover = std::make_shared<chiapos::DiskProver>(file->get_path());
-#pragma omp critical
-					plots.emplace_back(file, prover);
-				}
-				catch(const std::exception& ex) {
-					log(WARN) << "Failed to load plot '" << file->get_path() << "' due to: " << ex.what();
-				}
-			}
 		}
 	}
 	total_bytes = 0;
