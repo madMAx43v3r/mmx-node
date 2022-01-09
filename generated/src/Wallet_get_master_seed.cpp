@@ -131,6 +131,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_master_seed::static_create_type_code()
 		field.name = "index";
 		field.code = {3};
 	}
+	type_code->permission = "mmx.permission_e.SPENDING";
 	type_code->build();
 	return type_code;
 }

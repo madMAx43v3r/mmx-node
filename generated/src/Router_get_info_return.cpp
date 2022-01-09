@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Router_get_info_return::VNX_TYPE_HASH(0x15170c71ca9209a9ull);
-const vnx::Hash64 Router_get_info_return::VNX_CODE_HASH(0x6da02ca1f8f4482dull);
+const vnx::Hash64 Router_get_info_return::VNX_CODE_HASH(0xd5570290d072503full);
 
 vnx::Hash64 Router_get_info_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -116,7 +116,7 @@ std::shared_ptr<vnx::TypeCode> Router_get_info_return::static_create_type_code()
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Router.get_info.return";
 	type_code->type_hash = vnx::Hash64(0x15170c71ca9209a9ull);
-	type_code->code_hash = vnx::Hash64(0x6da02ca1f8f4482dull);
+	type_code->code_hash = vnx::Hash64(0xd5570290d072503full);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;

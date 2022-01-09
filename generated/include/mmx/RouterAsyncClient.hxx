@@ -12,6 +12,7 @@
 #include <mmx/Transaction.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/node_info_t.hxx>
+#include <mmx/node_type_e.hxx>
 #include <mmx/pubkey_t.hpp>
 #include <mmx/signature_t.hpp>
 #include <vnx/TopicPtr.hpp>

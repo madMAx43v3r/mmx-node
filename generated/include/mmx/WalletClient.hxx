@@ -67,6 +67,8 @@ public:
 	
 	::mmx::addr_t get_address(const uint32_t& index = 0, const uint32_t& offset = 0);
 	
+	std::vector<::mmx::addr_t> get_all_addresses(const int32_t& index = 0);
+	
 	::mmx::hash_t get_master_seed(const uint32_t& index = 0);
 	
 	std::shared_ptr<const ::mmx::FarmerKeys> get_farmer_keys(const uint32_t& index = 0);

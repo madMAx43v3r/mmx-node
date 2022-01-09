@@ -55,6 +55,7 @@ public:
 	uint32_t tx_pool_limit = 1000000;
 	int32_t opencl_device = 0;
 	vnx::bool_t do_sync = true;
+	vnx::bool_t light_mode = false;
 	std::string storage_path;
 	std::string router_name = "Router";
 	std::string timelord_name = "TimeLord";

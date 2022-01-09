@@ -4,7 +4,7 @@
 #include <mmx/package.hxx>
 #include <mmx/Block.hxx>
 #include <mmx/BlockHeader.hxx>
-#include <mmx/Transaction.hxx>
+#include <mmx/TransactionBase.hxx>
 #include <mmx/hash_t.hpp>
 
 #include <vnx/vnx.h>

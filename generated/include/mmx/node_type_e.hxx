@@ -15,7 +15,7 @@ struct node_type_e {
 	enum enum_t : uint32_t {
 		API_CLIENT = 1802393446l,
 		FULL_NODE = 2903686019l,
-		SPV_WALLET = 3547734269l,
+		LIGHT_NODE = 3477499945l,
 	};
 	
 	::mmx::node_type_e::enum_t value = ::mmx::node_type_e::enum_t(0);

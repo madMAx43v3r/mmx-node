@@ -12,6 +12,7 @@
 #include <mmx/Transaction.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/node_info_t.hxx>
+#include <mmx/node_type_e.hxx>
 #include <mmx/pubkey_t.hpp>
 #include <mmx/signature_t.hpp>
 #include <vnx/TopicPtr.hpp>
@@ -57,6 +58,8 @@ public:
 	uint32_t max_node_tx_credits = 1024;
 	uint32_t max_farmer_credits = 32;
 	uint32_t node_version = 100;
+	::mmx::node_type_e mode = ::mmx::node_type_e::FULL_NODE;
+	vnx::bool_t do_relay = true;
 	std::set<std::string> seed_peers;
 	std::set<std::string> block_peers;
 	std::string storage_path;

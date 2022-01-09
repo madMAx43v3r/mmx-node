@@ -11,7 +11,7 @@ namespace mmx {
 
 
 const vnx::Hash64 node_type_e::VNX_TYPE_HASH(0xa5de458f1ce5539aull);
-const vnx::Hash64 node_type_e::VNX_CODE_HASH(0xbf2f8dd872763c8aull);
+const vnx::Hash64 node_type_e::VNX_CODE_HASH(0xbf2f8dd8ae8b1079ull);
 
 vnx::Hash64 node_type_e::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -45,7 +45,7 @@ vnx::bool_t node_type_e::is_valid() const {
 	switch(value) {
 		case API_CLIENT: return true;
 		case FULL_NODE: return true;
-		case SPV_WALLET: return true;
+		case LIGHT_NODE: return true;
 	}
 	return false;
 }
@@ -54,7 +54,7 @@ std::string node_type_e::to_string() const {
 	switch(value) {
 		case API_CLIENT: return "\"API_CLIENT\"";
 		case FULL_NODE: return "\"FULL_NODE\"";
-		case SPV_WALLET: return "\"SPV_WALLET\"";
+		case LIGHT_NODE: return "\"LIGHT_NODE\"";
 	}
 	return std::to_string(value);
 }
@@ -63,7 +63,7 @@ std::string node_type_e::to_string_value() const {
 	switch(value) {
 		case API_CLIENT: return "API_CLIENT";
 		case FULL_NODE: return "FULL_NODE";
-		case SPV_WALLET: return "SPV_WALLET";
+		case LIGHT_NODE: return "LIGHT_NODE";
 	}
 	return std::to_string(value);
 }
@@ -72,7 +72,7 @@ std::string node_type_e::to_string_value_full() const {
 	switch(value) {
 		case API_CLIENT: return "mmx.node_type_e.API_CLIENT";
 		case FULL_NODE: return "mmx.node_type_e.FULL_NODE";
-		case SPV_WALLET: return "mmx.node_type_e.SPV_WALLET";
+		case LIGHT_NODE: return "mmx.node_type_e.LIGHT_NODE";
 	}
 	return std::to_string(value);
 }
@@ -89,7 +89,7 @@ void node_type_e::from_string_value(const std::string& _name) {
 	if(var.is_string()) {
 		if(_name == "API_CLIENT") value = API_CLIENT;
 		else if(_name == "FULL_NODE") value = FULL_NODE;
-		else if(_name == "SPV_WALLET") value = SPV_WALLET;
+		else if(_name == "LIGHT_NODE") value = LIGHT_NODE;
 		else value = enum_t(vnx::hash64(_name));
 	} else {
 		value = enum_t(std::stoul(_name.c_str(), nullptr, 0));
@@ -101,7 +101,7 @@ void node_type_e::accept(vnx::Visitor& _visitor) const {
 	switch(value) {
 		case API_CLIENT: _name = "API_CLIENT"; break;
 		case FULL_NODE: _name = "FULL_NODE"; break;
-		case SPV_WALLET: _name = "SPV_WALLET"; break;
+		case LIGHT_NODE: _name = "LIGHT_NODE"; break;
 	}
 	_visitor.enum_value(value, _name);
 }
@@ -110,7 +110,7 @@ void node_type_e::write(std::ostream& _out) const {
 	switch(value) {
 		case API_CLIENT: _out << "\"API_CLIENT\""; break;
 		case FULL_NODE: _out << "\"FULL_NODE\""; break;
-		case SPV_WALLET: _out << "\"SPV_WALLET\""; break;
+		case LIGHT_NODE: _out << "\"LIGHT_NODE\""; break;
 		default: _out << value;
 	}
 }
@@ -173,7 +173,7 @@ std::shared_ptr<vnx::TypeCode> node_type_e::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.node_type_e";
 	type_code->type_hash = vnx::Hash64(0xa5de458f1ce5539aull);
-	type_code->code_hash = vnx::Hash64(0xbf2f8dd872763c8aull);
+	type_code->code_hash = vnx::Hash64(0xbf2f8dd8ae8b1079ull);
 	type_code->is_native = true;
 	type_code->is_enum = true;
 	type_code->native_size = sizeof(::mmx::node_type_e);
@@ -187,7 +187,7 @@ std::shared_ptr<vnx::TypeCode> node_type_e::static_create_type_code() {
 	}
 	type_code->enum_map[1802393446] = "API_CLIENT";
 	type_code->enum_map[2903686019] = "FULL_NODE";
-	type_code->enum_map[3547734269] = "SPV_WALLET";
+	type_code->enum_map[3477499945] = "LIGHT_NODE";
 	type_code->build();
 	return type_code;
 }

@@ -105,9 +105,12 @@
 #include <mmx/TimeLord_stop_vdf.hxx>
 #include <mmx/TimeLord_stop_vdf_return.hxx>
 #include <mmx/Transaction.hxx>
+#include <mmx/TransactionBase.hxx>
 #include <mmx/WalletBase.hxx>
 #include <mmx/Wallet_get_address.hxx>
 #include <mmx/Wallet_get_address_return.hxx>
+#include <mmx/Wallet_get_all_addresses.hxx>
+#include <mmx/Wallet_get_all_addresses_return.hxx>
 #include <mmx/Wallet_get_all_farmer_keys.hxx>
 #include <mmx/Wallet_get_all_farmer_keys_return.hxx>
 #include <mmx/Wallet_get_balance.hxx>
@@ -951,6 +954,14 @@ void type<::mmx::Transaction>::create_dynamic_code(std::vector<uint16_t>& code, 
 	code.push_back(CODE_OBJECT);
 }
 
+void type<::mmx::TransactionBase>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::TransactionBase());
+}
+
+void type<::mmx::TransactionBase>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::TransactionBase& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 void type<::mmx::Wallet_get_address>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Wallet_get_address());
 }
@@ -964,6 +975,22 @@ void type<::mmx::Wallet_get_address_return>::create_dynamic_code(std::vector<uin
 }
 
 void type<::mmx::Wallet_get_address_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_address_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+void type<::mmx::Wallet_get_all_addresses>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Wallet_get_all_addresses());
+}
+
+void type<::mmx::Wallet_get_all_addresses>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_all_addresses& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+void type<::mmx::Wallet_get_all_addresses_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Wallet_get_all_addresses_return());
+}
+
+void type<::mmx::Wallet_get_all_addresses_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_all_addresses_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -1435,9 +1462,12 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::TimeLord_stop_vdf::static_create_type_code());
 	vnx::register_type_code(::mmx::TimeLord_stop_vdf_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Transaction::static_create_type_code());
+	vnx::register_type_code(::mmx::TransactionBase::static_create_type_code());
 	vnx::register_type_code(::mmx::WalletBase::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_get_address::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_get_address_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Wallet_get_all_addresses::static_create_type_code());
+	vnx::register_type_code(::mmx::Wallet_get_all_addresses_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_get_all_farmer_keys::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_get_all_farmer_keys_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_get_balance::static_create_type_code());
@@ -1586,9 +1616,12 @@ const vnx::TypeCode* const vnx_native_type_code_TimeLordBase = vnx::get_type_cod
 const vnx::TypeCode* const vnx_native_type_code_TimeLord_stop_vdf = vnx::get_type_code(vnx::Hash64(0xf7f78eb9f371e6e7ull));
 const vnx::TypeCode* const vnx_native_type_code_TimeLord_stop_vdf_return = vnx::get_type_code(vnx::Hash64(0x53e37fb500ea3a9full));
 const vnx::TypeCode* const vnx_native_type_code_Transaction = vnx::get_type_code(vnx::Hash64(0xce0462acdceaa5bcull));
+const vnx::TypeCode* const vnx_native_type_code_TransactionBase = vnx::get_type_code(vnx::Hash64(0x6697ffbf3611887dull));
 const vnx::TypeCode* const vnx_native_type_code_WalletBase = vnx::get_type_code(vnx::Hash64(0x62207fd96d3aead7ull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_get_address = vnx::get_type_code(vnx::Hash64(0xccad8dfe1543aa77ull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_get_address_return = vnx::get_type_code(vnx::Hash64(0x4c76a08d8d85c4e4ull));
+const vnx::TypeCode* const vnx_native_type_code_Wallet_get_all_addresses = vnx::get_type_code(vnx::Hash64(0xf5e2b4554613fd97ull));
+const vnx::TypeCode* const vnx_native_type_code_Wallet_get_all_addresses_return = vnx::get_type_code(vnx::Hash64(0x2f16846155284194ull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_get_all_farmer_keys = vnx::get_type_code(vnx::Hash64(0xc6a03b3f813d071dull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_get_all_farmer_keys_return = vnx::get_type_code(vnx::Hash64(0xa2de9b0aaffc515aull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_get_balance = vnx::get_type_code(vnx::Hash64(0x1bc2c2dd67ab2829ull));

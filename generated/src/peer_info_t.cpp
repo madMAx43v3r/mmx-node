@@ -12,7 +12,7 @@ namespace mmx {
 
 
 const vnx::Hash64 peer_info_t::VNX_TYPE_HASH(0xce0ff32e89625afbull);
-const vnx::Hash64 peer_info_t::VNX_CODE_HASH(0x3e8d8c548b5991e9ull);
+const vnx::Hash64 peer_info_t::VNX_CODE_HASH(0xc5f03cc390dab5ddull);
 
 vnx::Hash64 peer_info_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -245,7 +245,7 @@ std::shared_ptr<vnx::TypeCode> peer_info_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.peer_info_t";
 	type_code->type_hash = vnx::Hash64(0xce0ff32e89625afbull);
-	type_code->code_hash = vnx::Hash64(0x3e8d8c548b5991e9ull);
+	type_code->code_hash = vnx::Hash64(0xc5f03cc390dab5ddull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::peer_info_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<peer_info_t>>(); };

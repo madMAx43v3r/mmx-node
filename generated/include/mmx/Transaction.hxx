@@ -8,18 +8,17 @@
 #include <mmx/ChainParams.hxx>
 #include <mmx/Operation.hxx>
 #include <mmx/Solution.hxx>
+#include <mmx/TransactionBase.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/tx_in_t.hxx>
 #include <mmx/tx_out_t.hxx>
-#include <vnx/Value.h>
 
 
 namespace mmx {
 
-class Transaction : public ::vnx::Value {
+class Transaction : public ::mmx::TransactionBase {
 public:
 	
-	::mmx::hash_t id;
 	uint32_t version = 0;
 	std::vector<::mmx::tx_in_t> inputs;
 	std::vector<::mmx::tx_out_t> outputs;
@@ -27,7 +26,7 @@ public:
 	std::vector<std::shared_ptr<const ::mmx::Operation>> execute;
 	std::vector<std::shared_ptr<const ::mmx::Solution>> solutions;
 	
-	typedef ::vnx::Value Super;
+	typedef ::mmx::TransactionBase Super;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -42,7 +41,7 @@ public:
 	
 	virtual void finalize();
 	virtual vnx::bool_t is_valid() const;
-	virtual ::mmx::hash_t calc_hash() const;
+	virtual ::mmx::hash_t calc_hash() const override;
 	virtual std::shared_ptr<const ::mmx::Solution> get_solution(const uint32_t& index = 0) const;
 	virtual uint64_t calc_min_fee(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	

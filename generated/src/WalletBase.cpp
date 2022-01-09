@@ -7,6 +7,8 @@
 #include <mmx/FarmerKeys.hxx>
 #include <mmx/Wallet_get_address.hxx>
 #include <mmx/Wallet_get_address_return.hxx>
+#include <mmx/Wallet_get_all_addresses.hxx>
+#include <mmx/Wallet_get_all_addresses_return.hxx>
 #include <mmx/Wallet_get_all_farmer_keys.hxx>
 #include <mmx/Wallet_get_all_farmer_keys_return.hxx>
 #include <mmx/Wallet_get_balance.hxx>
@@ -206,7 +208,7 @@ std::shared_ptr<vnx::TypeCode> WalletBase::static_create_type_code() {
 	type_code->code_hash = vnx::Hash64(0xf20a135dad35179ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::WalletBase);
-	type_code->methods.resize(22);
+	type_code->methods.resize(23);
 	type_code->methods[0] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
 	type_code->methods[1] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
 	type_code->methods[2] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
@@ -224,11 +226,12 @@ std::shared_ptr<vnx::TypeCode> WalletBase::static_create_type_code() {
 	type_code->methods[14] = ::mmx::Wallet_get_history::static_get_type_code();
 	type_code->methods[15] = ::mmx::Wallet_get_balance::static_get_type_code();
 	type_code->methods[16] = ::mmx::Wallet_get_address::static_get_type_code();
-	type_code->methods[17] = ::mmx::Wallet_get_master_seed::static_get_type_code();
-	type_code->methods[18] = ::mmx::Wallet_get_farmer_keys::static_get_type_code();
-	type_code->methods[19] = ::mmx::Wallet_get_all_farmer_keys::static_get_type_code();
-	type_code->methods[20] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
-	type_code->methods[21] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
+	type_code->methods[17] = ::mmx::Wallet_get_all_addresses::static_get_type_code();
+	type_code->methods[18] = ::mmx::Wallet_get_master_seed::static_get_type_code();
+	type_code->methods[19] = ::mmx::Wallet_get_farmer_keys::static_get_type_code();
+	type_code->methods[20] = ::mmx::Wallet_get_all_farmer_keys::static_get_type_code();
+	type_code->methods[21] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
+	type_code->methods[22] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
 	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
@@ -380,6 +383,12 @@ std::shared_ptr<vnx::Value> WalletBase::vnx_call_switch(std::shared_ptr<const vn
 			auto _args = std::static_pointer_cast<const ::mmx::Wallet_get_address>(_method);
 			auto _return_value = ::mmx::Wallet_get_address_return::create();
 			_return_value->_ret_0 = get_address(_args->index, _args->offset);
+			return _return_value;
+		}
+		case 0xf5e2b4554613fd97ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Wallet_get_all_addresses>(_method);
+			auto _return_value = ::mmx::Wallet_get_all_addresses_return::create();
+			_return_value->_ret_0 = get_all_addresses(_args->index);
 			return _return_value;
 		}
 		case 0x8fddd77ece4d295bull: {
