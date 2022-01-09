@@ -4,6 +4,8 @@ struct tx_entry_t {
 	
 	uint height;
 	
+	hash_t txid;
+	
 	tx_type_e type;
 	
 	addr_t address;

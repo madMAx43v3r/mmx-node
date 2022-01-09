@@ -391,6 +391,7 @@ std::vector<tx_entry_t> Node::get_history_for(const std::vector<addr_t>& address
 			if(amount[utxo.contract] > 0) {
 				tx_entry_t entry;
 				entry.height = utxo.height;
+				entry.txid = iter.first;
 				entry.type = tx_type_e::RECEIVE;
 				entry.contract = utxo.contract;
 				entry.address = utxo.address;
@@ -406,6 +407,7 @@ std::vector<tx_entry_t> Node::get_history_for(const std::vector<addr_t>& address
 							if(amount[utxo.contract] < 0 && !addr_set.count(utxo.address)) {
 								tx_entry_t entry;
 								entry.height = *height;
+								entry.txid = iter.first;
 								entry.type = tx_type_e::SEND;
 								entry.contract = utxo.contract;
 								entry.address = utxo.address;
