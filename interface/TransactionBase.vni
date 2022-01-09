@@ -1,0 +1,10 @@
+package mmx;
+
+class TransactionBase {
+	
+	hash_t id;
+	
+	
+	hash_t calc_hash() const;
+	
+}

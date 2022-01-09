@@ -1,8 +1,6 @@
 package mmx;
 
-class Transaction {
-	
-	hash_t id;
+class Transaction extends TransactionBase {
 	
 	uint version;
 	

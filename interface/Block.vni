@@ -2,7 +2,7 @@ package mmx;
 
 class Block extends BlockHeader {
 	
-	vector<Transaction*> tx_list;
+	vector<TransactionBase*> tx_list;
 	
 	
 	void finalize();

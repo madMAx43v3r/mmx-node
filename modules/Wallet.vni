@@ -29,6 +29,9 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	addr_t get_address(uint index, uint offset) const;
 	
+	vector<addr_t> get_all_addresses(int index) const;				// (index == -1) -> all wallets
+	
+	@Permission(permission_e.SPENDING)
 	hash_t get_master_seed(uint index) const;
 	
 	

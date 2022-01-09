@@ -149,7 +149,7 @@ private:
 
 	void purge_tree();
 
-	uint32_t verify_proof(std::shared_ptr<const Block> block, const hash_t& vdf_output) const;
+	void verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_output) const;
 
 	uint32_t verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, const uint64_t space_diff) const;
 
@@ -217,6 +217,8 @@ private:
 
 	std::unordered_multimap<uint32_t, hash_t> challenge_map;						// [height => challenge]
 	std::unordered_map<hash_t, std::shared_ptr<const ProofResponse>> proof_map;		// [challenge => proof]
+
+	std::unordered_set<hash_t> light_address_set;											// addresses for light mode
 
 	bool is_replay = true;
 	bool is_synced = false;

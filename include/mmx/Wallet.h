@@ -45,6 +45,8 @@ protected:
 
 	addr_t get_address(const uint32_t& index, const uint32_t& offset) const override;
 
+	std::vector<addr_t> get_all_addresses(const int32_t& index) const override;
+
 	std::shared_ptr<const FarmerKeys> get_farmer_keys(const uint32_t& index) const override;
 
 	std::vector<std::shared_ptr<const FarmerKeys>> get_all_farmer_keys() const override;

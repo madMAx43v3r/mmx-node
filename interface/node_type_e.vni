@@ -3,7 +3,7 @@ package mmx;
 enum node_type_e {
 	
 	FULL_NODE,
-	SPV_WALLET,
+	LIGHT_NODE,
 	API_CLIENT,
 	
 }

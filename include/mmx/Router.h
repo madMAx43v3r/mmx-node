@@ -147,13 +147,13 @@ private:
 
 	void on_transaction(uint64_t client, std::shared_ptr<const Transaction> tx);
 
-	void relay(uint64_t source, std::shared_ptr<const vnx::Value> msg);
+	void relay(uint64_t source, std::shared_ptr<const vnx::Value> msg, const std::set<node_type_e>& filter);
 
 	void send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg, bool reliable = true);
 
 	void send_to(peer_t& peer, std::shared_ptr<const vnx::Value> msg, bool reliable = true);
 
-	void send_all(std::shared_ptr<const vnx::Value> msg, bool reliable = true);
+	void send_all(std::shared_ptr<const vnx::Value> msg, const std::set<node_type_e>& filter, bool reliable = true);
 
 	template<typename R, typename T>
 	void send_result(uint64_t client, uint32_t id, const T& value);

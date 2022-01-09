@@ -46,6 +46,9 @@ module Router extends vnx.addons.TcpServer {
 	uint max_farmer_credits = 32;
 	
 	uint node_version = 100;
+	node_type_e mode = FULL_NODE;
+	
+	bool do_relay = true;
 	
 	set<string> seed_peers;
 	set<string> block_peers;

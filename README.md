@@ -159,6 +159,9 @@ For example to run at the bare recommended minimum:
 `num_peers_out` is the maximum number of outgoing connections to synced peers. `max_connections` is the maximum total number of connections.
 Keep in mind this will increase your chances of losing sync.
 
+Another more drastic measure is to disable relaying messages to other nodes, by setting `do_relay` to `false` in `config/local/Router.json`.
+However this will hurt the network, so please only disable it if absolutely necessary.
+
 ### Running in background
 
 To run a node in the background you can enter a `screen` session:

@@ -11,6 +11,11 @@
 
 namespace mmx {
 
+hash_t TransactionBase::calc_hash() const
+{
+	return id;
+}
+
 void Transaction::finalize()
 {
 	id = calc_hash();

@@ -64,7 +64,7 @@ std::shared_ptr<ECDSA_Wallet> Wallet::get_wallet(const uint32_t& index) const
 	if(auto wallet = wallets[index]) {
 		return wallet;
 	}
-	throw std::logic_error("wallet error");
+	throw std::logic_error("no such wallet");
 }
 
 hash_t Wallet::send(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& contract) const
@@ -154,6 +154,21 @@ addr_t Wallet::get_address(const uint32_t& index, const uint32_t& offset) const
 {
 	const auto wallet = get_wallet(index);
 	return wallet->get_address(offset);
+}
+
+std::vector<addr_t> Wallet::get_all_addresses(const int32_t& index) const
+{
+	if(index >= 0) {
+		return get_wallet(index)->get_all_addresses();
+	}
+	std::vector<addr_t> list;
+	for(const auto wallet : wallets) {
+		if(wallet) {
+			const auto set = wallet->get_all_addresses();
+			list.insert(list.end(), set.begin(), set.end());
+		}
+	}
+	return list;
 }
 
 std::shared_ptr<const FarmerKeys> Wallet::get_farmer_keys(const uint32_t& index) const
