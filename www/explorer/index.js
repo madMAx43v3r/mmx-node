@@ -45,9 +45,9 @@ function parse_block(data)
 		block.pool_key = to_hex(block.proof.pool_key);
 		block.farmer_key = to_hex(block.proof.farmer_key);
 	}
+	block.reward = 0;
+	block.rewards = [];
 	if(block.tx_base) {
-		block.reward = 0;
-		block.rewards = [];
 		for(const out of block.tx_base.outputs) {
 			block.reward += out.amount;
 			block.rewards.push({address: to_addr(out.address), amount: out.amount / 1e6});

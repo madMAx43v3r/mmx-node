@@ -38,6 +38,35 @@
 </head>
 <body>
 
+<a href="/recent">Recent Blocks</a>
+
+<p>
+<form method="GET" action="/address">
+<label for="value">Address: </label><input type="text" size="60" id="value" name="addr">
+<input type="submit" value="Submit">
+</form>
+</p>
+<p>
+<form method="GET" action="/transaction">
+<label for="value">Transaction: </label><input type="text" size="60" id="value" name="id">
+<input type="submit" value="Submit">
+</form>
+</p>
+<p>
+<form method="GET" action="/block">
+<label for="value">Block Hash: </label><input type="text" size="60" id="value" name="hash">
+<input type="submit" value="Submit">
+</form>
+</p>
+<p>
+<form method="GET" action="/block">
+<label for="value">Block Height: </label><input type="text" id="value" name="height">
+<input type="submit" value="Submit">
+</form>
+</p>
+
+<hr>
+
 <%- include(body) %>
 
 </body>
