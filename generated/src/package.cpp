@@ -65,6 +65,8 @@
 #include <mmx/Node_get_tx_ids_at_return.hxx>
 #include <mmx/Node_get_txo_info.hxx>
 #include <mmx/Node_get_txo_info_return.hxx>
+#include <mmx/Node_get_txo_infos.hxx>
+#include <mmx/Node_get_txo_infos_return.hxx>
 #include <mmx/Node_get_utxo_list.hxx>
 #include <mmx/Node_get_utxo_list_return.hxx>
 #include <mmx/Node_start_sync.hxx>
@@ -647,6 +649,22 @@ void type<::mmx::Node_get_txo_info_return>::create_dynamic_code(std::vector<uint
 }
 
 void type<::mmx::Node_get_txo_info_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_txo_info_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+void type<::mmx::Node_get_txo_infos>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_txo_infos());
+}
+
+void type<::mmx::Node_get_txo_infos>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_txo_infos& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+void type<::mmx::Node_get_txo_infos_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_txo_infos_return());
+}
+
+void type<::mmx::Node_get_txo_infos_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_txo_infos_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -1422,6 +1440,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Node_get_tx_ids_at_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_txo_info::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_txo_info_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_txo_infos::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_txo_infos_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_utxo_list::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_utxo_list_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_start_sync::static_create_type_code());
@@ -1576,6 +1596,8 @@ const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_ids_at = vnx::get_ty
 const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_ids_at_return = vnx::get_type_code(vnx::Hash64(0x945565d9cbfadc31ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_txo_info = vnx::get_type_code(vnx::Hash64(0xd9d0be3b95e67d52ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_txo_info_return = vnx::get_type_code(vnx::Hash64(0xec5afeac062fef38ull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_txo_infos = vnx::get_type_code(vnx::Hash64(0x576d7f03fe334ad9ull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_txo_infos_return = vnx::get_type_code(vnx::Hash64(0x271a5dc31f4d4d61ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_utxo_list = vnx::get_type_code(vnx::Hash64(0x7f52e1aa01c66023ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_utxo_list_return = vnx::get_type_code(vnx::Hash64(0xb64b283378c24f70ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_start_sync = vnx::get_type_code(vnx::Hash64(0x6c5be8aeb25ef3c8ull));

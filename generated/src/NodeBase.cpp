@@ -50,6 +50,8 @@
 #include <mmx/Node_get_tx_ids_at_return.hxx>
 #include <mmx/Node_get_txo_info.hxx>
 #include <mmx/Node_get_txo_info_return.hxx>
+#include <mmx/Node_get_txo_infos.hxx>
+#include <mmx/Node_get_txo_infos_return.hxx>
 #include <mmx/Node_get_utxo_list.hxx>
 #include <mmx/Node_get_utxo_list_return.hxx>
 #include <mmx/Node_start_sync.hxx>
@@ -492,7 +494,7 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	type_code->code_hash = vnx::Hash64(0xb230aadce3f55f88ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::NodeBase);
-	type_code->methods.resize(34);
+	type_code->methods.resize(35);
 	type_code->methods[0] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
 	type_code->methods[1] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
 	type_code->methods[2] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
@@ -511,22 +513,23 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	type_code->methods[15] = ::mmx::Node_get_header_at::static_get_type_code();
 	type_code->methods[16] = ::mmx::Node_get_block_hash::static_get_type_code();
 	type_code->methods[17] = ::mmx::Node_get_txo_info::static_get_type_code();
-	type_code->methods[18] = ::mmx::Node_get_tx_height::static_get_type_code();
-	type_code->methods[19] = ::mmx::Node_get_tx_ids_at::static_get_type_code();
-	type_code->methods[20] = ::mmx::Node_add_block::static_get_type_code();
-	type_code->methods[21] = ::mmx::Node_add_transaction::static_get_type_code();
-	type_code->methods[22] = ::mmx::Node_get_transaction::static_get_type_code();
-	type_code->methods[23] = ::mmx::Node_get_transactions::static_get_type_code();
-	type_code->methods[24] = ::mmx::Node_get_history_for::static_get_type_code();
-	type_code->methods[25] = ::mmx::Node_get_contract::static_get_type_code();
-	type_code->methods[26] = ::mmx::Node_get_balance::static_get_type_code();
-	type_code->methods[27] = ::mmx::Node_get_total_balance::static_get_type_code();
-	type_code->methods[28] = ::mmx::Node_get_total_supply::static_get_type_code();
-	type_code->methods[29] = ::mmx::Node_get_utxo_list::static_get_type_code();
-	type_code->methods[30] = ::mmx::Node_get_stxo_list::static_get_type_code();
-	type_code->methods[31] = ::mmx::Node_start_sync::static_get_type_code();
-	type_code->methods[32] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
-	type_code->methods[33] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
+	type_code->methods[18] = ::mmx::Node_get_txo_infos::static_get_type_code();
+	type_code->methods[19] = ::mmx::Node_get_tx_height::static_get_type_code();
+	type_code->methods[20] = ::mmx::Node_get_tx_ids_at::static_get_type_code();
+	type_code->methods[21] = ::mmx::Node_add_block::static_get_type_code();
+	type_code->methods[22] = ::mmx::Node_add_transaction::static_get_type_code();
+	type_code->methods[23] = ::mmx::Node_get_transaction::static_get_type_code();
+	type_code->methods[24] = ::mmx::Node_get_transactions::static_get_type_code();
+	type_code->methods[25] = ::mmx::Node_get_history_for::static_get_type_code();
+	type_code->methods[26] = ::mmx::Node_get_contract::static_get_type_code();
+	type_code->methods[27] = ::mmx::Node_get_balance::static_get_type_code();
+	type_code->methods[28] = ::mmx::Node_get_total_balance::static_get_type_code();
+	type_code->methods[29] = ::mmx::Node_get_total_supply::static_get_type_code();
+	type_code->methods[30] = ::mmx::Node_get_utxo_list::static_get_type_code();
+	type_code->methods[31] = ::mmx::Node_get_stxo_list::static_get_type_code();
+	type_code->methods[32] = ::mmx::Node_start_sync::static_get_type_code();
+	type_code->methods[33] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
+	type_code->methods[34] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
 	type_code->fields.resize(28);
 	{
 		auto& field = type_code->fields[0];
@@ -858,6 +861,12 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_txo_info>(_method);
 			auto _return_value = ::mmx::Node_get_txo_info_return::create();
 			_return_value->_ret_0 = get_txo_info(_args->key);
+			return _return_value;
+		}
+		case 0x576d7f03fe334ad9ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_txo_infos>(_method);
+			auto _return_value = ::mmx::Node_get_txo_infos_return::create();
+			_return_value->_ret_0 = get_txo_infos(_args->keys);
 			return _return_value;
 		}
 		case 0xf6f917fad9361e3aull: {

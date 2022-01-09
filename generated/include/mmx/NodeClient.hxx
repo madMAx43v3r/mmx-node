@@ -76,7 +76,9 @@ public:
 	
 	vnx::optional<::mmx::hash_t> get_block_hash(const uint32_t& height = 0);
 	
-	::mmx::txo_info_t get_txo_info(const ::mmx::txio_key_t& key = ::mmx::txio_key_t());
+	vnx::optional<::mmx::txo_info_t> get_txo_info(const ::mmx::txio_key_t& key = ::mmx::txio_key_t());
+	
+	std::vector<vnx::optional<::mmx::txo_info_t>> get_txo_infos(const std::vector<::mmx::txio_key_t>& keys = {});
 	
 	vnx::optional<uint32_t> get_tx_height(const ::mmx::hash_t& id = ::mmx::hash_t());
 	
