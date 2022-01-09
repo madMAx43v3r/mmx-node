@@ -261,7 +261,7 @@ vnx::optional<uint32_t> Node::get_tx_height(const hash_t& id) const
 	return nullptr;
 }
 
-txo_info_t Node::get_txo_info(const txio_key_t& key) const
+vnx::optional<txo_info_t> Node::get_txo_info(const txio_key_t& key) const
 {
 	{
 		auto iter = utxo_map.find(key);
@@ -289,7 +289,16 @@ txo_info_t Node::get_txo_info(const txio_key_t& key) const
 			return info;
 		}
 	}
-	throw std::logic_error("no such txo entry");
+	return nullptr;
+}
+
+std::vector<vnx::optional<txo_info_t>> Node::get_txo_infos(const std::vector<txio_key_t>& keys) const
+{
+	std::vector<vnx::optional<txo_info_t>> res;
+	for(const auto& key : keys) {
+		res.push_back(get_txo_info(key));
+	}
+	return res;
 }
 
 std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id) const
