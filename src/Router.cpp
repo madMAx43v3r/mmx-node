@@ -37,8 +37,6 @@
 #include <mmx/Node_get_block_hash_return.hxx>
 #include <mmx/Node_get_tx_ids_at.hxx>
 #include <mmx/Node_get_tx_ids_at_return.hxx>
-#include <mmx/Node_get_history_for.hxx>
-#include <mmx/Node_get_history_for_return.hxx>
 
 #include <vnx/vnx.h>
 #include <vnx/NoSuchMethod.hxx>
@@ -1158,15 +1156,6 @@ void Router::on_request(uint64_t client, std::shared_ptr<const Request> msg)
 				node->get_tx_ids_at(value->height,
 						[=](const std::vector<hash_t>& ids) {
 							send_result<Node_get_tx_ids_at_return>(client, msg->id, ids);
-						},
-						std::bind(&Router::on_error, this, client, msg->id, std::placeholders::_1));
-			}
-			break;
-		case Node_get_history_for::VNX_TYPE_ID:
-			if(auto value = std::dynamic_pointer_cast<const Node_get_history_for>(method)) {
-				node->get_history_for(value->addresses, value->since,
-						[=](const std::vector<tx_entry_t>& entries) {
-							send_result<Node_get_history_for_return>(client, msg->id, entries);
 						},
 						std::bind(&Router::on_error, this, client, msg->id, std::placeholders::_1));
 			}
