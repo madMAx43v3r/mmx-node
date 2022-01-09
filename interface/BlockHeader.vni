@@ -17,6 +17,8 @@ class BlockHeader {
 	
 	TransactionBase* tx_base;
 	
+	uint tx_count;
+	
 	hash_t tx_hash;
 	
 	optional<bls_signature_t> pool_sig;

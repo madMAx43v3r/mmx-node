@@ -4,6 +4,8 @@ class ProofOfSpace {
 	
 	uchar ksize;
 	
+	ulong score;
+	
 	hash_t plot_id;
 	
 	vector<uchar> proof_bytes;

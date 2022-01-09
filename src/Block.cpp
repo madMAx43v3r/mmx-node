@@ -13,6 +13,7 @@ namespace mmx {
 
 void Block::finalize()
 {
+	tx_count = tx_list.size();
 	tx_hash = calc_tx_hash();
 	hash = calc_hash();
 }

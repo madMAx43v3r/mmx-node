@@ -122,6 +122,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 		}
 		auto proof = ProofOfSpace::create();
 		proof->ksize = best_proof->k;
+		proof->score = best_score;
 		proof->plot_id = hash_t::from_bytes(best_proof->id);
 		proof->proof_bytes = best_proof->proof;
 		proof->local_key = local_sk.GetG1Element();
