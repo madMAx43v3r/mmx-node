@@ -5,6 +5,7 @@ export LC_ALL=en_US.utf-8
 cat $1 | grep "Verified VDF" | grep -oP "took [+-]?([0-9]*[.])?[0-9]+" > vdf_verify
 
 echo "VDF Average =" $(cat vdf_verify | awk '{ sum += $2 } END { print sum / NR }') sec
+echo "VDF Verify < 1 sec =" $(cat vdf_verify | awk '{ if ($2 <= 1) sum += 1 } END { print 100 * sum / NR }') %
 echo "VDF Verify > 1 sec =" $(cat vdf_verify | awk '{ if ($2 > 1) sum += 1 } END { print 100 * sum / NR }') %
 echo "VDF Verify > 2 sec =" $(cat vdf_verify | awk '{ if ($2 > 2) sum += 1 } END { print 100 * sum / NR }') %
 echo "VDF Verify > 3 sec =" $(cat vdf_verify | awk '{ if ($2 > 3) sum += 1 } END { print 100 * sum / NR }') %
