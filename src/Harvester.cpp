@@ -23,6 +23,8 @@ Harvester::Harvester(const std::string& _vnx_name)
 void Harvester::init()
 {
 	vnx::open_pipe(vnx_name, this, max_queue_ms);
+
+	subscribe(input_challenges, max_queue_ms);
 }
 
 void Harvester::main()
@@ -32,16 +34,14 @@ void Harvester::main()
 	}
 	params = get_params();
 
-	subscribe(input_challenges, max_queue_ms);
-
 	set_timer_millis(10000, std::bind(&Harvester::update, this));
 
 	if(reload_interval > 0) {
 		set_timer_millis(int64_t(reload_interval) * 1000, std::bind(&Harvester::reload, this));
 	}
 
-	update();
 	reload();
+	update();
 
 	Super::main();
 }
@@ -214,6 +214,7 @@ void Harvester::update()
 	catch(const std::exception& ex) {
 		log(WARN) << "Failed to contact farmer: " << ex.what();
 	}
+	publish(get_farm_info(), output_info);
 }
 
 

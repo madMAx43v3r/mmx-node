@@ -21,6 +21,8 @@ void Farmer::init()
 {
 	vnx::open_pipe(vnx_name, this, 1000);
 	vnx::open_pipe(vnx_get_id(), this, 1000);
+
+	subscribe(input_info, 1000);
 }
 
 void Farmer::main()
@@ -61,9 +63,40 @@ vnx::Hash64 Farmer::get_mac_addr() const
 	return vnx_get_id();
 }
 
+std::shared_ptr<const FarmInfo> Farmer::get_farm_info() const
+{
+	auto info = FarmInfo::create();
+	for(const auto& entry : info_map) {
+		if(auto value = std::dynamic_pointer_cast<const FarmInfo>(entry.second->value)) {
+			for(const auto& entry : value->plot_count) {
+				info->plot_count[entry.first] += entry.second;
+			}
+			info->plot_dirs.insert(info->plot_dirs.end(), value->plot_dirs.begin(), value->plot_dirs.end());
+			info->total_bytes += value->total_bytes;
+		}
+	}
+	return info;
+}
+
 void Farmer::update()
 {
 	vnx::open_flow(vnx::get_pipe(node_server), vnx::get_pipe(vnx_get_id()));
+
+	const auto now = vnx::get_sync_time_micros();
+	for(auto iter = info_map.begin(); iter != info_map.end();) {
+		if((now - iter->second->recv_time) / 1000000 > harvester_timeout) {
+			iter = info_map.erase(iter);
+		} else {
+			iter++;
+		}
+	}
+}
+
+void Farmer::handle(std::shared_ptr<const FarmInfo> value)
+{
+	if(auto sample = vnx_sample) {
+		info_map[sample->src_mac] = sample;
+	}
 }
 
 std::shared_ptr<const BlockHeader>

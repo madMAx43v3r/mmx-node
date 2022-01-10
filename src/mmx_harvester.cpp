@@ -41,6 +41,7 @@ int main(int argc, char** argv)
 	{
 		vnx::Handle<mmx::Harvester> module = new mmx::Harvester("Harvester");
 		proxy->import_list.push_back(module->input_challenges);
+		proxy->export_list.push_back(module->output_info);
 		proxy->export_list.push_back(module->output_proofs);
 		module.start_detached();
 	}

@@ -8,6 +8,7 @@
 #include <mmx/NodeClient.hxx>
 #include <mmx/RouterClient.hxx>
 #include <mmx/WalletClient.hxx>
+#include <mmx/FarmerClient.hxx>
 #include <mmx/HarvesterClient.hxx>
 #include <mmx/KeyFile.hxx>
 #include <mmx/secp256k1.hpp>
@@ -101,9 +102,9 @@ int main(int argc, char** argv)
 			vnx::read_config("node", node_url);
 
 			if(command != "create") {
-				vnx::Handle<vnx::Proxy> module = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
-				module->forward_list = {"Wallet", "Node"};
-				module.start_detached();
+				vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
+				proxy->forward_list = {"Wallet", "Node"};
+				proxy.start_detached();
 				try {
 					params = node.get_params();
 				} catch(...) {
@@ -223,9 +224,9 @@ int main(int argc, char** argv)
 			std::string node_url = ":11331";
 			vnx::read_config("node", node_url);
 
-			vnx::Handle<vnx::Proxy> module = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
-			module->forward_list = {"Router", "Node"};
-			module.start_detached();
+			vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
+			proxy->forward_list = {"Router", "Node"};
+			proxy.start_detached();
 			try {
 				params = node.get_params();
 			} catch(...) {
@@ -484,17 +485,24 @@ int main(int argc, char** argv)
 			std::string node_url = ":11333";
 			vnx::read_config("node", node_url);
 
-			vnx::Handle<vnx::Proxy> module = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
-			module->forward_list = {"Farmer", "Harvester", "Node"};
-			module.start_detached();
+			vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
+			proxy->forward_list = {"Farmer", "Harvester", "Node"};
+			proxy.start_detached();
+
+			mmx::FarmerClient farmer("Farmer");
+			mmx::HarvesterClient harvester("Harvester");
+
+			std::shared_ptr<const mmx::FarmInfo> info;
 			try {
-				params = node.get_params();
+				info = harvester.get_farm_info();
+				info = farmer.get_farm_info();
 			} catch(...) {
 				// ignore
 			}
-			mmx::HarvesterClient harvester("Harvester");
-
-			auto info = harvester.get_farm_info();
+			if(!info) {
+				vnx::log_error() << "No Farmer or Harvester running!";
+				goto failed;
+			}
 
 			if(command == "info") {
 				std::cout << "Total space: " << info->total_bytes / pow(1024, 4) << " TiB" << std::endl;

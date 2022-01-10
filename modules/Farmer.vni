@@ -2,8 +2,12 @@ package mmx;
 
 module Farmer {
 	
+	vnx.TopicPtr input_info = "harvester.info";
+	
 	uint default_wallet = 0;						// for default reward address
 	uint default_address = 0;						// index for default reward address
+	
+	uint harvester_timeout = 60;					// [sec]
 	
 	string node_server = "Node";
 	string wallet_server = "Wallet";
@@ -16,6 +20,11 @@ module Farmer {
 	
 	vnx.Hash64 get_mac_addr() const;
 	
+	FarmInfo* get_farm_info() const;
+	
 	BlockHeader* sign_block(BlockHeader* block, ulong reward_amount) const;
+	
+	
+	void handle(FarmInfo sample);
 	
 }
