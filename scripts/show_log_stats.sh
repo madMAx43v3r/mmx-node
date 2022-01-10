@@ -1,5 +1,7 @@
 #!/bin/bash
 
+LC_ALL=en_US.utf-8
+
 cat $1 | grep "Verified VDF" | grep -oP "took [+-]?([0-9]*[.])?[0-9]+" > vdf_verify
 
 echo "VDF Avgerage =" $(cat vdf_verify | awk '{ sum += $2 } END { print sum / NR }') sec
