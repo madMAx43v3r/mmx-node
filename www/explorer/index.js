@@ -118,6 +118,7 @@ function on_recent(res, ret)
 function on_address(res, address, balance, history)
 {
 	for(const entry of history) {
+		entry.txid = to_hex(entry.txid);
 		entry.amount = entry.amount / 1e6;
 		entry.address = to_addr(entry.address);
 		entry.contract = to_addr(entry.contract);

@@ -16,6 +16,7 @@
 <th class="data">Type</th>
 <th class="data">Amount</th>
 <th class="data">Address</th>
+<th class="data">TX ID</th>
 </tr>
 
 <% history.forEach(function(entry) { %>
@@ -24,6 +25,7 @@
 <td class="data"><%= entry.type %></td>
 <td class="data"><%= entry.amount %></td>
 <td class="data"><a href="address?addr=<%= entry.address %>"><%= entry.address %></a></td>
+<td class="data"><a href="transaction?id=<%= entry.txid %>"><%= entry.txid %></a></td>
 </tr>
 <% }); %>
 </table>
