@@ -24,6 +24,7 @@ public:
 	int32_t max_queue_ms = 10000;
 	int32_t reload_interval = 3600;
 	uint32_t num_threads = 0;
+	vnx::bool_t recursive_search = true;
 	
 	typedef ::vnx::Module Super;
 	

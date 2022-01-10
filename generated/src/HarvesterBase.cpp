@@ -40,7 +40,7 @@ namespace mmx {
 
 
 const vnx::Hash64 HarvesterBase::VNX_TYPE_HASH(0xc17118896cde1555ull);
-const vnx::Hash64 HarvesterBase::VNX_CODE_HASH(0xbd16293995b52c24ull);
+const vnx::Hash64 HarvesterBase::VNX_CODE_HASH(0x2225c1747e3766full);
 
 HarvesterBase::HarvesterBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -53,6 +53,7 @@ HarvesterBase::HarvesterBase(const std::string& _vnx_name)
 	vnx::read_config(vnx_name + ".max_queue_ms", max_queue_ms);
 	vnx::read_config(vnx_name + ".reload_interval", reload_interval);
 	vnx::read_config(vnx_name + ".num_threads", num_threads);
+	vnx::read_config(vnx_name + ".recursive_search", recursive_search);
 }
 
 vnx::Hash64 HarvesterBase::get_type_hash() const {
@@ -78,6 +79,7 @@ void HarvesterBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, max_queue_ms);
 	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, reload_interval);
 	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, num_threads);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, recursive_search);
 	_visitor.type_end(*_type_code);
 }
 
@@ -91,6 +93,7 @@ void HarvesterBase::write(std::ostream& _out) const {
 	_out << ", \"max_queue_ms\": "; vnx::write(_out, max_queue_ms);
 	_out << ", \"reload_interval\": "; vnx::write(_out, reload_interval);
 	_out << ", \"num_threads\": "; vnx::write(_out, num_threads);
+	_out << ", \"recursive_search\": "; vnx::write(_out, recursive_search);
 	_out << "}";
 }
 
@@ -111,6 +114,7 @@ vnx::Object HarvesterBase::to_object() const {
 	_object["max_queue_ms"] = max_queue_ms;
 	_object["reload_interval"] = reload_interval;
 	_object["num_threads"] = num_threads;
+	_object["recursive_search"] = recursive_search;
 	return _object;
 }
 
@@ -130,6 +134,8 @@ void HarvesterBase::from_object(const vnx::Object& _object) {
 			_entry.second.to(output_proofs);
 		} else if(_entry.first == "plot_dirs") {
 			_entry.second.to(plot_dirs);
+		} else if(_entry.first == "recursive_search") {
+			_entry.second.to(recursive_search);
 		} else if(_entry.first == "reload_interval") {
 			_entry.second.to(reload_interval);
 		}
@@ -161,6 +167,9 @@ vnx::Variant HarvesterBase::get_field(const std::string& _name) const {
 	if(_name == "num_threads") {
 		return vnx::Variant(num_threads);
 	}
+	if(_name == "recursive_search") {
+		return vnx::Variant(recursive_search);
+	}
 	return vnx::Variant();
 }
 
@@ -181,6 +190,8 @@ void HarvesterBase::set_field(const std::string& _name, const vnx::Variant& _val
 		_value.to(reload_interval);
 	} else if(_name == "num_threads") {
 		_value.to(num_threads);
+	} else if(_name == "recursive_search") {
+		_value.to(recursive_search);
 	} else {
 		throw std::logic_error("no such field: '" + _name + "'");
 	}
@@ -210,7 +221,7 @@ std::shared_ptr<vnx::TypeCode> HarvesterBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Harvester";
 	type_code->type_hash = vnx::Hash64(0xc17118896cde1555ull);
-	type_code->code_hash = vnx::Hash64(0xbd16293995b52c24ull);
+	type_code->code_hash = vnx::Hash64(0x2225c1747e3766full);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::HarvesterBase);
 	type_code->methods.resize(12);
@@ -226,7 +237,7 @@ std::shared_ptr<vnx::TypeCode> HarvesterBase::static_create_type_code() {
 	type_code->methods[9] = ::mmx::Harvester_reload::static_get_type_code();
 	type_code->methods[10] = ::mmx::Harvester_get_farm_info::static_get_type_code();
 	type_code->methods[11] = ::mmx::Harvester_get_total_bytes::static_get_type_code();
-	type_code->fields.resize(8);
+	type_code->fields.resize(9);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -281,6 +292,13 @@ std::shared_ptr<vnx::TypeCode> HarvesterBase::static_create_type_code() {
 		field.name = "num_threads";
 		field.value = vnx::to_string(0);
 		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[8];
+		field.data_size = 1;
+		field.name = "recursive_search";
+		field.value = vnx::to_string(true);
+		field.code = {31};
 	}
 	type_code->build();
 	return type_code;
@@ -428,6 +446,9 @@ void read(TypeInput& in, ::mmx::HarvesterBase& value, const TypeCode* type_code,
 		if(const auto* const _field = type_code->field_map[7]) {
 			vnx::read_value(_buf + _field->offset, value.num_threads, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[8]) {
+			vnx::read_value(_buf + _field->offset, value.recursive_search, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -454,10 +475,11 @@ void write(TypeOutput& out, const ::mmx::HarvesterBase& value, const TypeCode* t
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(12);
+	char* const _buf = out.write(13);
 	vnx::write_value(_buf + 0, value.max_queue_ms);
 	vnx::write_value(_buf + 4, value.reload_interval);
 	vnx::write_value(_buf + 8, value.num_threads);
+	vnx::write_value(_buf + 12, value.recursive_search);
 	vnx::write(out, value.input_challenges, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.output_info, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.output_proofs, type_code, type_code->fields[2].code.data());
