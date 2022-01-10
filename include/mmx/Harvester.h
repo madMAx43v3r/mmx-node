@@ -34,6 +34,8 @@ protected:
 private:
 	void update();
 
+	void find_plot_dirs(const std::vector<std::string>& dirs, std::vector<std::string>& all_dirs);
+
 private:
 	size_t total_bytes = 0;
 	vnx::Hash64 farmer_addr;
