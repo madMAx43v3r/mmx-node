@@ -3,6 +3,7 @@
 
 #include <mmx/contract/Condition.hxx>
 #include <mmx/contract/Delegated.hxx>
+#include <mmx/contract/HTLC.hxx>
 #include <mmx/contract/Locked.hxx>
 #include <mmx/contract/MultiSig.hxx>
 #include <mmx/contract/NFT.hxx>
@@ -34,6 +35,14 @@ void type<::mmx::contract::Delegated>::create_dynamic_code(std::vector<uint16_t>
 }
 
 void type<::mmx::contract::Delegated>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Delegated& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+void type<::mmx::contract::HTLC>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::HTLC());
+}
+
+void type<::mmx::contract::HTLC>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::HTLC& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -136,6 +145,7 @@ namespace contract {
 static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::Condition::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Delegated::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::HTLC::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Locked::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::NFT::static_create_type_code());
@@ -156,6 +166,7 @@ static struct vnx_static_init {
 
 const vnx::TypeCode* const vnx_native_type_code_Condition = vnx::get_type_code(vnx::Hash64(0x85f70b1c8de5f940ull));
 const vnx::TypeCode* const vnx_native_type_code_Delegated = vnx::get_type_code(vnx::Hash64(0x5b699f6e4ba4aea7ull));
+const vnx::TypeCode* const vnx_native_type_code_HTLC = vnx::get_type_code(vnx::Hash64(0x64804455753f1f10ull));
 const vnx::TypeCode* const vnx_native_type_code_Locked = vnx::get_type_code(vnx::Hash64(0xd0ff1b6e7bad1493ull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig = vnx::get_type_code(vnx::Hash64(0x7d674c5f7297dedull));
 const vnx::TypeCode* const vnx_native_type_code_NFT = vnx::get_type_code(vnx::Hash64(0x7cb24b9888a47906ull));

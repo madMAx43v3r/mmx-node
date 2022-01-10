@@ -6,9 +6,11 @@
 
 #include <vnx/AsyncClient.h>
 #include <mmx/BlockHeader.hxx>
+#include <mmx/FarmInfo.hxx>
 #include <mmx/addr_t.hpp>
 #include <vnx/Hash64.hpp>
 #include <vnx/Module.h>
+#include <vnx/TopicPtr.hpp>
 
 
 namespace mmx {
@@ -59,6 +61,10 @@ public:
 			const std::function<void(const ::vnx::Hash64&)>& _callback = std::function<void(const ::vnx::Hash64&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
+	uint64_t get_farm_info(
+			const std::function<void(std::shared_ptr<const ::mmx::FarmInfo>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::FarmInfo>)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
 	uint64_t sign_block(std::shared_ptr<const ::mmx::BlockHeader> block = nullptr, const uint64_t& reward_amount = 0, 
 			const std::function<void(std::shared_ptr<const ::mmx::BlockHeader>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::BlockHeader>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
@@ -79,6 +85,7 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_vnx_stop;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const vnx::bool_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_vnx_self_test;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::vnx::Hash64&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_mac_addr;
+	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::FarmInfo>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_farm_info;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::BlockHeader>)>, std::function<void(const vnx::exception&)>>> vnx_queue_sign_block;
 	
 };

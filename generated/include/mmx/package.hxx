@@ -20,6 +20,8 @@ class Challenge;
 class Contract;
 class FarmInfo;
 class FarmerBase;
+class Farmer_get_farm_info;
+class Farmer_get_farm_info_return;
 class Farmer_get_mac_addr;
 class Farmer_get_mac_addr_return;
 class Farmer_sign_block;
@@ -176,6 +178,8 @@ extern const vnx::TypeCode* const vnx_native_type_code_Challenge; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Contract; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_FarmInfo; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_FarmerBase; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_farm_info; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_farm_info_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_mac_addr; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_mac_addr_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_block; ///< \private
@@ -330,6 +334,8 @@ void read(TypeInput& in, ::mmx::Challenge& value, const TypeCode* type_code, con
 void read(TypeInput& in, ::mmx::Contract& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::FarmInfo& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::FarmerBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Farmer_get_farm_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Farmer_get_farm_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Farmer_get_mac_addr& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Farmer_get_mac_addr_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Farmer_sign_block& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -486,6 +492,8 @@ void write(TypeOutput& out, const ::mmx::Challenge& value, const TypeCode* type_
 void write(TypeOutput& out, const ::mmx::Contract& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::FarmInfo& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::FarmerBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Farmer_get_farm_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Farmer_get_farm_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Farmer_get_mac_addr& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Farmer_get_mac_addr_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Farmer_sign_block& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -642,6 +650,8 @@ void read(std::istream& in, ::mmx::Challenge& value); ///< \private
 void read(std::istream& in, ::mmx::Contract& value); ///< \private
 void read(std::istream& in, ::mmx::FarmInfo& value); ///< \private
 void read(std::istream& in, ::mmx::FarmerBase& value); ///< \private
+void read(std::istream& in, ::mmx::Farmer_get_farm_info& value); ///< \private
+void read(std::istream& in, ::mmx::Farmer_get_farm_info_return& value); ///< \private
 void read(std::istream& in, ::mmx::Farmer_get_mac_addr& value); ///< \private
 void read(std::istream& in, ::mmx::Farmer_get_mac_addr_return& value); ///< \private
 void read(std::istream& in, ::mmx::Farmer_sign_block& value); ///< \private
@@ -798,6 +808,8 @@ void write(std::ostream& out, const ::mmx::Challenge& value); ///< \private
 void write(std::ostream& out, const ::mmx::Contract& value); ///< \private
 void write(std::ostream& out, const ::mmx::FarmInfo& value); ///< \private
 void write(std::ostream& out, const ::mmx::FarmerBase& value); ///< \private
+void write(std::ostream& out, const ::mmx::Farmer_get_farm_info& value); ///< \private
+void write(std::ostream& out, const ::mmx::Farmer_get_farm_info_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Farmer_get_mac_addr& value); ///< \private
 void write(std::ostream& out, const ::mmx::Farmer_get_mac_addr_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Farmer_sign_block& value); ///< \private
@@ -954,6 +966,8 @@ void accept(Visitor& visitor, const ::mmx::Challenge& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Contract& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::FarmInfo& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::FarmerBase& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Farmer_get_farm_info& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Farmer_get_farm_info_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Farmer_get_mac_addr& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Farmer_get_mac_addr_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Farmer_sign_block& value); ///< \private
@@ -1253,6 +1267,50 @@ struct type<::mmx::FarmerBase> {
 	void accept(Visitor& visitor, const ::mmx::FarmerBase& value) {
 		vnx::accept(visitor, value);
 	}
+};
+
+/// \private
+template<>
+struct type<::mmx::Farmer_get_farm_info> {
+	void read(TypeInput& in, ::mmx::Farmer_get_farm_info& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Farmer_get_farm_info& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Farmer_get_farm_info& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Farmer_get_farm_info& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Farmer_get_farm_info& value) {
+		vnx::accept(visitor, value);
+	}
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_get_farm_info& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Farmer_get_farm_info_return> {
+	void read(TypeInput& in, ::mmx::Farmer_get_farm_info_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Farmer_get_farm_info_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Farmer_get_farm_info_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Farmer_get_farm_info_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Farmer_get_farm_info_return& value) {
+		vnx::accept(visitor, value);
+	}
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_get_farm_info_return& value, bool special = false);
 };
 
 /// \private

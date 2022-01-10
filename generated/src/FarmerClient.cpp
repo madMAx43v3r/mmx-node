@@ -4,6 +4,9 @@
 #include <mmx/package.hxx>
 #include <mmx/FarmerClient.hxx>
 #include <mmx/BlockHeader.hxx>
+#include <mmx/FarmInfo.hxx>
+#include <mmx/Farmer_get_farm_info.hxx>
+#include <mmx/Farmer_get_farm_info_return.hxx>
 #include <mmx/Farmer_get_mac_addr.hxx>
 #include <mmx/Farmer_get_mac_addr_return.hxx>
 #include <mmx/Farmer_sign_block.hxx>
@@ -29,6 +32,7 @@
 #include <vnx/ModuleInterface_vnx_set_config_object_return.hxx>
 #include <vnx/ModuleInterface_vnx_stop.hxx>
 #include <vnx/ModuleInterface_vnx_stop_return.hxx>
+#include <vnx/TopicPtr.hpp>
 
 #include <vnx/Generic.hxx>
 #include <vnx/vnx.h>
@@ -160,6 +164,18 @@ vnx::bool_t FarmerClient::vnx_self_test() {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<::vnx::Hash64>();
+	} else {
+		throw std::logic_error("FarmerClient: invalid return value");
+	}
+}
+
+std::shared_ptr<const ::mmx::FarmInfo> FarmerClient::get_farm_info() {
+	auto _method = ::mmx::Farmer_get_farm_info::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Farmer_get_farm_info_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::FarmInfo>>();
 	} else {
 		throw std::logic_error("FarmerClient: invalid return value");
 	}

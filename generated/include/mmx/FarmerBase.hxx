@@ -6,9 +6,11 @@
 
 #include <mmx/package.hxx>
 #include <mmx/BlockHeader.hxx>
+#include <mmx/FarmInfo.hxx>
 #include <mmx/addr_t.hpp>
 #include <vnx/Hash64.hpp>
 #include <vnx/Module.h>
+#include <vnx/TopicPtr.hpp>
 
 
 namespace mmx {
@@ -16,8 +18,10 @@ namespace mmx {
 class FarmerBase : public ::vnx::Module {
 public:
 	
+	::vnx::TopicPtr input_info = "harvester.info";
 	uint32_t default_wallet = 0;
 	uint32_t default_address = 0;
+	uint32_t harvester_timeout = 60;
 	std::string node_server = "Node";
 	std::string wallet_server = "Wallet";
 	vnx::optional<::mmx::addr_t> reward_addr;
@@ -58,7 +62,9 @@ protected:
 	using Super::handle;
 	
 	virtual ::vnx::Hash64 get_mac_addr() const = 0;
+	virtual std::shared_ptr<const ::mmx::FarmInfo> get_farm_info() const = 0;
 	virtual std::shared_ptr<const ::mmx::BlockHeader> sign_block(std::shared_ptr<const ::mmx::BlockHeader> block, const uint64_t& reward_amount) const = 0;
+	virtual void handle(std::shared_ptr<const ::mmx::FarmInfo> _value) {}
 	
 	void vnx_handle_switch(std::shared_ptr<const vnx::Value> _value) override;
 	std::shared_ptr<vnx::Value> vnx_call_switch(std::shared_ptr<const vnx::Value> _method, const vnx::request_id_t& _request_id) override;
