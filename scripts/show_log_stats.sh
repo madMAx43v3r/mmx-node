@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LC_ALL=en_US.utf-8
+export LC_ALL=en_US.utf-8
 
 cat $1 | grep "Verified VDF" | grep -oP "took [+-]?([0-9]*[.])?[0-9]+" > vdf_verify
 
