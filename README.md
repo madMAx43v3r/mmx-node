@@ -288,6 +288,7 @@ To add a plot directory add the path to `plot_dirs` array in `config/local/Harve
 	"plot_dirs": ["/mnt/drive1/plots/", "/mnt/drive2/plots/"]
 }
 ```
+Directories are searched recursively by default. To disable recursive search you can set `recursive_search` to `false` in `Harvester.json`.
 
 ## Installation
 
