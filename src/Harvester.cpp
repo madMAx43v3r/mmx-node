@@ -160,7 +160,7 @@ std::shared_ptr<const FarmInfo> Harvester::get_farm_info() const
 	return info;
 }
 
-void Harvester::find_plot_dirs(const std::vector<std::string>& dirs, std::vector<std::string>& all_dirs)
+void Harvester::find_plot_dirs(const std::vector<std::string>& dirs, std::vector<std::string>& all_dirs) const
 {
 	std::vector<std::string> sub_dirs;
 	for(const auto& path : dirs) {

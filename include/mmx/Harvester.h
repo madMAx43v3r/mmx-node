@@ -34,7 +34,7 @@ protected:
 private:
 	void update();
 
-	void find_plot_dirs(const std::vector<std::string>& dirs, std::vector<std::string>& all_dirs);
+	void find_plot_dirs(const std::vector<std::string>& dirs, std::vector<std::string>& all_dirs) const;
 
 private:
 	size_t total_bytes = 0;
