@@ -7,6 +7,7 @@
 #include <vnx/Type.h>
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/hash_t.hpp>
 #include <mmx/tx_type_e.hxx>
 
 
@@ -16,6 +17,7 @@ struct tx_entry_t {
 	
 	
 	uint32_t height = 0;
+	::mmx::hash_t txid;
 	::mmx::tx_type_e type;
 	::mmx::addr_t address;
 	::mmx::addr_t contract;
