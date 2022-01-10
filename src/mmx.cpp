@@ -530,7 +530,7 @@ int main(int argc, char** argv)
 				}
 			}
 			else {
-				std::cerr << "Help: mmx farm [info | reload]" << std::endl;
+				std::cerr << "Help: mmx farm [info | get | reload]" << std::endl;
 			}
 		}
 		else {
