@@ -17,6 +17,8 @@ module Harvester {
 	
 	uint num_threads = 0;					// 0 = number of plot_dirs
 	
+	bool recursive_search = true;
+	
 	
 	void reload();
 	

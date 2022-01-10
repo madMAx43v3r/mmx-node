@@ -188,8 +188,11 @@ void Harvester::find_plot_dirs(const std::vector<std::string>& dirs, std::vector
 void Harvester::reload()
 {
 	std::vector<std::string> all_dirs;
-	find_plot_dirs(plot_dirs, all_dirs);
-
+	if(recursive_search) {
+		find_plot_dirs(plot_dirs, all_dirs);
+	} else {
+		all_dirs = plot_dirs;
+	}
 	std::vector<std::pair<std::shared_ptr<vnx::File>, std::shared_ptr<chiapos::DiskProver>>> plots;
 
 #pragma omp parallel for num_threads(num_threads)
