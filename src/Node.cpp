@@ -322,9 +322,9 @@ std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id) const
 					return tx;
 				}
 				if(auto header = std::dynamic_pointer_cast<BlockHeader>(value)) {
-					if(auto tx = std::dynamic_pointer_cast<const Transaction>(header->tx_base)) {
+					if(auto tx = header->tx_base) {
 						if(tx->id == id) {
-							return tx;
+							return std::dynamic_pointer_cast<const Transaction>(tx);
 						}
 					}
 				}
@@ -332,6 +332,15 @@ std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id) const
 			catch(...) {
 				block_chain->seek_to(last_pos);
 				throw;
+			}
+		}
+	}
+	for(const auto& entry : fork_tree) {
+		if(const auto& block = entry.second->block) {
+			if(const auto& tx = block->tx_base) {
+				if(tx->id == id) {
+					return std::dynamic_pointer_cast<const Transaction>(tx);
+				}
 			}
 		}
 	}
