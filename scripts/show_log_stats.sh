@@ -30,7 +30,7 @@ echo "Fork Depth 5  =" $(cat forked_at | awk '{ if ($2 - $8 == 5) sum += 1 } END
 echo "Fork Depth 6  =" $(cat forked_at | awk '{ if ($2 - $8 == 6) sum += 1 } END { print 100 * sum / NR }') %
 echo "Fork Depth 7  =" $(cat forked_at | awk '{ if ($2 - $8 == 7) sum += 1 } END { print 100 * sum / NR }') %
 echo "Fork Depth 8  =" $(cat forked_at | awk '{ if ($2 - $8 == 8) sum += 1 } END { print 100 * sum / NR }') %
-echo "Fork Depth >8 =" $(cat forked_at | awk '{ if ($2 - $8 > 8) sum += 1 } END { print 100 * sum / NR }') % "(false positives from restarting node)"
+echo "Fork Depth >8 =" $(cat forked_at | awk '{ if ($2 - $8 > 8) sum += 1 } END { print 100 * sum / NR }') % "(contains false positives from restarting node)"
 
 rm forked_at
 rm vdf_verify
