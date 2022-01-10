@@ -1,0 +1,14 @@
+package mmx.contract;
+
+class HTLC extends Locked {
+	
+	addr_t target;
+	
+	pubket_t pubkey;			// for signing message
+	
+	
+//	bool is_valid() const;
+	
+//	hash_t calc_hash() const;
+	
+}
