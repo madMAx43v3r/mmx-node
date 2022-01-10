@@ -1,10 +1,14 @@
 package mmx.contract;
 
+import mmx.hash_t;
+import mmx.addr_t;
+import mmx.pubkey_t;
+
 class HTLC extends Locked {
 	
 	addr_t target;
 	
-	pubket_t pubkey;			// for signing message
+	pubkey_t pubkey;			// for signing message
 	
 	
 //	bool is_valid() const;
