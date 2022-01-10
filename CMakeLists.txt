@@ -19,7 +19,7 @@ add_subdirectory(bls-signatures)
 find_package(OpenCL)
 find_package(Threads REQUIRED)
 
-include(chiapos.cmake)
+include(cmake/chiapos.cmake)
 
 if(OpenCL_FOUND)
 	add_subdirectory(basic-opencl)
