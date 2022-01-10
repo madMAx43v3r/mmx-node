@@ -21,6 +21,14 @@
 
 <p>
 <table class="data">
+<tr>
+<th class="data"></th>
+<th class="data">Amount</th>
+<th class="data">Token</th>
+<th class="data">Address</th>
+<th class="data">Spent TX</th>
+</tr>
+
 <% tx.inputs.forEach(function(input, index) { %>
 <tr>
 <td class="data"><b>Input[<%= index %>]</b></td>
@@ -29,17 +37,16 @@
 <td class="data"><a href="address?addr=<%= input.address %>"><%= input.address %></a></td>
 </tr>
 <% }); %>
-</table>
-</p>
 
-<p>
-<table class="data">
 <% tx.outputs.forEach(function(output, index) { %>
 <tr>
 <td class="data"><b>Output[<%= index %>]</b></td>
 <td class="data"><%= output.amount %></td>
 <td class="data">MMX</td>
 <td class="data"><a href="address?addr=<%= output.address %>"><%= output.address %></a></td>
+<% if(output.spent_txid) { %>
+<td class="data"><a href="transaction?id=<%= output.spent_txid %>"><%= output.spent_txid %></a></td>
+<% } %>
 </tr>
 <% }); %>
 </table>

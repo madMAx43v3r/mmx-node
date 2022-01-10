@@ -131,13 +131,13 @@ function on_address(res, address, balance, history)
 	res.render('index', args);
 }
 
-function on_transaction(res, tx, txi_info)
+function on_transaction(res, tx, txio_info)
 {
 	tx.id = to_hex(tx.id);
 	tx.input_amount = 0;
 	tx.inputs.forEach((input, i) => {
-		if(i < txi_info.length) {
-			const info = txi_info[i];
+		if(i < txio_info.length) {
+			const info = txio_info[i];
 			if(info) {
 				input.amount = info.output.amount / 1e6;
 				input.address = to_addr(info.output.address);
@@ -149,14 +149,20 @@ function on_transaction(res, tx, txi_info)
 		}
 	});
 	tx.output_amount = 0;
-	for(const out of tx.outputs) {
+	tx.outputs.forEach((out, i) => {
+		if(tx.inputs.length + i < txio_info.length) {
+			const info = txio_info[tx.inputs.length + i];
+			if(info && info.spent) {
+				out.spent_txid = to_hex(info.spent.txid);
+			}
+		}
 		out.address = to_addr(out.address);
 		out.contract = to_addr(out.contract);
 		if(out.contract == MMX_ADDR) {
 			tx.output_amount += out.amount;
 		}
 		out.amount = out.amount / 1e6;
-	}
+	});
 	tx.fee_amount = tx.input_amount - tx.output_amount;
 	tx.input_amount /= 1e6;
 	tx.output_amount /= 1e6;
@@ -225,6 +231,9 @@ app.get('/transaction', (req, res) => {
 			for(const input of tx.inputs) {
 				keys.push(input.prev);
 			}
+			tx.outputs.forEach((output, i) => {
+				keys.push({txid: tx.id, index: i});
+			});
 			axios.post(host + '/api/node/get_txo_infos', {keys: keys})
 			.then((ret) => {
 				on_transaction(res, tx, ret.data);
