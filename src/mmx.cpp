@@ -494,14 +494,12 @@ int main(int argc, char** argv)
 
 			std::shared_ptr<const mmx::FarmInfo> info;
 			try {
-				info = harvester.get_farm_info();
 				info = farmer.get_farm_info();
 			} catch(...) {
 				// ignore
 			}
 			if(!info) {
-				vnx::log_error() << "No Farmer or Harvester running!";
-				goto failed;
+				info = harvester.get_farm_info();
 			}
 
 			if(command == "info") {
