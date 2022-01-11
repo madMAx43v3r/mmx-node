@@ -77,8 +77,10 @@ void Node::main()
 			apply(block);
 			commit(block);
 		}
-		log(INFO) << "Loaded " << get_height() + 1 << " blocks with " << tx_index.size()
-				<< " transactions from disk, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+		if(auto peak = get_peak()) {
+			log(INFO) << "Loaded " << peak->height + 1 << " blocks with " << tx_index.size()
+					<< " transactions from disk, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+		}
 	} else {
 		block_chain->open("wb");
 		block_chain->open("rb+");
@@ -472,10 +474,8 @@ void Node::add_block(std::shared_ptr<const Block> block)
 	if(fork_tree.count(block->hash)) {
 		return;
 	}
-	auto root = get_root();
-	if(block->height <= root->height
-		|| (is_synced && block->height > get_height() + params->commit_delay))
-	{
+	const auto root = get_root();
+	if(block->height <= root->height) {
 		return;
 	}
 	if(!block->is_valid()) {
@@ -661,8 +661,8 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 	if(verified_vdfs.count(proof->height)) {
 		return;
 	}
-	const auto height = get_height();
-	if(proof->height < height || proof->height > height + params->commit_delay) {
+	const auto peak = get_peak();
+	if(!peak || proof->height < peak->height) {
 		return;
 	}
 	if(vdf_verify_pending.count(proof->height)) {
@@ -1738,7 +1738,6 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 void Node::purge_tree()
 {
 	const auto root = get_root();
-	const auto height = get_height();
 	std::unordered_set<hash_t> purged;
 	for(auto iter = fork_index.begin(); iter != fork_index.end();)
 	{
@@ -1746,8 +1745,7 @@ void Node::purge_tree()
 		const auto& block = fork->block;
 		if(block->height <= root->height
 			|| purged.count(block->prev)
-			|| (!is_synced && fork->is_invalid)
-			|| (is_synced && block->height > height + params->commit_delay))
+			|| (!is_synced && fork->is_invalid))
 		{
 			purged.insert(block->hash);
 			fork_tree.erase(block->hash);
