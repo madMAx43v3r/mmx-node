@@ -1294,6 +1294,9 @@ void Node::sync_more()
 		sync_update = sync_pos;
 		log(INFO) << "Starting sync at height " << sync_pos;
 	}
+	if(vdf_threads->get_num_pending()) {
+		return;
+	}
 	if(auto peak = get_peak()) {
 		if(sync_pos - peak->height > 16 * max_sync_jobs) {
 			return;
