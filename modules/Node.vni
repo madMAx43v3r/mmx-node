@@ -31,7 +31,7 @@ module Node implements vnx.addons.HttpComponent {
 	uint replay_height = -1;				// to limit reloading from disk and force resync
 	
 	uint num_vdf_threads = 8;
-	uint vdf_check_divider = 256;			// how many VDFs to verify during sync
+	uint vdf_check_divider = 10000;			// how many VDFs to verify during sync
 	
 	int opencl_device = 0;					// device to use for VDF verification (-1 to disable)
 	
