@@ -525,7 +525,8 @@ void Node::add_block(std::shared_ptr<const Block> block)
 	if(is_synced && !fork_tree.count(block->prev))
 	{
 		const auto height = block->height - 1;
-		if(!sync_pending.count(height)) {
+		if(!sync_pending.count(height) && height > root->height)
+		{
 			router->get_blocks_at(height, std::bind(&Node::sync_result, this, height, std::placeholders::_1));
 			sync_pending.insert(height);
 			log(INFO) << "Fetching missed block at height " << height << " with hash " << block->prev;
