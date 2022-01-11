@@ -1704,8 +1704,10 @@ void Node::purge_tree()
 		{
 			const auto& fork = iter->second;
 			const auto& block = fork->block;
-			if(block->height <= root->height || purged.count(block->prev)
-				|| (is_synced && block->height > root->height + 2 * params->commit_delay))
+			if(block->height <= root->height
+				|| purged.count(block->prev)
+				|| (!is_synced && fork->is_invalid)
+				|| (is_synced && block->height > root->height + params->commit_delay))
 			{
 				purged.insert(block->hash);
 				iter = fork_tree.erase(iter);
