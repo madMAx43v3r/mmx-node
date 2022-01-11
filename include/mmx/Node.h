@@ -99,10 +99,13 @@ private:
 		bool is_invalid = false;
 		bool is_verified = false;
 		bool is_finalized = false;
+		bool is_vdf_verified = false;
 		bool is_proof_verified = false;
 		bool has_weak_proof = false;
 		uint32_t proof_score = -1;
 		int64_t recv_time = 0;
+		uint128_t weight = 0;
+		uint128_t total_weight = 0;
 		std::weak_ptr<fork_t> prev;
 		std::shared_ptr<const Block> block;
 		std::shared_ptr<const BlockHeader> diff_block;
@@ -126,6 +129,10 @@ private:
 
 	void check_vdfs();
 
+	void add_fork(std::shared_ptr<fork_t> fork);
+
+	void erase_fork(const uint32_t height, const hash_t& hash);
+
 	bool include_transaction(std::shared_ptr<const Transaction> tx);
 
 	bool make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response);
@@ -141,8 +148,6 @@ private:
 	std::shared_ptr<fork_t> find_best_fork(std::shared_ptr<const BlockHeader> root = nullptr, const uint32_t* at_height = nullptr) const;
 
 	std::vector<std::shared_ptr<fork_t>> get_fork_line(std::shared_ptr<fork_t> fork_head = nullptr) const;
-
-	bool calc_fork_weight(std::shared_ptr<const BlockHeader> root, std::shared_ptr<fork_t> fork, int64_t& total_weight) const;
 
 	void validate(std::shared_ptr<const Block> block) const;
 
@@ -214,6 +219,7 @@ private:
 	std::set<std::pair<addr_t, txio_key_t>> addr_map;								// [addr => utxo keys] (finalized + unspent only)
 	std::unordered_map<addr_t, std::unordered_set<txio_key_t>> taddr_map;			// [addr => utxo keys] (pending + unspent only)
 
+	std::multimap<uint32_t, std::shared_ptr<fork_t>> fork_index;					// [height => fork]
 	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;					// pending blocks
 	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;					// [height => block header] (finalized only)
 	std::unordered_map<addr_t, std::shared_ptr<const Contract>> contracts;			// current contract state

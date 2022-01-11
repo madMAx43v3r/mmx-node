@@ -24,6 +24,7 @@ module Node implements vnx.addons.HttpComponent {
 	int sync_loss_delay = 60;				// when to re-sync if stuck [sec]
 	
 	uint max_history = 1000;
+	uint max_fork_length = 100000;			// to keep in memory at most
 	
 	uint replay_height = -1;				// to limit reloading from disk and force resync
 	
