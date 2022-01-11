@@ -1297,7 +1297,6 @@ void Node::sync_more()
 	}
 	if(!sync_pos) {
 		sync_pos = get_root()->height + 1;
-		sync_update = sync_pos;
 		log(INFO) << "Starting sync at height " << sync_pos;
 	}
 	if(vdf_threads->get_num_pending()) {
@@ -1333,10 +1332,6 @@ void Node::sync_result(const uint32_t& height, const std::vector<std::shared_ptr
 			if(height < sync_peak) {
 				sync_peak = height;
 			}
-		}
-		if(sync_pos - sync_update >= 32) {
-			sync_update = sync_pos;
-			add_task(std::bind(&Node::update, this));
 		}
 		sync_more();
 	}
