@@ -544,11 +544,6 @@ void Node::add_transaction(std::shared_ptr<const Transaction> tx)
 	if(!tx->is_valid()) {
 		return;
 	}
-	const auto tx_cost = tx->calc_min_fee(params);
-	if(tx_cost > params->max_block_cost) {
-		log(WARN) << "Rejected over-size TX: cost = " << tx_cost;
-		return;
-	}
 	tx_pool[tx->id] = tx;
 
 	if(!vnx_sample) {
@@ -1213,8 +1208,12 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 			continue;
 		}
 		try {
+			const auto cost = tx->calc_min_fee(params);
+			if(cost > params->max_block_cost) {
+				throw std::logic_error("tx cost > max_block_cost");
+			}
+			tx_cost[i] = cost;
 			tx_fees[i] = validate(tx);
-			tx_cost[i] = tx->calc_min_fee(params);
 		}
 		catch(const std::exception& ex) {
 #pragma omp critical
