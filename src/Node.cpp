@@ -648,16 +648,25 @@ void Node::http_request_chunk_async(std::shared_ptr<const vnx::addons::HttpReque
 
 void Node::handle(std::shared_ptr<const Block> block)
 {
+	if(!is_synced && !sync_retry) {
+		return;
+	}
 	add_block(block);
 }
 
 void Node::handle(std::shared_ptr<const Transaction> tx)
 {
+	if(!is_synced && !sync_retry) {
+		return;
+	}
 	add_transaction(tx);
 }
 
 void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 {
+	if(!is_synced && !sync_retry) {
+		return;
+	}
 	if(verified_vdfs.count(proof->height)) {
 		return;
 	}
