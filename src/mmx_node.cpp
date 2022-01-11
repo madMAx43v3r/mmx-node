@@ -55,26 +55,25 @@ int main(int argc, char** argv)
 	vnx::read_config("public_endpoint", public_endpoint);
 	vnx::read_config("root_path", root_path);
 
+#ifdef WITH_OPENCL
+	try {
+		std::string platform_name;
+		vnx::read_config("opencl.platform", platform_name);
+		automy::basic_opencl::create_context(CL_DEVICE_TYPE_GPU, platform_name);
+	}
+	catch(const std::exception& ex) {
+		vnx::log_info() << "No OpenCL GPU platform found: " << ex.what();
+	}
+#endif
+
 	if(light_mode) {
 		with_farmer = false;
 		with_timelord = false;
 		root_path += "light_node/";
-	} else {
-#ifdef WITH_OPENCL
-		try {
-			std::string platform_name;
-			vnx::read_config("opencl.platform", platform_name);
-			automy::basic_opencl::create_context(CL_DEVICE_TYPE_GPU, platform_name);
-		}
-		catch(const std::exception& ex) {
-			vnx::log_info() << "No OpenCL GPU platform found: " << ex.what();
-		}
-#endif
 	}
 	if(!root_path.empty()) {
 		vnx::Directory(root_path).create();
 	}
-
 	if(with_farmer) {
 		with_wallet = true;
 	} else {
