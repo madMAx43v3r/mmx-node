@@ -55,7 +55,7 @@ public:
 	uint32_t num_sync_retries = 3;
 	uint32_t replay_height = -1;
 	uint32_t num_vdf_threads = 8;
-	uint32_t vdf_check_divider = 256;
+	uint32_t vdf_check_divider = 10000;
 	int32_t opencl_device = 0;
 	vnx::bool_t do_sync = true;
 	vnx::bool_t light_mode = false;
