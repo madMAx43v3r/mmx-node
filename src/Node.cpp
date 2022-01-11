@@ -1671,11 +1671,10 @@ void Node::validate_diff_adjust(const uint64_t& block, const uint64_t& prev) con
 
 void Node::commit(std::shared_ptr<const Block> block) noexcept
 {
-	const auto root = get_root();
-	if(root && block->prev != root->hash) {
+	if(change_log.empty()) {
 		return;
 	}
-	if(change_log.empty()) {
+	if(!history.empty() && block->prev != get_root()->hash) {
 		return;
 	}
 	const auto log = change_log.front();
@@ -2137,7 +2136,7 @@ bool Node::revert() noexcept
 std::shared_ptr<const BlockHeader> Node::get_root() const
 {
 	if(history.empty()) {
-		return nullptr;
+		throw std::logic_error("have no root");
 	}
 	return (--history.end())->second;
 }
