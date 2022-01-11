@@ -651,7 +651,9 @@ void Node::handle(std::shared_ptr<const Block> block)
 	if(!is_synced && !sync_retry) {
 		return;
 	}
-	add_block(block);
+	if(block->proof) {
+		add_block(block);
+	}
 }
 
 void Node::handle(std::shared_ptr<const Transaction> tx)
