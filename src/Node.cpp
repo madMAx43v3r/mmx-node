@@ -477,7 +477,7 @@ void Node::add_block(std::shared_ptr<const Block> block)
 	}
 	auto root = get_root();
 	if(block->height <= root->height
-		|| (is_synced && block->height > root->height + params->commit_delay))
+		|| (is_synced && block->height > get_height() + params->commit_delay))
 	{
 		return;
 	}
@@ -1696,6 +1696,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 void Node::purge_tree()
 {
 	const auto root = get_root();
+	const auto height = get_height();
 	bool repeat = true;
 	std::unordered_set<hash_t> purged;
 	do {
@@ -1707,7 +1708,7 @@ void Node::purge_tree()
 			if(block->height <= root->height
 				|| purged.count(block->prev)
 				|| (!is_synced && fork->is_invalid)
-				|| (is_synced && block->height > root->height + params->commit_delay))
+				|| (is_synced && block->height > height + params->commit_delay))
 			{
 				purged.insert(block->hash);
 				iter = fork_tree.erase(iter);
