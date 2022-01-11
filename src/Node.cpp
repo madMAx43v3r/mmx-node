@@ -922,8 +922,7 @@ void Node::update()
 			const auto prev = fork->prev.lock();
 			log(INFO) << "New peak at height " << peak->height << " with score " << std::to_string(fork->proof_score)
 					<< (is_synced && forked_at ? ", forked at " + std::to_string(forked_at->height) : "")
-					<< (is_synced ? (light_mode ? ", delta " : ", delay ") : "")
-					<< (is_synced ? std::to_string((fork->recv_time - (light_mode ? (prev ? prev->recv_time : fork->recv_time) : verified_vdfs[peak->height].recv_time)) / 1e6) + " sec" : "")
+					<< (is_synced ? ", delay " + std::to_string((fork->recv_time - verified_vdfs[peak->height].recv_time) / 1e6) + " sec" : "")
 					<< ", took " << elapsed << " sec, " << fork_tree.size() << " blocks";
 		}
 	}
