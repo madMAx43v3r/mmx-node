@@ -476,7 +476,9 @@ void Node::add_block(std::shared_ptr<const Block> block)
 		return;
 	}
 	auto root = get_root();
-	if(block->height <= root->height) {
+	if(block->height <= root->height
+		|| (is_synced && block->height > root->height + params->commit_delay))
+	{
 		return;
 	}
 	if(!block->is_valid()) {
