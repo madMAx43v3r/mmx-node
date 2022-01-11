@@ -38,27 +38,26 @@ void Node::init()
 
 void Node::main()
 {
+#ifdef WITH_OPENCL
+	if(opencl_device >= 0) {
+		const auto devices = automy::basic_opencl::get_devices();
+		if(size_t(opencl_device) < devices.size()) {
+			for(int i = 0; i < 2; ++i) {
+				opencl_vdf[i] = std::make_shared<OCL_VDF>(opencl_device);
+			}
+			log(INFO) << "Using OpenCL GPU device: " << opencl_device;
+		}
+		else if(devices.size()) {
+			log(WARN) <<  "No such OpenCL GPU device: " << opencl_device;
+		}
+	}
+#endif
+	vdf_threads = std::make_shared<vnx::ThreadPool>(num_vdf_threads);
+
 	if(light_mode) {
 		vnx::read_config("light_address_set", light_address_set);
 		log(INFO) << "Got " << light_address_set.size() << " addresses for light mode.";
-	} else {
-#ifdef WITH_OPENCL
-		if(opencl_device >= 0) {
-			const auto devices = automy::basic_opencl::get_devices();
-			if(size_t(opencl_device) < devices.size()) {
-				for(int i = 0; i < 2; ++i) {
-					opencl_vdf[i] = std::make_shared<OCL_VDF>(opencl_device);
-				}
-				log(INFO) << "Using OpenCL GPU device: " << opencl_device;
-			}
-			else if(devices.size()) {
-				log(WARN) <<  "No such OpenCL GPU device: " << opencl_device;
-			}
-		}
-#endif
-		vdf_threads = std::make_shared<vnx::ThreadPool>(1);
 	}
-
 	router = std::make_shared<RouterAsyncClient>(router_name);
 	http = std::make_shared<vnx::addons::HttpInterface<Node>>(this, vnx_name);
 	add_async_client(router);
@@ -666,7 +665,7 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 	if(proof->height < height || proof->height > height + params->commit_delay) {
 		return;
 	}
-	if(proof->height == vdf_verify_pending) {
+	if(vdf_verify_pending.count(proof->height)) {
 		pending_vdfs.emplace(proof->height, proof);
 		return;
 	}
@@ -674,14 +673,14 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 	if(iter != verified_vdfs.end())
 	{
 		try {
-			vdf_verify_pending = proof->height;
+			vdf_verify_pending.insert(proof->height);
 			verify_vdf(proof, iter->second);
 		}
 		catch(const std::exception& ex) {
 			if(is_synced) {
 				log(WARN) << "VDF verification for height " << proof->height << " failed with: " << ex.what();
 			}
-			vdf_verify_pending = 0;
+			vdf_verify_pending.erase(proof->height);
 		}
 	}
 	else {
@@ -697,7 +696,7 @@ void Node::handle(std::shared_ptr<const ProofResponse> value)
 	}
 	const auto peak = get_peak();
 	const auto request = value->request;
-	if(request->height < peak->height) {
+	if(!peak || request->height < peak->height) {
 		return;
 	}
 	const auto challenge = request->challenge;
@@ -739,7 +738,7 @@ void Node::check_vdfs()
 	for(auto iter = pending_vdfs.begin(); iter != pending_vdfs.end();) {
 		const auto& proof = iter->second;
 		if(verified_vdfs.count(proof->height - 1)) {
-			if(proof->height != vdf_verify_pending) {
+			if(!vdf_verify_pending.count(proof->height)) {
 				add_task([this, proof]() {
 					handle(proof);
 				});
@@ -802,27 +801,29 @@ void Node::update()
 			}
 			if(!fork->is_invalid && !fork->is_proof_verified && fork->diff_block && (has_prev || block->prev == root->hash))
 			{
-				bool vdf_passed = light_mode;
-				if(is_synced) {
+				bool vdf_passed = !is_synced;
+				if(is_synced && light_mode) {
+					vdf_passed = true;
+					fork->is_vdf_verified = true;
+				}
+				if(!vdf_passed) {
 					auto iter2 = verified_vdfs.find(block->height);
 					if(iter2 != verified_vdfs.end()) {
 						const auto& point = iter2->second;
 						if(block->vdf_iters == point.iters && block->vdf_output == point.output) {
 							vdf_passed = true;
+							fork->is_vdf_verified = true;
 						} else {
 							fork->is_invalid = true;
 							log(WARN) << "VDF verification failed for a block at height " << block->height;
 						}
 					}
 				}
-				if(!is_synced || vdf_passed)
-				{
+				if(vdf_passed) {
 					hash_t vdf_challenge;
 					if(find_vdf_challenge(block, vdf_challenge)) {
 						to_verify.emplace_back(fork, vdf_challenge);
 					}
-					// TODO: check some VDFs during sync (also in light mode)
-					fork->is_vdf_verified = true;
 				}
 			}
 		}
@@ -850,9 +851,6 @@ void Node::update()
 	while(true) {
 		forked_at = nullptr;
 
-		// purge disconnected forks
-		purge_tree();
-
 		const auto best_fork = find_best_fork();
 
 		if(!best_fork || best_fork->block->hash == state_hash) {
@@ -866,6 +864,8 @@ void Node::update()
 		catch(...) {
 			continue;	// try again
 		}
+		purge_tree();
+
 		const auto fork_line = get_fork_line();
 
 		// show finalized blocks
@@ -1385,6 +1385,18 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 				if(!light_mode) {
 					validate(block);
 				}
+				if(!fork->is_vdf_verified) {
+					if(auto prev = find_prev_header(block)) {
+						if(auto infuse = find_prev_header(block, params->finality_delay + 1, true)) {
+							log(INFO) << "Checking VDF for block at height " << block->height << " ...";
+							vdf_threads->add_task(std::bind(&Node::check_vdf_task, this, fork, prev, infuse));
+						} else {
+							throw std::logic_error("cannot verify");
+						}
+					} else {
+						throw std::logic_error("cannot verify");
+					}
+				}
 				fork->is_verified = true;
 			}
 			catch(const std::exception& ex) {
@@ -1396,7 +1408,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 			if(is_synced) {
 				publish(block, output_verified_blocks);
 			}
-			else if(!light_mode) {
+			else {
 				vdf_point_t point;
 				point.height = block->height;
 				point.iters = block->vdf_iters;
@@ -1710,7 +1722,6 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 		write_block(block);
 	}
 	erase_fork(block->height, block->hash);
-	purge_tree();
 
 	publish(block, output_committed_blocks, is_replay ? BLOCKING : 0);
 }
@@ -1776,6 +1787,13 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 	}
 	fork->weight *= diff_block->space_diff;
 	fork->weight *= diff_block->time_diff;
+
+	// check some VDFs during sync
+	if(!fork->is_proof_verified && !fork->is_vdf_verified) {
+		if(vnx::rand64() % vdf_check_divider) {
+			fork->is_vdf_verified = true;
+		}
+	}
 	fork->is_proof_verified = true;
 }
 
@@ -1826,8 +1844,8 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const vdf_point_
 	if(proof->height != prev.height + 1) {
 		throw std::logic_error("invalid height: " + std::to_string(proof->height) + " != " + std::to_string(prev.height + 1));
 	}
-	if(auto root = get_root()) {
-		if(auto diff_block = find_diff_header(root, proof->height - root->height)) {
+	if(auto peak = get_peak()) {
+		if(auto diff_block = find_diff_header(peak, proof->height - peak->height)) {
 			const auto num_iters = proof->get_num_iters();
 			const auto expected = diff_block->time_diff * params->time_diff_constant;
 			if(num_iters != expected) {
@@ -1927,7 +1945,7 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, const vdf_point_t& prev, const vdf_point_t& point)
 {
 	verified_vdfs[proof->height] = point;
-	vdf_verify_pending = 0;
+	vdf_verify_pending.erase(proof->height);
 
 	const auto elapsed = (vnx::get_wall_time_micros() - point.recv_time) / 1e6;
 	if(elapsed > params->block_time) {
@@ -1970,7 +1988,7 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, const vd
 
 void Node::verify_vdf_failed(std::shared_ptr<const ProofOfTime> proof)
 {
-	vdf_verify_pending = 0;
+	vdf_verify_pending.erase(proof->height);
 	check_vdfs();
 }
 
@@ -2008,6 +2026,34 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const vdf_p
 			((Node*)this)->verify_vdf_failed(proof);
 		});
 		log(WARN) << "VDF verification for height " << proof->height << " failed with: " << ex.what();
+	}
+}
+
+void Node::check_vdf_task(std::shared_ptr<fork_t> fork, std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const BlockHeader> infuse) const noexcept
+{
+	const auto time_begin = vnx::get_wall_time_micros();
+	const auto& block = fork->block;
+
+	auto point = prev->vdf_output;
+	point[0] = hash_t(point[0] + infuse->hash);
+
+	if(infuse->height >= params->challenge_interval && infuse->height % params->challenge_interval == 0) {
+		point[1] = hash_t(point[1] + infuse->hash);
+	}
+	const auto num_iters = block->vdf_iters - prev->vdf_iters;
+
+	for(uint64_t i = 0; i < num_iters; ++i) {
+		for(int chain = 0; chain < 2; ++chain) {
+			point[chain] = hash_t(point[chain].bytes);
+		}
+	}
+	if(point == block->vdf_output) {
+		fork->is_vdf_verified = true;
+		const auto elapsed = (vnx::get_wall_time_micros() - time_begin) / 1e6;
+		log(INFO) << "VDF check for height " << block->height << " passed, took " << elapsed << " sec";
+	} else {
+		fork->is_invalid = true;
+		log(WARN) << "VDF check for height " << block->height << " failed!";
 	}
 }
 

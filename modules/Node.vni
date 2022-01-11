@@ -20,18 +20,18 @@ module Node implements vnx.addons.HttpComponent {
 	
 	int max_queue_ms = 10000;				// [ms]
 	int update_interval_ms = 1000;			// [ms]
-	
 	int sync_loss_delay = 60;				// when to re-sync if stuck [sec]
 	
 	uint max_history = 1000;
+	uint tx_pool_limit = 1000000;
 	uint max_fork_length = 100000;			// to keep in memory at most
-	
-	uint replay_height = -1;				// to limit reloading from disk and force resync
 	
 	uint max_sync_jobs = 64;				// number of parallel requests
 	uint num_sync_retries = 3;				// how often to retry when reaching a peak
+	uint replay_height = -1;				// to limit reloading from disk and force resync
 	
-	uint tx_pool_limit = 1000000;
+	uint num_vdf_threads = 8;
+	uint vdf_check_divider = 256;			// how many VDFs to verify during sync
 	
 	int opencl_device = 0;					// device to use for VDF verification (-1 to disable)
 	

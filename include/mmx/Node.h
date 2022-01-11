@@ -173,6 +173,8 @@ private:
 
 	void verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const vdf_point_t& prev) const noexcept;
 
+	void check_vdf_task(std::shared_ptr<fork_t> fork, std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const BlockHeader> infuse) const noexcept;
+
 	void apply(std::shared_ptr<const Block> block) noexcept;
 
 	void apply(std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx, size_t index, change_log_t& log) noexcept;
@@ -253,7 +255,7 @@ private:
 	std::shared_ptr<vnx::addons::HttpInterface<Node>> http;
 
 	mutable std::mutex vdf_mutex;
-	uint32_t vdf_verify_pending = 0;						// height
+	std::unordered_set<uint32_t> vdf_verify_pending;						// height
 	std::shared_ptr<OCL_VDF> opencl_vdf[2];
 	std::shared_ptr<vnx::ThreadPool> vdf_threads;
 
