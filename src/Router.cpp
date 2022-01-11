@@ -858,7 +858,7 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> proof)
 			return;
 		}
 		if(!has_credits) {
-			log(INFO) << "Peer " << peer->address << " has insufficient credits to relay VDF for height " << proof->height << ", verifying first.";
+			log(DEBUG) << "Peer " << peer->address << " has insufficient credits to relay VDF for height " << proof->height << ", verifying first.";
 		}
 	} else {
 		relay_msg_hash(hash);
@@ -894,10 +894,10 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 					block_counter++;
 				}
 			} else {
-				log(WARN) << "A farmer has insufficient credits to relay block at height " << block->height << ", verifying first.";
+				log(DEBUG) << "A farmer has insufficient credits to relay block at height " << block->height << ", verifying first.";
 			}
 		} else {
-			log(INFO) << "Got block from an unknown farmer at height " << block->height << ", verifying first.";
+			log(DEBUG) << "Got block from an unknown farmer at height " << block->height << ", verifying first.";
 		}
 	} else {
 		relay_msg_hash(block->hash);
