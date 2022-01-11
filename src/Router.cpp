@@ -850,7 +850,7 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> proof)
 		if(has_credits) {
 			if(relay_msg_hash(hash)) {
 				peer->credits -= vdf_relay_cost;
-				relay(client, proof, {node_type_e::FULL_NODE});
+				relay(client, proof, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
 				vdf_counter++;
 			}
 		}
