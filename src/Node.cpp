@@ -116,13 +116,13 @@ void Node::main()
 	}
 
 	if(!light_mode) {
-		subscribe(input_vdfs, max_queue_ms);
-		subscribe(input_proof, max_queue_ms);
 		subscribe(input_transactions, max_queue_ms);
-		subscribe(input_timelord_vdfs, max_queue_ms);
-		subscribe(input_harvester_proof, max_queue_ms);
 	}
+	subscribe(input_vdfs, max_queue_ms);
+	subscribe(input_proof, max_queue_ms);
 	subscribe(input_blocks, max_queue_ms);
+	subscribe(input_timelord_vdfs, max_queue_ms);
+	subscribe(input_harvester_proof, max_queue_ms);
 
 	update_timer = set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
 	stuck_timer = set_timer_millis(sync_loss_delay * 1000, std::bind(&Node::on_stuck_timeout, this));
@@ -528,7 +528,7 @@ void Node::add_block(std::shared_ptr<const Block> block)
 		{
 			router->get_blocks_at(height, std::bind(&Node::sync_result, this, height, std::placeholders::_1));
 			sync_pending.insert(height);
-			log(INFO) << "Fetching missed block at height " << height << " with hash " << block->prev;
+			log(WARN) << "Fetching missed block at height " << height << " with hash " << block->prev;
 		}
 	}
 }
@@ -807,12 +807,8 @@ void Node::update()
 			}
 			if(!fork->is_invalid && !fork->is_proof_verified && fork->diff_block && (has_prev || block->prev == root->hash))
 			{
-				bool vdf_passed = !is_synced;
-				if(is_synced && light_mode) {
-					vdf_passed = true;
-					fork->is_vdf_verified = true;
-				}
-				if(!vdf_passed) {
+				bool vdf_passed = false;
+				if(is_synced) {
 					auto iter2 = verified_vdfs.find(block->height);
 					if(iter2 != verified_vdfs.end()) {
 						const auto& point = iter2->second;
@@ -825,7 +821,7 @@ void Node::update()
 						}
 					}
 				}
-				if(vdf_passed) {
+				if(vdf_passed || !is_synced) {
 					hash_t vdf_challenge;
 					if(find_vdf_challenge(block, vdf_challenge)) {
 						to_verify.emplace_back(fork, vdf_challenge);

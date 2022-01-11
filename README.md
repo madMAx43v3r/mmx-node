@@ -148,7 +148,7 @@ Any config changes require a node restart to become effective.
 
 ### Light Node
 
-The node can be run in a "light mode" which filters out any transactions which don't concern your addresses, in addition to disabling message relaying, VDF verification and transaction verification.
+The node can be run in a "light mode" which filters out any transactions which don't concern your addresses, in addition to disabling message relaying and transaction verification.
 A light node relies on other full nodes to validate transactions and only checks that transactions of interest were included in blocks with valid proof (aka SPV, Simplified Payment Verification). 
 
 To run a light node:
