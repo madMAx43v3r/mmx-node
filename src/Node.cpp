@@ -869,15 +869,18 @@ void Node::update()
 		const auto fork_line = get_fork_line();
 
 		// show finalized blocks
-		if(is_synced) {
+		{
+			const auto peak_height = best_fork->block->height;
 			for(const auto& fork : fork_line) {
-				if(fork->block->height + params->finality_delay + 1 < fork_line.back()->block->height) {
+				const auto& block = fork->block;
+				if(block->height + params->finality_delay + 1 < peak_height) {
 					if(!fork->is_finalized) {
 						fork->is_finalized = true;
-						const auto block = fork->block;
-						log(INFO) << "Finalized height " << block->height << " with: ntx = " << block->tx_list.size()
-								<< ", score = " << fork->proof_score << ", k = " << (block->proof ? block->proof->ksize : 0)
-								<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff << (fork->has_weak_proof ? ", weak proof" : "");
+						if(!do_sync || block->height >= sync_peak) {
+							log(INFO) << "Finalized height " << block->height << " with: ntx = " << block->tx_list.size()
+									<< ", score = " << fork->proof_score << ", k = " << (block->proof ? block->proof->ksize : 0)
+									<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff << (fork->has_weak_proof ? ", weak proof" : "");
+						}
 					}
 				}
 			}
@@ -915,11 +918,10 @@ void Node::update()
 		stuck_timer->reset();
 		if(auto fork = find_fork(peak->hash)) {
 			const auto prev = fork->prev.lock();
-			const bool show_delta = light_mode || !is_synced;
 			log(INFO) << "New peak at height " << peak->height << " with score " << std::to_string(fork->proof_score)
-					<< (forked_at ? ", forked at " + std::to_string(forked_at->height) : "")
-					<< ", " << (show_delta ? "delta " : "delay ")
-					<< (fork->recv_time - (show_delta ? (prev ? prev->recv_time : fork->recv_time) : verified_vdfs[peak->height].recv_time)) / 1e6 << " sec"
+					<< (is_synced && forked_at ? ", forked at " + std::to_string(forked_at->height) : "")
+					<< (is_synced ? (light_mode ? ", delta " : ", delay ") : "")
+					<< (is_synced ? std::to_string((fork->recv_time - (light_mode ? (prev ? prev->recv_time : fork->recv_time) : verified_vdfs[peak->height].recv_time)) / 1e6) + " sec" : "")
 					<< ", took " << elapsed << " sec, " << fork_tree.size() << " blocks";
 		}
 	}
