@@ -176,6 +176,8 @@ private:
 
 	std::shared_ptr<const BlockHeader> get_root() const;
 
+	std::shared_ptr<const BlockHeader> get_peak() const;
+
 	std::shared_ptr<fork_t> find_fork(const hash_t& hash) const;
 
 	std::shared_ptr<const Block> find_block(const hash_t& hash) const;

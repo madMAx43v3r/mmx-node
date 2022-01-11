@@ -78,10 +78,8 @@ void Node::main()
 			apply(block);
 			commit(block);
 		}
-		if(auto block = find_header(state_hash)) {
-			log(INFO) << "Loaded " << block->height + 1 << " blocks with " << tx_index.size()
-					<< " transactions from disk, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
-		}
+		log(INFO) << "Loaded " << get_height() + 1 << " blocks with " << tx_index.size()
+				<< " transactions from disk, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 	} else {
 		block_chain->open("wb");
 		block_chain->open("rb+");
@@ -107,7 +105,7 @@ void Node::main()
 		commit(genesis);
 	}
 
-	if(auto block = find_header(state_hash)) {
+	if(auto block = get_peak()) {
 		vdf_point_t point;
 		point.height = block->height;
 		point.iters = block->vdf_iters;
@@ -147,7 +145,7 @@ std::shared_ptr<const ChainParams> Node::get_params() const
 
 uint32_t Node::get_height() const
 {
-	if(auto block = find_header(state_hash)) {
+	if(auto block = get_peak()) {
 		return block->height;
 	}
 	throw std::logic_error("have no peak");
@@ -697,15 +695,14 @@ void Node::handle(std::shared_ptr<const ProofResponse> value)
 	if(!value->proof || !value->request) {
 		return;
 	}
-	const auto root = get_root();
+	const auto peak = get_peak();
 	const auto request = value->request;
-	if(request->height <= root->height) {
+	if(request->height < peak->height) {
 		return;
 	}
 	const auto challenge = request->challenge;
-
 	try {
-		const auto diff_block = find_diff_header(root, request->height - root->height);
+		const auto diff_block = find_diff_header(peak, request->height - peak->height);
 		if(!diff_block) {
 			throw std::logic_error("cannot verify");
 		}
@@ -823,7 +820,7 @@ void Node::update()
 			log(WARN) << "Proof verification failed for a block at height " << block->height << " with: " << ex.what();
 		}
 	}
-	const auto prev_peak = find_header(state_hash);
+	const auto prev_peak = get_peak();
 
 	std::shared_ptr<const BlockHeader> forked_at;
 
@@ -869,7 +866,7 @@ void Node::update()
 		break;
 	}
 
-	const auto peak = find_header(state_hash);
+	const auto peak = get_peak();
 	if(!peak) {
 		log(WARN) << "Have no peak!";
 		return;
@@ -2069,6 +2066,11 @@ std::shared_ptr<const BlockHeader> Node::get_root() const
 	return (--history.end())->second;
 }
 
+std::shared_ptr<const BlockHeader> Node::get_peak() const
+{
+	return find_header(state_hash);
+}
+
 std::shared_ptr<Node::fork_t> Node::find_fork(const hash_t& hash) const
 {
 	auto iter = fork_tree.find(hash);
@@ -2112,7 +2114,7 @@ std::shared_ptr<Node::fork_t> Node::find_prev_fork(std::shared_ptr<fork_t> fork,
 std::shared_ptr<const BlockHeader> Node::find_prev_header(	std::shared_ptr<const BlockHeader> block,
 															const size_t distance, bool clamped) const
 {
-	if(distance > 1 && (block->height >= distance || clamped))
+	if(distance > 1 && block && (block->height >= distance || clamped))
 	{
 		const auto height = block->height > distance ? block->height - distance : 0;
 		auto iter = history.find(height);
@@ -2135,10 +2137,12 @@ std::shared_ptr<const BlockHeader> Node::find_diff_header(std::shared_ptr<const 
 	if(offset > params->challenge_interval) {
 		throw std::logic_error("offset out of range");
 	}
-	uint32_t height = block->height + offset;
-	height -= (height % params->challenge_interval);
-	if(auto prev = find_prev_header(block, (block->height + params->challenge_interval) - height, true)) {
-		return prev;
+	if(block) {
+		uint32_t height = block->height + offset;
+		height -= (height % params->challenge_interval);
+		if(auto prev = find_prev_header(block, (block->height + params->challenge_interval) - height, true)) {
+			return prev;
+		}
 	}
 	return nullptr;
 }
