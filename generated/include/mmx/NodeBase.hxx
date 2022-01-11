@@ -49,11 +49,13 @@ public:
 	int32_t update_interval_ms = 1000;
 	int32_t sync_loss_delay = 60;
 	uint32_t max_history = 1000;
+	uint32_t tx_pool_limit = 1000000;
 	uint32_t max_fork_length = 100000;
-	uint32_t replay_height = -1;
 	uint32_t max_sync_jobs = 64;
 	uint32_t num_sync_retries = 3;
-	uint32_t tx_pool_limit = 1000000;
+	uint32_t replay_height = -1;
+	uint32_t num_vdf_threads = 8;
+	uint32_t vdf_check_divider = 256;
 	int32_t opencl_device = 0;
 	vnx::bool_t do_sync = true;
 	vnx::bool_t light_mode = false;
