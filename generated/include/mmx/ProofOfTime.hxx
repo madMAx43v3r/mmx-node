@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_ProofOfTime_HXX_
 
 #include <mmx/package.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/pubkey_t.hpp>
 #include <mmx/signature_t.hpp>
@@ -23,6 +24,7 @@ public:
 	std::array<vnx::optional<::mmx::hash_t>, 2> infuse = {};
 	std::vector<::mmx::time_segment_t> segments;
 	vnx::optional<::mmx::hash_t> timelord_proof;
+	vnx::optional<::mmx::addr_t> timelord_reward;
 	::mmx::pubkey_t timelord_key;
 	::mmx::signature_t timelord_sig;
 	
