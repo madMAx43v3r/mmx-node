@@ -1680,19 +1680,15 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	history[block->height] = block->get_header();
 	change_log.pop_front();
 
-	// purge history
-	while(history.size() > max_history) {
-		history.erase(history.begin());
-	}
-	if(!history.empty()) {
-		const auto begin = history.begin()->first;
-		pending_vdfs.erase(pending_vdfs.begin(), pending_vdfs.lower_bound(begin));
-		verified_vdfs.erase(verified_vdfs.begin(), verified_vdfs.lower_bound(begin));
-	}
 	if(!is_replay) {
 		write_block(block);
 	}
+	while(history.size() > max_history) {
+		history.erase(history.begin());
+	}
 	fork_tree.erase(block->hash);
+	pending_vdfs.erase(pending_vdfs.begin(), pending_vdfs.upper_bound(block->height));
+	verified_vdfs.erase(verified_vdfs.begin(), verified_vdfs.upper_bound(block->height));
 
 	publish(block, output_committed_blocks, is_replay ? BLOCKING : 0);
 }
