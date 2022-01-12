@@ -884,7 +884,10 @@ void Node::update()
 			}
 			if(!is_synced && fork_line.size() < max_fork_length) {
 				// check if there is a competing fork at this height
-				if(std::distance(fork_index.lower_bound(block->height), fork_index.upper_bound(block->height)) > 1) {
+				const auto finalized_height = peak->height - std::min(params->finality_delay + 1, peak->height);
+				if(std::distance(fork_index.lower_bound(block->height), fork_index.upper_bound(block->height)) > 1
+					&& std::distance(fork_index.lower_bound(finalized_height), fork_index.upper_bound(finalized_height)) > 1)
+				{
 					break;
 				}
 			}
