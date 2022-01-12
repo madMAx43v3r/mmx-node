@@ -209,7 +209,7 @@ std::vector<std::string> Router::get_peers(const uint32_t& max_count) const
 {
 	std::set<std::string> valid;
 	for(const auto& entry : peer_map) {
-		const auto& addr = entry.second.address;
+		const auto& addr = entry.second->address;
 		if(is_public_address(addr)) {
 			valid.insert(addr);
 		}
@@ -226,7 +226,7 @@ std::vector<std::string> Router::get_connected_peers() const
 {
 	std::vector<std::string> res;
 	for(const auto& entry : peer_map) {
-		res.push_back(entry.second.address);
+		res.push_back(entry.second->address);
 	}
 	return res;
 }
@@ -239,20 +239,20 @@ std::shared_ptr<const PeerInfo> Router::get_peer_info() const
 	for(const auto& entry : peer_map) {
 		const auto& state = entry.second;
 		peer_info_t peer;
-		peer.type = state.info.type;
-		peer.address = state.address;
-		peer.height = state.height;
-		peer.version = state.info.version;
-		peer.credits = state.credits;
-		peer.tx_credits = state.tx_credits;
-		peer.ping_ms = state.ping_ms;
-		peer.bytes_send = state.bytes_send;
-		peer.bytes_recv = state.bytes_recv;
-		peer.is_synced = state.is_synced;
-		peer.is_blocked = state.is_blocked;
-		peer.is_outbound = state.is_outbound;
-		peer.recv_timeout_ms = now_ms - state.last_receive_ms;
-		peer.connect_time_ms = now_ms - state.connected_since_ms;
+		peer.type = state->info.type;
+		peer.address = state->address;
+		peer.height = state->height;
+		peer.version = state->info.version;
+		peer.credits = state->credits;
+		peer.tx_credits = state->tx_credits;
+		peer.ping_ms = state->ping_ms;
+		peer.bytes_send = state->bytes_send;
+		peer.bytes_recv = state->bytes_recv;
+		peer.is_synced = state->is_synced;
+		peer.is_blocked = state->is_blocked;
+		peer.is_outbound = state->is_outbound;
+		peer.recv_timeout_ms = now_ms - state->last_receive_ms;
+		peer.connect_time_ms = now_ms - state->connected_since_ms;
 		info->peers.push_back(peer);
 	}
 	std::sort(info->peers.begin(), info->peers.end(),
@@ -349,7 +349,7 @@ void Router::handle(std::shared_ptr<const ProofResponse> value)
 	}
 }
 
-uint32_t Router::send_request(peer_t& peer, std::shared_ptr<const vnx::Value> method, bool reliable)
+uint32_t Router::send_request(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Value> method, bool reliable)
 {
 	auto req = Request::create();
 	req->id = next_request_id++;
@@ -371,18 +371,18 @@ void Router::update()
 {
 	const auto now_ms = vnx::get_wall_time_millis();
 
-	for(auto& entry : peer_map) {
-		auto& peer = entry.second;
-		peer.credits = std::min(peer.credits, max_node_credits);
-		peer.tx_credits = std::min(peer.tx_credits + tx_credits, max_node_tx_credits);
+	for(const auto& entry : peer_map) {
+		const auto& peer = entry.second;
+		peer->credits = std::min(peer->credits, max_node_credits);
+		peer->tx_credits = std::min(peer->tx_credits + tx_credits, max_node_tx_credits);
 
 		// check pending transactions
-		while(!peer.tx_queue.empty()) {
-			const auto& tx = peer.tx_queue.front();
-			if(peer.tx_credits >= tx_relay_cost) {
+		while(!peer->tx_queue.empty()) {
+			const auto& tx = peer->tx_queue.front();
+			if(peer->tx_credits >= tx_relay_cost) {
 				if(relay_msg_hash(tx->id)) {
-					peer.tx_credits -= tx_relay_cost;
-					relay(peer.client, tx, {node_type_e::FULL_NODE});
+					peer->tx_credits -= tx_relay_cost;
+					relay(peer->client, tx, {node_type_e::FULL_NODE});
 					tx_counter++;
 				}
 			} else {
@@ -391,7 +391,7 @@ void Router::update()
 					break;
 				}
 			}
-			peer.tx_queue.pop();
+			peer->tx_queue.pop();
 		}
 	}
 	for(auto& entry : farmer_credits) {
@@ -413,7 +413,7 @@ void Router::update()
 		size_t num_peers = 0;
 		for(const auto& entry : peer_map) {
 			const auto& peer = entry.second;
-			if(peer.is_synced && now_ms - peer.last_receive_ms < sync_loss_delay * 1000) {
+			if(peer->is_synced && now_ms - peer->last_receive_ms < sync_loss_delay * 1000) {
 				num_peers++;
 			}
 		}
@@ -621,10 +621,10 @@ bool Router::process(std::shared_ptr<const Return> ret)
 			}
 		}
 		if(job.request_map.empty()) {
-			peer_t* peer = nullptr;
-			for(auto& entry : peer_map) {
-				if(entry.second.address == job.from_peer) {
-					peer = &entry.second;
+			std::shared_ptr<peer_t> peer;
+			for(const auto& entry : peer_map) {
+				if(entry.second->address == job.from_peer) {
+					peer = entry.second;
 					break;
 				}
 			}
@@ -635,7 +635,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 			}
 			auto req = Node_get_block_at::create();
 			req->height = job.height;
-			const auto id = send_request(*peer, req);
+			const auto id = send_request(peer, req);
 			job.request_map[id] = peer->client;
 		}
 		iter++;
@@ -651,7 +651,7 @@ void Router::connect()
 		for(const auto& address : peer_set) {
 			bool connected = false;
 			for(const auto& entry : peer_map) {
-				if(address == entry.second.address) {
+				if(address == entry.second->address) {
 					connected = true;
 				}
 			}
@@ -727,11 +727,11 @@ void Router::query()
 								fork_check.request_map.clear();
 								auto req = Node_get_block_hash::create();
 								req->height = height;
-								for(auto& entry : peer_map) {
-									auto& peer = entry.second;
-									if(peer.is_synced && peer.is_outbound && peer.info.type == node_type_e::FULL_NODE) {
+								for(const auto& entry : peer_map) {
+									const auto& peer = entry.second;
+									if(peer->is_synced && peer->is_outbound && peer->info.type == node_type_e::FULL_NODE) {
 										const auto id = send_request(peer, req);
-										fork_check.request_map[id] = peer.client;
+										fork_check.request_map[id] = peer->client;
 									}
 								}
 							}
@@ -788,8 +788,9 @@ void Router::add_peer(const std::string& address, const int sock)
 		}
 		const auto client = add_client(sock, address);
 
-		auto& peer = peer_map[client];
-		peer.is_outbound = true;
+		if(auto peer = find_peer(client)) {
+			peer->is_outbound = true;
+		}
 	}
 	else if(!seed_peers.count(address)) {
 		peer_set.erase(address);
@@ -980,9 +981,9 @@ void Router::on_transaction(uint64_t client, std::shared_ptr<const Transaction> 
 void Router::relay(uint64_t source, std::shared_ptr<const vnx::Value> msg, const std::set<node_type_e>& filter)
 {
 	if(do_relay) {
-		for(auto& entry : peer_map) {
-			auto& peer = entry.second;
-			if((filter.empty() || filter.count(peer.info.type)) && entry.first != source) {
+		for(const auto& entry : peer_map) {
+			const auto& peer = entry.second;
+			if((filter.empty() || filter.count(peer->info.type)) && entry.first != source) {
 				send_to(peer, msg, false);
 			}
 		}
@@ -992,13 +993,13 @@ void Router::relay(uint64_t source, std::shared_ptr<const vnx::Value> msg, const
 void Router::send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg, bool reliable)
 {
 	if(auto peer = find_peer(client)) {
-		send_to(*peer, msg, reliable);
+		send_to(peer, msg, reliable);
 	}
 }
 
-void Router::send_to(peer_t& peer, std::shared_ptr<const vnx::Value> msg, bool reliable)
+void Router::send_to(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Value> msg, bool reliable)
 {
-	if(peer.is_blocked && !reliable) {
+	if(peer->is_blocked && !reliable) {
 		switch(msg->get_type_code()->type_hash) {
 			case Block::VNX_TYPE_ID: block_drop_counter++; break;
 			case Transaction::VNX_TYPE_ID: tx_drop_counter++; break;
@@ -1009,36 +1010,36 @@ void Router::send_to(peer_t& peer, std::shared_ptr<const vnx::Value> msg, bool r
 					auto ret = Return::create();
 					ret->id = req->id;
 					ret->result = vnx::OverflowException::create();
-					add_task(std::bind(&Router::on_return, this, peer.client, ret));
+					add_task(std::bind(&Router::on_return, this, peer->client, ret));
 				}
 				break;
 		}
 		drop_counter++;
 		return;
 	}
-	auto& out = peer.out;
+	auto& out = peer->out;
 	vnx::write(out, uint16_t(vnx::CODE_UINT32));
 	vnx::write(out, uint32_t(0));
 	vnx::write(out, msg);
 	out.flush();
 
-	auto buffer = std::make_shared<vnx::Buffer>(peer.data);
-	peer.data.clear();
+	auto buffer = std::make_shared<vnx::Buffer>(peer->data);
+	peer->data.clear();
 
 	if(buffer->size() > max_msg_size) {
 		return;
 	}
 	*((uint32_t*)buffer->data(2)) = buffer->size() - 6;
 
-	peer.bytes_send += buffer->size();
-	Super::send_to(peer.client, buffer);
+	peer->bytes_send += buffer->size();
+	Super::send_to(peer->client, buffer);
 }
 
 void Router::send_all(std::shared_ptr<const vnx::Value> msg, const std::set<node_type_e>& filter, bool reliable)
 {
-	for(auto& entry : peer_map) {
-		auto& peer = entry.second;
-		if(filter.empty() || filter.count(peer.info.type)) {
+	for(const auto& entry : peer_map) {
+		const auto& peer = entry.second;
+		if(filter.empty() || filter.count(peer->info.type)) {
 			send_to(peer, msg, reliable);
 		}
 	}
@@ -1317,45 +1318,45 @@ void Router::on_msg(uint64_t client, std::shared_ptr<const vnx::Value> msg)
 
 void Router::on_buffer(uint64_t client, void*& buffer, size_t& max_bytes)
 {
-	auto& peer = get_peer(client);
-	const auto offset = peer.buffer.size();
-	if(peer.msg_size == 0) {
+	const auto peer = get_peer(client);
+	const auto offset = peer->buffer.size();
+	if(peer->msg_size == 0) {
 		if(offset > 6) {
 			throw std::logic_error("offset > 6");
 		}
-		peer.buffer.reserve(6);
+		peer->buffer.reserve(6);
 		max_bytes = 6 - offset;
 	} else {
-		max_bytes = (6 + peer.msg_size) - offset;
+		max_bytes = (6 + peer->msg_size) - offset;
 	}
-	buffer = peer.buffer.data(offset);
+	buffer = peer->buffer.data(offset);
 }
 
 bool Router::on_read(uint64_t client, size_t num_bytes)
 {
-	auto& peer = get_peer(client);
-	peer.bytes_recv += num_bytes;
-	peer.buffer.resize(peer.buffer.size() + num_bytes);
+	const auto peer = get_peer(client);
+	peer->bytes_recv += num_bytes;
+	peer->buffer.resize(peer->buffer.size() + num_bytes);
 
-	if(peer.msg_size == 0) {
-		if(peer.buffer.size() >= 6) {
+	if(peer->msg_size == 0) {
+		if(peer->buffer.size() >= 6) {
 			uint16_t code = 0;
-			vnx::read_value(peer.buffer.data(), code);
-			vnx::read_value(peer.buffer.data(2), peer.msg_size, &code);
-			if(peer.msg_size > max_msg_size) {
+			vnx::read_value(peer->buffer.data(), code);
+			vnx::read_value(peer->buffer.data(2), peer->msg_size, &code);
+			if(peer->msg_size > max_msg_size) {
 				throw std::logic_error("message too large");
 			}
-			if(peer.msg_size > 0) {
-				peer.buffer.reserve(6 + peer.msg_size);
+			if(peer->msg_size > 0) {
+				peer->buffer.reserve(6 + peer->msg_size);
 			} else {
-				peer.buffer.clear();
+				peer->buffer.clear();
 			}
 		}
 	}
-	else if(peer.buffer.size() == 6 + peer.msg_size)
+	else if(peer->buffer.size() == 6 + peer->msg_size)
 	{
-		peer.in.read(6);
-		if(auto value = vnx::read(peer.in)) {
+		peer->in.read(6);
+		if(auto value = vnx::read(peer->in)) {
 			try {
 				on_msg(client, value);
 			}
@@ -1365,30 +1366,30 @@ bool Router::on_read(uint64_t client, size_t num_bytes)
 				}
 			}
 		}
-		peer.buffer.clear();
-		peer.in_stream.reset();
-		peer.msg_size = 0;
+		peer->buffer.clear();
+		peer->in_stream.reset();
+		peer->msg_size = 0;
 	}
 	return true;
 }
 
 void Router::on_pause(uint64_t client)
 {
-	auto& peer = get_peer(client);
-	peer.is_blocked = true;
-
-	if(!peer.is_outbound) {
-		pause(client);		// pause incoming traffic
+	if(auto peer = find_peer(client)) {
+		peer->is_blocked = true;
+		if(!peer->is_outbound) {
+			pause(client);		// pause incoming traffic
+		}
 	}
 }
 
 void Router::on_resume(uint64_t client)
 {
-	auto& peer = get_peer(client);
-	peer.is_blocked = false;
-
-	if(!peer.is_outbound) {
-		resume(client);		// resume incoming traffic
+	if(auto peer = find_peer(client)) {
+		peer->is_blocked = false;
+		if(!peer->is_outbound) {
+			resume(client);		// resume incoming traffic
+		}
 	}
 }
 
@@ -1400,12 +1401,13 @@ void Router::on_connect(uint64_t client, const std::string& address)
 	}
 	const auto seed = vnx::rand64();
 
-	auto& peer = peer_map[client];
-	peer.client = client;
-	peer.address = address;
-	peer.info.type = node_type_e::FULL_NODE;	// assume full node
-	peer.challenge = hash_t(&seed, sizeof(seed));
-	peer.connected_since_ms = vnx::get_wall_time_millis();
+	auto peer = std::make_shared<peer_t>();
+	peer->client = client;
+	peer->address = address;
+	peer->info.type = node_type_e::FULL_NODE;	// assume full node
+	peer->challenge = hash_t(&seed, sizeof(seed));
+	peer->connected_since_ms = vnx::get_wall_time_millis();
+	peer_map[client] = peer;
 	peer_set.insert(address);
 
 	send_request(peer, Router_get_id::create());
@@ -1413,40 +1415,37 @@ void Router::on_connect(uint64_t client, const std::string& address)
 	send_request(peer, Node_get_synced_height::create());
 
 	auto req = Router_sign_msg::create();
-	req->msg = peer.challenge;
+	req->msg = peer->challenge;
 	send_request(peer, req);
 
-	log(INFO) << "Connected to peer " << peer.address;
+	log(INFO) << "Connected to peer " << peer->address;
 }
 
 void Router::on_disconnect(uint64_t client)
 {
-	if(!vnx_task) {
-		// cannot modify peer_map in a nested loop
-		add_task(std::bind(&Router::on_disconnect, this, client));
-		return;
-	}
-	auto iter = peer_map.find(client);
-	if(iter != peer_map.end()) {
-		log(INFO) << "Peer " << iter->second.address << " disconnected";
-		peer_map.erase(iter);
+	if(auto peer = find_peer(client)) {
+		log(INFO) << "Peer " << peer->address << " disconnected";
 	}
 	synced_peers.erase(client);
+
+	add_task([this, client]() {
+		peer_map.erase(client);
+	});
 }
 
-Router::peer_t& Router::get_peer(uint64_t client)
+std::shared_ptr<Router::peer_t> Router::get_peer(uint64_t client)
 {
 	if(auto peer = find_peer(client)) {
-		return *peer;
+		return peer;
 	}
 	throw std::logic_error("no such peer");
 }
 
-Router::peer_t* Router::find_peer(uint64_t client)
+std::shared_ptr<Router::peer_t> Router::find_peer(uint64_t client)
 {
 	auto iter = peer_map.find(client);
 	if(iter != peer_map.end()) {
-		return &iter->second;
+		return iter->second;
 	}
 	return nullptr;
 }

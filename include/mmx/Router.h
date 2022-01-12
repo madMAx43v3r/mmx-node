@@ -135,7 +135,7 @@ private:
 
 	void print_stats() override;
 
-	uint32_t send_request(peer_t& peer, std::shared_ptr<const vnx::Value> method, bool reliable = true);
+	uint32_t send_request(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Value> method, bool reliable = true);
 
 	uint32_t send_request(uint64_t client, std::shared_ptr<const vnx::Value> method, bool reliable = true);
 
@@ -151,7 +151,7 @@ private:
 
 	void send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg, bool reliable = true);
 
-	void send_to(peer_t& peer, std::shared_ptr<const vnx::Value> msg, bool reliable = true);
+	void send_to(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Value> msg, bool reliable = true);
 
 	void send_all(std::shared_ptr<const vnx::Value> msg, const std::set<node_type_e>& filter, bool reliable = true);
 
@@ -178,9 +178,9 @@ private:
 
 	void on_disconnect(uint64_t client) override;
 
-	peer_t& get_peer(uint64_t client);
+	std::shared_ptr<peer_t> get_peer(uint64_t client);
 
-	peer_t* find_peer(uint64_t client);
+	std::shared_ptr<peer_t> find_peer(uint64_t client);
 
 	bool relay_msg_hash(const hash_t& hash, uint32_t credits = 0);
 
@@ -197,7 +197,7 @@ private:
 	std::set<std::string> connecting_peers;
 
 	std::set<uint64_t> synced_peers;
-	std::unordered_map<uint64_t, peer_t> peer_map;
+	std::unordered_map<uint64_t, std::shared_ptr<peer_t>> peer_map;
 
 	std::queue<hash_t> hash_queue;
 	std::unordered_map<hash_t, hash_info_t> hash_info;
