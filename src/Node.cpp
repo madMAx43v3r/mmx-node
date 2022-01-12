@@ -856,21 +856,19 @@ void Node::update()
 		}
 		purge_tree();
 
+		const auto peak = best_fork->block;
 		const auto fork_line = get_fork_line();
 
 		// show finalized blocks
-		{
-			const auto peak_height = best_fork->block->height;
-			for(const auto& fork : fork_line) {
-				const auto& block = fork->block;
-				if(block->height + params->finality_delay + 1 < peak_height) {
-					if(!fork->is_finalized) {
-						fork->is_finalized = true;
-						if(!do_sync || block->height >= sync_peak) {
-							log(INFO) << "Finalized height " << block->height << " with: ntx = " << block->tx_list.size()
-									<< ", score = " << fork->proof_score << ", k = " << (block->proof ? block->proof->ksize : 0)
-									<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff << (fork->has_weak_proof ? ", weak proof" : "");
-						}
+		for(const auto& fork : fork_line) {
+			const auto& block = fork->block;
+			if(block->height + params->finality_delay + 1 < peak->height) {
+				if(!fork->is_finalized) {
+					fork->is_finalized = true;
+					if(!do_sync || block->height >= sync_peak) {
+						log(INFO) << "Finalized height " << block->height << " with: ntx = " << block->tx_list.size()
+								<< ", score = " << fork->proof_score << ", k = " << (block->proof ? block->proof->ksize : 0)
+								<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff << (fork->has_weak_proof ? ", weak proof" : "");
 					}
 				}
 			}
@@ -886,7 +884,10 @@ void Node::update()
 			}
 			if(!is_synced && fork_line.size() < max_fork_length) {
 				// check if there is a competing fork at this height
-				if(std::distance(fork_index.lower_bound(block->height), fork_index.upper_bound(block->height)) > 1) {
+				const auto finalized_height = peak->height - std::min(params->finality_delay + 1, peak->height);
+				if(std::distance(fork_index.lower_bound(block->height), fork_index.upper_bound(block->height)) > 1
+					&& std::distance(fork_index.lower_bound(finalized_height), fork_index.upper_bound(finalized_height)) > 1)
+				{
 					break;
 				}
 			}
@@ -1717,6 +1718,8 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	if(!is_replay) {
 		write_block(block);
 	}
+	fork_tree.erase(block->hash);
+
 	publish(block, output_committed_blocks, is_replay ? BLOCKING : 0);
 }
 
@@ -1732,8 +1735,9 @@ void Node::purge_tree()
 			|| purged.count(block->prev)
 			|| (!is_synced && fork->is_invalid))
 		{
-			purged.insert(block->hash);
-			fork_tree.erase(block->hash);
+			if(fork_tree.erase(block->hash)) {
+				purged.insert(block->hash);
+			}
 			iter = fork_index.erase(iter);
 		} else {
 			iter++;
@@ -1954,6 +1958,13 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, const vd
 
 	// add dummy blocks in case no proof is found
 	{
+		hash_t infused_hash;
+		{
+			auto iter = proof->infuse[0].find(proof->start);
+			if(iter != proof->infuse[0].end()) {
+				infused_hash = iter->second;
+			}
+		}
 		std::vector<std::shared_ptr<const BlockHeader>> prev_blocks;
 		if(auto root = get_root()) {
 			if(root->height + 1 == proof->height) {
@@ -1964,6 +1975,11 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, const vd
 			prev_blocks.push_back(iter->second->block);
 		}
 		for(auto prev : prev_blocks) {
+			if(auto infused = find_prev_header(prev, params->finality_delay, true)) {
+				if(infused->hash != infused_hash) {
+					continue;
+				}
+			}
 			auto block = Block::create();
 			block->prev = prev->hash;
 			block->height = proof->height;
