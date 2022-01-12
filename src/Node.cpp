@@ -1773,9 +1773,9 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 	}
 	fork->weight = 0;
 	if(fork->has_weak_proof) {
-		fork->weight -= params->score_threshold;	// count as negative dummy
+		fork->weight -= params->weak_penalty;
 	} else {
-		fork->weight += 2 * params->score_threshold - fork->proof_score;
+		fork->weight += params->block_weight + (params->score_threshold - fork->proof_score);
 	}
 	fork->weight *= diff_block->space_diff;
 	fork->weight *= diff_block->time_diff;
