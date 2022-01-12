@@ -28,6 +28,7 @@ mmx::hash_t ProofOfTime::calc_hash() const
 		write_bytes(out, seg.output);
 	}
 	write_bytes(out, timelord_proof);
+	write_bytes(out, timelord_reward);
 	write_bytes(out, timelord_key);
 	out.flush();
 

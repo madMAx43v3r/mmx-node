@@ -13,9 +13,9 @@ class ProofOfTime {
 	vector<time_segment_t> segments;
 	
 	optional<hash_t> timelord_proof;				// optional proof for timelord identity
+	optional<addr_t> timelord_reward;
 	
 	pubkey_t timelord_key;
-	
 	signature_t timelord_sig;
 	
 	
