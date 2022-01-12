@@ -865,7 +865,7 @@ void Node::update()
 			if(block->height + params->finality_delay + 1 < peak->height) {
 				if(!fork->is_finalized) {
 					fork->is_finalized = true;
-					if(!do_sync || block->height >= sync_peak) {
+					if(!do_sync || (sync_peak && block->height >= *sync_peak)) {
 						log(INFO) << "Finalized height " << block->height << " with: ntx = " << block->tx_list.size()
 								<< ", score = " << fork->proof_score << ", k = " << (block->proof ? block->proof->ksize : 0)
 								<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff << (fork->has_weak_proof ? ", weak proof" : "");
@@ -916,14 +916,14 @@ void Node::update()
 		}
 	}
 
-	if(!is_synced && sync_pos >= sync_peak && sync_pending.empty())
+	if(!is_synced && sync_peak && sync_pending.empty())
 	{
 		if(sync_retry < num_sync_retries) {
-			log(INFO) << "Reached sync peak at height " << sync_peak - 1;
-			sync_pos = sync_peak;
-			sync_peak = -1;
+			log(INFO) << "Reached sync peak at height " << *sync_peak - 1;
+			sync_pos = *sync_peak;
+			sync_peak = nullptr;
 			sync_retry++;
-		} else if(peak->height + params->commit_delay + 1 < sync_peak) {
+		} else if(peak->height + params->commit_delay + 1 < *sync_peak) {
 			log(ERROR) << "Sync failed, it appears we have forked from the network a while ago.";
 			const auto replay_height = peak->height - std::min<uint32_t>(1000, peak->height);
 			vnx::write_config("Node.replay_height", replay_height);
@@ -1264,7 +1264,7 @@ void Node::start_sync(const vnx::bool_t& force)
 		return;
 	}
 	sync_pos = 0;
-	sync_peak = -1;
+	sync_peak = nullptr;
 	sync_retry = 0;
 	is_synced = false;
 
@@ -1292,7 +1292,7 @@ void Node::sync_more()
 	}
 	const auto max_pending = !sync_retry ? max_sync_jobs : 1;
 	while(sync_pending.size() < max_pending) {
-		if(sync_pos >= sync_peak) {
+		if(sync_peak && sync_pos >= *sync_peak) {
 			break;
 		}
 		const auto height = sync_pos++;
@@ -1312,7 +1312,7 @@ void Node::sync_result(const uint32_t& height, const std::vector<std::shared_ptr
 	}
 	if(!is_synced) {
 		if(blocks.empty()) {
-			if(height < sync_peak) {
+			if(!sync_peak || height < *sync_peak) {
 				sync_peak = height;
 			}
 		}

@@ -240,9 +240,9 @@ private:
 	std::unordered_map<uint32_t, std::pair<int64_t, hash_t>> block_index;			// [height => [file offset, block hash]]
 
 	uint32_t sync_pos = 0;									// current sync height
-	uint32_t sync_peak = -1;								// max height we can sync
 	uint32_t sync_retry = 0;
 	std::set<uint32_t> sync_pending;						// set of heights
+	vnx::optional<uint32_t> sync_peak;						// max height we can sync
 
 	std::shared_ptr<vnx::Timer> stuck_timer;
 	std::shared_ptr<vnx::Timer> update_timer;
