@@ -1718,6 +1718,8 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	if(!is_replay) {
 		write_block(block);
 	}
+	fork_tree.erase(block->hash);
+
 	publish(block, output_committed_blocks, is_replay ? BLOCKING : 0);
 }
 
@@ -1733,8 +1735,9 @@ void Node::purge_tree()
 			|| purged.count(block->prev)
 			|| (!is_synced && fork->is_invalid))
 		{
-			purged.insert(block->hash);
-			fork_tree.erase(block->hash);
+			if(fork_tree.erase(block->hash)) {
+				purged.insert(block->hash);
+			}
 			iter = fork_index.erase(iter);
 		} else {
 			iter++;
