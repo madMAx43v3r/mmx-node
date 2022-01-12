@@ -856,21 +856,19 @@ void Node::update()
 		}
 		purge_tree();
 
+		const auto peak = best_fork->block;
 		const auto fork_line = get_fork_line();
 
 		// show finalized blocks
-		{
-			const auto peak_height = best_fork->block->height;
-			for(const auto& fork : fork_line) {
-				const auto& block = fork->block;
-				if(block->height + params->finality_delay + 1 < peak_height) {
-					if(!fork->is_finalized) {
-						fork->is_finalized = true;
-						if(!do_sync || block->height >= sync_peak) {
-							log(INFO) << "Finalized height " << block->height << " with: ntx = " << block->tx_list.size()
-									<< ", score = " << fork->proof_score << ", k = " << (block->proof ? block->proof->ksize : 0)
-									<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff << (fork->has_weak_proof ? ", weak proof" : "");
-						}
+		for(const auto& fork : fork_line) {
+			const auto& block = fork->block;
+			if(block->height + params->finality_delay + 1 < peak->height) {
+				if(!fork->is_finalized) {
+					fork->is_finalized = true;
+					if(!do_sync || block->height >= sync_peak) {
+						log(INFO) << "Finalized height " << block->height << " with: ntx = " << block->tx_list.size()
+								<< ", score = " << fork->proof_score << ", k = " << (block->proof ? block->proof->ksize : 0)
+								<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff << (fork->has_weak_proof ? ", weak proof" : "");
 					}
 				}
 			}
