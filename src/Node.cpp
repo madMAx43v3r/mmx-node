@@ -1290,11 +1290,6 @@ void Node::sync_more()
 	if(vdf_threads->get_num_pending()) {
 		return;
 	}
-	if(auto peak = get_peak()) {
-		if(sync_pos - peak->height > 16 * max_sync_jobs) {
-			return;
-		}
-	}
 	const auto max_pending = !sync_retry ? max_sync_jobs : 1;
 	while(sync_pending.size() < max_pending) {
 		if(sync_pos >= sync_peak) {
