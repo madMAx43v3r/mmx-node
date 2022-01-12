@@ -1958,6 +1958,13 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, const vd
 
 	// add dummy blocks in case no proof is found
 	{
+		hash_t infused_hash;
+		{
+			auto iter = proof->infuse[0].find(proof->start);
+			if(iter != proof->infuse[0].end()) {
+				infused_hash = iter->second;
+			}
+		}
 		std::vector<std::shared_ptr<const BlockHeader>> prev_blocks;
 		if(auto root = get_root()) {
 			if(root->height + 1 == proof->height) {
@@ -1968,6 +1975,11 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, const vd
 			prev_blocks.push_back(iter->second->block);
 		}
 		for(auto prev : prev_blocks) {
+			if(auto infused = find_prev_header(prev, params->finality_delay, true)) {
+				if(infused->hash != infused_hash) {
+					continue;
+				}
+			}
 			auto block = Block::create();
 			block->prev = prev->hash;
 			block->height = proof->height;
