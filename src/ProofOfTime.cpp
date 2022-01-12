@@ -19,19 +19,15 @@ mmx::hash_t ProofOfTime::calc_hash() const
 
 	buffer.reserve(64 * 1024);
 
-	for(const auto& entry : infuse[0]) {
-		write_bytes(out, entry.first);
-		write_bytes(out, entry.second);
-	}
-	for(const auto& entry : infuse[1]) {
-		write_bytes(out, entry.first);
-		write_bytes(out, entry.second);
-	}
+	write_bytes(out, height);
+	write_bytes(out, start);
+	write_bytes(out, input);
+	write_bytes(out, infuse);
 	for(const auto& seg : segments) {
 		write_bytes(out, seg.num_iters);
-		write_bytes(out, seg.output[0]);
-		write_bytes(out, seg.output[1]);
+		write_bytes(out, seg.output);
 	}
+	write_bytes(out, timelord_proof);
 	write_bytes(out, timelord_key);
 	out.flush();
 
@@ -57,6 +53,11 @@ uint64_t ProofOfTime::get_num_iters() const
 		sum += seg.num_iters;
 	}
 	return sum;
+}
+
+uint64_t ProofOfTime::get_vdf_iters() const
+{
+	return start + get_num_iters();
 }
 
 std::shared_ptr<const ProofOfTime> ProofOfTime::compressed() const

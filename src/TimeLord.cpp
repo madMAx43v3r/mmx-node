@@ -127,23 +127,29 @@ void TimeLord::update()
 
 	for(auto iter = pending.begin(); iter != pending.end();)
 	{
-		const auto iters_begin = iter->first.second;
 		const auto iters_end = iter->first.first;
+		const auto iters_begin = iter->first.second;
 
-		auto end = history.lower_bound(iters_end);
+		auto end = history.find(iters_end);
 		if(end != history.end())
 		{
-			auto begin = history.upper_bound(iters_begin);
-			if(begin != history.end() && begin != end)
+			auto begin = history.find(iters_begin);
+			if(begin != history.end())
 			{
 				auto proof = ProofOfTime::create();
 				proof->start = iters_begin;
 				proof->height = iter->second;
+				proof->input = begin->second;
 
 				for(uint32_t k = 0; k < 2; ++k) {
-					proof->infuse[k].insert(infuse_history[k].lower_bound(iters_begin), infuse_history[k].lower_bound(iters_end));
+					auto iter = infuse_history[k].find(iters_begin);
+					if(iter != infuse_history[k].end()) {
+						proof->infuse[k] = iter->second;
+					}
 				}
 
+				end++;
+				begin++;
 				auto prev_iters = iters_begin;
 				for(auto iter = begin; iter != end; ++iter) {
 					time_segment_t seg;
@@ -152,22 +158,6 @@ void TimeLord::update()
 					prev_iters = iter->first;
 					proof->segments.push_back(seg);
 				}
-
-				time_segment_t seg;
-				if(end->first == iters_end) {
-					// history has exact end
-					seg.num_iters = end->first - prev_iters;
-					seg.output = end->second;
-				} else {
-					// need to recompute end point from previous checkpoint
-					auto prev = end; prev--;
-					seg.num_iters = iters_end - prev->first;
-					for(uint32_t k = 0; k < 2; ++k) {
-						seg.output[k] = compute(prev->second[k], seg.num_iters);
-					}
-				}
-				proof->segments.push_back(seg);
-
 				publish(proof, output_proofs);
 			}
 		} else {

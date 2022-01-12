@@ -95,6 +95,17 @@ protected:
 	void handle(std::shared_ptr<const ProofResponse> value);
 
 private:
+	struct vdf_point_t {
+		uint32_t height = -1;
+		uint64_t vdf_start = 0;
+		uint64_t vdf_iters = 0;
+		int64_t recv_time = 0;
+		std::array<hash_t, 2> input;
+		std::array<hash_t, 2> output;
+		vnx::optional<hash_t> infused;
+		std::shared_ptr<const ProofOfTime> proof;
+	};
+
 	struct fork_t {
 		bool is_invalid = false;
 		bool is_verified = false;
@@ -102,20 +113,15 @@ private:
 		bool is_vdf_verified = false;
 		bool is_proof_verified = false;
 		bool has_weak_proof = false;
+		bool has_dummy_block = false;
 		uint32_t proof_score = -1;
 		int64_t recv_time = 0;
 		uint128_t weight = 0;
 		uint128_t total_weight = 0;
 		std::weak_ptr<fork_t> prev;
 		std::shared_ptr<const Block> block;
+		std::shared_ptr<const vdf_point_t> vdf_point;
 		std::shared_ptr<const BlockHeader> diff_block;
-	};
-
-	struct vdf_point_t {
-		std::array<hash_t, 2> output;
-		uint64_t iters = 0;
-		int64_t recv_time = 0;
-		uint32_t height = -1;
 	};
 
 	struct change_log_t {
@@ -130,6 +136,8 @@ private:
 	void check_vdfs();
 
 	void add_fork(std::shared_ptr<fork_t> fork);
+
+	bool add_dummy_block(std::shared_ptr<const BlockHeader> prev);
 
 	bool include_transaction(std::shared_ptr<const Transaction> tx);
 
@@ -161,15 +169,15 @@ private:
 
 	uint32_t verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, const uint64_t space_diff) const;
 
-	void verify_vdf(std::shared_ptr<const ProofOfTime> proof, const vdf_point_t& prev) const;
+	void verify_vdf(std::shared_ptr<const ProofOfTime> proof) const;
 
-	void verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain, const hash_t& begin) const;
+	void verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain) const;
 
-	void verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, const vdf_point_t& prev, const vdf_point_t& point);
+	void verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::shared_ptr<vdf_point_t> point);
 
 	void verify_vdf_failed(std::shared_ptr<const ProofOfTime> proof);
 
-	void verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const vdf_point_t& prev) const noexcept;
+	void verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) const noexcept;
 
 	void check_vdf_task(std::shared_ptr<fork_t> fork, std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const BlockHeader> infuse) const noexcept;
 
@@ -200,6 +208,11 @@ private:
 
 	bool find_vdf_challenge(std::shared_ptr<const BlockHeader> block, hash_t& vdf_challenge, uint32_t offset = 0) const;
 
+	std::shared_ptr<Node::vdf_point_t> find_vdf_point(const uint32_t height, const uint64_t vdf_start, const uint64_t vdf_iters,
+			const std::array<hash_t, 2>& input, const std::array<hash_t, 2>& output) const;
+
+	std::shared_ptr<Node::vdf_point_t> find_next_vdf_point(std::shared_ptr<const BlockHeader> block);
+
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block) const;
 
 	std::shared_ptr<const Block> read_block(bool is_replay = false, int64_t* file_offset = nullptr);
@@ -225,7 +238,7 @@ private:
 	std::unordered_map<addr_t, std::shared_ptr<const Contract>> contracts;			// current contract state
 	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_pool;
 
-	std::map<uint32_t, vdf_point_t> verified_vdfs;									// [height => output]
+	std::multimap<uint32_t, std::shared_ptr<vdf_point_t>> verified_vdfs;			// [height => output]
 	std::multimap<uint32_t, std::shared_ptr<const ProofOfTime>> pending_vdfs;		// [height => proof]
 
 	std::unordered_multimap<uint32_t, hash_t> challenge_map;						// [height => challenge]

@@ -14,6 +14,7 @@
 
 #include <vnx/Buffer.hpp>
 #include <vnx/Output.hpp>
+#include <vnx/optional.h>
 
 #include <string>
 
@@ -85,6 +86,22 @@ inline void write_bytes(vnx::OutputBuffer& out, const tx_out_t& value)
 	write_bytes(out, value.address);
 	write_bytes(out, value.contract);
 	write_bytes(out, value.amount);
+}
+
+template<typename T>
+void write_bytes(vnx::OutputBuffer& out, const vnx::optional<T>& value, const T& fallback = T()) {
+	if(value) {
+		write_bytes(out, *value);
+	} else {
+		write_bytes(out, fallback);
+	}
+}
+
+template<typename T, size_t N>
+void write_bytes(vnx::OutputBuffer& out, const std::array<T, N>& value) {
+	for(const auto& elem : value) {
+		write_bytes(out, elem);
+	}
 }
 
 

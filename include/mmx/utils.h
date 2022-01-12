@@ -57,14 +57,14 @@ inline
 uint64_t calc_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
 {
 	return ((uint128_t(space_diff) * params->space_diff_constant * params->reward_factor.value) << (params->plot_filter + params->score_bits))
-			/ params->target_score / params->reward_factor.inverse;
+			/ params->score_target / params->reward_factor.inverse;
 }
 
 inline
 uint64_t calc_total_netspace(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
 {
 	return 0.762 * uint64_t(
-			((uint128_t(space_diff) * params->space_diff_constant) << (params->plot_filter + params->score_bits)) / params->target_score);
+			((uint128_t(space_diff) * params->space_diff_constant) << (params->plot_filter + params->score_bits)) / params->score_target);
 }
 
 

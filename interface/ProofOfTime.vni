@@ -6,9 +6,13 @@ class ProofOfTime {
 	
 	ulong start;		// [iters]
 	
+	hash_t input[2];
+	
 	optional<hash_t> infuse[2];
 	
 	vector<time_segment_t> segments;
+	
+	optional<hash_t> timelord_proof;				// optional proof for timelord identity
 	
 	pubkey_t timelord_key;
 	
@@ -20,6 +24,8 @@ class ProofOfTime {
 	hash_t get_output(uint chain) const;			// final segment output
 	
 	ulong get_num_iters() const;					// relative (sum of segment iters)
+	
+	ulong get_vdf_iters() const;					// absolute output iters
 	
 	ProofOfTime* compressed() const;				// get compressed proof with just one segment
 	

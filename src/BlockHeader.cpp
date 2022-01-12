@@ -29,8 +29,7 @@ mmx::hash_t BlockHeader::calc_hash() const
 	write_bytes(out, time_diff);
 	write_bytes(out, space_diff);
 	write_bytes(out, vdf_iters);
-	write_bytes(out, vdf_output[0]);
-	write_bytes(out, vdf_output[1]);
+	write_bytes(out, vdf_output);
 	write_bytes(out, proof ? proof->calc_hash() : hash_t());
 	write_bytes(out, tx_base ? tx_base->calc_hash() : hash_t());
 	write_bytes(out, tx_hash);
