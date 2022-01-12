@@ -131,8 +131,6 @@ private:
 
 	void add_fork(std::shared_ptr<fork_t> fork);
 
-	void erase_fork(const uint32_t height, const hash_t& hash);
-
 	bool include_transaction(std::shared_ptr<const Transaction> tx);
 
 	bool make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response);

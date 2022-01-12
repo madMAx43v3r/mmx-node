@@ -764,18 +764,6 @@ void Node::add_fork(std::shared_ptr<fork_t> fork)
 	}
 }
 
-void Node::erase_fork(const uint32_t height, const hash_t& hash)
-{
-	const auto range = fork_index.equal_range(height);
-	for(auto iter = range.first; iter != range.second; ++iter) {
-		if(iter->second->block->hash == hash) {
-			fork_index.erase(iter);
-			break;
-		}
-	}
-	fork_tree.erase(hash);
-}
-
 void Node::update()
 {
 	const auto time_begin = vnx::get_wall_time_micros();
@@ -1729,8 +1717,6 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	if(!is_replay) {
 		write_block(block);
 	}
-	erase_fork(block->height, block->hash);
-
 	publish(block, output_committed_blocks, is_replay ? BLOCKING : 0);
 }
 
