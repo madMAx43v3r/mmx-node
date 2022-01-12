@@ -327,7 +327,7 @@ void Router::handle(std::shared_ptr<const ProofOfTime> proof)
 			if(vnx_sample && vnx_sample->topic == input_vdfs) {
 				log(INFO) << "Broadcasting VDF for height " << proof->height;
 			}
-			send_all(proof, {node_type_e::FULL_NODE});
+			send_all(proof, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
 			vdf_counter++;
 		}
 	}
