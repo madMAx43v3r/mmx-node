@@ -19,8 +19,10 @@ public:
 	
 	uint32_t height = 0;
 	uint64_t start = 0;
-	std::array<std::map<uint64_t, ::mmx::hash_t>, 2> infuse = {};
+	std::array<::mmx::hash_t, 2> input = {};
+	std::array<vnx::optional<::mmx::hash_t>, 2> infuse = {};
 	std::vector<::mmx::time_segment_t> segments;
+	vnx::optional<::mmx::hash_t> timelord_proof;
 	::mmx::pubkey_t timelord_key;
 	::mmx::signature_t timelord_sig;
 	
@@ -40,6 +42,7 @@ public:
 	virtual ::mmx::hash_t calc_hash() const;
 	virtual ::mmx::hash_t get_output(const uint32_t& chain = 0) const;
 	virtual uint64_t get_num_iters() const;
+	virtual uint64_t get_vdf_iters() const;
 	virtual std::shared_ptr<const ::mmx::ProofOfTime> compressed() const;
 	
 	static std::shared_ptr<ProofOfTime> create();
