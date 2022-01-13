@@ -1221,7 +1221,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 
 	FarmerClient farmer(response->farmer_addr);
 	const auto block_reward = calc_block_reward(block);
-	const auto final_reward = std::max(std::max(block_reward, params->min_reward), uint64_t(total_fees));
+	const auto final_reward = calc_final_block_reward(params, block_reward, total_fees);
 	const auto result = farmer.sign_block(block, final_reward);
 
 	if(!result) {
@@ -1531,7 +1531,7 @@ void Node::validate(std::shared_ptr<const Block> block) const
 		throw std::logic_error("block cost too high: " + std::to_string(uint64_t(total_cost)));
 	}
 	const auto base_reward = calc_block_reward(block);
-	const auto base_allowed = std::max(std::max(base_reward, params->min_reward), uint64_t(total_fees));
+	const auto base_allowed = calc_final_block_reward(params, base_reward, total_fees);
 	if(base_spent > base_allowed) {
 		throw std::logic_error("coin base over-spend");
 	}

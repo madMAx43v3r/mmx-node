@@ -61,6 +61,14 @@ uint64_t calc_block_reward(std::shared_ptr<const ChainParams> params, const uint
 }
 
 inline
+uint64_t calc_final_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t reward, const uint64_t fees)
+{
+	const uint64_t scale = 1 << 16;
+	const uint64_t reward_ = std::max(reward, params->min_reward);
+	return uint64_t(std::max<int64_t>(int64_t(scale) - ((scale * fees) / (2 * reward_)), 0) * reward_) / scale + fees;
+}
+
+inline
 uint64_t calc_total_netspace(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
 {
 	return 0.762 * uint64_t(
