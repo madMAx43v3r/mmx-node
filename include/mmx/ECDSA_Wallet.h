@@ -237,10 +237,11 @@ public:
 
 			if(change > tx_fees) {
 				// we got more than enough, add change output
+				change -= tx_fees;
 				if(change > params->min_txfee_io) {
 					tx_out_t out;
 					out.address = get_address(0);
-					out.amount = change - tx_fees;
+					out.amount = change;
 					tx->outputs.push_back(out);
 				}
 				change = 0;
