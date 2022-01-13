@@ -1227,7 +1227,6 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 		throw std::logic_error("farmer refused");
 	}
 	block->tx_base = result->tx_base;
-	block->pool_sig = result->pool_sig;
 	block->farmer_sig = result->farmer_sig;
 	block->finalize();
 
@@ -1470,9 +1469,6 @@ void Node::validate(std::shared_ptr<const Block> block) const
 		throw std::logic_error("invalid difficulty");
 	}
 	if(auto proof = block->proof) {
-		if(!block->pool_sig || !block->pool_sig->verify(proof->pool_key, block->hash)) {
-			throw std::logic_error("invalid pool signature");
-		}
 		if(!block->farmer_sig || !block->farmer_sig->verify(proof->farmer_key, block->hash)) {
 			throw std::logic_error("invalid farmer signature");
 		}

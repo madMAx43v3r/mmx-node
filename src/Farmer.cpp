@@ -32,9 +32,7 @@ void Farmer::main()
 
 		for(auto keys : wallet.get_all_farmer_keys()) {
 			if(keys) {
-				key_map[keys->pool_public_key] = keys->pool_private_key;
 				key_map[keys->farmer_public_key] = keys->farmer_private_key;
-				log(INFO) << "Got pool key:   " << keys->pool_public_key;
 				log(INFO) << "Got farmer key: " << keys->farmer_public_key;
 			}
 		}
@@ -105,15 +103,7 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& rew
 	if(!block->proof) {
 		throw std::logic_error("invalid proof");
 	}
-	skey_t pool_sk;
 	skey_t farmer_sk;
-	{
-		auto iter = key_map.find(block->proof->pool_key);
-		if(iter == key_map.end()) {
-			throw std::logic_error("unknown pool key");
-		}
-		pool_sk = iter->second;
-	}
 	{
 		auto iter = key_map.find(block->proof->farmer_key);
 		if(iter == key_map.end()) {
@@ -152,7 +142,6 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& rew
 
 	copy->tx_base = base;
 	copy->hash = copy->calc_hash();
-	copy->pool_sig = bls_signature_t::sign(pool_sk, copy->hash);
 	copy->farmer_sig = bls_signature_t::sign(farmer_sk, copy->hash);
 	return copy;
 }
