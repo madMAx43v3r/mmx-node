@@ -22,12 +22,20 @@
 
 namespace vnx {
 
+const TypeCode* type<::mmx::contract::Condition>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_Condition;
+}
+
 void type<::mmx::contract::Condition>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::contract::Condition());
 }
 
 void type<::mmx::contract::Condition>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Condition& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::Delegated>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_Delegated;
 }
 
 void type<::mmx::contract::Delegated>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -38,12 +46,20 @@ void type<::mmx::contract::Delegated>::create_dynamic_code(std::vector<uint16_t>
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::contract::HTLC>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_HTLC;
+}
+
 void type<::mmx::contract::HTLC>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::contract::HTLC());
 }
 
 void type<::mmx::contract::HTLC>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::HTLC& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::Locked>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_Locked;
 }
 
 void type<::mmx::contract::Locked>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -54,12 +70,20 @@ void type<::mmx::contract::Locked>::create_dynamic_code(std::vector<uint16_t>& c
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::contract::MultiSig>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_MultiSig;
+}
+
 void type<::mmx::contract::MultiSig>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::contract::MultiSig());
 }
 
 void type<::mmx::contract::MultiSig>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::NFT>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_NFT;
 }
 
 void type<::mmx::contract::NFT>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -70,12 +94,20 @@ void type<::mmx::contract::NFT>::create_dynamic_code(std::vector<uint16_t>& code
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::contract::Nobody>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_Nobody;
+}
+
 void type<::mmx::contract::Nobody>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::contract::Nobody());
 }
 
 void type<::mmx::contract::Nobody>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Nobody& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PubKey>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PubKey;
 }
 
 void type<::mmx::contract::PubKey>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -86,12 +118,20 @@ void type<::mmx::contract::PubKey>::create_dynamic_code(std::vector<uint16_t>& c
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::contract::Staking>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_Staking;
+}
+
 void type<::mmx::contract::Staking>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::contract::Staking());
 }
 
 void type<::mmx::contract::Staking>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Staking& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::Symbol>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_Symbol;
 }
 
 void type<::mmx::contract::Symbol>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -102,12 +142,20 @@ void type<::mmx::contract::Symbol>::create_dynamic_code(std::vector<uint16_t>& c
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::contract::Token>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_Token;
+}
+
 void type<::mmx::contract::Token>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::contract::Token());
 }
 
 void type<::mmx::contract::Token>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Token& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::compare_e>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_compare_e;
 }
 
 void type<::mmx::contract::compare_e>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -120,6 +168,10 @@ void type<::mmx::contract::compare_e>::create_dynamic_code(std::vector<uint16_t>
 	} else {
 		code.push_back(CODE_UINT32);
 	}
+}
+
+const TypeCode* type<::mmx::contract::condition_e>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_condition_e;
 }
 
 void type<::mmx::contract::condition_e>::create_dynamic_code(std::vector<uint16_t>& code) {

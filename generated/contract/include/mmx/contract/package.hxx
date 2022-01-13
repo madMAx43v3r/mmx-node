@@ -136,6 +136,7 @@ struct type<::mmx::contract::Condition> {
 	void accept(Visitor& visitor, const ::mmx::contract::Condition& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Condition& value, bool special = false);
 };
@@ -158,6 +159,7 @@ struct type<::mmx::contract::Delegated> {
 	void accept(Visitor& visitor, const ::mmx::contract::Delegated& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Delegated& value, bool special = false);
 };
@@ -180,6 +182,7 @@ struct type<::mmx::contract::HTLC> {
 	void accept(Visitor& visitor, const ::mmx::contract::HTLC& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::HTLC& value, bool special = false);
 };
@@ -202,6 +205,7 @@ struct type<::mmx::contract::Locked> {
 	void accept(Visitor& visitor, const ::mmx::contract::Locked& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Locked& value, bool special = false);
 };
@@ -224,6 +228,7 @@ struct type<::mmx::contract::MultiSig> {
 	void accept(Visitor& visitor, const ::mmx::contract::MultiSig& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig& value, bool special = false);
 };
@@ -246,6 +251,7 @@ struct type<::mmx::contract::NFT> {
 	void accept(Visitor& visitor, const ::mmx::contract::NFT& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::NFT& value, bool special = false);
 };
@@ -268,6 +274,7 @@ struct type<::mmx::contract::Nobody> {
 	void accept(Visitor& visitor, const ::mmx::contract::Nobody& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Nobody& value, bool special = false);
 };
@@ -290,6 +297,7 @@ struct type<::mmx::contract::PubKey> {
 	void accept(Visitor& visitor, const ::mmx::contract::PubKey& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PubKey& value, bool special = false);
 };
@@ -312,6 +320,7 @@ struct type<::mmx::contract::Staking> {
 	void accept(Visitor& visitor, const ::mmx::contract::Staking& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Staking& value, bool special = false);
 };
@@ -334,6 +343,7 @@ struct type<::mmx::contract::Symbol> {
 	void accept(Visitor& visitor, const ::mmx::contract::Symbol& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Symbol& value, bool special = false);
 };
@@ -356,6 +366,7 @@ struct type<::mmx::contract::Token> {
 	void accept(Visitor& visitor, const ::mmx::contract::Token& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Token& value, bool special = false);
 };
@@ -378,6 +389,7 @@ struct type<::mmx::contract::compare_e> {
 	void accept(Visitor& visitor, const ::mmx::contract::compare_e& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::compare_e& value, bool special = false);
 };
@@ -400,6 +412,7 @@ struct type<::mmx::contract::condition_e> {
 	void accept(Visitor& visitor, const ::mmx::contract::condition_e& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::condition_e& value, bool special = false);
 };

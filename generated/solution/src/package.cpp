@@ -11,12 +11,20 @@
 
 namespace vnx {
 
+const TypeCode* type<::mmx::solution::MultiSig>::get_type_code() {
+	return mmx::solution::vnx_native_type_code_MultiSig;
+}
+
 void type<::mmx::solution::MultiSig>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::solution::MultiSig());
 }
 
 void type<::mmx::solution::MultiSig>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::MultiSig& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::solution::PubKey>::get_type_code() {
+	return mmx::solution::vnx_native_type_code_PubKey;
 }
 
 void type<::mmx::solution::PubKey>::create_dynamic_code(std::vector<uint16_t>& code) {

@@ -159,6 +159,7 @@ class pubkey_t;
 class signature_t;
 class skey_t;
 struct stxo_entry_t;
+struct stxo_t;
 struct time_segment_t;
 struct tx_entry_t;
 struct tx_in_t;
@@ -310,6 +311,7 @@ extern const vnx::TypeCode* const vnx_native_type_code_node_type_e; ///< \privat
 extern const vnx::TypeCode* const vnx_native_type_code_peer_info_t; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_permission_e; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_stxo_entry_t; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_stxo_t; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_time_segment_t; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_tx_entry_t; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_tx_in_t; ///< \private
@@ -473,6 +475,7 @@ void read(TypeInput& in, ::mmx::pubkey_t& value, const TypeCode* type_code, cons
 void read(TypeInput& in, ::mmx::signature_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::skey_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::stxo_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::stxo_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::time_segment_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::tx_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::tx_in_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -631,6 +634,7 @@ void write(TypeOutput& out, const ::mmx::pubkey_t& value, const TypeCode* type_c
 void write(TypeOutput& out, const ::mmx::signature_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::skey_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::stxo_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::stxo_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::time_segment_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::tx_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::tx_in_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -789,6 +793,7 @@ void read(std::istream& in, ::mmx::pubkey_t& value); ///< \private
 void read(std::istream& in, ::mmx::signature_t& value); ///< \private
 void read(std::istream& in, ::mmx::skey_t& value); ///< \private
 void read(std::istream& in, ::mmx::stxo_entry_t& value); ///< \private
+void read(std::istream& in, ::mmx::stxo_t& value); ///< \private
 void read(std::istream& in, ::mmx::time_segment_t& value); ///< \private
 void read(std::istream& in, ::mmx::tx_entry_t& value); ///< \private
 void read(std::istream& in, ::mmx::tx_in_t& value); ///< \private
@@ -947,6 +952,7 @@ void write(std::ostream& out, const ::mmx::pubkey_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::signature_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::skey_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::stxo_entry_t& value); ///< \private
+void write(std::ostream& out, const ::mmx::stxo_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::time_segment_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::tx_entry_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::tx_in_t& value); ///< \private
@@ -1105,6 +1111,7 @@ void accept(Visitor& visitor, const ::mmx::pubkey_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::signature_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::skey_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::stxo_entry_t& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::stxo_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::time_segment_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::tx_entry_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::tx_in_t& value); ///< \private
@@ -1135,6 +1142,7 @@ struct type<::mmx::Block> {
 	void accept(Visitor& visitor, const ::mmx::Block& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Block& value, bool special = false);
 };
@@ -1157,6 +1165,7 @@ struct type<::mmx::BlockHeader> {
 	void accept(Visitor& visitor, const ::mmx::BlockHeader& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::BlockHeader& value, bool special = false);
 };
@@ -1179,6 +1188,7 @@ struct type<::mmx::ChainParams> {
 	void accept(Visitor& visitor, const ::mmx::ChainParams& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ChainParams& value, bool special = false);
 };
@@ -1201,6 +1211,7 @@ struct type<::mmx::Challenge> {
 	void accept(Visitor& visitor, const ::mmx::Challenge& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Challenge& value, bool special = false);
 };
@@ -1223,6 +1234,7 @@ struct type<::mmx::Contract> {
 	void accept(Visitor& visitor, const ::mmx::Contract& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Contract& value, bool special = false);
 };
@@ -1245,6 +1257,7 @@ struct type<::mmx::FarmInfo> {
 	void accept(Visitor& visitor, const ::mmx::FarmInfo& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::FarmInfo& value, bool special = false);
 };
@@ -1287,6 +1300,7 @@ struct type<::mmx::Farmer_get_farm_info> {
 	void accept(Visitor& visitor, const ::mmx::Farmer_get_farm_info& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_get_farm_info& value, bool special = false);
 };
@@ -1309,6 +1323,7 @@ struct type<::mmx::Farmer_get_farm_info_return> {
 	void accept(Visitor& visitor, const ::mmx::Farmer_get_farm_info_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_get_farm_info_return& value, bool special = false);
 };
@@ -1331,6 +1346,7 @@ struct type<::mmx::Farmer_get_mac_addr> {
 	void accept(Visitor& visitor, const ::mmx::Farmer_get_mac_addr& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_get_mac_addr& value, bool special = false);
 };
@@ -1353,6 +1369,7 @@ struct type<::mmx::Farmer_get_mac_addr_return> {
 	void accept(Visitor& visitor, const ::mmx::Farmer_get_mac_addr_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_get_mac_addr_return& value, bool special = false);
 };
@@ -1375,6 +1392,7 @@ struct type<::mmx::Farmer_sign_block> {
 	void accept(Visitor& visitor, const ::mmx::Farmer_sign_block& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_sign_block& value, bool special = false);
 };
@@ -1397,6 +1415,7 @@ struct type<::mmx::Farmer_sign_block_return> {
 	void accept(Visitor& visitor, const ::mmx::Farmer_sign_block_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_sign_block_return& value, bool special = false);
 };
@@ -1419,6 +1438,7 @@ struct type<::mmx::FarmerKeys> {
 	void accept(Visitor& visitor, const ::mmx::FarmerKeys& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::FarmerKeys& value, bool special = false);
 };
@@ -1461,6 +1481,7 @@ struct type<::mmx::Harvester_get_farm_info> {
 	void accept(Visitor& visitor, const ::mmx::Harvester_get_farm_info& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Harvester_get_farm_info& value, bool special = false);
 };
@@ -1483,6 +1504,7 @@ struct type<::mmx::Harvester_get_farm_info_return> {
 	void accept(Visitor& visitor, const ::mmx::Harvester_get_farm_info_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Harvester_get_farm_info_return& value, bool special = false);
 };
@@ -1505,6 +1527,7 @@ struct type<::mmx::Harvester_get_total_bytes> {
 	void accept(Visitor& visitor, const ::mmx::Harvester_get_total_bytes& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Harvester_get_total_bytes& value, bool special = false);
 };
@@ -1527,6 +1550,7 @@ struct type<::mmx::Harvester_get_total_bytes_return> {
 	void accept(Visitor& visitor, const ::mmx::Harvester_get_total_bytes_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Harvester_get_total_bytes_return& value, bool special = false);
 };
@@ -1549,6 +1573,7 @@ struct type<::mmx::Harvester_reload> {
 	void accept(Visitor& visitor, const ::mmx::Harvester_reload& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Harvester_reload& value, bool special = false);
 };
@@ -1571,6 +1596,7 @@ struct type<::mmx::Harvester_reload_return> {
 	void accept(Visitor& visitor, const ::mmx::Harvester_reload_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Harvester_reload_return& value, bool special = false);
 };
@@ -1593,6 +1619,7 @@ struct type<::mmx::IntervalRequest> {
 	void accept(Visitor& visitor, const ::mmx::IntervalRequest& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::IntervalRequest& value, bool special = false);
 };
@@ -1615,6 +1642,7 @@ struct type<::mmx::KeyFile> {
 	void accept(Visitor& visitor, const ::mmx::KeyFile& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::KeyFile& value, bool special = false);
 };
@@ -1657,6 +1685,7 @@ struct type<::mmx::Node_add_block> {
 	void accept(Visitor& visitor, const ::mmx::Node_add_block& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_add_block& value, bool special = false);
 };
@@ -1679,6 +1708,7 @@ struct type<::mmx::Node_add_block_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_add_block_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_add_block_return& value, bool special = false);
 };
@@ -1701,6 +1731,7 @@ struct type<::mmx::Node_add_transaction> {
 	void accept(Visitor& visitor, const ::mmx::Node_add_transaction& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_add_transaction& value, bool special = false);
 };
@@ -1723,6 +1754,7 @@ struct type<::mmx::Node_add_transaction_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_add_transaction_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_add_transaction_return& value, bool special = false);
 };
@@ -1745,6 +1777,7 @@ struct type<::mmx::Node_get_balance> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_balance& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_balance& value, bool special = false);
 };
@@ -1767,6 +1800,7 @@ struct type<::mmx::Node_get_balance_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_balance_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_balance_return& value, bool special = false);
 };
@@ -1789,6 +1823,7 @@ struct type<::mmx::Node_get_block> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_block& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_block& value, bool special = false);
 };
@@ -1811,6 +1846,7 @@ struct type<::mmx::Node_get_block_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_block_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_block_return& value, bool special = false);
 };
@@ -1833,6 +1869,7 @@ struct type<::mmx::Node_get_block_at> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_block_at& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_block_at& value, bool special = false);
 };
@@ -1855,6 +1892,7 @@ struct type<::mmx::Node_get_block_at_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_block_at_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_block_at_return& value, bool special = false);
 };
@@ -1877,6 +1915,7 @@ struct type<::mmx::Node_get_block_hash> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_block_hash& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_block_hash& value, bool special = false);
 };
@@ -1899,6 +1938,7 @@ struct type<::mmx::Node_get_block_hash_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_block_hash_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_block_hash_return& value, bool special = false);
 };
@@ -1921,6 +1961,7 @@ struct type<::mmx::Node_get_contract> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_contract& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_contract& value, bool special = false);
 };
@@ -1943,6 +1984,7 @@ struct type<::mmx::Node_get_contract_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_contract_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_contract_return& value, bool special = false);
 };
@@ -1965,6 +2007,7 @@ struct type<::mmx::Node_get_header> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_header& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_header& value, bool special = false);
 };
@@ -1987,6 +2030,7 @@ struct type<::mmx::Node_get_header_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_header_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_header_return& value, bool special = false);
 };
@@ -2009,6 +2053,7 @@ struct type<::mmx::Node_get_header_at> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_header_at& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_header_at& value, bool special = false);
 };
@@ -2031,6 +2076,7 @@ struct type<::mmx::Node_get_header_at_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_header_at_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_header_at_return& value, bool special = false);
 };
@@ -2053,6 +2099,7 @@ struct type<::mmx::Node_get_height> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_height& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_height& value, bool special = false);
 };
@@ -2075,6 +2122,7 @@ struct type<::mmx::Node_get_height_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_height_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_height_return& value, bool special = false);
 };
@@ -2097,6 +2145,7 @@ struct type<::mmx::Node_get_history_for> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_history_for& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_history_for& value, bool special = false);
 };
@@ -2119,6 +2168,7 @@ struct type<::mmx::Node_get_history_for_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_history_for_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_history_for_return& value, bool special = false);
 };
@@ -2141,6 +2191,7 @@ struct type<::mmx::Node_get_params> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_params& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_params& value, bool special = false);
 };
@@ -2163,6 +2214,7 @@ struct type<::mmx::Node_get_params_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_params_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_params_return& value, bool special = false);
 };
@@ -2185,6 +2237,7 @@ struct type<::mmx::Node_get_stxo_list> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_stxo_list& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_stxo_list& value, bool special = false);
 };
@@ -2207,6 +2260,7 @@ struct type<::mmx::Node_get_stxo_list_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_stxo_list_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_stxo_list_return& value, bool special = false);
 };
@@ -2229,6 +2283,7 @@ struct type<::mmx::Node_get_synced_height> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_synced_height& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_synced_height& value, bool special = false);
 };
@@ -2251,6 +2306,7 @@ struct type<::mmx::Node_get_synced_height_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_synced_height_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_synced_height_return& value, bool special = false);
 };
@@ -2273,6 +2329,7 @@ struct type<::mmx::Node_get_total_balance> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_total_balance& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_total_balance& value, bool special = false);
 };
@@ -2295,6 +2352,7 @@ struct type<::mmx::Node_get_total_balance_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_total_balance_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_total_balance_return& value, bool special = false);
 };
@@ -2317,6 +2375,7 @@ struct type<::mmx::Node_get_total_supply> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_total_supply& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_total_supply& value, bool special = false);
 };
@@ -2339,6 +2398,7 @@ struct type<::mmx::Node_get_total_supply_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_total_supply_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_total_supply_return& value, bool special = false);
 };
@@ -2361,6 +2421,7 @@ struct type<::mmx::Node_get_transaction> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_transaction& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_transaction& value, bool special = false);
 };
@@ -2383,6 +2444,7 @@ struct type<::mmx::Node_get_transaction_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_transaction_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_transaction_return& value, bool special = false);
 };
@@ -2405,6 +2467,7 @@ struct type<::mmx::Node_get_transactions> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_transactions& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_transactions& value, bool special = false);
 };
@@ -2427,6 +2490,7 @@ struct type<::mmx::Node_get_transactions_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_transactions_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_transactions_return& value, bool special = false);
 };
@@ -2449,6 +2513,7 @@ struct type<::mmx::Node_get_tx_height> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_tx_height& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_tx_height& value, bool special = false);
 };
@@ -2471,6 +2536,7 @@ struct type<::mmx::Node_get_tx_height_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_tx_height_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_tx_height_return& value, bool special = false);
 };
@@ -2493,6 +2559,7 @@ struct type<::mmx::Node_get_tx_ids_at> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_tx_ids_at& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_tx_ids_at& value, bool special = false);
 };
@@ -2515,6 +2582,7 @@ struct type<::mmx::Node_get_tx_ids_at_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_tx_ids_at_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_tx_ids_at_return& value, bool special = false);
 };
@@ -2537,6 +2605,7 @@ struct type<::mmx::Node_get_txo_info> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_txo_info& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_txo_info& value, bool special = false);
 };
@@ -2559,6 +2628,7 @@ struct type<::mmx::Node_get_txo_info_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_txo_info_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_txo_info_return& value, bool special = false);
 };
@@ -2581,6 +2651,7 @@ struct type<::mmx::Node_get_txo_infos> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_txo_infos& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_txo_infos& value, bool special = false);
 };
@@ -2603,6 +2674,7 @@ struct type<::mmx::Node_get_txo_infos_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_txo_infos_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_txo_infos_return& value, bool special = false);
 };
@@ -2625,6 +2697,7 @@ struct type<::mmx::Node_get_utxo_list> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_utxo_list& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_utxo_list& value, bool special = false);
 };
@@ -2647,6 +2720,7 @@ struct type<::mmx::Node_get_utxo_list_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_get_utxo_list_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_utxo_list_return& value, bool special = false);
 };
@@ -2669,6 +2743,7 @@ struct type<::mmx::Node_start_sync> {
 	void accept(Visitor& visitor, const ::mmx::Node_start_sync& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_start_sync& value, bool special = false);
 };
@@ -2691,6 +2766,7 @@ struct type<::mmx::Node_start_sync_return> {
 	void accept(Visitor& visitor, const ::mmx::Node_start_sync_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_start_sync_return& value, bool special = false);
 };
@@ -2713,6 +2789,7 @@ struct type<::mmx::Operation> {
 	void accept(Visitor& visitor, const ::mmx::Operation& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Operation& value, bool special = false);
 };
@@ -2735,6 +2812,7 @@ struct type<::mmx::PeerInfo> {
 	void accept(Visitor& visitor, const ::mmx::PeerInfo& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::PeerInfo& value, bool special = false);
 };
@@ -2757,6 +2835,7 @@ struct type<::mmx::ProofOfSpace> {
 	void accept(Visitor& visitor, const ::mmx::ProofOfSpace& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofOfSpace& value, bool special = false);
 };
@@ -2779,6 +2858,7 @@ struct type<::mmx::ProofOfTime> {
 	void accept(Visitor& visitor, const ::mmx::ProofOfTime& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofOfTime& value, bool special = false);
 };
@@ -2801,6 +2881,7 @@ struct type<::mmx::ProofResponse> {
 	void accept(Visitor& visitor, const ::mmx::ProofResponse& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofResponse& value, bool special = false);
 };
@@ -2823,6 +2904,7 @@ struct type<::mmx::Request> {
 	void accept(Visitor& visitor, const ::mmx::Request& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Request& value, bool special = false);
 };
@@ -2845,6 +2927,7 @@ struct type<::mmx::Return> {
 	void accept(Visitor& visitor, const ::mmx::Return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Return& value, bool special = false);
 };
@@ -2887,6 +2970,7 @@ struct type<::mmx::Router_discover> {
 	void accept(Visitor& visitor, const ::mmx::Router_discover& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_discover& value, bool special = false);
 };
@@ -2909,6 +2993,7 @@ struct type<::mmx::Router_discover_return> {
 	void accept(Visitor& visitor, const ::mmx::Router_discover_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_discover_return& value, bool special = false);
 };
@@ -2931,6 +3016,7 @@ struct type<::mmx::Router_fetch_block_at> {
 	void accept(Visitor& visitor, const ::mmx::Router_fetch_block_at& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_fetch_block_at& value, bool special = false);
 };
@@ -2953,6 +3039,7 @@ struct type<::mmx::Router_fetch_block_at_return> {
 	void accept(Visitor& visitor, const ::mmx::Router_fetch_block_at_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_fetch_block_at_return& value, bool special = false);
 };
@@ -2975,6 +3062,7 @@ struct type<::mmx::Router_get_blocks_at> {
 	void accept(Visitor& visitor, const ::mmx::Router_get_blocks_at& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_blocks_at& value, bool special = false);
 };
@@ -2997,6 +3085,7 @@ struct type<::mmx::Router_get_blocks_at_return> {
 	void accept(Visitor& visitor, const ::mmx::Router_get_blocks_at_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_blocks_at_return& value, bool special = false);
 };
@@ -3019,6 +3108,7 @@ struct type<::mmx::Router_get_connected_peers> {
 	void accept(Visitor& visitor, const ::mmx::Router_get_connected_peers& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_connected_peers& value, bool special = false);
 };
@@ -3041,6 +3131,7 @@ struct type<::mmx::Router_get_connected_peers_return> {
 	void accept(Visitor& visitor, const ::mmx::Router_get_connected_peers_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_connected_peers_return& value, bool special = false);
 };
@@ -3063,6 +3154,7 @@ struct type<::mmx::Router_get_farmer_credits> {
 	void accept(Visitor& visitor, const ::mmx::Router_get_farmer_credits& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_farmer_credits& value, bool special = false);
 };
@@ -3085,6 +3177,7 @@ struct type<::mmx::Router_get_farmer_credits_return> {
 	void accept(Visitor& visitor, const ::mmx::Router_get_farmer_credits_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_farmer_credits_return& value, bool special = false);
 };
@@ -3107,6 +3200,7 @@ struct type<::mmx::Router_get_id> {
 	void accept(Visitor& visitor, const ::mmx::Router_get_id& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_id& value, bool special = false);
 };
@@ -3129,6 +3223,7 @@ struct type<::mmx::Router_get_id_return> {
 	void accept(Visitor& visitor, const ::mmx::Router_get_id_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_id_return& value, bool special = false);
 };
@@ -3151,6 +3246,7 @@ struct type<::mmx::Router_get_info> {
 	void accept(Visitor& visitor, const ::mmx::Router_get_info& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_info& value, bool special = false);
 };
@@ -3173,6 +3269,7 @@ struct type<::mmx::Router_get_info_return> {
 	void accept(Visitor& visitor, const ::mmx::Router_get_info_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_info_return& value, bool special = false);
 };
@@ -3195,6 +3292,7 @@ struct type<::mmx::Router_get_known_peers> {
 	void accept(Visitor& visitor, const ::mmx::Router_get_known_peers& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_known_peers& value, bool special = false);
 };
@@ -3217,6 +3315,7 @@ struct type<::mmx::Router_get_known_peers_return> {
 	void accept(Visitor& visitor, const ::mmx::Router_get_known_peers_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_known_peers_return& value, bool special = false);
 };
@@ -3239,6 +3338,7 @@ struct type<::mmx::Router_get_peer_info> {
 	void accept(Visitor& visitor, const ::mmx::Router_get_peer_info& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_peer_info& value, bool special = false);
 };
@@ -3261,6 +3361,7 @@ struct type<::mmx::Router_get_peer_info_return> {
 	void accept(Visitor& visitor, const ::mmx::Router_get_peer_info_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_peer_info_return& value, bool special = false);
 };
@@ -3283,6 +3384,7 @@ struct type<::mmx::Router_get_peers> {
 	void accept(Visitor& visitor, const ::mmx::Router_get_peers& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_peers& value, bool special = false);
 };
@@ -3305,6 +3407,7 @@ struct type<::mmx::Router_get_peers_return> {
 	void accept(Visitor& visitor, const ::mmx::Router_get_peers_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_peers_return& value, bool special = false);
 };
@@ -3327,6 +3430,7 @@ struct type<::mmx::Router_sign_msg> {
 	void accept(Visitor& visitor, const ::mmx::Router_sign_msg& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_sign_msg& value, bool special = false);
 };
@@ -3349,6 +3453,7 @@ struct type<::mmx::Router_sign_msg_return> {
 	void accept(Visitor& visitor, const ::mmx::Router_sign_msg_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_sign_msg_return& value, bool special = false);
 };
@@ -3371,6 +3476,7 @@ struct type<::mmx::Solution> {
 	void accept(Visitor& visitor, const ::mmx::Solution& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Solution& value, bool special = false);
 };
@@ -3393,6 +3499,7 @@ struct type<::mmx::TimeInfusion> {
 	void accept(Visitor& visitor, const ::mmx::TimeInfusion& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::TimeInfusion& value, bool special = false);
 };
@@ -3435,6 +3542,7 @@ struct type<::mmx::TimeLord_stop_vdf> {
 	void accept(Visitor& visitor, const ::mmx::TimeLord_stop_vdf& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::TimeLord_stop_vdf& value, bool special = false);
 };
@@ -3457,6 +3565,7 @@ struct type<::mmx::TimeLord_stop_vdf_return> {
 	void accept(Visitor& visitor, const ::mmx::TimeLord_stop_vdf_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::TimeLord_stop_vdf_return& value, bool special = false);
 };
@@ -3479,6 +3588,7 @@ struct type<::mmx::Transaction> {
 	void accept(Visitor& visitor, const ::mmx::Transaction& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Transaction& value, bool special = false);
 };
@@ -3501,6 +3611,7 @@ struct type<::mmx::TransactionBase> {
 	void accept(Visitor& visitor, const ::mmx::TransactionBase& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::TransactionBase& value, bool special = false);
 };
@@ -3543,6 +3654,7 @@ struct type<::mmx::Wallet_get_address> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_get_address& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_address& value, bool special = false);
 };
@@ -3565,6 +3677,7 @@ struct type<::mmx::Wallet_get_address_return> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_get_address_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_address_return& value, bool special = false);
 };
@@ -3587,6 +3700,7 @@ struct type<::mmx::Wallet_get_all_addresses> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_get_all_addresses& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_all_addresses& value, bool special = false);
 };
@@ -3609,6 +3723,7 @@ struct type<::mmx::Wallet_get_all_addresses_return> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_get_all_addresses_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_all_addresses_return& value, bool special = false);
 };
@@ -3631,6 +3746,7 @@ struct type<::mmx::Wallet_get_all_farmer_keys> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_get_all_farmer_keys& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_all_farmer_keys& value, bool special = false);
 };
@@ -3653,6 +3769,7 @@ struct type<::mmx::Wallet_get_all_farmer_keys_return> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_get_all_farmer_keys_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_all_farmer_keys_return& value, bool special = false);
 };
@@ -3675,6 +3792,7 @@ struct type<::mmx::Wallet_get_balance> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_get_balance& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_balance& value, bool special = false);
 };
@@ -3697,6 +3815,7 @@ struct type<::mmx::Wallet_get_balance_return> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_get_balance_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_balance_return& value, bool special = false);
 };
@@ -3719,6 +3838,7 @@ struct type<::mmx::Wallet_get_farmer_keys> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_get_farmer_keys& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_farmer_keys& value, bool special = false);
 };
@@ -3741,6 +3861,7 @@ struct type<::mmx::Wallet_get_farmer_keys_return> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_get_farmer_keys_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_farmer_keys_return& value, bool special = false);
 };
@@ -3763,6 +3884,7 @@ struct type<::mmx::Wallet_get_history> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_get_history& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_history& value, bool special = false);
 };
@@ -3785,6 +3907,7 @@ struct type<::mmx::Wallet_get_history_return> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_get_history_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_history_return& value, bool special = false);
 };
@@ -3807,6 +3930,7 @@ struct type<::mmx::Wallet_get_master_seed> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_get_master_seed& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_master_seed& value, bool special = false);
 };
@@ -3829,6 +3953,7 @@ struct type<::mmx::Wallet_get_master_seed_return> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_get_master_seed_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_master_seed_return& value, bool special = false);
 };
@@ -3851,6 +3976,7 @@ struct type<::mmx::Wallet_get_stxo_list> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_get_stxo_list& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_stxo_list& value, bool special = false);
 };
@@ -3873,6 +3999,7 @@ struct type<::mmx::Wallet_get_stxo_list_return> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_get_stxo_list_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_stxo_list_return& value, bool special = false);
 };
@@ -3895,6 +4022,7 @@ struct type<::mmx::Wallet_get_stxo_list_for> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_get_stxo_list_for& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_stxo_list_for& value, bool special = false);
 };
@@ -3917,6 +4045,7 @@ struct type<::mmx::Wallet_get_stxo_list_for_return> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_get_stxo_list_for_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_stxo_list_for_return& value, bool special = false);
 };
@@ -3939,6 +4068,7 @@ struct type<::mmx::Wallet_get_utxo_list> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_get_utxo_list& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_utxo_list& value, bool special = false);
 };
@@ -3961,6 +4091,7 @@ struct type<::mmx::Wallet_get_utxo_list_return> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_get_utxo_list_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_utxo_list_return& value, bool special = false);
 };
@@ -3983,6 +4114,7 @@ struct type<::mmx::Wallet_get_utxo_list_for> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_get_utxo_list_for& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_utxo_list_for& value, bool special = false);
 };
@@ -4005,6 +4137,7 @@ struct type<::mmx::Wallet_get_utxo_list_for_return> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_get_utxo_list_for_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_utxo_list_for_return& value, bool special = false);
 };
@@ -4027,6 +4160,7 @@ struct type<::mmx::Wallet_send> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_send& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_send& value, bool special = false);
 };
@@ -4049,6 +4183,7 @@ struct type<::mmx::Wallet_send_return> {
 	void accept(Visitor& visitor, const ::mmx::Wallet_send_return& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_send_return& value, bool special = false);
 };
@@ -4071,6 +4206,7 @@ struct type<::mmx::addr_t> {
 	void accept(Visitor& visitor, const ::mmx::addr_t& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::addr_t& value, bool special = false);
 };
@@ -4093,6 +4229,7 @@ struct type<::mmx::bls_pubkey_t> {
 	void accept(Visitor& visitor, const ::mmx::bls_pubkey_t& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::bls_pubkey_t& value, bool special = false);
 };
@@ -4115,6 +4252,7 @@ struct type<::mmx::bls_signature_t> {
 	void accept(Visitor& visitor, const ::mmx::bls_signature_t& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::bls_signature_t& value, bool special = false);
 };
@@ -4137,6 +4275,7 @@ struct type<::mmx::hash_t> {
 	void accept(Visitor& visitor, const ::mmx::hash_t& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::hash_t& value, bool special = false);
 };
@@ -4159,6 +4298,7 @@ struct type<::mmx::node_info_t> {
 	void accept(Visitor& visitor, const ::mmx::node_info_t& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::node_info_t& value, bool special = false);
 };
@@ -4181,6 +4321,7 @@ struct type<::mmx::node_type_e> {
 	void accept(Visitor& visitor, const ::mmx::node_type_e& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::node_type_e& value, bool special = false);
 };
@@ -4203,6 +4344,7 @@ struct type<::mmx::peer_info_t> {
 	void accept(Visitor& visitor, const ::mmx::peer_info_t& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::peer_info_t& value, bool special = false);
 };
@@ -4225,6 +4367,7 @@ struct type<::mmx::permission_e> {
 	void accept(Visitor& visitor, const ::mmx::permission_e& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::permission_e& value, bool special = false);
 };
@@ -4247,6 +4390,7 @@ struct type<::mmx::pubkey_t> {
 	void accept(Visitor& visitor, const ::mmx::pubkey_t& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::pubkey_t& value, bool special = false);
 };
@@ -4269,6 +4413,7 @@ struct type<::mmx::signature_t> {
 	void accept(Visitor& visitor, const ::mmx::signature_t& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::signature_t& value, bool special = false);
 };
@@ -4291,6 +4436,7 @@ struct type<::mmx::skey_t> {
 	void accept(Visitor& visitor, const ::mmx::skey_t& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::skey_t& value, bool special = false);
 };
@@ -4313,8 +4459,32 @@ struct type<::mmx::stxo_entry_t> {
 	void accept(Visitor& visitor, const ::mmx::stxo_entry_t& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::stxo_entry_t& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::stxo_t> {
+	void read(TypeInput& in, ::mmx::stxo_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::stxo_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::stxo_t& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::stxo_t& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::stxo_t& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::stxo_t& value, bool special = false);
 };
 
 /// \private
@@ -4335,6 +4505,7 @@ struct type<::mmx::time_segment_t> {
 	void accept(Visitor& visitor, const ::mmx::time_segment_t& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::time_segment_t& value, bool special = false);
 };
@@ -4357,6 +4528,7 @@ struct type<::mmx::tx_entry_t> {
 	void accept(Visitor& visitor, const ::mmx::tx_entry_t& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::tx_entry_t& value, bool special = false);
 };
@@ -4379,6 +4551,7 @@ struct type<::mmx::tx_in_t> {
 	void accept(Visitor& visitor, const ::mmx::tx_in_t& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::tx_in_t& value, bool special = false);
 };
@@ -4401,6 +4574,7 @@ struct type<::mmx::tx_out_t> {
 	void accept(Visitor& visitor, const ::mmx::tx_out_t& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::tx_out_t& value, bool special = false);
 };
@@ -4423,6 +4597,7 @@ struct type<::mmx::tx_type_e> {
 	void accept(Visitor& visitor, const ::mmx::tx_type_e& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::tx_type_e& value, bool special = false);
 };
@@ -4445,6 +4620,7 @@ struct type<::mmx::txio_key_t> {
 	void accept(Visitor& visitor, const ::mmx::txio_key_t& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::txio_key_t& value, bool special = false);
 };
@@ -4467,6 +4643,7 @@ struct type<::mmx::txo_info_t> {
 	void accept(Visitor& visitor, const ::mmx::txo_info_t& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::txo_info_t& value, bool special = false);
 };
@@ -4489,6 +4666,7 @@ struct type<::mmx::uint_fraction_t> {
 	void accept(Visitor& visitor, const ::mmx::uint_fraction_t& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::uint_fraction_t& value, bool special = false);
 };
@@ -4511,6 +4689,7 @@ struct type<::mmx::ulong_fraction_t> {
 	void accept(Visitor& visitor, const ::mmx::ulong_fraction_t& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ulong_fraction_t& value, bool special = false);
 };
@@ -4533,6 +4712,7 @@ struct type<::mmx::utxo_entry_t> {
 	void accept(Visitor& visitor, const ::mmx::utxo_entry_t& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::utxo_entry_t& value, bool special = false);
 };
@@ -4555,6 +4735,7 @@ struct type<::mmx::utxo_t> {
 	void accept(Visitor& visitor, const ::mmx::utxo_t& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::utxo_t& value, bool special = false);
 };

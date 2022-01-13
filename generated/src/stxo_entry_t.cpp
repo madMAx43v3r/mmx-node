@@ -3,9 +3,9 @@
 
 #include <mmx/package.hxx>
 #include <mmx/stxo_entry_t.hxx>
+#include <mmx/stxo_t.hxx>
 #include <mmx/txio_key_t.hxx>
 #include <mmx/utxo_entry_t.hxx>
-#include <mmx/utxo_t.hxx>
 
 #include <vnx/vnx.h>
 

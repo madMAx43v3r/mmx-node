@@ -72,6 +72,7 @@ struct type<::mmx::operation::Delegate> {
 	void accept(Visitor& visitor, const ::mmx::operation::Delegate& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Delegate& value, bool special = false);
 };
@@ -94,6 +95,7 @@ struct type<::mmx::operation::Deploy> {
 	void accept(Visitor& visitor, const ::mmx::operation::Deploy& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Deploy& value, bool special = false);
 };
@@ -116,6 +118,7 @@ struct type<::mmx::operation::Mint> {
 	void accept(Visitor& visitor, const ::mmx::operation::Mint& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Mint& value, bool special = false);
 };
@@ -138,6 +141,7 @@ struct type<::mmx::operation::Transfer> {
 	void accept(Visitor& visitor, const ::mmx::operation::Transfer& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Transfer& value, bool special = false);
 };

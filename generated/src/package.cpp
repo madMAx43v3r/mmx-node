@@ -140,6 +140,7 @@
 #include <mmx/peer_info_t.hxx>
 #include <mmx/permission_e.hxx>
 #include <mmx/stxo_entry_t.hxx>
+#include <mmx/stxo_t.hxx>
 #include <mmx/time_segment_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_in_t.hxx>
@@ -166,12 +167,20 @@
 
 namespace vnx {
 
+const TypeCode* type<::mmx::Block>::get_type_code() {
+	return mmx::vnx_native_type_code_Block;
+}
+
 void type<::mmx::Block>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Block());
 }
 
 void type<::mmx::Block>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Block& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::BlockHeader>::get_type_code() {
+	return mmx::vnx_native_type_code_BlockHeader;
 }
 
 void type<::mmx::BlockHeader>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -182,12 +191,20 @@ void type<::mmx::BlockHeader>::create_dynamic_code(std::vector<uint16_t>& code, 
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::ChainParams>::get_type_code() {
+	return mmx::vnx_native_type_code_ChainParams;
+}
+
 void type<::mmx::ChainParams>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::ChainParams());
 }
 
 void type<::mmx::ChainParams>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ChainParams& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Challenge>::get_type_code() {
+	return mmx::vnx_native_type_code_Challenge;
 }
 
 void type<::mmx::Challenge>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -198,12 +215,20 @@ void type<::mmx::Challenge>::create_dynamic_code(std::vector<uint16_t>& code, co
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Contract>::get_type_code() {
+	return mmx::vnx_native_type_code_Contract;
+}
+
 void type<::mmx::Contract>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Contract());
 }
 
 void type<::mmx::Contract>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Contract& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::FarmInfo>::get_type_code() {
+	return mmx::vnx_native_type_code_FarmInfo;
 }
 
 void type<::mmx::FarmInfo>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -214,12 +239,20 @@ void type<::mmx::FarmInfo>::create_dynamic_code(std::vector<uint16_t>& code, con
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Farmer_get_farm_info>::get_type_code() {
+	return mmx::vnx_native_type_code_Farmer_get_farm_info;
+}
+
 void type<::mmx::Farmer_get_farm_info>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Farmer_get_farm_info());
 }
 
 void type<::mmx::Farmer_get_farm_info>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_get_farm_info& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Farmer_get_farm_info_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Farmer_get_farm_info_return;
 }
 
 void type<::mmx::Farmer_get_farm_info_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -230,12 +263,20 @@ void type<::mmx::Farmer_get_farm_info_return>::create_dynamic_code(std::vector<u
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Farmer_get_mac_addr>::get_type_code() {
+	return mmx::vnx_native_type_code_Farmer_get_mac_addr;
+}
+
 void type<::mmx::Farmer_get_mac_addr>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Farmer_get_mac_addr());
 }
 
 void type<::mmx::Farmer_get_mac_addr>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_get_mac_addr& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Farmer_get_mac_addr_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Farmer_get_mac_addr_return;
 }
 
 void type<::mmx::Farmer_get_mac_addr_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -246,12 +287,20 @@ void type<::mmx::Farmer_get_mac_addr_return>::create_dynamic_code(std::vector<ui
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Farmer_sign_block>::get_type_code() {
+	return mmx::vnx_native_type_code_Farmer_sign_block;
+}
+
 void type<::mmx::Farmer_sign_block>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Farmer_sign_block());
 }
 
 void type<::mmx::Farmer_sign_block>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_sign_block& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Farmer_sign_block_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Farmer_sign_block_return;
 }
 
 void type<::mmx::Farmer_sign_block_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -262,12 +311,20 @@ void type<::mmx::Farmer_sign_block_return>::create_dynamic_code(std::vector<uint
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::FarmerKeys>::get_type_code() {
+	return mmx::vnx_native_type_code_FarmerKeys;
+}
+
 void type<::mmx::FarmerKeys>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::FarmerKeys());
 }
 
 void type<::mmx::FarmerKeys>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::FarmerKeys& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Harvester_get_farm_info>::get_type_code() {
+	return mmx::vnx_native_type_code_Harvester_get_farm_info;
 }
 
 void type<::mmx::Harvester_get_farm_info>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -278,12 +335,20 @@ void type<::mmx::Harvester_get_farm_info>::create_dynamic_code(std::vector<uint1
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Harvester_get_farm_info_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Harvester_get_farm_info_return;
+}
+
 void type<::mmx::Harvester_get_farm_info_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Harvester_get_farm_info_return());
 }
 
 void type<::mmx::Harvester_get_farm_info_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Harvester_get_farm_info_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Harvester_get_total_bytes>::get_type_code() {
+	return mmx::vnx_native_type_code_Harvester_get_total_bytes;
 }
 
 void type<::mmx::Harvester_get_total_bytes>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -294,12 +359,20 @@ void type<::mmx::Harvester_get_total_bytes>::create_dynamic_code(std::vector<uin
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Harvester_get_total_bytes_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Harvester_get_total_bytes_return;
+}
+
 void type<::mmx::Harvester_get_total_bytes_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Harvester_get_total_bytes_return());
 }
 
 void type<::mmx::Harvester_get_total_bytes_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Harvester_get_total_bytes_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Harvester_reload>::get_type_code() {
+	return mmx::vnx_native_type_code_Harvester_reload;
 }
 
 void type<::mmx::Harvester_reload>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -310,12 +383,20 @@ void type<::mmx::Harvester_reload>::create_dynamic_code(std::vector<uint16_t>& c
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Harvester_reload_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Harvester_reload_return;
+}
+
 void type<::mmx::Harvester_reload_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Harvester_reload_return());
 }
 
 void type<::mmx::Harvester_reload_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Harvester_reload_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::IntervalRequest>::get_type_code() {
+	return mmx::vnx_native_type_code_IntervalRequest;
 }
 
 void type<::mmx::IntervalRequest>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -326,12 +407,20 @@ void type<::mmx::IntervalRequest>::create_dynamic_code(std::vector<uint16_t>& co
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::KeyFile>::get_type_code() {
+	return mmx::vnx_native_type_code_KeyFile;
+}
+
 void type<::mmx::KeyFile>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::KeyFile());
 }
 
 void type<::mmx::KeyFile>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::KeyFile& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_add_block>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_add_block;
 }
 
 void type<::mmx::Node_add_block>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -342,12 +431,20 @@ void type<::mmx::Node_add_block>::create_dynamic_code(std::vector<uint16_t>& cod
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_add_block_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_add_block_return;
+}
+
 void type<::mmx::Node_add_block_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_add_block_return());
 }
 
 void type<::mmx::Node_add_block_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_add_block_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_add_transaction>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_add_transaction;
 }
 
 void type<::mmx::Node_add_transaction>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -358,12 +455,20 @@ void type<::mmx::Node_add_transaction>::create_dynamic_code(std::vector<uint16_t
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_add_transaction_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_add_transaction_return;
+}
+
 void type<::mmx::Node_add_transaction_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_add_transaction_return());
 }
 
 void type<::mmx::Node_add_transaction_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_add_transaction_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_balance>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_balance;
 }
 
 void type<::mmx::Node_get_balance>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -374,12 +479,20 @@ void type<::mmx::Node_get_balance>::create_dynamic_code(std::vector<uint16_t>& c
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_get_balance_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_balance_return;
+}
+
 void type<::mmx::Node_get_balance_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_get_balance_return());
 }
 
 void type<::mmx::Node_get_balance_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_balance_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_block>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_block;
 }
 
 void type<::mmx::Node_get_block>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -390,12 +503,20 @@ void type<::mmx::Node_get_block>::create_dynamic_code(std::vector<uint16_t>& cod
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_get_block_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_block_return;
+}
+
 void type<::mmx::Node_get_block_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_get_block_return());
 }
 
 void type<::mmx::Node_get_block_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_block_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_block_at>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_block_at;
 }
 
 void type<::mmx::Node_get_block_at>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -406,12 +527,20 @@ void type<::mmx::Node_get_block_at>::create_dynamic_code(std::vector<uint16_t>& 
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_get_block_at_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_block_at_return;
+}
+
 void type<::mmx::Node_get_block_at_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_get_block_at_return());
 }
 
 void type<::mmx::Node_get_block_at_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_block_at_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_block_hash>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_block_hash;
 }
 
 void type<::mmx::Node_get_block_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -422,12 +551,20 @@ void type<::mmx::Node_get_block_hash>::create_dynamic_code(std::vector<uint16_t>
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_get_block_hash_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_block_hash_return;
+}
+
 void type<::mmx::Node_get_block_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_get_block_hash_return());
 }
 
 void type<::mmx::Node_get_block_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_block_hash_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_contract>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_contract;
 }
 
 void type<::mmx::Node_get_contract>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -438,12 +575,20 @@ void type<::mmx::Node_get_contract>::create_dynamic_code(std::vector<uint16_t>& 
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_get_contract_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_contract_return;
+}
+
 void type<::mmx::Node_get_contract_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_get_contract_return());
 }
 
 void type<::mmx::Node_get_contract_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_contract_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_header>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_header;
 }
 
 void type<::mmx::Node_get_header>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -454,12 +599,20 @@ void type<::mmx::Node_get_header>::create_dynamic_code(std::vector<uint16_t>& co
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_get_header_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_header_return;
+}
+
 void type<::mmx::Node_get_header_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_get_header_return());
 }
 
 void type<::mmx::Node_get_header_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_header_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_header_at>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_header_at;
 }
 
 void type<::mmx::Node_get_header_at>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -470,12 +623,20 @@ void type<::mmx::Node_get_header_at>::create_dynamic_code(std::vector<uint16_t>&
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_get_header_at_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_header_at_return;
+}
+
 void type<::mmx::Node_get_header_at_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_get_header_at_return());
 }
 
 void type<::mmx::Node_get_header_at_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_header_at_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_height>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_height;
 }
 
 void type<::mmx::Node_get_height>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -486,12 +647,20 @@ void type<::mmx::Node_get_height>::create_dynamic_code(std::vector<uint16_t>& co
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_get_height_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_height_return;
+}
+
 void type<::mmx::Node_get_height_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_get_height_return());
 }
 
 void type<::mmx::Node_get_height_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_height_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_history_for>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_history_for;
 }
 
 void type<::mmx::Node_get_history_for>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -502,12 +671,20 @@ void type<::mmx::Node_get_history_for>::create_dynamic_code(std::vector<uint16_t
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_get_history_for_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_history_for_return;
+}
+
 void type<::mmx::Node_get_history_for_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_get_history_for_return());
 }
 
 void type<::mmx::Node_get_history_for_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_history_for_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_params>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_params;
 }
 
 void type<::mmx::Node_get_params>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -518,12 +695,20 @@ void type<::mmx::Node_get_params>::create_dynamic_code(std::vector<uint16_t>& co
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_get_params_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_params_return;
+}
+
 void type<::mmx::Node_get_params_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_get_params_return());
 }
 
 void type<::mmx::Node_get_params_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_params_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_stxo_list>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_stxo_list;
 }
 
 void type<::mmx::Node_get_stxo_list>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -534,12 +719,20 @@ void type<::mmx::Node_get_stxo_list>::create_dynamic_code(std::vector<uint16_t>&
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_get_stxo_list_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_stxo_list_return;
+}
+
 void type<::mmx::Node_get_stxo_list_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_get_stxo_list_return());
 }
 
 void type<::mmx::Node_get_stxo_list_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_stxo_list_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_synced_height>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_synced_height;
 }
 
 void type<::mmx::Node_get_synced_height>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -550,12 +743,20 @@ void type<::mmx::Node_get_synced_height>::create_dynamic_code(std::vector<uint16
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_get_synced_height_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_synced_height_return;
+}
+
 void type<::mmx::Node_get_synced_height_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_get_synced_height_return());
 }
 
 void type<::mmx::Node_get_synced_height_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_synced_height_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_total_balance>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_total_balance;
 }
 
 void type<::mmx::Node_get_total_balance>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -566,12 +767,20 @@ void type<::mmx::Node_get_total_balance>::create_dynamic_code(std::vector<uint16
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_get_total_balance_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_total_balance_return;
+}
+
 void type<::mmx::Node_get_total_balance_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_get_total_balance_return());
 }
 
 void type<::mmx::Node_get_total_balance_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_total_balance_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_total_supply>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_total_supply;
 }
 
 void type<::mmx::Node_get_total_supply>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -582,12 +791,20 @@ void type<::mmx::Node_get_total_supply>::create_dynamic_code(std::vector<uint16_
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_get_total_supply_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_total_supply_return;
+}
+
 void type<::mmx::Node_get_total_supply_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_get_total_supply_return());
 }
 
 void type<::mmx::Node_get_total_supply_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_total_supply_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_transaction>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_transaction;
 }
 
 void type<::mmx::Node_get_transaction>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -598,12 +815,20 @@ void type<::mmx::Node_get_transaction>::create_dynamic_code(std::vector<uint16_t
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_get_transaction_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_transaction_return;
+}
+
 void type<::mmx::Node_get_transaction_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_get_transaction_return());
 }
 
 void type<::mmx::Node_get_transaction_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_transaction_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_transactions>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_transactions;
 }
 
 void type<::mmx::Node_get_transactions>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -614,12 +839,20 @@ void type<::mmx::Node_get_transactions>::create_dynamic_code(std::vector<uint16_
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_get_transactions_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_transactions_return;
+}
+
 void type<::mmx::Node_get_transactions_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_get_transactions_return());
 }
 
 void type<::mmx::Node_get_transactions_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_transactions_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_tx_height>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_tx_height;
 }
 
 void type<::mmx::Node_get_tx_height>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -630,12 +863,20 @@ void type<::mmx::Node_get_tx_height>::create_dynamic_code(std::vector<uint16_t>&
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_get_tx_height_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_tx_height_return;
+}
+
 void type<::mmx::Node_get_tx_height_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_get_tx_height_return());
 }
 
 void type<::mmx::Node_get_tx_height_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_tx_height_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_tx_ids_at>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_tx_ids_at;
 }
 
 void type<::mmx::Node_get_tx_ids_at>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -646,12 +887,20 @@ void type<::mmx::Node_get_tx_ids_at>::create_dynamic_code(std::vector<uint16_t>&
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_get_tx_ids_at_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_tx_ids_at_return;
+}
+
 void type<::mmx::Node_get_tx_ids_at_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_get_tx_ids_at_return());
 }
 
 void type<::mmx::Node_get_tx_ids_at_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_tx_ids_at_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_txo_info>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_txo_info;
 }
 
 void type<::mmx::Node_get_txo_info>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -662,12 +911,20 @@ void type<::mmx::Node_get_txo_info>::create_dynamic_code(std::vector<uint16_t>& 
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_get_txo_info_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_txo_info_return;
+}
+
 void type<::mmx::Node_get_txo_info_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_get_txo_info_return());
 }
 
 void type<::mmx::Node_get_txo_info_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_txo_info_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_txo_infos>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_txo_infos;
 }
 
 void type<::mmx::Node_get_txo_infos>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -678,12 +935,20 @@ void type<::mmx::Node_get_txo_infos>::create_dynamic_code(std::vector<uint16_t>&
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_get_txo_infos_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_txo_infos_return;
+}
+
 void type<::mmx::Node_get_txo_infos_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_get_txo_infos_return());
 }
 
 void type<::mmx::Node_get_txo_infos_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_txo_infos_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_utxo_list>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_utxo_list;
 }
 
 void type<::mmx::Node_get_utxo_list>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -694,12 +959,20 @@ void type<::mmx::Node_get_utxo_list>::create_dynamic_code(std::vector<uint16_t>&
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_get_utxo_list_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_utxo_list_return;
+}
+
 void type<::mmx::Node_get_utxo_list_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_get_utxo_list_return());
 }
 
 void type<::mmx::Node_get_utxo_list_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_utxo_list_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_start_sync>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_start_sync;
 }
 
 void type<::mmx::Node_start_sync>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -710,12 +983,20 @@ void type<::mmx::Node_start_sync>::create_dynamic_code(std::vector<uint16_t>& co
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_start_sync_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_start_sync_return;
+}
+
 void type<::mmx::Node_start_sync_return>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Node_start_sync_return());
 }
 
 void type<::mmx::Node_start_sync_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_start_sync_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Operation>::get_type_code() {
+	return mmx::vnx_native_type_code_Operation;
 }
 
 void type<::mmx::Operation>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -726,12 +1007,20 @@ void type<::mmx::Operation>::create_dynamic_code(std::vector<uint16_t>& code, co
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::PeerInfo>::get_type_code() {
+	return mmx::vnx_native_type_code_PeerInfo;
+}
+
 void type<::mmx::PeerInfo>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::PeerInfo());
 }
 
 void type<::mmx::PeerInfo>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::PeerInfo& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::ProofOfSpace>::get_type_code() {
+	return mmx::vnx_native_type_code_ProofOfSpace;
 }
 
 void type<::mmx::ProofOfSpace>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -742,12 +1031,20 @@ void type<::mmx::ProofOfSpace>::create_dynamic_code(std::vector<uint16_t>& code,
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::ProofOfTime>::get_type_code() {
+	return mmx::vnx_native_type_code_ProofOfTime;
+}
+
 void type<::mmx::ProofOfTime>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::ProofOfTime());
 }
 
 void type<::mmx::ProofOfTime>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofOfTime& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::ProofResponse>::get_type_code() {
+	return mmx::vnx_native_type_code_ProofResponse;
 }
 
 void type<::mmx::ProofResponse>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -758,12 +1055,20 @@ void type<::mmx::ProofResponse>::create_dynamic_code(std::vector<uint16_t>& code
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Request>::get_type_code() {
+	return mmx::vnx_native_type_code_Request;
+}
+
 void type<::mmx::Request>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Request());
 }
 
 void type<::mmx::Request>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Request& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Return>::get_type_code() {
+	return mmx::vnx_native_type_code_Return;
 }
 
 void type<::mmx::Return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -774,12 +1079,20 @@ void type<::mmx::Return>::create_dynamic_code(std::vector<uint16_t>& code, const
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Router_discover>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_discover;
+}
+
 void type<::mmx::Router_discover>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Router_discover());
 }
 
 void type<::mmx::Router_discover>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_discover& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Router_discover_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_discover_return;
 }
 
 void type<::mmx::Router_discover_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -790,12 +1103,20 @@ void type<::mmx::Router_discover_return>::create_dynamic_code(std::vector<uint16
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Router_fetch_block_at>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_fetch_block_at;
+}
+
 void type<::mmx::Router_fetch_block_at>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Router_fetch_block_at());
 }
 
 void type<::mmx::Router_fetch_block_at>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_fetch_block_at& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Router_fetch_block_at_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_fetch_block_at_return;
 }
 
 void type<::mmx::Router_fetch_block_at_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -806,12 +1127,20 @@ void type<::mmx::Router_fetch_block_at_return>::create_dynamic_code(std::vector<
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Router_get_blocks_at>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_get_blocks_at;
+}
+
 void type<::mmx::Router_get_blocks_at>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Router_get_blocks_at());
 }
 
 void type<::mmx::Router_get_blocks_at>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_blocks_at& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Router_get_blocks_at_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_get_blocks_at_return;
 }
 
 void type<::mmx::Router_get_blocks_at_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -822,12 +1151,20 @@ void type<::mmx::Router_get_blocks_at_return>::create_dynamic_code(std::vector<u
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Router_get_connected_peers>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_get_connected_peers;
+}
+
 void type<::mmx::Router_get_connected_peers>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Router_get_connected_peers());
 }
 
 void type<::mmx::Router_get_connected_peers>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_connected_peers& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Router_get_connected_peers_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_get_connected_peers_return;
 }
 
 void type<::mmx::Router_get_connected_peers_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -838,12 +1175,20 @@ void type<::mmx::Router_get_connected_peers_return>::create_dynamic_code(std::ve
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Router_get_farmer_credits>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_get_farmer_credits;
+}
+
 void type<::mmx::Router_get_farmer_credits>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Router_get_farmer_credits());
 }
 
 void type<::mmx::Router_get_farmer_credits>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_farmer_credits& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Router_get_farmer_credits_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_get_farmer_credits_return;
 }
 
 void type<::mmx::Router_get_farmer_credits_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -854,12 +1199,20 @@ void type<::mmx::Router_get_farmer_credits_return>::create_dynamic_code(std::vec
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Router_get_id>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_get_id;
+}
+
 void type<::mmx::Router_get_id>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Router_get_id());
 }
 
 void type<::mmx::Router_get_id>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_id& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Router_get_id_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_get_id_return;
 }
 
 void type<::mmx::Router_get_id_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -870,12 +1223,20 @@ void type<::mmx::Router_get_id_return>::create_dynamic_code(std::vector<uint16_t
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Router_get_info>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_get_info;
+}
+
 void type<::mmx::Router_get_info>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Router_get_info());
 }
 
 void type<::mmx::Router_get_info>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_info& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Router_get_info_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_get_info_return;
 }
 
 void type<::mmx::Router_get_info_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -886,12 +1247,20 @@ void type<::mmx::Router_get_info_return>::create_dynamic_code(std::vector<uint16
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Router_get_known_peers>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_get_known_peers;
+}
+
 void type<::mmx::Router_get_known_peers>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Router_get_known_peers());
 }
 
 void type<::mmx::Router_get_known_peers>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_known_peers& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Router_get_known_peers_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_get_known_peers_return;
 }
 
 void type<::mmx::Router_get_known_peers_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -902,12 +1271,20 @@ void type<::mmx::Router_get_known_peers_return>::create_dynamic_code(std::vector
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Router_get_peer_info>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_get_peer_info;
+}
+
 void type<::mmx::Router_get_peer_info>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Router_get_peer_info());
 }
 
 void type<::mmx::Router_get_peer_info>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_peer_info& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Router_get_peer_info_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_get_peer_info_return;
 }
 
 void type<::mmx::Router_get_peer_info_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -918,12 +1295,20 @@ void type<::mmx::Router_get_peer_info_return>::create_dynamic_code(std::vector<u
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Router_get_peers>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_get_peers;
+}
+
 void type<::mmx::Router_get_peers>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Router_get_peers());
 }
 
 void type<::mmx::Router_get_peers>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_peers& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Router_get_peers_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_get_peers_return;
 }
 
 void type<::mmx::Router_get_peers_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -934,12 +1319,20 @@ void type<::mmx::Router_get_peers_return>::create_dynamic_code(std::vector<uint1
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Router_sign_msg>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_sign_msg;
+}
+
 void type<::mmx::Router_sign_msg>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Router_sign_msg());
 }
 
 void type<::mmx::Router_sign_msg>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_sign_msg& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Router_sign_msg_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_sign_msg_return;
 }
 
 void type<::mmx::Router_sign_msg_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -950,12 +1343,20 @@ void type<::mmx::Router_sign_msg_return>::create_dynamic_code(std::vector<uint16
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Solution>::get_type_code() {
+	return mmx::vnx_native_type_code_Solution;
+}
+
 void type<::mmx::Solution>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Solution());
 }
 
 void type<::mmx::Solution>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Solution& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::TimeInfusion>::get_type_code() {
+	return mmx::vnx_native_type_code_TimeInfusion;
 }
 
 void type<::mmx::TimeInfusion>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -966,12 +1367,20 @@ void type<::mmx::TimeInfusion>::create_dynamic_code(std::vector<uint16_t>& code,
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::TimeLord_stop_vdf>::get_type_code() {
+	return mmx::vnx_native_type_code_TimeLord_stop_vdf;
+}
+
 void type<::mmx::TimeLord_stop_vdf>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::TimeLord_stop_vdf());
 }
 
 void type<::mmx::TimeLord_stop_vdf>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::TimeLord_stop_vdf& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::TimeLord_stop_vdf_return>::get_type_code() {
+	return mmx::vnx_native_type_code_TimeLord_stop_vdf_return;
 }
 
 void type<::mmx::TimeLord_stop_vdf_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -982,12 +1391,20 @@ void type<::mmx::TimeLord_stop_vdf_return>::create_dynamic_code(std::vector<uint
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Transaction>::get_type_code() {
+	return mmx::vnx_native_type_code_Transaction;
+}
+
 void type<::mmx::Transaction>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Transaction());
 }
 
 void type<::mmx::Transaction>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Transaction& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::TransactionBase>::get_type_code() {
+	return mmx::vnx_native_type_code_TransactionBase;
 }
 
 void type<::mmx::TransactionBase>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -998,12 +1415,20 @@ void type<::mmx::TransactionBase>::create_dynamic_code(std::vector<uint16_t>& co
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Wallet_get_address>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_address;
+}
+
 void type<::mmx::Wallet_get_address>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Wallet_get_address());
 }
 
 void type<::mmx::Wallet_get_address>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_address& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Wallet_get_address_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_address_return;
 }
 
 void type<::mmx::Wallet_get_address_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -1014,12 +1439,20 @@ void type<::mmx::Wallet_get_address_return>::create_dynamic_code(std::vector<uin
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Wallet_get_all_addresses>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_all_addresses;
+}
+
 void type<::mmx::Wallet_get_all_addresses>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Wallet_get_all_addresses());
 }
 
 void type<::mmx::Wallet_get_all_addresses>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_all_addresses& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Wallet_get_all_addresses_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_all_addresses_return;
 }
 
 void type<::mmx::Wallet_get_all_addresses_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -1030,12 +1463,20 @@ void type<::mmx::Wallet_get_all_addresses_return>::create_dynamic_code(std::vect
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Wallet_get_all_farmer_keys>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_all_farmer_keys;
+}
+
 void type<::mmx::Wallet_get_all_farmer_keys>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Wallet_get_all_farmer_keys());
 }
 
 void type<::mmx::Wallet_get_all_farmer_keys>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_all_farmer_keys& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Wallet_get_all_farmer_keys_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_all_farmer_keys_return;
 }
 
 void type<::mmx::Wallet_get_all_farmer_keys_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -1046,12 +1487,20 @@ void type<::mmx::Wallet_get_all_farmer_keys_return>::create_dynamic_code(std::ve
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Wallet_get_balance>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_balance;
+}
+
 void type<::mmx::Wallet_get_balance>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Wallet_get_balance());
 }
 
 void type<::mmx::Wallet_get_balance>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_balance& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Wallet_get_balance_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_balance_return;
 }
 
 void type<::mmx::Wallet_get_balance_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -1062,12 +1511,20 @@ void type<::mmx::Wallet_get_balance_return>::create_dynamic_code(std::vector<uin
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Wallet_get_farmer_keys>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_farmer_keys;
+}
+
 void type<::mmx::Wallet_get_farmer_keys>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Wallet_get_farmer_keys());
 }
 
 void type<::mmx::Wallet_get_farmer_keys>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_farmer_keys& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Wallet_get_farmer_keys_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_farmer_keys_return;
 }
 
 void type<::mmx::Wallet_get_farmer_keys_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -1078,12 +1535,20 @@ void type<::mmx::Wallet_get_farmer_keys_return>::create_dynamic_code(std::vector
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Wallet_get_history>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_history;
+}
+
 void type<::mmx::Wallet_get_history>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Wallet_get_history());
 }
 
 void type<::mmx::Wallet_get_history>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_history& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Wallet_get_history_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_history_return;
 }
 
 void type<::mmx::Wallet_get_history_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -1094,12 +1559,20 @@ void type<::mmx::Wallet_get_history_return>::create_dynamic_code(std::vector<uin
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Wallet_get_master_seed>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_master_seed;
+}
+
 void type<::mmx::Wallet_get_master_seed>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Wallet_get_master_seed());
 }
 
 void type<::mmx::Wallet_get_master_seed>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_master_seed& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Wallet_get_master_seed_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_master_seed_return;
 }
 
 void type<::mmx::Wallet_get_master_seed_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -1110,12 +1583,20 @@ void type<::mmx::Wallet_get_master_seed_return>::create_dynamic_code(std::vector
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Wallet_get_stxo_list>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_stxo_list;
+}
+
 void type<::mmx::Wallet_get_stxo_list>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Wallet_get_stxo_list());
 }
 
 void type<::mmx::Wallet_get_stxo_list>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_stxo_list& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Wallet_get_stxo_list_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_stxo_list_return;
 }
 
 void type<::mmx::Wallet_get_stxo_list_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -1126,12 +1607,20 @@ void type<::mmx::Wallet_get_stxo_list_return>::create_dynamic_code(std::vector<u
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Wallet_get_stxo_list_for>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_stxo_list_for;
+}
+
 void type<::mmx::Wallet_get_stxo_list_for>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Wallet_get_stxo_list_for());
 }
 
 void type<::mmx::Wallet_get_stxo_list_for>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_stxo_list_for& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Wallet_get_stxo_list_for_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_stxo_list_for_return;
 }
 
 void type<::mmx::Wallet_get_stxo_list_for_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -1142,12 +1631,20 @@ void type<::mmx::Wallet_get_stxo_list_for_return>::create_dynamic_code(std::vect
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Wallet_get_utxo_list>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_utxo_list;
+}
+
 void type<::mmx::Wallet_get_utxo_list>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Wallet_get_utxo_list());
 }
 
 void type<::mmx::Wallet_get_utxo_list>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_utxo_list& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Wallet_get_utxo_list_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_utxo_list_return;
 }
 
 void type<::mmx::Wallet_get_utxo_list_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -1158,12 +1655,20 @@ void type<::mmx::Wallet_get_utxo_list_return>::create_dynamic_code(std::vector<u
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Wallet_get_utxo_list_for>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_utxo_list_for;
+}
+
 void type<::mmx::Wallet_get_utxo_list_for>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Wallet_get_utxo_list_for());
 }
 
 void type<::mmx::Wallet_get_utxo_list_for>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_utxo_list_for& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Wallet_get_utxo_list_for_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_utxo_list_for_return;
 }
 
 void type<::mmx::Wallet_get_utxo_list_for_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -1174,12 +1679,20 @@ void type<::mmx::Wallet_get_utxo_list_for_return>::create_dynamic_code(std::vect
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Wallet_send>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_send;
+}
+
 void type<::mmx::Wallet_send>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::Wallet_send());
 }
 
 void type<::mmx::Wallet_send>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_send& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Wallet_send_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_send_return;
 }
 
 void type<::mmx::Wallet_send_return>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -1190,6 +1703,10 @@ void type<::mmx::Wallet_send_return>::create_dynamic_code(std::vector<uint16_t>&
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::addr_t>::get_type_code() {
+	return nullptr;
+}
+
 void type<::mmx::addr_t>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::addr_t());
 }
@@ -1197,6 +1714,10 @@ void type<::mmx::addr_t>::create_dynamic_code(std::vector<uint16_t>& code) {
 void type<::mmx::addr_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::addr_t& value, bool special) {
 	const std::vector<int> tmp = {11, 32, 1};
 	code.insert(code.end(), tmp.begin(), tmp.end());}
+
+const TypeCode* type<::mmx::bls_pubkey_t>::get_type_code() {
+	return nullptr;
+}
 
 void type<::mmx::bls_pubkey_t>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::bls_pubkey_t());
@@ -1206,6 +1727,10 @@ void type<::mmx::bls_pubkey_t>::create_dynamic_code(std::vector<uint16_t>& code,
 	const std::vector<int> tmp = {11, 48, 1};
 	code.insert(code.end(), tmp.begin(), tmp.end());}
 
+const TypeCode* type<::mmx::bls_signature_t>::get_type_code() {
+	return nullptr;
+}
+
 void type<::mmx::bls_signature_t>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::bls_signature_t());
 }
@@ -1213,6 +1738,10 @@ void type<::mmx::bls_signature_t>::create_dynamic_code(std::vector<uint16_t>& co
 void type<::mmx::bls_signature_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::bls_signature_t& value, bool special) {
 	const std::vector<int> tmp = {11, 96, 1};
 	code.insert(code.end(), tmp.begin(), tmp.end());}
+
+const TypeCode* type<::mmx::hash_t>::get_type_code() {
+	return nullptr;
+}
 
 void type<::mmx::hash_t>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::hash_t());
@@ -1222,12 +1751,20 @@ void type<::mmx::hash_t>::create_dynamic_code(std::vector<uint16_t>& code, const
 	const std::vector<int> tmp = {11, 32, 1};
 	code.insert(code.end(), tmp.begin(), tmp.end());}
 
+const TypeCode* type<::mmx::node_info_t>::get_type_code() {
+	return mmx::vnx_native_type_code_node_info_t;
+}
+
 void type<::mmx::node_info_t>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::node_info_t());
 }
 
 void type<::mmx::node_info_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::node_info_t& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::node_type_e>::get_type_code() {
+	return mmx::vnx_native_type_code_node_type_e;
 }
 
 void type<::mmx::node_type_e>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -1242,12 +1779,20 @@ void type<::mmx::node_type_e>::create_dynamic_code(std::vector<uint16_t>& code, 
 	}
 }
 
+const TypeCode* type<::mmx::peer_info_t>::get_type_code() {
+	return mmx::vnx_native_type_code_peer_info_t;
+}
+
 void type<::mmx::peer_info_t>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::peer_info_t());
 }
 
 void type<::mmx::peer_info_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::peer_info_t& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::permission_e>::get_type_code() {
+	return mmx::vnx_native_type_code_permission_e;
 }
 
 void type<::mmx::permission_e>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -1262,6 +1807,10 @@ void type<::mmx::permission_e>::create_dynamic_code(std::vector<uint16_t>& code,
 	}
 }
 
+const TypeCode* type<::mmx::pubkey_t>::get_type_code() {
+	return nullptr;
+}
+
 void type<::mmx::pubkey_t>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::pubkey_t());
 }
@@ -1269,6 +1818,10 @@ void type<::mmx::pubkey_t>::create_dynamic_code(std::vector<uint16_t>& code) {
 void type<::mmx::pubkey_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::pubkey_t& value, bool special) {
 	const std::vector<int> tmp = {11, 33, 1};
 	code.insert(code.end(), tmp.begin(), tmp.end());}
+
+const TypeCode* type<::mmx::signature_t>::get_type_code() {
+	return nullptr;
+}
 
 void type<::mmx::signature_t>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::signature_t());
@@ -1278,6 +1831,10 @@ void type<::mmx::signature_t>::create_dynamic_code(std::vector<uint16_t>& code, 
 	const std::vector<int> tmp = {11, 64, 1};
 	code.insert(code.end(), tmp.begin(), tmp.end());}
 
+const TypeCode* type<::mmx::skey_t>::get_type_code() {
+	return nullptr;
+}
+
 void type<::mmx::skey_t>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::skey_t());
 }
@@ -1286,12 +1843,32 @@ void type<::mmx::skey_t>::create_dynamic_code(std::vector<uint16_t>& code, const
 	const std::vector<int> tmp = {11, 32, 1};
 	code.insert(code.end(), tmp.begin(), tmp.end());}
 
+const TypeCode* type<::mmx::stxo_entry_t>::get_type_code() {
+	return mmx::vnx_native_type_code_stxo_entry_t;
+}
+
 void type<::mmx::stxo_entry_t>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::stxo_entry_t());
 }
 
 void type<::mmx::stxo_entry_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::stxo_entry_t& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::stxo_t>::get_type_code() {
+	return mmx::vnx_native_type_code_stxo_t;
+}
+
+void type<::mmx::stxo_t>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::stxo_t());
+}
+
+void type<::mmx::stxo_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::stxo_t& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::time_segment_t>::get_type_code() {
+	return mmx::vnx_native_type_code_time_segment_t;
 }
 
 void type<::mmx::time_segment_t>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -1302,12 +1879,20 @@ void type<::mmx::time_segment_t>::create_dynamic_code(std::vector<uint16_t>& cod
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::tx_entry_t>::get_type_code() {
+	return mmx::vnx_native_type_code_tx_entry_t;
+}
+
 void type<::mmx::tx_entry_t>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::tx_entry_t());
 }
 
 void type<::mmx::tx_entry_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::tx_entry_t& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::tx_in_t>::get_type_code() {
+	return mmx::vnx_native_type_code_tx_in_t;
 }
 
 void type<::mmx::tx_in_t>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -1318,12 +1903,20 @@ void type<::mmx::tx_in_t>::create_dynamic_code(std::vector<uint16_t>& code, cons
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::tx_out_t>::get_type_code() {
+	return mmx::vnx_native_type_code_tx_out_t;
+}
+
 void type<::mmx::tx_out_t>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::tx_out_t());
 }
 
 void type<::mmx::tx_out_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::tx_out_t& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::tx_type_e>::get_type_code() {
+	return mmx::vnx_native_type_code_tx_type_e;
 }
 
 void type<::mmx::tx_type_e>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -1338,12 +1931,20 @@ void type<::mmx::tx_type_e>::create_dynamic_code(std::vector<uint16_t>& code, co
 	}
 }
 
+const TypeCode* type<::mmx::txio_key_t>::get_type_code() {
+	return mmx::vnx_native_type_code_txio_key_t;
+}
+
 void type<::mmx::txio_key_t>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::txio_key_t());
 }
 
 void type<::mmx::txio_key_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::txio_key_t& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::txo_info_t>::get_type_code() {
+	return mmx::vnx_native_type_code_txo_info_t;
 }
 
 void type<::mmx::txo_info_t>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -1354,12 +1955,20 @@ void type<::mmx::txo_info_t>::create_dynamic_code(std::vector<uint16_t>& code, c
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::uint_fraction_t>::get_type_code() {
+	return mmx::vnx_native_type_code_uint_fraction_t;
+}
+
 void type<::mmx::uint_fraction_t>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::uint_fraction_t());
 }
 
 void type<::mmx::uint_fraction_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::uint_fraction_t& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::ulong_fraction_t>::get_type_code() {
+	return mmx::vnx_native_type_code_ulong_fraction_t;
 }
 
 void type<::mmx::ulong_fraction_t>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -1370,12 +1979,20 @@ void type<::mmx::ulong_fraction_t>::create_dynamic_code(std::vector<uint16_t>& c
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::utxo_entry_t>::get_type_code() {
+	return mmx::vnx_native_type_code_utxo_entry_t;
+}
+
 void type<::mmx::utxo_entry_t>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::utxo_entry_t());
 }
 
 void type<::mmx::utxo_entry_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::utxo_entry_t& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::utxo_t>::get_type_code() {
+	return mmx::vnx_native_type_code_utxo_t;
 }
 
 void type<::mmx::utxo_t>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -1533,6 +2150,7 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::peer_info_t::static_create_type_code());
 	vnx::register_type_code(::mmx::permission_e::static_create_type_code());
 	vnx::register_type_code(::mmx::stxo_entry_t::static_create_type_code());
+	vnx::register_type_code(::mmx::stxo_t::static_create_type_code());
 	vnx::register_type_code(::mmx::time_segment_t::static_create_type_code());
 	vnx::register_type_code(::mmx::tx_entry_t::static_create_type_code());
 	vnx::register_type_code(::mmx::tx_in_t::static_create_type_code());
@@ -1691,6 +2309,7 @@ const vnx::TypeCode* const vnx_native_type_code_node_type_e = vnx::get_type_code
 const vnx::TypeCode* const vnx_native_type_code_peer_info_t = vnx::get_type_code(vnx::Hash64(0xce0ff32e89625afbull));
 const vnx::TypeCode* const vnx_native_type_code_permission_e = vnx::get_type_code(vnx::Hash64(0x7d75a3f04c313898ull));
 const vnx::TypeCode* const vnx_native_type_code_stxo_entry_t = vnx::get_type_code(vnx::Hash64(0x7655c1e23969201bull));
+const vnx::TypeCode* const vnx_native_type_code_stxo_t = vnx::get_type_code(vnx::Hash64(0x615a84cdd47c1938ull));
 const vnx::TypeCode* const vnx_native_type_code_time_segment_t = vnx::get_type_code(vnx::Hash64(0x344b7baf0798fe2aull));
 const vnx::TypeCode* const vnx_native_type_code_tx_entry_t = vnx::get_type_code(vnx::Hash64(0x438cda5719015870ull));
 const vnx::TypeCode* const vnx_native_type_code_tx_in_t = vnx::get_type_code(vnx::Hash64(0xd9253957c5a57cd5ull));

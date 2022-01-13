@@ -13,12 +13,20 @@
 
 namespace vnx {
 
+const TypeCode* type<::mmx::operation::Delegate>::get_type_code() {
+	return mmx::operation::vnx_native_type_code_Delegate;
+}
+
 void type<::mmx::operation::Delegate>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::operation::Delegate());
 }
 
 void type<::mmx::operation::Delegate>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Delegate& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::operation::Deploy>::get_type_code() {
+	return mmx::operation::vnx_native_type_code_Deploy;
 }
 
 void type<::mmx::operation::Deploy>::create_dynamic_code(std::vector<uint16_t>& code) {
@@ -29,12 +37,20 @@ void type<::mmx::operation::Deploy>::create_dynamic_code(std::vector<uint16_t>& 
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::operation::Mint>::get_type_code() {
+	return mmx::operation::vnx_native_type_code_Mint;
+}
+
 void type<::mmx::operation::Mint>::create_dynamic_code(std::vector<uint16_t>& code) {
 	create_dynamic_code(code, ::mmx::operation::Mint());
 }
 
 void type<::mmx::operation::Mint>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Mint& value, bool special) {
 	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::operation::Transfer>::get_type_code() {
+	return mmx::operation::vnx_native_type_code_Transfer;
 }
 
 void type<::mmx::operation::Transfer>::create_dynamic_code(std::vector<uint16_t>& code) {
