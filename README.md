@@ -271,7 +271,7 @@ mmx wallet keys [-j index]
 
 The node needs to be running for this command to work. (`-j` to specify the index of a non-default wallet)
 
-Then use the latest version of my plotter with `-x 11337` argument: https://github.com/madMAx43v3r/chia-plotter
+Then use the latest version of my plotter with `-x 11337` argument: https://github.com/madMAx43v3r/chia-plotter \
 For windows: https://github.com/MMX-World/mmx-plotter/releases/tag/v0.0.1
 
 It will show the following output at the beginning to confirm the new plot format (from testnet3 onwards):
