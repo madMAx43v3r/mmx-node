@@ -27,7 +27,6 @@ public:
 	int64_t last_utxo_update = 0;
 	std::vector<utxo_entry_t> utxo_cache;
 	std::unordered_set<txio_key_t> spent_txo_set;
-	std::unordered_map<txio_key_t, addr_t> addr_map;
 	std::unordered_map<txio_key_t, tx_out_t> utxo_change_cache;
 
 	ECDSA_Wallet(std::shared_ptr<const KeyFile> key_file, std::shared_ptr<const ChainParams> params, size_t num_addresses)
@@ -126,12 +125,6 @@ public:
 			utxo_cache.push_back(utxo_entry_t::create_ex(entry.first, utxo_t::create_ex(entry.second)));
 		}
 
-		// create lookup map
-		addr_map.clear();
-		for(const auto& entry : utxo_cache) {
-			addr_map[entry.key] = entry.output.address;
-		}
-
 		// sort by height, such as to use oldest coins first (which are more likely to be spend-able right now)
 		std::sort(utxo_cache.begin(), utxo_cache.end(),
 			[](const utxo_entry_t& lhs, const utxo_entry_t& rhs) -> bool {
@@ -167,7 +160,7 @@ public:
 	}
 
 	uint64_t gather_inputs(	std::shared_ptr<Transaction> tx,
-							std::unordered_set<txio_key_t>& tmp_spent_txo,
+							std::unordered_map<txio_key_t, addr_t>& spent_map,
 							uint64_t amount, const addr_t& contract)
 	{
 		uint64_t change = 0;
@@ -181,7 +174,7 @@ public:
 				continue;
 			}
 			const auto& key = entry.key;
-			if(tmp_spent_txo.count(key) || spent_txo_set.count(key)) {
+			if(spent_map.count(key) || spent_txo_set.count(key)) {
 				continue;
 			}
 			if(out.amount > amount) {
@@ -193,7 +186,7 @@ public:
 			tx_in_t in;
 			in.prev = key;
 			tx->inputs.push_back(in);
-			tmp_spent_txo.insert(key);
+			spent_map.emplace(key, out.address);
 		}
 		if(amount != 0) {
 			throw std::logic_error("not enough funds");
@@ -212,9 +205,9 @@ public:
 			out.amount = amount;
 			tx->outputs.push_back(out);
 		}
-		std::unordered_set<txio_key_t> tmp_spent_txo;
+		std::unordered_map<txio_key_t, addr_t> spent_map;
 
-		uint64_t change = gather_inputs(tx, tmp_spent_txo, amount, contract);
+		uint64_t change = gather_inputs(tx, spent_map, amount, contract);
 
 		if(contract != addr_t() && change > 0) {
 			// token change cannot be used as tx fee
@@ -232,8 +225,8 @@ public:
 			// count number of solutions needed
 			std::unordered_set<addr_t> used_addr;
 			for(const auto& in : tx->inputs) {
-				auto iter = addr_map.find(in.prev);
-				if(iter == addr_map.end()) {
+				auto iter = spent_map.find(in.prev);
+				if(iter == spent_map.end()) {
 					throw std::logic_error("cannot sign input");
 				}
 				used_addr.insert(iter->second);
@@ -258,7 +251,7 @@ public:
 			}
 			// gather more
 			const auto left = tx_fees - change;
-			change += gather_inputs(tx, tmp_spent_txo, left, addr_t());
+			change += gather_inputs(tx, spent_map, left, addr_t());
 			change += left;
 		}
 		tx->finalize();
@@ -268,8 +261,8 @@ public:
 		for(auto& in : tx->inputs)
 		{
 			// sign all inputs
-			auto iter = addr_map.find(in.prev);
-			if(iter == addr_map.end()) {
+			auto iter = spent_map.find(in.prev);
+			if(iter == spent_map.end()) {
 				throw std::logic_error("cannot sign input");
 			}
 			auto iter2 = solution_map.find(iter->second);
