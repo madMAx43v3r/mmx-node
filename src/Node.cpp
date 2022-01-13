@@ -63,6 +63,12 @@ void Node::main()
 	add_async_client(router);
 	add_async_client(http);
 
+	vnx::Directory(storage_path + "db").create();
+	stxo_index.open(storage_path + "db/stxo_index");
+	saddr_map.open(storage_path + "db/saddr_map");
+	stxo_index.truncate();
+	saddr_map.truncate();
+
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
 
 	if(block_chain->exists()) {
@@ -258,11 +264,11 @@ vnx::optional<txo_info_t> Node::get_txo_info(const txio_key_t& key) const
 		}
 	}
 	{
-		auto iter = stxo_index.find(key);
-		if(iter != stxo_index.end()) {
+		stxo_t stxo;
+		if(stxo_index.find(key, stxo)) {
 			txo_info_t info;
-			info.output = iter->second;
-			info.spent = iter->second.spent;
+			info.output = stxo;
+			info.spent = stxo.spent;
 			return info;
 		}
 	}
@@ -582,11 +588,12 @@ std::vector<stxo_entry_t> Node::get_stxo_list(const std::vector<addr_t>& address
 {
 	std::vector<stxo_entry_t> res;
 	for(const auto& addr : addresses) {
-		const auto range = saddr_map.equal_range(addr);
-		for(auto iter = range.first; iter != range.second; ++iter) {
-			auto iter2 = stxo_index.find(iter->second);
-			if(iter2 != stxo_index.end()) {
-				res.push_back(stxo_entry_t::create_ex(iter->second, iter2->second));
+		std::vector<txio_key_t> keys;
+		saddr_map.find(addr, keys);
+		for(const auto& key : keys) {
+			stxo_t stxo;
+			if(stxo_index.find(key, stxo)) {
+				res.push_back(stxo_entry_t::create_ex(key, stxo));
 			}
 		}
 	}
@@ -1656,8 +1663,8 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 
 	for(const auto& entry : log->utxo_removed) {
 		const auto& stxo = entry.second;
-		stxo_index[entry.first] = entry.second;
-		saddr_map.emplace(stxo.address, entry.first);
+		stxo_index.insert(entry.first, entry.second);
+		saddr_map.insert(stxo.address, entry.first);
 		addr_map.erase(std::make_pair(stxo.address, entry.first));
 	}
 	for(const auto& entry : log->utxo_added) {

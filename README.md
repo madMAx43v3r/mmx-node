@@ -297,7 +297,7 @@ Note: OpenCL packages are optional, ie. `ocl-icd-opencl-dev`, etc.
 Ubuntu Linux:
 ```
 sudo apt update
-sudo apt install git cmake build-essential libsecp256k1-dev libsodium-dev zlib1g-dev ocl-icd-opencl-dev clinfo screen
+sudo apt install git cmake build-essential libsecp256k1-dev librocksdb-dev libsodium-dev zlib1g-dev ocl-icd-opencl-dev clinfo screen
 ```
 
 Arch Linux:

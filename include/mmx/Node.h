@@ -17,6 +17,8 @@
 #include <mmx/OCL_VDF.h>
 
 #include <vnx/ThreadPool.h>
+#include <vnx/rocksdb/table.h>
+#include <vnx/rocksdb/multi_table.h>
 #include <vnx/addons/HttpInterface.h>
 
 
@@ -227,8 +229,8 @@ private:
 	std::list<std::shared_ptr<const change_log_t>> change_log;
 
 	std::unordered_map<hash_t, uint32_t> hash_index;								// [block hash => height] (finalized only)
-	std::unordered_map<txio_key_t, stxo_t> stxo_index;						// [stxo key => [txi key, stxo]] (finalized + spent only)
-	std::unordered_multimap<addr_t, txio_key_t> saddr_map;							// [addr => stxo key] (finalized + spent only)
+	vnx::rocksdb::table<txio_key_t, stxo_t> stxo_index;								// [stxo key => [txi key, stxo]] (finalized + spent only)
+	vnx::rocksdb::multi_table<addr_t, txio_key_t> saddr_map;						// [addr => stxo key] (finalized + spent only)
 
 	std::unordered_map<hash_t, uint32_t> tx_map;									// [txid => height] (pending only)
 	std::unordered_map<txio_key_t, utxo_t> utxo_map;								// [utxo key => utxo]

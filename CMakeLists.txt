@@ -13,6 +13,7 @@ set(LIBBECH32_BUILD_RAPIDCHECK OFF CACHE BOOL "LIBBECH32_BUILD_RAPIDCHECK")
 
 add_subdirectory(vnx-base)
 add_subdirectory(vnx-addons)
+add_subdirectory(vnx-rocksdb)
 add_subdirectory(libbech32)
 add_subdirectory(bls-signatures)
 
@@ -92,7 +93,7 @@ target_include_directories(mmx_chiapos
 )
 
 target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_addons vnx_base)
-target_link_libraries(mmx_modules mmx_chiapos mmx_iface)
+target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_iface)
 
 if(OpenCL_FOUND)
 	target_link_libraries(mmx_modules automy_basic_opencl)
