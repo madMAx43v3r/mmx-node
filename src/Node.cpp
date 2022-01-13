@@ -112,6 +112,7 @@ void Node::main()
 
 	update_timer = set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
 	stuck_timer = set_timer_millis(sync_loss_delay * 1000, std::bind(&Node::on_stuck_timeout, this));
+	set_timer_millis(60 * 1000, std::bind(&Node::print_stats, this));
 
 	update();
 
@@ -905,7 +906,7 @@ void Node::update()
 			log(INFO) << "New peak at height " << peak->height << " with score " << std::to_string(fork->proof_score)
 					<< (is_synced && forked_at ? ", forked at " + std::to_string(forked_at->height) : "")
 					<< (is_synced && vdf_point ? ", delay " + std::to_string((fork->recv_time - vdf_point->recv_time) / 1e6) + " sec" : "")
-					<< ", took " << elapsed << " sec, " << fork_tree.size() << " blocks";
+					<< ", took " << elapsed << " sec";
 		}
 	}
 
@@ -1239,6 +1240,11 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 			<< ", fees = " << total_fees / pow(10, params->decimals) << " MMX"
 			<< ", took " << elapsed << " sec";
 	return true;
+}
+
+void Node::print_stats()
+{
+	 log(INFO) << tx_pool.size() << " tx, " << utxo_map.size() << " utxo, " << change_log.size() << " / " << fork_tree.size() << " blocks";
 }
 
 void Node::on_stuck_timeout()

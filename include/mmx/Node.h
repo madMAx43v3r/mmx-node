@@ -135,6 +135,8 @@ private:
 
 	void check_vdfs();
 
+	void print_stats();
+
 	void add_fork(std::shared_ptr<fork_t> fork);
 
 	bool add_dummy_block(std::shared_ptr<const BlockHeader> prev);
