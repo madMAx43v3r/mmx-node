@@ -16,7 +16,7 @@ namespace mmx {
 
 
 const vnx::Hash64 BlockHeader::VNX_TYPE_HASH(0xcaae941a2fc712a6ull);
-const vnx::Hash64 BlockHeader::VNX_CODE_HASH(0x933c3ac3360fedabull);
+const vnx::Hash64 BlockHeader::VNX_CODE_HASH(0xdcb1c8902c4107d9ull);
 
 vnx::Hash64 BlockHeader::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -60,8 +60,7 @@ void BlockHeader::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, tx_base);
 	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, tx_count);
 	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, tx_hash);
-	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, pool_sig);
-	_visitor.type_field(_type_code->fields[12], 12); vnx::accept(_visitor, farmer_sig);
+	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, farmer_sig);
 	_visitor.type_end(*_type_code);
 }
 
@@ -78,7 +77,6 @@ void BlockHeader::write(std::ostream& _out) const {
 	_out << ", \"tx_base\": "; vnx::write(_out, tx_base);
 	_out << ", \"tx_count\": "; vnx::write(_out, tx_count);
 	_out << ", \"tx_hash\": "; vnx::write(_out, tx_hash);
-	_out << ", \"pool_sig\": "; vnx::write(_out, pool_sig);
 	_out << ", \"farmer_sig\": "; vnx::write(_out, farmer_sig);
 	_out << "}";
 }
@@ -103,7 +101,6 @@ vnx::Object BlockHeader::to_object() const {
 	_object["tx_base"] = tx_base;
 	_object["tx_count"] = tx_count;
 	_object["tx_hash"] = tx_hash;
-	_object["pool_sig"] = pool_sig;
 	_object["farmer_sig"] = farmer_sig;
 	return _object;
 }
@@ -116,8 +113,6 @@ void BlockHeader::from_object(const vnx::Object& _object) {
 			_entry.second.to(hash);
 		} else if(_entry.first == "height") {
 			_entry.second.to(height);
-		} else if(_entry.first == "pool_sig") {
-			_entry.second.to(pool_sig);
 		} else if(_entry.first == "prev") {
 			_entry.second.to(prev);
 		} else if(_entry.first == "proof") {
@@ -174,9 +169,6 @@ vnx::Variant BlockHeader::get_field(const std::string& _name) const {
 	if(_name == "tx_hash") {
 		return vnx::Variant(tx_hash);
 	}
-	if(_name == "pool_sig") {
-		return vnx::Variant(pool_sig);
-	}
 	if(_name == "farmer_sig") {
 		return vnx::Variant(farmer_sig);
 	}
@@ -206,8 +198,6 @@ void BlockHeader::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(tx_count);
 	} else if(_name == "tx_hash") {
 		_value.to(tx_hash);
-	} else if(_name == "pool_sig") {
-		_value.to(pool_sig);
 	} else if(_name == "farmer_sig") {
 		_value.to(farmer_sig);
 	} else {
@@ -239,12 +229,12 @@ std::shared_ptr<vnx::TypeCode> BlockHeader::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.BlockHeader";
 	type_code->type_hash = vnx::Hash64(0xcaae941a2fc712a6ull);
-	type_code->code_hash = vnx::Hash64(0x933c3ac3360fedabull);
+	type_code->code_hash = vnx::Hash64(0xdcb1c8902c4107d9ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::BlockHeader);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<BlockHeader>(); };
-	type_code->fields.resize(13);
+	type_code->fields.resize(12);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -313,12 +303,6 @@ std::shared_ptr<vnx::TypeCode> BlockHeader::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[11];
-		field.is_extended = true;
-		field.name = "pool_sig";
-		field.code = {33, 11, 96, 1};
-	}
-	{
-		auto& field = type_code->fields[12];
 		field.is_extended = true;
 		field.name = "farmer_sig";
 		field.code = {33, 11, 96, 1};
@@ -389,8 +373,7 @@ void read(TypeInput& in, ::mmx::BlockHeader& value, const TypeCode* type_code, c
 			case 7: vnx::read(in, value.proof, type_code, _field->code.data()); break;
 			case 8: vnx::read(in, value.tx_base, type_code, _field->code.data()); break;
 			case 10: vnx::read(in, value.tx_hash, type_code, _field->code.data()); break;
-			case 11: vnx::read(in, value.pool_sig, type_code, _field->code.data()); break;
-			case 12: vnx::read(in, value.farmer_sig, type_code, _field->code.data()); break;
+			case 11: vnx::read(in, value.farmer_sig, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -421,8 +404,7 @@ void write(TypeOutput& out, const ::mmx::BlockHeader& value, const TypeCode* typ
 	vnx::write(out, value.proof, type_code, type_code->fields[7].code.data());
 	vnx::write(out, value.tx_base, type_code, type_code->fields[8].code.data());
 	vnx::write(out, value.tx_hash, type_code, type_code->fields[10].code.data());
-	vnx::write(out, value.pool_sig, type_code, type_code->fields[11].code.data());
-	vnx::write(out, value.farmer_sig, type_code, type_code->fields[12].code.data());
+	vnx::write(out, value.farmer_sig, type_code, type_code->fields[11].code.data());
 }
 
 void read(std::istream& in, ::mmx::BlockHeader& value) {
