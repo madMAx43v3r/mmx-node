@@ -72,6 +72,8 @@ void Node::main()
 		stxo_index.open(storage_path + "db/stxo_index", options);
 		saddr_map.open(storage_path + "db/saddr_map", options);
 		stxo_log.open(storage_path + "db/stxo_log", options);
+		tx_index.open(storage_path + "db/tx_index", options);
+		tx_log.open(storage_path + "db/tx_log", options);
 	}
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
 
@@ -88,8 +90,7 @@ void Node::main()
 			commit(block);
 		}
 		if(auto peak = get_peak()) {
-			log(INFO) << "Loaded " << peak->height + 1 << " blocks with " << tx_index.size()
-					<< " transactions from disk, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+			log(INFO) << "Loaded " << peak->height + 1 << " blocks from disk, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 		}
 	} else {
 		block_chain->open("wb");
@@ -97,16 +98,30 @@ void Node::main()
 	}
 
 	if(auto peak = get_peak()) {
-		std::vector<txio_key_t> keys;
-		if(stxo_log.find(peak->height + 1, keys, vnx::rocksdb::GREATER_EQUAL)) {
-			for(const auto& key : keys) {
-				stxo_index.erase(key);
+		{
+			std::vector<txio_key_t> keys;
+			if(stxo_log.find(peak->height + 1, keys, vnx::rocksdb::GREATER_EQUAL)) {
+				for(const auto& key : keys) {
+					stxo_index.erase(key);
+				}
+				stxo_index.flush();
+				log(INFO) << "Purged " << keys.size() << " STXO entries";
 			}
-			stxo_index.flush();
-			log(INFO) << "Purged " << keys.size() << " STXO entries";
+			stxo_log.erase_all(peak->height + 1, vnx::rocksdb::GREATER_EQUAL);
+			stxo_log.flush();
 		}
-		stxo_log.erase_all(peak->height + 1, vnx::rocksdb::GREATER_EQUAL);
-		stxo_log.flush();
+		{
+			std::vector<hash_t> keys;
+			if(tx_log.find(peak->height + 1, keys, vnx::rocksdb::GREATER_EQUAL)) {
+				for(const auto& key : keys) {
+					tx_index.erase(key);
+				}
+				tx_index.flush();
+				log(INFO) << "Purged " << keys.size() << " TX entries";
+			}
+			tx_log.erase_all(peak->height + 1, vnx::rocksdb::GREATER_EQUAL);
+			tx_log.flush();
+		}
 	}
 	is_replay = false;
 	is_synced = !do_sync;
@@ -262,9 +277,9 @@ vnx::optional<uint32_t> Node::get_tx_height(const hash_t& id) const
 		}
 	}
 	{
-		auto iter = tx_index.find(id);
-		if(iter != tx_index.end()) {
-			return iter->second.second;
+		std::pair<int64_t, uint32_t> entry;
+		if(tx_index.find(id, entry)) {
+			return entry.second;
 		}
 	}
 	return nullptr;
@@ -319,9 +334,8 @@ std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id) const
 		}
 	}
 	{
-		auto iter = tx_index.find(id);
-		if(iter != tx_index.end()) {
-			const auto& entry = iter->second;
+		std::pair<int64_t, uint32_t> entry;
+		if(tx_index.find(id, entry)) {
 			const auto last_pos = block_chain->get_output_pos();
 			try {
 				block_chain->seek_to(entry.first);
@@ -2279,9 +2293,6 @@ std::shared_ptr<const Block> Node::read_block(bool is_replay, int64_t* file_offs
 				return nullptr;
 			}
 			if(is_replay) {
-				if(auto tx = std::dynamic_pointer_cast<const Transaction>(header->tx_base)) {
-					tx_index[tx->id] = std::make_pair(offset, header->height);
-				}
 				block_index[header->height] = std::make_pair(offset, header->hash);
 			}
 			auto block = Block::create();
@@ -2291,9 +2302,6 @@ std::shared_ptr<const Block> Node::read_block(bool is_replay, int64_t* file_offs
 				if(auto value = vnx::read(in)) {
 					if(auto tx = std::dynamic_pointer_cast<TransactionBase>(value)) {
 						block->tx_list.push_back(tx);
-						if(is_replay && std::dynamic_pointer_cast<Transaction>(value)) {
-							tx_index[tx->id] = std::make_pair(offset, block->height);
-						}
 					}
 				} else {
 					break;
@@ -2313,7 +2321,8 @@ void Node::write_block(std::shared_ptr<const Block> block)
 	auto& out = block_chain->out;
 	const auto offset = out.get_output_pos();
 	if(auto tx = std::dynamic_pointer_cast<const Transaction>(block->tx_base)) {
-		tx_index[tx->id] = std::make_pair(offset, block->height);
+		tx_index.insert(tx->id, std::make_pair(offset, block->height));
+		tx_log.insert(block->height, tx->id);
 	}
 	block_index[block->height] = std::make_pair(offset, block->hash);
 	vnx::write(out, block->get_header());
@@ -2321,11 +2330,15 @@ void Node::write_block(std::shared_ptr<const Block> block)
 	for(const auto& tx : block->tx_list) {
 		const auto offset = out.get_output_pos();
 		if(std::dynamic_pointer_cast<const Transaction>(tx)) {
-			tx_index[tx->id] = std::make_pair(offset, block->height);
+			tx_index.insert(tx->id, std::make_pair(offset, block->height));
+			tx_log.insert(block->height, tx->id);
 		}
 		vnx::write(out, tx);
 	}
 	vnx::write(out, nullptr);
+
+	tx_index.flush();
+	tx_log.flush();
 	block_chain->flush();
 }
 

@@ -233,6 +233,9 @@ private:
 	vnx::rocksdb::multi_table<addr_t, txio_key_t> saddr_map;						// [addr => stxo key] (finalized + spent only)
 	vnx::rocksdb::multi_table<uint32_t, txio_key_t> stxo_log;						// [height => stxo key] (finalized + spent only)
 
+	vnx::rocksdb::table<hash_t, std::pair<int64_t, uint32_t>> tx_index;				// [txid => [file offset, height]]
+	vnx::rocksdb::multi_table<uint32_t, hash_t> tx_log;								// [height => txid]
+
 	std::unordered_map<hash_t, uint32_t> tx_map;									// [txid => height] (pending only)
 	std::unordered_map<txio_key_t, utxo_t> utxo_map;								// [utxo key => utxo]
 	std::set<std::pair<addr_t, txio_key_t>> addr_map;								// [addr => utxo keys] (finalized + unspent only)
@@ -255,7 +258,6 @@ private:
 	bool is_replay = true;
 	bool is_synced = false;
 	std::shared_ptr<vnx::File> block_chain;
-	std::unordered_map<hash_t, std::pair<int64_t, uint32_t>> tx_index;				// [txid => [file offset, height]]
 	std::unordered_map<uint32_t, std::pair<int64_t, hash_t>> block_index;			// [height => [file offset, block hash]]
 
 	uint32_t sync_pos = 0;									// current sync height
