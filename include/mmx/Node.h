@@ -231,6 +231,7 @@ private:
 	std::unordered_map<hash_t, uint32_t> hash_index;								// [block hash => height] (finalized only)
 	vnx::rocksdb::table<txio_key_t, stxo_t> stxo_index;								// [stxo key => [txi key, stxo]] (finalized + spent only)
 	vnx::rocksdb::multi_table<addr_t, txio_key_t> saddr_map;						// [addr => stxo key] (finalized + spent only)
+	vnx::rocksdb::multi_table<uint32_t, txio_key_t> stxo_log;						// [height => stxo key] (finalized + spent only)
 
 	std::unordered_map<hash_t, uint32_t> tx_map;									// [txid => height] (pending only)
 	std::unordered_map<txio_key_t, utxo_t> utxo_map;								// [utxo key => utxo]

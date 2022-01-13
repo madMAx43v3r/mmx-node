@@ -64,11 +64,15 @@ void Node::main()
 	add_async_client(http);
 
 	vnx::Directory(storage_path + "db").create();
-	stxo_index.open(storage_path + "db/stxo_index");
-	saddr_map.open(storage_path + "db/saddr_map");
-	stxo_index.truncate();
-	saddr_map.truncate();
+	{
+		::rocksdb::Options options;
+		options.keep_log_file_num = 3;
+		options.max_manifest_file_size = 64 * 1024 * 1024;
 
+		stxo_index.open(storage_path + "db/stxo_index", options);
+		saddr_map.open(storage_path + "db/saddr_map", options);
+		stxo_log.open(storage_path + "db/stxo_log", options);
+	}
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
 
 	if(block_chain->exists()) {
@@ -90,6 +94,19 @@ void Node::main()
 	} else {
 		block_chain->open("wb");
 		block_chain->open("rb+");
+	}
+
+	if(auto peak = get_peak()) {
+		std::vector<txio_key_t> keys;
+		if(stxo_log.find(peak->height + 1, keys, vnx::rocksdb::GREATER_EQUAL)) {
+			for(const auto& key : keys) {
+				stxo_index.erase(key);
+			}
+			stxo_index.flush();
+			log(INFO) << "Purged " << keys.size() << " STXO entries";
+		}
+		stxo_log.erase_all(peak->height + 1, vnx::rocksdb::GREATER_EQUAL);
+		stxo_log.flush();
 	}
 	is_replay = false;
 	is_synced = !do_sync;
@@ -590,7 +607,7 @@ std::vector<stxo_entry_t> Node::get_stxo_list(const std::vector<addr_t>& address
 	for(const auto& addr : addresses) {
 		std::vector<txio_key_t> keys;
 		saddr_map.find(addr, keys);
-		for(const auto& key : keys) {
+		for(const auto& key : std::unordered_set<txio_key_t>(keys.begin(), keys.end())) {
 			stxo_t stxo;
 			if(stxo_index.find(key, stxo)) {
 				res.push_back(stxo_entry_t::create_ex(key, stxo));
@@ -1663,8 +1680,11 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 
 	for(const auto& entry : log->utxo_removed) {
 		const auto& stxo = entry.second;
-		stxo_index.insert(entry.first, entry.second);
-		saddr_map.insert(stxo.address, entry.first);
+		if(!is_replay) {
+			stxo_index.insert(entry.first, entry.second);
+			saddr_map.insert(stxo.address, entry.first);
+			stxo_log.insert(block->height, entry.first);
+		}
 		addr_map.erase(std::make_pair(stxo.address, entry.first));
 	}
 	for(const auto& entry : log->utxo_added) {
@@ -1700,6 +1720,9 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	change_log.pop_front();
 
 	if(!is_replay) {
+		stxo_index.flush();
+		saddr_map.flush();
+		stxo_log.flush();
 		write_block(block);
 	}
 	while(history.size() > max_history) {
