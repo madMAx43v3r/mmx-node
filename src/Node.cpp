@@ -98,28 +98,29 @@ void Node::main()
 	}
 
 	if(auto peak = get_peak()) {
+		const auto next_height = peak->height + 1;
 		{
 			std::vector<txio_key_t> keys;
-			if(stxo_log.find(peak->height + 1, keys, vnx::rocksdb::GREATER_EQUAL)) {
+			if(stxo_log.find(next_height, keys, vnx::rocksdb::GREATER_EQUAL)) {
 				for(const auto& key : keys) {
 					stxo_index.erase(key);
 				}
 				stxo_index.flush();
 				log(INFO) << "Purged " << keys.size() << " STXO entries";
 			}
-			stxo_log.erase_all(peak->height + 1, vnx::rocksdb::GREATER_EQUAL);
+			stxo_log.erase_all(next_height, vnx::rocksdb::GREATER_EQUAL);
 			stxo_log.flush();
 		}
 		{
 			std::vector<hash_t> keys;
-			if(tx_log.find(peak->height + 1, keys, vnx::rocksdb::GREATER_EQUAL)) {
+			if(tx_log.find(next_height, keys, vnx::rocksdb::GREATER_EQUAL)) {
 				for(const auto& key : keys) {
 					tx_index.erase(key);
 				}
 				tx_index.flush();
 				log(INFO) << "Purged " << keys.size() << " TX entries";
 			}
-			tx_log.erase_all(peak->height + 1, vnx::rocksdb::GREATER_EQUAL);
+			tx_log.erase_all(next_height, vnx::rocksdb::GREATER_EQUAL);
 			tx_log.flush();
 		}
 	}
@@ -2298,7 +2299,6 @@ std::shared_ptr<const Block> Node::read_block(bool is_replay, int64_t* file_offs
 			auto block = Block::create();
 			block->BlockHeader::operator=(*header);
 			while(true) {
-				const auto offset = in.get_input_pos();
 				if(auto value = vnx::read(in)) {
 					if(auto tx = std::dynamic_pointer_cast<TransactionBase>(value)) {
 						block->tx_list.push_back(tx);
