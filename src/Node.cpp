@@ -756,10 +756,21 @@ void Node::update()
 	check_vdfs();
 
 	// add dummy blocks
-
+	{
+		std::vector<std::shared_ptr<const Block>> blocks;
+		for(const auto& entry : fork_index) {
+			const auto& fork = entry.second;
+			if(!fork->has_dummy_block) {
+				blocks.push_back(fork->block);
+			}
+		}
+		for(auto block : blocks) {
+			add_dummy_block(block);
+		}
+	}
 
 	// verify proof where possible
-	std::vector<std::pair<std::shared_ptr<fork_t>, hash_t>> to_verify;
+	std::vector<std::shared_ptr<fork_t>> to_verify;
 	{
 		const auto root = get_root();
 		for(const auto& entry : fork_index)
@@ -794,10 +805,7 @@ void Node::update()
 				fork->vdf_point = point;
 			}
 			if(vdf_passed || !is_synced) {
-				hash_t vdf_challenge;
-				if(find_vdf_challenge(block, vdf_challenge)) {
-					to_verify.emplace_back(fork, vdf_challenge);
-				}
+				to_verify.push_back(fork);
 			}
 		}
 	}
@@ -805,11 +813,13 @@ void Node::update()
 #pragma omp parallel for
 	for(size_t i = 0; i < to_verify.size(); ++i)
 	{
-		const auto& entry = to_verify[i];
-		const auto& fork = entry.first;
+		const auto& fork = to_verify[i];
 		const auto& block = fork->block;
 		try {
-			verify_proof(fork, entry.second);
+			hash_t vdf_challenge;
+			if(find_vdf_challenge(block, vdf_challenge)) {
+				verify_proof(fork, vdf_challenge);
+			}
 		}
 		catch(const std::exception& ex) {
 			fork->is_invalid = true;
