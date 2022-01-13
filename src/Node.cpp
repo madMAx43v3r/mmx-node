@@ -1696,9 +1696,9 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	for(const auto& entry : log->utxo_removed) {
 		const auto& stxo = entry.second;
 		if(!is_replay) {
+			stxo_log.insert(block->height, entry.first);
 			stxo_index.insert(entry.first, entry.second);
 			saddr_map.insert(stxo.address, entry.first);
-			stxo_log.insert(block->height, entry.first);
 		}
 		addr_map.erase(std::make_pair(stxo.address, entry.first));
 	}
@@ -1735,9 +1735,9 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	change_log.pop_front();
 
 	if(!is_replay) {
+		stxo_log.flush();
 		stxo_index.flush();
 		saddr_map.flush();
-		stxo_log.flush();
 		write_block(block);
 	}
 	while(history.size() > max_history) {
@@ -2321,8 +2321,8 @@ void Node::write_block(std::shared_ptr<const Block> block)
 	auto& out = block_chain->out;
 	const auto offset = out.get_output_pos();
 	if(auto tx = std::dynamic_pointer_cast<const Transaction>(block->tx_base)) {
-		tx_index.insert(tx->id, std::make_pair(offset, block->height));
 		tx_log.insert(block->height, tx->id);
+		tx_index.insert(tx->id, std::make_pair(offset, block->height));
 	}
 	block_index[block->height] = std::make_pair(offset, block->hash);
 	vnx::write(out, block->get_header());
@@ -2330,15 +2330,15 @@ void Node::write_block(std::shared_ptr<const Block> block)
 	for(const auto& tx : block->tx_list) {
 		const auto offset = out.get_output_pos();
 		if(std::dynamic_pointer_cast<const Transaction>(tx)) {
-			tx_index.insert(tx->id, std::make_pair(offset, block->height));
 			tx_log.insert(block->height, tx->id);
+			tx_index.insert(tx->id, std::make_pair(offset, block->height));
 		}
 		vnx::write(out, tx);
 	}
 	vnx::write(out, nullptr);
 
-	tx_index.flush();
 	tx_log.flush();
+	tx_index.flush();
 	block_chain->flush();
 }
 
