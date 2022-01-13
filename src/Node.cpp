@@ -261,8 +261,8 @@ vnx::optional<txo_info_t> Node::get_txo_info(const txio_key_t& key) const
 		auto iter = stxo_index.find(key);
 		if(iter != stxo_index.end()) {
 			txo_info_t info;
-			info.output = iter->second.output;
-			info.spent = iter->second.key;
+			info.output = iter->second;
+			info.spent = iter->second.spent;
 			return info;
 		}
 	}
@@ -270,8 +270,8 @@ vnx::optional<txo_info_t> Node::get_txo_info(const txio_key_t& key) const
 		auto iter = log->utxo_removed.find(key);
 		if(iter != log->utxo_removed.end()) {
 			txo_info_t info;
-			info.output = iter->second.output;
-			info.spent = iter->second.key;
+			info.output = iter->second;
+			info.spent = iter->second.spent;
 			return info;
 		}
 	}
@@ -586,16 +586,16 @@ std::vector<stxo_entry_t> Node::get_stxo_list(const std::vector<addr_t>& address
 		for(auto iter = range.first; iter != range.second; ++iter) {
 			auto iter2 = stxo_index.find(iter->second);
 			if(iter2 != stxo_index.end()) {
-				res.push_back(stxo_entry_t::create_ex(iter->second, iter2->second.output, iter2->second.key));
+				res.push_back(stxo_entry_t::create_ex(iter->second, iter2->second));
 			}
 		}
 	}
 	const std::unordered_set<addr_t> addr_set(addresses.begin(), addresses.end());
 	for(const auto& log : change_log) {
 		for(const auto& entry : log->utxo_removed) {
-			const auto& stxo = entry.second.output;
+			const auto& stxo = entry.second;
 			if(addr_set.count(stxo.address)) {
-				res.push_back(stxo_entry_t::create_ex(entry.first, stxo, entry.second.key));
+				res.push_back(stxo_entry_t::create_ex(entry.first, stxo));
 			}
 		}
 	}
@@ -1655,7 +1655,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	const auto log = change_log.front();
 
 	for(const auto& entry : log->utxo_removed) {
-		const auto& stxo = entry.second.output;
+		const auto& stxo = entry.second;
 		stxo_index[entry.first] = entry.second;
 		saddr_map.emplace(stxo.address, entry.first);
 		addr_map.erase(std::make_pair(stxo.address, entry.first));
@@ -2038,7 +2038,7 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 		if(iter != utxo_map.end()) {
 			const auto key = txio_key_t::create_ex(tx->id, i);
 			const auto& stxo = iter->second;
-			log.utxo_removed.emplace(iter->first, utxo_entry_t::create_ex(key, stxo));
+			log.utxo_removed.emplace(iter->first, stxo_t::create_ex(stxo, key));
 			taddr_map[stxo.address].erase(iter->first);
 			utxo_map.erase(iter);
 		}
@@ -2068,7 +2068,7 @@ bool Node::revert() noexcept
 		taddr_map[utxo.address].erase(entry.first);
 	}
 	for(const auto& entry : log->utxo_removed) {
-		const auto& utxo = entry.second.output;
+		const auto& utxo = entry.second;
 		utxo_map.emplace(entry.first, utxo);
 		taddr_map[utxo.address].insert(entry.first);
 	}

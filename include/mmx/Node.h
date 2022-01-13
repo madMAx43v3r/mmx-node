@@ -12,6 +12,7 @@
 #include <mmx/ChainParams.hxx>
 #include <mmx/RouterAsyncClient.hxx>
 #include <mmx/utxo_t.hpp>
+#include <mmx/stxo_t.hpp>
 #include <mmx/txio_key_t.hpp>
 #include <mmx/OCL_VDF.h>
 
@@ -127,8 +128,8 @@ private:
 	struct change_log_t {
 		hash_t prev_state;
 		std::vector<hash_t> tx_added;
-		std::unordered_map<txio_key_t, utxo_t> utxo_added;				// [utxo key => utxo]
-		std::unordered_map<txio_key_t, utxo_entry_t> utxo_removed;		// [utxo key => [txi key, utxo]]
+		std::unordered_map<txio_key_t, utxo_t> utxo_added;			// [utxo key => utxo]
+		std::unordered_map<txio_key_t, stxo_t> utxo_removed;		// [utxo key => [txi key, utxo]]
 	};
 
 	void update();
@@ -226,7 +227,7 @@ private:
 	std::list<std::shared_ptr<const change_log_t>> change_log;
 
 	std::unordered_map<hash_t, uint32_t> hash_index;								// [block hash => height] (finalized only)
-	std::unordered_map<txio_key_t, utxo_entry_t> stxo_index;						// [stxo key => [txi key, stxo]] (finalized + spent only)
+	std::unordered_map<txio_key_t, stxo_t> stxo_index;						// [stxo key => [txi key, stxo]] (finalized + spent only)
 	std::unordered_multimap<addr_t, txio_key_t> saddr_map;							// [addr => stxo key] (finalized + spent only)
 
 	std::unordered_map<hash_t, uint32_t> tx_map;									// [txid => height] (pending only)

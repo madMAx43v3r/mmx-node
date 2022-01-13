@@ -5,6 +5,6 @@ struct stxo_entry_t extends utxo_entry_t {
 	txio_key_t spent;
 	
 	
-	static stxo_entry_t create_ex(txio_key_t key, utxo_t output, txio_key_t spent);
+	static stxo_entry_t create_ex(txio_key_t key, stxo_t stxo);
 	
 }
