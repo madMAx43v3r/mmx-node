@@ -22,3 +22,6 @@
 [submodule "vnx-base"]
 	path = vnx-base
 	url = https://github.com/madMAx43v3r/vnx-base.git
+[submodule "vnx-rocksdb"]
+	path = vnx-rocksdb
+	url = https://github.com/madMAx43v3r/vnx-rocksdb.git
