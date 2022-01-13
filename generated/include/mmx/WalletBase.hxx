@@ -25,7 +25,7 @@ public:
 	std::vector<std::string> key_files;
 	std::string storage_path;
 	std::string node_server = "Node";
-	uint32_t num_addresses = 100;
+	uint32_t num_addresses = 1000;
 	int32_t utxo_timeout_ms = 1000;
 	
 	typedef ::vnx::Module Super;
