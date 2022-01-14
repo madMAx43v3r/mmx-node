@@ -6,8 +6,6 @@ class Delegated extends NFT {
 	
 	Contract* user;
 	
-	Condition* delegate_cond;			// condition for changing user
-	
 	
 //	hash_t calc_hash() const;
 	

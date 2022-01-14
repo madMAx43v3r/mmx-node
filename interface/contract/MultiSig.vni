@@ -7,7 +7,7 @@ class MultiSig extends mmx.Contract {
 	
 	int num_required;
 	
-	vector<addr_t> addresses;
+	vector<mmx.Contract*> owners;
 	
 	
 //	bool is_valid() const;

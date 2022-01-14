@@ -4,7 +4,7 @@ import mmx.hash_t;
 
 class Deploy extends mmx.Operation {
 	
-	mmx.Contract* payload;
+	mmx.Contract* contract;
 	
 	
 //	hash_t calc_hash() const;

@@ -4,20 +4,23 @@ import mmx.hash_t;
 import mmx.addr_t;
 import mmx.ulong_fraction_t;
 import mmx.Solution;
+import mmx.Contract;
 
-class Token extends NFT {
+class Token extends Contract {
+	
+	Contract* owner;
 	
 	string name;
+	
+	string symbol;
 	
 	string web_url;
 	
 	string icon_url;
 	
-	addr_t symbol;					// contract address
-	
-	Solution* symbol_sig;			// signature from symbol owner for this token's hash
-	
 	int decimals;
+	
+	ulong max_supply;
 	
 	ulong_fraction_t time_factor;							// for inflation / deflation (factor applied per block)
 	

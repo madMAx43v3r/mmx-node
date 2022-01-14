@@ -4,11 +4,13 @@ class Operation {
 	
 	uint version;
 	
-	addr_t address;
+	optional<addr_t> contract;
 	
 	Solution* solution;
 	
 	
 	hash_t calc_hash() const;
+	
+	ulong calc_min_fee(ChainParams* params) const;
 	
 }

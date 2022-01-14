@@ -1,0 +1,15 @@
+package mmx.operation;
+
+import mmx.hash_t;
+import mmx.addr_t;
+
+class Create extends mmx.Operation {
+	
+	addr_t target;				// receipient
+	
+	vnx.Object data;			// NFT data
+	
+	
+//	hash_t calc_hash() const;
+	
+}

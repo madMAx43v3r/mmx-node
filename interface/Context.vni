@@ -1,0 +1,13 @@
+package mmx;
+
+class Context {
+	
+	hash_t txid;
+	
+	ulong supply;
+	
+	Contract* owner;
+	
+	vector<Contract*> dependency;
+	
+}

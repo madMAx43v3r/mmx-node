@@ -1,0 +1,14 @@
+package mmx.operation;
+
+import mmx.hash_t;
+
+class Spend extends mmx.Operation {
+	
+	txio_key_t key;			// utxo key
+	
+	utxo_t utxo;			// utxo to spend
+	
+	
+//	hash_t calc_hash() const;
+	
+}

@@ -9,6 +9,12 @@ class Contract {
 	
 	hash_t calc_hash() const;
 	
-	bool validate(Operation* operation, Solution* solution, hash_t txid) const;
+	ulong calc_min_fee(ChainParams* params) const;
+	
+	vector<hash_t> get_dependency() const;
+	
+	void apply(Operation* operation);
+	
+	vector<tx_out_t> validate(Operation* operation, Solution* solution, Context* context) const;
 	
 }

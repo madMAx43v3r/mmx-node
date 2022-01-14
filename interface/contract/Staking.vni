@@ -4,6 +4,8 @@ import mmx.addr_t;
 
 class Staking extends mmx.Contract {
 	
+	Contract* owner;
+	
 	addr_t contract;			// contract being staked for
 	
 	addr_t reward_addr;			// reward address

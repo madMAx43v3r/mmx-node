@@ -2,6 +2,6 @@ package mmx.solution;
 
 class MultiSig extends mmx.Solution {
 	
-	vector<PubKey> solutions;
+	vector<mmx.Solution*> solutions;
 	
 }

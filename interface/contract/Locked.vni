@@ -2,6 +2,8 @@ package mmx.contract;
 
 class Locked extends mmx.Contract {
 	
+	Contract* owner;
+	
 	Condition* condition;
 	
 	

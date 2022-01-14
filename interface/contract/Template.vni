@@ -1,0 +1,11 @@
+package mmx;
+
+class Template extends mmx.Contract {
+	
+	Contract* owner;
+	
+	vnx.Object data;
+	
+	ulong max_supply;
+	
+}

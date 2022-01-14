@@ -4,11 +4,11 @@ import mmx.hash_t;
 import mmx.addr_t;
 import mmx.pubkey_t;
 
-class HTLC extends Locked {
+class PuzzleLock extends Locked {
 	
-	addr_t target;
+	mmx.Contract* puzzle;			// to unlock for target via MultiSig solution
 	
-	pubkey_t pubkey;			// for signing message
+	mmx.Contract* target;			// beneficiary
 	
 	
 //	bool is_valid() const;
