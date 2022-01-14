@@ -89,11 +89,12 @@ inline void write_bytes(vnx::OutputBuffer& out, const tx_out_t& value)
 }
 
 template<typename T>
-void write_bytes(vnx::OutputBuffer& out, const vnx::optional<T>& value, const T& fallback = T()) {
+void write_bytes(vnx::OutputBuffer& out, const vnx::optional<T>& value) {
 	if(value) {
+		write_bytes(out, uint8_t(1));
 		write_bytes(out, *value);
 	} else {
-		write_bytes(out, fallback);
+		write_bytes(out, uint8_t(0));
 	}
 }
 
