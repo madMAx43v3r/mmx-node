@@ -61,20 +61,5 @@ uint64_t ProofOfTime::get_vdf_iters() const
 	return start + get_num_iters();
 }
 
-std::shared_ptr<const ProofOfTime> ProofOfTime::compressed() const
-{
-	auto out = ProofOfTime::create();
-	out->start = start;
-	out->infuse = infuse;
-	{
-		time_segment_t seg;
-		seg.num_iters = get_num_iters();
-		seg.output[0] = get_output(0);
-		seg.output[1] = get_output(1);
-		out->segments.push_back(seg);
-	}
-	return out;
-}
-
 
 } // mmx
