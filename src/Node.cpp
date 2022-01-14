@@ -84,6 +84,9 @@ void Node::main()
 		while(auto block = read_block(true, &last_pos)) {
 			if(block->height >= replay_height) {
 				block_chain->seek_to(last_pos);
+				// preemptively mark end of file since we purge DB entries now
+				vnx::write(block_chain->out, nullptr);
+				block_chain->seek_to(last_pos);
 				break;
 			}
 			apply(block);
