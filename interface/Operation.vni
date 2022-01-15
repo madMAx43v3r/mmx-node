@@ -4,7 +4,7 @@ class Operation {
 	
 	uint version;
 	
-	addr_t contract;
+	addr_t address;
 	
 	Solution* solution;
 	

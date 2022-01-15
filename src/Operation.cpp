@@ -19,7 +19,7 @@ hash_t Operation::calc_hash() const
 
 	write_bytes(out, get_type_hash());
 	write_bytes(out, version);
-	write_bytes(out, contract);
+	write_bytes(out, address);
 	out.flush();
 
 	return hash_t(buffer);

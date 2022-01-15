@@ -495,7 +495,7 @@ bool Node::include_transaction(std::shared_ptr<const Transaction> tx)
 		}
 	}
 	for(const auto& op : tx->execute) {
-		if(light_address_set.count(op->contract)) {
+		if(light_address_set.count(op->address)) {
 			return true;
 		}
 	}
@@ -1680,7 +1680,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 				}
 			}
 			auto spend = operation::Spend::create();
-			spend->contract = utxo.address;
+			spend->address = utxo.address;
 			spend->solution = solution;
 			spend->key = in.prev;
 			spend->utxo = utxo;
@@ -1692,7 +1692,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 		}
 		for(const auto& op : tx->execute)
 		{
-			auto iter = contracts.find(op->contract);
+			auto iter = contracts.find(op->address);
 			if(iter != contracts.end()) {
 				const auto& contract = iter->second;
 				const auto outputs = contract->validate(op, create_context(contract, context, tx));
