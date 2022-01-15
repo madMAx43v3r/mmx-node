@@ -1493,8 +1493,8 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork(std::shared_ptr<const BlockHe
 				fork->is_invalid = true;
 				continue;
 			}
-			fork->total_weight = prev->total_weight + fork->weight + std::min<int32_t>(prev->weight_buffer, params->block_weight);
-			fork->weight_buffer = std::min<int32_t>(std::max(prev->weight_buffer + fork->buffer_delta, 0), params->weight_buffer);
+			fork->total_weight = prev->total_weight + fork->weight + std::min<int32_t>(prev->weight_buffer, params->score_threshold);
+			fork->weight_buffer = std::min<int32_t>(std::max(prev->weight_buffer + fork->buffer_delta, 0), params->max_weight_buffer);
 		} else {
 			fork->total_weight = fork->weight;
 		}
@@ -1886,11 +1886,11 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 	if(fork->has_weak_proof) {
 		fork->weight -= params->score_threshold;
 	} else if(block->proof) {
-		fork->weight += params->score_threshold - fork->proof_score;
+		fork->weight += 1 + params->score_threshold - fork->proof_score;
 		fork->buffer_delta += int32_t(2 * params->score_target) - fork->proof_score;
 	} else {
 		fork->weight += 1;
-		fork->buffer_delta -= params->block_weight;
+		fork->buffer_delta -= params->score_threshold;
 	}
 	fork->weight *= diff_block->space_diff;
 	fork->weight *= diff_block->time_diff;
