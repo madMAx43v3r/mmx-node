@@ -17,6 +17,7 @@ class Block;
 class BlockHeader;
 class ChainParams;
 class Challenge;
+class Context;
 class Contract;
 class FarmInfo;
 class FarmerBase;
@@ -176,6 +177,7 @@ extern const vnx::TypeCode* const vnx_native_type_code_Block; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_BlockHeader; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_ChainParams; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Challenge; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_Context; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Contract; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_FarmInfo; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_FarmerBase; ///< \private
@@ -333,6 +335,7 @@ void read(TypeInput& in, ::mmx::Block& value, const TypeCode* type_code, const u
 void read(TypeInput& in, ::mmx::BlockHeader& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ChainParams& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Challenge& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Context& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Contract& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::FarmInfo& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::FarmerBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -492,6 +495,7 @@ void write(TypeOutput& out, const ::mmx::Block& value, const TypeCode* type_code
 void write(TypeOutput& out, const ::mmx::BlockHeader& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ChainParams& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Challenge& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Context& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Contract& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::FarmInfo& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::FarmerBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -651,6 +655,7 @@ void read(std::istream& in, ::mmx::Block& value); ///< \private
 void read(std::istream& in, ::mmx::BlockHeader& value); ///< \private
 void read(std::istream& in, ::mmx::ChainParams& value); ///< \private
 void read(std::istream& in, ::mmx::Challenge& value); ///< \private
+void read(std::istream& in, ::mmx::Context& value); ///< \private
 void read(std::istream& in, ::mmx::Contract& value); ///< \private
 void read(std::istream& in, ::mmx::FarmInfo& value); ///< \private
 void read(std::istream& in, ::mmx::FarmerBase& value); ///< \private
@@ -810,6 +815,7 @@ void write(std::ostream& out, const ::mmx::Block& value); ///< \private
 void write(std::ostream& out, const ::mmx::BlockHeader& value); ///< \private
 void write(std::ostream& out, const ::mmx::ChainParams& value); ///< \private
 void write(std::ostream& out, const ::mmx::Challenge& value); ///< \private
+void write(std::ostream& out, const ::mmx::Context& value); ///< \private
 void write(std::ostream& out, const ::mmx::Contract& value); ///< \private
 void write(std::ostream& out, const ::mmx::FarmInfo& value); ///< \private
 void write(std::ostream& out, const ::mmx::FarmerBase& value); ///< \private
@@ -969,6 +975,7 @@ void accept(Visitor& visitor, const ::mmx::Block& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::BlockHeader& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ChainParams& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Challenge& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Context& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Contract& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::FarmInfo& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::FarmerBase& value); ///< \private
@@ -1214,6 +1221,29 @@ struct type<::mmx::Challenge> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Challenge& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Context> {
+	void read(TypeInput& in, ::mmx::Context& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Context& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Context& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Context& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Context& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Context& value, bool special = false);
 };
 
 /// \private

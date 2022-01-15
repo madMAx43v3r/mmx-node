@@ -5,6 +5,7 @@
 #include <mmx/BlockHeader.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/Challenge.hxx>
+#include <mmx/Context.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/FarmInfo.hxx>
 #include <mmx/FarmerBase.hxx>
@@ -212,6 +213,18 @@ void type<::mmx::Challenge>::create_dynamic_code(std::vector<uint16_t>& code) {
 }
 
 void type<::mmx::Challenge>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Challenge& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Context>::get_type_code() {
+	return mmx::vnx_native_type_code_Context;
+}
+
+void type<::mmx::Context>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Context());
+}
+
+void type<::mmx::Context>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Context& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -2015,6 +2028,7 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::BlockHeader::static_create_type_code());
 	vnx::register_type_code(::mmx::ChainParams::static_create_type_code());
 	vnx::register_type_code(::mmx::Challenge::static_create_type_code());
+	vnx::register_type_code(::mmx::Context::static_create_type_code());
 	vnx::register_type_code(::mmx::Contract::static_create_type_code());
 	vnx::register_type_code(::mmx::FarmInfo::static_create_type_code());
 	vnx::register_type_code(::mmx::FarmerBase::static_create_type_code());
@@ -2174,6 +2188,7 @@ const vnx::TypeCode* const vnx_native_type_code_Block = vnx::get_type_code(vnx::
 const vnx::TypeCode* const vnx_native_type_code_BlockHeader = vnx::get_type_code(vnx::Hash64(0xcaae941a2fc712a6ull));
 const vnx::TypeCode* const vnx_native_type_code_ChainParams = vnx::get_type_code(vnx::Hash64(0x51bba8d28881e8e7ull));
 const vnx::TypeCode* const vnx_native_type_code_Challenge = vnx::get_type_code(vnx::Hash64(0x4bf49f8022405249ull));
+const vnx::TypeCode* const vnx_native_type_code_Context = vnx::get_type_code(vnx::Hash64(0x4c0f99bb7370b6ccull));
 const vnx::TypeCode* const vnx_native_type_code_Contract = vnx::get_type_code(vnx::Hash64(0x26b896ae8c415285ull));
 const vnx::TypeCode* const vnx_native_type_code_FarmInfo = vnx::get_type_code(vnx::Hash64(0xa2701372b9137f0eull));
 const vnx::TypeCode* const vnx_native_type_code_FarmerBase = vnx::get_type_code(vnx::Hash64(0xff732ba14d9d1abull));

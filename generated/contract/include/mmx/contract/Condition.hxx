@@ -20,8 +20,7 @@ public:
 	::mmx::contract::condition_e type;
 	::mmx::contract::compare_e compare;
 	vnx::optional<int64_t> value;
-	vnx::optional<::mmx::addr_t> address;
-	vnx::optional<::mmx::addr_t> contract;
+	vnx::optional<::mmx::addr_t> currency;
 	std::vector<std::shared_ptr<const ::mmx::contract::Condition>> nested;
 	
 	typedef ::vnx::Value Super;

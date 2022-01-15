@@ -3,9 +3,13 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/contract/MultiSig.hxx>
+#include <mmx/ChainParams.hxx>
+#include <mmx/Context.hxx>
 #include <mmx/Contract.hxx>
+#include <mmx/Operation.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
+#include <mmx/tx_out_t.hxx>
 
 #include <vnx/vnx.h>
 
@@ -15,7 +19,7 @@ namespace contract {
 
 
 const vnx::Hash64 MultiSig::VNX_TYPE_HASH(0x7d674c5f7297dedull);
-const vnx::Hash64 MultiSig::VNX_CODE_HASH(0x61686255918da380ull);
+const vnx::Hash64 MultiSig::VNX_CODE_HASH(0x563474c79c6e72a6ull);
 
 vnx::Hash64 MultiSig::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -50,7 +54,7 @@ void MultiSig::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, version);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, num_required);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, addresses);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, owners);
 	_visitor.type_end(*_type_code);
 }
 
@@ -58,7 +62,7 @@ void MultiSig::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.contract.MultiSig\"";
 	_out << ", \"version\": "; vnx::write(_out, version);
 	_out << ", \"num_required\": "; vnx::write(_out, num_required);
-	_out << ", \"addresses\": "; vnx::write(_out, addresses);
+	_out << ", \"owners\": "; vnx::write(_out, owners);
 	_out << "}";
 }
 
@@ -73,16 +77,16 @@ vnx::Object MultiSig::to_object() const {
 	_object["__type"] = "mmx.contract.MultiSig";
 	_object["version"] = version;
 	_object["num_required"] = num_required;
-	_object["addresses"] = addresses;
+	_object["owners"] = owners;
 	return _object;
 }
 
 void MultiSig::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "addresses") {
-			_entry.second.to(addresses);
-		} else if(_entry.first == "num_required") {
+		if(_entry.first == "num_required") {
 			_entry.second.to(num_required);
+		} else if(_entry.first == "owners") {
+			_entry.second.to(owners);
 		} else if(_entry.first == "version") {
 			_entry.second.to(version);
 		}
@@ -96,8 +100,8 @@ vnx::Variant MultiSig::get_field(const std::string& _name) const {
 	if(_name == "num_required") {
 		return vnx::Variant(num_required);
 	}
-	if(_name == "addresses") {
-		return vnx::Variant(addresses);
+	if(_name == "owners") {
+		return vnx::Variant(owners);
 	}
 	return vnx::Variant();
 }
@@ -107,8 +111,8 @@ void MultiSig::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(version);
 	} else if(_name == "num_required") {
 		_value.to(num_required);
-	} else if(_name == "addresses") {
-		_value.to(addresses);
+	} else if(_name == "owners") {
+		_value.to(owners);
 	} else {
 		throw std::logic_error("no such field: '" + _name + "'");
 	}
@@ -138,7 +142,7 @@ std::shared_ptr<vnx::TypeCode> MultiSig::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.MultiSig";
 	type_code->type_hash = vnx::Hash64(0x7d674c5f7297dedull);
-	type_code->code_hash = vnx::Hash64(0x61686255918da380ull);
+	type_code->code_hash = vnx::Hash64(0x563474c79c6e72a6ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::MultiSig);
@@ -156,12 +160,12 @@ std::shared_ptr<vnx::TypeCode> MultiSig::static_create_type_code() {
 		auto& field = type_code->fields[1];
 		field.data_size = 4;
 		field.name = "num_required";
-		field.code = {7};
+		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[2];
 		field.is_extended = true;
-		field.name = "addresses";
+		field.name = "owners";
 		field.code = {12, 11, 32, 1};
 	}
 	type_code->build();
@@ -216,7 +220,7 @@ void read(TypeInput& in, ::mmx::contract::MultiSig& value, const TypeCode* type_
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 2: vnx::read(in, value.addresses, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.owners, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -238,7 +242,7 @@ void write(TypeOutput& out, const ::mmx::contract::MultiSig& value, const TypeCo
 	char* const _buf = out.write(8);
 	vnx::write_value(_buf + 0, value.version);
 	vnx::write_value(_buf + 4, value.num_required);
-	vnx::write(out, value.addresses, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.owners, type_code, type_code->fields[2].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::MultiSig& value) {

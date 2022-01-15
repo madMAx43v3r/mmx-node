@@ -6,6 +6,7 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/Contract.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/contract/Condition.hxx>
 
 
@@ -15,6 +16,7 @@ namespace contract {
 class Locked : public ::mmx::Contract {
 public:
 	
+	::mmx::addr_t owner;
 	std::shared_ptr<const ::mmx::contract::Condition> condition;
 	
 	typedef ::mmx::Contract Super;

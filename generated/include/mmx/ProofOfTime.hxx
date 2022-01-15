@@ -45,7 +45,6 @@ public:
 	virtual ::mmx::hash_t get_output(const uint32_t& chain = 0) const;
 	virtual uint64_t get_num_iters() const;
 	virtual uint64_t get_vdf_iters() const;
-	virtual std::shared_ptr<const ::mmx::ProofOfTime> compressed() const;
 	
 	static std::shared_ptr<ProofOfTime> create();
 	std::shared_ptr<vnx::Value> clone() const override;

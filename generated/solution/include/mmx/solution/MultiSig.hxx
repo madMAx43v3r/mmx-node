@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_solution_MultiSig_HXX_
 
 #include <mmx/solution/package.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/solution/PubKey.hxx>
 
@@ -15,7 +16,7 @@ namespace solution {
 class MultiSig : public ::mmx::Solution {
 public:
 	
-	std::vector<::mmx::solution::PubKey> solutions;
+	std::vector<std::shared_ptr<const ::mmx::solution::PubKey>> solutions;
 	
 	typedef ::mmx::Solution Super;
 	
@@ -29,6 +30,8 @@ public:
 	vnx::Hash64 get_type_hash() const override;
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
+	
+	virtual uint64_t calc_min_fee(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	
 	static std::shared_ptr<MultiSig> create();
 	std::shared_ptr<vnx::Value> clone() const override;

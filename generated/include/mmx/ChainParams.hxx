@@ -43,7 +43,7 @@ public:
 	uint64_t initial_space_diff = 10;
 	uint64_t min_txfee_io = 100;
 	uint64_t min_txfee_sign = 1000;
-	uint64_t min_txfee_exec = 10000;
+	uint64_t min_txfee_byte = 10;
 	uint64_t max_block_cost = 10000000;
 	vnx::float64_t block_time = 10;
 	std::string vdf_seed;

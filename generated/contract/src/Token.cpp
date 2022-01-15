@@ -3,10 +3,10 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/contract/Token.hxx>
+#include <mmx/Contract.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/contract/Condition.hxx>
-#include <mmx/contract/NFT.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/ulong_fraction_t.hxx>
 
@@ -18,7 +18,7 @@ namespace contract {
 
 
 const vnx::Hash64 Token::VNX_TYPE_HASH(0x2d8835d6429431b2ull);
-const vnx::Hash64 Token::VNX_CODE_HASH(0x4ba61300aa062e3aull);
+const vnx::Hash64 Token::VNX_CODE_HASH(0x44b7a4ab793495ecull);
 
 vnx::Hash64 Token::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -52,35 +52,27 @@ void Token::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::contract::vnx_native_type_code_Token;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, version);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, owner);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, transfer_cond);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, is_burnable);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, is_transferable);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, name);
-	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, web_url);
-	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, icon_url);
-	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, symbol);
-	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, symbol_sig);
-	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, decimals);
-	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, time_factor);
-	_visitor.type_field(_type_code->fields[12], 12); vnx::accept(_visitor, stake_condition);
-	_visitor.type_field(_type_code->fields[13], 13); vnx::accept(_visitor, stake_factors);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, name);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, symbol);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, web_url);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, icon_url);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, decimals);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, owner);
+	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, time_factor);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, stake_condition);
+	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, stake_factors);
 	_visitor.type_end(*_type_code);
 }
 
 void Token::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.contract.Token\"";
 	_out << ", \"version\": "; vnx::write(_out, version);
-	_out << ", \"owner\": "; vnx::write(_out, owner);
-	_out << ", \"transfer_cond\": "; vnx::write(_out, transfer_cond);
-	_out << ", \"is_burnable\": "; vnx::write(_out, is_burnable);
-	_out << ", \"is_transferable\": "; vnx::write(_out, is_transferable);
 	_out << ", \"name\": "; vnx::write(_out, name);
+	_out << ", \"symbol\": "; vnx::write(_out, symbol);
 	_out << ", \"web_url\": "; vnx::write(_out, web_url);
 	_out << ", \"icon_url\": "; vnx::write(_out, icon_url);
-	_out << ", \"symbol\": "; vnx::write(_out, symbol);
-	_out << ", \"symbol_sig\": "; vnx::write(_out, symbol_sig);
 	_out << ", \"decimals\": "; vnx::write(_out, decimals);
+	_out << ", \"owner\": "; vnx::write(_out, owner);
 	_out << ", \"time_factor\": "; vnx::write(_out, time_factor);
 	_out << ", \"stake_condition\": "; vnx::write(_out, stake_condition);
 	_out << ", \"stake_factors\": "; vnx::write(_out, stake_factors);
@@ -97,16 +89,12 @@ vnx::Object Token::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.contract.Token";
 	_object["version"] = version;
-	_object["owner"] = owner;
-	_object["transfer_cond"] = transfer_cond;
-	_object["is_burnable"] = is_burnable;
-	_object["is_transferable"] = is_transferable;
 	_object["name"] = name;
+	_object["symbol"] = symbol;
 	_object["web_url"] = web_url;
 	_object["icon_url"] = icon_url;
-	_object["symbol"] = symbol;
-	_object["symbol_sig"] = symbol_sig;
 	_object["decimals"] = decimals;
+	_object["owner"] = owner;
 	_object["time_factor"] = time_factor;
 	_object["stake_condition"] = stake_condition;
 	_object["stake_factors"] = stake_factors;
@@ -119,10 +107,6 @@ void Token::from_object(const vnx::Object& _object) {
 			_entry.second.to(decimals);
 		} else if(_entry.first == "icon_url") {
 			_entry.second.to(icon_url);
-		} else if(_entry.first == "is_burnable") {
-			_entry.second.to(is_burnable);
-		} else if(_entry.first == "is_transferable") {
-			_entry.second.to(is_transferable);
 		} else if(_entry.first == "name") {
 			_entry.second.to(name);
 		} else if(_entry.first == "owner") {
@@ -133,12 +117,8 @@ void Token::from_object(const vnx::Object& _object) {
 			_entry.second.to(stake_factors);
 		} else if(_entry.first == "symbol") {
 			_entry.second.to(symbol);
-		} else if(_entry.first == "symbol_sig") {
-			_entry.second.to(symbol_sig);
 		} else if(_entry.first == "time_factor") {
 			_entry.second.to(time_factor);
-		} else if(_entry.first == "transfer_cond") {
-			_entry.second.to(transfer_cond);
 		} else if(_entry.first == "version") {
 			_entry.second.to(version);
 		} else if(_entry.first == "web_url") {
@@ -151,20 +131,11 @@ vnx::Variant Token::get_field(const std::string& _name) const {
 	if(_name == "version") {
 		return vnx::Variant(version);
 	}
-	if(_name == "owner") {
-		return vnx::Variant(owner);
-	}
-	if(_name == "transfer_cond") {
-		return vnx::Variant(transfer_cond);
-	}
-	if(_name == "is_burnable") {
-		return vnx::Variant(is_burnable);
-	}
-	if(_name == "is_transferable") {
-		return vnx::Variant(is_transferable);
-	}
 	if(_name == "name") {
 		return vnx::Variant(name);
+	}
+	if(_name == "symbol") {
+		return vnx::Variant(symbol);
 	}
 	if(_name == "web_url") {
 		return vnx::Variant(web_url);
@@ -172,14 +143,11 @@ vnx::Variant Token::get_field(const std::string& _name) const {
 	if(_name == "icon_url") {
 		return vnx::Variant(icon_url);
 	}
-	if(_name == "symbol") {
-		return vnx::Variant(symbol);
-	}
-	if(_name == "symbol_sig") {
-		return vnx::Variant(symbol_sig);
-	}
 	if(_name == "decimals") {
 		return vnx::Variant(decimals);
+	}
+	if(_name == "owner") {
+		return vnx::Variant(owner);
 	}
 	if(_name == "time_factor") {
 		return vnx::Variant(time_factor);
@@ -196,26 +164,18 @@ vnx::Variant Token::get_field(const std::string& _name) const {
 void Token::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "version") {
 		_value.to(version);
-	} else if(_name == "owner") {
-		_value.to(owner);
-	} else if(_name == "transfer_cond") {
-		_value.to(transfer_cond);
-	} else if(_name == "is_burnable") {
-		_value.to(is_burnable);
-	} else if(_name == "is_transferable") {
-		_value.to(is_transferable);
 	} else if(_name == "name") {
 		_value.to(name);
+	} else if(_name == "symbol") {
+		_value.to(symbol);
 	} else if(_name == "web_url") {
 		_value.to(web_url);
 	} else if(_name == "icon_url") {
 		_value.to(icon_url);
-	} else if(_name == "symbol") {
-		_value.to(symbol);
-	} else if(_name == "symbol_sig") {
-		_value.to(symbol_sig);
 	} else if(_name == "decimals") {
 		_value.to(decimals);
+	} else if(_name == "owner") {
+		_value.to(owner);
 	} else if(_name == "time_factor") {
 		_value.to(time_factor);
 	} else if(_name == "stake_condition") {
@@ -251,17 +211,16 @@ std::shared_ptr<vnx::TypeCode> Token::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.Token";
 	type_code->type_hash = vnx::Hash64(0x2d8835d6429431b2ull);
-	type_code->code_hash = vnx::Hash64(0x4ba61300aa062e3aull);
+	type_code->code_hash = vnx::Hash64(0x44b7a4ab793495ecull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::Token);
-	type_code->parents.resize(2);
-	type_code->parents[0] = ::mmx::contract::NFT::static_get_type_code();
-	type_code->parents[1] = ::mmx::Contract::static_get_type_code();
+	type_code->parents.resize(1);
+	type_code->parents[0] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Token>(); };
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::ulong_fraction_t::static_get_type_code();
-	type_code->fields.resize(14);
+	type_code->fields.resize(10);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -271,77 +230,53 @@ std::shared_ptr<vnx::TypeCode> Token::static_create_type_code() {
 	{
 		auto& field = type_code->fields[1];
 		field.is_extended = true;
-		field.name = "owner";
-		field.code = {16};
-	}
-	{
-		auto& field = type_code->fields[2];
-		field.is_extended = true;
-		field.name = "transfer_cond";
-		field.code = {16};
-	}
-	{
-		auto& field = type_code->fields[3];
-		field.data_size = 1;
-		field.name = "is_burnable";
-		field.code = {31};
-	}
-	{
-		auto& field = type_code->fields[4];
-		field.data_size = 1;
-		field.name = "is_transferable";
-		field.code = {31};
-	}
-	{
-		auto& field = type_code->fields[5];
-		field.is_extended = true;
 		field.name = "name";
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[6];
+		auto& field = type_code->fields[2];
+		field.is_extended = true;
+		field.name = "symbol";
+		field.code = {32};
+	}
+	{
+		auto& field = type_code->fields[3];
 		field.is_extended = true;
 		field.name = "web_url";
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[7];
+		auto& field = type_code->fields[4];
 		field.is_extended = true;
 		field.name = "icon_url";
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[8];
-		field.is_extended = true;
-		field.name = "symbol";
-		field.code = {11, 32, 1};
-	}
-	{
-		auto& field = type_code->fields[9];
-		field.is_extended = true;
-		field.name = "symbol_sig";
-		field.code = {16};
-	}
-	{
-		auto& field = type_code->fields[10];
+		auto& field = type_code->fields[5];
 		field.data_size = 4;
 		field.name = "decimals";
 		field.code = {7};
 	}
 	{
-		auto& field = type_code->fields[11];
+		auto& field = type_code->fields[6];
+		field.is_extended = true;
+		field.name = "owner";
+		field.code = {11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[7];
 		field.is_extended = true;
 		field.name = "time_factor";
 		field.code = {19, 0};
 	}
 	{
-		auto& field = type_code->fields[12];
+		auto& field = type_code->fields[8];
 		field.is_extended = true;
 		field.name = "stake_condition";
 		field.code = {16};
 	}
 	{
-		auto& field = type_code->fields[13];
+		auto& field = type_code->fields[9];
 		field.is_extended = true;
 		field.name = "stake_factors";
 		field.code = {13, 5, 11, 32, 1, 19, 0};
@@ -392,28 +327,20 @@ void read(TypeInput& in, ::mmx::contract::Token& value, const TypeCode* type_cod
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.version, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[3]) {
-			vnx::read_value(_buf + _field->offset, value.is_burnable, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[4]) {
-			vnx::read_value(_buf + _field->offset, value.is_transferable, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[10]) {
+		if(const auto* const _field = type_code->field_map[5]) {
 			vnx::read_value(_buf + _field->offset, value.decimals, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 1: vnx::read(in, value.owner, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.transfer_cond, type_code, _field->code.data()); break;
-			case 5: vnx::read(in, value.name, type_code, _field->code.data()); break;
-			case 6: vnx::read(in, value.web_url, type_code, _field->code.data()); break;
-			case 7: vnx::read(in, value.icon_url, type_code, _field->code.data()); break;
-			case 8: vnx::read(in, value.symbol, type_code, _field->code.data()); break;
-			case 9: vnx::read(in, value.symbol_sig, type_code, _field->code.data()); break;
-			case 11: vnx::read(in, value.time_factor, type_code, _field->code.data()); break;
-			case 12: vnx::read(in, value.stake_condition, type_code, _field->code.data()); break;
-			case 13: vnx::read(in, value.stake_factors, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.name, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.symbol, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.web_url, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.icon_url, type_code, _field->code.data()); break;
+			case 6: vnx::read(in, value.owner, type_code, _field->code.data()); break;
+			case 7: vnx::read(in, value.time_factor, type_code, _field->code.data()); break;
+			case 8: vnx::read(in, value.stake_condition, type_code, _field->code.data()); break;
+			case 9: vnx::read(in, value.stake_factors, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -432,21 +359,17 @@ void write(TypeOutput& out, const ::mmx::contract::Token& value, const TypeCode*
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(10);
+	char* const _buf = out.write(8);
 	vnx::write_value(_buf + 0, value.version);
-	vnx::write_value(_buf + 4, value.is_burnable);
-	vnx::write_value(_buf + 5, value.is_transferable);
-	vnx::write_value(_buf + 6, value.decimals);
-	vnx::write(out, value.owner, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.transfer_cond, type_code, type_code->fields[2].code.data());
-	vnx::write(out, value.name, type_code, type_code->fields[5].code.data());
-	vnx::write(out, value.web_url, type_code, type_code->fields[6].code.data());
-	vnx::write(out, value.icon_url, type_code, type_code->fields[7].code.data());
-	vnx::write(out, value.symbol, type_code, type_code->fields[8].code.data());
-	vnx::write(out, value.symbol_sig, type_code, type_code->fields[9].code.data());
-	vnx::write(out, value.time_factor, type_code, type_code->fields[11].code.data());
-	vnx::write(out, value.stake_condition, type_code, type_code->fields[12].code.data());
-	vnx::write(out, value.stake_factors, type_code, type_code->fields[13].code.data());
+	vnx::write_value(_buf + 4, value.decimals);
+	vnx::write(out, value.name, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.symbol, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.web_url, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.icon_url, type_code, type_code->fields[4].code.data());
+	vnx::write(out, value.owner, type_code, type_code->fields[6].code.data());
+	vnx::write(out, value.time_factor, type_code, type_code->fields[7].code.data());
+	vnx::write(out, value.stake_condition, type_code, type_code->fields[8].code.data());
+	vnx::write(out, value.stake_factors, type_code, type_code->fields[9].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::Token& value) {

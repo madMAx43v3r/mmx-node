@@ -4,6 +4,7 @@
 #include <mmx/contract/package.hxx>
 #include <mmx/contract/Locked.hxx>
 #include <mmx/Contract.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/contract/Condition.hxx>
 
 #include <vnx/vnx.h>
@@ -14,7 +15,7 @@ namespace contract {
 
 
 const vnx::Hash64 Locked::VNX_TYPE_HASH(0xd0ff1b6e7bad1493ull);
-const vnx::Hash64 Locked::VNX_CODE_HASH(0x8633f8655eaa1adcull);
+const vnx::Hash64 Locked::VNX_CODE_HASH(0x8785f19846c68c0aull);
 
 vnx::Hash64 Locked::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,13 +49,15 @@ void Locked::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::contract::vnx_native_type_code_Locked;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, version);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, condition);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, owner);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, condition);
 	_visitor.type_end(*_type_code);
 }
 
 void Locked::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.contract.Locked\"";
 	_out << ", \"version\": "; vnx::write(_out, version);
+	_out << ", \"owner\": "; vnx::write(_out, owner);
 	_out << ", \"condition\": "; vnx::write(_out, condition);
 	_out << "}";
 }
@@ -69,6 +72,7 @@ vnx::Object Locked::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.contract.Locked";
 	_object["version"] = version;
+	_object["owner"] = owner;
 	_object["condition"] = condition;
 	return _object;
 }
@@ -77,6 +81,8 @@ void Locked::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "condition") {
 			_entry.second.to(condition);
+		} else if(_entry.first == "owner") {
+			_entry.second.to(owner);
 		} else if(_entry.first == "version") {
 			_entry.second.to(version);
 		}
@@ -87,6 +93,9 @@ vnx::Variant Locked::get_field(const std::string& _name) const {
 	if(_name == "version") {
 		return vnx::Variant(version);
 	}
+	if(_name == "owner") {
+		return vnx::Variant(owner);
+	}
 	if(_name == "condition") {
 		return vnx::Variant(condition);
 	}
@@ -96,6 +105,8 @@ vnx::Variant Locked::get_field(const std::string& _name) const {
 void Locked::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "version") {
 		_value.to(version);
+	} else if(_name == "owner") {
+		_value.to(owner);
 	} else if(_name == "condition") {
 		_value.to(condition);
 	} else {
@@ -127,14 +138,14 @@ std::shared_ptr<vnx::TypeCode> Locked::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.Locked";
 	type_code->type_hash = vnx::Hash64(0xd0ff1b6e7bad1493ull);
-	type_code->code_hash = vnx::Hash64(0x8633f8655eaa1adcull);
+	type_code->code_hash = vnx::Hash64(0x8785f19846c68c0aull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::Locked);
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Locked>(); };
-	type_code->fields.resize(2);
+	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -143,6 +154,12 @@ std::shared_ptr<vnx::TypeCode> Locked::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[1];
+		field.is_extended = true;
+		field.name = "owner";
+		field.code = {11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[2];
 		field.is_extended = true;
 		field.name = "condition";
 		field.code = {16};
@@ -196,7 +213,8 @@ void read(TypeInput& in, ::mmx::contract::Locked& value, const TypeCode* type_co
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 1: vnx::read(in, value.condition, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.owner, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.condition, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -217,7 +235,8 @@ void write(TypeOutput& out, const ::mmx::contract::Locked& value, const TypeCode
 	}
 	char* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.version);
-	vnx::write(out, value.condition, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.owner, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.condition, type_code, type_code->fields[2].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::Locked& value) {

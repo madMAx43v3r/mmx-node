@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_Operation_HXX_
 
 #include <mmx/package.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
@@ -17,7 +18,7 @@ class Operation : public ::vnx::Value {
 public:
 	
 	uint32_t version = 0;
-	::mmx::addr_t address;
+	::mmx::addr_t contract;
 	std::shared_ptr<const ::mmx::Solution> solution;
 	
 	typedef ::vnx::Value Super;
@@ -34,6 +35,7 @@ public:
 	const vnx::TypeCode* get_type_code() const override;
 	
 	virtual ::mmx::hash_t calc_hash() const;
+	virtual uint64_t calc_min_fee(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	
 	static std::shared_ptr<Operation> create();
 	std::shared_ptr<vnx::Value> clone() const override;

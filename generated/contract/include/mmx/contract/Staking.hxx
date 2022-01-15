@@ -15,7 +15,8 @@ namespace contract {
 class Staking : public ::mmx::Contract {
 public:
 	
-	::mmx::addr_t contract;
+	::mmx::addr_t owner;
+	::mmx::addr_t currency;
 	::mmx::addr_t reward_addr;
 	
 	typedef ::mmx::Contract Super;

@@ -14,7 +14,7 @@ namespace contract {
 
 
 const vnx::Hash64 Staking::VNX_TYPE_HASH(0xf058a3326fc2e7dcull);
-const vnx::Hash64 Staking::VNX_CODE_HASH(0x21f8a0c27cf53c54ull);
+const vnx::Hash64 Staking::VNX_CODE_HASH(0x4826a9d5f2fe3f31ull);
 
 vnx::Hash64 Staking::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,15 +48,17 @@ void Staking::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::contract::vnx_native_type_code_Staking;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, version);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, contract);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, reward_addr);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, owner);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, currency);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, reward_addr);
 	_visitor.type_end(*_type_code);
 }
 
 void Staking::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.contract.Staking\"";
 	_out << ", \"version\": "; vnx::write(_out, version);
-	_out << ", \"contract\": "; vnx::write(_out, contract);
+	_out << ", \"owner\": "; vnx::write(_out, owner);
+	_out << ", \"currency\": "; vnx::write(_out, currency);
 	_out << ", \"reward_addr\": "; vnx::write(_out, reward_addr);
 	_out << "}";
 }
@@ -71,15 +73,18 @@ vnx::Object Staking::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.contract.Staking";
 	_object["version"] = version;
-	_object["contract"] = contract;
+	_object["owner"] = owner;
+	_object["currency"] = currency;
 	_object["reward_addr"] = reward_addr;
 	return _object;
 }
 
 void Staking::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "contract") {
-			_entry.second.to(contract);
+		if(_entry.first == "currency") {
+			_entry.second.to(currency);
+		} else if(_entry.first == "owner") {
+			_entry.second.to(owner);
 		} else if(_entry.first == "reward_addr") {
 			_entry.second.to(reward_addr);
 		} else if(_entry.first == "version") {
@@ -92,8 +97,11 @@ vnx::Variant Staking::get_field(const std::string& _name) const {
 	if(_name == "version") {
 		return vnx::Variant(version);
 	}
-	if(_name == "contract") {
-		return vnx::Variant(contract);
+	if(_name == "owner") {
+		return vnx::Variant(owner);
+	}
+	if(_name == "currency") {
+		return vnx::Variant(currency);
 	}
 	if(_name == "reward_addr") {
 		return vnx::Variant(reward_addr);
@@ -104,8 +112,10 @@ vnx::Variant Staking::get_field(const std::string& _name) const {
 void Staking::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "version") {
 		_value.to(version);
-	} else if(_name == "contract") {
-		_value.to(contract);
+	} else if(_name == "owner") {
+		_value.to(owner);
+	} else if(_name == "currency") {
+		_value.to(currency);
 	} else if(_name == "reward_addr") {
 		_value.to(reward_addr);
 	} else {
@@ -137,14 +147,14 @@ std::shared_ptr<vnx::TypeCode> Staking::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.Staking";
 	type_code->type_hash = vnx::Hash64(0xf058a3326fc2e7dcull);
-	type_code->code_hash = vnx::Hash64(0x21f8a0c27cf53c54ull);
+	type_code->code_hash = vnx::Hash64(0x4826a9d5f2fe3f31ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::Staking);
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Staking>(); };
-	type_code->fields.resize(3);
+	type_code->fields.resize(4);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -154,11 +164,17 @@ std::shared_ptr<vnx::TypeCode> Staking::static_create_type_code() {
 	{
 		auto& field = type_code->fields[1];
 		field.is_extended = true;
-		field.name = "contract";
+		field.name = "owner";
 		field.code = {11, 32, 1};
 	}
 	{
 		auto& field = type_code->fields[2];
+		field.is_extended = true;
+		field.name = "currency";
+		field.code = {11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[3];
 		field.is_extended = true;
 		field.name = "reward_addr";
 		field.code = {11, 32, 1};
@@ -212,8 +228,9 @@ void read(TypeInput& in, ::mmx::contract::Staking& value, const TypeCode* type_c
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 1: vnx::read(in, value.contract, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.reward_addr, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.owner, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.currency, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.reward_addr, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -234,8 +251,9 @@ void write(TypeOutput& out, const ::mmx::contract::Staking& value, const TypeCod
 	}
 	char* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.version);
-	vnx::write(out, value.contract, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.reward_addr, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.owner, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.currency, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.reward_addr, type_code, type_code->fields[3].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::Staking& value) {

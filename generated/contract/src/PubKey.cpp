@@ -3,11 +3,13 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/contract/PubKey.hxx>
+#include <mmx/ChainParams.hxx>
+#include <mmx/Context.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/Operation.hxx>
-#include <mmx/Solution.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
+#include <mmx/tx_out_t.hxx>
 
 #include <vnx/vnx.h>
 

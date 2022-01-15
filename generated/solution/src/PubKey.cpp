@@ -3,6 +3,7 @@
 
 #include <mmx/solution/package.hxx>
 #include <mmx/solution/PubKey.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/pubkey_t.hpp>
 #include <mmx/signature_t.hpp>

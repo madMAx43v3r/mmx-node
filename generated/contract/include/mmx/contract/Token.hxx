@@ -5,10 +5,10 @@
 #define INCLUDE_mmx_contract_Token_HXX_
 
 #include <mmx/contract/package.hxx>
+#include <mmx/Contract.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/contract/Condition.hxx>
-#include <mmx/contract/NFT.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/ulong_fraction_t.hxx>
 
@@ -16,20 +16,20 @@
 namespace mmx {
 namespace contract {
 
-class Token : public ::mmx::contract::NFT {
+class Token : public ::mmx::Contract {
 public:
 	
 	std::string name;
+	std::string symbol;
 	std::string web_url;
 	std::string icon_url;
-	::mmx::addr_t symbol;
-	std::shared_ptr<const ::mmx::Solution> symbol_sig;
 	int32_t decimals = 0;
+	::mmx::addr_t owner;
 	::mmx::ulong_fraction_t time_factor;
 	std::shared_ptr<const ::mmx::contract::Condition> stake_condition;
 	std::map<::mmx::addr_t, ::mmx::ulong_fraction_t> stake_factors;
 	
-	typedef ::mmx::contract::NFT Super;
+	typedef ::mmx::Contract Super;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;

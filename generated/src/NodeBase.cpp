@@ -551,10 +551,10 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	type_code->methods[20] = ::mmx::Node_get_tx_ids_at::static_get_type_code();
 	type_code->methods[21] = ::mmx::Node_add_block::static_get_type_code();
 	type_code->methods[22] = ::mmx::Node_add_transaction::static_get_type_code();
-	type_code->methods[23] = ::mmx::Node_get_transaction::static_get_type_code();
-	type_code->methods[24] = ::mmx::Node_get_transactions::static_get_type_code();
-	type_code->methods[25] = ::mmx::Node_get_history_for::static_get_type_code();
-	type_code->methods[26] = ::mmx::Node_get_contract::static_get_type_code();
+	type_code->methods[23] = ::mmx::Node_get_contract::static_get_type_code();
+	type_code->methods[24] = ::mmx::Node_get_transaction::static_get_type_code();
+	type_code->methods[25] = ::mmx::Node_get_transactions::static_get_type_code();
+	type_code->methods[26] = ::mmx::Node_get_history_for::static_get_type_code();
 	type_code->methods[27] = ::mmx::Node_get_balance::static_get_type_code();
 	type_code->methods[28] = ::mmx::Node_get_total_balance::static_get_type_code();
 	type_code->methods[29] = ::mmx::Node_get_total_supply::static_get_type_code();
@@ -947,6 +947,12 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 			add_transaction(_args->tx);
 			return _return_value;
 		}
+		case 0xa28704c65a67a293ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_contract>(_method);
+			auto _return_value = ::mmx::Node_get_contract_return::create();
+			_return_value->_ret_0 = get_contract(_args->address);
+			return _return_value;
+		}
 		case 0x9c76ca142292750full: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_transaction>(_method);
 			auto _return_value = ::mmx::Node_get_transaction_return::create();
@@ -963,12 +969,6 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_history_for>(_method);
 			auto _return_value = ::mmx::Node_get_history_for_return::create();
 			_return_value->_ret_0 = get_history_for(_args->addresses, _args->since);
-			return _return_value;
-		}
-		case 0xa28704c65a67a293ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_get_contract>(_method);
-			auto _return_value = ::mmx::Node_get_contract_return::create();
-			_return_value->_ret_0 = get_contract(_args->address);
 			return _return_value;
 		}
 		case 0x2e00172d0470479ull: {
