@@ -101,6 +101,21 @@ void Node::main()
 		block_chain->open("wb");
 		block_chain->open("rb+");
 	}
+	is_replay = false;
+	is_synced = !do_sync;
+
+	if(state_hash == hash_t())
+	{
+		auto genesis = Block::create();
+		genesis->time_diff = params->initial_time_diff;
+		genesis->space_diff = params->initial_space_diff;
+		genesis->vdf_output[0] = hash_t(params->vdf_seed);
+		genesis->vdf_output[1] = hash_t(params->vdf_seed);
+		genesis->finalize();
+
+		apply(genesis);
+		commit(genesis);
+	}
 
 	if(auto peak = get_peak()) {
 		const auto next_height = peak->height + 1;
@@ -128,21 +143,6 @@ void Node::main()
 			tx_log.erase_all(next_height, vnx::rocksdb::GREATER_EQUAL);
 			tx_log.flush();
 		}
-	}
-	is_replay = false;
-	is_synced = !do_sync;
-
-	if(state_hash == hash_t())
-	{
-		auto genesis = Block::create();
-		genesis->time_diff = params->initial_time_diff;
-		genesis->space_diff = params->initial_space_diff;
-		genesis->vdf_output[0] = hash_t(params->vdf_seed);
-		genesis->vdf_output[1] = hash_t(params->vdf_seed);
-		genesis->finalize();
-
-		apply(genesis);
-		commit(genesis);
 	}
 
 	if(!light_mode) {
@@ -1279,6 +1279,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	for(const auto& id : invalid) {
 		tx_pool.erase(id);
 	}
+	block->finalize();
 
 	FarmerClient farmer(response->farmer_addr);
 	const auto block_reward = calc_block_reward(block);
@@ -1720,7 +1721,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 	}
 	if(base) {
 		fee_amount = base_amount;
-		return tx;
+		return nullptr;
 	}
 	fee_amount = amounts[hash_t()];
 
