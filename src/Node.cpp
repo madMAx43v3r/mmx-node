@@ -915,8 +915,10 @@ void Node::update()
 					fork->is_finalized = true;
 					if(!do_sync || (sync_peak && block->height >= *sync_peak)) {
 						log(INFO) << "Finalized height " << block->height << " with: ntx = " << block->tx_list.size()
-								<< ", score = " << fork->proof_score << ", k = " << (block->proof ? block->proof->ksize : 0)
-								<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff << (fork->has_weak_proof ? ", weak proof" : "");
+								<< ", k = " << (block->proof ? block->proof->ksize : 0)
+								<< ", score = " << fork->proof_score << ", buffer = " << fork->weight_buffer
+								<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff
+								<< (fork->has_weak_proof ? ", weak proof" : "");
 					}
 				}
 			}
@@ -1491,7 +1493,8 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork(std::shared_ptr<const BlockHe
 				fork->is_invalid = true;
 				continue;
 			}
-			fork->total_weight = prev->total_weight + fork->weight;
+			fork->total_weight = prev->total_weight + fork->weight + std::min<int32_t>(prev->weight_buffer, params->block_weight);
+			fork->weight_buffer = std::min<int32_t>(std::max(prev->weight_buffer + fork->buffer_delta, 0), params->weight_buffer);
 		} else {
 			fork->total_weight = fork->weight;
 		}
@@ -1878,14 +1881,16 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 	} else {
 		fork->proof_score = params->score_threshold;
 	}
-
 	fork->weight = 0;
+	fork->buffer_delta = 0;
 	if(fork->has_weak_proof) {
-		fork->weight -= params->weak_penalty;
+		fork->weight -= params->score_threshold;
 	} else if(block->proof) {
-		fork->weight += params->block_weight + (params->score_threshold - fork->proof_score);
+		fork->weight += params->score_threshold - fork->proof_score;
+		fork->buffer_delta += int32_t(2 * params->score_target) - fork->proof_score;
 	} else {
-		fork->weight += params->dummy_weight;
+		fork->weight += 1;
+		fork->buffer_delta -= params->block_weight;
 	}
 	fork->weight *= diff_block->space_diff;
 	fork->weight *= diff_block->time_diff;

@@ -24,9 +24,8 @@ class ChainParams {
 	uint score_bits = 16;
 	uint score_target = 8192;				// defines how many competing blocks are created (must be less than score_threshold)
 	uint score_threshold = 65536;			// should be <= 2^score_bits
-	uint block_weight = 32768;				// weight = block_weight + (score_threshold - score)
-	uint dummy_weight = 8192;
-	uint weak_penalty = 65536;
+	uint block_weight = 32768;
+	uint weight_buffer = 131072;
 	
 	ulong min_reward = 200000;
 	ulong_fraction_t reward_factor;			// reward = (diff * value) / inverse;
