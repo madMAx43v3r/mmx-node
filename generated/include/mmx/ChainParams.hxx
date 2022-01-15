@@ -33,8 +33,7 @@ public:
 	uint32_t score_target = 8192;
 	uint32_t score_threshold = 65536;
 	uint32_t block_weight = 32768;
-	uint32_t dummy_weight = 8192;
-	uint32_t weak_penalty = 65536;
+	uint32_t weight_buffer = 131072;
 	uint64_t min_reward = 200000;
 	::mmx::ulong_fraction_t reward_factor;
 	uint64_t time_diff_constant = 1000;
