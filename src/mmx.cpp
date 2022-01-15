@@ -158,7 +158,7 @@ int main(int argc, char** argv)
 					std::cout << wallet.get_master_seed(index) << std::endl;
 				}
 				else {
-					std::cerr << "Help: mmx wallet get [address | amount | balance]" << std::endl;
+					std::cerr << "Help: mmx wallet get [address | amount | balance | seed]" << std::endl;
 				}
 			}
 			else if(command == "send")
