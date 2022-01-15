@@ -18,7 +18,7 @@ class Operation : public ::vnx::Value {
 public:
 	
 	uint32_t version = 0;
-	::mmx::addr_t contract;
+	::mmx::addr_t address;
 	std::shared_ptr<const ::mmx::Solution> solution;
 	
 	typedef ::vnx::Value Super;

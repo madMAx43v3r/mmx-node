@@ -15,7 +15,7 @@ namespace operation {
 
 
 const vnx::Hash64 Mint::VNX_TYPE_HASH(0x936aeac3aa6373c0ull);
-const vnx::Hash64 Mint::VNX_CODE_HASH(0x1765d80cd878f620ull);
+const vnx::Hash64 Mint::VNX_CODE_HASH(0x68f25dfbcc6b9d29ull);
 
 vnx::Hash64 Mint::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,7 +49,7 @@ void Mint::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::operation::vnx_native_type_code_Mint;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, version);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, contract);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, address);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, solution);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, target);
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, amount);
@@ -59,7 +59,7 @@ void Mint::accept(vnx::Visitor& _visitor) const {
 void Mint::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.operation.Mint\"";
 	_out << ", \"version\": "; vnx::write(_out, version);
-	_out << ", \"contract\": "; vnx::write(_out, contract);
+	_out << ", \"address\": "; vnx::write(_out, address);
 	_out << ", \"solution\": "; vnx::write(_out, solution);
 	_out << ", \"target\": "; vnx::write(_out, target);
 	_out << ", \"amount\": "; vnx::write(_out, amount);
@@ -76,7 +76,7 @@ vnx::Object Mint::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.operation.Mint";
 	_object["version"] = version;
-	_object["contract"] = contract;
+	_object["address"] = address;
 	_object["solution"] = solution;
 	_object["target"] = target;
 	_object["amount"] = amount;
@@ -85,10 +85,10 @@ vnx::Object Mint::to_object() const {
 
 void Mint::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "amount") {
+		if(_entry.first == "address") {
+			_entry.second.to(address);
+		} else if(_entry.first == "amount") {
 			_entry.second.to(amount);
-		} else if(_entry.first == "contract") {
-			_entry.second.to(contract);
 		} else if(_entry.first == "solution") {
 			_entry.second.to(solution);
 		} else if(_entry.first == "target") {
@@ -103,8 +103,8 @@ vnx::Variant Mint::get_field(const std::string& _name) const {
 	if(_name == "version") {
 		return vnx::Variant(version);
 	}
-	if(_name == "contract") {
-		return vnx::Variant(contract);
+	if(_name == "address") {
+		return vnx::Variant(address);
 	}
 	if(_name == "solution") {
 		return vnx::Variant(solution);
@@ -121,8 +121,8 @@ vnx::Variant Mint::get_field(const std::string& _name) const {
 void Mint::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "version") {
 		_value.to(version);
-	} else if(_name == "contract") {
-		_value.to(contract);
+	} else if(_name == "address") {
+		_value.to(address);
 	} else if(_name == "solution") {
 		_value.to(solution);
 	} else if(_name == "target") {
@@ -158,7 +158,7 @@ std::shared_ptr<vnx::TypeCode> Mint::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.operation.Mint";
 	type_code->type_hash = vnx::Hash64(0x936aeac3aa6373c0ull);
-	type_code->code_hash = vnx::Hash64(0x1765d80cd878f620ull);
+	type_code->code_hash = vnx::Hash64(0x68f25dfbcc6b9d29ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::operation::Mint);
@@ -175,7 +175,7 @@ std::shared_ptr<vnx::TypeCode> Mint::static_create_type_code() {
 	{
 		auto& field = type_code->fields[1];
 		field.is_extended = true;
-		field.name = "contract";
+		field.name = "address";
 		field.code = {11, 32, 1};
 	}
 	{
@@ -248,7 +248,7 @@ void read(TypeInput& in, ::mmx::operation::Mint& value, const TypeCode* type_cod
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 1: vnx::read(in, value.contract, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.address, type_code, _field->code.data()); break;
 			case 2: vnx::read(in, value.solution, type_code, _field->code.data()); break;
 			case 3: vnx::read(in, value.target, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
@@ -272,7 +272,7 @@ void write(TypeOutput& out, const ::mmx::operation::Mint& value, const TypeCode*
 	char* const _buf = out.write(12);
 	vnx::write_value(_buf + 0, value.version);
 	vnx::write_value(_buf + 4, value.amount);
-	vnx::write(out, value.contract, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.address, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.solution, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.target, type_code, type_code->fields[3].code.data());
 }
