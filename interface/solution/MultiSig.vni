@@ -2,7 +2,7 @@ package mmx.solution;
 
 class MultiSig extends mmx.Solution {
 	
-	vector<mmx.Solution*> solutions;
+	vector<PubKey*> solutions;
 	
 	
 	ulong calc_min_fee(mmx.ChainParams* params) const;

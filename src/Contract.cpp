@@ -35,6 +35,7 @@ uint64_t Contract::calc_min_fee(std::shared_ptr<const ChainParams> params) const
 std::vector<addr_t> Contract::get_dependency() const {
 	return {};
 }
+
 std::vector<addr_t> Contract::get_parties() const {
 	return {};
 }

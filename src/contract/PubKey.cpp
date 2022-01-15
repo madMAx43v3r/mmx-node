@@ -32,12 +32,13 @@ hash_t PubKey::calc_hash() const
 }
 
 uint64_t PubKey::calc_min_fee(std::shared_ptr<const ChainParams> params) const {
-	return (8 + 32) * params->min_txfee_byte;
+	return (8 + 4 + 32) * params->min_txfee_byte;
 }
 
 std::vector<addr_t> PubKey::get_dependency() const {
 	return {};
 }
+
 std::vector<addr_t> PubKey::get_parties() const {
 	return {address};
 }

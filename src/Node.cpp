@@ -1249,8 +1249,10 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 			if(cost > params->max_block_cost) {
 				throw std::logic_error("tx cost > max_block_cost");
 			}
+			if(auto new_tx = validate(tx, context, nullptr, tx_fees[i])) {
+				tx = new_tx;
+			}
 			tx_cost[i] = cost;
-			tx = validate(tx, context, nullptr, tx_fees[i]);
 		}
 		catch(const std::exception& ex) {
 #pragma omp critical
@@ -1277,7 +1279,6 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	for(const auto& id : invalid) {
 		tx_pool.erase(id);
 	}
-	block->finalize();
 
 	FarmerClient farmer(response->farmer_addr);
 	const auto block_reward = calc_block_reward(block);
@@ -1553,7 +1554,9 @@ void Node::validate(std::shared_ptr<const Block> block) const
 
 	uint64_t base_spent = 0;
 	if(auto tx = std::dynamic_pointer_cast<const Transaction>(block->tx_base)) {
-		block->tx_base = validate(tx, context, block, base_spent);
+		if(validate(tx, context, block, base_spent)) {
+			throw std::logic_error("missing exec_outputs");
+		}
 	}
 	{
 		std::unordered_set<txio_key_t> inputs;
@@ -1576,11 +1579,13 @@ void Node::validate(std::shared_ptr<const Block> block) const
 #pragma omp parallel for
 	for(size_t i = 0; i < block->tx_list.size(); ++i)
 	{
-		auto& base = block->tx_list[i];
+		const auto& base = block->tx_list[i];
 		try {
 			if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
 				uint64_t fees = 0;
-				base = validate(tx, context, nullptr, fees);
+				if(validate(tx, context, nullptr, fees)) {
+					throw std::logic_error("missing exec_outputs");
+				}
 				total_fees += fees;
 				total_cost += tx->calc_min_fee(params);
 			}
@@ -1723,12 +1728,25 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 	if(fee_amount < fee_needed) {
 		throw std::logic_error("insufficient fee: " + std::to_string(fee_amount) + " < " + std::to_string(fee_needed));
 	}
-	if(!exec_outputs.empty()) {
-		auto copy = vnx::clone(tx);
-		copy->exec_outputs = exec_outputs;
-		tx = copy;
+	if(tx->exec_outputs.empty()) {
+		if(!exec_outputs.empty()) {
+			auto copy = vnx::clone(tx);
+			copy->exec_outputs = exec_outputs;
+			return copy;
+		}
+	} else {
+		if(tx->exec_outputs.size() != exec_outputs.size()) {
+			throw std::logic_error("exec_outputs size mismatch");
+		}
+		for(size_t i = 0; i < exec_outputs.size(); ++i) {
+			const auto& lhs = exec_outputs[i];
+			const auto& rhs = tx->exec_outputs[i];
+			if(lhs.contract != rhs.contract || lhs.address != rhs.address || lhs.amount != rhs.amount) {
+				throw std::logic_error("exec_output mismatch at index " + std::to_string(i));
+			}
+		}
 	}
-	return tx;
+	return nullptr;
 }
 
 void Node::validate_diff_adjust(const uint64_t& block, const uint64_t& prev) const
