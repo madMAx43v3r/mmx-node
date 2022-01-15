@@ -1,0 +1,9 @@
+package mmx.contract;
+
+class WebData extends mmx.Contract {
+	
+	string mime_type;
+	
+	vnx.Buffer payload;
+	
+}

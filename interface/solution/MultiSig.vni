@@ -4,4 +4,7 @@ class MultiSig extends mmx.Solution {
 	
 	vector<mmx.Solution*> solutions;
 	
+	
+	ulong calc_min_fee(mmx.ChainParams* params) const;
+	
 }

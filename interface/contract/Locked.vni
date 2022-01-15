@@ -1,8 +1,11 @@
 package mmx.contract;
 
+import mmx.addr_t;
+import mmx.Contract;
+
 class Locked extends mmx.Contract {
 	
-	Contract* owner;
+	addr_t owner;
 	
 	Condition* condition;
 	

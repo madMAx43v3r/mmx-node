@@ -130,6 +130,7 @@ private:
 	struct change_log_t {
 		hash_t prev_state;
 		std::vector<hash_t> tx_added;
+		std::vector<hash_t> deployed;								// for light mode only
 		std::unordered_map<txio_key_t, utxo_t> utxo_added;			// [utxo key => utxo]
 		std::unordered_map<txio_key_t, stxo_t> utxo_removed;		// [utxo key => [txi key, utxo]]
 	};
@@ -162,7 +163,11 @@ private:
 
 	void validate(std::shared_ptr<const Block> block) const;
 
-	uint64_t validate(std::shared_ptr<const Transaction> tx, std::shared_ptr<const Block> block = nullptr) const;
+	std::shared_ptr<const Context> create_context(
+			std::shared_ptr<const Contract> contract, std::shared_ptr<const Context> base, std::shared_ptr<const Transaction> tx) const;
+
+	std::shared_ptr<const Transaction> validate(std::shared_ptr<const Transaction> tx, std::shared_ptr<const Context> context,
+												std::shared_ptr<const Block> base, uint64_t& fee_amount) const;
 
 	void validate_diff_adjust(const uint64_t& block, const uint64_t& prev) const;
 
@@ -188,7 +193,10 @@ private:
 
 	void apply(std::shared_ptr<const Block> block) noexcept;
 
-	void apply(std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx, size_t index, change_log_t& log) noexcept;
+	void apply(std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx, change_log_t& log) noexcept;
+
+	void apply_output(	std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx,
+						const tx_out_t& output, const size_t index, change_log_t& log) noexcept;
 
 	bool revert() noexcept;
 
@@ -233,8 +241,8 @@ private:
 	vnx::rocksdb::multi_table<addr_t, txio_key_t> saddr_map;						// [addr => stxo key] (finalized + spent only)
 	vnx::rocksdb::multi_table<uint32_t, txio_key_t> stxo_log;						// [height => stxo key] (finalized + spent only)
 
-	vnx::rocksdb::table<hash_t, std::pair<int64_t, uint32_t>> tx_index;				// [txid => [file offset, height]]
-	vnx::rocksdb::multi_table<uint32_t, hash_t> tx_log;								// [height => txid]
+	vnx::rocksdb::table<hash_t, std::pair<int64_t, uint32_t>> tx_index;				// [txid => [file offset, height]] (finalized only)
+	vnx::rocksdb::multi_table<uint32_t, hash_t> tx_log;								// [height => txid] (finalized only)
 
 	std::unordered_map<hash_t, uint32_t> tx_map;									// [txid => height] (pending only)
 	std::unordered_map<txio_key_t, utxo_t> utxo_map;								// [utxo key => utxo]
@@ -242,10 +250,10 @@ private:
 	std::unordered_map<addr_t, std::unordered_set<txio_key_t>> taddr_map;			// [addr => utxo keys] (pending + unspent only)
 
 	std::multimap<uint32_t, std::shared_ptr<fork_t>> fork_index;					// [height => fork]
-	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;					// pending blocks
+	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;					// [block hash => fork] (pending only)
 	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;					// [height => block header] (finalized only)
-	std::unordered_map<addr_t, std::shared_ptr<const Contract>> contracts;			// current contract state
-	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_pool;
+	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_pool;			// [txid => transaction] (pending only)
+	std::unordered_map<hash_t, std::shared_ptr<const Contract>> contracts;			// [contract hash => contract] (cached only)
 
 	std::multimap<uint32_t, std::shared_ptr<vdf_point_t>> verified_vdfs;			// [height => output]
 	std::multimap<uint32_t, std::shared_ptr<const ProofOfTime>> pending_vdfs;		// [height => proof]

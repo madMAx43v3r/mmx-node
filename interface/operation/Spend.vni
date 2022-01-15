@@ -1,6 +1,8 @@
 package mmx.operation;
 
 import mmx.hash_t;
+import mmx.utxo_t;
+import mmx.txio_key_t;
 
 class Spend extends mmx.Operation {
 	

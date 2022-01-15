@@ -1,0 +1,7 @@
+package mmx.contract;
+
+class Data extends mmx.Contract {
+	
+	vnx.Variant payload;
+	
+}

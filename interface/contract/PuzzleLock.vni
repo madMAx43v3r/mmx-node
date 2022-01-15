@@ -8,7 +8,9 @@ class PuzzleLock extends Locked {
 	
 	mmx.Contract* puzzle;			// to unlock for target via MultiSig solution
 	
-	mmx.Contract* target;			// beneficiary
+	addr_t target;					// beneficiary
+	
+	optional<addr_t> currency;
 	
 	
 //	bool is_valid() const;

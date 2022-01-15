@@ -6,12 +6,14 @@
  */
 
 #include <mmx/Node.h>
+#include <mmx/Context.hxx>
 #include <mmx/Challenge.hxx>
 #include <mmx/FarmerClient.hxx>
 #include <mmx/TimeInfusion.hxx>
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/TimeLordClient.hxx>
 #include <mmx/contract/PubKey.hxx>
+#include <mmx/operation/Spend.hxx>
 #include <mmx/utxo_entry_t.hpp>
 #include <mmx/stxo_entry_t.hpp>
 #include <mmx/chiapos.h>
@@ -469,6 +471,9 @@ std::shared_ptr<const Contract> Node::get_contract(const addr_t& address) const
 	if(iter != contracts.end()) {
 		return iter->second;
 	}
+	if(auto tx = get_transaction(address)) {
+		return tx->deploy;
+	}
 	return nullptr;
 }
 
@@ -490,8 +495,15 @@ bool Node::include_transaction(std::shared_ptr<const Transaction> tx)
 		}
 	}
 	for(const auto& op : tx->execute) {
-		if(light_address_set.count(op->address)) {
+		if(light_address_set.count(op->contract)) {
 			return true;
+		}
+	}
+	if(const auto& contract = tx->deploy) {
+		for(const auto& addr : contract->get_parties()) {
+			if(light_address_set.count(addr)) {
+				return true;
+			}
 		}
 	}
 	return false;
@@ -1187,6 +1199,9 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	std::unordered_set<txio_key_t> spent;
 	std::vector<std::shared_ptr<const Transaction>> tx_list;
 
+	auto context = Context::create();
+	context->height = block->height;
+
 	for(const auto& entry : tx_pool)
 	{
 		if(tx_map.count(entry.first)) {
@@ -1213,7 +1228,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 #pragma omp parallel for
 	for(size_t i = 0; i < tx_list.size(); ++i)
 	{
-		const auto& tx = tx_list[i];
+		auto& tx = tx_list[i];
 		// check if tx depends on another one which is not in a block yet
 		bool depends = false;
 		for(const auto& in : tx->inputs) {
@@ -1227,12 +1242,15 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 			continue;
 		}
 		try {
+			if(!tx->exec_outputs.empty()) {
+				throw std::logic_error("exec_outputs not empty");
+			}
 			const auto cost = tx->calc_min_fee(params);
 			if(cost > params->max_block_cost) {
 				throw std::logic_error("tx cost > max_block_cost");
 			}
 			tx_cost[i] = cost;
-			tx_fees[i] = validate(tx);
+			tx = validate(tx, context, nullptr, tx_fees[i]);
 		}
 		catch(const std::exception& ex) {
 #pragma omp critical
@@ -1530,9 +1548,12 @@ void Node::validate(std::shared_ptr<const Block> block) const
 			throw std::logic_error("invalid difficulty adjustment");
 		}
 	}
+	auto context = Context::create();
+	context->height = block->height;
+
 	uint64_t base_spent = 0;
 	if(auto tx = std::dynamic_pointer_cast<const Transaction>(block->tx_base)) {
-		base_spent = validate(tx, block);
+		block->tx_base = validate(tx, context, block, base_spent);
 	}
 	{
 		std::unordered_set<txio_key_t> inputs;
@@ -1555,10 +1576,12 @@ void Node::validate(std::shared_ptr<const Block> block) const
 #pragma omp parallel for
 	for(size_t i = 0; i < block->tx_list.size(); ++i)
 	{
-		const auto& base = block->tx_list[i];
+		auto& base = block->tx_list[i];
 		try {
 			if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
-				total_fees += validate(tx);
+				uint64_t fees = 0;
+				base = validate(tx, context, nullptr, fees);
+				total_fees += fees;
 				total_cost += tx->calc_min_fee(params);
 			}
 		} catch(...) {
@@ -1579,12 +1602,28 @@ void Node::validate(std::shared_ptr<const Block> block) const
 	}
 }
 
-uint64_t Node::validate(std::shared_ptr<const Transaction> tx, std::shared_ptr<const Block> block) const
+std::shared_ptr<const Context> Node::create_context(std::shared_ptr<const Contract> contract,
+													std::shared_ptr<const Context> base, std::shared_ptr<const Transaction> tx) const
+{
+	auto context = vnx::clone(base);
+	context->txid = tx->id;
+	for(const auto& addr : contract->get_dependency()) {
+		const auto iter = contracts.find(addr);
+		context->depends[addr] = iter != contracts.end() ? iter->second : nullptr;
+	}
+	return context;
+}
+
+std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const Context> context,
+													std::shared_ptr<const Block> base, uint64_t& fee_amount) const
 {
 	if(tx->id != tx->calc_hash()) {
 		throw std::logic_error("invalid tx id");
 	}
-	if(block) {
+	if(base) {
+		if(tx->deploy) {
+			throw std::logic_error("coin base cannot deploy");
+		}
 		if(!tx->execute.empty()) {
 			throw std::logic_error("coin base cannot have operations");
 		}
@@ -1598,7 +1637,7 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, std::shared_ptr<c
 			throw std::logic_error("coin base must have one input");
 		}
 		const auto& in = tx->inputs[0];
-		if(in.prev.txid != hash_t(block->prev) || in.prev.index != 0) {
+		if(in.prev.txid != hash_t(base->prev) || in.prev.index != 0) {
 			throw std::logic_error("invalid coin base input");
 		}
 	} else {
@@ -1607,42 +1646,52 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, std::shared_ptr<c
 		}
 	}
 	uint64_t base_amount = 0;
+	std::vector<tx_out_t> exec_outputs;
 	std::unordered_map<hash_t, uint64_t> amounts;
 
-	if(!block) {
+	if(!base) {
 		for(const auto& in : tx->inputs)
 		{
 			auto iter = utxo_map.find(in.prev);
 			if(iter == utxo_map.end()) {
 				throw std::logic_error("utxo not found");
 			}
-			const auto& out = iter->second;
+			const auto& utxo = iter->second;
 
-			// verify signature
 			const auto solution = tx->get_solution(in.solution);
 			if(!solution) {
 				throw std::logic_error("missing solution");
 			}
+			std::shared_ptr<const Contract> contract;
 			{
-				auto iter = contracts.find(out.address);
+				auto iter = contracts.find(utxo.address);
 				if(iter != contracts.end()) {
-					if(!iter->second->validate(nullptr, solution, tx->id)) {
-						throw std::logic_error("invalid solution");
-					}
-				}
-				else {
-					contract::PubKey simple;
-					simple.address = out.address;
-					if(!simple.validate(nullptr, solution, tx->id)) {
-						throw std::logic_error("invalid solution");
-					}
+					contract = iter->second;
+				} else {
+					auto simple = contract::PubKey::create();
+					simple->address = utxo.address;
+					contract = simple;
 				}
 			}
-			amounts[out.contract] += out.amount;
+			auto spend = operation::Spend::create();
+			spend->contract = utxo.address;
+			spend->solution = solution;
+			spend->key = in.prev;
+			spend->utxo = utxo;
+
+			const auto outputs = contract->validate(spend, create_context(contract, context, tx));
+			exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
+
+			amounts[utxo.contract] += utxo.amount;
 		}
 		for(const auto& op : tx->execute)
 		{
-			// TODO
+			auto iter = contracts.find(op->contract);
+			if(iter != contracts.end()) {
+				const auto& contract = iter->second;
+				const auto outputs = contract->validate(op, create_context(contract, context, tx));
+				exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
+			}
 		}
 	}
 	for(const auto& out : tx->outputs)
@@ -1650,7 +1699,7 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, std::shared_ptr<c
 		if(out.amount == 0) {
 			throw std::logic_error("zero tx output");
 		}
-		if(block) {
+		if(base) {
 			if(out.contract != hash_t()) {
 				throw std::logic_error("invalid coin base output");
 			}
@@ -1664,15 +1713,22 @@ uint64_t Node::validate(std::shared_ptr<const Transaction> tx, std::shared_ptr<c
 			value -= out.amount;
 		}
 	}
-	if(block) {
-		return base_amount;
+	if(base) {
+		fee_amount = base_amount;
+		return tx;
 	}
-	const auto fee_amount = amounts[hash_t()];
+	fee_amount = amounts[hash_t()];
+
 	const auto fee_needed = tx->calc_min_fee(params);
 	if(fee_amount < fee_needed) {
 		throw std::logic_error("insufficient fee: " + std::to_string(fee_amount) + " < " + std::to_string(fee_needed));
 	}
-	return fee_amount;
+	if(!exec_outputs.empty()) {
+		auto copy = vnx::clone(tx);
+		copy->exec_outputs = exec_outputs;
+		tx = copy;
+	}
+	return tx;
 }
 
 void Node::validate_diff_adjust(const uint64_t& block, const uint64_t& prev) const
@@ -2067,18 +2123,18 @@ void Node::apply(std::shared_ptr<const Block> block) noexcept
 	log->prev_state = state_hash;
 
 	if(auto tx = std::dynamic_pointer_cast<const Transaction>(block->tx_base)) {
-		apply(block, tx, 0, *log);
+		apply(block, tx, *log);
 	}
 	for(size_t i = 0; i < block->tx_list.size(); ++i) {
 		if(auto tx = std::dynamic_pointer_cast<const Transaction>(block->tx_list[i])) {
-			apply(block, tx, 1 + i, *log);
+			apply(block, tx, *log);
 		}
 	}
 	state_hash = block->hash;
 	change_log.push_back(log);
 }
 
-void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx, size_t index, change_log_t& log) noexcept
+void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx, change_log_t& log) noexcept
 {
 	for(size_t i = 0; i < tx->inputs.size(); ++i)
 	{
@@ -2091,16 +2147,28 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 			utxo_map.erase(iter);
 		}
 	}
-	for(size_t i = 0; i < tx->outputs.size(); ++i)
-	{
-		const auto key = txio_key_t::create_ex(tx->id, i);
-		const auto utxo = utxo_t::create_ex(tx->outputs[i], block->height);
-		utxo_map[key] = utxo;
-		taddr_map[utxo.address].insert(key);
-		log.utxo_added.emplace(key, utxo);
+	for(size_t i = 0; i < tx->outputs.size(); ++i) {
+		apply_output(block, tx, tx->outputs[i], i, log);
+	}
+	for(size_t i = 0; i < tx->exec_outputs.size(); ++i) {
+		apply_output(block, tx, tx->exec_outputs[i], tx->outputs.size() + i, log);
+	}
+	if(light_mode && tx->deploy) {
+		light_address_set.insert(tx->id);
+		log.deployed.push_back(tx->id);
 	}
 	tx_map[tx->id] = block->height;
 	log.tx_added.push_back(tx->id);
+}
+
+void Node::apply_output(std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx,
+						const tx_out_t& output, const size_t index, change_log_t& log) noexcept
+{
+	const auto key = txio_key_t::create_ex(tx->id, index);
+	const auto utxo = utxo_t::create_ex(output, block->height);
+	utxo_map[key] = utxo;
+	taddr_map[utxo.address].insert(key);
+	log.utxo_added.emplace(key, utxo);
 }
 
 bool Node::revert() noexcept
@@ -2122,6 +2190,11 @@ bool Node::revert() noexcept
 	}
 	for(const auto& txid : log->tx_added) {
 		tx_map.erase(txid);
+	}
+	if(light_mode) {
+		for(const auto& addr : log->deployed) {
+			light_address_set.erase(addr);
+		}
 	}
 	change_log.pop_back();
 	state_hash = log->prev_state;

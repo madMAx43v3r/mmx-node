@@ -1,9 +1,0 @@
-package mmx.contract;
-
-class Nobody extends mmx.Contract {
-	
-//	bool is_valid() const;
-	
-//	mmx.hash_t calc_hash() const;
-	
-}

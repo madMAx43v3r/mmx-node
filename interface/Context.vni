@@ -4,10 +4,10 @@ class Context {
 	
 	hash_t txid;
 	
-	ulong supply;
+	uint height;
 	
-	Contract* owner;
+	map<addr_t, ulong> amounts;				// amounts in contract
 	
-	vector<Contract*> dependency;
+	map<addr_t, Contract*> depends;
 	
 }

@@ -8,8 +8,6 @@ import mmx.Contract;
 
 class Token extends Contract {
 	
-	Contract* owner;
-	
 	string name;
 	
 	string symbol;
@@ -20,13 +18,13 @@ class Token extends Contract {
 	
 	int decimals;
 	
-	ulong max_supply;
+	addr_t owner;
 	
 	ulong_fraction_t time_factor;							// for inflation / deflation (factor applied per block)
 	
 	Condition* stake_condition;
 	
-	map<addr_t, ulong_fraction_t> stake_factors;			// [contract => mint factor per block]
+	map<addr_t, ulong_fraction_t> stake_factors;			// [currency => mint factor per block]
 	
 	
 //	bool is_valid() const;
