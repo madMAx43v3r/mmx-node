@@ -12,7 +12,7 @@
 namespace mmx {
 
 vnx::bool_t Contract::is_valid() const {
-	return false;
+	return version == 0;
 }
 
 hash_t Contract::calc_hash() const

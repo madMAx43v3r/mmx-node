@@ -1617,8 +1617,14 @@ std::shared_ptr<const Context> Node::create_context(std::shared_ptr<const Contra
 	auto context = vnx::clone(base);
 	context->txid = tx->id;
 	for(const auto& addr : contract->get_dependency()) {
-		const auto iter = contracts.find(addr);
-		context->depends[addr] = iter != contracts.end() ? iter->second : nullptr;
+		auto iter = contracts.find(addr);
+		if(iter != contracts.end()) {
+			context->depends[addr] = iter->second;
+		} else {
+			auto pubkey = contract::PubKey::create();
+			pubkey->address = addr;
+			context->depends[addr] = pubkey;
+		}
 	}
 	return context;
 }

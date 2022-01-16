@@ -11,6 +11,7 @@
 #include <mmx/hash_t.hpp>
 #include <mmx/tx_in_t.hxx>
 #include <mmx/tx_out_t.hxx>
+#include <mmx/ulong_fraction_t.hxx>
 
 #include <vnx/Buffer.hpp>
 #include <vnx/Output.hpp>
@@ -86,6 +87,11 @@ inline void write_bytes(vnx::OutputBuffer& out, const tx_out_t& value)
 	write_bytes(out, value.address);
 	write_bytes(out, value.contract);
 	write_bytes(out, value.amount);
+}
+
+inline void write_bytes(vnx::OutputBuffer& out, const ulong_fraction_t& value) {
+	write_bytes(out, value.value);
+	write_bytes(out, value.inverse);
 }
 
 template<typename T>

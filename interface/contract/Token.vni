@@ -16,9 +16,9 @@ class Token extends Contract {
 	
 	string icon_url;
 	
-	int decimals;
+	uint decimals;
 	
-	addr_t owner;
+	optional<addr_t> owner;
 	
 	ulong_fraction_t time_factor;							// for inflation / deflation (factor applied per block)
 	
@@ -27,8 +27,16 @@ class Token extends Contract {
 	map<addr_t, ulong_fraction_t> stake_factors;			// [currency => mint factor per block]
 	
 	
-//	bool is_valid() const;
+	bool is_valid() const;
 	
-//	hash_t calc_hash() const;
+	hash_t calc_hash() const;
+	
+	ulong calc_min_fee(mmx.ChainParams* params) const;
+	
+	vector<addr_t> get_dependency() const;
+	
+	vector<addr_t> get_parties() const;
+	
+	vector<mmx.tx_out_t> validate(mmx.Operation* operation, mmx.Context* context) const;
 	
 }

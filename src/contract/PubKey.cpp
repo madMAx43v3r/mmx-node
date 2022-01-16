@@ -14,7 +14,7 @@ namespace mmx {
 namespace contract {
 
 vnx::bool_t PubKey::is_valid() const {
-	return address != hash_t();
+	return Contract::is_valid() && address != hash_t();
 }
 
 hash_t PubKey::calc_hash() const

@@ -1,8 +1,11 @@
 package mmx.contract;
 
+import mmx.hash_t;
 import mmx.addr_t;
 
 class Condition {
+	
+	uint version;
 	
 	condition_e type;
 	
@@ -15,8 +18,10 @@ class Condition {
 	vector<Condition*> nested;
 	
 	
-//	bool is_valid() const;
+	bool is_valid() const;
 	
-//	hash_t calc_hash() const;
+	hash_t calc_hash() const;
+	
+	ulong calc_min_fee(mmx.ChainParams* params) const;
 	
 }
