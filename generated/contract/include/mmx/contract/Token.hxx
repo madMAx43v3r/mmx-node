@@ -11,7 +11,6 @@
 #include <mmx/Operation.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/contract/Condition.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/tx_out_t.hxx>
 #include <mmx/ulong_fraction_t.hxx>
@@ -30,7 +29,6 @@ public:
 	uint32_t decimals = 0;
 	vnx::optional<::mmx::addr_t> owner;
 	::mmx::ulong_fraction_t time_factor;
-	std::shared_ptr<const ::mmx::contract::Condition> stake_condition;
 	std::map<::mmx::addr_t, ::mmx::ulong_fraction_t> stake_factors;
 	
 	typedef ::mmx::Contract Super;

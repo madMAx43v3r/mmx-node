@@ -9,7 +9,6 @@
 #include <mmx/Operation.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/contract/Condition.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/tx_out_t.hxx>
 #include <mmx/ulong_fraction_t.hxx>
@@ -22,7 +21,7 @@ namespace contract {
 
 
 const vnx::Hash64 Token::VNX_TYPE_HASH(0x2d8835d6429431b2ull);
-const vnx::Hash64 Token::VNX_CODE_HASH(0x2c02e7f4e66cd244ull);
+const vnx::Hash64 Token::VNX_CODE_HASH(0x8b0b5dccb07f8504ull);
 
 vnx::Hash64 Token::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -63,8 +62,7 @@ void Token::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, decimals);
 	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, owner);
 	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, time_factor);
-	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, stake_condition);
-	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, stake_factors);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, stake_factors);
 	_visitor.type_end(*_type_code);
 }
 
@@ -78,7 +76,6 @@ void Token::write(std::ostream& _out) const {
 	_out << ", \"decimals\": "; vnx::write(_out, decimals);
 	_out << ", \"owner\": "; vnx::write(_out, owner);
 	_out << ", \"time_factor\": "; vnx::write(_out, time_factor);
-	_out << ", \"stake_condition\": "; vnx::write(_out, stake_condition);
 	_out << ", \"stake_factors\": "; vnx::write(_out, stake_factors);
 	_out << "}";
 }
@@ -100,7 +97,6 @@ vnx::Object Token::to_object() const {
 	_object["decimals"] = decimals;
 	_object["owner"] = owner;
 	_object["time_factor"] = time_factor;
-	_object["stake_condition"] = stake_condition;
 	_object["stake_factors"] = stake_factors;
 	return _object;
 }
@@ -115,8 +111,6 @@ void Token::from_object(const vnx::Object& _object) {
 			_entry.second.to(name);
 		} else if(_entry.first == "owner") {
 			_entry.second.to(owner);
-		} else if(_entry.first == "stake_condition") {
-			_entry.second.to(stake_condition);
 		} else if(_entry.first == "stake_factors") {
 			_entry.second.to(stake_factors);
 		} else if(_entry.first == "symbol") {
@@ -156,9 +150,6 @@ vnx::Variant Token::get_field(const std::string& _name) const {
 	if(_name == "time_factor") {
 		return vnx::Variant(time_factor);
 	}
-	if(_name == "stake_condition") {
-		return vnx::Variant(stake_condition);
-	}
 	if(_name == "stake_factors") {
 		return vnx::Variant(stake_factors);
 	}
@@ -182,8 +173,6 @@ void Token::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(owner);
 	} else if(_name == "time_factor") {
 		_value.to(time_factor);
-	} else if(_name == "stake_condition") {
-		_value.to(stake_condition);
 	} else if(_name == "stake_factors") {
 		_value.to(stake_factors);
 	} else {
@@ -215,7 +204,7 @@ std::shared_ptr<vnx::TypeCode> Token::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.Token";
 	type_code->type_hash = vnx::Hash64(0x2d8835d6429431b2ull);
-	type_code->code_hash = vnx::Hash64(0x2c02e7f4e66cd244ull);
+	type_code->code_hash = vnx::Hash64(0x8b0b5dccb07f8504ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::Token);
@@ -224,7 +213,7 @@ std::shared_ptr<vnx::TypeCode> Token::static_create_type_code() {
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Token>(); };
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::ulong_fraction_t::static_get_type_code();
-	type_code->fields.resize(10);
+	type_code->fields.resize(9);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -275,12 +264,6 @@ std::shared_ptr<vnx::TypeCode> Token::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[8];
-		field.is_extended = true;
-		field.name = "stake_condition";
-		field.code = {16};
-	}
-	{
-		auto& field = type_code->fields[9];
 		field.is_extended = true;
 		field.name = "stake_factors";
 		field.code = {13, 5, 11, 32, 1, 19, 0};
@@ -343,8 +326,7 @@ void read(TypeInput& in, ::mmx::contract::Token& value, const TypeCode* type_cod
 			case 4: vnx::read(in, value.icon_url, type_code, _field->code.data()); break;
 			case 6: vnx::read(in, value.owner, type_code, _field->code.data()); break;
 			case 7: vnx::read(in, value.time_factor, type_code, _field->code.data()); break;
-			case 8: vnx::read(in, value.stake_condition, type_code, _field->code.data()); break;
-			case 9: vnx::read(in, value.stake_factors, type_code, _field->code.data()); break;
+			case 8: vnx::read(in, value.stake_factors, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -372,8 +354,7 @@ void write(TypeOutput& out, const ::mmx::contract::Token& value, const TypeCode*
 	vnx::write(out, value.icon_url, type_code, type_code->fields[4].code.data());
 	vnx::write(out, value.owner, type_code, type_code->fields[6].code.data());
 	vnx::write(out, value.time_factor, type_code, type_code->fields[7].code.data());
-	vnx::write(out, value.stake_condition, type_code, type_code->fields[8].code.data());
-	vnx::write(out, value.stake_factors, type_code, type_code->fields[9].code.data());
+	vnx::write(out, value.stake_factors, type_code, type_code->fields[8].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::Token& value) {
