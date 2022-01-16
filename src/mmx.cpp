@@ -336,7 +336,7 @@ int main(int argc, char** argv)
 				mmx::hash_t txid;
 				vnx::read_config("$3", txid);
 
-				const auto tx = node.get_transaction(txid);
+				const auto tx = node.get_transaction(txid, true);
 				if(!tx) {
 					vnx::log_error() << "No such transaction: " << txid;
 					goto failed;
@@ -409,7 +409,7 @@ int main(int argc, char** argv)
 					mmx::hash_t txid;
 					vnx::read_config("$4", txid);
 
-					const auto tx = node.get_transaction(txid);
+					const auto tx = node.get_transaction(txid, true);
 					{
 						std::stringstream ss;
 						vnx::PrettyPrinter printer(ss);

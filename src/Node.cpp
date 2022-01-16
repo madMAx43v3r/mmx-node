@@ -331,9 +331,10 @@ std::vector<vnx::optional<txo_info_t>> Node::get_txo_infos(const std::vector<txi
 	return res;
 }
 
-std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id) const
+std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id, const vnx::bool_t& include_pending) const
 {
 	// THREAD SAFE
+	if(include_pending || tx_map.count(id))
 	{
 		auto iter = tx_pool.find(id);
 		if(iter != tx_pool.end()) {
@@ -779,7 +780,6 @@ void Node::add_block_tx(std::shared_ptr<const BlockHeader> block, std::shared_pt
 {
 	if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
 		tx_pool.emplace(tx->id, tx);
-		tx_map.emplace(tx->id, block->height);
 	}
 }
 

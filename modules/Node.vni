@@ -87,7 +87,7 @@ module Node implements vnx.addons.HttpComponent {
 	Contract* get_contract(addr_t address) const;
 	
 	@Permission(permission_e.PUBLIC)
-	Transaction* get_transaction(hash_t id) const;
+	Transaction* get_transaction(hash_t id, bool include_pending) const;
 	
 	@Permission(permission_e.PUBLIC)
 	vector<Transaction*> get_transactions(vector<hash_t> ids) const;

@@ -57,7 +57,7 @@ protected:
 
 	std::vector<vnx::optional<txo_info_t>> get_txo_infos(const std::vector<txio_key_t>& keys) const override;
 
-	std::shared_ptr<const Transaction> get_transaction(const hash_t& id) const override;
+	std::shared_ptr<const Transaction> get_transaction(const hash_t& id, const vnx::bool_t& include_pending = false) const override;
 
 	std::vector<std::shared_ptr<const Transaction>> get_transactions(const std::vector<hash_t>& ids) const override;
 
