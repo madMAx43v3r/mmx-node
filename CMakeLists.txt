@@ -62,6 +62,7 @@ add_library(mmx_iface SHARED
 	src/contract/PubKey.cpp
 	src/contract/MultiSig.cpp
 	src/contract/Token.cpp
+	src/contract/Staking.cpp
 	src/contract/Condition.cpp
 	src/solution/PubKey.cpp
 	src/solution/MultiSig.cpp

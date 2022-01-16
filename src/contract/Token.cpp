@@ -13,7 +13,20 @@
 namespace mmx {
 namespace contract {
 
-vnx::bool_t Token::is_valid() const {
+vnx::bool_t Token::is_valid() const
+{
+	if(!time_factor.inverse) {
+		return false;
+	}
+	for(const auto& entry : stake_factors) {
+		const auto& factor = entry.second;
+		if(!factor.value || !factor.inverse) {
+			return false;
+		}
+		if(uint128_t(factor.value) * 10000 > factor.inverse) {
+			return false;
+		}
+	}
 	return Contract::is_valid() && !name.empty() && !symbol.empty();
 }
 
@@ -32,7 +45,6 @@ hash_t Token::calc_hash() const
 	write_bytes(out, decimals);
 	write_bytes(out, owner);
 	write_bytes(out, time_factor);
-	write_bytes(out, stake_condition ? stake_condition->calc_hash() : hash_t());
 	for(const auto& entry : stake_factors) {
 		write_bytes(out, entry.first);
 		write_bytes(out, entry.second);
@@ -44,8 +56,7 @@ hash_t Token::calc_hash() const
 
 uint64_t Token::calc_min_fee(std::shared_ptr<const ChainParams> params) const {
 	return (8 + 4 + name.size() + symbol.size() + web_url.size() + icon_url.size()
-			+ 4 + 32 + 16 + (32 + 16) * stake_factors.size()) * params->min_txfee_byte
-			+ (stake_condition ? stake_condition->calc_min_fee(params) : 0);
+			+ 4 + 32 + 16 + (32 + 16) * stake_factors.size()) * params->min_txfee_byte;
 }
 
 std::vector<addr_t> Token::get_dependency() const {
