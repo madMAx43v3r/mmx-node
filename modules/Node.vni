@@ -102,6 +102,9 @@ module Node implements vnx.addons.HttpComponent {
 	ulong get_total_balance(vector<addr_t> addresses, addr_t contract) const;
 	
 	@Permission(permission_e.PUBLIC)
+	map<addr_t, ulong> get_total_balances(vector<addr_t> addresses) const;
+	
+	@Permission(permission_e.PUBLIC)
 	ulong get_total_supply(addr_t contract) const;
 	
 	@Permission(permission_e.PUBLIC)

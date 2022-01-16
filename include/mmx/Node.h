@@ -73,6 +73,8 @@ protected:
 
 	uint64_t get_total_balance(const std::vector<addr_t>& addresses, const addr_t& contract) const override;
 
+	std::map<addr_t, uint64_t> get_total_balances(const std::vector<addr_t>& addresses) const override;
+
 	uint64_t get_total_supply(const addr_t& contract) const override;
 
 	std::vector<utxo_entry_t> get_utxo_list(const std::vector<addr_t>& addresses) const override;
