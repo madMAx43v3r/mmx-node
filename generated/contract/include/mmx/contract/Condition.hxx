@@ -5,9 +5,11 @@
 #define INCLUDE_mmx_contract_Condition_HXX_
 
 #include <mmx/contract/package.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/contract/compare_e.hxx>
 #include <mmx/contract/condition_e.hxx>
+#include <mmx/hash_t.hpp>
 #include <vnx/Value.h>
 
 
@@ -17,6 +19,7 @@ namespace contract {
 class Condition : public ::vnx::Value {
 public:
 	
+	uint32_t version = 0;
 	::mmx::contract::condition_e type;
 	::mmx::contract::compare_e compare;
 	vnx::optional<int64_t> value;
@@ -35,6 +38,10 @@ public:
 	vnx::Hash64 get_type_hash() const override;
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
+	
+	virtual vnx::bool_t is_valid() const;
+	virtual ::mmx::hash_t calc_hash() const;
+	virtual uint64_t calc_min_fee(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	
 	static std::shared_ptr<Condition> create();
 	std::shared_ptr<vnx::Value> clone() const override;

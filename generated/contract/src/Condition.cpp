@@ -3,9 +3,11 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/contract/Condition.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/contract/compare_e.hxx>
 #include <mmx/contract/condition_e.hxx>
+#include <mmx/hash_t.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -16,7 +18,7 @@ namespace contract {
 
 
 const vnx::Hash64 Condition::VNX_TYPE_HASH(0x85f70b1c8de5f940ull);
-const vnx::Hash64 Condition::VNX_CODE_HASH(0x91ecc28119077a1cull);
+const vnx::Hash64 Condition::VNX_CODE_HASH(0x4f0862d280e78977ull);
 
 vnx::Hash64 Condition::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,16 +51,18 @@ void Condition::write(vnx::TypeOutput& _out, const vnx::TypeCode* _type_code, co
 void Condition::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::contract::vnx_native_type_code_Condition;
 	_visitor.type_begin(*_type_code);
-	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, type);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, compare);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, value);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, currency);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, nested);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, version);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, type);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, compare);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, value);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, currency);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, nested);
 	_visitor.type_end(*_type_code);
 }
 
 void Condition::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.contract.Condition\"";
+	_out << ", \"version\": "; vnx::write(_out, version);
 	_out << ", \"type\": "; vnx::write(_out, type);
 	_out << ", \"compare\": "; vnx::write(_out, compare);
 	_out << ", \"value\": "; vnx::write(_out, value);
@@ -76,6 +80,7 @@ void Condition::read(std::istream& _in) {
 vnx::Object Condition::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.contract.Condition";
+	_object["version"] = version;
 	_object["type"] = type;
 	_object["compare"] = compare;
 	_object["value"] = value;
@@ -96,11 +101,16 @@ void Condition::from_object(const vnx::Object& _object) {
 			_entry.second.to(type);
 		} else if(_entry.first == "value") {
 			_entry.second.to(value);
+		} else if(_entry.first == "version") {
+			_entry.second.to(version);
 		}
 	}
 }
 
 vnx::Variant Condition::get_field(const std::string& _name) const {
+	if(_name == "version") {
+		return vnx::Variant(version);
+	}
 	if(_name == "type") {
 		return vnx::Variant(type);
 	}
@@ -120,7 +130,9 @@ vnx::Variant Condition::get_field(const std::string& _name) const {
 }
 
 void Condition::set_field(const std::string& _name, const vnx::Variant& _value) {
-	if(_name == "type") {
+	if(_name == "version") {
+		_value.to(version);
+	} else if(_name == "type") {
 		_value.to(type);
 	} else if(_name == "compare") {
 		_value.to(compare);
@@ -159,7 +171,7 @@ std::shared_ptr<vnx::TypeCode> Condition::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.Condition";
 	type_code->type_hash = vnx::Hash64(0x85f70b1c8de5f940ull);
-	type_code->code_hash = vnx::Hash64(0x91ecc28119077a1cull);
+	type_code->code_hash = vnx::Hash64(0x4f0862d280e78977ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::Condition);
@@ -167,33 +179,39 @@ std::shared_ptr<vnx::TypeCode> Condition::static_create_type_code() {
 	type_code->depends.resize(2);
 	type_code->depends[0] = ::mmx::contract::condition_e::static_get_type_code();
 	type_code->depends[1] = ::mmx::contract::compare_e::static_get_type_code();
-	type_code->fields.resize(5);
+	type_code->fields.resize(6);
 	{
 		auto& field = type_code->fields[0];
+		field.data_size = 4;
+		field.name = "version";
+		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[1];
 		field.is_extended = true;
 		field.name = "type";
 		field.code = {19, 0};
 	}
 	{
-		auto& field = type_code->fields[1];
+		auto& field = type_code->fields[2];
 		field.is_extended = true;
 		field.name = "compare";
 		field.code = {19, 1};
 	}
 	{
-		auto& field = type_code->fields[2];
+		auto& field = type_code->fields[3];
 		field.is_extended = true;
 		field.name = "value";
 		field.code = {33, 8};
 	}
 	{
-		auto& field = type_code->fields[3];
+		auto& field = type_code->fields[4];
 		field.is_extended = true;
 		field.name = "currency";
 		field.code = {33, 11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[4];
+		auto& field = type_code->fields[5];
 		field.is_extended = true;
 		field.name = "nested";
 		field.code = {12, 16};
@@ -239,16 +257,19 @@ void read(TypeInput& in, ::mmx::contract::Condition& value, const TypeCode* type
 			}
 		}
 	}
-	in.read(type_code->total_field_size);
+	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
+		if(const auto* const _field = type_code->field_map[0]) {
+			vnx::read_value(_buf + _field->offset, value.version, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 0: vnx::read(in, value.type, type_code, _field->code.data()); break;
-			case 1: vnx::read(in, value.compare, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.value, type_code, _field->code.data()); break;
-			case 3: vnx::read(in, value.currency, type_code, _field->code.data()); break;
-			case 4: vnx::read(in, value.nested, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.type, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.compare, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.value, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.currency, type_code, _field->code.data()); break;
+			case 5: vnx::read(in, value.nested, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -267,11 +288,13 @@ void write(TypeOutput& out, const ::mmx::contract::Condition& value, const TypeC
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	vnx::write(out, value.type, type_code, type_code->fields[0].code.data());
-	vnx::write(out, value.compare, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.value, type_code, type_code->fields[2].code.data());
-	vnx::write(out, value.currency, type_code, type_code->fields[3].code.data());
-	vnx::write(out, value.nested, type_code, type_code->fields[4].code.data());
+	char* const _buf = out.write(4);
+	vnx::write_value(_buf + 0, value.version);
+	vnx::write(out, value.type, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.compare, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.value, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.currency, type_code, type_code->fields[4].code.data());
+	vnx::write(out, value.nested, type_code, type_code->fields[5].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::Condition& value) {

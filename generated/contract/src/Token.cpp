@@ -3,11 +3,15 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/contract/Token.hxx>
+#include <mmx/ChainParams.hxx>
+#include <mmx/Context.hxx>
 #include <mmx/Contract.hxx>
+#include <mmx/Operation.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/contract/Condition.hxx>
 #include <mmx/hash_t.hpp>
+#include <mmx/tx_out_t.hxx>
 #include <mmx/ulong_fraction_t.hxx>
 
 #include <vnx/vnx.h>
@@ -18,7 +22,7 @@ namespace contract {
 
 
 const vnx::Hash64 Token::VNX_TYPE_HASH(0x2d8835d6429431b2ull);
-const vnx::Hash64 Token::VNX_CODE_HASH(0x44b7a4ab793495ecull);
+const vnx::Hash64 Token::VNX_CODE_HASH(0x2c02e7f4e66cd244ull);
 
 vnx::Hash64 Token::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -211,7 +215,7 @@ std::shared_ptr<vnx::TypeCode> Token::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.Token";
 	type_code->type_hash = vnx::Hash64(0x2d8835d6429431b2ull);
-	type_code->code_hash = vnx::Hash64(0x44b7a4ab793495ecull);
+	type_code->code_hash = vnx::Hash64(0x2c02e7f4e66cd244ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::Token);
@@ -255,13 +259,13 @@ std::shared_ptr<vnx::TypeCode> Token::static_create_type_code() {
 		auto& field = type_code->fields[5];
 		field.data_size = 4;
 		field.name = "decimals";
-		field.code = {7};
+		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[6];
 		field.is_extended = true;
 		field.name = "owner";
-		field.code = {11, 32, 1};
+		field.code = {33, 11, 32, 1};
 	}
 	{
 		auto& field = type_code->fields[7];
