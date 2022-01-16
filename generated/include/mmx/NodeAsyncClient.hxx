@@ -150,6 +150,10 @@ public:
 			const std::function<void(const uint64_t&)>& _callback = std::function<void(const uint64_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
+	uint64_t get_total_balances(const std::vector<::mmx::addr_t>& addresses = {}, 
+			const std::function<void(const std::map<::mmx::addr_t, uint64_t>&)>& _callback = std::function<void(const std::map<::mmx::addr_t, uint64_t>&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
 	uint64_t get_total_supply(const ::mmx::addr_t& contract = ::mmx::addr_t(), 
 			const std::function<void(const uint64_t&)>& _callback = std::function<void(const uint64_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
@@ -209,6 +213,7 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::tx_entry_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_history_for;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const uint64_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_balance;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const uint64_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_total_balance;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<::mmx::addr_t, uint64_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_total_balances;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const uint64_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_total_supply;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::utxo_entry_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_utxo_list;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::stxo_entry_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_stxo_list;
