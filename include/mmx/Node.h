@@ -145,6 +145,8 @@ private:
 
 	void add_fork(std::shared_ptr<fork_t> fork);
 
+	void add_block_tx(std::shared_ptr<const BlockHeader> block, std::shared_ptr<const TransactionBase> tx);
+
 	bool add_dummy_block(std::shared_ptr<const BlockHeader> prev);
 
 	bool include_transaction(std::shared_ptr<const Transaction> tx);

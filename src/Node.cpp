@@ -359,15 +359,6 @@ std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id) const
 			}
 		}
 	}
-	for(const auto& entry : fork_tree) {
-		if(const auto& block = entry.second->block) {
-			if(const auto& tx = block->tx_base) {
-				if(tx->id == id) {
-					return std::dynamic_pointer_cast<const Transaction>(tx);
-				}
-			}
-		}
-	}
 	return nullptr;
 }
 
@@ -770,11 +761,25 @@ void Node::check_vdfs()
 void Node::add_fork(std::shared_ptr<fork_t> fork)
 {
 	const auto& block = fork->block;
-	if(fork_tree.emplace(block->hash, fork).second) {
+	if(fork_tree.emplace(block->hash, fork).second)
+	{
 		fork_index.emplace(block->height, fork);
+		// add transactions to pool
+		for(const auto& tx : block->tx_list) {
+			add_block_tx(block, tx);
+		}
+		add_block_tx(block, block->tx_base);
 	}
 	if(add_dummy_block(block)) {
 		fork->has_dummy_block = true;
+	}
+}
+
+void Node::add_block_tx(std::shared_ptr<const BlockHeader> block, std::shared_ptr<const TransactionBase> base)
+{
+	if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
+		tx_pool.emplace(tx->id, tx);
+		tx_map.emplace(tx->id, block->height);
 	}
 }
 
@@ -811,7 +816,7 @@ void Node::update()
 				blocks.push_back(fork->block);
 			}
 		}
-		for(auto block : blocks) {
+		for(const auto& block : blocks) {
 			add_dummy_block(block);
 		}
 	}
