@@ -1241,12 +1241,14 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 			continue;
 		}
 		try {
-			if(!tx->exec_outputs.empty()) {
-				throw std::logic_error("exec_outputs not empty");
-			}
 			const auto cost = tx->calc_min_fee(params);
 			if(cost > params->max_block_cost) {
 				throw std::logic_error("tx cost > max_block_cost");
+			}
+			if(!tx->exec_outputs.empty()) {
+				auto copy = vnx::clone(tx);
+				copy->exec_outputs.clear();
+				tx = copy;
 			}
 			if(auto new_tx = validate(tx, context, nullptr, tx_fees[i])) {
 				tx = new_tx;
