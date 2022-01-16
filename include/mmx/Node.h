@@ -255,7 +255,6 @@ private:
 	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;					// [block hash => fork] (pending only)
 	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;					// [height => block header] (finalized only)
 	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_pool;			// [txid => transaction] (pending only)
-	std::unordered_map<hash_t, std::shared_ptr<const Contract>> contracts;			// [contract hash => contract] (cached only)
 
 	std::multimap<uint32_t, std::shared_ptr<vdf_point_t>> verified_vdfs;			// [height => output]
 	std::multimap<uint32_t, std::shared_ptr<const ProofOfTime>> pending_vdfs;		// [height => proof]

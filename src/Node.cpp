@@ -333,6 +333,7 @@ std::vector<vnx::optional<txo_info_t>> Node::get_txo_infos(const std::vector<txi
 
 std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id) const
 {
+	// THREAD SAFE
 	{
 		auto iter = tx_pool.find(id);
 		if(iter != tx_pool.end()) {
@@ -342,25 +343,19 @@ std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id) const
 	{
 		std::pair<int64_t, uint32_t> entry;
 		if(tx_index.find(id, entry)) {
-			const auto last_pos = block_chain->get_output_pos();
-			try {
-				block_chain->seek_to(entry.first);
-				auto value = vnx::read(block_chain->in);
-				block_chain->seek_to(last_pos);
-				if(auto tx = std::dynamic_pointer_cast<Transaction>(value)) {
-					return tx;
-				}
-				if(auto header = std::dynamic_pointer_cast<BlockHeader>(value)) {
-					if(auto tx = header->tx_base) {
-						if(tx->id == id) {
-							return std::dynamic_pointer_cast<const Transaction>(tx);
-						}
+			vnx::File file(block_chain->get_path());
+			file.open("rb");
+			file.seek_to(entry.first);
+			const auto value = vnx::read(file.in);
+			if(auto tx = std::dynamic_pointer_cast<Transaction>(value)) {
+				return tx;
+			}
+			if(auto header = std::dynamic_pointer_cast<BlockHeader>(value)) {
+				if(auto tx = header->tx_base) {
+					if(tx->id == id) {
+						return std::dynamic_pointer_cast<const Transaction>(tx);
 					}
 				}
-			}
-			catch(...) {
-				block_chain->seek_to(last_pos);
-				throw;
 			}
 		}
 	}
@@ -467,10 +462,7 @@ std::vector<tx_entry_t> Node::get_history_for(const std::vector<addr_t>& address
 
 std::shared_ptr<const Contract> Node::get_contract(const addr_t& address) const
 {
-	auto iter = contracts.find(address);
-	if(iter != contracts.end()) {
-		return iter->second;
-	}
+	// THREAD SAFE
 	if(auto tx = get_transaction(address)) {
 		return tx->deploy;
 	}
@@ -1617,9 +1609,8 @@ std::shared_ptr<const Context> Node::create_context(std::shared_ptr<const Contra
 	auto context = vnx::clone(base);
 	context->txid = tx->id;
 	for(const auto& addr : contract->get_dependency()) {
-		auto iter = contracts.find(addr);
-		if(iter != contracts.end()) {
-			context->depends[addr] = iter->second;
+		if(auto contract = get_contract(addr)) {
+			context->depends[addr] = contract;
 		} else {
 			auto pubkey = contract::PubKey::create();
 			pubkey->address = addr;
@@ -1677,16 +1668,11 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 			if(!solution) {
 				throw std::logic_error("missing solution");
 			}
-			std::shared_ptr<const Contract> contract;
-			{
-				auto iter = contracts.find(utxo.address);
-				if(iter != contracts.end()) {
-					contract = iter->second;
-				} else {
-					auto simple = contract::PubKey::create();
-					simple->address = utxo.address;
-					contract = simple;
-				}
+			auto contract = get_contract(utxo.address);
+			if(!contract) {
+				auto pubkey = contract::PubKey::create();
+				pubkey->address = utxo.address;
+				contract = pubkey;
 			}
 			auto spend = operation::Spend::create();
 			spend->address = utxo.address;
@@ -1701,11 +1687,11 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 		}
 		for(const auto& op : tx->execute)
 		{
-			auto iter = contracts.find(op->address);
-			if(iter != contracts.end()) {
-				const auto& contract = iter->second;
+			if(auto contract = get_contract(op->address)) {
 				const auto outputs = contract->validate(op, create_context(contract, context, tx));
 				exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
+			} else {
+				throw std::logic_error("no such contract");
 			}
 		}
 	}
