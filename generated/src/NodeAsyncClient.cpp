@@ -413,9 +413,10 @@ uint64_t NodeAsyncClient::get_contract(const ::mmx::addr_t& address, const std::
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_transaction(const ::mmx::hash_t& id, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_transaction(const ::mmx::hash_t& id, const vnx::bool_t& include_pending, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_transaction::create();
 	_method->id = id;
+	_method->include_pending = include_pending;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);

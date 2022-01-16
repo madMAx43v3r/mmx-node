@@ -15,6 +15,7 @@ class Node_get_transaction : public ::vnx::Value {
 public:
 	
 	::mmx::hash_t id;
+	vnx::bool_t include_pending = 0;
 	
 	typedef ::vnx::Value Super;
 	

@@ -130,7 +130,7 @@ public:
 			const std::function<void(std::shared_ptr<const ::mmx::Contract>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::Contract>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_transaction(const ::mmx::hash_t& id = ::mmx::hash_t(), 
+	uint64_t get_transaction(const ::mmx::hash_t& id = ::mmx::hash_t(), const vnx::bool_t& include_pending = 0, 
 			const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::Transaction>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	

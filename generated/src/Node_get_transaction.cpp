@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_transaction::VNX_TYPE_HASH(0x9c76ca142292750full);
-const vnx::Hash64 Node_get_transaction::VNX_CODE_HASH(0xafd99c29083a783cull);
+const vnx::Hash64 Node_get_transaction::VNX_CODE_HASH(0x69a50e4f02b559dfull);
 
 vnx::Hash64 Node_get_transaction::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,12 +48,14 @@ void Node_get_transaction::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Node_get_transaction;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, id);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, include_pending);
 	_visitor.type_end(*_type_code);
 }
 
 void Node_get_transaction::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Node.get_transaction\"";
 	_out << ", \"id\": "; vnx::write(_out, id);
+	_out << ", \"include_pending\": "; vnx::write(_out, include_pending);
 	_out << "}";
 }
 
@@ -67,6 +69,7 @@ vnx::Object Node_get_transaction::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Node.get_transaction";
 	_object["id"] = id;
+	_object["include_pending"] = include_pending;
 	return _object;
 }
 
@@ -74,6 +77,8 @@ void Node_get_transaction::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "id") {
 			_entry.second.to(id);
+		} else if(_entry.first == "include_pending") {
+			_entry.second.to(include_pending);
 		}
 	}
 }
@@ -82,12 +87,17 @@ vnx::Variant Node_get_transaction::get_field(const std::string& _name) const {
 	if(_name == "id") {
 		return vnx::Variant(id);
 	}
+	if(_name == "include_pending") {
+		return vnx::Variant(include_pending);
+	}
 	return vnx::Variant();
 }
 
 void Node_get_transaction::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "id") {
 		_value.to(id);
+	} else if(_name == "include_pending") {
+		_value.to(include_pending);
 	} else {
 		throw std::logic_error("no such field: '" + _name + "'");
 	}
@@ -117,7 +127,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_transaction::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_transaction";
 	type_code->type_hash = vnx::Hash64(0x9c76ca142292750full);
-	type_code->code_hash = vnx::Hash64(0xafd99c29083a783cull);
+	type_code->code_hash = vnx::Hash64(0x69a50e4f02b559dfull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -125,12 +135,18 @@ std::shared_ptr<vnx::TypeCode> Node_get_transaction::static_create_type_code() {
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Node_get_transaction>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Node_get_transaction_return::static_get_type_code();
-	type_code->fields.resize(1);
+	type_code->fields.resize(2);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "id";
 		field.code = {11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[1];
+		field.data_size = 1;
+		field.name = "include_pending";
+		field.code = {31};
 	}
 	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();
@@ -173,8 +189,11 @@ void read(TypeInput& in, ::mmx::Node_get_transaction& value, const TypeCode* typ
 			}
 		}
 	}
-	in.read(type_code->total_field_size);
+	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
+		if(const auto* const _field = type_code->field_map[1]) {
+			vnx::read_value(_buf + _field->offset, value.include_pending, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -197,6 +216,8 @@ void write(TypeOutput& out, const ::mmx::Node_get_transaction& value, const Type
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
+	char* const _buf = out.write(1);
+	vnx::write_value(_buf + 0, value.include_pending);
 	vnx::write(out, value.id, type_code, type_code->fields[0].code.data());
 }
 

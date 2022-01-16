@@ -956,7 +956,7 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 		case 0x9c76ca142292750full: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_transaction>(_method);
 			auto _return_value = ::mmx::Node_get_transaction_return::create();
-			_return_value->_ret_0 = get_transaction(_args->id);
+			_return_value->_ret_0 = get_transaction(_args->id, _args->include_pending);
 			return _return_value;
 		}
 		case 0x715a5bb668426203ull: {

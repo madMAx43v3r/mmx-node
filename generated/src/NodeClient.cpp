@@ -406,9 +406,10 @@ std::shared_ptr<const ::mmx::Contract> NodeClient::get_contract(const ::mmx::add
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> NodeClient::get_transaction(const ::mmx::hash_t& id) {
+std::shared_ptr<const ::mmx::Transaction> NodeClient::get_transaction(const ::mmx::hash_t& id, const vnx::bool_t& include_pending) {
 	auto _method = ::mmx::Node_get_transaction::create();
 	_method->id = id;
+	_method->include_pending = include_pending;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_transaction_return>(_return_value)) {
 		return _result->_ret_0;
