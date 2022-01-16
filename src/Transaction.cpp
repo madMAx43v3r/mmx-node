@@ -66,8 +66,16 @@ uint64_t Transaction::calc_min_fee(std::shared_ptr<const ChainParams> params) co
 		throw std::logic_error("!params");
 	}
 	uint64_t fee = (inputs.size() + outputs.size()) * params->min_txfee_io;
+
 	for(const auto& op : execute) {
-		fee += op->calc_min_fee(params);
+		if(op) {
+			fee += op->calc_min_fee(params);
+		}
+	}
+	for(const auto& sol : solutions) {
+		if(sol) {
+			fee += sol->calc_min_fee(params);
+		}
 	}
 	if(deploy) {
 		fee += deploy->calc_min_fee(params);
