@@ -2109,6 +2109,7 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) const noexc
 
 void Node::check_vdf_task(std::shared_ptr<fork_t> fork, std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const BlockHeader> infuse) const noexcept
 {
+	// MAY NOT ACCESS ANY NODE DATA EXCEPT "params"
 	const auto time_begin = vnx::get_wall_time_micros();
 	const auto& block = fork->block;
 
