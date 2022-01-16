@@ -1305,7 +1305,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 
 void Node::print_stats()
 {
-	 log(INFO) << tx_pool.size() << " tx, " << utxo_map.size() << " utxo, " << change_log.size() << " / " << fork_tree.size() << " blocks";
+	 log(INFO) << tx_pool.size() << " tx pool, " << utxo_map.size() << " utxo, " << change_log.size() << " / " << fork_tree.size() << " blocks";
 }
 
 void Node::on_stuck_timeout()
