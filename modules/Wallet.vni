@@ -16,6 +16,9 @@ module Wallet implements vnx.addons.HttpComponent {
 	hash_t send(uint index, ulong amount, addr_t dst_addr, addr_t contract) const;
 	
 	@Permission(permission_e.SPENDING)
+	hash_t mint(uint index, ulong amount, addr_t dst_addr, addr_t contract) const;
+	
+	@Permission(permission_e.SPENDING)
 	hash_t deploy(uint index, Contract* contract) const;
 	
 	vector<utxo_entry_t> get_utxo_list(uint index) const;
@@ -29,6 +32,8 @@ module Wallet implements vnx.addons.HttpComponent {
 	vector<tx_entry_t> get_history(uint index, int since) const;
 	
 	ulong get_balance(uint index, addr_t contract) const;
+	
+	map<addr_t, ulong> get_balances(uint index) const;
 	
 	addr_t get_address(uint index, uint offset) const;
 	

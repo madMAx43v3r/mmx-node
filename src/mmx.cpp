@@ -11,6 +11,7 @@
 #include <mmx/FarmerClient.hxx>
 #include <mmx/HarvesterClient.hxx>
 #include <mmx/Contract.hxx>
+#include <mmx/contract/Token.hxx>
 #include <mmx/KeyFile.hxx>
 #include <mmx/secp256k1.hpp>
 #include <mmx/hash_t.hpp>
@@ -119,8 +120,12 @@ int main(int argc, char** argv)
 				int num_addrs = 1;
 				vnx::read_config("$3", num_addrs);
 
-				const auto amount = wallet.get_balance(index, contract);
-				std::cout << "Balance: " << amount / pow(10, params->decimals) << " MMX (" << amount << ")" << std::endl;
+				for(const auto& entry : wallet.get_balances(index))
+				{
+					const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(entry.first));
+					const auto decimals = token ? token->decimals : params->decimals;
+					std::cout << "Balance: " << entry.second / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.second << ")" << std::endl;
+				}
 				for(int i = 0; i < num_addrs; ++i) {
 					std::cout << "Address[" << i << "]: " << wallet.get_address(index, i) << std::endl;
 				}
@@ -164,7 +169,10 @@ int main(int argc, char** argv)
 			}
 			else if(command == "send")
 			{
-				const int64_t mojo = amount * pow(10, params->decimals);
+				const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(contract));
+
+				const auto decimals = token ? token->decimals : params->decimals;
+				const int64_t mojo = amount * pow(10, decimals);
 				if(amount <= 0 || mojo <= 0) {
 					vnx::log_error() << "Invalid amount: " << amount << " (-a | --amount)";
 					goto failed;
@@ -173,12 +181,28 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Missing destination address argument: -t | --target";
 					goto failed;
 				}
-				std::string currency = "MMX";
-				if(contract != mmx::addr_t()) {
-					currency = "?";
-				}
 				const auto txid = wallet.send(index, mojo, target, contract);
-				std::cout << "Sent " << mojo / pow(10, params->decimals) << " (" << mojo << ") " << currency << " to " << target << std::endl;
+				std::cout << "Sent " << mojo / pow(10, decimals) << " (" << mojo << ") " << (token ? token->symbol : "MMX") << " to " << target << std::endl;
+				std::cout << "Transaction ID: " << txid << std::endl;
+			}
+			else if(command == "mint")
+			{
+				const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(contract));
+				if(!token) {
+					vnx::log_error() << "No such token: " << contract;
+					goto failed;
+				}
+				const int64_t mojo = amount * pow(10, token->decimals);
+				if(amount <= 0 || mojo <= 0) {
+					vnx::log_error() << "Invalid amount: " << amount << " (-a | --amount)";
+					goto failed;
+				}
+				if(target == mmx::addr_t()) {
+					vnx::log_error() << "Missing destination address argument: -t | --target";
+					goto failed;
+				}
+				const auto txid = wallet.mint(index, mojo, target, contract);
+				std::cout << "Minted " << mojo / pow(10, token->decimals) << " (" << mojo << ") " << token->symbol << " to " << target << std::endl;
 				std::cout << "Transaction ID: " << txid << std::endl;
 			}
 			else if(command == "deploy")
@@ -231,7 +255,7 @@ int main(int argc, char** argv)
 						<< std::endl << wallet.seed_value << std::endl;
 			}
 			else {
-				std::cerr << "Help: mmx wallet [show | log | send | deploy | create]" << std::endl;
+				std::cerr << "Help: mmx wallet [show | log | send | mint | deploy | create]" << std::endl;
 			}
 		}
 		else if(module == "node")
@@ -432,7 +456,7 @@ int main(int argc, char** argv)
 						std::cout << ss.str() << std::endl;
 					}
 				}
-				else if(command == "contract")
+				else if(subject == "contract")
 				{
 					mmx::addr_t address;
 					vnx::read_config("$4", address);

@@ -10,6 +10,7 @@
 
 #include <mmx/KeyFile.hxx>
 #include <mmx/Transaction.hxx>
+#include <mmx/operation/Mint.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/solution/PubKey.hxx>
 
@@ -295,9 +296,35 @@ public:
 		return tx;
 	}
 
+	std::shared_ptr<Transaction> mint(const uint64_t& amount, const addr_t& dst_addr, const addr_t& contract, const addr_t& owner)
+	{
+		auto tx = Transaction::create();
+
+		auto op = operation::Mint::create();
+		op->amount = amount;
+		op->target = dst_addr;
+		op->address = contract;
+		tx->execute.push_back(op);
+
+		uint64_t change = 0;
+		std::unordered_map<txio_key_t, addr_t> spent_map;
+		gather_fee(tx, spent_map, change);
+		sign_off(tx, spent_map);
+		{
+			const auto& keys = get_keypair(owner);
+
+			auto sol = solution::PubKey::create();
+			sol->pubkey = keys.second;
+			sol->signature = signature_t::sign(keys.first, tx->id);
+			op->solution = sol;
+		}
+		return tx;
+	}
+
 	std::shared_ptr<Transaction> deploy(std::shared_ptr<const Contract> contract)
 	{
 		auto tx = Transaction::create();
+		tx->deploy = contract;
 
 		uint64_t change = 0;
 		std::unordered_map<txio_key_t, addr_t> spent_map;

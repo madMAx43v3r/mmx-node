@@ -9,6 +9,7 @@
 #include <mmx/utxo_t.hpp>
 #include <mmx/utxo_entry_t.hpp>
 #include <mmx/stxo_entry_t.hpp>
+#include <mmx/contract/Token.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/utils.h>
 
@@ -86,6 +87,36 @@ hash_t Wallet::send(const uint32_t& index, const uint64_t& amount, const addr_t&
 	wallet->update_from(tx);
 
 	log(INFO) << "Sent " << amount << " with fee " << tx->calc_min_fee(params) << " to " << dst_addr << " (" << tx->id << ")";
+	return tx->id;
+}
+
+hash_t Wallet::mint(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& contract) const
+{
+	if(amount == 0) {
+		throw std::logic_error("amount cannot be zero");
+	}
+	if(dst_addr == addr_t()) {
+		throw std::logic_error("dst_addr cannot be zero");
+	}
+	const auto wallet = get_wallet(index);
+
+	const auto token = std::dynamic_pointer_cast<const contract::Token>(node->get_contract(contract));
+	if(!token) {
+		throw std::logic_error("no such contract");
+	}
+	if(!token->owner) {
+		throw std::logic_error("token has no owner");
+	}
+
+	// update utxo_cache
+	get_utxo_list(index);
+
+	auto tx = wallet->mint(amount, dst_addr, contract, *token->owner);
+
+	node->add_transaction(tx);
+	wallet->update_from(tx);
+
+	log(INFO) << "Minted " << amount << " with fee " << tx->calc_min_fee(params) << " to " << dst_addr << " (" << tx->id << ")";
 	return tx->id;
 }
 
@@ -167,6 +198,16 @@ uint64_t Wallet::get_balance(const uint32_t& index, const addr_t& contract) cons
 		}
 	}
 	return total;
+}
+
+std::map<addr_t, uint64_t> Wallet::get_balances(const uint32_t& index) const
+{
+	std::map<addr_t, uint64_t> amounts;
+	for(const auto& entry : get_utxo_list(index)) {
+		const auto& utxo = entry.output;
+		amounts[utxo.contract] += utxo.amount;
+	}
+	return amounts;
 }
 
 addr_t Wallet::get_address(const uint32_t& index, const uint32_t& offset) const
