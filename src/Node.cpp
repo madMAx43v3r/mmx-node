@@ -68,8 +68,8 @@ void Node::main()
 	vnx::Directory(storage_path + "db").create();
 	{
 		::rocksdb::Options options;
-		options.keep_log_file_num = 3;
 		options.max_open_files = 16;
+		options.keep_log_file_num = 3;
 		options.max_manifest_file_size = 64 * 1024 * 1024;
 
 		stxo_index.open(storage_path + "db/stxo_index", options);
