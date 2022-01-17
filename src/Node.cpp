@@ -1842,9 +1842,6 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	change_log.pop_front();
 
 	if(!is_replay) {
-		stxo_log.flush();
-		stxo_index.flush();
-		saddr_map.flush();
 		write_block(block);
 	}
 	while(history.size() > max_history) {
@@ -2463,9 +2460,6 @@ void Node::write_block(std::shared_ptr<const Block> block)
 		vnx::write(out, tx);
 	}
 	vnx::write(out, nullptr);
-
-	tx_log.flush();
-	tx_index.flush();
 	block_chain->flush();
 }
 
