@@ -11,6 +11,7 @@
 #include <mmx/FarmerClient.hxx>
 #include <mmx/HarvesterClient.hxx>
 #include <mmx/Contract.hxx>
+#include <mmx/contract/NFT.hxx>
 #include <mmx/contract/Token.hxx>
 #include <mmx/KeyFile.hxx>
 #include <mmx/secp256k1.hpp>
@@ -120,11 +121,20 @@ int main(int argc, char** argv)
 				int num_addrs = 1;
 				vnx::read_config("$3", num_addrs);
 
+				std::vector<mmx::addr_t> nfts;
 				for(const auto& entry : wallet.get_balances(index))
 				{
-					const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(entry.first));
-					const auto decimals = token ? token->decimals : params->decimals;
-					std::cout << "Balance: " << entry.second / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.second << ")" << std::endl;
+					const auto contract = node.get_contract(entry.first);
+					if(std::dynamic_pointer_cast<const mmx::contract::NFT>(contract)) {
+						nfts.push_back(entry.first);
+					} else {
+						const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(contract);
+						const auto decimals = token ? token->decimals : params->decimals;
+						std::cout << "Balance: " << entry.second / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.second << ")" << std::endl;
+					}
+				}
+				for(const auto& addr : nfts) {
+					std::cout << "NFT: " << addr;
 				}
 				for(int i = 0; i < num_addrs; ++i) {
 					std::cout << "Address[" << i << "]: " << wallet.get_address(index, i) << std::endl;
