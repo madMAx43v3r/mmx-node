@@ -1203,10 +1203,17 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	}
 	block->proof = response->proof;
 
+	struct tx_entry_t {
+		uint64_t fees = 0;
+		uint64_t cost = 0;
+		double fee_ratio = 0;
+		std::shared_ptr<const Transaction> tx;
+	};
+
+	std::vector<tx_entry_t> tx_list;
 	std::unordered_set<hash_t> invalid;
 	std::unordered_set<hash_t> postpone;
 	std::unordered_set<txio_key_t> spent;
-	std::vector<std::shared_ptr<const Transaction>> tx_list;
 
 	auto context = Context::create();
 	context->height = block->height;
@@ -1224,20 +1231,21 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 					throw std::logic_error("double spend");
 				}
 			}
-			tx_list.push_back(tx);
+			tx_entry_t entry;
+			entry.tx = tx;
+			tx_list.push_back(entry);
 		}
 		catch(const std::exception& ex) {
 			invalid.insert(entry.first);
 			log(WARN) << "TX validation failed with: " << ex.what();
 		}
 	}
-	std::vector<uint64_t> tx_fees(tx_list.size());
-	std::vector<uint64_t> tx_cost(tx_list.size());
 
 #pragma omp parallel for
 	for(size_t i = 0; i < tx_list.size(); ++i)
 	{
-		auto& tx = tx_list[i];
+		auto& entry = tx_list[i];
+		auto& tx = entry.tx;
 		// check if tx depends on another one which is not in a block yet
 		bool depends = false;
 		for(const auto& in : tx->inputs) {
@@ -1260,10 +1268,11 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 				copy->exec_outputs.clear();
 				tx = copy;
 			}
-			if(auto new_tx = validate(tx, context, nullptr, tx_fees[i])) {
+			if(auto new_tx = validate(tx, context, nullptr, entry.fees)) {
 				tx = new_tx;
 			}
-			tx_cost[i] = cost;
+			entry.cost = cost;
+			entry.fee_ratio = entry.fees / double(cost);
 		}
 		catch(const std::exception& ex) {
 #pragma omp critical
@@ -1272,18 +1281,25 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 		}
 	}
 
+	// sort by fee ratio
+	std::sort(tx_list.begin(), tx_list.end(),
+		[](const tx_entry_t& lhs, const tx_entry_t& rhs) -> bool {
+			return lhs.fee_ratio > rhs.fee_ratio;
+		});
+
 	uint64_t total_fees = 0;
 	uint64_t total_cost = 0;
 	for(size_t i = 0; i < tx_list.size(); ++i)
 	{
-		const auto& tx = tx_list[i];
+		const auto& entry = tx_list[i];
+		const auto& tx = entry.tx;
 		if(!invalid.count(tx->id) && !postpone.count(tx->id))
 		{
-			if(total_cost + tx_cost[i] < params->max_block_cost)
+			if(total_cost + entry.cost < params->max_block_cost)
 			{
 				block->tx_list.push_back(tx);
-				total_fees += tx_fees[i];
-				total_cost += tx_cost[i];
+				total_fees += entry.fees;
+				total_cost += entry.cost;
 			}
 		}
 	}
