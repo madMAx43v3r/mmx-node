@@ -12,6 +12,7 @@
 #include <mmx/TimeInfusion.hxx>
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/TimeLordClient.hxx>
+#include <mmx/contract/NFT.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/operation/Spend.hxx>
 #include <mmx/utxo_entry_t.hpp>
@@ -1719,14 +1720,14 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 
 			amounts[utxo.contract] += utxo.amount;
 		}
-		for(const auto& op : tx->execute)
-		{
-			if(auto contract = get_contract(op->address)) {
-				const auto outputs = contract->validate(op, create_context(contract, context, tx));
-				exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
-			} else {
-				throw std::logic_error("no such contract");
-			}
+	}
+	for(const auto& op : tx->execute)
+	{
+		if(auto contract = get_contract(op->address)) {
+			const auto outputs = contract->validate(op, create_context(contract, context, tx));
+			exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
+		} else {
+			throw std::logic_error("no such contract");
 		}
 	}
 	for(const auto& out : tx->outputs)
@@ -1746,6 +1747,15 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 				throw std::logic_error("tx over-spend");
 			}
 			value -= out.amount;
+		}
+	}
+	if(tx->deploy) {
+		if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(tx->deploy)) {
+			tx_out_t out;
+			out.contract = tx->id;
+			out.address = nft->creator;
+			out.amount = 1;
+			exec_outputs.push_back(out);
 		}
 	}
 	if(base) {

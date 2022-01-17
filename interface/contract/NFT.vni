@@ -1,0 +1,13 @@
+package mmx.contract;
+
+import mmx.addr_t;
+
+class NFT extends mmx.Contract {
+	
+	addr_t creator;
+	
+	optional<addr_t> parent;
+	
+	vnx.Object data;
+	
+}
