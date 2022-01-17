@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_WalletBase_HXX_
 
 #include <mmx/package.hxx>
+#include <mmx/Contract.hxx>
 #include <mmx/FarmerKeys.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
@@ -62,6 +63,7 @@ protected:
 	using Super::handle;
 	
 	virtual ::mmx::hash_t send(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& contract) const = 0;
+	virtual ::mmx::hash_t deploy(const uint32_t& index, std::shared_ptr<const ::mmx::Contract> contract) const = 0;
 	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list(const uint32_t& index) const = 0;
 	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list_for(const uint32_t& index, const ::mmx::addr_t& contract) const = 0;
 	virtual std::vector<::mmx::stxo_entry_t> get_stxo_list(const uint32_t& index) const = 0;

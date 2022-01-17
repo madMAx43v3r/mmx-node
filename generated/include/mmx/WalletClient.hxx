@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_Wallet_CLIENT_HXX_
 
 #include <vnx/Client.h>
+#include <mmx/Contract.hxx>
 #include <mmx/FarmerKeys.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
@@ -52,6 +53,8 @@ public:
 	vnx::bool_t vnx_self_test();
 	
 	::mmx::hash_t send(const uint32_t& index = 0, const uint64_t& amount = 0, const ::mmx::addr_t& dst_addr = ::mmx::addr_t(), const ::mmx::addr_t& contract = ::mmx::addr_t());
+	
+	::mmx::hash_t deploy(const uint32_t& index = 0, std::shared_ptr<const ::mmx::Contract> contract = nullptr);
 	
 	std::vector<::mmx::utxo_entry_t> get_utxo_list(const uint32_t& index = 0);
 	
