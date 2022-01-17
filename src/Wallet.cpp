@@ -89,6 +89,25 @@ hash_t Wallet::send(const uint32_t& index, const uint64_t& amount, const addr_t&
 	return tx->id;
 }
 
+hash_t Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> contract) const
+{
+	if(!contract) {
+		throw std::logic_error("contract cannot be null");
+	}
+	const auto wallet = get_wallet(index);
+
+	// update utxo_cache
+	get_utxo_list(index);
+
+	auto tx = wallet->deploy(contract);
+
+	node->add_transaction(tx);
+	wallet->update_from(tx);
+
+	log(INFO) << "Deployed " << contract->get_type_name() << " with fee " << tx->calc_min_fee(params) << " as " << addr_t(tx->id) << " (" << tx->id << ")";
+	return tx->id;
+}
+
 std::vector<utxo_entry_t> Wallet::get_utxo_list(const uint32_t& index) const
 {
 	const auto wallet = get_wallet(index);

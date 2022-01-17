@@ -31,6 +31,8 @@ protected:
 
 	hash_t send(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& contract) const override;
 
+	hash_t deploy(const uint32_t& index, std::shared_ptr<const Contract> contract) const override;
+
 	std::vector<utxo_entry_t> get_utxo_list(const uint32_t& index) const override;
 
 	std::vector<utxo_entry_t> get_utxo_list_for(const uint32_t& index, const addr_t& contract) const override;

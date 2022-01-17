@@ -15,6 +15,9 @@ module Wallet implements vnx.addons.HttpComponent {
 	@Permission(permission_e.SPENDING)
 	hash_t send(uint index, ulong amount, addr_t dst_addr, addr_t contract) const;
 	
+	@Permission(permission_e.SPENDING)
+	hash_t deploy(uint index, Contract* contract) const;
+	
 	vector<utxo_entry_t> get_utxo_list(uint index) const;
 	
 	vector<utxo_entry_t> get_utxo_list_for(uint index, addr_t contract) const;

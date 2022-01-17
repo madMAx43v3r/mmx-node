@@ -194,32 +194,8 @@ public:
 		return change;
 	}
 
-	std::shared_ptr<Transaction> send(const uint64_t& amount, const addr_t& dst_addr, const addr_t& contract)
+	uint64_t gather_fee(std::shared_ptr<Transaction> tx, std::unordered_map<txio_key_t, addr_t>& spent_map, uint64_t& change)
 	{
-		auto tx = Transaction::create();
-		{
-			// add primary output
-			tx_out_t out;
-			out.address = dst_addr;
-			out.contract = contract;
-			out.amount = amount;
-			tx->outputs.push_back(out);
-		}
-		std::unordered_map<txio_key_t, addr_t> spent_map;
-
-		uint64_t change = gather_inputs(tx, spent_map, amount, contract);
-
-		if(contract != addr_t() && change > 0) {
-			// token change cannot be used as tx fee
-			tx_out_t out;
-			out.address = get_address(0);
-			out.contract = contract;
-			out.amount = change;
-			tx->outputs.push_back(out);
-			change = 0;
-		}
-
-		// gather inputs for tx fee
 		uint64_t tx_fees = 0;
 		while(true) {
 			// count number of solutions needed
@@ -257,10 +233,14 @@ public:
 			change += gather_inputs(tx, spent_map, left, addr_t());
 			change += left;
 		}
+		return tx_fees;
+	}
+
+	void sign_off(std::shared_ptr<Transaction> tx, const std::unordered_map<txio_key_t, addr_t>& spent_map)
+	{
 		tx->finalize();
 
 		std::unordered_map<addr_t, uint32_t> solution_map;
-
 		for(auto& in : tx->inputs)
 		{
 			// sign all inputs
@@ -284,6 +264,45 @@ public:
 			solution_map[iter->second] = in.solution;
 			tx->solutions.push_back(sol);
 		}
+	}
+
+	std::shared_ptr<Transaction> send(const uint64_t& amount, const addr_t& dst_addr, const addr_t& contract)
+	{
+		auto tx = Transaction::create();
+		{
+			// add primary output
+			tx_out_t out;
+			out.address = dst_addr;
+			out.contract = contract;
+			out.amount = amount;
+			tx->outputs.push_back(out);
+		}
+		std::unordered_map<txio_key_t, addr_t> spent_map;
+
+		uint64_t change = gather_inputs(tx, spent_map, amount, contract);
+
+		if(contract != addr_t() && change > 0) {
+			// token change cannot be used as tx fee
+			tx_out_t out;
+			out.address = get_address(0);
+			out.contract = contract;
+			out.amount = change;
+			tx->outputs.push_back(out);
+			change = 0;
+		}
+		gather_fee(tx, spent_map, change);
+		sign_off(tx, spent_map);
+		return tx;
+	}
+
+	std::shared_ptr<Transaction> deploy(std::shared_ptr<const Contract> contract)
+	{
+		auto tx = Transaction::create();
+
+		uint64_t change = 0;
+		std::unordered_map<txio_key_t, addr_t> spent_map;
+		gather_fee(tx, spent_map, change);
+		sign_off(tx, spent_map);
 		return tx;
 	}
 
