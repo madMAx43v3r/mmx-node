@@ -10,6 +10,7 @@
 #include <mmx/WalletClient.hxx>
 #include <mmx/FarmerClient.hxx>
 #include <mmx/HarvesterClient.hxx>
+#include <mmx/Contract.hxx>
 #include <mmx/KeyFile.hxx>
 #include <mmx/secp256k1.hpp>
 #include <mmx/hash_t.hpp>
@@ -180,6 +181,20 @@ int main(int argc, char** argv)
 				std::cout << "Sent " << mojo / pow(10, params->decimals) << " (" << mojo << ") " << currency << " to " << target << std::endl;
 				std::cout << "Transaction ID: " << txid << std::endl;
 			}
+			else if(command == "deploy")
+			{
+				std::string file_path;
+				vnx::read_config("$3", file_path);
+
+				auto payload = vnx::read_from_file<mmx::Contract>(file_path);
+				if(!payload) {
+					vnx::log_error() << "Failed to read contract from file: " << file_path;
+					goto failed;
+				}
+				const auto txid = wallet.deploy(index, payload);
+				std::cout << "Deployed " << payload->get_type_name() << " as " << mmx::addr_t(txid) << std::endl;
+				std::cout << "Transaction ID: " << txid << std::endl;
+			}
 			else if(command == "log")
 			{
 				int64_t since = 0;
@@ -216,7 +231,7 @@ int main(int argc, char** argv)
 						<< std::endl << wallet.seed_value << std::endl;
 			}
 			else {
-				std::cerr << "Help: mmx wallet [show | log | send | create]" << std::endl;
+				std::cerr << "Help: mmx wallet [show | log | send | deploy | create]" << std::endl;
 			}
 		}
 		else if(module == "node")
@@ -417,6 +432,19 @@ int main(int argc, char** argv)
 						std::cout << ss.str() << std::endl;
 					}
 				}
+				else if(command == "contract")
+				{
+					mmx::addr_t address;
+					vnx::read_config("$4", address);
+
+					const auto contract = node.get_contract(address);
+					{
+						std::stringstream ss;
+						vnx::PrettyPrinter printer(ss);
+						vnx::accept(printer, contract);
+						std::cout << ss.str() << std::endl;
+					}
+				}
 				else if(subject == "peers")
 				{
 					int64_t max_count = 10;
@@ -437,7 +465,7 @@ int main(int argc, char** argv)
 					std::cout << node.get_total_supply(contract) << std::endl;
 				}
 				else {
-					std::cerr << "Help: mmx node get [height | tx | balance | amount | history | block | header | peers | netspace | supply]" << std::endl;
+					std::cerr << "Help: mmx node get [height | tx | contract | balance | amount | history | block | header | peers | netspace | supply]" << std::endl;
 				}
 			}
 			else if(command == "fetch")
