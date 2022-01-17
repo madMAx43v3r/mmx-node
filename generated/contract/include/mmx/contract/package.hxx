@@ -18,6 +18,7 @@ class Condition;
 class Data;
 class Locked;
 class MultiSig;
+class NFT;
 class PubKey;
 class PuzzleLock;
 class Staking;
@@ -30,6 +31,7 @@ extern const vnx::TypeCode* const vnx_native_type_code_Condition; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Data; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Locked; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_MultiSig; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_NFT; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_PubKey; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_PuzzleLock; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Staking; ///< \private
@@ -48,6 +50,7 @@ void read(TypeInput& in, ::mmx::contract::Condition& value, const TypeCode* type
 void read(TypeInput& in, ::mmx::contract::Data& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Locked& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::NFT& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::PubKey& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::PuzzleLock& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Staking& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -60,6 +63,7 @@ void write(TypeOutput& out, const ::mmx::contract::Condition& value, const TypeC
 void write(TypeOutput& out, const ::mmx::contract::Data& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Locked& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::NFT& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::PubKey& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::PuzzleLock& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Staking& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -72,6 +76,7 @@ void read(std::istream& in, ::mmx::contract::Condition& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Data& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Locked& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig& value); ///< \private
+void read(std::istream& in, ::mmx::contract::NFT& value); ///< \private
 void read(std::istream& in, ::mmx::contract::PubKey& value); ///< \private
 void read(std::istream& in, ::mmx::contract::PuzzleLock& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Staking& value); ///< \private
@@ -84,6 +89,7 @@ void write(std::ostream& out, const ::mmx::contract::Condition& value); ///< \pr
 void write(std::ostream& out, const ::mmx::contract::Data& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Locked& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::NFT& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::PubKey& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::PuzzleLock& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Staking& value); ///< \private
@@ -96,6 +102,7 @@ void accept(Visitor& visitor, const ::mmx::contract::Condition& value); ///< \pr
 void accept(Visitor& visitor, const ::mmx::contract::Data& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Locked& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::NFT& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::PubKey& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::PuzzleLock& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Staking& value); ///< \private
@@ -194,6 +201,29 @@ struct type<::mmx::contract::MultiSig> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::NFT> {
+	void read(TypeInput& in, ::mmx::contract::NFT& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::NFT& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::NFT& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::NFT& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::NFT& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::NFT& value, bool special = false);
 };
 
 /// \private

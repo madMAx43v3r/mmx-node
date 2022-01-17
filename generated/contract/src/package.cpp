@@ -5,6 +5,7 @@
 #include <mmx/contract/Data.hxx>
 #include <mmx/contract/Locked.hxx>
 #include <mmx/contract/MultiSig.hxx>
+#include <mmx/contract/NFT.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/contract/PuzzleLock.hxx>
 #include <mmx/contract/Staking.hxx>
@@ -65,6 +66,18 @@ void type<::mmx::contract::MultiSig>::create_dynamic_code(std::vector<uint16_t>&
 }
 
 void type<::mmx::contract::MultiSig>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::NFT>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_NFT;
+}
+
+void type<::mmx::contract::NFT>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::NFT());
+}
+
+void type<::mmx::contract::NFT>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::NFT& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -173,6 +186,7 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::Data::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Locked::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::NFT::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PuzzleLock::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Staking::static_create_type_code());
@@ -192,6 +206,7 @@ const vnx::TypeCode* const vnx_native_type_code_Condition = vnx::get_type_code(v
 const vnx::TypeCode* const vnx_native_type_code_Data = vnx::get_type_code(vnx::Hash64(0xadfeee3822244f50ull));
 const vnx::TypeCode* const vnx_native_type_code_Locked = vnx::get_type_code(vnx::Hash64(0xd0ff1b6e7bad1493ull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig = vnx::get_type_code(vnx::Hash64(0x7d674c5f7297dedull));
+const vnx::TypeCode* const vnx_native_type_code_NFT = vnx::get_type_code(vnx::Hash64(0x7cb24b9888a47906ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey = vnx::get_type_code(vnx::Hash64(0x9b3cd508d7f41423ull));
 const vnx::TypeCode* const vnx_native_type_code_PuzzleLock = vnx::get_type_code(vnx::Hash64(0xf33097b29a62c755ull));
 const vnx::TypeCode* const vnx_native_type_code_Staking = vnx::get_type_code(vnx::Hash64(0xf058a3326fc2e7dcull));
