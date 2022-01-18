@@ -28,10 +28,11 @@ void show_history(const std::vector<mmx::tx_entry_t>& history, mmx::NodeClient& 
 	for(const auto& entry : history) {
 		std::cout << "[" << entry.height << "] ";
 		switch(entry.type) {
-			case mmx::tx_type_e::SEND:    std::cout << "SEND    "; break;
-			case mmx::tx_type_e::SPEND:   std::cout << "SPEND   "; break;
-			case mmx::tx_type_e::RECEIVE: std::cout << "RECEIVE "; break;
-			case mmx::tx_type_e::REWARD:  std::cout << "REWARD  "; break;
+			case mmx::tx_type_e::SEND:    std::cout << "SEND    - "; break;
+			case mmx::tx_type_e::SPEND:   std::cout << "SPEND   - "; break;
+			case mmx::tx_type_e::INPUT:   std::cout << "INPUT   + "; break;
+			case mmx::tx_type_e::RECEIVE: std::cout << "RECEIVE + "; break;
+			case mmx::tx_type_e::REWARD:  std::cout << "REWARD  + "; break;
 			default: std::cout << "????    "; break;
 		}
 		auto iter = token_map.find(entry.contract);

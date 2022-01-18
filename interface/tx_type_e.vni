@@ -4,6 +4,7 @@ enum tx_type_e {
 	
 	SEND,
 	SPEND,
+	INPUT,
 	RECEIVE,
 	REWARD
 	

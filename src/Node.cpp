@@ -448,11 +448,26 @@ std::vector<tx_entry_t> Node::get_history_for(const std::vector<addr_t>& address
 		}
 		if(!txio.inputs.empty() && height) {
 			if(auto tx = get_transaction(iter.first)) {
+				for(const auto& in : tx->inputs) {
+					if(auto info = get_txo_info(in.prev)) {
+						const auto& utxo = info->output;
+						if(amount[utxo.contract] < 0 && !addr_set.count(utxo.address)) {
+							tx_entry_t entry;
+							entry.height = *height;
+							entry.txid = tx->id;
+							entry.type = tx_type_e::INPUT;
+							entry.contract = utxo.contract;
+							entry.address = utxo.address;
+							entry.amount = utxo.amount;
+							list.emplace(entry.height, entry);
+						}
+					}
+				}
 				for(const auto& utxo : tx->outputs) {
 					if(amount[utxo.contract] < 0 && !addr_set.count(utxo.address)) {
 						tx_entry_t entry;
 						entry.height = *height;
-						entry.txid = iter.first;
+						entry.txid = tx->id;
 						entry.type = tx_type_e::SEND;
 						entry.contract = utxo.contract;
 						entry.address = utxo.address;
