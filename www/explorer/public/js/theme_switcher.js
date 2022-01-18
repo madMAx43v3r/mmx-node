@@ -1,5 +1,3 @@
-const light_theme_path = "css/bootstrap_flatly.min.css";
-const dark_theme_path = "css/bootstrap_darkly.min.css";
 var lightTheme = document.getElementsByTagName('link')[0];
 var darkTheme = document.getElementsByTagName('link')[1];
 
