@@ -3,6 +3,7 @@
 
 #include <mmx/operation/package.hxx>
 #include <mmx/operation/Mint.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/Operation.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
@@ -13,6 +14,7 @@
 namespace mmx {
 namespace operation {
 
+const uint64_t Mint::max_amount;
 
 const vnx::Hash64 Mint::VNX_TYPE_HASH(0x936aeac3aa6373c0ull);
 const vnx::Hash64 Mint::VNX_CODE_HASH(0x68f25dfbcc6b9d29ull);

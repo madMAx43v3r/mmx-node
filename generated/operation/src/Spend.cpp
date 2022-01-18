@@ -3,6 +3,7 @@
 
 #include <mmx/operation/package.hxx>
 #include <mmx/operation/Spend.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/Operation.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/txio_key_t.hxx>

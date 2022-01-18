@@ -7,6 +7,7 @@
 #include <vnx/Type.h>
 
 #include <mmx/package.hxx>
+#include <vnx/package.hxx>
 
 
 namespace mmx {
