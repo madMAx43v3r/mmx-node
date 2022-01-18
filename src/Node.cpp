@@ -127,11 +127,9 @@ void Node::main()
 				for(const auto& key : keys) {
 					stxo_index.erase(key);
 				}
-				stxo_index.flush();
 				log(INFO) << "Purged " << keys.size() << " STXO entries";
 			}
 			stxo_log.erase_all(next_height, vnx::rocksdb::GREATER_EQUAL);
-			stxo_log.flush();
 		}
 		{
 			std::vector<hash_t> keys;
@@ -139,11 +137,9 @@ void Node::main()
 				for(const auto& key : keys) {
 					tx_index.erase(key);
 				}
-				tx_index.flush();
 				log(INFO) << "Purged " << keys.size() << " TX entries";
 			}
 			tx_log.erase_all(next_height, vnx::rocksdb::GREATER_EQUAL);
-			tx_log.flush();
 		}
 	}
 
