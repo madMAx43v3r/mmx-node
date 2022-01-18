@@ -2485,11 +2485,7 @@ std::shared_ptr<const Block> Node::read_block(bool is_replay, int64_t* file_offs
 		*file_offset = offset;
 	}
 	try {
-		if(auto value = vnx::read(in)) {
-			auto header = std::dynamic_pointer_cast<BlockHeader>(value);
-			if(!header) {
-				return nullptr;
-			}
+		if(auto header = std::dynamic_pointer_cast<BlockHeader>(vnx::read(in))) {
 			if(is_replay) {
 				block_index[header->height] = std::make_pair(offset, header->hash);
 			}
