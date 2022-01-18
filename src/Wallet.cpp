@@ -240,6 +240,12 @@ std::map<addr_t, uint64_t> Wallet::get_balances(const uint32_t& index) const
 	return amounts;
 }
 
+std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts(const uint32_t& index) const
+{
+	const auto wallet = get_wallet(index);
+	return node->get_contracts_owned(wallet->get_all_addresses());
+}
+
 addr_t Wallet::get_address(const uint32_t& index, const uint32_t& offset) const
 {
 	const auto wallet = get_wallet(index);

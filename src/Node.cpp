@@ -77,6 +77,7 @@ void Node::main()
 		saddr_map.open(storage_path + "db/saddr_map", options);
 		stxo_log.open(storage_path + "db/stxo_log", options);
 		tx_index.open(storage_path + "db/tx_index", options);
+		owner_map.open(storage_path + "db/owner_map", options);
 		tx_log.open(storage_path + "db/tx_log", options);
 	}
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
@@ -493,6 +494,31 @@ std::shared_ptr<const Contract> Node::get_contract(const addr_t& address) const
 	return nullptr;
 }
 
+std::map<addr_t, std::shared_ptr<const Contract>> Node::get_contracts_owned(const std::vector<addr_t>& owners) const
+{
+	std::map<addr_t, std::shared_ptr<const Contract>> res;
+	for(const auto& owner : owners) {
+		std::vector<addr_t> list;
+		owner_map.find(owner, list);
+		for(const auto& addr : list) {
+			if(auto contract = get_contract(addr)) {
+				res.emplace(addr, contract);
+			}
+		}
+	}
+	const std::unordered_set<addr_t> owner_set(owners.begin(), owners.end());
+	for(const auto& log : change_log) {
+		for(const auto& entry : log->deployed) {
+			if(auto owner = entry.second->get_owner()) {
+				if(owner_set.count(*owner)) {
+					res.emplace(entry.first, entry.second);
+				}
+			}
+		}
+	}
+	return res;
+}
+
 bool Node::include_transaction(std::shared_ptr<const Transaction> tx)
 {
 	for(const auto& in : tx->inputs) {
@@ -516,8 +542,8 @@ bool Node::include_transaction(std::shared_ptr<const Transaction> tx)
 		}
 	}
 	if(const auto& contract = tx->deploy) {
-		if(const auto addr = contract->get_owner()) {
-			if(light_address_set.count(*addr)) {
+		if(auto owner = contract->get_owner()) {
+			if(light_address_set.count(*owner)) {
 				return true;
 			}
 		}
@@ -1861,6 +1887,13 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 		}
 		tx_pool.erase(txid);
 	}
+	if(!is_replay) {
+		for(const auto& entry : log->deployed) {
+			if(auto owner = entry.second->get_owner()) {
+				owner_map.insert(*owner, entry.first);
+			}
+		}
+	}
 	if(block->height % 16 == 0) {
 		for(auto iter = taddr_map.begin(); iter != taddr_map.end();) {
 			if(iter->second.empty()) {
@@ -2241,9 +2274,11 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 	for(size_t i = 0; i < tx->exec_outputs.size(); ++i) {
 		apply_output(block, tx, tx->exec_outputs[i], tx->outputs.size() + i, log);
 	}
-	if(light_mode && tx->deploy) {
-		light_address_set.insert(tx->id);
-		log.deployed.push_back(tx->id);
+	if(auto contract = tx->deploy) {
+		if(light_mode) {
+			light_address_set.insert(tx->id);
+		}
+		log.deployed.emplace(tx->id, contract);
 	}
 	tx_map[tx->id] = block->height;
 	log.tx_added.push_back(tx->id);
@@ -2279,10 +2314,8 @@ bool Node::revert() noexcept
 	for(const auto& txid : log->tx_added) {
 		tx_map.erase(txid);
 	}
-	if(light_mode) {
-		for(const auto& addr : log->deployed) {
-			light_address_set.erase(addr);
-		}
+	for(const auto& entry : log->deployed) {
+		light_address_set.erase(entry.first);
 	}
 	change_log.pop_back();
 	state_hash = log->prev_state;

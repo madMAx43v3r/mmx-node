@@ -51,6 +51,8 @@ protected:
 
 	std::map<addr_t, uint64_t> get_balances(const uint32_t& index) const override;
 
+	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts(const uint32_t& index) const override;
+
 	addr_t get_address(const uint32_t& index, const uint32_t& offset) const override;
 
 	std::vector<addr_t> get_all_addresses(const int32_t& index) const override;

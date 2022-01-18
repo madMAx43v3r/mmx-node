@@ -155,11 +155,25 @@ int main(int argc, char** argv)
 						std::cout << "Balance: " << entry.second / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.second << ")" << std::endl;
 					}
 				}
-				for(const auto& addr : nfts) {
-					std::cout << "NFT: " << addr;
-				}
 				for(int i = 0; i < num_addrs; ++i) {
 					std::cout << "Address[" << i << "]: " << wallet.get_address(index, i) << std::endl;
+				}
+				for(const auto& addr : nfts) {
+					std::cout << "NFT: " << addr << std::endl;
+				}
+				for(const auto& entry : wallet.get_contracts(index))
+				{
+					const auto& address = entry.first;
+					const auto& contract = entry.second;
+					std::cout << "Contract: " << address << " (" << contract->get_type_name() << ")" << std::endl;
+
+					for(const auto& entry : node.get_total_balances({address}))
+					{
+						const auto currency = node.get_contract(entry.first);
+						const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(currency);
+						const auto decimals = token ? token->decimals : params->decimals;
+						std::cout << "  Balance: " << entry.second / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.second << ")" << std::endl;
+					}
 				}
 			}
 			else if(command == "keys")
@@ -192,12 +206,18 @@ int main(int argc, char** argv)
 					const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(contract));
 					std::cout << wallet.get_balance(index, contract) / pow(10, token ? token->decimals : params->decimals) << std::endl;
 				}
+				else if(subject == "contracts")
+				{
+					for(const auto& entry : wallet.get_contracts(index)) {
+						std::cout << entry.first << std::endl;
+					}
+				}
 				else if(subject == "seed")
 				{
 					std::cout << wallet.get_master_seed(index) << std::endl;
 				}
 				else {
-					std::cerr << "Help: mmx wallet get [address | amount | balance | seed]" << std::endl;
+					std::cerr << "Help: mmx wallet get [address | balance | amount | contracts | seed]" << std::endl;
 				}
 			}
 			else if(command == "send")
@@ -238,6 +258,16 @@ int main(int argc, char** argv)
 				}
 				const auto txid = wallet.send_from(index, mojo, target, source, contract);
 				std::cout << "Sent " << mojo / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << mojo << ") to " << target << std::endl;
+				std::cout << "Transaction ID: " << txid << std::endl;
+			}
+			else if(command == "transfer")
+			{
+				if(target == mmx::addr_t()) {
+					vnx::log_error() << "Missing destination address argument: -t | --target";
+					goto failed;
+				}
+				const auto txid = wallet.send(index, 1, target, contract);
+				std::cout << "Sent " << contract << " to " << target << std::endl;
 				std::cout << "Transaction ID: " << txid << std::endl;
 			}
 			else if(command == "mint")
@@ -310,7 +340,7 @@ int main(int argc, char** argv)
 						<< std::endl << wallet.seed_value << std::endl;
 			}
 			else {
-				std::cerr << "Help: mmx wallet [show | log | send | send_from | mint | deploy | create]" << std::endl;
+				std::cerr << "Help: mmx wallet [show | log | send | send_from | transfer | mint | deploy | create]" << std::endl;
 			}
 		}
 		else if(module == "node")

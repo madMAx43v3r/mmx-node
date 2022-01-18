@@ -65,6 +65,8 @@ protected:
 
 	std::shared_ptr<const Contract> get_contract(const addr_t& address) const override;
 
+	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts_owned(const std::vector<addr_t>& owners) const override;
+
 	void add_block(std::shared_ptr<const Block> block) override;
 
 	void add_transaction(std::shared_ptr<const Transaction> tx) override;
@@ -134,9 +136,9 @@ private:
 	struct change_log_t {
 		hash_t prev_state;
 		std::vector<hash_t> tx_added;
-		std::vector<hash_t> deployed;								// for light mode only
 		std::unordered_map<txio_key_t, utxo_t> utxo_added;			// [utxo key => utxo]
 		std::unordered_map<txio_key_t, stxo_t> utxo_removed;		// [utxo key => [txi key, utxo]]
+		std::unordered_map<addr_t, std::shared_ptr<const Contract>> deployed;
 	};
 
 	void update();
@@ -248,6 +250,7 @@ private:
 	vnx::rocksdb::multi_table<uint32_t, txio_key_t> stxo_log;						// [height => stxo key] (finalized + spent only)
 
 	vnx::rocksdb::table<hash_t, std::pair<int64_t, uint32_t>> tx_index;				// [txid => [file offset, height]] (finalized only)
+	vnx::rocksdb::multi_table<addr_t, addr_t> owner_map;							// [owner => contract]
 	vnx::rocksdb::multi_table<uint32_t, hash_t> tx_log;								// [height => txid] (finalized only)
 
 	std::unordered_map<hash_t, uint32_t> tx_map;									// [txid => height] (pending only)
