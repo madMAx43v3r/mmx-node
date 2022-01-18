@@ -1,32 +1,30 @@
 
-<h3>Address | <%= address %></h3>
+<h4>Address | <span class="font-monospace"><%= address %></span></h4>
 
-<table class="data">
-<tr>
-<td class="data"><b>Balance</b></td>
-<td class="data"><%= balance %></td>
-<td class="data">MMX</td>
-</tr>
-</table>
+<h5>Balance<b class="font-monospace"> <%= balance %> </b>MMX</h5>
 
 <p>
-<table class="data">
+<table class="table">
+<thead>
 <tr>
-<th class="data">Height</th>
-<th class="data">Type</th>
-<th class="data">Amount</th>
-<th class="data">Address</th>
-<th class="data">TX ID</th>
+<th>Height</th>
+<th>Type</th>
+<th>Amount</th>
+<th>Address</th>
+<th>TX ID</th>
 </tr>
+</thead>
 
+<tbody class="font-monospace">
 <% history.forEach(function(entry) { %>
 <tr>
-<td class="data"><%= entry.height %></td>
-<td class="data"><%= entry.type %></td>
-<td class="data"><%= entry.amount %></td>
-<td class="data"><a href="address?addr=<%= entry.address %>"><%= entry.address %></a></td>
-<td class="data"><a href="transaction?id=<%= entry.txid %>"><%= entry.txid %></a></td>
+<td><%= entry.height %></td>
+<td><%= entry.type %></td>
+<td><%= entry.amount %></td>
+<td><a href="address?addr=<%= entry.address %>"><%= entry.address %></a></td>
+<td><a href="transaction?id=<%= entry.txid %>"><%= entry.txid %></a></td>
 </tr>
 <% }); %>
+</tbody>
 </table>
 </p>

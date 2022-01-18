@@ -4,9 +4,12 @@
 <meta charset="UTF-8">
 <title>MMX - Explorer</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" type="text/css" href="css/bootstrap_flatly.min.css" title="light">
+<link rel="stylesheet" type="text/css" href="css/bootstrap_darkly.min.css" title="dark" disabled="">
+<script src="js/theme_switcher.js"></script>
 <style>
 	body {
-		margin: 20px;
+		padding-top: 100px;
 	}
 	a.title {
 		font-size: 120%;
@@ -34,40 +37,103 @@
 	table.data, th.data, td.data {
 		border: 1px solid gray;
 	}
+
+	.table-nonfluid {
+		width: auto !important;
+	}
 </style>
 </head>
 <body>
 
-<a href="/recent">Recent Blocks</a>
 
-<p>
+<nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-dark">
+	<div class="container">
+		<a class="navbar-brand" href="/recent">Recent Blocks</a>
+
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+	      <span class="navbar-toggler-icon"></span>
+	    </button>
+
+		<div class="collapse navbar-collapse" id="navbarSupportedContent">
+			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+				<li class="nav-item dropdown">
+					<a class="nav-link dropdown-toggle" href="#" id="themeDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+						Theme
+					</a>
+					<ul class="dropdown-menu" aria-labelledby="themeDropdown">
+						<li><button class="dropdown-item" onclick="setThemeLight()">Light</button></li>
+						<li><button class="dropdown-item" onclick="setThemeDark()">Dark</button></li>
+					</ul>
+				</li>
+			</ul>
+
+			<!--
+			<form class="d-flex" method="GET" action="/search">
+				<div class="input-group">
+					<input class="form-control search-input" onfocus=this.value='' type="text" size="60" id="value" name="term" placeholder="Addr, TX, Block Hash, Height">
+					<span class="input-group-btn">
+						<button class="btn btn-primary" type="submit" title="Search">
+							Search
+						</button>
+					</span>
+				</div>
+			</form>
+			-->
+
+		</div>
+	</div>
+</nav>
+
+<div class="container">
+
+<div class="row">
+<div class="col" style="max-width: 600px;">
+
 <form method="GET" action="/address">
-<label for="value">Address: </label><input type="text" size="60" id="value" name="addr">
-<input type="submit" value="Submit">
+	<div class="input-group mb-3">
+		<input class="form-control" onfocus=this.value='' type="text" size="60" id="value" name="addr" placeholder="Address">
+		<span class="input-group-append">
+			<input type="submit" value="Search" class="btn btn-secondary">
+		</span>
+	</div>
 </form>
-</p>
-<p>
+
 <form method="GET" action="/transaction">
-<label for="value">Transaction: </label><input type="text" size="60" id="value" name="id">
-<input type="submit" value="Submit">
+	<div class="input-group mb-3">
+		<input class="form-control" onfocus=this.value='' type="text" size="60" id="value" name="id" placeholder="Transaction">
+		<span class="input-group-append">
+			<input type="submit" value="Search" class="btn btn-secondary">
+		</span>
+	</div>
 </form>
-</p>
-<p>
+
 <form method="GET" action="/block">
-<label for="value">Block Hash: </label><input type="text" size="60" id="value" name="hash">
-<input type="submit" value="Submit">
+	<div class="input-group mb-3">
+		<input class="form-control" onfocus=this.value='' type="text" size="60" id="value" name="hash" placeholder="Block Hash">
+		<span class="input-group-append">
+			<input type="submit" value="Search" class="btn btn-secondary">
+		</span>
+	</div>
 </form>
-</p>
-<p>
+
 <form method="GET" action="/block">
-<label for="value">Block Height: </label><input type="text" id="value" name="height">
-<input type="submit" value="Submit">
+	<div class="input-group mb-3">
+		<input class="form-control" onfocus=this.value='' type="text" id="value" name="height" placeholder="Block Height">
+		<span class="input-group-append">
+			<input type="submit" value="Search" class="btn btn-secondary">
+		</span>
+	</div>
 </form>
-</p>
+
+
+</div>
+</div>
 
 <hr>
 
 <%- include(body) %>
 
+</div>
+<script src="js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
