@@ -39,8 +39,8 @@ std::vector<addr_t> PubKey::get_dependency() const {
 	return {};
 }
 
-std::vector<addr_t> PubKey::get_parties() const {
-	return {address};
+vnx::optional<addr_t> PubKey::get_owner() const {
+	return address;
 }
 
 std::vector<tx_out_t> PubKey::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const

@@ -36,8 +36,8 @@ std::vector<addr_t> Contract::get_dependency() const {
 	return {};
 }
 
-std::vector<addr_t> Contract::get_parties() const {
-	return {};
+vnx::optional<addr_t> Contract::get_owner() const {
+	return nullptr;
 }
 
 std::vector<tx_out_t> Contract::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const

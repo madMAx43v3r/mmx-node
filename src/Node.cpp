@@ -486,8 +486,8 @@ bool Node::include_transaction(std::shared_ptr<const Transaction> tx)
 		}
 	}
 	if(const auto& contract = tx->deploy) {
-		for(const auto& addr : contract->get_parties()) {
-			if(light_address_set.count(addr)) {
+		if(const auto addr = contract->get_owner()) {
+			if(light_address_set.count(*addr)) {
 				return true;
 			}
 		}

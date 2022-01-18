@@ -68,7 +68,7 @@ std::shared_ptr<ECDSA_Wallet> Wallet::get_wallet(const uint32_t& index) const
 	throw std::logic_error("no such wallet");
 }
 
-hash_t Wallet::send(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& contract) const
+hash_t Wallet::send(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& currency) const
 {
 	if(amount == 0) {
 		throw std::logic_error("amount cannot be zero");
@@ -81,7 +81,7 @@ hash_t Wallet::send(const uint32_t& index, const uint64_t& amount, const addr_t&
 	// update utxo_cache
 	get_utxo_list(index);
 
-	auto tx = wallet->send(amount, dst_addr, contract);
+	auto tx = wallet->send(amount, dst_addr, currency);
 
 	node->add_transaction(tx);
 	wallet->update_from(tx);
@@ -90,7 +90,7 @@ hash_t Wallet::send(const uint32_t& index, const uint64_t& amount, const addr_t&
 	return tx->id;
 }
 
-hash_t Wallet::mint(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& contract) const
+hash_t Wallet::send_from(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& src_addr, const addr_t& currency) const
 {
 	if(amount == 0) {
 		throw std::logic_error("amount cannot be zero");
@@ -100,9 +100,39 @@ hash_t Wallet::mint(const uint32_t& index, const uint64_t& amount, const addr_t&
 	}
 	const auto wallet = get_wallet(index);
 
-	const auto token = std::dynamic_pointer_cast<const contract::Token>(node->get_contract(contract));
+	// update utxo_cache
+	get_utxo_list(index);
+
+	auto src_owner = src_addr;
+	if(auto contract = node->get_contract(src_addr)) {
+		if(auto owner = contract->get_owner()) {
+			src_owner = *owner;
+		} else {
+			throw std::logic_error("contract has no owner");
+		}
+	}
+	auto tx = wallet->send_from(amount, dst_addr, src_addr, src_owner, node->get_utxo_list({src_addr}), currency);
+
+	node->add_transaction(tx);
+	wallet->update_from(tx);
+
+	log(INFO) << "Sent " << amount << " with fee " << tx->calc_min_fee(params) << " to " << dst_addr << " (" << tx->id << ")";
+	return tx->id;
+}
+
+hash_t Wallet::mint(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& currency) const
+{
+	if(amount == 0) {
+		throw std::logic_error("amount cannot be zero");
+	}
+	if(dst_addr == addr_t()) {
+		throw std::logic_error("dst_addr cannot be zero");
+	}
+	const auto wallet = get_wallet(index);
+
+	const auto token = std::dynamic_pointer_cast<const contract::Token>(node->get_contract(currency));
 	if(!token) {
-		throw std::logic_error("no such contract");
+		throw std::logic_error("no such currency");
 	}
 	if(!token->owner) {
 		throw std::logic_error("token has no owner");
@@ -111,7 +141,7 @@ hash_t Wallet::mint(const uint32_t& index, const uint64_t& amount, const addr_t&
 	// update utxo_cache
 	get_utxo_list(index);
 
-	auto tx = wallet->mint(amount, dst_addr, contract, *token->owner);
+	auto tx = wallet->mint(amount, dst_addr, currency, *token->owner);
 
 	node->add_transaction(tx);
 	wallet->update_from(tx);

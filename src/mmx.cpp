@@ -53,12 +53,14 @@ int main(int argc, char** argv)
 	options["f"] = "file";
 	options["j"] = "index";
 	options["a"] = "amount";
+	options["s"] = "source";
 	options["t"] = "target";
 	options["x"] = "contract";
 	options["node"] = "address";
 	options["file"] = "path";
 	options["index"] = "0..?";
 	options["amount"] = "123.456";
+	options["source"] = "address";
 	options["target"] = "address";
 	options["contract"] = "address";
 
@@ -69,6 +71,7 @@ int main(int argc, char** argv)
 	std::string module;
 	std::string command;
 	std::string file_name;
+	std::string source_addr;
 	std::string target_addr;
 	std::string contract_addr;
 	int64_t index = 0;
@@ -78,6 +81,7 @@ int main(int argc, char** argv)
 	vnx::read_config("file", file_name);
 	vnx::read_config("index", index);
 	vnx::read_config("amount", amount);
+	vnx::read_config("source", source_addr);
 	vnx::read_config("target", target_addr);
 	vnx::read_config("contract", contract_addr);
 
@@ -86,8 +90,17 @@ int main(int argc, char** argv)
 
 	mmx::NodeClient node("Node");
 
+	mmx::addr_t source;
 	mmx::addr_t target;
 	mmx::addr_t contract;
+	try {
+		if(!source_addr.empty()) {
+			source.from_string(source_addr);
+		}
+	} catch(std::exception& ex) {
+		vnx::log_error() << "Invalid address: " << ex.what();
+		goto failed;
+	}
 	try {
 		if(!target_addr.empty()) {
 			target.from_string(target_addr);
@@ -203,6 +216,28 @@ int main(int argc, char** argv)
 				std::cout << "Sent " << mojo / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << mojo << ") to " << target << std::endl;
 				std::cout << "Transaction ID: " << txid << std::endl;
 			}
+			else if(command == "send_from")
+			{
+				const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(contract));
+
+				const auto decimals = token ? token->decimals : params->decimals;
+				const int64_t mojo = amount * pow(10, decimals);
+				if(amount <= 0 || mojo <= 0) {
+					vnx::log_error() << "Invalid amount: " << amount << " (-a | --amount)";
+					goto failed;
+				}
+				if(source == mmx::addr_t()) {
+					vnx::log_error() << "Missing source address argument: -s | --source";
+					goto failed;
+				}
+				if(target == mmx::addr_t()) {
+					vnx::log_error() << "Missing destination address argument: -t | --target";
+					goto failed;
+				}
+				const auto txid = wallet.send_from(index, mojo, target, source, contract);
+				std::cout << "Sent " << mojo / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << mojo << ") to " << target << std::endl;
+				std::cout << "Transaction ID: " << txid << std::endl;
+			}
 			else if(command == "mint")
 			{
 				const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(contract));
@@ -273,7 +308,7 @@ int main(int argc, char** argv)
 						<< std::endl << wallet.seed_value << std::endl;
 			}
 			else {
-				std::cerr << "Help: mmx wallet [show | log | send | mint | deploy | create]" << std::endl;
+				std::cerr << "Help: mmx wallet [show | log | send | send_from | mint | deploy | create]" << std::endl;
 			}
 		}
 		else if(module == "node")

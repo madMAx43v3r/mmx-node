@@ -66,11 +66,8 @@ std::vector<addr_t> Token::get_dependency() const {
 	return {};
 }
 
-std::vector<addr_t> Token::get_parties() const {
-	if(owner) {
-		return {*owner};
-	}
-	return {};
+vnx::optional<addr_t> Token::get_owner() const {
+	return owner;
 }
 
 std::vector<tx_out_t> Token::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const

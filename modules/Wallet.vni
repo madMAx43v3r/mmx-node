@@ -13,25 +13,28 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	
 	@Permission(permission_e.SPENDING)
-	hash_t send(uint index, ulong amount, addr_t dst_addr, addr_t contract) const;
+	hash_t send(uint index, ulong amount, addr_t dst_addr, addr_t currency) const;
 	
 	@Permission(permission_e.SPENDING)
-	hash_t mint(uint index, ulong amount, addr_t dst_addr, addr_t contract) const;
+	hash_t send_from(uint index, ulong amount, addr_t dst_addr, addr_t src_addr, addr_t currency) const;
+	
+	@Permission(permission_e.SPENDING)
+	hash_t mint(uint index, ulong amount, addr_t dst_addr, addr_t currency) const;
 	
 	@Permission(permission_e.SPENDING)
 	hash_t deploy(uint index, Contract* contract) const;
 	
 	vector<utxo_entry_t> get_utxo_list(uint index) const;
 	
-	vector<utxo_entry_t> get_utxo_list_for(uint index, addr_t contract) const;
+	vector<utxo_entry_t> get_utxo_list_for(uint index, addr_t currency) const;
 	
 	vector<stxo_entry_t> get_stxo_list(uint index) const;
 	
-	vector<stxo_entry_t> get_stxo_list_for(uint index, addr_t contract) const;
+	vector<stxo_entry_t> get_stxo_list_for(uint index, addr_t currency) const;
 	
 	vector<tx_entry_t> get_history(uint index, int since) const;
 	
-	ulong get_balance(uint index, addr_t contract) const;
+	ulong get_balance(uint index, addr_t currency) const;
 	
 	map<addr_t, ulong> get_balances(uint index) const;
 	

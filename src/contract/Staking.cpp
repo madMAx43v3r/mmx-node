@@ -42,8 +42,8 @@ std::vector<addr_t> Staking::get_dependency() const {
 	return {owner, currency};
 }
 
-std::vector<addr_t> Staking::get_parties() const {
-	return {owner};
+vnx::optional<addr_t> Staking::get_owner() const {
+	return owner;
 }
 
 std::vector<tx_out_t> Staking::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const

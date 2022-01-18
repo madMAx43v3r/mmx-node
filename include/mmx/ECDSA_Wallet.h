@@ -161,17 +161,18 @@ public:
 	}
 
 	uint64_t gather_inputs(	std::shared_ptr<Transaction> tx,
+							const std::vector<utxo_entry_t>& utxo_map,
 							std::unordered_map<txio_key_t, addr_t>& spent_map,
-							uint64_t amount, const addr_t& contract)
+							uint64_t amount, const addr_t& currency)
 	{
 		uint64_t change = 0;
-		for(const auto& entry : utxo_cache)
+		for(const auto& entry : utxo_map)
 		{
 			if(amount == 0) {
 				break;
 			}
 			const auto& out = entry.output;
-			if(out.contract != contract) {
+			if(out.contract != currency) {
 				continue;
 			}
 			const auto& key = entry.key;
@@ -231,13 +232,15 @@ public:
 			}
 			// gather more
 			const auto left = tx_fees - change;
-			change += gather_inputs(tx, spent_map, left, addr_t());
+			change += gather_inputs(tx, utxo_cache, spent_map, left, addr_t());
 			change += left;
 		}
 		return tx_fees;
 	}
 
-	void sign_off(std::shared_ptr<Transaction> tx, const std::unordered_map<txio_key_t, addr_t>& spent_map)
+	void sign_off(	std::shared_ptr<Transaction> tx,
+					const std::unordered_map<txio_key_t, addr_t>& spent_map,
+					const std::unordered_map<addr_t, addr_t>& owner_map = {})
 	{
 		tx->finalize();
 
@@ -249,13 +252,22 @@ public:
 			if(iter == spent_map.end()) {
 				throw std::logic_error("cannot sign input");
 			}
-			auto iter2 = solution_map.find(iter->second);
-			if(iter2 != solution_map.end()) {
-				// re-use solution
-				in.solution = iter2->second;
-				continue;
+			auto owner = iter->second;
+			{
+				auto iter = owner_map.find(owner);
+				if(iter != owner_map.end()) {
+					owner = iter->second;
+				}
 			}
-			const auto& keys = get_keypair(iter->second);
+			{
+				auto iter = solution_map.find(owner);
+				if(iter != solution_map.end()) {
+					// re-use solution
+					in.solution = iter->second;
+					continue;
+				}
+			}
+			const auto& keys = get_keypair(owner);
 
 			auto sol = solution::PubKey::create();
 			sol->pubkey = keys.second;
@@ -267,26 +279,26 @@ public:
 		}
 	}
 
-	std::shared_ptr<Transaction> send(const uint64_t& amount, const addr_t& dst_addr, const addr_t& contract)
+	std::shared_ptr<Transaction> send(const uint64_t& amount, const addr_t& dst_addr, const addr_t& currency)
 	{
 		auto tx = Transaction::create();
 		{
 			// add primary output
 			tx_out_t out;
 			out.address = dst_addr;
-			out.contract = contract;
+			out.contract = currency;
 			out.amount = amount;
 			tx->outputs.push_back(out);
 		}
 		std::unordered_map<txio_key_t, addr_t> spent_map;
 
-		uint64_t change = gather_inputs(tx, spent_map, amount, contract);
+		uint64_t change = gather_inputs(tx, utxo_cache, spent_map, amount, currency);
 
-		if(contract != addr_t() && change > 0) {
+		if(currency != addr_t() && change > 0) {
 			// token change cannot be used as tx fee
 			tx_out_t out;
 			out.address = get_address(0);
-			out.contract = contract;
+			out.contract = currency;
 			out.amount = change;
 			tx->outputs.push_back(out);
 			change = 0;
@@ -296,14 +308,48 @@ public:
 		return tx;
 	}
 
-	std::shared_ptr<Transaction> mint(const uint64_t& amount, const addr_t& dst_addr, const addr_t& contract, const addr_t& owner)
+	std::shared_ptr<Transaction> send_from(	const uint64_t& amount, const addr_t& dst_addr, const addr_t& src_addr,
+											const addr_t& src_owner, const std::vector<utxo_entry_t>& src_utxo, const addr_t& currency)
+	{
+		auto tx = Transaction::create();
+		{
+			// add primary output
+			tx_out_t out;
+			out.address = dst_addr;
+			out.contract = currency;
+			out.amount = amount;
+			tx->outputs.push_back(out);
+		}
+		std::unordered_map<txio_key_t, addr_t> spent_map;
+
+		uint64_t change = gather_inputs(tx, src_utxo, spent_map, amount, currency);
+
+		if(currency != addr_t() && change > 0) {
+			// token change cannot be used as tx fee
+			tx_out_t out;
+			out.address = src_addr;
+			out.contract = currency;
+			out.amount = change;
+			tx->outputs.push_back(out);
+			change = 0;
+		}
+		gather_fee(tx, spent_map, change);
+
+		std::unordered_map<addr_t, addr_t> owner_map;
+		owner_map.emplace(src_addr, src_owner);
+
+		sign_off(tx, spent_map, owner_map);
+		return tx;
+	}
+
+	std::shared_ptr<Transaction> mint(const uint64_t& amount, const addr_t& dst_addr, const addr_t& currency, const addr_t& owner)
 	{
 		auto tx = Transaction::create();
 
 		auto op = operation::Mint::create();
 		op->amount = amount;
 		op->target = dst_addr;
-		op->address = contract;
+		op->address = currency;
 		tx->execute.push_back(op);
 
 		uint64_t change = 0;
