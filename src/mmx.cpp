@@ -24,7 +24,7 @@
 
 void show_history(const std::vector<mmx::tx_entry_t>& history, mmx::NodeClient& node, std::shared_ptr<const mmx::ChainParams> params)
 {
-	std::unordered_map<mmx::addr_t, std::shared_ptr<const mmx::contract::Token>> token_map;
+	std::unordered_map<mmx::addr_t, std::shared_ptr<const mmx::Contract>> contract_map;
 	for(const auto& entry : history) {
 		std::cout << "[" << entry.height << "] ";
 		switch(entry.type) {
@@ -35,13 +35,17 @@ void show_history(const std::vector<mmx::tx_entry_t>& history, mmx::NodeClient& 
 			case mmx::tx_type_e::REWARD:  std::cout << "REWARD  + "; break;
 			default: std::cout << "????    "; break;
 		}
-		auto iter = token_map.find(entry.contract);
-		if(iter == token_map.end()) {
-			iter = token_map.emplace(entry.contract, std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(entry.contract))).first;
+		auto iter = contract_map.find(entry.contract);
+		if(iter == contract_map.end()) {
+			iter = contract_map.emplace(entry.contract, std::dynamic_pointer_cast<const mmx::Contract>(node.get_contract(entry.contract))).first;
 		}
-		const auto token = iter->second;
-		const auto decimals = token ? token->decimals : params->decimals;
-		std::cout << entry.amount / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.amount << ") -> " << entry.address << std::endl;
+		if(auto nft = std::dynamic_pointer_cast<const mmx::contract::NFT>(iter->second)) {
+			std::cout << entry.contract << " -> " << entry.address << std::endl;
+		} else {
+			const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(iter->second);
+			const auto decimals = token ? token->decimals : params->decimals;
+			std::cout << entry.amount / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.amount << ") -> " << entry.address << std::endl;
+		}
 	}
 }
 
