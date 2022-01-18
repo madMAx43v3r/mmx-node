@@ -2518,15 +2518,26 @@ void Node::write_block(std::shared_ptr<const Block> block)
 		tx_index.insert(tx->id, std::make_pair(offset, block->height));
 	}
 	block_index[block->height] = std::make_pair(offset, block->hash);
-	vnx::write(out, block->get_header());
+
+	auto header = block->get_header();
+	if(light_mode) {
+		auto copy = vnx::clone(header);
+		copy->proof = nullptr;
+		header = copy;
+	}
+	vnx::write(out, header);
 
 	for(const auto& tx : block->tx_list) {
+		bool is_full = false;
 		const auto offset = out.get_output_pos();
-		if(std::dynamic_pointer_cast<const Transaction>(tx)) {
+		if(!light_mode || std::dynamic_pointer_cast<const Transaction>(tx)) {
+			is_full = true;
 			tx_log.insert(block->height, tx->id);
 			tx_index.insert(tx->id, std::make_pair(offset, block->height));
 		}
-		vnx::write(out, tx);
+		if(!light_mode || is_full) {
+			vnx::write(out, tx);
+		}
 	}
 	vnx::write(out, nullptr);
 	block_chain->flush();
