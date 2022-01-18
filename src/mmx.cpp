@@ -22,8 +22,9 @@
 #include <vnx/Proxy.h>
 
 
-void show_history(const std::vector<mmx::tx_entry_t>& history, std::shared_ptr<const mmx::ChainParams> params)
+void show_history(const std::vector<mmx::tx_entry_t>& history, mmx::NodeClient& node, std::shared_ptr<const mmx::ChainParams> params)
 {
+	std::unordered_map<mmx::addr_t, std::shared_ptr<const mmx::contract::Token>> token_map;
 	for(const auto& entry : history) {
 		std::cout << "[" << entry.height << "] ";
 		switch(entry.type) {
@@ -32,7 +33,13 @@ void show_history(const std::vector<mmx::tx_entry_t>& history, std::shared_ptr<c
 			case mmx::tx_type_e::REWARD:  std::cout << "REWARD  "; break;
 			default: std::cout << "????    "; break;
 		}
-		std::cout << entry.amount / pow(10, params->decimals) << " MMX (" << entry.amount << ") -> " << entry.address << std::endl;
+		auto iter = token_map.find(entry.contract);
+		if(iter == token_map.end()) {
+			iter = token_map.emplace(entry.contract, std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(entry.contract))).first;
+		}
+		const auto token = iter->second;
+		const auto decimals = token ? token->decimals : params->decimals;
+		std::cout << entry.amount / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.amount << ") -> " << entry.address << std::endl;
 	}
 }
 
@@ -167,7 +174,8 @@ int main(int argc, char** argv)
 				}
 				else if(subject == "balance")
 				{
-					std::cout << wallet.get_balance(index, contract) / pow(10, params->decimals) << std::endl;
+					const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(contract));
+					std::cout << wallet.get_balance(index, contract) / pow(10, token ? token->decimals : params->decimals) << std::endl;
 				}
 				else if(subject == "seed")
 				{
@@ -192,7 +200,7 @@ int main(int argc, char** argv)
 					goto failed;
 				}
 				const auto txid = wallet.send(index, mojo, target, contract);
-				std::cout << "Sent " << mojo / pow(10, decimals) << " (" << mojo << ") " << (token ? token->symbol : "MMX") << " to " << target << std::endl;
+				std::cout << "Sent " << mojo / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << mojo << ") to " << target << std::endl;
 				std::cout << "Transaction ID: " << txid << std::endl;
 			}
 			else if(command == "mint")
@@ -234,7 +242,7 @@ int main(int argc, char** argv)
 				int64_t since = 0;
 				vnx::read_config("$3", since);
 
-				show_history(wallet.get_history(index, since), params);
+				show_history(wallet.get_history(index, since), node, params);
 			}
 			else if(command == "create")
 			{
@@ -287,11 +295,18 @@ int main(int argc, char** argv)
 			{
 				mmx::addr_t address;
 				if(!vnx::read_config("$3", address)) {
-					vnx::log_error() << "Missing address argument! (node balance <address>)";
+					vnx::log_error() << "Missing address argument! (node balances <address>)";
 					goto failed;
 				}
-				const auto amount = node.get_balance(address, contract);
-				std::cout << "Balance: " << amount / pow(10, params->decimals) << " MMX (" << amount << ")" << std::endl;
+				for(const auto& entry : node.get_total_balances({address}))
+				{
+					const auto contract = node.get_contract(entry.first);
+					if(!std::dynamic_pointer_cast<const mmx::contract::NFT>(contract)) {
+						const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(contract);
+						const auto decimals = token ? token->decimals : params->decimals;
+						std::cout << "Balance: " << entry.second / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.second << ")" << std::endl;
+					}
+				}
 			}
 			else if(command == "info")
 			{
@@ -315,7 +330,7 @@ int main(int argc, char** argv)
 				int64_t since = 0;
 				vnx::read_config("$4", since);
 
-				show_history(node.get_history_for({address}, since), params);
+				show_history(node.get_history_for({address}, since), node, params);
 			}
 			else if(command == "peers")
 			{
@@ -399,7 +414,10 @@ int main(int argc, char** argv)
 				}
 				size_t i = 0;
 				for(const auto& out : tx->outputs) {
-					std::cout << "Output[" << i++ << "]: " << out.amount / pow(10, params->decimals) << " MMX (" << out.amount << ") -> " << out.address << std::endl;
+					const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(out.contract));
+					const auto decimals = token ? token->decimals : params->decimals;
+					std::cout << "Output[" << i++ << "]: " << out.amount / pow(10, decimals)
+							<< " " << (token ? token->symbol : "MMX") << " (" << out.amount << ") -> " << out.address << std::endl;
 				}
 			}
 			else if(command == "get")
@@ -412,16 +430,15 @@ int main(int argc, char** argv)
 					mmx::addr_t address;
 					vnx::read_config("$4", address);
 
-					const auto amount = node.get_balance(address, contract);
-					std::cout << amount / pow(10, params->decimals) << std::endl;
+					const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(contract));
+					std::cout << node.get_balance(address, contract) / pow(10, token ? token->decimals : params->decimals) << std::endl;
 				}
 				else if(subject == "amount")
 				{
 					mmx::addr_t address;
 					vnx::read_config("$4", address);
 
-					const auto amount = node.get_balance(address, contract);
-					std::cout << amount << std::endl;
+					std::cout << node.get_balance(address, contract) << std::endl;
 				}
 				else if(subject == "height")
 				{
@@ -499,7 +516,7 @@ int main(int argc, char** argv)
 					std::cout << node.get_total_supply(contract) << std::endl;
 				}
 				else {
-					std::cerr << "Help: mmx node get [height | tx | contract | balance | amount | history | block | header | peers | netspace | supply]" << std::endl;
+					std::cerr << "Help: mmx node get [height | tx | contract | balance | amount | block | header | peers | netspace | supply]" << std::endl;
 				}
 			}
 			else if(command == "fetch")
@@ -539,7 +556,7 @@ int main(int argc, char** argv)
 				}
 			}
 			else {
-				std::cerr << "Help: mmx node [info | peers | tx | get | fetch | balance | sync]" << std::endl;
+				std::cerr << "Help: mmx node [info | peers | tx | get | fetch | balance | history | sync]" << std::endl;
 			}
 		}
 		else if(module == "farm")
