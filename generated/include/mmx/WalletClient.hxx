@@ -74,6 +74,8 @@ public:
 	
 	std::map<::mmx::addr_t, uint64_t> get_balances(const uint32_t& index = 0);
 	
+	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts(const uint32_t& index = 0);
+	
 	::mmx::addr_t get_address(const uint32_t& index = 0, const uint32_t& offset = 0);
 	
 	std::vector<::mmx::addr_t> get_all_addresses(const int32_t& index = 0);

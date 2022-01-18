@@ -73,6 +73,7 @@ protected:
 	virtual std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index, const int32_t& since) const = 0;
 	virtual uint64_t get_balance(const uint32_t& index, const ::mmx::addr_t& currency) const = 0;
 	virtual std::map<::mmx::addr_t, uint64_t> get_balances(const uint32_t& index) const = 0;
+	virtual std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts(const uint32_t& index) const = 0;
 	virtual ::mmx::addr_t get_address(const uint32_t& index, const uint32_t& offset) const = 0;
 	virtual std::vector<::mmx::addr_t> get_all_addresses(const int32_t& index) const = 0;
 	virtual ::mmx::hash_t get_master_seed(const uint32_t& index) const = 0;
