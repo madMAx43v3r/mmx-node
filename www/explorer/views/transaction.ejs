@@ -1,51 +1,51 @@
 
-<h3>TX | <%= tx.id %></h3>
+<h3>TX | <span class="font-monospace"><%= tx.id %></span></h3>
 
-<table class="data">
+<table class="table table-nonfluid mb-5">
 <tr>
-<td class="data"><b>Input</b></td>
-<td class="data"><%= tx.input_amount %></td>
-<td class="data">MMX</td>
+<td><b>Input</b></td>
+<td class="font-monospace"><%= tx.input_amount %></td>
+<td>MMX</td>
 </tr>
 <tr>
-<td class="data"><b>Output</b></td>
-<td class="data"><%= tx.output_amount %></td>
-<td class="data">MMX</td>
+<td><b>Output</b></td>
+<td class="font-monospace"><%= tx.output_amount %></td>
+<td>MMX</td>
 </tr>
 <tr>
-<td class="data"><b>Fee</b></td>
-<td class="data"><%= tx.fee_amount %></td>
-<td class="data">MMX</td>
+<td><b>Fee</b></td>
+<td class="font-monospace"><%= tx.fee_amount %></td>
+<td>MMX</td>
 </tr>
 </table>
 
 <p>
-<table class="data">
+<table class="table table-nonfluid">
 <tr>
-<th class="data"></th>
-<th class="data">Amount</th>
-<th class="data">Token</th>
-<th class="data">Address</th>
-<th class="data">Spent TX</th>
+<th></th>
+<th>Amount</th>
+<th>Token</th>
+<th>Address</th>
+<th>Spent TX</th>
 </tr>
 
 <% tx.inputs.forEach(function(input, index) { %>
 <tr>
-<td class="data"><b>Input[<%= index %>]</b></td>
-<td class="data"><%= input.amount %></td>
-<td class="data">MMX</td>
-<td class="data"><a href="address?addr=<%= input.address %>"><%= input.address %></a></td>
+<td><b>Input[<%= index %>]</b></td>
+<td class="font-monospace"><%= input.amount %></td>
+<td>MMX</td>
+<td class="font-monospace"><a href="address?addr=<%= input.address %>"><%= input.address %></a></td>
 </tr>
 <% }); %>
 
 <% tx.outputs.forEach(function(output, index) { %>
 <tr>
-<td class="data"><b>Output[<%= index %>]</b></td>
-<td class="data"><%= output.amount %></td>
-<td class="data">MMX</td>
-<td class="data"><a href="address?addr=<%= output.address %>"><%= output.address %></a></td>
+<td><b>Output[<%= index %>]</b></td>
+<td class="font-monospace"><%= output.amount %></td>
+<td>MMX</td>
+<td class="font-monospace"><a href="address?addr=<%= output.address %>"><%= output.address %></a></td>
 <% if(output.spent_txid) { %>
-<td class="data"><a href="transaction?id=<%= output.spent_txid %>"><%= output.spent_txid %></a></td>
+<td class="font-monospace"><a href="transaction?id=<%= output.spent_txid %>"><%= output.spent_txid %></a></td>
 <% } %>
 </tr>
 <% }); %>
