@@ -386,7 +386,7 @@ std::vector<tx_entry_t> Node::get_history_for(const std::vector<addr_t>& address
 
 	struct txio_t {
 		std::vector<utxo_t> outputs;
-		std::vector<stxo_entry_t> inputs;
+		std::unordered_map<size_t, stxo_entry_t> inputs;
 	};
 	std::unordered_map<hash_t, txio_t> txio_map;
 
@@ -399,7 +399,7 @@ std::vector<tx_entry_t> Node::get_history_for(const std::vector<addr_t>& address
 		if(entry.output.height >= min_height) {
 			txio_map[entry.key.txid].outputs.push_back(entry.output);
 		}
-		txio_map[entry.spent.txid].inputs.push_back(entry);
+		txio_map[entry.spent.txid].inputs[entry.spent.index] = entry;
 	}
 	std::multimap<uint32_t, tx_entry_t> list;
 
@@ -418,11 +418,11 @@ std::vector<tx_entry_t> Node::get_history_for(const std::vector<addr_t>& address
 			amount[utxo.contract] += utxo.amount;
 		}
 		for(const auto& entry : txio.inputs) {
-			const auto& utxo = entry.output;
+			const auto& utxo = entry.second.output;
 			amount[utxo.contract] -= utxo.amount;
 		}
-		for(const auto& stxo : txio.inputs) {
-			const auto& utxo = stxo.output;
+		for(const auto& entry : txio.inputs) {
+			const auto& utxo = entry.second.output;
 			if(amount[utxo.contract] > 0 && height) {
 				tx_entry_t entry;
 				entry.height = *height;
@@ -448,18 +448,21 @@ std::vector<tx_entry_t> Node::get_history_for(const std::vector<addr_t>& address
 		}
 		if(!txio.inputs.empty() && height) {
 			if(auto tx = get_transaction(iter.first)) {
-				for(const auto& in : tx->inputs) {
-					if(auto info = get_txo_info(in.prev)) {
-						const auto& utxo = info->output;
-						if(amount[utxo.contract] < 0 && !addr_set.count(utxo.address)) {
-							tx_entry_t entry;
-							entry.height = *height;
-							entry.txid = tx->id;
-							entry.type = tx_type_e::INPUT;
-							entry.contract = utxo.contract;
-							entry.address = utxo.address;
-							entry.amount = utxo.amount;
-							list.emplace(entry.height, entry);
+				for(size_t i = 0; i < tx->inputs.size(); ++i) {
+					if(!txio.inputs.count(i)) {
+						const auto& in = tx->inputs[i];
+						if(auto info = get_txo_info(in.prev)) {
+							const auto& utxo = info->output;
+							if(amount[utxo.contract] < 0 && !addr_set.count(utxo.address)) {
+								tx_entry_t entry;
+								entry.height = *height;
+								entry.txid = tx->id;
+								entry.type = tx_type_e::INPUT;
+								entry.contract = utxo.contract;
+								entry.address = utxo.address;
+								entry.amount = utxo.amount;
+								list.emplace(entry.height, entry);
+							}
 						}
 					}
 				}
