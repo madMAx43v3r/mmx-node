@@ -406,6 +406,13 @@ std::vector<tx_entry_t> Node::get_history_for(const std::vector<addr_t>& address
 	for(const auto& iter : txio_map) {
 		const auto& txio = iter.second;
 
+		vnx::optional<uint32_t> height;
+		if(!txio.inputs.empty()) {
+			height = get_tx_height(iter.first);
+		}
+		if(height && *height < min_height) {
+			continue;
+		}
 		std::unordered_map<hash_t, int64_t> amount;
 		for(const auto& utxo : txio.outputs) {
 			amount[utxo.contract] += utxo.amount;
@@ -413,6 +420,19 @@ std::vector<tx_entry_t> Node::get_history_for(const std::vector<addr_t>& address
 		for(const auto& entry : txio.inputs) {
 			const auto& utxo = entry.output;
 			amount[utxo.contract] -= utxo.amount;
+		}
+		for(const auto& stxo : txio.inputs) {
+			const auto& utxo = stxo.output;
+			if(amount[utxo.contract] > 0 && height) {
+				tx_entry_t entry;
+				entry.height = *height;
+				entry.txid = iter.first;
+				entry.type = tx_type_e::SPEND;
+				entry.contract = utxo.contract;
+				entry.address = utxo.address;
+				entry.amount = utxo.amount;
+				list.emplace(entry.height, entry);
+			}
 		}
 		for(const auto& utxo : txio.outputs) {
 			if(amount[utxo.contract] > 0) {
@@ -426,22 +446,18 @@ std::vector<tx_entry_t> Node::get_history_for(const std::vector<addr_t>& address
 				list.emplace(entry.height, entry);
 			}
 		}
-		if(!txio.inputs.empty()) {
-			if(auto height = get_tx_height(iter.first)) {
-				if(*height >= min_height) {
-					if(auto tx = get_transaction(iter.first)) {
-						for(const auto& utxo : tx->outputs) {
-							if(amount[utxo.contract] < 0 && !addr_set.count(utxo.address)) {
-								tx_entry_t entry;
-								entry.height = *height;
-								entry.txid = iter.first;
-								entry.type = tx_type_e::SEND;
-								entry.contract = utxo.contract;
-								entry.address = utxo.address;
-								entry.amount = utxo.amount;
-								list.emplace(entry.height, entry);
-							}
-						}
+		if(!txio.inputs.empty() && height) {
+			if(auto tx = get_transaction(iter.first)) {
+				for(const auto& utxo : tx->outputs) {
+					if(amount[utxo.contract] < 0 && !addr_set.count(utxo.address)) {
+						tx_entry_t entry;
+						entry.height = *height;
+						entry.txid = iter.first;
+						entry.type = tx_type_e::SEND;
+						entry.contract = utxo.contract;
+						entry.address = utxo.address;
+						entry.amount = utxo.amount;
+						list.emplace(entry.height, entry);
 					}
 				}
 			}

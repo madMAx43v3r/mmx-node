@@ -3,6 +3,7 @@ package mmx;
 enum tx_type_e {
 	
 	SEND,
+	SPEND,
 	RECEIVE,
 	REWARD
 	

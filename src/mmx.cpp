@@ -29,6 +29,7 @@ void show_history(const std::vector<mmx::tx_entry_t>& history, mmx::NodeClient& 
 		std::cout << "[" << entry.height << "] ";
 		switch(entry.type) {
 			case mmx::tx_type_e::SEND:    std::cout << "SEND    "; break;
+			case mmx::tx_type_e::SPEND:   std::cout << "SPEND   "; break;
 			case mmx::tx_type_e::RECEIVE: std::cout << "RECEIVE "; break;
 			case mmx::tx_type_e::REWARD:  std::cout << "REWARD  "; break;
 			default: std::cout << "????    "; break;

@@ -16,6 +16,7 @@ struct tx_type_e {
 		RECEIVE = 940023181l,
 		REWARD = 3842121424l,
 		SEND = 521672984l,
+		SPEND = 2341768809l,
 	};
 	
 	::mmx::tx_type_e::enum_t value = ::mmx::tx_type_e::enum_t(0);
