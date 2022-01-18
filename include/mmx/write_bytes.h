@@ -15,6 +15,7 @@
 
 #include <vnx/Buffer.hpp>
 #include <vnx/Output.hpp>
+#include <vnx/Variant.hpp>
 #include <vnx/optional.h>
 
 #include <string>
@@ -69,6 +70,10 @@ inline void write_bytes(vnx::OutputBuffer& out, const std::vector<uint8_t>& valu
 
 inline void write_bytes(vnx::OutputBuffer& out, const vnx::Buffer& value) {
 	out.write(value.data(), value.size());
+}
+
+inline void write_bytes(vnx::OutputBuffer& out, const vnx::Variant& value) {
+	write_bytes(out, value.data);
 }
 
 inline void write_bytes(vnx::OutputBuffer& out, const txio_key_t& value)

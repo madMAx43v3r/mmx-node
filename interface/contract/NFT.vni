@@ -1,5 +1,6 @@
 package mmx.contract;
 
+import mmx.hash_t;
 import mmx.addr_t;
 
 class NFT extends mmx.Contract {
@@ -9,5 +10,12 @@ class NFT extends mmx.Contract {
 	optional<addr_t> parent;
 	
 	vnx.Object data;
+	
+	
+	bool is_valid() const;
+	
+	hash_t calc_hash() const;
+	
+	ulong calc_min_fee(mmx.ChainParams* params) const;
 	
 }

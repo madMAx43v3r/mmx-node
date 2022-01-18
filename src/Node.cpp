@@ -1779,6 +1779,9 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 	}
 	for(const auto& op : tx->execute)
 	{
+		if(!op->is_valid()) {
+			throw std::logic_error("invalid operation");
+		}
 		if(auto contract = get_contract(op->address)) {
 			const auto outputs = contract->validate(op, create_context(contract, context, tx));
 			exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
@@ -1806,6 +1809,9 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 		}
 	}
 	if(tx->deploy) {
+		if(!tx->deploy->is_valid()) {
+			throw std::logic_error("invalid contract");
+		}
 		if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(tx->deploy)) {
 			tx_out_t out;
 			out.contract = tx->id;

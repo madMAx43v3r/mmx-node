@@ -11,6 +11,8 @@ class Spend extends mmx.Operation {
 	utxo_t utxo;			// utxo to spend
 	
 	
-//	hash_t calc_hash() const;
+	hash_t calc_hash() const;
+	
+	ulong calc_min_fee(mmx.ChainParams* params) const;
 	
 }

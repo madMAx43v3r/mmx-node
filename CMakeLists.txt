@@ -59,6 +59,7 @@ add_library(mmx_iface SHARED
 	src/ProofOfSpace.cpp
 	src/secp256k1.cpp
 	src/hash_t.cpp
+	src/contract/NFT.cpp
 	src/contract/PubKey.cpp
 	src/contract/MultiSig.cpp
 	src/contract/Token.cpp
@@ -66,6 +67,8 @@ add_library(mmx_iface SHARED
 	src/contract/Condition.cpp
 	src/solution/PubKey.cpp
 	src/solution/MultiSig.cpp
+	src/operation/Mint.cpp
+	src/operation/Spend.cpp
 )
 
 add_library(mmx_modules SHARED

@@ -11,6 +11,10 @@
 
 namespace mmx {
 
+vnx::bool_t Operation::is_valid() const {
+	return version == 0;
+}
+
 hash_t Operation::calc_hash() const
 {
 	std::vector<uint8_t> buffer;

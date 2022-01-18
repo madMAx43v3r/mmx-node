@@ -27,7 +27,7 @@ vnx::bool_t Token::is_valid() const
 			return false;
 		}
 	}
-	return Contract::is_valid() && !name.empty() && !symbol.empty();
+	return Contract::is_valid() && !name.empty() && !symbol.empty() && symbol != "MMX";
 }
 
 hash_t Token::calc_hash() const
