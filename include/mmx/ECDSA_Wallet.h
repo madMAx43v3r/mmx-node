@@ -336,8 +336,8 @@ public:
 
 		uint64_t change = gather_inputs(tx, src_utxo, spent_map, amount, currency);
 
-		if(currency != addr_t() && change > 0) {
-			// token change cannot be used as tx fee
+		if(change > 0) {
+			// send change back to source address
 			tx_out_t out;
 			out.address = src_addr;
 			out.contract = currency;
