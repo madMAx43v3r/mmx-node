@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_get_utxo_list_for::VNX_TYPE_HASH(0x8b3f02747642c28dull);
-const vnx::Hash64 Wallet_get_utxo_list_for::VNX_CODE_HASH(0xe7f42cbba0bde180ull);
+const vnx::Hash64 Wallet_get_utxo_list_for::VNX_CODE_HASH(0x44ffd367fc2be272ull);
 
 vnx::Hash64 Wallet_get_utxo_list_for::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,14 +48,14 @@ void Wallet_get_utxo_list_for::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Wallet_get_utxo_list_for;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, index);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, contract);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, currency);
 	_visitor.type_end(*_type_code);
 }
 
 void Wallet_get_utxo_list_for::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Wallet.get_utxo_list_for\"";
 	_out << ", \"index\": "; vnx::write(_out, index);
-	_out << ", \"contract\": "; vnx::write(_out, contract);
+	_out << ", \"currency\": "; vnx::write(_out, currency);
 	_out << "}";
 }
 
@@ -69,14 +69,14 @@ vnx::Object Wallet_get_utxo_list_for::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Wallet.get_utxo_list_for";
 	_object["index"] = index;
-	_object["contract"] = contract;
+	_object["currency"] = currency;
 	return _object;
 }
 
 void Wallet_get_utxo_list_for::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "contract") {
-			_entry.second.to(contract);
+		if(_entry.first == "currency") {
+			_entry.second.to(currency);
 		} else if(_entry.first == "index") {
 			_entry.second.to(index);
 		}
@@ -87,8 +87,8 @@ vnx::Variant Wallet_get_utxo_list_for::get_field(const std::string& _name) const
 	if(_name == "index") {
 		return vnx::Variant(index);
 	}
-	if(_name == "contract") {
-		return vnx::Variant(contract);
+	if(_name == "currency") {
+		return vnx::Variant(currency);
 	}
 	return vnx::Variant();
 }
@@ -96,8 +96,8 @@ vnx::Variant Wallet_get_utxo_list_for::get_field(const std::string& _name) const
 void Wallet_get_utxo_list_for::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "index") {
 		_value.to(index);
-	} else if(_name == "contract") {
-		_value.to(contract);
+	} else if(_name == "currency") {
+		_value.to(currency);
 	} else {
 		throw std::logic_error("no such field: '" + _name + "'");
 	}
@@ -127,7 +127,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_utxo_list_for::static_create_type_code
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.get_utxo_list_for";
 	type_code->type_hash = vnx::Hash64(0x8b3f02747642c28dull);
-	type_code->code_hash = vnx::Hash64(0xe7f42cbba0bde180ull);
+	type_code->code_hash = vnx::Hash64(0x44ffd367fc2be272ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -145,7 +145,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_utxo_list_for::static_create_type_code
 	{
 		auto& field = type_code->fields[1];
 		field.is_extended = true;
-		field.name = "contract";
+		field.name = "currency";
 		field.code = {11, 32, 1};
 	}
 	type_code->build();
@@ -196,7 +196,7 @@ void read(TypeInput& in, ::mmx::Wallet_get_utxo_list_for& value, const TypeCode*
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 1: vnx::read(in, value.contract, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.currency, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -217,7 +217,7 @@ void write(TypeOutput& out, const ::mmx::Wallet_get_utxo_list_for& value, const 
 	}
 	char* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.index);
-	vnx::write(out, value.contract, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.currency, type_code, type_code->fields[1].code.data());
 }
 
 void read(std::istream& in, ::mmx::Wallet_get_utxo_list_for& value) {
