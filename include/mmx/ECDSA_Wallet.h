@@ -361,6 +361,9 @@ public:
 		op->amount = amount;
 		op->target = dst_addr;
 		op->address = currency;
+		if(!op->is_valid()) {
+			throw std::logic_error("invalid operation");
+		}
 		tx->execute.push_back(op);
 
 		uint64_t change = 0;
@@ -380,6 +383,9 @@ public:
 
 	std::shared_ptr<Transaction> deploy(std::shared_ptr<const Contract> contract)
 	{
+		if(!contract || !contract->is_valid()) {
+			throw std::logic_error("invalid contract");
+		}
 		auto tx = Transaction::create();
 		tx->deploy = contract;
 
