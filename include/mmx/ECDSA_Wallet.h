@@ -196,7 +196,8 @@ public:
 		return change;
 	}
 
-	uint64_t gather_fee(std::shared_ptr<Transaction> tx, std::unordered_map<txio_key_t, addr_t>& spent_map, uint64_t& change)
+	uint64_t gather_fee(std::shared_ptr<Transaction> tx, std::unordered_map<txio_key_t, addr_t>& spent_map,
+						uint64_t change = 0, const std::unordered_map<addr_t, addr_t>& owner_map = {})
 	{
 		uint64_t tx_fees = 0;
 		while(true) {
@@ -207,7 +208,14 @@ public:
 				if(iter == spent_map.end()) {
 					throw std::logic_error("cannot sign input");
 				}
-				used_addr.insert(iter->second);
+				auto owner = iter->second;
+				{
+					auto iter = owner_map.find(owner);
+					if(iter != owner_map.end()) {
+						owner = iter->second;
+					}
+				}
+				used_addr.insert(owner);
 			}
 			tx_fees = tx->calc_min_fee(params)
 					+ params->min_txfee_io	// for change output
@@ -245,14 +253,18 @@ public:
 		tx->finalize();
 
 		std::unordered_map<addr_t, uint32_t> solution_map;
+
+		// sign all inputs
 		for(auto& in : tx->inputs)
 		{
-			// sign all inputs
-			auto iter = spent_map.find(in.prev);
-			if(iter == spent_map.end()) {
-				throw std::logic_error("cannot sign input");
+			addr_t owner;
+			{
+				auto iter = spent_map.find(in.prev);
+				if(iter == spent_map.end()) {
+					throw std::logic_error("cannot sign input");
+				}
+				owner = iter->second;
 			}
-			auto owner = iter->second;
 			{
 				auto iter = owner_map.find(owner);
 				if(iter != owner_map.end()) {
@@ -274,7 +286,7 @@ public:
 			sol->signature = signature_t::sign(keys.first, tx->id);
 
 			in.solution = tx->solutions.size();
-			solution_map[iter->second] = in.solution;
+			solution_map[owner] = in.solution;
 			tx->solutions.push_back(sol);
 		}
 	}
@@ -333,11 +345,10 @@ public:
 			tx->outputs.push_back(out);
 			change = 0;
 		}
-		gather_fee(tx, spent_map, change);
-
 		std::unordered_map<addr_t, addr_t> owner_map;
 		owner_map.emplace(src_addr, src_owner);
 
+		gather_fee(tx, spent_map, change, owner_map);
 		sign_off(tx, spent_map, owner_map);
 		return tx;
 	}
