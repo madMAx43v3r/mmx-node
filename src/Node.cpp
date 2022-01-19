@@ -67,19 +67,20 @@ void Node::main()
 	add_async_client(router);
 	add_async_client(http);
 
-	vnx::Directory(storage_path + "db").create();
+	vnx::Directory(storage_path).create();
+	vnx::Directory(database_path).create();
 	{
 		::rocksdb::Options options;
 		options.max_open_files = 16;
 		options.keep_log_file_num = 3;
 		options.max_manifest_file_size = 64 * 1024 * 1024;
 
-		stxo_index.open(storage_path + "db/stxo_index", options);
-		saddr_map.open(storage_path + "db/saddr_map", options);
-		stxo_log.open(storage_path + "db/stxo_log", options);
-		tx_index.open(storage_path + "db/tx_index", options);
-		owner_map.open(storage_path + "db/owner_map", options);
-		tx_log.open(storage_path + "db/tx_log", options);
+		stxo_index.open(database_path + "stxo_index", options);
+		saddr_map.open(database_path + "saddr_map", options);
+		stxo_log.open(database_path + "stxo_log", options);
+		tx_index.open(database_path + "tx_index", options);
+		owner_map.open(database_path + "owner_map", options);
+		tx_log.open(database_path + "tx_log", options);
 	}
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
 

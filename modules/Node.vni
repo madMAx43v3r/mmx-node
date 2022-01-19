@@ -39,6 +39,7 @@ module Node implements vnx.addons.HttpComponent {
 	bool light_mode = false;
 	
 	string storage_path;
+	string database_path = "db/";
 	string router_name = "Router";
 	string timelord_name = "TimeLord";
 	

@@ -150,6 +150,7 @@ int main(int argc, char** argv)
 	{
 		vnx::Handle<mmx::Node> module = new mmx::Node("Node");
 		module->storage_path = root_path + module->storage_path;
+		module->database_path = root_path + module->database_path;
 		module.start();
 		module.wait();
 	}
