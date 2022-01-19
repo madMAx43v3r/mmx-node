@@ -135,6 +135,7 @@ private:
 
 	struct change_log_t {
 		hash_t prev_state;
+		vnx::optional<hash_t> tx_base;
 		std::vector<hash_t> tx_added;
 		std::unordered_map<txio_key_t, utxo_t> utxo_added;			// [utxo key => utxo]
 		std::unordered_map<txio_key_t, stxo_t> utxo_removed;		// [utxo key => [txi key, utxo]]

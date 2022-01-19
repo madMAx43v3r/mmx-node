@@ -2237,6 +2237,7 @@ void Node::apply(std::shared_ptr<const Block> block) noexcept
 
 	if(auto tx = std::dynamic_pointer_cast<const Transaction>(block->tx_base)) {
 		apply(block, tx, *log);
+		log->tx_base = tx->id;
 	}
 	for(size_t i = 0; i < block->tx_list.size(); ++i) {
 		if(auto tx = std::dynamic_pointer_cast<const Transaction>(block->tx_list[i])) {
@@ -2306,6 +2307,9 @@ bool Node::revert() noexcept
 	}
 	for(const auto& txid : log->tx_added) {
 		tx_map.erase(txid);
+	}
+	if(const auto& txid = log->tx_base) {
+		tx_pool.erase(*txid);
 	}
 	for(const auto& entry : log->deployed) {
 		light_address_set.erase(entry.first);
