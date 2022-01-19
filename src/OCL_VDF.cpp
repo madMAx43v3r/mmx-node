@@ -105,7 +105,7 @@ void OCL_VDF::verify(std::shared_ptr<const ProofOfTime> proof, const uint32_t ch
 
 OCL_VDF::OCL_VDF(uint32_t device) {}
 
-void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain, const hash_t& begin) {}
+void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain) {}
 
 void OCL_VDF::verify(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain) {}
 
