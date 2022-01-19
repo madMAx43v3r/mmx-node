@@ -351,6 +351,20 @@ After that you can follow the normal instructions for Ubuntu 20.04.
 To get OpenCL working in WSL:
 https://devblogs.microsoft.com/commandline/oneapi-l0-openvino-and-opencl-coming-to-the-windows-subsystem-for-linux-for-intel-gpus/
 
+### Custom RocksDB build
+
+On some platforms, like Ubuntu 18.04, the provided RocksDB package is faulty and will cause linker errors when building mmx-node.
+
+To solve the issue, you have to compile RocksDB manually as follows:
+```
+git clone https://github.com/facebook/rocksdb.git
+cd rocksdb
+USE_RTTI=1 make -j16 shared_lib
+sudo make install
+```
+
+(For some reason RocksDB developers thought it be a great idea to compile unusable libraries by default)
+
 ### Using packaged secp256k1
 
 If you don't have a system package for `libsecp256k1`:
