@@ -1271,33 +1271,16 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	std::vector<tx_entry_t> tx_list;
 	std::unordered_set<hash_t> invalid;
 	std::unordered_set<hash_t> postpone;
-	std::unordered_set<txio_key_t> spent;
 
-	auto context = Context::create();
-	context->height = block->height;
-
-	for(const auto& entry : tx_pool)
-	{
-		if(tx_map.count(entry.first)) {
-			// already included in a previous block
-			continue;
-		}
-		const auto& tx = entry.second;
-		try {
-			for(const auto& in : tx->inputs) {
-				if(!spent.insert(in.prev).second) {
-					throw std::logic_error("double spend");
-				}
-			}
-			tx_entry_t entry;
-			entry.tx = tx;
-			tx_list.push_back(entry);
-		}
-		catch(const std::exception& ex) {
-			invalid.insert(entry.first);
-			log(WARN) << "TX validation failed with: " << ex.what();
+	for(const auto& entry : tx_pool) {
+		if(!tx_map.count(entry.first)) {
+			tx_entry_t tmp;
+			tmp.tx = entry.second;
+			tx_list.push_back(tmp);
 		}
 	}
+	auto context = Context::create();
+	context->height = block->height;
 
 #pragma omp parallel for
 	for(size_t i = 0; i < tx_list.size(); ++i)
@@ -1347,6 +1330,8 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 
 	uint64_t total_fees = 0;
 	uint64_t total_cost = 0;
+	std::unordered_set<txio_key_t> spent;
+
 	for(size_t i = 0; i < tx_list.size(); ++i)
 	{
 		const auto& entry = tx_list[i];
@@ -1355,9 +1340,20 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 		{
 			if(total_cost + entry.cost < params->max_block_cost)
 			{
-				block->tx_list.push_back(tx);
-				total_fees += entry.fees;
-				total_cost += entry.cost;
+				bool passed = true;
+				for(const auto& in : tx->inputs) {
+					if(spent.count(in.prev)) {
+						passed = false;
+					}
+				}
+				if(passed) {
+					for(const auto& in : tx->inputs) {
+						spent.insert(in.prev);
+					}
+					block->tx_list.push_back(tx);
+					total_fees += entry.fees;
+					total_cost += entry.cost;
+				}
 			}
 		}
 	}
