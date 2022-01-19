@@ -724,8 +724,11 @@ void Node::http_request_chunk_async(std::shared_ptr<const vnx::addons::HttpReque
 
 void Node::handle(std::shared_ptr<const Block> block)
 {
-	if(!is_synced && !sync_retry) {
-		return;
+	if(!is_synced) {
+		const auto peak = get_peak();
+		if(!peak || block->height < peak->height || block->height - peak->height > params->commit_delay) {
+			return;
+		}
 	}
 	if(block->proof) {
 		add_block(block);
@@ -734,7 +737,7 @@ void Node::handle(std::shared_ptr<const Block> block)
 
 void Node::handle(std::shared_ptr<const Transaction> tx)
 {
-	if(!is_synced && !sync_retry) {
+	if(!is_synced) {
 		return;
 	}
 	add_transaction(tx);
@@ -742,17 +745,17 @@ void Node::handle(std::shared_ptr<const Transaction> tx)
 
 void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 {
-	if(!is_synced && !sync_retry) {
+	const auto peak = get_peak();
+	if(!peak || proof->height < peak->height) {
+		return;
+	}
+	if(proof->height > peak->height && proof->height - peak->height > params->commit_delay) {
 		return;
 	}
 	if(find_vdf_point(	proof->height, proof->start, proof->get_vdf_iters(),
 						proof->input, {proof->get_output(0), proof->get_output(1)}))
 	{
 		return;		// already verified
-	}
-	const auto peak = get_peak();
-	if(!peak || proof->height < peak->height) {
-		return;
 	}
 	if(vdf_verify_pending.count(proof->height)) {
 		pending_vdfs.emplace(proof->height, proof);
