@@ -13,6 +13,7 @@ set(LIBBECH32_BUILD_RAPIDCHECK OFF CACHE BOOL "LIBBECH32_BUILD_RAPIDCHECK")
 
 add_subdirectory(vnx-base)
 add_subdirectory(vnx-addons)
+add_subdirectory(vnx-rocksdb)
 add_subdirectory(libbech32)
 add_subdirectory(bls-signatures)
 
@@ -53,11 +54,24 @@ add_library(mmx_iface SHARED
 	src/Transaction.cpp
 	src/Operation.cpp
 	src/Contract.cpp
+	src/Solution.cpp
 	src/ProofOfTime.cpp
 	src/ProofOfSpace.cpp
 	src/secp256k1.cpp
 	src/hash_t.cpp
+	src/contract/NFT.cpp
+	src/contract/Data.cpp
+	src/contract/WebData.cpp
 	src/contract/PubKey.cpp
+	src/contract/MultiSig.cpp
+	src/contract/Token.cpp
+	src/contract/Staking.cpp
+	src/contract/Condition.cpp
+	src/solution/PubKey.cpp
+	src/solution/MultiSig.cpp
+	src/operation/Mint.cpp
+	src/operation/Spend.cpp
+	src/operation/Mutate.cpp
 )
 
 add_library(mmx_modules SHARED
@@ -92,7 +106,7 @@ target_include_directories(mmx_chiapos
 )
 
 target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_addons vnx_base)
-target_link_libraries(mmx_modules mmx_chiapos mmx_iface)
+target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_iface)
 
 if(OpenCL_FOUND)
 	target_link_libraries(mmx_modules automy_basic_opencl)

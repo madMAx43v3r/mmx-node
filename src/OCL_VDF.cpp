@@ -49,7 +49,7 @@ OCL_VDF::OCL_VDF(uint32_t device)
 	queue = automy::basic_opencl::create_command_queue(device);
 }
 
-void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain, const hash_t& begin)
+void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain)
 {
 	const size_t local = 64;
 	const size_t width = proof->segments.size() + (local - (proof->segments.size() % local)) % local;
@@ -58,18 +58,13 @@ void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 	}
 	hash.resize(width * 32);
 	{
-		auto start_iters = proof->start;
-		for(size_t i = 0; i < proof->segments.size(); ++i)
-		{
-			auto point = i > 0 ? proof->segments[i-1].output[chain] : begin;
-			{
-				auto iter = proof->infuse[chain].find(start_iters);
-				if(iter != proof->infuse[chain].end()) {
-					point = hash_t(point + iter->second);
-				}
-			}
-			::memcpy(hash.data() + i * 32, point.data(), point.size());
-			start_iters += proof->segments[i].num_iters;
+		auto input = proof->input[chain];
+		if(auto infuse = proof->infuse[chain]) {
+			input = hash_t(input + *infuse);
+		}
+		for(size_t i = 0; i < proof->segments.size(); ++i) {
+			::memcpy(hash.data() + i * 32, input.data(), input.size());
+			input = proof->segments[i].output[chain];
 		}
 	}
 
@@ -110,7 +105,7 @@ void OCL_VDF::verify(std::shared_ptr<const ProofOfTime> proof, const uint32_t ch
 
 OCL_VDF::OCL_VDF(uint32_t device) {}
 
-void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain, const hash_t& begin) {}
+void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain) {}
 
 void OCL_VDF::verify(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain) {}
 

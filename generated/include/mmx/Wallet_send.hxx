@@ -17,7 +17,7 @@ public:
 	uint32_t index = 0;
 	uint64_t amount = 0;
 	::mmx::addr_t dst_addr;
-	::mmx::addr_t contract;
+	::mmx::addr_t currency;
 	
 	typedef ::vnx::Value Super;
 	

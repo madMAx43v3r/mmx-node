@@ -26,7 +26,7 @@ public:
 	std::string wallet_server = "Wallet";
 	vnx::optional<::mmx::addr_t> reward_addr;
 	vnx::optional<::mmx::addr_t> project_addr;
-	vnx::float64_t devfee_ratio = 0.025;
+	vnx::float64_t devfee_ratio = 0.05;
 	
 	typedef ::vnx::Module Super;
 	

@@ -23,7 +23,7 @@ class OCL_VDF {
 public:
 	OCL_VDF(uint32_t device);
 
-	void compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain, const hash_t& begin);
+	void compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain);
 
 	void verify(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain);
 

@@ -27,7 +27,7 @@ The variable reward function is as follows: \
 Where `min_reward` and `const_factor` are fixed at launch.
 
 A mainnet launch is planned in ~6 months or so.
-Currently we are running _testnet3_, so the coins farmed right now are _not worth anything_.
+Currently we are running _testnet4_, so the coins farmed right now are _not worth anything_.
 
 See `#mmx-news` and `#mmx-general` on discord: https://discord.gg/pQwkebKnPB
 
@@ -121,12 +121,12 @@ mmx wallet get seed [-j index]
 
 First perform the installation and setup steps.
 
-To run a node for current `testnet3`
+To run a node for current `testnet4`
 ```
 ./run_node.sh
 ```
 
-You can enable port forwarding on TCP port 12333 if you want to help out the network and accept incoming connections.
+You can enable port forwarding on TCP port 12334 if you want to help out the network and accept incoming connections.
 
 To set a custom storage path for the blockchain, etc:
 ```
@@ -155,7 +155,7 @@ To run a light node:
 ```
 ./run_light_node.sh
 ```
-Light node data will end up in `testnet3/light_node/` by default, there is no conflict with data from a full node.
+Light node data will end up in `testnet4/light_node/` by default, there is no conflict with data from a full node.
 
 Note: You cannot add a new wallet afterwards (or increase the number of addresses), if you do so you have to re-sync from scratch.
 
@@ -195,12 +195,11 @@ To re-sync from scratch delete `block_chain.dat`.
 
 After stopping the node:
 ```
+rm NETWORK
 ./update.sh
-rm config/local/mmx_node.json
-rm block_chain.dat known_peers.dat NETWORK
 ./run_node.sh
 ```
-`block_chain.dat`, `known_peers.dat` and `logs` are now stored in `testnet3` folder by default.
+`block_chain.dat`, `known_peers.dat` and `logs` are now stored in `testnet4` folder by default.
 
 ### Remote Farmer
 
@@ -300,18 +299,18 @@ Note: OpenCL packages are optional, ie. `ocl-icd-opencl-dev`, etc.
 Ubuntu Linux:
 ```
 sudo apt update
-sudo apt install git cmake build-essential libsecp256k1-dev libsodium-dev zlib1g-dev ocl-icd-opencl-dev clinfo screen
+sudo apt install git cmake build-essential libsecp256k1-dev librocksdb-dev libsodium-dev zlib1g-dev ocl-icd-opencl-dev clinfo screen
 ```
 
 Arch Linux:
 ```
 sudo pacman -Syu
-sudo pacman -S base-devel git cmake zlib libsecp256k1 libsodium opencl-headers ocl-icd clinfo screen
+sudo pacman -S base-devel git cmake zlib libsecp256k1 rocksdb libsodium opencl-headers ocl-icd clinfo screen
 ```
 
 Fedora Linux:
 ```
-yum install git cmake clinfo gcc libsecp256k1-devel libsodium ocl-icd-devel opencl-headers opencl-utils ghc-zlib
+yum install git cmake clinfo gcc libsecp256k1-devel rocksdb-devel libsodium ocl-icd-devel opencl-headers opencl-utils ghc-zlib
 ```
 
 OpenCL provides faster and more efficient VDF verification using an integrated or dedicated GPU.
@@ -350,6 +349,22 @@ After that you can follow the normal instructions for Ubuntu 20.04.
 
 To get OpenCL working in WSL:
 https://devblogs.microsoft.com/commandline/oneapi-l0-openvino-and-opencl-coming-to-the-windows-subsystem-for-linux-for-intel-gpus/
+
+### Custom RocksDB build
+
+On some platforms, like Ubuntu 18.04, the provided RocksDB package is faulty and will cause linker errors when building mmx-node.
+
+To solve the issue, you have to compile RocksDB manually as follows:
+```
+git clone https://github.com/facebook/rocksdb.git
+cd rocksdb
+USE_RTTI=1 make -j8 shared_lib
+sudo make install
+```
+
+Make sure to uninstall any system package which provides a faulty version of RocksDB, like `librocksdb-dev`.
+
+(For some reason RocksDB developers thought it be a great idea to compile unusable libraries by default)
 
 ### Using packaged secp256k1
 

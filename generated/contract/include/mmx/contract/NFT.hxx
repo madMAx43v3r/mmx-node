@@ -5,9 +5,11 @@
 #define INCLUDE_mmx_contract_NFT_HXX_
 
 #include <mmx/contract/package.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
-#include <mmx/contract/Condition.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
+#include <vnx/Object.hpp>
 
 
 namespace mmx {
@@ -16,10 +18,9 @@ namespace contract {
 class NFT : public ::mmx::Contract {
 public:
 	
-	std::shared_ptr<const ::mmx::Contract> owner;
-	std::shared_ptr<const ::mmx::contract::Condition> transfer_cond;
-	vnx::bool_t is_burnable = 0;
-	vnx::bool_t is_transferable = 0;
+	::mmx::addr_t creator;
+	vnx::optional<::mmx::addr_t> parent;
+	::vnx::Object data;
 	
 	typedef ::mmx::Contract Super;
 	
@@ -33,6 +34,10 @@ public:
 	vnx::Hash64 get_type_hash() const override;
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
+	
+	virtual vnx::bool_t is_valid() const override;
+	virtual ::mmx::hash_t calc_hash() const override;
+	virtual uint64_t calc_min_fee(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	
 	static std::shared_ptr<NFT> create();
 	std::shared_ptr<vnx::Value> clone() const override;

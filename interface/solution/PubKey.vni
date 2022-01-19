@@ -9,4 +9,7 @@ class PubKey extends mmx.Solution {
 	
 	signature_t signature;
 	
+	
+	ulong calc_min_fee(mmx.ChainParams* params) const;
+	
 }

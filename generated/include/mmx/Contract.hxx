@@ -5,9 +5,12 @@
 #define INCLUDE_mmx_Contract_HXX_
 
 #include <mmx/package.hxx>
+#include <mmx/ChainParams.hxx>
+#include <mmx/Context.hxx>
 #include <mmx/Operation.hxx>
-#include <mmx/Solution.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
+#include <mmx/tx_out_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -33,7 +36,10 @@ public:
 	
 	virtual vnx::bool_t is_valid() const;
 	virtual ::mmx::hash_t calc_hash() const;
-	virtual vnx::bool_t validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Solution> solution = nullptr, const ::mmx::hash_t& txid = ::mmx::hash_t()) const;
+	virtual uint64_t calc_min_fee(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
+	virtual std::vector<::mmx::addr_t> get_dependency() const;
+	virtual vnx::optional<::mmx::addr_t> get_owner() const;
+	virtual std::vector<::mmx::tx_out_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const;
 	
 	static std::shared_ptr<Contract> create();
 	std::shared_ptr<vnx::Value> clone() const override;

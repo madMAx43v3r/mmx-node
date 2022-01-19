@@ -5,9 +5,13 @@
 #define INCLUDE_mmx_contract_MultiSig_HXX_
 
 #include <mmx/contract/package.hxx>
+#include <mmx/ChainParams.hxx>
+#include <mmx/Context.hxx>
 #include <mmx/Contract.hxx>
+#include <mmx/Operation.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
+#include <mmx/tx_out_t.hxx>
 
 
 namespace mmx {
@@ -16,8 +20,8 @@ namespace contract {
 class MultiSig : public ::mmx::Contract {
 public:
 	
-	int32_t num_required = 0;
-	std::vector<::mmx::addr_t> addresses;
+	uint32_t num_required = 0;
+	std::vector<::mmx::addr_t> owners;
 	
 	typedef ::mmx::Contract Super;
 	
@@ -31,6 +35,12 @@ public:
 	vnx::Hash64 get_type_hash() const override;
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
+	
+	virtual vnx::bool_t is_valid() const override;
+	virtual ::mmx::hash_t calc_hash() const override;
+	virtual uint64_t calc_min_fee(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
+	virtual std::vector<::mmx::addr_t> get_dependency() const override;
+	virtual std::vector<::mmx::tx_out_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
 	
 	static std::shared_ptr<MultiSig> create();
 	std::shared_ptr<vnx::Value> clone() const override;

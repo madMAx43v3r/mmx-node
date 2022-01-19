@@ -225,7 +225,7 @@ app.get('/transaction', (req, res) => {
 		res.status(404).send();
 		return;
 	}
-	axios.get(host + '/api/node/get_transaction?id=' + req.query.id)
+	axios.get(host + '/api/node/get_transaction?include_pending=true&id=' + req.query.id)
 		.then((ret) => {
 			const tx = ret.data;
 			if(!tx) {

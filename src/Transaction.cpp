@@ -45,6 +45,8 @@ hash_t Transaction::calc_hash() const
 	for(const auto& op : execute) {
 		write_bytes(out, op ? op->calc_hash() : hash_t());
 	}
+	write_bytes(out, deploy ? deploy->calc_hash() : hash_t());
+
 	out.flush();
 
 	return hash_t(buffer);
@@ -63,9 +65,22 @@ uint64_t Transaction::calc_min_fee(std::shared_ptr<const ChainParams> params) co
 	if(!params) {
 		throw std::logic_error("!params");
 	}
-	return (inputs.size() + outputs.size()) * params->min_txfee_io
-			+ solutions.size() * params->min_txfee_sign
-			+ execute.size() * params->min_txfee_exec;
+	uint64_t fee = (inputs.size() + outputs.size()) * params->min_txfee_io;
+
+	for(const auto& op : execute) {
+		if(op) {
+			fee += op->calc_min_fee(params);
+		}
+	}
+	for(const auto& sol : solutions) {
+		if(sol) {
+			fee += sol->calc_min_fee(params);
+		}
+	}
+	if(deploy) {
+		fee += deploy->calc_min_fee(params);
+	}
+	return fee;
 }
 
 

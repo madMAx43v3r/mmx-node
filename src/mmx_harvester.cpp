@@ -22,7 +22,7 @@ int main(int argc, char** argv)
 	vnx::init("mmx_harvester", argc, argv, options);
 
 	std::string node_url = ":11330";
-	std::string endpoint = ":11334";
+	std::string endpoint = ":11333";
 
 	vnx::read_config("node", node_url);
 	vnx::read_config("endpoint", endpoint);

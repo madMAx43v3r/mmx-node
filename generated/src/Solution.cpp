@@ -3,6 +3,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Solution.hxx>
+#include <mmx/ChainParams.hxx>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>

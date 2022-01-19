@@ -5,31 +5,33 @@
 #define INCLUDE_mmx_contract_Token_HXX_
 
 #include <mmx/contract/package.hxx>
+#include <mmx/ChainParams.hxx>
+#include <mmx/Context.hxx>
+#include <mmx/Contract.hxx>
+#include <mmx/Operation.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/contract/Condition.hxx>
-#include <mmx/contract/NFT.hxx>
 #include <mmx/hash_t.hpp>
+#include <mmx/tx_out_t.hxx>
 #include <mmx/ulong_fraction_t.hxx>
 
 
 namespace mmx {
 namespace contract {
 
-class Token : public ::mmx::contract::NFT {
+class Token : public ::mmx::Contract {
 public:
 	
 	std::string name;
+	std::string symbol;
 	std::string web_url;
 	std::string icon_url;
-	::mmx::addr_t symbol;
-	std::shared_ptr<const ::mmx::Solution> symbol_sig;
-	int32_t decimals = 0;
+	uint32_t decimals = 0;
+	vnx::optional<::mmx::addr_t> owner;
 	::mmx::ulong_fraction_t time_factor;
-	std::shared_ptr<const ::mmx::contract::Condition> stake_condition;
 	std::map<::mmx::addr_t, ::mmx::ulong_fraction_t> stake_factors;
 	
-	typedef ::mmx::contract::NFT Super;
+	typedef ::mmx::Contract Super;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -41,6 +43,13 @@ public:
 	vnx::Hash64 get_type_hash() const override;
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
+	
+	virtual vnx::bool_t is_valid() const override;
+	virtual ::mmx::hash_t calc_hash() const override;
+	virtual uint64_t calc_min_fee(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
+	virtual std::vector<::mmx::addr_t> get_dependency() const override;
+	virtual vnx::optional<::mmx::addr_t> get_owner() const override;
+	virtual std::vector<::mmx::tx_out_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
 	
 	static std::shared_ptr<Token> create();
 	std::shared_ptr<vnx::Value> clone() const override;

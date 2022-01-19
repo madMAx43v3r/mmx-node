@@ -42,7 +42,7 @@ namespace mmx {
 
 
 const vnx::Hash64 FarmerBase::VNX_TYPE_HASH(0xff732ba14d9d1abull);
-const vnx::Hash64 FarmerBase::VNX_CODE_HASH(0xb78959ce70dd7401ull);
+const vnx::Hash64 FarmerBase::VNX_CODE_HASH(0x4ae8eecaf47aa5aaull);
 
 FarmerBase::FarmerBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -223,7 +223,7 @@ std::shared_ptr<vnx::TypeCode> FarmerBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Farmer";
 	type_code->type_hash = vnx::Hash64(0xff732ba14d9d1abull);
-	type_code->code_hash = vnx::Hash64(0xb78959ce70dd7401ull);
+	type_code->code_hash = vnx::Hash64(0x4ae8eecaf47aa5aaull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::FarmerBase);
 	type_code->methods.resize(12);
@@ -298,7 +298,7 @@ std::shared_ptr<vnx::TypeCode> FarmerBase::static_create_type_code() {
 		auto& field = type_code->fields[8];
 		field.data_size = 8;
 		field.name = "devfee_ratio";
-		field.value = vnx::to_string(0.025);
+		field.value = vnx::to_string(0.05);
 		field.code = {10};
 	}
 	type_code->build();

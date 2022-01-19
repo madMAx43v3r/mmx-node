@@ -1,0 +1,20 @@
+package mmx.contract;
+
+import mmx.hash_t;
+import mmx.addr_t;
+import mmx.pubkey_t;
+
+class PuzzleLock extends Locked {
+	
+	mmx.Contract* puzzle;			// to unlock for target via MultiSig solution
+	
+	addr_t target;					// beneficiary
+	
+	optional<addr_t> currency;
+	
+	
+//	bool is_valid() const;
+	
+//	hash_t calc_hash() const;
+	
+}

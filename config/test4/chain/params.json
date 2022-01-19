@@ -1,0 +1,21 @@
+{
+	"port": 12334,
+	"block_time": 10,
+	"plot_filter": 8,
+	"challenge_delay": 9,
+	"min_ksize": 26,
+	"vdf_seed": "test4",
+	"reward_factor": {
+		"value": 8,
+		"inverse": 100000000000
+	},
+	"min_reward": 200000,
+	"min_txfee_io": 500,
+	"min_txfee_sign": 3000,
+	"min_txfee_byte": 10,
+	"max_block_cost": 10000000,
+	"initial_time_diff": 30000,
+	"initial_space_diff": 1,
+	"time_diff_constant": 1000,
+	"space_diff_constant": 100000000
+}

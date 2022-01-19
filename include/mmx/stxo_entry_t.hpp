@@ -14,12 +14,12 @@
 namespace mmx {
 
 inline
-stxo_entry_t stxo_entry_t::create_ex(const txio_key_t& key, const utxo_t& output, const txio_key_t& spent)
+stxo_entry_t stxo_entry_t::create_ex(const txio_key_t& key, const stxo_t& stxo)
 {
 	stxo_entry_t res;
 	res.key = key;
-	res.output = output;
-	res.spent = spent;
+	res.output = stxo;
+	res.spent = stxo.spent;
 	return res;
 }
 

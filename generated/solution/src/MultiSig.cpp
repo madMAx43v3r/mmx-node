@@ -3,6 +3,7 @@
 
 #include <mmx/solution/package.hxx>
 #include <mmx/solution/MultiSig.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/solution/PubKey.hxx>
 
@@ -14,7 +15,7 @@ namespace solution {
 
 
 const vnx::Hash64 MultiSig::VNX_TYPE_HASH(0x64ffa2f8fc8dffd1ull);
-const vnx::Hash64 MultiSig::VNX_CODE_HASH(0x79d84b7a77e0fc41ull);
+const vnx::Hash64 MultiSig::VNX_CODE_HASH(0xce1b5fb0152dabd8ull);
 
 vnx::Hash64 MultiSig::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -127,15 +128,13 @@ std::shared_ptr<vnx::TypeCode> MultiSig::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.solution.MultiSig";
 	type_code->type_hash = vnx::Hash64(0x64ffa2f8fc8dffd1ull);
-	type_code->code_hash = vnx::Hash64(0x79d84b7a77e0fc41ull);
+	type_code->code_hash = vnx::Hash64(0xce1b5fb0152dabd8ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::solution::MultiSig);
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Solution::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<MultiSig>(); };
-	type_code->depends.resize(1);
-	type_code->depends[0] = ::mmx::solution::PubKey::static_get_type_code();
 	type_code->fields.resize(2);
 	{
 		auto& field = type_code->fields[0];
@@ -147,7 +146,7 @@ std::shared_ptr<vnx::TypeCode> MultiSig::static_create_type_code() {
 		auto& field = type_code->fields[1];
 		field.is_extended = true;
 		field.name = "solutions";
-		field.code = {12, 19, 0};
+		field.code = {12, 16};
 	}
 	type_code->build();
 	return type_code;

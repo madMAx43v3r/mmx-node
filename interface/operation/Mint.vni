@@ -9,7 +9,13 @@ class Mint extends mmx.Operation {
 	
 	ulong amount;
 	
+	static const ulong max_amount = 1000000000000;
 	
-//	hash_t calc_hash() const;
+	
+	bool is_valid() const;
+	
+	hash_t calc_hash() const;
+	
+	ulong calc_min_fee(mmx.ChainParams* params) const;
 	
 }

@@ -60,6 +60,7 @@ public:
 	vnx::bool_t do_sync = true;
 	vnx::bool_t light_mode = false;
 	std::string storage_path;
+	std::string database_path = "db/";
 	std::string router_name = "Router";
 	std::string timelord_name = "TimeLord";
 	
@@ -110,12 +111,14 @@ protected:
 	virtual std::vector<::mmx::hash_t> get_tx_ids_at(const uint32_t& height) const = 0;
 	virtual void add_block(std::shared_ptr<const ::mmx::Block> block) = 0;
 	virtual void add_transaction(std::shared_ptr<const ::mmx::Transaction> tx) = 0;
-	virtual std::shared_ptr<const ::mmx::Transaction> get_transaction(const ::mmx::hash_t& id) const = 0;
+	virtual std::shared_ptr<const ::mmx::Contract> get_contract(const ::mmx::addr_t& address) const = 0;
+	virtual std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts_owned(const std::vector<::mmx::addr_t>& owners) const = 0;
+	virtual std::shared_ptr<const ::mmx::Transaction> get_transaction(const ::mmx::hash_t& id, const vnx::bool_t& include_pending) const = 0;
 	virtual std::vector<std::shared_ptr<const ::mmx::Transaction>> get_transactions(const std::vector<::mmx::hash_t>& ids) const = 0;
 	virtual std::vector<::mmx::tx_entry_t> get_history_for(const std::vector<::mmx::addr_t>& addresses, const int32_t& since) const = 0;
-	virtual std::shared_ptr<const ::mmx::Contract> get_contract(const ::mmx::addr_t& address) const = 0;
 	virtual uint64_t get_balance(const ::mmx::addr_t& address, const ::mmx::addr_t& contract) const = 0;
 	virtual uint64_t get_total_balance(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& contract) const = 0;
+	virtual std::map<::mmx::addr_t, uint64_t> get_total_balances(const std::vector<::mmx::addr_t>& addresses) const = 0;
 	virtual uint64_t get_total_supply(const ::mmx::addr_t& contract) const = 0;
 	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list(const std::vector<::mmx::addr_t>& addresses) const = 0;
 	virtual std::vector<::mmx::stxo_entry_t> get_stxo_list(const std::vector<::mmx::addr_t>& addresses) const = 0;

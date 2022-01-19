@@ -10,8 +10,8 @@ class ChainParams {
 	
 	uint commit_delay = 18;					// for writing to disk (must > finality_delay)
 	uint finality_delay = 6;				// for primary VDF infusion (must be > 0)
-	uint challenge_delay = 3;				// blocks until new challange is active (must be > 0)
-	uint challenge_interval = 36;			// challenge (and difficulty) is for next N blocks (must be > commit_delay)
+	uint challenge_delay = 9;				// blocks until new challange is active (must be > 0)
+	uint challenge_interval = 48;			// challenge (and difficulty) is for next N blocks (must be > commit_delay)
 	uint max_diff_adjust = 10;				// per block (1/2^x)
 	
 	uint min_vdf_segments = 320;
@@ -21,22 +21,23 @@ class ChainParams {
 	uint max_tx_base_out = 10;
 	uint recursive_interval = 60480;		// number of blocks per iteration to approximate recursive functions
 	
-	uint score_bits = 10;
-	uint score_threshold = 1000;			// should be <= 2^score_bits
-	uint target_score = 125;				// defines how many competing blocks are created (must be less than score_threshold)
+	uint score_bits = 16;
+	uint score_target = 8192;				// defines how many competing blocks are created (must be less than score_threshold)
+	uint score_threshold = 65536;			// should be <= 2^score_bits
+	uint max_weight_buffer = 262144;
 	
 	ulong min_reward = 200000;
 	ulong_fraction_t reward_factor;			// reward = (diff * value) / inverse;
 	
-	ulong time_diff_constant = 10000;
-	ulong space_diff_constant = 139586437120;
+	ulong time_diff_constant = 1000;
+	ulong space_diff_constant = 100000000;
 	
 	ulong initial_time_diff = 10000;		// [iters/sec]
-	ulong initial_space_diff = 256;			// quality modulo
+	ulong initial_space_diff = 10;
 	
 	ulong min_txfee_io = 100;				// per input / output
 	ulong min_txfee_sign = 1000;			// per solution
-	ulong min_txfee_exec = 100000;			// per operation
+	ulong min_txfee_byte = 10;				// per byte of data
 	ulong max_block_cost = 10000000;
 	
 	double block_time = 10;					// [sec]

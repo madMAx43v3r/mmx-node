@@ -4,30 +4,37 @@ import mmx.hash_t;
 import mmx.addr_t;
 import mmx.ulong_fraction_t;
 import mmx.Solution;
+import mmx.Contract;
 
-class Token extends NFT {
+class Token extends Contract {
 	
 	string name;
+	
+	string symbol;
 	
 	string web_url;
 	
 	string icon_url;
 	
-	addr_t symbol;					// contract address
+	uint decimals;
 	
-	Solution* symbol_sig;			// signature from symbol owner for this token's hash
-	
-	int decimals;
+	optional<addr_t> owner;
 	
 	ulong_fraction_t time_factor;							// for inflation / deflation (factor applied per block)
 	
-	Condition* stake_condition;
-	
-	map<addr_t, ulong_fraction_t> stake_factors;			// [contract => mint factor per block]
+	map<addr_t, ulong_fraction_t> stake_factors;			// [currency => mint factor per block]
 	
 	
-//	bool is_valid() const;
+	bool is_valid() const;
 	
-//	hash_t calc_hash() const;
+	hash_t calc_hash() const;
+	
+	ulong calc_min_fee(mmx.ChainParams* params) const;
+	
+	vector<addr_t> get_dependency() const;
+	
+	optional<addr_t> get_owner() const;
+	
+	vector<mmx.tx_out_t> validate(mmx.Operation* operation, mmx.Context* context) const;
 	
 }

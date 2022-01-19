@@ -32,7 +32,7 @@ mmx::hash_t Block::calc_tx_hash() const
 	buffer.reserve(1024 * 1024);
 
 	for(const auto& tx : tx_list) {
-		write_bytes(out, tx->calc_hash());
+		write_bytes(out, tx ? tx->calc_hash() : hash_t());
 	}
 	out.flush();
 

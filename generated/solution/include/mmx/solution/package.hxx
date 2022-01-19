@@ -7,6 +7,7 @@
 #include <vnx/Type.h>
 
 #include <mmx/package.hxx>
+#include <vnx/package.hxx>
 
 
 namespace mmx {
@@ -58,6 +59,7 @@ struct type<::mmx::solution::MultiSig> {
 	void accept(Visitor& visitor, const ::mmx::solution::MultiSig& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::MultiSig& value, bool special = false);
 };
@@ -80,6 +82,7 @@ struct type<::mmx::solution::PubKey> {
 	void accept(Visitor& visitor, const ::mmx::solution::PubKey& value) {
 		vnx::accept(visitor, value);
 	}
+	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::PubKey& value, bool special = false);
 };

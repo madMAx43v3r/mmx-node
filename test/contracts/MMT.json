@@ -1,0 +1,13 @@
+{
+	"__type": "mmx.contract.Token",
+	"name": "MMX Token",
+	"symbol": "MMT",
+	"decimals": 6,
+	"owner": "mmx1nn8u9etvnghq7x8atj2y55he76z9yvxalc9t3nx8ym0xqr4yuzvsdf8jp8",
+	"stake_factors": {
+		"mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev": {
+			"value": 1,
+			"inverse": 10000
+		}
+	}
+}

@@ -8,10 +8,16 @@ class PubKey extends mmx.Contract {
 	addr_t address;
 	
 	
-//	bool is_valid() const;
+	bool is_valid() const;
 	
-//	hash_t calc_hash() const;
+	hash_t calc_hash() const;
 	
-	bool validate(mmx.Operation* operation, mmx.Solution* solution, hash_t txid) const;
+	ulong calc_min_fee(mmx.ChainParams* params) const;
+	
+	vector<addr_t> get_dependency() const;
+	
+	optional<addr_t> get_owner() const;
+	
+	vector<mmx.tx_out_t> validate(mmx.Operation* operation, mmx.Context* context) const;
 	
 }

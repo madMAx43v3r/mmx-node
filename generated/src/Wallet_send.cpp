@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_send::VNX_TYPE_HASH(0x3842658ae3c2d5ebull);
-const vnx::Hash64 Wallet_send::VNX_CODE_HASH(0xb24a32837ab1b492ull);
+const vnx::Hash64 Wallet_send::VNX_CODE_HASH(0x1141cd5f2627b760ull);
 
 vnx::Hash64 Wallet_send::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -50,7 +50,7 @@ void Wallet_send::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, index);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, amount);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, dst_addr);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, contract);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, currency);
 	_visitor.type_end(*_type_code);
 }
 
@@ -59,7 +59,7 @@ void Wallet_send::write(std::ostream& _out) const {
 	_out << ", \"index\": "; vnx::write(_out, index);
 	_out << ", \"amount\": "; vnx::write(_out, amount);
 	_out << ", \"dst_addr\": "; vnx::write(_out, dst_addr);
-	_out << ", \"contract\": "; vnx::write(_out, contract);
+	_out << ", \"currency\": "; vnx::write(_out, currency);
 	_out << "}";
 }
 
@@ -75,7 +75,7 @@ vnx::Object Wallet_send::to_object() const {
 	_object["index"] = index;
 	_object["amount"] = amount;
 	_object["dst_addr"] = dst_addr;
-	_object["contract"] = contract;
+	_object["currency"] = currency;
 	return _object;
 }
 
@@ -83,8 +83,8 @@ void Wallet_send::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "amount") {
 			_entry.second.to(amount);
-		} else if(_entry.first == "contract") {
-			_entry.second.to(contract);
+		} else if(_entry.first == "currency") {
+			_entry.second.to(currency);
 		} else if(_entry.first == "dst_addr") {
 			_entry.second.to(dst_addr);
 		} else if(_entry.first == "index") {
@@ -103,8 +103,8 @@ vnx::Variant Wallet_send::get_field(const std::string& _name) const {
 	if(_name == "dst_addr") {
 		return vnx::Variant(dst_addr);
 	}
-	if(_name == "contract") {
-		return vnx::Variant(contract);
+	if(_name == "currency") {
+		return vnx::Variant(currency);
 	}
 	return vnx::Variant();
 }
@@ -116,8 +116,8 @@ void Wallet_send::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(amount);
 	} else if(_name == "dst_addr") {
 		_value.to(dst_addr);
-	} else if(_name == "contract") {
-		_value.to(contract);
+	} else if(_name == "currency") {
+		_value.to(currency);
 	} else {
 		throw std::logic_error("no such field: '" + _name + "'");
 	}
@@ -147,7 +147,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_send::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.send";
 	type_code->type_hash = vnx::Hash64(0x3842658ae3c2d5ebull);
-	type_code->code_hash = vnx::Hash64(0xb24a32837ab1b492ull);
+	type_code->code_hash = vnx::Hash64(0x1141cd5f2627b760ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -177,7 +177,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_send::static_create_type_code() {
 	{
 		auto& field = type_code->fields[3];
 		field.is_extended = true;
-		field.name = "contract";
+		field.name = "currency";
 		field.code = {11, 32, 1};
 	}
 	type_code->permission = "mmx.permission_e.SPENDING";
@@ -233,7 +233,7 @@ void read(TypeInput& in, ::mmx::Wallet_send& value, const TypeCode* type_code, c
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 2: vnx::read(in, value.dst_addr, type_code, _field->code.data()); break;
-			case 3: vnx::read(in, value.contract, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.currency, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -256,7 +256,7 @@ void write(TypeOutput& out, const ::mmx::Wallet_send& value, const TypeCode* typ
 	vnx::write_value(_buf + 0, value.index);
 	vnx::write_value(_buf + 4, value.amount);
 	vnx::write(out, value.dst_addr, type_code, type_code->fields[2].code.data());
-	vnx::write(out, value.contract, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.currency, type_code, type_code->fields[3].code.data());
 }
 
 void read(std::istream& in, ::mmx::Wallet_send& value) {

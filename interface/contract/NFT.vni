@@ -1,19 +1,21 @@
 package mmx.contract;
 
 import mmx.hash_t;
-import mmx.Contract;
+import mmx.addr_t;
 
-class NFT extends Contract {
+class NFT extends mmx.Contract {
 	
-	Contract* owner;
+	addr_t creator;
 	
-	Condition* transfer_cond;
+	optional<addr_t> parent;
 	
-	bool is_burnable;
-	
-	bool is_transferable;
+	vnx.Object data;
 	
 	
-//	hash_t calc_hash() const;
+	bool is_valid() const;
+	
+	hash_t calc_hash() const;
+	
+	ulong calc_min_fee(mmx.ChainParams* params) const;
 	
 }

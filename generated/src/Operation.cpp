@@ -3,6 +3,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Operation.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>

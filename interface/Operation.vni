@@ -9,6 +9,10 @@ class Operation {
 	Solution* solution;
 	
 	
+	bool is_valid() const;
+	
 	hash_t calc_hash() const;
+	
+	ulong calc_min_fee(ChainParams* params) const;
 	
 }

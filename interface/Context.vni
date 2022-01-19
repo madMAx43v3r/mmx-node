@@ -1,0 +1,13 @@
+package mmx;
+
+class Context {
+	
+	hash_t txid;
+	
+	uint height;
+	
+	map<addr_t, ulong> amounts;				// amounts in contract
+	
+	map<addr_t, Contract*> depends;
+	
+}

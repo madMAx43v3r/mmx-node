@@ -5,9 +5,9 @@
 #define INCLUDE_mmx_stxo_entry_t_HXX_
 
 #include <mmx/package.hxx>
+#include <mmx/stxo_t.hxx>
 #include <mmx/txio_key_t.hxx>
 #include <mmx/utxo_entry_t.hxx>
-#include <mmx/utxo_t.hxx>
 
 
 namespace mmx {
@@ -30,7 +30,7 @@ struct stxo_entry_t : ::mmx::utxo_entry_t {
 	std::string get_type_name() const;
 	const vnx::TypeCode* get_type_code() const;
 	
-	static ::mmx::stxo_entry_t create_ex(const ::mmx::txio_key_t& key = ::mmx::txio_key_t(), const ::mmx::utxo_t& output = ::mmx::utxo_t(), const ::mmx::txio_key_t& spent = ::mmx::txio_key_t());
+	static ::mmx::stxo_entry_t create_ex(const ::mmx::txio_key_t& key = ::mmx::txio_key_t(), const ::mmx::stxo_t& stxo = ::mmx::stxo_t());
 	
 	static std::shared_ptr<stxo_entry_t> create();
 	std::shared_ptr<stxo_entry_t> clone() const;

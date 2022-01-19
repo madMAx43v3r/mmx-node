@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_WalletBase_HXX_
 
 #include <mmx/package.hxx>
+#include <mmx/Contract.hxx>
 #include <mmx/FarmerKeys.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
@@ -25,7 +26,7 @@ public:
 	std::vector<std::string> key_files;
 	std::string storage_path;
 	std::string node_server = "Node";
-	uint32_t num_addresses = 100;
+	uint32_t num_addresses = 1000;
 	int32_t utxo_timeout_ms = 1000;
 	
 	typedef ::vnx::Module Super;
@@ -61,13 +62,18 @@ public:
 protected:
 	using Super::handle;
 	
-	virtual ::mmx::hash_t send(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& contract) const = 0;
+	virtual ::mmx::hash_t send(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& currency) const = 0;
+	virtual ::mmx::hash_t send_from(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& src_addr, const ::mmx::addr_t& currency) const = 0;
+	virtual ::mmx::hash_t mint(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& currency) const = 0;
+	virtual ::mmx::hash_t deploy(const uint32_t& index, std::shared_ptr<const ::mmx::Contract> contract) const = 0;
 	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list(const uint32_t& index) const = 0;
-	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list_for(const uint32_t& index, const ::mmx::addr_t& contract) const = 0;
+	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list_for(const uint32_t& index, const ::mmx::addr_t& currency) const = 0;
 	virtual std::vector<::mmx::stxo_entry_t> get_stxo_list(const uint32_t& index) const = 0;
-	virtual std::vector<::mmx::stxo_entry_t> get_stxo_list_for(const uint32_t& index, const ::mmx::addr_t& contract) const = 0;
+	virtual std::vector<::mmx::stxo_entry_t> get_stxo_list_for(const uint32_t& index, const ::mmx::addr_t& currency) const = 0;
 	virtual std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index, const int32_t& since) const = 0;
-	virtual uint64_t get_balance(const uint32_t& index, const ::mmx::addr_t& contract) const = 0;
+	virtual uint64_t get_balance(const uint32_t& index, const ::mmx::addr_t& currency) const = 0;
+	virtual std::map<::mmx::addr_t, uint64_t> get_balances(const uint32_t& index) const = 0;
+	virtual std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts(const uint32_t& index) const = 0;
 	virtual ::mmx::addr_t get_address(const uint32_t& index, const uint32_t& offset) const = 0;
 	virtual std::vector<::mmx::addr_t> get_all_addresses(const int32_t& index) const = 0;
 	virtual ::mmx::hash_t get_master_seed(const uint32_t& index) const = 0;

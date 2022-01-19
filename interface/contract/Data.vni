@@ -1,0 +1,14 @@
+package mmx.contract;
+
+import mmx.hash_t;
+
+class Data extends mmx.Contract {
+	
+	vnx.Variant payload;
+	
+	
+	hash_t calc_hash() const;
+	
+	ulong calc_min_fee(mmx.ChainParams* params) const;
+	
+}

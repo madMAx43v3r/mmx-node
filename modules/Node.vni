@@ -39,6 +39,7 @@ module Node implements vnx.addons.HttpComponent {
 	bool light_mode = false;
 	
 	string storage_path;
+	string database_path = "db/";
 	string router_name = "Router";
 	string timelord_name = "TimeLord";
 	
@@ -84,7 +85,13 @@ module Node implements vnx.addons.HttpComponent {
 	void add_transaction(Transaction* tx);
 	
 	@Permission(permission_e.PUBLIC)
-	Transaction* get_transaction(hash_t id) const;
+	Contract* get_contract(addr_t address) const;
+	
+	@Permission(permission_e.PUBLIC)
+	map<addr_t, Contract*> get_contracts_owned(vector<addr_t> owners) const;
+	
+	@Permission(permission_e.PUBLIC)
+	Transaction* get_transaction(hash_t id, bool include_pending) const;
 	
 	@Permission(permission_e.PUBLIC)
 	vector<Transaction*> get_transactions(vector<hash_t> ids) const;
@@ -93,13 +100,13 @@ module Node implements vnx.addons.HttpComponent {
 	vector<tx_entry_t> get_history_for(vector<addr_t> addresses, int since) const;
 	
 	@Permission(permission_e.PUBLIC)
-	Contract* get_contract(addr_t address) const;
-	
-	@Permission(permission_e.PUBLIC)
 	ulong get_balance(addr_t address, addr_t contract) const;
 	
 	@Permission(permission_e.PUBLIC)
 	ulong get_total_balance(vector<addr_t> addresses, addr_t contract) const;
+	
+	@Permission(permission_e.PUBLIC)
+	map<addr_t, ulong> get_total_balances(vector<addr_t> addresses) const;
 	
 	@Permission(permission_e.PUBLIC)
 	ulong get_total_supply(addr_t contract) const;

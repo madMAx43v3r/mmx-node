@@ -1,0 +1,14 @@
+package mmx.operation;
+
+import mmx.hash_t;
+
+class Mutate extends mmx.Operation {
+	
+	vnx.Object method;
+	
+	
+	hash_t calc_hash() const;
+	
+	ulong calc_min_fee(mmx.ChainParams* params) const;
+	
+}

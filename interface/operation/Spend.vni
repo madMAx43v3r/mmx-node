@@ -1,0 +1,18 @@
+package mmx.operation;
+
+import mmx.hash_t;
+import mmx.utxo_t;
+import mmx.txio_key_t;
+
+class Spend extends mmx.Operation {
+	
+	txio_key_t key;			// utxo key
+	
+	utxo_t utxo;			// utxo to spend
+	
+	
+	hash_t calc_hash() const;
+	
+	ulong calc_min_fee(mmx.ChainParams* params) const;
+	
+}

@@ -6,6 +6,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/ChainParams.hxx>
+#include <mmx/Contract.hxx>
 #include <mmx/Operation.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/TransactionBase.hxx>
@@ -25,6 +26,7 @@ public:
 	std::vector<::mmx::tx_out_t> exec_outputs;
 	std::vector<std::shared_ptr<const ::mmx::Operation>> execute;
 	std::vector<std::shared_ptr<const ::mmx::Solution>> solutions;
+	std::shared_ptr<const ::mmx::Contract> deploy;
 	
 	typedef ::mmx::TransactionBase Super;
 	

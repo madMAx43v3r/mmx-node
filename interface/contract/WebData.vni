@@ -1,0 +1,18 @@
+package mmx.contract;
+
+import mmx.hash_t;
+
+class WebData extends mmx.Contract {
+	
+	string mime_type;
+	
+	vnx.Buffer payload;
+	
+	
+	bool is_valid() const;
+	
+	hash_t calc_hash() const;
+	
+	ulong calc_min_fee(mmx.ChainParams* params) const;
+	
+}
