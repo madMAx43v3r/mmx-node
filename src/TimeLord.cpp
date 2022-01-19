@@ -39,6 +39,7 @@ void TimeLord::start_vdf(vdf_point_t begin)
 {
 	if(!is_running) {
 		is_running = true;
+		latest_point = nullptr;
 		last_restart = vnx::get_time_micros();
 		log(INFO) << "Started VDF at " << begin.num_iters;
 		vdf_thread = std::thread(&TimeLord::vdf_loop, this, begin);
@@ -159,12 +160,12 @@ void TimeLord::update()
 					proof->segments.push_back(seg);
 				}
 				publish(proof, output_proofs);
+
+				iter = pending.erase(iter);
+				continue;
 			}
-		} else {
-			// nothing to do
-			break;
 		}
-		iter = pending.erase(iter);
+		iter++;
 	}
 }
 
