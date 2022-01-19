@@ -5,7 +5,9 @@
 #define INCLUDE_mmx_contract_WebData_HXX_
 
 #include <mmx/contract/package.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
+#include <mmx/hash_t.hpp>
 #include <vnx/Buffer.hpp>
 
 
@@ -30,6 +32,10 @@ public:
 	vnx::Hash64 get_type_hash() const override;
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
+	
+	virtual vnx::bool_t is_valid() const override;
+	virtual ::mmx::hash_t calc_hash() const override;
+	virtual uint64_t calc_min_fee(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	
 	static std::shared_ptr<WebData> create();
 	std::shared_ptr<vnx::Value> clone() const override;

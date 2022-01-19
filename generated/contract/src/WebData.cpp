@@ -3,7 +3,9 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/contract/WebData.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
+#include <mmx/hash_t.hpp>
 #include <vnx/Buffer.hpp>
 
 #include <vnx/vnx.h>
