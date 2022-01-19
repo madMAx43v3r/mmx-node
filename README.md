@@ -271,7 +271,8 @@ mmx wallet keys [-j index]
 
 The node needs to be running for this command to work. (`-j` to specify the index of a non-default wallet)
 
-Then use the latest version of my plotter with `-x 11337` argument: https://github.com/madMAx43v3r/chia-plotter
+Then use the latest version of my plotter with `-x 11337` argument: https://github.com/madMAx43v3r/chia-plotter \
+For windows: https://github.com/MMX-World/mmx-plotter/releases/tag/v0.0.1
 
 It will show the following output at the beginning to confirm the new plot format (from testnet3 onwards):
 ```
@@ -291,6 +292,8 @@ To add a plot directory add the path to `plot_dirs` array in `config/local/Harve
 Directories are searched recursively by default. To disable recursive search you can set `recursive_search` to `false` in `Harvester.json`.
 
 ## Installation
+
+Windows binaries: https://github.com/stotiks/mmx-node/releases/tag/v0.0.1
 
 Note: OpenCL packages are optional, ie. `ocl-icd-opencl-dev`, etc.
 

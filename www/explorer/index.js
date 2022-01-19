@@ -10,6 +10,7 @@ app.set('views', './views');
 app.set('view engine', 'ejs');
 
 app.use(express.static('data'));
+app.use(express.static("public"));
 
 const MMX_ADDR = "mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev";
 
@@ -126,7 +127,7 @@ function on_address(res, address, balance, history)
 	let args = {};
 	args.body = 'address';
 	args.address = address;
-	args.balance = balance / 1e6;
+	args.balance = (balance / 1e6).toLocaleString();
 	args.history = history.reverse();
 	res.render('index', args);
 }
@@ -167,6 +168,10 @@ function on_transaction(res, tx, txio_info)
 	tx.input_amount /= 1e6;
 	tx.output_amount /= 1e6;
 	tx.fee_amount /= 1e6;
+
+	tx.input_amount.toLocaleString(undefined, { minimumFractionDigits: 20 });
+	tx.output_amount.toLocaleString(undefined, { minimumFractionDigits: 20 });
+	tx.fee_amount.toLocaleString(undefined, { minimumFractionDigits: 20 });
 	
 	let args = {};
 	args.body = 'transaction';
@@ -242,6 +247,13 @@ app.get('/transaction', (req, res) => {
 		})
 		.catch(on_error.bind(null, res));
 });
+
+
+/*
+app.get('/search', (req, res) => {
+	
+});
+*/
 
 app.use('/api', createProxyMiddleware({target: host, changeOrigin: true}));
 

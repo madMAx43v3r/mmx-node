@@ -1,26 +1,30 @@
 
-<table class="data">
+<table class="table table-hover">
+<thead>
 <tr>
-<th class="data">Height</th>
-<th class="data">TX</th>
-<th class="data">K</th>
-<th class="data">Score</th>
-<th class="data">Reward</th>
-<th class="data">T Diff</th>
-<th class="data">S Diff</th>
-<th class="data">Hash</th>
+<th>Height</th>
+<th>TX</th>
+<th>K</th>
+<th>Score</th>
+<th>Reward</th>
+<th>T-Diff</th>
+<th>S-Diff</th>
+<th>Hash</th>
 </tr>
+</thead>
 
+<tbody class="font-monospace">
 <% blocks.forEach(function(block) { %>
 <tr>
-<td class="data"><a href="block?height=<%= block.height %>"><%= block.height %></a></td>
-<td class="data"><%= block.tx_count %></td>
-<td class="data"><%= block.ksize %></td>
-<td class="data"><%= block.score %></td>
-<td class="data"><%= block.reward %></td>
-<td class="data"><%= block.time_diff %></td>
-<td class="data"><%= block.space_diff %></td>
-<td class="data"><a href="block?hash=<%= block.hash %>"><%= block.hash %></a></td>
+<td><a href="block?height=<%= block.height %>"><%= block.height %></a></td>
+<td><%= block.tx_count %></td>
+<td><%= block.ksize %></td>
+<td class="text-end"><%= block.score %></td>
+<td><%= block.reward %></td>
+<td class="text-end"><%= block.time_diff %></td>
+<td class="text-end"><%= block.space_diff %></td>
+<td><a href="block?hash=<%= block.hash %>"><%= block.hash %></a></td>
 </tr>
 <% }); %>
+</tbody>
 </table>
