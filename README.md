@@ -306,12 +306,12 @@ sudo apt install git cmake build-essential libsecp256k1-dev librocksdb-dev libso
 Arch Linux:
 ```
 sudo pacman -Syu
-sudo pacman -S base-devel git cmake zlib libsecp256k1 libsodium opencl-headers ocl-icd clinfo screen
+sudo pacman -S base-devel git cmake zlib libsecp256k1 rocksdb libsodium opencl-headers ocl-icd clinfo screen
 ```
 
 Fedora Linux:
 ```
-yum install git cmake clinfo gcc libsecp256k1-devel libsodium ocl-icd-devel opencl-headers opencl-utils ghc-zlib
+yum install git cmake clinfo gcc libsecp256k1-devel rocksdb-devel libsodium ocl-icd-devel opencl-headers opencl-utils ghc-zlib
 ```
 
 OpenCL provides faster and more efficient VDF verification using an integrated or dedicated GPU.
