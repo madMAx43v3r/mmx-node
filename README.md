@@ -363,6 +363,8 @@ USE_RTTI=1 make -j8 shared_lib
 sudo make install
 ```
 
+Make sure to uninstall any system package which provides a faulty version of RocksDB, like `librocksdb-dev`.
+
 (For some reason RocksDB developers thought it be a great idea to compile unusable libraries by default)
 
 ### Using packaged secp256k1
