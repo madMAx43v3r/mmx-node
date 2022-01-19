@@ -60,6 +60,7 @@ public:
 	vnx::bool_t do_sync = true;
 	vnx::bool_t light_mode = false;
 	std::string storage_path;
+	std::string database_path = "db/";
 	std::string router_name = "Router";
 	std::string timelord_name = "TimeLord";
 	
