@@ -389,7 +389,7 @@ int main(int argc, char** argv)
 				const auto peak = node.get_header_at(height);
 				std::cout << "Synced: " << (node.get_synced_height() ? "Yes" : "No") << std::endl;
 				std::cout << "Height: " << height << std::endl;
-				std::cout << "Netspace: " << mmx::calc_total_netspace(params, peak->space_diff) / pow(1024, 4) << " TiB" << std::endl;
+				std::cout << "Netspace: " << mmx::calc_total_netspace(params, peak ? peak->space_diff : 0) / pow(1024, 4) << " TiB" << std::endl;
 				for(uint32_t i = 0; i < 2 * params->finality_delay && i < height; ++i) {
 					const auto hash = node.get_block_hash(height - i);
 					std::cout << "Block[" << (height - i) << "] " << (hash ? *hash : mmx::hash_t()) << std::endl;
@@ -584,7 +584,7 @@ int main(int argc, char** argv)
 				{
 					const auto height = node.get_height();
 					const auto peak = node.get_header_at(height);
-					std::cout << mmx::calc_total_netspace(params, peak->space_diff) << std::endl;
+					std::cout << mmx::calc_total_netspace(params, peak ? peak->space_diff : 0) << std::endl;
 				}
 				else if(subject == "supply")
 				{
