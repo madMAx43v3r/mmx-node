@@ -359,7 +359,7 @@ To solve the issue, you have to compile RocksDB manually as follows:
 ```
 git clone https://github.com/facebook/rocksdb.git
 cd rocksdb
-USE_RTTI=1 make -j16 shared_lib
+USE_RTTI=1 make -j8 shared_lib
 sudo make install
 ```
 
