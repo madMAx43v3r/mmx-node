@@ -1889,10 +1889,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 		taddr_map[utxo.address].erase(entry.first);
 	}
 	for(const auto& txid : log->tx_added) {
-		auto iter = tx_map.find(txid);
-		if(iter != tx_map.end()) {
-			tx_map.erase(iter);
-		}
+		tx_map.erase(txid);
 		tx_pool.erase(txid);
 	}
 	if(!is_replay) {
