@@ -15,6 +15,7 @@
 #include <mmx/contract/NFT.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/operation/Spend.hxx>
+#include <mmx/operation/Mutate.hxx>
 #include <mmx/utxo_entry_t.hpp>
 #include <mmx/stxo_entry_t.hpp>
 #include <mmx/chiapos.h>
@@ -1330,6 +1331,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 
 	uint64_t total_fees = 0;
 	uint64_t total_cost = 0;
+	std::unordered_set<addr_t> mutated;
 	std::unordered_set<txio_key_t> spent;
 
 	for(size_t i = 0; i < tx_list.size(); ++i)
@@ -1342,14 +1344,18 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 			{
 				bool passed = true;
 				for(const auto& in : tx->inputs) {
-					if(spent.count(in.prev)) {
+					if(!spent.insert(in.prev).second) {
 						passed = false;
 					}
 				}
-				if(passed) {
-					for(const auto& in : tx->inputs) {
-						spent.insert(in.prev);
+				for(const auto& op : tx->execute) {
+					if(std::dynamic_pointer_cast<const operation::Mutate>(op)) {
+						if(!mutated.insert(op->address).second) {
+							passed = false;
+						}
 					}
+				}
+				if(passed) {
 					block->tx_list.push_back(tx);
 					total_fees += entry.fees;
 					total_cost += entry.cost;

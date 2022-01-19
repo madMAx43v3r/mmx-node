@@ -26,10 +26,7 @@ hash_t NFT::calc_hash() const
 	write_bytes(out, version);
 	write_bytes(out, creator);
 	write_bytes(out, parent);
-	for(const auto& entry : data.field) {
-		write_bytes(out, entry.first);
-		write_bytes(out, entry.second);
-	}
+	write_bytes(out, data);
 	out.flush();
 
 	return hash_t(buffer);

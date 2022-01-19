@@ -71,6 +71,7 @@ add_library(mmx_iface SHARED
 	src/solution/MultiSig.cpp
 	src/operation/Mint.cpp
 	src/operation/Spend.cpp
+	src/operation/Mutate.cpp
 )
 
 add_library(mmx_modules SHARED
