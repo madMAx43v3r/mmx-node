@@ -27,7 +27,7 @@ The variable reward function is as follows: \
 Where `min_reward` and `const_factor` are fixed at launch.
 
 A mainnet launch is planned in ~6 months or so.
-Currently we are running _testnet3_, so the coins farmed right now are _not worth anything_.
+Currently we are running _testnet4_, so the coins farmed right now are _not worth anything_.
 
 See `#mmx-news` and `#mmx-general` on discord: https://discord.gg/pQwkebKnPB
 
@@ -121,12 +121,12 @@ mmx wallet get seed [-j index]
 
 First perform the installation and setup steps.
 
-To run a node for current `testnet3`
+To run a node for current `testnet4`
 ```
 ./run_node.sh
 ```
 
-You can enable port forwarding on TCP port 12333 if you want to help out the network and accept incoming connections.
+You can enable port forwarding on TCP port 12334 if you want to help out the network and accept incoming connections.
 
 To set a custom storage path for the blockchain, etc:
 ```
@@ -155,7 +155,7 @@ To run a light node:
 ```
 ./run_light_node.sh
 ```
-Light node data will end up in `testnet3/light_node/` by default, there is no conflict with data from a full node.
+Light node data will end up in `testnet4/light_node/` by default, there is no conflict with data from a full node.
 
 Note: You cannot add a new wallet afterwards (or increase the number of addresses), if you do so you have to re-sync from scratch.
 
@@ -195,12 +195,11 @@ To re-sync from scratch delete `block_chain.dat`.
 
 After stopping the node:
 ```
+rm NETWORK
 ./update.sh
-rm config/local/mmx_node.json
-rm block_chain.dat known_peers.dat NETWORK
 ./run_node.sh
 ```
-`block_chain.dat`, `known_peers.dat` and `logs` are now stored in `testnet3` folder by default.
+`block_chain.dat`, `known_peers.dat` and `logs` are now stored in `testnet4` folder by default.
 
 ### Remote Farmer
 
