@@ -726,7 +726,7 @@ void Node::handle(std::shared_ptr<const Block> block)
 {
 	if(!is_synced) {
 		const auto peak = get_peak();
-		if(!peak || block->height < peak->height || block->height - peak->height > params->commit_delay) {
+		if(peak && block->height > peak->height && block->height - peak->height > 2 * params->commit_delay) {
 			return;
 		}
 	}
@@ -746,10 +746,7 @@ void Node::handle(std::shared_ptr<const Transaction> tx)
 void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 {
 	const auto peak = get_peak();
-	if(!peak || proof->height < peak->height) {
-		return;
-	}
-	if(proof->height > peak->height && proof->height - peak->height > params->commit_delay) {
+	if(peak && proof->height > peak->height && proof->height - peak->height > 2 * params->commit_delay) {
 		return;
 	}
 	if(find_vdf_point(	proof->height, proof->start, proof->get_vdf_iters(),
