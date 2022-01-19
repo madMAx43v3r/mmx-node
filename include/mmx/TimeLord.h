@@ -36,6 +36,8 @@ private:
 
 	void update();
 
+	void clear_history();
+
 	void start_vdf(vdf_point_t begin);
 
 	void vdf_loop(vdf_point_t point);

@@ -55,6 +55,14 @@ void TimeLord::stop_vdf()
 	if(vdf_thread.joinable()) {
 		vdf_thread.join();
 	}
+	clear_history();
+}
+
+void TimeLord::clear_history()
+{
+	history.clear();
+	infuse_history[0].clear();
+	infuse_history[1].clear();
 }
 
 void TimeLord::handle(std::shared_ptr<const TimeInfusion> value)
@@ -99,9 +107,7 @@ void TimeLord::handle(std::shared_ptr<const IntervalRequest> request)
 				|| (iter == history.end() && latest_point && latest_point->num_iters > request->begin))
 			{
 				do_restart = true;
-				history.clear();
-				infuse_history[0].clear();
-				infuse_history[1].clear();
+				clear_history();
 				latest_point = std::make_shared<vdf_point_t>(begin);
 				log(WARN) << "Our VDF forked from the network, restarting ...";
 			}
@@ -164,6 +170,11 @@ void TimeLord::update()
 				iter = pending.erase(iter);
 				continue;
 			}
+		}
+		if(!history.empty() && history.upper_bound(iters_begin) == history.begin())
+		{
+			iter = pending.erase(iter);
+			continue;
 		}
 		iter++;
 	}
