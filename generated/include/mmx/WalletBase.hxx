@@ -28,6 +28,7 @@ public:
 	std::string node_server = "Node";
 	uint32_t num_addresses = 1000;
 	int32_t utxo_timeout_ms = 1000;
+	vnx::bool_t enable_bls = true;
 	
 	typedef ::vnx::Module Super;
 	
