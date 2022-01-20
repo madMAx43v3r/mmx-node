@@ -1,9 +1,38 @@
 
 <h4>Address | <span class="font-monospace"><%= address %></span></h4>
 
-<h5>Balance<b class="font-monospace"> <%= balance %> </b>MMX</h5>
+<table class="table">
+<thead>
+<tr>
+<th>Balance</th>
+<th>Currency</th>
+<th>Contract</th>
+</tr>
+</thead>
+<tbody class="font-monospace">
 
-<p>
+<% balances.forEach(function(entry) { %>
+<tr>
+<td><b><%= entry.balance %></b></td>
+<td><%= entry.currency %></td>
+<td>
+<% if(entry.contract) { %>
+<a href="/address?addr=<%= entry.contract %>"><%= entry.contract %></a>
+<% } %>
+</td>
+</tr>
+<% }); %>
+
+<% nfts.forEach(function(address) { %>
+<tr>
+<td>NFT</td>
+<td>N/A</td>
+<td><a href="/address?addr=<%= address %>"><%= address %></a></td>
+</tr>
+<% }); %>
+</tbody>
+</table>
+
 <table class="table">
 <thead>
 <tr>
@@ -20,11 +49,10 @@
 <tr>
 <td><%= entry.height %></td>
 <td><%= entry.type %></td>
-<td><%= entry.amount %></td>
+<td><b><%= entry.amount %></b></td>
 <td><a href="address?addr=<%= entry.address %>"><%= entry.address %></a></td>
 <td><a href="transaction?id=<%= entry.txid %>"><%= entry.txid %></a></td>
 </tr>
 <% }); %>
 </tbody>
 </table>
-</p>

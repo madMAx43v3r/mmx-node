@@ -24,9 +24,12 @@ function to_hex(a)
 	return b;
 }
 
-function to_addr(a)
-{
-	return bech32m.encode('mmx', bech32m.toWords(a.reverse()));
+function to_addr(array) {
+	return bech32m.encode('mmx', bech32m.toWords(array.reverse()));
+}
+
+function to_balance(amount) {
+	return (amount / 1e6).toLocaleString(undefined, {maximumFractionDigits: 6});
 }
 
 function on_error(res, ex)
@@ -51,9 +54,9 @@ function parse_block(data)
 	if(block.tx_base) {
 		for(const out of block.tx_base.outputs) {
 			block.reward += out.amount;
-			block.rewards.push({address: to_addr(out.address), amount: out.amount / 1e6});
+			block.rewards.push({address: to_addr(out.address), amount: to_balance(out.amount)});
 		}
-		block.reward /= 1e6;
+		block.reward = to_balance(block.reward);
 	}
 	for(const tx of block.tx_list) {
 		tx.id = to_hex(tx.id);
@@ -61,9 +64,15 @@ function parse_block(data)
 			input.prev.txid = to_hex(input.prev.txid);
 		}
 		for(const out of tx.outputs) {
-			out.amount /= 1e6;
+			out.amount = to_balance(out.amount);
 			out.address = to_addr(out.address);
 			out.contract = to_addr(out.contract);
+			if(out.contract == MMX_ADDR) {
+				out.contract = null;
+				out.currency = "MMX";
+			} else {
+				out.currency = "Token";
+			}
 		}
 	}
 	block.tx_count = block.tx_list.length;
@@ -116,18 +125,44 @@ function on_recent(res, ret)
 		.catch(on_error.bind(null, res));
 }
 
-function on_address(res, address, balance, history)
+function on_address(res, address, all_balances, contracts, history)
 {
+	let nfts = [];
+	let balances = [];
+	all_balances.forEach((entry, i) => {
+		const contract = contracts[i];
+		if(contract && contract.__type) {
+			if(contract.__type == "mmx.contract.NFT") {
+				nfts.push(to_addr(entry[0]));
+			}
+			if(contract.__type == "mmx.contract.Token") {
+				let out = {};
+				out.balance = entry[1];
+				out.currency = contract.symbol;
+				out.contract = to_addr(entry[0]);
+				balances.push(out);
+			}
+		} else {
+			let out = {};
+			out.balance = entry[1];
+			out.currency = "MMX";
+			balances.push(out);
+		}
+	});
 	for(const entry of history) {
 		entry.txid = to_hex(entry.txid);
-		entry.amount = entry.amount / 1e6;
+		entry.amount = to_balance(entry.amount);
 		entry.address = to_addr(entry.address);
 		entry.contract = to_addr(entry.contract);
+	}
+	for(const entry of balances) {
+		entry.balance = to_balance(entry.balance);
 	}
 	let args = {};
 	args.body = 'address';
 	args.address = address;
-	args.balance = (balance / 1e6).toLocaleString();
+	args.nfts = nfts;
+	args.balances = balances;
 	args.history = history.reverse();
 	res.render('index', args);
 }
@@ -153,6 +188,11 @@ function on_contract(res, address, contract)
 		contract.currency = to_addr(contract.currency);
 		contract.reward_addr = to_addr(contract.reward_addr);
 	}
+	if(contract.__type == "mmx.contract.MultiSig") {
+		contract.stake_factors.forEach((addr) => {
+			addr = to_addr(addr);
+		});
+	}
 	let args = {};
 	args.body = 'contract';
 	args.address = address;
@@ -166,40 +206,48 @@ function on_transaction(res, tx, txio_info)
 	tx.input_amount = 0;
 	tx.inputs.forEach((input, i) => {
 		if(i < txio_info.length) {
-			const info = txio_info[i];
-			if(info) {
-				input.amount = info.output.amount / 1e6;
-				input.address = to_addr(info.output.address);
-				input.contract = to_addr(info.output.contract);
+			const out = txio_info[i];
+			if(out) {
+				input.contract = to_addr(out.output.contract);
 				if(input.contract == MMX_ADDR) {
-					tx.input_amount += info.output.amount;
+					input.contract = null;
+					input.currency = "MMX";
+					tx.input_amount += out.output.amount;
+				} else {
+					input.currency = "Token";
 				}
+				input.address = to_addr(out.output.address);
+				input.amount = to_balance(out.output.amount);
 			}
 		}
+		input.prev.txid = to_hex(input.prev.txid);
 	});
 	tx.output_amount = 0;
+	tx.outputs = tx.outputs.concat(tx.exec_outputs);
 	tx.outputs.forEach((out, i) => {
 		if(tx.inputs.length + i < txio_info.length) {
 			const info = txio_info[tx.inputs.length + i];
 			if(info && info.spent) {
-				out.spent_txid = to_hex(info.spent.txid);
+				out.spent = info.spent;
+				out.spent.txid = to_hex(out.spent.txid);
 			}
 		}
-		out.address = to_addr(out.address);
 		out.contract = to_addr(out.contract);
 		if(out.contract == MMX_ADDR) {
+			out.contract = null;
+			out.currency = "MMX";
 			tx.output_amount += out.amount;
+		} else {
+			out.currency = "Token";
 		}
-		out.amount = out.amount / 1e6;
+		out.address = to_addr(out.address);
+		out.amount = to_balance(out.amount);
 	});
 	tx.fee_amount = tx.input_amount - tx.output_amount;
-	tx.input_amount /= 1e6;
-	tx.output_amount /= 1e6;
-	tx.fee_amount /= 1e6;
-
-	tx.input_amount.toLocaleString(undefined, { minimumFractionDigits: 20 });
-	tx.output_amount.toLocaleString(undefined, { minimumFractionDigits: 20 });
-	tx.fee_amount.toLocaleString(undefined, { minimumFractionDigits: 20 });
+	
+	tx.input_amount = to_balance(tx.input_amount);
+	tx.output_amount = to_balance(tx.output_amount);
+	tx.fee_amount = to_balance(tx.fee_amount);
 	
 	let args = {};
 	args.body = 'transaction';
@@ -242,14 +290,23 @@ app.get('/address', (req, res) => {
 			if(contract) {
 				on_contract(res, req.query.addr, contract);
 			} else {
-				axios.get(host + '/api/node/get_balance?address=' + req.query.addr)
+				axios.get(host + '/api/node/get_total_balances?addresses=' + req.query.addr)
 					.then((ret) => {
-						const balance = ret.data;
-						axios.get(host + '/api/node/get_history_for?addresses=' + req.query.addr)
-						.then((ret) => {
-							on_address(res, req.query.addr, balance, ret.data);
-						})
-						.catch(on_error.bind(null, res));
+						const balances = ret.data;
+						let keys = [];
+						for(const entry of balances) {
+							keys.push(entry[0]);
+						}
+						axios.post(host + '/api/node/get_contracts', {addresses: keys})
+							.then((ret) => {
+								const contracts = ret.data;
+								axios.get(host + '/api/node/get_history_for?addresses=' + req.query.addr)
+									.then((ret) => {
+										on_address(res, req.query.addr, balances, contracts, ret.data);
+									})
+									.catch(on_error.bind(null, res));
+							})
+							.catch(on_error.bind(null, res));
 					})
 					.catch(on_error.bind(null, res));
 			}
@@ -276,11 +333,14 @@ app.get('/transaction', (req, res) => {
 			tx.outputs.forEach((output, i) => {
 				keys.push({txid: tx.id, index: i});
 			});
+			tx.exec_outputs.forEach((output, i) => {
+				keys.push({txid: tx.id, index: tx.outputs.length + i});
+			});
 			axios.post(host + '/api/node/get_txo_infos', {keys: keys})
-			.then((ret) => {
-				on_transaction(res, tx, ret.data);
-			})
-			.catch(on_error.bind(null, res));
+				.then((ret) => {
+					on_transaction(res, tx, ret.data);
+				})
+				.catch(on_error.bind(null, res));
 		})
 		.catch(on_error.bind(null, res));
 });
