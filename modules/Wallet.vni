@@ -11,6 +11,8 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	int utxo_timeout_ms = 1000;				// how often to update from node [ms]
 	
+	bool enable_bls = true;
+	
 	
 	@Permission(permission_e.SPENDING)
 	hash_t send(uint index, ulong amount, addr_t dst_addr, addr_t currency) const;

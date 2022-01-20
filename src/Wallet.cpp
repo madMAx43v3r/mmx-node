@@ -42,8 +42,12 @@ void Wallet::main()
 
 		if(auto key_file = vnx::read_from_file<KeyFile>(file_path))
 		{
+			if(enable_bls) {
+				bls_wallets.push_back(std::make_shared<BLS_Wallet>(key_file, 11337));
+			} else {
+				bls_wallets.push_back(nullptr);
+			}
 			wallets.push_back(std::make_shared<ECDSA_Wallet>(key_file, params, num_addresses));
-			bls_wallets.push_back(std::make_shared<BLS_Wallet>(key_file, 11337));
 		}
 		else {
 			wallets.push_back(nullptr);
