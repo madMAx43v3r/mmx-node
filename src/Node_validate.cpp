@@ -205,7 +205,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 			throw std::logic_error("zero tx output");
 		}
 		if(base) {
-			if(out.contract != hash_t()) {
+			if(out.contract != addr_t()) {
 				throw std::logic_error("invalid coin base output");
 			}
 			base_amount += out.amount;
