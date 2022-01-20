@@ -7,7 +7,7 @@ module Wallet implements vnx.addons.HttpComponent {
 	string storage_path;
 	string node_server = "Node";
 	
-	uint num_addresses = 1000;
+	uint num_addresses = 100;
 	
 	int utxo_timeout_ms = 1000;				// how often to update from node [ms]
 	
