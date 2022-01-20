@@ -88,7 +88,7 @@ module Node implements vnx.addons.HttpComponent {
 	Contract* get_contract(addr_t address) const;
 	
 	@Permission(permission_e.PUBLIC)
-	map<addr_t, Contract*> get_contracts(vector<addr_t> addresses) const;
+	vector<Contract*> get_contracts(vector<addr_t> addresses) const;
 	
 	@Permission(permission_e.PUBLIC)
 	map<addr_t, Contract*> get_contracts_owned(vector<addr_t> owners) const;
