@@ -42,15 +42,14 @@
 </tbody>
 </table>
 
-
-<% block.tx_list.forEach(function(tx, index) { %>
 <table class="table table-nonfluid">
 <tbody class="font-monospace">
+<% block.tx_list.forEach(function(tx, index) { %>
 <tr>
 <td><b>TX[<%= index %>]</b></td>
 <td><a href="transaction?id=<%= tx.id %>"><%= tx.id %></a></td>
 </tr>
+<% }); %>
 </tbody>
 </table>
-<% }); %>
 
