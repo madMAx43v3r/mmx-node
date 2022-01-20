@@ -132,6 +132,34 @@ function on_address(res, address, balance, history)
 	res.render('index', args);
 }
 
+function on_contract(res, address, contract)
+{
+	if(contract.__type == "mmx.contract.NFT") {
+		contract.creator = to_addr(contract.creator);
+		if(contract.parent) {
+			contract.parent = to_addr(contract.parent);
+		}
+	}
+	if(contract.__type == "mmx.contract.Token") {
+		if(contract.owner) {
+			contract.owner = to_addr(contract.owner);
+		}
+		contract.stake_factors.forEach((entry) => {
+			entry[0] = to_addr(entry[0]);
+		});
+	}
+	if(contract.__type == "mmx.contract.Staking") {
+		contract.owner = to_addr(contract.owner);
+		contract.currency = to_addr(contract.currency);
+		contract.reward_addr = to_addr(contract.reward_addr);
+	}
+	let args = {};
+	args.body = 'contract';
+	args.address = address;
+	args.contract = contract;
+	res.render('index', args);
+}
+
 function on_transaction(res, tx, txio_info)
 {
 	tx.id = to_hex(tx.id);
@@ -208,14 +236,23 @@ app.get('/address', (req, res) => {
 		res.status(404).send();
 		return;
 	}
-	axios.get(host + '/api/node/get_balance?address=' + req.query.addr)
+	axios.get(host + '/api/node/get_contract?address=' + req.query.addr)
 		.then((ret) => {
-			const balance = ret.data;
-			axios.get(host + '/api/node/get_history_for?addresses=' + req.query.addr)
-			.then((ret) => {
-				on_address(res, req.query.addr, balance, ret.data);
-			})
-			.catch(on_error.bind(null, res));
+			const contract = ret.data;
+			if(contract) {
+				on_contract(res, req.query.addr, contract);
+			} else {
+				axios.get(host + '/api/node/get_balance?address=' + req.query.addr)
+					.then((ret) => {
+						const balance = ret.data;
+						axios.get(host + '/api/node/get_history_for?addresses=' + req.query.addr)
+						.then((ret) => {
+							on_address(res, req.query.addr, balance, ret.data);
+						})
+						.catch(on_error.bind(null, res));
+					})
+					.catch(on_error.bind(null, res));
+			}
 		})
 		.catch(on_error.bind(null, res));
 });
