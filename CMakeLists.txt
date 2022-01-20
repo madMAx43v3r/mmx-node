@@ -77,6 +77,9 @@ add_library(mmx_iface SHARED
 add_library(mmx_modules SHARED
 	src/TimeLord.cpp
 	src/Node.cpp
+	src/Node_update.cpp
+	src/Node_verify.cpp
+	src/Node_validate.cpp
 	src/Wallet.cpp
 	src/Farmer.cpp
 	src/Harvester.cpp
