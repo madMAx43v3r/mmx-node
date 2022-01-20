@@ -496,6 +496,15 @@ std::shared_ptr<const Contract> Node::get_contract(const addr_t& address) const
 	return nullptr;
 }
 
+std::map<addr_t, std::shared_ptr<const Contract>> Node::get_contracts(const std::vector<addr_t>& addresses) const
+{
+	std::map<addr_t, std::shared_ptr<const Contract>> res;
+	for(const auto& addr : addresses) {
+		res[addr] = get_contract(addr);
+	}
+	return res;
+}
+
 std::map<addr_t, std::shared_ptr<const Contract>> Node::get_contracts_owned(const std::vector<addr_t>& owners) const
 {
 	std::map<addr_t, std::shared_ptr<const Contract>> res;

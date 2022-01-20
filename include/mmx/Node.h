@@ -65,6 +65,8 @@ protected:
 
 	std::shared_ptr<const Contract> get_contract(const addr_t& address) const override;
 
+	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts(const std::vector<addr_t>& addresses) const override;
+
 	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts_owned(const std::vector<addr_t>& owners) const override;
 
 	void add_block(std::shared_ptr<const Block> block) override;
