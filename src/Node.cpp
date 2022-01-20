@@ -2069,6 +2069,8 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof) const
 			if(*proof->infuse[1] != *proof->infuse[0]) {
 				throw std::logic_error("invalid infusion on chain 1");
 			}
+		} else if(proof->infuse[1]) {
+			throw std::logic_error("invalid infusion on chain 1");
 		}
 	}
 	vdf_threads->add_task(std::bind(&Node::verify_vdf_task, this, proof));
