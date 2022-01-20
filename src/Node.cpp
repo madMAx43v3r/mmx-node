@@ -764,7 +764,9 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 	}
 	catch(const std::exception& ex) {
 		vdf_verify_pending.erase(proof->height);
-		log(WARN) << "VDF verification for height " << proof->height << " failed with: " << ex.what();
+		if(is_synced) {
+			log(WARN) << "VDF verification for height " << proof->height << " failed with: " << ex.what();
+		}
 	}
 }
 
