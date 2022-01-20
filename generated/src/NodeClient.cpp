@@ -412,14 +412,14 @@ std::shared_ptr<const ::mmx::Contract> NodeClient::get_contract(const ::mmx::add
 	}
 }
 
-std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> NodeClient::get_contracts(const std::vector<::mmx::addr_t>& addresses) {
+std::vector<std::shared_ptr<const ::mmx::Contract>> NodeClient::get_contracts(const std::vector<::mmx::addr_t>& addresses) {
 	auto _method = ::mmx::Node_get_contracts::create();
 	_method->addresses = addresses;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_contracts_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>>();
+		return _return_value->get_field_by_index(0).to<std::vector<std::shared_ptr<const ::mmx::Contract>>>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}
