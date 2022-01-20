@@ -40,6 +40,8 @@
 #include <mmx/Node_get_block_hash_return.hxx>
 #include <mmx/Node_get_contract.hxx>
 #include <mmx/Node_get_contract_return.hxx>
+#include <mmx/Node_get_contracts.hxx>
+#include <mmx/Node_get_contracts_return.hxx>
 #include <mmx/Node_get_contracts_owned.hxx>
 #include <mmx/Node_get_contracts_owned_return.hxx>
 #include <mmx/Node_get_header.hxx>
@@ -611,6 +613,30 @@ void type<::mmx::Node_get_contract_return>::create_dynamic_code(std::vector<uint
 }
 
 void type<::mmx::Node_get_contract_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_contract_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_contracts>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_contracts;
+}
+
+void type<::mmx::Node_get_contracts>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_contracts());
+}
+
+void type<::mmx::Node_get_contracts>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_contracts& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_contracts_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_contracts_return;
+}
+
+void type<::mmx::Node_get_contracts_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_contracts_return());
+}
+
+void type<::mmx::Node_get_contracts_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_contracts_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -2245,6 +2271,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Node_get_block_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_contract::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_contract_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_contracts::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_contracts_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_contracts_owned::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_contracts_owned_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_header::static_create_type_code());
@@ -2419,6 +2447,8 @@ const vnx::TypeCode* const vnx_native_type_code_Node_get_block_hash = vnx::get_t
 const vnx::TypeCode* const vnx_native_type_code_Node_get_block_hash_return = vnx::get_type_code(vnx::Hash64(0x47877c5597b978dfull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_contract = vnx::get_type_code(vnx::Hash64(0xa28704c65a67a293ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_contract_return = vnx::get_type_code(vnx::Hash64(0x314d0901de362f8cull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_contracts = vnx::get_type_code(vnx::Hash64(0x49e218583c1f1c8aull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_contracts_return = vnx::get_type_code(vnx::Hash64(0x13d73d6d69c8af0bull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_contracts_owned = vnx::get_type_code(vnx::Hash64(0x867544b29550d588ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_contracts_owned_return = vnx::get_type_code(vnx::Hash64(0x435eb2132d4278acull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_header = vnx::get_type_code(vnx::Hash64(0xf17a5d0c180db198ull));
