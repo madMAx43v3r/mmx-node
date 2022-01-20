@@ -258,7 +258,7 @@ std::vector<addr_t> Wallet::get_all_addresses(const int32_t& index) const
 		return get_wallet(index)->get_all_addresses();
 	}
 	std::vector<addr_t> list;
-	for(const auto wallet : wallets) {
+	for(const auto& wallet : wallets) {
 		if(wallet) {
 			const auto set = wallet->get_all_addresses();
 			list.insert(list.end(), set.begin(), set.end());
@@ -278,7 +278,7 @@ std::shared_ptr<const FarmerKeys> Wallet::get_farmer_keys(const uint32_t& index)
 std::vector<std::shared_ptr<const FarmerKeys>> Wallet::get_all_farmer_keys() const
 {
 	std::vector<std::shared_ptr<const FarmerKeys>> res;
-	for(auto wallet : bls_wallets) {
+	for(const auto& wallet : bls_wallets) {
 		if(wallet) {
 			res.push_back(wallet->get_farmer_keys());
 		}
