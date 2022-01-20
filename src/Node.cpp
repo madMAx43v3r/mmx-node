@@ -2032,6 +2032,13 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof) const
 	if(proof->segments.size() > params->max_vdf_segments) {
 		throw std::logic_error("too many segments: " + std::to_string(proof->segments.size()));
 	}
+	const auto proof_iters = proof->get_num_iters();
+	const auto avg_seg_iters = proof_iters / proof->segments.size();
+	for(const auto& seg : proof->segments) {
+		if(seg.num_iters > 2 * avg_seg_iters) {
+			throw std::logic_error("too many segment iterations: " + std::to_string(seg.num_iters));
+		}
+	}
 
 	// check proper infusions
 	if(proof->start > 0) {
@@ -2049,16 +2056,9 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof) const
 		if(!diff_block) {
 			throw std::logic_error("cannot verify");
 		}
-		const auto proof_iters = proof->get_num_iters();
 		const auto expected_iters = diff_block->time_diff * params->time_diff_constant;
 		if(proof_iters != expected_iters) {
 			throw std::logic_error("wrong number of iterations: " + std::to_string(proof_iters) + " != " + std::to_string(expected_iters));
-		}
-		const auto avg_seg_iters = proof_iters / proof->segments.size();
-		for(const auto& seg : proof->segments) {
-			if(seg.num_iters > 2 * avg_seg_iters) {
-				throw std::logic_error("too many segment iterations: " + std::to_string(seg.num_iters));
-			}
 		}
 		if(infused_block->height >= params->challenge_interval
 			&& infused_block->height % params->challenge_interval == 0)
