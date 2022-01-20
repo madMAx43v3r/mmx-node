@@ -36,10 +36,7 @@ See `#mmx-news` and `#mmx-general` on discord: https://discord.gg/pQwkebKnPB
 
 Please take a look at the Wiki:
 
-https://github.com/madMAx43v3r/mmx-node/wiki/Installation
-
-https://github.com/madMAx43v3r/mmx-node/wiki/Getting-Started
-
-https://github.com/madMAx43v3r/mmx-node/wiki/CLI-Commands
-
-https://github.com/madMAx43v3r/mmx-node/wiki/Frequently-Asked-Questions
+- [Installation](https://github.com/madMAx43v3r/mmx-node/wiki/Installation)
+- [Getting-Started](https://github.com/madMAx43v3r/mmx-node/wiki/Getting-Started)
+- [CLI-Commands](https://github.com/madMAx43v3r/mmx-node/wiki/CLI-Commands)
+- [Frequently-Asked-Questions](https://github.com/madMAx43v3r/mmx-node/wiki/Frequently-Asked-Questions)
