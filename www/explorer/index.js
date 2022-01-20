@@ -218,6 +218,8 @@ function on_transaction(res, tx, txio_info)
 				}
 				input.address = to_addr(out.output.address);
 				input.amount = to_balance(out.output.amount);
+			} else {
+				input.is_base = true;
 			}
 		}
 		input.prev.txid = to_hex(input.prev.txid);

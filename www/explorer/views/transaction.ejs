@@ -34,6 +34,7 @@
 <tbody class="font-monospace">
 
 <% tx.inputs.forEach(function(input, index) { %>
+<% if(!input.is_base) { %>
 <tr>
 <td><b>Input[<%= index %>]</b></td>
 <td><%= input.amount %></td>
@@ -47,6 +48,7 @@
 <td><a href="address?addr=<%= input.address %>"><%= input.address %></a></td>
 <td><a href="transaction?id=<%= input.prev.txid %>">Prev</a></td>
 </tr>
+<% } %>
 <% }); %>
 
 <% tx.outputs.forEach(function(output, index) { %>
