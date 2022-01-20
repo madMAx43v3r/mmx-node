@@ -20,11 +20,12 @@ Tokens can either be traditionally issued by the owner, or they can be owner-les
 
 In the future it is planned that anybody can create their own token on MMX using a simple web interface.
 
-In addition the first application for MMX will be a decentralized exchange where users can trade MMX and tokens.
+The first application for MMX will be a hybrid decentralized exchange where users can trade MMX and tokens, as well as possibly a decentralized storage platform.
 
 The variable reward function is as follows: \
-`reward = max(max(difficulty * const_factor, min_reward), TX fees)`. \
-Where `min_reward` and `const_factor` are fixed at launch.
+`reward = max(difficulty * reward_factor, min_reward)` \
+`final_reward = max(1 - TX_fees / (2 * reward), 0) * reward + TX_fees` \
+Where `min_reward` is fixed at launch and `reward_factor` will decrease by 15% per year to compensate for reduced farming cost.
 
 A mainnet launch is planned in ~6 months or so.
 Currently we are running _testnet4_, so the coins farmed right now are _not worth anything_.
