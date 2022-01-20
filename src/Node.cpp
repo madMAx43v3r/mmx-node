@@ -492,7 +492,6 @@ std::vector<std::shared_ptr<const Contract>> Node::get_contracts(const std::vect
 {
 	std::vector<std::shared_ptr<const Contract>> res;
 	for(const auto& addr : addresses) {
-		log(INFO) << addr;
 		res.push_back(get_contract(addr));
 	}
 	return res;
