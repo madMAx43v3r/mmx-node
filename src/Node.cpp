@@ -773,7 +773,7 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 
 void Node::handle(std::shared_ptr<const ProofResponse> value)
 {
-	if(!value->proof || !value->request) {
+	if(!is_synced || !value->proof || !value->request) {
 		return;
 	}
 	const auto peak = get_peak();
@@ -809,9 +809,7 @@ void Node::handle(std::shared_ptr<const ProofResponse> value)
 		publish(response, output_verified_proof);
 	}
 	catch(const std::exception& ex) {
-		if(is_synced) {
-			log(WARN) << "Got invalid proof: " << ex.what();
-		}
+		log(WARN) << "Got invalid proof: " << ex.what();
 	}
 }
 
@@ -885,6 +883,9 @@ void Node::sync_result(const uint32_t& height, const std::vector<std::shared_ptr
 			if(!sync_peak || height < *sync_peak) {
 				sync_peak = height;
 			}
+		}
+		if(!sync_retry && height % 64 == 0) {
+			add_task(std::bind(&Node::update, this));
 		}
 		sync_more();
 	}
