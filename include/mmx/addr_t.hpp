@@ -113,6 +113,13 @@ void read(vnx::TypeInput& in, mmx::addr_t& value, const vnx::TypeCode* type_code
 			}
 			break;
 		}
+		case CODE_DYNAMIC:
+		case CODE_ALT_DYNAMIC: {
+			vnx::Variant tmp;
+			vnx::read(in, tmp, type_code, code);
+			tmp.to(value);
+			break;
+		}
 		default:
 			vnx::read(in, value.bytes, type_code, code);
 	}

@@ -16,6 +16,7 @@
 #include <bls.hpp>
 #include <vnx/Input.hpp>
 #include <vnx/Output.hpp>
+#include <vnx/Variant.hpp>
 
 
 namespace mmx {
@@ -164,6 +165,21 @@ void read(vnx::TypeInput& in, mmx::bytes_t<N>& value, const vnx::TypeCode* type_
 			uint64_t tmp = 0;
 			vnx::read(in, tmp, type_code, code);
 			::memcpy(value.data(), &tmp, std::min(N, sizeof(tmp)));
+			break;
+		}
+		case CODE_DYNAMIC:
+		case CODE_ALT_DYNAMIC: {
+			vnx::Variant tmp;
+			vnx::read(in, tmp, type_code, code);
+			if(tmp.is_string()) {
+				std::string str;
+				tmp.to(str);
+				value.from_string(str);
+			} else {
+				std::array<uint8_t, N> array;
+				tmp.to(array);
+				value = array;
+			}
 			break;
 		}
 		default:
