@@ -26,7 +26,7 @@
 <tr>
 <th></th>
 <th>Amount</th>
-<th>Currency</th>
+<th>Token</th>
 <th>Address</th>
 <th></th>
 </tr>
@@ -40,9 +40,9 @@
 <td><%= input.amount %></td>
 <td>
 <% if(input.contract) { %>
-<a href="/address?addr=<%= input.contract %>"><%= input.currency %></a>
+<a href="/address?addr=<%= input.contract %>"><%= input.symbol %></a>
 <% } else { %>
-<%= input.currency %>
+<%= input.symbol %>
 <% } %>
 </td>
 <td><a href="address?addr=<%= input.address %>"><%= input.address %></a></td>
@@ -57,9 +57,9 @@
 <td><%= output.amount %></td>
 <td>
 <% if(output.contract) { %>
-<a href="/address?addr=<%= output.contract %>"><%= output.currency %></a>
+<a href="/address?addr=<%= output.contract %>"><%= output.symbol %></a>
 <% } else { %>
-<%= output.currency %>
+<%= output.symbol %>
 <% } %>
 </td>
 <td><a href="address?addr=<%= output.address %>"><%= output.address %></a></td>

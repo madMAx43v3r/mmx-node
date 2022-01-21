@@ -14,6 +14,8 @@ app.use(express.static("public"));
 
 const MMX_ADDR = "mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev";
 
+const contract_cache = new Map();
+
 function to_hex(a)
 {
 	var b = a.map(function (x) {
@@ -79,6 +81,43 @@ function parse_block(data)
 	return block
 }
 
+async function get_contract(address)
+{
+	if(contract_cache.has(address)) {
+		return contract_cache.get(address);
+	}
+	const ret = await axios.get(host + '/api/node/get_contract?address=' + address);
+	const contract = ret.data;
+	if(contract) {
+		if(contract.__type == "mmx.contract.NFT") {
+			contract.creator = to_addr(contract.creator);
+			if(contract.parent) {
+				contract.parent = to_addr(contract.parent);
+			}
+		}
+		if(contract.__type == "mmx.contract.Token") {
+			if(contract.owner) {
+				contract.owner = to_addr(contract.owner);
+			}
+			contract.stake_factors.forEach((entry) => {
+				entry[0] = to_addr(entry[0]);
+			});
+		}
+		if(contract.__type == "mmx.contract.Staking") {
+			contract.owner = to_addr(contract.owner);
+			contract.currency = to_addr(contract.currency);
+			contract.reward_addr = to_addr(contract.reward_addr);
+		}
+		if(contract.__type == "mmx.contract.MultiSig") {
+			contract.stake_factors.forEach((addr) => {
+				addr = to_addr(addr);
+			});
+		}
+	}
+	contract_cache.set(address, contract);
+	return contract;
+}
+
 function on_block(res, ret)
 {
 	if(!ret.data) {
@@ -91,55 +130,50 @@ function on_block(res, ret)
 	res.render('index', args);
 }
 
-function gather_recent(blocks, height, res, ret)
-{
-	if(!ret.data) {
-		res.status(404).send("no such block");
-		return;
-	}
-	blocks.push(parse_block(ret.data));
-	
-	if(blocks.length < 30 && height > 0) {
-		height -= 1;
-		axios.get(host + '/api/node/get_block_at?height=' + height)
-			.then(gather_recent.bind(null, blocks, height, res))
-			.catch(on_error.bind(null, res));
-	} else {
-		let args = {};
-		args.body = 'recent';
-		args.blocks = blocks;
-		res.render('index', args);
-	}
-}
-
-function on_recent(res, ret)
+async function on_recent(res, ret)
 {
 	if(!ret.data) {
 		res.status(404).send("nothing found");
 		return;
 	}
-	let height = ret.data;
+	const height = ret.data;
 	var blocks = [];
-	axios.get(host + '/api/node/get_block_at?height=' + height)
-		.then(gather_recent.bind(null, blocks, height, res))
-		.catch(on_error.bind(null, res));
+	for(let i = 0; i < 30 && i < height; i++) {
+		try {
+			const ret = await axios.get(host + '/api/node/get_block_at?height=' + (height - i));
+			blocks.push(parse_block(ret.data));
+		} catch(err) {
+			break;
+		}
+	}
+	let args = {};
+	args.body = 'recent';
+	args.blocks = blocks;
+	res.render('index', args);
 }
 
-function on_address(res, address, all_balances, contracts, history)
+async function on_address(res, address)
 {
+	let ret = null;
+	ret = await axios.get(host + '/api/node/get_total_balances?addresses=' + address);
+	const all_balances = ret.data;
+	ret = await axios.get(host + '/api/node/get_history_for?addresses=' + address);
+	const history = ret.data;
+	
 	let nfts = [];
 	let balances = [];
-	all_balances.forEach((entry, i) => {
-		const contract = contracts[i];
-		if(contract && contract.__type) {
+	for(const entry of all_balances) {
+		const currency = to_addr(entry[0]);
+		const contract = await get_contract(currency);
+		if(contract) {
 			if(contract.__type == "mmx.contract.NFT") {
-				nfts.push(to_addr(entry[0]));
+				nfts.push(currency);
 			}
 			if(contract.__type == "mmx.contract.Token") {
 				let out = {};
 				out.balance = entry[1];
 				out.currency = contract.symbol;
-				out.contract = to_addr(entry[0]);
+				out.contract = currency;
 				balances.push(out);
 			}
 		} else {
@@ -148,12 +182,25 @@ function on_address(res, address, all_balances, contracts, history)
 			out.currency = "MMX";
 			balances.push(out);
 		}
-	});
+	}
 	for(const entry of history) {
 		entry.txid = to_hex(entry.txid);
 		entry.amount = to_balance(entry.amount);
 		entry.address = to_addr(entry.address);
 		entry.contract = to_addr(entry.contract);
+		const contract = await get_contract(entry.contract);
+		if(contract) {
+			if(contract.__type == "mmx.contract.NFT") {
+				entry.amount = 1;
+				entry.symbol = "NFT";
+			}
+			if(contract.__type == "mmx.contract.Token") {
+				entry.symbol = contract.symbol;
+			}
+		} else {
+			entry.symbol = "MMX";
+			entry.contract = null;
+		}
 	}
 	for(const entry of balances) {
 		entry.balance = to_balance(entry.balance);
@@ -169,30 +216,6 @@ function on_address(res, address, all_balances, contracts, history)
 
 function on_contract(res, address, contract)
 {
-	if(contract.__type == "mmx.contract.NFT") {
-		contract.creator = to_addr(contract.creator);
-		if(contract.parent) {
-			contract.parent = to_addr(contract.parent);
-		}
-	}
-	if(contract.__type == "mmx.contract.Token") {
-		if(contract.owner) {
-			contract.owner = to_addr(contract.owner);
-		}
-		contract.stake_factors.forEach((entry) => {
-			entry[0] = to_addr(entry[0]);
-		});
-	}
-	if(contract.__type == "mmx.contract.Staking") {
-		contract.owner = to_addr(contract.owner);
-		contract.currency = to_addr(contract.currency);
-		contract.reward_addr = to_addr(contract.reward_addr);
-	}
-	if(contract.__type == "mmx.contract.MultiSig") {
-		contract.stake_factors.forEach((addr) => {
-			addr = to_addr(addr);
-		});
-	}
 	let args = {};
 	args.body = 'contract';
 	args.address = address;
@@ -200,30 +223,54 @@ function on_contract(res, address, contract)
 	res.render('index', args);
 }
 
-function on_transaction(res, tx, txio_info)
+async function on_transaction(res, tx)
 {
+	let keys = [];
+	for(const input of tx.inputs) {
+		keys.push(input.prev);
+	}
+	tx.outputs.forEach((output, i) => {
+		keys.push({txid: tx.id, index: i});
+	});
+	tx.exec_outputs.forEach((output, i) => {
+		keys.push({txid: tx.id, index: tx.outputs.length + i});
+	});
+	let ret = await axios.post(host + '/api/node/get_txo_infos', {keys: keys});
+	txio_info = ret.data;
+	
 	tx.id = to_hex(tx.id);
 	tx.input_amount = 0;
 	tx.inputs.forEach((input, i) => {
 		if(i < txio_info.length) {
 			const out = txio_info[i];
 			if(out) {
+				input.amount = to_balance(out.output.amount);
+				input.address = to_addr(out.output.address);
 				input.contract = to_addr(out.output.contract);
 				if(input.contract == MMX_ADDR) {
-					input.contract = null;
-					input.currency = "MMX";
 					tx.input_amount += out.output.amount;
-				} else {
-					input.currency = "Token";
 				}
-				input.address = to_addr(out.output.address);
-				input.amount = to_balance(out.output.amount);
 			} else {
 				input.is_base = true;
 			}
 		}
 		input.prev.txid = to_hex(input.prev.txid);
 	});
+	for(const input of tx.inputs) {
+		const contract = await get_contract(input.contract);
+		if(contract) {
+			if(contract.__type == "mmx.contract.NFT") {
+				input.amount = 1;
+				input.symbol = "NFT";
+			}
+			if(contract.__type == "mmx.contract.Token") {
+				input.symbol = contract.symbol;
+			}
+		} else {
+			input.symbol = "MMX";
+			input.contract = null;
+		}
+	}
 	tx.output_amount = 0;
 	tx.outputs = tx.outputs.concat(tx.exec_outputs);
 	tx.outputs.forEach((out, i) => {
@@ -234,17 +281,27 @@ function on_transaction(res, tx, txio_info)
 				out.spent.txid = to_hex(out.spent.txid);
 			}
 		}
-		out.contract = to_addr(out.contract);
-		if(out.contract == MMX_ADDR) {
-			out.contract = null;
-			out.currency = "MMX";
-			tx.output_amount += out.amount;
-		} else {
-			out.currency = "Token";
-		}
 		out.address = to_addr(out.address);
-		out.amount = to_balance(out.amount);
+		out.contract = to_addr(out.contract);
 	});
+	for(const out of tx.outputs) {
+		const contract = await get_contract(out.contract);
+		if(contract) {
+			out.amount = to_balance(out.amount);
+			if(contract.__type == "mmx.contract.NFT") {
+				out.amount = 1;
+				out.symbol = "NFT";
+			}
+			if(contract.__type == "mmx.contract.Token") {
+				out.symbol = contract.symbol;
+			}
+		} else {
+			tx.output_amount += out.amount;
+			out.symbol = "MMX";
+			out.contract = null;
+			out.amount = to_balance(out.amount);
+		}
+	}
 	tx.fee_amount = tx.input_amount - tx.output_amount;
 	
 	tx.input_amount = to_balance(tx.input_amount);
@@ -281,39 +338,18 @@ app.get('/block', (req, res) => {
 	}
 });
 
-app.get('/address', (req, res) => {
+app.get('/address', async (req, res) => {
 	if(!req.query.addr) {
 		res.status(404).send("missing addr param");
 		return;
 	}
-	axios.get(host + '/api/node/get_contract?address=' + req.query.addr)
-		.then((ret) => {
-			const contract = ret.data;
-			if(contract) {
-				on_contract(res, req.query.addr, contract);
-			} else {
-				axios.get(host + '/api/node/get_total_balances?addresses=' + req.query.addr)
-					.then((ret) => {
-						const balances = ret.data;
-						let keys = [];
-						for(const entry of balances) {
-							keys.push(entry[0]);
-						}
-						axios.post(host + '/api/node/get_contracts', {addresses: keys})
-							.then((ret) => {
-								const contracts = ret.data;
-								axios.get(host + '/api/node/get_history_for?addresses=' + req.query.addr)
-									.then((ret) => {
-										on_address(res, req.query.addr, balances, contracts, ret.data);
-									})
-									.catch(on_error.bind(null, res));
-							})
-							.catch(on_error.bind(null, res));
-					})
-					.catch(on_error.bind(null, res));
-			}
-		})
-		.catch(on_error.bind(null, res));
+	const address = req.query.addr;
+	const contract = await get_contract(address).catch(on_error.bind(null, res));
+	if(contract) {
+		on_contract(res, address, contract);
+	} else {
+		on_address(res, address).catch(on_error.bind(null, res));
+	}
 });
 
 app.get('/transaction', (req, res) => {
@@ -324,25 +360,11 @@ app.get('/transaction', (req, res) => {
 	axios.get(host + '/api/node/get_transaction?include_pending=true&id=' + req.query.id)
 		.then((ret) => {
 			const tx = ret.data;
-			if(!tx) {
+			if(tx) {
+				on_transaction(res, tx).catch(on_error.bind(null, res));
+			} else {
 				res.status(404).send("no such transaction");
-				return;
 			}
-			let keys = [];
-			for(const input of tx.inputs) {
-				keys.push(input.prev);
-			}
-			tx.outputs.forEach((output, i) => {
-				keys.push({txid: tx.id, index: i});
-			});
-			tx.exec_outputs.forEach((output, i) => {
-				keys.push({txid: tx.id, index: tx.outputs.length + i});
-			});
-			axios.post(host + '/api/node/get_txo_infos', {keys: keys})
-				.then((ret) => {
-					on_transaction(res, tx, ret.data);
-				})
-				.catch(on_error.bind(null, res));
 		})
 		.catch(on_error.bind(null, res));
 });

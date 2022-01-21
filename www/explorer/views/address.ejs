@@ -25,22 +25,23 @@
 
 <% nfts.forEach(function(address) { %>
 <tr>
-<td>NFT</td>
 <td>N/A</td>
+<td>NFT</td>
 <td><a href="/address?addr=<%= address %>"><%= address %></a></td>
 </tr>
 <% }); %>
 </tbody>
 </table>
 
-<table class="table">
+<table class="table table-nonfluid">
 <thead>
 <tr>
 <th>Height</th>
 <th>Type</th>
 <th>Amount</th>
+<th>Token</th>
 <th>Address</th>
-<th>TX ID</th>
+<th></th>
 </tr>
 </thead>
 
@@ -50,8 +51,15 @@
 <td><%= entry.height %></td>
 <td><%= entry.type %></td>
 <td><b><%= entry.amount %></b></td>
+<td>
+<% if(entry.contract) { %>
+<a href="/address?addr=<%= entry.contract %>"><%= entry.symbol %></a>
+<% } else { %>
+MMX
+<% } %>
+</td>
 <td><a href="address?addr=<%= entry.address %>"><%= entry.address %></a></td>
-<td><a href="transaction?id=<%= entry.txid %>"><%= entry.txid %></a></td>
+<td><a href="transaction?id=<%= entry.txid %>">TX</a></td>
 </tr>
 <% }); %>
 </tbody>
