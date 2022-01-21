@@ -205,21 +205,15 @@ async function on_address(res, address)
 	for(const entry of balances) {
 		entry.balance = to_balance(entry.balance);
 	}
+	const contract = await get_contract(address);
+	
 	let args = {};
 	args.body = 'address';
 	args.address = address;
 	args.nfts = nfts;
 	args.balances = balances;
-	args.history = history.reverse();
-	res.render('index', args);
-}
-
-function on_contract(res, address, contract)
-{
-	let args = {};
-	args.body = 'contract';
-	args.address = address;
 	args.contract = contract;
+	args.history = history.reverse();
 	res.render('index', args);
 }
 
@@ -344,12 +338,7 @@ app.get('/address', async (req, res) => {
 		return;
 	}
 	const address = req.query.addr;
-	const contract = await get_contract(address).catch(on_error.bind(null, res));
-	if(contract) {
-		on_contract(res, address, contract);
-	} else {
-		on_address(res, address).catch(on_error.bind(null, res));
-	}
+	on_address(res, address).catch(on_error.bind(null, res));
 });
 
 app.get('/transaction', (req, res) => {

@@ -33,6 +33,14 @@
 </tbody>
 </table>
 
+<% if(contract) { %>
+<blockquote class="blockquote">
+<pre>
+<%= JSON.stringify(contract, null, 4) %>
+</pre>
+</blockquote>
+<% } %>
+
 <table class="table table-nonfluid">
 <thead>
 <tr>
