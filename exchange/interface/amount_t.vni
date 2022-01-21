@@ -1,0 +1,9 @@
+package mmx.exchange;
+
+struct amount_t {
+	
+	ulong amount;
+	
+	mmx.addr_t currency;
+	
+}

@@ -1,0 +1,19 @@
+package mmx.exchange;
+
+import mmx.addr_t;
+import mmx.txio_key_t;
+import mmx.Transaction;
+
+module Server {
+	
+	
+	
+	void place(trade_pair_t pair, vector<limit_order_t> orders);
+	
+	Transaction* execute(trade_pair_t pair, vector<trade_order_t> orders) const;
+	
+	vector<order_t> get_orders(trade_pair_t pair) const;
+	
+	ulong_fraction_t get_price(addr_t want, amount_t have) const;
+	
+}
