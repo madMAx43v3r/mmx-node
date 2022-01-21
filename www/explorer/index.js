@@ -82,7 +82,7 @@ function parse_block(data)
 function on_block(res, ret)
 {
 	if(!ret.data) {
-		res.status(404);
+		res.status(404).send("no such block");
 		return;
 	}
 	let args = {};
@@ -94,7 +94,7 @@ function on_block(res, ret)
 function gather_recent(blocks, height, res, ret)
 {
 	if(!ret.data) {
-		res.status(404);
+		res.status(404).send("no such block");
 		return;
 	}
 	blocks.push(parse_block(ret.data));
@@ -115,7 +115,7 @@ function gather_recent(blocks, height, res, ret)
 function on_recent(res, ret)
 {
 	if(!ret.data) {
-		res.status(404);
+		res.status(404).send("nothing found");
 		return;
 	}
 	let height = ret.data;
@@ -277,13 +277,13 @@ app.get('/block', (req, res) => {
 			.then(on_block.bind(null, res))
 			.catch(on_error.bind(null, res));
 	} else {
-		res.status(404).send();
+		res.status(404).send("missing hash or height param");
 	}
 });
 
 app.get('/address', (req, res) => {
 	if(!req.query.addr) {
-		res.status(404).send();
+		res.status(404).send("missing addr param");
 		return;
 	}
 	axios.get(host + '/api/node/get_contract?address=' + req.query.addr)
@@ -318,14 +318,14 @@ app.get('/address', (req, res) => {
 
 app.get('/transaction', (req, res) => {
 	if(!req.query.id) {
-		res.status(404).send();
+		res.status(404).send("missing id param");
 		return;
 	}
 	axios.get(host + '/api/node/get_transaction?include_pending=true&id=' + req.query.id)
 		.then((ret) => {
 			const tx = ret.data;
 			if(!tx) {
-				res.status(404).send();
+				res.status(404).send("no such transaction");
 				return;
 			}
 			let keys = [];
