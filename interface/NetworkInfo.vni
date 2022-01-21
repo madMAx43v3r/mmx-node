@@ -7,7 +7,7 @@ class NetworkInfo {
 	ulong time_diff;
 	ulong space_diff;
 	
-	ulong block_reward;
+	ulong block_reward;			// MMX * 1e6
 	
 	ulong total_space;			// [bytes]
 	ulong total_supply;			// MMX * 1e6
