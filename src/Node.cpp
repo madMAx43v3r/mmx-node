@@ -163,9 +163,36 @@ void Node::main()
 	}
 }
 
-std::shared_ptr<const ChainParams> Node::get_params() const
-{
+std::shared_ptr<const ChainParams> Node::get_params() const {
 	return params;
+}
+
+std::shared_ptr<const NetworkInfo> Node::get_network_info() const
+{
+	if(const auto peak = get_peak()) {
+		if(!network || peak->height != network->height) {
+			auto info = NetworkInfo::create();
+			info->height = peak->height;
+			info->time_diff = peak->time_diff;
+			info->space_diff = peak->space_diff;
+			info->block_reward = calc_block_reward(peak);
+			info->utxo_count = utxo_map.size();
+			info->total_space = calc_total_netspace(params, peak->space_diff);
+			{
+				std::unordered_set<addr_t> addr_set;
+				for(const auto& entry : utxo_map) {
+					const auto& utxo = entry.second;
+					if(utxo.contract == addr_t()) {
+						info->total_supply += utxo.amount;
+					}
+					addr_set.insert(utxo.address);
+				}
+				info->address_count = addr_set.size();
+			}
+			network = info;
+		}
+	}
+	return network;
 }
 
 uint32_t Node::get_height() const

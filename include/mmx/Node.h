@@ -35,6 +35,8 @@ protected:
 
 	std::shared_ptr<const ChainParams> get_params() const override;
 
+	std::shared_ptr<const NetworkInfo> get_network_info() const override;
+
 	uint32_t get_height() const override;
 
 	vnx::optional<uint32_t> get_synced_height() const override;
@@ -286,6 +288,7 @@ private:
 	std::shared_ptr<vnx::Timer> update_timer;
 
 	std::shared_ptr<const ChainParams> params;
+	mutable std::shared_ptr<const NetworkInfo> network;
 	std::shared_ptr<RouterAsyncClient> router;
 	std::shared_ptr<vnx::addons::HttpInterface<Node>> http;
 

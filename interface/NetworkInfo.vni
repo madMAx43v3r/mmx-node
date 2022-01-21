@@ -1,0 +1,18 @@
+package mmx;
+
+class NetworkInfo {
+	
+	uint height;
+	
+	ulong time_diff;
+	ulong space_diff;
+	
+	ulong block_reward;
+	
+	ulong total_space;			// [bytes]
+	ulong total_supply;			// MMX * 1e6
+	
+	ulong utxo_count;
+	ulong address_count;
+	
+}

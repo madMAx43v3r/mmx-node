@@ -385,14 +385,17 @@ int main(int argc, char** argv)
 			}
 			else if(command == "info")
 			{
-				const auto height = node.get_height();
-				const auto peak = node.get_header_at(height);
-				std::cout << "Synced: " << (node.get_synced_height() ? "Yes" : "No") << std::endl;
-				std::cout << "Height: " << height << std::endl;
-				std::cout << "Netspace: " << mmx::calc_total_netspace(params, peak ? peak->space_diff : 0) / pow(1024, 4) << " TiB" << std::endl;
-				for(uint32_t i = 0; i < 2 * params->finality_delay && i < height; ++i) {
-					const auto hash = node.get_block_hash(height - i);
-					std::cout << "Block[" << (height - i) << "] " << (hash ? *hash : mmx::hash_t()) << std::endl;
+				const auto info = node.get_network_info();
+				std::cout << "Synced:   " << (node.get_synced_height() ? "Yes" : "No") << std::endl;
+				std::cout << "Height:   " << info->height << std::endl;
+				std::cout << "Netspace: " << info->total_space / pow(1024, 4) << " TiB" << std::endl;
+				std::cout << "Reward:   " << info->block_reward / 1e6 << " MMX" << std::endl;
+				std::cout << "Supply:   " << info->total_supply / 1e6 << " MMX" << std::endl;
+				std::cout << "N(UTXO):    " << info->utxo_count << std::endl;
+				std::cout << "N(Address): " << info->address_count << std::endl;
+				for(uint32_t i = 0; i < 2 * params->finality_delay && i < info->height; ++i) {
+					const auto hash = node.get_block_hash(info->height - i);
+					std::cout << "Block[" << (info->height - i) << "] " << (hash ? *hash : mmx::hash_t()) << std::endl;
 				}
 			}
 			else if(command == "history")
