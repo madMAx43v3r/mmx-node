@@ -66,6 +66,7 @@ void Node::main()
 		options.max_open_files = 16;
 		options.keep_log_file_num = 3;
 		options.max_manifest_file_size = 64 * 1024 * 1024;
+		options.OptimizeForSmallDb();
 
 		stxo_index.open(database_path + "stxo_index", options);
 		saddr_map.open(database_path + "saddr_map", options);
