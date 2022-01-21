@@ -7,6 +7,7 @@
 #include <mmx/BlockHeader.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
+#include <mmx/NetworkInfo.hxx>
 #include <mmx/Node_add_block.hxx>
 #include <mmx/Node_add_block_return.hxx>
 #include <mmx/Node_add_transaction.hxx>
@@ -33,6 +34,8 @@
 #include <mmx/Node_get_height_return.hxx>
 #include <mmx/Node_get_history_for.hxx>
 #include <mmx/Node_get_history_for_return.hxx>
+#include <mmx/Node_get_network_info.hxx>
+#include <mmx/Node_get_network_info_return.hxx>
 #include <mmx/Node_get_params.hxx>
 #include <mmx/Node_get_params_return.hxx>
 #include <mmx/Node_get_stxo_list.hxx>
@@ -229,6 +232,18 @@ std::shared_ptr<const ::mmx::ChainParams> NodeClient::get_params() {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::ChainParams>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::shared_ptr<const ::mmx::NetworkInfo> NodeClient::get_network_info() {
+	auto _method = ::mmx::Node_get_network_info::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_network_info_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::NetworkInfo>>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}

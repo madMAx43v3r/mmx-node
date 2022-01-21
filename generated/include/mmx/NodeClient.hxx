@@ -9,6 +9,7 @@
 #include <mmx/BlockHeader.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
+#include <mmx/NetworkInfo.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
@@ -61,6 +62,8 @@ public:
 	vnx::bool_t vnx_self_test();
 	
 	std::shared_ptr<const ::mmx::ChainParams> get_params();
+	
+	std::shared_ptr<const ::mmx::NetworkInfo> get_network_info();
 	
 	uint32_t get_height();
 	

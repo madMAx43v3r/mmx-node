@@ -25,6 +25,7 @@
 #include <mmx/Harvester_reload_return.hxx>
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/KeyFile.hxx>
+#include <mmx/NetworkInfo.hxx>
 #include <mmx/NodeBase.hxx>
 #include <mmx/Node_add_block.hxx>
 #include <mmx/Node_add_block_return.hxx>
@@ -52,6 +53,8 @@
 #include <mmx/Node_get_height_return.hxx>
 #include <mmx/Node_get_history_for.hxx>
 #include <mmx/Node_get_history_for_return.hxx>
+#include <mmx/Node_get_network_info.hxx>
+#include <mmx/Node_get_network_info_return.hxx>
 #include <mmx/Node_get_params.hxx>
 #include <mmx/Node_get_params_return.hxx>
 #include <mmx/Node_get_stxo_list.hxx>
@@ -448,6 +451,18 @@ void type<::mmx::KeyFile>::create_dynamic_code(std::vector<uint16_t>& code, cons
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::NetworkInfo>::get_type_code() {
+	return mmx::vnx_native_type_code_NetworkInfo;
+}
+
+void type<::mmx::NetworkInfo>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::NetworkInfo());
+}
+
+void type<::mmx::NetworkInfo>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::NetworkInfo& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::Node_add_block>::get_type_code() {
 	return mmx::vnx_native_type_code_Node_add_block;
 }
@@ -757,6 +772,30 @@ void type<::mmx::Node_get_history_for_return>::create_dynamic_code(std::vector<u
 }
 
 void type<::mmx::Node_get_history_for_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_history_for_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_network_info>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_network_info;
+}
+
+void type<::mmx::Node_get_network_info>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_network_info());
+}
+
+void type<::mmx::Node_get_network_info>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_network_info& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_network_info_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_network_info_return;
+}
+
+void type<::mmx::Node_get_network_info_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_network_info_return());
+}
+
+void type<::mmx::Node_get_network_info_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_network_info_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -2256,6 +2295,7 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Harvester_reload_return::static_create_type_code());
 	vnx::register_type_code(::mmx::IntervalRequest::static_create_type_code());
 	vnx::register_type_code(::mmx::KeyFile::static_create_type_code());
+	vnx::register_type_code(::mmx::NetworkInfo::static_create_type_code());
 	vnx::register_type_code(::mmx::NodeBase::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_add_block::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_add_block_return::static_create_type_code());
@@ -2283,6 +2323,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Node_get_height_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_history_for::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_history_for_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_network_info::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_network_info_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_params::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_params_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_stxo_list::static_create_type_code());
@@ -2432,6 +2474,7 @@ const vnx::TypeCode* const vnx_native_type_code_Harvester_reload = vnx::get_type
 const vnx::TypeCode* const vnx_native_type_code_Harvester_reload_return = vnx::get_type_code(vnx::Hash64(0x39fc8cc53bcf4659ull));
 const vnx::TypeCode* const vnx_native_type_code_IntervalRequest = vnx::get_type_code(vnx::Hash64(0xa4e39be061f13d71ull));
 const vnx::TypeCode* const vnx_native_type_code_KeyFile = vnx::get_type_code(vnx::Hash64(0xdf868931a939cba1ull));
+const vnx::TypeCode* const vnx_native_type_code_NetworkInfo = vnx::get_type_code(vnx::Hash64(0xd984018819746101ull));
 const vnx::TypeCode* const vnx_native_type_code_NodeBase = vnx::get_type_code(vnx::Hash64(0x289d7651582d76a3ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_add_block = vnx::get_type_code(vnx::Hash64(0x63abca4d23f93894ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_add_block_return = vnx::get_type_code(vnx::Hash64(0xb6d1115db03a6d6aull));
@@ -2459,6 +2502,8 @@ const vnx::TypeCode* const vnx_native_type_code_Node_get_height = vnx::get_type_
 const vnx::TypeCode* const vnx_native_type_code_Node_get_height_return = vnx::get_type_code(vnx::Hash64(0x5fb0ff1e11add033ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_history_for = vnx::get_type_code(vnx::Hash64(0x61588fcbc5a50893ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_history_for_return = vnx::get_type_code(vnx::Hash64(0x9b39b74d62dd7f9ull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_network_info = vnx::get_type_code(vnx::Hash64(0x79cedc8662eeb2e4ull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_network_info_return = vnx::get_type_code(vnx::Hash64(0x28541acc5945ae0eull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_params = vnx::get_type_code(vnx::Hash64(0x6384b34900c2e465ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_params_return = vnx::get_type_code(vnx::Hash64(0xd0a614f2ed037180ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_stxo_list = vnx::get_type_code(vnx::Hash64(0xb4e1314236d07ca2ull));

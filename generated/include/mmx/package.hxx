@@ -37,6 +37,7 @@ class Harvester_reload;
 class Harvester_reload_return;
 class IntervalRequest;
 class KeyFile;
+class NetworkInfo;
 class NodeBase;
 class Node_add_block;
 class Node_add_block_return;
@@ -64,6 +65,8 @@ class Node_get_height;
 class Node_get_height_return;
 class Node_get_history_for;
 class Node_get_history_for_return;
+class Node_get_network_info;
+class Node_get_network_info_return;
 class Node_get_params;
 class Node_get_params_return;
 class Node_get_stxo_list;
@@ -213,6 +216,7 @@ extern const vnx::TypeCode* const vnx_native_type_code_Harvester_reload; ///< \p
 extern const vnx::TypeCode* const vnx_native_type_code_Harvester_reload_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_IntervalRequest; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_KeyFile; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_NetworkInfo; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_NodeBase; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Node_add_block; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Node_add_block_return; ///< \private
@@ -240,6 +244,8 @@ extern const vnx::TypeCode* const vnx_native_type_code_Node_get_height; ///< \pr
 extern const vnx::TypeCode* const vnx_native_type_code_Node_get_height_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Node_get_history_for; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Node_get_history_for_return; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_Node_get_network_info; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_Node_get_network_info_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Node_get_params; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Node_get_params_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Node_get_stxo_list; ///< \private
@@ -387,6 +393,7 @@ void read(TypeInput& in, ::mmx::Harvester_reload& value, const TypeCode* type_co
 void read(TypeInput& in, ::mmx::Harvester_reload_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::IntervalRequest& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::KeyFile& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::NetworkInfo& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::NodeBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_add_block& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_add_block_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -414,6 +421,8 @@ void read(TypeInput& in, ::mmx::Node_get_height& value, const TypeCode* type_cod
 void read(TypeInput& in, ::mmx::Node_get_height_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_history_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_history_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_network_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_network_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_params& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_params_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_stxo_list& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -563,6 +572,7 @@ void write(TypeOutput& out, const ::mmx::Harvester_reload& value, const TypeCode
 void write(TypeOutput& out, const ::mmx::Harvester_reload_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::IntervalRequest& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::KeyFile& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::NetworkInfo& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::NodeBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_add_block& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_add_block_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -590,6 +600,8 @@ void write(TypeOutput& out, const ::mmx::Node_get_height& value, const TypeCode*
 void write(TypeOutput& out, const ::mmx::Node_get_height_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_history_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_history_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_network_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_network_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_params& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_params_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_stxo_list& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -739,6 +751,7 @@ void read(std::istream& in, ::mmx::Harvester_reload& value); ///< \private
 void read(std::istream& in, ::mmx::Harvester_reload_return& value); ///< \private
 void read(std::istream& in, ::mmx::IntervalRequest& value); ///< \private
 void read(std::istream& in, ::mmx::KeyFile& value); ///< \private
+void read(std::istream& in, ::mmx::NetworkInfo& value); ///< \private
 void read(std::istream& in, ::mmx::NodeBase& value); ///< \private
 void read(std::istream& in, ::mmx::Node_add_block& value); ///< \private
 void read(std::istream& in, ::mmx::Node_add_block_return& value); ///< \private
@@ -766,6 +779,8 @@ void read(std::istream& in, ::mmx::Node_get_height& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_height_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_history_for& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_history_for_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_network_info& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_network_info_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_params& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_params_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_stxo_list& value); ///< \private
@@ -915,6 +930,7 @@ void write(std::ostream& out, const ::mmx::Harvester_reload& value); ///< \priva
 void write(std::ostream& out, const ::mmx::Harvester_reload_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::IntervalRequest& value); ///< \private
 void write(std::ostream& out, const ::mmx::KeyFile& value); ///< \private
+void write(std::ostream& out, const ::mmx::NetworkInfo& value); ///< \private
 void write(std::ostream& out, const ::mmx::NodeBase& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_add_block& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_add_block_return& value); ///< \private
@@ -942,6 +958,8 @@ void write(std::ostream& out, const ::mmx::Node_get_height& value); ///< \privat
 void write(std::ostream& out, const ::mmx::Node_get_height_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_history_for& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_history_for_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_network_info& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_network_info_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_params& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_params_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_stxo_list& value); ///< \private
@@ -1091,6 +1109,7 @@ void accept(Visitor& visitor, const ::mmx::Harvester_reload& value); ///< \priva
 void accept(Visitor& visitor, const ::mmx::Harvester_reload_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::IntervalRequest& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::KeyFile& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::NetworkInfo& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::NodeBase& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_add_block& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_add_block_return& value); ///< \private
@@ -1118,6 +1137,8 @@ void accept(Visitor& visitor, const ::mmx::Node_get_height& value); ///< \privat
 void accept(Visitor& visitor, const ::mmx::Node_get_height_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_history_for& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_history_for_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_network_info& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_network_info_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_params& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_params_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_stxo_list& value); ///< \private
@@ -1791,6 +1812,29 @@ struct type<::mmx::KeyFile> {
 
 /// \private
 template<>
+struct type<::mmx::NetworkInfo> {
+	void read(TypeInput& in, ::mmx::NetworkInfo& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::NetworkInfo& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::NetworkInfo& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::NetworkInfo& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::NetworkInfo& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::NetworkInfo& value, bool special = false);
+};
+
+/// \private
+template<>
 struct type<::mmx::NodeBase> {
 	void read(TypeInput& in, ::mmx::NodeBase& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
@@ -2405,6 +2449,52 @@ struct type<::mmx::Node_get_history_for_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_history_for_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_network_info> {
+	void read(TypeInput& in, ::mmx::Node_get_network_info& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_network_info& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_network_info& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_network_info& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_network_info& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_network_info& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_network_info_return> {
+	void read(TypeInput& in, ::mmx::Node_get_network_info_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_network_info_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_network_info_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_network_info_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_network_info_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_network_info_return& value, bool special = false);
 };
 
 /// \private
