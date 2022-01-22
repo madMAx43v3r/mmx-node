@@ -1,0 +1,11 @@
+package mmx;
+
+struct spend_options_t {
+	
+	uint min_confirm = 1;
+	
+	bool pending_change = true;
+	
+	vector<txio_key_t> exclude;
+	
+}

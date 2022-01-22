@@ -7,6 +7,7 @@ import mmx.Transaction;
 module Server {
 	
 	
+	void approve(Transaction* tx);
 	
 	void place(trade_pair_t pair, vector<limit_order_t> orders);
 	

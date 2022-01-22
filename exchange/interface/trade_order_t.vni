@@ -9,8 +9,6 @@ struct trade_order_t {
 	
 	vector<txio_key_t> bid_keys;
 	
-	vector<txio_key_t> fee_keys;
-	
 	mmx.Solution* solution;
 	
 	

@@ -409,7 +409,7 @@ std::vector<tx_entry_t> Node::get_history_for(const std::vector<addr_t>& address
 	};
 	std::unordered_map<hash_t, txio_t> txio_map;
 
-	for(const auto& entry : get_utxo_list(addresses)) {
+	for(const auto& entry : get_utxo_list(addresses, 1)) {
 		if(entry.output.height >= min_height) {
 			txio_map[entry.key.txid].outputs.push_back(entry.output);
 		}
@@ -650,15 +650,15 @@ void Node::add_transaction(std::shared_ptr<const Transaction> tx)
 	}
 }
 
-uint64_t Node::get_balance(const addr_t& address, const addr_t& contract) const
+uint64_t Node::get_balance(const addr_t& address, const addr_t& contract, const uint32_t& min_confirm) const
 {
-	return get_total_balance({address}, contract);
+	return get_total_balance({address}, contract, min_confirm);
 }
 
-uint64_t Node::get_total_balance(const std::vector<addr_t>& addresses, const addr_t& contract) const
+uint64_t Node::get_total_balance(const std::vector<addr_t>& addresses, const addr_t& contract, const uint32_t& min_confirm) const
 {
 	uint64_t total = 0;
-	for(const auto& entry : get_utxo_list(addresses)) {
+	for(const auto& entry : get_utxo_list(addresses, min_confirm)) {
 		const auto& utxo = entry.output;
 		if(utxo.contract == contract) {
 			total += utxo.amount;
@@ -667,10 +667,10 @@ uint64_t Node::get_total_balance(const std::vector<addr_t>& addresses, const add
 	return total;
 }
 
-std::map<addr_t, uint64_t> Node::get_total_balances(const std::vector<addr_t>& addresses) const
+std::map<addr_t, uint64_t> Node::get_total_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const
 {
 	std::map<addr_t, uint64_t> amounts;
-	for(const auto& entry : get_utxo_list(addresses)) {
+	for(const auto& entry : get_utxo_list(addresses, min_confirm)) {
 		const auto& utxo = entry.output;
 		amounts[utxo.contract] += utxo.amount;
 	}
@@ -689,8 +689,9 @@ uint64_t Node::get_total_supply(const addr_t& contract) const
 	return total;
 }
 
-std::vector<utxo_entry_t> Node::get_utxo_list(const std::vector<addr_t>& addresses) const
+std::vector<utxo_entry_t> Node::get_utxo_list(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const
 {
+	const auto height = get_height();
 	std::vector<utxo_entry_t> res;
 	for(const auto& addr : addresses) {
 		const auto begin = addr_map.lower_bound(std::make_pair(addr, txio_key_t()));
@@ -698,7 +699,10 @@ std::vector<utxo_entry_t> Node::get_utxo_list(const std::vector<addr_t>& address
 		for(auto iter = begin; iter != end; ++iter) {
 			auto iter2 = utxo_map.find(iter->second);
 			if(iter2 != utxo_map.end()) {
-				res.push_back(utxo_entry_t::create_ex(iter2->first, iter2->second));
+				const auto& utxo = iter2->second;
+				if((height - utxo.height) + 1 >= min_confirm) {
+					res.push_back(utxo_entry_t::create_ex(iter2->first, utxo));
+				}
 			}
 		}
 		auto iter = taddr_map.find(addr);
@@ -706,7 +710,10 @@ std::vector<utxo_entry_t> Node::get_utxo_list(const std::vector<addr_t>& address
 			for(const auto& key : iter->second) {
 				auto iter2 = utxo_map.find(key);
 				if(iter2 != utxo_map.end()) {
-					res.push_back(utxo_entry_t::create_ex(iter2->first, iter2->second));
+					const auto& utxo = iter2->second;
+					if((height - utxo.height) + 1 >= min_confirm) {
+						res.push_back(utxo_entry_t::create_ex(iter2->first, utxo));
+					}
 				}
 			}
 		}
