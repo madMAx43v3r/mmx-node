@@ -11,7 +11,8 @@
 #include <mmx/RouterBase.hxx>
 #include <mmx/NodeAsyncClient.hxx>
 
-#include <vnx/Buffer.h>
+#include <vnx/Buffer.hpp>
+#include <vnx/Input.hpp>
 #include <vnx/Output.hpp>
 #include <vnx/ThreadPool.h>
 
@@ -58,33 +59,21 @@ protected:
 	void handle(std::shared_ptr<const ProofResponse> value);
 
 private:
-	struct peer_t {
+	struct peer_t : Super::peer_t {
 		bool is_synced = false;
 		bool is_blocked = false;
 		bool is_outbound = false;
 		uint32_t height = 0;
-		uint32_t msg_size = 0;
 		uint32_t credits = 0;
 		uint32_t tx_credits = 0;
 		int32_t ping_ms = 0;
 		int64_t last_receive_ms = 0;
 		int64_t connected_since_ms = 0;
-		uint64_t client = 0;
-		uint64_t bytes_send = 0;
-		uint64_t bytes_recv = 0;
 		hash_t challenge;
 		node_info_t info;
 		std::string address;
 		vnx::optional<hash_t> node_id;
 		std::queue<std::shared_ptr<const Transaction>> tx_queue;
-
-		vnx::Memory data;
-		vnx::Buffer buffer;
-		vnx::BufferInputStream in_stream;
-		vnx::MemoryOutputStream out_stream;
-		vnx::TypeInput in;
-		vnx::TypeOutput out;
-		peer_t() : in_stream(&buffer), out_stream(&data), in(&in_stream), out(&out_stream) {}
 	};
 
 	struct hash_info_t {
@@ -166,10 +155,6 @@ private:
 
 	void on_msg(uint64_t client, std::shared_ptr<const vnx::Value> msg);
 
-	void on_buffer(uint64_t client, void*& buffer, size_t& max_bytes) override;
-
-	bool on_read(uint64_t client, size_t num_bytes) override;
-
 	void on_pause(uint64_t client) override;
 
 	void on_resume(uint64_t client) override;
@@ -177,6 +162,8 @@ private:
 	void on_connect(uint64_t client, const std::string& address) override;
 
 	void on_disconnect(uint64_t client) override;
+
+	std::shared_ptr<Super::peer_t> get_peer_base(uint64_t client) override;
 
 	std::shared_ptr<peer_t> get_peer(uint64_t client);
 

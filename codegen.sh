@@ -9,3 +9,4 @@ vnxcppcodegen --cleanup generated/ mmx interface/ modules/ vnx-base/interface/ v
 vnxcppcodegen --cleanup generated/contract/ mmx.contract interface/contract/ interface/ vnx-base/interface/
 vnxcppcodegen --cleanup generated/operation/ mmx.operation interface/operation/ interface/ vnx-base/interface/
 vnxcppcodegen --cleanup generated/solution/ mmx.solution interface/solution/ interface/ vnx-base/interface/
+vnxcppcodegen --cleanup generated/exchange/ mmx.exchange exchange/interface/ exchange/modules/ interface/ vnx-base/interface/
