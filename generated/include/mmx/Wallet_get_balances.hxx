@@ -14,6 +14,7 @@ class Wallet_get_balances : public ::vnx::Value {
 public:
 	
 	uint32_t index = 0;
+	uint32_t min_confirm = 0;
 	
 	typedef ::vnx::Value Super;
 	

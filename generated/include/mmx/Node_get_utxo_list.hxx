@@ -15,6 +15,7 @@ class Node_get_utxo_list : public ::vnx::Value {
 public:
 	
 	std::vector<::mmx::addr_t> addresses;
+	uint32_t min_confirm = 1;
 	
 	typedef ::vnx::Value Super;
 	

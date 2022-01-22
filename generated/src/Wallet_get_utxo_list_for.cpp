@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_get_utxo_list_for::VNX_TYPE_HASH(0x8b3f02747642c28dull);
-const vnx::Hash64 Wallet_get_utxo_list_for::VNX_CODE_HASH(0x44ffd367fc2be272ull);
+const vnx::Hash64 Wallet_get_utxo_list_for::VNX_CODE_HASH(0xf992768e86764249ull);
 
 vnx::Hash64 Wallet_get_utxo_list_for::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,6 +49,7 @@ void Wallet_get_utxo_list_for::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, index);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, currency);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, min_confirm);
 	_visitor.type_end(*_type_code);
 }
 
@@ -56,6 +57,7 @@ void Wallet_get_utxo_list_for::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Wallet.get_utxo_list_for\"";
 	_out << ", \"index\": "; vnx::write(_out, index);
 	_out << ", \"currency\": "; vnx::write(_out, currency);
+	_out << ", \"min_confirm\": "; vnx::write(_out, min_confirm);
 	_out << "}";
 }
 
@@ -70,6 +72,7 @@ vnx::Object Wallet_get_utxo_list_for::to_object() const {
 	_object["__type"] = "mmx.Wallet.get_utxo_list_for";
 	_object["index"] = index;
 	_object["currency"] = currency;
+	_object["min_confirm"] = min_confirm;
 	return _object;
 }
 
@@ -79,6 +82,8 @@ void Wallet_get_utxo_list_for::from_object(const vnx::Object& _object) {
 			_entry.second.to(currency);
 		} else if(_entry.first == "index") {
 			_entry.second.to(index);
+		} else if(_entry.first == "min_confirm") {
+			_entry.second.to(min_confirm);
 		}
 	}
 }
@@ -90,6 +95,9 @@ vnx::Variant Wallet_get_utxo_list_for::get_field(const std::string& _name) const
 	if(_name == "currency") {
 		return vnx::Variant(currency);
 	}
+	if(_name == "min_confirm") {
+		return vnx::Variant(min_confirm);
+	}
 	return vnx::Variant();
 }
 
@@ -98,6 +106,8 @@ void Wallet_get_utxo_list_for::set_field(const std::string& _name, const vnx::Va
 		_value.to(index);
 	} else if(_name == "currency") {
 		_value.to(currency);
+	} else if(_name == "min_confirm") {
+		_value.to(min_confirm);
 	} else {
 		throw std::logic_error("no such field: '" + _name + "'");
 	}
@@ -127,7 +137,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_utxo_list_for::static_create_type_code
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.get_utxo_list_for";
 	type_code->type_hash = vnx::Hash64(0x8b3f02747642c28dull);
-	type_code->code_hash = vnx::Hash64(0x44ffd367fc2be272ull);
+	type_code->code_hash = vnx::Hash64(0xf992768e86764249ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -135,7 +145,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_utxo_list_for::static_create_type_code
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Wallet_get_utxo_list_for>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Wallet_get_utxo_list_for_return::static_get_type_code();
-	type_code->fields.resize(2);
+	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -147,6 +157,13 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_utxo_list_for::static_create_type_code
 		field.is_extended = true;
 		field.name = "currency";
 		field.code = {11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[2];
+		field.data_size = 4;
+		field.name = "min_confirm";
+		field.value = vnx::to_string(0);
+		field.code = {3};
 	}
 	type_code->build();
 	return type_code;
@@ -193,6 +210,9 @@ void read(TypeInput& in, ::mmx::Wallet_get_utxo_list_for& value, const TypeCode*
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.index, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[2]) {
+			vnx::read_value(_buf + _field->offset, value.min_confirm, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -215,8 +235,9 @@ void write(TypeOutput& out, const ::mmx::Wallet_get_utxo_list_for& value, const 
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
+	char* const _buf = out.write(8);
 	vnx::write_value(_buf + 0, value.index);
+	vnx::write_value(_buf + 4, value.min_confirm);
 	vnx::write(out, value.currency, type_code, type_code->fields[1].code.data());
 }
 

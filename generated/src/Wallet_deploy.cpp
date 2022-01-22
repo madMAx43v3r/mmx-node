@@ -5,6 +5,7 @@
 #include <mmx/Wallet_deploy.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/Wallet_deploy_return.hxx>
+#include <mmx/spend_options_t.hxx>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -14,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_deploy::VNX_TYPE_HASH(0xcd71b07853d17497ull);
-const vnx::Hash64 Wallet_deploy::VNX_CODE_HASH(0x387d2c68dbf80d16ull);
+const vnx::Hash64 Wallet_deploy::VNX_CODE_HASH(0xbdef5c7896a82bf0ull);
 
 vnx::Hash64 Wallet_deploy::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,6 +50,7 @@ void Wallet_deploy::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, index);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, contract);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, options);
 	_visitor.type_end(*_type_code);
 }
 
@@ -56,6 +58,7 @@ void Wallet_deploy::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Wallet.deploy\"";
 	_out << ", \"index\": "; vnx::write(_out, index);
 	_out << ", \"contract\": "; vnx::write(_out, contract);
+	_out << ", \"options\": "; vnx::write(_out, options);
 	_out << "}";
 }
 
@@ -70,6 +73,7 @@ vnx::Object Wallet_deploy::to_object() const {
 	_object["__type"] = "mmx.Wallet.deploy";
 	_object["index"] = index;
 	_object["contract"] = contract;
+	_object["options"] = options;
 	return _object;
 }
 
@@ -79,6 +83,8 @@ void Wallet_deploy::from_object(const vnx::Object& _object) {
 			_entry.second.to(contract);
 		} else if(_entry.first == "index") {
 			_entry.second.to(index);
+		} else if(_entry.first == "options") {
+			_entry.second.to(options);
 		}
 	}
 }
@@ -90,6 +96,9 @@ vnx::Variant Wallet_deploy::get_field(const std::string& _name) const {
 	if(_name == "contract") {
 		return vnx::Variant(contract);
 	}
+	if(_name == "options") {
+		return vnx::Variant(options);
+	}
 	return vnx::Variant();
 }
 
@@ -98,6 +107,8 @@ void Wallet_deploy::set_field(const std::string& _name, const vnx::Variant& _val
 		_value.to(index);
 	} else if(_name == "contract") {
 		_value.to(contract);
+	} else if(_name == "options") {
+		_value.to(options);
 	} else {
 		throw std::logic_error("no such field: '" + _name + "'");
 	}
@@ -127,15 +138,17 @@ std::shared_ptr<vnx::TypeCode> Wallet_deploy::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.deploy";
 	type_code->type_hash = vnx::Hash64(0xcd71b07853d17497ull);
-	type_code->code_hash = vnx::Hash64(0x387d2c68dbf80d16ull);
+	type_code->code_hash = vnx::Hash64(0xbdef5c7896a82bf0ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
 	type_code->native_size = sizeof(::mmx::Wallet_deploy);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Wallet_deploy>(); };
+	type_code->depends.resize(1);
+	type_code->depends[0] = ::mmx::spend_options_t::static_get_type_code();
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Wallet_deploy_return::static_get_type_code();
-	type_code->fields.resize(2);
+	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -147,6 +160,12 @@ std::shared_ptr<vnx::TypeCode> Wallet_deploy::static_create_type_code() {
 		field.is_extended = true;
 		field.name = "contract";
 		field.code = {16};
+	}
+	{
+		auto& field = type_code->fields[2];
+		field.is_extended = true;
+		field.name = "options";
+		field.code = {19, 0};
 	}
 	type_code->permission = "mmx.permission_e.SPENDING";
 	type_code->build();
@@ -198,6 +217,7 @@ void read(TypeInput& in, ::mmx::Wallet_deploy& value, const TypeCode* type_code,
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 1: vnx::read(in, value.contract, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.options, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -219,6 +239,7 @@ void write(TypeOutput& out, const ::mmx::Wallet_deploy& value, const TypeCode* t
 	char* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.index);
 	vnx::write(out, value.contract, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.options, type_code, type_code->fields[2].code.data());
 }
 
 void read(std::istream& in, ::mmx::Wallet_deploy& value) {

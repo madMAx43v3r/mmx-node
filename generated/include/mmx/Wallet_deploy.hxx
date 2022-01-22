@@ -6,6 +6,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Contract.hxx>
+#include <mmx/spend_options_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -16,6 +17,7 @@ public:
 	
 	uint32_t index = 0;
 	std::shared_ptr<const ::mmx::Contract> contract;
+	::mmx::spend_options_t options;
 	
 	typedef ::vnx::Value Super;
 	

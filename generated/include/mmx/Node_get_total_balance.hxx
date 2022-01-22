@@ -16,6 +16,7 @@ public:
 	
 	std::vector<::mmx::addr_t> addresses;
 	::mmx::addr_t contract;
+	uint32_t min_confirm = 1;
 	
 	typedef ::vnx::Value Super;
 	

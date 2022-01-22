@@ -16,12 +16,12 @@
 #include <mmx/pubkey_t.hpp>
 #include <mmx/signature_t.hpp>
 #include <vnx/TopicPtr.hpp>
-#include <vnx/addons/TcpServer.h>
+#include <vnx/addons/MsgServer.h>
 
 
 namespace mmx {
 
-class RouterBase : public ::vnx::addons::TcpServer {
+class RouterBase : public ::vnx::addons::MsgServer {
 public:
 	
 	::vnx::TopicPtr input_vdfs = "timelord.proofs";
@@ -44,7 +44,6 @@ public:
 	uint32_t num_peers_out = 8;
 	uint32_t min_sync_peers = 2;
 	uint32_t max_sync_peers = 4;
-	uint32_t max_msg_size = 4194304;
 	uint32_t max_hash_cache = 100000;
 	uint32_t tx_credits = 8;
 	uint32_t vdf_credits = 1024;
@@ -65,7 +64,7 @@ public:
 	std::string storage_path;
 	std::string node_server = "Node";
 	
-	typedef ::vnx::addons::TcpServer Super;
+	typedef ::vnx::addons::MsgServer Super;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;

@@ -16,6 +16,7 @@ public:
 	
 	uint32_t index = 0;
 	::mmx::addr_t currency;
+	uint32_t min_confirm = 0;
 	
 	typedef ::vnx::Value Super;
 	

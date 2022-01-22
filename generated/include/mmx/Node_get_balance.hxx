@@ -16,6 +16,7 @@ public:
 	
 	::mmx::addr_t address;
 	::mmx::addr_t contract;
+	uint32_t min_confirm = 1;
 	
 	typedef ::vnx::Value Super;
 	

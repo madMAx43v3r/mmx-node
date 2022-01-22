@@ -16,7 +16,7 @@
 #include <mmx/pubkey_t.hpp>
 #include <mmx/signature_t.hpp>
 #include <vnx/TopicPtr.hpp>
-#include <vnx/addons/TcpServer.h>
+#include <vnx/addons/MsgServer.h>
 
 
 namespace mmx {

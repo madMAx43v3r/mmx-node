@@ -54,7 +54,7 @@
 #include <vnx/ModuleInterface_vnx_stop.hxx>
 #include <vnx/ModuleInterface_vnx_stop_return.hxx>
 #include <vnx/TopicPtr.hpp>
-#include <vnx/addons/TcpServer.h>
+#include <vnx/addons/MsgServer.h>
 
 #include <vnx/Generic.hxx>
 #include <vnx/vnx.h>

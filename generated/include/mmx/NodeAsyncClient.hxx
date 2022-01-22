@@ -155,15 +155,15 @@ public:
 			const std::function<void(const std::vector<::mmx::tx_entry_t>&)>& _callback = std::function<void(const std::vector<::mmx::tx_entry_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_balance(const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::addr_t& contract = ::mmx::addr_t(), 
+	uint64_t get_balance(const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::addr_t& contract = ::mmx::addr_t(), const uint32_t& min_confirm = 1, 
 			const std::function<void(const uint64_t&)>& _callback = std::function<void(const uint64_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_total_balance(const std::vector<::mmx::addr_t>& addresses = {}, const ::mmx::addr_t& contract = ::mmx::addr_t(), 
+	uint64_t get_total_balance(const std::vector<::mmx::addr_t>& addresses = {}, const ::mmx::addr_t& contract = ::mmx::addr_t(), const uint32_t& min_confirm = 1, 
 			const std::function<void(const uint64_t&)>& _callback = std::function<void(const uint64_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_total_balances(const std::vector<::mmx::addr_t>& addresses = {}, 
+	uint64_t get_total_balances(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& min_confirm = 1, 
 			const std::function<void(const std::map<::mmx::addr_t, uint64_t>&)>& _callback = std::function<void(const std::map<::mmx::addr_t, uint64_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
@@ -171,7 +171,7 @@ public:
 			const std::function<void(const uint64_t&)>& _callback = std::function<void(const uint64_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_utxo_list(const std::vector<::mmx::addr_t>& addresses = {}, 
+	uint64_t get_utxo_list(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& min_confirm = 1, 
 			const std::function<void(const std::vector<::mmx::utxo_entry_t>&)>& _callback = std::function<void(const std::vector<::mmx::utxo_entry_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	

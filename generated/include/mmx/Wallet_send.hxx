@@ -6,6 +6,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/spend_options_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -18,6 +19,7 @@ public:
 	uint64_t amount = 0;
 	::mmx::addr_t dst_addr;
 	::mmx::addr_t currency;
+	::mmx::spend_options_t options;
 	
 	typedef ::vnx::Value Super;
 	

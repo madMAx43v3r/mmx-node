@@ -501,10 +501,11 @@ uint64_t NodeAsyncClient::get_history_for(const std::vector<::mmx::addr_t>& addr
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_balance(const ::mmx::addr_t& address, const ::mmx::addr_t& contract, const std::function<void(const uint64_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_balance(const ::mmx::addr_t& address, const ::mmx::addr_t& contract, const uint32_t& min_confirm, const std::function<void(const uint64_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_balance::create();
 	_method->address = address;
 	_method->contract = contract;
+	_method->min_confirm = min_confirm;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
@@ -515,10 +516,11 @@ uint64_t NodeAsyncClient::get_balance(const ::mmx::addr_t& address, const ::mmx:
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_total_balance(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& contract, const std::function<void(const uint64_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_total_balance(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& contract, const uint32_t& min_confirm, const std::function<void(const uint64_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_total_balance::create();
 	_method->addresses = addresses;
 	_method->contract = contract;
+	_method->min_confirm = min_confirm;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
@@ -529,9 +531,10 @@ uint64_t NodeAsyncClient::get_total_balance(const std::vector<::mmx::addr_t>& ad
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_total_balances(const std::vector<::mmx::addr_t>& addresses, const std::function<void(const std::map<::mmx::addr_t, uint64_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_total_balances(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm, const std::function<void(const std::map<::mmx::addr_t, uint64_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_total_balances::create();
 	_method->addresses = addresses;
+	_method->min_confirm = min_confirm;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
@@ -555,9 +558,10 @@ uint64_t NodeAsyncClient::get_total_supply(const ::mmx::addr_t& contract, const 
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_utxo_list(const std::vector<::mmx::addr_t>& addresses, const std::function<void(const std::vector<::mmx::utxo_entry_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_utxo_list(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm, const std::function<void(const std::vector<::mmx::utxo_entry_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_utxo_list::create();
 	_method->addresses = addresses;
+	_method->min_confirm = min_confirm;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
