@@ -176,7 +176,7 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 			info->height = peak->height;
 			info->time_diff = peak->time_diff;
 			info->space_diff = peak->space_diff;
-			info->block_reward = calc_block_reward(peak);
+			info->block_reward = mmx::calc_block_reward(params, peak->space_diff);
 			info->utxo_count = utxo_map.size();
 			info->total_space = calc_total_netspace(params, peak->space_diff);
 			{
