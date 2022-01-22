@@ -2,6 +2,8 @@ package mmx;
 
 class ProofOfTime {
 	
+	// TODO: uint version;
+	
 	uint height;
 	
 	ulong start;		// [iters]

@@ -34,6 +34,7 @@ hash_t Transaction::calc_hash() const
 
 	buffer.reserve(4 * 1024);
 
+	// TODO: write_bytes(out, get_type_hash());
 	write_bytes(out, version);
 
 	for(const auto& tx : inputs) {
