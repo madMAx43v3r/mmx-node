@@ -7,4 +7,7 @@ struct order_t {
 	
 	mmx.txio_key_t bid_key;
 	
+	
+	double get_price() const;
+	
 }

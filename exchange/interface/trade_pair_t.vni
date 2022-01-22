@@ -5,4 +5,9 @@ struct trade_pair_t {
 	mmx.addr_t bid;
 	mmx.addr_t ask;
 	
+	
+	trade_pair_t reverse() const;
+	
+	static trade_pair_t create_ex(mmx.addr_t bid, mmx.addr_t ask);
+	
 }

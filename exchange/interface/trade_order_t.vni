@@ -7,6 +7,8 @@ struct trade_order_t {
 	
 	ulong bid;
 	
+	optional<ulong> ask;
+	
 	vector<txio_key_t> bid_keys;
 	
 	mmx.Solution* solution;

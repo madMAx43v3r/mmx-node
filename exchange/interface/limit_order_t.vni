@@ -6,7 +6,6 @@ import mmx.txio_key_t;
 struct limit_order_t {
 	
 	ulong ask;
-	ulong bid;
 	
 	vector<txio_key_t> bid_keys;
 	
