@@ -11,6 +11,11 @@
 
 namespace mmx {
 
+vnx::bool_t ProofOfSpace::is_valid() const
+{
+	return ksize > 0 && proof_bytes.size() <= 512;
+}
+
 mmx::hash_t ProofOfSpace::calc_hash() const
 {
 	std::vector<uint8_t> buffer;

@@ -25,6 +25,6 @@ class Transaction extends TransactionBase {
 	
 	Solution* get_solution(uint index) const;
 	
-	ulong calc_min_fee(ChainParams* params) const;
+	ulong calc_cost(ChainParams* params) const;
 	
 }

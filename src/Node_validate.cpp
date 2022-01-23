@@ -84,7 +84,7 @@ void Node::validate(std::shared_ptr<const Block> block) const
 					throw std::logic_error("missing exec_outputs");
 				}
 				total_fees += fees;
-				total_cost += tx->calc_min_fee(params);
+				total_cost += tx->calc_cost(params);
 			}
 		} catch(...) {
 #pragma omp critical
@@ -236,7 +236,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 	}
 	fee_amount = amounts[hash_t()];
 
-	const auto fee_needed = tx->calc_min_fee(params);
+	const auto fee_needed = tx->calc_cost(params);
 	if(fee_amount < fee_needed) {
 		throw std::logic_error("insufficient fee: " + std::to_string(fee_amount) + " < " + std::to_string(fee_needed));
 	}

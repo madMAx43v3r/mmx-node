@@ -233,7 +233,7 @@ public:
 				}
 				used_addr.insert(owner);
 			}
-			tx_fees = tx->calc_min_fee(params)
+			tx_fees = tx->calc_cost(params)
 					+ params->min_txfee_io	// for change output
 					+ used_addr.size() * params->min_txfee_sign;
 

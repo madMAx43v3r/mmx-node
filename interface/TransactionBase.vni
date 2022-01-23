@@ -7,4 +7,6 @@ class TransactionBase {
 	
 	hash_t calc_hash() const;
 	
+	ulong calc_cost(ChainParams* params) const;
+	
 }

@@ -498,7 +498,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 			continue;
 		}
 		try {
-			const auto cost = tx->calc_min_fee(params);
+			const auto cost = tx->calc_cost(params);
 			if(cost > params->max_block_cost) {
 				throw std::logic_error("tx cost > max_block_cost");
 			}

@@ -11,18 +11,19 @@
 
 namespace mmx {
 
-hash_t TransactionBase::calc_hash() const
-{
+hash_t TransactionBase::calc_hash() const {
 	return id;
 }
 
-void Transaction::finalize()
-{
+uint64_t TransactionBase::calc_cost(std::shared_ptr<const ChainParams> params) const {
+	return 0;
+}
+
+void Transaction::finalize() {
 	id = calc_hash();
 }
 
-vnx::bool_t Transaction::is_valid() const
-{
+vnx::bool_t Transaction::is_valid() const {
 	return calc_hash() == id;
 }
 
@@ -61,7 +62,7 @@ std::shared_ptr<const Solution> Transaction::get_solution(const uint32_t& index)
 	return nullptr;
 }
 
-uint64_t Transaction::calc_min_fee(std::shared_ptr<const ChainParams> params) const
+uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
 	if(!params) {
 		throw std::logic_error("!params");

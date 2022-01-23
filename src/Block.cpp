@@ -20,7 +20,7 @@ void Block::finalize()
 
 vnx::bool_t Block::is_valid() const
 {
-	return BlockHeader::is_valid() && calc_tx_hash() == tx_hash;
+	return BlockHeader::is_valid() && (!proof || proof->is_valid()) && calc_tx_hash() == tx_hash;
 }
 
 mmx::hash_t Block::calc_tx_hash() const
@@ -37,6 +37,17 @@ mmx::hash_t Block::calc_tx_hash() const
 	out.flush();
 
 	return hash_t(buffer);
+}
+
+uint64_t Block::calc_cost(std::shared_ptr<const ChainParams> params) const
+{
+	uint64_t cost = 0;
+	for(const auto& tx : tx_list) {
+		if(tx) {
+			cost += tx->calc_cost(params);
+		}
+	}
+	return cost;
 }
 
 std::shared_ptr<const BlockHeader> Block::get_header() const

@@ -11,6 +11,8 @@ class Block extends BlockHeader {
 	
 	hash_t calc_tx_hash() const;
 	
+	ulong calc_cost(ChainParams* params) const;
+	
 	BlockHeader* get_header() const;
 	
 }

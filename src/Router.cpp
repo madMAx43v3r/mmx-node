@@ -304,9 +304,10 @@ void Router::handle(std::shared_ptr<const Block> block)
 			auto& info = iter->second;
 			if(!info.received_from.empty()) {
 				if(auto peer = find_peer(info.received_from.front())) {
-					peer->tx_credits += tx_credits;
+					peer->tx_credits += tx->calc_cost(params);
 				}
 			}
+			info.did_relay = true;
 		}
 	}
 }
@@ -374,14 +375,15 @@ void Router::update()
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
 		peer->credits = std::min(peer->credits, max_node_credits);
-		peer->tx_credits = std::min(peer->tx_credits + tx_credits, max_node_tx_credits);
+		peer->tx_credits = std::min(peer->tx_credits + tx_credits, params->max_block_cost);
 
 		// check pending transactions
 		while(!peer->tx_queue.empty()) {
 			const auto& tx = peer->tx_queue.front();
-			if(peer->tx_credits >= tx_relay_cost) {
+			const auto tx_cost = tx->calc_cost(params);
+			if(peer->tx_credits >= tx_cost) {
 				if(relay_msg_hash(tx->id)) {
-					peer->tx_credits -= tx_relay_cost;
+					peer->tx_credits -= tx_cost;
 					relay(peer->client, tx, {node_type_e::FULL_NODE});
 					tx_counter++;
 				}
@@ -841,7 +843,10 @@ void Router::print_stats()
 void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> proof)
 {
 	const auto peer = find_peer(client);
-	if(!peer) {
+	if(!peer
+		|| proof->segments.size() < params->min_vdf_segments
+		|| proof->segments.size() > params->max_vdf_segments)
+	{
 		return;
 	}
 	const auto hash = proof->calc_hash();
@@ -874,6 +879,7 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 	}
 	const auto proof = block->proof;
 	if(!proof || !block->is_valid() || !block->farmer_sig
+		|| block->calc_cost(params) > params->max_block_cost
 		|| !proof->local_sig.verify(proof->local_key, proof->calc_hash())
 		|| !block->farmer_sig->verify(proof->farmer_key, block->hash))
 	{
@@ -917,7 +923,8 @@ void Router::on_proof(uint64_t client, std::shared_ptr<const ProofResponse> resp
 	if(!receive_msg_hash(hash, client, proof_relay_cost)) {
 		return;
 	}
-	if(!proof->local_sig.verify(proof->local_key, hash)) {
+	if(!proof->is_valid() || !proof->local_sig.verify(proof->local_key, hash))
+	{
 		if(auto peer = find_peer(client)) {
 			block_peers.insert(peer->address);
 			disconnect(client);
@@ -953,17 +960,19 @@ void Router::on_transaction(uint64_t client, std::shared_ptr<const Transaction> 
 	if(!peer) {
 		return;
 	}
-	if(!tx->is_valid()) {
+	const auto tx_cost = tx->calc_cost(params);
+	if(!tx->is_valid() || tx_cost > params->max_block_cost)
+	{
 		block_peers.insert(peer->address);
 		disconnect(client);
 		log(WARN) << "Banned peer " << peer->address << " because they sent us an invalid transaction.";
 		return;
 	}
 	if(do_relay) {
-		const bool has_credits = peer->tx_credits >= tx_relay_cost;
+		const bool has_credits = peer->tx_credits >= tx_cost;
 		if(has_credits) {
 			if(relay_msg_hash(tx->id)) {
-				peer->tx_credits -= tx_relay_cost;
+				peer->tx_credits -= tx_cost;
 				relay(client, tx, {node_type_e::FULL_NODE});
 				tx_counter++;
 			}

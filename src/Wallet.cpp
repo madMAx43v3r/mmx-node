@@ -88,7 +88,7 @@ hash_t Wallet::send(const uint32_t& index, const uint64_t& amount, const addr_t&
 	node->add_transaction(tx);
 	wallet->update_from(tx);
 
-	log(INFO) << "Sent " << amount << " with fee " << tx->calc_min_fee(params) << " to " << dst_addr << " (" << tx->id << ")";
+	log(INFO) << "Sent " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
 	return tx->id;
 }
 
@@ -119,7 +119,7 @@ hash_t Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 	node->add_transaction(tx);
 	wallet->update_from(tx);
 
-	log(INFO) << "Sent " << amount << " with fee " << tx->calc_min_fee(params) << " to " << dst_addr << " (" << tx->id << ")";
+	log(INFO) << "Sent " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
 	return tx->id;
 }
 
@@ -146,7 +146,7 @@ hash_t Wallet::mint(const uint32_t& index, const uint64_t& amount, const addr_t&
 	node->add_transaction(tx);
 	wallet->update_from(tx);
 
-	log(INFO) << "Minted " << amount << " with fee " << tx->calc_min_fee(params) << " to " << dst_addr << " (" << tx->id << ")";
+	log(INFO) << "Minted " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
 	return tx->id;
 }
 
@@ -163,7 +163,7 @@ hash_t Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> con
 	node->add_transaction(tx);
 	wallet->update_from(tx);
 
-	log(INFO) << "Deployed " << contract->get_type_name() << " with fee " << tx->calc_min_fee(params) << " as " << addr_t(tx->id) << " (" << tx->id << ")";
+	log(INFO) << "Deployed " << contract->get_type_name() << " with fee " << tx->calc_cost(params) << " as " << addr_t(tx->id) << " (" << tx->id << ")";
 	return tx->id;
 }
 
