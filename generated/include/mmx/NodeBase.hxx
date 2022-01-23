@@ -112,7 +112,7 @@ protected:
 	virtual vnx::optional<uint32_t> get_tx_height(const ::mmx::hash_t& id) const = 0;
 	virtual std::vector<::mmx::hash_t> get_tx_ids_at(const uint32_t& height) const = 0;
 	virtual void add_block(std::shared_ptr<const ::mmx::Block> block) = 0;
-	virtual void add_transaction(std::shared_ptr<const ::mmx::Transaction> tx) = 0;
+	virtual void add_transaction(std::shared_ptr<const ::mmx::Transaction> tx, const vnx::bool_t& pre_validate) = 0;
 	virtual std::shared_ptr<const ::mmx::Contract> get_contract(const ::mmx::addr_t& address) const = 0;
 	virtual std::vector<std::shared_ptr<const ::mmx::Contract>> get_contracts(const std::vector<::mmx::addr_t>& addresses) const = 0;
 	virtual std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts_owned(const std::vector<::mmx::addr_t>& owners) const = 0;

@@ -45,16 +45,14 @@ public:
 	uint32_t min_sync_peers = 2;
 	uint32_t max_sync_peers = 4;
 	uint32_t max_hash_cache = 100000;
-	uint32_t tx_credits = 8;
+	uint32_t tx_credits = 10000;
 	uint32_t vdf_credits = 1024;
 	uint32_t block_credits = 256;
 	uint32_t proof_credits = 10;
-	uint32_t tx_relay_cost = 1;
 	uint32_t vdf_relay_cost = 768;
 	uint32_t proof_relay_cost = 2;
 	uint32_t block_relay_cost = 8;
 	uint32_t max_node_credits = 1024;
-	uint32_t max_node_tx_credits = 1024;
 	uint32_t max_farmer_credits = 32;
 	uint32_t node_version = 101;
 	::mmx::node_type_e mode = ::mmx::node_type_e::FULL_NODE;

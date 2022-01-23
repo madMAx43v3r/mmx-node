@@ -3,26 +3,33 @@
 
 #include <mmx/exchange/package.hxx>
 #include <mmx/exchange/ServerClient.hxx>
+#include <mmx/Block.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/exchange/Server_approve.hxx>
 #include <mmx/exchange/Server_approve_return.hxx>
+#include <mmx/exchange/Server_cancel.hxx>
+#include <mmx/exchange/Server_cancel_return.hxx>
 #include <mmx/exchange/Server_execute.hxx>
 #include <mmx/exchange/Server_execute_return.hxx>
 #include <mmx/exchange/Server_get_orders.hxx>
 #include <mmx/exchange/Server_get_orders_return.hxx>
 #include <mmx/exchange/Server_get_price.hxx>
 #include <mmx/exchange/Server_get_price_return.hxx>
+#include <mmx/exchange/Server_match.hxx>
+#include <mmx/exchange/Server_match_return.hxx>
 #include <mmx/exchange/Server_place.hxx>
 #include <mmx/exchange/Server_place_return.hxx>
+#include <mmx/exchange/Server_reject.hxx>
+#include <mmx/exchange/Server_reject_return.hxx>
 #include <mmx/exchange/amount_t.hxx>
 #include <mmx/exchange/limit_order_t.hxx>
 #include <mmx/exchange/order_t.hxx>
 #include <mmx/exchange/trade_order_t.hxx>
 #include <mmx/exchange/trade_pair_t.hxx>
+#include <mmx/hash_t.hpp>
 #include <mmx/txio_key_t.hxx>
 #include <mmx/ulong_fraction_t.hxx>
-#include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_object.hxx>
@@ -42,6 +49,7 @@
 #include <vnx/ModuleInterface_vnx_stop.hxx>
 #include <vnx/ModuleInterface_vnx_stop_return.hxx>
 #include <vnx/TopicPtr.hpp>
+#include <vnx/addons/MsgServer.h>
 
 #include <vnx/Generic.hxx>
 #include <vnx/vnx.h>
@@ -167,38 +175,24 @@ vnx::bool_t ServerClient::vnx_self_test() {
 	}
 }
 
-void ServerClient::approve(std::shared_ptr<const ::mmx::Transaction> tx) {
-	auto _method = ::mmx::exchange::Server_approve::create();
-	_method->tx = tx;
-	vnx_request(_method, false);
-}
-
-void ServerClient::approve_async(std::shared_ptr<const ::mmx::Transaction> tx) {
-	auto _method = ::mmx::exchange::Server_approve::create();
-	_method->tx = tx;
-	vnx_request(_method, true);
-}
-
-void ServerClient::place(const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::limit_order_t& orders) {
-	auto _method = ::mmx::exchange::Server_place::create();
-	_method->pair = pair;
-	_method->orders = orders;
-	vnx_request(_method, false);
-}
-
-void ServerClient::place_async(const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::limit_order_t& orders) {
-	auto _method = ::mmx::exchange::Server_place::create();
-	_method->pair = pair;
-	_method->orders = orders;
-	vnx_request(_method, true);
-}
-
-std::shared_ptr<const ::mmx::Transaction> ServerClient::execute(const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::trade_order_t& orders) {
+void ServerClient::execute(std::shared_ptr<const ::mmx::Transaction> tx) {
 	auto _method = ::mmx::exchange::Server_execute::create();
+	_method->tx = tx;
+	vnx_request(_method, false);
+}
+
+void ServerClient::execute_async(std::shared_ptr<const ::mmx::Transaction> tx) {
+	auto _method = ::mmx::exchange::Server_execute::create();
+	_method->tx = tx;
+	vnx_request(_method, true);
+}
+
+std::shared_ptr<const ::mmx::Transaction> ServerClient::match(const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::trade_order_t& orders) {
+	auto _method = ::mmx::exchange::Server_match::create();
 	_method->pair = pair;
 	_method->orders = orders;
 	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Server_execute_return>(_return_value)) {
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Server_match_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Transaction>>();
@@ -232,6 +226,64 @@ std::vector<::mmx::exchange::order_t> ServerClient::get_orders(const ::mmx::exch
 	} else {
 		throw std::logic_error("ServerClient: invalid return value");
 	}
+}
+
+void ServerClient::place(const uint64_t& client, const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::limit_order_t& orders) {
+	auto _method = ::mmx::exchange::Server_place::create();
+	_method->client = client;
+	_method->pair = pair;
+	_method->orders = orders;
+	vnx_request(_method, false);
+}
+
+void ServerClient::place_async(const uint64_t& client, const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::limit_order_t& orders) {
+	auto _method = ::mmx::exchange::Server_place::create();
+	_method->client = client;
+	_method->pair = pair;
+	_method->orders = orders;
+	vnx_request(_method, true);
+}
+
+void ServerClient::cancel(const uint64_t& client, const std::vector<::mmx::txio_key_t>& orders) {
+	auto _method = ::mmx::exchange::Server_cancel::create();
+	_method->client = client;
+	_method->orders = orders;
+	vnx_request(_method, false);
+}
+
+void ServerClient::cancel_async(const uint64_t& client, const std::vector<::mmx::txio_key_t>& orders) {
+	auto _method = ::mmx::exchange::Server_cancel::create();
+	_method->client = client;
+	_method->orders = orders;
+	vnx_request(_method, true);
+}
+
+void ServerClient::reject(const uint64_t& client, const ::mmx::hash_t& txid) {
+	auto _method = ::mmx::exchange::Server_reject::create();
+	_method->client = client;
+	_method->txid = txid;
+	vnx_request(_method, false);
+}
+
+void ServerClient::reject_async(const uint64_t& client, const ::mmx::hash_t& txid) {
+	auto _method = ::mmx::exchange::Server_reject::create();
+	_method->client = client;
+	_method->txid = txid;
+	vnx_request(_method, true);
+}
+
+void ServerClient::approve(const uint64_t& client, std::shared_ptr<const ::mmx::Transaction> tx) {
+	auto _method = ::mmx::exchange::Server_approve::create();
+	_method->client = client;
+	_method->tx = tx;
+	vnx_request(_method, false);
+}
+
+void ServerClient::approve_async(const uint64_t& client, std::shared_ptr<const ::mmx::Transaction> tx) {
+	auto _method = ::mmx::exchange::Server_approve::create();
+	_method->client = client;
+	_method->tx = tx;
+	vnx_request(_method, true);
 }
 
 

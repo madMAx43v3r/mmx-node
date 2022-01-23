@@ -6,6 +6,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/BlockHeader.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/TransactionBase.hxx>
 #include <mmx/hash_t.hpp>
 
@@ -33,6 +34,7 @@ public:
 	virtual void finalize();
 	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_tx_hash() const;
+	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	virtual std::shared_ptr<const ::mmx::BlockHeader> get_header() const;
 	
 	static std::shared_ptr<Block> create();

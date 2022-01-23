@@ -402,15 +402,17 @@ void NodeClient::add_block_async(std::shared_ptr<const ::mmx::Block> block) {
 	vnx_request(_method, true);
 }
 
-void NodeClient::add_transaction(std::shared_ptr<const ::mmx::Transaction> tx) {
+void NodeClient::add_transaction(std::shared_ptr<const ::mmx::Transaction> tx, const vnx::bool_t& pre_validate) {
 	auto _method = ::mmx::Node_add_transaction::create();
 	_method->tx = tx;
+	_method->pre_validate = pre_validate;
 	vnx_request(_method, false);
 }
 
-void NodeClient::add_transaction_async(std::shared_ptr<const ::mmx::Transaction> tx) {
+void NodeClient::add_transaction_async(std::shared_ptr<const ::mmx::Transaction> tx, const vnx::bool_t& pre_validate) {
 	auto _method = ::mmx::Node_add_transaction::create();
 	_method->tx = tx;
+	_method->pre_validate = pre_validate;
 	vnx_request(_method, true);
 }
 

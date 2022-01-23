@@ -12,7 +12,7 @@ namespace mmx {
 
 
 const vnx::Hash64 peer_info_t::VNX_TYPE_HASH(0xce0ff32e89625afbull);
-const vnx::Hash64 peer_info_t::VNX_CODE_HASH(0xc5f03cc390dab5ddull);
+const vnx::Hash64 peer_info_t::VNX_CODE_HASH(0xb66fe269af179b4cull);
 
 vnx::Hash64 peer_info_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -245,7 +245,7 @@ std::shared_ptr<vnx::TypeCode> peer_info_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.peer_info_t";
 	type_code->type_hash = vnx::Hash64(0xce0ff32e89625afbull);
-	type_code->code_hash = vnx::Hash64(0xc5f03cc390dab5ddull);
+	type_code->code_hash = vnx::Hash64(0xb66fe269af179b4cull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::peer_info_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<peer_info_t>>(); };
@@ -268,13 +268,13 @@ std::shared_ptr<vnx::TypeCode> peer_info_t::static_create_type_code() {
 		auto& field = type_code->fields[2];
 		field.data_size = 4;
 		field.name = "credits";
-		field.code = {7};
+		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[3];
-		field.data_size = 4;
+		field.data_size = 8;
 		field.name = "tx_credits";
-		field.code = {7};
+		field.code = {4};
 	}
 	{
 		auto& field = type_code->fields[4];
@@ -437,19 +437,19 @@ void write(TypeOutput& out, const ::mmx::peer_info_t& value, const TypeCode* typ
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(55);
+	char* const _buf = out.write(59);
 	vnx::write_value(_buf + 0, value.credits);
 	vnx::write_value(_buf + 4, value.tx_credits);
-	vnx::write_value(_buf + 8, value.ping_ms);
-	vnx::write_value(_buf + 12, value.height);
-	vnx::write_value(_buf + 16, value.version);
-	vnx::write_value(_buf + 20, value.recv_timeout_ms);
-	vnx::write_value(_buf + 28, value.connect_time_ms);
-	vnx::write_value(_buf + 36, value.bytes_send);
-	vnx::write_value(_buf + 44, value.bytes_recv);
-	vnx::write_value(_buf + 52, value.is_synced);
-	vnx::write_value(_buf + 53, value.is_blocked);
-	vnx::write_value(_buf + 54, value.is_outbound);
+	vnx::write_value(_buf + 12, value.ping_ms);
+	vnx::write_value(_buf + 16, value.height);
+	vnx::write_value(_buf + 20, value.version);
+	vnx::write_value(_buf + 24, value.recv_timeout_ms);
+	vnx::write_value(_buf + 32, value.connect_time_ms);
+	vnx::write_value(_buf + 40, value.bytes_send);
+	vnx::write_value(_buf + 48, value.bytes_recv);
+	vnx::write_value(_buf + 56, value.is_synced);
+	vnx::write_value(_buf + 57, value.is_blocked);
+	vnx::write_value(_buf + 58, value.is_outbound);
 	vnx::write(out, value.address, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.type, type_code, type_code->fields[1].code.data());
 }

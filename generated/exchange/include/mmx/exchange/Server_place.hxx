@@ -16,6 +16,7 @@ namespace exchange {
 class Server_place : public ::vnx::Value {
 public:
 	
+	uint64_t client = 0;
 	::mmx::exchange::trade_pair_t pair;
 	::mmx::exchange::limit_order_t orders;
 	

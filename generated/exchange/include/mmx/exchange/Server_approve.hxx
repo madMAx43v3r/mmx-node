@@ -15,6 +15,7 @@ namespace exchange {
 class Server_approve : public ::vnx::Value {
 public:
 	
+	uint64_t client = 0;
 	std::shared_ptr<const ::mmx::Transaction> tx;
 	
 	typedef ::vnx::Value Super;

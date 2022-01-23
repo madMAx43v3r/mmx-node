@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_add_transaction::VNX_TYPE_HASH(0xd9782531c0e3f766ull);
-const vnx::Hash64 Node_add_transaction::VNX_CODE_HASH(0x34d45cf206a034d1ull);
+const vnx::Hash64 Node_add_transaction::VNX_CODE_HASH(0xe79464bfffb7995bull);
 
 vnx::Hash64 Node_add_transaction::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,12 +48,14 @@ void Node_add_transaction::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Node_add_transaction;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, tx);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, pre_validate);
 	_visitor.type_end(*_type_code);
 }
 
 void Node_add_transaction::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Node.add_transaction\"";
 	_out << ", \"tx\": "; vnx::write(_out, tx);
+	_out << ", \"pre_validate\": "; vnx::write(_out, pre_validate);
 	_out << "}";
 }
 
@@ -67,12 +69,15 @@ vnx::Object Node_add_transaction::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Node.add_transaction";
 	_object["tx"] = tx;
+	_object["pre_validate"] = pre_validate;
 	return _object;
 }
 
 void Node_add_transaction::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "tx") {
+		if(_entry.first == "pre_validate") {
+			_entry.second.to(pre_validate);
+		} else if(_entry.first == "tx") {
 			_entry.second.to(tx);
 		}
 	}
@@ -82,12 +87,17 @@ vnx::Variant Node_add_transaction::get_field(const std::string& _name) const {
 	if(_name == "tx") {
 		return vnx::Variant(tx);
 	}
+	if(_name == "pre_validate") {
+		return vnx::Variant(pre_validate);
+	}
 	return vnx::Variant();
 }
 
 void Node_add_transaction::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "tx") {
 		_value.to(tx);
+	} else if(_name == "pre_validate") {
+		_value.to(pre_validate);
 	} else {
 		throw std::logic_error("no such field: '" + _name + "'");
 	}
@@ -117,19 +127,25 @@ std::shared_ptr<vnx::TypeCode> Node_add_transaction::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.add_transaction";
 	type_code->type_hash = vnx::Hash64(0xd9782531c0e3f766ull);
-	type_code->code_hash = vnx::Hash64(0x34d45cf206a034d1ull);
+	type_code->code_hash = vnx::Hash64(0xe79464bfffb7995bull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
 	type_code->native_size = sizeof(::mmx::Node_add_transaction);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Node_add_transaction>(); };
 	type_code->return_type = ::mmx::Node_add_transaction_return::static_get_type_code();
-	type_code->fields.resize(1);
+	type_code->fields.resize(2);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "tx";
 		field.code = {16};
+	}
+	{
+		auto& field = type_code->fields[1];
+		field.data_size = 1;
+		field.name = "pre_validate";
+		field.code = {31};
 	}
 	type_code->build();
 	return type_code;
@@ -171,8 +187,11 @@ void read(TypeInput& in, ::mmx::Node_add_transaction& value, const TypeCode* typ
 			}
 		}
 	}
-	in.read(type_code->total_field_size);
+	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
+		if(const auto* const _field = type_code->field_map[1]) {
+			vnx::read_value(_buf + _field->offset, value.pre_validate, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -195,6 +214,8 @@ void write(TypeOutput& out, const ::mmx::Node_add_transaction& value, const Type
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
+	char* const _buf = out.write(1);
+	vnx::write_value(_buf + 0, value.pre_validate);
 	vnx::write(out, value.tx, type_code, type_code->fields[0].code.data());
 }
 

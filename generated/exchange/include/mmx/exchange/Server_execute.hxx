@@ -5,8 +5,7 @@
 #define INCLUDE_mmx_exchange_Server_execute_HXX_
 
 #include <mmx/exchange/package.hxx>
-#include <mmx/exchange/trade_order_t.hxx>
-#include <mmx/exchange/trade_pair_t.hxx>
+#include <mmx/Transaction.hxx>
 #include <vnx/Value.h>
 
 
@@ -16,8 +15,7 @@ namespace exchange {
 class Server_execute : public ::vnx::Value {
 public:
 	
-	::mmx::exchange::trade_pair_t pair;
-	::mmx::exchange::trade_order_t orders;
+	std::shared_ptr<const ::mmx::Transaction> tx;
 	
 	typedef ::vnx::Value Super;
 	

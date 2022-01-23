@@ -3,6 +3,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/TransactionBase.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/hash_t.hpp>
 #include <vnx/Value.h>
 

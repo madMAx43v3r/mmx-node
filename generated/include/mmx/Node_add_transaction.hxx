@@ -15,6 +15,7 @@ class Node_add_transaction : public ::vnx::Value {
 public:
 	
 	std::shared_ptr<const ::mmx::Transaction> tx;
+	vnx::bool_t pre_validate = 0;
 	
 	typedef ::vnx::Value Super;
 	

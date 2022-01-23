@@ -91,9 +91,9 @@ public:
 	
 	void add_block_async(std::shared_ptr<const ::mmx::Block> block = nullptr);
 	
-	void add_transaction(std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
+	void add_transaction(std::shared_ptr<const ::mmx::Transaction> tx = nullptr, const vnx::bool_t& pre_validate = 0);
 	
-	void add_transaction_async(std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
+	void add_transaction_async(std::shared_ptr<const ::mmx::Transaction> tx = nullptr, const vnx::bool_t& pre_validate = 0);
 	
 	std::shared_ptr<const ::mmx::Contract> get_contract(const ::mmx::addr_t& address = ::mmx::addr_t());
 	

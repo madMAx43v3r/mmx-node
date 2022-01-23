@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_exchange_ServerBase_HXX_
 
 #include <mmx/exchange/package.hxx>
+#include <mmx/Block.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/exchange/amount_t.hxx>
@@ -12,21 +13,22 @@
 #include <mmx/exchange/order_t.hxx>
 #include <mmx/exchange/trade_order_t.hxx>
 #include <mmx/exchange/trade_pair_t.hxx>
+#include <mmx/hash_t.hpp>
 #include <mmx/txio_key_t.hxx>
 #include <mmx/ulong_fraction_t.hxx>
-#include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
+#include <vnx/addons/MsgServer.h>
 
 
 namespace mmx {
 namespace exchange {
 
-class ServerBase : public ::vnx::Module {
+class ServerBase : public ::vnx::addons::MsgServer {
 public:
 	
 	::vnx::TopicPtr input_blocks = "node.verified_blocks";
 	
-	typedef ::vnx::Module Super;
+	typedef ::vnx::addons::MsgServer Super;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -59,13 +61,18 @@ public:
 protected:
 	using Super::handle;
 	
-	virtual void approve(std::shared_ptr<const ::mmx::Transaction> tx) = 0;
-	virtual void place_async(const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::limit_order_t& orders, const vnx::request_id_t& _request_id) = 0;
-	void place_async_return(const vnx::request_id_t& _request_id) const;
-	virtual void execute_async(const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::trade_order_t& orders, const vnx::request_id_t& _request_id) const = 0;
-	void execute_async_return(const vnx::request_id_t& _request_id, const std::shared_ptr<const ::mmx::Transaction>& _ret_0) const;
+	virtual void execute_async(std::shared_ptr<const ::mmx::Transaction> tx, const vnx::request_id_t& _request_id) = 0;
+	void execute_async_return(const vnx::request_id_t& _request_id) const;
+	virtual void match_async(const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::trade_order_t& orders, const vnx::request_id_t& _request_id) const = 0;
+	void match_async_return(const vnx::request_id_t& _request_id, const std::shared_ptr<const ::mmx::Transaction>& _ret_0) const;
 	virtual std::vector<::mmx::exchange::order_t> get_orders(const ::mmx::exchange::trade_pair_t& pair) const = 0;
 	virtual ::mmx::ulong_fraction_t get_price(const ::mmx::addr_t& want, const ::mmx::exchange::amount_t& have) const = 0;
+	virtual void place_async(const uint64_t& client, const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::limit_order_t& orders, const vnx::request_id_t& _request_id) = 0;
+	void place_async_return(const vnx::request_id_t& _request_id) const;
+	virtual void cancel(const uint64_t& client, const std::vector<::mmx::txio_key_t>& orders) = 0;
+	virtual void reject(const uint64_t& client, const ::mmx::hash_t& txid) = 0;
+	virtual void approve(const uint64_t& client, std::shared_ptr<const ::mmx::Transaction> tx) = 0;
+	virtual void handle(std::shared_ptr<const ::mmx::Block> _value) {}
 	
 	void vnx_handle_switch(std::shared_ptr<const vnx::Value> _value) override;
 	std::shared_ptr<vnx::Value> vnx_call_switch(std::shared_ptr<const vnx::Value> _method, const vnx::request_id_t& _request_id) override;

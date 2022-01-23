@@ -135,6 +135,7 @@ std::shared_ptr<vnx::TypeCode> Server_get_orders::static_create_type_code() {
 		field.name = "pair";
 		field.code = {19, 0};
 	}
+	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();
 	return type_code;
 }

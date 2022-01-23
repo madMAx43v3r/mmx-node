@@ -408,9 +408,10 @@ uint64_t NodeAsyncClient::add_block(std::shared_ptr<const ::mmx::Block> block, c
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::add_transaction(std::shared_ptr<const ::mmx::Transaction> tx, const std::function<void()>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::add_transaction(std::shared_ptr<const ::mmx::Transaction> tx, const vnx::bool_t& pre_validate, const std::function<void()>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_add_transaction::create();
 	_method->tx = tx;
+	_method->pre_validate = pre_validate;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);

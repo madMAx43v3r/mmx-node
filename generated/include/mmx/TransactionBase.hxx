@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_TransactionBase_HXX_
 
 #include <mmx/package.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/hash_t.hpp>
 #include <vnx/Value.h>
 
@@ -30,6 +31,7 @@ public:
 	const vnx::TypeCode* get_type_code() const override;
 	
 	virtual ::mmx::hash_t calc_hash() const;
+	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	
 	static std::shared_ptr<TransactionBase> create();
 	std::shared_ptr<vnx::Value> clone() const override;
