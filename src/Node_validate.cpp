@@ -127,7 +127,6 @@ std::shared_ptr<const Context> Node::create_context(const addr_t& address, std::
 			context->depends[addr] = pubkey;
 		}
 	}
-	context->amounts = get_total_balances({address}, 1);
 	return context;
 }
 
