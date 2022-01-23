@@ -73,7 +73,7 @@ protected:
 
 	void add_block(std::shared_ptr<const Block> block) override;
 
-	void add_transaction(std::shared_ptr<const Transaction> tx) override;
+	void add_transaction(std::shared_ptr<const Transaction> tx, const vnx::bool_t& pre_validate = false) override;
 
 	uint64_t get_balance(const addr_t& address, const addr_t& contract, const uint32_t& min_confirm) const override;
 
@@ -174,8 +174,11 @@ private:
 
 	void validate(std::shared_ptr<const Block> block) const;
 
+	void validate(std::shared_ptr<const Transaction> tx) const;
+
 	std::shared_ptr<const Context> create_context(
-			std::shared_ptr<const Contract> contract, std::shared_ptr<const Context> base, std::shared_ptr<const Transaction> tx) const;
+			const addr_t& address, std::shared_ptr<const Contract> contract,
+			std::shared_ptr<const Context> base, std::shared_ptr<const Transaction> tx) const;
 
 	std::shared_ptr<const Transaction> validate(std::shared_ptr<const Transaction> tx, std::shared_ptr<const Context> context,
 												std::shared_ptr<const Block> base, uint64_t& fee_amount) const;

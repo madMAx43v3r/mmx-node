@@ -85,5 +85,20 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 	return fee;
 }
 
+void Transaction::merge_sign(std::shared_ptr<const Transaction> tx)
+{
+	// TODO
+}
+
+vnx::bool_t Transaction::is_signed() const
+{
+	for(const auto& in : inputs) {
+		if(in.solution >= solutions.size()) {
+			return false;
+		}
+	}
+	return true;
+}
+
 
 } // mmx

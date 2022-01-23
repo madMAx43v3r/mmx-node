@@ -1,0 +1,12 @@
+package mmx.exchange;
+
+module Client {
+	
+	vnx.TopicPtr input_blocks = "node.verified_blocks";
+	
+	
+	mmx.Transaction* approve(mmx.Transaction* tx) const;
+	
+	void handle(mmx.Block sample);
+	
+}

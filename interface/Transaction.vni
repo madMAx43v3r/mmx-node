@@ -19,7 +19,11 @@ class Transaction extends TransactionBase {
 	
 	void finalize();
 	
+	void merge_sign(Transaction* tx);
+	
 	bool is_valid() const;
+	
+	bool is_signed() const;
 	
 	hash_t calc_hash() const;
 	

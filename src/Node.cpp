@@ -632,7 +632,7 @@ void Node::add_block(std::shared_ptr<const Block> block)
 	}
 }
 
-void Node::add_transaction(std::shared_ptr<const Transaction> tx)
+void Node::add_transaction(std::shared_ptr<const Transaction> tx, const vnx::bool_t& pre_validate)
 {
 	if(tx_pool.size() >= tx_pool_limit) {
 		return;
@@ -642,6 +642,9 @@ void Node::add_transaction(std::shared_ptr<const Transaction> tx)
 	}
 	if(!tx->is_valid()) {
 		return;
+	}
+	if(pre_validate) {
+		validate(tx);
 	}
 	tx_pool[tx->id] = tx;
 

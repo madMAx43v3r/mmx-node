@@ -104,7 +104,16 @@ void Node::validate(std::shared_ptr<const Block> block) const
 	}
 }
 
-std::shared_ptr<const Context> Node::create_context(std::shared_ptr<const Contract> contract,
+void Node::validate(std::shared_ptr<const Transaction> tx) const
+{
+	auto context = Context::create();
+	context->height = get_height();
+
+	uint64_t fee = 0;
+	validate(tx, context, nullptr, fee);
+}
+
+std::shared_ptr<const Context> Node::create_context(const addr_t& address, std::shared_ptr<const Contract> contract,
 													std::shared_ptr<const Context> base, std::shared_ptr<const Transaction> tx) const
 {
 	auto context = vnx::clone(base);
@@ -118,6 +127,7 @@ std::shared_ptr<const Context> Node::create_context(std::shared_ptr<const Contra
 			context->depends[addr] = pubkey;
 		}
 	}
+	context->amounts = get_total_balances({address}, 1);
 	return context;
 }
 
@@ -181,7 +191,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 			spend->key = in.prev;
 			spend->utxo = utxo;
 
-			const auto outputs = contract->validate(spend, create_context(contract, context, tx));
+			const auto outputs = contract->validate(spend, create_context(utxo.address, contract, context, tx));
 			exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
 
 			amounts[utxo.contract] += utxo.amount;
@@ -193,7 +203,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 			throw std::logic_error("invalid operation");
 		}
 		if(auto contract = get_contract(op->address)) {
-			const auto outputs = contract->validate(op, create_context(contract, context, tx));
+			const auto outputs = contract->validate(op, create_context(op->address, contract, context, tx));
 			exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
 		} else {
 			throw std::logic_error("no such contract");

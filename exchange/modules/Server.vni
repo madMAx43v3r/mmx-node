@@ -1,23 +1,36 @@
 package mmx.exchange;
 
+import mmx.hash_t;
 import mmx.addr_t;
 import mmx.txio_key_t;
 import mmx.ulong_fraction_t;
 import mmx.Transaction;
 
-module Server {
+module Server extends vnx.addons.MsgServer {
 	
 	vnx.TopicPtr input_blocks = "node.verified_blocks";
 	
 	
-	void approve(Transaction* tx);
+	@Permission(mmx.permission_e.PUBLIC)
+	void execute(Transaction* tx) async;
 	
-	void place(trade_pair_t pair, limit_order_t orders) async;
+	@Permission(mmx.permission_e.PUBLIC)
+	Transaction* match(trade_pair_t pair, trade_order_t orders) const async;
 	
-	Transaction* execute(trade_pair_t pair, trade_order_t orders) const async;
-	
+	@Permission(mmx.permission_e.PUBLIC)
 	vector<order_t> get_orders(trade_pair_t pair) const;
 	
+	@Permission(mmx.permission_e.PUBLIC)
 	ulong_fraction_t get_price(addr_t want, amount_t have) const;
+	
+	void place(ulong client, trade_pair_t pair, limit_order_t orders) async;
+	
+	void cancel(ulong client, vector<txio_key_t> orders);
+	
+	void reject(ulong client, hash_t txid);
+	
+	void approve(ulong client, Transaction* tx);
+	
+	void handle(mmx.Block sample);
 	
 }

@@ -1,5 +1,0 @@
-package mmx.exchange;
-
-module Router extends vnx.addons.MsgServer {
-	
-}

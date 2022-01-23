@@ -85,7 +85,7 @@ module Node implements vnx.addons.HttpComponent {
 	
 	void add_block(Block* block);
 	
-	void add_transaction(Transaction* tx);
+	void add_transaction(Transaction* tx, bool pre_validate);
 	
 	@Permission(permission_e.PUBLIC)
 	Contract* get_contract(addr_t address) const;
