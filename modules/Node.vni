@@ -24,6 +24,7 @@ module Node implements vnx.addons.HttpComponent {
 	
 	uint max_history = 1000;
 	uint tx_pool_limit = 1000000;
+	uint max_contract_cache = 1000;
 	uint max_fork_length = 100000;			// to keep in memory at most
 	
 	uint max_sync_jobs = 64;				// number of parallel requests

@@ -249,7 +249,7 @@ void Node::verify_vdf_failed(std::shared_ptr<const ProofOfTime> proof)
 
 void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) const noexcept
 {
-	std::lock_guard<std::mutex> lock(vdf_mutex);
+	std::lock_guard lock(vdf_mutex);
 
 	const auto time_begin = vnx::get_wall_time_micros();
 	try {

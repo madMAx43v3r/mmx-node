@@ -510,10 +510,27 @@ std::vector<tx_entry_t> Node::get_history_for(const std::vector<addr_t>& address
 std::shared_ptr<const Contract> Node::get_contract(const addr_t& address) const
 {
 	// THREAD SAFE
-	if(auto tx = get_transaction(address)) {
-		return tx->deploy;
+	{
+		std::shared_lock lock(cache_mutex);
+		auto iter = contract_map.find(address);
+		if(iter != contract_map.end()) {
+			return iter->second;
+		}
 	}
-	return nullptr;
+	std::shared_ptr<const Contract> contract;
+	if(auto tx = get_transaction(address)) {
+		contract = tx->deploy;
+	}
+	{
+		std::unique_lock lock(cache_mutex);
+		contract_map[address] = contract;
+		contract_cache_queue.push(address);
+		if(contract_cache_queue.size() > max_contract_cache) {
+			contract_map.erase(contract_cache_queue.front());
+			contract_cache_queue.pop();
+		}
+	}
+	return contract;
 }
 
 std::vector<std::shared_ptr<const Contract>> Node::get_contracts(const std::vector<addr_t>& addresses) const
@@ -853,7 +870,8 @@ void Node::handle(std::shared_ptr<const ProofResponse> value)
 
 void Node::print_stats()
 {
-	 log(INFO) << tx_pool.size() << " tx pool, " << utxo_map.size() << " utxo, " << change_log.size() << " / " << fork_tree.size() << " blocks";
+	 log(INFO) << tx_pool.size() << " tx pool, " << contract_map.size() << " contracts, "
+			 << utxo_map.size() << " utxo, " << change_log.size() << " / " << fork_tree.size() << " blocks";
 }
 
 void Node::on_stuck_timeout()

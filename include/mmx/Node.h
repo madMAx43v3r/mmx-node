@@ -21,6 +21,8 @@
 #include <vnx/rocksdb/multi_table.h>
 #include <vnx/addons/HttpInterface.h>
 
+#include <shared_mutex>
+
 
 namespace mmx {
 
@@ -299,6 +301,10 @@ private:
 	std::unordered_set<uint32_t> vdf_verify_pending;						// height
 	std::shared_ptr<OCL_VDF> opencl_vdf[2];
 	std::shared_ptr<vnx::ThreadPool> vdf_threads;
+
+	mutable std::shared_mutex cache_mutex;
+	mutable std::queue<addr_t> contract_cache_queue;
+	mutable std::unordered_map<addr_t, std::shared_ptr<const Contract>> contract_map;		// [addr => contract] (cached only)
 
 	friend class vnx::addons::HttpInterface<Node>;
 
