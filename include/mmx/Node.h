@@ -284,6 +284,10 @@ private:
 	std::shared_ptr<vnx::File> block_chain;
 	std::unordered_map<uint32_t, std::pair<int64_t, hash_t>> block_index;			// [height => [file offset, block hash]]
 
+	mutable std::shared_mutex cache_mutex;
+	mutable std::queue<addr_t> contract_cache_queue;
+	mutable std::unordered_map<addr_t, std::shared_ptr<const Contract>> contract_map;		// [addr => contract] (cached only)
+
 	uint32_t sync_pos = 0;									// current sync height
 	uint32_t sync_retry = 0;
 	std::set<uint32_t> sync_pending;						// set of heights
@@ -298,13 +302,9 @@ private:
 	std::shared_ptr<vnx::addons::HttpInterface<Node>> http;
 
 	mutable std::mutex vdf_mutex;
-	std::unordered_set<uint32_t> vdf_verify_pending;						// height
+	std::unordered_set<uint32_t> vdf_verify_pending;		// height
 	std::shared_ptr<OCL_VDF> opencl_vdf[2];
 	std::shared_ptr<vnx::ThreadPool> vdf_threads;
-
-	mutable std::shared_mutex cache_mutex;
-	mutable std::queue<addr_t> contract_cache_queue;
-	mutable std::unordered_map<addr_t, std::shared_ptr<const Contract>> contract_map;		// [addr => contract] (cached only)
 
 	friend class vnx::addons::HttpInterface<Node>;
 
