@@ -20,9 +20,73 @@ Server::Server(const std::string& _vnx_name)
 	params = mmx::get_params();
 }
 
+void Server::init()
+{
+	vnx::open_pipe(vnx_get_id(), this, UNLIMITED);
+}
+
 void Server::main()
 {
+	subscribe(input_blocks, 10000);
+
+	node = std::make_shared<NodeAsyncClient>(node_server);
+	server = std::make_shared<vnx::GenericAsyncClient>(vnx_get_id());
+	add_async_client(node);
+	add_async_client(server);
+
 	Super::main();
+}
+
+void Server::handle(std::shared_ptr<const Block> block)
+{
+	for(const auto& base : block->tx_list) {
+		if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
+			for(const auto& in : tx->inputs) {
+				if(utxo_map.erase(in.prev)) {
+					lock_map.erase(in.prev);
+				}
+			}
+		}
+	}
+	for(const auto& entry : trade_map) {
+		const auto& book = entry.second;
+		for(auto iter = book->orders.begin(); iter != book->orders.end();) {
+			if(utxo_map.count(iter->second.bid_key)) {
+				iter++;
+			} else {
+				iter = book->orders.erase(iter);
+			}
+		}
+	}
+}
+
+void Server::cancel(const uint64_t& client, const std::vector<txio_key_t>& orders)
+{
+	const auto peer = get_peer(client);
+	for(const auto& key : orders) {
+		auto iter = peer->order_set.find(key);
+		if(iter != peer->order_set.end()) {
+			cancel_set.insert(key);
+			peer->order_set.erase(iter);
+		}
+	}
+}
+
+void Server::reject(const uint64_t& client, const hash_t& txid)
+{
+	auto iter = pending.find(txid);
+	if(iter == pending.end()) {
+		throw std::logic_error("no such trade");
+	}
+	auto job = iter->second;
+	if(job->pending_clients.count(client)) {
+		for(const auto& in : job->tx->inputs) {
+			lock_map.erase(in.prev);
+		}
+		pending.erase(iter);
+		vnx_async_return_ex_what(job->request_id, "trade rejected");
+		log(WARN) << "Trade was rejected: " << txid;
+	}
 }
 
 void Server::approve(const uint64_t& client, std::shared_ptr<const Transaction> tx)
@@ -35,12 +99,16 @@ void Server::approve(const uint64_t& client, std::shared_ptr<const Transaction> 
 		throw std::logic_error("no such trade");
 	}
 	auto job = iter->second;
+	if(!job->pending_clients.erase(client)) {
+		throw std::logic_error("trade mismatch");
+	}
 	job->tx->merge_sign(tx);
 
-	if(job->tx->is_signed()) {
+	if(job->pending_clients.empty())
+	{
+		pending.erase(job->tx->id);
 		node->add_transaction(job->tx, true,
 			[this, job]() {
-				pending.erase(job->tx->id);
 				execute_async_return(job->request_id);
 				log(INFO) << "Executed trade: " << job->tx->id;
 			},
@@ -48,7 +116,6 @@ void Server::approve(const uint64_t& client, std::shared_ptr<const Transaction> 
 				for(const auto& in : job->tx->inputs) {
 					lock_map.erase(in.prev);
 				}
-				pending.erase(job->tx->id);
 				vnx_async_return_ex(job->request_id, ex);
 				log(WARN) << "Trade failed with: " << ex.what();
 			});
@@ -63,11 +130,10 @@ void Server::place_async(const uint64_t& client, const trade_pair_t& pair, const
 		throw std::logic_error("invalid signature");
 	}
 	const auto address = solution->pubkey.get_addr();
-	peer->addr_set.insert(address);
 	addr_map[address] = client;
 
 	node->get_txo_infos(order.bid_keys,
-		[this, client, pair, address, order, request_id](const std::vector<vnx::optional<txo_info_t>>& entries) {
+		[this, peer, pair, address, order, request_id](const std::vector<vnx::optional<txo_info_t>>& entries) {
 			uint64_t total_bid = 0;
 			std::vector<order_t> result;
 			for(size_t i = 0; i < entries.size() && i < order.bid_keys.size(); ++i) {
@@ -95,6 +161,7 @@ void Server::place_async(const uint64_t& client, const trade_pair_t& pair, const
 				const auto price = order.ask / double(total_bid);
 				for(auto& tmp : result) {
 					tmp.ask = tmp.bid * price;
+					peer->order_set.insert(tmp.bid_key);
 					book->orders.emplace(tmp.get_price(), tmp);
 				}
 			}
@@ -120,8 +187,8 @@ void Server::execute_async(std::shared_ptr<const Transaction> tx, const vnx::req
 				std::unordered_map<addr_t, uint64_t> input_amount;
 				for(size_t i = 0; i < entries.size() && i < tx->inputs.size(); ++i) {
 					const auto& in = tx->inputs[i];
-					if(lock_map.count(in.prev)) {
-						throw std::logic_error("offer already locked");
+					if(!is_open(in.prev)) {
+						throw std::logic_error("offer no longer open");
 					}
 					if(const auto& entry = entries[i]) {
 						if(entry->spent) {
@@ -155,27 +222,27 @@ void Server::execute_async(std::shared_ptr<const Transaction> tx, const vnx::req
 					}
 				}
 				const auto fee_amount = left_amount[addr_t()];
-				const auto fee_needed = tx->calc_min_fee(params) + input_addrs.size() * params->min_txfee_sign;
+				const auto fee_needed = tx->calc_cost(params) + input_addrs.size() * params->min_txfee_sign;
 				if(fee_amount < fee_needed) {
 					throw std::logic_error("insufficient fee: " + std::to_string(fee_amount) + " < " + std::to_string(fee_needed));
 				}
-				std::vector<uint64_t> offer_clients;
+				auto job = std::make_shared<trade_job_t>();
+
 				for(const auto& addr : offer_addrs) {
 					auto iter = addr_map.find(addr);
 					if(iter == addr_map.end()) {
 						throw std::logic_error("client not found");
 					}
-					offer_clients.push_back(iter->second);
+					job->pending_clients.insert(iter->second);
 				}
-				for(const auto client : offer_clients) {
-					auto request = Client_approve::create();
-					request->tx = tx;
-					send_to(client, tx);
+				auto request = Client_approve::create();
+				request->tx = tx;
+				for(const auto client : job->pending_clients) {
+					send_to(client, request);
 				}
 				for(const auto& in : tx->inputs) {
 					lock_map[in.prev] = tx->id;
 				}
-				auto job = std::make_shared<trade_job_t>();
 				job->tx = vnx::clone(tx);
 				job->request_id = request_id;
 				job->start_time_ms = vnx::get_time_millis();
@@ -233,10 +300,11 @@ void Server::match_async(const trade_pair_t& pair, const trade_order_t& order, c
 				const auto& order = entry.second;
 				if(order.ask <= bid_left) {
 					auto iter = utxo_map.find(order.bid_key);
-					if(iter == utxo_map.end() || lock_map.count(order.bid_key)) {
+					if(iter == utxo_map.end() || !is_open(order.bid_key)) {
 						continue;
 					}
-					output_map[iter->second.address] += order.ask;
+					const auto& utxo = iter->second;
+					output_map[utxo.address] += order.ask;
 					{
 						tx_in_t input;
 						input.prev = order.bid_key;
@@ -295,7 +363,7 @@ std::vector<order_t> Server::get_orders(const trade_pair_t& pair) const
 	if(auto book = find_pair(pair)) {
 		for(const auto& entry : book->orders) {
 			const auto& order = entry.second;
-			if(utxo_map.count(order.bid_key) && !lock_map.count(order.bid_key)) {
+			if(utxo_map.count(order.bid_key) && is_open(order.bid_key)) {
 				orders.push_back(order);
 			}
 		}
@@ -322,6 +390,11 @@ ulong_fraction_t Server::get_price(const addr_t& want, const amount_t& have) con
 		left -= order.bid;
 	}
 	return price;
+}
+
+bool Server::is_open(const txio_key_t& bid_key) const
+{
+	return !lock_map.count(bid_key) && !cancel_set.count(bid_key);
 }
 
 std::shared_ptr<Server::order_book_t> Server::find_pair(const trade_pair_t& pair) const
@@ -355,16 +428,14 @@ void Server::on_error(uint64_t client, uint32_t id, const vnx::exception& ex)
 
 void Server::on_request(uint64_t client, std::shared_ptr<const Request> msg)
 {
-	if(auto method = msg->method) {
-		auto ret = Return::create();
-		ret->id = msg->id;
-		server->call(method,
-			[this, ret](std::shared_ptr<const vnx::Value> result) {
-				ret->result = result;
-				send_to(client, ret);
-			},
-			std::bind(&Server::on_error, this, client, msg->id, std::placeholders::_1));
-	}
+	auto ret = Return::create();
+	ret->id = msg->id;
+	server->call(msg->method,
+		[this, ret](std::shared_ptr<const vnx::Value> result) {
+			ret->result = result;
+			send_to(client, ret);
+		},
+		std::bind(&Server::on_error, this, client, msg->id, std::placeholders::_1));
 }
 
 void Server::on_return(uint64_t client, std::shared_ptr<const Return> msg)
@@ -415,6 +486,7 @@ void Server::on_connect(uint64_t client, const std::string& address)
 void Server::on_disconnect(uint64_t client)
 {
 	if(auto peer = find_peer(client)) {
+		cancel_set.insert(peer->order_set.begin(), peer->order_set.end());
 		log(INFO) << "Client " << peer->address << " disconnected";
 	}
 	add_task([this, client]() {

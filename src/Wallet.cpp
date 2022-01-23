@@ -33,15 +33,14 @@ void Wallet::main()
 {
 	params = get_params();
 
+	node = std::make_shared<NodeClient>(node_server);
 	http = std::make_shared<vnx::addons::HttpInterface<Wallet>>(this, vnx_name);
 	add_async_client(http);
 
-	for(auto file_path : key_files)
-	{
+	for(auto file_path : key_files) {
 		file_path = storage_path + file_path;
 
-		if(auto key_file = vnx::read_from_file<KeyFile>(file_path))
-		{
+		if(auto key_file = vnx::read_from_file<KeyFile>(file_path)) {
 			if(enable_bls) {
 				bls_wallets.push_back(std::make_shared<BLS_Wallet>(key_file, 11337));
 			} else {
@@ -55,9 +54,6 @@ void Wallet::main()
 			log(ERROR) << "Failed to read wallet '" << file_path << "'";
 		}
 	}
-
-	node = std::make_shared<NodeClient>(node_server);
-
 	Super::main();
 }
 
@@ -178,6 +174,21 @@ std::shared_ptr<const Transaction> Wallet::sign_off(const uint32_t& index, std::
 	auto copy = vnx::clone(tx);
 	wallet->sign_off(copy, utxo_map);
 	return copy;
+}
+
+void Wallet::reserve(const std::vector<txio_key_t>& keys)
+{
+	// TODO
+}
+
+void Wallet::release(const std::vector<txio_key_t>& keys)
+{
+	// TODO
+}
+
+void Wallet::release_all()
+{
+	// TODO
 }
 
 std::vector<utxo_entry_t> Wallet::get_utxo_list(const uint32_t& index, const uint32_t& min_confirm) const

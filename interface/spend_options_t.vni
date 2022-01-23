@@ -4,6 +4,8 @@ struct spend_options_t {
 	
 	uint min_confirm = 1;
 	
+	uint split_output = 1;					// how many outputs of equal size
+	
 	bool pending_change = true;
 	
 	vector<txio_key_t> exclude;

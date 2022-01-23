@@ -1,6 +1,6 @@
 package mmx.exchange;
 
-module Client {
+module Client extends vnx.addons.MsgServer {
 	
 	vnx.TopicPtr input_blocks = "node.verified_blocks";
 	

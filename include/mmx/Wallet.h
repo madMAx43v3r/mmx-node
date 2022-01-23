@@ -39,6 +39,12 @@ protected:
 
 	std::shared_ptr<const Transaction> sign_off(const uint32_t& index, std::shared_ptr<const Transaction> tx) const override;
 
+	void reserve(const std::vector<txio_key_t>& keys) override;
+
+	void release(const std::vector<txio_key_t>& keys) override;
+
+	void release_all() override;
+
 	std::vector<utxo_entry_t> get_utxo_list(const uint32_t& index, const uint32_t& min_confirm = 1) const override;
 
 	std::vector<utxo_entry_t> get_utxo_list_for(const uint32_t& index, const addr_t& currency, const uint32_t& min_confirm) const override;

@@ -9,13 +9,14 @@
 #define INCLUDE_MMX_EXCHANGE_SERVER_H_
 
 #include <mmx/exchange/ServerBase.hxx>
-#include <mmx/exchange/ServerAsyncClient.hxx>
 #include <mmx/exchange/order_t.hpp>
 #include <mmx/exchange/trade_pair_t.hpp>
 #include <mmx/NodeAsyncClient.hxx>
 #include <mmx/Request.hxx>
 #include <mmx/Return.hxx>
 #include <mmx/utils.h>
+
+#include <vnx/GenericAsyncClient.h>
 
 
 namespace mmx {
@@ -28,7 +29,7 @@ public:
 protected:
 	struct peer_t : Super::peer_t {
 		std::string address;
-		std::unordered_set<addr_t> addr_set;
+		std::unordered_set<txio_key_t> order_set;
 	};
 
 	struct order_book_t {
@@ -39,9 +40,16 @@ protected:
 		int64_t start_time_ms = 0;
 		vnx::request_id_t request_id;
 		std::shared_ptr<Transaction> tx;
+		std::unordered_set<uint64_t> pending_clients;
 	};
 
+	void init() override;
+
 	void main() override;
+
+	void cancel(const uint64_t& client, const std::vector<txio_key_t>& orders) override;
+
+	void reject(const uint64_t& client, const hash_t& txid) override;
 
 	void approve(const uint64_t& client, std::shared_ptr<const Transaction> tx) override;
 
@@ -55,7 +63,11 @@ protected:
 
 	ulong_fraction_t get_price(const addr_t& want, const amount_t& have) const override;
 
+	void handle(std::shared_ptr<const Block> block) override;
+
 private:
+	bool is_open(const txio_key_t& bid_key) const;
+
 	std::shared_ptr<order_book_t> find_pair(const trade_pair_t& pair) const;
 
 	void send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg, bool reliable = true);
@@ -82,12 +94,14 @@ private:
 
 private:
 	std::shared_ptr<NodeAsyncClient> node;
-	std::shared_ptr<ServerAsyncClient> server;
+	std::shared_ptr<vnx::GenericAsyncClient> server;
 	std::shared_ptr<const ChainParams> params;
 
 	std::unordered_map<addr_t, uint64_t> addr_map;								// [addr => client]
 	std::unordered_map<txio_key_t, utxo_t> utxo_map;
 	std::unordered_map<txio_key_t, hash_t> lock_map;							// [key => txid]
+	std::unordered_set<txio_key_t> cancel_set;
+
 	std::map<trade_pair_t, std::shared_ptr<order_book_t>> trade_map;
 
 	std::unordered_map<uint64_t, std::shared_ptr<peer_t>> peer_map;

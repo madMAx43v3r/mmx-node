@@ -24,7 +24,7 @@ void Transaction::finalize() {
 }
 
 vnx::bool_t Transaction::is_valid() const {
-	return calc_hash() == id;
+	return calc_hash() == id && is_signed();
 }
 
 hash_t Transaction::calc_hash() const
@@ -87,7 +87,15 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 
 void Transaction::merge_sign(std::shared_ptr<const Transaction> tx)
 {
-	// TODO
+	for(size_t i = 0; i < inputs.size() && i < tx->inputs.size(); ++i)
+	{
+		auto& our = inputs[i];
+		const auto& other = tx->inputs[i];
+		if(other.solution < tx->solutions.size() && our.solution >= solutions.size()) {
+			our.solution = solutions.size();
+			solutions.push_back(tx->solutions[other.solution]);
+		}
+	}
 }
 
 vnx::bool_t Transaction::is_signed() const
