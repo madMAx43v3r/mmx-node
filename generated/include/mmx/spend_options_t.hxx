@@ -15,6 +15,7 @@ struct spend_options_t {
 	
 	
 	uint32_t min_confirm = 1;
+	uint32_t split_output = 1;
 	vnx::bool_t pending_change = true;
 	std::vector<::mmx::txio_key_t> exclude;
 	

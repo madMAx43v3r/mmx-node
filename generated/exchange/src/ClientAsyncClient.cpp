@@ -7,7 +7,6 @@
 #include <mmx/Transaction.hxx>
 #include <mmx/exchange/Client_approve.hxx>
 #include <mmx/exchange/Client_approve_return.hxx>
-#include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_object.hxx>
@@ -27,6 +26,7 @@
 #include <vnx/ModuleInterface_vnx_stop.hxx>
 #include <vnx/ModuleInterface_vnx_stop_return.hxx>
 #include <vnx/TopicPtr.hpp>
+#include <vnx/addons/MsgServer.h>
 
 #include <vnx/Generic.hxx>
 #include <vnx/vnx.h>

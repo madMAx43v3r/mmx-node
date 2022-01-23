@@ -7,8 +7,8 @@
 #include <vnx/Client.h>
 #include <mmx/Block.hxx>
 #include <mmx/Transaction.hxx>
-#include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
+#include <vnx/addons/MsgServer.h>
 
 
 namespace mmx {

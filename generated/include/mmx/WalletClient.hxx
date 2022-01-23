@@ -13,6 +13,7 @@
 #include <mmx/spend_options_t.hxx>
 #include <mmx/stxo_entry_t.hxx>
 #include <mmx/tx_entry_t.hxx>
+#include <mmx/txio_key_t.hxx>
 #include <mmx/utxo_entry_t.hxx>
 #include <vnx/Module.h>
 #include <vnx/addons/HttpData.hxx>
@@ -63,6 +64,18 @@ public:
 	::mmx::hash_t deploy(const uint32_t& index = 0, std::shared_ptr<const ::mmx::Contract> contract = nullptr, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
 	std::shared_ptr<const ::mmx::Transaction> sign_off(const uint32_t& index = 0, std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
+	
+	void reserve(const std::vector<::mmx::txio_key_t>& keys = {});
+	
+	void reserve_async(const std::vector<::mmx::txio_key_t>& keys = {});
+	
+	void release(const std::vector<::mmx::txio_key_t>& keys = {});
+	
+	void release_async(const std::vector<::mmx::txio_key_t>& keys = {});
+	
+	void release_all();
+	
+	void release_all_async();
 	
 	std::vector<::mmx::utxo_entry_t> get_utxo_list(const uint32_t& index = 0, const uint32_t& min_confirm = 0);
 	

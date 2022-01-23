@@ -38,6 +38,12 @@
 #include <mmx/Wallet_get_utxo_list_for_return.hxx>
 #include <mmx/Wallet_mint.hxx>
 #include <mmx/Wallet_mint_return.hxx>
+#include <mmx/Wallet_release.hxx>
+#include <mmx/Wallet_release_return.hxx>
+#include <mmx/Wallet_release_all.hxx>
+#include <mmx/Wallet_release_all_return.hxx>
+#include <mmx/Wallet_reserve.hxx>
+#include <mmx/Wallet_reserve_return.hxx>
 #include <mmx/Wallet_send.hxx>
 #include <mmx/Wallet_send_return.hxx>
 #include <mmx/Wallet_send_from.hxx>
@@ -49,6 +55,7 @@
 #include <mmx/spend_options_t.hxx>
 #include <mmx/stxo_entry_t.hxx>
 #include <mmx/tx_entry_t.hxx>
+#include <mmx/txio_key_t.hxx>
 #include <mmx/utxo_entry_t.hxx>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
@@ -279,6 +286,40 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::sign_off(const uint32_t&
 	} else {
 		throw std::logic_error("WalletClient: invalid return value");
 	}
+}
+
+void WalletClient::reserve(const std::vector<::mmx::txio_key_t>& keys) {
+	auto _method = ::mmx::Wallet_reserve::create();
+	_method->keys = keys;
+	vnx_request(_method, false);
+}
+
+void WalletClient::reserve_async(const std::vector<::mmx::txio_key_t>& keys) {
+	auto _method = ::mmx::Wallet_reserve::create();
+	_method->keys = keys;
+	vnx_request(_method, true);
+}
+
+void WalletClient::release(const std::vector<::mmx::txio_key_t>& keys) {
+	auto _method = ::mmx::Wallet_release::create();
+	_method->keys = keys;
+	vnx_request(_method, false);
+}
+
+void WalletClient::release_async(const std::vector<::mmx::txio_key_t>& keys) {
+	auto _method = ::mmx::Wallet_release::create();
+	_method->keys = keys;
+	vnx_request(_method, true);
+}
+
+void WalletClient::release_all() {
+	auto _method = ::mmx::Wallet_release_all::create();
+	vnx_request(_method, false);
+}
+
+void WalletClient::release_all_async() {
+	auto _method = ::mmx::Wallet_release_all::create();
+	vnx_request(_method, true);
 }
 
 std::vector<::mmx::utxo_entry_t> WalletClient::get_utxo_list(const uint32_t& index, const uint32_t& min_confirm) {

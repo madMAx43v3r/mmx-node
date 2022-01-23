@@ -27,6 +27,8 @@ class ServerBase : public ::vnx::addons::MsgServer {
 public:
 	
 	::vnx::TopicPtr input_blocks = "node.verified_blocks";
+	int32_t trade_timeout_ms = 10000;
+	std::string node_server = "Node";
 	
 	typedef ::vnx::addons::MsgServer Super;
 	

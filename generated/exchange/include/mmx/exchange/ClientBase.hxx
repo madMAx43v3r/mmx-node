@@ -7,19 +7,19 @@
 #include <mmx/exchange/package.hxx>
 #include <mmx/Block.hxx>
 #include <mmx/Transaction.hxx>
-#include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
+#include <vnx/addons/MsgServer.h>
 
 
 namespace mmx {
 namespace exchange {
 
-class ClientBase : public ::vnx::Module {
+class ClientBase : public ::vnx::addons::MsgServer {
 public:
 	
 	::vnx::TopicPtr input_blocks = "node.verified_blocks";
 	
-	typedef ::vnx::Module Super;
+	typedef ::vnx::addons::MsgServer Super;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
