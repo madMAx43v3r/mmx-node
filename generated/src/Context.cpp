@@ -15,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Context::VNX_TYPE_HASH(0x4c0f99bb7370b6ccull);
-const vnx::Hash64 Context::VNX_CODE_HASH(0xabda22f3bb0e0d55ull);
+const vnx::Hash64 Context::VNX_CODE_HASH(0xec97b93d30f43851ull);
 
 vnx::Hash64 Context::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -50,8 +50,7 @@ void Context::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, txid);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, height);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, amounts);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, depends);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, depends);
 	_visitor.type_end(*_type_code);
 }
 
@@ -59,7 +58,6 @@ void Context::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Context\"";
 	_out << ", \"txid\": "; vnx::write(_out, txid);
 	_out << ", \"height\": "; vnx::write(_out, height);
-	_out << ", \"amounts\": "; vnx::write(_out, amounts);
 	_out << ", \"depends\": "; vnx::write(_out, depends);
 	_out << "}";
 }
@@ -75,16 +73,13 @@ vnx::Object Context::to_object() const {
 	_object["__type"] = "mmx.Context";
 	_object["txid"] = txid;
 	_object["height"] = height;
-	_object["amounts"] = amounts;
 	_object["depends"] = depends;
 	return _object;
 }
 
 void Context::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "amounts") {
-			_entry.second.to(amounts);
-		} else if(_entry.first == "depends") {
+		if(_entry.first == "depends") {
 			_entry.second.to(depends);
 		} else if(_entry.first == "height") {
 			_entry.second.to(height);
@@ -101,9 +96,6 @@ vnx::Variant Context::get_field(const std::string& _name) const {
 	if(_name == "height") {
 		return vnx::Variant(height);
 	}
-	if(_name == "amounts") {
-		return vnx::Variant(amounts);
-	}
 	if(_name == "depends") {
 		return vnx::Variant(depends);
 	}
@@ -115,8 +107,6 @@ void Context::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(txid);
 	} else if(_name == "height") {
 		_value.to(height);
-	} else if(_name == "amounts") {
-		_value.to(amounts);
 	} else if(_name == "depends") {
 		_value.to(depends);
 	} else {
@@ -148,12 +138,12 @@ std::shared_ptr<vnx::TypeCode> Context::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Context";
 	type_code->type_hash = vnx::Hash64(0x4c0f99bb7370b6ccull);
-	type_code->code_hash = vnx::Hash64(0xabda22f3bb0e0d55ull);
+	type_code->code_hash = vnx::Hash64(0xec97b93d30f43851ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::Context);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Context>(); };
-	type_code->fields.resize(4);
+	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -168,12 +158,6 @@ std::shared_ptr<vnx::TypeCode> Context::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[2];
-		field.is_extended = true;
-		field.name = "amounts";
-		field.code = {13, 5, 11, 32, 1, 4};
-	}
-	{
-		auto& field = type_code->fields[3];
 		field.is_extended = true;
 		field.name = "depends";
 		field.code = {13, 5, 11, 32, 1, 16};
@@ -227,8 +211,7 @@ void read(TypeInput& in, ::mmx::Context& value, const TypeCode* type_code, const
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.txid, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.amounts, type_code, _field->code.data()); break;
-			case 3: vnx::read(in, value.depends, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.depends, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -250,8 +233,7 @@ void write(TypeOutput& out, const ::mmx::Context& value, const TypeCode* type_co
 	char* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.height);
 	vnx::write(out, value.txid, type_code, type_code->fields[0].code.data());
-	vnx::write(out, value.amounts, type_code, type_code->fields[2].code.data());
-	vnx::write(out, value.depends, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.depends, type_code, type_code->fields[2].code.data());
 }
 
 void read(std::istream& in, ::mmx::Context& value) {

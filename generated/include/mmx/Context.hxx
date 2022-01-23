@@ -18,7 +18,6 @@ public:
 	
 	::mmx::hash_t txid;
 	uint32_t height = 0;
-	std::map<::mmx::addr_t, uint64_t> amounts;
 	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> depends;
 	
 	typedef ::vnx::Value Super;
