@@ -1295,6 +1295,7 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 		if(light_mode) {
 			light_address_set.insert(tx->id);
 		}
+		contract_map.erase(tx->id);
 		log.deployed.emplace(tx->id, contract);
 	}
 	tx_map[tx->id] = block->height;
@@ -1336,6 +1337,7 @@ bool Node::revert() noexcept
 		tx_pool.erase(*txid);
 	}
 	for(const auto& entry : log->deployed) {
+		contract_map.erase(entry.first);
 		light_address_set.erase(entry.first);
 	}
 	change_log.pop_back();
