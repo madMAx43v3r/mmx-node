@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_exchange_Server_place_return_HXX_
 
 #include <mmx/exchange/package.hxx>
+#include <mmx/exchange/order_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -14,6 +15,7 @@ namespace exchange {
 class Server_place_return : public ::vnx::Value {
 public:
 	
+	std::vector<::mmx::exchange::order_t> _ret_0;
 	
 	typedef ::vnx::Value Super;
 	

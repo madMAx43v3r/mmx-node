@@ -8,6 +8,21 @@
 #include <mmx/Transaction.hxx>
 #include <mmx/exchange/Client_approve.hxx>
 #include <mmx/exchange/Client_approve_return.hxx>
+#include <mmx/exchange/Client_get_all_offers.hxx>
+#include <mmx/exchange/Client_get_all_offers_return.hxx>
+#include <mmx/exchange/Client_get_offer.hxx>
+#include <mmx/exchange/Client_get_offer_return.hxx>
+#include <mmx/exchange/Client_get_order.hxx>
+#include <mmx/exchange/Client_get_order_return.hxx>
+#include <mmx/exchange/Client_make_offer.hxx>
+#include <mmx/exchange/Client_make_offer_return.hxx>
+#include <mmx/exchange/Client_place.hxx>
+#include <mmx/exchange/Client_place_return.hxx>
+#include <mmx/exchange/OrderBundle.hxx>
+#include <mmx/exchange/open_order_t.hxx>
+#include <mmx/exchange/trade_pair_t.hxx>
+#include <mmx/hash_t.hpp>
+#include <mmx/txio_key_t.hxx>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_object.hxx>
@@ -37,12 +52,14 @@ namespace exchange {
 
 
 const vnx::Hash64 ClientBase::VNX_TYPE_HASH(0x7d13a60fec8eb7f6ull);
-const vnx::Hash64 ClientBase::VNX_CODE_HASH(0xef51afe057892011ull);
+const vnx::Hash64 ClientBase::VNX_CODE_HASH(0x853610b86a6bb0eeull);
 
 ClientBase::ClientBase(const std::string& _vnx_name)
 	:	MsgServer::MsgServer(_vnx_name)
 {
 	vnx::read_config(vnx_name + ".input_blocks", input_blocks);
+	vnx::read_config(vnx_name + ".node_server", node_server);
+	vnx::read_config(vnx_name + ".wallet_server", wallet_server);
 }
 
 vnx::Hash64 ClientBase::get_type_hash() const {
@@ -73,6 +90,8 @@ void ClientBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, show_warnings);
 	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, max_msg_size);
 	_visitor.type_field(_type_code->fields[12], 12); vnx::accept(_visitor, input_blocks);
+	_visitor.type_field(_type_code->fields[13], 13); vnx::accept(_visitor, node_server);
+	_visitor.type_field(_type_code->fields[14], 14); vnx::accept(_visitor, wallet_server);
 	_visitor.type_end(*_type_code);
 }
 
@@ -91,6 +110,8 @@ void ClientBase::write(std::ostream& _out) const {
 	_out << ", \"show_warnings\": "; vnx::write(_out, show_warnings);
 	_out << ", \"max_msg_size\": "; vnx::write(_out, max_msg_size);
 	_out << ", \"input_blocks\": "; vnx::write(_out, input_blocks);
+	_out << ", \"node_server\": "; vnx::write(_out, node_server);
+	_out << ", \"wallet_server\": "; vnx::write(_out, wallet_server);
 	_out << "}";
 }
 
@@ -116,6 +137,8 @@ vnx::Object ClientBase::to_object() const {
 	_object["show_warnings"] = show_warnings;
 	_object["max_msg_size"] = max_msg_size;
 	_object["input_blocks"] = input_blocks;
+	_object["node_server"] = node_server;
+	_object["wallet_server"] = wallet_server;
 	return _object;
 }
 
@@ -133,6 +156,8 @@ void ClientBase::from_object(const vnx::Object& _object) {
 			_entry.second.to(max_connections);
 		} else if(_entry.first == "max_msg_size") {
 			_entry.second.to(max_msg_size);
+		} else if(_entry.first == "node_server") {
+			_entry.second.to(node_server);
 		} else if(_entry.first == "port") {
 			_entry.second.to(port);
 		} else if(_entry.first == "receive_buffer_size") {
@@ -147,6 +172,8 @@ void ClientBase::from_object(const vnx::Object& _object) {
 			_entry.second.to(tcp_keepalive);
 		} else if(_entry.first == "tcp_no_delay") {
 			_entry.second.to(tcp_no_delay);
+		} else if(_entry.first == "wallet_server") {
+			_entry.second.to(wallet_server);
 		}
 	}
 }
@@ -191,6 +218,12 @@ vnx::Variant ClientBase::get_field(const std::string& _name) const {
 	if(_name == "input_blocks") {
 		return vnx::Variant(input_blocks);
 	}
+	if(_name == "node_server") {
+		return vnx::Variant(node_server);
+	}
+	if(_name == "wallet_server") {
+		return vnx::Variant(wallet_server);
+	}
 	return vnx::Variant();
 }
 
@@ -221,6 +254,10 @@ void ClientBase::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(max_msg_size);
 	} else if(_name == "input_blocks") {
 		_value.to(input_blocks);
+	} else if(_name == "node_server") {
+		_value.to(node_server);
+	} else if(_name == "wallet_server") {
+		_value.to(wallet_server);
 	} else {
 		throw std::logic_error("no such field: '" + _name + "'");
 	}
@@ -250,13 +287,13 @@ std::shared_ptr<vnx::TypeCode> ClientBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.Client";
 	type_code->type_hash = vnx::Hash64(0x7d13a60fec8eb7f6ull);
-	type_code->code_hash = vnx::Hash64(0xef51afe057892011ull);
+	type_code->code_hash = vnx::Hash64(0x853610b86a6bb0eeull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::exchange::ClientBase);
 	type_code->parents.resize(2);
 	type_code->parents[0] = ::vnx::addons::MsgServerBase::static_get_type_code();
 	type_code->parents[1] = ::vnx::addons::TcpServerBase::static_get_type_code();
-	type_code->methods.resize(10);
+	type_code->methods.resize(15);
 	type_code->methods[0] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
 	type_code->methods[1] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
 	type_code->methods[2] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
@@ -266,8 +303,13 @@ std::shared_ptr<vnx::TypeCode> ClientBase::static_create_type_code() {
 	type_code->methods[6] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
 	type_code->methods[7] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
 	type_code->methods[8] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
-	type_code->methods[9] = ::mmx::exchange::Client_approve::static_get_type_code();
-	type_code->fields.resize(13);
+	type_code->methods[9] = ::mmx::exchange::Client_get_order::static_get_type_code();
+	type_code->methods[10] = ::mmx::exchange::Client_get_offer::static_get_type_code();
+	type_code->methods[11] = ::mmx::exchange::Client_get_all_offers::static_get_type_code();
+	type_code->methods[12] = ::mmx::exchange::Client_make_offer::static_get_type_code();
+	type_code->methods[13] = ::mmx::exchange::Client_place::static_get_type_code();
+	type_code->methods[14] = ::mmx::exchange::Client_approve::static_get_type_code();
+	type_code->fields.resize(15);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -357,6 +399,20 @@ std::shared_ptr<vnx::TypeCode> ClientBase::static_create_type_code() {
 		field.value = vnx::to_string("node.verified_blocks");
 		field.code = {12, 5};
 	}
+	{
+		auto& field = type_code->fields[13];
+		field.is_extended = true;
+		field.name = "node_server";
+		field.value = vnx::to_string("Node");
+		field.code = {32};
+	}
+	{
+		auto& field = type_code->fields[14];
+		field.is_extended = true;
+		field.name = "wallet_server";
+		field.value = vnx::to_string("Wallet");
+		field.code = {32};
+	}
 	type_code->build();
 	return type_code;
 }
@@ -429,6 +485,36 @@ std::shared_ptr<vnx::Value> ClientBase::vnx_call_switch(std::shared_ptr<const vn
 			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_self_test>(_method);
 			auto _return_value = ::vnx::ModuleInterface_vnx_self_test_return::create();
 			_return_value->_ret_0 = vnx_self_test();
+			return _return_value;
+		}
+		case 0xc10718307553c190ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_get_order>(_method);
+			auto _return_value = ::mmx::exchange::Client_get_order_return::create();
+			_return_value->_ret_0 = get_order(_args->key);
+			return _return_value;
+		}
+		case 0x849af91452f19e33ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_get_offer>(_method);
+			auto _return_value = ::mmx::exchange::Client_get_offer_return::create();
+			_return_value->_ret_0 = get_offer(_args->id);
+			return _return_value;
+		}
+		case 0x6a5cbb4ec8f30f60ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_get_all_offers>(_method);
+			auto _return_value = ::mmx::exchange::Client_get_all_offers_return::create();
+			_return_value->_ret_0 = get_all_offers();
+			return _return_value;
+		}
+		case 0x9d3f5ba7b8309a30ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_make_offer>(_method);
+			auto _return_value = ::mmx::exchange::Client_make_offer_return::create();
+			_return_value->_ret_0 = make_offer(_args->wallet, _args->pair, _args->bid, _args->ask);
+			return _return_value;
+		}
+		case 0xb32aebcb67327b40ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_place>(_method);
+			auto _return_value = ::mmx::exchange::Client_place_return::create();
+			place(_args->offer);
 			return _return_value;
 		}
 		case 0x2f7fd18fad9a3f09ull: {
@@ -521,6 +607,8 @@ void read(TypeInput& in, ::mmx::exchange::ClientBase& value, const TypeCode* typ
 		switch(_field->native_index) {
 			case 1: vnx::read(in, value.host, type_code, _field->code.data()); break;
 			case 12: vnx::read(in, value.input_blocks, type_code, _field->code.data()); break;
+			case 13: vnx::read(in, value.node_server, type_code, _field->code.data()); break;
+			case 14: vnx::read(in, value.wallet_server, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -553,6 +641,8 @@ void write(TypeOutput& out, const ::mmx::exchange::ClientBase& value, const Type
 	vnx::write_value(_buf + 31, value.max_msg_size);
 	vnx::write(out, value.host, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.input_blocks, type_code, type_code->fields[12].code.data());
+	vnx::write(out, value.node_server, type_code, type_code->fields[13].code.data());
+	vnx::write(out, value.wallet_server, type_code, type_code->fields[14].code.data());
 }
 
 void read(std::istream& in, ::mmx::exchange::ClientBase& value) {

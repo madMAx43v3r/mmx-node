@@ -7,6 +7,21 @@
 #include <mmx/Transaction.hxx>
 #include <mmx/exchange/Client_approve.hxx>
 #include <mmx/exchange/Client_approve_return.hxx>
+#include <mmx/exchange/Client_get_all_offers.hxx>
+#include <mmx/exchange/Client_get_all_offers_return.hxx>
+#include <mmx/exchange/Client_get_offer.hxx>
+#include <mmx/exchange/Client_get_offer_return.hxx>
+#include <mmx/exchange/Client_get_order.hxx>
+#include <mmx/exchange/Client_get_order_return.hxx>
+#include <mmx/exchange/Client_make_offer.hxx>
+#include <mmx/exchange/Client_make_offer_return.hxx>
+#include <mmx/exchange/Client_place.hxx>
+#include <mmx/exchange/Client_place_return.hxx>
+#include <mmx/exchange/OrderBundle.hxx>
+#include <mmx/exchange/open_order_t.hxx>
+#include <mmx/exchange/trade_pair_t.hxx>
+#include <mmx/hash_t.hpp>
+#include <mmx/txio_key_t.hxx>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_object.hxx>
@@ -150,6 +165,72 @@ vnx::bool_t ClientClient::vnx_self_test() {
 	} else {
 		throw std::logic_error("ClientClient: invalid return value");
 	}
+}
+
+vnx::optional<::mmx::exchange::open_order_t> ClientClient::get_order(const ::mmx::txio_key_t& key) {
+	auto _method = ::mmx::exchange::Client_get_order::create();
+	_method->key = key;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Client_get_order_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<vnx::optional<::mmx::exchange::open_order_t>>();
+	} else {
+		throw std::logic_error("ClientClient: invalid return value");
+	}
+}
+
+std::shared_ptr<const ::mmx::exchange::OrderBundle> ClientClient::get_offer(const uint64_t& id) {
+	auto _method = ::mmx::exchange::Client_get_offer::create();
+	_method->id = id;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Client_get_offer_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::exchange::OrderBundle>>();
+	} else {
+		throw std::logic_error("ClientClient: invalid return value");
+	}
+}
+
+std::vector<std::shared_ptr<const ::mmx::exchange::OrderBundle>> ClientClient::get_all_offers() {
+	auto _method = ::mmx::exchange::Client_get_all_offers::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Client_get_all_offers_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<std::shared_ptr<const ::mmx::exchange::OrderBundle>>>();
+	} else {
+		throw std::logic_error("ClientClient: invalid return value");
+	}
+}
+
+std::shared_ptr<const ::mmx::exchange::OrderBundle> ClientClient::make_offer(const uint32_t& wallet, const ::mmx::exchange::trade_pair_t& pair, const uint64_t& bid, const uint64_t& ask) {
+	auto _method = ::mmx::exchange::Client_make_offer::create();
+	_method->wallet = wallet;
+	_method->pair = pair;
+	_method->bid = bid;
+	_method->ask = ask;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Client_make_offer_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::exchange::OrderBundle>>();
+	} else {
+		throw std::logic_error("ClientClient: invalid return value");
+	}
+}
+
+void ClientClient::place(std::shared_ptr<const ::mmx::exchange::OrderBundle> offer) {
+	auto _method = ::mmx::exchange::Client_place::create();
+	_method->offer = offer;
+	vnx_request(_method, false);
+}
+
+void ClientClient::place_async(std::shared_ptr<const ::mmx::exchange::OrderBundle> offer) {
+	auto _method = ::mmx::exchange::Client_place::create();
+	_method->offer = offer;
+	vnx_request(_method, true);
 }
 
 std::shared_ptr<const ::mmx::Transaction> ClientClient::approve(std::shared_ptr<const ::mmx::Transaction> tx) {

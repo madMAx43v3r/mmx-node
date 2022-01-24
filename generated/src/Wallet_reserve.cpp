@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_reserve::VNX_TYPE_HASH(0xd14c466e8e7ebd76ull);
-const vnx::Hash64 Wallet_reserve::VNX_CODE_HASH(0xf44e0aecc71a6f8ull);
+const vnx::Hash64 Wallet_reserve::VNX_CODE_HASH(0x1b14aa0c5e26ad9bull);
 
 vnx::Hash64 Wallet_reserve::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -47,12 +47,14 @@ void Wallet_reserve::write(vnx::TypeOutput& _out, const vnx::TypeCode* _type_cod
 void Wallet_reserve::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Wallet_reserve;
 	_visitor.type_begin(*_type_code);
-	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, keys);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, index);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, keys);
 	_visitor.type_end(*_type_code);
 }
 
 void Wallet_reserve::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Wallet.reserve\"";
+	_out << ", \"index\": "; vnx::write(_out, index);
 	_out << ", \"keys\": "; vnx::write(_out, keys);
 	_out << "}";
 }
@@ -66,19 +68,25 @@ void Wallet_reserve::read(std::istream& _in) {
 vnx::Object Wallet_reserve::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Wallet.reserve";
+	_object["index"] = index;
 	_object["keys"] = keys;
 	return _object;
 }
 
 void Wallet_reserve::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "keys") {
+		if(_entry.first == "index") {
+			_entry.second.to(index);
+		} else if(_entry.first == "keys") {
 			_entry.second.to(keys);
 		}
 	}
 }
 
 vnx::Variant Wallet_reserve::get_field(const std::string& _name) const {
+	if(_name == "index") {
+		return vnx::Variant(index);
+	}
 	if(_name == "keys") {
 		return vnx::Variant(keys);
 	}
@@ -86,7 +94,9 @@ vnx::Variant Wallet_reserve::get_field(const std::string& _name) const {
 }
 
 void Wallet_reserve::set_field(const std::string& _name, const vnx::Variant& _value) {
-	if(_name == "keys") {
+	if(_name == "index") {
+		_value.to(index);
+	} else if(_name == "keys") {
 		_value.to(keys);
 	} else {
 		throw std::logic_error("no such field: '" + _name + "'");
@@ -117,7 +127,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_reserve::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.reserve";
 	type_code->type_hash = vnx::Hash64(0xd14c466e8e7ebd76ull);
-	type_code->code_hash = vnx::Hash64(0xf44e0aecc71a6f8ull);
+	type_code->code_hash = vnx::Hash64(0x1b14aa0c5e26ad9bull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -126,9 +136,15 @@ std::shared_ptr<vnx::TypeCode> Wallet_reserve::static_create_type_code() {
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::txio_key_t::static_get_type_code();
 	type_code->return_type = ::mmx::Wallet_reserve_return::static_get_type_code();
-	type_code->fields.resize(1);
+	type_code->fields.resize(2);
 	{
 		auto& field = type_code->fields[0];
+		field.data_size = 4;
+		field.name = "index";
+		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[1];
 		field.is_extended = true;
 		field.name = "keys";
 		field.code = {12, 19, 0};
@@ -173,12 +189,15 @@ void read(TypeInput& in, ::mmx::Wallet_reserve& value, const TypeCode* type_code
 			}
 		}
 	}
-	in.read(type_code->total_field_size);
+	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
+		if(const auto* const _field = type_code->field_map[0]) {
+			vnx::read_value(_buf + _field->offset, value.index, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 0: vnx::read(in, value.keys, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.keys, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -197,7 +216,9 @@ void write(TypeOutput& out, const ::mmx::Wallet_reserve& value, const TypeCode* 
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	vnx::write(out, value.keys, type_code, type_code->fields[0].code.data());
+	char* const _buf = out.write(4);
+	vnx::write_value(_buf + 0, value.index);
+	vnx::write(out, value.keys, type_code, type_code->fields[1].code.data());
 }
 
 void read(std::istream& in, ::mmx::Wallet_reserve& value) {

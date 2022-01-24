@@ -71,8 +71,8 @@ protected:
 	virtual ::mmx::hash_t mint(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
 	virtual ::mmx::hash_t deploy(const uint32_t& index, std::shared_ptr<const ::mmx::Contract> contract, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> sign_off(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx) const = 0;
-	virtual void reserve(const std::vector<::mmx::txio_key_t>& keys) = 0;
-	virtual void release(const std::vector<::mmx::txio_key_t>& keys) = 0;
+	virtual void reserve(const uint32_t& index, const std::vector<::mmx::txio_key_t>& keys) = 0;
+	virtual void release(const uint32_t& index, const std::vector<::mmx::txio_key_t>& keys) = 0;
 	virtual void release_all() = 0;
 	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list(const uint32_t& index, const uint32_t& min_confirm) const = 0;
 	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list_for(const uint32_t& index, const ::mmx::addr_t& currency, const uint32_t& min_confirm) const = 0;

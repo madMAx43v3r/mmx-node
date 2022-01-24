@@ -193,10 +193,10 @@ uint64_t ServerAsyncClient::execute(std::shared_ptr<const ::mmx::Transaction> tx
 	return _request_id;
 }
 
-uint64_t ServerAsyncClient::match(const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::trade_order_t& orders, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t ServerAsyncClient::match(const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::trade_order_t& order, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::exchange::Server_match::create();
 	_method->pair = pair;
-	_method->orders = orders;
+	_method->order = order;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
@@ -234,11 +234,11 @@ uint64_t ServerAsyncClient::get_price(const ::mmx::addr_t& want, const ::mmx::ex
 	return _request_id;
 }
 
-uint64_t ServerAsyncClient::place(const uint64_t& client, const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::limit_order_t& orders, const std::function<void()>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t ServerAsyncClient::place(const uint64_t& client, const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::limit_order_t& order, const std::function<void(const std::vector<::mmx::exchange::order_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::exchange::Server_place::create();
 	_method->client = client;
 	_method->pair = pair;
-	_method->orders = orders;
+	_method->order = order;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
@@ -743,7 +743,13 @@ int32_t ServerAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			vnx_queue_place.erase(_iter);
 			_lock.unlock();
 			if(_callback) {
-				_callback();
+				if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Server_place_return>(_value)) {
+					_callback(_result->_ret_0);
+				} else if(_value && !_value->is_void()) {
+					_callback(_value->get_field_by_index(0).to<std::vector<::mmx::exchange::order_t>>());
+				} else {
+					throw std::logic_error("ServerAsyncClient: invalid return value");
+				}
 			}
 			break;
 		}

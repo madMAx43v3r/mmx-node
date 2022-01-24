@@ -7,6 +7,11 @@
 #include <vnx/Client.h>
 #include <mmx/Block.hxx>
 #include <mmx/Transaction.hxx>
+#include <mmx/exchange/OrderBundle.hxx>
+#include <mmx/exchange/open_order_t.hxx>
+#include <mmx/exchange/trade_pair_t.hxx>
+#include <mmx/hash_t.hpp>
+#include <mmx/txio_key_t.hxx>
 #include <vnx/TopicPtr.hpp>
 #include <vnx/addons/MsgServer.h>
 
@@ -45,6 +50,18 @@ public:
 	void vnx_stop_async();
 	
 	vnx::bool_t vnx_self_test();
+	
+	vnx::optional<::mmx::exchange::open_order_t> get_order(const ::mmx::txio_key_t& key = ::mmx::txio_key_t());
+	
+	std::shared_ptr<const ::mmx::exchange::OrderBundle> get_offer(const uint64_t& id = 0);
+	
+	std::vector<std::shared_ptr<const ::mmx::exchange::OrderBundle>> get_all_offers();
+	
+	std::shared_ptr<const ::mmx::exchange::OrderBundle> make_offer(const uint32_t& wallet = 0, const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const uint64_t& bid = 0, const uint64_t& ask = 0);
+	
+	void place(std::shared_ptr<const ::mmx::exchange::OrderBundle> offer = nullptr);
+	
+	void place_async(std::shared_ptr<const ::mmx::exchange::OrderBundle> offer = nullptr);
 	
 	std::shared_ptr<const ::mmx::Transaction> approve(std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
 	

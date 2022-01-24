@@ -187,10 +187,10 @@ void ServerClient::execute_async(std::shared_ptr<const ::mmx::Transaction> tx) {
 	vnx_request(_method, true);
 }
 
-std::shared_ptr<const ::mmx::Transaction> ServerClient::match(const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::trade_order_t& orders) {
+std::shared_ptr<const ::mmx::Transaction> ServerClient::match(const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::trade_order_t& order) {
 	auto _method = ::mmx::exchange::Server_match::create();
 	_method->pair = pair;
-	_method->orders = orders;
+	_method->order = order;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Server_match_return>(_return_value)) {
 		return _result->_ret_0;
@@ -228,20 +228,19 @@ std::vector<::mmx::exchange::order_t> ServerClient::get_orders(const ::mmx::exch
 	}
 }
 
-void ServerClient::place(const uint64_t& client, const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::limit_order_t& orders) {
+std::vector<::mmx::exchange::order_t> ServerClient::place(const uint64_t& client, const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::limit_order_t& order) {
 	auto _method = ::mmx::exchange::Server_place::create();
 	_method->client = client;
 	_method->pair = pair;
-	_method->orders = orders;
-	vnx_request(_method, false);
-}
-
-void ServerClient::place_async(const uint64_t& client, const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::limit_order_t& orders) {
-	auto _method = ::mmx::exchange::Server_place::create();
-	_method->client = client;
-	_method->pair = pair;
-	_method->orders = orders;
-	vnx_request(_method, true);
+	_method->order = order;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Server_place_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::exchange::order_t>>();
+	} else {
+		throw std::logic_error("ServerClient: invalid return value");
+	}
 }
 
 void ServerClient::cancel(const uint64_t& client, const std::vector<::mmx::txio_key_t>& orders) {

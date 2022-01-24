@@ -59,15 +59,13 @@ public:
 	
 	void execute_async(std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
 	
-	std::shared_ptr<const ::mmx::Transaction> match(const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const ::mmx::exchange::trade_order_t& orders = ::mmx::exchange::trade_order_t());
+	std::shared_ptr<const ::mmx::Transaction> match(const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const ::mmx::exchange::trade_order_t& order = ::mmx::exchange::trade_order_t());
 	
 	std::vector<::mmx::exchange::order_t> get_orders(const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t());
 	
 	::mmx::ulong_fraction_t get_price(const ::mmx::addr_t& want = ::mmx::addr_t(), const ::mmx::exchange::amount_t& have = ::mmx::exchange::amount_t());
 	
-	void place(const uint64_t& client = 0, const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const ::mmx::exchange::limit_order_t& orders = ::mmx::exchange::limit_order_t());
-	
-	void place_async(const uint64_t& client = 0, const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const ::mmx::exchange::limit_order_t& orders = ::mmx::exchange::limit_order_t());
+	std::vector<::mmx::exchange::order_t> place(const uint64_t& client = 0, const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const ::mmx::exchange::limit_order_t& order = ::mmx::exchange::limit_order_t());
 	
 	void cancel(const uint64_t& client = 0, const std::vector<::mmx::txio_key_t>& orders = {});
 	

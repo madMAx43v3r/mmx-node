@@ -15,6 +15,7 @@ class Solution : public ::vnx::Value {
 public:
 	
 	uint32_t version = 0;
+	vnx::bool_t is_contract = 0;
 	
 	typedef ::vnx::Value Super;
 	

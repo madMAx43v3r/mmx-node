@@ -14,6 +14,7 @@ namespace mmx {
 class Wallet_release : public ::vnx::Value {
 public:
 	
+	uint32_t index = 0;
 	std::vector<::mmx::txio_key_t> keys;
 	
 	typedef ::vnx::Value Super;

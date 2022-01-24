@@ -65,13 +65,13 @@ public:
 	
 	std::shared_ptr<const ::mmx::Transaction> sign_off(const uint32_t& index = 0, std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
 	
-	void reserve(const std::vector<::mmx::txio_key_t>& keys = {});
+	void reserve(const uint32_t& index = 0, const std::vector<::mmx::txio_key_t>& keys = {});
 	
-	void reserve_async(const std::vector<::mmx::txio_key_t>& keys = {});
+	void reserve_async(const uint32_t& index = 0, const std::vector<::mmx::txio_key_t>& keys = {});
 	
-	void release(const std::vector<::mmx::txio_key_t>& keys = {});
+	void release(const uint32_t& index = 0, const std::vector<::mmx::txio_key_t>& keys = {});
 	
-	void release_async(const std::vector<::mmx::txio_key_t>& keys = {});
+	void release_async(const uint32_t& index = 0, const std::vector<::mmx::txio_key_t>& keys = {});
 	
 	void release_all();
 	

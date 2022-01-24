@@ -7,6 +7,11 @@
 #include <mmx/exchange/package.hxx>
 #include <mmx/Block.hxx>
 #include <mmx/Transaction.hxx>
+#include <mmx/exchange/OrderBundle.hxx>
+#include <mmx/exchange/open_order_t.hxx>
+#include <mmx/exchange/trade_pair_t.hxx>
+#include <mmx/hash_t.hpp>
+#include <mmx/txio_key_t.hxx>
 #include <vnx/TopicPtr.hpp>
 #include <vnx/addons/MsgServer.h>
 
@@ -18,6 +23,8 @@ class ClientBase : public ::vnx::addons::MsgServer {
 public:
 	
 	::vnx::TopicPtr input_blocks = "node.verified_blocks";
+	std::string node_server = "Node";
+	std::string wallet_server = "Wallet";
 	
 	typedef ::vnx::addons::MsgServer Super;
 	
@@ -52,6 +59,11 @@ public:
 protected:
 	using Super::handle;
 	
+	virtual vnx::optional<::mmx::exchange::open_order_t> get_order(const ::mmx::txio_key_t& key) const = 0;
+	virtual std::shared_ptr<const ::mmx::exchange::OrderBundle> get_offer(const uint64_t& id) const = 0;
+	virtual std::vector<std::shared_ptr<const ::mmx::exchange::OrderBundle>> get_all_offers() const = 0;
+	virtual std::shared_ptr<const ::mmx::exchange::OrderBundle> make_offer(const uint32_t& wallet, const ::mmx::exchange::trade_pair_t& pair, const uint64_t& bid, const uint64_t& ask) const = 0;
+	virtual void place(std::shared_ptr<const ::mmx::exchange::OrderBundle> offer) = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> approve(std::shared_ptr<const ::mmx::Transaction> tx) const = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::Block> _value) {}
 	

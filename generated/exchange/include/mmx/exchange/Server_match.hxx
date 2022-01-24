@@ -17,7 +17,7 @@ class Server_match : public ::vnx::Value {
 public:
 	
 	::mmx::exchange::trade_pair_t pair;
-	::mmx::exchange::trade_order_t orders;
+	::mmx::exchange::trade_order_t order;
 	
 	typedef ::vnx::Value Super;
 	

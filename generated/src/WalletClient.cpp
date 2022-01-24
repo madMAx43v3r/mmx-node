@@ -288,26 +288,30 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::sign_off(const uint32_t&
 	}
 }
 
-void WalletClient::reserve(const std::vector<::mmx::txio_key_t>& keys) {
+void WalletClient::reserve(const uint32_t& index, const std::vector<::mmx::txio_key_t>& keys) {
 	auto _method = ::mmx::Wallet_reserve::create();
+	_method->index = index;
 	_method->keys = keys;
 	vnx_request(_method, false);
 }
 
-void WalletClient::reserve_async(const std::vector<::mmx::txio_key_t>& keys) {
+void WalletClient::reserve_async(const uint32_t& index, const std::vector<::mmx::txio_key_t>& keys) {
 	auto _method = ::mmx::Wallet_reserve::create();
+	_method->index = index;
 	_method->keys = keys;
 	vnx_request(_method, true);
 }
 
-void WalletClient::release(const std::vector<::mmx::txio_key_t>& keys) {
+void WalletClient::release(const uint32_t& index, const std::vector<::mmx::txio_key_t>& keys) {
 	auto _method = ::mmx::Wallet_release::create();
+	_method->index = index;
 	_method->keys = keys;
 	vnx_request(_method, false);
 }
 
-void WalletClient::release_async(const std::vector<::mmx::txio_key_t>& keys) {
+void WalletClient::release_async(const uint32_t& index, const std::vector<::mmx::txio_key_t>& keys) {
 	auto _method = ::mmx::Wallet_release::create();
+	_method->index = index;
 	_method->keys = keys;
 	vnx_request(_method, true);
 }

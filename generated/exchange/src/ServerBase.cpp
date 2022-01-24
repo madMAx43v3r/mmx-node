@@ -504,7 +504,7 @@ std::shared_ptr<vnx::Value> ServerBase::vnx_call_switch(std::shared_ptr<const vn
 		}
 		case 0x7d6b1feaf4d8a485ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::exchange::Server_match>(_method);
-			match_async(_args->pair, _args->orders, _request_id);
+			match_async(_args->pair, _args->order, _request_id);
 			return nullptr;
 		}
 		case 0x75d1f7f88288f10cull: {
@@ -521,7 +521,7 @@ std::shared_ptr<vnx::Value> ServerBase::vnx_call_switch(std::shared_ptr<const vn
 		}
 		case 0x957913dc32e3d68cull: {
 			auto _args = std::static_pointer_cast<const ::mmx::exchange::Server_place>(_method);
-			place_async(_args->client, _args->pair, _args->orders, _request_id);
+			place_async(_args->client, _args->pair, _args->order, _request_id);
 			return nullptr;
 		}
 		case 0xeec8da2aee14c3e8ull: {
@@ -560,8 +560,9 @@ void ServerBase::match_async_return(const vnx::request_id_t& _request_id, const 
 	vnx_async_return(_request_id, _return_value);
 }
 
-void ServerBase::place_async_return(const vnx::request_id_t& _request_id) const {
+void ServerBase::place_async_return(const vnx::request_id_t& _request_id, const std::vector<::mmx::exchange::order_t>& _ret_0) const {
 	auto _return_value = ::mmx::exchange::Server_place_return::create();
+	_return_value->_ret_0 = _ret_0;
 	vnx_async_return(_request_id, _return_value);
 }
 
