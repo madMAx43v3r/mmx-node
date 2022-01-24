@@ -163,11 +163,11 @@ private:
 
 	void on_disconnect(uint64_t client) override;
 
-	std::shared_ptr<Super::peer_t> get_peer_base(uint64_t client) override;
+	std::shared_ptr<Super::peer_t> get_peer_base(uint64_t client) const override;
 
-	std::shared_ptr<peer_t> get_peer(uint64_t client);
+	std::shared_ptr<peer_t> get_peer(uint64_t client) const;
 
-	std::shared_ptr<peer_t> find_peer(uint64_t client);
+	std::shared_ptr<peer_t> find_peer(uint64_t client) const;
 
 	bool relay_msg_hash(const hash_t& hash, uint32_t credits = 0);
 

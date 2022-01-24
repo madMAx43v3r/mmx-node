@@ -1,10 +1,28 @@
 package mmx.exchange;
 
+import mmx.hash_t;
+import mmx.txio_key_t;
+
 module Client extends vnx.addons.MsgServer {
 	
 	vnx.TopicPtr input_blocks = "node.verified_blocks";
 	
+	string node_server = "Node";
+	string wallet_server = "Wallet";
 	
+	
+	optional<open_order_t> get_order(txio_key_t key) const;
+	
+	OrderBundle* get_offer(ulong id) const;
+	
+	vector<OrderBundle*> get_all_offers() const;
+	
+	OrderBundle* make_offer(uint wallet, trade_pair_t pair, ulong bid, ulong ask) const;
+	
+	@Permission(mmx.permission_e.SPENDING)
+	void place(OrderBundle* offer);
+	
+	@Permission(mmx.permission_e.SPENDING)
 	mmx.Transaction* approve(mmx.Transaction* tx) const;
 	
 	void handle(mmx.Block sample);

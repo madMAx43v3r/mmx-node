@@ -176,12 +176,12 @@ std::shared_ptr<const Transaction> Wallet::sign_off(const uint32_t& index, std::
 	return copy;
 }
 
-void Wallet::reserve(const std::vector<txio_key_t>& keys)
+void Wallet::reserve(const uint32_t& index, const std::vector<txio_key_t>& keys)
 {
 	// TODO
 }
 
-void Wallet::release(const std::vector<txio_key_t>& keys)
+void Wallet::release(const uint32_t& index, const std::vector<txio_key_t>& keys)
 {
 	// TODO
 }

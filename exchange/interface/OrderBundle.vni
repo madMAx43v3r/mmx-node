@@ -1,0 +1,23 @@
+package mmx.exchange;
+
+import mmx.txio_key_t;
+
+class OrderBundle {
+	
+	ulong id;
+	
+	uint wallet;
+	
+	trade_pair_t pair;
+	
+	ulong bid;
+	ulong ask;
+	
+	ulong bid_sold;
+	ulong received;
+	
+	vector<limit_order_t> limit_orders;
+	
+	vector<pair<txio_key_t, open_order_t>> orders;
+	
+}

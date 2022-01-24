@@ -29,9 +29,9 @@ module Wallet implements vnx.addons.HttpComponent {
 	@Permission(permission_e.SPENDING)
 	Transaction* sign_off(uint index, Transaction* tx) const;
 	
-	void reserve(vector<txio_key_t> keys);
+	void reserve(uint index, vector<txio_key_t> keys);
 	
-	void release(vector<txio_key_t> keys);
+	void release(uint index, vector<txio_key_t> keys);
 	
 	void release_all();
 	

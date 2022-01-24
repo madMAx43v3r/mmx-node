@@ -1,0 +1,15 @@
+package mmx.exchange;
+
+import mmx.utxo_t;
+
+struct open_order_t {
+	
+	utxo_t bid;
+	
+	amount_t ask;
+	
+	uint wallet;
+	
+	ulong offer_id;
+	
+}

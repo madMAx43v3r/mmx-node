@@ -1,8 +1,0 @@
-package mmx.exchange;
-
-enum order_type_e {
-	
-	BUY,
-	SELL
-	
-}

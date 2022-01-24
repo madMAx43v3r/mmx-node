@@ -39,9 +39,9 @@ protected:
 
 	std::shared_ptr<const Transaction> sign_off(const uint32_t& index, std::shared_ptr<const Transaction> tx) const override;
 
-	void reserve(const std::vector<txio_key_t>& keys) override;
+	void reserve(const uint32_t& index, const std::vector<txio_key_t>& keys) override;
 
-	void release(const std::vector<txio_key_t>& keys) override;
+	void release(const uint32_t& index, const std::vector<txio_key_t>& keys) override;
 
 	void release_all() override;
 

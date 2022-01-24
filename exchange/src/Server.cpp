@@ -22,7 +22,8 @@ Server::Server(const std::string& _vnx_name)
 
 void Server::init()
 {
-	vnx::open_pipe(vnx_get_id(), this, UNLIMITED);
+	vnx::open_pipe(vnx_name, this, 10000);
+	vnx::open_pipe(vnx_get_id(), this, 10000);
 }
 
 void Server::main()
@@ -31,6 +32,7 @@ void Server::main()
 
 	node = std::make_shared<NodeAsyncClient>(node_server);
 	server = std::make_shared<vnx::GenericAsyncClient>(vnx_get_id());
+	server->vnx_set_non_blocking(true);
 	add_async_client(node);
 	add_async_client(server);
 
@@ -122,7 +124,7 @@ void Server::approve(const uint64_t& client, std::shared_ptr<const Transaction> 
 	}
 }
 
-void Server::place_async(const uint64_t& client, const trade_pair_t& pair, const limit_order_t& order, const vnx::request_id_t& request_id)
+void Server::place_async(const uint64_t& client, const trade_pair_t& pair, const limit_order_t& order, const vnx::request_id_t& request_id) const
 {
 	const auto peer = get_peer(client);
 	const auto solution = std::dynamic_pointer_cast<const solution::PubKey>(order.solution);
@@ -148,9 +150,12 @@ void Server::place_async(const uint64_t& client, const trade_pair_t& pair, const
 						order_t tmp;
 						tmp.bid = utxo.amount;
 						tmp.bid_key = bid_key;
-						total_bid += tmp.bid;
 						result.push_back(tmp);
 					}
+					total_bid += utxo.amount;
+				} else {
+					vnx_async_return_ex_what(request_id, "no such utxo");
+					return;
 				}
 			}
 			if(!result.empty()) {
@@ -165,7 +170,7 @@ void Server::place_async(const uint64_t& client, const trade_pair_t& pair, const
 					book->orders.emplace(tmp.get_price(), tmp);
 				}
 			}
-			place_async_return(request_id);
+			place_async_return(request_id, result);
 		},
 		std::bind(&Server::vnx_async_return_ex, request_id, std::placeholders::_1));
 }
@@ -428,10 +433,14 @@ void Server::on_error(uint64_t client, uint32_t id, const vnx::exception& ex)
 
 void Server::on_request(uint64_t client, std::shared_ptr<const Request> msg)
 {
+	auto method = vnx::clone(msg->method);
+	if(method) {
+		method->set_field("client", vnx::Variant(client));
+	}
 	auto ret = Return::create();
 	ret->id = msg->id;
-	server->call(msg->method,
-		[this, ret](std::shared_ptr<const vnx::Value> result) {
+	server->call(method,
+		[this, client, ret](std::shared_ptr<const vnx::Value> result) {
 			ret->result = result;
 			send_to(client, ret);
 		},
@@ -494,12 +503,12 @@ void Server::on_disconnect(uint64_t client)
 	});
 }
 
-std::shared_ptr<Server::Super::peer_t> Server::get_peer_base(uint64_t client)
+std::shared_ptr<Server::Super::peer_t> Server::get_peer_base(uint64_t client) const
 {
 	return get_peer(client);
 }
 
-std::shared_ptr<Server::peer_t> Server::get_peer(uint64_t client)
+std::shared_ptr<Server::peer_t> Server::get_peer(uint64_t client) const
 {
 	if(auto peer = find_peer(client)) {
 		return peer;
@@ -507,7 +516,7 @@ std::shared_ptr<Server::peer_t> Server::get_peer(uint64_t client)
 	throw std::logic_error("no such peer");
 }
 
-std::shared_ptr<Server::peer_t> Server::find_peer(uint64_t client)
+std::shared_ptr<Server::peer_t> Server::find_peer(uint64_t client) const
 {
 	auto iter = peer_map.find(client);
 	if(iter != peer_map.end()) {

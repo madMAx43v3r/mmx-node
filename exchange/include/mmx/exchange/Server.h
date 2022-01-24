@@ -53,7 +53,7 @@ protected:
 
 	void approve(const uint64_t& client, std::shared_ptr<const Transaction> tx) override;
 
-	void place_async(const uint64_t& client, const trade_pair_t& pair, const limit_order_t& order, const vnx::request_id_t& request_id) override;
+	void place_async(const uint64_t& client, const trade_pair_t& pair, const limit_order_t& order, const vnx::request_id_t& request_id) const override;
 
 	void execute_async(std::shared_ptr<const Transaction> tx, const vnx::request_id_t& request_id) override;
 
@@ -86,23 +86,23 @@ private:
 
 	void on_disconnect(uint64_t client) override;
 
-	std::shared_ptr<Super::peer_t> get_peer_base(uint64_t client) override;
+	std::shared_ptr<Super::peer_t> get_peer_base(uint64_t client) const override;
 
-	std::shared_ptr<peer_t> get_peer(uint64_t client);
+	std::shared_ptr<peer_t> get_peer(uint64_t client) const;
 
-	std::shared_ptr<peer_t> find_peer(uint64_t client);
+	std::shared_ptr<peer_t> find_peer(uint64_t client) const;
 
 private:
 	std::shared_ptr<NodeAsyncClient> node;
 	std::shared_ptr<vnx::GenericAsyncClient> server;
 	std::shared_ptr<const ChainParams> params;
 
-	std::unordered_map<addr_t, uint64_t> addr_map;								// [addr => client]
-	std::unordered_map<txio_key_t, utxo_t> utxo_map;
+	mutable std::unordered_map<addr_t, uint64_t> addr_map;						// [addr => client]
+	mutable std::unordered_map<txio_key_t, utxo_t> utxo_map;
 	std::unordered_map<txio_key_t, hash_t> lock_map;							// [key => txid]
 	std::unordered_set<txio_key_t> cancel_set;
 
-	std::map<trade_pair_t, std::shared_ptr<order_book_t>> trade_map;
+	mutable std::map<trade_pair_t, std::shared_ptr<order_book_t>> trade_map;
 
 	std::unordered_map<uint64_t, std::shared_ptr<peer_t>> peer_map;
 	std::unordered_map<hash_t, std::shared_ptr<trade_job_t>> pending;

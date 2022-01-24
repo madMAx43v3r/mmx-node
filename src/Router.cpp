@@ -1370,12 +1370,12 @@ void Router::on_disconnect(uint64_t client)
 	});
 }
 
-std::shared_ptr<Router::Super::peer_t> Router::get_peer_base(uint64_t client)
+std::shared_ptr<Router::Super::peer_t> Router::get_peer_base(uint64_t client) const
 {
 	return get_peer(client);
 }
 
-std::shared_ptr<Router::peer_t> Router::get_peer(uint64_t client)
+std::shared_ptr<Router::peer_t> Router::get_peer(uint64_t client) const
 {
 	if(auto peer = find_peer(client)) {
 		return peer;
@@ -1383,7 +1383,7 @@ std::shared_ptr<Router::peer_t> Router::get_peer(uint64_t client)
 	throw std::logic_error("no such peer");
 }
 
-std::shared_ptr<Router::peer_t> Router::find_peer(uint64_t client)
+std::shared_ptr<Router::peer_t> Router::find_peer(uint64_t client) const
 {
 	auto iter = peer_map.find(client);
 	if(iter != peer_map.end()) {
