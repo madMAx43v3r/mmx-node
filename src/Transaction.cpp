@@ -62,6 +62,27 @@ std::shared_ptr<const Solution> Transaction::get_solution(const uint32_t& index)
 	return nullptr;
 }
 
+tx_out_t Transaction::get_output(const uint32_t& index) const
+{
+	if(index < outputs.size()) {
+		return outputs[index];
+	}
+	if(index >= outputs.size()) {
+		const auto offset = index - outputs.size();
+		if(offset < exec_outputs.size()) {
+			return exec_outputs[offset];
+		}
+	}
+	throw std::logic_error("no such output");
+}
+
+std::vector<tx_out_t> Transaction::get_all_outputs() const
+{
+	auto res = outputs;
+	res.insert(res.end(), exec_outputs.begin(), exec_outputs.end());
+	return res;
+}
+
 uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
 	if(!params) {

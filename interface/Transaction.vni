@@ -29,6 +29,10 @@ class Transaction extends TransactionBase {
 	
 	Solution* get_solution(uint index) const;
 	
+	tx_out_t get_output(uint index) const;
+	
+	vector<tx_out_t> get_all_outputs() const;
+	
 	ulong calc_cost(ChainParams* params) const;
 	
 }

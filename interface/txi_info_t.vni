@@ -1,0 +1,9 @@
+package mmx;
+
+struct txi_info_t {
+	
+	txio_key_t prev;
+	
+	optional<utxo_t> utxo;
+	
+}

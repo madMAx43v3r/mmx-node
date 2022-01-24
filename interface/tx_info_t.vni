@@ -1,0 +1,25 @@
+package mmx;
+
+class tx_info_t {
+	
+	hash_t id;
+	
+	optional<uint> height;
+	optional<hash_t> block;
+	
+	long fee;
+	ulong cost;
+	
+	vector<txi_info_t> inputs;
+	vector<txo_info_t> outputs;
+	
+	vector<Operation*> operations;
+	
+	Contract* deployed;
+	
+	map<addr_t, ulong> input_amounts;
+	map<addr_t, ulong> output_amounts;
+	
+	map<addr_t, Contract*> contracts;
+	
+}

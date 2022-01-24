@@ -4,6 +4,16 @@
 <table class="table table-nonfluid mt-3">
 <tbody class="font-monospace">
 <tr>
+<td><b>Block</b></td>
+<td>
+<% if(tx.height) { %>
+<a href="/block?hash=<%= tx.block %>"><%= tx.height %></a>
+<% } else { %>
+<i>unconfirmed</i>
+<% } %>
+</td>
+</tr>
+<tr>
 <td><b>Input</b></td>
 <td><%= tx.input_amount %></td>
 <td>MMX</td>
@@ -34,7 +44,7 @@
 <tbody class="font-monospace">
 
 <% tx.inputs.forEach(function(input, index) { %>
-<% if(!input.is_base) { %>
+<% if(input.utxo) { %>
 <tr>
 <td><b>Input[<%= index %>]</b></td>
 <td><%= input.amount %></td>

@@ -312,6 +312,57 @@ vnx::optional<uint32_t> Node::get_tx_height(const hash_t& id) const
 	return nullptr;
 }
 
+vnx::optional<tx_info_t> Node::get_tx_info(const hash_t& id) const
+{
+	if(auto tx = get_transaction(id, true)) {
+		tx_info_t info;
+		info.id = id;
+		if(auto height = get_tx_height(id)) {
+			info.height = *height;
+			info.block = get_block_hash(*height);
+		}
+		info.cost = tx->calc_cost(params);
+		info.operations = tx->execute;
+		info.deployed = tx->deploy;
+
+		std::unordered_set<addr_t> contracts;
+		for(const auto& in : tx->inputs) {
+			txi_info_t entry;
+			entry.prev = in.prev;
+			if(auto txo = get_txo_info(in.prev)) {
+				const auto& utxo = txo->output;
+				entry.utxo = utxo;
+				contracts.insert(utxo.contract);
+				info.input_amounts[utxo.contract] += utxo.amount;
+			}
+			info.inputs.push_back(entry);
+		}
+		for(size_t i = 0; i < tx->outputs.size() + tx->exec_outputs.size(); ++i) {
+			txo_info_t entry;
+			if(auto txo = get_txo_info(txio_key_t::create_ex(id, i))) {
+				entry = *txo;
+				info.output_amounts[txo->output.contract] += txo->output.amount;
+			}
+			info.outputs.push_back(entry);
+			contracts.insert(entry.output.contract);
+		}
+		for(const auto& op : tx->execute) {
+			contracts.insert(op->address);
+		}
+		for(const auto& addr : contracts) {
+			if(auto contract = get_contract(addr)) {
+				info.contracts[addr] = contract;
+			}
+		}
+		auto iter = info.input_amounts.find(addr_t());
+		auto iter2 = info.output_amounts.find(addr_t());
+		info.fee = int64_t(iter != info.input_amounts.end() ? iter->second : 0)
+						- (iter2 != info.output_amounts.end() ? iter2->second : 0);
+		return info;
+	}
+	return nullptr;
+}
+
 vnx::optional<txo_info_t> Node::get_txo_info(const txio_key_t& key) const
 {
 	{
@@ -339,6 +390,11 @@ vnx::optional<txo_info_t> Node::get_txo_info(const txio_key_t& key) const
 			info.spent = iter->second.spent;
 			return info;
 		}
+	}
+	if(auto tx = get_transaction(key.txid)) {
+		txo_info_t info;
+		info.output = utxo_t::create_ex(tx->get_output(key.index));
+		return info;
 	}
 	return nullptr;
 }

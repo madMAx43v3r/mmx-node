@@ -57,6 +57,8 @@ protected:
 
 	std::vector<hash_t> get_tx_ids_at(const uint32_t& height) const override;
 
+	vnx::optional<tx_info_t> get_tx_info(const hash_t& id) const override;
+
 	vnx::optional<txo_info_t> get_txo_info(const txio_key_t& key) const override;
 
 	std::vector<vnx::optional<txo_info_t>> get_txo_infos(const std::vector<txio_key_t>& keys) const override;
