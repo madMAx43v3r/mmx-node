@@ -183,6 +183,8 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 				auto pubkey = contract::PubKey::create();
 				pubkey->address = utxo.address;
 				contract = pubkey;
+			} else if(!solution->is_contract) {
+				// TODO: throw std::logic_error("invalid solution: !is_contract");
 			}
 			auto spend = operation::Spend::create();
 			spend->address = utxo.address;

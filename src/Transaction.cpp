@@ -6,6 +6,7 @@
  */
 
 #include <mmx/Transaction.hxx>
+#include <mmx/solution/PubKey.hxx>
 #include <mmx/write_bytes.h>
 
 
@@ -90,8 +91,20 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 	}
 	uint64_t fee = (inputs.size() + outputs.size()) * params->min_txfee_io;
 
+	std::unordered_map<uint32_t, uint32_t> sol_count;
+	for(const auto& in : inputs) {
+		sol_count[in.solution]++;
+	}
+	for(const auto& entry : sol_count) {
+		if(auto sol = get_solution(entry.first)) {
+			if(sol->is_contract) {
+				// TODO: fee += entry.second * params->min_txfee_exec;
+			}
+		}
+	}
 	for(const auto& op : execute) {
 		if(op) {
+			// TODO: fee += params->min_txfee_exec;
 			fee += op->calc_min_fee(params);
 		}
 	}
