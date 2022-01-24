@@ -13,6 +13,7 @@
 #include <mmx/Contract.hxx>
 #include <mmx/contract/NFT.hxx>
 #include <mmx/contract/Token.hxx>
+#include <mmx/contract/Staking.hxx>
 #include <mmx/KeyFile.hxx>
 #include <mmx/secp256k1.hpp>
 #include <mmx/hash_t.hpp>
@@ -173,7 +174,22 @@ int main(int argc, char** argv)
 				{
 					const auto& address = entry.first;
 					const auto& contract = entry.second;
-					std::cout << "Contract: " << address << " (" << contract->get_type_name() << ")" << std::endl;
+					std::cout << "Contract: " << address << " (" << contract->get_type_name();
+					if(auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(contract)) {
+						std::cout << ", " << token->symbol << ", " << token->name;
+					}
+					if(auto staking = std::dynamic_pointer_cast<const mmx::contract::Staking>(contract)) {
+						if(auto contract = node.get_contract(staking->currency)) {
+							if(auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(contract)) {
+								std::cout << ", " << token->symbol;
+							} else {
+								std::cout << ", ???";
+							}
+						} else {
+							std::cout << ", ???";
+						}
+					}
+					std::cout << ")" << std::endl;
 
 					for(const auto& entry : node.get_total_balances({address}))
 					{
