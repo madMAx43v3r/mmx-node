@@ -56,6 +56,8 @@
 #include <mmx/Node_get_tx_height_return.hxx>
 #include <mmx/Node_get_tx_ids_at.hxx>
 #include <mmx/Node_get_tx_ids_at_return.hxx>
+#include <mmx/Node_get_tx_info.hxx>
+#include <mmx/Node_get_tx_info_return.hxx>
 #include <mmx/Node_get_txo_info.hxx>
 #include <mmx/Node_get_txo_info_return.hxx>
 #include <mmx/Node_get_txo_infos.hxx>
@@ -71,6 +73,7 @@
 #include <mmx/hash_t.hpp>
 #include <mmx/stxo_entry_t.hxx>
 #include <mmx/tx_entry_t.hxx>
+#include <mmx/tx_info_t.hxx>
 #include <mmx/txio_key_t.hxx>
 #include <mmx/txo_info_t.hxx>
 #include <mmx/utxo_entry_t.hxx>
@@ -372,6 +375,19 @@ vnx::optional<uint32_t> NodeClient::get_tx_height(const ::mmx::hash_t& id) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<vnx::optional<uint32_t>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+vnx::optional<::mmx::tx_info_t> NodeClient::get_tx_info(const ::mmx::hash_t& id) {
+	auto _method = ::mmx::Node_get_tx_info::create();
+	_method->id = id;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_tx_info_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<vnx::optional<::mmx::tx_info_t>>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}

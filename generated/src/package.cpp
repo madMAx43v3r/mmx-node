@@ -75,6 +75,8 @@
 #include <mmx/Node_get_tx_height_return.hxx>
 #include <mmx/Node_get_tx_ids_at.hxx>
 #include <mmx/Node_get_tx_ids_at_return.hxx>
+#include <mmx/Node_get_tx_info.hxx>
+#include <mmx/Node_get_tx_info_return.hxx>
 #include <mmx/Node_get_txo_info.hxx>
 #include <mmx/Node_get_txo_info_return.hxx>
 #include <mmx/Node_get_txo_infos.hxx>
@@ -175,8 +177,10 @@
 #include <mmx/time_segment_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_in_t.hxx>
+#include <mmx/tx_info_t.hxx>
 #include <mmx/tx_out_t.hxx>
 #include <mmx/tx_type_e.hxx>
+#include <mmx/txi_info_t.hxx>
 #include <mmx/txio_key_t.hxx>
 #include <mmx/txo_info_t.hxx>
 #include <mmx/uint_fraction_t.hxx>
@@ -1047,6 +1051,30 @@ void type<::mmx::Node_get_tx_ids_at_return>::create_dynamic_code(std::vector<uin
 }
 
 void type<::mmx::Node_get_tx_ids_at_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_tx_ids_at_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_tx_info>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_tx_info;
+}
+
+void type<::mmx::Node_get_tx_info>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_tx_info());
+}
+
+void type<::mmx::Node_get_tx_info>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_tx_info& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_tx_info_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_tx_info_return;
+}
+
+void type<::mmx::Node_get_tx_info_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_tx_info_return());
+}
+
+void type<::mmx::Node_get_tx_info_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_tx_info_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -2306,6 +2334,18 @@ void type<::mmx::tx_in_t>::create_dynamic_code(std::vector<uint16_t>& code, cons
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::tx_info_t>::get_type_code() {
+	return mmx::vnx_native_type_code_tx_info_t;
+}
+
+void type<::mmx::tx_info_t>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::tx_info_t());
+}
+
+void type<::mmx::tx_info_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::tx_info_t& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::tx_out_t>::get_type_code() {
 	return mmx::vnx_native_type_code_tx_out_t;
 }
@@ -2332,6 +2372,18 @@ void type<::mmx::tx_type_e>::create_dynamic_code(std::vector<uint16_t>& code, co
 	} else {
 		code.push_back(CODE_UINT32);
 	}
+}
+
+const TypeCode* type<::mmx::txi_info_t>::get_type_code() {
+	return mmx::vnx_native_type_code_txi_info_t;
+}
+
+void type<::mmx::txi_info_t>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::txi_info_t());
+}
+
+void type<::mmx::txi_info_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::txi_info_t& value, bool special) {
+	code.push_back(CODE_OBJECT);
 }
 
 const TypeCode* type<::mmx::txio_key_t>::get_type_code() {
@@ -2488,6 +2540,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Node_get_tx_height_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_tx_ids_at::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_tx_ids_at_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_tx_info::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_tx_info_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_txo_info::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_txo_info_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_txo_infos::static_create_type_code());
@@ -2588,8 +2642,10 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::time_segment_t::static_create_type_code());
 	vnx::register_type_code(::mmx::tx_entry_t::static_create_type_code());
 	vnx::register_type_code(::mmx::tx_in_t::static_create_type_code());
+	vnx::register_type_code(::mmx::tx_info_t::static_create_type_code());
 	vnx::register_type_code(::mmx::tx_out_t::static_create_type_code());
 	vnx::register_type_code(::mmx::tx_type_e::static_create_type_code());
+	vnx::register_type_code(::mmx::txi_info_t::static_create_type_code());
 	vnx::register_type_code(::mmx::txio_key_t::static_create_type_code());
 	vnx::register_type_code(::mmx::txo_info_t::static_create_type_code());
 	vnx::register_type_code(::mmx::uint_fraction_t::static_create_type_code());
@@ -2678,6 +2734,8 @@ const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_height = vnx::get_ty
 const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_height_return = vnx::get_type_code(vnx::Hash64(0xda69a0d06f4b5c3eull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_ids_at = vnx::get_type_code(vnx::Hash64(0x904c686b59c101c3ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_ids_at_return = vnx::get_type_code(vnx::Hash64(0x945565d9cbfadc31ull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info = vnx::get_type_code(vnx::Hash64(0xb5409a3aaa19d1d2ull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info_return = vnx::get_type_code(vnx::Hash64(0x3668f41cc643227full));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_txo_info = vnx::get_type_code(vnx::Hash64(0xd9d0be3b95e67d52ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_txo_info_return = vnx::get_type_code(vnx::Hash64(0xec5afeac062fef38ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_txo_infos = vnx::get_type_code(vnx::Hash64(0x576d7f03fe334ad9ull));
@@ -2778,8 +2836,10 @@ const vnx::TypeCode* const vnx_native_type_code_stxo_t = vnx::get_type_code(vnx:
 const vnx::TypeCode* const vnx_native_type_code_time_segment_t = vnx::get_type_code(vnx::Hash64(0x344b7baf0798fe2aull));
 const vnx::TypeCode* const vnx_native_type_code_tx_entry_t = vnx::get_type_code(vnx::Hash64(0x438cda5719015870ull));
 const vnx::TypeCode* const vnx_native_type_code_tx_in_t = vnx::get_type_code(vnx::Hash64(0xd9253957c5a57cd5ull));
+const vnx::TypeCode* const vnx_native_type_code_tx_info_t = vnx::get_type_code(vnx::Hash64(0x44e4a710953f4785ull));
 const vnx::TypeCode* const vnx_native_type_code_tx_out_t = vnx::get_type_code(vnx::Hash64(0xff8d7b37bd8c3a07ull));
 const vnx::TypeCode* const vnx_native_type_code_tx_type_e = vnx::get_type_code(vnx::Hash64(0x3b7f577c2cfd4c91ull));
+const vnx::TypeCode* const vnx_native_type_code_txi_info_t = vnx::get_type_code(vnx::Hash64(0x290dea3427bbdfbbull));
 const vnx::TypeCode* const vnx_native_type_code_txio_key_t = vnx::get_type_code(vnx::Hash64(0xfc88d5457510e2a5ull));
 const vnx::TypeCode* const vnx_native_type_code_txo_info_t = vnx::get_type_code(vnx::Hash64(0x41e366a847ba3fb4ull));
 const vnx::TypeCode* const vnx_native_type_code_uint_fraction_t = vnx::get_type_code(vnx::Hash64(0xe5632136b5a3ed5aull));

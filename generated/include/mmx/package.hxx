@@ -87,6 +87,8 @@ class Node_get_tx_height;
 class Node_get_tx_height_return;
 class Node_get_tx_ids_at;
 class Node_get_tx_ids_at_return;
+class Node_get_tx_info;
+class Node_get_tx_info_return;
 class Node_get_txo_info;
 class Node_get_txo_info_return;
 class Node_get_txo_infos;
@@ -194,8 +196,10 @@ struct stxo_t;
 struct time_segment_t;
 struct tx_entry_t;
 struct tx_in_t;
+class tx_info_t;
 struct tx_out_t;
 struct tx_type_e;
+struct txi_info_t;
 struct txio_key_t;
 struct txo_info_t;
 struct uint_fraction_t;
@@ -277,6 +281,8 @@ extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_height; ///< 
 extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_height_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_ids_at; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_ids_at_return; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Node_get_txo_info; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Node_get_txo_info_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Node_get_txo_infos; ///< \private
@@ -377,8 +383,10 @@ extern const vnx::TypeCode* const vnx_native_type_code_stxo_t; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_time_segment_t; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_tx_entry_t; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_tx_in_t; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_tx_info_t; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_tx_out_t; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_tx_type_e; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_txi_info_t; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_txio_key_t; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_txo_info_t; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_uint_fraction_t; ///< \private
@@ -465,6 +473,8 @@ void read(TypeInput& in, ::mmx::Node_get_tx_height& value, const TypeCode* type_
 void read(TypeInput& in, ::mmx::Node_get_tx_height_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_tx_ids_at& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_tx_ids_at_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_tx_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_tx_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_txo_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_txo_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_txo_infos& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -572,8 +582,10 @@ void read(TypeInput& in, ::mmx::stxo_t& value, const TypeCode* type_code, const 
 void read(TypeInput& in, ::mmx::time_segment_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::tx_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::tx_in_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::tx_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::tx_out_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::tx_type_e& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::txi_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::txio_key_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::txo_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::uint_fraction_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -655,6 +667,8 @@ void write(TypeOutput& out, const ::mmx::Node_get_tx_height& value, const TypeCo
 void write(TypeOutput& out, const ::mmx::Node_get_tx_height_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_tx_ids_at& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_tx_ids_at_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_tx_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_tx_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_txo_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_txo_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_txo_infos& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -762,8 +776,10 @@ void write(TypeOutput& out, const ::mmx::stxo_t& value, const TypeCode* type_cod
 void write(TypeOutput& out, const ::mmx::time_segment_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::tx_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::tx_in_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::tx_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::tx_out_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::tx_type_e& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::txi_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::txio_key_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::txo_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::uint_fraction_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -845,6 +861,8 @@ void read(std::istream& in, ::mmx::Node_get_tx_height& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_tx_height_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_tx_ids_at& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_tx_ids_at_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_tx_info& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_tx_info_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_txo_info& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_txo_info_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_txo_infos& value); ///< \private
@@ -952,8 +970,10 @@ void read(std::istream& in, ::mmx::stxo_t& value); ///< \private
 void read(std::istream& in, ::mmx::time_segment_t& value); ///< \private
 void read(std::istream& in, ::mmx::tx_entry_t& value); ///< \private
 void read(std::istream& in, ::mmx::tx_in_t& value); ///< \private
+void read(std::istream& in, ::mmx::tx_info_t& value); ///< \private
 void read(std::istream& in, ::mmx::tx_out_t& value); ///< \private
 void read(std::istream& in, ::mmx::tx_type_e& value); ///< \private
+void read(std::istream& in, ::mmx::txi_info_t& value); ///< \private
 void read(std::istream& in, ::mmx::txio_key_t& value); ///< \private
 void read(std::istream& in, ::mmx::txo_info_t& value); ///< \private
 void read(std::istream& in, ::mmx::uint_fraction_t& value); ///< \private
@@ -1035,6 +1055,8 @@ void write(std::ostream& out, const ::mmx::Node_get_tx_height& value); ///< \pri
 void write(std::ostream& out, const ::mmx::Node_get_tx_height_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_tx_ids_at& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_tx_ids_at_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_tx_info& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_tx_info_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_txo_info& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_txo_info_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_txo_infos& value); ///< \private
@@ -1142,8 +1164,10 @@ void write(std::ostream& out, const ::mmx::stxo_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::time_segment_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::tx_entry_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::tx_in_t& value); ///< \private
+void write(std::ostream& out, const ::mmx::tx_info_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::tx_out_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::tx_type_e& value); ///< \private
+void write(std::ostream& out, const ::mmx::txi_info_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::txio_key_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::txo_info_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::uint_fraction_t& value); ///< \private
@@ -1225,6 +1249,8 @@ void accept(Visitor& visitor, const ::mmx::Node_get_tx_height& value); ///< \pri
 void accept(Visitor& visitor, const ::mmx::Node_get_tx_height_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_tx_ids_at& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_tx_ids_at_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_tx_info& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_tx_info_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_txo_info& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_txo_info_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_txo_infos& value); ///< \private
@@ -1332,8 +1358,10 @@ void accept(Visitor& visitor, const ::mmx::stxo_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::time_segment_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::tx_entry_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::tx_in_t& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::tx_info_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::tx_out_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::tx_type_e& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::txi_info_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::txio_key_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::txo_info_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::uint_fraction_t& value); ///< \private
@@ -3032,6 +3060,52 @@ struct type<::mmx::Node_get_tx_ids_at_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_tx_ids_at_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_tx_info> {
+	void read(TypeInput& in, ::mmx::Node_get_tx_info& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_tx_info& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_tx_info& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_tx_info& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_tx_info& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_tx_info& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_tx_info_return> {
+	void read(TypeInput& in, ::mmx::Node_get_tx_info_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_tx_info_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_tx_info_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_tx_info_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_tx_info_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_tx_info_return& value, bool special = false);
 };
 
 /// \private
@@ -5488,6 +5562,29 @@ struct type<::mmx::tx_in_t> {
 
 /// \private
 template<>
+struct type<::mmx::tx_info_t> {
+	void read(TypeInput& in, ::mmx::tx_info_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::tx_info_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::tx_info_t& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::tx_info_t& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::tx_info_t& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::tx_info_t& value, bool special = false);
+};
+
+/// \private
+template<>
 struct type<::mmx::tx_out_t> {
 	void read(TypeInput& in, ::mmx::tx_out_t& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
@@ -5530,6 +5627,29 @@ struct type<::mmx::tx_type_e> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::tx_type_e& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::txi_info_t> {
+	void read(TypeInput& in, ::mmx::txi_info_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::txi_info_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::txi_info_t& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::txi_info_t& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::txi_info_t& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::txi_info_t& value, bool special = false);
 };
 
 /// \private

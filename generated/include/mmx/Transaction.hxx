@@ -47,6 +47,8 @@ public:
 	virtual vnx::bool_t is_signed() const;
 	virtual ::mmx::hash_t calc_hash() const override;
 	virtual std::shared_ptr<const ::mmx::Solution> get_solution(const uint32_t& index = 0) const;
+	virtual ::mmx::tx_out_t get_output(const uint32_t& index = 0) const;
+	virtual std::vector<::mmx::tx_out_t> get_all_outputs() const;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	
 	static std::shared_ptr<Transaction> create();
