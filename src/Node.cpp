@@ -1123,7 +1123,7 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork(std::shared_ptr<const BlockHe
 		}
 		if(prev) {
 			fork->total_weight = prev->total_weight;
-			if(!prev_best || prev == prev_best || prev_best->recv_time > fork->recv_time) {
+			if(!prev_best || prev == prev_best || !fork->vdf_point || prev_best->recv_time > fork->vdf_point->recv_time) {
 				if(!fork->has_weak_proof) {
 					fork->total_weight += std::min<int32_t>(prev->weight_buffer, params->score_threshold);
 				}
