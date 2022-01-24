@@ -164,9 +164,6 @@ int main(int argc, char** argv)
 						std::cout << std::endl;
 					}
 				}
-				for(int i = 0; i < num_addrs; ++i) {
-					std::cout << "Address[" << i << "]: " << wallet.get_address(index, i) << std::endl;
-				}
 				for(const auto& addr : nfts) {
 					std::cout << "NFT: " << addr << std::endl;
 				}
@@ -198,6 +195,9 @@ int main(int argc, char** argv)
 						const auto decimals = token ? token->decimals : params->decimals;
 						std::cout << "  Balance: " << entry.second / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.second << ")" << std::endl;
 					}
+				}
+				for(int i = 0; i < num_addrs; ++i) {
+					std::cout << "Address[" << i << "]: " << wallet.get_address(index, i) << std::endl;
 				}
 			}
 			else if(command == "keys")
