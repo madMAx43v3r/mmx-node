@@ -1101,22 +1101,36 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork(std::shared_ptr<const BlockHe
 	if(!root) {
 		root = get_root();
 	}
+	uint32_t curr_height = 0;
 	uint128_t max_weight = 0;
 	std::shared_ptr<fork_t> best_fork;
+	std::shared_ptr<fork_t> prev_best;
 	const auto begin = at_height ? fork_index.lower_bound(*at_height) : fork_index.upper_bound(root->height);
 	const auto end =   at_height ? fork_index.upper_bound(*at_height) : fork_index.end();
 	for(auto iter = begin; iter != end; ++iter)
 	{
 		const auto& fork = iter->second;
+		const auto prev = fork->prev.lock();
+		if(prev && prev->is_invalid) {
+			fork->is_invalid = true;
+		}
 		if(!fork->is_proof_verified || fork->is_invalid) {
 			continue;
 		}
-		if(auto prev = fork->prev.lock()) {
-			if(prev->is_invalid) {
-				fork->is_invalid = true;
-				continue;
+		if(iter->first != curr_height) {
+			prev_best = best_fork;
+			curr_height = iter->first;
+		}
+		if(prev) {
+			fork->total_weight = prev->total_weight;
+			if(!prev_best || prev == prev_best || prev_best->recv_time > fork->recv_time) {
+				if(!fork->has_weak_proof) {
+					fork->total_weight += std::min<int32_t>(prev->weight_buffer, params->score_threshold);
+				}
+				fork->total_weight += fork->weight;
+			} else {
+				fork->total_weight -= params->score_threshold;		// orphan penalty
 			}
-			fork->total_weight = prev->total_weight + fork->weight + std::min<int32_t>(prev->weight_buffer, params->score_threshold);
 			fork->weight_buffer = std::min<int32_t>(std::max(prev->weight_buffer + fork->buffer_delta, 0), params->max_weight_buffer);
 		} else {
 			fork->total_weight = fork->weight;
