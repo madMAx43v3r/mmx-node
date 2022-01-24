@@ -579,11 +579,12 @@ std::shared_ptr<const Contract> Node::get_contract(const addr_t& address) const
 	}
 	{
 		std::unique_lock lock(cache_mutex);
-		contract_map[address] = contract;
-		contract_cache_queue.push(address);
-		if(contract_cache_queue.size() > max_contract_cache) {
-			contract_map.erase(contract_cache_queue.front());
-			contract_cache_queue.pop();
+		if(contract_map.emplace(address, contract).second) {
+			contract_cache_queue.push(address);
+			if(contract_cache_queue.size() > max_contract_cache) {
+				contract_map.erase(contract_cache_queue.front());
+				contract_cache_queue.pop();
+			}
 		}
 	}
 	return contract;
