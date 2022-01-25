@@ -43,6 +43,8 @@ struct tx_entry_t {
 	void read(std::istream& _in);
 	void write(std::ostream& _out) const;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const;
 	
 	vnx::Object to_object() const;
@@ -58,6 +60,18 @@ struct tx_entry_t {
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
 };
+
+template<typename T>
+void tx_entry_t::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<tx_entry_t>(6);
+	_visitor.type_field("height", 0); _visitor.accept(height);
+	_visitor.type_field("txid", 1); _visitor.accept(txid);
+	_visitor.type_field("type", 2); _visitor.accept(type);
+	_visitor.type_field("address", 3); _visitor.accept(address);
+	_visitor.type_field("contract", 4); _visitor.accept(contract);
+	_visitor.type_field("amount", 5); _visitor.accept(amount);
+	_visitor.template type_end<tx_entry_t>(6);
+}
 
 
 } // namespace mmx

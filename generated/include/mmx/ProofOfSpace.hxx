@@ -50,6 +50,8 @@ public:
 	void read(std::istream& _in) override;
 	void write(std::ostream& _out) const override;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const override;
 	
 	vnx::Object to_object() const override;
@@ -65,6 +67,20 @@ public:
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
 };
+
+template<typename T>
+void ProofOfSpace::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<ProofOfSpace>(8);
+	_visitor.type_field("ksize", 0); _visitor.accept(ksize);
+	_visitor.type_field("score", 1); _visitor.accept(score);
+	_visitor.type_field("plot_id", 2); _visitor.accept(plot_id);
+	_visitor.type_field("proof_bytes", 3); _visitor.accept(proof_bytes);
+	_visitor.type_field("local_key", 4); _visitor.accept(local_key);
+	_visitor.type_field("farmer_key", 5); _visitor.accept(farmer_key);
+	_visitor.type_field("pool_key", 6); _visitor.accept(pool_key);
+	_visitor.type_field("local_sig", 7); _visitor.accept(local_sig);
+	_visitor.template type_end<ProofOfSpace>(8);
+}
 
 
 } // namespace mmx

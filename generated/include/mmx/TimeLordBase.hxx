@@ -39,6 +39,8 @@ public:
 	void read(std::istream& _in) override;
 	void write(std::ostream& _out) const override;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const override;
 	
 	vnx::Object to_object() const override;
@@ -64,6 +66,18 @@ protected:
 	std::shared_ptr<vnx::Value> vnx_call_switch(std::shared_ptr<const vnx::Value> _method, const vnx::request_id_t& _request_id) override;
 	
 };
+
+template<typename T>
+void TimeLordBase::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<TimeLordBase>(6);
+	_visitor.type_field("input_infuse", 0); _visitor.accept(input_infuse);
+	_visitor.type_field("input_request", 1); _visitor.accept(input_request);
+	_visitor.type_field("output_proofs", 2); _visitor.accept(output_proofs);
+	_visitor.type_field("max_history", 3); _visitor.accept(max_history);
+	_visitor.type_field("restart_holdoff", 4); _visitor.accept(restart_holdoff);
+	_visitor.type_field("node_server", 5); _visitor.accept(node_server);
+	_visitor.template type_end<TimeLordBase>(6);
+}
 
 
 } // namespace mmx

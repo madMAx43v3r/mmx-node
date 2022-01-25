@@ -46,6 +46,8 @@ struct permission_e {
 	void read(std::istream& _in);
 	void write(std::ostream& _out) const;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const;
 	
 	vnx::bool_t is_valid() const;
@@ -69,6 +71,13 @@ struct permission_e {
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
 };
+
+template<typename T>
+void permission_e::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<permission_e>(1);
+	_visitor.type_field("value", 0); _visitor.accept(value);
+	_visitor.template type_end<permission_e>(1);
+}
 
 
 } // namespace mmx

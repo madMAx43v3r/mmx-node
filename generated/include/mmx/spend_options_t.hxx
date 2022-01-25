@@ -39,6 +39,8 @@ struct spend_options_t {
 	void read(std::istream& _in);
 	void write(std::ostream& _out) const;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const;
 	
 	vnx::Object to_object() const;
@@ -54,6 +56,16 @@ struct spend_options_t {
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
 };
+
+template<typename T>
+void spend_options_t::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<spend_options_t>(4);
+	_visitor.type_field("min_confirm", 0); _visitor.accept(min_confirm);
+	_visitor.type_field("split_output", 1); _visitor.accept(split_output);
+	_visitor.type_field("pending_change", 2); _visitor.accept(pending_change);
+	_visitor.type_field("exclude", 3); _visitor.accept(exclude);
+	_visitor.template type_end<spend_options_t>(4);
+}
 
 
 } // namespace mmx

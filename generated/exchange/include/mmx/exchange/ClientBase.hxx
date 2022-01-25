@@ -42,6 +42,8 @@ public:
 	void read(std::istream& _in) override;
 	void write(std::ostream& _out) const override;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const override;
 	
 	vnx::Object to_object() const override;
@@ -71,6 +73,27 @@ protected:
 	std::shared_ptr<vnx::Value> vnx_call_switch(std::shared_ptr<const vnx::Value> _method, const vnx::request_id_t& _request_id) override;
 	
 };
+
+template<typename T>
+void ClientBase::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<ClientBase>(15);
+	_visitor.type_field("port", 0); _visitor.accept(port);
+	_visitor.type_field("host", 1); _visitor.accept(host);
+	_visitor.type_field("max_connections", 2); _visitor.accept(max_connections);
+	_visitor.type_field("listen_queue_size", 3); _visitor.accept(listen_queue_size);
+	_visitor.type_field("stats_interval_ms", 4); _visitor.accept(stats_interval_ms);
+	_visitor.type_field("connection_timeout_ms", 5); _visitor.accept(connection_timeout_ms);
+	_visitor.type_field("send_buffer_size", 6); _visitor.accept(send_buffer_size);
+	_visitor.type_field("receive_buffer_size", 7); _visitor.accept(receive_buffer_size);
+	_visitor.type_field("tcp_no_delay", 8); _visitor.accept(tcp_no_delay);
+	_visitor.type_field("tcp_keepalive", 9); _visitor.accept(tcp_keepalive);
+	_visitor.type_field("show_warnings", 10); _visitor.accept(show_warnings);
+	_visitor.type_field("max_msg_size", 11); _visitor.accept(max_msg_size);
+	_visitor.type_field("input_blocks", 12); _visitor.accept(input_blocks);
+	_visitor.type_field("node_server", 13); _visitor.accept(node_server);
+	_visitor.type_field("wallet_server", 14); _visitor.accept(wallet_server);
+	_visitor.template type_end<ClientBase>(15);
+}
 
 
 } // namespace mmx

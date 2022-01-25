@@ -55,6 +55,8 @@ public:
 	void read(std::istream& _in) override;
 	void write(std::ostream& _out) const override;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const override;
 	
 	vnx::Object to_object() const override;
@@ -70,6 +72,21 @@ public:
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
 };
+
+template<typename T>
+void ProofOfTime::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<ProofOfTime>(9);
+	_visitor.type_field("height", 0); _visitor.accept(height);
+	_visitor.type_field("start", 1); _visitor.accept(start);
+	_visitor.type_field("input", 2); _visitor.accept(input);
+	_visitor.type_field("infuse", 3); _visitor.accept(infuse);
+	_visitor.type_field("segments", 4); _visitor.accept(segments);
+	_visitor.type_field("timelord_proof", 5); _visitor.accept(timelord_proof);
+	_visitor.type_field("timelord_reward", 6); _visitor.accept(timelord_reward);
+	_visitor.type_field("timelord_key", 7); _visitor.accept(timelord_key);
+	_visitor.type_field("timelord_sig", 8); _visitor.accept(timelord_sig);
+	_visitor.template type_end<ProofOfTime>(9);
+}
 
 
 } // namespace mmx

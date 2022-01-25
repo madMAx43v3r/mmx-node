@@ -49,6 +49,8 @@ public:
 	void read(std::istream& _in) override;
 	void write(std::ostream& _out) const override;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const override;
 	
 	vnx::Object to_object() const override;
@@ -97,6 +99,18 @@ protected:
 	std::shared_ptr<vnx::Value> vnx_call_switch(std::shared_ptr<const vnx::Value> _method, const vnx::request_id_t& _request_id) override;
 	
 };
+
+template<typename T>
+void WalletBase::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<WalletBase>(6);
+	_visitor.type_field("key_files", 0); _visitor.accept(key_files);
+	_visitor.type_field("storage_path", 1); _visitor.accept(storage_path);
+	_visitor.type_field("node_server", 2); _visitor.accept(node_server);
+	_visitor.type_field("num_addresses", 3); _visitor.accept(num_addresses);
+	_visitor.type_field("utxo_timeout_ms", 4); _visitor.accept(utxo_timeout_ms);
+	_visitor.type_field("enable_bls", 5); _visitor.accept(enable_bls);
+	_visitor.template type_end<WalletBase>(6);
+}
 
 
 } // namespace mmx

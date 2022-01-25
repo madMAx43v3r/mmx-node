@@ -39,6 +39,8 @@ struct txio_key_t {
 	void read(std::istream& _in);
 	void write(std::ostream& _out) const;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const;
 	
 	vnx::Object to_object() const;
@@ -54,6 +56,14 @@ struct txio_key_t {
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
 };
+
+template<typename T>
+void txio_key_t::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<txio_key_t>(2);
+	_visitor.type_field("txid", 0); _visitor.accept(txid);
+	_visitor.type_field("index", 1); _visitor.accept(index);
+	_visitor.template type_end<txio_key_t>(2);
+}
 
 
 } // namespace mmx

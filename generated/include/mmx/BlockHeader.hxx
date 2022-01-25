@@ -55,6 +55,8 @@ public:
 	void read(std::istream& _in) override;
 	void write(std::ostream& _out) const override;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const override;
 	
 	vnx::Object to_object() const override;
@@ -70,6 +72,24 @@ public:
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
 };
+
+template<typename T>
+void BlockHeader::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<BlockHeader>(12);
+	_visitor.type_field("hash", 0); _visitor.accept(hash);
+	_visitor.type_field("prev", 1); _visitor.accept(prev);
+	_visitor.type_field("height", 2); _visitor.accept(height);
+	_visitor.type_field("time_diff", 3); _visitor.accept(time_diff);
+	_visitor.type_field("space_diff", 4); _visitor.accept(space_diff);
+	_visitor.type_field("vdf_iters", 5); _visitor.accept(vdf_iters);
+	_visitor.type_field("vdf_output", 6); _visitor.accept(vdf_output);
+	_visitor.type_field("proof", 7); _visitor.accept(proof);
+	_visitor.type_field("tx_base", 8); _visitor.accept(tx_base);
+	_visitor.type_field("tx_count", 9); _visitor.accept(tx_count);
+	_visitor.type_field("tx_hash", 10); _visitor.accept(tx_hash);
+	_visitor.type_field("farmer_sig", 11); _visitor.accept(farmer_sig);
+	_visitor.template type_end<BlockHeader>(12);
+}
 
 
 } // namespace mmx

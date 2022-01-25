@@ -41,6 +41,8 @@ struct open_order_t {
 	void read(std::istream& _in);
 	void write(std::ostream& _out) const;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const;
 	
 	vnx::Object to_object() const;
@@ -56,6 +58,16 @@ struct open_order_t {
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
 };
+
+template<typename T>
+void open_order_t::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<open_order_t>(4);
+	_visitor.type_field("bid", 0); _visitor.accept(bid);
+	_visitor.type_field("ask", 1); _visitor.accept(ask);
+	_visitor.type_field("wallet", 2); _visitor.accept(wallet);
+	_visitor.type_field("offer_id", 3); _visitor.accept(offer_id);
+	_visitor.template type_end<open_order_t>(4);
+}
 
 
 } // namespace mmx

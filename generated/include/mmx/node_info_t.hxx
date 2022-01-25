@@ -39,6 +39,8 @@ struct node_info_t {
 	void read(std::istream& _in);
 	void write(std::ostream& _out) const;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const;
 	
 	vnx::Object to_object() const;
@@ -54,6 +56,15 @@ struct node_info_t {
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
 };
+
+template<typename T>
+void node_info_t::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<node_info_t>(3);
+	_visitor.type_field("id", 0); _visitor.accept(id);
+	_visitor.type_field("version", 1); _visitor.accept(version);
+	_visitor.type_field("type", 2); _visitor.accept(type);
+	_visitor.template type_end<node_info_t>(3);
+}
 
 
 } // namespace mmx

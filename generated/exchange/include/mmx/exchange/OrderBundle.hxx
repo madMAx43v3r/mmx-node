@@ -50,6 +50,8 @@ public:
 	void read(std::istream& _in) override;
 	void write(std::ostream& _out) const override;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const override;
 	
 	vnx::Object to_object() const override;
@@ -65,6 +67,21 @@ public:
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
 };
+
+template<typename T>
+void OrderBundle::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<OrderBundle>(9);
+	_visitor.type_field("id", 0); _visitor.accept(id);
+	_visitor.type_field("wallet", 1); _visitor.accept(wallet);
+	_visitor.type_field("pair", 2); _visitor.accept(pair);
+	_visitor.type_field("bid", 3); _visitor.accept(bid);
+	_visitor.type_field("ask", 4); _visitor.accept(ask);
+	_visitor.type_field("bid_sold", 5); _visitor.accept(bid_sold);
+	_visitor.type_field("received", 6); _visitor.accept(received);
+	_visitor.type_field("limit_orders", 7); _visitor.accept(limit_orders);
+	_visitor.type_field("orders", 8); _visitor.accept(orders);
+	_visitor.template type_end<OrderBundle>(9);
+}
 
 
 } // namespace mmx

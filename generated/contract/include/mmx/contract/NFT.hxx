@@ -48,6 +48,8 @@ public:
 	void read(std::istream& _in) override;
 	void write(std::ostream& _out) const override;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const override;
 	
 	vnx::Object to_object() const override;
@@ -63,6 +65,16 @@ public:
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
 };
+
+template<typename T>
+void NFT::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<NFT>(4);
+	_visitor.type_field("version", 0); _visitor.accept(version);
+	_visitor.type_field("creator", 1); _visitor.accept(creator);
+	_visitor.type_field("parent", 2); _visitor.accept(parent);
+	_visitor.type_field("data", 3); _visitor.accept(data);
+	_visitor.template type_end<NFT>(4);
+}
 
 
 } // namespace mmx

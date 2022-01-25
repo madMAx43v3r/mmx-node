@@ -44,6 +44,8 @@ public:
 	void read(std::istream& _in) override;
 	void write(std::ostream& _out) const override;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const override;
 	
 	vnx::Object to_object() const override;
@@ -59,6 +61,18 @@ public:
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
 };
+
+template<typename T>
+void PuzzleLock::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<PuzzleLock>(6);
+	_visitor.type_field("version", 0); _visitor.accept(version);
+	_visitor.type_field("owner", 1); _visitor.accept(owner);
+	_visitor.type_field("condition", 2); _visitor.accept(condition);
+	_visitor.type_field("puzzle", 3); _visitor.accept(puzzle);
+	_visitor.type_field("target", 4); _visitor.accept(target);
+	_visitor.type_field("currency", 5); _visitor.accept(currency);
+	_visitor.template type_end<PuzzleLock>(6);
+}
 
 
 } // namespace mmx

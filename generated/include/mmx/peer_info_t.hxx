@@ -49,6 +49,8 @@ struct peer_info_t {
 	void read(std::istream& _in);
 	void write(std::ostream& _out) const;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const;
 	
 	vnx::Object to_object() const;
@@ -64,6 +66,26 @@ struct peer_info_t {
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
 };
+
+template<typename T>
+void peer_info_t::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<peer_info_t>(14);
+	_visitor.type_field("address", 0); _visitor.accept(address);
+	_visitor.type_field("type", 1); _visitor.accept(type);
+	_visitor.type_field("credits", 2); _visitor.accept(credits);
+	_visitor.type_field("tx_credits", 3); _visitor.accept(tx_credits);
+	_visitor.type_field("ping_ms", 4); _visitor.accept(ping_ms);
+	_visitor.type_field("height", 5); _visitor.accept(height);
+	_visitor.type_field("version", 6); _visitor.accept(version);
+	_visitor.type_field("recv_timeout_ms", 7); _visitor.accept(recv_timeout_ms);
+	_visitor.type_field("connect_time_ms", 8); _visitor.accept(connect_time_ms);
+	_visitor.type_field("bytes_send", 9); _visitor.accept(bytes_send);
+	_visitor.type_field("bytes_recv", 10); _visitor.accept(bytes_recv);
+	_visitor.type_field("is_synced", 11); _visitor.accept(is_synced);
+	_visitor.type_field("is_blocked", 12); _visitor.accept(is_blocked);
+	_visitor.type_field("is_outbound", 13); _visitor.accept(is_outbound);
+	_visitor.template type_end<peer_info_t>(14);
+}
 
 
 } // namespace mmx

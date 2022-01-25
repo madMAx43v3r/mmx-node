@@ -39,6 +39,8 @@ public:
 	void read(std::istream& _in) override;
 	void write(std::ostream& _out) const override;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const override;
 	
 	vnx::Object to_object() const override;
@@ -54,6 +56,14 @@ public:
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
 };
+
+template<typename T>
+void Node_add_transaction::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<Node_add_transaction>(2);
+	_visitor.type_field("tx", 0); _visitor.accept(tx);
+	_visitor.type_field("pre_validate", 1); _visitor.accept(pre_validate);
+	_visitor.template type_end<Node_add_transaction>(2);
+}
 
 
 } // namespace mmx

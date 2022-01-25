@@ -47,6 +47,8 @@ struct node_type_e {
 	void read(std::istream& _in);
 	void write(std::ostream& _out) const;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const;
 	
 	vnx::bool_t is_valid() const;
@@ -70,6 +72,13 @@ struct node_type_e {
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
 };
+
+template<typename T>
+void node_type_e::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<node_type_e>(1);
+	_visitor.type_field("value", 0); _visitor.accept(value);
+	_visitor.template type_end<node_type_e>(1);
+}
 
 
 } // namespace mmx

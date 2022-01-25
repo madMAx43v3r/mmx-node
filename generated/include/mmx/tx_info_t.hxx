@@ -54,6 +54,8 @@ public:
 	void read(std::istream& _in) override;
 	void write(std::ostream& _out) const override;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const override;
 	
 	vnx::Object to_object() const override;
@@ -69,6 +71,24 @@ public:
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
 };
+
+template<typename T>
+void tx_info_t::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<tx_info_t>(12);
+	_visitor.type_field("id", 0); _visitor.accept(id);
+	_visitor.type_field("height", 1); _visitor.accept(height);
+	_visitor.type_field("block", 2); _visitor.accept(block);
+	_visitor.type_field("fee", 3); _visitor.accept(fee);
+	_visitor.type_field("cost", 4); _visitor.accept(cost);
+	_visitor.type_field("inputs", 5); _visitor.accept(inputs);
+	_visitor.type_field("outputs", 6); _visitor.accept(outputs);
+	_visitor.type_field("operations", 7); _visitor.accept(operations);
+	_visitor.type_field("deployed", 8); _visitor.accept(deployed);
+	_visitor.type_field("input_amounts", 9); _visitor.accept(input_amounts);
+	_visitor.type_field("output_amounts", 10); _visitor.accept(output_amounts);
+	_visitor.type_field("contracts", 11); _visitor.accept(contracts);
+	_visitor.template type_end<tx_info_t>(12);
+}
 
 
 } // namespace mmx

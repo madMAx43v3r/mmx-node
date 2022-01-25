@@ -78,6 +78,8 @@ public:
 	void read(std::istream& _in) override;
 	void write(std::ostream& _out) const override;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const override;
 	
 	vnx::Object to_object() const override;
@@ -117,6 +119,61 @@ protected:
 	std::shared_ptr<vnx::Value> vnx_call_switch(std::shared_ptr<const vnx::Value> _method, const vnx::request_id_t& _request_id) override;
 	
 };
+
+template<typename T>
+void RouterBase::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<RouterBase>(49);
+	_visitor.type_field("port", 0); _visitor.accept(port);
+	_visitor.type_field("host", 1); _visitor.accept(host);
+	_visitor.type_field("max_connections", 2); _visitor.accept(max_connections);
+	_visitor.type_field("listen_queue_size", 3); _visitor.accept(listen_queue_size);
+	_visitor.type_field("stats_interval_ms", 4); _visitor.accept(stats_interval_ms);
+	_visitor.type_field("connection_timeout_ms", 5); _visitor.accept(connection_timeout_ms);
+	_visitor.type_field("send_buffer_size", 6); _visitor.accept(send_buffer_size);
+	_visitor.type_field("receive_buffer_size", 7); _visitor.accept(receive_buffer_size);
+	_visitor.type_field("tcp_no_delay", 8); _visitor.accept(tcp_no_delay);
+	_visitor.type_field("tcp_keepalive", 9); _visitor.accept(tcp_keepalive);
+	_visitor.type_field("show_warnings", 10); _visitor.accept(show_warnings);
+	_visitor.type_field("max_msg_size", 11); _visitor.accept(max_msg_size);
+	_visitor.type_field("input_vdfs", 12); _visitor.accept(input_vdfs);
+	_visitor.type_field("input_blocks", 13); _visitor.accept(input_blocks);
+	_visitor.type_field("input_verified_vdfs", 14); _visitor.accept(input_verified_vdfs);
+	_visitor.type_field("input_verified_proof", 15); _visitor.accept(input_verified_proof);
+	_visitor.type_field("input_transactions", 16); _visitor.accept(input_transactions);
+	_visitor.type_field("output_vdfs", 17); _visitor.accept(output_vdfs);
+	_visitor.type_field("output_proof", 18); _visitor.accept(output_proof);
+	_visitor.type_field("output_blocks", 19); _visitor.accept(output_blocks);
+	_visitor.type_field("output_transactions", 20); _visitor.accept(output_transactions);
+	_visitor.type_field("max_queue_ms", 21); _visitor.accept(max_queue_ms);
+	_visitor.type_field("query_interval_ms", 22); _visitor.accept(query_interval_ms);
+	_visitor.type_field("update_interval_ms", 23); _visitor.accept(update_interval_ms);
+	_visitor.type_field("connect_interval_ms", 24); _visitor.accept(connect_interval_ms);
+	_visitor.type_field("fetch_timeout_ms", 25); _visitor.accept(fetch_timeout_ms);
+	_visitor.type_field("sync_loss_delay", 26); _visitor.accept(sync_loss_delay);
+	_visitor.type_field("discover_interval", 27); _visitor.accept(discover_interval);
+	_visitor.type_field("num_threads", 28); _visitor.accept(num_threads);
+	_visitor.type_field("num_peers_out", 29); _visitor.accept(num_peers_out);
+	_visitor.type_field("min_sync_peers", 30); _visitor.accept(min_sync_peers);
+	_visitor.type_field("max_sync_peers", 31); _visitor.accept(max_sync_peers);
+	_visitor.type_field("max_hash_cache", 32); _visitor.accept(max_hash_cache);
+	_visitor.type_field("tx_credits", 33); _visitor.accept(tx_credits);
+	_visitor.type_field("vdf_credits", 34); _visitor.accept(vdf_credits);
+	_visitor.type_field("block_credits", 35); _visitor.accept(block_credits);
+	_visitor.type_field("proof_credits", 36); _visitor.accept(proof_credits);
+	_visitor.type_field("vdf_relay_cost", 37); _visitor.accept(vdf_relay_cost);
+	_visitor.type_field("proof_relay_cost", 38); _visitor.accept(proof_relay_cost);
+	_visitor.type_field("block_relay_cost", 39); _visitor.accept(block_relay_cost);
+	_visitor.type_field("max_node_credits", 40); _visitor.accept(max_node_credits);
+	_visitor.type_field("max_farmer_credits", 41); _visitor.accept(max_farmer_credits);
+	_visitor.type_field("node_version", 42); _visitor.accept(node_version);
+	_visitor.type_field("mode", 43); _visitor.accept(mode);
+	_visitor.type_field("do_relay", 44); _visitor.accept(do_relay);
+	_visitor.type_field("seed_peers", 45); _visitor.accept(seed_peers);
+	_visitor.type_field("block_peers", 46); _visitor.accept(block_peers);
+	_visitor.type_field("storage_path", 47); _visitor.accept(storage_path);
+	_visitor.type_field("node_server", 48); _visitor.accept(node_server);
+	_visitor.template type_end<RouterBase>(49);
+}
 
 
 } // namespace mmx

@@ -60,6 +60,8 @@ public:
 	void read(std::istream& _in) override;
 	void write(std::ostream& _out) const override;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const override;
 	
 	vnx::Object to_object() const override;
@@ -75,6 +77,21 @@ public:
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
 };
+
+template<typename T>
+void Token::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<Token>(9);
+	_visitor.type_field("version", 0); _visitor.accept(version);
+	_visitor.type_field("name", 1); _visitor.accept(name);
+	_visitor.type_field("symbol", 2); _visitor.accept(symbol);
+	_visitor.type_field("web_url", 3); _visitor.accept(web_url);
+	_visitor.type_field("icon_url", 4); _visitor.accept(icon_url);
+	_visitor.type_field("decimals", 5); _visitor.accept(decimals);
+	_visitor.type_field("owner", 6); _visitor.accept(owner);
+	_visitor.type_field("time_factor", 7); _visitor.accept(time_factor);
+	_visitor.type_field("stake_factors", 8); _visitor.accept(stake_factors);
+	_visitor.template type_end<Token>(9);
+}
 
 
 } // namespace mmx

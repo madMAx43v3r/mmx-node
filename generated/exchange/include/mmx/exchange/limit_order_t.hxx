@@ -43,6 +43,8 @@ struct limit_order_t {
 	void read(std::istream& _in);
 	void write(std::ostream& _out) const;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const;
 	
 	vnx::Object to_object() const;
@@ -58,6 +60,15 @@ struct limit_order_t {
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
 };
+
+template<typename T>
+void limit_order_t::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<limit_order_t>(3);
+	_visitor.type_field("ask", 0); _visitor.accept(ask);
+	_visitor.type_field("bid_keys", 1); _visitor.accept(bid_keys);
+	_visitor.type_field("solution", 2); _visitor.accept(solution);
+	_visitor.template type_end<limit_order_t>(3);
+}
 
 
 } // namespace mmx

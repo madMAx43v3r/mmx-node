@@ -39,6 +39,8 @@ struct utxo_t : ::mmx::tx_out_t {
 	void read(std::istream& _in);
 	void write(std::ostream& _out) const;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const;
 	
 	vnx::Object to_object() const;
@@ -54,6 +56,16 @@ struct utxo_t : ::mmx::tx_out_t {
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
 };
+
+template<typename T>
+void utxo_t::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<utxo_t>(4);
+	_visitor.type_field("address", 0); _visitor.accept(address);
+	_visitor.type_field("contract", 1); _visitor.accept(contract);
+	_visitor.type_field("amount", 2); _visitor.accept(amount);
+	_visitor.type_field("height", 3); _visitor.accept(height);
+	_visitor.template type_end<utxo_t>(4);
+}
 
 
 } // namespace mmx

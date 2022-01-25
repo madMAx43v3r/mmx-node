@@ -83,6 +83,8 @@ public:
 	void read(std::istream& _in) override;
 	void write(std::ostream& _out) const override;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const override;
 	
 	vnx::Object to_object() const override;
@@ -142,6 +144,45 @@ protected:
 	std::shared_ptr<vnx::Value> vnx_call_switch(std::shared_ptr<const vnx::Value> _method, const vnx::request_id_t& _request_id) override;
 	
 };
+
+template<typename T>
+void NodeBase::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<NodeBase>(33);
+	_visitor.type_field("input_vdfs", 0); _visitor.accept(input_vdfs);
+	_visitor.type_field("input_proof", 1); _visitor.accept(input_proof);
+	_visitor.type_field("input_blocks", 2); _visitor.accept(input_blocks);
+	_visitor.type_field("input_transactions", 3); _visitor.accept(input_transactions);
+	_visitor.type_field("input_timelord_vdfs", 4); _visitor.accept(input_timelord_vdfs);
+	_visitor.type_field("input_harvester_proof", 5); _visitor.accept(input_harvester_proof);
+	_visitor.type_field("output_verified_vdfs", 6); _visitor.accept(output_verified_vdfs);
+	_visitor.type_field("output_verified_proof", 7); _visitor.accept(output_verified_proof);
+	_visitor.type_field("output_verified_blocks", 8); _visitor.accept(output_verified_blocks);
+	_visitor.type_field("output_committed_blocks", 9); _visitor.accept(output_committed_blocks);
+	_visitor.type_field("output_transactions", 10); _visitor.accept(output_transactions);
+	_visitor.type_field("output_interval_request", 11); _visitor.accept(output_interval_request);
+	_visitor.type_field("output_timelord_infuse", 12); _visitor.accept(output_timelord_infuse);
+	_visitor.type_field("output_challenges", 13); _visitor.accept(output_challenges);
+	_visitor.type_field("max_queue_ms", 14); _visitor.accept(max_queue_ms);
+	_visitor.type_field("update_interval_ms", 15); _visitor.accept(update_interval_ms);
+	_visitor.type_field("sync_loss_delay", 16); _visitor.accept(sync_loss_delay);
+	_visitor.type_field("max_history", 17); _visitor.accept(max_history);
+	_visitor.type_field("tx_pool_limit", 18); _visitor.accept(tx_pool_limit);
+	_visitor.type_field("max_contract_cache", 19); _visitor.accept(max_contract_cache);
+	_visitor.type_field("max_fork_length", 20); _visitor.accept(max_fork_length);
+	_visitor.type_field("max_sync_jobs", 21); _visitor.accept(max_sync_jobs);
+	_visitor.type_field("num_sync_retries", 22); _visitor.accept(num_sync_retries);
+	_visitor.type_field("replay_height", 23); _visitor.accept(replay_height);
+	_visitor.type_field("num_vdf_threads", 24); _visitor.accept(num_vdf_threads);
+	_visitor.type_field("vdf_check_divider", 25); _visitor.accept(vdf_check_divider);
+	_visitor.type_field("opencl_device", 26); _visitor.accept(opencl_device);
+	_visitor.type_field("do_sync", 27); _visitor.accept(do_sync);
+	_visitor.type_field("light_mode", 28); _visitor.accept(light_mode);
+	_visitor.type_field("storage_path", 29); _visitor.accept(storage_path);
+	_visitor.type_field("database_path", 30); _visitor.accept(database_path);
+	_visitor.type_field("router_name", 31); _visitor.accept(router_name);
+	_visitor.type_field("timelord_name", 32); _visitor.accept(timelord_name);
+	_visitor.template type_end<NodeBase>(33);
+}
 
 
 } // namespace mmx

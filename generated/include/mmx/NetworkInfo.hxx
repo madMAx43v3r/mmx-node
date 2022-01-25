@@ -44,6 +44,8 @@ public:
 	void read(std::istream& _in) override;
 	void write(std::ostream& _out) const override;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const override;
 	
 	vnx::Object to_object() const override;
@@ -59,6 +61,20 @@ public:
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
 };
+
+template<typename T>
+void NetworkInfo::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<NetworkInfo>(8);
+	_visitor.type_field("height", 0); _visitor.accept(height);
+	_visitor.type_field("time_diff", 1); _visitor.accept(time_diff);
+	_visitor.type_field("space_diff", 2); _visitor.accept(space_diff);
+	_visitor.type_field("block_reward", 3); _visitor.accept(block_reward);
+	_visitor.type_field("total_space", 4); _visitor.accept(total_space);
+	_visitor.type_field("total_supply", 5); _visitor.accept(total_supply);
+	_visitor.type_field("utxo_count", 6); _visitor.accept(utxo_count);
+	_visitor.type_field("address_count", 7); _visitor.accept(address_count);
+	_visitor.template type_end<NetworkInfo>(8);
+}
 
 
 } // namespace mmx

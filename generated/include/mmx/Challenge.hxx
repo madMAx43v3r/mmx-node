@@ -40,6 +40,8 @@ public:
 	void read(std::istream& _in) override;
 	void write(std::ostream& _out) const override;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const override;
 	
 	vnx::Object to_object() const override;
@@ -55,6 +57,15 @@ public:
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
 };
+
+template<typename T>
+void Challenge::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<Challenge>(3);
+	_visitor.type_field("height", 0); _visitor.accept(height);
+	_visitor.type_field("space_diff", 1); _visitor.accept(space_diff);
+	_visitor.type_field("challenge", 2); _visitor.accept(challenge);
+	_visitor.template type_end<Challenge>(3);
+}
 
 
 } // namespace mmx

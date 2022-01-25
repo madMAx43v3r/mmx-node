@@ -42,6 +42,8 @@ public:
 	void read(std::istream& _in) override;
 	void write(std::ostream& _out) const override;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const override;
 	
 	vnx::Object to_object() const override;
@@ -57,6 +59,16 @@ public:
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
 };
+
+template<typename T>
+void FarmerKeys::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<FarmerKeys>(4);
+	_visitor.type_field("pool_private_key", 0); _visitor.accept(pool_private_key);
+	_visitor.type_field("farmer_private_key", 1); _visitor.accept(farmer_private_key);
+	_visitor.type_field("pool_public_key", 2); _visitor.accept(pool_public_key);
+	_visitor.type_field("farmer_public_key", 3); _visitor.accept(farmer_public_key);
+	_visitor.template type_end<FarmerKeys>(4);
+}
 
 
 } // namespace mmx

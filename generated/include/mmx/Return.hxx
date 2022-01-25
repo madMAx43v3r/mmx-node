@@ -38,6 +38,8 @@ public:
 	void read(std::istream& _in) override;
 	void write(std::ostream& _out) const override;
 	
+	template<typename T>
+	void accept_generic(T& _visitor) const;
 	void accept(vnx::Visitor& _visitor) const override;
 	
 	vnx::Object to_object() const override;
@@ -53,6 +55,14 @@ public:
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
 };
+
+template<typename T>
+void Return::accept_generic(T& _visitor) const {
+	_visitor.template type_begin<Return>(2);
+	_visitor.type_field("id", 0); _visitor.accept(id);
+	_visitor.type_field("result", 1); _visitor.accept(result);
+	_visitor.template type_end<Return>(2);
+}
 
 
 } // namespace mmx
