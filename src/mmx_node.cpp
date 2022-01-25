@@ -11,6 +11,7 @@
 #include <mmx/Farmer.h>
 #include <mmx/Harvester.h>
 #include <mmx/Router.h>
+#include <mmx/WebAPI.h>
 #include <mmx/WalletClient.hxx>
 #include <mmx/secp256k1.hpp>
 #include <mmx/utils.h>
@@ -115,7 +116,12 @@ int main(int argc, char** argv)
 		vnx::write_config("light_address_set", light_set);
 	}
 	{
+		vnx::Handle<mmx::WebAPI> module = new mmx::WebAPI("WebAPI");
+		module.start_detached();
+	}
+	{
 		vnx::Handle<vnx::addons::HttpServer> module = new vnx::addons::HttpServer("HttpServer");
+		module->components["/wapi/"] = "WebAPI";
 		module->components["/api/node/"] = "Node";
 		module->components["/api/wallet/"] = "Wallet";
 		module.start_detached();

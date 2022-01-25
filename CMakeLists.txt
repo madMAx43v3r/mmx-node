@@ -84,6 +84,7 @@ add_library(mmx_modules SHARED
 	src/Farmer.cpp
 	src/Harvester.cpp
 	src/Router.cpp
+	src/WebAPI.cpp
 	src/OCL_VDF.cpp
 )
 

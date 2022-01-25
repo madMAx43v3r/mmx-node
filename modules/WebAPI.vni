@@ -1,0 +1,10 @@
+package mmx;
+
+module WebAPI implements vnx.addons.HttpComponent {
+	
+	string node_server = "Node";
+	
+	
+	void handle(Block sample);
+	
+}
