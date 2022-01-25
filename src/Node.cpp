@@ -410,7 +410,7 @@ std::vector<vnx::optional<txo_info_t>> Node::get_txo_infos(const std::vector<txi
 
 std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id, const vnx::bool_t& include_pending) const
 {
-	// THREAD SAFE
+	// THREAD SAFE (for concurrent reads)
 	if(include_pending || tx_map.count(id))
 	{
 		auto iter = tx_pool.find(id);
