@@ -603,6 +603,19 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "address?id");
 		}
 	}
+	else if(sub_path == "/contract") {
+		const auto iter = query.find("id");
+		if(iter != query.end()) {
+			const auto address = vnx::from_string_value<addr_t>(iter->second);
+			node->get_contract(address,
+				[this, request_id](std::shared_ptr<const Contract> contract) {
+					respond(request_id, render_value(contract));
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "contract?id");
+		}
+	}
 	else if(sub_path == "/address/history") {
 		const auto iter_id = query.find("id");
 		const auto iter_limit = query.find("limit");
@@ -622,7 +635,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else {
 		std::vector<std::string> options = {
-				"node/info", "header", "headers", "block", "transaction", "transactions", "address", "address/history"
+			"node/info", "header", "headers", "block", "transaction", "transactions", "address", "contract", "address/history"
 		};
 		respond_status(request_id, 404, vnx::to_string(options));
 	}
