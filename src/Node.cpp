@@ -8,6 +8,7 @@
 #include <mmx/Node.h>
 #include <mmx/Context.hxx>
 #include <mmx/Challenge.hxx>
+#include <mmx/contract/Token.hxx>
 #include <mmx/TimeLordClient.hxx>
 #include <mmx/utxo_entry_t.hpp>
 #include <mmx/stxo_entry_t.hpp>
@@ -657,6 +658,9 @@ bool Node::include_transaction(std::shared_ptr<const Transaction> tx)
 			if(light_address_set.count(*owner)) {
 				return true;
 			}
+		}
+		if(std::dynamic_pointer_cast<const contract::Token>(contract)) {
+			return true;
 		}
 	}
 	return false;
