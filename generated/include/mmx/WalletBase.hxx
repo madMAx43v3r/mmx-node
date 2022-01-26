@@ -7,6 +7,7 @@
 #include <mmx/package.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/FarmerKeys.hxx>
+#include <mmx/Solution.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
@@ -73,6 +74,7 @@ protected:
 	virtual ::mmx::hash_t mint(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
 	virtual ::mmx::hash_t deploy(const uint32_t& index, std::shared_ptr<const ::mmx::Contract> contract, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> sign_off(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx) const = 0;
+	virtual std::shared_ptr<const ::mmx::Solution> sign_msg(const uint32_t& index, const ::mmx::addr_t& address, const ::mmx::hash_t& msg) const = 0;
 	virtual void reserve(const uint32_t& index, const std::vector<::mmx::txio_key_t>& keys) = 0;
 	virtual void release(const uint32_t& index, const std::vector<::mmx::txio_key_t>& keys) = 0;
 	virtual void release_all() = 0;
@@ -84,6 +86,7 @@ protected:
 	virtual std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index, const int32_t& since) const = 0;
 	virtual uint64_t get_balance(const uint32_t& index, const ::mmx::addr_t& currency, const uint32_t& min_confirm) const = 0;
 	virtual std::map<::mmx::addr_t, uint64_t> get_balances(const uint32_t& index, const uint32_t& min_confirm) const = 0;
+	virtual std::map<::mmx::addr_t, uint64_t> get_reserved_balances(const uint32_t& index, const uint32_t& min_confirm) const = 0;
 	virtual std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts(const uint32_t& index) const = 0;
 	virtual ::mmx::addr_t get_address(const uint32_t& index, const uint32_t& offset) const = 0;
 	virtual std::vector<::mmx::addr_t> get_all_addresses(const int32_t& index) const = 0;

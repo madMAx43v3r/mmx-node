@@ -7,6 +7,7 @@
 #include <vnx/AsyncClient.h>
 #include <mmx/Contract.hxx>
 #include <mmx/FarmerKeys.hxx>
+#include <mmx/Solution.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
@@ -85,6 +86,10 @@ public:
 			const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::Transaction>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
+	uint64_t sign_msg(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::hash_t& msg = ::mmx::hash_t(), 
+			const std::function<void(std::shared_ptr<const ::mmx::Solution>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::Solution>)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
 	uint64_t reserve(const uint32_t& index = 0, const std::vector<::mmx::txio_key_t>& keys = {}, 
 			const std::function<void()>& _callback = std::function<void()>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
@@ -126,6 +131,10 @@ public:
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_balances(const uint32_t& index = 0, const uint32_t& min_confirm = 0, 
+			const std::function<void(const std::map<::mmx::addr_t, uint64_t>&)>& _callback = std::function<void(const std::map<::mmx::addr_t, uint64_t>&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t get_reserved_balances(const uint32_t& index = 0, const uint32_t& min_confirm = 0, 
 			const std::function<void(const std::map<::mmx::addr_t, uint64_t>&)>& _callback = std::function<void(const std::map<::mmx::addr_t, uint64_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
@@ -181,6 +190,7 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::hash_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_mint;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::hash_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_deploy;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::Transaction>)>, std::function<void(const vnx::exception&)>>> vnx_queue_sign_off;
+	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::Solution>)>, std::function<void(const vnx::exception&)>>> vnx_queue_sign_msg;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_reserve;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_release;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_release_all;
@@ -192,6 +202,7 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::tx_entry_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_history;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const uint64_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_balance;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<::mmx::addr_t, uint64_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_balances;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<::mmx::addr_t, uint64_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_reserved_balances;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_contracts;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::addr_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_address;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::addr_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_all_addresses;

@@ -7,6 +7,7 @@
 #include <vnx/Client.h>
 #include <mmx/Contract.hxx>
 #include <mmx/FarmerKeys.hxx>
+#include <mmx/Solution.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
@@ -65,6 +66,8 @@ public:
 	
 	std::shared_ptr<const ::mmx::Transaction> sign_off(const uint32_t& index = 0, std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
 	
+	std::shared_ptr<const ::mmx::Solution> sign_msg(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::hash_t& msg = ::mmx::hash_t());
+	
 	void reserve(const uint32_t& index = 0, const std::vector<::mmx::txio_key_t>& keys = {});
 	
 	void reserve_async(const uint32_t& index = 0, const std::vector<::mmx::txio_key_t>& keys = {});
@@ -92,6 +95,8 @@ public:
 	uint64_t get_balance(const uint32_t& index = 0, const ::mmx::addr_t& currency = ::mmx::addr_t(), const uint32_t& min_confirm = 0);
 	
 	std::map<::mmx::addr_t, uint64_t> get_balances(const uint32_t& index = 0, const uint32_t& min_confirm = 0);
+	
+	std::map<::mmx::addr_t, uint64_t> get_reserved_balances(const uint32_t& index = 0, const uint32_t& min_confirm = 0);
 	
 	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts(const uint32_t& index = 0);
 	
