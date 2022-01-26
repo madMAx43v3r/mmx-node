@@ -14,6 +14,7 @@
 #include <mmx/NodeAsyncClient.hxx>
 #include <mmx/Request.hxx>
 #include <mmx/Return.hxx>
+#include <mmx/txio_key_t.hpp>
 #include <mmx/utils.h>
 
 #include <vnx/GenericAsyncClient.h>
@@ -22,12 +23,14 @@
 namespace mmx {
 namespace exchange {
 
-class Server : ServerBase {
+class Server : public ServerBase {
 public:
 	Server(const std::string& _vnx_name);
 
 protected:
 	struct peer_t : Super::peer_t {
+		bool is_blocked = false;
+		bool is_outbound = false;
 		std::string address;
 		std::unordered_set<txio_key_t> order_set;
 	};
@@ -81,6 +84,10 @@ private:
 	void on_return(uint64_t client, std::shared_ptr<const Return> msg);
 
 	void on_msg(uint64_t client, std::shared_ptr<const vnx::Value> msg);
+
+	void on_pause(uint64_t client) override;
+
+	void on_resume(uint64_t client) override;
 
 	void on_connect(uint64_t client, const std::string& address) override;
 

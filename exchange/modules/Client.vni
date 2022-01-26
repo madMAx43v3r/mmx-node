@@ -1,7 +1,10 @@
 package mmx.exchange;
 
 import mmx.hash_t;
+import mmx.addr_t;
 import mmx.txio_key_t;
+import mmx.Transaction;
+import mmx.ulong_fraction_t;
 
 module Client extends vnx.addons.MsgServer {
 	
@@ -9,6 +12,19 @@ module Client extends vnx.addons.MsgServer {
 	
 	string node_server = "Node";
 	string wallet_server = "Wallet";
+	
+	map<string, string> server_map;			// [name => address]
+	
+	
+	vector<string> get_servers() const;
+	
+	void execute(string server, Transaction* tx) async;
+	
+	Transaction* match(string server, trade_pair_t pair, trade_order_t order) const async;
+	
+	vector<order_t> get_orders(string server, trade_pair_t pair) const async;
+	
+	ulong_fraction_t get_price(string server, addr_t want, amount_t have) const async;
 	
 	
 	optional<open_order_t> get_order(txio_key_t key) const;
@@ -18,6 +34,8 @@ module Client extends vnx.addons.MsgServer {
 	vector<OrderBundle*> get_all_offers() const;
 	
 	OrderBundle* make_offer(uint wallet, trade_pair_t pair, ulong bid, ulong ask) const;
+	
+	vector<trade_order_t> make_trade(uint wallet, trade_pair_t pair, ulong bid, optional<ulong> ask) const;
 	
 	@Permission(mmx.permission_e.SPENDING)
 	void place(OrderBundle* offer);

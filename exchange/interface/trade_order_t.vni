@@ -5,6 +5,8 @@ import mmx.txio_key_t;
 
 struct trade_order_t {
 	
+	uint version;
+	
 	ulong bid;
 	
 	optional<ulong> ask;

@@ -29,6 +29,7 @@ public:
 	uint32_t height = 0;
 	int64_t last_utxo_update = 0;
 	std::vector<utxo_entry_t> utxo_cache;
+	std::unordered_set<txio_key_t> reserved_set;
 	std::unordered_set<txio_key_t> spent_txo_set;
 	std::unordered_map<txio_key_t, tx_out_t> utxo_change_cache;
 
@@ -190,7 +191,7 @@ public:
 				continue;
 			}
 			const auto& key = entry.key;
-			if(spent_map.count(key) || spent_txo_set.count(key) || exclude.count(key)) {
+			if(spent_map.count(key) || spent_txo_set.count(key) || reserved_set.count(key) || exclude.count(key)) {
 				continue;
 			}
 			if(out.amount > amount) {
@@ -306,6 +307,16 @@ public:
 			solution_map[owner] = in.solution;
 			tx->solutions.push_back(sol);
 		}
+	}
+
+	std::shared_ptr<const Solution> sign_msg(const addr_t& address, const hash_t& msg) const
+	{
+		const auto& keys = get_keypair(address);
+
+		auto sol = solution::PubKey::create();
+		sol->pubkey = keys.second;
+		sol->signature = signature_t::sign(keys.first, msg);
+		return sol;
 	}
 
 	std::shared_ptr<Transaction> send(const uint64_t& amount, const addr_t& dst_addr, const addr_t& currency, const spend_options_t& options)

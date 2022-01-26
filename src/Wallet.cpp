@@ -68,7 +68,8 @@ std::shared_ptr<ECDSA_Wallet> Wallet::get_wallet(const uint32_t& index) const
 	throw std::logic_error("no such wallet");
 }
 
-hash_t Wallet::send(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& currency, const spend_options_t& options) const
+hash_t Wallet::send(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
+					const addr_t& currency, const spend_options_t& options) const
 {
 	if(amount == 0) {
 		throw std::logic_error("amount cannot be zero");
@@ -119,7 +120,8 @@ hash_t Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 	return tx->id;
 }
 
-hash_t Wallet::mint(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& currency, const spend_options_t& options) const
+hash_t Wallet::mint(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
+					const addr_t& currency, const spend_options_t& options) const
 {
 	if(amount == 0) {
 		throw std::logic_error("amount cannot be zero");
@@ -167,28 +169,53 @@ std::shared_ptr<const Transaction> Wallet::sign_off(const uint32_t& index, std::
 {
 	const auto wallet = get_wallet(index);
 
-	std::unordered_map<txio_key_t, utxo_t> utxo_map;
-	for(const auto& entry : wallet->utxo_cache) {
-		utxo_map[entry.key] = entry.output;
+	std::unordered_set<txio_key_t> spent_keys;
+	for(const auto& in : tx->inputs) {
+		spent_keys.insert(in.prev);
 	}
+	std::unordered_map<txio_key_t, utxo_t> spent_map;
+	for(const auto& entry : wallet->utxo_cache) {
+		if(spent_keys.erase(entry.key)) {
+			spent_map[entry.key] = entry.output;
+		}
+		if(spent_keys.empty()) {
+			break;
+		}
+	}
+	// TODO: lookup owner_map
+
 	auto copy = vnx::clone(tx);
-	wallet->sign_off(copy, utxo_map);
+	wallet->sign_off(copy, spent_map);
 	return copy;
+}
+
+std::shared_ptr<const Solution> Wallet::sign_msg(const uint32_t& index, const addr_t& address, const hash_t& msg) const
+{
+	const auto wallet = get_wallet(index);
+	return wallet->sign_msg(address, msg);
 }
 
 void Wallet::reserve(const uint32_t& index, const std::vector<txio_key_t>& keys)
 {
-	// TODO
+	const auto wallet = get_wallet(index);
+	wallet->reserved_set.insert(keys.begin(), keys.end());
 }
 
 void Wallet::release(const uint32_t& index, const std::vector<txio_key_t>& keys)
 {
-	// TODO
+	const auto wallet = get_wallet(index);
+	for(const auto& key : keys) {
+		wallet->reserved_set.erase(key);
+	}
 }
 
 void Wallet::release_all()
 {
-	// TODO
+	for(auto wallet : wallets) {
+		if(wallet) {
+			wallet->reserved_set.clear();
+		}
+	}
 }
 
 std::vector<utxo_entry_t> Wallet::get_utxo_list(const uint32_t& index, const uint32_t& min_confirm) const
@@ -203,7 +230,7 @@ std::vector<utxo_entry_t> Wallet::get_utxo_list(const uint32_t& index, const uin
 		wallet->update_cache(all_utxo, height);
 		wallet->last_utxo_update = now;
 
-		log(INFO) << "Updated UTXO cache: " << wallet->utxo_cache.size() << " entries, " << wallet->utxo_change_cache.size() << " pending change";
+		log(INFO) << "Updated cache: " << wallet->utxo_cache.size() << " utxo, " << wallet->utxo_change_cache.size() << " pending change";
 	}
 	if(min_confirm == 0) {
 		return wallet->utxo_cache;
@@ -247,7 +274,8 @@ std::vector<stxo_entry_t> Wallet::get_stxo_list_for(const uint32_t& index, const
 	return res;
 }
 
-std::vector<utxo_entry_t> Wallet::gather_utxos_for(const uint32_t& index, const uint64_t& amount, const addr_t& currency, const spend_options_t& options) const
+std::vector<utxo_entry_t> Wallet::gather_utxos_for(	const uint32_t& index, const uint64_t& amount,
+													const addr_t& currency, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
 	get_utxo_list(index);	// update utxo_cache
@@ -288,6 +316,20 @@ std::map<addr_t, uint64_t> Wallet::get_balances(const uint32_t& index, const uin
 	for(const auto& entry : get_utxo_list(index, min_confirm)) {
 		const auto& utxo = entry.output;
 		amounts[utxo.contract] += utxo.amount;
+	}
+	return amounts;
+}
+
+std::map<addr_t, uint64_t> Wallet::get_reserved_balances(const uint32_t& index, const uint32_t& min_confirm) const
+{
+	const auto wallet = get_wallet(index);
+
+	std::map<addr_t, uint64_t> amounts;
+	for(const auto& entry : get_utxo_list(index, min_confirm)) {
+		if(wallet->reserved_set.count(entry.key)) {
+			const auto& utxo = entry.output;
+			amounts[utxo.contract] += utxo.amount;
+		}
 	}
 	return amounts;
 }

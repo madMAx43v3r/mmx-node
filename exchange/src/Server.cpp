@@ -158,21 +158,23 @@ void Server::place_async(const uint64_t& client, const trade_pair_t& pair, const
 					return;
 				}
 			}
-			if(!result.empty()) {
-				auto& book = trade_map[pair];
-				if(!book) {
-					book = std::make_shared<order_book_t>();
-				}
-				const auto price = order.ask / double(total_bid);
-				for(auto& tmp : result) {
-					tmp.ask = tmp.bid * price;
-					peer->order_set.insert(tmp.bid_key);
-					book->orders.emplace(tmp.get_price(), tmp);
-				}
+			if(result.empty()) {
+				vnx_async_return_ex_what(request_id, "empty order");
+				return;
+			}
+			auto& book = trade_map[pair];
+			if(!book) {
+				book = std::make_shared<order_book_t>();
+			}
+			const auto price = order.ask / double(total_bid);
+			for(auto& tmp : result) {
+				tmp.ask = tmp.bid * price;
+				peer->order_set.insert(tmp.bid_key);
+				book->orders.emplace(tmp.get_price(), tmp);
 			}
 			place_async_return(request_id, result);
 		},
-		std::bind(&Server::vnx_async_return_ex, request_id, std::placeholders::_1));
+		std::bind(&Server::vnx_async_return_ex, this, request_id, std::placeholders::_1));
 }
 
 void Server::execute_async(std::shared_ptr<const Transaction> tx, const vnx::request_id_t& request_id)
@@ -257,7 +259,7 @@ void Server::execute_async(std::shared_ptr<const Transaction> tx, const vnx::req
 				vnx_async_return_ex(request_id, ex);
 			}
 		},
-		std::bind(&Server::vnx_async_return_ex, request_id, std::placeholders::_1));
+		std::bind(&Server::vnx_async_return_ex, this, request_id, std::placeholders::_1));
 }
 
 void Server::match_async(const trade_pair_t& pair, const trade_order_t& order, const vnx::request_id_t& request_id) const
@@ -284,9 +286,13 @@ void Server::match_async(const trade_pair_t& pair, const trade_order_t& order, c
 					}
 				}
 			}
+			if(bid_keys.empty()) {
+				vnx_async_return_ex_what(request_id, "empty order");
+				return;
+			}
 			const auto book = find_pair(pair.reverse());
-			if(!book || bid_keys.empty()) {
-				match_async_return(request_id, nullptr);
+			if(!book) {
+				vnx_async_return_ex_what(request_id, "no such trade pair");
 				return;
 			}
 			const auto max_price = order.ask ? order.bid / double(*order.ask) : std::numeric_limits<double>::infinity();
@@ -319,6 +325,10 @@ void Server::match_async(const trade_pair_t& pair, const trade_order_t& order, c
 					final_bid += order.ask;
 					final_ask += order.bid;
 				}
+			}
+			if(output_map.empty()) {
+				vnx_async_return_ex_what(request_id, "empty match");
+				return;
 			}
 			// give the bid
 			for(const auto& entry : output_map) {
@@ -359,7 +369,7 @@ void Server::match_async(const trade_pair_t& pair, const trade_order_t& order, c
 			}
 			match_async_return(request_id, tx);
 		},
-		std::bind(&Server::vnx_async_return_ex, request_id, std::placeholders::_1));
+		std::bind(&Server::vnx_async_return_ex, this, request_id, std::placeholders::_1));
 }
 
 std::vector<order_t> Server::get_orders(const trade_pair_t& pair) const
@@ -479,6 +489,26 @@ void Server::on_msg(uint64_t client, std::shared_ptr<const vnx::Value> msg)
 			}
 		}
 		break;
+	}
+}
+
+void Server::on_pause(uint64_t client)
+{
+	if(auto peer = find_peer(client)) {
+		peer->is_blocked = true;
+		if(!peer->is_outbound) {
+			pause(client);		// pause incoming traffic
+		}
+	}
+}
+
+void Server::on_resume(uint64_t client)
+{
+	if(auto peer = find_peer(client)) {
+		peer->is_blocked = false;
+		if(!peer->is_outbound) {
+			resume(client);		// resume incoming traffic
+		}
 	}
 }
 

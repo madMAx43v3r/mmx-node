@@ -29,15 +29,20 @@ protected:
 
 	void main() override;
 
-	hash_t send(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& currency, const spend_options_t& options) const override;
+	hash_t send(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
+				const addr_t& currency, const spend_options_t& options) const override;
 
-	hash_t send_from(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& src_addr, const addr_t& currency, const spend_options_t& options) const override;
+	hash_t send_from(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& src_addr,
+						const addr_t& currency, const spend_options_t& options) const override;
 
-	hash_t mint(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& currency, const spend_options_t& options) const override;
+	hash_t mint(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
+				const addr_t& currency, const spend_options_t& options) const override;
 
 	hash_t deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> sign_off(const uint32_t& index, std::shared_ptr<const Transaction> tx) const override;
+
+	std::shared_ptr<const Solution> sign_msg(const uint32_t& index, const addr_t& address, const hash_t& msg) const override;
 
 	void reserve(const uint32_t& index, const std::vector<txio_key_t>& keys) override;
 
@@ -53,13 +58,16 @@ protected:
 
 	std::vector<stxo_entry_t> get_stxo_list_for(const uint32_t& index, const addr_t& currency) const override;
 
-	std::vector<utxo_entry_t> gather_utxos_for(const uint32_t& index, const uint64_t& amount, const addr_t& currency, const spend_options_t& options) const override;
+	std::vector<utxo_entry_t> gather_utxos_for(	const uint32_t& index, const uint64_t& amount,
+												const addr_t& currency, const spend_options_t& options) const override;
 
 	std::vector<tx_entry_t> get_history(const uint32_t& index, const int32_t& since) const override;
 
 	uint64_t get_balance(const uint32_t& index, const addr_t& contract, const uint32_t& min_confirm) const override;
 
 	std::map<addr_t, uint64_t> get_balances(const uint32_t& index, const uint32_t& min_confirm) const override;
+
+	std::map<addr_t, uint64_t> get_reserved_balances(const uint32_t& index, const uint32_t& min_confirm) const override;
 
 	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts(const uint32_t& index) const override;
 
