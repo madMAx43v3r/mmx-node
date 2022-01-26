@@ -91,7 +91,7 @@ void WebAPI::handle(std::shared_ptr<const Block> block)
 {
 }
 
-vnx::Object to_amount(const uint64_t& value, const int decimals)
+vnx::Object to_amount(const int64_t& value, const int decimals)
 {
 	vnx::Object res;
 	res["value"] = value * pow(10, -decimals);
