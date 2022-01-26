@@ -462,6 +462,19 @@ void WebAPI::render_transactions(	const vnx::request_id_t& request_id, const siz
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 }
 
+void WebAPI::gather_transactions(	const vnx::request_id_t& request_id, const size_t limit, const uint32_t height,
+									std::shared_ptr<std::vector<hash_t>> result, const std::vector<hash_t>& tx_ids) const
+{
+	result->insert(result->end(), tx_ids.begin(), tx_ids.end());
+	if(result->size() >= limit) {
+		render_transactions(request_id, limit, 0, std::make_shared<std::vector<vnx::Variant>>(), *result, nullptr);
+		return;
+	}
+	node->get_tx_ids_at(height,
+			std::bind(&WebAPI::gather_transactions, this, request_id, limit, height - 1, result, std::placeholders::_1),
+			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+}
+
 void WebAPI::render_address(const vnx::request_id_t& request_id, const addr_t& address, const std::map<addr_t, uint64_t>& balances) const
 {
 	std::unordered_set<addr_t> addr_set;
@@ -543,10 +556,18 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	else if(sub_path == "/headers") {
 		const auto iter_limit = query.find("limit");
 		const auto iter_offset = query.find("offset");
-		if(iter_limit != query.end()) {
+		if(iter_limit != query.end() && iter_offset != query.end()) {
 			const size_t limit = std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 1000), 0);
-			const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
+			const size_t offset = vnx::from_string<int64_t>(iter_offset->second);
 			render_headers(request_id, limit, offset, std::make_shared<std::vector<vnx::Variant>>(), nullptr);
+		} else if(iter_offset == query.end()) {
+			const uint32_t limit = iter_limit != query.end() ?
+					std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 1000), 0) : 20;
+			node->get_height(
+				[this, request_id, limit](const uint32_t& height) {
+					render_headers(request_id, limit, height - std::min(limit, height) + 1, std::make_shared<std::vector<vnx::Variant>>(), nullptr);
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
 			respond_status(request_id, 404, "headers?limit|offset");
 		}
@@ -587,6 +608,14 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			node->get_tx_ids_at(vnx::from_string_value<uint32_t>(iter_height->second),
 				std::bind(&WebAPI::render_transactions, this, request_id, limit, offset,
 						std::make_shared<std::vector<vnx::Variant>>(), std::placeholders::_1, nullptr),
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else if(iter_offset == query.end()) {
+			const size_t limit = iter_limit != query.end() ?
+					std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 10000), 0) : 20;
+			node->get_height(
+				[this, request_id, limit](const uint32_t& height) {
+					gather_transactions(request_id, limit, height, std::make_shared<std::vector<hash_t>>(), {});
+				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
 			respond_status(request_id, 404, "transactions?height|limit|offset");

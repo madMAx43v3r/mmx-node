@@ -48,6 +48,9 @@ private:
 								std::shared_ptr<std::vector<vnx::Variant>> result, const std::vector<hash_t>& tx_ids,
 								const vnx::optional<tx_info_t>& info) const;
 
+	void gather_transactions(	const vnx::request_id_t& request_id, const size_t limit, const uint32_t height,
+								std::shared_ptr<std::vector<hash_t>> result, const std::vector<hash_t>& tx_ids) const;
+
 	void render_address(const vnx::request_id_t& request_id, const addr_t& address, const std::map<addr_t, uint64_t>& balances) const;
 
 	void render_history(const vnx::request_id_t& request_id, const addr_t& address,
