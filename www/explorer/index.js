@@ -130,7 +130,7 @@ function on_block(res, ret)
 	res.render('index', args);
 }
 
-async function on_recent(res, ret)
+async function on_recent_blocks(res, ret)
 {
 	if(!ret.data) {
 		res.status(404).send("nothing found");
@@ -149,6 +149,18 @@ async function on_recent(res, ret)
 	let args = {};
 	args.body = 'recent';
 	args.blocks = blocks;
+	res.render('index', args);
+}
+
+function on_recent_transactions(res, ret)
+{
+	if(!ret.data) {
+		res.status(404).send("nothing found");
+		return;
+	}
+	let args = {};
+	args.body = 'recent_transactions';
+	args.transactions = ret.data;
 	res.render('index', args);
 }
 
@@ -289,7 +301,13 @@ app.get('/', (req, res) => {
 
 app.get('/recent', (req, res) => {
 	axios.get(host + '/api/node/get_height')
-		.then(on_recent.bind(null, res))
+		.then(on_recent_blocks.bind(null, res))
+		.catch(on_error.bind(null, res));
+});
+
+app.get('/transactions', (req, res) => {
+	axios.get(host + '/wapi/transactions?limit=100')
+		.then(on_recent_transactions.bind(null, res))
 		.catch(on_error.bind(null, res));
 });
 

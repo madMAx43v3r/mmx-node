@@ -1,0 +1,24 @@
+
+<table class="table table-hover">
+<thead>
+<tr>
+<th>Height</th>
+<th>Fee</th>
+<th>N(In)</th>
+<th>N(Out)</th>
+<th>ID</th>
+</tr>
+</thead>
+
+<tbody class="font-monospace">
+<% transactions.forEach(function(info) { %>
+<tr>
+<td><a href="block?hash=<%= info.block %>"><%= info.height %></a></td>
+<td><%= info.fee.value %> MMX</td>
+<td><%= info.inputs.length %></td>
+<td><%= info.outputs.length %></td>
+<td><a href="transaction?id=<%= info.id %>"><%= info.id %></a></td>
+</tr>
+<% }); %>
+</tbody>
+</table>
