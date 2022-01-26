@@ -156,12 +156,14 @@ int main(int argc, char** argv)
 						nfts.push_back(entry.first);
 					} else {
 						const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(contract);
-						const auto decimals = token ? token->decimals : params->decimals;
-						std::cout << "Balance: " << entry.second / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.second << ")";
-						if(token) {
-							std::cout << " [" << entry.first << "]";
+						if(token || entry.first == mmx::addr_t()) {
+							const auto decimals = token ? token->decimals : params->decimals;
+							std::cout << "Balance: " << entry.second / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.second << ")";
+							if(token) {
+								std::cout << " [" << entry.first << "]";
+							}
+							std::cout << std::endl;
 						}
-						std::cout << std::endl;
 					}
 				}
 				for(const auto& addr : nfts) {
