@@ -37,12 +37,24 @@ protected:
 private:
 	void render_header(const vnx::request_id_t& request_id, std::shared_ptr<const BlockHeader> block) const;
 
+	void render_headers(const vnx::request_id_t& request_id, const size_t limit, const size_t offset,
+						std::shared_ptr<std::vector<vnx::Variant>> result, std::shared_ptr<const BlockHeader> block) const;
+
 	void render_block(const vnx::request_id_t& request_id, std::shared_ptr<const Block> block) const;
 
-	void render_transaction(const vnx::request_id_t& request_id, const vnx::optional<tx_info_t> info) const;
+	void render_transaction(const vnx::request_id_t& request_id, const vnx::optional<tx_info_t>& info) const;
 
-	void get_contracts(	const std::unordered_set<addr_t>& addresses,
-						const vnx::request_id_t& request_id, const std::function<void()>& callback) const;
+	void render_transactions(	const vnx::request_id_t& request_id, const size_t limit, const size_t offset,
+								std::shared_ptr<std::vector<vnx::Variant>> result, const std::vector<hash_t>& tx_ids,
+								const vnx::optional<tx_info_t>& info) const;
+
+	void render_address(const vnx::request_id_t& request_id, const addr_t& address, const std::map<addr_t, uint64_t>& balances) const;
+
+	void render_history(const vnx::request_id_t& request_id, const addr_t& address,
+						const size_t limit, const size_t offset, std::vector<tx_entry_t> history) const;
+
+	void get_context(	const std::unordered_set<addr_t>& addr_set, const vnx::request_id_t& request_id,
+						const std::function<void(std::shared_ptr<RenderContext>)>& callback) const;
 
 	void respond(const vnx::request_id_t& request_id, const vnx::Variant& value) const;
 
@@ -50,13 +62,11 @@ private:
 
 	void respond_ex(const vnx::request_id_t& request_id, const std::exception& ex) const;
 
-	void respond_status(const vnx::request_id_t& request_id, const int32_t& status) const;
+	void respond_status(const vnx::request_id_t& request_id, const int32_t& status, const std::string& text = "") const;
 
 private:
 	std::shared_ptr<NodeAsyncClient> node;
 	std::shared_ptr<const ChainParams> params;
-
-	std::shared_ptr<RenderContext> context;
 
 };
 

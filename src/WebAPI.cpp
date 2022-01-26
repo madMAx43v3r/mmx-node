@@ -18,8 +18,6 @@
 
 #include <vnx/vnx.h>
 
-#include <stack>
-
 
 namespace mmx {
 
@@ -31,6 +29,14 @@ struct currency_t {
 
 class RenderContext {
 public:
+	RenderContext(std::shared_ptr<const ChainParams> params)
+		:	params(params)
+	{
+		auto& currency = currency_map[addr_t()];
+		currency.decimals = params->decimals;
+		currency.symbol = "MMX";
+	}
+
 	bool have_contract(const addr_t& address) const {
 		return currency_map.count(address);
 	}
@@ -66,13 +72,6 @@ WebAPI::WebAPI(const std::string& _vnx_name)
 	:	WebAPIBase(_vnx_name)
 {
 	params = mmx::get_params();
-
-	context = std::make_shared<RenderContext>();
-	context->params = params;
-
-	auto& currency = context->currency_map[addr_t()];
-	currency.decimals = params->decimals;
-	currency.symbol = "MMX";
 }
 
 void WebAPI::init()
@@ -229,14 +228,14 @@ public:
 		set(render(value, context));
 	}
 
-	vnx::Object apply(vnx::Object out, const tx_out_t& value) {
+	vnx::Object augment(vnx::Object out, const addr_t& contract, const uint64_t amount) {
 		if(context) {
-			if(auto info = context->find_currency(value.contract)) {
+			if(auto info = context->find_currency(contract)) {
 				if(info->is_nft) {
 					out["is_nft"] = true;
 				} else {
 					out["symbol"] = info->symbol;
-					out["value"] = value.amount * pow(10, -info->decimals);
+					out["value"] = amount * pow(10, -info->decimals);
 				}
 			}
 		}
@@ -244,11 +243,11 @@ public:
 	}
 
 	void accept(const tx_out_t& value) {
-		set(apply(render(value), value));
+		set(augment(render(value), value.contract, value.amount));
 	}
 
 	void accept(const utxo_t& value) {
-		set(apply(render(value), value));
+		set(augment(render(value), value.contract, value.amount));
 	}
 
 	void accept(const txi_info_t& value) {
@@ -261,44 +260,41 @@ public:
 
 	vnx::Object to_output(const addr_t& contract, const uint64_t amount) {
 		vnx::Object tmp;
-		if(context) {
-			if(auto info = context->find_currency(contract)) {
-				if(info->is_nft) {
-					tmp["is_nft"] = true;
-				} else {
-					tmp["symbol"] = info->symbol;
-					tmp["value"] = amount * pow(10, -info->decimals);
-				}
-			}
-		}
 		tmp["amount"] = amount;
 		tmp["contract"] = contract.to_string();
-		return tmp;
+		return augment(tmp, contract, amount);
 	}
 
 	void accept(const tx_info_t& value) {
+		auto tmp = render(value, context);
 		if(context) {
-			auto tmp = render(value, context);
 			tmp["fee"] = to_amount(value.fee, context->params->decimals);
 			tmp["cost"] = to_amount(value.cost, context->params->decimals);
-			{
-				std::vector<vnx::Object> rows;
-				for(const auto& entry : value.input_amounts) {
-					rows.push_back(to_output(entry.first, entry.second));
-				}
-				tmp["input_amounts"] = rows;
-			}
-			{
-				std::vector<vnx::Object> rows;
-				for(const auto& entry : value.output_amounts) {
-					rows.push_back(to_output(entry.first, entry.second));
-				}
-				tmp["output_amounts"] = rows;
-			}
-			set(tmp);
-		} else {
-			set(render(value));
 		}
+		{
+			std::vector<vnx::Object> rows;
+			for(const auto& entry : value.input_amounts) {
+				rows.push_back(to_output(entry.first, entry.second));
+			}
+			tmp["input_amounts"] = rows;
+		}
+		{
+			std::vector<vnx::Object> rows;
+			for(const auto& entry : value.output_amounts) {
+				rows.push_back(to_output(entry.first, entry.second));
+			}
+			tmp["output_amounts"] = rows;
+		}
+		tmp.erase("contracts");
+		set(tmp);
+	}
+
+	void accept(const tx_type_e& value) {
+		set(value.to_string_value());
+	}
+
+	void accept(const tx_entry_t& value) {
+		set(augment(render(value, context), value.contract, value.amount));
 	}
 
 	void accept(std::shared_ptr<const Transaction> value) {
@@ -358,9 +354,9 @@ private:
 
 template<typename T>
 vnx::Object render(const T& value, std::shared_ptr<const RenderContext> context) {
-	Render tmp(context);
-	value.accept_generic(tmp);
-	return std::move(tmp.object);
+	Render visitor(context);
+	value.accept_generic(visitor);
+	return std::move(visitor.object);
 }
 
 template<typename T>
@@ -371,9 +367,33 @@ vnx::Variant render(std::shared_ptr<const T> value, std::shared_ptr<const Render
 	return vnx::Variant(nullptr);
 }
 
+template<typename T>
+vnx::Variant render_value(const T& value, std::shared_ptr<const RenderContext> context = nullptr) {
+	Render visitor(context);
+	visitor.accept(value);
+	return std::move(visitor.result);
+}
+
 void WebAPI::render_header(const vnx::request_id_t& request_id, std::shared_ptr<const BlockHeader> block) const
 {
+	auto context = std::make_shared<RenderContext>(params);
 	respond(request_id, render(block, context));
+}
+
+void WebAPI::render_headers(const vnx::request_id_t& request_id, const size_t limit, const size_t offset,
+							std::shared_ptr<std::vector<vnx::Variant>> result, std::shared_ptr<const BlockHeader> block) const
+{
+	if(block) {
+		auto context = std::make_shared<RenderContext>(params);
+		result->push_back(render(block, context));
+	}
+	if(result->size() >= limit) {
+		respond(request_id, vnx::Variant(*result));
+		return;
+	}
+	node->get_header_at(offset,
+			std::bind(&WebAPI::render_headers, this, request_id, limit, offset + 1, result, std::placeholders::_1),
+			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 }
 
 void WebAPI::render_block(const vnx::request_id_t& request_id, std::shared_ptr<const Block> block) const
@@ -403,29 +423,95 @@ void WebAPI::render_block(const vnx::request_id_t& request_id, std::shared_ptr<c
 			}
 		}
 	}
-	get_contracts(addr_set, request_id,
-		[this, request_id, block]() {
+	get_context(addr_set, request_id,
+		[this, request_id, block](std::shared_ptr<const RenderContext> context) {
 			respond(request_id, render(block, context));
 		});
 }
 
-void WebAPI::render_transaction(const vnx::request_id_t& request_id, const vnx::optional<tx_info_t> info) const
+void WebAPI::render_transaction(const vnx::request_id_t& request_id, const vnx::optional<tx_info_t>& info) const
 {
 	if(!info) {
 		respond_status(request_id, 404);
 		return;
 	}
+	auto context = std::make_shared<RenderContext>(params);
 	for(const auto& entry : info->contracts) {
 		context->add_contract(entry.first, entry.second);
 	}
-	Render render(context);
-	render.accept(*info);
-	respond(request_id, render.result);
+	respond(request_id, render_value(info, context));
+}
+
+void WebAPI::render_transactions(	const vnx::request_id_t& request_id, const size_t limit, const size_t offset,
+									std::shared_ptr<std::vector<vnx::Variant>> result, const std::vector<hash_t>& tx_ids,
+									const vnx::optional<tx_info_t>& info) const
+{
+	if(info) {
+		auto context = std::make_shared<RenderContext>(params);
+		for(const auto& entry : info->contracts) {
+			context->add_contract(entry.first, entry.second);
+		}
+		result->push_back(render_value(info, context));
+	}
+	if(result->size() >= limit || offset >= tx_ids.size()) {
+		respond(request_id, vnx::Variant(*result));
+		return;
+	}
+	node->get_tx_info(tx_ids[offset],
+			std::bind(&WebAPI::render_transactions, this, request_id, limit, offset + 1, result, tx_ids, std::placeholders::_1),
+			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+}
+
+void WebAPI::render_address(const vnx::request_id_t& request_id, const addr_t& address, const std::map<addr_t, uint64_t>& balances) const
+{
+	std::unordered_set<addr_t> addr_set;
+	for(const auto& entry : balances) {
+		addr_set.insert(entry.first);
+	}
+	get_context(addr_set, request_id,
+		[this, request_id, address, balances](std::shared_ptr<const RenderContext> context) {
+			Render visitor(context);
+			std::vector<vnx::Object> rows;
+			for(const auto& entry : balances) {
+				rows.push_back(visitor.to_output(entry.first, entry.second));
+			}
+			node->get_contract(address,
+				[this, request_id, rows](std::shared_ptr<const Contract> contract) {
+					vnx::Object out;
+					out["balances"] = rows;
+					out["contract"] = render_value(contract);
+					respond(request_id, out);
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		});
+}
+
+void WebAPI::render_history(const vnx::request_id_t& request_id, const addr_t& address,
+							const size_t limit, const size_t offset, std::vector<tx_entry_t> history) const
+{
+	if(offset > 0) {
+		for(size_t i = 0; i < history.size() && i < limit; ++i) {
+			history[i] = history[offset + 1];
+		}
+	}
+	if(history.size() > limit) {
+		history.resize(limit);
+	}
+	std::unordered_set<addr_t> addr_set;
+	for(const auto& entry : history) {
+		addr_set.insert(entry.contract);
+	}
+	get_context(addr_set, request_id,
+		[this, request_id, history](std::shared_ptr<const RenderContext> context) {
+			respond(request_id, render_value(history, context));
+		});
 }
 
 void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
 								const vnx::request_id_t& request_id) const
 {
+	const auto& query = request->query_params;
+
 	if(sub_path == "/node/info") {
 		node->get_network_info(
 			[this, request_id](std::shared_ptr<const NetworkInfo> info) {
@@ -439,49 +525,106 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 	}
 	else if(sub_path == "/header") {
-		const auto iter_hash = request->query_params.find("hash");
-		const auto iter_height = request->query_params.find("height");
-		if(iter_hash != request->query_params.end()) {
+		const auto iter_hash = query.find("hash");
+		const auto iter_height = query.find("height");
+		if(iter_hash != query.end()) {
 			node->get_header(vnx::from_string_value<hash_t>(iter_hash->second),
 				std::bind(&WebAPI::render_header, this, request_id, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		}
-		else if(iter_height != request->query_params.end()) {
+		else if(iter_height != query.end()) {
 			node->get_header_at(vnx::from_string_value<uint32_t>(iter_height->second),
 				std::bind(&WebAPI::render_header, this, request_id, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404);
+			respond_status(request_id, 404, "header?hash|height");
+		}
+	}
+	else if(sub_path == "/headers") {
+		const auto iter_limit = query.find("limit");
+		const auto iter_offset = query.find("offset");
+		if(iter_limit != query.end()) {
+			const size_t limit = std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 1000), 0);
+			const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
+			render_headers(request_id, limit, offset, std::make_shared<std::vector<vnx::Variant>>(), nullptr);
+		} else {
+			respond_status(request_id, 404, "headers?limit|offset");
 		}
 	}
 	else if(sub_path == "/block") {
-		const auto iter_hash = request->query_params.find("hash");
-		const auto iter_height = request->query_params.find("height");
-		if(iter_hash != request->query_params.end()) {
+		const auto iter_hash = query.find("hash");
+		const auto iter_height = query.find("height");
+		if(iter_hash != query.end()) {
 			node->get_block(vnx::from_string_value<hash_t>(iter_hash->second),
 				std::bind(&WebAPI::render_block, this, request_id, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		}
-		else if(iter_height != request->query_params.end()) {
+		else if(iter_height != query.end()) {
 			node->get_block_at(vnx::from_string_value<uint32_t>(iter_height->second),
 				std::bind(&WebAPI::render_block, this, request_id, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404);
+			respond_status(request_id, 404, "block?hash|height");
 		}
 	}
 	else if(sub_path == "/transaction") {
-		const auto iter_id = request->query_params.find("id");
-		if(iter_id != request->query_params.end()) {
+		const auto iter_id = query.find("id");
+		if(iter_id != query.end()) {
 			node->get_tx_info(vnx::from_string_value<hash_t>(iter_id->second),
 				std::bind(&WebAPI::render_transaction, this, request_id, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404);
+			respond_status(request_id, 404, "transaction?id");
+		}
+	}
+	else if(sub_path == "/transactions") {
+		const auto iter_height = query.find("height");
+		const auto iter_limit = query.find("limit");
+		const auto iter_offset = query.find("offset");
+		if(iter_height != query.end()) {
+			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
+			const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
+			node->get_tx_ids_at(vnx::from_string_value<uint32_t>(iter_height->second),
+				std::bind(&WebAPI::render_transactions, this, request_id, limit, offset,
+						std::make_shared<std::vector<vnx::Variant>>(), std::placeholders::_1, nullptr),
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "transactions?height|limit|offset");
+		}
+	}
+	else if(sub_path == "/address") {
+		const auto iter = query.find("id");
+		if(iter != query.end()) {
+			const auto address = vnx::from_string_value<addr_t>(iter->second);
+			node->get_total_balances({address}, 1,
+				std::bind(&WebAPI::render_address, this, request_id, address, std::placeholders::_1),
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "address?id");
+		}
+	}
+	else if(sub_path == "/address/history") {
+		const auto iter_id = query.find("id");
+		const auto iter_limit = query.find("limit");
+		const auto iter_offset = query.find("offset");
+		const auto iter_since = query.find("since");
+		if(iter_id != query.end()) {
+			const auto address = vnx::from_string_value<addr_t>(iter_id->second);
+			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
+			const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
+			const int32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
+			node->get_history_for({address}, since,
+				std::bind(&WebAPI::render_history, this, request_id, address, limit, offset, std::placeholders::_1),
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "address/history?id|limit|offset|since");
 		}
 	}
 	else {
-		respond_status(request_id, 404);
+		std::vector<std::string> options = {
+				"node/info", "header", "headers", "block", "transaction", "transactions", "address", "address/history"
+		};
+		respond_status(request_id, 404, vnx::to_string(options));
 	}
 }
 
@@ -491,25 +634,17 @@ void WebAPI::http_request_chunk_async(	std::shared_ptr<const vnx::addons::HttpRe
 	throw std::logic_error("not implemented");
 }
 
-void WebAPI::get_contracts(	const std::unordered_set<addr_t>& addresses,
-							const vnx::request_id_t& request_id, const std::function<void()>& callback) const
+void WebAPI::get_context(	const std::unordered_set<addr_t>& addr_set, const vnx::request_id_t& request_id,
+							const std::function<void(std::shared_ptr<RenderContext>)>& callback) const
 {
-	std::vector<addr_t> list;
-	for(const auto& addr : addresses) {
-		if(!context->have_contract(addr)) {
-			list.push_back(addr);
-		}
-	}
-	if(list.empty()) {
-		callback();
-		return;
-	}
+	const std::vector<addr_t> list(addr_set.begin(), addr_set.end());
 	node->get_contracts(list,
 		[this, list, request_id, callback](const std::vector<std::shared_ptr<const Contract>> values) {
+			auto context = std::make_shared<RenderContext>(params);
 			for(size_t i = 0; i < list.size() && i < values.size(); ++i) {
 				context->add_contract(list[i], values[i]);
 			}
-			callback();
+			callback(context);
 		},
 		std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 }
@@ -529,9 +664,13 @@ void WebAPI::respond_ex(const vnx::request_id_t& request_id, const std::exceptio
 	http_request_async_return(request_id, vnx::addons::HttpResponse::from_text_ex(ex.what(), 500));
 }
 
-void WebAPI::respond_status(const vnx::request_id_t& request_id, const int32_t& status) const
+void WebAPI::respond_status(const vnx::request_id_t& request_id, const int32_t& status, const std::string& text) const
 {
-	http_request_async_return(request_id, vnx::addons::HttpResponse::from_status(status));
+	if(text.empty()) {
+		http_request_async_return(request_id, vnx::addons::HttpResponse::from_status(status));
+	} else {
+		http_request_async_return(request_id, vnx::addons::HttpResponse::from_text_ex(text, status));
+	}
 }
 
 
