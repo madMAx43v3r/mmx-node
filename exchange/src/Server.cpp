@@ -22,6 +22,7 @@ Server::Server(const std::string& _vnx_name)
 
 void Server::init()
 {
+	Super::init();
 	vnx::open_pipe(vnx_name, this, 10000);
 	vnx::open_pipe(vnx_get_id(), this, 10000);
 }

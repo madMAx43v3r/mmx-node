@@ -35,6 +35,7 @@ Client::Client(const std::string& _vnx_name)
 
 void Client::init()
 {
+	Super::init();
 	vnx::open_pipe(vnx_name, this, 10000);
 }
 
@@ -138,6 +139,9 @@ std::shared_ptr<const OrderBundle> Client::make_offer(const uint32_t& index, con
 
 	for(const auto& entry : wallet->gather_utxos_for(index, bid, pair.bid)) {
 		const auto& utxo = entry.output;
+		if(offer->bid + utxo.amount > bid) {
+			continue;
+		}
 		open_order_t order;
 		order.wallet = index;
 		order.offer_id = offer->id;
@@ -212,7 +216,12 @@ void Client::place(std::shared_ptr<const OrderBundle> offer)
 	order_map.insert(offer->orders.begin(), offer->orders.end());
 	offer_map[offer->id] = vnx::clone(offer);
 
-	log(INFO) << "Placed offer " << offer->id << ", asking " << offer->ask << " [" << offer->pair.ask << "] for " << offer->bid << " [" << offer->pair.bid << "]";
+	log(INFO) << "Placed offer " << offer->id << ", asking "
+			<< offer->ask << " [" << offer->pair.ask << "] for " << offer->bid << " [" << offer->pair.bid << "]"
+			<< " (" << avail_server_map.size() << " servers)";
+	if(avail_server_map.empty()) {
+		log(WARN) << "Not connected to any exchange servers at the moment!";
+	}
 
 	std::vector<txio_key_t> keys;
 	for(const auto& entry : offer->orders) {
