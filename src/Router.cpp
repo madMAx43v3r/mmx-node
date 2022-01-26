@@ -804,16 +804,19 @@ void Router::connect_task(const std::string& address) noexcept
 	vnx::TcpEndpoint peer;
 	peer.host_name = address;
 	peer.port = params->port;
-	auto sock = peer.open();
+	int sock = -1;
 	try {
+		sock = peer.open();
 		peer.connect(sock);
 	}
 	catch(const std::exception& ex) {
+		if(sock >= 0) {
+			peer.close(sock);
+			sock = -1;
+		}
 		if(show_warnings) {
 			log(WARN) << "Connecting to peer " << address << " failed with: " << ex.what();
 		}
-		peer.close(sock);
-		sock = -1;
 	}
 	if(vnx::do_run()) {
 		add_task(std::bind(&Router::add_peer, this, address, sock));
