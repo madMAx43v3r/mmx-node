@@ -25,7 +25,7 @@ void Transaction::finalize() {
 }
 
 vnx::bool_t Transaction::is_valid() const {
-	return calc_hash() == id && is_signed();
+	return calc_hash() == id;
 }
 
 hash_t Transaction::calc_hash() const
