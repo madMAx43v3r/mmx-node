@@ -286,12 +286,18 @@ vnx::optional<hash_t> Node::get_block_hash(const uint32_t& height) const
 
 std::vector<hash_t> Node::get_tx_ids_at(const uint32_t& height) const
 {
-	std::vector<hash_t> list;
-	if(auto block = get_block_at(height)) {
-		for(const auto& tx : block->tx_list) {
-			list.push_back(tx->id);
+	if(auto peak = get_peak()) {
+		if(height <= peak->height) {
+			const auto offset = peak->height - height;
+			if(offset < change_log.size()) {
+				auto iter = change_log.rbegin();
+				std::advance(iter, offset);
+				return (*iter)->tx_added;
+			}
 		}
 	}
+	std::vector<hash_t> list;
+	tx_log.find(height, list);
 	return list;
 }
 
