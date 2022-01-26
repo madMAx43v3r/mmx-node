@@ -769,8 +769,10 @@ uint64_t Node::get_total_supply(const addr_t& contract) const
 std::vector<utxo_entry_t> Node::get_utxo_list(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const
 {
 	const auto height = get_height();
+	const std::unordered_set<addr_t> addr_set(addresses.begin(), addresses.end());
+
 	std::vector<utxo_entry_t> res;
-	for(const auto& addr : addresses) {
+	for(const auto& addr : addr_set) {
 		const auto begin = addr_map.lower_bound(std::make_pair(addr, txio_key_t()));
 		const auto end   = addr_map.upper_bound(std::make_pair(addr, txio_key_t::create_ex(hash_t::ones(), -1)));
 		for(auto iter = begin; iter != end; ++iter) {
@@ -800,8 +802,10 @@ std::vector<utxo_entry_t> Node::get_utxo_list(const std::vector<addr_t>& address
 
 std::vector<stxo_entry_t> Node::get_stxo_list(const std::vector<addr_t>& addresses) const
 {
+	const std::unordered_set<addr_t> addr_set(addresses.begin(), addresses.end());
+
 	std::vector<stxo_entry_t> res;
-	for(const auto& addr : addresses) {
+	for(const auto& addr : addr_set) {
 		std::vector<txio_key_t> keys;
 		saddr_map.find(addr, keys);
 		for(const auto& key : std::unordered_set<txio_key_t>(keys.begin(), keys.end())) {
@@ -811,7 +815,6 @@ std::vector<stxo_entry_t> Node::get_stxo_list(const std::vector<addr_t>& address
 			}
 		}
 	}
-	const std::unordered_set<addr_t> addr_set(addresses.begin(), addresses.end());
 	for(const auto& log : change_log) {
 		for(const auto& entry : log->utxo_removed) {
 			const auto& stxo = entry.second;
