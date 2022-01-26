@@ -121,8 +121,7 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 
 void Transaction::merge_sign(std::shared_ptr<const Transaction> tx)
 {
-	for(size_t i = 0; i < inputs.size() && i < tx->inputs.size(); ++i)
-	{
+	for(size_t i = 0; i < inputs.size() && i < tx->inputs.size(); ++i) {
 		auto& our = inputs[i];
 		const auto& other = tx->inputs[i];
 		if(other.solution < tx->solutions.size() && our.solution >= solutions.size()) {
