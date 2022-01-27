@@ -1,3 +1,4 @@
 {
-	"port": 11348
+	"port": 11348,
+	"stats_interval_ms": -1
 }

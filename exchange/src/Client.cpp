@@ -448,6 +448,9 @@ void Client::on_connect(uint64_t client, const std::string& address)
 	peer_map[client] = peer;
 	avail_server_map[address] = client;
 
+	for(const auto& entry : offer_map) {
+		send_offer(client, entry.second);
+	}
 	log(INFO) << "Connected to server " << peer->address;
 }
 
