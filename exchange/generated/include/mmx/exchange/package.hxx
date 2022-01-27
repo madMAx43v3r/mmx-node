@@ -44,7 +44,7 @@ class Client_match;
 class Client_match_return;
 class Client_place;
 class Client_place_return;
-class OrderBundle;
+class OfferBundle;
 class ServerBase;
 class Server_approve;
 class Server_approve_return;
@@ -99,7 +99,7 @@ extern const vnx::TypeCode* const vnx_native_type_code_Client_match; ///< \priva
 extern const vnx::TypeCode* const vnx_native_type_code_Client_match_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Client_place; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Client_place_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_OrderBundle; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_OfferBundle; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_ServerBase; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Server_approve; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Server_approve_return; ///< \private
@@ -160,7 +160,7 @@ void read(TypeInput& in, ::mmx::exchange::Client_match& value, const TypeCode* t
 void read(TypeInput& in, ::mmx::exchange::Client_match_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::exchange::Client_place& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::exchange::Client_place_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::exchange::OrderBundle& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::exchange::OfferBundle& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::exchange::ServerBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::exchange::Server_approve& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::exchange::Server_approve_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -215,7 +215,7 @@ void write(TypeOutput& out, const ::mmx::exchange::Client_match& value, const Ty
 void write(TypeOutput& out, const ::mmx::exchange::Client_match_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::exchange::Client_place& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::exchange::Client_place_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::exchange::OrderBundle& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::exchange::OfferBundle& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::exchange::ServerBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::exchange::Server_approve& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::exchange::Server_approve_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -270,7 +270,7 @@ void read(std::istream& in, ::mmx::exchange::Client_match& value); ///< \private
 void read(std::istream& in, ::mmx::exchange::Client_match_return& value); ///< \private
 void read(std::istream& in, ::mmx::exchange::Client_place& value); ///< \private
 void read(std::istream& in, ::mmx::exchange::Client_place_return& value); ///< \private
-void read(std::istream& in, ::mmx::exchange::OrderBundle& value); ///< \private
+void read(std::istream& in, ::mmx::exchange::OfferBundle& value); ///< \private
 void read(std::istream& in, ::mmx::exchange::ServerBase& value); ///< \private
 void read(std::istream& in, ::mmx::exchange::Server_approve& value); ///< \private
 void read(std::istream& in, ::mmx::exchange::Server_approve_return& value); ///< \private
@@ -325,7 +325,7 @@ void write(std::ostream& out, const ::mmx::exchange::Client_match& value); ///< 
 void write(std::ostream& out, const ::mmx::exchange::Client_match_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::exchange::Client_place& value); ///< \private
 void write(std::ostream& out, const ::mmx::exchange::Client_place_return& value); ///< \private
-void write(std::ostream& out, const ::mmx::exchange::OrderBundle& value); ///< \private
+void write(std::ostream& out, const ::mmx::exchange::OfferBundle& value); ///< \private
 void write(std::ostream& out, const ::mmx::exchange::ServerBase& value); ///< \private
 void write(std::ostream& out, const ::mmx::exchange::Server_approve& value); ///< \private
 void write(std::ostream& out, const ::mmx::exchange::Server_approve_return& value); ///< \private
@@ -380,7 +380,7 @@ void accept(Visitor& visitor, const ::mmx::exchange::Client_match& value); ///< 
 void accept(Visitor& visitor, const ::mmx::exchange::Client_match_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::exchange::Client_place& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::exchange::Client_place_return& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::exchange::OrderBundle& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::exchange::OfferBundle& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::exchange::ServerBase& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::exchange::Server_approve& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::exchange::Server_approve_return& value); ///< \private
@@ -1072,25 +1072,25 @@ struct type<::mmx::exchange::Client_place_return> {
 
 /// \private
 template<>
-struct type<::mmx::exchange::OrderBundle> {
-	void read(TypeInput& in, ::mmx::exchange::OrderBundle& value, const TypeCode* type_code, const uint16_t* code) {
+struct type<::mmx::exchange::OfferBundle> {
+	void read(TypeInput& in, ::mmx::exchange::OfferBundle& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
 	}
-	void write(TypeOutput& out, const ::mmx::exchange::OrderBundle& value, const TypeCode* type_code, const uint16_t* code) {
+	void write(TypeOutput& out, const ::mmx::exchange::OfferBundle& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::write(out, value, type_code, code);
 	}
-	void read(std::istream& in, ::mmx::exchange::OrderBundle& value) {
+	void read(std::istream& in, ::mmx::exchange::OfferBundle& value) {
 		vnx::read(in, value);
 	}
-	void write(std::ostream& out, const ::mmx::exchange::OrderBundle& value) {
+	void write(std::ostream& out, const ::mmx::exchange::OfferBundle& value) {
 		vnx::write(out, value);
 	}
-	void accept(Visitor& visitor, const ::mmx::exchange::OrderBundle& value) {
+	void accept(Visitor& visitor, const ::mmx::exchange::OfferBundle& value) {
 		vnx::accept(visitor, value);
 	}
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::exchange::OrderBundle& value, bool special = false);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::exchange::OfferBundle& value, bool special = false);
 };
 
 /// \private

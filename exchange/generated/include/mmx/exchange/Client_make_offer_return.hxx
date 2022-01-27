@@ -5,7 +5,7 @@
 #define INCLUDE_mmx_exchange_Client_make_offer_return_HXX_
 
 #include <mmx/exchange/package.hxx>
-#include <mmx/exchange/OrderBundle.hxx>
+#include <mmx/exchange/OfferBundle.hxx>
 #include <vnx/Value.h>
 
 
@@ -15,7 +15,7 @@ namespace exchange {
 class Client_make_offer_return : public ::vnx::Value {
 public:
 	
-	std::shared_ptr<const ::mmx::exchange::OrderBundle> _ret_0;
+	std::shared_ptr<const ::mmx::exchange::OfferBundle> _ret_0;
 	
 	typedef ::vnx::Value Super;
 	

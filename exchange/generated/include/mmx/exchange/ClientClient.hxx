@@ -8,7 +8,7 @@
 #include <mmx/Block.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/exchange/OrderBundle.hxx>
+#include <mmx/exchange/OfferBundle.hxx>
 #include <mmx/exchange/amount_t.hxx>
 #include <mmx/exchange/matched_order_t.hxx>
 #include <mmx/exchange/open_order_t.hxx>
@@ -69,9 +69,9 @@ public:
 	
 	vnx::optional<::mmx::exchange::open_order_t> get_order(const ::mmx::txio_key_t& key = ::mmx::txio_key_t());
 	
-	std::shared_ptr<const ::mmx::exchange::OrderBundle> get_offer(const uint64_t& id = 0);
+	std::shared_ptr<const ::mmx::exchange::OfferBundle> get_offer(const uint64_t& id = 0);
 	
-	std::vector<std::shared_ptr<const ::mmx::exchange::OrderBundle>> get_all_offers();
+	std::vector<std::shared_ptr<const ::mmx::exchange::OfferBundle>> get_all_offers();
 	
 	void cancel_offer(const uint64_t& id = 0);
 	
@@ -81,13 +81,13 @@ public:
 	
 	void cancel_all_async();
 	
-	std::shared_ptr<const ::mmx::exchange::OrderBundle> make_offer(const uint32_t& wallet = 0, const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const uint64_t& bid = 0, const uint64_t& ask = 0);
+	std::shared_ptr<const ::mmx::exchange::OfferBundle> make_offer(const uint32_t& wallet = 0, const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const uint64_t& bid = 0, const uint64_t& ask = 0);
 	
 	std::vector<::mmx::exchange::trade_order_t> make_trade(const uint32_t& wallet = 0, const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const uint64_t& bid = 0, const vnx::optional<uint64_t>& ask = nullptr);
 	
-	void place(std::shared_ptr<const ::mmx::exchange::OrderBundle> offer = nullptr);
+	void place(std::shared_ptr<const ::mmx::exchange::OfferBundle> offer = nullptr);
 	
-	void place_async(std::shared_ptr<const ::mmx::exchange::OrderBundle> offer = nullptr);
+	void place_async(std::shared_ptr<const ::mmx::exchange::OfferBundle> offer = nullptr);
 	
 	std::shared_ptr<const ::mmx::Transaction> approve(std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
 	

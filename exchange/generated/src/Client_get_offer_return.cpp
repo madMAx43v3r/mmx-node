@@ -3,7 +3,7 @@
 
 #include <mmx/exchange/package.hxx>
 #include <mmx/exchange/Client_get_offer_return.hxx>
-#include <mmx/exchange/OrderBundle.hxx>
+#include <mmx/exchange/OfferBundle.hxx>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>

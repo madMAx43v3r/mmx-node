@@ -34,7 +34,7 @@
 #include <mmx/exchange/Client_match_return.hxx>
 #include <mmx/exchange/Client_place.hxx>
 #include <mmx/exchange/Client_place_return.hxx>
-#include <mmx/exchange/OrderBundle.hxx>
+#include <mmx/exchange/OfferBundle.hxx>
 #include <mmx/exchange/amount_t.hxx>
 #include <mmx/exchange/matched_order_t.hxx>
 #include <mmx/exchange/open_order_t.hxx>
@@ -273,26 +273,26 @@ vnx::optional<::mmx::exchange::open_order_t> ClientClient::get_order(const ::mmx
 	}
 }
 
-std::shared_ptr<const ::mmx::exchange::OrderBundle> ClientClient::get_offer(const uint64_t& id) {
+std::shared_ptr<const ::mmx::exchange::OfferBundle> ClientClient::get_offer(const uint64_t& id) {
 	auto _method = ::mmx::exchange::Client_get_offer::create();
 	_method->id = id;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Client_get_offer_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::exchange::OrderBundle>>();
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::exchange::OfferBundle>>();
 	} else {
 		throw std::logic_error("ClientClient: invalid return value");
 	}
 }
 
-std::vector<std::shared_ptr<const ::mmx::exchange::OrderBundle>> ClientClient::get_all_offers() {
+std::vector<std::shared_ptr<const ::mmx::exchange::OfferBundle>> ClientClient::get_all_offers() {
 	auto _method = ::mmx::exchange::Client_get_all_offers::create();
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Client_get_all_offers_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::vector<std::shared_ptr<const ::mmx::exchange::OrderBundle>>>();
+		return _return_value->get_field_by_index(0).to<std::vector<std::shared_ptr<const ::mmx::exchange::OfferBundle>>>();
 	} else {
 		throw std::logic_error("ClientClient: invalid return value");
 	}
@@ -320,7 +320,7 @@ void ClientClient::cancel_all_async() {
 	vnx_request(_method, true);
 }
 
-std::shared_ptr<const ::mmx::exchange::OrderBundle> ClientClient::make_offer(const uint32_t& wallet, const ::mmx::exchange::trade_pair_t& pair, const uint64_t& bid, const uint64_t& ask) {
+std::shared_ptr<const ::mmx::exchange::OfferBundle> ClientClient::make_offer(const uint32_t& wallet, const ::mmx::exchange::trade_pair_t& pair, const uint64_t& bid, const uint64_t& ask) {
 	auto _method = ::mmx::exchange::Client_make_offer::create();
 	_method->wallet = wallet;
 	_method->pair = pair;
@@ -330,7 +330,7 @@ std::shared_ptr<const ::mmx::exchange::OrderBundle> ClientClient::make_offer(con
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Client_make_offer_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::exchange::OrderBundle>>();
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::exchange::OfferBundle>>();
 	} else {
 		throw std::logic_error("ClientClient: invalid return value");
 	}
@@ -352,13 +352,13 @@ std::vector<::mmx::exchange::trade_order_t> ClientClient::make_trade(const uint3
 	}
 }
 
-void ClientClient::place(std::shared_ptr<const ::mmx::exchange::OrderBundle> offer) {
+void ClientClient::place(std::shared_ptr<const ::mmx::exchange::OfferBundle> offer) {
 	auto _method = ::mmx::exchange::Client_place::create();
 	_method->offer = offer;
 	vnx_request(_method, false);
 }
 
-void ClientClient::place_async(std::shared_ptr<const ::mmx::exchange::OrderBundle> offer) {
+void ClientClient::place_async(std::shared_ptr<const ::mmx::exchange::OfferBundle> offer) {
 	auto _method = ::mmx::exchange::Client_place::create();
 	_method->offer = offer;
 	vnx_request(_method, true);

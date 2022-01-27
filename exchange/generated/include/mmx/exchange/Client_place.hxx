@@ -5,7 +5,7 @@
 #define INCLUDE_mmx_exchange_Client_place_HXX_
 
 #include <mmx/exchange/package.hxx>
-#include <mmx/exchange/OrderBundle.hxx>
+#include <mmx/exchange/OfferBundle.hxx>
 #include <vnx/Value.h>
 
 
@@ -15,7 +15,7 @@ namespace exchange {
 class Client_place : public ::vnx::Value {
 public:
 	
-	std::shared_ptr<const ::mmx::exchange::OrderBundle> offer;
+	std::shared_ptr<const ::mmx::exchange::OfferBundle> offer;
 	
 	typedef ::vnx::Value Super;
 	

@@ -35,7 +35,7 @@
 #include <mmx/exchange/Client_match_return.hxx>
 #include <mmx/exchange/Client_place.hxx>
 #include <mmx/exchange/Client_place_return.hxx>
-#include <mmx/exchange/OrderBundle.hxx>
+#include <mmx/exchange/OfferBundle.hxx>
 #include <mmx/exchange/amount_t.hxx>
 #include <mmx/exchange/matched_order_t.hxx>
 #include <mmx/exchange/open_order_t.hxx>

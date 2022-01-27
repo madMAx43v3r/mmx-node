@@ -34,7 +34,7 @@
 #include <mmx/exchange/Client_match_return.hxx>
 #include <mmx/exchange/Client_place.hxx>
 #include <mmx/exchange/Client_place_return.hxx>
-#include <mmx/exchange/OrderBundle.hxx>
+#include <mmx/exchange/OfferBundle.hxx>
 #include <mmx/exchange/amount_t.hxx>
 #include <mmx/exchange/matched_order_t.hxx>
 #include <mmx/exchange/open_order_t.hxx>
@@ -278,7 +278,7 @@ uint64_t ClientAsyncClient::get_order(const ::mmx::txio_key_t& key, const std::f
 	return _request_id;
 }
 
-uint64_t ClientAsyncClient::get_offer(const uint64_t& id, const std::function<void(std::shared_ptr<const ::mmx::exchange::OrderBundle>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t ClientAsyncClient::get_offer(const uint64_t& id, const std::function<void(std::shared_ptr<const ::mmx::exchange::OfferBundle>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::exchange::Client_get_offer::create();
 	_method->id = id;
 	const auto _request_id = ++vnx_next_id;
@@ -291,7 +291,7 @@ uint64_t ClientAsyncClient::get_offer(const uint64_t& id, const std::function<vo
 	return _request_id;
 }
 
-uint64_t ClientAsyncClient::get_all_offers(const std::function<void(const std::vector<std::shared_ptr<const ::mmx::exchange::OrderBundle>>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t ClientAsyncClient::get_all_offers(const std::function<void(const std::vector<std::shared_ptr<const ::mmx::exchange::OfferBundle>>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::exchange::Client_get_all_offers::create();
 	const auto _request_id = ++vnx_next_id;
 	{
@@ -328,7 +328,7 @@ uint64_t ClientAsyncClient::cancel_all(const std::function<void()>& _callback, c
 	return _request_id;
 }
 
-uint64_t ClientAsyncClient::make_offer(const uint32_t& wallet, const ::mmx::exchange::trade_pair_t& pair, const uint64_t& bid, const uint64_t& ask, const std::function<void(std::shared_ptr<const ::mmx::exchange::OrderBundle>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t ClientAsyncClient::make_offer(const uint32_t& wallet, const ::mmx::exchange::trade_pair_t& pair, const uint64_t& bid, const uint64_t& ask, const std::function<void(std::shared_ptr<const ::mmx::exchange::OfferBundle>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::exchange::Client_make_offer::create();
 	_method->wallet = wallet;
 	_method->pair = pair;
@@ -360,7 +360,7 @@ uint64_t ClientAsyncClient::make_trade(const uint32_t& wallet, const ::mmx::exch
 	return _request_id;
 }
 
-uint64_t ClientAsyncClient::place(std::shared_ptr<const ::mmx::exchange::OrderBundle> offer, const std::function<void()>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t ClientAsyncClient::place(std::shared_ptr<const ::mmx::exchange::OfferBundle> offer, const std::function<void()>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::exchange::Client_place::create();
 	_method->offer = offer;
 	const auto _request_id = ++vnx_next_id;
@@ -957,7 +957,7 @@ int32_t ClientAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Client_get_offer_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::exchange::OrderBundle>>());
+					_callback(_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::exchange::OfferBundle>>());
 				} else {
 					throw std::logic_error("ClientAsyncClient: invalid return value");
 				}
@@ -976,7 +976,7 @@ int32_t ClientAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Client_get_all_offers_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<std::vector<std::shared_ptr<const ::mmx::exchange::OrderBundle>>>());
+					_callback(_value->get_field_by_index(0).to<std::vector<std::shared_ptr<const ::mmx::exchange::OfferBundle>>>());
 				} else {
 					throw std::logic_error("ClientAsyncClient: invalid return value");
 				}
@@ -1021,7 +1021,7 @@ int32_t ClientAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Client_make_offer_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::exchange::OrderBundle>>());
+					_callback(_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::exchange::OfferBundle>>());
 				} else {
 					throw std::logic_error("ClientAsyncClient: invalid return value");
 				}

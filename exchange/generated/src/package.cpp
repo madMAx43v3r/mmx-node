@@ -30,7 +30,7 @@
 #include <mmx/exchange/Client_match_return.hxx>
 #include <mmx/exchange/Client_place.hxx>
 #include <mmx/exchange/Client_place_return.hxx>
-#include <mmx/exchange/OrderBundle.hxx>
+#include <mmx/exchange/OfferBundle.hxx>
 #include <mmx/exchange/ServerBase.hxx>
 #include <mmx/exchange/Server_approve.hxx>
 #include <mmx/exchange/Server_approve_return.hxx>
@@ -399,15 +399,15 @@ void type<::mmx::exchange::Client_place_return>::create_dynamic_code(std::vector
 	code.push_back(CODE_OBJECT);
 }
 
-const TypeCode* type<::mmx::exchange::OrderBundle>::get_type_code() {
-	return mmx::exchange::vnx_native_type_code_OrderBundle;
+const TypeCode* type<::mmx::exchange::OfferBundle>::get_type_code() {
+	return mmx::exchange::vnx_native_type_code_OfferBundle;
 }
 
-void type<::mmx::exchange::OrderBundle>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::exchange::OrderBundle());
+void type<::mmx::exchange::OfferBundle>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::exchange::OfferBundle());
 }
 
-void type<::mmx::exchange::OrderBundle>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::exchange::OrderBundle& value, bool special) {
+void type<::mmx::exchange::OfferBundle>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::exchange::OfferBundle& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -725,7 +725,7 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::exchange::Client_match_return::static_create_type_code());
 	vnx::register_type_code(::mmx::exchange::Client_place::static_create_type_code());
 	vnx::register_type_code(::mmx::exchange::Client_place_return::static_create_type_code());
-	vnx::register_type_code(::mmx::exchange::OrderBundle::static_create_type_code());
+	vnx::register_type_code(::mmx::exchange::OfferBundle::static_create_type_code());
 	vnx::register_type_code(::mmx::exchange::ServerBase::static_create_type_code());
 	vnx::register_type_code(::mmx::exchange::Server_approve::static_create_type_code());
 	vnx::register_type_code(::mmx::exchange::Server_approve_return::static_create_type_code());
@@ -787,7 +787,7 @@ const vnx::TypeCode* const vnx_native_type_code_Client_match = vnx::get_type_cod
 const vnx::TypeCode* const vnx_native_type_code_Client_match_return = vnx::get_type_code(vnx::Hash64(0xcc5f8532622c2fd8ull));
 const vnx::TypeCode* const vnx_native_type_code_Client_place = vnx::get_type_code(vnx::Hash64(0xb32aebcb67327b40ull));
 const vnx::TypeCode* const vnx_native_type_code_Client_place_return = vnx::get_type_code(vnx::Hash64(0x5889dde5d86b212dull));
-const vnx::TypeCode* const vnx_native_type_code_OrderBundle = vnx::get_type_code(vnx::Hash64(0xe4c159a5d79a29cdull));
+const vnx::TypeCode* const vnx_native_type_code_OfferBundle = vnx::get_type_code(vnx::Hash64(0xa1f52e2a78efa212ull));
 const vnx::TypeCode* const vnx_native_type_code_ServerBase = vnx::get_type_code(vnx::Hash64(0x573a9f3b899c4e1dull));
 const vnx::TypeCode* const vnx_native_type_code_Server_approve = vnx::get_type_code(vnx::Hash64(0xe2ce003c827b9aa9ull));
 const vnx::TypeCode* const vnx_native_type_code_Server_approve_return = vnx::get_type_code(vnx::Hash64(0x50f02c0bce8f41d3ull));
