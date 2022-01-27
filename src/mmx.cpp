@@ -798,7 +798,7 @@ int main(int argc, char** argv)
 				std::cout << std::endl;
 				std::cout << "Total Bid: " << offer->bid / bid_factor << " (" << offer->bid << ") " << bid_symbol << std::endl;
 				std::cout << "Total Ask: " << offer->ask / ask_factor << " (" << offer->ask << ") " << ask_symbol << std::endl;
-				std::cout << "Price: " << bid / double(ask) << " " << bid_symbol << " / " << ask_symbol << std::endl;
+				std::cout << "Price: " << ask / double(bid) << " " << ask_symbol << " / " << bid_symbol << std::endl;
 				if(pre_accept) {
 					client.place(offer);
 				} else {
@@ -860,10 +860,11 @@ int main(int argc, char** argv)
 					std::cout << (i++ ? " + " : "") << trade.bid / bid_factor;
 				}
 				std::cout << std::endl;
+				std::cout << "----------------------------------------------------------------" << std::endl;
 				std::cout << "Total Bid: " << total_bid / bid_factor << " (" << total_bid << ") " << bid_symbol << std::endl;
 				if(ask > 0) {
 					std::cout << "Total Ask: " << total_ask / ask_factor << " (" << total_ask << ") " << ask_symbol << std::endl;
-					std::cout << "Price: " << ask / double(bid) << " " << ask_symbol << " / " << bid_symbol << std::endl;
+					std::cout << "Price: " << bid / double(ask) << " " << bid_symbol << " / " << ask_symbol << std::endl;
 				}
 				bool accepted = pre_accept;
 				if(!accepted) {
@@ -889,11 +890,11 @@ int main(int argc, char** argv)
 						total_bid += order.bid;
 						total_match += order.ask;
 						std::cout << "Trade " << i++ << ": " << order.ask / ask_factor << " " << ask_symbol << " for " << order.bid / bid_factor
-								<< " " << bid_symbol << " [" << order.ask / double(order.bid) << " " << ask_symbol << " / " << bid_symbol << "]" << std::endl;
+								<< " " << bid_symbol << " [" << order.bid / double(order.ask) << " " << bid_symbol << " / " << ask_symbol << "]" << std::endl;
 					}
 					std::cout << "----------------------------------------------------------------" << std::endl;
 					std::cout << "Total: " << total_match / ask_factor << " " << ask_symbol << " for " << total_bid / bid_factor
-							<< " " << bid_symbol << " [" << total_match / double(total_bid) << " " << ask_symbol << " / " << bid_symbol << "]" << std::endl;
+							<< " " << bid_symbol << " [" << double(total_bid) / total_match << " " << bid_symbol << " / " << ask_symbol << "]" << std::endl;
 
 					bool accepted = pre_accept;
 					if(!accepted) {
@@ -908,6 +909,7 @@ int main(int argc, char** argv)
 					}
 					if(accepted) {
 						int i = 0;
+						std::cout << "----------------------------------------------------------------" << std::endl;
 						for(const auto& order : matched) {
 							std::cout << "Trade " << i++ << ": ";
 							try {
@@ -932,7 +934,7 @@ int main(int argc, char** argv)
 					const auto ask_factor = pow(10, ask_token ? ask_token->decimals : params->decimals);
 					std::cout << "[" << offer->id << "] offering " << offer->bid / bid_factor << " " << bid_symbol
 							<< " for " << offer->ask / ask_factor << " " << ask_symbol
-							<< " [" << (offer->bid / double(offer->ask)) << " " << bid_symbol << " / " << ask_symbol
+							<< " [" << (offer->ask / double(offer->bid)) << " " << ask_symbol << " / " << bid_symbol
 							<< "] (" << 100 * (offer->bid_sold / double(offer->bid)) << " % executed)" << std::endl;
 				}
 			}
@@ -953,12 +955,12 @@ int main(int argc, char** argv)
 				auto sell_orders = client.get_orders(server, pair);
 				std::reverse(sell_orders.begin(), sell_orders.end());
 				for(const auto& order : sell_orders) {
-					std::cout << "Sell: " << order.bid / double(order.ask) << " => " << order.bid / bid_factor << " " << bid_symbol << std::endl;
+					std::cout << "Sell: " << order.ask / double(order.bid) << " => " << order.bid / bid_factor << " " << bid_symbol << std::endl;
 				}
 				auto buy_orders = client.get_orders(server, pair.reverse());
 				std::reverse(buy_orders.begin(), buy_orders.end());
 				for(const auto& order : buy_orders) {
-					std::cout << "Buy:  " << order.ask / double(order.bid) << " => " << order.ask / bid_factor << " " << bid_symbol << std::endl;
+					std::cout << "Buy:  " << order.bid / double(order.ask) << " => " << order.ask / bid_factor << " " << bid_symbol << std::endl;
 				}
 			}
 			else if(command == "price")
