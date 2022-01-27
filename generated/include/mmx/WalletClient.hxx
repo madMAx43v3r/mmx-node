@@ -69,6 +69,10 @@ public:
 	
 	std::shared_ptr<const ::mmx::Solution> sign_msg(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::hash_t& msg = ::mmx::hash_t());
 	
+	void mark_spent(const uint32_t& index = 0, const std::vector<::mmx::txio_key_t>& keys = {});
+	
+	void mark_spent_async(const uint32_t& index = 0, const std::vector<::mmx::txio_key_t>& keys = {});
+	
 	void reserve(const uint32_t& index = 0, const std::vector<::mmx::txio_key_t>& keys = {});
 	
 	void reserve_async(const uint32_t& index = 0, const std::vector<::mmx::txio_key_t>& keys = {});

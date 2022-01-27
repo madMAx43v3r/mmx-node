@@ -39,6 +39,8 @@
 #include <mmx/Wallet_get_utxo_list_return.hxx>
 #include <mmx/Wallet_get_utxo_list_for.hxx>
 #include <mmx/Wallet_get_utxo_list_for_return.hxx>
+#include <mmx/Wallet_mark_spent.hxx>
+#include <mmx/Wallet_mark_spent_return.hxx>
 #include <mmx/Wallet_mint.hxx>
 #include <mmx/Wallet_mint_return.hxx>
 #include <mmx/Wallet_release.hxx>
@@ -309,6 +311,20 @@ std::shared_ptr<const ::mmx::Solution> WalletClient::sign_msg(const uint32_t& in
 	} else {
 		throw std::logic_error("WalletClient: invalid return value");
 	}
+}
+
+void WalletClient::mark_spent(const uint32_t& index, const std::vector<::mmx::txio_key_t>& keys) {
+	auto _method = ::mmx::Wallet_mark_spent::create();
+	_method->index = index;
+	_method->keys = keys;
+	vnx_request(_method, false);
+}
+
+void WalletClient::mark_spent_async(const uint32_t& index, const std::vector<::mmx::txio_key_t>& keys) {
+	auto _method = ::mmx::Wallet_mark_spent::create();
+	_method->index = index;
+	_method->keys = keys;
+	vnx_request(_method, true);
 }
 
 void WalletClient::reserve(const uint32_t& index, const std::vector<::mmx::txio_key_t>& keys) {
