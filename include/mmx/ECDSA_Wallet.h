@@ -29,8 +29,8 @@ public:
 	uint32_t height = 0;
 	int64_t last_utxo_update = 0;
 	std::vector<utxo_entry_t> utxo_cache;
+	std::unordered_set<txio_key_t> spent_set;
 	std::unordered_set<txio_key_t> reserved_set;
-	std::unordered_set<txio_key_t> spent_txo_set;
 	std::unordered_map<txio_key_t, tx_out_t> utxo_change_cache;
 
 	ECDSA_Wallet(std::shared_ptr<const KeyFile> key_file, std::shared_ptr<const ChainParams> params, size_t num_addresses)
@@ -120,7 +120,7 @@ public:
 
 		utxo_cache.clear();
 		for(const auto& entry : utxo_list) {
-			if(!spent_txo_set.count(entry.key)) {
+			if(!spent_set.count(entry.key)) {
 				utxo_cache.push_back(entry);
 			}
 			utxo_change_cache.erase(entry.key);
@@ -141,14 +141,14 @@ public:
 	void update_from(std::shared_ptr<const Transaction> tx)
 	{
 		for(const auto& in : tx->inputs) {
-			spent_txo_set.insert(in.prev);
+			spent_set.insert(in.prev);
 			utxo_change_cache.erase(in.prev);
 		}
 
 		// remove spent utxo from cache
 		std::vector<utxo_entry_t> utxo_list;
 		for(const auto& entry : utxo_cache) {
-			if(!spent_txo_set.count(entry.key)) {
+			if(!spent_set.count(entry.key)) {
 				utxo_list.push_back(entry);
 			}
 		}
@@ -211,7 +211,7 @@ public:
 				continue;
 			}
 			const auto& key = entry.key;
-			if(spent_map.count(key) || spent_txo_set.count(key) || reserved_set.count(key) || exclude.count(key)) {
+			if(spent_map.count(key) || spent_set.count(key) || reserved_set.count(key) || exclude.count(key)) {
 				continue;
 			}
 			if(out.amount > amount) {

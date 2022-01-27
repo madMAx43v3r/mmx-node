@@ -331,15 +331,24 @@ std::shared_ptr<const Transaction> Client::approve(std::shared_ptr<const Transac
 void Client::execute_async(const std::string& server, const uint32_t& index, const matched_order_t& order, const vnx::request_id_t& request_id) const
 {
 	auto peer = get_server(server);
-	auto method = Server_execute::create();
-	method->tx = wallet->sign_off(index, order.tx, true, order.utxo_list);
-	if(method->tx) {
+	auto tx = wallet->sign_off(index, order.tx, true, order.utxo_list);
+	if(tx) {
+		std::vector<txio_key_t> keys;
+		for(const auto& in : tx->inputs) {
+			keys.push_back(in.prev);
+		}
+		wallet->reserve(index, keys);
+
+		auto method = Server_execute::create();
+		method->tx = tx;
 		send_request(peer, method,
-			[this, request_id, method](std::shared_ptr<const vnx::Value> result) {
+			[this, request_id, index, keys, tx](std::shared_ptr<const vnx::Value> result) {
+				wallet->release(index, keys);
 				if(auto ex = std::dynamic_pointer_cast<const vnx::Exception>(result)) {
 					vnx_async_return(request_id, ex);
 				} else {
-					execute_async_return(request_id, method->tx->id);
+					wallet->mark_spent(index, keys);
+					execute_async_return(request_id, tx->id);
 				}
 			});
 	} else {

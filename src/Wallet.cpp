@@ -205,6 +205,12 @@ std::shared_ptr<const Solution> Wallet::sign_msg(const uint32_t& index, const ad
 	return wallet->sign_msg(address, msg);
 }
 
+void Wallet::mark_spent(const uint32_t& index, const std::vector<txio_key_t>& keys)
+{
+	const auto wallet = get_wallet(index);
+	wallet->spent_set.insert(keys.begin(), keys.end());
+}
+
 void Wallet::reserve(const uint32_t& index, const std::vector<txio_key_t>& keys)
 {
 	const auto wallet = get_wallet(index);

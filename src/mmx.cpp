@@ -981,6 +981,25 @@ int main(int argc, char** argv)
 					std::cout << "No orders available!" << std::endl;
 				}
 			}
+			else if(command == "cancel")
+			{
+				std::string offer;
+				vnx::read_config("$3", offer);
+
+				if(offer == "all") {
+					client.cancel_all();
+					std::cout << "Canceled all offers." << std::endl;
+				} else {
+					const auto id = vnx::from_string<int64_t>(offer);
+					if(client.get_offer(id)) {
+						client.cancel_offer(id);
+						std::cout << "Canceled offer " << id << std::endl;
+					} else {
+						vnx::log_error() << "No such offer: " << id;
+						goto failed;
+					}
+				}
+			}
 			else if(command == "servers")
 			{
 				const auto servers = client.get_servers();

@@ -126,7 +126,7 @@ private:
 	std::unordered_map<uint64_t, std::shared_ptr<peer_t>> peer_map;
 
 	std::unordered_map<txio_key_t, open_order_t> order_map;
-	std::unordered_map<uint64_t, std::shared_ptr<OfferBundle>> offer_map;
+	std::map<uint64_t, std::shared_ptr<OfferBundle>> offer_map;
 
 	mutable std::unordered_map<uint32_t, std::function<void(std::shared_ptr<const vnx::Value>)>> return_map;
 

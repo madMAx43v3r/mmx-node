@@ -46,6 +46,8 @@ protected:
 
 	std::shared_ptr<const Solution> sign_msg(const uint32_t& index, const addr_t& address, const hash_t& msg) const override;
 
+	void mark_spent(const uint32_t& index, const std::vector<txio_key_t>& keys) override;
+
 	void reserve(const uint32_t& index, const std::vector<txio_key_t>& keys) override;
 
 	void release(const uint32_t& index, const std::vector<txio_key_t>& keys) override;

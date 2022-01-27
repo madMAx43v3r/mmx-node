@@ -32,6 +32,8 @@ module Wallet implements vnx.addons.HttpComponent {
 	@Permission(permission_e.SPENDING)
 	Solution* sign_msg(uint index, addr_t address, hash_t msg) const;
 	
+	void mark_spent(uint index, vector<txio_key_t> keys);
+	
 	void reserve(uint index, vector<txio_key_t> keys);
 	
 	void release(uint index, vector<txio_key_t> keys);
