@@ -859,7 +859,7 @@ int main(int argc, char** argv)
 					total_ask += trade.ask ? *trade.ask : 0;
 					std::cout << (i++ ? " + " : "") << trade.bid / bid_factor;
 				}
-				std::cout << std::endl;
+				std::cout << " " << bid_symbol << std::endl;
 				std::cout << "----------------------------------------------------------------" << std::endl;
 				std::cout << "Total Bid: " << total_bid / bid_factor << " (" << total_bid << ") " << bid_symbol << std::endl;
 				if(ask > 0) {
@@ -889,7 +889,7 @@ int main(int argc, char** argv)
 					for(const auto& order : matched) {
 						total_bid += order.bid;
 						total_match += order.ask;
-						std::cout << "Trade " << i++ << ": " << order.ask / ask_factor << " " << ask_symbol << " for " << order.bid / bid_factor
+						std::cout << "Trade[" << i++ << "]: " << order.ask / ask_factor << " " << ask_symbol << " for " << order.bid / bid_factor
 								<< " " << bid_symbol << " [" << order.bid / double(order.ask) << " " << bid_symbol << " / " << ask_symbol << "]" << std::endl;
 					}
 					std::cout << "----------------------------------------------------------------" << std::endl;
@@ -911,7 +911,7 @@ int main(int argc, char** argv)
 						int i = 0;
 						std::cout << "----------------------------------------------------------------" << std::endl;
 						for(const auto& order : matched) {
-							std::cout << "Trade " << i++ << ": ";
+							std::cout << "Trade[" << i++ << "]: ";
 							try {
 								const auto id = client.execute(server, index, order);
 								std::cout << order.ask / ask_factor << " " << ask_symbol << " (" << id << ")" << std::endl;
@@ -932,7 +932,7 @@ int main(int argc, char** argv)
 					const auto ask_symbol = (ask_token ? ask_token->symbol : "MMX");
 					const auto bid_factor = pow(10, bid_token ? bid_token->decimals : params->decimals);
 					const auto ask_factor = pow(10, ask_token ? ask_token->decimals : params->decimals);
-					std::cout << "[" << offer->id << "] offering " << offer->bid / bid_factor << " " << bid_symbol
+					std::cout << "[" << offer->id << "] Offering " << offer->bid / bid_factor << " " << bid_symbol
 							<< " for " << offer->ask / ask_factor << " " << ask_symbol
 							<< " [" << (offer->ask / double(offer->bid)) << " " << ask_symbol << " / " << bid_symbol
 							<< "] (" << 100 * (offer->bid_sold / double(offer->bid)) << " % executed)" << std::endl;
@@ -951,16 +951,18 @@ int main(int argc, char** argv)
 				const auto bid_factor = pow(10, bid_token ? bid_token->decimals : params->decimals);
 
 				std::cout << "Server: " << server << std::endl;
-				std::cout << "Pair: " << bid_symbol << " / " << ask_symbol << std::endl;
+				std::cout << "Pair: " << ask_symbol << " / " << bid_symbol << std::endl;
 				auto sell_orders = client.get_orders(server, pair);
 				std::reverse(sell_orders.begin(), sell_orders.end());
 				for(const auto& order : sell_orders) {
-					std::cout << "Sell: " << order.ask / double(order.bid) << " => " << order.bid / bid_factor << " " << bid_symbol << std::endl;
+					std::cout << "Sell: " << order.ask / double(order.bid) << " " << ask_symbol << " / " << bid_symbol
+							<< " => " << order.bid / bid_factor << " " << bid_symbol << std::endl;
 				}
 				auto buy_orders = client.get_orders(server, pair.reverse());
 				std::reverse(buy_orders.begin(), buy_orders.end());
 				for(const auto& order : buy_orders) {
-					std::cout << "Buy:  " << order.bid / double(order.ask) << " => " << order.ask / bid_factor << " " << bid_symbol << std::endl;
+					std::cout << "Buy:  " << order.bid / double(order.ask) << " " << ask_symbol << " / " << bid_symbol
+							<< " => " << order.ask / bid_factor << " " << bid_symbol << std::endl;
 				}
 			}
 			else if(command == "price")
@@ -976,9 +978,9 @@ int main(int argc, char** argv)
 				have.amount = amount > 0 ? amount / pow(10, bid_token ? bid_token->decimals : params->decimals) : 1;
 				have.currency = pair.bid;
 				const auto price = client.get_price(server, pair.ask, have);
-				if(price.inverse > 0) {
-					std::cout << price.value / double(price.inverse) << " "
-							<< (ask_token ? ask_token->symbol : "MMX") << " / " << (bid_token ? bid_token->symbol : "MMX") << std::endl;
+				if(price.value > 0) {
+					std::cout << price.inverse / double(price.value) << " "
+							<< (bid_token ? bid_token->symbol : "MMX") << " / " << (ask_token ? ask_token->symbol : "MMX") << std::endl;
 				} else {
 					std::cout << "No orders available!" << std::endl;
 				}
