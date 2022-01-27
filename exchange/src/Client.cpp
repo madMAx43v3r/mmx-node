@@ -467,6 +467,8 @@ void Client::on_disconnect(uint64_t client)
 				}
 			}
 		}
+		avail_server_map.erase(peer->address);
+
 		log(INFO) << "Server " << peer->address << " disconnected";
 	}
 	add_task([this, client]() {
