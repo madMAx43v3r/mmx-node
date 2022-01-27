@@ -23,7 +23,7 @@ int main(int argc, char** argv)
 
 	vnx::init("mmx_exch_server", argc, argv, options);
 
-	std::string node_url = ":11330";
+	std::string node_url = ":11331";
 	std::string endpoint = ":11340";
 
 	vnx::read_config("node", node_url);

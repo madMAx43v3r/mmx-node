@@ -42,6 +42,9 @@ void Server::main()
 
 void Server::handle(std::shared_ptr<const Block> block)
 {
+	if(!block->proof) {
+		return;
+	}
 	size_t num_exec = 0;
 	for(const auto& base : block->tx_list) {
 		if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
@@ -53,34 +56,48 @@ void Server::handle(std::shared_ptr<const Block> block)
 			}
 		}
 	}
-	size_t num_purged = 0;
 	for(const auto& entry : trade_map) {
 		const auto& book = entry.second;
 		for(auto iter = book->orders.begin(); iter != book->orders.end();) {
 			const auto& order = iter->second;
-			if(utxo_map.count(order.bid_key) && !cancel_set.count(order.bid_key)) {
+			if(utxo_map.count(order.bid_key)) {
 				iter++;
 			} else {
-				if(cancel_set.erase(order.bid_key)) {
-					utxo_map.erase(order.bid_key);
-				}
+				book->key_map.erase(order.bid_key);
 				iter = book->orders.erase(iter);
-				num_purged++;
 			}
 		}
 	}
-	log(INFO) << "Height " << block->height << ": " << num_exec << " executed, " << num_purged << " canceled, "
+	log(INFO) << "Height " << block->height << ": " << num_exec << " executed, "
 			<< utxo_map.size() << " open, " << lock_map.size() << " locked";
+}
+
+void Server::cancel_order(const trade_pair_t& pair, const txio_key_t& key)
+{
+	if(auto book = find_pair(pair)) {
+		auto iter = book->key_map.find(key);
+		if(iter != book->key_map.end()) {
+			const auto range = book->orders.equal_range(iter->second);
+			for(auto iter = range.first; iter != range.second; ++iter) {
+				if(iter->second.bid_key == key) {
+					book->orders.erase(iter);
+					break;
+				}
+			}
+			book->key_map.erase(iter);
+		}
+	}
+	utxo_map.erase(key);
 }
 
 void Server::cancel(const uint64_t& client, const std::vector<txio_key_t>& orders)
 {
 	const auto peer = get_peer(client);
 	for(const auto& key : orders) {
-		auto iter = peer->order_set.find(key);
-		if(iter != peer->order_set.end()) {
-			cancel_set.insert(key);
-			peer->order_set.erase(iter);
+		auto iter = peer->order_map.find(key);
+		if(iter != peer->order_map.end()) {
+			cancel_order(iter->second, key);
+			peer->order_map.erase(iter);
 		}
 	}
 }
@@ -183,8 +200,10 @@ void Server::place_async(const uint64_t& client, const trade_pair_t& pair, const
 			const auto price = order.ask / double(total_bid);
 			for(auto& tmp : result) {
 				tmp.ask = tmp.bid * price;
-				peer->order_set.insert(tmp.bid_key);
-				book->orders.emplace(tmp.get_price(), tmp);
+				const auto price = tmp.get_price();
+				book->key_map[tmp.bid_key] = price;
+				book->orders.emplace(price, tmp);
+				peer->order_map[tmp.bid_key] = pair;
 			}
 			place_async_return(request_id, result);
 		},
@@ -216,7 +235,7 @@ void Server::execute_async(std::shared_ptr<const Transaction> tx, const vnx::req
 							throw std::logic_error("input already spent");
 						}
 						const auto& utxo = entry->output;
-						if(in.solution < tx->solutions.size()) {
+						if(in.solution >= tx->solutions.size()) {
 							offer_addrs.insert(utxo.address);
 						}
 						input_addrs.insert(utxo.address);
@@ -242,8 +261,11 @@ void Server::execute_async(std::shared_ptr<const Transaction> tx, const vnx::req
 						throw std::logic_error("left-over amount");
 					}
 				}
+				if(tx->solutions.size() > input_addrs.size()) {
+					throw std::logic_error("too many solutions");
+				}
 				const auto fee_amount = left_amount[addr_t()];
-				const auto fee_needed = tx->calc_cost(params) + input_addrs.size() * params->min_txfee_sign;
+				const auto fee_needed = tx->calc_cost(params) + (input_addrs.size() - tx->solutions.size()) * params->min_txfee_sign;
 				if(fee_amount < fee_needed) {
 					throw std::logic_error("insufficient fee: " + std::to_string(fee_amount) + " < " + std::to_string(fee_needed));
 				}
@@ -262,7 +284,9 @@ void Server::execute_async(std::shared_ptr<const Transaction> tx, const vnx::req
 					send_to(client, request);
 				}
 				for(const auto& in : tx->inputs) {
-					lock_map[in.prev] = tx->id;
+					if(utxo_map.count(in.prev)) {
+						lock_map[in.prev] = tx->id;
+					}
 				}
 				job->tx = vnx::clone(tx);
 				job->request_id = request_id;
@@ -296,7 +320,8 @@ void Server::match_async(const trade_pair_t& pair, const trade_order_t& order, c
 						&& utxo.contract == pair.bid)
 					{
 						max_bid += utxo.amount;
-						bid_keys.emplace_back(order.bid_keys[i], utxo.amount);
+						const auto& key = order.bid_keys[i];
+						bid_keys.emplace_back(key, utxo.amount);
 					}
 				}
 			}
@@ -311,13 +336,14 @@ void Server::match_async(const trade_pair_t& pair, const trade_order_t& order, c
 			}
 			const auto max_price = order.ask ? order.bid / double(*order.ask) : std::numeric_limits<double>::infinity();
 
-			uint64_t final_bid = 0;
-			uint64_t final_ask = 0;
-			uint64_t bid_left = std::min(order.bid, max_bid);
+			matched_order_t result;
+			result.pair = pair;
 
 			// match orders
 			auto tx = Transaction::create();
 			std::map<addr_t, uint64_t> output_map;
+
+			uint64_t bid_left = std::min(order.bid, max_bid);
 			for(const auto& entry : book->orders) {
 				if(entry.first > max_price || !bid_left) {
 					break;
@@ -334,10 +360,11 @@ void Server::match_async(const trade_pair_t& pair, const trade_order_t& order, c
 						tx_in_t input;
 						input.prev = order.bid_key;
 						tx->inputs.push_back(input);
+						result.utxo_list.emplace_back(order.bid_key, utxo);
 					}
 					bid_left -= order.ask;
-					final_bid += order.ask;
-					final_ask += order.bid;
+					result.bid += order.ask;
+					result.ask += order.bid;
 				}
 			}
 			if(output_map.empty()) {
@@ -353,7 +380,7 @@ void Server::match_async(const trade_pair_t& pair, const trade_order_t& order, c
 				tx->outputs.push_back(out);
 			}
 			// provide inputs for the bid
-			bid_left = final_bid;
+			bid_left = result.bid;
 			for(const auto& entry : bid_keys) {
 				if(!bid_left) {
 					break;
@@ -361,6 +388,7 @@ void Server::match_async(const trade_pair_t& pair, const trade_order_t& order, c
 				tx_in_t input;
 				input.prev = entry.first;
 				tx->inputs.push_back(input);
+
 				if(entry.second <= bid_left) {
 					bid_left -= entry.second;
 				} else {
@@ -378,10 +406,11 @@ void Server::match_async(const trade_pair_t& pair, const trade_order_t& order, c
 				tx_out_t out;
 				out.address = address;
 				out.contract = pair.ask;
-				out.amount = final_ask;
+				out.amount = result.ask;
 				tx->outputs.push_back(out);
 			}
-			match_async_return(request_id, tx);
+			result.tx = tx;
+			match_async_return(request_id, result);
 		},
 		std::bind(&Server::vnx_async_return_ex, this, request_id, std::placeholders::_1));
 }
@@ -407,23 +436,23 @@ ulong_fraction_t Server::get_price(const addr_t& want, const amount_t& have) con
 
 	uint64_t left = have.amount;
 	for(const auto& order : get_orders(trade_pair_t::create_ex(want, have.currency))) {
-		if(order.bid >= left) {
-			price.value += order.ask;
-			price.inverse += order.bid;
+		if(order.ask >= left) {
+			price.value += order.bid;
+			price.inverse += order.ask;
 			left = 0;
 			break;
 		} else {
-			price.value += order.ask * (left / double(order.bid));
+			price.value += order.bid * (left / double(order.ask));
 			price.inverse += left;
 		}
-		left -= order.bid;
+		left -= order.ask;
 	}
 	return price;
 }
 
 bool Server::is_open(const txio_key_t& bid_key) const
 {
-	return !lock_map.count(bid_key) && !cancel_set.count(bid_key);
+	return !lock_map.count(bid_key);
 }
 
 std::shared_ptr<Server::order_book_t> Server::find_pair(const trade_pair_t& pair) const
@@ -539,8 +568,10 @@ void Server::on_connect(uint64_t client, const std::string& address)
 void Server::on_disconnect(uint64_t client)
 {
 	if(auto peer = find_peer(client)) {
-		cancel_set.insert(peer->order_set.begin(), peer->order_set.end());
-		log(INFO) << "Client " << peer->address << " disconnected, " << peer->order_set.size() << " orders canceled";
+		for(const auto& entry : peer->order_map) {
+			cancel_order(entry.second, entry.first);
+		}
+		log(INFO) << "Client " << peer->address << " disconnected, " << peer->order_map.size() << " orders canceled";
 	}
 	add_task([this, client]() {
 		peer_map.erase(client);

@@ -85,7 +85,7 @@ hash_t Wallet::send(const uint32_t& index, const uint64_t& amount, const addr_t&
 	node->add_transaction(tx);
 	wallet->update_from(tx);
 
-	log(INFO) << "Sent " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
+	log(INFO) << "Sent " << amount << " [" << currency << "] with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
 	return tx->id;
 }
 
@@ -116,7 +116,7 @@ hash_t Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 	node->add_transaction(tx);
 	wallet->update_from(tx);
 
-	log(INFO) << "Sent " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
+	log(INFO) << "Sent " << amount << " [" << currency << "] with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
 	return tx->id;
 }
 
@@ -144,7 +144,7 @@ hash_t Wallet::mint(const uint32_t& index, const uint64_t& amount, const addr_t&
 	node->add_transaction(tx);
 	wallet->update_from(tx);
 
-	log(INFO) << "Minted " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
+	log(INFO) << "Minted " << amount << " [" << currency << "] with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
 	return tx->id;
 }
 
@@ -165,8 +165,13 @@ hash_t Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> con
 	return tx->id;
 }
 
-std::shared_ptr<const Transaction> Wallet::sign_off(const uint32_t& index, std::shared_ptr<const Transaction> tx, const vnx::bool_t& cover_fee) const
+std::shared_ptr<const Transaction>
+Wallet::sign_off(	const uint32_t& index, std::shared_ptr<const Transaction> tx,
+					const vnx::bool_t& cover_fee, const std::vector<std::pair<txio_key_t, utxo_t>>& utxo_list) const
 {
+	if(!tx) {
+		return nullptr;
+	}
 	const auto wallet = get_wallet(index);
 
 	std::unordered_set<txio_key_t> spent_keys;
@@ -182,13 +187,15 @@ std::shared_ptr<const Transaction> Wallet::sign_off(const uint32_t& index, std::
 			break;
 		}
 	}
+	std::unordered_map<addr_t, addr_t> owner_map;
 	// TODO: lookup owner_map
 
 	auto copy = vnx::clone(tx);
 	if(cover_fee) {
-		wallet->gather_fee(copy, spent_map, {}, 0, {});
+		const std::unordered_map<txio_key_t, utxo_t> utxo_map(utxo_list.begin(), utxo_list.end());
+		wallet->gather_fee(copy, spent_map, {}, 0, owner_map, utxo_map);
 	}
-	wallet->sign_off(copy, spent_map);
+	wallet->sign_off(copy, spent_map, owner_map);
 	return copy;
 }
 

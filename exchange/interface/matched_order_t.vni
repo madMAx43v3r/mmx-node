@@ -1,0 +1,18 @@
+package mmx.exchange;
+
+import mmx.utxo_t;
+import mmx.txio_key_t;
+import mmx.Transaction;
+
+struct matched_order_t {
+	
+	trade_pair_t pair;
+	
+	ulong bid;
+	ulong ask;
+	
+	Transaction* tx;
+	
+	vector<pair<txio_key_t, utxo_t>> utxo_list;
+	
+}	

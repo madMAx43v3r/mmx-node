@@ -214,18 +214,28 @@ public:
 	uint64_t gather_fee(std::shared_ptr<Transaction> tx,
 						std::unordered_map<txio_key_t, utxo_t>& spent_map,
 						const spend_options_t& options = {}, uint64_t change = 0,
-						const std::unordered_map<addr_t, addr_t>& owner_map = {})
+						const std::unordered_map<addr_t, addr_t>& owner_map = {},
+						const std::unordered_map<txio_key_t, utxo_t>& utxo_map = {})
 	{
 		uint64_t tx_fees = 0;
 		while(true) {
 			// count number of solutions needed
 			std::unordered_set<addr_t> used_addr;
 			for(const auto& in : tx->inputs) {
-				auto iter = spent_map.find(in.prev);
-				if(iter == spent_map.end()) {
-					throw std::logic_error("cannot sign input");
+				addr_t owner;
+				{
+					auto iter = spent_map.find(in.prev);
+					if(iter == spent_map.end()) {
+						auto iter = utxo_map.find(in.prev);
+						if(iter == utxo_map.end()) {
+							throw std::logic_error("unknown input");
+						} else {
+							owner = iter->second.address;
+						}
+					} else {
+						owner = iter->second.address;
+					}
 				}
-				auto owner = iter->second.address;
 				{
 					auto iter = owner_map.find(owner);
 					if(iter != owner_map.end()) {

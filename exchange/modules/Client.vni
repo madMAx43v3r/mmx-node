@@ -19,9 +19,9 @@ module Client extends vnx.addons.MsgServer {
 	vector<string> get_servers() const;
 	
 	@Permission(mmx.permission_e.SPENDING)
-	void execute(string server, uint wallet, Transaction* tx) async;
+	hash_t execute(string server, uint wallet, matched_order_t order) const async;
 	
-	Transaction* match(string server, trade_pair_t pair, trade_order_t order) const async;
+	vector<matched_order_t> match(string server, trade_pair_t pair, vector<trade_order_t> orders) const async;
 	
 	vector<order_t> get_orders(string server, trade_pair_t pair) const async;
 	
@@ -33,6 +33,10 @@ module Client extends vnx.addons.MsgServer {
 	OrderBundle* get_offer(ulong id) const;
 	
 	vector<OrderBundle*> get_all_offers() const;
+	
+	void cancel_offer(ulong id);
+	
+	void cancel_all();
 	
 	OrderBundle* make_offer(uint wallet, trade_pair_t pair, ulong bid, ulong ask) const;
 	

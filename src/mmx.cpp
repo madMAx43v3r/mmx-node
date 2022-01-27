@@ -61,6 +61,7 @@ int main(int argc, char** argv)
 	options["n"] = "node";
 	options["f"] = "file";
 	options["j"] = "index";
+	options["k"] = "server";
 	options["a"] = "amount";
 	options["b"] = "bid";
 	options["s"] = "source";
@@ -70,6 +71,7 @@ int main(int argc, char** argv)
 	options["node"] = "address";
 	options["file"] = "path";
 	options["index"] = "0..?";
+	options["server"] = "index";
 	options["amount"] = "123.456";
 	options["bid"] = "123.456";
 	options["source"] = "address";
@@ -87,6 +89,7 @@ int main(int argc, char** argv)
 	std::string target_addr;
 	std::string contract_addr;
 	int64_t index = 0;
+	int64_t server_index = 0;
 	double amount = 0;
 	double bid_amount = 0;
 	bool pre_accept = false;
@@ -95,6 +98,7 @@ int main(int argc, char** argv)
 	vnx::read_config("yes", pre_accept);
 	vnx::read_config("file", file_name);
 	vnx::read_config("index", index);
+	vnx::read_config("server", server_index);
 	vnx::read_config("amount", amount);
 	vnx::read_config("bid", bid_amount);
 	vnx::read_config("source", source_addr);
@@ -734,6 +738,13 @@ int main(int argc, char** argv)
 			}
 			mmx::exchange::ClientClient client("ExchClient");
 
+			const auto servers = client.get_servers();
+
+			std::string server;
+			if(size_t(server_index) < servers.size()) {
+				server = servers[server_index];
+			}
+
 			if(command == "offer")
 			{
 				mmx::exchange::trade_pair_t pair;
@@ -759,12 +770,12 @@ int main(int argc, char** argv)
 				const uint64_t bid = bid_amount * pow(10, bid_token ? bid_token->decimals : params->decimals);
 
 				if(bid == 0 || ask == 0) {
-					vnx::log_error() << "Invalid amount!";
+					vnx::log_error() << "Invalid amount! (-a | -b)";
 					goto failed;
 				}
 				auto offer = client.make_offer(index, pair, bid, ask);
 				if(!offer) {
-					vnx::log_error() << "Unable to make offer!";
+					vnx::log_error() << "Unable to make an offer! (insufficient funds, or not split down enough)";
 					goto failed;
 				}
 				std::cout << "ID: " << offer->id << std::endl;
@@ -793,6 +804,125 @@ int main(int argc, char** argv)
 					}
 				}
 			}
+			else if(command == "trade")
+			{
+				mmx::exchange::trade_pair_t pair;
+				pair.bid = contract;
+				vnx::read_config("$3", pair.ask);
+
+				if(pair.bid == pair.ask) {
+					vnx::log_error() << "Invalid trade!";
+					goto failed;
+				}
+				auto bid_token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(pair.bid));
+				auto ask_token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(pair.ask));
+
+				if(!bid_token && pair.bid != mmx::addr_t()) {
+					vnx::log_error() << "Invalid token: " << pair.bid;
+					goto failed;
+				}
+				if(!ask_token && pair.ask != mmx::addr_t()) {
+					vnx::log_error() << "Invalid token: " << pair.ask;
+					goto failed;
+				}
+				const uint64_t ask = amount * pow(10, ask_token ? ask_token->decimals : params->decimals);
+				const uint64_t bid = bid_amount * pow(10, bid_token ? bid_token->decimals : params->decimals);
+
+				if(bid == 0) {
+					vnx::log_error() << "Invalid bid amount! (-b)";
+					goto failed;
+				}
+				const auto trades = client.make_trade(index, pair, bid, ask > 0 ? vnx::optional<uint64_t>(ask) : nullptr);
+				if(trades.empty()) {
+					vnx::log_error() << "Unable to make trade!";
+					goto failed;
+				}
+				std::cout << "Server: " << server << std::endl;
+				std::cout << "Bids: ";
+				int i = 0;
+				uint64_t total_bid = 0;
+				uint64_t total_ask = 0;
+				for(const auto& trade : trades) {
+					total_bid += trade.bid;
+					total_ask += trade.ask ? *trade.ask : 0;
+					std::cout << (i++ ? " + " : "") << trade.bid / pow(10, bid_token ? bid_token->decimals : params->decimals);
+				}
+				std::cout << std::endl;
+				std::cout << "Total Bid: " << total_bid / pow(10, bid_token ? bid_token->decimals : params->decimals)
+						<< " (" << total_bid << ") " << (bid_token ? bid_token->symbol : "MMX") << std::endl;
+				if(ask > 0) {
+					std::cout << "Total Ask: " << total_ask / pow(10, ask_token ? ask_token->decimals : params->decimals)
+							<< " (" << total_ask << ") " << (ask_token ? ask_token->symbol : "MMX") << std::endl;
+					std::cout << "Price: " << ask / double(bid) << " " << (ask_token ? ask_token->symbol : "MMX")
+							<< " / " << (bid_token ? bid_token->symbol : "MMX") << std::endl;
+				}
+				bool accepted = pre_accept;
+				if(!accepted) {
+					std::cout << "Accept (y): ";
+					std::string input;
+					std::getline(std::cin, input);
+					if(input == "y") {
+						accepted = true;
+					} else {
+						std::cout << "Aborted" << std::endl;
+					}
+				}
+				if(accepted) {
+					const auto matched = client.match(server, pair, trades);
+					if(matched.empty()) {
+						vnx::log_error() << "Matched nothing!";
+						goto failed;
+					}
+					uint64_t total_bid = 0;
+					uint64_t total_match = 0;
+					for(const auto& order : matched) {
+						total_bid += order.bid;
+						total_match += order.ask;
+					}
+					std::cout << "Matched: " << total_match / pow(10, ask_token ? ask_token->decimals : params->decimals)
+								<< " " << (ask_token ? ask_token->symbol : "MMX") << " for "
+								<< total_bid / pow(10, bid_token ? bid_token->decimals : params->decimals)
+								<< " " << (bid_token ? bid_token->symbol : "MMX") << " ["
+								<< total_match / double(total_bid) << " " << (ask_token ? ask_token->symbol : "MMX") << " / " << (bid_token ? bid_token->symbol : "MMX")
+								<< "] (" << matched.size() << " trades)" << std::endl;
+
+					bool accepted = pre_accept;
+					if(!accepted) {
+						std::cout << "Accept (y): ";
+						std::string input;
+						std::getline(std::cin, input);
+						if(input == "y") {
+							accepted = true;
+						} else {
+							std::cout << "Aborted" << std::endl;
+						}
+					}
+					if(accepted) {
+						int i = 0;
+						for(const auto& order : matched) {
+							std::cout << "Trade " << i++ << ": ";
+							try {
+								const auto id = client.execute(server, index, order);
+								std::cout << id << std::endl;
+							} catch(std::exception& ex) {
+								std::cout << ex.what() << std::endl;
+							}
+						}
+					}
+				}
+			}
+			else if(command == "offers")
+			{
+				for(const auto offer : client.get_all_offers()) {
+					auto bid_token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(offer->pair.bid));
+					auto ask_token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(offer->pair.ask));
+					std::cout << "[" << offer->id << "] offering "
+							<< offer->bid / pow(10, bid_token ? bid_token->decimals : params->decimals) << " " << (bid_token ? bid_token->symbol : "MMX")
+							<< " for " << offer->ask / pow(10, ask_token ? ask_token->decimals : params->decimals) << " " << (ask_token ? ask_token->symbol : "MMX")
+							<< " [" << (offer->bid / double(offer->ask)) << " " << (bid_token ? bid_token->symbol : "MMX") << " / " << (ask_token ? ask_token->symbol : "MMX")
+							<< "] (" << (offer->bid_sold / double(offer->bid)) << " % executed)" << std::endl;
+				}
+			}
 			else if(command == "orders")
 			{
 				mmx::exchange::trade_pair_t pair;
@@ -802,24 +932,38 @@ int main(int argc, char** argv)
 				auto bid_token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(pair.bid));
 				auto ask_token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(pair.ask));
 
-				const auto servers = client.get_servers();
-				if(size_t(index) >= servers.size()) {
-					vnx::log_error() << "Invalid server!";
-					goto failed;
-				}
-				std::cout << "Server: " << servers[index] << std::endl;
+				std::cout << "Server: " << server << std::endl;
 				std::cout << "Pair: " << (bid_token ? bid_token->symbol : "MMX") << " / " << (ask_token ? ask_token->symbol : "MMX") << std::endl;
-				auto sell_orders = client.get_orders(servers[index], pair);
+				auto sell_orders = client.get_orders(server, pair);
 				std::reverse(sell_orders.begin(), sell_orders.end());
 				for(const auto& order : sell_orders) {
 					std::cout << "Sell: " << order.bid / double(order.ask) << " => "
 							<< order.bid / pow(10, bid_token ? bid_token->decimals : params->decimals) << " " << (bid_token ? bid_token->symbol : "MMX") << std::endl;
 				}
-				auto buy_orders = client.get_orders(servers[index], pair.reverse());
+				auto buy_orders = client.get_orders(server, pair.reverse());
 				std::reverse(buy_orders.begin(), buy_orders.end());
 				for(const auto& order : buy_orders) {
 					std::cout << "Buy:  " << order.ask / double(order.bid) << " => "
 							<< order.ask / pow(10, bid_token ? bid_token->decimals : params->decimals) << " " << (bid_token ? bid_token->symbol : "MMX") << std::endl;
+				}
+			}
+			else if(command == "price")
+			{
+				mmx::exchange::trade_pair_t pair;
+				pair.bid = contract;
+				vnx::read_config("$3", pair.ask);
+
+				auto bid_token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(pair.bid));
+				auto ask_token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(pair.ask));
+
+				mmx::exchange::amount_t have;
+				have.amount = amount > 0 ? amount / pow(10, bid_token ? bid_token->decimals : params->decimals) : 1;
+				have.currency = pair.bid;
+				const auto price = client.get_price(server, pair.ask, have);
+				if(price.inverse > 0) {
+					std::cout << price.value / double(price.inverse) << " " << (ask_token ? ask_token->symbol : "MMX") << " / " << (bid_token ? bid_token->symbol : "MMX") << std::endl;
+				} else {
+					std::cout << "No orders available!" << std::endl;
 				}
 			}
 			else if(command == "servers")

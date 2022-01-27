@@ -121,12 +121,19 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 
 void Transaction::merge_sign(std::shared_ptr<const Transaction> tx)
 {
+	std::unordered_map<uint32_t, uint32_t> import_map;
 	for(size_t i = 0; i < inputs.size() && i < tx->inputs.size(); ++i) {
 		auto& our = inputs[i];
 		const auto& other = tx->inputs[i];
 		if(other.solution < tx->solutions.size() && our.solution >= solutions.size()) {
-			our.solution = solutions.size();
-			solutions.push_back(tx->solutions[other.solution]);
+			auto iter = import_map.find(other.solution);
+			if(iter != import_map.end()) {
+				our.solution = iter->second;
+			} else {
+				our.solution = solutions.size();
+				import_map[other.solution] = our.solution;
+				solutions.push_back(tx->solutions[other.solution]);
+			}
 		}
 	}
 }

@@ -32,11 +32,12 @@ protected:
 		bool is_blocked = false;
 		bool is_outbound = false;
 		std::string address;
-		std::unordered_set<txio_key_t> order_set;
+		std::unordered_map<txio_key_t, trade_pair_t> order_map;
 	};
 
 	struct order_book_t {
 		std::multimap<double, order_t> orders;
+		std::unordered_map<txio_key_t, double> key_map;
 	};
 
 	struct trade_job_t {
@@ -70,6 +71,8 @@ protected:
 
 private:
 	bool is_open(const txio_key_t& bid_key) const;
+
+	void cancel_order(const trade_pair_t& pair, const txio_key_t& key);
 
 	std::shared_ptr<order_book_t> find_pair(const trade_pair_t& pair) const;
 
@@ -107,7 +110,6 @@ private:
 	mutable std::unordered_map<addr_t, uint64_t> addr_map;						// [addr => client]
 	mutable std::unordered_map<txio_key_t, utxo_t> utxo_map;
 	std::unordered_map<txio_key_t, hash_t> lock_map;							// [key => txid]
-	std::unordered_set<txio_key_t> cancel_set;
 
 	mutable std::map<trade_pair_t, std::shared_ptr<order_book_t>> trade_map;
 

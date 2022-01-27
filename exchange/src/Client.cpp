@@ -10,6 +10,8 @@
 #include <mmx/exchange/Client_approve_return.hxx>
 #include <mmx/exchange/Server_place.hxx>
 #include <mmx/exchange/Server_place_return.hxx>
+#include <mmx/exchange/Server_cancel.hxx>
+#include <mmx/exchange/Server_cancel_return.hxx>
 #include <mmx/exchange/Server_execute.hxx>
 #include <mmx/exchange/Server_execute_return.hxx>
 #include <mmx/exchange/Server_match.hxx>
@@ -69,25 +71,29 @@ void Client::main()
 
 void Client::handle(std::shared_ptr<const Block> block)
 {
+	if(!block->proof) {
+		return;
+	}
+	std::unordered_map<uint32_t, std::vector<txio_key_t>> sold_map;
 	for(const auto& base : block->tx_list) {
 		if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
 			for(const auto& in : tx->inputs) {
 				auto iter = order_map.find(in.prev);
 				if(iter != order_map.end()) {
 					const auto& order = iter->second;
-					{
-						auto iter = offer_map.find(order.offer_id);
-						if(iter != offer_map.end()) {
-							const auto offer = iter->second;
-							offer->bid_sold += order.bid.amount;
-							offer->received += order.ask.amount;
-						}
+					if(auto offer = find_offer(order.offer_id)) {
+						offer->bid_sold += order.bid.amount;
+						offer->received += order.ask.amount;
+						sold_map[offer->wallet].push_back(in.prev);
 					}
 					log(INFO) << "Sold " << order.bid.amount << " [" << order.bid.contract << "] for " << order.ask.amount << " [" << order.ask.currency << "]";
 					order_map.erase(iter);
 				}
 			}
 		}
+	}
+	for(const auto& entry : sold_map) {
+		wallet->release(entry.first, entry.second);
 	}
 }
 
@@ -111,13 +117,18 @@ vnx::optional<open_order_t> Client::get_order(const txio_key_t& key) const
 	return nullptr;
 }
 
-std::shared_ptr<const OrderBundle> Client::get_offer(const uint64_t& id) const
+std::shared_ptr<OrderBundle> Client::find_offer(const uint64_t& id) const
 {
 	auto iter = offer_map.find(id);
 	if(iter != offer_map.end()) {
 		return iter->second;
 	}
 	return nullptr;
+}
+
+std::shared_ptr<const OrderBundle> Client::get_offer(const uint64_t& id) const
+{
+	return find_offer(id);
 }
 
 std::vector<std::shared_ptr<const OrderBundle>> Client::get_all_offers() const
@@ -127,6 +138,43 @@ std::vector<std::shared_ptr<const OrderBundle>> Client::get_all_offers() const
 		res.push_back(entry.second);
 	}
 	return res;
+}
+
+void Client::cancel_offer(const uint64_t& id)
+{
+	auto iter = offer_map.find(id);
+	if(iter == offer_map.end()) {
+		throw std::logic_error("no such offer");
+	}
+	auto offer = iter->second;
+	auto method = Server_cancel::create();
+	for(const auto& order : offer->limit_orders) {
+		for(const auto& key : order.bid_keys) {
+			method->orders.push_back(key);
+		}
+	}
+	for(const auto& entry : avail_server_map) {
+		auto req = Request::create();
+		req->id = next_request_id++;
+		req->method = method;
+		send_to(entry.second, req);
+	}
+	for(const auto& key : method->orders) {
+		order_map.erase(key);
+	}
+	offer_map.erase(iter);
+	wallet->release(offer->wallet, method->orders);
+}
+
+void Client::cancel_all()
+{
+	std::vector<uint64_t> ids;
+	for(const auto& entry : offer_map) {
+		ids.push_back(entry.first);
+	}
+	for(const auto id : ids) {
+		cancel_offer(id);
+	}
 }
 
 std::shared_ptr<const OrderBundle> Client::make_offer(const uint32_t& index, const trade_pair_t& pair, const uint64_t& bid, const uint64_t& ask) const
@@ -177,23 +225,30 @@ std::vector<trade_order_t> Client::make_trade(const uint32_t& index, const trade
 		const auto& utxo = entry.output;
 		addr_map[utxo.address].emplace_back(entry.key, utxo.amount);
 	}
+	uint64_t bid_left = bid;
 	std::vector<trade_order_t> orders;
-
 	for(const auto& bundle : addr_map) {
 		trade_order_t order;
 		if(ask) {
 			order.ask = uint64_t(0);
 		}
 		for(const auto& entry : bundle.second) {
-			if(ask) {
-				*order.ask += entry.second * price;
+			if(!bid_left) {
+				break;
 			}
-			order.bid += entry.second;
+			const auto amount = std::min(entry.second, bid_left);
+			if(ask) {
+				*order.ask += amount * price;
+			}
+			order.bid += amount;
 			order.bid_keys.push_back(entry.first);
+			bid_left -= amount;
 		}
-		const auto hash = order.calc_hash();
-		order.solution = wallet->sign_msg(index, bundle.first, hash);
-		orders.push_back(order);
+		if(order.bid > 0) {
+			const auto hash = order.calc_hash();
+			order.solution = wallet->sign_msg(index, bundle.first, hash);
+			orders.push_back(order);
+		}
 	}
 	return orders;
 }
@@ -259,29 +314,65 @@ std::shared_ptr<const Transaction> Client::approve(std::shared_ptr<const Transac
 			throw std::logic_error("expected amount: " + std::to_string(entry.second) + " [" + entry.first.to_string() + "]");
 		}
 	}
-	auto copy = vnx::clone(tx);
+	auto out = vnx::clone(tx);
 	for(auto index : wallets) {
-		wallet->sign_off(index, copy);
+		if(auto tx = wallet->sign_off(index, out)) {
+			out = vnx::clone(tx);
+		} else {
+			throw std::logic_error("unable to sign off");
+		}
 	}
 	log(INFO) << "Accepted trade " << tx->id;
-	return copy;
+	return out;
 }
 
-void Client::execute_async(const std::string& server, const uint32_t& index, std::shared_ptr<const Transaction> tx, const vnx::request_id_t& request_id)
+void Client::execute_async(const std::string& server, const uint32_t& index, const matched_order_t& order, const vnx::request_id_t& request_id) const
 {
 	auto peer = get_server(server);
 	auto method = Server_execute::create();
-	method->tx = wallet->sign_off(index, tx, true);
-	send_request(peer, method, std::bind(&Client::vnx_async_return, this, request_id, std::placeholders::_1));
+	method->tx = wallet->sign_off(index, order.tx, true, order.utxo_list);
+	if(method->tx) {
+		send_request(peer, method,
+			[this, request_id, method](std::shared_ptr<const vnx::Value> result) {
+				if(auto ex = std::dynamic_pointer_cast<const vnx::Exception>(result)) {
+					vnx_async_return(request_id, ex);
+				} else {
+					execute_async_return(request_id, method->tx->id);
+				}
+			});
+	} else {
+		vnx_async_return_ex_what(request_id, "failed to sign off");
+	}
 }
 
-void Client::match_async(const std::string& server, const trade_pair_t& pair, const trade_order_t& order, const vnx::request_id_t& request_id) const
+void Client::match_async(const std::string& server, const trade_pair_t& pair, const std::vector<trade_order_t>& orders, const vnx::request_id_t& request_id) const
 {
+	if(orders.empty()) {
+		match_async_return(request_id, {});
+		return;
+	}
 	auto peer = get_server(server);
-	auto method = Server_match::create();
-	method->pair = pair;
-	method->order = order;
-	send_request(peer, method, std::bind(&Client::vnx_async_return, this, request_id, std::placeholders::_1));
+	auto job = std::make_shared<match_job_t>();
+	job->num_requests = orders.size();
+	job->request_id = request_id;
+
+	for(const auto& order : orders) {
+		auto method = Server_match::create();
+		method->pair = pair;
+		method->order = order;
+		send_request(peer, method,
+			[this, job](std::shared_ptr<const vnx::Value> result) {
+				if(auto ret = std::dynamic_pointer_cast<const Server_match_return>(result)) {
+					job->result.push_back(ret->_ret_0);
+				}
+				else if(auto ret = std::dynamic_pointer_cast<const vnx::Exception>(result)) {
+					log(WARN) << "match() failed with: " << ret->what;
+				}
+				if(++job->num_returns >= job->num_requests) {
+					match_async_return(job->request_id, job->result);
+				}
+			});
+	}
 }
 
 void Client::get_orders_async(const std::string& server, const trade_pair_t& pair, const vnx::request_id_t& request_id) const
