@@ -18,7 +18,8 @@ module Client extends vnx.addons.MsgServer {
 	
 	vector<string> get_servers() const;
 	
-	void execute(string server, Transaction* tx) async;
+	@Permission(mmx.permission_e.SPENDING)
+	void execute(string server, uint wallet, Transaction* tx) async;
 	
 	Transaction* match(string server, trade_pair_t pair, trade_order_t order) const async;
 	

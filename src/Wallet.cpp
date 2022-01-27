@@ -165,7 +165,7 @@ hash_t Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> con
 	return tx->id;
 }
 
-std::shared_ptr<const Transaction> Wallet::sign_off(const uint32_t& index, std::shared_ptr<const Transaction> tx) const
+std::shared_ptr<const Transaction> Wallet::sign_off(const uint32_t& index, std::shared_ptr<const Transaction> tx, const vnx::bool_t& cover_fee) const
 {
 	const auto wallet = get_wallet(index);
 
@@ -185,6 +185,9 @@ std::shared_ptr<const Transaction> Wallet::sign_off(const uint32_t& index, std::
 	// TODO: lookup owner_map
 
 	auto copy = vnx::clone(tx);
+	if(cover_fee) {
+		wallet->gather_fee(copy, spent_map, {}, 0, {});
+	}
 	wallet->sign_off(copy, spent_map);
 	return copy;
 }

@@ -70,6 +70,10 @@ std::string addr_t::to_string() const
 inline
 void addr_t::from_string(const std::string& addr)
 {
+	if(addr == "MMX") {
+		*this = addr_t();
+		return;
+	}
 	const auto res = bech32::decode(addr);
 	if(res.encoding != bech32::Bech32m) {
 		throw std::logic_error("invalid address: " + addr);

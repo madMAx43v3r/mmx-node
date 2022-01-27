@@ -29,6 +29,7 @@ public:
 protected:
 	struct peer_t : Super::peer_t {
 		std::string address;
+		std::unordered_set<uint32_t> pending;
 		std::unordered_set<txio_key_t> order_set;
 	};
 
@@ -52,7 +53,7 @@ protected:
 
 	std::shared_ptr<const Transaction> approve(std::shared_ptr<const Transaction> tx) const override;
 
-	void execute_async(const std::string& server, std::shared_ptr<const Transaction> tx, const vnx::request_id_t& request_id) override;
+	void execute_async(const std::string& server, const uint32_t& wallet, std::shared_ptr<const Transaction> tx, const vnx::request_id_t& request_id) override;
 
 	void match_async(const std::string& server, const trade_pair_t& pair, const trade_order_t& order, const vnx::request_id_t& request_id) const override;
 
@@ -106,8 +107,8 @@ private:
 	std::shared_ptr<NodeClient> node;
 	std::shared_ptr<WalletClient> wallet;
 
-	std::set<std::string> connecting;
-	std::map<std::string, uint64_t> avail_server_map;
+	std::set<std::string> connecting;										// [address]
+	std::map<std::string, uint64_t> avail_server_map;						// [address => client]
 	std::unordered_map<uint64_t, std::shared_ptr<peer_t>> peer_map;
 
 	std::unordered_map<txio_key_t, open_order_t> order_map;

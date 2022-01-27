@@ -213,7 +213,7 @@ public:
 
 	uint64_t gather_fee(std::shared_ptr<Transaction> tx,
 						std::unordered_map<txio_key_t, utxo_t>& spent_map,
-						const spend_options_t& options, uint64_t change = 0,
+						const spend_options_t& options = {}, uint64_t change = 0,
 						const std::unordered_map<addr_t, addr_t>& owner_map = {})
 	{
 		uint64_t tx_fees = 0;

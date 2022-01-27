@@ -94,8 +94,10 @@ void Client::handle(std::shared_ptr<const Block> block)
 std::vector<std::string> Client::get_servers() const
 {
 	std::vector<std::string> list;
-	for(const auto& entry : avail_server_map) {
-		list.push_back(entry.first);
+	for(const auto& entry : server_map) {
+		if(avail_server_map.count(entry.second)) {
+			list.push_back(entry.first);
+		}
 	}
 	return list;
 }
@@ -199,11 +201,12 @@ std::vector<trade_order_t> Client::make_trade(const uint32_t& index, const trade
 void Client::send_offer(uint64_t server, std::shared_ptr<const OrderBundle> offer)
 {
 	for(const auto& order : offer->limit_orders) {
-		auto req = Request::create();
-		req->id = next_request_id++;
 		auto method = Server_place::create();
 		method->pair = offer->pair;
 		method->order = order;
+		auto req = Request::create();
+		req->id = next_request_id++;
+		req->method = method;
 		send_to(server, req);
 	}
 }
@@ -264,11 +267,11 @@ std::shared_ptr<const Transaction> Client::approve(std::shared_ptr<const Transac
 	return copy;
 }
 
-void Client::execute_async(const std::string& server, std::shared_ptr<const Transaction> tx, const vnx::request_id_t& request_id)
+void Client::execute_async(const std::string& server, const uint32_t& index, std::shared_ptr<const Transaction> tx, const vnx::request_id_t& request_id)
 {
 	auto peer = get_server(server);
 	auto method = Server_execute::create();
-	method->tx = tx;
+	method->tx = wallet->sign_off(index, tx, true);
 	send_request(peer, method, std::bind(&Client::vnx_async_return, this, request_id, std::placeholders::_1));
 }
 
@@ -301,7 +304,7 @@ void Client::get_price_async(const std::string& server, const addr_t& want, cons
 void Client::connect()
 {
 	for(const auto& entry : server_map) {
-		if(!avail_server_map.count(entry.first) && !connecting.count(entry.second))
+		if(!avail_server_map.count(entry.second) && !connecting.count(entry.second))
 		{
 			const auto address = entry.second;
 			log(DEBUG) << "Trying to connect to " << address;
@@ -362,6 +365,7 @@ uint32_t Client::send_request(	std::shared_ptr<peer_t> peer, std::shared_ptr<con
 	req->method = method;
 	((Client*)this)->send_to(peer, req, true);
 
+	peer->pending.insert(req->id);
 	return_map[req->id] = callback;
 	return req->id;
 }
@@ -382,11 +386,16 @@ void Client::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 {
 	auto iter = return_map.find(msg->id);
 	if(iter != return_map.end()) {
+		if(auto peer = find_peer(client)) {
+			peer->pending.erase(msg->id);
+		}
 		const auto callback = std::move(iter->second);
 		return_map.erase(iter);
 		if(callback) {
 			callback(msg->result);
 		}
+	} else if(auto ex = std::dynamic_pointer_cast<const vnx::Exception>(msg->result)) {
+		log(WARN) << "Request failed with: " << ex->what;
 	}
 }
 
@@ -437,6 +446,7 @@ void Client::on_connect(uint64_t client, const std::string& address)
 	peer->client = client;
 	peer->address = address;
 	peer_map[client] = peer;
+	avail_server_map[address] = client;
 
 	log(INFO) << "Connected to server " << peer->address;
 }
@@ -444,6 +454,16 @@ void Client::on_connect(uint64_t client, const std::string& address)
 void Client::on_disconnect(uint64_t client)
 {
 	if(auto peer = find_peer(client)) {
+		for(const auto id : peer->pending) {
+			auto iter = return_map.find(id);
+			if(iter != return_map.end()) {
+				const auto callback = std::move(iter->second);
+				return_map.erase(iter);
+				if(callback) {
+					callback(vnx::Exception::from_what("server disconnect"));
+				}
+			}
+		}
 		log(INFO) << "Server " << peer->address << " disconnected";
 	}
 	add_task([this, client]() {
@@ -475,9 +495,13 @@ std::shared_ptr<Client::peer_t> Client::find_peer(uint64_t client) const
 
 std::shared_ptr<Client::peer_t> Client::get_server(const std::string& name) const
 {
-	auto iter = avail_server_map.find(name);
-	if(iter != avail_server_map.end()) {
-		return get_peer(iter->second);
+	auto iter = server_map.find(name);
+	if(iter != server_map.end()) {
+		const auto& address = iter->second;
+		auto iter = avail_server_map.find(address);
+		if(iter != avail_server_map.end()) {
+			return get_peer(iter->second);
+		}
 	}
 	throw std::logic_error("no such server");
 }

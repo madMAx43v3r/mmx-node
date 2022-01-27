@@ -42,25 +42,35 @@ void Server::main()
 
 void Server::handle(std::shared_ptr<const Block> block)
 {
+	size_t num_exec = 0;
 	for(const auto& base : block->tx_list) {
 		if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
 			for(const auto& in : tx->inputs) {
 				if(utxo_map.erase(in.prev)) {
 					lock_map.erase(in.prev);
+					num_exec++;
 				}
 			}
 		}
 	}
+	size_t num_purged = 0;
 	for(const auto& entry : trade_map) {
 		const auto& book = entry.second;
 		for(auto iter = book->orders.begin(); iter != book->orders.end();) {
-			if(utxo_map.count(iter->second.bid_key)) {
+			const auto& order = iter->second;
+			if(utxo_map.count(order.bid_key) && !cancel_set.count(order.bid_key)) {
 				iter++;
 			} else {
+				if(cancel_set.erase(order.bid_key)) {
+					utxo_map.erase(order.bid_key);
+				}
 				iter = book->orders.erase(iter);
+				num_purged++;
 			}
 		}
 	}
+	log(INFO) << "Height " << block->height << ": " << num_exec << " executed, " << num_purged << " canceled, "
+			<< utxo_map.size() << " open, " << lock_map.size() << " locked";
 }
 
 void Server::cancel(const uint64_t& client, const std::vector<txio_key_t>& orders)
@@ -137,6 +147,12 @@ void Server::place_async(const uint64_t& client, const trade_pair_t& pair, const
 
 	node->get_txo_infos(order.bid_keys,
 		[this, peer, pair, address, order, request_id](const std::vector<vnx::optional<txo_info_t>>& entries) {
+			for(const auto& entry : entries) {
+				if(!entry) {
+					vnx_async_return_ex_what(request_id, "no such utxo");
+					return;
+				}
+			}
 			uint64_t total_bid = 0;
 			std::vector<order_t> result;
 			for(size_t i = 0; i < entries.size() && i < order.bid_keys.size(); ++i) {
@@ -154,9 +170,6 @@ void Server::place_async(const uint64_t& client, const trade_pair_t& pair, const
 						result.push_back(tmp);
 					}
 					total_bid += utxo.amount;
-				} else {
-					vnx_async_return_ex_what(request_id, "no such utxo");
-					return;
 				}
 			}
 			if(result.empty()) {
@@ -527,7 +540,7 @@ void Server::on_disconnect(uint64_t client)
 {
 	if(auto peer = find_peer(client)) {
 		cancel_set.insert(peer->order_set.begin(), peer->order_set.end());
-		log(INFO) << "Client " << peer->address << " disconnected";
+		log(INFO) << "Client " << peer->address << " disconnected, " << peer->order_set.size() << " orders canceled";
 	}
 	add_task([this, client]() {
 		peer_map.erase(client);

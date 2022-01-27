@@ -11,6 +11,7 @@
 #include <mmx/FarmerClient.hxx>
 #include <mmx/HarvesterClient.hxx>
 #include <mmx/exchange/ClientClient.hxx>
+#include <mmx/exchange/trade_pair_t.hpp>
 #include <mmx/Contract.hxx>
 #include <mmx/contract/NFT.hxx>
 #include <mmx/contract/Token.hxx>
@@ -766,34 +767,70 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Unable to make offer!";
 					goto failed;
 				}
-				std::cout << "Offer: " << offer->id << std::endl;
-				std::cout << "Total Ask: " << offer->ask / pow(10, ask_token ? ask_token->decimals : params->decimals)
-						<< " (" << offer->ask << ") " << (ask_token ? ask_token->symbol : "MMX") << std::endl;
-				std::cout << "Total Bid: " << offer->bid / pow(10, bid_token ? bid_token->decimals : params->decimals)
-						<< " (" << offer->bid << ") " << (bid_token ? bid_token->symbol : "MMX") << std::endl;
+				std::cout << "ID: " << offer->id << std::endl;
 				std::cout << "Bids: ";
 				int i = 0;
 				for(const auto& entry : offer->orders) {
 					std::cout << (i++ ? " + " : "") << entry.second.bid.amount / pow(10, bid_token ? bid_token->decimals : params->decimals);
 				}
 				std::cout << std::endl;
-				std::cout << "Price: " << ask / double(bid) << " " << (ask_token ? ask_token->symbol : "MMX")
-						<< " / " << (bid_token ? bid_token->symbol : "MMX") << std::endl;
+				std::cout << "Total Bid: " << offer->bid / pow(10, bid_token ? bid_token->decimals : params->decimals)
+						<< " (" << offer->bid << ") " << (bid_token ? bid_token->symbol : "MMX") << std::endl;
+				std::cout << "Total Ask: " << offer->ask / pow(10, ask_token ? ask_token->decimals : params->decimals)
+						<< " (" << offer->ask << ") " << (ask_token ? ask_token->symbol : "MMX") << std::endl;
+				std::cout << "Price: " << bid / double(ask) << " " << (bid_token ? bid_token->symbol : "MMX")
+						<< " / " << (ask_token ? ask_token->symbol : "MMX") << std::endl;
 				if(pre_accept) {
 					client.place(offer);
 				} else {
-					std::cout << "Accept (y/Y): ";
+					std::cout << "Accept (y): ";
 					std::string input;
 					std::getline(std::cin, input);
-					if(input == "y" || input == "Y") {
+					if(input == "y") {
 						client.place(offer);
 					} else {
 						std::cout << "Aborted" << std::endl;
 					}
 				}
 			}
+			else if(command == "orders")
+			{
+				mmx::exchange::trade_pair_t pair;
+				pair.ask = contract;
+				vnx::read_config("$3", pair.bid);
+
+				auto bid_token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(pair.bid));
+				auto ask_token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(pair.ask));
+
+				const auto servers = client.get_servers();
+				if(size_t(index) >= servers.size()) {
+					vnx::log_error() << "Invalid server!";
+					goto failed;
+				}
+				std::cout << "Server: " << servers[index] << std::endl;
+				std::cout << "Pair: " << (bid_token ? bid_token->symbol : "MMX") << " / " << (ask_token ? ask_token->symbol : "MMX") << std::endl;
+				auto sell_orders = client.get_orders(servers[index], pair);
+				std::reverse(sell_orders.begin(), sell_orders.end());
+				for(const auto& order : sell_orders) {
+					std::cout << "Sell: " << order.bid / double(order.ask) << " => "
+							<< order.bid / pow(10, bid_token ? bid_token->decimals : params->decimals) << " " << (bid_token ? bid_token->symbol : "MMX") << std::endl;
+				}
+				auto buy_orders = client.get_orders(servers[index], pair.reverse());
+				std::reverse(buy_orders.begin(), buy_orders.end());
+				for(const auto& order : buy_orders) {
+					std::cout << "Buy:  " << order.ask / double(order.bid) << " => "
+							<< order.ask / pow(10, ask_token ? ask_token->decimals : params->decimals) << " " << (ask_token ? ask_token->symbol : "MMX") << std::endl;
+				}
+			}
+			else if(command == "servers")
+			{
+				const auto servers = client.get_servers();
+				for(const auto& name : servers) {
+					std::cout << "[" << name << "]" << std::endl;
+				}
+			}
 			else {
-				std::cerr << "Help: mmx exch [offer]" << std::endl;
+				std::cerr << "Help: mmx exch [offer | orders | servers]" << std::endl;
 			}
 		}
 		else {
