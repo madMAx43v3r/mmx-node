@@ -85,7 +85,7 @@ hash_t Wallet::send(const uint32_t& index, const uint64_t& amount, const addr_t&
 	node->add_transaction(tx);
 	wallet->update_from(tx);
 
-	log(INFO) << "Sent " << amount << " [" << currency << "] with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
+	log(INFO) << "Sent " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
 	return tx->id;
 }
 
@@ -116,7 +116,7 @@ hash_t Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 	node->add_transaction(tx);
 	wallet->update_from(tx);
 
-	log(INFO) << "Sent " << amount << " [" << currency << "] with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
+	log(INFO) << "Sent " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
 	return tx->id;
 }
 
@@ -144,7 +144,7 @@ hash_t Wallet::mint(const uint32_t& index, const uint64_t& amount, const addr_t&
 	node->add_transaction(tx);
 	wallet->update_from(tx);
 
-	log(INFO) << "Minted " << amount << " [" << currency << "] with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
+	log(INFO) << "Minted " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
 	return tx->id;
 }
 
