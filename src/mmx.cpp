@@ -819,7 +819,7 @@ int main(int argc, char** argv)
 				std::reverse(buy_orders.begin(), buy_orders.end());
 				for(const auto& order : buy_orders) {
 					std::cout << "Buy:  " << order.ask / double(order.bid) << " => "
-							<< order.ask / pow(10, ask_token ? ask_token->decimals : params->decimals) << " " << (ask_token ? ask_token->symbol : "MMX") << std::endl;
+							<< order.ask / pow(10, bid_token ? bid_token->decimals : params->decimals) << " " << (bid_token ? bid_token->symbol : "MMX") << std::endl;
 				}
 			}
 			else if(command == "servers")
