@@ -10,6 +10,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/exchange/OrderBundle.hxx>
 #include <mmx/exchange/amount_t.hxx>
+#include <mmx/exchange/matched_order_t.hxx>
 #include <mmx/exchange/open_order_t.hxx>
 #include <mmx/exchange/order_t.hxx>
 #include <mmx/exchange/trade_order_t.hxx>
@@ -58,11 +59,9 @@ public:
 	
 	std::vector<std::string> get_servers();
 	
-	void execute(const std::string& server = "", const uint32_t& wallet = 0, std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
+	::mmx::hash_t execute(const std::string& server = "", const uint32_t& wallet = 0, const ::mmx::exchange::matched_order_t& order = ::mmx::exchange::matched_order_t());
 	
-	void execute_async(const std::string& server = "", const uint32_t& wallet = 0, std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
-	
-	std::shared_ptr<const ::mmx::Transaction> match(const std::string& server = "", const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const ::mmx::exchange::trade_order_t& order = ::mmx::exchange::trade_order_t());
+	std::vector<::mmx::exchange::matched_order_t> match(const std::string& server = "", const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const std::vector<::mmx::exchange::trade_order_t>& orders = {});
 	
 	std::vector<::mmx::exchange::order_t> get_orders(const std::string& server = "", const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t());
 	
@@ -73,6 +72,14 @@ public:
 	std::shared_ptr<const ::mmx::exchange::OrderBundle> get_offer(const uint64_t& id = 0);
 	
 	std::vector<std::shared_ptr<const ::mmx::exchange::OrderBundle>> get_all_offers();
+	
+	void cancel_offer(const uint64_t& id = 0);
+	
+	void cancel_offer_async(const uint64_t& id = 0);
+	
+	void cancel_all();
+	
+	void cancel_all_async();
 	
 	std::shared_ptr<const ::mmx::exchange::OrderBundle> make_offer(const uint32_t& wallet = 0, const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const uint64_t& bid = 0, const uint64_t& ask = 0);
 	

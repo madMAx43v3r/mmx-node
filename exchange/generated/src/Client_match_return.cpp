@@ -3,7 +3,7 @@
 
 #include <mmx/exchange/package.hxx>
 #include <mmx/exchange/Client_match_return.hxx>
-#include <mmx/Transaction.hxx>
+#include <mmx/exchange/matched_order_t.hxx>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -14,7 +14,7 @@ namespace exchange {
 
 
 const vnx::Hash64 Client_match_return::VNX_TYPE_HASH(0xcc5f8532622c2fd8ull);
-const vnx::Hash64 Client_match_return::VNX_CODE_HASH(0x4abf9b88b82c01e1ull);
+const vnx::Hash64 Client_match_return::VNX_CODE_HASH(0x98546163ffe9494cull);
 
 vnx::Hash64 Client_match_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -115,18 +115,20 @@ std::shared_ptr<vnx::TypeCode> Client_match_return::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.Client.match.return";
 	type_code->type_hash = vnx::Hash64(0xcc5f8532622c2fd8ull);
-	type_code->code_hash = vnx::Hash64(0x4abf9b88b82c01e1ull);
+	type_code->code_hash = vnx::Hash64(0x98546163ffe9494cull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
 	type_code->native_size = sizeof(::mmx::exchange::Client_match_return);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Client_match_return>(); };
+	type_code->depends.resize(1);
+	type_code->depends[0] = ::mmx::exchange::matched_order_t::static_get_type_code();
 	type_code->fields.resize(1);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "_ret_0";
-		field.code = {16};
+		field.code = {12, 19, 0};
 	}
 	type_code->build();
 	return type_code;

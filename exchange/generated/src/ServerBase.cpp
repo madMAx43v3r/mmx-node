@@ -25,6 +25,7 @@
 #include <mmx/exchange/Server_reject_return.hxx>
 #include <mmx/exchange/amount_t.hxx>
 #include <mmx/exchange/limit_order_t.hxx>
+#include <mmx/exchange/matched_order_t.hxx>
 #include <mmx/exchange/order_t.hxx>
 #include <mmx/exchange/trade_order_t.hxx>
 #include <mmx/exchange/trade_pair_t.hxx>
@@ -552,7 +553,7 @@ void ServerBase::execute_async_return(const vnx::request_id_t& _request_id) cons
 	vnx_async_return(_request_id, _return_value);
 }
 
-void ServerBase::match_async_return(const vnx::request_id_t& _request_id, const std::shared_ptr<const ::mmx::Transaction>& _ret_0) const {
+void ServerBase::match_async_return(const vnx::request_id_t& _request_id, const ::mmx::exchange::matched_order_t& _ret_0) const {
 	auto _return_value = ::mmx::exchange::Server_match_return::create();
 	_return_value->_ret_0 = _ret_0;
 	vnx_async_return(_request_id, _return_value);

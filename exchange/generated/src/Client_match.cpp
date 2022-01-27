@@ -16,7 +16,7 @@ namespace exchange {
 
 
 const vnx::Hash64 Client_match::VNX_TYPE_HASH(0x5b38e7fda1090949ull);
-const vnx::Hash64 Client_match::VNX_CODE_HASH(0x8409e50825ed0892ull);
+const vnx::Hash64 Client_match::VNX_CODE_HASH(0xc8618ac8f4b990d5ull);
 
 vnx::Hash64 Client_match::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -51,7 +51,7 @@ void Client_match::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, server);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, pair);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, order);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, orders);
 	_visitor.type_end(*_type_code);
 }
 
@@ -59,7 +59,7 @@ void Client_match::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.exchange.Client.match\"";
 	_out << ", \"server\": "; vnx::write(_out, server);
 	_out << ", \"pair\": "; vnx::write(_out, pair);
-	_out << ", \"order\": "; vnx::write(_out, order);
+	_out << ", \"orders\": "; vnx::write(_out, orders);
 	_out << "}";
 }
 
@@ -74,14 +74,14 @@ vnx::Object Client_match::to_object() const {
 	_object["__type"] = "mmx.exchange.Client.match";
 	_object["server"] = server;
 	_object["pair"] = pair;
-	_object["order"] = order;
+	_object["orders"] = orders;
 	return _object;
 }
 
 void Client_match::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "order") {
-			_entry.second.to(order);
+		if(_entry.first == "orders") {
+			_entry.second.to(orders);
 		} else if(_entry.first == "pair") {
 			_entry.second.to(pair);
 		} else if(_entry.first == "server") {
@@ -97,8 +97,8 @@ vnx::Variant Client_match::get_field(const std::string& _name) const {
 	if(_name == "pair") {
 		return vnx::Variant(pair);
 	}
-	if(_name == "order") {
-		return vnx::Variant(order);
+	if(_name == "orders") {
+		return vnx::Variant(orders);
 	}
 	return vnx::Variant();
 }
@@ -108,8 +108,8 @@ void Client_match::set_field(const std::string& _name, const vnx::Variant& _valu
 		_value.to(server);
 	} else if(_name == "pair") {
 		_value.to(pair);
-	} else if(_name == "order") {
-		_value.to(order);
+	} else if(_name == "orders") {
+		_value.to(orders);
 	}
 }
 
@@ -137,7 +137,7 @@ std::shared_ptr<vnx::TypeCode> Client_match::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.Client.match";
 	type_code->type_hash = vnx::Hash64(0x5b38e7fda1090949ull);
-	type_code->code_hash = vnx::Hash64(0x8409e50825ed0892ull);
+	type_code->code_hash = vnx::Hash64(0xc8618ac8f4b990d5ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -165,8 +165,8 @@ std::shared_ptr<vnx::TypeCode> Client_match::static_create_type_code() {
 	{
 		auto& field = type_code->fields[2];
 		field.is_extended = true;
-		field.name = "order";
-		field.code = {19, 1};
+		field.name = "orders";
+		field.code = {12, 19, 1};
 	}
 	type_code->build();
 	return type_code;
@@ -216,7 +216,7 @@ void read(TypeInput& in, ::mmx::exchange::Client_match& value, const TypeCode* t
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.server, type_code, _field->code.data()); break;
 			case 1: vnx::read(in, value.pair, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.order, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.orders, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -237,7 +237,7 @@ void write(TypeOutput& out, const ::mmx::exchange::Client_match& value, const Ty
 	}
 	vnx::write(out, value.server, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.pair, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.order, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.orders, type_code, type_code->fields[2].code.data());
 }
 
 void read(std::istream& in, ::mmx::exchange::Client_match& value) {

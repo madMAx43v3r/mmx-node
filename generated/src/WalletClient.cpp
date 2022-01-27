@@ -62,6 +62,7 @@
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/txio_key_t.hxx>
 #include <mmx/utxo_entry_t.hxx>
+#include <mmx/utxo_t.hxx>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
@@ -279,11 +280,12 @@ vnx::bool_t WalletClient::vnx_self_test() {
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::sign_off(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx, const vnx::bool_t& cover_fee) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::sign_off(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx, const vnx::bool_t& cover_fee, const std::vector<std::pair<::mmx::txio_key_t, ::mmx::utxo_t>>& utxo_list) {
 	auto _method = ::mmx::Wallet_sign_off::create();
 	_method->index = index;
 	_method->tx = tx;
 	_method->cover_fee = cover_fee;
+	_method->utxo_list = utxo_list;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_sign_off_return>(_return_value)) {
 		return _result->_ret_0;

@@ -24,6 +24,7 @@
 #include <mmx/exchange/Server_reject_return.hxx>
 #include <mmx/exchange/amount_t.hxx>
 #include <mmx/exchange/limit_order_t.hxx>
+#include <mmx/exchange/matched_order_t.hxx>
 #include <mmx/exchange/order_t.hxx>
 #include <mmx/exchange/trade_order_t.hxx>
 #include <mmx/exchange/trade_pair_t.hxx>
@@ -187,7 +188,7 @@ void ServerClient::execute_async(std::shared_ptr<const ::mmx::Transaction> tx) {
 	vnx_request(_method, true);
 }
 
-std::shared_ptr<const ::mmx::Transaction> ServerClient::match(const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::trade_order_t& order) {
+::mmx::exchange::matched_order_t ServerClient::match(const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::trade_order_t& order) {
 	auto _method = ::mmx::exchange::Server_match::create();
 	_method->pair = pair;
 	_method->order = order;
@@ -195,7 +196,7 @@ std::shared_ptr<const ::mmx::Transaction> ServerClient::match(const ::mmx::excha
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Server_match_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Transaction>>();
+		return _return_value->get_field_by_index(0).to<::mmx::exchange::matched_order_t>();
 	} else {
 		throw std::logic_error("ServerClient: invalid return value");
 	}

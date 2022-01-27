@@ -38,6 +38,7 @@ public:
 	virtual ::mmx::hash_t calc_hash() const;
 	virtual uint64_t calc_min_fee(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	virtual std::vector<::mmx::addr_t> get_dependency() const;
+	virtual std::vector<::mmx::addr_t> get_parties() const;
 	virtual vnx::optional<::mmx::addr_t> get_owner() const;
 	virtual std::vector<::mmx::tx_out_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const;
 	

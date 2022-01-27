@@ -24,6 +24,7 @@
 #include <mmx/exchange/Server_reject_return.hxx>
 #include <mmx/exchange/amount_t.hxx>
 #include <mmx/exchange/limit_order_t.hxx>
+#include <mmx/exchange/matched_order_t.hxx>
 #include <mmx/exchange/order_t.hxx>
 #include <mmx/exchange/trade_order_t.hxx>
 #include <mmx/exchange/trade_pair_t.hxx>
@@ -193,7 +194,7 @@ uint64_t ServerAsyncClient::execute(std::shared_ptr<const ::mmx::Transaction> tx
 	return _request_id;
 }
 
-uint64_t ServerAsyncClient::match(const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::trade_order_t& order, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t ServerAsyncClient::match(const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::trade_order_t& order, const std::function<void(const ::mmx::exchange::matched_order_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::exchange::Server_match::create();
 	_method->pair = pair;
 	_method->order = order;
@@ -689,7 +690,7 @@ int32_t ServerAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Server_match_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Transaction>>());
+					_callback(_value->get_field_by_index(0).to<::mmx::exchange::matched_order_t>());
 				} else {
 					throw std::logic_error("ServerAsyncClient: invalid return value");
 				}

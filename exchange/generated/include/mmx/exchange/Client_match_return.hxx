@@ -5,7 +5,7 @@
 #define INCLUDE_mmx_exchange_Client_match_return_HXX_
 
 #include <mmx/exchange/package.hxx>
-#include <mmx/Transaction.hxx>
+#include <mmx/exchange/matched_order_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -15,7 +15,7 @@ namespace exchange {
 class Client_match_return : public ::vnx::Value {
 public:
 	
-	std::shared_ptr<const ::mmx::Transaction> _ret_0;
+	std::vector<::mmx::exchange::matched_order_t> _ret_0;
 	
 	typedef ::vnx::Value Super;
 	

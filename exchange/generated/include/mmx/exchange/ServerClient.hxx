@@ -10,6 +10,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/exchange/amount_t.hxx>
 #include <mmx/exchange/limit_order_t.hxx>
+#include <mmx/exchange/matched_order_t.hxx>
 #include <mmx/exchange/order_t.hxx>
 #include <mmx/exchange/trade_order_t.hxx>
 #include <mmx/exchange/trade_pair_t.hxx>
@@ -59,7 +60,7 @@ public:
 	
 	void execute_async(std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
 	
-	std::shared_ptr<const ::mmx::Transaction> match(const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const ::mmx::exchange::trade_order_t& order = ::mmx::exchange::trade_order_t());
+	::mmx::exchange::matched_order_t match(const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const ::mmx::exchange::trade_order_t& order = ::mmx::exchange::trade_order_t());
 	
 	std::vector<::mmx::exchange::order_t> get_orders(const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t());
 	

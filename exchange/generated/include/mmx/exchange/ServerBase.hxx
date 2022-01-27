@@ -10,6 +10,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/exchange/amount_t.hxx>
 #include <mmx/exchange/limit_order_t.hxx>
+#include <mmx/exchange/matched_order_t.hxx>
 #include <mmx/exchange/order_t.hxx>
 #include <mmx/exchange/trade_order_t.hxx>
 #include <mmx/exchange/trade_pair_t.hxx>
@@ -68,7 +69,7 @@ protected:
 	virtual void execute_async(std::shared_ptr<const ::mmx::Transaction> tx, const vnx::request_id_t& _request_id) = 0;
 	void execute_async_return(const vnx::request_id_t& _request_id) const;
 	virtual void match_async(const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::trade_order_t& order, const vnx::request_id_t& _request_id) const = 0;
-	void match_async_return(const vnx::request_id_t& _request_id, const std::shared_ptr<const ::mmx::Transaction>& _ret_0) const;
+	void match_async_return(const vnx::request_id_t& _request_id, const ::mmx::exchange::matched_order_t& _ret_0) const;
 	virtual std::vector<::mmx::exchange::order_t> get_orders(const ::mmx::exchange::trade_pair_t& pair) const = 0;
 	virtual ::mmx::ulong_fraction_t get_price(const ::mmx::addr_t& want, const ::mmx::exchange::amount_t& have) const = 0;
 	virtual void place_async(const uint64_t& client, const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::limit_order_t& order, const vnx::request_id_t& _request_id) const = 0;

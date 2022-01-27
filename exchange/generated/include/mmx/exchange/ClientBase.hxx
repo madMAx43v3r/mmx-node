@@ -10,6 +10,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/exchange/OrderBundle.hxx>
 #include <mmx/exchange/amount_t.hxx>
+#include <mmx/exchange/matched_order_t.hxx>
 #include <mmx/exchange/open_order_t.hxx>
 #include <mmx/exchange/order_t.hxx>
 #include <mmx/exchange/trade_order_t.hxx>
@@ -68,10 +69,10 @@ protected:
 	using Super::handle;
 	
 	virtual std::vector<std::string> get_servers() const = 0;
-	virtual void execute_async(const std::string& server, const uint32_t& wallet, std::shared_ptr<const ::mmx::Transaction> tx, const vnx::request_id_t& _request_id) = 0;
-	void execute_async_return(const vnx::request_id_t& _request_id) const;
-	virtual void match_async(const std::string& server, const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::trade_order_t& order, const vnx::request_id_t& _request_id) const = 0;
-	void match_async_return(const vnx::request_id_t& _request_id, const std::shared_ptr<const ::mmx::Transaction>& _ret_0) const;
+	virtual void execute_async(const std::string& server, const uint32_t& wallet, const ::mmx::exchange::matched_order_t& order, const vnx::request_id_t& _request_id) const = 0;
+	void execute_async_return(const vnx::request_id_t& _request_id, const ::mmx::hash_t& _ret_0) const;
+	virtual void match_async(const std::string& server, const ::mmx::exchange::trade_pair_t& pair, const std::vector<::mmx::exchange::trade_order_t>& orders, const vnx::request_id_t& _request_id) const = 0;
+	void match_async_return(const vnx::request_id_t& _request_id, const std::vector<::mmx::exchange::matched_order_t>& _ret_0) const;
 	virtual void get_orders_async(const std::string& server, const ::mmx::exchange::trade_pair_t& pair, const vnx::request_id_t& _request_id) const = 0;
 	void get_orders_async_return(const vnx::request_id_t& _request_id, const std::vector<::mmx::exchange::order_t>& _ret_0) const;
 	virtual void get_price_async(const std::string& server, const ::mmx::addr_t& want, const ::mmx::exchange::amount_t& have, const vnx::request_id_t& _request_id) const = 0;
@@ -79,6 +80,8 @@ protected:
 	virtual vnx::optional<::mmx::exchange::open_order_t> get_order(const ::mmx::txio_key_t& key) const = 0;
 	virtual std::shared_ptr<const ::mmx::exchange::OrderBundle> get_offer(const uint64_t& id) const = 0;
 	virtual std::vector<std::shared_ptr<const ::mmx::exchange::OrderBundle>> get_all_offers() const = 0;
+	virtual void cancel_offer(const uint64_t& id) = 0;
+	virtual void cancel_all() = 0;
 	virtual std::shared_ptr<const ::mmx::exchange::OrderBundle> make_offer(const uint32_t& wallet, const ::mmx::exchange::trade_pair_t& pair, const uint64_t& bid, const uint64_t& ask) const = 0;
 	virtual std::vector<::mmx::exchange::trade_order_t> make_trade(const uint32_t& wallet, const ::mmx::exchange::trade_pair_t& pair, const uint64_t& bid, const vnx::optional<uint64_t>& ask) const = 0;
 	virtual void place(std::shared_ptr<const ::mmx::exchange::OrderBundle> offer) = 0;

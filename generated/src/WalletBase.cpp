@@ -63,6 +63,7 @@
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/txio_key_t.hxx>
 #include <mmx/utxo_entry_t.hxx>
+#include <mmx/utxo_t.hxx>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
@@ -421,7 +422,7 @@ std::shared_ptr<vnx::Value> WalletBase::vnx_call_switch(std::shared_ptr<const vn
 		case 0x232c89cf3ed4d5b1ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Wallet_sign_off>(_method);
 			auto _return_value = ::mmx::Wallet_sign_off_return::create();
-			_return_value->_ret_0 = sign_off(_args->index, _args->tx, _args->cover_fee);
+			_return_value->_ret_0 = sign_off(_args->index, _args->tx, _args->cover_fee, _args->utxo_list);
 			return _return_value;
 		}
 		case 0x5bc54cc8b0112d3aull: {

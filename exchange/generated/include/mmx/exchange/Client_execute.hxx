@@ -5,7 +5,7 @@
 #define INCLUDE_mmx_exchange_Client_execute_HXX_
 
 #include <mmx/exchange/package.hxx>
-#include <mmx/Transaction.hxx>
+#include <mmx/exchange/matched_order_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -17,7 +17,7 @@ public:
 	
 	std::string server;
 	uint32_t wallet = 0;
-	std::shared_ptr<const ::mmx::Transaction> tx;
+	::mmx::exchange::matched_order_t order;
 	
 	typedef ::vnx::Value Super;
 	
@@ -64,7 +64,7 @@ void Client_execute::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<Client_execute>(3);
 	_visitor.type_field("server", 0); _visitor.accept(server);
 	_visitor.type_field("wallet", 1); _visitor.accept(wallet);
-	_visitor.type_field("tx", 2); _visitor.accept(tx);
+	_visitor.type_field("order", 2); _visitor.accept(order);
 	_visitor.template type_end<Client_execute>(3);
 }
 
