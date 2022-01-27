@@ -44,6 +44,7 @@ protected:
 		int64_t start_time_ms = 0;
 		vnx::request_id_t request_id;
 		std::shared_ptr<Transaction> tx;
+		std::vector<txio_key_t> locked_keys;
 		std::unordered_set<uint64_t> pending_clients;
 	};
 
@@ -70,7 +71,11 @@ protected:
 	void handle(std::shared_ptr<const Block> block) override;
 
 private:
+	void update();
+
 	bool is_open(const txio_key_t& bid_key) const;
+
+	void finish_trade(std::shared_ptr<trade_job_t> job);
 
 	void cancel_order(const trade_pair_t& pair, const txio_key_t& key);
 

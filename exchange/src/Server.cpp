@@ -37,6 +37,8 @@ void Server::main()
 	add_async_client(node);
 	add_async_client(server);
 
+	set_timer_millis(1000, std::bind(&Server::update, this));
+
 	Super::main();
 }
 
@@ -70,6 +72,24 @@ void Server::handle(std::shared_ptr<const Block> block)
 	}
 	log(INFO) << "Height " << block->height << ": " << num_exec << " executed, "
 			<< utxo_map.size() << " open, " << lock_map.size() << " locked";
+}
+
+void Server::update()
+{
+	const auto now = vnx::get_time_millis();
+	for(auto iter = pending.begin(); iter != pending.end();) {
+		const auto trade = iter->second;
+		if(now - trade->start_time_ms > trade_timeout_ms) {
+			for(const auto& key : trade->locked_keys) {
+				lock_map.erase(key);
+			}
+			vnx_async_return_ex_what(trade->request_id, "trade timeout");
+			log(WARN) << "Trade timeout with " << trade->pending_clients.size() << " approvals pending (" << iter->first << ")";
+			iter = pending.erase(iter);
+		} else {
+			iter++;
+		}
+	}
 }
 
 void Server::cancel_order(const trade_pair_t& pair, const txio_key_t& key)
@@ -110,12 +130,12 @@ void Server::reject(const uint64_t& client, const hash_t& txid)
 	}
 	auto job = iter->second;
 	if(job->pending_clients.count(client)) {
-		for(const auto& in : job->tx->inputs) {
-			lock_map.erase(in.prev);
+		for(const auto& key : job->locked_keys) {
+			lock_map.erase(key);
 		}
-		pending.erase(iter);
 		vnx_async_return_ex_what(job->request_id, "trade rejected");
 		log(WARN) << "Trade was rejected: " << txid;
+		pending.erase(iter);
 	}
 }
 
@@ -134,22 +154,26 @@ void Server::approve(const uint64_t& client, std::shared_ptr<const Transaction> 
 	}
 	job->tx->merge_sign(tx);
 
-	if(job->pending_clients.empty())
-	{
-		pending.erase(job->tx->id);
-		node->add_transaction(job->tx, true,
-			[this, job]() {
-				execute_async_return(job->request_id);
-				log(INFO) << "Executed trade: " << job->tx->id;
-			},
-			[this, job](const vnx::exception& ex) {
-				for(const auto& in : job->tx->inputs) {
-					lock_map.erase(in.prev);
-				}
-				vnx_async_return_ex(job->request_id, ex);
-				log(WARN) << "Trade failed with: " << ex.what();
-			});
+	if(job->pending_clients.empty()) {
+		finish_trade(job);
 	}
+}
+
+void Server::finish_trade(std::shared_ptr<trade_job_t> job)
+{
+	pending.erase(job->tx->id);
+	node->add_transaction(job->tx, true,
+		[this, job]() {
+			execute_async_return(job->request_id);
+			log(INFO) << "Executed trade: " << job->tx->id;
+		},
+		[this, job](const vnx::exception& ex) {
+			for(const auto& key : job->locked_keys) {
+				lock_map.erase(key);
+			}
+			vnx_async_return_ex(job->request_id, ex);
+			log(WARN) << "Trade failed with: " << ex.what();
+		});
 }
 
 void Server::place_async(const uint64_t& client, const trade_pair_t& pair, const limit_order_t& order, const vnx::request_id_t& request_id) const
@@ -286,12 +310,17 @@ void Server::execute_async(std::shared_ptr<const Transaction> tx, const vnx::req
 				for(const auto& in : tx->inputs) {
 					if(utxo_map.count(in.prev)) {
 						lock_map[in.prev] = tx->id;
+						job->locked_keys.push_back(in.prev);
 					}
 				}
 				job->tx = vnx::clone(tx);
 				job->request_id = request_id;
 				job->start_time_ms = vnx::get_time_millis();
 				pending[tx->id] = job;
+
+				if(job->pending_clients.empty()) {
+					finish_trade(job);
+				}
 			}
 			catch(const std::exception& ex) {
 				vnx_async_return_ex(request_id, ex);

@@ -165,6 +165,26 @@ public:
 		}
 	}
 
+	void add_outputs(	std::shared_ptr<Transaction> tx,
+						const uint64_t& amount, const addr_t& dst_addr,
+						const addr_t& currency, const spend_options_t& options)
+	{
+		const auto num_outputs = std::max<size_t>(options.split_output, 1);
+		if(num_outputs > 1000000) {
+			throw std::logic_error("too many outputs");
+		}
+		const auto chunk_size = std::max<uint64_t>(amount / num_outputs, 1);
+		uint64_t left = amount;
+		for(size_t i = 0; i < num_outputs; ++i) {
+			tx_out_t out;
+			out.address = dst_addr;
+			out.contract = currency;
+			out.amount = i < num_outputs - 1 ? chunk_size : left;
+			left -= out.amount;
+			tx->outputs.push_back(out);
+		}
+	}
+
 	uint64_t gather_inputs(	std::vector<tx_in_t>& inputs,
 							const std::vector<utxo_entry_t>& utxo_list,
 							std::unordered_map<txio_key_t, utxo_t>& spent_map,
@@ -195,6 +215,9 @@ public:
 				continue;
 			}
 			if(out.amount > amount) {
+				if(!options.over_spend) {
+					continue;
+				}
 				change += out.amount - amount;
 				amount = 0;
 			} else {
@@ -205,7 +228,7 @@ public:
 			inputs.push_back(in);
 			spent_map.emplace(key, out);
 		}
-		if(amount != 0) {
+		if(amount > 0 && options.over_spend) {
 			throw std::logic_error("not enough funds");
 		}
 		return change;
@@ -332,16 +355,9 @@ public:
 	std::shared_ptr<Transaction> send(const uint64_t& amount, const addr_t& dst_addr, const addr_t& currency, const spend_options_t& options)
 	{
 		auto tx = Transaction::create();
-		{
-			// add primary output
-			tx_out_t out;
-			out.address = dst_addr;
-			out.contract = currency;
-			out.amount = amount;
-			tx->outputs.push_back(out);
-		}
-		std::unordered_map<txio_key_t, utxo_t> spent_map;
+		add_outputs(tx, amount, dst_addr, currency, options);
 
+		std::unordered_map<txio_key_t, utxo_t> spent_map;
 		uint64_t change = gather_inputs(tx->inputs, utxo_cache, spent_map, amount, currency, options);
 
 		if(currency != addr_t() && change > 0) {
@@ -363,16 +379,9 @@ public:
 											const spend_options_t& options)
 	{
 		auto tx = Transaction::create();
-		{
-			// add primary output
-			tx_out_t out;
-			out.address = dst_addr;
-			out.contract = currency;
-			out.amount = amount;
-			tx->outputs.push_back(out);
-		}
-		std::unordered_map<txio_key_t, utxo_t> spent_map;
+		add_outputs(tx, amount, dst_addr, currency, options);
 
+		std::unordered_map<txio_key_t, utxo_t> spent_map;
 		uint64_t change = gather_inputs(tx->inputs, src_utxo, spent_map, amount, currency, options);
 
 		if(change > 0) {

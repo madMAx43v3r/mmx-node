@@ -187,11 +187,10 @@ std::shared_ptr<const OfferBundle> Client::make_offer(const uint32_t& index, con
 	const auto price = ask / double(bid);
 	std::unordered_map<addr_t, std::vector<std::pair<txio_key_t, uint64_t>>> addr_map;
 
-	for(const auto& entry : wallet->gather_utxos_for(index, bid, pair.bid)) {
+	spend_options_t options;
+	options.over_spend = false;
+	for(const auto& entry : wallet->gather_utxos_for(index, bid, pair.bid, options)) {
 		const auto& utxo = entry.output;
-		if(offer->bid + utxo.amount > bid) {
-			continue;
-		}
 		open_order_t order;
 		order.wallet = index;
 		order.offer_id = offer->id;
@@ -268,6 +267,9 @@ void Client::send_offer(uint64_t server, std::shared_ptr<const OfferBundle> offe
 
 void Client::place(std::shared_ptr<const OfferBundle> offer)
 {
+	if(!offer->bid || !offer->ask) {
+		throw std::logic_error("empty offer");
+	}
 	for(const auto& entry : avail_server_map) {
 		send_offer(entry.second, offer);
 	}

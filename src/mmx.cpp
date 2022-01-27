@@ -64,6 +64,7 @@ int main(int argc, char** argv)
 	options["k"] = "server";
 	options["a"] = "amount";
 	options["b"] = "bid";
+	options["m"] = "outputs";
 	options["s"] = "source";
 	options["t"] = "target";
 	options["x"] = "contract";
@@ -74,6 +75,7 @@ int main(int argc, char** argv)
 	options["server"] = "index";
 	options["amount"] = "123.456";
 	options["bid"] = "123.456";
+	options["outputs"] = "count";
 	options["source"] = "address";
 	options["target"] = "address";
 	options["contract"] = "address";
@@ -90,6 +92,7 @@ int main(int argc, char** argv)
 	std::string contract_addr;
 	int64_t index = 0;
 	int64_t server_index = 0;
+	int64_t num_outputs = 0;
 	double amount = 0;
 	double bid_amount = 0;
 	bool pre_accept = false;
@@ -101,12 +104,16 @@ int main(int argc, char** argv)
 	vnx::read_config("server", server_index);
 	vnx::read_config("amount", amount);
 	vnx::read_config("bid", bid_amount);
+	vnx::read_config("outputs", num_outputs);
 	vnx::read_config("source", source_addr);
 	vnx::read_config("target", target_addr);
 	vnx::read_config("contract", contract_addr);
 
 	bool did_fail = false;
 	auto params = mmx::get_params();
+
+	mmx::spend_options_t spend_options;
+	spend_options.split_output = std::max<uint32_t>(num_outputs, 1);
 
 	mmx::NodeClient node("Node");
 
@@ -273,7 +280,7 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Missing destination address argument: -t | --target";
 					goto failed;
 				}
-				const auto txid = wallet.send(index, mojo, target, contract);
+				const auto txid = wallet.send(index, mojo, target, contract, spend_options);
 				std::cout << "Sent " << mojo / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << mojo << ") to " << target << std::endl;
 				std::cout << "Transaction ID: " << txid << std::endl;
 			}
@@ -295,7 +302,7 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Missing destination address argument: -t | --target";
 					goto failed;
 				}
-				const auto txid = wallet.send_from(index, mojo, target, source, contract);
+				const auto txid = wallet.send_from(index, mojo, target, source, contract, spend_options);
 				std::cout << "Sent " << mojo / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << mojo << ") to " << target << std::endl;
 				std::cout << "Transaction ID: " << txid << std::endl;
 			}
@@ -875,15 +882,18 @@ int main(int argc, char** argv)
 						vnx::log_error() << "Matched nothing!";
 						goto failed;
 					}
+					int i = 0;
 					uint64_t total_bid = 0;
 					uint64_t total_match = 0;
 					for(const auto& order : matched) {
 						total_bid += order.bid;
 						total_match += order.ask;
+						std::cout << "Trade " << i++ << ": " << order.ask / ask_factor << " " << ask_symbol << " for " << order.bid / bid_factor
+								<< " " << bid_symbol << " [" << order.ask / double(order.bid) << " " << ask_symbol << " / " << bid_symbol << "]" << std::endl;
 					}
-					std::cout << "Matched: " << total_match / ask_factor << " " << ask_symbol << " for " << total_bid / bid_factor
-							<< " " << bid_symbol << " [" << total_match / double(total_bid) << " " << ask_symbol << " / " << bid_symbol
-							<< "] (" << matched.size() << " trades)" << std::endl;
+					std::cout << "----------------------------------------------------------------" << std::endl;
+					std::cout << "Total: " << total_match / ask_factor << " " << ask_symbol << " for " << total_bid / bid_factor
+							<< " " << bid_symbol << " [" << total_match / double(total_bid) << " " << ask_symbol << " / " << bid_symbol << "]" << std::endl;
 
 					bool accepted = pre_accept;
 					if(!accepted) {
@@ -902,7 +912,7 @@ int main(int argc, char** argv)
 							std::cout << "Trade " << i++ << ": ";
 							try {
 								const auto id = client.execute(server, index, order);
-								std::cout << id << std::endl;
+								std::cout << order.ask / ask_factor << " " << ask_symbol << " (" << id << ")" << std::endl;
 							} catch(std::exception& ex) {
 								std::cout << ex.what() << std::endl;
 							}
@@ -923,7 +933,7 @@ int main(int argc, char** argv)
 					std::cout << "[" << offer->id << "] offering " << offer->bid / bid_factor << " " << bid_symbol
 							<< " for " << offer->ask / ask_factor << " " << ask_symbol
 							<< " [" << (offer->bid / double(offer->ask)) << " " << bid_symbol << " / " << ask_symbol
-							<< "] (" << (offer->bid_sold / double(offer->bid)) << " % executed)" << std::endl;
+							<< "] (" << 100 * (offer->bid_sold / double(offer->bid)) << " % executed)" << std::endl;
 				}
 			}
 			else if(command == "orders")

@@ -10,7 +10,7 @@ module Server extends vnx.addons.MsgServer {
 	
 	vnx.TopicPtr input_blocks = "node.verified_blocks";
 	
-	int trade_timeout_ms = 10000;			// [ms]
+	int trade_timeout_ms = 5000;			// [ms]
 	
 	string node_server = "Node";
 	
