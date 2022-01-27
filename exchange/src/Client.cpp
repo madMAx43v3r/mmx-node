@@ -117,7 +117,7 @@ vnx::optional<open_order_t> Client::get_order(const txio_key_t& key) const
 	return nullptr;
 }
 
-std::shared_ptr<OrderBundle> Client::find_offer(const uint64_t& id) const
+std::shared_ptr<OfferBundle> Client::find_offer(const uint64_t& id) const
 {
 	auto iter = offer_map.find(id);
 	if(iter != offer_map.end()) {
@@ -126,14 +126,14 @@ std::shared_ptr<OrderBundle> Client::find_offer(const uint64_t& id) const
 	return nullptr;
 }
 
-std::shared_ptr<const OrderBundle> Client::get_offer(const uint64_t& id) const
+std::shared_ptr<const OfferBundle> Client::get_offer(const uint64_t& id) const
 {
 	return find_offer(id);
 }
 
-std::vector<std::shared_ptr<const OrderBundle>> Client::get_all_offers() const
+std::vector<std::shared_ptr<const OfferBundle>> Client::get_all_offers() const
 {
-	std::vector<std::shared_ptr<const OrderBundle>> res;
+	std::vector<std::shared_ptr<const OfferBundle>> res;
 	for(const auto& entry : offer_map) {
 		res.push_back(entry.second);
 	}
@@ -177,9 +177,9 @@ void Client::cancel_all()
 	}
 }
 
-std::shared_ptr<const OrderBundle> Client::make_offer(const uint32_t& index, const trade_pair_t& pair, const uint64_t& bid, const uint64_t& ask) const
+std::shared_ptr<const OfferBundle> Client::make_offer(const uint32_t& index, const trade_pair_t& pair, const uint64_t& bid, const uint64_t& ask) const
 {
-	auto offer = OrderBundle::create();
+	auto offer = OfferBundle::create();
 	offer->id = next_offer_id++;
 	offer->wallet = index;
 	offer->pair = pair;
@@ -253,7 +253,7 @@ std::vector<trade_order_t> Client::make_trade(const uint32_t& index, const trade
 	return orders;
 }
 
-void Client::send_offer(uint64_t server, std::shared_ptr<const OrderBundle> offer)
+void Client::send_offer(uint64_t server, std::shared_ptr<const OfferBundle> offer)
 {
 	for(const auto& order : offer->limit_orders) {
 		auto method = Server_place::create();
@@ -266,7 +266,7 @@ void Client::send_offer(uint64_t server, std::shared_ptr<const OrderBundle> offe
 	}
 }
 
-void Client::place(std::shared_ptr<const OrderBundle> offer)
+void Client::place(std::shared_ptr<const OfferBundle> offer)
 {
 	for(const auto& entry : avail_server_map) {
 		send_offer(entry.second, offer);

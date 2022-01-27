@@ -49,19 +49,19 @@ protected:
 
 	vnx::optional<open_order_t> get_order(const txio_key_t& key) const override;
 
-	std::shared_ptr<const OrderBundle> get_offer(const uint64_t& id) const override;
+	std::shared_ptr<const OfferBundle> get_offer(const uint64_t& id) const override;
 
-	std::vector<std::shared_ptr<const OrderBundle>> get_all_offers() const override;
+	std::vector<std::shared_ptr<const OfferBundle>> get_all_offers() const override;
 
 	void cancel_offer(const uint64_t& id) override;
 
 	void cancel_all() override;
 
-	std::shared_ptr<const OrderBundle> make_offer(const uint32_t& wallet, const trade_pair_t& pair, const uint64_t& bid, const uint64_t& ask) const override;
+	std::shared_ptr<const OfferBundle> make_offer(const uint32_t& wallet, const trade_pair_t& pair, const uint64_t& bid, const uint64_t& ask) const override;
 
 	std::vector<trade_order_t> make_trade(const uint32_t& wallet, const trade_pair_t& pair, const uint64_t& bid, const vnx::optional<uint64_t>& ask) const override;
 
-	void place(std::shared_ptr<const OrderBundle> offer) override;
+	void place(std::shared_ptr<const OfferBundle> offer) override;
 
 	std::shared_ptr<const Transaction> approve(std::shared_ptr<const Transaction> tx) const override;
 
@@ -76,9 +76,9 @@ protected:
 	void handle(std::shared_ptr<const Block> block) override;
 
 private:
-	std::shared_ptr<OrderBundle> find_offer(const uint64_t& id) const;
+	std::shared_ptr<OfferBundle> find_offer(const uint64_t& id) const;
 
-	void send_offer(uint64_t server, std::shared_ptr<const OrderBundle> offer);
+	void send_offer(uint64_t server, std::shared_ptr<const OfferBundle> offer);
 
 	void send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg, bool reliable = true);
 
@@ -126,7 +126,7 @@ private:
 	std::unordered_map<uint64_t, std::shared_ptr<peer_t>> peer_map;
 
 	std::unordered_map<txio_key_t, open_order_t> order_map;
-	std::unordered_map<uint64_t, std::shared_ptr<OrderBundle>> offer_map;
+	std::unordered_map<uint64_t, std::shared_ptr<OfferBundle>> offer_map;
 
 	mutable std::unordered_map<uint32_t, std::function<void(std::shared_ptr<const vnx::Value>)>> return_map;
 

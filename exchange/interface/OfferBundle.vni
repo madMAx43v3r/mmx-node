@@ -2,7 +2,7 @@ package mmx.exchange;
 
 import mmx.txio_key_t;
 
-class OrderBundle {
+class OfferBundle {
 	
 	ulong id;
 	
