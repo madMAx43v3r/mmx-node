@@ -15,7 +15,7 @@ namespace exchange {
 
 
 const vnx::Hash64 Client_execute::VNX_TYPE_HASH(0xa683dfd1653658acull);
-const vnx::Hash64 Client_execute::VNX_CODE_HASH(0x129fafac1a069299ull);
+const vnx::Hash64 Client_execute::VNX_CODE_HASH(0x4f5d1dd1e0b7e6bdull);
 
 vnx::Hash64 Client_execute::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,13 +49,15 @@ void Client_execute::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::exchange::vnx_native_type_code_Client_execute;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, server);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, tx);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, wallet);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, tx);
 	_visitor.type_end(*_type_code);
 }
 
 void Client_execute::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.exchange.Client.execute\"";
 	_out << ", \"server\": "; vnx::write(_out, server);
+	_out << ", \"wallet\": "; vnx::write(_out, wallet);
 	_out << ", \"tx\": "; vnx::write(_out, tx);
 	_out << "}";
 }
@@ -70,6 +72,7 @@ vnx::Object Client_execute::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.exchange.Client.execute";
 	_object["server"] = server;
+	_object["wallet"] = wallet;
 	_object["tx"] = tx;
 	return _object;
 }
@@ -80,6 +83,8 @@ void Client_execute::from_object(const vnx::Object& _object) {
 			_entry.second.to(server);
 		} else if(_entry.first == "tx") {
 			_entry.second.to(tx);
+		} else if(_entry.first == "wallet") {
+			_entry.second.to(wallet);
 		}
 	}
 }
@@ -87,6 +92,9 @@ void Client_execute::from_object(const vnx::Object& _object) {
 vnx::Variant Client_execute::get_field(const std::string& _name) const {
 	if(_name == "server") {
 		return vnx::Variant(server);
+	}
+	if(_name == "wallet") {
+		return vnx::Variant(wallet);
 	}
 	if(_name == "tx") {
 		return vnx::Variant(tx);
@@ -97,10 +105,10 @@ vnx::Variant Client_execute::get_field(const std::string& _name) const {
 void Client_execute::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "server") {
 		_value.to(server);
+	} else if(_name == "wallet") {
+		_value.to(wallet);
 	} else if(_name == "tx") {
 		_value.to(tx);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 
@@ -128,7 +136,7 @@ std::shared_ptr<vnx::TypeCode> Client_execute::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.Client.execute";
 	type_code->type_hash = vnx::Hash64(0xa683dfd1653658acull);
-	type_code->code_hash = vnx::Hash64(0x129fafac1a069299ull);
+	type_code->code_hash = vnx::Hash64(0x4f5d1dd1e0b7e6bdull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -136,7 +144,7 @@ std::shared_ptr<vnx::TypeCode> Client_execute::static_create_type_code() {
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Client_execute>(); };
 	type_code->is_async = true;
 	type_code->return_type = ::mmx::exchange::Client_execute_return::static_get_type_code();
-	type_code->fields.resize(2);
+	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -145,10 +153,17 @@ std::shared_ptr<vnx::TypeCode> Client_execute::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[1];
+		field.data_size = 4;
+		field.name = "wallet";
+		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[2];
 		field.is_extended = true;
 		field.name = "tx";
 		field.code = {16};
 	}
+	type_code->permission = "mmx.permission_e.SPENDING";
 	type_code->build();
 	return type_code;
 }
@@ -190,13 +205,16 @@ void read(TypeInput& in, ::mmx::exchange::Client_execute& value, const TypeCode*
 			}
 		}
 	}
-	in.read(type_code->total_field_size);
+	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
+		if(const auto* const _field = type_code->field_map[1]) {
+			vnx::read_value(_buf + _field->offset, value.wallet, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.server, type_code, _field->code.data()); break;
-			case 1: vnx::read(in, value.tx, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.tx, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -215,8 +233,10 @@ void write(TypeOutput& out, const ::mmx::exchange::Client_execute& value, const 
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
+	char* const _buf = out.write(4);
+	vnx::write_value(_buf + 0, value.wallet);
 	vnx::write(out, value.server, type_code, type_code->fields[0].code.data());
-	vnx::write(out, value.tx, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.tx, type_code, type_code->fields[2].code.data());
 }
 
 void read(std::istream& in, ::mmx::exchange::Client_execute& value) {

@@ -74,7 +74,6 @@ vnx::Variant Harvester_get_total_bytes::get_field(const std::string& _name) cons
 }
 
 void Harvester_get_total_bytes::set_field(const std::string& _name, const vnx::Variant& _value) {
-	throw std::logic_error("no such field: '" + _name + "'");
 }
 
 /// \private

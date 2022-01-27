@@ -119,8 +119,6 @@ void ProofResponse::set_field(const std::string& _name, const vnx::Variant& _val
 		_value.to(score);
 	} else if(_name == "farmer_addr") {
 		_value.to(farmer_addr);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

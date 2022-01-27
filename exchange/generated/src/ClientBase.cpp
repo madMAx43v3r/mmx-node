@@ -286,8 +286,6 @@ void ClientBase::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(wallet_server);
 	} else if(_name == "server_map") {
 		_value.to(server_map);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 
@@ -535,7 +533,7 @@ std::shared_ptr<vnx::Value> ClientBase::vnx_call_switch(std::shared_ptr<const vn
 		}
 		case 0xa683dfd1653658acull: {
 			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_execute>(_method);
-			execute_async(_args->server, _args->tx, _request_id);
+			execute_async(_args->server, _args->wallet, _args->tx, _request_id);
 			return nullptr;
 		}
 		case 0x5b38e7fda1090949ull: {

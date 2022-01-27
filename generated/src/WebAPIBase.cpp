@@ -103,8 +103,6 @@ vnx::Variant WebAPIBase::get_field(const std::string& _name) const {
 void WebAPIBase::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "node_server") {
 		_value.to(node_server);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

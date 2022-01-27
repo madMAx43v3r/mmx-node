@@ -98,8 +98,6 @@ void Node_get_total_balances::set_field(const std::string& _name, const vnx::Var
 		_value.to(addresses);
 	} else if(_name == "min_confirm") {
 		_value.to(min_confirm);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

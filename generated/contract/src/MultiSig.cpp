@@ -113,8 +113,6 @@ void MultiSig::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(num_required);
 	} else if(_name == "owners") {
 		_value.to(owners);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

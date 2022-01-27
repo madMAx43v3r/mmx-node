@@ -88,8 +88,6 @@ vnx::Variant Node_get_txo_infos::get_field(const std::string& _name) const {
 void Node_get_txo_infos::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "keys") {
 		_value.to(keys);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

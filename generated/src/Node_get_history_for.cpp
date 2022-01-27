@@ -98,8 +98,6 @@ void Node_get_history_for::set_field(const std::string& _name, const vnx::Varian
 		_value.to(addresses);
 	} else if(_name == "since") {
 		_value.to(since);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

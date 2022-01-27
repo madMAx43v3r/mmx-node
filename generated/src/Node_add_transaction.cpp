@@ -98,8 +98,6 @@ void Node_add_transaction::set_field(const std::string& _name, const vnx::Varian
 		_value.to(tx);
 	} else if(_name == "pre_validate") {
 		_value.to(pre_validate);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

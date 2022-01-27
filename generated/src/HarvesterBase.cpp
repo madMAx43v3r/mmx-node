@@ -192,8 +192,6 @@ void HarvesterBase::set_field(const std::string& _name, const vnx::Variant& _val
 		_value.to(num_threads);
 	} else if(_name == "recursive_search") {
 		_value.to(recursive_search);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

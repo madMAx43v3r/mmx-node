@@ -99,8 +99,6 @@ void Client_get_orders::set_field(const std::string& _name, const vnx::Variant& 
 		_value.to(server);
 	} else if(_name == "pair") {
 		_value.to(pair);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

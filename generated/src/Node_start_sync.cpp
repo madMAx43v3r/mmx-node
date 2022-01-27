@@ -87,8 +87,6 @@ vnx::Variant Node_start_sync::get_field(const std::string& _name) const {
 void Node_start_sync::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "force") {
 		_value.to(force);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

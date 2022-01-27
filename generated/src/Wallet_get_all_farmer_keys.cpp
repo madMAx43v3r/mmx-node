@@ -74,7 +74,6 @@ vnx::Variant Wallet_get_all_farmer_keys::get_field(const std::string& _name) con
 }
 
 void Wallet_get_all_farmer_keys::set_field(const std::string& _name, const vnx::Variant& _value) {
-	throw std::logic_error("no such field: '" + _name + "'");
 }
 
 /// \private

@@ -87,8 +87,6 @@ vnx::Variant Node_get_header_at::get_field(const std::string& _name) const {
 void Node_get_header_at::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "height") {
 		_value.to(height);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

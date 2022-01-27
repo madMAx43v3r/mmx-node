@@ -266,8 +266,6 @@ void ServerBase::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(trade_timeout_ms);
 	} else if(_name == "node_server") {
 		_value.to(node_server);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

@@ -99,8 +99,6 @@ void Server_cancel::set_field(const std::string& _name, const vnx::Variant& _val
 		_value.to(client);
 	} else if(_name == "orders") {
 		_value.to(orders);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

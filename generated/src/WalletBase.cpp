@@ -216,8 +216,6 @@ void WalletBase::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(utxo_timeout_ms);
 	} else if(_name == "enable_bls") {
 		_value.to(enable_bls);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 
@@ -423,7 +421,7 @@ std::shared_ptr<vnx::Value> WalletBase::vnx_call_switch(std::shared_ptr<const vn
 		case 0x232c89cf3ed4d5b1ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Wallet_sign_off>(_method);
 			auto _return_value = ::mmx::Wallet_sign_off_return::create();
-			_return_value->_ret_0 = sign_off(_args->index, _args->tx);
+			_return_value->_ret_0 = sign_off(_args->index, _args->tx, _args->cover_fee);
 			return _return_value;
 		}
 		case 0x5bc54cc8b0112d3aull: {

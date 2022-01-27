@@ -107,8 +107,6 @@ void node_info_t::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(version);
 	} else if(_name == "type") {
 		_value.to(type);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

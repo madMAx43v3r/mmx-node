@@ -159,8 +159,6 @@ void ProofOfSpace::set_field(const std::string& _name, const vnx::Variant& _valu
 		_value.to(pool_key);
 	} else if(_name == "local_sig") {
 		_value.to(local_sig);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

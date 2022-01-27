@@ -100,8 +100,6 @@ void Server_get_price::set_field(const std::string& _name, const vnx::Variant& _
 		_value.to(want);
 	} else if(_name == "have") {
 		_value.to(have);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

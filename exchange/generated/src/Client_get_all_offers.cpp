@@ -75,7 +75,6 @@ vnx::Variant Client_get_all_offers::get_field(const std::string& _name) const {
 }
 
 void Client_get_all_offers::set_field(const std::string& _name, const vnx::Variant& _value) {
-	throw std::logic_error("no such field: '" + _name + "'");
 }
 
 /// \private

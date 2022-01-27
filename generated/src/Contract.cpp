@@ -92,8 +92,6 @@ vnx::Variant Contract::get_field(const std::string& _name) const {
 void Contract::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "version") {
 		_value.to(version);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

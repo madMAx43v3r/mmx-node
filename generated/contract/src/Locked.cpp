@@ -109,8 +109,6 @@ void Locked::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(owner);
 	} else if(_name == "condition") {
 		_value.to(condition);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

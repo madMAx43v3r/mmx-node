@@ -121,8 +121,6 @@ void NFT::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(parent);
 	} else if(_name == "data") {
 		_value.to(data);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

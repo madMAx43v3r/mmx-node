@@ -88,8 +88,6 @@ vnx::Variant Client_get_offer::get_field(const std::string& _name) const {
 void Client_get_offer::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "id") {
 		_value.to(id);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

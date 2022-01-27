@@ -99,8 +99,6 @@ void Server_approve::set_field(const std::string& _name, const vnx::Variant& _va
 		_value.to(client);
 	} else if(_name == "tx") {
 		_value.to(tx);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

@@ -16,6 +16,7 @@ class Client_execute : public ::vnx::Value {
 public:
 	
 	std::string server;
+	uint32_t wallet = 0;
 	std::shared_ptr<const ::mmx::Transaction> tx;
 	
 	typedef ::vnx::Value Super;
@@ -60,10 +61,11 @@ public:
 
 template<typename T>
 void Client_execute::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Client_execute>(2);
+	_visitor.template type_begin<Client_execute>(3);
 	_visitor.type_field("server", 0); _visitor.accept(server);
-	_visitor.type_field("tx", 1); _visitor.accept(tx);
-	_visitor.template type_end<Client_execute>(2);
+	_visitor.type_field("wallet", 1); _visitor.accept(wallet);
+	_visitor.type_field("tx", 2); _visitor.accept(tx);
+	_visitor.template type_end<Client_execute>(3);
 }
 
 

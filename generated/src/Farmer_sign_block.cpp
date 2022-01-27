@@ -98,8 +98,6 @@ void Farmer_sign_block::set_field(const std::string& _name, const vnx::Variant& 
 		_value.to(block);
 	} else if(_name == "reward_amount") {
 		_value.to(reward_amount);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

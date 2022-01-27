@@ -87,8 +87,6 @@ vnx::Variant PeerInfo::get_field(const std::string& _name) const {
 void PeerInfo::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "peers") {
 		_value.to(peers);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

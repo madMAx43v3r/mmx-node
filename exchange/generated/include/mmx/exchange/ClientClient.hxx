@@ -58,9 +58,9 @@ public:
 	
 	std::vector<std::string> get_servers();
 	
-	void execute(const std::string& server = "", std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
+	void execute(const std::string& server = "", const uint32_t& wallet = 0, std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
 	
-	void execute_async(const std::string& server = "", std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
+	void execute_async(const std::string& server = "", const uint32_t& wallet = 0, std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
 	
 	std::shared_ptr<const ::mmx::Transaction> match(const std::string& server = "", const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const ::mmx::exchange::trade_order_t& order = ::mmx::exchange::trade_order_t());
 	

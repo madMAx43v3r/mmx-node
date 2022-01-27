@@ -106,8 +106,6 @@ void FarmInfo::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(plot_count);
 	} else if(_name == "total_bytes") {
 		_value.to(total_bytes);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

@@ -98,8 +98,6 @@ void Wallet_reserve::set_field(const std::string& _name, const vnx::Variant& _va
 		_value.to(index);
 	} else if(_name == "keys") {
 		_value.to(keys);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

@@ -129,8 +129,6 @@ void Wallet_send::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(currency);
 	} else if(_name == "options") {
 		_value.to(options);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

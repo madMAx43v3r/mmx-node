@@ -529,8 +529,6 @@ void NodeBase::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(router_name);
 	} else if(_name == "timelord_name") {
 		_value.to(timelord_name);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

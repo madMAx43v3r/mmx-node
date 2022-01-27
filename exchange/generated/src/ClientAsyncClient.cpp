@@ -201,9 +201,10 @@ uint64_t ClientAsyncClient::get_servers(const std::function<void(const std::vect
 	return _request_id;
 }
 
-uint64_t ClientAsyncClient::execute(const std::string& server, std::shared_ptr<const ::mmx::Transaction> tx, const std::function<void()>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t ClientAsyncClient::execute(const std::string& server, const uint32_t& wallet, std::shared_ptr<const ::mmx::Transaction> tx, const std::function<void()>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::exchange::Client_execute::create();
 	_method->server = server;
+	_method->wallet = wallet;
 	_method->tx = tx;
 	const auto _request_id = ++vnx_next_id;
 	{

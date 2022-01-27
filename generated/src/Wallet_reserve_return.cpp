@@ -73,7 +73,6 @@ vnx::Variant Wallet_reserve_return::get_field(const std::string& _name) const {
 }
 
 void Wallet_reserve_return::set_field(const std::string& _name, const vnx::Variant& _value) {
-	throw std::logic_error("no such field: '" + _name + "'");
 }
 
 /// \private

@@ -279,10 +279,11 @@ vnx::bool_t WalletClient::vnx_self_test() {
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::sign_off(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::sign_off(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx, const vnx::bool_t& cover_fee) {
 	auto _method = ::mmx::Wallet_sign_off::create();
 	_method->index = index;
 	_method->tx = tx;
+	_method->cover_fee = cover_fee;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_sign_off_return>(_return_value)) {
 		return _result->_ret_0;

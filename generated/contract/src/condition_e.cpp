@@ -159,8 +159,6 @@ vnx::Variant condition_e::get_field(const std::string& _name) const {
 void condition_e::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "value") {
 		_value.to(value);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

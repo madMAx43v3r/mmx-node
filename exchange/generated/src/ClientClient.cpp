@@ -196,16 +196,18 @@ std::vector<std::string> ClientClient::get_servers() {
 	}
 }
 
-void ClientClient::execute(const std::string& server, std::shared_ptr<const ::mmx::Transaction> tx) {
+void ClientClient::execute(const std::string& server, const uint32_t& wallet, std::shared_ptr<const ::mmx::Transaction> tx) {
 	auto _method = ::mmx::exchange::Client_execute::create();
 	_method->server = server;
+	_method->wallet = wallet;
 	_method->tx = tx;
 	vnx_request(_method, false);
 }
 
-void ClientClient::execute_async(const std::string& server, std::shared_ptr<const ::mmx::Transaction> tx) {
+void ClientClient::execute_async(const std::string& server, const uint32_t& wallet, std::shared_ptr<const ::mmx::Transaction> tx) {
 	auto _method = ::mmx::exchange::Client_execute::create();
 	_method->server = server;
+	_method->wallet = wallet;
 	_method->tx = tx;
 	vnx_request(_method, true);
 }

@@ -87,8 +87,6 @@ vnx::Variant Router_get_peers::get_field(const std::string& _name) const {
 void Router_get_peers::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "max_count") {
 		_value.to(max_count);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

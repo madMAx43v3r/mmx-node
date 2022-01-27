@@ -109,8 +109,6 @@ void Wallet_deploy::set_field(const std::string& _name, const vnx::Variant& _val
 		_value.to(contract);
 	} else if(_name == "options") {
 		_value.to(options);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

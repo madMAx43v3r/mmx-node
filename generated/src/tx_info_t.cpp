@@ -202,8 +202,6 @@ void tx_info_t::set_field(const std::string& _name, const vnx::Variant& _value) 
 		_value.to(output_amounts);
 	} else if(_name == "contracts") {
 		_value.to(contracts);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

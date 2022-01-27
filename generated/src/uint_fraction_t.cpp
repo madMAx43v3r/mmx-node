@@ -95,8 +95,6 @@ void uint_fraction_t::set_field(const std::string& _name, const vnx::Variant& _v
 		_value.to(value);
 	} else if(_name == "inverse") {
 		_value.to(inverse);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

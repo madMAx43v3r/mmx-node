@@ -118,8 +118,6 @@ void open_order_t::set_field(const std::string& _name, const vnx::Variant& _valu
 		_value.to(wallet);
 	} else if(_name == "offer_id") {
 		_value.to(offer_id);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

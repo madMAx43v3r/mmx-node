@@ -88,8 +88,6 @@ vnx::Variant Node_add_block::get_field(const std::string& _name) const {
 void Node_add_block::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "block") {
 		_value.to(block);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

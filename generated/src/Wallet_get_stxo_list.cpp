@@ -87,8 +87,6 @@ vnx::Variant Wallet_get_stxo_list::get_field(const std::string& _name) const {
 void Wallet_get_stxo_list::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "index") {
 		_value.to(index);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

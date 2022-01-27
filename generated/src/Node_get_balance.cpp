@@ -108,8 +108,6 @@ void Node_get_balance::set_field(const std::string& _name, const vnx::Variant& _
 		_value.to(contract);
 	} else if(_name == "min_confirm") {
 		_value.to(min_confirm);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

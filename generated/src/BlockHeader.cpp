@@ -200,8 +200,6 @@ void BlockHeader::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(tx_hash);
 	} else if(_name == "farmer_sig") {
 		_value.to(farmer_sig);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

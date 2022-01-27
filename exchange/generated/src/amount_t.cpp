@@ -97,8 +97,6 @@ void amount_t::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(amount);
 	} else if(_name == "currency") {
 		_value.to(currency);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

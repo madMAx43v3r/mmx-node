@@ -110,8 +110,6 @@ void Server_place::set_field(const std::string& _name, const vnx::Variant& _valu
 		_value.to(pair);
 	} else if(_name == "order") {
 		_value.to(order);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

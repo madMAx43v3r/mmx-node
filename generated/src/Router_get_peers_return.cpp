@@ -86,8 +86,6 @@ vnx::Variant Router_get_peers_return::get_field(const std::string& _name) const 
 void Router_get_peers_return::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "_ret_0") {
 		_value.to(_ret_0);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

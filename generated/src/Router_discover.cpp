@@ -74,7 +74,6 @@ vnx::Variant Router_discover::get_field(const std::string& _name) const {
 }
 
 void Router_discover::set_field(const std::string& _name, const vnx::Variant& _value) {
-	throw std::logic_error("no such field: '" + _name + "'");
 }
 
 /// \private

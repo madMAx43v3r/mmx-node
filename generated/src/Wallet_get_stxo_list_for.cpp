@@ -98,8 +98,6 @@ void Wallet_get_stxo_list_for::set_field(const std::string& _name, const vnx::Va
 		_value.to(index);
 	} else if(_name == "currency") {
 		_value.to(currency);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

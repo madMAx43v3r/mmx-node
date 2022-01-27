@@ -97,8 +97,6 @@ void trade_pair_t::set_field(const std::string& _name, const vnx::Variant& _valu
 		_value.to(bid);
 	} else if(_name == "ask") {
 		_value.to(ask);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

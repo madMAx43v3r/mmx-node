@@ -96,8 +96,6 @@ void time_segment_t::set_field(const std::string& _name, const vnx::Variant& _va
 		_value.to(num_iters);
 	} else if(_name == "output") {
 		_value.to(output);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

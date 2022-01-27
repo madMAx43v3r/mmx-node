@@ -216,8 +216,6 @@ void peer_info_t::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(is_blocked);
 	} else if(_name == "is_outbound") {
 		_value.to(is_outbound);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

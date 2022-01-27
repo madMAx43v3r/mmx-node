@@ -109,8 +109,6 @@ void Context::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(height);
 	} else if(_name == "depends") {
 		_value.to(depends);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

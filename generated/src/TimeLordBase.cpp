@@ -155,8 +155,6 @@ void TimeLordBase::set_field(const std::string& _name, const vnx::Variant& _valu
 		_value.to(restart_holdoff);
 	} else if(_name == "node_server") {
 		_value.to(node_server);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

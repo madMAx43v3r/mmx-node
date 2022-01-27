@@ -88,8 +88,6 @@ vnx::Variant Node_get_block::get_field(const std::string& _name) const {
 void Node_get_block::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "hash") {
 		_value.to(hash);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

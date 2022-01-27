@@ -109,8 +109,6 @@ void Wallet_sign_msg::set_field(const std::string& _name, const vnx::Variant& _v
 		_value.to(address);
 	} else if(_name == "msg") {
 		_value.to(msg);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

@@ -129,8 +129,6 @@ void trade_order_t::set_field(const std::string& _name, const vnx::Variant& _val
 		_value.to(bid_keys);
 	} else if(_name == "solution") {
 		_value.to(solution);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

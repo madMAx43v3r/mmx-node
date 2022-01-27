@@ -97,8 +97,6 @@ void Solution::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(version);
 	} else if(_name == "is_contract") {
 		_value.to(is_contract);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

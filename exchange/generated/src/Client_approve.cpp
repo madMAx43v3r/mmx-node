@@ -89,8 +89,6 @@ vnx::Variant Client_approve::get_field(const std::string& _name) const {
 void Client_approve::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "tx") {
 		_value.to(tx);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

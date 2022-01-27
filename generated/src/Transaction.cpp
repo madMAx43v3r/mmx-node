@@ -163,8 +163,6 @@ void Transaction::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(solutions);
 	} else if(_name == "deploy") {
 		_value.to(deploy);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

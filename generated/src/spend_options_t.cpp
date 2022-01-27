@@ -116,8 +116,6 @@ void spend_options_t::set_field(const std::string& _name, const vnx::Variant& _v
 		_value.to(pending_change);
 	} else if(_name == "exclude") {
 		_value.to(exclude);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

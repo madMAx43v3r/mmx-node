@@ -88,8 +88,6 @@ vnx::Variant Node_get_stxo_list::get_field(const std::string& _name) const {
 void Node_get_stxo_list::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "addresses") {
 		_value.to(addresses);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

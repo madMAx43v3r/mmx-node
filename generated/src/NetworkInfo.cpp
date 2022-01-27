@@ -156,8 +156,6 @@ void NetworkInfo::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(utxo_count);
 	} else if(_name == "address_count") {
 		_value.to(address_count);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

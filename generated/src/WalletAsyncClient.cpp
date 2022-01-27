@@ -284,10 +284,11 @@ uint64_t WalletAsyncClient::deploy(const uint32_t& index, std::shared_ptr<const 
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::sign_off(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::sign_off(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx, const vnx::bool_t& cover_fee, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_sign_off::create();
 	_method->index = index;
 	_method->tx = tx;
+	_method->cover_fee = cover_fee;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);

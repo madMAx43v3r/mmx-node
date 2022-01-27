@@ -96,8 +96,6 @@ void Return::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(id);
 	} else if(_name == "result") {
 		_value.to(result);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

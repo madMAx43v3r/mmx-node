@@ -142,8 +142,6 @@ void Condition::set_field(const std::string& _name, const vnx::Variant& _value) 
 		_value.to(currency);
 	} else if(_name == "nested") {
 		_value.to(nested);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

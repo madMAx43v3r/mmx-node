@@ -89,8 +89,6 @@ vnx::Variant Server_execute::get_field(const std::string& _name) const {
 void Server_execute::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "tx") {
 		_value.to(tx);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

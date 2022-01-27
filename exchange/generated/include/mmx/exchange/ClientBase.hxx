@@ -68,7 +68,7 @@ protected:
 	using Super::handle;
 	
 	virtual std::vector<std::string> get_servers() const = 0;
-	virtual void execute_async(const std::string& server, std::shared_ptr<const ::mmx::Transaction> tx, const vnx::request_id_t& _request_id) = 0;
+	virtual void execute_async(const std::string& server, const uint32_t& wallet, std::shared_ptr<const ::mmx::Transaction> tx, const vnx::request_id_t& _request_id) = 0;
 	void execute_async_return(const vnx::request_id_t& _request_id) const;
 	virtual void match_async(const std::string& server, const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::trade_order_t& order, const vnx::request_id_t& _request_id) const = 0;
 	void match_async_return(const vnx::request_id_t& _request_id, const std::shared_ptr<const ::mmx::Transaction>& _ret_0) const;

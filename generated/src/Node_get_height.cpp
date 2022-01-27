@@ -74,7 +74,6 @@ vnx::Variant Node_get_height::get_field(const std::string& _name) const {
 }
 
 void Node_get_height::set_field(const std::string& _name, const vnx::Variant& _value) {
-	throw std::logic_error("no such field: '" + _name + "'");
 }
 
 /// \private

@@ -98,8 +98,6 @@ void Node_get_transaction::set_field(const std::string& _name, const vnx::Varian
 		_value.to(id);
 	} else if(_name == "include_pending") {
 		_value.to(include_pending);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

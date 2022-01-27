@@ -97,8 +97,6 @@ void utxo_entry_t::set_field(const std::string& _name, const vnx::Variant& _valu
 		_value.to(key);
 	} else if(_name == "output") {
 		_value.to(output);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

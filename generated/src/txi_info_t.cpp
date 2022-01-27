@@ -97,8 +97,6 @@ void txi_info_t::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(prev);
 	} else if(_name == "utxo") {
 		_value.to(utxo);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

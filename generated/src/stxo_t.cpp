@@ -127,8 +127,6 @@ void stxo_t::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(height);
 	} else if(_name == "spent") {
 		_value.to(spent);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

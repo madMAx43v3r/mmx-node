@@ -194,8 +194,6 @@ void FarmerBase::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(project_addr);
 	} else if(_name == "devfee_ratio") {
 		_value.to(devfee_ratio);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

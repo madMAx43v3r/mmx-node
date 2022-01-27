@@ -97,8 +97,6 @@ void Wallet_get_address::set_field(const std::string& _name, const vnx::Variant&
 		_value.to(index);
 	} else if(_name == "offset") {
 		_value.to(offset);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

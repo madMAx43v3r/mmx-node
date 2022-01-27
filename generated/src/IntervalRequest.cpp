@@ -137,8 +137,6 @@ void IntervalRequest::set_field(const std::string& _name, const vnx::Variant& _v
 		_value.to(num_segments);
 	} else if(_name == "height") {
 		_value.to(height);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

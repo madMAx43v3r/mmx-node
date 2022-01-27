@@ -88,8 +88,6 @@ vnx::Variant Router_sign_msg::get_field(const std::string& _name) const {
 void Router_sign_msg::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "msg") {
 		_value.to(msg);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

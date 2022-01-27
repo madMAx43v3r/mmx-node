@@ -88,8 +88,6 @@ vnx::Variant Node_get_contracts_owned::get_field(const std::string& _name) const
 void Node_get_contracts_owned::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "owners") {
 		_value.to(owners);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

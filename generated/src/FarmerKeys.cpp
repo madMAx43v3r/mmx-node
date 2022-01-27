@@ -118,8 +118,6 @@ void FarmerKeys::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(pool_public_key);
 	} else if(_name == "farmer_public_key") {
 		_value.to(farmer_public_key);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

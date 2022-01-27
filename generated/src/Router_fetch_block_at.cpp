@@ -97,8 +97,6 @@ void Router_fetch_block_at::set_field(const std::string& _name, const vnx::Varia
 		_value.to(address);
 	} else if(_name == "height") {
 		_value.to(height);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

@@ -131,8 +131,6 @@ void Spend::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(key);
 	} else if(_name == "utxo") {
 		_value.to(utxo);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

@@ -89,8 +89,6 @@ vnx::Variant Server_get_orders::get_field(const std::string& _name) const {
 void Server_get_orders::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "pair") {
 		_value.to(pair);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

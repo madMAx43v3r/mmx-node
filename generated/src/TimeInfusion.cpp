@@ -97,8 +97,6 @@ void TimeInfusion::set_field(const std::string& _name, const vnx::Variant& _valu
 		_value.to(chain);
 	} else if(_name == "values") {
 		_value.to(values);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

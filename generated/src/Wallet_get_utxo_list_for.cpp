@@ -108,8 +108,6 @@ void Wallet_get_utxo_list_for::set_field(const std::string& _name, const vnx::Va
 		_value.to(currency);
 	} else if(_name == "min_confirm") {
 		_value.to(min_confirm);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

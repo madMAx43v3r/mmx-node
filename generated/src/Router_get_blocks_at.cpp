@@ -87,8 +87,6 @@ vnx::Variant Router_get_blocks_at::get_field(const std::string& _name) const {
 void Router_get_blocks_at::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "height") {
 		_value.to(height);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 

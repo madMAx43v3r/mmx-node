@@ -70,7 +70,7 @@ public:
 			const std::function<void(const std::vector<std::string>&)>& _callback = std::function<void(const std::vector<std::string>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t execute(const std::string& server = "", std::shared_ptr<const ::mmx::Transaction> tx = nullptr, 
+	uint64_t execute(const std::string& server = "", const uint32_t& wallet = 0, std::shared_ptr<const ::mmx::Transaction> tx = nullptr, 
 			const std::function<void()>& _callback = std::function<void()>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	

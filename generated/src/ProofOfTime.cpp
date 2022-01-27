@@ -171,8 +171,6 @@ void ProofOfTime::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(timelord_key);
 	} else if(_name == "timelord_sig") {
 		_value.to(timelord_sig);
-	} else {
-		throw std::logic_error("no such field: '" + _name + "'");
 	}
 }
 
