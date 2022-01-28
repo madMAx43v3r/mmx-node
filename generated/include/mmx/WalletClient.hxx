@@ -9,6 +9,7 @@
 #include <mmx/FarmerKeys.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/Transaction.hxx>
+#include <mmx/account_t.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/spend_options_t.hxx>
@@ -108,6 +109,12 @@ public:
 	::mmx::addr_t get_address(const uint32_t& index = 0, const uint32_t& offset = 0);
 	
 	std::vector<::mmx::addr_t> get_all_addresses(const int32_t& index = 0);
+	
+	std::map<uint32_t, ::mmx::account_t> get_accounts();
+	
+	void add_account(const uint32_t& index = 0, const ::mmx::account_t& config = ::mmx::account_t());
+	
+	void add_account_async(const uint32_t& index = 0, const ::mmx::account_t& config = ::mmx::account_t());
 	
 	::mmx::hash_t get_master_seed(const uint32_t& index = 0);
 	
