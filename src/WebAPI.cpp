@@ -309,6 +309,9 @@ public:
 			}
 			tmp["output_amounts"] = rows;
 		}
+		if(value.deployed) {
+			tmp["address"] = addr_t(value.id).to_string();
+		}
 		tmp.erase("contracts");
 		set(tmp);
 	}
