@@ -7,6 +7,7 @@
 #include <vnx/AsyncClient.h>
 #include <mmx/Block.hxx>
 #include <vnx/Module.h>
+#include <vnx/TopicPtr.hpp>
 #include <vnx/addons/HttpData.hxx>
 #include <vnx/addons/HttpRequest.hxx>
 #include <vnx/addons/HttpResponse.hxx>

@@ -7,6 +7,7 @@
 #include <mmx/package.hxx>
 #include <mmx/Block.hxx>
 #include <vnx/Module.h>
+#include <vnx/TopicPtr.hpp>
 #include <vnx/addons/HttpData.hxx>
 #include <vnx/addons/HttpRequest.hxx>
 #include <vnx/addons/HttpResponse.hxx>
@@ -17,6 +18,7 @@ namespace mmx {
 class WebAPIBase : public ::vnx::Module {
 public:
 	
+	::vnx::TopicPtr input_blocks = "node.verified_blocks";
 	std::string node_server = "Node";
 	
 	typedef ::vnx::Module Super;
@@ -67,9 +69,10 @@ protected:
 
 template<typename T>
 void WebAPIBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<WebAPIBase>(1);
-	_visitor.type_field("node_server", 0); _visitor.accept(node_server);
-	_visitor.template type_end<WebAPIBase>(1);
+	_visitor.template type_begin<WebAPIBase>(2);
+	_visitor.type_field("input_blocks", 0); _visitor.accept(input_blocks);
+	_visitor.type_field("node_server", 1); _visitor.accept(node_server);
+	_visitor.template type_end<WebAPIBase>(2);
 }
 
 
