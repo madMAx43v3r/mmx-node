@@ -1012,7 +1012,7 @@ int main(int argc, char** argv)
 				}
 			}
 			else {
-				std::cerr << "Help: mmx exch [offer | orders | servers]" << std::endl;
+				std::cerr << "Help: mmx exch [offer | trade | offers | orders | price | servers | cancel]" << std::endl;
 			}
 		}
 		else {
