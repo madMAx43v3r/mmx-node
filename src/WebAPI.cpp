@@ -621,7 +621,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			render_headers(request_id, limit, offset, std::make_shared<std::vector<vnx::Variant>>(), nullptr);
 		} else if(iter_offset == query.end()) {
 			const uint32_t limit = iter_limit != query.end() ?
-					std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 1000), 0) : 20;
+					std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_limit->second), max_block_history), 0) : 20;
 			node->get_height(
 				[this, request_id, limit](const uint32_t& height) {
 					render_headers(request_id, limit, height - std::min(limit, height) + 1, std::make_shared<std::vector<vnx::Variant>>(), nullptr);
@@ -670,7 +670,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else if(iter_offset == query.end()) {
 			const size_t limit = iter_limit != query.end() ?
-					std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 10000), 0) : 20;
+					std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_limit->second), max_tx_history), 0) : 20;
 			node->get_height(
 				[this, request_id, limit](const uint32_t& height) {
 					gather_transactions(request_id, limit, height, std::make_shared<std::vector<hash_t>>(), {});

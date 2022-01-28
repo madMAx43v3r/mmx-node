@@ -6,6 +6,10 @@ module WebAPI implements vnx.addons.HttpComponent {
 	
 	string node_server = "Node";
 	
+	uint max_block_history = 1000;
+	
+	ulong max_tx_history = 10000;
+	
 	
 	void handle(Block sample);
 	
