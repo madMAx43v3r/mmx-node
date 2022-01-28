@@ -1,0 +1,13 @@
+package mmx;
+
+struct account_t {
+	
+	uint index;
+	
+	uint num_addresses = 100;
+	
+	string name;
+	
+	string key_file;
+	
+}
