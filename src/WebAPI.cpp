@@ -525,11 +525,11 @@ void WebAPI::gather_transactions(	const vnx::request_id_t& request_id, const siz
 									std::shared_ptr<std::vector<hash_t>> result, const std::vector<hash_t>& tx_ids) const
 {
 	result->insert(result->end(), tx_ids.begin(), tx_ids.end());
-	if(result->size() >= limit) {
+	if(result->size() >= limit || height == 0) {
 		render_transactions(request_id, limit, 0, std::make_shared<std::vector<vnx::Variant>>(), *result, nullptr);
 		return;
 	}
-	node->get_tx_ids_at(height,
+	node->get_tx_ids_at(height - 1,
 			std::bind(&WebAPI::gather_transactions, this, request_id, limit, height - 1, result, std::placeholders::_1),
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 }
@@ -673,7 +673,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_limit->second), max_tx_history), 0) : 20;
 			node->get_height(
 				[this, request_id, limit](const uint32_t& height) {
-					gather_transactions(request_id, limit, height, std::make_shared<std::vector<hash_t>>(), {});
+					gather_transactions(request_id, limit, height + 1, std::make_shared<std::vector<hash_t>>(), {});
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
