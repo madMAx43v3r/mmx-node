@@ -14,33 +14,28 @@
 #include <mmx/ChainParams.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/spend_options_t.hxx>
-
 #include <mmx/skey_t.hpp>
 #include <mmx/addr_t.hpp>
 #include <mmx/pubkey_t.hpp>
 #include <mmx/txio_key_t.hpp>
 #include <mmx/utxo_entry_t.hpp>
+#include <mmx/account_t.hxx>
 
 
 namespace mmx {
 
 class ECDSA_Wallet {
 public:
-	uint32_t height = 0;
-	int64_t last_utxo_update = 0;
-	std::vector<utxo_entry_t> utxo_cache;
-	std::unordered_set<txio_key_t> spent_set;
-	std::unordered_set<txio_key_t> reserved_set;
-	std::unordered_map<txio_key_t, tx_out_t> utxo_change_cache;
+	const account_t config;
 
-	ECDSA_Wallet(std::shared_ptr<const KeyFile> key_file, std::shared_ptr<const ChainParams> params, size_t num_addresses)
-		:	params(params)
+	ECDSA_Wallet(std::shared_ptr<const KeyFile> key_file, const account_t& config, std::shared_ptr<const ChainParams> params)
+		:	config(config), params(params)
 	{
 		master_sk = hash_t(key_file->seed_value);
 
-		for(size_t i = 0; i < num_addresses + 1; ++i)
+		for(size_t i = 0; i < config.num_addresses; ++i)
 		{
-			const auto keys = generate_keypair(i);
+			const auto keys = generate_keypair(config.index, i);
 			const auto addr = keys.second;
 			keypair_map[addr] = keys;
 			keypairs.push_back(keys);
@@ -109,9 +104,9 @@ public:
 		return keys;
 	}
 
-	std::pair<skey_t, pubkey_t> generate_keypair(const uint32_t index) const
+	std::pair<skey_t, pubkey_t> generate_keypair(const uint32_t account, const uint32_t index) const
 	{
-		return generate_keypair({0, index});
+		return generate_keypair({account, index});
 	}
 
 	void update_cache(const std::vector<utxo_entry_t>& utxo_list, const uint32_t height)
@@ -444,6 +439,13 @@ public:
 		sign_off(tx, spent_map);
 		return tx;
 	}
+
+	uint32_t height = 0;
+	int64_t last_utxo_update = 0;
+	std::vector<utxo_entry_t> utxo_cache;
+	std::unordered_set<txio_key_t> spent_set;
+	std::unordered_set<txio_key_t> reserved_set;
+	std::unordered_map<txio_key_t, tx_out_t> utxo_change_cache;
 
 private:
 	skey_t master_sk;

@@ -4,9 +4,13 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	vector<string> key_files;
 	
+	vector<account_t> accounts;				// index starts at max_key_files
+	
 	string storage_path;
 	string node_server = "Node";
 	
+	uint max_accounts = 1000;
+	uint max_key_files = 100;
 	uint num_addresses = 100;
 	
 	int utxo_timeout_ms = 1000;				// how often to update from node [ms]
@@ -63,6 +67,10 @@ module Wallet implements vnx.addons.HttpComponent {
 	addr_t get_address(uint index, uint offset) const;
 	
 	vector<addr_t> get_all_addresses(int index) const;				// (index == -1) -> all wallets
+	
+	map<uint, account_t> get_accounts() const;
+	
+	void add_account(uint index, account_t config);
 	
 	@Permission(permission_e.SPENDING)
 	hash_t get_master_seed(uint index) const;

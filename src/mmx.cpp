@@ -222,6 +222,14 @@ int main(int argc, char** argv)
 					std::cout << "Address[" << i << "]: " << wallet.get_address(index, i) << std::endl;
 				}
 			}
+			else if(command == "accounts")
+			{
+				for(const auto& entry : wallet.get_accounts()) {
+					const auto& config = entry.second;
+					std::cout << "[" << entry.first << "] name = '" << config.name << "', account = " << config.index
+							<< ", num_addresses = " << config.num_addresses << ", key_file = '" << config.key_file << "'" << std::endl;
+				}
+			}
 			else if(command == "keys")
 			{
 				if(auto keys = wallet.get_farmer_keys(index)) {
@@ -386,7 +394,7 @@ int main(int argc, char** argv)
 						<< std::endl << wallet.seed_value << std::endl;
 			}
 			else {
-				std::cerr << "Help: mmx wallet [show | log | send | send_from | transfer | mint | deploy | create]" << std::endl;
+				std::cerr << "Help: mmx wallet [show | log | send | send_from | transfer | mint | deploy | create | accounts]" << std::endl;
 			}
 		}
 		else if(module == "node")

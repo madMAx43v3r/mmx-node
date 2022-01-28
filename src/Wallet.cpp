@@ -31,6 +31,9 @@ void Wallet::init()
 
 void Wallet::main()
 {
+	if(key_files.size() > max_key_files) {
+		throw std::logic_error("too many key files");
+	}
 	params = get_params();
 
 	node = std::make_shared<NodeClient>(node_server);
@@ -46,12 +49,27 @@ void Wallet::main()
 			} else {
 				bls_wallets.push_back(nullptr);
 			}
-			wallets.push_back(std::make_shared<ECDSA_Wallet>(key_file, params, num_addresses));
+			account_t config;
+			config.name = "Default";
+			config.key_file = file_path;
+			config.num_addresses = num_addresses;
+			wallets.push_back(std::make_shared<ECDSA_Wallet>(key_file, config, params));
 		}
 		else {
 			wallets.push_back(nullptr);
 			bls_wallets.push_back(nullptr);
 			log(ERROR) << "Failed to read wallet '" << file_path << "'";
+		}
+	}
+	wallets.resize(max_key_files + accounts.size());
+
+	for(size_t i = 0; i < accounts.size(); ++i) {
+		auto config = accounts[i];
+		config.key_file = storage_path + config.key_file;
+		if(auto key_file = vnx::read_from_file<KeyFile>(config.key_file)) {
+			wallets[max_key_files + i] = std::make_shared<ECDSA_Wallet>(key_file, config, params);
+		} else {
+			log(ERROR) << "Failed to read wallet '" << config.key_file << "'";
 		}
 	}
 	Super::main();
@@ -394,6 +412,32 @@ std::vector<std::shared_ptr<const FarmerKeys>> Wallet::get_all_farmer_keys() con
 		}
 	}
 	return res;
+}
+
+std::map<uint32_t, account_t> Wallet::get_accounts() const
+{
+	std::map<uint32_t, account_t> res;
+	for(size_t i = 0; i < wallets.size(); ++i) {
+		if(auto wallet = wallets[i]) {
+			res[i] = wallet->config;
+		}
+	}
+	return res;
+}
+
+void Wallet::add_account(const uint32_t& index, const account_t& config)
+{
+	if(index >= max_accounts) {
+		throw std::logic_error("index >= max_accounts");
+	}
+	if(index >= wallets.size()) {
+		wallets.resize(index + 1);
+	}
+	if(auto key_file = vnx::read_from_file<KeyFile>(config.key_file)) {
+		wallets[index] = std::make_shared<ECDSA_Wallet>(key_file, config, params);
+	} else {
+		throw std::runtime_error("failed to read key file");
+	}
 }
 
 hash_t Wallet::get_master_seed(const uint32_t& index) const
