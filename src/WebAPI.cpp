@@ -37,6 +37,10 @@ public:
 		currency.symbol = "MMX";
 	}
 
+	int64_t get_time(const uint32_t& height) const {
+		return int64_t(height - height_offset) * int64_t(params->block_time) + time_offset;
+	}
+
 	bool have_contract(const addr_t& address) const {
 		return currency_map.count(address);
 	}
@@ -63,6 +67,8 @@ public:
 		}
 	}
 
+	int64_t time_offset = 0;		// [sec]
+	int64_t height_offset = 0;
 	std::shared_ptr<const ChainParams> params;
 	std::unordered_map<addr_t, currency_t> currency_map;
 };
@@ -81,10 +87,25 @@ void WebAPI::init()
 
 void WebAPI::main()
 {
+	subscribe(input_blocks, 10000);
+
 	node = std::make_shared<NodeAsyncClient>(node_server);
 	add_async_client(node);
 
+	set_timer_millis(1000, std::bind(&WebAPI::update, this));
+
 	Super::main();
+}
+
+void WebAPI::update()
+{
+	node->get_height(
+		[this](const uint32_t& height) {
+			if(height != height_offset) {
+				time_offset = vnx::get_time_seconds();
+				height_offset = height;
+			}
+		});
 }
 
 void WebAPI::handle(std::shared_ptr<const Block> block)
@@ -270,6 +291,9 @@ public:
 		if(context) {
 			tmp["fee"] = to_amount(value.fee, context->params->decimals);
 			tmp["cost"] = to_amount(value.cost, context->params->decimals);
+			if(auto height = value.height) {
+				tmp["time"] = context->get_time(*height);
+			}
 		}
 		{
 			std::vector<vnx::Object> rows;
@@ -294,7 +318,11 @@ public:
 	}
 
 	void accept(const tx_entry_t& value) {
-		set(augment(render(value, context), value.contract, value.amount));
+		auto tmp = augment(render(value, context), value.contract, value.amount);
+		if(context) {
+			tmp["time"] = context->get_time(value.height);
+		}
+		set(tmp);
 	}
 
 	void accept(std::shared_ptr<const Transaction> value) {
@@ -345,6 +373,28 @@ public:
 		set(render(value, context));
 	}
 
+	void accept(std::shared_ptr<const BlockHeader> value) {
+		if(auto block = std::dynamic_pointer_cast<const Block>(value)) {
+			accept(block);
+		} else if(value && context) {
+			auto tmp = render(*value, context);
+			tmp["time"] = context->get_time(value->height);
+			set(tmp);
+		} else {
+			set(render(value));
+		}
+	}
+
+	void accept(std::shared_ptr<const Block> value) {
+		if(value && context) {
+			auto tmp = render(*value, context);
+			tmp["time"] = context->get_time(value->height);
+			set(tmp);
+		} else {
+			set(render(value));
+		}
+	}
+
 	std::shared_ptr<const RenderContext> context;
 
 private:
@@ -374,18 +424,24 @@ vnx::Variant render_value(const T& value, std::shared_ptr<const RenderContext> c
 	return std::move(visitor.result);
 }
 
-void WebAPI::render_header(const vnx::request_id_t& request_id, std::shared_ptr<const BlockHeader> block) const
+std::shared_ptr<RenderContext> WebAPI::get_context() const
 {
 	auto context = std::make_shared<RenderContext>(params);
-	respond(request_id, render(block, context));
+	context->time_offset = time_offset;
+	context->height_offset = height_offset;
+	return context;
+}
+
+void WebAPI::render_header(const vnx::request_id_t& request_id, std::shared_ptr<const BlockHeader> block) const
+{
+	respond(request_id, render_value(block, get_context()));
 }
 
 void WebAPI::render_headers(const vnx::request_id_t& request_id, const size_t limit, const size_t offset,
 							std::shared_ptr<std::vector<vnx::Variant>> result, std::shared_ptr<const BlockHeader> block) const
 {
 	if(block) {
-		auto context = std::make_shared<RenderContext>(params);
-		result->push_back(render(block, context));
+		result->push_back(render_value(block, get_context()));
 	}
 	if(result->size() >= limit) {
 		respond(request_id, vnx::Variant(*result));
@@ -425,7 +481,7 @@ void WebAPI::render_block(const vnx::request_id_t& request_id, std::shared_ptr<c
 	}
 	get_context(addr_set, request_id,
 		[this, request_id, block](std::shared_ptr<const RenderContext> context) {
-			respond(request_id, render(block, context));
+			respond(request_id, render_value(block, context));
 		});
 }
 
@@ -435,7 +491,7 @@ void WebAPI::render_transaction(const vnx::request_id_t& request_id, const vnx::
 		respond_status(request_id, 404);
 		return;
 	}
-	auto context = std::make_shared<RenderContext>(params);
+	auto context = get_context();
 	for(const auto& entry : info->contracts) {
 		context->add_contract(entry.first, entry.second);
 	}
@@ -447,7 +503,7 @@ void WebAPI::render_transactions(	const vnx::request_id_t& request_id, const siz
 									const vnx::optional<tx_info_t>& info) const
 {
 	if(info) {
-		auto context = std::make_shared<RenderContext>(params);
+		auto context = get_context();
 		for(const auto& entry : info->contracts) {
 			context->add_contract(entry.first, entry.second);
 		}
@@ -682,7 +738,7 @@ void WebAPI::get_context(	const std::unordered_set<addr_t>& addr_set, const vnx:
 	const std::vector<addr_t> list(addr_set.begin(), addr_set.end());
 	node->get_contracts(list,
 		[this, list, request_id, callback](const std::vector<std::shared_ptr<const Contract>> values) {
-			auto context = std::make_shared<RenderContext>(params);
+			auto context = get_context();
 			for(size_t i = 0; i < list.size() && i < values.size(); ++i) {
 				context->add_contract(list[i], values[i]);
 			}

@@ -2,6 +2,8 @@ package mmx;
 
 module WebAPI implements vnx.addons.HttpComponent {
 	
+	vnx.TopicPtr input_blocks = "node.verified_blocks";
+	
 	string node_server = "Node";
 	
 	

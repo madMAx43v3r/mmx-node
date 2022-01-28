@@ -35,6 +35,10 @@ protected:
 	void handle(std::shared_ptr<const Block> block) override;
 
 private:
+	void update();
+
+	std::shared_ptr<RenderContext> get_context() const;
+
 	void render_header(const vnx::request_id_t& request_id, std::shared_ptr<const BlockHeader> block) const;
 
 	void render_headers(const vnx::request_id_t& request_id, const size_t limit, const size_t offset,
@@ -70,6 +74,9 @@ private:
 private:
 	std::shared_ptr<NodeAsyncClient> node;
 	std::shared_ptr<const ChainParams> params;
+
+	int64_t time_offset = 0;		// [sec]
+	int64_t height_offset = 0;
 
 };
 
