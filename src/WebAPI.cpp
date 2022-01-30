@@ -284,8 +284,9 @@ public:
 	vnx::Object to_output(const addr_t& contract, const uint64_t amount) {
 		vnx::Object tmp;
 		tmp["amount"] = amount;
-		if(contract != addr_t()) {
-			tmp["contract"] = contract.to_string();
+		tmp["contract"] = contract.to_string();
+		if(contract == addr_t()) {
+			tmp["is_native"] = true;
 		}
 		return augment(tmp, contract, amount);
 	}
