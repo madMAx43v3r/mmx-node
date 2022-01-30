@@ -414,7 +414,13 @@ std::vector<std::shared_ptr<const FarmerKeys>> Wallet::get_all_farmer_keys() con
 	return res;
 }
 
-std::map<uint32_t, account_t> Wallet::get_accounts() const
+account_t Wallet::get_account(const uint32_t& index) const
+{
+	const auto wallet = get_wallet(index);
+	return wallet->config;
+}
+
+std::map<uint32_t, account_t> Wallet::get_all_accounts() const
 {
 	std::map<uint32_t, account_t> res;
 	for(size_t i = 0; i < wallets.size(); ++i) {

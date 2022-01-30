@@ -83,7 +83,9 @@ protected:
 
 	std::vector<std::shared_ptr<const FarmerKeys>> get_all_farmer_keys() const override;
 
-	std::map<uint32_t, account_t> get_accounts() const override;
+	account_t get_account(const uint32_t& index) const override;
+
+	std::map<uint32_t, account_t> get_all_accounts() const override;
 
 	void add_account(const uint32_t& index, const account_t& config) override;
 
