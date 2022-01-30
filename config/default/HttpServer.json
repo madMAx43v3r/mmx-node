@@ -1,5 +1,5 @@
 {
 	"port": 8080,
 	"stats_interval_ms": 60000,
-	"default_access": "NETWORK"
+	"default_access": "LOCALHOST"
 }
