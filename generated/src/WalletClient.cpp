@@ -13,10 +13,12 @@
 #include <mmx/Wallet_deploy_return.hxx>
 #include <mmx/Wallet_gather_utxos_for.hxx>
 #include <mmx/Wallet_gather_utxos_for_return.hxx>
-#include <mmx/Wallet_get_accounts.hxx>
-#include <mmx/Wallet_get_accounts_return.hxx>
+#include <mmx/Wallet_get_account.hxx>
+#include <mmx/Wallet_get_account_return.hxx>
 #include <mmx/Wallet_get_address.hxx>
 #include <mmx/Wallet_get_address_return.hxx>
+#include <mmx/Wallet_get_all_accounts.hxx>
+#include <mmx/Wallet_get_all_accounts_return.hxx>
 #include <mmx/Wallet_get_all_addresses.hxx>
 #include <mmx/Wallet_get_all_addresses_return.hxx>
 #include <mmx/Wallet_get_all_farmer_keys.hxx>
@@ -539,10 +541,23 @@ std::vector<::mmx::addr_t> WalletClient::get_all_addresses(const int32_t& index)
 	}
 }
 
-std::map<uint32_t, ::mmx::account_t> WalletClient::get_accounts() {
-	auto _method = ::mmx::Wallet_get_accounts::create();
+::mmx::account_t WalletClient::get_account(const uint32_t& index) {
+	auto _method = ::mmx::Wallet_get_account::create();
+	_method->index = index;
 	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_accounts_return>(_return_value)) {
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_account_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<::mmx::account_t>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
+std::map<uint32_t, ::mmx::account_t> WalletClient::get_all_accounts() {
+	auto _method = ::mmx::Wallet_get_all_accounts::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_all_accounts_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::map<uint32_t, ::mmx::account_t>>();

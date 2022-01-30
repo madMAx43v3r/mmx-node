@@ -110,7 +110,9 @@ public:
 	
 	std::vector<::mmx::addr_t> get_all_addresses(const int32_t& index = 0);
 	
-	std::map<uint32_t, ::mmx::account_t> get_accounts();
+	::mmx::account_t get_account(const uint32_t& index = 0);
+	
+	std::map<uint32_t, ::mmx::account_t> get_all_accounts();
 	
 	void add_account(const uint32_t& index = 0, const ::mmx::account_t& config = ::mmx::account_t());
 	
