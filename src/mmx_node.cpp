@@ -21,6 +21,7 @@
 #include <vnx/Server.h>
 #include <vnx/Terminal.h>
 #include <vnx/TcpEndpoint.hxx>
+#include <vnx/addons/FileServer.h>
 #include <vnx/addons/HttpServer.h>
 
 
@@ -127,10 +128,17 @@ int main(int argc, char** argv)
 		module.start_detached();
 	}
 	{
+		vnx::Handle<vnx::addons::FileServer> module = new vnx::addons::FileServer("FileServer_1");
+		module->www_root = "www/web-gui/public/";
+		module->directory_files.push_back("index.html");
+		module.start_detached();
+	}
+	{
 		vnx::Handle<vnx::addons::HttpServer> module = new vnx::addons::HttpServer("HttpServer");
 		module->components["/wapi/"] = "WebAPI";
 		module->components["/api/node/"] = "Node";
 		module->components["/api/wallet/"] = "Wallet";
+		module->components["/gui/"] = "FileServer_1";
 		module.start_detached();
 	}
 	{

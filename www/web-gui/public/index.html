@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" href="css/semantic.min.css">
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script src="js/semantic.min.js"></script>
+<script src="https://unpkg.com/vue@next"></script>
+<title>MMX - GUI</title>
+</head>
+
+<body>
+
+<div class="ui large top menu">
+	<div class="ui container">
+		<a class="active item">Wallet</a>
+		<a class="item">Exchange</a>
+		<div class="right menu">
+			<div class="item">
+				<a class="ui button">Settings</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="ui main container" id="content">
+	<balance-table address="mmx1nn8u9etvnghq7x8atj2y55he76z9yvxalc9t3nx8ym0xqr4yuzvsdf8jp8"></balance-table>
+</div>
+
+
+<script src="index.js"></script>
+</body>
+</html>
