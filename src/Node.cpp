@@ -81,17 +81,18 @@ void Node::main()
 	if(block_chain->exists()) {
 		const auto time_begin = vnx::get_wall_time_millis();
 		block_chain->open("rb+");
-		int64_t last_pos = 0;
-		while(auto block = read_block(true, &last_pos)) {
+		int64_t offset = 0;
+		while(auto block = read_block(*block_chain, &offset)) {
 			if(block->height >= replay_height) {
-				block_chain->seek_to(last_pos);
+				block_chain->seek_to(offset);
 				// preemptively mark end of file since we purge DB entries now
 				vnx::write(block_chain->out, nullptr);
-				block_chain->seek_to(last_pos);
+				block_chain->seek_to(offset);
 				break;
 			}
 			apply(block);
 			commit(block);
+			block_index[block->height] = std::make_pair(offset, block->hash);
 		}
 		if(auto peak = get_peak()) {
 			log(INFO) << "Loaded " << peak->height + 1 << " blocks from disk, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
@@ -227,13 +228,13 @@ std::shared_ptr<const Block> Node::get_block(const hash_t& hash) const
 
 std::shared_ptr<const Block> Node::get_block_at(const uint32_t& height) const
 {
+	// THREAD SAFE (for concurrent reads)
 	auto iter = block_index.find(height);
 	if(iter != block_index.end()) {
-		const auto prev_pos = block_chain->get_output_pos();
-		block_chain->seek_to(iter->second.first);
-		const auto block = ((Node*)this)->read_block();
-		block_chain->seek_to(prev_pos);
-		return block;
+		vnx::File file(block_chain->get_path());
+		file.open("rb");
+		file.seek_to(iter->second.first);
+		return read_block(file);
 	}
 	const auto line = get_fork_line();
 	if(!line.empty()) {
@@ -307,7 +308,7 @@ vnx::optional<uint32_t> Node::get_tx_height(const hash_t& id) const
 	{
 		auto iter = tx_map.find(id);
 		if(iter != tx_map.end()) {
-			return iter->second;
+			return iter->second.second;
 		}
 	}
 	{
@@ -418,8 +419,13 @@ std::vector<vnx::optional<txo_info_t>> Node::get_txo_infos(const std::vector<txi
 std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id, const vnx::bool_t& include_pending) const
 {
 	// THREAD SAFE (for concurrent reads)
-	if(include_pending || tx_map.count(id))
 	{
+		auto iter = tx_map.find(id);
+		if(iter != tx_map.end()) {
+			return iter->second.first;
+		}
+	}
+	if(include_pending) {
 		auto iter = tx_pool.find(id);
 		if(iter != tx_pool.end()) {
 			return iter->second;
@@ -654,6 +660,7 @@ bool Node::include_transaction(std::shared_ptr<const Transaction> tx)
 		}
 	}
 	if(const auto& contract = tx->deploy) {
+		// TODO: use get_parties()
 		if(auto owner = contract->get_owner()) {
 			if(light_address_set.count(*owner)) {
 				return true;
@@ -1311,8 +1318,7 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 		contract_map.erase(tx->id);
 		log.deployed.emplace(tx->id, contract);
 	}
-	tx_map[tx->id] = block->height;
-	tx_pool.emplace(tx->id, tx);
+	tx_map[tx->id] = std::make_pair(tx, block->height);
 	log.tx_added.push_back(tx->id);
 }
 
@@ -1345,9 +1351,6 @@ bool Node::revert() noexcept
 	}
 	for(const auto& txid : log->tx_added) {
 		tx_map.erase(txid);
-	}
-	if(const auto& txid = log->tx_base) {
-		tx_pool.erase(*txid);
 	}
 	for(const auto& entry : log->deployed) {
 		contract_map.erase(entry.first);
@@ -1513,18 +1516,16 @@ uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block) const
 	return 0;
 }
 
-std::shared_ptr<const Block> Node::read_block(bool is_replay, int64_t* file_offset)
+std::shared_ptr<const Block> Node::read_block(vnx::File& file, int64_t* file_offset) const
 {
-	auto& in = block_chain->in;
+	// THREAD SAFE (for concurrent reads)
+	auto& in = file.in;
 	const auto offset = in.get_input_pos();
 	if(file_offset) {
 		*file_offset = offset;
 	}
 	try {
 		if(auto header = std::dynamic_pointer_cast<BlockHeader>(vnx::read(in))) {
-			if(is_replay) {
-				block_index[header->height] = std::make_pair(offset, header->hash);
-			}
 			auto block = Block::create();
 			block->BlockHeader::operator=(*header);
 			while(true) {
@@ -1541,7 +1542,7 @@ std::shared_ptr<const Block> Node::read_block(bool is_replay, int64_t* file_offs
 	} catch(const std::exception& ex) {
 		log(WARN) << "Failed to read block: " << ex.what();
 	}
-	block_chain->seek_to(offset);
+	file.seek_to(offset);
 	return nullptr;
 }
 

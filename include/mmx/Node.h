@@ -246,7 +246,7 @@ private:
 
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block) const;
 
-	std::shared_ptr<const Block> read_block(bool is_replay = false, int64_t* file_offset = nullptr);
+	std::shared_ptr<const Block> read_block(vnx::File& file, int64_t* file_offset = nullptr) const;
 
 	void write_block(std::shared_ptr<const Block> block);
 
@@ -263,10 +263,10 @@ private:
 	vnx::rocksdb::multi_table<addr_t, addr_t> owner_map;							// [owner => contract]
 	vnx::rocksdb::multi_table<uint32_t, hash_t> tx_log;								// [height => txid] (finalized only)
 
-	std::unordered_map<hash_t, uint32_t> tx_map;									// [txid => height] (pending only)
 	std::unordered_map<txio_key_t, utxo_t> utxo_map;								// [utxo key => utxo]
 	std::set<std::pair<addr_t, txio_key_t>> addr_map;								// [addr => utxo keys] (finalized + unspent only)
 	std::unordered_map<addr_t, std::unordered_set<txio_key_t>> taddr_map;			// [addr => utxo keys] (pending + unspent only)
+	std::unordered_map<hash_t, std::pair<std::shared_ptr<const Transaction>, uint32_t>> tx_map;		// [txid => [tx, height]] (executed + pending only)
 
 	std::multimap<uint32_t, std::shared_ptr<fork_t>> fork_index;					// [height => fork]
 	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;					// [block hash => fork] (pending only)
