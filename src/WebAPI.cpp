@@ -590,13 +590,14 @@ void WebAPI::render_balance(const vnx::request_id_t& request_id, const std::map<
 		});
 }
 
-void WebAPI::render_history(const vnx::request_id_t& request_id, const addr_t& address,
-							const size_t limit, const size_t offset, std::vector<tx_entry_t> history) const
+void WebAPI::render_history(const vnx::request_id_t& request_id, size_t limit, const size_t offset, std::vector<tx_entry_t> history) const
 {
+	std::reverse(history.begin(), history.end());
 	if(offset > 0) {
-		for(size_t i = 0; i < history.size() && i < limit; ++i) {
-			history[i] = history[offset + 1];
+		for(size_t i = 0; i < limit && offset + i < history.size(); ++i) {
+			history[i] = history[offset + i];
 		}
+		limit = std::min(offset + limit, history.size()) - std::min(offset, history.size());
 	}
 	if(history.size() > limit) {
 		history.resize(limit);
@@ -747,7 +748,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
 			const int32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 			node->get_history_for({address}, since,
-				std::bind(&WebAPI::render_history, this, request_id, address, limit, offset, std::placeholders::_1),
+				std::bind(&WebAPI::render_history, this, request_id, limit, offset, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
 			respond_status(request_id, 404, "address/history?id|limit|offset|since");
@@ -766,9 +767,48 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "wallet/balance?index|confirm");
 		}
 	}
+	else if(sub_path == "/wallet/address") {
+		const auto iter_index = query.find("index");
+		const auto iter_limit = query.find("limit");
+		const auto iter_offset = query.find("offset");
+		if(iter_index != query.end()) {
+			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
+			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 1;
+			const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
+			wallet->get_all_addresses(index,
+				[this, request_id, limit, offset](const std::vector<addr_t>& list) {
+					std::vector<std::string> res;
+					for(size_t i = 0; i < limit && offset + i < list.size(); ++i) {
+						res.push_back(list[offset + i].to_string());
+					}
+					respond(request_id, vnx::Variant(res));
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "wallet/address?index|limit|offset");
+		}
+	}
+	else if(sub_path == "/wallet/history") {
+		const auto iter_index = query.find("index");
+		const auto iter_limit = query.find("limit");
+		const auto iter_offset = query.find("offset");
+		const auto iter_since = query.find("since");
+		if(iter_index != query.end()) {
+			const uint32_t index = vnx::from_string_value<int64_t>(iter_index->second);
+			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
+			const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
+			const int32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
+			wallet->get_history(index, since,
+				std::bind(&WebAPI::render_history, this, request_id, limit, offset, std::placeholders::_1),
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "wallet/history?index|limit|offset|since");
+		}
+	}
 	else {
 		std::vector<std::string> options = {
-			"node/info", "header", "headers", "block", "transaction", "transactions", "address", "contract", "address/history"
+			"node/info", "header", "headers", "block", "transaction", "transactions", "address", "contract",
+			"address/history", "wallet/balance", "wallet/address", "wallet/history"
 		};
 		respond_status(request_id, 404, vnx::to_string(options));
 	}

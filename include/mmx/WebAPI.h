@@ -60,8 +60,7 @@ private:
 
 	void render_balance(const vnx::request_id_t& request_id, const std::map<addr_t, uint64_t>& balances) const;
 
-	void render_history(const vnx::request_id_t& request_id, const addr_t& address,
-						const size_t limit, const size_t offset, std::vector<tx_entry_t> history) const;
+	void render_history(const vnx::request_id_t& request_id, size_t limit, const size_t offset, std::vector<tx_entry_t> history) const;
 
 	void get_context(	const std::unordered_set<addr_t>& addr_set, const vnx::request_id_t& request_id,
 						const std::function<void(std::shared_ptr<RenderContext>)>& callback) const;
