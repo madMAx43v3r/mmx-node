@@ -40,13 +40,14 @@ namespace mmx {
 
 
 const vnx::Hash64 WebAPIBase::VNX_TYPE_HASH(0xfe90ce601fcc0cc6ull);
-const vnx::Hash64 WebAPIBase::VNX_CODE_HASH(0xa27f9fc0221eb15bull);
+const vnx::Hash64 WebAPIBase::VNX_CODE_HASH(0xf010b31fc4fbc96aull);
 
 WebAPIBase::WebAPIBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
 {
 	vnx::read_config(vnx_name + ".input_blocks", input_blocks);
 	vnx::read_config(vnx_name + ".node_server", node_server);
+	vnx::read_config(vnx_name + ".wallet_server", wallet_server);
 	vnx::read_config(vnx_name + ".max_block_history", max_block_history);
 	vnx::read_config(vnx_name + ".max_tx_history", max_tx_history);
 }
@@ -68,8 +69,9 @@ void WebAPIBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, input_blocks);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, node_server);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, max_block_history);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, max_tx_history);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, wallet_server);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, max_block_history);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, max_tx_history);
 	_visitor.type_end(*_type_code);
 }
 
@@ -77,6 +79,7 @@ void WebAPIBase::write(std::ostream& _out) const {
 	_out << "{";
 	_out << "\"input_blocks\": "; vnx::write(_out, input_blocks);
 	_out << ", \"node_server\": "; vnx::write(_out, node_server);
+	_out << ", \"wallet_server\": "; vnx::write(_out, wallet_server);
 	_out << ", \"max_block_history\": "; vnx::write(_out, max_block_history);
 	_out << ", \"max_tx_history\": "; vnx::write(_out, max_tx_history);
 	_out << "}";
@@ -93,6 +96,7 @@ vnx::Object WebAPIBase::to_object() const {
 	_object["__type"] = "mmx.WebAPI";
 	_object["input_blocks"] = input_blocks;
 	_object["node_server"] = node_server;
+	_object["wallet_server"] = wallet_server;
 	_object["max_block_history"] = max_block_history;
 	_object["max_tx_history"] = max_tx_history;
 	return _object;
@@ -108,6 +112,8 @@ void WebAPIBase::from_object(const vnx::Object& _object) {
 			_entry.second.to(max_tx_history);
 		} else if(_entry.first == "node_server") {
 			_entry.second.to(node_server);
+		} else if(_entry.first == "wallet_server") {
+			_entry.second.to(wallet_server);
 		}
 	}
 }
@@ -118,6 +124,9 @@ vnx::Variant WebAPIBase::get_field(const std::string& _name) const {
 	}
 	if(_name == "node_server") {
 		return vnx::Variant(node_server);
+	}
+	if(_name == "wallet_server") {
+		return vnx::Variant(wallet_server);
 	}
 	if(_name == "max_block_history") {
 		return vnx::Variant(max_block_history);
@@ -133,6 +142,8 @@ void WebAPIBase::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(input_blocks);
 	} else if(_name == "node_server") {
 		_value.to(node_server);
+	} else if(_name == "wallet_server") {
+		_value.to(wallet_server);
 	} else if(_name == "max_block_history") {
 		_value.to(max_block_history);
 	} else if(_name == "max_tx_history") {
@@ -164,7 +175,7 @@ std::shared_ptr<vnx::TypeCode> WebAPIBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.WebAPI";
 	type_code->type_hash = vnx::Hash64(0xfe90ce601fcc0cc6ull);
-	type_code->code_hash = vnx::Hash64(0xa27f9fc0221eb15bull);
+	type_code->code_hash = vnx::Hash64(0xf010b31fc4fbc96aull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::WebAPIBase);
 	type_code->methods.resize(11);
@@ -179,7 +190,7 @@ std::shared_ptr<vnx::TypeCode> WebAPIBase::static_create_type_code() {
 	type_code->methods[8] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
 	type_code->methods[9] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
 	type_code->methods[10] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
-	type_code->fields.resize(4);
+	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -196,13 +207,20 @@ std::shared_ptr<vnx::TypeCode> WebAPIBase::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[2];
+		field.is_extended = true;
+		field.name = "wallet_server";
+		field.value = vnx::to_string("Wallet");
+		field.code = {32};
+	}
+	{
+		auto& field = type_code->fields[3];
 		field.data_size = 4;
 		field.name = "max_block_history";
 		field.value = vnx::to_string(1000);
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[3];
+		auto& field = type_code->fields[4];
 		field.data_size = 8;
 		field.name = "max_tx_history";
 		field.value = vnx::to_string(10000);
@@ -349,10 +367,10 @@ void read(TypeInput& in, ::mmx::WebAPIBase& value, const TypeCode* type_code, co
 	}
 	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
-		if(const auto* const _field = type_code->field_map[2]) {
+		if(const auto* const _field = type_code->field_map[3]) {
 			vnx::read_value(_buf + _field->offset, value.max_block_history, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[3]) {
+		if(const auto* const _field = type_code->field_map[4]) {
 			vnx::read_value(_buf + _field->offset, value.max_tx_history, _field->code.data());
 		}
 	}
@@ -360,6 +378,7 @@ void read(TypeInput& in, ::mmx::WebAPIBase& value, const TypeCode* type_code, co
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.input_blocks, type_code, _field->code.data()); break;
 			case 1: vnx::read(in, value.node_server, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.wallet_server, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -383,6 +402,7 @@ void write(TypeOutput& out, const ::mmx::WebAPIBase& value, const TypeCode* type
 	vnx::write_value(_buf + 4, value.max_tx_history);
 	vnx::write(out, value.input_blocks, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.node_server, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.wallet_server, type_code, type_code->fields[2].code.data());
 }
 
 void read(std::istream& in, ::mmx::WebAPIBase& value) {
