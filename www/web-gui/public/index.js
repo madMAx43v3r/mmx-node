@@ -20,8 +20,24 @@ const AccountHome = {
 		index: Number
 	},
 	template: `
-		<balance-table :index="index"/>
-		<account-history :index="index"/>
+		<account-balance :index="index"/>
+		<account-history :index="index" :limit="200"/>
+	`
+}
+const AccountNFTs = {
+	props: {
+		index: Number
+	},
+	template: `
+		<nft-table :index="index"/>
+	`
+}
+const AccountContracts = {
+	props: {
+		index: Number
+	},
+	template: `
+		<account-contracts :index="index"/>
 	`
 }
 const AccountAddresses = {
@@ -29,7 +45,7 @@ const AccountAddresses = {
 		index: Number
 	},
 	template: `
-		<account-addresses :index="index"/>
+		<account-addresses :index="index" :limit="1000"/>
 	`
 }
 
@@ -44,6 +60,8 @@ const routes = [
 		props: route => ({ index: parseInt(route.params.index) }),
 		children: [
 			{ path: '', component: AccountHome },
+			{ path: 'nfts', component: AccountNFTs },
+			{ path: 'contracts', component: AccountContracts },
 			{ path: 'addresses', component: AccountAddresses },
 		]
 	},
@@ -104,8 +122,8 @@ app.component('account-menu', {
 		<account-header :index="index" :account="account"/>
 		<div class="ui four item large menu">
 			<router-link class="item" :to="'/wallet/account/' + index">Account</router-link>
-			<router-link class="item" :to="'/wallet/account/' + index">NFTs</router-link>
-			<router-link class="item" :to="'/wallet/account/' + index">Contracts</router-link>
+			<router-link class="item" :to="'/wallet/account/' + index + '/nfts'">NFTs</router-link>
+			<router-link class="item" :to="'/wallet/account/' + index + '/contracts'">Contracts</router-link>
 			<router-link class="item" :to="'/wallet/account/' + index + '/addresses'">Addresses</router-link>
 		</div>
 		`
@@ -133,6 +151,7 @@ app.component('account-header', {
 	},
 	template: `
 		<router-link class="ui large labels" :to="'/wallet/account/' + index">
+			<div class="ui horizontal label">Account</div>
 			<div class="ui horizontal label">#{{index}}</div>
 			<div class="ui horizontal label">{{account.name}}</div>
 			<div class="ui horizontal label">{{address}}</div>
@@ -148,31 +167,38 @@ app.component('account-summary', {
 	template: `
 		<div>
 			<account-header :index="index" :account="account"/>
-			<balance-table :index="index"/>
+			<account-balance :index="index"/>
 		</div>
 		`
 })
 
-app.component('balance-table', {
+app.component('account-balance', {
 	props: {
 		index: Number
 	},
 	data() {
 		return {
-			data: {
-				balances: []
-			}
+			balances: []
 		}
 	},
 	methods: {
 		update() {
 			fetch('/wapi/wallet/balance?index=' + this.index)
 				.then(response => response.json())
-				.then(data => this.data = data);
+				.then(data => this.balances = data.balances);
 		}
 	},
 	created() {
 		this.update()
+	},
+	template: `
+		<balance-table :balances="balances"/>
+		`
+})
+
+app.component('balance-table', {
+	props: {
+		balances: Object
 	},
 	template: `
 		<table class="ui table">
@@ -184,7 +210,7 @@ app.component('balance-table', {
 			</tr>
 			</thead>
 			<tbody>
-			<tr v-for="item in data.balances" :key="item.contract">
+			<tr v-for="item in balances" :key="item.contract">
 				<td>{{item.value}}</td>
 				<td>{{item.symbol}}</td>
 				<td>{{item.is_native ? '' : item.contract}}</td>
@@ -194,9 +220,45 @@ app.component('balance-table', {
 		`
 })
 
-app.component('account-history', {
+app.component('nft-table', {
 	props: {
 		index: Number
+	},
+	data() {
+		return {
+			nfts: []
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/wallet/balance?index=' + this.index)
+				.then(response => response.json())
+				.then(data => this.nfts = data.nfts);
+		}
+	},
+	created() {
+		this.update()
+	},
+	template: `
+		<table class="ui table">
+			<thead>
+			<tr>
+				<th>NFT</th>
+			</tr>
+			</thead>
+			<tbody>
+			<tr v-for="item in nfts" :key="item">
+				<td>{{item}}</td>
+			</tr>
+			</tbody>
+		</table>
+		`
+})
+
+app.component('account-history', {
+	props: {
+		index: Number,
+		limit: Number
 	},
 	data() {
 		return {
@@ -205,7 +267,7 @@ app.component('account-history', {
 	},
 	methods: {
 		update() {
-			fetch('/wapi/wallet/history?limit=20&index=' + this.index)
+			fetch('/wapi/wallet/history?limit=' + this.limit + '&index=' + this.index)
 				.then(response => response.json())
 				.then(data => this.data = data);
 		}
@@ -239,7 +301,48 @@ app.component('account-history', {
 		`
 })
 
-app.component('account-addresses', {
+app.component('contract-summary', {
+	props: {
+		address: String,
+		contract: Object
+	},
+	data() {
+		return {
+			balances: []
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/address?id=' + this.address)
+				.then(response => response.json())
+				.then(data => this.balances = data.balances);
+		}
+	},
+	created() {
+		this.update()
+	},
+	template: `
+		<div class="ui raised segment">
+			<div class="ui large labels">
+				<div class="ui horizontal label">{{contract.__type}}</div>
+				<div class="ui horizontal label">{{address}}</div>
+			</div>
+			<table class="ui definition table striped">
+				<tbody>
+				<template v-for="(value, key) in contract" :key="key">
+					<tr v-if="key != '__type'">
+						<td class="collapsing">{{key}}</td>
+						<td>{{value}}</td>
+					</tr>
+				</template>
+				</tbody>
+			</table>
+			<balance-table :balances="balances" v-if="balances.length"/>
+		</div>
+		`
+})
+
+app.component('account-contracts', {
 	props: {
 		index: Number
 	},
@@ -250,7 +353,32 @@ app.component('account-addresses', {
 	},
 	methods: {
 		update() {
-			fetch('/wapi/wallet/address?limit=100&index=' + this.index)
+			fetch('/wapi/wallet/contracts?index=' + this.index)
+				.then(response => response.json())
+				.then(data => this.data = data);
+		}
+	},
+	created() {
+		this.update()
+	},
+	template: `
+		<contract-summary v-for="item in data" :key="item[0]" :address="item[0]" :contract="item[1]"/>
+		`
+})
+
+app.component('account-addresses', {
+	props: {
+		index: Number,
+		limit: Number
+	},
+	data() {
+		return {
+			data: []
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/wallet/address?limit=' + this.limit + '&index=' + this.index)
 				.then(response => response.json())
 				.then(data => this.data = data);
 		}
@@ -262,7 +390,7 @@ app.component('account-addresses', {
 		<table class="ui table striped">
 			<thead>
 			<tr>
-				<th class="collapsing right">Index</th>
+				<th>Index</th>
 				<th>Address</th>
 			</tr>
 			</thead>

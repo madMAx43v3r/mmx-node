@@ -137,7 +137,9 @@ public:
 	Render(std::shared_ptr<const RenderContext> context) : context(context) {}
 
 	template<typename T>
-	void type_begin(int num_fields) {}
+	void type_begin(int num_fields) {
+		object["__type"] = T::static_get_type_code()->name;
+	}
 
 	template<typename T>
 	void type_end(int num_fields) {}
@@ -767,6 +769,24 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "wallet/balance?index|confirm");
 		}
 	}
+	else if(sub_path == "/wallet/contracts") {
+		const auto iter_index = query.find("index");
+		if(iter_index != query.end()) {
+			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
+			wallet->get_contracts(index,
+				[this, request_id](const std::map<addr_t, std::shared_ptr<const Contract>>& map) {
+					auto context = get_context();
+					std::map<std::string, vnx::Variant> res;
+					for(const auto& entry : map) {
+						res.emplace(entry.first.to_string(), render_value(entry.second, context));
+					}
+					respond(request_id, vnx::Variant(res));
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "wallet/contracts?index");
+		}
+	}
 	else if(sub_path == "/wallet/address") {
 		const auto iter_index = query.find("index");
 		const auto iter_limit = query.find("limit");
@@ -808,7 +828,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	else {
 		std::vector<std::string> options = {
 			"node/info", "header", "headers", "block", "transaction", "transactions", "address", "contract",
-			"address/history", "wallet/balance", "wallet/address", "wallet/history"
+			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/history"
 		};
 		respond_status(request_id, 404, vnx::to_string(options));
 	}
