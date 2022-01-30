@@ -10,6 +10,7 @@
 
 #include <mmx/WebAPIBase.hxx>
 #include <mmx/NodeAsyncClient.hxx>
+#include <mmx/WalletAsyncClient.hxx>
 #include <mmx/Block.hxx>
 
 
@@ -57,6 +58,8 @@ private:
 
 	void render_address(const vnx::request_id_t& request_id, const addr_t& address, const std::map<addr_t, uint64_t>& balances) const;
 
+	void render_balance(const vnx::request_id_t& request_id, const std::map<addr_t, uint64_t>& balances) const;
+
 	void render_history(const vnx::request_id_t& request_id, const addr_t& address,
 						const size_t limit, const size_t offset, std::vector<tx_entry_t> history) const;
 
@@ -73,6 +76,7 @@ private:
 
 private:
 	std::shared_ptr<NodeAsyncClient> node;
+	std::shared_ptr<WalletAsyncClient> wallet;
 	std::shared_ptr<const ChainParams> params;
 
 	int64_t time_offset = 0;		// [sec]

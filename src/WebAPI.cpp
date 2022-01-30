@@ -90,7 +90,9 @@ void WebAPI::main()
 	subscribe(input_blocks, 10000);
 
 	node = std::make_shared<NodeAsyncClient>(node_server);
+	wallet = std::make_shared<WalletAsyncClient>(wallet_server);
 	add_async_client(node);
+	add_async_client(wallet);
 
 	set_timer_millis(1000, std::bind(&WebAPI::update, this));
 
@@ -282,7 +284,9 @@ public:
 	vnx::Object to_output(const addr_t& contract, const uint64_t amount) {
 		vnx::Object tmp;
 		tmp["amount"] = amount;
-		tmp["contract"] = contract.to_string();
+		if(contract != addr_t()) {
+			tmp["contract"] = contract.to_string();
+		}
 		return augment(tmp, contract, amount);
 	}
 
@@ -558,6 +562,33 @@ void WebAPI::render_address(const vnx::request_id_t& request_id, const addr_t& a
 		});
 }
 
+void WebAPI::render_balance(const vnx::request_id_t& request_id, const std::map<addr_t, uint64_t>& balances) const
+{
+	std::unordered_set<addr_t> addr_set;
+	for(const auto& entry : balances) {
+		addr_set.insert(entry.first);
+	}
+	get_context(addr_set, request_id,
+		[this, request_id, balances](std::shared_ptr<const RenderContext> context) {
+			Render visitor(context);
+			std::vector<vnx::Object> rows;
+			std::vector<std::string> nfts;
+			for(const auto& entry : balances) {
+				if(auto currency = context->find_currency(entry.first)) {
+					if(currency->is_nft) {
+						nfts.push_back(entry.first.to_string());
+					} else {
+						rows.push_back(visitor.to_output(entry.first, entry.second));
+					}
+				}
+			}
+			vnx::Object out;
+			out["nfts"] = nfts;
+			out["balances"] = rows;
+			respond(request_id, out);
+		});
+}
+
 void WebAPI::render_history(const vnx::request_id_t& request_id, const addr_t& address,
 							const size_t limit, const size_t offset, std::vector<tx_entry_t> history) const
 {
@@ -719,6 +750,19 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
 			respond_status(request_id, 404, "address/history?id|limit|offset|since");
+		}
+	}
+	else if(sub_path == "/wallet/balance") {
+		const auto iter_index = query.find("index");
+		const auto iter_confirm = query.find("confirm");
+		if(iter_index != query.end()) {
+			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
+			const uint32_t min_confirm = iter_confirm != query.end() ? vnx::from_string<int64_t>(iter_confirm->second) : 1;
+			wallet->get_balances(index, min_confirm,
+				std::bind(&WebAPI::render_balance, this, request_id, std::placeholders::_1),
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "wallet/balance?index|confirm");
 		}
 	}
 	else {
