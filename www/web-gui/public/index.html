@@ -5,29 +5,31 @@
 <link rel="stylesheet" type="text/css" href="css/semantic.min.css">
 <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 <script src="js/semantic.min.js"></script>
-<script src="https://unpkg.com/vue@next"></script>
+<script src="https://unpkg.com/vue@3"></script>
+<script src="https://unpkg.com/vue-router@4"></script>
 <title>MMX - GUI</title>
 </head>
 
 <body>
+<div id="content">
 
 <div class="ui large top menu">
 	<div class="ui container">
-		<a class="active item">Wallet</a>
-		<a class="item">Exchange</a>
+		<router-link class="item" to="/wallet/">Wallet</router-link>
+		<router-link class="item" to="/exchange/">Exchange</router-link>
 		<div class="right menu">
 			<div class="item">
-				<a class="ui button">Settings</a>
+				<router-link class="ui button" to="/settings/">Settings</router-link>
 			</div>
 		</div>
 	</div>
 </div>
 
-<div class="ui main container" id="content">
-	<wallet-summary></wallet-summary>
+<div class="ui main container">
+	<router-view/>
 </div>
 
-
+</div>
 <script src="index.js"></script>
 </body>
 </html>
