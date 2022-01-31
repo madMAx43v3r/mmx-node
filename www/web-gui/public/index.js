@@ -10,6 +10,7 @@ const Account = {
 		index: Number
 	},
 	template: `
+		<account-header :index="index"></account-header>
 		<account-menu :index="index"></account-menu>
 		<router-view :index="index"></router-view>
 	`
@@ -117,30 +118,9 @@ app.component('wallet-summary', {
 
 app.component('account-menu', {
 	props: {
-		index: Number,
-		account: Object
-	},
-	data() {
-		return {
-			data: {}
-		}
-	},
-	methods: {
-		update() {
-			fetch('/api/wallet/get_account?index=' + this.index)
-				.then(response => response.json())
-				.then(data => this.data = data);
-		}
-	},
-	created() {
-		if(this.account) {
-			this.data = this.account
-		} else {
-			this.update()
-		}
+		index: Number
 	},
 	template: `
-		<account-header :index="index" :account="data"></account-header>
 		<div class="ui four item large menu">
 			<router-link class="item" :class="{active: $route.meta.page == 'balance'}" :to="'/wallet/account/' + index">Balance</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'nfts'}" :to="'/wallet/account/' + index + '/nfts'">NFTs</router-link>
@@ -157,11 +137,22 @@ app.component('account-header', {
 	},
 	data() {
 		return {
+			info: {
+				name: null,
+				index: null
+			},
 			address: null
 		}
 	},
 	methods: {
 		update() {
+			if(this.account) {
+				this.info = this.account
+			} else {
+				fetch('/api/wallet/get_account?index=' + this.index)
+					.then(response => response.json())
+					.then(data => this.info = data);
+			}
 			fetch('/wapi/wallet/address?index=' + this.index)
 				.then(response => response.json())
 				.then(data => this.address = data[0]);
@@ -174,8 +165,8 @@ app.component('account-header', {
 		<div class="ui large labels">
 			<div class="ui horizontal label">Account</div>
 			<div class="ui horizontal label">#{{index}}</div>
-			<div class="ui horizontal label">{{account.name}}</div>
-			<div class="ui horizontal label">{{account.index}}</div>
+			<div class="ui horizontal label">{{info.name}}</div>
+			<div class="ui horizontal label">{{info.index}}</div>
 			<div class="ui horizontal label">{{address}}</div>
 		</div>
 		`
@@ -188,7 +179,8 @@ app.component('account-summary', {
 	},
 	template: `
 		<div>
-			<account-menu :index="index" :account="account"></account-menu>
+			<account-header :index="index" :account="account"></account-header>
+			<account-menu :index="index"></account-menu>
 			<account-balance :index="index"></account-balance>
 		</div>
 		`
