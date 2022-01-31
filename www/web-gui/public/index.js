@@ -60,7 +60,7 @@ const routes = [
 		meta: { is_wallet: true },
 		props: route => ({ index: parseInt(route.params.index) }),
 		children: [
-			{ path: '', component: AccountHome, meta: { page: 'account' } },
+			{ path: '', component: AccountHome, meta: { page: 'balance' } },
 			{ path: 'nfts', component: AccountNFTs, meta: { page: 'nfts' } },
 			{ path: 'contracts', component: AccountContracts, meta: { page: 'contracts' } },
 			{ path: 'addresses', component: AccountAddresses, meta: { page: 'addresses' } },
@@ -108,7 +108,6 @@ app.component('wallet-summary', {
 	},
 	created() {
 		this.update()
-		console.log(this)
 	},
 	template: `
 		<div class="ui raised segment" v-for="item in data" :key="item[0]">
@@ -139,7 +138,7 @@ app.component('account-menu', {
 	template: `
 		<account-header :index="index" :account="account"></account-header>
 		<div class="ui four item large menu">
-			<router-link class="item" :class="{active: $route.meta.page == 'account'}" :to="'/wallet/account/' + index">Account</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'balance'}" :to="'/wallet/account/' + index">Balance</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'nfts'}" :to="'/wallet/account/' + index + '/nfts'">NFTs</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'contracts'}" :to="'/wallet/account/' + index + '/contracts'">Contracts</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'addresses'}" :to="'/wallet/account/' + index + '/addresses'">Addresses</router-link>
