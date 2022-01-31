@@ -128,7 +128,7 @@ app.component('account-menu', {
 		index: Number
 	},
 	template: `
-		<div class="ui five item large menu">
+		<div class="ui five item large pointing menu">
 			<router-link class="item" :class="{active: $route.meta.page == 'balance'}" :to="'/wallet/account/' + index">Balance</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'nfts'}" :to="'/wallet/account/' + index + '/nfts'">NFTs</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'contracts'}" :to="'/wallet/account/' + index + '/contracts'">Contracts</router-link>
