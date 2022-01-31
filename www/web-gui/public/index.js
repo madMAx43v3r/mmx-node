@@ -48,6 +48,14 @@ const AccountAddresses = {
 		<account-addresses :index="index" :limit="1000"></account-addresses>
 	`
 }
+const AccountSend = {
+	props: {
+		index: Number
+	},
+	template: `
+		<account-send-form :index="index"></account-send-form>
+	`
+}
 
 const Exchange = { template: '<h1>Exchange</h1>TODO' }
 const Settings = { template: '<h1>Settings</h1>TODO' }
@@ -64,6 +72,7 @@ const routes = [
 			{ path: 'nfts', component: AccountNFTs, meta: { page: 'nfts' } },
 			{ path: 'contracts', component: AccountContracts, meta: { page: 'contracts' } },
 			{ path: 'addresses', component: AccountAddresses, meta: { page: 'addresses' } },
+			{ path: 'send', component: AccountSend, meta: { page: 'send' } },
 		]
 	},
 	{ path: '/exchange', component: Exchange, meta: { is_exchange: true } },
@@ -84,9 +93,7 @@ app.component('main-menu', {
 				<router-link class="item" :class="{active: $route.meta.is_wallet}" to="/wallet/">Wallet</router-link>
 				<router-link class="item" :class="{active: $route.meta.is_exchange}" to="/exchange/">Exchange</router-link>
 				<div class="right menu">
-					<div class="item">
-						<router-link class="ui button" to="/settings/">Settings</router-link>
-					</div>
+					<router-link class="item" to="/settings/">Settings</router-link>
 				</div>
 			</div>
 		</div>
@@ -121,11 +128,12 @@ app.component('account-menu', {
 		index: Number
 	},
 	template: `
-		<div class="ui four item large menu">
+		<div class="ui five item large menu">
 			<router-link class="item" :class="{active: $route.meta.page == 'balance'}" :to="'/wallet/account/' + index">Balance</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'nfts'}" :to="'/wallet/account/' + index + '/nfts'">NFTs</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'contracts'}" :to="'/wallet/account/' + index + '/contracts'">Contracts</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'addresses'}" :to="'/wallet/account/' + index + '/addresses'">Addresses</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'send'}" :to="'/wallet/account/' + index + '/send'">Send</router-link>
 		</div>
 		`
 })
@@ -415,6 +423,58 @@ app.component('account-addresses', {
 			</tr>
 			</tbody>
 		</table>
+		`
+})
+
+app.component('account-send-form', {
+	props: {
+		index: Number
+	},
+	mounted() {
+		$('.ui.dropdown').dropdown();
+	},
+	template: `
+		<div class="ui raised segment">
+		<form class="ui form">
+			<input type="hidden" name="index" :value="index">
+			<div class="field">
+				<label>Destination</label>
+				<div class="ui selection dropdown">
+					<i class="dropdown icon"></i>
+					<div class="default text">Select</div>
+					<div class="menu">
+						<div class="item" data-value="">Address Input</div>
+						<div class="item" data-value="mmx1nn8u9etvnghq7x8atj2y55he76z9yvxalc9t3nx8ym0xqr4yuzvsdf8jp8">Account #0 (Default) [0] (mmx1nn8u9etvnghq7x8atj2y55he76z9yvxalc9t3nx8ym0xqr4yuzvsdf8jp8)</div>
+					</div>
+				</div>
+			</div>
+			<div class="field">
+				<label>Destination Address</label>
+				<input type="text" name="target" placeholder="mmx1..."/>
+			</div>
+			<div class="two fields">
+				<div class="four wide field">
+					<label>Amount</label>
+					<input type="text" name="amount" placeholder="1.234"/>
+				</div>
+				<div class="twelve wide field">
+					<label>Currency</label>
+					<div class="ui selection dropdown">
+						<input type="hidden" name="currency">
+						<i class="dropdown icon"></i>
+						<div class="default text">Select</div>
+						<div class="menu">
+							<div class="item" data-value="MMX">MMX</div>
+							<div class="item" data-value="mmx1qyhvjyeumwzc6wfpkhg5cd936eprlmju3d5tj6zyyfdvrx7g2xrs6tvg3e">MMT [mmx1qyhvjyeumwzc6wfpkhg5cd936eprlmju3d5tj6zyyfdvrx7g2xrs6tvg3e]</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="ui basic clearing segment">
+				<div class="ui submit right floated primary button disabled">Send</div>
+			</div>
+		</form>
+		</div>
 		`
 })
 
