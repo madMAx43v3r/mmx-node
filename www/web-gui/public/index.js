@@ -3,7 +3,7 @@ const app = Vue.createApp({
 })
 
 const Wallet = {
-	template: '<wallet-summary/>'
+	template: '<wallet-summary></wallet-summary>'
 }
 
 const Account = {
@@ -11,7 +11,7 @@ const Account = {
 		index: Number
 	},
 	template: `
-		<account-menu :index="index"/>
+		<account-menu :index="index"></account-menu>
 		<router-view :index="index"></router-view>
 	`
 }
@@ -20,8 +20,8 @@ const AccountHome = {
 		index: Number
 	},
 	template: `
-		<account-balance :index="index"/>
-		<account-history :index="index" :limit="200"/>
+		<account-balance :index="index"></account-balance>
+		<account-history :index="index" :limit="200"></account-history>
 	`
 }
 const AccountNFTs = {
@@ -29,7 +29,7 @@ const AccountNFTs = {
 		index: Number
 	},
 	template: `
-		<nft-table :index="index"/>
+		<nft-table :index="index"></nft-table>
 	`
 }
 const AccountContracts = {
@@ -37,7 +37,7 @@ const AccountContracts = {
 		index: Number
 	},
 	template: `
-		<account-contracts :index="index"/>
+		<account-contracts :index="index"></account-contracts>
 	`
 }
 const AccountAddresses = {
@@ -45,7 +45,7 @@ const AccountAddresses = {
 		index: Number
 	},
 	template: `
-		<account-addresses :index="index" :limit="1000"/>
+		<account-addresses :index="index" :limit="1000"></account-addresses>
 	`
 }
 
@@ -54,18 +54,19 @@ const Settings = { template: '<h1>Settings</h1>TODO' }
 
 const routes = [
 	{ path: '/', redirect: "/wallet" },
-	{ path: '/wallet', component: Wallet },
+	{ path: '/wallet', component: Wallet, meta: { is_wallet: true } },
 	{ path: '/wallet/account/:index',
 		component: Account,
+		meta: { is_wallet: true },
 		props: route => ({ index: parseInt(route.params.index) }),
 		children: [
-			{ path: '', component: AccountHome },
-			{ path: 'nfts', component: AccountNFTs },
-			{ path: 'contracts', component: AccountContracts },
-			{ path: 'addresses', component: AccountAddresses },
+			{ path: '', component: AccountHome, meta: { page: 'account' } },
+			{ path: 'nfts', component: AccountNFTs, meta: { page: 'nfts' } },
+			{ path: 'contracts', component: AccountContracts, meta: { page: 'contracts' } },
+			{ path: 'addresses', component: AccountAddresses, meta: { page: 'addresses' } },
 		]
 	},
-	{ path: '/exchange', component: Exchange },
+	{ path: '/exchange', component: Exchange, meta: { is_exchange: true } },
 	{ path: '/settings', component: Settings },
 ]
 
@@ -75,6 +76,22 @@ const router = VueRouter.createRouter({
 })
 
 app.use(router)
+
+app.component('main-menu', {
+	template: `
+		<div class="ui large top menu">
+			<div class="ui container">
+				<router-link class="item" :class="{active: $route.meta.is_wallet}" to="/wallet/">Wallet</router-link>
+				<router-link class="item" :class="{active: $route.meta.is_exchange}" to="/exchange/">Exchange</router-link>
+				<div class="right menu">
+					<div class="item">
+						<router-link class="ui button" to="/settings/">Settings</router-link>
+					</div>
+				</div>
+			</div>
+		</div>
+		`
+})
 
 app.component('wallet-summary', {
 	data() {
@@ -91,10 +108,11 @@ app.component('wallet-summary', {
 	},
 	created() {
 		this.update()
+		console.log(this)
 	},
 	template: `
 		<div class="ui raised segment" v-for="item in data" :key="item[0]">
-			<account-summary :index="item[0]" :account="item[1]"/>
+			<account-summary :index="item[0]" :account="item[1]"></account-summary>
 		</div>
 		`
 })
@@ -119,12 +137,12 @@ app.component('account-menu', {
 		this.update()
 	},
 	template: `
-		<account-header :index="index" :account="account"/>
+		<account-header :index="index" :account="account"></account-header>
 		<div class="ui four item large menu">
-			<router-link class="item" :to="'/wallet/account/' + index">Account</router-link>
-			<router-link class="item" :to="'/wallet/account/' + index + '/nfts'">NFTs</router-link>
-			<router-link class="item" :to="'/wallet/account/' + index + '/contracts'">Contracts</router-link>
-			<router-link class="item" :to="'/wallet/account/' + index + '/addresses'">Addresses</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'account'}" :to="'/wallet/account/' + index">Account</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'nfts'}" :to="'/wallet/account/' + index + '/nfts'">NFTs</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'contracts'}" :to="'/wallet/account/' + index + '/contracts'">Contracts</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'addresses'}" :to="'/wallet/account/' + index + '/addresses'">Addresses</router-link>
 		</div>
 		`
 })
@@ -166,8 +184,8 @@ app.component('account-summary', {
 	},
 	template: `
 		<div>
-			<account-header :index="index" :account="account"/>
-			<account-balance :index="index"/>
+			<account-header :index="index" :account="account"></account-header>
+			<account-balance :index="index"></account-balance>
 		</div>
 		`
 })
@@ -192,7 +210,7 @@ app.component('account-balance', {
 		this.update()
 	},
 	template: `
-		<balance-table :balances="balances"/>
+		<balance-table :balances="balances"></balance-table>
 		`
 })
 
@@ -337,7 +355,7 @@ app.component('contract-summary', {
 				</template>
 				</tbody>
 			</table>
-			<balance-table :balances="balances" v-if="balances.length"/>
+			<balance-table :balances="balances" v-if="balances.length"></balance-table>
 		</div>
 		`
 })
@@ -362,7 +380,7 @@ app.component('account-contracts', {
 		this.update()
 	},
 	template: `
-		<contract-summary v-for="item in data" :key="item[0]" :address="item[0]" :contract="item[1]"/>
+		<contract-summary v-for="item in data" :key="item[0]" :address="item[0]" :contract="item[1]"></contract-summary>
 		`
 })
 
@@ -404,4 +422,4 @@ app.component('account-addresses', {
 		`
 })
 
-app.mount('#content');
+app.mount('#content')
