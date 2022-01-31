@@ -171,13 +171,13 @@ app.component('account-header', {
 		this.update()
 	},
 	template: `
-		<router-link class="ui large labels" :to="'/wallet/account/' + index">
+		<div class="ui large labels">
 			<div class="ui horizontal label">Account</div>
 			<div class="ui horizontal label">#{{index}}</div>
 			<div class="ui horizontal label">{{account.name}}</div>
 			<div class="ui horizontal label">{{account.index}}</div>
 			<div class="ui horizontal label">{{address}}</div>
-		</router-link>
+		</div>
 		`
 })
 
