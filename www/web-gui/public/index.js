@@ -117,25 +117,30 @@ app.component('wallet-summary', {
 
 app.component('account-menu', {
 	props: {
-		index: Number
+		index: Number,
+		account: Object
 	},
 	data() {
 		return {
-			account: []
+			data: {}
 		}
 	},
 	methods: {
 		update() {
 			fetch('/api/wallet/get_account?index=' + this.index)
 				.then(response => response.json())
-				.then(data => this.account = data);
+				.then(data => this.data = data);
 		}
 	},
 	created() {
-		this.update()
+		if(this.account) {
+			this.data = this.account
+		} else {
+			this.update()
+		}
 	},
 	template: `
-		<account-header :index="index" :account="account"></account-header>
+		<account-header :index="index" :account="data"></account-header>
 		<div class="ui four item large menu">
 			<router-link class="item" :class="{active: $route.meta.page == 'balance'}" :to="'/wallet/account/' + index">Balance</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'nfts'}" :to="'/wallet/account/' + index + '/nfts'">NFTs</router-link>
@@ -183,7 +188,7 @@ app.component('account-summary', {
 	},
 	template: `
 		<div>
-			<account-header :index="index" :account="account"></account-header>
+			<account-menu :index="index" :account="account"></account-menu>
 			<account-balance :index="index"></account-balance>
 		</div>
 		`
