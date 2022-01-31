@@ -432,6 +432,7 @@ app.component('account-send-form', {
 	},
 	mounted() {
 		$('.ui.dropdown').dropdown();
+		$('.ui.checkbox').checkbox();
 	},
 	template: `
 		<div class="ui raised segment">
@@ -470,9 +471,13 @@ app.component('account-send-form', {
 					</div>
 				</div>
 			</div>
-			<div class="ui basic clearing segment">
-				<div class="ui submit right floated primary button disabled">Send</div>
+			<div class="inline field">
+				<div class="ui toggle checkbox">
+					<input type="checkbox" tabindex="0" class="hidden">
+					<label>Confirm</label>
+				</div>
 			</div>
+			<div class="ui submit primary button disabled">Send</div>
 		</form>
 		</div>
 		`
