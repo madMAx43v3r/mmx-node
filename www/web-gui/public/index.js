@@ -5,7 +5,6 @@ const app = Vue.createApp({
 const Wallet = {
 	template: '<wallet-summary></wallet-summary>'
 }
-
 const Account = {
 	props: {
 		index: Number
@@ -296,9 +295,9 @@ app.component('account-history', {
 		<table class="ui table striped">
 			<thead>
 			<tr>
-				<th class="collapsing">Height</th>
-				<th class="collapsing">Type</th>
-				<th class="collapsing">Amount</th>
+				<th>Height</th>
+				<th>Type</th>
+				<th>Amount</th>
 				<th>Token</th>
 				<th>Address</th>
 				<th>Time</th>
