@@ -170,6 +170,7 @@ app.component('account-header', {
 			<div class="ui horizontal label">Account</div>
 			<div class="ui horizontal label">#{{index}}</div>
 			<div class="ui horizontal label">{{account.name}}</div>
+			<div class="ui horizontal label">{{account.index}}</div>
 			<div class="ui horizontal label">{{address}}</div>
 		</router-link>
 		`
