@@ -825,10 +825,41 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "wallet/history?index|limit|offset|since");
 		}
 	}
+	else if(sub_path == "/wallet/send") {
+		if(request->payload.size()) {
+			vnx::Object args;
+			vnx::from_string(request->payload.as_string(), args);
+			const auto currency = args["currency"].to<addr_t>();
+			node->get_contract(currency,
+				[this, request_id, args, currency](std::shared_ptr<const Contract> contract) {
+					try {
+						uint64_t amount = 0;
+						const auto value = args["amount"].to<double>();
+						if(auto token = std::dynamic_pointer_cast<const contract::Token>(contract)) {
+							amount = value * pow(10, token->decimals);
+						} else if(currency == addr_t()) {
+							amount = value * pow(10, params->decimals);
+						} else {
+							throw std::logic_error("invalid currency");
+						}
+						wallet->send(args["index"].to<uint32_t>(), amount, args["dst_addr"].to<addr_t>(), currency, args["options"].to<spend_options_t>(),
+							[this, request_id](const hash_t& txid) {
+								respond(request_id, vnx::Variant(txid.to_string()));
+							},
+							std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+					} catch(std::exception& ex) {
+						respond_ex(request_id, ex);
+					}
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "POST wallet/send {...}");
+		}
+	}
 	else {
 		std::vector<std::string> options = {
 			"node/info", "header", "headers", "block", "transaction", "transactions", "address", "contract",
-			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/history"
+			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/history", "wallet/send"
 		};
 		respond_status(request_id, 404, vnx::to_string(options));
 	}
