@@ -47,7 +47,7 @@ protected:
 
 	std::vector<std::string> get_servers() const override;
 
-	vnx::optional<open_order_t> get_order(const txio_key_t& key) const override;
+	open_order_t get_order(const txio_key_t& key) const override;
 
 	std::shared_ptr<const OfferBundle> get_offer(const uint64_t& id) const override;
 

@@ -108,13 +108,13 @@ std::vector<std::string> Client::get_servers() const
 	return list;
 }
 
-vnx::optional<open_order_t> Client::get_order(const txio_key_t& key) const
+open_order_t Client::get_order(const txio_key_t& key) const
 {
 	auto iter = order_map.find(key);
 	if(iter != order_map.end()) {
 		return iter->second;
 	}
-	return nullptr;
+	throw std::runtime_error("no such order");
 }
 
 std::shared_ptr<OfferBundle> Client::find_offer(const uint64_t& id) const

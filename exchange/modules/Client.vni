@@ -28,7 +28,7 @@ module Client extends vnx.addons.MsgServer {
 	ulong_fraction_t get_price(string server, addr_t want, amount_t have) const async;
 	
 	
-	optional<open_order_t> get_order(txio_key_t key) const;
+	open_order_t get_order(txio_key_t key) const;
 	
 	OfferBundle* get_offer(ulong id) const;
 	
