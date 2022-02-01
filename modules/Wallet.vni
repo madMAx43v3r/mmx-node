@@ -58,9 +58,7 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	ulong get_balance(uint index, addr_t currency, uint min_confirm = 0) const;
 	
-	map<addr_t, ulong> get_balances(uint index, uint min_confirm = 0) const;
-	
-	map<addr_t, ulong> get_reserved_balances(uint index, uint min_confirm = 0) const;
+	map<addr_t, balance_t> get_balances(uint index, uint min_confirm = 0) const;
 	
 	map<addr_t, Contract*> get_contracts(uint index) const;
 	

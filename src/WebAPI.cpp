@@ -565,7 +565,7 @@ void WebAPI::render_address(const vnx::request_id_t& request_id, const addr_t& a
 		});
 }
 
-void WebAPI::render_balance(const vnx::request_id_t& request_id, const std::map<addr_t, uint64_t>& balances) const
+void WebAPI::render_balance(const vnx::request_id_t& request_id, const std::map<addr_t, balance_t>& balances) const
 {
 	std::unordered_set<addr_t> addr_set;
 	for(const auto& entry : balances) {
@@ -581,7 +581,16 @@ void WebAPI::render_balance(const vnx::request_id_t& request_id, const std::map<
 					if(currency->is_nft) {
 						nfts.push_back(entry.first.to_string());
 					} else {
-						rows.push_back(visitor.to_output(entry.first, entry.second));
+						vnx::Object row;
+						row["total"] = entry.second.total * pow(10, -currency->decimals);
+						row["spendable"] = entry.second.spendable * pow(10, -currency->decimals);
+						row["reserved"] = entry.second.reserved * pow(10, -currency->decimals);
+						row["symbol"] = currency->symbol;
+						row["contract"] = entry.first.to_string();
+						if(entry.first == addr_t()) {
+							row["is_native"] = true;
+						}
+						rows.push_back(row);
 					}
 				}
 			}

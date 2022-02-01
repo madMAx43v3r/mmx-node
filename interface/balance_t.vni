@@ -1,0 +1,11 @@
+package mmx;
+
+struct balance_t {
+	
+	ulong spendable;
+	
+	ulong reserved;
+	
+	ulong total;
+	
+}

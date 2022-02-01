@@ -344,26 +344,20 @@ uint64_t Wallet::get_balance(const uint32_t& index, const addr_t& contract, cons
 	return total;
 }
 
-std::map<addr_t, uint64_t> Wallet::get_balances(const uint32_t& index, const uint32_t& min_confirm) const
-{
-	std::map<addr_t, uint64_t> amounts;
-	for(const auto& entry : get_utxo_list(index, min_confirm)) {
-		const auto& utxo = entry.output;
-		amounts[utxo.contract] += utxo.amount;
-	}
-	return amounts;
-}
-
-std::map<addr_t, uint64_t> Wallet::get_reserved_balances(const uint32_t& index, const uint32_t& min_confirm) const
+std::map<addr_t, balance_t> Wallet::get_balances(const uint32_t& index, const uint32_t& min_confirm) const
 {
 	const auto wallet = get_wallet(index);
 
-	std::map<addr_t, uint64_t> amounts;
+	std::map<addr_t, balance_t> amounts;
 	for(const auto& entry : get_utxo_list(index, min_confirm)) {
+		const auto& utxo = entry.output;
+		auto& out = amounts[utxo.contract];
 		if(wallet->reserved_set.count(entry.key)) {
-			const auto& utxo = entry.output;
-			amounts[utxo.contract] += utxo.amount;
+			out.reserved += utxo.amount;
+		} else {
+			out.spendable += utxo.amount;
 		}
+		out.total += utxo.amount;
 	}
 	return amounts;
 }

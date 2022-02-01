@@ -58,7 +58,7 @@ private:
 
 	void render_address(const vnx::request_id_t& request_id, const addr_t& address, const std::map<addr_t, uint64_t>& balances) const;
 
-	void render_balance(const vnx::request_id_t& request_id, const std::map<addr_t, uint64_t>& balances) const;
+	void render_balance(const vnx::request_id_t& request_id, const std::map<addr_t, balance_t>& balances) const;
 
 	void render_history(const vnx::request_id_t& request_id, size_t limit, const size_t offset, std::vector<tx_entry_t> history) const;
 

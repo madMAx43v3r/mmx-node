@@ -178,7 +178,7 @@ int main(int argc, char** argv)
 						const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(contract);
 						if(token || entry.first == mmx::addr_t()) {
 							const auto decimals = token ? token->decimals : params->decimals;
-							std::cout << "Balance: " << entry.second / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.second << ")";
+							std::cout << "Balance: " << entry.second.total / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.second.total << ")";
 							if(token) {
 								std::cout << " [" << entry.first << "]";
 							}
