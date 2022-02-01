@@ -633,7 +633,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			[this, request_id](std::shared_ptr<const NetworkInfo> info) {
 				vnx::Object res;
 				if(info) {
+					auto context = get_context();
 					res = render(*info);
+					res["time"] = context->get_time(info->height);
 					res["block_reward"] = to_amount(info->block_reward, params->decimals);
 				}
 				respond(request_id, res);
