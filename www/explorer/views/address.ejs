@@ -13,21 +13,21 @@
 
 <% balances.forEach(function(entry) { %>
 <tr>
-<td><b><%= entry.balance %></b></td>
-<td><%= entry.currency %></td>
+<td><b><%= entry.value %></b></td>
+<td><%= entry.symbol %></td>
 <td>
-<% if(entry.contract) { %>
+<% if(!entry.is_native) { %>
 <a href="/address?addr=<%= entry.contract %>"><%= entry.contract %></a>
 <% } %>
 </td>
 </tr>
 <% }); %>
 
-<% nfts.forEach(function(address) { %>
+<% nfts.forEach(function(entry) { %>
 <tr>
 <td>N/A</td>
 <td>NFT</td>
-<td><a href="/address?addr=<%= address %>"><%= address %></a></td>
+<td><a href="/address?addr=<%= entry.contract %>"><%= entry.contract %></a></td>
 </tr>
 <% }); %>
 </tbody>
@@ -58,9 +58,9 @@
 <tr>
 <td><%= entry.height %></td>
 <td><%= entry.type %></td>
-<td><b><%= entry.amount %></b></td>
+<td><b><%= entry.value %></b></td>
 <td>
-<% if(entry.contract) { %>
+<% if(entry.symbol != "MMX") { %>
 <a href="/address?addr=<%= entry.contract %>"><%= entry.symbol %></a>
 <% } else { %>
 MMX

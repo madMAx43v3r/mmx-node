@@ -31,7 +31,7 @@ function to_addr(array) {
 }
 
 function to_balance(amount) {
-	return (amount / 1e6).toLocaleString(undefined, {maximumFractionDigits: 6});
+	return amount / 1e6;
 }
 
 function on_error(res, ex)
@@ -167,57 +167,21 @@ function on_recent_transactions(res, ret)
 async function on_address(res, address)
 {
 	let ret = null;
-	ret = await axios.get(host + '/api/node/get_total_balances?addresses=' + address);
-	const all_balances = ret.data;
-	ret = await axios.get(host + '/api/node/get_history_for?addresses=' + address);
+	ret = await axios.get(host + '/wapi/address?id=' + address);
+	const contract = ret.data.contract;
+	const all_balances = ret.data.balances;
+	ret = await axios.get(host + '/wapi/address/history?limit=10000&id=' + address);
 	const history = ret.data;
 	
 	let nfts = [];
 	let balances = [];
 	for(const entry of all_balances) {
-		const currency = to_addr(entry[0]);
-		const contract = await get_contract(currency);
-		if(contract) {
-			if(contract.__type == "mmx.contract.NFT") {
-				nfts.push(currency);
-			}
-			if(contract.__type == "mmx.contract.Token") {
-				let out = {};
-				out.balance = entry[1];
-				out.currency = contract.symbol;
-				out.contract = currency;
-				balances.push(out);
-			}
+		if(entry.is_nft) {
+			nfts.push(entry);
 		} else {
-			let out = {};
-			out.balance = entry[1];
-			out.currency = "MMX";
-			balances.push(out);
+			balances.push(entry);
 		}
 	}
-	for(const entry of history) {
-		entry.txid = to_hex(entry.txid);
-		entry.amount = to_balance(entry.amount);
-		entry.address = to_addr(entry.address);
-		entry.contract = to_addr(entry.contract);
-		const contract = await get_contract(entry.contract);
-		if(contract) {
-			if(contract.__type == "mmx.contract.NFT") {
-				entry.amount = 1;
-				entry.symbol = "NFT";
-			}
-			if(contract.__type == "mmx.contract.Token") {
-				entry.symbol = contract.symbol;
-			}
-		} else {
-			entry.symbol = "MMX";
-			entry.contract = null;
-		}
-	}
-	for(const entry of balances) {
-		entry.balance = to_balance(entry.balance);
-	}
-	const contract = await get_contract(address);
 	
 	let args = {};
 	args.body = 'address';
@@ -225,7 +189,7 @@ async function on_address(res, address)
 	args.nfts = nfts;
 	args.balances = balances;
 	args.contract = contract;
-	args.history = history.reverse();
+	args.history = history;
 	res.render('index', args);
 }
 
