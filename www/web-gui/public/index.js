@@ -430,54 +430,145 @@ app.component('account-send-form', {
 	props: {
 		index: Number
 	},
+	data() {
+		return {
+			accounts: [],
+			balances: [],
+			amount: null,
+			confirmed: false,
+			options: {
+				split_output: 1
+			}
+		}
+	},
+	methods: {
+		update() {
+			fetch('/api/wallet/get_all_accounts')
+				.then(response => response.json())
+				.then(data => {
+					for(const entry of data) {
+						const info = entry[1];
+						info.account = entry[0];
+						fetch('/wapi/wallet/address?limit=1&index=' + entry[0])
+							.then(response => response.json())
+							.then(data => {
+								info.address = data[0];
+								this.accounts.push(info);
+								this.accounts.sort(function(a, b){return a.account - b.account});
+							});
+					}
+				});
+			fetch('/wapi/wallet/balance?index=' + this.index)
+				.then(response => response.json())
+				.then(data => this.balances = data.balances);
+		},
+		submit() {
+			this.confirmed = false;
+			const req = {};
+			req.index = this.index;
+			req.amount = parseFloat(this.amount);
+			req.currency = $('#currency_input').val();
+			req.dst_addr = $('#target').val();
+			req.options = this.options;
+			fetch('/wapi/wallet/send', {body: JSON.stringify(req), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						response.json().then(data => {
+							alert("Transaction ID: " + data)
+						});
+					} else {
+						response.text().then(data => {
+							alert("Send failed with: " + data)
+						});
+					}
+					this.update();
+					this.$refs.balance.update();
+				});
+		}
+	},
+	created() {
+		this.update()
+	},
 	mounted() {
-		$('.ui.dropdown').dropdown();
+		$('#address').dropdown({
+			onChange: function(value, text) {
+				if(value) {
+					$('#target').val(value).prop('disabled', true);
+				} else {
+					$('#target').val("").prop('disabled', false);
+				}
+			}
+		});
+		$('#currency').dropdown({
+			onChange: function(value, text) {}
+		});
 		$('.ui.checkbox').checkbox();
 	},
+	watch: {
+		amount(value) {
+			// TODO: validate
+		},
+		confirmed(value) {
+			if(value) {
+				$('#submit').removeClass('disabled');
+			} else {
+				$('#submit').addClass('disabled');
+			}
+		}
+	},
 	template: `
+		<account-balance :index="index" ref="balance"></account-balance>
 		<div class="ui raised segment">
-		<form class="ui form">
-			<input type="hidden" name="index" :value="index">
+		<form class="ui form" id="form">
 			<div class="field">
 				<label>Destination</label>
-				<div class="ui selection dropdown">
+				<div class="ui selection dropdown" id="address">
 					<i class="dropdown icon"></i>
 					<div class="default text">Select</div>
 					<div class="menu">
 						<div class="item" data-value="">Address Input</div>
-						<div class="item" data-value="mmx1nn8u9etvnghq7x8atj2y55he76z9yvxalc9t3nx8ym0xqr4yuzvsdf8jp8">Account #0 (Default) [0] (mmx1nn8u9etvnghq7x8atj2y55he76z9yvxalc9t3nx8ym0xqr4yuzvsdf8jp8)</div>
+						<div v-for="item in accounts" :key="item.account" class="item" :data-value="item.address">
+							Account #{{item.account}} ({{item.name}}) [{{item.index}}] ({{item.address}})
+						</div>
 					</div>
 				</div>
 			</div>
-			<div class="field">
-				<label>Destination Address</label>
-				<input type="text" name="target" placeholder="mmx1..."/>
+			<div class="two fields">
+				<div class="fourteen wide field">
+					<label>Destination Address</label>
+					<input type="text" id="target" placeholder="mmx1..."/>
+				</div>
+				<div class="two wide field">
+					<label>Output Split</label>
+					<input type="text" v-model.number="options.split_output" style="text-align: right"/>
+				</div>
 			</div>
 			<div class="two fields">
 				<div class="four wide field">
 					<label>Amount</label>
-					<input type="text" name="amount" placeholder="1.234"/>
+					<input type="text" v-model="amount" placeholder="1.23" style="text-align: right"/>
 				</div>
 				<div class="twelve wide field">
 					<label>Currency</label>
-					<div class="ui selection dropdown">
-						<input type="hidden" name="currency">
+					<div class="ui selection dropdown" id="currency">
+						<input type="hidden" id="currency_input">
 						<i class="dropdown icon"></i>
 						<div class="default text">Select</div>
 						<div class="menu">
-							<div class="item" data-value="MMX">MMX</div>
-							<div class="item" data-value="mmx1qyhvjyeumwzc6wfpkhg5cd936eprlmju3d5tj6zyyfdvrx7g2xrs6tvg3e">MMT [mmx1qyhvjyeumwzc6wfpkhg5cd936eprlmju3d5tj6zyyfdvrx7g2xrs6tvg3e]</div>
+							<div v-for="item in balances" :key="item.contract" class="item" :data-value="item.contract">
+								{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
+							</div>
 						</div>
 					</div>
 				</div>
 			</div>
 			<div class="inline field">
 				<div class="ui toggle checkbox">
-					<input type="checkbox" tabindex="0" class="hidden">
+					<input type="checkbox" class="hidden" v-model="confirmed">
 					<label>Confirm</label>
 				</div>
 			</div>
-			<div class="ui submit primary button disabled">Send</div>
+			<div @click="submit" class="ui submit primary button disabled" id="submit">Send</div>
 		</form>
 		</div>
 		`
