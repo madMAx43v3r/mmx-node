@@ -842,11 +842,23 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 						} else {
 							throw std::logic_error("invalid currency");
 						}
-						wallet->send(args["index"].to<uint32_t>(), amount, args["dst_addr"].to<addr_t>(), currency, args["options"].to<spend_options_t>(),
-							[this, request_id](const hash_t& txid) {
-								respond(request_id, vnx::Variant(txid.to_string()));
-							},
-							std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+						const auto index = args["index"].to<uint32_t>();
+						const auto dst_addr = args["dst_addr"].to<addr_t>();
+						const auto options = args["options"].to<spend_options_t>();
+						if(args.field.count("src_addr")) {
+							const auto src_addr = args["src_addr"].to<addr_t>();
+							wallet->send_from(index, amount, dst_addr, src_addr, currency, options,
+								[this, request_id](const hash_t& txid) {
+									respond(request_id, vnx::Variant(txid.to_string()));
+								},
+								std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+						} else {
+							wallet->send(index, amount, dst_addr, currency, options,
+								[this, request_id](const hash_t& txid) {
+									respond(request_id, vnx::Variant(txid.to_string()));
+								},
+								std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+						}
 					} catch(std::exception& ex) {
 						respond_ex(request_id, ex);
 					}
