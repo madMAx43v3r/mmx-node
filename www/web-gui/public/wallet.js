@@ -27,12 +27,15 @@ app.component('account-menu', {
 		index: Number
 	},
 	template: `
-		<div class="ui five item large pointing menu">
+		<div class="ui large pointing menu">
 			<router-link class="item" :class="{active: $route.meta.page == 'balance'}" :to="'/wallet/account/' + index">Balance</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'nfts'}" :to="'/wallet/account/' + index + '/nfts'">NFTs</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'contracts'}" :to="'/wallet/account/' + index + '/contracts'">Contracts</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'addresses'}" :to="'/wallet/account/' + index + '/addresses'">Addresses</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'send'}" :to="'/wallet/account/' + index + '/send'">Send</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'offer'}" :to="'/wallet/account/' + index + '/offer'">Offer</router-link>
+			<a class="item">Details</a>
+			<a class="right item"><i class="cog icon"></i></a>
 		</div>
 		`
 })
@@ -70,10 +73,8 @@ app.component('account-header', {
 	},
 	template: `
 		<div class="ui large labels">
-			<div class="ui horizontal label">Account</div>
-			<div class="ui horizontal label">#{{index}}</div>
-			<div class="ui horizontal label">{{info.name}}</div>
-			<div class="ui horizontal label">{{info.index}}</div>
+			<div class="ui horizontal label">Account #{{index}}</div>
+			<div class="ui horizontal label">[{{info.index}}] {{info.name}}</div>
 			<div class="ui horizontal label">{{address}}</div>
 		</div>
 		`
@@ -113,7 +114,26 @@ app.component('account-balance', {
 		this.update()
 	},
 	template: `
-		<balance-table :balances="balances"></balance-table>
+		<table class="ui table">
+			<thead>
+			<tr>
+				<th class="two wide">Balance</th>
+				<th class="two wide">Reserved</th>
+				<th class="two wide">Spendable</th>
+				<th class="two wide">Token</th>
+				<th>Contract</th>
+			</tr>
+			</thead>
+			<tbody>
+			<tr v-for="item in balances" :key="item.contract">
+				<td>{{item.total}}</td>
+				<td>{{item.reserved}}</td>
+				<td>{{item.spendable}}</td>
+				<td>{{item.symbol}}</td>
+				<td>{{item.is_native ? '' : item.contract}}</td>
+			</tr>
+			</tbody>
+		</table>
 		`
 })
 
@@ -427,7 +447,7 @@ app.component('account-send-form', {
 					<div class="menu">
 						<div class="item" data-value="">Address Input</div>
 						<div v-for="item in accounts" :key="item.account" class="item" :data-value="item.address">
-							Account #{{item.account}} ({{item.name}}) [{{item.index}}] ({{item.address}})
+							Account #{{item.account}} ([{{item.index}}] {{item.name}}) ({{item.address}})
 						</div>
 					</div>
 				</div>
@@ -468,6 +488,136 @@ app.component('account-send-form', {
 				</div>
 			</div>
 			<div @click="submit" class="ui submit primary button disabled" id="submit">Send</div>
+		</form>
+		</div>
+		`
+})
+
+app.component('account-offer-form', {
+	props: {
+		index: Number
+	},
+	data() {
+		return {
+			balances: [],
+			bid_amount: null,
+			ask_amount: null,
+			confirmed: false
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/wallet/balance?index=' + this.index)
+				.then(response => response.json())
+				.then(data => this.balances = data.balances);
+		},
+		submit() {
+			this.confirmed = false;
+			const req = {};
+			req.index = this.index;
+			fetch('/wapi/wallet/offer', {body: JSON.stringify(req), method: "post"})
+				.then(response => {
+					if(!response.ok) {
+						response.text().then(data => {
+							alert("Failed with: " + data)
+						});
+					}
+					this.update();
+					this.$refs.balance.update();
+				});
+		}
+	},
+	created() {
+		this.update()
+	},
+	mounted() {
+		$('#bid_select').dropdown({
+			onChange: function(value, text) {}
+		});
+		$('#ask_select').dropdown({
+			onChange: function(value, text) {
+				if(value) {
+					$('#ask_currency_input').val(value).prop('disabled', true);
+				} else {
+					$('#ask_currency_input').val("").prop('disabled', false);
+				}
+			}
+		});
+		$('.ui.checkbox').checkbox();
+	},
+	watch: {
+		ask_amount(value) {
+			// TODO: validate
+		},
+		bid_amount(value) {
+			// TODO: validate
+		},
+		confirmed(value) {
+			if(value) {
+				$('#submit').removeClass('disabled');
+			} else {
+				$('#submit').addClass('disabled');
+			}
+		}
+	},
+	template: `
+		<account-balance :index="index" ref="balance"></account-balance>
+		<div class="ui raised segment">
+		<form class="ui form" id="form">
+			<div class="two fields">
+				<div class="four wide field">
+					<label>Bid Amount</label>
+					<input type="text" v-model.number="bid_amount" placeholder="1.23" style="text-align: right"/>
+				</div>
+				<div class="twelve wide field">
+					<label>Bid Currency</label>
+					<div class="ui selection dropdown" id="bid_select">
+						<input type="hidden" id="bid_currency">
+						<i class="dropdown icon"></i>
+						<div class="default text">Select</div>
+						<div class="menu">
+							<div v-for="item in balances" :key="item.contract" class="item" :data-value="item.contract">
+								{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="field">
+				<label>Ask Currency</label>
+				<div class="ui selection dropdown" id="ask_select">
+					<input type="hidden" id="ask_currency">
+					<i class="dropdown icon"></i>
+					<div class="default text">Select</div>
+					<div class="menu">
+						<div class="item" data-value="">Contract Input</div>
+						<div v-for="item in balances" :key="item.contract" class="item" :data-value="item.contract">
+							{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="two fields">
+				<div class="four wide field">
+					<label>Ask Amount</label>
+					<input type="text" v-model.number="ask_amount" placeholder="1.23" style="text-align: right"/>
+				</div>
+				<div class="two wide field">
+					<label>Ask Symbol</label>
+					<input type="text" id="ask_symbol"/>
+				</div>
+				<div class="ten wide field">
+					<label>Ask Currency Contract</label>
+					<input type="text" id="ask_currency_input" placeholder="mmx1..."/>
+				</div>
+			</div>
+			<div class="inline field">
+				<div class="ui toggle checkbox">
+					<input type="checkbox" class="hidden" v-model="confirmed">
+					<label>Confirm</label>
+				</div>
+			</div>
+			<div @click="submit" class="ui submit primary button disabled" id="submit">Offer</div>
 		</form>
 		</div>
 		`

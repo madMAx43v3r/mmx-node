@@ -56,6 +56,14 @@ const AccountSend = {
 		<account-send-form :index="index"></account-send-form>
 	`
 }
+const AccountOffer = {
+	props: {
+		index: Number
+	},
+	template: `
+		<account-offer-form :index="index"></account-offer-form>
+	`
+}
 
 const Exchange = { template: '<h1>Exchange</h1>TODO' }
 const Settings = { template: '<h1>Settings</h1>TODO' }
@@ -73,6 +81,7 @@ const routes = [
 			{ path: 'contracts', component: AccountContracts, meta: { page: 'contracts' } },
 			{ path: 'addresses', component: AccountAddresses, meta: { page: 'addresses' } },
 			{ path: 'send', component: AccountSend, meta: { page: 'send' } },
+			{ path: 'offer', component: AccountOffer, meta: { page: 'offer' } },
 		]
 	},
 	{ path: '/exchange', component: Exchange, meta: { is_exchange: true } },
