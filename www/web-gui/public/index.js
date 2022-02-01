@@ -466,7 +466,7 @@ app.component('account-send-form', {
 			this.confirmed = false;
 			const req = {};
 			req.index = this.index;
-			req.amount = parseFloat(this.amount);
+			req.amount = this.amount;
 			req.currency = $('#currency_input').val();
 			req.dst_addr = $('#target').val();
 			req.options = this.options;
@@ -546,7 +546,7 @@ app.component('account-send-form', {
 			<div class="two fields">
 				<div class="four wide field">
 					<label>Amount</label>
-					<input type="text" v-model="amount" placeholder="1.23" style="text-align: right"/>
+					<input type="text" v-model.number="amount" placeholder="1.23" style="text-align: right"/>
 				</div>
 				<div class="twelve wide field">
 					<label>Currency</label>
