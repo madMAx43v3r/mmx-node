@@ -88,7 +88,7 @@ public:
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_order(const ::mmx::txio_key_t& key = ::mmx::txio_key_t(), 
-			const std::function<void(const vnx::optional<::mmx::exchange::open_order_t>&)>& _callback = std::function<void(const vnx::optional<::mmx::exchange::open_order_t>&)>(),
+			const std::function<void(const ::mmx::exchange::open_order_t&)>& _callback = std::function<void(const ::mmx::exchange::open_order_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_offer(const uint64_t& id = 0, 
@@ -143,7 +143,7 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::exchange::matched_order_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_match;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::exchange::order_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_orders;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::ulong_fraction_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_price;
-	std::unordered_map<uint64_t, std::pair<std::function<void(const vnx::optional<::mmx::exchange::open_order_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_order;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::exchange::open_order_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_order;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::exchange::OfferBundle>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_offer;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::shared_ptr<const ::mmx::exchange::OfferBundle>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_all_offers;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_cancel_offer;

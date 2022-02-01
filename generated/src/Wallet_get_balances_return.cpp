@@ -4,6 +4,7 @@
 #include <mmx/package.hxx>
 #include <mmx/Wallet_get_balances_return.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/balance_t.hxx>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -13,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_get_balances_return::VNX_TYPE_HASH(0xe041fcc6b3606c0full);
-const vnx::Hash64 Wallet_get_balances_return::VNX_CODE_HASH(0x4b945b0e49ad3632ull);
+const vnx::Hash64 Wallet_get_balances_return::VNX_CODE_HASH(0xc93898d8dd6b139full);
 
 vnx::Hash64 Wallet_get_balances_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -114,18 +115,20 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_balances_return::static_create_type_co
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.get_balances.return";
 	type_code->type_hash = vnx::Hash64(0xe041fcc6b3606c0full);
-	type_code->code_hash = vnx::Hash64(0x4b945b0e49ad3632ull);
+	type_code->code_hash = vnx::Hash64(0xc93898d8dd6b139full);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
 	type_code->native_size = sizeof(::mmx::Wallet_get_balances_return);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Wallet_get_balances_return>(); };
+	type_code->depends.resize(1);
+	type_code->depends[0] = ::mmx::balance_t::static_get_type_code();
 	type_code->fields.resize(1);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "_ret_0";
-		field.code = {13, 5, 11, 32, 1, 4};
+		field.code = {13, 5, 11, 32, 1, 19, 0};
 	}
 	type_code->build();
 	return type_code;

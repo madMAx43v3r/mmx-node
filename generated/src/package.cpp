@@ -151,8 +151,6 @@
 #include <mmx/Wallet_get_history_return.hxx>
 #include <mmx/Wallet_get_master_seed.hxx>
 #include <mmx/Wallet_get_master_seed_return.hxx>
-#include <mmx/Wallet_get_reserved_balances.hxx>
-#include <mmx/Wallet_get_reserved_balances_return.hxx>
 #include <mmx/Wallet_get_stxo_list.hxx>
 #include <mmx/Wallet_get_stxo_list_return.hxx>
 #include <mmx/Wallet_get_stxo_list_for.hxx>
@@ -181,6 +179,7 @@
 #include <mmx/Wallet_sign_off_return.hxx>
 #include <mmx/WebAPIBase.hxx>
 #include <mmx/account_t.hxx>
+#include <mmx/balance_t.hxx>
 #include <mmx/node_info_t.hxx>
 #include <mmx/node_type_e.hxx>
 #include <mmx/peer_info_t.hxx>
@@ -1944,30 +1943,6 @@ void type<::mmx::Wallet_get_master_seed_return>::create_dynamic_code(std::vector
 	code.push_back(CODE_OBJECT);
 }
 
-const TypeCode* type<::mmx::Wallet_get_reserved_balances>::get_type_code() {
-	return mmx::vnx_native_type_code_Wallet_get_reserved_balances;
-}
-
-void type<::mmx::Wallet_get_reserved_balances>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::Wallet_get_reserved_balances());
-}
-
-void type<::mmx::Wallet_get_reserved_balances>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_reserved_balances& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::Wallet_get_reserved_balances_return>::get_type_code() {
-	return mmx::vnx_native_type_code_Wallet_get_reserved_balances_return;
-}
-
-void type<::mmx::Wallet_get_reserved_balances_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::Wallet_get_reserved_balances_return());
-}
-
-void type<::mmx::Wallet_get_reserved_balances_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_reserved_balances_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
 const TypeCode* type<::mmx::Wallet_get_stxo_list>::get_type_code() {
 	return mmx::vnx_native_type_code_Wallet_get_stxo_list;
 }
@@ -2303,6 +2278,18 @@ void type<::mmx::addr_t>::create_dynamic_code(std::vector<uint16_t>& code) {
 void type<::mmx::addr_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::addr_t& value, bool special) {
 	const std::vector<int> tmp = {11, 32, 1};
 	code.insert(code.end(), tmp.begin(), tmp.end());}
+
+const TypeCode* type<::mmx::balance_t>::get_type_code() {
+	return mmx::vnx_native_type_code_balance_t;
+}
+
+void type<::mmx::balance_t>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::balance_t());
+}
+
+void type<::mmx::balance_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::balance_t& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
 
 const TypeCode* type<::mmx::bls_pubkey_t>::get_type_code() {
 	return nullptr;
@@ -2786,8 +2773,6 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Wallet_get_history_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_get_master_seed::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_get_master_seed_return::static_create_type_code());
-	vnx::register_type_code(::mmx::Wallet_get_reserved_balances::static_create_type_code());
-	vnx::register_type_code(::mmx::Wallet_get_reserved_balances_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_get_stxo_list::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_get_stxo_list_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_get_stxo_list_for::static_create_type_code());
@@ -2816,6 +2801,7 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Wallet_sign_off_return::static_create_type_code());
 	vnx::register_type_code(::mmx::WebAPIBase::static_create_type_code());
 	vnx::register_type_code(::mmx::account_t::static_create_type_code());
+	vnx::register_type_code(::mmx::balance_t::static_create_type_code());
 	vnx::register_type_code(::mmx::node_info_t::static_create_type_code());
 	vnx::register_type_code(::mmx::node_type_e::static_create_type_code());
 	vnx::register_type_code(::mmx::peer_info_t::static_create_type_code());
@@ -2994,8 +2980,6 @@ const vnx::TypeCode* const vnx_native_type_code_Wallet_get_history = vnx::get_ty
 const vnx::TypeCode* const vnx_native_type_code_Wallet_get_history_return = vnx::get_type_code(vnx::Hash64(0xb1b8c9a446a81b1full));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_get_master_seed = vnx::get_type_code(vnx::Hash64(0x8fddd77ece4d295bull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_get_master_seed_return = vnx::get_type_code(vnx::Hash64(0x8b0f38e742e132f0ull));
-const vnx::TypeCode* const vnx_native_type_code_Wallet_get_reserved_balances = vnx::get_type_code(vnx::Hash64(0x1d7a6c15c0262b11ull));
-const vnx::TypeCode* const vnx_native_type_code_Wallet_get_reserved_balances_return = vnx::get_type_code(vnx::Hash64(0xf46798cd106281c8ull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_get_stxo_list = vnx::get_type_code(vnx::Hash64(0x62f2ba31c40eed7full));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_get_stxo_list_return = vnx::get_type_code(vnx::Hash64(0xa0bdc240bd749ddeull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_get_stxo_list_for = vnx::get_type_code(vnx::Hash64(0xf1a2de0ec45bc8ecull));
@@ -3024,6 +3008,7 @@ const vnx::TypeCode* const vnx_native_type_code_Wallet_sign_off = vnx::get_type_
 const vnx::TypeCode* const vnx_native_type_code_Wallet_sign_off_return = vnx::get_type_code(vnx::Hash64(0x4b2ee7febe4ec00aull));
 const vnx::TypeCode* const vnx_native_type_code_WebAPIBase = vnx::get_type_code(vnx::Hash64(0xfe90ce601fcc0cc6ull));
 const vnx::TypeCode* const vnx_native_type_code_account_t = vnx::get_type_code(vnx::Hash64(0xc0c163f453729a7ull));
+const vnx::TypeCode* const vnx_native_type_code_balance_t = vnx::get_type_code(vnx::Hash64(0x613173c7e5ce65b4ull));
 const vnx::TypeCode* const vnx_native_type_code_node_info_t = vnx::get_type_code(vnx::Hash64(0xda45b5e3a527588eull));
 const vnx::TypeCode* const vnx_native_type_code_node_type_e = vnx::get_type_code(vnx::Hash64(0xa5de458f1ce5539aull));
 const vnx::TypeCode* const vnx_native_type_code_peer_info_t = vnx::get_type_code(vnx::Hash64(0xce0ff32e89625afbull));

@@ -14,7 +14,7 @@ namespace exchange {
 
 
 const vnx::Hash64 Client_get_order_return::VNX_TYPE_HASH(0xebfed8231a01bf25ull);
-const vnx::Hash64 Client_get_order_return::VNX_CODE_HASH(0xd17a27a8af233216ull);
+const vnx::Hash64 Client_get_order_return::VNX_CODE_HASH(0x41addaa25981cf89ull);
 
 vnx::Hash64 Client_get_order_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -115,7 +115,7 @@ std::shared_ptr<vnx::TypeCode> Client_get_order_return::static_create_type_code(
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.Client.get_order.return";
 	type_code->type_hash = vnx::Hash64(0xebfed8231a01bf25ull);
-	type_code->code_hash = vnx::Hash64(0xd17a27a8af233216ull);
+	type_code->code_hash = vnx::Hash64(0x41addaa25981cf89ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
@@ -128,7 +128,7 @@ std::shared_ptr<vnx::TypeCode> Client_get_order_return::static_create_type_code(
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "_ret_0";
-		field.code = {33, 19, 0};
+		field.code = {19, 0};
 	}
 	type_code->build();
 	return type_code;

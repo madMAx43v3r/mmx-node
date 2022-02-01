@@ -67,7 +67,7 @@ public:
 	
 	::mmx::ulong_fraction_t get_price(const std::string& server = "", const ::mmx::addr_t& want = ::mmx::addr_t(), const ::mmx::exchange::amount_t& have = ::mmx::exchange::amount_t());
 	
-	vnx::optional<::mmx::exchange::open_order_t> get_order(const ::mmx::txio_key_t& key = ::mmx::txio_key_t());
+	::mmx::exchange::open_order_t get_order(const ::mmx::txio_key_t& key = ::mmx::txio_key_t());
 	
 	std::shared_ptr<const ::mmx::exchange::OfferBundle> get_offer(const uint64_t& id = 0);
 	

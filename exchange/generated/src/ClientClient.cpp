@@ -260,14 +260,14 @@ std::vector<::mmx::exchange::order_t> ClientClient::get_orders(const std::string
 	}
 }
 
-vnx::optional<::mmx::exchange::open_order_t> ClientClient::get_order(const ::mmx::txio_key_t& key) {
+::mmx::exchange::open_order_t ClientClient::get_order(const ::mmx::txio_key_t& key) {
 	auto _method = ::mmx::exchange::Client_get_order::create();
 	_method->key = key;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Client_get_order_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<vnx::optional<::mmx::exchange::open_order_t>>();
+		return _return_value->get_field_by_index(0).to<::mmx::exchange::open_order_t>();
 	} else {
 		throw std::logic_error("ClientClient: invalid return value");
 	}

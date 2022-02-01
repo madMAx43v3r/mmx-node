@@ -77,7 +77,7 @@ protected:
 	void get_orders_async_return(const vnx::request_id_t& _request_id, const std::vector<::mmx::exchange::order_t>& _ret_0) const;
 	virtual void get_price_async(const std::string& server, const ::mmx::addr_t& want, const ::mmx::exchange::amount_t& have, const vnx::request_id_t& _request_id) const = 0;
 	void get_price_async_return(const vnx::request_id_t& _request_id, const ::mmx::ulong_fraction_t& _ret_0) const;
-	virtual vnx::optional<::mmx::exchange::open_order_t> get_order(const ::mmx::txio_key_t& key) const = 0;
+	virtual ::mmx::exchange::open_order_t get_order(const ::mmx::txio_key_t& key) const = 0;
 	virtual std::shared_ptr<const ::mmx::exchange::OfferBundle> get_offer(const uint64_t& id) const = 0;
 	virtual std::vector<std::shared_ptr<const ::mmx::exchange::OfferBundle>> get_all_offers() const = 0;
 	virtual void cancel_offer(const uint64_t& id) = 0;

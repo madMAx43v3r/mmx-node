@@ -265,7 +265,7 @@ uint64_t ClientAsyncClient::get_price(const std::string& server, const ::mmx::ad
 	return _request_id;
 }
 
-uint64_t ClientAsyncClient::get_order(const ::mmx::txio_key_t& key, const std::function<void(const vnx::optional<::mmx::exchange::open_order_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t ClientAsyncClient::get_order(const ::mmx::txio_key_t& key, const std::function<void(const ::mmx::exchange::open_order_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::exchange::Client_get_order::create();
 	_method->key = key;
 	const auto _request_id = ++vnx_next_id;
@@ -938,7 +938,7 @@ int32_t ClientAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Client_get_order_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<vnx::optional<::mmx::exchange::open_order_t>>());
+					_callback(_value->get_field_by_index(0).to<::mmx::exchange::open_order_t>());
 				} else {
 					throw std::logic_error("ClientAsyncClient: invalid return value");
 				}

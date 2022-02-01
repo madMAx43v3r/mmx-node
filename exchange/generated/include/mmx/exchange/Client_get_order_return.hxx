@@ -15,7 +15,7 @@ namespace exchange {
 class Client_get_order_return : public ::vnx::Value {
 public:
 	
-	vnx::optional<::mmx::exchange::open_order_t> _ret_0;
+	::mmx::exchange::open_order_t _ret_0;
 	
 	typedef ::vnx::Value Super;
 	

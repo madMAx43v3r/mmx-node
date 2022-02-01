@@ -6,6 +6,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/balance_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -14,7 +15,7 @@ namespace mmx {
 class Wallet_get_balances_return : public ::vnx::Value {
 public:
 	
-	std::map<::mmx::addr_t, uint64_t> _ret_0;
+	std::map<::mmx::addr_t, ::mmx::balance_t> _ret_0;
 	
 	typedef ::vnx::Value Super;
 	

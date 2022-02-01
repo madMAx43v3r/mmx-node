@@ -35,8 +35,6 @@
 #include <mmx/Wallet_get_history_return.hxx>
 #include <mmx/Wallet_get_master_seed.hxx>
 #include <mmx/Wallet_get_master_seed_return.hxx>
-#include <mmx/Wallet_get_reserved_balances.hxx>
-#include <mmx/Wallet_get_reserved_balances_return.hxx>
 #include <mmx/Wallet_get_stxo_list.hxx>
 #include <mmx/Wallet_get_stxo_list_return.hxx>
 #include <mmx/Wallet_get_stxo_list_for.hxx>
@@ -65,6 +63,7 @@
 #include <mmx/Wallet_sign_off_return.hxx>
 #include <mmx/account_t.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/balance_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/spend_options_t.hxx>
 #include <mmx/stxo_entry_t.hxx>
@@ -473,7 +472,7 @@ uint64_t WalletClient::get_balance(const uint32_t& index, const ::mmx::addr_t& c
 	}
 }
 
-std::map<::mmx::addr_t, uint64_t> WalletClient::get_balances(const uint32_t& index, const uint32_t& min_confirm) {
+std::map<::mmx::addr_t, ::mmx::balance_t> WalletClient::get_balances(const uint32_t& index, const uint32_t& min_confirm) {
 	auto _method = ::mmx::Wallet_get_balances::create();
 	_method->index = index;
 	_method->min_confirm = min_confirm;
@@ -481,21 +480,7 @@ std::map<::mmx::addr_t, uint64_t> WalletClient::get_balances(const uint32_t& ind
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_balances_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, uint64_t>>();
-	} else {
-		throw std::logic_error("WalletClient: invalid return value");
-	}
-}
-
-std::map<::mmx::addr_t, uint64_t> WalletClient::get_reserved_balances(const uint32_t& index, const uint32_t& min_confirm) {
-	auto _method = ::mmx::Wallet_get_reserved_balances::create();
-	_method->index = index;
-	_method->min_confirm = min_confirm;
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_reserved_balances_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, uint64_t>>();
+		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, ::mmx::balance_t>>();
 	} else {
 		throw std::logic_error("WalletClient: invalid return value");
 	}

@@ -11,6 +11,7 @@
 #include <mmx/Transaction.hxx>
 #include <mmx/account_t.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/balance_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/spend_options_t.hxx>
 #include <mmx/stxo_entry_t.hxx>
@@ -100,9 +101,7 @@ public:
 	
 	uint64_t get_balance(const uint32_t& index = 0, const ::mmx::addr_t& currency = ::mmx::addr_t(), const uint32_t& min_confirm = 0);
 	
-	std::map<::mmx::addr_t, uint64_t> get_balances(const uint32_t& index = 0, const uint32_t& min_confirm = 0);
-	
-	std::map<::mmx::addr_t, uint64_t> get_reserved_balances(const uint32_t& index = 0, const uint32_t& min_confirm = 0);
+	std::map<::mmx::addr_t, ::mmx::balance_t> get_balances(const uint32_t& index = 0, const uint32_t& min_confirm = 0);
 	
 	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts(const uint32_t& index = 0);
 	
