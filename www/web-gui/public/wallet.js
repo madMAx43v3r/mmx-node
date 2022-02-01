@@ -534,15 +534,6 @@ app.component('account-offer-form', {
 		$('#bid_select').dropdown({
 			onChange: function(value, text) {}
 		});
-		$('#ask_select').dropdown({
-			onChange: function(value, text) {
-				if(value) {
-					$('#ask_currency_input').val(value).prop('disabled', true);
-				} else {
-					$('#ask_currency_input').val("").prop('disabled', false);
-				}
-			}
-		});
 		$('.ui.checkbox').checkbox();
 	},
 	watch: {
@@ -583,20 +574,6 @@ app.component('account-offer-form', {
 					</div>
 				</div>
 			</div>
-			<div class="field">
-				<label>Ask Currency</label>
-				<div class="ui selection dropdown" id="ask_select">
-					<input type="hidden" id="ask_currency">
-					<i class="dropdown icon"></i>
-					<div class="default text">Select</div>
-					<div class="menu">
-						<div class="item" data-value="">Contract Input</div>
-						<div v-for="item in balances" :key="item.contract" class="item" :data-value="item.contract">
-							{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
-						</div>
-					</div>
-				</div>
-			</div>
 			<div class="two fields">
 				<div class="four wide field">
 					<label>Ask Amount</label>
@@ -608,7 +585,7 @@ app.component('account-offer-form', {
 				</div>
 				<div class="ten wide field">
 					<label>Ask Currency Contract</label>
-					<input type="text" id="ask_currency_input" placeholder="mmx1..."/>
+					<input type="text" id="ask_currency" placeholder="mmx1..."/>
 				</div>
 			</div>
 			<div class="inline field">
