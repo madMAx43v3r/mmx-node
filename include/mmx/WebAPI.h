@@ -47,6 +47,9 @@ private:
 
 	void render_block(const vnx::request_id_t& request_id, std::shared_ptr<const Block> block) const;
 
+	void render_blocks(	const vnx::request_id_t& request_id, const size_t limit, const size_t offset,
+						std::shared_ptr<std::vector<vnx::Variant>> result, std::shared_ptr<const Block> block) const;
+
 	void render_transaction(const vnx::request_id_t& request_id, const vnx::optional<tx_info_t>& info) const;
 
 	void render_transactions(	const vnx::request_id_t& request_id, const size_t limit, const size_t offset,

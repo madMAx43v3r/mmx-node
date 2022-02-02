@@ -495,6 +495,21 @@ void WebAPI::render_block(const vnx::request_id_t& request_id, std::shared_ptr<c
 		});
 }
 
+void WebAPI::render_blocks(	const vnx::request_id_t& request_id, const size_t limit, const size_t offset,
+							std::shared_ptr<std::vector<vnx::Variant>> result, std::shared_ptr<const Block> block) const
+{
+	if(block) {
+		result->push_back(render_value(block, get_context()));
+	}
+	if(result->size() >= limit) {
+		respond(request_id, vnx::Variant(*result));
+		return;
+	}
+	node->get_block_at(offset,
+			std::bind(&WebAPI::render_blocks, this, request_id, limit, offset + 1, result, std::placeholders::_1),
+			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+}
+
 void WebAPI::render_transaction(const vnx::request_id_t& request_id, const vnx::optional<tx_info_t>& info) const
 {
 	if(!info) {
@@ -693,6 +708,25 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "block?hash|height");
 		}
 	}
+	else if(sub_path == "/blocks") {
+		const auto iter_limit = query.find("limit");
+		const auto iter_offset = query.find("offset");
+		if(iter_limit != query.end() && iter_offset != query.end()) {
+			const size_t limit = std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 1000), 0);
+			const size_t offset = vnx::from_string<int64_t>(iter_offset->second);
+			render_blocks(request_id, limit, offset, std::make_shared<std::vector<vnx::Variant>>(), nullptr);
+		} else if(iter_offset == query.end()) {
+			const uint32_t limit = iter_limit != query.end() ?
+					std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_limit->second), max_block_history), 0) : 20;
+			node->get_height(
+				[this, request_id, limit](const uint32_t& height) {
+					render_blocks(request_id, limit, height - std::min(limit, height) + 1, std::make_shared<std::vector<vnx::Variant>>(), nullptr);
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "headers?limit|offset");
+		}
+	}
 	else if(sub_path == "/transaction") {
 		const auto iter_id = query.find("id");
 		if(iter_id != query.end()) {
@@ -881,7 +915,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else {
 		std::vector<std::string> options = {
-			"node/info", "header", "headers", "block", "transaction", "transactions", "address", "contract",
+			"node/info", "header", "headers", "block", "blocks", "transaction", "transactions", "address", "contract",
 			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/history", "wallet/send"
 		};
 		respond_status(request_id, 404, vnx::to_string(options));
