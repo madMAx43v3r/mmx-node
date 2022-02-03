@@ -110,6 +110,10 @@ void WebAPI::update()
 				height_offset = height;
 			}
 		});
+
+	while(pending_offers.size() > 1000) {
+		pending_offers.erase(pending_offers.begin());
+	}
 }
 
 void WebAPI::handle(std::shared_ptr<const Block> block)
