@@ -72,16 +72,17 @@ void Client::main()
 
 	is_init = false;
 	Super::main();
-
-	std::unordered_map<uint32_t, std::vector<txio_key_t>> keys;
-	for(const auto& entry : order_map) {
-		keys[entry.second.wallet].push_back(entry.first);
-	}
-	for(const auto& entry : keys) {
-		try {
-			wallet->release(entry.first, entry.second);
-		} catch(...) {
-			break;
+	{
+		std::unordered_map<uint32_t, std::vector<txio_key_t>> keys;
+		for(const auto& entry : order_map) {
+			keys[entry.second.wallet].push_back(entry.first);
+		}
+		for(const auto& entry : keys) {
+			try {
+				wallet->release(entry.first, entry.second);
+			} catch(...) {
+				break;
+			}
 		}
 	}
 }
@@ -181,6 +182,7 @@ void Client::cancel_offer(const uint64_t& id)
 	}
 	offer_map.erase(iter);
 	wallet->release(offer->wallet, method->orders);
+	save_offers();
 }
 
 void Client::cancel_all()
@@ -306,11 +308,14 @@ void Client::place(std::shared_ptr<const OfferBundle> offer)
 		keys.push_back(entry.first);
 	}
 	wallet->reserve(offer->wallet, keys);
-	{
-		vnx::File file(storage_path + "offers.dat");
-		file.open("wb");
-		vnx::write_generic(file.out, offer_map);
-	}
+	save_offers();
+}
+
+void Client::save_offers() const
+{
+	vnx::File file(storage_path + "offers.dat");
+	file.open("wb");
+	vnx::write_generic(file.out, offer_map);
 }
 
 std::shared_ptr<const Transaction> Client::approve(std::shared_ptr<const Transaction> tx) const

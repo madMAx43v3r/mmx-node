@@ -96,6 +96,8 @@ private:
 
 	void connect();
 
+	void save_offers() const;
+
 	void add_peer(const std::string& address, const int sock);
 
 	void connect_task(const std::string& address) noexcept;
