@@ -55,8 +55,22 @@ void Client::main()
 
 	set_timer_millis(60 * 1000, std::bind(&Client::connect, this));
 
+	{
+		vnx::File file(storage_path + "offers.dat");
+		if(file.exists()) {
+			file.open("rb");
+			std::map<uint64_t, std::shared_ptr<OfferBundle>> offers;
+			vnx::read_generic(file.in, offers);
+			for(const auto& entry : offers) {
+				if(auto offer = entry.second) {
+					place(offer);
+				}
+			}
+		}
+	}
 	connect();
 
+	is_init = false;
 	Super::main();
 
 	std::unordered_map<uint32_t, std::vector<txio_key_t>> keys;
@@ -276,21 +290,27 @@ void Client::place(std::shared_ptr<const OfferBundle> offer)
 	for(const auto& entry : avail_server_map) {
 		send_offer(entry.second, offer);
 	}
+	next_offer_id = std::max(offer->id + 1, next_offer_id);
 	order_map.insert(offer->orders.begin(), offer->orders.end());
 	offer_map[offer->id] = vnx::clone(offer);
 
 	log(INFO) << "Placed offer " << offer->id << ", asking "
 			<< offer->ask << " [" << offer->pair.ask << "] for " << offer->bid << " [" << offer->pair.bid << "]"
 			<< " (" << avail_server_map.size() << " servers)";
-	if(avail_server_map.empty()) {
+
+	if(avail_server_map.empty() && !is_init) {
 		log(WARN) << "Not connected to any exchange servers at the moment!";
 	}
-
 	std::vector<txio_key_t> keys;
 	for(const auto& entry : offer->orders) {
 		keys.push_back(entry.first);
 	}
 	wallet->reserve(offer->wallet, keys);
+	{
+		vnx::File file(storage_path + "offers.dat");
+		file.open("wb");
+		vnx::write_generic(file.out, offer_map);
+	}
 }
 
 std::shared_ptr<const Transaction> Client::approve(std::shared_ptr<const Transaction> tx) const

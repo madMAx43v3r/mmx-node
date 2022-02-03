@@ -125,6 +125,7 @@ private:
 	std::shared_ptr<peer_t> get_server(const std::string& name) const;
 
 private:
+	bool is_init = true;
 	std::shared_ptr<NodeClient> node;
 	std::shared_ptr<WalletClient> wallet;
 

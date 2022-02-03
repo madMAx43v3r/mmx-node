@@ -102,6 +102,7 @@ int main(int argc, char** argv)
 		}
 		{
 			vnx::Handle<mmx::exchange::Client> module = new mmx::exchange::Client("ExchClient");
+			module->storage_path = root_path + module->storage_path;
 			module.start_detached();
 		}
 		{

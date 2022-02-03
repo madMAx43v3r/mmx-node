@@ -15,6 +15,8 @@ module Client extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	
 	map<string, string> server_map;			// [name => address]
 	
+	string storage_path;
+	
 	
 	vector<string> get_servers() const;
 	
