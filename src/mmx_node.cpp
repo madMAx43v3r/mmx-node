@@ -138,6 +138,7 @@ int main(int argc, char** argv)
 		module->components["/wapi/"] = "WebAPI";
 		module->components["/api/node/"] = "Node";
 		module->components["/api/wallet/"] = "Wallet";
+		module->components["/api/exchange/"] = "ExchClient";
 		module->components["/gui/"] = "FileServer_1";
 		module.start_detached();
 	}

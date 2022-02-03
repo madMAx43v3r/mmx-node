@@ -111,7 +111,7 @@ target_include_directories(mmx_chiapos
 )
 
 target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_addons vnx_base)
-target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_iface)
+target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_iface mmx_exchange)
 
 if(OpenCL_FOUND)
 	target_link_libraries(mmx_modules automy_basic_opencl)

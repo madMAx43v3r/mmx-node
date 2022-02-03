@@ -18,6 +18,7 @@
 #include <mmx/txio_key_t.hpp>
 
 #include <vnx/ThreadPool.h>
+#include <vnx/addons/HttpInterface.h>
 
 
 namespace mmx {
@@ -72,6 +73,12 @@ protected:
 	void get_orders_async(const std::string& server, const trade_pair_t& pair, const vnx::request_id_t& request_id) const override;
 
 	void get_price_async(const std::string& server, const addr_t& want, const amount_t& have, const vnx::request_id_t& request_id) const override;
+
+	void http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
+							const vnx::request_id_t& request_id) const override;
+
+	void http_request_chunk_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
+									const int64_t& offset, const int64_t& max_bytes, const vnx::request_id_t& request_id) const override;
 
 	void handle(std::shared_ptr<const Block> block) override;
 
@@ -131,9 +138,12 @@ private:
 	mutable std::unordered_map<uint32_t, std::function<void(std::shared_ptr<const vnx::Value>)>> return_map;
 
 	vnx::ThreadPool* threads = nullptr;
+	std::shared_ptr<vnx::addons::HttpInterface<Client>> http;
 
 	mutable uint32_t next_request_id = 0;
 	mutable uint64_t next_offer_id = 0;
+
+	friend class vnx::addons::HttpInterface<Client>;
 
 };
 

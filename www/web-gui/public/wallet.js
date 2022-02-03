@@ -502,6 +502,8 @@ app.component('account-offer-form', {
 			balances: [],
 			bid_amount: null,
 			ask_amount: null,
+			ask_symbol: "MMX",
+			ask_currency: null,
 			confirmed: false
 		}
 	},
@@ -515,15 +517,34 @@ app.component('account-offer-form', {
 			this.confirmed = false;
 			const req = {};
 			req.index = this.index;
-			fetch('/wapi/wallet/offer', {body: JSON.stringify(req), method: "post"})
+			const pair = {};
+			pair.bid = $('#bid_currency').val();
+			pair.ask = this.ask_currency;
+			req.pair = pair;
+			req.bid = this.bid_amount;
+			req.ask = this.ask_amount;
+			fetch('/wapi/exchange/offer', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
-					if(!response.ok) {
+					if(response.ok) {
+						response.json().then(data => {
+							fetch('/wapi/exchange/place?id=' + data.id)
+								.then(response => {
+										if(response.ok) {
+											this.update();
+											this.$refs.balance.update();
+											this.$refs.offers.update();
+										} else {
+											response.text().then(data => {
+												alert("Failed with: " + data)
+											});
+										}
+									});
+						});
+					} else {
 						response.text().then(data => {
 							alert("Failed with: " + data)
 						});
 					}
-					this.update();
-					this.$refs.balance.update();
 				});
 		}
 	},
@@ -542,6 +563,23 @@ app.component('account-offer-form', {
 		},
 		bid_amount(value) {
 			// TODO: validate
+		},
+		ask_currency(value) {
+			if(value) {
+				fetch('/wapi/contract?id=' + value)
+					.then(response => {
+						if(response.ok) {
+							response.json()
+								.then(data => {
+									this.ask_symbol = data.symbol
+								});
+						} else {
+							this.ask_symbol = "???"
+						}
+					});
+			} else {
+				this.ask_symbol = "MMX"
+			}
 		},
 		confirmed(value) {
 			if(value) {
@@ -581,11 +619,11 @@ app.component('account-offer-form', {
 				</div>
 				<div class="two wide field">
 					<label>Ask Symbol</label>
-					<input type="text" id="ask_symbol"/>
+					<input type="text" v-model="ask_symbol" disabled/>
 				</div>
 				<div class="ten wide field">
 					<label>Ask Currency Contract</label>
-					<input type="text" id="ask_currency" placeholder="mmx1..."/>
+					<input type="text" v-model="ask_currency" placeholder="mmx1..."/>
 				</div>
 			</div>
 			<div class="inline field">
@@ -597,5 +635,59 @@ app.component('account-offer-form', {
 			<div @click="submit" class="ui submit primary button disabled" id="submit">Offer</div>
 		</form>
 		</div>
+		<account-offers :index="index" ref="offers"></account-offers>
+		`
+})
+
+app.component('account-offers', {
+	props: {
+		index: Number
+	},
+	data() {
+		return {
+			data: []
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/exchange/offers?index=' + this.index)
+				.then(response => response.json())
+				.then(data => this.data = data);
+		},
+		cancel(id) {
+			fetch('/api/exchange/cancel_offer?id=' + id)
+				.then(response => this.update());
+		}
+	},
+	created() {
+		this.update()
+	},
+	template: `
+		<table class="ui table striped">
+			<thead>
+			<tr>
+				<th>ID</th>
+				<th>Bid Amount</th>
+				<th>Bid Symbol</th>
+				<th>Ask Amount</th>
+				<th>Ask Symbol</th>
+				<th>Status</th>
+				<th>Actions</th>
+			</tr>
+			</thead>
+			<tbody>
+			<tr v-for="item in data">
+				<td>{{item.id}}</td>
+				<td>{{item.bid_value}}</td>
+				<td>{{item.bid_symbol}}</td>
+				<td>{{item.ask_value}}</td>
+				<td>{{item.ask_symbol}}</td>
+				<td>{{100 * item.bid_sold / item.bid}} %</td>
+				<td>
+					<div class="ui tiny button" @click="cancel(item.id)">Cancel</div>
+				</td>
+			</tr>
+			</tbody>
+		</table>
 		`
 })

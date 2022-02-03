@@ -11,6 +11,7 @@
 #include <mmx/WebAPIBase.hxx>
 #include <mmx/NodeAsyncClient.hxx>
 #include <mmx/WalletAsyncClient.hxx>
+#include <mmx/exchange/ClientAsyncClient.hxx>
 #include <mmx/Block.hxx>
 
 
@@ -79,7 +80,10 @@ private:
 private:
 	std::shared_ptr<NodeAsyncClient> node;
 	std::shared_ptr<WalletAsyncClient> wallet;
+	std::shared_ptr<exchange::ClientAsyncClient> exch_client;
 	std::shared_ptr<const ChainParams> params;
+
+	mutable std::unordered_map<uint64_t, std::shared_ptr<const exchange::OfferBundle>> pending_offers;
 
 	int64_t time_offset = 0;		// [sec]
 	int64_t height_offset = 0;

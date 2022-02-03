@@ -6,7 +6,7 @@ import mmx.txio_key_t;
 import mmx.Transaction;
 import mmx.ulong_fraction_t;
 
-module Client extends vnx.addons.MsgServer {
+module Client extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	
 	vnx.TopicPtr input_blocks = "node.verified_blocks";
 	

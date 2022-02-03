@@ -91,8 +91,10 @@ void WebAPI::main()
 
 	node = std::make_shared<NodeAsyncClient>(node_server);
 	wallet = std::make_shared<WalletAsyncClient>(wallet_server);
+	exch_client = std::make_shared<exchange::ClientAsyncClient>(exchange_server);
 	add_async_client(node);
 	add_async_client(wallet);
+	add_async_client(exch_client);
 
 	set_timer_millis(1000, std::bind(&WebAPI::update, this));
 
@@ -399,6 +401,38 @@ public:
 		if(value && context) {
 			auto tmp = render(*value, context);
 			tmp["time"] = context->get_time(value->height);
+			set(tmp);
+		} else {
+			set(render(value));
+		}
+	}
+
+	void accept(const exchange::amount_t& value) {
+		auto tmp = render(value, context);
+		if(context) {
+			if(auto info = context->find_currency(value.currency)) {
+				tmp["symbol"] = info->symbol;
+				tmp["value"] = value.amount * pow(10, -info->decimals);
+			}
+		}
+		set(tmp);
+	}
+
+	void accept(const exchange::open_order_t& value) {
+		set(render(value, context));
+	}
+
+	void accept(std::shared_ptr<const exchange::OfferBundle> value) {
+		if(value && context) {
+			auto tmp = render(*value, context);
+			if(auto info = context->find_currency(value->pair.bid)) {
+				tmp["bid_symbol"] = info->symbol;
+				tmp["bid_value"] = value->bid * pow(10, -info->decimals);
+			}
+			if(auto info = context->find_currency(value->pair.ask)) {
+				tmp["ask_symbol"] = info->symbol;
+				tmp["ask_value"] = value->ask * pow(10, -info->decimals);
+			}
 			set(tmp);
 		} else {
 			set(render(value));
@@ -913,10 +947,93 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "POST wallet/send {...}");
 		}
 	}
+	else if(sub_path == "/exchange/offer") {
+		if(request->payload.size()) {
+			vnx::Object args;
+			vnx::from_string(request->payload.as_string(), args);
+
+			std::unordered_set<addr_t> addr_set;
+			const auto pair = args["pair"].to<exchange::trade_pair_t>();
+			addr_set.insert(pair.bid);
+			addr_set.insert(pair.ask);
+
+			get_context(addr_set, request_id,
+				[this, request_id, args, pair](std::shared_ptr<RenderContext> context) {
+					try {
+						uint64_t bid_amount = 0;
+						uint64_t ask_amount = 0;
+						if(auto currency = context->find_currency(pair.bid)) {
+							bid_amount = args["bid"].to<double>() * pow(10, currency->decimals);
+						} else {
+							throw std::logic_error("invalid bid currency");
+						}
+						if(auto currency = context->find_currency(pair.ask)) {
+							ask_amount = args["ask"].to<double>() * pow(10, currency->decimals);
+						} else {
+							throw std::logic_error("invalid ask currency");
+						}
+						const auto index = args["index"].to<uint32_t>();
+						exch_client->make_offer(index, pair, bid_amount, ask_amount,
+							[this, request_id, context](std::shared_ptr<const exchange::OfferBundle> offer) {
+								pending_offers[offer->id] = offer;
+								respond(request_id, render_value(offer, context));
+							},
+							std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+					} catch(std::exception& ex) {
+						respond_ex(request_id, ex);
+					}
+				});
+		} else {
+			respond_status(request_id, 404, "POST exchange/offer {...}");
+		}
+	}
+	else if(sub_path == "/exchange/place") {
+		const auto iter_id = query.find("id");
+		if(iter_id != query.end()) {
+			const uint64_t id = vnx::from_string_value<int64_t>(iter_id->second);
+			auto iter = pending_offers.find(id);
+			if(iter != pending_offers.end()) {
+				exch_client->place(iter->second,
+					std::bind(&WebAPI::respond_status, this, request_id, 200, ""),
+					std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+			} else {
+				respond_status(request_id, 404, "no such offer");
+			}
+		} else {
+			respond_status(request_id, 404, "wallet/place?id");
+		}
+	}
+	else if(sub_path == "/exchange/offers") {
+		vnx::optional<uint32_t> wallet;
+		const auto iter_wallet = query.find("wallet");
+		if(iter_wallet != query.end()) {
+			wallet = vnx::from_string_value<uint32_t>(iter_wallet->second);
+		}
+		exch_client->get_all_offers(
+			[this, request_id, wallet](const std::vector<std::shared_ptr<const exchange::OfferBundle>> offers) {
+				std::unordered_set<addr_t> addr_set;
+				for(auto offer : offers) {
+					addr_set.insert(offer->pair.bid);
+					addr_set.insert(offer->pair.ask);
+				}
+				get_context(addr_set, request_id,
+					[this, request_id, wallet, offers](std::shared_ptr<RenderContext> context) {
+						std::vector<vnx::Variant> res;
+						for(auto offer : offers) {
+							if(!wallet || offer->wallet == *wallet) {
+								res.push_back(render_value(offer, context));
+							}
+						}
+						respond(request_id, vnx::Variant(res));
+					});
+			},
+			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+	}
 	else {
 		std::vector<std::string> options = {
 			"node/info", "header", "headers", "block", "blocks", "transaction", "transactions", "address", "contract",
-			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/history", "wallet/send"
+			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/history", "wallet/send",
+			"exchange/offer", "exchange/place", "exchange/offers"
 		};
 		respond_status(request_id, 404, vnx::to_string(options));
 	}

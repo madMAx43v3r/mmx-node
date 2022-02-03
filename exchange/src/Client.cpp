@@ -48,6 +48,9 @@ void Client::main()
 	node = std::make_shared<NodeClient>(node_server);
 	wallet = std::make_shared<WalletClient>(wallet_server);
 
+	http = std::make_shared<vnx::addons::HttpInterface<Client>>(this, vnx_name);
+	add_async_client(http);
+
 	threads = new vnx::ThreadPool(1);
 
 	set_timer_millis(60 * 1000, std::bind(&Client::connect, this));
@@ -611,6 +614,18 @@ std::shared_ptr<Client::peer_t> Client::get_server(const std::string& name) cons
 		}
 	}
 	throw std::logic_error("no such server");
+}
+
+void Client::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
+								const vnx::request_id_t& request_id) const
+{
+	http->http_request(request, sub_path, request_id);
+}
+
+void Client::http_request_chunk_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
+										const int64_t& offset, const int64_t& max_bytes, const vnx::request_id_t& request_id) const
+{
+	throw std::logic_error("not implemented");
 }
 
 
