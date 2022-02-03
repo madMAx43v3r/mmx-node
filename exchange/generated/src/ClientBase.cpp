@@ -81,7 +81,7 @@ namespace exchange {
 
 
 const vnx::Hash64 ClientBase::VNX_TYPE_HASH(0x7d13a60fec8eb7f6ull);
-const vnx::Hash64 ClientBase::VNX_CODE_HASH(0x71ff3c54f2fcd499ull);
+const vnx::Hash64 ClientBase::VNX_CODE_HASH(0xb134b549f66c8c01ull);
 
 ClientBase::ClientBase(const std::string& _vnx_name)
 	:	MsgServer::MsgServer(_vnx_name)
@@ -90,6 +90,7 @@ ClientBase::ClientBase(const std::string& _vnx_name)
 	vnx::read_config(vnx_name + ".node_server", node_server);
 	vnx::read_config(vnx_name + ".wallet_server", wallet_server);
 	vnx::read_config(vnx_name + ".server_map", server_map);
+	vnx::read_config(vnx_name + ".storage_path", storage_path);
 }
 
 vnx::Hash64 ClientBase::get_type_hash() const {
@@ -123,6 +124,7 @@ void ClientBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[13], 13); vnx::accept(_visitor, node_server);
 	_visitor.type_field(_type_code->fields[14], 14); vnx::accept(_visitor, wallet_server);
 	_visitor.type_field(_type_code->fields[15], 15); vnx::accept(_visitor, server_map);
+	_visitor.type_field(_type_code->fields[16], 16); vnx::accept(_visitor, storage_path);
 	_visitor.type_end(*_type_code);
 }
 
@@ -144,6 +146,7 @@ void ClientBase::write(std::ostream& _out) const {
 	_out << ", \"node_server\": "; vnx::write(_out, node_server);
 	_out << ", \"wallet_server\": "; vnx::write(_out, wallet_server);
 	_out << ", \"server_map\": "; vnx::write(_out, server_map);
+	_out << ", \"storage_path\": "; vnx::write(_out, storage_path);
 	_out << "}";
 }
 
@@ -172,6 +175,7 @@ vnx::Object ClientBase::to_object() const {
 	_object["node_server"] = node_server;
 	_object["wallet_server"] = wallet_server;
 	_object["server_map"] = server_map;
+	_object["storage_path"] = storage_path;
 	return _object;
 }
 
@@ -203,6 +207,8 @@ void ClientBase::from_object(const vnx::Object& _object) {
 			_entry.second.to(show_warnings);
 		} else if(_entry.first == "stats_interval_ms") {
 			_entry.second.to(stats_interval_ms);
+		} else if(_entry.first == "storage_path") {
+			_entry.second.to(storage_path);
 		} else if(_entry.first == "tcp_keepalive") {
 			_entry.second.to(tcp_keepalive);
 		} else if(_entry.first == "tcp_no_delay") {
@@ -262,6 +268,9 @@ vnx::Variant ClientBase::get_field(const std::string& _name) const {
 	if(_name == "server_map") {
 		return vnx::Variant(server_map);
 	}
+	if(_name == "storage_path") {
+		return vnx::Variant(storage_path);
+	}
 	return vnx::Variant();
 }
 
@@ -298,6 +307,8 @@ void ClientBase::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(wallet_server);
 	} else if(_name == "server_map") {
 		_value.to(server_map);
+	} else if(_name == "storage_path") {
+		_value.to(storage_path);
 	}
 }
 
@@ -325,7 +336,7 @@ std::shared_ptr<vnx::TypeCode> ClientBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.Client";
 	type_code->type_hash = vnx::Hash64(0x7d13a60fec8eb7f6ull);
-	type_code->code_hash = vnx::Hash64(0x71ff3c54f2fcd499ull);
+	type_code->code_hash = vnx::Hash64(0xb134b549f66c8c01ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::exchange::ClientBase);
 	type_code->parents.resize(2);
@@ -357,7 +368,7 @@ std::shared_ptr<vnx::TypeCode> ClientBase::static_create_type_code() {
 	type_code->methods[22] = ::mmx::exchange::Client_approve::static_get_type_code();
 	type_code->methods[23] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
 	type_code->methods[24] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
-	type_code->fields.resize(16);
+	type_code->fields.resize(17);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -466,6 +477,12 @@ std::shared_ptr<vnx::TypeCode> ClientBase::static_create_type_code() {
 		field.is_extended = true;
 		field.name = "server_map";
 		field.code = {13, 3, 32, 32};
+	}
+	{
+		auto& field = type_code->fields[16];
+		field.is_extended = true;
+		field.name = "storage_path";
+		field.code = {32};
 	}
 	type_code->build();
 	return type_code;
@@ -754,6 +771,7 @@ void read(TypeInput& in, ::mmx::exchange::ClientBase& value, const TypeCode* typ
 			case 13: vnx::read(in, value.node_server, type_code, _field->code.data()); break;
 			case 14: vnx::read(in, value.wallet_server, type_code, _field->code.data()); break;
 			case 15: vnx::read(in, value.server_map, type_code, _field->code.data()); break;
+			case 16: vnx::read(in, value.storage_path, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -789,6 +807,7 @@ void write(TypeOutput& out, const ::mmx::exchange::ClientBase& value, const Type
 	vnx::write(out, value.node_server, type_code, type_code->fields[13].code.data());
 	vnx::write(out, value.wallet_server, type_code, type_code->fields[14].code.data());
 	vnx::write(out, value.server_map, type_code, type_code->fields[15].code.data());
+	vnx::write(out, value.storage_path, type_code, type_code->fields[16].code.data());
 }
 
 void read(std::istream& in, ::mmx::exchange::ClientBase& value) {

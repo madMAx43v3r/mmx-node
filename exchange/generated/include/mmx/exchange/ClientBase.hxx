@@ -35,6 +35,7 @@ public:
 	std::string node_server = "Node";
 	std::string wallet_server = "Wallet";
 	std::map<std::string, std::string> server_map;
+	std::string storage_path;
 	
 	typedef ::vnx::addons::MsgServer Super;
 	
@@ -102,7 +103,7 @@ protected:
 
 template<typename T>
 void ClientBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ClientBase>(16);
+	_visitor.template type_begin<ClientBase>(17);
 	_visitor.type_field("port", 0); _visitor.accept(port);
 	_visitor.type_field("host", 1); _visitor.accept(host);
 	_visitor.type_field("max_connections", 2); _visitor.accept(max_connections);
@@ -119,7 +120,8 @@ void ClientBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("node_server", 13); _visitor.accept(node_server);
 	_visitor.type_field("wallet_server", 14); _visitor.accept(wallet_server);
 	_visitor.type_field("server_map", 15); _visitor.accept(server_map);
-	_visitor.template type_end<ClientBase>(16);
+	_visitor.type_field("storage_path", 16); _visitor.accept(storage_path);
+	_visitor.template type_end<ClientBase>(17);
 }
 
 
