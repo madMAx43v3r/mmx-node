@@ -253,12 +253,12 @@ int main(int argc, char** argv)
 				}
 				else if(subject == "amount")
 				{
-					std::cout << wallet.get_balance(index, contract) << std::endl;
+					std::cout << wallet.get_balance(index, contract).total << std::endl;
 				}
 				else if(subject == "balance")
 				{
 					const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(contract));
-					std::cout << wallet.get_balance(index, contract) / pow(10, token ? token->decimals : params->decimals) << std::endl;
+					std::cout << wallet.get_balance(index, contract).total / pow(10, token ? token->decimals : params->decimals) << std::endl;
 				}
 				else if(subject == "contracts")
 				{

@@ -333,15 +333,23 @@ std::vector<tx_entry_t> Wallet::get_history(const uint32_t& index, const int32_t
 	return node->get_history_for(wallet->get_all_addresses(), since);
 }
 
-uint64_t Wallet::get_balance(const uint32_t& index, const addr_t& contract, const uint32_t& min_confirm) const
+balance_t Wallet::get_balance(const uint32_t& index, const addr_t& currency, const uint32_t& min_confirm) const
 {
-	uint64_t total = 0;
+	const auto wallet = get_wallet(index);
+
+	balance_t out;
 	for(const auto& entry : get_utxo_list(index, min_confirm)) {
-		if(entry.output.contract == contract) {
-			total += entry.output.amount;
+		const auto& utxo = entry.output;
+		if(utxo.contract == currency) {
+			if(wallet->reserved_set.count(entry.key)) {
+				out.reserved += utxo.amount;
+			} else {
+				out.spendable += utxo.amount;
+			}
+			out.total += utxo.amount;
 		}
 	}
-	return total;
+	return out;
 }
 
 std::map<addr_t, balance_t> Wallet::get_balances(const uint32_t& index, const uint32_t& min_confirm) const

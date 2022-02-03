@@ -67,7 +67,7 @@ protected:
 
 	std::vector<tx_entry_t> get_history(const uint32_t& index, const int32_t& since) const override;
 
-	uint64_t get_balance(const uint32_t& index, const addr_t& contract, const uint32_t& min_confirm) const override;
+	balance_t get_balance(const uint32_t& index, const addr_t& currency, const uint32_t& min_confirm) const override;
 
 	std::map<addr_t, balance_t> get_balances(const uint32_t& index, const uint32_t& min_confirm) const override;
 

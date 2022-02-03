@@ -56,7 +56,7 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	vector<tx_entry_t> get_history(uint index, int since) const;
 	
-	ulong get_balance(uint index, addr_t currency, uint min_confirm = 0) const;
+	balance_t get_balance(uint index, addr_t currency, uint min_confirm = 0) const;
 	
 	map<addr_t, balance_t> get_balances(uint index, uint min_confirm = 0) const;
 	
