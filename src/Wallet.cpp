@@ -280,11 +280,11 @@ std::vector<utxo_entry_t> Wallet::get_utxo_list(const uint32_t& index, const uin
 	return list;
 }
 
-std::vector<utxo_entry_t> Wallet::get_utxo_list_for(const uint32_t& index, const addr_t& contract, const uint32_t& min_confirm) const
+std::vector<utxo_entry_t> Wallet::get_utxo_list_for(const uint32_t& index, const addr_t& currency, const uint32_t& min_confirm) const
 {
 	std::vector<utxo_entry_t> res;
 	for(const auto& entry : get_utxo_list(index, min_confirm)) {
-		if(entry.output.contract == contract) {
+		if(entry.output.contract == currency) {
 			res.push_back(entry);
 		}
 	}
@@ -297,11 +297,11 @@ std::vector<stxo_entry_t> Wallet::get_stxo_list(const uint32_t& index) const
 	return node->get_stxo_list(wallet->get_all_addresses());
 }
 
-std::vector<stxo_entry_t> Wallet::get_stxo_list_for(const uint32_t& index, const addr_t& contract) const
+std::vector<stxo_entry_t> Wallet::get_stxo_list_for(const uint32_t& index, const addr_t& currency) const
 {
 	std::vector<stxo_entry_t> res;
 	for(const auto& entry : get_stxo_list(index)) {
-		if(entry.output.contract == contract) {
+		if(entry.output.contract == currency) {
 			res.push_back(entry);
 		}
 	}
