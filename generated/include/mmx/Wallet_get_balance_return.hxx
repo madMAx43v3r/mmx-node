@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_Wallet_get_balance_return_HXX_
 
 #include <mmx/package.hxx>
+#include <mmx/balance_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -13,7 +14,7 @@ namespace mmx {
 class Wallet_get_balance_return : public ::vnx::Value {
 public:
 	
-	uint64_t _ret_0 = 0;
+	::mmx::balance_t _ret_0;
 	
 	typedef ::vnx::Value Super;
 	

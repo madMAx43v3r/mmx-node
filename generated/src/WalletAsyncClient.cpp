@@ -464,7 +464,7 @@ uint64_t WalletAsyncClient::get_history(const uint32_t& index, const int32_t& si
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::get_balance(const uint32_t& index, const ::mmx::addr_t& currency, const uint32_t& min_confirm, const std::function<void(const uint64_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::get_balance(const uint32_t& index, const ::mmx::addr_t& currency, const uint32_t& min_confirm, const std::function<void(const ::mmx::balance_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_get_balance::create();
 	_method->index = index;
 	_method->currency = currency;
@@ -1557,7 +1557,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_balance_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<uint64_t>());
+					_callback(_value->get_field_by_index(0).to<::mmx::balance_t>());
 				} else {
 					throw std::logic_error("WalletAsyncClient: invalid return value");
 				}

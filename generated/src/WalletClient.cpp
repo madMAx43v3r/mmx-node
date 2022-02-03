@@ -457,7 +457,7 @@ std::vector<::mmx::tx_entry_t> WalletClient::get_history(const uint32_t& index, 
 	}
 }
 
-uint64_t WalletClient::get_balance(const uint32_t& index, const ::mmx::addr_t& currency, const uint32_t& min_confirm) {
+::mmx::balance_t WalletClient::get_balance(const uint32_t& index, const ::mmx::addr_t& currency, const uint32_t& min_confirm) {
 	auto _method = ::mmx::Wallet_get_balance::create();
 	_method->index = index;
 	_method->currency = currency;
@@ -466,7 +466,7 @@ uint64_t WalletClient::get_balance(const uint32_t& index, const ::mmx::addr_t& c
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_balance_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<uint64_t>();
+		return _return_value->get_field_by_index(0).to<::mmx::balance_t>();
 	} else {
 		throw std::logic_error("WalletClient: invalid return value");
 	}

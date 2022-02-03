@@ -99,7 +99,7 @@ public:
 	
 	std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index = 0, const int32_t& since = 0);
 	
-	uint64_t get_balance(const uint32_t& index = 0, const ::mmx::addr_t& currency = ::mmx::addr_t(), const uint32_t& min_confirm = 0);
+	::mmx::balance_t get_balance(const uint32_t& index = 0, const ::mmx::addr_t& currency = ::mmx::addr_t(), const uint32_t& min_confirm = 0);
 	
 	std::map<::mmx::addr_t, ::mmx::balance_t> get_balances(const uint32_t& index = 0, const uint32_t& min_confirm = 0);
 	
