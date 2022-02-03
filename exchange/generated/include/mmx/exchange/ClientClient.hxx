@@ -19,6 +19,9 @@
 #include <mmx/txio_key_t.hxx>
 #include <mmx/ulong_fraction_t.hxx>
 #include <vnx/TopicPtr.hpp>
+#include <vnx/addons/HttpData.hxx>
+#include <vnx/addons/HttpRequest.hxx>
+#include <vnx/addons/HttpResponse.hxx>
 #include <vnx/addons/MsgServer.h>
 
 
@@ -90,6 +93,10 @@ public:
 	void place_async(std::shared_ptr<const ::mmx::exchange::OfferBundle> offer = nullptr);
 	
 	std::shared_ptr<const ::mmx::Transaction> approve(std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
+	
+	std::shared_ptr<const ::vnx::addons::HttpResponse> http_request(std::shared_ptr<const ::vnx::addons::HttpRequest> request = nullptr, const std::string& sub_path = "");
+	
+	std::shared_ptr<const ::vnx::addons::HttpData> http_request_chunk(std::shared_ptr<const ::vnx::addons::HttpRequest> request = nullptr, const std::string& sub_path = "", const int64_t& offset = 0, const int64_t& max_bytes = 0);
 	
 };
 

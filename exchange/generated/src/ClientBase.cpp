@@ -64,6 +64,13 @@
 #include <vnx/ModuleInterface_vnx_stop.hxx>
 #include <vnx/ModuleInterface_vnx_stop_return.hxx>
 #include <vnx/TopicPtr.hpp>
+#include <vnx/addons/HttpComponent_http_request.hxx>
+#include <vnx/addons/HttpComponent_http_request_return.hxx>
+#include <vnx/addons/HttpComponent_http_request_chunk.hxx>
+#include <vnx/addons/HttpComponent_http_request_chunk_return.hxx>
+#include <vnx/addons/HttpData.hxx>
+#include <vnx/addons/HttpRequest.hxx>
+#include <vnx/addons/HttpResponse.hxx>
 #include <vnx/addons/MsgServer.h>
 
 #include <vnx/vnx.h>
@@ -324,7 +331,7 @@ std::shared_ptr<vnx::TypeCode> ClientBase::static_create_type_code() {
 	type_code->parents.resize(2);
 	type_code->parents[0] = ::vnx::addons::MsgServerBase::static_get_type_code();
 	type_code->parents[1] = ::vnx::addons::TcpServerBase::static_get_type_code();
-	type_code->methods.resize(23);
+	type_code->methods.resize(25);
 	type_code->methods[0] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
 	type_code->methods[1] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
 	type_code->methods[2] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
@@ -348,6 +355,8 @@ std::shared_ptr<vnx::TypeCode> ClientBase::static_create_type_code() {
 	type_code->methods[20] = ::mmx::exchange::Client_make_trade::static_get_type_code();
 	type_code->methods[21] = ::mmx::exchange::Client_place::static_get_type_code();
 	type_code->methods[22] = ::mmx::exchange::Client_approve::static_get_type_code();
+	type_code->methods[23] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
+	type_code->methods[24] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
 	type_code->fields.resize(16);
 	{
 		auto& field = type_code->fields[0];
@@ -612,6 +621,16 @@ std::shared_ptr<vnx::Value> ClientBase::vnx_call_switch(std::shared_ptr<const vn
 			_return_value->_ret_0 = approve(_args->tx);
 			return _return_value;
 		}
+		case 0xe0b6c38f619bad92ull: {
+			auto _args = std::static_pointer_cast<const ::vnx::addons::HttpComponent_http_request>(_method);
+			http_request_async(_args->request, _args->sub_path, _request_id);
+			return nullptr;
+		}
+		case 0x97e79d08440406d5ull: {
+			auto _args = std::static_pointer_cast<const ::vnx::addons::HttpComponent_http_request_chunk>(_method);
+			http_request_chunk_async(_args->request, _args->sub_path, _args->offset, _args->max_bytes, _request_id);
+			return nullptr;
+		}
 	}
 	auto _ex = vnx::NoSuchMethod::create();
 	_ex->dst_mac = vnx_request ? vnx_request->dst_mac : vnx::Hash64();
@@ -639,6 +658,18 @@ void ClientBase::get_orders_async_return(const vnx::request_id_t& _request_id, c
 
 void ClientBase::get_price_async_return(const vnx::request_id_t& _request_id, const ::mmx::ulong_fraction_t& _ret_0) const {
 	auto _return_value = ::mmx::exchange::Client_get_price_return::create();
+	_return_value->_ret_0 = _ret_0;
+	vnx_async_return(_request_id, _return_value);
+}
+
+void ClientBase::http_request_async_return(const vnx::request_id_t& _request_id, const std::shared_ptr<const ::vnx::addons::HttpResponse>& _ret_0) const {
+	auto _return_value = ::vnx::addons::HttpComponent_http_request_return::create();
+	_return_value->_ret_0 = _ret_0;
+	vnx_async_return(_request_id, _return_value);
+}
+
+void ClientBase::http_request_chunk_async_return(const vnx::request_id_t& _request_id, const std::shared_ptr<const ::vnx::addons::HttpData>& _ret_0) const {
+	auto _return_value = ::vnx::addons::HttpComponent_http_request_chunk_return::create();
 	_return_value->_ret_0 = _ret_0;
 	vnx_async_return(_request_id, _return_value);
 }
