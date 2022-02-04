@@ -886,7 +886,7 @@ int main(int argc, char** argv)
 					}
 				}
 				if(accepted) {
-					const auto matched = client.match(server, pair, trades);
+					const auto matched = client.match(server, trades);
 					if(matched.empty()) {
 						vnx::log_error() << "Matched nothing!";
 						goto failed;

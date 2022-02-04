@@ -68,7 +68,7 @@ protected:
 
 	void execute_async(const std::string& server, const uint32_t& wallet, const matched_order_t& order, const vnx::request_id_t& request_id) const override;
 
-	void match_async(const std::string& server, const trade_pair_t& pair, const std::vector<trade_order_t>& orders, const vnx::request_id_t& request_id) const override;
+	void match_async(const std::string& server, const std::vector<trade_order_t>& orders, const vnx::request_id_t& request_id) const override;
 
 	void get_orders_async(const std::string& server, const trade_pair_t& pair, const vnx::request_id_t& request_id) const override;
 

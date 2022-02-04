@@ -19,7 +19,7 @@ module Server extends vnx.addons.MsgServer {
 	void execute(Transaction* tx) async;
 	
 	@Permission(mmx.permission_e.PUBLIC)
-	matched_order_t match(trade_pair_t pair, trade_order_t order) const async;
+	matched_order_t match(trade_order_t order) const async;
 	
 	@Permission(mmx.permission_e.PUBLIC)
 	vector<order_t> get_orders(trade_pair_t pair) const;

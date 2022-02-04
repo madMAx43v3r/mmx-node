@@ -426,6 +426,38 @@ public:
 		set(render(value, context));
 	}
 
+	void accept(const exchange::trade_order_t& value) {
+		auto tmp = render(value, context);
+		if(context) {
+			if(auto info = context->find_currency(value.pair.bid)) {
+				tmp["bid_symbol"] = info->symbol;
+				tmp["bid_value"] = value.bid * pow(10, -info->decimals);
+			}
+			if(auto info = context->find_currency(value.pair.ask)) {
+				tmp["ask_symbol"] = info->symbol;
+				if(auto ask = value.ask) {
+					tmp["ask_value"] = (*ask) * pow(10, -info->decimals);
+				}
+			}
+		}
+		set(tmp);
+	}
+
+	void accept(const exchange::matched_order_t& value) {
+		auto tmp = render(value, context);
+		if(context) {
+			if(auto info = context->find_currency(value.pair.bid)) {
+				tmp["bid_symbol"] = info->symbol;
+				tmp["bid_value"] = value.bid * pow(10, -info->decimals);
+			}
+			if(auto info = context->find_currency(value.pair.ask)) {
+				tmp["ask_symbol"] = info->symbol;
+				tmp["ask_value"] = value.ask * pow(10, -info->decimals);
+			}
+		}
+		set(tmp);
+	}
+
 	void accept(std::shared_ptr<const exchange::OfferBundle> value) {
 		if(value && context) {
 			auto tmp = render(*value, context);

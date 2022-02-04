@@ -23,7 +23,7 @@ module Client extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	@Permission(mmx.permission_e.SPENDING)
 	hash_t execute(string server, uint wallet, matched_order_t order) const async;
 	
-	vector<matched_order_t> match(string server, trade_pair_t pair, vector<trade_order_t> orders) const async;
+	vector<matched_order_t> match(string server, vector<trade_order_t> orders) const async;
 	
 	vector<order_t> get_orders(string server, trade_pair_t pair) const async;
 	

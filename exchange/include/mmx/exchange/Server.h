@@ -62,7 +62,7 @@ protected:
 
 	void execute_async(std::shared_ptr<const Transaction> tx, const vnx::request_id_t& request_id) override;
 
-	void match_async(const trade_pair_t& pair, const trade_order_t& order, const vnx::request_id_t& request_id) const override;
+	void match_async(const trade_order_t& order, const vnx::request_id_t& request_id) const override;
 
 	std::vector<order_t> get_orders(const trade_pair_t& pair) const override;
 

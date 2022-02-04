@@ -247,6 +247,7 @@ std::vector<trade_order_t> Client::make_trade(const uint32_t& index, const trade
 	std::vector<trade_order_t> orders;
 	for(const auto& bundle : addr_map) {
 		trade_order_t order;
+		order.pair = pair;
 		if(ask) {
 			order.ask = uint64_t(0);
 		}
@@ -384,7 +385,7 @@ void Client::execute_async(const std::string& server, const uint32_t& index, con
 	}
 }
 
-void Client::match_async(const std::string& server, const trade_pair_t& pair, const std::vector<trade_order_t>& orders, const vnx::request_id_t& request_id) const
+void Client::match_async(const std::string& server, const std::vector<trade_order_t>& orders, const vnx::request_id_t& request_id) const
 {
 	if(orders.empty()) {
 		match_async_return(request_id, {});
@@ -397,7 +398,6 @@ void Client::match_async(const std::string& server, const trade_pair_t& pair, co
 
 	for(const auto& order : orders) {
 		auto method = Server_match::create();
-		method->pair = pair;
 		method->order = order;
 		send_request(peer, method,
 			[this, job](std::shared_ptr<const vnx::Value> result) {
