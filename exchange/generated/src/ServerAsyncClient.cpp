@@ -194,9 +194,8 @@ uint64_t ServerAsyncClient::execute(std::shared_ptr<const ::mmx::Transaction> tx
 	return _request_id;
 }
 
-uint64_t ServerAsyncClient::match(const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::trade_order_t& order, const std::function<void(const ::mmx::exchange::matched_order_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t ServerAsyncClient::match(const ::mmx::exchange::trade_order_t& order, const std::function<void(const ::mmx::exchange::matched_order_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::exchange::Server_match::create();
-	_method->pair = pair;
 	_method->order = order;
 	const auto _request_id = ++vnx_next_id;
 	{

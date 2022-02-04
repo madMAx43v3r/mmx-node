@@ -16,7 +16,7 @@ namespace exchange {
 
 
 const vnx::Hash64 matched_order_t::VNX_TYPE_HASH(0xe730b5f024a17e86ull);
-const vnx::Hash64 matched_order_t::VNX_CODE_HASH(0x423625c7ecc9b268ull);
+const vnx::Hash64 matched_order_t::VNX_CODE_HASH(0xed09c5e289c4fc69ull);
 
 vnx::Hash64 matched_order_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,9 +49,9 @@ void matched_order_t::write(vnx::TypeOutput& _out, const vnx::TypeCode* _type_co
 void matched_order_t::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::exchange::vnx_native_type_code_matched_order_t;
 	_visitor.type_begin(*_type_code);
-	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, pair);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, bid);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, ask);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, bid);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, ask);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, pair);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, tx);
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, utxo_list);
 	_visitor.type_end(*_type_code);
@@ -59,9 +59,9 @@ void matched_order_t::accept(vnx::Visitor& _visitor) const {
 
 void matched_order_t::write(std::ostream& _out) const {
 	_out << "{";
-	_out << "\"pair\": "; vnx::write(_out, pair);
-	_out << ", \"bid\": "; vnx::write(_out, bid);
+	_out << "\"bid\": "; vnx::write(_out, bid);
 	_out << ", \"ask\": "; vnx::write(_out, ask);
+	_out << ", \"pair\": "; vnx::write(_out, pair);
 	_out << ", \"tx\": "; vnx::write(_out, tx);
 	_out << ", \"utxo_list\": "; vnx::write(_out, utxo_list);
 	_out << "}";
@@ -76,9 +76,9 @@ void matched_order_t::read(std::istream& _in) {
 vnx::Object matched_order_t::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.exchange.matched_order_t";
-	_object["pair"] = pair;
 	_object["bid"] = bid;
 	_object["ask"] = ask;
+	_object["pair"] = pair;
 	_object["tx"] = tx;
 	_object["utxo_list"] = utxo_list;
 	return _object;
@@ -101,14 +101,14 @@ void matched_order_t::from_object(const vnx::Object& _object) {
 }
 
 vnx::Variant matched_order_t::get_field(const std::string& _name) const {
-	if(_name == "pair") {
-		return vnx::Variant(pair);
-	}
 	if(_name == "bid") {
 		return vnx::Variant(bid);
 	}
 	if(_name == "ask") {
 		return vnx::Variant(ask);
+	}
+	if(_name == "pair") {
+		return vnx::Variant(pair);
 	}
 	if(_name == "tx") {
 		return vnx::Variant(tx);
@@ -120,12 +120,12 @@ vnx::Variant matched_order_t::get_field(const std::string& _name) const {
 }
 
 void matched_order_t::set_field(const std::string& _name, const vnx::Variant& _value) {
-	if(_name == "pair") {
-		_value.to(pair);
-	} else if(_name == "bid") {
+	if(_name == "bid") {
 		_value.to(bid);
 	} else if(_name == "ask") {
 		_value.to(ask);
+	} else if(_name == "pair") {
+		_value.to(pair);
 	} else if(_name == "tx") {
 		_value.to(tx);
 	} else if(_name == "utxo_list") {
@@ -157,7 +157,7 @@ std::shared_ptr<vnx::TypeCode> matched_order_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.matched_order_t";
 	type_code->type_hash = vnx::Hash64(0xe730b5f024a17e86ull);
-	type_code->code_hash = vnx::Hash64(0x423625c7ecc9b268ull);
+	type_code->code_hash = vnx::Hash64(0xed09c5e289c4fc69ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::exchange::matched_order_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<matched_order_t>>(); };
@@ -168,21 +168,21 @@ std::shared_ptr<vnx::TypeCode> matched_order_t::static_create_type_code() {
 	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
-		field.is_extended = true;
-		field.name = "pair";
-		field.code = {19, 0};
-	}
-	{
-		auto& field = type_code->fields[1];
 		field.data_size = 8;
 		field.name = "bid";
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[2];
+		auto& field = type_code->fields[1];
 		field.data_size = 8;
 		field.name = "ask";
 		field.code = {4};
+	}
+	{
+		auto& field = type_code->fields[2];
+		field.is_extended = true;
+		field.name = "pair";
+		field.code = {19, 0};
 	}
 	{
 		auto& field = type_code->fields[3];
@@ -239,16 +239,16 @@ void read(TypeInput& in, ::mmx::exchange::matched_order_t& value, const TypeCode
 	}
 	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
-		if(const auto* const _field = type_code->field_map[1]) {
+		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.bid, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[2]) {
+		if(const auto* const _field = type_code->field_map[1]) {
 			vnx::read_value(_buf + _field->offset, value.ask, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 0: vnx::read(in, value.pair, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.pair, type_code, _field->code.data()); break;
 			case 3: vnx::read(in, value.tx, type_code, _field->code.data()); break;
 			case 4: vnx::read(in, value.utxo_list, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
@@ -272,7 +272,7 @@ void write(TypeOutput& out, const ::mmx::exchange::matched_order_t& value, const
 	char* const _buf = out.write(16);
 	vnx::write_value(_buf + 0, value.bid);
 	vnx::write_value(_buf + 8, value.ask);
-	vnx::write(out, value.pair, type_code, type_code->fields[0].code.data());
+	vnx::write(out, value.pair, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.tx, type_code, type_code->fields[3].code.data());
 	vnx::write(out, value.utxo_list, type_code, type_code->fields[4].code.data());
 }

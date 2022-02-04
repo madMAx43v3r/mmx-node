@@ -6,7 +6,6 @@
 
 #include <mmx/exchange/package.hxx>
 #include <mmx/exchange/trade_order_t.hxx>
-#include <mmx/exchange/trade_pair_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -16,7 +15,6 @@ namespace exchange {
 class Server_match : public ::vnx::Value {
 public:
 	
-	::mmx::exchange::trade_pair_t pair;
 	::mmx::exchange::trade_order_t order;
 	
 	typedef ::vnx::Value Super;
@@ -61,10 +59,9 @@ public:
 
 template<typename T>
 void Server_match::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Server_match>(2);
-	_visitor.type_field("pair", 0); _visitor.accept(pair);
-	_visitor.type_field("order", 1); _visitor.accept(order);
-	_visitor.template type_end<Server_match>(2);
+	_visitor.template type_begin<Server_match>(1);
+	_visitor.type_field("order", 0); _visitor.accept(order);
+	_visitor.template type_end<Server_match>(1);
 }
 
 

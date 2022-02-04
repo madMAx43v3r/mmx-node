@@ -75,7 +75,7 @@ protected:
 	virtual std::vector<std::string> get_servers() const = 0;
 	virtual void execute_async(const std::string& server, const uint32_t& wallet, const ::mmx::exchange::matched_order_t& order, const vnx::request_id_t& _request_id) const = 0;
 	void execute_async_return(const vnx::request_id_t& _request_id, const ::mmx::hash_t& _ret_0) const;
-	virtual void match_async(const std::string& server, const ::mmx::exchange::trade_pair_t& pair, const std::vector<::mmx::exchange::trade_order_t>& orders, const vnx::request_id_t& _request_id) const = 0;
+	virtual void match_async(const std::string& server, const std::vector<::mmx::exchange::trade_order_t>& orders, const vnx::request_id_t& _request_id) const = 0;
 	void match_async_return(const vnx::request_id_t& _request_id, const std::vector<::mmx::exchange::matched_order_t>& _ret_0) const;
 	virtual void get_orders_async(const std::string& server, const ::mmx::exchange::trade_pair_t& pair, const vnx::request_id_t& _request_id) const = 0;
 	void get_orders_async_return(const vnx::request_id_t& _request_id, const std::vector<::mmx::exchange::order_t>& _ret_0) const;

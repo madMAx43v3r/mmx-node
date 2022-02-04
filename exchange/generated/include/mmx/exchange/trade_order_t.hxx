@@ -7,6 +7,7 @@
 #include <vnx/Type.h>
 #include <mmx/exchange/package.hxx>
 #include <mmx/Solution.hxx>
+#include <mmx/exchange/trade_pair_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/txio_key_t.hxx>
 
@@ -20,6 +21,7 @@ struct trade_order_t {
 	uint32_t version = 0;
 	uint64_t bid = 0;
 	vnx::optional<uint64_t> ask;
+	::mmx::exchange::trade_pair_t pair;
 	std::vector<::mmx::txio_key_t> bid_keys;
 	std::shared_ptr<const ::mmx::Solution> solution;
 	
@@ -65,13 +67,14 @@ struct trade_order_t {
 
 template<typename T>
 void trade_order_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<trade_order_t>(5);
+	_visitor.template type_begin<trade_order_t>(6);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("bid", 1); _visitor.accept(bid);
 	_visitor.type_field("ask", 2); _visitor.accept(ask);
-	_visitor.type_field("bid_keys", 3); _visitor.accept(bid_keys);
-	_visitor.type_field("solution", 4); _visitor.accept(solution);
-	_visitor.template type_end<trade_order_t>(5);
+	_visitor.type_field("pair", 3); _visitor.accept(pair);
+	_visitor.type_field("bid_keys", 4); _visitor.accept(bid_keys);
+	_visitor.type_field("solution", 5); _visitor.accept(solution);
+	_visitor.template type_end<trade_order_t>(6);
 }
 
 

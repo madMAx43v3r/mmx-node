@@ -18,9 +18,9 @@ namespace exchange {
 struct matched_order_t {
 	
 	
-	::mmx::exchange::trade_pair_t pair;
 	uint64_t bid = 0;
 	uint64_t ask = 0;
+	::mmx::exchange::trade_pair_t pair;
 	std::shared_ptr<const ::mmx::Transaction> tx;
 	std::vector<std::pair<::mmx::txio_key_t, ::mmx::utxo_t>> utxo_list;
 	
@@ -65,9 +65,9 @@ struct matched_order_t {
 template<typename T>
 void matched_order_t::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<matched_order_t>(5);
-	_visitor.type_field("pair", 0); _visitor.accept(pair);
-	_visitor.type_field("bid", 1); _visitor.accept(bid);
-	_visitor.type_field("ask", 2); _visitor.accept(ask);
+	_visitor.type_field("bid", 0); _visitor.accept(bid);
+	_visitor.type_field("ask", 1); _visitor.accept(ask);
+	_visitor.type_field("pair", 2); _visitor.accept(pair);
 	_visitor.type_field("tx", 3); _visitor.accept(tx);
 	_visitor.type_field("utxo_list", 4); _visitor.accept(utxo_list);
 	_visitor.template type_end<matched_order_t>(5);

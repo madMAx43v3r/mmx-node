@@ -78,7 +78,7 @@ public:
 			const std::function<void(const ::mmx::hash_t&)>& _callback = std::function<void(const ::mmx::hash_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t match(const std::string& server = "", const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const std::vector<::mmx::exchange::trade_order_t>& orders = {}, 
+	uint64_t match(const std::string& server = "", const std::vector<::mmx::exchange::trade_order_t>& orders = {}, 
 			const std::function<void(const std::vector<::mmx::exchange::matched_order_t>&)>& _callback = std::function<void(const std::vector<::mmx::exchange::matched_order_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	

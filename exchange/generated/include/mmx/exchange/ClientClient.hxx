@@ -64,7 +64,7 @@ public:
 	
 	::mmx::hash_t execute(const std::string& server = "", const uint32_t& wallet = 0, const ::mmx::exchange::matched_order_t& order = ::mmx::exchange::matched_order_t());
 	
-	std::vector<::mmx::exchange::matched_order_t> match(const std::string& server = "", const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const std::vector<::mmx::exchange::trade_order_t>& orders = {});
+	std::vector<::mmx::exchange::matched_order_t> match(const std::string& server = "", const std::vector<::mmx::exchange::trade_order_t>& orders = {});
 	
 	std::vector<::mmx::exchange::order_t> get_orders(const std::string& server = "", const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t());
 	

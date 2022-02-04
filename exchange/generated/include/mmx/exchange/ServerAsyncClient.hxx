@@ -70,7 +70,7 @@ public:
 			const std::function<void()>& _callback = std::function<void()>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t match(const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const ::mmx::exchange::trade_order_t& order = ::mmx::exchange::trade_order_t(), 
+	uint64_t match(const ::mmx::exchange::trade_order_t& order = ::mmx::exchange::trade_order_t(), 
 			const std::function<void(const ::mmx::exchange::matched_order_t&)>& _callback = std::function<void(const ::mmx::exchange::matched_order_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	

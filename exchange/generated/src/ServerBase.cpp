@@ -503,7 +503,7 @@ std::shared_ptr<vnx::Value> ServerBase::vnx_call_switch(std::shared_ptr<const vn
 		}
 		case 0x7d6b1feaf4d8a485ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::exchange::Server_match>(_method);
-			match_async(_args->pair, _args->order, _request_id);
+			match_async(_args->order, _request_id);
 			return nullptr;
 		}
 		case 0x75d1f7f88288f10cull: {

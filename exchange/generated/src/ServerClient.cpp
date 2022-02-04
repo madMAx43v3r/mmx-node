@@ -188,9 +188,8 @@ void ServerClient::execute_async(std::shared_ptr<const ::mmx::Transaction> tx) {
 	vnx_request(_method, true);
 }
 
-::mmx::exchange::matched_order_t ServerClient::match(const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::trade_order_t& order) {
+::mmx::exchange::matched_order_t ServerClient::match(const ::mmx::exchange::trade_order_t& order) {
 	auto _method = ::mmx::exchange::Server_match::create();
-	_method->pair = pair;
 	_method->order = order;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Server_match_return>(_return_value)) {

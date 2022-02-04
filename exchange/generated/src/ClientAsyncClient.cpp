@@ -228,10 +228,9 @@ uint64_t ClientAsyncClient::execute(const std::string& server, const uint32_t& w
 	return _request_id;
 }
 
-uint64_t ClientAsyncClient::match(const std::string& server, const ::mmx::exchange::trade_pair_t& pair, const std::vector<::mmx::exchange::trade_order_t>& orders, const std::function<void(const std::vector<::mmx::exchange::matched_order_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t ClientAsyncClient::match(const std::string& server, const std::vector<::mmx::exchange::trade_order_t>& orders, const std::function<void(const std::vector<::mmx::exchange::matched_order_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::exchange::Client_match::create();
 	_method->server = server;
-	_method->pair = pair;
 	_method->orders = orders;
 	const auto _request_id = ++vnx_next_id;
 	{

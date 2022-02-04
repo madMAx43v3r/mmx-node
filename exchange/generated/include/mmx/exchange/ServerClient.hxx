@@ -60,7 +60,7 @@ public:
 	
 	void execute_async(std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
 	
-	::mmx::exchange::matched_order_t match(const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const ::mmx::exchange::trade_order_t& order = ::mmx::exchange::trade_order_t());
+	::mmx::exchange::matched_order_t match(const ::mmx::exchange::trade_order_t& order = ::mmx::exchange::trade_order_t());
 	
 	std::vector<::mmx::exchange::order_t> get_orders(const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t());
 	

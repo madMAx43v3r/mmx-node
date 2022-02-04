@@ -223,10 +223,9 @@ std::vector<std::string> ClientClient::get_servers() {
 	}
 }
 
-std::vector<::mmx::exchange::matched_order_t> ClientClient::match(const std::string& server, const ::mmx::exchange::trade_pair_t& pair, const std::vector<::mmx::exchange::trade_order_t>& orders) {
+std::vector<::mmx::exchange::matched_order_t> ClientClient::match(const std::string& server, const std::vector<::mmx::exchange::trade_order_t>& orders) {
 	auto _method = ::mmx::exchange::Client_match::create();
 	_method->server = server;
-	_method->pair = pair;
 	_method->orders = orders;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Client_match_return>(_return_value)) {

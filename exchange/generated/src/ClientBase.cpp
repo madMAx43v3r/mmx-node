@@ -571,7 +571,7 @@ std::shared_ptr<vnx::Value> ClientBase::vnx_call_switch(std::shared_ptr<const vn
 		}
 		case 0x5b38e7fda1090949ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_match>(_method);
-			match_async(_args->server, _args->pair, _args->orders, _request_id);
+			match_async(_args->server, _args->orders, _request_id);
 			return nullptr;
 		}
 		case 0xe2be2ad61d7d7ddull: {
