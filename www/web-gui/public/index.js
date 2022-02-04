@@ -66,14 +66,60 @@ const AccountOffer = {
 }
 
 const Exchange = {
+	data() {
+		return {
+			wallet: null,
+			bid_symbol: null,
+			ask_symbol: null
+		}
+	},
+	methods: {
+		update_wallet(value) {
+			this.wallet = value;
+		},
+		update_bid_symbol(value) {
+			this.bid_symbol = value;
+		},
+		update_ask_symbol(value) {
+			this.ask_symbol = value;
+		}
+	},
 	template: `
-		<exchange-menu :server_="$route.params.server" :bid_="$route.params.bid" :ask_="$route.params.ask"></exchange-menu>
-		<router-view :key="$route.path"></router-view>
+		<exchange-menu @update-wallet="update_wallet" @update-bid-symbol="update_bid_symbol" @update-ask-symbol="update_ask_symbol"
+			:server_="$route.params.server" :bid_="$route.params.bid" :ask_="$route.params.ask">
+		</exchange-menu>
+		<router-view :key="$route.path" :wallet="wallet" :bid_symbol="bid_symbol" :ask_symbol="ask_symbol"></router-view>
 		`
 }
 const ExchangeMarket = {
+	props: {
+		wallet: null,
+		bid_symbol: null,
+		ask_symbol: null
+	},
+	methods: {
+		update() {
+			this.$refs.orders.update();
+		}
+	},
 	template: `
-		<exchange-orders :server="$route.params.server" :bid="$route.params.bid" :ask="$route.params.ask" :limit="200"></exchange-orders>
+		<div class="ui two column grid">
+			<div class="column">
+				<exchange-trade-form @trade-executed="update"
+					:wallet="wallet" :server="$route.params.server"
+					:bid_symbol="ask_symbol" :ask_symbol="bid_symbol"
+					:bid_currency="$route.params.ask" :ask_currency="$route.params.bid">
+				</exchange-trade-form>
+			</div>
+			<div class="column">
+				<exchange-trade-form @trade-executed="update"
+					:wallet="wallet" :server="$route.params.server"
+					:bid_symbol="bid_symbol" :ask_symbol="ask_symbol"
+					:bid_currency="$route.params.bid" :ask_currency="$route.params.ask">
+				</exchange-trade-form>
+			</div>
+		</div>
+		<exchange-orders ref="orders" :server="$route.params.server" :bid="$route.params.bid" :ask="$route.params.ask" :limit="100"></exchange-orders>
 		`
 }
 
@@ -99,7 +145,7 @@ const routes = [
 		component: Exchange,
 		meta: { is_exchange: true },
 		children: [
-			{ path: 'market/:server/:bid/:ask', component: ExchangeMarket }
+			{ path: 'market/:server/:bid/:ask', component: ExchangeMarket, meta: { page: 'market' } }
 		]
 	},
 	{ path: '/settings', component: Settings },

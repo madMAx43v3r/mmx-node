@@ -62,9 +62,13 @@ private:
 
 	void render_address(const vnx::request_id_t& request_id, const addr_t& address, const std::map<addr_t, uint64_t>& balances) const;
 
-	void render_balance(const vnx::request_id_t& request_id, const std::map<addr_t, balance_t>& balances) const;
+	void render_balances(const vnx::request_id_t& request_id, const vnx::optional<addr_t>& currency, const std::map<addr_t, balance_t>& balances) const;
 
 	void render_history(const vnx::request_id_t& request_id, size_t limit, const size_t offset, std::vector<tx_entry_t> history) const;
+
+	void execute_trades(const std::string& server, const uint32_t index, const std::vector<exchange::matched_order_t>& orders,
+						const size_t offset, std::shared_ptr<std::vector<hash_t>> result, vnx::request_id_t request_id,
+						const hash_t& txid, const vnx::exception& ex, bool is_fail) const;
 
 	void get_context(	const std::unordered_set<addr_t>& addr_set, const vnx::request_id_t& request_id,
 						const std::function<void(std::shared_ptr<RenderContext>)>& callback) const;
