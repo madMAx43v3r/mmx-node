@@ -68,7 +68,7 @@ protected:
 
 	std::vector<trade_pair_t> get_trade_pairs() const override;
 
-	std::vector<order_t> get_orders(const trade_pair_t& pair) const override;
+	std::vector<order_t> get_orders(const trade_pair_t& pair, const int32_t& limit) const override;
 
 	ulong_fraction_t get_price(const addr_t& want, const amount_t& have) const override;
 

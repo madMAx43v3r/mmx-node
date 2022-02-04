@@ -432,11 +432,12 @@ void Client::get_trade_pairs_async(const std::string& server, const vnx::request
 	send_request(peer, method, std::bind(&Client::vnx_async_return, this, request_id, std::placeholders::_1));
 }
 
-void Client::get_orders_async(const std::string& server, const trade_pair_t& pair, const vnx::request_id_t& request_id) const
+void Client::get_orders_async(const std::string& server, const trade_pair_t& pair, const int32_t& limit, const vnx::request_id_t& request_id) const
 {
 	auto peer = get_server(server);
 	auto method = Server_get_orders::create();
 	method->pair = pair;
+	method->limit = limit;
 	send_request(peer, method, std::bind(&Client::vnx_async_return, this, request_id, std::placeholders::_1));
 }
 

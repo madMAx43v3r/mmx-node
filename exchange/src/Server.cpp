@@ -453,11 +453,15 @@ std::vector<trade_pair_t> Server::get_trade_pairs() const
 	return res;
 }
 
-std::vector<order_t> Server::get_orders(const trade_pair_t& pair) const
+std::vector<order_t> Server::get_orders(const trade_pair_t& pair, const int32_t& limit_) const
 {
+	const size_t limit = limit_;
 	std::vector<order_t> orders;
 	if(auto book = find_pair(pair)) {
 		for(const auto& entry : book->orders) {
+			if(orders.size() >= limit) {
+				break;
+			}
 			const auto& order = entry.second;
 			if(utxo_map.count(order.bid_key) && is_open(order.bid_key)) {
 				orders.push_back(order);
@@ -473,7 +477,7 @@ ulong_fraction_t Server::get_price(const addr_t& want, const amount_t& have) con
 	price.inverse = 0;
 
 	uint64_t left = have.amount;
-	for(const auto& order : get_orders(trade_pair_t::create_ex(want, have.currency))) {
+	for(const auto& order : get_orders(trade_pair_t::create_ex(want, have.currency), 100)) {
 		if(order.ask >= left) {
 			price.value += order.bid;
 			price.inverse += order.ask;

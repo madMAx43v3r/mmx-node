@@ -1118,22 +1118,19 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const auto iter_ask = query.find("ask");
 		const auto iter_limit = query.find("limit");
 		if(iter_server != query.end() && iter_bid != query.end() && iter_ask != query.end()) {
-			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
+			const int32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
 			const auto server = iter_server->second;
 			exchange::trade_pair_t pair;
 			pair.bid = iter_bid->second;
 			pair.ask = iter_ask->second;
-			exch_client->get_orders(server, pair,
+			exch_client->get_orders(server, pair, limit,
 				[this, request_id, pair, limit](const std::vector<exchange::order_t>& orders) {
 					get_context({pair.bid, pair.ask}, request_id,
-						[this, request_id, pair, limit, orders](std::shared_ptr<RenderContext> context) {
+						[this, request_id, pair, orders](std::shared_ptr<RenderContext> context) {
 							std::vector<vnx::Object> rows;
 							auto* bid_info = context->find_currency(pair.bid);
 							auto* ask_info = context->find_currency(pair.ask);
 							for(const auto& order : orders) {
-								if(rows.size() >= limit) {
-									break;
-								}
 								auto row = order.to_object();
 								if(bid_info) {
 									row["bid_value"] = order.bid * pow(10, -bid_info->decimals);

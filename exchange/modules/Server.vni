@@ -22,7 +22,10 @@ module Server extends vnx.addons.MsgServer {
 	matched_order_t match(trade_order_t order) const async;
 	
 	@Permission(mmx.permission_e.PUBLIC)
-	vector<order_t> get_orders(trade_pair_t pair) const;
+	vector<trade_pair_t> get_trade_pairs() const;
+	
+	@Permission(mmx.permission_e.PUBLIC)
+	vector<order_t> get_orders(trade_pair_t pair, int limit = -1) const;
 	
 	@Permission(mmx.permission_e.PUBLIC)
 	ulong_fraction_t get_price(addr_t want, amount_t have) const;
@@ -36,8 +39,6 @@ module Server extends vnx.addons.MsgServer {
 	void approve(ulong client, Transaction* tx);
 	
 	void ping(ulong client) const;
-	
-	vector<trade_pair_t> get_trade_pairs() const;
 	
 	
 	void handle(mmx.Block sample);
