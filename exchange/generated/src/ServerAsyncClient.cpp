@@ -16,6 +16,8 @@
 #include <mmx/exchange/Server_get_orders_return.hxx>
 #include <mmx/exchange/Server_get_price.hxx>
 #include <mmx/exchange/Server_get_price_return.hxx>
+#include <mmx/exchange/Server_get_trade_pairs.hxx>
+#include <mmx/exchange/Server_get_trade_pairs_return.hxx>
 #include <mmx/exchange/Server_match.hxx>
 #include <mmx/exchange/Server_match_return.hxx>
 #include <mmx/exchange/Server_place.hxx>
@@ -291,6 +293,18 @@ uint64_t ServerAsyncClient::approve(const uint64_t& client, std::shared_ptr<cons
 	return _request_id;
 }
 
+uint64_t ServerAsyncClient::get_trade_pairs(const std::function<void(const std::vector<::mmx::exchange::trade_pair_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+	auto _method = ::mmx::exchange::Server_get_trade_pairs::create();
+	const auto _request_id = ++vnx_next_id;
+	{
+		std::lock_guard<std::mutex> _lock(vnx_mutex);
+		vnx_pending[_request_id] = 17;
+		vnx_queue_get_trade_pairs[_request_id] = std::make_pair(_callback, _error_callback);
+	}
+	vnx_request(_method, _request_id);
+	return _request_id;
+}
+
 int32_t ServerAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exception& _ex) {
 	std::unique_lock<std::mutex> _lock(vnx_mutex);
 	const auto _iter = vnx_pending.find(_request_id);
@@ -497,6 +511,18 @@ int32_t ServerAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			if(_iter != vnx_queue_approve.end()) {
 				const auto _callback = std::move(_iter->second.second);
 				vnx_queue_approve.erase(_iter);
+				_lock.unlock();
+				if(_callback) {
+					_callback(_ex);
+				}
+			}
+			break;
+		}
+		case 17: {
+			const auto _iter = vnx_queue_get_trade_pairs.find(_request_id);
+			if(_iter != vnx_queue_get_trade_pairs.end()) {
+				const auto _callback = std::move(_iter->second.second);
+				vnx_queue_get_trade_pairs.erase(_iter);
 				_lock.unlock();
 				if(_callback) {
 					_callback(_ex);
@@ -789,6 +815,25 @@ int32_t ServerAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			_lock.unlock();
 			if(_callback) {
 				_callback();
+			}
+			break;
+		}
+		case 17: {
+			const auto _iter = vnx_queue_get_trade_pairs.find(_request_id);
+			if(_iter == vnx_queue_get_trade_pairs.end()) {
+				throw std::runtime_error("ServerAsyncClient: callback not found");
+			}
+			const auto _callback = std::move(_iter->second.first);
+			vnx_queue_get_trade_pairs.erase(_iter);
+			_lock.unlock();
+			if(_callback) {
+				if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Server_get_trade_pairs_return>(_value)) {
+					_callback(_result->_ret_0);
+				} else if(_value && !_value->is_void()) {
+					_callback(_value->get_field_by_index(0).to<std::vector<::mmx::exchange::trade_pair_t>>());
+				} else {
+					throw std::logic_error("ServerAsyncClient: invalid return value");
+				}
 			}
 			break;
 		}

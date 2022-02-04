@@ -26,6 +26,8 @@
 #include <mmx/exchange/Client_get_price_return.hxx>
 #include <mmx/exchange/Client_get_servers.hxx>
 #include <mmx/exchange/Client_get_servers_return.hxx>
+#include <mmx/exchange/Client_get_trade_pairs.hxx>
+#include <mmx/exchange/Client_get_trade_pairs_return.hxx>
 #include <mmx/exchange/Client_make_offer.hxx>
 #include <mmx/exchange/Client_make_offer_return.hxx>
 #include <mmx/exchange/Client_make_trade.hxx>
@@ -232,6 +234,19 @@ std::vector<::mmx::exchange::matched_order_t> ClientClient::match(const std::str
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::vector<::mmx::exchange::matched_order_t>>();
+	} else {
+		throw std::logic_error("ClientClient: invalid return value");
+	}
+}
+
+std::vector<::mmx::exchange::trade_pair_t> ClientClient::get_trade_pairs(const std::string& server) {
+	auto _method = ::mmx::exchange::Client_get_trade_pairs::create();
+	_method->server = server;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Client_get_trade_pairs_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::exchange::trade_pair_t>>();
 	} else {
 		throw std::logic_error("ClientClient: invalid return value");
 	}

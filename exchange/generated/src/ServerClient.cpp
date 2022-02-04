@@ -16,6 +16,8 @@
 #include <mmx/exchange/Server_get_orders_return.hxx>
 #include <mmx/exchange/Server_get_price.hxx>
 #include <mmx/exchange/Server_get_price_return.hxx>
+#include <mmx/exchange/Server_get_trade_pairs.hxx>
+#include <mmx/exchange/Server_get_trade_pairs_return.hxx>
 #include <mmx/exchange/Server_match.hxx>
 #include <mmx/exchange/Server_match_return.hxx>
 #include <mmx/exchange/Server_place.hxx>
@@ -283,6 +285,18 @@ void ServerClient::approve_async(const uint64_t& client, std::shared_ptr<const :
 	_method->client = client;
 	_method->tx = tx;
 	vnx_request(_method, true);
+}
+
+std::vector<::mmx::exchange::trade_pair_t> ServerClient::get_trade_pairs() {
+	auto _method = ::mmx::exchange::Server_get_trade_pairs::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Server_get_trade_pairs_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::exchange::trade_pair_t>>();
+	} else {
+		throw std::logic_error("ServerClient: invalid return value");
+	}
 }
 
 

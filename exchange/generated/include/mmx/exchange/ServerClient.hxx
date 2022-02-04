@@ -80,6 +80,8 @@ public:
 	
 	void approve_async(const uint64_t& client = 0, std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
 	
+	std::vector<::mmx::exchange::trade_pair_t> get_trade_pairs();
+	
 };
 
 

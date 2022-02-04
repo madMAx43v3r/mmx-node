@@ -17,6 +17,8 @@
 #include <mmx/exchange/Server_get_orders_return.hxx>
 #include <mmx/exchange/Server_get_price.hxx>
 #include <mmx/exchange/Server_get_price_return.hxx>
+#include <mmx/exchange/Server_get_trade_pairs.hxx>
+#include <mmx/exchange/Server_get_trade_pairs_return.hxx>
 #include <mmx/exchange/Server_match.hxx>
 #include <mmx/exchange/Server_match_return.hxx>
 #include <mmx/exchange/Server_place.hxx>
@@ -300,7 +302,7 @@ std::shared_ptr<vnx::TypeCode> ServerBase::static_create_type_code() {
 	type_code->parents.resize(2);
 	type_code->parents[0] = ::vnx::addons::MsgServerBase::static_get_type_code();
 	type_code->parents[1] = ::vnx::addons::TcpServerBase::static_get_type_code();
-	type_code->methods.resize(17);
+	type_code->methods.resize(18);
 	type_code->methods[0] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
 	type_code->methods[1] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
 	type_code->methods[2] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
@@ -318,6 +320,7 @@ std::shared_ptr<vnx::TypeCode> ServerBase::static_create_type_code() {
 	type_code->methods[14] = ::mmx::exchange::Server_cancel::static_get_type_code();
 	type_code->methods[15] = ::mmx::exchange::Server_reject::static_get_type_code();
 	type_code->methods[16] = ::mmx::exchange::Server_approve::static_get_type_code();
+	type_code->methods[17] = ::mmx::exchange::Server_get_trade_pairs::static_get_type_code();
 	type_code->fields.resize(15);
 	{
 		auto& field = type_code->fields[0];
@@ -539,6 +542,12 @@ std::shared_ptr<vnx::Value> ServerBase::vnx_call_switch(std::shared_ptr<const vn
 			auto _args = std::static_pointer_cast<const ::mmx::exchange::Server_approve>(_method);
 			auto _return_value = ::mmx::exchange::Server_approve_return::create();
 			approve(_args->client, _args->tx);
+			return _return_value;
+		}
+		case 0x8757a05fb1ee1637ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::exchange::Server_get_trade_pairs>(_method);
+			auto _return_value = ::mmx::exchange::Server_get_trade_pairs_return::create();
+			_return_value->_ret_0 = get_trade_pairs();
 			return _return_value;
 		}
 	}

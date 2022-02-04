@@ -77,6 +77,7 @@ protected:
 	virtual void cancel(const uint64_t& client, const std::vector<::mmx::txio_key_t>& orders) = 0;
 	virtual void reject(const uint64_t& client, const ::mmx::hash_t& txid) = 0;
 	virtual void approve(const uint64_t& client, std::shared_ptr<const ::mmx::Transaction> tx) = 0;
+	virtual std::vector<::mmx::exchange::trade_pair_t> get_trade_pairs() const = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::Block> _value) {}
 	
 	void vnx_handle_switch(std::shared_ptr<const vnx::Value> _value) override;

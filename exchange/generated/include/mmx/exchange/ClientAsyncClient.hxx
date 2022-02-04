@@ -82,6 +82,10 @@ public:
 			const std::function<void(const std::vector<::mmx::exchange::matched_order_t>&)>& _callback = std::function<void(const std::vector<::mmx::exchange::matched_order_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
+	uint64_t get_trade_pairs(const std::string& server = "", 
+			const std::function<void(const std::vector<::mmx::exchange::trade_pair_t>&)>& _callback = std::function<void(const std::vector<::mmx::exchange::trade_pair_t>&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
 	uint64_t get_orders(const std::string& server = "", const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), 
 			const std::function<void(const std::vector<::mmx::exchange::order_t>&)>& _callback = std::function<void(const std::vector<::mmx::exchange::order_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
@@ -152,6 +156,7 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::string>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_servers;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::hash_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_execute;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::exchange::matched_order_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_match;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::exchange::trade_pair_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_trade_pairs;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::exchange::order_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_orders;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::ulong_fraction_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_price;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::exchange::open_order_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_order;

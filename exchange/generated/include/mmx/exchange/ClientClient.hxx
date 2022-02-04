@@ -66,6 +66,8 @@ public:
 	
 	std::vector<::mmx::exchange::matched_order_t> match(const std::string& server = "", const std::vector<::mmx::exchange::trade_order_t>& orders = {});
 	
+	std::vector<::mmx::exchange::trade_pair_t> get_trade_pairs(const std::string& server = "");
+	
 	std::vector<::mmx::exchange::order_t> get_orders(const std::string& server = "", const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t());
 	
 	::mmx::ulong_fraction_t get_price(const std::string& server = "", const ::mmx::addr_t& want = ::mmx::addr_t(), const ::mmx::exchange::amount_t& have = ::mmx::exchange::amount_t());
