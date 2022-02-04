@@ -38,7 +38,9 @@ app.component('exchange-menu', {
 				});
 		},
 		submit() {
-			this.$router.push('/exchange/market/' + this.server + '/' + this.bid + '/' + this.ask);
+			if(this.server && this.bid && this.ask) {
+				this.$router.push('/exchange/market/' + this.server + '/' + this.bid + '/' + this.ask);
+			}
 		}
 	},
 	created() {
@@ -62,9 +64,10 @@ app.component('exchange-menu', {
 						}
 					}
 					this.bid_pairs = list;
-					if(this.bid_) {
+					if(!this.bid && this.bid_) {
 						this.bid = this.bid_;
 					}
+					this.submit();
 				});
 		},
 		bid(value) {
@@ -77,7 +80,7 @@ app.component('exchange-menu', {
 				}
 			}
 			this.ask_pairs = list;
-			if(this.ask_) {
+			if(!this.ask && this.ask_) {
 				this.ask = this.ask_;
 			} else if(list.length == 1) {
 				this.ask = list[0].currency;
@@ -130,7 +133,8 @@ app.component('exchange-order-list', {
 		ask: String,
 		server: String,
 		flip: Boolean,
-		title: String
+		title: String,
+		limit: Number
 	},
 	data() {
 		return {
@@ -139,7 +143,7 @@ app.component('exchange-order-list', {
 	},
 	methods: {
 		update() {
-			fetch('/wapi/exchange/orders?server=' + this.server + '&bid=' + this.bid + '&ask=' + this.ask)
+			fetch('/wapi/exchange/orders?server=' + this.server + '&bid=' + this.bid + '&ask=' + this.ask + '&limit=' + this.limit)
 				.then(response => response.json())
 				.then(data => {
 					this.data = data;
@@ -173,7 +177,8 @@ app.component('exchange-orders', {
 	props: {
 		bid: String,
 		ask: String,
-		server: String
+		server: String,
+		limit: Number
 	},
 	methods: {
 		update() {
@@ -185,10 +190,10 @@ app.component('exchange-orders', {
 		<div class="ui segment">
 			<div class="ui two column grid">
 				<div class="column">
-					<exchange-order-list title="Buy" :server="server" :bid="bid" :ask="ask" :flip="false" ref="bid_list"></exchange-order-list>
+					<exchange-order-list title="Buy" :server="server" :bid="bid" :ask="ask" :flip="false" :limit="limit" ref="bid_list"></exchange-order-list>
 				</div>
 				<div class="column">
-					<exchange-order-list title="Sell" :server="server" :bid="ask" :ask="bid" :flip="true"  ref="ask_list"></exchange-order-list>
+					<exchange-order-list title="Sell" :server="server" :bid="ask" :ask="bid" :flip="true" :limit="limit" ref="ask_list"></exchange-order-list>
 				</div>
 			</div>
 		</div>

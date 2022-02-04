@@ -73,7 +73,7 @@ const Exchange = {
 }
 const ExchangeMarket = {
 	template: `
-		<exchange-orders :server="$route.params.server" :bid="$route.params.bid" :ask="$route.params.ask"></exchange-orders>
+		<exchange-orders :server="$route.params.server" :bid="$route.params.bid" :ask="$route.params.ask" :limit="200"></exchange-orders>
 		`
 }
 
