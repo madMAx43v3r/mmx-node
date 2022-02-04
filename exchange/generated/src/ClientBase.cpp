@@ -584,7 +584,7 @@ std::shared_ptr<vnx::Value> ClientBase::vnx_call_switch(std::shared_ptr<const vn
 		}
 		case 0xe2be2ad61d7d7ddull: {
 			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_get_orders>(_method);
-			get_orders_async(_args->server, _args->pair, _request_id);
+			get_orders_async(_args->server, _args->pair, _args->limit, _request_id);
 			return nullptr;
 		}
 		case 0xbdf64eb0607d08d1ull: {

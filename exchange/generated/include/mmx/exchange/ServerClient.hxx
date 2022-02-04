@@ -62,7 +62,9 @@ public:
 	
 	::mmx::exchange::matched_order_t match(const ::mmx::exchange::trade_order_t& order = ::mmx::exchange::trade_order_t());
 	
-	std::vector<::mmx::exchange::order_t> get_orders(const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t());
+	std::vector<::mmx::exchange::trade_pair_t> get_trade_pairs();
+	
+	std::vector<::mmx::exchange::order_t> get_orders(const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const int32_t& limit = -1);
 	
 	::mmx::ulong_fraction_t get_price(const ::mmx::addr_t& want = ::mmx::addr_t(), const ::mmx::exchange::amount_t& have = ::mmx::exchange::amount_t());
 	
@@ -83,8 +85,6 @@ public:
 	void ping(const uint64_t& client = 0);
 	
 	void ping_async(const uint64_t& client = 0);
-	
-	std::vector<::mmx::exchange::trade_pair_t> get_trade_pairs();
 	
 };
 

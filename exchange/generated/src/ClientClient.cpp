@@ -252,10 +252,11 @@ std::vector<::mmx::exchange::trade_pair_t> ClientClient::get_trade_pairs(const s
 	}
 }
 
-std::vector<::mmx::exchange::order_t> ClientClient::get_orders(const std::string& server, const ::mmx::exchange::trade_pair_t& pair) {
+std::vector<::mmx::exchange::order_t> ClientClient::get_orders(const std::string& server, const ::mmx::exchange::trade_pair_t& pair, const int32_t& limit) {
 	auto _method = ::mmx::exchange::Client_get_orders::create();
 	_method->server = server;
 	_method->pair = pair;
+	_method->limit = limit;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Client_get_orders_return>(_return_value)) {
 		return _result->_ret_0;

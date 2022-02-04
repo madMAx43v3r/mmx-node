@@ -86,7 +86,7 @@ public:
 			const std::function<void(const std::vector<::mmx::exchange::trade_pair_t>&)>& _callback = std::function<void(const std::vector<::mmx::exchange::trade_pair_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_orders(const std::string& server = "", const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), 
+	uint64_t get_orders(const std::string& server = "", const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const int32_t& limit = -1, 
 			const std::function<void(const std::vector<::mmx::exchange::order_t>&)>& _callback = std::function<void(const std::vector<::mmx::exchange::order_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	

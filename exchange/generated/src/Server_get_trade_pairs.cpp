@@ -109,6 +109,7 @@ std::shared_ptr<vnx::TypeCode> Server_get_trade_pairs::static_create_type_code()
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Server_get_trade_pairs>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::exchange::Server_get_trade_pairs_return::static_get_type_code();
+	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();
 	return type_code;
 }

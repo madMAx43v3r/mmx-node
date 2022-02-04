@@ -16,6 +16,7 @@ class Server_get_orders : public ::vnx::Value {
 public:
 	
 	::mmx::exchange::trade_pair_t pair;
+	int32_t limit = -1;
 	
 	typedef ::vnx::Value Super;
 	
@@ -59,9 +60,10 @@ public:
 
 template<typename T>
 void Server_get_orders::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Server_get_orders>(1);
+	_visitor.template type_begin<Server_get_orders>(2);
 	_visitor.type_field("pair", 0); _visitor.accept(pair);
-	_visitor.template type_end<Server_get_orders>(1);
+	_visitor.type_field("limit", 1); _visitor.accept(limit);
+	_visitor.template type_end<Server_get_orders>(2);
 }
 
 

@@ -79,7 +79,7 @@ protected:
 	void match_async_return(const vnx::request_id_t& _request_id, const std::vector<::mmx::exchange::matched_order_t>& _ret_0) const;
 	virtual void get_trade_pairs_async(const std::string& server, const vnx::request_id_t& _request_id) const = 0;
 	void get_trade_pairs_async_return(const vnx::request_id_t& _request_id, const std::vector<::mmx::exchange::trade_pair_t>& _ret_0) const;
-	virtual void get_orders_async(const std::string& server, const ::mmx::exchange::trade_pair_t& pair, const vnx::request_id_t& _request_id) const = 0;
+	virtual void get_orders_async(const std::string& server, const ::mmx::exchange::trade_pair_t& pair, const int32_t& limit, const vnx::request_id_t& _request_id) const = 0;
 	void get_orders_async_return(const vnx::request_id_t& _request_id, const std::vector<::mmx::exchange::order_t>& _ret_0) const;
 	virtual void get_price_async(const std::string& server, const ::mmx::addr_t& want, const ::mmx::exchange::amount_t& have, const vnx::request_id_t& _request_id) const = 0;
 	void get_price_async_return(const vnx::request_id_t& _request_id, const ::mmx::ulong_fraction_t& _ret_0) const;

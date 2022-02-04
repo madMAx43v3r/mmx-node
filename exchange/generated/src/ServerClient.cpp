@@ -205,9 +205,22 @@ void ServerClient::execute_async(std::shared_ptr<const ::mmx::Transaction> tx) {
 	}
 }
 
-std::vector<::mmx::exchange::order_t> ServerClient::get_orders(const ::mmx::exchange::trade_pair_t& pair) {
+std::vector<::mmx::exchange::trade_pair_t> ServerClient::get_trade_pairs() {
+	auto _method = ::mmx::exchange::Server_get_trade_pairs::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Server_get_trade_pairs_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::exchange::trade_pair_t>>();
+	} else {
+		throw std::logic_error("ServerClient: invalid return value");
+	}
+}
+
+std::vector<::mmx::exchange::order_t> ServerClient::get_orders(const ::mmx::exchange::trade_pair_t& pair, const int32_t& limit) {
 	auto _method = ::mmx::exchange::Server_get_orders::create();
 	_method->pair = pair;
+	_method->limit = limit;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Server_get_orders_return>(_return_value)) {
 		return _result->_ret_0;
@@ -299,18 +312,6 @@ void ServerClient::ping_async(const uint64_t& client) {
 	auto _method = ::mmx::exchange::Server_ping::create();
 	_method->client = client;
 	vnx_request(_method, true);
-}
-
-std::vector<::mmx::exchange::trade_pair_t> ServerClient::get_trade_pairs() {
-	auto _method = ::mmx::exchange::Server_get_trade_pairs::create();
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Server_get_trade_pairs_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::vector<::mmx::exchange::trade_pair_t>>();
-	} else {
-		throw std::logic_error("ServerClient: invalid return value");
-	}
 }
 
 

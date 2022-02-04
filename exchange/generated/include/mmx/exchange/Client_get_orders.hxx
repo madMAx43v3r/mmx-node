@@ -17,6 +17,7 @@ public:
 	
 	std::string server;
 	::mmx::exchange::trade_pair_t pair;
+	int32_t limit = -1;
 	
 	typedef ::vnx::Value Super;
 	
@@ -60,10 +61,11 @@ public:
 
 template<typename T>
 void Client_get_orders::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Client_get_orders>(2);
+	_visitor.template type_begin<Client_get_orders>(3);
 	_visitor.type_field("server", 0); _visitor.accept(server);
 	_visitor.type_field("pair", 1); _visitor.accept(pair);
-	_visitor.template type_end<Client_get_orders>(2);
+	_visitor.type_field("limit", 2); _visitor.accept(limit);
+	_visitor.template type_end<Client_get_orders>(3);
 }
 
 

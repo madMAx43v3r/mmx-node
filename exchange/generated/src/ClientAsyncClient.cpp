@@ -257,10 +257,11 @@ uint64_t ClientAsyncClient::get_trade_pairs(const std::string& server, const std
 	return _request_id;
 }
 
-uint64_t ClientAsyncClient::get_orders(const std::string& server, const ::mmx::exchange::trade_pair_t& pair, const std::function<void(const std::vector<::mmx::exchange::order_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t ClientAsyncClient::get_orders(const std::string& server, const ::mmx::exchange::trade_pair_t& pair, const int32_t& limit, const std::function<void(const std::vector<::mmx::exchange::order_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::exchange::Client_get_orders::create();
 	_method->server = server;
 	_method->pair = pair;
+	_method->limit = limit;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
