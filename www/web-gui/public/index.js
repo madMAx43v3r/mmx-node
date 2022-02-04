@@ -65,7 +65,18 @@ const AccountOffer = {
 	`
 }
 
-const Exchange = { template: '<h1>Exchange</h1>TODO' }
+const Exchange = {
+	template: `
+		<exchange-menu :server_="$route.params.server" :bid_="$route.params.bid" :ask_="$route.params.ask"></exchange-menu>
+		<router-view :key="$route.path"></router-view>
+		`
+}
+const ExchangeMarket = {
+	template: `
+		<exchange-orders :server="$route.params.server" :bid="$route.params.bid" :ask="$route.params.ask"></exchange-orders>
+		`
+}
+
 const Settings = { template: '<h1>Settings</h1>TODO' }
 
 const routes = [
@@ -84,7 +95,13 @@ const routes = [
 			{ path: 'offer', component: AccountOffer, meta: { page: 'offer' } },
 		]
 	},
-	{ path: '/exchange', component: Exchange, meta: { is_exchange: true } },
+	{ path: '/exchange',
+		component: Exchange,
+		meta: { is_exchange: true },
+		children: [
+			{ path: 'market/:server/:bid/:ask', component: ExchangeMarket }
+		]
+	},
 	{ path: '/settings', component: Settings },
 ]
 

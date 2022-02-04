@@ -650,7 +650,7 @@ app.component('account-offers', {
 	},
 	methods: {
 		update() {
-			fetch('/wapi/exchange/offers?index=' + this.index)
+			fetch('/wapi/exchange/offers?wallet=' + this.index)
 				.then(response => response.json())
 				.then(data => this.data = data);
 		},
@@ -684,7 +684,7 @@ app.component('account-offers', {
 				<td>{{item.ask_symbol}}</td>
 				<td>{{100 * item.bid_sold / item.bid}} %</td>
 				<td>
-					<div class="ui tiny button" @click="cancel(item.id)">Cancel</div>
+					<div class="ui tiny compact button" @click="cancel(item.id)">Cancel</div>
 				</td>
 			</tr>
 			</tbody>

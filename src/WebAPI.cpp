@@ -15,6 +15,7 @@
 #include <mmx/operation/Spend.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/solution/MultiSig.hxx>
+#include <mmx/exchange/trade_pair_t.hpp>
 
 #include <vnx/vnx.h>
 
@@ -428,6 +429,19 @@ public:
 
 	void accept(const exchange::open_order_t& value) {
 		set(render(value, context));
+	}
+
+	void accept(const exchange::trade_pair_t& value) {
+		auto tmp = render(value, context);
+		if(context) {
+			if(auto info = context->find_currency(value.bid)) {
+				tmp["bid_symbol"] = info->symbol;
+			}
+			if(auto info = context->find_currency(value.ask)) {
+				tmp["ask_symbol"] = info->symbol;
+			}
+		}
+		set(tmp);
 	}
 
 	void accept(const exchange::trade_order_t& value) {
@@ -1053,8 +1067,10 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			[this, request_id, wallet](const std::vector<std::shared_ptr<const exchange::OfferBundle>> offers) {
 				std::unordered_set<addr_t> addr_set;
 				for(auto offer : offers) {
-					addr_set.insert(offer->pair.bid);
-					addr_set.insert(offer->pair.ask);
+					if(offer) {
+						addr_set.insert(offer->pair.bid);
+						addr_set.insert(offer->pair.ask);
+					}
 				}
 				get_context(addr_set, request_id,
 					[this, request_id, wallet, offers](std::shared_ptr<RenderContext> context) {
@@ -1069,11 +1085,82 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			},
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 	}
+	else if(sub_path == "/exchange/pairs") {
+		const auto iter_server = query.find("server");
+		if(iter_server != query.end()) {
+			const auto server = iter_server->second;
+			exch_client->get_trade_pairs(server,
+				[this, request_id](const std::vector<exchange::trade_pair_t>& pairs) {
+					std::unordered_set<addr_t> addr_set;
+					for(const auto& pair : pairs) {
+						addr_set.insert(pair.bid);
+						addr_set.insert(pair.ask);
+					}
+					get_context(addr_set, request_id,
+						[this, request_id, pairs](std::shared_ptr<RenderContext> context) {
+							std::vector<exchange::trade_pair_t> res;
+							for(const auto& pair : pairs) {
+								res.push_back(pair);
+								res.push_back(pair.reverse());
+							}
+							std::sort(res.begin(), res.end());
+							respond(request_id, render_value(res, context));
+						});
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "exchange/pairs?server");
+		}
+	}
+	else if(sub_path == "/exchange/orders") {
+		const auto iter_server = query.find("server");
+		const auto iter_bid = query.find("bid");
+		const auto iter_ask = query.find("ask");
+		if(iter_server != query.end() && iter_bid != query.end() && iter_ask != query.end()) {
+			const auto server = iter_server->second;
+			exchange::trade_pair_t pair;
+			pair.bid = iter_bid->second;
+			pair.ask = iter_ask->second;
+			exch_client->get_orders(server, pair,
+				[this, request_id, pair](const std::vector<exchange::order_t>& orders) {
+					get_context({pair.bid, pair.ask}, request_id,
+						[this, request_id, pair, orders](std::shared_ptr<RenderContext> context) {
+							std::vector<vnx::Object> rows;
+							auto* bid_info = context->find_currency(pair.bid);
+							auto* ask_info = context->find_currency(pair.ask);
+							for(const auto& order : orders) {
+								auto row = order.to_object();
+								if(bid_info) {
+									row["bid_value"] = order.bid * pow(10, -bid_info->decimals);
+								}
+								if(ask_info) {
+									row["ask_value"] = order.ask * pow(10, -ask_info->decimals);
+								}
+								row["price"] = order.ask / double(order.bid);
+								row["inv_price"] = order.bid / double(order.ask);
+								rows.push_back(row);
+							}
+							vnx::Object res;
+							res["orders"] = rows;
+							if(bid_info) {
+								res["bid_symbol"] = bid_info->symbol;
+							}
+							if(ask_info) {
+								res["ask_symbol"] = ask_info->symbol;
+							}
+							respond(request_id, res);
+						});
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "exchange/orders?server|bid|ask");
+		}
+	}
 	else {
 		std::vector<std::string> options = {
 			"node/info", "header", "headers", "block", "blocks", "transaction", "transactions", "address", "contract",
 			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/history", "wallet/send",
-			"exchange/offer", "exchange/place", "exchange/offers"
+			"exchange/offer", "exchange/place", "exchange/offers", "exchange/pairs", "exchange/orders"
 		};
 		respond_status(request_id, 404, vnx::to_string(options));
 	}
