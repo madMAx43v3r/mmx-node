@@ -19,6 +19,7 @@
 #include <mmx/exchange/Server_get_trade_pairs.hxx>
 #include <mmx/exchange/Server_get_orders.hxx>
 #include <mmx/exchange/Server_get_price.hxx>
+#include <mmx/exchange/Server_ping.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/Request.hxx>
 
@@ -52,6 +53,7 @@ void Client::main()
 
 	threads = new vnx::ThreadPool(1);
 
+	set_timer_millis(10 * 1000, std::bind(&Client::update, this));
 	set_timer_millis(60 * 1000, std::bind(&Client::connect, this));
 
 	{
@@ -83,6 +85,16 @@ void Client::main()
 				break;
 			}
 		}
+	}
+}
+
+void Client::update()
+{
+	// send keep alive
+	for(const auto& entry : avail_server_map) {
+		auto req = Request::create();
+		req->method = Server_ping::create();
+		send_to(entry.second, req);
 	}
 }
 

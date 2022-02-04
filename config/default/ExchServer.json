@@ -2,5 +2,6 @@
 	"port": 11347,
 	"host": "0.0.0.0",
 	"max_connections": 512,
-	"stats_interval_ms": 60000
+	"stats_interval_ms": 60000,
+	"connection_timeout_ms": 30000
 }

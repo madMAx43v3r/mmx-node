@@ -52,6 +52,8 @@ protected:
 
 	void main() override;
 
+	void ping(const uint64_t& client) const override;
+
 	void cancel(const uint64_t& client, const std::vector<txio_key_t>& orders) override;
 
 	void reject(const uint64_t& client, const hash_t& txid) override;

@@ -35,6 +35,8 @@ module Server extends vnx.addons.MsgServer {
 	
 	void approve(ulong client, Transaction* tx);
 	
+	void ping(ulong client) const;
+	
 	vector<trade_pair_t> get_trade_pairs() const;
 	
 	

@@ -85,6 +85,8 @@ protected:
 	void handle(std::shared_ptr<const Block> block) override;
 
 private:
+	void update();
+
 	std::shared_ptr<OfferBundle> find_offer(const uint64_t& id) const;
 
 	void send_offer(uint64_t server, std::shared_ptr<const OfferBundle> offer);

@@ -488,6 +488,10 @@ ulong_fraction_t Server::get_price(const addr_t& want, const amount_t& have) con
 	return price;
 }
 
+void Server::ping(const uint64_t& client) const
+{
+}
+
 bool Server::is_open(const txio_key_t& bid_key) const
 {
 	return !lock_map.count(bid_key);
