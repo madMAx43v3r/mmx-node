@@ -20,6 +20,8 @@
 #include <mmx/exchange/Server_get_trade_pairs_return.hxx>
 #include <mmx/exchange/Server_match.hxx>
 #include <mmx/exchange/Server_match_return.hxx>
+#include <mmx/exchange/Server_ping.hxx>
+#include <mmx/exchange/Server_ping_return.hxx>
 #include <mmx/exchange/Server_place.hxx>
 #include <mmx/exchange/Server_place_return.hxx>
 #include <mmx/exchange/Server_reject.hxx>
@@ -284,6 +286,18 @@ void ServerClient::approve_async(const uint64_t& client, std::shared_ptr<const :
 	auto _method = ::mmx::exchange::Server_approve::create();
 	_method->client = client;
 	_method->tx = tx;
+	vnx_request(_method, true);
+}
+
+void ServerClient::ping(const uint64_t& client) {
+	auto _method = ::mmx::exchange::Server_ping::create();
+	_method->client = client;
+	vnx_request(_method, false);
+}
+
+void ServerClient::ping_async(const uint64_t& client) {
+	auto _method = ::mmx::exchange::Server_ping::create();
+	_method->client = client;
 	vnx_request(_method, true);
 }
 

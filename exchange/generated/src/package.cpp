@@ -48,6 +48,8 @@
 #include <mmx/exchange/Server_get_trade_pairs_return.hxx>
 #include <mmx/exchange/Server_match.hxx>
 #include <mmx/exchange/Server_match_return.hxx>
+#include <mmx/exchange/Server_ping.hxx>
+#include <mmx/exchange/Server_ping_return.hxx>
 #include <mmx/exchange/Server_place.hxx>
 #include <mmx/exchange/Server_place_return.hxx>
 #include <mmx/exchange/Server_reject.hxx>
@@ -607,6 +609,30 @@ void type<::mmx::exchange::Server_match_return>::create_dynamic_code(std::vector
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::exchange::Server_ping>::get_type_code() {
+	return mmx::exchange::vnx_native_type_code_Server_ping;
+}
+
+void type<::mmx::exchange::Server_ping>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::exchange::Server_ping());
+}
+
+void type<::mmx::exchange::Server_ping>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::exchange::Server_ping& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::exchange::Server_ping_return>::get_type_code() {
+	return mmx::exchange::vnx_native_type_code_Server_ping_return;
+}
+
+void type<::mmx::exchange::Server_ping_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::exchange::Server_ping_return());
+}
+
+void type<::mmx::exchange::Server_ping_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::exchange::Server_ping_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::exchange::Server_place>::get_type_code() {
 	return mmx::exchange::vnx_native_type_code_Server_place;
 }
@@ -795,6 +821,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::exchange::Server_get_trade_pairs_return::static_create_type_code());
 	vnx::register_type_code(::mmx::exchange::Server_match::static_create_type_code());
 	vnx::register_type_code(::mmx::exchange::Server_match_return::static_create_type_code());
+	vnx::register_type_code(::mmx::exchange::Server_ping::static_create_type_code());
+	vnx::register_type_code(::mmx::exchange::Server_ping_return::static_create_type_code());
 	vnx::register_type_code(::mmx::exchange::Server_place::static_create_type_code());
 	vnx::register_type_code(::mmx::exchange::Server_place_return::static_create_type_code());
 	vnx::register_type_code(::mmx::exchange::Server_reject::static_create_type_code());
@@ -861,6 +889,8 @@ const vnx::TypeCode* const vnx_native_type_code_Server_get_trade_pairs = vnx::ge
 const vnx::TypeCode* const vnx_native_type_code_Server_get_trade_pairs_return = vnx::get_type_code(vnx::Hash64(0x67aebf5da454f122ull));
 const vnx::TypeCode* const vnx_native_type_code_Server_match = vnx::get_type_code(vnx::Hash64(0x7d6b1feaf4d8a485ull));
 const vnx::TypeCode* const vnx_native_type_code_Server_match_return = vnx::get_type_code(vnx::Hash64(0xdd7bd59f9bd2a773ull));
+const vnx::TypeCode* const vnx_native_type_code_Server_ping = vnx::get_type_code(vnx::Hash64(0x7a04c726acd61ce8ull));
+const vnx::TypeCode* const vnx_native_type_code_Server_ping_return = vnx::get_type_code(vnx::Hash64(0xf1de352e5239c87ull));
 const vnx::TypeCode* const vnx_native_type_code_Server_place = vnx::get_type_code(vnx::Hash64(0x957913dc32e3d68cull));
 const vnx::TypeCode* const vnx_native_type_code_Server_place_return = vnx::get_type_code(vnx::Hash64(0x49ad8d482195a986ull));
 const vnx::TypeCode* const vnx_native_type_code_Server_reject = vnx::get_type_code(vnx::Hash64(0x29196637450834e9ull));

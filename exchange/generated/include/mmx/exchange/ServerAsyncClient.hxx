@@ -98,6 +98,10 @@ public:
 			const std::function<void()>& _callback = std::function<void()>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
+	uint64_t ping(const uint64_t& client = 0, 
+			const std::function<void()>& _callback = std::function<void()>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
 	uint64_t get_trade_pairs(
 			const std::function<void(const std::vector<::mmx::exchange::trade_pair_t>&)>& _callback = std::function<void(const std::vector<::mmx::exchange::trade_pair_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
@@ -125,6 +129,7 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_cancel;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_reject;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_approve;
+	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_ping;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::exchange::trade_pair_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_trade_pairs;
 	
 };
