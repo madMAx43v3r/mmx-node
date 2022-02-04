@@ -70,6 +70,8 @@ protected:
 
 	void match_async(const std::string& server, const std::vector<trade_order_t>& orders, const vnx::request_id_t& request_id) const override;
 
+	void get_trade_pairs_async(const std::string& server, const vnx::request_id_t& request_id) const override;
+
 	void get_orders_async(const std::string& server, const trade_pair_t& pair, const vnx::request_id_t& request_id) const override;
 
 	void get_price_async(const std::string& server, const addr_t& want, const amount_t& have, const vnx::request_id_t& request_id) const override;

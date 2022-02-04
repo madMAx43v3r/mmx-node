@@ -64,6 +64,8 @@ protected:
 
 	void match_async(const trade_order_t& order, const vnx::request_id_t& request_id) const override;
 
+	std::vector<trade_pair_t> get_trade_pairs() const override;
+
 	std::vector<order_t> get_orders(const trade_pair_t& pair) const override;
 
 	ulong_fraction_t get_price(const addr_t& want, const amount_t& have) const override;

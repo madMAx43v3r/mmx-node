@@ -16,10 +16,9 @@
 #include <mmx/exchange/Server_execute_return.hxx>
 #include <mmx/exchange/Server_match.hxx>
 #include <mmx/exchange/Server_match_return.hxx>
+#include <mmx/exchange/Server_get_trade_pairs.hxx>
 #include <mmx/exchange/Server_get_orders.hxx>
-#include <mmx/exchange/Server_get_orders_return.hxx>
 #include <mmx/exchange/Server_get_price.hxx>
-#include <mmx/exchange/Server_get_price_return.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/Request.hxx>
 
@@ -412,6 +411,13 @@ void Client::match_async(const std::string& server, const std::vector<trade_orde
 				}
 			});
 	}
+}
+
+void Client::get_trade_pairs_async(const std::string& server, const vnx::request_id_t& request_id) const
+{
+	auto peer = get_server(server);
+	auto method = Server_get_trade_pairs::create();
+	send_request(peer, method, std::bind(&Client::vnx_async_return, this, request_id, std::placeholders::_1));
 }
 
 void Client::get_orders_async(const std::string& server, const trade_pair_t& pair, const vnx::request_id_t& request_id) const

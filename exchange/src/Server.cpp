@@ -444,6 +444,15 @@ void Server::match_async(const trade_order_t& order, const vnx::request_id_t& re
 		std::bind(&Server::vnx_async_return_ex, this, request_id, std::placeholders::_1));
 }
 
+std::vector<trade_pair_t> Server::get_trade_pairs() const
+{
+	std::vector<trade_pair_t> res;
+	for(const auto& entry : trade_map) {
+		res.push_back(entry.first);
+	}
+	return res;
+}
+
 std::vector<order_t> Server::get_orders(const trade_pair_t& pair) const
 {
 	std::vector<order_t> orders;

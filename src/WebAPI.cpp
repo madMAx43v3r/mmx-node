@@ -422,6 +422,10 @@ public:
 		set(tmp);
 	}
 
+	void accept(const exchange::order_t& value) {
+		set(render(value, context));
+	}
+
 	void accept(const exchange::open_order_t& value) {
 		set(render(value, context));
 	}
