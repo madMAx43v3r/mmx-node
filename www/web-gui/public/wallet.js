@@ -523,6 +523,9 @@ app.component('account-offer-form', {
 				.then(response => response.json())
 				.then(data => this.balances = data.balances);
 		},
+		update_balance() {
+			this.$refs.balance.update();
+		},
 		submit() {
 			this.confirmed = false;
 			const req = {};
@@ -645,7 +648,7 @@ app.component('account-offer-form', {
 			<div @click="submit" class="ui submit primary button disabled" id="submit">Offer</div>
 		</form>
 		</div>
-		<account-offers :index="index" ref="offers"></account-offers>
+		<account-offers @offer-cancel="update_balance" :index="index" ref="offers"></account-offers>
 		`
 })
 
@@ -653,6 +656,9 @@ app.component('account-offers', {
 	props: {
 		index: Number
 	},
+	emits: [
+		"offer-cancel"
+	],
 	data() {
 		return {
 			data: []
@@ -666,7 +672,10 @@ app.component('account-offers', {
 		},
 		cancel(id) {
 			fetch('/api/exchange/cancel_offer?id=' + id)
-				.then(response => this.update());
+				.then(response => {
+					this.update();
+					this.$emit('offer-cancel', id);
+				});
 		}
 	},
 	created() {
