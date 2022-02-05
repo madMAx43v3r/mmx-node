@@ -95,6 +95,8 @@
 #include <mmx/RouterBase.hxx>
 #include <mmx/Router_discover.hxx>
 #include <mmx/Router_discover_return.hxx>
+#include <mmx/Router_fetch_block.hxx>
+#include <mmx/Router_fetch_block_return.hxx>
 #include <mmx/Router_fetch_block_at.hxx>
 #include <mmx/Router_fetch_block_at_return.hxx>
 #include <mmx/Router_get_blocks_at.hxx>
@@ -1292,6 +1294,30 @@ void type<::mmx::Router_discover_return>::create_dynamic_code(std::vector<uint16
 }
 
 void type<::mmx::Router_discover_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_discover_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Router_fetch_block>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_fetch_block;
+}
+
+void type<::mmx::Router_fetch_block>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Router_fetch_block());
+}
+
+void type<::mmx::Router_fetch_block>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_fetch_block& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Router_fetch_block_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Router_fetch_block_return;
+}
+
+void type<::mmx::Router_fetch_block_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Router_fetch_block_return());
+}
+
+void type<::mmx::Router_fetch_block_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_fetch_block_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -2717,6 +2743,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::RouterBase::static_create_type_code());
 	vnx::register_type_code(::mmx::Router_discover::static_create_type_code());
 	vnx::register_type_code(::mmx::Router_discover_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Router_fetch_block::static_create_type_code());
+	vnx::register_type_code(::mmx::Router_fetch_block_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Router_fetch_block_at::static_create_type_code());
 	vnx::register_type_code(::mmx::Router_fetch_block_at_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Router_get_blocks_at::static_create_type_code());
@@ -2924,6 +2952,8 @@ const vnx::TypeCode* const vnx_native_type_code_Return = vnx::get_type_code(vnx:
 const vnx::TypeCode* const vnx_native_type_code_RouterBase = vnx::get_type_code(vnx::Hash64(0x952c4ef2956f31c4ull));
 const vnx::TypeCode* const vnx_native_type_code_Router_discover = vnx::get_type_code(vnx::Hash64(0xeda51767d96e246cull));
 const vnx::TypeCode* const vnx_native_type_code_Router_discover_return = vnx::get_type_code(vnx::Hash64(0xb4e47e012f264f94ull));
+const vnx::TypeCode* const vnx_native_type_code_Router_fetch_block = vnx::get_type_code(vnx::Hash64(0x7c2f762681e7cc51ull));
+const vnx::TypeCode* const vnx_native_type_code_Router_fetch_block_return = vnx::get_type_code(vnx::Hash64(0xcbe76155006bbb44ull));
 const vnx::TypeCode* const vnx_native_type_code_Router_fetch_block_at = vnx::get_type_code(vnx::Hash64(0xa4deba522ed6f8adull));
 const vnx::TypeCode* const vnx_native_type_code_Router_fetch_block_at_return = vnx::get_type_code(vnx::Hash64(0xff711a762d6f885ull));
 const vnx::TypeCode* const vnx_native_type_code_Router_get_blocks_at = vnx::get_type_code(vnx::Hash64(0x1eb0c0d7eae3c33aull));

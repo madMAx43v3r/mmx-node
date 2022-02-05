@@ -75,7 +75,9 @@ public:
 	
 	std::vector<std::shared_ptr<const ::mmx::Block>> get_blocks_at(const uint32_t& height = 0);
 	
-	std::shared_ptr<const ::mmx::Block> fetch_block_at(const std::string& address = "", const uint32_t& height = 0);
+	std::shared_ptr<const ::mmx::Block> fetch_block(const ::mmx::hash_t& hash = ::mmx::hash_t(), const vnx::optional<std::string>& address = nullptr);
+	
+	std::shared_ptr<const ::mmx::Block> fetch_block_at(const uint32_t& height = 0, const std::string& address = "");
 	
 };
 

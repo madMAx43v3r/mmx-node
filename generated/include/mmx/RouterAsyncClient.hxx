@@ -103,7 +103,11 @@ public:
 			const std::function<void(const std::vector<std::shared_ptr<const ::mmx::Block>>&)>& _callback = std::function<void(const std::vector<std::shared_ptr<const ::mmx::Block>>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t fetch_block_at(const std::string& address = "", const uint32_t& height = 0, 
+	uint64_t fetch_block(const ::mmx::hash_t& hash = ::mmx::hash_t(), const vnx::optional<std::string>& address = nullptr, 
+			const std::function<void(std::shared_ptr<const ::mmx::Block>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::Block>)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t fetch_block_at(const uint32_t& height = 0, const std::string& address = "", 
 			const std::function<void(std::shared_ptr<const ::mmx::Block>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::Block>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
@@ -132,6 +136,7 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::PeerInfo>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_peer_info;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::pair<std::string, uint32_t>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_farmer_credits;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::shared_ptr<const ::mmx::Block>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_blocks_at;
+	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::Block>)>, std::function<void(const vnx::exception&)>>> vnx_queue_fetch_block;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::Block>)>, std::function<void(const vnx::exception&)>>> vnx_queue_fetch_block_at;
 	
 };

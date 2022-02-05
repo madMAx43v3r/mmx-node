@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Router_fetch_block_at::VNX_TYPE_HASH(0xa4deba522ed6f8adull);
-const vnx::Hash64 Router_fetch_block_at::VNX_CODE_HASH(0xa2ecd34d4deeaa1aull);
+const vnx::Hash64 Router_fetch_block_at::VNX_CODE_HASH(0x611fcd29266eedc5ull);
 
 vnx::Hash64 Router_fetch_block_at::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -46,15 +46,15 @@ void Router_fetch_block_at::write(vnx::TypeOutput& _out, const vnx::TypeCode* _t
 void Router_fetch_block_at::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Router_fetch_block_at;
 	_visitor.type_begin(*_type_code);
-	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, address);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, height);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, height);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, address);
 	_visitor.type_end(*_type_code);
 }
 
 void Router_fetch_block_at::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Router.fetch_block_at\"";
-	_out << ", \"address\": "; vnx::write(_out, address);
 	_out << ", \"height\": "; vnx::write(_out, height);
+	_out << ", \"address\": "; vnx::write(_out, address);
 	_out << "}";
 }
 
@@ -67,8 +67,8 @@ void Router_fetch_block_at::read(std::istream& _in) {
 vnx::Object Router_fetch_block_at::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Router.fetch_block_at";
-	_object["address"] = address;
 	_object["height"] = height;
+	_object["address"] = address;
 	return _object;
 }
 
@@ -83,20 +83,20 @@ void Router_fetch_block_at::from_object(const vnx::Object& _object) {
 }
 
 vnx::Variant Router_fetch_block_at::get_field(const std::string& _name) const {
-	if(_name == "address") {
-		return vnx::Variant(address);
-	}
 	if(_name == "height") {
 		return vnx::Variant(height);
+	}
+	if(_name == "address") {
+		return vnx::Variant(address);
 	}
 	return vnx::Variant();
 }
 
 void Router_fetch_block_at::set_field(const std::string& _name, const vnx::Variant& _value) {
-	if(_name == "address") {
-		_value.to(address);
-	} else if(_name == "height") {
+	if(_name == "height") {
 		_value.to(height);
+	} else if(_name == "address") {
+		_value.to(address);
 	}
 }
 
@@ -124,7 +124,7 @@ std::shared_ptr<vnx::TypeCode> Router_fetch_block_at::static_create_type_code() 
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Router.fetch_block_at";
 	type_code->type_hash = vnx::Hash64(0xa4deba522ed6f8adull);
-	type_code->code_hash = vnx::Hash64(0xa2ecd34d4deeaa1aull);
+	type_code->code_hash = vnx::Hash64(0x611fcd29266eedc5ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -136,15 +136,15 @@ std::shared_ptr<vnx::TypeCode> Router_fetch_block_at::static_create_type_code() 
 	type_code->fields.resize(2);
 	{
 		auto& field = type_code->fields[0];
-		field.is_extended = true;
-		field.name = "address";
-		field.code = {32};
-	}
-	{
-		auto& field = type_code->fields[1];
 		field.data_size = 4;
 		field.name = "height";
 		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[1];
+		field.is_extended = true;
+		field.name = "address";
+		field.code = {32};
 	}
 	type_code->build();
 	return type_code;
@@ -188,13 +188,13 @@ void read(TypeInput& in, ::mmx::Router_fetch_block_at& value, const TypeCode* ty
 	}
 	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
-		if(const auto* const _field = type_code->field_map[1]) {
+		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.height, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 0: vnx::read(in, value.address, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.address, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -215,7 +215,7 @@ void write(TypeOutput& out, const ::mmx::Router_fetch_block_at& value, const Typ
 	}
 	char* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.height);
-	vnx::write(out, value.address, type_code, type_code->fields[0].code.data());
+	vnx::write(out, value.address, type_code, type_code->fields[1].code.data());
 }
 
 void read(std::istream& in, ::mmx::Router_fetch_block_at& value) {

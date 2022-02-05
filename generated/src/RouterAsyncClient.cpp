@@ -9,6 +9,8 @@
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Router_discover.hxx>
 #include <mmx/Router_discover_return.hxx>
+#include <mmx/Router_fetch_block.hxx>
+#include <mmx/Router_fetch_block_return.hxx>
 #include <mmx/Router_fetch_block_at.hxx>
 #include <mmx/Router_fetch_block_at_return.hxx>
 #include <mmx/Router_get_blocks_at.hxx>
@@ -307,14 +309,28 @@ uint64_t RouterAsyncClient::get_blocks_at(const uint32_t& height, const std::fun
 	return _request_id;
 }
 
-uint64_t RouterAsyncClient::fetch_block_at(const std::string& address, const uint32_t& height, const std::function<void(std::shared_ptr<const ::mmx::Block>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
-	auto _method = ::mmx::Router_fetch_block_at::create();
+uint64_t RouterAsyncClient::fetch_block(const ::mmx::hash_t& hash, const vnx::optional<std::string>& address, const std::function<void(std::shared_ptr<const ::mmx::Block>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+	auto _method = ::mmx::Router_fetch_block::create();
+	_method->hash = hash;
 	_method->address = address;
-	_method->height = height;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
 		vnx_pending[_request_id] = 19;
+		vnx_queue_fetch_block[_request_id] = std::make_pair(_callback, _error_callback);
+	}
+	vnx_request(_method, _request_id);
+	return _request_id;
+}
+
+uint64_t RouterAsyncClient::fetch_block_at(const uint32_t& height, const std::string& address, const std::function<void(std::shared_ptr<const ::mmx::Block>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+	auto _method = ::mmx::Router_fetch_block_at::create();
+	_method->height = height;
+	_method->address = address;
+	const auto _request_id = ++vnx_next_id;
+	{
+		std::lock_guard<std::mutex> _lock(vnx_mutex);
+		vnx_pending[_request_id] = 20;
 		vnx_queue_fetch_block_at[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -559,6 +575,18 @@ int32_t RouterAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			break;
 		}
 		case 19: {
+			const auto _iter = vnx_queue_fetch_block.find(_request_id);
+			if(_iter != vnx_queue_fetch_block.end()) {
+				const auto _callback = std::move(_iter->second.second);
+				vnx_queue_fetch_block.erase(_iter);
+				_lock.unlock();
+				if(_callback) {
+					_callback(_ex);
+				}
+			}
+			break;
+		}
+		case 20: {
 			const auto _iter = vnx_queue_fetch_block_at.find(_request_id);
 			if(_iter != vnx_queue_fetch_block_at.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -915,6 +943,25 @@ int32_t RouterAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			break;
 		}
 		case 19: {
+			const auto _iter = vnx_queue_fetch_block.find(_request_id);
+			if(_iter == vnx_queue_fetch_block.end()) {
+				throw std::runtime_error("RouterAsyncClient: callback not found");
+			}
+			const auto _callback = std::move(_iter->second.first);
+			vnx_queue_fetch_block.erase(_iter);
+			_lock.unlock();
+			if(_callback) {
+				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Router_fetch_block_return>(_value)) {
+					_callback(_result->_ret_0);
+				} else if(_value && !_value->is_void()) {
+					_callback(_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Block>>());
+				} else {
+					throw std::logic_error("RouterAsyncClient: invalid return value");
+				}
+			}
+			break;
+		}
+		case 20: {
 			const auto _iter = vnx_queue_fetch_block_at.find(_request_id);
 			if(_iter == vnx_queue_fetch_block_at.end()) {
 				throw std::runtime_error("RouterAsyncClient: callback not found");

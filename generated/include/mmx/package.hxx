@@ -107,6 +107,8 @@ class Return;
 class RouterBase;
 class Router_discover;
 class Router_discover_return;
+class Router_fetch_block;
+class Router_fetch_block_return;
 class Router_fetch_block_at;
 class Router_fetch_block_at_return;
 class Router_get_blocks_at;
@@ -314,6 +316,8 @@ extern const vnx::TypeCode* const vnx_native_type_code_Return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_RouterBase; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Router_discover; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Router_discover_return; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_Router_fetch_block; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_Router_fetch_block_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Router_fetch_block_at; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Router_fetch_block_at_return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Router_get_blocks_at; ///< \private
@@ -519,6 +523,8 @@ void read(TypeInput& in, ::mmx::Return& value, const TypeCode* type_code, const 
 void read(TypeInput& in, ::mmx::RouterBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Router_discover& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Router_discover_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Router_fetch_block& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Router_fetch_block_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Router_fetch_block_at& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Router_fetch_block_at_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Router_get_blocks_at& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -726,6 +732,8 @@ void write(TypeOutput& out, const ::mmx::Return& value, const TypeCode* type_cod
 void write(TypeOutput& out, const ::mmx::RouterBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Router_discover& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Router_discover_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Router_fetch_block& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Router_fetch_block_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Router_fetch_block_at& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Router_fetch_block_at_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Router_get_blocks_at& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -933,6 +941,8 @@ void read(std::istream& in, ::mmx::Return& value); ///< \private
 void read(std::istream& in, ::mmx::RouterBase& value); ///< \private
 void read(std::istream& in, ::mmx::Router_discover& value); ///< \private
 void read(std::istream& in, ::mmx::Router_discover_return& value); ///< \private
+void read(std::istream& in, ::mmx::Router_fetch_block& value); ///< \private
+void read(std::istream& in, ::mmx::Router_fetch_block_return& value); ///< \private
 void read(std::istream& in, ::mmx::Router_fetch_block_at& value); ///< \private
 void read(std::istream& in, ::mmx::Router_fetch_block_at_return& value); ///< \private
 void read(std::istream& in, ::mmx::Router_get_blocks_at& value); ///< \private
@@ -1140,6 +1150,8 @@ void write(std::ostream& out, const ::mmx::Return& value); ///< \private
 void write(std::ostream& out, const ::mmx::RouterBase& value); ///< \private
 void write(std::ostream& out, const ::mmx::Router_discover& value); ///< \private
 void write(std::ostream& out, const ::mmx::Router_discover_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Router_fetch_block& value); ///< \private
+void write(std::ostream& out, const ::mmx::Router_fetch_block_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Router_fetch_block_at& value); ///< \private
 void write(std::ostream& out, const ::mmx::Router_fetch_block_at_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Router_get_blocks_at& value); ///< \private
@@ -1347,6 +1359,8 @@ void accept(Visitor& visitor, const ::mmx::Return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::RouterBase& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Router_discover& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Router_discover_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Router_fetch_block& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Router_fetch_block_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Router_fetch_block_at& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Router_fetch_block_at_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Router_get_blocks_at& value); ///< \private
@@ -3608,6 +3622,52 @@ struct type<::mmx::Router_discover_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_discover_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Router_fetch_block> {
+	void read(TypeInput& in, ::mmx::Router_fetch_block& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Router_fetch_block& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Router_fetch_block& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Router_fetch_block& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Router_fetch_block& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_fetch_block& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Router_fetch_block_return> {
+	void read(TypeInput& in, ::mmx::Router_fetch_block_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Router_fetch_block_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Router_fetch_block_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Router_fetch_block_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Router_fetch_block_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_fetch_block_return& value, bool special = false);
 };
 
 /// \private

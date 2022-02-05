@@ -10,6 +10,8 @@
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Router_discover.hxx>
 #include <mmx/Router_discover_return.hxx>
+#include <mmx/Router_fetch_block.hxx>
+#include <mmx/Router_fetch_block_return.hxx>
 #include <mmx/Router_fetch_block_at.hxx>
 #include <mmx/Router_fetch_block_at_return.hxx>
 #include <mmx/Router_get_blocks_at.hxx>
@@ -679,7 +681,7 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	type_code->parents[1] = ::vnx::addons::TcpServerBase::static_get_type_code();
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::node_type_e::static_get_type_code();
-	type_code->methods.resize(20);
+	type_code->methods.resize(21);
 	type_code->methods[0] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
 	type_code->methods[1] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
 	type_code->methods[2] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
@@ -699,7 +701,8 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	type_code->methods[16] = ::mmx::Router_get_peer_info::static_get_type_code();
 	type_code->methods[17] = ::mmx::Router_get_farmer_credits::static_get_type_code();
 	type_code->methods[18] = ::mmx::Router_get_blocks_at::static_get_type_code();
-	type_code->methods[19] = ::mmx::Router_fetch_block_at::static_get_type_code();
+	type_code->methods[19] = ::mmx::Router_fetch_block::static_get_type_code();
+	type_code->methods[20] = ::mmx::Router_fetch_block_at::static_get_type_code();
 	type_code->fields.resize(49);
 	{
 		auto& field = type_code->fields[0];
@@ -1181,9 +1184,14 @@ std::shared_ptr<vnx::Value> RouterBase::vnx_call_switch(std::shared_ptr<const vn
 			get_blocks_at_async(_args->height, _request_id);
 			return nullptr;
 		}
+		case 0x7c2f762681e7cc51ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Router_fetch_block>(_method);
+			fetch_block_async(_args->hash, _args->address, _request_id);
+			return nullptr;
+		}
 		case 0xa4deba522ed6f8adull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Router_fetch_block_at>(_method);
-			fetch_block_at_async(_args->address, _args->height, _request_id);
+			fetch_block_at_async(_args->height, _args->address, _request_id);
 			return nullptr;
 		}
 	}
@@ -1195,6 +1203,12 @@ std::shared_ptr<vnx::Value> RouterBase::vnx_call_switch(std::shared_ptr<const vn
 
 void RouterBase::get_blocks_at_async_return(const vnx::request_id_t& _request_id, const std::vector<std::shared_ptr<const ::mmx::Block>>& _ret_0) const {
 	auto _return_value = ::mmx::Router_get_blocks_at_return::create();
+	_return_value->_ret_0 = _ret_0;
+	vnx_async_return(_request_id, _return_value);
+}
+
+void RouterBase::fetch_block_async_return(const vnx::request_id_t& _request_id, const std::shared_ptr<const ::mmx::Block>& _ret_0) const {
+	auto _return_value = ::mmx::Router_fetch_block_return::create();
 	_return_value->_ret_0 = _ret_0;
 	vnx_async_return(_request_id, _return_value);
 }
