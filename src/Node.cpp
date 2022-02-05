@@ -19,6 +19,10 @@
 #include <atomic>
 #include <algorithm>
 
+#ifdef WITH_JEMALLOC
+#include <jemalloc/jemalloc.h>
+#endif
+
 
 namespace mmx {
 
@@ -945,9 +949,23 @@ void Node::handle(std::shared_ptr<const ProofResponse> value)
 	}
 }
 
+#ifdef WITH_JEMALLOC
+static void malloc_stats_callback(void* file, const char* data) {
+	fwrite(data, 1, strlen(data), (FILE*)file);
+}
+#endif
+
 void Node::print_stats()
 {
-	 log(INFO) << tx_pool.size() << " tx pool, " << contract_map.size() << " contracts, "
+#ifdef WITH_JEMALLOC
+	{
+		const std::string path = storage_path + "node_malloc_info.txt";
+		FILE* file = fopen(path.c_str(), "w");
+		malloc_stats_print(&malloc_stats_callback, file, 0);
+		fclose(file);
+	}
+#endif
+	log(INFO) << tx_pool.size() << " tx pool, " << contract_map.size() << " contracts, "
 			 << utxo_map.size() << " utxo, " << change_log.size() << " / " << fork_tree.size() << " blocks";
 }
 

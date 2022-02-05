@@ -21,6 +21,8 @@ add_subdirectory(exchange)
 find_package(OpenCL)
 find_package(Threads REQUIRED)
 
+find_library(JEMALLOC_LIB NAMES jemalloc)
+
 include(cmake/chiapos.cmake)
 
 if(OpenCL_FOUND)
@@ -116,6 +118,12 @@ target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_iface mmx_exchange
 if(OpenCL_FOUND)
 	target_link_libraries(mmx_modules automy_basic_opencl)
 	target_compile_definitions(mmx_modules PUBLIC WITH_OPENCL)
+endif()
+
+if(JEMALLOC_LIB)
+	message(STATUS "Found jemalloc")
+	target_link_libraries(mmx_modules ${JEMALLOC_LIB})
+	target_compile_definitions(mmx_modules PUBLIC WITH_JEMALLOC)
 endif()
 
 add_executable(mmx src/mmx.cpp)
