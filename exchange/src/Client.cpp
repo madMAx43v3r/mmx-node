@@ -465,7 +465,8 @@ std::shared_ptr<const Transaction> Client::approve(std::shared_ptr<const Transac
 	for(const auto& entry : expect_amount) {
 		auto iter = output_amount.find(entry.first);
 		if(iter == output_amount.end() || iter->second < entry.second) {
-			throw std::logic_error("expected amount: " + std::to_string(entry.second) + " [" + entry.first.to_string() + "]");
+			const uint64_t amount = iter != output_amount.end() ? iter->second : 0;
+			throw std::logic_error("expected amount: " + std::to_string(entry.second) + " != " + std::to_string(amount) + " [" + entry.first.to_string() + "]");
 		}
 	}
 	auto out = vnx::clone(tx);
