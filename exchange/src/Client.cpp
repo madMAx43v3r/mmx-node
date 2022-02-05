@@ -64,7 +64,9 @@ void Client::main()
 			vnx::read_generic(file.in, offers);
 			for(const auto& entry : offers) {
 				if(auto offer = entry.second) {
-					place(offer);
+					if(offer->bid_sold < offer->bid) {
+						place(offer);
+					}
 				}
 			}
 		}
