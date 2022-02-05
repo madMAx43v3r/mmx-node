@@ -7,9 +7,7 @@ struct limit_order_t {
 	
 	uint version;
 	
-	ulong ask;
-	
-	vector<txio_key_t> bid_keys;
+	vector<pair<txio_key_t, ulong>> bids;		// [key => ask amount]
 	
 	mmx.Solution* solution;
 	

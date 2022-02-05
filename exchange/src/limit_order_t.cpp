@@ -20,9 +20,9 @@ hash_t limit_order_t::calc_hash() const
 
 	write_bytes(out, get_type_hash());
 	write_bytes(out, version);
-	write_bytes(out, ask);
-	for(const auto& key : bid_keys) {
-		write_bytes(out, key);
+	for(const auto& entry : bids) {
+		write_bytes(out, entry.first);
+		write_bytes(out, entry.second);
 	}
 	out.flush();
 

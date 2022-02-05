@@ -283,8 +283,8 @@ void Client::cancel_offer(const uint64_t& id)
 	auto offer = iter->second;
 	auto method = Server_cancel::create();
 	for(const auto& order : offer->limit_orders) {
-		for(const auto& key : order.bid_keys) {
-			method->orders.push_back(key);
+		for(const auto& entry : order.bids) {
+			method->orders.push_back(entry.first);
 		}
 	}
 	for(const auto& entry : avail_server_map) {
@@ -340,8 +340,7 @@ std::shared_ptr<const OfferBundle> Client::make_offer(const uint32_t& index, con
 	for(const auto& bundle : addr_map) {
 		limit_order_t order;
 		for(const auto& entry : bundle.second) {
-			order.ask += entry.second;
-			order.bid_keys.push_back(entry.first);
+			order.bids.emplace_back(entry.first, entry.second);
 		}
 		const auto hash = order.calc_hash();
 		order.solution = wallet->sign_msg(index, bundle.first, hash);
