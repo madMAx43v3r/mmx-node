@@ -15,7 +15,7 @@ namespace exchange {
 
 
 const vnx::Hash64 limit_order_t::VNX_TYPE_HASH(0x29221388863cc7c6ull);
-const vnx::Hash64 limit_order_t::VNX_CODE_HASH(0xc11d5f530ca98c6eull);
+const vnx::Hash64 limit_order_t::VNX_CODE_HASH(0x7a8bfd1e352c2530ull);
 
 vnx::Hash64 limit_order_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,17 +49,15 @@ void limit_order_t::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::exchange::vnx_native_type_code_limit_order_t;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, version);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, ask);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, bid_keys);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, solution);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, bids);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, solution);
 	_visitor.type_end(*_type_code);
 }
 
 void limit_order_t::write(std::ostream& _out) const {
 	_out << "{";
 	_out << "\"version\": "; vnx::write(_out, version);
-	_out << ", \"ask\": "; vnx::write(_out, ask);
-	_out << ", \"bid_keys\": "; vnx::write(_out, bid_keys);
+	_out << ", \"bids\": "; vnx::write(_out, bids);
 	_out << ", \"solution\": "; vnx::write(_out, solution);
 	_out << "}";
 }
@@ -74,18 +72,15 @@ vnx::Object limit_order_t::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.exchange.limit_order_t";
 	_object["version"] = version;
-	_object["ask"] = ask;
-	_object["bid_keys"] = bid_keys;
+	_object["bids"] = bids;
 	_object["solution"] = solution;
 	return _object;
 }
 
 void limit_order_t::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "ask") {
-			_entry.second.to(ask);
-		} else if(_entry.first == "bid_keys") {
-			_entry.second.to(bid_keys);
+		if(_entry.first == "bids") {
+			_entry.second.to(bids);
 		} else if(_entry.first == "solution") {
 			_entry.second.to(solution);
 		} else if(_entry.first == "version") {
@@ -98,11 +93,8 @@ vnx::Variant limit_order_t::get_field(const std::string& _name) const {
 	if(_name == "version") {
 		return vnx::Variant(version);
 	}
-	if(_name == "ask") {
-		return vnx::Variant(ask);
-	}
-	if(_name == "bid_keys") {
-		return vnx::Variant(bid_keys);
+	if(_name == "bids") {
+		return vnx::Variant(bids);
 	}
 	if(_name == "solution") {
 		return vnx::Variant(solution);
@@ -113,10 +105,8 @@ vnx::Variant limit_order_t::get_field(const std::string& _name) const {
 void limit_order_t::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "version") {
 		_value.to(version);
-	} else if(_name == "ask") {
-		_value.to(ask);
-	} else if(_name == "bid_keys") {
-		_value.to(bid_keys);
+	} else if(_name == "bids") {
+		_value.to(bids);
 	} else if(_name == "solution") {
 		_value.to(solution);
 	}
@@ -146,13 +136,13 @@ std::shared_ptr<vnx::TypeCode> limit_order_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.limit_order_t";
 	type_code->type_hash = vnx::Hash64(0x29221388863cc7c6ull);
-	type_code->code_hash = vnx::Hash64(0xc11d5f530ca98c6eull);
+	type_code->code_hash = vnx::Hash64(0x7a8bfd1e352c2530ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::exchange::limit_order_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<limit_order_t>>(); };
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::txio_key_t::static_get_type_code();
-	type_code->fields.resize(4);
+	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -161,18 +151,12 @@ std::shared_ptr<vnx::TypeCode> limit_order_t::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[1];
-		field.data_size = 8;
-		field.name = "ask";
-		field.code = {4};
+		field.is_extended = true;
+		field.name = "bids";
+		field.code = {12, 23, 2, 4, 6, 19, 0, 4};
 	}
 	{
 		auto& field = type_code->fields[2];
-		field.is_extended = true;
-		field.name = "bid_keys";
-		field.code = {12, 19, 0};
-	}
-	{
-		auto& field = type_code->fields[3];
 		field.is_extended = true;
 		field.name = "solution";
 		field.code = {16};
@@ -223,14 +207,11 @@ void read(TypeInput& in, ::mmx::exchange::limit_order_t& value, const TypeCode* 
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.version, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[1]) {
-			vnx::read_value(_buf + _field->offset, value.ask, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 2: vnx::read(in, value.bid_keys, type_code, _field->code.data()); break;
-			case 3: vnx::read(in, value.solution, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.bids, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.solution, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -249,11 +230,10 @@ void write(TypeOutput& out, const ::mmx::exchange::limit_order_t& value, const T
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(12);
+	char* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.version);
-	vnx::write_value(_buf + 4, value.ask);
-	vnx::write(out, value.bid_keys, type_code, type_code->fields[2].code.data());
-	vnx::write(out, value.solution, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.bids, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.solution, type_code, type_code->fields[2].code.data());
 }
 
 void read(std::istream& in, ::mmx::exchange::limit_order_t& value) {

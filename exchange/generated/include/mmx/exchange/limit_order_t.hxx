@@ -18,8 +18,7 @@ struct limit_order_t {
 	
 	
 	uint32_t version = 0;
-	uint64_t ask = 0;
-	std::vector<::mmx::txio_key_t> bid_keys;
+	std::vector<std::pair<::mmx::txio_key_t, uint64_t>> bids;
 	std::shared_ptr<const ::mmx::Solution> solution;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
@@ -64,12 +63,11 @@ struct limit_order_t {
 
 template<typename T>
 void limit_order_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<limit_order_t>(4);
+	_visitor.template type_begin<limit_order_t>(3);
 	_visitor.type_field("version", 0); _visitor.accept(version);
-	_visitor.type_field("ask", 1); _visitor.accept(ask);
-	_visitor.type_field("bid_keys", 2); _visitor.accept(bid_keys);
-	_visitor.type_field("solution", 3); _visitor.accept(solution);
-	_visitor.template type_end<limit_order_t>(4);
+	_visitor.type_field("bids", 1); _visitor.accept(bids);
+	_visitor.type_field("solution", 2); _visitor.accept(solution);
+	_visitor.template type_end<limit_order_t>(3);
 }
 
 

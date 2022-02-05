@@ -16,7 +16,7 @@ namespace exchange {
 
 
 const vnx::Hash64 Server_place::VNX_TYPE_HASH(0x957913dc32e3d68cull);
-const vnx::Hash64 Server_place::VNX_CODE_HASH(0x61e81ed3cbabee92ull);
+const vnx::Hash64 Server_place::VNX_CODE_HASH(0x49014cff43ce06fbull);
 
 vnx::Hash64 Server_place::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -137,7 +137,7 @@ std::shared_ptr<vnx::TypeCode> Server_place::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.Server.place";
 	type_code->type_hash = vnx::Hash64(0x957913dc32e3d68cull);
-	type_code->code_hash = vnx::Hash64(0x61e81ed3cbabee92ull);
+	type_code->code_hash = vnx::Hash64(0x49014cff43ce06fbull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
