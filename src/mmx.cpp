@@ -1016,8 +1016,28 @@ int main(int argc, char** argv)
 					std::cout << "[" << name << "]" << std::endl;
 				}
 			}
+			else if(command == "log")
+			{
+				auto history = client.get_local_history();
+				std::reverse(history.begin(), history.end());
+				for(const auto& entry : history) {
+					auto bid_token = get_token(node, entry->pair.bid);
+					auto ask_token = get_token(node, entry->pair.ask);
+					std::cout << "[" << (entry->height ? std::to_string(*entry->height) : (entry->failed ? "failed" : "pending")) << "] "
+							<< (entry->offer_id ? "SOLD  " : "TRADE ")
+							<< entry->bid / pow(10, bid_token->decimals) << " [" << bid_token->symbol << "] FOR "
+							<< entry->ask / pow(10, ask_token->decimals) << " [" << ask_token->symbol << "]";
+					if(entry->offer_id) {
+						std::cout << " (ID " << *entry->offer_id << ")";
+					}
+					if(entry->message) {
+						std::cout << " (" << *entry->message << ")";
+					}
+					std::cout << " (" << entry->id << ")" << std::endl;
+				}
+			}
 			else {
-				std::cerr << "Help: mmx exch [offer | trade | offers | orders | price | servers | cancel]" << std::endl;
+				std::cerr << "Help: mmx exch [offer | trade | offers | orders | log | price | servers | cancel]" << std::endl;
 			}
 		}
 		else {
