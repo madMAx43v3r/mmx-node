@@ -264,7 +264,7 @@ std::vector<utxo_entry_t> Wallet::get_utxo_list(const uint32_t& index, const uin
 		wallet->update_cache(all_utxo, height);
 		wallet->last_utxo_update = now;
 
-		log(INFO) << "Updated cache: " << wallet->utxo_cache.size() << " utxo, " << wallet->utxo_change_cache.size() << " pending change";
+		log(DEBUG) << "Updated cache: " << wallet->utxo_cache.size() << " utxo, " << wallet->utxo_change_cache.size() << " pending change";
 	}
 	if(min_confirm == 0) {
 		return wallet->utxo_cache;
