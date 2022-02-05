@@ -405,12 +405,15 @@ void Client::place(std::shared_ptr<const OfferBundle> offer)
 	if(!offer->bid || !offer->ask) {
 		throw std::logic_error("empty offer");
 	}
+	// TODO: check bid keys (discard empty offers)
+
 	for(const auto& entry : avail_server_map) {
 		send_offer(entry.second, offer);
 	}
 	next_offer_id = std::max(offer->id + 1, next_offer_id);
 	order_map.insert(offer->orders.begin(), offer->orders.end());
 	offer_map[offer->id] = vnx::clone(offer);
+	save_offers();
 
 	log(INFO) << "Placed offer " << offer->id << ", asking "
 			<< offer->ask << " [" << offer->pair.ask << "] for " << offer->bid << " [" << offer->pair.bid << "]"
@@ -424,14 +427,18 @@ void Client::place(std::shared_ptr<const OfferBundle> offer)
 		keys.push_back(entry.first);
 	}
 	wallet->reserve(offer->wallet, keys);
-	save_offers();
 }
 
 void Client::save_offers() const
 {
-	vnx::File file(storage_path + "offers.dat");
-	file.open("wb");
-	vnx::write_generic(file.out, offer_map);
+	try {
+		vnx::File file(storage_path + "offers.dat");
+		file.open("wb");
+		vnx::write_generic(file.out, offer_map);
+	}
+	catch(const std::exception& ex) {
+		log(WARN) << ex.what();
+	}
 }
 
 std::shared_ptr<const Transaction> Client::approve(std::shared_ptr<const Transaction> tx) const
