@@ -20,6 +20,7 @@
 #include <mmx/exchange/Server_get_orders.hxx>
 #include <mmx/exchange/Server_get_price.hxx>
 #include <mmx/exchange/Server_ping.hxx>
+#include <mmx/exchange/Server_reject.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/Request.hxx>
 
@@ -692,16 +693,18 @@ void Client::on_msg(uint64_t client, std::shared_ptr<const vnx::Value> msg)
 		break;
 	case Client_approve::VNX_TYPE_ID:
 		if(auto value = std::dynamic_pointer_cast<const Client_approve>(msg)) {
-			try {
-				auto ret = Client_approve_return::create();
-				ret->_ret_0 = approve(value->tx);
-				send_to(client, ret);
-			}
-			catch(const std::exception& ex) {
-				auto ret = vnx::Exception::create();
-				ret->what = ex.what();
-				send_to(client, ret);
-				log(WARN) << "approve() failed with: " << ex.what();
+			if(auto tx = value->tx) {
+				try {
+					auto ret = Client_approve_return::create();
+					ret->_ret_0 = approve(tx);
+					send_to(client, ret);
+				}
+				catch(const std::exception& ex) {
+					auto ret = Server_reject::create();
+					ret->txid = tx->id;
+					send_to(client, ret);
+					log(WARN) << "approve() failed with: " << ex.what();
+				}
 			}
 		}
 		break;
