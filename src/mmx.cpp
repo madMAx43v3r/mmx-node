@@ -25,9 +25,28 @@
 #include <vnx/Proxy.h>
 
 
+std::unordered_map<mmx::addr_t, std::shared_ptr<const mmx::Contract>> contract_cache;
+
+std::shared_ptr<const mmx::Contract> get_contract(mmx::NodeClient& node, const mmx::addr_t& address)
+{
+	auto iter = contract_cache.find(address);
+	if(iter == contract_cache.end()) {
+		iter = contract_cache.emplace(address, node.get_contract(address)).first;
+	}
+	return iter->second;
+}
+
+std::shared_ptr<const mmx::contract::Token> get_token(mmx::NodeClient& node, const mmx::addr_t& address, bool fail = true)
+{
+	auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(get_contract(node, address));
+	if(!token && fail) {
+		throw std::logic_error("no such token: " + address.to_string());
+	}
+	return token;
+}
+
 void show_history(const std::vector<mmx::tx_entry_t>& history, mmx::NodeClient& node, std::shared_ptr<const mmx::ChainParams> params)
 {
-	std::unordered_map<mmx::addr_t, std::shared_ptr<const mmx::Contract>> contract_map;
 	for(const auto& entry : history) {
 		std::cout << "[" << entry.height << "] ";
 		switch(entry.type) {
@@ -38,14 +57,11 @@ void show_history(const std::vector<mmx::tx_entry_t>& history, mmx::NodeClient& 
 			case mmx::tx_type_e::REWARD:  std::cout << "REWARD  + "; break;
 			default: std::cout << "????    "; break;
 		}
-		auto iter = contract_map.find(entry.contract);
-		if(iter == contract_map.end()) {
-			iter = contract_map.emplace(entry.contract, std::dynamic_pointer_cast<const mmx::Contract>(node.get_contract(entry.contract))).first;
-		}
-		if(auto nft = std::dynamic_pointer_cast<const mmx::contract::NFT>(iter->second)) {
+		const auto contract = get_contract(node, entry.contract);
+		if(auto nft = std::dynamic_pointer_cast<const mmx::contract::NFT>(contract)) {
 			std::cout << entry.contract << " -> " << entry.address << std::endl;
 		} else {
-			const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(iter->second);
+			const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(contract);
 			const auto decimals = token ? token->decimals : params->decimals;
 			std::cout << entry.amount / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.amount << ") -> " << entry.address << std::endl;
 		}
@@ -111,6 +127,12 @@ int main(int argc, char** argv)
 
 	bool did_fail = false;
 	auto params = mmx::get_params();
+	{
+		auto token = mmx::contract::Token::create();
+		token->decimals = params->decimals;
+		token->symbol = "MMX";
+		contract_cache[mmx::addr_t()] = token;
+	}
 
 	mmx::spend_options_t spend_options;
 	spend_options.split_output = std::max<uint32_t>(num_outputs, 1);
@@ -171,19 +193,16 @@ int main(int argc, char** argv)
 				std::vector<mmx::addr_t> nfts;
 				for(const auto& entry : wallet.get_balances(index))
 				{
-					const auto contract = node.get_contract(entry.first);
+					const auto contract = get_contract(node, entry.first);
 					if(std::dynamic_pointer_cast<const mmx::contract::NFT>(contract)) {
 						nfts.push_back(entry.first);
-					} else {
-						const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(contract);
-						if(token || entry.first == mmx::addr_t()) {
-							const auto decimals = token ? token->decimals : params->decimals;
-							std::cout << "Balance: " << entry.second.total / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.second.total << ")";
-							if(token) {
-								std::cout << " [" << entry.first << "]";
-							}
-							std::cout << std::endl;
+					}
+					else if(auto token = get_token(node, entry.first, false)) {
+						std::cout << "Balance: " << entry.second.total / pow(10, token->decimals) << " " << token->symbol << " (" << entry.second.total << ")";
+						if(entry.first != mmx::addr_t()) {
+							std::cout << " [" << entry.first << "]";
 						}
+						std::cout << std::endl;
 					}
 				}
 				for(const auto& addr : nfts) {
@@ -198,7 +217,7 @@ int main(int argc, char** argv)
 						std::cout << ", " << token->symbol << ", " << token->name;
 					}
 					if(auto staking = std::dynamic_pointer_cast<const mmx::contract::Staking>(contract)) {
-						if(auto contract = node.get_contract(staking->currency)) {
+						if(auto contract = get_contract(node, staking->currency)) {
 							if(auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(contract)) {
 								std::cout << ", " << token->symbol;
 							} else {
@@ -212,10 +231,13 @@ int main(int argc, char** argv)
 
 					for(const auto& entry : node.get_total_balances({address}))
 					{
-						const auto currency = node.get_contract(entry.first);
-						const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(currency);
-						const auto decimals = token ? token->decimals : params->decimals;
-						std::cout << "  Balance: " << entry.second / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.second << ")" << std::endl;
+						if(auto token = get_token(node, entry.first, false)) {
+							std::cout << "  Balance: " << entry.second / pow(10, token->decimals) << " " << token->symbol << " (" << entry.second << ")";
+							if(entry.first != mmx::addr_t()) {
+								std::cout << " [" << entry.first << "]";
+							}
+							std::cout << std::endl;
+						}
 					}
 				}
 				for(int i = 0; i < num_addrs; ++i) {
@@ -257,7 +279,7 @@ int main(int argc, char** argv)
 				}
 				else if(subject == "balance")
 				{
-					const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(contract));
+					const auto token = get_token(node, contract);
 					std::cout << wallet.get_balance(index, contract).total / pow(10, token ? token->decimals : params->decimals) << std::endl;
 				}
 				else if(subject == "contracts")
@@ -276,10 +298,9 @@ int main(int argc, char** argv)
 			}
 			else if(command == "send")
 			{
-				const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(contract));
+				const auto token = get_token(node, contract);
 
-				const auto decimals = token ? token->decimals : params->decimals;
-				const int64_t mojo = amount * pow(10, decimals);
+				const int64_t mojo = amount * pow(10, token->decimals);
 				if(amount <= 0 || mojo <= 0) {
 					vnx::log_error() << "Invalid amount: " << amount << " (-a | --amount)";
 					goto failed;
@@ -289,15 +310,14 @@ int main(int argc, char** argv)
 					goto failed;
 				}
 				const auto txid = wallet.send(index, mojo, target, contract, spend_options);
-				std::cout << "Sent " << mojo / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << mojo << ") to " << target << std::endl;
+				std::cout << "Sent " << mojo / pow(10, token->decimals) << " " << (token ? token->symbol : "MMX") << " (" << mojo << ") to " << target << std::endl;
 				std::cout << "Transaction ID: " << txid << std::endl;
 			}
 			else if(command == "send_from")
 			{
-				const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(contract));
+				const auto token = get_token(node, contract);
 
-				const auto decimals = token ? token->decimals : params->decimals;
-				const int64_t mojo = amount * pow(10, decimals);
+				const int64_t mojo = amount * pow(10, token->decimals);
 				if(amount <= 0 || mojo <= 0) {
 					vnx::log_error() << "Invalid amount: " << amount << " (-a | --amount)";
 					goto failed;
@@ -311,7 +331,7 @@ int main(int argc, char** argv)
 					goto failed;
 				}
 				const auto txid = wallet.send_from(index, mojo, target, source, contract, spend_options);
-				std::cout << "Sent " << mojo / pow(10, decimals) << " " << (token ? token->symbol : "MMX") << " (" << mojo << ") to " << target << std::endl;
+				std::cout << "Sent " << mojo / pow(10, token->decimals) << " " << (token ? token->symbol : "MMX") << " (" << mojo << ") to " << target << std::endl;
 				std::cout << "Transaction ID: " << txid << std::endl;
 			}
 			else if(command == "transfer")
@@ -326,11 +346,8 @@ int main(int argc, char** argv)
 			}
 			else if(command == "mint")
 			{
-				const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(contract));
-				if(!token) {
-					vnx::log_error() << "No such token: " << contract;
-					goto failed;
-				}
+				const auto token = get_token(node, contract);
+
 				const int64_t mojo = amount * pow(10, token->decimals);
 				if(amount <= 0 || mojo <= 0) {
 					vnx::log_error() << "Invalid amount: " << amount << " (-a | --amount)";
@@ -421,7 +438,7 @@ int main(int argc, char** argv)
 				}
 				for(const auto& entry : node.get_total_balances({address}))
 				{
-					const auto contract = node.get_contract(entry.first);
+					const auto contract = get_contract(node, entry.first);
 					if(!std::dynamic_pointer_cast<const mmx::contract::NFT>(contract)) {
 						const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(contract);
 						const auto decimals = token ? token->decimals : params->decimals;
@@ -538,10 +555,9 @@ int main(int argc, char** argv)
 				}
 				size_t i = 0;
 				for(const auto& out : tx->outputs) {
-					const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(out.contract));
-					const auto decimals = token ? token->decimals : params->decimals;
-					std::cout << "Output[" << i++ << "]: " << out.amount / pow(10, decimals)
-							<< " " << (token ? token->symbol : "MMX") << " (" << out.amount << ") -> " << out.address << std::endl;
+					const auto token = get_token(node, out.contract);
+					std::cout << "Output[" << i++ << "]: " << out.amount / pow(10, token->decimals)
+							<< " " << token->symbol << " (" << out.amount << ") -> " << out.address << std::endl;
 				}
 			}
 			else if(command == "get")
@@ -554,8 +570,8 @@ int main(int argc, char** argv)
 					mmx::addr_t address;
 					vnx::read_config("$4", address);
 
-					const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(contract));
-					std::cout << node.get_balance(address, contract) / pow(10, token ? token->decimals : params->decimals) << std::endl;
+					const auto token = get_token(node, contract);
+					std::cout << node.get_balance(address, contract) / pow(10, token->decimals) << std::endl;
 				}
 				else if(subject == "amount")
 				{
@@ -770,21 +786,12 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Invalid trade!";
 					goto failed;
 				}
-				auto bid_token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(pair.bid));
-				auto ask_token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(pair.ask));
-
-				if(!bid_token && pair.bid != mmx::addr_t()) {
-					vnx::log_error() << "Invalid token: " << pair.bid;
-					goto failed;
-				}
-				if(!ask_token && pair.ask != mmx::addr_t()) {
-					vnx::log_error() << "Invalid token: " << pair.ask;
-					goto failed;
-				}
-				const auto bid_symbol = (bid_token ? bid_token->symbol : "MMX");
-				const auto ask_symbol = (ask_token ? ask_token->symbol : "MMX");
-				const auto bid_factor = pow(10, bid_token ? bid_token->decimals : params->decimals);
-				const auto ask_factor = pow(10, ask_token ? ask_token->decimals : params->decimals);
+				const auto bid_token = get_token(node, pair.bid);
+				const auto ask_token = get_token(node, pair.ask);
+				const auto bid_symbol = bid_token->symbol;
+				const auto ask_symbol = ask_token->symbol;
+				const auto bid_factor = pow(10, bid_token->decimals);
+				const auto ask_factor = pow(10, ask_token->decimals);
 
 				const uint64_t ask = amount * ask_factor;
 				const uint64_t bid = bid_amount * bid_factor;
@@ -830,21 +837,12 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Invalid trade!";
 					goto failed;
 				}
-				auto bid_token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(pair.bid));
-				auto ask_token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(pair.ask));
-
-				if(!bid_token && pair.bid != mmx::addr_t()) {
-					vnx::log_error() << "Invalid token: " << pair.bid;
-					goto failed;
-				}
-				if(!ask_token && pair.ask != mmx::addr_t()) {
-					vnx::log_error() << "Invalid token: " << pair.ask;
-					goto failed;
-				}
-				const auto bid_symbol = (bid_token ? bid_token->symbol : "MMX");
-				const auto ask_symbol = (ask_token ? ask_token->symbol : "MMX");
-				const auto bid_factor = pow(10, bid_token ? bid_token->decimals : params->decimals);
-				const auto ask_factor = pow(10, ask_token ? ask_token->decimals : params->decimals);
+				const auto bid_token = get_token(node, pair.bid);
+				const auto ask_token = get_token(node, pair.ask);
+				const auto bid_symbol = bid_token->symbol;
+				const auto ask_symbol = ask_token->symbol;
+				const auto bid_factor = pow(10, bid_token->decimals);
+				const auto ask_factor = pow(10, ask_token->decimals);
 
 				const uint64_t ask = amount * ask_factor;
 				const uint64_t bid = bid_amount * bid_factor;
@@ -934,12 +932,12 @@ int main(int argc, char** argv)
 			{
 				for(const auto offer : client.get_all_offers())
 				{
-					auto bid_token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(offer->pair.bid));
-					auto ask_token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(offer->pair.ask));
-					const auto bid_symbol = (bid_token ? bid_token->symbol : "MMX");
-					const auto ask_symbol = (ask_token ? ask_token->symbol : "MMX");
-					const auto bid_factor = pow(10, bid_token ? bid_token->decimals : params->decimals);
-					const auto ask_factor = pow(10, ask_token ? ask_token->decimals : params->decimals);
+					const auto bid_token = get_token(node, offer->pair.bid);
+					const auto ask_token = get_token(node, offer->pair.ask);
+					const auto bid_symbol = bid_token->symbol;
+					const auto ask_symbol = ask_token->symbol;
+					const auto bid_factor = pow(10, bid_token->decimals);
+					const auto ask_factor = pow(10, ask_token->decimals);
 					std::cout << "[" << offer->id << "] Offering " << offer->bid / bid_factor << " " << bid_symbol
 							<< " for " << offer->ask / ask_factor << " " << ask_symbol
 							<< " [" << (offer->ask / double(offer->bid)) << " " << ask_symbol << " / " << bid_symbol
@@ -952,11 +950,11 @@ int main(int argc, char** argv)
 				pair.ask = contract;
 				vnx::read_config("$3", pair.bid);
 
-				auto bid_token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(pair.bid));
-				auto ask_token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(pair.ask));
-				const auto bid_symbol = (bid_token ? bid_token->symbol : "MMX");
-				const auto ask_symbol = (ask_token ? ask_token->symbol : "MMX");
-				const auto bid_factor = pow(10, bid_token ? bid_token->decimals : params->decimals);
+				const auto bid_token = get_token(node, pair.bid);
+				const auto ask_token = get_token(node, pair.ask);
+				const auto bid_symbol = bid_token->symbol;
+				const auto ask_symbol = ask_token->symbol;
+				const auto bid_factor = pow(10, bid_token->decimals);
 
 				std::cout << "Server: " << server << std::endl;
 				std::cout << "Pair: " << ask_symbol << " / " << bid_symbol << std::endl;
@@ -979,16 +977,15 @@ int main(int argc, char** argv)
 				pair.bid = contract;
 				vnx::read_config("$3", pair.ask);
 
-				auto bid_token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(pair.bid));
-				auto ask_token = std::dynamic_pointer_cast<const mmx::contract::Token>(node.get_contract(pair.ask));
+				const auto bid_token = get_token(node, pair.bid);
+				const auto ask_token = get_token(node, pair.ask);
 
 				mmx::exchange::amount_t have;
-				have.amount = amount > 0 ? amount / pow(10, bid_token ? bid_token->decimals : params->decimals) : 1;
+				have.amount = amount > 0 ? amount / pow(10, bid_token->decimals) : 1;
 				have.currency = pair.bid;
 				const auto price = client.get_price(server, pair.ask, have);
 				if(price.value > 0) {
-					std::cout << price.inverse / double(price.value) << " "
-							<< (bid_token ? bid_token->symbol : "MMX") << " / " << (ask_token ? ask_token->symbol : "MMX") << std::endl;
+					std::cout << price.inverse / double(price.value) << " " << bid_token->symbol << " / " << ask_token->symbol << std::endl;
 				} else {
 					std::cout << "No orders available!" << std::endl;
 				}
