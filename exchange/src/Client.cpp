@@ -337,13 +337,11 @@ std::shared_ptr<const OfferBundle> Client::make_offer(const uint32_t& index, con
 		offer->orders.emplace_back(entry.key, order);
 		addr_map[utxo.address].emplace_back(entry.key, order.ask.amount);
 	}
-	for(const auto& bundle : addr_map) {
+	for(const auto& entry : addr_map) {
 		limit_order_t order;
-		for(const auto& entry : bundle.second) {
-			order.bids.emplace_back(entry.first, entry.second);
-		}
+		order.bids = entry.second;
 		const auto hash = order.calc_hash();
-		order.solution = wallet->sign_msg(index, bundle.first, hash);
+		order.solution = wallet->sign_msg(index, entry.first, hash);
 		offer->limit_orders.push_back(order);
 	}
 	return offer;
