@@ -172,7 +172,8 @@ app.component('exchange-order-list', {
 	},
 	data() {
 		return {
-			data: []
+			data: [],
+			timer: null
 		}
 	},
 	methods: {
@@ -185,7 +186,11 @@ app.component('exchange-order-list', {
 		}
 	},
 	created() {
-		this.update()
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 30000);
+	},
+	unmounted() {
+		clearInterval(this.timer);
 	},
 	template: `
 		<table class="ui table striped">

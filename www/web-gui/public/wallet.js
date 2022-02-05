@@ -100,7 +100,8 @@ app.component('account-balance', {
 	},
 	data() {
 		return {
-			balances: []
+			balances: [],
+			timer: null
 		}
 	},
 	methods: {
@@ -111,7 +112,11 @@ app.component('account-balance', {
 		}
 	},
 	created() {
-		this.update()
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 30000);
+	},
+	unmounted() {
+		clearInterval(this.timer);
 	},
 	template: `
 		<table class="ui table">
@@ -203,7 +208,8 @@ app.component('account-history', {
 	},
 	data() {
 		return {
-			data: []
+			data: [],
+			timer: null
 		}
 	},
 	methods: {
@@ -214,7 +220,11 @@ app.component('account-history', {
 		}
 	},
 	created() {
-		this.update()
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 60000);
+	},
+	unmounted() {
+		clearInterval(this.timer);
 	},
 	template: `
 		<table class="ui table striped">
