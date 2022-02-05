@@ -141,42 +141,44 @@ void Client::handle(std::shared_ptr<const Block> block)
 	}
 	std::unordered_map<uint32_t, std::vector<txio_key_t>> sold_map;
 	for(const auto& base : block->tx_list) {
-		if(auto tx = std::dynamic_pointer_cast<const Transaction>(base))
-		{
-			std::map<uint64_t, std::shared_ptr<LocalTrade>> trade_map;
-			for(const auto& in : tx->inputs) {
-				auto iter = order_map.find(in.prev);
-				if(iter != order_map.end()) {
-					const auto& order = iter->second;
-					if(auto offer = find_offer(order.offer_id)) {
-						offer->bid_sold += order.bid.amount;
-						offer->received += order.ask.amount;
-						sold_map[offer->wallet].push_back(in.prev);
+		if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
+			if(pending_approvals.count(tx->id)) {
+				std::map<uint64_t, std::shared_ptr<LocalTrade>> trade_map;
+				for(const auto& in : tx->inputs) {
+					auto iter = order_map.find(in.prev);
+					if(iter != order_map.end()) {
+						const auto& order = iter->second;
+						if(auto offer = find_offer(order.offer_id)) {
+							offer->bid_sold += order.bid.amount;
+							offer->received += order.ask.amount;
+							sold_map[offer->wallet].push_back(in.prev);
+						}
+						auto& trade = trade_map[order.offer_id];
+						if(!trade) {
+							trade = LocalTrade::create();
+							trade->id = tx->id;
+							trade->height = block->height;
+							trade->pair.bid = order.bid.contract;
+							trade->pair.ask = order.ask.currency;
+							trade->offer_id = order.offer_id;
+						}
+						trade->bid += order.bid.amount;
+						trade->ask += order.ask.amount;
+						order_map.erase(iter);
 					}
-					auto& trade = trade_map[order.offer_id];
-					if(!trade) {
-						trade = LocalTrade::create();
-						trade->id = tx->id;
-						trade->height = block->height;
-						trade->pair.bid = order.bid.contract;
-						trade->pair.ask = order.ask.currency;
-						trade->offer_id = order.offer_id;
+				}
+				for(const auto& entry : trade_map) {
+					const auto trade = entry.second;
+					try {
+						vnx::write(trade_log->out, trade);
+						trade_log->flush();
+					} catch(const std::exception& ex) {
+						log(WARN) << ex.what();
 					}
-					trade->bid += order.bid.amount;
-					trade->ask += order.ask.amount;
-					order_map.erase(iter);
+					trade_history.emplace(trade->height, trade);
+					log(INFO) << "Sold " << trade->bid << " [" << trade->pair.bid << "] for " << trade->ask << " [" << trade->pair.ask << "]";
 				}
-			}
-			for(const auto& entry : trade_map) {
-				const auto trade = entry.second;
-				try {
-					vnx::write(trade_log->out, trade);
-					trade_log->flush();
-				} catch(const std::exception& ex) {
-					log(WARN) << ex.what();
-				}
-				trade_history.emplace(trade->height, trade);
-				log(INFO) << "Sold " << trade->bid << " [" << trade->pair.bid << "] for " << trade->ask << " [" << trade->pair.ask << "]";
+				pending_approvals.erase(tx->id);
 			}
 			{
 				auto iter = pending_trades.find(tx->id);
@@ -466,6 +468,7 @@ std::shared_ptr<const Transaction> Client::approve(std::shared_ptr<const Transac
 			throw std::logic_error("unable to sign off");
 		}
 	}
+	pending_approvals.insert(tx->id);
 	log(INFO) << "Accepted trade " << tx->id;
 	return out;
 }

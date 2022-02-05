@@ -147,6 +147,8 @@ private:
 	std::map<uint64_t, std::shared_ptr<OfferBundle>> offer_map;
 
 	mutable std::multimap<uint32_t, std::shared_ptr<const LocalTrade>> trade_history;
+
+	mutable std::unordered_set<hash_t> pending_approvals;
 	mutable std::unordered_map<hash_t, std::shared_ptr<LocalTrade>> pending_trades;
 	mutable std::unordered_map<uint32_t, std::function<void(std::shared_ptr<const vnx::Value>)>> return_map;
 
