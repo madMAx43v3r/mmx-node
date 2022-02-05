@@ -8,6 +8,7 @@
 #include <mmx/Block.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/exchange/LocalTrade.hxx>
 #include <mmx/exchange/OfferBundle.hxx>
 #include <mmx/exchange/amount_t.hxx>
 #include <mmx/exchange/matched_order_t.hxx>
@@ -36,6 +37,7 @@ public:
 	std::string wallet_server = "Wallet";
 	std::map<std::string, std::string> server_map;
 	std::string storage_path;
+	uint32_t max_trade_history = 10000;
 	
 	typedef ::vnx::addons::MsgServer Super;
 	
@@ -86,6 +88,7 @@ protected:
 	virtual ::mmx::exchange::open_order_t get_order(const ::mmx::txio_key_t& key) const = 0;
 	virtual std::shared_ptr<const ::mmx::exchange::OfferBundle> get_offer(const uint64_t& id) const = 0;
 	virtual std::vector<std::shared_ptr<const ::mmx::exchange::OfferBundle>> get_all_offers() const = 0;
+	virtual std::vector<std::shared_ptr<const ::mmx::exchange::LocalTrade>> get_local_history(const vnx::optional<::mmx::exchange::trade_pair_t>& pair, const int32_t& limit) const = 0;
 	virtual void cancel_offer(const uint64_t& id) = 0;
 	virtual void cancel_all() = 0;
 	virtual std::shared_ptr<const ::mmx::exchange::OfferBundle> make_offer(const uint32_t& wallet, const ::mmx::exchange::trade_pair_t& pair, const uint64_t& bid, const uint64_t& ask) const = 0;
@@ -105,7 +108,7 @@ protected:
 
 template<typename T>
 void ClientBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ClientBase>(17);
+	_visitor.template type_begin<ClientBase>(18);
 	_visitor.type_field("port", 0); _visitor.accept(port);
 	_visitor.type_field("host", 1); _visitor.accept(host);
 	_visitor.type_field("max_connections", 2); _visitor.accept(max_connections);
@@ -123,7 +126,8 @@ void ClientBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("wallet_server", 14); _visitor.accept(wallet_server);
 	_visitor.type_field("server_map", 15); _visitor.accept(server_map);
 	_visitor.type_field("storage_path", 16); _visitor.accept(storage_path);
-	_visitor.template type_end<ClientBase>(17);
+	_visitor.type_field("max_trade_history", 17); _visitor.accept(max_trade_history);
+	_visitor.template type_end<ClientBase>(18);
 }
 
 

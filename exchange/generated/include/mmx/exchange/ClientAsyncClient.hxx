@@ -8,6 +8,7 @@
 #include <mmx/Block.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/exchange/LocalTrade.hxx>
 #include <mmx/exchange/OfferBundle.hxx>
 #include <mmx/exchange/amount_t.hxx>
 #include <mmx/exchange/matched_order_t.hxx>
@@ -106,6 +107,10 @@ public:
 			const std::function<void(const std::vector<std::shared_ptr<const ::mmx::exchange::OfferBundle>>&)>& _callback = std::function<void(const std::vector<std::shared_ptr<const ::mmx::exchange::OfferBundle>>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
+	uint64_t get_local_history(const vnx::optional<::mmx::exchange::trade_pair_t>& pair = nullptr, const int32_t& limit = -1, 
+			const std::function<void(const std::vector<std::shared_ptr<const ::mmx::exchange::LocalTrade>>&)>& _callback = std::function<void(const std::vector<std::shared_ptr<const ::mmx::exchange::LocalTrade>>&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
 	uint64_t cancel_offer(const uint64_t& id = 0, 
 			const std::function<void()>& _callback = std::function<void()>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
@@ -162,6 +167,7 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::exchange::open_order_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_order;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::exchange::OfferBundle>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_offer;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::shared_ptr<const ::mmx::exchange::OfferBundle>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_all_offers;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::shared_ptr<const ::mmx::exchange::LocalTrade>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_local_history;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_cancel_offer;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_cancel_all;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::exchange::OfferBundle>)>, std::function<void(const vnx::exception&)>>> vnx_queue_make_offer;

@@ -8,6 +8,7 @@
 #include <mmx/Block.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/exchange/LocalTrade.hxx>
 #include <mmx/exchange/OfferBundle.hxx>
 #include <mmx/exchange/amount_t.hxx>
 #include <mmx/exchange/matched_order_t.hxx>
@@ -77,6 +78,8 @@ public:
 	std::shared_ptr<const ::mmx::exchange::OfferBundle> get_offer(const uint64_t& id = 0);
 	
 	std::vector<std::shared_ptr<const ::mmx::exchange::OfferBundle>> get_all_offers();
+	
+	std::vector<std::shared_ptr<const ::mmx::exchange::LocalTrade>> get_local_history(const vnx::optional<::mmx::exchange::trade_pair_t>& pair = nullptr, const int32_t& limit = -1);
 	
 	void cancel_offer(const uint64_t& id = 0);
 	

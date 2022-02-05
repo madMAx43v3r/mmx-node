@@ -16,6 +16,8 @@
 #include <mmx/exchange/Client_execute_return.hxx>
 #include <mmx/exchange/Client_get_all_offers.hxx>
 #include <mmx/exchange/Client_get_all_offers_return.hxx>
+#include <mmx/exchange/Client_get_local_history.hxx>
+#include <mmx/exchange/Client_get_local_history_return.hxx>
 #include <mmx/exchange/Client_get_offer.hxx>
 #include <mmx/exchange/Client_get_offer_return.hxx>
 #include <mmx/exchange/Client_get_order.hxx>
@@ -36,6 +38,7 @@
 #include <mmx/exchange/Client_match_return.hxx>
 #include <mmx/exchange/Client_place.hxx>
 #include <mmx/exchange/Client_place_return.hxx>
+#include <mmx/exchange/LocalTrade.hxx>
 #include <mmx/exchange/OfferBundle.hxx>
 #include <mmx/exchange/amount_t.hxx>
 #include <mmx/exchange/matched_order_t.hxx>
@@ -315,6 +318,20 @@ std::vector<std::shared_ptr<const ::mmx::exchange::OfferBundle>> ClientClient::g
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::vector<std::shared_ptr<const ::mmx::exchange::OfferBundle>>>();
+	} else {
+		throw std::logic_error("ClientClient: invalid return value");
+	}
+}
+
+std::vector<std::shared_ptr<const ::mmx::exchange::LocalTrade>> ClientClient::get_local_history(const vnx::optional<::mmx::exchange::trade_pair_t>& pair, const int32_t& limit) {
+	auto _method = ::mmx::exchange::Client_get_local_history::create();
+	_method->pair = pair;
+	_method->limit = limit;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Client_get_local_history_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<std::shared_ptr<const ::mmx::exchange::LocalTrade>>>();
 	} else {
 		throw std::logic_error("ClientClient: invalid return value");
 	}
