@@ -302,7 +302,7 @@ app.component('exchange-trade-form', {
 	},
 	created() {
 		this.update();
-		this.timer = setInterval(() => { this.update(); }, 5000);
+		this.timer = setInterval(() => { this.update(); }, 10000);
 	},
 	mounted() {
 		$('.ui.checkbox').checkbox();

@@ -692,7 +692,7 @@ app.component('account-offers', {
 				<td>{{item.bid_symbol}}</td>
 				<td>{{item.ask_value}}</td>
 				<td>{{item.ask_symbol}}</td>
-				<td>{{100 * item.bid_sold / item.bid}} %</td>
+				<td>{{(100 * item.bid_sold / item.bid).toPrecision(3)}} %</td>
 				<td>
 					<div class="ui tiny compact button" @click="cancel(item.id)">Cancel</div>
 				</td>
