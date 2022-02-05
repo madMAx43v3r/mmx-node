@@ -1,0 +1,14 @@
+package mmx.exchange;
+
+import mmx.hash_t;
+
+struct trade_entry_t {
+	
+	hash_t id;
+	
+	uint height;
+	
+	ulong bid;
+	ulong ask;
+	
+}

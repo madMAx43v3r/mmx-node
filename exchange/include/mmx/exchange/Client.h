@@ -9,8 +9,10 @@
 #define INCLUDE_MMX_EXCHANGE_CLIENT_H_
 
 #include <mmx/exchange/ClientBase.hxx>
+#include <mmx/exchange/LocalTrade.hxx>
 #include <mmx/exchange/amount_t.hxx>
 #include <mmx/exchange/matched_order_t.hxx>
+#include <mmx/exchange/trade_pair_t.hpp>
 #include <mmx/Request.hxx>
 #include <mmx/Return.hxx>
 #include <mmx/NodeClient.hxx>
@@ -53,6 +55,8 @@ protected:
 	std::shared_ptr<const OfferBundle> get_offer(const uint64_t& id) const override;
 
 	std::vector<std::shared_ptr<const OfferBundle>> get_all_offers() const override;
+
+	std::vector<std::shared_ptr<const LocalTrade>> get_local_history(const vnx::optional<trade_pair_t>& pair, const int32_t& limit) const override;
 
 	void cancel_offer(const uint64_t& id) override;
 
@@ -142,9 +146,12 @@ private:
 	std::unordered_map<txio_key_t, open_order_t> order_map;
 	std::map<uint64_t, std::shared_ptr<OfferBundle>> offer_map;
 
+	mutable std::multimap<uint32_t, std::shared_ptr<const LocalTrade>> trade_history;
+	mutable std::unordered_map<hash_t, std::shared_ptr<LocalTrade>> pending_trades;
 	mutable std::unordered_map<uint32_t, std::function<void(std::shared_ptr<const vnx::Value>)>> return_map;
 
 	vnx::ThreadPool* threads = nullptr;
+	std::shared_ptr<vnx::File> trade_log;
 	std::shared_ptr<vnx::addons::HttpInterface<Client>> http;
 
 	mutable uint32_t next_request_id = 0;

@@ -493,6 +493,26 @@ public:
 		}
 	}
 
+	void accept(std::shared_ptr<const exchange::LocalTrade> value) {
+		if(value && context) {
+			auto tmp = render(*value, context);
+			if(auto info = context->find_currency(value->pair.bid)) {
+				tmp["bid_symbol"] = info->symbol;
+				tmp["bid_value"] = value->bid * pow(10, -info->decimals);
+			}
+			if(auto info = context->find_currency(value->pair.ask)) {
+				tmp["ask_symbol"] = info->symbol;
+				tmp["ask_value"] = value->ask * pow(10, -info->decimals);
+			}
+			if(auto height = value->height) {
+				tmp["time"] = context->get_time(*height);
+			}
+			set(tmp);
+		} else {
+			set(render(value));
+		}
+	}
+
 	std::shared_ptr<const RenderContext> context;
 
 private:
@@ -1264,12 +1284,33 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "POST exchange/trade {...}");
 		}
 	}
+	else if(sub_path == "/exchange/history") {
+		const auto iter_bid = query.find("bid");
+		const auto iter_ask = query.find("ask");
+		const auto iter_limit = query.find("limit");
+		if(iter_bid != query.end() && iter_ask != query.end()) {
+			exchange::trade_pair_t pair;
+			pair.bid = iter_bid->second;
+			pair.ask = iter_ask->second;
+			const int32_t limit = iter_limit != query.end() ? vnx::from_string<int32_t>(iter_limit->second) : -1;
+			get_context({pair.bid, pair.ask}, request_id,
+				[this, request_id, pair, limit](std::shared_ptr<RenderContext> context) {
+					exch_client->get_local_history(pair, limit,
+						[this, request_id, pair, context](const std::vector<std::shared_ptr<const exchange::LocalTrade>>& result) {
+							respond(request_id, render_value(result, context));
+						},
+						std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+				});
+		} else {
+			respond_status(request_id, 404, "exchange/history?bid|ask|limit");
+		}
+	}
 	else {
 		std::vector<std::string> options = {
 			"node/info", "header", "headers", "block", "blocks", "transaction", "transactions", "address", "contract",
 			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/history", "wallet/send",
 			"exchange/offer", "exchange/place", "exchange/offers", "exchange/pairs", "exchange/orders", "exchange/price",
-			"exchange/trade"
+			"exchange/trade", "exchange/history"
 		};
 		respond_status(request_id, 404, vnx::to_string(options));
 	}

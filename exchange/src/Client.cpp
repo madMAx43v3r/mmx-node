@@ -71,10 +71,37 @@ void Client::main()
 			}
 		}
 	}
+
+	trade_log = std::make_shared<vnx::File>(storage_path + "trade_log.dat");
+	if(trade_log->exists()) {
+		int64_t offset = 0;
+		trade_log->open("rb+");
+		while(true) {
+			try {
+				offset = trade_log->get_input_pos();
+				if(auto value = vnx::read(trade_log->in)) {
+					if(auto trade = std::dynamic_pointer_cast<LocalTrade>(value)) {
+						trade_history.emplace(trade->height, trade);
+					}
+				} else {
+					break;
+				}
+			} catch(const std::exception& ex) {
+				log(WARN) << ex.what();
+				break;
+			}
+		}
+		trade_log->seek_to(offset);
+	} else {
+		trade_log->open("wb");
+	}
+
 	connect();
 
 	is_init = false;
 	Super::main();
+
+	save_offers();
 	{
 		std::unordered_map<uint32_t, std::vector<txio_key_t>> keys;
 		for(const auto& entry : order_map) {
@@ -88,6 +115,10 @@ void Client::main()
 			}
 		}
 	}
+	{
+		vnx::write(trade_log->out, nullptr);
+		trade_log->close();
+	}
 }
 
 void Client::update()
@@ -98,6 +129,9 @@ void Client::update()
 		req->method = Server_ping::create();
 		send_to(entry.second, req);
 	}
+	while(trade_history.size() > max_trade_history) {
+		trade_history.erase(trade_history.begin());
+	}
 }
 
 void Client::handle(std::shared_ptr<const Block> block)
@@ -107,7 +141,9 @@ void Client::handle(std::shared_ptr<const Block> block)
 	}
 	std::unordered_map<uint32_t, std::vector<txio_key_t>> sold_map;
 	for(const auto& base : block->tx_list) {
-		if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
+		if(auto tx = std::dynamic_pointer_cast<const Transaction>(base))
+		{
+			std::map<uint64_t, std::shared_ptr<LocalTrade>> trade_map;
 			for(const auto& in : tx->inputs) {
 				auto iter = order_map.find(in.prev);
 				if(iter != order_map.end()) {
@@ -117,14 +153,53 @@ void Client::handle(std::shared_ptr<const Block> block)
 						offer->received += order.ask.amount;
 						sold_map[offer->wallet].push_back(in.prev);
 					}
-					log(INFO) << "Sold " << order.bid.amount << " [" << order.bid.contract << "] for " << order.ask.amount << " [" << order.ask.currency << "]";
+					auto& trade = trade_map[order.offer_id];
+					if(!trade) {
+						trade = LocalTrade::create();
+						trade->id = tx->id;
+						trade->height = block->height;
+						trade->pair.bid = order.bid.contract;
+						trade->pair.ask = order.ask.currency;
+						trade->offer_id = order.offer_id;
+					}
+					trade->bid += order.bid.amount;
+					trade->ask += order.ask.amount;
 					order_map.erase(iter);
+				}
+			}
+			for(const auto& entry : trade_map) {
+				const auto trade = entry.second;
+				try {
+					vnx::write(trade_log->out, trade);
+					trade_log->flush();
+				} catch(const std::exception& ex) {
+					log(WARN) << ex.what();
+				}
+				trade_history.emplace(trade->height, trade);
+				log(INFO) << "Sold " << trade->bid << " [" << trade->pair.bid << "] for " << trade->ask << " [" << trade->pair.ask << "]";
+			}
+			{
+				auto iter = pending_trades.find(tx->id);
+				if(iter != pending_trades.end()) {
+					auto trade = iter->second;
+					trade->height = block->height;
+					try {
+						vnx::write(trade_log->out, trade);
+						trade_log->flush();
+					} catch(const std::exception& ex) {
+						log(WARN) << ex.what();
+					}
+					trade_history.emplace(trade->height, trade);
+					pending_trades.erase(iter);
 				}
 			}
 		}
 	}
 	for(const auto& entry : sold_map) {
 		wallet->release(entry.first, entry.second);
+	}
+	if(!sold_map.empty()) {
+		save_offers();
 	}
 }
 
@@ -167,6 +242,31 @@ std::vector<std::shared_ptr<const OfferBundle>> Client::get_all_offers() const
 	std::vector<std::shared_ptr<const OfferBundle>> res;
 	for(const auto& entry : offer_map) {
 		res.push_back(entry.second);
+	}
+	return res;
+}
+
+std::vector<std::shared_ptr<const LocalTrade>>
+Client::get_local_history(const vnx::optional<trade_pair_t>& pair, const int32_t& limit) const
+{
+	const trade_pair_t reverse = pair ? pair->reverse() : trade_pair_t();
+
+	std::vector<std::shared_ptr<const LocalTrade>> res;
+	for(const auto& entry : trade_history) {
+		const auto& trade = entry.second;
+		if(!pair || trade->pair == *pair || trade->pair == reverse) {
+			res.push_back(trade);
+		}
+	}
+	for(const auto& entry : pending_trades) {
+		const auto& trade = entry.second;
+		if(!pair || trade->pair == *pair || trade->pair == reverse) {
+			res.push_back(trade);
+		}
+	}
+	std::reverse(res.begin(), res.end());
+	if(res.size() > size_t(limit)) {
+		res.resize(limit);
 	}
 	return res;
 }
@@ -381,16 +481,32 @@ void Client::execute_async(const std::string& server, const uint32_t& index, con
 		}
 		wallet->reserve(index, keys);
 
+		auto trade = LocalTrade::create();
+		trade->id = tx->id;
+		trade->pair = order.pair;
+		trade->bid = order.bid;
+		trade->ask = order.ask;
+
 		auto method = Server_execute::create();
 		method->tx = tx;
 		send_request(peer, method,
-			[this, request_id, index, keys, tx](std::shared_ptr<const vnx::Value> result) {
+			[this, request_id, index, keys, trade, tx](std::shared_ptr<const vnx::Value> result) {
 				wallet->release(index, keys);
 				if(auto ex = std::dynamic_pointer_cast<const vnx::Exception>(result)) {
 					vnx_async_return(request_id, ex);
+					try {
+						trade->failed = true;
+						trade->message = ex->what;
+						vnx::write(trade_log->out, trade);
+						trade_log->flush();
+					} catch(const std::exception& ex) {
+						log(WARN) << ex.what();
+					}
+					trade_history.emplace(trade->height, trade);
 				} else {
 					wallet->mark_spent(index, keys);
 					execute_async_return(request_id, tx->id);
+					pending_trades[tx->id] = trade;
 				}
 			});
 	} else {

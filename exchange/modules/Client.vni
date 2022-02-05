@@ -17,6 +17,8 @@ module Client extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	
 	string storage_path;
 	
+	uint max_trade_history = 10000;
+	
 	
 	vector<string> get_servers() const;
 	
@@ -37,6 +39,8 @@ module Client extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	OfferBundle* get_offer(ulong id) const;
 	
 	vector<OfferBundle*> get_all_offers() const;
+	
+	vector<LocalTrade*> get_local_history(optional<trade_pair_t> pair, int limit = -1) const;
 	
 	void cancel_offer(ulong id);
 	

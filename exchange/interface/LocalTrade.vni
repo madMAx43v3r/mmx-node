@@ -1,0 +1,22 @@
+package mmx.exchange;
+
+import mmx.hash_t;
+
+class LocalTrade {
+	
+	hash_t id;
+	
+	bool failed;
+	
+	optional<uint> height;
+	
+	trade_pair_t pair;
+	
+	ulong bid;
+	ulong ask;
+	
+	optional<ulong> offer_id;
+	
+	optional<string> message;
+	
+}

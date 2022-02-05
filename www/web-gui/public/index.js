@@ -86,7 +86,7 @@ const Exchange = {
 	},
 	template: `
 		<exchange-menu @update-wallet="update_wallet" @update-bid-symbol="update_bid_symbol" @update-ask-symbol="update_ask_symbol"
-			:server_="$route.params.server" :bid_="$route.params.bid" :ask_="$route.params.ask">
+			:server_="$route.params.server" :bid_="$route.params.bid" :ask_="$route.params.ask" :page="$route.meta.page">
 		</exchange-menu>
 		<router-view :key="$route.path" :wallet="wallet" :bid_symbol="bid_symbol" :ask_symbol="ask_symbol"></router-view>
 		`
@@ -122,6 +122,15 @@ const ExchangeMarket = {
 		<exchange-orders ref="orders" :server="$route.params.server" :bid="$route.params.bid" :ask="$route.params.ask" :limit="100"></exchange-orders>
 		`
 }
+const ExchangeHistory = {
+	props: {
+		bid_symbol: null,
+		ask_symbol: null
+	},
+	template: `
+		<exchange-history :bid="$route.params.bid" :ask="$route.params.ask" :limit="200"></exchange-history>
+		`
+}
 
 const Settings = { template: '<h1>Settings</h1>TODO' }
 
@@ -145,7 +154,8 @@ const routes = [
 		component: Exchange,
 		meta: { is_exchange: true },
 		children: [
-			{ path: 'market/:server/:bid/:ask', component: ExchangeMarket, meta: { page: 'market' } }
+			{ path: 'market/:server/:bid/:ask', component: ExchangeMarket, meta: { page: 'market' } },
+			{ path: 'history/:server/:bid/:ask', component: ExchangeHistory, meta: { page: 'history' } },
 		]
 	},
 	{ path: '/settings', component: Settings },

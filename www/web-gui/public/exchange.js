@@ -3,7 +3,8 @@ app.component('exchange-menu', {
 	props: {
 		server_: String,
 		bid_: String,
-		ask_: String
+		ask_: String,
+		page: String
 	},
 	emits: [
 		"update-wallet", "update-bid-symbol", "update-ask-symbol"
@@ -45,7 +46,11 @@ app.component('exchange-menu', {
 		submit(page) {
 			if(this.server && this.bid && this.ask) {
 				if(!page) {
-					page = "market";
+					if(this.page) {
+						page = this.page;
+					} else {
+						page = "market";
+					}
 				}
 				this.$router.push('/exchange/' + page + '/' + this.server + '/' + this.bid + '/' + this.ask);
 				this.$emit('update-bid-symbol', this.bid_symbol_map.get(this.bid));
@@ -142,21 +147,8 @@ app.component('exchange-menu', {
 		<div class="ui large pointing menu">
 			<a class="item" :class="{active: $route.meta.page == 'market'}" @click="submit('market')">Market</a>
 			<a class="item" :class="{active: $route.meta.page == 'trades'}">Trades</a>
-			<a class="item" :class="{active: $route.meta.page == 'history'}">Executed</a>
+			<a class="item" :class="{active: $route.meta.page == 'history'}" @click="submit('history')">History</a>
 			<a class="item" :class="{active: $route.meta.page == 'offers'}">Offers</a>
-		</div>
-		`
-})
-
-app.component('exchange-market-menu', {
-	template: `
-		<div class="ui large pointing menu">
-			<router-link class="item" :class="{active: $route.meta.page == 'balance'}" :to="'/ex/account/' + index">Balance</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'nfts'}" :to="'/wallet/account/' + index + '/nfts'">NFTs</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'contracts'}" :to="'/wallet/account/' + index + '/contracts'">Contracts</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'addresses'}" :to="'/wallet/account/' + index + '/addresses'">Addresses</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'send'}" :to="'/wallet/account/' + index + '/send'">Send</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'offer'}" :to="'/wallet/account/' + index + '/offer'">Offer</router-link>
 		</div>
 		`
 })
@@ -201,9 +193,7 @@ app.component('exchange-order-list', {
 			</thead>
 			<tbody>
 				<tr v-for="item in data.orders">
-					<td>
-						{{flip ? item.inv_price : item.price}}
-					</td>
+					<td>{{flip ? item.inv_price : item.price}}</td>
 					<td>{{flip ? item.ask_value : item.bid_value}}</td>
 					<td>{{flip ? data.ask_symbol : data.bid_symbol}}</td>
 				</tr>
@@ -234,6 +224,55 @@ app.component('exchange-orders', {
 				<exchange-order-list title="Sell" :server="server" :bid="ask" :ask="bid" :flip="true" :limit="limit" ref="ask_list"></exchange-order-list>
 			</div>
 		</div>
+		`
+})
+
+app.component('exchange-history', {
+	props: {
+		bid: String,
+		ask: String,
+		limit: Number
+	},
+	data() {
+		return {
+			data: []
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/exchange/history?limit=' + this.limit + '&bid=' + this.bid + '&ask=' + this.ask)
+				.then(response => response.json())
+				.then(data => this.data = data);
+		}
+	},
+	created() {
+		this.update();
+	},
+	template: `
+		<table class="ui table striped">
+			<thead>
+				<th>Type</th>
+				<th>Bid</th>
+				<th>Token</th>
+				<th>Ask</th>
+				<th>Token</th>
+				<th>Offer</th>
+				<th>Height</th>
+				<th>Time</th>
+			</thead>
+			<tbody>
+				<tr v-for="item in data">
+					<td>{{item.pair.bid == bid ? "SELL" : "BUY"}}</td>
+					<td>{{item.pair.bid == bid ? item.bid_value : item.ask_value}}</td>
+					<td>{{item.pair.bid == bid ? item.bid_symbol : item.ask_symbol}}</td>
+					<td>{{item.pair.bid == bid ? item.ask_value : item.bid_value}}</td>
+					<td>{{item.pair.bid == bid ? item.ask_symbol : item.bid_symbol}}</td>
+					<td>{{item.offer_id}}</td>
+					<td>{{item.failed ? "(failed)" : (item.height ? item.height : "(pending)")}}</td>
+					<td>{{item.time ? new Date(item.time * 1000).toLocaleString() : "(pending)"}}</td>
+				</tr>
+			</tbody>
+		</table>
 		`
 })
 
