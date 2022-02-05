@@ -218,10 +218,10 @@ app.component('exchange-orders', {
 	template: `
 		<div class="ui two column grid">
 			<div class="column">
-				<exchange-order-list title="Buy" :server="server" :bid="bid" :ask="ask" :flip="false" :limit="limit" ref="bid_list"></exchange-order-list>
+				<exchange-order-list title="Buy -" :server="server" :bid="bid" :ask="ask" :flip="false" :limit="limit" ref="bid_list"></exchange-order-list>
 			</div>
 			<div class="column">
-				<exchange-order-list title="Sell" :server="server" :bid="ask" :ask="bid" :flip="true" :limit="limit" ref="ask_list"></exchange-order-list>
+				<exchange-order-list title="Sell -" :server="server" :bid="ask" :ask="bid" :flip="true" :limit="limit" ref="ask_list"></exchange-order-list>
 			</div>
 		</div>
 		`
