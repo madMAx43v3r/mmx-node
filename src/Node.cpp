@@ -717,12 +717,13 @@ void Node::add_block(std::shared_ptr<const Block> block)
 	// fetch missing previous
 	if(is_synced && !fork_tree.count(block->prev))
 	{
+		const auto hash = block->prev;
 		const auto height = block->height - 1;
-		if(!sync_pending.count(height) && height > root->height)
+		if(!fetch_pending.count(hash) && height > root->height)
 		{
-			router->get_blocks_at(height, std::bind(&Node::sync_result, this, height, std::placeholders::_1));
-			sync_pending.insert(height);
-			log(WARN) << "Fetching missed block at height " << height << " with hash " << block->prev;
+			router->fetch_block(hash, nullptr, std::bind(&Node::fetch_result, this, hash, std::placeholders::_1));
+			fetch_pending.insert(hash);
+			log(WARN) << "Fetching missed block at height " << height << " with hash " << hash;
 		}
 	}
 }
@@ -1040,6 +1041,14 @@ void Node::sync_result(const uint32_t& height, const std::vector<std::shared_ptr
 		}
 		sync_more();
 	}
+}
+
+void Node::fetch_result(const hash_t& hash, std::shared_ptr<const Block> block)
+{
+	if(block) {
+		add_block(block);
+	}
+	fetch_pending.erase(hash);
 }
 
 std::shared_ptr<const BlockHeader> Node::fork_to(const hash_t& state)

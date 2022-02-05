@@ -279,7 +279,16 @@ void Router::get_blocks_at_async(const uint32_t& height, const vnx::request_id_t
 	((Router*)this)->process();
 }
 
-void Router::fetch_block_at_async(const std::string& address, const uint32_t& height, const vnx::request_id_t& request_id) const
+void Router::fetch_block_async(const hash_t& hash, const vnx::optional<std::string>& address, const vnx::request_id_t& request_id) const
+{
+	auto& job = fetch_jobs[request_id];
+	job.hash = hash;
+	job.from_peer = address;
+	job.start_time_ms = vnx::get_wall_time_millis();
+	((Router*)this)->process();
+}
+
+void Router::fetch_block_at_async(const uint32_t& height, const std::string& address, const vnx::request_id_t& request_id) const
 {
 	auto& job = fetch_jobs[request_id];
 	job.height = height;
@@ -604,41 +613,105 @@ bool Router::process(std::shared_ptr<const Return> ret)
 	}
 	for(auto iter = fetch_jobs.begin(); iter != fetch_jobs.end();)
 	{
+		const auto& request_id = iter->first;
 		auto& job = iter->second;
 		if(ret) {
 			// check for any returns
-			if(job.request_map.count(ret->id)) {
+			auto iter2 = job.request_map.find(ret->id);
+			if(iter2 != job.request_map.end()) {
+				bool is_done = false;
 				if(auto result = std::dynamic_pointer_cast<const Node_get_block_at_return>(ret->result)) {
-					fetch_block_at_async_return(iter->first, result->_ret_0);
+					if(job.height) {
+						is_done = true;
+						fetch_block_at_async_return(request_id, result->_ret_0);
+					}
 				}
-				else if(auto result = std::dynamic_pointer_cast<const vnx::Exception>(ret->result)) {
-					vnx_async_return(iter->first, result);
+				else if(auto result = std::dynamic_pointer_cast<const Node_get_block_return>(ret->result)) {
+					if(job.hash) {
+						if(result->_ret_0 || job.from_peer) {
+							is_done = true;
+							fetch_block_async_return(request_id, result->_ret_0);
+							log(DEBUG) << "Got block " << *job.hash << " by fetching "
+									<< job.pending.size() + job.failed.size() << " times, " << job.failed.size() << " failed";
+						} else {
+							job.failed.insert(iter2->second);
+						}
+					}
+				}
+				else if(job.from_peer) {
+					is_done = true;
+					vnx_async_return_ex_what(request_id, "request failed");
 				}
 				else {
-					vnx_async_return_ex_what(iter->first, "request failed");
+					job.failed.insert(iter2->second);
 				}
-				iter = fetch_jobs.erase(iter);
-				did_consume = true;
-				continue;
+				job.pending.erase(iter2->second);
+				job.request_map.erase(iter2);
+
+				if(is_done) {
+					iter = fetch_jobs.erase(iter);
+					did_consume = true;
+					continue;
+				}
 			}
 		}
-		if(job.request_map.empty()) {
-			std::shared_ptr<peer_t> peer;
-			for(const auto& entry : peer_map) {
-				if(entry.second->address == job.from_peer) {
-					peer = entry.second;
-					break;
+		if(auto address = job.from_peer) {
+			if(job.request_map.empty()) {
+				std::shared_ptr<peer_t> peer;
+				for(const auto& entry : peer_map) {
+					if(entry.second->address == *address) {
+						peer = entry.second;
+						break;
+					}
+				}
+				if(!peer) {
+					vnx_async_return_ex_what(request_id, "no such peer");
+					iter = fetch_jobs.erase(iter);
+					continue;
+				}
+				if(auto hash = job.hash) {
+					auto req = Node_get_block::create();
+					req->hash = *hash;
+					const auto id = send_request(peer, req);
+					job.request_map[id] = peer->client;
+				}
+				if(auto height = job.height) {
+					auto req = Node_get_block_at::create();
+					req->height = *height;
+					const auto id = send_request(peer, req);
+					job.request_map[id] = peer->client;
 				}
 			}
-			if(!peer) {
-				vnx_async_return_ex_what(iter->first, "no such peer");
-				iter = fetch_jobs.erase(iter);
-				continue;
+		}
+		else if(auto hash = job.hash) {
+			if(job.pending.size() < min_sync_peers) {
+				auto clients = synced_peers;
+				for(auto id : job.failed) {
+					clients.erase(id);
+				}
+				for(auto id : job.pending) {
+					clients.erase(id);
+				}
+				if(clients.empty() && job.failed.size() >= min_sync_peers)
+				{
+					fetch_block_async_return(request_id, nullptr);
+					iter = fetch_jobs.erase(iter);
+					continue;
+				}
+				for(auto client : get_subset(clients, min_sync_peers - job.pending.size()))
+				{
+					auto req = Node_get_block::create();
+					req->hash = *hash;
+					const auto id = send_request(client, req);
+					job.request_map[id] = client;
+					job.pending.insert(client);
+				}
 			}
-			auto req = Node_get_block_at::create();
-			req->height = job.height;
-			const auto id = send_request(peer, req);
-			job.request_map[id] = peer->client;
+		}
+		else {
+			vnx_async_return_ex_what(request_id, "invalid request");
+			iter = fetch_jobs.erase(iter);
+			continue;
 		}
 		iter++;
 	}

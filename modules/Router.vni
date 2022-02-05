@@ -74,7 +74,9 @@ module Router extends vnx.addons.MsgServer {
 	
 	vector<Block*> get_blocks_at(uint height) const async;
 	
-	Block* fetch_block_at(string address, uint height) const async;
+	Block* fetch_block(hash_t hash, optional<string> address) const async;
+	
+	Block* fetch_block_at(uint height, string address) const async;
 	
 	
 	void handle(Block sample);

@@ -656,14 +656,14 @@ int main(int argc, char** argv)
 					vnx::read_config("$5", height);
 
 					if(from_peer.empty()) {
-						vnx::log_error() << "Missing peer argument: node fetch <peer> [height]";
+						vnx::log_error() << "Missing peer argument: node fetch [block | header] <peer> [height]";
 						goto failed;
 					}
 					if(height < 0) {
 						vnx::log_error() << "Invalid height: " << height;
 						goto failed;
 					}
-					const auto block = router.fetch_block_at(from_peer, height);
+					const auto block = router.fetch_block_at(height, from_peer);
 					{
 						std::stringstream ss;
 						vnx::PrettyPrinter printer(ss);

@@ -48,7 +48,9 @@ protected:
 
 	void get_blocks_at_async(const uint32_t& height, const vnx::request_id_t& request_id) const override;
 
-	void fetch_block_at_async(const std::string& address, const uint32_t& height, const vnx::request_id_t& request_id) const override;
+	void fetch_block_async(const hash_t& hash, const vnx::optional<std::string>& address, const vnx::request_id_t& request_id) const override;
+
+	void fetch_block_at_async(const uint32_t& height, const std::string& address, const vnx::request_id_t& request_id) const override;
 
 	void handle(std::shared_ptr<const Block> value);
 
@@ -101,10 +103,12 @@ private:
 	};
 
 	struct fetch_job_t {
-		uint32_t height = 0;
-		std::string from_peer;
 		vnx::optional<hash_t> hash;
+		vnx::optional<uint32_t> height;
+		vnx::optional<std::string> from_peer;
 		int64_t start_time_ms = 0;
+		std::unordered_set<uint64_t> failed;
+		std::unordered_set<uint64_t> pending;
 		std::unordered_map<uint32_t, uint64_t> request_map;				// [request id, client]
 	};
 
