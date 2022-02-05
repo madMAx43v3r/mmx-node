@@ -514,7 +514,8 @@ app.component('account-offer-form', {
 			ask_amount: null,
 			ask_symbol: "MMX",
 			ask_currency: null,
-			confirmed: false
+			confirmed: false,
+			timer: null
 		}
 	},
 	methods: {
@@ -524,6 +525,7 @@ app.component('account-offer-form', {
 				.then(data => this.balances = data.balances);
 		},
 		update_balance() {
+			this.update();
 			this.$refs.balance.update();
 		},
 		submit() {
@@ -562,13 +564,15 @@ app.component('account-offer-form', {
 		}
 	},
 	created() {
-		this.update()
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 30000);
 	},
 	mounted() {
-		$('#bid_select').dropdown({
-			onChange: function(value, text) {}
-		});
+		$('.ui.dropdown').dropdown();
 		$('.ui.checkbox').checkbox();
+	},
+	unmounted() {
+		clearInterval(this.timer);
 	},
 	watch: {
 		ask_amount(value) {
