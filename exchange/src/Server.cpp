@@ -8,6 +8,7 @@
 #include <mmx/exchange/Server.h>
 #include <mmx/exchange/Client_approve.hxx>
 #include <mmx/exchange/Client_approve_return.hxx>
+#include <mmx/exchange/Server_reject.hxx>
 #include <mmx/solution/PubKey.hxx>
 
 
@@ -567,6 +568,15 @@ void Server::on_msg(uint64_t client, std::shared_ptr<const vnx::Value> msg)
 	case Return::VNX_TYPE_ID:
 		if(auto value = std::dynamic_pointer_cast<const Return>(msg)) {
 			on_return(client, value);
+		}
+		break;
+	case Server_reject::VNX_TYPE_ID:
+		if(auto value = std::dynamic_pointer_cast<const Server_reject>(msg)) {
+			try {
+				reject(client, value->txid);
+			} catch(const std::exception& ex) {
+				log(WARN) << "reject() failed with: " << ex.what();
+			}
 		}
 		break;
 	case Client_approve_return::VNX_TYPE_ID:
