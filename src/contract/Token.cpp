@@ -27,6 +27,8 @@ vnx::bool_t Token::is_valid() const
 			return false;
 		}
 	}
+	// TODO: max name length 128
+	// TODO: max symbol length 6, min length 2
 	return Contract::is_valid() && !name.empty() && !symbol.empty() && symbol != "MMX";
 }
 
