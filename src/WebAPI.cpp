@@ -750,21 +750,26 @@ void WebAPI::render_history(const vnx::request_id_t& request_id, size_t limit, c
 }
 
 void WebAPI::execute_trades(const std::string& server, const uint32_t index, const std::vector<exchange::matched_order_t>& orders,
-							const size_t offset, std::shared_ptr<std::vector<hash_t>> result, vnx::request_id_t request_id,
-							const hash_t& txid, const vnx::exception& ex, bool is_fail) const
+							const size_t offset, std::shared_ptr<std::vector<vnx::Object>> result, std::shared_ptr<RenderContext> context,
+							vnx::request_id_t request_id, const hash_t& txid, const vnx::exception& ex, bool is_fail) const
 {
-	if(is_fail) {
-		log(WARN) << "execute() failed with: " << ex.what();
-	} else if(txid != hash_t()) {
-		result->push_back(txid);
+	if(offset > 0) {
+		vnx::Object res;
+		res["id"] = txid.to_string();
+		res["order"] = render_value(orders[offset - 1], context);
+		if(is_fail) {
+			res["failed"] = true;
+			res["message"] = ex.what();
+		}
+		result->push_back(res);
 	}
 	if(offset >= orders.size()) {
 		respond(request_id, render_value(*result));
 		return;
 	}
 	exch_client->execute(server, index, orders[offset],
-		std::bind(&WebAPI::execute_trades, this, server, index, orders, offset + 1, result, request_id, std::placeholders::_1, vnx::exception(), false),
-		std::bind(&WebAPI::execute_trades, this, server, index, orders, offset + 1, result, request_id, hash_t(), std::placeholders::_1, true));
+		std::bind(&WebAPI::execute_trades, this, server, index, orders, offset + 1, result, context, request_id, std::placeholders::_1, vnx::exception(), false),
+		std::bind(&WebAPI::execute_trades, this, server, index, orders, offset + 1, result, context, request_id, hash_t(), std::placeholders::_1, true));
 }
 
 void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
@@ -1270,8 +1275,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 								const auto server = args["server"].to_string_value();
 								exch_client->match(server, orders,
 									[this, request_id, args, server, index, context](const std::vector<exchange::matched_order_t> orders) {
-										auto result = std::make_shared<std::vector<hash_t>>();
-										execute_trades(server, index, orders, 0, result, request_id, hash_t(), {}, false);
+										auto result = std::make_shared<std::vector<vnx::Object>>();
+										execute_trades(server, index, orders, 0, result, context, request_id, hash_t(), {}, false);
 									},
 									std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 							},

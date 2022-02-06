@@ -299,7 +299,9 @@ app.component('exchange-trade-form', {
 			bid_amount: null,
 			ask_amount: null,
 			confirmed: false,
-			timer: null
+			timer: null,
+			result: null,
+			error: null
 		}
 	},
 	methods: {
@@ -329,16 +331,16 @@ app.component('exchange-trade-form', {
 					if(response.ok) {
 						response.json().then(data => {
 							if(data.length) {
-								alert("TX IDs: " + JSON.stringify(data));
+								this.result = data;
 								this.$emit('trade-executed', data);
 								this.update();
 							} else {
-								alert("Trade failed! (Most likely no offers available or bid amount too low)")
+								this.error = "Most likely no offers available or bid amount too low.";
 							}
 						});
 					} else {
 						response.text().then(data => {
-							alert("Failed with: " + data)
+							this.error = data;
 						});
 					}
 				});
@@ -369,42 +371,62 @@ app.component('exchange-trade-form', {
 						this.ask_amount = "???";
 					}
 				});
+		},
+		result(value) {
+			if(value) {
+				this.error = null;
+			}
+		},
+		error(value) {
+			if(value) {
+				this.result = null;
+			}
 		}
 	},
 	template: `
 		<div class="ui segment">
-		<form class="ui form" id="form">
-			<div class="two fields">
-				<div class="field">
-					<label>Bid Amount</label>
-					<div class="ui right labeled input">
-						<input type="text" v-model.number.lazy="bid_amount" placeholder="1.23" style="text-align: right"/>
-						<div class="ui basic label">
-							{{bid_symbol}}
+			<form class="ui form" id="form">
+				<div class="two fields">
+					<div class="field">
+						<label>Bid Amount</label>
+						<div class="ui right labeled input">
+							<input type="text" v-model.number.lazy="bid_amount" placeholder="1.23" style="text-align: right"/>
+							<div class="ui basic label">
+								{{bid_symbol}}
+							</div>
+						</div>
+					</div>
+					<div class="field">
+						<label>Receive (estimated)</label>
+						<div class="ui right labeled input field">
+							<input type="text" v-model="ask_amount" style="text-align: right" disabled/>
+							<div class="ui basic label">
+								{{ask_symbol}}
+							</div>
 						</div>
 					</div>
 				</div>
-				<div class="field">
-					<label>Receive (estimated)</label>
-					<div class="ui right labeled input field">
-						<input type="text" v-model="ask_amount" style="text-align: right" disabled/>
-						<div class="ui basic label">
-							{{ask_symbol}}
-						</div>
+				<div class="inline field">
+					<div class="ui checkbox">
+						<input type="checkbox" v-model="confirmed">
+						<label>Confirm</label>
 					</div>
 				</div>
+				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}" id="submit">Trade</div>
+			</form>
+			<div class="ui bottom right attached large label">
+				Balance: {{balance}} {{bid_symbol}}
 			</div>
-			<div class="inline field">
-				<div class="ui checkbox">
-					<input type="checkbox" v-model="confirmed">
-					<label>Confirm</label>
-				</div>
-			</div>
-			<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}" id="submit">Trade</div>
-		</form>
-		<div class="ui bottom right attached large label">
-			Balance: {{balance}} {{bid_symbol}}
 		</div>
+		<div class="ui message" :class="{hidden: !result}">
+			<template v-for="item in result" :key="item.id">
+				Traded {{item.order.bid_value}} [{{item.order.bid_symbol}}] for {{item.order.ask_value}} [{{item.order.ask_symbol}}]
+				<template v-if="item.failed">({{item.message}})</template>
+				<br/>
+			</template>
+		</div>
+		<div class="ui negative message" :class="{hidden: !error}">
+			Failed with: <b>{{error}}</b>
 		</div>
 		`
 })
