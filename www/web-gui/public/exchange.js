@@ -159,7 +159,6 @@ app.component('exchange-order-list', {
 		ask: String,
 		server: String,
 		flip: Boolean,
-		title: String,
 		limit: Number
 	},
 	data() {
@@ -187,14 +186,20 @@ app.component('exchange-order-list', {
 	template: `
 		<table class="ui table striped">
 			<thead>
-				<th>{{title}} [{{flip ? data.bid_symbol : data.ask_symbol}} / {{flip ? data.ask_symbol : data.bid_symbol}}]</th>
-				<th>Amount</th>
-				<th>Token</th>
+				<th>Price</th>
+				<th></th>
+				<th>{{flip ? "Bid" : "Ask"}}</th>
+				<th></th>
+				<th>{{flip ? "Ask" : "Bid"}}</th>
+				<th></th>
 			</thead>
 			<tbody>
 				<tr v-for="item in data.orders">
-					<td>{{flip ? item.inv_price : item.price}}</td>
-					<td>{{flip ? item.ask_value : item.bid_value}}</td>
+					<td class="collapsing"><b>{{flip ? item.inv_price : item.price}}</b></td>
+					<td>{{flip ? data.bid_symbol : data.ask_symbol}} / {{flip ? data.ask_symbol : data.bid_symbol}}</td>
+					<td class="collapsing"><b>{{flip ? item.bid_value : item.ask_value}}</b></td>
+					<td>{{flip ? data.bid_symbol : data.ask_symbol}}</td>
+					<td class="collapsing"><b>{{flip ? item.ask_value : item.bid_value}}</b></td>
 					<td>{{flip ? data.ask_symbol : data.bid_symbol}}</td>
 				</tr>
 			</tbody>
@@ -218,10 +223,10 @@ app.component('exchange-orders', {
 	template: `
 		<div class="ui two column grid">
 			<div class="column">
-				<exchange-order-list title="Buy -" :server="server" :bid="bid" :ask="ask" :flip="false" :limit="limit" ref="bid_list"></exchange-order-list>
+				<exchange-order-list :server="server" :bid="bid" :ask="ask" :flip="false" :limit="limit" ref="bid_list"></exchange-order-list>
 			</div>
 			<div class="column">
-				<exchange-order-list title="Sell -" :server="server" :bid="ask" :ask="bid" :flip="true" :limit="limit" ref="ask_list"></exchange-order-list>
+				<exchange-order-list :server="server" :bid="ask" :ask="bid" :flip="true" :limit="limit" ref="ask_list"></exchange-order-list>
 			</div>
 		</div>
 		`
