@@ -655,7 +655,7 @@ app.component('account-offer-form', {
 		</div>
 		<div class="ui large message" :class="{hidden: !result}">
 			<template v-if="result">
-			[<b>{{result.id}}</b>] Offering <b>{{result.bid_value}}</b> [{{result.bid_symbol}}] for <b>{{result.ask_value}}</b> [{{result.ask_symbol}}]
+				[<b>{{result.id}}</b>] Offering <b>{{result.bid_value}}</b> [{{result.bid_symbol}}] for <b>{{result.ask_value}}</b> [{{result.ask_symbol}}]
 			</template>
 		</div>
 		<div class="ui large negative message" :class="{hidden: !error}">
@@ -667,7 +667,9 @@ app.component('account-offer-form', {
 
 app.component('account-offers', {
 	props: {
-		index: Number
+		index: Number,
+		bid: String,
+		ask: String
 	},
 	emits: [
 		"offer-cancel"
@@ -680,7 +682,7 @@ app.component('account-offers', {
 	},
 	methods: {
 		update() {
-			fetch('/wapi/exchange/offers?wallet=' + this.index)
+			fetch('/wapi/exchange/offers?wallet=' + this.index + (this.bid ? '&bid=' + this.bid : '') + (this.ask ? '&ask=' + this.ask : ''))
 				.then(response => response.json())
 				.then(data => this.data = data);
 		},
@@ -690,6 +692,11 @@ app.component('account-offers', {
 					this.update();
 					this.$emit('offer-cancel', id);
 				});
+		}
+	},
+	watch: {
+		index(value) {
+			this.update();
 		}
 	},
 	created() {

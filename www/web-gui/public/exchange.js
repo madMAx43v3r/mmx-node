@@ -148,7 +148,7 @@ app.component('exchange-menu', {
 			<a class="item" :class="{active: $route.meta.page == 'market'}" @click="submit('market')">Market</a>
 			<a class="item" :class="{active: $route.meta.page == 'trades'}">Trades</a>
 			<a class="item" :class="{active: $route.meta.page == 'history'}" @click="submit('history')">History</a>
-			<a class="item" :class="{active: $route.meta.page == 'offers'}">Offers</a>
+			<a class="item" :class="{active: $route.meta.page == 'offers'}" @click="submit('offers')">Offers</a>
 		</div>
 		`
 })
@@ -428,6 +428,168 @@ app.component('exchange-trade-form', {
 				Traded {{item.order.bid_value}} [{{item.order.bid_symbol}}] for {{item.order.ask_value}} [{{item.order.ask_symbol}}]
 				<template v-if="item.failed">({{item.message}})</template>
 				<br/>
+			</template>
+		</div>
+		<div class="ui negative message" :class="{hidden: !error}">
+			Failed with: <b>{{error}}</b>
+		</div>
+		`
+})
+
+app.component('exchange-offer-form', {
+	props: {
+		server: String,
+		wallet: Number,
+		bid_symbol: String,
+		ask_symbol: String,
+		bid_currency: String,
+		ask_currency: String,
+		flip: Boolean
+	},
+	emits: [
+		"offer-created"
+	],
+	data() {
+		return {
+			balance: null,
+			bid_amount: null,
+			ask_amount: null,
+			price: null,
+			confirmed: false,
+			timer: null,
+			result: null,
+			error: null
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/wallet/balance?index=' + this.wallet + '&currency=' + this.bid_currency)
+				.then(response => response.json())
+				.then(data => {
+					if(data.balances.length) {
+						this.balance = data.balances[0].spendable;
+					} else {
+						this.balance = 0;
+					}
+				});
+		},
+		submit() {
+			this.confirmed = false;
+			const req = {};
+			req.index = this.wallet;
+			const pair = {};
+			pair.bid = this.bid_currency;
+			pair.ask = this.ask_currency;
+			req.pair = pair;
+			req.bid = this.bid_amount;
+			req.ask = this.ask_amount;
+			fetch('/wapi/exchange/offer', {body: JSON.stringify(req), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						response.json().then(data => {
+							fetch('/wapi/exchange/place?id=' + data.id)
+								.then(response => {
+										if(response.ok) {
+											this.result = data;
+											this.update();
+											this.$emit('offer-created', data);
+										} else {
+											response.text().then(data => {
+												this.error = data;
+											});
+										}
+									});
+						});
+					} else {
+						response.text().then(data => {
+							this.error = data;
+						});
+					}
+				});
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 10000);
+	},
+	mounted() {
+		$('.ui.checkbox').checkbox();
+	},
+	unmounted() {
+		clearInterval(this.timer);
+	},
+	watch: {
+		wallet() {
+			this.update();
+		},
+		price(value) {
+			if(this.bid_amount && value) {
+				this.ask_amount = this.flip ? this.bid_amount / value : this.bid_amount * value;
+			}
+		},
+		bid_amount(value) {
+			if(this.price) {
+				this.ask_amount = this.flip ? this.bid_amount / this.price : this.bid_amount * this.price;
+			}
+		},
+		result(value) {
+			if(value) {
+				this.error = null;
+			}
+		},
+		error(value) {
+			if(value) {
+				this.result = null;
+			}
+		}
+	},
+	template: `
+		<div class="ui segment">
+			<form class="ui form" id="form">
+				<div class="two fields">
+					<div class="field">
+						<label>Bid Amount</label>
+						<div class="ui right labeled input">
+							<input type="text" v-model.number="bid_amount" placeholder="1.23" style="text-align: right"/>
+							<div class="ui basic label">
+								{{bid_symbol}}
+							</div>
+						</div>
+					</div>
+					<div class="field">
+						<label>Ask Amount</label>
+						<div class="ui right labeled input field">
+							<input type="text" v-model.number="ask_amount" style="text-align: right" disabled/>
+							<div class="ui basic label">
+								{{ask_symbol}}
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="field">
+					<label>Price</label>
+					<div class="ui right labeled input field">
+						<input type="text" v-model.number="price" style="text-align: right"/>
+						<div class="ui basic label">
+							{{flip ? bid_symbol : ask_symbol}} / {{flip ? ask_symbol : bid_symbol}}
+						</div>
+					</div>
+				</div>
+				<div class="inline field">
+					<div class="ui checkbox">
+						<input type="checkbox" v-model="confirmed">
+						<label>Confirm</label>
+					</div>
+				</div>
+				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}" id="submit">Offer</div>
+			</form>
+			<div class="ui bottom right attached large label">
+				Balance: {{balance}} {{bid_symbol}}
+			</div>
+		</div>
+		<div class="ui message" :class="{hidden: !result}">
+			<template v-if="result">
+				[<b>{{result.id}}</b>] Offering <b>{{result.bid_value}}</b> [{{result.bid_symbol}}] for <b>{{result.ask_value}}</b> [{{result.ask_symbol}}]
 			</template>
 		</div>
 		<div class="ui negative message" :class="{hidden: !error}">

@@ -1106,28 +1106,36 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else if(sub_path == "/exchange/offers") {
 		vnx::optional<uint32_t> wallet;
+		vnx::optional<addr_t> bid;
+		vnx::optional<addr_t> ask;
 		const auto iter_wallet = query.find("wallet");
+		const auto iter_bid = query.find("bid");
+		const auto iter_ask = query.find("ask");
 		if(iter_wallet != query.end()) {
 			wallet = vnx::from_string_value<uint32_t>(iter_wallet->second);
 		}
+		if(iter_bid != query.end()) {
+			bid = vnx::from_string_value<addr_t>(iter_bid->second);
+		}
+		if(iter_ask != query.end()) {
+			ask = vnx::from_string_value<addr_t>(iter_ask->second);
+		}
 		exch_client->get_all_offers(
-			[this, request_id, wallet](const std::vector<std::shared_ptr<const exchange::OfferBundle>> offers) {
+			[this, request_id, wallet, bid, ask](const std::vector<std::shared_ptr<const exchange::OfferBundle>> offers) {
 				std::unordered_set<addr_t> addr_set;
+				std::vector<std::shared_ptr<const exchange::OfferBundle>> result;
 				for(auto offer : offers) {
-					if(offer) {
+					if((!wallet || offer->wallet == *wallet)
+						&& (!bid || !ask || (offer->pair.bid == *bid && offer->pair.ask == *ask) || (offer->pair.bid == *ask && offer->pair.ask == *bid)))
+					{
+						result.push_back(offer);
 						addr_set.insert(offer->pair.bid);
 						addr_set.insert(offer->pair.ask);
 					}
 				}
 				get_context(addr_set, request_id,
-					[this, request_id, wallet, offers](std::shared_ptr<RenderContext> context) {
-						std::vector<vnx::Variant> res;
-						for(auto offer : offers) {
-							if(!wallet || offer->wallet == *wallet) {
-								res.push_back(render_value(offer, context));
-							}
-						}
-						respond(request_id, vnx::Variant(res));
+					[this, request_id, result](std::shared_ptr<RenderContext> context) {
+						respond(request_id, render_value(result, context));
 					});
 			},
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
