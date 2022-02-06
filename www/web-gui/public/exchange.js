@@ -524,12 +524,12 @@ app.component('exchange-offer-form', {
 		},
 		price(value) {
 			if(this.bid_amount && value) {
-				this.ask_amount = this.flip ? this.bid_amount / value : this.bid_amount * value;
+				this.ask_amount = parseFloat((this.flip ? this.bid_amount / value : this.bid_amount * value).toPrecision(6));
 			}
 		},
 		bid_amount(value) {
 			if(this.price) {
-				this.ask_amount = this.flip ? this.bid_amount / this.price : this.bid_amount * this.price;
+				this.ask_amount = parseFloat((this.flip ? this.bid_amount / this.price : this.bid_amount * this.price).toPrecision(6));
 			}
 		},
 		result(value) {
