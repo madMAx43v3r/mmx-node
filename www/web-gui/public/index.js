@@ -138,30 +138,35 @@ const ExchangeOffers = {
 		ask_symbol: null
 	},
 	methods: {
-		update() {
+		update_created() {
 			this.$refs.orders.update();
 			this.$refs.offers.update();
+		},
+		update_cancel() {
+			this.$refs.orders.update();
+			this.$refs.bid_form.update();
+			this.$refs.ask_form.update();
 		}
 	},
 	template: `
 		<div class="ui two column grid">
 			<div class="column">
-				<exchange-offer-form @offer-created="update"
-					:wallet="wallet" :server="$route.params.server"
-					:bid_symbol="ask_symbol" :ask_symbol="bid_symbol" :flip="true"
-					:bid_currency="$route.params.ask" :ask_currency="$route.params.bid">
-				</exchange-offer-form>
-			</div>
-			<div class="column">
-				<exchange-offer-form @offer-created="update"
+				<exchange-offer-form ref="bid_form" @offer-created="update_created"
 					:wallet="wallet" :server="$route.params.server"
 					:bid_symbol="bid_symbol" :ask_symbol="ask_symbol" :flip="false"
 					:bid_currency="$route.params.bid" :ask_currency="$route.params.ask">
 				</exchange-offer-form>
 			</div>
+			<div class="column">
+				<exchange-offer-form ref="ask_form" @offer-created="update_created"
+					:wallet="wallet" :server="$route.params.server"
+					:bid_symbol="ask_symbol" :ask_symbol="bid_symbol" :flip="true"
+					:bid_currency="$route.params.ask" :ask_currency="$route.params.bid">
+				</exchange-offer-form>
+			</div>
 		</div>
 		<exchange-orders ref="orders" :server="$route.params.server" :bid="$route.params.bid" :ask="$route.params.ask" :limit="5"></exchange-orders>
-		<account-offers ref="offers" @offer-cancel="update" :index="wallet" :bid="$route.params.bid" :ask="$route.params.ask"></account-offers>
+		<account-offers ref="offers" @offer-cancel="update_cancel" :index="wallet" :bid="$route.params.bid" :ask="$route.params.ask"></account-offers>
 		`
 }
 
