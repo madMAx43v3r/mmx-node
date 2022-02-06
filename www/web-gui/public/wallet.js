@@ -367,7 +367,9 @@ app.component('account-send-form', {
 			confirmed: false,
 			options: {
 				split_output: 1
-			}
+			},
+			result: null,
+			error: null
 		}
 	},
 	methods: {
@@ -383,7 +385,7 @@ app.component('account-send-form', {
 							.then(data => {
 								info.address = data[0];
 								this.accounts.push(info);
-								this.accounts.sort(function(a, b){return a.account - b.account});
+								this.accounts.sort((a, b) => a.account - b.account);
 							});
 					}
 				});
@@ -403,11 +405,11 @@ app.component('account-send-form', {
 				.then(response => {
 					if(response.ok) {
 						response.json().then(data => {
-							alert("Transaction ID: " + data)
+							this.result = data;
 						});
 					} else {
 						response.text().then(data => {
-							alert("Send failed with: " + data)
+							this.error = data;
 						});
 					}
 					this.update();
@@ -428,77 +430,84 @@ app.component('account-send-form', {
 				}
 			}
 		});
-		$('#currency').dropdown({
-			onChange: function(value, text) {}
-		});
+		$('#currency').dropdown();
 		$('.ui.checkbox').checkbox();
 	},
 	watch: {
 		amount(value) {
 			// TODO: validate
 		},
-		confirmed(value) {
+		result(value) {
 			if(value) {
-				$('#submit').removeClass('disabled');
-			} else {
-				$('#submit').addClass('disabled');
+				this.error = null;
+			}
+		},
+		error(value) {
+			if(value) {
+				this.result = null;
 			}
 		}
 	},
 	template: `
 		<account-balance :index="index" ref="balance"></account-balance>
 		<div class="ui raised segment">
-		<form class="ui form" id="form">
-			<div class="field">
-				<label>Destination</label>
-				<div class="ui selection dropdown" id="address">
-					<i class="dropdown icon"></i>
-					<div class="default text">Select</div>
-					<div class="menu">
-						<div class="item" data-value="">Address Input</div>
-						<div v-for="item in accounts" :key="item.account" class="item" :data-value="item.address">
-							Account #{{item.account}} ([{{item.index}}] {{item.name}}) ({{item.address}})
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="two fields">
-				<div class="fourteen wide field">
-					<label>Destination Address</label>
-					<input type="text" id="target" placeholder="mmx1..."/>
-				</div>
-				<div class="two wide field">
-					<label>Output Split</label>
-					<input type="text" v-model.number="options.split_output" style="text-align: right"/>
-				</div>
-			</div>
-			<div class="two fields">
-				<div class="four wide field">
-					<label>Amount</label>
-					<input type="text" v-model.number="amount" placeholder="1.23" style="text-align: right"/>
-				</div>
-				<div class="twelve wide field">
-					<label>Currency</label>
-					<div class="ui selection dropdown" id="currency">
-						<input type="hidden" id="currency_input">
+			<form class="ui form" id="form">
+				<div class="field">
+					<label>Destination</label>
+					<div class="ui selection dropdown" id="address">
 						<i class="dropdown icon"></i>
 						<div class="default text">Select</div>
 						<div class="menu">
-							<div v-for="item in balances" :key="item.contract" class="item" :data-value="item.contract">
-								{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
+							<div class="item" data-value="">Address Input</div>
+							<div v-for="item in accounts" :key="item.account" class="item" :data-value="item.address">
+								Account #{{item.account}} ([{{item.index}}] {{item.name}}) ({{item.address}})
 							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-			<div class="inline field">
-				<div class="ui toggle checkbox">
-					<input type="checkbox" class="hidden" v-model="confirmed">
-					<label>Confirm</label>
+				<div class="two fields">
+					<div class="fourteen wide field">
+						<label>Destination Address</label>
+						<input type="text" id="target" placeholder="mmx1..."/>
+					</div>
+					<div class="two wide field">
+						<label>Output Split</label>
+						<input type="text" v-model.number="options.split_output" style="text-align: right"/>
+					</div>
 				</div>
-			</div>
-			<div @click="submit" class="ui submit primary button disabled" id="submit">Send</div>
-		</form>
+				<div class="two fields">
+					<div class="four wide field">
+						<label>Amount</label>
+						<input type="text" v-model.number="amount" placeholder="1.23" style="text-align: right"/>
+					</div>
+					<div class="twelve wide field">
+						<label>Currency</label>
+						<div class="ui selection dropdown" id="currency">
+							<input type="hidden" id="currency_input">
+							<i class="dropdown icon"></i>
+							<div class="default text">Select</div>
+							<div class="menu">
+								<div v-for="item in balances" :key="item.contract" class="item" :data-value="item.contract">
+									{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="inline field">
+					<div class="ui toggle checkbox" ref="confirm">
+						<input type="checkbox" class="hidden" v-model="confirmed">
+						<label>Confirm</label>
+					</div>
+				</div>
+				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">Send</div>
+			</form>
+		</div>
+		<div class="ui large message" :class="{hidden: !result}">
+			Transaction has been sent: <b>{{result}}</b>
+		</div>
+		<div class="ui large negative message" :class="{hidden: !error}">
+			Failed with: <b>{{error}}</b>
 		</div>
 		`
 })
@@ -515,7 +524,9 @@ app.component('account-offer-form', {
 			ask_symbol: "MMX",
 			ask_currency: null,
 			confirmed: false,
-			timer: null
+			timer: null,
+			result: null,
+			error: null
 		}
 	},
 	methods: {
@@ -545,19 +556,20 @@ app.component('account-offer-form', {
 							fetch('/wapi/exchange/place?id=' + data.id)
 								.then(response => {
 										if(response.ok) {
+											this.result = data.id;
 											this.update();
 											this.$refs.balance.update();
 											this.$refs.offers.update();
 										} else {
 											response.text().then(data => {
-												alert("Failed with: " + data)
+												this.error = data;
 											});
 										}
 									});
 						});
 					} else {
 						response.text().then(data => {
-							alert("Failed with: " + data)
+							this.error = data;
 						});
 					}
 				});
@@ -598,59 +610,68 @@ app.component('account-offer-form', {
 				this.ask_symbol = "MMX"
 			}
 		},
-		confirmed(value) {
+		result(value) {
 			if(value) {
-				$('#submit').removeClass('disabled');
-			} else {
-				$('#submit').addClass('disabled');
+				this.error = null;
+			}
+		},
+		error(value) {
+			if(value) {
+				this.result = null;
 			}
 		}
 	},
 	template: `
 		<account-balance :index="index" ref="balance"></account-balance>
 		<div class="ui raised segment">
-		<form class="ui form" id="form">
-			<div class="two fields">
-				<div class="four wide field">
-					<label>Bid Amount</label>
-					<input type="text" v-model.number="bid_amount" placeholder="1.23" style="text-align: right"/>
-				</div>
-				<div class="twelve wide field">
-					<label>Bid Currency</label>
-					<div class="ui selection dropdown" id="bid_select">
-						<input type="hidden" id="bid_currency">
-						<i class="dropdown icon"></i>
-						<div class="default text">Select</div>
-						<div class="menu">
-							<div v-for="item in balances" :key="item.contract" class="item" :data-value="item.contract">
-								{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
+			<form class="ui form" id="form">
+				<div class="two fields">
+					<div class="four wide field">
+						<label>Bid Amount</label>
+						<input type="text" v-model.number="bid_amount" placeholder="1.23" style="text-align: right"/>
+					</div>
+					<div class="twelve wide field">
+						<label>Bid Currency</label>
+						<div class="ui selection dropdown" id="bid_select">
+							<input type="hidden" id="bid_currency">
+							<i class="dropdown icon"></i>
+							<div class="default text">Select</div>
+							<div class="menu">
+								<div v-for="item in balances" :key="item.contract" class="item" :data-value="item.contract">
+									{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-			<div class="two fields">
-				<div class="four wide field">
-					<label>Ask Amount</label>
-					<input type="text" v-model.number="ask_amount" placeholder="1.23" style="text-align: right"/>
+				<div class="two fields">
+					<div class="four wide field">
+						<label>Ask Amount</label>
+						<input type="text" v-model.number="ask_amount" placeholder="1.23" style="text-align: right"/>
+					</div>
+					<div class="two wide field">
+						<label>Ask Symbol</label>
+						<input type="text" v-model="ask_symbol" disabled/>
+					</div>
+					<div class="ten wide field">
+						<label>Ask Currency Contract</label>
+						<input type="text" v-model="ask_currency" placeholder="mmx1..."/>
+					</div>
 				</div>
-				<div class="two wide field">
-					<label>Ask Symbol</label>
-					<input type="text" v-model="ask_symbol" disabled/>
+				<div class="inline field">
+					<div class="ui toggle checkbox">
+						<input type="checkbox" class="hidden" v-model="confirmed">
+						<label>Confirm</label>
+					</div>
 				</div>
-				<div class="ten wide field">
-					<label>Ask Currency Contract</label>
-					<input type="text" v-model="ask_currency" placeholder="mmx1..."/>
-				</div>
-			</div>
-			<div class="inline field">
-				<div class="ui toggle checkbox">
-					<input type="checkbox" class="hidden" v-model="confirmed">
-					<label>Confirm</label>
-				</div>
-			</div>
-			<div @click="submit" class="ui submit primary button disabled" id="submit">Offer</div>
-		</form>
+				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">Offer</div>
+			</form>
+		</div>
+		<div class="ui large message" :class="{hidden: !result}">
+			Offer created: <b>{{result}}</b>
+		</div>
+		<div class="ui large negative message" :class="{hidden: !error}">
+			Failed with: <b>{{error}}</b>
 		</div>
 		<account-offers @offer-cancel="update_balance" :index="index" ref="offers"></account-offers>
 		`
