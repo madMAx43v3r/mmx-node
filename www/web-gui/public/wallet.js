@@ -133,7 +133,7 @@ app.component('account-balance', {
 			<tr v-for="item in balances" :key="item.contract">
 				<td>{{item.total}}</td>
 				<td>{{item.reserved}}</td>
-				<td>{{item.spendable}}</td>
+				<td><b>{{item.spendable}}</b></td>
 				<td>{{item.symbol}}</td>
 				<td>{{item.is_native ? '' : item.contract}}</td>
 			</tr>
@@ -157,7 +157,7 @@ app.component('balance-table', {
 			</thead>
 			<tbody>
 			<tr v-for="item in balances" :key="item.contract">
-				<td>{{item.value}}</td>
+				<td><b>{{item.value}}</b></td>
 				<td>{{item.symbol}}</td>
 				<td>{{item.is_native ? '' : item.contract}}</td>
 			</tr>
@@ -242,7 +242,7 @@ app.component('account-history', {
 			<tr v-for="item in data">
 				<td>{{item.height}}</td>
 				<td>{{item.type}}</td>
-				<td>{{item.value}}</td>
+				<td><b>{{item.value}}</b></td>
 				<td>{{item.symbol}}</td>
 				<td>{{item.address}}</td>
 				<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
