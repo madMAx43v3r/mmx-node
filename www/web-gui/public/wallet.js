@@ -730,9 +730,9 @@ app.component('account-offers', {
 				<td>{{item.bid_symbol}}</td>
 				<td class="collapsing"><b>{{item.ask_value}}</b></td>
 				<td>{{item.ask_symbol}}</td>
-				<td class="collapsing"><b>{{(item.ask_value / item.bid_value).toPrecision(6)}}</b></td>
+				<td class="collapsing"><b>{{(item.ask_value / item.bid_value).toPrecision(5)}}</b></td>
 				<td>{{item.ask_symbol}} / {{item.bid_symbol}}</td>
-				<td class="collapsing"><b>{{(item.bid_value / item.ask_value).toPrecision(6)}}</b></td>
+				<td class="collapsing"><b>{{(item.bid_value / item.ask_value).toPrecision(5)}}</b></td>
 				<td>{{item.bid_symbol}} / {{item.ask_symbol}}</td>
 				<td>{{(100 * item.bid_sold / item.bid).toPrecision(3)}} %</td>
 				<td>

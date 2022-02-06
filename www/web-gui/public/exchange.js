@@ -279,7 +279,7 @@ app.component('exchange-history', {
 					<td>{{item.pair.bid == bid ? item.bid_symbol : item.ask_symbol}}</td>
 					<td class="collapsing"><b>{{item.pair.bid == bid ? item.ask_value : item.bid_value}}</b></td>
 					<td>{{item.pair.bid == bid ? item.ask_symbol : item.bid_symbol}}</td>
-					<td class="collapsing"><b>{{(item.pair.bid == bid ? item.ask_value / item.bid_value : item.bid_value / item.ask_value).toPrecision(6)}}</b></td>
+					<td class="collapsing"><b>{{(item.pair.bid == bid ? item.ask_value / item.bid_value : item.bid_value / item.ask_value).toPrecision(5)}}</b></td>
 					<td>{{item.pair.bid == bid ? item.ask_symbol : item.bid_symbol}} / {{item.pair.bid == bid ? item.bid_symbol : item.ask_symbol}}</td>
 					<td>{{item.offer_id}}</td>
 					<td>{{item.failed ? "(failed)" : (item.height ? item.height : "(pending)")}}</td>
@@ -374,7 +374,7 @@ app.component('exchange-trade-form', {
 				.then(response => {
 					if(response.ok) {
 						response.json().then(data => {
-							this.ask_amount = (this.bid_amount * data.price).toPrecision(6);
+							this.ask_amount = (this.bid_amount * data.price).toPrecision(5);
 						});
 					} else {
 						this.ask_amount = "???";
@@ -528,12 +528,12 @@ app.component('exchange-offer-form', {
 		},
 		price(value) {
 			if(this.bid_amount && value) {
-				this.ask_amount = parseFloat((this.flip ? this.bid_amount / value : this.bid_amount * value).toPrecision(6));
+				this.ask_amount = parseFloat((this.flip ? this.bid_amount / value : this.bid_amount * value).toPrecision(5));
 			}
 		},
 		bid_amount(value) {
 			if(this.price) {
-				this.ask_amount = parseFloat((this.flip ? this.bid_amount / this.price : this.bid_amount * this.price).toPrecision(6));
+				this.ask_amount = parseFloat((this.flip ? this.bid_amount / this.price : this.bid_amount * this.price).toPrecision(5));
 			}
 		},
 		result(value) {
