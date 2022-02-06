@@ -364,6 +364,9 @@ app.component('account-send-form', {
 			accounts: [],
 			balances: [],
 			amount: null,
+			target: null,
+			address: null,
+			currency: null,
 			confirmed: false,
 			options: {
 				split_output: 1
@@ -398,8 +401,8 @@ app.component('account-send-form', {
 			const req = {};
 			req.index = this.index;
 			req.amount = this.amount;
-			req.currency = $('#currency_input').val();
-			req.dst_addr = $('#target').val();
+			req.currency = this.currency;
+			req.dst_addr = this.target;
 			req.options = this.options;
 			fetch('/wapi/wallet/send', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
@@ -418,22 +421,19 @@ app.component('account-send-form', {
 		}
 	},
 	created() {
-		this.update()
+		this.update();
 	},
 	mounted() {
-		$('#address').dropdown({
-			onChange: function(value, text) {
-				if(value) {
-					$('#target').val(value).prop('disabled', true);
-				} else {
-					$('#target').val("").prop('disabled', false);
-				}
-			}
-		});
-		$('#currency').dropdown();
 		$('.ui.checkbox').checkbox();
 	},
 	watch: {
+		address(value) {
+			if(value) {
+				this.target = value;
+			} else {
+				this.target = null;
+			}
+		},
 		amount(value) {
 			// TODO: validate
 		},
@@ -451,24 +451,20 @@ app.component('account-send-form', {
 	template: `
 		<account-balance :index="index" ref="balance"></account-balance>
 		<div class="ui raised segment">
-			<form class="ui form" id="form">
+			<form class="ui form">
 				<div class="field">
 					<label>Destination</label>
-					<div class="ui selection dropdown" id="address">
-						<i class="dropdown icon"></i>
-						<div class="default text">Select</div>
-						<div class="menu">
-							<div class="item" data-value="">Address Input</div>
-							<div v-for="item in accounts" :key="item.account" class="item" :data-value="item.address">
-								Account #{{item.account}} ([{{item.index}}] {{item.name}}) ({{item.address}})
-							</div>
-						</div>
-					</div>
+					<select v-model="address">
+						<option value="">Address Input</option>
+						<option v-for="item in accounts" :key="item.account" class="item" :value="item.address">
+							Account #{{item.account}} ([{{item.index}}] {{item.name}}) ({{item.address}})
+						</option>
+					</select>
 				</div>
 				<div class="two fields">
 					<div class="fourteen wide field">
 						<label>Destination Address</label>
-						<input type="text" id="target" placeholder="mmx1..."/>
+						<input type="text" v-model="target" :disabled="address" placeholder="mmx1..."/>
 					</div>
 					<div class="two wide field">
 						<label>Output Split</label>
@@ -482,20 +478,15 @@ app.component('account-send-form', {
 					</div>
 					<div class="twelve wide field">
 						<label>Currency</label>
-						<div class="ui selection dropdown" id="currency">
-							<input type="hidden" id="currency_input">
-							<i class="dropdown icon"></i>
-							<div class="default text">Select</div>
-							<div class="menu">
-								<div v-for="item in balances" :key="item.contract" class="item" :data-value="item.contract">
-									{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
-								</div>
-							</div>
-						</div>
+						<select v-model="currency">
+							<option v-for="item in balances" :key="item.contract" class="item" :value="item.contract">
+								{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
+							</option>
+						</select>
 					</div>
 				</div>
 				<div class="inline field">
-					<div class="ui toggle checkbox" ref="confirm">
+					<div class="ui toggle checkbox">
 						<input type="checkbox" class="hidden" v-model="confirmed">
 						<label>Confirm</label>
 					</div>
@@ -522,6 +513,7 @@ app.component('account-offer-form', {
 			bid_amount: null,
 			ask_amount: null,
 			ask_symbol: "MMX",
+			bid_currency: null,
 			ask_currency: null,
 			confirmed: false,
 			timer: null,
@@ -544,7 +536,7 @@ app.component('account-offer-form', {
 			const req = {};
 			req.index = this.index;
 			const pair = {};
-			pair.bid = $('#bid_currency').val();
+			pair.bid = this.bid_currency;
 			pair.ask = this.ask_currency;
 			req.pair = pair;
 			req.bid = this.bid_amount;
@@ -580,7 +572,6 @@ app.component('account-offer-form', {
 		this.timer = setInterval(() => { this.update(); }, 30000);
 	},
 	mounted() {
-		$('.ui.dropdown').dropdown();
 		$('.ui.checkbox').checkbox();
 	},
 	unmounted() {
@@ -600,14 +591,14 @@ app.component('account-offer-form', {
 						if(response.ok) {
 							response.json()
 								.then(data => {
-									this.ask_symbol = data.symbol
+									this.ask_symbol = data.symbol;
 								});
 						} else {
-							this.ask_symbol = "???"
+							this.ask_symbol = "???";
 						}
 					});
 			} else {
-				this.ask_symbol = "MMX"
+				this.ask_symbol = "MMX";
 			}
 		},
 		result(value) {
@@ -632,16 +623,11 @@ app.component('account-offer-form', {
 					</div>
 					<div class="twelve wide field">
 						<label>Bid Currency</label>
-						<div class="ui selection dropdown" id="bid_select">
-							<input type="hidden" id="bid_currency">
-							<i class="dropdown icon"></i>
-							<div class="default text">Select</div>
-							<div class="menu">
-								<div v-for="item in balances" :key="item.contract" class="item" :data-value="item.contract">
-									{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
-								</div>
-							</div>
-						</div>
+						<select v-model="bid_currency">
+							<option v-for="item in balances" :key="item.contract" class="item" :value="item.contract">
+								{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
+							</option>
+						</select>
 					</div>
 				</div>
 				<div class="two fields">
