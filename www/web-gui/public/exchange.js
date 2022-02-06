@@ -263,9 +263,9 @@ app.component('exchange-history', {
 			<thead>
 				<th>Type</th>
 				<th>Bid</th>
-				<th>Token</th>
+				<th></th>
 				<th>Ask</th>
-				<th>Token</th>
+				<th></th>
 				<th>Offer</th>
 				<th>Height</th>
 				<th>Time</th>
@@ -273,13 +273,13 @@ app.component('exchange-history', {
 			<tbody>
 				<tr v-for="item in data">
 					<td>{{item.pair.bid == bid ? "SELL" : "BUY"}}</td>
-					<td>{{item.pair.bid == bid ? item.bid_value : item.ask_value}}</td>
+					<td class="collapsing"><b>{{item.pair.bid == bid ? item.bid_value : item.ask_value}}</b></td>
 					<td>{{item.pair.bid == bid ? item.bid_symbol : item.ask_symbol}}</td>
-					<td>{{item.pair.bid == bid ? item.ask_value : item.bid_value}}</td>
+					<td class="collapsing"><b>{{item.pair.bid == bid ? item.ask_value : item.bid_value}}</b></td>
 					<td>{{item.pair.bid == bid ? item.ask_symbol : item.bid_symbol}}</td>
 					<td>{{item.offer_id}}</td>
 					<td>{{item.failed ? "(failed)" : (item.height ? item.height : "(pending)")}}</td>
-					<td>{{item.time ? new Date(item.time * 1000).toLocaleString() : "(pending)"}}</td>
+					<td>{{item.time ? new Date(item.time * 1000).toLocaleString() : (item.failed ? "(failed)" : "(pending)")}}</td>
 				</tr>
 			</tbody>
 		</table>

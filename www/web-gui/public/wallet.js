@@ -556,7 +556,7 @@ app.component('account-offer-form', {
 							fetch('/wapi/exchange/place?id=' + data.id)
 								.then(response => {
 										if(response.ok) {
-											this.result = data.id;
+											this.result = data;
 											this.update();
 											this.$refs.balance.update();
 											this.$refs.offers.update();
@@ -668,7 +668,9 @@ app.component('account-offer-form', {
 			</form>
 		</div>
 		<div class="ui large message" :class="{hidden: !result}">
-			Offer created: <b>{{result}}</b>
+			<template v-if="result">
+			[<b>{{result.id}}</b>] Offering <b>{{result.bid_value}}</b> [{{result.bid_symbol}}] for <b>{{result.ask_value}}</b> [{{result.ask_symbol}}]
+			</template>
 		</div>
 		<div class="ui large negative message" :class="{hidden: !error}">
 			Failed with: <b>{{error}}</b>
@@ -716,10 +718,10 @@ app.component('account-offers', {
 			<thead>
 			<tr>
 				<th>ID</th>
-				<th>Bid Amount</th>
-				<th>Bid Symbol</th>
-				<th>Ask Amount</th>
-				<th>Ask Symbol</th>
+				<th>Bid</th>
+				<th></th>
+				<th>Ask</th>
+				<th></th>
 				<th>Status</th>
 				<th>Actions</th>
 			</tr>
@@ -727,9 +729,9 @@ app.component('account-offers', {
 			<tbody>
 			<tr v-for="item in data">
 				<td>{{item.id}}</td>
-				<td>{{item.bid_value}}</td>
+				<td class="collapsing"><b>{{item.bid_value}}</b></td>
 				<td>{{item.bid_symbol}}</td>
-				<td>{{item.ask_value}}</td>
+				<td class="collapsing"><b>{{item.ask_value}}</b></td>
 				<td>{{item.ask_symbol}}</td>
 				<td>{{(100 * item.bid_sold / item.bid).toPrecision(3)}} %</td>
 				<td>
