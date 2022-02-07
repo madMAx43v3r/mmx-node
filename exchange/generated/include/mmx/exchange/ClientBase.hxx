@@ -14,6 +14,7 @@
 #include <mmx/exchange/matched_order_t.hxx>
 #include <mmx/exchange/open_order_t.hxx>
 #include <mmx/exchange/order_t.hxx>
+#include <mmx/exchange/trade_entry_t.hxx>
 #include <mmx/exchange/trade_order_t.hxx>
 #include <mmx/exchange/trade_pair_t.hxx>
 #include <mmx/hash_t.hpp>
@@ -83,6 +84,8 @@ protected:
 	void get_trade_pairs_async_return(const vnx::request_id_t& _request_id, const std::vector<::mmx::exchange::trade_pair_t>& _ret_0) const;
 	virtual void get_orders_async(const std::string& server, const ::mmx::exchange::trade_pair_t& pair, const int32_t& limit, const vnx::request_id_t& _request_id) const = 0;
 	void get_orders_async_return(const vnx::request_id_t& _request_id, const std::vector<::mmx::exchange::order_t>& _ret_0) const;
+	virtual void get_trade_history_async(const std::string& server, const ::mmx::exchange::trade_pair_t& pair, const int32_t& limit, const vnx::request_id_t& _request_id) const = 0;
+	void get_trade_history_async_return(const vnx::request_id_t& _request_id, const std::vector<::mmx::exchange::trade_entry_t>& _ret_0) const;
 	virtual void get_price_async(const std::string& server, const ::mmx::addr_t& want, const ::mmx::exchange::amount_t& have, const vnx::request_id_t& _request_id) const = 0;
 	void get_price_async_return(const vnx::request_id_t& _request_id, const ::mmx::ulong_fraction_t& _ret_0) const;
 	virtual ::mmx::exchange::open_order_t get_order(const ::mmx::txio_key_t& key) const = 0;
