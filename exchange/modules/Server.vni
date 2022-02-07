@@ -12,6 +12,8 @@ module Server extends vnx.addons.MsgServer {
 	
 	int trade_timeout_ms = 5000;			// [ms]
 	
+	uint max_history = 10000;
+	
 	string node_server = "Node";
 	
 	
@@ -26,6 +28,9 @@ module Server extends vnx.addons.MsgServer {
 	
 	@Permission(mmx.permission_e.PUBLIC)
 	vector<order_t> get_orders(trade_pair_t pair, int limit = -1) const;
+	
+	@Permission(mmx.permission_e.PUBLIC)
+	vector<trade_entry_t> get_history(trade_pair_t pair, int limit = -1) const;
 	
 	@Permission(mmx.permission_e.PUBLIC)
 	ulong_fraction_t get_price(addr_t want, amount_t have) const;

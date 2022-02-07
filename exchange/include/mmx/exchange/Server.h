@@ -38,6 +38,7 @@ protected:
 	struct order_book_t {
 		std::multimap<double, order_t> orders;
 		std::unordered_map<txio_key_t, double> key_map;
+		std::list<trade_entry_t> history;
 	};
 
 	struct trade_job_t {
@@ -70,6 +71,8 @@ protected:
 
 	std::vector<order_t> get_orders(const trade_pair_t& pair, const int32_t& limit) const override;
 
+	std::vector<trade_entry_t> get_history(const trade_pair_t& pair, const int32_t& limit) const override;
+
 	ulong_fraction_t get_price(const addr_t& want, const amount_t& have) const override;
 
 	void handle(std::shared_ptr<const Block> block) override;
@@ -80,6 +83,8 @@ private:
 	bool is_open(const txio_key_t& bid_key) const;
 
 	void finish_trade(std::shared_ptr<trade_job_t> job);
+
+	void cancel_trade(std::shared_ptr<trade_job_t> job);
 
 	void cancel_order(const trade_pair_t& pair, const txio_key_t& key);
 
@@ -123,7 +128,7 @@ private:
 	mutable std::map<trade_pair_t, std::shared_ptr<order_book_t>> trade_map;
 
 	std::unordered_map<uint64_t, std::shared_ptr<peer_t>> peer_map;
-	std::unordered_map<hash_t, std::shared_ptr<trade_job_t>> pending;
+	std::unordered_map<hash_t, std::shared_ptr<trade_job_t>> pending_trades;
 
 };
 

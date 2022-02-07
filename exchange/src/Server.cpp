@@ -48,13 +48,13 @@ void Server::handle(std::shared_ptr<const Block> block)
 	if(!block->proof) {
 		return;
 	}
-	size_t num_exec = 0;
+	std::unordered_map<txio_key_t, hash_t> exec_map;
 	for(const auto& base : block->tx_list) {
 		if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
 			for(const auto& in : tx->inputs) {
 				if(utxo_map.erase(in.prev)) {
+					exec_map[in.prev] = tx->id;
 					lock_map.erase(in.prev);
-					num_exec++;
 				}
 			}
 		}
@@ -66,29 +66,43 @@ void Server::handle(std::shared_ptr<const Block> block)
 			if(utxo_map.count(order.bid_key)) {
 				iter++;
 			} else {
+				{
+					auto iter = exec_map.find(order.bid_key);
+					if(iter != exec_map.end()) {
+						trade_entry_t entry;
+						entry.id = iter->second;
+						entry.height = block->height;
+						entry.order = order;
+						book->history.push_front(entry);
+					}
+				}
 				book->key_map.erase(order.bid_key);
 				iter = book->orders.erase(iter);
 			}
 		}
 	}
-	log(INFO) << "Height " << block->height << ": " << num_exec << " executed, "
+	log(INFO) << "Height " << block->height << ": " << exec_map.size() << " executed, "
 			<< utxo_map.size() << " open, " << lock_map.size() << " locked";
 }
 
 void Server::update()
 {
 	const auto now = vnx::get_time_millis();
-	for(auto iter = pending.begin(); iter != pending.end();) {
+	for(auto iter = pending_trades.begin(); iter != pending_trades.end();) {
 		const auto trade = iter->second;
 		if(now - trade->start_time_ms > trade_timeout_ms) {
-			for(const auto& key : trade->locked_keys) {
-				lock_map.erase(key);
-			}
+			cancel_trade(trade);
 			vnx_async_return_ex_what(trade->request_id, "trade timeout");
 			log(WARN) << "Trade timeout with " << trade->pending_clients.size() << " approvals pending (" << iter->first << ")";
-			iter = pending.erase(iter);
+			iter = pending_trades.erase(iter);
 		} else {
 			iter++;
+		}
+	}
+	for(const auto& entry : trade_map) {
+		const auto& book = entry.second;
+		for(size_t i = book->history.size(); i > max_history; --i) {
+			book->history.pop_back();
 		}
 	}
 }
@@ -125,18 +139,16 @@ void Server::cancel(const uint64_t& client, const std::vector<txio_key_t>& order
 
 void Server::reject(const uint64_t& client, const hash_t& txid)
 {
-	auto iter = pending.find(txid);
-	if(iter == pending.end()) {
+	auto iter = pending_trades.find(txid);
+	if(iter == pending_trades.end()) {
 		throw std::logic_error("no such trade");
 	}
 	auto job = iter->second;
 	if(job->pending_clients.count(client)) {
-		for(const auto& key : job->locked_keys) {
-			lock_map.erase(key);
-		}
+		cancel_trade(job);
 		vnx_async_return_ex_what(job->request_id, "trade rejected");
 		log(WARN) << "Trade was rejected: " << txid;
-		pending.erase(iter);
+		pending_trades.erase(iter);
 	}
 }
 
@@ -145,8 +157,8 @@ void Server::approve(const uint64_t& client, std::shared_ptr<const Transaction> 
 	if(!tx || !tx->is_valid()) {
 		throw std::logic_error("invalid tx");
 	}
-	auto iter = pending.find(tx->id);
-	if(iter == pending.end()) {
+	auto iter = pending_trades.find(tx->id);
+	if(iter == pending_trades.end()) {
 		throw std::logic_error("no such trade");
 	}
 	auto job = iter->second;
@@ -162,19 +174,24 @@ void Server::approve(const uint64_t& client, std::shared_ptr<const Transaction> 
 
 void Server::finish_trade(std::shared_ptr<trade_job_t> job)
 {
-	pending.erase(job->tx->id);
+	pending_trades.erase(job->tx->id);
 	node->add_transaction(job->tx, true,
 		[this, job]() {
 			execute_async_return(job->request_id);
 			log(INFO) << "Executed trade: " << job->tx->id;
 		},
 		[this, job](const vnx::exception& ex) {
-			for(const auto& key : job->locked_keys) {
-				lock_map.erase(key);
-			}
+			cancel_trade(job);
 			vnx_async_return_ex(job->request_id, ex);
 			log(WARN) << "Trade failed with: " << ex.what();
 		});
+}
+
+void Server::cancel_trade(std::shared_ptr<trade_job_t> job)
+{
+	for(const auto& key : job->locked_keys) {
+		lock_map.erase(key);
+	}
 }
 
 void Server::place_async(const uint64_t& client, const trade_pair_t& pair, const limit_order_t& order, const vnx::request_id_t& request_id) const
@@ -320,7 +337,7 @@ void Server::execute_async(std::shared_ptr<const Transaction> tx, const vnx::req
 				job->tx = vnx::clone(tx);
 				job->request_id = request_id;
 				job->start_time_ms = vnx::get_time_millis();
-				pending[tx->id] = job;
+				pending_trades[tx->id] = job;
 
 				if(job->pending_clients.empty()) {
 					finish_trade(job);
@@ -473,6 +490,21 @@ std::vector<order_t> Server::get_orders(const trade_pair_t& pair, const int32_t&
 		}
 	}
 	return orders;
+}
+
+std::vector<trade_entry_t> Server::get_history(const trade_pair_t& pair, const int32_t& limit_) const
+{
+	const size_t limit = limit_;
+	std::vector<trade_entry_t> result;
+	if(auto book = find_pair(pair)) {
+		for(const auto& entry : book->history) {
+			if(result.size() >= limit) {
+				break;
+			}
+			result.push_back(entry);
+		}
+	}
+	return result;
 }
 
 ulong_fraction_t Server::get_price(const addr_t& want, const amount_t& have) const
