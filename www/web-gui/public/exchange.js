@@ -1,13 +1,14 @@
 
 app.component('exchange-menu', {
 	props: {
+		wallet_: Number,
 		server_: String,
 		bid_: String,
 		ask_: String,
 		page: String
 	},
 	emits: [
-		"update-wallet", "update-bid-symbol", "update-ask-symbol"
+		"update-bid-symbol", "update-ask-symbol"
 	],
 	data() {
 		return {
@@ -38,7 +39,10 @@ app.component('exchange-menu', {
 				.then(response => response.json())
 				.then(data => {
 					this.wallets = data;
-					if(data.length > 0) {
+					if(!this.wallet && this.wallet_ < data.length) {
+						this.wallet = this.wallet_;
+					}
+					else if(data.length > 0) {
 						this.wallet = data[0][0];
 					}
 				});
@@ -52,7 +56,7 @@ app.component('exchange-menu', {
 						page = "market";
 					}
 				}
-				this.$router.push('/exchange/' + page + '/' + this.server + '/' + this.bid + '/' + this.ask);
+				this.$router.push('/exchange/' + page + '/' + this.wallet + '/' + this.server + '/' + this.bid + '/' + this.ask);
 				this.$emit('update-bid-symbol', this.bid_symbol_map.get(this.bid));
 				this.$emit('update-ask-symbol', this.bid_symbol_map.get(this.ask));
 			}
@@ -87,7 +91,7 @@ app.component('exchange-menu', {
 				});
 		},
 		wallet(value) {
-			this.$emit('update-wallet', value);
+			this.submit();
 		},
 		bid(value) {
 			let list = [];
