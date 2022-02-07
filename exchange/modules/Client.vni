@@ -31,6 +31,8 @@ module Client extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	
 	vector<order_t> get_orders(string server, trade_pair_t pair, int limit = -1) const async;
 	
+	vector<trade_entry_t> get_trade_history(string server, trade_pair_t pair, int limit = -1) const async;
+	
 	ulong_fraction_t get_price(string server, addr_t want, amount_t have) const async;
 	
 	
