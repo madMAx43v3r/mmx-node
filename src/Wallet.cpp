@@ -335,21 +335,13 @@ std::vector<tx_entry_t> Wallet::get_history(const uint32_t& index, const int32_t
 
 balance_t Wallet::get_balance(const uint32_t& index, const addr_t& currency, const uint32_t& min_confirm) const
 {
-	const auto wallet = get_wallet(index);
+	const auto balances = get_balances(index, min_confirm);
 
-	balance_t out;
-	for(const auto& entry : get_utxo_list(index, min_confirm)) {
-		const auto& utxo = entry.output;
-		if(utxo.contract == currency) {
-			if(wallet->reserved_set.count(entry.key)) {
-				out.reserved += utxo.amount;
-			} else {
-				out.spendable += utxo.amount;
-			}
-			out.total += utxo.amount;
-		}
+	auto iter = balances.find(currency);
+	if(iter != balances.end()) {
+		return iter->second;
 	}
-	return out;
+	return balance_t();
 }
 
 std::map<addr_t, balance_t> Wallet::get_balances(const uint32_t& index, const uint32_t& min_confirm) const
@@ -362,7 +354,7 @@ std::map<addr_t, balance_t> Wallet::get_balances(const uint32_t& index, const ui
 		auto& out = amounts[utxo.contract];
 		if(wallet->reserved_set.count(entry.key)) {
 			out.reserved += utxo.amount;
-		} else {
+		} else if(!wallet->spent_set.count(entry.key)) {
 			out.spendable += utxo.amount;
 		}
 		out.total += utxo.amount;
