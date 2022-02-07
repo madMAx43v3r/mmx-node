@@ -146,7 +146,7 @@ app.component('exchange-menu', {
 		</div>
 		<div class="ui large pointing menu">
 			<a class="item" :class="{active: $route.meta.page == 'market'}" @click="submit('market')">Market</a>
-			<a class="item" :class="{active: $route.meta.page == 'trades'}">Trades</a>
+			<a class="item" :class="{active: $route.meta.page == 'trades'}" @click="submit('trades')">Trades</a>
 			<a class="item" :class="{active: $route.meta.page == 'history'}" @click="submit('history')">History</a>
 			<a class="item" :class="{active: $route.meta.page == 'offers'}" @click="submit('offers')">Offers</a>
 		</div>
@@ -158,6 +158,7 @@ app.component('exchange-order-list', {
 		bid: String,
 		ask: String,
 		server: String,
+		color: String,
 		flip: Boolean,
 		limit: Number
 	},
@@ -184,7 +185,7 @@ app.component('exchange-order-list', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<table class="ui table striped">
+		<table class="ui table striped" :class="color">
 			<thead>
 				<th>Price</th>
 				<th></th>
@@ -195,7 +196,7 @@ app.component('exchange-order-list', {
 			</thead>
 			<tbody>
 				<tr v-for="item in data.orders">
-					<td class="collapsing"><b>{{flip ? item.inv_price : item.price}}</b></td>
+					<td class="collapsing"><b>{{(flip ? item.bid_value / item.ask_value : item.ask_value / item.bid_value).toPrecision(5)}}</b></td>
 					<td>{{flip ? data.bid_symbol : data.ask_symbol}} / {{flip ? data.ask_symbol : data.bid_symbol}}</td>
 					<td class="collapsing"><b>{{flip ? item.bid_value : item.ask_value}}</b></td>
 					<td>{{flip ? data.bid_symbol : data.ask_symbol}}</td>
@@ -223,10 +224,86 @@ app.component('exchange-orders', {
 	template: `
 		<div class="ui two column grid">
 			<div class="column">
-				<exchange-order-list :server="server" :bid="bid" :ask="ask" :flip="false" :limit="limit" ref="bid_list"></exchange-order-list>
+				<exchange-order-list :server="server" :bid="bid" :ask="ask" :flip="false" :limit="limit" color="green" ref="bid_list"></exchange-order-list>
 			</div>
 			<div class="column">
-				<exchange-order-list :server="server" :bid="ask" :ask="bid" :flip="true" :limit="limit" ref="ask_list"></exchange-order-list>
+				<exchange-order-list :server="server" :bid="ask" :ask="bid" :flip="true" :limit="limit" color="red" ref="ask_list"></exchange-order-list>
+			</div>
+		</div>
+		`
+})
+
+app.component('exchange-trade-list', {
+	props: {
+		bid: String,
+		ask: String,
+		server: String,
+		color: String,
+		flip: Boolean,
+		limit: Number
+	},
+	data() {
+		return {
+			data: [],
+			timer: null
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/exchange/trades?server=' + this.server + '&bid=' + this.bid + '&ask=' + this.ask + '&limit=' + this.limit)
+				.then(response => response.json())
+				.then(data => {
+					this.data = data;
+				});
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 30000);
+	},
+	unmounted() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<table class="ui table striped" :class="color">
+			<thead>
+				<th>{{flip ? data.bid_symbol : data.ask_symbol}} / {{flip ? data.ask_symbol : data.bid_symbol}}</th>
+				<th>{{data.bid_symbol}}</th>
+				<th>{{data.ask_symbol}}</th>
+				<th>Time</th>
+			</thead>
+			<tbody>
+				<tr v-for="item in data.history">
+					<td><b>{{(flip ? item.bid_value / item.ask_value : item.ask_value / item.bid_value).toPrecision(5)}}</b></td>
+					<td>{{item.bid_value}}</td>
+					<td>{{item.ask_value}}</td>
+					<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
+				</tr>
+			</tbody>
+		</table>
+		`
+})
+
+app.component('exchange-trades', {
+	props: {
+		bid: String,
+		ask: String,
+		server: String,
+		limit: Number
+	},
+	methods: {
+		update() {
+			this.$refs.bid_list.update();
+			this.$refs.ask_list.update();
+		}
+	},
+	template: `
+		<div class="ui two column grid">
+			<div class="column">
+				<exchange-trade-list :server="server" :bid="bid" :ask="ask" :flip="false" :limit="limit" color="green" ref="bid_list"></exchange-trade-list>
+			</div>
+			<div class="column">
+				<exchange-trade-list :server="server" :bid="ask" :ask="bid" :flip="true" :limit="limit" color="red" ref="ask_list"></exchange-trade-list>
 			</div>
 		</div>
 		`
@@ -429,7 +506,7 @@ app.component('exchange-trade-form', {
 		</div>
 		<div class="ui message" :class="{hidden: !result}">
 			<template v-for="item in result" :key="item.id">
-				Traded {{item.order.bid_value}} [{{item.order.bid_symbol}}] for {{item.order.ask_value}} [{{item.order.ask_symbol}}]
+				Traded <b>{{item.order.bid_value}}</b> [{{item.order.bid_symbol}}] for <b>{{item.order.ask_value}}</b> [{{item.order.ask_symbol}}]
 				<template v-if="item.failed">({{item.message}})</template>
 				<br/>
 			</template>

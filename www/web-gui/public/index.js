@@ -122,6 +122,16 @@ const ExchangeMarket = {
 		<exchange-orders ref="orders" :server="$route.params.server" :bid="$route.params.bid" :ask="$route.params.ask" :limit="100"></exchange-orders>
 		`
 }
+
+const ExchangeTrades = {
+	props: {
+		bid_symbol: null,
+		ask_symbol: null
+	},
+	template: `
+		<exchange-trades :server="$route.params.server" :bid="$route.params.bid" :ask="$route.params.ask" :limit="200"></exchange-trades>
+		`
+}
 const ExchangeHistory = {
 	props: {
 		bid_symbol: null,
@@ -193,6 +203,7 @@ const routes = [
 		meta: { is_exchange: true },
 		children: [
 			{ path: 'market/:server/:bid/:ask', component: ExchangeMarket, meta: { page: 'market' } },
+			{ path: 'trades/:server/:bid/:ask', component: ExchangeTrades, meta: { page: 'trades' } },
 			{ path: 'history/:server/:bid/:ask', component: ExchangeHistory, meta: { page: 'history' } },
 			{ path: 'offers/:server/:bid/:ask', component: ExchangeOffers, meta: { page: 'offers' } },
 		]
