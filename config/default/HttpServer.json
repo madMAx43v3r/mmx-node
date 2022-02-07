@@ -1,8 +1,5 @@
 {
 	"port": 8080,
 	"stats_interval_ms": 60000,
-	"default_access": "LOCALHOST",
-	"add_headers": [
-		["Access-Control-Allow-Origin", "*"]
-	]
+	"default_access": "LOCALHOST"
 }
