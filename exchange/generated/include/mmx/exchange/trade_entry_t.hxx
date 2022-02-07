@@ -6,6 +6,7 @@
 
 #include <vnx/Type.h>
 #include <mmx/exchange/package.hxx>
+#include <mmx/exchange/order_t.hxx>
 #include <mmx/hash_t.hpp>
 
 
@@ -17,8 +18,7 @@ struct trade_entry_t {
 	
 	::mmx::hash_t id;
 	uint32_t height = 0;
-	uint64_t bid = 0;
-	uint64_t ask = 0;
+	::mmx::exchange::order_t order;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -60,12 +60,11 @@ struct trade_entry_t {
 
 template<typename T>
 void trade_entry_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<trade_entry_t>(4);
+	_visitor.template type_begin<trade_entry_t>(3);
 	_visitor.type_field("id", 0); _visitor.accept(id);
 	_visitor.type_field("height", 1); _visitor.accept(height);
-	_visitor.type_field("bid", 2); _visitor.accept(bid);
-	_visitor.type_field("ask", 3); _visitor.accept(ask);
-	_visitor.template type_end<trade_entry_t>(4);
+	_visitor.type_field("order", 2); _visitor.accept(order);
+	_visitor.template type_end<trade_entry_t>(3);
 }
 
 

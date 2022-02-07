@@ -12,6 +12,8 @@
 #include <mmx/exchange/Server_cancel_return.hxx>
 #include <mmx/exchange/Server_execute.hxx>
 #include <mmx/exchange/Server_execute_return.hxx>
+#include <mmx/exchange/Server_get_history.hxx>
+#include <mmx/exchange/Server_get_history_return.hxx>
 #include <mmx/exchange/Server_get_orders.hxx>
 #include <mmx/exchange/Server_get_orders_return.hxx>
 #include <mmx/exchange/Server_get_price.hxx>
@@ -30,6 +32,7 @@
 #include <mmx/exchange/limit_order_t.hxx>
 #include <mmx/exchange/matched_order_t.hxx>
 #include <mmx/exchange/order_t.hxx>
+#include <mmx/exchange/trade_entry_t.hxx>
 #include <mmx/exchange/trade_order_t.hxx>
 #include <mmx/exchange/trade_pair_t.hxx>
 #include <mmx/hash_t.hpp>
@@ -226,6 +229,20 @@ std::vector<::mmx::exchange::order_t> ServerClient::get_orders(const ::mmx::exch
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::vector<::mmx::exchange::order_t>>();
+	} else {
+		throw std::logic_error("ServerClient: invalid return value");
+	}
+}
+
+std::vector<::mmx::exchange::trade_entry_t> ServerClient::get_history(const ::mmx::exchange::trade_pair_t& pair, const int32_t& limit) {
+	auto _method = ::mmx::exchange::Server_get_history::create();
+	_method->pair = pair;
+	_method->limit = limit;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Server_get_history_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::exchange::trade_entry_t>>();
 	} else {
 		throw std::logic_error("ServerClient: invalid return value");
 	}
