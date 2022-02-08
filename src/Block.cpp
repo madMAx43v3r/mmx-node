@@ -7,6 +7,7 @@
 
 #include <mmx/Block.hxx>
 #include <mmx/write_bytes.h>
+#include <mmx/Transaction.hxx>
 
 
 namespace mmx {
@@ -20,6 +21,14 @@ void Block::finalize()
 
 vnx::bool_t Block::is_valid() const
 {
+	if(tx_base && !std::dynamic_pointer_cast<const Transaction>(tx_base)) {
+		return false;
+	}
+	for(const auto& base : tx_list) {
+		if(!std::dynamic_pointer_cast<const Transaction>(base)) {
+			return false;
+		}
+	}
 	return BlockHeader::is_valid() && (!proof || proof->is_valid()) && calc_tx_hash() == tx_hash;
 }
 
