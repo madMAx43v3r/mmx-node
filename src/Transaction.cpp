@@ -20,6 +20,12 @@ uint64_t TransactionBase::calc_cost(std::shared_ptr<const ChainParams> params) c
 	return 0;
 }
 
+std::shared_ptr<const TransactionBase> TransactionBase::create_ex(const hash_t& id) {
+	auto tx = TransactionBase::create();
+	tx->id = id;
+	return tx;
+}
+
 void Transaction::finalize() {
 	id = calc_hash();
 }

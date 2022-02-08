@@ -75,6 +75,8 @@ private:
 		node_info_t info;
 		std::string address;
 		vnx::optional<hash_t> node_id;
+		std::queue<hash_t> hash_queue;
+		std::unordered_set<hash_t> sent_set;
 		std::queue<std::shared_ptr<const Transaction>> tx_queue;
 	};
 
@@ -142,11 +144,11 @@ private:
 
 	void on_transaction(uint64_t client, std::shared_ptr<const Transaction> tx);
 
-	void relay(uint64_t source, std::shared_ptr<const vnx::Value> msg, const std::set<node_type_e>& filter);
+	void relay(uint64_t source, std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter);
 
-	void send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg, bool reliable = true);
+	bool send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg, bool reliable = true);
 
-	void send_to(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Value> msg, bool reliable = true);
+	bool send_to(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Value> msg, bool reliable = true);
 
 	void send_all(std::shared_ptr<const vnx::Value> msg, const std::set<node_type_e>& filter, bool reliable = true);
 

@@ -396,7 +396,7 @@ void Router::update()
 			if(peer->tx_credits >= tx_cost) {
 				if(relay_msg_hash(tx->id)) {
 					peer->tx_credits -= tx_cost;
-					relay(peer->client, tx, {node_type_e::FULL_NODE});
+					relay(peer->client, tx, tx->id, {node_type_e::FULL_NODE});
 					tx_counter++;
 				}
 			} else {
@@ -407,7 +407,15 @@ void Router::update()
 			}
 			peer->tx_queue.pop();
 		}
+
+		// clear old hashes
+		while(peer->sent_set.size() > max_sent_cache) {
+			peer->sent_set.erase(peer->hash_queue.front());
+			peer->hash_queue.pop();
+		}
 	}
+
+	// limit farmer credits
 	for(auto& entry : farmer_credits) {
 		entry.second = std::min(entry.second, max_farmer_credits);
 	}
@@ -946,7 +954,7 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> proof)
 		if(has_credits) {
 			if(relay_msg_hash(hash)) {
 				peer->credits -= vdf_relay_cost;
-				relay(client, proof, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
+				relay(client, proof, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
 				vdf_counter++;
 			}
 		}
@@ -987,7 +995,7 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 			if(iter->second >= block_relay_cost) {
 				if(relay_msg_hash(block->hash)) {
 					iter->second -= block_relay_cost;
-					relay(client, block, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
+					relay(client, block, block->hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
 					block_counter++;
 				}
 			} else {
@@ -1029,7 +1037,7 @@ void Router::on_proof(uint64_t client, std::shared_ptr<const ProofResponse> resp
 			if(iter->second >= proof_relay_cost) {
 				if(relay_msg_hash(hash)) {
 					iter->second -= proof_relay_cost;
-					relay(client, response, {node_type_e::FULL_NODE});
+					relay(client, response, hash, {node_type_e::FULL_NODE});
 					proof_counter++;
 				}
 			} else {
@@ -1063,7 +1071,7 @@ void Router::on_transaction(uint64_t client, std::shared_ptr<const Transaction> 
 		if(has_credits) {
 			if(relay_msg_hash(tx->id)) {
 				peer->tx_credits -= tx_cost;
-				relay(client, tx, {node_type_e::FULL_NODE});
+				relay(client, tx, tx->id, {node_type_e::FULL_NODE});
 				tx_counter++;
 			}
 		}
@@ -1077,26 +1085,31 @@ void Router::on_transaction(uint64_t client, std::shared_ptr<const Transaction> 
 	publish(tx, output_transactions);
 }
 
-void Router::relay(uint64_t source, std::shared_ptr<const vnx::Value> msg, const std::set<node_type_e>& filter)
+void Router::relay(uint64_t source, std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter)
 {
-	if(do_relay) {
-		for(const auto& entry : peer_map) {
-			const auto& peer = entry.second;
-			if((filter.empty() || filter.count(peer->info.type)) && entry.first != source) {
-				send_to(peer, msg, false);
+	if(!do_relay) {
+		return;
+	}
+	for(const auto& entry : peer_map) {
+		const auto& peer = entry.second;
+		if((filter.empty() || filter.count(peer->info.type))) {
+			if(entry.first == source || send_to(peer, msg, false)) {
+				peer->sent_set.insert(msg_hash);
+				peer->hash_queue.push(msg_hash);
 			}
 		}
 	}
 }
 
-void Router::send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg, bool reliable)
+bool Router::send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg, bool reliable)
 {
 	if(auto peer = find_peer(client)) {
-		send_to(peer, msg, reliable);
+		return send_to(peer, msg, reliable);
 	}
+	return false;
 }
 
-void Router::send_to(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Value> msg, bool reliable)
+bool Router::send_to(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Value> msg, bool reliable)
 {
 	if(peer->is_blocked && !reliable) {
 		switch(msg->get_type_code()->type_hash) {
@@ -1114,9 +1127,22 @@ void Router::send_to(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Va
 				break;
 		}
 		drop_counter++;
-		return;
+		return false;
+	}
+	if(peer->info.type == node_type_e::FULL_NODE && peer->info.version >= 102)
+	{
+		if(auto block = std::dynamic_pointer_cast<const Block>(msg)) {
+			auto copy = vnx::clone(block);
+			for(auto& tx : copy->tx_list) {
+				if(peer->sent_set.count(tx->id)) {
+					tx = TransactionBase::create_ex(tx->id);
+				}
+			}
+			msg = copy;
+		}
 	}
 	Super::send_to(peer, msg);
+	return true;
 }
 
 void Router::send_all(std::shared_ptr<const vnx::Value> msg, const std::set<node_type_e>& filter, bool reliable)

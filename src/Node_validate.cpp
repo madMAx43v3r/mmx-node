@@ -17,7 +17,7 @@
 
 namespace mmx {
 
-void Node::validate(std::shared_ptr<const Block> block) const
+std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
 {
 	const auto prev = find_prev_header(block);
 	if(!prev) {
@@ -69,19 +69,20 @@ void Node::validate(std::shared_ptr<const Block> block) const
 			}
 		}
 	}
+	auto out = vnx::clone(block);
 	std::exception_ptr failed_ex;
 	std::atomic<uint64_t> total_fees {0};
 	std::atomic<uint64_t> total_cost {0};
 
 #pragma omp parallel for
-	for(size_t i = 0; i < block->tx_list.size(); ++i)
+	for(size_t i = 0; i < out->tx_list.size(); ++i)
 	{
-		const auto& base = block->tx_list[i];
+		auto& base = out->tx_list[i];
 		try {
 			if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
 				uint64_t fees = 0;
-				if(validate(tx, context, nullptr, fees)) {
-					throw std::logic_error("missing exec_outputs");
+				if(auto new_tx = validate(tx, context, nullptr, fees)) {
+					base = new_tx;
 				}
 				total_fees += fees;
 				total_cost += tx->calc_cost(params);
@@ -102,6 +103,7 @@ void Node::validate(std::shared_ptr<const Block> block) const
 	if(base_spent > base_allowed) {
 		throw std::logic_error("coin base over-spend");
 	}
+	return out;
 }
 
 void Node::validate(std::shared_ptr<const Transaction> tx) const

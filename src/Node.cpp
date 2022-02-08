@@ -868,9 +868,17 @@ void Node::handle(std::shared_ptr<const Block> block)
 			return;
 		}
 	}
-	if(block->proof) {
-		add_block(block);
+	if(!block->proof) {
+		return;
 	}
+	auto copy = vnx::clone(block);
+	for(auto& tx : copy->tx_list) {
+		auto iter = tx_pool.find(tx->id);
+		if(iter != tx_pool.end()) {
+			tx = iter->second;
+		}
+	}
+	add_block(copy);
 }
 
 void Node::handle(std::shared_ptr<const Transaction> tx)
@@ -1099,7 +1107,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 	// verify and apply
 	for(const auto& fork : fork_line)
 	{
-		const auto& block = fork->block;
+		auto& block = fork->block;
 		if(block->prev != state_hash) {
 			// already verified and applied
 			continue;
@@ -1107,7 +1115,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 		if(!fork->is_verified) {
 			try {
 				if(!light_mode) {
-					validate(block);
+					block = validate(block);
 				}
 				if(!fork->is_vdf_verified) {
 					if(auto prev = find_prev_header(block)) {

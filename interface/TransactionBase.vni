@@ -9,4 +9,6 @@ class TransactionBase {
 	
 	ulong calc_cost(ChainParams* params) const;
 	
+	static TransactionBase* create_ex(hash_t id);
+	
 }
