@@ -348,7 +348,7 @@ void Router::handle(std::shared_ptr<const ProofOfTime> proof)
 void Router::handle(std::shared_ptr<const ProofResponse> value)
 {
 	if(auto proof = value->proof) {
-		if(relay_msg_hash(proof->calc_hash())) {
+		if(relay_msg_hash(proof->calc_hash(), proof_credits)) {
 			if(vnx::get_pipe(value->farmer_addr)) {
 				log(INFO) << "Broadcasting proof for height " << value->request->height << " with score " << value->score;
 			}

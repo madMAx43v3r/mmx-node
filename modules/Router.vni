@@ -36,7 +36,7 @@ module Router extends vnx.addons.MsgServer {
 	uint tx_credits = 10000;				// node reward per update
 	uint vdf_credits = 1024;				// node reward for valid vdf
 	uint block_credits = 256;				// node reward for valid block
-	uint proof_credits = 10;				// farmer reward for valid proof
+	uint proof_credits = 10;				// node + farmer reward for valid proof
 	
 	uint vdf_relay_cost = 768;				// node cost
 	uint proof_relay_cost = 2;				// farmer cost + node reward
