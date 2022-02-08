@@ -64,6 +64,12 @@ protected:
 	void handle(std::shared_ptr<const ProofResponse> value);
 
 private:
+	struct send_item_t {
+		bool reliable = false;
+		hash_t hash;
+		std::shared_ptr<const vnx::Value> value;
+	};
+
 	struct peer_t : Super::peer_t {
 		bool is_synced = false;
 		bool is_blocked = false;
@@ -81,7 +87,7 @@ private:
 		std::queue<hash_t> hash_queue;
 		std::unordered_set<hash_t> sent_hashes;
 		std::queue<std::shared_ptr<const Transaction>> tx_queue;
-		std::map<int64_t, std::pair<std::shared_ptr<const vnx::Value>, hash_t>> send_queue;
+		std::map<int64_t, send_item_t> send_queue;
 	};
 
 	struct hash_info_t {
@@ -156,6 +162,10 @@ private:
 	void recv_notify(uint64_t source, const hash_t& msg_hash);
 
 	void relay(uint64_t source, std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter);
+
+	void broadcast(std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter, bool reliable = true);
+
+	void send_to(std::vector<std::shared_ptr<peer_t>> peers, std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, bool reliable);
 
 	bool send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg, bool reliable = true);
 

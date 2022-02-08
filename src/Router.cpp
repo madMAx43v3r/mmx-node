@@ -305,7 +305,7 @@ void Router::handle(std::shared_ptr<const Block> block)
 	}
 	if(relay_msg_hash(block->hash, block_credits)) {
 		log(INFO) << "Broadcasting block for height " << block->height;
-		send_all(block, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
+		broadcast(block, block->hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
 		block_counter++;
 	}
 	for(const auto& tx : block->tx_list) {
@@ -326,7 +326,7 @@ void Router::handle(std::shared_ptr<const Transaction> tx)
 {
 	if(relay_msg_hash(tx->id)) {
 		log(INFO) << "Broadcasting transaction " << tx->id;
-		send_all(tx, {node_type_e::FULL_NODE});
+		broadcast(tx, tx->id, {node_type_e::FULL_NODE});
 		tx_counter++;
 	}
 }
@@ -334,11 +334,12 @@ void Router::handle(std::shared_ptr<const Transaction> tx)
 void Router::handle(std::shared_ptr<const ProofOfTime> proof)
 {
 	if(proof->height > verified_vdf_height) {
-		if(relay_msg_hash(proof->calc_hash(), vdf_credits)) {
+		const auto hash = proof->calc_hash();
+		if(relay_msg_hash(hash, vdf_credits)) {
 			if(vnx_sample && vnx_sample->topic == input_vdfs) {
 				log(INFO) << "Broadcasting VDF for height " << proof->height;
 			}
-			send_all(proof, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
+			broadcast(proof, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
 			vdf_counter++;
 		}
 	}
@@ -348,11 +349,12 @@ void Router::handle(std::shared_ptr<const ProofOfTime> proof)
 void Router::handle(std::shared_ptr<const ProofResponse> value)
 {
 	if(auto proof = value->proof) {
-		if(relay_msg_hash(proof->calc_hash(), proof_credits)) {
+		const auto hash = proof->calc_hash();
+		if(relay_msg_hash(hash, proof_credits)) {
 			if(vnx::get_pipe(value->farmer_addr)) {
 				log(INFO) << "Broadcasting proof for height " << value->request->height << " with score " << value->score;
 			}
-			send_all(value, {node_type_e::FULL_NODE});
+			broadcast(value, hash, {node_type_e::FULL_NODE});
 			proof_counter++;
 		}
 		const auto farmer_id = hash_t(proof->farmer_key);
@@ -1110,15 +1112,30 @@ void Router::send()
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
 		for(auto iter = peer->send_queue.begin(); iter != peer->send_queue.end() && iter->first < now;) {
-			const auto& entry = iter->second;
-			if(!peer->sent_hashes.count(entry.second)) {
-				if(!entry.first || send_to(peer, entry.first, false)) {
-					peer->sent_hashes.insert(entry.second);
-					peer->hash_queue.push(entry.second);
+			const auto& item = iter->second;
+			if(!peer->sent_hashes.count(item.hash)) {
+				if(send_to(peer, item.value, item.reliable)) {
+					peer->sent_hashes.insert(item.hash);
+					peer->hash_queue.push(item.hash);
 				}
 			}
 			iter = peer->send_queue.erase(iter);
 		}
+	}
+}
+
+void Router::send_to(std::vector<std::shared_ptr<peer_t>> peers, std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, bool reliable)
+{
+	std::shuffle(peers.begin(), peers.end(), rand_engine);
+
+	const auto now = vnx::get_wall_time_micros();
+	const auto interval = (relay_target_ms * 1000) / (1 + peers.size());
+	for(size_t i = 0; i < peers.size(); ++i) {
+		send_item_t item;
+		item.hash = msg_hash;
+		item.value = msg;
+		item.reliable = reliable;
+		peers[i]->send_queue.emplace(now + interval * i, item);
 	}
 }
 
@@ -1138,13 +1155,19 @@ void Router::relay(uint64_t source, std::shared_ptr<const vnx::Value> msg, const
 			peer->hash_queue.push(msg_hash);
 		}
 	}
-	std::shuffle(peers.begin(), peers.end(), rand_engine);
+	send_to(peers, msg, msg_hash, false);
+}
 
-	const auto now = vnx::get_wall_time_micros();
-	const auto interval = (relay_target_ms * 1000) / (1 + peer_map.size());
-	for(size_t i = 0; i < peers.size(); ++i) {
-		peers[i]->send_queue.emplace(now + interval * i, std::make_pair(msg, msg_hash));
+void Router::broadcast(std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter, bool reliable)
+{
+	std::vector<std::shared_ptr<peer_t>> peers;
+	for(const auto& entry : peer_map) {
+		const auto& peer = entry.second;
+		if(filter.empty() || filter.count(peer->info.type)) {
+			peers.push_back(peer);
+		}
 	}
+	send_to(peers, msg, msg_hash, reliable);
 }
 
 bool Router::send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg, bool reliable)
