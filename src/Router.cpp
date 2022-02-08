@@ -972,7 +972,8 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> proof)
 
 void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 {
-	if(!receive_msg_hash(block->hash, client, block_relay_cost)) {
+	const auto hash = block->calc_hash();
+	if(!receive_msg_hash(hash, client, block_relay_cost)) {
 		return;
 	}
 	const auto proof = block->proof;
