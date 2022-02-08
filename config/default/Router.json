@@ -7,5 +7,6 @@
 	"stats_interval_ms": 60000,
 	"connect_interval_ms": 10000,
 	"connection_timeout_ms": 60000,
-	"fetch_timeout_ms": 30000
+	"fetch_timeout_ms": 30000,
+	"relay_target_ms": 3000
 }
