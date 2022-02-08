@@ -14,10 +14,12 @@ module Router extends vnx.addons.MsgServer {
 	vnx.TopicPtr output_transactions = "network.transactions";
 	
 	int max_queue_ms = 1000;				// [ms]
+	int send_interval_ms = 20;				// [ms]
 	int query_interval_ms = 10000;			// [ms]
 	int update_interval_ms = 1000;			// [ms]
 	int connect_interval_ms = 10000;		// [ms]
 	int fetch_timeout_ms = 10000;			// for fetching data from peers [ms]
+	int relay_target_ms = 5000;				// [ms]
 	
 	uint sync_loss_delay = 60;				// when to re-sync [sec]
 	uint discover_interval = 60;			// how often to search for new peers [sec]

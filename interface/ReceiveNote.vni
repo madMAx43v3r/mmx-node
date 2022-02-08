@@ -1,0 +1,9 @@
+package mmx;
+
+class ReceiveNote {
+	
+	long time;				// [usec]
+	
+	hash_t hash;
+	
+}

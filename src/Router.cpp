@@ -148,6 +148,7 @@ void Router::main()
 
 	threads = new vnx::ThreadPool(num_threads);
 
+	set_timer_millis(send_interval_ms, std::bind(&Router::send, this));
 	set_timer_millis(query_interval_ms, std::bind(&Router::query, this));
 	set_timer_millis(update_interval_ms, std::bind(&Router::update, this));
 	set_timer_millis(connect_interval_ms, std::bind(&Router::connect, this));
@@ -409,8 +410,8 @@ void Router::update()
 		}
 
 		// clear old hashes
-		while(peer->sent_set.size() > max_sent_cache) {
-			peer->sent_set.erase(peer->hash_queue.front());
+		while(peer->sent_hashes.size() > max_sent_cache) {
+			peer->sent_hashes.erase(peer->hash_queue.front());
 			peer->hash_queue.pop();
 		}
 	}
@@ -1085,17 +1086,61 @@ void Router::on_transaction(uint64_t client, std::shared_ptr<const Transaction> 
 	publish(tx, output_transactions);
 }
 
+void Router::on_recv_note(uint64_t client, std::shared_ptr<const ReceiveNote> note)
+{
+	if(auto peer = find_peer(client)) {
+		if(peer->sent_hashes.insert(note->hash).second) {
+			peer->hash_queue.push(note->hash);
+		}
+	}
+}
+
+void Router::recv_notify(uint64_t source, const hash_t& msg_hash)
+{
+	auto note = ReceiveNote::create();
+	note->time = vnx::get_wall_time_micros();
+	note->hash = msg_hash;
+	for(const auto& entry : peer_map) {
+		if(entry.first != source) {
+			send_to(entry.second, note, true);
+		}
+	}
+}
+
+void Router::send()
+{
+	const auto now = vnx::get_wall_time_micros();
+	for(const auto& entry : peer_map) {
+		const auto& peer = entry.second;
+		for(auto iter = peer->send_queue.begin(); iter != peer->send_queue.end() && iter->first < now;) {
+			const auto& entry = iter->second;
+			if(!peer->sent_hashes.count(entry.second)) {
+				if(!entry.first || send_to(peer, entry.first, false)) {
+					peer->sent_hashes.insert(entry.second);
+					peer->hash_queue.push(entry.second);
+				}
+			}
+			iter = peer->send_queue.erase(iter);
+		}
+	}
+}
+
 void Router::relay(uint64_t source, std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter)
 {
 	if(!do_relay) {
 		return;
 	}
+	int offset = 0;
+	const auto now = vnx::get_wall_time_micros();
+	const auto interval = (relay_target_ms * 1000) / (1 + peer_map.size());
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
 		if((filter.empty() || filter.count(peer->info.type))) {
-			if(entry.first == source || send_to(peer, msg, false)) {
-				peer->sent_set.insert(msg_hash);
-				peer->hash_queue.push(msg_hash);
+			const auto value = entry.first != source ? msg : nullptr;
+			const auto target = offset > 0 ? now + interval * offset : 0;
+			peer->send_queue.emplace(target, std::make_pair(value, msg_hash));
+			if(value) {
+				offset++;
 			}
 		}
 	}
@@ -1134,7 +1179,7 @@ bool Router::send_to(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Va
 		if(auto block = std::dynamic_pointer_cast<const Block>(msg)) {
 			auto copy = vnx::clone(block);
 			for(auto& tx : copy->tx_list) {
-				if(peer->sent_set.count(tx->id)) {
+				if(peer->sent_hashes.count(tx->id)) {
 					tx = TransactionBase::create_ex(tx->id);
 				}
 			}
@@ -1423,6 +1468,11 @@ void Router::on_msg(uint64_t client, std::shared_ptr<const vnx::Value> msg)
 			on_return(client, value);
 		}
 		break;
+	case ReceiveNote::VNX_TYPE_ID:
+		if(auto value = std::dynamic_pointer_cast<const ReceiveNote>(msg)) {
+			on_recv_note(client, value);
+		}
+		break;
 	}
 }
 
@@ -1538,6 +1588,10 @@ bool Router::receive_msg_hash(const hash_t& hash, uint64_t client, uint32_t cred
 		hash_queue.push(hash);
 	}
 	auto& info = ret.first->second;
+	if(!info.did_notify) {
+		recv_notify(client, hash);
+		info.did_notify = true;
+	}
 	const bool is_new = info.received_from.empty();
 	if(std::find(info.received_from.begin(), info.received_from.end(), client) == info.received_from.end())
 	{

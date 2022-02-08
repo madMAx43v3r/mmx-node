@@ -9,6 +9,7 @@
 #define INCLUDE_MMX_ROUTER_H_
 
 #include <mmx/RouterBase.hxx>
+#include <mmx/ReceiveNote.hxx>
 #include <mmx/NodeAsyncClient.hxx>
 
 #include <vnx/Buffer.hpp>
@@ -76,15 +77,17 @@ private:
 		std::string address;
 		vnx::optional<hash_t> node_id;
 		std::queue<hash_t> hash_queue;
-		std::unordered_set<hash_t> sent_set;
+		std::unordered_set<hash_t> sent_hashes;
 		std::queue<std::shared_ptr<const Transaction>> tx_queue;
+		std::map<int64_t, std::pair<std::shared_ptr<const vnx::Value>, hash_t>> send_queue;
 	};
 
 	struct hash_info_t {
-		std::vector<uint64_t> received_from;
 		bool is_valid = false;
 		bool is_rewarded = false;
 		bool did_relay = false;
+		bool did_notify = false;
+		std::vector<uint64_t> received_from;
 	};
 
 	enum sync_state_e {
@@ -116,6 +119,8 @@ private:
 		std::unordered_map<uint32_t, uint64_t> request_map;				// [request id, client]
 	};
 
+	void send();
+
 	void update();
 
 	bool process(std::shared_ptr<const Return> ret = nullptr);
@@ -143,6 +148,10 @@ private:
 	void on_proof(uint64_t client, std::shared_ptr<const ProofResponse> response);
 
 	void on_transaction(uint64_t client, std::shared_ptr<const Transaction> tx);
+
+	void on_recv_note(uint64_t client, std::shared_ptr<const ReceiveNote> note);
+
+	void recv_notify(uint64_t source, const hash_t& msg_hash);
 
 	void relay(uint64_t source, std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter);
 
