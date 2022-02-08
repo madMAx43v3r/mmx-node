@@ -102,6 +102,7 @@ class PeerInfo;
 class ProofOfSpace;
 class ProofOfTime;
 class ProofResponse;
+class ReceiveNote;
 class Request;
 class Return;
 class RouterBase;
@@ -311,6 +312,7 @@ extern const vnx::TypeCode* const vnx_native_type_code_PeerInfo; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_ProofOfSpace; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_ProofOfTime; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_ProofResponse; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_ReceiveNote; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Request; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Return; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_RouterBase; ///< \private
@@ -518,6 +520,7 @@ void read(TypeInput& in, ::mmx::PeerInfo& value, const TypeCode* type_code, cons
 void read(TypeInput& in, ::mmx::ProofOfSpace& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ProofOfTime& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ProofResponse& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::ReceiveNote& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Request& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::RouterBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -727,6 +730,7 @@ void write(TypeOutput& out, const ::mmx::PeerInfo& value, const TypeCode* type_c
 void write(TypeOutput& out, const ::mmx::ProofOfSpace& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ProofOfTime& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ProofResponse& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::ReceiveNote& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Request& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::RouterBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -936,6 +940,7 @@ void read(std::istream& in, ::mmx::PeerInfo& value); ///< \private
 void read(std::istream& in, ::mmx::ProofOfSpace& value); ///< \private
 void read(std::istream& in, ::mmx::ProofOfTime& value); ///< \private
 void read(std::istream& in, ::mmx::ProofResponse& value); ///< \private
+void read(std::istream& in, ::mmx::ReceiveNote& value); ///< \private
 void read(std::istream& in, ::mmx::Request& value); ///< \private
 void read(std::istream& in, ::mmx::Return& value); ///< \private
 void read(std::istream& in, ::mmx::RouterBase& value); ///< \private
@@ -1145,6 +1150,7 @@ void write(std::ostream& out, const ::mmx::PeerInfo& value); ///< \private
 void write(std::ostream& out, const ::mmx::ProofOfSpace& value); ///< \private
 void write(std::ostream& out, const ::mmx::ProofOfTime& value); ///< \private
 void write(std::ostream& out, const ::mmx::ProofResponse& value); ///< \private
+void write(std::ostream& out, const ::mmx::ReceiveNote& value); ///< \private
 void write(std::ostream& out, const ::mmx::Request& value); ///< \private
 void write(std::ostream& out, const ::mmx::Return& value); ///< \private
 void write(std::ostream& out, const ::mmx::RouterBase& value); ///< \private
@@ -1354,6 +1360,7 @@ void accept(Visitor& visitor, const ::mmx::PeerInfo& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ProofOfSpace& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ProofOfTime& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ProofResponse& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::ReceiveNote& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Request& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::RouterBase& value); ///< \private
@@ -3510,6 +3517,29 @@ struct type<::mmx::ProofResponse> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofResponse& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::ReceiveNote> {
+	void read(TypeInput& in, ::mmx::ReceiveNote& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::ReceiveNote& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::ReceiveNote& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::ReceiveNote& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::ReceiveNote& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ReceiveNote& value, bool special = false);
 };
 
 /// \private

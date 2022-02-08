@@ -90,6 +90,7 @@
 #include <mmx/ProofOfSpace.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
+#include <mmx/ReceiveNote.hxx>
 #include <mmx/Request.hxx>
 #include <mmx/Return.hxx>
 #include <mmx/RouterBase.hxx>
@@ -1246,6 +1247,18 @@ void type<::mmx::ProofResponse>::create_dynamic_code(std::vector<uint16_t>& code
 }
 
 void type<::mmx::ProofResponse>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofResponse& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::ReceiveNote>::get_type_code() {
+	return mmx::vnx_native_type_code_ReceiveNote;
+}
+
+void type<::mmx::ReceiveNote>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::ReceiveNote());
+}
+
+void type<::mmx::ReceiveNote>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ReceiveNote& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -2738,6 +2751,7 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::ProofOfSpace::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofOfTime::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofResponse::static_create_type_code());
+	vnx::register_type_code(::mmx::ReceiveNote::static_create_type_code());
 	vnx::register_type_code(::mmx::Request::static_create_type_code());
 	vnx::register_type_code(::mmx::Return::static_create_type_code());
 	vnx::register_type_code(::mmx::RouterBase::static_create_type_code());
@@ -2947,6 +2961,7 @@ const vnx::TypeCode* const vnx_native_type_code_PeerInfo = vnx::get_type_code(vn
 const vnx::TypeCode* const vnx_native_type_code_ProofOfSpace = vnx::get_type_code(vnx::Hash64(0x9269760ad5fd0058ull));
 const vnx::TypeCode* const vnx_native_type_code_ProofOfTime = vnx::get_type_code(vnx::Hash64(0xa84a63942b8e5c6aull));
 const vnx::TypeCode* const vnx_native_type_code_ProofResponse = vnx::get_type_code(vnx::Hash64(0x816e898b36befae0ull));
+const vnx::TypeCode* const vnx_native_type_code_ReceiveNote = vnx::get_type_code(vnx::Hash64(0x30439468cf29fa4bull));
 const vnx::TypeCode* const vnx_native_type_code_Request = vnx::get_type_code(vnx::Hash64(0x110ce6958669f66bull));
 const vnx::TypeCode* const vnx_native_type_code_Return = vnx::get_type_code(vnx::Hash64(0xb479dce669278664ull));
 const vnx::TypeCode* const vnx_native_type_code_RouterBase = vnx::get_type_code(vnx::Hash64(0x952c4ef2956f31c4ull));
