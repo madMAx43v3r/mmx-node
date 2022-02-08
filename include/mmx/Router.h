@@ -17,6 +17,8 @@
 #include <vnx/Output.hpp>
 #include <vnx/ThreadPool.h>
 
+#include <random>
+
 
 namespace mmx {
 
@@ -221,6 +223,8 @@ private:
 	vnx::ThreadPool* threads = nullptr;
 	std::shared_ptr<NodeAsyncClient> node;
 	std::shared_ptr<const ChainParams> params;
+
+	mutable std::default_random_engine rand_engine;
 
 	uint32_t next_request_id = 0;
 	uint32_t verified_vdf_height = 0;

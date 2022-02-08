@@ -42,6 +42,8 @@
 #include <vnx/NoSuchMethod.hxx>
 #include <vnx/OverflowException.hxx>
 
+#include <algorithm>
+
 
 namespace mmx {
 
@@ -190,20 +192,15 @@ bool is_public_address(const std::string& addr)
 	return true;
 }
 
-template<typename T>
-std::vector<T> get_subset(const std::set<T>& candidates, const size_t max_count)
+template<typename T, typename R>
+std::vector<T> get_subset(const std::set<T>& candidates, const size_t max_count, R& engine)
 {
-	std::set<T> result;
-	if(max_count < candidates.size()) {
-		// return a random subset
-		const std::vector<T> tmp(candidates.begin(), candidates.end());
-		for(size_t i = 0; i < 2 * candidates.size() && result.size() < max_count; ++i) {
-			result.insert(tmp[vnx::rand64() % tmp.size()]);
-		}
-	} else {
-		result = candidates;
+	std::vector<T> result(candidates.begin(), candidates.end());
+	if(max_count < result.size()) {
+		std::shuffle(result.begin(), result.end(), engine);
+		result.resize(max_count);
 	}
-	return std::vector<T>(result.begin(), result.end());
+	return result;
 }
 
 std::vector<std::string> Router::get_peers(const uint32_t& max_count) const
@@ -215,7 +212,7 @@ std::vector<std::string> Router::get_peers(const uint32_t& max_count) const
 			valid.insert(addr);
 		}
 	}
-	return get_subset(valid, max_count);
+	return get_subset(valid, max_count, rand_engine);
 }
 
 std::vector<std::string> Router::get_known_peers() const
@@ -541,7 +538,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				for(auto client : job->succeeded) {
 					peers.erase(client);
 				}
-				for(auto client : get_subset(peers, min_sync_peers))
+				for(auto client : get_subset(peers, min_sync_peers, rand_engine))
 				{
 					if(job->succeeded.size() + job->pending.size() + job->failed.size() >= max_sync_peers) {
 						break;
@@ -597,7 +594,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 							for(auto id : job->pending) {
 								clients.erase(id);
 							}
-							for(auto client : get_subset(clients, max_pending - num_pending))
+							for(auto client : get_subset(clients, max_pending - num_pending, rand_engine))
 							{
 								auto req = Node_get_block::create();
 								req->hash = entry.first;
@@ -716,7 +713,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 					fetch_block_async_return(request_id, nullptr);
 					continue;
 				}
-				for(auto client : get_subset(clients, min_sync_peers - job->pending.size()))
+				for(auto client : get_subset(clients, min_sync_peers - job->pending.size(), rand_engine))
 				{
 					auto req = Node_get_block::create();
 					req->hash = *hash;
@@ -757,7 +754,7 @@ void Router::connect()
 				peers.insert(address);
 			}
 		}
-		for(const auto& address : get_subset(peers, num_peers_out))
+		for(const auto& address : get_subset(peers, num_peers_out, rand_engine))
 		{
 			if(connecting_peers.size() >= num_threads) {
 				break;
@@ -770,7 +767,7 @@ void Router::connect()
 	}
 	else if(synced_peers.size() > num_peers_out + 1)
 	{
-		for(auto client : get_subset(synced_peers, synced_peers.size() - num_peers_out)) {
+		for(auto client : get_subset(synced_peers, synced_peers.size() - num_peers_out, rand_engine)) {
 			if(auto peer = find_peer(client)) {
 				if(peer->is_outbound) {
 					log(INFO) << "Disconnecting from " << peer->address << " to reduce connections";
@@ -1130,19 +1127,23 @@ void Router::relay(uint64_t source, std::shared_ptr<const vnx::Value> msg, const
 	if(!do_relay) {
 		return;
 	}
-	int offset = 0;
-	const auto now = vnx::get_wall_time_micros();
-	const auto interval = (relay_target_ms * 1000) / (1 + peer_map.size());
+	std::vector<std::shared_ptr<peer_t>> peers;
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
-		if((filter.empty() || filter.count(peer->info.type))) {
-			const auto value = entry.first != source ? msg : nullptr;
-			const auto target = offset > 0 ? now + interval * offset : 0;
-			peer->send_queue.emplace(target, std::make_pair(value, msg_hash));
-			if(value) {
-				offset++;
+		if(entry.first != source) {
+			if(filter.empty() || filter.count(peer->info.type)) {
+				peers.push_back(peer);
 			}
+		} else if(peer->sent_hashes.insert(msg_hash).second) {
+			peer->hash_queue.push(msg_hash);
 		}
+	}
+	std::shuffle(peers.begin(), peers.end(), rand_engine);
+
+	const auto now = vnx::get_wall_time_micros();
+	const auto interval = (relay_target_ms * 1000) / (1 + peer_map.size());
+	for(size_t i = 0; i < peers.size(); ++i) {
+		peers[i]->send_queue.emplace(now + interval * i, std::make_pair(msg, msg_hash));
 	}
 }
 
