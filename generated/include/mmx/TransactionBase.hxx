@@ -32,6 +32,7 @@ public:
 	
 	virtual ::mmx::hash_t calc_hash() const;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
+	static std::shared_ptr<const ::mmx::TransactionBase> create_ex(const ::mmx::hash_t& id = ::mmx::hash_t());
 	
 	static std::shared_ptr<TransactionBase> create();
 	std::shared_ptr<vnx::Value> clone() const override;
