@@ -1198,18 +1198,6 @@ bool Router::send_to(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Va
 		drop_counter++;
 		return false;
 	}
-	if(peer->info.type == node_type_e::FULL_NODE && peer->info.version >= 102)
-	{
-		if(auto block = std::dynamic_pointer_cast<const Block>(msg)) {
-			auto copy = vnx::clone(block);
-			for(auto& tx : copy->tx_list) {
-				if(peer->sent_hashes.count(tx->id)) {
-					tx = TransactionBase::create_ex(tx->id);
-				}
-			}
-			msg = copy;
-		}
-	}
 	Super::send_to(peer, msg);
 	return true;
 }

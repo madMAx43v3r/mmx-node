@@ -862,23 +862,16 @@ void Node::http_request_chunk_async(std::shared_ptr<const vnx::addons::HttpReque
 
 void Node::handle(std::shared_ptr<const Block> block)
 {
+	if(!block->proof) {
+		return;
+	}
 	if(!is_synced) {
 		const auto peak = get_peak();
 		if(peak && block->height > peak->height && block->height - peak->height > 2 * params->commit_delay) {
 			return;
 		}
 	}
-	if(!block->proof) {
-		return;
-	}
-	auto copy = vnx::clone(block);
-	for(auto& tx : copy->tx_list) {
-		auto iter = tx_pool.find(tx->id);
-		if(iter != tx_pool.end()) {
-			tx = iter->second;
-		}
-	}
-	add_block(copy);
+	add_block(block);
 }
 
 void Node::handle(std::shared_ptr<const Transaction> tx)
