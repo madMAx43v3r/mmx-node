@@ -190,6 +190,7 @@ int main(int argc, char** argv)
 				int num_addrs = 1;
 				vnx::read_config("$3", num_addrs);
 
+				bool is_empty = true;
 				std::vector<mmx::addr_t> nfts;
 				for(const auto& entry : wallet.get_balances(index))
 				{
@@ -203,7 +204,11 @@ int main(int argc, char** argv)
 							std::cout << " [" << entry.first << "]";
 						}
 						std::cout << std::endl;
+						is_empty = false;
 					}
+				}
+				if(is_empty) {
+					std::cout << "Balance: 0 MMX" << std::endl;
 				}
 				for(const auto& addr : nfts) {
 					std::cout << "NFT: " << addr << std::endl;
