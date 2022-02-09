@@ -248,7 +248,7 @@ int main(int argc, char** argv)
 			{
 				for(const auto& entry : wallet.get_all_accounts()) {
 					const auto& config = entry.second;
-					std::cout << "[" << entry.first << "] name = '" << config.name << "', account = " << config.index
+					std::cout << "[" << entry.first << "] name = '" << config.name << "', index = " << config.index
 							<< ", num_addresses = " << config.num_addresses << ", key_file = '" << config.key_file << "'" << std::endl;
 				}
 			}

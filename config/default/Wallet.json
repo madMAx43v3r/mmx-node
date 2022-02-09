@@ -1,5 +1,6 @@
 {
 	"key_files": [
 		"wallet.dat"
-	]
+	],
+	"config_path": "config/local/"
 }

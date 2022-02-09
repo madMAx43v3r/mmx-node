@@ -5,6 +5,9 @@ var app = Vue.createApp({
 const Wallet = {
 	template: '<wallet-summary></wallet-summary>'
 }
+const WalletCreate = {
+	template: '<create-wallet></create-wallet>'
+}
 const Account = {
 	props: {
 		index: Number
@@ -62,6 +65,22 @@ const AccountOffer = {
 	},
 	template: `
 		<account-offer-form :index="index"></account-offer-form>
+	`
+}
+const AccountDetails = {
+	props: {
+		index: Number
+	},
+	template: `
+		<account-details :index="index"></account-details>
+	`
+}
+const AccountOptions = {
+	props: {
+		index: Number
+	},
+	template: `
+		<create-account :index="index"></create-account>
 	`
 }
 
@@ -199,6 +218,7 @@ const Settings = { template: '<h1>Settings</h1>TODO' }
 const routes = [
 	{ path: '/', redirect: "/wallet" },
 	{ path: '/wallet', component: Wallet, meta: { is_wallet: true } },
+	{ path: '/wallet/create', component: WalletCreate, meta: { is_wallet: true } },
 	{ path: '/wallet/account/:index',
 		component: Account,
 		meta: { is_wallet: true },
@@ -210,6 +230,8 @@ const routes = [
 			{ path: 'addresses', component: AccountAddresses, meta: { page: 'addresses' } },
 			{ path: 'send', component: AccountSend, meta: { page: 'send' } },
 			{ path: 'offer', component: AccountOffer, meta: { page: 'offer' } },
+			{ path: 'details', component: AccountDetails, meta: { page: 'details' } },
+			{ path: 'options', component: AccountOptions, meta: { page: 'options' } },
 		]
 	},
 	{ path: '/exchange',

@@ -19,6 +19,9 @@ app.component('wallet-summary', {
 		<div class="ui raised segment" v-for="item in data" :key="item[0]">
 			<account-summary :index="item[0]" :account="item[1]"></account-summary>
 		</div>
+		<router-link to="/wallet/create">
+			<button class="ui button">New Wallet</button>
+		</router-link>
 		`
 })
 
@@ -34,8 +37,8 @@ app.component('account-menu', {
 			<router-link class="item" :class="{active: $route.meta.page == 'addresses'}" :to="'/wallet/account/' + index + '/addresses'">Addresses</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'send'}" :to="'/wallet/account/' + index + '/send'">Send</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'offer'}" :to="'/wallet/account/' + index + '/offer'">Offer</router-link>
-			<a class="item">Details</a>
-			<a class="right item"><i class="cog icon"></i></a>
+			<router-link class="item" :class="{active: $route.meta.page == 'details'}" :to="'/wallet/account/' + index + '/details'">Details</router-link>
+			<router-link class="right item" :class="{active: $route.meta.page == 'options'}" :to="'/wallet/account/' + index + '/options'"><i class="cog icon"></i></router-link>
 		</div>
 		`
 })
@@ -352,6 +355,158 @@ app.component('account-addresses', {
 			</tr>
 			</tbody>
 		</table>
+		`
+})
+
+app.component('account-details', {
+	props: {
+		index: Number
+	},
+	data() {
+		return {
+			data: null
+		}
+	},
+	methods: {
+		update() {
+			fetch('/api/wallet/get_account?index=' + this.index)
+				.then(response => response.json())
+				.then(data => this.data = data);
+		}
+	},
+	created() {
+		this.update();
+	},
+	template: `
+		<table class="ui definition table striped">
+			<tbody>
+			<template v-for="(value, key) in data" :key="key">
+				<tr v-if="key != '__type'">
+					<td class="collapsing">{{key}}</td>
+					<td>{{value}}</td>
+				</tr>
+			</template>
+			</tbody>
+		</table>
+		`
+})
+
+app.component('create-account', {
+	props: {
+		index: Number
+	},
+	data() {
+		return {
+			data: null,
+			name: null,
+			offset: null,
+			num_addresses: 100,
+			error: null
+		}
+	},
+	methods: {
+		update() {
+			fetch('/api/wallet/get_account?index=' + this.index)
+				.then(response => response.json())
+				.then(data => this.data = data);
+		},
+		submit() {
+			if(this.offset < 1) {
+				this.error = "'Account Index' cannot be less than 1";
+				return;
+			}
+			const req = {};
+			req.config = {};
+			req.config.name = this.name;
+			req.config.index = this.offset;
+			req.config.key_file = this.data.key_file;
+			req.config.num_addresses = this.num_addresses;
+			fetch('/api/wallet/create_account', {body: JSON.stringify(req), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						this.$router.push('/wallet/');
+					} else {
+						response.text().then(data => {
+							this.error = data;
+						});
+					}
+				});
+		}
+	},
+	created() {
+		this.update();
+	},
+	template: `
+		<div class="ui raised segment">
+			<form class="ui form">
+				<div class="three fields">
+					<div class="three wide field">
+						<label>Account Index</label>
+						<input type="text" v-model.number="offset" style="text-align: right"/>
+					</div>
+					<div class="nine wide field">
+						<label>Account Name</label>
+						<input type="text" v-model="name"/>
+					</div>
+					<div class="four wide field">
+						<label>Number of Addresses</label>
+						<input type="text" v-model.number="num_addresses" style="text-align: right"/>
+					</div>
+				</div>
+				<div @click="submit" class="ui submit primary button">Create Account</div>
+			</form>
+		</div>
+		<div class="ui large negative message" :class="{hidden: !error}">
+			Failed with: <b>{{error}}</b>
+		</div>
+		`
+})
+
+app.component('create-wallet', {
+	data() {
+		return {
+			name: null,
+			num_addresses: 100,
+			error: null
+		}
+	},
+	methods: {
+		submit() {
+			const req = {};
+			req.config = {};
+			req.config.name = this.name;
+			req.config.num_addresses = this.num_addresses;
+			fetch('/api/wallet/create_wallet', {body: JSON.stringify(req), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						this.$router.push('/wallet/');
+					} else {
+						response.text().then(data => {
+							this.error = data;
+						});
+					}
+				});
+		}
+	},
+	template: `
+		<div class="ui raised segment">
+			<form class="ui form">
+				<div class="two fields">
+					<div class="twelve wide field">
+						<label>Account Name</label>
+						<input type="text" v-model="name"/>
+					</div>
+					<div class="four wide field">
+						<label>Number of Addresses</label>
+						<input type="text" v-model.number="num_addresses" style="text-align: right"/>
+					</div>
+				</div>
+				<div @click="submit" class="ui submit primary button">Create Wallet</div>
+			</form>
+		</div>
+		<div class="ui large negative message" :class="{hidden: !error}">
+			Failed with: <b>{{error}}</b>
+		</div>
 		`
 })
 

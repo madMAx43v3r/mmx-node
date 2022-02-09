@@ -36,40 +36,28 @@ void Wallet::main()
 	}
 	params = get_params();
 
+	vnx::Directory(config_path).create();
+
 	node = std::make_shared<NodeClient>(node_server);
 	http = std::make_shared<vnx::addons::HttpInterface<Wallet>>(this, vnx_name);
 	add_async_client(http);
 
-	for(auto file_path : key_files) {
-		file_path = storage_path + file_path;
-
-		if(auto key_file = vnx::read_from_file<KeyFile>(file_path)) {
-			if(enable_bls) {
-				bls_wallets.push_back(std::make_shared<BLS_Wallet>(key_file, 11337));
-			} else {
-				bls_wallets.push_back(nullptr);
-			}
-			account_t config;
-			config.name = "Default";
-			config.key_file = file_path;
-			config.num_addresses = num_addresses;
-			wallets.push_back(std::make_shared<ECDSA_Wallet>(key_file, config, params));
-		}
-		else {
-			wallets.push_back(nullptr);
-			bls_wallets.push_back(nullptr);
-			log(ERROR) << "Failed to read wallet '" << file_path << "'";
+	for(size_t i = 0; i < key_files.size(); ++i) {
+		account_t config;
+		config.name = "Default";
+		config.key_file = key_files[i];
+		config.num_addresses = num_addresses;
+		try {
+			add_account(i, config);
+		} catch(const std::exception& ex) {
+			log(WARN) << ex.what();
 		}
 	}
-	wallets.resize(max_key_files + accounts.size());
-
 	for(size_t i = 0; i < accounts.size(); ++i) {
-		auto config = accounts[i];
-		config.key_file = storage_path + config.key_file;
-		if(auto key_file = vnx::read_from_file<KeyFile>(config.key_file)) {
-			wallets[max_key_files + i] = std::make_shared<ECDSA_Wallet>(key_file, config, params);
-		} else {
-			log(ERROR) << "Failed to read wallet '" << config.key_file << "'";
+		try {
+			add_account(max_key_files + i, accounts[i]);
+		} catch(const std::exception& ex) {
+			log(WARN) << ex.what();
 		}
 	}
 	Super::main();
@@ -432,12 +420,62 @@ void Wallet::add_account(const uint32_t& index, const account_t& config)
 	}
 	if(index >= wallets.size()) {
 		wallets.resize(index + 1);
+		bls_wallets.resize(index + 1);
+	} else if(wallets[index]) {
+		throw std::logic_error("account already exists");
 	}
-	if(auto key_file = vnx::read_from_file<KeyFile>(config.key_file)) {
+	if(auto key_file = vnx::read_from_file<KeyFile>(storage_path + config.key_file)) {
+		if(enable_bls) {
+			bls_wallets[index] = std::make_shared<BLS_Wallet>(key_file, 11337);
+		}
 		wallets[index] = std::make_shared<ECDSA_Wallet>(key_file, config, params);
 	} else {
 		throw std::runtime_error("failed to read key file");
 	}
+}
+
+void Wallet::create_account(const account_t& config)
+{
+	if(config.name.empty()) {
+		throw std::logic_error("name cannot be empty");
+	}
+	if(config.num_addresses < 1) {
+		throw std::logic_error("num_addresses cannot be zero");
+	}
+	add_account(std::max<uint32_t>(max_key_files, wallets.size()), config);
+
+	const std::string path = config_path + "Wallet.json";
+	{
+		auto object = vnx::read_config_file(path);
+		auto& accounts = object["accounts+"];
+		auto list = accounts.to<std::vector<account_t>>();
+		list.push_back(config);
+		accounts = list;
+		vnx::write_config_file(path, object);
+	}
+}
+
+void Wallet::create_wallet(const account_t& config_)
+{
+	mmx::KeyFile key_file;
+	key_file.seed_value = mmx::hash_t::random();
+
+	auto config = config_;
+	if(config.name.empty()) {
+		throw std::logic_error("name cannot be empty");
+	}
+	if(config.num_addresses < 1) {
+		throw std::logic_error("num_addresses cannot be zero");
+	}
+	if(config.key_file.empty()) {
+		config.key_file = "wallet_" + std::to_string(uint32_t(std::hash<hash_t>{}(key_file.seed_value))) + ".dat";
+	}
+	if(vnx::File(config.key_file).exists()) {
+		throw std::logic_error("key file already exists");
+	}
+	vnx::write_to_file(storage_path + config.key_file, key_file);
+
+	create_account(config);
 }
 
 hash_t Wallet::get_master_seed(const uint32_t& index) const
