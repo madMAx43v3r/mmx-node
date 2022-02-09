@@ -42,19 +42,20 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 	} else {
 		fork->proof_score = params->score_threshold;
 	}
-	fork->weight = 0;
-	fork->buffer_delta = 0;
-	if(fork->has_weak_proof) {
-		fork->weight -= params->score_threshold;
-	} else if(block->proof) {
-		fork->weight += 1 + params->score_threshold - fork->proof_score;
-		fork->buffer_delta += int32_t(2 * params->score_target) - fork->proof_score;
-	} else {
-		fork->weight += 1;
-		fork->buffer_delta -= params->score_threshold;
+
+	fork->weight = 1;
+	if(block->proof) {
+		fork->weight += params->score_threshold - fork->proof_score;
 	}
 	fork->weight *= diff_block->space_diff;
 	fork->weight *= diff_block->time_diff;
+
+	fork->buffer_delta = 0;
+	if(!block->proof || fork->has_weak_proof) {
+		fork->buffer_delta -= params->score_threshold;
+	} else {
+		fork->buffer_delta += int32_t(2 * params->score_target) - fork->proof_score;
+	}
 
 	// check some VDFs during sync
 	if(!fork->is_proof_verified && !fork->is_vdf_verified) {
