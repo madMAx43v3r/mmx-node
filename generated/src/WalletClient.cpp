@@ -9,6 +9,10 @@
 #include <mmx/Transaction.hxx>
 #include <mmx/Wallet_add_account.hxx>
 #include <mmx/Wallet_add_account_return.hxx>
+#include <mmx/Wallet_create_account.hxx>
+#include <mmx/Wallet_create_account_return.hxx>
+#include <mmx/Wallet_create_wallet.hxx>
+#include <mmx/Wallet_create_wallet_return.hxx>
 #include <mmx/Wallet_deploy.hxx>
 #include <mmx/Wallet_deploy_return.hxx>
 #include <mmx/Wallet_gather_utxos_for.hxx>
@@ -561,6 +565,30 @@ void WalletClient::add_account(const uint32_t& index, const ::mmx::account_t& co
 void WalletClient::add_account_async(const uint32_t& index, const ::mmx::account_t& config) {
 	auto _method = ::mmx::Wallet_add_account::create();
 	_method->index = index;
+	_method->config = config;
+	vnx_request(_method, true);
+}
+
+void WalletClient::create_account(const ::mmx::account_t& config) {
+	auto _method = ::mmx::Wallet_create_account::create();
+	_method->config = config;
+	vnx_request(_method, false);
+}
+
+void WalletClient::create_account_async(const ::mmx::account_t& config) {
+	auto _method = ::mmx::Wallet_create_account::create();
+	_method->config = config;
+	vnx_request(_method, true);
+}
+
+void WalletClient::create_wallet(const ::mmx::account_t& config) {
+	auto _method = ::mmx::Wallet_create_wallet::create();
+	_method->config = config;
+	vnx_request(_method, false);
+}
+
+void WalletClient::create_wallet_async(const ::mmx::account_t& config) {
+	auto _method = ::mmx::Wallet_create_wallet::create();
 	_method->config = config;
 	vnx_request(_method, true);
 }
