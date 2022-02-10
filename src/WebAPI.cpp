@@ -1427,7 +1427,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	else {
 		std::vector<std::string> options = {
 			"node/info", "header", "headers", "block", "blocks", "transaction", "transactions", "address", "contract",
-			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/coins", "wallet/history", "wallet/send",
+			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/coins", "wallet/history", "wallet/send", "wallet/split",
 			"exchange/offer", "exchange/place", "exchange/offers", "exchange/pairs", "exchange/orders", "exchange/price",
 			"exchange/trade", "exchange/history", "exchange/trades"
 		};
