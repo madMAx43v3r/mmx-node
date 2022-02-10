@@ -990,8 +990,8 @@ int main(int argc, char** argv)
 				have.currency = pair.bid;
 				const auto price = client.get_price(server, pair.ask, have);
 				if(price.value > 0) {
-					std::cout << price.value / double(price.inverse) << " " << ask_token->symbol << " / " << bid_token->symbol << std::endl;
 					std::cout << price.inverse / double(price.value) << " " << bid_token->symbol << " / " << ask_token->symbol << std::endl;
+					std::cout << price.value / double(price.inverse) << " " << ask_token->symbol << " / " << bid_token->symbol << std::endl;
 					std::cout << "Amount:  " << price.inverse / pow(10, bid_token->decimals) << " " << bid_token->symbol << std::endl;
 					std::cout << "Receive: " << price.value / pow(10, ask_token->decimals) << " " << ask_token->symbol << std::endl;
 				} else {
