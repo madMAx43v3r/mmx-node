@@ -513,17 +513,15 @@ ulong_fraction_t Server::get_price(const addr_t& want, const amount_t& have) con
 	price.inverse = 0;
 
 	uint64_t left = have.amount;
-	for(const auto& order : get_orders(trade_pair_t::create_ex(want, have.currency), 100)) {
-		if(order.ask >= left) {
+	for(const auto& order : get_orders(trade_pair_t::create_ex(want, have.currency), price_estimation_limit)) {
+		if(!left) {
+			break;
+		}
+		if(order.ask <= left) {
 			price.value += order.bid;
 			price.inverse += order.ask;
-			left = 0;
-			break;
-		} else {
-			price.value += order.bid * (left / double(order.ask));
-			price.inverse += left;
+			left -= order.ask;
 		}
-		left -= order.ask;
 	}
 	return price;
 }
