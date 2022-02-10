@@ -131,7 +131,7 @@ app.component('account-balance', {
 				<th class="two wide">Spendable</th>
 				<th class="two wide">Token</th>
 				<th>Contract</th>
-				<th>Links</th>
+				<th>More</th>
 			</tr>
 			</thead>
 			<tbody>
