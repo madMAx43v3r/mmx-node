@@ -1254,12 +1254,15 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 							auto* bid_info = context->find_currency(pair.bid);
 							auto* ask_info = context->find_currency(pair.ask);
 							for(const auto& order : orders) {
-								auto row = order.to_object();
+								auto row = render(order, context);
 								if(bid_info) {
 									row["bid_value"] = order.bid * pow(10, -bid_info->decimals);
 								}
 								if(ask_info) {
 									row["ask_value"] = order.ask * pow(10, -ask_info->decimals);
+								}
+								if(bid_info && ask_info) {
+									row["price"] = order.ask / double(order.bid) * pow(10, bid_info->decimals - ask_info->decimals);
 								}
 								rows.push_back(row);
 							}
