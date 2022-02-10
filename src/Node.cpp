@@ -353,9 +353,13 @@ vnx::optional<tx_info_t> Node::get_tx_info(const hash_t& id) const
 			txo_info_t entry;
 			if(auto txo = get_txo_info(txio_key_t::create_ex(id, i))) {
 				entry = *txo;
-				info.output_amounts[txo->output.contract] += txo->output.amount;
+			} else if(i < tx->outputs.size()) {
+				entry.output.tx_out_t::operator=(tx->outputs[i]);
+			} else {
+				entry.output.tx_out_t::operator=(tx->exec_outputs[i - tx->outputs.size()]);
 			}
 			info.outputs.push_back(entry);
+			info.output_amounts[entry.output.contract] += entry.output.amount;
 			contracts.insert(entry.output.contract);
 		}
 		for(const auto& op : tx->execute) {
