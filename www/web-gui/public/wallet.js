@@ -520,7 +520,7 @@ app.component('account-send-form', {
 			balances: [],
 			amount: null,
 			target: null,
-			address: null,
+			address: "",
 			currency: null,
 			confirmed: false,
 			options: {
@@ -619,7 +619,7 @@ app.component('account-send-form', {
 				<div class="two fields">
 					<div class="fourteen wide field">
 						<label>Destination Address</label>
-						<input type="text" v-model="target" :disabled="address" placeholder="mmx1..."/>
+						<input type="text" v-model="target" :disabled="!!address" placeholder="mmx1..."/>
 					</div>
 					<div class="two wide field">
 						<label>Output Split</label>
