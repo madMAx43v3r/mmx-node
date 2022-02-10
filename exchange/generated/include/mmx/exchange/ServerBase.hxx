@@ -31,6 +31,7 @@ public:
 	::vnx::TopicPtr input_blocks = "node.verified_blocks";
 	int32_t trade_timeout_ms = 5000;
 	uint32_t max_history = 10000;
+	uint32_t price_estimation_limit = 1000;
 	std::string node_server = "Node";
 	
 	typedef ::vnx::addons::MsgServer Super;
@@ -91,7 +92,7 @@ protected:
 
 template<typename T>
 void ServerBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ServerBase>(16);
+	_visitor.template type_begin<ServerBase>(17);
 	_visitor.type_field("port", 0); _visitor.accept(port);
 	_visitor.type_field("host", 1); _visitor.accept(host);
 	_visitor.type_field("max_connections", 2); _visitor.accept(max_connections);
@@ -107,8 +108,9 @@ void ServerBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("input_blocks", 12); _visitor.accept(input_blocks);
 	_visitor.type_field("trade_timeout_ms", 13); _visitor.accept(trade_timeout_ms);
 	_visitor.type_field("max_history", 14); _visitor.accept(max_history);
-	_visitor.type_field("node_server", 15); _visitor.accept(node_server);
-	_visitor.template type_end<ServerBase>(16);
+	_visitor.type_field("price_estimation_limit", 15); _visitor.accept(price_estimation_limit);
+	_visitor.type_field("node_server", 16); _visitor.accept(node_server);
+	_visitor.template type_end<ServerBase>(17);
 }
 
 
