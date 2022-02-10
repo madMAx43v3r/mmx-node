@@ -734,14 +734,17 @@ void Node::add_block(std::shared_ptr<const Block> block)
 
 void Node::add_transaction(std::shared_ptr<const Transaction> tx, const vnx::bool_t& pre_validate)
 {
-	if(tx_pool.size() >= tx_pool_limit) {
-		return;
-	}
 	if(tx_pool.count(tx->id)) {
 		return;
 	}
+	if(tx_pool.size() >= tx_pool_limit) {
+		throw std::logic_error("tx pool at limit");
+	}
 	if(!tx->is_valid()) {
-		return;
+		throw std::logic_error("invalid tx");
+	}
+	if(tx->calc_cost(params) > params->max_block_cost) {
+		throw std::logic_error("tx cost > max_block_cost");
 	}
 	if(pre_validate) {
 		validate(tx);
