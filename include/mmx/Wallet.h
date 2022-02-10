@@ -38,6 +38,8 @@ protected:
 	hash_t mint(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
 				const addr_t& currency, const spend_options_t& options) const override;
 
+	vnx::optional<hash_t> split(const uint32_t& index, const uint64_t& max_amount, const addr_t& currency, const spend_options_t& options) const override;
+
 	hash_t deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction>

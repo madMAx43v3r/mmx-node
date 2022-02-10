@@ -36,6 +36,7 @@ app.component('account-menu', {
 			<router-link class="item" :class="{active: $route.meta.page == 'contracts'}" :to="'/wallet/account/' + index + '/contracts'">Contracts</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'addresses'}" :to="'/wallet/account/' + index + '/addresses'">Addresses</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'send'}" :to="'/wallet/account/' + index + '/send'">Send</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'split'}" :to="'/wallet/account/' + index + '/split'">Split</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'offer'}" :to="'/wallet/account/' + index + '/offer'">Offer</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'details'}" :to="'/wallet/account/' + index + '/details'">Details</router-link>
 			<router-link class="right item" :class="{active: $route.meta.page == 'options'}" :to="'/wallet/account/' + index + '/options'"><i class="cog icon"></i></router-link>
@@ -130,6 +131,7 @@ app.component('account-balance', {
 				<th class="two wide">Spendable</th>
 				<th class="two wide">Token</th>
 				<th>Contract</th>
+				<th>Links</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -139,6 +141,9 @@ app.component('account-balance', {
 				<td><b>{{item.spendable}}</b></td>
 				<td>{{item.symbol}}</td>
 				<td>{{item.is_native ? '' : item.contract}}</td>
+				<td>
+					<router-link :to="'/wallet/account/' + index + '/coins/' + item.contract">Coins</router-link>
+				</td>
 			</tr>
 			</tbody>
 		</table>
@@ -352,6 +357,49 @@ app.component('account-addresses', {
 			<tr v-for="(item, index) in data" :key="index">
 				<td>{{index}}</td>
 				<td>{{item}}</td>
+			</tr>
+			</tbody>
+		</table>
+		`
+})
+
+app.component('account-coins', {
+	props: {
+		index: Number,
+		currency: String,
+		limit: Number
+	},
+	data() {
+		return {
+			data: []
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/wallet/coins?limit=' + this.limit + '&index=' + this.index + '&currency=' + this.currency)
+				.then(response => response.json())
+				.then(data => this.data = data);
+		}
+	},
+	created() {
+		this.update()
+	},
+	template: `
+		<table class="ui table striped">
+			<thead>
+			<tr>
+				<th>Height</th>
+				<th>Amount</th>
+				<th></th>
+				<th>Address</th>
+			</tr>
+			</thead>
+			<tbody>
+			<tr v-for="item in data" :key="item.key">
+				<td>{{item.output.height}}</td>
+				<td class="collapsing"><b>{{item.output.value}}</b></td>
+				<td>{{item.output.symbol}}</td>
+				<td>{{item.output.address}}</td>
 			</tr>
 			</tbody>
 		</table>
@@ -629,6 +677,109 @@ app.component('account-send-form', {
 				<div class="two fields">
 					<div class="four wide field">
 						<label>Amount</label>
+						<input type="text" v-model.number="amount" placeholder="1.23" style="text-align: right"/>
+					</div>
+					<div class="twelve wide field">
+						<label>Currency</label>
+						<select v-model="currency">
+							<option v-for="item in balances" :key="item.contract" class="item" :value="item.contract">
+								{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
+							</option>
+						</select>
+					</div>
+				</div>
+				<div class="inline field">
+					<div class="ui toggle checkbox">
+						<input type="checkbox" class="hidden" v-model="confirmed">
+						<label>Confirm</label>
+					</div>
+				</div>
+				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">Send</div>
+			</form>
+		</div>
+		<div class="ui large message" :class="{hidden: !result}">
+			Transaction has been sent: <b>{{result}}</b>
+		</div>
+		<div class="ui large negative message" :class="{hidden: !error}">
+			Failed with: <b>{{error}}</b>
+		</div>
+		`
+})
+
+app.component('account-split-form', {
+	props: {
+		index: Number
+	},
+	data() {
+		return {
+			balances: [],
+			amount: null,
+			currency: null,
+			confirmed: false,
+			result: null,
+			error: null
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/wallet/balance?index=' + this.index)
+				.then(response => response.json())
+				.then(data => this.balances = data.balances);
+		},
+		submit() {
+			this.confirmed = false;
+			const req = {};
+			req.index = this.index;
+			req.amount = this.amount;
+			req.currency = this.currency;
+			fetch('/wapi/wallet/split', {body: JSON.stringify(req), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						response.json().then(data => {
+							if(data && data != "null") {
+								this.result = data;
+							} else {
+								this.error = "nothing to split";
+							}
+						});
+					} else {
+						response.text().then(data => {
+							this.error = data;
+						});
+					}
+					this.update();
+					this.$refs.balance.update();
+				});
+		}
+	},
+	created() {
+		this.update();
+	},
+	mounted() {
+		$('.ui.checkbox').checkbox();
+	},
+	watch: {
+		amount(value) {
+			// TODO: validate
+		},
+		result(value) {
+			if(value) {
+				this.error = null;
+			}
+		},
+		error(value) {
+			if(value) {
+				this.result = null;
+			}
+		}
+	},
+	template: `
+		<account-balance :index="index" ref="balance"></account-balance>
+		<div class="ui raised segment">
+			<form class="ui form">
+				<div class="two fields">
+					<div class="four wide field">
+						<label>Max Coin Amount</label>
 						<input type="text" v-model.number="amount" placeholder="1.23" style="text-align: right"/>
 					</div>
 					<div class="twelve wide field">

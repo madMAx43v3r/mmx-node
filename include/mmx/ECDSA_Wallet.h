@@ -109,6 +109,11 @@ public:
 		return generate_keypair({account, index});
 	}
 
+	bool is_spendable(const txio_key_t& key) const
+	{
+		return !spent_set.count(key) && !reserved_set.count(key);
+	}
+
 	void update_cache(const std::vector<utxo_entry_t>& utxo_list, const uint32_t height)
 	{
 		this->height = height;

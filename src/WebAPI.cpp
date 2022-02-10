@@ -75,6 +75,17 @@ public:
 };
 
 
+template<typename T>
+std::vector<T> get_page(const std::vector<T>& list, const size_t limit, const size_t offset)
+{
+	std::vector<T> res;
+	for(size_t i = 0; i < limit && offset + i < list.size(); ++i) {
+		res.push_back(list[offset + i]);
+	}
+	return res;
+}
+
+
 WebAPI::WebAPI(const std::string& _vnx_name)
 	:	WebAPIBase(_vnx_name)
 {
@@ -340,6 +351,10 @@ public:
 			tmp["time"] = context->get_time(value.height);
 		}
 		set(tmp);
+	}
+
+	void accept(const utxo_entry_t& value) {
+		set(render(value, context));
 	}
 
 	void accept(std::shared_ptr<const Transaction> value) {
@@ -727,18 +742,11 @@ void WebAPI::render_balances(const vnx::request_id_t& request_id, const vnx::opt
 		});
 }
 
-void WebAPI::render_history(const vnx::request_id_t& request_id, size_t limit, const size_t offset, std::vector<tx_entry_t> history) const
+void WebAPI::render_history(const vnx::request_id_t& request_id, const size_t limit, const size_t offset, std::vector<tx_entry_t> history) const
 {
 	std::reverse(history.begin(), history.end());
-	if(offset > 0) {
-		for(size_t i = 0; i < limit && offset + i < history.size(); ++i) {
-			history[i] = history[offset + i];
-		}
-		limit = std::min(offset + limit, history.size()) - std::min(offset, history.size());
-	}
-	if(history.size() > limit) {
-		history.resize(limit);
-	}
+	history = get_page(history, limit, offset);
+
 	std::unordered_set<addr_t> addr_set;
 	for(const auto& entry : history) {
 		addr_set.insert(entry.contract);
@@ -982,14 +990,40 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			wallet->get_all_addresses(index,
 				[this, request_id, limit, offset](const std::vector<addr_t>& list) {
 					std::vector<std::string> res;
-					for(size_t i = 0; i < limit && offset + i < list.size(); ++i) {
-						res.push_back(list[offset + i].to_string());
+					for(const auto& addr : get_page(list, limit, offset)) {
+						res.push_back(addr.to_string());
 					}
 					respond(request_id, vnx::Variant(res));
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
 			respond_status(request_id, 404, "wallet/address?index|limit|offset");
+		}
+	}
+	else if(sub_path == "/wallet/coins") {
+		const auto iter_index = query.find("index");
+		const auto iter_confirm = query.find("confirm");
+		const auto iter_currency = query.find("currency");
+		const auto iter_limit = query.find("limit");
+		const auto iter_offset = query.find("offset");
+		if(iter_index != query.end() && iter_currency != query.end()) {
+			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
+			const addr_t currency = vnx::from_string<addr_t>(iter_currency->second);
+			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 1;
+			const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
+			const uint32_t min_confirm = iter_confirm != query.end() ? vnx::from_string<int64_t>(iter_confirm->second) : 0;
+			wallet->get_utxo_list_for(index, currency, min_confirm,
+				[this, request_id, currency, limit, offset](const std::vector<utxo_entry_t>& list_) {
+					auto list = get_page(list_, limit, offset);
+					std::reverse(list.begin(), list.end());
+					get_context({currency}, request_id,
+						[this, request_id, list](std::shared_ptr<RenderContext> context) {
+							respond(request_id, render_value(list, context));
+						});
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "wallet/coins?index|limit|offset|confirm");
 		}
 	}
 	else if(sub_path == "/wallet/history") {
@@ -1050,6 +1084,39 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
 			respond_status(request_id, 404, "POST wallet/send {...}");
+		}
+	}
+	else if(sub_path == "/wallet/split") {
+		if(request->payload.size()) {
+			vnx::Object args;
+			vnx::from_string(request->payload.as_string(), args);
+			const auto currency = args["currency"].to<addr_t>();
+			node->get_contract(currency,
+				[this, request_id, args, currency](std::shared_ptr<const Contract> contract) {
+					try {
+						uint64_t amount = 0;
+						const auto value = args["amount"].to<double>();
+						if(auto token = std::dynamic_pointer_cast<const contract::Token>(contract)) {
+							amount = value * pow(10, token->decimals);
+						} else if(currency == addr_t()) {
+							amount = value * pow(10, params->decimals);
+						} else {
+							throw std::logic_error("invalid currency");
+						}
+						const auto index = args["index"].to<uint32_t>();
+						const auto options = args["options"].to<spend_options_t>();
+						wallet->split(index, amount, currency, options,
+							[this, request_id](const vnx::optional<hash_t>& txid) {
+								respond(request_id, vnx::Variant(txid ? txid->to_string() : "null"));
+							},
+							std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+					} catch(std::exception& ex) {
+						respond_ex(request_id, ex);
+					}
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "POST wallet/split {...}");
 		}
 	}
 	else if(sub_path == "/exchange/offer") {
@@ -1360,7 +1427,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	else {
 		std::vector<std::string> options = {
 			"node/info", "header", "headers", "block", "blocks", "transaction", "transactions", "address", "contract",
-			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/history", "wallet/send",
+			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/coins", "wallet/history", "wallet/send",
 			"exchange/offer", "exchange/place", "exchange/offers", "exchange/pairs", "exchange/orders", "exchange/price",
 			"exchange/trade", "exchange/history", "exchange/trades"
 		};

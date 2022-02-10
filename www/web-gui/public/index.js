@@ -51,12 +51,29 @@ const AccountAddresses = {
 		<account-addresses :index="index" :limit="1000"></account-addresses>
 	`
 }
+const AccountCoins = {
+	props: {
+		index: Number,
+		currency: String
+	},
+	template: `
+		<account-coins :index="index" :currency="currency" :limit="1000"></account-coins>
+	`
+}
 const AccountSend = {
 	props: {
 		index: Number
 	},
 	template: `
 		<account-send-form :index="index"></account-send-form>
+	`
+}
+const AccountSplit = {
+	props: {
+		index: Number
+	},
+	template: `
+		<account-split-form :index="index"></account-split-form>
 	`
 }
 const AccountOffer = {
@@ -229,9 +246,11 @@ const routes = [
 			{ path: 'contracts', component: AccountContracts, meta: { page: 'contracts' } },
 			{ path: 'addresses', component: AccountAddresses, meta: { page: 'addresses' } },
 			{ path: 'send', component: AccountSend, meta: { page: 'send' } },
+			{ path: 'split', component: AccountSplit, meta: { page: 'split' } },
 			{ path: 'offer', component: AccountOffer, meta: { page: 'offer' } },
 			{ path: 'details', component: AccountDetails, meta: { page: 'details' } },
 			{ path: 'options', component: AccountOptions, meta: { page: 'options' } },
+			{ path: 'coins/:currency', component: AccountCoins, props: route => ({currency: route.params.currency}), meta: { page: 'coins' } },
 		]
 	},
 	{ path: '/exchange',

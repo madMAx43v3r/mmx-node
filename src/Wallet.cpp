@@ -154,6 +154,41 @@ hash_t Wallet::mint(const uint32_t& index, const uint64_t& amount, const addr_t&
 	return tx->id;
 }
 
+vnx::optional<hash_t> Wallet::split(const uint32_t& index, const uint64_t& max_amount, const addr_t& currency, const spend_options_t& options) const
+{
+	if(!max_amount) {
+		throw std::logic_error("invalid max_amount");
+	}
+	const auto wallet = get_wallet(index);
+	const std::unordered_set<txio_key_t> exclude(options.exclude.begin(), options.exclude.end());
+
+	auto tx = Transaction::create();
+	uint64_t total = 0;
+	std::vector<std::pair<txio_key_t, utxo_t>> utxo_list;
+	for(const auto& entry : get_utxo_list_for(index, currency, options.min_confirm)) {
+		const auto& utxo = entry.output;
+		if(utxo.amount > max_amount && wallet->is_spendable(entry.key) && !exclude.count(entry.key)) {
+			tx_in_t in;
+			in.prev = entry.key;
+			tx->inputs.push_back(in);
+			total += utxo.amount;
+			utxo_list.emplace_back(entry.key, utxo);
+		}
+	}
+	if(utxo_list.empty()) {
+		return nullptr;
+	}
+	{
+		spend_options_t options;
+		options.split_output = (total + max_amount - 1) / max_amount;
+		wallet->add_outputs(tx, total, wallet->get_address(0), currency, options);
+	}
+	auto res = sign_off(index, tx, true, utxo_list);
+	node->add_transaction(res);
+	wallet->update_from(res);
+	return res->id;
+}
+
 hash_t Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, const spend_options_t& options) const
 {
 	if(!contract) {
