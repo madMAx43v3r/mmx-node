@@ -132,6 +132,7 @@ private:
 		uint32_t proof_score = -1;
 		int32_t buffer_delta = 0;
 		int32_t weight_buffer = 0;
+		int32_t score_bonus = 0;
 		int64_t recv_time = 0;
 		uint128_t weight = 0;
 		uint128_t total_weight = 0;

@@ -1173,12 +1173,14 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork(std::shared_ptr<const BlockHe
 			prev_best = best_fork;
 			curr_height = iter->first;
 		}
-		if(prev) {
+		fork->score_bonus = 0;
+		if(iter != begin && prev) {
 			fork->total_weight = prev->total_weight + fork->weight;
 			// add buffer bonus if not weak proof and did not orphan previous
 			if(!prev_best || prev == prev_best || !fork->vdf_point || prev_best->recv_time > fork->vdf_point->recv_time) {
 				if(!fork->has_weak_proof) {
-					fork->total_weight += std::min<int32_t>(prev->weight_buffer, params->score_threshold);
+					fork->score_bonus = std::min<int32_t>(prev->weight_buffer, params->score_threshold);
+					fork->total_weight += uint128_t(fork->score_bonus) * fork->diff_block->time_diff * fork->diff_block->space_diff;
 				}
 			}
 			fork->weight_buffer = std::min<int32_t>(std::max(prev->weight_buffer + fork->buffer_delta, 0), params->max_weight_buffer);
