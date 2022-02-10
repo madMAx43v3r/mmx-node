@@ -217,7 +217,7 @@ void Node::update()
 		stuck_timer->reset();
 		if(auto fork = find_fork(peak->hash)) {
 			auto vdf_point = fork->vdf_point;
-			log(INFO) << "New peak at height " << peak->height << " with score " << std::to_string(fork->proof_score) << ", bonus " << fork->score_bonus
+			log(INFO) << "New peak at height " << peak->height << " with score " << std::to_string(fork->proof_score)
 					<< (is_synced && forked_at ? ", forked at " + std::to_string(forked_at->height) : "")
 					<< (is_synced && vdf_point ? ", delay " + std::to_string((fork->recv_time - vdf_point->recv_time) / 1e6) + " sec" : "")
 					<< ", took " << elapsed << " sec";
