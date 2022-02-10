@@ -58,7 +58,7 @@ void Client::main()
 	set_timer_millis(10 * 1000, std::bind(&Client::update, this));
 	set_timer_millis(60 * 1000, std::bind(&Client::connect, this));
 
-	{
+	set_timeout_millis(2000, [this]() {
 		vnx::File file(storage_path + "offers.dat");
 		if(file.exists()) {
 			file.open("rb");
@@ -66,13 +66,11 @@ void Client::main()
 			vnx::read_generic(file.in, offers);
 			for(const auto& entry : offers) {
 				if(auto offer = entry.second) {
-					if(offer->bid_sold < offer->bid) {
-						place(offer);
-					}
+					place(offer);
 				}
 			}
 		}
-	}
+	});
 
 	trade_log = std::make_shared<vnx::File>(storage_path + "trade_log.dat");
 	if(trade_log->exists()) {
@@ -475,8 +473,7 @@ bool Client::try_place(std::shared_ptr<const OfferBundle> offer)
 		save_offers();
 		wallet->reserve(offer->wallet, keys);
 	}
-	if(is_ready)
-	{
+	if(is_ready) {
 		send_offer(offer);
 		log(INFO) << "Placed offer " << offer->id << ", asking "
 				<< offer->ask << " [" << offer->pair.ask << "] for " << offer->bid << " [" << offer->pair.bid << "]"
