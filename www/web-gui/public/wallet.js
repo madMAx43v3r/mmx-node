@@ -355,7 +355,7 @@ app.component('account-addresses', {
 			</thead>
 			<tbody>
 			<tr v-for="(item, index) in data" :key="index">
-				<td>{{index}}</td>
+				<td><b>{{index}}</b></td>
 				<td>{{item}}</td>
 			</tr>
 			</tbody>
