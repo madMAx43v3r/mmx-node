@@ -247,7 +247,7 @@ app.component('account-history', {
 			</tr>
 			</thead>
 			<tbody>
-			<tr v-for="item in data">
+			<tr v-for="item in data" :key="item.txid">
 				<td>{{item.height}}</td>
 				<td>{{item.type}}</td>
 				<td><b>{{item.value}}</b></td>
@@ -1036,7 +1036,7 @@ app.component('account-offers', {
 			</tr>
 			</thead>
 			<tbody>
-			<tr v-for="item in data">
+			<tr v-for="item in data" :key="item.id">
 				<td>{{item.id}}</td>
 				<td class="collapsing"><b>{{item.bid_value}}</b></td>
 				<td>{{item.bid_symbol}}</td>

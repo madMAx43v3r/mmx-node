@@ -199,7 +199,7 @@ app.component('exchange-order-list', {
 				<th></th>
 			</thead>
 			<tbody>
-				<tr v-for="item in data.orders">
+				<tr v-for="item in data.orders" :key="item.bid_key">
 					<td class="collapsing"><b>{{(flip ? item.bid_value / item.ask_value : item.ask_value / item.bid_value).toPrecision(5)}}</b></td>
 					<td>{{flip ? data.bid_symbol : data.ask_symbol}} / {{flip ? data.ask_symbol : data.bid_symbol}}</td>
 					<td class="collapsing"><b>{{flip ? item.bid_value : item.ask_value}}</b></td>
@@ -277,7 +277,7 @@ app.component('exchange-trade-list', {
 				<th>Time</th>
 			</thead>
 			<tbody>
-				<tr v-for="item in data.history">
+				<tr v-for="item in data.history" :key="item.id">
 					<td><b>{{(flip ? item.bid_value / item.ask_value : item.ask_value / item.bid_value).toPrecision(5)}}</b></td>
 					<td>{{item.bid_value}}</td>
 					<td>{{item.ask_value}}</td>
@@ -354,7 +354,7 @@ app.component('exchange-history', {
 				<th>Time</th>
 			</thead>
 			<tbody>
-				<tr v-for="item in data">
+				<tr v-for="item in data" :key="item.id">
 					<td>{{item.pair.bid == bid ? "SELL" : "BUY"}}</td>
 					<td class="collapsing"><b>{{item.pair.bid == bid ? item.bid_value : item.ask_value}}</b></td>
 					<td>{{item.pair.bid == bid ? item.bid_symbol : item.ask_symbol}}</td>
