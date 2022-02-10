@@ -10,6 +10,7 @@
 #include <mmx/Operation.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/TransactionBase.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/tx_in_t.hxx>
 #include <mmx/tx_out_t.hxx>
@@ -42,6 +43,7 @@ public:
 	const vnx::TypeCode* get_type_code() const override;
 	
 	virtual void finalize();
+	virtual void add_output(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const uint64_t& amount = 0, const uint32_t& split = 1);
 	virtual void merge_sign(std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
 	virtual vnx::bool_t is_valid() const;
 	virtual vnx::bool_t is_signed() const;

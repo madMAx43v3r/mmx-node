@@ -8,6 +8,7 @@
 #include <mmx/Operation.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/TransactionBase.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/tx_in_t.hxx>
 #include <mmx/tx_out_t.hxx>

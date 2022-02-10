@@ -385,12 +385,13 @@ uint64_t ClientAsyncClient::cancel_all(const std::function<void()>& _callback, c
 	return _request_id;
 }
 
-uint64_t ClientAsyncClient::make_offer(const uint32_t& wallet, const ::mmx::exchange::trade_pair_t& pair, const uint64_t& bid, const uint64_t& ask, const std::function<void(std::shared_ptr<const ::mmx::exchange::OfferBundle>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t ClientAsyncClient::make_offer(const uint32_t& wallet, const ::mmx::exchange::trade_pair_t& pair, const uint64_t& bid, const uint64_t& ask, const uint32_t& num_chunks, const std::function<void(std::shared_ptr<const ::mmx::exchange::OfferBundle>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::exchange::Client_make_offer::create();
 	_method->wallet = wallet;
 	_method->pair = pair;
 	_method->bid = bid;
 	_method->ask = ask;
+	_method->num_chunks = num_chunks;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);

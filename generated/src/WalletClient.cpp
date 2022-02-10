@@ -9,6 +9,8 @@
 #include <mmx/Transaction.hxx>
 #include <mmx/Wallet_add_account.hxx>
 #include <mmx/Wallet_add_account_return.hxx>
+#include <mmx/Wallet_complete.hxx>
+#include <mmx/Wallet_complete_return.hxx>
 #include <mmx/Wallet_create_account.hxx>
 #include <mmx/Wallet_create_account_return.hxx>
 #include <mmx/Wallet_create_wallet.hxx>
@@ -61,6 +63,8 @@
 #include <mmx/Wallet_send_return.hxx>
 #include <mmx/Wallet_send_from.hxx>
 #include <mmx/Wallet_send_from_return.hxx>
+#include <mmx/Wallet_send_off.hxx>
+#include <mmx/Wallet_send_off_return.hxx>
 #include <mmx/Wallet_sign_msg.hxx>
 #include <mmx/Wallet_sign_msg_return.hxx>
 #include <mmx/Wallet_sign_off.hxx>
@@ -310,6 +314,21 @@ vnx::optional<::mmx::hash_t> WalletClient::split(const uint32_t& index, const ui
 	}
 }
 
+std::shared_ptr<const ::mmx::Transaction> WalletClient::complete(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx, const ::mmx::spend_options_t& options) {
+	auto _method = ::mmx::Wallet_complete::create();
+	_method->index = index;
+	_method->tx = tx;
+	_method->options = options;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_complete_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Transaction>>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
 std::shared_ptr<const ::mmx::Transaction> WalletClient::sign_off(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx, const vnx::bool_t& cover_fee, const std::vector<std::pair<::mmx::txio_key_t, ::mmx::utxo_t>>& utxo_list) {
 	auto _method = ::mmx::Wallet_sign_off::create();
 	_method->index = index;
@@ -339,6 +358,20 @@ std::shared_ptr<const ::mmx::Solution> WalletClient::sign_msg(const uint32_t& in
 	} else {
 		throw std::logic_error("WalletClient: invalid return value");
 	}
+}
+
+void WalletClient::send_off(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx) {
+	auto _method = ::mmx::Wallet_send_off::create();
+	_method->index = index;
+	_method->tx = tx;
+	vnx_request(_method, false);
+}
+
+void WalletClient::send_off_async(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx) {
+	auto _method = ::mmx::Wallet_send_off::create();
+	_method->index = index;
+	_method->tx = tx;
+	vnx_request(_method, true);
 }
 
 void WalletClient::mark_spent(const uint32_t& index, const std::vector<::mmx::txio_key_t>& keys) {

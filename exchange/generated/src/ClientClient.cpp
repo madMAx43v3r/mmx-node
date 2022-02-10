@@ -377,12 +377,13 @@ void ClientClient::cancel_all_async() {
 	vnx_request(_method, true);
 }
 
-std::shared_ptr<const ::mmx::exchange::OfferBundle> ClientClient::make_offer(const uint32_t& wallet, const ::mmx::exchange::trade_pair_t& pair, const uint64_t& bid, const uint64_t& ask) {
+std::shared_ptr<const ::mmx::exchange::OfferBundle> ClientClient::make_offer(const uint32_t& wallet, const ::mmx::exchange::trade_pair_t& pair, const uint64_t& bid, const uint64_t& ask, const uint32_t& num_chunks) {
 	auto _method = ::mmx::exchange::Client_make_offer::create();
 	_method->wallet = wallet;
 	_method->pair = pair;
 	_method->bid = bid;
 	_method->ask = ask;
+	_method->num_chunks = num_chunks;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Client_make_offer_return>(_return_value)) {
 		return _result->_ret_0;

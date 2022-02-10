@@ -15,7 +15,7 @@ namespace exchange {
 
 
 const vnx::Hash64 Client_make_offer::VNX_TYPE_HASH(0x9d3f5ba7b8309a30ull);
-const vnx::Hash64 Client_make_offer::VNX_CODE_HASH(0xb7c24dbaae605179ull);
+const vnx::Hash64 Client_make_offer::VNX_CODE_HASH(0xd05ed1c12f5af835ull);
 
 vnx::Hash64 Client_make_offer::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -52,6 +52,7 @@ void Client_make_offer::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, pair);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, bid);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, ask);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, num_chunks);
 	_visitor.type_end(*_type_code);
 }
 
@@ -61,6 +62,7 @@ void Client_make_offer::write(std::ostream& _out) const {
 	_out << ", \"pair\": "; vnx::write(_out, pair);
 	_out << ", \"bid\": "; vnx::write(_out, bid);
 	_out << ", \"ask\": "; vnx::write(_out, ask);
+	_out << ", \"num_chunks\": "; vnx::write(_out, num_chunks);
 	_out << "}";
 }
 
@@ -77,6 +79,7 @@ vnx::Object Client_make_offer::to_object() const {
 	_object["pair"] = pair;
 	_object["bid"] = bid;
 	_object["ask"] = ask;
+	_object["num_chunks"] = num_chunks;
 	return _object;
 }
 
@@ -86,6 +89,8 @@ void Client_make_offer::from_object(const vnx::Object& _object) {
 			_entry.second.to(ask);
 		} else if(_entry.first == "bid") {
 			_entry.second.to(bid);
+		} else if(_entry.first == "num_chunks") {
+			_entry.second.to(num_chunks);
 		} else if(_entry.first == "pair") {
 			_entry.second.to(pair);
 		} else if(_entry.first == "wallet") {
@@ -107,6 +112,9 @@ vnx::Variant Client_make_offer::get_field(const std::string& _name) const {
 	if(_name == "ask") {
 		return vnx::Variant(ask);
 	}
+	if(_name == "num_chunks") {
+		return vnx::Variant(num_chunks);
+	}
 	return vnx::Variant();
 }
 
@@ -119,6 +127,8 @@ void Client_make_offer::set_field(const std::string& _name, const vnx::Variant& 
 		_value.to(bid);
 	} else if(_name == "ask") {
 		_value.to(ask);
+	} else if(_name == "num_chunks") {
+		_value.to(num_chunks);
 	}
 }
 
@@ -146,7 +156,7 @@ std::shared_ptr<vnx::TypeCode> Client_make_offer::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.Client.make_offer";
 	type_code->type_hash = vnx::Hash64(0x9d3f5ba7b8309a30ull);
-	type_code->code_hash = vnx::Hash64(0xb7c24dbaae605179ull);
+	type_code->code_hash = vnx::Hash64(0xd05ed1c12f5af835ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -156,7 +166,7 @@ std::shared_ptr<vnx::TypeCode> Client_make_offer::static_create_type_code() {
 	type_code->depends[0] = ::mmx::exchange::trade_pair_t::static_get_type_code();
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::exchange::Client_make_offer_return::static_get_type_code();
-	type_code->fields.resize(4);
+	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -180,6 +190,13 @@ std::shared_ptr<vnx::TypeCode> Client_make_offer::static_create_type_code() {
 		field.data_size = 8;
 		field.name = "ask";
 		field.code = {4};
+	}
+	{
+		auto& field = type_code->fields[4];
+		field.data_size = 4;
+		field.name = "num_chunks";
+		field.value = vnx::to_string(1);
+		field.code = {3};
 	}
 	type_code->build();
 	return type_code;
@@ -233,6 +250,9 @@ void read(TypeInput& in, ::mmx::exchange::Client_make_offer& value, const TypeCo
 		if(const auto* const _field = type_code->field_map[3]) {
 			vnx::read_value(_buf + _field->offset, value.ask, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[4]) {
+			vnx::read_value(_buf + _field->offset, value.num_chunks, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -255,10 +275,11 @@ void write(TypeOutput& out, const ::mmx::exchange::Client_make_offer& value, con
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(20);
+	char* const _buf = out.write(24);
 	vnx::write_value(_buf + 0, value.wallet);
 	vnx::write_value(_buf + 4, value.bid);
 	vnx::write_value(_buf + 12, value.ask);
+	vnx::write_value(_buf + 20, value.num_chunks);
 	vnx::write(out, value.pair, type_code, type_code->fields[1].code.data());
 }
 

@@ -6,6 +6,7 @@
 
 #include <vnx/Type.h>
 #include <mmx/package.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/txio_key_t.hxx>
 
 
@@ -18,6 +19,7 @@ struct spend_options_t {
 	uint32_t split_output = 1;
 	vnx::bool_t over_spend = true;
 	vnx::bool_t pending_change = true;
+	vnx::optional<::mmx::addr_t> change_addr;
 	std::vector<::mmx::txio_key_t> exclude;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
@@ -60,13 +62,14 @@ struct spend_options_t {
 
 template<typename T>
 void spend_options_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<spend_options_t>(5);
+	_visitor.template type_begin<spend_options_t>(6);
 	_visitor.type_field("min_confirm", 0); _visitor.accept(min_confirm);
 	_visitor.type_field("split_output", 1); _visitor.accept(split_output);
 	_visitor.type_field("over_spend", 2); _visitor.accept(over_spend);
 	_visitor.type_field("pending_change", 3); _visitor.accept(pending_change);
-	_visitor.type_field("exclude", 4); _visitor.accept(exclude);
-	_visitor.template type_end<spend_options_t>(5);
+	_visitor.type_field("change_addr", 4); _visitor.accept(change_addr);
+	_visitor.type_field("exclude", 5); _visitor.accept(exclude);
+	_visitor.template type_end<spend_options_t>(6);
 }
 
 

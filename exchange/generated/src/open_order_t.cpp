@@ -4,7 +4,7 @@
 #include <mmx/exchange/package.hxx>
 #include <mmx/exchange/open_order_t.hxx>
 #include <mmx/exchange/amount_t.hxx>
-#include <mmx/utxo_t.hxx>
+#include <mmx/tx_out_t.hxx>
 
 #include <vnx/vnx.h>
 
@@ -14,7 +14,7 @@ namespace exchange {
 
 
 const vnx::Hash64 open_order_t::VNX_TYPE_HASH(0x4339172b6fea1072ull);
-const vnx::Hash64 open_order_t::VNX_CODE_HASH(0x85afa071857399dfull);
+const vnx::Hash64 open_order_t::VNX_CODE_HASH(0xd3d5f6cdfc45196aull);
 
 vnx::Hash64 open_order_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -145,12 +145,12 @@ std::shared_ptr<vnx::TypeCode> open_order_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.open_order_t";
 	type_code->type_hash = vnx::Hash64(0x4339172b6fea1072ull);
-	type_code->code_hash = vnx::Hash64(0x85afa071857399dfull);
+	type_code->code_hash = vnx::Hash64(0xd3d5f6cdfc45196aull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::exchange::open_order_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<open_order_t>>(); };
 	type_code->depends.resize(2);
-	type_code->depends[0] = ::mmx::utxo_t::static_get_type_code();
+	type_code->depends[0] = ::mmx::tx_out_t::static_get_type_code();
 	type_code->depends[1] = ::mmx::exchange::amount_t::static_get_type_code();
 	type_code->fields.resize(4);
 	{

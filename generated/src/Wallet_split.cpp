@@ -15,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_split::VNX_TYPE_HASH(0xbd7c4dbb51c0f7c2ull);
-const vnx::Hash64 Wallet_split::VNX_CODE_HASH(0x4c11e59745a6531eull);
+const vnx::Hash64 Wallet_split::VNX_CODE_HASH(0x290f3c10878c173aull);
 
 vnx::Hash64 Wallet_split::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -146,7 +146,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_split::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.split";
 	type_code->type_hash = vnx::Hash64(0xbd7c4dbb51c0f7c2ull);
-	type_code->code_hash = vnx::Hash64(0x4c11e59745a6531eull);
+	type_code->code_hash = vnx::Hash64(0x290f3c10878c173aull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;

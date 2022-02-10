@@ -3,6 +3,7 @@
 
 #include <mmx/exchange/package.hxx>
 #include <mmx/exchange/OfferBundle.hxx>
+#include <mmx/Transaction.hxx>
 #include <mmx/exchange/limit_order_t.hxx>
 #include <mmx/exchange/open_order_t.hxx>
 #include <mmx/exchange/trade_pair_t.hxx>
@@ -17,7 +18,7 @@ namespace exchange {
 
 
 const vnx::Hash64 OfferBundle::VNX_TYPE_HASH(0xa1f52e2a78efa212ull);
-const vnx::Hash64 OfferBundle::VNX_CODE_HASH(0xe02107ec09624d89ull);
+const vnx::Hash64 OfferBundle::VNX_CODE_HASH(0xb4809d5de0994538ull);
 
 vnx::Hash64 OfferBundle::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -59,6 +60,7 @@ void OfferBundle::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, received);
 	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, limit_orders);
 	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, orders);
+	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, generator);
 	_visitor.type_end(*_type_code);
 }
 
@@ -73,6 +75,7 @@ void OfferBundle::write(std::ostream& _out) const {
 	_out << ", \"received\": "; vnx::write(_out, received);
 	_out << ", \"limit_orders\": "; vnx::write(_out, limit_orders);
 	_out << ", \"orders\": "; vnx::write(_out, orders);
+	_out << ", \"generator\": "; vnx::write(_out, generator);
 	_out << "}";
 }
 
@@ -94,6 +97,7 @@ vnx::Object OfferBundle::to_object() const {
 	_object["received"] = received;
 	_object["limit_orders"] = limit_orders;
 	_object["orders"] = orders;
+	_object["generator"] = generator;
 	return _object;
 }
 
@@ -105,6 +109,8 @@ void OfferBundle::from_object(const vnx::Object& _object) {
 			_entry.second.to(bid);
 		} else if(_entry.first == "bid_sold") {
 			_entry.second.to(bid_sold);
+		} else if(_entry.first == "generator") {
+			_entry.second.to(generator);
 		} else if(_entry.first == "id") {
 			_entry.second.to(id);
 		} else if(_entry.first == "limit_orders") {
@@ -149,6 +155,9 @@ vnx::Variant OfferBundle::get_field(const std::string& _name) const {
 	if(_name == "orders") {
 		return vnx::Variant(orders);
 	}
+	if(_name == "generator") {
+		return vnx::Variant(generator);
+	}
 	return vnx::Variant();
 }
 
@@ -171,6 +180,8 @@ void OfferBundle::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(limit_orders);
 	} else if(_name == "orders") {
 		_value.to(orders);
+	} else if(_name == "generator") {
+		_value.to(generator);
 	}
 }
 
@@ -198,7 +209,7 @@ std::shared_ptr<vnx::TypeCode> OfferBundle::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.OfferBundle";
 	type_code->type_hash = vnx::Hash64(0xa1f52e2a78efa212ull);
-	type_code->code_hash = vnx::Hash64(0xe02107ec09624d89ull);
+	type_code->code_hash = vnx::Hash64(0xb4809d5de0994538ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::exchange::OfferBundle);
@@ -208,7 +219,7 @@ std::shared_ptr<vnx::TypeCode> OfferBundle::static_create_type_code() {
 	type_code->depends[1] = ::mmx::exchange::limit_order_t::static_get_type_code();
 	type_code->depends[2] = ::mmx::txio_key_t::static_get_type_code();
 	type_code->depends[3] = ::mmx::exchange::open_order_t::static_get_type_code();
-	type_code->fields.resize(9);
+	type_code->fields.resize(10);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 8;
@@ -262,6 +273,12 @@ std::shared_ptr<vnx::TypeCode> OfferBundle::static_create_type_code() {
 		field.is_extended = true;
 		field.name = "orders";
 		field.code = {12, 23, 2, 4, 6, 19, 2, 19, 3};
+	}
+	{
+		auto& field = type_code->fields[9];
+		field.is_extended = true;
+		field.name = "generator";
+		field.code = {12, 16};
 	}
 	type_code->build();
 	return type_code;
@@ -330,6 +347,7 @@ void read(TypeInput& in, ::mmx::exchange::OfferBundle& value, const TypeCode* ty
 			case 2: vnx::read(in, value.pair, type_code, _field->code.data()); break;
 			case 7: vnx::read(in, value.limit_orders, type_code, _field->code.data()); break;
 			case 8: vnx::read(in, value.orders, type_code, _field->code.data()); break;
+			case 9: vnx::read(in, value.generator, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -358,6 +376,7 @@ void write(TypeOutput& out, const ::mmx::exchange::OfferBundle& value, const Typ
 	vnx::write(out, value.pair, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.limit_orders, type_code, type_code->fields[7].code.data());
 	vnx::write(out, value.orders, type_code, type_code->fields[8].code.data());
+	vnx::write(out, value.generator, type_code, type_code->fields[9].code.data());
 }
 
 void read(std::istream& in, ::mmx::exchange::OfferBundle& value) {

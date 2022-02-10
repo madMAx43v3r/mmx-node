@@ -94,7 +94,7 @@ protected:
 	virtual std::vector<std::shared_ptr<const ::mmx::exchange::LocalTrade>> get_local_history(const vnx::optional<::mmx::exchange::trade_pair_t>& pair, const int32_t& limit) const = 0;
 	virtual void cancel_offer(const uint64_t& id) = 0;
 	virtual void cancel_all() = 0;
-	virtual std::shared_ptr<const ::mmx::exchange::OfferBundle> make_offer(const uint32_t& wallet, const ::mmx::exchange::trade_pair_t& pair, const uint64_t& bid, const uint64_t& ask) const = 0;
+	virtual std::shared_ptr<const ::mmx::exchange::OfferBundle> make_offer(const uint32_t& wallet, const ::mmx::exchange::trade_pair_t& pair, const uint64_t& bid, const uint64_t& ask, const uint32_t& num_chunks) const = 0;
 	virtual std::vector<::mmx::exchange::trade_order_t> make_trade(const uint32_t& wallet, const ::mmx::exchange::trade_pair_t& pair, const uint64_t& bid, const vnx::optional<uint64_t>& ask) const = 0;
 	virtual void place(std::shared_ptr<const ::mmx::exchange::OfferBundle> offer) = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> approve(std::shared_ptr<const ::mmx::Transaction> tx) const = 0;

@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_exchange_OfferBundle_HXX_
 
 #include <mmx/exchange/package.hxx>
+#include <mmx/Transaction.hxx>
 #include <mmx/exchange/limit_order_t.hxx>
 #include <mmx/exchange/open_order_t.hxx>
 #include <mmx/exchange/trade_pair_t.hxx>
@@ -27,6 +28,7 @@ public:
 	uint64_t received = 0;
 	std::vector<::mmx::exchange::limit_order_t> limit_orders;
 	std::vector<std::pair<::mmx::txio_key_t, ::mmx::exchange::open_order_t>> orders;
+	std::vector<std::shared_ptr<const ::mmx::Transaction>> generator;
 	
 	typedef ::vnx::Value Super;
 	
@@ -70,7 +72,7 @@ public:
 
 template<typename T>
 void OfferBundle::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<OfferBundle>(9);
+	_visitor.template type_begin<OfferBundle>(10);
 	_visitor.type_field("id", 0); _visitor.accept(id);
 	_visitor.type_field("wallet", 1); _visitor.accept(wallet);
 	_visitor.type_field("pair", 2); _visitor.accept(pair);
@@ -80,7 +82,8 @@ void OfferBundle::accept_generic(T& _visitor) const {
 	_visitor.type_field("received", 6); _visitor.accept(received);
 	_visitor.type_field("limit_orders", 7); _visitor.accept(limit_orders);
 	_visitor.type_field("orders", 8); _visitor.accept(orders);
-	_visitor.template type_end<OfferBundle>(9);
+	_visitor.type_field("generator", 9); _visitor.accept(generator);
+	_visitor.template type_end<OfferBundle>(10);
 }
 
 

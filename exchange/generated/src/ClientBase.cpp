@@ -662,7 +662,7 @@ std::shared_ptr<vnx::Value> ClientBase::vnx_call_switch(std::shared_ptr<const vn
 		case 0x9d3f5ba7b8309a30ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_make_offer>(_method);
 			auto _return_value = ::mmx::exchange::Client_make_offer_return::create();
-			_return_value->_ret_0 = make_offer(_args->wallet, _args->pair, _args->bid, _args->ask);
+			_return_value->_ret_0 = make_offer(_args->wallet, _args->pair, _args->bid, _args->ask, _args->num_chunks);
 			return _return_value;
 		}
 		case 0x10fff803f7c32a54ull: {

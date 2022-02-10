@@ -7,7 +7,7 @@
 #include <vnx/Type.h>
 #include <mmx/exchange/package.hxx>
 #include <mmx/exchange/amount_t.hxx>
-#include <mmx/utxo_t.hxx>
+#include <mmx/tx_out_t.hxx>
 
 
 namespace mmx {
@@ -16,7 +16,7 @@ namespace exchange {
 struct open_order_t {
 	
 	
-	::mmx::utxo_t bid;
+	::mmx::tx_out_t bid;
 	::mmx::exchange::amount_t ask;
 	uint32_t wallet = 0;
 	uint64_t offer_id = 0;
