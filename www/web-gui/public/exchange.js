@@ -31,7 +31,7 @@ app.component('exchange-menu', {
 				.then(response => response.json())
 				.then(data => {
 					this.servers = data;
-					if(data) {
+					if(!this.server && data.length) {
 						this.server = data[0];
 					}
 				});
