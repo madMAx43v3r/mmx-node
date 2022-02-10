@@ -142,8 +142,10 @@ void Client::handle(std::shared_ptr<const Block> block)
 		return;
 	}
 	std::unordered_map<uint32_t, std::vector<txio_key_t>> sold_map;
+
 	for(const auto& base : block->tx_list) {
 		if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
+			// check for completed offers
 			if(pending_approvals.count(tx->id)) {
 				std::map<uint64_t, std::shared_ptr<LocalTrade>> trade_map;
 				for(const auto& in : tx->inputs) {
@@ -204,6 +206,14 @@ void Client::handle(std::shared_ptr<const Block> block)
 	}
 	if(!sold_map.empty()) {
 		save_offers();
+	}
+	for(auto iter = pending_offers.begin(); iter != pending_offers.end();)
+	{
+		if(try_place(iter->second)) {
+			iter = pending_offers.erase(iter);
+		} else {
+			iter++;
+		}
 	}
 }
 
@@ -313,20 +323,33 @@ void Client::cancel_all()
 	}
 }
 
-std::shared_ptr<const OfferBundle> Client::make_offer(const uint32_t& index, const trade_pair_t& pair, const uint64_t& bid, const uint64_t& ask) const
+std::shared_ptr<const OfferBundle>
+Client::make_offer(const uint32_t& index, const trade_pair_t& pair, const uint64_t& bid, const uint64_t& ask, const uint32_t& num_chunks) const
 {
+	if(bid == 0 || ask == 0 || num_chunks == 0) {
+		throw std::logic_error("invalid argument");
+	}
+	if(num_chunks > 1000) {
+		throw std::logic_error("num_chunks > 1000");
+	}
 	auto offer = OfferBundle::create();
 	offer->id = next_offer_id++;
 	offer->wallet = index;
 	offer->pair = pair;
 
+	limit_order_t limit_order;
 	const auto price = ask / double(bid);
-	std::unordered_map<addr_t, std::vector<std::pair<txio_key_t, uint64_t>>> addr_map;
+	const auto address = wallet->get_address(index, 0);
 
-	spend_options_t options;
-	options.over_spend = false;
-	for(const auto& entry : wallet->gather_utxos_for(index, bid, pair.bid, options)) {
-		const auto& utxo = entry.output;
+	auto tx_ = Transaction::create();
+	tx_->add_output(pair.bid, address, bid, num_chunks);
+	auto tx = wallet->complete(index, tx_);
+	offer->generator.push_back(tx);
+
+	for(uint32_t i = 0; i < num_chunks && i < tx->outputs.size(); ++i)
+	{
+		const auto key = txio_key_t::create_ex(tx->id, i);
+		const auto& utxo = tx->outputs[i];
 		open_order_t order;
 		order.wallet = index;
 		order.offer_id = offer->id;
@@ -335,20 +358,19 @@ std::shared_ptr<const OfferBundle> Client::make_offer(const uint32_t& index, con
 		order.ask.currency = pair.ask;
 		offer->bid += order.bid.amount;
 		offer->ask += order.ask.amount;
-		offer->orders.emplace_back(entry.key, order);
-		addr_map[utxo.address].emplace_back(entry.key, order.ask.amount);
+		offer->orders.emplace_back(key, order);
+		limit_order.bids.emplace_back(key, order.ask.amount);
 	}
-	for(const auto& entry : addr_map) {
-		limit_order_t order;
-		order.bids = entry.second;
-		const auto hash = order.calc_hash();
-		order.solution = wallet->sign_msg(index, entry.first, hash);
-		offer->limit_orders.push_back(order);
+	{
+		const auto hash = limit_order.calc_hash();
+		limit_order.solution = wallet->sign_msg(index, address, hash);
+		offer->limit_orders.push_back(limit_order);
 	}
 	return offer;
 }
 
-std::vector<trade_order_t> Client::make_trade(const uint32_t& index, const trade_pair_t& pair, const uint64_t& bid, const vnx::optional<uint64_t>& ask) const
+std::vector<trade_order_t>
+Client::make_trade(const uint32_t& index, const trade_pair_t& pair, const uint64_t& bid, const vnx::optional<uint64_t>& ask) const
 {
 	const double price = ask ? *ask / double(bid) : 0;
 	std::unordered_map<addr_t, std::vector<std::pair<txio_key_t, uint64_t>>> addr_map;
@@ -399,33 +421,68 @@ void Client::send_offer(uint64_t server, std::shared_ptr<const OfferBundle> offe
 	}
 }
 
+void Client::send_offer(std::shared_ptr<const OfferBundle> offer)
+{
+	for(const auto& entry : avail_server_map) {
+		send_offer(entry.second, offer);
+	}
+}
+
 void Client::place(std::shared_ptr<const OfferBundle> offer)
 {
 	if(!offer->bid || !offer->ask) {
 		throw std::logic_error("empty offer");
 	}
-	// TODO: check bid keys (discard empty offers)
-
-	for(const auto& entry : avail_server_map) {
-		send_offer(entry.second, offer);
+	if(offer_map.count(offer->id)) {
+		throw std::logic_error("offer already exists");
 	}
-	next_offer_id = std::max(offer->id + 1, next_offer_id);
-	order_map.insert(offer->orders.begin(), offer->orders.end());
-	offer_map[offer->id] = vnx::clone(offer);
-	save_offers();
-
-	log(INFO) << "Placed offer " << offer->id << ", asking "
-			<< offer->ask << " [" << offer->pair.ask << "] for " << offer->bid << " [" << offer->pair.bid << "]"
-			<< " (" << avail_server_map.size() << " servers)";
-
-	if(avail_server_map.empty() && !is_init) {
-		log(WARN) << "Not connected to any exchange servers at the moment!";
+	if(!try_place(offer)) {
+		pending_offers[offer->id] = offer;
 	}
+}
+
+bool Client::try_place(std::shared_ptr<const OfferBundle> offer)
+{
 	std::vector<txio_key_t> keys;
-	for(const auto& entry : offer->orders) {
-		keys.push_back(entry.first);
+	for(const auto& order : offer->orders) {
+		keys.push_back(order.first);
 	}
-	wallet->reserve(offer->wallet, keys);
+	bool is_empty = true;
+	bool is_ready = true;
+	for(const auto& entry : node->get_txo_infos(keys)) {
+		if(entry) {
+			if(!entry->spent) {
+				is_empty = false;
+			}
+		} else {
+			is_ready = false;
+		}
+	}
+	if(is_ready && is_empty) {
+		return true;
+	}
+	if(!pending_offers.count(offer->id))
+	{
+		if(!is_ready) {
+			for(auto tx : offer->generator) {
+				wallet->send_off(offer->wallet, tx);
+				log(INFO) << "Sent transaction for offer " << offer->id << " (" << tx->id << ")";
+			}
+		}
+		next_offer_id = std::max(offer->id + 1, next_offer_id);
+		order_map.insert(offer->orders.begin(), offer->orders.end());
+		offer_map[offer->id] = vnx::clone(offer);
+		save_offers();
+		wallet->reserve(offer->wallet, keys);
+	}
+	if(is_ready)
+	{
+		send_offer(offer);
+		log(INFO) << "Placed offer " << offer->id << ", asking "
+				<< offer->ask << " [" << offer->pair.ask << "] for " << offer->bid << " [" << offer->pair.bid << "]"
+				<< " (" << avail_server_map.size() << " servers)";
+	}
+	return is_ready;
 }
 
 void Client::save_offers() const

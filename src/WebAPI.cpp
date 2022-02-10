@@ -1141,7 +1141,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 							throw std::logic_error("invalid ask currency");
 						}
 						const auto index = args["index"].to<uint32_t>();
-						exch_client->make_offer(index, pair, bid_amount, ask_amount,
+						const auto num_chunks = args["num_chunks"].to<uint32_t>();
+						exch_client->make_offer(index, pair, bid_amount, ask_amount, num_chunks ? num_chunks : 4,
 							[this, request_id, context](std::shared_ptr<const exchange::OfferBundle> offer) {
 								pending_offers[offer->id] = offer;
 								respond(request_id, render_value(offer, context));

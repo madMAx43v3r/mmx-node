@@ -132,7 +132,7 @@ app.component('exchange-menu', {
 				</div>
 			</div>
 			<div class="field">
-				<label>Bid</label>
+				<label>Token</label>
 				<select v-model="bid">
 					<option v-for="item in bid_pairs" :key="item.currency" :value="item.currency">
 						{{item.symbol}}<template v-if="item.currency != 'mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev'"> - [{{item.currency}}]</template>
@@ -140,7 +140,7 @@ app.component('exchange-menu', {
 				</select>
 			</div>
 			<div class="field">
-				<label>Ask</label>
+				<label>Currency</label>
 				<select v-model="ask">
 					<option v-for="item in ask_pairs" :key="item.currency" :value="item.currency">
 						{{item.symbol}}<template v-if="item.currency != 'mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev'"> - [{{item.currency}}]</template>
@@ -343,9 +343,9 @@ app.component('exchange-history', {
 		<table class="ui table striped">
 			<thead>
 				<th>Type</th>
-				<th>Bid</th>
+				<th>Amount</th>
 				<th></th>
-				<th>Ask</th>
+				<th>Volume</th>
 				<th></th>
 				<th>Price</th>
 				<th></th>
@@ -379,6 +379,7 @@ app.component('exchange-trade-form', {
 		ask_symbol: String,
 		bid_currency: String,
 		ask_currency: String,
+		action: String
 	},
 	emits: [
 		"trade-executed"
@@ -502,7 +503,7 @@ app.component('exchange-trade-form', {
 						<label>Confirm</label>
 					</div>
 				</div>
-				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}" id="submit">Trade</div>
+				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}" id="submit">{{action}}</div>
 			</form>
 			<div class="ui bottom right attached large label">
 				Balance: {{balance}} {{bid_symbol}}
@@ -539,6 +540,7 @@ app.component('exchange-offer-form', {
 			balance: null,
 			bid_amount: null,
 			ask_amount: null,
+			num_chunks: 1,
 			price: null,
 			confirmed: false,
 			timer: null,
@@ -568,6 +570,7 @@ app.component('exchange-offer-form', {
 			req.pair = pair;
 			req.bid = this.bid_amount;
 			req.ask = this.ask_amount;
+			req.num_chunks = this.num_chunks;
 			fetch('/wapi/exchange/offer', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
@@ -633,7 +636,7 @@ app.component('exchange-offer-form', {
 			<form class="ui form" id="form">
 				<div class="two fields">
 					<div class="field">
-						<label>Bid Amount</label>
+						<label>Offer Amount</label>
 						<div class="ui right labeled input">
 							<input type="text" v-model.number="bid_amount" placeholder="1.23" style="text-align: right"/>
 							<div class="ui basic label">
@@ -642,7 +645,7 @@ app.component('exchange-offer-form', {
 						</div>
 					</div>
 					<div class="field">
-						<label>Ask Amount</label>
+						<label>Receive Amount</label>
 						<div class="ui right labeled input field">
 							<input type="text" v-model.number="ask_amount" style="text-align: right" disabled/>
 							<div class="ui basic label">
@@ -651,13 +654,19 @@ app.component('exchange-offer-form', {
 						</div>
 					</div>
 				</div>
-				<div class="field">
-					<label>Price</label>
-					<div class="ui right labeled input field">
-						<input type="text" v-model.number="price" style="text-align: right"/>
-						<div class="ui basic label">
-							{{flip ? bid_symbol : ask_symbol}} / {{flip ? ask_symbol : bid_symbol}}
+				<div class="two fields">
+					<div class="twelve wide field">
+						<label>Price</label>
+						<div class="ui right labeled input field">
+							<input type="text" v-model.number="price" style="text-align: right"/>
+							<div class="ui basic label">
+								{{flip ? bid_symbol : ask_symbol}} / {{flip ? ask_symbol : bid_symbol}}
+							</div>
 						</div>
+					</div>
+					<div class="four wide field">
+						<label>No. Chunks</label>
+						<input type="text" v-model.number="num_chunks" style="text-align: right"/>
 					</div>
 				</div>
 				<div class="inline field">
@@ -666,7 +675,7 @@ app.component('exchange-offer-form', {
 						<label>Confirm</label>
 					</div>
 				</div>
-				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}" id="submit">Offer</div>
+				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}" id="submit">Make {{flip ? "Buy" : "Sell"}} Offer</div>
 			</form>
 			<div class="ui bottom right attached large label">
 				Balance: {{balance}} {{bid_symbol}}

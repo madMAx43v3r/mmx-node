@@ -149,14 +149,14 @@ const ExchangeMarket = {
 				<exchange-trade-form @trade-executed="update"
 					:wallet="wallet" :server="server"
 					:bid_symbol="ask_symbol" :ask_symbol="bid_symbol"
-					:bid_currency="ask" :ask_currency="bid">
+					:bid_currency="ask" :ask_currency="bid" action="Buy">
 				</exchange-trade-form>
 			</div>
 			<div class="column">
 				<exchange-trade-form @trade-executed="update"
 					:wallet="wallet" :server="server"
 					:bid_symbol="bid_symbol" :ask_symbol="ask_symbol"
-					:bid_currency="bid" :ask_currency="ask">
+					:bid_currency="bid" :ask_currency="ask" action="Sell">
 				</exchange-trade-form>
 			</div>
 		</div>

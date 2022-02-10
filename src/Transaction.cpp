@@ -61,6 +61,28 @@ hash_t Transaction::calc_hash() const
 	return hash_t(buffer);
 }
 
+void Transaction::add_output(const addr_t& currency, const addr_t& address, const uint64_t& amount, const uint32_t& split)
+{
+	if(split == 0) {
+		throw std::logic_error("split == 0");
+	}
+	if(split > 1000000) {
+		throw std::logic_error("split > 1000000");
+	}
+	if(amount < split) {
+		throw std::logic_error("amount < split");
+	}
+	uint64_t left = amount;
+	for(uint32_t i = 0; i < split; ++i) {
+		tx_out_t out;
+		out.address = address;
+		out.contract = currency;
+		out.amount = i + 1 < split ? amount / split : left;
+		left -= out.amount;
+		outputs.push_back(out);
+	}
+}
+
 std::shared_ptr<const Solution> Transaction::get_solution(const uint32_t& index) const
 {
 	if(index < solutions.size()) {

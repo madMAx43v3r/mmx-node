@@ -821,6 +821,7 @@ app.component('account-offer-form', {
 			ask_symbol: "MMX",
 			bid_currency: null,
 			ask_currency: null,
+			num_chunks: 1,
 			confirmed: false,
 			timer: null,
 			result: null,
@@ -847,6 +848,7 @@ app.component('account-offer-form', {
 			req.pair = pair;
 			req.bid = this.bid_amount;
 			req.ask = this.ask_amount;
+			req.num_chunks = this.num_chunks;
 			fetch('/wapi/exchange/offer', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
@@ -922,31 +924,35 @@ app.component('account-offer-form', {
 		<account-balance :index="index" ref="balance"></account-balance>
 		<div class="ui raised segment">
 			<form class="ui form" id="form">
-				<div class="two fields">
+				<div class="three fields">
 					<div class="four wide field">
-						<label>Bid Amount</label>
+						<label>Offer Amount</label>
 						<input type="text" v-model.number="bid_amount" placeholder="1.23" style="text-align: right"/>
 					</div>
-					<div class="twelve wide field">
-						<label>Bid Currency</label>
+					<div class="ten wide field">
+						<label>Offer Currency</label>
 						<select v-model="bid_currency">
 							<option v-for="item in balances" :key="item.contract" class="item" :value="item.contract">
 								{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
 							</option>
 						</select>
 					</div>
+					<div class="two wide field">
+						<label>No. Chunks</label>
+						<input type="text" v-model.number="num_chunks" style="text-align: right"/>
+					</div>
 				</div>
 				<div class="two fields">
 					<div class="four wide field">
-						<label>Ask Amount</label>
+						<label>Receive Amount</label>
 						<input type="text" v-model.number="ask_amount" placeholder="1.23" style="text-align: right"/>
 					</div>
 					<div class="two wide field">
-						<label>Ask Symbol</label>
+						<label>Symbol</label>
 						<input type="text" v-model="ask_symbol" disabled/>
 					</div>
 					<div class="ten wide field">
-						<label>Ask Currency Contract</label>
+						<label>Receive Currency Contract</label>
 						<input type="text" v-model="ask_currency" placeholder="mmx1..."/>
 					</div>
 				</div>
@@ -1017,9 +1023,9 @@ app.component('account-offers', {
 			<thead>
 			<tr>
 				<th>ID</th>
-				<th>Bid</th>
+				<th>Offer</th>
 				<th></th>
-				<th>Ask</th>
+				<th>Receive</th>
 				<th></th>
 				<th>Price</th>
 				<th></th>

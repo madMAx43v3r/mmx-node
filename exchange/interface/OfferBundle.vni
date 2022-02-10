@@ -1,6 +1,7 @@
 package mmx.exchange;
 
 import mmx.txio_key_t;
+import mmx.Transaction;
 
 class OfferBundle {
 	
@@ -19,5 +20,7 @@ class OfferBundle {
 	vector<limit_order_t> limit_orders;
 	
 	vector<pair<txio_key_t, open_order_t>> orders;
+	
+	vector<Transaction*> generator;
 	
 }

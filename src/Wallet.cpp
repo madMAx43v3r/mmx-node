@@ -77,19 +77,11 @@ std::shared_ptr<ECDSA_Wallet> Wallet::get_wallet(const uint32_t& index) const
 hash_t Wallet::send(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
 					const addr_t& currency, const spend_options_t& options) const
 {
-	if(amount == 0) {
-		throw std::logic_error("amount cannot be zero");
-	}
-	if(dst_addr == addr_t()) {
-		throw std::logic_error("dst_addr cannot be zero");
-	}
 	const auto wallet = get_wallet(index);
 	get_utxo_list(index);	// update utxo_cache
 
 	auto tx = wallet->send(amount, dst_addr, currency, options);
-
-	node->add_transaction(tx);
-	wallet->update_from(tx);
+	send_off(index, tx);
 
 	log(INFO) << "Sent " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
 	return tx->id;
@@ -99,12 +91,6 @@ hash_t Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 							const addr_t& dst_addr, const addr_t& src_addr,
 							const addr_t& currency, const spend_options_t& options) const
 {
-	if(amount == 0) {
-		throw std::logic_error("amount cannot be zero");
-	}
-	if(dst_addr == addr_t()) {
-		throw std::logic_error("dst_addr cannot be zero");
-	}
 	const auto wallet = get_wallet(index);
 	get_utxo_list(index);	// update utxo_cache
 
@@ -118,9 +104,7 @@ hash_t Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 	}
 	auto tx = wallet->send_from(amount, dst_addr, src_addr, src_owner,
 								node->get_utxo_list({src_addr}, options.min_confirm), currency, options);
-
-	node->add_transaction(tx);
-	wallet->update_from(tx);
+	send_off(index, tx);
 
 	log(INFO) << "Sent " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
 	return tx->id;
@@ -129,12 +113,6 @@ hash_t Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 hash_t Wallet::mint(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
 					const addr_t& currency, const spend_options_t& options) const
 {
-	if(amount == 0) {
-		throw std::logic_error("amount cannot be zero");
-	}
-	if(dst_addr == addr_t()) {
-		throw std::logic_error("dst_addr cannot be zero");
-	}
 	const auto token = std::dynamic_pointer_cast<const contract::Token>(node->get_contract(currency));
 	if(!token) {
 		throw std::logic_error("no such currency");
@@ -146,9 +124,7 @@ hash_t Wallet::mint(const uint32_t& index, const uint64_t& amount, const addr_t&
 	get_utxo_list(index);	// update utxo_cache
 
 	auto tx = wallet->mint(amount, dst_addr, currency, *token->owner, options);
-
-	node->add_transaction(tx);
-	wallet->update_from(tx);
+	send_off(index, tx);
 
 	log(INFO) << "Minted " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
 	return tx->id;
@@ -156,7 +132,7 @@ hash_t Wallet::mint(const uint32_t& index, const uint64_t& amount, const addr_t&
 
 vnx::optional<hash_t> Wallet::split(const uint32_t& index, const uint64_t& max_amount, const addr_t& currency, const spend_options_t& options) const
 {
-	if(!max_amount) {
+	if(max_amount == 0) {
 		throw std::logic_error("invalid max_amount");
 	}
 	const auto wallet = get_wallet(index);
@@ -179,14 +155,12 @@ vnx::optional<hash_t> Wallet::split(const uint32_t& index, const uint64_t& max_a
 		return nullptr;
 	}
 	{
-		spend_options_t options;
-		options.split_output = (total + max_amount - 1) / max_amount;
-		wallet->add_outputs(tx, total, wallet->get_address(0), currency, options);
+		const auto split = (total + max_amount - 1) / max_amount;
+		tx->add_output(currency, wallet->get_address(0), total, split);
 	}
-	auto res = sign_off(index, tx, true, utxo_list);
-	node->add_transaction(res);
-	wallet->update_from(res);
-	return res->id;
+	auto signed_tx = sign_off(index, tx, true, utxo_list);
+	send_off(index, signed_tx);
+	return signed_tx->id;
 }
 
 hash_t Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, const spend_options_t& options) const
@@ -198,12 +172,24 @@ hash_t Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> con
 	get_utxo_list(index);	// update utxo_cache
 
 	auto tx = wallet->deploy(contract, options);
-
-	node->add_transaction(tx);
-	wallet->update_from(tx);
+	send_off(index, tx);
 
 	log(INFO) << "Deployed " << contract->get_type_name() << " with fee " << tx->calc_cost(params) << " as " << addr_t(tx->id) << " (" << tx->id << ")";
 	return tx->id;
+}
+
+std::shared_ptr<const Transaction>
+Wallet::complete(const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const
+{
+	if(!tx) {
+		return nullptr;
+	}
+	const auto wallet = get_wallet(index);
+	get_utxo_list(index);	// update utxo_cache
+
+	auto copy = vnx::clone(tx);
+	wallet->complete(copy, wallet->utxo_cache, options);
+	return copy;
 }
 
 std::shared_ptr<const Transaction>
@@ -244,6 +230,16 @@ std::shared_ptr<const Solution> Wallet::sign_msg(const uint32_t& index, const ad
 {
 	const auto wallet = get_wallet(index);
 	return wallet->sign_msg(address, msg);
+}
+
+void Wallet::send_off(const uint32_t& index, std::shared_ptr<const Transaction> tx) const
+{
+	if(!tx) {
+		return;
+	}
+	const auto wallet = get_wallet(index);
+	node->add_transaction(tx);
+	wallet->update_from(tx);
 }
 
 void Wallet::mark_spent(const uint32_t& index, const std::vector<txio_key_t>& keys)
@@ -337,11 +333,13 @@ std::vector<utxo_entry_t> Wallet::gather_utxos_for(	const uint32_t& index, const
 	const auto wallet = get_wallet(index);
 	get_utxo_list(index);	// update utxo_cache
 
-	std::vector<tx_in_t> inputs;
+	auto tx = Transaction::create();
+
 	std::vector<utxo_entry_t> res;
 	std::unordered_map<txio_key_t, utxo_t> spent_map;
-	wallet->gather_inputs(inputs, wallet->utxo_cache, spent_map, amount, currency, options);
-	for(const auto& in : inputs) {
+	wallet->gather_inputs(tx, wallet->utxo_cache, spent_map, amount, currency, options);
+
+	for(const auto& in : tx->inputs) {
 		utxo_entry_t entry;
 		entry.key = in.prev;
 		entry.output = spent_map[in.prev];

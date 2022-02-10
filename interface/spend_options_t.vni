@@ -10,6 +10,8 @@ struct spend_options_t {
 	
 	bool pending_change = true;
 	
+	optional<addr_t> change_addr;			// address to send change to
+	
 	vector<txio_key_t> exclude;
 	
 }

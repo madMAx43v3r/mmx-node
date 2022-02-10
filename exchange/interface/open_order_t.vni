@@ -1,10 +1,10 @@
 package mmx.exchange;
 
-import mmx.utxo_t;
+import mmx.tx_out_t;
 
 struct open_order_t {
 	
-	utxo_t bid;
+	tx_out_t bid;
 	
 	amount_t ask;
 	
