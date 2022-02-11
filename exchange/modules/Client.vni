@@ -17,6 +17,10 @@ module Client extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	
 	string storage_path;
 	
+	int post_interval = 900;				// [sec]
+	
+	uint min_confirm = 2;
+	
 	uint max_trade_history = 10000;
 	
 	

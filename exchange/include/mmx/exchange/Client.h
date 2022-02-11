@@ -97,7 +97,7 @@ private:
 
 	std::shared_ptr<OfferBundle> find_offer(const uint64_t& id) const;
 
-	bool try_place(std::shared_ptr<const OfferBundle> offer);
+	bool try_place(std::shared_ptr<OfferBundle> offer);
 
 	void send_offer(uint64_t server, std::shared_ptr<const OfferBundle> offer);
 
@@ -113,6 +113,8 @@ private:
 	void connect();
 
 	void save_offers() const;
+
+	void post_offers();
 
 	void add_peer(const std::string& address, const int sock);
 
@@ -158,7 +160,7 @@ private:
 
 	mutable std::unordered_set<hash_t> pending_approvals;
 	mutable std::unordered_map<hash_t, std::shared_ptr<LocalTrade>> pending_trades;
-	mutable std::unordered_map<uint64_t, std::shared_ptr<const OfferBundle>> pending_offers;
+	mutable std::unordered_map<uint64_t, std::shared_ptr<OfferBundle>> pending_offers;
 	mutable std::unordered_map<uint32_t, std::function<void(std::shared_ptr<const vnx::Value>)>> return_map;
 
 	vnx::ThreadPool* threads = nullptr;

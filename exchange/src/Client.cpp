@@ -57,6 +57,9 @@ void Client::main()
 
 	set_timer_millis(10 * 1000, std::bind(&Client::update, this));
 	set_timer_millis(60 * 1000, std::bind(&Client::connect, this));
+	if(post_interval > 0) {
+		set_timer_millis(post_interval * 1000, std::bind(&Client::post_offers, this));
+	}
 
 	set_timeout_millis(2000, [this]() {
 		vnx::File file(storage_path + "offers.dat");
@@ -202,16 +205,19 @@ void Client::handle(std::shared_ptr<const Block> block)
 	for(const auto& entry : sold_map) {
 		wallet->release(entry.first, entry.second);
 	}
-	if(!sold_map.empty()) {
-		save_offers();
-	}
-	for(auto iter = pending_offers.begin(); iter != pending_offers.end();)
-	{
-		if(try_place(iter->second)) {
-			iter = pending_offers.erase(iter);
-		} else {
-			iter++;
+
+	std::vector<uint64_t> posted_offers;
+	for(const auto& entry : pending_offers) {
+		if(try_place(entry.second)) {
+			posted_offers.push_back(entry.first);
 		}
+	}
+	for(auto id : posted_offers) {
+		pending_offers.erase(id);
+	}
+
+	if(!sold_map.empty() || !posted_offers.empty()) {
+		save_offers();
 	}
 }
 
@@ -306,6 +312,7 @@ void Client::cancel_offer(const uint64_t& id)
 		order_map.erase(key);
 	}
 	offer_map.erase(iter);
+	pending_offers.erase(id);
 	wallet->release(offer->wallet, method->orders);
 	save_offers();
 }
@@ -434,42 +441,54 @@ void Client::place(std::shared_ptr<const OfferBundle> offer)
 	if(offer_map.count(offer->id)) {
 		throw std::logic_error("offer already exists");
 	}
-	if(!try_place(offer)) {
-		pending_offers[offer->id] = offer;
+	auto copy = vnx::clone(offer);
+	if(!try_place(copy)) {
+		pending_offers[copy->id] = copy;
 	}
 }
 
-bool Client::try_place(std::shared_ptr<const OfferBundle> offer)
+bool Client::try_place(std::shared_ptr<OfferBundle> offer)
 {
 	std::vector<txio_key_t> keys;
 	for(const auto& order : offer->orders) {
 		keys.push_back(order.first);
 	}
-	bool is_empty = true;
+	const auto height = node->get_synced_height();
+
+	offer->bid_sold = 0;
 	bool is_ready = true;
-	for(const auto& entry : node->get_txo_infos(keys)) {
-		if(entry) {
-			if(!entry->spent) {
-				is_empty = false;
+	bool is_generated = true;
+	if(height) {
+		for(const auto& entry : node->get_txo_infos(keys)) {
+			if(entry) {
+				const auto& utxo = entry->output;
+				if(entry->spent) {
+					offer->bid_sold += utxo.amount;
+				}
+				if(utxo.height + min_confirm > *height + 1) {
+					is_ready = false;
+				}
+			} else {
+				is_ready = false;
+				is_generated = false;
 			}
-		} else {
-			is_ready = false;
 		}
+	} else {
+		is_ready = false;
 	}
-	if(is_ready && is_empty) {
+	if(offer->bid_sold >= offer->bid) {
 		return true;
 	}
-	if(!pending_offers.count(offer->id))
-	{
-		if(!is_ready) {
-			for(auto tx : offer->generator) {
-				wallet->send_off(offer->wallet, tx);
-				log(INFO) << "Sent transaction for offer " << offer->id << " (" << tx->id << ")";
-			}
+	if(!is_generated) {
+		for(auto tx : offer->generator) {
+			wallet->send_off(offer->wallet, tx);
+			log(INFO) << "Sent transaction for offer " << offer->id << " (" << tx->id << ")";
 		}
+	}
+	if(!pending_offers.count(offer->id)) {
 		next_offer_id = std::max(offer->id + 1, next_offer_id);
 		order_map.insert(offer->orders.begin(), offer->orders.end());
-		offer_map[offer->id] = vnx::clone(offer);
+		offer_map[offer->id] = offer;
 		save_offers();
 		wallet->reserve(offer->wallet, keys);
 	}
@@ -491,6 +510,15 @@ void Client::save_offers() const
 	}
 	catch(const std::exception& ex) {
 		log(WARN) << ex.what();
+	}
+}
+
+void Client::post_offers()
+{
+	for(const auto& entry : offer_map) {
+		if(!pending_offers.count(entry.first)) {
+			send_offer(entry.second);
+		}
 	}
 }
 
