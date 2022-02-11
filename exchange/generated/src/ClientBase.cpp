@@ -89,7 +89,7 @@ namespace exchange {
 
 
 const vnx::Hash64 ClientBase::VNX_TYPE_HASH(0x7d13a60fec8eb7f6ull);
-const vnx::Hash64 ClientBase::VNX_CODE_HASH(0x785ac82576760183ull);
+const vnx::Hash64 ClientBase::VNX_CODE_HASH(0xe8622dafc3b2e8b8ull);
 
 ClientBase::ClientBase(const std::string& _vnx_name)
 	:	MsgServer::MsgServer(_vnx_name)
@@ -377,7 +377,7 @@ std::shared_ptr<vnx::TypeCode> ClientBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.Client";
 	type_code->type_hash = vnx::Hash64(0x7d13a60fec8eb7f6ull);
-	type_code->code_hash = vnx::Hash64(0x785ac82576760183ull);
+	type_code->code_hash = vnx::Hash64(0xe8622dafc3b2e8b8ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::exchange::ClientBase);
 	type_code->parents.resize(2);
@@ -526,6 +526,7 @@ std::shared_ptr<vnx::TypeCode> ClientBase::static_create_type_code() {
 		auto& field = type_code->fields[16];
 		field.is_extended = true;
 		field.name = "storage_path";
+		field.value = vnx::to_string("exchange/");
 		field.code = {32};
 	}
 	{

@@ -37,7 +37,7 @@ public:
 	std::string node_server = "Node";
 	std::string wallet_server = "Wallet";
 	std::map<std::string, std::string> server_map;
-	std::string storage_path;
+	std::string storage_path = "exchange/";
 	int32_t post_interval = 900;
 	uint32_t min_confirm = 2;
 	uint32_t max_trade_history = 10000;
