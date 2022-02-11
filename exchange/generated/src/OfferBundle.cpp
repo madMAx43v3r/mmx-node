@@ -18,7 +18,7 @@ namespace exchange {
 
 
 const vnx::Hash64 OfferBundle::VNX_TYPE_HASH(0xa1f52e2a78efa212ull);
-const vnx::Hash64 OfferBundle::VNX_CODE_HASH(0xb4809d5de0994538ull);
+const vnx::Hash64 OfferBundle::VNX_CODE_HASH(0xd817cf7d5fbc1d54ull);
 
 vnx::Hash64 OfferBundle::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -57,10 +57,9 @@ void OfferBundle::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, bid);
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, ask);
 	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, bid_sold);
-	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, received);
-	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, limit_orders);
-	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, orders);
-	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, generator);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, limit_orders);
+	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, orders);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, generator);
 	_visitor.type_end(*_type_code);
 }
 
@@ -72,7 +71,6 @@ void OfferBundle::write(std::ostream& _out) const {
 	_out << ", \"bid\": "; vnx::write(_out, bid);
 	_out << ", \"ask\": "; vnx::write(_out, ask);
 	_out << ", \"bid_sold\": "; vnx::write(_out, bid_sold);
-	_out << ", \"received\": "; vnx::write(_out, received);
 	_out << ", \"limit_orders\": "; vnx::write(_out, limit_orders);
 	_out << ", \"orders\": "; vnx::write(_out, orders);
 	_out << ", \"generator\": "; vnx::write(_out, generator);
@@ -94,7 +92,6 @@ vnx::Object OfferBundle::to_object() const {
 	_object["bid"] = bid;
 	_object["ask"] = ask;
 	_object["bid_sold"] = bid_sold;
-	_object["received"] = received;
 	_object["limit_orders"] = limit_orders;
 	_object["orders"] = orders;
 	_object["generator"] = generator;
@@ -119,8 +116,6 @@ void OfferBundle::from_object(const vnx::Object& _object) {
 			_entry.second.to(orders);
 		} else if(_entry.first == "pair") {
 			_entry.second.to(pair);
-		} else if(_entry.first == "received") {
-			_entry.second.to(received);
 		} else if(_entry.first == "wallet") {
 			_entry.second.to(wallet);
 		}
@@ -145,9 +140,6 @@ vnx::Variant OfferBundle::get_field(const std::string& _name) const {
 	}
 	if(_name == "bid_sold") {
 		return vnx::Variant(bid_sold);
-	}
-	if(_name == "received") {
-		return vnx::Variant(received);
 	}
 	if(_name == "limit_orders") {
 		return vnx::Variant(limit_orders);
@@ -174,8 +166,6 @@ void OfferBundle::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(ask);
 	} else if(_name == "bid_sold") {
 		_value.to(bid_sold);
-	} else if(_name == "received") {
-		_value.to(received);
 	} else if(_name == "limit_orders") {
 		_value.to(limit_orders);
 	} else if(_name == "orders") {
@@ -209,7 +199,7 @@ std::shared_ptr<vnx::TypeCode> OfferBundle::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.OfferBundle";
 	type_code->type_hash = vnx::Hash64(0xa1f52e2a78efa212ull);
-	type_code->code_hash = vnx::Hash64(0xb4809d5de0994538ull);
+	type_code->code_hash = vnx::Hash64(0xd817cf7d5fbc1d54ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::exchange::OfferBundle);
@@ -219,7 +209,7 @@ std::shared_ptr<vnx::TypeCode> OfferBundle::static_create_type_code() {
 	type_code->depends[1] = ::mmx::exchange::limit_order_t::static_get_type_code();
 	type_code->depends[2] = ::mmx::txio_key_t::static_get_type_code();
 	type_code->depends[3] = ::mmx::exchange::open_order_t::static_get_type_code();
-	type_code->fields.resize(10);
+	type_code->fields.resize(9);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 8;
@@ -258,24 +248,18 @@ std::shared_ptr<vnx::TypeCode> OfferBundle::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[6];
-		field.data_size = 8;
-		field.name = "received";
-		field.code = {4};
-	}
-	{
-		auto& field = type_code->fields[7];
 		field.is_extended = true;
 		field.name = "limit_orders";
 		field.code = {12, 19, 1};
 	}
 	{
-		auto& field = type_code->fields[8];
+		auto& field = type_code->fields[7];
 		field.is_extended = true;
 		field.name = "orders";
 		field.code = {12, 23, 2, 4, 6, 19, 2, 19, 3};
 	}
 	{
-		auto& field = type_code->fields[9];
+		auto& field = type_code->fields[8];
 		field.is_extended = true;
 		field.name = "generator";
 		field.code = {12, 16};
@@ -338,16 +322,13 @@ void read(TypeInput& in, ::mmx::exchange::OfferBundle& value, const TypeCode* ty
 		if(const auto* const _field = type_code->field_map[5]) {
 			vnx::read_value(_buf + _field->offset, value.bid_sold, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[6]) {
-			vnx::read_value(_buf + _field->offset, value.received, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 2: vnx::read(in, value.pair, type_code, _field->code.data()); break;
-			case 7: vnx::read(in, value.limit_orders, type_code, _field->code.data()); break;
-			case 8: vnx::read(in, value.orders, type_code, _field->code.data()); break;
-			case 9: vnx::read(in, value.generator, type_code, _field->code.data()); break;
+			case 6: vnx::read(in, value.limit_orders, type_code, _field->code.data()); break;
+			case 7: vnx::read(in, value.orders, type_code, _field->code.data()); break;
+			case 8: vnx::read(in, value.generator, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -366,17 +347,16 @@ void write(TypeOutput& out, const ::mmx::exchange::OfferBundle& value, const Typ
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(44);
+	char* const _buf = out.write(36);
 	vnx::write_value(_buf + 0, value.id);
 	vnx::write_value(_buf + 8, value.wallet);
 	vnx::write_value(_buf + 12, value.bid);
 	vnx::write_value(_buf + 20, value.ask);
 	vnx::write_value(_buf + 28, value.bid_sold);
-	vnx::write_value(_buf + 36, value.received);
 	vnx::write(out, value.pair, type_code, type_code->fields[2].code.data());
-	vnx::write(out, value.limit_orders, type_code, type_code->fields[7].code.data());
-	vnx::write(out, value.orders, type_code, type_code->fields[8].code.data());
-	vnx::write(out, value.generator, type_code, type_code->fields[9].code.data());
+	vnx::write(out, value.limit_orders, type_code, type_code->fields[6].code.data());
+	vnx::write(out, value.orders, type_code, type_code->fields[7].code.data());
+	vnx::write(out, value.generator, type_code, type_code->fields[8].code.data());
 }
 
 void read(std::istream& in, ::mmx::exchange::OfferBundle& value) {

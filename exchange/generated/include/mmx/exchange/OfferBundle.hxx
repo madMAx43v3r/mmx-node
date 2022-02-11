@@ -25,7 +25,6 @@ public:
 	uint64_t bid = 0;
 	uint64_t ask = 0;
 	uint64_t bid_sold = 0;
-	uint64_t received = 0;
 	std::vector<::mmx::exchange::limit_order_t> limit_orders;
 	std::vector<std::pair<::mmx::txio_key_t, ::mmx::exchange::open_order_t>> orders;
 	std::vector<std::shared_ptr<const ::mmx::Transaction>> generator;
@@ -72,18 +71,17 @@ public:
 
 template<typename T>
 void OfferBundle::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<OfferBundle>(10);
+	_visitor.template type_begin<OfferBundle>(9);
 	_visitor.type_field("id", 0); _visitor.accept(id);
 	_visitor.type_field("wallet", 1); _visitor.accept(wallet);
 	_visitor.type_field("pair", 2); _visitor.accept(pair);
 	_visitor.type_field("bid", 3); _visitor.accept(bid);
 	_visitor.type_field("ask", 4); _visitor.accept(ask);
 	_visitor.type_field("bid_sold", 5); _visitor.accept(bid_sold);
-	_visitor.type_field("received", 6); _visitor.accept(received);
-	_visitor.type_field("limit_orders", 7); _visitor.accept(limit_orders);
-	_visitor.type_field("orders", 8); _visitor.accept(orders);
-	_visitor.type_field("generator", 9); _visitor.accept(generator);
-	_visitor.template type_end<OfferBundle>(10);
+	_visitor.type_field("limit_orders", 6); _visitor.accept(limit_orders);
+	_visitor.type_field("orders", 7); _visitor.accept(orders);
+	_visitor.type_field("generator", 8); _visitor.accept(generator);
+	_visitor.template type_end<OfferBundle>(9);
 }
 
 
