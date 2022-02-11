@@ -4,6 +4,7 @@
 #include <mmx/exchange/package.hxx>
 #include <mmx/exchange/LocalTrade.hxx>
 #include <mmx/exchange/trade_pair_t.hxx>
+#include <mmx/exchange/trade_type_e.hxx>
 #include <mmx/hash_t.hpp>
 #include <vnx/Value.h>
 
@@ -15,7 +16,7 @@ namespace exchange {
 
 
 const vnx::Hash64 LocalTrade::VNX_TYPE_HASH(0x63fd417b165df53cull);
-const vnx::Hash64 LocalTrade::VNX_CODE_HASH(0x4c03af243172f796ull);
+const vnx::Hash64 LocalTrade::VNX_CODE_HASH(0x4665affb73ca601aull);
 
 vnx::Hash64 LocalTrade::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -52,10 +53,11 @@ void LocalTrade::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, failed);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, height);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, pair);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, bid);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, ask);
-	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, offer_id);
-	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, message);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, type);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, bid);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, ask);
+	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, offer_id);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, message);
 	_visitor.type_end(*_type_code);
 }
 
@@ -65,6 +67,7 @@ void LocalTrade::write(std::ostream& _out) const {
 	_out << ", \"failed\": "; vnx::write(_out, failed);
 	_out << ", \"height\": "; vnx::write(_out, height);
 	_out << ", \"pair\": "; vnx::write(_out, pair);
+	_out << ", \"type\": "; vnx::write(_out, type);
 	_out << ", \"bid\": "; vnx::write(_out, bid);
 	_out << ", \"ask\": "; vnx::write(_out, ask);
 	_out << ", \"offer_id\": "; vnx::write(_out, offer_id);
@@ -85,6 +88,7 @@ vnx::Object LocalTrade::to_object() const {
 	_object["failed"] = failed;
 	_object["height"] = height;
 	_object["pair"] = pair;
+	_object["type"] = type;
 	_object["bid"] = bid;
 	_object["ask"] = ask;
 	_object["offer_id"] = offer_id;
@@ -110,6 +114,8 @@ void LocalTrade::from_object(const vnx::Object& _object) {
 			_entry.second.to(offer_id);
 		} else if(_entry.first == "pair") {
 			_entry.second.to(pair);
+		} else if(_entry.first == "type") {
+			_entry.second.to(type);
 		}
 	}
 }
@@ -126,6 +132,9 @@ vnx::Variant LocalTrade::get_field(const std::string& _name) const {
 	}
 	if(_name == "pair") {
 		return vnx::Variant(pair);
+	}
+	if(_name == "type") {
+		return vnx::Variant(type);
 	}
 	if(_name == "bid") {
 		return vnx::Variant(bid);
@@ -151,6 +160,8 @@ void LocalTrade::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(height);
 	} else if(_name == "pair") {
 		_value.to(pair);
+	} else if(_name == "type") {
+		_value.to(type);
 	} else if(_name == "bid") {
 		_value.to(bid);
 	} else if(_name == "ask") {
@@ -186,14 +197,15 @@ std::shared_ptr<vnx::TypeCode> LocalTrade::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.LocalTrade";
 	type_code->type_hash = vnx::Hash64(0x63fd417b165df53cull);
-	type_code->code_hash = vnx::Hash64(0x4c03af243172f796ull);
+	type_code->code_hash = vnx::Hash64(0x4665affb73ca601aull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::exchange::LocalTrade);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<LocalTrade>(); };
-	type_code->depends.resize(1);
+	type_code->depends.resize(2);
 	type_code->depends[0] = ::mmx::exchange::trade_pair_t::static_get_type_code();
-	type_code->fields.resize(8);
+	type_code->depends[1] = ::mmx::exchange::trade_type_e::static_get_type_code();
+	type_code->fields.resize(9);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -220,24 +232,31 @@ std::shared_ptr<vnx::TypeCode> LocalTrade::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[4];
+		field.is_extended = true;
+		field.name = "type";
+		field.value = vnx::to_string("BUY");
+		field.code = {19, 1};
+	}
+	{
+		auto& field = type_code->fields[5];
 		field.data_size = 8;
 		field.name = "bid";
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[5];
+		auto& field = type_code->fields[6];
 		field.data_size = 8;
 		field.name = "ask";
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[6];
+		auto& field = type_code->fields[7];
 		field.is_extended = true;
 		field.name = "offer_id";
 		field.code = {33, 4};
 	}
 	{
-		auto& field = type_code->fields[7];
+		auto& field = type_code->fields[8];
 		field.is_extended = true;
 		field.name = "message";
 		field.code = {33, 32};
@@ -288,10 +307,10 @@ void read(TypeInput& in, ::mmx::exchange::LocalTrade& value, const TypeCode* typ
 		if(const auto* const _field = type_code->field_map[1]) {
 			vnx::read_value(_buf + _field->offset, value.failed, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[4]) {
+		if(const auto* const _field = type_code->field_map[5]) {
 			vnx::read_value(_buf + _field->offset, value.bid, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[5]) {
+		if(const auto* const _field = type_code->field_map[6]) {
 			vnx::read_value(_buf + _field->offset, value.ask, _field->code.data());
 		}
 	}
@@ -300,8 +319,9 @@ void read(TypeInput& in, ::mmx::exchange::LocalTrade& value, const TypeCode* typ
 			case 0: vnx::read(in, value.id, type_code, _field->code.data()); break;
 			case 2: vnx::read(in, value.height, type_code, _field->code.data()); break;
 			case 3: vnx::read(in, value.pair, type_code, _field->code.data()); break;
-			case 6: vnx::read(in, value.offer_id, type_code, _field->code.data()); break;
-			case 7: vnx::read(in, value.message, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.type, type_code, _field->code.data()); break;
+			case 7: vnx::read(in, value.offer_id, type_code, _field->code.data()); break;
+			case 8: vnx::read(in, value.message, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -327,8 +347,9 @@ void write(TypeOutput& out, const ::mmx::exchange::LocalTrade& value, const Type
 	vnx::write(out, value.id, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.height, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.pair, type_code, type_code->fields[3].code.data());
-	vnx::write(out, value.offer_id, type_code, type_code->fields[6].code.data());
-	vnx::write(out, value.message, type_code, type_code->fields[7].code.data());
+	vnx::write(out, value.type, type_code, type_code->fields[4].code.data());
+	vnx::write(out, value.offer_id, type_code, type_code->fields[7].code.data());
+	vnx::write(out, value.message, type_code, type_code->fields[8].code.data());
 }
 
 void read(std::istream& in, ::mmx::exchange::LocalTrade& value) {
