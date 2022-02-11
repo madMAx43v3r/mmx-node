@@ -73,16 +73,6 @@ void Client::main()
 	}
 
 	set_timeout_millis(2000, [this]() {
-		vnx::File file(storage_path + "offers.dat");
-		if(file.exists()) {
-			file.open("rb");
-			std::map<uint64_t, std::shared_ptr<OfferBundle>> offers;
-			vnx::read_generic(file.in, offers);
-			for(const auto& entry : offers) {
-				offer_table.insert(entry.first, entry.second);
-			}
-			file.remove();
-		}
 		offer_table.scan(
 			[this](const uint64_t& id, const std::shared_ptr<OfferBundle>& offer) {
 				place(offer);
