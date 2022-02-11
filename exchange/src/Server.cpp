@@ -511,14 +511,17 @@ ulong_fraction_t Server::get_price(const addr_t& want, const amount_t& have) con
 	price.inverse = 0;
 
 	uint64_t left = have.amount;
-	for(const auto& order : get_orders(trade_pair_t::create_ex(want, have.currency), price_estimation_limit)) {
-		if(!left) {
-			break;
-		}
-		if(order.ask <= left) {
-			price.value += order.bid;
-			price.inverse += order.ask;
-			left -= order.ask;
+	if(auto book = find_pair(trade_pair_t::create_ex(want, have.currency))) {
+		for(const auto& entry : book->orders) {
+			if(!left) {
+				break;
+			}
+			const auto& order = entry.second;
+			if(order.ask <= left && utxo_map.count(order.bid_key) && is_open(order.bid_key)) {
+				price.value += order.bid;
+				price.inverse += order.ask;
+				left -= order.ask;
+			}
 		}
 	}
 	return price;

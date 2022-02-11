@@ -14,8 +14,6 @@ module Server extends vnx.addons.MsgServer {
 	
 	uint max_history = 10000;
 	
-	uint price_estimation_limit = 1000;		// number of orders
-	
 	string node_server = "Node";
 	
 	
