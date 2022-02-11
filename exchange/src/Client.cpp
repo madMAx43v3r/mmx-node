@@ -266,24 +266,30 @@ Client::get_local_history(const vnx::optional<trade_pair_t>& pair, const int32_t
 {
 	const trade_pair_t reverse = pair ? pair->reverse() : trade_pair_t();
 
-	std::vector<std::shared_ptr<const LocalTrade>> res;
+	std::vector<std::shared_ptr<const LocalTrade>> result;
 	for(const auto& entry : trade_history) {
 		const auto& trade = entry.second;
-		if(!pair || trade->pair == *pair || trade->pair == reverse) {
-			res.push_back(trade);
+		if(!pair || trade->pair == *pair) {
+			result.push_back(trade);
+		}
+		if(pair && trade->pair == reverse) {
+			result.push_back(trade->reverse());
 		}
 	}
 	for(const auto& entry : pending_trades) {
 		const auto& trade = entry.second;
-		if(!pair || trade->pair == *pair || trade->pair == reverse) {
-			res.push_back(trade);
+		if(!pair || trade->pair == *pair) {
+			result.push_back(trade);
+		}
+		if(pair && trade->pair == reverse) {
+			result.push_back(trade->reverse());
 		}
 	}
-	std::reverse(res.begin(), res.end());
-	if(res.size() > size_t(limit)) {
-		res.resize(limit);
+	std::reverse(result.begin(), result.end());
+	if(result.size() > size_t(limit)) {
+		result.resize(limit);
 	}
-	return res;
+	return result;
 }
 
 void Client::cancel_offer(const uint64_t& id)

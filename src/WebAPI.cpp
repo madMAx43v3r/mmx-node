@@ -1434,6 +1434,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 								if(ask_info) {
 									tmp["ask_value"] = entry.ask * pow(10, -ask_info->decimals);
 								}
+								if(bid_info && ask_info) {
+									tmp["price"] = entry.ask / double(entry.bid) * pow(10, bid_info->decimals - ask_info->decimals);
+								}
 								tmp["time"] = context->get_time(entry.height);
 								list.push_back(tmp);
 							}

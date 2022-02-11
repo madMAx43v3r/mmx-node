@@ -240,8 +240,6 @@ app.component('exchange-trade-list', {
 		bid: String,
 		ask: String,
 		server: String,
-		color: String,
-		flip: Boolean,
 		limit: Number
 	},
 	data() {
@@ -267,18 +265,25 @@ app.component('exchange-trade-list', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<table class="ui table striped" :class="color">
+		<table class="ui table striped">
 			<thead>
-				<th>{{flip ? data.bid_symbol : data.ask_symbol}} / {{flip ? data.ask_symbol : data.bid_symbol}}</th>
-				<th>{{data.bid_symbol}}</th>
-				<th>{{data.ask_symbol}}</th>
+				<th>Type</th>
+				<th colspan="2">Amount</th>
+				<th colspan="2">Volume</th>
+				<th colspan="2">Price</th>
+				<th>Height</th>
 				<th>Time</th>
 			</thead>
 			<tbody>
 				<tr v-for="item in data.history" :key="item.id">
-					<td><b>{{(flip ? item.bid_value / item.ask_value : item.ask_value / item.bid_value).toPrecision(5)}}</b></td>
-					<td>{{item.bid_value}}</td>
-					<td>{{item.ask_value}}</td>
+					<td :class="item.type == 'BUY' ? 'positive' : 'negative'">{{item.type}}</td>
+					<td class="collapsing"><b>{{item.bid_value}}</b></td>
+					<td>{{data.bid_symbol}}</td>
+					<td class="collapsing"><b>{{item.ask_value}}</b></td>
+					<td>{{data.ask_symbol}}</td>
+					<td class="collapsing"><b>{{(item.ask_value / item.bid_value).toPrecision(5)}}</b></td>
+					<td>{{data.ask_symbol}} / {{data.bid_symbol}}</td>
+					<td>{{item.height}}</td>
 					<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 				</tr>
 			</tbody>
@@ -295,19 +300,11 @@ app.component('exchange-trades', {
 	},
 	methods: {
 		update() {
-			this.$refs.bid_list.update();
-			this.$refs.ask_list.update();
+			this.$refs.trade_list.update();
 		}
 	},
 	template: `
-		<div class="ui two column grid">
-			<div class="column">
-				<exchange-trade-list :server="server" :bid="bid" :ask="ask" :flip="false" :limit="limit" color="green" ref="bid_list"></exchange-trade-list>
-			</div>
-			<div class="column">
-				<exchange-trade-list :server="server" :bid="ask" :ask="bid" :flip="true" :limit="limit" color="red" ref="ask_list"></exchange-trade-list>
-			</div>
-		</div>
+		<exchange-trade-list :server="server" :bid="bid" :ask="ask" :limit="limit" ref="trade_list"></exchange-trade-list>
 		`
 })
 
@@ -350,16 +347,16 @@ app.component('exchange-history', {
 			</thead>
 			<tbody>
 				<tr v-for="item in data" :key="item.id">
-					<td>{{item.pair.bid == bid ? "SELL" : "BUY"}}</td>
-					<td class="collapsing"><b>{{item.pair.bid == bid ? item.bid_value : item.ask_value}}</b></td>
-					<td>{{item.pair.bid == bid ? item.bid_symbol : item.ask_symbol}}</td>
-					<td class="collapsing"><b>{{item.pair.bid == bid ? item.ask_value : item.bid_value}}</b></td>
-					<td>{{item.pair.bid == bid ? item.ask_symbol : item.bid_symbol}}</td>
-					<td class="collapsing"><b>{{(item.pair.bid == bid ? item.ask_value / item.bid_value : item.bid_value / item.ask_value).toPrecision(5)}}</b></td>
-					<td>{{item.pair.bid == bid ? item.ask_symbol : item.bid_symbol}} / {{item.pair.bid == bid ? item.bid_symbol : item.ask_symbol}}</td>
+					<td :class="item.type == 'BUY' ? 'positive' : 'negative'">{{item.type}}</td>
+					<td class="collapsing"><b>{{item.bid_value}}</b></td>
+					<td>{{item.bid_symbol}}</td>
+					<td class="collapsing"><b>{{item.ask_value}}</b></td>
+					<td>{{item.ask_symbol}}</td>
+					<td class="collapsing"><b>{{(item.ask_value / item.bid_value).toPrecision(5)}}</b></td>
+					<td>{{item.ask_symbol}} / {{item.bid_symbol}}</td>
 					<td>{{item.offer_id}}</td>
-					<td>{{item.failed ? "(failed)" : (item.height ? item.height : "(pending)")}}</td>
-					<td>{{item.time ? new Date(item.time * 1000).toLocaleString() : (item.failed ? "(failed)" : "(pending)")}}</td>
+					<td>{{item.height ? item.height : item.failed ? "(failed)" : "(pending)"}}</td>
+					<td>{{item.failed ? "(failed)" : item.time ? new Date(item.time * 1000).toLocaleString() : "(pending)"}}</td>
 				</tr>
 			</tbody>
 		</table>

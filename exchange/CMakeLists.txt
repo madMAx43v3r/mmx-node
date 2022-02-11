@@ -7,6 +7,7 @@ add_library(mmx_exchange SHARED
 	${GENERATED_SOURCE_FILES}
 	src/Server.cpp
 	src/Client.cpp
+	src/LocalTrade.cpp
 	src/limit_order_t.cpp
 	src/trade_order_t.cpp
 )

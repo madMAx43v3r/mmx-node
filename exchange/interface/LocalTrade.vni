@@ -12,11 +12,15 @@ class LocalTrade {
 	
 	trade_pair_t pair;
 	
+	trade_type_e type = BUY;
+	
 	ulong bid;
 	ulong ask;
 	
 	optional<ulong> offer_id;
 	
 	optional<string> message;
+	
+	LocalTrade* reverse() const;
 	
 }
