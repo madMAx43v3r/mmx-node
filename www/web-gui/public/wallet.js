@@ -1057,3 +1057,171 @@ app.component('account-offers', {
 		</table>
 		`
 })
+
+app.component('create-contract-menu', {
+	props: {
+		index: Number
+	},
+	data() {
+		return {
+			type: null
+		}
+	},
+	methods: {
+		submit() {
+			this.$router.push("/wallet/account/" + this.index + "/create/" + this.type);
+		}
+	},
+	template: `
+		<div class="ui raised segment">
+			<form class="ui form">
+				<div class="field">
+					<label>Create Contract</label>
+					<select v-model="type">
+						<option value="staking">mmx.contract.Staking</option>
+					</select>
+				</div>
+				<div @click="submit" class="ui submit button" :class="{disabled: !type}">Create</div>
+			</form>
+		</div>
+		`
+})
+
+app.component('create-staking-contract', {
+	props: {
+		index: Number
+	},
+	data() {
+		return {
+			addresses: [],
+			owner: null,
+			currency: null,
+			symbol: null,
+			reward_addr: null,
+			confirmed: false,
+			valid: false,
+			result: null,
+			error: null
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/wallet/address?limit=100&index=' + this.index)
+				.then(response => response.json())
+				.then(data => {
+					this.addresses = data;
+					if(!this.owner && data.length) {
+						this.owner = data[0];
+					}
+					if(!this.reward_addr && data.length) {
+						this.reward_addr = data[0];
+					}
+				});
+		},
+		update_balance() {
+			this.update();
+			this.$refs.balance.update();
+		},
+		submit() {
+			this.confirmed = false;
+			const contract = {};
+			contract.__type = "mmx.contract.Staking";
+			contract.owner = this.addresses[0];
+			contract.currency = this.currency;
+			contract.reward_addr = this.reward_addr;
+			fetch('/wapi/wallet/deploy?index=' + this.index, {body: JSON.stringify(contract), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						response.json().then(data => this.result = data);
+					} else {
+						response.text().then(data => this.error = data);
+					}
+				});
+		}
+	},
+	created() {
+		this.update();
+	},
+	mounted() {
+		$('.ui.checkbox').checkbox();
+	},
+	unmounted() {
+		clearInterval(this.timer);
+	},
+	watch: {
+		currency(value) {
+			this.valid = false;
+			this.symbol = "???";
+			fetch('/wapi/contract?id=' + value)
+				.then(response => {
+					if(response.ok) {
+						response.json().then(data => {
+								if(data) {
+									this.valid = true;
+									this.symbol = data.symbol;
+								}
+							});
+					}
+				});
+		},
+		result(value) {
+			if(value) {
+				this.error = null;
+			}
+		},
+		error(value) {
+			if(value) {
+				this.result = null;
+			}
+		}
+	},
+	template: `
+		<div class="ui large label">Create</div>
+		<div class="ui large label">mmx.contract.Staking</div>
+		<div class="ui raised segment">
+			<form class="ui form" id="form">
+				<div class="field">
+					<label>Owner Address</label>
+					<select v-model="owner">
+						<option v-for="(item, index) in addresses" :key="item" :value="item">
+							[{{index}}] {{item}}
+						</option>
+					</select>
+				</div>
+				<div class="field">
+					<label>Reward Address</label>
+					<select v-model="reward_addr">
+						<option v-for="(item, index) in addresses" :key="item" :value="item">
+							[{{index}}] {{item}}
+						</option>
+					</select>
+				</div>
+				<div class="two fields">
+					<div class="two wide field">
+						<label>Symbol</label>
+						<input type="text" v-model="symbol" disabled/>
+					</div>
+					<div class="fourteen wide field">
+						<label>Currency Contract</label>
+						<input type="text" v-model="currency" placeholder="mmx1..."/>
+					</div>
+				</div>
+				<div class="inline field">
+					<div class="ui toggle checkbox" :class="{disabled: !valid}">
+						<input type="checkbox" class="hidden" v-model="confirmed">
+						<label>Confirm</label>
+					</div>
+				</div>
+				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">Deploy</div>
+			</form>
+		</div>
+		<div class="ui large message" :class="{hidden: !result}">
+			<template v-if="result">
+				Deployed as: <b>{{result}}</b>
+			</template>
+		</div>
+		<div class="ui large negative message" :class="{hidden: !error}">
+			Failed with: <b>{{error}}</b>
+		</div>
+		`
+})

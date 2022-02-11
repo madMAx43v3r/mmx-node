@@ -40,6 +40,7 @@ const AccountContracts = {
 		index: Number
 	},
 	template: `
+		<create-contract-menu :index="index"></create-contract-menu>
 		<account-contracts :index="index"></account-contracts>
 	`
 }
@@ -98,6 +99,14 @@ const AccountOptions = {
 	},
 	template: `
 		<create-account :index="index"></create-account>
+	`
+}
+const AccountCreateStaking = {
+	props: {
+		index: Number
+	},
+	template: `
+		<create-staking-contract :index="index"></create-staking-contract>
 	`
 }
 
@@ -250,7 +259,8 @@ const routes = [
 			{ path: 'offer', component: AccountOffer, meta: { page: 'offer' } },
 			{ path: 'details', component: AccountDetails, meta: { page: 'details' } },
 			{ path: 'options', component: AccountOptions, meta: { page: 'options' } },
-			{ path: 'coins/:currency', component: AccountCoins, props: route => ({currency: route.params.currency}), meta: { page: 'coins' } },
+			{ path: 'create/staking', component: AccountCreateStaking },
+			{ path: 'coins/:currency', component: AccountCoins, props: route => ({currency: route.params.currency}) },
 		]
 	},
 	{ path: '/exchange',

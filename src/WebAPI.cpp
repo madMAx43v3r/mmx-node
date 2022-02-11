@@ -1119,6 +1119,21 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "POST wallet/split {...}");
 		}
 	}
+	else if(sub_path == "/wallet/deploy") {
+		const auto iter_index = query.find("index");
+		if(request->payload.size() && iter_index != query.end()) {
+			std::shared_ptr<Contract> contract;
+			vnx::from_string(request->payload.as_string(), contract);
+			const auto index = vnx::from_string<uint32_t>(iter_index->second);
+			wallet->deploy(index, contract, {},
+				[this, request_id](const hash_t& txid) {
+					respond(request_id, vnx::Variant(addr_t(txid).to_string()));
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "POST wallet/deploy?index {...}");
+		}
+	}
 	else if(sub_path == "/exchange/offer") {
 		if(request->payload.size()) {
 			vnx::Object args;
