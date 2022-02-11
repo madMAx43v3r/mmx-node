@@ -236,19 +236,17 @@ void Server::place_async(const uint64_t& client, const trade_pair_t& pair, const
 					total_bid += utxo.amount;
 				}
 			}
-			if(result.empty()) {
-				vnx_async_return_ex_what(request_id, "empty order");
-				return;
-			}
-			auto& book = trade_map[pair];
-			if(!book) {
-				book = std::make_shared<order_book_t>();
-			}
-			for(const auto& entry : result) {
-				const auto price = entry.get_price();
-				book->key_map[entry.bid_key] = price;
-				book->orders.emplace(price, entry);
-				peer->order_map[entry.bid_key] = pair;
+			if(!result.empty()) {
+				auto& book = trade_map[pair];
+				if(!book) {
+					book = std::make_shared<order_book_t>();
+				}
+				for(const auto& entry : result) {
+					const auto price = entry.get_price();
+					book->key_map[entry.bid_key] = price;
+					book->orders.emplace(price, entry);
+					peer->order_map[entry.bid_key] = pair;
+				}
 			}
 			place_async_return(request_id, result);
 		},
