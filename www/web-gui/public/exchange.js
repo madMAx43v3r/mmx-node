@@ -504,7 +504,7 @@ app.component('exchange-trade-form', {
 		<div class="ui message" :class="{hidden: !result}">
 			<template v-for="item in result" :key="item.id">
 				Traded <b>{{item.order.bid_value}}</b> [{{item.order.bid_symbol}}] for <b>{{item.order.ask_value}}</b> [{{item.order.ask_symbol}}]
-				<template v-if="item.failed">({{item.message}})</template>
+				<template v-if="item.failed">(failed with: {{item.message}})</template>
 				<br/>
 			</template>
 		</div>
