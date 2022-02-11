@@ -659,7 +659,7 @@ app.component('account-send-form', {
 					<label>Destination</label>
 					<select v-model="address">
 						<option value="">Address Input</option>
-						<option v-for="item in accounts" :key="item.account" class="item" :value="item.address">
+						<option v-for="item in accounts" :key="item.account" :value="item.address">
 							Account #{{item.account}} ([{{item.index}}] {{item.name}}) ({{item.address}})
 						</option>
 					</select>
@@ -682,7 +682,7 @@ app.component('account-send-form', {
 					<div class="twelve wide field">
 						<label>Currency</label>
 						<select v-model="currency">
-							<option v-for="item in balances" :key="item.contract" class="item" :value="item.contract">
+							<option v-for="item in balances" :key="item.contract" :value="item.contract">
 								{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
 							</option>
 						</select>
@@ -785,7 +785,7 @@ app.component('account-split-form', {
 					<div class="twelve wide field">
 						<label>Currency</label>
 						<select v-model="currency">
-							<option v-for="item in balances" :key="item.contract" class="item" :value="item.contract">
+							<option v-for="item in balances" :key="item.contract" :value="item.contract">
 								{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
 							</option>
 						</select>
@@ -932,7 +932,7 @@ app.component('account-offer-form', {
 					<div class="ten wide field">
 						<label>Offer Currency</label>
 						<select v-model="bid_currency">
-							<option v-for="item in balances" :key="item.contract" class="item" :value="item.contract">
+							<option v-for="item in balances" :key="item.contract" :value="item.contract">
 								{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
 							</option>
 						</select>
