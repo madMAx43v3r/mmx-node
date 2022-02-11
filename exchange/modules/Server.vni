@@ -12,9 +12,9 @@ module Server extends vnx.addons.MsgServer {
 	
 	int trade_timeout_ms = 5000;			// [ms]
 	
-	uint max_history = 10000;
-	
 	string node_server = "Node";
+	
+	string storage_path = "exchange/server/";
 	
 	
 	@Permission(mmx.permission_e.PUBLIC)

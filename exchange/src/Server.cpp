@@ -32,6 +32,17 @@ void Server::main()
 {
 	subscribe(input_blocks, 10000);
 
+	vnx::Directory(storage_path).create();
+	{
+		::rocksdb::Options options;
+		options.max_open_files = 16;
+		options.keep_log_file_num = 3;
+		options.max_manifest_file_size = 64 * 1024 * 1024;
+		options.OptimizeForSmallDb();
+
+		trade_history.open(storage_path + "trade_history", options);
+	}
+
 	node = std::make_shared<NodeAsyncClient>(node_server);
 	server = std::make_shared<vnx::GenericAsyncClient>(vnx_get_id());
 	server->vnx_set_non_blocking(true);
@@ -69,11 +80,24 @@ void Server::handle(std::shared_ptr<const Block> block)
 				{
 					auto iter = exec_map.find(order.bid_key);
 					if(iter != exec_map.end()) {
-						trade_entry_t entry;
-						entry.id = iter->second;
-						entry.height = block->height;
-						entry.order = order;
-						book->history.push_front(entry);
+						{
+							trade_entry_t out;
+							out.id = iter->second;
+							out.height = block->height;
+							out.type = trade_type_e::SELL;
+							out.bid = order.bid;
+							out.ask = order.ask;
+							trade_history.insert(entry.first, out);
+						}
+						{
+							trade_entry_t out;
+							out.id = iter->second;
+							out.height = block->height;
+							out.type = trade_type_e::BUY;
+							out.bid = order.ask;
+							out.ask = order.bid;
+							trade_history.insert(entry.first.reverse(), out);
+						}
 					}
 				}
 				book->key_map.erase(order.bid_key);
@@ -97,12 +121,6 @@ void Server::update()
 			iter = pending_trades.erase(iter);
 		} else {
 			iter++;
-		}
-	}
-	for(const auto& entry : trade_map) {
-		const auto& book = entry.second;
-		for(size_t i = book->history.size(); i > max_history; --i) {
-			book->history.pop_back();
 		}
 	}
 }
@@ -490,21 +508,6 @@ std::vector<order_t> Server::get_orders(const trade_pair_t& pair, const int32_t&
 	return orders;
 }
 
-std::vector<trade_entry_t> Server::get_history(const trade_pair_t& pair, const int32_t& limit_) const
-{
-	const size_t limit = limit_;
-	std::vector<trade_entry_t> result;
-	if(auto book = find_pair(pair)) {
-		for(const auto& entry : book->history) {
-			if(result.size() >= limit) {
-				break;
-			}
-			result.push_back(entry);
-		}
-	}
-	return result;
-}
-
 ulong_fraction_t Server::get_price(const addr_t& want, const amount_t& have) const
 {
 	ulong_fraction_t price;
@@ -525,6 +528,13 @@ ulong_fraction_t Server::get_price(const addr_t& want, const amount_t& have) con
 		}
 	}
 	return price;
+}
+
+std::vector<trade_entry_t> Server::get_history(const trade_pair_t& pair, const int32_t& limit) const
+{
+	std::vector<trade_entry_t> result;
+	trade_history.find_last(pair, result, limit);
+	return result;
 }
 
 void Server::ping(const uint64_t& client) const

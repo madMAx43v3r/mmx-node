@@ -8,6 +8,9 @@ struct trade_entry_t {
 	
 	uint height;
 	
-	order_t order;
+	trade_type_e type;
+	
+	ulong bid;
+	ulong ask;
 	
 }

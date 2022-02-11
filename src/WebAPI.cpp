@@ -1429,10 +1429,10 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 							for(const auto& entry : history) {
 								auto tmp = render(entry, context);
 								if(bid_info) {
-									tmp["bid_value"] = entry.order.bid * pow(10, -bid_info->decimals);
+									tmp["bid_value"] = entry.bid * pow(10, -bid_info->decimals);
 								}
 								if(ask_info) {
-									tmp["ask_value"] = entry.order.ask * pow(10, -ask_info->decimals);
+									tmp["ask_value"] = entry.ask * pow(10, -ask_info->decimals);
 								}
 								tmp["time"] = context->get_time(entry.height);
 								list.push_back(tmp);

@@ -18,6 +18,7 @@
 #include <mmx/utils.h>
 
 #include <vnx/GenericAsyncClient.h>
+#include <vnx/rocksdb/multi_table.h>
 
 
 namespace mmx {
@@ -38,7 +39,6 @@ protected:
 	struct order_book_t {
 		std::multimap<double, order_t> orders;
 		std::unordered_map<txio_key_t, double> key_map;
-		std::list<trade_entry_t> history;
 	};
 
 	struct trade_job_t {
@@ -126,6 +126,8 @@ private:
 	std::unordered_map<txio_key_t, hash_t> lock_map;							// [key => txid]
 
 	mutable std::map<trade_pair_t, std::shared_ptr<order_book_t>> trade_map;
+
+	vnx::rocksdb::multi_table<trade_pair_t, trade_entry_t, uint64_t> trade_history;
 
 	std::unordered_map<uint64_t, std::shared_ptr<peer_t>> peer_map;
 	std::unordered_map<hash_t, std::shared_ptr<trade_job_t>> pending_trades;

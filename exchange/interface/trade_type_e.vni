@@ -1,0 +1,8 @@
+package mmx.exchange;
+
+enum trade_type_e {
+	
+	BUY,
+	SELL
+	
+}

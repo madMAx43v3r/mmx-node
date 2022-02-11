@@ -25,9 +25,11 @@ int main(int argc, char** argv)
 
 	std::string node_url = ":11331";
 	std::string endpoint = ":11340";
+	std::string root_path;
 
 	vnx::read_config("node", node_url);
 	vnx::read_config("endpoint", endpoint);
+	vnx::read_config("root_path", root_path);
 
 	vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
 	proxy->forward_list = {"Node"};
@@ -42,6 +44,7 @@ int main(int argc, char** argv)
 	}
 	{
 		vnx::Handle<mmx::exchange::Server> module = new mmx::exchange::Server("ExchServer");
+		module->storage_path = root_path + module->storage_path;
 		proxy->import_list.push_back(module->input_blocks);
 		module.start_detached();
 	}
