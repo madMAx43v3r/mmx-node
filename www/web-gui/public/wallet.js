@@ -1038,7 +1038,7 @@ app.component('account-offers', {
 			<tr v-for="item in data" :key="item.id">
 				<td>{{item.id}}</td>
 				<template v-if="bid && ask">
-					<td>{{item.type}}</td>
+					<td :class="item.type == 'BUY' ? 'positive' : 'negative'">{{item.type}}</td>
 				</template>
 				<td class="collapsing"><b>{{item.bid_value}}</b></td>
 				<td>{{item.bid_symbol}}</td>
@@ -1076,7 +1076,7 @@ app.component('create-contract-menu', {
 		<div class="ui raised segment">
 			<form class="ui form">
 				<div class="field">
-					<label>Create Contract</label>
+					<label>Contract Type</label>
 					<select v-model="type">
 						<option value="staking">mmx.contract.Staking</option>
 					</select>
@@ -1144,9 +1144,6 @@ app.component('create-staking-contract', {
 	},
 	mounted() {
 		$('.ui.checkbox').checkbox();
-	},
-	unmounted() {
-		clearInterval(this.timer);
 	},
 	watch: {
 		currency(value) {
