@@ -83,6 +83,7 @@ struct order_t;
 struct trade_entry_t;
 struct trade_order_t;
 struct trade_pair_t;
+struct trade_type_e;
 
 extern const vnx::TypeCode* const vnx_native_type_code_ClientBase; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_Client_approve; ///< \private
@@ -152,6 +153,7 @@ extern const vnx::TypeCode* const vnx_native_type_code_order_t; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_trade_entry_t; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_trade_order_t; ///< \private
 extern const vnx::TypeCode* const vnx_native_type_code_trade_pair_t; ///< \private
+extern const vnx::TypeCode* const vnx_native_type_code_trade_type_e; ///< \private
 
 } // namespace mmx
 } // namespace exchange
@@ -227,6 +229,7 @@ void read(TypeInput& in, ::mmx::exchange::order_t& value, const TypeCode* type_c
 void read(TypeInput& in, ::mmx::exchange::trade_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::exchange::trade_order_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::exchange::trade_pair_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::exchange::trade_type_e& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 
 void write(TypeOutput& out, const ::mmx::exchange::ClientBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::exchange::Client_approve& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -296,6 +299,7 @@ void write(TypeOutput& out, const ::mmx::exchange::order_t& value, const TypeCod
 void write(TypeOutput& out, const ::mmx::exchange::trade_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::exchange::trade_order_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::exchange::trade_pair_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::exchange::trade_type_e& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 
 void read(std::istream& in, ::mmx::exchange::ClientBase& value); ///< \private
 void read(std::istream& in, ::mmx::exchange::Client_approve& value); ///< \private
@@ -365,6 +369,7 @@ void read(std::istream& in, ::mmx::exchange::order_t& value); ///< \private
 void read(std::istream& in, ::mmx::exchange::trade_entry_t& value); ///< \private
 void read(std::istream& in, ::mmx::exchange::trade_order_t& value); ///< \private
 void read(std::istream& in, ::mmx::exchange::trade_pair_t& value); ///< \private
+void read(std::istream& in, ::mmx::exchange::trade_type_e& value); ///< \private
 
 void write(std::ostream& out, const ::mmx::exchange::ClientBase& value); ///< \private
 void write(std::ostream& out, const ::mmx::exchange::Client_approve& value); ///< \private
@@ -434,6 +439,7 @@ void write(std::ostream& out, const ::mmx::exchange::order_t& value); ///< \priv
 void write(std::ostream& out, const ::mmx::exchange::trade_entry_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::exchange::trade_order_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::exchange::trade_pair_t& value); ///< \private
+void write(std::ostream& out, const ::mmx::exchange::trade_type_e& value); ///< \private
 
 void accept(Visitor& visitor, const ::mmx::exchange::ClientBase& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::exchange::Client_approve& value); ///< \private
@@ -503,6 +509,7 @@ void accept(Visitor& visitor, const ::mmx::exchange::order_t& value); ///< \priv
 void accept(Visitor& visitor, const ::mmx::exchange::trade_entry_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::exchange::trade_order_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::exchange::trade_pair_t& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::exchange::trade_type_e& value); ///< \private
 
 /// \private
 template<>
@@ -2060,6 +2067,29 @@ struct type<::mmx::exchange::trade_pair_t> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::exchange::trade_pair_t& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::exchange::trade_type_e> {
+	void read(TypeInput& in, ::mmx::exchange::trade_type_e& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::exchange::trade_type_e& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::exchange::trade_type_e& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::exchange::trade_type_e& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::exchange::trade_type_e& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::exchange::trade_type_e& value, bool special = false);
 };
 
 

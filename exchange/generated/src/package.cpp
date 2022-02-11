@@ -69,6 +69,7 @@
 #include <mmx/exchange/trade_entry_t.hxx>
 #include <mmx/exchange/trade_order_t.hxx>
 #include <mmx/exchange/trade_pair_t.hxx>
+#include <mmx/exchange/trade_type_e.hxx>
 
 #include <mmx/exchange/package.hxx>
 #include <vnx/vnx.h>
@@ -869,6 +870,22 @@ void type<::mmx::exchange::trade_pair_t>::create_dynamic_code(std::vector<uint16
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::exchange::trade_type_e>::get_type_code() {
+	return mmx::exchange::vnx_native_type_code_trade_type_e;
+}
+
+void type<::mmx::exchange::trade_type_e>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::exchange::trade_type_e());
+}
+
+void type<::mmx::exchange::trade_type_e>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::exchange::trade_type_e& value, bool special) {
+	if(!special || value.is_valid()) {
+		code.push_back(CODE_STRING);
+	} else {
+		code.push_back(CODE_UINT32);
+	}
+}
+
 
 } // namespace vnx
 
@@ -946,6 +963,7 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::exchange::trade_entry_t::static_create_type_code());
 	vnx::register_type_code(::mmx::exchange::trade_order_t::static_create_type_code());
 	vnx::register_type_code(::mmx::exchange::trade_pair_t::static_create_type_code());
+	vnx::register_type_code(::mmx::exchange::trade_type_e::static_create_type_code());
 }
 
 static struct vnx_static_init {
@@ -1022,6 +1040,7 @@ const vnx::TypeCode* const vnx_native_type_code_order_t = vnx::get_type_code(vnx
 const vnx::TypeCode* const vnx_native_type_code_trade_entry_t = vnx::get_type_code(vnx::Hash64(0x3d465e4d012518b0ull));
 const vnx::TypeCode* const vnx_native_type_code_trade_order_t = vnx::get_type_code(vnx::Hash64(0x96dc9b77e428e71ull));
 const vnx::TypeCode* const vnx_native_type_code_trade_pair_t = vnx::get_type_code(vnx::Hash64(0xb905dc58e1616f03ull));
+const vnx::TypeCode* const vnx_native_type_code_trade_type_e = vnx::get_type_code(vnx::Hash64(0x4feb2b6265c7f88bull));
 
 } // namespace mmx
 } // namespace exchange

@@ -68,15 +68,15 @@ namespace exchange {
 
 
 const vnx::Hash64 ServerBase::VNX_TYPE_HASH(0x573a9f3b899c4e1dull);
-const vnx::Hash64 ServerBase::VNX_CODE_HASH(0x97fdc6cde8605804ull);
+const vnx::Hash64 ServerBase::VNX_CODE_HASH(0xb7c0cd90f99964a7ull);
 
 ServerBase::ServerBase(const std::string& _vnx_name)
 	:	MsgServer::MsgServer(_vnx_name)
 {
 	vnx::read_config(vnx_name + ".input_blocks", input_blocks);
 	vnx::read_config(vnx_name + ".trade_timeout_ms", trade_timeout_ms);
-	vnx::read_config(vnx_name + ".max_history", max_history);
 	vnx::read_config(vnx_name + ".node_server", node_server);
+	vnx::read_config(vnx_name + ".storage_path", storage_path);
 }
 
 vnx::Hash64 ServerBase::get_type_hash() const {
@@ -108,8 +108,8 @@ void ServerBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, max_msg_size);
 	_visitor.type_field(_type_code->fields[12], 12); vnx::accept(_visitor, input_blocks);
 	_visitor.type_field(_type_code->fields[13], 13); vnx::accept(_visitor, trade_timeout_ms);
-	_visitor.type_field(_type_code->fields[14], 14); vnx::accept(_visitor, max_history);
-	_visitor.type_field(_type_code->fields[15], 15); vnx::accept(_visitor, node_server);
+	_visitor.type_field(_type_code->fields[14], 14); vnx::accept(_visitor, node_server);
+	_visitor.type_field(_type_code->fields[15], 15); vnx::accept(_visitor, storage_path);
 	_visitor.type_end(*_type_code);
 }
 
@@ -129,8 +129,8 @@ void ServerBase::write(std::ostream& _out) const {
 	_out << ", \"max_msg_size\": "; vnx::write(_out, max_msg_size);
 	_out << ", \"input_blocks\": "; vnx::write(_out, input_blocks);
 	_out << ", \"trade_timeout_ms\": "; vnx::write(_out, trade_timeout_ms);
-	_out << ", \"max_history\": "; vnx::write(_out, max_history);
 	_out << ", \"node_server\": "; vnx::write(_out, node_server);
+	_out << ", \"storage_path\": "; vnx::write(_out, storage_path);
 	_out << "}";
 }
 
@@ -157,8 +157,8 @@ vnx::Object ServerBase::to_object() const {
 	_object["max_msg_size"] = max_msg_size;
 	_object["input_blocks"] = input_blocks;
 	_object["trade_timeout_ms"] = trade_timeout_ms;
-	_object["max_history"] = max_history;
 	_object["node_server"] = node_server;
+	_object["storage_path"] = storage_path;
 	return _object;
 }
 
@@ -174,8 +174,6 @@ void ServerBase::from_object(const vnx::Object& _object) {
 			_entry.second.to(listen_queue_size);
 		} else if(_entry.first == "max_connections") {
 			_entry.second.to(max_connections);
-		} else if(_entry.first == "max_history") {
-			_entry.second.to(max_history);
 		} else if(_entry.first == "max_msg_size") {
 			_entry.second.to(max_msg_size);
 		} else if(_entry.first == "node_server") {
@@ -190,6 +188,8 @@ void ServerBase::from_object(const vnx::Object& _object) {
 			_entry.second.to(show_warnings);
 		} else if(_entry.first == "stats_interval_ms") {
 			_entry.second.to(stats_interval_ms);
+		} else if(_entry.first == "storage_path") {
+			_entry.second.to(storage_path);
 		} else if(_entry.first == "tcp_keepalive") {
 			_entry.second.to(tcp_keepalive);
 		} else if(_entry.first == "tcp_no_delay") {
@@ -243,11 +243,11 @@ vnx::Variant ServerBase::get_field(const std::string& _name) const {
 	if(_name == "trade_timeout_ms") {
 		return vnx::Variant(trade_timeout_ms);
 	}
-	if(_name == "max_history") {
-		return vnx::Variant(max_history);
-	}
 	if(_name == "node_server") {
 		return vnx::Variant(node_server);
+	}
+	if(_name == "storage_path") {
+		return vnx::Variant(storage_path);
 	}
 	return vnx::Variant();
 }
@@ -281,10 +281,10 @@ void ServerBase::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(input_blocks);
 	} else if(_name == "trade_timeout_ms") {
 		_value.to(trade_timeout_ms);
-	} else if(_name == "max_history") {
-		_value.to(max_history);
 	} else if(_name == "node_server") {
 		_value.to(node_server);
+	} else if(_name == "storage_path") {
+		_value.to(storage_path);
 	}
 }
 
@@ -312,7 +312,7 @@ std::shared_ptr<vnx::TypeCode> ServerBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.Server";
 	type_code->type_hash = vnx::Hash64(0x573a9f3b899c4e1dull);
-	type_code->code_hash = vnx::Hash64(0x97fdc6cde8605804ull);
+	type_code->code_hash = vnx::Hash64(0xb7c0cd90f99964a7ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::exchange::ServerBase);
 	type_code->parents.resize(2);
@@ -438,16 +438,16 @@ std::shared_ptr<vnx::TypeCode> ServerBase::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[14];
-		field.data_size = 4;
-		field.name = "max_history";
-		field.value = vnx::to_string(10000);
-		field.code = {3};
+		field.is_extended = true;
+		field.name = "node_server";
+		field.value = vnx::to_string("Node");
+		field.code = {32};
 	}
 	{
 		auto& field = type_code->fields[15];
 		field.is_extended = true;
-		field.name = "node_server";
-		field.value = vnx::to_string("Node");
+		field.name = "storage_path";
+		field.value = vnx::to_string("exchange/server/");
 		field.code = {32};
 	}
 	type_code->build();
@@ -686,15 +686,13 @@ void read(TypeInput& in, ::mmx::exchange::ServerBase& value, const TypeCode* typ
 		if(const auto* const _field = type_code->field_map[13]) {
 			vnx::read_value(_buf + _field->offset, value.trade_timeout_ms, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[14]) {
-			vnx::read_value(_buf + _field->offset, value.max_history, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 1: vnx::read(in, value.host, type_code, _field->code.data()); break;
 			case 12: vnx::read(in, value.input_blocks, type_code, _field->code.data()); break;
-			case 15: vnx::read(in, value.node_server, type_code, _field->code.data()); break;
+			case 14: vnx::read(in, value.node_server, type_code, _field->code.data()); break;
+			case 15: vnx::read(in, value.storage_path, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -713,7 +711,7 @@ void write(TypeOutput& out, const ::mmx::exchange::ServerBase& value, const Type
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(43);
+	char* const _buf = out.write(39);
 	vnx::write_value(_buf + 0, value.port);
 	vnx::write_value(_buf + 4, value.max_connections);
 	vnx::write_value(_buf + 8, value.listen_queue_size);
@@ -726,10 +724,10 @@ void write(TypeOutput& out, const ::mmx::exchange::ServerBase& value, const Type
 	vnx::write_value(_buf + 30, value.show_warnings);
 	vnx::write_value(_buf + 31, value.max_msg_size);
 	vnx::write_value(_buf + 35, value.trade_timeout_ms);
-	vnx::write_value(_buf + 39, value.max_history);
 	vnx::write(out, value.host, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.input_blocks, type_code, type_code->fields[12].code.data());
-	vnx::write(out, value.node_server, type_code, type_code->fields[15].code.data());
+	vnx::write(out, value.node_server, type_code, type_code->fields[14].code.data());
+	vnx::write(out, value.storage_path, type_code, type_code->fields[15].code.data());
 }
 
 void read(std::istream& in, ::mmx::exchange::ServerBase& value) {

@@ -30,8 +30,8 @@ public:
 	
 	::vnx::TopicPtr input_blocks = "node.verified_blocks";
 	int32_t trade_timeout_ms = 5000;
-	uint32_t max_history = 10000;
 	std::string node_server = "Node";
+	std::string storage_path = "exchange/server/";
 	
 	typedef ::vnx::addons::MsgServer Super;
 	
@@ -106,8 +106,8 @@ void ServerBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("max_msg_size", 11); _visitor.accept(max_msg_size);
 	_visitor.type_field("input_blocks", 12); _visitor.accept(input_blocks);
 	_visitor.type_field("trade_timeout_ms", 13); _visitor.accept(trade_timeout_ms);
-	_visitor.type_field("max_history", 14); _visitor.accept(max_history);
-	_visitor.type_field("node_server", 15); _visitor.accept(node_server);
+	_visitor.type_field("node_server", 14); _visitor.accept(node_server);
+	_visitor.type_field("storage_path", 15); _visitor.accept(storage_path);
 	_visitor.template type_end<ServerBase>(16);
 }
 

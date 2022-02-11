@@ -3,7 +3,7 @@
 
 #include <mmx/exchange/package.hxx>
 #include <mmx/exchange/trade_entry_t.hxx>
-#include <mmx/exchange/order_t.hxx>
+#include <mmx/exchange/trade_type_e.hxx>
 #include <mmx/hash_t.hpp>
 
 #include <vnx/vnx.h>
@@ -14,7 +14,7 @@ namespace exchange {
 
 
 const vnx::Hash64 trade_entry_t::VNX_TYPE_HASH(0x3d465e4d012518b0ull);
-const vnx::Hash64 trade_entry_t::VNX_CODE_HASH(0x2eba9cef3d7cecc1ull);
+const vnx::Hash64 trade_entry_t::VNX_CODE_HASH(0x7554e047a7e262f2ull);
 
 vnx::Hash64 trade_entry_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,7 +49,9 @@ void trade_entry_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, id);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, height);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, order);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, type);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, bid);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, ask);
 	_visitor.type_end(*_type_code);
 }
 
@@ -57,7 +59,9 @@ void trade_entry_t::write(std::ostream& _out) const {
 	_out << "{";
 	_out << "\"id\": "; vnx::write(_out, id);
 	_out << ", \"height\": "; vnx::write(_out, height);
-	_out << ", \"order\": "; vnx::write(_out, order);
+	_out << ", \"type\": "; vnx::write(_out, type);
+	_out << ", \"bid\": "; vnx::write(_out, bid);
+	_out << ", \"ask\": "; vnx::write(_out, ask);
 	_out << "}";
 }
 
@@ -72,18 +76,24 @@ vnx::Object trade_entry_t::to_object() const {
 	_object["__type"] = "mmx.exchange.trade_entry_t";
 	_object["id"] = id;
 	_object["height"] = height;
-	_object["order"] = order;
+	_object["type"] = type;
+	_object["bid"] = bid;
+	_object["ask"] = ask;
 	return _object;
 }
 
 void trade_entry_t::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "height") {
+		if(_entry.first == "ask") {
+			_entry.second.to(ask);
+		} else if(_entry.first == "bid") {
+			_entry.second.to(bid);
+		} else if(_entry.first == "height") {
 			_entry.second.to(height);
 		} else if(_entry.first == "id") {
 			_entry.second.to(id);
-		} else if(_entry.first == "order") {
-			_entry.second.to(order);
+		} else if(_entry.first == "type") {
+			_entry.second.to(type);
 		}
 	}
 }
@@ -95,8 +105,14 @@ vnx::Variant trade_entry_t::get_field(const std::string& _name) const {
 	if(_name == "height") {
 		return vnx::Variant(height);
 	}
-	if(_name == "order") {
-		return vnx::Variant(order);
+	if(_name == "type") {
+		return vnx::Variant(type);
+	}
+	if(_name == "bid") {
+		return vnx::Variant(bid);
+	}
+	if(_name == "ask") {
+		return vnx::Variant(ask);
 	}
 	return vnx::Variant();
 }
@@ -106,8 +122,12 @@ void trade_entry_t::set_field(const std::string& _name, const vnx::Variant& _val
 		_value.to(id);
 	} else if(_name == "height") {
 		_value.to(height);
-	} else if(_name == "order") {
-		_value.to(order);
+	} else if(_name == "type") {
+		_value.to(type);
+	} else if(_name == "bid") {
+		_value.to(bid);
+	} else if(_name == "ask") {
+		_value.to(ask);
 	}
 }
 
@@ -135,13 +155,13 @@ std::shared_ptr<vnx::TypeCode> trade_entry_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.trade_entry_t";
 	type_code->type_hash = vnx::Hash64(0x3d465e4d012518b0ull);
-	type_code->code_hash = vnx::Hash64(0x2eba9cef3d7cecc1ull);
+	type_code->code_hash = vnx::Hash64(0x7554e047a7e262f2ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::exchange::trade_entry_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<trade_entry_t>>(); };
 	type_code->depends.resize(1);
-	type_code->depends[0] = ::mmx::exchange::order_t::static_get_type_code();
-	type_code->fields.resize(3);
+	type_code->depends[0] = ::mmx::exchange::trade_type_e::static_get_type_code();
+	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -157,8 +177,20 @@ std::shared_ptr<vnx::TypeCode> trade_entry_t::static_create_type_code() {
 	{
 		auto& field = type_code->fields[2];
 		field.is_extended = true;
-		field.name = "order";
+		field.name = "type";
 		field.code = {19, 0};
+	}
+	{
+		auto& field = type_code->fields[3];
+		field.data_size = 8;
+		field.name = "bid";
+		field.code = {4};
+	}
+	{
+		auto& field = type_code->fields[4];
+		field.data_size = 8;
+		field.name = "ask";
+		field.code = {4};
 	}
 	type_code->build();
 	return type_code;
@@ -206,11 +238,17 @@ void read(TypeInput& in, ::mmx::exchange::trade_entry_t& value, const TypeCode* 
 		if(const auto* const _field = type_code->field_map[1]) {
 			vnx::read_value(_buf + _field->offset, value.height, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[3]) {
+			vnx::read_value(_buf + _field->offset, value.bid, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[4]) {
+			vnx::read_value(_buf + _field->offset, value.ask, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.id, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.order, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.type, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -229,10 +267,12 @@ void write(TypeOutput& out, const ::mmx::exchange::trade_entry_t& value, const T
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
+	char* const _buf = out.write(20);
 	vnx::write_value(_buf + 0, value.height);
+	vnx::write_value(_buf + 4, value.bid);
+	vnx::write_value(_buf + 12, value.ask);
 	vnx::write(out, value.id, type_code, type_code->fields[0].code.data());
-	vnx::write(out, value.order, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.type, type_code, type_code->fields[2].code.data());
 }
 
 void read(std::istream& in, ::mmx::exchange::trade_entry_t& value) {
