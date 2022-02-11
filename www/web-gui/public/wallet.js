@@ -1050,7 +1050,7 @@ app.component('account-offers', {
 				<td>{{item.bid_symbol}} / {{item.ask_symbol}}</td>
 				<td>{{(100 * item.bid_sold / item.bid).toPrecision(3)}} %</td>
 				<td>
-					<div class="ui tiny compact button" @click="cancel(item.id)">Cancel</div>
+					<div class="ui tiny compact button" @click="cancel(item.id)">{{item.bid_sold < item.bid ? 'Cancel' : 'Delete'}}</div>
 				</td>
 			</tr>
 			</tbody>

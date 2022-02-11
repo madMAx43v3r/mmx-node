@@ -55,6 +55,17 @@ void Client::main()
 
 	threads = new vnx::ThreadPool(1);
 
+	vnx::Directory(storage_path).create();
+	{
+		::rocksdb::Options options;
+		options.max_open_files = 4;
+		options.keep_log_file_num = 1;
+		options.max_manifest_file_size = 8 * 1024 * 1024;
+		options.OptimizeForSmallDb();
+
+		offer_table.open(storage_path + "offer_table", options);
+	}
+
 	set_timer_millis(10 * 1000, std::bind(&Client::update, this));
 	set_timer_millis(60 * 1000, std::bind(&Client::connect, this));
 	if(post_interval > 0) {
@@ -68,11 +79,14 @@ void Client::main()
 			std::map<uint64_t, std::shared_ptr<OfferBundle>> offers;
 			vnx::read_generic(file.in, offers);
 			for(const auto& entry : offers) {
-				if(auto offer = entry.second) {
-					place(offer);
-				}
+				offer_table.insert(entry.first, entry.second);
 			}
+			file.remove();
 		}
+		offer_table.scan(
+			[this](const uint64_t& id, const std::shared_ptr<OfferBundle>& offer) {
+				place(offer);
+			});
 	});
 
 	trade_log = std::make_shared<vnx::File>(storage_path + "trade_log.dat");
@@ -101,7 +115,6 @@ void Client::main()
 
 	connect();
 
-	is_init = false;
 	Super::main();
 
 	{
@@ -305,10 +318,10 @@ void Client::cancel_offer(const uint64_t& id)
 	for(const auto& key : method->orders) {
 		order_map.erase(key);
 	}
+	offer_table.erase(id);
 	offer_map.erase(iter);
 	pending_offers.erase(id);
 	wallet->release(offer->wallet, method->orders);
-	save_offers();
 }
 
 void Client::cancel_all()
@@ -471,6 +484,7 @@ bool Client::try_place(std::shared_ptr<OfferBundle> offer)
 		is_ready = false;
 	}
 	if(offer->bid_sold >= offer->bid) {
+		offer_table.erase(offer->id);
 		return true;
 	}
 	if(!is_generated) {
@@ -483,7 +497,7 @@ bool Client::try_place(std::shared_ptr<OfferBundle> offer)
 		next_offer_id = std::max(offer->id + 1, next_offer_id);
 		order_map.insert(offer->orders.begin(), offer->orders.end());
 		offer_map[offer->id] = offer;
-		save_offers();
+		offer_table.insert(offer->id, offer);
 		wallet->reserve(offer->wallet, keys);
 	}
 	if(is_ready) {
@@ -493,18 +507,6 @@ bool Client::try_place(std::shared_ptr<OfferBundle> offer)
 				<< " (" << avail_server_map.size() << " servers)";
 	}
 	return is_ready;
-}
-
-void Client::save_offers() const
-{
-	try {
-		vnx::File file(storage_path + "offers.dat");
-		file.open("wb");
-		vnx::write_generic(file.out, offer_map);
-	}
-	catch(const std::exception& ex) {
-		log(WARN) << ex.what();
-	}
 }
 
 void Client::post_offers()

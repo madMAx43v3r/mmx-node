@@ -21,6 +21,7 @@
 
 #include <vnx/ThreadPool.h>
 #include <vnx/addons/HttpInterface.h>
+#include <vnx/rocksdb/table.h>
 
 
 namespace mmx {
@@ -112,8 +113,6 @@ private:
 
 	void connect();
 
-	void save_offers() const;
-
 	void post_offers();
 
 	void add_peer(const std::string& address, const int sock);
@@ -145,7 +144,6 @@ private:
 	std::shared_ptr<peer_t> get_server(const std::string& name) const;
 
 private:
-	bool is_init = true;
 	std::shared_ptr<NodeClient> node;
 	std::shared_ptr<WalletClient> wallet;
 
@@ -155,6 +153,7 @@ private:
 
 	std::unordered_map<txio_key_t, open_order_t> order_map;
 	std::map<uint64_t, std::shared_ptr<OfferBundle>> offer_map;
+	vnx::rocksdb::table<uint64_t, std::shared_ptr<OfferBundle>> offer_table;
 
 	mutable std::multimap<uint32_t, std::shared_ptr<const LocalTrade>> trade_history;
 
