@@ -39,7 +39,7 @@ app.component('exchange-menu', {
 				.then(response => response.json())
 				.then(data => {
 					this.wallets = data;
-					if(!this.wallet && this.wallet_ < data.length) {
+					if(!this.wallet && this.wallet_) {
 						this.wallet = this.wallet_;
 					}
 					else if(data.length > 0) {
