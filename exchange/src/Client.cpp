@@ -104,7 +104,6 @@ void Client::main()
 	is_init = false;
 	Super::main();
 
-	save_offers();
 	{
 		std::unordered_map<uint32_t, std::vector<txio_key_t>> keys;
 		for(const auto& entry : order_map) {
@@ -155,7 +154,6 @@ void Client::handle(std::shared_ptr<const Block> block)
 						const auto& order = iter->second;
 						if(auto offer = find_offer(order.offer_id)) {
 							offer->bid_sold += order.bid.amount;
-							offer->received += order.ask.amount;
 							sold_map[offer->wallet].push_back(in.prev);
 						}
 						auto& trade = trade_map[order.offer_id];
@@ -214,10 +212,6 @@ void Client::handle(std::shared_ptr<const Block> block)
 	}
 	for(auto id : posted_offers) {
 		pending_offers.erase(id);
-	}
-
-	if(!sold_map.empty() || !posted_offers.empty()) {
-		save_offers();
 	}
 }
 

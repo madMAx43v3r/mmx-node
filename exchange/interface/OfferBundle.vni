@@ -15,7 +15,6 @@ class OfferBundle {
 	ulong ask;
 	
 	ulong bid_sold;
-	ulong received;
 	
 	vector<limit_order_t> limit_orders;
 	
