@@ -38,6 +38,8 @@ public:
 	std::string wallet_server = "Wallet";
 	std::map<std::string, std::string> server_map;
 	std::string storage_path;
+	int32_t post_interval = 900;
+	uint32_t min_confirm = 2;
 	uint32_t max_trade_history = 10000;
 	
 	typedef ::vnx::addons::MsgServer Super;
@@ -111,7 +113,7 @@ protected:
 
 template<typename T>
 void ClientBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ClientBase>(18);
+	_visitor.template type_begin<ClientBase>(20);
 	_visitor.type_field("port", 0); _visitor.accept(port);
 	_visitor.type_field("host", 1); _visitor.accept(host);
 	_visitor.type_field("max_connections", 2); _visitor.accept(max_connections);
@@ -129,8 +131,10 @@ void ClientBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("wallet_server", 14); _visitor.accept(wallet_server);
 	_visitor.type_field("server_map", 15); _visitor.accept(server_map);
 	_visitor.type_field("storage_path", 16); _visitor.accept(storage_path);
-	_visitor.type_field("max_trade_history", 17); _visitor.accept(max_trade_history);
-	_visitor.template type_end<ClientBase>(18);
+	_visitor.type_field("post_interval", 17); _visitor.accept(post_interval);
+	_visitor.type_field("min_confirm", 18); _visitor.accept(min_confirm);
+	_visitor.type_field("max_trade_history", 19); _visitor.accept(max_trade_history);
+	_visitor.template type_end<ClientBase>(20);
 }
 
 

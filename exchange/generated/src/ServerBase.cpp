@@ -68,7 +68,7 @@ namespace exchange {
 
 
 const vnx::Hash64 ServerBase::VNX_TYPE_HASH(0x573a9f3b899c4e1dull);
-const vnx::Hash64 ServerBase::VNX_CODE_HASH(0x55306989b579a084ull);
+const vnx::Hash64 ServerBase::VNX_CODE_HASH(0x97fdc6cde8605804ull);
 
 ServerBase::ServerBase(const std::string& _vnx_name)
 	:	MsgServer::MsgServer(_vnx_name)
@@ -76,7 +76,6 @@ ServerBase::ServerBase(const std::string& _vnx_name)
 	vnx::read_config(vnx_name + ".input_blocks", input_blocks);
 	vnx::read_config(vnx_name + ".trade_timeout_ms", trade_timeout_ms);
 	vnx::read_config(vnx_name + ".max_history", max_history);
-	vnx::read_config(vnx_name + ".price_estimation_limit", price_estimation_limit);
 	vnx::read_config(vnx_name + ".node_server", node_server);
 }
 
@@ -110,8 +109,7 @@ void ServerBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[12], 12); vnx::accept(_visitor, input_blocks);
 	_visitor.type_field(_type_code->fields[13], 13); vnx::accept(_visitor, trade_timeout_ms);
 	_visitor.type_field(_type_code->fields[14], 14); vnx::accept(_visitor, max_history);
-	_visitor.type_field(_type_code->fields[15], 15); vnx::accept(_visitor, price_estimation_limit);
-	_visitor.type_field(_type_code->fields[16], 16); vnx::accept(_visitor, node_server);
+	_visitor.type_field(_type_code->fields[15], 15); vnx::accept(_visitor, node_server);
 	_visitor.type_end(*_type_code);
 }
 
@@ -132,7 +130,6 @@ void ServerBase::write(std::ostream& _out) const {
 	_out << ", \"input_blocks\": "; vnx::write(_out, input_blocks);
 	_out << ", \"trade_timeout_ms\": "; vnx::write(_out, trade_timeout_ms);
 	_out << ", \"max_history\": "; vnx::write(_out, max_history);
-	_out << ", \"price_estimation_limit\": "; vnx::write(_out, price_estimation_limit);
 	_out << ", \"node_server\": "; vnx::write(_out, node_server);
 	_out << "}";
 }
@@ -161,7 +158,6 @@ vnx::Object ServerBase::to_object() const {
 	_object["input_blocks"] = input_blocks;
 	_object["trade_timeout_ms"] = trade_timeout_ms;
 	_object["max_history"] = max_history;
-	_object["price_estimation_limit"] = price_estimation_limit;
 	_object["node_server"] = node_server;
 	return _object;
 }
@@ -186,8 +182,6 @@ void ServerBase::from_object(const vnx::Object& _object) {
 			_entry.second.to(node_server);
 		} else if(_entry.first == "port") {
 			_entry.second.to(port);
-		} else if(_entry.first == "price_estimation_limit") {
-			_entry.second.to(price_estimation_limit);
 		} else if(_entry.first == "receive_buffer_size") {
 			_entry.second.to(receive_buffer_size);
 		} else if(_entry.first == "send_buffer_size") {
@@ -252,9 +246,6 @@ vnx::Variant ServerBase::get_field(const std::string& _name) const {
 	if(_name == "max_history") {
 		return vnx::Variant(max_history);
 	}
-	if(_name == "price_estimation_limit") {
-		return vnx::Variant(price_estimation_limit);
-	}
 	if(_name == "node_server") {
 		return vnx::Variant(node_server);
 	}
@@ -292,8 +283,6 @@ void ServerBase::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(trade_timeout_ms);
 	} else if(_name == "max_history") {
 		_value.to(max_history);
-	} else if(_name == "price_estimation_limit") {
-		_value.to(price_estimation_limit);
 	} else if(_name == "node_server") {
 		_value.to(node_server);
 	}
@@ -323,7 +312,7 @@ std::shared_ptr<vnx::TypeCode> ServerBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.Server";
 	type_code->type_hash = vnx::Hash64(0x573a9f3b899c4e1dull);
-	type_code->code_hash = vnx::Hash64(0x55306989b579a084ull);
+	type_code->code_hash = vnx::Hash64(0x97fdc6cde8605804ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::exchange::ServerBase);
 	type_code->parents.resize(2);
@@ -350,7 +339,7 @@ std::shared_ptr<vnx::TypeCode> ServerBase::static_create_type_code() {
 	type_code->methods[17] = ::mmx::exchange::Server_reject::static_get_type_code();
 	type_code->methods[18] = ::mmx::exchange::Server_approve::static_get_type_code();
 	type_code->methods[19] = ::mmx::exchange::Server_ping::static_get_type_code();
-	type_code->fields.resize(17);
+	type_code->fields.resize(16);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -456,13 +445,6 @@ std::shared_ptr<vnx::TypeCode> ServerBase::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[15];
-		field.data_size = 4;
-		field.name = "price_estimation_limit";
-		field.value = vnx::to_string(1000);
-		field.code = {3};
-	}
-	{
-		auto& field = type_code->fields[16];
 		field.is_extended = true;
 		field.name = "node_server";
 		field.value = vnx::to_string("Node");
@@ -707,15 +689,12 @@ void read(TypeInput& in, ::mmx::exchange::ServerBase& value, const TypeCode* typ
 		if(const auto* const _field = type_code->field_map[14]) {
 			vnx::read_value(_buf + _field->offset, value.max_history, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[15]) {
-			vnx::read_value(_buf + _field->offset, value.price_estimation_limit, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 1: vnx::read(in, value.host, type_code, _field->code.data()); break;
 			case 12: vnx::read(in, value.input_blocks, type_code, _field->code.data()); break;
-			case 16: vnx::read(in, value.node_server, type_code, _field->code.data()); break;
+			case 15: vnx::read(in, value.node_server, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -734,7 +713,7 @@ void write(TypeOutput& out, const ::mmx::exchange::ServerBase& value, const Type
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(47);
+	char* const _buf = out.write(43);
 	vnx::write_value(_buf + 0, value.port);
 	vnx::write_value(_buf + 4, value.max_connections);
 	vnx::write_value(_buf + 8, value.listen_queue_size);
@@ -748,10 +727,9 @@ void write(TypeOutput& out, const ::mmx::exchange::ServerBase& value, const Type
 	vnx::write_value(_buf + 31, value.max_msg_size);
 	vnx::write_value(_buf + 35, value.trade_timeout_ms);
 	vnx::write_value(_buf + 39, value.max_history);
-	vnx::write_value(_buf + 43, value.price_estimation_limit);
 	vnx::write(out, value.host, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.input_blocks, type_code, type_code->fields[12].code.data());
-	vnx::write(out, value.node_server, type_code, type_code->fields[16].code.data());
+	vnx::write(out, value.node_server, type_code, type_code->fields[15].code.data());
 }
 
 void read(std::istream& in, ::mmx::exchange::ServerBase& value) {
