@@ -36,8 +36,8 @@ app.component('account-menu', {
 			<router-link class="item" :class="{active: $route.meta.page == 'contracts'}" :to="'/wallet/account/' + index + '/contracts'">Contracts</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'addresses'}" :to="'/wallet/account/' + index + '/addresses'">Addresses</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'send'}" :to="'/wallet/account/' + index + '/send'">Send</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'split'}" :to="'/wallet/account/' + index + '/split'">Split</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'offer'}" :to="'/wallet/account/' + index + '/offer'">Offer</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'split'}" :to="'/wallet/account/' + index + '/split'">Split</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'details'}" :to="'/wallet/account/' + index + '/details'">Details</router-link>
 			<router-link class="right item" :class="{active: $route.meta.page == 'options'}" :to="'/wallet/account/' + index + '/options'"><i class="cog icon"></i></router-link>
 		</div>
@@ -1023,14 +1023,13 @@ app.component('account-offers', {
 			<thead>
 			<tr>
 				<th>ID</th>
-				<th>Offer</th>
-				<th></th>
-				<th>Receive</th>
-				<th></th>
-				<th>Price</th>
-				<th></th>
-				<th>Price</th>
-				<th></th>
+				<template v-if="bid && ask">
+					<th>Type</th>
+				</template>
+				<th colspan="2">Amount</th>
+				<th colspan="2">Receive</th>
+				<th colspan="2">Price</th>
+				<th colspan="2">Price</th>
 				<th>Status</th>
 				<th>Actions</th>
 			</tr>
@@ -1038,6 +1037,9 @@ app.component('account-offers', {
 			<tbody>
 			<tr v-for="item in data" :key="item.id">
 				<td>{{item.id}}</td>
+				<template v-if="bid && ask">
+					<td>{{item.type}}</td>
+				</template>
 				<td class="collapsing"><b>{{item.bid_value}}</b></td>
 				<td>{{item.bid_symbol}}</td>
 				<td class="collapsing"><b>{{item.ask_value}}</b></td>

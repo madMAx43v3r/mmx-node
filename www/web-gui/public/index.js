@@ -160,7 +160,7 @@ const ExchangeMarket = {
 				</exchange-trade-form>
 			</div>
 		</div>
-		<exchange-orders ref="orders" :server="server" :bid="bid" :ask="ask" :limit="100"></exchange-orders>
+		<exchange-orders ref="orders" :server="server" :bid="bid" :ask="ask" :flip="false" :limit="100"></exchange-orders>
 		`
 }
 
@@ -225,7 +225,7 @@ const ExchangeOffers = {
 				</exchange-offer-form>
 			</div>
 		</div>
-		<exchange-orders ref="orders" :server="server" :bid="bid" :ask="ask" :limit="5"></exchange-orders>
+		<exchange-orders ref="orders" :server="server" :bid="bid" :ask="ask" :flip="true" :limit="5"></exchange-orders>
 		<account-offers ref="offers" @offer-cancel="update_cancel" :index="wallet" :bid="bid" :ask="ask"></account-offers>
 		`
 }

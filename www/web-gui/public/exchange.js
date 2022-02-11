@@ -191,12 +191,9 @@ app.component('exchange-order-list', {
 	template: `
 		<table class="ui table striped" :class="color">
 			<thead>
-				<th>Price</th>
-				<th></th>
-				<th>{{flip ? "Bid" : "Ask"}}</th>
-				<th></th>
-				<th>{{flip ? "Ask" : "Bid"}}</th>
-				<th></th>
+				<th colspan="2">Price</th>
+				<th colspan="2">{{flip ? "Bid" : "Ask"}}</th>
+				<th colspan="2">{{flip ? "Ask" : "Bid"}}</th>
 			</thead>
 			<tbody>
 				<tr v-for="item in data.orders" :key="item.bid_key">
@@ -217,7 +214,8 @@ app.component('exchange-orders', {
 		bid: String,
 		ask: String,
 		server: String,
-		limit: Number
+		limit: Number,
+		flip: Boolean
 	},
 	methods: {
 		update() {
@@ -228,10 +226,10 @@ app.component('exchange-orders', {
 	template: `
 		<div class="ui two column grid">
 			<div class="column">
-				<exchange-order-list :server="server" :bid="bid" :ask="ask" :flip="false" :limit="limit" color="green" ref="bid_list"></exchange-order-list>
+				<exchange-order-list :server="server" :bid="bid" :ask="ask" :flip="false" :limit="limit" :color="flip ? 'red' : 'green'" ref="bid_list"></exchange-order-list>
 			</div>
 			<div class="column">
-				<exchange-order-list :server="server" :bid="ask" :ask="bid" :flip="true" :limit="limit" color="red" ref="ask_list"></exchange-order-list>
+				<exchange-order-list :server="server" :bid="ask" :ask="bid" :flip="true" :limit="limit" :color="flip ? 'green' : 'red'" ref="ask_list"></exchange-order-list>
 			</div>
 		</div>
 		`
@@ -343,12 +341,9 @@ app.component('exchange-history', {
 		<table class="ui table striped">
 			<thead>
 				<th>Type</th>
-				<th>Amount</th>
-				<th></th>
-				<th>Volume</th>
-				<th></th>
-				<th>Price</th>
-				<th></th>
+				<th colspan="2">Amount</th>
+				<th colspan="2">Volume</th>
+				<th colspan="2">Price</th>
 				<th>Offer</th>
 				<th>Height</th>
 				<th>Time</th>
