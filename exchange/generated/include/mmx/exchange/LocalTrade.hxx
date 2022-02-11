@@ -21,7 +21,7 @@ public:
 	vnx::bool_t failed = 0;
 	vnx::optional<uint32_t> height;
 	::mmx::exchange::trade_pair_t pair;
-	::mmx::exchange::trade_type_e type = ::mmx::exchange::trade_type_e::BUY;
+	::mmx::exchange::trade_type_e type = ::mmx::exchange::trade_type_e::SELL;
 	uint64_t bid = 0;
 	uint64_t ask = 0;
 	vnx::optional<uint64_t> offer_id;

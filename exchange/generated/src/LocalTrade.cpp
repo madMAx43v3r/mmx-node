@@ -16,7 +16,7 @@ namespace exchange {
 
 
 const vnx::Hash64 LocalTrade::VNX_TYPE_HASH(0x63fd417b165df53cull);
-const vnx::Hash64 LocalTrade::VNX_CODE_HASH(0x4665affb73ca601aull);
+const vnx::Hash64 LocalTrade::VNX_CODE_HASH(0x9282106418c030a9ull);
 
 vnx::Hash64 LocalTrade::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -197,7 +197,7 @@ std::shared_ptr<vnx::TypeCode> LocalTrade::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.LocalTrade";
 	type_code->type_hash = vnx::Hash64(0x63fd417b165df53cull);
-	type_code->code_hash = vnx::Hash64(0x4665affb73ca601aull);
+	type_code->code_hash = vnx::Hash64(0x9282106418c030a9ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::exchange::LocalTrade);
@@ -234,7 +234,7 @@ std::shared_ptr<vnx::TypeCode> LocalTrade::static_create_type_code() {
 		auto& field = type_code->fields[4];
 		field.is_extended = true;
 		field.name = "type";
-		field.value = vnx::to_string("BUY");
+		field.value = vnx::to_string("SELL");
 		field.code = {19, 1};
 	}
 	{

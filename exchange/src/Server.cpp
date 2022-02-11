@@ -84,7 +84,7 @@ void Server::handle(std::shared_ptr<const Block> block)
 							trade_entry_t out;
 							out.id = iter->second;
 							out.height = block->height;
-							out.type = trade_type_e::SELL;
+							out.type = trade_type_e::BUY;
 							out.bid = order.bid;
 							out.ask = order.ask;
 							trade_history.insert(entry.first, out);
@@ -93,7 +93,7 @@ void Server::handle(std::shared_ptr<const Block> block)
 							trade_entry_t out;
 							out.id = iter->second;
 							out.height = block->height;
-							out.type = trade_type_e::BUY;
+							out.type = trade_type_e::SELL;
 							out.bid = order.ask;
 							out.ask = order.bid;
 							trade_history.insert(entry.first.reverse(), out);

@@ -12,7 +12,7 @@ class LocalTrade {
 	
 	trade_pair_t pair;
 	
-	trade_type_e type = BUY;
+	trade_type_e type = SELL;
 	
 	ulong bid;
 	ulong ask;
