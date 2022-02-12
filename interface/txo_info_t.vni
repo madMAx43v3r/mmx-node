@@ -2,6 +2,8 @@ package mmx;
 
 struct txo_info_t {
 	
+	txio_key_t key;
+	
 	utxo_t output;
 	
 	optional<txio_key_t> spent;

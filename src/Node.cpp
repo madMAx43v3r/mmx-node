@@ -351,7 +351,8 @@ vnx::optional<tx_info_t> Node::get_tx_info(const hash_t& id) const
 		}
 		for(size_t i = 0; i < tx->outputs.size() + tx->exec_outputs.size(); ++i) {
 			txo_info_t entry;
-			if(auto txo = get_txo_info(txio_key_t::create_ex(id, i))) {
+			entry.key = txio_key_t::create_ex(id, i);
+			if(auto txo = get_txo_info(entry.key)) {
 				entry = *txo;
 			} else if(i < tx->outputs.size()) {
 				entry.output.tx_out_t::operator=(tx->outputs[i]);
@@ -381,10 +382,11 @@ vnx::optional<tx_info_t> Node::get_tx_info(const hash_t& id) const
 
 vnx::optional<txo_info_t> Node::get_txo_info(const txio_key_t& key) const
 {
+	txo_info_t info;
+	info.key = key;
 	{
 		auto iter = utxo_map.find(key);
 		if(iter != utxo_map.end()) {
-			txo_info_t info;
 			info.output = iter->second;
 			return info;
 		}
@@ -392,7 +394,6 @@ vnx::optional<txo_info_t> Node::get_txo_info(const txio_key_t& key) const
 	{
 		stxo_t stxo;
 		if(stxo_index.find(key, stxo)) {
-			txo_info_t info;
 			info.output = stxo;
 			info.spent = stxo.spent;
 			return info;
@@ -401,14 +402,12 @@ vnx::optional<txo_info_t> Node::get_txo_info(const txio_key_t& key) const
 	for(const auto& log : change_log) {
 		auto iter = log->utxo_removed.find(key);
 		if(iter != log->utxo_removed.end()) {
-			txo_info_t info;
 			info.output = iter->second;
 			info.spent = iter->second.spent;
 			return info;
 		}
 	}
 	if(auto tx = get_transaction(key.txid)) {
-		txo_info_t info;
 		info.output = utxo_t::create_ex(tx->get_output(key.index));
 		return info;
 	}
