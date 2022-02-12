@@ -123,8 +123,9 @@ private:
 	std::shared_ptr<vnx::GenericAsyncClient> server;
 	std::shared_ptr<const ChainParams> params;
 
-	mutable std::unordered_map<addr_t, uint64_t> addr_map;						// [addr => client]
 	mutable std::unordered_map<txio_key_t, utxo_t> utxo_map;
+	mutable std::unordered_map<txio_key_t, uint64_t> owner_map;					// [addr => client]
+
 	std::unordered_map<txio_key_t, hash_t> lock_map;							// [key => txid]
 
 	mutable std::map<trade_pair_t, std::shared_ptr<order_book_t>> trade_map;

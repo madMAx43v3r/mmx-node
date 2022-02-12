@@ -202,7 +202,7 @@ Wallet::sign_off(	const uint32_t& index, std::shared_ptr<const Transaction> tx,
 	const auto wallet = get_wallet(index);
 	const std::unordered_map<txio_key_t, utxo_t> utxo_map(utxo_list.begin(), utxo_list.end());
 
-	uint64_t native_change = 0;
+	int64_t native_change = 0;
 	std::unordered_set<txio_key_t> spent_keys;
 	for(const auto& in : tx->inputs) {
 		auto iter = utxo_map.find(in.prev);
@@ -237,6 +237,14 @@ Wallet::sign_off(	const uint32_t& index, std::shared_ptr<const Transaction> tx,
 
 	auto copy = vnx::clone(tx);
 	if(cover_fee) {
+		for(const auto& key : spent_keys) {
+			if(!utxo_map.count(key)) {
+				throw std::logic_error("unknown input");
+			}
+		}
+		if(native_change < 0) {
+			throw std::logic_error("negative change");
+		}
 		wallet->gather_fee(copy, spent_map, {}, native_change, owner_map, utxo_map);
 	}
 	wallet->sign_off(copy, spent_map, owner_map);
@@ -262,6 +270,9 @@ void Wallet::send_off(const uint32_t& index, std::shared_ptr<const Transaction> 
 void Wallet::mark_spent(const uint32_t& index, const std::vector<txio_key_t>& keys)
 {
 	const auto wallet = get_wallet(index);
+	for(const auto& key : keys) {
+		wallet->reserved_set.erase(key);
+	}
 	wallet->spent_set.insert(keys.begin(), keys.end());
 }
 

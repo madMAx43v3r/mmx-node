@@ -621,44 +621,43 @@ void Client::execute_async(const std::string& server, const uint32_t& index, con
 		copy->outputs.push_back(out);
 	}
 	auto tx = wallet->sign_off(index, copy, true, utxo_list);
-	if(tx) {
-		std::vector<txio_key_t> keys;
-		for(const auto& in : tx->inputs) {
-			keys.push_back(in.prev);
-		}
-		wallet->reserve(index, keys);
-
-		auto trade = LocalTrade::create();
-		trade->id = tx->id;
-		trade->pair = order.pair;
-		trade->bid = order.bid;
-		trade->ask = order.ask;
-
-		auto method = Server_execute::create();
-		method->tx = tx;
-		send_request(peer, method,
-			[this, request_id, index, keys, trade, tx](std::shared_ptr<const vnx::Value> result) {
-				wallet->release(index, keys);
-				if(auto ex = std::dynamic_pointer_cast<const vnx::Exception>(result)) {
-					vnx_async_return(request_id, ex);
-					try {
-						trade->failed = true;
-						trade->message = ex->what;
-						vnx::write(trade_log->out, trade);
-						trade_log->flush();
-					} catch(const std::exception& ex) {
-						log(WARN) << ex.what();
-					}
-					trade_history.emplace(trade->height, trade);
-				} else {
-					wallet->mark_spent(index, keys);
-					execute_async_return(request_id, tx->id);
-					pending_trades[tx->id] = trade;
-				}
-			});
-	} else {
-		vnx_async_return_ex_what(request_id, "failed to sign off");
+	if(!tx) {
+		throw std::logic_error("failed to sign off");
 	}
+	keys.clear();
+	for(const auto& in : tx->inputs) {
+		keys.push_back(in.prev);
+	}
+	wallet->reserve(index, keys);
+
+	auto trade = LocalTrade::create();
+	trade->id = tx->id;
+	trade->pair = order.pair;
+	trade->bid = order.bid;
+	trade->ask = order.ask;
+
+	auto method = Server_execute::create();
+	method->tx = tx;
+	send_request(peer, method,
+		[this, request_id, index, keys, trade, tx](std::shared_ptr<const vnx::Value> result) {
+			if(auto ex = std::dynamic_pointer_cast<const vnx::Exception>(result)) {
+				wallet->release(index, keys);
+				vnx_async_return(request_id, ex);
+				try {
+					trade->failed = true;
+					trade->message = ex->what;
+					vnx::write(trade_log->out, trade);
+					trade_log->flush();
+				} catch(const std::exception& ex) {
+					log(WARN) << ex.what();
+				}
+				trade_history.emplace(trade->height, trade);
+			} else {
+				wallet->mark_spent(index, keys);
+				execute_async_return(request_id, tx->id);
+				pending_trades[tx->id] = trade;
+			}
+		});
 }
 
 void Client::match_async(const std::string& server, const std::vector<trade_order_t>& orders, const vnx::request_id_t& request_id) const

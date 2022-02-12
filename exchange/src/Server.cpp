@@ -100,6 +100,15 @@ void Server::handle(std::shared_ptr<const Block> block)
 						}
 					}
 				}
+				{
+					auto iter = owner_map.find(order.bid_key);
+					if(iter != owner_map.end()) {
+						if(auto peer = find_peer(iter->second)) {
+							peer->order_map.erase(order.bid_key);
+						}
+						owner_map.erase(iter);
+					}
+				}
 				book->key_map.erase(order.bid_key);
 				iter = book->orders.erase(iter);
 			}
@@ -151,6 +160,7 @@ void Server::cancel(const uint64_t& client, const std::vector<txio_key_t>& order
 		if(iter != peer->order_map.end()) {
 			cancel_order(iter->second, key);
 			peer->order_map.erase(iter);
+			owner_map.erase(key);
 		}
 	}
 }
@@ -220,7 +230,6 @@ void Server::place_async(const uint64_t& client, const trade_pair_t& pair, const
 		throw std::logic_error("invalid signature");
 	}
 	const auto address = solution->pubkey.get_addr();
-	addr_map[address] = client;
 
 	std::vector<txio_key_t> keys;
 	for(const auto& entry : order.bids) {
@@ -264,6 +273,7 @@ void Server::place_async(const uint64_t& client, const trade_pair_t& pair, const
 					book->key_map[entry.bid_key] = price;
 					book->orders.emplace(price, entry);
 					peer->order_map[entry.bid_key] = pair;
+					owner_map[entry.bid_key] = peer->client;
 				}
 			}
 			place_async_return(request_id, result);
@@ -280,10 +290,13 @@ void Server::execute_async(std::shared_ptr<const Transaction> tx, const vnx::req
 	for(const auto& in : tx->inputs) {
 		keys.push_back(in.prev);
 	}
+	if(std::unordered_set<txio_key_t>(keys.begin(), keys.end()).size() != keys.size()) {
+		throw std::logic_error("double spend");
+	}
 	node->get_txo_infos(keys,
 		[this, tx, request_id](const std::vector<vnx::optional<txo_info_t>>& entries) {
 			try {
-				std::unordered_set<addr_t> offer_addrs;
+				auto job = std::make_shared<trade_job_t>();
 				std::unordered_set<addr_t> input_addrs;
 				std::unordered_map<addr_t, uint64_t> input_amount;
 				for(size_t i = 0; i < entries.size() && i < tx->inputs.size(); ++i) {
@@ -291,18 +304,23 @@ void Server::execute_async(std::shared_ptr<const Transaction> tx, const vnx::req
 					if(!is_open(in.prev)) {
 						throw std::logic_error("offer no longer open");
 					}
+					if(in.solution >= tx->solutions.size()) {
+						auto iter = owner_map.find(in.prev);
+						if(iter != owner_map.end()) {
+							job->pending_clients.insert(iter->second);
+						} else {
+							throw std::logic_error("missing solution for input " + std::to_string(i));
+						}
+					}
 					if(const auto& entry = entries[i]) {
 						if(entry->spent) {
 							throw std::logic_error("input already spent");
 						}
 						const auto& utxo = entry->output;
-						if(in.solution >= tx->solutions.size()) {
-							offer_addrs.insert(utxo.address);
-						}
 						input_addrs.insert(utxo.address);
 						input_amount[utxo.contract] += utxo.amount;
 					} else {
-						throw std::logic_error("no such utxo");
+						throw std::logic_error("invalid input");
 					}
 				}
 				std::unordered_map<addr_t, uint64_t> output_amount;
@@ -330,18 +348,10 @@ void Server::execute_async(std::shared_ptr<const Transaction> tx, const vnx::req
 				if(fee_amount < fee_needed) {
 					throw std::logic_error("insufficient fee: " + std::to_string(fee_amount) + " < " + std::to_string(fee_needed));
 				}
-				auto job = std::make_shared<trade_job_t>();
 
-				for(const auto& addr : offer_addrs) {
-					auto iter = addr_map.find(addr);
-					if(iter == addr_map.end()) {
-						throw std::logic_error("client not found");
-					}
-					job->pending_clients.insert(iter->second);
-				}
 				auto request = Client_approve::create();
 				request->tx = tx;
-				for(const auto client : job->pending_clients) {
+				for(auto client : job->pending_clients) {
 					send_to(client, request);
 				}
 				for(const auto& in : tx->inputs) {
