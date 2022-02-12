@@ -183,7 +183,7 @@ app.component('exchange-order-list', {
 	},
 	created() {
 		this.update();
-		this.timer = setInterval(() => { this.update(); }, 30000);
+		this.timer = setInterval(() => { this.update(); }, 60000);
 	},
 	unmounted() {
 		clearInterval(this.timer);
@@ -259,7 +259,7 @@ app.component('exchange-trade-list', {
 	},
 	created() {
 		this.update();
-		this.timer = setInterval(() => { this.update(); }, 30000);
+		this.timer = setInterval(() => { this.update(); }, 60000);
 	},
 	unmounted() {
 		clearInterval(this.timer);
@@ -329,7 +329,7 @@ app.component('exchange-history', {
 	},
 	created() {
 		this.update();
-		this.timer = setInterval(() => { this.update(); }, 30000);
+		this.timer = setInterval(() => { this.update(); }, 10000);
 	},
 	unmounted() {
 		clearInterval(this.timer);
@@ -384,6 +384,7 @@ app.component('exchange-trade-form', {
 			min_trade: "?",
 			confirmed: false,
 			timer: null,
+			counter: 0,
 			result: null,
 			error: null
 		}
@@ -399,9 +400,12 @@ app.component('exchange-trade-form', {
 						this.balance = 0;
 					}
 				});
-			fetch('/wapi/exchange/min_trade?server=' + this.server + '&ask=' + this.bid_currency + '&bid=' + this.ask_currency)
-				.then(response => response.json())
-				.then(data => this.min_trade = data.amount);
+			if(this.counter % 6 == 0) {
+				fetch('/wapi/exchange/min_trade?server=' + this.server + '&ask=' + this.bid_currency + '&bid=' + this.ask_currency)
+					.then(response => response.json())
+					.then(data => this.min_trade = data.amount);
+			}
+			this.counter++;
 		},
 		submit() {
 			this.confirmed = false;
