@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_txo_info_return::VNX_TYPE_HASH(0xec5afeac062fef38ull);
-const vnx::Hash64 Node_get_txo_info_return::VNX_CODE_HASH(0xa9c169b5e43f4bf0ull);
+const vnx::Hash64 Node_get_txo_info_return::VNX_CODE_HASH(0xb1434f8497b50b99ull);
 
 vnx::Hash64 Node_get_txo_info_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -114,7 +114,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_txo_info_return::static_create_type_code
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_txo_info.return";
 	type_code->type_hash = vnx::Hash64(0xec5afeac062fef38ull);
-	type_code->code_hash = vnx::Hash64(0xa9c169b5e43f4bf0ull);
+	type_code->code_hash = vnx::Hash64(0xb1434f8497b50b99ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;

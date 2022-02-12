@@ -15,6 +15,7 @@ namespace mmx {
 struct txo_info_t {
 	
 	
+	::mmx::txio_key_t key;
 	::mmx::utxo_t output;
 	vnx::optional<::mmx::txio_key_t> spent;
 	
@@ -58,10 +59,11 @@ struct txo_info_t {
 
 template<typename T>
 void txo_info_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<txo_info_t>(2);
-	_visitor.type_field("output", 0); _visitor.accept(output);
-	_visitor.type_field("spent", 1); _visitor.accept(spent);
-	_visitor.template type_end<txo_info_t>(2);
+	_visitor.template type_begin<txo_info_t>(3);
+	_visitor.type_field("key", 0); _visitor.accept(key);
+	_visitor.type_field("output", 1); _visitor.accept(output);
+	_visitor.type_field("spent", 2); _visitor.accept(spent);
+	_visitor.template type_end<txo_info_t>(3);
 }
 
 

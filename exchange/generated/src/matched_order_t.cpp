@@ -16,7 +16,7 @@ namespace exchange {
 
 
 const vnx::Hash64 matched_order_t::VNX_TYPE_HASH(0xe730b5f024a17e86ull);
-const vnx::Hash64 matched_order_t::VNX_CODE_HASH(0xed09c5e289c4fc69ull);
+const vnx::Hash64 matched_order_t::VNX_CODE_HASH(0xde46ea25350414c1ull);
 
 vnx::Hash64 matched_order_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -53,7 +53,6 @@ void matched_order_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, ask);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, pair);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, tx);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, utxo_list);
 	_visitor.type_end(*_type_code);
 }
 
@@ -63,7 +62,6 @@ void matched_order_t::write(std::ostream& _out) const {
 	_out << ", \"ask\": "; vnx::write(_out, ask);
 	_out << ", \"pair\": "; vnx::write(_out, pair);
 	_out << ", \"tx\": "; vnx::write(_out, tx);
-	_out << ", \"utxo_list\": "; vnx::write(_out, utxo_list);
 	_out << "}";
 }
 
@@ -80,7 +78,6 @@ vnx::Object matched_order_t::to_object() const {
 	_object["ask"] = ask;
 	_object["pair"] = pair;
 	_object["tx"] = tx;
-	_object["utxo_list"] = utxo_list;
 	return _object;
 }
 
@@ -94,8 +91,6 @@ void matched_order_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(pair);
 		} else if(_entry.first == "tx") {
 			_entry.second.to(tx);
-		} else if(_entry.first == "utxo_list") {
-			_entry.second.to(utxo_list);
 		}
 	}
 }
@@ -113,9 +108,6 @@ vnx::Variant matched_order_t::get_field(const std::string& _name) const {
 	if(_name == "tx") {
 		return vnx::Variant(tx);
 	}
-	if(_name == "utxo_list") {
-		return vnx::Variant(utxo_list);
-	}
 	return vnx::Variant();
 }
 
@@ -128,8 +120,6 @@ void matched_order_t::set_field(const std::string& _name, const vnx::Variant& _v
 		_value.to(pair);
 	} else if(_name == "tx") {
 		_value.to(tx);
-	} else if(_name == "utxo_list") {
-		_value.to(utxo_list);
 	}
 }
 
@@ -157,15 +147,13 @@ std::shared_ptr<vnx::TypeCode> matched_order_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.matched_order_t";
 	type_code->type_hash = vnx::Hash64(0xe730b5f024a17e86ull);
-	type_code->code_hash = vnx::Hash64(0xed09c5e289c4fc69ull);
+	type_code->code_hash = vnx::Hash64(0xde46ea25350414c1ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::exchange::matched_order_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<matched_order_t>>(); };
-	type_code->depends.resize(3);
+	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::exchange::trade_pair_t::static_get_type_code();
-	type_code->depends[1] = ::mmx::txio_key_t::static_get_type_code();
-	type_code->depends[2] = ::mmx::utxo_t::static_get_type_code();
-	type_code->fields.resize(5);
+	type_code->fields.resize(4);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 8;
@@ -189,12 +177,6 @@ std::shared_ptr<vnx::TypeCode> matched_order_t::static_create_type_code() {
 		field.is_extended = true;
 		field.name = "tx";
 		field.code = {16};
-	}
-	{
-		auto& field = type_code->fields[4];
-		field.is_extended = true;
-		field.name = "utxo_list";
-		field.code = {12, 23, 2, 4, 6, 19, 1, 19, 2};
 	}
 	type_code->build();
 	return type_code;
@@ -250,7 +232,6 @@ void read(TypeInput& in, ::mmx::exchange::matched_order_t& value, const TypeCode
 		switch(_field->native_index) {
 			case 2: vnx::read(in, value.pair, type_code, _field->code.data()); break;
 			case 3: vnx::read(in, value.tx, type_code, _field->code.data()); break;
-			case 4: vnx::read(in, value.utxo_list, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -274,7 +255,6 @@ void write(TypeOutput& out, const ::mmx::exchange::matched_order_t& value, const
 	vnx::write_value(_buf + 8, value.ask);
 	vnx::write(out, value.pair, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.tx, type_code, type_code->fields[3].code.data());
-	vnx::write(out, value.utxo_list, type_code, type_code->fields[4].code.data());
 }
 
 void read(std::istream& in, ::mmx::exchange::matched_order_t& value) {
