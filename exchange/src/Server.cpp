@@ -202,8 +202,22 @@ void Server::approve(const uint64_t& client, std::shared_ptr<const Transaction> 
 
 void Server::finish_trade(std::shared_ptr<trade_job_t> job)
 {
-	pending_trades.erase(job->tx->id);
-	node->add_transaction(job->tx, true,
+	const auto tx = job->tx;
+	for(const auto& in : tx->inputs) {
+		if(lock_map.count(in.prev)) {
+			vnx_async_return_ex_what(job->request_id, "order already sold");
+			return;
+		}
+	}
+	for(const auto& in : tx->inputs) {
+		if(utxo_map.count(in.prev)) {
+			lock_map[in.prev] = tx->id;
+			job->locked_keys.push_back(in.prev);
+		}
+	}
+	pending_trades.erase(tx->id);
+
+	node->add_transaction(tx, true,
 		[this, job]() {
 			execute_async_return(job->request_id);
 			log(INFO) << "Executed trade: " << job->tx->id;
@@ -353,12 +367,6 @@ void Server::execute_async(std::shared_ptr<const Transaction> tx, const vnx::req
 				request->tx = tx;
 				for(auto client : job->pending_clients) {
 					send_to(client, request);
-				}
-				for(const auto& in : tx->inputs) {
-					if(utxo_map.count(in.prev)) {
-						lock_map[in.prev] = tx->id;
-						job->locked_keys.push_back(in.prev);
-					}
 				}
 				job->tx = vnx::clone(tx);
 				job->request_id = request_id;
