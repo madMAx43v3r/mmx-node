@@ -200,18 +200,36 @@ Wallet::sign_off(	const uint32_t& index, std::shared_ptr<const Transaction> tx,
 		return nullptr;
 	}
 	const auto wallet = get_wallet(index);
+	const std::unordered_map<txio_key_t, utxo_t> utxo_map(utxo_list.begin(), utxo_list.end());
 
+	uint64_t native_change = 0;
 	std::unordered_set<txio_key_t> spent_keys;
 	for(const auto& in : tx->inputs) {
+		auto iter = utxo_map.find(in.prev);
+		if(iter != utxo_map.end()) {
+			const auto& utxo = iter->second;
+			if(utxo.contract == addr_t()) {
+				native_change += utxo.amount;
+			}
+		}
 		spent_keys.insert(in.prev);
 	}
 	std::unordered_map<txio_key_t, utxo_t> spent_map;
 	for(const auto& entry : wallet->utxo_cache) {
 		if(spent_keys.erase(entry.key)) {
-			spent_map[entry.key] = entry.output;
+			const auto& utxo = entry.output;
+			if(utxo.contract == addr_t()) {
+				native_change += utxo.amount;
+			}
+			spent_map[entry.key] = utxo;
 		}
 		if(spent_keys.empty()) {
 			break;
+		}
+	}
+	for(const auto& out : tx->outputs) {
+		if(out.contract == addr_t()) {
+			native_change -= out.amount;
 		}
 	}
 	std::unordered_map<addr_t, addr_t> owner_map;
@@ -219,8 +237,7 @@ Wallet::sign_off(	const uint32_t& index, std::shared_ptr<const Transaction> tx,
 
 	auto copy = vnx::clone(tx);
 	if(cover_fee) {
-		const std::unordered_map<txio_key_t, utxo_t> utxo_map(utxo_list.begin(), utxo_list.end());
-		wallet->gather_fee(copy, spent_map, {}, 0, owner_map, utxo_map);
+		wallet->gather_fee(copy, spent_map, {}, native_change, owner_map, utxo_map);
 	}
 	wallet->sign_off(copy, spent_map, owner_map);
 	return copy;

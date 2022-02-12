@@ -426,7 +426,6 @@ void Server::match_async(const trade_order_t& order, const vnx::request_id_t& re
 						tx_in_t input;
 						input.prev = order.bid_key;
 						tx->inputs.push_back(input);
-						result.utxo_list.emplace_back(order.bid_key, utxo);
 					}
 					bid_left -= order.ask;
 					result.bid += order.ask;
@@ -448,9 +447,6 @@ void Server::match_async(const trade_order_t& order, const vnx::request_id_t& re
 			// provide inputs for the bid
 			bid_left = result.bid;
 			for(const auto& entry : bid_keys) {
-				if(!bid_left) {
-					break;
-				}
 				tx_in_t input;
 				input.prev = entry.first;
 				tx->inputs.push_back(input);
@@ -458,13 +454,7 @@ void Server::match_async(const trade_order_t& order, const vnx::request_id_t& re
 				if(entry.second <= bid_left) {
 					bid_left -= entry.second;
 				} else {
-					// change output
-					tx_out_t out;
-					out.address = address;
-					out.contract = order.pair.bid;
-					out.amount = entry.second - bid_left;
-					tx->outputs.push_back(out);
-					bid_left = 0;
+					break;
 				}
 			}
 			// take the ask

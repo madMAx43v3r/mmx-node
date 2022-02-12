@@ -13,6 +13,4 @@ struct matched_order_t {
 	
 	Transaction* tx;
 	
-	vector<pair<txio_key_t, utxo_t>> utxo_list;
-	
 }	

@@ -557,8 +557,70 @@ std::shared_ptr<const Transaction> Client::approve(std::shared_ptr<const Transac
 
 void Client::execute_async(const std::string& server, const uint32_t& index, const matched_order_t& order, const vnx::request_id_t& request_id) const
 {
+	if(!order.tx) {
+		throw std::logic_error("!tx");
+	}
 	auto peer = get_server(server);
-	auto tx = wallet->sign_off(index, order.tx, true, order.utxo_list);
+
+	std::unordered_set<addr_t> addr_set;
+	for(const auto& addr : wallet->get_all_addresses(index)) {
+		addr_set.insert(addr);
+	}
+	std::vector<txio_key_t> keys;
+	for(const auto& in : order.tx->inputs) {
+		keys.push_back(in.prev);
+	}
+	uint64_t total_bid = 0;
+	vnx::optional<addr_t> change_addr;
+	std::vector<std::pair<txio_key_t, utxo_t>> utxo_list;
+	for(const auto& entry : node->get_txo_infos(keys)) {
+		if(!entry) {
+			throw std::logic_error("unknown input");
+		}
+		if(entry->spent) {
+			throw std::logic_error("input already spent");
+		}
+		const auto& utxo = entry->output;
+		if(addr_set.count(utxo.address)) {
+			if(utxo.contract == order.pair.bid) {
+				total_bid += utxo.amount;
+			} else {
+				throw std::logic_error("invalid bid");
+			}
+			change_addr = utxo.address;
+		} else {
+			utxo_list.emplace_back(entry->key, entry->output);
+		}
+	}
+	if(!change_addr) {
+		throw std::logic_error("have no change address");
+	}
+	uint64_t total_ask = 0;
+	for(const auto& out : order.tx->outputs) {
+		if(addr_set.count(out.address)) {
+			if(out.contract == order.pair.ask) {
+				total_ask += out.amount;
+			} else {
+				throw std::logic_error("invalid ask");
+			}
+		}
+	}
+	if(total_bid < order.bid) {
+		throw std::logic_error("insufficient bid amount");
+	}
+	if(total_ask != order.ask) {
+		throw std::logic_error("ask amount mismatch");
+	}
+	auto copy = vnx::clone(order.tx);
+	if(total_bid > order.bid && order.pair.bid != addr_t()) {
+		// token change output
+		tx_out_t out;
+		out.address = *change_addr;
+		out.contract = order.pair.bid;
+		out.amount = total_bid - order.bid;
+		copy->outputs.push_back(out);
+	}
+	auto tx = wallet->sign_off(index, copy, true, utxo_list);
 	if(tx) {
 		std::vector<txio_key_t> keys;
 		for(const auto& in : tx->inputs) {
