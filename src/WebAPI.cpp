@@ -1157,7 +1157,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 						}
 						const auto index = args["index"].to<uint32_t>();
 						const auto num_chunks = args["num_chunks"].to<uint32_t>();
-						exch_client->make_offer(index, pair, bid_amount, ask_amount, num_chunks ? num_chunks : 4,
+						exch_client->make_offer(index, pair, bid_amount, ask_amount, std::max<uint32_t>(num_chunks, 1),
 							[this, request_id, context](std::shared_ptr<const exchange::OfferBundle> offer) {
 								pending_offers[offer->id] = offer;
 								respond(request_id, render_value(offer, context));
@@ -1321,18 +1321,16 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				[this, request_id, server, want, bid, amount](std::shared_ptr<RenderContext> context) {
 					exchange::amount_t have;
 					have.currency = bid;
-					auto* bid_info = context->find_currency(bid);
+					auto bid_info = context->find_currency(bid);
 					have.amount = bid_info && amount > 0 ? uint64_t(amount * pow(10, bid_info->decimals)) : 1;
 					exch_client->get_price(server, want, have,
 						[this, request_id, want, bid, context](const ulong_fraction_t& price) {
 							auto* bid_info = context->find_currency(bid);
 							auto* ask_info = context->find_currency(want);
-							double price_factor = 1;
-							if(bid_info && ask_info) {
-								price_factor = pow(10, bid_info->decimals - ask_info->decimals);
-							}
 							vnx::Object res;
-							res["price"] = price.value / double(price.inverse) * price_factor;
+							if(bid_info && ask_info) {
+								res["price"] = price.value / double(price.inverse) * pow(10, bid_info->decimals - ask_info->decimals);
+							}
 							if(bid_info) {
 								res["amount"] = price.inverse * pow(10, -bid_info->decimals);
 							}
