@@ -381,6 +381,7 @@ app.component('exchange-trade-form', {
 			balance: null,
 			bid_amount: null,
 			ask_amount: null,
+			min_trade: "?",
 			confirmed: false,
 			timer: null,
 			result: null,
@@ -398,6 +399,9 @@ app.component('exchange-trade-form', {
 						this.balance = 0;
 					}
 				});
+			fetch('/wapi/exchange/min_trade?server=' + this.server + '&ask=' + this.bid_currency + '&bid=' + this.ask_currency)
+				.then(response => response.json())
+				.then(data => this.min_trade = data.amount);
 		},
 		submit() {
 			this.confirmed = false;
@@ -471,7 +475,7 @@ app.component('exchange-trade-form', {
 			<form class="ui form" id="form">
 				<div class="two fields">
 					<div class="field">
-						<label>Bid Amount</label>
+						<label>Bid Amount (min: {{min_trade}})</label>
 						<div class="ui right labeled input">
 							<input type="text" v-model.number.lazy="bid_amount" placeholder="1.23" style="text-align: right"/>
 							<div class="ui basic label">

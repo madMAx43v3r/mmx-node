@@ -530,6 +530,25 @@ ulong_fraction_t Server::get_price(const addr_t& want, const amount_t& have) con
 	return price;
 }
 
+ulong_fraction_t Server::get_min_trade(const trade_pair_t& pair) const
+{
+	ulong_fraction_t price;
+	price.inverse = 0;
+
+	uint64_t min_amount = -1;
+	if(auto book = find_pair(pair)) {
+		for(const auto& entry : book->orders) {
+			const auto& order = entry.second;
+			if(order.ask < min_amount && utxo_map.count(order.bid_key) && is_open(order.bid_key)) {
+				price.value = order.bid;
+				price.inverse = order.ask;
+				min_amount = order.ask;
+			}
+		}
+	}
+	return price;
+}
+
 std::vector<trade_entry_t> Server::get_history(const trade_pair_t& pair, const int32_t& limit) const
 {
 	std::vector<trade_entry_t> result;

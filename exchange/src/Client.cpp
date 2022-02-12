@@ -20,6 +20,7 @@
 #include <mmx/exchange/Server_get_orders.hxx>
 #include <mmx/exchange/Server_get_history.hxx>
 #include <mmx/exchange/Server_get_price.hxx>
+#include <mmx/exchange/Server_get_min_trade.hxx>
 #include <mmx/exchange/Server_ping.hxx>
 #include <mmx/exchange/Server_reject.hxx>
 #include <mmx/solution/PubKey.hxx>
@@ -658,6 +659,14 @@ void Client::get_price_async(const std::string& server, const addr_t& want, cons
 	auto method = Server_get_price::create();
 	method->want = want;
 	method->have = have;
+	send_request(peer, method, std::bind(&Client::vnx_async_return, this, request_id, std::placeholders::_1));
+}
+
+void Client::get_min_trade_async(const std::string& server, const trade_pair_t& pair, const vnx::request_id_t& request_id) const
+{
+	auto peer = get_server(server);
+	auto method = Server_get_min_trade::create();
+	method->pair = pair;
 	send_request(peer, method, std::bind(&Client::vnx_async_return, this, request_id, std::placeholders::_1));
 }
 

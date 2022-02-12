@@ -85,6 +85,8 @@ protected:
 
 	void get_price_async(const std::string& server, const addr_t& want, const amount_t& have, const vnx::request_id_t& request_id) const override;
 
+	void get_min_trade_async(const std::string& server, const trade_pair_t& pair, const vnx::request_id_t& request_id) const override;
+
 	void http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
 							const vnx::request_id_t& request_id) const override;
 

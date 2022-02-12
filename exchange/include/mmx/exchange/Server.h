@@ -75,6 +75,8 @@ protected:
 
 	ulong_fraction_t get_price(const addr_t& want, const amount_t& have) const override;
 
+	ulong_fraction_t get_min_trade(const trade_pair_t& pair) const override;
+
 	void handle(std::shared_ptr<const Block> block) override;
 
 private:

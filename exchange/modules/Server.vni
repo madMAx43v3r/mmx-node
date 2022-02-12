@@ -35,6 +35,9 @@ module Server extends vnx.addons.MsgServer {
 	@Permission(mmx.permission_e.PUBLIC)
 	ulong_fraction_t get_price(addr_t want, amount_t have) const;
 	
+	@Permission(mmx.permission_e.PUBLIC)
+	ulong_fraction_t get_min_trade(trade_pair_t pair) const;
+	
 	vector<order_t> place(ulong client, trade_pair_t pair, limit_order_t order) const async;
 	
 	void cancel(ulong client, vector<txio_key_t> orders);

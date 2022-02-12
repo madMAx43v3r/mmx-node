@@ -1344,6 +1344,36 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "exchange/price?server|bid|ask|amount");
 		}
 	}
+	else if(sub_path == "/exchange/min_trade") {
+		const auto iter_server = query.find("server");
+		const auto iter_bid = query.find("bid");
+		const auto iter_ask = query.find("ask");
+		if(iter_server != query.end() && iter_bid != query.end() && iter_ask != query.end()) {
+			const auto server = iter_server->second;
+			exchange::trade_pair_t pair;
+			pair.bid = iter_bid->second;
+			pair.ask = iter_ask->second;
+			get_context({pair.bid, pair.ask}, request_id,
+				[this, request_id, server, pair](std::shared_ptr<RenderContext> context) {
+					exch_client->get_min_trade(server, pair,
+						[this, request_id, pair, context](const ulong_fraction_t& price) {
+							auto* bid_info = context->find_currency(pair.bid);
+							auto* ask_info = context->find_currency(pair.ask);
+							vnx::Object res;
+							if(bid_info && ask_info) {
+								res["price"] = price.value / double(price.inverse) * pow(10, bid_info->decimals - ask_info->decimals);
+							}
+							if(bid_info) {
+								res["amount"] = price.inverse * pow(10, -bid_info->decimals);
+							}
+							respond(request_id, res);
+						},
+						std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+				});
+		} else {
+			respond_status(request_id, 404, "exchange/min_trade?server|bid|ask");
+		}
+	}
 	else if(sub_path == "/exchange/trade") {
 		if(request->payload.size()) {
 			vnx::Object args;
@@ -1461,7 +1491,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			"node/info", "header", "headers", "block", "blocks", "transaction", "transactions", "address", "contract",
 			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/coins", "wallet/history", "wallet/send", "wallet/split",
 			"exchange/offer", "exchange/place", "exchange/offers", "exchange/pairs", "exchange/orders", "exchange/price",
-			"exchange/trade", "exchange/history", "exchange/trades"
+			"exchange/trade", "exchange/history", "exchange/trades", "exchange/min_trade"
 		};
 		respond_status(request_id, 404, vnx::to_string(options));
 	}
