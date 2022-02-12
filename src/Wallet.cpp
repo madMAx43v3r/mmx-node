@@ -200,6 +200,8 @@ Wallet::sign_off(	const uint32_t& index, std::shared_ptr<const Transaction> tx,
 		return nullptr;
 	}
 	const auto wallet = get_wallet(index);
+	get_utxo_list(index);	// update utxo_cache
+
 	const std::unordered_map<txio_key_t, utxo_t> utxo_map(utxo_list.begin(), utxo_list.end());
 
 	int64_t native_change = 0;
