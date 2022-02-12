@@ -381,8 +381,8 @@ public:
 				}
 			}
 		}
-		gather_fee(tx, spent_map, options, native_change);
-		sign_off(tx, spent_map);
+		gather_fee(tx, spent_map, options, native_change, owner_map);
+		sign_off(tx, spent_map, owner_map);
 	}
 
 	std::shared_ptr<Transaction> send(const uint64_t& amount, const addr_t& dst_addr, const addr_t& currency, const spend_options_t& options)
