@@ -90,6 +90,8 @@ protected:
 	void get_trade_history_async_return(const vnx::request_id_t& _request_id, const std::vector<::mmx::exchange::trade_entry_t>& _ret_0) const;
 	virtual void get_price_async(const std::string& server, const ::mmx::addr_t& want, const ::mmx::exchange::amount_t& have, const vnx::request_id_t& _request_id) const = 0;
 	void get_price_async_return(const vnx::request_id_t& _request_id, const ::mmx::ulong_fraction_t& _ret_0) const;
+	virtual void get_min_trade_async(const std::string& server, const ::mmx::exchange::trade_pair_t& pair, const vnx::request_id_t& _request_id) const = 0;
+	void get_min_trade_async_return(const vnx::request_id_t& _request_id, const ::mmx::ulong_fraction_t& _ret_0) const;
 	virtual ::mmx::exchange::open_order_t get_order(const ::mmx::txio_key_t& key) const = 0;
 	virtual std::shared_ptr<const ::mmx::exchange::OfferBundle> get_offer(const uint64_t& id) const = 0;
 	virtual std::vector<std::shared_ptr<const ::mmx::exchange::OfferBundle>> get_all_offers() const = 0;

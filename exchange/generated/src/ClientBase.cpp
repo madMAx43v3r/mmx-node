@@ -19,6 +19,8 @@
 #include <mmx/exchange/Client_get_all_offers_return.hxx>
 #include <mmx/exchange/Client_get_local_history.hxx>
 #include <mmx/exchange/Client_get_local_history_return.hxx>
+#include <mmx/exchange/Client_get_min_trade.hxx>
+#include <mmx/exchange/Client_get_min_trade_return.hxx>
 #include <mmx/exchange/Client_get_offer.hxx>
 #include <mmx/exchange/Client_get_offer_return.hxx>
 #include <mmx/exchange/Client_get_order.hxx>
@@ -383,7 +385,7 @@ std::shared_ptr<vnx::TypeCode> ClientBase::static_create_type_code() {
 	type_code->parents.resize(2);
 	type_code->parents[0] = ::vnx::addons::MsgServerBase::static_get_type_code();
 	type_code->parents[1] = ::vnx::addons::TcpServerBase::static_get_type_code();
-	type_code->methods.resize(28);
+	type_code->methods.resize(29);
 	type_code->methods[0] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
 	type_code->methods[1] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
 	type_code->methods[2] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
@@ -400,18 +402,19 @@ std::shared_ptr<vnx::TypeCode> ClientBase::static_create_type_code() {
 	type_code->methods[13] = ::mmx::exchange::Client_get_orders::static_get_type_code();
 	type_code->methods[14] = ::mmx::exchange::Client_get_trade_history::static_get_type_code();
 	type_code->methods[15] = ::mmx::exchange::Client_get_price::static_get_type_code();
-	type_code->methods[16] = ::mmx::exchange::Client_get_order::static_get_type_code();
-	type_code->methods[17] = ::mmx::exchange::Client_get_offer::static_get_type_code();
-	type_code->methods[18] = ::mmx::exchange::Client_get_all_offers::static_get_type_code();
-	type_code->methods[19] = ::mmx::exchange::Client_get_local_history::static_get_type_code();
-	type_code->methods[20] = ::mmx::exchange::Client_cancel_offer::static_get_type_code();
-	type_code->methods[21] = ::mmx::exchange::Client_cancel_all::static_get_type_code();
-	type_code->methods[22] = ::mmx::exchange::Client_make_offer::static_get_type_code();
-	type_code->methods[23] = ::mmx::exchange::Client_make_trade::static_get_type_code();
-	type_code->methods[24] = ::mmx::exchange::Client_place::static_get_type_code();
-	type_code->methods[25] = ::mmx::exchange::Client_approve::static_get_type_code();
-	type_code->methods[26] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
-	type_code->methods[27] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
+	type_code->methods[16] = ::mmx::exchange::Client_get_min_trade::static_get_type_code();
+	type_code->methods[17] = ::mmx::exchange::Client_get_order::static_get_type_code();
+	type_code->methods[18] = ::mmx::exchange::Client_get_offer::static_get_type_code();
+	type_code->methods[19] = ::mmx::exchange::Client_get_all_offers::static_get_type_code();
+	type_code->methods[20] = ::mmx::exchange::Client_get_local_history::static_get_type_code();
+	type_code->methods[21] = ::mmx::exchange::Client_cancel_offer::static_get_type_code();
+	type_code->methods[22] = ::mmx::exchange::Client_cancel_all::static_get_type_code();
+	type_code->methods[23] = ::mmx::exchange::Client_make_offer::static_get_type_code();
+	type_code->methods[24] = ::mmx::exchange::Client_make_trade::static_get_type_code();
+	type_code->methods[25] = ::mmx::exchange::Client_place::static_get_type_code();
+	type_code->methods[26] = ::mmx::exchange::Client_approve::static_get_type_code();
+	type_code->methods[27] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
+	type_code->methods[28] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
 	type_code->fields.resize(20);
 	{
 		auto& field = type_code->fields[0];
@@ -660,6 +663,11 @@ std::shared_ptr<vnx::Value> ClientBase::vnx_call_switch(std::shared_ptr<const vn
 			get_price_async(_args->server, _args->want, _args->have, _request_id);
 			return nullptr;
 		}
+		case 0x58211bd8f2a99ca1ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_get_min_trade>(_method);
+			get_min_trade_async(_args->server, _args->pair, _request_id);
+			return nullptr;
+		}
 		case 0xc10718307553c190ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_get_order>(_method);
 			auto _return_value = ::mmx::exchange::Client_get_order_return::create();
@@ -769,6 +777,12 @@ void ClientBase::get_trade_history_async_return(const vnx::request_id_t& _reques
 
 void ClientBase::get_price_async_return(const vnx::request_id_t& _request_id, const ::mmx::ulong_fraction_t& _ret_0) const {
 	auto _return_value = ::mmx::exchange::Client_get_price_return::create();
+	_return_value->_ret_0 = _ret_0;
+	vnx_async_return(_request_id, _return_value);
+}
+
+void ClientBase::get_min_trade_async_return(const vnx::request_id_t& _request_id, const ::mmx::ulong_fraction_t& _ret_0) const {
+	auto _return_value = ::mmx::exchange::Client_get_min_trade_return::create();
 	_return_value->_ret_0 = _ret_0;
 	vnx_async_return(_request_id, _return_value);
 }

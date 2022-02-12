@@ -15,6 +15,8 @@
 #include <mmx/exchange/Server_execute_return.hxx>
 #include <mmx/exchange/Server_get_history.hxx>
 #include <mmx/exchange/Server_get_history_return.hxx>
+#include <mmx/exchange/Server_get_min_trade.hxx>
+#include <mmx/exchange/Server_get_min_trade_return.hxx>
 #include <mmx/exchange/Server_get_orders.hxx>
 #include <mmx/exchange/Server_get_orders_return.hxx>
 #include <mmx/exchange/Server_get_price.hxx>
@@ -318,7 +320,7 @@ std::shared_ptr<vnx::TypeCode> ServerBase::static_create_type_code() {
 	type_code->parents.resize(2);
 	type_code->parents[0] = ::vnx::addons::MsgServerBase::static_get_type_code();
 	type_code->parents[1] = ::vnx::addons::TcpServerBase::static_get_type_code();
-	type_code->methods.resize(20);
+	type_code->methods.resize(21);
 	type_code->methods[0] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
 	type_code->methods[1] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
 	type_code->methods[2] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
@@ -334,11 +336,12 @@ std::shared_ptr<vnx::TypeCode> ServerBase::static_create_type_code() {
 	type_code->methods[12] = ::mmx::exchange::Server_get_orders::static_get_type_code();
 	type_code->methods[13] = ::mmx::exchange::Server_get_history::static_get_type_code();
 	type_code->methods[14] = ::mmx::exchange::Server_get_price::static_get_type_code();
-	type_code->methods[15] = ::mmx::exchange::Server_place::static_get_type_code();
-	type_code->methods[16] = ::mmx::exchange::Server_cancel::static_get_type_code();
-	type_code->methods[17] = ::mmx::exchange::Server_reject::static_get_type_code();
-	type_code->methods[18] = ::mmx::exchange::Server_approve::static_get_type_code();
-	type_code->methods[19] = ::mmx::exchange::Server_ping::static_get_type_code();
+	type_code->methods[15] = ::mmx::exchange::Server_get_min_trade::static_get_type_code();
+	type_code->methods[16] = ::mmx::exchange::Server_place::static_get_type_code();
+	type_code->methods[17] = ::mmx::exchange::Server_cancel::static_get_type_code();
+	type_code->methods[18] = ::mmx::exchange::Server_reject::static_get_type_code();
+	type_code->methods[19] = ::mmx::exchange::Server_approve::static_get_type_code();
+	type_code->methods[20] = ::mmx::exchange::Server_ping::static_get_type_code();
 	type_code->fields.resize(16);
 	{
 		auto& field = type_code->fields[0];
@@ -556,6 +559,12 @@ std::shared_ptr<vnx::Value> ServerBase::vnx_call_switch(std::shared_ptr<const vn
 			auto _args = std::static_pointer_cast<const ::mmx::exchange::Server_get_price>(_method);
 			auto _return_value = ::mmx::exchange::Server_get_price_return::create();
 			_return_value->_ret_0 = get_price(_args->want, _args->have);
+			return _return_value;
+		}
+		case 0xda60d78d7e48e2abull: {
+			auto _args = std::static_pointer_cast<const ::mmx::exchange::Server_get_min_trade>(_method);
+			auto _return_value = ::mmx::exchange::Server_get_min_trade_return::create();
+			_return_value->_ret_0 = get_min_trade(_args->pair);
 			return _return_value;
 		}
 		case 0x957913dc32e3d68cull: {

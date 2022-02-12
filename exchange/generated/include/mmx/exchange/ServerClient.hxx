@@ -71,6 +71,8 @@ public:
 	
 	::mmx::ulong_fraction_t get_price(const ::mmx::addr_t& want = ::mmx::addr_t(), const ::mmx::exchange::amount_t& have = ::mmx::exchange::amount_t());
 	
+	::mmx::ulong_fraction_t get_min_trade(const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t());
+	
 	std::vector<::mmx::exchange::order_t> place(const uint64_t& client = 0, const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const ::mmx::exchange::limit_order_t& order = ::mmx::exchange::limit_order_t());
 	
 	void cancel(const uint64_t& client = 0, const std::vector<::mmx::txio_key_t>& orders = {});

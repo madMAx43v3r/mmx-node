@@ -76,6 +76,7 @@ protected:
 	virtual std::vector<::mmx::exchange::order_t> get_orders(const ::mmx::exchange::trade_pair_t& pair, const int32_t& limit) const = 0;
 	virtual std::vector<::mmx::exchange::trade_entry_t> get_history(const ::mmx::exchange::trade_pair_t& pair, const int32_t& limit) const = 0;
 	virtual ::mmx::ulong_fraction_t get_price(const ::mmx::addr_t& want, const ::mmx::exchange::amount_t& have) const = 0;
+	virtual ::mmx::ulong_fraction_t get_min_trade(const ::mmx::exchange::trade_pair_t& pair) const = 0;
 	virtual void place_async(const uint64_t& client, const ::mmx::exchange::trade_pair_t& pair, const ::mmx::exchange::limit_order_t& order, const vnx::request_id_t& _request_id) const = 0;
 	void place_async_return(const vnx::request_id_t& _request_id, const std::vector<::mmx::exchange::order_t>& _ret_0) const;
 	virtual void cancel(const uint64_t& client, const std::vector<::mmx::txio_key_t>& orders) = 0;
