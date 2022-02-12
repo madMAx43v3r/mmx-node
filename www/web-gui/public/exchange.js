@@ -424,6 +424,7 @@ app.component('exchange-trade-form', {
 							if(data.length) {
 								this.result = data;
 								this.$emit('trade-executed', data);
+								this.counter = 0;
 								this.update();
 							} else {
 								this.error = "Most likely no offers available or bid amount too low.";
