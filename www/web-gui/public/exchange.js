@@ -421,14 +421,10 @@ app.component('exchange-trade-form', {
 				.then(response => {
 					if(response.ok) {
 						response.json().then(data => {
-							if(data.length) {
-								this.result = data;
-								this.$emit('trade-executed', data);
-								this.counter = 0;
-								this.update();
-							} else {
-								this.error = "Most likely no offers available or bid amount too low.";
-							}
+							this.result = data;
+							this.$emit('trade-executed', data);
+							this.counter = 0;
+							this.update();
 						});
 					} else {
 						response.text().then(data => {
@@ -510,14 +506,10 @@ app.component('exchange-trade-form', {
 				Balance: {{balance}} {{bid_symbol}}
 			</div>
 		</div>
-		<div class="ui message" :class="{hidden: !result}">
-			<template v-for="item in result" :key="item.id">
-				Traded <b>{{item.order.bid_value}}</b> [{{item.order.bid_symbol}}] for <b>{{item.order.ask_value}}</b> [{{item.order.ask_symbol}}]
-				<template v-if="item.failed">(failed with: {{item.message}})</template>
-				<br/>
-			</template>
+		<div class="ui message" v-if="result">
+			Traded <b>{{result.order.bid_value}}</b> [{{result.order.bid_symbol}}] for <b>{{result.order.ask_value}}</b> [{{result.order.ask_symbol}}]
 		</div>
-		<div class="ui negative message" :class="{hidden: !error}">
+		<div class="ui negative message" v-if="error">
 			Failed with: <b>{{error}}</b>
 		</div>
 		`
