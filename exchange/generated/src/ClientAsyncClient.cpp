@@ -238,10 +238,10 @@ uint64_t ClientAsyncClient::execute(const std::string& server, const uint32_t& w
 	return _request_id;
 }
 
-uint64_t ClientAsyncClient::match(const std::string& server, const std::vector<::mmx::exchange::trade_order_t>& orders, const std::function<void(const std::vector<::mmx::exchange::matched_order_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t ClientAsyncClient::match(const std::string& server, const ::mmx::exchange::trade_order_t& order, const std::function<void(const ::mmx::exchange::matched_order_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::exchange::Client_match::create();
 	_method->server = server;
-	_method->orders = orders;
+	_method->order = order;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
@@ -418,7 +418,7 @@ uint64_t ClientAsyncClient::make_offer(const uint32_t& wallet, const ::mmx::exch
 	return _request_id;
 }
 
-uint64_t ClientAsyncClient::make_trade(const uint32_t& wallet, const ::mmx::exchange::trade_pair_t& pair, const uint64_t& bid, const vnx::optional<uint64_t>& ask, const std::function<void(const std::vector<::mmx::exchange::trade_order_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t ClientAsyncClient::make_trade(const uint32_t& wallet, const ::mmx::exchange::trade_pair_t& pair, const uint64_t& bid, const vnx::optional<uint64_t>& ask, const std::function<void(const ::mmx::exchange::trade_order_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::exchange::Client_make_trade::create();
 	_method->wallet = wallet;
 	_method->pair = pair;
@@ -1057,7 +1057,7 @@ int32_t ClientAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Client_match_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<std::vector<::mmx::exchange::matched_order_t>>());
+					_callback(_value->get_field_by_index(0).to<::mmx::exchange::matched_order_t>());
 				} else {
 					throw std::logic_error("ClientAsyncClient: invalid return value");
 				}
@@ -1292,7 +1292,7 @@ int32_t ClientAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Client_make_trade_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<std::vector<::mmx::exchange::trade_order_t>>());
+					_callback(_value->get_field_by_index(0).to<::mmx::exchange::trade_order_t>());
 				} else {
 					throw std::logic_error("ClientAsyncClient: invalid return value");
 				}

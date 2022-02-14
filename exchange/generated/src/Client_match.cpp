@@ -15,7 +15,7 @@ namespace exchange {
 
 
 const vnx::Hash64 Client_match::VNX_TYPE_HASH(0x5b38e7fda1090949ull);
-const vnx::Hash64 Client_match::VNX_CODE_HASH(0x43f12ae0f076e25full);
+const vnx::Hash64 Client_match::VNX_CODE_HASH(0x64429e31be35889dull);
 
 vnx::Hash64 Client_match::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,14 +49,14 @@ void Client_match::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::exchange::vnx_native_type_code_Client_match;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, server);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, orders);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, order);
 	_visitor.type_end(*_type_code);
 }
 
 void Client_match::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.exchange.Client.match\"";
 	_out << ", \"server\": "; vnx::write(_out, server);
-	_out << ", \"orders\": "; vnx::write(_out, orders);
+	_out << ", \"order\": "; vnx::write(_out, order);
 	_out << "}";
 }
 
@@ -70,14 +70,14 @@ vnx::Object Client_match::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.exchange.Client.match";
 	_object["server"] = server;
-	_object["orders"] = orders;
+	_object["order"] = order;
 	return _object;
 }
 
 void Client_match::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "orders") {
-			_entry.second.to(orders);
+		if(_entry.first == "order") {
+			_entry.second.to(order);
 		} else if(_entry.first == "server") {
 			_entry.second.to(server);
 		}
@@ -88,8 +88,8 @@ vnx::Variant Client_match::get_field(const std::string& _name) const {
 	if(_name == "server") {
 		return vnx::Variant(server);
 	}
-	if(_name == "orders") {
-		return vnx::Variant(orders);
+	if(_name == "order") {
+		return vnx::Variant(order);
 	}
 	return vnx::Variant();
 }
@@ -97,8 +97,8 @@ vnx::Variant Client_match::get_field(const std::string& _name) const {
 void Client_match::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "server") {
 		_value.to(server);
-	} else if(_name == "orders") {
-		_value.to(orders);
+	} else if(_name == "order") {
+		_value.to(order);
 	}
 }
 
@@ -126,7 +126,7 @@ std::shared_ptr<vnx::TypeCode> Client_match::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.Client.match";
 	type_code->type_hash = vnx::Hash64(0x5b38e7fda1090949ull);
-	type_code->code_hash = vnx::Hash64(0x43f12ae0f076e25full);
+	type_code->code_hash = vnx::Hash64(0x64429e31be35889dull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -147,8 +147,8 @@ std::shared_ptr<vnx::TypeCode> Client_match::static_create_type_code() {
 	{
 		auto& field = type_code->fields[1];
 		field.is_extended = true;
-		field.name = "orders";
-		field.code = {12, 19, 0};
+		field.name = "order";
+		field.code = {19, 0};
 	}
 	type_code->build();
 	return type_code;
@@ -197,7 +197,7 @@ void read(TypeInput& in, ::mmx::exchange::Client_match& value, const TypeCode* t
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.server, type_code, _field->code.data()); break;
-			case 1: vnx::read(in, value.orders, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.order, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -217,7 +217,7 @@ void write(TypeOutput& out, const ::mmx::exchange::Client_match& value, const Ty
 		type_code = type_code->depends[code[1]];
 	}
 	vnx::write(out, value.server, type_code, type_code->fields[0].code.data());
-	vnx::write(out, value.orders, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.order, type_code, type_code->fields[1].code.data());
 }
 
 void read(std::istream& in, ::mmx::exchange::Client_match& value) {

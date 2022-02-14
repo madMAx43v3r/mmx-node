@@ -80,8 +80,8 @@ protected:
 	virtual std::vector<std::string> get_servers() const = 0;
 	virtual void execute_async(const std::string& server, const uint32_t& wallet, const ::mmx::exchange::matched_order_t& order, const vnx::request_id_t& _request_id) const = 0;
 	void execute_async_return(const vnx::request_id_t& _request_id, const ::mmx::hash_t& _ret_0) const;
-	virtual void match_async(const std::string& server, const std::vector<::mmx::exchange::trade_order_t>& orders, const vnx::request_id_t& _request_id) const = 0;
-	void match_async_return(const vnx::request_id_t& _request_id, const std::vector<::mmx::exchange::matched_order_t>& _ret_0) const;
+	virtual void match_async(const std::string& server, const ::mmx::exchange::trade_order_t& order, const vnx::request_id_t& _request_id) const = 0;
+	void match_async_return(const vnx::request_id_t& _request_id, const ::mmx::exchange::matched_order_t& _ret_0) const;
 	virtual void get_trade_pairs_async(const std::string& server, const vnx::request_id_t& _request_id) const = 0;
 	void get_trade_pairs_async_return(const vnx::request_id_t& _request_id, const std::vector<::mmx::exchange::trade_pair_t>& _ret_0) const;
 	virtual void get_orders_async(const std::string& server, const ::mmx::exchange::trade_pair_t& pair, const int32_t& limit, const vnx::request_id_t& _request_id) const = 0;
@@ -99,7 +99,7 @@ protected:
 	virtual void cancel_offer(const uint64_t& id) = 0;
 	virtual void cancel_all() = 0;
 	virtual std::shared_ptr<const ::mmx::exchange::OfferBundle> make_offer(const uint32_t& wallet, const ::mmx::exchange::trade_pair_t& pair, const uint64_t& bid, const uint64_t& ask, const uint32_t& num_chunks) const = 0;
-	virtual std::vector<::mmx::exchange::trade_order_t> make_trade(const uint32_t& wallet, const ::mmx::exchange::trade_pair_t& pair, const uint64_t& bid, const vnx::optional<uint64_t>& ask) const = 0;
+	virtual ::mmx::exchange::trade_order_t make_trade(const uint32_t& wallet, const ::mmx::exchange::trade_pair_t& pair, const uint64_t& bid, const vnx::optional<uint64_t>& ask) const = 0;
 	virtual void place(std::shared_ptr<const ::mmx::exchange::OfferBundle> offer) = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> approve(std::shared_ptr<const ::mmx::Transaction> tx) const = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::Block> _value) {}

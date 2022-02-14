@@ -4,6 +4,7 @@
 #include <mmx/package.hxx>
 #include <mmx/txio_key_t.hxx>
 #include <mmx/hash_t.hpp>
+#include <vnx/Variant.hpp>
 
 #include <vnx/vnx.h>
 
@@ -167,7 +168,9 @@ void read(TypeInput& in, ::mmx::txio_key_t& value, const TypeCode* type_code, co
 		}
 	}
 	if(!type_code) {
-		vnx::skip(in, type_code, code);
+		Variant tmp;
+		vnx::read(in, tmp, type_code, code);
+		value.vnx_read_fallback(tmp);
 		return;
 	}
 	if(code) {
@@ -175,7 +178,9 @@ void read(TypeInput& in, ::mmx::txio_key_t& value, const TypeCode* type_code, co
 			case CODE_STRUCT: type_code = type_code->depends[code[1]]; break;
 			case CODE_ALT_STRUCT: type_code = type_code->depends[vnx::flip_bytes(code[1])]; break;
 			default: {
-				vnx::skip(in, type_code, code);
+				Variant tmp;
+				vnx::read(in, tmp, type_code, code);
+				value.vnx_read_fallback(tmp);
 				return;
 			}
 		}

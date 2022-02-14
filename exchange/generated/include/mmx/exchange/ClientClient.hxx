@@ -66,7 +66,7 @@ public:
 	
 	::mmx::hash_t execute(const std::string& server = "", const uint32_t& wallet = 0, const ::mmx::exchange::matched_order_t& order = ::mmx::exchange::matched_order_t());
 	
-	std::vector<::mmx::exchange::matched_order_t> match(const std::string& server = "", const std::vector<::mmx::exchange::trade_order_t>& orders = {});
+	::mmx::exchange::matched_order_t match(const std::string& server = "", const ::mmx::exchange::trade_order_t& order = ::mmx::exchange::trade_order_t());
 	
 	std::vector<::mmx::exchange::trade_pair_t> get_trade_pairs(const std::string& server = "");
 	
@@ -96,7 +96,7 @@ public:
 	
 	std::shared_ptr<const ::mmx::exchange::OfferBundle> make_offer(const uint32_t& wallet = 0, const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const uint64_t& bid = 0, const uint64_t& ask = 0, const uint32_t& num_chunks = 1);
 	
-	std::vector<::mmx::exchange::trade_order_t> make_trade(const uint32_t& wallet = 0, const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const uint64_t& bid = 0, const vnx::optional<uint64_t>& ask = nullptr);
+	::mmx::exchange::trade_order_t make_trade(const uint32_t& wallet = 0, const ::mmx::exchange::trade_pair_t& pair = ::mmx::exchange::trade_pair_t(), const uint64_t& bid = 0, const vnx::optional<uint64_t>& ask = nullptr);
 	
 	void place(std::shared_ptr<const ::mmx::exchange::OfferBundle> offer = nullptr);
 	

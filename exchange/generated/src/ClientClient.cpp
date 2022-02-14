@@ -233,15 +233,15 @@ std::vector<std::string> ClientClient::get_servers() {
 	}
 }
 
-std::vector<::mmx::exchange::matched_order_t> ClientClient::match(const std::string& server, const std::vector<::mmx::exchange::trade_order_t>& orders) {
+::mmx::exchange::matched_order_t ClientClient::match(const std::string& server, const ::mmx::exchange::trade_order_t& order) {
 	auto _method = ::mmx::exchange::Client_match::create();
 	_method->server = server;
-	_method->orders = orders;
+	_method->order = order;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Client_match_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::vector<::mmx::exchange::matched_order_t>>();
+		return _return_value->get_field_by_index(0).to<::mmx::exchange::matched_order_t>();
 	} else {
 		throw std::logic_error("ClientClient: invalid return value");
 	}
@@ -410,7 +410,7 @@ std::shared_ptr<const ::mmx::exchange::OfferBundle> ClientClient::make_offer(con
 	}
 }
 
-std::vector<::mmx::exchange::trade_order_t> ClientClient::make_trade(const uint32_t& wallet, const ::mmx::exchange::trade_pair_t& pair, const uint64_t& bid, const vnx::optional<uint64_t>& ask) {
+::mmx::exchange::trade_order_t ClientClient::make_trade(const uint32_t& wallet, const ::mmx::exchange::trade_pair_t& pair, const uint64_t& bid, const vnx::optional<uint64_t>& ask) {
 	auto _method = ::mmx::exchange::Client_make_trade::create();
 	_method->wallet = wallet;
 	_method->pair = pair;
@@ -420,7 +420,7 @@ std::vector<::mmx::exchange::trade_order_t> ClientClient::make_trade(const uint3
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::exchange::Client_make_trade_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::vector<::mmx::exchange::trade_order_t>>();
+		return _return_value->get_field_by_index(0).to<::mmx::exchange::trade_order_t>();
 	} else {
 		throw std::logic_error("ClientClient: invalid return value");
 	}

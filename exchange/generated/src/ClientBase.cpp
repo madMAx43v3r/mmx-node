@@ -640,7 +640,7 @@ std::shared_ptr<vnx::Value> ClientBase::vnx_call_switch(std::shared_ptr<const vn
 		}
 		case 0x5b38e7fda1090949ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_match>(_method);
-			match_async(_args->server, _args->orders, _request_id);
+			match_async(_args->server, _args->order, _request_id);
 			return nullptr;
 		}
 		case 0xa448568c63c8bc5full: {
@@ -751,7 +751,7 @@ void ClientBase::execute_async_return(const vnx::request_id_t& _request_id, cons
 	vnx_async_return(_request_id, _return_value);
 }
 
-void ClientBase::match_async_return(const vnx::request_id_t& _request_id, const std::vector<::mmx::exchange::matched_order_t>& _ret_0) const {
+void ClientBase::match_async_return(const vnx::request_id_t& _request_id, const ::mmx::exchange::matched_order_t& _ret_0) const {
 	auto _return_value = ::mmx::exchange::Client_match_return::create();
 	_return_value->_ret_0 = _ret_0;
 	vnx_async_return(_request_id, _return_value);

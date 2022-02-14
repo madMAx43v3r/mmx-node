@@ -7,6 +7,7 @@
 #include <vnx/Type.h>
 #include <mmx/package.hxx>
 #include <mmx/hash_t.hpp>
+#include <vnx/Variant.hpp>
 
 
 namespace mmx {
@@ -28,6 +29,9 @@ struct txio_key_t {
 	std::string get_type_name() const;
 	const vnx::TypeCode* get_type_code() const;
 	
+	std::string to_string_value() const;
+	void from_string_value(const std::string& str = "");
+	void vnx_read_fallback(const ::vnx::Variant& data = ::vnx::Variant());
 	static ::mmx::txio_key_t create_ex(const ::mmx::hash_t& txid = ::mmx::hash_t(), const uint32_t& index = 0);
 	
 	static std::shared_ptr<txio_key_t> create();

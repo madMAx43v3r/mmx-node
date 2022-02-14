@@ -16,7 +16,7 @@ class Client_match : public ::vnx::Value {
 public:
 	
 	std::string server;
-	std::vector<::mmx::exchange::trade_order_t> orders;
+	::mmx::exchange::trade_order_t order;
 	
 	typedef ::vnx::Value Super;
 	
@@ -62,7 +62,7 @@ template<typename T>
 void Client_match::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<Client_match>(2);
 	_visitor.type_field("server", 0); _visitor.accept(server);
-	_visitor.type_field("orders", 1); _visitor.accept(orders);
+	_visitor.type_field("order", 1); _visitor.accept(order);
 	_visitor.template type_end<Client_match>(2);
 }
 

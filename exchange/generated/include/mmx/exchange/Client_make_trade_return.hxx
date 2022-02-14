@@ -15,7 +15,7 @@ namespace exchange {
 class Client_make_trade_return : public ::vnx::Value {
 public:
 	
-	std::vector<::mmx::exchange::trade_order_t> _ret_0;
+	::mmx::exchange::trade_order_t _ret_0;
 	
 	typedef ::vnx::Value Super;
 	
