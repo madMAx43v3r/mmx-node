@@ -62,6 +62,7 @@ add_library(mmx_iface SHARED
 	src/ProofOfSpace.cpp
 	src/secp256k1.cpp
 	src/hash_t.cpp
+	src/txio_key_t.cpp
 	src/contract/NFT.cpp
 	src/contract/Data.cpp
 	src/contract/WebData.cpp

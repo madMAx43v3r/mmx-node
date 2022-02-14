@@ -7,6 +7,12 @@ struct txio_key_t {
 	uint index;
 	
 	
+	string to_string_value() const;
+	
+	void from_string_value(string str);
+	
+	void vnx_read_fallback(vnx.Variant data);
+	
 	static txio_key_t create_ex(hash_t txid, uint index);
 	
 }

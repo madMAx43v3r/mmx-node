@@ -264,7 +264,7 @@ public:
 	}
 
 	void accept(const txio_key_t& value) {
-		set(render(value, context));
+		set(value.to_string_value());
 	}
 
 	void accept(const tx_in_t& value) {

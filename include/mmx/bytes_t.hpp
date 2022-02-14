@@ -174,7 +174,11 @@ void read(vnx::TypeInput& in, mmx::bytes_t<N>& value, const vnx::TypeCode* type_
 			if(tmp.is_string()) {
 				std::string str;
 				tmp.to(str);
-				value.from_string(str);
+				try {
+					value.from_string(str);
+				} catch(...) {
+					value = mmx::bytes_t<N>();
+				}
 			} else {
 				std::array<uint8_t, N> array;
 				tmp.to(array);
