@@ -1397,12 +1397,18 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 						}
 						const auto index = args["wallet"].to<uint32_t>();
 						exch_client->make_trade(index, pair, bid_amount, ask_amount,
-							[this, request_id, args, index, context](const std::vector<exchange::trade_order_t> orders) {
+							[this, request_id, args, index, context](const exchange::trade_order_t& order) {
 								const auto server = args["server"].to_string_value();
-								exch_client->match(server, orders,
-									[this, request_id, args, server, index, context](const std::vector<exchange::matched_order_t> orders) {
-										auto result = std::make_shared<std::vector<vnx::Object>>();
-										execute_trades(server, index, orders, 0, result, context, request_id, hash_t(), {}, false);
+								exch_client->match(server, order,
+									[this, request_id, args, server, index, context](const exchange::matched_order_t& order) {
+										exch_client->execute(server, index, order,
+											[this, request_id, order, context](const hash_t& txid) {
+												vnx::Object res;
+												res["id"] = txid.to_string();
+												res["order"] = render_value(order, context);
+												respond(request_id, res);
+											},
+											std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 									},
 									std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 							},

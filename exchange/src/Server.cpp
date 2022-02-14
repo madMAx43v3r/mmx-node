@@ -386,21 +386,28 @@ void Server::execute_async(std::shared_ptr<const Transaction> tx, const vnx::req
 
 void Server::match_async(const trade_order_t& order, const vnx::request_id_t& request_id) const
 {
-	const auto solution = std::dynamic_pointer_cast<const solution::PubKey>(order.solution);
-	if(!solution || !solution->signature.verify(solution->pubkey, order.calc_hash())) {
-		throw std::logic_error("invalid signature");
+	if(order.ask_addr == addr_t()) {
+		throw std::logic_error("invalid ask_addr");
 	}
-	const auto address = solution->pubkey.get_addr();
+	std::vector<addr_t> bid_addrs;
+	for(const auto& entry : order.solutions) {
+		const auto solution = std::dynamic_pointer_cast<const solution::PubKey>(entry);
+		if(!solution || !solution->signature.verify(solution->pubkey, order.calc_hash())) {
+			throw std::logic_error("invalid signature");
+		}
+		bid_addrs.push_back(solution->pubkey.get_addr());
+	}
+	const std::unordered_set<addr_t> bid_addr_set(bid_addrs.begin(), bid_addrs.end());
 
 	node->get_txo_infos(order.bid_keys,
-		[this, address, order, request_id](const std::vector<vnx::optional<txo_info_t>>& entries) {
+		[this, bid_addr_set, order, request_id](const std::vector<vnx::optional<txo_info_t>>& entries) {
 			uint64_t max_bid = 0;
 			std::vector<std::pair<txio_key_t, uint64_t>> bid_keys;
 			for(size_t i = 0; i < entries.size() && i < order.bid_keys.size(); ++i) {
 				if(const auto& entry = entries[i]) {
 					const auto& utxo = entry->output;
 					if(!entry->spent
-						&& utxo.address == address
+						&& bid_addr_set.count(utxo.address)
 						&& utxo.contract == order.pair.bid)
 					{
 						max_bid += utxo.amount;
@@ -478,7 +485,7 @@ void Server::match_async(const trade_order_t& order, const vnx::request_id_t& re
 			// take the ask
 			{
 				tx_out_t out;
-				out.address = address;
+				out.address = order.ask_addr;
 				out.contract = order.pair.ask;
 				out.amount = result.ask;
 				tx->outputs.push_back(out);

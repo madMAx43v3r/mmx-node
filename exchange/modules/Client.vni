@@ -29,7 +29,7 @@ module Client extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	@Permission(mmx.permission_e.SPENDING)
 	hash_t execute(string server, uint wallet, matched_order_t order) const async;
 	
-	vector<matched_order_t> match(string server, vector<trade_order_t> orders) const async;
+	matched_order_t match(string server, trade_order_t order) const async;
 	
 	vector<trade_pair_t> get_trade_pairs(string server) const async;
 	
@@ -56,7 +56,7 @@ module Client extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	
 	OfferBundle* make_offer(uint wallet, trade_pair_t pair, ulong bid, ulong ask, uint num_chunks = 1) const;
 	
-	vector<trade_order_t> make_trade(uint wallet, trade_pair_t pair, ulong bid, optional<ulong> ask) const;
+	trade_order_t make_trade(uint wallet, trade_pair_t pair, ulong bid, optional<ulong> ask) const;
 	
 	@Permission(mmx.permission_e.SPENDING)
 	void place(OfferBundle* offer);

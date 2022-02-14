@@ -38,13 +38,6 @@ protected:
 		std::unordered_set<txio_key_t> order_set;
 	};
 
-	struct match_job_t {
-		size_t num_returns = 0;
-		size_t num_requests = 0;
-		vnx::request_id_t request_id;
-		std::vector<matched_order_t> result;
-	};
-
 	void init() override;
 
 	void main() override;
@@ -66,8 +59,7 @@ protected:
 	std::shared_ptr<const OfferBundle>
 	make_offer(const uint32_t& wallet, const trade_pair_t& pair, const uint64_t& bid, const uint64_t& ask, const uint32_t& num_chunks) const override;
 
-	std::vector<trade_order_t>
-	make_trade(const uint32_t& wallet, const trade_pair_t& pair, const uint64_t& bid, const vnx::optional<uint64_t>& ask) const override;
+	trade_order_t make_trade(const uint32_t& wallet, const trade_pair_t& pair, const uint64_t& bid, const vnx::optional<uint64_t>& ask) const override;
 
 	void place(std::shared_ptr<const OfferBundle> offer) override;
 
@@ -75,7 +67,7 @@ protected:
 
 	void execute_async(const std::string& server, const uint32_t& wallet, const matched_order_t& order, const vnx::request_id_t& request_id) const override;
 
-	void match_async(const std::string& server, const std::vector<trade_order_t>& orders, const vnx::request_id_t& request_id) const override;
+	void match_async(const std::string& server, const trade_order_t& order, const vnx::request_id_t& request_id) const override;
 
 	void get_trade_pairs_async(const std::string& server, const vnx::request_id_t& request_id) const override;
 

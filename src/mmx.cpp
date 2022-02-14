@@ -855,26 +855,11 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Invalid bid amount! (-b)";
 					goto failed;
 				}
-				const auto trades = client.make_trade(index, pair, bid, ask > 0 ? vnx::optional<uint64_t>(ask) : nullptr);
-				if(trades.empty()) {
-					vnx::log_error() << "Unable to make trade!";
-					goto failed;
-				}
+				auto trade = client.make_trade(index, pair, bid, ask > 0 ? vnx::optional<uint64_t>(ask) : nullptr);
 				std::cout << "Server: " << server << std::endl;
-				std::cout << "Bids: ";
-				int i = 0;
-				uint64_t total_bid = 0;
-				uint64_t total_ask = 0;
-				for(const auto& trade : trades) {
-					total_bid += trade.bid;
-					total_ask += trade.ask ? *trade.ask : 0;
-					std::cout << (i++ ? " + " : "") << trade.bid / bid_factor;
-				}
-				std::cout << " " << bid_symbol << std::endl;
-				std::cout << "----------------------------------------------------------------" << std::endl;
-				std::cout << "Total Bid: " << total_bid / bid_factor << " (" << total_bid << ") " << bid_symbol << std::endl;
+				std::cout << "Total Bid: " << trade.bid / bid_factor << " (" << trade.bid << ") " << bid_symbol << std::endl;
 				if(ask > 0) {
-					std::cout << "Total Ask: " << total_ask / ask_factor << " (" << total_ask << ") " << ask_symbol << std::endl;
+					std::cout << "Total Ask: " << trade.ask / ask_factor << " (" << trade.ask << ") " << ask_symbol << std::endl;
 					std::cout << "Price: " << bid / double(ask) << " " << bid_symbol << " / " << ask_symbol << std::endl;
 				}
 				bool accepted = pre_accept;
@@ -889,23 +874,9 @@ int main(int argc, char** argv)
 					}
 				}
 				if(accepted) {
-					const auto matched = client.match(server, trades);
-					if(matched.empty()) {
-						vnx::log_error() << "Matched nothing!";
-						goto failed;
-					}
-					int i = 0;
-					uint64_t total_bid = 0;
-					uint64_t total_match = 0;
-					for(const auto& order : matched) {
-						total_bid += order.bid;
-						total_match += order.ask;
-						std::cout << "Trade[" << i++ << "]: " << order.ask / ask_factor << " " << ask_symbol << " for " << order.bid / bid_factor
-								<< " " << bid_symbol << " [" << order.bid / double(order.ask) << " " << bid_symbol << " / " << ask_symbol << "]" << std::endl;
-					}
-					std::cout << "----------------------------------------------------------------" << std::endl;
-					std::cout << "Total: " << total_match / ask_factor << " " << ask_symbol << " for " << total_bid / bid_factor
-							<< " " << bid_symbol << " [" << double(total_bid) / total_match << " " << bid_symbol << " / " << ask_symbol << "]" << std::endl;
+					const auto matched = client.match(server, trade);
+					std::cout << "Matched: " << matched.ask / ask_factor << " " << ask_symbol << " for " << matched.bid / bid_factor
+							<< " " << bid_symbol << " [" << double(matched.bid) / matched.ask << " " << bid_symbol << " / " << ask_symbol << "]" << std::endl;
 
 					bool accepted = pre_accept;
 					if(!accepted) {
@@ -919,16 +890,11 @@ int main(int argc, char** argv)
 						}
 					}
 					if(accepted) {
-						int i = 0;
-						std::cout << "----------------------------------------------------------------" << std::endl;
-						for(const auto& order : matched) {
-							std::cout << "Trade[" << i++ << "]: ";
-							try {
-								const auto id = client.execute(server, index, order);
-								std::cout << order.ask / ask_factor << " " << ask_symbol << " (" << id << ")" << std::endl;
-							} catch(std::exception& ex) {
-								std::cout << ex.what() << std::endl;
-							}
+						try {
+							const auto id = client.execute(server, index, matched);
+							std::cout << "Trade: " << id << std::endl;
+						} catch(std::exception& ex) {
+							std::cout << "Trade failed with: " << ex.what() << std::endl;
 						}
 					}
 				}
