@@ -14,23 +14,6 @@
 namespace mmx {
 
 inline
-std::string txio_key_t::to_string_value() const {
-	return txid.to_string() + ":" + std::to_string(index);
-}
-
-inline
-void txio_key_t::from_string_value(const std::string& str)
-{
-	const auto pos = str.find(':');
-	if(pos != std::string::npos && str.find_first_of("{}[]\"") == std::string::npos) {
-		txid.from_string(str.substr(0, pos));
-		vnx::from_string(str.substr(pos + 1), index);
-	} else {
-		throw std::logic_error("invalid txio_key_t string");
-	}
-}
-
-inline
 txio_key_t txio_key_t::create_ex(const hash_t& txid, const uint32_t& index)
 {
 	txio_key_t key;
