@@ -42,6 +42,10 @@ std::vector<addr_t> Staking::get_dependency() const {
 	return {owner, currency};
 }
 
+std::vector<addr_t> Staking::get_parties() const {
+	return {owner};
+}
+
 vnx::optional<addr_t> Staking::get_owner() const {
 	return owner;
 }

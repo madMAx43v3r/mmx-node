@@ -39,6 +39,10 @@ std::vector<addr_t> PubKey::get_dependency() const {
 	return {};
 }
 
+std::vector<addr_t> PubKey::get_parties() const {
+	return {address};
+}
+
 vnx::optional<addr_t> PubKey::get_owner() const {
 	return address;
 }

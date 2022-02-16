@@ -29,6 +29,7 @@ vnx::bool_t Token::is_valid() const
 	}
 	// TODO: max name length 128
 	// TODO: max symbol length 6, min length 2
+	// TODO: min decimals 0, max decimals 12
 	return Contract::is_valid() && !name.empty() && !symbol.empty() && symbol != "MMX";
 }
 
@@ -62,6 +63,13 @@ uint64_t Token::calc_min_fee(std::shared_ptr<const ChainParams> params) const {
 }
 
 std::vector<addr_t> Token::get_dependency() const {
+	if(owner) {
+		return {*owner};
+	}
+	return {};
+}
+
+std::vector<addr_t> Token::get_parties() const {
 	if(owner) {
 		return {*owner};
 	}

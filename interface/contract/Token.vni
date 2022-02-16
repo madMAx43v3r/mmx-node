@@ -33,6 +33,8 @@ class Token extends Contract {
 	
 	vector<addr_t> get_dependency() const;
 	
+	vector<addr_t> get_parties() const;
+	
 	optional<addr_t> get_owner() const;
 	
 	vector<mmx.tx_out_t> validate(mmx.Operation* operation, mmx.Context* context) const;

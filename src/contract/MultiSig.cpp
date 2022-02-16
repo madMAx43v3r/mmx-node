@@ -42,6 +42,10 @@ std::vector<addr_t> MultiSig::get_dependency() const {
 	return {};
 }
 
+std::vector<addr_t> MultiSig::get_parties() const {
+	return owners;
+}
+
 std::vector<tx_out_t> MultiSig::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
 	if(!operation) {
