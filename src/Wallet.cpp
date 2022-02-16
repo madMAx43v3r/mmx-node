@@ -140,7 +140,6 @@ vnx::optional<hash_t> Wallet::split(const uint32_t& index, const uint64_t& max_a
 
 	auto tx = Transaction::create();
 	uint64_t total = 0;
-	std::vector<std::pair<txio_key_t, utxo_t>> utxo_list;
 	for(const auto& entry : get_utxo_list_for(index, currency, options.min_confirm)) {
 		const auto& utxo = entry.output;
 		if(utxo.amount > max_amount && wallet->is_spendable(entry.key) && !exclude.count(entry.key)) {
@@ -148,17 +147,16 @@ vnx::optional<hash_t> Wallet::split(const uint32_t& index, const uint64_t& max_a
 			in.prev = entry.key;
 			tx->inputs.push_back(in);
 			total += utxo.amount;
-			utxo_list.emplace_back(entry.key, utxo);
 		}
 	}
-	if(utxo_list.empty()) {
+	if(!total) {
 		return nullptr;
 	}
 	{
 		const auto split = (total + max_amount - 1) / max_amount;
 		tx->add_output(currency, wallet->get_address(0), total, split);
 	}
-	auto signed_tx = sign_off(index, tx, true, utxo_list);
+	auto signed_tx = sign_off(index, tx, true, {});
 	send_off(index, signed_tx);
 	return signed_tx->id;
 }
