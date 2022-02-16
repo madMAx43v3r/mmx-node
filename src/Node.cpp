@@ -1150,18 +1150,15 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 	return did_fork ? forked_at : nullptr;
 }
 
-std::shared_ptr<Node::fork_t> Node::find_best_fork(std::shared_ptr<const BlockHeader> root, const uint32_t* at_height) const
+std::shared_ptr<Node::fork_t> Node::find_best_fork() const
 {
-	if(!root) {
-		root = get_root();
-	}
 	uint32_t curr_height = 0;
 	uint128_t max_weight = 0;
 	std::shared_ptr<fork_t> best_fork;
 	std::shared_ptr<fork_t> prev_best;
-	const auto begin = at_height ? fork_index.lower_bound(*at_height) : fork_index.upper_bound(root->height);
-	const auto end =   at_height ? fork_index.upper_bound(*at_height) : fork_index.end();
-	for(auto iter = begin; iter != end; ++iter)
+	const auto root = get_root();
+	const auto begin = fork_index.upper_bound(root->height);
+	for(auto iter = begin; iter != fork_index.end(); ++iter)
 	{
 		const auto& fork = iter->second;
 		const auto prev = fork->prev.lock();
@@ -1188,6 +1185,7 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork(std::shared_ptr<const BlockHe
 			fork->weight_buffer = std::min<int32_t>(std::max(prev->weight_buffer + fork->buffer_delta, 0), params->max_weight_buffer);
 		} else {
 			fork->total_weight = fork->weight;
+			fork->weight_buffer = std::max(fork->buffer_delta, 0);
 		}
 		if(!best_fork
 			|| fork->total_weight > max_weight

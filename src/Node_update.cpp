@@ -316,6 +316,7 @@ void Node::update()
 	{
 		auto prev = peak;
 		bool made_block = false;
+		std::shared_ptr<fork_t> best_fork;
 		for(uint32_t i = 0; prev && i <= 1; ++i)
 		{
 			if(prev->height < root->height) {
@@ -333,8 +334,6 @@ void Node::update()
 				// check if it's our proof
 				if(vnx::get_pipe(proof->farmer_addr))
 				{
-					const auto next_height = prev->height + 1;
-					const auto best_fork = find_best_fork(prev, &next_height);
 					// check if we have a better proof
 					if(!best_fork || proof->score < best_fork->proof_score) {
 						try {
@@ -352,6 +351,7 @@ void Node::update()
 					}
 				}
 			}
+			best_fork = find_fork(prev->hash);
 			prev = find_prev_header(prev);
 		}
 		if(made_block) {
