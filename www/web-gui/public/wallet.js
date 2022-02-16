@@ -412,7 +412,7 @@ app.component('account-coins', {
 			</thead>
 			<tbody>
 			<tr v-for="item in data" :key="item.key">
-				<td>{{item.output.height}}</td>
+				<td>{{item.output.height == 4294967295 ? "pending" : item.output.height}}</td>
 				<td class="collapsing"><b>{{item.output.value}}</b></td>
 				<td>{{item.output.symbol}}</td>
 				<td>{{item.output.address}}</td>
