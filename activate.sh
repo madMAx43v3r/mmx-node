@@ -14,4 +14,4 @@ if [ ! -d config/local ]; then
 	echo "Initialized config/local/ with defaults."
 fi
 
-export PATH=$PATH:$PWD/build
+export PATH=$PATH:$PWD/build:$PWD/build/exchange
