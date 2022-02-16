@@ -1361,8 +1361,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 							if(bid_info && ask_info) {
 								res["price"] = price.value / double(price.inverse) * pow(10, bid_info->decimals - ask_info->decimals);
 							}
-							if(bid_info) {
-								res["amount"] = price.inverse * pow(10, -bid_info->decimals);
+							if(ask_info) {
+								res["amount"] = price.inverse * pow(10, -ask_info->decimals);
 							}
 							respond(request_id, res);
 						},
