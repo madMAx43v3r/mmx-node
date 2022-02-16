@@ -1522,7 +1522,8 @@ std::shared_ptr<Node::vdf_point_t> Node::find_next_vdf_point(std::shared_ptr<con
 		const auto infused = find_prev_header(block, params->finality_delay, true);
 		const auto vdf_iters = block->vdf_iters + diff_block->time_diff * params->time_diff_constant;
 
-		for(auto iter = verified_vdfs.lower_bound(height); iter != verified_vdfs.upper_bound(height); ++iter) {
+		for(auto iter = verified_vdfs.lower_bound(height); iter != verified_vdfs.upper_bound(height); ++iter)
+		{
 			const auto& point = iter->second;
 			if(block->vdf_iters == point->vdf_start && vdf_iters == point->vdf_iters && block->vdf_output == point->input
 				&& ((!infused && !point->infused) || (infused && point->infused && infused->hash == *point->infused)))
