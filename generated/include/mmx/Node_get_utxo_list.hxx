@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class Node_get_utxo_list : public ::vnx::Value {
+class VNX_EXPORT Node_get_utxo_list : public ::vnx::Value {
 public:
 	
 	std::vector<::mmx::addr_t> addresses;
@@ -19,8 +19,8 @@ public:
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x7f52e1aa01c66023ull;
 	

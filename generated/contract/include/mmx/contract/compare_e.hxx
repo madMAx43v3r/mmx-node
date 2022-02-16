@@ -11,9 +11,9 @@
 namespace mmx {
 namespace contract {
 
-struct compare_e {
+struct VNX_EXPORT compare_e {
 	
-	enum enum_t : uint32_t {
+	enum VNX_EXPORT enum_t : uint32_t {
 		EQUAL = 3913649559l,
 		GREATER = 4126259227l,
 		GREATER_EQUAL = 3503116463l,
@@ -24,8 +24,8 @@ struct compare_e {
 	
 	::mmx::contract::compare_e::enum_t value = ::mmx::contract::compare_e::enum_t(0);
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xe27ffb2535efa133ull;
 	

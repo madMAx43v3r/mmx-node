@@ -12,7 +12,7 @@
 
 namespace mmx {
 
-class FarmerKeys : public ::vnx::Value {
+class VNX_EXPORT FarmerKeys : public ::vnx::Value {
 public:
 	
 	::mmx::skey_t pool_private_key;
@@ -22,8 +22,8 @@ public:
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x9942f861520098b3ull;
 	

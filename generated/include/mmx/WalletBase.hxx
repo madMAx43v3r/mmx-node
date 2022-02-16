@@ -27,7 +27,7 @@
 
 namespace mmx {
 
-class WalletBase : public ::vnx::Module {
+class VNX_EXPORT WalletBase : public ::vnx::Module {
 public:
 	
 	std::vector<std::string> key_files;
@@ -43,8 +43,8 @@ public:
 	
 	typedef ::vnx::Module Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x62207fd96d3aead7ull;
 	

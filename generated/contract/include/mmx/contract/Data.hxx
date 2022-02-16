@@ -14,15 +14,15 @@
 namespace mmx {
 namespace contract {
 
-class Data : public ::mmx::Contract {
+class VNX_EXPORT Data : public ::mmx::Contract {
 public:
 	
 	::vnx::Variant payload;
 	
 	typedef ::mmx::Contract Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xadfeee3822244f50ull;
 	

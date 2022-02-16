@@ -21,7 +21,7 @@
 
 namespace mmx {
 
-class RouterBase : public ::vnx::addons::MsgServer {
+class VNX_EXPORT RouterBase : public ::vnx::addons::MsgServer {
 public:
 	
 	::vnx::TopicPtr input_vdfs = "timelord.proofs";
@@ -67,8 +67,8 @@ public:
 	
 	typedef ::vnx::addons::MsgServer Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x952c4ef2956f31c4ull;
 	

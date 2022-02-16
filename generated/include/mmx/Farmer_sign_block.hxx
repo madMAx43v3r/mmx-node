@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class Farmer_sign_block : public ::vnx::Value {
+class VNX_EXPORT Farmer_sign_block : public ::vnx::Value {
 public:
 	
 	std::shared_ptr<const ::mmx::BlockHeader> block;
@@ -19,8 +19,8 @@ public:
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x6924b10f345eb316ull;
 	

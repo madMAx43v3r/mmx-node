@@ -10,17 +10,17 @@
 
 namespace mmx {
 
-struct permission_e {
+struct VNX_EXPORT permission_e {
 	
-	enum enum_t : uint32_t {
+	enum VNX_EXPORT enum_t : uint32_t {
 		PUBLIC = 2166575688l,
 		SPENDING = 1957258863l,
 	};
 	
 	::mmx::permission_e::enum_t value = ::mmx::permission_e::enum_t(0);
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x7d75a3f04c313898ull;
 	

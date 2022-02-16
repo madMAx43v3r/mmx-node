@@ -11,15 +11,15 @@
 
 namespace mmx {
 
-class Node_get_tx_info_return : public ::vnx::Value {
+class VNX_EXPORT Node_get_tx_info_return : public ::vnx::Value {
 public:
 	
 	vnx::optional<::mmx::tx_info_t> _ret_0;
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x3668f41cc643227full;
 	

@@ -11,15 +11,15 @@
 
 namespace mmx {
 
-class PeerInfo : public ::vnx::Value {
+class VNX_EXPORT PeerInfo : public ::vnx::Value {
 public:
 	
 	std::vector<::mmx::peer_info_t> peers;
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xf7a37f624c94a121ull;
 	

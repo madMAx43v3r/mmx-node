@@ -15,7 +15,7 @@
 namespace mmx {
 namespace operation {
 
-class Spend : public ::mmx::Operation {
+class VNX_EXPORT Spend : public ::mmx::Operation {
 public:
 	
 	::mmx::txio_key_t key;
@@ -23,8 +23,8 @@ public:
 	
 	typedef ::mmx::Operation Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xfa01bec4331109c3ull;
 	

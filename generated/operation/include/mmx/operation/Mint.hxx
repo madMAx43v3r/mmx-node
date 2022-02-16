@@ -14,7 +14,7 @@
 namespace mmx {
 namespace operation {
 
-class Mint : public ::mmx::Operation {
+class VNX_EXPORT Mint : public ::mmx::Operation {
 public:
 	static const uint64_t max_amount = 1000000000000;
 	
@@ -23,8 +23,8 @@ public:
 	
 	typedef ::mmx::Operation Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x936aeac3aa6373c0ull;
 	

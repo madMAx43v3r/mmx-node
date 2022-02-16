@@ -13,7 +13,7 @@
 
 namespace mmx {
 
-class ProofResponse : public ::vnx::Value {
+class VNX_EXPORT ProofResponse : public ::vnx::Value {
 public:
 	
 	std::shared_ptr<const ::mmx::Challenge> request;
@@ -23,8 +23,8 @@ public:
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x816e898b36befae0ull;
 	

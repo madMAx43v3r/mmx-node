@@ -13,7 +13,7 @@
 
 namespace mmx {
 
-struct tx_entry_t {
+struct VNX_EXPORT tx_entry_t {
 	
 	
 	uint32_t height = 0;
@@ -23,8 +23,8 @@ struct tx_entry_t {
 	::mmx::addr_t contract;
 	uint64_t amount = 0;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x438cda5719015870ull;
 	

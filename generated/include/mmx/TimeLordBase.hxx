@@ -13,7 +13,7 @@
 
 namespace mmx {
 
-class TimeLordBase : public ::vnx::Module {
+class VNX_EXPORT TimeLordBase : public ::vnx::Module {
 public:
 	
 	::vnx::TopicPtr input_infuse = "timelord.infuse";
@@ -25,8 +25,8 @@ public:
 	
 	typedef ::vnx::Module Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x311081636f6570efull;
 	

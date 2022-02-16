@@ -10,15 +10,15 @@
 
 namespace mmx {
 
-class Harvester_get_total_bytes_return : public ::vnx::Value {
+class VNX_EXPORT Harvester_get_total_bytes_return : public ::vnx::Value {
 public:
 	
 	uint64_t _ret_0 = 0;
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xd9a9fe83ba7d6918ull;
 	

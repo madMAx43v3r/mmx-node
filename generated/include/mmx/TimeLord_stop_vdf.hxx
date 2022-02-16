@@ -10,14 +10,14 @@
 
 namespace mmx {
 
-class TimeLord_stop_vdf : public ::vnx::Value {
+class VNX_EXPORT TimeLord_stop_vdf : public ::vnx::Value {
 public:
 	
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xf7f78eb9f371e6e7ull;
 	

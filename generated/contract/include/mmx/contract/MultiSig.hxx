@@ -17,7 +17,7 @@
 namespace mmx {
 namespace contract {
 
-class MultiSig : public ::mmx::Contract {
+class VNX_EXPORT MultiSig : public ::mmx::Contract {
 public:
 	
 	uint32_t num_required = 0;
@@ -25,8 +25,8 @@ public:
 	
 	typedef ::mmx::Contract Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x7d674c5f7297dedull;
 	
@@ -40,6 +40,7 @@ public:
 	virtual ::mmx::hash_t calc_hash() const override;
 	virtual uint64_t calc_min_fee(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	virtual std::vector<::mmx::addr_t> get_dependency() const override;
+	virtual std::vector<::mmx::addr_t> get_parties() const override;
 	virtual std::vector<::mmx::tx_out_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
 	
 	static std::shared_ptr<MultiSig> create();

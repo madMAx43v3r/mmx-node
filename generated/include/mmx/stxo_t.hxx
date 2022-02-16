@@ -11,15 +11,15 @@
 
 namespace mmx {
 
-struct stxo_t : ::mmx::utxo_t {
+struct VNX_EXPORT stxo_t : ::mmx::utxo_t {
 	
 	
 	::mmx::txio_key_t spent;
 	
 	typedef ::mmx::utxo_t Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x615a84cdd47c1938ull;
 	

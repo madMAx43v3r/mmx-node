@@ -13,15 +13,15 @@
 namespace mmx {
 namespace solution {
 
-class MultiSig : public ::mmx::Solution {
+class VNX_EXPORT MultiSig : public ::mmx::Solution {
 public:
 	
 	std::vector<std::shared_ptr<const ::mmx::solution::PubKey>> solutions;
 	
 	typedef ::mmx::Solution Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x64ffa2f8fc8dffd1ull;
 	

@@ -10,15 +10,15 @@
 
 namespace mmx {
 
-struct balance_t {
+struct VNX_EXPORT balance_t {
 	
 	
 	uint64_t spendable = 0;
 	uint64_t reserved = 0;
 	uint64_t total = 0;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x613173c7e5ce65b4ull;
 	

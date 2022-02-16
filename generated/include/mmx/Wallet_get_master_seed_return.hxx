@@ -11,15 +11,15 @@
 
 namespace mmx {
 
-class Wallet_get_master_seed_return : public ::vnx::Value {
+class VNX_EXPORT Wallet_get_master_seed_return : public ::vnx::Value {
 public:
 	
 	::mmx::hash_t _ret_0;
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x8b0f38e742e132f0ull;
 	

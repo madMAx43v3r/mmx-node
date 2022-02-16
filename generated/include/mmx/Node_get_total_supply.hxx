@@ -11,15 +11,15 @@
 
 namespace mmx {
 
-class Node_get_total_supply : public ::vnx::Value {
+class VNX_EXPORT Node_get_total_supply : public ::vnx::Value {
 public:
 	
 	::mmx::addr_t contract;
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x17d971db6900bd9dull;
 	

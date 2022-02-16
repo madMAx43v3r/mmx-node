@@ -17,7 +17,7 @@
 namespace mmx {
 namespace contract {
 
-class Staking : public ::mmx::Contract {
+class VNX_EXPORT Staking : public ::mmx::Contract {
 public:
 	static const uint32_t min_duration = 18;
 	
@@ -27,8 +27,8 @@ public:
 	
 	typedef ::mmx::Contract Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xf058a3326fc2e7dcull;
 	
@@ -42,6 +42,7 @@ public:
 	virtual ::mmx::hash_t calc_hash() const override;
 	virtual uint64_t calc_min_fee(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	virtual std::vector<::mmx::addr_t> get_dependency() const override;
+	virtual std::vector<::mmx::addr_t> get_parties() const override;
 	virtual vnx::optional<::mmx::addr_t> get_owner() const override;
 	virtual std::vector<::mmx::tx_out_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
 	

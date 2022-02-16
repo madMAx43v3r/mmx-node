@@ -15,7 +15,7 @@
 
 namespace mmx {
 
-class FarmerBase : public ::vnx::Module {
+class VNX_EXPORT FarmerBase : public ::vnx::Module {
 public:
 	
 	::vnx::TopicPtr input_info = "harvester.info";
@@ -30,8 +30,8 @@ public:
 	
 	typedef ::vnx::Module Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xff732ba14d9d1abull;
 	

@@ -12,7 +12,7 @@
 
 namespace mmx {
 
-class Wallet_split : public ::vnx::Value {
+class VNX_EXPORT Wallet_split : public ::vnx::Value {
 public:
 	
 	uint32_t index = 0;
@@ -22,8 +22,8 @@ public:
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xbd7c4dbb51c0f7c2ull;
 	

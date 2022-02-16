@@ -11,14 +11,14 @@
 
 namespace mmx {
 
-struct time_segment_t {
+struct VNX_EXPORT time_segment_t {
 	
 	
 	uint32_t num_iters = 0;
 	std::array<::mmx::hash_t, 2> output = {};
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x344b7baf0798fe2aull;
 	

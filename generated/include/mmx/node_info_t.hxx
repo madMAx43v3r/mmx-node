@@ -12,15 +12,15 @@
 
 namespace mmx {
 
-struct node_info_t {
+struct VNX_EXPORT node_info_t {
 	
 	
 	::mmx::hash_t id;
 	uint32_t version = 0;
 	::mmx::node_type_e type;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xda45b5e3a527588eull;
 	

@@ -10,15 +10,15 @@
 
 namespace mmx {
 
-class Node_start_sync : public ::vnx::Value {
+class VNX_EXPORT Node_start_sync : public ::vnx::Value {
 public:
 	
 	vnx::bool_t force = 0;
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x6c5be8aeb25ef3c8ull;
 	

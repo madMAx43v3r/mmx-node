@@ -12,15 +12,15 @@
 namespace mmx {
 namespace exchange {
 
-class Client_make_trade_return : public ::vnx::Value {
+class VNX_EXPORT Client_make_trade_return : public ::vnx::Value {
 public:
 	
 	::mmx::exchange::trade_order_t _ret_0;
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x321e4d9a0e3b15e0ull;
 	

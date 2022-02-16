@@ -11,15 +11,15 @@
 namespace mmx {
 namespace exchange {
 
-class Server_ping : public ::vnx::Value {
+class VNX_EXPORT Server_ping : public ::vnx::Value {
 public:
 	
 	uint64_t client = 0;
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x7a04c726acd61ce8ull;
 	

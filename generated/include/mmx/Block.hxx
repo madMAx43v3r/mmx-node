@@ -13,15 +13,15 @@
 
 namespace mmx {
 
-class Block : public ::mmx::BlockHeader {
+class VNX_EXPORT Block : public ::mmx::BlockHeader {
 public:
 	
 	std::vector<std::shared_ptr<const ::mmx::TransactionBase>> tx_list;
 	
 	typedef ::mmx::BlockHeader Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x94965d816d328467ull;
 	

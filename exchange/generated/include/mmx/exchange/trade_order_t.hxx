@@ -16,7 +16,7 @@
 namespace mmx {
 namespace exchange {
 
-struct trade_order_t {
+struct VNX_EXPORT trade_order_t {
 	
 	
 	uint32_t version = 0;
@@ -27,8 +27,8 @@ struct trade_order_t {
 	std::vector<::mmx::txio_key_t> bid_keys;
 	std::vector<std::shared_ptr<const ::mmx::Solution>> solutions;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x96dc9b77e428e71ull;
 	

@@ -12,15 +12,15 @@
 namespace mmx {
 namespace exchange {
 
-class Client_get_offer_return : public ::vnx::Value {
+class VNX_EXPORT Client_get_offer_return : public ::vnx::Value {
 public:
 	
 	std::shared_ptr<const ::mmx::exchange::OfferBundle> _ret_0;
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xf0210f5753af3965ull;
 	

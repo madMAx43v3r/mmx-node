@@ -13,7 +13,7 @@
 namespace mmx {
 namespace exchange {
 
-struct open_order_t {
+struct VNX_EXPORT open_order_t {
 	
 	
 	::mmx::tx_out_t bid;
@@ -21,8 +21,8 @@ struct open_order_t {
 	uint32_t wallet = 0;
 	uint64_t offer_id = 0;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x4339172b6fea1072ull;
 	

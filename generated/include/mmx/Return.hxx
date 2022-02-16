@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-class Return : public ::vnx::Value {
+class VNX_EXPORT Return : public ::vnx::Value {
 public:
 	
 	uint32_t id = 0;
@@ -18,8 +18,8 @@ public:
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xb479dce669278664ull;
 	

@@ -30,7 +30,7 @@
 
 namespace mmx {
 
-class NodeBase : public ::vnx::Module {
+class VNX_EXPORT NodeBase : public ::vnx::Module {
 public:
 	
 	::vnx::TopicPtr input_vdfs = "network.vdfs";
@@ -69,8 +69,8 @@ public:
 	
 	typedef ::vnx::Module Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x289d7651582d76a3ull;
 	

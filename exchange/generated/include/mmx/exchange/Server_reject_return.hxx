@@ -11,14 +11,14 @@
 namespace mmx {
 namespace exchange {
 
-class Server_reject_return : public ::vnx::Value {
+class VNX_EXPORT Server_reject_return : public ::vnx::Value {
 public:
 	
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x39d67e1e7add1955ull;
 	

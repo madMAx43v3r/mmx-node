@@ -10,14 +10,14 @@
 
 namespace mmx {
 
-class Router_discover_return : public ::vnx::Value {
+class VNX_EXPORT Router_discover_return : public ::vnx::Value {
 public:
 	
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xb4e47e012f264f94ull;
 	

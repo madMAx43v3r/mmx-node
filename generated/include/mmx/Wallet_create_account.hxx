@@ -11,15 +11,15 @@
 
 namespace mmx {
 
-class Wallet_create_account : public ::vnx::Value {
+class VNX_EXPORT Wallet_create_account : public ::vnx::Value {
 public:
 	
 	::mmx::account_t config;
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x11cd618b00e9e56cull;
 	

@@ -11,9 +11,9 @@
 namespace mmx {
 namespace contract {
 
-struct condition_e {
+struct VNX_EXPORT condition_e {
 	
-	enum enum_t : uint32_t {
+	enum VNX_EXPORT enum_t : uint32_t {
 		ADDR_AMOUNT = 3839664221l,
 		CHAIN_HEIGHT = 509533408l,
 		COND_AND = 3328292983l,
@@ -23,8 +23,8 @@ struct condition_e {
 	
 	::mmx::contract::condition_e::enum_t value = ::mmx::contract::condition_e::enum_t(0);
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xd11073d2e6a56dd6ull;
 	

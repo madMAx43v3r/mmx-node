@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-struct account_t {
+struct VNX_EXPORT account_t {
 	
 	
 	uint32_t index = 0;
@@ -18,8 +18,8 @@ struct account_t {
 	std::string name;
 	std::string key_file;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xc0c163f453729a7ull;
 	

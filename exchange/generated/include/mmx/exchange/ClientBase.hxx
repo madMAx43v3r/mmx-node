@@ -30,7 +30,7 @@
 namespace mmx {
 namespace exchange {
 
-class ClientBase : public ::vnx::addons::MsgServer {
+class VNX_EXPORT ClientBase : public ::vnx::addons::MsgServer {
 public:
 	
 	::vnx::TopicPtr input_blocks = "node.verified_blocks";
@@ -44,8 +44,8 @@ public:
 	
 	typedef ::vnx::addons::MsgServer Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x7d13a60fec8eb7f6ull;
 	

@@ -18,7 +18,7 @@
 
 namespace mmx {
 
-class Transaction : public ::mmx::TransactionBase {
+class VNX_EXPORT Transaction : public ::mmx::TransactionBase {
 public:
 	
 	uint32_t version = 0;
@@ -31,8 +31,8 @@ public:
 	
 	typedef ::mmx::TransactionBase Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xce0462acdceaa5bcull;
 	

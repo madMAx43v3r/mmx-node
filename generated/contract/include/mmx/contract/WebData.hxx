@@ -14,7 +14,7 @@
 namespace mmx {
 namespace contract {
 
-class WebData : public ::mmx::Contract {
+class VNX_EXPORT WebData : public ::mmx::Contract {
 public:
 	
 	std::string mime_type;
@@ -22,8 +22,8 @@ public:
 	
 	typedef ::mmx::Contract Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xf7c226b211c088c4ull;
 	

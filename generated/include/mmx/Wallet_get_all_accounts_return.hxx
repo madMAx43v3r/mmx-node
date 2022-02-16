@@ -11,15 +11,15 @@
 
 namespace mmx {
 
-class Wallet_get_all_accounts_return : public ::vnx::Value {
+class VNX_EXPORT Wallet_get_all_accounts_return : public ::vnx::Value {
 public:
 	
 	std::map<uint32_t, ::mmx::account_t> _ret_0;
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x2bb48cc4299c5782ull;
 	

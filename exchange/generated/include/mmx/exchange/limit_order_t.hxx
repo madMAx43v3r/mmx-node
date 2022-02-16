@@ -14,15 +14,15 @@
 namespace mmx {
 namespace exchange {
 
-struct limit_order_t {
+struct VNX_EXPORT limit_order_t {
 	
 	
 	uint32_t version = 0;
 	std::vector<std::pair<::mmx::txio_key_t, uint64_t>> bids;
 	std::shared_ptr<const ::mmx::Solution> solution;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x29221388863cc7c6ull;
 	

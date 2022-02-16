@@ -10,14 +10,14 @@
 
 namespace mmx {
 
-class Router_get_connected_peers : public ::vnx::Value {
+class VNX_EXPORT Router_get_connected_peers : public ::vnx::Value {
 public:
 	
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x8682feb65fbb77feull;
 	

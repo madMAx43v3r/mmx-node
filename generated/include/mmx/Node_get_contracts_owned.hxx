@@ -11,15 +11,15 @@
 
 namespace mmx {
 
-class Node_get_contracts_owned : public ::vnx::Value {
+class VNX_EXPORT Node_get_contracts_owned : public ::vnx::Value {
 public:
 	
 	std::vector<::mmx::addr_t> owners;
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x867544b29550d588ull;
 	

@@ -14,7 +14,7 @@
 namespace mmx {
 namespace exchange {
 
-class LocalTrade : public ::vnx::Value {
+class VNX_EXPORT LocalTrade : public ::vnx::Value {
 public:
 	
 	::mmx::hash_t id;
@@ -29,8 +29,8 @@ public:
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x63fd417b165df53cull;
 	

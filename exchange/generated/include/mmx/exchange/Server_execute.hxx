@@ -12,15 +12,15 @@
 namespace mmx {
 namespace exchange {
 
-class Server_execute : public ::vnx::Value {
+class VNX_EXPORT Server_execute : public ::vnx::Value {
 public:
 	
 	std::shared_ptr<const ::mmx::Transaction> tx;
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x6b320e624ad7fd0cull;
 	

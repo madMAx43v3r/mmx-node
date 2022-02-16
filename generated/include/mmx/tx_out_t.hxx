@@ -11,15 +11,15 @@
 
 namespace mmx {
 
-struct tx_out_t {
+struct VNX_EXPORT tx_out_t {
 	
 	
 	::mmx::addr_t address;
 	::mmx::addr_t contract;
 	uint64_t amount = 0;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xff8d7b37bd8c3a07ull;
 	

@@ -13,7 +13,7 @@
 namespace mmx {
 namespace contract {
 
-class Locked : public ::mmx::Contract {
+class VNX_EXPORT Locked : public ::mmx::Contract {
 public:
 	
 	::mmx::addr_t owner;
@@ -21,8 +21,8 @@ public:
 	
 	typedef ::mmx::Contract Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xd0ff1b6e7bad1493ull;
 	

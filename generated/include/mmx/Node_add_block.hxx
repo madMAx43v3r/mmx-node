@@ -11,15 +11,15 @@
 
 namespace mmx {
 
-class Node_add_block : public ::vnx::Value {
+class VNX_EXPORT Node_add_block : public ::vnx::Value {
 public:
 	
 	std::shared_ptr<const ::mmx::Block> block;
 	
 	typedef ::vnx::Value Super;
 	
-	static const vnx::Hash64 VNX_TYPE_HASH;
-	static const vnx::Hash64 VNX_CODE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
+	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x63abca4d23f93894ull;
 	
