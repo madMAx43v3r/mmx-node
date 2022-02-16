@@ -85,42 +85,38 @@ void Node::update()
 
 	// verify proof where possible
 	std::vector<std::shared_ptr<fork_t>> to_verify;
-	{
-		const auto root = get_root();
-		for(const auto& entry : fork_index)
-		{
-			const auto& fork = entry.second;
-			if(fork->is_proof_verified) {
-				continue;
-			}
-			const auto& block = fork->block;
-			if(!fork->prev.lock()) {
-				if(auto prev = find_fork(block->prev)) {
-					if(prev->is_invalid) {
-						fork->is_invalid = true;
-					}
-					fork->prev = prev;
+	for(const auto& entry : fork_index) {
+		const auto& fork = entry.second;
+		if(fork->is_proof_verified) {
+			continue;
+		}
+		const auto& block = fork->block;
+		if(!fork->prev.lock()) {
+			if(auto prev = find_fork(block->prev)) {
+				if(prev->is_invalid) {
+					fork->is_invalid = true;
 				}
+				fork->prev = prev;
 			}
-			if(!fork->diff_block) {
-				fork->diff_block = find_diff_header(block);
-			}
-			if(fork->is_invalid || !fork->diff_block) {
-				continue;
-			}
-			const auto prev = find_prev_header(block);
-			if(!prev) {
-				continue;	// wait for previous block
-			}
-			bool vdf_passed = false;
-			if(auto point = find_vdf_point(block->height, prev->vdf_iters, block->vdf_iters, prev->vdf_output, block->vdf_output)) {
-				vdf_passed = true;
-				fork->is_vdf_verified = true;
-				fork->vdf_point = point;
-			}
-			if(vdf_passed || !is_synced) {
-				to_verify.push_back(fork);
-			}
+		}
+		if(!fork->diff_block) {
+			fork->diff_block = find_diff_header(block);
+		}
+		if(fork->is_invalid || !fork->diff_block) {
+			continue;
+		}
+		const auto prev = find_prev_header(block);
+		if(!prev) {
+			continue;	// wait for previous block
+		}
+		bool vdf_passed = false;
+		if(auto point = find_vdf_point(block->height, prev->vdf_iters, block->vdf_iters, prev->vdf_output, block->vdf_output)) {
+			vdf_passed = true;
+			fork->is_vdf_verified = true;
+			fork->vdf_point = point;
+		}
+		if(vdf_passed || !is_synced) {
+			to_verify.push_back(fork);
 		}
 	}
 
