@@ -220,7 +220,7 @@ Wallet::sign_off(	const uint32_t& index, std::shared_ptr<const Transaction> tx,
 	for(const auto& entry : wallet->utxo_cache) {
 		if(spent_keys.erase(entry.key)) {
 			const auto& utxo = entry.output;
-			if(utxo.contract == addr_t()) {
+			if(utxo.contract == addr_t() && !utxo_map.count(entry.key)) {
 				native_change += utxo.amount;
 			}
 			spent_map[entry.key] = utxo;
