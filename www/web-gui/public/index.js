@@ -66,7 +66,15 @@ const AccountSend = {
 		index: Number
 	},
 	template: `
-		<account-send-form :index="index"></account-send-form>
+		<account-send-form :index="index" :target_="$route.params.target"></account-send-form>
+	`
+}
+const AccountSendFrom = {
+	props: {
+		index: Number
+	},
+	template: `
+		<account-send-form :index="index" :source_="$route.params.source"></account-send-form>
 	`
 }
 const AccountSplit = {
@@ -254,7 +262,8 @@ const routes = [
 			{ path: 'nfts', component: AccountNFTs, meta: { page: 'nfts' } },
 			{ path: 'contracts', component: AccountContracts, meta: { page: 'contracts' } },
 			{ path: 'addresses', component: AccountAddresses, meta: { page: 'addresses' } },
-			{ path: 'send', component: AccountSend, meta: { page: 'send' } },
+			{ path: 'send/:target?', component: AccountSend, meta: { page: 'send' } },
+			{ path: 'send_from/:source?', component: AccountSendFrom, meta: { page: 'send' } },
 			{ path: 'split', component: AccountSplit, meta: { page: 'split' } },
 			{ path: 'offer', component: AccountOffer, meta: { page: 'offer' } },
 			{ path: 'details', component: AccountDetails, meta: { page: 'details' } },

@@ -152,10 +152,31 @@ app.component('account-balance', {
 
 app.component('balance-table', {
 	props: {
-		balances: Object
+		address: String,
+		show_empty: Boolean
+	},
+	data() {
+		return {
+			data: [],
+			timer: null
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/address?id=' + this.address)
+				.then(response => response.json())
+				.then(data => this.data = data.balances);
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 10000);
+	},
+	unmounted() {
+		clearInterval(this.timer);
 	},
 	template: `
-		<table class="ui table">
+		<table class="ui table" v-if="data.length || show_empty">
 			<thead>
 			<tr>
 				<th class="two wide">Balance</th>
@@ -164,7 +185,7 @@ app.component('balance-table', {
 			</tr>
 			</thead>
 			<tbody>
-			<tr v-for="item in balances" :key="item.contract">
+			<tr v-for="item in data" :key="item.contract">
 				<td><b>{{item.value}}</b></td>
 				<td>{{item.symbol}}</td>
 				<td>{{item.is_native ? '' : item.contract}}</td>
@@ -265,20 +286,13 @@ app.component('contract-summary', {
 		address: String,
 		contract: Object
 	},
-	data() {
-		return {
-			balances: []
-		}
-	},
 	methods: {
-		update() {
-			fetch('/wapi/address?id=' + this.address)
-				.then(response => response.json())
-				.then(data => this.balances = data.balances);
+		deposit() {
+			this.$router.push("/wallet/account/" + this.index + "/send/" + this.address);
+		},
+		withdraw() {
+			this.$router.push("/wallet/account/" + this.index + "/send_from/" + this.address);
 		}
-	},
-	created() {
-		this.update()
 	},
 	template: `
 		<div class="ui raised segment">
@@ -296,7 +310,9 @@ app.component('contract-summary', {
 				</template>
 				</tbody>
 			</table>
-			<balance-table :balances="balances" v-if="balances.length"></balance-table>
+			<balance-table :address="address"></balance-table>
+			<div @click="deposit" class="ui submit button">Deposit</div>
+			<div @click="withdraw" class="ui submit button">Withdraw</div>
 		</div>
 		`
 })
@@ -560,7 +576,9 @@ app.component('create-wallet', {
 
 app.component('account-send-form', {
 	props: {
-		index: Number
+		index: Number,
+		target_: String,
+		source_: String
 	},
 	data() {
 		return {
@@ -568,6 +586,7 @@ app.component('account-send-form', {
 			balances: [],
 			amount: null,
 			target: null,
+			source: null,
 			address: "",
 			currency: null,
 			confirmed: false,
@@ -595,9 +614,15 @@ app.component('account-send-form', {
 							});
 					}
 				});
-			fetch('/wapi/wallet/balance?index=' + this.index)
-				.then(response => response.json())
-				.then(data => this.balances = data.balances);
+			if(this.source) {
+				fetch('/wapi/address?id=' + this.source)
+					.then(response => response.json())
+					.then(data => this.balances = data.balances);
+			} else {
+				fetch('/wapi/wallet/balance?index=' + this.index)
+					.then(response => response.json())
+					.then(data => this.balances = data.balances);
+			}
 		},
 		submit() {
 			this.confirmed = false;
@@ -605,6 +630,9 @@ app.component('account-send-form', {
 			req.index = this.index;
 			req.amount = this.amount;
 			req.currency = this.currency;
+			if(this.source) {
+				req.src_addr = this.source;
+			}
 			req.dst_addr = this.target;
 			req.options = this.options;
 			fetch('/wapi/wallet/send', {body: JSON.stringify(req), method: "post"})
@@ -624,6 +652,13 @@ app.component('account-send-form', {
 		}
 	},
 	created() {
+		if(this.source_) {
+			this.source = this.source_;
+		}
+		if(this.target_) {
+			this.address = "";
+			this.target = this.target_;
+		}
 		this.update();
 	},
 	mounted() {
@@ -652,12 +687,17 @@ app.component('account-send-form', {
 		}
 	},
 	template: `
-		<account-balance :index="index" ref="balance"></account-balance>
+		<balance-table :address="source" :show_empty="true" v-if="source" ref="balance"></balance-table>
+		<account-balance :index="index" v-if="!source" ref="balance"></account-balance>
 		<div class="ui raised segment">
 			<form class="ui form">
+				<div class="field" v-if="!!source">
+					<label>Source Address</label>
+					<input type="text" v-model="source" disabled/>
+				</div>
 				<div class="field">
 					<label>Destination</label>
-					<select v-model="address">
+					<select v-model="address" :disabled="!!target_">
 						<option value="">Address Input</option>
 						<option v-for="item in accounts" :key="item.account" :value="item.address">
 							Account #{{item.account}} ([{{item.index}}] {{item.name}}) ({{item.address}})
@@ -667,7 +707,7 @@ app.component('account-send-form', {
 				<div class="two fields">
 					<div class="fourteen wide field">
 						<label>Destination Address</label>
-						<input type="text" v-model="target" :disabled="!!address" placeholder="mmx1..."/>
+						<input type="text" v-model="target" :disabled="!!address || !!target_" placeholder="mmx1..."/>
 					</div>
 					<div class="two wide field">
 						<label>Output Split</label>
