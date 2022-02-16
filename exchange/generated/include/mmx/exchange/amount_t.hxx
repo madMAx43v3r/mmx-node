@@ -18,8 +18,8 @@ struct VNX_EXPORT amount_t {
 	uint64_t amount = 0;
 	::mmx::addr_t currency;
 	
-	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
-	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
+	static const vnx::Hash64 VNX_TYPE_HASH;
+	static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x8f650f3d1b457f84ull;
 	

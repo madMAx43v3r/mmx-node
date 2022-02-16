@@ -21,8 +21,8 @@ public:
 	
 	typedef ::mmx::Contract Super;
 	
-	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
-	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
+	static const vnx::Hash64 VNX_TYPE_HASH;
+	static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xadfeee3822244f50ull;
 	

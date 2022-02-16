@@ -16,8 +16,8 @@ struct VNX_EXPORT ulong_fraction_t {
 	uint64_t value = 0;
 	uint64_t inverse = 1;
 	
-	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
-	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
+	static const vnx::Hash64 VNX_TYPE_HASH;
+	static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xe9c2388a9c35ce06ull;
 	

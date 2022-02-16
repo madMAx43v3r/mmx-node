@@ -29,8 +29,8 @@ struct VNX_EXPORT peer_info_t {
 	vnx::bool_t is_blocked = 0;
 	vnx::bool_t is_outbound = 0;
 	
-	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
-	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
+	static const vnx::Hash64 VNX_TYPE_HASH;
+	static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xce0ff32e89625afbull;
 	

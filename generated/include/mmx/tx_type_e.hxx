@@ -12,7 +12,7 @@ namespace mmx {
 
 struct VNX_EXPORT tx_type_e {
 	
-	enum VNX_EXPORT enum_t : uint32_t {
+	enum enum_t : uint32_t {
 		INPUT = 495375891l,
 		RECEIVE = 940023181l,
 		REWARD = 3842121424l,
@@ -22,8 +22,8 @@ struct VNX_EXPORT tx_type_e {
 	
 	::mmx::tx_type_e::enum_t value = ::mmx::tx_type_e::enum_t(0);
 	
-	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
-	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
+	static const vnx::Hash64 VNX_TYPE_HASH;
+	static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x3b7f577c2cfd4c91ull;
 	

@@ -19,8 +19,8 @@ struct VNX_EXPORT order_t {
 	uint64_t ask = 0;
 	::mmx::txio_key_t bid_key;
 	
-	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
-	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
+	static const vnx::Hash64 VNX_TYPE_HASH;
+	static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x26c0ed85748d941dull;
 	

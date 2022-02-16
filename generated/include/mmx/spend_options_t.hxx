@@ -22,8 +22,8 @@ struct VNX_EXPORT spend_options_t {
 	vnx::optional<::mmx::addr_t> change_addr;
 	std::vector<::mmx::txio_key_t> exclude;
 	
-	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
-	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
+	static const vnx::Hash64 VNX_TYPE_HASH;
+	static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x37f7c6d377362e95ull;
 	

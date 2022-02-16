@@ -18,8 +18,8 @@ struct VNX_EXPORT txio_key_t {
 	::mmx::hash_t txid;
 	uint32_t index = 0;
 	
-	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
-	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
+	static const vnx::Hash64 VNX_TYPE_HASH;
+	static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xfc88d5457510e2a5ull;
 	

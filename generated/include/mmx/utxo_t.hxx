@@ -17,8 +17,8 @@ struct VNX_EXPORT utxo_t : ::mmx::tx_out_t {
 	
 	typedef ::mmx::tx_out_t Super;
 	
-	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
-	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
+	static const vnx::Hash64 VNX_TYPE_HASH;
+	static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xb698d425571f5729ull;
 	

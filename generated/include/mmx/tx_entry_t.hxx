@@ -23,8 +23,8 @@ struct VNX_EXPORT tx_entry_t {
 	::mmx::addr_t contract;
 	uint64_t amount = 0;
 	
-	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
-	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
+	static const vnx::Hash64 VNX_TYPE_HASH;
+	static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x438cda5719015870ull;
 	

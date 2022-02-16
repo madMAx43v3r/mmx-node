@@ -22,8 +22,8 @@ struct VNX_EXPORT trade_entry_t {
 	uint64_t bid = 0;
 	uint64_t ask = 0;
 	
-	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
-	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
+	static const vnx::Hash64 VNX_TYPE_HASH;
+	static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x3d465e4d012518b0ull;
 	

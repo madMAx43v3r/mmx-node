@@ -21,8 +21,8 @@ struct VNX_EXPORT limit_order_t {
 	std::vector<std::pair<::mmx::txio_key_t, uint64_t>> bids;
 	std::shared_ptr<const ::mmx::Solution> solution;
 	
-	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
-	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
+	static const vnx::Hash64 VNX_TYPE_HASH;
+	static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x29221388863cc7c6ull;
 	

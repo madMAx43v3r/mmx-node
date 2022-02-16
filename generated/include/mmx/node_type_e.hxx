@@ -12,7 +12,7 @@ namespace mmx {
 
 struct VNX_EXPORT node_type_e {
 	
-	enum VNX_EXPORT enum_t : uint32_t {
+	enum enum_t : uint32_t {
 		API_CLIENT = 1802393446l,
 		FULL_NODE = 2903686019l,
 		LIGHT_NODE = 3477499945l,
@@ -20,8 +20,8 @@ struct VNX_EXPORT node_type_e {
 	
 	::mmx::node_type_e::enum_t value = ::mmx::node_type_e::enum_t(0);
 	
-	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
-	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
+	static const vnx::Hash64 VNX_TYPE_HASH;
+	static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xa5de458f1ce5539aull;
 	

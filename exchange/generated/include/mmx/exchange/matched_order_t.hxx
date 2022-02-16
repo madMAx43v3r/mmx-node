@@ -23,8 +23,8 @@ struct VNX_EXPORT matched_order_t {
 	::mmx::exchange::trade_pair_t pair;
 	std::shared_ptr<const ::mmx::Transaction> tx;
 	
-	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
-	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
+	static const vnx::Hash64 VNX_TYPE_HASH;
+	static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0xe730b5f024a17e86ull;
 	

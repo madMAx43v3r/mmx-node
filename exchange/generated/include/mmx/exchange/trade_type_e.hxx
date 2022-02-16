@@ -13,15 +13,15 @@ namespace exchange {
 
 struct VNX_EXPORT trade_type_e {
 	
-	enum VNX_EXPORT enum_t : uint32_t {
+	enum enum_t : uint32_t {
 		BUY = 2074647193l,
 		SELL = 1504135012l,
 	};
 	
 	::mmx::exchange::trade_type_e::enum_t value = ::mmx::exchange::trade_type_e::enum_t(0);
 	
-	VNX_EXPORT static const vnx::Hash64 VNX_TYPE_HASH;
-	VNX_EXPORT static const vnx::Hash64 VNX_CODE_HASH;
+	static const vnx::Hash64 VNX_TYPE_HASH;
+	static const vnx::Hash64 VNX_CODE_HASH;
 	
 	static constexpr uint64_t VNX_TYPE_ID = 0x4feb2b6265c7f88bull;
 	
