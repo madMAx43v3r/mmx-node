@@ -323,30 +323,28 @@ void Node::update()
 				break;
 			}
 			hash_t vdf_challenge;
-			if(!find_vdf_challenge(prev, vdf_challenge, 1)) {
-				break;
-			}
-			const auto challenge = get_challenge(prev, vdf_challenge, 1);
+			if(find_vdf_challenge(prev, vdf_challenge, 1))
+			{
+				const auto challenge = get_challenge(prev, vdf_challenge, 1);
 
-			auto iter = proof_map.find(challenge);
-			if(iter != proof_map.end()) {
-				const auto proof = iter->second;
-				// check if it's our proof
-				if(vnx::get_pipe(proof->farmer_addr))
-				{
-					// check if we have a better proof
-					if(!best_fork || proof->score < best_fork->proof_score) {
-						try {
-							if(make_block(prev, proof)) {
-								made_block = true;
+				auto iter = proof_map.find(challenge);
+				if(iter != proof_map.end()) {
+					const auto proof = iter->second;
+					// check if it's our proof
+					if(vnx::get_pipe(proof->farmer_addr))
+					{
+						// check if we have a better proof
+						if(!best_fork || proof->score < best_fork->proof_score) {
+							try {
+								if(make_block(prev, proof)) {
+									made_block = true;
+								}
 							}
-						}
-						catch(const std::exception& ex) {
-							log(WARN) << "Failed to create a block: " << ex.what();
-						}
-						// revert back to peak
-						if(auto fork = find_fork(peak->hash)) {
-							fork_to(fork);
+							catch(const std::exception& ex) {
+								log(WARN) << "Failed to create a block: " << ex.what();
+							}
+							// revert back to peak
+							fork_to(peak->hash);
 						}
 					}
 				}

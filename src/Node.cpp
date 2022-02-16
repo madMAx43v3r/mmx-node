@@ -1060,6 +1060,9 @@ void Node::fetch_result(const hash_t& hash, std::shared_ptr<const Block> block)
 
 std::shared_ptr<const BlockHeader> Node::fork_to(const hash_t& state)
 {
+	if(state == state_hash) {
+		return nullptr;
+	}
 	if(auto fork = find_fork(state)) {
 		return fork_to(fork);
 	}
