@@ -152,9 +152,25 @@ vnx::optional<hash_t> Wallet::split(const uint32_t& index, const uint64_t& max_a
 	if(!total) {
 		return nullptr;
 	}
-	{
-		const auto split = (total + max_amount - 1) / max_amount;
-		tx->add_output(currency, wallet->get_address(0), total, split);
+	const auto dst_addr = wallet->get_address(0);
+	const auto num_split = (total - (currency == addr_t() ? std::min<uint64_t>(1000000, total) : 0)) / max_amount;
+
+	auto left = total;
+	for(size_t i = 0; i < num_split; ++i) {
+		tx_out_t out;
+		out.contract = currency;
+		out.address = dst_addr;
+		out.amount = max_amount;
+		tx->outputs.push_back(out);
+		left -= out.amount;
+	}
+	if(left && currency != addr_t()) {
+		tx_out_t out;
+		out.contract = currency;
+		out.address = dst_addr;
+		out.amount = left;
+		tx->outputs.push_back(out);
+		left = 0;
 	}
 	auto signed_tx = sign_off(index, tx, true, {});
 	send_off(index, signed_tx);
