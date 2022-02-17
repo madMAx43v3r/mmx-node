@@ -20,6 +20,7 @@ class Token extends Contract {
 	
 	optional<addr_t> owner;
 	
+	// TODO: optional<ulong_fraction_t>
 	ulong_fraction_t time_factor;							// for inflation / deflation (factor applied per block)
 	
 	map<addr_t, ulong_fraction_t> stake_factors;			// [currency => mint factor per block]
