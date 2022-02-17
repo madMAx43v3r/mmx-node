@@ -7,8 +7,9 @@
 
 #include <mmx/TimeLord.h>
 #include <mmx/ProofOfTime.hxx>
+#include <mmx/WalletClient.hxx>
 
-#include <vnx/Config.hpp>
+#include <vnx/vnx.h>
 
 
 namespace mmx {
@@ -28,6 +29,47 @@ void TimeLord::init()
 
 void TimeLord::main()
 {
+	try {
+		if(!reward_addr) {
+			WalletClient wallet(wallet_server);
+			reward_addr = wallet.get_address(0, 0);
+		}
+	}
+	catch(const std::exception& ex) {
+		log(WARN) << "Failed to get address from wallet: " << ex.what();
+	}
+	if(reward_addr) {
+		log(INFO) << "Reward address: " << reward_addr->to_string();
+	} else {
+		log(WARN) << "No reward address set!";
+	}
+	{
+		vnx::File file(storage_path + "timelord_sk.dat");
+		if(file.exists()) {
+			try {
+				file.open("rb");
+				vnx::read_generic(file.in, timelord_sk);
+				file.close();
+			}
+			catch(const std::exception& ex) {
+				log(WARN) << "Failed to read key from file: " << ex.what();
+			}
+		}
+		if(timelord_sk == skey_t()) {
+			timelord_sk = hash_t::random();
+			try {
+				file.open("wb");
+				vnx::write_generic(file.out, timelord_sk);
+				file.close();
+			}
+			catch(const std::exception& ex) {
+				log(WARN) << "Failed to write key to file: " << ex.what();
+			}
+		}
+		timelord_key = pubkey_t::from_skey(timelord_sk);
+		log(INFO) << "Our Timelord Key: " << timelord_key;
+	}
+
 	set_timer_millis(10000, std::bind(&TimeLord::print_info, this));
 
 	Super::main();
@@ -165,6 +207,11 @@ void TimeLord::update()
 					prev_iters = iter->first;
 					proof->segments.push_back(seg);
 				}
+
+				proof->timelord_reward = reward_addr;
+				proof->timelord_key = timelord_key;
+				proof->timelord_sig = signature_t::sign(timelord_sk, proof->calc_hash());
+
 				publish(proof, output_proofs);
 
 				iter = pending.erase(iter);

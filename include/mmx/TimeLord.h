@@ -64,6 +64,9 @@ private:
 
 	std::shared_ptr<vdf_point_t> latest_point;
 
+	skey_t timelord_sk;
+	pubkey_t timelord_key;
+
 };
 
 

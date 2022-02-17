@@ -13,6 +13,11 @@ module TimeLord {
 	uint restart_holdoff = 60000;					// [ms]
 	
 	string node_server = "Node";
+	string wallet_server = "Wallet";
+	
+	string storage_path;
+	
+	optional<addr_t> reward_addr;					// default = first address of first wallet
 	
 	
 	void stop_vdf();
