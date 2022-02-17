@@ -15,6 +15,8 @@
 
 int main(int argc, char** argv)
 {
+	mmx::secp256k1_init();
+
 	std::map<std::string, std::string> options;
 	options["n"] = "node";
 	options["node"] = "address";
@@ -30,7 +32,7 @@ int main(int argc, char** argv)
 	vnx::read_config("root_path", root_path);
 
 	vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
-	proxy->forward_list = {"Node"};
+	proxy->forward_list = {"Node", "Wallet"};
 
 	{
 		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url(endpoint));
@@ -52,6 +54,8 @@ int main(int argc, char** argv)
 	proxy.start();
 
 	vnx::wait();
+
+	mmx::secp256k1_free();
 
 	return 0;
 }
