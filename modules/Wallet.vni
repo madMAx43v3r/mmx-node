@@ -8,6 +8,7 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	string config_path;
 	string storage_path;
+	string database_path = "wallet/";
 	string node_server = "Node";
 	
 	uint max_accounts = 1000;
@@ -64,6 +65,8 @@ module Wallet implements vnx.addons.HttpComponent {
 	vector<utxo_entry_t> gather_utxos_for(uint index, ulong amount, addr_t currency, spend_options_t options) const;
 	
 	vector<tx_entry_t> get_history(uint index, int since) const;
+	
+	vector<tx_log_entry_t> get_tx_history(uint index, int limit = -1, uint offset) const;
 	
 	balance_t get_balance(uint index, addr_t currency, uint min_confirm = 0) const;
 	

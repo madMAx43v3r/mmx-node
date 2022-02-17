@@ -37,6 +37,17 @@ void Wallet::main()
 	params = get_params();
 
 	vnx::Directory(config_path).create();
+	vnx::Directory(storage_path).create();
+	vnx::Directory(database_path).create();
+	{
+		::rocksdb::Options options;
+		options.max_open_files = 4;
+		options.keep_log_file_num = 3;
+		options.max_manifest_file_size = 8 * 1024 * 1024;
+		options.OptimizeForSmallDb();
+
+		tx_log.open(database_path + "tx_log", options);
+	}
 
 	node = std::make_shared<NodeClient>(node_server);
 	http = std::make_shared<vnx::addons::HttpInterface<Wallet>>(this, vnx_name);
@@ -281,6 +292,12 @@ void Wallet::send_off(const uint32_t& index, std::shared_ptr<const Transaction> 
 	const auto wallet = get_wallet(index);
 	node->add_transaction(tx);
 	wallet->update_from(tx);
+	{
+		tx_log_entry_t entry;
+		entry.time = vnx::get_time_millis();
+		entry.tx = tx;
+		tx_log.insert(wallet->get_address(0), entry);
+	}
 }
 
 void Wallet::mark_spent(const uint32_t& index, const std::vector<txio_key_t>& keys)
@@ -396,6 +413,23 @@ std::vector<tx_entry_t> Wallet::get_history(const uint32_t& index, const int32_t
 {
 	const auto wallet = get_wallet(index);
 	return node->get_history_for(wallet->get_all_addresses(), since);
+}
+
+std::vector<tx_log_entry_t> Wallet::get_tx_history(const uint32_t& index, const int32_t& limit_, const uint32_t& offset) const
+{
+	const auto wallet = get_wallet(index);
+	const size_t limit = limit_ >= 0 ? limit_ : uint32_t(-1);
+
+	std::vector<tx_log_entry_t> res;
+	tx_log.find_last(wallet->get_address(0), res, limit + offset);
+	if(offset) {
+		const auto tmp = std::move(res);
+		res.clear();
+		for(size_t i = 0; i < limit && i + offset < tmp.size(); ++i) {
+			res.push_back(tmp[i + offset]);
+		}
+	}
+	return res;
 }
 
 balance_t Wallet::get_balance(const uint32_t& index, const addr_t& currency, const uint32_t& min_confirm) const

@@ -1,0 +1,9 @@
+package mmx;
+
+struct tx_log_entry_t {
+	
+	long time;				// [ms]
+	
+	Transaction* tx;
+	
+}

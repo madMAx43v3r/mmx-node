@@ -15,6 +15,7 @@
 #include <mmx/ECDSA_Wallet.h>
 #include <mmx/txio_key_t.hpp>
 
+#include <vnx/rocksdb/multi_table.h>
 #include <vnx/addons/HttpInterface.h>
 
 
@@ -74,6 +75,8 @@ protected:
 
 	std::vector<tx_entry_t> get_history(const uint32_t& index, const int32_t& since) const override;
 
+	std::vector<tx_log_entry_t> get_tx_history(const uint32_t& index, const int32_t& limit, const uint32_t& offset) const override;
+
 	balance_t get_balance(const uint32_t& index, const addr_t& currency, const uint32_t& min_confirm) const override;
 
 	std::map<addr_t, balance_t> get_balances(const uint32_t& index, const uint32_t& min_confirm) const override;
@@ -114,6 +117,8 @@ private:
 
 	std::vector<std::shared_ptr<ECDSA_Wallet>> wallets;
 	std::vector<std::shared_ptr<BLS_Wallet>> bls_wallets;
+
+	mutable vnx::rocksdb::multi_table<addr_t, tx_log_entry_t> tx_log;
 
 	std::shared_ptr<const ChainParams> params;
 	std::shared_ptr<vnx::addons::HttpInterface<Wallet>> http;
