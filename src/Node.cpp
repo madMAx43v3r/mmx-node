@@ -1010,8 +1010,14 @@ void Node::sync_more()
 			break;
 		}
 		const auto height = sync_pos++;
-		router->get_blocks_at(height, std::bind(&Node::sync_result, this, height, std::placeholders::_1));
 		sync_pending.insert(height);
+		router->get_blocks_at(height,
+				std::bind(&Node::sync_result, this, height, std::placeholders::_1),
+				[this, height](const vnx::exception& ex) {
+					sync_pos = height;
+					sync_pending.erase(height);
+					log(WARN) << "get_blocks_at() failed with: " << ex.what();
+				});
 	}
 }
 
