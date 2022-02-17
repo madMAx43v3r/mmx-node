@@ -7,6 +7,7 @@
 #include <vnx/AsyncClient.h>
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/TimeInfusion.hxx>
+#include <mmx/addr_t.hpp>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
 

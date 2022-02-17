@@ -7,6 +7,7 @@
 #include <mmx/package.hxx>
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/TimeInfusion.hxx>
+#include <mmx/addr_t.hpp>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
 
@@ -22,6 +23,9 @@ public:
 	uint32_t max_history = 65536;
 	uint32_t restart_holdoff = 60000;
 	std::string node_server = "Node";
+	std::string wallet_server = "Wallet";
+	std::string storage_path;
+	vnx::optional<::mmx::addr_t> reward_addr;
 	
 	typedef ::vnx::Module Super;
 	
@@ -69,14 +73,17 @@ protected:
 
 template<typename T>
 void TimeLordBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<TimeLordBase>(6);
+	_visitor.template type_begin<TimeLordBase>(9);
 	_visitor.type_field("input_infuse", 0); _visitor.accept(input_infuse);
 	_visitor.type_field("input_request", 1); _visitor.accept(input_request);
 	_visitor.type_field("output_proofs", 2); _visitor.accept(output_proofs);
 	_visitor.type_field("max_history", 3); _visitor.accept(max_history);
 	_visitor.type_field("restart_holdoff", 4); _visitor.accept(restart_holdoff);
 	_visitor.type_field("node_server", 5); _visitor.accept(node_server);
-	_visitor.template type_end<TimeLordBase>(6);
+	_visitor.type_field("wallet_server", 6); _visitor.accept(wallet_server);
+	_visitor.type_field("storage_path", 7); _visitor.accept(storage_path);
+	_visitor.type_field("reward_addr", 8); _visitor.accept(reward_addr);
+	_visitor.template type_end<TimeLordBase>(9);
 }
 
 
