@@ -16,6 +16,7 @@
 #include <mmx/spend_options_t.hxx>
 #include <mmx/stxo_entry_t.hxx>
 #include <mmx/tx_entry_t.hxx>
+#include <mmx/tx_log_entry_t.hxx>
 #include <mmx/txio_key_t.hxx>
 #include <mmx/utxo_entry_t.hxx>
 #include <mmx/utxo_t.hxx>
@@ -34,6 +35,7 @@ public:
 	std::vector<::mmx::account_t> accounts;
 	std::string config_path;
 	std::string storage_path;
+	std::string database_path = "wallet/";
 	std::string node_server = "Node";
 	uint32_t max_accounts = 1000;
 	uint32_t max_key_files = 100;
@@ -95,6 +97,7 @@ protected:
 	virtual std::vector<::mmx::stxo_entry_t> get_stxo_list_for(const uint32_t& index, const ::mmx::addr_t& currency) const = 0;
 	virtual std::vector<::mmx::utxo_entry_t> gather_utxos_for(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index, const int32_t& since) const = 0;
+	virtual std::vector<::mmx::tx_log_entry_t> get_tx_history(const uint32_t& index, const int32_t& limit, const uint32_t& offset) const = 0;
 	virtual ::mmx::balance_t get_balance(const uint32_t& index, const ::mmx::addr_t& currency, const uint32_t& min_confirm) const = 0;
 	virtual std::map<::mmx::addr_t, ::mmx::balance_t> get_balances(const uint32_t& index, const uint32_t& min_confirm) const = 0;
 	virtual std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts(const uint32_t& index) const = 0;
@@ -120,18 +123,19 @@ protected:
 
 template<typename T>
 void WalletBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<WalletBase>(10);
+	_visitor.template type_begin<WalletBase>(11);
 	_visitor.type_field("key_files", 0); _visitor.accept(key_files);
 	_visitor.type_field("accounts", 1); _visitor.accept(accounts);
 	_visitor.type_field("config_path", 2); _visitor.accept(config_path);
 	_visitor.type_field("storage_path", 3); _visitor.accept(storage_path);
-	_visitor.type_field("node_server", 4); _visitor.accept(node_server);
-	_visitor.type_field("max_accounts", 5); _visitor.accept(max_accounts);
-	_visitor.type_field("max_key_files", 6); _visitor.accept(max_key_files);
-	_visitor.type_field("num_addresses", 7); _visitor.accept(num_addresses);
-	_visitor.type_field("utxo_timeout_ms", 8); _visitor.accept(utxo_timeout_ms);
-	_visitor.type_field("enable_bls", 9); _visitor.accept(enable_bls);
-	_visitor.template type_end<WalletBase>(10);
+	_visitor.type_field("database_path", 4); _visitor.accept(database_path);
+	_visitor.type_field("node_server", 5); _visitor.accept(node_server);
+	_visitor.type_field("max_accounts", 6); _visitor.accept(max_accounts);
+	_visitor.type_field("max_key_files", 7); _visitor.accept(max_key_files);
+	_visitor.type_field("num_addresses", 8); _visitor.accept(num_addresses);
+	_visitor.type_field("utxo_timeout_ms", 9); _visitor.accept(utxo_timeout_ms);
+	_visitor.type_field("enable_bls", 10); _visitor.accept(enable_bls);
+	_visitor.template type_end<WalletBase>(11);
 }
 
 

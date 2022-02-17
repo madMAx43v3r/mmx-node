@@ -45,6 +45,8 @@
 #include <mmx/Wallet_get_stxo_list_return.hxx>
 #include <mmx/Wallet_get_stxo_list_for.hxx>
 #include <mmx/Wallet_get_stxo_list_for_return.hxx>
+#include <mmx/Wallet_get_tx_history.hxx>
+#include <mmx/Wallet_get_tx_history_return.hxx>
 #include <mmx/Wallet_get_utxo_list.hxx>
 #include <mmx/Wallet_get_utxo_list_return.hxx>
 #include <mmx/Wallet_get_utxo_list_for.hxx>
@@ -78,6 +80,7 @@
 #include <mmx/spend_options_t.hxx>
 #include <mmx/stxo_entry_t.hxx>
 #include <mmx/tx_entry_t.hxx>
+#include <mmx/tx_log_entry_t.hxx>
 #include <mmx/txio_key_t.hxx>
 #include <mmx/utxo_entry_t.hxx>
 #include <mmx/utxo_t.hxx>
@@ -507,6 +510,21 @@ std::vector<::mmx::tx_entry_t> WalletClient::get_history(const uint32_t& index, 
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::vector<::mmx::tx_entry_t>>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
+std::vector<::mmx::tx_log_entry_t> WalletClient::get_tx_history(const uint32_t& index, const int32_t& limit, const uint32_t& offset) {
+	auto _method = ::mmx::Wallet_get_tx_history::create();
+	_method->index = index;
+	_method->limit = limit;
+	_method->offset = offset;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_tx_history_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::tx_log_entry_t>>();
 	} else {
 		throw std::logic_error("WalletClient: invalid return value");
 	}
