@@ -1095,13 +1095,13 @@ void Router::on_recv_note(uint64_t client, std::shared_ptr<const ReceiveNote> no
 	}
 }
 
-void Router::recv_notify(uint64_t source, const hash_t& msg_hash)
+void Router::recv_notify(const hash_t& msg_hash, const uint64_t* source)
 {
 	auto note = ReceiveNote::create();
 	note->time = vnx::get_wall_time_micros();
 	note->hash = msg_hash;
 	for(const auto& entry : peer_map) {
-		if(entry.first != source) {
+		if(!source || entry.first != *source) {
 			send_to(entry.second, note, true);
 		}
 	}
@@ -1578,6 +1578,10 @@ bool Router::relay_msg_hash(const hash_t& hash, uint32_t credits)
 		hash_queue.push(hash);
 	}
 	auto& info = ret.first->second;
+	if(!info.did_notify) {
+		recv_notify(hash, nullptr);
+		info.did_notify = true;
+	}
 	info.is_valid = true;
 
 	if(credits && !info.is_rewarded && !info.received_from.empty())
@@ -1602,7 +1606,7 @@ bool Router::receive_msg_hash(const hash_t& hash, uint64_t client, uint32_t cred
 	}
 	auto& info = ret.first->second;
 	if(!info.did_notify) {
-		recv_notify(client, hash);
+		recv_notify(hash, &client);
 		info.did_notify = true;
 	}
 	const bool is_new = info.received_from.empty();
