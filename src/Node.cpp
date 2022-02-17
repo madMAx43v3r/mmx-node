@@ -1005,10 +1005,9 @@ void Node::sync_more()
 		return;
 	}
 	const auto max_pending = !sync_retry ? max_sync_jobs : 1;
-	while(sync_pending.size() < max_pending) {
-		if(sync_peak && sync_pos >= *sync_peak) {
-			break;
-		}
+
+	while(sync_pending.size() < max_pending && (!sync_peak || sync_pos < *sync_peak))
+	{
 		const auto height = sync_pos++;
 		sync_pending.insert(height);
 		router->get_blocks_at(height,
