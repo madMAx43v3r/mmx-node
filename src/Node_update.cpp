@@ -470,22 +470,34 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	}
 	block->proof = response->proof;
 
-	struct tx_entry_t {
+	struct tx_data_t {
+		bool invalid = false;
 		uint64_t fees = 0;
 		uint64_t cost = 0;
 		double fee_ratio = 0;
 		std::shared_ptr<const Transaction> tx;
 	};
 
-	std::vector<tx_entry_t> tx_list;
-	std::unordered_set<hash_t> invalid;
-	std::unordered_set<hash_t> postpone;
+	std::vector<tx_data_t> tx_list;
+	std::unordered_multimap<hash_t, hash_t> dependency;
 
 	for(const auto& entry : tx_pool) {
-		if(!tx_map.count(entry.first)) {
-			tx_entry_t tmp;
-			tmp.tx = entry.second;
-			tx_list.push_back(tmp);
+		const auto& tx = entry.second;
+		if(!tx_map.count(tx->id)) {
+			bool depends = false;
+			for(const auto& in : tx->inputs) {
+				const auto& prev = in.prev.txid;
+				// check if tx depends on another one which is not in a block yet
+				if(tx_pool.count(prev) && !tx_map.count(prev)) {
+					dependency.emplace(prev, tx->id);
+					depends = true;
+				}
+			}
+			if(!depends) {
+				tx_data_t tmp;
+				tmp.tx = tx;
+				tx_list.push_back(tmp);
+			}
 		}
 	}
 	auto context = Context::create();
@@ -496,18 +508,6 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	{
 		auto& entry = tx_list[i];
 		auto& tx = entry.tx;
-		// check if tx depends on another one which is not in a block yet
-		bool depends = false;
-		for(const auto& in : tx->inputs) {
-			if(tx_pool.count(in.prev.txid) && !tx_map.count(in.prev.txid)) {
-				depends = true;
-			}
-		}
-		if(depends) {
-#pragma omp critical
-			postpone.insert(tx->id);
-			continue;
-		}
 		try {
 			const auto cost = tx->calc_cost(params);
 			if(cost > params->max_block_cost) {
@@ -525,54 +525,68 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 			entry.fee_ratio = entry.fees / double(cost);
 		}
 		catch(const std::exception& ex) {
-#pragma omp critical
-			invalid.insert(tx->id);
+			entry.invalid = true;
 			log(WARN) << "TX validation failed with: " << ex.what();
 		}
 	}
 
 	// sort by fee ratio
 	std::sort(tx_list.begin(), tx_list.end(),
-		[](const tx_entry_t& lhs, const tx_entry_t& rhs) -> bool {
+		[](const tx_data_t& lhs, const tx_data_t& rhs) -> bool {
 			return lhs.fee_ratio > rhs.fee_ratio;
 		});
 
 	uint64_t total_fees = 0;
 	uint64_t total_cost = 0;
+	std::unordered_set<hash_t> invalid;
 	std::unordered_set<addr_t> mutated;
 	std::unordered_set<txio_key_t> spent;
 
+	// select transactions
 	for(size_t i = 0; i < tx_list.size(); ++i)
 	{
 		const auto& entry = tx_list[i];
 		const auto& tx = entry.tx;
-		if(!invalid.count(tx->id) && !postpone.count(tx->id))
+		if(entry.invalid) {
+			invalid.insert(tx->id);
+			continue;
+		}
+		if(total_cost + entry.cost < params->max_block_cost)
 		{
-			if(total_cost + entry.cost < params->max_block_cost)
-			{
-				bool passed = true;
-				for(const auto& in : tx->inputs) {
-					if(!spent.insert(in.prev).second) {
+			bool passed = true;
+			for(const auto& in : tx->inputs) {
+				// prevent double spending
+				if(!spent.insert(in.prev).second) {
+					passed = false;
+				}
+			}
+			for(const auto& op : tx->execute) {
+				if(std::dynamic_pointer_cast<const operation::Mutate>(op)) {
+					// prevent concurrent mutation
+					if(!mutated.insert(op->address).second) {
 						passed = false;
 					}
 				}
-				for(const auto& op : tx->execute) {
-					if(std::dynamic_pointer_cast<const operation::Mutate>(op)) {
-						if(!mutated.insert(op->address).second) {
-							passed = false;
-						}
-					}
-				}
-				if(passed) {
-					block->tx_list.push_back(tx);
-					total_fees += entry.fees;
-					total_cost += entry.cost;
-				}
+			}
+			if(passed) {
+				block->tx_list.push_back(tx);
+				total_fees += entry.fees;
+				total_cost += entry.cost;
 			}
 		}
 	}
-	for(const auto& id : invalid) {
-		tx_pool.erase(id);
+
+	// purge invalid
+	while(!invalid.empty()) {
+		std::unordered_set<hash_t> more;
+		for(const auto& id : invalid) {
+			const auto range = dependency.equal_range(id);
+			for(auto iter = range.first; iter != range.second; ++iter) {
+				more.insert(iter->second);
+			}
+			tx_pool.erase(id);
+		}
+		invalid = more;
 	}
 	block->finalize();
 
