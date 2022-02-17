@@ -858,11 +858,9 @@ void Node::handle(std::shared_ptr<const Block> block)
 	if(!block->proof) {
 		return;
 	}
-	if(!is_synced) {
-		const auto peak = get_peak();
-		if(peak && block->height > peak->height && block->height - peak->height > 2 * params->commit_delay) {
-			return;
-		}
+	const auto peak = get_peak();
+	if(peak && block->height > peak->height && block->height - peak->height > 2 * params->commit_delay) {
+		return;
 	}
 	add_block(block);
 }
