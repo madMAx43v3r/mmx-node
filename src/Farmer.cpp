@@ -32,8 +32,9 @@ void Farmer::main()
 
 		for(auto keys : wallet.get_all_farmer_keys()) {
 			if(keys) {
-				key_map[keys->farmer_public_key] = keys->farmer_private_key;
-				log(INFO) << "Got farmer key: " << keys->farmer_public_key;
+				if(key_map.emplace(keys->farmer_public_key, keys->farmer_private_key).second) {
+					log(INFO) << "Got Farmer Key: " << keys->farmer_public_key;
+				}
 			}
 		}
 		if(!reward_addr) {
