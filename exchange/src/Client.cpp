@@ -67,19 +67,6 @@ void Client::main()
 		offer_table.open(storage_path + "offer_table", options);
 	}
 
-	set_timer_millis(10 * 1000, std::bind(&Client::update, this));
-	set_timer_millis(60 * 1000, std::bind(&Client::connect, this));
-	if(post_interval > 0) {
-		set_timer_millis(post_interval * 1000, std::bind(&Client::post_offers, this));
-	}
-
-	set_timeout_millis(2000, [this]() {
-		offer_table.scan(
-			[this](const uint64_t& id, const std::shared_ptr<OfferBundle>& offer) {
-				place(offer);
-			});
-	});
-
 	trade_log = std::make_shared<vnx::File>(storage_path + "trade_log.dat");
 	if(trade_log->exists()) {
 		int64_t offset = 0;
@@ -103,6 +90,19 @@ void Client::main()
 	} else {
 		trade_log->open("wb");
 	}
+
+	set_timer_millis(10 * 1000, std::bind(&Client::update, this));
+	set_timer_millis(60 * 1000, std::bind(&Client::connect, this));
+	if(post_interval > 0) {
+		set_timer_millis(post_interval * 1000, std::bind(&Client::post_offers, this));
+	}
+
+	set_timeout_millis(2000, [this]() {
+		offer_table.scan(
+			[this](const uint64_t& id, const std::shared_ptr<OfferBundle>& offer) {
+				place(offer);
+			});
+	});
 
 	connect();
 
