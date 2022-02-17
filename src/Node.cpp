@@ -716,19 +716,6 @@ void Node::add_block(std::shared_ptr<const Block> block)
 	fork->recv_time = vnx::get_wall_time_micros();
 	fork->block = block;
 	add_fork(fork);
-
-	// fetch missing previous
-	if(is_synced && !fork_tree.count(block->prev))
-	{
-		const auto hash = block->prev;
-		const auto height = block->height - 1;
-		if(!fetch_pending.count(hash) && height > root->height)
-		{
-			router->fetch_block(hash, nullptr, std::bind(&Node::fetch_result, this, hash, std::placeholders::_1));
-			fetch_pending.insert(hash);
-			log(WARN) << "Fetching missed block at height " << height << " with hash " << hash;
-		}
-	}
 }
 
 void Node::add_transaction(std::shared_ptr<const Transaction> tx, const vnx::bool_t& pre_validate)

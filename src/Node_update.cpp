@@ -85,38 +85,56 @@ void Node::update()
 
 	// verify proof where possible
 	std::vector<std::shared_ptr<fork_t>> to_verify;
-	for(const auto& entry : fork_index) {
-		const auto& fork = entry.second;
-		if(fork->is_proof_verified) {
-			continue;
-		}
-		const auto& block = fork->block;
-		if(!fork->prev.lock()) {
-			if(auto prev = find_fork(block->prev)) {
-				if(prev->is_invalid) {
-					fork->is_invalid = true;
-				}
-				fork->prev = prev;
+	{
+		const auto root = get_root();
+		for(const auto& entry : fork_index) {
+			const auto& fork = entry.second;
+			if(fork->is_proof_verified) {
+				continue;
 			}
-		}
-		if(!fork->diff_block) {
-			fork->diff_block = find_diff_header(block);
-		}
-		if(fork->is_invalid || !fork->diff_block) {
-			continue;
-		}
-		const auto prev = find_prev_header(block);
-		if(!prev) {
-			continue;	// wait for previous block
-		}
-		bool vdf_passed = false;
-		if(auto point = find_vdf_point(block->height, prev->vdf_iters, block->vdf_iters, prev->vdf_output, block->vdf_output)) {
-			vdf_passed = true;
-			fork->is_vdf_verified = true;
-			fork->vdf_point = point;
-		}
-		if(vdf_passed || !is_synced) {
-			to_verify.push_back(fork);
+			const auto& block = fork->block;
+			if(!fork->prev.lock()) {
+				if(auto prev = find_fork(block->prev)) {
+					if(prev->is_invalid) {
+						fork->is_invalid = true;
+					}
+					fork->prev = prev;
+				}
+				else if(is_synced) {
+					// fetch missing previous
+					const auto hash = block->prev;
+					const auto height = block->height - 1;
+					if(!fetch_pending.count(hash) && height > root->height)
+					{
+						fetch_pending.insert(hash);
+						router->fetch_block(hash, nullptr,
+								std::bind(&Node::fetch_result, this, hash, std::placeholders::_1),
+								[this, hash](const vnx::exception&) {
+									fetch_pending.erase(hash);
+								});
+						log(WARN) << "Fetching missed block at height " << height << " with hash " << hash;
+					}
+				}
+			}
+			if(!fork->diff_block) {
+				fork->diff_block = find_diff_header(block);
+			}
+			if(fork->is_invalid || !fork->diff_block) {
+				continue;
+			}
+			const auto prev = find_prev_header(block);
+			if(!prev) {
+				continue;	// wait for previous block
+			}
+			bool vdf_passed = false;
+			if(auto point = find_vdf_point(block->height, prev->vdf_iters, block->vdf_iters, prev->vdf_output, block->vdf_output)) {
+				vdf_passed = true;
+				fork->is_vdf_verified = true;
+				fork->vdf_point = point;
+			}
+			if(vdf_passed || !is_synced) {
+				to_verify.push_back(fork);
+			}
 		}
 	}
 
