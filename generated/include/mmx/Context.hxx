@@ -13,7 +13,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Context : public ::vnx::Value {
+class MMX_EXPORT Context : public ::vnx::Value {
 public:
 	
 	::mmx::hash_t txid;

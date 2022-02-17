@@ -11,7 +11,7 @@
 namespace mmx {
 namespace contract {
 
-struct VNX_EXPORT condition_e {
+struct MMX_CONTRACT_EXPORT condition_e {
 	
 	enum enum_t : uint32_t {
 		ADDR_AMOUNT = 3839664221l,

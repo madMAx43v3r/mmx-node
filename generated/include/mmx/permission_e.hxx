@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-struct VNX_EXPORT permission_e {
+struct MMX_EXPORT permission_e {
 	
 	enum enum_t : uint32_t {
 		PUBLIC = 2166575688l,

@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Node_get_txo_infos : public ::vnx::Value {
+class MMX_EXPORT Node_get_txo_infos : public ::vnx::Value {
 public:
 	
 	std::vector<::mmx::txio_key_t> keys;

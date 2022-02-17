@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-struct VNX_EXPORT stxo_t : ::mmx::utxo_t {
+struct MMX_EXPORT stxo_t : ::mmx::utxo_t {
 	
 	
 	::mmx::txio_key_t spent;

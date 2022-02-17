@@ -13,7 +13,7 @@
 namespace mmx {
 namespace solution {
 
-class VNX_EXPORT MultiSig : public ::mmx::Solution {
+class MMX_SOLUTION_EXPORT MultiSig : public ::mmx::Solution {
 public:
 	
 	std::vector<std::shared_ptr<const ::mmx::solution::PubKey>> solutions;

@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Node_add_transaction : public ::vnx::Value {
+class MMX_EXPORT Node_add_transaction : public ::vnx::Value {
 public:
 	
 	std::shared_ptr<const ::mmx::Transaction> tx;

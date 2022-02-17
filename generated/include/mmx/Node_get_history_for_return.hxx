@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Node_get_history_for_return : public ::vnx::Value {
+class MMX_EXPORT Node_get_history_for_return : public ::vnx::Value {
 public:
 	
 	std::vector<::mmx::tx_entry_t> _ret_0;

@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Node_add_block : public ::vnx::Value {
+class MMX_EXPORT Node_add_block : public ::vnx::Value {
 public:
 	
 	std::shared_ptr<const ::mmx::Block> block;

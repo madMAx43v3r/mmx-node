@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Node_get_synced_height : public ::vnx::Value {
+class MMX_EXPORT Node_get_synced_height : public ::vnx::Value {
 public:
 	
 	

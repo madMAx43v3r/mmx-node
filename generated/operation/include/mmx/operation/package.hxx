@@ -13,14 +13,18 @@
 namespace mmx {
 namespace operation {
 
+#ifndef MMX_OPERATION_EXPORT
+#define MMX_OPERATION_EXPORT
+#endif
+
 
 class Mint;
 class Mutate;
 class Spend;
 
-extern const vnx::TypeCode* const vnx_native_type_code_Mint; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Mutate; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Spend; ///< \private
+MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Mint; ///< \private
+MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Mutate; ///< \private
+MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Spend; ///< \private
 
 } // namespace mmx
 } // namespace operation

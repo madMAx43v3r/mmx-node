@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-struct VNX_EXPORT node_type_e {
+struct MMX_EXPORT node_type_e {
 	
 	enum enum_t : uint32_t {
 		API_CLIENT = 1802393446l,

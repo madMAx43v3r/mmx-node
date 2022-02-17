@@ -15,7 +15,7 @@
 namespace mmx {
 namespace operation {
 
-class VNX_EXPORT Spend : public ::mmx::Operation {
+class MMX_OPERATION_EXPORT Spend : public ::mmx::Operation {
 public:
 	
 	::mmx::txio_key_t key;

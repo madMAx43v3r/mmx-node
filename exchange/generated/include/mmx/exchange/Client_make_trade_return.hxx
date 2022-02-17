@@ -12,7 +12,7 @@
 namespace mmx {
 namespace exchange {
 
-class VNX_EXPORT Client_make_trade_return : public ::vnx::Value {
+class MMX_EXCHANGE_EXPORT Client_make_trade_return : public ::vnx::Value {
 public:
 	
 	::mmx::exchange::trade_order_t _ret_0;

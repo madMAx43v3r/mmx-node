@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Wallet_gather_utxos_for_return : public ::vnx::Value {
+class MMX_EXPORT Wallet_gather_utxos_for_return : public ::vnx::Value {
 public:
 	
 	std::vector<::mmx::utxo_entry_t> _ret_0;

@@ -19,7 +19,7 @@
 namespace mmx {
 namespace contract {
 
-class VNX_EXPORT Token : public ::mmx::Contract {
+class MMX_CONTRACT_EXPORT Token : public ::mmx::Contract {
 public:
 	
 	std::string name;

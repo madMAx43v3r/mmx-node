@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Farmer_get_farm_info_return : public ::vnx::Value {
+class MMX_EXPORT Farmer_get_farm_info_return : public ::vnx::Value {
 public:
 	
 	std::shared_ptr<const ::mmx::FarmInfo> _ret_0;

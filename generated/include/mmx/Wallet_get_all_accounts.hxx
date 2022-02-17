@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Wallet_get_all_accounts : public ::vnx::Value {
+class MMX_EXPORT Wallet_get_all_accounts : public ::vnx::Value {
 public:
 	
 	

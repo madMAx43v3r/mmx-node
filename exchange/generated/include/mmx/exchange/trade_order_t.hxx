@@ -16,7 +16,7 @@
 namespace mmx {
 namespace exchange {
 
-struct VNX_EXPORT trade_order_t {
+struct MMX_EXCHANGE_EXPORT trade_order_t {
 	
 	
 	uint32_t version = 0;

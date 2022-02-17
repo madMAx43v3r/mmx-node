@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-struct VNX_EXPORT tx_in_t {
+struct MMX_EXPORT tx_in_t {
 	
 	
 	::mmx::txio_key_t prev;

@@ -15,7 +15,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT WebAPIBase : public ::vnx::Module {
+class MMX_EXPORT WebAPIBase : public ::vnx::Module {
 public:
 	
 	::vnx::TopicPtr input_blocks = "node.verified_blocks";

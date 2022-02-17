@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT TimeLord_stop_vdf : public ::vnx::Value {
+class MMX_EXPORT TimeLord_stop_vdf : public ::vnx::Value {
 public:
 	
 	

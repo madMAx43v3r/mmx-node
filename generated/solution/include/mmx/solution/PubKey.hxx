@@ -14,7 +14,7 @@
 namespace mmx {
 namespace solution {
 
-class VNX_EXPORT PubKey : public ::mmx::Solution {
+class MMX_SOLUTION_EXPORT PubKey : public ::mmx::Solution {
 public:
 	
 	::mmx::pubkey_t pubkey;

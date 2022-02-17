@@ -11,7 +11,7 @@
 namespace mmx {
 namespace contract {
 
-struct VNX_EXPORT compare_e {
+struct MMX_CONTRACT_EXPORT compare_e {
 	
 	enum enum_t : uint32_t {
 		EQUAL = 3913649559l,

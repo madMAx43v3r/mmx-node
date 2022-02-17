@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Wallet_create_account : public ::vnx::Value {
+class MMX_EXPORT Wallet_create_account : public ::vnx::Value {
 public:
 	
 	::mmx::account_t config;

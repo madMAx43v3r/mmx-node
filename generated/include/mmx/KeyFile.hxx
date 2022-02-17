@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT KeyFile : public ::vnx::Value {
+class MMX_EXPORT KeyFile : public ::vnx::Value {
 public:
 	
 	::mmx::hash_t seed_value;

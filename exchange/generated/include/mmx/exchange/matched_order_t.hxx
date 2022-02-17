@@ -15,7 +15,7 @@
 namespace mmx {
 namespace exchange {
 
-struct VNX_EXPORT matched_order_t {
+struct MMX_EXCHANGE_EXPORT matched_order_t {
 	
 	
 	uint64_t bid = 0;

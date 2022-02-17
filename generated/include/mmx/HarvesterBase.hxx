@@ -13,7 +13,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT HarvesterBase : public ::vnx::Module {
+class MMX_EXPORT HarvesterBase : public ::vnx::Module {
 public:
 	
 	::vnx::TopicPtr input_challenges = "harvester.challenges";

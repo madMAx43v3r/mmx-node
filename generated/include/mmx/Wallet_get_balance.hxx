@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Wallet_get_balance : public ::vnx::Value {
+class MMX_EXPORT Wallet_get_balance : public ::vnx::Value {
 public:
 	
 	uint32_t index = 0;

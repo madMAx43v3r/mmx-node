@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-struct VNX_EXPORT uint_fraction_t {
+struct MMX_EXPORT uint_fraction_t {
 	
 	
 	uint32_t value = 0;

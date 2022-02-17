@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Wallet_get_master_seed : public ::vnx::Value {
+class MMX_EXPORT Wallet_get_master_seed : public ::vnx::Value {
 public:
 	
 	uint32_t index = 0;

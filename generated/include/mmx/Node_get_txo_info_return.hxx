@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Node_get_txo_info_return : public ::vnx::Value {
+class MMX_EXPORT Node_get_txo_info_return : public ::vnx::Value {
 public:
 	
 	vnx::optional<::mmx::txo_info_t> _ret_0;

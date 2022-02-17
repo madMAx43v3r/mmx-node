@@ -12,7 +12,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT FarmerKeys : public ::vnx::Value {
+class MMX_EXPORT FarmerKeys : public ::vnx::Value {
 public:
 	
 	::mmx::skey_t pool_private_key;

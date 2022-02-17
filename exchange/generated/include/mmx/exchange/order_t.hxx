@@ -12,7 +12,7 @@
 namespace mmx {
 namespace exchange {
 
-struct VNX_EXPORT order_t {
+struct MMX_EXCHANGE_EXPORT order_t {
 	
 	
 	uint64_t bid = 0;

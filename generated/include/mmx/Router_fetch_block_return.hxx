@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Router_fetch_block_return : public ::vnx::Value {
+class MMX_EXPORT Router_fetch_block_return : public ::vnx::Value {
 public:
 	
 	std::shared_ptr<const ::mmx::Block> _ret_0;

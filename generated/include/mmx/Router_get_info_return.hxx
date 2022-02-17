@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Router_get_info_return : public ::vnx::Value {
+class MMX_EXPORT Router_get_info_return : public ::vnx::Value {
 public:
 	
 	::mmx::node_info_t _ret_0;

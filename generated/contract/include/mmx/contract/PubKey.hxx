@@ -17,7 +17,7 @@
 namespace mmx {
 namespace contract {
 
-class VNX_EXPORT PubKey : public ::mmx::Contract {
+class MMX_CONTRACT_EXPORT PubKey : public ::mmx::Contract {
 public:
 	
 	::mmx::addr_t address;

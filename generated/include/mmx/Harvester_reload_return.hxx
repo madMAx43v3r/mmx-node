@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Harvester_reload_return : public ::vnx::Value {
+class MMX_EXPORT Harvester_reload_return : public ::vnx::Value {
 public:
 	
 	

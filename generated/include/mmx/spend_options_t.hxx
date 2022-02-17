@@ -12,7 +12,7 @@
 
 namespace mmx {
 
-struct VNX_EXPORT spend_options_t {
+struct MMX_EXPORT spend_options_t {
 	
 	
 	uint32_t min_confirm = 1;

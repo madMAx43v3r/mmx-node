@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Wallet_mark_spent_return : public ::vnx::Value {
+class MMX_EXPORT Wallet_mark_spent_return : public ::vnx::Value {
 public:
 	
 	

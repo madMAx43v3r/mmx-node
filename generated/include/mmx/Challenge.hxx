@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Challenge : public ::vnx::Value {
+class MMX_EXPORT Challenge : public ::vnx::Value {
 public:
 	
 	uint32_t height = 0;

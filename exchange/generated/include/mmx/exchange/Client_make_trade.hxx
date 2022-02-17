@@ -12,7 +12,7 @@
 namespace mmx {
 namespace exchange {
 
-class VNX_EXPORT Client_make_trade : public ::vnx::Value {
+class MMX_EXCHANGE_EXPORT Client_make_trade : public ::vnx::Value {
 public:
 	
 	uint32_t wallet = 0;

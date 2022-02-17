@@ -13,7 +13,7 @@
 namespace mmx {
 namespace contract {
 
-class VNX_EXPORT Locked : public ::mmx::Contract {
+class MMX_CONTRACT_EXPORT Locked : public ::mmx::Contract {
 public:
 	
 	::mmx::addr_t owner;

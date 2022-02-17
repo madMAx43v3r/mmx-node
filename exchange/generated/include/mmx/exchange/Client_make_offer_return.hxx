@@ -12,7 +12,7 @@
 namespace mmx {
 namespace exchange {
 
-class VNX_EXPORT Client_make_offer_return : public ::vnx::Value {
+class MMX_EXCHANGE_EXPORT Client_make_offer_return : public ::vnx::Value {
 public:
 	
 	std::shared_ptr<const ::mmx::exchange::OfferBundle> _ret_0;

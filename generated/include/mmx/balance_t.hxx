@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-struct VNX_EXPORT balance_t {
+struct MMX_EXPORT balance_t {
 	
 	
 	uint64_t spendable = 0;

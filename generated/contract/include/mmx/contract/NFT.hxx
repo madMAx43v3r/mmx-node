@@ -15,7 +15,7 @@
 namespace mmx {
 namespace contract {
 
-class VNX_EXPORT NFT : public ::mmx::Contract {
+class MMX_CONTRACT_EXPORT NFT : public ::mmx::Contract {
 public:
 	
 	::mmx::addr_t creator;

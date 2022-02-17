@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Router_fetch_block : public ::vnx::Value {
+class MMX_EXPORT Router_fetch_block : public ::vnx::Value {
 public:
 	
 	::mmx::hash_t hash;

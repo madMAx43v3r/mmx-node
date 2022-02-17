@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT ReceiveNote : public ::vnx::Value {
+class MMX_EXPORT ReceiveNote : public ::vnx::Value {
 public:
 	
 	int64_t time = 0;

@@ -28,7 +28,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT WalletBase : public ::vnx::Module {
+class MMX_EXPORT WalletBase : public ::vnx::Module {
 public:
 	
 	std::vector<std::string> key_files;

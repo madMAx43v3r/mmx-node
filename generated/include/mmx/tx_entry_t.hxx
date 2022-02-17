@@ -13,7 +13,7 @@
 
 namespace mmx {
 
-struct VNX_EXPORT tx_entry_t {
+struct MMX_EXPORT tx_entry_t {
 	
 	
 	uint32_t height = 0;

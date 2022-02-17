@@ -12,7 +12,7 @@
 namespace mmx {
 namespace exchange {
 
-class VNX_EXPORT Client_get_order : public ::vnx::Value {
+class MMX_EXCHANGE_EXPORT Client_get_order : public ::vnx::Value {
 public:
 	
 	::mmx::txio_key_t key;

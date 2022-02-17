@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Router_get_known_peers_return : public ::vnx::Value {
+class MMX_EXPORT Router_get_known_peers_return : public ::vnx::Value {
 public:
 	
 	std::vector<std::string> _ret_0;

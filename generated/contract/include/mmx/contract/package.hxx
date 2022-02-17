@@ -13,6 +13,10 @@
 namespace mmx {
 namespace contract {
 
+#ifndef MMX_CONTRACT_EXPORT
+#define MMX_CONTRACT_EXPORT
+#endif
+
 
 class Condition;
 class Data;
@@ -27,18 +31,18 @@ class WebData;
 struct compare_e;
 struct condition_e;
 
-extern const vnx::TypeCode* const vnx_native_type_code_Condition; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Data; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Locked; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_MultiSig; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_NFT; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_PubKey; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_PuzzleLock; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Staking; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Token; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_WebData; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_compare_e; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_condition_e; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Condition; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Data; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Locked; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_NFT; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PuzzleLock; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Staking; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Token; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WebData; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_compare_e; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_condition_e; ///< \private
 
 } // namespace mmx
 } // namespace contract

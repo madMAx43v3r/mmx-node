@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT ChainParams : public ::vnx::Value {
+class MMX_EXPORT ChainParams : public ::vnx::Value {
 public:
 	
 	uint32_t port = 0;

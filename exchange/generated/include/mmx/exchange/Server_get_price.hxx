@@ -13,7 +13,7 @@
 namespace mmx {
 namespace exchange {
 
-class VNX_EXPORT Server_get_price : public ::vnx::Value {
+class MMX_EXCHANGE_EXPORT Server_get_price : public ::vnx::Value {
 public:
 	
 	::mmx::addr_t want;

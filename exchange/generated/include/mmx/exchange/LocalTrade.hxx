@@ -14,7 +14,7 @@
 namespace mmx {
 namespace exchange {
 
-class VNX_EXPORT LocalTrade : public ::vnx::Value {
+class MMX_EXCHANGE_EXPORT LocalTrade : public ::vnx::Value {
 public:
 	
 	::mmx::hash_t id;

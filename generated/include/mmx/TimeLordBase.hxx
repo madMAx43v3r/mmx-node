@@ -14,7 +14,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT TimeLordBase : public ::vnx::Module {
+class MMX_EXPORT TimeLordBase : public ::vnx::Module {
 public:
 	
 	::vnx::TopicPtr input_infuse = "timelord.infuse";

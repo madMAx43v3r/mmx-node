@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Node_get_stxo_list : public ::vnx::Value {
+class MMX_EXPORT Node_get_stxo_list : public ::vnx::Value {
 public:
 	
 	std::vector<::mmx::addr_t> addresses;

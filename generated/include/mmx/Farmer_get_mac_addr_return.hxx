@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Farmer_get_mac_addr_return : public ::vnx::Value {
+class MMX_EXPORT Farmer_get_mac_addr_return : public ::vnx::Value {
 public:
 	
 	::vnx::Hash64 _ret_0;

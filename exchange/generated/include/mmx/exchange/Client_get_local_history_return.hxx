@@ -12,7 +12,7 @@
 namespace mmx {
 namespace exchange {
 
-class VNX_EXPORT Client_get_local_history_return : public ::vnx::Value {
+class MMX_EXCHANGE_EXPORT Client_get_local_history_return : public ::vnx::Value {
 public:
 	
 	std::vector<std::shared_ptr<const ::mmx::exchange::LocalTrade>> _ret_0;

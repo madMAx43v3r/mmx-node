@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Router_get_farmer_credits_return : public ::vnx::Value {
+class MMX_EXPORT Router_get_farmer_credits_return : public ::vnx::Value {
 public:
 	
 	std::vector<std::pair<std::string, uint32_t>> _ret_0;

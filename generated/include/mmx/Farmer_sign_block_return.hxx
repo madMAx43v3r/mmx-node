@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Farmer_sign_block_return : public ::vnx::Value {
+class MMX_EXPORT Farmer_sign_block_return : public ::vnx::Value {
 public:
 	
 	std::shared_ptr<const ::mmx::BlockHeader> _ret_0;

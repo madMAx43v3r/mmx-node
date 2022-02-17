@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Wallet_sign_msg_return : public ::vnx::Value {
+class MMX_EXPORT Wallet_sign_msg_return : public ::vnx::Value {
 public:
 	
 	std::shared_ptr<const ::mmx::Solution> _ret_0;

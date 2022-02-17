@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Wallet_get_stxo_list_for : public ::vnx::Value {
+class MMX_EXPORT Wallet_get_stxo_list_for : public ::vnx::Value {
 public:
 	
 	uint32_t index = 0;

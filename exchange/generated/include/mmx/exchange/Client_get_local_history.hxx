@@ -12,7 +12,7 @@
 namespace mmx {
 namespace exchange {
 
-class VNX_EXPORT Client_get_local_history : public ::vnx::Value {
+class MMX_EXCHANGE_EXPORT Client_get_local_history : public ::vnx::Value {
 public:
 	
 	vnx::optional<::mmx::exchange::trade_pair_t> pair;

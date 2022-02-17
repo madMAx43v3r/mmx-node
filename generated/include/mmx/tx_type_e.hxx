@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-struct VNX_EXPORT tx_type_e {
+struct MMX_EXPORT tx_type_e {
 	
 	enum enum_t : uint32_t {
 		INPUT = 495375891l,

@@ -13,7 +13,7 @@
 namespace mmx {
 namespace exchange {
 
-struct VNX_EXPORT trade_entry_t {
+struct MMX_EXCHANGE_EXPORT trade_entry_t {
 	
 	
 	::mmx::hash_t id;

@@ -15,7 +15,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT ProofOfTime : public ::vnx::Value {
+class MMX_EXPORT ProofOfTime : public ::vnx::Value {
 public:
 	
 	uint32_t height = 0;

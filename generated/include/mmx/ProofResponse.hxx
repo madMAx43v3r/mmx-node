@@ -13,7 +13,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT ProofResponse : public ::vnx::Value {
+class MMX_EXPORT ProofResponse : public ::vnx::Value {
 public:
 	
 	std::shared_ptr<const ::mmx::Challenge> request;

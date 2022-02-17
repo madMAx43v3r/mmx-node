@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT TimeInfusion : public ::vnx::Value {
+class MMX_EXPORT TimeInfusion : public ::vnx::Value {
 public:
 	
 	uint32_t chain = 0;

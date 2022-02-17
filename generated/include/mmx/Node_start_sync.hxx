@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Node_start_sync : public ::vnx::Value {
+class MMX_EXPORT Node_start_sync : public ::vnx::Value {
 public:
 	
 	vnx::bool_t force = 0;

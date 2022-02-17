@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Node_get_tx_ids_at_return : public ::vnx::Value {
+class MMX_EXPORT Node_get_tx_ids_at_return : public ::vnx::Value {
 public:
 	
 	std::vector<::mmx::hash_t> _ret_0;

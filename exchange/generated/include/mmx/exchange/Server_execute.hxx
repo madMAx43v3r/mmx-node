@@ -12,7 +12,7 @@
 namespace mmx {
 namespace exchange {
 
-class VNX_EXPORT Server_execute : public ::vnx::Value {
+class MMX_EXCHANGE_EXPORT Server_execute : public ::vnx::Value {
 public:
 	
 	std::shared_ptr<const ::mmx::Transaction> tx;

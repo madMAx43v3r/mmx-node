@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Router_get_peer_info_return : public ::vnx::Value {
+class MMX_EXPORT Router_get_peer_info_return : public ::vnx::Value {
 public:
 	
 	std::shared_ptr<const ::mmx::PeerInfo> _ret_0;

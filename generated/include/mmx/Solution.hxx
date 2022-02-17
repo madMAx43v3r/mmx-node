@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Solution : public ::vnx::Value {
+class MMX_EXPORT Solution : public ::vnx::Value {
 public:
 	
 	uint32_t version = 0;

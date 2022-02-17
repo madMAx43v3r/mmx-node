@@ -12,7 +12,7 @@
 namespace mmx {
 namespace exchange {
 
-class VNX_EXPORT Client_execute_return : public ::vnx::Value {
+class MMX_EXCHANGE_EXPORT Client_execute_return : public ::vnx::Value {
 public:
 	
 	::mmx::hash_t _ret_0;

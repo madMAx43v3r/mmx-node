@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Router_discover_return : public ::vnx::Value {
+class MMX_EXPORT Router_discover_return : public ::vnx::Value {
 public:
 	
 	

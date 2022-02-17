@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Node_get_contract : public ::vnx::Value {
+class MMX_EXPORT Node_get_contract : public ::vnx::Value {
 public:
 	
 	::mmx::addr_t address;

@@ -12,7 +12,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Node_get_contracts_owned_return : public ::vnx::Value {
+class MMX_EXPORT Node_get_contracts_owned_return : public ::vnx::Value {
 public:
 	
 	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> _ret_0;

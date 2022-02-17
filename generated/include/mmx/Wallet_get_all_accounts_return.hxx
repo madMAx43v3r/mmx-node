@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Wallet_get_all_accounts_return : public ::vnx::Value {
+class MMX_EXPORT Wallet_get_all_accounts_return : public ::vnx::Value {
 public:
 	
 	std::map<uint32_t, ::mmx::account_t> _ret_0;

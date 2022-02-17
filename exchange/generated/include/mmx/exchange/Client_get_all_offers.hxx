@@ -11,7 +11,7 @@
 namespace mmx {
 namespace exchange {
 
-class VNX_EXPORT Client_get_all_offers : public ::vnx::Value {
+class MMX_EXCHANGE_EXPORT Client_get_all_offers : public ::vnx::Value {
 public:
 	
 	

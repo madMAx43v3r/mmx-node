@@ -14,7 +14,7 @@
 namespace mmx {
 namespace operation {
 
-class VNX_EXPORT Mutate : public ::mmx::Operation {
+class MMX_OPERATION_EXPORT Mutate : public ::mmx::Operation {
 public:
 	
 	::vnx::Object method;

@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Node_get_params_return : public ::vnx::Value {
+class MMX_EXPORT Node_get_params_return : public ::vnx::Value {
 public:
 	
 	std::shared_ptr<const ::mmx::ChainParams> _ret_0;

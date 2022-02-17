@@ -16,7 +16,7 @@
 namespace mmx {
 namespace exchange {
 
-class VNX_EXPORT OfferBundle : public ::vnx::Value {
+class MMX_EXCHANGE_EXPORT OfferBundle : public ::vnx::Value {
 public:
 	
 	uint64_t id = 0;

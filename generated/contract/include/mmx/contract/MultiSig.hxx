@@ -17,7 +17,7 @@
 namespace mmx {
 namespace contract {
 
-class VNX_EXPORT MultiSig : public ::mmx::Contract {
+class MMX_CONTRACT_EXPORT MultiSig : public ::mmx::Contract {
 public:
 	
 	uint32_t num_required = 0;

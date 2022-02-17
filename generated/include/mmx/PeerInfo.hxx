@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT PeerInfo : public ::vnx::Value {
+class MMX_EXPORT PeerInfo : public ::vnx::Value {
 public:
 	
 	std::vector<::mmx::peer_info_t> peers;

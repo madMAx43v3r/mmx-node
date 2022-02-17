@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Router_get_connected_peers : public ::vnx::Value {
+class MMX_EXPORT Router_get_connected_peers : public ::vnx::Value {
 public:
 	
 	

@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Node_get_block_hash_return : public ::vnx::Value {
+class MMX_EXPORT Node_get_block_hash_return : public ::vnx::Value {
 public:
 	
 	vnx::optional<::mmx::hash_t> _ret_0;

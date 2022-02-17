@@ -12,7 +12,7 @@
 namespace mmx {
 namespace exchange {
 
-class VNX_EXPORT Client_get_orders_return : public ::vnx::Value {
+class MMX_EXCHANGE_EXPORT Client_get_orders_return : public ::vnx::Value {
 public:
 	
 	std::vector<::mmx::exchange::order_t> _ret_0;

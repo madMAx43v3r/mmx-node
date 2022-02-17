@@ -14,7 +14,7 @@
 namespace mmx {
 namespace operation {
 
-class VNX_EXPORT Mint : public ::mmx::Operation {
+class MMX_OPERATION_EXPORT Mint : public ::mmx::Operation {
 public:
 	static const uint64_t max_amount = 1000000000000;
 	

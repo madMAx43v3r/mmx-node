@@ -13,7 +13,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Block : public ::mmx::BlockHeader {
+class MMX_EXPORT Block : public ::mmx::BlockHeader {
 public:
 	
 	std::vector<std::shared_ptr<const ::mmx::TransactionBase>> tx_list;

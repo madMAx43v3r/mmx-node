@@ -13,7 +13,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT ProofOfSpace : public ::vnx::Value {
+class MMX_EXPORT ProofOfSpace : public ::vnx::Value {
 public:
 	
 	uint8_t ksize = 0;

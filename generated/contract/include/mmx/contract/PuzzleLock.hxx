@@ -15,7 +15,7 @@
 namespace mmx {
 namespace contract {
 
-class VNX_EXPORT PuzzleLock : public ::mmx::contract::Locked {
+class MMX_CONTRACT_EXPORT PuzzleLock : public ::mmx::contract::Locked {
 public:
 	
 	std::shared_ptr<const ::mmx::Contract> puzzle;

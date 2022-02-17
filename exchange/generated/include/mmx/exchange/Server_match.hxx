@@ -12,7 +12,7 @@
 namespace mmx {
 namespace exchange {
 
-class VNX_EXPORT Server_match : public ::vnx::Value {
+class MMX_EXCHANGE_EXPORT Server_match : public ::vnx::Value {
 public:
 	
 	::mmx::exchange::trade_order_t order;

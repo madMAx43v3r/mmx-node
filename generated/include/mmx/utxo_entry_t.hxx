@@ -12,7 +12,7 @@
 
 namespace mmx {
 
-struct VNX_EXPORT utxo_entry_t {
+struct MMX_EXPORT utxo_entry_t {
 	
 	
 	::mmx::txio_key_t key;

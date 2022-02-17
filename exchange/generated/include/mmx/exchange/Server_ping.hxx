@@ -11,7 +11,7 @@
 namespace mmx {
 namespace exchange {
 
-class VNX_EXPORT Server_ping : public ::vnx::Value {
+class MMX_EXCHANGE_EXPORT Server_ping : public ::vnx::Value {
 public:
 	
 	uint64_t client = 0;

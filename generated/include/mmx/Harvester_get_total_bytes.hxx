@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Harvester_get_total_bytes : public ::vnx::Value {
+class MMX_EXPORT Harvester_get_total_bytes : public ::vnx::Value {
 public:
 	
 	

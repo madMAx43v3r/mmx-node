@@ -13,12 +13,16 @@
 namespace mmx {
 namespace solution {
 
+#ifndef MMX_SOLUTION_EXPORT
+#define MMX_SOLUTION_EXPORT
+#endif
+
 
 class MultiSig;
 class PubKey;
 
-extern const vnx::TypeCode* const vnx_native_type_code_MultiSig; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_PubKey; ///< \private
+MMX_SOLUTION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig; ///< \private
+MMX_SOLUTION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey; ///< \private
 
 } // namespace mmx
 } // namespace solution

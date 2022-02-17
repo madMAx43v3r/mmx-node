@@ -12,7 +12,7 @@
 
 namespace mmx {
 
-struct VNX_EXPORT txio_key_t {
+struct MMX_EXPORT txio_key_t {
 	
 	
 	::mmx::hash_t txid;

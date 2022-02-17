@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Node_get_tx_height : public ::vnx::Value {
+class MMX_EXPORT Node_get_tx_height : public ::vnx::Value {
 public:
 	
 	::mmx::hash_t id;

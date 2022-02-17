@@ -12,7 +12,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Wallet_get_balances_return : public ::vnx::Value {
+class MMX_EXPORT Wallet_get_balances_return : public ::vnx::Value {
 public:
 	
 	std::map<::mmx::addr_t, ::mmx::balance_t> _ret_0;

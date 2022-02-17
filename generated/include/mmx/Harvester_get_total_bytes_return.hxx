@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Harvester_get_total_bytes_return : public ::vnx::Value {
+class MMX_EXPORT Harvester_get_total_bytes_return : public ::vnx::Value {
 public:
 	
 	uint64_t _ret_0 = 0;

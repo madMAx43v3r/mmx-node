@@ -12,7 +12,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Router_sign_msg_return : public ::vnx::Value {
+class MMX_EXPORT Router_sign_msg_return : public ::vnx::Value {
 public:
 	
 	std::pair<::mmx::pubkey_t, ::mmx::signature_t> _ret_0;

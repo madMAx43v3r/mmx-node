@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Router_get_farmer_credits : public ::vnx::Value {
+class MMX_EXPORT Router_get_farmer_credits : public ::vnx::Value {
 public:
 	
 	

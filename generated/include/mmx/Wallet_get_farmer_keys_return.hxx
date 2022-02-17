@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Wallet_get_farmer_keys_return : public ::vnx::Value {
+class MMX_EXPORT Wallet_get_farmer_keys_return : public ::vnx::Value {
 public:
 	
 	std::shared_ptr<const ::mmx::FarmerKeys> _ret_0;

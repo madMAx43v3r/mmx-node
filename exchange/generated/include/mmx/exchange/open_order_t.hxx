@@ -13,7 +13,7 @@
 namespace mmx {
 namespace exchange {
 
-struct VNX_EXPORT open_order_t {
+struct MMX_EXCHANGE_EXPORT open_order_t {
 	
 	
 	::mmx::tx_out_t bid;

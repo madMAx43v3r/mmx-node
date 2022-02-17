@@ -30,7 +30,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT NodeBase : public ::vnx::Module {
+class MMX_EXPORT NodeBase : public ::vnx::Module {
 public:
 	
 	::vnx::TopicPtr input_vdfs = "network.vdfs";

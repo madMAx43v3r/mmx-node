@@ -18,7 +18,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Transaction : public ::mmx::TransactionBase {
+class MMX_EXPORT Transaction : public ::mmx::TransactionBase {
 public:
 	
 	uint32_t version = 0;

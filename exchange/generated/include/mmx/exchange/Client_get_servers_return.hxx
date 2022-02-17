@@ -11,7 +11,7 @@
 namespace mmx {
 namespace exchange {
 
-class VNX_EXPORT Client_get_servers_return : public ::vnx::Value {
+class MMX_EXCHANGE_EXPORT Client_get_servers_return : public ::vnx::Value {
 public:
 	
 	std::vector<std::string> _ret_0;

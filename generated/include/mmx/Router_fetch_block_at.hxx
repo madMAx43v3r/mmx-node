@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Router_fetch_block_at : public ::vnx::Value {
+class MMX_EXPORT Router_fetch_block_at : public ::vnx::Value {
 public:
 	
 	uint32_t height = 0;

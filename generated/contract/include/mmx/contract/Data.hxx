@@ -14,7 +14,7 @@
 namespace mmx {
 namespace contract {
 
-class VNX_EXPORT Data : public ::mmx::Contract {
+class MMX_CONTRACT_EXPORT Data : public ::mmx::Contract {
 public:
 	
 	::vnx::Variant payload;

@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Node_get_total_supply_return : public ::vnx::Value {
+class MMX_EXPORT Node_get_total_supply_return : public ::vnx::Value {
 public:
 	
 	uint64_t _ret_0 = 0;

@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Wallet_get_address_return : public ::vnx::Value {
+class MMX_EXPORT Wallet_get_address_return : public ::vnx::Value {
 public:
 	
 	::mmx::addr_t _ret_0;

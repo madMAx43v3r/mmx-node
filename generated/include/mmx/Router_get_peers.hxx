@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Router_get_peers : public ::vnx::Value {
+class MMX_EXPORT Router_get_peers : public ::vnx::Value {
 public:
 	
 	uint32_t max_count = 10;

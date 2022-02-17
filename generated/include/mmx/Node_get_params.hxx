@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Node_get_params : public ::vnx::Value {
+class MMX_EXPORT Node_get_params : public ::vnx::Value {
 public:
 	
 	

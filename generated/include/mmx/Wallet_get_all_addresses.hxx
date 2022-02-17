@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Wallet_get_all_addresses : public ::vnx::Value {
+class MMX_EXPORT Wallet_get_all_addresses : public ::vnx::Value {
 public:
 	
 	int32_t index = 0;

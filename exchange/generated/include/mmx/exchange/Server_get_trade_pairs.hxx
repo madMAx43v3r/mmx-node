@@ -11,7 +11,7 @@
 namespace mmx {
 namespace exchange {
 
-class VNX_EXPORT Server_get_trade_pairs : public ::vnx::Value {
+class MMX_EXCHANGE_EXPORT Server_get_trade_pairs : public ::vnx::Value {
 public:
 	
 	

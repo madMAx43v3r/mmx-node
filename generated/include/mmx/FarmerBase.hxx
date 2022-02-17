@@ -15,7 +15,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT FarmerBase : public ::vnx::Module {
+class MMX_EXPORT FarmerBase : public ::vnx::Module {
 public:
 	
 	::vnx::TopicPtr input_info = "harvester.info";

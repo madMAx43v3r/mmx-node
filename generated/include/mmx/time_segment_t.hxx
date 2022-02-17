@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-struct VNX_EXPORT time_segment_t {
+struct MMX_EXPORT time_segment_t {
 	
 	
 	uint32_t num_iters = 0;

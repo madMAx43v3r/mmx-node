@@ -11,7 +11,7 @@
 namespace mmx {
 namespace exchange {
 
-class VNX_EXPORT Client_cancel_offer : public ::vnx::Value {
+class MMX_EXCHANGE_EXPORT Client_cancel_offer : public ::vnx::Value {
 public:
 	
 	uint64_t id = 0;

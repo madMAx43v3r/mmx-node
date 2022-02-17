@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-struct VNX_EXPORT tx_out_t {
+struct MMX_EXPORT tx_out_t {
 	
 	
 	::mmx::addr_t address;

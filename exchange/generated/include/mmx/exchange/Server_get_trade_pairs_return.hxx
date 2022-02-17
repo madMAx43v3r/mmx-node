@@ -12,7 +12,7 @@
 namespace mmx {
 namespace exchange {
 
-class VNX_EXPORT Server_get_trade_pairs_return : public ::vnx::Value {
+class MMX_EXCHANGE_EXPORT Server_get_trade_pairs_return : public ::vnx::Value {
 public:
 	
 	std::vector<::mmx::exchange::trade_pair_t> _ret_0;

@@ -14,7 +14,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT BlockHeader : public ::vnx::Value {
+class MMX_EXPORT BlockHeader : public ::vnx::Value {
 public:
 	
 	::mmx::hash_t hash;

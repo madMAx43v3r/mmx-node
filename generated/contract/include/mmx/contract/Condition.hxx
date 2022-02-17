@@ -16,7 +16,7 @@
 namespace mmx {
 namespace contract {
 
-class VNX_EXPORT Condition : public ::vnx::Value {
+class MMX_CONTRACT_EXPORT Condition : public ::vnx::Value {
 public:
 	
 	uint32_t version = 0;

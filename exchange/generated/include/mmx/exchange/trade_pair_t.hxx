@@ -12,7 +12,7 @@
 namespace mmx {
 namespace exchange {
 
-struct VNX_EXPORT trade_pair_t {
+struct MMX_EXCHANGE_EXPORT trade_pair_t {
 	
 	
 	::mmx::addr_t bid;

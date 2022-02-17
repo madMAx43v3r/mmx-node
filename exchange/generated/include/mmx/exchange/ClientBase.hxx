@@ -30,7 +30,7 @@
 namespace mmx {
 namespace exchange {
 
-class VNX_EXPORT ClientBase : public ::vnx::addons::MsgServer {
+class MMX_EXCHANGE_EXPORT ClientBase : public ::vnx::addons::MsgServer {
 public:
 	
 	::vnx::TopicPtr input_blocks = "node.verified_blocks";

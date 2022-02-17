@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT FarmInfo : public ::vnx::Value {
+class MMX_EXPORT FarmInfo : public ::vnx::Value {
 public:
 	
 	std::vector<std::string> plot_dirs;

@@ -12,7 +12,7 @@
 
 namespace mmx {
 
-struct VNX_EXPORT node_info_t {
+struct MMX_EXPORT node_info_t {
 	
 	
 	::mmx::hash_t id;

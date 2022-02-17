@@ -17,7 +17,7 @@
 namespace mmx {
 namespace contract {
 
-class VNX_EXPORT Staking : public ::mmx::Contract {
+class MMX_CONTRACT_EXPORT Staking : public ::mmx::Contract {
 public:
 	static const uint32_t min_duration = 18;
 	

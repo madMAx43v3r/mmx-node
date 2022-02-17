@@ -12,7 +12,7 @@
 namespace mmx {
 namespace exchange {
 
-class VNX_EXPORT Client_get_min_trade_return : public ::vnx::Value {
+class MMX_EXCHANGE_EXPORT Client_get_min_trade_return : public ::vnx::Value {
 public:
 	
 	::mmx::ulong_fraction_t _ret_0;

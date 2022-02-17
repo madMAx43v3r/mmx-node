@@ -11,7 +11,7 @@
 namespace mmx {
 namespace exchange {
 
-struct VNX_EXPORT trade_type_e {
+struct MMX_EXCHANGE_EXPORT trade_type_e {
 	
 	enum enum_t : uint32_t {
 		BUY = 2074647193l,

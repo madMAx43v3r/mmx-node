@@ -12,6 +12,10 @@
 
 namespace mmx {
 
+#ifndef MMX_EXPORT
+#define MMX_EXPORT
+#endif
+
 
 class Block;
 class BlockHeader;
@@ -236,221 +240,221 @@ struct ulong_fraction_t;
 struct utxo_entry_t;
 struct utxo_t;
 
-extern const vnx::TypeCode* const vnx_native_type_code_Block; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_BlockHeader; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_ChainParams; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Challenge; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Context; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Contract; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_FarmInfo; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_FarmerBase; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_farm_info; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_farm_info_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_mac_addr; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_mac_addr_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_block; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_block_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_FarmerKeys; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_HarvesterBase; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Harvester_get_farm_info; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Harvester_get_farm_info_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Harvester_get_total_bytes; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Harvester_get_total_bytes_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Harvester_reload; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Harvester_reload_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_IntervalRequest; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_KeyFile; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_NetworkInfo; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_NodeBase; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_add_block; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_add_block_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_add_transaction; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_add_transaction_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_balance; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_balance_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_block; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_block_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_block_at; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_block_at_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_block_hash; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_block_hash_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_contract; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_contract_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_contracts; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_contracts_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_contracts_owned; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_contracts_owned_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_header; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_header_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_header_at; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_header_at_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_height; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_height_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_history_for; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_history_for_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_network_info; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_network_info_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_params; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_params_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_stxo_list; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_stxo_list_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_synced_height; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_synced_height_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_total_balance; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_total_balance_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_total_balances; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_total_balances_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_total_supply; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_total_supply_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_transaction; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_transaction_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_transactions; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_transactions_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_height; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_height_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_ids_at; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_ids_at_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_txo_info; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_txo_info_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_txo_infos; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_txo_infos_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_utxo_list; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_get_utxo_list_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_start_sync; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Node_start_sync_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Operation; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_PeerInfo; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_ProofOfSpace; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_ProofOfTime; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_ProofResponse; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_ReceiveNote; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Request; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_RouterBase; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_discover; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_discover_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_fetch_block; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_fetch_block_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_fetch_block_at; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_fetch_block_at_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_get_blocks_at; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_get_blocks_at_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_get_connected_peers; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_get_connected_peers_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_get_farmer_credits; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_get_farmer_credits_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_get_id; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_get_id_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_get_info; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_get_info_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_get_known_peers; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_get_known_peers_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_get_peer_info; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_get_peer_info_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_get_peers; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_get_peers_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_sign_msg; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Router_sign_msg_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Solution; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_TimeInfusion; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_TimeLordBase; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_TimeLord_stop_vdf; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_TimeLord_stop_vdf_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Transaction; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_TransactionBase; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_WalletBase; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_add_account; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_add_account_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_complete; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_complete_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_create_account; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_create_account_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_create_wallet; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_create_wallet_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_deploy; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_deploy_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_gather_utxos_for; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_gather_utxos_for_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_account; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_account_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_address; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_address_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_all_accounts; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_all_accounts_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_all_addresses; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_all_addresses_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_all_farmer_keys; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_all_farmer_keys_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_balance; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_balance_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_balances; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_balances_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_contracts; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_contracts_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_farmer_keys; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_farmer_keys_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_history; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_history_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_master_seed; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_master_seed_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_stxo_list; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_stxo_list_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_stxo_list_for; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_stxo_list_for_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_tx_history; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_tx_history_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_utxo_list; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_utxo_list_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_utxo_list_for; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_utxo_list_for_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_mark_spent; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_mark_spent_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_mint; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_mint_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_release; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_release_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_release_all; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_release_all_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_reserve; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_reserve_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_send; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_send_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_send_from; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_send_from_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_send_off; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_send_off_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_sign_msg; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_sign_msg_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_sign_off; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_sign_off_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_split; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Wallet_split_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_WebAPIBase; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_account_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_balance_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_node_info_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_node_type_e; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_peer_info_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_permission_e; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_spend_options_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_stxo_entry_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_stxo_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_time_segment_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_tx_entry_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_tx_in_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_tx_info_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_tx_log_entry_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_tx_out_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_tx_type_e; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_txi_info_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_txio_key_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_txo_info_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_uint_fraction_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_ulong_fraction_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_utxo_entry_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_utxo_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Block; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_BlockHeader; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ChainParams; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Challenge; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Context; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_FarmInfo; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_FarmerBase; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_farm_info; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_farm_info_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_mac_addr; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_mac_addr_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_block; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_block_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_FarmerKeys; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_HarvesterBase; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Harvester_get_farm_info; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Harvester_get_farm_info_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Harvester_get_total_bytes; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Harvester_get_total_bytes_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Harvester_reload; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Harvester_reload_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_IntervalRequest; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_KeyFile; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_NetworkInfo; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_NodeBase; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_add_block; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_add_block_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_add_transaction; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_add_transaction_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_balance; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_balance_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_block; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_block_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_block_at; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_block_at_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_block_hash; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_block_hash_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_contract; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_contract_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_contracts; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_contracts_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_contracts_owned; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_contracts_owned_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_header; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_header_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_header_at; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_header_at_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_height; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_height_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_history_for; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_history_for_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_network_info; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_network_info_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_params; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_params_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_stxo_list; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_stxo_list_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_synced_height; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_synced_height_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_total_balance; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_total_balance_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_total_balances; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_total_balances_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_total_supply; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_total_supply_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_transaction; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_transaction_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_transactions; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_transactions_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_height; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_height_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_ids_at; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_ids_at_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_txo_info; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_txo_info_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_txo_infos; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_txo_infos_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_utxo_list; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_utxo_list_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_start_sync; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_start_sync_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Operation; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PeerInfo; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfSpace; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfTime; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofResponse; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ReceiveNote; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Request; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_RouterBase; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_discover; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_discover_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_fetch_block; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_fetch_block_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_fetch_block_at; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_fetch_block_at_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_get_blocks_at; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_get_blocks_at_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_get_connected_peers; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_get_connected_peers_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_get_farmer_credits; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_get_farmer_credits_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_get_id; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_get_id_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_get_info; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_get_info_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_get_known_peers; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_get_known_peers_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_get_peer_info; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_get_peer_info_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_get_peers; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_get_peers_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_sign_msg; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_sign_msg_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Solution; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeInfusion; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLordBase; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLord_stop_vdf; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLord_stop_vdf_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Transaction; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TransactionBase; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WalletBase; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_add_account; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_add_account_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_complete; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_complete_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_create_account; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_create_account_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_create_wallet; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_create_wallet_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_deploy; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_deploy_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_gather_utxos_for; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_gather_utxos_for_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_account; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_account_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_address; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_address_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_all_accounts; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_all_accounts_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_all_addresses; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_all_addresses_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_all_farmer_keys; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_all_farmer_keys_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_balance; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_balance_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_balances; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_balances_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_contracts; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_contracts_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_farmer_keys; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_farmer_keys_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_history; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_history_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_master_seed; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_master_seed_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_stxo_list; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_stxo_list_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_stxo_list_for; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_stxo_list_for_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_tx_history; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_tx_history_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_utxo_list; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_utxo_list_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_utxo_list_for; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_utxo_list_for_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_mark_spent; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_mark_spent_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_mint; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_mint_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_release; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_release_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_release_all; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_release_all_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_reserve; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_reserve_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_send; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_send_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_send_from; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_send_from_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_send_off; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_send_off_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_sign_msg; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_sign_msg_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_sign_off; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_sign_off_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_split; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_split_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WebAPIBase; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_account_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_balance_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_node_info_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_node_type_e; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_peer_info_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_permission_e; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_spend_options_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_stxo_entry_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_stxo_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_time_segment_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_tx_entry_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_tx_in_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_tx_info_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_tx_log_entry_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_tx_out_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_tx_type_e; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_txi_info_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_txio_key_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_txo_info_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_uint_fraction_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ulong_fraction_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_utxo_entry_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_utxo_t; ///< \private
 
 } // namespace mmx
 

@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT Node_get_transactions_return : public ::vnx::Value {
+class MMX_EXPORT Node_get_transactions_return : public ::vnx::Value {
 public:
 	
 	std::vector<std::shared_ptr<const ::mmx::Transaction>> _ret_0;

@@ -14,6 +14,10 @@
 namespace mmx {
 namespace exchange {
 
+#ifndef MMX_EXCHANGE_EXPORT
+#define MMX_EXCHANGE_EXPORT
+#endif
+
 
 class ClientBase;
 class Client_approve;
@@ -89,79 +93,79 @@ struct trade_order_t;
 struct trade_pair_t;
 struct trade_type_e;
 
-extern const vnx::TypeCode* const vnx_native_type_code_ClientBase; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_approve; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_approve_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_cancel_all; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_cancel_all_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_cancel_offer; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_cancel_offer_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_execute; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_execute_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_get_all_offers; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_get_all_offers_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_get_local_history; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_get_local_history_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_get_min_trade; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_get_min_trade_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_get_offer; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_get_offer_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_get_order; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_get_order_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_get_orders; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_get_orders_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_get_price; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_get_price_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_get_servers; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_get_servers_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_get_trade_history; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_get_trade_history_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_get_trade_pairs; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_get_trade_pairs_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_make_offer; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_make_offer_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_make_trade; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_make_trade_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_match; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_match_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_place; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Client_place_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_LocalTrade; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_OfferBundle; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_ServerBase; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_approve; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_approve_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_cancel; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_cancel_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_execute; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_execute_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_get_history; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_get_history_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_get_min_trade; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_get_min_trade_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_get_orders; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_get_orders_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_get_price; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_get_price_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_get_trade_pairs; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_get_trade_pairs_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_match; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_match_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_ping; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_ping_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_place; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_place_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_reject; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_Server_reject_return; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_amount_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_limit_order_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_matched_order_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_open_order_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_order_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_trade_entry_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_trade_order_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_trade_pair_t; ///< \private
-extern const vnx::TypeCode* const vnx_native_type_code_trade_type_e; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ClientBase; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_approve; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_approve_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_cancel_all; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_cancel_all_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_cancel_offer; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_cancel_offer_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_execute; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_execute_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_get_all_offers; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_get_all_offers_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_get_local_history; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_get_local_history_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_get_min_trade; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_get_min_trade_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_get_offer; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_get_offer_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_get_order; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_get_order_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_get_orders; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_get_orders_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_get_price; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_get_price_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_get_servers; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_get_servers_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_get_trade_history; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_get_trade_history_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_get_trade_pairs; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_get_trade_pairs_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_make_offer; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_make_offer_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_make_trade; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_make_trade_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_match; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_match_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_place; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Client_place_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_LocalTrade; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_OfferBundle; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ServerBase; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_approve; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_approve_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_cancel; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_cancel_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_execute; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_execute_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_get_history; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_get_history_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_get_min_trade; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_get_min_trade_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_get_orders; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_get_orders_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_get_price; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_get_price_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_get_trade_pairs; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_get_trade_pairs_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_match; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_match_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_ping; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_ping_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_place; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_place_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_reject; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Server_reject_return; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_amount_t; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_limit_order_t; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_matched_order_t; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_open_order_t; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_order_t; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_trade_entry_t; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_trade_order_t; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_trade_pair_t; ///< \private
+MMX_EXCHANGE_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_trade_type_e; ///< \private
 
 } // namespace mmx
 } // namespace exchange

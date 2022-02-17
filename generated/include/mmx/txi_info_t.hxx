@@ -12,7 +12,7 @@
 
 namespace mmx {
 
-struct VNX_EXPORT txi_info_t {
+struct MMX_EXPORT txi_info_t {
 	
 	
 	::mmx::txio_key_t prev;

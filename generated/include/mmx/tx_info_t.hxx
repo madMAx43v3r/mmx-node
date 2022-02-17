@@ -16,7 +16,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT tx_info_t : public ::vnx::Value {
+class MMX_EXPORT tx_info_t : public ::vnx::Value {
 public:
 	
 	::mmx::hash_t id;

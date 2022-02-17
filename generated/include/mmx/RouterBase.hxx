@@ -21,7 +21,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT RouterBase : public ::vnx::addons::MsgServer {
+class MMX_EXPORT RouterBase : public ::vnx::addons::MsgServer {
 public:
 	
 	::vnx::TopicPtr input_vdfs = "timelord.proofs";

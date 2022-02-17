@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-class VNX_EXPORT NetworkInfo : public ::vnx::Value {
+class MMX_EXPORT NetworkInfo : public ::vnx::Value {
 public:
 	
 	uint32_t height = 0;
