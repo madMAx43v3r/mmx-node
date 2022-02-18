@@ -2,20 +2,28 @@
 app.component('wallet-summary', {
 	data() {
 		return {
-			data: []
+			data: null,
+			loading: false
 		}
 	},
 	methods: {
 		update() {
+			this.loading = true;
 			fetch('/api/wallet/get_all_accounts')
 				.then(response => response.json())
-				.then(data => this.data = data);
+				.then(data => {
+					this.loading = false;
+					this.data = data;
+				});
 		}
 	},
 	created() {
-		this.update()
+		this.update();
 	},
 	template: `
+		<template v-if="!data && loading">
+			<div class="ui basic loading placeholder segment"></div>
+		</template>
 		<div class="ui raised segment" v-for="item in data" :key="item[0]">
 			<account-summary :index="item[0]" :account="item[1]"></account-summary>
 		</div>
@@ -106,15 +114,20 @@ app.component('account-balance', {
 	},
 	data() {
 		return {
-			balances: [],
+			data: null,
+			loading: false,
 			timer: null
 		}
 	},
 	methods: {
 		update() {
+			this.loading = true;
 			fetch('/wapi/wallet/balance?index=' + this.index)
 				.then(response => response.json())
-				.then(data => this.balances = data.balances);
+				.then(data => {
+					this.loading = false;
+					this.data = data.balances;
+				});
 		}
 	},
 	created() {
@@ -125,7 +138,10 @@ app.component('account-balance', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<table class="ui table">
+		<template v-if="!data && loading">
+			<div class="ui basic loading placeholder segment"></div>
+		</template>
+		<table class="ui table" v-if="data">
 			<thead>
 			<tr>
 				<th class="two wide">Balance</th>
