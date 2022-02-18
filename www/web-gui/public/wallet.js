@@ -266,6 +266,7 @@ app.component('account-history', {
 				<th>Amount</th>
 				<th>Token</th>
 				<th>Address</th>
+				<th>Link</th>
 				<th>Time</th>
 			</tr>
 			</thead>
@@ -276,6 +277,7 @@ app.component('account-history', {
 				<td><b>{{item.value}}</b></td>
 				<td>{{item.symbol}}</td>
 				<td>{{item.address}}</td>
+				<td><router-link :to="'/explore/transaction/' + item.txid">TX</router-link></td>
 				<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 			</tr>
 			</tbody>
@@ -322,7 +324,7 @@ app.component('account-tx-history', {
 			<tr v-for="item in data" :key="item.txid">
 				<td>{{item.height ? item.height : "pending"}}</td>
 				<td>{{item.confirm ? item.confirm : 0}}</td>
-				<td>{{item.id}}</td>
+				<td><router-link :to="'/explore/transaction/' + item.id">{{item.id}}</router-link></td>
 				<td>{{new Date(item.time).toLocaleString()}}</td>
 			</tr>
 			</tbody>
@@ -330,7 +332,7 @@ app.component('account-tx-history', {
 		`
 })
 
-app.component('contract-summary', {
+app.component('account-contract-summary', {
 	props: {
 		address: String,
 		contract: Object
@@ -349,16 +351,7 @@ app.component('contract-summary', {
 				<div class="ui horizontal label">{{contract.__type}}</div>
 				<div class="ui horizontal label">{{address}}</div>
 			</div>
-			<table class="ui definition table striped">
-				<tbody>
-				<template v-for="(value, key) in contract" :key="key">
-					<tr v-if="key != '__type'">
-						<td class="collapsing">{{key}}</td>
-						<td>{{value}}</td>
-					</tr>
-				</template>
-				</tbody>
-			</table>
+			<contract-table :data="contract"></contract-table>
 			<balance-table :address="address"></balance-table>
 			<div @click="deposit" class="ui submit button">Deposit</div>
 			<div @click="withdraw" class="ui submit button">Withdraw</div>
@@ -386,7 +379,7 @@ app.component('account-contracts', {
 		this.update()
 	},
 	template: `
-		<contract-summary v-for="item in data" :key="item[0]" :address="item[0]" :contract="item[1]"></contract-summary>
+		<account-contract-summary v-for="item in data" :key="item[0]" :address="item[0]" :contract="item[1]"></account-contract-summary>
 		`
 })
 
@@ -411,7 +404,7 @@ app.component('account-addresses', {
 		this.update()
 	},
 	template: `
-		<table class="ui table striped">
+		<table class="ui definition table striped">
 			<thead>
 			<tr>
 				<th>Index</th>
@@ -420,7 +413,7 @@ app.component('account-addresses', {
 			</thead>
 			<tbody>
 			<tr v-for="(item, index) in data" :key="index">
-				<td><b>{{index}}</b></td>
+				<td>{{index}}</td>
 				<td>{{item}}</td>
 			</tr>
 			</tbody>
@@ -787,8 +780,8 @@ app.component('account-send-form', {
 				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">Send</div>
 			</form>
 		</div>
-		<div class="ui large message" :class="{hidden: !result}">
-			Transaction has been sent: <b>{{result}}</b>
+		<div class="ui message" :class="{hidden: !result}">
+			Transaction has been sent: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
 		</div>
 		<div class="ui large negative message" :class="{hidden: !error}">
 			Failed with: <b>{{error}}</b>
@@ -892,10 +885,10 @@ app.component('account-split-form', {
 				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">Send</div>
 			</form>
 		</div>
-		<div class="ui large message" :class="{hidden: !result}">
-			Transaction has been sent: <b>{{result}}</b>
+		<div class="ui message" :class="{hidden: !result}">
+			Transaction has been sent: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
 		</div>
-		<div class="ui large negative message" :class="{hidden: !error}">
+		<div class="ui negative message" :class="{hidden: !error}">
 			Failed with: <b>{{error}}</b>
 		</div>
 		<account-tx-history :index="index" :limit="10" ref="history"></account-tx-history>
@@ -1058,7 +1051,7 @@ app.component('account-offer-form', {
 				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">Offer</div>
 			</form>
 		</div>
-		<div class="ui large message" :class="{hidden: !result}">
+		<div class="ui message" :class="{hidden: !result}">
 			<template v-if="result">
 				[<b>{{result.id}}</b>] Offering <b>{{result.bid_value}}</b> [{{result.bid_symbol}}] for <b>{{result.ask_value}}</b> [{{result.ask_symbol}}]
 			</template>
@@ -1305,7 +1298,7 @@ app.component('create-staking-contract', {
 				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">Deploy</div>
 			</form>
 		</div>
-		<div class="ui large message" :class="{hidden: !result}">
+		<div class="ui message" :class="{hidden: !result}">
 			<template v-if="result">
 				Deployed as: <b>{{result}}</b>
 			</template>

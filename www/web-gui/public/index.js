@@ -263,7 +263,22 @@ const ExchangeOffers = {
 		`
 }
 
-const Settings = { template: '<h1>Settings</h1>TODO' }
+const Explore = {
+	template: `
+		<h3>TODO</h3>
+	`
+}
+const ExploreTransaction = {
+	template: `
+		<transaction-view :id="$route.params.id"></transaction-view>
+	`
+}
+
+const Settings = {
+	template: `
+		<h3>TODO</h3>
+	`
+}
 
 const routes = [
 	{ path: '/', redirect: "/wallet" },
@@ -306,6 +321,8 @@ const routes = [
 			{ path: 'offers/:wallet/:server/:bid/:ask', component: ExchangeOffers, meta: { page: 'offers' } },
 		]
 	},
+	{ path: '/explore', component: Explore, meta: { is_explorer: true } },
+	{ path: '/explore/transaction/:id', component: ExploreTransaction, meta: { is_explorer: true } },
 	{ path: '/settings', component: Settings },
 ]
 
@@ -321,6 +338,7 @@ app.component('main-menu', {
 		<div class="ui large top menu">
 			<div class="ui container">
 				<router-link class="item" :class="{active: $route.meta.is_wallet}" to="/wallet/">Wallet</router-link>
+				<router-link class="item" :class="{active: $route.meta.is_explorer}" to="/explore/">Explore</router-link>
 				<router-link class="item" :class="{active: $route.meta.is_exchange}" to="/exchange/">Exchange</router-link>
 				<div class="right menu">
 					<router-link class="item" to="/settings/">Settings</router-link>

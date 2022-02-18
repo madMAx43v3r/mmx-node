@@ -39,7 +39,7 @@ public:
 	}
 
 	int64_t get_time(const uint32_t& height) const {
-		return int64_t(height - height_offset) * int64_t(params->block_time) + time_offset;
+		return int64_t(height - int64_t(curr_height)) * int64_t(params->block_time) + time_offset;
 	}
 
 	bool have_contract(const addr_t& address) const {
@@ -69,7 +69,7 @@ public:
 	}
 
 	int64_t time_offset = 0;		// [sec]
-	int64_t height_offset = 0;
+	uint32_t curr_height = 0;
 	std::shared_ptr<const ChainParams> params;
 	std::unordered_map<addr_t, currency_t> currency_map;
 };
@@ -264,7 +264,9 @@ public:
 	}
 
 	void accept(const txio_key_t& value) {
-		set(value.to_string_value());
+		auto tmp = render(value, context);
+		tmp["key"] = value.to_string_value();
+		set(tmp);
 	}
 
 	void accept(const tx_in_t& value) {
@@ -318,6 +320,7 @@ public:
 			tmp["cost"] = to_amount(value.cost, context->params->decimals);
 			if(auto height = value.height) {
 				tmp["time"] = context->get_time(*height);
+				tmp["confirm"] = context->curr_height >= *height ? 1 + context->curr_height - *height : 0;
 			}
 		}
 		{
@@ -561,7 +564,7 @@ std::shared_ptr<RenderContext> WebAPI::get_context() const
 {
 	auto context = std::make_shared<RenderContext>(params);
 	context->time_offset = time_offset;
-	context->height_offset = curr_height;
+	context->curr_height = curr_height;
 	return context;
 }
 
