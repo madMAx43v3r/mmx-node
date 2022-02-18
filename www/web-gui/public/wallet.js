@@ -153,7 +153,7 @@ app.component('account-balance', {
 			</tr>
 			</thead>
 			<tbody>
-			<tr v-for="item in balances" :key="item.contract">
+			<tr v-for="item in data" :key="item.contract">
 				<td>{{item.total}}</td>
 				<td>{{item.reserved}}</td>
 				<td><b>{{item.spendable}}</b></td>
