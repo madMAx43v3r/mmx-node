@@ -138,7 +138,7 @@ void Node::update()
 		}
 	}
 
-#pragma omp parallel for
+#pragma omp parallel for if(!is_synced)
 	for(size_t i = 0; i < to_verify.size(); ++i)
 	{
 		const auto& fork = to_verify[i];
