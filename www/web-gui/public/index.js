@@ -265,7 +265,7 @@ const ExchangeOffers = {
 
 const Explore = {
 	template: `
-		<h3>TODO</h3>
+		<recent-blocks-summary :limit="30"></recent-blocks-summary>
 	`
 }
 const ExploreTransaction = {

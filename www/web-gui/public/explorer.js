@@ -1,4 +1,75 @@
 
+app.component('recent-blocks-summary', {
+	props: {
+		limit: Number
+	},
+	data() {
+		return {
+			data: null,
+			timer: null,
+			loading: false
+		}
+	},
+	methods: {
+		update() {
+			this.loading = true;
+			fetch('/wapi/headers?limit=' + this.limit)
+				.then(response => response.json())
+				.then(data => {
+					this.loading = false;
+					for(const block of data) {
+						if(block.tx_base) {
+							block.reward = 0;
+							for(const out of block.tx_base.outputs) {
+								block.reward += out.amount;
+							}
+							block.reward /= 1000000;
+						}
+					}
+					this.data = data;
+				});
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 10000);
+	},
+	unmounted() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<template v-if="!data && loading">
+			<div class="ui basic loading placeholder segment"></div>
+		</template>
+		<table class="ui table striped" v-if="data">
+			<thead>
+			<tr>
+				<th>Height</th>
+				<th>TX</th>
+				<th>K</th>
+				<th>Score</th>
+				<th>Reward</th>
+				<th>T-Diff</th>
+				<th>S-Diff</th>
+				<th>Hash</th>
+			</tr>
+			</thead>
+			<tbody>
+			<tr v-for="item in data" :key="item.key">
+				<td>{{item.height}}</td>
+				<td>{{item.tx_count}}</td>
+				<td>{{item.proof ? item.proof.ksize : ""}}</td>
+				<td>{{item.proof ? item.proof.score : ""}}</td>
+				<td><template v-if="item.reward">{{(item.reward).toPrecision(6)}}</template></td>
+				<td>{{item.time_diff}}</td>
+				<td>{{item.space_diff}}</td>
+				<td>{{item.hash}}</td>
+			</tr>
+			</tbody>
+		</table>
+		`
+})
+
 app.component('transaction-view', {
 	props: {
 		id: String
