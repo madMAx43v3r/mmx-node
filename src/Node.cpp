@@ -951,7 +951,8 @@ static void malloc_stats_callback(void* file, const char* data) {
 void Node::print_stats()
 {
 #ifdef WITH_JEMALLOC
-	{
+	static size_t counter = 0;
+	if(counter++ % 15 == 0) {
 		const std::string path = storage_path + "node_malloc_info.txt";
 		FILE* file = fopen(path.c_str(), "w");
 		malloc_stats_print(&malloc_stats_callback, file, 0);
