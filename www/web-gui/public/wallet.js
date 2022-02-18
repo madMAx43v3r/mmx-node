@@ -88,7 +88,6 @@ app.component('account-header', {
 	template: `
 		<div class="ui large labels">
 			<div class="ui horizontal label">Wallet #{{index}}</div>
-			<div class="ui horizontal label">[{{info.index}}] {{info.name}}</div>
 			<div class="ui horizontal label">{{address}}</div>
 		</div>
 		`
@@ -793,7 +792,7 @@ app.component('account-send-form', {
 					<select v-model="address" :disabled="!!target_">
 						<option value="">Address Input</option>
 						<option v-for="item in accounts" :key="item.account" :value="item.address">
-							Account #{{item.account}} ([{{item.index}}] {{item.name}}) ({{item.address}})
+							Wallet #{{item.account}} ({{item.address}})
 						</option>
 					</select>
 				</div>

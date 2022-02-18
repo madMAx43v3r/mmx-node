@@ -127,7 +127,7 @@ app.component('exchange-menu', {
 				<div class="field">
 					<label>Wallet</label>
 					<select v-model="wallet">
-						<option v-for="item in wallets" :key="item[0]" :value="item[0]">Account #{{item[0]}} ([{{item[1].index}}] {{item[1].name}})</option>
+						<option v-for="item in wallets" :key="item[0]" :value="item[0]">Wallet #{{item[0]}}</option>
 					</select>
 				</div>
 			</div>
