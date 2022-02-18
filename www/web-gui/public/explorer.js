@@ -83,7 +83,7 @@ app.component('transaction-view', {
 				</tr>
 				</tbody>
 			</table>
-			<table class="ui definition table striped">
+			<table class="ui definition table striped" v-if="data.fee >= 0">
 				<thead>
 				<tr>
 					<th></th>
