@@ -175,15 +175,20 @@ app.component('balance-table', {
 	},
 	data() {
 		return {
-			data: [],
+			data: null,
+			loading: false,
 			timer: null
 		}
 	},
 	methods: {
 		update() {
+			this.loading = true;
 			fetch('/wapi/address?id=' + this.address)
 				.then(response => response.json())
-				.then(data => this.data = data.balances);
+				.then(data => {
+					this.loading = false;
+					this.data = data.balances;
+				});
 		}
 	},
 	created() {
@@ -194,7 +199,10 @@ app.component('balance-table', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<table class="ui table" v-if="data.length || show_empty">
+		<template v-if="!data && loading">
+			<div class="ui basic loading placeholder segment"></div>
+		</template>
+		<table class="ui table" v-if="data && (data.length || show_empty)">
 			<thead>
 			<tr>
 				<th class="two wide">Balance</th>
@@ -255,15 +263,20 @@ app.component('account-history', {
 	},
 	data() {
 		return {
-			data: [],
+			data: null,
+			loading: false,
 			timer: null
 		}
 	},
 	methods: {
 		update() {
+			this.loading = true;
 			fetch('/wapi/wallet/history?limit=' + this.limit + '&index=' + this.index)
 				.then(response => response.json())
-				.then(data => this.data = data);
+				.then(data => {
+					this.loading = false;
+					this.data = data;
+				});
 		}
 	},
 	created() {
@@ -274,7 +287,10 @@ app.component('account-history', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<table class="ui table striped">
+		<template v-if="!data && loading">
+			<div class="ui basic loading placeholder segment"></div>
+		</template>
+		<table class="ui table striped" v-if="data">
 			<thead>
 			<tr>
 				<th>Height</th>
@@ -308,15 +324,20 @@ app.component('account-tx-history', {
 	},
 	data() {
 		return {
-			data: [],
+			data: null,
+			loading: false,
 			timer: null
 		}
 	},
 	methods: {
 		update() {
+			this.loading = true;
 			fetch('/wapi/wallet/tx_history?limit=' + this.limit + '&index=' + this.index)
 				.then(response => response.json())
-				.then(data => this.data = data);
+				.then(data => {
+					this.loading = false;
+					this.data = data;
+				});
 		}
 	},
 	created() {
@@ -327,7 +348,10 @@ app.component('account-tx-history', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<table class="ui table striped">
+		<template v-if="!data && loading">
+			<div class="ui basic loading placeholder segment"></div>
+		</template>
+		<table class="ui table striped" v-if="data">
 			<thead>
 			<tr>
 				<th>Height</th>
@@ -381,21 +405,31 @@ app.component('account-contracts', {
 	},
 	data() {
 		return {
-			data: []
+			data: null,
+			loading: false
 		}
 	},
 	methods: {
 		update() {
+			this.loading = true;
 			fetch('/wapi/wallet/contracts?index=' + this.index)
 				.then(response => response.json())
-				.then(data => this.data = data);
+				.then(data => {
+					this.loading = false;
+					this.data = data;
+				});
 		}
 	},
 	created() {
-		this.update()
+		this.update();
 	},
 	template: `
-		<account-contract-summary v-for="item in data" :key="item[0]" :address="item[0]" :contract="item[1]"></account-contract-summary>
+		<template v-if="!data && loading">
+			<div class="ui basic loading placeholder segment"></div>
+		</template>
+		<template v-if="data">
+			<account-contract-summary v-for="item in data" :key="item[0]" :address="item[0]" :contract="item[1]"></account-contract-summary>
+		</template>
 		`
 })
 
