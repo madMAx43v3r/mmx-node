@@ -573,20 +573,33 @@ void WebAPI::render_header(const vnx::request_id_t& request_id, std::shared_ptr<
 	respond(request_id, render_value(block, get_context()));
 }
 
-void WebAPI::render_headers(const vnx::request_id_t& request_id, const size_t limit, const size_t offset,
-							std::shared_ptr<std::vector<vnx::Variant>> result, std::shared_ptr<const BlockHeader> block) const
+void WebAPI::render_headers(const vnx::request_id_t& request_id, size_t limit, const size_t offset) const
 {
-	if(block) {
-		result->push_back(render_value(block, get_context()));
-	}
-	if(result->size() >= limit) {
-		respond(request_id, vnx::Variant(*result));
+	limit = std::min(limit, offset);
+
+	struct job_t {
+		size_t num_left = 0;
+		vnx::request_id_t request_id;
+		std::vector<vnx::Variant> result;
+	};
+	auto job = std::make_shared<job_t>();
+	job->num_left = limit;
+	job->request_id = request_id;
+	job->result.resize(limit);
+
+	if(!job->num_left) {
+		respond(request_id, render_value(job->result));
 		return;
 	}
-	// TODO: parallelize
-	node->get_header_at(offset,
-			std::bind(&WebAPI::render_headers, this, request_id, limit, offset + 1, result, std::placeholders::_1),
-			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+	for(size_t i = 0; i < limit; ++i) {
+		node->get_header_at(offset - i,
+			[this, job, i](std::shared_ptr<const BlockHeader> block) {
+				job->result[i] = render_value(block, get_context());
+				if(--job->num_left == 0) {
+					respond(job->request_id, render_value(job->result));
+				}
+			});
+	}
 }
 
 void WebAPI::render_block(const vnx::request_id_t& request_id, std::shared_ptr<const Block> block) const
@@ -622,20 +635,33 @@ void WebAPI::render_block(const vnx::request_id_t& request_id, std::shared_ptr<c
 		});
 }
 
-void WebAPI::render_blocks(	const vnx::request_id_t& request_id, const size_t limit, const size_t offset,
-							std::shared_ptr<std::vector<vnx::Variant>> result, std::shared_ptr<const Block> block) const
+void WebAPI::render_blocks(const vnx::request_id_t& request_id, size_t limit, const size_t offset) const
 {
-	if(block) {
-		result->push_back(render_value(block, get_context()));
-	}
-	if(result->size() >= limit) {
-		respond(request_id, vnx::Variant(*result));
+	limit = std::min(limit, offset);
+
+	struct job_t {
+		size_t num_left = 0;
+		vnx::request_id_t request_id;
+		std::vector<vnx::Variant> result;
+	};
+	auto job = std::make_shared<job_t>();
+	job->num_left = limit;
+	job->request_id = request_id;
+	job->result.resize(limit);
+
+	if(!job->num_left) {
+		respond(request_id, render_value(job->result));
 		return;
 	}
-	// TODO: parallelize
-	node->get_block_at(offset,
-			std::bind(&WebAPI::render_blocks, this, request_id, limit, offset + 1, result, std::placeholders::_1),
-			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+	for(size_t i = 0; i < limit; ++i) {
+		node->get_block_at(offset - i,
+			[this, job, i](std::shared_ptr<const Block> block) {
+				job->result[i] = render_value(block, get_context());
+				if(--job->num_left == 0) {
+					respond(job->request_id, render_value(job->result));
+				}
+			});
+	}
 }
 
 void WebAPI::render_transaction(const vnx::request_id_t& request_id, const vnx::optional<tx_info_t>& info) const
@@ -651,37 +677,51 @@ void WebAPI::render_transaction(const vnx::request_id_t& request_id, const vnx::
 	respond(request_id, render_value(info, context));
 }
 
-void WebAPI::render_transactions(	const vnx::request_id_t& request_id, const size_t limit, const size_t offset,
-									std::shared_ptr<std::vector<vnx::Variant>> result, const std::vector<hash_t>& tx_ids,
-									const vnx::optional<tx_info_t>& info) const
+void WebAPI::render_transactions(	const vnx::request_id_t& request_id, size_t limit, const size_t offset,
+									const std::vector<hash_t>& tx_ids) const
 {
-	if(info) {
-		auto context = get_context();
-		for(const auto& entry : info->contracts) {
-			context->add_contract(entry.first, entry.second);
-		}
-		result->push_back(render_value(info, context));
-	}
-	if(result->size() >= limit || offset >= tx_ids.size()) {
-		respond(request_id, vnx::Variant(*result));
+	limit = std::min(limit, tx_ids.size() - std::min(offset, tx_ids.size()));
+
+	struct job_t {
+		size_t num_left = 0;
+		vnx::request_id_t request_id;
+		std::vector<vnx::Variant> result;
+	};
+	auto job = std::make_shared<job_t>();
+	job->num_left = limit;
+	job->request_id = request_id;
+	job->result.resize(limit);
+
+	if(!job->num_left) {
+		respond(request_id, render_value(job->result));
 		return;
 	}
-	// TODO: parallelize
-	node->get_tx_info(tx_ids[offset],
-			std::bind(&WebAPI::render_transactions, this, request_id, limit, offset + 1, result, tx_ids, std::placeholders::_1),
-			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+	for(size_t i = 0; i < limit; ++i) {
+		node->get_tx_info(tx_ids[offset + i],
+			[this, job, i](const vnx::optional<tx_info_t>& info) {
+				if(info) {
+					auto context = get_context();
+					for(const auto& entry : info->contracts) {
+						context->add_contract(entry.first, entry.second);
+					}
+					job->result[i] = render_value(info, context);
+				}
+				if(--job->num_left == 0) {
+					respond(job->request_id, render_value(job->result));
+				}
+			});
+	}
 }
 
-void WebAPI::gather_transactions(	const vnx::request_id_t& request_id, const size_t limit, const uint32_t height,
+void WebAPI::gather_transactions(	const vnx::request_id_t& request_id, const size_t limit, const int64_t height,
 									std::shared_ptr<std::vector<hash_t>> result, const std::vector<hash_t>& tx_ids) const
 {
 	result->insert(result->end(), tx_ids.begin(), tx_ids.end());
-	if(result->size() >= limit || height == 0) {
-		render_transactions(request_id, limit, 0, std::make_shared<std::vector<vnx::Variant>>(), *result, nullptr);
+	if(result->size() >= limit || height < 0) {
+		render_transactions(request_id, limit, 0, *result);
 		return;
 	}
-	// TODO: parallelize
-	node->get_tx_ids_at(height - 1,
+	node->get_tx_ids_at(height,
 			std::bind(&WebAPI::gather_transactions, this, request_id, limit, height - 1, result, std::placeholders::_1),
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 }
@@ -839,13 +879,13 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		if(iter_limit != query.end() && iter_offset != query.end()) {
 			const size_t limit = std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 1000), 0);
 			const size_t offset = vnx::from_string<int64_t>(iter_offset->second);
-			render_headers(request_id, limit, offset, std::make_shared<std::vector<vnx::Variant>>(), nullptr);
+			render_headers(request_id, limit, offset);
 		} else if(iter_offset == query.end()) {
 			const uint32_t limit = iter_limit != query.end() ?
 					std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_limit->second), max_block_history), 0) : 20;
 			node->get_height(
 				[this, request_id, limit](const uint32_t& height) {
-					render_headers(request_id, limit, height - std::min(limit, height) + 1, std::make_shared<std::vector<vnx::Variant>>(), nullptr);
+					render_headers(request_id, limit, height);
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
@@ -874,13 +914,13 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		if(iter_limit != query.end() && iter_offset != query.end()) {
 			const size_t limit = std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 1000), 0);
 			const size_t offset = vnx::from_string<int64_t>(iter_offset->second);
-			render_blocks(request_id, limit, offset, std::make_shared<std::vector<vnx::Variant>>(), nullptr);
+			render_blocks(request_id, limit, offset);
 		} else if(iter_offset == query.end()) {
 			const uint32_t limit = iter_limit != query.end() ?
 					std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_limit->second), max_block_history), 0) : 20;
 			node->get_height(
 				[this, request_id, limit](const uint32_t& height) {
-					render_blocks(request_id, limit, height - std::min(limit, height) + 1, std::make_shared<std::vector<vnx::Variant>>(), nullptr);
+					render_blocks(request_id, limit, height);
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
@@ -905,15 +945,14 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
 			const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
 			node->get_tx_ids_at(vnx::from_string_value<uint32_t>(iter_height->second),
-				std::bind(&WebAPI::render_transactions, this, request_id, limit, offset,
-						std::make_shared<std::vector<vnx::Variant>>(), std::placeholders::_1, nullptr),
+				std::bind(&WebAPI::render_transactions, this, request_id, limit, offset, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else if(iter_offset == query.end()) {
 			const size_t limit = iter_limit != query.end() ?
 					std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_limit->second), max_tx_history), 0) : 20;
 			node->get_height(
 				[this, request_id, limit](const uint32_t& height) {
-					gather_transactions(request_id, limit, height + 1, std::make_shared<std::vector<hash_t>>(), {});
+					gather_transactions(request_id, limit, height, std::make_shared<std::vector<hash_t>>(), {});
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {

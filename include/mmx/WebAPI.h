@@ -43,21 +43,17 @@ private:
 
 	void render_header(const vnx::request_id_t& request_id, std::shared_ptr<const BlockHeader> block) const;
 
-	void render_headers(const vnx::request_id_t& request_id, const size_t limit, const size_t offset,
-						std::shared_ptr<std::vector<vnx::Variant>> result, std::shared_ptr<const BlockHeader> block) const;
+	void render_headers(const vnx::request_id_t& request_id, size_t limit, const size_t offset) const;
 
 	void render_block(const vnx::request_id_t& request_id, std::shared_ptr<const Block> block) const;
 
-	void render_blocks(	const vnx::request_id_t& request_id, const size_t limit, const size_t offset,
-						std::shared_ptr<std::vector<vnx::Variant>> result, std::shared_ptr<const Block> block) const;
+	void render_blocks(const vnx::request_id_t& request_id, size_t limit, const size_t offset) const;
 
 	void render_transaction(const vnx::request_id_t& request_id, const vnx::optional<tx_info_t>& info) const;
 
-	void render_transactions(	const vnx::request_id_t& request_id, const size_t limit, const size_t offset,
-								std::shared_ptr<std::vector<vnx::Variant>> result, const std::vector<hash_t>& tx_ids,
-								const vnx::optional<tx_info_t>& info) const;
+	void render_transactions(const vnx::request_id_t& request_id, size_t limit, const size_t offset, const std::vector<hash_t>& tx_ids) const;
 
-	void gather_transactions(	const vnx::request_id_t& request_id, const size_t limit, const uint32_t height,
+	void gather_transactions(	const vnx::request_id_t& request_id, const size_t limit, const int64_t height,
 								std::shared_ptr<std::vector<hash_t>> result, const std::vector<hash_t>& tx_ids) const;
 
 	void render_address(const vnx::request_id_t& request_id, const addr_t& address, const std::map<addr_t, uint64_t>& balances) const;
