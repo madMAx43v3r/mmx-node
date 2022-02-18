@@ -38,6 +38,8 @@ app.component('account-menu', {
 			<router-link class="item" :class="{active: $route.meta.page == 'send'}" :to="'/wallet/account/' + index + '/send'">Send</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'offer'}" :to="'/wallet/account/' + index + '/offer'">Offer</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'split'}" :to="'/wallet/account/' + index + '/split'">Split</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'history'}" :to="'/wallet/account/' + index + '/history'">History</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'log'}" :to="'/wallet/account/' + index + '/log'">Log</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'details'}" :to="'/wallet/account/' + index + '/details'">Details</router-link>
 			<router-link class="right item" :class="{active: $route.meta.page == 'options'}" :to="'/wallet/account/' + index + '/options'"><i class="cog icon"></i></router-link>
 		</div>
@@ -275,6 +277,53 @@ app.component('account-history', {
 				<td>{{item.symbol}}</td>
 				<td>{{item.address}}</td>
 				<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
+			</tr>
+			</tbody>
+		</table>
+		`
+})
+
+app.component('account-tx-history', {
+	props: {
+		index: Number,
+		limit: Number
+	},
+	data() {
+		return {
+			data: [],
+			timer: null
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/wallet/tx_history?limit=' + this.limit + '&index=' + this.index)
+				.then(response => response.json())
+				.then(data => this.data = data);
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 10000);
+	},
+	unmounted() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<table class="ui table striped">
+			<thead>
+			<tr>
+				<th>Height</th>
+				<th>Confirmed</th>
+				<th>Transaction ID</th>
+				<th>Time</th>
+			</tr>
+			</thead>
+			<tbody>
+			<tr v-for="item in data" :key="item.txid">
+				<td>{{item.height ? item.height : "pending"}}</td>
+				<td>{{item.confirm ? item.confirm : 0}}</td>
+				<td>{{item.id}}</td>
+				<td>{{new Date(item.time).toLocaleString()}}</td>
 			</tr>
 			</tbody>
 		</table>
@@ -648,6 +697,7 @@ app.component('account-send-form', {
 					}
 					this.update();
 					this.$refs.balance.update();
+					this.$refs.history.update();
 				});
 		}
 	},
@@ -743,6 +793,7 @@ app.component('account-send-form', {
 		<div class="ui large negative message" :class="{hidden: !error}">
 			Failed with: <b>{{error}}</b>
 		</div>
+		<account-tx-history :index="index" :limit="10" ref="history"></account-tx-history>
 		`
 })
 
@@ -789,6 +840,7 @@ app.component('account-split-form', {
 					}
 					this.update();
 					this.$refs.balance.update();
+					this.$refs.history.update();
 				});
 		}
 	},
@@ -846,6 +898,7 @@ app.component('account-split-form', {
 		<div class="ui large negative message" :class="{hidden: !error}">
 			Failed with: <b>{{error}}</b>
 		</div>
+		<account-tx-history :index="index" :limit="10" ref="history"></account-tx-history>
 		`
 })
 

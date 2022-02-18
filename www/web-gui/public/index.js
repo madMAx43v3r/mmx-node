@@ -24,7 +24,7 @@ const AccountHome = {
 	},
 	template: `
 		<account-balance :index="index"></account-balance>
-		<account-history :index="index" :limit="200"></account-history>
+		<account-history :index="index" :limit="50"></account-history>
 	`
 }
 const AccountNFTs = {
@@ -91,6 +91,22 @@ const AccountOffer = {
 	},
 	template: `
 		<account-offer-form :index="index"></account-offer-form>
+	`
+}
+const AccountHistory = {
+	props: {
+		index: Number
+	},
+	template: `
+		<account-history :index="index" :limit="200"></account-history>
+	`
+}
+const AccountLog = {
+	props: {
+		index: Number
+	},
+	template: `
+		<account-tx-history :index="index" :limit="200"></account-tx-history>
 	`
 }
 const AccountDetails = {
@@ -266,6 +282,8 @@ const routes = [
 			{ path: 'send_from/:source?', component: AccountSendFrom, meta: { page: 'send' } },
 			{ path: 'split', component: AccountSplit, meta: { page: 'split' } },
 			{ path: 'offer', component: AccountOffer, meta: { page: 'offer' } },
+			{ path: 'history', component: AccountHistory, meta: { page: 'history' } },
+			{ path: 'log', component: AccountLog, meta: { page: 'log' } },
 			{ path: 'details', component: AccountDetails, meta: { page: 'details' } },
 			{ path: 'options', component: AccountOptions, meta: { page: 'options' } },
 			{ path: 'create/staking', component: AccountCreateStaking },
