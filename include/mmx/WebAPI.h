@@ -66,9 +66,7 @@ private:
 
 	void render_history(const vnx::request_id_t& request_id, const size_t limit, const size_t offset, std::vector<tx_entry_t> history) const;
 
-	void execute_trades(const std::string& server, const uint32_t index, const std::vector<exchange::matched_order_t>& orders,
-						const size_t offset, std::shared_ptr<std::vector<vnx::Object>> result, std::shared_ptr<RenderContext> context,
-						vnx::request_id_t request_id, const hash_t& txid, const vnx::exception& ex, bool is_fail) const;
+	void render_tx_history(const vnx::request_id_t& request_id, const std::vector<tx_log_entry_t>& history) const;
 
 	void get_context(	const std::unordered_set<addr_t>& addr_set, const vnx::request_id_t& request_id,
 						const std::function<void(std::shared_ptr<RenderContext>)>& callback) const;
@@ -90,7 +88,7 @@ private:
 	mutable std::map<uint64_t, std::shared_ptr<const exchange::OfferBundle>> pending_offers;
 
 	int64_t time_offset = 0;		// [sec]
-	int64_t height_offset = 0;
+	uint32_t curr_height = 0;
 
 };
 

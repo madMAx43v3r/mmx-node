@@ -117,9 +117,9 @@ void WebAPI::update()
 {
 	node->get_height(
 		[this](const uint32_t& height) {
-			if(height != height_offset) {
+			if(height != curr_height) {
 				time_offset = vnx::get_time_seconds();
-				height_offset = height;
+				curr_height = height;
 			}
 		});
 
@@ -561,7 +561,7 @@ std::shared_ptr<RenderContext> WebAPI::get_context() const
 {
 	auto context = std::make_shared<RenderContext>(params);
 	context->time_offset = time_offset;
-	context->height_offset = height_offset;
+	context->height_offset = curr_height;
 	return context;
 }
 
@@ -757,27 +757,38 @@ void WebAPI::render_history(const vnx::request_id_t& request_id, const size_t li
 		});
 }
 
-void WebAPI::execute_trades(const std::string& server, const uint32_t index, const std::vector<exchange::matched_order_t>& orders,
-							const size_t offset, std::shared_ptr<std::vector<vnx::Object>> result, std::shared_ptr<RenderContext> context,
-							vnx::request_id_t request_id, const hash_t& txid, const vnx::exception& ex, bool is_fail) const
+void WebAPI::render_tx_history(const vnx::request_id_t& request_id, const std::vector<tx_log_entry_t>& history) const
 {
-	if(offset > 0) {
-		vnx::Object res;
-		res["id"] = txid.to_string();
-		res["order"] = render_value(orders[offset - 1], context);
-		if(is_fail) {
-			res["failed"] = true;
-			res["message"] = ex.what();
-		}
-		result->push_back(res);
-	}
-	if(offset >= orders.size()) {
-		respond(request_id, render_value(*result));
+	struct job_t {
+		size_t num_left = 0;
+		vnx::request_id_t request_id;
+		std::vector<vnx::Object> result;
+	};
+	auto job = std::make_shared<job_t>();
+	job->num_left = history.size();
+	job->request_id = request_id;
+	job->result.resize(history.size());
+
+	if(!job->num_left) {
+		respond(request_id, render_value(job->result));
 		return;
 	}
-	exch_client->execute(server, index, orders[offset],
-		std::bind(&WebAPI::execute_trades, this, server, index, orders, offset + 1, result, context, request_id, std::placeholders::_1, vnx::exception(), false),
-		std::bind(&WebAPI::execute_trades, this, server, index, orders, offset + 1, result, context, request_id, hash_t(), std::placeholders::_1, true));
+	for(size_t i = 0; i < history.size(); ++i) {
+		const auto& entry = history[i];
+		auto& out = job->result[i];
+		out["time"] = entry.time;
+		out["id"] = entry.tx->id.to_string();
+		node->get_tx_height(entry.tx->id,
+			[this, job, i](const vnx::optional<uint32_t>& height) {
+				if(height) {
+					job->result[i]["height"] = *height;
+					job->result[i]["confirm"] = curr_height >= *height ? 1 + curr_height - *height : 0;
+				}
+				if(--job->num_left == 0) {
+					respond(job->request_id, render_value(job->result));
+				}
+			});
+	}
 }
 
 void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
@@ -1038,6 +1049,21 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			const int32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 			wallet->get_history(index, since,
 				std::bind(&WebAPI::render_history, this, request_id, limit, offset, std::placeholders::_1),
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "wallet/history?index|limit|offset|since");
+		}
+	}
+	else if(sub_path == "/wallet/tx_history") {
+		const auto iter_index = query.find("index");
+		const auto iter_limit = query.find("limit");
+		const auto iter_offset = query.find("offset");
+		if(iter_index != query.end()) {
+			const uint32_t index = vnx::from_string_value<int64_t>(iter_index->second);
+			const int32_t  limit = iter_limit != query.end() ? vnx::from_string<int32_t>(iter_limit->second) : -1;
+			const uint32_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
+			wallet->get_tx_history(index, limit, offset,
+				std::bind(&WebAPI::render_tx_history, this, request_id, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
 			respond_status(request_id, 404, "wallet/history?index|limit|offset|since");
