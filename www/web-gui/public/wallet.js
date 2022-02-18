@@ -87,7 +87,7 @@ app.component('account-header', {
 	},
 	template: `
 		<div class="ui large labels">
-			<div class="ui horizontal label">Account #{{index}}</div>
+			<div class="ui horizontal label">Wallet #{{index}}</div>
 			<div class="ui horizontal label">[{{info.index}}] {{info.name}}</div>
 			<div class="ui horizontal label">{{address}}</div>
 		</div>
