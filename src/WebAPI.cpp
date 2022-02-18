@@ -580,6 +580,7 @@ void WebAPI::render_headers(const vnx::request_id_t& request_id, const size_t li
 		respond(request_id, vnx::Variant(*result));
 		return;
 	}
+	// TODO: parallelize
 	node->get_header_at(offset,
 			std::bind(&WebAPI::render_headers, this, request_id, limit, offset + 1, result, std::placeholders::_1),
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
@@ -628,6 +629,7 @@ void WebAPI::render_blocks(	const vnx::request_id_t& request_id, const size_t li
 		respond(request_id, vnx::Variant(*result));
 		return;
 	}
+	// TODO: parallelize
 	node->get_block_at(offset,
 			std::bind(&WebAPI::render_blocks, this, request_id, limit, offset + 1, result, std::placeholders::_1),
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
@@ -661,6 +663,7 @@ void WebAPI::render_transactions(	const vnx::request_id_t& request_id, const siz
 		respond(request_id, vnx::Variant(*result));
 		return;
 	}
+	// TODO: parallelize
 	node->get_tx_info(tx_ids[offset],
 			std::bind(&WebAPI::render_transactions, this, request_id, limit, offset + 1, result, tx_ids, std::placeholders::_1),
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
@@ -674,6 +677,7 @@ void WebAPI::gather_transactions(	const vnx::request_id_t& request_id, const siz
 		render_transactions(request_id, limit, 0, std::make_shared<std::vector<vnx::Variant>>(), *result, nullptr);
 		return;
 	}
+	// TODO: parallelize
 	node->get_tx_ids_at(height - 1,
 			std::bind(&WebAPI::gather_transactions, this, request_id, limit, height - 1, result, std::placeholders::_1),
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
