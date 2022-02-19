@@ -395,7 +395,7 @@ vnx::optional<txo_info_t> Node::get_txo_info(const txio_key_t& key) const
 		stxo_t stxo;
 		if(stxo_index.find(key, stxo)) {
 			info.output = stxo;
-			info.spent = stxo.spent;
+			info.spent = stxo.spent_key;
 			return info;
 		}
 	}
@@ -403,7 +403,7 @@ vnx::optional<txo_info_t> Node::get_txo_info(const txio_key_t& key) const
 		auto iter = log->utxo_removed.find(key);
 		if(iter != log->utxo_removed.end()) {
 			info.output = iter->second;
-			info.spent = iter->second.spent;
+			info.spent = iter->second.spent_key;
 			return info;
 		}
 	}
@@ -477,102 +477,57 @@ std::vector<tx_entry_t> Node::get_history_for(const std::vector<addr_t>& address
 {
 	const uint32_t height = get_height();
 	const uint32_t min_height = since >= 0 ? since : std::max<int32_t>(height + since, 0);
-	const std::unordered_set<addr_t> addr_set(addresses.begin(), addresses.end());
 
 	struct txio_t {
 		std::vector<utxo_t> outputs;
-		std::unordered_map<size_t, stxo_entry_t> inputs;
+		std::vector<stxo_entry_t> inputs;
 	};
 	std::unordered_map<hash_t, txio_t> txio_map;
 
-	for(const auto& entry : get_utxo_list(addresses, 1)) {
+	for(const auto& entry : get_utxo_list(addresses, 1, min_height)) {
 		if(entry.output.height >= min_height) {
 			txio_map[entry.key.txid].outputs.push_back(entry.output);
 		}
 	}
-	for(const auto& entry : get_stxo_list(addresses)) {
+	for(const auto& entry : get_stxo_list(addresses, min_height)) {
 		if(entry.output.height >= min_height) {
 			txio_map[entry.key.txid].outputs.push_back(entry.output);
 		}
-		txio_map[entry.spent.txid].inputs[entry.spent.index] = entry;
+		txio_map[entry.spent_key.txid].inputs.push_back(entry);
 	}
 	std::multimap<uint32_t, tx_entry_t> list;
 
 	for(const auto& iter : txio_map) {
 		const auto& txio = iter.second;
 
-		vnx::optional<uint32_t> height;
-		if(!txio.inputs.empty()) {
-			height = get_tx_height(iter.first);
-		}
-		if(height && *height < min_height) {
-			continue;
-		}
-		std::unordered_map<hash_t, int64_t> amount;
+		uint32_t height = 0;
+		std::map<addr_t, std::map<addr_t, int64_t>> delta_map;
 		for(const auto& utxo : txio.outputs) {
-			amount[utxo.contract] += utxo.amount;
+			delta_map[utxo.address][utxo.contract] += utxo.amount;
+			height = utxo.height;
 		}
 		for(const auto& entry : txio.inputs) {
-			const auto& utxo = entry.second.output;
-			amount[utxo.contract] -= utxo.amount;
+			const auto& utxo = entry.output;
+			delta_map[utxo.address][utxo.contract] -= utxo.amount;
+			height = entry.spent_height;
 		}
-		for(const auto& entry : txio.inputs) {
-			const auto& utxo = entry.second.output;
-			if(amount[utxo.contract] > 0 && height) {
-				tx_entry_t entry;
-				entry.height = *height;
-				entry.txid = iter.first;
-				entry.type = tx_type_e::SPEND;
-				entry.contract = utxo.contract;
-				entry.address = utxo.address;
-				entry.amount = utxo.amount;
-				list.emplace(entry.height, entry);
-			}
-		}
-		for(const auto& utxo : txio.outputs) {
-			if(amount[utxo.contract] > 0) {
-				tx_entry_t entry;
-				entry.height = utxo.height;
-				entry.txid = iter.first;
-				entry.type = tx_type_e::RECEIVE;
-				entry.contract = utxo.contract;
-				entry.address = utxo.address;
-				entry.amount = utxo.amount;
-				list.emplace(entry.height, entry);
-			}
-		}
-		if(!txio.inputs.empty() && height) {
-			if(auto tx = get_transaction(iter.first)) {
-				for(size_t i = 0; i < tx->inputs.size(); ++i) {
-					if(!txio.inputs.count(i)) {
-						const auto& in = tx->inputs[i];
-						if(auto info = get_txo_info(in.prev)) {
-							const auto& utxo = info->output;
-							if(amount[utxo.contract] < 0 && !addr_set.count(utxo.address)) {
-								tx_entry_t entry;
-								entry.height = *height;
-								entry.txid = tx->id;
-								entry.type = tx_type_e::INPUT;
-								entry.contract = utxo.contract;
-								entry.address = utxo.address;
-								entry.amount = utxo.amount;
-								list.emplace(entry.height, entry);
-							}
-						}
-					}
+		for(const auto& entry_1 : delta_map) {
+			const auto& addr = entry_1.first;
+			for(const auto& entry : entry_1.second) {
+				tx_entry_t out;
+				out.height = height;
+				out.txid = iter.first;
+				out.contract = entry.first;
+				out.address = addr;
+				if(entry.second > 0) {
+					out.type = tx_type_e::RECEIVE;
+					out.amount = entry.second;
 				}
-				for(const auto& utxo : tx->outputs) {
-					if(amount[utxo.contract] < 0 && !addr_set.count(utxo.address)) {
-						tx_entry_t entry;
-						entry.height = *height;
-						entry.txid = tx->id;
-						entry.type = tx_type_e::SEND;
-						entry.contract = utxo.contract;
-						entry.address = utxo.address;
-						entry.amount = utxo.amount;
-						list.emplace(entry.height, entry);
-					}
+				if(entry.second < 0) {
+					out.type = tx_type_e::SPEND;
+					out.amount = -entry.second;
 				}
+				list.emplace(out.height, out);
 			}
 		}
 	}
@@ -781,7 +736,7 @@ uint64_t Node::get_total_supply(const addr_t& contract) const
 	return total;
 }
 
-std::vector<utxo_entry_t> Node::get_utxo_list(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const
+std::vector<utxo_entry_t> Node::get_utxo_list(const std::vector<addr_t>& addresses, const uint32_t& min_confirm, const uint32_t& since) const
 {
 	const auto height = get_height();
 	const std::unordered_set<addr_t> addr_set(addresses.begin(), addresses.end());
@@ -794,7 +749,7 @@ std::vector<utxo_entry_t> Node::get_utxo_list(const std::vector<addr_t>& address
 			auto iter2 = utxo_map.find(iter->second);
 			if(iter2 != utxo_map.end()) {
 				const auto& utxo = iter2->second;
-				if((height - utxo.height) + 1 >= min_confirm) {
+				if(utxo.height >= since && (height - utxo.height) + 1 >= min_confirm) {
 					res.push_back(utxo_entry_t::create_ex(iter2->first, utxo));
 				}
 			}
@@ -805,7 +760,7 @@ std::vector<utxo_entry_t> Node::get_utxo_list(const std::vector<addr_t>& address
 				auto iter2 = utxo_map.find(key);
 				if(iter2 != utxo_map.end()) {
 					const auto& utxo = iter2->second;
-					if((height - utxo.height) + 1 >= min_confirm) {
+					if(utxo.height >= since && (height - utxo.height) + 1 >= min_confirm) {
 						res.push_back(utxo_entry_t::create_ex(iter2->first, utxo));
 					}
 				}
@@ -815,14 +770,14 @@ std::vector<utxo_entry_t> Node::get_utxo_list(const std::vector<addr_t>& address
 	return res;
 }
 
-std::vector<stxo_entry_t> Node::get_stxo_list(const std::vector<addr_t>& addresses) const
+std::vector<stxo_entry_t> Node::get_stxo_list(const std::vector<addr_t>& addresses, const uint32_t& since) const
 {
 	const std::unordered_set<addr_t> addr_set(addresses.begin(), addresses.end());
 
 	std::vector<stxo_entry_t> res;
 	for(const auto& addr : addr_set) {
 		std::vector<txio_key_t> keys;
-		saddr_map.find(addr, keys);
+		saddr_map.find_range(std::make_pair(addr, since), std::make_pair(addr, -1), keys);
 		for(const auto& key : std::unordered_set<txio_key_t>(keys.begin(), keys.end())) {
 			stxo_t stxo;
 			if(stxo_index.find(key, stxo)) {
@@ -831,10 +786,12 @@ std::vector<stxo_entry_t> Node::get_stxo_list(const std::vector<addr_t>& address
 		}
 	}
 	for(const auto& log : change_log) {
-		for(const auto& entry : log->utxo_removed) {
-			const auto& stxo = entry.second;
-			if(addr_set.count(stxo.address)) {
-				res.push_back(stxo_entry_t::create_ex(entry.first, stxo));
+		if(log->height >= since) {
+			for(const auto& entry : log->utxo_removed) {
+				const auto& stxo = entry.second;
+				if(addr_set.count(stxo.address)) {
+					res.push_back(stxo_entry_t::create_ex(entry.first, stxo));
+				}
 			}
 		}
 	}
@@ -1219,7 +1176,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 		if(!is_replay) {
 			stxo_log.insert(block->height, entry.first);
 			stxo_index.insert(entry.first, entry.second);
-			saddr_map.insert(stxo.address, entry.first);
+			saddr_map.insert(std::make_pair(stxo.address, block->height), entry.first);
 		}
 		addr_map.erase(std::make_pair(stxo.address, entry.first));
 	}
@@ -1300,6 +1257,7 @@ void Node::apply(std::shared_ptr<const Block> block) noexcept
 		return;
 	}
 	const auto log = std::make_shared<change_log_t>();
+	log->height = block->height;
 	log->prev_state = state_hash;
 
 	if(auto tx = std::dynamic_pointer_cast<const Transaction>(block->tx_base)) {
@@ -1323,7 +1281,7 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 		if(iter != utxo_map.end()) {
 			const auto key = txio_key_t::create_ex(tx->id, i);
 			const auto& stxo = iter->second;
-			log.utxo_removed.emplace(iter->first, stxo_t::create_ex(stxo, key));
+			log.utxo_removed.emplace(iter->first, stxo_t::create_ex(stxo, block->height, key));
 			taddr_map[stxo.address].erase(iter->first);
 			utxo_map.erase(iter);
 		}

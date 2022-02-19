@@ -87,9 +87,9 @@ protected:
 
 	uint64_t get_total_supply(const addr_t& contract) const override;
 
-	std::vector<utxo_entry_t> get_utxo_list(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const override;
+	std::vector<utxo_entry_t> get_utxo_list(const std::vector<addr_t>& addresses, const uint32_t& min_confirm = 1, const uint32_t& since = 0) const override;
 
-	std::vector<stxo_entry_t> get_stxo_list(const std::vector<addr_t>& addresses) const override;
+	std::vector<stxo_entry_t> get_stxo_list(const std::vector<addr_t>& addresses, const uint32_t& since = 0) const override;
 
 	void on_stuck_timeout();
 
@@ -143,6 +143,7 @@ private:
 	};
 
 	struct change_log_t {
+		uint32_t height = 0;
 		hash_t prev_state;
 		vnx::optional<hash_t> tx_base;
 		std::vector<hash_t> tx_added;
@@ -259,7 +260,7 @@ private:
 
 	std::unordered_map<hash_t, uint32_t> hash_index;								// [block hash => height] (finalized only)
 	vnx::rocksdb::table<txio_key_t, stxo_t> stxo_index;								// [stxo key => [txi key, stxo]] (finalized + spent only)
-	vnx::rocksdb::multi_table<addr_t, txio_key_t> saddr_map;						// [addr => stxo key] (finalized + spent only)
+	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, txio_key_t> saddr_map;	// [[addr, height] => stxo key] (finalized + spent only)
 	vnx::rocksdb::multi_table<uint32_t, txio_key_t> stxo_log;						// [height => stxo key] (finalized + spent only)
 
 	vnx::rocksdb::table<hash_t, std::pair<int64_t, uint32_t>> tx_index;				// [txid => [file offset, height]] (finalized only)
