@@ -118,9 +118,9 @@ public:
 	
 	uint64_t get_total_supply(const ::mmx::addr_t& contract = ::mmx::addr_t());
 	
-	std::vector<::mmx::utxo_entry_t> get_utxo_list(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& min_confirm = 1);
+	std::vector<::mmx::utxo_entry_t> get_utxo_list(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& min_confirm = 1, const uint32_t& since = 0);
 	
-	std::vector<::mmx::stxo_entry_t> get_stxo_list(const std::vector<::mmx::addr_t>& addresses = {});
+	std::vector<::mmx::stxo_entry_t> get_stxo_list(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& since = 0);
 	
 	void start_sync(const vnx::bool_t& force = 0);
 	

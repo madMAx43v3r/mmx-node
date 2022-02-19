@@ -9,12 +9,16 @@
 #include <vnx/package.hxx>
 #include <vnx/addons/package.hxx>
 
-
-namespace mmx {
-
+#ifdef MMX_EXPORT_ENABLE
+#include <mmx_export.h>
+#else
 #ifndef MMX_EXPORT
 #define MMX_EXPORT
 #endif
+#endif
+
+
+namespace mmx {
 
 
 class Block;

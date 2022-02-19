@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_get_stxo_list_for_return::VNX_TYPE_HASH(0x8b4cfd0ced61d756ull);
-const vnx::Hash64 Wallet_get_stxo_list_for_return::VNX_CODE_HASH(0x33e2555c77e6ec8eull);
+const vnx::Hash64 Wallet_get_stxo_list_for_return::VNX_CODE_HASH(0x2a96b99957ed4144ull);
 
 vnx::Hash64 Wallet_get_stxo_list_for_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -114,7 +114,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_stxo_list_for_return::static_create_ty
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.get_stxo_list_for.return";
 	type_code->type_hash = vnx::Hash64(0x8b4cfd0ced61d756ull);
-	type_code->code_hash = vnx::Hash64(0x33e2555c77e6ec8eull);
+	type_code->code_hash = vnx::Hash64(0x2a96b99957ed4144ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;

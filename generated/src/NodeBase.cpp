@@ -1073,13 +1073,13 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 		case 0x7f52e1aa01c66023ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_utxo_list>(_method);
 			auto _return_value = ::mmx::Node_get_utxo_list_return::create();
-			_return_value->_ret_0 = get_utxo_list(_args->addresses, _args->min_confirm);
+			_return_value->_ret_0 = get_utxo_list(_args->addresses, _args->min_confirm, _args->since);
 			return _return_value;
 		}
 		case 0xb4e1314236d07ca2ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_stxo_list>(_method);
 			auto _return_value = ::mmx::Node_get_stxo_list_return::create();
-			_return_value->_ret_0 = get_stxo_list(_args->addresses);
+			_return_value->_ret_0 = get_stxo_list(_args->addresses, _args->since);
 			return _return_value;
 		}
 		case 0x6c5be8aeb25ef3c8ull: {

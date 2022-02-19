@@ -14,7 +14,8 @@ namespace mmx {
 struct MMX_EXPORT stxo_t : ::mmx::utxo_t {
 	
 	
-	::mmx::txio_key_t spent;
+	uint32_t spent_height = 0;
+	::mmx::txio_key_t spent_key;
 	
 	typedef ::mmx::utxo_t Super;
 	
@@ -29,7 +30,7 @@ struct MMX_EXPORT stxo_t : ::mmx::utxo_t {
 	std::string get_type_name() const;
 	const vnx::TypeCode* get_type_code() const;
 	
-	static ::mmx::stxo_t create_ex(const ::mmx::utxo_t& utxo = ::mmx::utxo_t(), const ::mmx::txio_key_t& spent = ::mmx::txio_key_t());
+	static ::mmx::stxo_t create_ex(const ::mmx::utxo_t& utxo = ::mmx::utxo_t(), const uint32_t& height = 0, const ::mmx::txio_key_t& spent = ::mmx::txio_key_t());
 	
 	static std::shared_ptr<stxo_t> create();
 	std::shared_ptr<stxo_t> clone() const;
@@ -60,13 +61,14 @@ struct MMX_EXPORT stxo_t : ::mmx::utxo_t {
 
 template<typename T>
 void stxo_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<stxo_t>(5);
+	_visitor.template type_begin<stxo_t>(6);
 	_visitor.type_field("address", 0); _visitor.accept(address);
 	_visitor.type_field("contract", 1); _visitor.accept(contract);
 	_visitor.type_field("amount", 2); _visitor.accept(amount);
 	_visitor.type_field("height", 3); _visitor.accept(height);
-	_visitor.type_field("spent", 4); _visitor.accept(spent);
-	_visitor.template type_end<stxo_t>(5);
+	_visitor.type_field("spent_height", 4); _visitor.accept(spent_height);
+	_visitor.type_field("spent_key", 5); _visitor.accept(spent_key);
+	_visitor.template type_end<stxo_t>(6);
 }
 
 

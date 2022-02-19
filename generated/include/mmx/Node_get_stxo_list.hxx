@@ -15,6 +15,7 @@ class MMX_EXPORT Node_get_stxo_list : public ::vnx::Value {
 public:
 	
 	std::vector<::mmx::addr_t> addresses;
+	uint32_t since = 0;
 	
 	typedef ::vnx::Value Super;
 	
@@ -58,9 +59,10 @@ public:
 
 template<typename T>
 void Node_get_stxo_list::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Node_get_stxo_list>(1);
+	_visitor.template type_begin<Node_get_stxo_list>(2);
 	_visitor.type_field("addresses", 0); _visitor.accept(addresses);
-	_visitor.template type_end<Node_get_stxo_list>(1);
+	_visitor.type_field("since", 1); _visitor.accept(since);
+	_visitor.template type_end<Node_get_stxo_list>(2);
 }
 
 

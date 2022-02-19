@@ -10,13 +10,17 @@
 #include <vnx/package.hxx>
 #include <vnx/addons/package.hxx>
 
-
-namespace mmx {
-namespace exchange {
-
+#ifdef MMX_EXCHANGE_EXPORT_ENABLE
+#include <mmx_exchange_export.h>
+#else
 #ifndef MMX_EXCHANGE_EXPORT
 #define MMX_EXCHANGE_EXPORT
 #endif
+#endif
+
+
+namespace mmx {
+namespace exchange {
 
 
 class ClientBase;

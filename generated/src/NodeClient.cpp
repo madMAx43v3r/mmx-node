@@ -569,10 +569,11 @@ uint64_t NodeClient::get_total_supply(const ::mmx::addr_t& contract) {
 	}
 }
 
-std::vector<::mmx::utxo_entry_t> NodeClient::get_utxo_list(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm) {
+std::vector<::mmx::utxo_entry_t> NodeClient::get_utxo_list(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm, const uint32_t& since) {
 	auto _method = ::mmx::Node_get_utxo_list::create();
 	_method->addresses = addresses;
 	_method->min_confirm = min_confirm;
+	_method->since = since;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_utxo_list_return>(_return_value)) {
 		return _result->_ret_0;
@@ -583,9 +584,10 @@ std::vector<::mmx::utxo_entry_t> NodeClient::get_utxo_list(const std::vector<::m
 	}
 }
 
-std::vector<::mmx::stxo_entry_t> NodeClient::get_stxo_list(const std::vector<::mmx::addr_t>& addresses) {
+std::vector<::mmx::stxo_entry_t> NodeClient::get_stxo_list(const std::vector<::mmx::addr_t>& addresses, const uint32_t& since) {
 	auto _method = ::mmx::Node_get_stxo_list::create();
 	_method->addresses = addresses;
+	_method->since = since;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_stxo_list_return>(_return_value)) {
 		return _result->_ret_0;

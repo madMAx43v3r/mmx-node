@@ -9,13 +9,17 @@
 #include <mmx/package.hxx>
 #include <vnx/package.hxx>
 
-
-namespace mmx {
-namespace contract {
-
+#ifdef MMX_CONTRACT_EXPORT_ENABLE
+#include <mmx_contract_export.h>
+#else
 #ifndef MMX_CONTRACT_EXPORT
 #define MMX_CONTRACT_EXPORT
 #endif
+#endif
+
+
+namespace mmx {
+namespace contract {
 
 
 class Condition;

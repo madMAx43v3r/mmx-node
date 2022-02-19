@@ -9,13 +9,17 @@
 #include <mmx/package.hxx>
 #include <vnx/package.hxx>
 
-
-namespace mmx {
-namespace solution {
-
+#ifdef MMX_SOLUTION_EXPORT_ENABLE
+#include <mmx_solution_export.h>
+#else
 #ifndef MMX_SOLUTION_EXPORT
 #define MMX_SOLUTION_EXPORT
 #endif
+#endif
+
+
+namespace mmx {
+namespace solution {
 
 
 class MultiSig;

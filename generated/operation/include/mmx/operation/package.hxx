@@ -9,13 +9,17 @@
 #include <mmx/package.hxx>
 #include <vnx/package.hxx>
 
-
-namespace mmx {
-namespace operation {
-
+#ifdef MMX_OPERATION_EXPORT_ENABLE
+#include <mmx_operation_export.h>
+#else
 #ifndef MMX_OPERATION_EXPORT
 #define MMX_OPERATION_EXPORT
 #endif
+#endif
+
+
+namespace mmx {
+namespace operation {
 
 
 class Mint;
