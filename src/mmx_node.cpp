@@ -77,6 +77,12 @@ int main(int argc, char** argv)
 	if(!root_path.empty()) {
 		vnx::Directory(root_path).create();
 	}
+	{
+		std::string log_path;
+		vnx::read_config("mmx_node.log_file_path", log_path);
+		log_path = root_path + log_path;
+		vnx::write_config("mmx_node.log_file_path", log_path);
+	}
 	if(with_farmer) {
 		with_wallet = true;
 	} else {
