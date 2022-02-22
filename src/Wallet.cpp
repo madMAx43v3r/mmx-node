@@ -591,10 +591,9 @@ void Wallet::create_wallet(const account_t& config_)
 
 hash_t Wallet::get_master_seed(const uint32_t& index) const
 {
-	if(index >= key_files.size()) {
-		throw std::logic_error("invalid wallet index");
-	}
-	if(auto key_file = vnx::read_from_file<KeyFile>(storage_path + key_files[index])) {
+	const auto wallet = get_wallet(index);
+
+	if(auto key_file = vnx::read_from_file<KeyFile>(storage_path + wallet->config.key_file)) {
 		return key_file->seed_value;
 	}
 	throw std::logic_error("failed to read key file");
