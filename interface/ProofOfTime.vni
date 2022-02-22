@@ -2,7 +2,7 @@ package mmx;
 
 class ProofOfTime {
 	
-	// TODO: uint version;
+	uint version;
 	
 	uint height;
 	
@@ -14,8 +14,6 @@ class ProofOfTime {
 	
 	vector<time_segment_t> segments;
 	
-	// TODO: remove timelord_proof and use central server
-	optional<hash_t> timelord_proof;				// optional proof for timelord identity
 	optional<addr_t> timelord_reward;
 	
 	pubkey_t timelord_key;

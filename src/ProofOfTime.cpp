@@ -19,8 +19,8 @@ mmx::hash_t ProofOfTime::calc_hash() const
 
 	buffer.reserve(64 * 1024);
 
-	// TODO: write_bytes(out, get_type_hash());
-	// TODO: write_bytes(out, version);
+	write_bytes(out, get_type_hash());
+	write_bytes(out, version);
 	write_bytes(out, height);
 	write_bytes(out, start);
 	write_bytes(out, input);
@@ -29,7 +29,6 @@ mmx::hash_t ProofOfTime::calc_hash() const
 		write_bytes(out, seg.num_iters);
 		write_bytes(out, seg.output);
 	}
-	write_bytes(out, timelord_proof);
 	write_bytes(out, timelord_reward);
 	write_bytes(out, timelord_key);
 	out.flush();
