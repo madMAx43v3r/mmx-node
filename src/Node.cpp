@@ -125,11 +125,23 @@ void Node::main()
 		const auto next_height = peak->height + 1;
 		{
 			std::vector<txio_key_t> keys;
-			if(stxo_log.find(next_height, keys, vnx::rocksdb::GREATER_EQUAL)) {
+			if(stxo_log.find(next_height, keys, vnx::rocksdb::GREATER_EQUAL))
+			{
+				std::unordered_set<addr_t> addr_set;
 				for(const auto& key : keys) {
+					stxo_t stxo;
+					if(stxo_index.find(key, stxo)) {
+						addr_set.insert(stxo.address);
+					}
 					stxo_index.erase(key);
 				}
 				log(INFO) << "Purged " << keys.size() << " STXO entries";
+
+				size_t total = 0;
+				for(const auto& addr : addr_set) {
+					total += saddr_map.erase_range(std::make_pair(addr, next_height), std::make_pair(addr, -1));
+				}
+				log(INFO) << "Purged " << total << " SADDR entries";
 			}
 			stxo_log.erase_all(next_height, vnx::rocksdb::GREATER_EQUAL);
 		}
