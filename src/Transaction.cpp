@@ -139,11 +139,11 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 	}
 	for(const auto& sol : solutions) {
 		if(sol) {
-			fee += sol->calc_min_fee(params);
+			fee += sol->calc_cost(params);
 		}
 	}
 	if(deploy) {
-		fee += deploy->calc_min_fee(params);
+		fee += deploy->calc_cost(params);
 	}
 	return fee;
 }
