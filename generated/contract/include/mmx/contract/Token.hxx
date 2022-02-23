@@ -28,7 +28,7 @@ public:
 	std::string icon_url;
 	uint32_t decimals = 0;
 	vnx::optional<::mmx::addr_t> owner;
-	::mmx::ulong_fraction_t time_factor;
+	vnx::optional<::mmx::ulong_fraction_t> time_factor;
 	std::map<::mmx::addr_t, ::mmx::ulong_fraction_t> stake_factors;
 	
 	typedef ::mmx::Contract Super;
