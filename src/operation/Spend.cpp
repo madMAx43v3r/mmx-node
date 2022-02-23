@@ -28,7 +28,7 @@ hash_t Spend::calc_hash() const
 	return hash_t(buffer);
 }
 
-uint64_t Spend::calc_min_fee(std::shared_ptr<const ChainParams> params) const {
+uint64_t Spend::calc_cost(std::shared_ptr<const ChainParams> params) const {
 	return (8 + 4 + 32 + 40 + (32 * 2 + 8 + 4)) * params->min_txfee_byte;
 }
 

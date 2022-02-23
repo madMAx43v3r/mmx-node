@@ -126,7 +126,7 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 	}
 	for(const auto& op : execute) {
 		if(op) {
-			fee += params->min_txfee_exec + op->calc_min_fee(params);
+			fee += params->min_txfee_exec + op->calc_cost(params);
 		}
 	}
 	for(const auto& sol : solutions) {

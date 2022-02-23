@@ -9,6 +9,6 @@ class Mutate extends mmx.Operation {
 	
 	hash_t calc_hash() const;
 	
-	ulong calc_min_fee(mmx.ChainParams* params) const;
+	ulong calc_cost(mmx.ChainParams* params) const;
 	
 }
