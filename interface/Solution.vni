@@ -4,9 +4,7 @@ class Solution {
 	
 	uint version;
 	
-	bool is_contract;
 	
-	
-	ulong calc_cost(ChainParams* params) const;
+	bool is_valid() const;
 	
 }

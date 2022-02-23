@@ -37,7 +37,7 @@ class ChainParams {
 	
 	ulong min_txfee_io = 100;				// per input / output
 	ulong min_txfee_sign = 1000;			// per solution
-	// TODO: ulong min_txfee_exec = 10000;			// per contract operation
+	ulong min_txfee_exec = 10000;			// per contract operation
 	ulong min_txfee_byte = 10;				// per byte of data
 	ulong max_block_cost = 10000000;
 	

@@ -180,13 +180,17 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 			if(!solution) {
 				throw std::logic_error("missing solution");
 			}
-			auto contract = get_contract(utxo.address);
-			if(!contract) {
+			std::shared_ptr<const Contract> contract;
+
+			if(in.flags & tx_in_t::IS_EXEC) {
+				contract = get_contract(utxo.address);
+			} else {
 				auto pubkey = contract::PubKey::create();
 				pubkey->address = utxo.address;
 				contract = pubkey;
-			} else if(!solution->is_contract) {
-				// TODO: throw std::logic_error("invalid solution: !is_contract");
+			}
+			if(!contract) {
+				throw std::logic_error("no such contract");
 			}
 			auto spend = operation::Spend::create();
 			spend->address = utxo.address;

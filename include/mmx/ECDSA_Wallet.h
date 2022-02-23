@@ -244,8 +244,7 @@ public:
 				}
 				auto iter = owner_map.find(owner);
 				if(iter != owner_map.end()) {
-					// TODO: used_addr[iter->second] += params->min_txfee_exec;
-					used_addr.emplace(iter->second, 0);
+					used_addr[iter->second] += params->min_txfee_exec;
 				} else {
 					used_addr.emplace(owner, 0);
 				}
@@ -306,6 +305,7 @@ public:
 				auto iter = owner_map.find(owner);
 				if(iter != owner_map.end()) {
 					owner = iter->second;
+					in.flags |= tx_in_t::IS_EXEC;
 				}
 			}
 			{

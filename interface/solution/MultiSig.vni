@@ -4,7 +4,9 @@ class MultiSig extends mmx.Solution {
 	
 	vector<PubKey*> solutions;
 	
+	static const uint MAX_SIGNATURES = 10;
 	
-	ulong calc_min_fee(mmx.ChainParams* params) const;
+	
+	bool is_valid() const;
 	
 }
