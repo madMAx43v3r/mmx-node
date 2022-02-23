@@ -36,7 +36,7 @@ public:
 	
 	virtual vnx::bool_t is_valid() const;
 	virtual ::mmx::hash_t calc_hash() const;
-	virtual uint64_t calc_min_fee(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
+	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	virtual std::vector<::mmx::addr_t> get_dependency() const;
 	virtual std::vector<::mmx::addr_t> get_parties() const;
 	virtual vnx::optional<::mmx::addr_t> get_owner() const;

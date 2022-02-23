@@ -30,7 +30,7 @@ public:
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
 	
-	virtual uint64_t calc_min_fee(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
+	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	
 	static std::shared_ptr<Solution> create();
 	std::shared_ptr<vnx::Value> clone() const override;
