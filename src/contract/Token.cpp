@@ -15,7 +15,7 @@ namespace contract {
 
 vnx::bool_t Token::is_valid() const
 {
-	if(!time_factor.inverse) {
+	if(time_factor && !time_factor->inverse) {
 		return false;
 	}
 	for(const auto& entry : stake_factors) {
@@ -27,10 +27,9 @@ vnx::bool_t Token::is_valid() const
 			return false;
 		}
 	}
-	// TODO: max name length 128
-	// TODO: max symbol length 6, min length 2
-	// TODO: min decimals 0, max decimals 12
-	return Contract::is_valid() && !name.empty() && !symbol.empty() && symbol != "MMX";
+	return Contract::is_valid() && name.size() <= 128
+			&& symbol.size() >= 2 && symbol.size() <= 6 && symbol != "MMX"
+			&& decimals >= 0 && decimals <= 12;
 }
 
 hash_t Token::calc_hash() const
