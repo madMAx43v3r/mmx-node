@@ -373,6 +373,7 @@ app.component('account-tx-history', {
 
 app.component('account-contract-summary', {
 	props: {
+		index: Number,
 		address: String,
 		contract: Object
 	},
@@ -427,7 +428,7 @@ app.component('account-contracts', {
 			<div class="ui basic loading placeholder segment"></div>
 		</template>
 		<template v-if="data">
-			<account-contract-summary v-for="item in data" :key="item[0]" :address="item[0]" :contract="item[1]"></account-contract-summary>
+			<account-contract-summary v-for="item in data" :key="item[0]" :index="index" :address="item[0]" :contract="item[1]"></account-contract-summary>
 		</template>
 		`
 })
