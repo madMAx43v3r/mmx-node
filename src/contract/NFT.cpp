@@ -32,7 +32,7 @@ hash_t NFT::calc_hash() const
 	return hash_t(buffer);
 }
 
-uint64_t NFT::calc_min_fee(std::shared_ptr<const ChainParams> params) const {
+uint64_t NFT::calc_cost(std::shared_ptr<const ChainParams> params) const {
 	uint32_t payload = 0;
 	for(const auto& entry : data.field) {
 		payload += entry.first.size();
