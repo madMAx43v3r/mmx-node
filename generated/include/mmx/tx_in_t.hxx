@@ -13,9 +13,11 @@ namespace mmx {
 
 struct MMX_EXPORT tx_in_t {
 	
+	static const uint16_t IS_EXEC = 1;
 	
 	::mmx::txio_key_t prev;
 	uint32_t solution = -1;
+	uint16_t flags = 0;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -57,10 +59,11 @@ struct MMX_EXPORT tx_in_t {
 
 template<typename T>
 void tx_in_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<tx_in_t>(2);
+	_visitor.template type_begin<tx_in_t>(3);
 	_visitor.type_field("prev", 0); _visitor.accept(prev);
 	_visitor.type_field("solution", 1); _visitor.accept(solution);
-	_visitor.template type_end<tx_in_t>(2);
+	_visitor.type_field("flags", 2); _visitor.accept(flags);
+	_visitor.template type_end<tx_in_t>(3);
 }
 
 
