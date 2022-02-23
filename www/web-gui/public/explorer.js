@@ -192,7 +192,12 @@ app.component('transaction-view', {
 				</tr>
 				</tbody>
 			</table>
-			<contract-table :data="data.deployed" v-if="data.deployed"></contract-table>
+			<template v-if="data.deployed">
+				<div class="ui segment">
+					<div class="ui large label">{{data.deployed.__type}}</div>
+					<contract-table :data="data.deployed"></contract-table>
+				</div>
+			</template>
 		</template>
 		`
 })
