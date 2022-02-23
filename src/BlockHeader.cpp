@@ -24,8 +24,8 @@ mmx::hash_t BlockHeader::calc_hash() const
 
 	buffer.reserve(64 * 1024);
 
-	// TODO: write_bytes(out, get_type_hash());
-	// TODO: write_bytes(out, version);
+	write_bytes(out, get_type_hash());
+	write_bytes(out, version);
 	write_bytes(out, prev);
 	write_bytes(out, height);
 	write_bytes(out, time_diff);

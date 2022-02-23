@@ -2,7 +2,7 @@ package mmx;
 
 class BlockHeader {
 	
-	// TODO: uint version;
+	uint version;
 	
 	hash_t hash;
 	hash_t prev;

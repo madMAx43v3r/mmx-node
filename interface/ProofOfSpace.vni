@@ -2,7 +2,7 @@ package mmx;
 
 class ProofOfSpace {
 	
-	// TODO: uint version;
+	uint version;
 	
 	uchar ksize;
 	

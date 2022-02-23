@@ -24,8 +24,8 @@ mmx::hash_t ProofOfSpace::calc_hash() const
 
 	buffer.reserve(4 * 1024);
 
-	// TODO: write_bytes(out, get_type_hash());
-	// TODO: write_bytes(out, version);
+	write_bytes(out, get_type_hash());
+	write_bytes(out, version);
 	write_bytes(out, ksize);
 	write_bytes(out, plot_id);
 	write_bytes(out, proof_bytes);
