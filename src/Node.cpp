@@ -79,6 +79,9 @@ void Node::main()
 		tx_index.open(database_path + "tx_index", options);
 		owner_map.open(database_path + "owner_map", options);
 		tx_log.open(database_path + "tx_log", options);
+		addr_log.open(database_path + "addr_log", options);
+		contract_cache.open(database_path + "contract_cache", options);
+		mutate_log.open(database_path + "mutate_log", options);
 	}
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
 
@@ -125,23 +128,11 @@ void Node::main()
 		const auto next_height = peak->height + 1;
 		{
 			std::vector<txio_key_t> keys;
-			if(stxo_log.find(next_height, keys, vnx::rocksdb::GREATER_EQUAL))
-			{
-				std::unordered_set<addr_t> addr_set;
+			if(stxo_log.find(next_height, keys, vnx::rocksdb::GREATER_EQUAL)) {
 				for(const auto& key : keys) {
-					stxo_t stxo;
-					if(stxo_index.find(key, stxo)) {
-						addr_set.insert(stxo.address);
-					}
 					stxo_index.erase(key);
 				}
 				log(INFO) << "Purged " << keys.size() << " STXO entries";
-
-				size_t total = 0;
-				for(const auto& addr : addr_set) {
-					total += saddr_map.erase_range(std::make_pair(addr, next_height), std::make_pair(addr, -1));
-				}
-				log(INFO) << "Purged " << total << " SADDR entries";
 			}
 			stxo_log.erase_all(next_height, vnx::rocksdb::GREATER_EQUAL);
 		}
@@ -154,6 +145,41 @@ void Node::main()
 				log(INFO) << "Purged " << keys.size() << " TX entries";
 			}
 			tx_log.erase_all(next_height, vnx::rocksdb::GREATER_EQUAL);
+		}
+		{
+			std::vector<addr_t> addr_set;
+			if(addr_log.find(next_height, addr_set, vnx::rocksdb::GREATER_EQUAL)) {
+				{
+					size_t total = 0;
+					for(const auto& addr : addr_set) {
+						total += saddr_map.erase_range(std::make_pair(addr, next_height), std::make_pair(addr, -1));
+					}
+					log(INFO) << "Purged " << total << " SADDR entries";
+				}
+				{
+					size_t total = 0;
+					std::unordered_set<addr_t> affected;
+					for(const auto& addr : addr_set) {
+						if(auto count = mutate_log.erase_range(std::make_pair(addr, next_height), std::make_pair(addr, -1))) {
+							affected.insert(addr);
+							total += count;
+						}
+					}
+					for(const auto& addr : affected) {
+						if(auto contract = get_contract(addr)) {
+							auto copy = vnx::clone(contract);
+							std::vector<vnx::Object> mutations;
+							mutate_log.find_range(std::make_pair(addr, 0), std::make_pair(addr, -1), mutations);
+							for(const auto& method : mutations) {
+								// TODO: update
+							}
+							contract_cache.insert(addr, copy);
+						}
+					}
+					log(INFO) << "Purged " << total << " mutate_log entries";
+					log(INFO) << "Reverted " << affected.size() << " contracts";
+				}
+			}
 		}
 	}
 
@@ -553,25 +579,27 @@ std::vector<tx_entry_t> Node::get_history_for(const std::vector<addr_t>& address
 std::shared_ptr<const Contract> Node::get_contract(const addr_t& address) const
 {
 	// THREAD SAFE
-	{
-		std::shared_lock lock(cache_mutex);
-		auto iter = contract_map.find(address);
-		if(iter != contract_map.end()) {
-			return iter->second;
+	std::shared_ptr<const Contract> contract;
+	if(!contract_cache.find(address, contract)) {
+		if(auto tx = get_transaction(address)) {
+			contract = tx->deploy;
 		}
 	}
-	std::shared_ptr<const Contract> contract;
-	if(auto tx = get_transaction(address)) {
-		contract = tx->deploy;
-	}
-	{
-		std::unique_lock lock(cache_mutex);
-		if(contract_map.emplace(address, contract).second) {
-			contract_cache_queue.push(address);
-			if(contract_cache_queue.size() > max_contract_cache) {
-				contract_map.erase(contract_cache_queue.front());
-				contract_cache_queue.pop();
+	if(contract) {
+		std::shared_ptr<Contract> copy;
+		for(const auto& log : change_log) {
+			auto iter = log->mutated.find(address);
+			if(iter != log->mutated.end()) {
+				for(const auto& op : iter->second) {
+					if(!copy) {
+						copy = vnx::clone(contract);
+					}
+					// TODO: update
+				}
 			}
+		}
+		if(copy) {
+			contract = copy;
 		}
 	}
 	return contract;
@@ -927,8 +955,7 @@ void Node::print_stats()
 		fclose(file);
 	}
 #endif
-	log(INFO) << tx_pool.size() << " tx pool, " << contract_map.size() << " contracts, "
-			 << utxo_map.size() << " utxo, " << change_log.size() << " / " << fork_tree.size() << " blocks";
+	log(INFO) << tx_pool.size() << " tx pool, " << utxo_map.size() << " utxo, " << change_log.size() << " / " << fork_tree.size() << " blocks";
 }
 
 void Node::on_stuck_timeout()
@@ -1185,6 +1212,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	for(const auto& entry : log->utxo_removed) {
 		const auto& stxo = entry.second;
 		if(!is_replay) {
+			addr_log.insert(block->height, stxo.address);
 			stxo_log.insert(block->height, entry.first);
 			stxo_index.insert(entry.first, entry.second);
 			saddr_map.insert(std::make_pair(stxo.address, block->height), entry.first);
@@ -1204,6 +1232,20 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 		for(const auto& entry : log->deployed) {
 			if(auto owner = entry.second->get_owner()) {
 				owner_map.insert(*owner, entry.first);
+			}
+		}
+		for(const auto& entry : log->mutated) {
+			const auto& address = entry.first;
+			for(const auto& op : entry.second) {
+				addr_log.insert(block->height, address);
+				mutate_log.insert(std::make_pair(address, block->height), op->method);
+
+				std::shared_ptr<const Contract> contract;
+				if(contract_cache.find(address, contract)) {
+					auto copy = vnx::clone(contract);
+					// TODO: mutate
+					contract_cache.insert(address, copy);
+				}
 			}
 		}
 	}
@@ -1303,11 +1345,15 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 	for(size_t i = 0; i < tx->exec_outputs.size(); ++i) {
 		apply_output(block, tx, tx->exec_outputs[i], tx->outputs.size() + i, log);
 	}
+	for(const auto& op : tx->execute) {
+		if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op)) {
+			log.mutated[mutate->address].push_back(mutate);
+		}
+	}
 	if(auto contract = tx->deploy) {
 		if(light_mode) {
 			light_address_set.insert(tx->id);
 		}
-		contract_map.erase(tx->id);
 		log.deployed.emplace(tx->id, contract);
 	}
 	tx_map[tx->id] = std::make_pair(tx, block->height);
@@ -1345,7 +1391,6 @@ bool Node::revert() noexcept
 		tx_map.erase(txid);
 	}
 	for(const auto& entry : log->deployed) {
-		contract_map.erase(entry.first);
 		light_address_set.erase(entry.first);
 	}
 	change_log.pop_back();

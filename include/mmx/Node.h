@@ -15,6 +15,7 @@
 #include <mmx/stxo_t.hpp>
 #include <mmx/txio_key_t.hpp>
 #include <mmx/OCL_VDF.h>
+#include <mmx/operation/Mutate.hxx>
 
 #include <vnx/ThreadPool.h>
 #include <vnx/rocksdb/table.h>
@@ -150,6 +151,7 @@ private:
 		std::unordered_map<txio_key_t, utxo_t> utxo_added;			// [utxo key => utxo]
 		std::unordered_map<txio_key_t, stxo_t> utxo_removed;		// [utxo key => [txi key, utxo]]
 		std::unordered_map<addr_t, std::shared_ptr<const Contract>> deployed;
+		std::unordered_map<addr_t, std::vector<std::shared_ptr<const operation::Mutate>>> mutated;
 	};
 
 	void update();
@@ -262,6 +264,10 @@ private:
 	vnx::rocksdb::table<txio_key_t, stxo_t> stxo_index;								// [stxo key => [txi key, stxo]] (finalized + spent only)
 	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, txio_key_t> saddr_map;	// [[addr, height] => stxo key] (finalized + spent only)
 	vnx::rocksdb::multi_table<uint32_t, txio_key_t> stxo_log;						// [height => stxo key] (finalized + spent only)
+	vnx::rocksdb::multi_table<uint32_t, addr_t> addr_log;							// [height => address] (finalized only)
+
+	vnx::rocksdb::table<addr_t, std::shared_ptr<const Contract>> contract_cache;			// [addr, contract] (finalized only)
+	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, vnx::Object> mutate_log;			// [[addr, height] => method] (finalized only)
 
 	vnx::rocksdb::table<hash_t, std::pair<int64_t, uint32_t>> tx_index;				// [txid => [file offset, height]] (finalized only)
 	vnx::rocksdb::multi_table<addr_t, addr_t> owner_map;							// [owner => contract]
@@ -289,10 +295,6 @@ private:
 	bool is_synced = false;
 	std::shared_ptr<vnx::File> block_chain;
 	std::unordered_map<uint32_t, std::pair<int64_t, hash_t>> block_index;			// [height => [file offset, block hash]]
-
-	mutable std::shared_mutex cache_mutex;
-	mutable std::queue<addr_t> contract_cache_queue;
-	mutable std::unordered_map<addr_t, std::shared_ptr<const Contract>> contract_map;		// [addr => contract] (cached only)
 
 	uint32_t sync_pos = 0;									// current sync height
 	uint32_t sync_retry = 0;
