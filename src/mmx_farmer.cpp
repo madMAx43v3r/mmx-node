@@ -39,6 +39,10 @@ int main(int argc, char** argv)
 		module.start_detached();
 	}
 	{
+		vnx::Handle<vnx::Server> module = new vnx::Server("Server5", vnx::Endpoint::from_url(":11335"));
+		module.start_detached();
+	}
+	{
 		vnx::Handle<vnx::Terminal> module = new vnx::Terminal("Terminal");
 		module.start_detached();
 	}
