@@ -33,7 +33,7 @@ uint64_t Mutate::calc_cost(std::shared_ptr<const ChainParams> params) const {
 		payload += entry.first.size();
 		payload += entry.second.data.size();
 	}
-	return (8 + 4 + 32 + payload) * params->min_txfee_byte;
+	return (8 + 4 + 32 + payload) * params->min_txfee_byte * 3;
 }
 
 
