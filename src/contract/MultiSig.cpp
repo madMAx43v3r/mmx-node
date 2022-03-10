@@ -59,18 +59,15 @@ std::vector<tx_out_t> MultiSig::validate(std::shared_ptr<const Operation> operat
 		}
 		const auto addr = solution->pubkey.get_addr();
 
-		bool found = false;
 		for(const auto& owner : owners) {
 			if(addr == owner) {
 				if(!solution->signature.verify(solution->pubkey, context->txid)) {
 					throw std::logic_error("invalid signature");
 				}
-				found = true;
+				return {};
 			}
 		}
-		if(!found) {
-			throw std::logic_error("insufficient signatures");
-		}
+		throw std::logic_error("no such owner");
 	}
 	if(auto solution = std::dynamic_pointer_cast<const solution::MultiSig>(operation->solution))
 	{
