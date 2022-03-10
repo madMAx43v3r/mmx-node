@@ -35,6 +35,8 @@
 #include <mmx/contract/Token_get_parties_return.hxx>
 #include <mmx/contract/Token_is_valid.hxx>
 #include <mmx/contract/Token_is_valid_return.hxx>
+#include <mmx/contract/Token_transfer.hxx>
+#include <mmx/contract/Token_transfer_return.hxx>
 #include <mmx/contract/Token_validate.hxx>
 #include <mmx/contract/Token_validate_return.hxx>
 #include <mmx/hash_t.hpp>
@@ -239,7 +241,7 @@ std::shared_ptr<vnx::TypeCode> Token::static_create_type_code() {
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Token>(); };
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::ulong_fraction_t::static_get_type_code();
-	type_code->methods.resize(14);
+	type_code->methods.resize(15);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_dependency::static_get_type_code();
@@ -253,7 +255,8 @@ std::shared_ptr<vnx::TypeCode> Token::static_create_type_code() {
 	type_code->methods[10] = ::mmx::contract::Token_get_owner::static_get_type_code();
 	type_code->methods[11] = ::mmx::contract::Token_get_parties::static_get_type_code();
 	type_code->methods[12] = ::mmx::contract::Token_is_valid::static_get_type_code();
-	type_code->methods[13] = ::mmx::contract::Token_validate::static_get_type_code();
+	type_code->methods[13] = ::mmx::contract::Token_transfer::static_get_type_code();
+	type_code->methods[14] = ::mmx::contract::Token_validate::static_get_type_code();
 	type_code->fields.resize(9);
 	{
 		auto& field = type_code->fields[0];
@@ -391,6 +394,12 @@ std::shared_ptr<vnx::Value> Token::vnx_call_switch(std::shared_ptr<const vnx::Va
 			auto _args = std::static_pointer_cast<const ::mmx::contract::Token_is_valid>(_method);
 			auto _return_value = ::mmx::contract::Token_is_valid_return::create();
 			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+		case 0xd54ee6345b881a52ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::Token_transfer>(_method);
+			auto _return_value = ::mmx::contract::Token_transfer_return::create();
+			transfer(_args->new_owner);
 			return _return_value;
 		}
 		case 0xc3476057943b66ffull: {

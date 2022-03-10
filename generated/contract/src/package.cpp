@@ -82,6 +82,8 @@
 #include <mmx/contract/Token_get_parties_return.hxx>
 #include <mmx/contract/Token_is_valid.hxx>
 #include <mmx/contract/Token_is_valid_return.hxx>
+#include <mmx/contract/Token_transfer.hxx>
+#include <mmx/contract/Token_transfer_return.hxx>
 #include <mmx/contract/Token_validate.hxx>
 #include <mmx/contract/Token_validate_return.hxx>
 #include <mmx/contract/WebData.hxx>
@@ -1073,6 +1075,30 @@ void type<::mmx::contract::Token_is_valid_return>::create_dynamic_code(std::vect
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::contract::Token_transfer>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_Token_transfer;
+}
+
+void type<::mmx::contract::Token_transfer>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::Token_transfer());
+}
+
+void type<::mmx::contract::Token_transfer>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Token_transfer& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::Token_transfer_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_Token_transfer_return;
+}
+
+void type<::mmx::contract::Token_transfer_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::Token_transfer_return());
+}
+
+void type<::mmx::contract::Token_transfer_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Token_transfer_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::contract::Token_validate>::get_type_code() {
 	return mmx::contract::vnx_native_type_code_Token_validate;
 }
@@ -1303,6 +1329,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::Token_get_parties_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Token_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Token_is_valid_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::Token_transfer::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::Token_transfer_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Token_validate::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Token_validate_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::WebData::static_create_type_code());
@@ -1403,6 +1431,8 @@ const vnx::TypeCode* const vnx_native_type_code_Token_get_parties = vnx::get_typ
 const vnx::TypeCode* const vnx_native_type_code_Token_get_parties_return = vnx::get_type_code(vnx::Hash64(0x434ef119eecba212ull));
 const vnx::TypeCode* const vnx_native_type_code_Token_is_valid = vnx::get_type_code(vnx::Hash64(0xe2f8f3a19e55d9baull));
 const vnx::TypeCode* const vnx_native_type_code_Token_is_valid_return = vnx::get_type_code(vnx::Hash64(0xdaf9a5651490bd5aull));
+const vnx::TypeCode* const vnx_native_type_code_Token_transfer = vnx::get_type_code(vnx::Hash64(0xd54ee6345b881a52ull));
+const vnx::TypeCode* const vnx_native_type_code_Token_transfer_return = vnx::get_type_code(vnx::Hash64(0x9e98330d476699c8ull));
 const vnx::TypeCode* const vnx_native_type_code_Token_validate = vnx::get_type_code(vnx::Hash64(0xc3476057943b66ffull));
 const vnx::TypeCode* const vnx_native_type_code_Token_validate_return = vnx::get_type_code(vnx::Hash64(0xc7dc19b4d86f2ca1ull));
 const vnx::TypeCode* const vnx_native_type_code_WebData = vnx::get_type_code(vnx::Hash64(0xf7c226b211c088c4ull));
