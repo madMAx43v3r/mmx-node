@@ -3,7 +3,21 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Block.hxx>
+#include <mmx/Block_calc_cost.hxx>
+#include <mmx/Block_calc_cost_return.hxx>
+#include <mmx/Block_calc_tx_hash.hxx>
+#include <mmx/Block_calc_tx_hash_return.hxx>
+#include <mmx/Block_finalize.hxx>
+#include <mmx/Block_finalize_return.hxx>
+#include <mmx/Block_get_header.hxx>
+#include <mmx/Block_get_header_return.hxx>
+#include <mmx/Block_is_valid.hxx>
+#include <mmx/Block_is_valid_return.hxx>
 #include <mmx/BlockHeader.hxx>
+#include <mmx/BlockHeader_calc_hash.hxx>
+#include <mmx/BlockHeader_calc_hash_return.hxx>
+#include <mmx/BlockHeader_is_valid.hxx>
+#include <mmx/BlockHeader_is_valid_return.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/TransactionBase.hxx>
 #include <mmx/hash_t.hpp>
@@ -253,6 +267,14 @@ std::shared_ptr<vnx::TypeCode> Block::static_create_type_code() {
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::BlockHeader::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Block>(); };
+	type_code->methods.resize(7);
+	type_code->methods[0] = ::mmx::Block_calc_cost::static_get_type_code();
+	type_code->methods[1] = ::mmx::Block_calc_tx_hash::static_get_type_code();
+	type_code->methods[2] = ::mmx::Block_finalize::static_get_type_code();
+	type_code->methods[3] = ::mmx::Block_get_header::static_get_type_code();
+	type_code->methods[4] = ::mmx::Block_is_valid::static_get_type_code();
+	type_code->methods[5] = ::mmx::BlockHeader_calc_hash::static_get_type_code();
+	type_code->methods[6] = ::mmx::BlockHeader_is_valid::static_get_type_code();
 	type_code->fields.resize(14);
 	{
 		auto& field = type_code->fields[0];
@@ -340,6 +362,54 @@ std::shared_ptr<vnx::TypeCode> Block::static_create_type_code() {
 	}
 	type_code->build();
 	return type_code;
+}
+
+std::shared_ptr<vnx::Value> Block::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
+	switch(_method->get_type_hash()) {
+		case 0xf761b92f6b0c2594ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Block_calc_cost>(_method);
+			auto _return_value = ::mmx::Block_calc_cost_return::create();
+			_return_value->_ret_0 = calc_cost(_args->params);
+			return _return_value;
+		}
+		case 0x4116f49822c328bcull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Block_calc_tx_hash>(_method);
+			auto _return_value = ::mmx::Block_calc_tx_hash_return::create();
+			_return_value->_ret_0 = calc_tx_hash();
+			return _return_value;
+		}
+		case 0xc19dfeaa6a6a3814ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Block_finalize>(_method);
+			auto _return_value = ::mmx::Block_finalize_return::create();
+			finalize();
+			return _return_value;
+		}
+		case 0xb94157aaa956f7d7ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Block_get_header>(_method);
+			auto _return_value = ::mmx::Block_get_header_return::create();
+			_return_value->_ret_0 = get_header();
+			return _return_value;
+		}
+		case 0xa203b4d10b9ca39bull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Block_is_valid>(_method);
+			auto _return_value = ::mmx::Block_is_valid_return::create();
+			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+		case 0xc525b15a3f7ee317ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::BlockHeader_calc_hash>(_method);
+			auto _return_value = ::mmx::BlockHeader_calc_hash_return::create();
+			_return_value->_ret_0 = calc_hash();
+			return _return_value;
+		}
+		case 0xee0825f87d03a5ebull: {
+			auto _args = std::static_pointer_cast<const ::mmx::BlockHeader_is_valid>(_method);
+			auto _return_value = ::mmx::BlockHeader_is_valid_return::create();
+			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+	}
+	return nullptr;
 }
 
 

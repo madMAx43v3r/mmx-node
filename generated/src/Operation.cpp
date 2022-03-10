@@ -4,6 +4,12 @@
 #include <mmx/package.hxx>
 #include <mmx/Operation.hxx>
 #include <mmx/ChainParams.hxx>
+#include <mmx/Operation_calc_cost.hxx>
+#include <mmx/Operation_calc_cost_return.hxx>
+#include <mmx/Operation_calc_hash.hxx>
+#include <mmx/Operation_calc_hash_return.hxx>
+#include <mmx/Operation_is_valid.hxx>
+#include <mmx/Operation_is_valid_return.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
@@ -142,6 +148,10 @@ std::shared_ptr<vnx::TypeCode> Operation::static_create_type_code() {
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::Operation);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Operation>(); };
+	type_code->methods.resize(3);
+	type_code->methods[0] = ::mmx::Operation_calc_cost::static_get_type_code();
+	type_code->methods[1] = ::mmx::Operation_calc_hash::static_get_type_code();
+	type_code->methods[2] = ::mmx::Operation_is_valid::static_get_type_code();
 	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
@@ -163,6 +173,30 @@ std::shared_ptr<vnx::TypeCode> Operation::static_create_type_code() {
 	}
 	type_code->build();
 	return type_code;
+}
+
+std::shared_ptr<vnx::Value> Operation::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
+	switch(_method->get_type_hash()) {
+		case 0x5907595c31b44526ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Operation_calc_cost>(_method);
+			auto _return_value = ::mmx::Operation_calc_cost_return::create();
+			_return_value->_ret_0 = calc_cost(_args->params);
+			return _return_value;
+		}
+		case 0x8915923a542631d9ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Operation_calc_hash>(_method);
+			auto _return_value = ::mmx::Operation_calc_hash_return::create();
+			_return_value->_ret_0 = calc_hash();
+			return _return_value;
+		}
+		case 0x3b2ec6e0a968cf51ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Operation_is_valid>(_method);
+			auto _return_value = ::mmx::Operation_is_valid_return::create();
+			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+	}
+	return nullptr;
 }
 
 

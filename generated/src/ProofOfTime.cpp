@@ -3,6 +3,14 @@
 
 #include <mmx/package.hxx>
 #include <mmx/ProofOfTime.hxx>
+#include <mmx/ProofOfTime_calc_hash.hxx>
+#include <mmx/ProofOfTime_calc_hash_return.hxx>
+#include <mmx/ProofOfTime_get_num_iters.hxx>
+#include <mmx/ProofOfTime_get_num_iters_return.hxx>
+#include <mmx/ProofOfTime_get_output.hxx>
+#include <mmx/ProofOfTime_get_output_return.hxx>
+#include <mmx/ProofOfTime_get_vdf_iters.hxx>
+#include <mmx/ProofOfTime_get_vdf_iters_return.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/pubkey_t.hpp>
@@ -205,6 +213,11 @@ std::shared_ptr<vnx::TypeCode> ProofOfTime::static_create_type_code() {
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<ProofOfTime>(); };
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::time_segment_t::static_get_type_code();
+	type_code->methods.resize(4);
+	type_code->methods[0] = ::mmx::ProofOfTime_calc_hash::static_get_type_code();
+	type_code->methods[1] = ::mmx::ProofOfTime_get_num_iters::static_get_type_code();
+	type_code->methods[2] = ::mmx::ProofOfTime_get_output::static_get_type_code();
+	type_code->methods[3] = ::mmx::ProofOfTime_get_vdf_iters::static_get_type_code();
 	type_code->fields.resize(9);
 	{
 		auto& field = type_code->fields[0];
@@ -262,6 +275,36 @@ std::shared_ptr<vnx::TypeCode> ProofOfTime::static_create_type_code() {
 	}
 	type_code->build();
 	return type_code;
+}
+
+std::shared_ptr<vnx::Value> ProofOfTime::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
+	switch(_method->get_type_hash()) {
+		case 0xfbe7b8fb426a914full: {
+			auto _args = std::static_pointer_cast<const ::mmx::ProofOfTime_calc_hash>(_method);
+			auto _return_value = ::mmx::ProofOfTime_calc_hash_return::create();
+			_return_value->_ret_0 = calc_hash();
+			return _return_value;
+		}
+		case 0x6572055c0dbeeb1aull: {
+			auto _args = std::static_pointer_cast<const ::mmx::ProofOfTime_get_num_iters>(_method);
+			auto _return_value = ::mmx::ProofOfTime_get_num_iters_return::create();
+			_return_value->_ret_0 = get_num_iters();
+			return _return_value;
+		}
+		case 0x836cbbed3b492046ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::ProofOfTime_get_output>(_method);
+			auto _return_value = ::mmx::ProofOfTime_get_output_return::create();
+			_return_value->_ret_0 = get_output(_args->chain);
+			return _return_value;
+		}
+		case 0xf9d7d387b2b87128ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::ProofOfTime_get_vdf_iters>(_method);
+			auto _return_value = ::mmx::ProofOfTime_get_vdf_iters_return::create();
+			_return_value->_ret_0 = get_vdf_iters();
+			return _return_value;
+		}
+	}
+	return nullptr;
 }
 
 

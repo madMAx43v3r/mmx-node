@@ -19,6 +19,14 @@ public:
 	
 	HarvesterClient(vnx::Hash64 service_addr);
 	
+	void reload();
+	
+	void reload_async();
+	
+	std::shared_ptr<const ::mmx::FarmInfo> get_farm_info();
+	
+	uint64_t get_total_bytes();
+	
 	::vnx::Object vnx_get_config_object();
 	
 	::vnx::Variant vnx_get_config(const std::string& name = "");
@@ -44,14 +52,6 @@ public:
 	void vnx_stop_async();
 	
 	vnx::bool_t vnx_self_test();
-	
-	void reload();
-	
-	void reload_async();
-	
-	std::shared_ptr<const ::mmx::FarmInfo> get_farm_info();
-	
-	uint64_t get_total_bytes();
 	
 };
 

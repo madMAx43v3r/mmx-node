@@ -4,6 +4,10 @@
 #include <mmx/package.hxx>
 #include <mmx/TransactionBase.hxx>
 #include <mmx/ChainParams.hxx>
+#include <mmx/TransactionBase_calc_cost.hxx>
+#include <mmx/TransactionBase_calc_cost_return.hxx>
+#include <mmx/TransactionBase_calc_hash.hxx>
+#include <mmx/TransactionBase_calc_hash_return.hxx>
 #include <mmx/hash_t.hpp>
 #include <vnx/Value.h>
 
@@ -120,6 +124,9 @@ std::shared_ptr<vnx::TypeCode> TransactionBase::static_create_type_code() {
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::TransactionBase);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<TransactionBase>(); };
+	type_code->methods.resize(2);
+	type_code->methods[0] = ::mmx::TransactionBase_calc_cost::static_get_type_code();
+	type_code->methods[1] = ::mmx::TransactionBase_calc_hash::static_get_type_code();
 	type_code->fields.resize(1);
 	{
 		auto& field = type_code->fields[0];
@@ -129,6 +136,24 @@ std::shared_ptr<vnx::TypeCode> TransactionBase::static_create_type_code() {
 	}
 	type_code->build();
 	return type_code;
+}
+
+std::shared_ptr<vnx::Value> TransactionBase::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
+	switch(_method->get_type_hash()) {
+		case 0xdc3d9eed0e103932ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::TransactionBase_calc_cost>(_method);
+			auto _return_value = ::mmx::TransactionBase_calc_cost_return::create();
+			_return_value->_ret_0 = calc_cost(_args->params);
+			return _return_value;
+		}
+		case 0xc2f558b6b824dcdull: {
+			auto _args = std::static_pointer_cast<const ::mmx::TransactionBase_calc_hash>(_method);
+			auto _return_value = ::mmx::TransactionBase_calc_hash_return::create();
+			_return_value->_ret_0 = calc_hash();
+			return _return_value;
+		}
+	}
+	return nullptr;
 }
 
 

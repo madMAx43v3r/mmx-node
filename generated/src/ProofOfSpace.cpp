@@ -3,6 +3,10 @@
 
 #include <mmx/package.hxx>
 #include <mmx/ProofOfSpace.hxx>
+#include <mmx/ProofOfSpace_calc_hash.hxx>
+#include <mmx/ProofOfSpace_calc_hash_return.hxx>
+#include <mmx/ProofOfSpace_is_valid.hxx>
+#include <mmx/ProofOfSpace_is_valid_return.hxx>
 #include <mmx/bls_pubkey_t.hpp>
 #include <mmx/bls_signature_t.hpp>
 #include <mmx/hash_t.hpp>
@@ -201,6 +205,9 @@ std::shared_ptr<vnx::TypeCode> ProofOfSpace::static_create_type_code() {
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ProofOfSpace);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<ProofOfSpace>(); };
+	type_code->methods.resize(2);
+	type_code->methods[0] = ::mmx::ProofOfSpace_calc_hash::static_get_type_code();
+	type_code->methods[1] = ::mmx::ProofOfSpace_is_valid::static_get_type_code();
 	type_code->fields.resize(9);
 	{
 		auto& field = type_code->fields[0];
@@ -258,6 +265,24 @@ std::shared_ptr<vnx::TypeCode> ProofOfSpace::static_create_type_code() {
 	}
 	type_code->build();
 	return type_code;
+}
+
+std::shared_ptr<vnx::Value> ProofOfSpace::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
+	switch(_method->get_type_hash()) {
+		case 0x4056d25a9096f144ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::ProofOfSpace_calc_hash>(_method);
+			auto _return_value = ::mmx::ProofOfSpace_calc_hash_return::create();
+			_return_value->_ret_0 = calc_hash();
+			return _return_value;
+		}
+		case 0x143933f39ea710d1ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::ProofOfSpace_is_valid>(_method);
+			auto _return_value = ::mmx::ProofOfSpace_is_valid_return::create();
+			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+	}
+	return nullptr;
 }
 
 

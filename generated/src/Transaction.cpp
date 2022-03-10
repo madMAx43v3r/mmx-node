@@ -7,7 +7,31 @@
 #include <mmx/Contract.hxx>
 #include <mmx/Operation.hxx>
 #include <mmx/Solution.hxx>
+#include <mmx/Transaction_add_output.hxx>
+#include <mmx/Transaction_add_output_return.hxx>
+#include <mmx/Transaction_calc_cost.hxx>
+#include <mmx/Transaction_calc_cost_return.hxx>
+#include <mmx/Transaction_calc_hash.hxx>
+#include <mmx/Transaction_calc_hash_return.hxx>
+#include <mmx/Transaction_finalize.hxx>
+#include <mmx/Transaction_finalize_return.hxx>
+#include <mmx/Transaction_get_all_outputs.hxx>
+#include <mmx/Transaction_get_all_outputs_return.hxx>
+#include <mmx/Transaction_get_output.hxx>
+#include <mmx/Transaction_get_output_return.hxx>
+#include <mmx/Transaction_get_solution.hxx>
+#include <mmx/Transaction_get_solution_return.hxx>
+#include <mmx/Transaction_is_signed.hxx>
+#include <mmx/Transaction_is_signed_return.hxx>
+#include <mmx/Transaction_is_valid.hxx>
+#include <mmx/Transaction_is_valid_return.hxx>
+#include <mmx/Transaction_merge_sign.hxx>
+#include <mmx/Transaction_merge_sign_return.hxx>
 #include <mmx/TransactionBase.hxx>
+#include <mmx/TransactionBase_calc_cost.hxx>
+#include <mmx/TransactionBase_calc_cost_return.hxx>
+#include <mmx/TransactionBase_calc_hash.hxx>
+#include <mmx/TransactionBase_calc_hash_return.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/tx_in_t.hxx>
@@ -201,6 +225,19 @@ std::shared_ptr<vnx::TypeCode> Transaction::static_create_type_code() {
 	type_code->depends.resize(2);
 	type_code->depends[0] = ::mmx::tx_in_t::static_get_type_code();
 	type_code->depends[1] = ::mmx::tx_out_t::static_get_type_code();
+	type_code->methods.resize(12);
+	type_code->methods[0] = ::mmx::Transaction_add_output::static_get_type_code();
+	type_code->methods[1] = ::mmx::Transaction_calc_cost::static_get_type_code();
+	type_code->methods[2] = ::mmx::Transaction_calc_hash::static_get_type_code();
+	type_code->methods[3] = ::mmx::Transaction_finalize::static_get_type_code();
+	type_code->methods[4] = ::mmx::Transaction_get_all_outputs::static_get_type_code();
+	type_code->methods[5] = ::mmx::Transaction_get_output::static_get_type_code();
+	type_code->methods[6] = ::mmx::Transaction_get_solution::static_get_type_code();
+	type_code->methods[7] = ::mmx::Transaction_is_signed::static_get_type_code();
+	type_code->methods[8] = ::mmx::Transaction_is_valid::static_get_type_code();
+	type_code->methods[9] = ::mmx::Transaction_merge_sign::static_get_type_code();
+	type_code->methods[10] = ::mmx::TransactionBase_calc_cost::static_get_type_code();
+	type_code->methods[11] = ::mmx::TransactionBase_calc_hash::static_get_type_code();
 	type_code->fields.resize(8);
 	{
 		auto& field = type_code->fields[0];
@@ -252,6 +289,84 @@ std::shared_ptr<vnx::TypeCode> Transaction::static_create_type_code() {
 	}
 	type_code->build();
 	return type_code;
+}
+
+std::shared_ptr<vnx::Value> Transaction::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
+	switch(_method->get_type_hash()) {
+		case 0x479ef0d3de1f6ea3ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Transaction_add_output>(_method);
+			auto _return_value = ::mmx::Transaction_add_output_return::create();
+			add_output(_args->currency, _args->address, _args->amount, _args->split);
+			return _return_value;
+		}
+		case 0x39606f716fd28613ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Transaction_calc_cost>(_method);
+			auto _return_value = ::mmx::Transaction_calc_cost_return::create();
+			_return_value->_ret_0 = calc_cost(_args->params);
+			return _return_value;
+		}
+		case 0xe972a4170a40f2ecull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Transaction_calc_hash>(_method);
+			auto _return_value = ::mmx::Transaction_calc_hash_return::create();
+			_return_value->_ret_0 = calc_hash();
+			return _return_value;
+		}
+		case 0x75a626fc20f09905ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Transaction_finalize>(_method);
+			auto _return_value = ::mmx::Transaction_finalize_return::create();
+			finalize();
+			return _return_value;
+		}
+		case 0x450d1b5d483217a6ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Transaction_get_all_outputs>(_method);
+			auto _return_value = ::mmx::Transaction_get_all_outputs_return::create();
+			_return_value->_ret_0 = get_all_outputs();
+			return _return_value;
+		}
+		case 0xf68f41fd090736c1ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Transaction_get_output>(_method);
+			auto _return_value = ::mmx::Transaction_get_output_return::create();
+			_return_value->_ret_0 = get_output(_args->index);
+			return _return_value;
+		}
+		case 0x8616c0b585da815bull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Transaction_get_solution>(_method);
+			auto _return_value = ::mmx::Transaction_get_solution_return::create();
+			_return_value->_ret_0 = get_solution(_args->index);
+			return _return_value;
+		}
+		case 0x3273a3ea7264e4f8ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Transaction_is_signed>(_method);
+			auto _return_value = ::mmx::Transaction_is_signed_return::create();
+			_return_value->_ret_0 = is_signed();
+			return _return_value;
+		}
+		case 0x16386c874106028aull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Transaction_is_valid>(_method);
+			auto _return_value = ::mmx::Transaction_is_valid_return::create();
+			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+		case 0x441d6e2bfb07ec38ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Transaction_merge_sign>(_method);
+			auto _return_value = ::mmx::Transaction_merge_sign_return::create();
+			merge_sign(_args->tx);
+			return _return_value;
+		}
+		case 0xdc3d9eed0e103932ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::TransactionBase_calc_cost>(_method);
+			auto _return_value = ::mmx::TransactionBase_calc_cost_return::create();
+			_return_value->_ret_0 = calc_cost(_args->params);
+			return _return_value;
+		}
+		case 0xc2f558b6b824dcdull: {
+			auto _args = std::static_pointer_cast<const ::mmx::TransactionBase_calc_hash>(_method);
+			auto _return_value = ::mmx::TransactionBase_calc_hash_return::create();
+			_return_value->_ret_0 = calc_hash();
+			return _return_value;
+		}
+	}
+	return nullptr;
 }
 
 

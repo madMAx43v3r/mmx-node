@@ -3,6 +3,8 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Solution.hxx>
+#include <mmx/Solution_is_valid.hxx>
+#include <mmx/Solution_is_valid_return.hxx>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -118,6 +120,8 @@ std::shared_ptr<vnx::TypeCode> Solution::static_create_type_code() {
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::Solution);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Solution>(); };
+	type_code->methods.resize(1);
+	type_code->methods[0] = ::mmx::Solution_is_valid::static_get_type_code();
 	type_code->fields.resize(1);
 	{
 		auto& field = type_code->fields[0];
@@ -127,6 +131,18 @@ std::shared_ptr<vnx::TypeCode> Solution::static_create_type_code() {
 	}
 	type_code->build();
 	return type_code;
+}
+
+std::shared_ptr<vnx::Value> Solution::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
+	switch(_method->get_type_hash()) {
+		case 0x80842f8f91d6b02bull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Solution_is_valid>(_method);
+			auto _return_value = ::mmx::Solution_is_valid_return::create();
+			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+	}
+	return nullptr;
 }
 
 

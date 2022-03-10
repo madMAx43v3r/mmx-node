@@ -5,6 +5,12 @@
 #include <mmx/contract/Condition.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/contract/Condition_calc_hash.hxx>
+#include <mmx/contract/Condition_calc_hash_return.hxx>
+#include <mmx/contract/Condition_calc_min_fee.hxx>
+#include <mmx/contract/Condition_calc_min_fee_return.hxx>
+#include <mmx/contract/Condition_is_valid.hxx>
+#include <mmx/contract/Condition_is_valid_return.hxx>
 #include <mmx/contract/compare_e.hxx>
 #include <mmx/contract/condition_e.hxx>
 #include <mmx/hash_t.hpp>
@@ -177,6 +183,10 @@ std::shared_ptr<vnx::TypeCode> Condition::static_create_type_code() {
 	type_code->depends.resize(2);
 	type_code->depends[0] = ::mmx::contract::condition_e::static_get_type_code();
 	type_code->depends[1] = ::mmx::contract::compare_e::static_get_type_code();
+	type_code->methods.resize(3);
+	type_code->methods[0] = ::mmx::contract::Condition_calc_hash::static_get_type_code();
+	type_code->methods[1] = ::mmx::contract::Condition_calc_min_fee::static_get_type_code();
+	type_code->methods[2] = ::mmx::contract::Condition_is_valid::static_get_type_code();
 	type_code->fields.resize(6);
 	{
 		auto& field = type_code->fields[0];
@@ -216,6 +226,30 @@ std::shared_ptr<vnx::TypeCode> Condition::static_create_type_code() {
 	}
 	type_code->build();
 	return type_code;
+}
+
+std::shared_ptr<vnx::Value> Condition::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
+	switch(_method->get_type_hash()) {
+		case 0xb7bc1dda67724085ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::Condition_calc_hash>(_method);
+			auto _return_value = ::mmx::contract::Condition_calc_hash_return::create();
+			_return_value->_ret_0 = calc_hash();
+			return _return_value;
+		}
+		case 0xd411b88bac1ead5aull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::Condition_calc_min_fee>(_method);
+			auto _return_value = ::mmx::contract::Condition_calc_min_fee_return::create();
+			_return_value->_ret_0 = calc_min_fee(_args->params);
+			return _return_value;
+		}
+		case 0x5f71bafb64aab7d9ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::Condition_is_valid>(_method);
+			auto _return_value = ::mmx::contract::Condition_is_valid_return::create();
+			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+	}
+	return nullptr;
 }
 
 

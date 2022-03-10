@@ -145,6 +145,12 @@ std::shared_ptr<vnx::TypeCode> Return::static_create_type_code() {
 	return type_code;
 }
 
+std::shared_ptr<vnx::Value> Return::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
+	switch(_method->get_type_hash()) {
+	}
+	return nullptr;
+}
+
 
 } // namespace mmx
 

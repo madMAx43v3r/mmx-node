@@ -20,6 +20,10 @@ public:
 	
 	TimeLordClient(vnx::Hash64 service_addr);
 	
+	void stop_vdf();
+	
+	void stop_vdf_async();
+	
 	::vnx::Object vnx_get_config_object();
 	
 	::vnx::Variant vnx_get_config(const std::string& name = "");
@@ -45,10 +49,6 @@ public:
 	void vnx_stop_async();
 	
 	vnx::bool_t vnx_self_test();
-	
-	void stop_vdf();
-	
-	void stop_vdf_async();
 	
 };
 

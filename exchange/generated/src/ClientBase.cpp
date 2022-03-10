@@ -386,33 +386,33 @@ std::shared_ptr<vnx::TypeCode> ClientBase::static_create_type_code() {
 	type_code->parents[0] = ::vnx::addons::MsgServerBase::static_get_type_code();
 	type_code->parents[1] = ::vnx::addons::TcpServerBase::static_get_type_code();
 	type_code->methods.resize(29);
-	type_code->methods[0] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
-	type_code->methods[1] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
-	type_code->methods[2] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
-	type_code->methods[3] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
-	type_code->methods[4] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
-	type_code->methods[5] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
-	type_code->methods[6] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
-	type_code->methods[7] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
-	type_code->methods[8] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
-	type_code->methods[9] = ::mmx::exchange::Client_get_servers::static_get_type_code();
-	type_code->methods[10] = ::mmx::exchange::Client_execute::static_get_type_code();
-	type_code->methods[11] = ::mmx::exchange::Client_match::static_get_type_code();
-	type_code->methods[12] = ::mmx::exchange::Client_get_trade_pairs::static_get_type_code();
-	type_code->methods[13] = ::mmx::exchange::Client_get_orders::static_get_type_code();
-	type_code->methods[14] = ::mmx::exchange::Client_get_trade_history::static_get_type_code();
-	type_code->methods[15] = ::mmx::exchange::Client_get_price::static_get_type_code();
-	type_code->methods[16] = ::mmx::exchange::Client_get_min_trade::static_get_type_code();
-	type_code->methods[17] = ::mmx::exchange::Client_get_order::static_get_type_code();
-	type_code->methods[18] = ::mmx::exchange::Client_get_offer::static_get_type_code();
-	type_code->methods[19] = ::mmx::exchange::Client_get_all_offers::static_get_type_code();
-	type_code->methods[20] = ::mmx::exchange::Client_get_local_history::static_get_type_code();
-	type_code->methods[21] = ::mmx::exchange::Client_cancel_offer::static_get_type_code();
-	type_code->methods[22] = ::mmx::exchange::Client_cancel_all::static_get_type_code();
-	type_code->methods[23] = ::mmx::exchange::Client_make_offer::static_get_type_code();
-	type_code->methods[24] = ::mmx::exchange::Client_make_trade::static_get_type_code();
-	type_code->methods[25] = ::mmx::exchange::Client_place::static_get_type_code();
-	type_code->methods[26] = ::mmx::exchange::Client_approve::static_get_type_code();
+	type_code->methods[0] = ::mmx::exchange::Client_approve::static_get_type_code();
+	type_code->methods[1] = ::mmx::exchange::Client_cancel_all::static_get_type_code();
+	type_code->methods[2] = ::mmx::exchange::Client_cancel_offer::static_get_type_code();
+	type_code->methods[3] = ::mmx::exchange::Client_execute::static_get_type_code();
+	type_code->methods[4] = ::mmx::exchange::Client_get_all_offers::static_get_type_code();
+	type_code->methods[5] = ::mmx::exchange::Client_get_local_history::static_get_type_code();
+	type_code->methods[6] = ::mmx::exchange::Client_get_min_trade::static_get_type_code();
+	type_code->methods[7] = ::mmx::exchange::Client_get_offer::static_get_type_code();
+	type_code->methods[8] = ::mmx::exchange::Client_get_order::static_get_type_code();
+	type_code->methods[9] = ::mmx::exchange::Client_get_orders::static_get_type_code();
+	type_code->methods[10] = ::mmx::exchange::Client_get_price::static_get_type_code();
+	type_code->methods[11] = ::mmx::exchange::Client_get_servers::static_get_type_code();
+	type_code->methods[12] = ::mmx::exchange::Client_get_trade_history::static_get_type_code();
+	type_code->methods[13] = ::mmx::exchange::Client_get_trade_pairs::static_get_type_code();
+	type_code->methods[14] = ::mmx::exchange::Client_make_offer::static_get_type_code();
+	type_code->methods[15] = ::mmx::exchange::Client_make_trade::static_get_type_code();
+	type_code->methods[16] = ::mmx::exchange::Client_match::static_get_type_code();
+	type_code->methods[17] = ::mmx::exchange::Client_place::static_get_type_code();
+	type_code->methods[18] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
+	type_code->methods[19] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
+	type_code->methods[20] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
+	type_code->methods[21] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
+	type_code->methods[22] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
+	type_code->methods[23] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
+	type_code->methods[24] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
+	type_code->methods[25] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
+	type_code->methods[26] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
 	type_code->methods[27] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
 	type_code->methods[28] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
 	type_code->fields.resize(20);
@@ -573,112 +573,28 @@ void ClientBase::vnx_handle_switch(std::shared_ptr<const vnx::Value> _value) {
 
 std::shared_ptr<vnx::Value> ClientBase::vnx_call_switch(std::shared_ptr<const vnx::Value> _method, const vnx::request_id_t& _request_id) {
 	switch(_method->get_type_hash()) {
-		case 0x17f58f68bf83abc0ull: {
-			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_get_config_object>(_method);
-			auto _return_value = ::vnx::ModuleInterface_vnx_get_config_object_return::create();
-			_return_value->_ret_0 = vnx_get_config_object();
+		case 0x2f7fd18fad9a3f09ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_approve>(_method);
+			auto _return_value = ::mmx::exchange::Client_approve_return::create();
+			_return_value->_ret_0 = approve(_args->tx);
 			return _return_value;
 		}
-		case 0xbbc7f1a01044d294ull: {
-			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_get_config>(_method);
-			auto _return_value = ::vnx::ModuleInterface_vnx_get_config_return::create();
-			_return_value->_ret_0 = vnx_get_config(_args->name);
+		case 0xb5b1b0b6b4f7e8fbull: {
+			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_cancel_all>(_method);
+			auto _return_value = ::mmx::exchange::Client_cancel_all_return::create();
+			cancel_all();
 			return _return_value;
 		}
-		case 0xca30f814f17f322full: {
-			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_set_config_object>(_method);
-			auto _return_value = ::vnx::ModuleInterface_vnx_set_config_object_return::create();
-			vnx_set_config_object(_args->config);
-			return _return_value;
-		}
-		case 0x362aac91373958b7ull: {
-			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_set_config>(_method);
-			auto _return_value = ::vnx::ModuleInterface_vnx_set_config_return::create();
-			vnx_set_config(_args->name, _args->value);
-			return _return_value;
-		}
-		case 0x305ec4d628960e5dull: {
-			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_get_type_code>(_method);
-			auto _return_value = ::vnx::ModuleInterface_vnx_get_type_code_return::create();
-			_return_value->_ret_0 = vnx_get_type_code();
-			return _return_value;
-		}
-		case 0xf6d82bdf66d034a1ull: {
-			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_get_module_info>(_method);
-			auto _return_value = ::vnx::ModuleInterface_vnx_get_module_info_return::create();
-			_return_value->_ret_0 = vnx_get_module_info();
-			return _return_value;
-		}
-		case 0x9e95dc280cecca1bull: {
-			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_restart>(_method);
-			auto _return_value = ::vnx::ModuleInterface_vnx_restart_return::create();
-			vnx_restart();
-			return _return_value;
-		}
-		case 0x7ab49ce3d1bfc0d2ull: {
-			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_stop>(_method);
-			auto _return_value = ::vnx::ModuleInterface_vnx_stop_return::create();
-			vnx_stop();
-			return _return_value;
-		}
-		case 0x6ce3775b41a42697ull: {
-			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_self_test>(_method);
-			auto _return_value = ::vnx::ModuleInterface_vnx_self_test_return::create();
-			_return_value->_ret_0 = vnx_self_test();
-			return _return_value;
-		}
-		case 0x87045c0acdc1ecb1ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_get_servers>(_method);
-			auto _return_value = ::mmx::exchange::Client_get_servers_return::create();
-			_return_value->_ret_0 = get_servers();
+		case 0xf1fcc5da8000e71cull: {
+			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_cancel_offer>(_method);
+			auto _return_value = ::mmx::exchange::Client_cancel_offer_return::create();
+			cancel_offer(_args->id);
 			return _return_value;
 		}
 		case 0xa683dfd1653658acull: {
 			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_execute>(_method);
 			execute_async(_args->server, _args->wallet, _args->order, _request_id);
 			return nullptr;
-		}
-		case 0x5b38e7fda1090949ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_match>(_method);
-			match_async(_args->server, _args->order, _request_id);
-			return nullptr;
-		}
-		case 0xa448568c63c8bc5full: {
-			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_get_trade_pairs>(_method);
-			get_trade_pairs_async(_args->server, _request_id);
-			return nullptr;
-		}
-		case 0xe2be2ad61d7d7ddull: {
-			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_get_orders>(_method);
-			get_orders_async(_args->server, _args->pair, _args->limit, _request_id);
-			return nullptr;
-		}
-		case 0x9a38929545420919ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_get_trade_history>(_method);
-			get_trade_history_async(_args->server, _args->pair, _args->limit, _request_id);
-			return nullptr;
-		}
-		case 0xbdf64eb0607d08d1ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_get_price>(_method);
-			get_price_async(_args->server, _args->want, _args->have, _request_id);
-			return nullptr;
-		}
-		case 0x58211bd8f2a99ca1ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_get_min_trade>(_method);
-			get_min_trade_async(_args->server, _args->pair, _request_id);
-			return nullptr;
-		}
-		case 0xc10718307553c190ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_get_order>(_method);
-			auto _return_value = ::mmx::exchange::Client_get_order_return::create();
-			_return_value->_ret_0 = get_order(_args->key);
-			return _return_value;
-		}
-		case 0x849af91452f19e33ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_get_offer>(_method);
-			auto _return_value = ::mmx::exchange::Client_get_offer_return::create();
-			_return_value->_ret_0 = get_offer(_args->id);
-			return _return_value;
 		}
 		case 0x6a5cbb4ec8f30f60ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_get_all_offers>(_method);
@@ -692,17 +608,48 @@ std::shared_ptr<vnx::Value> ClientBase::vnx_call_switch(std::shared_ptr<const vn
 			_return_value->_ret_0 = get_local_history(_args->pair, _args->limit);
 			return _return_value;
 		}
-		case 0xf1fcc5da8000e71cull: {
-			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_cancel_offer>(_method);
-			auto _return_value = ::mmx::exchange::Client_cancel_offer_return::create();
-			cancel_offer(_args->id);
+		case 0x58211bd8f2a99ca1ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_get_min_trade>(_method);
+			get_min_trade_async(_args->server, _args->pair, _request_id);
+			return nullptr;
+		}
+		case 0x849af91452f19e33ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_get_offer>(_method);
+			auto _return_value = ::mmx::exchange::Client_get_offer_return::create();
+			_return_value->_ret_0 = get_offer(_args->id);
 			return _return_value;
 		}
-		case 0xb5b1b0b6b4f7e8fbull: {
-			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_cancel_all>(_method);
-			auto _return_value = ::mmx::exchange::Client_cancel_all_return::create();
-			cancel_all();
+		case 0xc10718307553c190ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_get_order>(_method);
+			auto _return_value = ::mmx::exchange::Client_get_order_return::create();
+			_return_value->_ret_0 = get_order(_args->key);
 			return _return_value;
+		}
+		case 0xe2be2ad61d7d7ddull: {
+			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_get_orders>(_method);
+			get_orders_async(_args->server, _args->pair, _args->limit, _request_id);
+			return nullptr;
+		}
+		case 0xbdf64eb0607d08d1ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_get_price>(_method);
+			get_price_async(_args->server, _args->want, _args->have, _request_id);
+			return nullptr;
+		}
+		case 0x87045c0acdc1ecb1ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_get_servers>(_method);
+			auto _return_value = ::mmx::exchange::Client_get_servers_return::create();
+			_return_value->_ret_0 = get_servers();
+			return _return_value;
+		}
+		case 0x9a38929545420919ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_get_trade_history>(_method);
+			get_trade_history_async(_args->server, _args->pair, _args->limit, _request_id);
+			return nullptr;
+		}
+		case 0xa448568c63c8bc5full: {
+			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_get_trade_pairs>(_method);
+			get_trade_pairs_async(_args->server, _request_id);
+			return nullptr;
 		}
 		case 0x9d3f5ba7b8309a30ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_make_offer>(_method);
@@ -716,16 +663,69 @@ std::shared_ptr<vnx::Value> ClientBase::vnx_call_switch(std::shared_ptr<const vn
 			_return_value->_ret_0 = make_trade(_args->wallet, _args->pair, _args->bid, _args->ask);
 			return _return_value;
 		}
+		case 0x5b38e7fda1090949ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_match>(_method);
+			match_async(_args->server, _args->order, _request_id);
+			return nullptr;
+		}
 		case 0xb32aebcb67327b40ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_place>(_method);
 			auto _return_value = ::mmx::exchange::Client_place_return::create();
 			place(_args->offer);
 			return _return_value;
 		}
-		case 0x2f7fd18fad9a3f09ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::exchange::Client_approve>(_method);
-			auto _return_value = ::mmx::exchange::Client_approve_return::create();
-			_return_value->_ret_0 = approve(_args->tx);
+		case 0xbbc7f1a01044d294ull: {
+			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_get_config>(_method);
+			auto _return_value = ::vnx::ModuleInterface_vnx_get_config_return::create();
+			_return_value->_ret_0 = vnx_get_config(_args->name);
+			return _return_value;
+		}
+		case 0x17f58f68bf83abc0ull: {
+			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_get_config_object>(_method);
+			auto _return_value = ::vnx::ModuleInterface_vnx_get_config_object_return::create();
+			_return_value->_ret_0 = vnx_get_config_object();
+			return _return_value;
+		}
+		case 0xf6d82bdf66d034a1ull: {
+			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_get_module_info>(_method);
+			auto _return_value = ::vnx::ModuleInterface_vnx_get_module_info_return::create();
+			_return_value->_ret_0 = vnx_get_module_info();
+			return _return_value;
+		}
+		case 0x305ec4d628960e5dull: {
+			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_get_type_code>(_method);
+			auto _return_value = ::vnx::ModuleInterface_vnx_get_type_code_return::create();
+			_return_value->_ret_0 = vnx_get_type_code();
+			return _return_value;
+		}
+		case 0x9e95dc280cecca1bull: {
+			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_restart>(_method);
+			auto _return_value = ::vnx::ModuleInterface_vnx_restart_return::create();
+			vnx_restart();
+			return _return_value;
+		}
+		case 0x6ce3775b41a42697ull: {
+			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_self_test>(_method);
+			auto _return_value = ::vnx::ModuleInterface_vnx_self_test_return::create();
+			_return_value->_ret_0 = vnx_self_test();
+			return _return_value;
+		}
+		case 0x362aac91373958b7ull: {
+			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_set_config>(_method);
+			auto _return_value = ::vnx::ModuleInterface_vnx_set_config_return::create();
+			vnx_set_config(_args->name, _args->value);
+			return _return_value;
+		}
+		case 0xca30f814f17f322full: {
+			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_set_config_object>(_method);
+			auto _return_value = ::vnx::ModuleInterface_vnx_set_config_object_return::create();
+			vnx_set_config_object(_args->config);
+			return _return_value;
+		}
+		case 0x7ab49ce3d1bfc0d2ull: {
+			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_stop>(_method);
+			auto _return_value = ::vnx::ModuleInterface_vnx_stop_return::create();
+			vnx_stop();
 			return _return_value;
 		}
 		case 0xe0b6c38f619bad92ull: {
