@@ -99,6 +99,23 @@ std::vector<tx_out_t> MultiSig::validate(std::shared_ptr<const Operation> operat
 	throw std::logic_error("invalid solution");
 }
 
+void MultiSig::add_owner(const addr_t& address)
+{
+	owners.push_back(address);
+}
+
+void MultiSig::rem_owner(const addr_t& address)
+{
+	while(true) {
+		auto iter = std::find(owners.begin(), owners.end(), address);
+		if(iter != owners.end()) {
+			owners.erase(iter);
+		} else {
+			break;
+		}
+	}
+}
+
 
 } // contract
 } // mmx

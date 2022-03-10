@@ -22,5 +22,9 @@ class MultiSig extends mmx.Contract {
 	
 	vector<mmx.tx_out_t> validate(mmx.Operation* operation, mmx.Context* context) const;
 	
+	void add_owner(addr_t address);
+	
+	void rem_owner(addr_t address);
+	
 }
 
