@@ -42,6 +42,8 @@ public:
 	virtual std::vector<::mmx::addr_t> get_dependency() const override;
 	virtual std::vector<::mmx::addr_t> get_parties() const override;
 	virtual std::vector<::mmx::tx_out_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
+	virtual void add_owner(const ::mmx::addr_t& address = ::mmx::addr_t());
+	virtual void rem_owner(const ::mmx::addr_t& address = ::mmx::addr_t());
 	
 	static std::shared_ptr<MultiSig> create();
 	std::shared_ptr<vnx::Value> clone() const override;

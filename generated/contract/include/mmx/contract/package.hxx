@@ -36,6 +36,8 @@ class Data_calc_hash;
 class Data_calc_hash_return;
 class Locked;
 class MultiSig;
+class MultiSig_add_owner;
+class MultiSig_add_owner_return;
 class MultiSig_calc_cost;
 class MultiSig_calc_cost_return;
 class MultiSig_calc_hash;
@@ -46,6 +48,8 @@ class MultiSig_get_parties;
 class MultiSig_get_parties_return;
 class MultiSig_is_valid;
 class MultiSig_is_valid_return;
+class MultiSig_rem_owner;
+class MultiSig_rem_owner_return;
 class MultiSig_validate;
 class MultiSig_validate_return;
 class NFT;
@@ -125,6 +129,8 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Data_
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Data_calc_hash_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Locked; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_add_owner; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_add_owner_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_calc_cost; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_calc_cost_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_calc_hash; ///< \private
@@ -135,6 +141,8 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Multi
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_get_parties_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_is_valid; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_is_valid_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_rem_owner; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_rem_owner_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_validate; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_validate_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_NFT; ///< \private
@@ -220,6 +228,8 @@ void read(TypeInput& in, ::mmx::contract::Data_calc_hash& value, const TypeCode*
 void read(TypeInput& in, ::mmx::contract::Data_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Locked& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::MultiSig_add_owner& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::MultiSig_add_owner_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -230,6 +240,8 @@ void read(TypeInput& in, ::mmx::contract::MultiSig_get_parties& value, const Typ
 void read(TypeInput& in, ::mmx::contract::MultiSig_get_parties_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::MultiSig_rem_owner& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::MultiSig_rem_owner_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::NFT& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -309,6 +321,8 @@ void write(TypeOutput& out, const ::mmx::contract::Data_calc_hash& value, const 
 void write(TypeOutput& out, const ::mmx::contract::Data_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Locked& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::MultiSig_add_owner& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::MultiSig_add_owner_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -319,6 +333,8 @@ void write(TypeOutput& out, const ::mmx::contract::MultiSig_get_parties& value, 
 void write(TypeOutput& out, const ::mmx::contract::MultiSig_get_parties_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::MultiSig_rem_owner& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::MultiSig_rem_owner_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::NFT& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -398,6 +414,8 @@ void read(std::istream& in, ::mmx::contract::Data_calc_hash& value); ///< \priva
 void read(std::istream& in, ::mmx::contract::Data_calc_hash_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Locked& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig& value); ///< \private
+void read(std::istream& in, ::mmx::contract::MultiSig_add_owner& value); ///< \private
+void read(std::istream& in, ::mmx::contract::MultiSig_add_owner_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig_calc_cost& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig_calc_cost_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig_calc_hash& value); ///< \private
@@ -408,6 +426,8 @@ void read(std::istream& in, ::mmx::contract::MultiSig_get_parties& value); ///< 
 void read(std::istream& in, ::mmx::contract::MultiSig_get_parties_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig_is_valid& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig_is_valid_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::MultiSig_rem_owner& value); ///< \private
+void read(std::istream& in, ::mmx::contract::MultiSig_rem_owner_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig_validate& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig_validate_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::NFT& value); ///< \private
@@ -487,6 +507,8 @@ void write(std::ostream& out, const ::mmx::contract::Data_calc_hash& value); ///
 void write(std::ostream& out, const ::mmx::contract::Data_calc_hash_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Locked& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::MultiSig_add_owner& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::MultiSig_add_owner_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig_calc_cost& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig_calc_cost_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig_calc_hash& value); ///< \private
@@ -497,6 +519,8 @@ void write(std::ostream& out, const ::mmx::contract::MultiSig_get_parties& value
 void write(std::ostream& out, const ::mmx::contract::MultiSig_get_parties_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig_is_valid& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig_is_valid_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::MultiSig_rem_owner& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::MultiSig_rem_owner_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig_validate& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig_validate_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::NFT& value); ///< \private
@@ -576,6 +600,8 @@ void accept(Visitor& visitor, const ::mmx::contract::Data_calc_hash& value); ///
 void accept(Visitor& visitor, const ::mmx::contract::Data_calc_hash_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Locked& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::MultiSig_add_owner& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::MultiSig_add_owner_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig_calc_cost& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig_calc_cost_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig_calc_hash& value); ///< \private
@@ -586,6 +612,8 @@ void accept(Visitor& visitor, const ::mmx::contract::MultiSig_get_parties& value
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig_get_parties_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig_is_valid& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig_is_valid_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::MultiSig_rem_owner& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::MultiSig_rem_owner_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig_validate& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig_validate_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::NFT& value); ///< \private
@@ -975,6 +1003,52 @@ struct type<::mmx::contract::MultiSig> {
 
 /// \private
 template<>
+struct type<::mmx::contract::MultiSig_add_owner> {
+	void read(TypeInput& in, ::mmx::contract::MultiSig_add_owner& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::MultiSig_add_owner& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::MultiSig_add_owner& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::MultiSig_add_owner& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::MultiSig_add_owner& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_add_owner& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::MultiSig_add_owner_return> {
+	void read(TypeInput& in, ::mmx::contract::MultiSig_add_owner_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::MultiSig_add_owner_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::MultiSig_add_owner_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::MultiSig_add_owner_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::MultiSig_add_owner_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_add_owner_return& value, bool special = false);
+};
+
+/// \private
+template<>
 struct type<::mmx::contract::MultiSig_calc_cost> {
 	void read(TypeInput& in, ::mmx::contract::MultiSig_calc_cost& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
@@ -1201,6 +1275,52 @@ struct type<::mmx::contract::MultiSig_is_valid_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_is_valid_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::MultiSig_rem_owner> {
+	void read(TypeInput& in, ::mmx::contract::MultiSig_rem_owner& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::MultiSig_rem_owner& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::MultiSig_rem_owner& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::MultiSig_rem_owner& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::MultiSig_rem_owner& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_rem_owner& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::MultiSig_rem_owner_return> {
+	void read(TypeInput& in, ::mmx::contract::MultiSig_rem_owner_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::MultiSig_rem_owner_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::MultiSig_rem_owner_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::MultiSig_rem_owner_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::MultiSig_rem_owner_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_rem_owner_return& value, bool special = false);
 };
 
 /// \private
