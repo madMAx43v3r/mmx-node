@@ -404,7 +404,9 @@ vnx::optional<tx_info_t> Node::get_tx_info(const hash_t& id) const
 			contracts.insert(entry.output.contract);
 		}
 		for(const auto& op : tx->execute) {
-			contracts.insert(op->address);
+			if(op) {
+				contracts.insert(op->address);
+			}
 		}
 		for(const auto& addr : contracts) {
 			if(auto contract = get_contract(addr)) {
@@ -659,7 +661,7 @@ bool Node::include_transaction(std::shared_ptr<const Transaction> tx)
 		}
 	}
 	for(const auto& op : tx->execute) {
-		if(light_address_set.count(op->address)) {
+		if(op && light_address_set.count(op->address)) {
 			return true;
 		}
 	}
