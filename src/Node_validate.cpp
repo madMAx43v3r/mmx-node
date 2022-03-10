@@ -206,7 +206,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 	}
 	for(const auto& op : tx->execute)
 	{
-		if(!op->is_valid()) {
+		if(!op || !op->is_valid()) {
 			throw std::logic_error("invalid operation");
 		}
 		if(auto contract = get_contract(op->address)) {
