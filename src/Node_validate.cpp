@@ -217,9 +217,6 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 					if(!ret) {
 						throw std::logic_error("no such method");
 					}
-					if(ret->get_num_fields()) {
-						throw std::logic_error("const method called");
-					}
 				} catch(const std::exception& ex) {
 					throw std::logic_error("mutate failed with: " + std::string(ex.what()));
 				}
