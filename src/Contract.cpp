@@ -44,6 +44,11 @@ vnx::optional<addr_t> Contract::get_owner() const {
 	return nullptr;
 }
 
+vnx::bool_t Contract::is_spendable(const utxo_t& utxo, std::shared_ptr<const Context> context) const
+{
+	return true;
+}
+
 std::vector<tx_out_t> Contract::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
 	throw std::logic_error("invalid operation");

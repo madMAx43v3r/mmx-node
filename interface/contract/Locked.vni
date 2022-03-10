@@ -1,5 +1,6 @@
 package mmx.contract;
 
+import mmx.hash_t;
 import mmx.addr_t;
 import mmx.Contract;
 
@@ -7,11 +8,25 @@ class Locked extends mmx.Contract {
 	
 	addr_t owner;
 	
-	Condition* condition;
+	optional<uint> chain_height;
+	
+	optional<uint> delta_height;
 	
 	
-//	bool is_valid() const;
+	bool is_valid() const;
 	
-//	hash_t calc_hash() const;
+	hash_t calc_hash() const;
+	
+	ulong calc_cost(mmx.ChainParams* params) const;
+	
+	vector<addr_t> get_dependency() const;
+	
+	vector<addr_t> get_parties() const;
+	
+	optional<addr_t> get_owner() const;
+	
+	bool is_spendable(mmx.utxo_t utxo, mmx.Context* context) const;
+	
+	vector<mmx.tx_out_t> validate(mmx.Operation* operation, mmx.Context* context) const;
 	
 }
