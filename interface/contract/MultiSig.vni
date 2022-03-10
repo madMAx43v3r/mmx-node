@@ -9,6 +9,8 @@ class MultiSig extends mmx.Contract {
 	
 	vector<addr_t> owners;
 	
+	static const uint MAX_OWNERS = 100;
+	
 	
 	bool is_valid() const;
 	

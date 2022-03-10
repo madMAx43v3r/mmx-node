@@ -15,8 +15,8 @@ namespace mmx {
 namespace contract {
 
 vnx::bool_t MultiSig::is_valid() const {
-	return Contract::is_valid() && num_required > 0
-			&& num_required <= solution::MultiSig::MAX_SIGNATURES && owners.size() >= num_required;
+	return Contract::is_valid() && num_required > 0 && owners.size() >= num_required
+			&& num_required <= solution::MultiSig::MAX_SIGNATURES && owners.size() <= MAX_OWNERS;
 }
 
 hash_t MultiSig::calc_hash() const
@@ -101,6 +101,9 @@ std::vector<tx_out_t> MultiSig::validate(std::shared_ptr<const Operation> operat
 
 void MultiSig::add_owner(const addr_t& address)
 {
+	if(owners.size() >= MAX_OWNERS) {
+		throw std::logic_error("MAX_OWNERS");
+	}
 	owners.push_back(address);
 }
 

@@ -49,6 +49,7 @@
 namespace mmx {
 namespace contract {
 
+const uint32_t MultiSig::MAX_OWNERS;
 
 const vnx::Hash64 MultiSig::VNX_TYPE_HASH(0x7d674c5f7297dedull);
 const vnx::Hash64 MultiSig::VNX_CODE_HASH(0x563474c79c6e72a6ull);

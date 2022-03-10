@@ -19,6 +19,7 @@ namespace contract {
 
 class MMX_CONTRACT_EXPORT MultiSig : public ::mmx::Contract {
 public:
+	static const uint32_t MAX_OWNERS = 100;
 	
 	uint32_t num_required = 0;
 	std::vector<::mmx::addr_t> owners;
