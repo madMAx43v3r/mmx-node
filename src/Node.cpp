@@ -166,14 +166,16 @@ void Node::main()
 						}
 					}
 					for(const auto& addr : affected) {
-						if(auto contract = get_contract(addr)) {
-							auto copy = vnx::clone(contract);
-							std::vector<vnx::Object> mutations;
-							mutate_log.find_range(std::make_pair(addr, 0), std::make_pair(addr, -1), mutations);
-							for(const auto& method : mutations) {
-								// TODO: update
+						if(auto tx = get_transaction(addr)) {
+							if(auto contract = tx->deploy) {
+								auto copy = vnx::clone(contract);
+								std::vector<vnx::Object> mutations;
+								mutate_log.find_range(std::make_pair(addr, 0), std::make_pair(addr, -1), mutations);
+								for(const auto& method : mutations) {
+									copy->vnx_call(vnx::clone(method));
+								}
+								contract_cache.insert(addr, copy);
 							}
-							contract_cache.insert(addr, copy);
 						}
 					}
 					log(INFO) << "Purged " << total << " mutate_log entries";
@@ -594,7 +596,7 @@ std::shared_ptr<const Contract> Node::get_contract(const addr_t& address) const
 					if(!copy) {
 						copy = vnx::clone(contract);
 					}
-					// TODO: update
+					copy->vnx_call(vnx::clone(op->method));
 				}
 			}
 		}
@@ -1243,7 +1245,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 				std::shared_ptr<const Contract> contract;
 				if(contract_cache.find(address, contract)) {
 					auto copy = vnx::clone(contract);
-					// TODO: mutate
+					copy->vnx_call(vnx::clone(op->method));
 					contract_cache.insert(address, copy);
 				}
 			}
