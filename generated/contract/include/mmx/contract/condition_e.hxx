@@ -14,7 +14,6 @@ namespace contract {
 struct MMX_CONTRACT_EXPORT condition_e {
 	
 	enum enum_t : uint32_t {
-		ADDR_AMOUNT = 3839664221l,
 		CHAIN_HEIGHT = 509533408l,
 		COND_AND = 3328292983l,
 		COND_OR = 3370524914l,

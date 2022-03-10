@@ -11,6 +11,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/tx_out_t.hxx>
+#include <mmx/utxo_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -40,6 +41,7 @@ public:
 	virtual std::vector<::mmx::addr_t> get_dependency() const;
 	virtual std::vector<::mmx::addr_t> get_parties() const;
 	virtual vnx::optional<::mmx::addr_t> get_owner() const;
+	virtual vnx::bool_t is_spendable(const ::mmx::utxo_t& utxo = ::mmx::utxo_t(), std::shared_ptr<const ::mmx::Context> context = nullptr) const;
 	virtual std::vector<::mmx::tx_out_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const;
 	
 	static std::shared_ptr<Contract> create();

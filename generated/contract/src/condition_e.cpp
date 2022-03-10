@@ -12,7 +12,7 @@ namespace contract {
 
 
 const vnx::Hash64 condition_e::VNX_TYPE_HASH(0xd11073d2e6a56dd6ull);
-const vnx::Hash64 condition_e::VNX_CODE_HASH(0x4599f905963c7298ull);
+const vnx::Hash64 condition_e::VNX_CODE_HASH(0xad32f61cf7641601ull);
 
 vnx::Hash64 condition_e::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -44,7 +44,6 @@ void condition_e::write(vnx::TypeOutput& _out, const vnx::TypeCode* _type_code, 
 
 vnx::bool_t condition_e::is_valid() const {
 	switch(value) {
-		case ADDR_AMOUNT: return true;
 		case CHAIN_HEIGHT: return true;
 		case COND_AND: return true;
 		case COND_OR: return true;
@@ -55,7 +54,6 @@ vnx::bool_t condition_e::is_valid() const {
 
 std::string condition_e::to_string() const {
 	switch(value) {
-		case ADDR_AMOUNT: return "\"ADDR_AMOUNT\"";
 		case CHAIN_HEIGHT: return "\"CHAIN_HEIGHT\"";
 		case COND_AND: return "\"COND_AND\"";
 		case COND_OR: return "\"COND_OR\"";
@@ -66,7 +64,6 @@ std::string condition_e::to_string() const {
 
 std::string condition_e::to_string_value() const {
 	switch(value) {
-		case ADDR_AMOUNT: return "ADDR_AMOUNT";
 		case CHAIN_HEIGHT: return "CHAIN_HEIGHT";
 		case COND_AND: return "COND_AND";
 		case COND_OR: return "COND_OR";
@@ -77,7 +74,6 @@ std::string condition_e::to_string_value() const {
 
 std::string condition_e::to_string_value_full() const {
 	switch(value) {
-		case ADDR_AMOUNT: return "mmx.contract.condition_e.ADDR_AMOUNT";
 		case CHAIN_HEIGHT: return "mmx.contract.condition_e.CHAIN_HEIGHT";
 		case COND_AND: return "mmx.contract.condition_e.COND_AND";
 		case COND_OR: return "mmx.contract.condition_e.COND_OR";
@@ -96,8 +92,7 @@ void condition_e::from_string_value(const std::string& _name) {
 	vnx::Variant var;
 	vnx::from_string_value(_name, var);
 	if(var.is_string()) {
-		if(_name == "ADDR_AMOUNT") value = ADDR_AMOUNT;
-		else if(_name == "CHAIN_HEIGHT") value = CHAIN_HEIGHT;
+		if(_name == "CHAIN_HEIGHT") value = CHAIN_HEIGHT;
 		else if(_name == "COND_AND") value = COND_AND;
 		else if(_name == "COND_OR") value = COND_OR;
 		else if(_name == "DELTA_HEIGHT") value = DELTA_HEIGHT;
@@ -110,7 +105,6 @@ void condition_e::from_string_value(const std::string& _name) {
 void condition_e::accept(vnx::Visitor& _visitor) const {
 	std::string _name;
 	switch(value) {
-		case ADDR_AMOUNT: _name = "ADDR_AMOUNT"; break;
 		case CHAIN_HEIGHT: _name = "CHAIN_HEIGHT"; break;
 		case COND_AND: _name = "COND_AND"; break;
 		case COND_OR: _name = "COND_OR"; break;
@@ -121,7 +115,6 @@ void condition_e::accept(vnx::Visitor& _visitor) const {
 
 void condition_e::write(std::ostream& _out) const {
 	switch(value) {
-		case ADDR_AMOUNT: _out << "\"ADDR_AMOUNT\""; break;
 		case CHAIN_HEIGHT: _out << "\"CHAIN_HEIGHT\""; break;
 		case COND_AND: _out << "\"COND_AND\""; break;
 		case COND_OR: _out << "\"COND_OR\""; break;
@@ -186,7 +179,7 @@ std::shared_ptr<vnx::TypeCode> condition_e::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.condition_e";
 	type_code->type_hash = vnx::Hash64(0xd11073d2e6a56dd6ull);
-	type_code->code_hash = vnx::Hash64(0x4599f905963c7298ull);
+	type_code->code_hash = vnx::Hash64(0xad32f61cf7641601ull);
 	type_code->is_native = true;
 	type_code->is_enum = true;
 	type_code->native_size = sizeof(::mmx::contract::condition_e);
@@ -198,7 +191,6 @@ std::shared_ptr<vnx::TypeCode> condition_e::static_create_type_code() {
 		field.name = "value";
 		field.code = {3};
 	}
-	type_code->enum_map[3839664221] = "ADDR_AMOUNT";
 	type_code->enum_map[509533408] = "CHAIN_HEIGHT";
 	type_code->enum_map[3328292983] = "COND_AND";
 	type_code->enum_map[3370524914] = "COND_OR";

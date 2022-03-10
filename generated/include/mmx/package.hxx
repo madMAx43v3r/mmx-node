@@ -51,6 +51,8 @@ class Contract_get_owner;
 class Contract_get_owner_return;
 class Contract_get_parties;
 class Contract_get_parties_return;
+class Contract_is_spendable;
+class Contract_is_spendable_return;
 class Contract_is_valid;
 class Contract_is_valid_return;
 class Contract_validate;
@@ -346,6 +348,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_get_o
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_get_owner_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_get_parties; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_get_parties_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_is_spendable; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_is_spendable_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_is_valid; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_is_valid_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_validate; ///< \private
@@ -639,6 +643,8 @@ void read(TypeInput& in, ::mmx::Contract_get_owner& value, const TypeCode* type_
 void read(TypeInput& in, ::mmx::Contract_get_owner_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Contract_get_parties& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Contract_get_parties_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Contract_is_spendable& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Contract_is_spendable_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Contract_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Contract_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Contract_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -934,6 +940,8 @@ void write(TypeOutput& out, const ::mmx::Contract_get_owner& value, const TypeCo
 void write(TypeOutput& out, const ::mmx::Contract_get_owner_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Contract_get_parties& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Contract_get_parties_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Contract_is_spendable& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Contract_is_spendable_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Contract_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Contract_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Contract_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1229,6 +1237,8 @@ void read(std::istream& in, ::mmx::Contract_get_owner& value); ///< \private
 void read(std::istream& in, ::mmx::Contract_get_owner_return& value); ///< \private
 void read(std::istream& in, ::mmx::Contract_get_parties& value); ///< \private
 void read(std::istream& in, ::mmx::Contract_get_parties_return& value); ///< \private
+void read(std::istream& in, ::mmx::Contract_is_spendable& value); ///< \private
+void read(std::istream& in, ::mmx::Contract_is_spendable_return& value); ///< \private
 void read(std::istream& in, ::mmx::Contract_is_valid& value); ///< \private
 void read(std::istream& in, ::mmx::Contract_is_valid_return& value); ///< \private
 void read(std::istream& in, ::mmx::Contract_validate& value); ///< \private
@@ -1524,6 +1534,8 @@ void write(std::ostream& out, const ::mmx::Contract_get_owner& value); ///< \pri
 void write(std::ostream& out, const ::mmx::Contract_get_owner_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Contract_get_parties& value); ///< \private
 void write(std::ostream& out, const ::mmx::Contract_get_parties_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Contract_is_spendable& value); ///< \private
+void write(std::ostream& out, const ::mmx::Contract_is_spendable_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Contract_is_valid& value); ///< \private
 void write(std::ostream& out, const ::mmx::Contract_is_valid_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Contract_validate& value); ///< \private
@@ -1819,6 +1831,8 @@ void accept(Visitor& visitor, const ::mmx::Contract_get_owner& value); ///< \pri
 void accept(Visitor& visitor, const ::mmx::Contract_get_owner_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Contract_get_parties& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Contract_get_parties_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Contract_is_spendable& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Contract_is_spendable_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Contract_is_valid& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Contract_is_valid_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Contract_validate& value); ///< \private
@@ -2772,6 +2786,52 @@ struct type<::mmx::Contract_get_parties_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Contract_get_parties_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Contract_is_spendable> {
+	void read(TypeInput& in, ::mmx::Contract_is_spendable& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Contract_is_spendable& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Contract_is_spendable& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Contract_is_spendable& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Contract_is_spendable& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Contract_is_spendable& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Contract_is_spendable_return> {
+	void read(TypeInput& in, ::mmx::Contract_is_spendable_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Contract_is_spendable_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Contract_is_spendable_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Contract_is_spendable_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Contract_is_spendable_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Contract_is_spendable_return& value, bool special = false);
 };
 
 /// \private

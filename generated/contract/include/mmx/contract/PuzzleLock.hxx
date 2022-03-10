@@ -67,14 +67,15 @@ protected:
 
 template<typename T>
 void PuzzleLock::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<PuzzleLock>(6);
+	_visitor.template type_begin<PuzzleLock>(7);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("owner", 1); _visitor.accept(owner);
-	_visitor.type_field("condition", 2); _visitor.accept(condition);
-	_visitor.type_field("puzzle", 3); _visitor.accept(puzzle);
-	_visitor.type_field("target", 4); _visitor.accept(target);
-	_visitor.type_field("currency", 5); _visitor.accept(currency);
-	_visitor.template type_end<PuzzleLock>(6);
+	_visitor.type_field("chain_height", 2); _visitor.accept(chain_height);
+	_visitor.type_field("delta_height", 3); _visitor.accept(delta_height);
+	_visitor.type_field("puzzle", 4); _visitor.accept(puzzle);
+	_visitor.type_field("target", 5); _visitor.accept(target);
+	_visitor.type_field("currency", 6); _visitor.accept(currency);
+	_visitor.template type_end<PuzzleLock>(7);
 }
 
 
