@@ -210,6 +210,20 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 			throw std::logic_error("invalid operation");
 		}
 		if(auto contract = get_contract(op->address)) {
+			if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op)) {
+				auto copy = vnx::clone(contract);
+				try {
+					auto ret = copy->vnx_call(vnx::clone(mutate->method));
+					if(!ret) {
+						throw std::logic_error("no such method");
+					}
+					if(ret->get_num_fields()) {
+						throw std::logic_error("const method called");
+					}
+				} catch(const std::exception& ex) {
+					throw std::logic_error("mutate failed with: " + std::string(ex.what()));
+				}
+			}
 			const auto outputs = contract->validate(op, create_context(op->address, contract, context, tx));
 			exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
 		} else {
