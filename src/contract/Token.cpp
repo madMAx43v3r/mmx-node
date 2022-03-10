@@ -104,6 +104,11 @@ std::vector<tx_out_t> Token::validate(std::shared_ptr<const Operation> operation
 	return {};
 }
 
+void Token::transfer(const vnx::optional<addr_t>& new_owner)
+{
+	owner = new_owner;
+}
+
 
 } // contract
 } // mmx
