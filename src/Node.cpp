@@ -1245,7 +1245,12 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 				mutate_log.insert(std::make_pair(address, block->height), op->method);
 
 				std::shared_ptr<const Contract> contract;
-				if(contract_cache.find(address, contract)) {
+				if(!contract_cache.find(address, contract)) {
+					if(auto tx = get_transaction(address)) {
+						contract = tx->deploy;
+					}
+				}
+				if(contract) {
 					auto copy = vnx::clone(contract);
 					copy->vnx_call(vnx::clone(op->method));
 					contract_cache.insert(address, copy);
