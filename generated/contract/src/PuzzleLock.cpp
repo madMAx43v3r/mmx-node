@@ -49,7 +49,7 @@ namespace contract {
 
 
 const vnx::Hash64 PuzzleLock::VNX_TYPE_HASH(0xf33097b29a62c755ull);
-const vnx::Hash64 PuzzleLock::VNX_CODE_HASH(0x8141d912938f8c59ull);
+const vnx::Hash64 PuzzleLock::VNX_CODE_HASH(0xab27c6539a99ea14ull);
 
 vnx::Hash64 PuzzleLock::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -88,7 +88,6 @@ void PuzzleLock::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, delta_height);
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, puzzle);
 	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, target);
-	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, currency);
 	_visitor.type_end(*_type_code);
 }
 
@@ -100,7 +99,6 @@ void PuzzleLock::write(std::ostream& _out) const {
 	_out << ", \"delta_height\": "; vnx::write(_out, delta_height);
 	_out << ", \"puzzle\": "; vnx::write(_out, puzzle);
 	_out << ", \"target\": "; vnx::write(_out, target);
-	_out << ", \"currency\": "; vnx::write(_out, currency);
 	_out << "}";
 }
 
@@ -119,7 +117,6 @@ vnx::Object PuzzleLock::to_object() const {
 	_object["delta_height"] = delta_height;
 	_object["puzzle"] = puzzle;
 	_object["target"] = target;
-	_object["currency"] = currency;
 	return _object;
 }
 
@@ -127,8 +124,6 @@ void PuzzleLock::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "chain_height") {
 			_entry.second.to(chain_height);
-		} else if(_entry.first == "currency") {
-			_entry.second.to(currency);
 		} else if(_entry.first == "delta_height") {
 			_entry.second.to(delta_height);
 		} else if(_entry.first == "owner") {
@@ -162,9 +157,6 @@ vnx::Variant PuzzleLock::get_field(const std::string& _name) const {
 	if(_name == "target") {
 		return vnx::Variant(target);
 	}
-	if(_name == "currency") {
-		return vnx::Variant(currency);
-	}
 	return vnx::Variant();
 }
 
@@ -181,8 +173,6 @@ void PuzzleLock::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(puzzle);
 	} else if(_name == "target") {
 		_value.to(target);
-	} else if(_name == "currency") {
-		_value.to(currency);
 	}
 }
 
@@ -210,7 +200,7 @@ std::shared_ptr<vnx::TypeCode> PuzzleLock::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.PuzzleLock";
 	type_code->type_hash = vnx::Hash64(0xf33097b29a62c755ull);
-	type_code->code_hash = vnx::Hash64(0x8141d912938f8c59ull);
+	type_code->code_hash = vnx::Hash64(0xab27c6539a99ea14ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::PuzzleLock);
@@ -235,7 +225,7 @@ std::shared_ptr<vnx::TypeCode> PuzzleLock::static_create_type_code() {
 	type_code->methods[13] = ::mmx::contract::Locked_is_spendable::static_get_type_code();
 	type_code->methods[14] = ::mmx::contract::Locked_is_valid::static_get_type_code();
 	type_code->methods[15] = ::mmx::contract::Locked_validate::static_get_type_code();
-	type_code->fields.resize(7);
+	type_code->fields.resize(6);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -271,12 +261,6 @@ std::shared_ptr<vnx::TypeCode> PuzzleLock::static_create_type_code() {
 		field.is_extended = true;
 		field.name = "target";
 		field.code = {11, 32, 1};
-	}
-	{
-		auto& field = type_code->fields[6];
-		field.is_extended = true;
-		field.name = "currency";
-		field.code = {33, 11, 32, 1};
 	}
 	type_code->build();
 	return type_code;
@@ -434,7 +418,6 @@ void read(TypeInput& in, ::mmx::contract::PuzzleLock& value, const TypeCode* typ
 			case 3: vnx::read(in, value.delta_height, type_code, _field->code.data()); break;
 			case 4: vnx::read(in, value.puzzle, type_code, _field->code.data()); break;
 			case 5: vnx::read(in, value.target, type_code, _field->code.data()); break;
-			case 6: vnx::read(in, value.currency, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -460,7 +443,6 @@ void write(TypeOutput& out, const ::mmx::contract::PuzzleLock& value, const Type
 	vnx::write(out, value.delta_height, type_code, type_code->fields[3].code.data());
 	vnx::write(out, value.puzzle, type_code, type_code->fields[4].code.data());
 	vnx::write(out, value.target, type_code, type_code->fields[5].code.data());
-	vnx::write(out, value.currency, type_code, type_code->fields[6].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::PuzzleLock& value) {
