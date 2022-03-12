@@ -43,6 +43,8 @@ protected:
 
 	hash_t deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, const spend_options_t& options) const override;
 
+	hash_t execute(const uint32_t& index, const addr_t& address, const vnx::Object& method, const spend_options_t& options) const override;
+
 	std::shared_ptr<const Transaction>
 	complete(const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const;
 

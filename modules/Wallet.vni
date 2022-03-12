@@ -33,6 +33,9 @@ module Wallet implements vnx.addons.HttpComponent {
 	hash_t deploy(uint index, Contract* contract, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
+	hash_t execute(uint index, addr_t address, vnx.Object method, spend_options_t options) const;
+	
+	@Permission(permission_e.SPENDING)
 	optional<hash_t> split(uint index, ulong max_amount, addr_t currency, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)

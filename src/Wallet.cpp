@@ -10,6 +10,7 @@
 #include <mmx/utxo_entry_t.hpp>
 #include <mmx/stxo_entry_t.hpp>
 #include <mmx/contract/Token.hxx>
+#include <mmx/operation/Mutate.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/utils.h>
 
@@ -200,6 +201,39 @@ hash_t Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> con
 	send_off(index, tx);
 
 	log(INFO) << "Deployed " << contract->get_type_name() << " with fee " << tx->calc_cost(params) << " as " << addr_t(tx->id) << " (" << tx->id << ")";
+	return tx->id;
+}
+
+hash_t Wallet::execute(const uint32_t& index, const addr_t& address, const vnx::Object& method, const spend_options_t& options) const
+{
+	auto contract = node->get_contract(address);
+	if(!contract) {
+		throw std::logic_error("no such contract");
+	}
+	auto owner = contract->get_owner();
+	if(!owner) {
+		throw std::logic_error("contract has no owner");
+	}
+	const auto wallet = get_wallet(index);
+	get_utxo_list(index);	// update utxo_cache
+
+	auto op = operation::Mutate::create();
+	op->address = address;
+	op->method = method;
+
+	auto tx = Transaction::create();
+	tx->execute.push_back(op);
+
+	if(wallet->find_address(*owner) < 0) {
+		throw std::logic_error("contract not owned by wallet");
+	}
+	std::unordered_map<addr_t, addr_t> owner_map;
+	owner_map.emplace(address, *owner);
+
+	wallet->complete(tx, wallet->utxo_cache, options, owner_map);
+	send_off(index, tx);
+
+	log(INFO) << "Executed " << method["__type"] << " on [" << address << "] with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
 	return tx->id;
 }
 
