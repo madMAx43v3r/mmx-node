@@ -132,10 +132,15 @@ hash_t Wallet::mint(const uint32_t& index, const uint64_t& amount, const addr_t&
 	if(!token->owner) {
 		throw std::logic_error("token has no owner");
 	}
+	const auto owner = *token->owner;
+
 	const auto wallet = get_wallet(index);
 	get_utxo_list(index);	// update utxo_cache
 
-	auto tx = wallet->mint(amount, dst_addr, currency, *token->owner, options);
+	if(wallet->find_address(owner) < 0) {
+		throw std::logic_error("token not owned by wallet");
+	}
+	auto tx = wallet->mint(amount, dst_addr, currency, owner, options);
 	send_off(index, tx);
 
 	log(INFO) << "Minted " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
