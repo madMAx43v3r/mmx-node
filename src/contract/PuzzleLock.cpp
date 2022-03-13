@@ -37,7 +37,8 @@ hash_t PuzzleLock::calc_hash() const
 	return hash_t(buffer);
 }
 
-uint64_t PuzzleLock::calc_cost(std::shared_ptr<const ChainParams> params) const {
+uint64_t PuzzleLock::calc_cost(std::shared_ptr<const ChainParams> params) const
+{
 	return Locked::calc_cost() + (puzzle ? puzzle->calc_cost(params) : 0) + 32 * params->min_txfee_byte;
 }
 
