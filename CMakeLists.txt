@@ -73,8 +73,10 @@ add_library(mmx_iface SHARED
 	src/contract/Token.cpp
 	src/contract/Staking.cpp
 	src/contract/Locked.cpp
+	src/contract/PuzzleLock.cpp
 	src/solution/PubKey.cpp
 	src/solution/MultiSig.cpp
+	src/solution/PuzzleLock.cpp
 	src/operation/Mint.cpp
 	src/operation/Spend.cpp
 	src/operation/Mutate.cpp
