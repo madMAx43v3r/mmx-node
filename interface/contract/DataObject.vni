@@ -28,6 +28,8 @@ class DataObject extends mmx.Contract {
 	
 	vector<mmx.tx_out_t> validate(mmx.Operation* operation, mmx.Context* context) const;
 	
+	void transfer(optional<addr_t> new_owner);
+	
 	void set(string key, vnx.Variant value);
 	
 	void erase(string key);

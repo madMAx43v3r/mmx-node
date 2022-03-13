@@ -83,6 +83,11 @@ std::vector<tx_out_t> DataObject::validate(std::shared_ptr<const Operation> oper
 	return {};
 }
 
+void DataObject::transfer(const vnx::optional<addr_t>& new_owner)
+{
+	owner = new_owner;
+}
+
 void DataObject::set(const std::string& key, const vnx::Variant& value)
 {
 	data[key] = value;

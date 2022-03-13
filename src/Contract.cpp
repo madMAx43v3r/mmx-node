@@ -54,5 +54,10 @@ std::vector<tx_out_t> Contract::validate(std::shared_ptr<const Operation> operat
 	throw std::logic_error("invalid operation");
 }
 
+void Contract::transfer(const vnx::optional<addr_t>& new_owner)
+{
+	throw std::logic_error("invalid operation");
+}
+
 
 } // mmx

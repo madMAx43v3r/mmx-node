@@ -20,14 +20,58 @@ hash_t Data::calc_hash() const
 
 	write_bytes(out, get_type_hash());
 	write_bytes(out, version);
-	write_bytes(out, payload);
+	write_bytes(out, owner);
+	write_bytes(out, data);
 	out.flush();
 
 	return hash_t(buffer);
 }
 
 uint64_t Data::calc_cost(std::shared_ptr<const ChainParams> params) const {
-	return (8 + 4 + payload.size()) * params->min_txfee_byte;
+	return (8 + 4 + (owner ? 32 : 0) + data.size()) * params->min_txfee_byte;
+}
+
+std::vector<addr_t> Data::get_dependency() const {
+	if(owner) {
+		return {*owner};
+	}
+	return {};
+}
+
+std::vector<addr_t> Data::get_parties() const {
+	if(owner) {
+		return {*owner};
+	}
+	return {};
+}
+
+vnx::optional<addr_t> Data::get_owner() const {
+	return owner;
+}
+
+std::vector<tx_out_t> Data::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
+{
+	if(!owner) {
+		throw std::logic_error("!owner");
+	}
+	{
+		auto iter = context->depends.find(*owner);
+		if(iter == context->depends.end()) {
+			throw std::logic_error("missing dependency");
+		}
+		iter->second->validate(operation, context);
+	}
+	return {};
+}
+
+void Data::transfer(const vnx::optional<addr_t>& new_owner)
+{
+	owner = new_owner;
+}
+
+void Data::set(const vnx::Variant& value)
+{
+	data = value;
 }
 
 

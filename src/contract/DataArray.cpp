@@ -25,6 +25,7 @@ hash_t DataArray::calc_hash() const
 
 	write_bytes(out, get_type_hash());
 	write_bytes(out, version);
+	write_bytes(out, owner);
 	for(const auto& elem : array) {
 		write_bytes(out, elem);
 	}
@@ -44,7 +45,45 @@ uint64_t DataArray::num_bytes() const
 
 uint64_t DataArray::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	return (8 + 4 + num_bytes()) * params->min_txfee_byte;
+	return (8 + 4 + (owner ? 32 : 0) + num_bytes()) * params->min_txfee_byte;
+}
+
+std::vector<addr_t> DataArray::get_dependency() const {
+	if(owner) {
+		return {*owner};
+	}
+	return {};
+}
+
+std::vector<addr_t> DataArray::get_parties() const {
+	if(owner) {
+		return {*owner};
+	}
+	return {};
+}
+
+vnx::optional<addr_t> DataArray::get_owner() const {
+	return owner;
+}
+
+std::vector<tx_out_t> DataArray::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
+{
+	if(!owner) {
+		throw std::logic_error("!owner");
+	}
+	{
+		auto iter = context->depends.find(*owner);
+		if(iter == context->depends.end()) {
+			throw std::logic_error("missing dependency");
+		}
+		iter->second->validate(operation, context);
+	}
+	return {};
+}
+
+void DataArray::transfer(const vnx::optional<addr_t>& new_owner)
+{
+	owner = new_owner;
 }
 
 void DataArray::append(const vnx::Variant& data)
