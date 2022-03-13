@@ -7,6 +7,5 @@ enum condition_e {
 	
 	CHAIN_HEIGHT,					// absolute height
 	DELTA_HEIGHT,					// relative time delay
-	ADDR_AMOUNT,					// absolute address amount
 	
 }
