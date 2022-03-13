@@ -7,6 +7,9 @@
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/solution/PubKey_is_valid.hxx>
 #include <mmx/solution/PubKey_is_valid_return.hxx>
+#include <mmx/solution/PuzzleLock.hxx>
+#include <mmx/solution/PuzzleLock_is_valid.hxx>
+#include <mmx/solution/PuzzleLock_is_valid_return.hxx>
 
 #include <mmx/solution/package.hxx>
 #include <vnx/vnx.h>
@@ -87,6 +90,42 @@ void type<::mmx::solution::PubKey_is_valid_return>::create_dynamic_code(std::vec
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::solution::PuzzleLock>::get_type_code() {
+	return mmx::solution::vnx_native_type_code_PuzzleLock;
+}
+
+void type<::mmx::solution::PuzzleLock>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::solution::PuzzleLock());
+}
+
+void type<::mmx::solution::PuzzleLock>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::PuzzleLock& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::solution::PuzzleLock_is_valid>::get_type_code() {
+	return mmx::solution::vnx_native_type_code_PuzzleLock_is_valid;
+}
+
+void type<::mmx::solution::PuzzleLock_is_valid>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::solution::PuzzleLock_is_valid());
+}
+
+void type<::mmx::solution::PuzzleLock_is_valid>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::PuzzleLock_is_valid& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::solution::PuzzleLock_is_valid_return>::get_type_code() {
+	return mmx::solution::vnx_native_type_code_PuzzleLock_is_valid_return;
+}
+
+void type<::mmx::solution::PuzzleLock_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::solution::PuzzleLock_is_valid_return());
+}
+
+void type<::mmx::solution::PuzzleLock_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::PuzzleLock_is_valid_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 
 } // namespace vnx
 
@@ -102,6 +141,9 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::solution::PubKey::static_create_type_code());
 	vnx::register_type_code(::mmx::solution::PubKey_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::solution::PubKey_is_valid_return::static_create_type_code());
+	vnx::register_type_code(::mmx::solution::PuzzleLock::static_create_type_code());
+	vnx::register_type_code(::mmx::solution::PuzzleLock_is_valid::static_create_type_code());
+	vnx::register_type_code(::mmx::solution::PuzzleLock_is_valid_return::static_create_type_code());
 }
 
 static struct vnx_static_init {
@@ -116,6 +158,9 @@ const vnx::TypeCode* const vnx_native_type_code_MultiSig_is_valid_return = vnx::
 const vnx::TypeCode* const vnx_native_type_code_PubKey = vnx::get_type_code(vnx::Hash64(0xe47af6fcacfcefa5ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_is_valid = vnx::get_type_code(vnx::Hash64(0x7fd0e49a6760a40aull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_is_valid_return = vnx::get_type_code(vnx::Hash64(0xf9ef9f0cf08f3d6eull));
+const vnx::TypeCode* const vnx_native_type_code_PuzzleLock = vnx::get_type_code(vnx::Hash64(0x7f4b6db1893deaecull));
+const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_is_valid = vnx::get_type_code(vnx::Hash64(0x9dc0e52cbf11031dull));
+const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_is_valid_return = vnx::get_type_code(vnx::Hash64(0xfd59cd6e1a9c1d1bull));
 
 } // namespace mmx
 } // namespace solution

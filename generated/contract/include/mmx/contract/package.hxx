@@ -84,6 +84,16 @@ class PubKey_is_valid_return;
 class PubKey_validate;
 class PubKey_validate_return;
 class PuzzleLock;
+class PuzzleLock_calc_cost;
+class PuzzleLock_calc_cost_return;
+class PuzzleLock_calc_hash;
+class PuzzleLock_calc_hash_return;
+class PuzzleLock_get_parties;
+class PuzzleLock_get_parties_return;
+class PuzzleLock_is_valid;
+class PuzzleLock_is_valid_return;
+class PuzzleLock_validate;
+class PuzzleLock_validate_return;
 class Staking;
 class Staking_calc_cost;
 class Staking_calc_cost_return;
@@ -188,6 +198,16 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKe
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey_validate; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey_validate_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PuzzleLock; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_calc_cost; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_calc_cost_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_calc_hash; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_calc_hash_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_get_parties; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_get_parties_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_is_valid; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_is_valid_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_validate; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_validate_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Staking; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Staking_calc_cost; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Staking_calc_cost_return; ///< \private
@@ -298,6 +318,16 @@ void read(TypeInput& in, ::mmx::contract::PubKey_is_valid_return& value, const T
 void read(TypeInput& in, ::mmx::contract::PubKey_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::PubKey_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::PuzzleLock& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::PuzzleLock_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::PuzzleLock_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::PuzzleLock_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::PuzzleLock_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::PuzzleLock_get_parties& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::PuzzleLock_get_parties_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::PuzzleLock_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::PuzzleLock_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::PuzzleLock_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::PuzzleLock_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Staking& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Staking_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Staking_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -402,6 +432,16 @@ void write(TypeOutput& out, const ::mmx::contract::PubKey_is_valid_return& value
 void write(TypeOutput& out, const ::mmx::contract::PubKey_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::PubKey_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::PuzzleLock& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::PuzzleLock_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::PuzzleLock_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::PuzzleLock_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::PuzzleLock_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::PuzzleLock_get_parties& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::PuzzleLock_get_parties_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::PuzzleLock_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::PuzzleLock_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::PuzzleLock_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::PuzzleLock_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Staking& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Staking_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Staking_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -506,6 +546,16 @@ void read(std::istream& in, ::mmx::contract::PubKey_is_valid_return& value); ///
 void read(std::istream& in, ::mmx::contract::PubKey_validate& value); ///< \private
 void read(std::istream& in, ::mmx::contract::PubKey_validate_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::PuzzleLock& value); ///< \private
+void read(std::istream& in, ::mmx::contract::PuzzleLock_calc_cost& value); ///< \private
+void read(std::istream& in, ::mmx::contract::PuzzleLock_calc_cost_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::PuzzleLock_calc_hash& value); ///< \private
+void read(std::istream& in, ::mmx::contract::PuzzleLock_calc_hash_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::PuzzleLock_get_parties& value); ///< \private
+void read(std::istream& in, ::mmx::contract::PuzzleLock_get_parties_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::PuzzleLock_is_valid& value); ///< \private
+void read(std::istream& in, ::mmx::contract::PuzzleLock_is_valid_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::PuzzleLock_validate& value); ///< \private
+void read(std::istream& in, ::mmx::contract::PuzzleLock_validate_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Staking& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Staking_calc_cost& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Staking_calc_cost_return& value); ///< \private
@@ -610,6 +660,16 @@ void write(std::ostream& out, const ::mmx::contract::PubKey_is_valid_return& val
 void write(std::ostream& out, const ::mmx::contract::PubKey_validate& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::PubKey_validate_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::PuzzleLock& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::PuzzleLock_calc_cost& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::PuzzleLock_calc_cost_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::PuzzleLock_calc_hash& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::PuzzleLock_calc_hash_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::PuzzleLock_get_parties& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::PuzzleLock_get_parties_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::PuzzleLock_is_valid& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::PuzzleLock_is_valid_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::PuzzleLock_validate& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::PuzzleLock_validate_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Staking& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Staking_calc_cost& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Staking_calc_cost_return& value); ///< \private
@@ -714,6 +774,16 @@ void accept(Visitor& visitor, const ::mmx::contract::PubKey_is_valid_return& val
 void accept(Visitor& visitor, const ::mmx::contract::PubKey_validate& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::PubKey_validate_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::PuzzleLock& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::PuzzleLock_calc_cost& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::PuzzleLock_calc_cost_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::PuzzleLock_calc_hash& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::PuzzleLock_calc_hash_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::PuzzleLock_get_parties& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::PuzzleLock_get_parties_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::PuzzleLock_is_valid& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::PuzzleLock_is_valid_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::PuzzleLock_validate& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::PuzzleLock_validate_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Staking& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Staking_calc_cost& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Staking_calc_cost_return& value); ///< \private
@@ -2180,6 +2250,236 @@ struct type<::mmx::contract::PuzzleLock> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::PuzzleLock_calc_cost> {
+	void read(TypeInput& in, ::mmx::contract::PuzzleLock_calc_cost& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::PuzzleLock_calc_cost& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::PuzzleLock_calc_cost& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::PuzzleLock_calc_cost& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::PuzzleLock_calc_cost& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock_calc_cost& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::PuzzleLock_calc_cost_return> {
+	void read(TypeInput& in, ::mmx::contract::PuzzleLock_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::PuzzleLock_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::PuzzleLock_calc_cost_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::PuzzleLock_calc_cost_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::PuzzleLock_calc_cost_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock_calc_cost_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::PuzzleLock_calc_hash> {
+	void read(TypeInput& in, ::mmx::contract::PuzzleLock_calc_hash& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::PuzzleLock_calc_hash& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::PuzzleLock_calc_hash& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::PuzzleLock_calc_hash& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::PuzzleLock_calc_hash& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock_calc_hash& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::PuzzleLock_calc_hash_return> {
+	void read(TypeInput& in, ::mmx::contract::PuzzleLock_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::PuzzleLock_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::PuzzleLock_calc_hash_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::PuzzleLock_calc_hash_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::PuzzleLock_calc_hash_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock_calc_hash_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::PuzzleLock_get_parties> {
+	void read(TypeInput& in, ::mmx::contract::PuzzleLock_get_parties& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::PuzzleLock_get_parties& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::PuzzleLock_get_parties& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::PuzzleLock_get_parties& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::PuzzleLock_get_parties& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock_get_parties& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::PuzzleLock_get_parties_return> {
+	void read(TypeInput& in, ::mmx::contract::PuzzleLock_get_parties_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::PuzzleLock_get_parties_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::PuzzleLock_get_parties_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::PuzzleLock_get_parties_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::PuzzleLock_get_parties_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock_get_parties_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::PuzzleLock_is_valid> {
+	void read(TypeInput& in, ::mmx::contract::PuzzleLock_is_valid& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::PuzzleLock_is_valid& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::PuzzleLock_is_valid& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::PuzzleLock_is_valid& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::PuzzleLock_is_valid& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock_is_valid& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::PuzzleLock_is_valid_return> {
+	void read(TypeInput& in, ::mmx::contract::PuzzleLock_is_valid_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::PuzzleLock_is_valid_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::PuzzleLock_is_valid_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::PuzzleLock_is_valid_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::PuzzleLock_is_valid_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock_is_valid_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::PuzzleLock_validate> {
+	void read(TypeInput& in, ::mmx::contract::PuzzleLock_validate& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::PuzzleLock_validate& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::PuzzleLock_validate& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::PuzzleLock_validate& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::PuzzleLock_validate& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock_validate& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::PuzzleLock_validate_return> {
+	void read(TypeInput& in, ::mmx::contract::PuzzleLock_validate_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::PuzzleLock_validate_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::PuzzleLock_validate_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::PuzzleLock_validate_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::PuzzleLock_validate_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock_validate_return& value, bool special = false);
 };
 
 /// \private

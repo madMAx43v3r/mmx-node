@@ -63,6 +63,16 @@
 #include <mmx/contract/PubKey_validate.hxx>
 #include <mmx/contract/PubKey_validate_return.hxx>
 #include <mmx/contract/PuzzleLock.hxx>
+#include <mmx/contract/PuzzleLock_calc_cost.hxx>
+#include <mmx/contract/PuzzleLock_calc_cost_return.hxx>
+#include <mmx/contract/PuzzleLock_calc_hash.hxx>
+#include <mmx/contract/PuzzleLock_calc_hash_return.hxx>
+#include <mmx/contract/PuzzleLock_get_parties.hxx>
+#include <mmx/contract/PuzzleLock_get_parties_return.hxx>
+#include <mmx/contract/PuzzleLock_is_valid.hxx>
+#include <mmx/contract/PuzzleLock_is_valid_return.hxx>
+#include <mmx/contract/PuzzleLock_validate.hxx>
+#include <mmx/contract/PuzzleLock_validate_return.hxx>
 #include <mmx/contract/Staking.hxx>
 #include <mmx/contract/Staking_calc_cost.hxx>
 #include <mmx/contract/Staking_calc_cost_return.hxx>
@@ -856,6 +866,126 @@ void type<::mmx::contract::PuzzleLock>::create_dynamic_code(std::vector<uint16_t
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::contract::PuzzleLock_calc_cost>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PuzzleLock_calc_cost;
+}
+
+void type<::mmx::contract::PuzzleLock_calc_cost>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PuzzleLock_calc_cost());
+}
+
+void type<::mmx::contract::PuzzleLock_calc_cost>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock_calc_cost& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PuzzleLock_calc_cost_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PuzzleLock_calc_cost_return;
+}
+
+void type<::mmx::contract::PuzzleLock_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PuzzleLock_calc_cost_return());
+}
+
+void type<::mmx::contract::PuzzleLock_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock_calc_cost_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PuzzleLock_calc_hash>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PuzzleLock_calc_hash;
+}
+
+void type<::mmx::contract::PuzzleLock_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PuzzleLock_calc_hash());
+}
+
+void type<::mmx::contract::PuzzleLock_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock_calc_hash& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PuzzleLock_calc_hash_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PuzzleLock_calc_hash_return;
+}
+
+void type<::mmx::contract::PuzzleLock_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PuzzleLock_calc_hash_return());
+}
+
+void type<::mmx::contract::PuzzleLock_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock_calc_hash_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PuzzleLock_get_parties>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PuzzleLock_get_parties;
+}
+
+void type<::mmx::contract::PuzzleLock_get_parties>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PuzzleLock_get_parties());
+}
+
+void type<::mmx::contract::PuzzleLock_get_parties>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock_get_parties& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PuzzleLock_get_parties_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PuzzleLock_get_parties_return;
+}
+
+void type<::mmx::contract::PuzzleLock_get_parties_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PuzzleLock_get_parties_return());
+}
+
+void type<::mmx::contract::PuzzleLock_get_parties_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock_get_parties_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PuzzleLock_is_valid>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PuzzleLock_is_valid;
+}
+
+void type<::mmx::contract::PuzzleLock_is_valid>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PuzzleLock_is_valid());
+}
+
+void type<::mmx::contract::PuzzleLock_is_valid>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock_is_valid& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PuzzleLock_is_valid_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PuzzleLock_is_valid_return;
+}
+
+void type<::mmx::contract::PuzzleLock_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PuzzleLock_is_valid_return());
+}
+
+void type<::mmx::contract::PuzzleLock_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock_is_valid_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PuzzleLock_validate>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PuzzleLock_validate;
+}
+
+void type<::mmx::contract::PuzzleLock_validate>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PuzzleLock_validate());
+}
+
+void type<::mmx::contract::PuzzleLock_validate>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock_validate& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PuzzleLock_validate_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PuzzleLock_validate_return;
+}
+
+void type<::mmx::contract::PuzzleLock_validate_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PuzzleLock_validate_return());
+}
+
+void type<::mmx::contract::PuzzleLock_validate_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock_validate_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::contract::Staking>::get_type_code() {
 	return mmx::contract::vnx_native_type_code_Staking;
 }
@@ -1427,6 +1557,16 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::PubKey_validate::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey_validate_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PuzzleLock::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PuzzleLock_calc_cost::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PuzzleLock_calc_cost_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PuzzleLock_calc_hash::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PuzzleLock_calc_hash_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PuzzleLock_get_parties::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PuzzleLock_get_parties_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PuzzleLock_is_valid::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PuzzleLock_is_valid_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PuzzleLock_validate::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PuzzleLock_validate_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Staking::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Staking_calc_cost::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Staking_calc_cost_return::static_create_type_code());
@@ -1538,6 +1678,16 @@ const vnx::TypeCode* const vnx_native_type_code_PubKey_is_valid_return = vnx::ge
 const vnx::TypeCode* const vnx_native_type_code_PubKey_validate = vnx::get_type_code(vnx::Hash64(0xc8c04e67ca0e5622ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_validate_return = vnx::get_type_code(vnx::Hash64(0xd37debdc13313296ull));
 const vnx::TypeCode* const vnx_native_type_code_PuzzleLock = vnx::get_type_code(vnx::Hash64(0xf33097b29a62c755ull));
+const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_calc_cost = vnx::get_type_code(vnx::Hash64(0xef887e5b77e465b5ull));
+const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xe3703fa5e9b25e67ull));
+const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_calc_hash = vnx::get_type_code(vnx::Hash64(0x3f9ab53d1276114aull));
+const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_calc_hash_return = vnx::get_type_code(vnx::Hash64(0x982662a96f6d331bull));
+const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_get_parties = vnx::get_type_code(vnx::Hash64(0xa0530fd9cb9a9c62ull));
+const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_get_parties_return = vnx::get_type_code(vnx::Hash64(0x85242cc27c6f3c52ull));
+const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_is_valid = vnx::get_type_code(vnx::Hash64(0xf4969d5cbc33744eull));
+const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_is_valid_return = vnx::get_type_code(vnx::Hash64(0xe0d6fa185046c2a1ull));
+const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_validate = vnx::get_type_code(vnx::Hash64(0xd5290eaab65dcb0bull));
+const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_validate_return = vnx::get_type_code(vnx::Hash64(0xfdf346c99cb9535aull));
 const vnx::TypeCode* const vnx_native_type_code_Staking = vnx::get_type_code(vnx::Hash64(0xf058a3326fc2e7dcull));
 const vnx::TypeCode* const vnx_native_type_code_Staking_calc_cost = vnx::get_type_code(vnx::Hash64(0x2f4c65f2e7467929ull));
 const vnx::TypeCode* const vnx_native_type_code_Staking_calc_cost_return = vnx::get_type_code(vnx::Hash64(0x59e400e91ac41189ull));
