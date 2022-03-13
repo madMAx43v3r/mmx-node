@@ -95,9 +95,6 @@ std::vector<tx_out_t> MultiSig::validate(std::shared_ptr<const Operation> operat
 
 void MultiSig::add_owner(const addr_t& address)
 {
-	if(owners.size() >= MAX_OWNERS) {
-		throw std::logic_error("MAX_OWNERS reached");
-	}
 	owners.push_back(address);
 }
 

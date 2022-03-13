@@ -166,6 +166,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 	uint64_t base_amount = 0;
 	std::vector<tx_out_t> exec_outputs;
 	std::unordered_map<hash_t, uint64_t> amounts;
+	std::unordered_map<addr_t, std::shared_ptr<Contract>> contract_state;
 
 	if(!base) {
 		for(const auto& in : tx->inputs)
@@ -209,23 +210,36 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 		if(!op || !op->is_valid()) {
 			throw std::logic_error("invalid operation");
 		}
-		if(auto contract = get_contract(op->address)) {
-			if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op)) {
-				auto copy = vnx::clone(contract);
-				try {
-					auto ret = copy->vnx_call(vnx::clone(mutate->method));
-					if(!ret) {
-						throw std::logic_error("no such method");
-					}
-				} catch(const std::exception& ex) {
-					throw std::logic_error("mutate failed with: " + std::string(ex.what()));
-				}
+		std::shared_ptr<const Contract> contract;
+		{
+			auto iter = contract_state.find(op->address);
+			if(iter != contract_state.end()) {
+				contract = iter->second;
 			}
-			const auto outputs = contract->validate(op, create_context(op->address, contract, context, tx));
-			exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
-		} else {
+		}
+		if(!contract) {
+			contract = get_contract(op->address);
+		}
+		if(!contract) {
 			throw std::logic_error("no such contract");
 		}
+		if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op))
+		{
+			auto copy = vnx::clone(contract);
+			try {
+				if(!copy->vnx_call(vnx::clone(mutate->method))) {
+					throw std::logic_error("no such method");
+				}
+				if(!copy->is_valid()) {
+					throw std::logic_error("invalid mutation");
+				}
+			} catch(const std::exception& ex) {
+				throw std::logic_error("mutate failed with: " + std::string(ex.what()));
+			}
+			contract_state[op->address] = copy;
+		}
+		const auto outputs = contract->validate(op, create_context(op->address, contract, context, tx));
+		exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
 	}
 	for(const auto& out : tx->outputs)
 	{
