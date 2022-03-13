@@ -6,6 +6,19 @@
 #include <mmx/contract/Data_calc_cost_return.hxx>
 #include <mmx/contract/Data_calc_hash.hxx>
 #include <mmx/contract/Data_calc_hash_return.hxx>
+#include <mmx/contract/DataArray.hxx>
+#include <mmx/contract/DataArray_append.hxx>
+#include <mmx/contract/DataArray_append_return.hxx>
+#include <mmx/contract/DataArray_calc_cost.hxx>
+#include <mmx/contract/DataArray_calc_cost_return.hxx>
+#include <mmx/contract/DataArray_calc_hash.hxx>
+#include <mmx/contract/DataArray_calc_hash_return.hxx>
+#include <mmx/contract/DataArray_clear.hxx>
+#include <mmx/contract/DataArray_clear_return.hxx>
+#include <mmx/contract/DataArray_is_valid.hxx>
+#include <mmx/contract/DataArray_is_valid_return.hxx>
+#include <mmx/contract/DataArray_num_bytes.hxx>
+#include <mmx/contract/DataArray_num_bytes_return.hxx>
 #include <mmx/contract/Locked.hxx>
 #include <mmx/contract/Locked_calc_cost.hxx>
 #include <mmx/contract/Locked_calc_cost_return.hxx>
@@ -179,6 +192,162 @@ void type<::mmx::contract::Data_calc_hash_return>::create_dynamic_code(std::vect
 }
 
 void type<::mmx::contract::Data_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Data_calc_hash_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::DataArray>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_DataArray;
+}
+
+void type<::mmx::contract::DataArray>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::DataArray());
+}
+
+void type<::mmx::contract::DataArray>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::DataArray& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::DataArray_append>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_DataArray_append;
+}
+
+void type<::mmx::contract::DataArray_append>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::DataArray_append());
+}
+
+void type<::mmx::contract::DataArray_append>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::DataArray_append& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::DataArray_append_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_DataArray_append_return;
+}
+
+void type<::mmx::contract::DataArray_append_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::DataArray_append_return());
+}
+
+void type<::mmx::contract::DataArray_append_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::DataArray_append_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::DataArray_calc_cost>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_DataArray_calc_cost;
+}
+
+void type<::mmx::contract::DataArray_calc_cost>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::DataArray_calc_cost());
+}
+
+void type<::mmx::contract::DataArray_calc_cost>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::DataArray_calc_cost& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::DataArray_calc_cost_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_DataArray_calc_cost_return;
+}
+
+void type<::mmx::contract::DataArray_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::DataArray_calc_cost_return());
+}
+
+void type<::mmx::contract::DataArray_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::DataArray_calc_cost_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::DataArray_calc_hash>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_DataArray_calc_hash;
+}
+
+void type<::mmx::contract::DataArray_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::DataArray_calc_hash());
+}
+
+void type<::mmx::contract::DataArray_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::DataArray_calc_hash& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::DataArray_calc_hash_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_DataArray_calc_hash_return;
+}
+
+void type<::mmx::contract::DataArray_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::DataArray_calc_hash_return());
+}
+
+void type<::mmx::contract::DataArray_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::DataArray_calc_hash_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::DataArray_clear>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_DataArray_clear;
+}
+
+void type<::mmx::contract::DataArray_clear>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::DataArray_clear());
+}
+
+void type<::mmx::contract::DataArray_clear>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::DataArray_clear& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::DataArray_clear_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_DataArray_clear_return;
+}
+
+void type<::mmx::contract::DataArray_clear_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::DataArray_clear_return());
+}
+
+void type<::mmx::contract::DataArray_clear_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::DataArray_clear_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::DataArray_is_valid>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_DataArray_is_valid;
+}
+
+void type<::mmx::contract::DataArray_is_valid>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::DataArray_is_valid());
+}
+
+void type<::mmx::contract::DataArray_is_valid>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::DataArray_is_valid& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::DataArray_is_valid_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_DataArray_is_valid_return;
+}
+
+void type<::mmx::contract::DataArray_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::DataArray_is_valid_return());
+}
+
+void type<::mmx::contract::DataArray_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::DataArray_is_valid_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::DataArray_num_bytes>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_DataArray_num_bytes;
+}
+
+void type<::mmx::contract::DataArray_num_bytes>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::DataArray_num_bytes());
+}
+
+void type<::mmx::contract::DataArray_num_bytes>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::DataArray_num_bytes& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::DataArray_num_bytes_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_DataArray_num_bytes_return;
+}
+
+void type<::mmx::contract::DataArray_num_bytes_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::DataArray_num_bytes_return());
+}
+
+void type<::mmx::contract::DataArray_num_bytes_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::DataArray_num_bytes_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -1500,6 +1669,19 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::Data_calc_cost_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Data_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Data_calc_hash_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::DataArray::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::DataArray_append::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::DataArray_append_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::DataArray_calc_cost::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::DataArray_calc_cost_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::DataArray_calc_hash::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::DataArray_calc_hash_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::DataArray_clear::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::DataArray_clear_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::DataArray_is_valid::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::DataArray_is_valid_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::DataArray_num_bytes::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::DataArray_num_bytes_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Locked::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Locked_calc_cost::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Locked_calc_cost_return::static_create_type_code());
@@ -1621,6 +1803,19 @@ const vnx::TypeCode* const vnx_native_type_code_Data_calc_cost = vnx::get_type_c
 const vnx::TypeCode* const vnx_native_type_code_Data_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xffa8c93868ea4352ull));
 const vnx::TypeCode* const vnx_native_type_code_Data_calc_hash = vnx::get_type_code(vnx::Hash64(0x322fb5c8d3dfe74ull));
 const vnx::TypeCode* const vnx_native_type_code_Data_calc_hash_return = vnx::get_type_code(vnx::Hash64(0x84fe9434ee352e2eull));
+const vnx::TypeCode* const vnx_native_type_code_DataArray = vnx::get_type_code(vnx::Hash64(0xe7b4a595cc73f3fbull));
+const vnx::TypeCode* const vnx_native_type_code_DataArray_append = vnx::get_type_code(vnx::Hash64(0xa37fa83da54b49c8ull));
+const vnx::TypeCode* const vnx_native_type_code_DataArray_append_return = vnx::get_type_code(vnx::Hash64(0xafa390b9fbac4738ull));
+const vnx::TypeCode* const vnx_native_type_code_DataArray_calc_cost = vnx::get_type_code(vnx::Hash64(0x8efad25daf7c1e65ull));
+const vnx::TypeCode* const vnx_native_type_code_DataArray_calc_cost_return = vnx::get_type_code(vnx::Hash64(0x8de502f46e6ebbf8ull));
+const vnx::TypeCode* const vnx_native_type_code_DataArray_calc_hash = vnx::get_type_code(vnx::Hash64(0x5ee8193bcaee6a9aull));
+const vnx::TypeCode* const vnx_native_type_code_DataArray_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xf6b35ff8e8b1d684ull));
+const vnx::TypeCode* const vnx_native_type_code_DataArray_clear = vnx::get_type_code(vnx::Hash64(0x529ca01cf4898deull));
+const vnx::TypeCode* const vnx_native_type_code_DataArray_clear_return = vnx::get_type_code(vnx::Hash64(0xb5779cb9f111c854ull));
+const vnx::TypeCode* const vnx_native_type_code_DataArray_is_valid = vnx::get_type_code(vnx::Hash64(0x5ec2b39605eb4210ull));
+const vnx::TypeCode* const vnx_native_type_code_DataArray_is_valid_return = vnx::get_type_code(vnx::Hash64(0x1e67a4878b6c72ddull));
+const vnx::TypeCode* const vnx_native_type_code_DataArray_num_bytes = vnx::get_type_code(vnx::Hash64(0x795e506d17006b72ull));
+const vnx::TypeCode* const vnx_native_type_code_DataArray_num_bytes_return = vnx::get_type_code(vnx::Hash64(0x3ce5c62f6469debull));
 const vnx::TypeCode* const vnx_native_type_code_Locked = vnx::get_type_code(vnx::Hash64(0xd0ff1b6e7bad1493ull));
 const vnx::TypeCode* const vnx_native_type_code_Locked_calc_cost = vnx::get_type_code(vnx::Hash64(0x4d220deaf420a61aull));
 const vnx::TypeCode* const vnx_native_type_code_Locked_calc_cost_return = vnx::get_type_code(vnx::Hash64(0x4ef0016844aa601full));
