@@ -377,7 +377,7 @@ int main(int argc, char** argv)
 					goto failed;
 				}
 				const auto txid = wallet.deploy(index, payload);
-				std::cout << "Deployed " << payload->get_type_name() << " as " << mmx::addr_t(txid) << std::endl;
+				std::cout << "Deployed " << payload->get_type_name() << " as [" << mmx::addr_t(txid) << "]" << std::endl;
 				std::cout << "Transaction ID: " << txid << std::endl;
 			}
 			else if(command == "exec")
