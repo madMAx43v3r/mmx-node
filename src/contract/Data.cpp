@@ -27,7 +27,7 @@ hash_t Data::calc_hash() const
 }
 
 uint64_t Data::calc_cost(std::shared_ptr<const ChainParams> params) const {
-	return (8 + 4 + payload.data.size()) * params->min_txfee_byte;
+	return (8 + 4 + payload.size()) * params->min_txfee_byte;
 }
 
 

@@ -36,7 +36,7 @@ uint64_t NFT::calc_cost(std::shared_ptr<const ChainParams> params) const {
 	uint32_t payload = 0;
 	for(const auto& entry : data.field) {
 		payload += entry.first.size();
-		payload += entry.second.data.size();
+		payload += entry.second.size();
 	}
 	return (8 + 4 + 32 + (parent ? 32 : 0) + payload) * params->min_txfee_byte;
 }
