@@ -1,0 +1,24 @@
+package mmx.contract;
+
+import mmx.hash_t;
+
+class DataArray extends mmx.Contract {
+	
+	vector<vnx.Variant> array;
+	
+	static const uint MAX_BYTES = 1048576;
+	
+	
+	bool is_valid() const;
+	
+	hash_t calc_hash() const;
+	
+	ulong num_bytes() const;
+	
+	ulong calc_cost(mmx.ChainParams* params) const;
+	
+	void append(vnx.Variant data);
+	
+	void clear();
+	
+}

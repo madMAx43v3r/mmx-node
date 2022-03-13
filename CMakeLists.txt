@@ -67,6 +67,7 @@ add_library(mmx_iface SHARED
 	src/txio_key_t.cpp
 	src/contract/NFT.cpp
 	src/contract/Data.cpp
+	src/contract/DataArray.cpp
 	src/contract/WebData.cpp
 	src/contract/PubKey.cpp
 	src/contract/MultiSig.cpp
