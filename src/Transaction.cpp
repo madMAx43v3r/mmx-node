@@ -31,6 +31,16 @@ void Transaction::finalize() {
 }
 
 vnx::bool_t Transaction::is_valid() const {
+	for(const auto& op : execute) {
+		if(!op) {
+			return false;
+		}
+	}
+	for(const auto& sol : solutions) {
+		if(!sol) {
+			return false;
+		}
+	}
 	return calc_hash() == id;
 }
 

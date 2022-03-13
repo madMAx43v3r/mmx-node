@@ -49,9 +49,6 @@ std::vector<addr_t> MultiSig::get_parties() const {
 
 std::vector<tx_out_t> MultiSig::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
-	if(!operation) {
-		throw std::logic_error("!operation");
-	}
 	if(auto solution = std::dynamic_pointer_cast<const solution::PubKey>(operation->solution))
 	{
 		if(num_required != 1) {

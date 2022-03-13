@@ -47,9 +47,6 @@ std::vector<addr_t> PuzzleLock::get_parties() const {
 
 std::vector<tx_out_t> PuzzleLock::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
-	if(!operation) {
-		throw std::logic_error("!operation");
-	}
 	if(auto claim = std::dynamic_pointer_cast<const solution::PuzzleLock>(operation->solution))
 	{
 		if(puzzle) {

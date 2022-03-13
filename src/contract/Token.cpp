@@ -81,18 +81,16 @@ vnx::optional<addr_t> Token::get_owner() const {
 
 std::vector<tx_out_t> Token::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
-	if(!operation) {
-		throw std::logic_error("!operation");
-	}
 	if(!owner) {
 		throw std::logic_error("!owner");
 	}
-	const auto iter = context->depends.find(*owner);
-	if(iter == context->depends.end()) {
-		throw std::logic_error("missing dependency");
+	{
+		const auto iter = context->depends.find(*owner);
+		if(iter == context->depends.end()) {
+			throw std::logic_error("missing dependency");
+		}
+		iter->second->validate(operation, context);
 	}
-	iter->second->validate(operation, context);
-
 	if(auto mint = std::dynamic_pointer_cast<const operation::Mint>(operation))
 	{
 		tx_out_t out;

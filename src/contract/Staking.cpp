@@ -52,9 +52,6 @@ vnx::optional<addr_t> Staking::get_owner() const {
 
 std::vector<tx_out_t> Staking::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
-	if(!operation) {
-		throw std::logic_error("!operation");
-	}
 	{
 		auto iter = context->depends.find(owner);
 		if(iter == context->depends.end()) {

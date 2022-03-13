@@ -63,9 +63,6 @@ vnx::bool_t Locked::is_spendable(const utxo_t& utxo, std::shared_ptr<const Conte
 
 std::vector<tx_out_t> Locked::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
-	if(!operation) {
-		throw std::logic_error("!operation");
-	}
 	{
 		auto iter = context->depends.find(owner);
 		if(iter == context->depends.end()) {
