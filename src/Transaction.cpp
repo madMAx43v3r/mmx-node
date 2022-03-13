@@ -20,7 +20,8 @@ uint64_t TransactionBase::calc_cost(std::shared_ptr<const ChainParams> params) c
 	return 0;
 }
 
-std::shared_ptr<const TransactionBase> TransactionBase::create_ex(const hash_t& id) {
+std::shared_ptr<const TransactionBase> TransactionBase::create_ex(const hash_t& id)
+{
 	auto tx = TransactionBase::create();
 	tx->id = id;
 	return tx;
@@ -30,7 +31,8 @@ void Transaction::finalize() {
 	id = calc_hash();
 }
 
-vnx::bool_t Transaction::is_valid() const {
+vnx::bool_t Transaction::is_valid() const
+{
 	for(const auto& op : execute) {
 		if(!op) {
 			return false;
