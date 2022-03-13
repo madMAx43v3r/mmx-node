@@ -92,6 +92,7 @@ int main(int argc, char** argv)
 	} else {
 		with_harvester = false;
 	}
+	vnx::rocksdb::sync_type_codes(root_path + "type_codes");
 
 	{
 		vnx::Handle<vnx::Terminal> module = new vnx::Terminal("Terminal");

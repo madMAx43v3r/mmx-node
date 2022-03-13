@@ -39,6 +39,8 @@ int main(int argc, char** argv)
 	vnx::read_config("node", node_url);
 	vnx::read_config("endpoint", endpoint);
 
+	vnx::rocksdb::sync_type_codes(root_path + "exchange/server/type_codes");
+
 	vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
 	proxy->forward_list = {"Node"};
 
