@@ -55,6 +55,8 @@ class Contract_is_spendable;
 class Contract_is_spendable_return;
 class Contract_is_valid;
 class Contract_is_valid_return;
+class Contract_transfer;
+class Contract_transfer_return;
 class Contract_validate;
 class Contract_validate_return;
 class FarmInfo;
@@ -354,6 +356,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_is_sp
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_is_spendable_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_is_valid; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_is_valid_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_transfer; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_transfer_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_validate; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_validate_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_FarmInfo; ///< \private
@@ -651,6 +655,8 @@ void read(TypeInput& in, ::mmx::Contract_is_spendable& value, const TypeCode* ty
 void read(TypeInput& in, ::mmx::Contract_is_spendable_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Contract_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Contract_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Contract_transfer& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Contract_transfer_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Contract_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Contract_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::FarmInfo& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -950,6 +956,8 @@ void write(TypeOutput& out, const ::mmx::Contract_is_spendable& value, const Typ
 void write(TypeOutput& out, const ::mmx::Contract_is_spendable_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Contract_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Contract_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Contract_transfer& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Contract_transfer_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Contract_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Contract_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::FarmInfo& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1249,6 +1257,8 @@ void read(std::istream& in, ::mmx::Contract_is_spendable& value); ///< \private
 void read(std::istream& in, ::mmx::Contract_is_spendable_return& value); ///< \private
 void read(std::istream& in, ::mmx::Contract_is_valid& value); ///< \private
 void read(std::istream& in, ::mmx::Contract_is_valid_return& value); ///< \private
+void read(std::istream& in, ::mmx::Contract_transfer& value); ///< \private
+void read(std::istream& in, ::mmx::Contract_transfer_return& value); ///< \private
 void read(std::istream& in, ::mmx::Contract_validate& value); ///< \private
 void read(std::istream& in, ::mmx::Contract_validate_return& value); ///< \private
 void read(std::istream& in, ::mmx::FarmInfo& value); ///< \private
@@ -1548,6 +1558,8 @@ void write(std::ostream& out, const ::mmx::Contract_is_spendable& value); ///< \
 void write(std::ostream& out, const ::mmx::Contract_is_spendable_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Contract_is_valid& value); ///< \private
 void write(std::ostream& out, const ::mmx::Contract_is_valid_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Contract_transfer& value); ///< \private
+void write(std::ostream& out, const ::mmx::Contract_transfer_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Contract_validate& value); ///< \private
 void write(std::ostream& out, const ::mmx::Contract_validate_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::FarmInfo& value); ///< \private
@@ -1847,6 +1859,8 @@ void accept(Visitor& visitor, const ::mmx::Contract_is_spendable& value); ///< \
 void accept(Visitor& visitor, const ::mmx::Contract_is_spendable_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Contract_is_valid& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Contract_is_valid_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Contract_transfer& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Contract_transfer_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Contract_validate& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Contract_validate_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::FarmInfo& value); ///< \private
@@ -2892,6 +2906,52 @@ struct type<::mmx::Contract_is_valid_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Contract_is_valid_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Contract_transfer> {
+	void read(TypeInput& in, ::mmx::Contract_transfer& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Contract_transfer& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Contract_transfer& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Contract_transfer& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Contract_transfer& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Contract_transfer& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Contract_transfer_return> {
+	void read(TypeInput& in, ::mmx::Contract_transfer_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Contract_transfer_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Contract_transfer_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Contract_transfer_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Contract_transfer_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Contract_transfer_return& value, bool special = false);
 };
 
 /// \private

@@ -6,8 +6,12 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/ChainParams.hxx>
+#include <mmx/Context.hxx>
 #include <mmx/Contract.hxx>
+#include <mmx/Operation.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
+#include <mmx/tx_out_t.hxx>
 #include <vnx/Variant.hpp>
 
 
@@ -18,6 +22,7 @@ class MMX_CONTRACT_EXPORT DataArray : public ::mmx::Contract {
 public:
 	static const uint32_t MAX_BYTES = 1048576;
 	
+	vnx::optional<::mmx::addr_t> owner;
 	std::vector<::vnx::Variant> array;
 	
 	typedef ::mmx::Contract Super;
@@ -37,6 +42,11 @@ public:
 	virtual ::mmx::hash_t calc_hash() const override;
 	virtual uint64_t num_bytes() const;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
+	virtual std::vector<::mmx::addr_t> get_dependency() const override;
+	virtual std::vector<::mmx::addr_t> get_parties() const override;
+	virtual vnx::optional<::mmx::addr_t> get_owner() const override;
+	virtual std::vector<::mmx::tx_out_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
+	virtual void transfer(const vnx::optional<::mmx::addr_t>& new_owner = nullptr) override;
 	virtual void append(const ::vnx::Variant& data = ::vnx::Variant());
 	virtual void clear();
 	
@@ -72,10 +82,11 @@ protected:
 
 template<typename T>
 void DataArray::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<DataArray>(2);
+	_visitor.template type_begin<DataArray>(3);
 	_visitor.type_field("version", 0); _visitor.accept(version);
-	_visitor.type_field("array", 1); _visitor.accept(array);
-	_visitor.template type_end<DataArray>(2);
+	_visitor.type_field("owner", 1); _visitor.accept(owner);
+	_visitor.type_field("array", 2); _visitor.accept(array);
+	_visitor.template type_end<DataArray>(3);
 }
 
 

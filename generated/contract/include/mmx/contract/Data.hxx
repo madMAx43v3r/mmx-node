@@ -6,8 +6,12 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/ChainParams.hxx>
+#include <mmx/Context.hxx>
 #include <mmx/Contract.hxx>
+#include <mmx/Operation.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
+#include <mmx/tx_out_t.hxx>
 #include <vnx/Variant.hpp>
 
 
@@ -17,7 +21,8 @@ namespace contract {
 class MMX_CONTRACT_EXPORT Data : public ::mmx::Contract {
 public:
 	
-	::vnx::Variant payload;
+	vnx::optional<::mmx::addr_t> owner;
+	::vnx::Variant data;
 	
 	typedef ::mmx::Contract Super;
 	
@@ -34,6 +39,12 @@ public:
 	
 	virtual ::mmx::hash_t calc_hash() const override;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
+	virtual std::vector<::mmx::addr_t> get_dependency() const override;
+	virtual std::vector<::mmx::addr_t> get_parties() const override;
+	virtual vnx::optional<::mmx::addr_t> get_owner() const override;
+	virtual std::vector<::mmx::tx_out_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
+	virtual void transfer(const vnx::optional<::mmx::addr_t>& new_owner = nullptr) override;
+	virtual void set(const ::vnx::Variant& value = ::vnx::Variant());
 	
 	static std::shared_ptr<Data> create();
 	std::shared_ptr<vnx::Value> clone() const override;
@@ -67,10 +78,11 @@ protected:
 
 template<typename T>
 void Data::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Data>(2);
+	_visitor.template type_begin<Data>(3);
 	_visitor.type_field("version", 0); _visitor.accept(version);
-	_visitor.type_field("payload", 1); _visitor.accept(payload);
-	_visitor.template type_end<Data>(2);
+	_visitor.type_field("owner", 1); _visitor.accept(owner);
+	_visitor.type_field("data", 2); _visitor.accept(data);
+	_visitor.template type_end<Data>(3);
 }
 
 

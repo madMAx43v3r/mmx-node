@@ -4,6 +4,7 @@
 #include <mmx/contract/package.hxx>
 #include <mmx/contract/DataArray.hxx>
 #include <mmx/ChainParams.hxx>
+#include <mmx/Context.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/Contract_calc_cost.hxx>
 #include <mmx/Contract_calc_cost_return.hxx>
@@ -19,8 +20,12 @@
 #include <mmx/Contract_is_spendable_return.hxx>
 #include <mmx/Contract_is_valid.hxx>
 #include <mmx/Contract_is_valid_return.hxx>
+#include <mmx/Contract_transfer.hxx>
+#include <mmx/Contract_transfer_return.hxx>
 #include <mmx/Contract_validate.hxx>
 #include <mmx/Contract_validate_return.hxx>
+#include <mmx/Operation.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/contract/DataArray_append.hxx>
 #include <mmx/contract/DataArray_append_return.hxx>
 #include <mmx/contract/DataArray_calc_cost.hxx>
@@ -29,11 +34,22 @@
 #include <mmx/contract/DataArray_calc_hash_return.hxx>
 #include <mmx/contract/DataArray_clear.hxx>
 #include <mmx/contract/DataArray_clear_return.hxx>
+#include <mmx/contract/DataArray_get_dependency.hxx>
+#include <mmx/contract/DataArray_get_dependency_return.hxx>
+#include <mmx/contract/DataArray_get_owner.hxx>
+#include <mmx/contract/DataArray_get_owner_return.hxx>
+#include <mmx/contract/DataArray_get_parties.hxx>
+#include <mmx/contract/DataArray_get_parties_return.hxx>
 #include <mmx/contract/DataArray_is_valid.hxx>
 #include <mmx/contract/DataArray_is_valid_return.hxx>
 #include <mmx/contract/DataArray_num_bytes.hxx>
 #include <mmx/contract/DataArray_num_bytes_return.hxx>
+#include <mmx/contract/DataArray_transfer.hxx>
+#include <mmx/contract/DataArray_transfer_return.hxx>
+#include <mmx/contract/DataArray_validate.hxx>
+#include <mmx/contract/DataArray_validate_return.hxx>
 #include <mmx/hash_t.hpp>
+#include <mmx/tx_out_t.hxx>
 #include <vnx/Variant.hpp>
 
 #include <vnx/vnx.h>
@@ -45,7 +61,7 @@ namespace contract {
 const uint32_t DataArray::MAX_BYTES;
 
 const vnx::Hash64 DataArray::VNX_TYPE_HASH(0xe7b4a595cc73f3fbull);
-const vnx::Hash64 DataArray::VNX_CODE_HASH(0x4378003464059377ull);
+const vnx::Hash64 DataArray::VNX_CODE_HASH(0x150ac16f64493accull);
 
 vnx::Hash64 DataArray::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -79,13 +95,15 @@ void DataArray::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::contract::vnx_native_type_code_DataArray;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, version);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, array);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, owner);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, array);
 	_visitor.type_end(*_type_code);
 }
 
 void DataArray::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.contract.DataArray\"";
 	_out << ", \"version\": "; vnx::write(_out, version);
+	_out << ", \"owner\": "; vnx::write(_out, owner);
 	_out << ", \"array\": "; vnx::write(_out, array);
 	_out << "}";
 }
@@ -100,6 +118,7 @@ vnx::Object DataArray::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.contract.DataArray";
 	_object["version"] = version;
+	_object["owner"] = owner;
 	_object["array"] = array;
 	return _object;
 }
@@ -108,6 +127,8 @@ void DataArray::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "array") {
 			_entry.second.to(array);
+		} else if(_entry.first == "owner") {
+			_entry.second.to(owner);
 		} else if(_entry.first == "version") {
 			_entry.second.to(version);
 		}
@@ -118,6 +139,9 @@ vnx::Variant DataArray::get_field(const std::string& _name) const {
 	if(_name == "version") {
 		return vnx::Variant(version);
 	}
+	if(_name == "owner") {
+		return vnx::Variant(owner);
+	}
 	if(_name == "array") {
 		return vnx::Variant(array);
 	}
@@ -127,6 +151,8 @@ vnx::Variant DataArray::get_field(const std::string& _name) const {
 void DataArray::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "version") {
 		_value.to(version);
+	} else if(_name == "owner") {
+		_value.to(owner);
 	} else if(_name == "array") {
 		_value.to(array);
 	}
@@ -156,14 +182,14 @@ std::shared_ptr<vnx::TypeCode> DataArray::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.DataArray";
 	type_code->type_hash = vnx::Hash64(0xe7b4a595cc73f3fbull);
-	type_code->code_hash = vnx::Hash64(0x4378003464059377ull);
+	type_code->code_hash = vnx::Hash64(0x150ac16f64493accull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::DataArray);
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<DataArray>(); };
-	type_code->methods.resize(14);
+	type_code->methods.resize(20);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_dependency::static_get_type_code();
@@ -171,14 +197,20 @@ std::shared_ptr<vnx::TypeCode> DataArray::static_create_type_code() {
 	type_code->methods[4] = ::mmx::Contract_get_parties::static_get_type_code();
 	type_code->methods[5] = ::mmx::Contract_is_spendable::static_get_type_code();
 	type_code->methods[6] = ::mmx::Contract_is_valid::static_get_type_code();
-	type_code->methods[7] = ::mmx::Contract_validate::static_get_type_code();
-	type_code->methods[8] = ::mmx::contract::DataArray_append::static_get_type_code();
-	type_code->methods[9] = ::mmx::contract::DataArray_calc_cost::static_get_type_code();
-	type_code->methods[10] = ::mmx::contract::DataArray_calc_hash::static_get_type_code();
-	type_code->methods[11] = ::mmx::contract::DataArray_clear::static_get_type_code();
-	type_code->methods[12] = ::mmx::contract::DataArray_is_valid::static_get_type_code();
-	type_code->methods[13] = ::mmx::contract::DataArray_num_bytes::static_get_type_code();
-	type_code->fields.resize(2);
+	type_code->methods[7] = ::mmx::Contract_transfer::static_get_type_code();
+	type_code->methods[8] = ::mmx::Contract_validate::static_get_type_code();
+	type_code->methods[9] = ::mmx::contract::DataArray_append::static_get_type_code();
+	type_code->methods[10] = ::mmx::contract::DataArray_calc_cost::static_get_type_code();
+	type_code->methods[11] = ::mmx::contract::DataArray_calc_hash::static_get_type_code();
+	type_code->methods[12] = ::mmx::contract::DataArray_clear::static_get_type_code();
+	type_code->methods[13] = ::mmx::contract::DataArray_get_dependency::static_get_type_code();
+	type_code->methods[14] = ::mmx::contract::DataArray_get_owner::static_get_type_code();
+	type_code->methods[15] = ::mmx::contract::DataArray_get_parties::static_get_type_code();
+	type_code->methods[16] = ::mmx::contract::DataArray_is_valid::static_get_type_code();
+	type_code->methods[17] = ::mmx::contract::DataArray_num_bytes::static_get_type_code();
+	type_code->methods[18] = ::mmx::contract::DataArray_transfer::static_get_type_code();
+	type_code->methods[19] = ::mmx::contract::DataArray_validate::static_get_type_code();
+	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -187,6 +219,12 @@ std::shared_ptr<vnx::TypeCode> DataArray::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[1];
+		field.is_extended = true;
+		field.name = "owner";
+		field.code = {33, 11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[2];
 		field.is_extended = true;
 		field.name = "array";
 		field.code = {12, 17};
@@ -239,6 +277,12 @@ std::shared_ptr<vnx::Value> DataArray::vnx_call_switch(std::shared_ptr<const vnx
 			_return_value->_ret_0 = is_valid();
 			return _return_value;
 		}
+		case 0xd41bec275faff1ffull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Contract_transfer>(_method);
+			auto _return_value = ::mmx::Contract_transfer_return::create();
+			transfer(_args->new_owner);
+			return _return_value;
+		}
 		case 0xc2126a44901c8d52ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Contract_validate>(_method);
 			auto _return_value = ::mmx::Contract_validate_return::create();
@@ -269,6 +313,24 @@ std::shared_ptr<vnx::Value> DataArray::vnx_call_switch(std::shared_ptr<const vnx
 			clear();
 			return _return_value;
 		}
+		case 0x20f315ee5d164225ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::DataArray_get_dependency>(_method);
+			auto _return_value = ::mmx::contract::DataArray_get_dependency_return::create();
+			_return_value->_ret_0 = get_dependency();
+			return _return_value;
+		}
+		case 0xb3251068ac783ef7ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::DataArray_get_owner>(_method);
+			auto _return_value = ::mmx::contract::DataArray_get_owner_return::create();
+			_return_value->_ret_0 = get_owner();
+			return _return_value;
+		}
+		case 0xc3ecbeaf6e2182d1ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::DataArray_get_parties>(_method);
+			auto _return_value = ::mmx::contract::DataArray_get_parties_return::create();
+			_return_value->_ret_0 = get_parties();
+			return _return_value;
+		}
 		case 0x5ec2b39605eb4210ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::contract::DataArray_is_valid>(_method);
 			auto _return_value = ::mmx::contract::DataArray_is_valid_return::create();
@@ -279,6 +341,18 @@ std::shared_ptr<vnx::Value> DataArray::vnx_call_switch(std::shared_ptr<const vnx
 			auto _args = std::static_pointer_cast<const ::mmx::contract::DataArray_num_bytes>(_method);
 			auto _return_value = ::mmx::contract::DataArray_num_bytes_return::create();
 			_return_value->_ret_0 = num_bytes();
+			return _return_value;
+		}
+		case 0x6974a603c03681f8ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::DataArray_transfer>(_method);
+			auto _return_value = ::mmx::contract::DataArray_transfer_return::create();
+			transfer(_args->new_owner);
+			return _return_value;
+		}
+		case 0x7f7d20600f85fd55ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::DataArray_validate>(_method);
+			auto _return_value = ::mmx::contract::DataArray_validate_return::create();
+			_return_value->_ret_0 = validate(_args->operation, _args->context);
 			return _return_value;
 		}
 	}
@@ -330,7 +404,8 @@ void read(TypeInput& in, ::mmx::contract::DataArray& value, const TypeCode* type
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 1: vnx::read(in, value.array, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.owner, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.array, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -351,7 +426,8 @@ void write(TypeOutput& out, const ::mmx::contract::DataArray& value, const TypeC
 	}
 	char* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.version);
-	vnx::write(out, value.array, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.owner, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.array, type_code, type_code->fields[2].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::DataArray& value) {
