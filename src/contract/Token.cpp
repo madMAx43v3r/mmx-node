@@ -70,10 +70,7 @@ std::vector<addr_t> Token::get_dependency() const {
 }
 
 std::vector<addr_t> Token::get_parties() const {
-	if(owner) {
-		return {*owner};
-	}
-	return {};
+	return get_dependency();
 }
 
 vnx::optional<addr_t> Token::get_owner() const {

@@ -7,7 +7,6 @@
 
 #include <mmx/contract/Locked.hxx>
 #include <mmx/operation/Spend.hxx>
-#include <mmx/solution/PubKey.hxx>
 #include <mmx/write_bytes.h>
 
 

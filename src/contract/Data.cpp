@@ -39,10 +39,7 @@ std::vector<addr_t> Data::get_dependency() const {
 }
 
 std::vector<addr_t> Data::get_parties() const {
-	if(owner) {
-		return {*owner};
-	}
-	return {};
+	return get_dependency();
 }
 
 vnx::optional<addr_t> Data::get_owner() const {
