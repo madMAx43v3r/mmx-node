@@ -32,8 +32,6 @@
 #include <mmx/contract/MultiSig_calc_cost_return.hxx>
 #include <mmx/contract/MultiSig_calc_hash.hxx>
 #include <mmx/contract/MultiSig_calc_hash_return.hxx>
-#include <mmx/contract/MultiSig_get_dependency.hxx>
-#include <mmx/contract/MultiSig_get_dependency_return.hxx>
 #include <mmx/contract/MultiSig_get_parties.hxx>
 #include <mmx/contract/MultiSig_get_parties_return.hxx>
 #include <mmx/contract/MultiSig_is_valid.hxx>
@@ -182,7 +180,7 @@ std::shared_ptr<vnx::TypeCode> MultiSig::static_create_type_code() {
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<MultiSig>(); };
-	type_code->methods.resize(17);
+	type_code->methods.resize(16);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_dependency::static_get_type_code();
@@ -195,11 +193,10 @@ std::shared_ptr<vnx::TypeCode> MultiSig::static_create_type_code() {
 	type_code->methods[9] = ::mmx::contract::MultiSig_add_owner::static_get_type_code();
 	type_code->methods[10] = ::mmx::contract::MultiSig_calc_cost::static_get_type_code();
 	type_code->methods[11] = ::mmx::contract::MultiSig_calc_hash::static_get_type_code();
-	type_code->methods[12] = ::mmx::contract::MultiSig_get_dependency::static_get_type_code();
-	type_code->methods[13] = ::mmx::contract::MultiSig_get_parties::static_get_type_code();
-	type_code->methods[14] = ::mmx::contract::MultiSig_is_valid::static_get_type_code();
-	type_code->methods[15] = ::mmx::contract::MultiSig_rem_owner::static_get_type_code();
-	type_code->methods[16] = ::mmx::contract::MultiSig_validate::static_get_type_code();
+	type_code->methods[12] = ::mmx::contract::MultiSig_get_parties::static_get_type_code();
+	type_code->methods[13] = ::mmx::contract::MultiSig_is_valid::static_get_type_code();
+	type_code->methods[14] = ::mmx::contract::MultiSig_rem_owner::static_get_type_code();
+	type_code->methods[15] = ::mmx::contract::MultiSig_validate::static_get_type_code();
 	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
@@ -295,12 +292,6 @@ std::shared_ptr<vnx::Value> MultiSig::vnx_call_switch(std::shared_ptr<const vnx:
 			auto _args = std::static_pointer_cast<const ::mmx::contract::MultiSig_calc_hash>(_method);
 			auto _return_value = ::mmx::contract::MultiSig_calc_hash_return::create();
 			_return_value->_ret_0 = calc_hash();
-			return _return_value;
-		}
-		case 0xd5b28a8ba1fda714ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::contract::MultiSig_get_dependency>(_method);
-			auto _return_value = ::mmx::contract::MultiSig_get_dependency_return::create();
-			_return_value->_ret_0 = get_dependency();
 			return _return_value;
 		}
 		case 0x99bf8748d9ab3076ull: {

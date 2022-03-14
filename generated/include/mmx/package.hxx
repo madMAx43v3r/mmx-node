@@ -40,6 +40,8 @@ class BlockHeader_is_valid_return;
 class ChainParams;
 class Challenge;
 class Context;
+class Context_get_contract;
+class Context_get_contract_return;
 class Contract;
 class Contract_calc_cost;
 class Contract_calc_cost_return;
@@ -341,6 +343,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_BlockHeader_is
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ChainParams; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Challenge; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Context; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Context_get_contract; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Context_get_contract_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_calc_cost; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_calc_cost_return; ///< \private
@@ -640,6 +644,8 @@ void read(TypeInput& in, ::mmx::BlockHeader_is_valid_return& value, const TypeCo
 void read(TypeInput& in, ::mmx::ChainParams& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Challenge& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Context& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Context_get_contract& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Context_get_contract_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Contract& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Contract_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Contract_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -941,6 +947,8 @@ void write(TypeOutput& out, const ::mmx::BlockHeader_is_valid_return& value, con
 void write(TypeOutput& out, const ::mmx::ChainParams& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Challenge& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Context& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Context_get_contract& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Context_get_contract_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Contract& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Contract_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Contract_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1242,6 +1250,8 @@ void read(std::istream& in, ::mmx::BlockHeader_is_valid_return& value); ///< \pr
 void read(std::istream& in, ::mmx::ChainParams& value); ///< \private
 void read(std::istream& in, ::mmx::Challenge& value); ///< \private
 void read(std::istream& in, ::mmx::Context& value); ///< \private
+void read(std::istream& in, ::mmx::Context_get_contract& value); ///< \private
+void read(std::istream& in, ::mmx::Context_get_contract_return& value); ///< \private
 void read(std::istream& in, ::mmx::Contract& value); ///< \private
 void read(std::istream& in, ::mmx::Contract_calc_cost& value); ///< \private
 void read(std::istream& in, ::mmx::Contract_calc_cost_return& value); ///< \private
@@ -1543,6 +1553,8 @@ void write(std::ostream& out, const ::mmx::BlockHeader_is_valid_return& value); 
 void write(std::ostream& out, const ::mmx::ChainParams& value); ///< \private
 void write(std::ostream& out, const ::mmx::Challenge& value); ///< \private
 void write(std::ostream& out, const ::mmx::Context& value); ///< \private
+void write(std::ostream& out, const ::mmx::Context_get_contract& value); ///< \private
+void write(std::ostream& out, const ::mmx::Context_get_contract_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Contract& value); ///< \private
 void write(std::ostream& out, const ::mmx::Contract_calc_cost& value); ///< \private
 void write(std::ostream& out, const ::mmx::Contract_calc_cost_return& value); ///< \private
@@ -1844,6 +1856,8 @@ void accept(Visitor& visitor, const ::mmx::BlockHeader_is_valid_return& value); 
 void accept(Visitor& visitor, const ::mmx::ChainParams& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Challenge& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Context& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Context_get_contract& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Context_get_contract_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Contract& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Contract_calc_cost& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Contract_calc_cost_return& value); ///< \private
@@ -2561,6 +2575,52 @@ struct type<::mmx::Context> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Context& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Context_get_contract> {
+	void read(TypeInput& in, ::mmx::Context_get_contract& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Context_get_contract& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Context_get_contract& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Context_get_contract& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Context_get_contract& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Context_get_contract& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Context_get_contract_return> {
+	void read(TypeInput& in, ::mmx::Context_get_contract_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Context_get_contract_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Context_get_contract_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Context_get_contract_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Context_get_contract_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Context_get_contract_return& value, bool special = false);
 };
 
 /// \private

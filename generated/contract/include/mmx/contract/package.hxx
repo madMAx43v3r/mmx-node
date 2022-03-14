@@ -111,8 +111,6 @@ class MultiSig_calc_cost;
 class MultiSig_calc_cost_return;
 class MultiSig_calc_hash;
 class MultiSig_calc_hash_return;
-class MultiSig_get_dependency;
-class MultiSig_get_dependency_return;
 class MultiSig_get_parties;
 class MultiSig_get_parties_return;
 class MultiSig_is_valid;
@@ -304,8 +302,6 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Multi
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_calc_cost_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_calc_hash; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_calc_hash_return; ///< \private
-MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_get_dependency; ///< \private
-MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_get_dependency_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_get_parties; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_get_parties_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_is_valid; ///< \private
@@ -503,8 +499,6 @@ void read(TypeInput& in, ::mmx::contract::MultiSig_calc_cost& value, const TypeC
 void read(TypeInput& in, ::mmx::contract::MultiSig_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::contract::MultiSig_get_dependency& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::contract::MultiSig_get_dependency_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig_get_parties& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig_get_parties_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -696,8 +690,6 @@ void write(TypeOutput& out, const ::mmx::contract::MultiSig_calc_cost& value, co
 void write(TypeOutput& out, const ::mmx::contract::MultiSig_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::contract::MultiSig_get_dependency& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::contract::MultiSig_get_dependency_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig_get_parties& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig_get_parties_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -889,8 +881,6 @@ void read(std::istream& in, ::mmx::contract::MultiSig_calc_cost& value); ///< \p
 void read(std::istream& in, ::mmx::contract::MultiSig_calc_cost_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig_calc_hash& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig_calc_hash_return& value); ///< \private
-void read(std::istream& in, ::mmx::contract::MultiSig_get_dependency& value); ///< \private
-void read(std::istream& in, ::mmx::contract::MultiSig_get_dependency_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig_get_parties& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig_get_parties_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig_is_valid& value); ///< \private
@@ -1082,8 +1072,6 @@ void write(std::ostream& out, const ::mmx::contract::MultiSig_calc_cost& value);
 void write(std::ostream& out, const ::mmx::contract::MultiSig_calc_cost_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig_calc_hash& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig_calc_hash_return& value); ///< \private
-void write(std::ostream& out, const ::mmx::contract::MultiSig_get_dependency& value); ///< \private
-void write(std::ostream& out, const ::mmx::contract::MultiSig_get_dependency_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig_get_parties& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig_get_parties_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig_is_valid& value); ///< \private
@@ -1275,8 +1263,6 @@ void accept(Visitor& visitor, const ::mmx::contract::MultiSig_calc_cost& value);
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig_calc_cost_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig_calc_hash& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig_calc_hash_return& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::contract::MultiSig_get_dependency& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::contract::MultiSig_get_dependency_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig_get_parties& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig_get_parties_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig_is_valid& value); ///< \private
@@ -3424,52 +3410,6 @@ struct type<::mmx::contract::MultiSig_calc_hash_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_calc_hash_return& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::contract::MultiSig_get_dependency> {
-	void read(TypeInput& in, ::mmx::contract::MultiSig_get_dependency& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::contract::MultiSig_get_dependency& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::contract::MultiSig_get_dependency& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::contract::MultiSig_get_dependency& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::contract::MultiSig_get_dependency& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_get_dependency& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::contract::MultiSig_get_dependency_return> {
-	void read(TypeInput& in, ::mmx::contract::MultiSig_get_dependency_return& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::contract::MultiSig_get_dependency_return& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::contract::MultiSig_get_dependency_return& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::contract::MultiSig_get_dependency_return& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::contract::MultiSig_get_dependency_return& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_get_dependency_return& value, bool special = false);
 };
 
 /// \private

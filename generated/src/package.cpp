@@ -20,6 +20,8 @@
 #include <mmx/ChainParams.hxx>
 #include <mmx/Challenge.hxx>
 #include <mmx/Context.hxx>
+#include <mmx/Context_get_contract.hxx>
+#include <mmx/Context_get_contract_return.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/Contract_calc_cost.hxx>
 #include <mmx/Contract_calc_cost_return.hxx>
@@ -534,6 +536,30 @@ void type<::mmx::Context>::create_dynamic_code(std::vector<uint16_t>& code) {
 }
 
 void type<::mmx::Context>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Context& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Context_get_contract>::get_type_code() {
+	return mmx::vnx_native_type_code_Context_get_contract;
+}
+
+void type<::mmx::Context_get_contract>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Context_get_contract());
+}
+
+void type<::mmx::Context_get_contract>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Context_get_contract& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Context_get_contract_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Context_get_contract_return;
+}
+
+void type<::mmx::Context_get_contract_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Context_get_contract_return());
+}
+
+void type<::mmx::Context_get_contract_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Context_get_contract_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -3864,6 +3890,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::ChainParams::static_create_type_code());
 	vnx::register_type_code(::mmx::Challenge::static_create_type_code());
 	vnx::register_type_code(::mmx::Context::static_create_type_code());
+	vnx::register_type_code(::mmx::Context_get_contract::static_create_type_code());
+	vnx::register_type_code(::mmx::Context_get_contract_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Contract::static_create_type_code());
 	vnx::register_type_code(::mmx::Contract_calc_cost::static_create_type_code());
 	vnx::register_type_code(::mmx::Contract_calc_cost_return::static_create_type_code());
@@ -4165,6 +4193,8 @@ const vnx::TypeCode* const vnx_native_type_code_BlockHeader_is_valid_return = vn
 const vnx::TypeCode* const vnx_native_type_code_ChainParams = vnx::get_type_code(vnx::Hash64(0x51bba8d28881e8e7ull));
 const vnx::TypeCode* const vnx_native_type_code_Challenge = vnx::get_type_code(vnx::Hash64(0x4bf49f8022405249ull));
 const vnx::TypeCode* const vnx_native_type_code_Context = vnx::get_type_code(vnx::Hash64(0x4c0f99bb7370b6ccull));
+const vnx::TypeCode* const vnx_native_type_code_Context_get_contract = vnx::get_type_code(vnx::Hash64(0x1f4d1db80d454fcbull));
+const vnx::TypeCode* const vnx_native_type_code_Context_get_contract_return = vnx::get_type_code(vnx::Hash64(0x852f76838933bfeaull));
 const vnx::TypeCode* const vnx_native_type_code_Contract = vnx::get_type_code(vnx::Hash64(0x26b896ae8c415285ull));
 const vnx::TypeCode* const vnx_native_type_code_Contract_calc_cost = vnx::get_type_code(vnx::Hash64(0xb23d047adf8b2612ull));
 const vnx::TypeCode* const vnx_native_type_code_Contract_calc_cost_return = vnx::get_type_code(vnx::Hash64(0x6aecc1400eb9e92ull));

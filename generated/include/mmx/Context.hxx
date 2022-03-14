@@ -33,6 +33,8 @@ public:
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
 	
+	virtual std::shared_ptr<const ::mmx::Contract> get_contract(const ::mmx::addr_t& address = ::mmx::addr_t()) const;
+	
 	static std::shared_ptr<Context> create();
 	std::shared_ptr<vnx::Value> clone() const override;
 	

@@ -90,8 +90,6 @@
 #include <mmx/contract/MultiSig_calc_cost_return.hxx>
 #include <mmx/contract/MultiSig_calc_hash.hxx>
 #include <mmx/contract/MultiSig_calc_hash_return.hxx>
-#include <mmx/contract/MultiSig_get_dependency.hxx>
-#include <mmx/contract/MultiSig_get_dependency_return.hxx>
 #include <mmx/contract/MultiSig_get_parties.hxx>
 #include <mmx/contract/MultiSig_get_parties_return.hxx>
 #include <mmx/contract/MultiSig_is_valid.hxx>
@@ -1266,30 +1264,6 @@ void type<::mmx::contract::MultiSig_calc_hash_return>::create_dynamic_code(std::
 }
 
 void type<::mmx::contract::MultiSig_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_calc_hash_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MultiSig_get_dependency>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MultiSig_get_dependency;
-}
-
-void type<::mmx::contract::MultiSig_get_dependency>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MultiSig_get_dependency());
-}
-
-void type<::mmx::contract::MultiSig_get_dependency>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_get_dependency& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MultiSig_get_dependency_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MultiSig_get_dependency_return;
-}
-
-void type<::mmx::contract::MultiSig_get_dependency_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MultiSig_get_dependency_return());
-}
-
-void type<::mmx::contract::MultiSig_get_dependency_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_get_dependency_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -2603,8 +2577,6 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::MultiSig_calc_cost_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig_calc_hash_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MultiSig_get_dependency::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MultiSig_get_dependency_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig_get_parties::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig_get_parties_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig_is_valid::static_create_type_code());
@@ -2803,8 +2775,6 @@ const vnx::TypeCode* const vnx_native_type_code_MultiSig_calc_cost = vnx::get_ty
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_calc_cost_return = vnx::get_type_code(vnx::Hash64(0x27d3b356beac0b61ull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_calc_hash = vnx::get_type_code(vnx::Hash64(0xcf77247303f2a760ull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_calc_hash_return = vnx::get_type_code(vnx::Hash64(0x5c85ee5a3873661dull));
-const vnx::TypeCode* const vnx_native_type_code_MultiSig_get_dependency = vnx::get_type_code(vnx::Hash64(0xd5b28a8ba1fda714ull));
-const vnx::TypeCode* const vnx_native_type_code_MultiSig_get_dependency_return = vnx::get_type_code(vnx::Hash64(0xc30bc595fa06fd8full));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_get_parties = vnx::get_type_code(vnx::Hash64(0x99bf8748d9ab3076ull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_get_parties_return = vnx::get_type_code(vnx::Hash64(0x3c5857efd3a8b353ull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_is_valid = vnx::get_type_code(vnx::Hash64(0x613ac937350f5cd7ull));
