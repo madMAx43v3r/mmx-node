@@ -42,6 +42,10 @@ uint64_t PuzzleLock::calc_cost(std::shared_ptr<const ChainParams> params) const
 	return Locked::calc_cost() + (puzzle ? puzzle->calc_cost(params) : 0) + 32 * params->min_txfee_byte;
 }
 
+std::vector<addr_t> PuzzleLock::get_dependency() const {
+	return {owner, target};
+}
+
 std::vector<addr_t> PuzzleLock::get_parties() const {
 	return {owner, target};
 }
@@ -56,12 +60,13 @@ std::vector<tx_out_t> PuzzleLock::validate(std::shared_ptr<const Operation> oper
 			puzzle->validate(op, context);
 		}
 		{
+			auto iter = context->depends.find(target);
+			if(iter == context->depends.end()) {
+				throw std::logic_error("missing dependency");
+			}
 			auto op = vnx::clone(operation);
 			op->solution = claim->target;
-
-			contract::PubKey contract;
-			contract.address = target;
-			contract.validate(op, context);
+			iter->second->validate(op, context);
 		}
 		if(!std::dynamic_pointer_cast<const operation::Spend>(operation)) {
 			throw std::logic_error("invalid operation");
