@@ -107,6 +107,25 @@
 #include <mmx/contract/NFT_calc_hash_return.hxx>
 #include <mmx/contract/NFT_is_valid.hxx>
 #include <mmx/contract/NFT_is_valid_return.hxx>
+#include <mmx/contract/PlotNFT.hxx>
+#include <mmx/contract/PlotNFT_calc_cost.hxx>
+#include <mmx/contract/PlotNFT_calc_cost_return.hxx>
+#include <mmx/contract/PlotNFT_calc_hash.hxx>
+#include <mmx/contract/PlotNFT_calc_hash_return.hxx>
+#include <mmx/contract/PlotNFT_get_dependency.hxx>
+#include <mmx/contract/PlotNFT_get_dependency_return.hxx>
+#include <mmx/contract/PlotNFT_get_owner.hxx>
+#include <mmx/contract/PlotNFT_get_owner_return.hxx>
+#include <mmx/contract/PlotNFT_get_parties.hxx>
+#include <mmx/contract/PlotNFT_get_parties_return.hxx>
+#include <mmx/contract/PlotNFT_is_valid.hxx>
+#include <mmx/contract/PlotNFT_is_valid_return.hxx>
+#include <mmx/contract/PlotNFT_lock_target.hxx>
+#include <mmx/contract/PlotNFT_lock_target_return.hxx>
+#include <mmx/contract/PlotNFT_unlock.hxx>
+#include <mmx/contract/PlotNFT_unlock_return.hxx>
+#include <mmx/contract/PlotNFT_validate.hxx>
+#include <mmx/contract/PlotNFT_validate_return.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/contract/PubKey_calc_cost.hxx>
 #include <mmx/contract/PubKey_calc_cost_return.hxx>
@@ -127,6 +146,8 @@
 #include <mmx/contract/PuzzleLock_calc_cost_return.hxx>
 #include <mmx/contract/PuzzleLock_calc_hash.hxx>
 #include <mmx/contract/PuzzleLock_calc_hash_return.hxx>
+#include <mmx/contract/PuzzleLock_get_dependency.hxx>
+#include <mmx/contract/PuzzleLock_get_dependency_return.hxx>
 #include <mmx/contract/PuzzleLock_get_parties.hxx>
 #include <mmx/contract/PuzzleLock_get_parties_return.hxx>
 #include <mmx/contract/PuzzleLock_is_valid.hxx>
@@ -1452,6 +1473,234 @@ void type<::mmx::contract::NFT_is_valid_return>::create_dynamic_code(std::vector
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::contract::PlotNFT>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PlotNFT;
+}
+
+void type<::mmx::contract::PlotNFT>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PlotNFT());
+}
+
+void type<::mmx::contract::PlotNFT>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PlotNFT_calc_cost>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PlotNFT_calc_cost;
+}
+
+void type<::mmx::contract::PlotNFT_calc_cost>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PlotNFT_calc_cost());
+}
+
+void type<::mmx::contract::PlotNFT_calc_cost>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_calc_cost& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PlotNFT_calc_cost_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PlotNFT_calc_cost_return;
+}
+
+void type<::mmx::contract::PlotNFT_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PlotNFT_calc_cost_return());
+}
+
+void type<::mmx::contract::PlotNFT_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_calc_cost_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PlotNFT_calc_hash>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PlotNFT_calc_hash;
+}
+
+void type<::mmx::contract::PlotNFT_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PlotNFT_calc_hash());
+}
+
+void type<::mmx::contract::PlotNFT_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_calc_hash& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PlotNFT_calc_hash_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PlotNFT_calc_hash_return;
+}
+
+void type<::mmx::contract::PlotNFT_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PlotNFT_calc_hash_return());
+}
+
+void type<::mmx::contract::PlotNFT_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_calc_hash_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PlotNFT_get_dependency>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PlotNFT_get_dependency;
+}
+
+void type<::mmx::contract::PlotNFT_get_dependency>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PlotNFT_get_dependency());
+}
+
+void type<::mmx::contract::PlotNFT_get_dependency>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_get_dependency& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PlotNFT_get_dependency_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PlotNFT_get_dependency_return;
+}
+
+void type<::mmx::contract::PlotNFT_get_dependency_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PlotNFT_get_dependency_return());
+}
+
+void type<::mmx::contract::PlotNFT_get_dependency_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_get_dependency_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PlotNFT_get_owner>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PlotNFT_get_owner;
+}
+
+void type<::mmx::contract::PlotNFT_get_owner>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PlotNFT_get_owner());
+}
+
+void type<::mmx::contract::PlotNFT_get_owner>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_get_owner& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PlotNFT_get_owner_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PlotNFT_get_owner_return;
+}
+
+void type<::mmx::contract::PlotNFT_get_owner_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PlotNFT_get_owner_return());
+}
+
+void type<::mmx::contract::PlotNFT_get_owner_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_get_owner_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PlotNFT_get_parties>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PlotNFT_get_parties;
+}
+
+void type<::mmx::contract::PlotNFT_get_parties>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PlotNFT_get_parties());
+}
+
+void type<::mmx::contract::PlotNFT_get_parties>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_get_parties& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PlotNFT_get_parties_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PlotNFT_get_parties_return;
+}
+
+void type<::mmx::contract::PlotNFT_get_parties_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PlotNFT_get_parties_return());
+}
+
+void type<::mmx::contract::PlotNFT_get_parties_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_get_parties_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PlotNFT_is_valid>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PlotNFT_is_valid;
+}
+
+void type<::mmx::contract::PlotNFT_is_valid>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PlotNFT_is_valid());
+}
+
+void type<::mmx::contract::PlotNFT_is_valid>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_is_valid& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PlotNFT_is_valid_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PlotNFT_is_valid_return;
+}
+
+void type<::mmx::contract::PlotNFT_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PlotNFT_is_valid_return());
+}
+
+void type<::mmx::contract::PlotNFT_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_is_valid_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PlotNFT_lock_target>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PlotNFT_lock_target;
+}
+
+void type<::mmx::contract::PlotNFT_lock_target>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PlotNFT_lock_target());
+}
+
+void type<::mmx::contract::PlotNFT_lock_target>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_lock_target& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PlotNFT_lock_target_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PlotNFT_lock_target_return;
+}
+
+void type<::mmx::contract::PlotNFT_lock_target_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PlotNFT_lock_target_return());
+}
+
+void type<::mmx::contract::PlotNFT_lock_target_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_lock_target_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PlotNFT_unlock>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PlotNFT_unlock;
+}
+
+void type<::mmx::contract::PlotNFT_unlock>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PlotNFT_unlock());
+}
+
+void type<::mmx::contract::PlotNFT_unlock>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_unlock& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PlotNFT_unlock_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PlotNFT_unlock_return;
+}
+
+void type<::mmx::contract::PlotNFT_unlock_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PlotNFT_unlock_return());
+}
+
+void type<::mmx::contract::PlotNFT_unlock_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_unlock_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PlotNFT_validate>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PlotNFT_validate;
+}
+
+void type<::mmx::contract::PlotNFT_validate>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PlotNFT_validate());
+}
+
+void type<::mmx::contract::PlotNFT_validate>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_validate& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PlotNFT_validate_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PlotNFT_validate_return;
+}
+
+void type<::mmx::contract::PlotNFT_validate_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PlotNFT_validate_return());
+}
+
+void type<::mmx::contract::PlotNFT_validate_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_validate_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::contract::PubKey>::get_type_code() {
 	return mmx::contract::vnx_native_type_code_PubKey;
 }
@@ -1689,6 +1938,30 @@ void type<::mmx::contract::PuzzleLock_calc_hash_return>::create_dynamic_code(std
 }
 
 void type<::mmx::contract::PuzzleLock_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock_calc_hash_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PuzzleLock_get_dependency>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PuzzleLock_get_dependency;
+}
+
+void type<::mmx::contract::PuzzleLock_get_dependency>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PuzzleLock_get_dependency());
+}
+
+void type<::mmx::contract::PuzzleLock_get_dependency>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock_get_dependency& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PuzzleLock_get_dependency_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PuzzleLock_get_dependency_return;
+}
+
+void type<::mmx::contract::PuzzleLock_get_dependency_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PuzzleLock_get_dependency_return());
+}
+
+void type<::mmx::contract::PuzzleLock_get_dependency_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleLock_get_dependency_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -2347,6 +2620,25 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::NFT_calc_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::NFT_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::NFT_is_valid_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PlotNFT::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PlotNFT_calc_cost::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PlotNFT_calc_cost_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PlotNFT_calc_hash::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PlotNFT_calc_hash_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PlotNFT_get_dependency::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PlotNFT_get_dependency_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PlotNFT_get_owner::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PlotNFT_get_owner_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PlotNFT_get_parties::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PlotNFT_get_parties_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PlotNFT_is_valid::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PlotNFT_is_valid_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PlotNFT_lock_target::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PlotNFT_lock_target_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PlotNFT_unlock::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PlotNFT_unlock_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PlotNFT_validate::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PlotNFT_validate_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey_calc_cost::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey_calc_cost_return::static_create_type_code());
@@ -2367,6 +2659,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::PuzzleLock_calc_cost_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PuzzleLock_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PuzzleLock_calc_hash_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PuzzleLock_get_dependency::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PuzzleLock_get_dependency_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PuzzleLock_get_parties::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PuzzleLock_get_parties_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PuzzleLock_is_valid::static_create_type_code());
@@ -2526,6 +2820,25 @@ const vnx::TypeCode* const vnx_native_type_code_NFT_calc_hash = vnx::get_type_co
 const vnx::TypeCode* const vnx_native_type_code_NFT_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xb0e1d680f5c79290ull));
 const vnx::TypeCode* const vnx_native_type_code_NFT_is_valid = vnx::get_type_code(vnx::Hash64(0xfc70fda3036d3a08ull));
 const vnx::TypeCode* const vnx_native_type_code_NFT_is_valid_return = vnx::get_type_code(vnx::Hash64(0x744c9a1ab5d94c5bull));
+const vnx::TypeCode* const vnx_native_type_code_PlotNFT = vnx::get_type_code(vnx::Hash64(0x7705f4da286543dull));
+const vnx::TypeCode* const vnx_native_type_code_PlotNFT_calc_cost = vnx::get_type_code(vnx::Hash64(0xb8ed405cc3b49949ull));
+const vnx::TypeCode* const vnx_native_type_code_PlotNFT_calc_cost_return = vnx::get_type_code(vnx::Hash64(0x20fc6d7eb7db96b1ull));
+const vnx::TypeCode* const vnx_native_type_code_PlotNFT_calc_hash = vnx::get_type_code(vnx::Hash64(0x68ff8b3aa626edb6ull));
+const vnx::TypeCode* const vnx_native_type_code_PlotNFT_calc_hash_return = vnx::get_type_code(vnx::Hash64(0x5baa30723104fbcdull));
+const vnx::TypeCode* const vnx_native_type_code_PlotNFT_get_dependency = vnx::get_type_code(vnx::Hash64(0x82d6a03bbbfb4e99ull));
+const vnx::TypeCode* const vnx_native_type_code_PlotNFT_get_dependency_return = vnx::get_type_code(vnx::Hash64(0x1051c88efeeb565eull));
+const vnx::TypeCode* const vnx_native_type_code_PlotNFT_get_owner = vnx::get_type_code(vnx::Hash64(0x85328269c0b0b9dbull));
+const vnx::TypeCode* const vnx_native_type_code_PlotNFT_get_owner_return = vnx::get_type_code(vnx::Hash64(0x23379da252a87839ull));
+const vnx::TypeCode* const vnx_native_type_code_PlotNFT_get_parties = vnx::get_type_code(vnx::Hash64(0xa72de574ea419e96ull));
+const vnx::TypeCode* const vnx_native_type_code_PlotNFT_get_parties_return = vnx::get_type_code(vnx::Hash64(0x865e4b38cdd0c616ull));
+const vnx::TypeCode* const vnx_native_type_code_PlotNFT_is_valid = vnx::get_type_code(vnx::Hash64(0xee4e1a5d6185e72bull));
+const vnx::TypeCode* const vnx_native_type_code_PlotNFT_is_valid_return = vnx::get_type_code(vnx::Hash64(0xdd7471627ac9d81dull));
+const vnx::TypeCode* const vnx_native_type_code_PlotNFT_lock_target = vnx::get_type_code(vnx::Hash64(0xce98b5ca521ecf16ull));
+const vnx::TypeCode* const vnx_native_type_code_PlotNFT_lock_target_return = vnx::get_type_code(vnx::Hash64(0x8cffbca2d246eec1ull));
+const vnx::TypeCode* const vnx_native_type_code_PlotNFT_unlock = vnx::get_type_code(vnx::Hash64(0xa0b90b41dbf800f0ull));
+const vnx::TypeCode* const vnx_native_type_code_PlotNFT_unlock_return = vnx::get_type_code(vnx::Hash64(0xd82126adce18ab73ull));
+const vnx::TypeCode* const vnx_native_type_code_PlotNFT_validate = vnx::get_type_code(vnx::Hash64(0xcff189ab6beb586eull));
+const vnx::TypeCode* const vnx_native_type_code_PlotNFT_validate_return = vnx::get_type_code(vnx::Hash64(0xc051cdb3b63649e6ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey = vnx::get_type_code(vnx::Hash64(0x9b3cd508d7f41423ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_calc_cost = vnx::get_type_code(vnx::Hash64(0x502d1edce44719b3ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xc2f589dac0e8bcb0ull));
@@ -2546,6 +2859,8 @@ const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_calc_cost = vnx::get_
 const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xe3703fa5e9b25e67ull));
 const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_calc_hash = vnx::get_type_code(vnx::Hash64(0x3f9ab53d1276114aull));
 const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_calc_hash_return = vnx::get_type_code(vnx::Hash64(0x982662a96f6d331bull));
+const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_get_dependency = vnx::get_type_code(vnx::Hash64(0xc83c186ef34eeb1bull));
+const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_get_dependency_return = vnx::get_type_code(vnx::Hash64(0xd13f6ea487c656bbull));
 const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_get_parties = vnx::get_type_code(vnx::Hash64(0xa0530fd9cb9a9c62ull));
 const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_get_parties_return = vnx::get_type_code(vnx::Hash64(0x85242cc27c6f3c52ull));
 const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_is_valid = vnx::get_type_code(vnx::Hash64(0xf4969d5cbc33744eull));

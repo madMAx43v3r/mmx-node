@@ -47,6 +47,8 @@
 #include <mmx/contract/PuzzleLock_calc_cost_return.hxx>
 #include <mmx/contract/PuzzleLock_calc_hash.hxx>
 #include <mmx/contract/PuzzleLock_calc_hash_return.hxx>
+#include <mmx/contract/PuzzleLock_get_dependency.hxx>
+#include <mmx/contract/PuzzleLock_get_dependency_return.hxx>
 #include <mmx/contract/PuzzleLock_get_parties.hxx>
 #include <mmx/contract/PuzzleLock_get_parties_return.hxx>
 #include <mmx/contract/PuzzleLock_is_valid.hxx>
@@ -224,7 +226,7 @@ std::shared_ptr<vnx::TypeCode> PuzzleLock::static_create_type_code() {
 	type_code->parents[0] = ::mmx::contract::Locked::static_get_type_code();
 	type_code->parents[1] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<PuzzleLock>(); };
-	type_code->methods.resize(22);
+	type_code->methods.resize(23);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_dependency::static_get_type_code();
@@ -244,9 +246,10 @@ std::shared_ptr<vnx::TypeCode> PuzzleLock::static_create_type_code() {
 	type_code->methods[16] = ::mmx::contract::Locked_validate::static_get_type_code();
 	type_code->methods[17] = ::mmx::contract::PuzzleLock_calc_cost::static_get_type_code();
 	type_code->methods[18] = ::mmx::contract::PuzzleLock_calc_hash::static_get_type_code();
-	type_code->methods[19] = ::mmx::contract::PuzzleLock_get_parties::static_get_type_code();
-	type_code->methods[20] = ::mmx::contract::PuzzleLock_is_valid::static_get_type_code();
-	type_code->methods[21] = ::mmx::contract::PuzzleLock_validate::static_get_type_code();
+	type_code->methods[19] = ::mmx::contract::PuzzleLock_get_dependency::static_get_type_code();
+	type_code->methods[20] = ::mmx::contract::PuzzleLock_get_parties::static_get_type_code();
+	type_code->methods[21] = ::mmx::contract::PuzzleLock_is_valid::static_get_type_code();
+	type_code->methods[22] = ::mmx::contract::PuzzleLock_validate::static_get_type_code();
 	type_code->fields.resize(6);
 	{
 		auto& field = type_code->fields[0];
@@ -402,6 +405,12 @@ std::shared_ptr<vnx::Value> PuzzleLock::vnx_call_switch(std::shared_ptr<const vn
 			auto _args = std::static_pointer_cast<const ::mmx::contract::PuzzleLock_calc_hash>(_method);
 			auto _return_value = ::mmx::contract::PuzzleLock_calc_hash_return::create();
 			_return_value->_ret_0 = calc_hash();
+			return _return_value;
+		}
+		case 0xc83c186ef34eeb1bull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::PuzzleLock_get_dependency>(_method);
+			auto _return_value = ::mmx::contract::PuzzleLock_get_dependency_return::create();
+			_return_value->_ret_0 = get_dependency();
 			return _return_value;
 		}
 		case 0xa0530fd9cb9a9c62ull: {
