@@ -17,6 +17,8 @@ class PuzzleLock extends Locked {
 	
 	ulong calc_cost(mmx.ChainParams* params) const;
 	
+	vector<addr_t> get_dependency() const;
+	
 	vector<addr_t> get_parties() const;
 	
 	vector<mmx.tx_out_t> validate(mmx.Operation* operation, mmx.Context* context) const;
