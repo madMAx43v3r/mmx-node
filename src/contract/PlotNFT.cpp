@@ -62,26 +62,25 @@ std::vector<tx_out_t> PlotNFT::validate(std::shared_ptr<const Operation> operati
 		if(!target) {
 			throw std::logic_error("!target");
 		}
-		{
-			auto iter = context->depends.find(*target);
-			if(iter == context->depends.end()) {
-				throw std::logic_error("missing dependency");
-			}
-			auto op = vnx::clone(operation);
-			op->solution = claim->target;
-			iter->second->validate(op, context);
+		auto contract = context->get_contract(*target);
+		if(!contract) {
+			throw std::logic_error("missing dependency");
 		}
+		auto op = vnx::clone(operation);
+		op->solution = claim->target;
+		contract->validate(op, context);
+
 		if(!std::dynamic_pointer_cast<const operation::Spend>(operation)) {
 			throw std::logic_error("invalid operation");
 		}
 		return {};
 	}
 	{
-		auto iter = context->depends.find(owner);
-		if(iter == context->depends.end()) {
+		auto contract = context->get_contract(owner);
+		if(!contract) {
 			throw std::logic_error("missing dependency");
 		}
-		iter->second->validate(operation, context);
+		contract->validate(operation, context);
 	}
 	if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(operation))
 	{

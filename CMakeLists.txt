@@ -58,6 +58,7 @@ add_library(mmx_iface SHARED
 	src/BlockHeader.cpp
 	src/Transaction.cpp
 	src/Operation.cpp
+	src/Context.cpp
 	src/Contract.cpp
 	src/Solution.cpp
 	src/ProofOfTime.cpp

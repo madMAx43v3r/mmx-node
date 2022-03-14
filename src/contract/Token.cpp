@@ -83,11 +83,11 @@ std::vector<tx_out_t> Token::validate(std::shared_ptr<const Operation> operation
 		throw std::logic_error("!owner");
 	}
 	{
-		const auto iter = context->depends.find(*owner);
-		if(iter == context->depends.end()) {
+		auto contract = context->get_contract(*owner);
+		if(!contract) {
 			throw std::logic_error("missing dependency");
 		}
-		iter->second->validate(operation, context);
+		contract->validate(operation, context);
 	}
 	if(auto mint = std::dynamic_pointer_cast<const operation::Mint>(operation))
 	{

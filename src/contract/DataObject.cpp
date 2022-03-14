@@ -71,11 +71,11 @@ std::vector<tx_out_t> DataObject::validate(std::shared_ptr<const Operation> oper
 		throw std::logic_error("!owner");
 	}
 	{
-		auto iter = context->depends.find(*owner);
-		if(iter == context->depends.end()) {
+		auto contract = context->get_contract(*owner);
+		if(!contract) {
 			throw std::logic_error("missing dependency");
 		}
-		iter->second->validate(operation, context);
+		contract->validate(operation, context);
 	}
 	return {};
 }

@@ -63,11 +63,11 @@ vnx::bool_t Locked::is_spendable(const utxo_t& utxo, std::shared_ptr<const Conte
 std::vector<tx_out_t> Locked::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
 	{
-		auto iter = context->depends.find(owner);
-		if(iter == context->depends.end()) {
+		auto contract = context->get_contract(owner);
+		if(!contract) {
 			throw std::logic_error("missing dependency");
 		}
-		iter->second->validate(operation, context);
+		contract->validate(operation, context);
 	}
 	if(auto spend = std::dynamic_pointer_cast<const operation::Spend>(operation))
 	{
