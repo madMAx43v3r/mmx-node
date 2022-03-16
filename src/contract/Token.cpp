@@ -91,6 +91,9 @@ std::vector<tx_out_t> Token::validate(std::shared_ptr<const Operation> operation
 	}
 	if(auto mint = std::dynamic_pointer_cast<const operation::Mint>(operation))
 	{
+		if(!is_mintable) {
+			throw std::logic_error("token not mintable");
+		}
 		tx_out_t out;
 		out.contract = mint->address;
 		out.address = mint->target;
@@ -103,6 +106,26 @@ std::vector<tx_out_t> Token::validate(std::shared_ptr<const Operation> operation
 void Token::transfer(const vnx::optional<addr_t>& new_owner)
 {
 	owner = new_owner;
+}
+
+void Token::set_time_factor(const vnx::optional<ulong_fraction_t>& factor)
+{
+	if(!is_adjustable) {
+		throw std::logic_error("token not adjustable");
+	}
+	time_factor = factor;
+}
+
+void Token::set_stake_factor(const addr_t& currency, const vnx::optional<ulong_fraction_t>& factor)
+{
+	if(!is_adjustable) {
+		throw std::logic_error("token not adjustable");
+	}
+	if(factor) {
+		stake_factors[currency] = factor;
+	} else {
+		stake_factors.erase(currency);
+	}
 }
 
 

@@ -24,6 +24,10 @@ class Token extends Contract {
 	
 	map<addr_t, ulong_fraction_t> stake_factors;			// [currency => mint factor per block]
 	
+	bool is_mintable = true;
+	
+	bool is_adjustable = false;								// if time_factor and stake_factors is adjustable by owner
+	
 	
 	bool is_valid() const;
 	
@@ -40,5 +44,9 @@ class Token extends Contract {
 	vector<mmx.tx_out_t> validate(mmx.Operation* operation, mmx.Context* context) const;
 	
 	void transfer(optional<addr_t> new_owner);
+	
+	void set_time_factor(optional<ulong_fraction_t> factor);
+	
+	void set_stake_factor(addr_t currency, optional<ulong_fraction_t> factor);
 	
 }
