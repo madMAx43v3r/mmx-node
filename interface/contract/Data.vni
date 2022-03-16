@@ -7,7 +7,7 @@ class Data extends mmx.Contract {
 	
 	optional<addr_t> owner;
 	
-	vnx.Variant data;
+	vnx.Variant value;
 	
 	
 	hash_t calc_hash() const;

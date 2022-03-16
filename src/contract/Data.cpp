@@ -21,14 +21,14 @@ hash_t Data::calc_hash() const
 	write_bytes(out, get_type_hash());
 	write_bytes(out, version);
 	write_bytes(out, owner);
-	write_bytes(out, data);
+	write_bytes(out, value);
 	out.flush();
 
 	return hash_t(buffer);
 }
 
 uint64_t Data::calc_cost(std::shared_ptr<const ChainParams> params) const {
-	return (8 + 4 + (owner ? 32 : 0) + data.size()) * params->min_txfee_byte;
+	return (8 + 4 + (owner ? 32 : 0) + value.size()) * params->min_txfee_byte;
 }
 
 std::vector<addr_t> Data::get_dependency() const {
@@ -66,9 +66,9 @@ void Data::transfer(const vnx::optional<addr_t>& new_owner)
 	owner = new_owner;
 }
 
-void Data::set(const vnx::Variant& value)
+void Data::set(const vnx::Variant& value_)
 {
-	data = value;
+	value = value_;
 }
 
 

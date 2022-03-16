@@ -54,7 +54,7 @@ namespace contract {
 
 
 const vnx::Hash64 Data::VNX_TYPE_HASH(0xadfeee3822244f50ull);
-const vnx::Hash64 Data::VNX_CODE_HASH(0x7b24c54d8ba48fdull);
+const vnx::Hash64 Data::VNX_CODE_HASH(0x945592de082369d5ull);
 
 vnx::Hash64 Data::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -89,7 +89,7 @@ void Data::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, version);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, owner);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, data);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, value);
 	_visitor.type_end(*_type_code);
 }
 
@@ -97,7 +97,7 @@ void Data::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.contract.Data\"";
 	_out << ", \"version\": "; vnx::write(_out, version);
 	_out << ", \"owner\": "; vnx::write(_out, owner);
-	_out << ", \"data\": "; vnx::write(_out, data);
+	_out << ", \"value\": "; vnx::write(_out, value);
 	_out << "}";
 }
 
@@ -112,16 +112,16 @@ vnx::Object Data::to_object() const {
 	_object["__type"] = "mmx.contract.Data";
 	_object["version"] = version;
 	_object["owner"] = owner;
-	_object["data"] = data;
+	_object["value"] = value;
 	return _object;
 }
 
 void Data::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "data") {
-			_entry.second.to(data);
-		} else if(_entry.first == "owner") {
+		if(_entry.first == "owner") {
 			_entry.second.to(owner);
+		} else if(_entry.first == "value") {
+			_entry.second.to(value);
 		} else if(_entry.first == "version") {
 			_entry.second.to(version);
 		}
@@ -135,8 +135,8 @@ vnx::Variant Data::get_field(const std::string& _name) const {
 	if(_name == "owner") {
 		return vnx::Variant(owner);
 	}
-	if(_name == "data") {
-		return vnx::Variant(data);
+	if(_name == "value") {
+		return vnx::Variant(value);
 	}
 	return vnx::Variant();
 }
@@ -146,8 +146,8 @@ void Data::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(version);
 	} else if(_name == "owner") {
 		_value.to(owner);
-	} else if(_name == "data") {
-		_value.to(data);
+	} else if(_name == "value") {
+		_value.to(value);
 	}
 }
 
@@ -175,7 +175,7 @@ std::shared_ptr<vnx::TypeCode> Data::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.Data";
 	type_code->type_hash = vnx::Hash64(0xadfeee3822244f50ull);
-	type_code->code_hash = vnx::Hash64(0x7b24c54d8ba48fdull);
+	type_code->code_hash = vnx::Hash64(0x945592de082369d5ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::Data);
@@ -216,7 +216,7 @@ std::shared_ptr<vnx::TypeCode> Data::static_create_type_code() {
 	{
 		auto& field = type_code->fields[2];
 		field.is_extended = true;
-		field.name = "data";
+		field.name = "value";
 		field.code = {17};
 	}
 	type_code->build();
@@ -377,7 +377,7 @@ void read(TypeInput& in, ::mmx::contract::Data& value, const TypeCode* type_code
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 1: vnx::read(in, value.owner, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.data, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.value, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -399,7 +399,7 @@ void write(TypeOutput& out, const ::mmx::contract::Data& value, const TypeCode* 
 	char* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.version);
 	vnx::write(out, value.owner, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.data, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.value, type_code, type_code->fields[2].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::Data& value) {

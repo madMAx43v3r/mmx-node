@@ -22,7 +22,7 @@ class MMX_CONTRACT_EXPORT Data : public ::mmx::Contract {
 public:
 	
 	vnx::optional<::mmx::addr_t> owner;
-	::vnx::Variant data;
+	::vnx::Variant value;
 	
 	typedef ::mmx::Contract Super;
 	
@@ -81,7 +81,7 @@ void Data::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<Data>(3);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("owner", 1); _visitor.accept(owner);
-	_visitor.type_field("data", 2); _visitor.accept(data);
+	_visitor.type_field("value", 2); _visitor.accept(value);
 	_visitor.template type_end<Data>(3);
 }
 
