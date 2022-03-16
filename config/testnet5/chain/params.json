@@ -12,7 +12,7 @@
 	"min_reward": 200000,
 	"min_txfee_io": 500,
 	"min_txfee_sign": 3000,
-	"min_txfee_exec": 20000,
+	"min_txfee_exec": 50000,
 	"min_txfee_byte": 10,
 	"max_block_cost": 10000000,
 	"initial_time_diff": 10000,
