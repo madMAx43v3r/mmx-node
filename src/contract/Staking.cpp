@@ -72,8 +72,11 @@ std::vector<tx_out_t> Staking::validate(std::shared_ptr<const Operation> operati
 					tx_out_t out;
 					out.contract = currency;
 					out.address = reward_addr;
-					out.amount = ((uint256_t(num_blocks) * spend->utxo.amount) * iter->second.value) / iter->second.inverse;
-					return {out};
+					const auto& factor = iter->second;
+					out.amount = ((uint256_t(num_blocks) * spend->utxo.amount) * factor.value) / factor.inverse;
+					if(out.amount) {
+						return {out};
+					}
 				}
 			}
 		}
