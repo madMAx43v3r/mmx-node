@@ -122,7 +122,7 @@ void Token::set_stake_factor(const addr_t& currency, const vnx::optional<ulong_f
 		throw std::logic_error("token not adjustable");
 	}
 	if(factor) {
-		stake_factors[currency] = factor;
+		stake_factors[currency] = *factor;
 	} else {
 		stake_factors.erase(currency);
 	}
