@@ -182,7 +182,7 @@ app.component('balance-table', {
 	methods: {
 		update() {
 			this.loading = true;
-			fetch('/wapi/address?id=' + this.address)
+			fetch('/wapi/balance?id=' + this.address)
 				.then(response => response.json())
 				.then(data => {
 					this.loading = false;
@@ -205,15 +205,23 @@ app.component('balance-table', {
 			<thead>
 			<tr>
 				<th class="two wide">Balance</th>
+				<th class="two wide">Locked</th>
+				<th class="two wide">Spendable</th>
 				<th class="two wide">Token</th>
 				<th>Contract</th>
+				<th>More</th>
 			</tr>
 			</thead>
 			<tbody>
 			<tr v-for="item in data" :key="item.contract">
-				<td><b>{{item.value}}</b></td>
+				<td>{{item.total}}</td>
+				<td>{{item.locked}}</td>
+				<td><b>{{item.spendable}}</b></td>
 				<td>{{item.symbol}}</td>
 				<td>{{item.is_native ? '' : item.contract}}</td>
+				<td>
+					<router-link :to="'/explore/address/coins/' + address + '/' + item.contract">Coins</router-link>
+				</td>
 			</tr>
 			</tbody>
 		</table>
@@ -491,6 +499,41 @@ app.component('account-coins', {
 	},
 	created() {
 		this.update()
+	},
+	template: `
+		<coins-table :data="data"></coins-table>
+		`
+})
+
+app.component('address-coins', {
+	props: {
+		address: String,
+		currency: String,
+		limit: Number
+	},
+	data() {
+		return {
+			data: []
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/address/coins?limit=' + this.limit + '&id=' + this.address + '&currency=' + this.currency)
+				.then(response => response.json())
+				.then(data => this.data = data);
+		}
+	},
+	created() {
+		this.update()
+	},
+	template: `
+		<coins-table :data="data"></coins-table>
+		`
+})
+
+app.component('coins-table', {
+	props: {
+		data: Object
 	},
 	template: `
 		<table class="ui table striped">

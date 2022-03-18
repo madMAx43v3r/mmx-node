@@ -61,6 +61,15 @@ const AccountCoins = {
 		<account-coins :index="index" :currency="currency" :limit="1000"></account-coins>
 	`
 }
+const AddressCoins = {
+	props: {
+		address: String,
+		currency: String
+	},
+	template: `
+		<address-coins :address="address" :currency="currency" :limit="1000"></address-coins>
+	`
+}
 const AccountSend = {
 	props: {
 		index: Number
@@ -323,6 +332,9 @@ const routes = [
 	},
 	{ path: '/explore', component: Explore, meta: { is_explorer: true } },
 	{ path: '/explore/transaction/:id', component: ExploreTransaction, meta: { is_explorer: true } },
+	{ path: '/explore/address/coins/:address/:currency', component: AddressCoins,
+		props: route => ({address: route.params.address, currency: route.params.currency})
+	},
 	{ path: '/settings', component: Settings },
 ]
 
