@@ -63,6 +63,8 @@
 #include <mmx/Wallet_release_all_return.hxx>
 #include <mmx/Wallet_reserve.hxx>
 #include <mmx/Wallet_reserve_return.hxx>
+#include <mmx/Wallet_reset_cache.hxx>
+#include <mmx/Wallet_reset_cache_return.hxx>
 #include <mmx/Wallet_send.hxx>
 #include <mmx/Wallet_send_return.hxx>
 #include <mmx/Wallet_send_from.hxx>
@@ -75,6 +77,8 @@
 #include <mmx/Wallet_sign_off_return.hxx>
 #include <mmx/Wallet_split.hxx>
 #include <mmx/Wallet_split_return.hxx>
+#include <mmx/Wallet_update_cache.hxx>
+#include <mmx/Wallet_update_cache_return.hxx>
 #include <mmx/account_t.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/balance_t.hxx>
@@ -338,6 +342,30 @@ void WalletClient::release_all() {
 
 void WalletClient::release_all_async() {
 	auto _method = ::mmx::Wallet_release_all::create();
+	vnx_request(_method, true);
+}
+
+void WalletClient::reset_cache(const uint32_t& index) {
+	auto _method = ::mmx::Wallet_reset_cache::create();
+	_method->index = index;
+	vnx_request(_method, false);
+}
+
+void WalletClient::reset_cache_async(const uint32_t& index) {
+	auto _method = ::mmx::Wallet_reset_cache::create();
+	_method->index = index;
+	vnx_request(_method, true);
+}
+
+void WalletClient::update_cache(const uint32_t& index) {
+	auto _method = ::mmx::Wallet_update_cache::create();
+	_method->index = index;
+	vnx_request(_method, false);
+}
+
+void WalletClient::update_cache_async(const uint32_t& index) {
+	auto _method = ::mmx::Wallet_update_cache::create();
+	_method->index = index;
 	vnx_request(_method, true);
 }
 

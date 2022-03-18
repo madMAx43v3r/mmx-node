@@ -73,6 +73,14 @@ public:
 	
 	void release_all_async();
 	
+	void reset_cache(const uint32_t& index = 0);
+	
+	void reset_cache_async(const uint32_t& index = 0);
+	
+	void update_cache(const uint32_t& index = 0);
+	
+	void update_cache_async(const uint32_t& index = 0);
+	
 	std::vector<::mmx::utxo_entry_t> get_utxo_list(const uint32_t& index = 0, const uint32_t& min_confirm = 0);
 	
 	std::vector<::mmx::utxo_entry_t> get_utxo_list_for(const uint32_t& index = 0, const ::mmx::addr_t& currency = ::mmx::addr_t(), const uint32_t& min_confirm = 0);
