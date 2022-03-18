@@ -251,8 +251,11 @@ Wallet::complete(const uint32_t& index, std::shared_ptr<const Transaction> tx, c
 	const auto wallet = get_wallet(index);
 	get_utxo_list(index);	// update utxo_cache
 
+	std::unordered_map<addr_t, addr_t> owner_map;
+	// TODO: lookup owner_map
+
 	auto copy = vnx::clone(tx);
-	wallet->complete(copy, wallet->utxo_cache, options);
+	wallet->complete(copy, wallet->utxo_cache, options, owner_map);
 	return copy;
 }
 
