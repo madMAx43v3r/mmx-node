@@ -131,6 +131,7 @@ const AccountOptions = {
 		index: Number
 	},
 	template: `
+		<account-actions :index="index"></account-actions>
 		<create-account :index="index"></create-account>
 	`
 }

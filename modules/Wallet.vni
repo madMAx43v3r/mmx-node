@@ -57,6 +57,10 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	void release_all();
 	
+	void reset_cache(uint index);
+	
+	void update_cache(uint index) const;
+	
 	vector<utxo_entry_t> get_utxo_list(uint index, uint min_confirm = 0) const;
 	
 	vector<utxo_entry_t> get_utxo_list_for(uint index, addr_t currency, uint min_confirm = 0) const;

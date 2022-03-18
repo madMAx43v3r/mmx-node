@@ -590,6 +590,45 @@ app.component('account-details', {
 		`
 })
 
+app.component('account-actions', {
+	props: {
+		index: Number
+	},
+	data() {
+		return {
+			info: null,
+			error: null
+		}
+	},
+	methods: {
+		reset_cache() {
+			const req = {};
+			req.index = this.index;
+			fetch('/api/wallet/reset_cache', {body: JSON.stringify(req), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						this.info = "Success";
+					} else {
+						response.text().then(data => {
+							this.error = data;
+						});
+					}
+				});
+		}
+	},
+	template: `
+		<div class="ui raised segment">
+			<div @click="reset_cache" class="ui button">Reset Cache</div>
+		</div>
+		<div class="ui message" :class="{hidden: !info}">
+			<b>{{info}}</b>
+		</div>
+		<div class="ui negative message" :class="{hidden: !error}">
+			Failed with: <b>{{error}}</b>
+		</div>
+		`
+})
+
 app.component('create-account', {
 	props: {
 		index: Number

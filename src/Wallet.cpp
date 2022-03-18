@@ -90,7 +90,7 @@ hash_t Wallet::send(const uint32_t& index, const uint64_t& amount, const addr_t&
 					const addr_t& currency, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
-	get_utxo_list(index);	// update utxo_cache
+	update_cache(index);
 
 	auto tx = wallet->send(amount, dst_addr, currency, options);
 	send_off(index, tx);
@@ -104,7 +104,7 @@ hash_t Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 							const addr_t& currency, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
-	get_utxo_list(index);	// update utxo_cache
+	update_cache(index);
 
 	auto src_owner = src_addr;
 	if(auto contract = node->get_contract(src_addr)) {
@@ -135,7 +135,7 @@ hash_t Wallet::mint(const uint32_t& index, const uint64_t& amount, const addr_t&
 	const auto owner = *token->owner;
 
 	const auto wallet = get_wallet(index);
-	get_utxo_list(index);	// update utxo_cache
+	update_cache(index);
 
 	if(wallet->find_address(owner) < 0) {
 		throw std::logic_error("token not owned by wallet");
@@ -200,7 +200,7 @@ hash_t Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> con
 		throw std::logic_error("contract cannot be null");
 	}
 	const auto wallet = get_wallet(index);
-	get_utxo_list(index);	// update utxo_cache
+	update_cache(index);
 
 	auto tx = wallet->deploy(contract, options);
 	send_off(index, tx);
@@ -220,7 +220,7 @@ hash_t Wallet::execute(const uint32_t& index, const addr_t& address, const vnx::
 		throw std::logic_error("contract has no owner");
 	}
 	const auto wallet = get_wallet(index);
-	get_utxo_list(index);	// update utxo_cache
+	update_cache(index);
 
 	auto op = operation::Mutate::create();
 	op->address = address;
@@ -249,7 +249,7 @@ Wallet::complete(const uint32_t& index, std::shared_ptr<const Transaction> tx, c
 		return nullptr;
 	}
 	const auto wallet = get_wallet(index);
-	get_utxo_list(index);	// update utxo_cache
+	update_cache(index);
 
 	std::unordered_map<addr_t, addr_t> owner_map;
 	// TODO: lookup owner_map
@@ -267,7 +267,7 @@ Wallet::sign_off(	const uint32_t& index, std::shared_ptr<const Transaction> tx,
 		return nullptr;
 	}
 	const auto wallet = get_wallet(index);
-	get_utxo_list(index);	// update utxo_cache
+	update_cache(index);
 
 	const std::unordered_map<txio_key_t, utxo_t> utxo_map(utxo_list.begin(), utxo_list.end());
 
@@ -374,7 +374,17 @@ void Wallet::release_all()
 	}
 }
 
-std::vector<utxo_entry_t> Wallet::get_utxo_list(const uint32_t& index, const uint32_t& min_confirm) const
+void Wallet::reset_cache(const uint32_t& index)
+{
+	const auto wallet = get_wallet(index);
+	wallet->spent_set.clear();
+	wallet->reserved_set.clear();
+	wallet->utxo_cache.clear();
+	wallet->utxo_change_cache.clear();
+	update_cache(index);
+}
+
+void Wallet::update_cache(const uint32_t& index) const
 {
 	const auto wallet = get_wallet(index);
 	const auto now = vnx::get_wall_time_millis();
@@ -388,14 +398,21 @@ std::vector<utxo_entry_t> Wallet::get_utxo_list(const uint32_t& index, const uin
 
 		log(DEBUG) << "Updated cache: " << wallet->utxo_cache.size() << " utxo, " << wallet->utxo_change_cache.size() << " pending change";
 	}
+}
+
+std::vector<utxo_entry_t> Wallet::get_utxo_list(const uint32_t& index, const uint32_t& min_confirm) const
+{
+	const auto wallet = get_wallet(index);
+	update_cache(index);
+
 	if(min_confirm == 0) {
 		return wallet->utxo_cache;
 	}
 	std::vector<utxo_entry_t> list;
 	const auto height = node->get_height();
 	for(const auto& entry : wallet->utxo_cache) {
-		const auto utxo_height = entry.output.height;
-		if(utxo_height <= height && (height - utxo_height) + 1 >= min_confirm) {
+		const auto& utxo = entry.output;
+		if(utxo.height <= height && (height - utxo.height) + 1 >= min_confirm) {
 			list.push_back(entry);
 		}
 	}
