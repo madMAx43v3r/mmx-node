@@ -655,7 +655,7 @@ app.component('create-account', {
 				<div @click="submit" class="ui submit primary button">Create Account</div>
 			</form>
 		</div>
-		<div class="ui large negative message" :class="{hidden: !error}">
+		<div class="ui negative message" :class="{hidden: !error}">
 			Failed with: <b>{{error}}</b>
 		</div>
 		`
@@ -703,7 +703,7 @@ app.component('create-wallet', {
 				<div @click="submit" class="ui submit primary button">Create Wallet</div>
 			</form>
 		</div>
-		<div class="ui large negative message" :class="{hidden: !error}">
+		<div class="ui negative message" :class="{hidden: !error}">
 			Failed with: <b>{{error}}</b>
 		</div>
 		`
@@ -876,7 +876,7 @@ app.component('account-send-form', {
 		<div class="ui message" :class="{hidden: !result}">
 			Transaction has been sent: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
 		</div>
-		<div class="ui large negative message" :class="{hidden: !error}">
+		<div class="ui negative message" :class="{hidden: !error}">
 			Failed with: <b>{{error}}</b>
 		</div>
 		<account-tx-history :index="index" :limit="10" ref="history"></account-tx-history>
@@ -1149,7 +1149,7 @@ app.component('account-offer-form', {
 				[<b>{{result.id}}</b>] Offering <b>{{result.bid_value}}</b> [{{result.bid_symbol}}] for <b>{{result.ask_value}}</b> [{{result.ask_symbol}}]
 			</template>
 		</div>
-		<div class="ui large negative message" :class="{hidden: !error}">
+		<div class="ui negative message" :class="{hidden: !error}">
 			Failed with: <b>{{error}}</b>
 		</div>
 		<account-offers @offer-cancel="update_balance" :index="index" ref="offers"></account-offers>
@@ -1396,7 +1396,7 @@ app.component('create-staking-contract', {
 				Deployed as: <b>{{result}}</b>
 			</template>
 		</div>
-		<div class="ui large negative message" :class="{hidden: !error}">
+		<div class="ui negative message" :class="{hidden: !error}">
 			Failed with: <b>{{error}}</b>
 		</div>
 		`
