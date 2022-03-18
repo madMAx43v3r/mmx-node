@@ -232,10 +232,10 @@ hash_t Wallet::execute(const uint32_t& index, const addr_t& address, const vnx::
 	if(wallet->find_address(*owner) < 0) {
 		throw std::logic_error("contract not owned by wallet");
 	}
-	std::unordered_map<addr_t, addr_t> owner_map;
-	owner_map.emplace(address, *owner);
+	auto options_ = options;
+	options_.owner_map.emplace_back(address, *owner);
 
-	wallet->complete(tx, wallet->utxo_cache, options, owner_map);
+	wallet->complete(tx, wallet->utxo_cache, options_);
 	send_off(index, tx);
 
 	log(INFO) << "Executed " << method["__type"] << " on [" << address << "] with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
@@ -258,7 +258,7 @@ Wallet::complete(const uint32_t& index, std::shared_ptr<const Transaction> tx, c
 
 std::shared_ptr<const Transaction>
 Wallet::sign_off(	const uint32_t& index, std::shared_ptr<const Transaction> tx,
-					const vnx::bool_t& cover_fee, const std::vector<std::pair<txio_key_t, utxo_t>>& utxo_list) const
+					const vnx::bool_t& cover_fee, const spend_options_t& options) const
 {
 	if(!tx) {
 		return nullptr;
@@ -266,7 +266,7 @@ Wallet::sign_off(	const uint32_t& index, std::shared_ptr<const Transaction> tx,
 	const auto wallet = get_wallet(index);
 	update_cache(index);
 
-	const std::unordered_map<txio_key_t, utxo_t> utxo_map(utxo_list.begin(), utxo_list.end());
+	const std::unordered_map<txio_key_t, utxo_t> utxo_map(options.utxo_map.begin(), options.utxo_map.end());
 
 	int64_t native_change = 0;
 	std::unordered_set<txio_key_t> spent_keys;
@@ -309,9 +309,9 @@ Wallet::sign_off(	const uint32_t& index, std::shared_ptr<const Transaction> tx,
 		if(native_change < 0) {
 			throw std::logic_error("negative change");
 		}
-		wallet->gather_fee(copy, spent_map, {}, native_change, {}, utxo_map);
+		wallet->gather_fee(copy, spent_map, options, native_change);
 	}
-	wallet->sign_off(copy, spent_map);
+	wallet->sign_off(copy, spent_map, options);
 	return copy;
 }
 

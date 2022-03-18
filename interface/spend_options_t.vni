@@ -14,4 +14,8 @@ struct spend_options_t {
 	
 	vector<txio_key_t> exclude;
 	
+	vector<pair<addr_t, addr_t>> owner_map;
+	
+	vector<pair<txio_key_t, utxo_t>> utxo_map;
+	
 }
