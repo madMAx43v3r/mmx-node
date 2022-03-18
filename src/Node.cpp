@@ -740,17 +740,17 @@ void Node::add_transaction(std::shared_ptr<const Transaction> tx, const vnx::boo
 	}
 }
 
-uint64_t Node::get_balance(const addr_t& address, const addr_t& contract, const uint32_t& min_confirm) const
+uint64_t Node::get_balance(const addr_t& address, const addr_t& currency, const uint32_t& min_confirm) const
 {
-	return get_total_balance({address}, contract, min_confirm);
+	return get_total_balance({address}, currency, min_confirm);
 }
 
-uint64_t Node::get_total_balance(const std::vector<addr_t>& addresses, const addr_t& contract, const uint32_t& min_confirm) const
+uint64_t Node::get_total_balance(const std::vector<addr_t>& addresses, const addr_t& currency, const uint32_t& min_confirm) const
 {
 	uint64_t total = 0;
 	for(const auto& entry : get_utxo_list(addresses, min_confirm)) {
 		const auto& utxo = entry.output;
-		if(utxo.contract == contract) {
+		if(utxo.contract == currency) {
 			total += utxo.amount;
 		}
 	}
@@ -767,12 +767,12 @@ std::map<addr_t, uint64_t> Node::get_total_balances(const std::vector<addr_t>& a
 	return amounts;
 }
 
-uint64_t Node::get_total_supply(const addr_t& contract) const
+uint64_t Node::get_total_supply(const addr_t& currency) const
 {
 	uint64_t total = 0;
 	for(const auto& entry : utxo_map) {
 		const auto& utxo = entry.second;
-		if(utxo.contract == contract) {
+		if(utxo.contract == currency) {
 			total += utxo.amount;
 		}
 	}
