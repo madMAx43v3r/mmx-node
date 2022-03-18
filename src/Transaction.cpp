@@ -27,7 +27,9 @@ std::shared_ptr<const TransactionBase> TransactionBase::create_ex(const hash_t& 
 	return tx;
 }
 
-void Transaction::finalize() {
+void Transaction::finalize()
+{
+	nonce = vnx::rand64();
 	id = calc_hash();
 }
 
@@ -56,6 +58,7 @@ hash_t Transaction::calc_hash() const
 
 	write_bytes(out, get_type_hash());
 	write_bytes(out, version);
+	write_bytes(out, nonce);
 
 	for(const auto& tx : inputs) {
 		write_bytes(out, tx);

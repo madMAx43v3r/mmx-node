@@ -4,6 +4,8 @@ class Transaction extends TransactionBase {
 	
 	uint version;
 	
+	ulong nonce;
+	
 	vector<tx_in_t> inputs;
 	
 	vector<tx_out_t> outputs;
