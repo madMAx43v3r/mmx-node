@@ -109,14 +109,14 @@ std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
 void Node::validate(std::shared_ptr<const Transaction> tx) const
 {
 	auto context = Context::create();
-	context->height = get_height();
+	context->height = get_height() + 1;
 
 	uint64_t fee = 0;
 	validate(tx, context, nullptr, fee);
 }
 
-std::shared_ptr<const Context> Node::create_context(const addr_t& address, std::shared_ptr<const Contract> contract,
-													std::shared_ptr<const Context> base, std::shared_ptr<const Transaction> tx) const
+std::shared_ptr<const Context> Node::create_context_for_tx(
+		std::shared_ptr<const Context> base, std::shared_ptr<const Contract> contract, std::shared_ptr<const Transaction> tx) const
 {
 	auto context = vnx::clone(base);
 	context->txid = tx->id;
@@ -199,7 +199,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 			spend->key = in.prev;
 			spend->utxo = utxo;
 
-			const auto outputs = contract->validate(spend, create_context(utxo.address, contract, context, tx));
+			const auto outputs = contract->validate(spend, create_context_for_tx(context, contract, tx));
 			exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
 
 			amounts[utxo.contract] += utxo.amount;
@@ -238,7 +238,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 			}
 			contract_state[op->address] = copy;
 		}
-		const auto outputs = contract->validate(op, create_context(op->address, contract, context, tx));
+		const auto outputs = contract->validate(op, create_context_for_tx(context, contract, tx));
 		exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
 	}
 	for(const auto& out : tx->outputs)

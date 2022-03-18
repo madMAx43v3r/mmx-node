@@ -186,9 +186,8 @@ private:
 
 	void validate(std::shared_ptr<const Transaction> tx) const;
 
-	std::shared_ptr<const Context> create_context(
-			const addr_t& address, std::shared_ptr<const Contract> contract,
-			std::shared_ptr<const Context> base, std::shared_ptr<const Transaction> tx) const;
+	std::shared_ptr<const Context> create_context_for_tx(
+			std::shared_ptr<const Context> base, std::shared_ptr<const Contract> contract, std::shared_ptr<const Transaction> tx) const;
 
 	std::shared_ptr<const Transaction> validate(std::shared_ptr<const Transaction> tx, std::shared_ptr<const Context> context,
 												std::shared_ptr<const Block> base, uint64_t& fee_amount) const;
