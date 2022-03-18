@@ -22,6 +22,7 @@ class MMX_EXPORT Transaction : public ::mmx::TransactionBase {
 public:
 	
 	uint32_t version = 0;
+	uint64_t nonce = 0;
 	std::vector<::mmx::tx_in_t> inputs;
 	std::vector<::mmx::tx_out_t> outputs;
 	std::vector<::mmx::tx_out_t> exec_outputs;
@@ -85,16 +86,17 @@ protected:
 
 template<typename T>
 void Transaction::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Transaction>(8);
+	_visitor.template type_begin<Transaction>(9);
 	_visitor.type_field("id", 0); _visitor.accept(id);
 	_visitor.type_field("version", 1); _visitor.accept(version);
-	_visitor.type_field("inputs", 2); _visitor.accept(inputs);
-	_visitor.type_field("outputs", 3); _visitor.accept(outputs);
-	_visitor.type_field("exec_outputs", 4); _visitor.accept(exec_outputs);
-	_visitor.type_field("execute", 5); _visitor.accept(execute);
-	_visitor.type_field("solutions", 6); _visitor.accept(solutions);
-	_visitor.type_field("deploy", 7); _visitor.accept(deploy);
-	_visitor.template type_end<Transaction>(8);
+	_visitor.type_field("nonce", 2); _visitor.accept(nonce);
+	_visitor.type_field("inputs", 3); _visitor.accept(inputs);
+	_visitor.type_field("outputs", 4); _visitor.accept(outputs);
+	_visitor.type_field("exec_outputs", 5); _visitor.accept(exec_outputs);
+	_visitor.type_field("execute", 6); _visitor.accept(execute);
+	_visitor.type_field("solutions", 7); _visitor.accept(solutions);
+	_visitor.type_field("deploy", 8); _visitor.accept(deploy);
+	_visitor.template type_end<Transaction>(9);
 }
 
 
