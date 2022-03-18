@@ -1086,7 +1086,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const auto iter_offset = query.find("offset");
 		if(iter_index != query.end()) {
 			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
-			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
+			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 1;
 			const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
 			wallet->get_all_addresses(index,
 				[this, request_id, limit, offset](const std::vector<addr_t>& list) {
