@@ -87,6 +87,8 @@ class Node_add_transaction;
 class Node_add_transaction_return;
 class Node_get_balance;
 class Node_get_balance_return;
+class Node_get_balances;
+class Node_get_balances_return;
 class Node_get_block;
 class Node_get_block_return;
 class Node_get_block_at;
@@ -137,6 +139,8 @@ class Node_get_txo_infos;
 class Node_get_txo_infos_return;
 class Node_get_utxo_list;
 class Node_get_utxo_list_return;
+class Node_get_utxo_list_for;
+class Node_get_utxo_list_for_return;
 class Node_start_sync;
 class Node_start_sync_return;
 class Operation;
@@ -390,6 +394,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_add_trans
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_add_transaction_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_balance; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_balance_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_balances; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_balances_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_block; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_block_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_block_at; ///< \private
@@ -440,6 +446,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_txo_i
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_txo_infos_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_utxo_list; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_utxo_list_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_utxo_list_for; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_utxo_list_for_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_start_sync; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_start_sync_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Operation; ///< \private
@@ -691,6 +699,8 @@ void read(TypeInput& in, ::mmx::Node_add_transaction& value, const TypeCode* typ
 void read(TypeInput& in, ::mmx::Node_add_transaction_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_balance& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_balance_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_balances& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_balances_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_block& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_block_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_block_at& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -741,6 +751,8 @@ void read(TypeInput& in, ::mmx::Node_get_txo_infos& value, const TypeCode* type_
 void read(TypeInput& in, ::mmx::Node_get_txo_infos_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_utxo_list& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_utxo_list_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_utxo_list_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_utxo_list_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_start_sync& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_start_sync_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Operation& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -994,6 +1006,8 @@ void write(TypeOutput& out, const ::mmx::Node_add_transaction& value, const Type
 void write(TypeOutput& out, const ::mmx::Node_add_transaction_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_balance& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_balance_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_balances& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_balances_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_block& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_block_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_block_at& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1044,6 +1058,8 @@ void write(TypeOutput& out, const ::mmx::Node_get_txo_infos& value, const TypeCo
 void write(TypeOutput& out, const ::mmx::Node_get_txo_infos_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_utxo_list& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_utxo_list_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_utxo_list_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_utxo_list_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_start_sync& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_start_sync_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Operation& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1297,6 +1313,8 @@ void read(std::istream& in, ::mmx::Node_add_transaction& value); ///< \private
 void read(std::istream& in, ::mmx::Node_add_transaction_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_balance& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_balance_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_balances& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_balances_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_block& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_block_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_block_at& value); ///< \private
@@ -1347,6 +1365,8 @@ void read(std::istream& in, ::mmx::Node_get_txo_infos& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_txo_infos_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_utxo_list& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_utxo_list_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_utxo_list_for& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_utxo_list_for_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_start_sync& value); ///< \private
 void read(std::istream& in, ::mmx::Node_start_sync_return& value); ///< \private
 void read(std::istream& in, ::mmx::Operation& value); ///< \private
@@ -1600,6 +1620,8 @@ void write(std::ostream& out, const ::mmx::Node_add_transaction& value); ///< \p
 void write(std::ostream& out, const ::mmx::Node_add_transaction_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_balance& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_balance_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_balances& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_balances_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_block& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_block_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_block_at& value); ///< \private
@@ -1650,6 +1672,8 @@ void write(std::ostream& out, const ::mmx::Node_get_txo_infos& value); ///< \pri
 void write(std::ostream& out, const ::mmx::Node_get_txo_infos_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_utxo_list& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_utxo_list_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_utxo_list_for& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_utxo_list_for_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_start_sync& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_start_sync_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Operation& value); ///< \private
@@ -1903,6 +1927,8 @@ void accept(Visitor& visitor, const ::mmx::Node_add_transaction& value); ///< \p
 void accept(Visitor& visitor, const ::mmx::Node_add_transaction_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_balance& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_balance_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_balances& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_balances_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_block& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_block_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_block_at& value); ///< \private
@@ -1953,6 +1979,8 @@ void accept(Visitor& visitor, const ::mmx::Node_get_txo_infos& value); ///< \pri
 void accept(Visitor& visitor, const ::mmx::Node_get_txo_infos_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_utxo_list& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_utxo_list_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_utxo_list_for& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_utxo_list_for_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_start_sync& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_start_sync_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Operation& value); ///< \private
@@ -3651,6 +3679,52 @@ struct type<::mmx::Node_get_balance_return> {
 
 /// \private
 template<>
+struct type<::mmx::Node_get_balances> {
+	void read(TypeInput& in, ::mmx::Node_get_balances& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_balances& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_balances& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_balances& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_balances& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_balances& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_balances_return> {
+	void read(TypeInput& in, ::mmx::Node_get_balances_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_balances_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_balances_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_balances_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_balances_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_balances_return& value, bool special = false);
+};
+
+/// \private
+template<>
 struct type<::mmx::Node_get_block> {
 	void read(TypeInput& in, ::mmx::Node_get_block& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
@@ -4797,6 +4871,52 @@ struct type<::mmx::Node_get_utxo_list_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_utxo_list_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_utxo_list_for> {
+	void read(TypeInput& in, ::mmx::Node_get_utxo_list_for& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_utxo_list_for& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_utxo_list_for& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_utxo_list_for& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_utxo_list_for& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_utxo_list_for& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_utxo_list_for_return> {
+	void read(TypeInput& in, ::mmx::Node_get_utxo_list_for_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_utxo_list_for_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_utxo_list_for_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_utxo_list_for_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_utxo_list_for_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_utxo_list_for_return& value, bool special = false);
 };
 
 /// \private

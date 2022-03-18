@@ -15,7 +15,7 @@ class MMX_EXPORT Node_get_balance : public ::vnx::Value {
 public:
 	
 	::mmx::addr_t address;
-	::mmx::addr_t contract;
+	::mmx::addr_t currency;
 	uint32_t min_confirm = 1;
 	
 	typedef ::vnx::Value Super;
@@ -62,7 +62,7 @@ template<typename T>
 void Node_get_balance::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<Node_get_balance>(3);
 	_visitor.type_field("address", 0); _visitor.accept(address);
-	_visitor.type_field("contract", 1); _visitor.accept(contract);
+	_visitor.type_field("currency", 1); _visitor.accept(currency);
 	_visitor.type_field("min_confirm", 2); _visitor.accept(min_confirm);
 	_visitor.template type_end<Node_get_balance>(3);
 }

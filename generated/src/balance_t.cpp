@@ -11,7 +11,7 @@ namespace mmx {
 
 
 const vnx::Hash64 balance_t::VNX_TYPE_HASH(0x613173c7e5ce65b4ull);
-const vnx::Hash64 balance_t::VNX_CODE_HASH(0xb4bf28f806e74c8cull);
+const vnx::Hash64 balance_t::VNX_CODE_HASH(0x78fa122062c9c9f5ull);
 
 vnx::Hash64 balance_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -46,7 +46,8 @@ void balance_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, spendable);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, reserved);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, total);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, locked);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, total);
 	_visitor.type_end(*_type_code);
 }
 
@@ -54,6 +55,7 @@ void balance_t::write(std::ostream& _out) const {
 	_out << "{";
 	_out << "\"spendable\": "; vnx::write(_out, spendable);
 	_out << ", \"reserved\": "; vnx::write(_out, reserved);
+	_out << ", \"locked\": "; vnx::write(_out, locked);
 	_out << ", \"total\": "; vnx::write(_out, total);
 	_out << "}";
 }
@@ -69,13 +71,16 @@ vnx::Object balance_t::to_object() const {
 	_object["__type"] = "mmx.balance_t";
 	_object["spendable"] = spendable;
 	_object["reserved"] = reserved;
+	_object["locked"] = locked;
 	_object["total"] = total;
 	return _object;
 }
 
 void balance_t::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "reserved") {
+		if(_entry.first == "locked") {
+			_entry.second.to(locked);
+		} else if(_entry.first == "reserved") {
 			_entry.second.to(reserved);
 		} else if(_entry.first == "spendable") {
 			_entry.second.to(spendable);
@@ -92,6 +97,9 @@ vnx::Variant balance_t::get_field(const std::string& _name) const {
 	if(_name == "reserved") {
 		return vnx::Variant(reserved);
 	}
+	if(_name == "locked") {
+		return vnx::Variant(locked);
+	}
 	if(_name == "total") {
 		return vnx::Variant(total);
 	}
@@ -103,6 +111,8 @@ void balance_t::set_field(const std::string& _name, const vnx::Variant& _value) 
 		_value.to(spendable);
 	} else if(_name == "reserved") {
 		_value.to(reserved);
+	} else if(_name == "locked") {
+		_value.to(locked);
 	} else if(_name == "total") {
 		_value.to(total);
 	}
@@ -132,11 +142,11 @@ std::shared_ptr<vnx::TypeCode> balance_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.balance_t";
 	type_code->type_hash = vnx::Hash64(0x613173c7e5ce65b4ull);
-	type_code->code_hash = vnx::Hash64(0xb4bf28f806e74c8cull);
+	type_code->code_hash = vnx::Hash64(0x78fa122062c9c9f5ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::balance_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<balance_t>>(); };
-	type_code->fields.resize(3);
+	type_code->fields.resize(4);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 8;
@@ -151,6 +161,12 @@ std::shared_ptr<vnx::TypeCode> balance_t::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[2];
+		field.data_size = 8;
+		field.name = "locked";
+		field.code = {4};
+	}
+	{
+		auto& field = type_code->fields[3];
 		field.data_size = 8;
 		field.name = "total";
 		field.code = {4};
@@ -204,6 +220,9 @@ void read(TypeInput& in, ::mmx::balance_t& value, const TypeCode* type_code, con
 			vnx::read_value(_buf + _field->offset, value.reserved, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[2]) {
+			vnx::read_value(_buf + _field->offset, value.locked, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[3]) {
 			vnx::read_value(_buf + _field->offset, value.total, _field->code.data());
 		}
 	}
@@ -227,10 +246,11 @@ void write(TypeOutput& out, const ::mmx::balance_t& value, const TypeCode* type_
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(24);
+	char* const _buf = out.write(32);
 	vnx::write_value(_buf + 0, value.spendable);
 	vnx::write_value(_buf + 8, value.reserved);
-	vnx::write_value(_buf + 16, value.total);
+	vnx::write_value(_buf + 16, value.locked);
+	vnx::write_value(_buf + 24, value.total);
 }
 
 void read(std::istream& in, ::mmx::balance_t& value) {
