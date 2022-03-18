@@ -466,6 +466,15 @@ public:
 		return tx;
 	}
 
+	void reset_cache()
+	{
+		spent_set.clear();
+		reserved_set.clear();
+		utxo_cache.clear();
+		utxo_change_cache.clear();
+		last_utxo_update = 0;
+	}
+
 	uint32_t height = 0;
 	int64_t last_utxo_update = 0;
 	std::vector<utxo_entry_t> utxo_cache;

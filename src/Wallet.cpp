@@ -377,10 +377,7 @@ void Wallet::release_all()
 void Wallet::reset_cache(const uint32_t& index)
 {
 	const auto wallet = get_wallet(index);
-	wallet->spent_set.clear();
-	wallet->reserved_set.clear();
-	wallet->utxo_cache.clear();
-	wallet->utxo_change_cache.clear();
+	wallet->reset_cache();
 	update_cache(index);
 }
 
