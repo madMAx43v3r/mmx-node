@@ -251,11 +251,8 @@ Wallet::complete(const uint32_t& index, std::shared_ptr<const Transaction> tx, c
 	const auto wallet = get_wallet(index);
 	update_cache(index);
 
-	std::unordered_map<addr_t, addr_t> owner_map;
-	// TODO: lookup owner_map
-
 	auto copy = vnx::clone(tx);
-	wallet->complete(copy, wallet->utxo_cache, options, owner_map);
+	wallet->complete(copy, wallet->utxo_cache, options);
 	return copy;
 }
 
@@ -301,8 +298,6 @@ Wallet::sign_off(	const uint32_t& index, std::shared_ptr<const Transaction> tx,
 			native_change -= out.amount;
 		}
 	}
-	std::unordered_map<addr_t, addr_t> owner_map;
-	// TODO: lookup owner_map
 
 	auto copy = vnx::clone(tx);
 	if(cover_fee) {
@@ -314,9 +309,9 @@ Wallet::sign_off(	const uint32_t& index, std::shared_ptr<const Transaction> tx,
 		if(native_change < 0) {
 			throw std::logic_error("negative change");
 		}
-		wallet->gather_fee(copy, spent_map, {}, native_change, owner_map, utxo_map);
+		wallet->gather_fee(copy, spent_map, {}, native_change, {}, utxo_map);
 	}
-	wallet->sign_off(copy, spent_map, owner_map);
+	wallet->sign_off(copy, spent_map);
 	return copy;
 }
 
