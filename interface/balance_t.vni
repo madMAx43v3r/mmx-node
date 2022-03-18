@@ -6,6 +6,8 @@ struct balance_t {
 	
 	ulong reserved;
 	
+	ulong locked;
+	
 	ulong total;
 	
 }

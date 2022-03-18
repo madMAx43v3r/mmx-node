@@ -767,6 +767,34 @@ std::map<addr_t, uint64_t> Node::get_total_balances(const std::vector<addr_t>& a
 	return amounts;
 }
 
+std::map<addr_t, balance_t> Node::get_balances(const addr_t& address, const uint32_t& min_confirm) const
+{
+	std::map<addr_t, balance_t> result;
+	if(auto contract = get_contract(address))
+	{
+		auto context = Context::create();
+		context->height = get_height() + 1;
+
+		for(const auto& entry : get_utxo_list({address}, min_confirm)) {
+			const auto& utxo = entry.output;
+			auto& out = result[utxo.contract];
+			if(contract->is_spendable(utxo, context)) {
+				out.spendable += utxo.amount;
+			} else {
+				out.locked += utxo.amount;
+			}
+			out.total += utxo.amount;
+		}
+	} else {
+		for(const auto& entry : get_total_balances({address}, min_confirm)) {
+			auto& out = result[entry.first];
+			out.spendable += entry.second;
+			out.total += entry.second;
+		}
+	}
+	return result;
+}
+
 uint64_t Node::get_total_supply(const addr_t& currency) const
 {
 	uint64_t total = 0;
@@ -779,22 +807,33 @@ uint64_t Node::get_total_supply(const addr_t& currency) const
 	return total;
 }
 
-std::vector<utxo_entry_t> Node::get_utxo_list(const std::vector<addr_t>& addresses, const uint32_t& min_confirm, const uint32_t& since) const
+std::vector<utxo_entry_t> Node::get_utxo_list(
+		const std::vector<addr_t>& addresses, const uint32_t& min_confirm, const uint32_t& since) const
+{
+	return get_utxo_list(addresses, nullptr, min_confirm, since);
+}
+
+std::vector<utxo_entry_t> Node::get_utxo_list(
+		const std::vector<addr_t>& addresses, const vnx::optional<addr_t> currency, const uint32_t& min_confirm, const uint32_t& since) const
 {
 	const auto height = get_height();
 	const std::unordered_set<addr_t> addr_set(addresses.begin(), addresses.end());
 
-	std::vector<utxo_entry_t> res;
+	const auto filter = [height, currency, min_confirm, since](std::vector<utxo_entry_t>& out, const txio_key_t& key, const utxo_t& utxo)
+	{
+		if(utxo.height >= since && (height - utxo.height) + 1 >= min_confirm && (!currency || utxo.contract == *currency)) {
+			out.push_back(utxo_entry_t::create_ex(key, utxo));
+		}
+	};
+
+	std::vector<utxo_entry_t> out;
 	for(const auto& addr : addr_set) {
 		const auto begin = addr_map.lower_bound(std::make_pair(addr, txio_key_t()));
 		const auto end   = addr_map.upper_bound(std::make_pair(addr, txio_key_t::create_ex(hash_t::ones(), -1)));
 		for(auto iter = begin; iter != end; ++iter) {
 			auto iter2 = utxo_map.find(iter->second);
 			if(iter2 != utxo_map.end()) {
-				const auto& utxo = iter2->second;
-				if(utxo.height >= since && (height - utxo.height) + 1 >= min_confirm) {
-					res.push_back(utxo_entry_t::create_ex(iter2->first, utxo));
-				}
+				filter(out, iter2->first, iter2->second);
 			}
 		}
 		auto iter = taddr_map.find(addr);
@@ -802,15 +841,18 @@ std::vector<utxo_entry_t> Node::get_utxo_list(const std::vector<addr_t>& address
 			for(const auto& key : iter->second) {
 				auto iter2 = utxo_map.find(key);
 				if(iter2 != utxo_map.end()) {
-					const auto& utxo = iter2->second;
-					if(utxo.height >= since && (height - utxo.height) + 1 >= min_confirm) {
-						res.push_back(utxo_entry_t::create_ex(iter2->first, utxo));
-					}
+					filter(out, iter2->first, iter2->second);
 				}
 			}
 		}
 	}
-	return res;
+	return out;
+}
+
+std::vector<utxo_entry_t> Node::get_utxo_list_for(
+		const std::vector<addr_t>& addresses, const addr_t& currency, const uint32_t& min_confirm, const uint32_t& since) const
+{
+	return get_utxo_list(addresses, currency, min_confirm, since);
 }
 
 std::vector<stxo_entry_t> Node::get_stxo_list(const std::vector<addr_t>& addresses, const uint32_t& since) const

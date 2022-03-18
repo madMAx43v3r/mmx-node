@@ -112,6 +112,9 @@ module Node implements vnx.addons.HttpComponent {
 	ulong get_balance(addr_t address, addr_t currency, uint min_confirm = 1) const;
 	
 	@Permission(permission_e.PUBLIC)
+	map<addr_t, balance_t> get_balances(addr_t address, uint min_confirm = 1) const;
+	
+	@Permission(permission_e.PUBLIC)
 	ulong get_total_balance(vector<addr_t> addresses, addr_t currency, uint min_confirm = 1) const;
 	
 	@Permission(permission_e.PUBLIC)
@@ -122,6 +125,9 @@ module Node implements vnx.addons.HttpComponent {
 	
 	@Permission(permission_e.PUBLIC)
 	vector<utxo_entry_t> get_utxo_list(vector<addr_t> addresses, uint min_confirm = 1, uint since = 0) const;
+	
+	@Permission(permission_e.PUBLIC)
+	vector<utxo_entry_t> get_utxo_list_for(vector<addr_t> addresses, addr_t currency, uint min_confirm = 1, uint since = 0) const;
 	
 	@Permission(permission_e.PUBLIC)
 	vector<stxo_entry_t> get_stxo_list(vector<addr_t> addresses, uint since = 0) const;

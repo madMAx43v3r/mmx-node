@@ -769,10 +769,12 @@ void WebAPI::render_balances(const vnx::request_id_t& request_id, const vnx::opt
 					if(currency->is_nft) {
 						nfts.push_back(entry.first.to_string());
 					} else {
+						const auto& balance = entry.second;
 						vnx::Object row;
-						row["total"] = entry.second.total * pow(10, -currency->decimals);
-						row["spendable"] = entry.second.spendable * pow(10, -currency->decimals);
-						row["reserved"] = entry.second.reserved * pow(10, -currency->decimals);
+						row["total"] = balance.total * pow(10, -currency->decimals);
+						row["spendable"] = balance.spendable * pow(10, -currency->decimals);
+						row["reserved"] = balance.reserved * pow(10, -currency->decimals);
+						row["locked"] = balance.locked * pow(10, -currency->decimals);
 						row["symbol"] = currency->symbol;
 						row["contract"] = entry.first.to_string();
 						if(entry.first == addr_t()) {
@@ -970,6 +972,22 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "address?id");
 		}
 	}
+	else if(sub_path == "/balance") {
+		const auto iter_id = query.find("id");
+		const auto iter_currency = query.find("currency");
+		if(iter_id != query.end()) {
+			vnx::optional<addr_t> currency;
+			if(iter_currency != query.end()) {
+				currency = vnx::from_string<addr_t>(iter_currency->second);
+			}
+			const auto address = vnx::from_string_value<addr_t>(iter_id->second);
+			node->get_balances(address, 1,
+				std::bind(&WebAPI::render_balances, this, request_id, currency, std::placeholders::_1),
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "balance?id|currency");
+		}
+	}
 	else if(sub_path == "/contract") {
 		const auto iter = query.find("id");
 		if(iter != query.end()) {
@@ -981,6 +999,32 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
 			respond_status(request_id, 404, "contract?id");
+		}
+	}
+	else if(sub_path == "/address/coins") {
+		const auto iter_id = query.find("id");
+		const auto iter_confirm = query.find("confirm");
+		const auto iter_currency = query.find("currency");
+		const auto iter_limit = query.find("limit");
+		const auto iter_offset = query.find("offset");
+		if(iter_id != query.end() && iter_currency != query.end()) {
+			const addr_t address = vnx::from_string<addr_t>(iter_id->second);
+			const addr_t currency = vnx::from_string<addr_t>(iter_currency->second);
+			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
+			const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
+			const uint32_t min_confirm = iter_confirm != query.end() ? vnx::from_string<int64_t>(iter_confirm->second) : 0;
+			node->get_utxo_list_for({address}, currency, min_confirm, 0,
+				[this, request_id, currency, limit, offset](const std::vector<utxo_entry_t>& list_) {
+					auto list = get_page(list_, limit, offset);
+					std::reverse(list.begin(), list.end());
+					get_context({currency}, request_id,
+						[this, request_id, list](std::shared_ptr<RenderContext> context) {
+							respond(request_id, render_value(list, context));
+						});
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "address/coins?index|limit|offset|confirm");
 		}
 	}
 	else if(sub_path == "/address/history") {
