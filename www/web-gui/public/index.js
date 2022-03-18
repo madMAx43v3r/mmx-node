@@ -332,7 +332,7 @@ const routes = [
 	},
 	{ path: '/explore', component: Explore, meta: { is_explorer: true } },
 	{ path: '/explore/transaction/:id', component: ExploreTransaction, meta: { is_explorer: true } },
-	{ path: '/explore/address/coins/:address/:currency', component: AddressCoins,
+	{ path: '/explore/address/coins/:address/:currency', component: AddressCoins, meta: { is_explorer: true },
 		props: route => ({address: route.params.address, currency: route.params.currency})
 	},
 	{ path: '/settings', component: Settings },
