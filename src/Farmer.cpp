@@ -139,7 +139,8 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& rew
 		amount_left -= out.amount;
 		base->outputs.push_back(out);
 	}
-	base->finalize();
+	base->nonce = block->height;
+	base->id = base->calc_hash();
 
 	copy->tx_base = base;
 	copy->hash = copy->calc_hash();

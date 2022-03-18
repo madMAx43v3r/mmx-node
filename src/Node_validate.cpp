@@ -135,12 +135,15 @@ std::shared_ptr<const Context> Node::create_context_for_tx(
 std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const Context> context,
 													std::shared_ptr<const Block> base, uint64_t& fee_amount) const
 {
-	if(tx->id != tx->calc_hash()) {
-		throw std::logic_error("invalid tx id");
+	if(!tx->is_valid()) {
+		throw std::logic_error("invalid tx");
 	}
 	if(base) {
 		if(tx->deploy) {
 			throw std::logic_error("coin base cannot deploy");
+		}
+		if(!tx->inputs.empty()) {
+			throw std::logic_error("coin base cannot have inputs");
 		}
 		if(!tx->execute.empty()) {
 			throw std::logic_error("coin base cannot have operations");
@@ -151,12 +154,8 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 		if(tx->outputs.size() > params->max_tx_base_out) {
 			throw std::logic_error("coin base has too many outputs");
 		}
-		if(tx->inputs.size() != 1) {
-			throw std::logic_error("coin base must have one input");
-		}
-		const auto& in = tx->inputs[0];
-		if(in.prev.txid != hash_t(base->prev) || in.prev.index != 0) {
-			throw std::logic_error("invalid coin base input");
+		if(tx->nonce != base->height) {
+			throw std::logic_error("invalid coin base nonce");
 		}
 	} else {
 		if(tx->inputs.empty()) {
@@ -205,6 +204,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 			amounts[utxo.contract] += utxo.amount;
 		}
 	}
+
 	for(const auto& op : tx->execute)
 	{
 		if(!op || !op->is_valid()) {
@@ -241,6 +241,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 		const auto outputs = contract->validate(op, create_context_for_tx(context, contract, tx));
 		exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
 	}
+
 	for(const auto& out : tx->outputs)
 	{
 		if(out.amount == 0) {
@@ -260,6 +261,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 			value -= out.amount;
 		}
 	}
+
 	if(tx->deploy) {
 		if(!tx->deploy->is_valid()) {
 			throw std::logic_error("invalid contract");
@@ -272,6 +274,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 			exec_outputs.push_back(out);
 		}
 	}
+
 	if(base) {
 		fee_amount = base_amount;
 		return nullptr;
