@@ -132,7 +132,7 @@ void Node::main()
 				for(const auto& key : keys) {
 					stxo_index.erase(key);
 				}
-				log(INFO) << "Purged " << keys.size() << " STXO entries";
+				log(INFO) << "Purged " << keys.size() << " stxo_index entries";
 			}
 			stxo_log.erase_all(next_height, vnx::rocksdb::GREATER_EQUAL);
 		}
@@ -142,7 +142,7 @@ void Node::main()
 				for(const auto& key : keys) {
 					tx_index.erase(key);
 				}
-				log(INFO) << "Purged " << keys.size() << " TX entries";
+				log(INFO) << "Purged " << keys.size() << " tx_index entries";
 			}
 			tx_log.erase_all(next_height, vnx::rocksdb::GREATER_EQUAL);
 		}
@@ -154,7 +154,7 @@ void Node::main()
 					for(const auto& addr : addr_set) {
 						total += saddr_map.erase_range(std::make_pair(addr, next_height), std::make_pair(addr, -1));
 					}
-					log(INFO) << "Purged " << total << " SADDR entries";
+					log(INFO) << "Purged " << total << " saddr_map entries";
 				}
 				{
 					size_t total = 0;
@@ -186,6 +186,7 @@ void Node::main()
 					log(INFO) << "Reverted " << affected.size() << " contracts";
 				}
 			}
+			addr_log.erase_all(next_height, vnx::rocksdb::GREATER_EQUAL);
 		}
 	}
 
