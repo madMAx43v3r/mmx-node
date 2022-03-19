@@ -1458,7 +1458,7 @@ app.component('create-locked-contract', {
 	},
 	methods: {
 		check_valid() {
-			this.valid = this.owner != null && (this.chain_height || this.delta_height);
+			this.valid = this.owner && (this.chain_height || this.delta_height);
 			if(!this.valid) {
 				this.confirmed = false;
 			}
