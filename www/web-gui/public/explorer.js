@@ -178,11 +178,17 @@ app.component('block-view', {
 					<td class="two wide">VDF Iterations</td>
 					<td>{{data.vdf_iters}}</td>
 				</tr>
-				<tr>
-					<td class="two wide">TX Count</td>
-					<td>{{data.tx_count}}</td>
-				</tr>
+				<template v-if="data.tx_base">
+					<tr>
+						<td class="two wide">TX Base</td>
+						<td><router-link :to="'/explore/transaction/' + data.tx_base.id">{{data.tx_base.id}}</router-link></td>
+					</tr>
+				</template>
 				<template v-if="data.proof">
+					<tr>
+						<td class="two wide">TX Count</td>
+						<td>{{data.tx_count}}</td>
+					</tr>
 					<tr>
 						<td class="two wide">K Size</td>
 						<td>{{data.proof.ksize}}</td>
@@ -208,7 +214,6 @@ app.component('block-view', {
 					<th>Reward</th>
 					<th></th>
 					<th>Address</th>
-					<th>Spent</th>
 				</tr>
 				</thead>
 				<tbody>
@@ -216,7 +221,6 @@ app.component('block-view', {
 					<td class="collapsing"><b>{{item.value}}</b></td>
 					<td>{{item.symbol}}</td>
 					<td>{{item.address}}</td>
-					<td><template v-if="item.spent"><router-link :to="'/explore/transaction/' + item.spent.txid">Next</router-link></template></td>
 				</tr>
 				</tbody>
 			</table>
