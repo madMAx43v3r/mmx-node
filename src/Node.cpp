@@ -1285,7 +1285,16 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	for(const auto& entry : log->utxo_added) {
 		const auto& utxo = entry.second;
 		addr_map.emplace(utxo.address, entry.first);
-		taddr_map[utxo.address].erase(entry.first);
+		{
+			auto iter = taddr_map.find(utxo.address);
+			if(iter != taddr_map.end()) {
+				auto& addr_set = iter->second;
+				addr_set.erase(entry.first);
+				if(addr_set.empty()) {
+					taddr_map.erase(iter);
+				}
+			}
+		}
 	}
 	for(const auto& txid : log->tx_added) {
 		tx_map.erase(txid);
@@ -1314,15 +1323,6 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 					copy->vnx_call(vnx::clone(op->method));
 					contract_cache.insert(address, copy);
 				}
-			}
-		}
-	}
-	if(block->height % 16 == 0) {
-		for(auto iter = taddr_map.begin(); iter != taddr_map.end();) {
-			if(iter->second.empty()) {
-				iter = taddr_map.erase(iter);
-			} else {
-				iter++;
 			}
 		}
 	}
