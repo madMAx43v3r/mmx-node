@@ -9,5 +9,6 @@
 			"value": 1,
 			"inverse": 10000
 		}
-	}
+	},
+	"is_adjustable": true
 }
