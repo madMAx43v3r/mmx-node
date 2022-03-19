@@ -820,16 +820,16 @@ std::vector<utxo_entry_t> Node::get_utxo_list(
 	};
 
 	std::vector<utxo_entry_t> out;
-	for(const auto& addr : addr_set) {
-		const auto begin = addr_map.lower_bound(std::make_pair(addr, txio_key_t()));
-		const auto end   = addr_map.upper_bound(std::make_pair(addr, txio_key_t::create_ex(hash_t::ones(), -1)));
+	for(const auto& address : addr_set) {
+		const auto begin = addr_map.lower_bound(std::make_pair(address, txio_key_t()));
+		const auto end   = addr_map.upper_bound(std::make_pair(address, txio_key_t::create_ex(hash_t::ones(), -1)));
 		for(auto iter = begin; iter != end; ++iter) {
 			auto iter2 = utxo_map.find(iter->second);
 			if(iter2 != utxo_map.end()) {
 				filter(out, iter2->first, iter2->second);
 			}
 		}
-		auto iter = taddr_map.find(addr);
+		auto iter = taddr_map.find(address);
 		if(iter != taddr_map.end()) {
 			for(const auto& key : iter->second) {
 				auto iter2 = utxo_map.find(key);
