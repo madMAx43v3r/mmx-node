@@ -2,7 +2,8 @@
 	"port": 12335,
 	"block_time": 10,
 	"plot_filter": 8,
-	"challenge_delay": 9,
+	"finality_delay": 3,
+	"challenge_delay": 6,
 	"min_ksize": 26,
 	"vdf_seed": "test5",
 	"reward_factor": {
