@@ -1340,6 +1340,8 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	if(!is_replay) {
 		write_block(block);
 	}
+	auto fork = find_fork(block->hash);
+
 	while(history.size() > max_history) {
 		history.erase(history.begin());
 	}
@@ -1347,6 +1349,12 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	pending_vdfs.erase(pending_vdfs.begin(), pending_vdfs.upper_bound(block->height));
 	verified_vdfs.erase(verified_vdfs.begin(), verified_vdfs.upper_bound(block->height));
 
+	if(!do_sync && fork) {
+		Node::log(INFO) << "Committed height " << block->height << " with: ntx = " << block->tx_list.size()
+				<< ", k = " << (block->proof ? block->proof->ksize : 0) << ", score = " << fork->proof_score
+				<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff
+				<< (fork->has_weak_proof ? ", weak proof" : "");
+	}
 	publish(block, output_committed_blocks, is_replay ? BLOCKING : 0);
 }
 

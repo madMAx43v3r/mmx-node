@@ -137,7 +137,6 @@ private:
 	struct fork_t {
 		bool is_invalid = false;
 		bool is_verified = false;
-		bool is_finalized = false;
 		bool is_vdf_verified = false;
 		bool is_proof_verified = false;
 		bool has_weak_proof = false;
