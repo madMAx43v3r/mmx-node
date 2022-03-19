@@ -389,7 +389,7 @@ int main(int argc, char** argv)
 
 				args["__type"] = method;
 				const auto txid = wallet.execute(index, contract, args);
-				std::cout << "Executed \"" << method << "\" on [" << contract << "] with:" << std::endl;
+				std::cout << "Executed " << method << " on [" << contract << "] with:" << std::endl;
 				vnx::PrettyPrinter printer(std::cout);
 				args.accept(printer);
 				std::cout << std::endl << "Transaction ID: " << txid << std::endl;
