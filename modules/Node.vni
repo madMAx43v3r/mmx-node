@@ -130,6 +130,9 @@ module Node implements vnx.addons.HttpComponent {
 	vector<utxo_entry_t> get_utxo_list_for(vector<addr_t> addresses, addr_t currency, uint min_confirm = 1, uint since = 0) const;
 	
 	@Permission(permission_e.PUBLIC)
+	vector<utxo_entry_t> get_spendable_utxo_list(vector<addr_t> addresses, uint min_confirm = 1, uint since = 0) const;
+	
+	@Permission(permission_e.PUBLIC)
 	vector<stxo_entry_t> get_stxo_list(vector<addr_t> addresses, uint since = 0) const;
 	
 	void start_sync(bool force);

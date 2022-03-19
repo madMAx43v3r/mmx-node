@@ -769,28 +769,21 @@ std::map<addr_t, uint64_t> Node::get_total_balances(const std::vector<addr_t>& a
 
 std::map<addr_t, balance_t> Node::get_balances(const addr_t& address, const uint32_t& min_confirm) const
 {
-	std::map<addr_t, balance_t> result;
-	if(auto contract = get_contract(address))
-	{
-		auto context = Context::create();
-		context->height = get_height() + 1;
+	auto context = Context::create();
+	context->height = get_height() + 1;
 
-		for(const auto& entry : get_utxo_list({address}, min_confirm)) {
-			const auto& utxo = entry.output;
-			auto& out = result[utxo.contract];
-			if(contract->is_spendable(utxo, context)) {
-				out.spendable += utxo.amount;
-			} else {
-				out.locked += utxo.amount;
-			}
-			out.total += utxo.amount;
+	auto contract = get_contract(address);
+
+	std::map<addr_t, balance_t> result;
+	for(const auto& entry : get_utxo_list({address}, min_confirm)) {
+		const auto& utxo = entry.output;
+		auto& out = result[utxo.contract];
+		if(!contract || contract->is_spendable(utxo, context)) {
+			out.spendable += utxo.amount;
+		} else {
+			out.locked += utxo.amount;
 		}
-	} else {
-		for(const auto& entry : get_total_balances({address}, min_confirm)) {
-			auto& out = result[entry.first];
-			out.spendable += entry.second;
-			out.total += entry.second;
-		}
+		out.total += utxo.amount;
 	}
 	return result;
 }
@@ -853,6 +846,25 @@ std::vector<utxo_entry_t> Node::get_utxo_list_for(
 		const std::vector<addr_t>& addresses, const addr_t& currency, const uint32_t& min_confirm, const uint32_t& since) const
 {
 	return get_utxo_list(addresses, currency, min_confirm, since);
+}
+
+std::vector<utxo_entry_t> Node::get_spendable_utxo_list(
+		const std::vector<addr_t>& addresses, const uint32_t& min_confirm, const uint32_t& since) const
+{
+	auto context = Context::create();
+	context->height = get_height() + 1;
+
+	std::vector<utxo_entry_t> out;
+	for(const auto& address : addresses) {
+		auto contract = get_contract(address);
+		for(const auto& entry : get_utxo_list({address}, min_confirm, since)) {
+			const auto& utxo = entry.output;
+			if(!contract || contract->is_spendable(utxo, context)) {
+				out.push_back(entry);
+			}
+		}
+	}
+	return out;
 }
 
 std::vector<stxo_entry_t> Node::get_stxo_list(const std::vector<addr_t>& addresses, const uint32_t& since) const

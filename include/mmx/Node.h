@@ -90,13 +90,17 @@ protected:
 
 	uint64_t get_total_supply(const addr_t& currency) const override;
 
-	std::vector<utxo_entry_t> get_utxo_list(const std::vector<addr_t>& addresses, const uint32_t& min_confirm = 1, const uint32_t& since = 0) const override;
+	std::vector<utxo_entry_t> get_utxo_list(
+			const std::vector<addr_t>& addresses, const uint32_t& min_confirm = 1, const uint32_t& since = 0) const override;
 
 	std::vector<utxo_entry_t> get_utxo_list(
 			const std::vector<addr_t>& addresses, const vnx::optional<addr_t> currency, const uint32_t& min_confirm = 1, const uint32_t& since = 0) const;
 
 	std::vector<utxo_entry_t> get_utxo_list_for(
 			const std::vector<addr_t>& addresses, const addr_t& currency, const uint32_t& min_confirm = 1, const uint32_t& since = 0) const override;
+
+	std::vector<utxo_entry_t> get_spendable_utxo_list(
+			const std::vector<addr_t>& addresses, const uint32_t& min_confirm, const uint32_t& since) const override;
 
 	std::vector<stxo_entry_t> get_stxo_list(const std::vector<addr_t>& addresses, const uint32_t& since = 0) const override;
 

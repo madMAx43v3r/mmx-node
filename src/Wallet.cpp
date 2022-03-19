@@ -115,7 +115,8 @@ hash_t Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 		}
 	}
 	auto tx = wallet->send_from(amount, dst_addr, src_addr, src_owner,
-								node->get_utxo_list({src_addr}, options.min_confirm), currency, options);
+								node->get_spendable_utxo_list({src_addr}, options.min_confirm),
+								currency, options);
 	send_off(index, tx);
 
 	log(INFO) << "Sent " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
