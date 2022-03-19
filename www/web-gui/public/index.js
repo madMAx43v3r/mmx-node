@@ -286,6 +286,11 @@ const Explore = {
 		<recent-blocks-summary :limit="30"></recent-blocks-summary>
 	`
 }
+const ExploreBlock = {
+	template: `
+		<block-view :hash="$route.params.hash" :height="parseInt($route.params.height)"></block-view>
+	`
+}
 const ExploreTransaction = {
 	template: `
 		<transaction-view :id="$route.params.id"></transaction-view>
@@ -341,6 +346,8 @@ const routes = [
 		]
 	},
 	{ path: '/explore', component: Explore, meta: { is_explorer: true } },
+	{ path: '/explore/block/hash/:hash', component: ExploreBlock, meta: { is_explorer: true } },
+	{ path: '/explore/block/height/:height', component: ExploreBlock, meta: { is_explorer: true } },
 	{ path: '/explore/transaction/:id', component: ExploreTransaction, meta: { is_explorer: true } },
 	{ path: '/explore/address/coins/:address/:currency', component: AddressCoins, meta: { is_explorer: true },
 		props: route => ({address: route.params.address, currency: route.params.currency})

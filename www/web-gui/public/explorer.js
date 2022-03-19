@@ -56,17 +56,185 @@ app.component('recent-blocks-summary', {
 			</thead>
 			<tbody>
 			<tr v-for="item in data" :key="item.key">
-				<td>{{item.height}}</td>
+				<td><router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link></td>
 				<td>{{item.tx_count}}</td>
 				<td>{{item.proof ? item.proof.ksize : ""}}</td>
 				<td>{{item.proof ? item.proof.score : ""}}</td>
 				<td><template v-if="item.reward">{{(item.reward).toPrecision(6)}}</template></td>
 				<td>{{item.time_diff}}</td>
 				<td>{{item.space_diff}}</td>
-				<td>{{item.hash}}</td>
+				<td><router-link :to="'/explore/block/hash/' + item.hash">{{item.hash}}</router-link></td>
 			</tr>
 			</tbody>
 		</table>
+		`
+})
+
+app.component('block-view', {
+	props: {
+		hash: String,
+		height: Number
+	},
+	data() {
+		return {
+			data: null,
+			loading: false
+		}
+	},
+	methods: {
+		update() {
+			let url = null;
+			if(this.hash) {
+				url = '/wapi/block?hash=' + this.hash;
+			}
+			if(this.height >= 0) {
+				url = '/wapi/block?height=' + this.height;
+			}
+			if(url) {
+				this.loading = true;
+				fetch(url)
+					.then(response => {
+						if(response.ok) {
+							response.json()
+								.then(data => {
+									this.loading = false;
+									this.data = data;
+								});
+						} else {
+							this.loading = false;
+							this.data = null;
+						}
+					});
+			}
+		}
+	},
+	watch: {
+		hash() {
+			this.update();
+		},
+		height() {
+			this.update();
+		}
+	},
+	created() {
+		this.update();
+	},
+	template: `
+		<template v-if="data">
+			<div class="ui large pointing menu">
+				<router-link class="item" :to="'/explore/block/hash/' + data.prev">Previous</router-link>
+				<router-link class="right item" :to="'/explore/block/height/' + (data.height + 1)">Next</router-link>
+			</div>
+			<div class="ui large labels">
+				<div class="ui horizontal label">Block</div>
+				<div class="ui horizontal label">{{data.height}}</div>
+				<div class="ui horizontal label">{{data.hash}}</div>
+			</div>
+		</template>
+		<template v-if="!data && height">
+			<div class="ui large pointing menu">
+				<template v-if="height > 0">
+					<router-link class="item" :to="'/explore/block/height/' + (height - 1)">Previous</router-link>
+				</template>
+				<router-link class="right item" :to="'/explore/block/height/' + (height + 1)">Next</router-link>
+			</div>
+		</template>
+		<template v-if="!data && !loading">
+			<div class="ui large negative message">
+				No such block!
+			</div>
+		</template>
+		<template v-if="!data && loading">
+			<div class="ui basic loading placeholder segment"></div>
+		</template>
+		<template v-if="data">
+			<table class="ui definition table striped">
+				<tbody>
+				<tr>
+					<td class="two wide">Height</td>
+					<td>{{data.height}}</td>
+				</tr>
+				<tr>
+					<td class="two wide">Hash</td>
+					<td>{{data.hash}}</td>
+				</tr>
+				<tr>
+					<td class="two wide">Previous</td>
+					<td>{{data.prev}}</td>
+				</tr>
+				<tr>
+					<td class="two wide">Time</td>
+					<td>{{new Date(data.time * 1000).toLocaleString()}}</td>
+				</tr>
+				<tr>
+					<td class="two wide">Time Diff</td>
+					<td>{{data.time_diff}}</td>
+				</tr>
+				<tr>
+					<td class="two wide">Space Diff</td>
+					<td>{{data.space_diff}}</td>
+				</tr>
+				<tr>
+					<td class="two wide">VDF Iterations</td>
+					<td>{{data.vdf_iters}}</td>
+				</tr>
+				<tr>
+					<td class="two wide">TX Count</td>
+					<td>{{data.tx_count}}</td>
+				</tr>
+				<template v-if="data.proof">
+					<tr>
+						<td class="two wide">K Size</td>
+						<td>{{data.proof.ksize}}</td>
+					</tr>
+					<tr>
+						<td class="two wide">Proof Score</td>
+						<td>{{data.proof.score}}</td>
+					</tr>
+					<tr>
+						<td class="two wide">Plot ID</td>
+						<td>{{data.proof.plot_id}}</td>
+					</tr>
+					<tr>
+						<td class="two wide">Farmer Key</td>
+						<td>{{data.proof.farmer_key}}</td>
+					</tr>
+				</template>
+				</tbody>
+			</table>
+			<table class="ui table striped" v-if="data.tx_base">
+				<thead>
+				<tr>
+					<th>Reward</th>
+					<th></th>
+					<th>Address</th>
+					<th>Spent</th>
+				</tr>
+				</thead>
+				<tbody>
+				<tr v-for="(item, index) in data.tx_base.outputs" :key="index">
+					<td class="collapsing"><b>{{item.value}}</b></td>
+					<td>{{item.symbol}}</td>
+					<td>{{item.address}}</td>
+					<td><template v-if="item.spent"><router-link :to="'/explore/transaction/' + item.spent.txid">Next</router-link></template></td>
+				</tr>
+				</tbody>
+			</table>
+			<table class="ui definition table striped" v-if="data.tx_list.length">
+				<thead>
+				<tr>
+					<th></th>
+					<th>Transaction ID</th>
+				</tr>
+				</thead>
+				<tbody>
+				<tr v-for="(item, index) in data.tx_list" :key="index">
+					<td class="two wide">TX[{{index}}]</td>
+					<td><router-link :to="'/explore/transaction/' + item.id">{{item.id}}</router-link></td>
+				</tr>
+				</tbody>
+			</table>
+		</template>
 		`
 })
 
@@ -154,7 +322,7 @@ app.component('transaction-view', {
 				</tr>
 				</tbody>
 			</table>
-			<table class="ui definition table striped" v-if="data.fee.value >= 0">
+			<table class="ui definition table striped" v-if="data.inputs.length">
 				<thead>
 				<tr>
 					<th></th>
