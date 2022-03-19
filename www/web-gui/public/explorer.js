@@ -254,17 +254,23 @@ app.component('transaction-view', {
 			if(this.id) {
 				this.loading = true;
 				fetch('/wapi/transaction?id=' + this.id)
-					.then(response => response.json())
-					.then(data => {
-						this.loading = false;
-						this.data = data;
+					.then(response => {
+						if(response.ok) {
+							response.json()
+								.then(data => {
+									this.loading = false;
+									this.data = data;
+								});
+						} else {
+							this.loading = false;
+							this.data = null;
+						}
 					});
 			}
 		}
 	},
 	watch: {
 		id() {
-			this.data = null;
 			this.update();
 		}
 	},
