@@ -127,26 +127,6 @@ void Node::main()
 	if(auto peak = get_peak()) {
 		const auto next_height = peak->height + 1;
 		{
-			std::vector<txio_key_t> keys;
-			if(stxo_log.find(next_height, keys, vnx::rocksdb::GREATER_EQUAL)) {
-				for(const auto& key : keys) {
-					stxo_index.erase(key);
-				}
-				log(INFO) << "Purged " << keys.size() << " stxo_index entries";
-			}
-			stxo_log.erase_all(next_height, vnx::rocksdb::GREATER_EQUAL);
-		}
-		{
-			std::vector<hash_t> keys;
-			if(tx_log.find(next_height, keys, vnx::rocksdb::GREATER_EQUAL)) {
-				for(const auto& key : keys) {
-					tx_index.erase(key);
-				}
-				log(INFO) << "Purged " << keys.size() << " tx_index entries";
-			}
-			tx_log.erase_all(next_height, vnx::rocksdb::GREATER_EQUAL);
-		}
-		{
 			std::vector<addr_t> addr_set;
 			if(addr_log.find(next_height, addr_set, vnx::rocksdb::GREATER_EQUAL)) {
 				{
@@ -187,6 +167,26 @@ void Node::main()
 				}
 			}
 			addr_log.erase_all(next_height, vnx::rocksdb::GREATER_EQUAL);
+		}
+		{
+			std::vector<txio_key_t> keys;
+			if(stxo_log.find(next_height, keys, vnx::rocksdb::GREATER_EQUAL)) {
+				for(const auto& key : keys) {
+					stxo_index.erase(key);
+				}
+				log(INFO) << "Purged " << keys.size() << " stxo_index entries";
+			}
+			stxo_log.erase_all(next_height, vnx::rocksdb::GREATER_EQUAL);
+		}
+		{
+			std::vector<hash_t> keys;
+			if(tx_log.find(next_height, keys, vnx::rocksdb::GREATER_EQUAL)) {
+				for(const auto& key : keys) {
+					tx_index.erase(key);
+				}
+				log(INFO) << "Purged " << keys.size() << " tx_index entries";
+			}
+			tx_log.erase_all(next_height, vnx::rocksdb::GREATER_EQUAL);
 		}
 	}
 
