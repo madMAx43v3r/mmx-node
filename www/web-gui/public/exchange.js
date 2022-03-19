@@ -343,6 +343,7 @@ app.component('exchange-history', {
 				<th colspan="2">Price</th>
 				<th>Offer</th>
 				<th>Height</th>
+				<th>Link</th>
 				<th>Time</th>
 			</thead>
 			<tbody>
@@ -356,6 +357,7 @@ app.component('exchange-history', {
 					<td>{{item.ask_symbol}} / {{item.bid_symbol}}</td>
 					<td>{{item.offer_id}}</td>
 					<td>{{item.height ? item.height : item.failed ? "(failed)" : "(pending)"}}</td>
+					<td><router-link :to="'/explore/transaction/' + item.id">TX</router-link></td>
 					<td>{{item.failed ? "(failed)" : item.time ? new Date(item.time * 1000).toLocaleString() : "(pending)"}}</td>
 				</tr>
 			</tbody>
