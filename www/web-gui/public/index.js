@@ -143,6 +143,14 @@ const AccountCreateStaking = {
 		<create-staking-contract :index="index"></create-staking-contract>
 	`
 }
+const AccountCreateLocked = {
+	props: {
+		index: Number
+	},
+	template: `
+		<create-locked-contract :index="index"></create-locked-contract>
+	`
+}
 
 const Exchange = {
 	props: {
@@ -312,6 +320,7 @@ const routes = [
 			{ path: 'details', component: AccountDetails, meta: { page: 'details' } },
 			{ path: 'options', component: AccountOptions, meta: { page: 'options' } },
 			{ path: 'create/staking', component: AccountCreateStaking },
+			{ path: 'create/locked', component: AccountCreateLocked },
 			{ path: 'coins/:currency', component: AccountCoins, props: route => ({currency: route.params.currency}) },
 		]
 	},

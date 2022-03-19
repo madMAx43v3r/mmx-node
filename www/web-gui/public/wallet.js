@@ -1297,6 +1297,7 @@ app.component('create-contract-menu', {
 					<label>Contract Type</label>
 					<select v-model="type">
 						<option value="staking">mmx.contract.Staking</option>
+						<option value="locked">mmx.contract.Locked</option>
 					</select>
 				</div>
 				<div @click="submit" class="ui submit button" :class="{disabled: !type}">Create</div>
@@ -1328,23 +1329,21 @@ app.component('create-staking-contract', {
 				.then(response => response.json())
 				.then(data => {
 					this.addresses = data;
-					if(!this.owner && data.length) {
-						this.owner = data[0];
-					}
-					if(!this.reward_addr && data.length) {
-						this.reward_addr = data[0];
+					if(data.length) {
+						if(!this.owner) {
+							this.owner = data[0];
+						}
+						if(!this.reward_addr) {
+							this.reward_addr = data[0];
+						}
 					}
 				});
-		},
-		update_balance() {
-			this.update();
-			this.$refs.balance.update();
 		},
 		submit() {
 			this.confirmed = false;
 			const contract = {};
 			contract.__type = "mmx.contract.Staking";
-			contract.owner = this.addresses[0];
+			contract.owner = this.owner;
 			contract.currency = this.currency;
 			contract.reward_addr = this.reward_addr;
 			fetch('/wapi/wallet/deploy?index=' + this.index, {body: JSON.stringify(contract), method: "post"})
@@ -1366,6 +1365,7 @@ app.component('create-staking-contract', {
 	watch: {
 		currency(value) {
 			this.valid = false;
+			this.confirmed = false;
 			this.symbol = "???";
 			fetch('/wapi/contract?id=' + value)
 				.then(response => {
@@ -1420,6 +1420,106 @@ app.component('create-staking-contract', {
 						<label>Currency Contract</label>
 						<input type="text" v-model="currency" placeholder="mmx1..."/>
 					</div>
+				</div>
+				<div class="inline field">
+					<div class="ui toggle checkbox" :class="{disabled: !valid}">
+						<input type="checkbox" class="hidden" v-model="confirmed">
+						<label>Confirm</label>
+					</div>
+				</div>
+				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">Deploy</div>
+			</form>
+		</div>
+		<div class="ui message" :class="{hidden: !result}">
+			<template v-if="result">
+				Deployed as: <b>{{result}}</b>
+			</template>
+		</div>
+		<div class="ui negative message" :class="{hidden: !error}">
+			Failed with: <b>{{error}}</b>
+		</div>
+		`
+})
+
+app.component('create-locked-contract', {
+	props: {
+		index: Number
+	},
+	data() {
+		return {
+			owner: null,
+			chain_height: null,
+			delta_height: null,
+			valid: false,
+			confirmed: false,
+			result: null,
+			error: null
+		}
+	},
+	methods: {
+		check_valid() {
+			this.valid = this.owner != null && (this.chain_height || this.delta_height);
+			if(!this.valid) {
+				this.confirmed = false;
+			}
+		},
+		submit() {
+			this.confirmed = false;
+			const contract = {};
+			contract.__type = "mmx.contract.Locked";
+			contract.owner = this.owner;
+			contract.chain_height = this.chain_height;
+			contract.delta_height = this.delta_height;
+			fetch('/wapi/wallet/deploy?index=' + this.index, {body: JSON.stringify(contract), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						response.json().then(data => this.result = data);
+					} else {
+						response.text().then(data => this.error = data);
+					}
+				});
+		}
+	},
+	mounted() {
+		$('.ui.checkbox').checkbox();
+	},
+	watch: {
+		owner(value) {
+			this.check_valid();
+		},
+		chain_height(value) {
+			this.check_valid();
+		},
+		delta_height(value) {
+			this.check_valid();
+		},
+		result(value) {
+			if(value) {
+				this.error = null;
+			}
+		},
+		error(value) {
+			if(value) {
+				this.result = null;
+			}
+		}
+	},
+	template: `
+		<div class="ui large label">Create</div>
+		<div class="ui large label">mmx.contract.Locked</div>
+		<div class="ui raised segment">
+			<form class="ui form" id="form">
+				<div class="field">
+					<label>Owner Address</label>
+					<input type="text" v-model="owner" placeholder="mmx1..."/>
+				</div>
+				<div class="field">
+					<label>Unlock at Chain Height</label>
+					<input type="text" v-model.number="chain_height"/>
+				</div>
+				<div class="field">
+					<label>Unlock after N Blocks</label>
+					<input type="text" v-model.number="delta_height"/>
 				</div>
 				<div class="inline field">
 					<div class="ui toggle checkbox" :class="{disabled: !valid}">
