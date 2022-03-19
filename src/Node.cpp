@@ -174,7 +174,11 @@ void Node::main()
 								for(const auto& method : mutations) {
 									copy->vnx_call(vnx::clone(method));
 								}
-								contract_cache.insert(addr, copy);
+								if(mutations.empty()) {
+									contract_cache.erase(addr);
+								} else {
+									contract_cache.insert(addr, copy);
+								}
 							}
 						}
 					}
