@@ -17,6 +17,7 @@
 #include <vnx/Input.hpp>
 #include <vnx/Output.hpp>
 #include <vnx/Variant.hpp>
+#include <vnx/Hash64.hpp>
 
 
 namespace mmx {
@@ -41,6 +42,8 @@ struct bytes_t {
 	size_t size() const;
 
 	bool is_zero() const;
+
+	vnx::Hash64 crc64() const;
 
 	std::string to_string() const;
 
@@ -108,6 +111,11 @@ bool bytes_t<N>::is_zero() const {
 template<size_t N>
 std::string bytes_t<N>::to_string() const {
 	return bls::Util::HexStr(bytes.data(), bytes.size());
+}
+
+template<size_t N>
+vnx::Hash64 bytes_t<N>::crc64() const {
+	return vnx::Hash64(bytes.data(), bytes.size());
 }
 
 template<size_t N>
