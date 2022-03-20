@@ -157,7 +157,7 @@ app.component('account-balance', {
 				<td>{{item.reserved}}</td>
 				<td><b>{{item.spendable}}</b></td>
 				<td>{{item.symbol}}</td>
-				<td>{{item.is_native ? '' : item.contract}}</td>
+				<td><router-link :to="'/explore/address/' + item.contract">{{item.is_native ? '' : item.contract}}</router-link></td>
 				<td>
 					<router-link :to="'/wallet/account/' + index + '/coins/' + item.contract">Coins</router-link>
 				</td>
@@ -190,6 +190,11 @@ app.component('balance-table', {
 				});
 		}
 	},
+	watch: {
+		address() {
+			this.update();
+		}
+	},
 	created() {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 10000);
@@ -218,10 +223,8 @@ app.component('balance-table', {
 				<td>{{item.locked}}</td>
 				<td><b>{{item.spendable}}</b></td>
 				<td>{{item.symbol}}</td>
-				<td>{{item.is_native ? '' : item.contract}}</td>
-				<td>
-					<router-link :to="'/explore/address/coins/' + address + '/' + item.contract">Coins</router-link>
-				</td>
+				<td><router-link :to="'/explore/address/' + item.contract">{{item.is_native ? '' : item.contract}}</router-link></td>
+				<td><router-link :to="'/explore/address/coins/' + address + '/' + item.contract">Coins</router-link></td>
 			</tr>
 			</tbody>
 		</table>
@@ -311,11 +314,16 @@ app.component('account-history', {
 			</thead>
 			<tbody>
 			<tr v-for="item in data" :key="item.txid">
-				<td>{{item.height}}</td>
+				<td><router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link></td>
 				<td>{{item.type}}</td>
 				<td><b>{{item.value}}</b></td>
-				<td>{{item.symbol}}</td>
-				<td>{{item.address}}</td>
+				<template v-if="item.is_native">
+					<td>{{item.symbol}}</td>
+				</template>
+				<template v-if="!item.is_native">
+					<td><router-link :to="'/explore/address/' + item.contract">{{item.symbol}}</router-link></td>
+				</template>
+				<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
 				<td><router-link :to="'/explore/transaction/' + item.txid">TX</router-link></td>
 				<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 			</tr>
@@ -399,7 +407,7 @@ app.component('account-contract-summary', {
 				<div class="ui horizontal label">{{contract.__type}}</div>
 				<div class="ui horizontal label">{{address}}</div>
 			</div>
-			<contract-table :data="contract"></contract-table>
+			<object-table :data="contract"></object-table>
 			<balance-table :address="address"></balance-table>
 			<div @click="deposit" class="ui submit button">Deposit</div>
 			<div @click="withdraw" class="ui submit button">Withdraw</div>
@@ -472,7 +480,7 @@ app.component('account-addresses', {
 			<tbody>
 			<tr v-for="(item, index) in data" :key="index">
 				<td>{{index}}</td>
-				<td>{{item}}</td>
+				<td><router-link :to="'/explore/address/' + item">{{item}}</router-link></td>
 			</tr>
 			</tbody>
 		</table>
@@ -527,6 +535,10 @@ app.component('address-coins', {
 		this.update()
 	},
 	template: `
+		<div class="ui large labels">
+			<div class="ui horizontal label">Coins</div>
+			<div class="ui horizontal label">{{address}}</div>
+		</div>
 		<coins-table :data="data"></coins-table>
 		`
 })
@@ -549,8 +561,8 @@ app.component('coins-table', {
 			<tr v-for="item in data" :key="item.key">
 				<td>{{item.output.height == 4294967295 ? "pending" : item.output.height}}</td>
 				<td class="collapsing"><b>{{item.output.value}}</b></td>
-				<td>{{item.output.symbol}}</td>
-				<td>{{item.output.address}}</td>
+				<td><router-link :to="'/explore/address/' + item.output.contract">{{item.output.symbol}}</router-link></td>
+				<td><router-link :to="'/explore/address/' + item.output.address">{{item.output.address}}</router-link></td>
 			</tr>
 			</tbody>
 		</table>

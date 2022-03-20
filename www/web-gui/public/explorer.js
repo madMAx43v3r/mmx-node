@@ -208,19 +208,21 @@ app.component('block-view', {
 				</template>
 				</tbody>
 			</table>
-			<table class="ui table striped" v-if="data.tx_base">
+			<table class="ui definition table striped" v-if="data.tx_base">
 				<thead>
 				<tr>
-					<th>Reward</th>
+					<th></th>
+					<th>Amount</th>
 					<th></th>
 					<th>Address</th>
 				</tr>
 				</thead>
 				<tbody>
 				<tr v-for="(item, index) in data.tx_base.outputs" :key="index">
+					<td class="two wide">Reward[{{index}}]</td>
 					<td class="collapsing"><b>{{item.value}}</b></td>
 					<td>{{item.symbol}}</td>
-					<td>{{item.address}}</td>
+					<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
 				</tr>
 				</tbody>
 			</table>
@@ -228,12 +230,18 @@ app.component('block-view', {
 				<thead>
 				<tr>
 					<th></th>
+					<th>Inputs</th>
+					<th>Outputs</th>
+					<th>Operations</th>
 					<th>Transaction ID</th>
 				</tr>
 				</thead>
 				<tbody>
 				<tr v-for="(item, index) in data.tx_list" :key="index">
 					<td class="two wide">TX[{{index}}]</td>
+					<td>{{item.inputs.length}}</td>
+					<td>{{item.outputs.length + item.exec_outputs.length}}</td>
+					<td>{{item.execute.length}}</td>
 					<td><router-link :to="'/explore/transaction/' + item.id">{{item.id}}</router-link></td>
 				</tr>
 				</tbody>
@@ -304,7 +312,9 @@ app.component('transaction-view', {
 				<tr>
 					<td class="two wide">Height</td>
 					<td colspan="2">
-						<template v-if="data.height">{{data.height}}</template>
+						<template v-if="data.height">
+							<router-link :to="'/explore/block/height/' + data.height">{{data.height}}</router-link>
+						</template>
 						<template v-if="!data.height"><i>pending</i></template>
 					</td>
 				</tr>
@@ -318,7 +328,7 @@ app.component('transaction-view', {
 				</tr>
 				<tr v-if="data.deployed">
 					<td class="two wide">Address</td>
-					<td colspan="2">{{data.address}}</td>
+					<td colspan="2"><router-link :to="'/explore/address/' + data.address">{{data.address}}</router-link></td>
 				</tr>
 				<tr>
 					<td class="two wide">Cost</td>
@@ -338,7 +348,8 @@ app.component('transaction-view', {
 					<th></th>
 					<th>Amount</th>
 					<th>Token</th>
-					<th>Previous</th>
+					<th>Address</th>
+					<th></th>
 				</tr>
 				</thead>
 				<tbody>
@@ -346,18 +357,19 @@ app.component('transaction-view', {
 					<td class="two wide">Input[{{index}}]</td>
 					<td class="collapsing"><b>{{item.utxo.value}}</b></td>
 					<td>{{item.utxo.symbol}}</td>
-					<td><router-link :to="'/explore/transaction/' + item.prev.txid">{{item.prev.key}}</router-link></td>
+					<td><router-link :to="'/explore/address/' + item.utxo.address">{{item.utxo.address}}</router-link></td>
+					<td><router-link :to="'/explore/transaction/' + item.prev.txid">Prev</router-link></td>
 				</tr>
 				</tbody>
 			</table>
-			<table class="ui definition table striped">
+			<table class="ui definition table striped" v-if="data.outputs.length">
 				<thead>
 				<tr>
 					<th></th>
 					<th>Amount</th>
 					<th>Token</th>
 					<th>Address</th>
-					<th>Spent</th>
+					<th></th>
 				</tr>
 				</thead>
 				<tbody>
@@ -365,22 +377,155 @@ app.component('transaction-view', {
 					<td class="two wide">Output[{{index}}]</td>
 					<td class="collapsing"><b>{{item.output.value}}</b></td>
 					<td>{{item.output.symbol}}</td>
-					<td>{{item.output.address}}</td>
+					<td><router-link :to="'/explore/address/' + item.output.address">{{item.output.address}}</router-link></td>
 					<td><template v-if="item.spent"><router-link :to="'/explore/transaction/' + item.spent.txid">Next</router-link></template></td>
 				</tr>
 				</tbody>
 			</table>
+			<template v-for="(op, index) in data.operations" :key="index">
+				<div class="ui segment">
+					<div class="ui large label">Operation[{{index}}]</div>
+					<div class="ui large label">{{op.__type}}</div>
+					<object-table :data="op"></object-table>
+				</div>
+			</template>
 			<template v-if="data.deployed">
 				<div class="ui segment">
 					<div class="ui large label">{{data.deployed.__type}}</div>
-					<contract-table :data="data.deployed"></contract-table>
+					<object-table :data="data.deployed"></object-table>
 				</div>
 			</template>
 		</template>
 		`
 })
 
-app.component('contract-table', {
+app.component('address-view', {
+	props: {
+		address: String
+	},
+	data() {
+		return {
+			data: null
+		}
+	},
+	methods: {
+		update() {
+			this.loading = true;
+			fetch('/wapi/contract?id=' + this.address)
+				.then(response => {
+					if(response.ok) {
+						response.json()
+							.then(data => {
+								this.loading = false;
+								this.data = data;
+							});
+					} else {
+						this.loading = false;
+						this.data = null;
+					}
+				});
+		}
+	},
+	watch: {
+		address() {
+			this.update();
+		}
+	},
+	created() {
+		this.update();
+	},
+	template: `
+		<div class="ui large labels">
+			<div class="ui horizontal label">Address</div>
+			<div class="ui horizontal label">{{address}}</div>
+		</div>
+		<balance-table :address="address" :show_empty="true"></balance-table>
+		<template v-if="data">
+			<div class="ui segment">
+				<div class="ui large label">{{data.__type}}</div>
+				<object-table :data="data"></object-table>
+			</div>
+		</template>
+		<address-history-table :address="address" :limit="200" :show_empty="false"></address-history-table>
+		`
+})
+
+app.component('address-history-table', {
+	props: {
+		address: String,
+		limit: Number,
+		show_empty: Boolean
+	},
+	data() {
+		return {
+			data: null,
+			loading: false,
+			timer: null
+		}
+	},
+	methods: {
+		update() {
+			this.loading = true;
+			fetch('/wapi/address/history?limit=' + this.limit + '&id=' + this.address)
+				.then(response => response.json())
+				.then(data => {
+					this.loading = false;
+					this.data = data;
+				});
+		}
+	},
+	watch: {
+		address() {
+			this.update();
+		},
+		limit() {
+			this.update();
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 60000);
+	},
+	unmounted() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<template v-if="!data && loading">
+			<div class="ui basic loading placeholder segment"></div>
+		</template>
+		<table class="ui table striped" v-if="data && (data.length || show_empty)">
+			<thead>
+			<tr>
+				<th>Height</th>
+				<th>Type</th>
+				<th>Amount</th>
+				<th>Token</th>
+				<th>Address</th>
+				<th>Link</th>
+				<th>Time</th>
+			</tr>
+			</thead>
+			<tbody>
+			<tr v-for="item in data" :key="item.txid">
+				<td><router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link></td>
+				<td>{{item.type}}</td>
+				<td><b>{{item.value}}</b></td>
+				<template v-if="item.is_native">
+					<td>{{item.symbol}}</td>
+				</template>
+				<template v-if="!item.is_native">
+					<td><router-link :to="'/explore/address/' + item.contract">{{item.symbol}}</router-link></td>
+				</template>
+				<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
+				<td><router-link :to="'/explore/transaction/' + item.txid">TX</router-link></td>
+				<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
+			</tr>
+			</tbody>
+		</table>
+		`
+})
+
+app.component('object-table', {
 	props: {
 		data: Object
 	},
