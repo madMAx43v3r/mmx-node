@@ -506,7 +506,7 @@ app.component('address-history-table', {
 			</tr>
 			</thead>
 			<tbody>
-			<tr v-for="item in data" :key="item.txid">
+			<tr v-for="item in data">
 				<td><router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link></td>
 				<td>{{item.type}}</td>
 				<td><b>{{item.value}}</b></td>
