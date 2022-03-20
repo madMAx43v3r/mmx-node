@@ -203,6 +203,7 @@ class TimeInfusion;
 class TimeLordBase;
 class TimeLord_stop_vdf;
 class TimeLord_stop_vdf_return;
+class TimeLordRewardsBase;
 class Transaction;
 class Transaction_add_output;
 class Transaction_add_output_return;
@@ -516,6 +517,7 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeInfusion; 
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLordBase; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLord_stop_vdf; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLord_stop_vdf_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLordRewardsBase; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Transaction; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Transaction_add_output; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Transaction_add_output_return; ///< \private
@@ -827,6 +829,7 @@ void read(TypeInput& in, ::mmx::TimeInfusion& value, const TypeCode* type_code, 
 void read(TypeInput& in, ::mmx::TimeLordBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::TimeLord_stop_vdf& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::TimeLord_stop_vdf_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::TimeLordRewardsBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Transaction& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Transaction_add_output& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Transaction_add_output_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1140,6 +1143,7 @@ void write(TypeOutput& out, const ::mmx::TimeInfusion& value, const TypeCode* ty
 void write(TypeOutput& out, const ::mmx::TimeLordBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::TimeLord_stop_vdf& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::TimeLord_stop_vdf_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::TimeLordRewardsBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Transaction& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Transaction_add_output& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Transaction_add_output_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1453,6 +1457,7 @@ void read(std::istream& in, ::mmx::TimeInfusion& value); ///< \private
 void read(std::istream& in, ::mmx::TimeLordBase& value); ///< \private
 void read(std::istream& in, ::mmx::TimeLord_stop_vdf& value); ///< \private
 void read(std::istream& in, ::mmx::TimeLord_stop_vdf_return& value); ///< \private
+void read(std::istream& in, ::mmx::TimeLordRewardsBase& value); ///< \private
 void read(std::istream& in, ::mmx::Transaction& value); ///< \private
 void read(std::istream& in, ::mmx::Transaction_add_output& value); ///< \private
 void read(std::istream& in, ::mmx::Transaction_add_output_return& value); ///< \private
@@ -1766,6 +1771,7 @@ void write(std::ostream& out, const ::mmx::TimeInfusion& value); ///< \private
 void write(std::ostream& out, const ::mmx::TimeLordBase& value); ///< \private
 void write(std::ostream& out, const ::mmx::TimeLord_stop_vdf& value); ///< \private
 void write(std::ostream& out, const ::mmx::TimeLord_stop_vdf_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::TimeLordRewardsBase& value); ///< \private
 void write(std::ostream& out, const ::mmx::Transaction& value); ///< \private
 void write(std::ostream& out, const ::mmx::Transaction_add_output& value); ///< \private
 void write(std::ostream& out, const ::mmx::Transaction_add_output_return& value); ///< \private
@@ -2079,6 +2085,7 @@ void accept(Visitor& visitor, const ::mmx::TimeInfusion& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::TimeLordBase& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::TimeLord_stop_vdf& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::TimeLord_stop_vdf_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::TimeLordRewardsBase& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Transaction& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Transaction_add_output& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Transaction_add_output_return& value); ///< \private
@@ -6379,6 +6386,26 @@ struct type<::mmx::TimeLord_stop_vdf_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::TimeLord_stop_vdf_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::TimeLordRewardsBase> {
+	void read(TypeInput& in, ::mmx::TimeLordRewardsBase& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::TimeLordRewardsBase& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::TimeLordRewardsBase& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::TimeLordRewardsBase& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::TimeLordRewardsBase& value) {
+		vnx::accept(visitor, value);
+	}
 };
 
 /// \private

@@ -183,6 +183,7 @@
 #include <mmx/TimeLordBase.hxx>
 #include <mmx/TimeLord_stop_vdf.hxx>
 #include <mmx/TimeLord_stop_vdf_return.hxx>
+#include <mmx/TimeLordRewardsBase.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/Transaction_add_output.hxx>
 #include <mmx/Transaction_add_output_return.hxx>
@@ -4183,6 +4184,7 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::TimeLordBase::static_create_type_code());
 	vnx::register_type_code(::mmx::TimeLord_stop_vdf::static_create_type_code());
 	vnx::register_type_code(::mmx::TimeLord_stop_vdf_return::static_create_type_code());
+	vnx::register_type_code(::mmx::TimeLordRewardsBase::static_create_type_code());
 	vnx::register_type_code(::mmx::Transaction::static_create_type_code());
 	vnx::register_type_code(::mmx::Transaction_add_output::static_create_type_code());
 	vnx::register_type_code(::mmx::Transaction_add_output_return::static_create_type_code());
@@ -4496,6 +4498,7 @@ const vnx::TypeCode* const vnx_native_type_code_TimeInfusion = vnx::get_type_cod
 const vnx::TypeCode* const vnx_native_type_code_TimeLordBase = vnx::get_type_code(vnx::Hash64(0x311081636f6570efull));
 const vnx::TypeCode* const vnx_native_type_code_TimeLord_stop_vdf = vnx::get_type_code(vnx::Hash64(0xf7f78eb9f371e6e7ull));
 const vnx::TypeCode* const vnx_native_type_code_TimeLord_stop_vdf_return = vnx::get_type_code(vnx::Hash64(0x53e37fb500ea3a9full));
+const vnx::TypeCode* const vnx_native_type_code_TimeLordRewardsBase = vnx::get_type_code(vnx::Hash64(0xa21363e9b58e1cbaull));
 const vnx::TypeCode* const vnx_native_type_code_Transaction = vnx::get_type_code(vnx::Hash64(0xce0462acdceaa5bcull));
 const vnx::TypeCode* const vnx_native_type_code_Transaction_add_output = vnx::get_type_code(vnx::Hash64(0x479ef0d3de1f6ea3ull));
 const vnx::TypeCode* const vnx_native_type_code_Transaction_add_output_return = vnx::get_type_code(vnx::Hash64(0xcd881f36124e1e8bull));
