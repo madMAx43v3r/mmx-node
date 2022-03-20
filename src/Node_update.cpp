@@ -213,7 +213,8 @@ void Node::update()
 	if(!prev_peak || peak->hash != prev_peak->hash)
 	{
 		stuck_timer->reset();
-		if(auto fork = find_fork(peak->hash)) {
+		if(auto fork = find_fork(peak->hash))
+		{
 			auto vdf_point = fork->vdf_point;
 			log(INFO) << "New peak at height " << peak->height << " with score " << std::to_string(fork->proof_score)
 					<< (is_synced && forked_at ? ", forked at " + std::to_string(forked_at->height) : "")
