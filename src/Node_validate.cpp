@@ -157,6 +157,9 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 		if(tx->nonce != base->height) {
 			throw std::logic_error("invalid coin base nonce");
 		}
+		if(!tx->salt || *tx->salt != base->vdf_output[0]) {
+			throw std::logic_error("invalid coin base salt");
+		}
 	} else {
 		if(tx->inputs.empty()) {
 			throw std::logic_error("tx without input");

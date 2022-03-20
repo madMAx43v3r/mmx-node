@@ -59,6 +59,7 @@ hash_t Transaction::calc_hash() const
 	write_bytes(out, get_type_hash());
 	write_bytes(out, version);
 	write_bytes(out, nonce);
+	write_bytes(out, salt);
 
 	for(const auto& tx : inputs) {
 		write_bytes(out, tx);

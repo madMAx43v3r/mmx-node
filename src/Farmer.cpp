@@ -116,6 +116,7 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& rew
 
 	auto base = Transaction::create();
 	base->nonce = block->height;
+	base->salt = block->vdf_output[0];
 
 	auto amount_left = reward_amount;
 	if(project_addr && amount_left > 0)
