@@ -1,0 +1,18 @@
+package mmx;
+
+module TimeLordRewards {
+	
+	vnx.TopicPtr input_vdfs = "node.verified_vdfs";
+	
+	uint wallet_index;
+	
+	uint reward_divider = 60;
+	
+	ulong reward = 100000;
+	
+	string wallet_server = "Wallet";
+	
+	
+	void handle(ProofOfTime sample);
+	
+}

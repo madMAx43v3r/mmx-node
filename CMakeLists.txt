@@ -99,6 +99,7 @@ add_library(mmx_modules SHARED
 	src/Router.cpp
 	src/WebAPI.cpp
 	src/OCL_VDF.cpp
+	src/TimeLordRewards.cpp
 )
 
 add_library(uint256_t STATIC
@@ -142,6 +143,7 @@ add_executable(mmx_farmer src/mmx_farmer.cpp)
 add_executable(mmx_wallet src/mmx_wallet.cpp)
 add_executable(mmx_timelord src/mmx_timelord.cpp)
 add_executable(mmx_harvester src/mmx_harvester.cpp)
+add_executable(mmx_timelord_rewards src/mmx_timelord_rewards.cpp)
 
 target_link_libraries(mmx mmx_iface mmx_exchange)
 target_link_libraries(mmx_node mmx_modules mmx_exchange)
@@ -149,6 +151,7 @@ target_link_libraries(mmx_farmer mmx_modules)
 target_link_libraries(mmx_wallet mmx_modules)
 target_link_libraries(mmx_timelord mmx_modules)
 target_link_libraries(mmx_harvester mmx_modules)
+target_link_libraries(mmx_timelord_rewards mmx_modules)
 
 add_executable(tx_bench src/tx_bench.cpp)
 
