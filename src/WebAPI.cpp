@@ -290,6 +290,7 @@ public:
 					out["value"] = amount * pow(10, -info->decimals);
 				}
 			}
+			out["is_native"] = contract == addr_t();
 		}
 		return out;
 	}
