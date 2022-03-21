@@ -573,15 +573,16 @@ std::vector<tx_entry_t> Node::get_history_for(const std::vector<addr_t>& address
 				out.txid = iter.first;
 				out.contract = entry.first;
 				out.address = addr;
+				out.amount = entry.second;
 				if(entry.second > 0) {
 					out.type = tx_type_e::RECEIVE;
-					out.amount = entry.second;
 				}
 				if(entry.second < 0) {
 					out.type = tx_type_e::SPEND;
-					out.amount = -entry.second;
 				}
-				list.emplace(out.height, out);
+				if(entry.second) {
+					list.emplace(out.height, out);
+				}
 			}
 		}
 	}
