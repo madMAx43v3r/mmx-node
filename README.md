@@ -35,3 +35,9 @@ Please take a look at the Wiki:
 - [Getting-Started](https://github.com/madMAx43v3r/mmx-node/wiki/Getting-Started)
 - [CLI-Commands](https://github.com/madMAx43v3r/mmx-node/wiki/CLI-Commands)
 - [Frequently-Asked-Questions](https://github.com/madMAx43v3r/mmx-node/wiki/Frequently-Asked-Questions)
+
+## WebGUI
+
+To access the WebGUI go to: http://localhost:11380/
+
+It's only available on localhost since it allows spending from your wallet.
