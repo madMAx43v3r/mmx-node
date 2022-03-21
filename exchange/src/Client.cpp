@@ -544,14 +544,14 @@ std::shared_ptr<const Transaction> Client::approve(std::shared_ptr<const Transac
 	}
 	auto out = vnx::clone(tx);
 	for(auto index : wallets) {
-		if(auto tx = wallet->sign_off(index, out)) {
+		if(auto tx = wallet->sign_off(index, out, false)) {
 			out = vnx::clone(tx);
 		} else {
 			throw std::logic_error("unable to sign off");
 		}
 	}
-	pending_approvals.insert(tx->id);
-	log(INFO) << "Accepted trade " << tx->id;
+	pending_approvals.insert(out->id);
+	log(INFO) << "Accepted trade " << out->id;
 	return out;
 }
 
