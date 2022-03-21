@@ -169,7 +169,7 @@ void Server::reject(const uint64_t& client, const hash_t& txid)
 {
 	auto iter = pending_trades.find(txid);
 	if(iter == pending_trades.end()) {
-		throw std::logic_error("no such trade");
+		throw std::logic_error("no such trade: " + txid.to_string());
 	}
 	auto job = iter->second;
 	if(job->pending_clients.count(client)) {
@@ -187,7 +187,7 @@ void Server::approve(const uint64_t& client, std::shared_ptr<const Transaction> 
 	}
 	auto iter = pending_trades.find(tx->id);
 	if(iter == pending_trades.end()) {
-		throw std::logic_error("no such trade");
+		throw std::logic_error("no such trade: " + tx->id.to_string());
 	}
 	auto job = iter->second;
 	if(!job->pending_clients.erase(client)) {
