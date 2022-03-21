@@ -108,7 +108,7 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& rew
 	{
 		auto iter = key_map.find(block->proof->farmer_key);
 		if(iter == key_map.end()) {
-			throw std::logic_error("unknown farmer key");
+			throw std::logic_error("unknown farmer key: " + block->proof->farmer_key.to_string());
 		}
 		farmer_sk = iter->second;
 	}
