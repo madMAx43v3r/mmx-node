@@ -1,0 +1,12 @@
+package mmx.solution;
+
+import mmx.Solution;
+
+class PlotNFT extends Solution {
+	
+	Solution* target;
+	
+	
+	bool is_valid() const;
+	
+}

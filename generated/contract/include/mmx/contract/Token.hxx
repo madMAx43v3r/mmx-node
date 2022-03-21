@@ -28,8 +28,10 @@ public:
 	std::string icon_url;
 	uint32_t decimals = 0;
 	vnx::optional<::mmx::addr_t> owner;
-	::mmx::ulong_fraction_t time_factor;
+	vnx::optional<::mmx::ulong_fraction_t> time_factor;
 	std::map<::mmx::addr_t, ::mmx::ulong_fraction_t> stake_factors;
+	vnx::bool_t is_mintable = true;
+	vnx::bool_t is_adjustable = false;
 	
 	typedef ::mmx::Contract Super;
 	
@@ -46,11 +48,14 @@ public:
 	
 	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_hash() const override;
-	virtual uint64_t calc_min_fee(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
+	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	virtual std::vector<::mmx::addr_t> get_dependency() const override;
 	virtual std::vector<::mmx::addr_t> get_parties() const override;
 	virtual vnx::optional<::mmx::addr_t> get_owner() const override;
 	virtual std::vector<::mmx::tx_out_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
+	virtual void transfer(const vnx::optional<::mmx::addr_t>& new_owner = nullptr) override;
+	virtual void set_time_factor(const vnx::optional<::mmx::ulong_fraction_t>& factor = nullptr);
+	virtual void set_stake_factor(const ::mmx::addr_t& currency = ::mmx::addr_t(), const vnx::optional<::mmx::ulong_fraction_t>& factor = nullptr);
 	
 	static std::shared_ptr<Token> create();
 	std::shared_ptr<vnx::Value> clone() const override;
@@ -77,11 +82,14 @@ public:
 	static const vnx::TypeCode* static_get_type_code();
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
+protected:
+	std::shared_ptr<vnx::Value> vnx_call_switch(std::shared_ptr<const vnx::Value> _method) override;
+	
 };
 
 template<typename T>
 void Token::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Token>(9);
+	_visitor.template type_begin<Token>(11);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("name", 1); _visitor.accept(name);
 	_visitor.type_field("symbol", 2); _visitor.accept(symbol);
@@ -91,7 +99,9 @@ void Token::accept_generic(T& _visitor) const {
 	_visitor.type_field("owner", 6); _visitor.accept(owner);
 	_visitor.type_field("time_factor", 7); _visitor.accept(time_factor);
 	_visitor.type_field("stake_factors", 8); _visitor.accept(stake_factors);
-	_visitor.template type_end<Token>(9);
+	_visitor.type_field("is_mintable", 9); _visitor.accept(is_mintable);
+	_visitor.type_field("is_adjustable", 10); _visitor.accept(is_adjustable);
+	_visitor.template type_end<Token>(11);
 }
 
 

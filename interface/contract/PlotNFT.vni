@@ -1,0 +1,35 @@
+package mmx.contract;
+
+import mmx.hash_t;
+import mmx.addr_t;
+
+class PlotNFT extends mmx.Contract {
+	
+	addr_t owner;
+	
+	optional<addr_t> target;
+	
+	optional<uint> unlock_height;				// height at which owner can withdraw
+	
+	static const uint UNLOCK_DELAY = 100;		// number of blocks
+	
+	
+	bool is_valid() const;
+	
+	hash_t calc_hash() const;
+	
+	ulong calc_cost(mmx.ChainParams* params) const;
+	
+	vector<addr_t> get_dependency() const;
+	
+	vector<addr_t> get_parties() const;
+	
+	optional<addr_t> get_owner() const;
+	
+	vector<mmx.tx_out_t> validate(mmx.Operation* operation, mmx.Context* context) const;
+	
+	void unlock(uint height);
+	
+	void lock_target(optional<addr_t> new_target);
+	
+}

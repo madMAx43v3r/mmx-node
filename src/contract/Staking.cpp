@@ -15,7 +15,7 @@ namespace mmx {
 namespace contract {
 
 vnx::bool_t Staking::is_valid() const {
-	return Contract::is_valid() && owner != hash_t() && reward_addr != hash_t();
+	return Contract::is_valid() && owner != addr_t() && reward_addr != addr_t();
 }
 
 hash_t Staking::calc_hash() const
@@ -34,7 +34,7 @@ hash_t Staking::calc_hash() const
 	return hash_t(buffer);
 }
 
-uint64_t Staking::calc_min_fee(std::shared_ptr<const ChainParams> params) const {
+uint64_t Staking::calc_cost(std::shared_ptr<const ChainParams> params) const {
 	return (8 + 4 + 32 * 3) * params->min_txfee_byte;
 }
 
@@ -52,32 +52,29 @@ vnx::optional<addr_t> Staking::get_owner() const {
 
 std::vector<tx_out_t> Staking::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
-	if(!operation) {
-		throw std::logic_error("!operation");
-	}
 	{
-		auto iter = context->depends.find(owner);
-		if(iter == context->depends.end()) {
+		auto contract = context->get_contract(owner);
+		if(!contract) {
 			throw std::logic_error("missing dependency");
 		}
-		iter->second->validate(operation, context);
+		contract->validate(operation, context);
 	}
 	if(auto spend = std::dynamic_pointer_cast<const operation::Spend>(operation))
 	{
 		const auto num_blocks = context->height - spend->utxo.height;
 		if(num_blocks >= min_duration)
 		{
-			auto iter = context->depends.find(currency);
-			if(iter != context->depends.end()) {
-				if(auto token = std::dynamic_pointer_cast<const Token>(iter->second))
+			if(auto token = std::dynamic_pointer_cast<const Token>(context->get_contract(currency)))
+			{
+				auto iter = token->stake_factors.find(spend->utxo.contract);
+				if(iter != token->stake_factors.end())
 				{
-					auto iter = token->stake_factors.find(spend->utxo.contract);
-					if(iter != token->stake_factors.end())
-					{
-						tx_out_t out;
-						out.contract = currency;
-						out.address = reward_addr;
-						out.amount = ((uint256_t(num_blocks) * spend->utxo.amount) * iter->second.value) / iter->second.inverse;
+					tx_out_t out;
+					out.contract = currency;
+					out.address = reward_addr;
+					const auto& factor = iter->second;
+					out.amount = ((uint256_t(num_blocks) * spend->utxo.amount) * factor.value) / factor.inverse;
+					if(out.amount) {
 						return {out};
 					}
 				}

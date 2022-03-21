@@ -5,11 +5,15 @@
 #define INCLUDE_mmx_contract_PuzzleLock_HXX_
 
 #include <mmx/contract/package.hxx>
+#include <mmx/ChainParams.hxx>
+#include <mmx/Context.hxx>
 #include <mmx/Contract.hxx>
+#include <mmx/Operation.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/contract/Locked.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/pubkey_t.hpp>
+#include <mmx/tx_out_t.hxx>
 
 
 namespace mmx {
@@ -20,7 +24,6 @@ public:
 	
 	std::shared_ptr<const ::mmx::Contract> puzzle;
 	::mmx::addr_t target;
-	vnx::optional<::mmx::addr_t> currency;
 	
 	typedef ::mmx::contract::Locked Super;
 	
@@ -34,6 +37,13 @@ public:
 	vnx::Hash64 get_type_hash() const override;
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
+	
+	virtual vnx::bool_t is_valid() const override;
+	virtual ::mmx::hash_t calc_hash() const override;
+	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
+	virtual std::vector<::mmx::addr_t> get_dependency() const override;
+	virtual std::vector<::mmx::addr_t> get_parties() const override;
+	virtual std::vector<::mmx::tx_out_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
 	
 	static std::shared_ptr<PuzzleLock> create();
 	std::shared_ptr<vnx::Value> clone() const override;
@@ -60,6 +70,9 @@ public:
 	static const vnx::TypeCode* static_get_type_code();
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
+protected:
+	std::shared_ptr<vnx::Value> vnx_call_switch(std::shared_ptr<const vnx::Value> _method) override;
+	
 };
 
 template<typename T>
@@ -67,10 +80,10 @@ void PuzzleLock::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<PuzzleLock>(6);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("owner", 1); _visitor.accept(owner);
-	_visitor.type_field("condition", 2); _visitor.accept(condition);
-	_visitor.type_field("puzzle", 3); _visitor.accept(puzzle);
-	_visitor.type_field("target", 4); _visitor.accept(target);
-	_visitor.type_field("currency", 5); _visitor.accept(currency);
+	_visitor.type_field("chain_height", 2); _visitor.accept(chain_height);
+	_visitor.type_field("delta_height", 3); _visitor.accept(delta_height);
+	_visitor.type_field("puzzle", 4); _visitor.accept(puzzle);
+	_visitor.type_field("target", 5); _visitor.accept(target);
 	_visitor.template type_end<PuzzleLock>(6);
 }
 

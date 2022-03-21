@@ -61,6 +61,15 @@ const AccountCoins = {
 		<account-coins :index="index" :currency="currency" :limit="1000"></account-coins>
 	`
 }
+const AddressCoins = {
+	props: {
+		address: String,
+		currency: String
+	},
+	template: `
+		<address-coins :address="address" :currency="currency" :limit="1000"></address-coins>
+	`
+}
 const AccountSend = {
 	props: {
 		index: Number
@@ -122,6 +131,7 @@ const AccountOptions = {
 		index: Number
 	},
 	template: `
+		<account-actions :index="index"></account-actions>
 		<create-account :index="index"></create-account>
 	`
 }
@@ -131,6 +141,14 @@ const AccountCreateStaking = {
 	},
 	template: `
 		<create-staking-contract :index="index"></create-staking-contract>
+	`
+}
+const AccountCreateLocked = {
+	props: {
+		index: Number
+	},
+	template: `
+		<create-locked-contract :index="index"></create-locked-contract>
 	`
 }
 
@@ -268,6 +286,16 @@ const Explore = {
 		<recent-blocks-summary :limit="30"></recent-blocks-summary>
 	`
 }
+const ExploreBlock = {
+	template: `
+		<block-view :hash="$route.params.hash" :height="parseInt($route.params.height)"></block-view>
+	`
+}
+const ExploreAddress = {
+	template: `
+		<address-view :address="$route.params.address"></address-view>
+	`
+}
 const ExploreTransaction = {
 	template: `
 		<transaction-view :id="$route.params.id"></transaction-view>
@@ -302,6 +330,7 @@ const routes = [
 			{ path: 'details', component: AccountDetails, meta: { page: 'details' } },
 			{ path: 'options', component: AccountOptions, meta: { page: 'options' } },
 			{ path: 'create/staking', component: AccountCreateStaking },
+			{ path: 'create/locked', component: AccountCreateLocked },
 			{ path: 'coins/:currency', component: AccountCoins, props: route => ({currency: route.params.currency}) },
 		]
 	},
@@ -322,7 +351,13 @@ const routes = [
 		]
 	},
 	{ path: '/explore', component: Explore, meta: { is_explorer: true } },
+	{ path: '/explore/block/hash/:hash', component: ExploreBlock, meta: { is_explorer: true } },
+	{ path: '/explore/block/height/:height', component: ExploreBlock, meta: { is_explorer: true } },
+	{ path: '/explore/address/:address', component: ExploreAddress, meta: { is_explorer: true } },
 	{ path: '/explore/transaction/:id', component: ExploreTransaction, meta: { is_explorer: true } },
+	{ path: '/explore/address/coins/:address/:currency', component: AddressCoins, meta: { is_explorer: true },
+		props: route => ({address: route.params.address, currency: route.params.currency})
+	},
 	{ path: '/settings', component: Settings },
 ]
 

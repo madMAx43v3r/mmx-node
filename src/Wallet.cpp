@@ -10,6 +10,7 @@
 #include <mmx/utxo_entry_t.hpp>
 #include <mmx/stxo_entry_t.hpp>
 #include <mmx/contract/Token.hxx>
+#include <mmx/operation/Mutate.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/utils.h>
 
@@ -89,7 +90,7 @@ hash_t Wallet::send(const uint32_t& index, const uint64_t& amount, const addr_t&
 					const addr_t& currency, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
-	get_utxo_list(index);	// update utxo_cache
+	update_cache(index);
 
 	auto tx = wallet->send(amount, dst_addr, currency, options);
 	send_off(index, tx);
@@ -103,7 +104,7 @@ hash_t Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 							const addr_t& currency, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
-	get_utxo_list(index);	// update utxo_cache
+	update_cache(index);
 
 	auto src_owner = src_addr;
 	if(auto contract = node->get_contract(src_addr)) {
@@ -114,7 +115,8 @@ hash_t Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 		}
 	}
 	auto tx = wallet->send_from(amount, dst_addr, src_addr, src_owner,
-								node->get_utxo_list({src_addr}, options.min_confirm), currency, options);
+								node->get_spendable_utxo_list({src_addr}, options.min_confirm),
+								currency, options);
 	send_off(index, tx);
 
 	log(INFO) << "Sent " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
@@ -131,10 +133,15 @@ hash_t Wallet::mint(const uint32_t& index, const uint64_t& amount, const addr_t&
 	if(!token->owner) {
 		throw std::logic_error("token has no owner");
 	}
-	const auto wallet = get_wallet(index);
-	get_utxo_list(index);	// update utxo_cache
+	const auto owner = *token->owner;
 
-	auto tx = wallet->mint(amount, dst_addr, currency, *token->owner, options);
+	const auto wallet = get_wallet(index);
+	update_cache(index);
+
+	if(wallet->find_address(owner) < 0) {
+		throw std::logic_error("token not owned by wallet");
+	}
+	auto tx = wallet->mint(amount, dst_addr, currency, owner, options);
 	send_off(index, tx);
 
 	log(INFO) << "Minted " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
@@ -194,12 +201,45 @@ hash_t Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> con
 		throw std::logic_error("contract cannot be null");
 	}
 	const auto wallet = get_wallet(index);
-	get_utxo_list(index);	// update utxo_cache
+	update_cache(index);
 
 	auto tx = wallet->deploy(contract, options);
 	send_off(index, tx);
 
 	log(INFO) << "Deployed " << contract->get_type_name() << " with fee " << tx->calc_cost(params) << " as " << addr_t(tx->id) << " (" << tx->id << ")";
+	return tx->id;
+}
+
+hash_t Wallet::execute(const uint32_t& index, const addr_t& address, const vnx::Object& method, const spend_options_t& options) const
+{
+	auto contract = node->get_contract(address);
+	if(!contract) {
+		throw std::logic_error("no such contract");
+	}
+	auto owner = contract->get_owner();
+	if(!owner) {
+		throw std::logic_error("contract has no owner");
+	}
+	const auto wallet = get_wallet(index);
+	update_cache(index);
+
+	auto op = operation::Mutate::create();
+	op->address = address;
+	op->method = method;
+
+	auto tx = Transaction::create();
+	tx->execute.push_back(op);
+
+	if(wallet->find_address(*owner) < 0) {
+		throw std::logic_error("contract not owned by wallet");
+	}
+	auto options_ = options;
+	options_.owner_map.emplace_back(address, *owner);
+
+	wallet->complete(tx, wallet->utxo_cache, options_);
+	send_off(index, tx);
+
+	log(INFO) << "Executed " << method["__type"] << " on [" << address << "] with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
 	return tx->id;
 }
 
@@ -210,7 +250,7 @@ Wallet::complete(const uint32_t& index, std::shared_ptr<const Transaction> tx, c
 		return nullptr;
 	}
 	const auto wallet = get_wallet(index);
-	get_utxo_list(index);	// update utxo_cache
+	update_cache(index);
 
 	auto copy = vnx::clone(tx);
 	wallet->complete(copy, wallet->utxo_cache, options);
@@ -219,15 +259,15 @@ Wallet::complete(const uint32_t& index, std::shared_ptr<const Transaction> tx, c
 
 std::shared_ptr<const Transaction>
 Wallet::sign_off(	const uint32_t& index, std::shared_ptr<const Transaction> tx,
-					const vnx::bool_t& cover_fee, const std::vector<std::pair<txio_key_t, utxo_t>>& utxo_list) const
+					const vnx::bool_t& cover_fee, const spend_options_t& options) const
 {
 	if(!tx) {
 		return nullptr;
 	}
 	const auto wallet = get_wallet(index);
-	get_utxo_list(index);	// update utxo_cache
+	update_cache(index);
 
-	const std::unordered_map<txio_key_t, utxo_t> utxo_map(utxo_list.begin(), utxo_list.end());
+	const std::unordered_map<txio_key_t, utxo_t> utxo_map(options.utxo_map.begin(), options.utxo_map.end());
 
 	int64_t native_change = 0;
 	std::unordered_set<txio_key_t> spent_keys;
@@ -259,8 +299,6 @@ Wallet::sign_off(	const uint32_t& index, std::shared_ptr<const Transaction> tx,
 			native_change -= out.amount;
 		}
 	}
-	std::unordered_map<addr_t, addr_t> owner_map;
-	// TODO: lookup owner_map
 
 	auto copy = vnx::clone(tx);
 	if(cover_fee) {
@@ -272,9 +310,9 @@ Wallet::sign_off(	const uint32_t& index, std::shared_ptr<const Transaction> tx,
 		if(native_change < 0) {
 			throw std::logic_error("negative change");
 		}
-		wallet->gather_fee(copy, spent_map, {}, native_change, owner_map, utxo_map);
+		wallet->gather_fee(copy, spent_map, options, native_change);
 	}
-	wallet->sign_off(copy, spent_map, owner_map);
+	wallet->sign_off(copy, spent_map, options);
 	return copy;
 }
 
@@ -332,7 +370,14 @@ void Wallet::release_all()
 	}
 }
 
-std::vector<utxo_entry_t> Wallet::get_utxo_list(const uint32_t& index, const uint32_t& min_confirm) const
+void Wallet::reset_cache(const uint32_t& index)
+{
+	const auto wallet = get_wallet(index);
+	wallet->reset_cache();
+	update_cache(index);
+}
+
+void Wallet::update_cache(const uint32_t& index) const
 {
 	const auto wallet = get_wallet(index);
 	const auto now = vnx::get_wall_time_millis();
@@ -346,14 +391,21 @@ std::vector<utxo_entry_t> Wallet::get_utxo_list(const uint32_t& index, const uin
 
 		log(DEBUG) << "Updated cache: " << wallet->utxo_cache.size() << " utxo, " << wallet->utxo_change_cache.size() << " pending change";
 	}
+}
+
+std::vector<utxo_entry_t> Wallet::get_utxo_list(const uint32_t& index, const uint32_t& min_confirm) const
+{
+	const auto wallet = get_wallet(index);
+	update_cache(index);
+
 	if(min_confirm == 0) {
 		return wallet->utxo_cache;
 	}
 	std::vector<utxo_entry_t> list;
 	const auto height = node->get_height();
 	for(const auto& entry : wallet->utxo_cache) {
-		const auto utxo_height = entry.output.height;
-		if(utxo_height <= height && (height - utxo_height) + 1 >= min_confirm) {
+		const auto& utxo = entry.output;
+		if(utxo.height <= height && (height - utxo.height) + 1 >= min_confirm) {
 			list.push_back(entry);
 		}
 	}
@@ -591,10 +643,9 @@ void Wallet::create_wallet(const account_t& config_)
 
 hash_t Wallet::get_master_seed(const uint32_t& index) const
 {
-	if(index >= key_files.size()) {
-		throw std::logic_error("invalid wallet index");
-	}
-	if(auto key_file = vnx::read_from_file<KeyFile>(storage_path + key_files[index])) {
+	const auto wallet = get_wallet(index);
+
+	if(auto key_file = vnx::read_from_file<KeyFile>(storage_path + wallet->config.key_file)) {
 		return key_file->seed_value;
 	}
 	throw std::logic_error("failed to read key file");

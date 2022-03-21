@@ -15,7 +15,8 @@ namespace mmx {
 struct MMX_EXPORT stxo_entry_t : ::mmx::utxo_entry_t {
 	
 	
-	::mmx::txio_key_t spent;
+	uint32_t spent_height = 0;
+	::mmx::txio_key_t spent_key;
 	
 	typedef ::mmx::utxo_entry_t Super;
 	
@@ -61,11 +62,12 @@ struct MMX_EXPORT stxo_entry_t : ::mmx::utxo_entry_t {
 
 template<typename T>
 void stxo_entry_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<stxo_entry_t>(3);
+	_visitor.template type_begin<stxo_entry_t>(4);
 	_visitor.type_field("key", 0); _visitor.accept(key);
 	_visitor.type_field("output", 1); _visitor.accept(output);
-	_visitor.type_field("spent", 2); _visitor.accept(spent);
-	_visitor.template type_end<stxo_entry_t>(3);
+	_visitor.type_field("spent_height", 2); _visitor.accept(spent_height);
+	_visitor.type_field("spent_key", 3); _visitor.accept(spent_key);
+	_visitor.template type_end<stxo_entry_t>(4);
 }
 
 

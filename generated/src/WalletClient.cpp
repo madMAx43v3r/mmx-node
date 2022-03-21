@@ -17,6 +17,8 @@
 #include <mmx/Wallet_create_wallet_return.hxx>
 #include <mmx/Wallet_deploy.hxx>
 #include <mmx/Wallet_deploy_return.hxx>
+#include <mmx/Wallet_execute.hxx>
+#include <mmx/Wallet_execute_return.hxx>
 #include <mmx/Wallet_gather_utxos_for.hxx>
 #include <mmx/Wallet_gather_utxos_for_return.hxx>
 #include <mmx/Wallet_get_account.hxx>
@@ -61,6 +63,8 @@
 #include <mmx/Wallet_release_all_return.hxx>
 #include <mmx/Wallet_reserve.hxx>
 #include <mmx/Wallet_reserve_return.hxx>
+#include <mmx/Wallet_reset_cache.hxx>
+#include <mmx/Wallet_reset_cache_return.hxx>
 #include <mmx/Wallet_send.hxx>
 #include <mmx/Wallet_send_return.hxx>
 #include <mmx/Wallet_send_from.hxx>
@@ -73,6 +77,8 @@
 #include <mmx/Wallet_sign_off_return.hxx>
 #include <mmx/Wallet_split.hxx>
 #include <mmx/Wallet_split_return.hxx>
+#include <mmx/Wallet_update_cache.hxx>
+#include <mmx/Wallet_update_cache_return.hxx>
 #include <mmx/account_t.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/balance_t.hxx>
@@ -83,7 +89,6 @@
 #include <mmx/tx_log_entry_t.hxx>
 #include <mmx/txio_key_t.hxx>
 #include <mmx/utxo_entry_t.hxx>
-#include <mmx/utxo_t.hxx>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
@@ -103,6 +108,7 @@
 #include <vnx/ModuleInterface_vnx_set_config_object_return.hxx>
 #include <vnx/ModuleInterface_vnx_stop.hxx>
 #include <vnx/ModuleInterface_vnx_stop_return.hxx>
+#include <vnx/Object.hpp>
 #include <vnx/addons/HttpComponent_http_request.hxx>
 #include <vnx/addons/HttpComponent_http_request_return.hxx>
 #include <vnx/addons/HttpComponent_http_request_chunk.hxx>
@@ -125,113 +131,6 @@ WalletClient::WalletClient(const std::string& service_name)
 WalletClient::WalletClient(vnx::Hash64 service_addr)
 	:	Client::Client(service_addr)
 {
-}
-
-::vnx::Object WalletClient::vnx_get_config_object() {
-	auto _method = ::vnx::ModuleInterface_vnx_get_config_object::create();
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::vnx::ModuleInterface_vnx_get_config_object_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<::vnx::Object>();
-	} else {
-		throw std::logic_error("WalletClient: invalid return value");
-	}
-}
-
-::vnx::Variant WalletClient::vnx_get_config(const std::string& name) {
-	auto _method = ::vnx::ModuleInterface_vnx_get_config::create();
-	_method->name = name;
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::vnx::ModuleInterface_vnx_get_config_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<::vnx::Variant>();
-	} else {
-		throw std::logic_error("WalletClient: invalid return value");
-	}
-}
-
-void WalletClient::vnx_set_config_object(const ::vnx::Object& config) {
-	auto _method = ::vnx::ModuleInterface_vnx_set_config_object::create();
-	_method->config = config;
-	vnx_request(_method, false);
-}
-
-void WalletClient::vnx_set_config_object_async(const ::vnx::Object& config) {
-	auto _method = ::vnx::ModuleInterface_vnx_set_config_object::create();
-	_method->config = config;
-	vnx_request(_method, true);
-}
-
-void WalletClient::vnx_set_config(const std::string& name, const ::vnx::Variant& value) {
-	auto _method = ::vnx::ModuleInterface_vnx_set_config::create();
-	_method->name = name;
-	_method->value = value;
-	vnx_request(_method, false);
-}
-
-void WalletClient::vnx_set_config_async(const std::string& name, const ::vnx::Variant& value) {
-	auto _method = ::vnx::ModuleInterface_vnx_set_config::create();
-	_method->name = name;
-	_method->value = value;
-	vnx_request(_method, true);
-}
-
-::vnx::TypeCode WalletClient::vnx_get_type_code() {
-	auto _method = ::vnx::ModuleInterface_vnx_get_type_code::create();
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::vnx::ModuleInterface_vnx_get_type_code_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<::vnx::TypeCode>();
-	} else {
-		throw std::logic_error("WalletClient: invalid return value");
-	}
-}
-
-std::shared_ptr<const ::vnx::ModuleInfo> WalletClient::vnx_get_module_info() {
-	auto _method = ::vnx::ModuleInterface_vnx_get_module_info::create();
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::vnx::ModuleInterface_vnx_get_module_info_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::vnx::ModuleInfo>>();
-	} else {
-		throw std::logic_error("WalletClient: invalid return value");
-	}
-}
-
-void WalletClient::vnx_restart() {
-	auto _method = ::vnx::ModuleInterface_vnx_restart::create();
-	vnx_request(_method, false);
-}
-
-void WalletClient::vnx_restart_async() {
-	auto _method = ::vnx::ModuleInterface_vnx_restart::create();
-	vnx_request(_method, true);
-}
-
-void WalletClient::vnx_stop() {
-	auto _method = ::vnx::ModuleInterface_vnx_stop::create();
-	vnx_request(_method, false);
-}
-
-void WalletClient::vnx_stop_async() {
-	auto _method = ::vnx::ModuleInterface_vnx_stop::create();
-	vnx_request(_method, true);
-}
-
-vnx::bool_t WalletClient::vnx_self_test() {
-	auto _method = ::vnx::ModuleInterface_vnx_self_test::create();
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::vnx::ModuleInterface_vnx_self_test_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<vnx::bool_t>();
-	} else {
-		throw std::logic_error("WalletClient: invalid return value");
-	}
 }
 
 ::mmx::hash_t WalletClient::send(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) {
@@ -301,6 +200,22 @@ vnx::bool_t WalletClient::vnx_self_test() {
 	}
 }
 
+::mmx::hash_t WalletClient::execute(const uint32_t& index, const ::mmx::addr_t& address, const ::vnx::Object& method, const ::mmx::spend_options_t& options) {
+	auto _method = ::mmx::Wallet_execute::create();
+	_method->index = index;
+	_method->address = address;
+	_method->method = method;
+	_method->options = options;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_execute_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<::mmx::hash_t>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
 vnx::optional<::mmx::hash_t> WalletClient::split(const uint32_t& index, const uint64_t& max_amount, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_split::create();
 	_method->index = index;
@@ -332,12 +247,12 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::complete(const uint32_t&
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::sign_off(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx, const vnx::bool_t& cover_fee, const std::vector<std::pair<::mmx::txio_key_t, ::mmx::utxo_t>>& utxo_list) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::sign_off(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx, const vnx::bool_t& cover_fee, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_sign_off::create();
 	_method->index = index;
 	_method->tx = tx;
 	_method->cover_fee = cover_fee;
-	_method->utxo_list = utxo_list;
+	_method->options = options;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_sign_off_return>(_return_value)) {
 		return _result->_ret_0;
@@ -426,6 +341,30 @@ void WalletClient::release_all() {
 
 void WalletClient::release_all_async() {
 	auto _method = ::mmx::Wallet_release_all::create();
+	vnx_request(_method, true);
+}
+
+void WalletClient::reset_cache(const uint32_t& index) {
+	auto _method = ::mmx::Wallet_reset_cache::create();
+	_method->index = index;
+	vnx_request(_method, false);
+}
+
+void WalletClient::reset_cache_async(const uint32_t& index) {
+	auto _method = ::mmx::Wallet_reset_cache::create();
+	_method->index = index;
+	vnx_request(_method, true);
+}
+
+void WalletClient::update_cache(const uint32_t& index) {
+	auto _method = ::mmx::Wallet_update_cache::create();
+	_method->index = index;
+	vnx_request(_method, false);
+}
+
+void WalletClient::update_cache_async(const uint32_t& index) {
+	auto _method = ::mmx::Wallet_update_cache::create();
+	_method->index = index;
 	vnx_request(_method, true);
 }
 
@@ -725,6 +664,113 @@ std::shared_ptr<const ::vnx::addons::HttpData> WalletClient::http_request_chunk(
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::vnx::addons::HttpData>>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
+::vnx::Object WalletClient::vnx_get_config_object() {
+	auto _method = ::vnx::ModuleInterface_vnx_get_config_object::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::vnx::ModuleInterface_vnx_get_config_object_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<::vnx::Object>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
+::vnx::Variant WalletClient::vnx_get_config(const std::string& name) {
+	auto _method = ::vnx::ModuleInterface_vnx_get_config::create();
+	_method->name = name;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::vnx::ModuleInterface_vnx_get_config_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<::vnx::Variant>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
+void WalletClient::vnx_set_config_object(const ::vnx::Object& config) {
+	auto _method = ::vnx::ModuleInterface_vnx_set_config_object::create();
+	_method->config = config;
+	vnx_request(_method, false);
+}
+
+void WalletClient::vnx_set_config_object_async(const ::vnx::Object& config) {
+	auto _method = ::vnx::ModuleInterface_vnx_set_config_object::create();
+	_method->config = config;
+	vnx_request(_method, true);
+}
+
+void WalletClient::vnx_set_config(const std::string& name, const ::vnx::Variant& value) {
+	auto _method = ::vnx::ModuleInterface_vnx_set_config::create();
+	_method->name = name;
+	_method->value = value;
+	vnx_request(_method, false);
+}
+
+void WalletClient::vnx_set_config_async(const std::string& name, const ::vnx::Variant& value) {
+	auto _method = ::vnx::ModuleInterface_vnx_set_config::create();
+	_method->name = name;
+	_method->value = value;
+	vnx_request(_method, true);
+}
+
+::vnx::TypeCode WalletClient::vnx_get_type_code() {
+	auto _method = ::vnx::ModuleInterface_vnx_get_type_code::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::vnx::ModuleInterface_vnx_get_type_code_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<::vnx::TypeCode>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
+std::shared_ptr<const ::vnx::ModuleInfo> WalletClient::vnx_get_module_info() {
+	auto _method = ::vnx::ModuleInterface_vnx_get_module_info::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::vnx::ModuleInterface_vnx_get_module_info_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::vnx::ModuleInfo>>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
+void WalletClient::vnx_restart() {
+	auto _method = ::vnx::ModuleInterface_vnx_restart::create();
+	vnx_request(_method, false);
+}
+
+void WalletClient::vnx_restart_async() {
+	auto _method = ::vnx::ModuleInterface_vnx_restart::create();
+	vnx_request(_method, true);
+}
+
+void WalletClient::vnx_stop() {
+	auto _method = ::vnx::ModuleInterface_vnx_stop::create();
+	vnx_request(_method, false);
+}
+
+void WalletClient::vnx_stop_async() {
+	auto _method = ::vnx::ModuleInterface_vnx_stop::create();
+	vnx_request(_method, true);
+}
+
+vnx::bool_t WalletClient::vnx_self_test() {
+	auto _method = ::vnx::ModuleInterface_vnx_self_test::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::vnx::ModuleInterface_vnx_self_test_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<vnx::bool_t>();
 	} else {
 		throw std::logic_error("WalletClient: invalid return value");
 	}

@@ -14,6 +14,7 @@
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/balance_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/stxo_entry_t.hxx>
 #include <mmx/tx_entry_t.hxx>
@@ -52,7 +53,6 @@ public:
 	int32_t sync_loss_delay = 60;
 	uint32_t max_history = 1000;
 	uint32_t tx_pool_limit = 1000000;
-	uint32_t max_contract_cache = 1000;
 	uint32_t max_fork_length = 100000;
 	uint32_t max_sync_jobs = 64;
 	uint32_t num_sync_retries = 3;
@@ -124,12 +124,15 @@ protected:
 	virtual std::shared_ptr<const ::mmx::Transaction> get_transaction(const ::mmx::hash_t& id, const vnx::bool_t& include_pending) const = 0;
 	virtual std::vector<std::shared_ptr<const ::mmx::Transaction>> get_transactions(const std::vector<::mmx::hash_t>& ids) const = 0;
 	virtual std::vector<::mmx::tx_entry_t> get_history_for(const std::vector<::mmx::addr_t>& addresses, const int32_t& since) const = 0;
-	virtual uint64_t get_balance(const ::mmx::addr_t& address, const ::mmx::addr_t& contract, const uint32_t& min_confirm) const = 0;
-	virtual uint64_t get_total_balance(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& contract, const uint32_t& min_confirm) const = 0;
+	virtual uint64_t get_balance(const ::mmx::addr_t& address, const ::mmx::addr_t& currency, const uint32_t& min_confirm) const = 0;
+	virtual std::map<::mmx::addr_t, ::mmx::balance_t> get_balances(const ::mmx::addr_t& address, const uint32_t& min_confirm) const = 0;
+	virtual uint64_t get_total_balance(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& currency, const uint32_t& min_confirm) const = 0;
 	virtual std::map<::mmx::addr_t, uint64_t> get_total_balances(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm) const = 0;
-	virtual uint64_t get_total_supply(const ::mmx::addr_t& contract) const = 0;
-	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm) const = 0;
-	virtual std::vector<::mmx::stxo_entry_t> get_stxo_list(const std::vector<::mmx::addr_t>& addresses) const = 0;
+	virtual uint64_t get_total_supply(const ::mmx::addr_t& currency) const = 0;
+	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm, const uint32_t& since) const = 0;
+	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list_for(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& currency, const uint32_t& min_confirm, const uint32_t& since) const = 0;
+	virtual std::vector<::mmx::utxo_entry_t> get_spendable_utxo_list(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm, const uint32_t& since) const = 0;
+	virtual std::vector<::mmx::stxo_entry_t> get_stxo_list(const std::vector<::mmx::addr_t>& addresses, const uint32_t& since) const = 0;
 	virtual void start_sync(const vnx::bool_t& force) = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::Block> _value) {}
 	virtual void handle(std::shared_ptr<const ::mmx::Transaction> _value) {}
@@ -147,7 +150,7 @@ protected:
 
 template<typename T>
 void NodeBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<NodeBase>(33);
+	_visitor.template type_begin<NodeBase>(32);
 	_visitor.type_field("input_vdfs", 0); _visitor.accept(input_vdfs);
 	_visitor.type_field("input_proof", 1); _visitor.accept(input_proof);
 	_visitor.type_field("input_blocks", 2); _visitor.accept(input_blocks);
@@ -167,21 +170,20 @@ void NodeBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("sync_loss_delay", 16); _visitor.accept(sync_loss_delay);
 	_visitor.type_field("max_history", 17); _visitor.accept(max_history);
 	_visitor.type_field("tx_pool_limit", 18); _visitor.accept(tx_pool_limit);
-	_visitor.type_field("max_contract_cache", 19); _visitor.accept(max_contract_cache);
-	_visitor.type_field("max_fork_length", 20); _visitor.accept(max_fork_length);
-	_visitor.type_field("max_sync_jobs", 21); _visitor.accept(max_sync_jobs);
-	_visitor.type_field("num_sync_retries", 22); _visitor.accept(num_sync_retries);
-	_visitor.type_field("replay_height", 23); _visitor.accept(replay_height);
-	_visitor.type_field("num_vdf_threads", 24); _visitor.accept(num_vdf_threads);
-	_visitor.type_field("vdf_check_divider", 25); _visitor.accept(vdf_check_divider);
-	_visitor.type_field("opencl_device", 26); _visitor.accept(opencl_device);
-	_visitor.type_field("do_sync", 27); _visitor.accept(do_sync);
-	_visitor.type_field("light_mode", 28); _visitor.accept(light_mode);
-	_visitor.type_field("storage_path", 29); _visitor.accept(storage_path);
-	_visitor.type_field("database_path", 30); _visitor.accept(database_path);
-	_visitor.type_field("router_name", 31); _visitor.accept(router_name);
-	_visitor.type_field("timelord_name", 32); _visitor.accept(timelord_name);
-	_visitor.template type_end<NodeBase>(33);
+	_visitor.type_field("max_fork_length", 19); _visitor.accept(max_fork_length);
+	_visitor.type_field("max_sync_jobs", 20); _visitor.accept(max_sync_jobs);
+	_visitor.type_field("num_sync_retries", 21); _visitor.accept(num_sync_retries);
+	_visitor.type_field("replay_height", 22); _visitor.accept(replay_height);
+	_visitor.type_field("num_vdf_threads", 23); _visitor.accept(num_vdf_threads);
+	_visitor.type_field("vdf_check_divider", 24); _visitor.accept(vdf_check_divider);
+	_visitor.type_field("opencl_device", 25); _visitor.accept(opencl_device);
+	_visitor.type_field("do_sync", 26); _visitor.accept(do_sync);
+	_visitor.type_field("light_mode", 27); _visitor.accept(light_mode);
+	_visitor.type_field("storage_path", 28); _visitor.accept(storage_path);
+	_visitor.type_field("database_path", 29); _visitor.accept(database_path);
+	_visitor.type_field("router_name", 30); _visitor.accept(router_name);
+	_visitor.type_field("timelord_name", 31); _visitor.accept(timelord_name);
+	_visitor.template type_end<NodeBase>(32);
 }
 
 

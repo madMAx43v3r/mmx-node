@@ -3,10 +3,13 @@
 
 #include <mmx/solution/package.hxx>
 #include <mmx/solution/PubKey.hxx>
-#include <mmx/ChainParams.hxx>
 #include <mmx/Solution.hxx>
+#include <mmx/Solution_is_valid.hxx>
+#include <mmx/Solution_is_valid_return.hxx>
 #include <mmx/pubkey_t.hpp>
 #include <mmx/signature_t.hpp>
+#include <mmx/solution/PubKey_is_valid.hxx>
+#include <mmx/solution/PubKey_is_valid_return.hxx>
 
 #include <vnx/vnx.h>
 
@@ -16,7 +19,7 @@ namespace solution {
 
 
 const vnx::Hash64 PubKey::VNX_TYPE_HASH(0xe47af6fcacfcefa5ull);
-const vnx::Hash64 PubKey::VNX_CODE_HASH(0xb467c108ee7f6b66ull);
+const vnx::Hash64 PubKey::VNX_CODE_HASH(0xd8d22390f30ffec7ull);
 
 vnx::Hash64 PubKey::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -50,16 +53,14 @@ void PubKey::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::solution::vnx_native_type_code_PubKey;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, version);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, is_contract);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, pubkey);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, signature);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, pubkey);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, signature);
 	_visitor.type_end(*_type_code);
 }
 
 void PubKey::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.solution.PubKey\"";
 	_out << ", \"version\": "; vnx::write(_out, version);
-	_out << ", \"is_contract\": "; vnx::write(_out, is_contract);
 	_out << ", \"pubkey\": "; vnx::write(_out, pubkey);
 	_out << ", \"signature\": "; vnx::write(_out, signature);
 	_out << "}";
@@ -75,7 +76,6 @@ vnx::Object PubKey::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.solution.PubKey";
 	_object["version"] = version;
-	_object["is_contract"] = is_contract;
 	_object["pubkey"] = pubkey;
 	_object["signature"] = signature;
 	return _object;
@@ -83,9 +83,7 @@ vnx::Object PubKey::to_object() const {
 
 void PubKey::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "is_contract") {
-			_entry.second.to(is_contract);
-		} else if(_entry.first == "pubkey") {
+		if(_entry.first == "pubkey") {
 			_entry.second.to(pubkey);
 		} else if(_entry.first == "signature") {
 			_entry.second.to(signature);
@@ -99,9 +97,6 @@ vnx::Variant PubKey::get_field(const std::string& _name) const {
 	if(_name == "version") {
 		return vnx::Variant(version);
 	}
-	if(_name == "is_contract") {
-		return vnx::Variant(is_contract);
-	}
 	if(_name == "pubkey") {
 		return vnx::Variant(pubkey);
 	}
@@ -114,8 +109,6 @@ vnx::Variant PubKey::get_field(const std::string& _name) const {
 void PubKey::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "version") {
 		_value.to(version);
-	} else if(_name == "is_contract") {
-		_value.to(is_contract);
 	} else if(_name == "pubkey") {
 		_value.to(pubkey);
 	} else if(_name == "signature") {
@@ -147,14 +140,17 @@ std::shared_ptr<vnx::TypeCode> PubKey::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.solution.PubKey";
 	type_code->type_hash = vnx::Hash64(0xe47af6fcacfcefa5ull);
-	type_code->code_hash = vnx::Hash64(0xb467c108ee7f6b66ull);
+	type_code->code_hash = vnx::Hash64(0xd8d22390f30ffec7ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::solution::PubKey);
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Solution::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<PubKey>(); };
-	type_code->fields.resize(4);
+	type_code->methods.resize(2);
+	type_code->methods[0] = ::mmx::Solution_is_valid::static_get_type_code();
+	type_code->methods[1] = ::mmx::solution::PubKey_is_valid::static_get_type_code();
+	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -163,24 +159,36 @@ std::shared_ptr<vnx::TypeCode> PubKey::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[1];
-		field.data_size = 1;
-		field.name = "is_contract";
-		field.code = {31};
-	}
-	{
-		auto& field = type_code->fields[2];
 		field.is_extended = true;
 		field.name = "pubkey";
 		field.code = {11, 33, 1};
 	}
 	{
-		auto& field = type_code->fields[3];
+		auto& field = type_code->fields[2];
 		field.is_extended = true;
 		field.name = "signature";
 		field.code = {11, 64, 1};
 	}
 	type_code->build();
 	return type_code;
+}
+
+std::shared_ptr<vnx::Value> PubKey::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
+	switch(_method->get_type_hash()) {
+		case 0x80842f8f91d6b02bull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Solution_is_valid>(_method);
+			auto _return_value = ::mmx::Solution_is_valid_return::create();
+			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+		case 0x7fd0e49a6760a40aull: {
+			auto _args = std::static_pointer_cast<const ::mmx::solution::PubKey_is_valid>(_method);
+			auto _return_value = ::mmx::solution::PubKey_is_valid_return::create();
+			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+	}
+	return nullptr;
 }
 
 
@@ -225,14 +233,11 @@ void read(TypeInput& in, ::mmx::solution::PubKey& value, const TypeCode* type_co
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.version, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[1]) {
-			vnx::read_value(_buf + _field->offset, value.is_contract, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 2: vnx::read(in, value.pubkey, type_code, _field->code.data()); break;
-			case 3: vnx::read(in, value.signature, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.pubkey, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.signature, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -251,11 +256,10 @@ void write(TypeOutput& out, const ::mmx::solution::PubKey& value, const TypeCode
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(5);
+	char* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.version);
-	vnx::write_value(_buf + 4, value.is_contract);
-	vnx::write(out, value.pubkey, type_code, type_code->fields[2].code.data());
-	vnx::write(out, value.signature, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.pubkey, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.signature, type_code, type_code->fields[2].code.data());
 }
 
 void read(std::istream& in, ::mmx::solution::PubKey& value) {

@@ -21,6 +21,12 @@ public:
 	
 	FarmerClient(vnx::Hash64 service_addr);
 	
+	::vnx::Hash64 get_mac_addr();
+	
+	std::shared_ptr<const ::mmx::FarmInfo> get_farm_info();
+	
+	std::shared_ptr<const ::mmx::BlockHeader> sign_block(std::shared_ptr<const ::mmx::BlockHeader> block = nullptr, const uint64_t& reward_amount = 0);
+	
 	::vnx::Object vnx_get_config_object();
 	
 	::vnx::Variant vnx_get_config(const std::string& name = "");
@@ -46,12 +52,6 @@ public:
 	void vnx_stop_async();
 	
 	vnx::bool_t vnx_self_test();
-	
-	::vnx::Hash64 get_mac_addr();
-	
-	std::shared_ptr<const ::mmx::FarmInfo> get_farm_info();
-	
-	std::shared_ptr<const ::mmx::BlockHeader> sign_block(std::shared_ptr<const ::mmx::BlockHeader> block = nullptr, const uint64_t& reward_amount = 0);
 	
 };
 

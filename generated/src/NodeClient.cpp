@@ -14,6 +14,8 @@
 #include <mmx/Node_add_transaction_return.hxx>
 #include <mmx/Node_get_balance.hxx>
 #include <mmx/Node_get_balance_return.hxx>
+#include <mmx/Node_get_balances.hxx>
+#include <mmx/Node_get_balances_return.hxx>
 #include <mmx/Node_get_block.hxx>
 #include <mmx/Node_get_block_return.hxx>
 #include <mmx/Node_get_block_at.hxx>
@@ -38,6 +40,8 @@
 #include <mmx/Node_get_network_info_return.hxx>
 #include <mmx/Node_get_params.hxx>
 #include <mmx/Node_get_params_return.hxx>
+#include <mmx/Node_get_spendable_utxo_list.hxx>
+#include <mmx/Node_get_spendable_utxo_list_return.hxx>
 #include <mmx/Node_get_stxo_list.hxx>
 #include <mmx/Node_get_stxo_list_return.hxx>
 #include <mmx/Node_get_synced_height.hxx>
@@ -64,12 +68,15 @@
 #include <mmx/Node_get_txo_infos_return.hxx>
 #include <mmx/Node_get_utxo_list.hxx>
 #include <mmx/Node_get_utxo_list_return.hxx>
+#include <mmx/Node_get_utxo_list_for.hxx>
+#include <mmx/Node_get_utxo_list_for_return.hxx>
 #include <mmx/Node_start_sync.hxx>
 #include <mmx/Node_start_sync_return.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/balance_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/stxo_entry_t.hxx>
 #include <mmx/tx_entry_t.hxx>
@@ -119,113 +126,6 @@ NodeClient::NodeClient(const std::string& service_name)
 NodeClient::NodeClient(vnx::Hash64 service_addr)
 	:	Client::Client(service_addr)
 {
-}
-
-::vnx::Object NodeClient::vnx_get_config_object() {
-	auto _method = ::vnx::ModuleInterface_vnx_get_config_object::create();
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::vnx::ModuleInterface_vnx_get_config_object_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<::vnx::Object>();
-	} else {
-		throw std::logic_error("NodeClient: invalid return value");
-	}
-}
-
-::vnx::Variant NodeClient::vnx_get_config(const std::string& name) {
-	auto _method = ::vnx::ModuleInterface_vnx_get_config::create();
-	_method->name = name;
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::vnx::ModuleInterface_vnx_get_config_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<::vnx::Variant>();
-	} else {
-		throw std::logic_error("NodeClient: invalid return value");
-	}
-}
-
-void NodeClient::vnx_set_config_object(const ::vnx::Object& config) {
-	auto _method = ::vnx::ModuleInterface_vnx_set_config_object::create();
-	_method->config = config;
-	vnx_request(_method, false);
-}
-
-void NodeClient::vnx_set_config_object_async(const ::vnx::Object& config) {
-	auto _method = ::vnx::ModuleInterface_vnx_set_config_object::create();
-	_method->config = config;
-	vnx_request(_method, true);
-}
-
-void NodeClient::vnx_set_config(const std::string& name, const ::vnx::Variant& value) {
-	auto _method = ::vnx::ModuleInterface_vnx_set_config::create();
-	_method->name = name;
-	_method->value = value;
-	vnx_request(_method, false);
-}
-
-void NodeClient::vnx_set_config_async(const std::string& name, const ::vnx::Variant& value) {
-	auto _method = ::vnx::ModuleInterface_vnx_set_config::create();
-	_method->name = name;
-	_method->value = value;
-	vnx_request(_method, true);
-}
-
-::vnx::TypeCode NodeClient::vnx_get_type_code() {
-	auto _method = ::vnx::ModuleInterface_vnx_get_type_code::create();
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::vnx::ModuleInterface_vnx_get_type_code_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<::vnx::TypeCode>();
-	} else {
-		throw std::logic_error("NodeClient: invalid return value");
-	}
-}
-
-std::shared_ptr<const ::vnx::ModuleInfo> NodeClient::vnx_get_module_info() {
-	auto _method = ::vnx::ModuleInterface_vnx_get_module_info::create();
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::vnx::ModuleInterface_vnx_get_module_info_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::vnx::ModuleInfo>>();
-	} else {
-		throw std::logic_error("NodeClient: invalid return value");
-	}
-}
-
-void NodeClient::vnx_restart() {
-	auto _method = ::vnx::ModuleInterface_vnx_restart::create();
-	vnx_request(_method, false);
-}
-
-void NodeClient::vnx_restart_async() {
-	auto _method = ::vnx::ModuleInterface_vnx_restart::create();
-	vnx_request(_method, true);
-}
-
-void NodeClient::vnx_stop() {
-	auto _method = ::vnx::ModuleInterface_vnx_stop::create();
-	vnx_request(_method, false);
-}
-
-void NodeClient::vnx_stop_async() {
-	auto _method = ::vnx::ModuleInterface_vnx_stop::create();
-	vnx_request(_method, true);
-}
-
-vnx::bool_t NodeClient::vnx_self_test() {
-	auto _method = ::vnx::ModuleInterface_vnx_self_test::create();
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::vnx::ModuleInterface_vnx_self_test_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<vnx::bool_t>();
-	} else {
-		throw std::logic_error("NodeClient: invalid return value");
-	}
 }
 
 std::shared_ptr<const ::mmx::ChainParams> NodeClient::get_params() {
@@ -512,10 +412,10 @@ std::vector<::mmx::tx_entry_t> NodeClient::get_history_for(const std::vector<::m
 	}
 }
 
-uint64_t NodeClient::get_balance(const ::mmx::addr_t& address, const ::mmx::addr_t& contract, const uint32_t& min_confirm) {
+uint64_t NodeClient::get_balance(const ::mmx::addr_t& address, const ::mmx::addr_t& currency, const uint32_t& min_confirm) {
 	auto _method = ::mmx::Node_get_balance::create();
 	_method->address = address;
-	_method->contract = contract;
+	_method->currency = currency;
 	_method->min_confirm = min_confirm;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_balance_return>(_return_value)) {
@@ -527,10 +427,24 @@ uint64_t NodeClient::get_balance(const ::mmx::addr_t& address, const ::mmx::addr
 	}
 }
 
-uint64_t NodeClient::get_total_balance(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& contract, const uint32_t& min_confirm) {
+std::map<::mmx::addr_t, ::mmx::balance_t> NodeClient::get_balances(const ::mmx::addr_t& address, const uint32_t& min_confirm) {
+	auto _method = ::mmx::Node_get_balances::create();
+	_method->address = address;
+	_method->min_confirm = min_confirm;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_balances_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, ::mmx::balance_t>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+uint64_t NodeClient::get_total_balance(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& currency, const uint32_t& min_confirm) {
 	auto _method = ::mmx::Node_get_total_balance::create();
 	_method->addresses = addresses;
-	_method->contract = contract;
+	_method->currency = currency;
 	_method->min_confirm = min_confirm;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_total_balance_return>(_return_value)) {
@@ -556,9 +470,9 @@ std::map<::mmx::addr_t, uint64_t> NodeClient::get_total_balances(const std::vect
 	}
 }
 
-uint64_t NodeClient::get_total_supply(const ::mmx::addr_t& contract) {
+uint64_t NodeClient::get_total_supply(const ::mmx::addr_t& currency) {
 	auto _method = ::mmx::Node_get_total_supply::create();
-	_method->contract = contract;
+	_method->currency = currency;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_total_supply_return>(_return_value)) {
 		return _result->_ret_0;
@@ -569,10 +483,11 @@ uint64_t NodeClient::get_total_supply(const ::mmx::addr_t& contract) {
 	}
 }
 
-std::vector<::mmx::utxo_entry_t> NodeClient::get_utxo_list(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm) {
+std::vector<::mmx::utxo_entry_t> NodeClient::get_utxo_list(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm, const uint32_t& since) {
 	auto _method = ::mmx::Node_get_utxo_list::create();
 	_method->addresses = addresses;
 	_method->min_confirm = min_confirm;
+	_method->since = since;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_utxo_list_return>(_return_value)) {
 		return _result->_ret_0;
@@ -583,9 +498,41 @@ std::vector<::mmx::utxo_entry_t> NodeClient::get_utxo_list(const std::vector<::m
 	}
 }
 
-std::vector<::mmx::stxo_entry_t> NodeClient::get_stxo_list(const std::vector<::mmx::addr_t>& addresses) {
+std::vector<::mmx::utxo_entry_t> NodeClient::get_utxo_list_for(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& currency, const uint32_t& min_confirm, const uint32_t& since) {
+	auto _method = ::mmx::Node_get_utxo_list_for::create();
+	_method->addresses = addresses;
+	_method->currency = currency;
+	_method->min_confirm = min_confirm;
+	_method->since = since;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_utxo_list_for_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::utxo_entry_t>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::vector<::mmx::utxo_entry_t> NodeClient::get_spendable_utxo_list(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm, const uint32_t& since) {
+	auto _method = ::mmx::Node_get_spendable_utxo_list::create();
+	_method->addresses = addresses;
+	_method->min_confirm = min_confirm;
+	_method->since = since;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_spendable_utxo_list_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::utxo_entry_t>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::vector<::mmx::stxo_entry_t> NodeClient::get_stxo_list(const std::vector<::mmx::addr_t>& addresses, const uint32_t& since) {
 	auto _method = ::mmx::Node_get_stxo_list::create();
 	_method->addresses = addresses;
+	_method->since = since;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_stxo_list_return>(_return_value)) {
 		return _result->_ret_0;
@@ -633,6 +580,113 @@ std::shared_ptr<const ::vnx::addons::HttpData> NodeClient::http_request_chunk(st
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::vnx::addons::HttpData>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+::vnx::Object NodeClient::vnx_get_config_object() {
+	auto _method = ::vnx::ModuleInterface_vnx_get_config_object::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::vnx::ModuleInterface_vnx_get_config_object_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<::vnx::Object>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+::vnx::Variant NodeClient::vnx_get_config(const std::string& name) {
+	auto _method = ::vnx::ModuleInterface_vnx_get_config::create();
+	_method->name = name;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::vnx::ModuleInterface_vnx_get_config_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<::vnx::Variant>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+void NodeClient::vnx_set_config_object(const ::vnx::Object& config) {
+	auto _method = ::vnx::ModuleInterface_vnx_set_config_object::create();
+	_method->config = config;
+	vnx_request(_method, false);
+}
+
+void NodeClient::vnx_set_config_object_async(const ::vnx::Object& config) {
+	auto _method = ::vnx::ModuleInterface_vnx_set_config_object::create();
+	_method->config = config;
+	vnx_request(_method, true);
+}
+
+void NodeClient::vnx_set_config(const std::string& name, const ::vnx::Variant& value) {
+	auto _method = ::vnx::ModuleInterface_vnx_set_config::create();
+	_method->name = name;
+	_method->value = value;
+	vnx_request(_method, false);
+}
+
+void NodeClient::vnx_set_config_async(const std::string& name, const ::vnx::Variant& value) {
+	auto _method = ::vnx::ModuleInterface_vnx_set_config::create();
+	_method->name = name;
+	_method->value = value;
+	vnx_request(_method, true);
+}
+
+::vnx::TypeCode NodeClient::vnx_get_type_code() {
+	auto _method = ::vnx::ModuleInterface_vnx_get_type_code::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::vnx::ModuleInterface_vnx_get_type_code_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<::vnx::TypeCode>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::shared_ptr<const ::vnx::ModuleInfo> NodeClient::vnx_get_module_info() {
+	auto _method = ::vnx::ModuleInterface_vnx_get_module_info::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::vnx::ModuleInterface_vnx_get_module_info_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::vnx::ModuleInfo>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+void NodeClient::vnx_restart() {
+	auto _method = ::vnx::ModuleInterface_vnx_restart::create();
+	vnx_request(_method, false);
+}
+
+void NodeClient::vnx_restart_async() {
+	auto _method = ::vnx::ModuleInterface_vnx_restart::create();
+	vnx_request(_method, true);
+}
+
+void NodeClient::vnx_stop() {
+	auto _method = ::vnx::ModuleInterface_vnx_stop::create();
+	vnx_request(_method, false);
+}
+
+void NodeClient::vnx_stop_async() {
+	auto _method = ::vnx::ModuleInterface_vnx_stop::create();
+	vnx_request(_method, true);
+}
+
+vnx::bool_t NodeClient::vnx_self_test() {
+	auto _method = ::vnx::ModuleInterface_vnx_self_test::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::vnx::ModuleInterface_vnx_self_test_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<vnx::bool_t>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}

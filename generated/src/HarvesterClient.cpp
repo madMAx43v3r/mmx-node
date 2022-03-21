@@ -48,6 +48,40 @@ HarvesterClient::HarvesterClient(vnx::Hash64 service_addr)
 {
 }
 
+void HarvesterClient::reload() {
+	auto _method = ::mmx::Harvester_reload::create();
+	vnx_request(_method, false);
+}
+
+void HarvesterClient::reload_async() {
+	auto _method = ::mmx::Harvester_reload::create();
+	vnx_request(_method, true);
+}
+
+std::shared_ptr<const ::mmx::FarmInfo> HarvesterClient::get_farm_info() {
+	auto _method = ::mmx::Harvester_get_farm_info::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Harvester_get_farm_info_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::FarmInfo>>();
+	} else {
+		throw std::logic_error("HarvesterClient: invalid return value");
+	}
+}
+
+uint64_t HarvesterClient::get_total_bytes() {
+	auto _method = ::mmx::Harvester_get_total_bytes::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Harvester_get_total_bytes_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<uint64_t>();
+	} else {
+		throw std::logic_error("HarvesterClient: invalid return value");
+	}
+}
+
 ::vnx::Object HarvesterClient::vnx_get_config_object() {
 	auto _method = ::vnx::ModuleInterface_vnx_get_config_object::create();
 	auto _return_value = vnx_request(_method, false);
@@ -150,40 +184,6 @@ vnx::bool_t HarvesterClient::vnx_self_test() {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<vnx::bool_t>();
-	} else {
-		throw std::logic_error("HarvesterClient: invalid return value");
-	}
-}
-
-void HarvesterClient::reload() {
-	auto _method = ::mmx::Harvester_reload::create();
-	vnx_request(_method, false);
-}
-
-void HarvesterClient::reload_async() {
-	auto _method = ::mmx::Harvester_reload::create();
-	vnx_request(_method, true);
-}
-
-std::shared_ptr<const ::mmx::FarmInfo> HarvesterClient::get_farm_info() {
-	auto _method = ::mmx::Harvester_get_farm_info::create();
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Harvester_get_farm_info_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::FarmInfo>>();
-	} else {
-		throw std::logic_error("HarvesterClient: invalid return value");
-	}
-}
-
-uint64_t HarvesterClient::get_total_bytes() {
-	auto _method = ::mmx::Harvester_get_total_bytes::create();
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Harvester_get_total_bytes_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<uint64_t>();
 	} else {
 		throw std::logic_error("HarvesterClient: invalid return value");
 	}

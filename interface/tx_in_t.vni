@@ -6,4 +6,9 @@ struct tx_in_t {
 	
 	uint solution = -1;
 	
+	ushort flags;
+	
+	
+	static const ushort IS_EXEC = 1;
+	
 }

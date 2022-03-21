@@ -19,7 +19,8 @@ stxo_entry_t stxo_entry_t::create_ex(const txio_key_t& key, const stxo_t& stxo)
 	stxo_entry_t res;
 	res.key = key;
 	res.output = stxo;
-	res.spent = stxo.spent;
+	res.spent_height = stxo.spent_height;
+	res.spent_key = stxo.spent_key;
 	return res;
 }
 

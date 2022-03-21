@@ -14,6 +14,7 @@
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/balance_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/stxo_entry_t.hxx>
 #include <mmx/tx_entry_t.hxx>
@@ -35,32 +36,6 @@ public:
 	NodeClient(const std::string& service_name);
 	
 	NodeClient(vnx::Hash64 service_addr);
-	
-	::vnx::Object vnx_get_config_object();
-	
-	::vnx::Variant vnx_get_config(const std::string& name = "");
-	
-	void vnx_set_config_object(const ::vnx::Object& config = ::vnx::Object());
-	
-	void vnx_set_config_object_async(const ::vnx::Object& config = ::vnx::Object());
-	
-	void vnx_set_config(const std::string& name = "", const ::vnx::Variant& value = ::vnx::Variant());
-	
-	void vnx_set_config_async(const std::string& name = "", const ::vnx::Variant& value = ::vnx::Variant());
-	
-	::vnx::TypeCode vnx_get_type_code();
-	
-	std::shared_ptr<const ::vnx::ModuleInfo> vnx_get_module_info();
-	
-	void vnx_restart();
-	
-	void vnx_restart_async();
-	
-	void vnx_stop();
-	
-	void vnx_stop_async();
-	
-	vnx::bool_t vnx_self_test();
 	
 	std::shared_ptr<const ::mmx::ChainParams> get_params();
 	
@@ -110,17 +85,23 @@ public:
 	
 	std::vector<::mmx::tx_entry_t> get_history_for(const std::vector<::mmx::addr_t>& addresses = {}, const int32_t& since = 0);
 	
-	uint64_t get_balance(const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::addr_t& contract = ::mmx::addr_t(), const uint32_t& min_confirm = 1);
+	uint64_t get_balance(const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::addr_t& currency = ::mmx::addr_t(), const uint32_t& min_confirm = 1);
 	
-	uint64_t get_total_balance(const std::vector<::mmx::addr_t>& addresses = {}, const ::mmx::addr_t& contract = ::mmx::addr_t(), const uint32_t& min_confirm = 1);
+	std::map<::mmx::addr_t, ::mmx::balance_t> get_balances(const ::mmx::addr_t& address = ::mmx::addr_t(), const uint32_t& min_confirm = 1);
+	
+	uint64_t get_total_balance(const std::vector<::mmx::addr_t>& addresses = {}, const ::mmx::addr_t& currency = ::mmx::addr_t(), const uint32_t& min_confirm = 1);
 	
 	std::map<::mmx::addr_t, uint64_t> get_total_balances(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& min_confirm = 1);
 	
-	uint64_t get_total_supply(const ::mmx::addr_t& contract = ::mmx::addr_t());
+	uint64_t get_total_supply(const ::mmx::addr_t& currency = ::mmx::addr_t());
 	
-	std::vector<::mmx::utxo_entry_t> get_utxo_list(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& min_confirm = 1);
+	std::vector<::mmx::utxo_entry_t> get_utxo_list(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& min_confirm = 1, const uint32_t& since = 0);
 	
-	std::vector<::mmx::stxo_entry_t> get_stxo_list(const std::vector<::mmx::addr_t>& addresses = {});
+	std::vector<::mmx::utxo_entry_t> get_utxo_list_for(const std::vector<::mmx::addr_t>& addresses = {}, const ::mmx::addr_t& currency = ::mmx::addr_t(), const uint32_t& min_confirm = 1, const uint32_t& since = 0);
+	
+	std::vector<::mmx::utxo_entry_t> get_spendable_utxo_list(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& min_confirm = 1, const uint32_t& since = 0);
+	
+	std::vector<::mmx::stxo_entry_t> get_stxo_list(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& since = 0);
 	
 	void start_sync(const vnx::bool_t& force = 0);
 	
@@ -129,6 +110,32 @@ public:
 	std::shared_ptr<const ::vnx::addons::HttpResponse> http_request(std::shared_ptr<const ::vnx::addons::HttpRequest> request = nullptr, const std::string& sub_path = "");
 	
 	std::shared_ptr<const ::vnx::addons::HttpData> http_request_chunk(std::shared_ptr<const ::vnx::addons::HttpRequest> request = nullptr, const std::string& sub_path = "", const int64_t& offset = 0, const int64_t& max_bytes = 0);
+	
+	::vnx::Object vnx_get_config_object();
+	
+	::vnx::Variant vnx_get_config(const std::string& name = "");
+	
+	void vnx_set_config_object(const ::vnx::Object& config = ::vnx::Object());
+	
+	void vnx_set_config_object_async(const ::vnx::Object& config = ::vnx::Object());
+	
+	void vnx_set_config(const std::string& name = "", const ::vnx::Variant& value = ::vnx::Variant());
+	
+	void vnx_set_config_async(const std::string& name = "", const ::vnx::Variant& value = ::vnx::Variant());
+	
+	::vnx::TypeCode vnx_get_type_code();
+	
+	std::shared_ptr<const ::vnx::ModuleInfo> vnx_get_module_info();
+	
+	void vnx_restart();
+	
+	void vnx_restart_async();
+	
+	void vnx_stop();
+	
+	void vnx_stop_async();
+	
+	vnx::bool_t vnx_self_test();
 	
 };
 

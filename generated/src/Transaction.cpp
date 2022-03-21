@@ -7,7 +7,31 @@
 #include <mmx/Contract.hxx>
 #include <mmx/Operation.hxx>
 #include <mmx/Solution.hxx>
+#include <mmx/Transaction_add_output.hxx>
+#include <mmx/Transaction_add_output_return.hxx>
+#include <mmx/Transaction_calc_cost.hxx>
+#include <mmx/Transaction_calc_cost_return.hxx>
+#include <mmx/Transaction_calc_hash.hxx>
+#include <mmx/Transaction_calc_hash_return.hxx>
+#include <mmx/Transaction_finalize.hxx>
+#include <mmx/Transaction_finalize_return.hxx>
+#include <mmx/Transaction_get_all_outputs.hxx>
+#include <mmx/Transaction_get_all_outputs_return.hxx>
+#include <mmx/Transaction_get_output.hxx>
+#include <mmx/Transaction_get_output_return.hxx>
+#include <mmx/Transaction_get_solution.hxx>
+#include <mmx/Transaction_get_solution_return.hxx>
+#include <mmx/Transaction_is_signed.hxx>
+#include <mmx/Transaction_is_signed_return.hxx>
+#include <mmx/Transaction_is_valid.hxx>
+#include <mmx/Transaction_is_valid_return.hxx>
+#include <mmx/Transaction_merge_sign.hxx>
+#include <mmx/Transaction_merge_sign_return.hxx>
 #include <mmx/TransactionBase.hxx>
+#include <mmx/TransactionBase_calc_cost.hxx>
+#include <mmx/TransactionBase_calc_cost_return.hxx>
+#include <mmx/TransactionBase_calc_hash.hxx>
+#include <mmx/TransactionBase_calc_hash_return.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/tx_in_t.hxx>
@@ -20,7 +44,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Transaction::VNX_TYPE_HASH(0xce0462acdceaa5bcull);
-const vnx::Hash64 Transaction::VNX_CODE_HASH(0xf7afeee64186fc9dull);
+const vnx::Hash64 Transaction::VNX_CODE_HASH(0x2bd9e4bea2ce7b5cull);
 
 vnx::Hash64 Transaction::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -55,12 +79,14 @@ void Transaction::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, id);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, version);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, inputs);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, outputs);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, exec_outputs);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, execute);
-	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, solutions);
-	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, deploy);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, nonce);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, salt);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, inputs);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, outputs);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, exec_outputs);
+	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, execute);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, solutions);
+	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, deploy);
 	_visitor.type_end(*_type_code);
 }
 
@@ -68,6 +94,8 @@ void Transaction::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Transaction\"";
 	_out << ", \"id\": "; vnx::write(_out, id);
 	_out << ", \"version\": "; vnx::write(_out, version);
+	_out << ", \"nonce\": "; vnx::write(_out, nonce);
+	_out << ", \"salt\": "; vnx::write(_out, salt);
 	_out << ", \"inputs\": "; vnx::write(_out, inputs);
 	_out << ", \"outputs\": "; vnx::write(_out, outputs);
 	_out << ", \"exec_outputs\": "; vnx::write(_out, exec_outputs);
@@ -88,6 +116,8 @@ vnx::Object Transaction::to_object() const {
 	_object["__type"] = "mmx.Transaction";
 	_object["id"] = id;
 	_object["version"] = version;
+	_object["nonce"] = nonce;
+	_object["salt"] = salt;
 	_object["inputs"] = inputs;
 	_object["outputs"] = outputs;
 	_object["exec_outputs"] = exec_outputs;
@@ -109,8 +139,12 @@ void Transaction::from_object(const vnx::Object& _object) {
 			_entry.second.to(id);
 		} else if(_entry.first == "inputs") {
 			_entry.second.to(inputs);
+		} else if(_entry.first == "nonce") {
+			_entry.second.to(nonce);
 		} else if(_entry.first == "outputs") {
 			_entry.second.to(outputs);
+		} else if(_entry.first == "salt") {
+			_entry.second.to(salt);
 		} else if(_entry.first == "solutions") {
 			_entry.second.to(solutions);
 		} else if(_entry.first == "version") {
@@ -125,6 +159,12 @@ vnx::Variant Transaction::get_field(const std::string& _name) const {
 	}
 	if(_name == "version") {
 		return vnx::Variant(version);
+	}
+	if(_name == "nonce") {
+		return vnx::Variant(nonce);
+	}
+	if(_name == "salt") {
+		return vnx::Variant(salt);
 	}
 	if(_name == "inputs") {
 		return vnx::Variant(inputs);
@@ -152,6 +192,10 @@ void Transaction::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(id);
 	} else if(_name == "version") {
 		_value.to(version);
+	} else if(_name == "nonce") {
+		_value.to(nonce);
+	} else if(_name == "salt") {
+		_value.to(salt);
 	} else if(_name == "inputs") {
 		_value.to(inputs);
 	} else if(_name == "outputs") {
@@ -191,7 +235,7 @@ std::shared_ptr<vnx::TypeCode> Transaction::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Transaction";
 	type_code->type_hash = vnx::Hash64(0xce0462acdceaa5bcull);
-	type_code->code_hash = vnx::Hash64(0xf7afeee64186fc9dull);
+	type_code->code_hash = vnx::Hash64(0x2bd9e4bea2ce7b5cull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::Transaction);
@@ -201,7 +245,20 @@ std::shared_ptr<vnx::TypeCode> Transaction::static_create_type_code() {
 	type_code->depends.resize(2);
 	type_code->depends[0] = ::mmx::tx_in_t::static_get_type_code();
 	type_code->depends[1] = ::mmx::tx_out_t::static_get_type_code();
-	type_code->fields.resize(8);
+	type_code->methods.resize(12);
+	type_code->methods[0] = ::mmx::Transaction_add_output::static_get_type_code();
+	type_code->methods[1] = ::mmx::Transaction_calc_cost::static_get_type_code();
+	type_code->methods[2] = ::mmx::Transaction_calc_hash::static_get_type_code();
+	type_code->methods[3] = ::mmx::Transaction_finalize::static_get_type_code();
+	type_code->methods[4] = ::mmx::Transaction_get_all_outputs::static_get_type_code();
+	type_code->methods[5] = ::mmx::Transaction_get_output::static_get_type_code();
+	type_code->methods[6] = ::mmx::Transaction_get_solution::static_get_type_code();
+	type_code->methods[7] = ::mmx::Transaction_is_signed::static_get_type_code();
+	type_code->methods[8] = ::mmx::Transaction_is_valid::static_get_type_code();
+	type_code->methods[9] = ::mmx::Transaction_merge_sign::static_get_type_code();
+	type_code->methods[10] = ::mmx::TransactionBase_calc_cost::static_get_type_code();
+	type_code->methods[11] = ::mmx::TransactionBase_calc_hash::static_get_type_code();
+	type_code->fields.resize(10);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -216,42 +273,132 @@ std::shared_ptr<vnx::TypeCode> Transaction::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[2];
+		field.data_size = 8;
+		field.name = "nonce";
+		field.code = {4};
+	}
+	{
+		auto& field = type_code->fields[3];
+		field.is_extended = true;
+		field.name = "salt";
+		field.code = {33, 11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[4];
 		field.is_extended = true;
 		field.name = "inputs";
 		field.code = {12, 19, 0};
 	}
 	{
-		auto& field = type_code->fields[3];
+		auto& field = type_code->fields[5];
 		field.is_extended = true;
 		field.name = "outputs";
 		field.code = {12, 19, 1};
 	}
 	{
-		auto& field = type_code->fields[4];
+		auto& field = type_code->fields[6];
 		field.is_extended = true;
 		field.name = "exec_outputs";
 		field.code = {12, 19, 1};
 	}
 	{
-		auto& field = type_code->fields[5];
+		auto& field = type_code->fields[7];
 		field.is_extended = true;
 		field.name = "execute";
 		field.code = {12, 16};
 	}
 	{
-		auto& field = type_code->fields[6];
+		auto& field = type_code->fields[8];
 		field.is_extended = true;
 		field.name = "solutions";
 		field.code = {12, 16};
 	}
 	{
-		auto& field = type_code->fields[7];
+		auto& field = type_code->fields[9];
 		field.is_extended = true;
 		field.name = "deploy";
 		field.code = {16};
 	}
 	type_code->build();
 	return type_code;
+}
+
+std::shared_ptr<vnx::Value> Transaction::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
+	switch(_method->get_type_hash()) {
+		case 0x479ef0d3de1f6ea3ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Transaction_add_output>(_method);
+			auto _return_value = ::mmx::Transaction_add_output_return::create();
+			add_output(_args->currency, _args->address, _args->amount, _args->split);
+			return _return_value;
+		}
+		case 0x39606f716fd28613ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Transaction_calc_cost>(_method);
+			auto _return_value = ::mmx::Transaction_calc_cost_return::create();
+			_return_value->_ret_0 = calc_cost(_args->params);
+			return _return_value;
+		}
+		case 0xe972a4170a40f2ecull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Transaction_calc_hash>(_method);
+			auto _return_value = ::mmx::Transaction_calc_hash_return::create();
+			_return_value->_ret_0 = calc_hash();
+			return _return_value;
+		}
+		case 0x75a626fc20f09905ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Transaction_finalize>(_method);
+			auto _return_value = ::mmx::Transaction_finalize_return::create();
+			finalize();
+			return _return_value;
+		}
+		case 0x450d1b5d483217a6ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Transaction_get_all_outputs>(_method);
+			auto _return_value = ::mmx::Transaction_get_all_outputs_return::create();
+			_return_value->_ret_0 = get_all_outputs();
+			return _return_value;
+		}
+		case 0xf68f41fd090736c1ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Transaction_get_output>(_method);
+			auto _return_value = ::mmx::Transaction_get_output_return::create();
+			_return_value->_ret_0 = get_output(_args->index);
+			return _return_value;
+		}
+		case 0x8616c0b585da815bull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Transaction_get_solution>(_method);
+			auto _return_value = ::mmx::Transaction_get_solution_return::create();
+			_return_value->_ret_0 = get_solution(_args->index);
+			return _return_value;
+		}
+		case 0x3273a3ea7264e4f8ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Transaction_is_signed>(_method);
+			auto _return_value = ::mmx::Transaction_is_signed_return::create();
+			_return_value->_ret_0 = is_signed();
+			return _return_value;
+		}
+		case 0x16386c874106028aull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Transaction_is_valid>(_method);
+			auto _return_value = ::mmx::Transaction_is_valid_return::create();
+			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+		case 0x441d6e2bfb07ec38ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Transaction_merge_sign>(_method);
+			auto _return_value = ::mmx::Transaction_merge_sign_return::create();
+			merge_sign(_args->tx);
+			return _return_value;
+		}
+		case 0xdc3d9eed0e103932ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::TransactionBase_calc_cost>(_method);
+			auto _return_value = ::mmx::TransactionBase_calc_cost_return::create();
+			_return_value->_ret_0 = calc_cost(_args->params);
+			return _return_value;
+		}
+		case 0xc2f558b6b824dcdull: {
+			auto _args = std::static_pointer_cast<const ::mmx::TransactionBase_calc_hash>(_method);
+			auto _return_value = ::mmx::TransactionBase_calc_hash_return::create();
+			_return_value->_ret_0 = calc_hash();
+			return _return_value;
+		}
+	}
+	return nullptr;
 }
 
 
@@ -295,16 +442,20 @@ void read(TypeInput& in, ::mmx::Transaction& value, const TypeCode* type_code, c
 		if(const auto* const _field = type_code->field_map[1]) {
 			vnx::read_value(_buf + _field->offset, value.version, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[2]) {
+			vnx::read_value(_buf + _field->offset, value.nonce, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.id, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.inputs, type_code, _field->code.data()); break;
-			case 3: vnx::read(in, value.outputs, type_code, _field->code.data()); break;
-			case 4: vnx::read(in, value.exec_outputs, type_code, _field->code.data()); break;
-			case 5: vnx::read(in, value.execute, type_code, _field->code.data()); break;
-			case 6: vnx::read(in, value.solutions, type_code, _field->code.data()); break;
-			case 7: vnx::read(in, value.deploy, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.salt, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.inputs, type_code, _field->code.data()); break;
+			case 5: vnx::read(in, value.outputs, type_code, _field->code.data()); break;
+			case 6: vnx::read(in, value.exec_outputs, type_code, _field->code.data()); break;
+			case 7: vnx::read(in, value.execute, type_code, _field->code.data()); break;
+			case 8: vnx::read(in, value.solutions, type_code, _field->code.data()); break;
+			case 9: vnx::read(in, value.deploy, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -323,15 +474,17 @@ void write(TypeOutput& out, const ::mmx::Transaction& value, const TypeCode* typ
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
+	char* const _buf = out.write(12);
 	vnx::write_value(_buf + 0, value.version);
+	vnx::write_value(_buf + 4, value.nonce);
 	vnx::write(out, value.id, type_code, type_code->fields[0].code.data());
-	vnx::write(out, value.inputs, type_code, type_code->fields[2].code.data());
-	vnx::write(out, value.outputs, type_code, type_code->fields[3].code.data());
-	vnx::write(out, value.exec_outputs, type_code, type_code->fields[4].code.data());
-	vnx::write(out, value.execute, type_code, type_code->fields[5].code.data());
-	vnx::write(out, value.solutions, type_code, type_code->fields[6].code.data());
-	vnx::write(out, value.deploy, type_code, type_code->fields[7].code.data());
+	vnx::write(out, value.salt, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.inputs, type_code, type_code->fields[4].code.data());
+	vnx::write(out, value.outputs, type_code, type_code->fields[5].code.data());
+	vnx::write(out, value.exec_outputs, type_code, type_code->fields[6].code.data());
+	vnx::write(out, value.execute, type_code, type_code->fields[7].code.data());
+	vnx::write(out, value.solutions, type_code, type_code->fields[8].code.data());
+	vnx::write(out, value.deploy, type_code, type_code->fields[9].code.data());
 }
 
 void read(std::istream& in, ::mmx::Transaction& value) {

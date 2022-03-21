@@ -6,15 +6,21 @@ import mmx.pubkey_t;
 
 class PuzzleLock extends Locked {
 	
-	mmx.Contract* puzzle;			// to unlock for target via MultiSig solution
+	mmx.Contract* puzzle;			// to unlock for target
 	
 	addr_t target;					// beneficiary
 	
-	optional<addr_t> currency;
 	
+	bool is_valid() const;
 	
-//	bool is_valid() const;
+	hash_t calc_hash() const;
 	
-//	hash_t calc_hash() const;
+	ulong calc_cost(mmx.ChainParams* params) const;
+	
+	vector<addr_t> get_dependency() const;
+	
+	vector<addr_t> get_parties() const;
+	
+	vector<mmx.tx_out_t> validate(mmx.Operation* operation, mmx.Context* context) const;
 	
 }

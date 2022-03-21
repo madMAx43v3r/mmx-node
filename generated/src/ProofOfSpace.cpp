@@ -3,6 +3,10 @@
 
 #include <mmx/package.hxx>
 #include <mmx/ProofOfSpace.hxx>
+#include <mmx/ProofOfSpace_calc_hash.hxx>
+#include <mmx/ProofOfSpace_calc_hash_return.hxx>
+#include <mmx/ProofOfSpace_is_valid.hxx>
+#include <mmx/ProofOfSpace_is_valid_return.hxx>
 #include <mmx/bls_pubkey_t.hpp>
 #include <mmx/bls_signature_t.hpp>
 #include <mmx/hash_t.hpp>
@@ -15,7 +19,7 @@ namespace mmx {
 
 
 const vnx::Hash64 ProofOfSpace::VNX_TYPE_HASH(0x9269760ad5fd0058ull);
-const vnx::Hash64 ProofOfSpace::VNX_CODE_HASH(0xb5cc7bd4fa7e2894ull);
+const vnx::Hash64 ProofOfSpace::VNX_CODE_HASH(0xf71043f360978cb0ull);
 
 vnx::Hash64 ProofOfSpace::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,19 +52,21 @@ void ProofOfSpace::write(vnx::TypeOutput& _out, const vnx::TypeCode* _type_code,
 void ProofOfSpace::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_ProofOfSpace;
 	_visitor.type_begin(*_type_code);
-	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, ksize);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, score);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, plot_id);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, proof_bytes);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, local_key);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, farmer_key);
-	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, pool_key);
-	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, local_sig);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, version);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, ksize);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, score);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, plot_id);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, proof_bytes);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, local_key);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, farmer_key);
+	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, pool_key);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, local_sig);
 	_visitor.type_end(*_type_code);
 }
 
 void ProofOfSpace::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.ProofOfSpace\"";
+	_out << ", \"version\": "; vnx::write(_out, version);
 	_out << ", \"ksize\": "; vnx::write(_out, ksize);
 	_out << ", \"score\": "; vnx::write(_out, score);
 	_out << ", \"plot_id\": "; vnx::write(_out, plot_id);
@@ -81,6 +87,7 @@ void ProofOfSpace::read(std::istream& _in) {
 vnx::Object ProofOfSpace::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.ProofOfSpace";
+	_object["version"] = version;
 	_object["ksize"] = ksize;
 	_object["score"] = score;
 	_object["plot_id"] = plot_id;
@@ -110,11 +117,16 @@ void ProofOfSpace::from_object(const vnx::Object& _object) {
 			_entry.second.to(proof_bytes);
 		} else if(_entry.first == "score") {
 			_entry.second.to(score);
+		} else if(_entry.first == "version") {
+			_entry.second.to(version);
 		}
 	}
 }
 
 vnx::Variant ProofOfSpace::get_field(const std::string& _name) const {
+	if(_name == "version") {
+		return vnx::Variant(version);
+	}
 	if(_name == "ksize") {
 		return vnx::Variant(ksize);
 	}
@@ -143,7 +155,9 @@ vnx::Variant ProofOfSpace::get_field(const std::string& _name) const {
 }
 
 void ProofOfSpace::set_field(const std::string& _name, const vnx::Variant& _value) {
-	if(_name == "ksize") {
+	if(_name == "version") {
+		_value.to(version);
+	} else if(_name == "ksize") {
 		_value.to(ksize);
 	} else if(_name == "score") {
 		_value.to(score);
@@ -186,62 +200,89 @@ std::shared_ptr<vnx::TypeCode> ProofOfSpace::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.ProofOfSpace";
 	type_code->type_hash = vnx::Hash64(0x9269760ad5fd0058ull);
-	type_code->code_hash = vnx::Hash64(0xb5cc7bd4fa7e2894ull);
+	type_code->code_hash = vnx::Hash64(0xf71043f360978cb0ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ProofOfSpace);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<ProofOfSpace>(); };
-	type_code->fields.resize(8);
+	type_code->methods.resize(2);
+	type_code->methods[0] = ::mmx::ProofOfSpace_calc_hash::static_get_type_code();
+	type_code->methods[1] = ::mmx::ProofOfSpace_is_valid::static_get_type_code();
+	type_code->fields.resize(9);
 	{
 		auto& field = type_code->fields[0];
+		field.data_size = 4;
+		field.name = "version";
+		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[1];
 		field.data_size = 1;
 		field.name = "ksize";
 		field.code = {1};
 	}
 	{
-		auto& field = type_code->fields[1];
+		auto& field = type_code->fields[2];
 		field.data_size = 8;
 		field.name = "score";
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[2];
+		auto& field = type_code->fields[3];
 		field.is_extended = true;
 		field.name = "plot_id";
 		field.code = {11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[3];
+		auto& field = type_code->fields[4];
 		field.is_extended = true;
 		field.name = "proof_bytes";
 		field.code = {12, 1};
 	}
 	{
-		auto& field = type_code->fields[4];
+		auto& field = type_code->fields[5];
 		field.is_extended = true;
 		field.name = "local_key";
 		field.code = {11, 48, 1};
 	}
 	{
-		auto& field = type_code->fields[5];
+		auto& field = type_code->fields[6];
 		field.is_extended = true;
 		field.name = "farmer_key";
 		field.code = {11, 48, 1};
 	}
 	{
-		auto& field = type_code->fields[6];
+		auto& field = type_code->fields[7];
 		field.is_extended = true;
 		field.name = "pool_key";
 		field.code = {11, 48, 1};
 	}
 	{
-		auto& field = type_code->fields[7];
+		auto& field = type_code->fields[8];
 		field.is_extended = true;
 		field.name = "local_sig";
 		field.code = {11, 96, 1};
 	}
 	type_code->build();
 	return type_code;
+}
+
+std::shared_ptr<vnx::Value> ProofOfSpace::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
+	switch(_method->get_type_hash()) {
+		case 0x4056d25a9096f144ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::ProofOfSpace_calc_hash>(_method);
+			auto _return_value = ::mmx::ProofOfSpace_calc_hash_return::create();
+			_return_value->_ret_0 = calc_hash();
+			return _return_value;
+		}
+		case 0x143933f39ea710d1ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::ProofOfSpace_is_valid>(_method);
+			auto _return_value = ::mmx::ProofOfSpace_is_valid_return::create();
+			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+	}
+	return nullptr;
 }
 
 
@@ -283,20 +324,23 @@ void read(TypeInput& in, ::mmx::ProofOfSpace& value, const TypeCode* type_code, 
 	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[0]) {
-			vnx::read_value(_buf + _field->offset, value.ksize, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.version, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[1]) {
+			vnx::read_value(_buf + _field->offset, value.ksize, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[2]) {
 			vnx::read_value(_buf + _field->offset, value.score, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 2: vnx::read(in, value.plot_id, type_code, _field->code.data()); break;
-			case 3: vnx::read(in, value.proof_bytes, type_code, _field->code.data()); break;
-			case 4: vnx::read(in, value.local_key, type_code, _field->code.data()); break;
-			case 5: vnx::read(in, value.farmer_key, type_code, _field->code.data()); break;
-			case 6: vnx::read(in, value.pool_key, type_code, _field->code.data()); break;
-			case 7: vnx::read(in, value.local_sig, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.plot_id, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.proof_bytes, type_code, _field->code.data()); break;
+			case 5: vnx::read(in, value.local_key, type_code, _field->code.data()); break;
+			case 6: vnx::read(in, value.farmer_key, type_code, _field->code.data()); break;
+			case 7: vnx::read(in, value.pool_key, type_code, _field->code.data()); break;
+			case 8: vnx::read(in, value.local_sig, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -315,15 +359,16 @@ void write(TypeOutput& out, const ::mmx::ProofOfSpace& value, const TypeCode* ty
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(9);
-	vnx::write_value(_buf + 0, value.ksize);
-	vnx::write_value(_buf + 1, value.score);
-	vnx::write(out, value.plot_id, type_code, type_code->fields[2].code.data());
-	vnx::write(out, value.proof_bytes, type_code, type_code->fields[3].code.data());
-	vnx::write(out, value.local_key, type_code, type_code->fields[4].code.data());
-	vnx::write(out, value.farmer_key, type_code, type_code->fields[5].code.data());
-	vnx::write(out, value.pool_key, type_code, type_code->fields[6].code.data());
-	vnx::write(out, value.local_sig, type_code, type_code->fields[7].code.data());
+	char* const _buf = out.write(13);
+	vnx::write_value(_buf + 0, value.version);
+	vnx::write_value(_buf + 4, value.ksize);
+	vnx::write_value(_buf + 5, value.score);
+	vnx::write(out, value.plot_id, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.proof_bytes, type_code, type_code->fields[4].code.data());
+	vnx::write(out, value.local_key, type_code, type_code->fields[5].code.data());
+	vnx::write(out, value.farmer_key, type_code, type_code->fields[6].code.data());
+	vnx::write(out, value.pool_key, type_code, type_code->fields[7].code.data());
+	vnx::write(out, value.local_sig, type_code, type_code->fields[8].code.data());
 }
 
 void read(std::istream& in, ::mmx::ProofOfSpace& value) {

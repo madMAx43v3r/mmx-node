@@ -15,6 +15,8 @@
 #include <mmx/Node_add_transaction_return.hxx>
 #include <mmx/Node_get_balance.hxx>
 #include <mmx/Node_get_balance_return.hxx>
+#include <mmx/Node_get_balances.hxx>
+#include <mmx/Node_get_balances_return.hxx>
 #include <mmx/Node_get_block.hxx>
 #include <mmx/Node_get_block_return.hxx>
 #include <mmx/Node_get_block_at.hxx>
@@ -39,6 +41,8 @@
 #include <mmx/Node_get_network_info_return.hxx>
 #include <mmx/Node_get_params.hxx>
 #include <mmx/Node_get_params_return.hxx>
+#include <mmx/Node_get_spendable_utxo_list.hxx>
+#include <mmx/Node_get_spendable_utxo_list_return.hxx>
 #include <mmx/Node_get_stxo_list.hxx>
 #include <mmx/Node_get_stxo_list_return.hxx>
 #include <mmx/Node_get_synced_height.hxx>
@@ -65,12 +69,15 @@
 #include <mmx/Node_get_txo_infos_return.hxx>
 #include <mmx/Node_get_utxo_list.hxx>
 #include <mmx/Node_get_utxo_list_return.hxx>
+#include <mmx/Node_get_utxo_list_for.hxx>
+#include <mmx/Node_get_utxo_list_for_return.hxx>
 #include <mmx/Node_start_sync.hxx>
 #include <mmx/Node_start_sync_return.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/balance_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/stxo_entry_t.hxx>
 #include <mmx/tx_entry_t.hxx>
@@ -113,7 +120,7 @@ namespace mmx {
 
 
 const vnx::Hash64 NodeBase::VNX_TYPE_HASH(0x289d7651582d76a3ull);
-const vnx::Hash64 NodeBase::VNX_CODE_HASH(0xe554c8a40ef41e86ull);
+const vnx::Hash64 NodeBase::VNX_CODE_HASH(0xd0ccdb0e000a8022ull);
 
 NodeBase::NodeBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -137,7 +144,6 @@ NodeBase::NodeBase(const std::string& _vnx_name)
 	vnx::read_config(vnx_name + ".sync_loss_delay", sync_loss_delay);
 	vnx::read_config(vnx_name + ".max_history", max_history);
 	vnx::read_config(vnx_name + ".tx_pool_limit", tx_pool_limit);
-	vnx::read_config(vnx_name + ".max_contract_cache", max_contract_cache);
 	vnx::read_config(vnx_name + ".max_fork_length", max_fork_length);
 	vnx::read_config(vnx_name + ".max_sync_jobs", max_sync_jobs);
 	vnx::read_config(vnx_name + ".num_sync_retries", num_sync_retries);
@@ -187,20 +193,19 @@ void NodeBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[16], 16); vnx::accept(_visitor, sync_loss_delay);
 	_visitor.type_field(_type_code->fields[17], 17); vnx::accept(_visitor, max_history);
 	_visitor.type_field(_type_code->fields[18], 18); vnx::accept(_visitor, tx_pool_limit);
-	_visitor.type_field(_type_code->fields[19], 19); vnx::accept(_visitor, max_contract_cache);
-	_visitor.type_field(_type_code->fields[20], 20); vnx::accept(_visitor, max_fork_length);
-	_visitor.type_field(_type_code->fields[21], 21); vnx::accept(_visitor, max_sync_jobs);
-	_visitor.type_field(_type_code->fields[22], 22); vnx::accept(_visitor, num_sync_retries);
-	_visitor.type_field(_type_code->fields[23], 23); vnx::accept(_visitor, replay_height);
-	_visitor.type_field(_type_code->fields[24], 24); vnx::accept(_visitor, num_vdf_threads);
-	_visitor.type_field(_type_code->fields[25], 25); vnx::accept(_visitor, vdf_check_divider);
-	_visitor.type_field(_type_code->fields[26], 26); vnx::accept(_visitor, opencl_device);
-	_visitor.type_field(_type_code->fields[27], 27); vnx::accept(_visitor, do_sync);
-	_visitor.type_field(_type_code->fields[28], 28); vnx::accept(_visitor, light_mode);
-	_visitor.type_field(_type_code->fields[29], 29); vnx::accept(_visitor, storage_path);
-	_visitor.type_field(_type_code->fields[30], 30); vnx::accept(_visitor, database_path);
-	_visitor.type_field(_type_code->fields[31], 31); vnx::accept(_visitor, router_name);
-	_visitor.type_field(_type_code->fields[32], 32); vnx::accept(_visitor, timelord_name);
+	_visitor.type_field(_type_code->fields[19], 19); vnx::accept(_visitor, max_fork_length);
+	_visitor.type_field(_type_code->fields[20], 20); vnx::accept(_visitor, max_sync_jobs);
+	_visitor.type_field(_type_code->fields[21], 21); vnx::accept(_visitor, num_sync_retries);
+	_visitor.type_field(_type_code->fields[22], 22); vnx::accept(_visitor, replay_height);
+	_visitor.type_field(_type_code->fields[23], 23); vnx::accept(_visitor, num_vdf_threads);
+	_visitor.type_field(_type_code->fields[24], 24); vnx::accept(_visitor, vdf_check_divider);
+	_visitor.type_field(_type_code->fields[25], 25); vnx::accept(_visitor, opencl_device);
+	_visitor.type_field(_type_code->fields[26], 26); vnx::accept(_visitor, do_sync);
+	_visitor.type_field(_type_code->fields[27], 27); vnx::accept(_visitor, light_mode);
+	_visitor.type_field(_type_code->fields[28], 28); vnx::accept(_visitor, storage_path);
+	_visitor.type_field(_type_code->fields[29], 29); vnx::accept(_visitor, database_path);
+	_visitor.type_field(_type_code->fields[30], 30); vnx::accept(_visitor, router_name);
+	_visitor.type_field(_type_code->fields[31], 31); vnx::accept(_visitor, timelord_name);
 	_visitor.type_end(*_type_code);
 }
 
@@ -225,7 +230,6 @@ void NodeBase::write(std::ostream& _out) const {
 	_out << ", \"sync_loss_delay\": "; vnx::write(_out, sync_loss_delay);
 	_out << ", \"max_history\": "; vnx::write(_out, max_history);
 	_out << ", \"tx_pool_limit\": "; vnx::write(_out, tx_pool_limit);
-	_out << ", \"max_contract_cache\": "; vnx::write(_out, max_contract_cache);
 	_out << ", \"max_fork_length\": "; vnx::write(_out, max_fork_length);
 	_out << ", \"max_sync_jobs\": "; vnx::write(_out, max_sync_jobs);
 	_out << ", \"num_sync_retries\": "; vnx::write(_out, num_sync_retries);
@@ -270,7 +274,6 @@ vnx::Object NodeBase::to_object() const {
 	_object["sync_loss_delay"] = sync_loss_delay;
 	_object["max_history"] = max_history;
 	_object["tx_pool_limit"] = tx_pool_limit;
-	_object["max_contract_cache"] = max_contract_cache;
 	_object["max_fork_length"] = max_fork_length;
 	_object["max_sync_jobs"] = max_sync_jobs;
 	_object["num_sync_retries"] = num_sync_retries;
@@ -307,8 +310,6 @@ void NodeBase::from_object(const vnx::Object& _object) {
 			_entry.second.to(input_vdfs);
 		} else if(_entry.first == "light_mode") {
 			_entry.second.to(light_mode);
-		} else if(_entry.first == "max_contract_cache") {
-			_entry.second.to(max_contract_cache);
 		} else if(_entry.first == "max_fork_length") {
 			_entry.second.to(max_fork_length);
 		} else if(_entry.first == "max_history") {
@@ -417,9 +418,6 @@ vnx::Variant NodeBase::get_field(const std::string& _name) const {
 	if(_name == "tx_pool_limit") {
 		return vnx::Variant(tx_pool_limit);
 	}
-	if(_name == "max_contract_cache") {
-		return vnx::Variant(max_contract_cache);
-	}
 	if(_name == "max_fork_length") {
 		return vnx::Variant(max_fork_length);
 	}
@@ -501,8 +499,6 @@ void NodeBase::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(max_history);
 	} else if(_name == "tx_pool_limit") {
 		_value.to(tx_pool_limit);
-	} else if(_name == "max_contract_cache") {
-		_value.to(max_contract_cache);
 	} else if(_name == "max_fork_length") {
 		_value.to(max_fork_length);
 	} else if(_name == "max_sync_jobs") {
@@ -556,51 +552,54 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node";
 	type_code->type_hash = vnx::Hash64(0x289d7651582d76a3ull);
-	type_code->code_hash = vnx::Hash64(0xe554c8a40ef41e86ull);
+	type_code->code_hash = vnx::Hash64(0xd0ccdb0e000a8022ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::NodeBase);
-	type_code->methods.resize(40);
-	type_code->methods[0] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
-	type_code->methods[1] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
-	type_code->methods[2] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
-	type_code->methods[3] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
-	type_code->methods[4] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
-	type_code->methods[5] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
-	type_code->methods[6] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
-	type_code->methods[7] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
-	type_code->methods[8] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
-	type_code->methods[9] = ::mmx::Node_get_params::static_get_type_code();
-	type_code->methods[10] = ::mmx::Node_get_network_info::static_get_type_code();
-	type_code->methods[11] = ::mmx::Node_get_height::static_get_type_code();
-	type_code->methods[12] = ::mmx::Node_get_synced_height::static_get_type_code();
-	type_code->methods[13] = ::mmx::Node_get_block::static_get_type_code();
-	type_code->methods[14] = ::mmx::Node_get_block_at::static_get_type_code();
-	type_code->methods[15] = ::mmx::Node_get_header::static_get_type_code();
-	type_code->methods[16] = ::mmx::Node_get_header_at::static_get_type_code();
-	type_code->methods[17] = ::mmx::Node_get_block_hash::static_get_type_code();
-	type_code->methods[18] = ::mmx::Node_get_txo_info::static_get_type_code();
-	type_code->methods[19] = ::mmx::Node_get_txo_infos::static_get_type_code();
-	type_code->methods[20] = ::mmx::Node_get_tx_height::static_get_type_code();
-	type_code->methods[21] = ::mmx::Node_get_tx_info::static_get_type_code();
-	type_code->methods[22] = ::mmx::Node_get_tx_ids_at::static_get_type_code();
-	type_code->methods[23] = ::mmx::Node_add_block::static_get_type_code();
-	type_code->methods[24] = ::mmx::Node_add_transaction::static_get_type_code();
-	type_code->methods[25] = ::mmx::Node_get_contract::static_get_type_code();
-	type_code->methods[26] = ::mmx::Node_get_contracts::static_get_type_code();
-	type_code->methods[27] = ::mmx::Node_get_contracts_owned::static_get_type_code();
-	type_code->methods[28] = ::mmx::Node_get_transaction::static_get_type_code();
-	type_code->methods[29] = ::mmx::Node_get_transactions::static_get_type_code();
-	type_code->methods[30] = ::mmx::Node_get_history_for::static_get_type_code();
-	type_code->methods[31] = ::mmx::Node_get_balance::static_get_type_code();
-	type_code->methods[32] = ::mmx::Node_get_total_balance::static_get_type_code();
-	type_code->methods[33] = ::mmx::Node_get_total_balances::static_get_type_code();
-	type_code->methods[34] = ::mmx::Node_get_total_supply::static_get_type_code();
-	type_code->methods[35] = ::mmx::Node_get_utxo_list::static_get_type_code();
-	type_code->methods[36] = ::mmx::Node_get_stxo_list::static_get_type_code();
-	type_code->methods[37] = ::mmx::Node_start_sync::static_get_type_code();
-	type_code->methods[38] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
-	type_code->methods[39] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
-	type_code->fields.resize(33);
+	type_code->methods.resize(43);
+	type_code->methods[0] = ::mmx::Node_add_block::static_get_type_code();
+	type_code->methods[1] = ::mmx::Node_add_transaction::static_get_type_code();
+	type_code->methods[2] = ::mmx::Node_get_balance::static_get_type_code();
+	type_code->methods[3] = ::mmx::Node_get_balances::static_get_type_code();
+	type_code->methods[4] = ::mmx::Node_get_block::static_get_type_code();
+	type_code->methods[5] = ::mmx::Node_get_block_at::static_get_type_code();
+	type_code->methods[6] = ::mmx::Node_get_block_hash::static_get_type_code();
+	type_code->methods[7] = ::mmx::Node_get_contract::static_get_type_code();
+	type_code->methods[8] = ::mmx::Node_get_contracts::static_get_type_code();
+	type_code->methods[9] = ::mmx::Node_get_contracts_owned::static_get_type_code();
+	type_code->methods[10] = ::mmx::Node_get_header::static_get_type_code();
+	type_code->methods[11] = ::mmx::Node_get_header_at::static_get_type_code();
+	type_code->methods[12] = ::mmx::Node_get_height::static_get_type_code();
+	type_code->methods[13] = ::mmx::Node_get_history_for::static_get_type_code();
+	type_code->methods[14] = ::mmx::Node_get_network_info::static_get_type_code();
+	type_code->methods[15] = ::mmx::Node_get_params::static_get_type_code();
+	type_code->methods[16] = ::mmx::Node_get_spendable_utxo_list::static_get_type_code();
+	type_code->methods[17] = ::mmx::Node_get_stxo_list::static_get_type_code();
+	type_code->methods[18] = ::mmx::Node_get_synced_height::static_get_type_code();
+	type_code->methods[19] = ::mmx::Node_get_total_balance::static_get_type_code();
+	type_code->methods[20] = ::mmx::Node_get_total_balances::static_get_type_code();
+	type_code->methods[21] = ::mmx::Node_get_total_supply::static_get_type_code();
+	type_code->methods[22] = ::mmx::Node_get_transaction::static_get_type_code();
+	type_code->methods[23] = ::mmx::Node_get_transactions::static_get_type_code();
+	type_code->methods[24] = ::mmx::Node_get_tx_height::static_get_type_code();
+	type_code->methods[25] = ::mmx::Node_get_tx_ids_at::static_get_type_code();
+	type_code->methods[26] = ::mmx::Node_get_tx_info::static_get_type_code();
+	type_code->methods[27] = ::mmx::Node_get_txo_info::static_get_type_code();
+	type_code->methods[28] = ::mmx::Node_get_txo_infos::static_get_type_code();
+	type_code->methods[29] = ::mmx::Node_get_utxo_list::static_get_type_code();
+	type_code->methods[30] = ::mmx::Node_get_utxo_list_for::static_get_type_code();
+	type_code->methods[31] = ::mmx::Node_start_sync::static_get_type_code();
+	type_code->methods[32] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
+	type_code->methods[33] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
+	type_code->methods[34] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
+	type_code->methods[35] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
+	type_code->methods[36] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
+	type_code->methods[37] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
+	type_code->methods[38] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
+	type_code->methods[39] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
+	type_code->methods[40] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
+	type_code->methods[41] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
+	type_code->methods[42] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
+	type_code->fields.resize(32);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -737,95 +736,88 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	{
 		auto& field = type_code->fields[19];
 		field.data_size = 4;
-		field.name = "max_contract_cache";
-		field.value = vnx::to_string(1000);
-		field.code = {3};
-	}
-	{
-		auto& field = type_code->fields[20];
-		field.data_size = 4;
 		field.name = "max_fork_length";
 		field.value = vnx::to_string(100000);
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[21];
+		auto& field = type_code->fields[20];
 		field.data_size = 4;
 		field.name = "max_sync_jobs";
 		field.value = vnx::to_string(64);
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[22];
+		auto& field = type_code->fields[21];
 		field.data_size = 4;
 		field.name = "num_sync_retries";
 		field.value = vnx::to_string(3);
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[23];
+		auto& field = type_code->fields[22];
 		field.data_size = 4;
 		field.name = "replay_height";
 		field.value = vnx::to_string(-1);
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[24];
+		auto& field = type_code->fields[23];
 		field.data_size = 4;
 		field.name = "num_vdf_threads";
 		field.value = vnx::to_string(8);
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[25];
+		auto& field = type_code->fields[24];
 		field.data_size = 4;
 		field.name = "vdf_check_divider";
 		field.value = vnx::to_string(10000);
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[26];
+		auto& field = type_code->fields[25];
 		field.data_size = 4;
 		field.name = "opencl_device";
 		field.value = vnx::to_string(0);
 		field.code = {7};
 	}
 	{
-		auto& field = type_code->fields[27];
+		auto& field = type_code->fields[26];
 		field.data_size = 1;
 		field.name = "do_sync";
 		field.value = vnx::to_string(true);
 		field.code = {31};
 	}
 	{
-		auto& field = type_code->fields[28];
+		auto& field = type_code->fields[27];
 		field.data_size = 1;
 		field.name = "light_mode";
 		field.value = vnx::to_string(false);
 		field.code = {31};
 	}
 	{
-		auto& field = type_code->fields[29];
+		auto& field = type_code->fields[28];
 		field.is_extended = true;
 		field.name = "storage_path";
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[30];
+		auto& field = type_code->fields[29];
 		field.is_extended = true;
 		field.name = "database_path";
 		field.value = vnx::to_string("db/");
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[31];
+		auto& field = type_code->fields[30];
 		field.is_extended = true;
 		field.name = "router_name";
 		field.value = vnx::to_string("Router");
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[32];
+		auto& field = type_code->fields[31];
 		field.is_extended = true;
 		field.name = "timelord_name";
 		field.value = vnx::to_string("TimeLord");
@@ -860,82 +852,28 @@ void NodeBase::vnx_handle_switch(std::shared_ptr<const vnx::Value> _value) {
 
 std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx::Value> _method, const vnx::request_id_t& _request_id) {
 	switch(_method->get_type_hash()) {
-		case 0x17f58f68bf83abc0ull: {
-			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_get_config_object>(_method);
-			auto _return_value = ::vnx::ModuleInterface_vnx_get_config_object_return::create();
-			_return_value->_ret_0 = vnx_get_config_object();
+		case 0x63abca4d23f93894ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_add_block>(_method);
+			auto _return_value = ::mmx::Node_add_block_return::create();
+			add_block(_args->block);
 			return _return_value;
 		}
-		case 0xbbc7f1a01044d294ull: {
-			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_get_config>(_method);
-			auto _return_value = ::vnx::ModuleInterface_vnx_get_config_return::create();
-			_return_value->_ret_0 = vnx_get_config(_args->name);
+		case 0xd9782531c0e3f766ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_add_transaction>(_method);
+			auto _return_value = ::mmx::Node_add_transaction_return::create();
+			add_transaction(_args->tx, _args->pre_validate);
 			return _return_value;
 		}
-		case 0xca30f814f17f322full: {
-			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_set_config_object>(_method);
-			auto _return_value = ::vnx::ModuleInterface_vnx_set_config_object_return::create();
-			vnx_set_config_object(_args->config);
+		case 0x2e00172d0470479ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_balance>(_method);
+			auto _return_value = ::mmx::Node_get_balance_return::create();
+			_return_value->_ret_0 = get_balance(_args->address, _args->currency, _args->min_confirm);
 			return _return_value;
 		}
-		case 0x362aac91373958b7ull: {
-			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_set_config>(_method);
-			auto _return_value = ::vnx::ModuleInterface_vnx_set_config_return::create();
-			vnx_set_config(_args->name, _args->value);
-			return _return_value;
-		}
-		case 0x305ec4d628960e5dull: {
-			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_get_type_code>(_method);
-			auto _return_value = ::vnx::ModuleInterface_vnx_get_type_code_return::create();
-			_return_value->_ret_0 = vnx_get_type_code();
-			return _return_value;
-		}
-		case 0xf6d82bdf66d034a1ull: {
-			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_get_module_info>(_method);
-			auto _return_value = ::vnx::ModuleInterface_vnx_get_module_info_return::create();
-			_return_value->_ret_0 = vnx_get_module_info();
-			return _return_value;
-		}
-		case 0x9e95dc280cecca1bull: {
-			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_restart>(_method);
-			auto _return_value = ::vnx::ModuleInterface_vnx_restart_return::create();
-			vnx_restart();
-			return _return_value;
-		}
-		case 0x7ab49ce3d1bfc0d2ull: {
-			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_stop>(_method);
-			auto _return_value = ::vnx::ModuleInterface_vnx_stop_return::create();
-			vnx_stop();
-			return _return_value;
-		}
-		case 0x6ce3775b41a42697ull: {
-			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_self_test>(_method);
-			auto _return_value = ::vnx::ModuleInterface_vnx_self_test_return::create();
-			_return_value->_ret_0 = vnx_self_test();
-			return _return_value;
-		}
-		case 0x6384b34900c2e465ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_get_params>(_method);
-			auto _return_value = ::mmx::Node_get_params_return::create();
-			_return_value->_ret_0 = get_params();
-			return _return_value;
-		}
-		case 0x79cedc8662eeb2e4ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_get_network_info>(_method);
-			auto _return_value = ::mmx::Node_get_network_info_return::create();
-			_return_value->_ret_0 = get_network_info();
-			return _return_value;
-		}
-		case 0x55f0d4ef7a117716ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_get_height>(_method);
-			auto _return_value = ::mmx::Node_get_height_return::create();
-			_return_value->_ret_0 = get_height();
-			return _return_value;
-		}
-		case 0xc4fb44ec3d1a8bb7ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_get_synced_height>(_method);
-			auto _return_value = ::mmx::Node_get_synced_height_return::create();
-			_return_value->_ret_0 = get_synced_height();
+		case 0x1c8af02c41e96460ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_balances>(_method);
+			auto _return_value = ::mmx::Node_get_balances_return::create();
+			_return_value->_ret_0 = get_balances(_args->address, _args->min_confirm);
 			return _return_value;
 		}
 		case 0xeb3fabe56dec161aull: {
@@ -950,64 +888,10 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 			_return_value->_ret_0 = get_block_at(_args->height);
 			return _return_value;
 		}
-		case 0xf17a5d0c180db198ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_get_header>(_method);
-			auto _return_value = ::mmx::Node_get_header_return::create();
-			_return_value->_ret_0 = get_header(_args->hash);
-			return _return_value;
-		}
-		case 0x52658163d8767c79ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_get_header_at>(_method);
-			auto _return_value = ::mmx::Node_get_header_at_return::create();
-			_return_value->_ret_0 = get_header_at(_args->height);
-			return _return_value;
-		}
 		case 0x43c5087066b73f38ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_block_hash>(_method);
 			auto _return_value = ::mmx::Node_get_block_hash_return::create();
 			_return_value->_ret_0 = get_block_hash(_args->height);
-			return _return_value;
-		}
-		case 0xd9d0be3b95e67d52ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_get_txo_info>(_method);
-			auto _return_value = ::mmx::Node_get_txo_info_return::create();
-			_return_value->_ret_0 = get_txo_info(_args->key);
-			return _return_value;
-		}
-		case 0x576d7f03fe334ad9ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_get_txo_infos>(_method);
-			auto _return_value = ::mmx::Node_get_txo_infos_return::create();
-			_return_value->_ret_0 = get_txo_infos(_args->keys);
-			return _return_value;
-		}
-		case 0xf6f917fad9361e3aull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_get_tx_height>(_method);
-			auto _return_value = ::mmx::Node_get_tx_height_return::create();
-			_return_value->_ret_0 = get_tx_height(_args->id);
-			return _return_value;
-		}
-		case 0xb5409a3aaa19d1d2ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_get_tx_info>(_method);
-			auto _return_value = ::mmx::Node_get_tx_info_return::create();
-			_return_value->_ret_0 = get_tx_info(_args->id);
-			return _return_value;
-		}
-		case 0x904c686b59c101c3ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_get_tx_ids_at>(_method);
-			auto _return_value = ::mmx::Node_get_tx_ids_at_return::create();
-			_return_value->_ret_0 = get_tx_ids_at(_args->height);
-			return _return_value;
-		}
-		case 0x63abca4d23f93894ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_add_block>(_method);
-			auto _return_value = ::mmx::Node_add_block_return::create();
-			add_block(_args->block);
-			return _return_value;
-		}
-		case 0xd9782531c0e3f766ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_add_transaction>(_method);
-			auto _return_value = ::mmx::Node_add_transaction_return::create();
-			add_transaction(_args->tx, _args->pre_validate);
 			return _return_value;
 		}
 		case 0xa28704c65a67a293ull: {
@@ -1028,6 +912,78 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 			_return_value->_ret_0 = get_contracts_owned(_args->owners);
 			return _return_value;
 		}
+		case 0xf17a5d0c180db198ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_header>(_method);
+			auto _return_value = ::mmx::Node_get_header_return::create();
+			_return_value->_ret_0 = get_header(_args->hash);
+			return _return_value;
+		}
+		case 0x52658163d8767c79ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_header_at>(_method);
+			auto _return_value = ::mmx::Node_get_header_at_return::create();
+			_return_value->_ret_0 = get_header_at(_args->height);
+			return _return_value;
+		}
+		case 0x55f0d4ef7a117716ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_height>(_method);
+			auto _return_value = ::mmx::Node_get_height_return::create();
+			_return_value->_ret_0 = get_height();
+			return _return_value;
+		}
+		case 0x61588fcbc5a50893ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_history_for>(_method);
+			auto _return_value = ::mmx::Node_get_history_for_return::create();
+			_return_value->_ret_0 = get_history_for(_args->addresses, _args->since);
+			return _return_value;
+		}
+		case 0x79cedc8662eeb2e4ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_network_info>(_method);
+			auto _return_value = ::mmx::Node_get_network_info_return::create();
+			_return_value->_ret_0 = get_network_info();
+			return _return_value;
+		}
+		case 0x6384b34900c2e465ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_params>(_method);
+			auto _return_value = ::mmx::Node_get_params_return::create();
+			_return_value->_ret_0 = get_params();
+			return _return_value;
+		}
+		case 0xf01dae359911a121ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_spendable_utxo_list>(_method);
+			auto _return_value = ::mmx::Node_get_spendable_utxo_list_return::create();
+			_return_value->_ret_0 = get_spendable_utxo_list(_args->addresses, _args->min_confirm, _args->since);
+			return _return_value;
+		}
+		case 0xb4e1314236d07ca2ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_stxo_list>(_method);
+			auto _return_value = ::mmx::Node_get_stxo_list_return::create();
+			_return_value->_ret_0 = get_stxo_list(_args->addresses, _args->since);
+			return _return_value;
+		}
+		case 0xc4fb44ec3d1a8bb7ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_synced_height>(_method);
+			auto _return_value = ::mmx::Node_get_synced_height_return::create();
+			_return_value->_ret_0 = get_synced_height();
+			return _return_value;
+		}
+		case 0x91e9019d224db4b0ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_total_balance>(_method);
+			auto _return_value = ::mmx::Node_get_total_balance_return::create();
+			_return_value->_ret_0 = get_total_balance(_args->addresses, _args->currency, _args->min_confirm);
+			return _return_value;
+		}
+		case 0xf54c4ec46ee6053aull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_total_balances>(_method);
+			auto _return_value = ::mmx::Node_get_total_balances_return::create();
+			_return_value->_ret_0 = get_total_balances(_args->addresses, _args->min_confirm);
+			return _return_value;
+		}
+		case 0x17d971db6900bd9dull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_total_supply>(_method);
+			auto _return_value = ::mmx::Node_get_total_supply_return::create();
+			_return_value->_ret_0 = get_total_supply(_args->currency);
+			return _return_value;
+		}
 		case 0x9c76ca142292750full: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_transaction>(_method);
 			auto _return_value = ::mmx::Node_get_transaction_return::create();
@@ -1040,52 +996,106 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 			_return_value->_ret_0 = get_transactions(_args->ids);
 			return _return_value;
 		}
-		case 0x61588fcbc5a50893ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_get_history_for>(_method);
-			auto _return_value = ::mmx::Node_get_history_for_return::create();
-			_return_value->_ret_0 = get_history_for(_args->addresses, _args->since);
+		case 0xf6f917fad9361e3aull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_tx_height>(_method);
+			auto _return_value = ::mmx::Node_get_tx_height_return::create();
+			_return_value->_ret_0 = get_tx_height(_args->id);
 			return _return_value;
 		}
-		case 0x2e00172d0470479ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_get_balance>(_method);
-			auto _return_value = ::mmx::Node_get_balance_return::create();
-			_return_value->_ret_0 = get_balance(_args->address, _args->contract, _args->min_confirm);
+		case 0x904c686b59c101c3ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_tx_ids_at>(_method);
+			auto _return_value = ::mmx::Node_get_tx_ids_at_return::create();
+			_return_value->_ret_0 = get_tx_ids_at(_args->height);
 			return _return_value;
 		}
-		case 0x91e9019d224db4b0ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_get_total_balance>(_method);
-			auto _return_value = ::mmx::Node_get_total_balance_return::create();
-			_return_value->_ret_0 = get_total_balance(_args->addresses, _args->contract, _args->min_confirm);
+		case 0xb5409a3aaa19d1d2ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_tx_info>(_method);
+			auto _return_value = ::mmx::Node_get_tx_info_return::create();
+			_return_value->_ret_0 = get_tx_info(_args->id);
 			return _return_value;
 		}
-		case 0xf54c4ec46ee6053aull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_get_total_balances>(_method);
-			auto _return_value = ::mmx::Node_get_total_balances_return::create();
-			_return_value->_ret_0 = get_total_balances(_args->addresses, _args->min_confirm);
+		case 0xd9d0be3b95e67d52ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_txo_info>(_method);
+			auto _return_value = ::mmx::Node_get_txo_info_return::create();
+			_return_value->_ret_0 = get_txo_info(_args->key);
 			return _return_value;
 		}
-		case 0x17d971db6900bd9dull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_get_total_supply>(_method);
-			auto _return_value = ::mmx::Node_get_total_supply_return::create();
-			_return_value->_ret_0 = get_total_supply(_args->contract);
+		case 0x576d7f03fe334ad9ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_txo_infos>(_method);
+			auto _return_value = ::mmx::Node_get_txo_infos_return::create();
+			_return_value->_ret_0 = get_txo_infos(_args->keys);
 			return _return_value;
 		}
 		case 0x7f52e1aa01c66023ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_utxo_list>(_method);
 			auto _return_value = ::mmx::Node_get_utxo_list_return::create();
-			_return_value->_ret_0 = get_utxo_list(_args->addresses, _args->min_confirm);
+			_return_value->_ret_0 = get_utxo_list(_args->addresses, _args->min_confirm, _args->since);
 			return _return_value;
 		}
-		case 0xb4e1314236d07ca2ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_get_stxo_list>(_method);
-			auto _return_value = ::mmx::Node_get_stxo_list_return::create();
-			_return_value->_ret_0 = get_stxo_list(_args->addresses);
+		case 0xa9135131e1870a58ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_utxo_list_for>(_method);
+			auto _return_value = ::mmx::Node_get_utxo_list_for_return::create();
+			_return_value->_ret_0 = get_utxo_list_for(_args->addresses, _args->currency, _args->min_confirm, _args->since);
 			return _return_value;
 		}
 		case 0x6c5be8aeb25ef3c8ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_start_sync>(_method);
 			auto _return_value = ::mmx::Node_start_sync_return::create();
 			start_sync(_args->force);
+			return _return_value;
+		}
+		case 0xbbc7f1a01044d294ull: {
+			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_get_config>(_method);
+			auto _return_value = ::vnx::ModuleInterface_vnx_get_config_return::create();
+			_return_value->_ret_0 = vnx_get_config(_args->name);
+			return _return_value;
+		}
+		case 0x17f58f68bf83abc0ull: {
+			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_get_config_object>(_method);
+			auto _return_value = ::vnx::ModuleInterface_vnx_get_config_object_return::create();
+			_return_value->_ret_0 = vnx_get_config_object();
+			return _return_value;
+		}
+		case 0xf6d82bdf66d034a1ull: {
+			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_get_module_info>(_method);
+			auto _return_value = ::vnx::ModuleInterface_vnx_get_module_info_return::create();
+			_return_value->_ret_0 = vnx_get_module_info();
+			return _return_value;
+		}
+		case 0x305ec4d628960e5dull: {
+			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_get_type_code>(_method);
+			auto _return_value = ::vnx::ModuleInterface_vnx_get_type_code_return::create();
+			_return_value->_ret_0 = vnx_get_type_code();
+			return _return_value;
+		}
+		case 0x9e95dc280cecca1bull: {
+			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_restart>(_method);
+			auto _return_value = ::vnx::ModuleInterface_vnx_restart_return::create();
+			vnx_restart();
+			return _return_value;
+		}
+		case 0x6ce3775b41a42697ull: {
+			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_self_test>(_method);
+			auto _return_value = ::vnx::ModuleInterface_vnx_self_test_return::create();
+			_return_value->_ret_0 = vnx_self_test();
+			return _return_value;
+		}
+		case 0x362aac91373958b7ull: {
+			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_set_config>(_method);
+			auto _return_value = ::vnx::ModuleInterface_vnx_set_config_return::create();
+			vnx_set_config(_args->name, _args->value);
+			return _return_value;
+		}
+		case 0xca30f814f17f322full: {
+			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_set_config_object>(_method);
+			auto _return_value = ::vnx::ModuleInterface_vnx_set_config_object_return::create();
+			vnx_set_config_object(_args->config);
+			return _return_value;
+		}
+		case 0x7ab49ce3d1bfc0d2ull: {
+			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_stop>(_method);
+			auto _return_value = ::vnx::ModuleInterface_vnx_stop_return::create();
+			vnx_stop();
 			return _return_value;
 		}
 		case 0xe0b6c38f619bad92ull: {
@@ -1171,33 +1181,30 @@ void read(TypeInput& in, ::mmx::NodeBase& value, const TypeCode* type_code, cons
 			vnx::read_value(_buf + _field->offset, value.tx_pool_limit, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[19]) {
-			vnx::read_value(_buf + _field->offset, value.max_contract_cache, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[20]) {
 			vnx::read_value(_buf + _field->offset, value.max_fork_length, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[21]) {
+		if(const auto* const _field = type_code->field_map[20]) {
 			vnx::read_value(_buf + _field->offset, value.max_sync_jobs, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[22]) {
+		if(const auto* const _field = type_code->field_map[21]) {
 			vnx::read_value(_buf + _field->offset, value.num_sync_retries, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[23]) {
+		if(const auto* const _field = type_code->field_map[22]) {
 			vnx::read_value(_buf + _field->offset, value.replay_height, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[24]) {
+		if(const auto* const _field = type_code->field_map[23]) {
 			vnx::read_value(_buf + _field->offset, value.num_vdf_threads, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[25]) {
+		if(const auto* const _field = type_code->field_map[24]) {
 			vnx::read_value(_buf + _field->offset, value.vdf_check_divider, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[26]) {
+		if(const auto* const _field = type_code->field_map[25]) {
 			vnx::read_value(_buf + _field->offset, value.opencl_device, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[27]) {
+		if(const auto* const _field = type_code->field_map[26]) {
 			vnx::read_value(_buf + _field->offset, value.do_sync, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[28]) {
+		if(const auto* const _field = type_code->field_map[27]) {
 			vnx::read_value(_buf + _field->offset, value.light_mode, _field->code.data());
 		}
 	}
@@ -1217,10 +1224,10 @@ void read(TypeInput& in, ::mmx::NodeBase& value, const TypeCode* type_code, cons
 			case 11: vnx::read(in, value.output_interval_request, type_code, _field->code.data()); break;
 			case 12: vnx::read(in, value.output_timelord_infuse, type_code, _field->code.data()); break;
 			case 13: vnx::read(in, value.output_challenges, type_code, _field->code.data()); break;
-			case 29: vnx::read(in, value.storage_path, type_code, _field->code.data()); break;
-			case 30: vnx::read(in, value.database_path, type_code, _field->code.data()); break;
-			case 31: vnx::read(in, value.router_name, type_code, _field->code.data()); break;
-			case 32: vnx::read(in, value.timelord_name, type_code, _field->code.data()); break;
+			case 28: vnx::read(in, value.storage_path, type_code, _field->code.data()); break;
+			case 29: vnx::read(in, value.database_path, type_code, _field->code.data()); break;
+			case 30: vnx::read(in, value.router_name, type_code, _field->code.data()); break;
+			case 31: vnx::read(in, value.timelord_name, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -1239,22 +1246,21 @@ void write(TypeOutput& out, const ::mmx::NodeBase& value, const TypeCode* type_c
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(54);
+	char* const _buf = out.write(50);
 	vnx::write_value(_buf + 0, value.max_queue_ms);
 	vnx::write_value(_buf + 4, value.update_interval_ms);
 	vnx::write_value(_buf + 8, value.sync_loss_delay);
 	vnx::write_value(_buf + 12, value.max_history);
 	vnx::write_value(_buf + 16, value.tx_pool_limit);
-	vnx::write_value(_buf + 20, value.max_contract_cache);
-	vnx::write_value(_buf + 24, value.max_fork_length);
-	vnx::write_value(_buf + 28, value.max_sync_jobs);
-	vnx::write_value(_buf + 32, value.num_sync_retries);
-	vnx::write_value(_buf + 36, value.replay_height);
-	vnx::write_value(_buf + 40, value.num_vdf_threads);
-	vnx::write_value(_buf + 44, value.vdf_check_divider);
-	vnx::write_value(_buf + 48, value.opencl_device);
-	vnx::write_value(_buf + 52, value.do_sync);
-	vnx::write_value(_buf + 53, value.light_mode);
+	vnx::write_value(_buf + 20, value.max_fork_length);
+	vnx::write_value(_buf + 24, value.max_sync_jobs);
+	vnx::write_value(_buf + 28, value.num_sync_retries);
+	vnx::write_value(_buf + 32, value.replay_height);
+	vnx::write_value(_buf + 36, value.num_vdf_threads);
+	vnx::write_value(_buf + 40, value.vdf_check_divider);
+	vnx::write_value(_buf + 44, value.opencl_device);
+	vnx::write_value(_buf + 48, value.do_sync);
+	vnx::write_value(_buf + 49, value.light_mode);
 	vnx::write(out, value.input_vdfs, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.input_proof, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.input_blocks, type_code, type_code->fields[2].code.data());
@@ -1269,10 +1275,10 @@ void write(TypeOutput& out, const ::mmx::NodeBase& value, const TypeCode* type_c
 	vnx::write(out, value.output_interval_request, type_code, type_code->fields[11].code.data());
 	vnx::write(out, value.output_timelord_infuse, type_code, type_code->fields[12].code.data());
 	vnx::write(out, value.output_challenges, type_code, type_code->fields[13].code.data());
-	vnx::write(out, value.storage_path, type_code, type_code->fields[29].code.data());
-	vnx::write(out, value.database_path, type_code, type_code->fields[30].code.data());
-	vnx::write(out, value.router_name, type_code, type_code->fields[31].code.data());
-	vnx::write(out, value.timelord_name, type_code, type_code->fields[32].code.data());
+	vnx::write(out, value.storage_path, type_code, type_code->fields[28].code.data());
+	vnx::write(out, value.database_path, type_code, type_code->fields[29].code.data());
+	vnx::write(out, value.router_name, type_code, type_code->fields[30].code.data());
+	vnx::write(out, value.timelord_name, type_code, type_code->fields[31].code.data());
 }
 
 void read(std::istream& in, ::mmx::NodeBase& value) {

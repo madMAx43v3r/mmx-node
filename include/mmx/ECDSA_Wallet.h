@@ -216,13 +216,14 @@ public:
 
 	uint64_t gather_fee(std::shared_ptr<Transaction> tx,
 						std::unordered_map<txio_key_t, utxo_t>& spent_map,
-						const spend_options_t& options = {}, uint64_t change = 0,
-						const std::unordered_map<addr_t, addr_t>& owner_map = {},
-						const std::unordered_map<txio_key_t, utxo_t>& utxo_map = {})
+						const spend_options_t& options = {}, uint64_t change = 0)
 	{
 		if(!tx->solutions.empty()) {
 			throw std::logic_error("solutions not empty before fee");
 		}
+		const std::unordered_map<addr_t, addr_t> owner_map(options.owner_map.begin(), options.owner_map.end());
+		const std::unordered_map<txio_key_t, utxo_t> utxo_map(options.utxo_map.begin(), options.utxo_map.end());
+
 		uint64_t tx_fees = 0;
 		while(true) {
 			// count number of solutions needed
@@ -244,8 +245,7 @@ public:
 				}
 				auto iter = owner_map.find(owner);
 				if(iter != owner_map.end()) {
-					// TODO: used_addr[iter->second] += params->min_txfee_exec;
-					used_addr.emplace(iter->second, 0);
+					used_addr[iter->second] += params->min_txfee_exec;
 				} else {
 					used_addr.emplace(owner, 0);
 				}
@@ -285,8 +285,10 @@ public:
 
 	void sign_off(	std::shared_ptr<Transaction> tx,
 					const std::unordered_map<txio_key_t, utxo_t>& spent_map,
-					const std::unordered_map<addr_t, addr_t>& owner_map = {})
+					const spend_options_t& options = {})
 	{
+		const std::unordered_map<addr_t, addr_t> owner_map(options.owner_map.begin(), options.owner_map.end());
+
 		tx->finalize();
 
 		std::unordered_map<addr_t, uint32_t> solution_map;
@@ -306,6 +308,7 @@ public:
 				auto iter = owner_map.find(owner);
 				if(iter != owner_map.end()) {
 					owner = iter->second;
+					in.flags |= tx_in_t::IS_EXEC;
 				}
 			}
 			{
@@ -361,8 +364,7 @@ public:
 		return sol;
 	}
 
-	void complete(	std::shared_ptr<Transaction> tx, const std::vector<utxo_entry_t>& src_utxo,
-					const spend_options_t& options, std::unordered_map<addr_t, addr_t> owner_map = {})
+	void complete(std::shared_ptr<Transaction> tx, const std::vector<utxo_entry_t>& src_utxo, const spend_options_t& options)
 	{
 		std::unordered_map<addr_t, uint64_t> amounts;
 		for(const auto& out : tx->outputs) {
@@ -388,8 +390,8 @@ public:
 				}
 			}
 		}
-		gather_fee(tx, spent_map, options, native_change, owner_map);
-		sign_off(tx, spent_map, owner_map);
+		gather_fee(tx, spent_map, options, native_change);
+		sign_off(tx, spent_map, options);
 	}
 
 	std::shared_ptr<Transaction> send(const uint64_t& amount, const addr_t& dst_addr, const addr_t& currency, const spend_options_t& options)
@@ -418,12 +420,11 @@ public:
 		auto tx = Transaction::create();
 		tx->add_output(currency, dst_addr, amount, options.split_output);
 
-		std::unordered_map<addr_t, addr_t> owner_map;
-		owner_map.emplace(src_addr, src_owner);
-
 		auto options_ = options;
 		options_.change_addr = src_addr;
-		complete(tx, src_utxo, options_, owner_map);
+		options_.owner_map.emplace_back(src_addr, src_owner);
+
+		complete(tx, src_utxo, options_);
 		return tx;
 	}
 
@@ -447,10 +448,10 @@ public:
 		}
 		tx->execute.push_back(op);
 
-		std::unordered_map<addr_t, addr_t> owner_map;
-		owner_map.emplace(currency, owner);
+		auto options_ = options;
+		options_.owner_map.emplace_back(currency, owner);
 
-		complete(tx, utxo_cache, options, owner_map);
+		complete(tx, utxo_cache, options_);
 		return tx;
 	}
 
@@ -464,6 +465,15 @@ public:
 
 		complete(tx, utxo_cache, options);
 		return tx;
+	}
+
+	void reset_cache()
+	{
+		spent_set.clear();
+		reserved_set.clear();
+		utxo_cache.clear();
+		utxo_change_cache.clear();
+		last_utxo_update = 0;
 	}
 
 	uint32_t height = 0;

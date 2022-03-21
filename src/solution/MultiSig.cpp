@@ -11,18 +11,15 @@
 namespace mmx {
 namespace solution {
 
-uint64_t MultiSig::calc_min_fee(std::shared_ptr<const ChainParams> params) const
+vnx::bool_t MultiSig::is_valid() const
 {
-	uint64_t sum = (8 + 4) * params->min_txfee_byte;
-
+	size_t count = 0;
 	for(const auto& sol : solutions) {
 		if(sol) {
-			sum += sol->calc_min_fee(params);
-		} else {
-			sum += 2;
+			count++;
 		}
 	}
-	return sum;
+	return count <= MAX_SIGNATURES;
 }
 
 

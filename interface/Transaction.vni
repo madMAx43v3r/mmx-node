@@ -4,6 +4,10 @@ class Transaction extends TransactionBase {
 	
 	uint version;
 	
+	ulong nonce;
+	
+	optional<hash_t> salt;
+	
 	vector<tx_in_t> inputs;
 	
 	vector<tx_out_t> outputs;

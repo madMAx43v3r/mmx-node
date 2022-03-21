@@ -11,8 +11,9 @@
 namespace mmx {
 namespace solution {
 
-uint64_t PubKey::calc_min_fee(std::shared_ptr<const ChainParams> params) const {
-	return params->min_txfee_sign;
+vnx::bool_t PubKey::is_valid() const
+{
+	return true;
 }
 
 

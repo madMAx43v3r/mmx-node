@@ -31,7 +31,7 @@ hash_t WebData::calc_hash() const
 	return hash_t(buffer);
 }
 
-uint64_t WebData::calc_min_fee(std::shared_ptr<const ChainParams> params) const {
+uint64_t WebData::calc_cost(std::shared_ptr<const ChainParams> params) const {
 	return (8 + 4 + mime_type.size() + payload.size()) * params->min_txfee_byte;
 }
 

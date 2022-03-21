@@ -29,6 +29,18 @@ int main(int argc, char** argv)
 {
 	mmx::secp256k1_init();
 
+	std::string mmx_home;
+	std::string mmx_network;
+	if(auto path = ::getenv("MMX_HOME")) {
+		mmx_home = path;
+	}
+	if(auto path = ::getenv("MMX_NETWORK")) {
+		mmx_network = path;
+	}
+	auto root_path = mmx_home + mmx_network;
+
+	vnx::write_config("mmx_node.log_file_path", mmx_home + mmx_network + "logs/");
+
 	std::map<std::string, std::string> options;
 	options["t"] = "timelord";
 
@@ -36,7 +48,7 @@ int main(int argc, char** argv)
 
 	const auto params = mmx::get_params();
 
-	if(params->vdf_seed == "test1" || params->vdf_seed == "test2" || params->vdf_seed == "test3") {
+	if(params->vdf_seed == "test1" || params->vdf_seed == "test2" || params->vdf_seed == "test3" || params->vdf_seed == "test4") {
 		vnx::log_error() << "This version is not compatible with testnet 1/2/3, please remove NETWORK file and try again to switch to testnet4.";
 		vnx::close();
 		return -1;
@@ -48,7 +60,6 @@ int main(int argc, char** argv)
 	bool light_mode = false;
 	std::string endpoint = ":11331";
 	std::string public_endpoint = "0.0.0.0:11330";
-	std::string root_path;
 	vnx::read_config("wallet", with_wallet);
 	vnx::read_config("farmer", with_farmer);
 	vnx::read_config("timelord", with_timelord);
@@ -56,7 +67,6 @@ int main(int argc, char** argv)
 	vnx::read_config("light_mode", light_mode);
 	vnx::read_config("endpoint", endpoint);
 	vnx::read_config("public_endpoint", public_endpoint);
-	vnx::read_config("root_path", root_path);
 
 #ifdef WITH_OPENCL
 	try {
@@ -82,6 +92,7 @@ int main(int argc, char** argv)
 	} else {
 		with_harvester = false;
 	}
+	vnx::rocksdb::sync_type_codes(root_path + "type_codes");
 
 	{
 		vnx::Handle<vnx::Terminal> module = new vnx::Terminal("Terminal");
@@ -98,6 +109,7 @@ int main(int argc, char** argv)
 	if(with_wallet) {
 		{
 			vnx::Handle<mmx::Wallet> module = new mmx::Wallet("Wallet");
+			module->storage_path = mmx_home + module->storage_path;
 			module->database_path = root_path + module->database_path;
 			module.start_detached();
 		}

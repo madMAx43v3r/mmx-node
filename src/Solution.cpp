@@ -10,8 +10,9 @@
 
 namespace mmx {
 
-uint64_t Solution::calc_min_fee(std::shared_ptr<const ChainParams> params) const {
-	return 8 * params->min_txfee_byte;
+vnx::bool_t Solution::is_valid() const
+{
+	return false;
 }
 
 

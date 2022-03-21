@@ -48,6 +48,36 @@ WebAPIClient::WebAPIClient(vnx::Hash64 service_addr)
 {
 }
 
+std::shared_ptr<const ::vnx::addons::HttpResponse> WebAPIClient::http_request(std::shared_ptr<const ::vnx::addons::HttpRequest> request, const std::string& sub_path) {
+	auto _method = ::vnx::addons::HttpComponent_http_request::create();
+	_method->request = request;
+	_method->sub_path = sub_path;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::vnx::addons::HttpComponent_http_request_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::vnx::addons::HttpResponse>>();
+	} else {
+		throw std::logic_error("WebAPIClient: invalid return value");
+	}
+}
+
+std::shared_ptr<const ::vnx::addons::HttpData> WebAPIClient::http_request_chunk(std::shared_ptr<const ::vnx::addons::HttpRequest> request, const std::string& sub_path, const int64_t& offset, const int64_t& max_bytes) {
+	auto _method = ::vnx::addons::HttpComponent_http_request_chunk::create();
+	_method->request = request;
+	_method->sub_path = sub_path;
+	_method->offset = offset;
+	_method->max_bytes = max_bytes;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::vnx::addons::HttpComponent_http_request_chunk_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::vnx::addons::HttpData>>();
+	} else {
+		throw std::logic_error("WebAPIClient: invalid return value");
+	}
+}
+
 ::vnx::Object WebAPIClient::vnx_get_config_object() {
 	auto _method = ::vnx::ModuleInterface_vnx_get_config_object::create();
 	auto _return_value = vnx_request(_method, false);
@@ -150,36 +180,6 @@ vnx::bool_t WebAPIClient::vnx_self_test() {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<vnx::bool_t>();
-	} else {
-		throw std::logic_error("WebAPIClient: invalid return value");
-	}
-}
-
-std::shared_ptr<const ::vnx::addons::HttpResponse> WebAPIClient::http_request(std::shared_ptr<const ::vnx::addons::HttpRequest> request, const std::string& sub_path) {
-	auto _method = ::vnx::addons::HttpComponent_http_request::create();
-	_method->request = request;
-	_method->sub_path = sub_path;
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::vnx::addons::HttpComponent_http_request_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::vnx::addons::HttpResponse>>();
-	} else {
-		throw std::logic_error("WebAPIClient: invalid return value");
-	}
-}
-
-std::shared_ptr<const ::vnx::addons::HttpData> WebAPIClient::http_request_chunk(std::shared_ptr<const ::vnx::addons::HttpRequest> request, const std::string& sub_path, const int64_t& offset, const int64_t& max_bytes) {
-	auto _method = ::vnx::addons::HttpComponent_http_request_chunk::create();
-	_method->request = request;
-	_method->sub_path = sub_path;
-	_method->offset = offset;
-	_method->max_bytes = max_bytes;
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::vnx::addons::HttpComponent_http_request_chunk_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::vnx::addons::HttpData>>();
 	} else {
 		throw std::logic_error("WebAPIClient: invalid return value");
 	}

@@ -20,17 +20,20 @@ class Token extends Contract {
 	
 	optional<addr_t> owner;
 	
-	// TODO: optional<ulong_fraction_t>
-	ulong_fraction_t time_factor;							// for inflation / deflation (factor applied per block)
+	optional<ulong_fraction_t> time_factor;					// for inflation / deflation (factor applied per block)
 	
 	map<addr_t, ulong_fraction_t> stake_factors;			// [currency => mint factor per block]
+	
+	bool is_mintable = true;
+	
+	bool is_adjustable = false;								// if time_factor and stake_factors is adjustable by owner
 	
 	
 	bool is_valid() const;
 	
 	hash_t calc_hash() const;
 	
-	ulong calc_min_fee(mmx.ChainParams* params) const;
+	ulong calc_cost(mmx.ChainParams* params) const;
 	
 	vector<addr_t> get_dependency() const;
 	
@@ -39,5 +42,11 @@ class Token extends Contract {
 	optional<addr_t> get_owner() const;
 	
 	vector<mmx.tx_out_t> validate(mmx.Operation* operation, mmx.Context* context) const;
+	
+	void transfer(optional<addr_t> new_owner);
+	
+	void set_time_factor(optional<ulong_fraction_t> factor);
+	
+	void set_stake_factor(addr_t currency, optional<ulong_fraction_t> factor);
 	
 }

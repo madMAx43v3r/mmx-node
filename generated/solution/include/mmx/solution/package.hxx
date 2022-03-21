@@ -9,20 +9,44 @@
 #include <mmx/package.hxx>
 #include <vnx/package.hxx>
 
+#ifdef MMX_SOLUTION_EXPORT_ENABLE
+#include <mmx_solution_export.h>
+#else
+#ifndef MMX_SOLUTION_EXPORT
+#define MMX_SOLUTION_EXPORT
+#endif
+#endif
+
 
 namespace mmx {
 namespace solution {
 
-#ifndef MMX_SOLUTION_EXPORT
-#define MMX_SOLUTION_EXPORT
-#endif
-
 
 class MultiSig;
+class MultiSig_is_valid;
+class MultiSig_is_valid_return;
+class PlotNFT;
+class PlotNFT_is_valid;
+class PlotNFT_is_valid_return;
 class PubKey;
+class PubKey_is_valid;
+class PubKey_is_valid_return;
+class PuzzleLock;
+class PuzzleLock_is_valid;
+class PuzzleLock_is_valid_return;
 
 MMX_SOLUTION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig; ///< \private
+MMX_SOLUTION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_is_valid; ///< \private
+MMX_SOLUTION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_is_valid_return; ///< \private
+MMX_SOLUTION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PlotNFT; ///< \private
+MMX_SOLUTION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PlotNFT_is_valid; ///< \private
+MMX_SOLUTION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PlotNFT_is_valid_return; ///< \private
 MMX_SOLUTION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey; ///< \private
+MMX_SOLUTION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey_is_valid; ///< \private
+MMX_SOLUTION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey_is_valid_return; ///< \private
+MMX_SOLUTION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PuzzleLock; ///< \private
+MMX_SOLUTION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_is_valid; ///< \private
+MMX_SOLUTION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PuzzleLock_is_valid_return; ///< \private
 
 } // namespace mmx
 } // namespace solution
@@ -31,19 +55,69 @@ MMX_SOLUTION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKe
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::solution::MultiSig& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::solution::MultiSig_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::solution::MultiSig_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::solution::PlotNFT& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::solution::PlotNFT_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::solution::PlotNFT_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::solution::PubKey& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::solution::PubKey_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::solution::PubKey_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::solution::PuzzleLock& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::solution::PuzzleLock_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::solution::PuzzleLock_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 
 void write(TypeOutput& out, const ::mmx::solution::MultiSig& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::solution::MultiSig_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::solution::MultiSig_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::solution::PlotNFT& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::solution::PlotNFT_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::solution::PlotNFT_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::solution::PubKey& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::solution::PubKey_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::solution::PubKey_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::solution::PuzzleLock& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::solution::PuzzleLock_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::solution::PuzzleLock_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 
 void read(std::istream& in, ::mmx::solution::MultiSig& value); ///< \private
+void read(std::istream& in, ::mmx::solution::MultiSig_is_valid& value); ///< \private
+void read(std::istream& in, ::mmx::solution::MultiSig_is_valid_return& value); ///< \private
+void read(std::istream& in, ::mmx::solution::PlotNFT& value); ///< \private
+void read(std::istream& in, ::mmx::solution::PlotNFT_is_valid& value); ///< \private
+void read(std::istream& in, ::mmx::solution::PlotNFT_is_valid_return& value); ///< \private
 void read(std::istream& in, ::mmx::solution::PubKey& value); ///< \private
+void read(std::istream& in, ::mmx::solution::PubKey_is_valid& value); ///< \private
+void read(std::istream& in, ::mmx::solution::PubKey_is_valid_return& value); ///< \private
+void read(std::istream& in, ::mmx::solution::PuzzleLock& value); ///< \private
+void read(std::istream& in, ::mmx::solution::PuzzleLock_is_valid& value); ///< \private
+void read(std::istream& in, ::mmx::solution::PuzzleLock_is_valid_return& value); ///< \private
 
 void write(std::ostream& out, const ::mmx::solution::MultiSig& value); ///< \private
+void write(std::ostream& out, const ::mmx::solution::MultiSig_is_valid& value); ///< \private
+void write(std::ostream& out, const ::mmx::solution::MultiSig_is_valid_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::solution::PlotNFT& value); ///< \private
+void write(std::ostream& out, const ::mmx::solution::PlotNFT_is_valid& value); ///< \private
+void write(std::ostream& out, const ::mmx::solution::PlotNFT_is_valid_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::solution::PubKey& value); ///< \private
+void write(std::ostream& out, const ::mmx::solution::PubKey_is_valid& value); ///< \private
+void write(std::ostream& out, const ::mmx::solution::PubKey_is_valid_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::solution::PuzzleLock& value); ///< \private
+void write(std::ostream& out, const ::mmx::solution::PuzzleLock_is_valid& value); ///< \private
+void write(std::ostream& out, const ::mmx::solution::PuzzleLock_is_valid_return& value); ///< \private
 
 void accept(Visitor& visitor, const ::mmx::solution::MultiSig& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::solution::MultiSig_is_valid& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::solution::MultiSig_is_valid_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::solution::PlotNFT& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::solution::PlotNFT_is_valid& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::solution::PlotNFT_is_valid_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::solution::PubKey& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::solution::PubKey_is_valid& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::solution::PubKey_is_valid_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::solution::PuzzleLock& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::solution::PuzzleLock_is_valid& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::solution::PuzzleLock_is_valid_return& value); ///< \private
 
 /// \private
 template<>
@@ -70,6 +144,121 @@ struct type<::mmx::solution::MultiSig> {
 
 /// \private
 template<>
+struct type<::mmx::solution::MultiSig_is_valid> {
+	void read(TypeInput& in, ::mmx::solution::MultiSig_is_valid& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::solution::MultiSig_is_valid& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::solution::MultiSig_is_valid& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::solution::MultiSig_is_valid& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::solution::MultiSig_is_valid& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::MultiSig_is_valid& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::solution::MultiSig_is_valid_return> {
+	void read(TypeInput& in, ::mmx::solution::MultiSig_is_valid_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::solution::MultiSig_is_valid_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::solution::MultiSig_is_valid_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::solution::MultiSig_is_valid_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::solution::MultiSig_is_valid_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::MultiSig_is_valid_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::solution::PlotNFT> {
+	void read(TypeInput& in, ::mmx::solution::PlotNFT& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::solution::PlotNFT& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::solution::PlotNFT& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::solution::PlotNFT& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::solution::PlotNFT& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::PlotNFT& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::solution::PlotNFT_is_valid> {
+	void read(TypeInput& in, ::mmx::solution::PlotNFT_is_valid& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::solution::PlotNFT_is_valid& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::solution::PlotNFT_is_valid& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::solution::PlotNFT_is_valid& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::solution::PlotNFT_is_valid& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::PlotNFT_is_valid& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::solution::PlotNFT_is_valid_return> {
+	void read(TypeInput& in, ::mmx::solution::PlotNFT_is_valid_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::solution::PlotNFT_is_valid_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::solution::PlotNFT_is_valid_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::solution::PlotNFT_is_valid_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::solution::PlotNFT_is_valid_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::PlotNFT_is_valid_return& value, bool special = false);
+};
+
+/// \private
+template<>
 struct type<::mmx::solution::PubKey> {
 	void read(TypeInput& in, ::mmx::solution::PubKey& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
@@ -89,6 +278,121 @@ struct type<::mmx::solution::PubKey> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::PubKey& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::solution::PubKey_is_valid> {
+	void read(TypeInput& in, ::mmx::solution::PubKey_is_valid& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::solution::PubKey_is_valid& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::solution::PubKey_is_valid& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::solution::PubKey_is_valid& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::solution::PubKey_is_valid& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::PubKey_is_valid& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::solution::PubKey_is_valid_return> {
+	void read(TypeInput& in, ::mmx::solution::PubKey_is_valid_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::solution::PubKey_is_valid_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::solution::PubKey_is_valid_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::solution::PubKey_is_valid_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::solution::PubKey_is_valid_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::PubKey_is_valid_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::solution::PuzzleLock> {
+	void read(TypeInput& in, ::mmx::solution::PuzzleLock& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::solution::PuzzleLock& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::solution::PuzzleLock& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::solution::PuzzleLock& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::solution::PuzzleLock& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::PuzzleLock& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::solution::PuzzleLock_is_valid> {
+	void read(TypeInput& in, ::mmx::solution::PuzzleLock_is_valid& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::solution::PuzzleLock_is_valid& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::solution::PuzzleLock_is_valid& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::solution::PuzzleLock_is_valid& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::solution::PuzzleLock_is_valid& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::PuzzleLock_is_valid& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::solution::PuzzleLock_is_valid_return> {
+	void read(TypeInput& in, ::mmx::solution::PuzzleLock_is_valid_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::solution::PuzzleLock_is_valid_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::solution::PuzzleLock_is_valid_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::solution::PuzzleLock_is_valid_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::solution::PuzzleLock_is_valid_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::PuzzleLock_is_valid_return& value, bool special = false);
 };
 
 

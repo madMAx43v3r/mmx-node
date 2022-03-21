@@ -16,6 +16,7 @@ namespace mmx {
 class MMX_EXPORT ProofOfSpace : public ::vnx::Value {
 public:
 	
+	uint32_t version = 0;
 	uint8_t ksize = 0;
 	uint64_t score = 0;
 	::mmx::hash_t plot_id;
@@ -66,20 +67,24 @@ public:
 	static const vnx::TypeCode* static_get_type_code();
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
+protected:
+	std::shared_ptr<vnx::Value> vnx_call_switch(std::shared_ptr<const vnx::Value> _method) override;
+	
 };
 
 template<typename T>
 void ProofOfSpace::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ProofOfSpace>(8);
-	_visitor.type_field("ksize", 0); _visitor.accept(ksize);
-	_visitor.type_field("score", 1); _visitor.accept(score);
-	_visitor.type_field("plot_id", 2); _visitor.accept(plot_id);
-	_visitor.type_field("proof_bytes", 3); _visitor.accept(proof_bytes);
-	_visitor.type_field("local_key", 4); _visitor.accept(local_key);
-	_visitor.type_field("farmer_key", 5); _visitor.accept(farmer_key);
-	_visitor.type_field("pool_key", 6); _visitor.accept(pool_key);
-	_visitor.type_field("local_sig", 7); _visitor.accept(local_sig);
-	_visitor.template type_end<ProofOfSpace>(8);
+	_visitor.template type_begin<ProofOfSpace>(9);
+	_visitor.type_field("version", 0); _visitor.accept(version);
+	_visitor.type_field("ksize", 1); _visitor.accept(ksize);
+	_visitor.type_field("score", 2); _visitor.accept(score);
+	_visitor.type_field("plot_id", 3); _visitor.accept(plot_id);
+	_visitor.type_field("proof_bytes", 4); _visitor.accept(proof_bytes);
+	_visitor.type_field("local_key", 5); _visitor.accept(local_key);
+	_visitor.type_field("farmer_key", 6); _visitor.accept(farmer_key);
+	_visitor.type_field("pool_key", 7); _visitor.accept(pool_key);
+	_visitor.type_field("local_sig", 8); _visitor.accept(local_sig);
+	_visitor.template type_end<ProofOfSpace>(9);
 }
 
 

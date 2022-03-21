@@ -43,12 +43,14 @@ protected:
 
 	hash_t deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, const spend_options_t& options) const override;
 
+	hash_t execute(const uint32_t& index, const addr_t& address, const vnx::Object& method, const spend_options_t& options) const override;
+
 	std::shared_ptr<const Transaction>
 	complete(const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const;
 
 	std::shared_ptr<const Transaction>
 	sign_off(	const uint32_t& index, std::shared_ptr<const Transaction> tx,
-				const vnx::bool_t& cover_fee, const std::vector<std::pair<txio_key_t, utxo_t>>& utxo_list) const override;
+				const vnx::bool_t& cover_fee, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Solution> sign_msg(const uint32_t& index, const addr_t& address, const hash_t& msg) const override;
 
@@ -61,6 +63,10 @@ protected:
 	void release(const uint32_t& index, const std::vector<txio_key_t>& keys) override;
 
 	void release_all() override;
+
+	void reset_cache(const uint32_t& index) override;
+
+	void update_cache(const uint32_t& index) const override;
 
 	std::vector<utxo_entry_t> get_utxo_list(const uint32_t& index, const uint32_t& min_confirm = 1) const override;
 

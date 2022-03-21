@@ -36,32 +36,6 @@ public:
 	
 	ClientClient(vnx::Hash64 service_addr);
 	
-	::vnx::Object vnx_get_config_object();
-	
-	::vnx::Variant vnx_get_config(const std::string& name = "");
-	
-	void vnx_set_config_object(const ::vnx::Object& config = ::vnx::Object());
-	
-	void vnx_set_config_object_async(const ::vnx::Object& config = ::vnx::Object());
-	
-	void vnx_set_config(const std::string& name = "", const ::vnx::Variant& value = ::vnx::Variant());
-	
-	void vnx_set_config_async(const std::string& name = "", const ::vnx::Variant& value = ::vnx::Variant());
-	
-	::vnx::TypeCode vnx_get_type_code();
-	
-	std::shared_ptr<const ::vnx::ModuleInfo> vnx_get_module_info();
-	
-	void vnx_restart();
-	
-	void vnx_restart_async();
-	
-	void vnx_stop();
-	
-	void vnx_stop_async();
-	
-	vnx::bool_t vnx_self_test();
-	
 	std::vector<std::string> get_servers();
 	
 	::mmx::hash_t execute(const std::string& server = "", const uint32_t& wallet = 0, const ::mmx::exchange::matched_order_t& order = ::mmx::exchange::matched_order_t());
@@ -107,6 +81,32 @@ public:
 	std::shared_ptr<const ::vnx::addons::HttpResponse> http_request(std::shared_ptr<const ::vnx::addons::HttpRequest> request = nullptr, const std::string& sub_path = "");
 	
 	std::shared_ptr<const ::vnx::addons::HttpData> http_request_chunk(std::shared_ptr<const ::vnx::addons::HttpRequest> request = nullptr, const std::string& sub_path = "", const int64_t& offset = 0, const int64_t& max_bytes = 0);
+	
+	::vnx::Object vnx_get_config_object();
+	
+	::vnx::Variant vnx_get_config(const std::string& name = "");
+	
+	void vnx_set_config_object(const ::vnx::Object& config = ::vnx::Object());
+	
+	void vnx_set_config_object_async(const ::vnx::Object& config = ::vnx::Object());
+	
+	void vnx_set_config(const std::string& name = "", const ::vnx::Variant& value = ::vnx::Variant());
+	
+	void vnx_set_config_async(const std::string& name = "", const ::vnx::Variant& value = ::vnx::Variant());
+	
+	::vnx::TypeCode vnx_get_type_code();
+	
+	std::shared_ptr<const ::vnx::ModuleInfo> vnx_get_module_info();
+	
+	void vnx_restart();
+	
+	void vnx_restart_async();
+	
+	void vnx_stop();
+	
+	void vnx_stop_async();
+	
+	vnx::bool_t vnx_self_test();
 	
 };
 

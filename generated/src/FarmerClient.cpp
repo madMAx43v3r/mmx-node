@@ -50,6 +50,44 @@ FarmerClient::FarmerClient(vnx::Hash64 service_addr)
 {
 }
 
+::vnx::Hash64 FarmerClient::get_mac_addr() {
+	auto _method = ::mmx::Farmer_get_mac_addr::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Farmer_get_mac_addr_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<::vnx::Hash64>();
+	} else {
+		throw std::logic_error("FarmerClient: invalid return value");
+	}
+}
+
+std::shared_ptr<const ::mmx::FarmInfo> FarmerClient::get_farm_info() {
+	auto _method = ::mmx::Farmer_get_farm_info::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Farmer_get_farm_info_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::FarmInfo>>();
+	} else {
+		throw std::logic_error("FarmerClient: invalid return value");
+	}
+}
+
+std::shared_ptr<const ::mmx::BlockHeader> FarmerClient::sign_block(std::shared_ptr<const ::mmx::BlockHeader> block, const uint64_t& reward_amount) {
+	auto _method = ::mmx::Farmer_sign_block::create();
+	_method->block = block;
+	_method->reward_amount = reward_amount;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Farmer_sign_block_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::BlockHeader>>();
+	} else {
+		throw std::logic_error("FarmerClient: invalid return value");
+	}
+}
+
 ::vnx::Object FarmerClient::vnx_get_config_object() {
 	auto _method = ::vnx::ModuleInterface_vnx_get_config_object::create();
 	auto _return_value = vnx_request(_method, false);
@@ -152,44 +190,6 @@ vnx::bool_t FarmerClient::vnx_self_test() {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<vnx::bool_t>();
-	} else {
-		throw std::logic_error("FarmerClient: invalid return value");
-	}
-}
-
-::vnx::Hash64 FarmerClient::get_mac_addr() {
-	auto _method = ::mmx::Farmer_get_mac_addr::create();
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Farmer_get_mac_addr_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<::vnx::Hash64>();
-	} else {
-		throw std::logic_error("FarmerClient: invalid return value");
-	}
-}
-
-std::shared_ptr<const ::mmx::FarmInfo> FarmerClient::get_farm_info() {
-	auto _method = ::mmx::Farmer_get_farm_info::create();
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Farmer_get_farm_info_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::FarmInfo>>();
-	} else {
-		throw std::logic_error("FarmerClient: invalid return value");
-	}
-}
-
-std::shared_ptr<const ::mmx::BlockHeader> FarmerClient::sign_block(std::shared_ptr<const ::mmx::BlockHeader> block, const uint64_t& reward_amount) {
-	auto _method = ::mmx::Farmer_sign_block::create();
-	_method->block = block;
-	_method->reward_amount = reward_amount;
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Farmer_sign_block_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::BlockHeader>>();
 	} else {
 		throw std::logic_error("FarmerClient: invalid return value");
 	}

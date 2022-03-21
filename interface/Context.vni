@@ -8,4 +8,7 @@ class Context {
 	
 	map<addr_t, Contract*> depends;
 	
+	
+	Contract* get_contract(addr_t address) const;
+	
 }

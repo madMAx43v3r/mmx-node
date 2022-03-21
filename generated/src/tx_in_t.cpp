@@ -10,9 +10,10 @@
 
 namespace mmx {
 
+const uint16_t tx_in_t::IS_EXEC;
 
 const vnx::Hash64 tx_in_t::VNX_TYPE_HASH(0xd9253957c5a57cd5ull);
-const vnx::Hash64 tx_in_t::VNX_CODE_HASH(0x38b9aa035578e44aull);
+const vnx::Hash64 tx_in_t::VNX_CODE_HASH(0xb544f2412ca661aull);
 
 vnx::Hash64 tx_in_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -47,6 +48,7 @@ void tx_in_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, prev);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, solution);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, flags);
 	_visitor.type_end(*_type_code);
 }
 
@@ -54,6 +56,7 @@ void tx_in_t::write(std::ostream& _out) const {
 	_out << "{";
 	_out << "\"prev\": "; vnx::write(_out, prev);
 	_out << ", \"solution\": "; vnx::write(_out, solution);
+	_out << ", \"flags\": "; vnx::write(_out, flags);
 	_out << "}";
 }
 
@@ -68,12 +71,15 @@ vnx::Object tx_in_t::to_object() const {
 	_object["__type"] = "mmx.tx_in_t";
 	_object["prev"] = prev;
 	_object["solution"] = solution;
+	_object["flags"] = flags;
 	return _object;
 }
 
 void tx_in_t::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "prev") {
+		if(_entry.first == "flags") {
+			_entry.second.to(flags);
+		} else if(_entry.first == "prev") {
 			_entry.second.to(prev);
 		} else if(_entry.first == "solution") {
 			_entry.second.to(solution);
@@ -88,6 +94,9 @@ vnx::Variant tx_in_t::get_field(const std::string& _name) const {
 	if(_name == "solution") {
 		return vnx::Variant(solution);
 	}
+	if(_name == "flags") {
+		return vnx::Variant(flags);
+	}
 	return vnx::Variant();
 }
 
@@ -96,6 +105,8 @@ void tx_in_t::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(prev);
 	} else if(_name == "solution") {
 		_value.to(solution);
+	} else if(_name == "flags") {
+		_value.to(flags);
 	}
 }
 
@@ -123,13 +134,13 @@ std::shared_ptr<vnx::TypeCode> tx_in_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.tx_in_t";
 	type_code->type_hash = vnx::Hash64(0xd9253957c5a57cd5ull);
-	type_code->code_hash = vnx::Hash64(0x38b9aa035578e44aull);
+	type_code->code_hash = vnx::Hash64(0xb544f2412ca661aull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::tx_in_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<tx_in_t>>(); };
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::txio_key_t::static_get_type_code();
-	type_code->fields.resize(2);
+	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -142,6 +153,12 @@ std::shared_ptr<vnx::TypeCode> tx_in_t::static_create_type_code() {
 		field.name = "solution";
 		field.value = vnx::to_string(-1);
 		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[2];
+		field.data_size = 2;
+		field.name = "flags";
+		field.code = {2};
 	}
 	type_code->build();
 	return type_code;
@@ -188,6 +205,9 @@ void read(TypeInput& in, ::mmx::tx_in_t& value, const TypeCode* type_code, const
 		if(const auto* const _field = type_code->field_map[1]) {
 			vnx::read_value(_buf + _field->offset, value.solution, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[2]) {
+			vnx::read_value(_buf + _field->offset, value.flags, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -210,8 +230,9 @@ void write(TypeOutput& out, const ::mmx::tx_in_t& value, const TypeCode* type_co
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
+	char* const _buf = out.write(6);
 	vnx::write_value(_buf + 0, value.solution);
+	vnx::write_value(_buf + 4, value.flags);
 	vnx::write(out, value.prev, type_code, type_code->fields[0].code.data());
 }
 

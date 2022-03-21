@@ -190,15 +190,15 @@ std::shared_ptr<vnx::TypeCode> WebAPIBase::static_create_type_code() {
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::WebAPIBase);
 	type_code->methods.resize(11);
-	type_code->methods[0] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
-	type_code->methods[1] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
-	type_code->methods[2] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
-	type_code->methods[3] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
-	type_code->methods[4] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
-	type_code->methods[5] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
-	type_code->methods[6] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
-	type_code->methods[7] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
-	type_code->methods[8] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
+	type_code->methods[0] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
+	type_code->methods[1] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
+	type_code->methods[2] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
+	type_code->methods[3] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
+	type_code->methods[4] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
+	type_code->methods[5] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
+	type_code->methods[6] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
+	type_code->methods[7] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
+	type_code->methods[8] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
 	type_code->methods[9] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
 	type_code->methods[10] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
 	type_code->fields.resize(6);
@@ -264,34 +264,16 @@ void WebAPIBase::vnx_handle_switch(std::shared_ptr<const vnx::Value> _value) {
 
 std::shared_ptr<vnx::Value> WebAPIBase::vnx_call_switch(std::shared_ptr<const vnx::Value> _method, const vnx::request_id_t& _request_id) {
 	switch(_method->get_type_hash()) {
-		case 0x17f58f68bf83abc0ull: {
-			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_get_config_object>(_method);
-			auto _return_value = ::vnx::ModuleInterface_vnx_get_config_object_return::create();
-			_return_value->_ret_0 = vnx_get_config_object();
-			return _return_value;
-		}
 		case 0xbbc7f1a01044d294ull: {
 			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_get_config>(_method);
 			auto _return_value = ::vnx::ModuleInterface_vnx_get_config_return::create();
 			_return_value->_ret_0 = vnx_get_config(_args->name);
 			return _return_value;
 		}
-		case 0xca30f814f17f322full: {
-			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_set_config_object>(_method);
-			auto _return_value = ::vnx::ModuleInterface_vnx_set_config_object_return::create();
-			vnx_set_config_object(_args->config);
-			return _return_value;
-		}
-		case 0x362aac91373958b7ull: {
-			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_set_config>(_method);
-			auto _return_value = ::vnx::ModuleInterface_vnx_set_config_return::create();
-			vnx_set_config(_args->name, _args->value);
-			return _return_value;
-		}
-		case 0x305ec4d628960e5dull: {
-			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_get_type_code>(_method);
-			auto _return_value = ::vnx::ModuleInterface_vnx_get_type_code_return::create();
-			_return_value->_ret_0 = vnx_get_type_code();
+		case 0x17f58f68bf83abc0ull: {
+			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_get_config_object>(_method);
+			auto _return_value = ::vnx::ModuleInterface_vnx_get_config_object_return::create();
+			_return_value->_ret_0 = vnx_get_config_object();
 			return _return_value;
 		}
 		case 0xf6d82bdf66d034a1ull: {
@@ -300,22 +282,40 @@ std::shared_ptr<vnx::Value> WebAPIBase::vnx_call_switch(std::shared_ptr<const vn
 			_return_value->_ret_0 = vnx_get_module_info();
 			return _return_value;
 		}
+		case 0x305ec4d628960e5dull: {
+			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_get_type_code>(_method);
+			auto _return_value = ::vnx::ModuleInterface_vnx_get_type_code_return::create();
+			_return_value->_ret_0 = vnx_get_type_code();
+			return _return_value;
+		}
 		case 0x9e95dc280cecca1bull: {
 			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_restart>(_method);
 			auto _return_value = ::vnx::ModuleInterface_vnx_restart_return::create();
 			vnx_restart();
 			return _return_value;
 		}
-		case 0x7ab49ce3d1bfc0d2ull: {
-			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_stop>(_method);
-			auto _return_value = ::vnx::ModuleInterface_vnx_stop_return::create();
-			vnx_stop();
-			return _return_value;
-		}
 		case 0x6ce3775b41a42697ull: {
 			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_self_test>(_method);
 			auto _return_value = ::vnx::ModuleInterface_vnx_self_test_return::create();
 			_return_value->_ret_0 = vnx_self_test();
+			return _return_value;
+		}
+		case 0x362aac91373958b7ull: {
+			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_set_config>(_method);
+			auto _return_value = ::vnx::ModuleInterface_vnx_set_config_return::create();
+			vnx_set_config(_args->name, _args->value);
+			return _return_value;
+		}
+		case 0xca30f814f17f322full: {
+			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_set_config_object>(_method);
+			auto _return_value = ::vnx::ModuleInterface_vnx_set_config_object_return::create();
+			vnx_set_config_object(_args->config);
+			return _return_value;
+		}
+		case 0x7ab49ce3d1bfc0d2ull: {
+			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_stop>(_method);
+			auto _return_value = ::vnx::ModuleInterface_vnx_stop_return::create();
+			vnx_stop();
 			return _return_value;
 		}
 		case 0xe0b6c38f619bad92ull: {

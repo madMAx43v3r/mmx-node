@@ -5,7 +5,6 @@
 #define INCLUDE_mmx_Solution_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/ChainParams.hxx>
 #include <vnx/Value.h>
 
 
@@ -15,7 +14,6 @@ class MMX_EXPORT Solution : public ::vnx::Value {
 public:
 	
 	uint32_t version = 0;
-	vnx::bool_t is_contract = 0;
 	
 	typedef ::vnx::Value Super;
 	
@@ -30,7 +28,7 @@ public:
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
 	
-	virtual uint64_t calc_min_fee(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
+	virtual vnx::bool_t is_valid() const;
 	
 	static std::shared_ptr<Solution> create();
 	std::shared_ptr<vnx::Value> clone() const override;
@@ -57,14 +55,16 @@ public:
 	static const vnx::TypeCode* static_get_type_code();
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
+protected:
+	std::shared_ptr<vnx::Value> vnx_call_switch(std::shared_ptr<const vnx::Value> _method) override;
+	
 };
 
 template<typename T>
 void Solution::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Solution>(2);
+	_visitor.template type_begin<Solution>(1);
 	_visitor.type_field("version", 0); _visitor.accept(version);
-	_visitor.type_field("is_contract", 1); _visitor.accept(is_contract);
-	_visitor.template type_end<Solution>(2);
+	_visitor.template type_end<Solution>(1);
 }
 
 

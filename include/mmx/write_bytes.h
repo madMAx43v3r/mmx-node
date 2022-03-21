@@ -74,7 +74,11 @@ inline void write_bytes(vnx::OutputBuffer& out, const vnx::Buffer& value) {
 }
 
 inline void write_bytes(vnx::OutputBuffer& out, const vnx::Variant& value) {
-	write_bytes(out, value.data);
+	if(value.empty()) {
+		write_bytes(out, vnx::Variant(nullptr));
+	} else {
+		write_bytes(out, value.data);
+	}
 }
 
 inline void write_bytes(vnx::OutputBuffer& out, const vnx::Object& value)

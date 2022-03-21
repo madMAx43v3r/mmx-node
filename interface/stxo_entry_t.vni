@@ -2,7 +2,9 @@ package mmx;
 
 struct stxo_entry_t extends utxo_entry_t {
 	
-	txio_key_t spent;
+	uint spent_height;
+	
+	txio_key_t spent_key;
 	
 	
 	static stxo_entry_t create_ex(txio_key_t key, stxo_t stxo);

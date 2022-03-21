@@ -17,6 +17,16 @@ int main(int argc, char** argv)
 {
 	mmx::secp256k1_init();
 
+	std::string mmx_home;
+	std::string mmx_network;
+	if(auto path = ::getenv("MMX_HOME")) {
+		mmx_home = path;
+	}
+	if(auto path = ::getenv("MMX_NETWORK")) {
+		mmx_network = path;
+	}
+	const auto root_path = mmx_home + mmx_network;
+
 	std::map<std::string, std::string> options;
 	options["n"] = "node";
 	options["node"] = "address";
@@ -25,11 +35,12 @@ int main(int argc, char** argv)
 
 	std::string node_url = ":11331";
 	std::string endpoint = ":11340";
-	std::string root_path;
 
 	vnx::read_config("node", node_url);
 	vnx::read_config("endpoint", endpoint);
-	vnx::read_config("root_path", root_path);
+
+	vnx::Directory(root_path + "exchange/server").create();
+	vnx::rocksdb::sync_type_codes(root_path + "exchange/server/type_codes");
 
 	vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
 	proxy->forward_list = {"Node"};

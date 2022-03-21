@@ -544,14 +544,14 @@ std::shared_ptr<const Transaction> Client::approve(std::shared_ptr<const Transac
 	}
 	auto out = vnx::clone(tx);
 	for(auto index : wallets) {
-		if(auto tx = wallet->sign_off(index, out)) {
+		if(auto tx = wallet->sign_off(index, out, false)) {
 			out = vnx::clone(tx);
 		} else {
 			throw std::logic_error("unable to sign off");
 		}
 	}
-	pending_approvals.insert(tx->id);
-	log(INFO) << "Accepted trade " << tx->id;
+	pending_approvals.insert(out->id);
+	log(INFO) << "Accepted trade " << out->id;
 	return out;
 }
 
@@ -570,6 +570,7 @@ void Client::execute_async(const std::string& server, const uint32_t& index, con
 	for(const auto& in : order.tx->inputs) {
 		keys.push_back(in.prev);
 	}
+
 	uint64_t total_bid = 0;
 	vnx::optional<addr_t> change_addr;
 	std::vector<std::pair<txio_key_t, utxo_t>> utxo_list;
@@ -611,6 +612,7 @@ void Client::execute_async(const std::string& server, const uint32_t& index, con
 	if(total_ask != order.ask) {
 		throw std::logic_error("ask amount mismatch");
 	}
+
 	auto copy = vnx::clone(order.tx);
 	if(total_bid > order.bid && order.pair.bid != addr_t()) {
 		// token change output
@@ -620,10 +622,14 @@ void Client::execute_async(const std::string& server, const uint32_t& index, con
 		out.amount = total_bid - order.bid;
 		copy->outputs.push_back(out);
 	}
-	auto tx = wallet->sign_off(index, copy, true, utxo_list);
+
+	spend_options_t options;
+	options.utxo_map = utxo_list;
+	auto tx = wallet->sign_off(index, copy, true, options);
 	if(!tx) {
 		throw std::logic_error("failed to sign off");
 	}
+
 	keys.clear();
 	for(const auto& in : tx->inputs) {
 		keys.push_back(in.prev);

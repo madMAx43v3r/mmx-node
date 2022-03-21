@@ -62,25 +62,29 @@ public:
 	static const vnx::TypeCode* static_get_type_code();
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
+protected:
+	std::shared_ptr<vnx::Value> vnx_call_switch(std::shared_ptr<const vnx::Value> _method) override;
+	
 };
 
 template<typename T>
 void Block::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Block>(13);
-	_visitor.type_field("hash", 0); _visitor.accept(hash);
-	_visitor.type_field("prev", 1); _visitor.accept(prev);
-	_visitor.type_field("height", 2); _visitor.accept(height);
-	_visitor.type_field("time_diff", 3); _visitor.accept(time_diff);
-	_visitor.type_field("space_diff", 4); _visitor.accept(space_diff);
-	_visitor.type_field("vdf_iters", 5); _visitor.accept(vdf_iters);
-	_visitor.type_field("vdf_output", 6); _visitor.accept(vdf_output);
-	_visitor.type_field("proof", 7); _visitor.accept(proof);
-	_visitor.type_field("tx_base", 8); _visitor.accept(tx_base);
-	_visitor.type_field("tx_count", 9); _visitor.accept(tx_count);
-	_visitor.type_field("tx_hash", 10); _visitor.accept(tx_hash);
-	_visitor.type_field("farmer_sig", 11); _visitor.accept(farmer_sig);
-	_visitor.type_field("tx_list", 12); _visitor.accept(tx_list);
-	_visitor.template type_end<Block>(13);
+	_visitor.template type_begin<Block>(14);
+	_visitor.type_field("version", 0); _visitor.accept(version);
+	_visitor.type_field("hash", 1); _visitor.accept(hash);
+	_visitor.type_field("prev", 2); _visitor.accept(prev);
+	_visitor.type_field("height", 3); _visitor.accept(height);
+	_visitor.type_field("time_diff", 4); _visitor.accept(time_diff);
+	_visitor.type_field("space_diff", 5); _visitor.accept(space_diff);
+	_visitor.type_field("vdf_iters", 6); _visitor.accept(vdf_iters);
+	_visitor.type_field("vdf_output", 7); _visitor.accept(vdf_output);
+	_visitor.type_field("proof", 8); _visitor.accept(proof);
+	_visitor.type_field("tx_base", 9); _visitor.accept(tx_base);
+	_visitor.type_field("tx_count", 10); _visitor.accept(tx_count);
+	_visitor.type_field("tx_hash", 11); _visitor.accept(tx_hash);
+	_visitor.type_field("farmer_sig", 12); _visitor.accept(farmer_sig);
+	_visitor.type_field("tx_list", 13); _visitor.accept(tx_list);
+	_visitor.template type_end<Block>(14);
 }
 
 

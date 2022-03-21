@@ -36,6 +36,7 @@
 /.settings
 /.project
 /.cproject
+/.pydevproject
 /config/local
 /NETWORK
 /testnet*

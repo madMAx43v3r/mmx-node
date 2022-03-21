@@ -1,0 +1,39 @@
+package mmx.contract;
+
+import mmx.hash_t;
+import mmx.addr_t;
+
+class DataObject extends mmx.Contract {
+	
+	optional<addr_t> owner;
+	
+	vnx.Object data;
+	
+	static const uint MAX_BYTES = 1048576;
+	
+	
+	bool is_valid() const;
+	
+	hash_t calc_hash() const;
+	
+	ulong num_bytes() const;
+	
+	ulong calc_cost(mmx.ChainParams* params) const;
+	
+	vector<addr_t> get_dependency() const;
+	
+	vector<addr_t> get_parties() const;
+	
+	optional<addr_t> get_owner() const;
+	
+	vector<mmx.tx_out_t> validate(mmx.Operation* operation, mmx.Context* context) const;
+	
+	void transfer(optional<addr_t> new_owner);
+	
+	void set(string key, vnx.Variant value);
+	
+	void erase(string key);
+	
+	void clear();
+	
+}

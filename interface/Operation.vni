@@ -13,7 +13,6 @@ class Operation {
 	
 	hash_t calc_hash() const;
 	
-	// TODO: rename to calc_cost()
-	ulong calc_min_fee(ChainParams* params) const;
+	ulong calc_cost(ChainParams* params) const;
 	
 }

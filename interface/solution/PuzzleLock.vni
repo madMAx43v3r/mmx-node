@@ -1,0 +1,14 @@
+package mmx.solution;
+
+import mmx.Solution;
+
+class PuzzleLock extends Solution {
+	
+	Solution* puzzle;
+	
+	Solution* target;
+	
+	
+	bool is_valid() const;
+	
+}

@@ -109,14 +109,14 @@ std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
 void Node::validate(std::shared_ptr<const Transaction> tx) const
 {
 	auto context = Context::create();
-	context->height = get_height();
+	context->height = get_height() + 1;
 
 	uint64_t fee = 0;
 	validate(tx, context, nullptr, fee);
 }
 
-std::shared_ptr<const Context> Node::create_context(const addr_t& address, std::shared_ptr<const Contract> contract,
-													std::shared_ptr<const Context> base, std::shared_ptr<const Transaction> tx) const
+std::shared_ptr<const Context> Node::create_context_for_tx(
+		std::shared_ptr<const Context> base, std::shared_ptr<const Contract> contract, std::shared_ptr<const Transaction> tx) const
 {
 	auto context = vnx::clone(base);
 	context->txid = tx->id;
@@ -135,12 +135,15 @@ std::shared_ptr<const Context> Node::create_context(const addr_t& address, std::
 std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const Context> context,
 													std::shared_ptr<const Block> base, uint64_t& fee_amount) const
 {
-	if(tx->id != tx->calc_hash()) {
-		throw std::logic_error("invalid tx id");
+	if(!tx->is_valid()) {
+		throw std::logic_error("invalid tx");
 	}
 	if(base) {
 		if(tx->deploy) {
 			throw std::logic_error("coin base cannot deploy");
+		}
+		if(!tx->inputs.empty()) {
+			throw std::logic_error("coin base cannot have inputs");
 		}
 		if(!tx->execute.empty()) {
 			throw std::logic_error("coin base cannot have operations");
@@ -151,12 +154,11 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 		if(tx->outputs.size() > params->max_tx_base_out) {
 			throw std::logic_error("coin base has too many outputs");
 		}
-		if(tx->inputs.size() != 1) {
-			throw std::logic_error("coin base must have one input");
+		if(tx->nonce != base->height) {
+			throw std::logic_error("invalid coin base nonce");
 		}
-		const auto& in = tx->inputs[0];
-		if(in.prev.txid != hash_t(base->prev) || in.prev.index != 0) {
-			throw std::logic_error("invalid coin base input");
+		if(!tx->salt || *tx->salt != base->vdf_output[0]) {
+			throw std::logic_error("invalid coin base salt");
 		}
 	} else {
 		if(tx->inputs.empty()) {
@@ -166,6 +168,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 	uint64_t base_amount = 0;
 	std::vector<tx_out_t> exec_outputs;
 	std::unordered_map<hash_t, uint64_t> amounts;
+	std::unordered_map<addr_t, std::shared_ptr<Contract>> contract_state;
 
 	if(!base) {
 		for(const auto& in : tx->inputs)
@@ -180,13 +183,17 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 			if(!solution) {
 				throw std::logic_error("missing solution");
 			}
-			auto contract = get_contract(utxo.address);
-			if(!contract) {
+			std::shared_ptr<const Contract> contract;
+
+			if(in.flags & tx_in_t::IS_EXEC) {
+				contract = get_contract(utxo.address);
+			} else {
 				auto pubkey = contract::PubKey::create();
 				pubkey->address = utxo.address;
 				contract = pubkey;
-			} else if(!solution->is_contract) {
-				// TODO: throw std::logic_error("invalid solution: !is_contract");
+			}
+			if(!contract) {
+				throw std::logic_error("no such contract");
 			}
 			auto spend = operation::Spend::create();
 			spend->address = utxo.address;
@@ -194,24 +201,50 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 			spend->key = in.prev;
 			spend->utxo = utxo;
 
-			const auto outputs = contract->validate(spend, create_context(utxo.address, contract, context, tx));
+			const auto outputs = contract->validate(spend, create_context_for_tx(context, contract, tx));
 			exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
 
 			amounts[utxo.contract] += utxo.amount;
 		}
 	}
+
 	for(const auto& op : tx->execute)
 	{
-		if(!op->is_valid()) {
+		if(!op || !op->is_valid()) {
 			throw std::logic_error("invalid operation");
 		}
-		if(auto contract = get_contract(op->address)) {
-			const auto outputs = contract->validate(op, create_context(op->address, contract, context, tx));
-			exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
-		} else {
+		std::shared_ptr<const Contract> contract;
+		{
+			auto iter = contract_state.find(op->address);
+			if(iter != contract_state.end()) {
+				contract = iter->second;
+			}
+		}
+		if(!contract) {
+			contract = get_contract(op->address);
+		}
+		if(!contract) {
 			throw std::logic_error("no such contract");
 		}
+		if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op))
+		{
+			auto copy = vnx::clone(contract);
+			try {
+				if(!copy->vnx_call(vnx::clone(mutate->method))) {
+					throw std::logic_error("no such method");
+				}
+				if(!copy->is_valid()) {
+					throw std::logic_error("invalid mutation");
+				}
+			} catch(const std::exception& ex) {
+				throw std::logic_error("mutate failed with: " + std::string(ex.what()));
+			}
+			contract_state[op->address] = copy;
+		}
+		const auto outputs = contract->validate(op, create_context_for_tx(context, contract, tx));
+		exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
 	}
+
 	for(const auto& out : tx->outputs)
 	{
 		if(out.amount == 0) {
@@ -231,6 +264,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 			value -= out.amount;
 		}
 	}
+
 	if(tx->deploy) {
 		if(!tx->deploy->is_valid()) {
 			throw std::logic_error("invalid contract");
@@ -243,6 +277,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 			exec_outputs.push_back(out);
 		}
 	}
+
 	if(base) {
 		fee_amount = base_amount;
 		return nullptr;

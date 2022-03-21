@@ -157,7 +157,7 @@ app.component('account-balance', {
 				<td>{{item.reserved}}</td>
 				<td><b>{{item.spendable}}</b></td>
 				<td>{{item.symbol}}</td>
-				<td>{{item.is_native ? '' : item.contract}}</td>
+				<td><router-link :to="'/explore/address/' + item.contract">{{item.is_native ? '' : item.contract}}</router-link></td>
 				<td>
 					<router-link :to="'/wallet/account/' + index + '/coins/' + item.contract">Coins</router-link>
 				</td>
@@ -182,12 +182,17 @@ app.component('balance-table', {
 	methods: {
 		update() {
 			this.loading = true;
-			fetch('/wapi/address?id=' + this.address)
+			fetch('/wapi/balance?id=' + this.address)
 				.then(response => response.json())
 				.then(data => {
 					this.loading = false;
 					this.data = data.balances;
 				});
+		}
+	},
+	watch: {
+		address() {
+			this.update();
 		}
 	},
 	created() {
@@ -205,15 +210,21 @@ app.component('balance-table', {
 			<thead>
 			<tr>
 				<th class="two wide">Balance</th>
+				<th class="two wide">Locked</th>
+				<th class="two wide">Spendable</th>
 				<th class="two wide">Token</th>
 				<th>Contract</th>
+				<th>More</th>
 			</tr>
 			</thead>
 			<tbody>
 			<tr v-for="item in data" :key="item.contract">
-				<td><b>{{item.value}}</b></td>
+				<td>{{item.total}}</td>
+				<td>{{item.locked}}</td>
+				<td><b>{{item.spendable}}</b></td>
 				<td>{{item.symbol}}</td>
-				<td>{{item.is_native ? '' : item.contract}}</td>
+				<td><router-link :to="'/explore/address/' + item.contract">{{item.is_native ? '' : item.contract}}</router-link></td>
+				<td><router-link :to="'/explore/address/coins/' + address + '/' + item.contract">Coins</router-link></td>
 			</tr>
 			</tbody>
 		</table>
@@ -302,12 +313,17 @@ app.component('account-history', {
 			</tr>
 			</thead>
 			<tbody>
-			<tr v-for="item in data" :key="item.txid">
-				<td>{{item.height}}</td>
+			<tr v-for="item in data">
+				<td><router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link></td>
 				<td>{{item.type}}</td>
 				<td><b>{{item.value}}</b></td>
-				<td>{{item.symbol}}</td>
-				<td>{{item.address}}</td>
+				<template v-if="item.is_native">
+					<td>{{item.symbol}}</td>
+				</template>
+				<template v-if="!item.is_native">
+					<td><router-link :to="'/explore/address/' + item.contract">{{item.symbol}}</router-link></td>
+				</template>
+				<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
 				<td><router-link :to="'/explore/transaction/' + item.txid">TX</router-link></td>
 				<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 			</tr>
@@ -391,7 +407,7 @@ app.component('account-contract-summary', {
 				<div class="ui horizontal label">{{contract.__type}}</div>
 				<div class="ui horizontal label">{{address}}</div>
 			</div>
-			<contract-table :data="contract"></contract-table>
+			<object-table :data="contract"></object-table>
 			<balance-table :address="address"></balance-table>
 			<div @click="deposit" class="ui submit button">Deposit</div>
 			<div @click="withdraw" class="ui submit button">Withdraw</div>
@@ -464,7 +480,7 @@ app.component('account-addresses', {
 			<tbody>
 			<tr v-for="(item, index) in data" :key="index">
 				<td>{{index}}</td>
-				<td>{{item}}</td>
+				<td><router-link :to="'/explore/address/' + item">{{item}}</router-link></td>
 			</tr>
 			</tbody>
 		</table>
@@ -493,6 +509,45 @@ app.component('account-coins', {
 		this.update()
 	},
 	template: `
+		<coins-table :data="data"></coins-table>
+		`
+})
+
+app.component('address-coins', {
+	props: {
+		address: String,
+		currency: String,
+		limit: Number
+	},
+	data() {
+		return {
+			data: []
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/address/coins?limit=' + this.limit + '&id=' + this.address + '&currency=' + this.currency)
+				.then(response => response.json())
+				.then(data => this.data = data);
+		}
+	},
+	created() {
+		this.update()
+	},
+	template: `
+		<div class="ui large labels">
+			<div class="ui horizontal label">Coins</div>
+			<div class="ui horizontal label">{{address}}</div>
+		</div>
+		<coins-table :data="data"></coins-table>
+		`
+})
+
+app.component('coins-table', {
+	props: {
+		data: Object
+	},
+	template: `
 		<table class="ui table striped">
 			<thead>
 			<tr>
@@ -506,8 +561,8 @@ app.component('account-coins', {
 			<tr v-for="item in data" :key="item.key">
 				<td>{{item.output.height == 4294967295 ? "pending" : item.output.height}}</td>
 				<td class="collapsing"><b>{{item.output.value}}</b></td>
-				<td>{{item.output.symbol}}</td>
-				<td>{{item.output.address}}</td>
+				<td><router-link :to="'/explore/address/' + item.output.contract">{{item.output.symbol}}</router-link></td>
+				<td><router-link :to="'/explore/address/' + item.output.address">{{item.output.address}}</router-link></td>
 			</tr>
 			</tbody>
 		</table>
@@ -544,6 +599,45 @@ app.component('account-details', {
 			</template>
 			</tbody>
 		</table>
+		`
+})
+
+app.component('account-actions', {
+	props: {
+		index: Number
+	},
+	data() {
+		return {
+			info: null,
+			error: null
+		}
+	},
+	methods: {
+		reset_cache() {
+			const req = {};
+			req.index = this.index;
+			fetch('/api/wallet/reset_cache', {body: JSON.stringify(req), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						this.info = "Success";
+					} else {
+						response.text().then(data => {
+							this.error = data;
+						});
+					}
+				});
+		}
+	},
+	template: `
+		<div class="ui raised segment">
+			<div @click="reset_cache" class="ui button">Reset Cache</div>
+		</div>
+		<div class="ui message" :class="{hidden: !info}">
+			<b>{{info}}</b>
+		</div>
+		<div class="ui negative message" :class="{hidden: !error}">
+			Failed with: <b>{{error}}</b>
+		</div>
 		`
 })
 
@@ -612,7 +706,7 @@ app.component('create-account', {
 				<div @click="submit" class="ui submit primary button">Create Account</div>
 			</form>
 		</div>
-		<div class="ui large negative message" :class="{hidden: !error}">
+		<div class="ui negative message" :class="{hidden: !error}">
 			Failed with: <b>{{error}}</b>
 		</div>
 		`
@@ -660,7 +754,7 @@ app.component('create-wallet', {
 				<div @click="submit" class="ui submit primary button">Create Wallet</div>
 			</form>
 		</div>
-		<div class="ui large negative message" :class="{hidden: !error}">
+		<div class="ui negative message" :class="{hidden: !error}">
 			Failed with: <b>{{error}}</b>
 		</div>
 		`
@@ -833,7 +927,7 @@ app.component('account-send-form', {
 		<div class="ui message" :class="{hidden: !result}">
 			Transaction has been sent: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
 		</div>
-		<div class="ui large negative message" :class="{hidden: !error}">
+		<div class="ui negative message" :class="{hidden: !error}">
 			Failed with: <b>{{error}}</b>
 		</div>
 		<account-tx-history :index="index" :limit="10" ref="history"></account-tx-history>
@@ -1106,7 +1200,7 @@ app.component('account-offer-form', {
 				[<b>{{result.id}}</b>] Offering <b>{{result.bid_value}}</b> [{{result.bid_symbol}}] for <b>{{result.ask_value}}</b> [{{result.ask_symbol}}]
 			</template>
 		</div>
-		<div class="ui large negative message" :class="{hidden: !error}">
+		<div class="ui negative message" :class="{hidden: !error}">
 			Failed with: <b>{{error}}</b>
 		</div>
 		<account-offers @offer-cancel="update_balance" :index="index" ref="offers"></account-offers>
@@ -1215,6 +1309,7 @@ app.component('create-contract-menu', {
 					<label>Contract Type</label>
 					<select v-model="type">
 						<option value="staking">mmx.contract.Staking</option>
+						<option value="locked">mmx.contract.Locked</option>
 					</select>
 				</div>
 				<div @click="submit" class="ui submit button" :class="{disabled: !type}">Create</div>
@@ -1246,23 +1341,21 @@ app.component('create-staking-contract', {
 				.then(response => response.json())
 				.then(data => {
 					this.addresses = data;
-					if(!this.owner && data.length) {
-						this.owner = data[0];
-					}
-					if(!this.reward_addr && data.length) {
-						this.reward_addr = data[0];
+					if(data.length) {
+						if(!this.owner) {
+							this.owner = data[0];
+						}
+						if(!this.reward_addr) {
+							this.reward_addr = data[0];
+						}
 					}
 				});
-		},
-		update_balance() {
-			this.update();
-			this.$refs.balance.update();
 		},
 		submit() {
 			this.confirmed = false;
 			const contract = {};
 			contract.__type = "mmx.contract.Staking";
-			contract.owner = this.addresses[0];
+			contract.owner = this.owner;
 			contract.currency = this.currency;
 			contract.reward_addr = this.reward_addr;
 			fetch('/wapi/wallet/deploy?index=' + this.index, {body: JSON.stringify(contract), method: "post"})
@@ -1284,6 +1377,7 @@ app.component('create-staking-contract', {
 	watch: {
 		currency(value) {
 			this.valid = false;
+			this.confirmed = false;
 			this.symbol = "???";
 			fetch('/wapi/contract?id=' + value)
 				.then(response => {
@@ -1353,7 +1447,107 @@ app.component('create-staking-contract', {
 				Deployed as: <b>{{result}}</b>
 			</template>
 		</div>
-		<div class="ui large negative message" :class="{hidden: !error}">
+		<div class="ui negative message" :class="{hidden: !error}">
+			Failed with: <b>{{error}}</b>
+		</div>
+		`
+})
+
+app.component('create-locked-contract', {
+	props: {
+		index: Number
+	},
+	data() {
+		return {
+			owner: null,
+			chain_height: null,
+			delta_height: null,
+			valid: false,
+			confirmed: false,
+			result: null,
+			error: null
+		}
+	},
+	methods: {
+		check_valid() {
+			this.valid = this.owner && (this.chain_height || this.delta_height);
+			if(!this.valid) {
+				this.confirmed = false;
+			}
+		},
+		submit() {
+			this.confirmed = false;
+			const contract = {};
+			contract.__type = "mmx.contract.Locked";
+			contract.owner = this.owner;
+			contract.chain_height = this.chain_height;
+			contract.delta_height = this.delta_height;
+			fetch('/wapi/wallet/deploy?index=' + this.index, {body: JSON.stringify(contract), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						response.json().then(data => this.result = data);
+					} else {
+						response.text().then(data => this.error = data);
+					}
+				});
+		}
+	},
+	mounted() {
+		$('.ui.checkbox').checkbox();
+	},
+	watch: {
+		owner(value) {
+			this.check_valid();
+		},
+		chain_height(value) {
+			this.check_valid();
+		},
+		delta_height(value) {
+			this.check_valid();
+		},
+		result(value) {
+			if(value) {
+				this.error = null;
+			}
+		},
+		error(value) {
+			if(value) {
+				this.result = null;
+			}
+		}
+	},
+	template: `
+		<div class="ui large label">Create</div>
+		<div class="ui large label">mmx.contract.Locked</div>
+		<div class="ui raised segment">
+			<form class="ui form" id="form">
+				<div class="field">
+					<label>Owner Address</label>
+					<input type="text" v-model="owner" placeholder="mmx1..."/>
+				</div>
+				<div class="field">
+					<label>Unlock at Chain Height</label>
+					<input type="text" v-model.number="chain_height"/>
+				</div>
+				<div class="field">
+					<label>Unlock after N Blocks</label>
+					<input type="text" v-model.number="delta_height"/>
+				</div>
+				<div class="inline field">
+					<div class="ui toggle checkbox" :class="{disabled: !valid}">
+						<input type="checkbox" class="hidden" v-model="confirmed">
+						<label>Confirm</label>
+					</div>
+				</div>
+				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">Deploy</div>
+			</form>
+		</div>
+		<div class="ui message" :class="{hidden: !result}">
+			<template v-if="result">
+				Deployed as: <b>{{result}}</b>
+			</template>
+		</div>
+		<div class="ui negative message" :class="{hidden: !error}">
 			Failed with: <b>{{error}}</b>
 		</div>
 		`

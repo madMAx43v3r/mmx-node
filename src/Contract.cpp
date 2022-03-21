@@ -28,7 +28,7 @@ hash_t Contract::calc_hash() const
 	return hash_t(buffer);
 }
 
-uint64_t Contract::calc_min_fee(std::shared_ptr<const ChainParams> params) const {
+uint64_t Contract::calc_cost(std::shared_ptr<const ChainParams> params) const {
 	return (8 + 4) * params->min_txfee_byte;
 }
 
@@ -44,7 +44,17 @@ vnx::optional<addr_t> Contract::get_owner() const {
 	return nullptr;
 }
 
+vnx::bool_t Contract::is_spendable(const utxo_t& utxo, std::shared_ptr<const Context> context) const
+{
+	return true;
+}
+
 std::vector<tx_out_t> Contract::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
+{
+	throw std::logic_error("invalid operation");
+}
+
+void Contract::transfer(const vnx::optional<addr_t>& new_owner)
 {
 	throw std::logic_error("invalid operation");
 }

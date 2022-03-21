@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 stxo_entry_t::VNX_TYPE_HASH(0x7655c1e23969201bull);
-const vnx::Hash64 stxo_entry_t::VNX_CODE_HASH(0x775731cf35754ba2ull);
+const vnx::Hash64 stxo_entry_t::VNX_CODE_HASH(0xe509a6f7f6f4caddull);
 
 vnx::Hash64 stxo_entry_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,7 +49,8 @@ void stxo_entry_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, key);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, output);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, spent);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, spent_height);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, spent_key);
 	_visitor.type_end(*_type_code);
 }
 
@@ -57,7 +58,8 @@ void stxo_entry_t::write(std::ostream& _out) const {
 	_out << "{";
 	_out << "\"key\": "; vnx::write(_out, key);
 	_out << ", \"output\": "; vnx::write(_out, output);
-	_out << ", \"spent\": "; vnx::write(_out, spent);
+	_out << ", \"spent_height\": "; vnx::write(_out, spent_height);
+	_out << ", \"spent_key\": "; vnx::write(_out, spent_key);
 	_out << "}";
 }
 
@@ -72,7 +74,8 @@ vnx::Object stxo_entry_t::to_object() const {
 	_object["__type"] = "mmx.stxo_entry_t";
 	_object["key"] = key;
 	_object["output"] = output;
-	_object["spent"] = spent;
+	_object["spent_height"] = spent_height;
+	_object["spent_key"] = spent_key;
 	return _object;
 }
 
@@ -82,8 +85,10 @@ void stxo_entry_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(key);
 		} else if(_entry.first == "output") {
 			_entry.second.to(output);
-		} else if(_entry.first == "spent") {
-			_entry.second.to(spent);
+		} else if(_entry.first == "spent_height") {
+			_entry.second.to(spent_height);
+		} else if(_entry.first == "spent_key") {
+			_entry.second.to(spent_key);
 		}
 	}
 }
@@ -95,8 +100,11 @@ vnx::Variant stxo_entry_t::get_field(const std::string& _name) const {
 	if(_name == "output") {
 		return vnx::Variant(output);
 	}
-	if(_name == "spent") {
-		return vnx::Variant(spent);
+	if(_name == "spent_height") {
+		return vnx::Variant(spent_height);
+	}
+	if(_name == "spent_key") {
+		return vnx::Variant(spent_key);
 	}
 	return vnx::Variant();
 }
@@ -106,8 +114,10 @@ void stxo_entry_t::set_field(const std::string& _name, const vnx::Variant& _valu
 		_value.to(key);
 	} else if(_name == "output") {
 		_value.to(output);
-	} else if(_name == "spent") {
-		_value.to(spent);
+	} else if(_name == "spent_height") {
+		_value.to(spent_height);
+	} else if(_name == "spent_key") {
+		_value.to(spent_key);
 	}
 }
 
@@ -135,7 +145,7 @@ std::shared_ptr<vnx::TypeCode> stxo_entry_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.stxo_entry_t";
 	type_code->type_hash = vnx::Hash64(0x7655c1e23969201bull);
-	type_code->code_hash = vnx::Hash64(0x775731cf35754ba2ull);
+	type_code->code_hash = vnx::Hash64(0xe509a6f7f6f4caddull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::stxo_entry_t);
 	type_code->parents.resize(1);
@@ -144,7 +154,7 @@ std::shared_ptr<vnx::TypeCode> stxo_entry_t::static_create_type_code() {
 	type_code->depends.resize(2);
 	type_code->depends[0] = ::mmx::txio_key_t::static_get_type_code();
 	type_code->depends[1] = ::mmx::utxo_t::static_get_type_code();
-	type_code->fields.resize(3);
+	type_code->fields.resize(4);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -159,8 +169,14 @@ std::shared_ptr<vnx::TypeCode> stxo_entry_t::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[2];
+		field.data_size = 4;
+		field.name = "spent_height";
+		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[3];
 		field.is_extended = true;
-		field.name = "spent";
+		field.name = "spent_key";
 		field.code = {19, 0};
 	}
 	type_code->build();
@@ -203,14 +219,17 @@ void read(TypeInput& in, ::mmx::stxo_entry_t& value, const TypeCode* type_code, 
 			}
 		}
 	}
-	in.read(type_code->total_field_size);
+	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
+		if(const auto* const _field = type_code->field_map[2]) {
+			vnx::read_value(_buf + _field->offset, value.spent_height, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.key, type_code, _field->code.data()); break;
 			case 1: vnx::read(in, value.output, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.spent, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.spent_key, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -229,9 +248,11 @@ void write(TypeOutput& out, const ::mmx::stxo_entry_t& value, const TypeCode* ty
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
+	char* const _buf = out.write(4);
+	vnx::write_value(_buf + 0, value.spent_height);
 	vnx::write(out, value.key, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.output, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.spent, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.spent_key, type_code, type_code->fields[3].code.data());
 }
 
 void read(std::istream& in, ::mmx::stxo_entry_t& value) {

@@ -3,7 +3,7 @@
 if [ -f NETWORK ]; then
 	NETWORK=$(cat NETWORK)
 else
-	NETWORK=test4
+	NETWORK=testnet5
 	echo ${NETWORK} > NETWORK
 fi
 
@@ -14,4 +14,5 @@ if [ ! -d config/local ]; then
 	echo "Initialized config/local/ with defaults."
 fi
 
+export MMX_NETWORK=${NETWORK}/
 export PATH=$PATH:$PWD/build:$PWD/build/exchange

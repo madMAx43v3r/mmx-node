@@ -14,11 +14,12 @@
 namespace mmx {
 
 inline
-stxo_t stxo_t::create_ex(const utxo_t& utxo, const txio_key_t& spent)
+stxo_t stxo_t::create_ex(const utxo_t& utxo, const uint32_t& height, const txio_key_t& spent)
 {
 	stxo_t stxo;
 	stxo.utxo_t::operator=(utxo);
-	stxo.spent = spent;
+	stxo.spent_height = height;
+	stxo.spent_key = spent;
 	return stxo;
 }
 

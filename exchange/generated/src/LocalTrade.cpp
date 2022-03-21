@@ -3,6 +3,8 @@
 
 #include <mmx/exchange/package.hxx>
 #include <mmx/exchange/LocalTrade.hxx>
+#include <mmx/exchange/LocalTrade_reverse.hxx>
+#include <mmx/exchange/LocalTrade_reverse_return.hxx>
 #include <mmx/exchange/trade_pair_t.hxx>
 #include <mmx/exchange/trade_type_e.hxx>
 #include <mmx/hash_t.hpp>
@@ -205,6 +207,8 @@ std::shared_ptr<vnx::TypeCode> LocalTrade::static_create_type_code() {
 	type_code->depends.resize(2);
 	type_code->depends[0] = ::mmx::exchange::trade_pair_t::static_get_type_code();
 	type_code->depends[1] = ::mmx::exchange::trade_type_e::static_get_type_code();
+	type_code->methods.resize(1);
+	type_code->methods[0] = ::mmx::exchange::LocalTrade_reverse::static_get_type_code();
 	type_code->fields.resize(9);
 	{
 		auto& field = type_code->fields[0];
@@ -263,6 +267,18 @@ std::shared_ptr<vnx::TypeCode> LocalTrade::static_create_type_code() {
 	}
 	type_code->build();
 	return type_code;
+}
+
+std::shared_ptr<vnx::Value> LocalTrade::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
+	switch(_method->get_type_hash()) {
+		case 0xd7eded0f6e5d4d0dull: {
+			auto _args = std::static_pointer_cast<const ::mmx::exchange::LocalTrade_reverse>(_method);
+			auto _return_value = ::mmx::exchange::LocalTrade_reverse_return::create();
+			_return_value->_ret_0 = reverse();
+			return _return_value;
+		}
+	}
+	return nullptr;
 }
 
 

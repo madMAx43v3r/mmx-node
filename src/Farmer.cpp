@@ -115,12 +115,10 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& rew
 	auto copy = vnx::clone(block);
 
 	auto base = Transaction::create();
+	base->nonce = block->height;
+	base->salt = block->vdf_output[0];
+
 	auto amount_left = reward_amount;
-	{
-		tx_in_t in;
-		in.prev.txid = hash_t(block->prev);
-		base->inputs.push_back(in);
-	}
 	if(project_addr && amount_left > 0)
 	{
 		tx_out_t out;
@@ -139,7 +137,7 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& rew
 		amount_left -= out.amount;
 		base->outputs.push_back(out);
 	}
-	base->finalize();
+	base->id = base->calc_hash();
 
 	copy->tx_base = base;
 	copy->hash = copy->calc_hash();

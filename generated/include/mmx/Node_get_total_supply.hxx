@@ -14,7 +14,7 @@ namespace mmx {
 class MMX_EXPORT Node_get_total_supply : public ::vnx::Value {
 public:
 	
-	::mmx::addr_t contract;
+	::mmx::addr_t currency;
 	
 	typedef ::vnx::Value Super;
 	
@@ -59,7 +59,7 @@ public:
 template<typename T>
 void Node_get_total_supply::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<Node_get_total_supply>(1);
-	_visitor.type_field("contract", 0); _visitor.accept(contract);
+	_visitor.type_field("currency", 0); _visitor.accept(currency);
 	_visitor.template type_end<Node_get_total_supply>(1);
 }
 

@@ -180,23 +180,7 @@ void Node::update()
 		const auto peak = best_fork->block;
 		const auto fork_line = get_fork_line();
 
-		// show finalized blocks
-		for(const auto& fork : fork_line) {
-			const auto& block = fork->block;
-			if(block->height + params->finality_delay + 1 < peak->height) {
-				if(!fork->is_finalized) {
-					fork->is_finalized = true;
-					if(!do_sync || (sync_peak && block->height >= *sync_peak)) {
-						log(INFO) << "Finalized height " << block->height << " with: ntx = " << block->tx_list.size()
-								<< ", k = " << (block->proof ? block->proof->ksize : 0) << ", score = " << fork->proof_score
-								<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff
-								<< (fork->has_weak_proof ? ", weak proof" : "");
-					}
-				}
-			}
-		}
-
-		// commit to history
+		// commit to disk
 		for(size_t i = 0; i + params->commit_delay < fork_line.size(); ++i)
 		{
 			const auto& fork = fork_line[i];
@@ -207,8 +191,8 @@ void Node::update()
 			if(!is_synced && fork_line.size() < max_fork_length) {
 				// check if there is a competing fork at this height
 				const auto finalized_height = peak->height - std::min(params->finality_delay + 1, peak->height);
-				if(std::distance(fork_index.lower_bound(block->height), fork_index.upper_bound(block->height)) > 1
-					&& std::distance(fork_index.lower_bound(finalized_height), fork_index.upper_bound(finalized_height)) > 1)
+				if(		std::distance(fork_index.lower_bound(block->height), fork_index.upper_bound(block->height)) > 1
+					&&	std::distance(fork_index.lower_bound(finalized_height), fork_index.upper_bound(finalized_height)) > 1)
 				{
 					break;
 				}
@@ -229,7 +213,8 @@ void Node::update()
 	if(!prev_peak || peak->hash != prev_peak->hash)
 	{
 		stuck_timer->reset();
-		if(auto fork = find_fork(peak->hash)) {
+		if(auto fork = find_fork(peak->hash))
+		{
 			auto vdf_point = fork->vdf_point;
 			log(INFO) << "New peak at height " << peak->height << " with score " << std::to_string(fork->proof_score)
 					<< (is_synced && forked_at ? ", forked at " + std::to_string(forked_at->height) : "")

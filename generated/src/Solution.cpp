@@ -3,7 +3,8 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Solution.hxx>
-#include <mmx/ChainParams.hxx>
+#include <mmx/Solution_is_valid.hxx>
+#include <mmx/Solution_is_valid_return.hxx>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -13,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Solution::VNX_TYPE_HASH(0x9f693babd1a91ccdull);
-const vnx::Hash64 Solution::VNX_CODE_HASH(0x752ca1f5f4ee5c26ull);
+const vnx::Hash64 Solution::VNX_CODE_HASH(0x94524a146af7f5e7ull);
 
 vnx::Hash64 Solution::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -47,14 +48,12 @@ void Solution::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Solution;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, version);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, is_contract);
 	_visitor.type_end(*_type_code);
 }
 
 void Solution::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Solution\"";
 	_out << ", \"version\": "; vnx::write(_out, version);
-	_out << ", \"is_contract\": "; vnx::write(_out, is_contract);
 	_out << "}";
 }
 
@@ -68,15 +67,12 @@ vnx::Object Solution::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Solution";
 	_object["version"] = version;
-	_object["is_contract"] = is_contract;
 	return _object;
 }
 
 void Solution::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "is_contract") {
-			_entry.second.to(is_contract);
-		} else if(_entry.first == "version") {
+		if(_entry.first == "version") {
 			_entry.second.to(version);
 		}
 	}
@@ -86,17 +82,12 @@ vnx::Variant Solution::get_field(const std::string& _name) const {
 	if(_name == "version") {
 		return vnx::Variant(version);
 	}
-	if(_name == "is_contract") {
-		return vnx::Variant(is_contract);
-	}
 	return vnx::Variant();
 }
 
 void Solution::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "version") {
 		_value.to(version);
-	} else if(_name == "is_contract") {
-		_value.to(is_contract);
 	}
 }
 
@@ -124,26 +115,34 @@ std::shared_ptr<vnx::TypeCode> Solution::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Solution";
 	type_code->type_hash = vnx::Hash64(0x9f693babd1a91ccdull);
-	type_code->code_hash = vnx::Hash64(0x752ca1f5f4ee5c26ull);
+	type_code->code_hash = vnx::Hash64(0x94524a146af7f5e7ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::Solution);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Solution>(); };
-	type_code->fields.resize(2);
+	type_code->methods.resize(1);
+	type_code->methods[0] = ::mmx::Solution_is_valid::static_get_type_code();
+	type_code->fields.resize(1);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
 		field.name = "version";
 		field.code = {3};
 	}
-	{
-		auto& field = type_code->fields[1];
-		field.data_size = 1;
-		field.name = "is_contract";
-		field.code = {31};
-	}
 	type_code->build();
 	return type_code;
+}
+
+std::shared_ptr<vnx::Value> Solution::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
+	switch(_method->get_type_hash()) {
+		case 0x80842f8f91d6b02bull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Solution_is_valid>(_method);
+			auto _return_value = ::mmx::Solution_is_valid_return::create();
+			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+	}
+	return nullptr;
 }
 
 
@@ -187,9 +186,6 @@ void read(TypeInput& in, ::mmx::Solution& value, const TypeCode* type_code, cons
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.version, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[1]) {
-			vnx::read_value(_buf + _field->offset, value.is_contract, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -211,9 +207,8 @@ void write(TypeOutput& out, const ::mmx::Solution& value, const TypeCode* type_c
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(5);
+	char* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.version);
-	vnx::write_value(_buf + 4, value.is_contract);
 }
 
 void read(std::istream& in, ::mmx::Solution& value) {

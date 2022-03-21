@@ -3,8 +3,11 @@
 
 #include <mmx/solution/package.hxx>
 #include <mmx/solution/MultiSig.hxx>
-#include <mmx/ChainParams.hxx>
 #include <mmx/Solution.hxx>
+#include <mmx/Solution_is_valid.hxx>
+#include <mmx/Solution_is_valid_return.hxx>
+#include <mmx/solution/MultiSig_is_valid.hxx>
+#include <mmx/solution/MultiSig_is_valid_return.hxx>
 #include <mmx/solution/PubKey.hxx>
 
 #include <vnx/vnx.h>
@@ -13,9 +16,10 @@
 namespace mmx {
 namespace solution {
 
+const uint32_t MultiSig::MAX_SIGNATURES;
 
 const vnx::Hash64 MultiSig::VNX_TYPE_HASH(0x64ffa2f8fc8dffd1ull);
-const vnx::Hash64 MultiSig::VNX_CODE_HASH(0xf5098707cc81ea5ull);
+const vnx::Hash64 MultiSig::VNX_CODE_HASH(0xce1b5fb0152dabd8ull);
 
 vnx::Hash64 MultiSig::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,15 +53,13 @@ void MultiSig::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::solution::vnx_native_type_code_MultiSig;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, version);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, is_contract);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, solutions);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, solutions);
 	_visitor.type_end(*_type_code);
 }
 
 void MultiSig::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.solution.MultiSig\"";
 	_out << ", \"version\": "; vnx::write(_out, version);
-	_out << ", \"is_contract\": "; vnx::write(_out, is_contract);
 	_out << ", \"solutions\": "; vnx::write(_out, solutions);
 	_out << "}";
 }
@@ -72,16 +74,13 @@ vnx::Object MultiSig::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.solution.MultiSig";
 	_object["version"] = version;
-	_object["is_contract"] = is_contract;
 	_object["solutions"] = solutions;
 	return _object;
 }
 
 void MultiSig::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "is_contract") {
-			_entry.second.to(is_contract);
-		} else if(_entry.first == "solutions") {
+		if(_entry.first == "solutions") {
 			_entry.second.to(solutions);
 		} else if(_entry.first == "version") {
 			_entry.second.to(version);
@@ -93,9 +92,6 @@ vnx::Variant MultiSig::get_field(const std::string& _name) const {
 	if(_name == "version") {
 		return vnx::Variant(version);
 	}
-	if(_name == "is_contract") {
-		return vnx::Variant(is_contract);
-	}
 	if(_name == "solutions") {
 		return vnx::Variant(solutions);
 	}
@@ -105,8 +101,6 @@ vnx::Variant MultiSig::get_field(const std::string& _name) const {
 void MultiSig::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "version") {
 		_value.to(version);
-	} else if(_name == "is_contract") {
-		_value.to(is_contract);
 	} else if(_name == "solutions") {
 		_value.to(solutions);
 	}
@@ -136,14 +130,17 @@ std::shared_ptr<vnx::TypeCode> MultiSig::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.solution.MultiSig";
 	type_code->type_hash = vnx::Hash64(0x64ffa2f8fc8dffd1ull);
-	type_code->code_hash = vnx::Hash64(0xf5098707cc81ea5ull);
+	type_code->code_hash = vnx::Hash64(0xce1b5fb0152dabd8ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::solution::MultiSig);
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Solution::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<MultiSig>(); };
-	type_code->fields.resize(3);
+	type_code->methods.resize(2);
+	type_code->methods[0] = ::mmx::Solution_is_valid::static_get_type_code();
+	type_code->methods[1] = ::mmx::solution::MultiSig_is_valid::static_get_type_code();
+	type_code->fields.resize(2);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -152,18 +149,30 @@ std::shared_ptr<vnx::TypeCode> MultiSig::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[1];
-		field.data_size = 1;
-		field.name = "is_contract";
-		field.code = {31};
-	}
-	{
-		auto& field = type_code->fields[2];
 		field.is_extended = true;
 		field.name = "solutions";
 		field.code = {12, 16};
 	}
 	type_code->build();
 	return type_code;
+}
+
+std::shared_ptr<vnx::Value> MultiSig::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
+	switch(_method->get_type_hash()) {
+		case 0x80842f8f91d6b02bull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Solution_is_valid>(_method);
+			auto _return_value = ::mmx::Solution_is_valid_return::create();
+			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+		case 0x7efc69b79102b1b3ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::solution::MultiSig_is_valid>(_method);
+			auto _return_value = ::mmx::solution::MultiSig_is_valid_return::create();
+			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+	}
+	return nullptr;
 }
 
 
@@ -208,13 +217,10 @@ void read(TypeInput& in, ::mmx::solution::MultiSig& value, const TypeCode* type_
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.version, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[1]) {
-			vnx::read_value(_buf + _field->offset, value.is_contract, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 2: vnx::read(in, value.solutions, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.solutions, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -233,10 +239,9 @@ void write(TypeOutput& out, const ::mmx::solution::MultiSig& value, const TypeCo
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(5);
+	char* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.version);
-	vnx::write_value(_buf + 4, value.is_contract);
-	vnx::write(out, value.solutions, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.solutions, type_code, type_code->fields[1].code.data());
 }
 
 void read(std::istream& in, ::mmx::solution::MultiSig& value) {

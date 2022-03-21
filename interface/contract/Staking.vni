@@ -19,7 +19,7 @@ class Staking extends mmx.Contract {
 	
 	hash_t calc_hash() const;
 	
-	ulong calc_min_fee(mmx.ChainParams* params) const;
+	ulong calc_cost(mmx.ChainParams* params) const;
 	
 	vector<addr_t> get_dependency() const;
 	

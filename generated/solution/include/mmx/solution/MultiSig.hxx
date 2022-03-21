@@ -5,7 +5,6 @@
 #define INCLUDE_mmx_solution_MultiSig_HXX_
 
 #include <mmx/solution/package.hxx>
-#include <mmx/ChainParams.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/solution/PubKey.hxx>
 
@@ -15,6 +14,7 @@ namespace solution {
 
 class MMX_SOLUTION_EXPORT MultiSig : public ::mmx::Solution {
 public:
+	static const uint32_t MAX_SIGNATURES = 10;
 	
 	std::vector<std::shared_ptr<const ::mmx::solution::PubKey>> solutions;
 	
@@ -31,7 +31,7 @@ public:
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
 	
-	virtual uint64_t calc_min_fee(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
+	virtual vnx::bool_t is_valid() const override;
 	
 	static std::shared_ptr<MultiSig> create();
 	std::shared_ptr<vnx::Value> clone() const override;
@@ -58,15 +58,17 @@ public:
 	static const vnx::TypeCode* static_get_type_code();
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
+protected:
+	std::shared_ptr<vnx::Value> vnx_call_switch(std::shared_ptr<const vnx::Value> _method) override;
+	
 };
 
 template<typename T>
 void MultiSig::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<MultiSig>(3);
+	_visitor.template type_begin<MultiSig>(2);
 	_visitor.type_field("version", 0); _visitor.accept(version);
-	_visitor.type_field("is_contract", 1); _visitor.accept(is_contract);
-	_visitor.type_field("solutions", 2); _visitor.accept(solutions);
-	_visitor.template type_end<MultiSig>(3);
+	_visitor.type_field("solutions", 1); _visitor.accept(solutions);
+	_visitor.template type_end<MultiSig>(2);
 }
 
 

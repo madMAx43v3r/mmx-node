@@ -33,13 +33,16 @@ module Wallet implements vnx.addons.HttpComponent {
 	hash_t deploy(uint index, Contract* contract, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
+	hash_t execute(uint index, addr_t address, vnx.Object method, spend_options_t options) const;
+	
+	@Permission(permission_e.SPENDING)
 	optional<hash_t> split(uint index, ulong max_amount, addr_t currency, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
 	Transaction* complete(uint index, Transaction* tx, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
-	Transaction* sign_off(uint index, Transaction* tx, bool cover_fee, vector<pair<txio_key_t, utxo_t>> utxo_list) const;
+	Transaction* sign_off(uint index, Transaction* tx, bool cover_fee, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
 	Solution* sign_msg(uint index, addr_t address, hash_t msg) const;
@@ -53,6 +56,10 @@ module Wallet implements vnx.addons.HttpComponent {
 	void release(uint index, vector<txio_key_t> keys);
 	
 	void release_all();
+	
+	void reset_cache(uint index);
+	
+	void update_cache(uint index) const;
 	
 	vector<utxo_entry_t> get_utxo_list(uint index, uint min_confirm = 0) const;
 	

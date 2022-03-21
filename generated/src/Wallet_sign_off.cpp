@@ -5,8 +5,7 @@
 #include <mmx/Wallet_sign_off.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/Wallet_sign_off_return.hxx>
-#include <mmx/txio_key_t.hxx>
-#include <mmx/utxo_t.hxx>
+#include <mmx/spend_options_t.hxx>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -16,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_sign_off::VNX_TYPE_HASH(0x232c89cf3ed4d5b1ull);
-const vnx::Hash64 Wallet_sign_off::VNX_CODE_HASH(0xf914649fee10ec4cull);
+const vnx::Hash64 Wallet_sign_off::VNX_CODE_HASH(0x9f41f7cb4f2ad2efull);
 
 vnx::Hash64 Wallet_sign_off::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -52,7 +51,7 @@ void Wallet_sign_off::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, index);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, tx);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, cover_fee);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, utxo_list);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, options);
 	_visitor.type_end(*_type_code);
 }
 
@@ -61,7 +60,7 @@ void Wallet_sign_off::write(std::ostream& _out) const {
 	_out << ", \"index\": "; vnx::write(_out, index);
 	_out << ", \"tx\": "; vnx::write(_out, tx);
 	_out << ", \"cover_fee\": "; vnx::write(_out, cover_fee);
-	_out << ", \"utxo_list\": "; vnx::write(_out, utxo_list);
+	_out << ", \"options\": "; vnx::write(_out, options);
 	_out << "}";
 }
 
@@ -77,7 +76,7 @@ vnx::Object Wallet_sign_off::to_object() const {
 	_object["index"] = index;
 	_object["tx"] = tx;
 	_object["cover_fee"] = cover_fee;
-	_object["utxo_list"] = utxo_list;
+	_object["options"] = options;
 	return _object;
 }
 
@@ -87,10 +86,10 @@ void Wallet_sign_off::from_object(const vnx::Object& _object) {
 			_entry.second.to(cover_fee);
 		} else if(_entry.first == "index") {
 			_entry.second.to(index);
+		} else if(_entry.first == "options") {
+			_entry.second.to(options);
 		} else if(_entry.first == "tx") {
 			_entry.second.to(tx);
-		} else if(_entry.first == "utxo_list") {
-			_entry.second.to(utxo_list);
 		}
 	}
 }
@@ -105,8 +104,8 @@ vnx::Variant Wallet_sign_off::get_field(const std::string& _name) const {
 	if(_name == "cover_fee") {
 		return vnx::Variant(cover_fee);
 	}
-	if(_name == "utxo_list") {
-		return vnx::Variant(utxo_list);
+	if(_name == "options") {
+		return vnx::Variant(options);
 	}
 	return vnx::Variant();
 }
@@ -118,8 +117,8 @@ void Wallet_sign_off::set_field(const std::string& _name, const vnx::Variant& _v
 		_value.to(tx);
 	} else if(_name == "cover_fee") {
 		_value.to(cover_fee);
-	} else if(_name == "utxo_list") {
-		_value.to(utxo_list);
+	} else if(_name == "options") {
+		_value.to(options);
 	}
 }
 
@@ -147,15 +146,14 @@ std::shared_ptr<vnx::TypeCode> Wallet_sign_off::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.sign_off";
 	type_code->type_hash = vnx::Hash64(0x232c89cf3ed4d5b1ull);
-	type_code->code_hash = vnx::Hash64(0xf914649fee10ec4cull);
+	type_code->code_hash = vnx::Hash64(0x9f41f7cb4f2ad2efull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
 	type_code->native_size = sizeof(::mmx::Wallet_sign_off);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Wallet_sign_off>(); };
-	type_code->depends.resize(2);
-	type_code->depends[0] = ::mmx::txio_key_t::static_get_type_code();
-	type_code->depends[1] = ::mmx::utxo_t::static_get_type_code();
+	type_code->depends.resize(1);
+	type_code->depends[0] = ::mmx::spend_options_t::static_get_type_code();
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Wallet_sign_off_return::static_get_type_code();
 	type_code->fields.resize(4);
@@ -180,8 +178,8 @@ std::shared_ptr<vnx::TypeCode> Wallet_sign_off::static_create_type_code() {
 	{
 		auto& field = type_code->fields[3];
 		field.is_extended = true;
-		field.name = "utxo_list";
-		field.code = {12, 23, 2, 4, 6, 19, 0, 19, 1};
+		field.name = "options";
+		field.code = {19, 0};
 	}
 	type_code->permission = "mmx.permission_e.SPENDING";
 	type_code->build();
@@ -236,7 +234,7 @@ void read(TypeInput& in, ::mmx::Wallet_sign_off& value, const TypeCode* type_cod
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 1: vnx::read(in, value.tx, type_code, _field->code.data()); break;
-			case 3: vnx::read(in, value.utxo_list, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.options, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -259,7 +257,7 @@ void write(TypeOutput& out, const ::mmx::Wallet_sign_off& value, const TypeCode*
 	vnx::write_value(_buf + 0, value.index);
 	vnx::write_value(_buf + 4, value.cover_fee);
 	vnx::write(out, value.tx, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.utxo_list, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.options, type_code, type_code->fields[3].code.data());
 }
 
 void read(std::istream& in, ::mmx::Wallet_sign_off& value) {

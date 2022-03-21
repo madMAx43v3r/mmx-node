@@ -33,6 +33,8 @@ public:
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
 	
+	virtual std::shared_ptr<const ::mmx::Contract> get_contract(const ::mmx::addr_t& address = ::mmx::addr_t()) const;
+	
 	static std::shared_ptr<Context> create();
 	std::shared_ptr<vnx::Value> clone() const override;
 	
@@ -57,6 +59,9 @@ public:
 	
 	static const vnx::TypeCode* static_get_type_code();
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
+	
+protected:
+	std::shared_ptr<vnx::Value> vnx_call_switch(std::shared_ptr<const vnx::Value> _method) override;
 	
 };
 

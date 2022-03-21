@@ -24,7 +24,6 @@ module Node implements vnx.addons.HttpComponent {
 	
 	uint max_history = 1000;
 	uint tx_pool_limit = 1000000;
-	uint max_contract_cache = 1000;
 	uint max_fork_length = 100000;			// to keep in memory at most
 	
 	uint max_sync_jobs = 64;				// number of parallel requests
@@ -110,22 +109,31 @@ module Node implements vnx.addons.HttpComponent {
 	vector<tx_entry_t> get_history_for(vector<addr_t> addresses, int since) const;
 	
 	@Permission(permission_e.PUBLIC)
-	ulong get_balance(addr_t address, addr_t contract, uint min_confirm = 1) const;
+	ulong get_balance(addr_t address, addr_t currency, uint min_confirm = 1) const;
 	
 	@Permission(permission_e.PUBLIC)
-	ulong get_total_balance(vector<addr_t> addresses, addr_t contract, uint min_confirm = 1) const;
+	map<addr_t, balance_t> get_balances(addr_t address, uint min_confirm = 1) const;
+	
+	@Permission(permission_e.PUBLIC)
+	ulong get_total_balance(vector<addr_t> addresses, addr_t currency, uint min_confirm = 1) const;
 	
 	@Permission(permission_e.PUBLIC)
 	map<addr_t, ulong> get_total_balances(vector<addr_t> addresses, uint min_confirm = 1) const;
 	
 	@Permission(permission_e.PUBLIC)
-	ulong get_total_supply(addr_t contract) const;
+	ulong get_total_supply(addr_t currency) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<utxo_entry_t> get_utxo_list(vector<addr_t> addresses, uint min_confirm = 1) const;
+	vector<utxo_entry_t> get_utxo_list(vector<addr_t> addresses, uint min_confirm = 1, uint since = 0) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<stxo_entry_t> get_stxo_list(vector<addr_t> addresses) const;
+	vector<utxo_entry_t> get_utxo_list_for(vector<addr_t> addresses, addr_t currency, uint min_confirm = 1, uint since = 0) const;
+	
+	@Permission(permission_e.PUBLIC)
+	vector<utxo_entry_t> get_spendable_utxo_list(vector<addr_t> addresses, uint min_confirm = 1, uint since = 0) const;
+	
+	@Permission(permission_e.PUBLIC)
+	vector<stxo_entry_t> get_stxo_list(vector<addr_t> addresses, uint since = 0) const;
 	
 	void start_sync(bool force);
 	

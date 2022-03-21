@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_total_supply::VNX_TYPE_HASH(0x17d971db6900bd9dull);
-const vnx::Hash64 Node_get_total_supply::VNX_CODE_HASH(0xb554de81cdc9df52ull);
+const vnx::Hash64 Node_get_total_supply::VNX_CODE_HASH(0x165f215d915fdca0ull);
 
 vnx::Hash64 Node_get_total_supply::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -47,13 +47,13 @@ void Node_get_total_supply::write(vnx::TypeOutput& _out, const vnx::TypeCode* _t
 void Node_get_total_supply::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Node_get_total_supply;
 	_visitor.type_begin(*_type_code);
-	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, contract);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, currency);
 	_visitor.type_end(*_type_code);
 }
 
 void Node_get_total_supply::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Node.get_total_supply\"";
-	_out << ", \"contract\": "; vnx::write(_out, contract);
+	_out << ", \"currency\": "; vnx::write(_out, currency);
 	_out << "}";
 }
 
@@ -66,28 +66,28 @@ void Node_get_total_supply::read(std::istream& _in) {
 vnx::Object Node_get_total_supply::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Node.get_total_supply";
-	_object["contract"] = contract;
+	_object["currency"] = currency;
 	return _object;
 }
 
 void Node_get_total_supply::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "contract") {
-			_entry.second.to(contract);
+		if(_entry.first == "currency") {
+			_entry.second.to(currency);
 		}
 	}
 }
 
 vnx::Variant Node_get_total_supply::get_field(const std::string& _name) const {
-	if(_name == "contract") {
-		return vnx::Variant(contract);
+	if(_name == "currency") {
+		return vnx::Variant(currency);
 	}
 	return vnx::Variant();
 }
 
 void Node_get_total_supply::set_field(const std::string& _name, const vnx::Variant& _value) {
-	if(_name == "contract") {
-		_value.to(contract);
+	if(_name == "currency") {
+		_value.to(currency);
 	}
 }
 
@@ -115,7 +115,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_total_supply::static_create_type_code() 
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_total_supply";
 	type_code->type_hash = vnx::Hash64(0x17d971db6900bd9dull);
-	type_code->code_hash = vnx::Hash64(0xb554de81cdc9df52ull);
+	type_code->code_hash = vnx::Hash64(0x165f215d915fdca0ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -127,7 +127,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_total_supply::static_create_type_code() 
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
-		field.name = "contract";
+		field.name = "currency";
 		field.code = {11, 32, 1};
 	}
 	type_code->permission = "mmx.permission_e.PUBLIC";
@@ -176,7 +176,7 @@ void read(TypeInput& in, ::mmx::Node_get_total_supply& value, const TypeCode* ty
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 0: vnx::read(in, value.contract, type_code, _field->code.data()); break;
+			case 0: vnx::read(in, value.currency, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -195,7 +195,7 @@ void write(TypeOutput& out, const ::mmx::Node_get_total_supply& value, const Typ
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	vnx::write(out, value.contract, type_code, type_code->fields[0].code.data());
+	vnx::write(out, value.currency, type_code, type_code->fields[0].code.data());
 }
 
 void read(std::istream& in, ::mmx::Node_get_total_supply& value) {

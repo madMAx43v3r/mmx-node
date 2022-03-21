@@ -9,18 +9,22 @@ class MultiSig extends mmx.Contract {
 	
 	vector<addr_t> owners;
 	
+	static const uint MAX_OWNERS = 100;
+	
 	
 	bool is_valid() const;
 	
 	hash_t calc_hash() const;
 	
-	ulong calc_min_fee(mmx.ChainParams* params) const;
-	
-	vector<addr_t> get_dependency() const;
+	ulong calc_cost(mmx.ChainParams* params) const;
 	
 	vector<addr_t> get_parties() const;
 	
 	vector<mmx.tx_out_t> validate(mmx.Operation* operation, mmx.Context* context) const;
+	
+	void add_owner(addr_t address);
+	
+	void rem_owner(addr_t address);
 	
 }
 

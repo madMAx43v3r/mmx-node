@@ -45,6 +45,16 @@ TimeLordClient::TimeLordClient(vnx::Hash64 service_addr)
 {
 }
 
+void TimeLordClient::stop_vdf() {
+	auto _method = ::mmx::TimeLord_stop_vdf::create();
+	vnx_request(_method, false);
+}
+
+void TimeLordClient::stop_vdf_async() {
+	auto _method = ::mmx::TimeLord_stop_vdf::create();
+	vnx_request(_method, true);
+}
+
 ::vnx::Object TimeLordClient::vnx_get_config_object() {
 	auto _method = ::vnx::ModuleInterface_vnx_get_config_object::create();
 	auto _return_value = vnx_request(_method, false);
@@ -150,16 +160,6 @@ vnx::bool_t TimeLordClient::vnx_self_test() {
 	} else {
 		throw std::logic_error("TimeLordClient: invalid return value");
 	}
-}
-
-void TimeLordClient::stop_vdf() {
-	auto _method = ::mmx::TimeLord_stop_vdf::create();
-	vnx_request(_method, false);
-}
-
-void TimeLordClient::stop_vdf_async() {
-	auto _method = ::mmx::TimeLord_stop_vdf::create();
-	vnx_request(_method, true);
 }
 
 

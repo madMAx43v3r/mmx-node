@@ -5,6 +5,7 @@
 #include <mmx/spend_options_t.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/txio_key_t.hxx>
+#include <mmx/utxo_t.hxx>
 
 #include <vnx/vnx.h>
 
@@ -13,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 spend_options_t::VNX_TYPE_HASH(0x37f7c6d377362e95ull);
-const vnx::Hash64 spend_options_t::VNX_CODE_HASH(0xd5c22b764c26045eull);
+const vnx::Hash64 spend_options_t::VNX_CODE_HASH(0xcac759095590b6e0ull);
 
 vnx::Hash64 spend_options_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -52,6 +53,8 @@ void spend_options_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, pending_change);
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, change_addr);
 	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, exclude);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, owner_map);
+	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, utxo_map);
 	_visitor.type_end(*_type_code);
 }
 
@@ -63,6 +66,8 @@ void spend_options_t::write(std::ostream& _out) const {
 	_out << ", \"pending_change\": "; vnx::write(_out, pending_change);
 	_out << ", \"change_addr\": "; vnx::write(_out, change_addr);
 	_out << ", \"exclude\": "; vnx::write(_out, exclude);
+	_out << ", \"owner_map\": "; vnx::write(_out, owner_map);
+	_out << ", \"utxo_map\": "; vnx::write(_out, utxo_map);
 	_out << "}";
 }
 
@@ -81,6 +86,8 @@ vnx::Object spend_options_t::to_object() const {
 	_object["pending_change"] = pending_change;
 	_object["change_addr"] = change_addr;
 	_object["exclude"] = exclude;
+	_object["owner_map"] = owner_map;
+	_object["utxo_map"] = utxo_map;
 	return _object;
 }
 
@@ -94,10 +101,14 @@ void spend_options_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(min_confirm);
 		} else if(_entry.first == "over_spend") {
 			_entry.second.to(over_spend);
+		} else if(_entry.first == "owner_map") {
+			_entry.second.to(owner_map);
 		} else if(_entry.first == "pending_change") {
 			_entry.second.to(pending_change);
 		} else if(_entry.first == "split_output") {
 			_entry.second.to(split_output);
+		} else if(_entry.first == "utxo_map") {
+			_entry.second.to(utxo_map);
 		}
 	}
 }
@@ -121,6 +132,12 @@ vnx::Variant spend_options_t::get_field(const std::string& _name) const {
 	if(_name == "exclude") {
 		return vnx::Variant(exclude);
 	}
+	if(_name == "owner_map") {
+		return vnx::Variant(owner_map);
+	}
+	if(_name == "utxo_map") {
+		return vnx::Variant(utxo_map);
+	}
 	return vnx::Variant();
 }
 
@@ -137,6 +154,10 @@ void spend_options_t::set_field(const std::string& _name, const vnx::Variant& _v
 		_value.to(change_addr);
 	} else if(_name == "exclude") {
 		_value.to(exclude);
+	} else if(_name == "owner_map") {
+		_value.to(owner_map);
+	} else if(_name == "utxo_map") {
+		_value.to(utxo_map);
 	}
 }
 
@@ -164,13 +185,14 @@ std::shared_ptr<vnx::TypeCode> spend_options_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.spend_options_t";
 	type_code->type_hash = vnx::Hash64(0x37f7c6d377362e95ull);
-	type_code->code_hash = vnx::Hash64(0xd5c22b764c26045eull);
+	type_code->code_hash = vnx::Hash64(0xcac759095590b6e0ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::spend_options_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<spend_options_t>>(); };
-	type_code->depends.resize(1);
+	type_code->depends.resize(2);
 	type_code->depends[0] = ::mmx::txio_key_t::static_get_type_code();
-	type_code->fields.resize(6);
+	type_code->depends[1] = ::mmx::utxo_t::static_get_type_code();
+	type_code->fields.resize(8);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -210,6 +232,18 @@ std::shared_ptr<vnx::TypeCode> spend_options_t::static_create_type_code() {
 		field.is_extended = true;
 		field.name = "exclude";
 		field.code = {12, 19, 0};
+	}
+	{
+		auto& field = type_code->fields[6];
+		field.is_extended = true;
+		field.name = "owner_map";
+		field.code = {12, 23, 2, 4, 7, 11, 32, 1, 11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[7];
+		field.is_extended = true;
+		field.name = "utxo_map";
+		field.code = {12, 23, 2, 4, 6, 19, 0, 19, 1};
 	}
 	type_code->build();
 	return type_code;
@@ -270,6 +304,8 @@ void read(TypeInput& in, ::mmx::spend_options_t& value, const TypeCode* type_cod
 		switch(_field->native_index) {
 			case 4: vnx::read(in, value.change_addr, type_code, _field->code.data()); break;
 			case 5: vnx::read(in, value.exclude, type_code, _field->code.data()); break;
+			case 6: vnx::read(in, value.owner_map, type_code, _field->code.data()); break;
+			case 7: vnx::read(in, value.utxo_map, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -295,6 +331,8 @@ void write(TypeOutput& out, const ::mmx::spend_options_t& value, const TypeCode*
 	vnx::write_value(_buf + 9, value.pending_change);
 	vnx::write(out, value.change_addr, type_code, type_code->fields[4].code.data());
 	vnx::write(out, value.exclude, type_code, type_code->fields[5].code.data());
+	vnx::write(out, value.owner_map, type_code, type_code->fields[6].code.data());
+	vnx::write(out, value.utxo_map, type_code, type_code->fields[7].code.data());
 }
 
 void read(std::istream& in, ::mmx::spend_options_t& value) {

@@ -4,10 +4,7 @@ class Solution {
 	
 	uint version;
 	
-	bool is_contract;
 	
-	
-	// TODO: rename to calc_cost()
-	ulong calc_min_fee(ChainParams* params) const;
+	bool is_valid() const;
 	
 }

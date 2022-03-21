@@ -6,8 +6,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Transaction.hxx>
-#include <mmx/txio_key_t.hxx>
-#include <mmx/utxo_t.hxx>
+#include <mmx/spend_options_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -19,7 +18,7 @@ public:
 	uint32_t index = 0;
 	std::shared_ptr<const ::mmx::Transaction> tx;
 	vnx::bool_t cover_fee = 0;
-	std::vector<std::pair<::mmx::txio_key_t, ::mmx::utxo_t>> utxo_list;
+	::mmx::spend_options_t options;
 	
 	typedef ::vnx::Value Super;
 	
@@ -67,7 +66,7 @@ void Wallet_sign_off::accept_generic(T& _visitor) const {
 	_visitor.type_field("index", 0); _visitor.accept(index);
 	_visitor.type_field("tx", 1); _visitor.accept(tx);
 	_visitor.type_field("cover_fee", 2); _visitor.accept(cover_fee);
-	_visitor.type_field("utxo_list", 3); _visitor.accept(utxo_list);
+	_visitor.type_field("options", 3); _visitor.accept(options);
 	_visitor.template type_end<Wallet_sign_off>(4);
 }
 

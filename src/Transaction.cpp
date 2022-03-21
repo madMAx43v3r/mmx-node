@@ -20,17 +20,33 @@ uint64_t TransactionBase::calc_cost(std::shared_ptr<const ChainParams> params) c
 	return 0;
 }
 
-std::shared_ptr<const TransactionBase> TransactionBase::create_ex(const hash_t& id) {
+std::shared_ptr<const TransactionBase> TransactionBase::create_ex(const hash_t& id)
+{
 	auto tx = TransactionBase::create();
 	tx->id = id;
 	return tx;
 }
 
-void Transaction::finalize() {
+void Transaction::finalize()
+{
+	while(!nonce) {
+		nonce = vnx::rand64();
+	}
 	id = calc_hash();
 }
 
-vnx::bool_t Transaction::is_valid() const {
+vnx::bool_t Transaction::is_valid() const
+{
+	for(const auto& op : execute) {
+		if(!op) {
+			return false;
+		}
+	}
+	for(const auto& sol : solutions) {
+		if(!sol) {
+			return false;
+		}
+	}
 	return calc_hash() == id;
 }
 
@@ -42,8 +58,10 @@ hash_t Transaction::calc_hash() const
 
 	buffer.reserve(4 * 1024);
 
-	// TODO: write_bytes(out, get_type_hash());
+	write_bytes(out, get_type_hash());
 	write_bytes(out, version);
+	write_bytes(out, nonce);
+	write_bytes(out, salt);
 
 	for(const auto& tx : inputs) {
 		write_bytes(out, tx);
@@ -118,32 +136,24 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 		throw std::logic_error("!params");
 	}
 	uint64_t fee = (inputs.size() + outputs.size()) * params->min_txfee_io;
-	{
-		std::unordered_map<uint32_t, uint32_t> exec_count;
-		for(const auto& in : inputs) {
-			exec_count[in.solution]++;
-		}
-		for(const auto& entry : exec_count) {
-			if(auto sol = get_solution(entry.first)) {
-				if(sol->is_contract) {
-					// TODO: fee += entry.second * params->min_txfee_exec;
-				}
-			}
+
+	for(const auto& in : inputs) {
+		if(in.flags & tx_in_t::IS_EXEC) {
+			fee += params->min_txfee_exec;
 		}
 	}
 	for(const auto& op : execute) {
 		if(op) {
-			// TODO: fee += params->min_txfee_exec;
-			fee += op->calc_min_fee(params);
+			fee += params->min_txfee_exec + op->calc_cost(params);
 		}
 	}
 	for(const auto& sol : solutions) {
 		if(sol) {
-			fee += sol->calc_min_fee(params);
+			fee += params->min_txfee_sign;
 		}
 	}
 	if(deploy) {
-		fee += deploy->calc_min_fee(params);
+		fee += deploy->calc_cost(params);
 	}
 	return fee;
 }

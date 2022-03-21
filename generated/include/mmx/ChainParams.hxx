@@ -41,6 +41,7 @@ public:
 	uint64_t initial_space_diff = 10;
 	uint64_t min_txfee_io = 100;
 	uint64_t min_txfee_sign = 1000;
+	uint64_t min_txfee_exec = 10000;
 	uint64_t min_txfee_byte = 10;
 	uint64_t max_block_cost = 10000000;
 	vnx::float64_t block_time = 10;
@@ -84,11 +85,14 @@ public:
 	static const vnx::TypeCode* static_get_type_code();
 	static std::shared_ptr<vnx::TypeCode> static_create_type_code();
 	
+protected:
+	std::shared_ptr<vnx::Value> vnx_call_switch(std::shared_ptr<const vnx::Value> _method) override;
+	
 };
 
 template<typename T>
 void ChainParams::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ChainParams>(31);
+	_visitor.template type_begin<ChainParams>(32);
 	_visitor.type_field("port", 0); _visitor.accept(port);
 	_visitor.type_field("decimals", 1); _visitor.accept(decimals);
 	_visitor.type_field("min_ksize", 2); _visitor.accept(min_ksize);
@@ -116,11 +120,12 @@ void ChainParams::accept_generic(T& _visitor) const {
 	_visitor.type_field("initial_space_diff", 24); _visitor.accept(initial_space_diff);
 	_visitor.type_field("min_txfee_io", 25); _visitor.accept(min_txfee_io);
 	_visitor.type_field("min_txfee_sign", 26); _visitor.accept(min_txfee_sign);
-	_visitor.type_field("min_txfee_byte", 27); _visitor.accept(min_txfee_byte);
-	_visitor.type_field("max_block_cost", 28); _visitor.accept(max_block_cost);
-	_visitor.type_field("block_time", 29); _visitor.accept(block_time);
-	_visitor.type_field("vdf_seed", 30); _visitor.accept(vdf_seed);
-	_visitor.template type_end<ChainParams>(31);
+	_visitor.type_field("min_txfee_exec", 27); _visitor.accept(min_txfee_exec);
+	_visitor.type_field("min_txfee_byte", 28); _visitor.accept(min_txfee_byte);
+	_visitor.type_field("max_block_cost", 29); _visitor.accept(max_block_cost);
+	_visitor.type_field("block_time", 30); _visitor.accept(block_time);
+	_visitor.type_field("vdf_seed", 31); _visitor.accept(vdf_seed);
+	_visitor.template type_end<ChainParams>(32);
 }
 
 

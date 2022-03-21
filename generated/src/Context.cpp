@@ -3,6 +3,8 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Context.hxx>
+#include <mmx/Context_get_contract.hxx>
+#include <mmx/Context_get_contract_return.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
@@ -141,6 +143,8 @@ std::shared_ptr<vnx::TypeCode> Context::static_create_type_code() {
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::Context);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Context>(); };
+	type_code->methods.resize(1);
+	type_code->methods[0] = ::mmx::Context_get_contract::static_get_type_code();
 	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
@@ -162,6 +166,18 @@ std::shared_ptr<vnx::TypeCode> Context::static_create_type_code() {
 	}
 	type_code->build();
 	return type_code;
+}
+
+std::shared_ptr<vnx::Value> Context::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
+	switch(_method->get_type_hash()) {
+		case 0x1f4d1db80d454fcbull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Context_get_contract>(_method);
+			auto _return_value = ::mmx::Context_get_contract_return::create();
+			_return_value->_ret_0 = get_contract(_args->address);
+			return _return_value;
+		}
+	}
+	return nullptr;
 }
 
 

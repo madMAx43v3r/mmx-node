@@ -15,7 +15,7 @@ namespace contract {
 
 vnx::bool_t Token::is_valid() const
 {
-	if(!time_factor.inverse) {
+	if(time_factor && !time_factor->inverse) {
 		return false;
 	}
 	for(const auto& entry : stake_factors) {
@@ -27,10 +27,9 @@ vnx::bool_t Token::is_valid() const
 			return false;
 		}
 	}
-	// TODO: max name length 128
-	// TODO: max symbol length 6, min length 2
-	// TODO: min decimals 0, max decimals 12
-	return Contract::is_valid() && !name.empty() && !symbol.empty() && symbol != "MMX";
+	return Contract::is_valid() && name.size() <= 128
+			&& symbol.size() >= 2 && symbol.size() <= 6 && symbol != "MMX"
+			&& decimals >= 0 && decimals <= 12;
 }
 
 hash_t Token::calc_hash() const
@@ -57,7 +56,8 @@ hash_t Token::calc_hash() const
 	return hash_t(buffer);
 }
 
-uint64_t Token::calc_min_fee(std::shared_ptr<const ChainParams> params) const {
+uint64_t Token::calc_cost(std::shared_ptr<const ChainParams> params) const
+{
 	return (8 + 4 + name.size() + symbol.size() + web_url.size() + icon_url.size()
 			+ 4 + 32 + 16 + (32 + 16) * stake_factors.size()) * params->min_txfee_byte;
 }
@@ -70,10 +70,7 @@ std::vector<addr_t> Token::get_dependency() const {
 }
 
 std::vector<addr_t> Token::get_parties() const {
-	if(owner) {
-		return {*owner};
-	}
-	return {};
+	return get_dependency();
 }
 
 vnx::optional<addr_t> Token::get_owner() const {
@@ -82,20 +79,21 @@ vnx::optional<addr_t> Token::get_owner() const {
 
 std::vector<tx_out_t> Token::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
-	if(!operation) {
-		throw std::logic_error("!operation");
-	}
 	if(!owner) {
 		throw std::logic_error("!owner");
 	}
-	const auto iter = context->depends.find(*owner);
-	if(iter == context->depends.end()) {
-		throw std::logic_error("missing dependency");
+	{
+		auto contract = context->get_contract(*owner);
+		if(!contract) {
+			throw std::logic_error("missing dependency");
+		}
+		contract->validate(operation, context);
 	}
-	iter->second->validate(operation, context);
-
 	if(auto mint = std::dynamic_pointer_cast<const operation::Mint>(operation))
 	{
+		if(!is_mintable) {
+			throw std::logic_error("token not mintable");
+		}
 		tx_out_t out;
 		out.contract = mint->address;
 		out.address = mint->target;
@@ -103,6 +101,31 @@ std::vector<tx_out_t> Token::validate(std::shared_ptr<const Operation> operation
 		return {out};
 	}
 	return {};
+}
+
+void Token::transfer(const vnx::optional<addr_t>& new_owner)
+{
+	owner = new_owner;
+}
+
+void Token::set_time_factor(const vnx::optional<ulong_fraction_t>& factor)
+{
+	if(!is_adjustable) {
+		throw std::logic_error("token not adjustable");
+	}
+	time_factor = factor;
+}
+
+void Token::set_stake_factor(const addr_t& currency, const vnx::optional<ulong_fraction_t>& factor)
+{
+	if(!is_adjustable) {
+		throw std::logic_error("token not adjustable");
+	}
+	if(factor) {
+		stake_factors[currency] = *factor;
+	} else {
+		stake_factors.erase(currency);
+	}
 }
 
 
