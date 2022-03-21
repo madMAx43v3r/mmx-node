@@ -1358,7 +1358,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	pending_vdfs.erase(pending_vdfs.begin(), pending_vdfs.upper_bound(block->height));
 	verified_vdfs.erase(verified_vdfs.begin(), verified_vdfs.upper_bound(block->height));
 
-	if(!do_sync && fork) {
+	if(is_synced && fork) {
 		Node::log(INFO) << "Committed height " << block->height << " with: ntx = " << block->tx_list.size()
 				<< ", k = " << (block->proof ? block->proof->ksize : 0) << ", score = " << fork->proof_score
 				<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff
