@@ -4,7 +4,7 @@ const {bech32, bech32m} = require('bech32')
 const {createProxyMiddleware} = require('http-proxy-middleware');
 const app = express();
 const port = 3000;
-const host = 'http://localhost:8080';
+const host = 'http://localhost:11380';
 
 app.set('views', './views');
 app.set('view engine', 'ejs');
