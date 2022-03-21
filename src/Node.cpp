@@ -83,12 +83,18 @@ void Node::main()
 		contract_cache.open(database_path + "contract_cache", options);
 		mutate_log.open(database_path + "mutate_log", options);
 	}
+	is_db_synced = !vnx::File(database_path + ".is_synced").create();
+
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
 
 	if(block_chain->exists()) {
+		if(!is_db_synced) {
+			log(INFO) << "Creating DB (this may take a while) ...";
+		}
 		const auto time_begin = vnx::get_wall_time_millis();
-		block_chain->open("rb+");
+
 		int64_t offset = 0;
+		block_chain->open("rb+");
 		while(auto block = read_block(*block_chain, &offset)) {
 			if(block->height >= replay_height) {
 				block_chain->seek_to(offset);
@@ -110,6 +116,7 @@ void Node::main()
 	}
 	is_replay = false;
 	is_synced = !do_sync;
+	is_db_synced = true;
 
 	if(state_hash == hash_t())
 	{
@@ -1274,7 +1281,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 
 	for(const auto& entry : log->utxo_removed) {
 		const auto& stxo = entry.second;
-		if(!is_replay) {
+		if(!is_replay || !is_db_synced) {
 			addr_log.insert(block->height, stxo.address);
 			stxo_log.insert(block->height, entry.first);
 			stxo_index.insert(entry.first, entry.second);
@@ -1300,7 +1307,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 		tx_map.erase(txid);
 		tx_pool.erase(txid);
 	}
-	if(!is_replay) {
+	if(!is_replay || !is_db_synced) {
 		for(const auto& entry : log->deployed) {
 			if(auto owner = entry.second->get_owner()) {
 				owner_map.insert(*owner, entry.first);

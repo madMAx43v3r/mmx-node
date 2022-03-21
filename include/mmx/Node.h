@@ -303,6 +303,7 @@ private:
 
 	bool is_replay = true;
 	bool is_synced = false;
+	bool is_db_synced = true;
 	std::shared_ptr<vnx::File> block_chain;
 	std::unordered_map<uint32_t, std::pair<int64_t, hash_t>> block_index;			// [height => [file offset, block hash]]
 
