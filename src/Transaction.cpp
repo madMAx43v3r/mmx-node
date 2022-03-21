@@ -29,7 +29,7 @@ std::shared_ptr<const TransactionBase> TransactionBase::create_ex(const hash_t& 
 
 void Transaction::finalize()
 {
-	if(!nonce) {
+	while(!nonce) {
 		nonce = vnx::rand64();
 	}
 	id = calc_hash();
