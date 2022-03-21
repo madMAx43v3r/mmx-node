@@ -344,6 +344,7 @@ void Node::update()
 								}
 							}
 							catch(const std::exception& ex) {
+								proof_map.erase(iter);
 								log(WARN) << "Failed to create a block: " << ex.what();
 							}
 							// revert back to peak
