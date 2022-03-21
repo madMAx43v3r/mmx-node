@@ -38,6 +38,6 @@ Please take a look at the Wiki:
 
 ## WebGUI
 
-To access the WebGUI go to: http://localhost:11380/
+To access the WebGUI go to: http://localhost:11380/gui/
 
 It's only available on localhost since it allows spending from your wallet.
