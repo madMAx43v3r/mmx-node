@@ -22,8 +22,8 @@ In the future it is planned that anybody can create their own token on MMX using
 
 The first application for MMX will be a hybrid decentralized exchange where users can trade MMX and tokens, as well as possibly a decentralized storage platform.
 
-A mainnet launch is planned in ~6 months or so.
-Currently we are running _testnet4_, so the coins farmed right now are _not worth anything_.
+A mainnet launch is planned in ~4 months or so.
+Currently we are running _testnet5_, so the coins farmed right now are _not worth anything_.
 
 See `#mmx-news` and `#mmx-general` on discord: https://discord.gg/pQwkebKnPB
 
