@@ -1318,9 +1318,6 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 		for(const auto& entry : log->mutated) {
 			const auto& address = entry.first;
 			for(const auto& op : entry.second) {
-				addr_log.insert(block->height, address);
-				mutate_log.insert(std::make_pair(address, block->height), op->method);
-
 				std::shared_ptr<const Contract> contract;
 				if(!contract_cache.find(address, contract)) {
 					if(auto tx = get_transaction(address)) {
@@ -1328,9 +1325,17 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 					}
 				}
 				if(contract) {
-					auto copy = vnx::clone(contract);
-					copy->vnx_call(vnx::clone(op->method));
-					contract_cache.insert(address, copy);
+					try {
+						auto copy = vnx::clone(contract);
+						copy->vnx_call(vnx::clone(op->method));
+
+						addr_log.insert(block->height, address);
+						mutate_log.insert(std::make_pair(address, block->height), op->method);
+						contract_cache.insert(address, copy);
+					}
+					catch(const std::exception& ex) {
+						Node::log(ERROR) << "commit(): mutate " << address << " failed with: " << ex.what();
+					}
 				}
 			}
 		}
