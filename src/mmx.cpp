@@ -73,6 +73,11 @@ int main(int argc, char** argv)
 {
 	mmx::secp256k1_init();
 
+	std::string mmx_home;
+	if(auto path = ::getenv("MMX_HOME")) {
+		mmx_home = path;
+	}
+
 	std::map<std::string, std::string> options;
 	options["n"] = "node";
 	options["f"] = "file";
@@ -406,8 +411,10 @@ int main(int argc, char** argv)
 				if(file_name.empty()) {
 					file_name = "wallet.dat";
 				}
+				file_name = mmx_home + file_name;
+
 				if(vnx::File(file_name).exists()) {
-					vnx::log_error() << "Wallet file '" << file_name << "' already exists";
+					vnx::log_error() << "Wallet file '" << file_name << "' already exists!";
 					goto failed;
 				}
 				std::string seed_str;
