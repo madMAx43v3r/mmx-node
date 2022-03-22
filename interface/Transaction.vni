@@ -6,6 +6,8 @@ class Transaction extends TransactionBase {
 	
 	ulong nonce;
 	
+	tx_note_e note;
+	
 	optional<hash_t> salt;
 	
 	vector<tx_in_t> inputs;

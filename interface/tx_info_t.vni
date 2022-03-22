@@ -10,6 +10,8 @@ class tx_info_t {
 	long fee;
 	ulong cost;
 	
+	tx_note_e note;
+	
 	vector<txi_info_t> inputs;
 	vector<txo_info_t> outputs;
 	

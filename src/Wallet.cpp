@@ -157,6 +157,8 @@ vnx::optional<hash_t> Wallet::split(const uint32_t& index, const uint64_t& max_a
 	const std::unordered_set<txio_key_t> exclude(options.exclude.begin(), options.exclude.end());
 
 	auto tx = Transaction::create();
+	tx->note = tx_note_e::SPLIT;
+
 	uint64_t total = 0;
 	for(const auto& entry : get_utxo_list_for(index, currency, options.min_confirm)) {
 		const auto& utxo = entry.output;
@@ -228,6 +230,7 @@ hash_t Wallet::execute(const uint32_t& index, const addr_t& address, const vnx::
 	op->method = method;
 
 	auto tx = Transaction::create();
+	tx->note = tx_note_e::MUTATE;
 	tx->execute.push_back(op);
 
 	if(wallet->find_address(*owner) < 0) {

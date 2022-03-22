@@ -1,0 +1,18 @@
+package mmx;
+
+enum tx_note_e {
+	
+	REWARD,
+	TRANSFER,
+	WITHDRAW,
+	CLAIM,
+	SPLIT,
+	BURN,
+	OFFER,
+	TRADE,
+	MINT,
+	DEPLOY,
+	MUTATE,
+	OTHER
+	
+}

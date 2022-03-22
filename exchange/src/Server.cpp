@@ -432,6 +432,8 @@ void Server::match_async(const trade_order_t& order, const vnx::request_id_t& re
 
 			// match orders
 			auto tx = Transaction::create();
+			tx->note = tx_note_e::TRADE;
+
 			std::map<addr_t, uint64_t> output_map;
 
 			uint64_t bid_left = std::min(order.bid, max_bid);

@@ -351,6 +351,7 @@ Client::make_offer(const uint32_t& index, const trade_pair_t& pair, const uint64
 	const auto address = wallet->get_address(index, 0);
 
 	auto tx_ = Transaction::create();
+	tx_->note = tx_note_e::OFFER;
 	tx_->add_output(pair.bid, address, bid, num_chunks);
 	auto tx = wallet->complete(index, tx_);
 	offer->generator.push_back(tx);

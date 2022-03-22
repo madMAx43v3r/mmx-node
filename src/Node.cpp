@@ -385,6 +385,7 @@ vnx::optional<tx_info_t> Node::get_tx_info(const hash_t& id) const
 			info.height = *height;
 			info.block = get_block_hash(*height);
 		}
+		info.note = tx->note;
 		info.cost = tx->calc_cost(params);
 		info.operations = tx->execute;
 		info.deployed = tx->deploy;
