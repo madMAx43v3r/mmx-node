@@ -9,6 +9,7 @@
 #include <mmx/Operation.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
+#include <mmx/tx_note_e.hxx>
 #include <mmx/txi_info_t.hxx>
 #include <mmx/txo_info_t.hxx>
 #include <vnx/Value.h>
@@ -24,6 +25,7 @@ public:
 	vnx::optional<::mmx::hash_t> block;
 	int64_t fee = 0;
 	uint64_t cost = 0;
+	::mmx::tx_note_e note;
 	std::vector<::mmx::txi_info_t> inputs;
 	std::vector<::mmx::txo_info_t> outputs;
 	std::vector<std::shared_ptr<const ::mmx::Operation>> operations;
@@ -77,20 +79,21 @@ protected:
 
 template<typename T>
 void tx_info_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<tx_info_t>(12);
+	_visitor.template type_begin<tx_info_t>(13);
 	_visitor.type_field("id", 0); _visitor.accept(id);
 	_visitor.type_field("height", 1); _visitor.accept(height);
 	_visitor.type_field("block", 2); _visitor.accept(block);
 	_visitor.type_field("fee", 3); _visitor.accept(fee);
 	_visitor.type_field("cost", 4); _visitor.accept(cost);
-	_visitor.type_field("inputs", 5); _visitor.accept(inputs);
-	_visitor.type_field("outputs", 6); _visitor.accept(outputs);
-	_visitor.type_field("operations", 7); _visitor.accept(operations);
-	_visitor.type_field("deployed", 8); _visitor.accept(deployed);
-	_visitor.type_field("input_amounts", 9); _visitor.accept(input_amounts);
-	_visitor.type_field("output_amounts", 10); _visitor.accept(output_amounts);
-	_visitor.type_field("contracts", 11); _visitor.accept(contracts);
-	_visitor.template type_end<tx_info_t>(12);
+	_visitor.type_field("note", 5); _visitor.accept(note);
+	_visitor.type_field("inputs", 6); _visitor.accept(inputs);
+	_visitor.type_field("outputs", 7); _visitor.accept(outputs);
+	_visitor.type_field("operations", 8); _visitor.accept(operations);
+	_visitor.type_field("deployed", 9); _visitor.accept(deployed);
+	_visitor.type_field("input_amounts", 10); _visitor.accept(input_amounts);
+	_visitor.type_field("output_amounts", 11); _visitor.accept(output_amounts);
+	_visitor.type_field("contracts", 12); _visitor.accept(contracts);
+	_visitor.template type_end<tx_info_t>(13);
 }
 
 

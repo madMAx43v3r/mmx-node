@@ -13,6 +13,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/tx_in_t.hxx>
+#include <mmx/tx_note_e.hxx>
 #include <mmx/tx_out_t.hxx>
 
 
@@ -23,6 +24,7 @@ public:
 	
 	uint32_t version = 0;
 	uint64_t nonce = 0;
+	::mmx::tx_note_e note;
 	vnx::optional<::mmx::hash_t> salt;
 	std::vector<::mmx::tx_in_t> inputs;
 	std::vector<::mmx::tx_out_t> outputs;
@@ -87,18 +89,19 @@ protected:
 
 template<typename T>
 void Transaction::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Transaction>(10);
+	_visitor.template type_begin<Transaction>(11);
 	_visitor.type_field("id", 0); _visitor.accept(id);
 	_visitor.type_field("version", 1); _visitor.accept(version);
 	_visitor.type_field("nonce", 2); _visitor.accept(nonce);
-	_visitor.type_field("salt", 3); _visitor.accept(salt);
-	_visitor.type_field("inputs", 4); _visitor.accept(inputs);
-	_visitor.type_field("outputs", 5); _visitor.accept(outputs);
-	_visitor.type_field("exec_outputs", 6); _visitor.accept(exec_outputs);
-	_visitor.type_field("execute", 7); _visitor.accept(execute);
-	_visitor.type_field("solutions", 8); _visitor.accept(solutions);
-	_visitor.type_field("deploy", 9); _visitor.accept(deploy);
-	_visitor.template type_end<Transaction>(10);
+	_visitor.type_field("note", 3); _visitor.accept(note);
+	_visitor.type_field("salt", 4); _visitor.accept(salt);
+	_visitor.type_field("inputs", 5); _visitor.accept(inputs);
+	_visitor.type_field("outputs", 6); _visitor.accept(outputs);
+	_visitor.type_field("exec_outputs", 7); _visitor.accept(exec_outputs);
+	_visitor.type_field("execute", 8); _visitor.accept(execute);
+	_visitor.type_field("solutions", 9); _visitor.accept(solutions);
+	_visitor.type_field("deploy", 10); _visitor.accept(deploy);
+	_visitor.template type_end<Transaction>(11);
 }
 
 
