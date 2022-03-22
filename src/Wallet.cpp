@@ -618,10 +618,14 @@ void Wallet::create_account(const account_t& config)
 	}
 }
 
-void Wallet::create_wallet(const account_t& config_)
+void Wallet::create_wallet(const account_t& config_, const vnx::optional<hash_t>& seed)
 {
 	mmx::KeyFile key_file;
-	key_file.seed_value = mmx::hash_t::random();
+	if(seed) {
+		key_file.seed_value = *seed;
+	} else {
+		key_file.seed_value = mmx::hash_t::random();
+	}
 
 	auto config = config_;
 	if(config.name.empty()) {

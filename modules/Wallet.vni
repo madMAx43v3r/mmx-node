@@ -93,7 +93,7 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	void create_account(account_t config);
 	
-	void create_wallet(account_t config);
+	void create_wallet(account_t config, optional<hash_t> seed);
 	
 	@Permission(permission_e.SPENDING)
 	hash_t get_master_seed(uint index) const;

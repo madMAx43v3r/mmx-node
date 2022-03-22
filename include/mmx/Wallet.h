@@ -105,7 +105,7 @@ protected:
 
 	void create_account(const account_t& config) override;
 
-	void create_wallet(const account_t& config) override;
+	void create_wallet(const account_t& config, const vnx::optional<hash_t>& seed) override;
 
 	hash_t get_master_seed(const uint32_t& index) const override;
 

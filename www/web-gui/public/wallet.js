@@ -575,30 +575,26 @@ app.component('account-details', {
 	},
 	data() {
 		return {
-			data: null
+			account: null,
+			keys: null
 		}
 	},
 	methods: {
 		update() {
 			fetch('/api/wallet/get_account?index=' + this.index)
 				.then(response => response.json())
-				.then(data => this.data = data);
+				.then(data => this.account = data);
+			fetch('/wapi/wallet/keys?index=' + this.index)
+				.then(response => response.json())
+				.then(data => this.keys = data);
 		}
 	},
 	created() {
 		this.update();
 	},
 	template: `
-		<table class="ui definition table striped">
-			<tbody>
-			<template v-for="(value, key) in data" :key="key">
-				<tr v-if="key != '__type'">
-					<td class="collapsing">{{key}}</td>
-					<td>{{value}}</td>
-				</tr>
-			</template>
-			</tbody>
-		</table>
+		<object-table :data="account"></object-table>
+		<object-table :data="keys"></object-table>
 		`
 })
 
@@ -608,6 +604,7 @@ app.component('account-actions', {
 	},
 	data() {
 		return {
+			seed: null,
 			info: null,
 			error: null
 		}
@@ -626,17 +623,31 @@ app.component('account-actions', {
 						});
 					}
 				});
+		},
+		show_seed() {
+			fetch('/wapi/wallet/seed?index=' + this.index)
+				.then(response => response.json())
+				.then(data => {
+					this.seed = data;
+					$(this.$refs.seed_modal).modal('show');
+				});
 		}
 	},
 	template: `
 		<div class="ui raised segment">
 			<div @click="reset_cache" class="ui button">Reset Cache</div>
+			<div @click="show_seed" class="ui button">Show Seed</div>
 		</div>
 		<div class="ui message" :class="{hidden: !info}">
 			<b>{{info}}</b>
 		</div>
 		<div class="ui negative message" :class="{hidden: !error}">
 			Failed with: <b>{{error}}</b>
+		</div>
+		<div class="ui modal" ref="seed_modal">
+			<div class="content">
+				<object-table :data="seed"></object-table>
+			</div>
 		</div>
 		`
 })
@@ -717,15 +728,26 @@ app.component('create-wallet', {
 		return {
 			name: null,
 			num_addresses: 100,
+			seed: null,
 			error: null
 		}
 	},
 	methods: {
 		submit() {
+			if(this.seed) {
+				if(this.seed == "") {
+					this.seed = null;
+				}
+				else if(this.seed.length != 64) {
+					this.error = "invalid seed value";
+					return;
+				}
+			}
 			const req = {};
 			req.config = {};
 			req.config.name = this.name;
 			req.config.num_addresses = this.num_addresses;
+			req.seed = this.seed;
 			fetch('/api/wallet/create_wallet', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
@@ -750,6 +772,10 @@ app.component('create-wallet', {
 						<label>Number of Addresses</label>
 						<input type="text" v-model.number="num_addresses" style="text-align: right"/>
 					</div>
+				</div>
+				<div class="field">
+					<label>Seed Hash (optional, hex string, 64 chars)</label>
+					<input type="text" v-model="seed" placeholder="<random>"/>
 				</div>
 				<div @click="submit" class="ui submit primary button">Create Wallet</div>
 			</form>

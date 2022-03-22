@@ -1066,6 +1066,39 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "address/history?id|limit|offset|since");
 		}
 	}
+	else if(sub_path == "/wallet/keys") {
+		const auto iter_index = query.find("index");
+		if(iter_index != query.end()) {
+			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
+			wallet->get_farmer_keys(index,
+				[this, request_id](std::shared_ptr<const FarmerKeys> keys) {
+					vnx::Object out;
+					if(keys) {
+						out["farmer_public_key"] = keys->farmer_public_key.to_string();
+						out["pool_public_key"] = keys->pool_public_key.to_string();
+					}
+					respond(request_id, out);
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "wallet/keys?index");
+		}
+	}
+	else if(sub_path == "/wallet/seed") {
+		const auto iter_index = query.find("index");
+		if(iter_index != query.end()) {
+			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
+			wallet->get_master_seed(index,
+				[this, request_id](const hash_t& seed) {
+					vnx::Object out;
+					out["hash"] = seed.to_string();
+					respond(request_id, out);
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "wallet/seed?index");
+		}
+	}
 	else if(sub_path == "/wallet/balance") {
 		const auto iter_index = query.find("index");
 		const auto iter_confirm = query.find("confirm");
