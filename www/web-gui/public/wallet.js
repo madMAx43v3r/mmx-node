@@ -1556,7 +1556,7 @@ app.component('create-locked-contract', {
 					<input type="text" v-model.number="chain_height"/>
 				</div>
 				<div class="field">
-					<label>Unlock after N Blocks</label>
+					<label>Unlock after N Blocks (starting at time of deposit)</label>
 					<input type="text" v-model.number="delta_height"/>
 				</div>
 				<div class="inline field">
