@@ -116,9 +116,9 @@ public:
 	
 	void create_account_async(const ::mmx::account_t& config = ::mmx::account_t());
 	
-	void create_wallet(const ::mmx::account_t& config = ::mmx::account_t());
+	void create_wallet(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<::mmx::hash_t>& seed = nullptr);
 	
-	void create_wallet_async(const ::mmx::account_t& config = ::mmx::account_t());
+	void create_wallet_async(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<::mmx::hash_t>& seed = nullptr);
 	
 	::mmx::hash_t get_master_seed(const uint32_t& index = 0);
 	

@@ -589,15 +589,17 @@ void WalletClient::create_account_async(const ::mmx::account_t& config) {
 	vnx_request(_method, true);
 }
 
-void WalletClient::create_wallet(const ::mmx::account_t& config) {
+void WalletClient::create_wallet(const ::mmx::account_t& config, const vnx::optional<::mmx::hash_t>& seed) {
 	auto _method = ::mmx::Wallet_create_wallet::create();
 	_method->config = config;
+	_method->seed = seed;
 	vnx_request(_method, false);
 }
 
-void WalletClient::create_wallet_async(const ::mmx::account_t& config) {
+void WalletClient::create_wallet_async(const ::mmx::account_t& config, const vnx::optional<::mmx::hash_t>& seed) {
 	auto _method = ::mmx::Wallet_create_wallet::create();
 	_method->config = config;
+	_method->seed = seed;
 	vnx_request(_method, true);
 }
 

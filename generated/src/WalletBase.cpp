@@ -491,7 +491,7 @@ std::shared_ptr<vnx::Value> WalletBase::vnx_call_switch(std::shared_ptr<const vn
 		case 0xdcc08a3a1b171a19ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Wallet_create_wallet>(_method);
 			auto _return_value = ::mmx::Wallet_create_wallet_return::create();
-			create_wallet(_args->config);
+			create_wallet(_args->config, _args->seed);
 			return _return_value;
 		}
 		case 0xcd71b07853d17497ull: {

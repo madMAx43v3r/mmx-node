@@ -594,9 +594,10 @@ uint64_t WalletAsyncClient::create_account(const ::mmx::account_t& config, const
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::create_wallet(const ::mmx::account_t& config, const std::function<void()>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::create_wallet(const ::mmx::account_t& config, const vnx::optional<::mmx::hash_t>& seed, const std::function<void()>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_create_wallet::create();
 	_method->config = config;
+	_method->seed = seed;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);

@@ -6,6 +6,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/account_t.hxx>
+#include <mmx/hash_t.hpp>
 #include <vnx/Value.h>
 
 
@@ -15,6 +16,7 @@ class MMX_EXPORT Wallet_create_wallet : public ::vnx::Value {
 public:
 	
 	::mmx::account_t config;
+	vnx::optional<::mmx::hash_t> seed;
 	
 	typedef ::vnx::Value Super;
 	
@@ -58,9 +60,10 @@ public:
 
 template<typename T>
 void Wallet_create_wallet::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Wallet_create_wallet>(1);
+	_visitor.template type_begin<Wallet_create_wallet>(2);
 	_visitor.type_field("config", 0); _visitor.accept(config);
-	_visitor.template type_end<Wallet_create_wallet>(1);
+	_visitor.type_field("seed", 1); _visitor.accept(seed);
+	_visitor.template type_end<Wallet_create_wallet>(2);
 }
 
 
