@@ -271,6 +271,9 @@ app.component('transaction-view', {
 							response.json()
 								.then(data => {
 									this.loading = false;
+									for(const op of data.operations) {
+										delete op.solution;
+									}
 									this.data = data;
 								});
 						} else {

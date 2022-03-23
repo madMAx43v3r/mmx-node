@@ -20,6 +20,7 @@
 #include <mmx/contract/PuzzleLock.hxx>
 #include <mmx/operation/Mint.hxx>
 #include <mmx/operation/Spend.hxx>
+#include <mmx/operation/Mutate.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/solution/MultiSig.hxx>
 #include <mmx/exchange/trade_pair_t.hpp>
@@ -384,6 +385,8 @@ public:
 		if(auto value = std::dynamic_pointer_cast<const operation::Mint>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const operation::Spend>(base)) {
+			set(render(value, context));
+		} else if(auto value = std::dynamic_pointer_cast<const operation::Mutate>(base)) {
 			set(render(value, context));
 		} else {
 			set(base);
