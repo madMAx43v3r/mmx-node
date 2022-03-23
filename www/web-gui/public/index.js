@@ -287,14 +287,14 @@ const Explore = {
 		<router-view></router-view>
 	`
 }
-const ExploreRecentBlocks = {
+const ExploreBlocks = {
 	template: `
-		<recent-blocks-summary :limit="30"></recent-blocks-summary>
+		<explore-blocks :limit="100"></explore-blocks>
 	`
 }
-const ExploreRecentTransactions = {
+const ExploreTransactions = {
 	template: `
-		<h3>TODO</h3>
+		<explore-transactions :limit="100"></explore-transactions>
 	`
 }
 const ExploreBlock = {
@@ -366,8 +366,8 @@ const routes = [
 		redirect: "/explore/blocks",
 		meta: { is_explorer: true },
 		children: [
-			{ path: 'blocks', component: ExploreRecentBlocks, meta: { page: 'blocks' } },
-			{ path: 'transactions', component: ExploreRecentTransactions, meta: { page: 'transactions' } },
+			{ path: 'blocks', component: ExploreBlocks, meta: { page: 'blocks' } },
+			{ path: 'transactions', component: ExploreTransactions, meta: { page: 'transactions' } },
 			{ path: 'block/hash/:hash', component: ExploreBlock, meta: { page: 'block' } },
 			{ path: 'block/height/:height', component: ExploreBlock, meta: { page: 'block' } },
 			{ path: 'address/:address', component: ExploreAddress, meta: { page: 'address' } },

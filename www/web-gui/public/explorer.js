@@ -44,7 +44,7 @@ app.component('explore-menu', {
 	`
 })
 
-app.component('recent-blocks-summary', {
+app.component('explore-blocks', {
 	props: {
 		limit: Number
 	},
@@ -100,7 +100,7 @@ app.component('recent-blocks-summary', {
 			</tr>
 			</thead>
 			<tbody>
-			<tr v-for="item in data" :key="item.key">
+			<tr v-for="item in data" :key="item.hash">
 				<td><router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link></td>
 				<td>{{item.tx_count}}</td>
 				<td>{{item.proof ? item.proof.ksize : ""}}</td>
@@ -109,6 +109,66 @@ app.component('recent-blocks-summary', {
 				<td>{{item.time_diff}}</td>
 				<td>{{item.space_diff}}</td>
 				<td><router-link :to="'/explore/block/hash/' + item.hash">{{item.hash}}</router-link></td>
+			</tr>
+			</tbody>
+		</table>
+		`
+})
+
+app.component('explore-transactions', {
+	props: {
+		limit: Number
+	},
+	data() {
+		return {
+			data: null,
+			timer: null,
+			loading: false
+		}
+	},
+	methods: {
+		update() {
+			this.loading = true;
+			fetch('/wapi/transactions?limit=' + this.limit)
+				.then(response => response.json())
+				.then(data => {
+					this.loading = false;
+					this.data = data;
+				});
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 10000);
+	},
+	unmounted() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<template v-if="!data && loading">
+			<div class="ui basic loading placeholder segment"></div>
+		</template>
+		<table class="ui table striped" v-if="data">
+			<thead>
+			<tr>
+				<th>Height</th>
+				<th>Type</th>
+				<th>Fee</th>
+				<th>N(in)</th>
+				<th>N(out)</th>
+				<th>N(op)</th>
+				<th>Transaction ID</th>
+			</tr>
+			</thead>
+			<tbody>
+			<tr v-for="item in data" :key="item.id">
+				<td><router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link></td>
+				<td>{{item.note ? item.note : ""}}</td>
+				<td><b>{{item.fee.value}}</b> MMX</td>
+				<td>{{item.inputs.length}}</td>
+				<td>{{item.outputs.length}}</td>
+				<td>{{item.operations.length}}</td>
+				<td><router-link :to="'/explore/transaction/' + item.id">{{item.id}}</router-link></td>
 			</tr>
 			</tbody>
 		</table>
