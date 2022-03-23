@@ -30,6 +30,7 @@ class DataArray extends mmx.Contract {
 	
 	void transfer(optional<addr_t> new_owner);
 	
+	// TODO: rename data to value
 	void append(vnx.Variant data);
 	
 	void clear();
