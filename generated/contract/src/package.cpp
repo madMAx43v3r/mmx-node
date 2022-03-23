@@ -188,6 +188,9 @@
 #include <mmx/contract/Token_transfer_return.hxx>
 #include <mmx/contract/Token_validate.hxx>
 #include <mmx/contract/Token_validate_return.hxx>
+#include <mmx/contract/VoteSheet.hxx>
+#include <mmx/contract/VoteSheet_is_valid.hxx>
+#include <mmx/contract/VoteSheet_is_valid_return.hxx>
 #include <mmx/contract/WebData.hxx>
 #include <mmx/contract/WebData_calc_cost.hxx>
 #include <mmx/contract/WebData_calc_cost_return.hxx>
@@ -2447,6 +2450,42 @@ void type<::mmx::contract::Token_validate_return>::create_dynamic_code(std::vect
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::contract::VoteSheet>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_VoteSheet;
+}
+
+void type<::mmx::contract::VoteSheet>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::VoteSheet());
+}
+
+void type<::mmx::contract::VoteSheet>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VoteSheet& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::VoteSheet_is_valid>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_VoteSheet_is_valid;
+}
+
+void type<::mmx::contract::VoteSheet_is_valid>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::VoteSheet_is_valid());
+}
+
+void type<::mmx::contract::VoteSheet_is_valid>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VoteSheet_is_valid& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::VoteSheet_is_valid_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_VoteSheet_is_valid_return;
+}
+
+void type<::mmx::contract::VoteSheet_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::VoteSheet_is_valid_return());
+}
+
+void type<::mmx::contract::VoteSheet_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VoteSheet_is_valid_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::contract::WebData>::get_type_code() {
 	return mmx::contract::vnx_native_type_code_WebData;
 }
@@ -2727,6 +2766,9 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::Token_transfer_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Token_validate::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Token_validate_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::VoteSheet::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::VoteSheet_is_valid::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::VoteSheet_is_valid_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::WebData::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::WebData_calc_cost::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::WebData_calc_cost_return::static_create_type_code());
@@ -2929,6 +2971,9 @@ const vnx::TypeCode* const vnx_native_type_code_Token_transfer = vnx::get_type_c
 const vnx::TypeCode* const vnx_native_type_code_Token_transfer_return = vnx::get_type_code(vnx::Hash64(0x9e98330d476699c8ull));
 const vnx::TypeCode* const vnx_native_type_code_Token_validate = vnx::get_type_code(vnx::Hash64(0xc3476057943b66ffull));
 const vnx::TypeCode* const vnx_native_type_code_Token_validate_return = vnx::get_type_code(vnx::Hash64(0xc7dc19b4d86f2ca1ull));
+const vnx::TypeCode* const vnx_native_type_code_VoteSheet = vnx::get_type_code(vnx::Hash64(0xdaac9a8f3f87ad6aull));
+const vnx::TypeCode* const vnx_native_type_code_VoteSheet_is_valid = vnx::get_type_code(vnx::Hash64(0x8ce2f9bd972e3147ull));
+const vnx::TypeCode* const vnx_native_type_code_VoteSheet_is_valid_return = vnx::get_type_code(vnx::Hash64(0xf5a70ae8dfe86db2ull));
 const vnx::TypeCode* const vnx_native_type_code_WebData = vnx::get_type_code(vnx::Hash64(0xf7c226b211c088c4ull));
 const vnx::TypeCode* const vnx_native_type_code_WebData_calc_cost = vnx::get_type_code(vnx::Hash64(0x3bbbd77da38a1013ull));
 const vnx::TypeCode* const vnx_native_type_code_WebData_calc_cost_return = vnx::get_type_code(vnx::Hash64(0x83c6569262ee4aa5ull));

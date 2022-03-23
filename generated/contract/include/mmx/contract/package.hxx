@@ -209,6 +209,9 @@ class Token_transfer;
 class Token_transfer_return;
 class Token_validate;
 class Token_validate_return;
+class VoteSheet;
+class VoteSheet_is_valid;
+class VoteSheet_is_valid_return;
 class WebData;
 class WebData_calc_cost;
 class WebData_calc_cost_return;
@@ -404,6 +407,9 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Token
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Token_transfer_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Token_validate; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Token_validate_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VoteSheet; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VoteSheet_is_valid; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VoteSheet_is_valid_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WebData; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WebData_calc_cost; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WebData_calc_cost_return; ///< \private
@@ -605,6 +611,9 @@ void read(TypeInput& in, ::mmx::contract::Token_transfer& value, const TypeCode*
 void read(TypeInput& in, ::mmx::contract::Token_transfer_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Token_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Token_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::VoteSheet& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::VoteSheet_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::VoteSheet_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::WebData& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::WebData_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::WebData_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -800,6 +809,9 @@ void write(TypeOutput& out, const ::mmx::contract::Token_transfer& value, const 
 void write(TypeOutput& out, const ::mmx::contract::Token_transfer_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Token_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Token_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::VoteSheet& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::VoteSheet_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::VoteSheet_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::WebData& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::WebData_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::WebData_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -995,6 +1007,9 @@ void read(std::istream& in, ::mmx::contract::Token_transfer& value); ///< \priva
 void read(std::istream& in, ::mmx::contract::Token_transfer_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Token_validate& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Token_validate_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::VoteSheet& value); ///< \private
+void read(std::istream& in, ::mmx::contract::VoteSheet_is_valid& value); ///< \private
+void read(std::istream& in, ::mmx::contract::VoteSheet_is_valid_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::WebData& value); ///< \private
 void read(std::istream& in, ::mmx::contract::WebData_calc_cost& value); ///< \private
 void read(std::istream& in, ::mmx::contract::WebData_calc_cost_return& value); ///< \private
@@ -1190,6 +1205,9 @@ void write(std::ostream& out, const ::mmx::contract::Token_transfer& value); ///
 void write(std::ostream& out, const ::mmx::contract::Token_transfer_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Token_validate& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Token_validate_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::VoteSheet& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::VoteSheet_is_valid& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::VoteSheet_is_valid_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::WebData& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::WebData_calc_cost& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::WebData_calc_cost_return& value); ///< \private
@@ -1385,6 +1403,9 @@ void accept(Visitor& visitor, const ::mmx::contract::Token_transfer& value); ///
 void accept(Visitor& visitor, const ::mmx::contract::Token_transfer_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Token_validate& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Token_validate_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::VoteSheet& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::VoteSheet_is_valid& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::VoteSheet_is_valid_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::WebData& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::WebData_calc_cost& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::WebData_calc_cost_return& value); ///< \private
@@ -5692,6 +5713,75 @@ struct type<::mmx::contract::Token_validate_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Token_validate_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::VoteSheet> {
+	void read(TypeInput& in, ::mmx::contract::VoteSheet& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::VoteSheet& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::VoteSheet& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::VoteSheet& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::VoteSheet& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VoteSheet& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::VoteSheet_is_valid> {
+	void read(TypeInput& in, ::mmx::contract::VoteSheet_is_valid& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::VoteSheet_is_valid& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::VoteSheet_is_valid& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::VoteSheet_is_valid& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::VoteSheet_is_valid& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VoteSheet_is_valid& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::VoteSheet_is_valid_return> {
+	void read(TypeInput& in, ::mmx::contract::VoteSheet_is_valid_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::VoteSheet_is_valid_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::VoteSheet_is_valid_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::VoteSheet_is_valid_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::VoteSheet_is_valid_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VoteSheet_is_valid_return& value, bool special = false);
 };
 
 /// \private
