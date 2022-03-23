@@ -546,10 +546,16 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 					passed = false;
 				}
 			}
-			for(const auto& op : tx->execute) {
-				if(std::dynamic_pointer_cast<const operation::Mutate>(op)) {
+			{
+				std::unordered_set<addr_t> addr_set;
+				for(const auto& op : tx->execute) {
+					if(std::dynamic_pointer_cast<const operation::Mutate>(op)) {
+						addr_set.insert(op->address);
+					}
+				}
+				for(const auto& addr : addr_set) {
 					// prevent concurrent mutation
-					if(!mutated.insert(op->address).second) {
+					if(!mutated.insert(addr).second) {
 						passed = false;
 					}
 				}
