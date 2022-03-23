@@ -270,10 +270,10 @@ app.component('transaction-view', {
 						if(response.ok) {
 							response.json()
 								.then(data => {
-									this.loading = false;
 									for(const op of data.operations) {
 										delete op.solution;
 									}
+									this.loading = false;
 									this.data = data;
 								});
 						} else {
