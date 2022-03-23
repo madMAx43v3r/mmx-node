@@ -52,20 +52,35 @@ std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
 	uint64_t base_spent = 0;
 	if(auto tx = std::dynamic_pointer_cast<const Transaction>(block->tx_base)) {
 		if(validate(tx, context, block, base_spent)) {
-			throw std::logic_error("missing exec_outputs");
+			throw std::logic_error("invalid tx_base");
 		}
 	}
 	{
-		std::unordered_set<txio_key_t> inputs;
+		std::unordered_set<txio_key_t> spent;
+		std::unordered_set<addr_t> mutated;
+
 		for(const auto& base : block->tx_list) {
 			if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
 				for(const auto& in : tx->inputs) {
-					if(!inputs.insert(in.prev).second) {
+					if(!spent.insert(in.prev).second) {
 						throw std::logic_error("double spend");
 					}
 				}
+				{
+					std::unordered_set<addr_t> addr_set;
+					for(const auto& op : tx->execute) {
+						if(std::dynamic_pointer_cast<const operation::Mutate>(op)) {
+							addr_set.insert(op->address);
+						}
+					}
+					for(const auto& addr : addr_set) {
+						if(!mutated.insert(addr).second) {
+							throw std::logic_error("concurrent mutation");
+						}
+					}
+				}
 			} else {
-				throw std::logic_error("transaction missing");
+				throw std::logic_error("missing transaction");
 			}
 		}
 	}
