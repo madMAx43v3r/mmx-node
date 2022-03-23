@@ -8,7 +8,7 @@ app.component('explore-menu', {
 	},
 	methods: {
 		submit() {
-			let hex = /[0-9A-Fa-f]{8}/g;
+			const hex = /[0-9A-Fa-f]{8}/g;
 			if(this.input) {
 				this.error = null;
 				if(this.input.startsWith("mmx1")) {
@@ -33,7 +33,7 @@ app.component('explore-menu', {
 	template: `
 		<div class="ui large pointing menu">
 			<router-link class="item" :class="{active: $route.meta.page == 'blocks'}" to="/explore/blocks">Blocks</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'transactions'}"  to="/explore/transactions">Transactions</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'transactions'}" to="/explore/transactions">Transactions</router-link>
 			<div class="item" style="flex-grow:1;">
 				<div class="ui transparent icon input" :class="{error: !!error}">
 					<input type="text" v-model="input" v-on:keyup.enter="submit" placeholder="address | transaction id | block height">
