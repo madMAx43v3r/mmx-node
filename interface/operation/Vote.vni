@@ -1,0 +1,10 @@
+package mmx.operation;
+
+class Vote extends mmx.Operation {
+	
+	optional<uint> option;
+	
+	
+	bool is_valid() const;
+	
+}

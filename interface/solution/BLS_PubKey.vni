@@ -1,0 +1,15 @@
+package mmx.solution;
+
+import mmx.bls_pubkey_t;
+import mmx.bls_signature_t;
+
+class BLS_PubKey extends mmx.Solution {
+	
+	bls_pubkey_t pubkey;
+	
+	bls_signature_t signature;
+	
+	
+	bool is_valid() const;
+	
+}

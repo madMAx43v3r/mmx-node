@@ -78,13 +78,16 @@ add_library(mmx_iface SHARED
 	src/contract/Locked.cpp
 	src/contract/PuzzleLock.cpp
 	src/contract/PlotNFT.cpp
+	src/contract/VoteSheet.cpp
 	src/solution/PubKey.cpp
 	src/solution/MultiSig.cpp
 	src/solution/PuzzleLock.cpp
 	src/solution/PlotNFT.cpp
+	src/solution/BLS_PubKey.cpp
 	src/operation/Mint.cpp
 	src/operation/Spend.cpp
 	src/operation/Mutate.cpp
+	src/operation/Vote.cpp
 )
 
 add_library(mmx_modules SHARED

@@ -1,0 +1,14 @@
+package mmx.contract;
+
+class VoteSheet extends mmx.Contract {
+	
+	vector<vnx.Variant> options;
+	
+	optional<uint> deadline;				// chain height
+	
+	static const uint MAX_BYTES = 1048576;
+	
+	
+	bool is_valid() const;
+	
+}
