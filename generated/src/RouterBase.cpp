@@ -57,6 +57,13 @@
 #include <vnx/ModuleInterface_vnx_stop.hxx>
 #include <vnx/ModuleInterface_vnx_stop_return.hxx>
 #include <vnx/TopicPtr.hpp>
+#include <vnx/addons/HttpComponent_http_request.hxx>
+#include <vnx/addons/HttpComponent_http_request_return.hxx>
+#include <vnx/addons/HttpComponent_http_request_chunk.hxx>
+#include <vnx/addons/HttpComponent_http_request_chunk_return.hxx>
+#include <vnx/addons/HttpData.hxx>
+#include <vnx/addons/HttpRequest.hxx>
+#include <vnx/addons/HttpResponse.hxx>
 #include <vnx/addons/MsgServer.h>
 
 #include <vnx/vnx.h>
@@ -714,7 +721,7 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	type_code->parents[1] = ::vnx::addons::TcpServerBase::static_get_type_code();
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::node_type_e::static_get_type_code();
-	type_code->methods.resize(21);
+	type_code->methods.resize(23);
 	type_code->methods[0] = ::mmx::Router_discover::static_get_type_code();
 	type_code->methods[1] = ::mmx::Router_fetch_block::static_get_type_code();
 	type_code->methods[2] = ::mmx::Router_fetch_block_at::static_get_type_code();
@@ -736,6 +743,8 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	type_code->methods[18] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
 	type_code->methods[19] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
 	type_code->methods[20] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
+	type_code->methods[21] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
+	type_code->methods[22] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
 	type_code->fields.resize(52);
 	{
 		auto& field = type_code->fields[0];
@@ -1248,6 +1257,16 @@ std::shared_ptr<vnx::Value> RouterBase::vnx_call_switch(std::shared_ptr<const vn
 			vnx_stop();
 			return _return_value;
 		}
+		case 0xe0b6c38f619bad92ull: {
+			auto _args = std::static_pointer_cast<const ::vnx::addons::HttpComponent_http_request>(_method);
+			http_request_async(_args->request, _args->sub_path, _request_id);
+			return nullptr;
+		}
+		case 0x97e79d08440406d5ull: {
+			auto _args = std::static_pointer_cast<const ::vnx::addons::HttpComponent_http_request_chunk>(_method);
+			http_request_chunk_async(_args->request, _args->sub_path, _args->offset, _args->max_bytes, _request_id);
+			return nullptr;
+		}
 	}
 	auto _ex = vnx::NoSuchMethod::create();
 	_ex->dst_mac = vnx_request ? vnx_request->dst_mac : vnx::Hash64();
@@ -1269,6 +1288,18 @@ void RouterBase::fetch_block_async_return(const vnx::request_id_t& _request_id, 
 
 void RouterBase::fetch_block_at_async_return(const vnx::request_id_t& _request_id, const std::shared_ptr<const ::mmx::Block>& _ret_0) const {
 	auto _return_value = ::mmx::Router_fetch_block_at_return::create();
+	_return_value->_ret_0 = _ret_0;
+	vnx_async_return(_request_id, _return_value);
+}
+
+void RouterBase::http_request_async_return(const vnx::request_id_t& _request_id, const std::shared_ptr<const ::vnx::addons::HttpResponse>& _ret_0) const {
+	auto _return_value = ::vnx::addons::HttpComponent_http_request_return::create();
+	_return_value->_ret_0 = _ret_0;
+	vnx_async_return(_request_id, _return_value);
+}
+
+void RouterBase::http_request_chunk_async_return(const vnx::request_id_t& _request_id, const std::shared_ptr<const ::vnx::addons::HttpData>& _ret_0) const {
+	auto _return_value = ::vnx::addons::HttpComponent_http_request_chunk_return::create();
 	_return_value->_ret_0 = _ret_0;
 	vnx_async_return(_request_id, _return_value);
 }

@@ -16,6 +16,9 @@
 #include <mmx/pubkey_t.hpp>
 #include <mmx/signature_t.hpp>
 #include <vnx/TopicPtr.hpp>
+#include <vnx/addons/HttpData.hxx>
+#include <vnx/addons/HttpRequest.hxx>
+#include <vnx/addons/HttpResponse.hxx>
 #include <vnx/addons/MsgServer.h>
 
 
@@ -52,6 +55,10 @@ public:
 	std::shared_ptr<const ::mmx::Block> fetch_block(const ::mmx::hash_t& hash = ::mmx::hash_t(), const vnx::optional<std::string>& address = nullptr);
 	
 	std::shared_ptr<const ::mmx::Block> fetch_block_at(const uint32_t& height = 0, const std::string& address = "");
+	
+	std::shared_ptr<const ::vnx::addons::HttpResponse> http_request(std::shared_ptr<const ::vnx::addons::HttpRequest> request = nullptr, const std::string& sub_path = "");
+	
+	std::shared_ptr<const ::vnx::addons::HttpData> http_request_chunk(std::shared_ptr<const ::vnx::addons::HttpRequest> request = nullptr, const std::string& sub_path = "", const int64_t& offset = 0, const int64_t& max_bytes = 0);
 	
 	::vnx::Object vnx_get_config_object();
 	
