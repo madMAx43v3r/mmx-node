@@ -178,7 +178,7 @@ app.component('netspace-graph', {
 	},
 	created() {
 		this.update();
-		this.timer = setInterval(() => { this.update(); }, 5 * 60 * 1000);
+		this.timer = setInterval(() => { this.update(); }, 60 * 1000);
 	},
 	unmounted() {
 		clearInterval(this.timer);
@@ -234,7 +234,7 @@ app.component('vdf-speed-graph', {
 	},
 	created() {
 		this.update();
-		this.timer = setInterval(() => { this.update(); }, 5 * 60 * 1000);
+		this.timer = setInterval(() => { this.update(); }, 60 * 1000);
 	},
 	unmounted() {
 		clearInterval(this.timer);
