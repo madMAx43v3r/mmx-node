@@ -188,7 +188,9 @@ app.component('netspace-graph', {
 			<div class="ui basic loading placeholder segment"></div>
 		</template>
 		<template v-if="data">
-			<vue-plotly :data="data" :layout="layout" :display-mode-bar="false"></vue-plotly>
+			<div class="ui segment">
+				<vue-plotly :data="data" :layout="layout" :display-mode-bar="false"></vue-plotly>
+			</div>
 		</template>
 		`
 })
@@ -242,7 +244,9 @@ app.component('vdf-speed-graph', {
 			<div class="ui basic loading placeholder segment"></div>
 		</template>
 		<template v-if="data">
-			<vue-plotly :data="data" :layout="layout" :display-mode-bar="false"></vue-plotly>
+			<div class="ui segment">
+				<vue-plotly :data="data" :layout="layout" :display-mode-bar="false"></vue-plotly>
+			</div>
 		</template>
 		`
 })
