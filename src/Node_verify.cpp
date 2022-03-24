@@ -160,7 +160,7 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 	size_t invalid_segment = -1;
 
 #pragma omp parallel for
-	for(size_t i = 0; i < segments.size(); ++i)
+	for(int i = 0; i < int(segments.size()); ++i)
 	{
 		if(!is_valid) {
 			continue;
