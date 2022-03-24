@@ -27,9 +27,13 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 	}
 	// Note: vdf_output already verified to match vdf_iters
 
-	if(block->proof) {
+	if(auto proof = block->proof) {
 		const auto challenge = get_challenge(block, vdf_challenge);
-		fork->proof_score = verify_proof(block->proof, challenge, diff_block->space_diff);
+		fork->proof_score = verify_proof(proof, challenge, diff_block->space_diff);
+
+		if(proof->score != fork->proof_score) {
+			throw std::logic_error("invalid proof score");
+		}
 
 		// check if block has a weak proof
 		const auto iter = proof_map.find(challenge);

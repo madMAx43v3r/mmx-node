@@ -32,6 +32,9 @@ std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
 	if(block->time_diff == 0 || block->space_diff == 0) {
 		throw std::logic_error("invalid difficulty");
 	}
+	if(block->tx_count != block->tx_list.size()) {
+		throw std::logic_error("invalid tx_count");
+	}
 	if(auto proof = block->proof) {
 		if(!block->farmer_sig || !block->farmer_sig->verify(proof->farmer_key, block->hash)) {
 			throw std::logic_error("invalid farmer signature");
