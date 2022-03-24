@@ -18,7 +18,7 @@ namespace exchange {
 
 
 const vnx::Hash64 OfferBundle::VNX_TYPE_HASH(0xa1f52e2a78efa212ull);
-const vnx::Hash64 OfferBundle::VNX_CODE_HASH(0xd817cf7d5fbc1d54ull);
+const vnx::Hash64 OfferBundle::VNX_CODE_HASH(0xc54386cb1bb4371bull);
 
 vnx::Hash64 OfferBundle::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -199,7 +199,7 @@ std::shared_ptr<vnx::TypeCode> OfferBundle::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.OfferBundle";
 	type_code->type_hash = vnx::Hash64(0xa1f52e2a78efa212ull);
-	type_code->code_hash = vnx::Hash64(0xd817cf7d5fbc1d54ull);
+	type_code->code_hash = vnx::Hash64(0xc54386cb1bb4371bull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::exchange::OfferBundle);

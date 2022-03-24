@@ -15,7 +15,7 @@ class MMX_EXPORT ChainParams : public ::vnx::Value {
 public:
 	
 	uint32_t port = 0;
-	uint32_t decimals = 6;
+	int32_t decimals = 6;
 	uint32_t min_ksize = 30;
 	uint32_t max_ksize = 42;
 	uint32_t plot_filter = 10;

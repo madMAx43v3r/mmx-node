@@ -15,7 +15,7 @@ namespace exchange {
 
 
 const vnx::Hash64 Client_get_trade_history::VNX_TYPE_HASH(0x9a38929545420919ull);
-const vnx::Hash64 Client_get_trade_history::VNX_CODE_HASH(0x7c83bc4a9f2c4ef9ull);
+const vnx::Hash64 Client_get_trade_history::VNX_CODE_HASH(0xc6c70d4fd34fd52cull);
 
 vnx::Hash64 Client_get_trade_history::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -136,7 +136,7 @@ std::shared_ptr<vnx::TypeCode> Client_get_trade_history::static_create_type_code
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.Client.get_trade_history";
 	type_code->type_hash = vnx::Hash64(0x9a38929545420919ull);
-	type_code->code_hash = vnx::Hash64(0x7c83bc4a9f2c4ef9ull);
+	type_code->code_hash = vnx::Hash64(0xc6c70d4fd34fd52cull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;

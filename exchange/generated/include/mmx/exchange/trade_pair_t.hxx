@@ -17,6 +17,7 @@ struct MMX_EXCHANGE_EXPORT trade_pair_t {
 	
 	::mmx::addr_t bid;
 	::mmx::addr_t ask;
+	vnx::optional<vnx::float64_t> price;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -61,10 +62,11 @@ struct MMX_EXCHANGE_EXPORT trade_pair_t {
 
 template<typename T>
 void trade_pair_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<trade_pair_t>(2);
+	_visitor.template type_begin<trade_pair_t>(3);
 	_visitor.type_field("bid", 0); _visitor.accept(bid);
 	_visitor.type_field("ask", 1); _visitor.accept(ask);
-	_visitor.template type_end<trade_pair_t>(2);
+	_visitor.type_field("price", 2); _visitor.accept(price);
+	_visitor.template type_end<trade_pair_t>(3);
 }
 
 

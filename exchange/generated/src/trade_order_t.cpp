@@ -17,7 +17,7 @@ namespace exchange {
 
 
 const vnx::Hash64 trade_order_t::VNX_TYPE_HASH(0x96dc9b77e428e71ull);
-const vnx::Hash64 trade_order_t::VNX_CODE_HASH(0xc8ca2bf155ef4135ull);
+const vnx::Hash64 trade_order_t::VNX_CODE_HASH(0x9e6ba459af0f6825ull);
 
 vnx::Hash64 trade_order_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -178,7 +178,7 @@ std::shared_ptr<vnx::TypeCode> trade_order_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exchange.trade_order_t";
 	type_code->type_hash = vnx::Hash64(0x96dc9b77e428e71ull);
-	type_code->code_hash = vnx::Hash64(0xc8ca2bf155ef4135ull);
+	type_code->code_hash = vnx::Hash64(0x9e6ba459af0f6825ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::exchange::trade_order_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<trade_order_t>>(); };
