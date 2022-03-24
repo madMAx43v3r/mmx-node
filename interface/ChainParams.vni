@@ -3,7 +3,7 @@ package mmx;
 class ChainParams {
 	
 	uint port;
-	uint decimals = 6;
+	int  decimals = 6;
 	uint min_ksize = 30;
 	uint max_ksize = 42;
 	uint plot_filter = 10;
