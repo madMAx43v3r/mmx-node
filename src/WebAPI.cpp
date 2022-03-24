@@ -627,6 +627,41 @@ void WebAPI::render_headers(const vnx::request_id_t& request_id, size_t limit, c
 	}
 }
 
+void WebAPI::render_block_graph(const vnx::request_id_t& request_id, size_t limit, const size_t step, const uint32_t height) const
+{
+	limit = std::min(limit, (height + step - 1) / step);
+
+	struct job_t {
+		size_t num_left = 0;
+		vnx::request_id_t request_id;
+		std::vector<vnx::Object> result;
+	};
+	auto job = std::make_shared<job_t>();
+	job->num_left = limit;
+	job->request_id = request_id;
+	job->result.resize(limit);
+
+	if(!job->num_left) {
+		respond(request_id, render_value(job->result));
+		return;
+	}
+	for(size_t i = 0; i < limit; ++i) {
+		node->get_header_at(height - i * step,
+			[this, job, i](std::shared_ptr<const BlockHeader> block) {
+				if(block) {
+					auto& out = job->result[i];
+					out["height"] = block->height;
+					out["tx_count"] = block->tx_count;
+					out["netspace"] = double(calc_total_netspace(params, block->space_diff)) * pow(1000, -5);
+					out["vdf_speed"] = double(block->time_diff) / params->time_diff_constant / params->block_time;
+				}
+				if(--job->num_left == 0) {
+					respond(job->request_id, render_value(job->result));
+				}
+			});
+	}
+}
+
 void WebAPI::render_block(const vnx::request_id_t& request_id, std::shared_ptr<const Block> block) const
 {
 	if(!block) {
@@ -883,6 +918,17 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				respond(request_id, res);
 			},
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+	}
+	else if(sub_path == "/node/graph/blocks") {
+		const auto iter_limit = query.find("limit");
+		const auto iter_step = query.find("step");
+		const size_t limit = std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 1000), 0);
+		const size_t step = std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_step->second), 90), 0);
+		node->get_height(
+				[this, request_id, limit, step](const uint32_t& height) {
+					render_block_graph(request_id, limit, step, height);
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 	}
 	else if(sub_path == "/header") {
 		const auto iter_hash = query.find("hash");

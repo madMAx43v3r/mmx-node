@@ -330,6 +330,16 @@ const NodePeers = {
 		<node-peers></node-peers>
 	`
 }
+const NodeNetspace = {
+	template: `
+		<netspace-graph :limit="1000" :step="90"></netspace-graph>
+	`
+}
+const NodeVDFSpeed = {
+	template: `
+		<vdf-speed-graph :limit="1000" :step="90"></vdf-speed-graph>
+	`
+}
 
 const Settings = {
 	template: `
@@ -402,6 +412,8 @@ const routes = [
 		children: [
 			{ path: 'peers', component: NodePeers, meta: { page: 'peers' } },
 			{ path: 'blocks', component: NodeBlocks, meta: { page: 'blocks' } },
+			{ path: 'netspace', component: NodeNetspace, meta: { page: 'netspace' } },
+			{ path: 'vdf_speed', component: NodeVDFSpeed, meta: { page: 'vdf_speed' } },
 		]
 	},
 	{ path: '/settings', component: Settings },

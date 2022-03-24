@@ -4,6 +4,8 @@ app.component('node-menu', {
 		<div class="ui large pointing menu">
 			<router-link class="item" :class="{active: $route.meta.page == 'peers'}" to="/node/peers">Peers</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'blocks'}" to="/node/blocks">Blocks</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'netspace'}" to="/node/netspace">Netspace</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'vdf_speed'}" to="/node/vdf_speed">VDF Speed</router-link>
 		</div>
 		`
 })
@@ -77,6 +79,14 @@ app.component('node-peers', {
 		return {
 			data: null,
 			timer: null,
+			gdata:[{
+		        x: [1,2,3,4],
+		        y: [10,15,13,17],
+		        type:"scatter"
+		      }],
+		      layout:{
+		        title: "My graph"
+		      }
 		}
 	},
 	methods: {
@@ -129,7 +139,113 @@ app.component('node-peers', {
 		`
 })
 
+app.component('netspace-graph', {
+	props: {
+		limit: Number,
+		step: Number
+	},
+	data() {
+		return {
+			data: null,
+			layout: {
+				title: "Netspace (PB)",
+				xaxis: {
+					title: "Height"
+				},
+				yaxis: {
+					title: "PB"
+				}
+			},
+			timer: null,
+			loading: false
+		}
+	},
+	methods: {
+		update() {
+			this.loading = true;
+			fetch('/wapi/node/graph/blocks?limit=' + this.limit + '&step=' + (this.step ? this.step : 90))
+				.then(response => response.json())
+				.then(data => {
+					const tmp = {x: [], y: [], type: "scatter"};
+					for(const item of data) {
+						tmp.x.push(item.height);
+						tmp.y.push(item.netspace);
+					}
+					this.loading = false;
+					this.data = [tmp];
+				});
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 5 * 60 * 1000);
+	},
+	unmounted() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<template v-if="!data && loading">
+			<div class="ui basic loading placeholder segment"></div>
+		</template>
+		<template v-if="data">
+			<vue-plotly :data="data" :layout="layout" :display-mode-bar="false"></vue-plotly>
+		</template>
+		`
+})
 
+app.component('vdf-speed-graph', {
+	props: {
+		limit: Number,
+		step: Number
+	},
+	data() {
+		return {
+			data: null,
+			layout: {
+				title: "VDF Speed (M/s)",
+				xaxis: {
+					title: "Height"
+				},
+				yaxis: {
+					title: "M/s"
+				}
+			},
+			timer: null,
+			loading: false
+		}
+	},
+	methods: {
+		update() {
+			this.loading = true;
+			fetch('/wapi/node/graph/blocks?limit=' + this.limit + '&step=' + (this.step ? this.step : 90))
+				.then(response => response.json())
+				.then(data => {
+					const tmp = {x: [], y: [], type: "scatter"};
+					for(const item of data) {
+						tmp.x.push(item.height);
+						tmp.y.push(item.vdf_speed);
+					}
+					this.loading = false;
+					this.data = [tmp];
+				});
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 5 * 60 * 1000);
+	},
+	unmounted() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<template v-if="!data && loading">
+			<div class="ui basic loading placeholder segment"></div>
+		</template>
+		<template v-if="data">
+			<vue-plotly :data="data" :layout="layout" :display-mode-bar="false"></vue-plotly>
+		</template>
+		`
+})
 
 
 
