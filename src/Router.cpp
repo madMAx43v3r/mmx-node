@@ -148,6 +148,9 @@ void Router::main()
 	node->vnx_set_non_blocking(true);
 	add_async_client(node);
 
+	http = std::make_shared<vnx::addons::HttpInterface<Router>>(this, vnx_name);
+	add_async_client(http);
+
 	threads = new vnx::ThreadPool(num_threads);
 
 	set_timer_millis(send_interval_ms, std::bind(&Router::send, this));
@@ -1620,6 +1623,18 @@ bool Router::receive_msg_hash(const hash_t& hash, uint64_t client, uint32_t cred
 		info.received_from.push_back(client);
 	}
 	return is_new;
+}
+
+void Router::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
+								const vnx::request_id_t& request_id) const
+{
+	http->http_request(request, sub_path, request_id);
+}
+
+void Router::http_request_chunk_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
+										const int64_t& offset, const int64_t& max_bytes, const vnx::request_id_t& request_id) const
+{
+	throw std::logic_error("not implemented");
 }
 
 

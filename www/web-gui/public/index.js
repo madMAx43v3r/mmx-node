@@ -315,18 +315,19 @@ const ExploreTransaction = {
 
 const Node = {
 	template: `
+		<node-info></node-info>
 		<node-menu></node-menu>
 		<router-view></router-view>
 	`
 }
-const NodeInfo = {
+const NodeBlocks = {
 	template: `
-		<node-info></node-info>
+		<explore-blocks :limit="10"></explore-blocks>
 	`
 }
 const NodePeers = {
 	template: `
-		TODO
+		<node-peers></node-peers>
 	`
 }
 
@@ -396,11 +397,11 @@ const routes = [
 	},
 	{ path: '/node',
 		component: Node,
-		redirect: "/node/info",
+		redirect: "/node/peers",
 		meta: { is_node: true },
 		children: [
-			{ path: 'info', component: NodeInfo, meta: { page: 'info' } },
 			{ path: 'peers', component: NodePeers, meta: { page: 'peers' } },
+			{ path: 'blocks', component: NodeBlocks, meta: { page: 'blocks' } },
 		]
 	},
 	{ path: '/settings', component: Settings },

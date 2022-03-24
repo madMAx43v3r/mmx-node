@@ -2,8 +2,8 @@
 app.component('node-menu', {
 	template: `
 		<div class="ui large pointing menu">
-			<router-link class="item" :class="{active: $route.meta.page == 'info'}" to="/node/info/">Info</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'peers'}" to="/node/peers/">Peers</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'peers'}" to="/node/peers">Peers</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'blocks'}" to="/node/blocks">Blocks</router-link>
 		</div>
 		`
 })
@@ -69,11 +69,65 @@ app.component('node-info', {
 				</div>
 			</div>
 		</div>
-		<explore-blocks :limit="10"></explore-blocks>
 		`
 })
 
-
+app.component('node-peers', {
+	data() {
+		return {
+			data: null,
+			timer: null,
+		}
+	},
+	methods: {
+		update() {
+			fetch('/api/router/get_peer_info')
+				.then(response => response.json())
+				.then(data => this.data = data);
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 5000);
+	},
+	unmounted() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<table class="ui definition table striped" v-if="data">
+			<thead>
+			<tr>
+				<th>IP</th>
+				<th>Height</th>
+				<th>Type</th>
+				<th>Version</th>
+				<th>Download</th>
+				<th>Upload</th>
+				<th>Ping</th>
+				<th>Duration</th>
+				<th>Credits</th>
+				<th>TX Credit</th>
+				<th>Connection</th>
+			</tr>
+			</thead>
+			<tbody>
+			<tr v-for="item in data.peers" :key="item.address">
+				<td>{{item.address}}</td>
+				<td>{{item.is_synced ? "" : "!"}}{{item.height}}</td>
+				<td>{{item.type}}</td>
+				<td>{{(item.version / 100).toFixed()}}.{{item.version % 100}}</td>
+				<td><b>{{(item.bytes_recv / item.connect_time_ms / 1.024).toFixed(1)}}</b> KB/s</td>
+				<td><b>{{(item.bytes_send / item.connect_time_ms / 1.024).toFixed(1)}}</b> KB/s</td>
+				<td><b>{{item.ping_ms}}</b> ms</td>
+				<td><b>{{(item.connect_time_ms / 1000 / 60).toFixed()}}</b> min</td>
+				<td>{{item.credits}}</td>
+				<td><b>{{(item.tx_credits / Math.pow(10, 6)).toFixed(3)}}</b> MMX</td>
+				<td>{{item.is_outbound ? "outbound" : "inbound"}}</td>
+			</tr>
+			</tbody>
+		</table>
+		`
+})
 
 
 

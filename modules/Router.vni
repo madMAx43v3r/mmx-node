@@ -1,6 +1,6 @@
 package mmx;
 
-module Router extends vnx.addons.MsgServer {
+module Router extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	
 	vnx.TopicPtr input_vdfs = "timelord.proofs";
 	vnx.TopicPtr input_blocks = "node.verified_blocks";

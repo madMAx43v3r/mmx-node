@@ -17,6 +17,8 @@
 #include <vnx/Output.hpp>
 #include <vnx/ThreadPool.h>
 
+#include <vnx/addons/HttpInterface.h>
+
 #include <random>
 
 
@@ -54,6 +56,12 @@ protected:
 	void fetch_block_async(const hash_t& hash, const vnx::optional<std::string>& address, const vnx::request_id_t& request_id) const override;
 
 	void fetch_block_at_async(const uint32_t& height, const std::string& address, const vnx::request_id_t& request_id) const override;
+
+	void http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
+							const vnx::request_id_t& request_id) const override;
+
+	void http_request_chunk_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
+									const int64_t& offset, const int64_t& max_bytes, const vnx::request_id_t& request_id) const override;
 
 	void handle(std::shared_ptr<const Block> value);
 
@@ -251,6 +259,10 @@ private:
 	size_t vdf_drop_counter = 0;
 	size_t proof_drop_counter = 0;
 	size_t block_drop_counter = 0;
+
+	std::shared_ptr<vnx::addons::HttpInterface<Router>> http;
+
+	friend class vnx::addons::HttpInterface<Router>;
 
 };
 
