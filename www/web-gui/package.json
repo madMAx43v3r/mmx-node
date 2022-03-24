@@ -1,0 +1,9 @@
+{
+  "name": "MMX-GUI",
+  "version": "1.0.0",
+  "description": "MMX GUI",
+  "author": "Max Wittal",
+  "license": "ISC",
+  "dependencies": {
+  }
+}
