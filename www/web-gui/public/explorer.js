@@ -164,7 +164,7 @@ app.component('explore-transactions', {
 			<tr v-for="item in data" :key="item.id">
 				<td><router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link></td>
 				<td>{{item.note ? item.note : ""}}</td>
-				<td><b>{{item.fee.value}}</b> MMX</td>
+				<td><b>{{item.fee.value}}</b></td>
 				<td>{{item.inputs.length}}</td>
 				<td>{{item.outputs.length}}</td>
 				<td>{{item.operations.length}}</td>
