@@ -231,6 +231,7 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 	if(const auto peak = get_peak()) {
 		if(!network || peak->height != network->height) {
 			auto info = NetworkInfo::create();
+			info->is_synced = is_synced;
 			info->height = peak->height;
 			info->time_diff = peak->time_diff;
 			info->space_diff = peak->space_diff;

@@ -2,6 +2,8 @@ package mmx;
 
 class NetworkInfo {
 	
+	bool is_synced;
+	
 	uint height;
 	
 	ulong time_diff;

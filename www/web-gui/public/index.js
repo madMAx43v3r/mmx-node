@@ -313,6 +313,23 @@ const ExploreTransaction = {
 	`
 }
 
+const Node = {
+	template: `
+		<node-menu></node-menu>
+		<router-view></router-view>
+	`
+}
+const NodeInfo = {
+	template: `
+		<node-info></node-info>
+	`
+}
+const NodePeers = {
+	template: `
+		TODO
+	`
+}
+
 const Settings = {
 	template: `
 		<h3>TODO</h3>
@@ -320,7 +337,7 @@ const Settings = {
 }
 
 const routes = [
-	{ path: '/', redirect: "/wallet" },
+	{ path: '/', redirect: "/node" },
 	{ path: '/wallet', component: Wallet, meta: { is_wallet: true } },
 	{ path: '/wallet/create', component: WalletCreate, meta: { is_wallet: true } },
 	{ path: '/wallet/account/:index',
@@ -377,6 +394,15 @@ const routes = [
 			},
 		]
 	},
+	{ path: '/node',
+		component: Node,
+		redirect: "/node/info",
+		meta: { is_node: true },
+		children: [
+			{ path: 'info', component: NodeInfo, meta: { page: 'info' } },
+			{ path: 'peers', component: NodePeers, meta: { page: 'peers' } },
+		]
+	},
 	{ path: '/settings', component: Settings },
 ]
 
@@ -391,6 +417,7 @@ app.component('main-menu', {
 	template: `
 		<div class="ui large top menu">
 			<div class="ui container">
+				<router-link class="item" :class="{active: $route.meta.is_node}" to="/node/">Node</router-link>
 				<router-link class="item" :class="{active: $route.meta.is_wallet}" to="/wallet/">Wallet</router-link>
 				<router-link class="item" :class="{active: $route.meta.is_explorer}" to="/explore/">Explore</router-link>
 				<router-link class="item" :class="{active: $route.meta.is_exchange}" to="/exchange/">Exchange</router-link>
