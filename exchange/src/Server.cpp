@@ -502,7 +502,13 @@ std::vector<trade_pair_t> Server::get_trade_pairs() const
 {
 	std::vector<trade_pair_t> res;
 	for(const auto& entry : trade_map) {
-		res.push_back(entry.first);
+		auto tmp = entry.first;
+		if(auto book = entry.second) {
+			if(!book->orders.empty()) {
+				tmp.price = book->orders.begin()->first;
+			}
+		}
+		res.push_back(tmp);
 	}
 	return res;
 }

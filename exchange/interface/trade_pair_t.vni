@@ -5,6 +5,8 @@ struct trade_pair_t {
 	mmx.addr_t bid;
 	mmx.addr_t ask;
 	
+	optional<double> price;
+	
 	
 	trade_pair_t reverse() const;
 	

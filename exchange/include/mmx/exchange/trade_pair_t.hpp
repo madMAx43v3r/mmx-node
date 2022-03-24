@@ -20,6 +20,9 @@ trade_pair_t trade_pair_t::reverse() const
 	trade_pair_t pair;
 	pair.ask = bid;
 	pair.bid = ask;
+	if(price) {
+		pair.price = 1 / (*price);
+	}
 	return pair;
 }
 
