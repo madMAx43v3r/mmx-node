@@ -33,6 +33,8 @@ struct MMX_EXCHANGE_EXPORT trade_entry_t {
 	std::string get_type_name() const;
 	const vnx::TypeCode* get_type_code() const;
 	
+	vnx::float64_t get_price() const;
+	
 	static std::shared_ptr<trade_entry_t> create();
 	std::shared_ptr<trade_entry_t> clone() const;
 	

@@ -1,12 +1,9 @@
 /*
- * order_t.hpp
+ * order_t.cpp
  *
- *  Created on: Jan 22, 2022
+ *  Created on: Mar 24, 2022
  *      Author: mad
  */
-
-#ifndef INCLUDE_MMX_EXCHANGE_ORDER_T_HPP_
-#define INCLUDE_MMX_EXCHANGE_ORDER_T_HPP_
 
 #include <mmx/exchange/order_t.hxx>
 
@@ -14,7 +11,6 @@
 namespace mmx {
 namespace exchange {
 
-inline
 double order_t::get_price() const {
 	return ask / double(bid);
 }
@@ -22,5 +18,3 @@ double order_t::get_price() const {
 
 } // exchange
 } // mmx
-
-#endif /* INCLUDE_MMX_EXCHANGE_ORDER_T_HPP_ */

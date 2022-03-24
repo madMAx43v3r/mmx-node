@@ -87,6 +87,7 @@ void Server::handle(std::shared_ptr<const Block> block)
 							out.type = trade_type_e::BUY;
 							out.bid = order.bid;
 							out.ask = order.ask;
+							book->last_trade = out;
 							trade_history.insert(entry.first, out);
 						}
 						{
@@ -96,7 +97,11 @@ void Server::handle(std::shared_ptr<const Block> block)
 							out.type = trade_type_e::SELL;
 							out.bid = order.ask;
 							out.ask = order.bid;
-							trade_history.insert(entry.first.reverse(), out);
+							const auto pair = entry.first.reverse();
+							if(auto book = find_pair(pair)) {
+								book->last_trade = out;
+							}
+							trade_history.insert(pair, out);
 						}
 					}
 				}
@@ -278,10 +283,7 @@ void Server::place_async(const uint64_t& client, const trade_pair_t& pair, const
 				}
 			}
 			if(!result.empty()) {
-				auto& book = trade_map[pair];
-				if(!book) {
-					book = std::make_shared<order_book_t>();
-				}
+				auto book = get_pair(pair);
 				for(const auto& entry : result) {
 					const auto price = entry.get_price();
 					book->key_map[entry.bid_key] = price;
@@ -504,8 +506,8 @@ std::vector<trade_pair_t> Server::get_trade_pairs() const
 	for(const auto& entry : trade_map) {
 		auto tmp = entry.first;
 		if(auto book = entry.second) {
-			if(!book->orders.empty()) {
-				tmp.price = book->orders.begin()->first;
+			if(auto trade = book->last_trade) {
+				tmp.price = trade->get_price();
 			}
 		}
 		res.push_back(tmp);
@@ -595,6 +597,20 @@ std::shared_ptr<Server::order_book_t> Server::find_pair(const trade_pair_t& pair
 		return iter->second;
 	}
 	return nullptr;
+}
+
+std::shared_ptr<Server::order_book_t> Server::get_pair(const trade_pair_t& pair) const
+{
+	auto& book = trade_map[pair];
+	if(!book) {
+		book = std::make_shared<order_book_t>();
+		// lookup last price
+		std::vector<trade_entry_t> trades;
+		if(trade_history.find_last(pair, trades, 1)) {
+			book->last_trade = trades.front();
+		}
+	}
+	return book;
 }
 
 void Server::send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg, bool reliable)

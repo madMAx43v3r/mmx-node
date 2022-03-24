@@ -15,27 +15,6 @@ namespace mmx {
 namespace exchange {
 
 inline
-trade_pair_t trade_pair_t::reverse() const
-{
-	trade_pair_t pair;
-	pair.ask = bid;
-	pair.bid = ask;
-	if(price) {
-		pair.price = 1 / (*price);
-	}
-	return pair;
-}
-
-inline
-trade_pair_t trade_pair_t::create_ex(const addr_t& bid, const addr_t& ask)
-{
-	trade_pair_t pair;
-	pair.bid = bid;
-	pair.ask = ask;
-	return pair;
-}
-
-inline
 bool operator==(const trade_pair_t& lhs, const trade_pair_t& rhs) {
 	return lhs.bid == rhs.bid && lhs.ask == rhs.ask;
 }

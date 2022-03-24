@@ -13,4 +13,7 @@ struct trade_entry_t {
 	ulong bid;
 	ulong ask;
 	
+	
+	double get_price() const;
+	
 }

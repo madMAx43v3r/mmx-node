@@ -9,7 +9,6 @@
 #define INCLUDE_MMX_EXCHANGE_SERVER_H_
 
 #include <mmx/exchange/ServerBase.hxx>
-#include <mmx/exchange/order_t.hpp>
 #include <mmx/exchange/trade_pair_t.hpp>
 #include <mmx/NodeAsyncClient.hxx>
 #include <mmx/Request.hxx>
@@ -39,6 +38,7 @@ protected:
 	struct order_book_t {
 		std::multimap<double, order_t> orders;
 		std::unordered_map<txio_key_t, double> key_map;
+		vnx::optional<trade_entry_t> last_trade;
 	};
 
 	struct trade_job_t {
@@ -91,6 +91,8 @@ private:
 	void cancel_order(const trade_pair_t& pair, const txio_key_t& key);
 
 	std::shared_ptr<order_book_t> find_pair(const trade_pair_t& pair) const;
+
+	std::shared_ptr<order_book_t> get_pair(const trade_pair_t& pair) const;
 
 	void send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg, bool reliable = true);
 

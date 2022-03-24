@@ -8,8 +8,11 @@ add_library(mmx_exchange SHARED
 	src/Server.cpp
 	src/Client.cpp
 	src/LocalTrade.cpp
+	src/order_t.cpp
+	src/trade_pair_t.cpp
 	src/limit_order_t.cpp
 	src/trade_order_t.cpp
+	src/trade_entry_t.cpp
 )
 
 add_executable(mmx_exch_server src/mmx_exch_server.cpp)
