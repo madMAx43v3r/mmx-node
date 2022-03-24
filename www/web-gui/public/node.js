@@ -106,7 +106,7 @@ app.component('node-peers', {
 				<th>Ping</th>
 				<th>Duration</th>
 				<th>Credits</th>
-				<th>TX Credit</th>
+				<th>TX Gas</th>
 				<th>Connection</th>
 			</tr>
 			</thead>
