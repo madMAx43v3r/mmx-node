@@ -95,17 +95,19 @@ void Node::main()
 
 		int64_t offset = 0;
 		block_chain->open("rb+");
-		while(auto block = read_block(*block_chain, &offset)) {
-			if(block->height >= replay_height) {
+		while(auto header = read_block(*block_chain, &offset, true)) {
+			if(header->height >= replay_height) {
 				block_chain->seek_to(offset);
 				// preemptively mark end of file since we purge DB entries now
 				vnx::write(block_chain->out, nullptr);
 				block_chain->seek_to(offset);
 				break;
 			}
-			apply(block);
-			commit(block);
-			block_index[block->height] = std::make_pair(offset, block->hash);
+			if(auto block = std::dynamic_pointer_cast<const Block>(header)) {
+				apply(block);
+				commit(block);
+			}
+			block_index[header->height] = std::make_pair(offset, header->hash);
 		}
 		if(auto peak = get_peak()) {
 			log(INFO) << "Loaded " << peak->height + 1 << " blocks from disk, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
@@ -273,17 +275,27 @@ vnx::optional<uint32_t> Node::get_synced_height() const
 
 std::shared_ptr<const Block> Node::get_block(const hash_t& hash) const
 {
+	return std::dynamic_pointer_cast<const Block>(get_block(hash, true));
+}
+
+std::shared_ptr<const BlockHeader> Node::get_block(const hash_t& hash, bool full_block) const
+{
 	if(auto block = find_block(hash)) {
 		return block;
 	}
 	auto iter = hash_index.find(hash);
 	if(iter != hash_index.end()) {
-		return get_block_at(iter->second);
+		return get_block_at(iter->second, full_block);
 	}
 	return nullptr;
 }
 
 std::shared_ptr<const Block> Node::get_block_at(const uint32_t& height) const
+{
+	return std::dynamic_pointer_cast<const Block>(get_block_at(height, true));
+}
+
+std::shared_ptr<const BlockHeader> Node::get_block_at(const uint32_t& height, bool full_block) const
 {
 	// THREAD SAFE (for concurrent reads)
 	auto iter = block_index.find(height);
@@ -291,7 +303,7 @@ std::shared_ptr<const Block> Node::get_block_at(const uint32_t& height) const
 		vnx::File file(block_chain->get_path());
 		file.open("rb");
 		file.seek_to(iter->second.first);
-		return read_block(file);
+		return read_block(file, nullptr, full_block);
 	}
 	const auto line = get_fork_line();
 	if(!line.empty()) {
@@ -311,10 +323,7 @@ std::shared_ptr<const BlockHeader> Node::get_header(const hash_t& hash) const
 	if(auto header = find_header(hash)) {
 		return header;
 	}
-	if(auto block = get_block(hash)) {
-		return block->get_header();
-	}
-	return nullptr;
+	return get_block(hash, false);
 }
 
 std::shared_ptr<const BlockHeader> Node::get_header_at(const uint32_t& height) const
@@ -325,10 +334,7 @@ std::shared_ptr<const BlockHeader> Node::get_header_at(const uint32_t& height) c
 			return iter->second;
 		}
 	}
-	if(auto block = get_block_at(height)) {
-		return block->get_header();
-	}
-	return nullptr;
+	return get_block_at(height, false);
 }
 
 vnx::optional<hash_t> Node::get_block_hash(const uint32_t& height) const
@@ -337,7 +343,7 @@ vnx::optional<hash_t> Node::get_block_hash(const uint32_t& height) const
 	if(iter != block_index.end()) {
 		return iter->second.second;
 	}
-	if(auto block = get_block_at(height)) {
+	if(auto block = get_block_at(height, false)) {
 		return block->hash;
 	}
 	return nullptr;
@@ -1646,7 +1652,7 @@ uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block) const
 	return 0;
 }
 
-std::shared_ptr<const Block> Node::read_block(vnx::File& file, int64_t* file_offset) const
+std::shared_ptr<const BlockHeader> Node::read_block(vnx::File& file, int64_t* file_offset, bool full_block) const
 {
 	// THREAD SAFE (for concurrent reads)
 	auto& in = file.in;
@@ -1656,18 +1662,21 @@ std::shared_ptr<const Block> Node::read_block(vnx::File& file, int64_t* file_off
 	}
 	try {
 		if(auto header = std::dynamic_pointer_cast<BlockHeader>(vnx::read(in))) {
-			auto block = Block::create();
-			block->BlockHeader::operator=(*header);
-			while(true) {
-				if(auto value = vnx::read(in)) {
-					if(auto tx = std::dynamic_pointer_cast<TransactionBase>(value)) {
-						block->tx_list.push_back(tx);
+			if(full_block) {
+				auto block = Block::create();
+				block->BlockHeader::operator=(*header);
+				while(true) {
+					if(auto value = vnx::read(in)) {
+						if(auto tx = std::dynamic_pointer_cast<TransactionBase>(value)) {
+							block->tx_list.push_back(tx);
+						}
+					} else {
+						break;
 					}
-				} else {
-					break;
 				}
+				header = block;
 			}
-			return block;
+			return header;
 		}
 	} catch(const std::exception& ex) {
 		log(WARN) << "Failed to read block: " << ex.what();

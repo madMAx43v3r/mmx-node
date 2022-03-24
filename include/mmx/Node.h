@@ -238,6 +238,10 @@ private:
 
 	std::shared_ptr<const BlockHeader> get_peak() const;
 
+	std::shared_ptr<const BlockHeader> get_block(const hash_t& hash, bool full_block) const;
+
+	std::shared_ptr<const BlockHeader> get_block_at(const uint32_t& height, bool full_block) const;
+
 	std::shared_ptr<fork_t> find_fork(const hash_t& hash) const;
 
 	std::shared_ptr<const Block> find_block(const hash_t& hash) const;
@@ -262,7 +266,7 @@ private:
 
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block) const;
 
-	std::shared_ptr<const Block> read_block(vnx::File& file, int64_t* file_offset = nullptr) const;
+	std::shared_ptr<const BlockHeader> read_block(vnx::File& file, int64_t* file_offset = nullptr, bool full_block = true) const;
 
 	void write_block(std::shared_ptr<const Block> block);
 
