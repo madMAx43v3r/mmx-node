@@ -6,6 +6,7 @@ app.component('node-menu', {
 			<router-link class="item" :class="{active: $route.meta.page == 'blocks'}" to="/node/blocks">Blocks</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'netspace'}" to="/node/netspace">Netspace</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'vdf_speed'}" to="/node/vdf_speed">VDF Speed</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'reward'}" to="/node/reward">Block Reward</router-link>
 		</div>
 		`
 })
@@ -226,6 +227,64 @@ app.component('vdf-speed-graph', {
 					for(const item of data) {
 						tmp.x.push(item.height);
 						tmp.y.push(item.vdf_speed);
+					}
+					this.loading = false;
+					this.data = [tmp];
+				});
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 60 * 1000);
+	},
+	unmounted() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<template v-if="!data && loading">
+			<div class="ui basic loading placeholder segment"></div>
+		</template>
+		<template v-if="data">
+			<div class="ui segment">
+				<vue-plotly :data="data" :layout="layout" :display-mode-bar="false"></vue-plotly>
+			</div>
+		</template>
+		`
+})
+
+app.component('block-reward-graph', {
+	props: {
+		limit: Number,
+		step: Number
+	},
+	data() {
+		return {
+			data: null,
+			layout: {
+				title: "Block Reward (MMX)",
+				xaxis: {
+					title: "Height"
+				},
+				yaxis: {
+					title: "MMX"
+				}
+			},
+			timer: null,
+			loading: false
+		}
+	},
+	methods: {
+		update() {
+			this.loading = true;
+			fetch('/wapi/node/graph/blocks?limit=' + this.limit + '&step=' + (this.step ? this.step : 90))
+				.then(response => response.json())
+				.then(data => {
+					const tmp = {x: [], y: [], type: "scatter"};
+					for(const item of data) {
+						if(item.reward > 0) {
+							tmp.x.push(item.height);
+							tmp.y.push(item.reward);
+						}
 					}
 					this.loading = false;
 					this.data = [tmp];

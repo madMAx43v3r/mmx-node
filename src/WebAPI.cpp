@@ -654,6 +654,18 @@ void WebAPI::render_block_graph(const vnx::request_id_t& request_id, size_t limi
 					out["tx_count"] = block->tx_count;
 					out["netspace"] = double(calc_total_netspace(params, block->space_diff)) * pow(1000, -5);
 					out["vdf_speed"] = double(block->time_diff) / params->time_diff_constant / params->block_time;
+					if(auto proof = block->proof) {
+						out["score"] = proof->score;
+					} else {
+						out["score"] = nullptr;
+					}
+					uint64_t total = 0;
+					if(auto tx = std::dynamic_pointer_cast<const Transaction>(block->tx_base)) {
+						for(const auto& out : tx->outputs) {
+							total += out.amount;
+						}
+					}
+					out["reward"] = total / pow(10, params->decimals);
 				}
 				if(--job->num_left == 0) {
 					respond(job->request_id, render_value(job->result));

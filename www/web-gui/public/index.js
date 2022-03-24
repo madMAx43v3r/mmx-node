@@ -340,6 +340,11 @@ const NodeVDFSpeed = {
 		<vdf-speed-graph :limit="1000" :step="90"></vdf-speed-graph>
 	`
 }
+const NodeBlockReward = {
+	template: `
+		<block-reward-graph :limit="1000" :step="90"></block-reward-graph>
+	`
+}
 
 const Settings = {
 	template: `
@@ -414,6 +419,7 @@ const routes = [
 			{ path: 'blocks', component: NodeBlocks, meta: { page: 'blocks' } },
 			{ path: 'netspace', component: NodeNetspace, meta: { page: 'netspace' } },
 			{ path: 'vdf_speed', component: NodeVDFSpeed, meta: { page: 'vdf_speed' } },
+			{ path: 'reward', component: NodeBlockReward, meta: { page: 'reward' } },
 		]
 	},
 	{ path: '/settings', component: Settings },
