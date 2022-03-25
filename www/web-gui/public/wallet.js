@@ -1286,6 +1286,7 @@ app.component('account-offers', {
 				<th colspan="2">Receive</th>
 				<th colspan="2">Price</th>
 				<th colspan="2">Price</th>
+				<th>Orders</th>
 				<th>Status</th>
 				<th>Actions</th>
 			</tr>
@@ -1304,6 +1305,7 @@ app.component('account-offers', {
 				<td>{{item.ask_symbol}} / {{item.bid_symbol}}</td>
 				<td class="collapsing"><b>{{(item.bid_value / item.ask_value).toPrecision(5)}}</b></td>
 				<td>{{item.bid_symbol}} / {{item.ask_symbol}}</td>
+				<td>{{item.orders.length}}</td>
 				<td :class="{positive: item.bid_sold >= item.bid}">{{(100 * item.bid_sold / item.bid).toPrecision(3)}} %</td>
 				<td>
 					<div class="ui tiny compact button" @click="cancel(item.id)">{{item.bid_sold < item.bid ? 'Cancel' : 'Delete'}}</div>
