@@ -41,7 +41,6 @@ void Harvester::main()
 	}
 
 	reload();
-	update();
 
 	Super::main();
 }
@@ -269,6 +268,8 @@ void Harvester::reload()
 	for(const auto& entry : plot_map) {
 		total_bytes += vnx::File(entry.first).file_size();
 	}
+	update();
+
 	log(INFO) << "Loaded " << plot_map.size() << " plots, " << total_bytes / pow(1024, 4) << " TiB total";
 }
 
