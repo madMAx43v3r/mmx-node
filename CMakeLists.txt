@@ -90,6 +90,15 @@ add_library(mmx_iface SHARED
 	src/operation/Vote.cpp
 )
 
+if(MSVC)
+	include(GenerateExportHeader)
+	GENERATE_EXPORT_HEADER(mmx_iface)
+	set(MMXIFACE_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} CACHE STRING "")
+	include_directories(${CMAKE_CURRENT_BINARY_DIR})
+	set_target_properties(mmx_iface PROPERTIES ENABLE_EXPORTS 1)
+	set_target_properties(mmx_iface PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)	
+endif()
+
 add_library(mmx_modules SHARED
 	src/TimeLord.cpp
 	src/Node.cpp
