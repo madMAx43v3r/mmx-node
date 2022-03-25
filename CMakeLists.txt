@@ -115,7 +115,7 @@ add_library(mmx_modules SHARED
 )
 
 add_library(uint256_t STATIC
-	uint256_t/uint128_t.cpp
+	uint256_t/uint128_t/uint128_t.cpp
 	uint256_t/uint256_t.cpp
 )
 
@@ -128,7 +128,9 @@ target_include_directories(mmx_iface
 		generated/solution/include
 )
 
-target_include_directories(uint256_t PUBLIC uint256_t)
+target_include_directories(uint256_t
+	PUBLIC uint256_t uint256_t/uint128_t
+)
 
 target_include_directories(mmx_chiapos
 	PUBLIC src/chiapos
