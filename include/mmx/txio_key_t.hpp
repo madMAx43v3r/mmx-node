@@ -42,7 +42,7 @@ namespace std {
 	template<>
 	struct hash<mmx::txio_key_t> {
 		size_t operator()(const mmx::txio_key_t& x) const {
-			return std::hash<mmx::hash_t>{}(x.txid) xor x.index;
+			return std::hash<mmx::hash_t>{}(x.txid) ^ x.index;
 		}
 	};
 } // std
