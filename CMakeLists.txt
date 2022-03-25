@@ -132,6 +132,8 @@ target_include_directories(uint256_t
 	PUBLIC uint256_t uint256_t/uint128_t
 )
 
+target_compile_definitions(uint256_t PUBLIC _UINT256_T_STATIC _UINT128_T_STATIC)
+
 target_include_directories(mmx_chiapos
 	PUBLIC src/chiapos
 	PRIVATE chiapos/src chiapos/lib/include
