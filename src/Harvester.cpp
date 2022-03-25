@@ -69,7 +69,8 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	}
 	std::vector<std::vector<uint128_t>> scores(plots.size());
 
-#pragma omp parallel for num_threads(num_threads)
+	const auto num_threads_ = std::min<uint32_t>(num_threads, plots.size());
+#pragma omp parallel for num_threads(num_threads_)
 	for(int i = 0; i < int(plots.size()); ++i)
 	{
 		const auto& prover = plots[i];
@@ -193,7 +194,11 @@ void Harvester::reload()
 	} else {
 		all_dirs = plot_dirs;
 	}
-	std::vector<std::pair<std::shared_ptr<vnx::File>, std::shared_ptr<chiapos::DiskProver>>> plots;
+	std::unordered_set<std::string> missing;
+	for(const auto& entry : plot_map) {
+		missing.insert(entry.first);
+	}
+	std::vector<std::pair<std::string, std::shared_ptr<chiapos::DiskProver>>> plots;
 
 #pragma omp parallel for num_threads(num_threads)
 	for(int i = 0; i < int(all_dirs.size()); ++i)
@@ -201,15 +206,23 @@ void Harvester::reload()
 		vnx::Directory dir(all_dirs[i]);
 		try {
 			dir.open();
-			for(const auto& file : dir.files()) {
-				if(file && file->get_extension() == ".plot") {
-					try {
-						auto prover = std::make_shared<chiapos::DiskProver>(file->get_path());
+			for(const auto& file : dir.files())
+			{
+				const auto file_name = file->get_path();
 #pragma omp critical
-						plots.emplace_back(file, prover);
+				missing.erase(file_name);
+
+				if(plot_map.count(file_name)) {
+					continue;
+				}
+				if(file->get_extension() == ".plot") {
+					try {
+						auto prover = std::make_shared<chiapos::DiskProver>(file_name);
+#pragma omp critical
+						plots.emplace_back(file_name, prover);
 					}
 					catch(const std::exception& ex) {
-						log(WARN) << "Failed to load plot '" << file->get_path() << "' due to: " << ex.what();
+						log(WARN) << "Failed to load plot '" << file_name << "' due to: " << ex.what();
 					}
 				}
 			}
@@ -218,20 +231,43 @@ void Harvester::reload()
 			continue;
 		}
 	}
-	total_bytes = 0;
-	id_map.clear();
-	plot_map.clear();
-	already_checked.clear();
 
+	// purge missing plots
+	for(const auto& file_name : missing)
+	{
+		auto iter = plot_map.find(file_name);
+		if(iter != plot_map.end()) {
+			if(auto prover = iter->second) {
+				id_map.erase(hash_t::from_bytes(prover->get_plot_id()));
+			}
+			plot_map.erase(iter);
+		}
+	}
+
+	if(missing.size()) {
+		log(INFO) << "Lost " << missing.size() << " plots";
+	}
+	if(plots.size() && plot_map.size()) {
+		log(INFO) << "Found " << plots.size() << " new plots";
+	}
+
+	// add new plots
 	for(const auto& entry : plots)
 	{
-		const auto& file = entry.first;
 		const auto& prover = entry.second;
-		const auto file_name = file->get_path();
+		const auto& file_name = entry.first;
 		const auto plot_id = hash_t::from_bytes(prover->get_plot_id());
 		id_map[plot_id] = file_name;
 		plot_map[file_name] = prover;
-		total_bytes += file->file_size();
+	}
+
+	// check challenges again
+	already_checked.clear();
+
+	// compute total space
+	total_bytes = 0;
+	for(const auto& entry : plot_map) {
+		total_bytes += vnx::File(entry.first).file_size();
 	}
 	log(INFO) << "Loaded " << plot_map.size() << " plots, " << total_bytes / pow(1024, 4) << " TiB total";
 }
