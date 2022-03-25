@@ -282,10 +282,10 @@ private:
 
 	vnx::rocksdb::table<addr_t, std::shared_ptr<const Contract>> contract_cache;			// [addr, contract] (finalized only)
 	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, vnx::Object> mutate_log;			// [[addr, height] => method] (finalized only)
+	vnx::rocksdb::multi_table<addr_t, addr_t> owner_map;									// [owner => contract]
 
-	vnx::rocksdb::table<hash_t, std::pair<int64_t, uint32_t>> tx_index;				// [txid => [file offset, height]] (finalized only)
-	vnx::rocksdb::multi_table<addr_t, addr_t> owner_map;							// [owner => contract]
-	vnx::rocksdb::multi_table<uint32_t, hash_t> tx_log;								// [height => txid] (finalized only)
+	mutable vnx::rocksdb::multi_table<uint32_t, hash_t> tx_log;						// [height => txid] (finalized only)
+	mutable vnx::rocksdb::table<hash_t, std::pair<int64_t, uint32_t>> tx_index;		// [txid => [file offset, height]] (finalized only)
 
 	std::unordered_map<txio_key_t, utxo_t> utxo_map;								// [utxo key => utxo]
 	std::set<std::pair<addr_t, txio_key_t>> addr_map;								// [addr => utxo keys] (finalized + unspent only)
@@ -307,7 +307,7 @@ private:
 
 	bool is_replay = true;
 	bool is_synced = false;
-	bool is_db_synced = true;
+	bool is_db_replay = false;
 	std::shared_ptr<vnx::File> block_chain;
 	std::unordered_map<uint32_t, std::pair<int64_t, hash_t>> block_index;			// [height => [file offset, block hash]]
 

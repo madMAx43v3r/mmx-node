@@ -83,12 +83,12 @@ void Node::main()
 		contract_cache.open(database_path + "contract_cache", options);
 		mutate_log.open(database_path + "mutate_log", options);
 	}
-	is_db_synced = !vnx::File(database_path + ".is_synced").create();
+	is_db_replay = vnx::File(database_path + ".is_synced").create();
 
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
 
 	if(block_chain->exists()) {
-		if(!is_db_synced) {
+		if(is_db_replay) {
 			log(INFO) << "Creating DB (this may take a while) ...";
 		}
 		const auto time_begin = vnx::get_wall_time_millis();
@@ -117,8 +117,8 @@ void Node::main()
 		block_chain->open("rb+");
 	}
 	is_replay = false;
+	is_db_replay = false;
 	is_synced = !do_sync;
-	is_db_synced = true;
 
 	if(state_hash == hash_t())
 	{
@@ -1291,7 +1291,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 
 	for(const auto& entry : log->utxo_removed) {
 		const auto& stxo = entry.second;
-		if(!is_replay || !is_db_synced) {
+		if(!is_replay || is_db_replay) {
 			addr_log.insert(block->height, stxo.address);
 			stxo_log.insert(block->height, entry.first);
 			stxo_index.insert(entry.first, entry.second);
@@ -1317,7 +1317,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 		tx_map.erase(txid);
 		tx_pool.erase(txid);
 	}
-	if(!is_replay || !is_db_synced) {
+	if(!is_replay || is_db_replay) {
 		for(const auto& entry : log->deployed) {
 			if(auto owner = entry.second->get_owner()) {
 				owner_map.insert(*owner, entry.first);
@@ -1662,12 +1662,25 @@ std::shared_ptr<const BlockHeader> Node::read_block(vnx::File& file, int64_t* fi
 	}
 	try {
 		if(auto header = std::dynamic_pointer_cast<BlockHeader>(vnx::read(in))) {
+			if(is_db_replay) {
+				if(auto tx = std::dynamic_pointer_cast<const Transaction>(header->tx_base)) {
+					tx_log.insert(header->height, tx->id);
+					tx_index.insert(tx->id, std::make_pair(offset, header->height));
+				}
+			}
 			if(full_block) {
 				auto block = Block::create();
 				block->BlockHeader::operator=(*header);
 				while(true) {
+					const auto offset = in.get_input_pos();
 					if(auto value = vnx::read(in)) {
 						if(auto tx = std::dynamic_pointer_cast<TransactionBase>(value)) {
+							if(is_db_replay) {
+								if(!light_mode || std::dynamic_pointer_cast<const Transaction>(tx)) {
+									tx_log.insert(block->height, tx->id);
+									tx_index.insert(tx->id, std::make_pair(offset, block->height));
+								}
+							}
 							block->tx_list.push_back(tx);
 						}
 					} else {
