@@ -320,7 +320,7 @@ void TimeLord::vdf_loop(vdf_point_t point)
 		const auto num_iters = next_target - point.num_iters;
 
 #pragma omp parallel for num_threads(2)
-		for(uint32_t k = 0; k < 2; ++k) {
+		for(int k = 0; k < 2; ++k) {
 			point.output[k] = compute(point.output[k], num_iters);
 		}
 		point.num_iters += num_iters;
