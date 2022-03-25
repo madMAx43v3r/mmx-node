@@ -13,6 +13,9 @@
 
 #include <vnx/Config.hpp>
 
+#include <uint128_t.h>
+#include <uint256_t.h>
+
 
 namespace mmx {
 
