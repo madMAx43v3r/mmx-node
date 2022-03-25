@@ -37,3 +37,13 @@ add_library(mmx_chiapos SHARED
 	${FSE_PATH}/entropy_common.c
 	${FSE_PATH}/hist.c
 )
+
+if(MSVC)
+	target_link_libraries(mmx_chiapos PRIVATE uint256_t)
+	
+	#GENERATE_EXPORT_HEADER(mmx_chiapos)
+	#include_directories("${CMAKE_CURRENT_BINARY_DIR}")	
+
+	set_target_properties(mmx_chiapos PROPERTIES ENABLE_EXPORTS 1)
+	set_target_properties(mmx_chiapos PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)	
+endif()
