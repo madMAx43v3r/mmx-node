@@ -30,7 +30,7 @@ void Harvester::init()
 void Harvester::main()
 {
 	if(!num_threads) {
-		num_threads = std::max<size_t>(plot_dirs.size(), 1);
+		num_threads = 16;
 	}
 	params = get_params();
 
