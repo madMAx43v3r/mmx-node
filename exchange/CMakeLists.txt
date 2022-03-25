@@ -21,6 +21,16 @@ target_include_directories(mmx_exchange
 	PUBLIC include generated/include
 )
 
+if(MSVC)
+	target_include_directories(mmx_exchange PUBLIC ${MMXIFACE_BINARY_DIR})
+
+	set_target_properties(mmx_exchange PROPERTIES ENABLE_EXPORTS 1)
+	set_target_properties(mmx_exchange PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
+	
+	set_target_properties(mmx_exchange PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")
+
+endif()
+
 target_link_libraries(mmx_exchange mmx_iface vnx_rocksdb)
 
 target_link_libraries(mmx_exch_server mmx_exchange)
