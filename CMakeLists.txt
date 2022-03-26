@@ -144,6 +144,13 @@ target_include_directories(mmx_chiapos
 	PRIVATE chiapos/src chiapos/lib/include
 )
 
+if(MSVC)
+	set_target_properties(mmx_modules PROPERTIES ENABLE_EXPORTS 1)
+	set_target_properties(mmx_modules PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
+	
+	set_target_properties(mmx_modules PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")	
+endif()
+
 target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_addons vnx_base)
 
 if(MSVC)
