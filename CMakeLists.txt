@@ -23,10 +23,12 @@ add_subdirectory(bls-signatures)
 add_subdirectory(exchange)
 
 find_package(OpenCL)
-find_package(OpenMP REQUIRED)
 find_package(Threads REQUIRED)
 
-find_library(JEMALLOC_LIB NAMES jemalloc)
+if (NOT MSVC)
+	find_package(OpenMP REQUIRED)
+	find_library(JEMALLOC_LIB NAMES jemalloc)
+endif()
 
 include(cmake/chiapos.cmake)
 
@@ -42,7 +44,7 @@ if(SODIUM_FOUND)
 	include_directories(${SODIUM_INCLUDE_DIR})
 endif()
 
-if(WITH_SECP256K1)
+if(NOT MSVC AND WITH_SECP256K1)
 	message(STATUS "Using secp256k1")
 	include_directories(secp256k1/include)
 	link_directories(secp256k1/.libs)
@@ -143,7 +145,12 @@ target_include_directories(mmx_chiapos
 )
 
 target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_addons vnx_base)
-target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_iface mmx_exchange OpenMP::OpenMP_CXX)
+
+if(MSVC)
+	target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_iface mmx_exchange)
+else()
+	target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_iface mmx_exchange OpenMP::OpenMP_CXX)
+endif()
 
 if(OpenCL_FOUND)
 	target_link_libraries(mmx_modules automy_basic_opencl)
