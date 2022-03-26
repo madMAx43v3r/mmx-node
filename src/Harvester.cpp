@@ -187,6 +187,8 @@ void Harvester::find_plot_dirs(const std::vector<std::string>& dirs, std::vector
 
 void Harvester::reload()
 {
+	const auto time_begin = vnx::get_wall_time_millis();
+
 	std::vector<std::string> all_dirs;
 	if(recursive_search) {
 		find_plot_dirs(plot_dirs, all_dirs);
@@ -270,7 +272,8 @@ void Harvester::reload()
 	}
 	update();
 
-	log(INFO) << "Loaded " << plot_map.size() << " plots, " << total_bytes / pow(1024, 4) << " TiB total";
+	log(INFO) << "Loaded " << plot_map.size() << " plots, " << total_bytes / pow(1024, 4) << " TiB total, took "
+			<< (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 }
 
 void Harvester::update()
