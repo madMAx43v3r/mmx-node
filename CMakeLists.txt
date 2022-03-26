@@ -116,8 +116,6 @@ if(MSVC)
 	set_target_properties(mmx_iface PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 	
 	set_target_properties(mmx_iface PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")
-
-	target_include_directories(mmx_iface PUBLIC ${secp256k1_INCLUDE_DIR})
 endif()
 
 add_library(mmx_modules SHARED
