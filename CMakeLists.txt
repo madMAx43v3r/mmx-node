@@ -101,7 +101,9 @@ if(MSVC)
 	set(MMXIFACE_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} CACHE STRING "")
 	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 	set_target_properties(mmx_iface PROPERTIES ENABLE_EXPORTS 1)
-	set_target_properties(mmx_iface PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)	
+	set_target_properties(mmx_iface PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
+	
+	set_target_properties(mmx_iface PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")	
 endif()
 
 add_library(mmx_modules SHARED
