@@ -477,7 +477,7 @@ int main(int argc, char** argv)
 				const auto info = node.get_network_info();
 				std::cout << "Synced:   " << (node.get_synced_height() ? "Yes" : "No") << std::endl;
 				std::cout << "Height:   " << info->height << std::endl;
-				std::cout << "Netspace: " << info->total_space / pow(1024, 4) << " TiB" << std::endl;
+				std::cout << "Netspace: " << info->total_space / pow(1000, 5) << " PB" << std::endl;
 				std::cout << "Reward:   " << info->block_reward / 1e6 << " MMX" << std::endl;
 				std::cout << "Supply:   " << info->total_supply / 1e6 << " MMX" << std::endl;
 				std::cout << "N(UTXO):    " << info->utxo_count << std::endl;
@@ -749,7 +749,7 @@ int main(int argc, char** argv)
 
 			if(command == "info")
 			{
-				std::cout << "Total space: " << info->total_bytes / pow(1024, 4) << " TiB" << std::endl;
+				std::cout << "Total space: " << info->total_bytes / pow(1000, 4) << " TB" << std::endl;
 				for(const auto& entry : info->plot_count) {
 					std::cout << "K" << int(entry.first) << ": " << entry.second << " plots" << std::endl;
 				}

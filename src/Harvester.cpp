@@ -272,7 +272,7 @@ void Harvester::reload()
 	}
 	update();
 
-	log(INFO) << "Loaded " << plot_map.size() << " plots, " << total_bytes / pow(1024, 4) << " TiB total, took "
+	log(INFO) << "Loaded " << plot_map.size() << " plots, " << total_bytes / pow(1000, 4) << " TB total, took "
 			<< (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 }
 
