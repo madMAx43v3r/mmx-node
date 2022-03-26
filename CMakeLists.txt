@@ -8,6 +8,18 @@ if(NOT MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function")
 endif()
 
+if (MSVC)
+	add_definitions(/MP /openmp)
+	
+	find_library(OpenCL_LIBRARY OpenCL HINTS ${OpenCL_LIBRARIES})
+
+	find_library(secp256k1_LIBRARY secp256k1 HINTS ${secp256k1_LIBRARIES})
+	add_library(secp256k1 INTERFACE IMPORTED)
+	set_target_properties(secp256k1 PROPERTIES INTERFACE_LINK_LIBRARIES ${secp256k1_LIBRARY})
+
+	set(MMXIFACE_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} CACHE STRING "")	
+endif()
+
 set(ARITH "easy" CACHE STRING "BLS ARITH")
 set(BUILD_BLS_PYTHON_BINDINGS OFF CACHE BOOL "BUILD_BLS_PYTHON_BINDINGS")
 set(BUILD_BLS_TESTS OFF CACHE BOOL "BUILD_BLS_TESTS")
@@ -99,12 +111,13 @@ add_library(mmx_iface SHARED
 if(MSVC)
 	include(GenerateExportHeader)
 	GENERATE_EXPORT_HEADER(mmx_iface)
-	set(MMXIFACE_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} CACHE STRING "")
 	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 	set_target_properties(mmx_iface PROPERTIES ENABLE_EXPORTS 1)
 	set_target_properties(mmx_iface PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 	
-	set_target_properties(mmx_iface PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")	
+	set_target_properties(mmx_iface PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")
+
+	target_include_directories(mmx_iface PUBLIC ${secp256k1_INCLUDE_DIR})
 endif()
 
 add_library(mmx_modules SHARED
