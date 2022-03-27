@@ -3,7 +3,22 @@ project(mmx-node C CXX ASM)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function")
+
+if(NOT MSVC)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function")
+endif()
+
+if (MSVC)
+	add_definitions(/MP /openmp)
+	
+	find_library(OpenCL_LIBRARY OpenCL HINTS ${OpenCL_LIBRARIES})
+
+	find_library(secp256k1_LIBRARY secp256k1 HINTS ${secp256k1_LIBRARIES})
+	add_library(secp256k1 INTERFACE IMPORTED)
+	set_target_properties(secp256k1 PROPERTIES INTERFACE_LINK_LIBRARIES ${secp256k1_LIBRARY})
+
+	set(MMXIFACE_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} CACHE STRING "")	
+endif()
 
 set(ARITH "easy" CACHE STRING "BLS ARITH")
 set(BUILD_BLS_PYTHON_BINDINGS OFF CACHE BOOL "BUILD_BLS_PYTHON_BINDINGS")
@@ -11,6 +26,7 @@ set(BUILD_BLS_TESTS OFF CACHE BOOL "BUILD_BLS_TESTS")
 set(BUILD_BLS_BENCHMARKS OFF CACHE BOOL "BUILD_BLS_BENCHMARKS")
 set(LIBBECH32_BUILD_TESTS OFF CACHE BOOL "LIBBECH32_BUILD_TESTS")
 set(LIBBECH32_BUILD_EXAMPLES OFF CACHE BOOL "LIBBECH32_BUILD_EXAMPLES")
+set(DIRENT_BUILD_TESTS OFF CACHE STRING "DIRENT_BUILD_TESTS")
 
 add_subdirectory(vnx-base)
 add_subdirectory(vnx-addons)
@@ -20,10 +36,12 @@ add_subdirectory(bls-signatures)
 add_subdirectory(exchange)
 
 find_package(OpenCL)
-find_package(OpenMP REQUIRED)
 find_package(Threads REQUIRED)
 
-find_library(JEMALLOC_LIB NAMES jemalloc)
+if (NOT MSVC)
+	find_package(OpenMP REQUIRED)
+	find_library(JEMALLOC_LIB NAMES jemalloc)
+endif()
 
 include(cmake/chiapos.cmake)
 
@@ -39,7 +57,7 @@ if(SODIUM_FOUND)
 	include_directories(${SODIUM_INCLUDE_DIR})
 endif()
 
-if(WITH_SECP256K1)
+if(NOT MSVC AND WITH_SECP256K1)
 	message(STATUS "Using secp256k1")
 	include_directories(secp256k1/include)
 	link_directories(secp256k1/.libs)
@@ -93,10 +111,11 @@ add_library(mmx_iface SHARED
 if(MSVC)
 	include(GenerateExportHeader)
 	GENERATE_EXPORT_HEADER(mmx_iface)
-	set(MMXIFACE_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} CACHE STRING "")
 	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 	set_target_properties(mmx_iface PROPERTIES ENABLE_EXPORTS 1)
-	set_target_properties(mmx_iface PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)	
+	set_target_properties(mmx_iface PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
+	
+	set_target_properties(mmx_iface PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")
 endif()
 
 add_library(mmx_modules SHARED
@@ -139,8 +158,20 @@ target_include_directories(mmx_chiapos
 	PRIVATE chiapos/src chiapos/lib/include
 )
 
+if(MSVC)
+	set_target_properties(mmx_modules PROPERTIES ENABLE_EXPORTS 1)
+	set_target_properties(mmx_modules PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
+	
+	set_target_properties(mmx_modules PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")	
+endif()
+
 target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_addons vnx_base)
-target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_iface mmx_exchange OpenMP::OpenMP_CXX)
+
+if(MSVC)
+	target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_iface mmx_exchange)
+else()
+	target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_iface mmx_exchange OpenMP::OpenMP_CXX)
+endif()
 
 if(OpenCL_FOUND)
 	target_link_libraries(mmx_modules automy_basic_opencl)
