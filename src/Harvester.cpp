@@ -234,15 +234,8 @@ void Harvester::reload()
 	}
 
 	// purge missing plots
-	for(const auto& file_name : missing)
-	{
-		auto iter = plot_map.find(file_name);
-		if(iter != plot_map.end()) {
-			if(auto prover = iter->second) {
-				id_map.erase(hash_t::from_bytes(prover->get_plot_id()));
-			}
-			plot_map.erase(iter);
-		}
+	for(const auto& file_name : missing) {
+		plot_map.erase(file_name);
 	}
 
 	if(missing.size()) {
@@ -253,24 +246,21 @@ void Harvester::reload()
 	}
 
 	// add new plots
-	for(const auto& entry : plots)
-	{
+	plot_map.insert(plots.begin(), plots.end());
+
+	id_map.clear();
+	total_bytes = 0;
+	for(const auto& entry : plot_map) {
 		const auto& prover = entry.second;
 		const auto& file_name = entry.first;
 		const auto plot_id = hash_t::from_bytes(prover->get_plot_id());
 		id_map[plot_id] = file_name;
-		plot_map[file_name] = prover;
+		total_bytes += vnx::File(file_name).file_size();
 	}
+	update();
 
 	// check challenges again
 	already_checked.clear();
-
-	// compute total space
-	total_bytes = 0;
-	for(const auto& entry : plot_map) {
-		total_bytes += vnx::File(entry.first).file_size();
-	}
-	update();
 
 	log(INFO) << "Loaded " << plot_map.size() << " plots, " << total_bytes / pow(1000, 4) << " TB total, took "
 			<< (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
