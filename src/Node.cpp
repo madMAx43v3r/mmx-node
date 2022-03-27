@@ -1588,6 +1588,7 @@ std::shared_ptr<const BlockHeader> Node::find_diff_header(std::shared_ptr<const 
 hash_t Node::get_challenge(std::shared_ptr<const BlockHeader> block, const hash_t& vdf_challenge, uint32_t offset) const
 {
 	if(auto diff_block = find_diff_header(block, offset)) {
+		// TODO: this is unnecessary
 		return hash_t(diff_block->hash + vdf_challenge);
 	}
 	return hash_t();
