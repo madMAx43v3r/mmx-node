@@ -9,6 +9,8 @@ class BlockHeader {
 	
 	uint height;
 	
+	// TODO: ulong nonce;
+	
 	ulong time_diff;
 	ulong space_diff;
 	
