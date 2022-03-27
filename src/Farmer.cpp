@@ -115,6 +115,7 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& rew
 	auto copy = vnx::clone(block);
 
 	auto base = Transaction::create();
+	// TODO: use random nonce to make block hash unpredictable in case of no tx
 	base->nonce = block->height;
 	base->salt = block->vdf_output[0];
 
