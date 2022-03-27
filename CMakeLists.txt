@@ -8,7 +8,7 @@ if(NOT MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function")
 endif()
 
-if (MSVC)
+if(MSVC)
 	add_definitions(/MP /openmp)
 	
 	find_library(OpenCL_LIBRARY OpenCL HINTS ${OpenCL_LIBRARIES})
@@ -38,7 +38,7 @@ add_subdirectory(exchange)
 find_package(OpenCL)
 find_package(Threads REQUIRED)
 
-if (NOT MSVC)
+if(NOT MSVC)
 	find_package(OpenMP REQUIRED)
 	find_library(JEMALLOC_LIB NAMES jemalloc)
 endif()
@@ -167,10 +167,10 @@ endif()
 
 target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_addons vnx_base)
 
-if(MSVC)
-	target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_iface mmx_exchange)
-else()
-	target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_iface mmx_exchange OpenMP::OpenMP_CXX)
+target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_iface mmx_exchange)
+
+if(NOT MSVC)
+	target_link_libraries(mmx_modules OpenMP::OpenMP_CXX)
 endif()
 
 if(OpenCL_FOUND)
