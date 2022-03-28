@@ -276,7 +276,7 @@ app.component('exchange-trade-list', {
 				<th>Time</th>
 			</thead>
 			<tbody>
-				<tr v-for="item in data.history" :key="item.id">
+				<tr v-for="item in data.history">
 					<td :class="item.type == 'BUY' ? 'positive' : 'negative'">{{item.type}}</td>
 					<td class="collapsing"><b>{{item.bid_value}}</b></td>
 					<td>{{data.bid_symbol}}</td>
