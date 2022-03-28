@@ -46,8 +46,12 @@ std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
 			throw std::logic_error("transactions not allowed");
 		}
 		if(block->time_diff != prev->time_diff || block->space_diff != prev->space_diff) {
-			throw std::logic_error("invalid difficulty adjustment");
+			throw std::logic_error("invalid difficulty adjustment for dummy block");
 		}
+		// TODO
+//		if(block->nonce) {
+//			throw std::logic_error("invalid block nonce for dummy block");
+//		}
 	}
 	auto context = Context::create();
 	context->height = block->height;
