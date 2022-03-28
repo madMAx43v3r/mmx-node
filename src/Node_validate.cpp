@@ -42,6 +42,9 @@ std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
 		validate_diff_adjust(block->time_diff, prev->time_diff);
 		validate_diff_adjust(block->space_diff, prev->space_diff);
 	} else {
+		if(block->version != 0) {
+			throw std::logic_error("invalid dummy block version");
+		}
 		if(block->tx_base || !block->tx_list.empty()) {
 			throw std::logic_error("transactions not allowed");
 		}
