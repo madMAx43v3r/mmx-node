@@ -252,7 +252,8 @@ public:
 			}
 			tx_fees = tx->calc_cost(params)
 					+ params->min_txfee_io	// for change output
-					+ used_addr.size() * params->min_txfee_sign;
+					+ used_addr.size() * params->min_txfee_sign
+					+ options.extra_fee;
 
 			for(const auto& entry : used_addr) {
 				tx_fees += entry.second;	// execution fees

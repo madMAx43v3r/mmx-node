@@ -6,6 +6,8 @@ struct spend_options_t {
 	
 	uint split_output = 1;					// how many outputs of equal size
 	
+	ulong extra_fee;
+	
 	bool over_spend = true;					// overspend to cover asked amount (ie. with change)
 	
 	bool pending_change = true;

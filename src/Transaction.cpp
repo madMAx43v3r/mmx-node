@@ -151,6 +151,7 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 	for(const auto& sol : solutions) {
 		if(sol) {
 			fee += params->min_txfee_sign;
+			// TODO: fee += sol->calc_cost(params);
 		}
 	}
 	if(deploy) {
