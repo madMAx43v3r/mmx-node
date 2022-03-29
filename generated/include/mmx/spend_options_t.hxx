@@ -18,6 +18,7 @@ struct MMX_EXPORT spend_options_t {
 	
 	uint32_t min_confirm = 1;
 	uint32_t split_output = 1;
+	uint64_t extra_fee = 0;
 	vnx::bool_t over_spend = true;
 	vnx::bool_t pending_change = true;
 	vnx::optional<::mmx::addr_t> change_addr;
@@ -65,16 +66,17 @@ struct MMX_EXPORT spend_options_t {
 
 template<typename T>
 void spend_options_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<spend_options_t>(8);
+	_visitor.template type_begin<spend_options_t>(9);
 	_visitor.type_field("min_confirm", 0); _visitor.accept(min_confirm);
 	_visitor.type_field("split_output", 1); _visitor.accept(split_output);
-	_visitor.type_field("over_spend", 2); _visitor.accept(over_spend);
-	_visitor.type_field("pending_change", 3); _visitor.accept(pending_change);
-	_visitor.type_field("change_addr", 4); _visitor.accept(change_addr);
-	_visitor.type_field("exclude", 5); _visitor.accept(exclude);
-	_visitor.type_field("owner_map", 6); _visitor.accept(owner_map);
-	_visitor.type_field("utxo_map", 7); _visitor.accept(utxo_map);
-	_visitor.template type_end<spend_options_t>(8);
+	_visitor.type_field("extra_fee", 2); _visitor.accept(extra_fee);
+	_visitor.type_field("over_spend", 3); _visitor.accept(over_spend);
+	_visitor.type_field("pending_change", 4); _visitor.accept(pending_change);
+	_visitor.type_field("change_addr", 5); _visitor.accept(change_addr);
+	_visitor.type_field("exclude", 6); _visitor.accept(exclude);
+	_visitor.type_field("owner_map", 7); _visitor.accept(owner_map);
+	_visitor.type_field("utxo_map", 8); _visitor.accept(utxo_map);
+	_visitor.template type_end<spend_options_t>(9);
 }
 
 
