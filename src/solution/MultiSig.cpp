@@ -22,6 +22,8 @@ vnx::bool_t MultiSig::is_valid() const
 	return count <= MAX_SIGNATURES;
 }
 
+// TODO: cost per signature
+
 
 } // solution
 } // mmx
