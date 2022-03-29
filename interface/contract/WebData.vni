@@ -4,6 +4,8 @@ import mmx.hash_t;
 
 class WebData extends mmx.Contract {
 	
+	// TODO: optional<addr_t> owner;
+	
 	string mime_type;
 	
 	vnx.Buffer payload;

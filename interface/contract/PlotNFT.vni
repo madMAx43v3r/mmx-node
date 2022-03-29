@@ -3,6 +3,8 @@ package mmx.contract;
 import mmx.hash_t;
 import mmx.addr_t;
 
+// TODO: rename to something generic
+
 class PlotNFT extends mmx.Contract {
 	
 	addr_t owner;
@@ -11,6 +13,7 @@ class PlotNFT extends mmx.Contract {
 	
 	optional<uint> unlock_height;				// height at which owner can withdraw
 	
+	// TODO: make it a param
 	static const uint UNLOCK_DELAY = 100;		// number of blocks
 	
 	

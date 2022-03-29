@@ -28,6 +28,10 @@ class Token extends Contract {
 	
 	bool is_adjustable = false;								// if time_factor and stake_factors is adjustable by owner
 	
+	// TODO: bool is_locked_staking;
+	
+	// TODO: optional<uint> min_stake_duration;
+	
 	
 	bool is_valid() const;
 	
