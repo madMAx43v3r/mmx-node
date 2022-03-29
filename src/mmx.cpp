@@ -482,7 +482,7 @@ int main(int argc, char** argv)
 				std::cout << "Supply:   " << info->total_supply / 1e6 << " MMX" << std::endl;
 				std::cout << "N(UTXO):    " << info->utxo_count << std::endl;
 				std::cout << "N(Address): " << info->address_count << std::endl;
-				for(uint32_t i = 0; i < 2 * params->finality_delay && i < info->height; ++i) {
+				for(uint32_t i = 0; i < 10 && i < info->height; ++i) {
 					const auto hash = node.get_block_hash(info->height - i);
 					std::cout << "Block[" << (info->height - i) << "] " << (hash ? *hash : mmx::hash_t()) << std::endl;
 				}
