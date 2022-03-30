@@ -371,7 +371,7 @@ vnx::optional<uint32_t> Node::get_tx_height(const hash_t& id) const
 	{
 		auto iter = tx_map.find(id);
 		if(iter != tx_map.end()) {
-			return iter->second.second;
+			return iter->second;
 		}
 	}
 	{
@@ -489,15 +489,11 @@ std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id, const
 {
 	// THREAD SAFE (for concurrent reads)
 	{
-		auto iter = tx_map.find(id);
-		if(iter != tx_map.end()) {
-			return iter->second.first;
-		}
-	}
-	if(include_pending) {
 		auto iter = tx_pool.find(id);
 		if(iter != tx_pool.end()) {
-			return iter->second;
+			if(include_pending || tx_map.count(id)) {
+				return iter->second;
+			}
 		}
 	}
 	{
@@ -1458,7 +1454,7 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 		}
 		log.deployed.emplace(tx->id, contract);
 	}
-	tx_map[tx->id] = std::make_pair(tx, block->height);
+	tx_map[tx->id] = block->height;
 	log.tx_added.push_back(tx->id);
 }
 
