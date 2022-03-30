@@ -53,6 +53,7 @@ bool Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
 		block->prev = prev->hash;
 		block->height = prev->height + 1;
 		block->time_diff = prev->time_diff;
+		// TODO: reduce space_diff
 		block->space_diff = prev->space_diff;
 		block->vdf_iters = vdf_point->vdf_iters;
 		block->vdf_output = vdf_point->output;
@@ -429,6 +430,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 			}
 			avg_score /= counter;
 		}
+		// TODO: based on current score only with integer math
 		double delta = prev->space_diff * (params->score_target - avg_score);
 		delta /= params->score_target;
 		delta /= (1 << params->max_diff_adjust);

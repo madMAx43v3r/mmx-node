@@ -40,6 +40,7 @@ std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
 			throw std::logic_error("invalid farmer signature");
 		}
 		validate_diff_adjust(block->time_diff, prev->time_diff);
+		// TODO: validate exact space diff adjustment
 		validate_diff_adjust(block->space_diff, prev->space_diff);
 	} else {
 		if(block->version != 0) {
