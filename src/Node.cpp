@@ -740,20 +740,36 @@ void Node::add_block(std::shared_ptr<const Block> block)
 
 void Node::add_transaction(std::shared_ptr<const Transaction> tx, const vnx::bool_t& pre_validate)
 {
-	if(tx_pool.count(tx->id)) {
-		return;
-	}
-	if(tx_pool.size() >= tx_pool_limit) {
-		throw std::logic_error("tx pool at limit");
-	}
 	if(!tx->is_valid()) {
 		throw std::logic_error("invalid tx");
+	}
+	if(tx_pool.count(tx->id)) {
+		return;
 	}
 	if(tx->calc_cost(params) > params->max_block_cost) {
 		throw std::logic_error("tx cost > max_block_cost");
 	}
 	if(pre_validate) {
 		validate(tx);
+	}
+	if(tx_pool.size() >= tx_pool_limit) {
+		// try to purge invalid transactions first
+		std::vector<hash_t> invalid;
+		for(const auto& entry : tx_pool) {
+			if(!tx_map.count(entry.first)) {
+				try {
+					validate(entry.second);
+				} catch(const std::exception& ex) {
+					invalid.push_back(entry.first);
+				}
+			}
+		}
+		for(const auto& id : invalid) {
+			tx_pool.erase(id);
+		}
+		if(invalid.empty()) {
+			throw std::logic_error("tx pool at limit");
+		}
 	}
 	tx_pool[tx->id] = tx;
 
