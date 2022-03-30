@@ -288,8 +288,8 @@ private:
 	mutable vnx::rocksdb::table<hash_t, std::pair<int64_t, uint32_t>> tx_index;		// [txid => [file offset, height]] (finalized only)
 
 	std::unordered_map<txio_key_t, utxo_t> utxo_map;								// [utxo key => utxo]
-	std::set<std::pair<addr_t, txio_key_t>> addr_map;								// [addr => utxo keys] (finalized + unspent only)
-	std::unordered_map<addr_t, std::unordered_set<txio_key_t>> taddr_map;			// [addr => utxo keys] (pending + unspent only)
+	std::unordered_map<addr_t, std::unordered_set<txio_key_t>> addr_map;			// [addr => utxo keys] (pending + unspent only)
+	// TODO: remove TX pointer again
 	std::unordered_map<hash_t, std::pair<std::shared_ptr<const Transaction>, uint32_t>> tx_map;		// [txid => [tx, height]] (executed + pending only)
 
 	std::multimap<uint32_t, std::shared_ptr<fork_t>> fork_index;					// [height => fork]
