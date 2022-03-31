@@ -123,10 +123,11 @@ void TimeLord::handle(std::shared_ptr<const TimeInfusion> value)
 			log(DEBUG) << "Infusing at " << entry.first << " on chain " << value->chain << ": " << entry.second;
 		}
 	}
-	if(!value->values.empty()) {
-		map.erase(map.lower_bound(value->values.begin()->first), map.end());
+	const auto& values = value->values;
+	if(!values.empty()) {
+		map.erase(map.lower_bound(values.begin()->first), map.end());
 	}
-	map.insert(value->values.begin(), value->values.end());
+	map.insert(values.begin(), values.end());
 }
 
 void TimeLord::handle(std::shared_ptr<const IntervalRequest> request)
