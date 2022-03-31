@@ -228,10 +228,19 @@ void Node::update()
 	{
 		if(sync_retry < num_sync_retries)
 		{
-			log(INFO) << "Reached sync peak at height " << *sync_peak - 1;
-			sync_pos = *sync_peak;
-			sync_peak = nullptr;
-			sync_retry++;
+			bool done = true;
+			for(const auto& fork : get_fork_line()) {
+				if(!fork->is_vdf_verified) {
+					done = false;
+					break;
+				}
+			}
+			if(done) {
+				log(INFO) << "Reached sync peak at height " << *sync_peak - 1;
+				sync_pos = *sync_peak;
+				sync_peak = nullptr;
+				sync_retry++;
+			}
 		}
 		else if(peak->height + params->commit_delay + 1 < *sync_peak)
 		{
