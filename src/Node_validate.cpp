@@ -56,6 +56,9 @@ std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
 //		if(block->nonce) {
 //			throw std::logic_error("invalid block nonce for dummy block");
 //		}
+		if(block->farmer_sig) {
+			throw std::logic_error("invalid farmer signature");
+		}
 	}
 	auto context = Context::create();
 	context->height = block->height;
