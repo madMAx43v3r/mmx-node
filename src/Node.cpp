@@ -522,11 +522,13 @@ std::vector<std::shared_ptr<const Transaction>> Node::get_transactions(const std
 {
 	std::vector<std::shared_ptr<const Transaction>> list;
 	for(const auto& id : ids) {
+		std::shared_ptr<const Transaction> tx;
 		try {
-			list.push_back(get_transaction(id));
+			tx = get_transaction(id);
 		} catch(...) {
 			// ignore
 		}
+		list.push_back(tx);
 	}
 	return list;
 }
