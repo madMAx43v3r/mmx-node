@@ -1,3 +1,4 @@
 {
+	"challenge_delay": 8,
 	"max_weight_buffer": 524288
 }
