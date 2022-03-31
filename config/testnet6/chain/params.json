@@ -1,5 +1,5 @@
 {
-	"orphan_delay": 2,
+	"orphan_delay": 3,
 	"challenge_delay": 7,
 	"max_weight_buffer": 524288
 }
