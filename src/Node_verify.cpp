@@ -22,12 +22,18 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 	if(!prev || !diff_block) {
 		throw std::logic_error("cannot verify");
 	}
+	if(!block->is_valid()) {
+		throw std::logic_error("invalid block");
+	}
 	if(block->vdf_iters != prev->vdf_iters + diff_block->time_diff * params->time_diff_constant) {
 		throw std::logic_error("invalid vdf_iters");
 	}
 	// Note: vdf_output already verified to match vdf_iters
 
 	if(auto proof = block->proof) {
+		if(!block->farmer_sig || !block->farmer_sig->verify(proof->farmer_key, block->hash)) {
+			throw std::logic_error("invalid farmer signature");
+		}
 		const auto challenge = get_challenge(block, vdf_challenge);
 		fork->proof_score = verify_proof(proof, challenge, diff_block->space_diff);
 

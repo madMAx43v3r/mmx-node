@@ -19,6 +19,7 @@ namespace mmx {
 
 std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
 {
+	// Note: block hash already verified together with proof
 	const auto prev = find_prev_header(block);
 	if(!prev) {
 		throw std::logic_error("invalid prev");
@@ -36,9 +37,7 @@ std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
 		throw std::logic_error("invalid tx_count");
 	}
 	if(auto proof = block->proof) {
-		if(!block->farmer_sig || !block->farmer_sig->verify(proof->farmer_key, block->hash)) {
-			throw std::logic_error("invalid farmer signature");
-		}
+		// Note: farmer_sig already verfied together with proof
 		validate_diff_adjust(block->time_diff, prev->time_diff);
 		// TODO: validate exact space diff adjustment
 		validate_diff_adjust(block->space_diff, prev->space_diff);
