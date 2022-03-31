@@ -1456,6 +1456,7 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 		}
 		log.deployed.emplace(tx->id, contract);
 	}
+	tx_pool[tx->id] = tx;
 	tx_map[tx->id] = block->height;
 	log.tx_added.push_back(tx->id);
 }
