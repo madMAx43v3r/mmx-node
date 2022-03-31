@@ -8,6 +8,7 @@ class ChainParams {
 	uint max_ksize = 42;
 	uint plot_filter = 10;
 	
+	// TODO: move to Node
 	uint commit_delay = 18;					// for writing to disk (must > finality_delay)
 	// TODO: rename to infuse_delay
 	uint finality_delay = 6;				// for primary VDF infusion (must be > 0)
@@ -33,6 +34,7 @@ class ChainParams {
 	ulong time_diff_constant = 1000;
 	ulong space_diff_constant = 100000000;
 	
+	// TODO: ulong min_time_diff = 10000;
 	ulong initial_time_diff = 10000;		// [iters/sec]
 	ulong initial_space_diff = 10;
 	
