@@ -291,7 +291,7 @@ private:
 	std::unordered_map<addr_t, std::unordered_set<txio_key_t>> addr_map;			// [addr => utxo keys] (pending + unspent only)
 	std::unordered_map<hash_t, uint32_t> tx_map;									// [txid => height] (executed + pending only)
 
-	std::multimap<uint32_t, std::shared_ptr<fork_t>> fork_index;					// [height => fork]
+	std::multimap<uint32_t, std::shared_ptr<fork_t>> fork_index;					// [height => fork] (pending only)
 	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;					// [block hash => fork] (pending only)
 	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;					// [height => block header] (finalized only)
 	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_pool;			// [txid => transaction] (pending only)
