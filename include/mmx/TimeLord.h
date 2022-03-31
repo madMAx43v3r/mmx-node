@@ -50,7 +50,6 @@ private:
 	std::thread vdf_thread;
 	std::recursive_mutex mutex;
 
-	bool do_restart = false;
 	bool is_running = false;
 	int64_t last_restart = 0;
 	uint64_t checkpoint_iters = 1000;
