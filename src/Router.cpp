@@ -984,22 +984,15 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> proof)
 
 void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 {
-	if(!block->is_valid() || !block->proof) {
+	if(!block->is_valid() || !block->proof || block->calc_cost(params) > params->max_block_cost) {
 		return;
 	}
 	if(!receive_msg_hash(block->hash, client, block_relay_cost)) {
 		return;
 	}
 	try {
-		if(!block->farmer_sig) {
-			throw std::logic_error("missing farmer_sig");
-		}
-		if(block->calc_cost(params) > params->max_block_cost) {
-			throw std::logic_error("block cost > max_block_cost");
-		}
 		block->validate();
-	}
-	catch(const std::exception& ex) {
+	} catch(const std::exception& ex) {
 		ban_peer(client, std::string("they sent us an invalid block: ") + ex.what());
 		return;
 	}

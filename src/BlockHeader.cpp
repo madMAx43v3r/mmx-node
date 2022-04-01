@@ -42,8 +42,17 @@ mmx::hash_t BlockHeader::calc_hash() const
 
 void BlockHeader::validate() const
 {
-	if(farmer_sig && !farmer_sig->verify(proof->farmer_key, hash)) {
-		throw std::logic_error("invalid farmer signature");
+	if(proof) {
+		if(!farmer_sig) {
+			throw std::logic_error("missing farmer signature");
+		}
+		if(!farmer_sig->verify(proof->farmer_key, hash)) {
+			throw std::logic_error("invalid farmer signature");
+		}
+	} else {
+		if(farmer_sig) {
+			throw std::logic_error("extra farmer signature");
+		}
 	}
 }
 
