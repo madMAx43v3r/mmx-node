@@ -20,7 +20,7 @@ struct MMX_EXPORT spend_options_t {
 	uint32_t split_output = 1;
 	uint64_t extra_fee = 0;
 	vnx::bool_t over_spend = true;
-	vnx::bool_t pending_change = true;
+	vnx::bool_t pending_change = false;
 	vnx::optional<::mmx::addr_t> change_addr;
 	std::vector<::mmx::txio_key_t> exclude;
 	std::vector<std::pair<::mmx::addr_t, ::mmx::addr_t>> owner_map;

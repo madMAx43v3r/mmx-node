@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 spend_options_t::VNX_TYPE_HASH(0x37f7c6d377362e95ull);
-const vnx::Hash64 spend_options_t::VNX_CODE_HASH(0x207fceda8c51e141ull);
+const vnx::Hash64 spend_options_t::VNX_CODE_HASH(0xb7fc587e4fe43fd9ull);
 
 vnx::Hash64 spend_options_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -195,7 +195,7 @@ std::shared_ptr<vnx::TypeCode> spend_options_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.spend_options_t";
 	type_code->type_hash = vnx::Hash64(0x37f7c6d377362e95ull);
-	type_code->code_hash = vnx::Hash64(0x207fceda8c51e141ull);
+	type_code->code_hash = vnx::Hash64(0xb7fc587e4fe43fd9ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::spend_options_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<spend_options_t>>(); };
@@ -234,7 +234,7 @@ std::shared_ptr<vnx::TypeCode> spend_options_t::static_create_type_code() {
 		auto& field = type_code->fields[4];
 		field.data_size = 1;
 		field.name = "pending_change";
-		field.value = vnx::to_string(true);
+		field.value = vnx::to_string(false);
 		field.code = {31};
 	}
 	{
