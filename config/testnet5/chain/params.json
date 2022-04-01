@@ -4,6 +4,7 @@
 	"plot_filter": 8,
 	"finality_delay": 3,
 	"challenge_delay": 6,
+	"orphan_delay": 3,
 	"min_ksize": 26,
 	"vdf_seed": "test5",
 	"reward_factor": {
