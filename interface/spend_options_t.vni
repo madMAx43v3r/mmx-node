@@ -10,7 +10,7 @@ struct spend_options_t {
 	
 	bool over_spend = true;					// overspend to cover asked amount (ie. with change)
 	
-	bool pending_change = true;
+	bool pending_change = false;
 	
 	optional<addr_t> change_addr;			// address to send change to
 	
