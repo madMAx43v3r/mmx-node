@@ -7,6 +7,8 @@
 #include <mmx/BlockHeader_calc_hash_return.hxx>
 #include <mmx/BlockHeader_is_valid.hxx>
 #include <mmx/BlockHeader_is_valid_return.hxx>
+#include <mmx/BlockHeader_validate.hxx>
+#include <mmx/BlockHeader_validate_return.hxx>
 #include <mmx/ProofOfSpace.hxx>
 #include <mmx/TransactionBase.hxx>
 #include <mmx/bls_signature_t.hpp>
@@ -246,9 +248,10 @@ std::shared_ptr<vnx::TypeCode> BlockHeader::static_create_type_code() {
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::BlockHeader);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<BlockHeader>(); };
-	type_code->methods.resize(2);
+	type_code->methods.resize(3);
 	type_code->methods[0] = ::mmx::BlockHeader_calc_hash::static_get_type_code();
 	type_code->methods[1] = ::mmx::BlockHeader_is_valid::static_get_type_code();
+	type_code->methods[2] = ::mmx::BlockHeader_validate::static_get_type_code();
 	type_code->fields.resize(13);
 	{
 		auto& field = type_code->fields[0];
@@ -344,6 +347,12 @@ std::shared_ptr<vnx::Value> BlockHeader::vnx_call_switch(std::shared_ptr<const v
 			auto _args = std::static_pointer_cast<const ::mmx::BlockHeader_is_valid>(_method);
 			auto _return_value = ::mmx::BlockHeader_is_valid_return::create();
 			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+		case 0xcfb7b60e776d1aaeull: {
+			auto _args = std::static_pointer_cast<const ::mmx::BlockHeader_validate>(_method);
+			auto _return_value = ::mmx::BlockHeader_validate_return::create();
+			validate();
 			return _return_value;
 		}
 	}

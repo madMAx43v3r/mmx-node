@@ -46,6 +46,7 @@ public:
 	
 	virtual vnx::bool_t is_valid() const;
 	virtual ::mmx::hash_t calc_hash() const;
+	virtual void validate() const;
 	
 	static std::shared_ptr<BlockHeader> create();
 	std::shared_ptr<vnx::Value> clone() const override;
