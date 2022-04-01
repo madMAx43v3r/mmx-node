@@ -997,7 +997,7 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 
 void Node::handle(std::shared_ptr<const ProofResponse> value)
 {
-	if(!is_synced || !value->proof || !value->request) {
+	if(!is_synced || !value->is_valid()) {
 		return;
 	}
 	const auto peak = get_peak();

@@ -42,9 +42,6 @@ mmx::hash_t BlockHeader::calc_hash() const
 
 void BlockHeader::validate() const
 {
-	if(proof) {
-		proof->validate();
-	}
 	if(farmer_sig && !farmer_sig->verify(proof->farmer_key, hash)) {
 		throw std::logic_error("invalid farmer signature");
 	}

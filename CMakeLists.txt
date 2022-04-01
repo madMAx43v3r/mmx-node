@@ -81,6 +81,7 @@ add_library(mmx_iface SHARED
 	src/Solution.cpp
 	src/ProofOfTime.cpp
 	src/ProofOfSpace.cpp
+	src/ProofResponse.cpp
 	src/secp256k1.cpp
 	src/hash_t.cpp
 	src/txio_key_t.cpp

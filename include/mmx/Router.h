@@ -149,6 +149,8 @@ private:
 
 	void add_peer(const std::string& address, const int sock);
 
+	void ban_peer(uint64_t client, const std::string& reason);
+
 	void connect_task(const std::string& peer) noexcept;
 
 	void print_stats() override;

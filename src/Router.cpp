@@ -941,6 +941,15 @@ void Router::print_stats()
 	block_drop_counter = 0;
 }
 
+void Router::ban_peer(uint64_t client, const std::string& reason)
+{
+	if(auto peer = find_peer(client)) {
+		block_peers.insert(peer->address);
+		disconnect(client);
+		log(WARN) << "Banned peer " << peer->address << " because: " << reason;
+	}
+}
+
 void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> proof)
 {
 	const auto peer = find_peer(client);
@@ -982,17 +991,16 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 		return;
 	}
 	try {
-		if(!block->farmer_sig || block->calc_cost(params) > params->max_block_cost) {
-			throw std::logic_error("invalid block");
+		if(!block->farmer_sig) {
+			throw std::logic_error("missing farmer_sig");
+		}
+		if(block->calc_cost(params) > params->max_block_cost) {
+			throw std::logic_error("block cost > max_block_cost");
 		}
 		block->validate();
 	}
-	catch(...) {
-		if(auto peer = find_peer(client)) {
-			block_peers.insert(peer->address);
-			disconnect(client);
-			log(WARN) << "Banned peer " << peer->address << " because they sent us an invalid block.";
-		}
+	catch(const std::exception& ex) {
+		ban_peer(client, std::string("they sent us an invalid block: ") + ex.what());
 		return;
 	}
 	if(do_relay) {
@@ -1019,23 +1027,20 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 
 void Router::on_proof(uint64_t client, std::shared_ptr<const ProofResponse> response)
 {
-	const auto proof = response->proof;
-	const auto request = response->request;
-	if(!proof || !request || !proof->is_valid()) {
+	if(!response->is_valid()) {
 		return;
 	}
+	const auto proof = response->proof;
+	const auto request = response->request;
+
 	const auto hash = proof->calc_hash();
 	if(!receive_msg_hash(hash, client, proof_relay_cost)) {
 		return;
 	}
 	try {
-		proof->validate();
-	} catch(...) {
-		if(auto peer = find_peer(client)) {
-			block_peers.insert(peer->address);
-			disconnect(client);
-			log(WARN) << "Banned peer " << peer->address << " because they sent us invalid proof.";
-		}
+		response->validate();
+	} catch(const std::exception& ex) {
+		ban_peer(client, std::string("they sent us invalid proof: ") + ex.what());
 		return;
 	}
 	if(do_relay) {
@@ -1068,9 +1073,6 @@ void Router::on_transaction(uint64_t client, std::shared_ptr<const Transaction> 
 	}
 	const auto tx_cost = tx->calc_cost(params);
 	if(tx_cost > params->max_block_cost) {
-		block_peers.insert(peer->address);
-		disconnect(client);
-		log(WARN) << "Banned peer " << peer->address << " because they sent us an invalid transaction.";
 		return;
 	}
 	if(do_relay) {

@@ -6,8 +6,15 @@ class ProofResponse {
 	
 	ProofOfSpace* proof;
 	
+	// TOOD: farmer_sig for proof
+	
 	uint score;
 	
 	vnx.Hash64 farmer_addr;
+	
+	
+	bool is_valid() const;
+	
+	void validate() const;
 	
 }
