@@ -179,6 +179,8 @@ private:
 
 	bool include_transaction(std::shared_ptr<const Transaction> tx);
 
+	void validate_pool();
+
 	bool make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response);
 
 	void sync_more();
@@ -320,6 +322,7 @@ private:
 
 	std::shared_ptr<vnx::Timer> stuck_timer;
 	std::shared_ptr<vnx::Timer> update_timer;
+	std::shared_ptr<vnx::Timer> validate_timer;
 
 	std::shared_ptr<const ChainParams> params;
 	mutable std::shared_ptr<const NetworkInfo> network;

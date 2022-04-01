@@ -209,6 +209,7 @@ void Node::main()
 	subscribe(input_harvester_proof, max_queue_ms);
 
 	update_timer = set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
+	validate_timer = set_timer_millis(validate_interval_ms, std::bind(&Node::validate_pool, this));
 	stuck_timer = set_timer_millis(sync_loss_delay * 1000, std::bind(&Node::on_stuck_timeout, this));
 	set_timer_millis(60 * 1000, std::bind(&Node::print_stats, this));
 
@@ -744,31 +745,15 @@ void Node::add_transaction(std::shared_ptr<const Transaction> tx, const vnx::boo
 	if(tx_pool.count(tx->id)) {
 		return;
 	}
+	if(tx_pool.size() >= tx_pool_limit) {
+		// TODO: hide in production
+		throw std::logic_error("tx pool at limit");
+	}
 	if(tx->calc_cost(params) > params->max_block_cost) {
 		throw std::logic_error("tx cost > max_block_cost");
 	}
 	if(pre_validate) {
 		validate(tx);
-	}
-	if(tx_pool.size() >= tx_pool_limit) {
-		// TODO: purge periodically (while considering dependencies)
-		// try to purge invalid transactions first
-		std::vector<hash_t> invalid;
-		for(const auto& entry : tx_pool) {
-			if(!tx_map.count(entry.first)) {
-				try {
-					validate(entry.second);
-				} catch(const std::exception& ex) {
-					invalid.push_back(entry.first);
-				}
-			}
-		}
-		for(const auto& id : invalid) {
-			tx_pool.erase(id);
-		}
-		if(invalid.empty()) {
-			throw std::logic_error("tx pool at limit");
-		}
 	}
 	tx_pool[tx->id] = tx;
 

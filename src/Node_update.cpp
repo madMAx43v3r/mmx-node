@@ -367,6 +367,7 @@ void Node::update()
 			prev = find_prev_header(prev);
 		}
 		if(made_block) {
+			validate_timer->reset();
 			// update again right away
 			add_task(std::bind(&Node::update, this));
 		}
@@ -391,15 +392,22 @@ void Node::update()
 	}
 }
 
+void Node::validate_pool()
+{
+	if(auto peak = get_peak()) {
+		try {
+			make_block(peak, nullptr);
+		}
+		catch(const std::exception& ex) {
+			log(WARN) << "Failed to validate pool: " << ex.what();
+		}
+		fork_to(peak->hash);
+	}
+}
+
 bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response)
 {
 	const auto time_begin = vnx::get_wall_time_micros();
-
-	const auto vdf_point = find_next_vdf_point(prev);
-	if(!vdf_point) {
-		return false;
-	}
-	const auto prev_fork = find_fork(prev->hash);
 
 	// reset state to previous block
 	fork_to(prev->hash);
@@ -409,63 +417,6 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	block->height = prev->height + 1;
 	block->time_diff = prev->time_diff;
 	block->space_diff = prev->space_diff;
-	block->vdf_iters = vdf_point->vdf_iters;
-	block->vdf_output = vdf_point->output;
-
-	// set new time difficulty
-	if(auto fork = find_prev_fork(prev_fork, params->finality_delay)) {
-		if(auto point = fork->vdf_point) {
-			const int64_t time_delta = (vdf_point->recv_time - point->recv_time) / (params->finality_delay + 1);
-			if(time_delta > 0) {
-				const double gain = 0.1;
-				if(auto diff_block = fork->diff_block) {
-					double new_diff = params->block_time * diff_block->time_diff / (time_delta * 1e-6);
-					new_diff = prev->time_diff * (1 - gain) + new_diff * gain;
-					block->time_diff = std::max<int64_t>(new_diff + 0.5, 1);
-				}
-			}
-		}
-	}
-	{
-		// set new space difficulty
-		double avg_score = response->score;
-		{
-			uint32_t counter = 1;
-			auto fork = prev_fork;
-			for(uint32_t i = 1; i < params->finality_delay && fork; ++i) {
-				avg_score += fork->proof_score;
-				fork = fork->prev.lock();
-				counter++;
-			}
-			avg_score /= counter;
-		}
-		// TODO: based on current score only with integer math
-		double delta = prev->space_diff * (params->score_target - avg_score);
-		delta /= params->score_target;
-		delta /= (1 << params->max_diff_adjust);
-
-		int64_t update = 0;
-		if(delta > 0 && delta < 1) {
-			update = 1;
-		} else if(delta < 0 && delta > -1) {
-			update = -1;
-		} else {
-			update = delta + 0.5;
-		}
-		const int64_t new_diff = prev->space_diff + update;
-		block->space_diff = std::max<int64_t>(new_diff, 1);
-	}
-	{
-		const auto max_update = std::max<uint64_t>(prev->time_diff >> params->max_diff_adjust, 1);
-		block->time_diff = std::min(block->time_diff, prev->time_diff + max_update);
-		block->time_diff = std::max(block->time_diff, prev->time_diff - max_update);
-	}
-	{
-		const auto max_update = std::max<uint64_t>(prev->space_diff >> params->max_diff_adjust, 1);
-		block->space_diff = std::min(block->space_diff, prev->space_diff + max_update);
-		block->space_diff = std::max(block->space_diff, prev->space_diff - max_update);
-	}
-	block->proof = response->proof;
 
 	struct tx_data_t {
 		bool invalid = false;
@@ -529,11 +480,47 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 		}
 		catch(const std::exception& ex) {
 			entry.invalid = true;
+			// TODO: hide in production
 			log(WARN) << "TX validation failed with: " << ex.what();
 		}
 	}
 
-	// sort by fee ratio
+	size_t num_invalid = 0;
+	{
+		// purge invalid transactions
+		std::unordered_set<hash_t> invalid;
+		for(const auto& entry : tx_list) {
+			if(entry.invalid) {
+				invalid.insert(entry.tx->id);
+			}
+		}
+		while(!invalid.empty()) {
+			std::unordered_set<hash_t> more;
+			for(const auto& id : invalid) {
+				const auto range = dependency.equal_range(id);
+				for(auto iter = range.first; iter != range.second; ++iter) {
+					more.insert(iter->second);
+				}
+				num_invalid += tx_pool.erase(id);
+			}
+			invalid = more;
+		}
+	}
+	if(!response) {
+		const auto elapsed = (vnx::get_wall_time_micros() - time_begin) / 1e6;
+		log(INFO) << "Validated pending transactions: " << tx_list.size() << " total, " << num_invalid << " invalid, took " << elapsed << " sec";
+		return false;
+	}
+
+	// find VDF output
+	const auto vdf_point = find_next_vdf_point(prev);
+	if(!vdf_point) {
+		return false;
+	}
+	block->vdf_iters = vdf_point->vdf_iters;
+	block->vdf_output = vdf_point->output;
+
+	// sort transactions by fee ratio
 	std::sort(tx_list.begin(), tx_list.end(),
 		[](const tx_data_t& lhs, const tx_data_t& rhs) -> bool {
 			return lhs.fee_ratio > rhs.fee_ratio;
@@ -541,19 +528,17 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 
 	uint64_t total_fees = 0;
 	uint64_t total_cost = 0;
-	std::unordered_set<hash_t> invalid;
 	std::unordered_set<addr_t> mutated;
 	std::unordered_set<txio_key_t> spent;
 
 	// select transactions
-	for(size_t i = 0; i < tx_list.size(); ++i)
+	for(const auto& entry : tx_list)
 	{
-		const auto& entry = tx_list[i];
-		const auto& tx = entry.tx;
 		if(entry.invalid) {
-			invalid.insert(tx->id);
 			continue;
 		}
+		const auto& tx = entry.tx;
+
 		if(total_cost + entry.cost < params->max_block_cost)
 		{
 			bool passed = true;
@@ -584,20 +569,64 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 			}
 		}
 	}
-	block->finalize();
 
-	// purge invalid
-	while(!invalid.empty()) {
-		std::unordered_set<hash_t> more;
-		for(const auto& id : invalid) {
-			const auto range = dependency.equal_range(id);
-			for(auto iter = range.first; iter != range.second; ++iter) {
-				more.insert(iter->second);
+	const auto prev_fork = find_fork(prev->hash);
+
+	// set new time difficulty
+	if(auto fork = find_prev_fork(prev_fork, params->finality_delay)) {
+		if(auto point = fork->vdf_point) {
+			const int64_t time_delta = (vdf_point->recv_time - point->recv_time) / (params->finality_delay + 1);
+			if(time_delta > 0) {
+				const double gain = 0.1;
+				if(auto diff_block = fork->diff_block) {
+					double new_diff = params->block_time * diff_block->time_diff / (time_delta * 1e-6);
+					new_diff = prev->time_diff * (1 - gain) + new_diff * gain;
+					block->time_diff = std::max<int64_t>(new_diff + 0.5, 1);
+				}
 			}
-			tx_pool.erase(id);
 		}
-		invalid = more;
 	}
+	{
+		// set new space difficulty
+		double avg_score = response->score;
+		{
+			uint32_t counter = 1;
+			auto fork = prev_fork;
+			for(uint32_t i = 1; i < params->finality_delay && fork; ++i) {
+				avg_score += fork->proof_score;
+				fork = fork->prev.lock();
+				counter++;
+			}
+			avg_score /= counter;
+		}
+		// TODO: based on current score only with integer math
+		double delta = prev->space_diff * (params->score_target - avg_score);
+		delta /= params->score_target;
+		delta /= (1 << params->max_diff_adjust);
+
+		int64_t update = 0;
+		if(delta > 0 && delta < 1) {
+			update = 1;
+		} else if(delta < 0 && delta > -1) {
+			update = -1;
+		} else {
+			update = delta + 0.5;
+		}
+		const int64_t new_diff = prev->space_diff + update;
+		block->space_diff = std::max<int64_t>(new_diff, 1);
+	}
+	{
+		const auto max_update = std::max<uint64_t>(prev->time_diff >> params->max_diff_adjust, 1);
+		block->time_diff = std::min(block->time_diff, prev->time_diff + max_update);
+		block->time_diff = std::max(block->time_diff, prev->time_diff - max_update);
+	}
+	{
+		const auto max_update = std::max<uint64_t>(prev->space_diff >> params->max_diff_adjust, 1);
+		block->space_diff = std::min(block->space_diff, prev->space_diff + max_update);
+		block->space_diff = std::max(block->space_diff, prev->space_diff - max_update);
+	}
+	block->proof = response->proof;
+	block->finalize();
 
 	FarmerClient farmer(response->farmer_addr);
 	const auto block_reward = calc_block_reward(block);
