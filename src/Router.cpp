@@ -1059,12 +1059,11 @@ void Router::on_proof(uint64_t client, std::shared_ptr<const ProofResponse> resp
 void Router::on_transaction(uint64_t client, std::shared_ptr<const Transaction> tx)
 {
 	const auto peer = find_peer(client);
-	if(!peer) {
+	if(!peer || !tx->is_valid()) {
 		return;
 	}
 	const auto tx_cost = tx->calc_cost(params);
-	if(!tx->is_valid() || tx_cost > params->max_block_cost)
-	{
+	if(tx_cost > params->max_block_cost) {
 		block_peers.insert(peer->address);
 		disconnect(client);
 		log(WARN) << "Banned peer " << peer->address << " because they sent us an invalid transaction.";
