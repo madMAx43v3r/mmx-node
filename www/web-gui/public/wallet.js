@@ -1052,7 +1052,7 @@ app.component('account-split-form', {
 						<label>Confirm</label>
 					</div>
 				</div>
-				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">Send</div>
+				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">Split</div>
 			</form>
 		</div>
 		<div class="ui message" :class="{hidden: !result}">
