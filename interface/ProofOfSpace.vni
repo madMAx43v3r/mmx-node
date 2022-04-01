@@ -23,4 +23,6 @@ class ProofOfSpace {
 	
 	hash_t calc_hash() const;
 	
+	void validate() const;
+	
 }

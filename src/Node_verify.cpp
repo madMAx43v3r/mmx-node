@@ -78,21 +78,17 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 
 uint32_t Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, const uint64_t space_diff) const
 {
+	if(!proof->is_valid()) {
+		throw std::logic_error("invalid proof");
+	}
 	if(proof->ksize < params->min_ksize) {
 		throw std::logic_error("ksize too small");
 	}
 	if(proof->ksize > params->max_ksize) {
 		throw std::logic_error("ksize too big");
 	}
-	const bls_pubkey_t plot_key = proof->local_key.to_bls() + proof->farmer_key.to_bls();
+	proof->validate();
 
-	const uint32_t port = 11337;
-	if(hash_t(hash_t(proof->pool_key + plot_key) + bytes_t<4>(&port, 4)) != proof->plot_id) {
-		throw std::logic_error("invalid proof keys or port");
-	}
-	if(!proof->local_sig.verify(proof->local_key, proof->calc_hash())) {
-		throw std::logic_error("invalid proof signature");
-	}
 	if(!check_plot_filter(params, challenge, proof->plot_id)) {
 		throw std::logic_error("plot filter failed");
 	}

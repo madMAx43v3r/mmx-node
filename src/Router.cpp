@@ -1018,15 +1018,16 @@ void Router::on_proof(uint64_t client, std::shared_ptr<const ProofResponse> resp
 {
 	const auto proof = response->proof;
 	const auto request = response->request;
-	if(!proof || !request) {
+	if(!proof || !request || !proof->is_valid()) {
 		return;
 	}
 	const auto hash = proof->calc_hash();
 	if(!receive_msg_hash(hash, client, proof_relay_cost)) {
 		return;
 	}
-	if(!proof->is_valid() || !proof->local_sig.verify(proof->local_key, hash))
-	{
+	try {
+		proof->validate();
+	} catch(...) {
 		if(auto peer = find_peer(client)) {
 			block_peers.insert(peer->address);
 			disconnect(client);
