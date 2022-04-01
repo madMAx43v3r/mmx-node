@@ -575,6 +575,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 			}
 		}
 	}
+	block->finalize();
 
 	// purge invalid
 	while(!invalid.empty()) {
@@ -588,7 +589,6 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 		}
 		invalid = more;
 	}
-	block->finalize();
 
 	FarmerClient farmer(response->farmer_addr);
 	const auto block_reward = calc_block_reward(block);
@@ -596,11 +596,11 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	const auto result = farmer.sign_block(block, final_reward);
 
 	if(!result) {
-		throw std::logic_error("farmer refused");
+		throw std::logic_error("farmer refused to sign block");
 	}
 	block->tx_base = result->tx_base;
 	block->farmer_sig = result->farmer_sig;
-	block->finalize();
+	block->hash = block->calc_hash();
 
 	add_block(block);
 
