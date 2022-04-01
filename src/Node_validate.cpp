@@ -199,6 +199,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 	std::unordered_map<addr_t, std::shared_ptr<Contract>> contract_state;
 
 	if(!base) {
+		// TODO: parallel for if many inputs
 		for(const auto& in : tx->inputs)
 		{
 			auto iter = utxo_map.find(in.prev);
