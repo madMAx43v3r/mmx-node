@@ -476,16 +476,24 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	};
 
 	std::vector<tx_data_t> tx_list;
+	std::vector<std::shared_ptr<const Transaction>> all_tx;
 	std::unordered_multimap<hash_t, hash_t> dependency;
 
 	for(const auto& entry : tx_pool) {
-		const auto& tx = entry.second;
+		all_tx.push_back(entry.second);
+	}
+
+#pragma omp parallel for
+	for(int i = 0; i < int(all_tx.size()); ++i)
+	{
+		const auto& tx = all_tx[i];
 		if(!tx_map.count(tx->id)) {
 			bool depends = false;
 			for(const auto& in : tx->inputs) {
 				const auto& prev = in.prev.txid;
 				// check if tx depends on another one which is not in a block yet
 				if(tx_pool.count(prev) && !tx_map.count(prev)) {
+#pragma omp critical
 					dependency.emplace(prev, tx->id);
 					depends = true;
 				}
@@ -493,6 +501,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 			if(!depends) {
 				tx_data_t tmp;
 				tmp.tx = tx;
+#pragma omp critical
 				tx_list.push_back(tmp);
 			}
 		}
