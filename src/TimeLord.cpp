@@ -125,12 +125,16 @@ void TimeLord::handle(std::shared_ptr<const TimeInfusion> value)
 		if(iter != map.end()) {
 			if(entry.second != iter->second && passed) {
 				log(WARN) << "Infusion value at " << entry.first << " changed, restarting ...";
-				stop_vdf();
+				add_task([this]{
+					stop_vdf();
+				});
 			}
 		} else {
 			if(passed) {
 				log(WARN) << "Missed infusion point at " << entry.first << " iterations, restarting ...";
-				stop_vdf();
+				add_task([this]{
+					stop_vdf();
+				});
 			}
 			log(DEBUG) << "Infusing at " << entry.first << " on chain " << value->chain << ": " << entry.second;
 		}
@@ -158,7 +162,9 @@ void TimeLord::handle(std::shared_ptr<const IntervalRequest> request)
 				|| (iter == history.end() && latest_point && latest_point->num_iters > request->begin))
 			{
 				log(WARN) << "Our VDF forked from the network, restarting ...";
-				stop_vdf();
+				add_task([this]{
+					stop_vdf();
+				});
 			}
 		}
 		if(!is_running) {
