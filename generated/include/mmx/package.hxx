@@ -172,6 +172,10 @@ class ProofOfTime_get_output_return;
 class ProofOfTime_get_vdf_iters;
 class ProofOfTime_get_vdf_iters_return;
 class ProofResponse;
+class ProofResponse_is_valid;
+class ProofResponse_is_valid_return;
+class ProofResponse_validate;
+class ProofResponse_validate_return;
 class ReceiveNote;
 class Request;
 class Return;
@@ -491,6 +495,10 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfTime_ge
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfTime_get_vdf_iters; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfTime_get_vdf_iters_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofResponse; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofResponse_is_valid; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofResponse_is_valid_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofResponse_validate; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofResponse_validate_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ReceiveNote; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Request; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Return; ///< \private
@@ -808,6 +816,10 @@ void read(TypeInput& in, ::mmx::ProofOfTime_get_output_return& value, const Type
 void read(TypeInput& in, ::mmx::ProofOfTime_get_vdf_iters& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ProofOfTime_get_vdf_iters_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ProofResponse& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::ProofResponse_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::ProofResponse_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::ProofResponse_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::ProofResponse_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ReceiveNote& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Request& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1127,6 +1139,10 @@ void write(TypeOutput& out, const ::mmx::ProofOfTime_get_output_return& value, c
 void write(TypeOutput& out, const ::mmx::ProofOfTime_get_vdf_iters& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ProofOfTime_get_vdf_iters_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ProofResponse& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::ProofResponse_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::ProofResponse_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::ProofResponse_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::ProofResponse_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ReceiveNote& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Request& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1446,6 +1462,10 @@ void read(std::istream& in, ::mmx::ProofOfTime_get_output_return& value); ///< \
 void read(std::istream& in, ::mmx::ProofOfTime_get_vdf_iters& value); ///< \private
 void read(std::istream& in, ::mmx::ProofOfTime_get_vdf_iters_return& value); ///< \private
 void read(std::istream& in, ::mmx::ProofResponse& value); ///< \private
+void read(std::istream& in, ::mmx::ProofResponse_is_valid& value); ///< \private
+void read(std::istream& in, ::mmx::ProofResponse_is_valid_return& value); ///< \private
+void read(std::istream& in, ::mmx::ProofResponse_validate& value); ///< \private
+void read(std::istream& in, ::mmx::ProofResponse_validate_return& value); ///< \private
 void read(std::istream& in, ::mmx::ReceiveNote& value); ///< \private
 void read(std::istream& in, ::mmx::Request& value); ///< \private
 void read(std::istream& in, ::mmx::Return& value); ///< \private
@@ -1765,6 +1785,10 @@ void write(std::ostream& out, const ::mmx::ProofOfTime_get_output_return& value)
 void write(std::ostream& out, const ::mmx::ProofOfTime_get_vdf_iters& value); ///< \private
 void write(std::ostream& out, const ::mmx::ProofOfTime_get_vdf_iters_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::ProofResponse& value); ///< \private
+void write(std::ostream& out, const ::mmx::ProofResponse_is_valid& value); ///< \private
+void write(std::ostream& out, const ::mmx::ProofResponse_is_valid_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::ProofResponse_validate& value); ///< \private
+void write(std::ostream& out, const ::mmx::ProofResponse_validate_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::ReceiveNote& value); ///< \private
 void write(std::ostream& out, const ::mmx::Request& value); ///< \private
 void write(std::ostream& out, const ::mmx::Return& value); ///< \private
@@ -2084,6 +2108,10 @@ void accept(Visitor& visitor, const ::mmx::ProofOfTime_get_output_return& value)
 void accept(Visitor& visitor, const ::mmx::ProofOfTime_get_vdf_iters& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ProofOfTime_get_vdf_iters_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ProofResponse& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::ProofResponse_is_valid& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::ProofResponse_is_valid_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::ProofResponse_validate& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::ProofResponse_validate_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ReceiveNote& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Request& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Return& value); ///< \private
@@ -5714,6 +5742,98 @@ struct type<::mmx::ProofResponse> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofResponse& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::ProofResponse_is_valid> {
+	void read(TypeInput& in, ::mmx::ProofResponse_is_valid& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::ProofResponse_is_valid& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::ProofResponse_is_valid& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::ProofResponse_is_valid& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::ProofResponse_is_valid& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofResponse_is_valid& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::ProofResponse_is_valid_return> {
+	void read(TypeInput& in, ::mmx::ProofResponse_is_valid_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::ProofResponse_is_valid_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::ProofResponse_is_valid_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::ProofResponse_is_valid_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::ProofResponse_is_valid_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofResponse_is_valid_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::ProofResponse_validate> {
+	void read(TypeInput& in, ::mmx::ProofResponse_validate& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::ProofResponse_validate& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::ProofResponse_validate& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::ProofResponse_validate& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::ProofResponse_validate& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofResponse_validate& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::ProofResponse_validate_return> {
+	void read(TypeInput& in, ::mmx::ProofResponse_validate_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::ProofResponse_validate_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::ProofResponse_validate_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::ProofResponse_validate_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::ProofResponse_validate_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofResponse_validate_return& value, bool special = false);
 };
 
 /// \private
