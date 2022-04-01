@@ -935,13 +935,27 @@ void Node::http_request_chunk_async(std::shared_ptr<const vnx::addons::HttpReque
 	throw std::logic_error("not implemented");
 }
 
+bool Node::recv_height(const uint32_t& height)
+{
+	if(auto root = get_root()) {
+		if(height < root->height) {
+			return false;
+		}
+	}
+	if(auto peak = get_peak()) {
+		if(height > peak->height && height - peak->height > params->commit_delay) {
+			return false;
+		}
+	}
+	return true;
+}
+
 void Node::handle(std::shared_ptr<const Block> block)
 {
 	if(!block->proof) {
 		return;
 	}
-	const auto peak = get_peak();
-	if(peak && block->height > peak->height && block->height - peak->height > 2 * params->commit_delay) {
+	if(!recv_height(block->height)) {
 		return;
 	}
 	add_block(block);
@@ -957,8 +971,7 @@ void Node::handle(std::shared_ptr<const Transaction> tx)
 
 void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 {
-	const auto peak = get_peak();
-	if(peak && proof->height > peak->height && proof->height - peak->height > 2 * params->commit_delay) {
+	if(!recv_height(proof->height)) {
 		return;
 	}
 	if(find_vdf_point(	proof->height, proof->start, proof->get_vdf_iters(),

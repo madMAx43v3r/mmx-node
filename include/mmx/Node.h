@@ -171,6 +171,8 @@ private:
 
 	void print_stats();
 
+	bool recv_height(const uint32_t& height);
+
 	void add_fork(std::shared_ptr<fork_t> fork);
 
 	bool add_dummy_block(std::shared_ptr<const BlockHeader> prev);
