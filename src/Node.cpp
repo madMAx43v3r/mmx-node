@@ -751,6 +751,7 @@ void Node::add_transaction(std::shared_ptr<const Transaction> tx, const vnx::boo
 		validate(tx);
 	}
 	if(tx_pool.size() >= tx_pool_limit) {
+		// TODO: purge periodically (while considering dependencies)
 		// try to purge invalid transactions first
 		std::vector<hash_t> invalid;
 		for(const auto& entry : tx_pool) {
