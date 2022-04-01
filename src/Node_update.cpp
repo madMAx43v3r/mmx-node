@@ -506,10 +506,6 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 		auto& entry = tx_list[i];
 		auto& tx = entry.tx;
 		try {
-			const auto cost = tx->calc_cost(params);
-			if(cost > params->max_block_cost) {
-				throw std::logic_error("tx cost > max_block_cost");
-			}
 			if(!tx->exec_outputs.empty()) {
 				auto copy = vnx::clone(tx);
 				copy->exec_outputs.clear();
@@ -518,6 +514,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 			if(auto new_tx = validate(tx, context, nullptr, entry.fees)) {
 				tx = new_tx;
 			}
+			const auto cost = tx->calc_cost(params);
 			entry.cost = cost;
 			entry.fee_ratio = entry.fees / double(cost);
 		}
