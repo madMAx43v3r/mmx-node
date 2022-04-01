@@ -37,7 +37,7 @@ std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
 		throw std::logic_error("invalid tx_count");
 	}
 	if(auto proof = block->proof) {
-		// Note: farmer_sig already verfied together with proof
+		// Note: farmer_sig already verified together with proof
 		validate_diff_adjust(block->time_diff, prev->time_diff);
 		// TODO: validate exact space diff adjustment
 		validate_diff_adjust(block->space_diff, prev->space_diff);
@@ -166,6 +166,8 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 	if(!tx->is_valid()) {
 		throw std::logic_error("invalid tx");
 	}
+	const auto tx_cost = tx->calc_cost(params);
+
 	if(base) {
 		if(tx->deploy) {
 			throw std::logic_error("coin base cannot deploy");
@@ -192,6 +194,9 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 		if(tx->inputs.empty()) {
 			throw std::logic_error("tx without input");
 		}
+	}
+	if(tx_cost > params->max_block_cost) {
+		throw std::logic_error("tx cost > max_block_cost");
 	}
 	uint64_t base_amount = 0;
 	std::vector<tx_out_t> exec_outputs;
@@ -313,9 +318,8 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 	}
 	fee_amount = amounts[hash_t()];
 
-	const auto fee_needed = tx->calc_cost(params);
-	if(fee_amount < fee_needed) {
-		throw std::logic_error("insufficient fee: " + std::to_string(fee_amount) + " < " + std::to_string(fee_needed));
+	if(fee_amount < tx_cost) {
+		throw std::logic_error("insufficient fee: " + std::to_string(fee_amount) + " < " + std::to_string(tx_cost));
 	}
 	if(tx->exec_outputs.empty()) {
 		if(!exec_outputs.empty()) {
