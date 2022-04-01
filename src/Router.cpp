@@ -975,16 +975,19 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> proof)
 
 void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 {
-	const auto hash = block->calc_hash();
-	if(!receive_msg_hash(hash, client, block_relay_cost)) {
+	if(!block->is_valid() || !block->proof) {
 		return;
 	}
-	const auto proof = block->proof;
-	if(!proof || !block->is_valid() || !block->farmer_sig
-		|| block->calc_cost(params) > params->max_block_cost
-		|| !proof->local_sig.verify(proof->local_key, proof->calc_hash())
-		|| !block->farmer_sig->verify(proof->farmer_key, block->hash))
-	{
+	if(!receive_msg_hash(block->hash, client, block_relay_cost)) {
+		return;
+	}
+	try {
+		if(!block->farmer_sig || block->calc_cost(params) > params->max_block_cost) {
+			throw std::logic_error("invalid block");
+		}
+		block->validate();
+	}
+	catch(...) {
 		if(auto peer = find_peer(client)) {
 			block_peers.insert(peer->address);
 			disconnect(client);
@@ -993,7 +996,7 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 		return;
 	}
 	if(do_relay) {
-		const auto farmer_id = hash_t(proof->farmer_key);
+		const auto farmer_id = hash_t(block->proof->farmer_key);
 		const auto iter = farmer_credits.find(farmer_id);
 		if(iter != farmer_credits.end()) {
 			if(iter->second >= block_relay_cost) {
