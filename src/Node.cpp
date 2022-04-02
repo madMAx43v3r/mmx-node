@@ -755,7 +755,7 @@ void Node::add_transaction(std::shared_ptr<const Transaction> tx, const vnx::boo
 		}
 		return;
 	}
-	tx_pool[tx->id] = {false, tx};
+	tx_pool[tx->id].tx = tx;
 
 	if(!vnx_sample) {
 		publish(tx, output_transactions);
@@ -1455,7 +1455,7 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 		}
 		log.deployed.emplace(tx->id, contract);
 	}
-	tx_pool[tx->id] = {false, tx};
+	tx_pool[tx->id] = {true, tx};
 	tx_map[tx->id] = block->height;
 	log.tx_added.push_back(tx->id);
 }
