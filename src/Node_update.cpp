@@ -419,6 +419,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 
 	struct tx_data_t {
 		bool invalid = false;
+		bool included = false;
 		bool duplicate = false;
 		uint64_t fees = 0;
 		uint64_t cost = 0;
@@ -442,6 +443,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 		auto& entry = all_tx[i];
 		const auto& tx = entry.tx;
 		if(tx_map.count(tx->id)) {
+			entry.included = true;
 			continue;
 		}
 		if(tx_index.find(tx->id)) {
@@ -462,6 +464,9 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	std::unordered_multimap<hash_t, hash_t> dependency;
 
 	for(const auto& entry : all_tx) {
+		if(entry.included) {
+			continue;
+		}
 		const auto& tx = entry.tx;
 		if(entry.duplicate) {
 			num_duplicate += tx_pool.erase(tx->id);
