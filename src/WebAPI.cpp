@@ -26,6 +26,7 @@
 #include <mmx/exchange/trade_pair_t.hpp>
 
 #include <vnx/vnx.h>
+#include <vnx/ProcessClient.hxx>
 
 
 namespace mmx {
@@ -917,7 +918,14 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 {
 	const auto& query = request->query_params;
 
-	if(sub_path == "/node/info") {
+	if(sub_path == "/node/exit") {
+		((WebAPI*)this)->set_timeout_millis(1000, [this]() {
+			vnx::ProcessClient client("vnx.process");
+			client.trigger_shutdown_async();
+		});
+		respond_status(request_id, 200);
+	}
+	else if(sub_path == "/node/info") {
 		node->get_network_info(
 			[this, request_id](std::shared_ptr<const NetworkInfo> info) {
 				vnx::Object res;
