@@ -237,18 +237,16 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 			throw std::logic_error("missing solution");
 		}
 		std::shared_ptr<const Contract> contract;
-		std::shared_ptr<const Context> tx_context = context;
 
 		if(in.flags & tx_in_t::IS_EXEC) {
 			contract = get_contract(utxo.address);
-			if(!contract) {
-				throw std::logic_error("no such contract");
-			}
-			tx_context = create_context_for_tx(context, contract, tx);
 		} else {
 			auto pubkey = contract::PubKey::create();
 			pubkey->address = utxo.address;
 			contract = pubkey;
+		}
+		if(!contract) {
+			throw std::logic_error("no such contract");
 		}
 		auto spend = operation::Spend::create();
 		spend->address = utxo.address;
@@ -256,7 +254,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 		spend->key = in.prev;
 		spend->utxo = utxo;
 
-		const auto outputs = contract->validate(spend, tx_context);
+		const auto outputs = contract->validate(spend, create_context_for_tx(context, contract, tx));
 		exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
 
 		amounts[utxo.contract] += utxo.amount;
