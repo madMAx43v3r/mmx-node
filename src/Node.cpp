@@ -1369,7 +1369,9 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 				<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff
 				<< (fork->has_weak_proof ? ", weak proof" : "");
 	}
-	publish(block, output_committed_blocks, is_replay ? BLOCKING : 0);
+	if(!is_replay) {
+		publish(block, output_committed_blocks, is_synced ? 0 : BLOCKING);
+	}
 }
 
 void Node::purge_tree()
