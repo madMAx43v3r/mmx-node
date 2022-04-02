@@ -398,6 +398,7 @@ void Router::update()
 			const auto tx_cost = tx->calc_cost(params);
 			if(peer->tx_credits >= tx_cost) {
 				if(relay_msg_hash(tx->id)) {
+					// TODO: create function relay_tx()
 					peer->tx_credits -= tx_cost;
 					relay(peer->client, tx, tx->id, {node_type_e::FULL_NODE});
 					tx_counter++;
