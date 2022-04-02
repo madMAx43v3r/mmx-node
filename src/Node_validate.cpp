@@ -203,51 +203,63 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 	std::unordered_map<hash_t, uint64_t> amounts;
 	std::unordered_map<addr_t, std::shared_ptr<Contract>> contract_state;
 
-	if(!base) {
+	{
 		std::unordered_set<txio_key_t> spent;
 		for(const auto& in : tx->inputs) {
 			if(!spent.insert(in.prev).second) {
 				throw std::logic_error("double spend");
 			}
 		}
-
-		for(const auto& in : tx->inputs)
-		{
-			auto iter = utxo_map.find(in.prev);
-			if(iter == utxo_map.end()) {
-				throw std::logic_error("utxo not found");
-			}
-			const auto& utxo = iter->second;
-
-			const auto solution = tx->get_solution(in.solution);
-			if(!solution) {
-				throw std::logic_error("missing solution");
-			}
-			std::shared_ptr<const Contract> contract;
-			std::shared_ptr<const Context> tx_context = context;
-
+	}
+	{
+		size_t num_exec = tx->execute.size();
+		for(const auto& in : tx->inputs) {
 			if(in.flags & tx_in_t::IS_EXEC) {
-				contract = get_contract(utxo.address);
-				if(!contract) {
-					throw std::logic_error("no such contract");
-				}
-				tx_context = create_context_for_tx(context, contract, tx);
-			} else {
-				auto pubkey = contract::PubKey::create();
-				pubkey->address = utxo.address;
-				contract = pubkey;
+				num_exec++;
 			}
-			auto spend = operation::Spend::create();
-			spend->address = utxo.address;
-			spend->solution = solution;
-			spend->key = in.prev;
-			spend->utxo = utxo;
-
-			const auto outputs = contract->validate(spend, tx_context);
-			exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
-
-			amounts[utxo.contract] += utxo.amount;
 		}
+		// TODO
+//		if(num_exec > params->max_tx_operations) {
+//			throw std::logic_error("num_exec > max_tx_operations");
+//		}
+	}
+
+	for(const auto& in : tx->inputs)
+	{
+		auto iter = utxo_map.find(in.prev);
+		if(iter == utxo_map.end()) {
+			throw std::logic_error("utxo not found");
+		}
+		const auto& utxo = iter->second;
+
+		const auto solution = tx->get_solution(in.solution);
+		if(!solution) {
+			throw std::logic_error("missing solution");
+		}
+		std::shared_ptr<const Contract> contract;
+		std::shared_ptr<const Context> tx_context = context;
+
+		if(in.flags & tx_in_t::IS_EXEC) {
+			contract = get_contract(utxo.address);
+			if(!contract) {
+				throw std::logic_error("no such contract");
+			}
+			tx_context = create_context_for_tx(context, contract, tx);
+		} else {
+			auto pubkey = contract::PubKey::create();
+			pubkey->address = utxo.address;
+			contract = pubkey;
+		}
+		auto spend = operation::Spend::create();
+		spend->address = utxo.address;
+		spend->solution = solution;
+		spend->key = in.prev;
+		spend->utxo = utxo;
+
+		const auto outputs = contract->validate(spend, tx_context);
+		exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
+
+		amounts[utxo.contract] += utxo.amount;
 	}
 
 	for(const auto& op : tx->execute)
