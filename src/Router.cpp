@@ -1616,9 +1616,11 @@ bool Router::receive_msg_hash(const hash_t& hash, uint64_t client, uint32_t cred
 	{
 		if(credits && info.is_valid && !is_new) {
 			if(auto peer = find_peer(client)) {
+				// TODO: no credits for already received
 				peer->credits += credits;
 			}
 		}
+		// TODO: only store first client
 		info.received_from.push_back(client);
 	}
 	return is_new;
