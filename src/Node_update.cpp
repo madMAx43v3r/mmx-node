@@ -406,7 +406,6 @@ std::vector<Node::tx_data_t> Node::validate_pending(bool only_new)
 	const auto time_begin = vnx::get_wall_time_micros();
 
 	std::vector<tx_data_t> all_tx;
-	std::vector<tx_data_t> tx_list;
 
 	for(const auto& iter : tx_pool) {
 		const auto& entry = iter.second;
@@ -456,6 +455,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(bool only_new)
 	}
 
 	size_t num_dependent = 0;
+	std::vector<tx_data_t> tx_list;
 	std::unordered_multimap<hash_t, hash_t> dependency;
 
 	for(const auto& entry : all_tx) {
