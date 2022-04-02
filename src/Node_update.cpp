@@ -366,7 +366,6 @@ void Node::update()
 			prev = find_prev_header(prev);
 		}
 		if(made_block) {
-			validate_timer->reset();
 			// update again right away
 			add_task(std::bind(&Node::update, this));
 		}
@@ -393,48 +392,29 @@ void Node::update()
 
 void Node::validate_pool()
 {
-	if(auto peak = get_peak()) {
-		try {
-			make_block(peak, nullptr);
-		}
-		catch(const std::exception& ex) {
-			log(WARN) << "Failed to validate pool: " << ex.what();
-		}
-		fork_to(peak->hash);
+	for(const auto& entry : validate_pending(true)) {
+		publish(entry.tx, output_verified_transactions);
 	}
 }
 
-bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response)
+std::vector<Node::tx_data_t> Node::validate_pending(bool only_new)
 {
+	const auto peak = get_peak();
+	if(!peak) {
+		return {};
+	}
 	const auto time_begin = vnx::get_wall_time_micros();
-
-	// reset state to previous block
-	fork_to(prev->hash);
-
-	auto block = Block::create();
-	block->prev = prev->hash;
-	block->height = prev->height + 1;
-	block->time_diff = prev->time_diff;
-	block->space_diff = prev->space_diff;
-
-	struct tx_data_t {
-		bool invalid = false;
-		bool included = false;
-		bool duplicate = false;
-		uint64_t fees = 0;
-		uint64_t cost = 0;
-		double fee_ratio = 0;
-		std::vector<hash_t> depends;
-		std::shared_ptr<const Transaction> tx;
-	};
 
 	std::vector<tx_data_t> all_tx;
 	std::vector<tx_data_t> tx_list;
 
-	for(const auto& entry : tx_pool) {
-		tx_data_t tmp;
-		tmp.tx = entry.second;
-		all_tx.push_back(tmp);
+	for(const auto& iter : tx_pool) {
+		const auto& entry = iter.second;
+		if(!only_new || !entry.is_validated) {
+			tx_data_t tmp;
+			tmp.tx = entry.tx;
+			all_tx.push_back(tmp);
+		}
 	}
 
 #pragma omp parallel for
@@ -480,7 +460,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 		}
 	}
 	auto context = Context::create();
-	context->height = block->height;
+	context->height = peak->height + 1;
 
 #pragma omp parallel for
 	for(int i = 0; i < int(tx_list.size()); ++i)
@@ -499,6 +479,12 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 			const auto cost = tx->calc_cost(params);
 			entry.cost = cost;
 			entry.fee_ratio = entry.fees / double(cost);
+			{
+				auto iter = tx_pool.find(tx->id);
+				if(iter != tx_pool.end()) {
+					iter->second.is_validated = true;
+				}
+			}
 		}
 		catch(const std::exception& ex) {
 			entry.invalid = true;
@@ -507,14 +493,17 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 		}
 	}
 
+	std::vector<tx_data_t> result;
 	{
-		// purge invalid transactions
 		std::vector<hash_t> invalid;
 		for(const auto& entry : tx_list) {
 			if(entry.invalid) {
 				invalid.push_back(entry.tx->id);
+			} else {
+				result.push_back(entry);
 			}
 		}
+		// purge invalid transactions
 		while(!invalid.empty()) {
 			std::vector<hash_t> more;
 			for(const auto& id : invalid) {
@@ -527,20 +516,36 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 			invalid = more;
 		}
 	}
-	if(!response) {
+	if(!all_tx.empty()) {
 		const auto elapsed = (vnx::get_wall_time_micros() - time_begin) / 1e6;
-		log(INFO) << "Validated transactions: " << tx_list.size() << " total, "
+		log(INFO) << "Validated" << (only_new ? " new " : " all pending ") << "transactions: " << result.size() << " valid, "
 				<< num_invalid << " invalid, " << num_duplicate << " duplicate, took " << elapsed << " sec";
-		return false;
 	}
+	return result;
+}
+
+bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response)
+{
+	const auto time_begin = vnx::get_wall_time_micros();
 
 	// find VDF output
 	const auto vdf_point = find_next_vdf_point(prev);
 	if(!vdf_point) {
 		return false;
 	}
+
+	// reset state to previous block
+	fork_to(prev->hash);
+
+	auto block = Block::create();
+	block->prev = prev->hash;
+	block->height = prev->height + 1;
+	block->time_diff = prev->time_diff;
+	block->space_diff = prev->space_diff;
 	block->vdf_iters = vdf_point->vdf_iters;
 	block->vdf_output = vdf_point->output;
+
+	auto tx_list = validate_pending(false);
 
 	// sort transactions by fee ratio
 	std::sort(tx_list.begin(), tx_list.end(),
@@ -556,11 +561,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	// select transactions
 	for(const auto& entry : tx_list)
 	{
-		if(entry.invalid) {
-			continue;
-		}
 		const auto& tx = entry.tx;
-
 		if(total_cost + entry.cost < params->max_block_cost)
 		{
 			bool passed = true;

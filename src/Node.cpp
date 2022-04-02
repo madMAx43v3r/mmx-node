@@ -208,10 +208,11 @@ void Node::main()
 	subscribe(input_timelord_vdfs, max_queue_ms);
 	subscribe(input_harvester_proof, max_queue_ms);
 
-	update_timer = set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
-	validate_timer = set_timer_millis(validate_interval_ms, std::bind(&Node::validate_pool, this));
-	stuck_timer = set_timer_millis(sync_loss_delay * 1000, std::bind(&Node::on_stuck_timeout, this));
 	set_timer_millis(60 * 1000, std::bind(&Node::print_stats, this));
+	set_timer_millis(validate_interval_ms, std::bind(&Node::validate_pool, this));
+
+	update_timer = set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
+	stuck_timer = set_timer_millis(sync_loss_delay * 1000, std::bind(&Node::on_stuck_timeout, this));
 
 	update();
 
@@ -493,7 +494,7 @@ std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id, const
 		auto iter = tx_pool.find(id);
 		if(iter != tx_pool.end()) {
 			if(include_pending || tx_map.count(id)) {
-				return iter->second;
+				return iter->second.tx;
 			}
 		}
 	}
@@ -745,17 +746,16 @@ void Node::add_transaction(std::shared_ptr<const Transaction> tx, const vnx::boo
 	if(tx_pool.count(tx->id)) {
 		return;
 	}
-	if(tx_pool.size() >= tx_pool_limit) {
-		// TODO: hide in production
-		throw std::logic_error("tx pool at limit");
-	}
-	if(tx->calc_cost(params) > params->max_block_cost) {
-		throw std::logic_error("tx cost > max_block_cost");
-	}
 	if(pre_validate) {
 		validate(tx);
 	}
-	tx_pool[tx->id] = tx;
+	if(tx_pool.size() >= tx_pool_limit) {
+		if(pre_validate) {
+			throw std::logic_error("tx pool at limit");
+		}
+		return;
+	}
+	tx_pool[tx->id] = {false, tx};
 
 	if(!vnx_sample) {
 		publish(tx, output_transactions);
@@ -1455,7 +1455,7 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 		}
 		log.deployed.emplace(tx->id, contract);
 	}
-	tx_pool[tx->id] = tx;
+	tx_pool[tx->id] = {false, tx};
 	tx_map[tx->id] = block->height;
 	log.tx_added.push_back(tx->id);
 }

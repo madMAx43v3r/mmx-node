@@ -165,6 +165,22 @@ private:
 		std::unordered_map<addr_t, std::vector<std::shared_ptr<const operation::Mutate>>> mutated;
 	};
 
+	struct tx_pool_t {
+		bool is_validated = false;
+		std::shared_ptr<const Transaction> tx;
+	};
+
+	struct tx_data_t {
+		bool invalid = false;
+		bool included = false;
+		bool duplicate = false;
+		uint64_t fees = 0;
+		uint64_t cost = 0;
+		double fee_ratio = 0;
+		std::vector<hash_t> depends;
+		std::shared_ptr<const Transaction> tx;
+	};
+
 	void update();
 
 	void check_vdfs();
@@ -180,6 +196,8 @@ private:
 	bool include_transaction(std::shared_ptr<const Transaction> tx);
 
 	void validate_pool();
+
+	std::vector<tx_data_t> validate_pending(bool only_new);
 
 	bool make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response);
 
@@ -298,7 +316,7 @@ private:
 	std::multimap<uint32_t, std::shared_ptr<fork_t>> fork_index;					// [height => fork] (pending only)
 	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;					// [block hash => fork] (pending only)
 	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;					// [height => block header] (finalized only)
-	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_pool;			// [txid => transaction] (pending only)
+	std::unordered_map<hash_t, tx_pool_t> tx_pool;									// [txid => transaction] (pending only)
 
 	std::multimap<uint32_t, std::shared_ptr<vdf_point_t>> verified_vdfs;			// [height => output]
 	std::multimap<uint32_t, std::shared_ptr<const ProofOfTime>> pending_vdfs;		// [height => proof]
@@ -322,7 +340,6 @@ private:
 
 	std::shared_ptr<vnx::Timer> stuck_timer;
 	std::shared_ptr<vnx::Timer> update_timer;
-	std::shared_ptr<vnx::Timer> validate_timer;
 
 	std::shared_ptr<const ChainParams> params;
 	mutable std::shared_ptr<const NetworkInfo> network;
