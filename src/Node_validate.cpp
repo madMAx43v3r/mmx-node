@@ -204,6 +204,13 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 	std::unordered_map<addr_t, std::shared_ptr<Contract>> contract_state;
 
 	if(!base) {
+		std::unordered_set<txio_key_t> spent;
+		for(const auto& in : tx->inputs) {
+			if(!spent.insert(in.prev).second) {
+				throw std::logic_error("double spend");
+			}
+		}
+
 		// TODO: parallel for if many inputs
 		for(const auto& in : tx->inputs)
 		{
