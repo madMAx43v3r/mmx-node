@@ -1307,11 +1307,14 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 		return;
 	}
 	const auto log = change_log.front();
+	std::unordered_set<addr_t> addr_set;
 
 	for(const auto& entry : log->utxo_removed) {
 		const auto& stxo = entry.second;
 		if(!is_replay || is_db_replay) {
-			addr_log.insert(block->height, stxo.address);
+			if(addr_set.insert(stxo.address).second) {
+				addr_log.insert(block->height, stxo.address);
+			}
 			stxo_log.insert(block->height, entry.first);
 			stxo_index.insert(entry.first, entry.second);
 			saddr_map.insert(std::make_pair(stxo.address, block->height), entry.first);
@@ -1341,7 +1344,9 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 						auto copy = vnx::clone(contract);
 						copy->vnx_call(vnx::clone(op->method));
 
-						addr_log.insert(block->height, address);
+						if(addr_set.insert(address).second) {
+							addr_log.insert(block->height, address);
+						}
 						mutate_log.insert(std::make_pair(address, block->height), op->method);
 						contract_cache.insert(address, copy);
 					}
