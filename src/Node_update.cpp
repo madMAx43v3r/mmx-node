@@ -421,16 +421,32 @@ std::vector<Node::tx_data_t> Node::validate_pending(bool only_new)
 	for(int i = 0; i < int(all_tx.size()); ++i)
 	{
 		auto& entry = all_tx[i];
-		const auto& tx = entry.tx;
-		if(tx_map.count(tx->id)) {
+		if(tx_map.count(entry.tx->id)) {
 			entry.included = true;
 			continue;
 		}
-		if(tx_index.find(tx->id)) {
+		if(tx_index.find(entry.tx->id)) {
 			entry.duplicate = true;
 			continue;
 		}
-		for(const auto& in : tx->inputs) {
+	}
+
+	// purge duplicates from pool first to avoid detecting false dependency
+	size_t num_duplicate = 0;
+	for(const auto& entry : all_tx) {
+		if(entry.duplicate) {
+			num_duplicate += tx_pool.erase(entry.tx->id);
+		}
+	}
+
+#pragma omp parallel for
+	for(int i = 0; i < int(all_tx.size()); ++i)
+	{
+		auto& entry = all_tx[i];
+		if(entry.included || entry.duplicate) {
+			continue;
+		}
+		for(const auto& in : entry.tx->inputs) {
 			const auto& prev = in.prev.txid;
 			// check if tx depends on another one which is not in a block yet
 			if(tx_pool.count(prev) && !tx_map.count(prev)) {
@@ -439,22 +455,15 @@ std::vector<Node::tx_data_t> Node::validate_pending(bool only_new)
 		}
 	}
 
-	size_t num_invalid = 0;
-	size_t num_duplicate = 0;
 	size_t num_dependent = 0;
 	std::unordered_multimap<hash_t, hash_t> dependency;
 
 	for(const auto& entry : all_tx) {
-		if(entry.included) {
-			continue;
-		}
-		const auto& tx = entry.tx;
-		if(entry.duplicate) {
-			num_duplicate += tx_pool.erase(tx->id);
+		if(entry.included || entry.duplicate) {
 			continue;
 		}
 		for(const auto& prev : entry.depends) {
-			dependency.emplace(prev, tx->id);
+			dependency.emplace(prev, entry.tx->id);
 		}
 		if(entry.depends.empty()) {
 			tx_list.push_back(entry);
@@ -497,6 +506,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(bool only_new)
 		}
 	}
 
+	size_t num_invalid = 0;
 	std::vector<tx_data_t> result;
 	{
 		std::vector<hash_t> invalid;
