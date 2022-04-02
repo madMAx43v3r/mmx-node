@@ -289,7 +289,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 	for(const auto& out : tx->outputs)
 	{
 		if(out.amount == 0) {
-			throw std::logic_error("zero tx output");
+			throw std::logic_error("zero amount output");
 		}
 		if(base) {
 			if(out.contract != addr_t()) {
