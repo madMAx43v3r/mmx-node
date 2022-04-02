@@ -488,18 +488,18 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	size_t num_invalid = 0;
 	{
 		// purge invalid transactions
-		std::unordered_set<hash_t> invalid;
+		std::vector<hash_t> invalid;
 		for(const auto& entry : tx_list) {
 			if(entry.invalid) {
-				invalid.insert(entry.tx->id);
+				invalid.push_back(entry.tx->id);
 			}
 		}
 		while(!invalid.empty()) {
-			std::unordered_set<hash_t> more;
+			std::vector<hash_t> more;
 			for(const auto& id : invalid) {
 				const auto range = dependency.equal_range(id);
 				for(auto iter = range.first; iter != range.second; ++iter) {
-					more.insert(iter->second);
+					more.push_back(iter->second);
 				}
 				num_invalid += tx_pool.erase(id);
 			}
