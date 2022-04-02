@@ -929,7 +929,7 @@ bool Node::recv_height(const uint32_t& height)
 		}
 	}
 	if(auto peak = get_peak()) {
-		if(height > peak->height && height - peak->height > params->commit_delay) {
+		if(height > peak->height && height - peak->height > 2 * params->commit_delay) {
 			return false;
 		}
 	}
