@@ -198,11 +198,6 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 	if(tx_cost > params->max_block_cost) {
 		throw std::logic_error("tx cost > max_block_cost");
 	}
-	uint64_t base_amount = 0;
-	std::vector<tx_out_t> exec_outputs;
-	std::unordered_map<hash_t, uint64_t> amounts;
-	std::unordered_map<addr_t, std::shared_ptr<Contract>> contract_state;
-
 	{
 		std::unordered_set<txio_key_t> spent;
 		for(const auto& in : tx->inputs) {
@@ -223,6 +218,10 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 //			throw std::logic_error("num_exec > max_tx_operations");
 //		}
 	}
+	uint64_t base_amount = 0;
+	std::vector<tx_out_t> exec_outputs;
+	std::unordered_map<hash_t, uint64_t> amounts;
+	std::unordered_map<addr_t, std::shared_ptr<Contract>> contract_state;
 
 	for(const auto& in : tx->inputs)
 	{
