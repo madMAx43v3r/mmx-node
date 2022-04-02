@@ -394,10 +394,12 @@ void Router::update()
 
 		// check pending transactions
 		while(!peer->tx_queue.empty()) {
+			// TODO: check for invalid / duplicate and purge
 			const auto& tx = peer->tx_queue.front();
 			const auto tx_cost = tx->calc_cost(params);
 			if(peer->tx_credits >= tx_cost) {
 				if(relay_msg_hash(tx->id)) {
+					// TODO: create function relay_tx()
 					peer->tx_credits -= tx_cost;
 					relay(peer->client, tx, tx->id, {node_type_e::FULL_NODE});
 					tx_counter++;
@@ -1615,9 +1617,11 @@ bool Router::receive_msg_hash(const hash_t& hash, uint64_t client, uint32_t cred
 	{
 		if(credits && info.is_valid && !is_new) {
 			if(auto peer = find_peer(client)) {
+				// TODO: no credits for already received
 				peer->credits += credits;
 			}
 		}
+		// TODO: only store first client
 		info.received_from.push_back(client);
 	}
 	return is_new;
