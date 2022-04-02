@@ -405,10 +405,9 @@ std::vector<utxo_entry_t> Wallet::get_utxo_list(const uint32_t& index, const uin
 		return wallet->utxo_cache;
 	}
 	std::vector<utxo_entry_t> list;
-	const auto height = node->get_height();
 	for(const auto& entry : wallet->utxo_cache) {
 		const auto& utxo = entry.output;
-		if(utxo.height <= height && (height - utxo.height) + 1 >= min_confirm) {
+		if(utxo.height <= wallet->height && (wallet->height - utxo.height) + 1 >= min_confirm) {
 			list.push_back(entry);
 		}
 	}
