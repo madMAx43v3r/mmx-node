@@ -316,8 +316,8 @@ void Router::handle(std::shared_ptr<const Block> block)
 		auto iter = hash_info.find(tx->id);
 		if(iter != hash_info.end()) {
 			auto& info = iter->second;
-			if(!info.received_from.empty()) {
-				if(auto peer = find_peer(info.received_from.front())) {
+			if(info.received_from != uint64_t(-1)) {
+				if(auto peer = find_peer(info.received_from)) {
 					peer->tx_credits += tx->calc_cost(params);
 				}
 			}
@@ -968,7 +968,7 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 	if(!block->is_valid() || !block->proof) {
 		return;
 	}
-	if(!receive_msg_hash(block->hash, client, block_relay_cost)) {
+	if(!receive_msg_hash(block->hash, client)) {
 		return;
 	}
 	try {
@@ -1008,7 +1008,7 @@ void Router::on_proof(uint64_t client, std::shared_ptr<const ProofResponse> resp
 	const auto request = response->request;
 
 	const auto hash = proof->calc_hash();
-	if(!receive_msg_hash(hash, client, proof_relay_cost)) {
+	if(!receive_msg_hash(hash, client)) {
 		return;
 	}
 	try {
@@ -1559,9 +1559,9 @@ bool Router::relay_msg_hash(const hash_t& hash, uint32_t credits)
 	}
 	info.is_valid = true;
 
-	if(credits && !info.is_rewarded && !info.received_from.empty())
+	if(credits && !info.is_rewarded && info.received_from != uint64_t(-1))
 	{
-		if(auto peer = find_peer(info.received_from.front())) {
+		if(auto peer = find_peer(info.received_from)) {
 			peer->credits += credits;
 		}
 		info.is_rewarded = true;
@@ -1573,7 +1573,7 @@ bool Router::relay_msg_hash(const hash_t& hash, uint32_t credits)
 	return false;
 }
 
-bool Router::receive_msg_hash(const hash_t& hash, uint64_t client, uint32_t credits)
+bool Router::receive_msg_hash(const hash_t& hash, uint64_t client)
 {
 	const auto ret = hash_info.emplace(hash, hash_info_t());
 	if(ret.second) {
@@ -1584,17 +1584,9 @@ bool Router::receive_msg_hash(const hash_t& hash, uint64_t client, uint32_t cred
 		recv_notify(hash, &client);
 		info.did_notify = true;
 	}
-	const bool is_new = info.received_from.empty();
-	if(std::find(info.received_from.begin(), info.received_from.end(), client) == info.received_from.end())
-	{
-		if(credits && info.is_valid && !is_new) {
-			if(auto peer = find_peer(client)) {
-				// TODO: no credits for already received
-				peer->credits += credits;
-			}
-		}
-		// TODO: only store first client
-		info.received_from.push_back(client);
+	const bool is_new = info.received_from == uint64_t(-1);
+	if(is_new) {
+		info.received_from = client;
 	}
 	return is_new;
 }

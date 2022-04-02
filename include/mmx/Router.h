@@ -102,7 +102,7 @@ private:
 		bool is_rewarded = false;
 		bool did_relay = false;
 		bool did_notify = false;
-		std::vector<uint64_t> received_from;
+		uint64_t received_from = -1;
 	};
 
 	enum sync_state_e {
@@ -209,7 +209,7 @@ private:
 
 	bool relay_msg_hash(const hash_t& hash, uint32_t credits = 0);
 
-	bool receive_msg_hash(const hash_t& hash, uint64_t client, uint32_t credits = 0);
+	bool receive_msg_hash(const hash_t& hash, uint64_t client);
 
 private:
 	bool is_connected = false;
