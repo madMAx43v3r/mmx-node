@@ -136,8 +136,10 @@ void Node::main()
 	if(auto peak = get_peak()) {
 		const auto next_height = peak->height + 1;
 		{
-			std::vector<addr_t> addr_set;
-			if(addr_log.find(next_height, addr_set, vnx::rocksdb::GREATER_EQUAL)) {
+			std::vector<addr_t> addr_list;
+			if(addr_log.find(next_height, addr_list, vnx::rocksdb::GREATER_EQUAL))
+			{
+				const std::set<addr_t> addr_set(addr_list.begin(), addr_list.end());
 				{
 					size_t total = 0;
 					for(const auto& addr : addr_set) {
@@ -147,7 +149,7 @@ void Node::main()
 				}
 				{
 					size_t total = 0;
-					std::unordered_set<addr_t> affected;
+					std::set<addr_t> affected;
 					for(const auto& addr : addr_set) {
 						if(auto count = mutate_log.erase_range(std::make_pair(addr, next_height), std::make_pair(addr, -1))) {
 							affected.insert(addr);
