@@ -39,6 +39,7 @@ module Node implements vnx.addons.HttpComponent {
 	
 	bool do_sync = true;
 	bool light_mode = false;
+	bool show_warnings = false;
 	
 	string storage_path;
 	string database_path = "db/";

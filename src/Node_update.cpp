@@ -487,9 +487,10 @@ std::vector<Node::tx_data_t> Node::validate_pending(bool only_new)
 			}
 		}
 		catch(const std::exception& ex) {
+			if(show_warnings) {
+				log(WARN) << "TX validation failed with: " << ex.what();
+			}
 			entry.invalid = true;
-			// TODO: hide in production
-			log(WARN) << "TX validation failed with: " << ex.what();
 		}
 	}
 
