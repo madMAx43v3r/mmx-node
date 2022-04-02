@@ -441,6 +441,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(bool only_new)
 
 	size_t num_invalid = 0;
 	size_t num_duplicate = 0;
+	size_t num_dependent = 0;
 	std::unordered_multimap<hash_t, hash_t> dependency;
 
 	for(const auto& entry : all_tx) {
@@ -457,6 +458,8 @@ std::vector<Node::tx_data_t> Node::validate_pending(bool only_new)
 		}
 		if(entry.depends.empty()) {
 			tx_list.push_back(entry);
+		} else {
+			num_dependent++;
 		}
 	}
 	auto context = Context::create();
@@ -520,7 +523,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(bool only_new)
 	if(!all_tx.empty()) {
 		const auto elapsed = (vnx::get_wall_time_micros() - time_begin) / 1e6;
 		log(INFO) << "Validated" << (only_new ? " new " : " all pending ") << "transactions: " << result.size() << " valid, "
-				<< num_invalid << " invalid, " << num_duplicate << " duplicate, took " << elapsed << " sec";
+				<< num_invalid << " invalid, " << num_duplicate << " duplicate, " << num_dependent << " dependent, took " << elapsed << " sec";
 	}
 	return result;
 }
