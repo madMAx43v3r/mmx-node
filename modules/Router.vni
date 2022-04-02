@@ -6,6 +6,7 @@ module Router extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	vnx.TopicPtr input_blocks = "node.verified_blocks";
 	vnx.TopicPtr input_verified_vdfs = "node.verified_vdfs";
 	vnx.TopicPtr input_verified_proof = "node.verified_proof";
+	vnx.TopicPtr input_verified_transactions = "node.verified_transactions";
 	vnx.TopicPtr input_transactions = "node.transactions";
 	
 	vnx.TopicPtr output_vdfs = "network.vdfs";

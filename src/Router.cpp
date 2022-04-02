@@ -83,6 +83,7 @@ void Router::main()
 	subscribe(input_blocks, max_queue_ms);
 	subscribe(input_verified_vdfs, max_queue_ms);
 	subscribe(input_verified_proof, max_queue_ms);
+	subscribe(input_verified_transactions, max_queue_ms);
 	subscribe(input_transactions, max_queue_ms);
 
 	peer_set = seed_peers;
@@ -328,7 +329,6 @@ void Router::handle(std::shared_ptr<const Block> block)
 void Router::handle(std::shared_ptr<const Transaction> tx)
 {
 	if(relay_msg_hash(tx->id)) {
-		log(INFO) << "Broadcasting transaction " << tx->id;
 		broadcast(tx, tx->id, {node_type_e::FULL_NODE});
 		tx_counter++;
 	}
@@ -391,27 +391,6 @@ void Router::update()
 		const auto& peer = entry.second;
 		peer->credits = std::min(peer->credits, max_node_credits);
 		peer->tx_credits = std::min(peer->tx_credits + tx_credits, params->max_block_cost);
-
-		// check pending transactions
-		while(!peer->tx_queue.empty()) {
-			// TODO: check for invalid / duplicate and purge
-			const auto& tx = peer->tx_queue.front();
-			const auto tx_cost = tx->calc_cost(params);
-			if(peer->tx_credits >= tx_cost) {
-				if(relay_msg_hash(tx->id)) {
-					// TODO: create function relay_tx()
-					peer->tx_credits -= tx_cost;
-					relay(peer->client, tx, tx->id, {node_type_e::FULL_NODE});
-					tx_counter++;
-				}
-			} else {
-				auto iter = hash_info.find(tx->id);
-				if(iter != hash_info.end() && !iter->second.did_relay) {
-					break;
-				}
-			}
-			peer->tx_queue.pop();
-		}
 
 		// clear old hashes
 		while(peer->sent_hashes.size() > max_sent_cache) {
@@ -986,7 +965,7 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> proof)
 
 void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 {
-	if(!block->is_valid() || !block->proof || block->calc_cost(params) > params->max_block_cost) {
+	if(!block->is_valid() || !block->proof) {
 		return;
 	}
 	if(!receive_msg_hash(block->hash, client, block_relay_cost)) {
@@ -1066,13 +1045,9 @@ void Router::on_transaction(uint64_t client, std::shared_ptr<const Transaction> 
 	if(!peer || !tx->is_valid()) {
 		return;
 	}
-	const auto tx_cost = tx->calc_cost(params);
-	if(tx_cost > params->max_block_cost) {
-		return;
-	}
 	if(do_relay) {
-		const bool has_credits = peer->tx_credits >= tx_cost;
-		if(has_credits) {
+		const auto tx_cost = tx->calc_cost(params);
+		if(peer->tx_credits >= tx_cost) {
 			if(relay_msg_hash(tx->id)) {
 				peer->tx_credits -= tx_cost;
 				relay(client, tx, tx->id, {node_type_e::FULL_NODE});
@@ -1081,9 +1056,6 @@ void Router::on_transaction(uint64_t client, std::shared_ptr<const Transaction> 
 		}
 		if(!receive_msg_hash(tx->id, client)) {
 			return;
-		}
-		if(!has_credits) {
-			peer->tx_queue.push(tx);
 		}
 	}
 	publish(tx, output_transactions);

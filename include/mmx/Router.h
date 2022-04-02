@@ -94,7 +94,6 @@ private:
 		vnx::optional<hash_t> node_id;
 		std::queue<hash_t> hash_queue;
 		std::unordered_set<hash_t> sent_hashes;
-		std::queue<std::shared_ptr<const Transaction>> tx_queue;
 		std::map<int64_t, send_item_t> send_queue;
 	};
 
