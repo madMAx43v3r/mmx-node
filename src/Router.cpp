@@ -394,6 +394,7 @@ void Router::update()
 
 		// check pending transactions
 		while(!peer->tx_queue.empty()) {
+			// TODO: check for invalid / duplicate and purge
 			const auto& tx = peer->tx_queue.front();
 			const auto tx_cost = tx->calc_cost(params);
 			if(peer->tx_credits >= tx_cost) {
