@@ -181,9 +181,14 @@ void Node::main()
 		}
 		{
 			std::vector<txio_key_t> keys;
-			if(stxo_log.find(next_height, keys, vnx::rocksdb::GREATER_EQUAL)) {
-				for(const auto& key : keys) {
-					stxo_index.erase(key);
+			if(stxo_log.find(next_height, keys, vnx::rocksdb::GREATER_EQUAL))
+			{
+				if(keys.size() > size_t(std::numeric_limits<int>::max())) {
+					throw std::logic_error("keys.size() > INT_MAX");
+				}
+#pragma omp parallel for
+				for(int i = 0; i < int(keys.size()); ++i) {
+					stxo_index.erase(keys[i]);
 				}
 				log(INFO) << "Purged " << keys.size() << " stxo_index entries";
 			}
@@ -191,9 +196,14 @@ void Node::main()
 		}
 		{
 			std::vector<hash_t> keys;
-			if(tx_log.find(next_height, keys, vnx::rocksdb::GREATER_EQUAL)) {
-				for(const auto& key : keys) {
-					tx_index.erase(key);
+			if(tx_log.find(next_height, keys, vnx::rocksdb::GREATER_EQUAL))
+			{
+				if(keys.size() > size_t(std::numeric_limits<int>::max())) {
+					throw std::logic_error("keys.size() > INT_MAX");
+				}
+#pragma omp parallel for
+				for(int i = 0; i < int(keys.size()); ++i) {
+					tx_index.erase(keys[i]);
 				}
 				log(INFO) << "Purged " << keys.size() << " tx_index entries";
 			}
