@@ -419,41 +419,59 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 
 	struct tx_data_t {
 		bool invalid = false;
+		bool duplicate = false;
 		uint64_t fees = 0;
 		uint64_t cost = 0;
 		double fee_ratio = 0;
+		std::vector<hash_t> depends;
 		std::shared_ptr<const Transaction> tx;
 	};
 
+	std::vector<tx_data_t> all_tx;
 	std::vector<tx_data_t> tx_list;
-	std::vector<std::shared_ptr<const Transaction>> all_tx;
-	std::unordered_multimap<hash_t, hash_t> dependency;
 
 	for(const auto& entry : tx_pool) {
-		all_tx.push_back(entry.second);
+		tx_data_t tmp;
+		tmp.tx = entry.second;
+		all_tx.push_back(tmp);
 	}
 
 #pragma omp parallel for
 	for(int i = 0; i < int(all_tx.size()); ++i)
 	{
-		const auto& tx = all_tx[i];
-		if(!tx_map.count(tx->id)) {
-			bool depends = false;
-			for(const auto& in : tx->inputs) {
-				const auto& prev = in.prev.txid;
-				// check if tx depends on another one which is not in a block yet
-				if(tx_pool.count(prev) && !tx_map.count(prev)) {
-#pragma omp critical
-					dependency.emplace(prev, tx->id);
-					depends = true;
-				}
+		auto& entry = all_tx[i];
+		const auto& tx = entry.tx;
+		if(tx_map.count(tx->id)) {
+			continue;
+		}
+		if(tx_index.find(tx->id)) {
+			entry.duplicate = true;
+			continue;
+		}
+		for(const auto& in : tx->inputs) {
+			const auto& prev = in.prev.txid;
+			// check if tx depends on another one which is not in a block yet
+			if(tx_pool.count(prev) && !tx_map.count(prev)) {
+				entry.depends.push_back(prev);
 			}
-			if(!depends) {
-				tx_data_t tmp;
-				tmp.tx = tx;
-#pragma omp critical
-				tx_list.push_back(tmp);
-			}
+		}
+	}
+
+	size_t num_invalid = 0;
+	size_t num_duplicate = 0;
+	std::unordered_multimap<hash_t, hash_t> dependency;
+
+	for(const auto& entry : all_tx) {
+		const auto& tx = entry.tx;
+		if(entry.duplicate) {
+			num_duplicate += tx_pool.erase(tx->id);
+			continue;
+		}
+		for(const auto& prev : entry.depends) {
+			dependency.emplace(prev, tx->id);
+		}
+		if(entry.depends.empty()) {
+			tx_list.push_back(entry);
 		}
 	}
 	auto context = Context::create();
@@ -484,7 +502,6 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 		}
 	}
 
-	size_t num_invalid = 0;
 	{
 		// purge invalid transactions
 		std::vector<hash_t> invalid;
@@ -507,7 +524,8 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	}
 	if(!response) {
 		const auto elapsed = (vnx::get_wall_time_micros() - time_begin) / 1e6;
-		log(INFO) << "Validated pending transactions: " << tx_list.size() << " total, " << num_invalid << " invalid, took " << elapsed << " sec";
+		log(INFO) << "Validated transactions: " << tx_list.size() << " total, "
+				<< num_invalid << " invalid, " << num_duplicate << " duplicate, took " << elapsed << " sec";
 		return false;
 	}
 
