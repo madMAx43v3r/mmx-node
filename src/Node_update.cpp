@@ -21,14 +21,12 @@ void Node::check_vdfs()
 {
 	for(auto iter = pending_vdfs.begin(); iter != pending_vdfs.end();) {
 		const auto& proof = iter->second;
-		if(verified_vdfs.count(proof->height - 1)) {
-			if(!vdf_verify_pending.count(proof->height)) {
-				add_task([this, proof]() {
-					handle(proof);
-				});
-				iter = pending_vdfs.erase(iter);
-				continue;
-			}
+		if(!vdf_verify_pending.count(proof->height)) {
+			add_task([this, proof]() {
+				handle(proof);
+			});
+			iter = pending_vdfs.erase(iter);
+			continue;
 		}
 		iter++;
 	}
