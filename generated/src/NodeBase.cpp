@@ -120,7 +120,7 @@ namespace mmx {
 
 
 const vnx::Hash64 NodeBase::VNX_TYPE_HASH(0x289d7651582d76a3ull);
-const vnx::Hash64 NodeBase::VNX_CODE_HASH(0x708919efe6f44c70ull);
+const vnx::Hash64 NodeBase::VNX_CODE_HASH(0xe448810ee721015cull);
 
 NodeBase::NodeBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -585,7 +585,7 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node";
 	type_code->type_hash = vnx::Hash64(0x289d7651582d76a3ull);
-	type_code->code_hash = vnx::Hash64(0x708919efe6f44c70ull);
+	type_code->code_hash = vnx::Hash64(0xe448810ee721015cull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::NodeBase);
 	type_code->methods.resize(43);
@@ -777,7 +777,7 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 		auto& field = type_code->fields[20];
 		field.data_size = 4;
 		field.name = "tx_pool_limit";
-		field.value = vnx::to_string(1000000);
+		field.value = vnx::to_string(100);
 		field.code = {3};
 	}
 	{
