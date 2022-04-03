@@ -499,7 +499,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 			continue;
 		}
 		if(entry.depends.empty()) {
-			if(total_verify_cost + entry.cost < verify_limit) {
+			if(total_verify_cost + entry.cost <= verify_limit) {
 				tx_list.push_back(entry);
 				total_verify_cost += entry.cost;
 			}
@@ -560,7 +560,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 		if(entry.invalid) {
 			continue;
 		}
-		if(total_cost + entry.cost < select_limit)
+		if(total_cost + entry.cost <= select_limit)
 		{
 			bool passed = true;
 			for(const auto& in : entry.tx->inputs) {
