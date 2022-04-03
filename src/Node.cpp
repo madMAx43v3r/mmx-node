@@ -761,12 +761,6 @@ void Node::add_transaction(std::shared_ptr<const Transaction> tx, const vnx::boo
 	if(pre_validate) {
 		validate(tx);
 	}
-	if(tx_pool.size() >= tx_pool_limit) {
-		if(pre_validate) {
-			throw std::logic_error("tx pool at limit");
-		}
-		return;
-	}
 	tx_pool[tx->id].tx = tx;
 
 	if(!vnx_sample) {
@@ -1474,7 +1468,11 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 		}
 		log.deployed.emplace(tx->id, contract);
 	}
-	tx_pool[tx->id] = {true, tx};
+	{
+		auto& entry = tx_pool[tx->id];
+		entry.did_validate = true;
+		entry.tx = tx;
+	}
 	tx_map[tx->id] = block->height;
 	log.tx_added.push_back(tx->id);
 }

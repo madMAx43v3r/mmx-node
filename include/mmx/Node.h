@@ -166,19 +166,19 @@ private:
 	};
 
 	struct tx_pool_t {
-		bool is_validated = false;
+		bool did_validate = false;
+		double fee_ratio = 0;
 		std::shared_ptr<const Transaction> tx;
 	};
 
-	struct tx_data_t {
+	struct tx_data_t : tx_pool_t {
 		bool invalid = false;
 		bool included = false;
 		bool duplicate = false;
+		bool purged = false;
 		uint64_t fees = 0;
 		uint64_t cost = 0;
-		double fee_ratio = 0;
 		std::vector<hash_t> depends;
-		std::shared_ptr<const Transaction> tx;
 	};
 
 	void update();
@@ -197,7 +197,7 @@ private:
 
 	void validate_pool();
 
-	std::vector<tx_data_t> validate_pending(bool only_new);
+	std::vector<tx_data_t> validate_pending(const uint64_t verify_limit, const uint64_t select_limit, bool only_new);
 
 	bool make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response);
 

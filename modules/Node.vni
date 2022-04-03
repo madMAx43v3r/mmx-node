@@ -25,7 +25,7 @@ module Node implements vnx.addons.HttpComponent {
 	int sync_loss_delay = 60;				// when to re-sync if stuck [sec]
 	
 	uint max_history = 1000;
-	uint tx_pool_limit = 1000000;			// TODO: use a cost limit
+	uint tx_pool_limit = 100;				// number of full blocks
 	uint max_fork_length = 100000;			// to keep in memory at most
 	
 	uint max_sync_jobs = 64;				// number of parallel requests

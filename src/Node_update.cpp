@@ -392,12 +392,12 @@ void Node::update()
 
 void Node::validate_pool()
 {
-	for(const auto& entry : validate_pending(true)) {
+	for(const auto& entry : validate_pending(params->max_block_cost, params->max_block_cost, true)) {
 		publish(entry.tx, output_verified_transactions);
 	}
 }
 
-std::vector<Node::tx_data_t> Node::validate_pending(bool only_new)
+std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit, const uint64_t select_limit, const bool only_new)
 {
 	const auto peak = get_peak();
 	if(!peak) {
@@ -407,26 +407,23 @@ std::vector<Node::tx_data_t> Node::validate_pending(bool only_new)
 
 	std::vector<tx_data_t> all_tx;
 
+	// select all candidates from pool
 	for(const auto& iter : tx_pool) {
-		const auto& entry = iter.second;
-		if(!only_new || !entry.is_validated) {
-			tx_data_t tmp;
-			tmp.tx = entry.tx;
-			all_tx.push_back(tmp);
-		}
+		tx_data_t tmp;
+		tmp.tx_pool_t::operator=(iter.second);
+		all_tx.push_back(tmp);
 	}
 
+	// check for already included transactions
 #pragma omp parallel for
 	for(int i = 0; i < int(all_tx.size()); ++i)
 	{
 		auto& entry = all_tx[i];
 		if(tx_map.count(entry.tx->id)) {
 			entry.included = true;
-			continue;
 		}
-		if(tx_index.find(entry.tx->id)) {
+		else if(tx_index.find(entry.tx->id)) {
 			entry.duplicate = true;
-			continue;
 		}
 	}
 
@@ -438,6 +435,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(bool only_new)
 		}
 	}
 
+	// check for dependency between transactions
 #pragma omp parallel for
 	for(int i = 0; i < int(all_tx.size()); ++i)
 	{
@@ -452,21 +450,59 @@ std::vector<Node::tx_data_t> Node::validate_pending(bool only_new)
 				entry.depends.push_back(prev);
 			}
 		}
+		entry.cost = entry.tx->calc_cost(params);
 	}
 
+	// sort transactions by fee ratio known from previous iterations
+	std::sort(all_tx.begin(), all_tx.end(),
+		[](const tx_data_t& lhs, const tx_data_t& rhs) -> bool {
+			return lhs.fee_ratio > rhs.fee_ratio;
+		});
+
+	size_t num_purged = 0;
 	size_t num_dependent = 0;
+	uint64_t total_verify_cost = 0;
 	std::vector<tx_data_t> tx_list;
 	std::unordered_multimap<hash_t, hash_t> dependency;
 
+	{
+		// purge transactions from pool if overflowing
+		uint64_t total_pool_cost = 0;
+		for(const auto& entry : all_tx) {
+			if(entry.did_validate) {
+				total_pool_cost += entry.cost;
+			}
+		}
+		for(auto iter = all_tx.rbegin(); iter != all_tx.rend(); ++iter)
+		{
+			if(total_pool_cost <= tx_pool_limit * params->max_block_cost) {
+				break;
+			}
+			if(iter->did_validate) {
+				// only purge transactions where fee ratio is known already
+				num_purged += tx_pool.erase(iter->tx->id);
+				total_pool_cost -= iter->cost;
+				iter->purged = true;
+			}
+		}
+	}
+
+	// select transactions to verify
 	for(const auto& entry : all_tx) {
-		if(entry.included || entry.duplicate) {
+		if(entry.included || entry.duplicate || entry.purged) {
 			continue;
 		}
 		for(const auto& prev : entry.depends) {
 			dependency.emplace(prev, entry.tx->id);
 		}
+		if(only_new && entry.did_validate) {
+			continue;
+		}
 		if(entry.depends.empty()) {
-			tx_list.push_back(entry);
+			if(total_verify_cost + entry.cost < verify_limit) {
+				tx_list.push_back(entry);
+				total_verify_cost += entry.cost;
+			}
 		} else {
 			num_dependent++;
 		}
@@ -474,6 +510,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(bool only_new)
 	auto context = Context::create();
 	context->height = peak->height + 1;
 
+	// verify transactions in parallel
 #pragma omp parallel for
 	for(int i = 0; i < int(tx_list.size()); ++i)
 	{
@@ -488,13 +525,13 @@ std::vector<Node::tx_data_t> Node::validate_pending(bool only_new)
 			if(auto new_tx = validate(tx, context, nullptr, entry.fees)) {
 				tx = new_tx;
 			}
-			const auto cost = tx->calc_cost(params);
-			entry.cost = cost;
-			entry.fee_ratio = entry.fees / double(cost);
+			entry.fee_ratio = entry.fees / double(entry.cost);
 			{
 				auto iter = tx_pool.find(tx->id);
 				if(iter != tx_pool.end()) {
-					iter->second.is_validated = true;
+					auto& data = iter->second;
+					data.did_validate = true;
+					data.fee_ratio = entry.fee_ratio;
 				}
 			}
 		}
@@ -506,18 +543,63 @@ std::vector<Node::tx_data_t> Node::validate_pending(bool only_new)
 		}
 	}
 
-	size_t num_invalid = 0;
+	// sort transactions by fee ratio
+	std::sort(tx_list.begin(), tx_list.end(),
+		[](const tx_data_t& lhs, const tx_data_t& rhs) -> bool {
+			return lhs.fee_ratio > rhs.fee_ratio;
+		});
+
+	uint64_t total_cost = 0;
 	std::vector<tx_data_t> result;
+	std::unordered_set<addr_t> mutated;
+	std::unordered_set<txio_key_t> spent;
+
+	// select final set of transactions
+	for(auto& entry : tx_list)
+	{
+		if(entry.invalid) {
+			continue;
+		}
+		if(total_cost + entry.cost < select_limit)
+		{
+			bool passed = true;
+			for(const auto& in : entry.tx->inputs) {
+				// prevent double spending
+				if(!spent.insert(in.prev).second) {
+					entry.invalid = true;
+					passed = false;
+				}
+			}
+			{
+				std::unordered_set<addr_t> addr_set;
+				for(const auto& op : entry.tx->execute) {
+					if(std::dynamic_pointer_cast<const operation::Mutate>(op)) {
+						addr_set.insert(op->address);
+					}
+				}
+				for(const auto& addr : addr_set) {
+					// prevent concurrent mutation
+					if(!mutated.insert(addr).second) {
+						passed = false;
+					}
+				}
+			}
+			if(passed) {
+				result.push_back(entry);
+				total_cost += entry.cost;
+			}
+		}
+	}
+
+	// purge invalid transactions
+	size_t num_invalid = 0;
 	{
 		std::vector<hash_t> invalid;
 		for(const auto& entry : tx_list) {
 			if(entry.invalid) {
 				invalid.push_back(entry.tx->id);
-			} else {
-				result.push_back(entry);
 			}
 		}
-		// purge invalid transactions
 		while(!invalid.empty()) {
 			std::vector<hash_t> more;
 			for(const auto& id : invalid) {
@@ -530,10 +612,12 @@ std::vector<Node::tx_data_t> Node::validate_pending(bool only_new)
 			invalid = more;
 		}
 	}
-	if(!all_tx.empty()) {
+
+	if(!only_new || !tx_list.empty()) {
 		const auto elapsed = (vnx::get_wall_time_micros() - time_begin) / 1e6;
-		log(INFO) << "Validated" << (only_new ? " new " : " all pending ") << "transactions: " << result.size() << " valid, "
-				<< num_invalid << " invalid, " << num_duplicate << " duplicate, " << num_dependent << " dependent, took " << elapsed << " sec";
+		log(INFO) << "Validated" << (only_new ? " new" : "") << " transactions: " << result.size() << " valid, "
+				<< num_invalid << " invalid, " << num_duplicate << " duplicate, " << num_dependent << " dependent, "
+				<< num_purged << " purged, took " << elapsed << " sec";
 	}
 	return result;
 }
@@ -559,52 +643,13 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	block->vdf_iters = vdf_point->vdf_iters;
 	block->vdf_output = vdf_point->output;
 
-	auto tx_list = validate_pending(false);
-
-	// sort transactions by fee ratio
-	std::sort(tx_list.begin(), tx_list.end(),
-		[](const tx_data_t& lhs, const tx_data_t& rhs) -> bool {
-			return lhs.fee_ratio > rhs.fee_ratio;
-		});
-
-	uint64_t total_fees = 0;
-	uint64_t total_cost = 0;
-	std::unordered_set<addr_t> mutated;
-	std::unordered_set<txio_key_t> spent;
+	const auto tx_list = validate_pending(2 * params->max_block_cost, params->max_block_cost, false);
 
 	// select transactions
-	for(const auto& entry : tx_list)
-	{
-		const auto& tx = entry.tx;
-		if(total_cost + entry.cost < params->max_block_cost)
-		{
-			bool passed = true;
-			for(const auto& in : tx->inputs) {
-				// prevent double spending
-				if(!spent.insert(in.prev).second) {
-					passed = false;
-				}
-			}
-			{
-				std::unordered_set<addr_t> addr_set;
-				for(const auto& op : tx->execute) {
-					if(std::dynamic_pointer_cast<const operation::Mutate>(op)) {
-						addr_set.insert(op->address);
-					}
-				}
-				for(const auto& addr : addr_set) {
-					// prevent concurrent mutation
-					if(!mutated.insert(addr).second) {
-						passed = false;
-					}
-				}
-			}
-			if(passed) {
-				block->tx_list.push_back(tx);
-				total_fees += entry.fees;
-				total_cost += entry.cost;
-			}
-		}
+	uint64_t total_fees = 0;
+	for(const auto& entry : tx_list) {
+		block->tx_list.push_back(entry.tx);
+		total_fees += entry.fees;
 	}
 
 	const auto prev_fork = find_fork(prev->hash);
