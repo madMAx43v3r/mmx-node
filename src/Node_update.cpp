@@ -466,7 +466,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 	std::unordered_multimap<hash_t, hash_t> dependency;
 
 	{
-		// purge transactions from pool if overflowing
+		// purge pending transactions from pool if overflowing
 		uint64_t total_pool_cost = 0;
 		for(const auto& entry : all_tx) {
 			if(entry.did_validate && !entry.included) {
