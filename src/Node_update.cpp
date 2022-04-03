@@ -469,7 +469,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 		// purge transactions from pool if overflowing
 		uint64_t total_pool_cost = 0;
 		for(const auto& entry : all_tx) {
-			if(entry.did_validate) {
+			if(entry.did_validate && !entry.included) {
 				total_pool_cost += entry.cost;
 			}
 		}
@@ -478,7 +478,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 			if(total_pool_cost <= tx_pool_limit * params->max_block_cost) {
 				break;
 			}
-			if(iter->did_validate) {
+			if(iter->did_validate && !iter->included) {
 				// only purge transactions where fee ratio is known already
 				num_purged += tx_pool.erase(iter->tx->id);
 				total_pool_cost -= iter->cost;
