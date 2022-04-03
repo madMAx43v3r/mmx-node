@@ -114,7 +114,7 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof) const
 	const auto avg_seg_iters = proof_iters / proof->segments.size();
 	for(const auto& seg : proof->segments) {
 		if(seg.num_iters > 2 * avg_seg_iters) {
-			throw std::logic_error("too many segment iterations: " + std::to_string(seg.num_iters));
+			throw std::logic_error("too many segment iterations: " + std::to_string(seg.num_iters) + " > 2 * " + std::to_string(avg_seg_iters));
 		}
 	}
 
