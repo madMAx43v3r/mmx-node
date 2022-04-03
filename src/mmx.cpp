@@ -437,7 +437,7 @@ int main(int argc, char** argv)
 						<< std::endl << wallet.seed_value << std::endl;
 			}
 			else {
-				std::cerr << "Help: mmx wallet [show | log | send | send_from | transfer | mint | deploy | exec | create | accounts | keys]" << std::endl;
+				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | transfer | mint | deploy | exec | create | accounts | keys]" << std::endl;
 			}
 		}
 		else if(module == "node")
