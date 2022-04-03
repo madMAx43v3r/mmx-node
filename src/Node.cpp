@@ -46,7 +46,7 @@ void Node::main()
 			for(int i = 0; i < 2; ++i) {
 				opencl_vdf[i] = std::make_shared<OCL_VDF>(opencl_device);
 			}
-			log(INFO) << "Using OpenCL GPU device: " << opencl_device;
+			log(INFO) << "Using OpenCL GPU device: " << opencl_device << " (out of " << devices.size() << ")";
 		}
 		else if(devices.size()) {
 			log(WARN) <<  "No such OpenCL GPU device: " << opencl_device;
