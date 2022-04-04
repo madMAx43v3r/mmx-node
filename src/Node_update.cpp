@@ -405,22 +405,18 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 
 	std::vector<tx_data_t> all_tx;
 
-	// select all candidates from pool
 	for(const auto& iter : tx_pool) {
 		tx_data_t tmp;
 		tmp.tx_pool_t::operator=(iter.second);
 		all_tx.push_back(tmp);
 	}
 
-	// check for already included transactions
+	// check for duplicate transactions
 #pragma omp parallel for
 	for(int i = 0; i < int(all_tx.size()); ++i)
 	{
 		auto& entry = all_tx[i];
-		if(tx_map.count(entry.tx->id)) {
-			entry.included = true;
-		}
-		else if(tx_index.find(entry.tx->id)) {
+		if(tx_map.count(entry.tx->id) || tx_index.find(entry.tx->id)) {
 			entry.duplicate = true;
 		}
 	}
@@ -438,13 +434,13 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 	for(int i = 0; i < int(all_tx.size()); ++i)
 	{
 		auto& entry = all_tx[i];
-		if(entry.included || entry.duplicate) {
+		if(entry.duplicate) {
 			continue;
 		}
 		for(const auto& in : entry.tx->inputs) {
 			const auto& prev = in.prev.txid;
 			// check if tx depends on another one which is not in a block yet
-			if(tx_pool.count(prev) && !tx_map.count(prev)) {
+			if(tx_pool.count(prev)) {
 				entry.depends.push_back(prev);
 			}
 		}
@@ -464,10 +460,10 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 	std::unordered_multimap<hash_t, hash_t> dependency;
 
 	{
-		// purge pending transactions from pool if overflowing
+		// purge transactions from pool if overflowing
 		uint64_t total_pool_cost = 0;
 		for(const auto& entry : all_tx) {
-			if(entry.did_validate && !entry.included) {
+			if(entry.did_validate) {
 				total_pool_cost += entry.cost;
 			}
 		}
@@ -476,7 +472,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 			if(total_pool_cost <= tx_pool_limit * params->max_block_cost) {
 				break;
 			}
-			if(iter->did_validate && !iter->included) {
+			if(iter->did_validate) {
 				// only purge transactions where fee ratio is known already
 				num_purged += tx_pool.erase(iter->tx->id);
 				total_pool_cost -= iter->cost;
@@ -487,7 +483,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 
 	// select transactions to verify
 	for(const auto& entry : all_tx) {
-		if(entry.included || entry.duplicate || entry.purged) {
+		if(entry.duplicate || entry.purged) {
 			continue;
 		}
 		for(const auto& prev : entry.depends) {
@@ -527,9 +523,9 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 			{
 				auto iter = tx_pool.find(tx->id);
 				if(iter != tx_pool.end()) {
-					auto& data = iter->second;
-					data.did_validate = true;
-					data.fee_ratio = entry.fee_ratio;
+					auto& info = iter->second;
+					info.did_validate = true;
+					info.fee_ratio = entry.fee_ratio;
 				}
 			}
 		}

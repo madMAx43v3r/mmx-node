@@ -165,6 +165,11 @@ private:
 		std::unordered_map<addr_t, std::vector<std::shared_ptr<const operation::Mutate>>> mutated;
 	};
 
+	struct tx_map_t {
+		uint32_t height = -1;
+		std::shared_ptr<const Transaction> tx;
+	};
+
 	struct tx_pool_t {
 		bool did_validate = false;
 		double fee_ratio = 0;
@@ -173,7 +178,6 @@ private:
 
 	struct tx_data_t : tx_pool_t {
 		bool invalid = false;
-		bool included = false;
 		bool duplicate = false;
 		bool purged = false;
 		uint64_t fees = 0;
@@ -311,13 +315,13 @@ private:
 
 	std::unordered_map<txio_key_t, utxo_t> utxo_map;								// [utxo key => utxo]
 	std::unordered_map<addr_t, std::unordered_set<txio_key_t>> addr_map;			// [addr => utxo keys] (pending + unspent only)
-	std::unordered_map<hash_t, uint32_t> tx_map;									// [txid => height] (executed + pending only)
+
+	std::unordered_map<hash_t, tx_map_t> tx_map;									// [txid => transaction] (executed + pending only)
+	std::unordered_map<hash_t, tx_pool_t> tx_pool;									// [txid => transaction] (non-executed only)
 
 	std::multimap<uint32_t, std::shared_ptr<fork_t>> fork_index;					// [height => fork] (pending only)
 	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;					// [block hash => fork] (pending only)
 	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;					// [height => block header] (finalized only)
-	// TODO: only non-included txs
-	std::unordered_map<hash_t, tx_pool_t> tx_pool;									// [txid => transaction] (pending only)
 
 	std::multimap<uint32_t, std::shared_ptr<vdf_point_t>> verified_vdfs;			// [height => output]
 	std::multimap<uint32_t, std::shared_ptr<const ProofOfTime>> pending_vdfs;		// [height => proof]

@@ -385,7 +385,7 @@ vnx::optional<uint32_t> Node::get_tx_height(const hash_t& id) const
 	{
 		auto iter = tx_map.find(id);
 		if(iter != tx_map.end()) {
-			return iter->second;
+			return iter->second.height;
 		}
 	}
 	{
@@ -502,12 +502,16 @@ std::vector<vnx::optional<txo_info_t>> Node::get_txo_infos(const std::vector<txi
 std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id, const vnx::bool_t& include_pending) const
 {
 	// THREAD SAFE (for concurrent reads)
-	{
+	if(include_pending) {
 		auto iter = tx_pool.find(id);
 		if(iter != tx_pool.end()) {
-			if(include_pending || tx_map.count(id)) {
-				return iter->second.tx;
-			}
+			return iter->second.tx;
+		}
+	}
+	{
+		auto iter = tx_map.find(id);
+		if(iter != tx_map.end()) {
+			return iter->second.tx;
 		}
 	}
 	{
@@ -1316,7 +1320,6 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	}
 	for(const auto& txid : log->tx_added) {
 		tx_map.erase(txid);
-		tx_pool.erase(txid);
 	}
 	if(!is_replay || is_db_replay) {
 		for(const auto& entry : log->deployed) {
@@ -1468,12 +1471,12 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 		}
 		log.deployed.emplace(tx->id, contract);
 	}
+	tx_pool.erase(tx->id);
 	{
-		auto& entry = tx_pool[tx->id];
-		entry.did_validate = true;
+		auto& entry = tx_map[tx->id];
+		entry.height = block->height;
 		entry.tx = tx;
 	}
-	tx_map[tx->id] = block->height;
 	log.tx_added.push_back(tx->id);
 }
 
@@ -1514,7 +1517,11 @@ bool Node::revert() noexcept
 		addr_map[utxo.address].insert(entry.first);
 	}
 	for(const auto& txid : log->tx_added) {
-		tx_map.erase(txid);
+		auto iter = tx_map.find(txid);
+		if(iter != tx_map.end()) {
+			tx_pool[txid].tx = iter->second.tx;
+			tx_map.erase(iter);
+		}
 	}
 	for(const auto& entry : log->deployed) {
 		light_address_set.erase(entry.first);
