@@ -331,7 +331,7 @@ void Wallet::send_off(const uint32_t& index, std::shared_ptr<const Transaction> 
 		return;
 	}
 	const auto wallet = get_wallet(index);
-	node->add_transaction(tx);
+	node->add_transaction(tx, true);
 	wallet->update_from(tx);
 	{
 		tx_log_entry_t entry;
