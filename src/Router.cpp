@@ -389,6 +389,7 @@ void Router::update()
 
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
+		// TODO: check for peer timeout and disconnect
 		peer->credits = std::min(peer->credits, max_node_credits);
 		peer->tx_credits = std::min(peer->tx_credits + tx_credits, params->max_block_cost);
 
