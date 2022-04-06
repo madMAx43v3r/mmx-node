@@ -10,7 +10,8 @@
 
 namespace mmx {
 
-thread_local std::array<bls_signature_t::cache_t, 1024> bls_signature_t::sig_cache;
+std::mutex bls_signature_t::mutex;
+std::array<bls_signature_t::cache_t, 2048> bls_signature_t::sig_cache;
 
 bls_signature_t::bls_signature_t(const bls::G2Element& sig)
 {
@@ -26,12 +27,16 @@ bool bls_signature_t::verify(const bls_pubkey_t& pubkey, const hash_t& hash) con
 	const auto sig_hash = std::hash<typename bls_signature_t::super_t>{}(*this);
 
 	auto& entry = sig_cache[sig_hash % sig_cache.size()];
-	if(entry.sig == *this && entry.pubkey == pubkey && entry.hash == hash) {
-		return true;
+	{
+		std::lock_guard lock(mutex);
+		if(entry.sig == *this && entry.pubkey == pubkey && entry.hash == hash) {
+			return true;
+		}
 	}
 	bls::AugSchemeMPL MPL;
 	const bool res = MPL.Verify(pubkey.to_bls(), bls::Bytes(hash.bytes.data(), hash.bytes.size()), to_bls());
 	if(res) {
+		std::lock_guard lock(mutex);
 		entry.sig = *this;
 		entry.hash = hash;
 		entry.pubkey = pubkey;

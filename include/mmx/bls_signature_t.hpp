@@ -12,6 +12,8 @@
 #include <mmx/skey_t.hpp>
 #include <mmx/bls_pubkey_t.hpp>
 
+#include <mutex>
+
 
 namespace mmx {
 
@@ -38,7 +40,8 @@ private:
 		bls_pubkey_t pubkey;
 	};
 
-	static thread_local std::array<cache_t, 1024> sig_cache;
+	static std::mutex mutex;
+	static std::array<cache_t, 2048> sig_cache;
 };
 
 } // mmx

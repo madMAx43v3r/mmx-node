@@ -10,7 +10,8 @@
 
 namespace mmx {
 
-thread_local std::array<signature_t::cache_t, 16384> signature_t::sig_cache;
+std::mutex signature_t::mutex;
+std::array<signature_t::cache_t, 16384> signature_t::sig_cache;
 
 signature_t::signature_t(const secp256k1_ecdsa_signature& sig)
 {
@@ -40,13 +41,17 @@ bool signature_t::verify(const pubkey_t& pubkey, const hash_t& hash) const
 	const auto sig_hash = std::hash<typename signature_t::super_t>{}(*this);
 
 	auto& entry = sig_cache[sig_hash % sig_cache.size()];
-	if(entry.sig == *this && entry.pubkey == pubkey && entry.hash == hash) {
-		return true;
+	{
+		std::lock_guard lock(mutex);
+		if(entry.sig == *this && entry.pubkey == pubkey && entry.hash == hash) {
+			return true;
+		}
 	}
 	const auto sig = to_secp256k1();
 	const auto key = pubkey.to_secp256k1();
 	const bool res = secp256k1_ecdsa_verify(g_secp256k1, &sig, hash.data(), &key);
 	if(res) {
+		std::lock_guard lock(mutex);
 		entry.sig = *this;
 		entry.hash = hash;
 		entry.pubkey = pubkey;

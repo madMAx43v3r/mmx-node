@@ -13,6 +13,8 @@
 #include <mmx/pubkey_t.hpp>
 #include <mmx/secp256k1.hpp>
 
+#include <mutex>
+
 
 namespace mmx {
 
@@ -37,7 +39,8 @@ private:
 		pubkey_t pubkey;
 	};
 
-	static thread_local std::array<cache_t, 16384> sig_cache;
+	static std::mutex mutex;
+	static std::array<cache_t, 16384> sig_cache;
 };
 
 } // mmx
