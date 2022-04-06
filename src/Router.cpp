@@ -572,7 +572,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 								num_pending++;
 							}
 						}
-						const auto max_pending = std::max<size_t>((now_ms - job->start_time_ms) / update_interval_ms, 1);
+						const auto max_pending = std::max<size_t>(((now_ms - job->start_time_ms) * max_sync_peers) / fetch_timeout_ms, 1);
 						if(num_pending < max_pending)
 						{
 							auto clients = entry.second;
