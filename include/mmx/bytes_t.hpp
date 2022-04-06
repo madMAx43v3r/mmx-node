@@ -228,7 +228,9 @@ namespace std {
 	template<size_t N>
 	struct hash<typename mmx::bytes_t<N>> {
 		size_t operator()(const mmx::bytes_t<N>& x) const {
-			return *((const size_t*)x.bytes.data());
+			size_t res = 0;
+			::memcpy(&res, x.bytes.data(), std::min(N, sizeof(size_t)));
+			return res;
 		}
 	};
 } // std
