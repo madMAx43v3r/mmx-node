@@ -11,6 +11,7 @@
 namespace mmx {
 
 std::mutex bls_signature_t::mutex;
+const size_t bls_signature_t::hash_salt = vnx::rand64();
 std::array<bls_signature_t::cache_t, 2048> bls_signature_t::sig_cache;
 
 bls_signature_t::bls_signature_t(const bls::G2Element& sig)
@@ -24,7 +25,8 @@ bls_signature_t::bls_signature_t(const bls::G2Element& sig)
 
 bool bls_signature_t::verify(const bls_pubkey_t& pubkey, const hash_t& hash) const
 {
-	const auto sig_hash = std::hash<typename bls_signature_t::super_t>{}(*this);
+	auto sig_hash = std::hash<typename bls_signature_t::super_t>{}(*this) ^ hash_salt;
+	sig_hash = vnx::Hash64(&sig_hash, sizeof(sig_hash));
 
 	auto& entry = sig_cache[sig_hash % sig_cache.size()];
 	{

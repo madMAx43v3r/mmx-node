@@ -41,6 +41,7 @@ private:
 	};
 
 	static std::mutex mutex;
+	static const size_t hash_salt;
 	static std::array<cache_t, 2048> sig_cache;
 };
 
