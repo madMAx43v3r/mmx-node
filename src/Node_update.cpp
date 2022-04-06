@@ -48,6 +48,7 @@ bool Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
 	if(auto vdf_point = find_next_vdf_point(prev))
 	{
 		auto block = Block::create();
+		block->version = 0;
 		block->prev = prev->hash;
 		block->height = prev->height + 1;
 		block->time_diff = prev->time_diff;
