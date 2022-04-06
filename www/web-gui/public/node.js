@@ -112,8 +112,8 @@ app.component('node-peers', {
 				<th>Height</th>
 				<th>Type</th>
 				<th>Version</th>
-				<th>Download</th>
-				<th>Upload</th>
+				<th>Receive</th>
+				<th>Send</th>
 				<th>Ping</th>
 				<th>Duration</th>
 				<th>Credits</th>
