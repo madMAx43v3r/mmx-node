@@ -391,7 +391,8 @@ void Router::update()
 		const auto& peer = entry.second;
 		// TODO: check for peer timeout and disconnect
 		peer->credits = std::min(peer->credits, max_node_credits);
-		peer->tx_credits = std::min(peer->tx_credits + tx_credits, params->max_block_cost);
+		peer->tx_credits = std::min(peer->tx_credits +
+				uint64_t(params->max_block_cost * update_interval_ms / (params->block_time * 1e3) / peer_map.size()), params->max_block_cost);
 
 		// clear old hashes
 		while(peer->sent_hashes.size() > max_sent_cache) {
