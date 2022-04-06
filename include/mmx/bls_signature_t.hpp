@@ -31,45 +31,15 @@ struct bls_signature_t : bytes_t<96> {
 
 	static bls_signature_t sign(const bls::PrivateKey& skey, const hash_t& hash);
 
+private:
+	struct cache_t {
+		bytes_t<96> sig;
+		hash_t hash;
+		bls_pubkey_t pubkey;
+	};
+
+	static thread_local std::array<cache_t, 1024> sig_cache;
 };
-
-
-inline
-bls_signature_t::bls_signature_t(const bls::G2Element& sig)
-{
-	const auto tmp = sig.Serialize();
-	if(tmp.size() != bytes.size()) {
-		throw std::logic_error("signature size mismatch");
-	}
-	::memcpy(bytes.data(), tmp.data(), tmp.size());
-}
-
-inline
-bool bls_signature_t::verify(const bls_pubkey_t& pubkey, const hash_t& hash) const
-{
-	bls::AugSchemeMPL MPL;
-	return MPL.Verify(pubkey.to_bls(), bls::Bytes(hash.bytes.data(), hash.bytes.size()), to_bls());
-}
-
-inline
-bls::G2Element bls_signature_t::to_bls() const
-{
-	return bls::G2Element::FromBytes(bls::Bytes(bytes.data(), bytes.size()));
-}
-
-inline
-bls_signature_t bls_signature_t::sign(const skey_t& skey, const hash_t& hash)
-{
-	const auto bls_skey = bls::PrivateKey::FromBytes(bls::Bytes(skey.data(), skey.size()));
-	return sign(bls_skey, hash);
-}
-
-inline
-bls_signature_t bls_signature_t::sign(const bls::PrivateKey& skey, const hash_t& hash)
-{
-	bls::AugSchemeMPL MPL;
-	return MPL.Sign(skey, bls::Bytes(hash.bytes.data(), hash.bytes.size()));
-}
 
 } // mmx
 
