@@ -34,10 +34,8 @@ int main(int argc, char** argv)
 	vnx::init("mmx_wallet", argc, argv, options);
 
 	std::string node_url = ":11330";
-	std::string endpoint = ":11335";
 
 	vnx::read_config("node", node_url);
-	vnx::read_config("endpoint", endpoint);
 
 	vnx::rocksdb::sync_type_codes(root_path + "wallet/type_codes");
 
@@ -45,7 +43,7 @@ int main(int argc, char** argv)
 	proxy->forward_list = {"Node"};
 
 	{
-		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url(endpoint));
+		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url(":11335"));
 		module.start_detached();
 	}
 	{

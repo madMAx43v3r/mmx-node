@@ -58,14 +58,12 @@ int main(int argc, char** argv)
 	bool with_timelord = true;
 	bool with_harvester = true;
 	bool light_mode = false;
-	std::string endpoint = ":11331";
 	std::string public_endpoint = "0.0.0.0:11330";
 	vnx::read_config("wallet", with_wallet);
 	vnx::read_config("farmer", with_farmer);
 	vnx::read_config("timelord", with_timelord);
 	vnx::read_config("harvester", with_harvester);
 	vnx::read_config("light_mode", light_mode);
-	vnx::read_config("endpoint", endpoint);
 	vnx::read_config("public_endpoint", public_endpoint);
 
 #ifdef WITH_OPENCL
@@ -100,10 +98,12 @@ int main(int argc, char** argv)
 	}
 	{
 		vnx::Handle<vnx::Server> module = new vnx::Server("Server0", vnx::Endpoint::from_url(public_endpoint));
+		module->use_authentication = true;
+		module->default_access = "USER";
 		module.start_detached();
 	}
 	{
-		vnx::Handle<vnx::Server> module = new vnx::Server("Server1", vnx::Endpoint::from_url(endpoint));
+		vnx::Handle<vnx::Server> module = new vnx::Server("Server1", vnx::Endpoint::from_url(":11331"));
 		module.start_detached();
 	}
 	if(with_wallet) {
