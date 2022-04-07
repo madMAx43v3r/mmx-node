@@ -189,7 +189,7 @@ app.component('exchange-order-list', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<table class="ui table striped" :class="color">
+		<table class="ui compact table striped" :class="color">
 			<thead>
 				<th colspan="2">Price</th>
 				<th colspan="2">{{flip ? "Bid" : "Ask"}}</th>
@@ -265,7 +265,7 @@ app.component('exchange-trade-list', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<table class="ui table striped">
+		<table class="ui compact table striped">
 			<thead>
 				<th>Type</th>
 				<th colspan="2">Amount</th>
@@ -337,7 +337,7 @@ app.component('exchange-history', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<table class="ui table striped">
+		<table class="ui compact table striped">
 			<thead>
 				<th>Type</th>
 				<th colspan="2">Amount</th>
