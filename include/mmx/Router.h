@@ -239,7 +239,7 @@ private:
 		std::unordered_map<uint32_t, uint64_t> request_map;
 	} fork_check;
 
-	vnx::ThreadPool* threads = nullptr;
+	vnx::ThreadPool* connect_threads = nullptr;
 	std::shared_ptr<NodeAsyncClient> node;
 	std::shared_ptr<const ChainParams> params;
 

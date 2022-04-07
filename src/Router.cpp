@@ -152,7 +152,7 @@ void Router::main()
 	http = std::make_shared<vnx::addons::HttpInterface<Router>>(this, vnx_name);
 	add_async_client(http);
 
-	threads = new vnx::ThreadPool(num_threads);
+	connect_threads = new vnx::ThreadPool(-1);
 
 	set_timer_millis(send_interval_ms, std::bind(&Router::send, this));
 	set_timer_millis(query_interval_ms, std::bind(&Router::query, this));
@@ -739,7 +739,7 @@ void Router::connect()
 		if(!connected && !connecting_peers.count(address))
 		{
 			connecting_peers.insert(address);
-			threads->add_task(std::bind(&Router::connect_task, this, address));
+			connect_threads->add_task(std::bind(&Router::connect_task, this, address));
 		}
 	}
 
@@ -759,13 +759,13 @@ void Router::connect()
 		}
 		for(const auto& address : get_subset(peers, num_peers_out, rand_engine))
 		{
-			if(connecting_peers.size() >= num_threads) {
+			if(connect_threads->get_num_running() >= max_connect_threads) {
 				break;
 			}
 			log(DEBUG) << "Trying to connect to " << address;
 
 			connecting_peers.insert(address);
-			threads->add_task(std::bind(&Router::connect_task, this, address));
+			connect_threads->add_task(std::bind(&Router::connect_task, this, address));
 		}
 	}
 	else if(synced_peers.size() > num_peers_out + 1)
