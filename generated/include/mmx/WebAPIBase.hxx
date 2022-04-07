@@ -6,6 +6,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Block.hxx>
+#include <vnx/LogMsg.hxx>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
 #include <vnx/addons/HttpData.hxx>
@@ -22,8 +23,7 @@ public:
 	std::string node_server = "Node";
 	std::string wallet_server = "Wallet";
 	std::string exchange_server = "ExchClient";
-	uint32_t max_block_history = 1000;
-	uint64_t max_tx_history = 10000;
+	uint32_t max_log_history = 10000;
 	
 	typedef ::vnx::Module Super;
 	
@@ -61,6 +61,7 @@ protected:
 	using Super::handle;
 	
 	virtual void handle(std::shared_ptr<const ::mmx::Block> _value) {}
+	virtual void handle(std::shared_ptr<const ::vnx::LogMsg> _value) {}
 	virtual void http_request_async(std::shared_ptr<const ::vnx::addons::HttpRequest> request, const std::string& sub_path, const vnx::request_id_t& _request_id) const = 0;
 	void http_request_async_return(const vnx::request_id_t& _request_id, const std::shared_ptr<const ::vnx::addons::HttpResponse>& _ret_0) const;
 	virtual void http_request_chunk_async(std::shared_ptr<const ::vnx::addons::HttpRequest> request, const std::string& sub_path, const int64_t& offset, const int64_t& max_bytes, const vnx::request_id_t& _request_id) const = 0;
@@ -73,14 +74,13 @@ protected:
 
 template<typename T>
 void WebAPIBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<WebAPIBase>(6);
+	_visitor.template type_begin<WebAPIBase>(5);
 	_visitor.type_field("input_blocks", 0); _visitor.accept(input_blocks);
 	_visitor.type_field("node_server", 1); _visitor.accept(node_server);
 	_visitor.type_field("wallet_server", 2); _visitor.accept(wallet_server);
 	_visitor.type_field("exchange_server", 3); _visitor.accept(exchange_server);
-	_visitor.type_field("max_block_history", 4); _visitor.accept(max_block_history);
-	_visitor.type_field("max_tx_history", 5); _visitor.accept(max_tx_history);
-	_visitor.template type_end<WebAPIBase>(6);
+	_visitor.type_field("max_log_history", 4); _visitor.accept(max_log_history);
+	_visitor.template type_end<WebAPIBase>(5);
 }
 
 

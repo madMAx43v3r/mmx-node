@@ -4,6 +4,7 @@
 #include <mmx/package.hxx>
 #include <mmx/WebAPIAsyncClient.hxx>
 #include <mmx/Block.hxx>
+#include <vnx/LogMsg.hxx>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
