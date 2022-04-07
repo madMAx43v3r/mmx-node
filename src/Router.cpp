@@ -728,6 +728,21 @@ bool Router::process(std::shared_ptr<const Return> ret)
 
 void Router::connect()
 {
+	for(const auto& address : fixed_peers)
+	{
+		bool connected = false;
+		for(const auto& entry : peer_map) {
+			if(address == entry.second->address) {
+				connected = true;
+			}
+		}
+		if(!connected && !connecting_peers.count(address))
+		{
+			connecting_peers.insert(address);
+			threads->add_task(std::bind(&Router::connect_task, this, address));
+		}
+	}
+
 	if(synced_peers.size() < num_peers_out)
 	{
 		std::set<std::string> peers;
@@ -757,7 +772,7 @@ void Router::connect()
 	{
 		for(auto client : get_subset(synced_peers, synced_peers.size() - num_peers_out, rand_engine)) {
 			if(auto peer = find_peer(client)) {
-				if(peer->is_outbound) {
+				if(peer->is_outbound && !fixed_peers.count(peer->address)) {
 					log(INFO) << "Disconnecting from " << peer->address << " to reduce connections";
 					disconnect(client);
 				}
