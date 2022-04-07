@@ -464,7 +464,12 @@ app.component('transaction-view', {
 				<tr v-for="(item, index) in data.inputs" :key="index">
 					<td class="two wide">Input[{{index}}]</td>
 					<td class="collapsing"><b>{{item.utxo.value}}</b></td>
-					<td>{{item.utxo.symbol}}</td>
+					<template v-if="item.utxo.is_native">
+						<td>{{item.utxo.symbol}}</td>
+					</template>
+					<template v-if="!item.utxo.is_native">
+						<td><router-link :to="'/explore/address/' + item.utxo.contract">{{item.utxo.is_nft ? "[NFT]" : item.utxo.symbol}}</router-link></td>
+					</template>
 					<td><router-link :to="'/explore/address/' + item.utxo.address">{{item.utxo.address}}</router-link></td>
 					<td><router-link :to="'/explore/transaction/' + item.prev.txid">Prev</router-link></td>
 				</tr>
@@ -484,7 +489,12 @@ app.component('transaction-view', {
 				<tr v-for="(item, index) in data.outputs" :key="index">
 					<td class="two wide">Output[{{index}}]</td>
 					<td class="collapsing"><b>{{item.output.value}}</b></td>
-					<td>{{item.output.symbol}}</td>
+					<template v-if="item.output.is_native">
+						<td>{{item.output.symbol}}</td>
+					</template>
+					<template v-if="!item.output.is_native">
+						<td><router-link :to="'/explore/address/' + item.output.contract">{{item.output.is_nft ? "[NFT]" : item.output.symbol}}</router-link></td>
+					</template>
 					<td><router-link :to="'/explore/address/' + item.output.address">{{item.output.address}}</router-link></td>
 					<td><template v-if="item.spent"><router-link :to="'/explore/transaction/' + item.spent.txid">Next</router-link></template></td>
 				</tr>
@@ -622,7 +632,7 @@ app.component('address-history-table', {
 					<td>{{item.symbol}}</td>
 				</template>
 				<template v-if="!item.is_native">
-					<td><router-link :to="'/explore/address/' + item.contract">{{item.symbol}}</router-link></td>
+					<td><router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}</router-link></td>
 				</template>
 				<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
 				<td><router-link :to="'/explore/transaction/' + item.txid">TX</router-link></td>

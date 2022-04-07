@@ -321,7 +321,7 @@ app.component('account-history', {
 					<td>{{item.symbol}}</td>
 				</template>
 				<template v-if="!item.is_native">
-					<td><router-link :to="'/explore/address/' + item.contract">{{item.symbol}}</router-link></td>
+					<td><router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}</router-link></td>
 				</template>
 				<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
 				<td><router-link :to="'/explore/transaction/' + item.txid">TX</router-link></td>
