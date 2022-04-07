@@ -25,7 +25,7 @@ module Router extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	uint sync_loss_delay = 60;				// when to re-sync [sec]
 	uint discover_interval = 60;			// how often to search for new peers [sec]
 	
-	uint num_threads = 32;					// for connecting
+	uint num_threads = 8;					// for connecting
 	uint num_peers_out = 8;					// maximum outgoing connections to synced peers
 	
 	uint min_sync_peers = 2;				// minimum peers needed for syncing
