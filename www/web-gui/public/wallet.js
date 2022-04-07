@@ -259,7 +259,7 @@ app.component('nft-table', {
 			</thead>
 			<tbody>
 			<tr v-for="item in nfts" :key="item">
-				<td>{{item}}</td>
+				<td><router-link :to="'/explore/address/' + item">{{item}}</router-link></td>
 			</tr>
 			</tbody>
 		</table>
