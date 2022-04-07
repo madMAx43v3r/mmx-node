@@ -98,7 +98,7 @@ app.component('node-peers', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<table class="ui definition table striped" v-if="data">
+		<table class="ui compact definition table striped" v-if="data">
 			<thead>
 			<tr>
 				<th>IP</th>

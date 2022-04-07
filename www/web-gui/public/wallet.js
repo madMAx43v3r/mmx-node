@@ -300,7 +300,7 @@ app.component('account-history', {
 		<template v-if="!data && loading">
 			<div class="ui basic loading placeholder segment"></div>
 		</template>
-		<table class="ui table striped" v-if="data">
+		<table class="ui compact table striped" v-if="data">
 			<thead>
 			<tr>
 				<th>Height</th>
@@ -366,7 +366,7 @@ app.component('account-tx-history', {
 		<template v-if="!data && loading">
 			<div class="ui basic loading placeholder segment"></div>
 		</template>
-		<table class="ui table striped" v-if="data">
+		<table class="ui compact table striped" v-if="data">
 			<thead>
 			<tr>
 				<th>Height</th>
@@ -470,7 +470,7 @@ app.component('account-addresses', {
 		this.update()
 	},
 	template: `
-		<table class="ui definition table striped">
+		<table class="ui compact definition table striped">
 			<thead>
 			<tr>
 				<th>Index</th>
@@ -548,7 +548,7 @@ app.component('coins-table', {
 		data: Object
 	},
 	template: `
-		<table class="ui table striped">
+		<table class="ui compact table striped">
 			<thead>
 			<tr>
 				<th>Height</th>
