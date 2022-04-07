@@ -331,7 +331,7 @@ app.component('block-view', {
 				</tr>
 				</tbody>
 			</table>
-			<table class="ui definition table striped" v-if="data.tx_list.length">
+			<table class="ui compact definition table striped" v-if="data.tx_list.length">
 				<thead>
 				<tr>
 					<th></th>
@@ -450,7 +450,7 @@ app.component('transaction-view', {
 				</tr>
 				</tbody>
 			</table>
-			<table class="ui definition table striped" v-if="data.inputs.length">
+			<table class="ui compact definition table striped" v-if="data.inputs.length">
 				<thead>
 				<tr>
 					<th></th>
@@ -470,7 +470,7 @@ app.component('transaction-view', {
 				</tr>
 				</tbody>
 			</table>
-			<table class="ui definition table striped" v-if="data.outputs.length">
+			<table class="ui compact definition table striped" v-if="data.outputs.length">
 				<thead>
 				<tr>
 					<th></th>
@@ -601,7 +601,7 @@ app.component('address-history-table', {
 		<template v-if="!data && loading">
 			<div class="ui basic loading placeholder segment"></div>
 		</template>
-		<table class="ui table striped" v-if="data && (data.length || show_empty)">
+		<table class="ui compact table striped" v-if="data && (data.length || show_empty)">
 			<thead>
 			<tr>
 				<th>Height</th>
