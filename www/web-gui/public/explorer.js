@@ -86,7 +86,7 @@ app.component('explore-blocks', {
 		<template v-if="!data && loading">
 			<div class="ui basic loading placeholder segment"></div>
 		</template>
-		<table class="ui table striped" v-if="data">
+		<table class="ui compact table striped" v-if="data">
 			<thead>
 			<tr>
 				<th>Height</th>
@@ -148,7 +148,7 @@ app.component('explore-transactions', {
 		<template v-if="!data && loading">
 			<div class="ui basic loading placeholder segment"></div>
 		</template>
-		<table class="ui table striped" v-if="data">
+		<table class="ui compact table striped" v-if="data">
 			<thead>
 			<tr>
 				<th>Height</th>
