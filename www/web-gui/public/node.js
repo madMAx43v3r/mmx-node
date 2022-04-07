@@ -2,6 +2,7 @@
 app.component('node-menu', {
 	template: `
 		<div class="ui large pointing menu">
+			<router-link class="item" :class="{active: $route.meta.page == 'log'}" to="/node/log">Log</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'peers'}" to="/node/peers">Peers</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'blocks'}" to="/node/blocks">Blocks</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'netspace'}" to="/node/netspace">Netspace</router-link>
@@ -79,15 +80,7 @@ app.component('node-peers', {
 	data() {
 		return {
 			data: null,
-			timer: null,
-			gdata:[{
-		        x: [1,2,3,4],
-		        y: [10,15,13,17],
-		        type:"scatter"
-		      }],
-		      layout:{
-		        title: "My graph"
-		      }
+			timer: null
 		}
 	},
 	methods: {
@@ -310,5 +303,72 @@ app.component('block-reward-graph', {
 		`
 })
 
+app.component('node-log', {
+	data() {
+		return {
+			limit: 100,
+			level: 3,
+			module: null
+		}
+	},
+	template: `
+		<div class="ui menu">
+			<div class="link item" :class="{active: !module}" @click="module = null">Terminal</div>
+			<div class="link item" :class="{active: module == 'Node'}" @click="module = 'Node'">Node</div>
+			<div class="link item" :class="{active: module == 'Router'}" @click="module = 'Router'">Router</div>
+			<div class="link item" :class="{active: module == 'Harvester'}" @click="module = 'Harvester'">Harvester</div>
+		</div>
+		<node-log-table :limit="limit" :level="level" :module="module"></node-log-table>
+		`
+})
 
+app.component('node-log-table', {
+	props: {
+		limit: Number,
+		level: Number,
+		module: String
+	},
+	data() {
+		return {
+			data: null,
+			timer: null,
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/node/log?limit=' + this.limit + "&level=" + this.level + (this.module ? "&module=" + this.module : ""))
+				.then(response => response.json())
+				.then(data => this.data = data);
+		}
+	},
+	watch: {
+		limit() {
+			this.update();
+		},
+		level() {
+			this.update();
+		},
+		module() {
+			this.update();
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 2000);
+	},
+	unmounted() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<table class="ui small compact table striped" v-if="data">
+			<tbody>
+			<tr v-for="item in data" :key="item.time" :class="{error: item.level == 1, warning: item.level == 2}">
+				<td class="collapsing"><code>{{new Date(item.time / 1000).toLocaleTimeString()}}</code></td>
+				<td><code><b>{{item.module}}</b></code></td>
+				<td><code>{{item.message}}</code></td>
+			</tr>
+			</tbody>
+		</table>
+		`
+})
 

@@ -322,7 +322,12 @@ const Node = {
 }
 const NodeBlocks = {
 	template: `
-		<explore-blocks :limit="10"></explore-blocks>
+		<explore-blocks :limit="20"></explore-blocks>
+	`
+}
+const NodeLog = {
+	template: `
+		<node-log></node-log>
 	`
 }
 const NodePeers = {
@@ -412,9 +417,10 @@ const routes = [
 	},
 	{ path: '/node',
 		component: Node,
-		redirect: "/node/peers",
+		redirect: "/node/log",
 		meta: { is_node: true },
 		children: [
+			{ path: 'log', component: NodeLog, meta: { page: 'log' } },
 			{ path: 'peers', component: NodePeers, meta: { page: 'peers' } },
 			{ path: 'blocks', component: NodeBlocks, meta: { page: 'blocks' } },
 			{ path: 'netspace', component: NodeNetspace, meta: { page: 'netspace' } },

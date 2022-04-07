@@ -14,6 +14,8 @@
 #include <mmx/exchange/ClientAsyncClient.hxx>
 #include <mmx/Block.hxx>
 
+#include <vnx/LogMsg.hxx>
+
 
 namespace mmx {
 
@@ -35,6 +37,8 @@ protected:
 									const int64_t& offset, const int64_t& max_bytes, const vnx::request_id_t& request_id) const override;
 
 	void handle(std::shared_ptr<const Block> block) override;
+
+	void handle(std::shared_ptr<const vnx::LogMsg> value) override;
 
 private:
 	void update();
@@ -82,6 +86,8 @@ private:
 	std::shared_ptr<WalletAsyncClient> wallet;
 	std::shared_ptr<exchange::ClientAsyncClient> exch_client;
 	std::shared_ptr<const ChainParams> params;
+
+	std::list<std::shared_ptr<const vnx::LogMsg>> log_history;
 
 	mutable std::map<uint64_t, std::shared_ptr<const exchange::OfferBundle>> pending_offers;
 

@@ -8,11 +8,10 @@ module WebAPI implements vnx.addons.HttpComponent {
 	string wallet_server = "Wallet";
 	string exchange_server = "ExchClient";
 	
-	uint max_block_history = 1000;
-	
-	ulong max_tx_history = 10000;
+	uint max_log_history = 10000;
 	
 	
 	void handle(Block sample);
+	void handle(vnx.LogMsg sample);
 	
 }

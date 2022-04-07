@@ -109,6 +109,7 @@ void WebAPI::init()
 void WebAPI::main()
 {
 	subscribe(input_blocks, 10000);
+	subscribe(vnx::log_out, 10000);
 
 	node = std::make_shared<NodeAsyncClient>(node_server);
 	wallet = std::make_shared<WalletAsyncClient>(wallet_server);
@@ -139,6 +140,14 @@ void WebAPI::update()
 
 void WebAPI::handle(std::shared_ptr<const Block> block)
 {
+}
+
+void WebAPI::handle(std::shared_ptr<const vnx::LogMsg> value)
+{
+	log_history.push_back(value);
+	while(log_history.size() > max_log_history) {
+		log_history.pop_front();
+	}
 }
 
 vnx::Object to_amount(const int64_t& value, const int decimals)
@@ -939,11 +948,30 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			},
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 	}
+	else if(sub_path == "/node/log") {
+		const auto iter_limit = query.find("limit");
+		const auto iter_level = query.find("level");
+		const auto iter_module = query.find("module");
+		const int level = iter_level != query.end() ? vnx::from_string<int32_t>(iter_level->second) : 3;
+		const size_t limit = iter_limit != query.end() ? std::max<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 0) : 100;
+		std::vector<vnx::Object> res;
+		for(auto iter = log_history.rbegin(); iter != log_history.rend(); ++iter) {
+			if(res.size() >= limit) {
+				break;
+			}
+			if((*iter)->level <= level) {
+				if(iter_module == query.end() || (*iter)->module == iter_module->second) {
+					res.push_back((*iter)->to_object());
+				}
+			}
+		}
+		respond(request_id, render_value(res));
+	}
 	else if(sub_path == "/node/graph/blocks") {
 		const auto iter_limit = query.find("limit");
 		const auto iter_step = query.find("step");
-		const size_t limit = std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 1000), 0);
-		const size_t step = std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_step->second), 90), 0);
+		const size_t limit = iter_limit != query.end() ? std::max<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 0) : 1000;
+		const size_t step = iter_step != query.end() ? std::max<int64_t>(vnx::from_string<int64_t>(iter_step->second), 0) : 90;
 		node->get_height(
 				[this, request_id, limit, step](const uint32_t& height) {
 					render_block_graph(request_id, limit, step, height);
@@ -970,12 +998,11 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const auto iter_limit = query.find("limit");
 		const auto iter_offset = query.find("offset");
 		if(iter_limit != query.end() && iter_offset != query.end()) {
-			const size_t limit = std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 1000), 0);
+			const size_t limit = std::max<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 0);
 			const size_t offset = vnx::from_string<int64_t>(iter_offset->second);
 			render_headers(request_id, limit, offset);
 		} else if(iter_offset == query.end()) {
-			const uint32_t limit = iter_limit != query.end() ?
-					std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_limit->second), max_block_history), 0) : 20;
+			const uint32_t limit = iter_limit != query.end() ? std::max<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 0) : 20;
 			node->get_height(
 				[this, request_id, limit](const uint32_t& height) {
 					render_headers(request_id, limit, height);
@@ -1005,12 +1032,12 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const auto iter_limit = query.find("limit");
 		const auto iter_offset = query.find("offset");
 		if(iter_limit != query.end() && iter_offset != query.end()) {
-			const size_t limit = std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 1000), 0);
+			const size_t limit = std::max<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 0);
 			const size_t offset = vnx::from_string<int64_t>(iter_offset->second);
 			render_blocks(request_id, limit, offset);
 		} else if(iter_offset == query.end()) {
 			const uint32_t limit = iter_limit != query.end() ?
-					std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_limit->second), max_block_history), 0) : 20;
+					std::max<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 0) : 20;
 			node->get_height(
 				[this, request_id, limit](const uint32_t& height) {
 					render_blocks(request_id, limit, height);
@@ -1042,7 +1069,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else if(iter_offset == query.end()) {
 			const size_t limit = iter_limit != query.end() ?
-					std::max<int64_t>(std::min<int64_t>(vnx::from_string<int64_t>(iter_limit->second), max_tx_history), 0) : 20;
+					std::max<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 0) : 20;
 			node->get_height(
 				[this, request_id, limit](const uint32_t& height) {
 					gather_transactions(request_id, limit, height, std::make_shared<std::vector<hash_t>>(), {});
@@ -1736,7 +1763,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else {
 		std::vector<std::string> options = {
-			"node/info", "header", "headers", "block", "blocks", "transaction", "transactions", "address", "contract",
+			"node/info", "node/log", "header", "headers", "block", "blocks", "transaction", "transactions", "address", "contract",
 			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/coins", "wallet/history", "wallet/send", "wallet/split",
 			"exchange/offer", "exchange/place", "exchange/offers", "exchange/pairs", "exchange/orders", "exchange/price",
 			"exchange/trade", "exchange/history", "exchange/trades", "exchange/min_trade"
