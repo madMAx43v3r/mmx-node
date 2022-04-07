@@ -46,8 +46,8 @@ public:
 	int32_t relay_target_ms = 5000;
 	uint32_t sync_loss_delay = 60;
 	uint32_t discover_interval = 60;
-	uint32_t num_threads = 32;
 	uint32_t num_peers_out = 8;
+	uint32_t max_connect_threads = 32;
 	uint32_t min_sync_peers = 2;
 	uint32_t max_sync_peers = 4;
 	uint32_t max_sent_cache = 20000;
@@ -64,6 +64,7 @@ public:
 	::mmx::node_type_e mode = ::mmx::node_type_e::FULL_NODE;
 	vnx::bool_t do_relay = true;
 	std::set<std::string> seed_peers;
+	std::set<std::string> fixed_peers;
 	std::set<std::string> block_peers;
 	std::string storage_path;
 	std::string node_server = "Node";
@@ -134,7 +135,7 @@ protected:
 
 template<typename T>
 void RouterBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<RouterBase>(52);
+	_visitor.template type_begin<RouterBase>(53);
 	_visitor.type_field("port", 0); _visitor.accept(port);
 	_visitor.type_field("host", 1); _visitor.accept(host);
 	_visitor.type_field("max_connections", 2); _visitor.accept(max_connections);
@@ -166,8 +167,8 @@ void RouterBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("relay_target_ms", 28); _visitor.accept(relay_target_ms);
 	_visitor.type_field("sync_loss_delay", 29); _visitor.accept(sync_loss_delay);
 	_visitor.type_field("discover_interval", 30); _visitor.accept(discover_interval);
-	_visitor.type_field("num_threads", 31); _visitor.accept(num_threads);
-	_visitor.type_field("num_peers_out", 32); _visitor.accept(num_peers_out);
+	_visitor.type_field("num_peers_out", 31); _visitor.accept(num_peers_out);
+	_visitor.type_field("max_connect_threads", 32); _visitor.accept(max_connect_threads);
 	_visitor.type_field("min_sync_peers", 33); _visitor.accept(min_sync_peers);
 	_visitor.type_field("max_sync_peers", 34); _visitor.accept(max_sync_peers);
 	_visitor.type_field("max_sent_cache", 35); _visitor.accept(max_sent_cache);
@@ -184,10 +185,11 @@ void RouterBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("mode", 46); _visitor.accept(mode);
 	_visitor.type_field("do_relay", 47); _visitor.accept(do_relay);
 	_visitor.type_field("seed_peers", 48); _visitor.accept(seed_peers);
-	_visitor.type_field("block_peers", 49); _visitor.accept(block_peers);
-	_visitor.type_field("storage_path", 50); _visitor.accept(storage_path);
-	_visitor.type_field("node_server", 51); _visitor.accept(node_server);
-	_visitor.template type_end<RouterBase>(52);
+	_visitor.type_field("fixed_peers", 49); _visitor.accept(fixed_peers);
+	_visitor.type_field("block_peers", 50); _visitor.accept(block_peers);
+	_visitor.type_field("storage_path", 51); _visitor.accept(storage_path);
+	_visitor.type_field("node_server", 52); _visitor.accept(node_server);
+	_visitor.template type_end<RouterBase>(53);
 }
 
 
