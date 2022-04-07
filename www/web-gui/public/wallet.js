@@ -377,8 +377,13 @@ app.component('account-tx-history', {
 			</thead>
 			<tbody>
 			<tr v-for="item in data" :key="item.txid">
-				<td>{{item.height ? item.height : "pending"}}</td>
-				<td>{{item.confirm ? item.confirm : 0}}</td>
+				<template v-if="item.height">
+					<td><router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link></td>
+				</template>
+				<template v-else>
+					<td><i>pending</i></td>
+				</template>
+				<td>{{item.confirm ? item.confirm > 1000 ? "> 1000" : item.confirm : 0}}</td>
 				<td><router-link :to="'/explore/transaction/' + item.id">{{item.id}}</router-link></td>
 				<td>{{new Date(item.time).toLocaleString()}}</td>
 			</tr>
