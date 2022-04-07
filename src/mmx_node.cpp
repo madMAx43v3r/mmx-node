@@ -97,6 +97,10 @@ int main(int argc, char** argv)
 		module.start_detached();
 	}
 	{
+		vnx::Handle<mmx::WebAPI> module = new mmx::WebAPI("WebAPI");
+		module.start_detached();
+	}
+	{
 		vnx::Handle<vnx::Server> module = new vnx::Server("Server0", vnx::Endpoint::from_url(public_endpoint));
 		module->use_authentication = true;
 		module->default_access = "USER";
@@ -136,10 +140,6 @@ int main(int argc, char** argv)
 			vnx::write_generic(file.out, light_set);
 		}
 		vnx::write_config("light_address_set", light_set);
-	}
-	{
-		vnx::Handle<mmx::WebAPI> module = new mmx::WebAPI("WebAPI");
-		module.start_detached();
 	}
 	{
 		vnx::Handle<vnx::addons::FileServer> module = new vnx::addons::FileServer("FileServer_1");

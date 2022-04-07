@@ -104,12 +104,13 @@ WebAPI::WebAPI(const std::string& _vnx_name)
 void WebAPI::init()
 {
 	vnx::open_pipe(vnx_name, this, 3000);
+
+	subscribe(vnx::log_out, 10000);
 }
 
 void WebAPI::main()
 {
 	subscribe(input_blocks, 10000);
-	subscribe(vnx::log_out, 10000);
 
 	node = std::make_shared<NodeAsyncClient>(node_server);
 	wallet = std::make_shared<WalletAsyncClient>(wallet_server);
