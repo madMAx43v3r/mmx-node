@@ -32,6 +32,11 @@ void Wallet::init()
 
 void Wallet::main()
 {
+	if(key_files.empty()) {
+		if(vnx::File(storage_path + "wallet.dat").exists()) {
+			key_files = {"wallet.dat"};
+		}
+	}
 	if(key_files.size() > max_key_files) {
 		throw std::logic_error("too many key files");
 	}
