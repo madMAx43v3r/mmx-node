@@ -360,7 +360,7 @@ app.component('node-log-table', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<table class="ui small compact table striped" v-if="data">
+		<table class="ui small very compact table striped" v-if="data">
 			<tbody>
 			<tr v-for="item in data" :key="item.time" :class="{error: item.level == 1, warning: item.level == 2}">
 				<td class="collapsing"><code>{{new Date(item.time / 1000).toLocaleTimeString()}}</code></td>
