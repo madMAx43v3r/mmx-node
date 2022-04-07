@@ -26,7 +26,7 @@ int main(int argc, char** argv)
 	vnx::init("mmx_farmer", argc, argv, options);
 
 	std::string node_url = ":11330";
-	std::string endpoint = ":11333";
+	std::string endpoint = "0.0.0.0:11333";
 
 	vnx::read_config("node", node_url);
 	vnx::read_config("endpoint", endpoint);

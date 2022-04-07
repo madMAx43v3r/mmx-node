@@ -179,7 +179,9 @@ int main(int argc, char** argv)
 			module.start_detached();
 		}
 		{
-			vnx::Handle<vnx::Server> module = new vnx::Server("Server3", vnx::Endpoint::from_url(":11333"));
+			vnx::Handle<vnx::Server> module = new vnx::Server("Server3", vnx::Endpoint::from_url("0.0.0.0:11333"));
+			module->use_authentication = true;
+			module->default_access = "USER";
 			module.start_detached();
 		}
 	}
