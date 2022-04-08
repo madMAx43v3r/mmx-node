@@ -932,7 +932,7 @@ std::shared_ptr<Client::peer_t> Client::get_server(const std::string& name) cons
 void Client::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
 								const vnx::request_id_t& request_id) const
 {
-	http->http_request(request, sub_path, request_id, vnx_request);
+	http->http_request(request, sub_path, request_id, vnx_request->session);
 }
 
 void Client::http_request_chunk_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,

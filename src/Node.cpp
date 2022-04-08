@@ -929,7 +929,7 @@ std::vector<stxo_entry_t> Node::get_stxo_list(const std::vector<addr_t>& address
 void Node::http_request_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
 								const vnx::request_id_t& request_id) const
 {
-	http->http_request(request, sub_path, request_id, vnx_request);
+	http->http_request(request, sub_path, request_id, vnx_request->session);
 }
 
 void Node::http_request_chunk_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
