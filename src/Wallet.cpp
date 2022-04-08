@@ -666,7 +666,7 @@ hash_t Wallet::get_master_seed(const uint32_t& index) const
 void Wallet::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
 								const vnx::request_id_t& request_id) const
 {
-	http->http_request(request, sub_path, request_id);
+	http->http_request(request, sub_path, request_id, vnx_request);
 }
 
 void Wallet::http_request_chunk_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
