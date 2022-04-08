@@ -316,6 +316,7 @@ app.component('node-log', {
 			<div class="link item" :class="{active: !module}" @click="module = null">Terminal</div>
 			<div class="link item" :class="{active: module == 'Node'}" @click="module = 'Node'">Node</div>
 			<div class="link item" :class="{active: module == 'Router'}" @click="module = 'Router'">Router</div>
+			<div class="link item" :class="{active: module == 'Wallet'}" @click="module = 'Wallet'">Wallet</div>
 			<div class="link item" :class="{active: module == 'Farmer'}" @click="module = 'Farmer'">Farmer</div>
 			<div class="link item" :class="{active: module == 'Harvester'}" @click="module = 'Harvester'">Harvester</div>
 			<div class="link item" :class="{active: module == 'TimeLord'}" @click="module = 'TimeLord'">TimeLord</div>
