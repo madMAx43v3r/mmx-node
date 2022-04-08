@@ -893,23 +893,32 @@ std::vector<utxo_entry_t> Node::get_spendable_utxo_list(
 std::vector<stxo_entry_t> Node::get_stxo_list(const std::vector<addr_t>& addresses, const uint32_t& since) const
 {
 	const std::unordered_set<addr_t> addr_set(addresses.begin(), addresses.end());
+	const std::vector<addr_t> addr_list(addr_set.begin(), addr_set.end());
 
-	std::vector<stxo_entry_t> res;
-	for(const auto& addr : addr_set) {
-		std::vector<txio_key_t> keys;
-		saddr_map.find_range(std::make_pair(addr, since), std::make_pair(addr, -1), keys);
+	std::vector<txio_key_t> keys;
 
-		std::unordered_set<txio_key_t> found;
 #pragma omp parallel for
-		for(int i = 0; i < int(keys.size()); ++i) {
-			const auto& key = keys[i];
-			stxo_t stxo;
-			if(stxo_index.find(key, stxo))
+	for(int i = 0; i < int(addr_list.size()); ++i)
+	{
+		std::vector<txio_key_t> keys_;
+		saddr_map.find_range(std::make_pair(addr_list[i], since), std::make_pair(addr_list[i], -1), keys_);
 #pragma omp critical
-			{
-				if(found.insert(key).second) {
-					res.push_back(stxo_entry_t::create_ex(key, stxo));
-				}
+		keys.insert(keys.end(), keys_.begin(), keys_.end());
+	}
+
+	std::vector<stxo_entry_t> out;
+	std::unordered_set<txio_key_t> found;
+
+#pragma omp parallel for
+	for(int i = 0; i < int(keys.size()); ++i)
+	{
+		const auto& key = keys[i];
+		stxo_t stxo;
+		if(stxo_index.find(key, stxo))
+#pragma omp critical
+		{
+			if(found.insert(key).second) {
+				out.push_back(stxo_entry_t::create_ex(key, stxo));
 			}
 		}
 	}
@@ -918,12 +927,12 @@ std::vector<stxo_entry_t> Node::get_stxo_list(const std::vector<addr_t>& address
 			for(const auto& entry : log->utxo_removed) {
 				const auto& stxo = entry.second;
 				if(addr_set.count(stxo.address)) {
-					res.push_back(stxo_entry_t::create_ex(entry.first, stxo));
+					out.push_back(stxo_entry_t::create_ex(entry.first, stxo));
 				}
 			}
 		}
 	}
-	return res;
+	return out;
 }
 
 void Node::http_request_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
