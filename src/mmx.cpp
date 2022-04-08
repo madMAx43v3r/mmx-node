@@ -408,6 +408,7 @@ int main(int argc, char** argv)
 			}
 			else if(command == "create")
 			{
+				// TODO: use running Wallet if available
 				if(file_name.empty()) {
 					file_name = "wallet.dat";
 				}
@@ -432,6 +433,8 @@ int main(int argc, char** argv)
 					}
 				}
 				vnx::write_to_file(file_name, wallet);
+
+				// TODO: add key file in config/local/Wallet.json
 
 				std::cout << "Created wallet '" << file_name << "' with seed: "
 						<< std::endl << wallet.seed_value << std::endl;
