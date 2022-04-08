@@ -129,6 +129,7 @@ std::shared_ptr<vnx::TypeCode> Node_add_block::static_create_type_code() {
 		field.name = "block";
 		field.code = {16};
 	}
+	type_code->permission = "vnx.permission_e.PUBLISH";
 	type_code->build();
 	return type_code;
 }

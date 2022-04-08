@@ -145,6 +145,7 @@ std::shared_ptr<vnx::TypeCode> Node_add_transaction::static_create_type_code() {
 		field.name = "pre_validate";
 		field.code = {31};
 	}
+	type_code->permission = "vnx.permission_e.PUBLISH";
 	type_code->build();
 	return type_code;
 }

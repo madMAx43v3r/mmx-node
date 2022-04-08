@@ -6,6 +6,11 @@
  */
 
 #include <mmx/Wallet.h>
+#include <mmx/WebAPI.h>
+#include <mmx/exchange/Client.h>
+
+#include <vnx/addons/FileServer.h>
+#include <vnx/addons/HttpServer.h>
 
 #include <vnx/vnx.h>
 #include <vnx/Proxy.h>
@@ -40,7 +45,7 @@ int main(int argc, char** argv)
 	vnx::rocksdb::sync_type_codes(root_path + "wallet/type_codes");
 
 	vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
-	proxy->forward_list = {"Node"};
+	proxy->forward_list = {"Node", "Router"};
 
 	{
 		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url(":11335"));
@@ -51,10 +56,35 @@ int main(int argc, char** argv)
 		module.start_detached();
 	}
 	{
+		vnx::Handle<mmx::WebAPI> module = new mmx::WebAPI("WebAPI");
+		module.start_detached();
+	}
+	{
 		vnx::Handle<mmx::Wallet> module = new mmx::Wallet("Wallet");
 		module->config_path = mmx_home + module->config_path;
 		module->storage_path = mmx_home + module->storage_path;
 		module->database_path = root_path + module->database_path;
+		module.start_detached();
+	}
+	{
+		vnx::Handle<mmx::exchange::Client> module = new mmx::exchange::Client("ExchClient");
+		module->storage_path = root_path + module->storage_path;
+		module.start_detached();
+	}
+	{
+		vnx::Handle<vnx::addons::FileServer> module = new vnx::addons::FileServer("FileServer_1");
+		module->www_root = "www/web-gui/public/";
+		module->directory_files.push_back("index.html");
+		module.start_detached();
+	}
+	{
+		vnx::Handle<vnx::addons::HttpServer> module = new vnx::addons::HttpServer("HttpServer");
+		module->components["/wapi/"] = "WebAPI";
+		module->components["/api/node/"] = "Node";
+		module->components["/api/wallet/"] = "Wallet";
+		module->components["/api/router/"] = "Router";
+		module->components["/api/exchange/"] = "ExchClient";
+		module->components["/gui/"] = "FileServer_1";
 		module.start_detached();
 	}
 

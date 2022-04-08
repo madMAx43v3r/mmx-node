@@ -89,8 +89,10 @@ module Node implements vnx.addons.HttpComponent {
 	@Permission(permission_e.PUBLIC)
 	vector<hash_t> get_tx_ids_at(uint height) const;
 	
+	@Permission(PUBLISH)
 	void add_block(Block* block);
 	
+	@Permission(PUBLISH)
 	void add_transaction(Transaction* tx, bool pre_validate);
 	
 	@Permission(permission_e.PUBLIC)
