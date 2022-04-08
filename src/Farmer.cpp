@@ -27,35 +27,9 @@ void Farmer::init()
 
 void Farmer::main()
 {
-	WalletClient wallet(wallet_server);
-	try {
-		for(auto keys : wallet.get_all_farmer_keys()) {
-			if(keys) {
-				if(key_map.emplace(keys->farmer_public_key, keys->farmer_private_key).second) {
-					log(INFO) << "Got Farmer Key: " << keys->farmer_public_key;
-				}
-			}
-		}
+	if(reward_addr) {
+		log(INFO) << "Reward address: " << reward_addr->to_string();
 	}
-	catch(const std::exception& ex) {
-		log(WARN) << "Failed to get keys from wallet: " << ex.what();
-	}
-	try {
-		if(!reward_addr) {
-			const auto accounts = wallet.get_all_accounts();
-			if(accounts.empty()) {
-				throw std::logic_error("no wallet available");
-			}
-			reward_addr = wallet.get_address(accounts.begin()->first, 0);
-		}
-	} catch(const std::exception& ex) {
-		log(WARN) << "Failed to get reward address from wallet: " << ex.what();
-	}
-	if(!reward_addr) {
-		log(ERROR) << "No reward address set!";
-		return;
-	}
-	log(INFO) << "Reward address: " << reward_addr->to_string();
 
 	set_timer_millis(10000, std::bind(&Farmer::update, this));
 
@@ -87,6 +61,32 @@ std::shared_ptr<const FarmInfo> Farmer::get_farm_info() const
 void Farmer::update()
 {
 	vnx::open_flow(vnx::get_pipe(node_server), vnx::get_pipe(vnx_get_id()));
+
+	WalletClient wallet(wallet_server);
+	try {
+		for(auto keys : wallet.get_all_farmer_keys()) {
+			if(keys) {
+				if(key_map.emplace(keys->farmer_public_key, keys->farmer_private_key).second) {
+					log(INFO) << "Got Farmer Key: " << keys->farmer_public_key;
+				}
+			}
+		}
+	}
+	catch(const std::exception& ex) {
+		log(WARN) << "Failed to get keys from wallet: " << ex.what();
+	}
+	try {
+		if(!reward_addr) {
+			const auto accounts = wallet.get_all_accounts();
+			if(accounts.empty()) {
+				throw std::logic_error("no wallet available");
+			}
+			reward_addr = wallet.get_address(accounts.begin()->first, 0);
+			log(INFO) << "Reward address: " << reward_addr->to_string();
+		}
+	} catch(const std::exception& ex) {
+		log(WARN) << "Failed to get reward address from wallet: " << ex.what();
+	}
 
 	const auto now = vnx::get_sync_time_micros();
 	for(auto iter = info_map.begin(); iter != info_map.end();) {
