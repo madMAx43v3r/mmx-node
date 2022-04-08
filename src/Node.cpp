@@ -901,9 +901,11 @@ std::vector<stxo_entry_t> Node::get_stxo_list(const std::vector<addr_t>& address
 	for(int i = 0; i < int(addr_list.size()); ++i)
 	{
 		std::vector<txio_key_t> keys_;
-		saddr_map.find_range(std::make_pair(addr_list[i], since), std::make_pair(addr_list[i], -1), keys_);
+		if(saddr_map.find_range(std::make_pair(addr_list[i], since), std::make_pair(addr_list[i], -1), keys_))
 #pragma omp critical
-		keys.insert(keys.end(), keys_.begin(), keys_.end());
+		{
+			keys.insert(keys.end(), keys_.begin(), keys_.end());
+		}
 	}
 
 	std::vector<stxo_entry_t> out;
