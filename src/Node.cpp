@@ -899,11 +899,18 @@ std::vector<stxo_entry_t> Node::get_stxo_list(const std::vector<addr_t>& address
 	for(const auto& addr : addr_set) {
 		std::vector<txio_key_t> keys;
 		saddr_map.find_range(std::make_pair(addr, since), std::make_pair(addr, -1), keys);
-// TODO: parallel for
-		for(const auto& key : std::unordered_set<txio_key_t>(keys.begin(), keys.end())) {
+
+		std::unordered_set<txio_key_t> found;
+#pragma omp parallel for
+		for(int i = 0; i < int(keys.size()); ++i) {
+			const auto& key = keys[i];
 			stxo_t stxo;
-			if(stxo_index.find(key, stxo)) {
-				res.push_back(stxo_entry_t::create_ex(key, stxo));
+			if(stxo_index.find(key, stxo))
+#pragma omp critical
+			{
+				if(found.insert(key).second) {
+					res.push_back(stxo_entry_t::create_ex(key, stxo));
+				}
 			}
 		}
 	}
