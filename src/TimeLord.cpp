@@ -29,14 +29,18 @@ void TimeLord::init()
 
 void TimeLord::main()
 {
+	WalletClient wallet(wallet_server);
 	try {
 		if(!reward_addr) {
-			WalletClient wallet(wallet_server);
-			reward_addr = wallet.get_address(0, 0);
+			const auto accounts = wallet.get_all_accounts();
+			if(accounts.empty()) {
+				throw std::logic_error("no wallet available");
+			}
+			reward_addr = wallet.get_address(accounts.begin()->first, 0);
 		}
 	}
 	catch(const std::exception& ex) {
-		log(WARN) << "Failed to get address from wallet: " << ex.what();
+		log(WARN) << "Failed to get reward address from wallet: " << ex.what();
 	}
 	if(reward_addr) {
 		log(INFO) << "Reward address: " << reward_addr->to_string();
