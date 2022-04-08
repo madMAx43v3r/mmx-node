@@ -19,8 +19,6 @@ class MMX_EXPORT FarmerBase : public ::vnx::Module {
 public:
 	
 	::vnx::TopicPtr input_info = "harvester.info";
-	uint32_t default_wallet = 0;
-	uint32_t default_address = 0;
 	uint32_t harvester_timeout = 60;
 	std::string node_server = "Node";
 	std::string wallet_server = "Wallet";
@@ -75,17 +73,15 @@ protected:
 
 template<typename T>
 void FarmerBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<FarmerBase>(9);
+	_visitor.template type_begin<FarmerBase>(7);
 	_visitor.type_field("input_info", 0); _visitor.accept(input_info);
-	_visitor.type_field("default_wallet", 1); _visitor.accept(default_wallet);
-	_visitor.type_field("default_address", 2); _visitor.accept(default_address);
-	_visitor.type_field("harvester_timeout", 3); _visitor.accept(harvester_timeout);
-	_visitor.type_field("node_server", 4); _visitor.accept(node_server);
-	_visitor.type_field("wallet_server", 5); _visitor.accept(wallet_server);
-	_visitor.type_field("reward_addr", 6); _visitor.accept(reward_addr);
-	_visitor.type_field("project_addr", 7); _visitor.accept(project_addr);
-	_visitor.type_field("devfee_ratio", 8); _visitor.accept(devfee_ratio);
-	_visitor.template type_end<FarmerBase>(9);
+	_visitor.type_field("harvester_timeout", 1); _visitor.accept(harvester_timeout);
+	_visitor.type_field("node_server", 2); _visitor.accept(node_server);
+	_visitor.type_field("wallet_server", 3); _visitor.accept(wallet_server);
+	_visitor.type_field("reward_addr", 4); _visitor.accept(reward_addr);
+	_visitor.type_field("project_addr", 5); _visitor.accept(project_addr);
+	_visitor.type_field("devfee_ratio", 6); _visitor.accept(devfee_ratio);
+	_visitor.template type_end<FarmerBase>(7);
 }
 
 
