@@ -512,7 +512,7 @@ std::map<addr_t, balance_t> Wallet::get_balances(const uint32_t& index, const ui
 		auto& out = amounts[utxo.contract];
 		if(wallet->reserved_set.count(entry.key)) {
 			out.reserved += utxo.amount;
-		} else if(!wallet->spent_set.count(entry.key)) {
+		} else if(!wallet->spent_set.count(entry.key) && utxo.height <= wallet->height) {
 			out.spendable += utxo.amount;
 		}
 		out.total += utxo.amount;
