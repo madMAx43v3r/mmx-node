@@ -575,7 +575,6 @@ std::vector<tx_entry_t> Node::get_history_for(const std::vector<addr_t>& address
 	}
 	std::multimap<uint32_t, tx_entry_t> list;
 
-// TODO: parallel for
 	for(const auto& iter : txio_map) {
 		const auto& txio = iter.second;
 
