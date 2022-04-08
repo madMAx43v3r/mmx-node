@@ -291,6 +291,7 @@
 #include <mmx/Wallet_split_return.hxx>
 #include <mmx/Wallet_update_cache.hxx>
 #include <mmx/Wallet_update_cache_return.hxx>
+#include <mmx/WalletFile.hxx>
 #include <mmx/WebAPIBase.hxx>
 #include <mmx/account_t.hxx>
 #include <mmx/balance_t.hxx>
@@ -3727,6 +3728,18 @@ void type<::mmx::Wallet_update_cache_return>::create_dynamic_code(std::vector<ui
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::WalletFile>::get_type_code() {
+	return mmx::vnx_native_type_code_WalletFile;
+}
+
+void type<::mmx::WalletFile>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::WalletFile());
+}
+
+void type<::mmx::WalletFile>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::WalletFile& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::account_t>::get_type_code() {
 	return mmx::vnx_native_type_code_account_t;
 }
@@ -4413,6 +4426,7 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Wallet_split_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_update_cache::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_update_cache_return::static_create_type_code());
+	vnx::register_type_code(::mmx::WalletFile::static_create_type_code());
 	vnx::register_type_code(::mmx::WebAPIBase::static_create_type_code());
 	vnx::register_type_code(::mmx::account_t::static_create_type_code());
 	vnx::register_type_code(::mmx::balance_t::static_create_type_code());
@@ -4736,6 +4750,7 @@ const vnx::TypeCode* const vnx_native_type_code_Wallet_split = vnx::get_type_cod
 const vnx::TypeCode* const vnx_native_type_code_Wallet_split_return = vnx::get_type_code(vnx::Hash64(0xc30b67e2db4bc6deull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_update_cache = vnx::get_type_code(vnx::Hash64(0xf98cf07accda73b8ull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_update_cache_return = vnx::get_type_code(vnx::Hash64(0x7e1b25fb37caf248ull));
+const vnx::TypeCode* const vnx_native_type_code_WalletFile = vnx::get_type_code(vnx::Hash64(0xefcdc0f20fc4360eull));
 const vnx::TypeCode* const vnx_native_type_code_WebAPIBase = vnx::get_type_code(vnx::Hash64(0xfe90ce601fcc0cc6ull));
 const vnx::TypeCode* const vnx_native_type_code_account_t = vnx::get_type_code(vnx::Hash64(0xc0c163f453729a7ull));
 const vnx::TypeCode* const vnx_native_type_code_balance_t = vnx::get_type_code(vnx::Hash64(0x613173c7e5ce65b4ull));

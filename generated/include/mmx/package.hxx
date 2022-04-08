@@ -311,6 +311,7 @@ class Wallet_split;
 class Wallet_split_return;
 class Wallet_update_cache;
 class Wallet_update_cache_return;
+class WalletFile;
 class WebAPIBase;
 struct account_t;
 class addr_t;
@@ -634,6 +635,7 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_split; 
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_split_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_update_cache; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_update_cache_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WalletFile; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WebAPIBase; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_account_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_balance_t; ///< \private
@@ -955,6 +957,7 @@ void read(TypeInput& in, ::mmx::Wallet_split& value, const TypeCode* type_code, 
 void read(TypeInput& in, ::mmx::Wallet_split_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Wallet_update_cache& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Wallet_update_cache_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::WalletFile& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::WebAPIBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::account_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::addr_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1278,6 +1281,7 @@ void write(TypeOutput& out, const ::mmx::Wallet_split& value, const TypeCode* ty
 void write(TypeOutput& out, const ::mmx::Wallet_split_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Wallet_update_cache& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Wallet_update_cache_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::WalletFile& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::WebAPIBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::account_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::addr_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1601,6 +1605,7 @@ void read(std::istream& in, ::mmx::Wallet_split& value); ///< \private
 void read(std::istream& in, ::mmx::Wallet_split_return& value); ///< \private
 void read(std::istream& in, ::mmx::Wallet_update_cache& value); ///< \private
 void read(std::istream& in, ::mmx::Wallet_update_cache_return& value); ///< \private
+void read(std::istream& in, ::mmx::WalletFile& value); ///< \private
 void read(std::istream& in, ::mmx::WebAPIBase& value); ///< \private
 void read(std::istream& in, ::mmx::account_t& value); ///< \private
 void read(std::istream& in, ::mmx::addr_t& value); ///< \private
@@ -1924,6 +1929,7 @@ void write(std::ostream& out, const ::mmx::Wallet_split& value); ///< \private
 void write(std::ostream& out, const ::mmx::Wallet_split_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Wallet_update_cache& value); ///< \private
 void write(std::ostream& out, const ::mmx::Wallet_update_cache_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::WalletFile& value); ///< \private
 void write(std::ostream& out, const ::mmx::WebAPIBase& value); ///< \private
 void write(std::ostream& out, const ::mmx::account_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::addr_t& value); ///< \private
@@ -2247,6 +2253,7 @@ void accept(Visitor& visitor, const ::mmx::Wallet_split& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Wallet_split_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Wallet_update_cache& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Wallet_update_cache_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::WalletFile& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::WebAPIBase& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::account_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::addr_t& value); ///< \private
@@ -8927,6 +8934,29 @@ struct type<::mmx::Wallet_update_cache_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_update_cache_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::WalletFile> {
+	void read(TypeInput& in, ::mmx::WalletFile& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::WalletFile& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::WalletFile& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::WalletFile& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::WalletFile& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::WalletFile& value, bool special = false);
 };
 
 /// \private
