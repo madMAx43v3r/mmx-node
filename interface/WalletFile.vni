@@ -1,0 +1,9 @@
+package mmx;
+
+class WalletFile {
+	
+	vector<addr_t> addresses;
+	
+	optional<vnx.Buffer> encrypted_keyfile;
+	
+}
