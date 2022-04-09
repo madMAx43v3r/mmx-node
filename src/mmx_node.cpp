@@ -98,6 +98,7 @@ int main(int argc, char** argv)
 	}
 	{
 		vnx::Handle<mmx::WebAPI> module = new mmx::WebAPI("WebAPI");
+		module->config_path = mmx_home + module->config_path;
 		module.start_detached();
 	}
 	{

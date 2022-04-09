@@ -353,7 +353,7 @@ const NodeBlockReward = {
 
 const Settings = {
 	template: `
-		<h3>TODO</h3>
+		<node-settings></node-settings>
 	`
 }
 

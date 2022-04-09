@@ -928,7 +928,36 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 {
 	const auto& query = request->query_params;
 
-	if(sub_path == "/node/exit") {
+	if(sub_path == "/config/get") {
+		const auto iter_key = query.find("key");
+		const auto config = vnx::get_all_configs(true);
+		vnx::Object object;
+		object.field = std::map<std::string, vnx::Variant>(config.begin(), config.end());
+		if(iter_key != query.end()) {
+			respond(request_id, object[iter_key->second]);
+		} else {
+			respond(request_id, object);
+		}
+	}
+	else if(sub_path == "/config/set") {
+		vnx::Object args;
+		vnx::from_string(request->payload.as_string(), args);
+		const auto iter_key = args.field.find("key");
+		const auto iter_value = args.field.find("value");
+		if(iter_key != args.field.end() && iter_value != args.field.end()) {
+			const auto key = iter_key->second.to_string_value();
+			const auto value = iter_value->second;
+			vnx::set_config(key, value);
+			log(INFO) << "set_config(\'" << key << "\', " << value << ")";
+			if(key == "timelord") {
+				std::ofstream(config_path + key) << value.to_string_value();
+			}
+			respond_status(request_id, 200);
+		} else {
+			respond_status(request_id, 404, "config/set?key|value");
+		}
+	}
+	else if(sub_path == "/exit" || sub_path == "/node/exit") {
 		((WebAPI*)this)->set_timeout_millis(1000, [this]() {
 			vnx::ProcessClient client("vnx.process");
 			client.trigger_shutdown_async();
@@ -1764,6 +1793,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else {
 		std::vector<std::string> options = {
+			"config/get", "config/set",
 			"node/info", "node/log", "header", "headers", "block", "blocks", "transaction", "transactions", "address", "contract",
 			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/coins", "wallet/history", "wallet/send", "wallet/split",
 			"exchange/offer", "exchange/place", "exchange/offers", "exchange/pairs", "exchange/orders", "exchange/price",
