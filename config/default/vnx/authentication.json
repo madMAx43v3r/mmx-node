@@ -1,6 +1,6 @@
 {
 	"permissions": {
-		"USER": ["mmx.permission_e.PUBLIC", "PUBLISH"],
+		"USER": ["mmx.permission_e.PUBLIC", "PUBLISH", "REQUEST"],
 		"NETWORK": ["mmx.permission_e.PUBLIC"],
 		"LOCALHOST": ["mmx.permission_e.PUBLIC", "mmx.permission_e.SPENDING", "CONST_REQUEST", "REQUEST", "PUBLISH"]
 	}
