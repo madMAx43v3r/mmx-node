@@ -928,7 +928,7 @@ app.component('account-send-form', {
 						<input type="text" v-model="target" :disabled="!!address || !!target_" placeholder="mmx1..."/>
 					</div>
 					<div class="two wide field">
-						<label>Output Split</label>
+						<label>No. Chunks</label>
 						<input type="text" v-model.number="options.split_output" style="text-align: right"/>
 					</div>
 				</div>
