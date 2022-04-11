@@ -44,6 +44,7 @@ public:
 	uint64_t min_txfee_exec = 10000;
 	uint64_t min_txfee_byte = 10;
 	uint64_t max_block_cost = 10000000;
+	uint32_t max_tx_operations = 20;
 	vnx::float64_t block_time = 10;
 	vnx::float64_t orphan_delay = 1;
 	std::string vdf_seed;
@@ -93,7 +94,7 @@ protected:
 
 template<typename T>
 void ChainParams::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ChainParams>(33);
+	_visitor.template type_begin<ChainParams>(34);
 	_visitor.type_field("port", 0); _visitor.accept(port);
 	_visitor.type_field("decimals", 1); _visitor.accept(decimals);
 	_visitor.type_field("min_ksize", 2); _visitor.accept(min_ksize);
@@ -124,10 +125,11 @@ void ChainParams::accept_generic(T& _visitor) const {
 	_visitor.type_field("min_txfee_exec", 27); _visitor.accept(min_txfee_exec);
 	_visitor.type_field("min_txfee_byte", 28); _visitor.accept(min_txfee_byte);
 	_visitor.type_field("max_block_cost", 29); _visitor.accept(max_block_cost);
-	_visitor.type_field("block_time", 30); _visitor.accept(block_time);
-	_visitor.type_field("orphan_delay", 31); _visitor.accept(orphan_delay);
-	_visitor.type_field("vdf_seed", 32); _visitor.accept(vdf_seed);
-	_visitor.template type_end<ChainParams>(33);
+	_visitor.type_field("max_tx_operations", 30); _visitor.accept(max_tx_operations);
+	_visitor.type_field("block_time", 31); _visitor.accept(block_time);
+	_visitor.type_field("orphan_delay", 32); _visitor.accept(orphan_delay);
+	_visitor.type_field("vdf_seed", 33); _visitor.accept(vdf_seed);
+	_visitor.template type_end<ChainParams>(34);
 }
 
 
