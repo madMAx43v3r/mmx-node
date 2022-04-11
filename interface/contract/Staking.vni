@@ -12,8 +12,6 @@ class Staking extends mmx.Contract {
 	
 	addr_t reward_addr;			// reward address
 	
-	static const uint min_duration = 18;			// number of blocks
-	
 	
 	bool is_valid() const;
 	

@@ -61,10 +61,10 @@ std::vector<tx_out_t> Staking::validate(std::shared_ptr<const Operation> operati
 	}
 	if(auto spend = std::dynamic_pointer_cast<const operation::Spend>(operation))
 	{
-		const auto num_blocks = context->height - spend->utxo.height;
-		if(num_blocks >= min_duration)
+		if(auto token = std::dynamic_pointer_cast<const Token>(context->get_contract(currency)))
 		{
-			if(auto token = std::dynamic_pointer_cast<const Token>(context->get_contract(currency)))
+			const auto num_blocks = context->height - spend->utxo.height;
+			if(num_blocks >= token->min_stake_duration)
 			{
 				auto iter = token->stake_factors.find(spend->utxo.contract);
 				if(iter != token->stake_factors.end())

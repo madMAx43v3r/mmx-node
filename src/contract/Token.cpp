@@ -52,6 +52,7 @@ hash_t Token::calc_hash() const
 		write_bytes(out, entry.first);
 		write_bytes(out, entry.second);
 	}
+	write_field(out, "min_stake_duration", min_stake_duration);
 	out.flush();
 
 	return hash_t(buffer);

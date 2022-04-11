@@ -28,7 +28,7 @@ class Token extends Contract {
 	
 	bool is_adjustable = false;								// if time_factor and stake_factors is adjustable by owner
 	
-	// TODO: optional<uint> min_stake_duration;
+	uint min_stake_duration = 18;							// number of blocks
 	
 	
 	bool is_valid() const;
