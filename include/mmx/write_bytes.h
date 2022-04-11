@@ -19,6 +19,8 @@
 #include <vnx/Variant.hpp>
 #include <vnx/optional.h>
 
+#include <uint128_t.h>
+
 #include <string>
 
 
@@ -59,6 +61,11 @@ inline void write_bytes(vnx::OutputBuffer& out, const uint16_t& value) {
 
 inline void write_bytes(vnx::OutputBuffer& out, const uint8_t& value) {
 	write_bytes(out, uint64_t(value));
+}
+
+inline void write_bytes(vnx::OutputBuffer& out, const uint128_t& value) {
+	write_bytes(out, value.upper());
+	write_bytes(out, value.lower());
 }
 
 template<size_t N>
