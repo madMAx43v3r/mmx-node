@@ -26,7 +26,7 @@ hash_t DataArray::calc_hash() const
 	write_bytes(out, get_type_hash());
 	write_field(out, "version", version);
 	write_field(out, "owner", 	owner);
-	write_field(out, "array", 	array);
+	write_field(out, "data", 	data);
 	out.flush();
 
 	return hash_t(buffer);
@@ -35,7 +35,7 @@ hash_t DataArray::calc_hash() const
 uint64_t DataArray::num_bytes() const
 {
 	uint64_t num_bytes = 0;
-	for(const auto& elem : array) {
+	for(const auto& elem : data) {
 		num_bytes += elem.size();
 	}
 	return num_bytes;
@@ -81,14 +81,14 @@ void DataArray::transfer(const vnx::optional<addr_t>& new_owner)
 	owner = new_owner;
 }
 
-void DataArray::append(const vnx::Variant& data)
+void DataArray::append(const vnx::Variant& value)
 {
-	array.push_back(data);
+	data.push_back(value);
 }
 
 void DataArray::clear()
 {
-	array.clear();
+	data.clear();
 }
 
 
