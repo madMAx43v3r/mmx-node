@@ -19,6 +19,7 @@ class ChainParams {
 	uint max_vdf_segments = 1024;
 
 	uint max_tx_base_out = 10;
+	uint max_tx_operations = 20;			// number of contracts
 	uint recursive_interval = 60480;		// number of blocks per iteration to approximate recursive functions
 	
 	uint score_bits = 16;
@@ -41,8 +42,6 @@ class ChainParams {
 	ulong min_txfee_exec = 10000;			// per contract operation
 	ulong min_txfee_byte = 10;				// per byte of data
 	ulong max_block_cost = 10000000;
-	
-	uint max_tx_operations = 20;
 	
 	double block_time = 10;					// [sec]
 	double orphan_delay = 1;				// [sec]
