@@ -15,7 +15,7 @@ namespace contract {
 class MMX_CONTRACT_EXPORT DataArray_append : public ::vnx::Value {
 public:
 	
-	::vnx::Variant data;
+	::vnx::Variant value;
 	
 	typedef ::vnx::Value Super;
 	
@@ -60,7 +60,7 @@ public:
 template<typename T>
 void DataArray_append::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<DataArray_append>(1);
-	_visitor.type_field("data", 0); _visitor.accept(data);
+	_visitor.type_field("value", 0); _visitor.accept(value);
 	_visitor.template type_end<DataArray_append>(1);
 }
 

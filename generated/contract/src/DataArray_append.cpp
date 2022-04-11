@@ -15,7 +15,7 @@ namespace contract {
 
 
 const vnx::Hash64 DataArray_append::VNX_TYPE_HASH(0xa37fa83da54b49c8ull);
-const vnx::Hash64 DataArray_append::VNX_CODE_HASH(0x947925e9926c6991ull);
+const vnx::Hash64 DataArray_append::VNX_CODE_HASH(0x79efb6342f548b9ull);
 
 vnx::Hash64 DataArray_append::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,13 +48,13 @@ void DataArray_append::write(vnx::TypeOutput& _out, const vnx::TypeCode* _type_c
 void DataArray_append::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::contract::vnx_native_type_code_DataArray_append;
 	_visitor.type_begin(*_type_code);
-	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, data);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, value);
 	_visitor.type_end(*_type_code);
 }
 
 void DataArray_append::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.contract.DataArray.append\"";
-	_out << ", \"data\": "; vnx::write(_out, data);
+	_out << ", \"value\": "; vnx::write(_out, value);
 	_out << "}";
 }
 
@@ -67,28 +67,28 @@ void DataArray_append::read(std::istream& _in) {
 vnx::Object DataArray_append::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.contract.DataArray.append";
-	_object["data"] = data;
+	_object["value"] = value;
 	return _object;
 }
 
 void DataArray_append::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "data") {
-			_entry.second.to(data);
+		if(_entry.first == "value") {
+			_entry.second.to(value);
 		}
 	}
 }
 
 vnx::Variant DataArray_append::get_field(const std::string& _name) const {
-	if(_name == "data") {
-		return vnx::Variant(data);
+	if(_name == "value") {
+		return vnx::Variant(value);
 	}
 	return vnx::Variant();
 }
 
 void DataArray_append::set_field(const std::string& _name, const vnx::Variant& _value) {
-	if(_name == "data") {
-		_value.to(data);
+	if(_name == "value") {
+		_value.to(value);
 	}
 }
 
@@ -116,7 +116,7 @@ std::shared_ptr<vnx::TypeCode> DataArray_append::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.DataArray.append";
 	type_code->type_hash = vnx::Hash64(0xa37fa83da54b49c8ull);
-	type_code->code_hash = vnx::Hash64(0x947925e9926c6991ull);
+	type_code->code_hash = vnx::Hash64(0x79efb6342f548b9ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -127,7 +127,7 @@ std::shared_ptr<vnx::TypeCode> DataArray_append::static_create_type_code() {
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
-		field.name = "data";
+		field.name = "value";
 		field.code = {17};
 	}
 	type_code->build();
@@ -176,7 +176,7 @@ void read(TypeInput& in, ::mmx::contract::DataArray_append& value, const TypeCod
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 0: vnx::read(in, value.data, type_code, _field->code.data()); break;
+			case 0: vnx::read(in, value.value, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -195,7 +195,7 @@ void write(TypeOutput& out, const ::mmx::contract::DataArray_append& value, cons
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	vnx::write(out, value.data, type_code, type_code->fields[0].code.data());
+	vnx::write(out, value.value, type_code, type_code->fields[0].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::DataArray_append& value) {

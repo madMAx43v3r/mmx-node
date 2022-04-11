@@ -23,7 +23,7 @@ public:
 	static const uint32_t MAX_BYTES = 1048576;
 	
 	vnx::optional<::mmx::addr_t> owner;
-	std::vector<::vnx::Variant> array;
+	std::vector<::vnx::Variant> data;
 	
 	typedef ::mmx::Contract Super;
 	
@@ -47,7 +47,7 @@ public:
 	virtual vnx::optional<::mmx::addr_t> get_owner() const override;
 	virtual std::vector<::mmx::tx_out_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
 	virtual void transfer(const vnx::optional<::mmx::addr_t>& new_owner = nullptr) override;
-	virtual void append(const ::vnx::Variant& data = ::vnx::Variant());
+	virtual void append(const ::vnx::Variant& value = ::vnx::Variant());
 	virtual void clear();
 	
 	static std::shared_ptr<DataArray> create();
@@ -85,7 +85,7 @@ void DataArray::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<DataArray>(3);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("owner", 1); _visitor.accept(owner);
-	_visitor.type_field("array", 2); _visitor.accept(array);
+	_visitor.type_field("data", 2); _visitor.accept(data);
 	_visitor.template type_end<DataArray>(3);
 }
 

@@ -61,7 +61,7 @@ namespace contract {
 const uint32_t DataArray::MAX_BYTES;
 
 const vnx::Hash64 DataArray::VNX_TYPE_HASH(0xe7b4a595cc73f3fbull);
-const vnx::Hash64 DataArray::VNX_CODE_HASH(0x150ac16f64493accull);
+const vnx::Hash64 DataArray::VNX_CODE_HASH(0xc817651b38a53445ull);
 
 vnx::Hash64 DataArray::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -96,7 +96,7 @@ void DataArray::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, version);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, owner);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, array);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, data);
 	_visitor.type_end(*_type_code);
 }
 
@@ -104,7 +104,7 @@ void DataArray::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.contract.DataArray\"";
 	_out << ", \"version\": "; vnx::write(_out, version);
 	_out << ", \"owner\": "; vnx::write(_out, owner);
-	_out << ", \"array\": "; vnx::write(_out, array);
+	_out << ", \"data\": "; vnx::write(_out, data);
 	_out << "}";
 }
 
@@ -119,14 +119,14 @@ vnx::Object DataArray::to_object() const {
 	_object["__type"] = "mmx.contract.DataArray";
 	_object["version"] = version;
 	_object["owner"] = owner;
-	_object["array"] = array;
+	_object["data"] = data;
 	return _object;
 }
 
 void DataArray::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "array") {
-			_entry.second.to(array);
+		if(_entry.first == "data") {
+			_entry.second.to(data);
 		} else if(_entry.first == "owner") {
 			_entry.second.to(owner);
 		} else if(_entry.first == "version") {
@@ -142,8 +142,8 @@ vnx::Variant DataArray::get_field(const std::string& _name) const {
 	if(_name == "owner") {
 		return vnx::Variant(owner);
 	}
-	if(_name == "array") {
-		return vnx::Variant(array);
+	if(_name == "data") {
+		return vnx::Variant(data);
 	}
 	return vnx::Variant();
 }
@@ -153,8 +153,8 @@ void DataArray::set_field(const std::string& _name, const vnx::Variant& _value) 
 		_value.to(version);
 	} else if(_name == "owner") {
 		_value.to(owner);
-	} else if(_name == "array") {
-		_value.to(array);
+	} else if(_name == "data") {
+		_value.to(data);
 	}
 }
 
@@ -182,7 +182,7 @@ std::shared_ptr<vnx::TypeCode> DataArray::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.DataArray";
 	type_code->type_hash = vnx::Hash64(0xe7b4a595cc73f3fbull);
-	type_code->code_hash = vnx::Hash64(0x150ac16f64493accull);
+	type_code->code_hash = vnx::Hash64(0xc817651b38a53445ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::DataArray);
@@ -226,7 +226,7 @@ std::shared_ptr<vnx::TypeCode> DataArray::static_create_type_code() {
 	{
 		auto& field = type_code->fields[2];
 		field.is_extended = true;
-		field.name = "array";
+		field.name = "data";
 		field.code = {12, 17};
 	}
 	type_code->build();
@@ -292,7 +292,7 @@ std::shared_ptr<vnx::Value> DataArray::vnx_call_switch(std::shared_ptr<const vnx
 		case 0xa37fa83da54b49c8ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::contract::DataArray_append>(_method);
 			auto _return_value = ::mmx::contract::DataArray_append_return::create();
-			append(_args->data);
+			append(_args->value);
 			return _return_value;
 		}
 		case 0x8efad25daf7c1e65ull: {
@@ -405,7 +405,7 @@ void read(TypeInput& in, ::mmx::contract::DataArray& value, const TypeCode* type
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 1: vnx::read(in, value.owner, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.array, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.data, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -427,7 +427,7 @@ void write(TypeOutput& out, const ::mmx::contract::DataArray& value, const TypeC
 	char* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.version);
 	vnx::write(out, value.owner, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.array, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.data, type_code, type_code->fields[2].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::DataArray& value) {
