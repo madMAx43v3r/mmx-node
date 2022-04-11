@@ -48,8 +48,8 @@ int main(int argc, char** argv)
 
 	const auto params = mmx::get_params();
 
-	if(params->vdf_seed == "test1" || params->vdf_seed == "test2" || params->vdf_seed == "test3" || params->vdf_seed == "test4") {
-		vnx::log_error() << "This version is not compatible with testnet 1/2/3, please remove NETWORK file and try again to switch to testnet4.";
+	if(params->vdf_seed == "test1" || params->vdf_seed == "test2" || params->vdf_seed == "test3" || params->vdf_seed == "test4" || params->vdf_seed == "test5") {
+		vnx::log_error() << "This version is not compatible with testnet 1/2/3/4/5, please remove NETWORK file and try again to switch to testnet6.";
 		vnx::close();
 		return -1;
 	}
