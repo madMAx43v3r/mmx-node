@@ -12,7 +12,8 @@
 
 namespace mmx {
 
-std::string txio_key_t::to_string_value() const {
+std::string txio_key_t::to_string_value() const
+{
 	return txid.to_string() + ":" + std::to_string(index);
 }
 
