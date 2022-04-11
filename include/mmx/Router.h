@@ -246,7 +246,7 @@ private:
 	mutable std::default_random_engine rand_engine;
 
 	uint32_t next_request_id = 0;
-	uint32_t verified_vdf_height = 0;
+	uint32_t verified_peak_height = 0;
 	int64_t last_query_ms = 0;
 
 	size_t tx_counter = 0;

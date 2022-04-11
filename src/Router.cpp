@@ -304,6 +304,8 @@ void Router::fetch_block_at_async(const uint32_t& height, const std::string& add
 
 void Router::handle(std::shared_ptr<const Block> block)
 {
+	verified_peak_height = block->height;
+
 	if(!block->proof) {
 		return;
 	}
@@ -328,6 +330,9 @@ void Router::handle(std::shared_ptr<const Block> block)
 
 void Router::handle(std::shared_ptr<const Transaction> tx)
 {
+	if(!tx->is_valid()) {
+		return;
+	}
 	if(relay_msg_hash(tx->id)) {
 		broadcast(tx, tx->id, {node_type_e::FULL_NODE});
 		tx_counter++;
@@ -336,7 +341,7 @@ void Router::handle(std::shared_ptr<const Transaction> tx)
 
 void Router::handle(std::shared_ptr<const ProofOfTime> proof)
 {
-	if(proof->height > verified_vdf_height) {
+	if(proof->height > verified_peak_height) {
 		const auto hash = proof->calc_hash();
 		if(relay_msg_hash(hash, vdf_credits)) {
 			if(vnx_sample && vnx_sample->topic == input_vdfs) {
@@ -346,7 +351,6 @@ void Router::handle(std::shared_ptr<const ProofOfTime> proof)
 			vdf_counter++;
 		}
 	}
-	verified_vdf_height = std::max(proof->height, verified_vdf_height);
 }
 
 void Router::handle(std::shared_ptr<const ProofResponse> value)
