@@ -25,16 +25,16 @@ mmx::hash_t BlockHeader::calc_hash() const
 	buffer.reserve(64 * 1024);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
-	write_bytes(out, prev);
-	write_bytes(out, height);
-	write_bytes(out, time_diff);
-	write_bytes(out, space_diff);
-	write_bytes(out, vdf_iters);
-	write_bytes(out, vdf_output);
-	write_bytes(out, proof ? proof->calc_hash() : hash_t());
-	write_bytes(out, tx_base ? tx_base->calc_hash() : hash_t());
-	write_bytes(out, tx_hash);
+	write_field(out, "version", 	version);
+	write_field(out, "prev",		prev);
+	write_field(out, "height", 		height);
+	write_field(out, "time_diff", 	time_diff);
+	write_field(out, "space_diff", 	space_diff);
+	write_field(out, "vdf_iters", 	vdf_iters);
+	write_field(out, "vdf_output", 	vdf_output);
+	write_field(out, "proof", 		proof ? proof->calc_hash() : hash_t());
+	write_field(out, "tx_base", 	tx_base ? tx_base->calc_hash() : hash_t());
+	write_field(out, "tx_hash", 	tx_hash);
 	out.flush();
 
 	return hash_t(buffer);

@@ -23,10 +23,10 @@ hash_t Mint::calc_hash() const
 	vnx::OutputBuffer out(&stream);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
-	write_bytes(out, address);
-	write_bytes(out, target);
-	write_bytes(out, amount);
+	write_field(out, "version", version);
+	write_field(out, "address", address);
+	write_field(out, "target", 	target);
+	write_field(out, "amount", 	amount);
 	out.flush();
 
 	return hash_t(buffer);

@@ -20,17 +20,18 @@ mmx::hash_t ProofOfTime::calc_hash() const
 	buffer.reserve(64 * 1024);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
-	write_bytes(out, height);
-	write_bytes(out, start);
-	write_bytes(out, input);
-	write_bytes(out, infuse);
+	write_field(out, "version", version);
+	write_field(out, "height", 	height);
+	write_field(out, "start", 	start);
+	write_field(out, "input", 	input);
+	write_field(out, "infuse", 	infuse);
+	write_field(out, "segments");
 	for(const auto& seg : segments) {
 		write_bytes(out, seg.num_iters);
 		write_bytes(out, seg.output);
 	}
-	write_bytes(out, timelord_reward);
-	write_bytes(out, timelord_key);
+	write_field(out, "timelord_reward", timelord_reward);
+	write_field(out, "timelord_key", 	timelord_key);
 	out.flush();
 
 	return hash_t(buffer);

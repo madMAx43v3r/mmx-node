@@ -59,21 +59,17 @@ hash_t Transaction::calc_hash() const
 	buffer.reserve(4 * 1024);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
-	write_bytes(out, nonce);
+	write_field(out, "version", version);
+	write_field(out, "nonce", 	nonce);
 	// TODO: write_bytes(out, note);
-	write_bytes(out, salt);
-
-	for(const auto& tx : inputs) {
-		write_bytes(out, tx);
-	}
-	for(const auto& tx : outputs) {
-		write_bytes(out, tx);
-	}
+	write_field(out, "salt", 	salt);
+	write_field(out, "inputs", inputs);
+	write_field(out, "outputs", outputs);
+	write_field(out, "execute");
 	for(const auto& op : execute) {
 		write_bytes(out, op ? op->calc_hash() : hash_t());
 	}
-	write_bytes(out, deploy ? deploy->calc_hash() : hash_t());
+	write_field(out, "deploy", deploy ? deploy->calc_hash() : hash_t());
 
 	out.flush();
 

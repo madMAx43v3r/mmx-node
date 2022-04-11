@@ -23,9 +23,9 @@ hash_t WebData::calc_hash() const
 	vnx::OutputBuffer out(&stream);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
-	write_bytes(out, mime_type);
-	write_bytes(out, payload);
+	write_field(out, "version", 	version);
+	write_field(out, "mime_type", 	mime_type);
+	write_field(out, "payload", 	payload);
 	out.flush();
 
 	return hash_t(buffer);

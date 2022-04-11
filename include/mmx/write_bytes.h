@@ -24,6 +24,11 @@
 
 namespace mmx {
 
+void write_field(vnx::OutputBuffer& out, const std::string& name);
+
+template<typename T>
+void write_field(vnx::OutputBuffer& out, const std::string& name, const T& value);
+
 inline void write_bytes(vnx::OutputBuffer& out, const int64_t& value) {
 	out.write(&value, sizeof(value));
 }
@@ -84,8 +89,8 @@ inline void write_bytes(vnx::OutputBuffer& out, const vnx::Variant& value) {
 inline void write_bytes(vnx::OutputBuffer& out, const vnx::Object& value)
 {
 	for(const auto& entry : value.field) {
-		write_bytes(out, entry.first);
-		write_bytes(out, entry.second);
+		write_field(out, "key", entry.first);
+		write_field(out, "value", entry.second);
 	}
 }
 
@@ -127,6 +132,24 @@ void write_bytes(vnx::OutputBuffer& out, const std::array<T, N>& value) {
 	for(const auto& elem : value) {
 		write_bytes(out, elem);
 	}
+}
+
+template<typename T>
+void write_bytes(vnx::OutputBuffer& out, const std::vector<T>& value) {
+	for(const auto& elem : value) {
+		write_bytes(out, elem);
+	}
+}
+
+inline void write_field(vnx::OutputBuffer& out, const std::string& name) {
+	write_bytes(out, uint16_t(11337));
+	write_bytes(out, name);
+}
+
+template<typename T>
+void write_field(vnx::OutputBuffer& out, const std::string& name, const T& value) {
+	write_field(out, name);
+	write_bytes(out, value);
 }
 
 

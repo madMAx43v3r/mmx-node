@@ -24,11 +24,9 @@ hash_t DataArray::calc_hash() const
 	vnx::OutputBuffer out(&stream);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
-	write_bytes(out, owner);
-	for(const auto& elem : array) {
-		write_bytes(out, elem);
-	}
+	write_field(out, "version", version);
+	write_field(out, "owner", 	owner);
+	write_field(out, "array", 	array);
 	out.flush();
 
 	return hash_t(buffer);

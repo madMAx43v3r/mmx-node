@@ -26,12 +26,12 @@ hash_t PuzzleLock::calc_hash() const
 	vnx::OutputBuffer out(&stream);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
-	write_bytes(out, owner);
-	write_bytes(out, chain_height);
-	write_bytes(out, delta_height);
-	write_bytes(out, puzzle ? puzzle->calc_hash() : hash_t());
-	write_bytes(out, target);
+	write_field(out, "version", version);
+	write_field(out, "owner", 	owner);
+	write_field(out, "chain_height", chain_height);
+	write_field(out, "delta_height", delta_height);
+	write_field(out, "puzzle", puzzle ? puzzle->calc_hash() : hash_t());
+	write_field(out, "target", target);
 	out.flush();
 
 	return hash_t(buffer);

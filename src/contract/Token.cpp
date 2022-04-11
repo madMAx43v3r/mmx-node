@@ -39,14 +39,15 @@ hash_t Token::calc_hash() const
 	vnx::OutputBuffer out(&stream);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
-	write_bytes(out, name);
-	write_bytes(out, symbol);
-	write_bytes(out, web_url);
-	write_bytes(out, icon_url);
-	write_bytes(out, decimals);
-	write_bytes(out, owner);
-	write_bytes(out, time_factor);
+	write_field(out, "version", 	version);
+	write_field(out, "name", 		name);
+	write_field(out, "symbol", 		symbol);
+	write_field(out, "web_url", 	web_url);
+	write_field(out, "icon_url", 	icon_url);
+	write_field(out, "decimals", 	decimals);
+	write_field(out, "owner", 		owner);
+	write_field(out, "time_factor", time_factor);
+	write_field(out, "stake_factors");
 	for(const auto& entry : stake_factors) {
 		write_bytes(out, entry.first);
 		write_bytes(out, entry.second);

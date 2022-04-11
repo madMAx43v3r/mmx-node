@@ -25,10 +25,10 @@ hash_t Staking::calc_hash() const
 	vnx::OutputBuffer out(&stream);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
-	write_bytes(out, owner);
-	write_bytes(out, currency);
-	write_bytes(out, reward_addr);
+	write_field(out, "version", 	version);
+	write_field(out, "owner", 		owner);
+	write_field(out, "currency", 	currency);
+	write_field(out, "reward_addr", reward_addr);
 	out.flush();
 
 	return hash_t(buffer);

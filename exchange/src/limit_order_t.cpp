@@ -19,7 +19,8 @@ hash_t limit_order_t::calc_hash() const
 	vnx::OutputBuffer out(&stream);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
+	write_field(out, "version", version);
+	write_field(out, "bids");
 	for(const auto& entry : bids) {
 		write_bytes(out, entry.first);
 		write_bytes(out, entry.second);

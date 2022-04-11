@@ -19,9 +19,9 @@ hash_t Data::calc_hash() const
 	vnx::OutputBuffer out(&stream);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
-	write_bytes(out, owner);
-	write_bytes(out, value);
+	write_field(out, "version", version);
+	write_field(out, "owner", 	owner);
+	write_field(out, "value", 	value);
 	out.flush();
 
 	return hash_t(buffer);

@@ -22,7 +22,7 @@ hash_t Contract::calc_hash() const
 	vnx::OutputBuffer out(&stream);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
+	write_field(out, "version", version);
 	out.flush();
 
 	return hash_t(buffer);

@@ -19,10 +19,10 @@ hash_t Spend::calc_hash() const
 	vnx::OutputBuffer out(&stream);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
-	write_bytes(out, address);
-	write_bytes(out, key);
-	write_bytes(out, utxo);
+	write_field(out, "version", version);
+	write_field(out, "address", address);
+	write_field(out, "key", 	key);
+	write_field(out, "utxo", 	utxo);
 	out.flush();
 
 	return hash_t(buffer);

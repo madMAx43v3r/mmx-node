@@ -25,13 +25,13 @@ mmx::hash_t ProofOfSpace::calc_hash() const
 	buffer.reserve(4 * 1024);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
-	write_bytes(out, ksize);
-	write_bytes(out, plot_id);
-	write_bytes(out, proof_bytes);
-	write_bytes(out, local_key);
-	write_bytes(out, farmer_key);
-	write_bytes(out, pool_key);
+	write_field(out, "version", 	version);
+	write_field(out, "ksize", 		ksize);
+	write_field(out, "plot_id", 	plot_id);
+	write_field(out, "proof_bytes", proof_bytes);
+	write_field(out, "local_key", 	local_key);
+	write_field(out, "farmer_key", 	farmer_key);
+	write_field(out, "pool_key", 	pool_key);
 	out.flush();
 
 	return hash_t(buffer);

@@ -24,10 +24,10 @@ hash_t Locked::calc_hash() const
 	vnx::OutputBuffer out(&stream);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
-	write_bytes(out, owner);
-	write_bytes(out, chain_height);
-	write_bytes(out, delta_height);
+	write_field(out, "version", version);
+	write_field(out, "owner", 	owner);
+	write_field(out, "chain_height", chain_height);
+	write_field(out, "delta_height", delta_height);
 	out.flush();
 
 	return hash_t(buffer);

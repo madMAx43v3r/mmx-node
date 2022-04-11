@@ -23,10 +23,10 @@ hash_t NFT::calc_hash() const
 	vnx::OutputBuffer out(&stream);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
-	write_bytes(out, creator);
-	write_bytes(out, parent);
-	write_bytes(out, data);
+	write_field(out, "version", version);
+	write_field(out, "creator", creator);
+	write_field(out, "parent", 	parent);
+	write_field(out, "data", 	data);
 	out.flush();
 
 	return hash_t(buffer);

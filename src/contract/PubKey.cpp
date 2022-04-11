@@ -24,8 +24,8 @@ hash_t PubKey::calc_hash() const
 	vnx::OutputBuffer out(&stream);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
-	write_bytes(out, address);
+	write_field(out, "version", version);
+	write_field(out, "address", address);
 	out.flush();
 
 	return hash_t(buffer);

@@ -26,10 +26,8 @@ hash_t MultiSig::calc_hash() const
 	vnx::OutputBuffer out(&stream);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
-	for(const auto& address : owners) {
-		write_bytes(out, address);
-	}
+	write_field(out, "version", version);
+	write_field(out, "owners", owners);
 	out.flush();
 
 	return hash_t(buffer);

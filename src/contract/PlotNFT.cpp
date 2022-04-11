@@ -27,10 +27,10 @@ hash_t PlotNFT::calc_hash() const
 	vnx::OutputBuffer out(&stream);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
-	write_bytes(out, owner);
-	write_bytes(out, target);
-	write_bytes(out, unlock_height);
+	write_field(out, "version", version);
+	write_field(out, "owner", 	owner);
+	write_field(out, "target", 	target);
+	write_field(out, "unlock_height", unlock_height);
 	out.flush();
 
 	return hash_t(buffer);

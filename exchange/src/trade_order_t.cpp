@@ -19,9 +19,10 @@ hash_t trade_order_t::calc_hash() const
 	vnx::OutputBuffer out(&stream);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
-	write_bytes(out, bid);
-	write_bytes(out, ask);
+	write_field(out, "version", version);
+	write_field(out, "bid", bid);
+	write_field(out, "ask", ask);
+	write_field(out, "bid_keys");
 	for(const auto& key : bid_keys) {
 		write_bytes(out, key);
 	}
