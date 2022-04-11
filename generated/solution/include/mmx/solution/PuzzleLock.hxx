@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_solution_PuzzleLock_HXX_
 
 #include <mmx/solution/package.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/Solution.hxx>
 
 
@@ -31,6 +32,7 @@ public:
 	const vnx::TypeCode* get_type_code() const override;
 	
 	virtual vnx::bool_t is_valid() const override;
+	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	
 	static std::shared_ptr<PuzzleLock> create();
 	std::shared_ptr<vnx::Value> clone() const override;

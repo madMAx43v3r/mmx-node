@@ -96,6 +96,8 @@
 #include <mmx/contract/MultiSig_is_valid_return.hxx>
 #include <mmx/contract/MultiSig_rem_owner.hxx>
 #include <mmx/contract/MultiSig_rem_owner_return.hxx>
+#include <mmx/contract/MultiSig_set_num_required.hxx>
+#include <mmx/contract/MultiSig_set_num_required_return.hxx>
 #include <mmx/contract/MultiSig_validate.hxx>
 #include <mmx/contract/MultiSig_validate_return.hxx>
 #include <mmx/contract/NFT.hxx>
@@ -1355,6 +1357,30 @@ void type<::mmx::contract::MultiSig_rem_owner_return>::create_dynamic_code(std::
 }
 
 void type<::mmx::contract::MultiSig_rem_owner_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_rem_owner_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::MultiSig_set_num_required>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_MultiSig_set_num_required;
+}
+
+void type<::mmx::contract::MultiSig_set_num_required>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::MultiSig_set_num_required());
+}
+
+void type<::mmx::contract::MultiSig_set_num_required>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_set_num_required& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::MultiSig_set_num_required_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_MultiSig_set_num_required_return;
+}
+
+void type<::mmx::contract::MultiSig_set_num_required_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::MultiSig_set_num_required_return());
+}
+
+void type<::mmx::contract::MultiSig_set_num_required_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_set_num_required_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -2830,6 +2856,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::MultiSig_is_valid_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig_rem_owner::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig_rem_owner_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::MultiSig_set_num_required::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::MultiSig_set_num_required_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig_validate::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig_validate_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::NFT::static_create_type_code());
@@ -3047,6 +3075,8 @@ const vnx::TypeCode* const vnx_native_type_code_MultiSig_is_valid = vnx::get_typ
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_is_valid_return = vnx::get_type_code(vnx::Hash64(0x2b104aee1e626c8cull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_rem_owner = vnx::get_type_code(vnx::Hash64(0x76c14727e0beab3cull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_rem_owner_return = vnx::get_type_code(vnx::Hash64(0xfa7d0d0c0718b8b1ull));
+const vnx::TypeCode* const vnx_native_type_code_MultiSig_set_num_required = vnx::get_type_code(vnx::Hash64(0x2103ca68f1bc4ffcull));
+const vnx::TypeCode* const vnx_native_type_code_MultiSig_set_num_required_return = vnx::get_type_code(vnx::Hash64(0x5af8b2d69978a7c4ull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_validate = vnx::get_type_code(vnx::Hash64(0x40855ac13f61e392ull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_validate_return = vnx::get_type_code(vnx::Hash64(0x3635f63fd29dfd77ull));
 const vnx::TypeCode* const vnx_native_type_code_NFT = vnx::get_type_code(vnx::Hash64(0x7cb24b9888a47906ull));
