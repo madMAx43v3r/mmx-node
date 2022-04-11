@@ -9,8 +9,7 @@ class MultiSig extends mmx.Contract {
 	
 	vector<addr_t> owners;
 	
-	// TODO: increase to 10000
-	static const uint MAX_OWNERS = 100;
+	static const uint MAX_OWNERS = 10000;
 	
 	
 	bool is_valid() const;
@@ -27,7 +26,7 @@ class MultiSig extends mmx.Contract {
 	
 	void rem_owner(addr_t address);
 	
-	// TODO: void set_num_required(uint count);
+	void set_num_required(uint count);
 	
 }
 

@@ -16,6 +16,11 @@ vnx::bool_t PlotNFT::is_valid() const
 	return target && target->is_valid();
 }
 
+uint64_t PlotNFT::calc_cost(std::shared_ptr<const ChainParams> params) const
+{
+	return target ? target->calc_cost(params) : 0;
+}
+
 
 } // solution
 } // mmx

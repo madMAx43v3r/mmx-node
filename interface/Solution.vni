@@ -7,4 +7,6 @@ class Solution {
 	
 	bool is_valid() const;
 	
+	ulong calc_cost(mmx.ChainParams* params) const;
+	
 }

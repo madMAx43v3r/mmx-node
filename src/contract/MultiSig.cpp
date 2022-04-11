@@ -15,8 +15,7 @@ namespace mmx {
 namespace contract {
 
 vnx::bool_t MultiSig::is_valid() const {
-	return Contract::is_valid() && num_required > 0 && owners.size() >= num_required
-			&& num_required <= solution::MultiSig::MAX_SIGNATURES && owners.size() <= MAX_OWNERS;
+	return Contract::is_valid() && num_required > 0 && owners.size() >= num_required && owners.size() <= MAX_OWNERS;
 }
 
 hash_t MultiSig::calc_hash() const
@@ -70,13 +69,16 @@ std::vector<tx_out_t> MultiSig::validate(std::shared_ptr<const Operation> operat
 		{
 			if(const auto& sol = solution->solutions[i])
 			{
-				if(sol->pubkey.get_addr() != owners[i]) {
-					throw std::logic_error("invalid pubkey at index " + std::to_string(i));
+				if(auto solution = std::dynamic_pointer_cast<const solution::PubKey>(sol))
+				{
+					if(solution->pubkey.get_addr() != owners[i]) {
+						throw std::logic_error("invalid pubkey at index " + std::to_string(i));
+					}
+					if(!solution->signature.verify(solution->pubkey, context->txid)) {
+						throw std::logic_error("invalid signature at index " + std::to_string(i));
+					}
+					count++;
 				}
-				if(!sol->signature.verify(sol->pubkey, context->txid)) {
-					throw std::logic_error("invalid signature at index " + std::to_string(i));
-				}
-				count++;
 			}
 		}
 		if(count < num_required) {
@@ -102,6 +104,11 @@ void MultiSig::rem_owner(const addr_t& address)
 			break;
 		}
 	}
+}
+
+void MultiSig::set_num_required(const uint32_t& count)
+{
+	num_required = count;
 }
 
 

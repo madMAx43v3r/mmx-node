@@ -2,15 +2,11 @@ package mmx.solution;
 
 class MultiSig extends mmx.Solution {
 	
-	// TODO: vector<mmx.Solution*>
-	vector<PubKey*> solutions;
-	
-	// TODO: remove
-	static const uint MAX_SIGNATURES = 10;
+	vector<mmx.Solution*> solutions;
 	
 	
 	bool is_valid() const;
 	
-	// TODO: ulong calc_cost(mmx.ChainParams* params) const;
+	ulong calc_cost(mmx.ChainParams* params) const;
 	
 }
