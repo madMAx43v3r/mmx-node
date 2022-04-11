@@ -1220,7 +1220,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 				}
 				if(!fork->is_vdf_verified) {
 					if(auto prev = find_prev_header(block)) {
-						if(auto infuse = find_prev_header(block, params->finality_delay + 1, true)) {
+						if(auto infuse = find_prev_header(block, params->infuse_delay + 1, true)) {
 							log(INFO) << "Checking VDF for block at height " << block->height << " ...";
 							vdf_threads->add_task(std::bind(&Node::check_vdf_task, this, fork, prev, infuse));
 						} else {
@@ -1678,7 +1678,7 @@ std::shared_ptr<Node::vdf_point_t> Node::find_next_vdf_point(std::shared_ptr<con
 	if(auto diff_block = find_diff_header(block, 1))
 	{
 		const auto height = block->height + 1;
-		const auto infused = find_prev_header(block, params->finality_delay, true);
+		const auto infused = find_prev_header(block, params->infuse_delay, true);
 		const auto vdf_iters = block->vdf_iters + diff_block->time_diff * params->time_diff_constant;
 
 		for(auto iter = verified_vdfs.lower_bound(height); iter != verified_vdfs.upper_bound(height); ++iter)

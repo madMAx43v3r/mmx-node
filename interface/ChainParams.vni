@@ -10,8 +10,7 @@ class ChainParams {
 	
 	// TODO: move to Node
 	uint commit_delay = 18;					// for writing to disk (must > finality_delay)
-	// TODO: rename to infuse_delay
-	uint finality_delay = 6;				// for primary VDF infusion (must be > 0)
+	uint infuse_delay = 6;					// for primary VDF infusion (must be > 0)
 	uint challenge_delay = 9;				// blocks until new challange is active (must be > 0)
 	uint challenge_interval = 48;			// challenge (and difficulty) is for next N blocks (must be > commit_delay)
 	uint max_diff_adjust = 10;				// per block (1/2^x)

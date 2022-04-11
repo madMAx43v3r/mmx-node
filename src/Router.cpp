@@ -815,7 +815,7 @@ void Router::query()
 					fork_check.hash_count.clear();
 				}
 				else {
-					const auto height = *sync_height - params->finality_delay;
+					const auto height = *sync_height - params->infuse_delay;
 					node->get_block_hash(height,
 						[this, height](const vnx::optional<hash_t>& hash) {
 							if(hash) {

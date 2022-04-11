@@ -24,17 +24,11 @@ std::shared_ptr<const ChainParams> get_params()
 {
 	auto params = ChainParams::create();
 	vnx::read_config("chain.params", params);
-	if(params->finality_delay < 1) {
-		throw std::logic_error("finality_delay < 1");
+	if(params->challenge_delay <= params->infuse_delay) {
+		throw std::logic_error("challenge_interval <= infuse_delay");
 	}
-	if(params->challenge_delay < 1) {
-		throw std::logic_error("challenge_delay < 1");
-	}
-	if(params->commit_delay <= params->finality_delay) {
-		throw std::logic_error("commit_delay <= finality_delay");
-	}
-	if(params->challenge_interval <= params->commit_delay) {
-		throw std::logic_error("challenge_interval <= commit_delay");
+	if(params->challenge_interval <= params->challenge_delay) {
+		throw std::logic_error("challenge_interval <= challenge_delay");
 	}
 	return params;
 }

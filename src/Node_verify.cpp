@@ -127,10 +127,10 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof) const
 		if(!infused_block) {
 			throw std::logic_error("unknown block infused on chain 0");
 		}
-		if(infused_block->height + std::min(params->finality_delay + 1, proof->height) != proof->height) {
+		if(infused_block->height + std::min(params->infuse_delay + 1, proof->height) != proof->height) {
 			throw std::logic_error("invalid block height infused on chain 0");
 		}
-		const auto diff_block = find_diff_header(infused_block, params->finality_delay + 1);
+		const auto diff_block = find_diff_header(infused_block, params->infuse_delay + 1);
 		if(!diff_block) {
 			throw std::logic_error("cannot verify");
 		}
@@ -227,7 +227,7 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::sha
 		const auto infused_hash = proof->infuse[0];
 		for(auto prev : prev_blocks) {
 			if(infused_hash) {
-				if(auto infused = find_prev_header(prev, params->finality_delay, true)) {
+				if(auto infused = find_prev_header(prev, params->infuse_delay, true)) {
 					if(infused->hash != *infused_hash) {
 						continue;
 					}

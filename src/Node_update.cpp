@@ -190,7 +190,7 @@ void Node::update()
 			}
 			if(!is_synced && fork_line.size() < max_fork_length) {
 				// check if there is a competing fork at this height
-				const auto finalized_height = peak->height - std::min(params->finality_delay + 1, peak->height);
+				const auto finalized_height = peak->height - std::min(params->infuse_delay + 1, peak->height);
 				if(		std::distance(fork_index.lower_bound(block->height), fork_index.upper_bound(block->height)) > 1
 					&&	std::distance(fork_index.lower_bound(finalized_height), fork_index.upper_bound(finalized_height)) > 1)
 				{
@@ -267,11 +267,11 @@ void Node::update()
 		auto infuse = TimeInfusion::create();
 		infuse->chain = 0;
 		auto vdf_iters = peak->vdf_iters;
-		for(uint32_t i = 0; i <= params->finality_delay; ++i)
+		for(uint32_t i = 0; i <= params->infuse_delay; ++i)
 		{
 			if(auto diff_block = find_diff_header(peak, i + 1))
 			{
-				if(auto prev = find_prev_header(peak, params->finality_delay - i, true))
+				if(auto prev = find_prev_header(peak, params->infuse_delay - i, true))
 				{
 					if(vdf_iters > 0) {
 						infuse->values[vdf_iters] = prev->hash;
@@ -294,7 +294,7 @@ void Node::update()
 				{
 					auto infuse = TimeInfusion::create();
 					infuse->chain = 1;
-					const auto vdf_iters = prev->vdf_iters + diff_block->time_diff * params->time_diff_constant * params->finality_delay;
+					const auto vdf_iters = prev->vdf_iters + diff_block->time_diff * params->time_diff_constant * params->infuse_delay;
 					infuse->values[vdf_iters] = prev->hash;
 					publish(infuse, output_timelord_infuse);
 				}
@@ -304,7 +304,7 @@ void Node::update()
 	{
 		// request next VDF proofs
 		auto vdf_iters = peak->vdf_iters;
-		for(uint32_t i = 0; i < params->finality_delay; ++i)
+		for(uint32_t i = 0; i < params->infuse_delay; ++i)
 		{
 			if(auto diff_block = find_diff_header(peak, i + 1))
 			{
@@ -650,9 +650,9 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	const auto prev_fork = find_fork(prev->hash);
 
 	// set new time difficulty
-	if(auto fork = find_prev_fork(prev_fork, params->finality_delay)) {
+	if(auto fork = find_prev_fork(prev_fork, params->infuse_delay)) {
 		if(auto point = fork->vdf_point) {
-			const int64_t time_delta = (vdf_point->recv_time - point->recv_time) / (params->finality_delay + 1);
+			const int64_t time_delta = (vdf_point->recv_time - point->recv_time) / (params->infuse_delay + 1);
 			if(time_delta > 0) {
 				const double gain = 0.1;
 				if(auto diff_block = fork->diff_block) {
@@ -669,7 +669,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 		{
 			uint32_t counter = 1;
 			auto fork = prev_fork;
-			for(uint32_t i = 1; i < params->finality_delay && fork; ++i) {
+			for(uint32_t i = 1; i < params->infuse_delay && fork; ++i) {
 				avg_score += fork->proof_score;
 				fork = fork->prev.lock();
 				counter++;
