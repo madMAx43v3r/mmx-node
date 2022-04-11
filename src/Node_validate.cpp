@@ -51,10 +51,9 @@ std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
 		if(block->time_diff != prev->time_diff || block->space_diff != prev->space_diff) {
 			throw std::logic_error("invalid difficulty adjustment for dummy block");
 		}
-		// TODO
-//		if(block->nonce) {
-//			throw std::logic_error("invalid block nonce for dummy block");
-//		}
+		if(block->nonce) {
+			throw std::logic_error("invalid block nonce for dummy block");
+		}
 		if(block->farmer_sig) {
 			throw std::logic_error("invalid farmer signature");
 		}
@@ -183,9 +182,6 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 		}
 		if(tx->outputs.size() > params->max_tx_base_out) {
 			throw std::logic_error("coin base has too many outputs");
-		}
-		if(tx->nonce != base->height) {
-			throw std::logic_error("invalid coin base nonce");
 		}
 		if(!tx->salt || *tx->salt != base->vdf_output[0]) {
 			throw std::logic_error("invalid coin base salt");

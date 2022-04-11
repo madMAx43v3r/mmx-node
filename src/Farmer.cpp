@@ -134,8 +134,6 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& rew
 	const auto farmer_sk = find_skey(block->proof->farmer_key);
 
 	auto base = Transaction::create();
-	// TODO: use random nonce to make block hash unpredictable in case of no tx
-	base->nonce = block->height;
 	base->salt = block->vdf_output[0];
 
 	auto amount_left = reward_amount;
@@ -160,6 +158,7 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& rew
 	base->finalize();
 
 	auto copy = vnx::clone(block);
+	copy->nonce = vnx::rand64();
 	copy->tx_base = base;
 	copy->hash = copy->calc_hash();
 	copy->farmer_sig = bls_signature_t::sign(farmer_sk, copy->hash);
