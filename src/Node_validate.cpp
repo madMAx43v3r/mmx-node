@@ -33,6 +33,9 @@ std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
 	if(block->time_diff == 0 || block->space_diff == 0) {
 		throw std::logic_error("invalid difficulty");
 	}
+	if(block->time_diff < params->min_time_diff) {
+		throw std::logic_error("time_diff < min_time_diff");
+	}
 	if(block->tx_count != block->tx_list.size()) {
 		throw std::logic_error("invalid tx_count");
 	}
