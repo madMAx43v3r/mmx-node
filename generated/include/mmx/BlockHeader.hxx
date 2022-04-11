@@ -21,6 +21,7 @@ public:
 	::mmx::hash_t hash;
 	::mmx::hash_t prev;
 	uint32_t height = 0;
+	uint64_t nonce = 0;
 	uint64_t time_diff = 0;
 	uint64_t space_diff = 0;
 	uint64_t vdf_iters = 0;
@@ -80,21 +81,22 @@ protected:
 
 template<typename T>
 void BlockHeader::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<BlockHeader>(13);
+	_visitor.template type_begin<BlockHeader>(14);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("hash", 1); _visitor.accept(hash);
 	_visitor.type_field("prev", 2); _visitor.accept(prev);
 	_visitor.type_field("height", 3); _visitor.accept(height);
-	_visitor.type_field("time_diff", 4); _visitor.accept(time_diff);
-	_visitor.type_field("space_diff", 5); _visitor.accept(space_diff);
-	_visitor.type_field("vdf_iters", 6); _visitor.accept(vdf_iters);
-	_visitor.type_field("vdf_output", 7); _visitor.accept(vdf_output);
-	_visitor.type_field("proof", 8); _visitor.accept(proof);
-	_visitor.type_field("tx_base", 9); _visitor.accept(tx_base);
-	_visitor.type_field("tx_count", 10); _visitor.accept(tx_count);
-	_visitor.type_field("tx_hash", 11); _visitor.accept(tx_hash);
-	_visitor.type_field("farmer_sig", 12); _visitor.accept(farmer_sig);
-	_visitor.template type_end<BlockHeader>(13);
+	_visitor.type_field("nonce", 4); _visitor.accept(nonce);
+	_visitor.type_field("time_diff", 5); _visitor.accept(time_diff);
+	_visitor.type_field("space_diff", 6); _visitor.accept(space_diff);
+	_visitor.type_field("vdf_iters", 7); _visitor.accept(vdf_iters);
+	_visitor.type_field("vdf_output", 8); _visitor.accept(vdf_output);
+	_visitor.type_field("proof", 9); _visitor.accept(proof);
+	_visitor.type_field("tx_base", 10); _visitor.accept(tx_base);
+	_visitor.type_field("tx_count", 11); _visitor.accept(tx_count);
+	_visitor.type_field("tx_hash", 12); _visitor.accept(tx_hash);
+	_visitor.type_field("farmer_sig", 13); _visitor.accept(farmer_sig);
+	_visitor.template type_end<BlockHeader>(14);
 }
 
 
