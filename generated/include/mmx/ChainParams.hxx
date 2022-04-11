@@ -20,7 +20,7 @@ public:
 	uint32_t max_ksize = 42;
 	uint32_t plot_filter = 10;
 	uint32_t commit_delay = 18;
-	uint32_t finality_delay = 6;
+	uint32_t infuse_delay = 6;
 	uint32_t challenge_delay = 9;
 	uint32_t challenge_interval = 48;
 	uint32_t max_diff_adjust = 10;
@@ -37,6 +37,7 @@ public:
 	::mmx::ulong_fraction_t reward_factor;
 	uint64_t time_diff_constant = 1000;
 	uint64_t space_diff_constant = 100000000;
+	uint64_t min_time_diff = 10000;
 	uint64_t initial_time_diff = 10000;
 	uint64_t initial_space_diff = 10;
 	uint64_t min_txfee_io = 100;
@@ -94,14 +95,14 @@ protected:
 
 template<typename T>
 void ChainParams::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ChainParams>(34);
+	_visitor.template type_begin<ChainParams>(35);
 	_visitor.type_field("port", 0); _visitor.accept(port);
 	_visitor.type_field("decimals", 1); _visitor.accept(decimals);
 	_visitor.type_field("min_ksize", 2); _visitor.accept(min_ksize);
 	_visitor.type_field("max_ksize", 3); _visitor.accept(max_ksize);
 	_visitor.type_field("plot_filter", 4); _visitor.accept(plot_filter);
 	_visitor.type_field("commit_delay", 5); _visitor.accept(commit_delay);
-	_visitor.type_field("finality_delay", 6); _visitor.accept(finality_delay);
+	_visitor.type_field("infuse_delay", 6); _visitor.accept(infuse_delay);
 	_visitor.type_field("challenge_delay", 7); _visitor.accept(challenge_delay);
 	_visitor.type_field("challenge_interval", 8); _visitor.accept(challenge_interval);
 	_visitor.type_field("max_diff_adjust", 9); _visitor.accept(max_diff_adjust);
@@ -118,18 +119,19 @@ void ChainParams::accept_generic(T& _visitor) const {
 	_visitor.type_field("reward_factor", 20); _visitor.accept(reward_factor);
 	_visitor.type_field("time_diff_constant", 21); _visitor.accept(time_diff_constant);
 	_visitor.type_field("space_diff_constant", 22); _visitor.accept(space_diff_constant);
-	_visitor.type_field("initial_time_diff", 23); _visitor.accept(initial_time_diff);
-	_visitor.type_field("initial_space_diff", 24); _visitor.accept(initial_space_diff);
-	_visitor.type_field("min_txfee_io", 25); _visitor.accept(min_txfee_io);
-	_visitor.type_field("min_txfee_sign", 26); _visitor.accept(min_txfee_sign);
-	_visitor.type_field("min_txfee_exec", 27); _visitor.accept(min_txfee_exec);
-	_visitor.type_field("min_txfee_byte", 28); _visitor.accept(min_txfee_byte);
-	_visitor.type_field("max_block_cost", 29); _visitor.accept(max_block_cost);
-	_visitor.type_field("max_tx_operations", 30); _visitor.accept(max_tx_operations);
-	_visitor.type_field("block_time", 31); _visitor.accept(block_time);
-	_visitor.type_field("orphan_delay", 32); _visitor.accept(orphan_delay);
-	_visitor.type_field("vdf_seed", 33); _visitor.accept(vdf_seed);
-	_visitor.template type_end<ChainParams>(34);
+	_visitor.type_field("min_time_diff", 23); _visitor.accept(min_time_diff);
+	_visitor.type_field("initial_time_diff", 24); _visitor.accept(initial_time_diff);
+	_visitor.type_field("initial_space_diff", 25); _visitor.accept(initial_space_diff);
+	_visitor.type_field("min_txfee_io", 26); _visitor.accept(min_txfee_io);
+	_visitor.type_field("min_txfee_sign", 27); _visitor.accept(min_txfee_sign);
+	_visitor.type_field("min_txfee_exec", 28); _visitor.accept(min_txfee_exec);
+	_visitor.type_field("min_txfee_byte", 29); _visitor.accept(min_txfee_byte);
+	_visitor.type_field("max_block_cost", 30); _visitor.accept(max_block_cost);
+	_visitor.type_field("max_tx_operations", 31); _visitor.accept(max_tx_operations);
+	_visitor.type_field("block_time", 32); _visitor.accept(block_time);
+	_visitor.type_field("orphan_delay", 33); _visitor.accept(orphan_delay);
+	_visitor.type_field("vdf_seed", 34); _visitor.accept(vdf_seed);
+	_visitor.template type_end<ChainParams>(35);
 }
 
 
