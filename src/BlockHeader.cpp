@@ -28,6 +28,7 @@ mmx::hash_t BlockHeader::calc_hash() const
 	write_field(out, "version", 	version);
 	write_field(out, "prev",		prev);
 	write_field(out, "height", 		height);
+	write_field(out, "nonce", 		nonce);
 	write_field(out, "time_diff", 	time_diff);
 	write_field(out, "space_diff", 	space_diff);
 	write_field(out, "vdf_iters", 	vdf_iters);

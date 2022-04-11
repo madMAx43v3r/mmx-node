@@ -61,7 +61,7 @@ hash_t Transaction::calc_hash() const
 	write_bytes(out, get_type_hash());
 	write_field(out, "version", version);
 	write_field(out, "nonce", 	nonce);
-	// TODO: write_bytes(out, note);
+	write_field(out, "note", 	note);
 	write_field(out, "salt", 	salt);
 	write_field(out, "inputs", inputs);
 	write_field(out, "outputs", outputs);
