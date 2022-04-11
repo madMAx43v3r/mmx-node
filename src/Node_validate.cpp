@@ -203,16 +203,24 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 		}
 	}
 	{
-		size_t num_exec = tx->execute.size();
+		std::unordered_set<addr_t> contracts;
 		for(const auto& in : tx->inputs) {
 			if(in.flags & tx_in_t::IS_EXEC) {
-				num_exec++;
+				auto iter = utxo_map.find(in.prev);
+				if(iter != utxo_map.end()) {
+					const auto& utxo = iter->second;
+					contracts.insert(utxo.address);
+				}
 			}
 		}
-		// TODO
-//		if(num_exec > params->max_tx_operations) {
-//			throw std::logic_error("num_exec > max_tx_operations");
-//		}
+		for(const auto& op : tx->execute) {
+			if(op) {
+				contracts.insert(op->address);
+			}
+		}
+		if(contracts.size() > params->max_tx_operations) {
+			throw std::logic_error("number of contracts > max_tx_operations");
+		}
 	}
 	uint64_t base_amount = 0;
 	std::vector<tx_out_t> exec_outputs;
