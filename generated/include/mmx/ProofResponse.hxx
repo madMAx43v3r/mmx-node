@@ -20,7 +20,6 @@ public:
 	std::shared_ptr<const ::mmx::Challenge> request;
 	std::shared_ptr<const ::mmx::ProofOfSpace> proof;
 	::mmx::bls_signature_t farmer_sig;
-	uint32_t score = 0;
 	::vnx::Hash64 farmer_addr;
 	
 	typedef ::vnx::Value Super;
@@ -71,13 +70,12 @@ protected:
 
 template<typename T>
 void ProofResponse::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ProofResponse>(5);
+	_visitor.template type_begin<ProofResponse>(4);
 	_visitor.type_field("request", 0); _visitor.accept(request);
 	_visitor.type_field("proof", 1); _visitor.accept(proof);
 	_visitor.type_field("farmer_sig", 2); _visitor.accept(farmer_sig);
-	_visitor.type_field("score", 3); _visitor.accept(score);
-	_visitor.type_field("farmer_addr", 4); _visitor.accept(farmer_addr);
-	_visitor.template type_end<ProofResponse>(5);
+	_visitor.type_field("farmer_addr", 3); _visitor.accept(farmer_addr);
+	_visitor.template type_end<ProofResponse>(4);
 }
 
 

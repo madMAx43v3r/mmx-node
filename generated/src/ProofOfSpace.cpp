@@ -21,7 +21,7 @@ namespace mmx {
 
 
 const vnx::Hash64 ProofOfSpace::VNX_TYPE_HASH(0x9269760ad5fd0058ull);
-const vnx::Hash64 ProofOfSpace::VNX_CODE_HASH(0xf71043f360978cb0ull);
+const vnx::Hash64 ProofOfSpace::VNX_CODE_HASH(0x40c9940317d30a1eull);
 
 vnx::Hash64 ProofOfSpace::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -202,7 +202,7 @@ std::shared_ptr<vnx::TypeCode> ProofOfSpace::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.ProofOfSpace";
 	type_code->type_hash = vnx::Hash64(0x9269760ad5fd0058ull);
-	type_code->code_hash = vnx::Hash64(0xf71043f360978cb0ull);
+	type_code->code_hash = vnx::Hash64(0x40c9940317d30a1eull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ProofOfSpace);
@@ -226,9 +226,9 @@ std::shared_ptr<vnx::TypeCode> ProofOfSpace::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[2];
-		field.data_size = 8;
+		field.data_size = 4;
 		field.name = "score";
-		field.code = {4};
+		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[3];
@@ -368,7 +368,7 @@ void write(TypeOutput& out, const ::mmx::ProofOfSpace& value, const TypeCode* ty
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(13);
+	char* const _buf = out.write(9);
 	vnx::write_value(_buf + 0, value.version);
 	vnx::write_value(_buf + 4, value.ksize);
 	vnx::write_value(_buf + 5, value.score);

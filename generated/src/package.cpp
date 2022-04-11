@@ -328,6 +328,7 @@
 #include <mmx/pubkey_t.hpp>
 #include <mmx/signature_t.hpp>
 #include <mmx/skey_t.hpp>
+#include <mmx/uint128.hpp>
 
 #include <mmx/package.hxx>
 #include <vnx/vnx.h>
@@ -4131,6 +4132,18 @@ void type<::mmx::txo_info_t>::create_dynamic_code(std::vector<uint16_t>& code) {
 void type<::mmx::txo_info_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::txo_info_t& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
+
+const TypeCode* type<::mmx::uint128>::get_type_code() {
+	return nullptr;
+}
+
+void type<::mmx::uint128>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::uint128());
+}
+
+void type<::mmx::uint128>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::uint128& value, bool special) {
+	const std::vector<int> tmp = {11, 2, 4};
+	code.insert(code.end(), tmp.begin(), tmp.end());}
 
 const TypeCode* type<::mmx::uint_fraction_t>::get_type_code() {
 	return mmx::vnx_native_type_code_uint_fraction_t;
