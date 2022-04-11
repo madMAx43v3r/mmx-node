@@ -8,7 +8,6 @@ class ChainParams {
 	uint max_ksize = 42;
 	uint plot_filter = 10;
 	
-	// TODO: move to Node
 	uint commit_delay = 18;					// for writing to disk (must > finality_delay)
 	uint infuse_delay = 6;					// for primary VDF infusion (must be > 0)
 	uint challenge_delay = 9;				// blocks until new challange is active (must be > 0)
