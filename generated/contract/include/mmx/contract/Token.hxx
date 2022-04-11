@@ -32,6 +32,7 @@ public:
 	std::map<::mmx::addr_t, ::mmx::ulong_fraction_t> stake_factors;
 	vnx::bool_t is_mintable = true;
 	vnx::bool_t is_adjustable = false;
+	uint32_t min_stake_duration = 18;
 	
 	typedef ::mmx::Contract Super;
 	
@@ -89,7 +90,7 @@ protected:
 
 template<typename T>
 void Token::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Token>(11);
+	_visitor.template type_begin<Token>(12);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("name", 1); _visitor.accept(name);
 	_visitor.type_field("symbol", 2); _visitor.accept(symbol);
@@ -101,7 +102,8 @@ void Token::accept_generic(T& _visitor) const {
 	_visitor.type_field("stake_factors", 8); _visitor.accept(stake_factors);
 	_visitor.type_field("is_mintable", 9); _visitor.accept(is_mintable);
 	_visitor.type_field("is_adjustable", 10); _visitor.accept(is_adjustable);
-	_visitor.template type_end<Token>(11);
+	_visitor.type_field("min_stake_duration", 11); _visitor.accept(min_stake_duration);
+	_visitor.template type_end<Token>(12);
 }
 
 

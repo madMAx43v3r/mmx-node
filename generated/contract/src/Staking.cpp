@@ -49,7 +49,6 @@
 namespace mmx {
 namespace contract {
 
-const uint32_t Staking::min_duration;
 
 const vnx::Hash64 Staking::VNX_TYPE_HASH(0xf058a3326fc2e7dcull);
 const vnx::Hash64 Staking::VNX_CODE_HASH(0x4826a9d5f2fe3f31ull);

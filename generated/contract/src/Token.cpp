@@ -59,7 +59,7 @@ namespace contract {
 
 
 const vnx::Hash64 Token::VNX_TYPE_HASH(0x2d8835d6429431b2ull);
-const vnx::Hash64 Token::VNX_CODE_HASH(0x87dbd28d967d3219ull);
+const vnx::Hash64 Token::VNX_CODE_HASH(0x5cd8be8398187463ull);
 
 vnx::Hash64 Token::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -103,6 +103,7 @@ void Token::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, stake_factors);
 	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, is_mintable);
 	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, is_adjustable);
+	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, min_stake_duration);
 	_visitor.type_end(*_type_code);
 }
 
@@ -119,6 +120,7 @@ void Token::write(std::ostream& _out) const {
 	_out << ", \"stake_factors\": "; vnx::write(_out, stake_factors);
 	_out << ", \"is_mintable\": "; vnx::write(_out, is_mintable);
 	_out << ", \"is_adjustable\": "; vnx::write(_out, is_adjustable);
+	_out << ", \"min_stake_duration\": "; vnx::write(_out, min_stake_duration);
 	_out << "}";
 }
 
@@ -142,6 +144,7 @@ vnx::Object Token::to_object() const {
 	_object["stake_factors"] = stake_factors;
 	_object["is_mintable"] = is_mintable;
 	_object["is_adjustable"] = is_adjustable;
+	_object["min_stake_duration"] = min_stake_duration;
 	return _object;
 }
 
@@ -155,6 +158,8 @@ void Token::from_object(const vnx::Object& _object) {
 			_entry.second.to(is_adjustable);
 		} else if(_entry.first == "is_mintable") {
 			_entry.second.to(is_mintable);
+		} else if(_entry.first == "min_stake_duration") {
+			_entry.second.to(min_stake_duration);
 		} else if(_entry.first == "name") {
 			_entry.second.to(name);
 		} else if(_entry.first == "owner") {
@@ -207,6 +212,9 @@ vnx::Variant Token::get_field(const std::string& _name) const {
 	if(_name == "is_adjustable") {
 		return vnx::Variant(is_adjustable);
 	}
+	if(_name == "min_stake_duration") {
+		return vnx::Variant(min_stake_duration);
+	}
 	return vnx::Variant();
 }
 
@@ -233,6 +241,8 @@ void Token::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(is_mintable);
 	} else if(_name == "is_adjustable") {
 		_value.to(is_adjustable);
+	} else if(_name == "min_stake_duration") {
+		_value.to(min_stake_duration);
 	}
 }
 
@@ -260,7 +270,7 @@ std::shared_ptr<vnx::TypeCode> Token::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.Token";
 	type_code->type_hash = vnx::Hash64(0x2d8835d6429431b2ull);
-	type_code->code_hash = vnx::Hash64(0x87dbd28d967d3219ull);
+	type_code->code_hash = vnx::Hash64(0x5cd8be8398187463ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::Token);
@@ -289,7 +299,7 @@ std::shared_ptr<vnx::TypeCode> Token::static_create_type_code() {
 	type_code->methods[16] = ::mmx::contract::Token_set_time_factor::static_get_type_code();
 	type_code->methods[17] = ::mmx::contract::Token_transfer::static_get_type_code();
 	type_code->methods[18] = ::mmx::contract::Token_validate::static_get_type_code();
-	type_code->fields.resize(11);
+	type_code->fields.resize(12);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -357,6 +367,13 @@ std::shared_ptr<vnx::TypeCode> Token::static_create_type_code() {
 		field.name = "is_adjustable";
 		field.value = vnx::to_string(false);
 		field.code = {31};
+	}
+	{
+		auto& field = type_code->fields[11];
+		field.data_size = 4;
+		field.name = "min_stake_duration";
+		field.value = vnx::to_string(18);
+		field.code = {3};
 	}
 	type_code->build();
 	return type_code;
@@ -533,6 +550,9 @@ void read(TypeInput& in, ::mmx::contract::Token& value, const TypeCode* type_cod
 		if(const auto* const _field = type_code->field_map[10]) {
 			vnx::read_value(_buf + _field->offset, value.is_adjustable, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[11]) {
+			vnx::read_value(_buf + _field->offset, value.min_stake_duration, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -561,11 +581,12 @@ void write(TypeOutput& out, const ::mmx::contract::Token& value, const TypeCode*
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(10);
+	char* const _buf = out.write(14);
 	vnx::write_value(_buf + 0, value.version);
 	vnx::write_value(_buf + 4, value.decimals);
 	vnx::write_value(_buf + 8, value.is_mintable);
 	vnx::write_value(_buf + 9, value.is_adjustable);
+	vnx::write_value(_buf + 10, value.min_stake_duration);
 	vnx::write(out, value.name, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.symbol, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.web_url, type_code, type_code->fields[3].code.data());

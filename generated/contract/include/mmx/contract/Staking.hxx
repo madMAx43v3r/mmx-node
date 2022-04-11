@@ -19,7 +19,6 @@ namespace contract {
 
 class MMX_CONTRACT_EXPORT Staking : public ::mmx::Contract {
 public:
-	static const uint32_t min_duration = 18;
 	
 	::mmx::addr_t owner;
 	::mmx::addr_t currency;
