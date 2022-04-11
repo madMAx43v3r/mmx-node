@@ -17,7 +17,11 @@ bool ProofResponse::is_valid() const
 
 void ProofResponse::validate() const
 {
-	// TODO: validate farmer_sig
+	if(proof) {
+		if(!farmer_sig.verify(proof->farmer_key, proof->calc_hash())) {
+			throw std::logic_error("invalid farmer signature");
+		}
+	}
 }
 
 

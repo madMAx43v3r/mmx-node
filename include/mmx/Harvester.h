@@ -9,6 +9,7 @@
 #define INCLUDE_MMX_HARVESTER_H_
 
 #include <mmx/HarvesterBase.hxx>
+#include <mmx/FarmerClient.hxx>
 #include <mmx/chiapos.h>
 
 
@@ -39,6 +40,7 @@ private:
 private:
 	size_t total_bytes = 0;
 	vnx::Hash64 farmer_addr;
+	std::shared_ptr<FarmerClient> farmer;
 
 	std::unordered_set<hash_t> already_checked;
 	std::unordered_map<hash_t, std::string> id_map;

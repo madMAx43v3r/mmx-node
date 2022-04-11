@@ -105,20 +105,34 @@ void Farmer::handle(std::shared_ptr<const FarmInfo> value)
 	}
 }
 
+skey_t Farmer::find_skey(const bls_pubkey_t& pubkey) const
+{
+	auto iter = key_map.find(pubkey);
+	if(iter == key_map.end()) {
+		throw std::logic_error("unknown farmer key: " + pubkey.to_string());
+	}
+	return iter->second;
+}
+
+bls_signature_t Farmer::sign_proof(std::shared_ptr<const ProofOfSpace> proof) const
+{
+	if(!proof) {
+		throw std::logic_error("!proof");
+	}
+	return bls_signature_t::sign(find_skey(proof->farmer_key), proof->calc_hash());
+}
+
 std::shared_ptr<const BlockHeader>
 Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& reward_amount) const
 {
+	if(!block) {
+		throw std::logic_error("!block");
+	}
 	if(!block->proof) {
-		throw std::logic_error("invalid proof");
+		throw std::logic_error("!proof");
 	}
-	skey_t farmer_sk;
-	{
-		auto iter = key_map.find(block->proof->farmer_key);
-		if(iter == key_map.end()) {
-			throw std::logic_error("unknown farmer key: " + block->proof->farmer_key.to_string());
-		}
-		farmer_sk = iter->second;
-	}
+	const auto farmer_sk = find_skey(block->proof->farmer_key);
+
 	auto base = Transaction::create();
 	// TODO: use random nonce to make block hash unpredictable in case of no tx
 	base->nonce = block->height;

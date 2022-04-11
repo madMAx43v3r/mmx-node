@@ -6,7 +6,7 @@ class ProofResponse {
 	
 	ProofOfSpace* proof;
 	
-	// TOOD: farmer_sig for proof
+	bls_signature_t farmer_sig;
 	
 	uint score;
 	

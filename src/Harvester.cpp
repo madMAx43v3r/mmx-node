@@ -34,6 +34,8 @@ void Harvester::main()
 	}
 	params = get_params();
 
+	farmer = std::make_shared<FarmerClient>(farmer_server);
+
 	set_timer_millis(10000, std::bind(&Harvester::update, this));
 
 	if(reload_interval > 0) {
@@ -129,9 +131,15 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 		proof->farmer_key = bls_pubkey_t::super_t(best_proof->farmer_key);
 		proof->pool_key = bls_pubkey_t::super_t(best_proof->pool_key);
 		proof->local_sig = bls_signature_t::sign(local_sk, proof->calc_hash());
-
 		out->proof = proof;
-		publish(out, output_proofs);
+
+		try {
+			out->farmer_sig = farmer->sign_proof(proof);
+			publish(out, output_proofs);
+		}
+		catch(const std::exception& ex) {
+			log(WARN) << "Failed to sign proof: " << ex.what();
+		}
 	}
 	already_checked.insert(value->challenge);
 
@@ -269,8 +277,7 @@ void Harvester::reload()
 void Harvester::update()
 {
 	try {
-		FarmerClient farmer(farmer_server);
-		farmer_addr = farmer.get_mac_addr();
+		farmer_addr = farmer->get_mac_addr();
 	}
 	catch(const std::exception& ex) {
 		log(WARN) << "Failed to contact farmer: " << ex.what();

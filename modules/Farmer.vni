@@ -19,6 +19,8 @@ module Farmer {
 	
 	FarmInfo* get_farm_info() const;
 	
+	bls_signature_t sign_proof(ProofOfSpace* proof) const;
+	
 	BlockHeader* sign_block(BlockHeader* block, ulong reward_amount) const;
 	
 	
