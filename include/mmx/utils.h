@@ -72,6 +72,15 @@ uint64_t calc_total_netspace(std::shared_ptr<const ChainParams> params, const ui
 			((uint128_t(space_diff) * params->space_diff_constant) << (params->plot_filter + params->score_bits)) / params->score_target);
 }
 
+inline
+uint64_t calc_new_space_diff(std::shared_ptr<const ChainParams> params, const uint64_t prev_diff, const uint32_t proof_score)
+{
+	int64_t delta = prev_diff * (int64_t(params->score_target) - proof_score);
+	delta /= params->score_target;
+	delta >>= params->max_diff_adjust;
+	return std::max<int64_t>(int64_t(prev_diff) + delta, 1);
+}
+
 
 } // mmx
 

@@ -42,20 +42,25 @@ std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
 	if(auto proof = block->proof) {
 		// Note: farmer_sig already verified together with proof
 		validate_diff_adjust(block->time_diff, prev->time_diff);
-		// TODO: validate exact space diff adjustment
-		validate_diff_adjust(block->space_diff, prev->space_diff);
+
+		if(block->space_diff != calc_new_space_diff(params, prev->space_diff, proof->score)) {
+			throw std::logic_error("invalid space_diff");
+		}
 	} else {
 		if(block->version != 0) {
-			throw std::logic_error("invalid dummy block version");
+			throw std::logic_error("invalid version");
 		}
 		if(block->tx_base || !block->tx_list.empty()) {
 			throw std::logic_error("transactions not allowed");
 		}
-		if(block->time_diff != prev->time_diff || block->space_diff != prev->space_diff) {
-			throw std::logic_error("invalid difficulty adjustment for dummy block");
+		if(block->time_diff != prev->time_diff) {
+			throw std::logic_error("invalid time_diff");
+		}
+		if(block->space_diff != calc_new_space_diff(params, prev->space_diff, params->score_threshold)) {
+			throw std::logic_error("invalid space_diff");
 		}
 		if(block->nonce) {
-			throw std::logic_error("invalid block nonce for dummy block");
+			throw std::logic_error("invalid block nonce");
 		}
 		if(block->farmer_sig) {
 			throw std::logic_error("invalid farmer signature");

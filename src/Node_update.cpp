@@ -52,8 +52,7 @@ bool Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
 		block->prev = prev->hash;
 		block->height = prev->height + 1;
 		block->time_diff = prev->time_diff;
-		// TODO: reduce space_diff
-		block->space_diff = prev->space_diff;
+		block->space_diff = calc_new_space_diff(params, prev->space_diff, params->score_threshold);
 		block->vdf_iters = vdf_point->vdf_iters;
 		block->vdf_output = vdf_point->output;
 		block->finalize();
@@ -637,6 +636,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	block->space_diff = prev->space_diff;
 	block->vdf_iters = vdf_point->vdf_iters;
 	block->vdf_output = vdf_point->output;
+	block->proof = response->proof;
 
 	const auto tx_list = validate_pending(2 * params->max_block_cost, params->max_block_cost, false);
 
@@ -650,7 +650,8 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	const auto prev_fork = find_fork(prev->hash);
 
 	// set new time difficulty
-	if(auto fork = find_prev_fork(prev_fork, params->infuse_delay)) {
+	if(auto fork = find_prev_fork(prev_fork, params->infuse_delay))
+	{
 		if(auto point = fork->vdf_point) {
 			const int64_t time_delta = (vdf_point->recv_time - point->recv_time) / (params->infuse_delay + 1);
 			if(time_delta > 0) {
@@ -664,45 +665,15 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 		}
 	}
 	{
-		// set new space difficulty
-		double avg_score = response->score;
-		{
-			uint32_t counter = 1;
-			auto fork = prev_fork;
-			for(uint32_t i = 1; i < params->infuse_delay && fork; ++i) {
-				avg_score += fork->proof_score;
-				fork = fork->prev.lock();
-				counter++;
-			}
-			avg_score /= counter;
-		}
-		// TODO: based on current score only with integer math
-		double delta = prev->space_diff * (params->score_target - avg_score);
-		delta /= params->score_target;
-		delta /= (1 << params->max_diff_adjust);
-
-		int64_t update = 0;
-		if(delta > 0 && delta < 1) {
-			update = 1;
-		} else if(delta < 0 && delta > -1) {
-			update = -1;
-		} else {
-			update = delta + 0.5;
-		}
-		const int64_t new_diff = prev->space_diff + update;
-		block->space_diff = std::max<int64_t>(new_diff, 1);
-	}
-	{
+		// limit time diff update
 		const auto max_update = std::max<uint64_t>(prev->time_diff >> params->max_diff_adjust, 1);
 		block->time_diff = std::min(block->time_diff, prev->time_diff + max_update);
 		block->time_diff = std::max(block->time_diff, prev->time_diff - max_update);
 	}
 	{
-		const auto max_update = std::max<uint64_t>(prev->space_diff >> params->max_diff_adjust, 1);
-		block->space_diff = std::min(block->space_diff, prev->space_diff + max_update);
-		block->space_diff = std::max(block->space_diff, prev->space_diff - max_update);
+		// set new space difficulty
+		block->space_diff = calc_new_space_diff(params, prev->space_diff, response->proof->score);
 	}
-	block->proof = response->proof;
 	block->finalize();
 
 	FarmerClient farmer(response->farmer_addr);
