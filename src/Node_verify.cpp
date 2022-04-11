@@ -43,9 +43,9 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 		// check if block has a weak proof
 		const auto iter = proof_map.find(challenge);
 		if(iter != proof_map.end()) {
-			if(fork->proof_score > iter->second->score) {
+			if(fork->proof_score > iter->second->proof->score) {
 				fork->has_weak_proof = true;
-				log(INFO) << "Got weak proof block for height " << block->height << " with score " << fork->proof_score << " > " << iter->second->score;
+				log(INFO) << "Got weak proof block for height " << block->height << " with score " << fork->proof_score << " > " << iter->second->proof->score;
 			}
 		}
 	} else {

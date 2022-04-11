@@ -351,18 +351,17 @@ void Router::handle(std::shared_ptr<const ProofOfTime> proof)
 
 void Router::handle(std::shared_ptr<const ProofResponse> value)
 {
-	if(auto proof = value->proof) {
-		const auto hash = proof->calc_hash();
-		if(relay_msg_hash(hash, proof_credits)) {
-			if(vnx::get_pipe(value->farmer_addr)) {
-				log(INFO) << "Broadcasting proof for height " << value->request->height << " with score " << value->score;
-			}
-			broadcast(value, hash, {node_type_e::FULL_NODE});
-			proof_counter++;
+	const auto proof = value->proof;
+	const auto hash = proof->calc_hash();
+	if(relay_msg_hash(hash, proof_credits)) {
+		if(vnx::get_pipe(value->farmer_addr)) {
+			log(INFO) << "Broadcasting proof for height " << value->request->height << " with score " << proof->score;
 		}
-		const auto farmer_id = hash_t(proof->farmer_key);
-		farmer_credits[farmer_id] += proof_credits;
+		broadcast(value, hash, {node_type_e::FULL_NODE});
+		proof_counter++;
 	}
+	const auto farmer_id = hash_t(proof->farmer_key);
+	farmer_credits[farmer_id] += proof_credits;
 }
 
 uint32_t Router::send_request(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Value> method, bool reliable)
@@ -1045,10 +1044,10 @@ void Router::on_proof(uint64_t client, std::shared_ptr<const ProofResponse> resp
 					proof_counter++;
 				}
 			} else {
-				log(DEBUG) << "A farmer has insufficient credits to relay proof for height " << request->height << " with score " << response->score << ", verifying first.";
+				log(DEBUG) << "A farmer has insufficient credits to relay proof for height " << request->height << " with score " << proof->score << ", verifying first.";
 			}
 		} else {
-			log(DEBUG) << "Got proof from an unknown farmer at height " << request->height << " with score " << response->score << ", verifying first.";
+			log(DEBUG) << "Got proof from an unknown farmer at height " << request->height << " with score " << proof->score << ", verifying first.";
 		}
 	} else {
 		relay_msg_hash(hash);
@@ -1373,7 +1372,6 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 					const auto& pair = value->_ret_0;
 					if(pair.second.verify(pair.first, hash_t(peer->challenge.bytes))) {
 						peer->node_id = pair.first.get_addr();
-						// TODO: load credits
 					} else {
 						log(WARN) << "Peer " << peer->address << " failed to verify identity!";
 					}

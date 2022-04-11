@@ -8,8 +8,6 @@ class ProofResponse {
 	
 	bls_signature_t farmer_sig;
 	
-	uint score;
-	
 	vnx.Hash64 farmer_addr;
 	
 	

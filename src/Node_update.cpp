@@ -340,14 +340,14 @@ void Node::update()
 
 				auto iter = proof_map.find(challenge);
 				if(iter != proof_map.end()) {
-					const auto proof = iter->second;
+					const auto response = iter->second;
 					// check if it's our proof
-					if(vnx::get_pipe(proof->farmer_addr))
+					if(vnx::get_pipe(response->farmer_addr))
 					{
 						// check if we have a better proof
-						if(!best_fork || proof->score < best_fork->proof_score) {
+						if(!best_fork || response->proof->score < best_fork->proof_score) {
 							try {
-								if(make_block(prev, proof)) {
+								if(make_block(prev, response)) {
 									made_block = true;
 								}
 							}
@@ -721,7 +721,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 
 	const auto elapsed = (vnx::get_wall_time_micros() - time_begin) / 1e6;
 	log(INFO) << "Created block at height " << block->height << " with: ntx = " << block->tx_list.size()
-			<< ", score = " << response->score << ", reward = " << final_reward / pow(10, params->decimals) << " MMX"
+			<< ", score = " << response->proof->score << ", reward = " << final_reward / pow(10, params->decimals) << " MMX"
 			<< ", nominal = " << block_reward / pow(10, params->decimals) << " MMX"
 			<< ", fees = " << total_fees / pow(10, params->decimals) << " MMX"
 			<< ", took " << elapsed << " sec";

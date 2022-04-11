@@ -1028,23 +1028,22 @@ void Node::handle(std::shared_ptr<const ProofResponse> value)
 		if(request->space_diff != diff_block->space_diff) {
 			throw std::logic_error("invalid space_diff");
 		}
-		auto response = vnx::clone(value);
-		response->score = verify_proof(value->proof, challenge, diff_block->space_diff);
+		verify_proof(value->proof, challenge, diff_block->space_diff);
 
-		if(response->score >= params->score_threshold) {
+		if(value->proof->score >= params->score_threshold) {
 			throw std::logic_error("invalid score");
 		}
 		auto iter = proof_map.find(challenge);
-		if(iter == proof_map.end() || response->score < iter->second->score)
+		if(iter == proof_map.end() || value->proof->score < iter->second->proof->score)
 		{
 			if(iter == proof_map.end()) {
 				challenge_map.emplace(request->height, challenge);
 			}
-			proof_map[challenge] = response;
+			proof_map[challenge] = value;
 
-			log(DEBUG) << "Got new best proof for height " << request->height << " with score " << response->score;
+			log(DEBUG) << "Got new best proof for height " << request->height << " with score " << value->proof->score;
 		}
-		publish(response, output_verified_proof);
+		publish(value, output_verified_proof);
 	}
 	catch(const std::exception& ex) {
 		log(WARN) << "Got invalid proof: " << ex.what();
@@ -1240,9 +1239,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 			}
 			if(is_synced) {
 				if(auto point = fork->vdf_point) {
-					if(auto proof = point->proof) {
-						publish(proof, output_verified_vdfs);
-					}
+					publish(point->proof, output_verified_vdfs);
 				}
 				publish(block, output_verified_blocks);
 			}

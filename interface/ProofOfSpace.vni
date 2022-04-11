@@ -6,7 +6,7 @@ class ProofOfSpace {
 	
 	uchar ksize;
 	
-	ulong score;
+	uint score;
 	
 	hash_t plot_id;
 	
