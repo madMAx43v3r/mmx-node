@@ -30,7 +30,8 @@ hash_t PlotNFT::calc_hash() const
 	write_field(out, "version", version);
 	write_field(out, "owner", 	owner);
 	write_field(out, "target", 	target);
-	write_field(out, "unlock_height", unlock_height);
+	write_field(out, "unlock_height", 	unlock_height);
+	write_field(out, "unlock_delay", 	unlock_delay);
 	out.flush();
 
 	return hash_t(buffer);
@@ -86,7 +87,7 @@ std::vector<tx_out_t> PlotNFT::validate(std::shared_ptr<const Operation> operati
 	{
 		if(auto method = std::dynamic_pointer_cast<const contract::PlotNFT_unlock>(mutate->method.to_value()))
 		{
-			if(method->height < context->height + UNLOCK_DELAY) {
+			if(method->height < context->height + unlock_delay) {
 				throw std::logic_error("invalid unlock height");
 			}
 			return {};

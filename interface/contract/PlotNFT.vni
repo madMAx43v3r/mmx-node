@@ -11,10 +11,9 @@ class PlotNFT extends mmx.Contract {
 	
 	optional<addr_t> target;
 	
-	optional<uint> unlock_height;				// height at which owner can withdraw
+	optional<uint> unlock_height;			// height at which owner can withdraw
 	
-	// TODO: make it a param
-	static const uint UNLOCK_DELAY = 100;		// number of blocks
+	uint unlock_delay = 100;				// number of blocks
 	
 	
 	bool is_valid() const;
