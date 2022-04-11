@@ -19,11 +19,11 @@ namespace contract {
 
 class MMX_CONTRACT_EXPORT PlotNFT : public ::mmx::Contract {
 public:
-	static const uint32_t UNLOCK_DELAY = 100;
 	
 	::mmx::addr_t owner;
 	vnx::optional<::mmx::addr_t> target;
 	vnx::optional<uint32_t> unlock_height;
+	uint32_t unlock_delay = 100;
 	
 	typedef ::mmx::Contract Super;
 	
@@ -80,12 +80,13 @@ protected:
 
 template<typename T>
 void PlotNFT::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<PlotNFT>(4);
+	_visitor.template type_begin<PlotNFT>(5);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("owner", 1); _visitor.accept(owner);
 	_visitor.type_field("target", 2); _visitor.accept(target);
 	_visitor.type_field("unlock_height", 3); _visitor.accept(unlock_height);
-	_visitor.template type_end<PlotNFT>(4);
+	_visitor.type_field("unlock_delay", 4); _visitor.accept(unlock_delay);
+	_visitor.template type_end<PlotNFT>(5);
 }
 
 

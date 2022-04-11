@@ -53,10 +53,9 @@
 namespace mmx {
 namespace contract {
 
-const uint32_t PlotNFT::UNLOCK_DELAY;
 
 const vnx::Hash64 PlotNFT::VNX_TYPE_HASH(0x7705f4da286543dull);
-const vnx::Hash64 PlotNFT::VNX_CODE_HASH(0x54651b42ed6fcfd7ull);
+const vnx::Hash64 PlotNFT::VNX_CODE_HASH(0x458e883ef5f58a81ull);
 
 vnx::Hash64 PlotNFT::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -93,6 +92,7 @@ void PlotNFT::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, owner);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, target);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, unlock_height);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, unlock_delay);
 	_visitor.type_end(*_type_code);
 }
 
@@ -102,6 +102,7 @@ void PlotNFT::write(std::ostream& _out) const {
 	_out << ", \"owner\": "; vnx::write(_out, owner);
 	_out << ", \"target\": "; vnx::write(_out, target);
 	_out << ", \"unlock_height\": "; vnx::write(_out, unlock_height);
+	_out << ", \"unlock_delay\": "; vnx::write(_out, unlock_delay);
 	_out << "}";
 }
 
@@ -118,6 +119,7 @@ vnx::Object PlotNFT::to_object() const {
 	_object["owner"] = owner;
 	_object["target"] = target;
 	_object["unlock_height"] = unlock_height;
+	_object["unlock_delay"] = unlock_delay;
 	return _object;
 }
 
@@ -127,6 +129,8 @@ void PlotNFT::from_object(const vnx::Object& _object) {
 			_entry.second.to(owner);
 		} else if(_entry.first == "target") {
 			_entry.second.to(target);
+		} else if(_entry.first == "unlock_delay") {
+			_entry.second.to(unlock_delay);
 		} else if(_entry.first == "unlock_height") {
 			_entry.second.to(unlock_height);
 		} else if(_entry.first == "version") {
@@ -148,6 +152,9 @@ vnx::Variant PlotNFT::get_field(const std::string& _name) const {
 	if(_name == "unlock_height") {
 		return vnx::Variant(unlock_height);
 	}
+	if(_name == "unlock_delay") {
+		return vnx::Variant(unlock_delay);
+	}
 	return vnx::Variant();
 }
 
@@ -160,6 +167,8 @@ void PlotNFT::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(target);
 	} else if(_name == "unlock_height") {
 		_value.to(unlock_height);
+	} else if(_name == "unlock_delay") {
+		_value.to(unlock_delay);
 	}
 }
 
@@ -187,7 +196,7 @@ std::shared_ptr<vnx::TypeCode> PlotNFT::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.PlotNFT";
 	type_code->type_hash = vnx::Hash64(0x7705f4da286543dull);
-	type_code->code_hash = vnx::Hash64(0x54651b42ed6fcfd7ull);
+	type_code->code_hash = vnx::Hash64(0x458e883ef5f58a81ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::PlotNFT);
@@ -213,7 +222,7 @@ std::shared_ptr<vnx::TypeCode> PlotNFT::static_create_type_code() {
 	type_code->methods[15] = ::mmx::contract::PlotNFT_lock_target::static_get_type_code();
 	type_code->methods[16] = ::mmx::contract::PlotNFT_unlock::static_get_type_code();
 	type_code->methods[17] = ::mmx::contract::PlotNFT_validate::static_get_type_code();
-	type_code->fields.resize(4);
+	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -237,6 +246,13 @@ std::shared_ptr<vnx::TypeCode> PlotNFT::static_create_type_code() {
 		field.is_extended = true;
 		field.name = "unlock_height";
 		field.code = {33, 3};
+	}
+	{
+		auto& field = type_code->fields[4];
+		field.data_size = 4;
+		field.name = "unlock_delay";
+		field.value = vnx::to_string(100);
+		field.code = {3};
 	}
 	type_code->build();
 	return type_code;
@@ -398,6 +414,9 @@ void read(TypeInput& in, ::mmx::contract::PlotNFT& value, const TypeCode* type_c
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.version, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[4]) {
+			vnx::read_value(_buf + _field->offset, value.unlock_delay, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -422,8 +441,9 @@ void write(TypeOutput& out, const ::mmx::contract::PlotNFT& value, const TypeCod
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
+	char* const _buf = out.write(8);
 	vnx::write_value(_buf + 0, value.version);
+	vnx::write_value(_buf + 4, value.unlock_delay);
 	vnx::write(out, value.owner, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.target, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.unlock_height, type_code, type_code->fields[3].code.data());
