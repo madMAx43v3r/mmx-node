@@ -218,16 +218,12 @@ public:
 						std::unordered_map<txio_key_t, utxo_t>& spent_map,
 						const spend_options_t& options = {}, uint64_t change = 0)
 	{
-		if(!tx->solutions.empty()) {
-			throw std::logic_error("solutions not empty before fee");
-		}
 		const std::unordered_map<addr_t, addr_t> owner_map(options.owner_map.begin(), options.owner_map.end());
 		const std::unordered_map<txio_key_t, utxo_t> utxo_map(options.utxo_map.begin(), options.utxo_map.end());
 
 		uint64_t tx_fees = 0;
 		while(true) {
-			// count number of solutions needed
-			std::unordered_map<addr_t, uint64_t> used_addr;
+			std::unordered_map<addr_t, uint64_t> spend_cost;
 			for(const auto& in : tx->inputs) {
 				addr_t owner;
 				{
@@ -245,18 +241,18 @@ public:
 				}
 				auto iter = owner_map.find(owner);
 				if(iter != owner_map.end()) {
-					used_addr[iter->second] += params->min_txfee_exec;
+					spend_cost[iter->second] += params->min_txfee_exec;
 				} else {
-					used_addr.emplace(owner, 0);
+					spend_cost.emplace(owner, 0);
 				}
 			}
 			tx_fees = tx->calc_cost(params)
+					+ spend_cost.size() * params->min_txfee_sign
 					+ params->min_txfee_io	// for change output
-					+ used_addr.size() * params->min_txfee_sign
 					+ options.extra_fee;
 
-			for(const auto& entry : used_addr) {
-				tx_fees += entry.second;	// execution fees
+			for(const auto& entry : spend_cost) {
+				tx_fees += entry.second;
 			}
 
 			if(change > tx_fees) {
