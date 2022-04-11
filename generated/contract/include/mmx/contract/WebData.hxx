@@ -6,8 +6,12 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/ChainParams.hxx>
+#include <mmx/Context.hxx>
 #include <mmx/Contract.hxx>
+#include <mmx/Operation.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
+#include <mmx/tx_out_t.hxx>
 #include <vnx/Buffer.hpp>
 
 
@@ -17,6 +21,7 @@ namespace contract {
 class MMX_CONTRACT_EXPORT WebData : public ::mmx::Contract {
 public:
 	
+	vnx::optional<::mmx::addr_t> owner;
 	std::string mime_type;
 	::vnx::Buffer payload;
 	
@@ -36,6 +41,12 @@ public:
 	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_hash() const override;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
+	virtual std::vector<::mmx::addr_t> get_dependency() const override;
+	virtual std::vector<::mmx::addr_t> get_parties() const override;
+	virtual vnx::optional<::mmx::addr_t> get_owner() const override;
+	virtual std::vector<::mmx::tx_out_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
+	virtual void transfer(const vnx::optional<::mmx::addr_t>& new_owner = nullptr) override;
+	virtual void update(const ::vnx::Buffer& new_payload = ::vnx::Buffer());
 	
 	static std::shared_ptr<WebData> create();
 	std::shared_ptr<vnx::Value> clone() const override;
@@ -69,11 +80,12 @@ protected:
 
 template<typename T>
 void WebData::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<WebData>(3);
+	_visitor.template type_begin<WebData>(4);
 	_visitor.type_field("version", 0); _visitor.accept(version);
-	_visitor.type_field("mime_type", 1); _visitor.accept(mime_type);
-	_visitor.type_field("payload", 2); _visitor.accept(payload);
-	_visitor.template type_end<WebData>(3);
+	_visitor.type_field("owner", 1); _visitor.accept(owner);
+	_visitor.type_field("mime_type", 2); _visitor.accept(mime_type);
+	_visitor.type_field("payload", 3); _visitor.accept(payload);
+	_visitor.template type_end<WebData>(4);
 }
 
 
