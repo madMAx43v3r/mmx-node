@@ -31,6 +31,9 @@ public:
 	ECDSA_Wallet(std::shared_ptr<const KeyFile> key_file, const account_t& config, std::shared_ptr<const ChainParams> params)
 		:	config(config), params(params)
 	{
+		if(key_file->seed_value == hash_t()) {
+			throw std::logic_error("seed == zero");
+		}
 		master_sk = hash_t(key_file->seed_value);
 
 		for(size_t i = 0; i < config.num_addresses; ++i)
