@@ -1,3 +1,3 @@
 #pragma once
 
-#define MMX_VERSION "0.5.0"
+#define MMX_VERSION "0.6.0"
