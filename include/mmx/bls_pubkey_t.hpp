@@ -56,7 +56,7 @@ bls::G1Element bls_pubkey_t::to_bls() const
 inline
 hash_t bls_pubkey_t::get_addr() const
 {
-	return hash_t(bytes.data(), bytes.size());
+	return hash_t(bytes);
 }
 
 } // mmx

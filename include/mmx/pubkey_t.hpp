@@ -55,7 +55,7 @@ secp256k1_pubkey pubkey_t::to_secp256k1() const
 inline
 hash_t pubkey_t::get_addr() const
 {
-	return hash_t(bytes.data(), bytes.size());
+	return hash_t(bytes);
 }
 
 inline
