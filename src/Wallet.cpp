@@ -559,7 +559,8 @@ address_info_t Wallet::get_address_info(const uint32_t& index, const uint32_t& o
 		info.last_receive_height = std::max(info.last_receive_height, entry.output.height);
 	}
 	for(const auto& entry : stxo_list) {
-		info.last_spend_height = std::max(info.last_spend_height, entry.output.height);
+		info.last_receive_height = std::max(info.last_receive_height, entry.output.height);
+		info.last_spend_height = std::max(info.last_spend_height, entry.spent_height);
 	}
 	return info;
 }
@@ -584,7 +585,8 @@ std::vector<address_info_t> Wallet::get_all_address_infos(const int32_t& index) 
 	for(const auto& entry : stxo_list) {
 		auto& info = result[index_map[entry.output.address]];
 		info.stxo_count++;
-		info.last_spend_height = std::max(info.last_spend_height, entry.output.height);
+		info.last_receive_height = std::max(info.last_receive_height, entry.output.height);
+		info.last_spend_height = std::max(info.last_spend_height, entry.spent_height);
 	}
 	return result;
 }
