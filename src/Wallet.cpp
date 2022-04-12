@@ -630,6 +630,9 @@ void Wallet::create_wallet(const account_t& config_, const vnx::optional<hash_t>
 {
 	mmx::KeyFile key_file;
 	if(seed) {
+		if(*seed == hash_t()) {
+			throw std::logic_error("seed cannot be all zeros");
+		}
 		key_file.seed_value = *seed;
 	} else {
 		key_file.seed_value = mmx::hash_t::random();
