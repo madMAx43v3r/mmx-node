@@ -15,6 +15,17 @@
 
 namespace mmx {
 
+static bls::PrivateKey derive_local_key(const std::vector<uint8_t>& master_sk)
+{
+	bls::AugSchemeMPL MPL;
+	auto local_sk = bls::PrivateKey::FromBytes(bls::Bytes(master_sk.data(), master_sk.size()));
+
+	for(uint32_t i : {12381, 11337, 3, 0}) {
+		local_sk = MPL.DeriveChildSk(local_sk, i);
+	}
+	return local_sk;
+}
+
 Harvester::Harvester(const std::string& _vnx_name)
 	:	HarvesterBase(_vnx_name)
 {
@@ -115,12 +126,8 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 		out->request = value;
 		out->farmer_addr = farmer_addr;
 
-		bls::AugSchemeMPL MPL;
-		auto local_sk = bls::PrivateKey::FromBytes(bls::Bytes(best_proof->master_sk.data(), best_proof->master_sk.size()));
+		const auto local_sk = derive_local_key(best_proof->master_sk);
 
-		for(uint32_t i : {12381, 11337, 3, 0}) {
-			local_sk = MPL.DeriveChildSk(local_sk, i);
-		}
 		auto proof = ProofOfSpace::create();
 		proof->ksize = best_proof->k;
 		proof->score = best_score;
