@@ -746,7 +746,7 @@ app.component('create-wallet', {
 			req.config.num_addresses = this.num_addresses;
 			if(this.with_seed) {
 				if(this.seed.length != 64) {
-					this.error = "Invalid seed value!";
+					this.error = "invalid seed value";
 					return;
 				}
 				req.seed = this.seed;
