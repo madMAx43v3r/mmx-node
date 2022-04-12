@@ -93,6 +93,10 @@ protected:
 
 	std::vector<addr_t> get_all_addresses(const int32_t& index) const override;
 
+	address_info_t get_address_info(const uint32_t& index, const uint32_t& offset) const;
+
+	std::vector<address_info_t> get_all_address_infos(const int32_t& index) const;
+
 	std::shared_ptr<const FarmerKeys> get_farmer_keys(const uint32_t& index) const override;
 
 	std::vector<std::shared_ptr<const FarmerKeys>> get_all_farmer_keys() const override;

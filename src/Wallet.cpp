@@ -547,6 +547,48 @@ std::vector<addr_t> Wallet::get_all_addresses(const int32_t& index) const
 	return list;
 }
 
+address_info_t Wallet::get_address_info(const uint32_t& index, const uint32_t& offset) const
+{
+	address_info_t info;
+	info.address = get_address(index, offset);
+	const auto utxo_list = node->get_utxo_list({info.address});
+	const auto stxo_list = node->get_stxo_list({info.address});
+	info.utxo_count = utxo_list.size();
+	info.stxo_count = stxo_list.size();
+	for(const auto& entry : utxo_list) {
+		info.last_receive_height = std::max(info.last_receive_height, entry.output.height);
+	}
+	for(const auto& entry : stxo_list) {
+		info.last_spend_height = std::max(info.last_spend_height, entry.output.height);
+	}
+	return info;
+}
+
+std::vector<address_info_t> Wallet::get_all_address_infos(const int32_t& index) const
+{
+	const auto addresses = get_all_addresses(index);
+	const auto utxo_list = node->get_utxo_list(addresses);
+	const auto stxo_list = node->get_stxo_list(addresses);
+
+	std::unordered_map<addr_t, size_t> index_map;
+	std::vector<address_info_t> result(addresses.size());
+	for(size_t i = 0; i < addresses.size(); ++i) {
+		index_map[addresses[i]] = i;
+		result[i].address = addresses[i];
+	}
+	for(const auto& entry : utxo_list) {
+		auto& info = result[index_map[entry.output.address]];
+		info.utxo_count++;
+		info.last_receive_height = std::max(info.last_receive_height, entry.output.height);
+	}
+	for(const auto& entry : stxo_list) {
+		auto& info = result[index_map[entry.output.address]];
+		info.stxo_count++;
+		info.last_spend_height = std::max(info.last_spend_height, entry.output.height);
+	}
+	return result;
+}
+
 std::shared_ptr<const FarmerKeys> Wallet::get_farmer_keys(const uint32_t& index) const
 {
 	if(auto wallet = bls_wallets.at(index)) {

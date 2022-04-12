@@ -1,0 +1,13 @@
+package mmx;
+
+struct address_info_t {
+	
+	addr_t address;
+	
+	ulong stxo_count;
+	ulong utxo_count;
+	
+	uint last_spend_height;
+	uint last_receive_height;
+	
+}
