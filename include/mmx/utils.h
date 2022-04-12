@@ -25,7 +25,7 @@ std::shared_ptr<const ChainParams> get_params()
 	auto params = ChainParams::create();
 	vnx::read_config("chain.params", params);
 	if(params->challenge_delay <= params->infuse_delay) {
-		throw std::logic_error("challenge_interval <= infuse_delay");
+		throw std::logic_error("challenge_delay <= infuse_delay");
 	}
 	if(params->challenge_interval <= params->challenge_delay) {
 		throw std::logic_error("challenge_interval <= challenge_delay");
