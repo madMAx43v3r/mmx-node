@@ -31,7 +31,7 @@ hash_t Staking::calc_hash() const
 	write_field(out, "reward_addr", reward_addr);
 	out.flush();
 
-	return hash_t(buffer);
+	return hash_t(hash_t(buffer).bytes);
 }
 
 uint64_t Staking::calc_cost(std::shared_ptr<const ChainParams> params) const {

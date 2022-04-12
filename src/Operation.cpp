@@ -26,7 +26,7 @@ hash_t Operation::calc_hash() const
 	write_field(out, "address", address);
 	out.flush();
 
-	return hash_t(buffer);
+	return hash_t(hash_t(buffer).bytes);
 }
 
 uint64_t Operation::calc_cost(std::shared_ptr<const ChainParams> params) const {

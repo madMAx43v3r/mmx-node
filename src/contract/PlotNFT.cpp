@@ -34,7 +34,7 @@ hash_t PlotNFT::calc_hash() const
 	write_field(out, "unlock_delay", 	unlock_delay);
 	out.flush();
 
-	return hash_t(buffer);
+	return hash_t(hash_t(buffer).bytes);
 }
 
 uint64_t PlotNFT::calc_cost(std::shared_ptr<const ChainParams> params) const {

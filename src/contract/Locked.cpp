@@ -30,7 +30,7 @@ hash_t Locked::calc_hash() const
 	write_field(out, "delta_height", delta_height);
 	out.flush();
 
-	return hash_t(buffer);
+	return hash_t(hash_t(buffer).bytes);
 }
 
 uint64_t Locked::calc_cost(std::shared_ptr<const ChainParams> params) const {

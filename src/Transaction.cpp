@@ -73,7 +73,7 @@ hash_t Transaction::calc_hash() const
 
 	out.flush();
 
-	return hash_t(buffer);
+	return hash_t(hash_t(buffer).bytes);
 }
 
 void Transaction::add_output(const addr_t& currency, const addr_t& address, const uint64_t& amount, const uint32_t& split)

@@ -34,7 +34,7 @@ hash_t PuzzleLock::calc_hash() const
 	write_field(out, "target", target);
 	out.flush();
 
-	return hash_t(buffer);
+	return hash_t(hash_t(buffer).bytes);
 }
 
 uint64_t PuzzleLock::calc_cost(std::shared_ptr<const ChainParams> params) const

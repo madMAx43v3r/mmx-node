@@ -25,7 +25,7 @@ hash_t Spend::calc_hash() const
 	write_field(out, "utxo", 	utxo);
 	out.flush();
 
-	return hash_t(buffer);
+	return hash_t(hash_t(buffer).bytes);
 }
 
 uint64_t Spend::calc_cost(std::shared_ptr<const ChainParams> params) const {

@@ -28,7 +28,7 @@ hash_t trade_order_t::calc_hash() const
 	}
 	out.flush();
 
-	return hash_t(buffer);
+	return hash_t(hash_t(buffer).bytes);
 }
 
 

@@ -29,7 +29,7 @@ hash_t DataArray::calc_hash() const
 	write_field(out, "data", 	data);
 	out.flush();
 
-	return hash_t(buffer);
+	return hash_t(hash_t(buffer).bytes);
 }
 
 uint64_t DataArray::num_bytes() const

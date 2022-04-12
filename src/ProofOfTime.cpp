@@ -34,7 +34,7 @@ mmx::hash_t ProofOfTime::calc_hash() const
 	write_field(out, "timelord_key", 	timelord_key);
 	out.flush();
 
-	return hash_t(buffer);
+	return hash_t(hash_t(buffer).bytes);
 }
 
 mmx::hash_t ProofOfTime::get_output(const uint32_t& chain) const

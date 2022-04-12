@@ -29,7 +29,7 @@ hash_t Mint::calc_hash() const
 	write_field(out, "amount", 	amount);
 	out.flush();
 
-	return hash_t(buffer);
+	return hash_t(hash_t(buffer).bytes);
 }
 
 uint64_t Mint::calc_cost(std::shared_ptr<const ChainParams> params) const {
