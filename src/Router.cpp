@@ -392,7 +392,6 @@ void Router::update()
 
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
-		// TODO: check for peer timeout and disconnect
 		peer->credits = std::min(peer->credits, max_node_credits);
 		peer->tx_credits = std::min(peer->tx_credits +
 				uint64_t(params->max_block_cost * update_interval_ms / (params->block_time * 1e3) / peer_map.size()), params->max_block_cost);
@@ -401,6 +400,11 @@ void Router::update()
 		while(peer->sent_hashes.size() > max_sent_cache) {
 			peer->sent_hashes.erase(peer->hash_queue.front());
 			peer->hash_queue.pop();
+		}
+		// check for timeout
+		if(connection_timeout_ms > 0 && now_ms - peer->last_receive_ms > connection_timeout_ms) {
+			log(INFO) << "Peer " << peer->address << " timed out";
+			disconnect(entry.first);
 		}
 	}
 
