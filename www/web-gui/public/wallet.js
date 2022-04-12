@@ -740,15 +740,6 @@ app.component('create-wallet', {
 	},
 	methods: {
 		submit() {
-			if(this.seed) {
-				if(this.seed == "") {
-					this.seed = null;
-				}
-				else if(this.seed.length != 64) {
-					this.error = "invalid seed value";
-					return;
-				}
-			}
 			const req = {};
 			req.config = {};
 			req.config.name = this.name;
