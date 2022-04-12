@@ -733,6 +733,7 @@ app.component('create-wallet', {
 		return {
 			name: null,
 			num_addresses: 100,
+			with_seed: false,
 			seed: null,
 			error: null
 		}
@@ -752,7 +753,13 @@ app.component('create-wallet', {
 			req.config = {};
 			req.config.name = this.name;
 			req.config.num_addresses = this.num_addresses;
-			req.seed = this.seed;
+			if(this.with_seed) {
+				if(this.seed.length != 64) {
+					this.error = "Invalid seed value!";
+					return;
+				}
+				req.seed = this.seed;
+			}
 			fetch('/api/wallet/create_wallet', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
@@ -778,9 +785,15 @@ app.component('create-wallet', {
 						<input type="text" v-model.number="num_addresses" style="text-align: right"/>
 					</div>
 				</div>
+				<div class="inline field">
+					<div class="ui toggle checkbox">
+						<input type="checkbox" class="hidden" v-model="with_seed">
+						<label>Use Custom Seed</label>
+					</div>
+				</div>
 				<div class="field">
 					<label>Seed Hash (optional, hex string, 64 chars)</label>
-					<input type="text" v-model="seed" placeholder="<random>"/>
+					<input type="text" v-model="seed" placeholder="<random>" :disabled="!with_seed"/>
 				</div>
 				<div @click="submit" class="ui submit primary button">Create Wallet</div>
 			</form>
