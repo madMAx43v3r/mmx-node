@@ -772,6 +772,9 @@ app.component('create-wallet', {
 				});
 		}
 	},
+	mounted() {
+		$('.ui.checkbox').checkbox();
+	},
 	template: `
 		<div class="ui raised segment">
 			<form class="ui form">
