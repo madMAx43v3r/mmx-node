@@ -390,11 +390,13 @@ void Router::update()
 {
 	const auto now_ms = vnx::get_wall_time_millis();
 
+	const uint64_t add_tx_credits =
+			(uint64_t(params->max_block_cost) * update_interval_ms) / uint32_t(params->block_time * 1e3) / std::max<size_t>(peer_map.size(), 1);
+
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
 		peer->credits = std::min(peer->credits, max_node_credits);
-		peer->tx_credits = std::min(peer->tx_credits +
-				uint64_t(params->max_block_cost * update_interval_ms / (params->block_time * 1e3) / peer_map.size()), params->max_block_cost);
+		peer->tx_credits = std::min(peer->tx_credits + add_tx_credits, params->max_block_cost);
 
 		// clear old hashes
 		while(peer->sent_hashes.size() > max_sent_cache) {
