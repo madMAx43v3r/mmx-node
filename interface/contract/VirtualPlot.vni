@@ -1,0 +1,22 @@
+package mmx.contract;
+
+import mmx.hash_t;
+import mmx.addr_t;
+import mmx.bls_pubkey_t;
+
+class VirtualPlot extends mmx.Contract {
+	
+	bls_pubkey_t farmer_key;
+	
+	optional<addr_t> pool_address;
+	
+	
+	bool is_valid() const;
+	
+	hash_t calc_hash() const;
+	
+	ulong calc_cost(mmx.ChainParams* params) const;
+	
+	void bls_transfer(bls_pubkey_t new_farmer_key);
+	
+}
