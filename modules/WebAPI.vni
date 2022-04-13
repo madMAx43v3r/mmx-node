@@ -13,6 +13,8 @@ module WebAPI implements vnx.addons.HttpComponent {
 	uint max_log_history = 10000;
 	
 	
+	void shutdown();
+	
 	void handle(Block sample);
 	void handle(vnx.LogMsg sample);
 	

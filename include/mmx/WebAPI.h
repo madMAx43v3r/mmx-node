@@ -30,6 +30,8 @@ protected:
 
 	void main() override;
 
+	void shutdown() override;
+
 	void http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
 							const vnx::request_id_t& request_id) const override;
 

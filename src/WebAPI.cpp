@@ -126,6 +126,7 @@ void WebAPI::main()
 
 void WebAPI::update()
 {
+	node->vnx_set_session();
 	node->get_height(
 		[this](const uint32_t& height) {
 			if(height != curr_height) {
@@ -923,12 +924,38 @@ void WebAPI::render_tx_history(const vnx::request_id_t& request_id, const std::v
 	}
 }
 
+void WebAPI::shutdown()
+{
+	((WebAPI*)this)->set_timeout_millis(1000, [this]() {
+		vnx::ProcessClient client("vnx.process");
+		client.trigger_shutdown_async();
+	});
+}
+
 void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
 								const vnx::request_id_t& request_id) const
 {
+	auto session = request->session;
+	if(!session) {
+		throw std::logic_error("not logged in");
+	}
+	auto vnx_session = vnx::get_session(session->vsid);
+	if(!vnx_session) {
+		throw std::logic_error("invalid session");
+	}
+	if(request->method != "GET" && request->method != "POST") {
+		throw std::logic_error("invalid method: " + request->method);
+	}
+	node->vnx_set_session(session->vsid);
+	wallet->vnx_set_session(session->vsid);
+	exch_client->vnx_set_session(session->vsid);
+
 	const auto& query = request->query_params;
 
 	if(sub_path == "/config/get") {
+		if(!vnx_session->has_permission_vnx(vnx::permission_e::READ_CONFIG)) {
+			throw std::logic_error("permission denied");
+		}
 		const auto iter_key = query.find("key");
 		const auto config = vnx::get_all_configs(true);
 		vnx::Object object;
@@ -940,6 +967,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/config/set") {
+		if(!vnx_session->has_permission_vnx(vnx::permission_e::WRITE_CONFIG)) {
+			throw std::logic_error("permission denied");
+		}
 		vnx::Object args;
 		vnx::from_string(request->payload.as_string(), args);
 		const auto iter_key = args.field.find("key");
@@ -988,10 +1018,10 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/exit" || sub_path == "/node/exit") {
-		((WebAPI*)this)->set_timeout_millis(1000, [this]() {
-			vnx::ProcessClient client("vnx.process");
-			client.trigger_shutdown_async();
-		});
+		if(!vnx_session->has_permission_vnx(vnx::permission_e::SHUTDOWN)) {
+			throw std::logic_error("permission denied");
+		}
+		((WebAPI*)this)->shutdown();
 		respond_status(request_id, 200);
 	}
 	else if(sub_path == "/node/info") {
@@ -1009,6 +1039,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 	}
 	else if(sub_path == "/node/log") {
+		if(!vnx_session->has_permission_vnx(vnx::permission_e::VIEW)) {
+			throw std::logic_error("permission denied");
+		}
 		const auto iter_limit = query.find("limit");
 		const auto iter_level = query.find("level");
 		const auto iter_module = query.find("module");
