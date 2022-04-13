@@ -11,18 +11,30 @@
 
 namespace mmx {
 
-vnx::bool_t ProofOfStake::is_valid() const
-{
-	return false;
-}
-
 mmx::hash_t ProofOfStake::calc_hash() const
 {
-	throw std::logic_error("not implemented");
+	std::vector<uint8_t> buffer;
+	vnx::VectorOutputStream stream(&buffer);
+	vnx::OutputBuffer out(&stream);
+
+	buffer.reserve(4 * 1024);
+
+	write_bytes(out, get_type_hash());
+	write_field(out, "version", 	version);
+	write_field(out, "score", 		score);
+	write_field(out, "plot_id", 	plot_id);
+	write_field(out, "farmer_key", 	farmer_key);
+	write_field(out, "contract", 	contract);
+	out.flush();
+
+	return hash_t(buffer);
 }
 
 void ProofOfStake::validate() const
 {
+	if(!farmer_sig.verify(farmer_key, calc_hash())) {
+		throw std::logic_error("invalid proof signature");
+	}
 }
 
 

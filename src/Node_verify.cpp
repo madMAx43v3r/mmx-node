@@ -6,6 +6,7 @@
  */
 
 #include <mmx/Node.h>
+#include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/chiapos.h>
 #include <mmx/utils.h>
 
@@ -35,10 +36,6 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 	if(auto proof = block->proof) {
 		const auto challenge = get_challenge(block, vdf_challenge);
 		fork->proof_score = verify_proof(proof, challenge, diff_block->space_diff);
-
-		if(proof->score != fork->proof_score) {
-			throw std::logic_error("invalid proof score");
-		}
 
 		// check if block has a weak proof
 		const auto iter = proof_map.find(challenge);
@@ -80,23 +77,34 @@ uint32_t Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const has
 	if(!proof->is_valid()) {
 		throw std::logic_error("invalid proof");
 	}
-	if(proof->ksize < params->min_ksize) {
-		throw std::logic_error("ksize too small");
-	}
-	if(proof->ksize > params->max_ksize) {
-		throw std::logic_error("ksize too big");
-	}
 	proof->validate();
 
 	if(!check_plot_filter(params, challenge, proof->plot_id)) {
 		throw std::logic_error("plot filter failed");
 	}
-	const auto quality = hash_t::from_bytes(chiapos::verify(
-			proof->ksize, proof->plot_id.bytes, challenge.bytes, proof->proof_bytes.data(), proof->proof_bytes.size()));
+	uint32_t score = -1;
 
-	const auto score = calc_proof_score(params, proof->ksize, quality, space_diff);
+	if(auto proof_ = std::dynamic_pointer_cast<const ProofOfSpaceOG>(proof))
+	{
+		if(proof_->ksize < params->min_ksize) {
+			throw std::logic_error("ksize too small");
+		}
+		if(proof_->ksize > params->max_ksize) {
+			throw std::logic_error("ksize too big");
+		}
+		const auto quality = hash_t::from_bytes(chiapos::verify(
+				proof_->ksize, proof->plot_id.bytes, challenge.bytes, proof_->proof_bytes.data(), proof_->proof_bytes.size()));
+
+		score = calc_proof_score(params, proof_->ksize, quality, space_diff);
+	}
+	else {
+		throw std::logic_error("invalid proof type");
+	}
+	if(proof->score != score) {
+		throw std::logic_error("proof score mismatch");
+	}
 	if(score >= params->score_threshold) {
-		throw std::logic_error("invalid score");
+		throw std::logic_error("score >= score_threshold");
 	}
 	return score;
 }

@@ -8,6 +8,7 @@
 #include <mmx/Harvester.h>
 #include <mmx/FarmerClient.hxx>
 #include <mmx/ProofResponse.hxx>
+#include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/utils.h>
 
 #include <bls.hpp>
@@ -128,7 +129,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 
 		const auto local_sk = derive_local_key(best_proof->master_sk);
 
-		auto proof = ProofOfSpace::create();
+		auto proof = ProofOfSpaceOG::create();
 		proof->ksize = best_proof->k;
 		proof->score = best_score;
 		proof->plot_id = hash_t::from_bytes(best_proof->id);

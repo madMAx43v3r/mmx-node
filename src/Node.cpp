@@ -1394,8 +1394,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 
 	if(is_synced && fork) {
 		Node::log(INFO) << "Committed height " << block->height << " with: ntx = " << block->tx_list.size()
-				<< ", k = " << (block->proof ? block->proof->ksize : 0) << ", score = " << fork->proof_score
-				<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff
+				<< ", score = " << fork->proof_score << ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff
 				<< (fork->has_weak_proof ? ", weak proof" : "");
 	}
 	if(!is_replay) {

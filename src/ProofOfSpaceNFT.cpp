@@ -27,6 +27,7 @@ mmx::hash_t ProofOfSpaceNFT::calc_hash() const
 	write_bytes(out, get_type_hash());
 	write_field(out, "version", 	version);
 	write_field(out, "ksize", 		ksize);
+	write_field(out, "score", 		score);
 	write_field(out, "plot_id", 	plot_id);
 	write_field(out, "proof_bytes", proof_bytes);
 	write_field(out, "local_key", 	local_key);
