@@ -391,7 +391,7 @@ void Wallet::update_cache(const uint32_t& index) const
 	const auto wallet = get_wallet(index);
 	const auto now = vnx::get_wall_time_millis();
 
-	if(!wallet->last_utxo_update || now - wallet->last_utxo_update > utxo_timeout_ms)
+	if(!wallet->last_utxo_update || now - wallet->last_utxo_update > cache_timeout_ms)
 	{
 		const auto height = node->get_height();
 		const auto all_utxo = node->get_utxo_list(wallet->get_all_addresses(), 1);
@@ -630,9 +630,6 @@ std::map<uint32_t, account_t> Wallet::get_all_accounts() const
 
 void Wallet::add_account(const uint32_t& index, const account_t& config)
 {
-	if(index >= max_accounts) {
-		throw std::logic_error("index >= max_accounts");
-	}
 	if(index >= wallets.size()) {
 		wallets.resize(index + 1);
 		bls_wallets.resize(index + 1);

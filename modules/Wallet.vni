@@ -11,11 +11,10 @@ module Wallet implements vnx.addons.HttpComponent {
 	string database_path = "wallet/";
 	string node_server = "Node";
 	
-	uint max_accounts = 1000;
 	uint max_key_files = 100;
 	uint num_addresses = 100;
 	
-	int utxo_timeout_ms = 1000;				// how often to update from node [ms]
+	int cache_timeout_ms = 1000;			// how often to update from node [ms]
 	
 	bool enable_bls = true;
 	
