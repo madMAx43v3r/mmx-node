@@ -2,21 +2,18 @@ package mmx.contract;
 
 import mmx.hash_t;
 import mmx.addr_t;
+import mmx.pubkey_t;
 
-class WebData extends mmx.Contract {
+class PuzzleTimeLock extends TimeLock {
 	
-	optional<addr_t> owner;
+	mmx.Contract* puzzle;			// to unlock for target
 	
-	string mime_type;
-	
-	vnx.Buffer payload;
+	addr_t target;					// beneficiary
 	
 	
 	bool is_valid() const;
 	
 	hash_t calc_hash() const;
-	
-	ulong num_bytes() const;
 	
 	ulong calc_cost(mmx.ChainParams* params) const;
 	
@@ -24,12 +21,6 @@ class WebData extends mmx.Contract {
 	
 	vector<addr_t> get_parties() const;
 	
-	optional<addr_t> get_owner() const;
-	
 	vector<mmx.tx_out_t> validate(mmx.Operation* operation, mmx.Context* context) const;
-	
-	void transfer(optional<addr_t> new_owner);
-	
-	void update(vnx.Buffer new_payload);
 	
 }

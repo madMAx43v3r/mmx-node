@@ -14,7 +14,7 @@ namespace contract {
 
 vnx::bool_t WebData::is_valid() const
 {
-	return Super::is_valid() && !mime_type.empty();
+	return Super::is_valid() && mime_type.size() <= 256;
 }
 
 hash_t WebData::calc_hash() const
@@ -33,8 +33,14 @@ hash_t WebData::calc_hash() const
 	return hash_t(buffer);
 }
 
-uint64_t WebData::calc_cost(std::shared_ptr<const ChainParams> params) const {
-	return (8 + 4 + mime_type.size() + payload.size()) * params->min_txfee_byte;
+uint64_t WebData::num_bytes() const
+{
+	return mime_type.size() + payload.size();
+}
+
+uint64_t WebData::calc_cost(std::shared_ptr<const ChainParams> params) const
+{
+	return num_bytes() * params->min_txfee_byte;
 }
 
 std::vector<addr_t> WebData::get_dependency() const {

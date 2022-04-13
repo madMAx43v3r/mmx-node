@@ -1,13 +1,13 @@
 /*
- * PuzzleLock.cpp
+ * PuzzleTimeLock.cpp
  *
  *  Created on: Mar 13, 2022
  *      Author: mad
  */
 
 #include <mmx/contract/PubKey.hxx>
-#include <mmx/contract/PuzzleLock.hxx>
-#include <mmx/solution/PuzzleLock.hxx>
+#include <mmx/contract/PuzzleTimeLock.hxx>
+#include <mmx/solution/PuzzleTimeLock.hxx>
 #include <mmx/operation/Spend.hxx>
 #include <mmx/write_bytes.h>
 
@@ -15,12 +15,12 @@
 namespace mmx {
 namespace contract {
 
-vnx::bool_t PuzzleLock::is_valid() const
+vnx::bool_t PuzzleTimeLock::is_valid() const
 {
 	return Super::is_valid() && puzzle;
 }
 
-hash_t PuzzleLock::calc_hash() const
+hash_t PuzzleTimeLock::calc_hash() const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
@@ -38,22 +38,22 @@ hash_t PuzzleLock::calc_hash() const
 	return hash_t(buffer);
 }
 
-uint64_t PuzzleLock::calc_cost(std::shared_ptr<const ChainParams> params) const
+uint64_t PuzzleTimeLock::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	return Locked::calc_cost() + (puzzle ? puzzle->calc_cost(params) : 0) + 32 * params->min_txfee_byte;
+	return Super::calc_cost() + (puzzle ? puzzle->calc_cost(params) : 0);
 }
 
-std::vector<addr_t> PuzzleLock::get_dependency() const {
+std::vector<addr_t> PuzzleTimeLock::get_dependency() const {
 	return {owner, target};
 }
 
-std::vector<addr_t> PuzzleLock::get_parties() const {
+std::vector<addr_t> PuzzleTimeLock::get_parties() const {
 	return {owner, target};
 }
 
-std::vector<tx_out_t> PuzzleLock::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
+std::vector<tx_out_t> PuzzleTimeLock::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
-	if(auto claim = std::dynamic_pointer_cast<const solution::PuzzleLock>(operation->solution))
+	if(auto claim = std::dynamic_pointer_cast<const solution::PuzzleTimeLock>(operation->solution))
 	{
 		if(puzzle) {
 			auto op = vnx::clone(operation);
@@ -74,7 +74,7 @@ std::vector<tx_out_t> PuzzleLock::validate(std::shared_ptr<const Operation> oper
 		}
 		return {};
 	}
-	return Locked::validate(operation, context);
+	return Super::validate(operation, context);
 }
 
 

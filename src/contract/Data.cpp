@@ -27,8 +27,14 @@ hash_t Data::calc_hash() const
 	return hash_t(buffer);
 }
 
-uint64_t Data::calc_cost(std::shared_ptr<const ChainParams> params) const {
-	return (8 + 4 + (owner ? 32 : 0) + value.size()) * params->min_txfee_byte;
+uint64_t Data::num_bytes() const
+{
+	return value.size();
+}
+
+uint64_t Data::calc_cost(std::shared_ptr<const ChainParams> params) const
+{
+	return num_bytes() * params->min_txfee_byte;
 }
 
 std::vector<addr_t> Data::get_dependency() const {

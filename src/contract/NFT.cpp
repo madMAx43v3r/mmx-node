@@ -33,13 +33,19 @@ hash_t NFT::calc_hash() const
 	return hash_t(buffer);
 }
 
-uint64_t NFT::calc_cost(std::shared_ptr<const ChainParams> params) const {
-	uint32_t payload = 0;
+uint64_t NFT::num_bytes() const
+{
+	uint64_t num_bytes = 0;
 	for(const auto& entry : data.field) {
-		payload += entry.first.size();
-		payload += entry.second.size();
+		num_bytes += entry.first.size();
+		num_bytes += entry.second.size();
 	}
-	return (8 + 4 + 32 + (parent ? 32 : 0) + payload) * params->min_txfee_byte;
+	return num_bytes;
+}
+
+uint64_t NFT::calc_cost(std::shared_ptr<const ChainParams> params) const
+{
+	return num_bytes() * params->min_txfee_byte;
 }
 
 

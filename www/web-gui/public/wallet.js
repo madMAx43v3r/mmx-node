@@ -1349,7 +1349,7 @@ app.component('create-contract-menu', {
 					<label>Contract Type</label>
 					<select v-model="type">
 						<option value="staking">mmx.contract.Staking</option>
-						<option value="locked">mmx.contract.Locked</option>
+						<option value="locked">mmx.contract.TimeLock</option>
 					</select>
 				</div>
 				<div @click="submit" class="ui submit button" :class="{disabled: !type}">Create</div>
@@ -1518,7 +1518,7 @@ app.component('create-locked-contract', {
 		submit() {
 			this.confirmed = false;
 			const contract = {};
-			contract.__type = "mmx.contract.Locked";
+			contract.__type = "mmx.contract.TimeLock";
 			contract.owner = this.owner;
 			contract.chain_height = this.chain_height;
 			contract.delta_height = this.delta_height;
@@ -1558,7 +1558,7 @@ app.component('create-locked-contract', {
 	},
 	template: `
 		<div class="ui large label">Create</div>
-		<div class="ui large label">mmx.contract.Locked</div>
+		<div class="ui large label">mmx.contract.TimeLock</div>
 		<div class="ui raised segment">
 			<form class="ui form" id="form">
 				<div class="field">

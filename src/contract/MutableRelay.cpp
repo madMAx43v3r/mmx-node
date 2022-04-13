@@ -1,27 +1,27 @@
 /*
- * PlotNFT.cpp
+ * MutableRelay.cpp
  *
  *  Created on: Mar 14, 2022
  *      Author: mad
  */
 
-#include <mmx/contract/PlotNFT.hxx>
-#include <mmx/contract/PlotNFT_unlock.hxx>
+#include <mmx/contract/MutableRelay.hxx>
+#include <mmx/contract/MutableRelay_unlock.hxx>
 #include <mmx/operation/Spend.hxx>
 #include <mmx/operation/Mutate.hxx>
-#include <mmx/solution/PlotNFT.hxx>
+#include <mmx/solution/MutableRelay.hxx>
 #include <mmx/write_bytes.h>
 
 
 namespace mmx {
 namespace contract {
 
-vnx::bool_t PlotNFT::is_valid() const
+vnx::bool_t MutableRelay::is_valid() const
 {
 	return Super::is_valid() && owner != addr_t();
 }
 
-hash_t PlotNFT::calc_hash() const
+hash_t MutableRelay::calc_hash() const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
@@ -38,28 +38,29 @@ hash_t PlotNFT::calc_hash() const
 	return hash_t(buffer);
 }
 
-uint64_t PlotNFT::calc_cost(std::shared_ptr<const ChainParams> params) const {
-	return (8 + 4 + 2 * 32 + 4) * params->min_txfee_byte;
+uint64_t MutableRelay::calc_cost(std::shared_ptr<const ChainParams> params) const
+{
+	return 0;
 }
 
-std::vector<addr_t> PlotNFT::get_dependency() const {
+std::vector<addr_t> MutableRelay::get_dependency() const {
 	if(target) {
 		return {owner, *target};
 	}
 	return {owner};
 }
 
-std::vector<addr_t> PlotNFT::get_parties() const {
+std::vector<addr_t> MutableRelay::get_parties() const {
 	return get_dependency();
 }
 
-vnx::optional<addr_t> PlotNFT::get_owner() const {
+vnx::optional<addr_t> MutableRelay::get_owner() const {
 	return owner;
 }
 
-std::vector<tx_out_t> PlotNFT::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
+std::vector<tx_out_t> MutableRelay::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
-	if(auto claim = std::dynamic_pointer_cast<const solution::PlotNFT>(operation->solution))
+	if(auto claim = std::dynamic_pointer_cast<const solution::MutableRelay>(operation->solution))
 	{
 		if(!target) {
 			throw std::logic_error("!target");
@@ -86,7 +87,7 @@ std::vector<tx_out_t> PlotNFT::validate(std::shared_ptr<const Operation> operati
 	}
 	if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(operation))
 	{
-		if(auto method = std::dynamic_pointer_cast<const contract::PlotNFT_unlock>(mutate->method.to_value()))
+		if(auto method = std::dynamic_pointer_cast<const contract::MutableRelay_unlock>(mutate->method.to_value()))
 		{
 			if(method->height < context->height + unlock_delay) {
 				throw std::logic_error("invalid unlock height");
@@ -102,12 +103,12 @@ std::vector<tx_out_t> PlotNFT::validate(std::shared_ptr<const Operation> operati
 	return {};
 }
 
-void PlotNFT::unlock(const uint32_t& height)
+void MutableRelay::unlock(const uint32_t& height)
 {
 	unlock_height = height;
 }
 
-void PlotNFT::lock_target(const vnx::optional<addr_t>& new_target)
+void MutableRelay::lock_target(const vnx::optional<addr_t>& new_target)
 {
 	target = new_target;
 	unlock_height = nullptr;

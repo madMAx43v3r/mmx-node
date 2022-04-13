@@ -30,7 +30,7 @@ hash_t Contract::calc_hash() const
 }
 
 uint64_t Contract::calc_cost(std::shared_ptr<const ChainParams> params) const {
-	return (8 + 4) * params->min_txfee_byte;
+	throw std::logic_error("not implemented");
 }
 
 std::vector<addr_t> Contract::get_dependency() const {

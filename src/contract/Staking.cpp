@@ -36,7 +36,7 @@ hash_t Staking::calc_hash() const
 }
 
 uint64_t Staking::calc_cost(std::shared_ptr<const ChainParams> params) const {
-	return (8 + 4 + 32 * 3) * params->min_txfee_byte;
+	return 0;
 }
 
 std::vector<addr_t> Staking::get_dependency() const {

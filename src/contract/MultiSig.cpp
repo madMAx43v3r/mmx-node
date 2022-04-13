@@ -33,8 +33,9 @@ hash_t MultiSig::calc_hash() const
 	return hash_t(buffer);
 }
 
-uint64_t MultiSig::calc_cost(std::shared_ptr<const ChainParams> params) const {
-	return (8 + 4 + 32 * owners.size()) * params->min_txfee_byte;
+uint64_t MultiSig::calc_cost(std::shared_ptr<const ChainParams> params) const
+{
+	return 32 * owners.size() * params->min_txfee_byte;
 }
 
 std::vector<addr_t> MultiSig::get_parties() const {

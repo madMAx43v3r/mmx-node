@@ -13,7 +13,7 @@ namespace mmx {
 
 vnx::bool_t ProofOfSpaceNFT::is_valid() const
 {
-	return ksize > 0 && proof_bytes.size() <= 512;
+	return Super::is_valid() && ksize > 0 && proof_bytes.size() <= 512;
 }
 
 mmx::hash_t ProofOfSpaceNFT::calc_hash() const

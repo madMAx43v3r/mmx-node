@@ -2,9 +2,7 @@ package mmx.solution;
 
 import mmx.Solution;
 
-class PuzzleLock extends Solution {
-	
-	Solution* puzzle;
+class MutableRelay extends Solution {
 	
 	Solution* target;
 	

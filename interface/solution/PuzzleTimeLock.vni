@@ -2,7 +2,9 @@ package mmx.solution;
 
 import mmx.Solution;
 
-class PlotNFT extends Solution {
+class PuzzleTimeLock extends Solution {
+	
+	Solution* puzzle;
 	
 	Solution* target;
 	

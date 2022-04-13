@@ -1,11 +1,11 @@
 /*
- * Locked.cpp
+ * TimeLock.cpp
  *
  *  Created on: Mar 10, 2022
  *      Author: mad
  */
 
-#include <mmx/contract/Locked.hxx>
+#include <mmx/contract/TimeLock.hxx>
 #include <mmx/operation/Spend.hxx>
 #include <mmx/write_bytes.h>
 
@@ -13,12 +13,12 @@
 namespace mmx {
 namespace contract {
 
-vnx::bool_t Locked::is_valid() const
+vnx::bool_t TimeLock::is_valid() const
 {
 	return Super::is_valid() && owner != addr_t() && (chain_height || delta_height);
 }
 
-hash_t Locked::calc_hash() const
+hash_t TimeLock::calc_hash() const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
@@ -34,23 +34,23 @@ hash_t Locked::calc_hash() const
 	return hash_t(buffer);
 }
 
-uint64_t Locked::calc_cost(std::shared_ptr<const ChainParams> params) const {
-	return (8 + 4 + 32 + 2 * 5) * params->min_txfee_byte;
+uint64_t TimeLock::calc_cost(std::shared_ptr<const ChainParams> params) const {
+	return 0;
 }
 
-std::vector<addr_t> Locked::get_dependency() const {
+std::vector<addr_t> TimeLock::get_dependency() const {
 	return {owner};
 }
 
-std::vector<addr_t> Locked::get_parties() const {
+std::vector<addr_t> TimeLock::get_parties() const {
 	return {owner};
 }
 
-vnx::optional<addr_t> Locked::get_owner() const {
+vnx::optional<addr_t> TimeLock::get_owner() const {
 	return owner;
 }
 
-vnx::bool_t Locked::is_spendable(const utxo_t& utxo, std::shared_ptr<const Context> context) const
+vnx::bool_t TimeLock::is_spendable(const utxo_t& utxo, std::shared_ptr<const Context> context) const
 {
 	if(chain_height && context->height >= *chain_height) {
 		return true;
@@ -61,7 +61,7 @@ vnx::bool_t Locked::is_spendable(const utxo_t& utxo, std::shared_ptr<const Conte
 	return false;
 }
 
-std::vector<tx_out_t> Locked::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
+std::vector<tx_out_t> TimeLock::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
 	{
 		auto contract = context->get_contract(owner);

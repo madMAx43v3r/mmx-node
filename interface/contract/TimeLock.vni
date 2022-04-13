@@ -4,7 +4,7 @@ import mmx.hash_t;
 import mmx.addr_t;
 import mmx.Contract;
 
-class Locked extends mmx.Contract {
+class TimeLock extends mmx.Contract {
 	
 	addr_t owner;
 	

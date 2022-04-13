@@ -16,7 +16,7 @@ class Token extends Contract {
 	
 	string icon_url;
 	
-	int decimals;
+	int decimals = 6;
 	
 	optional<addr_t> owner;
 	

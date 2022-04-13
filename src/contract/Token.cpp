@@ -53,6 +53,8 @@ hash_t Token::calc_hash() const
 		write_bytes(out, entry.first);
 		write_bytes(out, entry.second);
 	}
+	write_field(out, "is_mintable", is_mintable);
+	write_field(out, "is_adjustable", is_adjustable);
 	write_field(out, "min_stake_duration", min_stake_duration);
 	out.flush();
 
@@ -61,8 +63,7 @@ hash_t Token::calc_hash() const
 
 uint64_t Token::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	return (8 + 4 + name.size() + symbol.size() + web_url.size() + icon_url.size()
-			+ 4 + 32 + 16 + (32 + 16) * stake_factors.size()) * params->min_txfee_byte;
+	return (name.size() + symbol.size() + web_url.size() + icon_url.size() + (32 + 16) * stake_factors.size()) * params->min_txfee_byte;
 }
 
 std::vector<addr_t> Token::get_dependency() const {

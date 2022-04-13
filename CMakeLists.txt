@@ -17,7 +17,7 @@ if(MSVC)
 	add_library(secp256k1 INTERFACE IMPORTED)
 	set_target_properties(secp256k1 PROPERTIES INTERFACE_LINK_LIBRARIES ${secp256k1_LIBRARY})
 
-	set(MMXIFACE_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} CACHE STRING "")	
+	set(MMXIFACE_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} CACHE STRING "")
 endif()
 
 set(ARITH "easy" CACHE STRING "BLS ARITH")
@@ -81,6 +81,9 @@ add_library(mmx_iface SHARED
 	src/Solution.cpp
 	src/ProofOfTime.cpp
 	src/ProofOfSpace.cpp
+	src/ProofOfStake.cpp
+	src/ProofOfSpaceOG.cpp
+	src/ProofOfSpaceNFT.cpp
 	src/ProofResponse.cpp
 	src/secp256k1.cpp
 	src/hash_t.cpp
@@ -96,14 +99,15 @@ add_library(mmx_iface SHARED
 	src/contract/MultiSig.cpp
 	src/contract/Token.cpp
 	src/contract/Staking.cpp
-	src/contract/Locked.cpp
-	src/contract/PuzzleLock.cpp
-	src/contract/PlotNFT.cpp
+	src/contract/TimeLock.cpp
+	src/contract/PuzzleTimeLock.cpp
+	src/contract/MutableRelay.cpp
+	src/contract/VirtualPlot.cpp
 	src/contract/VoteSheet.cpp
 	src/solution/PubKey.cpp
 	src/solution/MultiSig.cpp
-	src/solution/PuzzleLock.cpp
-	src/solution/PlotNFT.cpp
+	src/solution/PuzzleTimeLock.cpp
+	src/solution/MutableRelay.cpp
 	src/solution/BLS_PubKey.cpp
 	src/operation/Mint.cpp
 	src/operation/Spend.cpp

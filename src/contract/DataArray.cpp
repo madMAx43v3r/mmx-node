@@ -43,7 +43,7 @@ uint64_t DataArray::num_bytes() const
 
 uint64_t DataArray::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	return (8 + 4 + (owner ? 32 : 0) + num_bytes()) * params->min_txfee_byte;
+	return num_bytes() * params->min_txfee_byte;
 }
 
 std::vector<addr_t> DataArray::get_dependency() const {

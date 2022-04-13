@@ -13,11 +13,11 @@
 #include <mmx/contract/DataObject.hxx>
 #include <mmx/contract/MultiSig.hxx>
 #include <mmx/contract/NFT.hxx>
-#include <mmx/contract/PlotNFT.hxx>
+#include <mmx/contract/MutableRelay.hxx>
 #include <mmx/contract/Token.hxx>
 #include <mmx/contract/Staking.hxx>
-#include <mmx/contract/Locked.hxx>
-#include <mmx/contract/PuzzleLock.hxx>
+#include <mmx/contract/TimeLock.hxx>
+#include <mmx/contract/PuzzleTimeLock.hxx>
 #include <mmx/operation/Mint.hxx>
 #include <mmx/operation/Spend.hxx>
 #include <mmx/operation/Mutate.hxx>
@@ -421,9 +421,9 @@ public:
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::Staking>(base)) {
 			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::Locked>(base)) {
+		} else if(auto value = std::dynamic_pointer_cast<const contract::TimeLock>(base)) {
 			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::PuzzleLock>(base)) {
+		} else if(auto value = std::dynamic_pointer_cast<const contract::PuzzleTimeLock>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::Data>(base)) {
 			set(render(value, context));
@@ -431,7 +431,7 @@ public:
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::DataObject>(base)) {
 			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::PlotNFT>(base)) {
+		} else if(auto value = std::dynamic_pointer_cast<const contract::MutableRelay>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::MultiSig>(base)) {
 			set(render(value, context));
