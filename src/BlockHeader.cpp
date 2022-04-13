@@ -38,7 +38,7 @@ mmx::hash_t BlockHeader::calc_hash() const
 	write_field(out, "tx_hash", 	tx_hash);
 	out.flush();
 
-	return hash_t(hash_t(buffer).bytes);
+	return hash_t(buffer);
 }
 
 void BlockHeader::validate() const

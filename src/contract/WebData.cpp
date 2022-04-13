@@ -29,7 +29,7 @@ hash_t WebData::calc_hash() const
 	write_field(out, "payload", 	payload);
 	out.flush();
 
-	return hash_t(hash_t(buffer).bytes);
+	return hash_t(buffer);
 }
 
 uint64_t WebData::calc_cost(std::shared_ptr<const ChainParams> params) const {

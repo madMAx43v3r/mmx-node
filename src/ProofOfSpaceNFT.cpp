@@ -34,7 +34,7 @@ mmx::hash_t ProofOfSpaceNFT::calc_hash() const
 	write_field(out, "contract", 	contract);
 	out.flush();
 
-	return hash_t(hash_t(buffer).bytes);
+	return hash_t(buffer);
 }
 
 void ProofOfSpaceNFT::validate() const

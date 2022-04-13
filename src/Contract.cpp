@@ -25,7 +25,7 @@ hash_t Contract::calc_hash() const
 	write_field(out, "version", version);
 	out.flush();
 
-	return hash_t(hash_t(buffer).bytes);
+	return hash_t(buffer);
 }
 
 uint64_t Contract::calc_cost(std::shared_ptr<const ChainParams> params) const {

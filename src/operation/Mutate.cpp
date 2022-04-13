@@ -24,7 +24,7 @@ hash_t Mutate::calc_hash() const
 	write_field(out, "method", 	method);
 	out.flush();
 
-	return hash_t(hash_t(buffer).bytes);
+	return hash_t(buffer);
 }
 
 uint64_t Mutate::calc_cost(std::shared_ptr<const ChainParams> params) const {

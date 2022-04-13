@@ -55,7 +55,7 @@ hash_t Token::calc_hash() const
 	write_field(out, "min_stake_duration", min_stake_duration);
 	out.flush();
 
-	return hash_t(hash_t(buffer).bytes);
+	return hash_t(buffer);
 }
 
 uint64_t Token::calc_cost(std::shared_ptr<const ChainParams> params) const

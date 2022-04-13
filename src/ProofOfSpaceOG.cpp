@@ -35,7 +35,7 @@ mmx::hash_t ProofOfSpaceOG::calc_hash() const
 	write_field(out, "pool_key", 	pool_key);
 	out.flush();
 
-	return hash_t(hash_t(buffer).bytes);
+	return hash_t(buffer);
 }
 
 void ProofOfSpaceOG::validate() const
