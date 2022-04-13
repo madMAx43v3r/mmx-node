@@ -16,6 +16,7 @@
 
 #include <vnx/vnx.h>
 #include <algorithm>
+#include <filesystem>
 
 
 namespace mmx {
@@ -639,6 +640,7 @@ void Wallet::add_account(const uint32_t& index, const account_t& config)
 		throw std::logic_error("account already exists: " + std::to_string(index));
 	}
 	const auto key_path = storage_path + config.key_file;
+
 	if(auto key_file = vnx::read_from_file<KeyFile>(key_path)) {
 		if(enable_bls) {
 			bls_wallets[index] = std::make_shared<BLS_Wallet>(key_file, 11337);
@@ -647,6 +649,7 @@ void Wallet::add_account(const uint32_t& index, const account_t& config)
 	} else {
 		throw std::runtime_error("failed to read key file: " + key_path);
 	}
+	std::filesystem::permissions(key_path, std::filesystem::perms::owner_read | std::filesystem::perms::owner_write);
 }
 
 void Wallet::create_account(const account_t& config)
@@ -687,7 +690,7 @@ void Wallet::create_wallet(const account_t& config_, const vnx::optional<hash_t>
 		throw std::logic_error("name cannot be empty");
 	}
 	if(config.num_addresses < 1) {
-		throw std::logic_error("num_addresses cannot be zero");
+		throw std::logic_error("num_addresses <= 0");
 	}
 	if(config.key_file.empty()) {
 		config.key_file = "wallet_" + std::to_string(uint32_t(std::hash<hash_t>{}(key_file.seed_value))) + ".dat";
@@ -695,7 +698,9 @@ void Wallet::create_wallet(const account_t& config_, const vnx::optional<hash_t>
 	if(vnx::File(config.key_file).exists()) {
 		throw std::logic_error("key file already exists");
 	}
-	vnx::write_to_file(storage_path + config.key_file, key_file);
+	const auto key_path = storage_path + config.key_file;
+	vnx::write_to_file(key_path, key_file);
+	std::filesystem::permissions(key_path, std::filesystem::perms::owner_read | std::filesystem::perms::owner_write);
 
 	create_account(config);
 }

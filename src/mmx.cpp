@@ -24,6 +24,8 @@
 #include <vnx/vnx.h>
 #include <vnx/Proxy.h>
 
+#include <filesystem>
+
 
 std::unordered_map<mmx::addr_t, std::shared_ptr<const mmx::Contract>> contract_cache;
 
@@ -408,7 +410,6 @@ int main(int argc, char** argv)
 			}
 			else if(command == "create")
 			{
-				// TODO: use running Wallet if available
 				if(file_name.empty()) {
 					file_name = "wallet.dat";
 				}
@@ -433,6 +434,7 @@ int main(int argc, char** argv)
 					}
 				}
 				vnx::write_to_file(file_name, wallet);
+				std::filesystem::permissions(file_name, std::filesystem::perms::owner_read | std::filesystem::perms::owner_write);
 
 				// TODO: add key file in config/local/Wallet.json
 
