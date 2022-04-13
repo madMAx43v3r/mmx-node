@@ -11,7 +11,8 @@
 
 namespace mmx {
 
-vnx::bool_t Contract::is_valid() const {
+vnx::bool_t Contract::is_valid() const
+{
 	return version == 0;
 }
 

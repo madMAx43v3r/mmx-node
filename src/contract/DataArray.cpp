@@ -14,7 +14,7 @@ namespace contract {
 
 vnx::bool_t DataArray::is_valid() const
 {
-	return Contract::is_valid() && num_bytes() <= MAX_BYTES;
+	return Super::is_valid() && num_bytes() <= MAX_BYTES;
 }
 
 hash_t DataArray::calc_hash() const

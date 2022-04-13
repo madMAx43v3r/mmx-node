@@ -11,10 +11,6 @@
 namespace mmx {
 namespace solution {
 
-vnx::bool_t MultiSig::is_valid() const {
-	return true;
-}
-
 uint64_t MultiSig::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
 	uint64_t cost = 0;

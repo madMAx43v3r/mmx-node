@@ -16,8 +16,9 @@
 namespace mmx {
 namespace contract {
 
-vnx::bool_t PlotNFT::is_valid() const {
-	return Contract::is_valid() && owner != addr_t();
+vnx::bool_t PlotNFT::is_valid() const
+{
+	return Super::is_valid() && owner != addr_t();
 }
 
 hash_t PlotNFT::calc_hash() const

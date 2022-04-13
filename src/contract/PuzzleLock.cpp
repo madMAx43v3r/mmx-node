@@ -15,8 +15,9 @@
 namespace mmx {
 namespace contract {
 
-vnx::bool_t PuzzleLock::is_valid() const {
-	return Locked::is_valid() && puzzle;
+vnx::bool_t PuzzleLock::is_valid() const
+{
+	return Super::is_valid() && puzzle;
 }
 
 hash_t PuzzleLock::calc_hash() const

@@ -13,7 +13,7 @@ namespace solution {
 
 vnx::bool_t PlotNFT::is_valid() const
 {
-	return target && target->is_valid();
+	return Super::is_valid() && target && target->is_valid();
 }
 
 uint64_t PlotNFT::calc_cost(std::shared_ptr<const ChainParams> params) const

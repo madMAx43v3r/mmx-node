@@ -13,8 +13,9 @@
 namespace mmx {
 namespace contract {
 
-vnx::bool_t Locked::is_valid() const {
-	return Contract::is_valid() && owner != addr_t() && (chain_height || delta_height);
+vnx::bool_t Locked::is_valid() const
+{
+	return Super::is_valid() && owner != addr_t() && (chain_height || delta_height);
 }
 
 hash_t Locked::calc_hash() const

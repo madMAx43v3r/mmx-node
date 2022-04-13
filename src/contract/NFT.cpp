@@ -12,8 +12,9 @@
 namespace mmx {
 namespace contract {
 
-vnx::bool_t NFT::is_valid() const {
-	return Contract::is_valid() && creator != hash_t();
+vnx::bool_t NFT::is_valid() const
+{
+	return Super::is_valid() && creator != hash_t();
 }
 
 hash_t NFT::calc_hash() const

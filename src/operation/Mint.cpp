@@ -12,8 +12,9 @@
 namespace mmx {
 namespace operation {
 
-vnx::bool_t Mint::is_valid() const {
-	return Operation::is_valid() && target != hash_t() && amount > 0 && amount <= max_amount;
+vnx::bool_t Mint::is_valid() const
+{
+	return Super::is_valid() && target != hash_t() && amount > 0 && amount <= max_amount;
 }
 
 hash_t Mint::calc_hash() const

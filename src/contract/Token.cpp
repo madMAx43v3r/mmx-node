@@ -27,8 +27,9 @@ vnx::bool_t Token::is_valid() const
 			return false;
 		}
 	}
-	return Contract::is_valid() && name.size() <= 128
-			&& symbol.size() >= 2 && symbol.size() <= 6 && symbol != "MMX"
+	return Super::is_valid() && name.size() <= 128
+			&& symbol.size() >= 2 && symbol.size() <= 6
+			&& symbol != "MMX" && symbol.find_first_of(" \n\t\r") == std::string::npos
 			&& decimals >= 0 && decimals <= 12;
 }
 

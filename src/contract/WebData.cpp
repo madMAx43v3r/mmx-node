@@ -12,8 +12,9 @@
 namespace mmx {
 namespace contract {
 
-vnx::bool_t WebData::is_valid() const {
-	return Contract::is_valid() && !mime_type.empty();
+vnx::bool_t WebData::is_valid() const
+{
+	return Super::is_valid() && !mime_type.empty();
 }
 
 hash_t WebData::calc_hash() const

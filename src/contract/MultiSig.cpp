@@ -14,8 +14,9 @@
 namespace mmx {
 namespace contract {
 
-vnx::bool_t MultiSig::is_valid() const {
-	return Contract::is_valid() && num_required > 0 && owners.size() >= num_required && owners.size() <= MAX_OWNERS;
+vnx::bool_t MultiSig::is_valid() const
+{
+	return Super::is_valid() && num_required > 0 && owners.size() >= num_required && owners.size() <= MAX_OWNERS;
 }
 
 hash_t MultiSig::calc_hash() const
