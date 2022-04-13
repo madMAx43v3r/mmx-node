@@ -131,7 +131,7 @@ app.component('account-balance', {
 	},
 	created() {
 		this.update();
-		this.timer = setInterval(() => { this.update(); }, 30000);
+		this.timer = setInterval(() => { this.update(); }, 10000);
 	},
 	unmounted() {
 		clearInterval(this.timer);
@@ -1145,7 +1145,7 @@ app.component('account-offer-form', {
 	},
 	created() {
 		this.update();
-		this.timer = setInterval(() => { this.update(); }, 30000);
+		this.timer = setInterval(() => { this.update(); }, 10000);
 	},
 	mounted() {
 		$('.ui.checkbox').checkbox();
