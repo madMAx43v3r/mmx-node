@@ -24,9 +24,9 @@ module Node implements vnx.addons.HttpComponent {
 	int validate_interval_ms = 10000;		// to validate pending transactions [ms]
 	int sync_loss_delay = 60;				// when to re-sync if stuck [sec]
 	
-	uint max_history = 1000;
+	uint max_history = 1000;				// max block header history
 	uint tx_pool_limit = 100;				// number of full blocks
-	uint max_fork_length = 100000;			// to keep in memory at most
+	uint max_fork_length = 10000;			// to keep in memory at most (during sync)
 	
 	uint max_sync_jobs = 64;				// number of parallel requests
 	uint num_sync_retries = 3;				// how often to retry when reaching a peak
