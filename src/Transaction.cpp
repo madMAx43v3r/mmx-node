@@ -150,7 +150,7 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 		}
 	}
 	if(deploy) {
-		fee += deploy->calc_cost(params);
+		fee += params->min_txfee_deploy + deploy->calc_cost(params);
 	}
 	return fee;
 }
