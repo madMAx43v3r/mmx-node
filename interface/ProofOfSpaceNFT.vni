@@ -1,0 +1,22 @@
+package mmx;
+
+class ProofOfSpaceNFT extends ProofOfSpace {
+	
+	uchar ksize;
+	
+	vector<uchar> proof_bytes;
+	
+	addr_t contract;
+	
+	bls_pubkey_t local_key;
+	
+	bls_signature_t local_sig;
+	
+	
+	bool is_valid() const;
+	
+	hash_t calc_hash() const;
+	
+	void validate() const;
+	
+}
