@@ -12,7 +12,7 @@ namespace mmx {
 
 vnx::bool_t Solution::is_valid() const
 {
-	return false;
+	return version == 0;
 }
 
 uint64_t Solution::calc_cost(std::shared_ptr<const ChainParams> params) const

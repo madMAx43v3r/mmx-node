@@ -47,7 +47,7 @@ vnx::bool_t Transaction::is_valid() const
 			return false;
 		}
 	}
-	return calc_hash() == id;
+	return version == 0 && calc_hash() == id;
 }
 
 hash_t Transaction::calc_hash() const

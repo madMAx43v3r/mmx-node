@@ -103,6 +103,9 @@ uint32_t Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const has
 
 void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof) const
 {
+	if(proof->version != 0) {
+		throw std::logic_error("invalid version");
+	}
 	// check number of segments
 	if(proof->segments.size() < params->min_vdf_segments) {
 		throw std::logic_error("not enough segments: " + std::to_string(proof->segments.size()));
