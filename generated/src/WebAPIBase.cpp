@@ -5,6 +5,8 @@
 #include <mmx/WebAPIBase.hxx>
 #include <vnx/NoSuchMethod.hxx>
 #include <mmx/Block.hxx>
+#include <mmx/WebAPI_shutdown.hxx>
+#include <mmx/WebAPI_shutdown_return.hxx>
 #include <vnx/LogMsg.hxx>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
@@ -190,18 +192,19 @@ std::shared_ptr<vnx::TypeCode> WebAPIBase::static_create_type_code() {
 	type_code->code_hash = vnx::Hash64(0x115b2a990c9c91c3ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::WebAPIBase);
-	type_code->methods.resize(11);
-	type_code->methods[0] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
-	type_code->methods[1] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
-	type_code->methods[2] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
-	type_code->methods[3] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
-	type_code->methods[4] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
-	type_code->methods[5] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
-	type_code->methods[6] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
-	type_code->methods[7] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
-	type_code->methods[8] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
-	type_code->methods[9] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
-	type_code->methods[10] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
+	type_code->methods.resize(12);
+	type_code->methods[0] = ::mmx::WebAPI_shutdown::static_get_type_code();
+	type_code->methods[1] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
+	type_code->methods[2] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
+	type_code->methods[3] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
+	type_code->methods[4] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
+	type_code->methods[5] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
+	type_code->methods[6] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
+	type_code->methods[7] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
+	type_code->methods[8] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
+	type_code->methods[9] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
+	type_code->methods[10] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
+	type_code->methods[11] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
 	type_code->fields.resize(6);
 	{
 		auto& field = type_code->fields[0];
@@ -267,6 +270,12 @@ void WebAPIBase::vnx_handle_switch(std::shared_ptr<const vnx::Value> _value) {
 
 std::shared_ptr<vnx::Value> WebAPIBase::vnx_call_switch(std::shared_ptr<const vnx::Value> _method, const vnx::request_id_t& _request_id) {
 	switch(_method->get_type_hash()) {
+		case 0x75dd6111dc25b9d6ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::WebAPI_shutdown>(_method);
+			auto _return_value = ::mmx::WebAPI_shutdown_return::create();
+			shutdown();
+			return _return_value;
+		}
 		case 0xbbc7f1a01044d294ull: {
 			auto _args = std::static_pointer_cast<const ::vnx::ModuleInterface_vnx_get_config>(_method);
 			auto _return_value = ::vnx::ModuleInterface_vnx_get_config_return::create();

@@ -181,6 +181,7 @@ std::shared_ptr<vnx::TypeCode> Client_make_trade::static_create_type_code() {
 		field.name = "ask";
 		field.code = {33, 4};
 	}
+	type_code->permission = "mmx.permission_e.SPENDING";
 	type_code->build();
 	return type_code;
 }

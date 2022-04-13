@@ -30,6 +30,8 @@
 #include <mmx/contract/NFT_calc_hash_return.hxx>
 #include <mmx/contract/NFT_is_valid.hxx>
 #include <mmx/contract/NFT_is_valid_return.hxx>
+#include <mmx/contract/NFT_num_bytes.hxx>
+#include <mmx/contract/NFT_num_bytes_return.hxx>
 #include <mmx/hash_t.hpp>
 #include <vnx/Object.hpp>
 
@@ -179,7 +181,7 @@ std::shared_ptr<vnx::TypeCode> NFT::static_create_type_code() {
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<NFT>(); };
-	type_code->methods.resize(12);
+	type_code->methods.resize(13);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_dependency::static_get_type_code();
@@ -192,6 +194,7 @@ std::shared_ptr<vnx::TypeCode> NFT::static_create_type_code() {
 	type_code->methods[9] = ::mmx::contract::NFT_calc_cost::static_get_type_code();
 	type_code->methods[10] = ::mmx::contract::NFT_calc_hash::static_get_type_code();
 	type_code->methods[11] = ::mmx::contract::NFT_is_valid::static_get_type_code();
+	type_code->methods[12] = ::mmx::contract::NFT_num_bytes::static_get_type_code();
 	type_code->fields.resize(4);
 	{
 		auto& field = type_code->fields[0];
@@ -293,6 +296,12 @@ std::shared_ptr<vnx::Value> NFT::vnx_call_switch(std::shared_ptr<const vnx::Valu
 			auto _args = std::static_pointer_cast<const ::mmx::contract::NFT_is_valid>(_method);
 			auto _return_value = ::mmx::contract::NFT_is_valid_return::create();
 			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+		case 0xf3c6c4128c2b3725ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::NFT_num_bytes>(_method);
+			auto _return_value = ::mmx::contract::NFT_num_bytes_return::create();
+			_return_value->_ret_0 = num_bytes();
 			return _return_value;
 		}
 	}

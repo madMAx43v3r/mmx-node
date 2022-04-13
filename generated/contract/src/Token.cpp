@@ -59,7 +59,7 @@ namespace contract {
 
 
 const vnx::Hash64 Token::VNX_TYPE_HASH(0x2d8835d6429431b2ull);
-const vnx::Hash64 Token::VNX_CODE_HASH(0x5cd8be8398187463ull);
+const vnx::Hash64 Token::VNX_CODE_HASH(0xbd887e5b70e4c578ull);
 
 vnx::Hash64 Token::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -270,7 +270,7 @@ std::shared_ptr<vnx::TypeCode> Token::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.Token";
 	type_code->type_hash = vnx::Hash64(0x2d8835d6429431b2ull);
-	type_code->code_hash = vnx::Hash64(0x5cd8be8398187463ull);
+	type_code->code_hash = vnx::Hash64(0xbd887e5b70e4c578ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::Token);
@@ -334,7 +334,8 @@ std::shared_ptr<vnx::TypeCode> Token::static_create_type_code() {
 		auto& field = type_code->fields[5];
 		field.data_size = 4;
 		field.name = "decimals";
-		field.code = {3};
+		field.value = vnx::to_string(6);
+		field.code = {7};
 	}
 	{
 		auto& field = type_code->fields[6];

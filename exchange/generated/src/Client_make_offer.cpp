@@ -198,6 +198,7 @@ std::shared_ptr<vnx::TypeCode> Client_make_offer::static_create_type_code() {
 		field.value = vnx::to_string(1);
 		field.code = {3};
 	}
+	type_code->permission = "mmx.permission_e.SPENDING";
 	type_code->build();
 	return type_code;
 }

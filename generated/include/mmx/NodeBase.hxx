@@ -55,7 +55,7 @@ public:
 	int32_t sync_loss_delay = 60;
 	uint32_t max_history = 1000;
 	uint32_t tx_pool_limit = 100;
-	uint32_t max_fork_length = 100000;
+	uint32_t max_fork_length = 10000;
 	uint32_t max_sync_jobs = 64;
 	uint32_t num_sync_retries = 3;
 	uint32_t replay_height = -1;

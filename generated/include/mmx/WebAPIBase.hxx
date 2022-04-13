@@ -61,6 +61,7 @@ public:
 protected:
 	using Super::handle;
 	
+	virtual void shutdown() = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::Block> _value) {}
 	virtual void handle(std::shared_ptr<const ::vnx::LogMsg> _value) {}
 	virtual void http_request_async(std::shared_ptr<const ::vnx::addons::HttpRequest> request, const std::string& sub_path, const vnx::request_id_t& _request_id) const = 0;

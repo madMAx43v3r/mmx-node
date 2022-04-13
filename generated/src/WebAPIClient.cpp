@@ -4,6 +4,8 @@
 #include <mmx/package.hxx>
 #include <mmx/WebAPIClient.hxx>
 #include <mmx/Block.hxx>
+#include <mmx/WebAPI_shutdown.hxx>
+#include <mmx/WebAPI_shutdown_return.hxx>
 #include <vnx/LogMsg.hxx>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
@@ -47,6 +49,16 @@ WebAPIClient::WebAPIClient(const std::string& service_name)
 WebAPIClient::WebAPIClient(vnx::Hash64 service_addr)
 	:	Client::Client(service_addr)
 {
+}
+
+void WebAPIClient::shutdown() {
+	auto _method = ::mmx::WebAPI_shutdown::create();
+	vnx_request(_method, false);
+}
+
+void WebAPIClient::shutdown_async() {
+	auto _method = ::mmx::WebAPI_shutdown::create();
+	vnx_request(_method, true);
 }
 
 std::shared_ptr<const ::vnx::addons::HttpResponse> WebAPIClient::http_request(std::shared_ptr<const ::vnx::addons::HttpRequest> request, const std::string& sub_path) {

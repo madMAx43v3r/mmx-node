@@ -26,7 +26,7 @@ public:
 	std::string symbol;
 	std::string web_url;
 	std::string icon_url;
-	uint32_t decimals = 0;
+	int32_t decimals = 6;
 	vnx::optional<::mmx::addr_t> owner;
 	vnx::optional<::mmx::ulong_fraction_t> time_factor;
 	std::map<::mmx::addr_t, ::mmx::ulong_fraction_t> stake_factors;

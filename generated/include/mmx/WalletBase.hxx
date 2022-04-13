@@ -11,6 +11,7 @@
 #include <mmx/Transaction.hxx>
 #include <mmx/account_t.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/address_info_t.hxx>
 #include <mmx/balance_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/spend_options_t.hxx>
@@ -105,7 +106,9 @@ protected:
 	virtual std::map<::mmx::addr_t, ::mmx::balance_t> get_balances(const uint32_t& index, const uint32_t& min_confirm) const = 0;
 	virtual std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts(const uint32_t& index) const = 0;
 	virtual ::mmx::addr_t get_address(const uint32_t& index, const uint32_t& offset) const = 0;
+	virtual ::mmx::address_info_t get_address_info(const uint32_t& index, const uint32_t& offset) const = 0;
 	virtual std::vector<::mmx::addr_t> get_all_addresses(const int32_t& index) const = 0;
+	virtual std::vector<::mmx::address_info_t> get_all_address_infos(const int32_t& index) const = 0;
 	virtual ::mmx::account_t get_account(const uint32_t& index) const = 0;
 	virtual std::map<uint32_t, ::mmx::account_t> get_all_accounts() const = 0;
 	virtual void add_account(const uint32_t& index, const ::mmx::account_t& config) = 0;

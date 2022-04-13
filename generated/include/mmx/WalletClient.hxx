@@ -11,6 +11,7 @@
 #include <mmx/Transaction.hxx>
 #include <mmx/account_t.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/address_info_t.hxx>
 #include <mmx/balance_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/spend_options_t.hxx>
@@ -102,7 +103,11 @@ public:
 	
 	::mmx::addr_t get_address(const uint32_t& index = 0, const uint32_t& offset = 0);
 	
+	::mmx::address_info_t get_address_info(const uint32_t& index = 0, const uint32_t& offset = 0);
+	
 	std::vector<::mmx::addr_t> get_all_addresses(const int32_t& index = 0);
+	
+	std::vector<::mmx::address_info_t> get_all_address_infos(const int32_t& index = 0);
 	
 	::mmx::account_t get_account(const uint32_t& index = 0);
 	

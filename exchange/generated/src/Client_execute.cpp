@@ -166,7 +166,6 @@ std::shared_ptr<vnx::TypeCode> Client_execute::static_create_type_code() {
 		field.name = "order";
 		field.code = {19, 0};
 	}
-	type_code->permission = "mmx.permission_e.SPENDING";
 	type_code->build();
 	return type_code;
 }

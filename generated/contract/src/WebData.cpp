@@ -38,6 +38,8 @@
 #include <mmx/contract/WebData_get_parties_return.hxx>
 #include <mmx/contract/WebData_is_valid.hxx>
 #include <mmx/contract/WebData_is_valid_return.hxx>
+#include <mmx/contract/WebData_num_bytes.hxx>
+#include <mmx/contract/WebData_num_bytes_return.hxx>
 #include <mmx/contract/WebData_transfer.hxx>
 #include <mmx/contract/WebData_transfer_return.hxx>
 #include <mmx/contract/WebData_update.hxx>
@@ -194,7 +196,7 @@ std::shared_ptr<vnx::TypeCode> WebData::static_create_type_code() {
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<WebData>(); };
-	type_code->methods.resize(18);
+	type_code->methods.resize(19);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_dependency::static_get_type_code();
@@ -210,9 +212,10 @@ std::shared_ptr<vnx::TypeCode> WebData::static_create_type_code() {
 	type_code->methods[12] = ::mmx::contract::WebData_get_owner::static_get_type_code();
 	type_code->methods[13] = ::mmx::contract::WebData_get_parties::static_get_type_code();
 	type_code->methods[14] = ::mmx::contract::WebData_is_valid::static_get_type_code();
-	type_code->methods[15] = ::mmx::contract::WebData_transfer::static_get_type_code();
-	type_code->methods[16] = ::mmx::contract::WebData_update::static_get_type_code();
-	type_code->methods[17] = ::mmx::contract::WebData_validate::static_get_type_code();
+	type_code->methods[15] = ::mmx::contract::WebData_num_bytes::static_get_type_code();
+	type_code->methods[16] = ::mmx::contract::WebData_transfer::static_get_type_code();
+	type_code->methods[17] = ::mmx::contract::WebData_update::static_get_type_code();
+	type_code->methods[18] = ::mmx::contract::WebData_validate::static_get_type_code();
 	type_code->fields.resize(4);
 	{
 		auto& field = type_code->fields[0];
@@ -332,6 +335,12 @@ std::shared_ptr<vnx::Value> WebData::vnx_call_switch(std::shared_ptr<const vnx::
 			auto _args = std::static_pointer_cast<const ::mmx::contract::WebData_is_valid>(_method);
 			auto _return_value = ::mmx::contract::WebData_is_valid_return::create();
 			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+		case 0xcc1f554d1bf66504ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::WebData_num_bytes>(_method);
+			auto _return_value = ::mmx::contract::WebData_num_bytes_return::create();
+			_return_value->_ret_0 = num_bytes();
 			return _return_value;
 		}
 		case 0x4d5f84a22d5fe2edull: {
