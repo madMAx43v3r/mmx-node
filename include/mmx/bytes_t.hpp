@@ -120,9 +120,7 @@ vnx::Hash64 bytes_t<N>::crc64() const {
 
 template<size_t N>
 std::vector<uint8_t> bytes_t<N>::to_vector() const {
-	std::vector<uint8_t> res(N);
-	::memcpy(res.data(), bytes.data(), N);
-	return res;
+	return std::vector<uint8_t>(bytes.begin(), bytes.end());
 }
 
 template<size_t N>
@@ -142,9 +140,16 @@ std::ostream& operator<<(std::ostream& out, const bytes_t<N>& bytes) {
 
 template<size_t N, size_t M>
 std::vector<uint8_t> operator+(const bytes_t<N>& lhs, const bytes_t<M>& rhs) {
-	std::vector<uint8_t> res(N + M);
-	::memcpy(res.data(), lhs.bytes.data(), N);
-	::memcpy(res.data() + N, rhs.bytes.data(), M);
+	std::vector<uint8_t> res;
+	res.insert(res.end(), lhs.bytes.begin(), lhs.bytes.end());
+	res.insert(res.end(), rhs.bytes.begin(), rhs.bytes.end());
+	return res;
+}
+
+template<size_t N>
+std::vector<uint8_t> operator+(const std::vector<uint8_t>& lhs, const bytes_t<N>& rhs) {
+	auto res = lhs;
+	res.insert(res.end(), rhs.bytes.begin(), rhs.bytes.end());
 	return res;
 }
 
