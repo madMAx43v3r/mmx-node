@@ -1323,6 +1323,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	const auto log = change_log.front();
 	std::unordered_set<addr_t> addr_set;
 
+	// TODO: parallel for
 	for(const auto& entry : log->utxo_removed) {
 		const auto& stxo = entry.second;
 		if(!is_replay || is_db_replay) {
