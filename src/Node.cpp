@@ -295,7 +295,7 @@ std::shared_ptr<const Block> Node::get_block(const hash_t& hash) const
 std::shared_ptr<const BlockHeader> Node::get_block(const hash_t& hash, bool full_block) const
 {
 	if(auto block = find_block(hash)) {
-		return block;
+		return full_block ? block : block->get_header();
 	}
 	auto iter = hash_index.find(hash);
 	if(iter != hash_index.end()) {
@@ -325,7 +325,8 @@ std::shared_ptr<const BlockHeader> Node::get_block_at(const uint32_t& height, bo
 		if(height >= offset) {
 			const auto index = height - offset;
 			if(index < line.size()) {
-				return line[index]->block;
+				const auto block = line[index]->block;
+				return full_block ? block : block->get_header();
 			}
 		}
 	}
