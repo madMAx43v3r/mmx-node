@@ -24,6 +24,7 @@
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/solution/MultiSig.hxx>
 #include <mmx/exchange/trade_pair_t.hpp>
+#include <mmx/permission_e.hxx>
 
 #include <vnx/vnx.h>
 #include <vnx/ProcessClient.hxx>
@@ -126,7 +127,6 @@ void WebAPI::main()
 
 void WebAPI::update()
 {
-	node->vnx_set_session();
 	node->get_height(
 		[this](const uint32_t& height) {
 			if(height != curr_height) {
@@ -932,6 +932,14 @@ void WebAPI::shutdown()
 	});
 }
 
+template<typename T>
+void require(std::shared_ptr<const vnx::Session> session, const T& perm)
+{
+	if(!session->has_permission(perm.to_string_value_full())) {
+		throw std::logic_error("permission denied");
+	}
+}
+
 void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
 								const vnx::request_id_t& request_id) const
 {
@@ -943,19 +951,15 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	if(!vnx_session) {
 		throw std::logic_error("invalid session");
 	}
-	if(request->method != "GET" && request->method != "POST") {
+	if(request->method != "HEAD" && request->method != "GET" && request->method != "POST") {
 		throw std::logic_error("invalid method: " + request->method);
 	}
-	node->vnx_set_session(session->vsid);
-	wallet->vnx_set_session(session->vsid);
-	exch_client->vnx_set_session(session->vsid);
+	require<vnx::permission_e>(vnx_session, vnx::permission_e::CONST_REQUEST);
 
 	const auto& query = request->query_params;
 
 	if(sub_path == "/config/get") {
-		if(!vnx_session->has_permission_vnx(vnx::permission_e::READ_CONFIG)) {
-			throw std::logic_error("permission denied");
-		}
+		require<vnx::permission_e>(vnx_session, vnx::permission_e::READ_CONFIG);
 		const auto iter_key = query.find("key");
 		const auto config = vnx::get_all_configs(true);
 		vnx::Object object;
@@ -967,9 +971,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/config/set") {
-		if(!vnx_session->has_permission_vnx(vnx::permission_e::WRITE_CONFIG)) {
-			throw std::logic_error("permission denied");
-		}
+		require<vnx::permission_e>(vnx_session, vnx::permission_e::WRITE_CONFIG);
 		vnx::Object args;
 		vnx::from_string(request->payload.as_string(), args);
 		const auto iter_key = args.field.find("key");
@@ -1018,9 +1020,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/exit" || sub_path == "/node/exit") {
-		if(!vnx_session->has_permission_vnx(vnx::permission_e::SHUTDOWN)) {
-			throw std::logic_error("permission denied");
-		}
+		require<vnx::permission_e>(vnx_session, vnx::permission_e::SHUTDOWN);
 		((WebAPI*)this)->shutdown();
 		respond_status(request_id, 200);
 	}
@@ -1039,9 +1039,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 	}
 	else if(sub_path == "/node/log") {
-		if(!vnx_session->has_permission_vnx(vnx::permission_e::VIEW)) {
-			throw std::logic_error("permission denied");
-		}
+		require<vnx::permission_e>(vnx_session, vnx::permission_e::VIEW);
 		const auto iter_limit = query.find("limit");
 		const auto iter_level = query.find("level");
 		const auto iter_module = query.find("module");
@@ -1274,6 +1272,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/wallet/seed") {
+		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
 		const auto iter_index = query.find("index");
 		if(iter_index != query.end()) {
 			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
@@ -1404,6 +1403,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/wallet/send") {
+		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
 		if(request->payload.size()) {
 			vnx::Object args;
 			vnx::from_string(request->payload.as_string(), args);
@@ -1447,6 +1447,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/wallet/split") {
+		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
 		if(request->payload.size()) {
 			vnx::Object args;
 			vnx::from_string(request->payload.as_string(), args);
@@ -1480,6 +1481,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/wallet/deploy") {
+		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
 		const auto iter_index = query.find("index");
 		if(request->payload.size() && iter_index != query.end()) {
 			std::shared_ptr<Contract> contract;
@@ -1495,6 +1497,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/exchange/offer") {
+		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
 		if(request->payload.size()) {
 			vnx::Object args;
 			vnx::from_string(request->payload.as_string(), args);
@@ -1532,6 +1535,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/exchange/place") {
+		require<vnx::permission_e>(vnx_session, vnx::permission_e::REQUEST);
 		const auto iter_id = query.find("id");
 		if(iter_id != query.end()) {
 			const uint64_t id = vnx::from_string_value<int64_t>(iter_id->second);
@@ -1737,6 +1741,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/exchange/trade") {
+		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
 		if(request->payload.size()) {
 			vnx::Object args;
 			vnx::from_string(request->payload.as_string(), args);
