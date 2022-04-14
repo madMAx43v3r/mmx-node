@@ -826,6 +826,7 @@ app.component('account-send-form', {
 			fetch('/api/wallet/get_all_accounts')
 				.then(response => response.json())
 				.then(data => {
+					this.accounts = [];
 					for(const entry of data) {
 						const info = entry[1];
 						info.account = entry[0];
