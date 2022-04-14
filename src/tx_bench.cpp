@@ -23,8 +23,8 @@ int main(int argc, char** argv)
 	options["x"] = "contract";
 	options["node"] = "address";
 	options["speed"] = "TPS";
-	options["index"] = "0..?";
-	options["amount"] = "123.456";
+	options["index"] = "0";
+	options["amount"] = "1000";
 	options["target"] = "address";
 	options["contract"] = "address";
 
