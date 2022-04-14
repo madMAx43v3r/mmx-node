@@ -10,6 +10,7 @@
 
 #include <mmx/FarmerBase.hxx>
 #include <mmx/FarmerKeys.hxx>
+#include <mmx/WalletAsyncClient.hxx>
 
 
 namespace mmx {
@@ -40,8 +41,9 @@ private:
 	skey_t find_skey(const bls_pubkey_t& pubkey) const;
 
 private:
-	std::unordered_map<bls_pubkey_t, skey_t> key_map;
+	std::shared_ptr<WalletAsyncClient> wallet;
 
+	std::unordered_map<bls_pubkey_t, skey_t> key_map;
 	std::unordered_map<vnx::Hash64, std::shared_ptr<const vnx::Sample>> info_map;
 
 };

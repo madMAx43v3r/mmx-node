@@ -7,7 +7,6 @@
 
 #include <mmx/Farmer.h>
 #include <mmx/Transaction.hxx>
-#include <mmx/WalletClient.hxx>
 
 
 namespace mmx {
@@ -30,6 +29,8 @@ void Farmer::main()
 	if(reward_addr) {
 		log(INFO) << "Reward address: " << reward_addr->to_string();
 	}
+	wallet = std::make_shared<WalletAsyncClient>(wallet_server);
+	add_async_client(wallet);
 
 	set_timer_millis(10000, std::bind(&Farmer::update, this));
 
@@ -62,30 +63,38 @@ void Farmer::update()
 {
 	vnx::open_flow(vnx::get_pipe(node_server), vnx::get_pipe(vnx_get_id()));
 
-	WalletClient wallet(wallet_server);
-	try {
-		for(auto keys : wallet.get_all_farmer_keys()) {
-			if(keys) {
+	wallet->get_all_farmer_keys(
+		[this](const std::vector<std::shared_ptr<const FarmerKeys>>& list) {
+			for(auto keys : list) {
 				if(key_map.emplace(keys->farmer_public_key, keys->farmer_private_key).second) {
 					log(INFO) << "Got Farmer Key: " << keys->farmer_public_key;
 				}
 			}
-		}
-	}
-	catch(const std::exception& ex) {
-		log(WARN) << "Failed to get keys from wallet: " << ex.what();
-	}
-	try {
-		if(!reward_addr) {
-			const auto accounts = wallet.get_all_accounts();
-			if(accounts.empty()) {
-				throw std::logic_error("no wallet available");
-			}
-			reward_addr = wallet.get_address(accounts.begin()->first, 0);
-			log(INFO) << "Reward address: " << reward_addr->to_string();
-		}
-	} catch(const std::exception& ex) {
-		log(WARN) << "Failed to get reward address from wallet: " << ex.what();
+		},
+		[this](const vnx::exception& ex) {
+			log(WARN) << "Failed to get keys from wallet: " << ex.what();
+		});
+
+	if(!reward_addr) {
+		wallet->get_all_accounts(
+			[this](const std::map<uint32_t, account_t>& accounts) {
+				if(accounts.empty()) {
+					log(WARN) << "Failed to get reward address from wallet: no wallet available";
+					return;
+				}
+				wallet->get_address(accounts.begin()->first, 0,
+					[this](const addr_t& address) {
+						reward_addr = address;
+						log(INFO) << "Reward address: " << address.to_string();
+					},
+					[this](const vnx::exception& ex) {
+						log(WARN) << "Failed to get reward address from wallet: " << ex.what();
+					});
+
+			},
+			[this](const vnx::exception& ex) {
+				log(WARN) << "Failed to get reward address from wallet: " << ex.what();
+			});
 	}
 
 	const auto now = vnx::get_sync_time_micros();
