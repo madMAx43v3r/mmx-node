@@ -1323,16 +1323,30 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	const auto log = change_log.front();
 	std::unordered_set<addr_t> addr_set;
 
-	// TODO: parallel for
-	for(const auto& entry : log->utxo_removed) {
-		const auto& stxo = entry.second;
-		if(!is_replay || is_db_replay) {
-			if(addr_set.insert(stxo.address).second) {
-				addr_log.insert(block->height, stxo.address);
-			}
-			stxo_log.insert(block->height, entry.first);
+	if(!is_replay || is_db_replay)
+	{
+		std::vector<txio_key_t> stxo_key_list;
+		std::vector<std::pair<txio_key_t, stxo_t>> stxo_list;
+		std::map<std::pair<addr_t, uint32_t>, std::vector<txio_key_t>> saddr_lists;
+		for(const auto& entry : log->utxo_removed) {
+			const auto& key = entry.first;
+			const auto& stxo = entry.second;
+			stxo_list.push_back(entry);
+			stxo_key_list.push_back(key);
+			addr_set.insert(stxo.address);
+			saddr_lists[std::make_pair(stxo.address, block->height)].push_back(key);
+		}
+		addr_log.insert_many(block->height, std::vector<addr_t>(addr_set.begin(), addr_set.end()));
+		stxo_log.insert_many(block->height, stxo_key_list);
+
+		for(const auto& entry : saddr_lists) {
+			saddr_map.insert_many(entry.first, entry.second);
+		}
+#pragma omp parallel for
+		for(int i = 0; i < int(stxo_list.size()); ++i)
+		{
+			const auto& entry = stxo_list[i];
 			stxo_index.insert(entry.first, entry.second);
-			saddr_map.insert(std::make_pair(stxo.address, block->height), entry.first);
 		}
 	}
 	for(const auto& txid : log->tx_added) {
