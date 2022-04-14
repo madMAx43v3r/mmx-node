@@ -850,6 +850,10 @@ app.component('account-send-form', {
 		},
 		submit() {
 			this.confirmed = false;
+			if(this.target.length != 63 || !this.target.startsWith("mmx1")) {
+				this.error = "invalid destination address";
+				return;
+			}
 			const req = {};
 			req.index = this.index;
 			req.amount = this.amount;
