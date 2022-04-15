@@ -851,7 +851,7 @@ app.component('account-send-form', {
 		},
 		submit() {
 			this.confirmed = false;
-			if(this.target.length != 63 || !this.target.startsWith("mmx1")) {
+			if(this.target.length != 62 || !this.target.startsWith("mmx1")) {
 				this.error = "invalid destination address";
 				return;
 			}
@@ -1113,7 +1113,7 @@ app.component('account-offer-form', {
 		},
 		submit() {
 			this.confirmed = false;
-			if(this.ask_currency.length != 63 || !this.ask_currency.startsWith("mmx1")) {
+			if(this.ask_currency.length != 62 || !this.ask_currency.startsWith("mmx1")) {
 				this.error = "invalid currency address";
 				return;
 			}
