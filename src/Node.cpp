@@ -1284,11 +1284,6 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 			const auto& entry = stxo_list[i];
 			stxo_index.insert(entry.first, entry.second);
 		}
-	}
-	for(const auto& txid : log->tx_added) {
-		tx_map.erase(txid);
-	}
-	if(!is_replay || is_db_replay) {
 		for(const auto& entry : log->deployed) {
 			if(auto owner = entry.second->get_owner()) {
 				owner_map.insert(*owner, entry.first);
@@ -1320,6 +1315,9 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 				}
 			}
 		}
+	}
+	for(const auto& txid : log->tx_added) {
+		tx_map.erase(txid);
 	}
 	{
 		const auto range = challenge_map.equal_range(block->height);
