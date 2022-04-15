@@ -66,5 +66,16 @@ std::shared_ptr<const BlockHeader> Block::get_header() const
 	return header;
 }
 
+void Block::validate() const
+{
+	Super::validate();
+
+	if(!farmer_sig) {
+		if(tx_base || tx_list.size()) {
+			throw std::logic_error("cannot have transactions");
+		}
+	}
+}
+
 
 } // mmx

@@ -24,6 +24,9 @@ std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
 	if(!prev) {
 		throw std::logic_error("invalid prev");
 	}
+	if(block->version != 0) {
+		throw std::logic_error("invalid version");
+	}
 	if(prev->hash != state_hash) {
 		throw std::logic_error("state mismatch");
 	}
@@ -39,31 +42,22 @@ std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
 	if(block->tx_count != block->tx_list.size()) {
 		throw std::logic_error("invalid tx_count");
 	}
-	if(auto proof = block->proof) {
+	const auto proof_score = block->proof ? block->proof->score : params->score_threshold;
+	if(block->space_diff != calc_new_space_diff(params, prev->space_diff, proof_score)) {
+		throw std::logic_error("invalid space_diff");
+	}
+	if(block->farmer_sig) {
 		// Note: farmer_sig already verified together with proof
 		validate_diff_adjust(block->time_diff, prev->time_diff);
-
-		if(block->space_diff != calc_new_space_diff(params, prev->space_diff, proof->score)) {
-			throw std::logic_error("invalid space_diff");
-		}
 	} else {
-		if(block->version != 0) {
-			throw std::logic_error("invalid version");
-		}
-		if(block->tx_base || !block->tx_list.empty()) {
-			throw std::logic_error("transactions not allowed");
+		if(block->nonce) {
+			throw std::logic_error("invalid block nonce");
 		}
 		if(block->time_diff != prev->time_diff) {
 			throw std::logic_error("invalid time_diff");
 		}
-		if(block->space_diff != calc_new_space_diff(params, prev->space_diff, params->score_threshold)) {
-			throw std::logic_error("invalid space_diff");
-		}
-		if(block->nonce) {
-			throw std::logic_error("invalid block nonce");
-		}
-		if(block->farmer_sig) {
-			throw std::logic_error("invalid farmer signature");
+		if(block->tx_base || block->tx_list.size()) {
+			throw std::logic_error("transactions not allowed");
 		}
 	}
 	auto context = Context::create();

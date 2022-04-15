@@ -55,6 +55,10 @@ bool Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
 		block->space_diff = calc_new_space_diff(params, prev->space_diff, params->score_threshold);
 		block->vdf_iters = vdf_point->vdf_iters;
 		block->vdf_output = vdf_point->output;
+
+		if(auto response = find_proof(get_challenge(block, vdf_point->output[1]))) {
+			block->proof = response->proof;
+		}
 		block->finalize();
 		add_block(block);
 		return true;
@@ -332,14 +336,9 @@ void Node::update()
 			hash_t vdf_challenge;
 			if(find_vdf_challenge(prev, vdf_challenge, 1))
 			{
-				const auto challenge = get_challenge(prev, vdf_challenge, 1);
-
-				auto iter = proof_map.find(challenge);
-				if(iter != proof_map.end()) {
-					const auto response = iter->second;
+				if(auto response = find_proof(get_challenge(prev, vdf_challenge, 1))) {
 					// check if it's our proof
-					if(vnx::get_pipe(response->farmer_addr))
-					{
+					if(vnx::get_pipe(response->farmer_addr)) {
 						// check if we have a better proof
 						if(!best_fork || response->proof->score < best_fork->proof_score) {
 							try {
@@ -348,7 +347,6 @@ void Node::update()
 								}
 							}
 							catch(const std::exception& ex) {
-								proof_map.erase(iter);
 								log(WARN) << "Failed to create a block: " << ex.what();
 							}
 							// revert back to peak

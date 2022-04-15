@@ -991,7 +991,7 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> proof)
 
 void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 {
-	if(!block->is_valid() || !block->proof) {
+	if(!block->is_valid() || !block->farmer_sig) {
 		return;
 	}
 	if(!receive_msg_hash(block->hash, client)) {

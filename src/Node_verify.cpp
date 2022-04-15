@@ -38,11 +38,10 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 		fork->proof_score = verify_proof(proof, challenge, diff_block->space_diff);
 
 		// check if block has a weak proof
-		const auto iter = proof_map.find(challenge);
-		if(iter != proof_map.end()) {
-			if(fork->proof_score > iter->second->proof->score) {
+		if(auto response = find_proof(challenge)) {
+			if(fork->proof_score > response->proof->score) {
 				fork->has_weak_proof = true;
-				log(INFO) << "Got weak proof block for height " << block->height << " with score " << fork->proof_score << " > " << iter->second->proof->score;
+				log(INFO) << "Got weak proof block for height " << block->height << " with score " << fork->proof_score << " > " << response->proof->score;
 			}
 		}
 	} else {

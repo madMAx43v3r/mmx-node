@@ -1613,7 +1613,7 @@ Node::find_vdf_point(	const uint32_t height, const uint64_t vdf_start, const uin
 	return nullptr;
 }
 
-std::shared_ptr<Node::vdf_point_t> Node::find_next_vdf_point(std::shared_ptr<const BlockHeader> block)
+std::shared_ptr<Node::vdf_point_t> Node::find_next_vdf_point(std::shared_ptr<const BlockHeader> block) const
 {
 	if(auto diff_block = find_diff_header(block, 1))
 	{
@@ -1630,6 +1630,15 @@ std::shared_ptr<Node::vdf_point_t> Node::find_next_vdf_point(std::shared_ptr<con
 				return point;
 			}
 		}
+	}
+	return nullptr;
+}
+
+std::shared_ptr<const ProofResponse> Node::find_proof(const hash_t& challenge) const
+{
+	auto iter = proof_map.find(challenge);
+	if(iter != proof_map.end()) {
+		return iter->second;
 	}
 	return nullptr;
 }
