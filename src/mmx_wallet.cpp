@@ -32,6 +32,10 @@ int main(int argc, char** argv)
 	}
 	const auto root_path = mmx_home + mmx_network;
 
+	if(!root_path.empty()) {
+		vnx::Directory(root_path).create();
+	}
+
 	std::map<std::string, std::string> options;
 	options["n"] = "node";
 	options["node"] = "address";
@@ -39,7 +43,6 @@ int main(int argc, char** argv)
 	vnx::init("mmx_wallet", argc, argv, options);
 
 	std::string node_url = ":11330";
-
 	vnx::read_config("node", node_url);
 
 	vnx::rocksdb::sync_type_codes(root_path + "wallet/type_codes");

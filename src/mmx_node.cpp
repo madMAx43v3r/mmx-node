@@ -39,7 +39,10 @@ int main(int argc, char** argv)
 	}
 	auto root_path = mmx_home + mmx_network;
 
-	vnx::write_config("mmx_node.log_file_path", mmx_home + mmx_network + "logs/");
+	if(!root_path.empty()) {
+		vnx::Directory(root_path).create();
+	}
+	vnx::write_config("mmx_node.log_file_path", root_path + "logs/");
 
 	std::map<std::string, std::string> options;
 	options["t"] = "timelord";
