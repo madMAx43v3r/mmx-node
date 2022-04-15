@@ -40,7 +40,7 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 		fork->proof_score = params->score_threshold;
 	}
 
-	fork->weight = 1;
+	fork->weight = block->farmer_sig ? 2 : 1;
 	if(block->proof) {
 		fork->weight += params->score_threshold - fork->proof_score;
 	}
