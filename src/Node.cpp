@@ -1344,7 +1344,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	if(is_synced && fork) {
 		Node::log(INFO) << "Committed height " << block->height << " with: ntx = " << block->tx_list.size()
 				<< ", score = " << fork->proof_score << ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff
-				<< ", took "(vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+				<< ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 	}
 	if(!is_replay) {
 		publish(block, output_committed_blocks, is_synced ? 0 : BLOCKING);
