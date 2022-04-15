@@ -1109,6 +1109,10 @@ app.component('account-offer-form', {
 		},
 		submit() {
 			this.confirmed = false;
+			if(this.ask_currency.length != 63 || !this.ask_currency.startsWith("mmx1")) {
+				this.error = "invalid currency address";
+				return;
+			}
 			const req = {};
 			req.index = this.index;
 			const pair = {};
