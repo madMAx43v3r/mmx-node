@@ -54,10 +54,6 @@ void Node::main()
 #endif
 	vdf_threads = std::make_shared<vnx::ThreadPool>(num_vdf_threads);
 
-	if(light_mode) {
-		vnx::read_config("light_address_set", light_address_set);
-		log(INFO) << "Got " << light_address_set.size() << " addresses for light mode.";
-	}
 	router = std::make_shared<RouterAsyncClient>(router_name);
 	timelord = std::make_shared<TimeLordAsyncClient>(timelord_name);
 	http = std::make_shared<vnx::addons::HttpInterface<Node>>(this, vnx_name);
@@ -212,12 +208,10 @@ void Node::main()
 		}
 	}
 
-	if(!light_mode) {
-		subscribe(input_transactions, max_queue_ms);
-	}
 	subscribe(input_vdfs, max_queue_ms);
 	subscribe(input_proof, max_queue_ms);
 	subscribe(input_blocks, max_queue_ms);
+	subscribe(input_transactions, max_queue_ms);
 	subscribe(input_timelord_vdfs, max_queue_ms);
 	subscribe(input_harvester_proof, max_queue_ms);
 
@@ -682,41 +676,6 @@ std::map<addr_t, std::shared_ptr<const Contract>> Node::get_contracts_owned(cons
 	return res;
 }
 
-bool Node::include_transaction(std::shared_ptr<const Transaction> tx)
-{
-	for(const auto& in : tx->inputs) {
-		if(utxo_map.count(in.prev)) {
-			return true;
-		}
-	}
-	for(const auto& out : tx->outputs) {
-		if(light_address_set.count(out.address)) {
-			return true;
-		}
-	}
-	for(const auto& out : tx->exec_outputs) {
-		if(light_address_set.count(out.address)) {
-			return true;
-		}
-	}
-	for(const auto& op : tx->execute) {
-		if(op && light_address_set.count(op->address)) {
-			return true;
-		}
-	}
-	if(const auto& contract = tx->deploy) {
-		for(const auto& addr : contract->get_parties()) {
-			if(light_address_set.count(addr)) {
-				return true;
-			}
-		}
-		if(std::dynamic_pointer_cast<const contract::Token>(contract)) {
-			return true;
-		}
-	}
-	return false;
-}
-
 void Node::add_block(std::shared_ptr<const Block> block)
 {
 	if(fork_tree.count(block->hash)) {
@@ -728,26 +687,6 @@ void Node::add_block(std::shared_ptr<const Block> block)
 	}
 	if(!block->is_valid()) {
 		return;
-	}
-	if(light_mode) {
-		auto copy = vnx::clone(block);
-		if(auto tx = std::dynamic_pointer_cast<const Transaction>(copy->tx_base)) {
-			if(!include_transaction(tx)) {
-				auto dummy = TransactionBase::create();
-				dummy->id = tx->id;
-				copy->tx_base = dummy;
-			}
-		}
-		for(auto& base : copy->tx_list) {
-			if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
-				if(!include_transaction(tx)) {
-					auto dummy = TransactionBase::create();
-					dummy->id = tx->id;
-					base = dummy;
-				}
-			}
-		}
-		block = copy;
 	}
 	auto fork = std::make_shared<fork_t>();
 	fork->recv_time = vnx::get_wall_time_micros();
@@ -1213,9 +1152,8 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 		}
 		if(!fork->is_verified) {
 			try {
-				if(!light_mode) {
-					block = validate(block);
-				}
+				block = validate(block);
+
 				if(!fork->is_vdf_verified) {
 					if(auto prev = find_prev_header(block)) {
 						if(auto infuse = find_prev_header(block, params->infuse_delay + 1, true)) {
@@ -1494,9 +1432,6 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 		}
 	}
 	if(auto contract = tx->deploy) {
-		if(light_mode) {
-			light_address_set.insert(tx->id);
-		}
 		log.deployed.emplace(tx->id, contract);
 	}
 	tx_pool.erase(tx->id);
@@ -1550,9 +1485,6 @@ bool Node::revert() noexcept
 			tx_pool[txid].tx = iter->second.tx;
 			tx_map.erase(iter);
 		}
-	}
-	for(const auto& entry : log->deployed) {
-		light_address_set.erase(entry.first);
 	}
 	change_log.pop_back();
 	state_hash = log->prev_state;
@@ -1739,10 +1671,8 @@ std::shared_ptr<const BlockHeader> Node::read_block(vnx::File& file, int64_t* fi
 					if(auto value = vnx::read(in)) {
 						if(auto tx = std::dynamic_pointer_cast<TransactionBase>(value)) {
 							if(is_db_replay) {
-								if(!light_mode || std::dynamic_pointer_cast<const Transaction>(tx)) {
-									tx_log.insert(block->height, tx->id);
-									tx_index.insert(tx->id, std::make_pair(offset, block->height));
-								}
+								tx_log.insert(block->height, tx->id);
+								tx_index.insert(tx->id, std::make_pair(offset, block->height));
 							}
 							block->tx_list.push_back(tx);
 						}
@@ -1771,25 +1701,13 @@ void Node::write_block(std::shared_ptr<const Block> block)
 	}
 	block_index[block->height] = std::make_pair(offset, block->hash);
 
-	auto header = block->get_header();
-	if(light_mode) {
-		auto copy = vnx::clone(header);
-		copy->proof = nullptr;
-		header = copy;
-	}
-	vnx::write(out, header);
+	vnx::write(out, block->get_header());
 
 	for(const auto& tx : block->tx_list) {
-		bool is_full = false;
 		const auto offset = out.get_output_pos();
-		if(!light_mode || std::dynamic_pointer_cast<const Transaction>(tx)) {
-			is_full = true;
-			tx_log.insert(block->height, tx->id);
-			tx_index.insert(tx->id, std::make_pair(offset, block->height));
-		}
-		if(!light_mode || is_full) {
-			vnx::write(out, tx);
-		}
+		tx_log.insert(block->height, tx->id);
+		tx_index.insert(tx->id, std::make_pair(offset, block->height));
+		vnx::write(out, tx);
 	}
 	vnx::write(out, nullptr);
 	block_chain->flush();

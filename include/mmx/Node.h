@@ -198,8 +198,6 @@ private:
 
 	bool add_dummy_block(std::shared_ptr<const BlockHeader> prev);
 
-	bool include_transaction(std::shared_ptr<const Transaction> tx);
-
 	void validate_pool();
 
 	std::vector<tx_data_t> validate_pending(const uint64_t verify_limit, const uint64_t select_limit, bool only_new);
@@ -329,8 +327,6 @@ private:
 
 	std::unordered_multimap<uint32_t, hash_t> challenge_map;						// [height => challenge]
 	std::unordered_map<hash_t, std::shared_ptr<const ProofResponse>> proof_map;		// [challenge => proof]
-
-	std::unordered_set<addr_t> light_address_set;									// addresses for light mode
 
 	bool is_replay = true;
 	bool is_synced = false;

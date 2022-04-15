@@ -38,7 +38,6 @@ module Node implements vnx.addons.HttpComponent {
 	int opencl_device = 0;					// device to use for VDF verification (-1 to disable)
 	
 	bool do_sync = true;
-	bool light_mode = false;
 	bool show_warnings = false;
 	
 	string storage_path;

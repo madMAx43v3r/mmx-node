@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 	const auto params = mmx::get_params();
 
 	if(params->vdf_seed == "test1" || params->vdf_seed == "test2" || params->vdf_seed == "test3" || params->vdf_seed == "test4" || params->vdf_seed == "test5") {
-		vnx::log_error() << "This version is not compatible with testnet 1/2/3/4/5, please remove NETWORK file and try again to switch to testnet6.";
+		vnx::log_error() << "This version is not compatible with testnet 1-5, please remove NETWORK file and try again to switch to testnet6.";
 		vnx::close();
 		return -1;
 	}
@@ -60,13 +60,11 @@ int main(int argc, char** argv)
 	bool with_wallet = true;
 	bool with_timelord = true;
 	bool with_harvester = true;
-	bool light_mode = false;
 	std::string public_endpoint = "0.0.0.0:11330";
 	vnx::read_config("wallet", with_wallet);
 	vnx::read_config("farmer", with_farmer);
 	vnx::read_config("timelord", with_timelord);
 	vnx::read_config("harvester", with_harvester);
-	vnx::read_config("light_mode", light_mode);
 	vnx::read_config("public_endpoint", public_endpoint);
 
 #ifdef WITH_OPENCL
@@ -80,14 +78,6 @@ int main(int argc, char** argv)
 	}
 #endif
 
-	if(light_mode) {
-		with_farmer = false;
-		with_timelord = false;
-		root_path += "light_node/";
-	}
-	if(!root_path.empty()) {
-		vnx::Directory(root_path).create();
-	}
 	if(with_farmer) {
 		with_wallet = true;
 	} else {
@@ -131,20 +121,6 @@ int main(int argc, char** argv)
 			vnx::Handle<vnx::Server> module = new vnx::Server("Server5", vnx::Endpoint::from_url(":11335"));
 			module.start_detached();
 		}
-	}
-	if(light_mode) {
-		std::vector<mmx::addr_t> light_set;
-		vnx::File file(root_path + "light_address_set.dat");
-		if(file.exists()) {
-			file.open("rb");
-			vnx::read_generic(file.in, light_set);
-		} else {
-			mmx::WalletClient wallet("Wallet");
-			light_set = wallet.get_all_addresses(-1);
-			file.open("wb");
-			vnx::write_generic(file.out, light_set);
-		}
-		vnx::write_config("light_address_set", light_set);
 	}
 	{
 		vnx::Handle<vnx::addons::FileServer> module = new vnx::addons::FileServer("FileServer_1");

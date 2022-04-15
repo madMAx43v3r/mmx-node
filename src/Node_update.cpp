@@ -258,9 +258,6 @@ void Node::update()
 		update_timer->reset();
 		return;
 	}
-	if(light_mode) {
-		return;
-	}
 	{
 		// publish time infusions for VDF 0
 		auto infuse = TimeInfusion::create();
