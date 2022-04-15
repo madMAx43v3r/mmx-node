@@ -1658,12 +1658,13 @@ std::shared_ptr<const BlockHeader> Node::read_block(vnx::File& file, int64_t* fi
 	try {
 		if(auto header = std::dynamic_pointer_cast<BlockHeader>(vnx::read(in))) {
 			if(is_db_replay) {
-				if(auto tx = std::dynamic_pointer_cast<const Transaction>(header->tx_base)) {
+				if(auto tx = header->tx_base) {
 					tx_log.insert(header->height, tx->id);
 					tx_index.insert(tx->id, std::make_pair(offset, header->height));
 				}
 			}
 			if(full_block) {
+				std::vector<hash_t> tx_ids;
 				auto block = Block::create();
 				block->BlockHeader::operator=(*header);
 				while(true) {
@@ -1671,7 +1672,7 @@ std::shared_ptr<const BlockHeader> Node::read_block(vnx::File& file, int64_t* fi
 					if(auto value = vnx::read(in)) {
 						if(auto tx = std::dynamic_pointer_cast<TransactionBase>(value)) {
 							if(is_db_replay) {
-								tx_log.insert(block->height, tx->id);
+								tx_ids.push_back(tx->id);
 								tx_index.insert(tx->id, std::make_pair(offset, block->height));
 							}
 							block->tx_list.push_back(tx);
@@ -1679,6 +1680,9 @@ std::shared_ptr<const BlockHeader> Node::read_block(vnx::File& file, int64_t* fi
 					} else {
 						break;
 					}
+				}
+				if(is_db_replay) {
+					tx_log.insert_many(block->height, tx_ids);
 				}
 				header = block;
 			}
@@ -1695,17 +1699,24 @@ void Node::write_block(std::shared_ptr<const Block> block)
 {
 	auto& out = block_chain->out;
 	const auto offset = out.get_output_pos();
-	if(auto tx = std::dynamic_pointer_cast<const Transaction>(block->tx_base)) {
-		tx_log.insert(block->height, tx->id);
-		tx_index.insert(tx->id, std::make_pair(offset, block->height));
-	}
 	block_index[block->height] = std::make_pair(offset, block->hash);
 
+	std::vector<hash_t> tx_ids;
+	if(auto tx = block->tx_base) {
+		tx_ids.push_back(tx->id);
+	}
+	for(const auto& tx : block->tx_list) {
+		tx_ids.push_back(tx->id);
+	}
+	tx_log.insert_many(block->height, tx_ids);
+
+	if(auto tx = block->tx_base) {
+		tx_index.insert(tx->id, std::make_pair(offset, block->height));
+	}
 	vnx::write(out, block->get_header());
 
 	for(const auto& tx : block->tx_list) {
 		const auto offset = out.get_output_pos();
-		tx_log.insert(block->height, tx->id);
 		tx_index.insert(tx->id, std::make_pair(offset, block->height));
 		vnx::write(out, tx);
 	}
