@@ -12,6 +12,8 @@
 #include <mmx/Block_get_header_return.hxx>
 #include <mmx/Block_is_valid.hxx>
 #include <mmx/Block_is_valid_return.hxx>
+#include <mmx/Block_validate.hxx>
+#include <mmx/Block_validate_return.hxx>
 #include <mmx/BlockHeader.hxx>
 #include <mmx/BlockHeader_calc_hash.hxx>
 #include <mmx/BlockHeader_calc_hash_return.hxx>
@@ -492,6 +494,30 @@ void type<::mmx::Block_is_valid_return>::create_dynamic_code(std::vector<uint16_
 }
 
 void type<::mmx::Block_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Block_is_valid_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Block_validate>::get_type_code() {
+	return mmx::vnx_native_type_code_Block_validate;
+}
+
+void type<::mmx::Block_validate>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Block_validate());
+}
+
+void type<::mmx::Block_validate>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Block_validate& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Block_validate_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Block_validate_return;
+}
+
+void type<::mmx::Block_validate_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Block_validate_return());
+}
+
+void type<::mmx::Block_validate_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Block_validate_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -4550,6 +4576,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Block_get_header_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Block_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::Block_is_valid_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Block_validate::static_create_type_code());
+	vnx::register_type_code(::mmx::Block_validate_return::static_create_type_code());
 	vnx::register_type_code(::mmx::BlockHeader::static_create_type_code());
 	vnx::register_type_code(::mmx::BlockHeader_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::BlockHeader_calc_hash_return::static_create_type_code());
@@ -4904,6 +4932,8 @@ const vnx::TypeCode* const vnx_native_type_code_Block_get_header = vnx::get_type
 const vnx::TypeCode* const vnx_native_type_code_Block_get_header_return = vnx::get_type_code(vnx::Hash64(0x8e93adc1629c3522ull));
 const vnx::TypeCode* const vnx_native_type_code_Block_is_valid = vnx::get_type_code(vnx::Hash64(0xa203b4d10b9ca39bull));
 const vnx::TypeCode* const vnx_native_type_code_Block_is_valid_return = vnx::get_type_code(vnx::Hash64(0xd134bed3cdddc939ull));
+const vnx::TypeCode* const vnx_native_type_code_Block_validate = vnx::get_type_code(vnx::Hash64(0x83bc272701f21cdeull));
+const vnx::TypeCode* const vnx_native_type_code_Block_validate_return = vnx::get_type_code(vnx::Hash64(0xcc110202012258c2ull));
 const vnx::TypeCode* const vnx_native_type_code_BlockHeader = vnx::get_type_code(vnx::Hash64(0xcaae941a2fc712a6ull));
 const vnx::TypeCode* const vnx_native_type_code_BlockHeader_calc_hash = vnx::get_type_code(vnx::Hash64(0xc525b15a3f7ee317ull));
 const vnx::TypeCode* const vnx_native_type_code_BlockHeader_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xc0147d9c9c93de5cull));
