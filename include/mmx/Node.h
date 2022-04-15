@@ -11,6 +11,7 @@
 #include <mmx/NodeBase.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/RouterAsyncClient.hxx>
+#include <mmx/TimeLordAsyncClient.hxx>
 #include <mmx/utxo_t.hpp>
 #include <mmx/stxo_t.hpp>
 #include <mmx/txio_key_t.hpp>
@@ -349,6 +350,7 @@ private:
 	std::shared_ptr<const ChainParams> params;
 	mutable std::shared_ptr<const NetworkInfo> network;
 	std::shared_ptr<RouterAsyncClient> router;
+	std::shared_ptr<TimeLordAsyncClient> timelord;
 	std::shared_ptr<vnx::addons::HttpInterface<Node>> http;
 
 	mutable std::mutex vdf_mutex;

@@ -9,7 +9,6 @@
 #include <mmx/Context.hxx>
 #include <mmx/Challenge.hxx>
 #include <mmx/contract/Token.hxx>
-#include <mmx/TimeLordClient.hxx>
 #include <mmx/utxo_entry_t.hpp>
 #include <mmx/stxo_entry_t.hpp>
 #include <mmx/utils.h>
@@ -60,8 +59,10 @@ void Node::main()
 		log(INFO) << "Got " << light_address_set.size() << " addresses for light mode.";
 	}
 	router = std::make_shared<RouterAsyncClient>(router_name);
+	timelord = std::make_shared<TimeLordAsyncClient>(timelord_name);
 	http = std::make_shared<vnx::addons::HttpInterface<Node>>(this, vnx_name);
 	add_async_client(router);
+	add_async_client(timelord);
 	add_async_client(http);
 
 	vnx::Directory(storage_path).create();
@@ -1089,13 +1090,10 @@ void Node::start_sync(const vnx::bool_t& force)
 	sync_retry = 0;
 	is_synced = false;
 
-	try {
-		TimeLordClient timelord(timelord_name);
-		timelord.stop_vdf();
-		log(INFO) << "Stopped TimeLord";
-	} catch(...) {
-		// ignore
-	}
+	timelord->stop_vdf(
+		[this]() {
+			log(INFO) << "Stopped TimeLord";
+		});
 	sync_more();
 }
 
