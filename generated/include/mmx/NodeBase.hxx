@@ -63,7 +63,6 @@ public:
 	uint32_t vdf_check_divider = 10000;
 	int32_t opencl_device = 0;
 	vnx::bool_t do_sync = true;
-	vnx::bool_t light_mode = false;
 	vnx::bool_t show_warnings = false;
 	std::string storage_path;
 	std::string database_path = "db/";
@@ -153,7 +152,7 @@ protected:
 
 template<typename T>
 void NodeBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<NodeBase>(35);
+	_visitor.template type_begin<NodeBase>(34);
 	_visitor.type_field("input_vdfs", 0); _visitor.accept(input_vdfs);
 	_visitor.type_field("input_proof", 1); _visitor.accept(input_proof);
 	_visitor.type_field("input_blocks", 2); _visitor.accept(input_blocks);
@@ -183,13 +182,12 @@ void NodeBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("vdf_check_divider", 26); _visitor.accept(vdf_check_divider);
 	_visitor.type_field("opencl_device", 27); _visitor.accept(opencl_device);
 	_visitor.type_field("do_sync", 28); _visitor.accept(do_sync);
-	_visitor.type_field("light_mode", 29); _visitor.accept(light_mode);
-	_visitor.type_field("show_warnings", 30); _visitor.accept(show_warnings);
-	_visitor.type_field("storage_path", 31); _visitor.accept(storage_path);
-	_visitor.type_field("database_path", 32); _visitor.accept(database_path);
-	_visitor.type_field("router_name", 33); _visitor.accept(router_name);
-	_visitor.type_field("timelord_name", 34); _visitor.accept(timelord_name);
-	_visitor.template type_end<NodeBase>(35);
+	_visitor.type_field("show_warnings", 29); _visitor.accept(show_warnings);
+	_visitor.type_field("storage_path", 30); _visitor.accept(storage_path);
+	_visitor.type_field("database_path", 31); _visitor.accept(database_path);
+	_visitor.type_field("router_name", 32); _visitor.accept(router_name);
+	_visitor.type_field("timelord_name", 33); _visitor.accept(timelord_name);
+	_visitor.template type_end<NodeBase>(34);
 }
 
 
