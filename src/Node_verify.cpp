@@ -36,14 +36,6 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 	if(auto proof = block->proof) {
 		const auto challenge = get_challenge(block, vdf_challenge);
 		fork->proof_score = verify_proof(proof, challenge, diff_block->space_diff);
-
-		// check if block has a weak proof
-		if(auto response = find_proof(challenge)) {
-			if(fork->proof_score > response->proof->score) {
-				fork->has_weak_proof = true;
-				log(INFO) << "Got weak proof block for height " << block->height << " with score " << fork->proof_score << " > " << response->proof->score;
-			}
-		}
 	} else {
 		fork->proof_score = params->score_threshold;
 	}
@@ -56,10 +48,10 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 	fork->weight *= diff_block->time_diff;
 
 	fork->buffer_delta = 0;
-	if(!block->proof || fork->has_weak_proof) {
-		fork->buffer_delta -= params->score_threshold;
-	} else {
+	if(block->proof) {
 		fork->buffer_delta += int32_t(2 * params->score_target) - fork->proof_score;
+	} else {
+		fork->buffer_delta -= params->score_threshold;
 	}
 
 	// check some VDFs during sync

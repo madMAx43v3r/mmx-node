@@ -140,7 +140,6 @@ private:
 		bool is_verified = false;
 		bool is_vdf_verified = false;
 		bool is_proof_verified = false;
-		bool has_weak_proof = false;
 		bool has_dummy_block = false;
 		uint32_t proof_score = -1;
 		int32_t buffer_delta = 0;

@@ -1211,14 +1211,12 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork() const
 		fork->score_bonus = 0;
 		if(iter != begin && prev) {
 			fork->total_weight = prev->total_weight + fork->weight;
-			// add buffer bonus if not weak proof and did not orphan previous
+			// add buffer bonus if did not orphan previous
 			if(!prev_best || prev == prev_best || !fork->vdf_point
 				|| prev_best->recv_time + int64_t(params->orphan_delay * 1e6) > fork->vdf_point->recv_time)
 			{
-				if(!fork->has_weak_proof) {
-					fork->score_bonus = std::min<int32_t>(prev->weight_buffer, params->score_threshold);
-					fork->total_weight += uint128_t(fork->score_bonus) * fork->diff_block->time_diff * fork->diff_block->space_diff;
-				}
+				fork->score_bonus = std::min<int32_t>(prev->weight_buffer, params->score_threshold);
+				fork->total_weight += uint128_t(fork->score_bonus) * fork->diff_block->time_diff * fork->diff_block->space_diff;
 			}
 			fork->weight_buffer = std::min<int32_t>(std::max(prev->weight_buffer + fork->buffer_delta, 0), params->max_weight_buffer);
 		} else {
@@ -1256,6 +1254,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	if(!history.empty() && block->prev != get_root()->hash) {
 		return;
 	}
+	const auto time_begin = vnx::get_wall_time_millis();
 	const auto log = change_log.front();
 	std::unordered_set<addr_t> addr_set;
 
@@ -1345,7 +1344,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	if(is_synced && fork) {
 		Node::log(INFO) << "Committed height " << block->height << " with: ntx = " << block->tx_list.size()
 				<< ", score = " << fork->proof_score << ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff
-				<< (fork->has_weak_proof ? ", weak proof" : "");
+				<< ", took "(vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 	}
 	if(!is_replay) {
 		publish(block, output_committed_blocks, is_synced ? 0 : BLOCKING);
