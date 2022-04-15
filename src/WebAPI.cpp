@@ -936,7 +936,7 @@ template<typename T>
 void require(std::shared_ptr<const vnx::Session> session, const T& perm)
 {
 	if(!session->has_permission(perm.to_string_value_full())) {
-		throw std::logic_error("permission denied");
+		throw vnx::permission_denied(perm);
 	}
 }
 
