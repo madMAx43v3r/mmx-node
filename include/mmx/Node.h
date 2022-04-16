@@ -337,6 +337,7 @@ private:
 
 	uint32_t sync_pos = 0;									// current sync height
 	uint32_t sync_retry = 0;
+	double max_sync_pending = 0;
 	std::set<uint32_t> sync_pending;						// set of heights
 	vnx::optional<uint32_t> sync_peak;						// max height we can sync
 	std::unordered_set<hash_t> fetch_pending;				// block hash

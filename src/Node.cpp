@@ -1048,7 +1048,7 @@ void Node::sync_more()
 	if(vdf_threads->get_num_pending()) {
 		return;
 	}
-	const auto max_pending = !sync_retry ? max_sync_jobs : 1;
+	const size_t max_pending = !sync_retry ? std::max(std::min<int>(max_sync_pending, max_sync_jobs), 2) : 1;
 
 	while(sync_pending.size() < max_pending && (!sync_peak || sync_pos < *sync_peak))
 	{
@@ -1068,10 +1068,16 @@ void Node::sync_result(const uint32_t& height, const std::vector<std::shared_ptr
 {
 	sync_pending.erase(height);
 
+	uint64_t total_cost = 0;
 	for(auto block : blocks) {
 		if(block) {
 			add_block(block);
+			total_cost += block->calc_cost(params);
 		}
+	}
+	{
+		const auto value = max_sync_jobs * (1 - std::min<double>(total_cost / double(params->max_block_cost), 1));
+		max_sync_pending = value * 0.1 + max_sync_pending * 0.9;
 	}
 	if(!is_synced) {
 		if(blocks.empty()) {
