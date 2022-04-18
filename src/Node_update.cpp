@@ -331,7 +331,6 @@ void Node::update()
 	{
 		auto prev = peak;
 		bool made_block = false;
-		std::shared_ptr<fork_t> best_fork;
 		for(uint32_t i = 0; prev && i <= 1; ++i)
 		{
 			if(prev->height < root->height) {
@@ -344,11 +343,13 @@ void Node::update()
 				if(auto response = find_proof(challenge)) {
 					// check if it's our proof
 					if(vnx::get_pipe(response->farmer_addr)) {
-						// check if we have a better proof
-						if(!best_fork || response->proof->score < best_fork->proof_score) {
+						const auto key = std::make_pair(prev->height + 1, prev->hash);
+						if(!created_blocks.count(key)) {
 							try {
-								if(make_block(prev, response)) {
+								if(auto block = make_block(prev, response)) {
+									add_block(block);
 									made_block = true;
+									created_blocks[key] = block->hash;
 								}
 							}
 							catch(const std::exception& ex) {
@@ -360,7 +361,6 @@ void Node::update()
 					}
 				}
 			}
-			best_fork = find_fork(prev->hash);
 			prev = find_prev_header(prev);
 		}
 		if(made_block) {
@@ -616,14 +616,14 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 	return result;
 }
 
-bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response)
+std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response)
 {
 	const auto time_begin = vnx::get_wall_time_micros();
 
 	// find VDF output
 	const auto vdf_point = find_next_vdf_point(prev);
 	if(!vdf_point) {
-		return false;
+		return nullptr;
 	}
 
 	// reset state to previous block
@@ -684,11 +684,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	if(!result) {
 		throw std::logic_error("farmer refused to sign block");
 	}
-	block->tx_base = result->tx_base;
-	block->farmer_sig = result->farmer_sig;
-	block->hash = block->calc_hash();
-
-	add_block(block);
+	block->BlockHeader::operator=(*result);
 
 	const auto elapsed = (vnx::get_wall_time_micros() - time_begin) / 1e6;
 	log(INFO) << "Created block at height " << block->height << " with: ntx = " << block->tx_list.size()
@@ -696,7 +692,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 			<< ", nominal = " << block_reward / pow(10, params->decimals) << " MMX"
 			<< ", fees = " << total_fees / pow(10, params->decimals) << " MMX"
 			<< ", took " << elapsed << " sec";
-	return true;
+	return block;
 }
 
 

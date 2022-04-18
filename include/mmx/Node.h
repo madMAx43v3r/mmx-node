@@ -201,7 +201,7 @@ private:
 
 	std::vector<tx_data_t> validate_pending(const uint64_t verify_limit, const uint64_t select_limit, bool only_new);
 
-	bool make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response);
+	std::shared_ptr<const Block> make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response);
 
 	void sync_more();
 
@@ -328,6 +328,7 @@ private:
 
 	std::unordered_multimap<uint32_t, hash_t> challenge_map;						// [height => challenge]
 	std::unordered_map<hash_t, std::shared_ptr<const ProofResponse>> proof_map;		// [challenge => proof]
+	std::map<std::pair<uint32_t, hash_t>, hash_t> created_blocks;					// [[height, prev hash] => hash]
 
 	bool is_replay = true;
 	bool is_synced = false;
