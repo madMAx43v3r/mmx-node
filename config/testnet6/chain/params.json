@@ -1,7 +1,6 @@
 {
 	"port": 12336,
 	"block_time": 8,
-	"orphan_delay": 3,
 	"plot_filter": 8,
 	"infuse_delay": 3,
 	"challenge_delay": 6,

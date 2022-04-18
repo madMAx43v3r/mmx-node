@@ -45,7 +45,6 @@ class ChainParams {
 	ulong max_block_cost = 10000000;
 	
 	double block_time = 10;					// [sec]
-	double orphan_delay = 1;				// [sec]
 	
 	string vdf_seed;
 	
