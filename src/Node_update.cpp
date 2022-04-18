@@ -56,8 +56,12 @@ bool Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
 		block->vdf_iters = vdf_point->vdf_iters;
 		block->vdf_output = vdf_point->output;
 
-		if(auto response = find_proof(get_challenge(block, vdf_point->output[1]))) {
-			block->proof = response->proof;
+		hash_t vdf_challenge;
+		if(find_vdf_challenge(prev, vdf_challenge, 1)) {
+			const auto challenge = get_challenge(prev, vdf_challenge, 1);
+			if(auto response = find_proof(challenge)) {
+				block->proof = response->proof;
+			}
 		}
 		block->finalize();
 		add_block(block);
