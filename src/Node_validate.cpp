@@ -108,7 +108,11 @@ std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
 	{
 		auto& base = out->tx_list[i];
 		try {
-			if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
+			if(auto tx = std::dynamic_pointer_cast<const Transaction>(base))
+			{
+				if(uint32_t(tx->id.to_uint256() & 0x1) != (context->height & 0x1)) {
+					throw std::logic_error("invalid inclusion");
+				}
 				uint64_t fees = 0;
 				if(auto new_tx = validate(tx, context, nullptr, fees)) {
 					base = new_tx;

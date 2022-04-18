@@ -480,6 +480,8 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 			}
 		}
 	}
+	auto context = Context::create();
+	context->height = peak->height + 1;
 
 	// select transactions to verify
 	for(const auto& entry : all_tx) {
@@ -488,6 +490,9 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 		}
 		for(const auto& prev : entry.depends) {
 			dependency.emplace(prev, entry.tx->id);
+		}
+		if(uint32_t(entry.tx->id.to_uint256() & 0x1) != (context->height & 0x1)) {
+			continue;
 		}
 		if(only_new && entry.did_validate) {
 			continue;
@@ -501,8 +506,6 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 			num_dependent++;
 		}
 	}
-	auto context = Context::create();
-	context->height = peak->height + 1;
 
 	// verify transactions in parallel
 #pragma omp parallel for
