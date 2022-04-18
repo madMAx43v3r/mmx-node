@@ -340,7 +340,8 @@ void Node::update()
 			hash_t vdf_challenge;
 			if(find_vdf_challenge(prev, vdf_challenge, 1))
 			{
-				if(auto response = find_proof(get_challenge(prev, vdf_challenge, 1))) {
+				const auto challenge = get_challenge(prev, vdf_challenge, 1);
+				if(auto response = find_proof(challenge)) {
 					// check if it's our proof
 					if(vnx::get_pipe(response->farmer_addr)) {
 						// check if we have a better proof
