@@ -975,12 +975,15 @@ void Node::handle(std::shared_ptr<const ProofResponse> value)
 			throw std::logic_error("invalid score");
 		}
 		auto iter = proof_map.find(challenge);
-		if(iter == proof_map.end() || value->proof->score < iter->second->proof->score)
+		if(iter == proof_map.end() || value->proof->score <= iter->second->proof->score)
 		{
 			if(iter == proof_map.end()) {
 				challenge_map.emplace(request->height, challenge);
 			}
-			proof_map[challenge] = value;
+			else if(value->proof->score < iter->second->proof->score) {
+				proof_map.erase(challenge);
+			}
+			proof_map.emplace(challenge, value);
 
 			log(DEBUG) << "Got new best proof for height " << request->height << " with score " << value->proof->score;
 		}
@@ -1621,13 +1624,14 @@ std::shared_ptr<Node::vdf_point_t> Node::find_next_vdf_point(std::shared_ptr<con
 	return nullptr;
 }
 
-std::shared_ptr<const ProofResponse> Node::find_proof(const hash_t& challenge) const
+std::vector<std::shared_ptr<const ProofResponse>> Node::find_proof(const hash_t& challenge) const
 {
-	auto iter = proof_map.find(challenge);
-	if(iter != proof_map.end()) {
-		return iter->second;
+	std::vector<std::shared_ptr<const ProofResponse>> res;
+	const auto range = proof_map.equal_range(challenge);
+	for(auto iter = range.first; iter != range.second; ++iter) {
+		res.push_back(iter->second);
 	}
-	return nullptr;
+	return res;
 }
 
 uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block) const

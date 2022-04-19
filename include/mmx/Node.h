@@ -140,7 +140,6 @@ private:
 		bool is_verified = false;
 		bool is_vdf_verified = false;
 		bool is_proof_verified = false;
-		bool has_dummy_block = false;
 		uint32_t proof_score = -1;
 		int32_t buffer_delta = 0;
 		int32_t weight_buffer = 0;
@@ -194,7 +193,7 @@ private:
 
 	void add_fork(std::shared_ptr<fork_t> fork);
 
-	bool add_dummy_block(std::shared_ptr<const BlockHeader> prev);
+	void add_dummy_blocks(std::shared_ptr<const BlockHeader> prev);
 
 	void validate_pool();
 
@@ -284,7 +283,7 @@ private:
 
 	std::shared_ptr<Node::vdf_point_t> find_next_vdf_point(std::shared_ptr<const BlockHeader> block) const;
 
-	std::shared_ptr<const ProofResponse> find_proof(const hash_t& challenge) const;
+	std::vector<std::shared_ptr<const ProofResponse>> find_proof(const hash_t& challenge) const;
 
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block) const;
 
@@ -322,9 +321,9 @@ private:
 	std::multimap<uint32_t, std::shared_ptr<vdf_point_t>> verified_vdfs;			// [height => output]
 	std::multimap<uint32_t, std::shared_ptr<const ProofOfTime>> pending_vdfs;		// [height => proof]
 
-	std::unordered_multimap<uint32_t, hash_t> challenge_map;						// [height => challenge]
-	std::unordered_map<hash_t, std::shared_ptr<const ProofResponse>> proof_map;		// [challenge => proof]
-	std::map<std::pair<uint32_t, hash_t>, hash_t> created_blocks;					// [[height, prev hash] => hash]
+	std::unordered_multimap<uint32_t, hash_t> challenge_map;								// [height => challenge]
+	std::unordered_multimap<hash_t, std::shared_ptr<const ProofResponse>> proof_map;		// [challenge => proof]
+	std::map<std::pair<hash_t, hash_t>, hash_t> created_blocks;								// [[prev hash, proof hash] => hash]
 
 	bool is_replay = true;
 	bool is_synced = false;

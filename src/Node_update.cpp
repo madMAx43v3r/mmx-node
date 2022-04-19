@@ -38,12 +38,10 @@ void Node::add_fork(std::shared_ptr<fork_t> fork)
 	if(fork_tree.emplace(block->hash, fork).second) {
 		fork_index.emplace(block->height, fork);
 	}
-	if(add_dummy_block(block)) {
-		fork->has_dummy_block = true;
-	}
+	add_dummy_blocks(block);
 }
 
-bool Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
+void Node::add_dummy_blocks(std::shared_ptr<const BlockHeader> prev)
 {
 	if(auto vdf_point = find_next_vdf_point(prev))
 	{
@@ -55,19 +53,20 @@ bool Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
 		block->space_diff = calc_new_space_diff(params, prev->space_diff, params->score_threshold);
 		block->vdf_iters = vdf_point->vdf_iters;
 		block->vdf_output = vdf_point->output;
-
-		hash_t vdf_challenge;
-		if(find_vdf_challenge(prev, vdf_challenge, 1)) {
-			const auto challenge = get_challenge(prev, vdf_challenge, 1);
-			if(auto response = find_proof(challenge)) {
-				block->proof = response->proof;
-			}
-		}
 		block->finalize();
 		add_block(block);
-		return true;
+
+		hash_t vdf_challenge;
+		if(find_vdf_challenge(block, vdf_challenge)) {
+			const auto challenge = get_challenge(block, vdf_challenge);
+			for(auto response : find_proof(challenge)) {
+				auto copy = vnx::clone(block);
+				copy->proof = response->proof;
+				copy->finalize();
+				add_block(copy);
+			}
+		}
 	}
-	return false;
 }
 
 void Node::update()
@@ -80,13 +79,10 @@ void Node::update()
 	{
 		std::vector<std::shared_ptr<const Block>> blocks;
 		for(const auto& entry : fork_index) {
-			const auto& fork = entry.second;
-			if(!fork->has_dummy_block) {
-				blocks.push_back(fork->block);
-			}
+			blocks.push_back(entry.second->block);
 		}
-		for(const auto& block : blocks) {
-			add_dummy_block(block);
+		for(const auto& prev : blocks) {
+			add_dummy_blocks(prev);
 		}
 	}
 
@@ -338,10 +334,11 @@ void Node::update()
 			if(find_vdf_challenge(prev, vdf_challenge, 1))
 			{
 				const auto challenge = get_challenge(prev, vdf_challenge, 1);
-				if(auto response = find_proof(challenge)) {
+
+				for(auto response : find_proof(challenge)) {
 					// check if it's our proof
 					if(vnx::get_pipe(response->farmer_addr)) {
-						const auto key = std::make_pair(prev->height + 1, prev->hash);
+						const auto key = std::make_pair(prev->hash, response->proof->calc_hash());
 						if(!created_blocks.count(key)) {
 							try {
 								if(auto block = make_block(prev, response)) {
