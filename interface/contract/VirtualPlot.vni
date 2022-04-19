@@ -8,7 +8,7 @@ class VirtualPlot extends mmx.Contract {
 	
 	bls_pubkey_t farmer_key;
 	
-	optional<addr_t> pool_address;
+	optional<addr_t> reward_address;
 	
 	
 	bool is_valid() const;
@@ -16,6 +16,8 @@ class VirtualPlot extends mmx.Contract {
 	hash_t calc_hash() const;
 	
 	ulong calc_cost(mmx.ChainParams* params) const;
+	
+	bool is_spendable(mmx.utxo_t utxo, mmx.Context* context) const;
 	
 	void bls_transfer(bls_pubkey_t new_farmer_key);
 	
