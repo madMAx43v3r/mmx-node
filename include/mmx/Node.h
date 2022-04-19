@@ -216,7 +216,7 @@ private:
 
 	std::vector<std::shared_ptr<fork_t>> get_fork_line(std::shared_ptr<fork_t> fork_head = nullptr) const;
 
-	std::shared_ptr<Block> validate(std::shared_ptr<const Block> block) const;
+	void validate(std::shared_ptr<const Block> block) const;
 
 	void validate(std::shared_ptr<const Transaction> tx) const;
 

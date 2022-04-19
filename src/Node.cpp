@@ -1151,14 +1151,14 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 	// verify and apply
 	for(const auto& fork : fork_line)
 	{
-		auto& block = fork->block;
+		const auto& block = fork->block;
 		if(block->prev != state_hash) {
 			// already verified and applied
 			continue;
 		}
 		if(!fork->is_verified) {
 			try {
-				block = validate(block);
+				validate(block);
 
 				if(!fork->is_vdf_verified) {
 					if(auto prev = find_prev_header(block)) {
@@ -1471,8 +1471,8 @@ bool Node::revert() noexcept
 			tx_map.erase(iter);
 		}
 	}
-	change_log.pop_back();
 	state_hash = log->prev_state;
+	change_log.pop_back();
 	return true;
 }
 

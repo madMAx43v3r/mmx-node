@@ -512,11 +512,6 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 		auto& entry = tx_list[i];
 		auto& tx = entry.tx;
 		try {
-			if(!tx->exec_outputs.empty()) {
-				auto copy = vnx::clone(tx);
-				copy->exec_outputs.clear();
-				tx = copy;
-			}
 			if(auto new_tx = validate(tx, context, nullptr, entry.fees)) {
 				tx = new_tx;
 			}

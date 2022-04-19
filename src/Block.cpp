@@ -14,15 +14,7 @@ namespace mmx {
 
 vnx::bool_t Block::is_valid() const
 {
-	if(tx_base && !std::dynamic_pointer_cast<const Transaction>(tx_base)) {
-		return false;
-	}
-	for(const auto& base : tx_list) {
-		if(!std::dynamic_pointer_cast<const Transaction>(base)) {
-			return false;
-		}
-	}
-	return BlockHeader::is_valid() && (!proof || proof->is_valid()) && calc_tx_hash() == tx_hash;
+	return BlockHeader::is_valid() && (!proof || proof->is_valid()) && tx_count == tx_list.size() && calc_tx_hash() == tx_hash;
 }
 
 mmx::hash_t Block::calc_tx_hash() const
@@ -85,6 +77,9 @@ void Block::validate() const
 	Super::validate();
 
 	if(!farmer_sig) {
+		if(nonce) {
+			throw std::logic_error("invalid block nonce");
+		}
 		if(tx_base || tx_list.size()) {
 			throw std::logic_error("cannot have transactions");
 		}

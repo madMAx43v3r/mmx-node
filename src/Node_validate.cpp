@@ -17,7 +17,7 @@
 
 namespace mmx {
 
-std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
+void Node::validate(std::shared_ptr<const Block> block) const
 {
 	// Note: block hash already verified together with proof
 	const auto prev = find_prev_header(block);
@@ -38,9 +38,6 @@ std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
 	}
 	if(block->time_diff < params->min_time_diff) {
 		throw std::logic_error("time_diff < min_time_diff");
-	}
-	if(block->tx_count != block->tx_list.size()) {
-		throw std::logic_error("invalid tx_count");
 	}
 	const auto proof_score = block->proof ? block->proof->score : params->score_threshold;
 	if(block->space_diff != calc_new_space_diff(params, prev->space_diff, proof_score)) {
@@ -68,6 +65,8 @@ std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
 		if(validate(tx, context, block, base_spent)) {
 			throw std::logic_error("invalid tx_base");
 		}
+	} else if(block->tx_base) {
+		throw std::logic_error("invalid transaction type");
 	}
 	{
 		std::unordered_set<txio_key_t> spent;
@@ -98,15 +97,14 @@ std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
 			}
 		}
 	}
-	auto out = vnx::clone(block);
 	std::exception_ptr failed_ex;
 	std::atomic<uint64_t> total_fees {0};
 	std::atomic<uint64_t> total_cost {0};
 
 #pragma omp parallel for
-	for(int i = 0; i < int(out->tx_list.size()); ++i)
+	for(int i = 0; i < int(block->tx_list.size()); ++i)
 	{
-		auto& base = out->tx_list[i];
+		const auto& base = block->tx_list[i];
 		try {
 			if(auto tx = std::dynamic_pointer_cast<const Transaction>(base))
 			{
@@ -114,11 +112,14 @@ std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
 					throw std::logic_error("invalid inclusion");
 				}
 				uint64_t fees = 0;
-				if(auto new_tx = validate(tx, context, nullptr, fees)) {
-					base = new_tx;
+				if(validate(tx, context, nullptr, fees)) {
+					throw std::logic_error("missing exec_outputs");
 				}
 				total_fees += fees;
 				total_cost += tx->calc_cost(params);
+			}
+			else {
+				throw std::logic_error("invalid transaction type");
 			}
 		} catch(...) {
 #pragma omp critical
@@ -136,7 +137,6 @@ std::shared_ptr<Block> Node::validate(std::shared_ptr<const Block> block) const
 	if(base_spent > base_allowed) {
 		throw std::logic_error("coin base over-spend");
 	}
-	return out;
 }
 
 void Node::validate(std::shared_ptr<const Transaction> tx) const
