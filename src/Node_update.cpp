@@ -126,6 +126,9 @@ void Node::update()
 				fork->is_vdf_verified = true;
 				fork->vdf_point = point;
 			}
+			else if(is_synced) {
+				// TODO: fetch missing vdf
+			}
 			if(vdf_passed || !is_synced) {
 				to_verify.push_back(fork);
 			}
