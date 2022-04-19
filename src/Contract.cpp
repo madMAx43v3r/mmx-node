@@ -45,8 +45,7 @@ vnx::optional<addr_t> Contract::get_owner() const {
 	return nullptr;
 }
 
-vnx::bool_t Contract::is_spendable(const utxo_t& utxo, std::shared_ptr<const Context> context) const
-{
+vnx::bool_t Contract::is_spendable(const utxo_t& utxo, std::shared_ptr<const Context> context) const {
 	return true;
 }
 

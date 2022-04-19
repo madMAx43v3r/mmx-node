@@ -157,7 +157,6 @@ private:
 	struct change_log_t {
 		uint32_t height = 0;
 		hash_t prev_state;
-		vnx::optional<hash_t> tx_base;
 		std::vector<hash_t> tx_added;
 		std::unordered_map<txio_key_t, utxo_t> utxo_added;			// [utxo key => utxo]
 		std::unordered_map<txio_key_t, stxo_t> utxo_removed;		// [utxo key => [txi key, utxo]]
@@ -251,10 +250,7 @@ private:
 
 	void apply(std::shared_ptr<const Block> block) noexcept;
 
-	void apply(std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx, change_log_t& log) noexcept;
-
-	void apply_output(	std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx,
-						const tx_out_t& output, const size_t index, change_log_t& log) noexcept;
+	void apply(std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx, std::shared_ptr<change_log_t> log) noexcept;
 
 	bool revert() noexcept;
 

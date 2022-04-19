@@ -126,12 +126,9 @@ void Node::update()
 			if(!fork->diff_block) {
 				fork->diff_block = find_diff_header(block);
 			}
-			if(fork->is_invalid || !fork->diff_block) {
-				continue;
-			}
 			const auto prev = find_prev_header(block);
-			if(!prev) {
-				continue;	// wait for previous block
+			if(!prev || fork->is_invalid || !fork->diff_block) {
+				continue;
 			}
 			bool vdf_passed = false;
 			if(auto point = find_vdf_point(block->height, prev->vdf_iters, block->vdf_iters, prev->vdf_output, block->vdf_output)) {

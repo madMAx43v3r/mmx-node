@@ -1383,20 +1383,14 @@ void Node::apply(std::shared_ptr<const Block> block) noexcept
 	log->height = block->height;
 	log->prev_state = state_hash;
 
-	if(auto tx = std::dynamic_pointer_cast<const Transaction>(block->tx_base)) {
-		apply(block, tx, *log);
-		log->tx_base = tx->id;
-	}
-	for(size_t i = 0; i < block->tx_list.size(); ++i) {
-		if(auto tx = std::dynamic_pointer_cast<const Transaction>(block->tx_list[i])) {
-			apply(block, tx, *log);
-		}
+	for(const auto& tx : block->get_all_transactions()) {
+		apply(block, tx, log);
 	}
 	state_hash = block->hash;
 	change_log.push_back(log);
 }
 
-void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx, change_log_t& log) noexcept
+void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx, std::shared_ptr<change_log_t> log) noexcept
 {
 	for(size_t i = 0; i < tx->inputs.size(); ++i)
 	{
@@ -1404,7 +1398,7 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 		if(iter != utxo_map.end()) {
 			const auto key = txio_key_t::create_ex(tx->id, i);
 			const auto& stxo = iter->second;
-			log.utxo_removed.emplace(iter->first, stxo_t::create_ex(stxo, block->height, key));
+			log->utxo_removed.emplace(iter->first, stxo_t::create_ex(stxo, block->height, key));
 			{
 				auto iter2 = addr_map.find(stxo.address);
 				if(iter2 != addr_map.end()) {
@@ -1418,19 +1412,22 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 			utxo_map.erase(iter);
 		}
 	}
-	for(size_t i = 0; i < tx->outputs.size(); ++i) {
-		apply_output(block, tx, tx->outputs[i], i, log);
-	}
-	for(size_t i = 0; i < tx->exec_outputs.size(); ++i) {
-		apply_output(block, tx, tx->exec_outputs[i], tx->outputs.size() + i, log);
+	const auto outputs = tx->get_all_outputs();
+	for(size_t i = 0; i < outputs.size(); ++i)
+	{
+		const auto key = txio_key_t::create_ex(tx->id, i);
+		const auto utxo = utxo_t::create_ex(outputs[i], block->height);
+		utxo_map[key] = utxo;
+		addr_map[utxo.address].insert(key);
+		log->utxo_added.emplace(key, utxo);
 	}
 	for(const auto& op : tx->execute) {
 		if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op)) {
-			log.mutated[mutate->address].push_back(mutate);
+			log->mutated[mutate->address].push_back(mutate);
 		}
 	}
 	if(auto contract = tx->deploy) {
-		log.deployed.emplace(tx->id, contract);
+		log->deployed.emplace(tx->id, contract);
 	}
 	tx_pool.erase(tx->id);
 	{
@@ -1438,17 +1435,7 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 		entry.height = block->height;
 		entry.tx = tx;
 	}
-	log.tx_added.push_back(tx->id);
-}
-
-void Node::apply_output(std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx,
-						const tx_out_t& output, const size_t index, change_log_t& log) noexcept
-{
-	const auto key = txio_key_t::create_ex(tx->id, index);
-	const auto utxo = utxo_t::create_ex(output, block->height);
-	utxo_map[key] = utxo;
-	addr_map[utxo.address].insert(key);
-	log.utxo_added.emplace(key, utxo);
+	log->tx_added.push_back(tx->id);
 }
 
 bool Node::revert() noexcept
