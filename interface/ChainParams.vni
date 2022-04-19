@@ -5,13 +5,13 @@ class ChainParams {
 	uint port;
 	int  decimals = 6;
 	uint min_ksize = 30;
-	uint max_ksize = 42;
-	uint plot_filter = 10;
+	uint max_ksize = 60;
+	uint plot_filter = 9;
 	
-	uint commit_delay = 18;					// for writing to disk (must > finality_delay)
-	uint infuse_delay = 6;					// for primary VDF infusion (must be > 0)
-	uint challenge_delay = 9;				// blocks until new challange is active (must be > 0)
-	uint challenge_interval = 48;			// challenge (and difficulty) is for next N blocks (must be > commit_delay)
+	uint commit_delay = 18;					// for writing to disk (should be less than challenge_interval - challenge_delay)
+	uint infuse_delay = 6;					// for primary VDF infusion
+	uint challenge_delay = 9;				// blocks until new challange is active
+	uint challenge_interval = 48;			// challenge (and difficulty) is for next N blocks
 	uint max_diff_adjust = 10;				// per block (1/2^x)
 	
 	uint min_vdf_segments = 320;
@@ -21,6 +21,7 @@ class ChainParams {
 	uint max_tx_base_out = 10;
 	uint max_tx_operations = 20;			// number of contracts
 	uint recursive_interval = 60480;		// number of blocks per iteration to approximate recursive functions
+	uint virtual_lifetime = 15768000;		// number of blocks balance on virtual plots is valid
 	
 	uint score_bits = 16;
 	uint score_target = 8192;				// defines how many competing blocks are created (must be less than score_threshold)
@@ -32,6 +33,7 @@ class ChainParams {
 	
 	ulong time_diff_constant = 1000;
 	ulong space_diff_constant = 100000000;
+	ulong virtual_space_constant = 500;
 	
 	ulong min_time_diff = 10000;
 	ulong initial_time_diff = 10000;		// [iters/sec]

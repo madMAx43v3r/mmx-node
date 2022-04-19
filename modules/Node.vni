@@ -125,6 +125,9 @@ module Node implements vnx.addons.HttpComponent {
 	map<addr_t, ulong> get_total_balances(vector<addr_t> addresses, uint min_confirm = 1) const;
 	
 	@Permission(permission_e.PUBLIC)
+	ulong get_virtual_plot_balance(addr_t plot_id, hash_t block_hash) const;
+	
+	@Permission(permission_e.PUBLIC)
 	ulong get_total_supply(addr_t currency) const;
 	
 	@Permission(permission_e.PUBLIC)

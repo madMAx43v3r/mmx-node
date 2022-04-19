@@ -30,6 +30,9 @@ std::shared_ptr<const ChainParams> get_params()
 	if(params->challenge_interval <= params->challenge_delay) {
 		throw std::logic_error("challenge_interval <= challenge_delay");
 	}
+	if(params->commit_delay >= params->challenge_interval - params->challenge_delay) {
+		throw std::logic_error("commit_delay >= challenge_interval - challenge_delay");
+	}
 	return params;
 }
 
@@ -48,6 +51,16 @@ uint128_t calc_proof_score(	std::shared_ptr<const ChainParams> params,
 	divider *= (2 * ksize) + 1;
 	divider <<= ksize - 1;
 	return quality.to_uint256() / divider;
+}
+
+inline
+uint128_t calc_virtual_score(	std::shared_ptr<const ChainParams> params,
+								const hash_t& challenge, const hash_t& plot_id,
+								const uint64_t balance, const uint64_t space_diff)
+{
+	uint256_t divider = (uint256_1 << (256 - params->score_bits)) / (uint128_t(space_diff) * params->virtual_space_constant);
+	divider *= uint128_t(balance);
+	return hash_t(plot_id + challenge).to_uint256() / divider;
 }
 
 inline

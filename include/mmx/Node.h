@@ -233,6 +233,8 @@ private:
 
 	void verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_output) const;
 
+	uint64_t get_virtual_plot_balance(const addr_t& plot_id, const hash_t& block_hash) const;
+
 	uint32_t verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, std::shared_ptr<const BlockHeader> diff_block) const;
 
 	void verify_vdf(std::shared_ptr<const ProofOfTime> proof) const;

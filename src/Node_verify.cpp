@@ -7,6 +7,8 @@
 
 #include <mmx/Node.h>
 #include <mmx/ProofOfSpaceOG.hxx>
+#include <mmx/ProofOfStake.hxx>
+#include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/chiapos.h>
 #include <mmx/utils.h>
 
@@ -61,6 +63,40 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 	fork->is_proof_verified = true;
 }
 
+uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const hash_t& block_hash) const
+{
+	auto block = get_header(block_hash);
+	if(!block) {
+		throw std::logic_error("no such block");
+	}
+	const auto root = get_root();
+	const auto height = block->height;
+	const auto since = height - std::min(params->virtual_lifetime, height);
+
+	uint64_t balance = 0;
+	for(const auto& entry : get_utxo_list_for({plot_id}, addr_t(), 0, since)) {
+		if(entry.output.height <= std::min(root->height, height)) {
+			balance += entry.output.amount;
+		}
+	}
+	auto fork = find_fork(block_hash);
+	while(fork) {
+		const auto block = fork->block;
+		if(block->height < since) {
+			break;
+		}
+		for(const auto& tx : block->get_all_transactions()) {
+			for(const auto& out : tx->get_all_outputs()) {
+				if(out.contract == addr_t() && out.address == plot_id) {
+					balance += out.amount;
+				}
+			}
+		}
+		fork = fork->prev.lock();
+	}
+	return balance;
+}
+
 uint32_t Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, std::shared_ptr<const BlockHeader> diff_block) const
 {
 	if(!proof->is_valid()) {
@@ -86,11 +122,23 @@ uint32_t Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const has
 
 		score = calc_proof_score(params, og_proof->ksize, quality, diff_block->space_diff);
 	}
+	else if(auto stake = std::dynamic_pointer_cast<const ProofOfStake>(proof))
+	{
+		const auto plot_id = stake->contract;
+		const auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(get_contract(plot_id));
+		if(!plot) {
+			throw std::logic_error("no such virtual plot");
+		}
+		if(stake->farmer_key != plot->farmer_key) {
+			throw std::logic_error("invalid farmer key");
+		}
+		const auto balance = get_virtual_plot_balance(plot_id, diff_block->hash);
+		score = calc_virtual_score(params, challenge, plot_id, balance, diff_block->space_diff);
 	}
 	else {
 		throw std::logic_error("invalid proof type");
 	}
-	if(proof->score != score) {
+	if(score > proof->score) {
 		throw std::logic_error("proof score mismatch");
 	}
 	if(score >= params->score_threshold) {
