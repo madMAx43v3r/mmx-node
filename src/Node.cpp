@@ -1107,6 +1107,19 @@ void Node::sync_result(const uint32_t& height, const std::vector<std::shared_ptr
 	}
 }
 
+void Node::fetch_block(const hash_t& hash)
+{
+	if(!fetch_pending.insert(hash).second) {
+		return;
+	}
+	router->fetch_block(hash, nullptr,
+			std::bind(&Node::fetch_result, this, hash, std::placeholders::_1),
+			[this, hash](const vnx::exception& ex) {
+				log(WARN) << "Fetching block " << hash << " failed with: " << ex.what();
+				fetch_pending.erase(hash);
+			});
+}
+
 void Node::fetch_result(const hash_t& hash, std::shared_ptr<const Block> block)
 {
 	if(block) {

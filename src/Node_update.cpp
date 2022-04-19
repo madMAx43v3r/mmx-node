@@ -107,14 +107,8 @@ void Node::update()
 					// fetch missing previous
 					const auto hash = block->prev;
 					const auto height = block->height - 1;
-					if(!fetch_pending.count(hash) && height > root->height)
-					{
-						fetch_pending.insert(hash);
-						router->fetch_block(hash, nullptr,
-								std::bind(&Node::fetch_result, this, hash, std::placeholders::_1),
-								[this, hash](const vnx::exception&) {
-									fetch_pending.erase(hash);
-								});
+					if(!fetch_pending.count(hash) && height > root->height) {
+						fetch_block(hash);
 						log(WARN) << "Fetching missed block at height " << height << " with hash " << hash;
 					}
 				}

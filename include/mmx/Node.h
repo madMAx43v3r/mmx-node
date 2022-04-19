@@ -205,6 +205,8 @@ private:
 
 	void sync_result(const uint32_t& height, const std::vector<std::shared_ptr<const Block>>& blocks);
 
+	void fetch_block(const hash_t& hash);
+
 	void fetch_result(const hash_t& hash, std::shared_ptr<const Block> block);
 
 	std::shared_ptr<const BlockHeader> fork_to(const hash_t& state);
