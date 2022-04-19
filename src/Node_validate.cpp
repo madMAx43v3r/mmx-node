@@ -19,16 +19,16 @@ namespace mmx {
 
 void Node::validate(std::shared_ptr<const Block> block) const
 {
-	// Note: block hash already verified together with proof
+	// Note: block hash, tx_hash, tx_count already verified together with proof
 	const auto prev = find_prev_header(block);
 	if(!prev) {
-		throw std::logic_error("invalid prev");
-	}
-	if(block->version != 0) {
-		throw std::logic_error("invalid version");
+		throw std::logic_error("missing prev");
 	}
 	if(prev->hash != state_hash) {
 		throw std::logic_error("state mismatch");
+	}
+	if(block->version != 0) {
+		throw std::logic_error("invalid version");
 	}
 	if(block->height != prev->height + 1) {
 		throw std::logic_error("invalid height");
@@ -39,23 +39,17 @@ void Node::validate(std::shared_ptr<const Block> block) const
 	if(block->time_diff < params->min_time_diff) {
 		throw std::logic_error("time_diff < min_time_diff");
 	}
-	const auto proof_score = block->proof ? block->proof->score : params->score_threshold;
-	if(block->space_diff != calc_new_space_diff(params, prev->space_diff, proof_score)) {
-		throw std::logic_error("invalid space_diff");
-	}
 	if(block->farmer_sig) {
 		// Note: farmer_sig already verified together with proof
 		validate_diff_adjust(block->time_diff, prev->time_diff);
 	} else {
-		if(block->nonce) {
-			throw std::logic_error("invalid block nonce");
-		}
 		if(block->time_diff != prev->time_diff) {
-			throw std::logic_error("invalid time_diff");
+			throw std::logic_error("invalid time_diff adjust");
 		}
-		if(block->tx_base || block->tx_list.size()) {
-			throw std::logic_error("transactions not allowed");
-		}
+	}
+	const auto proof_score = block->proof ? block->proof->score : params->score_threshold;
+	if(block->space_diff != calc_new_space_diff(params, prev->space_diff, proof_score)) {
+		throw std::logic_error("invalid space_diff adjust");
 	}
 	auto context = Context::create();
 	context->height = block->height;
