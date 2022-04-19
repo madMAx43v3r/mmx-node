@@ -35,15 +35,13 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 
 	if(auto proof = block->proof) {
 		const auto challenge = get_challenge(block, vdf_challenge);
-		fork->proof_score = verify_proof(proof, challenge, diff_block->space_diff);
+		fork->proof_score = verify_proof(proof, challenge, diff_block);
 	} else {
 		fork->proof_score = params->score_threshold;
 	}
 
 	fork->weight = block->farmer_sig ? 2 : 1;
-	if(block->proof) {
-		fork->weight += params->score_threshold - fork->proof_score;
-	}
+	fork->weight += params->score_threshold - fork->proof_score;
 	fork->weight *= diff_block->space_diff;
 	fork->weight *= diff_block->time_diff;
 
@@ -63,7 +61,7 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 	fork->is_proof_verified = true;
 }
 
-uint32_t Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, const uint64_t space_diff) const
+uint32_t Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, std::shared_ptr<const BlockHeader> diff_block) const
 {
 	if(!proof->is_valid()) {
 		throw std::logic_error("invalid proof");
@@ -75,18 +73,19 @@ uint32_t Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const has
 	}
 	uint32_t score = -1;
 
-	if(auto proof_ = std::dynamic_pointer_cast<const ProofOfSpaceOG>(proof))
+	if(auto og_proof = std::dynamic_pointer_cast<const ProofOfSpaceOG>(proof))
 	{
-		if(proof_->ksize < params->min_ksize) {
+		if(og_proof->ksize < params->min_ksize) {
 			throw std::logic_error("ksize too small");
 		}
-		if(proof_->ksize > params->max_ksize) {
+		if(og_proof->ksize > params->max_ksize) {
 			throw std::logic_error("ksize too big");
 		}
 		const auto quality = hash_t::from_bytes(chiapos::verify(
-				proof_->ksize, proof->plot_id.bytes, challenge.bytes, proof_->proof_bytes.data(), proof_->proof_bytes.size()));
+				og_proof->ksize, proof->plot_id.bytes, challenge.bytes, og_proof->proof_bytes.data(), og_proof->proof_bytes.size()));
 
-		score = calc_proof_score(params, proof_->ksize, quality, space_diff);
+		score = calc_proof_score(params, og_proof->ksize, quality, diff_block->space_diff);
+	}
 	}
 	else {
 		throw std::logic_error("invalid proof type");

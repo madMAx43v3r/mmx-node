@@ -781,6 +781,7 @@ std::vector<utxo_entry_t> Node::get_utxo_list(
 std::vector<utxo_entry_t> Node::get_utxo_list(
 		const std::vector<addr_t>& addresses, const vnx::optional<addr_t> currency, const uint32_t& min_confirm, const uint32_t& since) const
 {
+	// THREAD SAFE
 	const auto height = get_height();
 	const std::unordered_set<addr_t> addr_set(addresses.begin(), addresses.end());
 
@@ -960,16 +961,27 @@ void Node::handle(std::shared_ptr<const ProofResponse> value)
 	if(!peak || request->height < peak->height) {
 		return;
 	}
-	const auto challenge = request->challenge;
 	try {
-		const auto diff_block = find_diff_header(peak, request->height - peak->height);
+		// TODO: race condition with receive of block
+		const auto vdf_block = find_header(request->vdf_block);
+		if(!vdf_block) {
+			throw std::logic_error("no such vdf_block");
+		}
+		if(request->height != vdf_block->height + params->challenge_delay) {
+			throw std::logic_error("invalid height");
+		}
+		const auto diff_block = find_diff_header(vdf_block, params->challenge_delay);
 		if(!diff_block) {
-			throw std::logic_error("cannot verify");
+			throw std::logic_error("missing difficulty block");
+		}
+		const auto challenge = hash_t(diff_block->hash + vdf_block->vdf_output[1]);
+		if(request->challenge != challenge) {
+			throw std::logic_error("invalid challenge");
 		}
 		if(request->space_diff != diff_block->space_diff) {
 			throw std::logic_error("invalid space_diff");
 		}
-		verify_proof(value->proof, challenge, diff_block->space_diff);
+		verify_proof(value->proof, challenge, diff_block);
 
 		if(value->proof->score >= params->score_threshold) {
 			throw std::logic_error("invalid score");

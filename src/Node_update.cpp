@@ -367,15 +367,14 @@ void Node::update()
 	// publish challenges
 	for(uint32_t i = 0; i <= params->challenge_delay; ++i)
 	{
-		hash_t vdf_challenge;
-		if(find_vdf_challenge(peak, vdf_challenge, i))
+		if(auto diff_block = find_diff_header(peak, i))
 		{
-			const auto challenge = get_challenge(peak, vdf_challenge, i);
-
-			auto value = Challenge::create();
-			value->height = peak->height + i;
-			value->challenge = challenge;
-			if(auto diff_block = find_diff_header(peak, i)) {
+			if(auto vdf_block = find_prev_header(peak, params->challenge_delay - i, true))
+			{
+				auto value = Challenge::create();
+				value->height = peak->height + i;
+				value->vdf_block = vdf_block->hash;
+				value->challenge = get_challenge(peak, vdf_block->vdf_output[1], i);
 				value->space_diff = diff_block->space_diff;
 				publish(value, output_challenges);
 			}

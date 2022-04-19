@@ -233,7 +233,7 @@ private:
 
 	void verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_output) const;
 
-	uint32_t verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, const uint64_t space_diff) const;
+	uint32_t verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, std::shared_ptr<const BlockHeader> diff_block) const;
 
 	void verify_vdf(std::shared_ptr<const ProofOfTime> proof) const;
 
