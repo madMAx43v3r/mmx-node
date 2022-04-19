@@ -70,6 +70,8 @@
 #include <mmx/Node_get_utxo_list_return.hxx>
 #include <mmx/Node_get_utxo_list_for.hxx>
 #include <mmx/Node_get_utxo_list_for_return.hxx>
+#include <mmx/Node_get_virtual_plot_balance.hxx>
+#include <mmx/Node_get_virtual_plot_balance_return.hxx>
 #include <mmx/Node_start_sync.hxx>
 #include <mmx/Node_start_sync_return.hxx>
 #include <mmx/ProofOfTime.hxx>
@@ -465,6 +467,20 @@ std::map<::mmx::addr_t, uint64_t> NodeClient::get_total_balances(const std::vect
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, uint64_t>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+uint64_t NodeClient::get_virtual_plot_balance(const ::mmx::addr_t& plot_id, const ::mmx::hash_t& block_hash) {
+	auto _method = ::mmx::Node_get_virtual_plot_balance::create();
+	_method->plot_id = plot_id;
+	_method->block_hash = block_hash;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_virtual_plot_balance_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<uint64_t>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}

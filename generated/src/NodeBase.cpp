@@ -71,6 +71,8 @@
 #include <mmx/Node_get_utxo_list_return.hxx>
 #include <mmx/Node_get_utxo_list_for.hxx>
 #include <mmx/Node_get_utxo_list_for_return.hxx>
+#include <mmx/Node_get_virtual_plot_balance.hxx>
+#include <mmx/Node_get_virtual_plot_balance_return.hxx>
 #include <mmx/Node_start_sync.hxx>
 #include <mmx/Node_start_sync_return.hxx>
 #include <mmx/ProofOfTime.hxx>
@@ -120,7 +122,7 @@ namespace mmx {
 
 
 const vnx::Hash64 NodeBase::VNX_TYPE_HASH(0x289d7651582d76a3ull);
-const vnx::Hash64 NodeBase::VNX_CODE_HASH(0x7777d8a2f68348fcull);
+const vnx::Hash64 NodeBase::VNX_CODE_HASH(0x8ba549321d7253d9ull);
 
 NodeBase::NodeBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -145,8 +147,8 @@ NodeBase::NodeBase(const std::string& _vnx_name)
 	vnx::read_config(vnx_name + ".validate_interval_ms", validate_interval_ms);
 	vnx::read_config(vnx_name + ".sync_loss_delay", sync_loss_delay);
 	vnx::read_config(vnx_name + ".max_history", max_history);
-	vnx::read_config(vnx_name + ".tx_pool_limit", tx_pool_limit);
 	vnx::read_config(vnx_name + ".max_fork_length", max_fork_length);
+	vnx::read_config(vnx_name + ".tx_pool_limit", tx_pool_limit);
 	vnx::read_config(vnx_name + ".max_sync_jobs", max_sync_jobs);
 	vnx::read_config(vnx_name + ".num_sync_retries", num_sync_retries);
 	vnx::read_config(vnx_name + ".replay_height", replay_height);
@@ -196,8 +198,8 @@ void NodeBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[17], 17); vnx::accept(_visitor, validate_interval_ms);
 	_visitor.type_field(_type_code->fields[18], 18); vnx::accept(_visitor, sync_loss_delay);
 	_visitor.type_field(_type_code->fields[19], 19); vnx::accept(_visitor, max_history);
-	_visitor.type_field(_type_code->fields[20], 20); vnx::accept(_visitor, tx_pool_limit);
-	_visitor.type_field(_type_code->fields[21], 21); vnx::accept(_visitor, max_fork_length);
+	_visitor.type_field(_type_code->fields[20], 20); vnx::accept(_visitor, max_fork_length);
+	_visitor.type_field(_type_code->fields[21], 21); vnx::accept(_visitor, tx_pool_limit);
 	_visitor.type_field(_type_code->fields[22], 22); vnx::accept(_visitor, max_sync_jobs);
 	_visitor.type_field(_type_code->fields[23], 23); vnx::accept(_visitor, num_sync_retries);
 	_visitor.type_field(_type_code->fields[24], 24); vnx::accept(_visitor, replay_height);
@@ -235,8 +237,8 @@ void NodeBase::write(std::ostream& _out) const {
 	_out << ", \"validate_interval_ms\": "; vnx::write(_out, validate_interval_ms);
 	_out << ", \"sync_loss_delay\": "; vnx::write(_out, sync_loss_delay);
 	_out << ", \"max_history\": "; vnx::write(_out, max_history);
-	_out << ", \"tx_pool_limit\": "; vnx::write(_out, tx_pool_limit);
 	_out << ", \"max_fork_length\": "; vnx::write(_out, max_fork_length);
+	_out << ", \"tx_pool_limit\": "; vnx::write(_out, tx_pool_limit);
 	_out << ", \"max_sync_jobs\": "; vnx::write(_out, max_sync_jobs);
 	_out << ", \"num_sync_retries\": "; vnx::write(_out, num_sync_retries);
 	_out << ", \"replay_height\": "; vnx::write(_out, replay_height);
@@ -281,8 +283,8 @@ vnx::Object NodeBase::to_object() const {
 	_object["validate_interval_ms"] = validate_interval_ms;
 	_object["sync_loss_delay"] = sync_loss_delay;
 	_object["max_history"] = max_history;
-	_object["tx_pool_limit"] = tx_pool_limit;
 	_object["max_fork_length"] = max_fork_length;
+	_object["tx_pool_limit"] = tx_pool_limit;
 	_object["max_sync_jobs"] = max_sync_jobs;
 	_object["num_sync_retries"] = num_sync_retries;
 	_object["replay_height"] = replay_height;
@@ -433,11 +435,11 @@ vnx::Variant NodeBase::get_field(const std::string& _name) const {
 	if(_name == "max_history") {
 		return vnx::Variant(max_history);
 	}
-	if(_name == "tx_pool_limit") {
-		return vnx::Variant(tx_pool_limit);
-	}
 	if(_name == "max_fork_length") {
 		return vnx::Variant(max_fork_length);
+	}
+	if(_name == "tx_pool_limit") {
+		return vnx::Variant(tx_pool_limit);
 	}
 	if(_name == "max_sync_jobs") {
 		return vnx::Variant(max_sync_jobs);
@@ -519,10 +521,10 @@ void NodeBase::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(sync_loss_delay);
 	} else if(_name == "max_history") {
 		_value.to(max_history);
-	} else if(_name == "tx_pool_limit") {
-		_value.to(tx_pool_limit);
 	} else if(_name == "max_fork_length") {
 		_value.to(max_fork_length);
+	} else if(_name == "tx_pool_limit") {
+		_value.to(tx_pool_limit);
 	} else if(_name == "max_sync_jobs") {
 		_value.to(max_sync_jobs);
 	} else if(_name == "num_sync_retries") {
@@ -574,10 +576,10 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node";
 	type_code->type_hash = vnx::Hash64(0x289d7651582d76a3ull);
-	type_code->code_hash = vnx::Hash64(0x7777d8a2f68348fcull);
+	type_code->code_hash = vnx::Hash64(0x8ba549321d7253d9ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::NodeBase);
-	type_code->methods.resize(43);
+	type_code->methods.resize(44);
 	type_code->methods[0] = ::mmx::Node_add_block::static_get_type_code();
 	type_code->methods[1] = ::mmx::Node_add_transaction::static_get_type_code();
 	type_code->methods[2] = ::mmx::Node_get_balance::static_get_type_code();
@@ -609,18 +611,19 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	type_code->methods[28] = ::mmx::Node_get_txo_infos::static_get_type_code();
 	type_code->methods[29] = ::mmx::Node_get_utxo_list::static_get_type_code();
 	type_code->methods[30] = ::mmx::Node_get_utxo_list_for::static_get_type_code();
-	type_code->methods[31] = ::mmx::Node_start_sync::static_get_type_code();
-	type_code->methods[32] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
-	type_code->methods[33] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
-	type_code->methods[34] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
-	type_code->methods[35] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
-	type_code->methods[36] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
-	type_code->methods[37] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
-	type_code->methods[38] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
-	type_code->methods[39] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
-	type_code->methods[40] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
-	type_code->methods[41] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
-	type_code->methods[42] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
+	type_code->methods[31] = ::mmx::Node_get_virtual_plot_balance::static_get_type_code();
+	type_code->methods[32] = ::mmx::Node_start_sync::static_get_type_code();
+	type_code->methods[33] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
+	type_code->methods[34] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
+	type_code->methods[35] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
+	type_code->methods[36] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
+	type_code->methods[37] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
+	type_code->methods[38] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
+	type_code->methods[39] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
+	type_code->methods[40] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
+	type_code->methods[41] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
+	type_code->methods[42] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
+	type_code->methods[43] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
 	type_code->fields.resize(34);
 	{
 		auto& field = type_code->fields[0];
@@ -765,15 +768,15 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	{
 		auto& field = type_code->fields[20];
 		field.data_size = 4;
-		field.name = "tx_pool_limit";
-		field.value = vnx::to_string(100);
+		field.name = "max_fork_length";
+		field.value = vnx::to_string(20000);
 		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[21];
 		field.data_size = 4;
-		field.name = "max_fork_length";
-		field.value = vnx::to_string(10000);
+		field.name = "tx_pool_limit";
+		field.value = vnx::to_string(100);
 		field.code = {3};
 	}
 	{
@@ -808,7 +811,7 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 		auto& field = type_code->fields[26];
 		field.data_size = 4;
 		field.name = "vdf_check_divider";
-		field.value = vnx::to_string(10000);
+		field.value = vnx::to_string(5000);
 		field.code = {3};
 	}
 	{
@@ -1074,6 +1077,12 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 			_return_value->_ret_0 = get_utxo_list_for(_args->addresses, _args->currency, _args->min_confirm, _args->since);
 			return _return_value;
 		}
+		case 0x8d4bb6395747b2edull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_virtual_plot_balance>(_method);
+			auto _return_value = ::mmx::Node_get_virtual_plot_balance_return::create();
+			_return_value->_ret_0 = get_virtual_plot_balance(_args->plot_id, _args->block_hash);
+			return _return_value;
+		}
 		case 0x6c5be8aeb25ef3c8ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_start_sync>(_method);
 			auto _return_value = ::mmx::Node_start_sync_return::create();
@@ -1217,10 +1226,10 @@ void read(TypeInput& in, ::mmx::NodeBase& value, const TypeCode* type_code, cons
 			vnx::read_value(_buf + _field->offset, value.max_history, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[20]) {
-			vnx::read_value(_buf + _field->offset, value.tx_pool_limit, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.max_fork_length, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[21]) {
-			vnx::read_value(_buf + _field->offset, value.max_fork_length, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.tx_pool_limit, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[22]) {
 			vnx::read_value(_buf + _field->offset, value.max_sync_jobs, _field->code.data());
@@ -1292,8 +1301,8 @@ void write(TypeOutput& out, const ::mmx::NodeBase& value, const TypeCode* type_c
 	vnx::write_value(_buf + 8, value.validate_interval_ms);
 	vnx::write_value(_buf + 12, value.sync_loss_delay);
 	vnx::write_value(_buf + 16, value.max_history);
-	vnx::write_value(_buf + 20, value.tx_pool_limit);
-	vnx::write_value(_buf + 24, value.max_fork_length);
+	vnx::write_value(_buf + 20, value.max_fork_length);
+	vnx::write_value(_buf + 24, value.tx_pool_limit);
 	vnx::write_value(_buf + 28, value.max_sync_jobs);
 	vnx::write_value(_buf + 32, value.num_sync_retries);
 	vnx::write_value(_buf + 36, value.replay_height);

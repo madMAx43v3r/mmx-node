@@ -6,10 +6,12 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/ChainParams.hxx>
+#include <mmx/Context.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/bls_pubkey_t.hpp>
 #include <mmx/hash_t.hpp>
+#include <mmx/utxo_t.hxx>
 
 
 namespace mmx {
@@ -19,7 +21,7 @@ class MMX_CONTRACT_EXPORT VirtualPlot : public ::mmx::Contract {
 public:
 	
 	::mmx::bls_pubkey_t farmer_key;
-	vnx::optional<::mmx::addr_t> pool_address;
+	vnx::optional<::mmx::addr_t> reward_address;
 	
 	typedef ::mmx::Contract Super;
 	
@@ -37,6 +39,7 @@ public:
 	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_hash() const override;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
+	virtual vnx::bool_t is_spendable(const ::mmx::utxo_t& utxo = ::mmx::utxo_t(), std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
 	virtual void bls_transfer(const ::mmx::bls_pubkey_t& new_farmer_key = ::mmx::bls_pubkey_t());
 	
 	static std::shared_ptr<VirtualPlot> create();
@@ -74,7 +77,7 @@ void VirtualPlot::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<VirtualPlot>(3);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("farmer_key", 1); _visitor.accept(farmer_key);
-	_visitor.type_field("pool_address", 2); _visitor.accept(pool_address);
+	_visitor.type_field("reward_address", 2); _visitor.accept(reward_address);
 	_visitor.template type_end<VirtualPlot>(3);
 }
 

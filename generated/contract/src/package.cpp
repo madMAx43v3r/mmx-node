@@ -201,6 +201,8 @@
 #include <mmx/contract/VirtualPlot_calc_cost_return.hxx>
 #include <mmx/contract/VirtualPlot_calc_hash.hxx>
 #include <mmx/contract/VirtualPlot_calc_hash_return.hxx>
+#include <mmx/contract/VirtualPlot_is_spendable.hxx>
+#include <mmx/contract/VirtualPlot_is_spendable_return.hxx>
 #include <mmx/contract/VirtualPlot_is_valid.hxx>
 #include <mmx/contract/VirtualPlot_is_valid_return.hxx>
 #include <mmx/contract/VoteSheet.hxx>
@@ -2635,6 +2637,30 @@ void type<::mmx::contract::VirtualPlot_calc_hash_return>::create_dynamic_code(st
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::contract::VirtualPlot_is_spendable>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_VirtualPlot_is_spendable;
+}
+
+void type<::mmx::contract::VirtualPlot_is_spendable>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::VirtualPlot_is_spendable());
+}
+
+void type<::mmx::contract::VirtualPlot_is_spendable>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot_is_spendable& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::VirtualPlot_is_spendable_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_VirtualPlot_is_spendable_return;
+}
+
+void type<::mmx::contract::VirtualPlot_is_spendable_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::VirtualPlot_is_spendable_return());
+}
+
+void type<::mmx::contract::VirtualPlot_is_spendable_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot_is_spendable_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::contract::VirtualPlot_is_valid>::get_type_code() {
 	return mmx::contract::vnx_native_type_code_VirtualPlot_is_valid;
 }
@@ -3156,6 +3182,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::VirtualPlot_calc_cost_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::VirtualPlot_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::VirtualPlot_calc_hash_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::VirtualPlot_is_spendable::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::VirtualPlot_is_spendable_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::VirtualPlot_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::VirtualPlot_is_valid_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::VoteSheet::static_create_type_code());
@@ -3390,6 +3418,8 @@ const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_cost = vnx::get
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xac85fcecbe875f5aull));
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_hash = vnx::get_type_code(vnx::Hash64(0x2ec01712e3899bd7ull));
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xd7d3a1e038583226ull));
+const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_spendable = vnx::get_type_code(vnx::Hash64(0xc9a7423554346829ull));
+const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_spendable_return = vnx::get_type_code(vnx::Hash64(0x23be8bb066dab3d3ull));
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_valid = vnx::get_type_code(vnx::Hash64(0xe97074988602acadull));
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_valid_return = vnx::get_type_code(vnx::Hash64(0xd5a16e6bb7e26611ull));
 const vnx::TypeCode* const vnx_native_type_code_VoteSheet = vnx::get_type_code(vnx::Hash64(0xdaac9a8f3f87ad6aull));

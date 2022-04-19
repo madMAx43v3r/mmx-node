@@ -54,13 +54,13 @@ public:
 	int32_t validate_interval_ms = 10000;
 	int32_t sync_loss_delay = 60;
 	uint32_t max_history = 1000;
+	uint32_t max_fork_length = 20000;
 	uint32_t tx_pool_limit = 100;
-	uint32_t max_fork_length = 10000;
 	uint32_t max_sync_jobs = 64;
 	uint32_t num_sync_retries = 3;
 	uint32_t replay_height = -1;
 	uint32_t num_vdf_threads = 8;
-	uint32_t vdf_check_divider = 10000;
+	uint32_t vdf_check_divider = 5000;
 	int32_t opencl_device = 0;
 	vnx::bool_t do_sync = true;
 	vnx::bool_t show_warnings = false;
@@ -130,6 +130,7 @@ protected:
 	virtual std::map<::mmx::addr_t, ::mmx::balance_t> get_balances(const ::mmx::addr_t& address, const uint32_t& min_confirm) const = 0;
 	virtual uint64_t get_total_balance(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& currency, const uint32_t& min_confirm) const = 0;
 	virtual std::map<::mmx::addr_t, uint64_t> get_total_balances(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm) const = 0;
+	virtual uint64_t get_virtual_plot_balance(const ::mmx::addr_t& plot_id, const ::mmx::hash_t& block_hash) const = 0;
 	virtual uint64_t get_total_supply(const ::mmx::addr_t& currency) const = 0;
 	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm, const uint32_t& since) const = 0;
 	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list_for(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& currency, const uint32_t& min_confirm, const uint32_t& since) const = 0;
@@ -173,8 +174,8 @@ void NodeBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("validate_interval_ms", 17); _visitor.accept(validate_interval_ms);
 	_visitor.type_field("sync_loss_delay", 18); _visitor.accept(sync_loss_delay);
 	_visitor.type_field("max_history", 19); _visitor.accept(max_history);
-	_visitor.type_field("tx_pool_limit", 20); _visitor.accept(tx_pool_limit);
-	_visitor.type_field("max_fork_length", 21); _visitor.accept(max_fork_length);
+	_visitor.type_field("max_fork_length", 20); _visitor.accept(max_fork_length);
+	_visitor.type_field("tx_pool_limit", 21); _visitor.accept(tx_pool_limit);
 	_visitor.type_field("max_sync_jobs", 22); _visitor.accept(max_sync_jobs);
 	_visitor.type_field("num_sync_retries", 23); _visitor.accept(num_sync_retries);
 	_visitor.type_field("replay_height", 24); _visitor.accept(replay_height);

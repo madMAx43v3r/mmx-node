@@ -4,6 +4,7 @@
 #include <mmx/contract/package.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/ChainParams.hxx>
+#include <mmx/Context.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/Contract_calc_cost.hxx>
 #include <mmx/Contract_calc_cost_return.hxx>
@@ -31,9 +32,12 @@
 #include <mmx/contract/VirtualPlot_calc_cost_return.hxx>
 #include <mmx/contract/VirtualPlot_calc_hash.hxx>
 #include <mmx/contract/VirtualPlot_calc_hash_return.hxx>
+#include <mmx/contract/VirtualPlot_is_spendable.hxx>
+#include <mmx/contract/VirtualPlot_is_spendable_return.hxx>
 #include <mmx/contract/VirtualPlot_is_valid.hxx>
 #include <mmx/contract/VirtualPlot_is_valid_return.hxx>
 #include <mmx/hash_t.hpp>
+#include <mmx/utxo_t.hxx>
 
 #include <vnx/vnx.h>
 
@@ -43,7 +47,7 @@ namespace contract {
 
 
 const vnx::Hash64 VirtualPlot::VNX_TYPE_HASH(0xab02561c615511e8ull);
-const vnx::Hash64 VirtualPlot::VNX_CODE_HASH(0x9df9929dad03c8b1ull);
+const vnx::Hash64 VirtualPlot::VNX_CODE_HASH(0xe1551a024eddc67dull);
 
 vnx::Hash64 VirtualPlot::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -78,7 +82,7 @@ void VirtualPlot::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, version);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, farmer_key);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, pool_address);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, reward_address);
 	_visitor.type_end(*_type_code);
 }
 
@@ -86,7 +90,7 @@ void VirtualPlot::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.contract.VirtualPlot\"";
 	_out << ", \"version\": "; vnx::write(_out, version);
 	_out << ", \"farmer_key\": "; vnx::write(_out, farmer_key);
-	_out << ", \"pool_address\": "; vnx::write(_out, pool_address);
+	_out << ", \"reward_address\": "; vnx::write(_out, reward_address);
 	_out << "}";
 }
 
@@ -101,7 +105,7 @@ vnx::Object VirtualPlot::to_object() const {
 	_object["__type"] = "mmx.contract.VirtualPlot";
 	_object["version"] = version;
 	_object["farmer_key"] = farmer_key;
-	_object["pool_address"] = pool_address;
+	_object["reward_address"] = reward_address;
 	return _object;
 }
 
@@ -109,8 +113,8 @@ void VirtualPlot::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "farmer_key") {
 			_entry.second.to(farmer_key);
-		} else if(_entry.first == "pool_address") {
-			_entry.second.to(pool_address);
+		} else if(_entry.first == "reward_address") {
+			_entry.second.to(reward_address);
 		} else if(_entry.first == "version") {
 			_entry.second.to(version);
 		}
@@ -124,8 +128,8 @@ vnx::Variant VirtualPlot::get_field(const std::string& _name) const {
 	if(_name == "farmer_key") {
 		return vnx::Variant(farmer_key);
 	}
-	if(_name == "pool_address") {
-		return vnx::Variant(pool_address);
+	if(_name == "reward_address") {
+		return vnx::Variant(reward_address);
 	}
 	return vnx::Variant();
 }
@@ -135,8 +139,8 @@ void VirtualPlot::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(version);
 	} else if(_name == "farmer_key") {
 		_value.to(farmer_key);
-	} else if(_name == "pool_address") {
-		_value.to(pool_address);
+	} else if(_name == "reward_address") {
+		_value.to(reward_address);
 	}
 }
 
@@ -164,14 +168,14 @@ std::shared_ptr<vnx::TypeCode> VirtualPlot::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.VirtualPlot";
 	type_code->type_hash = vnx::Hash64(0xab02561c615511e8ull);
-	type_code->code_hash = vnx::Hash64(0x9df9929dad03c8b1ull);
+	type_code->code_hash = vnx::Hash64(0xe1551a024eddc67dull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::VirtualPlot);
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<VirtualPlot>(); };
-	type_code->methods.resize(13);
+	type_code->methods.resize(14);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_dependency::static_get_type_code();
@@ -184,7 +188,8 @@ std::shared_ptr<vnx::TypeCode> VirtualPlot::static_create_type_code() {
 	type_code->methods[9] = ::mmx::contract::VirtualPlot_bls_transfer::static_get_type_code();
 	type_code->methods[10] = ::mmx::contract::VirtualPlot_calc_cost::static_get_type_code();
 	type_code->methods[11] = ::mmx::contract::VirtualPlot_calc_hash::static_get_type_code();
-	type_code->methods[12] = ::mmx::contract::VirtualPlot_is_valid::static_get_type_code();
+	type_code->methods[12] = ::mmx::contract::VirtualPlot_is_spendable::static_get_type_code();
+	type_code->methods[13] = ::mmx::contract::VirtualPlot_is_valid::static_get_type_code();
 	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
@@ -201,7 +206,7 @@ std::shared_ptr<vnx::TypeCode> VirtualPlot::static_create_type_code() {
 	{
 		auto& field = type_code->fields[2];
 		field.is_extended = true;
-		field.name = "pool_address";
+		field.name = "reward_address";
 		field.code = {33, 11, 32, 1};
 	}
 	type_code->build();
@@ -282,6 +287,12 @@ std::shared_ptr<vnx::Value> VirtualPlot::vnx_call_switch(std::shared_ptr<const v
 			_return_value->_ret_0 = calc_hash();
 			return _return_value;
 		}
+		case 0xc9a7423554346829ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::VirtualPlot_is_spendable>(_method);
+			auto _return_value = ::mmx::contract::VirtualPlot_is_spendable_return::create();
+			_return_value->_ret_0 = is_spendable(_args->utxo, _args->context);
+			return _return_value;
+		}
 		case 0xe97074988602acadull: {
 			auto _args = std::static_pointer_cast<const ::mmx::contract::VirtualPlot_is_valid>(_method);
 			auto _return_value = ::mmx::contract::VirtualPlot_is_valid_return::create();
@@ -338,7 +349,7 @@ void read(TypeInput& in, ::mmx::contract::VirtualPlot& value, const TypeCode* ty
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 1: vnx::read(in, value.farmer_key, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.pool_address, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.reward_address, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -360,7 +371,7 @@ void write(TypeOutput& out, const ::mmx::contract::VirtualPlot& value, const Typ
 	char* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.version);
 	vnx::write(out, value.farmer_key, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.pool_address, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.reward_address, type_code, type_code->fields[2].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::VirtualPlot& value) {

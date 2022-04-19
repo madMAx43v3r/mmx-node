@@ -222,6 +222,8 @@ class VirtualPlot_calc_cost;
 class VirtualPlot_calc_cost_return;
 class VirtualPlot_calc_hash;
 class VirtualPlot_calc_hash_return;
+class VirtualPlot_is_spendable;
+class VirtualPlot_is_spendable_return;
 class VirtualPlot_is_valid;
 class VirtualPlot_is_valid_return;
 class VoteSheet;
@@ -449,6 +451,8 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Virtu
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_cost_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_hash; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_hash_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_spendable; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_spendable_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_valid; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_valid_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VoteSheet; ///< \private
@@ -682,6 +686,8 @@ void read(TypeInput& in, ::mmx::contract::VirtualPlot_calc_cost& value, const Ty
 void read(TypeInput& in, ::mmx::contract::VirtualPlot_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::VirtualPlot_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::VirtualPlot_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::VirtualPlot_is_spendable& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::VirtualPlot_is_spendable_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::VirtualPlot_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::VirtualPlot_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::VoteSheet& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -909,6 +915,8 @@ void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_calc_cost& value,
 void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_is_spendable& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_is_spendable_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::VoteSheet& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1136,6 +1144,8 @@ void read(std::istream& in, ::mmx::contract::VirtualPlot_calc_cost& value); ///<
 void read(std::istream& in, ::mmx::contract::VirtualPlot_calc_cost_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::VirtualPlot_calc_hash& value); ///< \private
 void read(std::istream& in, ::mmx::contract::VirtualPlot_calc_hash_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::VirtualPlot_is_spendable& value); ///< \private
+void read(std::istream& in, ::mmx::contract::VirtualPlot_is_spendable_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::VirtualPlot_is_valid& value); ///< \private
 void read(std::istream& in, ::mmx::contract::VirtualPlot_is_valid_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::VoteSheet& value); ///< \private
@@ -1363,6 +1373,8 @@ void write(std::ostream& out, const ::mmx::contract::VirtualPlot_calc_cost& valu
 void write(std::ostream& out, const ::mmx::contract::VirtualPlot_calc_cost_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::VirtualPlot_calc_hash& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::VirtualPlot_calc_hash_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::VirtualPlot_is_spendable& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::VirtualPlot_is_spendable_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::VirtualPlot_is_valid& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::VirtualPlot_is_valid_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::VoteSheet& value); ///< \private
@@ -1590,6 +1602,8 @@ void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_calc_cost& valu
 void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_calc_cost_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_calc_hash& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_calc_hash_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_is_spendable& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_is_spendable_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_is_valid& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_is_valid_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::VoteSheet& value); ///< \private
@@ -6215,6 +6229,52 @@ struct type<::mmx::contract::VirtualPlot_calc_hash_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot_calc_hash_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::VirtualPlot_is_spendable> {
+	void read(TypeInput& in, ::mmx::contract::VirtualPlot_is_spendable& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_is_spendable& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::VirtualPlot_is_spendable& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::VirtualPlot_is_spendable& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_is_spendable& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot_is_spendable& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::VirtualPlot_is_spendable_return> {
+	void read(TypeInput& in, ::mmx::contract::VirtualPlot_is_spendable_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_is_spendable_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::VirtualPlot_is_spendable_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::VirtualPlot_is_spendable_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_is_spendable_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot_is_spendable_return& value, bool special = false);
 };
 
 /// \private

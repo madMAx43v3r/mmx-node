@@ -93,6 +93,8 @@ public:
 	
 	std::map<::mmx::addr_t, uint64_t> get_total_balances(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& min_confirm = 1);
 	
+	uint64_t get_virtual_plot_balance(const ::mmx::addr_t& plot_id = ::mmx::addr_t(), const ::mmx::hash_t& block_hash = ::mmx::hash_t());
+	
 	uint64_t get_total_supply(const ::mmx::addr_t& currency = ::mmx::addr_t());
 	
 	std::vector<::mmx::utxo_entry_t> get_utxo_list(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& min_confirm = 1, const uint32_t& since = 0);

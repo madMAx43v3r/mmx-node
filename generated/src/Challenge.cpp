@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Challenge::VNX_TYPE_HASH(0x4bf49f8022405249ull);
-const vnx::Hash64 Challenge::VNX_CODE_HASH(0x2ae52b94e16ef72ull);
+const vnx::Hash64 Challenge::VNX_CODE_HASH(0x57552b58fad02389ull);
 
 vnx::Hash64 Challenge::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -47,16 +47,18 @@ void Challenge::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Challenge;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, height);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, space_diff);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, vdf_block);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, challenge);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, space_diff);
 	_visitor.type_end(*_type_code);
 }
 
 void Challenge::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Challenge\"";
 	_out << ", \"height\": "; vnx::write(_out, height);
-	_out << ", \"space_diff\": "; vnx::write(_out, space_diff);
+	_out << ", \"vdf_block\": "; vnx::write(_out, vdf_block);
 	_out << ", \"challenge\": "; vnx::write(_out, challenge);
+	_out << ", \"space_diff\": "; vnx::write(_out, space_diff);
 	_out << "}";
 }
 
@@ -70,8 +72,9 @@ vnx::Object Challenge::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Challenge";
 	_object["height"] = height;
-	_object["space_diff"] = space_diff;
+	_object["vdf_block"] = vdf_block;
 	_object["challenge"] = challenge;
+	_object["space_diff"] = space_diff;
 	return _object;
 }
 
@@ -83,6 +86,8 @@ void Challenge::from_object(const vnx::Object& _object) {
 			_entry.second.to(height);
 		} else if(_entry.first == "space_diff") {
 			_entry.second.to(space_diff);
+		} else if(_entry.first == "vdf_block") {
+			_entry.second.to(vdf_block);
 		}
 	}
 }
@@ -91,11 +96,14 @@ vnx::Variant Challenge::get_field(const std::string& _name) const {
 	if(_name == "height") {
 		return vnx::Variant(height);
 	}
-	if(_name == "space_diff") {
-		return vnx::Variant(space_diff);
+	if(_name == "vdf_block") {
+		return vnx::Variant(vdf_block);
 	}
 	if(_name == "challenge") {
 		return vnx::Variant(challenge);
+	}
+	if(_name == "space_diff") {
+		return vnx::Variant(space_diff);
 	}
 	return vnx::Variant();
 }
@@ -103,10 +111,12 @@ vnx::Variant Challenge::get_field(const std::string& _name) const {
 void Challenge::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "height") {
 		_value.to(height);
-	} else if(_name == "space_diff") {
-		_value.to(space_diff);
+	} else if(_name == "vdf_block") {
+		_value.to(vdf_block);
 	} else if(_name == "challenge") {
 		_value.to(challenge);
+	} else if(_name == "space_diff") {
+		_value.to(space_diff);
 	}
 }
 
@@ -134,12 +144,12 @@ std::shared_ptr<vnx::TypeCode> Challenge::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Challenge";
 	type_code->type_hash = vnx::Hash64(0x4bf49f8022405249ull);
-	type_code->code_hash = vnx::Hash64(0x2ae52b94e16ef72ull);
+	type_code->code_hash = vnx::Hash64(0x57552b58fad02389ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::Challenge);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Challenge>(); };
-	type_code->fields.resize(3);
+	type_code->fields.resize(4);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -148,15 +158,21 @@ std::shared_ptr<vnx::TypeCode> Challenge::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[1];
-		field.data_size = 8;
-		field.name = "space_diff";
-		field.code = {4};
+		field.is_extended = true;
+		field.name = "vdf_block";
+		field.code = {11, 32, 1};
 	}
 	{
 		auto& field = type_code->fields[2];
 		field.is_extended = true;
 		field.name = "challenge";
 		field.code = {11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[3];
+		field.data_size = 8;
+		field.name = "space_diff";
+		field.code = {4};
 	}
 	type_code->build();
 	return type_code;
@@ -209,12 +225,13 @@ void read(TypeInput& in, ::mmx::Challenge& value, const TypeCode* type_code, con
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.height, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[1]) {
+		if(const auto* const _field = type_code->field_map[3]) {
 			vnx::read_value(_buf + _field->offset, value.space_diff, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
+			case 1: vnx::read(in, value.vdf_block, type_code, _field->code.data()); break;
 			case 2: vnx::read(in, value.challenge, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
@@ -237,6 +254,7 @@ void write(TypeOutput& out, const ::mmx::Challenge& value, const TypeCode* type_
 	char* const _buf = out.write(12);
 	vnx::write_value(_buf + 0, value.height);
 	vnx::write_value(_buf + 4, value.space_diff);
+	vnx::write(out, value.vdf_block, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.challenge, type_code, type_code->fields[2].code.data());
 }
 
