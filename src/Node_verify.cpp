@@ -37,15 +37,8 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 
 	if(auto proof = block->proof) {
 		const auto challenge = get_challenge(block, vdf_challenge);
-		fork->proof_score = verify_proof(proof, challenge, diff_block);
-	} else {
-		fork->proof_score = params->score_threshold;
+		verify_proof(proof, challenge, diff_block);
 	}
-
-	fork->weight = block->farmer_sig ? 2 : 1;
-	fork->weight += params->score_threshold - fork->proof_score;
-	fork->weight *= diff_block->space_diff;
-	fork->weight *= diff_block->time_diff;
 
 	// check some VDFs during sync
 	if(!fork->is_proof_verified && !fork->is_vdf_verified) {
@@ -90,7 +83,7 @@ uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const hash_t& blo
 	return balance;
 }
 
-uint32_t Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, std::shared_ptr<const BlockHeader> diff_block) const
+void Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, std::shared_ptr<const BlockHeader> diff_block) const
 {
 	if(!proof->is_valid()) {
 		throw std::logic_error("invalid proof");
@@ -131,13 +124,12 @@ uint32_t Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const has
 	else {
 		throw std::logic_error("invalid proof type");
 	}
-	if(score > proof->score) {
+	if(score != proof->score) {
 		throw std::logic_error("proof score mismatch");
 	}
 	if(score >= params->score_threshold) {
 		throw std::logic_error("score >= score_threshold");
 	}
-	return score;
 }
 
 void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof) const

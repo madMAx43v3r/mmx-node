@@ -53,6 +53,8 @@ void Node::add_dummy_blocks(std::shared_ptr<const BlockHeader> prev)
 		block->space_diff = calc_new_space_diff(params, prev->space_diff, params->score_threshold);
 		block->vdf_iters = vdf_point->vdf_iters;
 		block->vdf_output = vdf_point->output;
+		block->weight = calc_block_weight(params, prev, block);
+		block->total_weight = prev->total_weight + block->weight;
 		block->finalize();
 		add_block(block);
 
@@ -212,9 +214,10 @@ void Node::update()
 		stuck_timer->reset();
 		if(auto fork = find_fork(peak->hash))
 		{
+			auto proof = fork->block->proof;
 			auto vdf_point = fork->vdf_point;
 			log(INFO) << "New peak at height " << peak->height
-					<< " with score " << std::to_string(fork->proof_score) << (peak->farmer_sig ? "" : " (dummy)")
+					<< " with score " << (proof ? proof->score : params->score_threshold) << (peak->farmer_sig ? "" : " (dummy)")
 					<< (is_synced && forked_at ? ", forked at " + std::to_string(forked_at->height) : "")
 					<< (is_synced && vdf_point ? ", delay " + std::to_string((fork->recv_time - vdf_point->recv_time) / 1e6) + " sec" : "")
 					<< ", took " << elapsed << " sec";
@@ -663,6 +666,8 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 		// set new space difficulty
 		block->space_diff = calc_new_space_diff(params, prev->space_diff, response->proof->score);
 	}
+	block->weight = calc_block_weight(params, prev, block);
+	block->total_weight = prev->total_weight + block->weight;
 	block->finalize();
 
 	FarmerClient farmer(response->farmer_addr);

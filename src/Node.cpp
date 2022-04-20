@@ -1222,15 +1222,14 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 
 std::shared_ptr<Node::fork_t> Node::find_best_fork() const
 {
-	uint32_t curr_height = 0;
 	uint128_t max_weight = 0;
 	std::shared_ptr<fork_t> best_fork;
-	std::shared_ptr<fork_t> prev_best;
 	const auto root = get_root();
 	const auto begin = fork_index.upper_bound(root->height);
 	for(auto iter = begin; iter != fork_index.end(); ++iter)
 	{
 		const auto& fork = iter->second;
+		const auto& block = fork->block;
 		const auto prev = fork->prev.lock();
 		if(prev && prev->is_invalid) {
 			fork->is_invalid = true;
@@ -1238,21 +1237,12 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork() const
 		if(!fork->is_proof_verified || fork->is_invalid) {
 			continue;
 		}
-		if(iter->first != curr_height) {
-			prev_best = best_fork;
-			curr_height = iter->first;
-		}
-		if(iter != begin && prev) {
-			fork->total_weight = prev->total_weight + fork->weight;
-		} else {
-			fork->total_weight = fork->weight;
-		}
 		if(!best_fork
-			|| fork->total_weight > max_weight
-			|| (fork->total_weight == max_weight && fork->block->hash < best_fork->block->hash))
+			|| block->total_weight > max_weight
+			|| (block->total_weight == max_weight && block->hash < best_fork->block->hash))
 		{
 			best_fork = fork;
-			max_weight = fork->total_weight;
+			max_weight = block->total_weight;
 		}
 	}
 	return best_fork;
@@ -1366,8 +1356,10 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	verified_vdfs.erase(verified_vdfs.begin(), verified_vdfs.upper_bound(block->height));
 
 	if(is_synced && fork) {
+		auto proof = fork->block->proof;
 		Node::log(INFO) << "Committed height " << block->height << " with: ntx = " << block->tx_list.size()
-				<< ", score = " << fork->proof_score << ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff
+				<< ", score = " << (proof ? proof->score : params->score_threshold)
+				<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff
 				<< ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 	}
 	if(!is_replay) {

@@ -9,6 +9,7 @@
 #define INCLUDE_MMX_UTILS_H_
 
 #include <mmx/hash_t.hpp>
+#include <mmx/BlockHeader.hxx>
 #include <mmx/ChainParams.hxx>
 
 #include <vnx/Config.hpp>
@@ -92,6 +93,18 @@ uint64_t calc_new_space_diff(std::shared_ptr<const ChainParams> params, const ui
 	delta /= params->score_target;
 	delta >>= params->max_diff_adjust;
 	return std::max<int64_t>(int64_t(prev_diff) + delta, 1);
+}
+
+inline
+uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const BlockHeader> block)
+{
+	uint128_t weight = block->farmer_sig ? 2 : 1;
+	if(auto proof = block->proof) {
+		weight += params->score_threshold - proof->score;
+	}
+	weight *= prev->space_diff;
+	weight *= prev->time_diff;
+	return weight;
 }
 
 

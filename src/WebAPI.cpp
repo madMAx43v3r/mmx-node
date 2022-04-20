@@ -25,6 +25,7 @@
 #include <mmx/solution/MultiSig.hxx>
 #include <mmx/exchange/trade_pair_t.hpp>
 #include <mmx/permission_e.hxx>
+#include <mmx/uint128.hpp>
 
 #include <vnx/vnx.h>
 #include <vnx/ProcessClient.hxx>
@@ -199,6 +200,10 @@ public:
 	template<size_t N>
 	void accept(const bytes_t<N>& value) {
 		set(value.to_string());
+	}
+
+	void accept(const uint128& value) {
+		set(value.str(10));
 	}
 
 	void accept(const hash_t& value) {

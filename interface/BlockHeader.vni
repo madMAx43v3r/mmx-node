@@ -14,6 +14,9 @@ class BlockHeader {
 	ulong time_diff;
 	ulong space_diff;
 	
+	uint128 weight;
+	uint128 total_weight;
+	
 	ulong vdf_iters;
 	hash_t vdf_output[2];
 	

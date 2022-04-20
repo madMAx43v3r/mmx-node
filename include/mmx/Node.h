@@ -140,10 +140,7 @@ private:
 		bool is_verified = false;
 		bool is_vdf_verified = false;
 		bool is_proof_verified = false;
-		uint32_t proof_score = -1;
 		int64_t recv_time = 0;
-		uint128_t weight = 0;
-		uint128_t total_weight = 0;
 		std::weak_ptr<fork_t> prev;
 		std::shared_ptr<const Block> block;
 		std::shared_ptr<const vdf_point_t> vdf_point;
@@ -234,7 +231,7 @@ private:
 
 	uint64_t get_virtual_plot_balance(const addr_t& plot_id, const hash_t& block_hash) const;
 
-	uint32_t verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, std::shared_ptr<const BlockHeader> diff_block) const;
+	void verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, std::shared_ptr<const BlockHeader> diff_block) const;
 
 	void verify_vdf(std::shared_ptr<const ProofOfTime> proof) const;
 
