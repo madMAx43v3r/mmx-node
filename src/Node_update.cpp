@@ -53,7 +53,7 @@ void Node::add_dummy_blocks(std::shared_ptr<const BlockHeader> prev)
 		block->space_diff = calc_new_space_diff(params, prev->space_diff, params->score_threshold);
 		block->vdf_iters = vdf_point->vdf_iters;
 		block->vdf_output = vdf_point->output;
-		block->weight = calc_block_weight(params, prev, block);
+		block->weight = calc_block_weight(params, prev, nullptr, false);
 		block->total_weight = prev->total_weight + block->weight;
 		block->finalize();
 		add_block(block);
@@ -61,9 +61,13 @@ void Node::add_dummy_blocks(std::shared_ptr<const BlockHeader> prev)
 		hash_t vdf_challenge;
 		if(find_vdf_challenge(block, vdf_challenge)) {
 			const auto challenge = get_challenge(block, vdf_challenge);
-			for(auto response : find_proof(challenge)) {
+			for(const auto& response : find_proof(challenge)) {
+				const auto& proof = response->proof;
 				auto copy = vnx::clone(block);
-				copy->proof = response->proof;
+				copy->proof = proof;
+				copy->space_diff = calc_new_space_diff(params, prev->space_diff, proof->score);
+				copy->weight = calc_block_weight(params, prev, proof, false);
+				copy->total_weight = prev->total_weight + copy->weight;
 				copy->finalize();
 				add_block(copy);
 			}
@@ -86,6 +90,7 @@ void Node::update()
 		for(const auto& prev : blocks) {
 			add_dummy_blocks(prev);
 		}
+		add_dummy_blocks(get_root());
 	}
 
 	// verify proof where possible
@@ -269,11 +274,9 @@ void Node::update()
 		{
 			if(auto diff_block = find_diff_header(peak, i + 1))
 			{
-				if(auto prev = find_prev_header(peak, params->infuse_delay - i, true))
+				if(auto prev = find_prev_header(peak, params->infuse_delay - i))
 				{
-					if(vdf_iters > 0) {
-						infuse->values[vdf_iters] = prev->hash;
-					}
+					infuse->values[vdf_iters] = prev->hash;
 				}
 				vdf_iters += diff_block->time_diff * params->time_diff_constant;
 			}
@@ -335,7 +338,7 @@ void Node::update()
 			{
 				const auto challenge = get_challenge(prev, vdf_challenge, 1);
 
-				for(auto response : find_proof(challenge)) {
+				for(const auto& response : find_proof(challenge)) {
 					// check if it's our proof
 					if(vnx::get_pipe(response->farmer_addr)) {
 						const auto key = std::make_pair(prev->hash, response->proof->calc_hash());
@@ -666,7 +669,7 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 		// set new space difficulty
 		block->space_diff = calc_new_space_diff(params, prev->space_diff, response->proof->score);
 	}
-	block->weight = calc_block_weight(params, prev, block);
+	block->weight = calc_block_weight(params, prev, block->proof, true);
 	block->total_weight = prev->total_weight + block->weight;
 	block->finalize();
 

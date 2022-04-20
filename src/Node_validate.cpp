@@ -51,8 +51,9 @@ void Node::validate(std::shared_ptr<const Block> block) const
 	if(block->space_diff != calc_new_space_diff(params, prev->space_diff, proof_score)) {
 		throw std::logic_error("invalid space_diff adjust");
 	}
-	if(block->weight != calc_block_weight(params, prev, block)) {
-		throw std::logic_error("invalid block weight");
+	const auto weight = calc_block_weight(params, prev, block->proof, block->farmer_sig);
+	if(block->weight != weight) {
+		throw std::logic_error("invalid block weight: " + block->weight.str(10) + " != " + weight.str(10));
 	}
 	if(block->total_weight != prev->total_weight + block->weight) {
 		throw std::logic_error("invalid block total_weight");

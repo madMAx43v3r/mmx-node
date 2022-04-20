@@ -1620,7 +1620,7 @@ std::shared_ptr<Node::vdf_point_t> Node::find_next_vdf_point(std::shared_ptr<con
 	if(auto diff_block = find_diff_header(block, 1))
 	{
 		const auto height = block->height + 1;
-		const auto infused = find_prev_header(block, params->infuse_delay, true);
+		const auto infused = find_prev_header(block, params->infuse_delay);
 		const auto vdf_iters = block->vdf_iters + diff_block->time_diff * params->time_diff_constant;
 
 		for(auto iter = verified_vdfs.lower_bound(height); iter != verified_vdfs.upper_bound(height); ++iter)

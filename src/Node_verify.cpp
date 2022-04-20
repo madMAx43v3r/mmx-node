@@ -153,7 +153,8 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof) const
 	}
 
 	// check proper infusions
-	if(proof->start > 0) {
+	if(proof->height > params->infuse_delay)
+	{
 		if(!proof->infuse[0]) {
 			throw std::logic_error("missing infusion on chain 0");
 		}
@@ -183,6 +184,13 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof) const
 			}
 		} else if(proof->infuse[1]) {
 			throw std::logic_error("invalid infusion on chain 1");
+		}
+	} else {
+		if(proof->infuse[0]) {
+			throw std::logic_error("invalid infusion on chain 0");
+		}
+		if(proof->infuse[1]) {
+			throw std::logic_error("invalid infusion on chain 0");
 		}
 	}
 	vdf_threads->add_task(std::bind(&Node::verify_vdf_task, this, proof));
@@ -247,38 +255,7 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::sha
 	log(INFO) << "Verified VDF for height " << proof->height <<
 			(prev ? ", delta = " + std::to_string((point->recv_time - prev->recv_time) / 1e6) + " sec" : "") << ", took " << elapsed << " sec";
 
-	// add dummy blocks in case no proof is found
-	{
-		std::vector<std::shared_ptr<const BlockHeader>> prev_blocks;
-		if(auto root = get_root()) {
-			if(root->height + 1 == proof->height) {
-				prev_blocks.push_back(root);
-			}
-		}
-		for(auto iter = fork_index.lower_bound(proof->height - 1); iter != fork_index.upper_bound(proof->height - 1); ++iter) {
-			prev_blocks.push_back(iter->second->block);
-		}
-		const auto infused_hash = proof->infuse[0];
-		for(auto prev : prev_blocks) {
-			if(infused_hash) {
-				if(auto infused = find_prev_header(prev, params->infuse_delay, true)) {
-					if(infused->hash != *infused_hash) {
-						continue;
-					}
-				}
-			}
-			auto block = Block::create();
-			block->prev = prev->hash;
-			block->height = proof->height;
-			block->time_diff = prev->time_diff;
-			block->space_diff = prev->space_diff;
-			block->vdf_iters = point->vdf_iters;
-			block->vdf_output = point->output;
-			block->finalize();
-			add_block(block);
-		}
-	}
-	update();
+	add_task(std::bind(&Node::update, this));
 }
 
 void Node::verify_vdf_failed(std::shared_ptr<const ProofOfTime> proof)
