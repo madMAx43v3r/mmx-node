@@ -92,6 +92,9 @@ uint64_t calc_new_space_diff(std::shared_ptr<const ChainParams> params, const ui
 	int64_t delta = prev_diff * (int64_t(params->score_target) - proof_score);
 	delta /= params->score_target;
 	delta >>= params->max_diff_adjust;
+	if(delta == 0) {
+		delta = 1;
+	}
 	return std::max<int64_t>(int64_t(prev_diff) + delta, 1);
 }
 
