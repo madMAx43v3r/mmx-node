@@ -9,6 +9,7 @@
 #include <mmx/TransactionBase.hxx>
 #include <mmx/bls_signature_t.hpp>
 #include <mmx/hash_t.hpp>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 
@@ -24,6 +25,8 @@ public:
 	uint64_t nonce = 0;
 	uint64_t time_diff = 0;
 	uint64_t space_diff = 0;
+	::mmx::uint128 weight;
+	::mmx::uint128 total_weight;
 	uint64_t vdf_iters = 0;
 	std::array<::mmx::hash_t, 2> vdf_output = {};
 	std::shared_ptr<const ::mmx::ProofOfSpace> proof;
@@ -81,7 +84,7 @@ protected:
 
 template<typename T>
 void BlockHeader::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<BlockHeader>(14);
+	_visitor.template type_begin<BlockHeader>(16);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("hash", 1); _visitor.accept(hash);
 	_visitor.type_field("prev", 2); _visitor.accept(prev);
@@ -89,14 +92,16 @@ void BlockHeader::accept_generic(T& _visitor) const {
 	_visitor.type_field("nonce", 4); _visitor.accept(nonce);
 	_visitor.type_field("time_diff", 5); _visitor.accept(time_diff);
 	_visitor.type_field("space_diff", 6); _visitor.accept(space_diff);
-	_visitor.type_field("vdf_iters", 7); _visitor.accept(vdf_iters);
-	_visitor.type_field("vdf_output", 8); _visitor.accept(vdf_output);
-	_visitor.type_field("proof", 9); _visitor.accept(proof);
-	_visitor.type_field("tx_base", 10); _visitor.accept(tx_base);
-	_visitor.type_field("tx_count", 11); _visitor.accept(tx_count);
-	_visitor.type_field("tx_hash", 12); _visitor.accept(tx_hash);
-	_visitor.type_field("farmer_sig", 13); _visitor.accept(farmer_sig);
-	_visitor.template type_end<BlockHeader>(14);
+	_visitor.type_field("weight", 7); _visitor.accept(weight);
+	_visitor.type_field("total_weight", 8); _visitor.accept(total_weight);
+	_visitor.type_field("vdf_iters", 9); _visitor.accept(vdf_iters);
+	_visitor.type_field("vdf_output", 10); _visitor.accept(vdf_output);
+	_visitor.type_field("proof", 11); _visitor.accept(proof);
+	_visitor.type_field("tx_base", 12); _visitor.accept(tx_base);
+	_visitor.type_field("tx_count", 13); _visitor.accept(tx_count);
+	_visitor.type_field("tx_hash", 14); _visitor.accept(tx_hash);
+	_visitor.type_field("farmer_sig", 15); _visitor.accept(farmer_sig);
+	_visitor.template type_end<BlockHeader>(16);
 }
 
 

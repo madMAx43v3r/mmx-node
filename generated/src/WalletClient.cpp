@@ -530,6 +530,19 @@ std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> WalletClient::ge
 	}
 }
 
+std::vector<::mmx::addr_t> WalletClient::get_all_addresses(const int32_t& index) {
+	auto _method = ::mmx::Wallet_get_all_addresses::create();
+	_method->index = index;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_all_addresses_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::addr_t>>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
 ::mmx::address_info_t WalletClient::get_address_info(const uint32_t& index, const uint32_t& offset) {
 	auto _method = ::mmx::Wallet_get_address_info::create();
 	_method->index = index;
@@ -539,19 +552,6 @@ std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> WalletClient::ge
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<::mmx::address_info_t>();
-	} else {
-		throw std::logic_error("WalletClient: invalid return value");
-	}
-}
-
-std::vector<::mmx::addr_t> WalletClient::get_all_addresses(const int32_t& index) {
-	auto _method = ::mmx::Wallet_get_all_addresses::create();
-	_method->index = index;
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_all_addresses_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::vector<::mmx::addr_t>>();
 	} else {
 		throw std::logic_error("WalletClient: invalid return value");
 	}
