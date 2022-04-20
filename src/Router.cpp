@@ -306,7 +306,7 @@ void Router::handle(std::shared_ptr<const Block> block)
 {
 	verified_peak_height = block->height;
 
-	if(!block->proof) {
+	if(!block->farmer_sig) {
 		return;
 	}
 	if(relay_msg_hash(block->hash, block_credits)) {
