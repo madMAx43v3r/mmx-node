@@ -1426,14 +1426,18 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 						if(args.field.count("src_addr")) {
 							const auto src_addr = args["src_addr"].to<addr_t>();
 							wallet->send_from(index, amount, dst_addr, src_addr, currency, options,
-								[this, request_id](const hash_t& txid) {
-									respond(request_id, vnx::Variant(txid.to_string()));
+								[this, request_id](std::shared_ptr<const Transaction> tx) {
+									vnx::Variant res;
+									if(tx) { res = tx->id.to_string(); }
+									respond(request_id, res);
 								},
 								std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 						} else {
 							wallet->send(index, amount, dst_addr, currency, options,
-								[this, request_id](const hash_t& txid) {
-									respond(request_id, vnx::Variant(txid.to_string()));
+								[this, request_id](std::shared_ptr<const Transaction> tx) {
+									vnx::Variant res;
+									if(tx) { res = tx->id.to_string(); }
+									respond(request_id, res);
 								},
 								std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 						}
@@ -1467,8 +1471,10 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 						const auto index = args["index"].to<uint32_t>();
 						const auto options = args["options"].to<spend_options_t>();
 						wallet->split(index, amount, currency, options,
-							[this, request_id](const vnx::optional<hash_t>& txid) {
-								respond(request_id, vnx::Variant(txid ? txid->to_string() : "null"));
+							[this, request_id](std::shared_ptr<const Transaction> tx) {
+								vnx::Variant res;
+								if(tx) { res = tx->id.to_string(); }
+								respond(request_id, res);
 							},
 							std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 					} catch(std::exception& ex) {
@@ -1488,8 +1494,10 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			vnx::from_string(request->payload.as_string(), contract);
 			const auto index = vnx::from_string<uint32_t>(iter_index->second);
 			wallet->deploy(index, contract, {},
-				[this, request_id](const hash_t& txid) {
-					respond(request_id, vnx::Variant(addr_t(txid).to_string()));
+				[this, request_id](std::shared_ptr<const Transaction> tx) {
+					vnx::Variant res;
+					if(tx) { res = addr_t(tx->id).to_string(); }
+					respond(request_id, res);
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {

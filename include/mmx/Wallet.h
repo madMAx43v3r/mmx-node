@@ -30,27 +30,32 @@ protected:
 
 	void main() override;
 
-	hash_t send(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
-				const addr_t& currency, const spend_options_t& options) const override;
+	std::shared_ptr<const Transaction> send(
+			const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
+			const addr_t& currency, const spend_options_t& options) const override;
 
-	hash_t send_from(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& src_addr,
-						const addr_t& currency, const spend_options_t& options) const override;
+	std::shared_ptr<const Transaction> send_from(
+			const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& src_addr,
+			const addr_t& currency, const spend_options_t& options) const override;
 
-	hash_t mint(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
-				const addr_t& currency, const spend_options_t& options) const override;
+	std::shared_ptr<const Transaction> mint(
+			const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
+			const addr_t& currency, const spend_options_t& options) const override;
 
-	vnx::optional<hash_t> split(const uint32_t& index, const uint64_t& max_amount, const addr_t& currency, const spend_options_t& options) const override;
+	std::shared_ptr<const Transaction> split(
+			const uint32_t& index, const uint64_t& max_amount, const addr_t& currency, const spend_options_t& options) const override;
 
-	hash_t deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, const spend_options_t& options) const override;
+	std::shared_ptr<const Transaction> deploy(
+			const uint32_t& index, std::shared_ptr<const Contract> contract, const spend_options_t& options) const override;
 
-	hash_t execute(const uint32_t& index, const addr_t& address, const vnx::Object& method, const spend_options_t& options) const override;
+	std::shared_ptr<const Transaction> execute(
+			const uint32_t& index, const addr_t& address, const vnx::Object& method, const spend_options_t& options) const override;
 
-	std::shared_ptr<const Transaction>
-	complete(const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const;
+	std::shared_ptr<const Transaction> complete(
+			const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const;
 
-	std::shared_ptr<const Transaction>
-	sign_off(	const uint32_t& index, std::shared_ptr<const Transaction> tx,
-				const vnx::bool_t& cover_fee, const spend_options_t& options) const override;
+	std::shared_ptr<const Transaction> sign_off(
+			const uint32_t& index, std::shared_ptr<const Transaction> tx, const vnx::bool_t& cover_fee, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Solution> sign_msg(const uint32_t& index, const addr_t& address, const hash_t& msg) const override;
 

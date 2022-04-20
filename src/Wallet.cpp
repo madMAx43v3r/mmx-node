@@ -92,8 +92,9 @@ std::shared_ptr<ECDSA_Wallet> Wallet::get_wallet(const uint32_t& index) const
 	throw std::logic_error("no such wallet");
 }
 
-hash_t Wallet::send(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
-					const addr_t& currency, const spend_options_t& options) const
+std::shared_ptr<const Transaction>
+Wallet::send(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
+				const addr_t& currency, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
 	update_cache(index);
@@ -102,12 +103,13 @@ hash_t Wallet::send(const uint32_t& index, const uint64_t& amount, const addr_t&
 	send_off(index, tx);
 
 	log(INFO) << "Sent " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
-	return tx->id;
+	return tx;
 }
 
-hash_t Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
-							const addr_t& dst_addr, const addr_t& src_addr,
-							const addr_t& currency, const spend_options_t& options) const
+std::shared_ptr<const Transaction>
+Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
+					const addr_t& dst_addr, const addr_t& src_addr,
+					const addr_t& currency, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
 	update_cache(index);
@@ -123,14 +125,16 @@ hash_t Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 	auto tx = wallet->send_from(amount, dst_addr, src_addr, src_owner,
 								node->get_spendable_utxo_list({src_addr}, options.min_confirm),
 								currency, options);
-	send_off(index, tx);
-
-	log(INFO) << "Sent " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
-	return tx->id;
+	if(tx->is_signed()) {
+		send_off(index, tx);
+		log(INFO) << "Sent " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
+	}
+	return tx;
 }
 
-hash_t Wallet::mint(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
-					const addr_t& currency, const spend_options_t& options) const
+std::shared_ptr<const Transaction>
+Wallet::mint(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
+				const addr_t& currency, const spend_options_t& options) const
 {
 	const auto token = std::dynamic_pointer_cast<const contract::Token>(node->get_contract(currency));
 	if(!token) {
@@ -148,13 +152,15 @@ hash_t Wallet::mint(const uint32_t& index, const uint64_t& amount, const addr_t&
 		throw std::logic_error("token not owned by wallet");
 	}
 	auto tx = wallet->mint(amount, dst_addr, currency, owner, options);
-	send_off(index, tx);
-
-	log(INFO) << "Minted " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
-	return tx->id;
+	if(tx->is_signed()) {
+		send_off(index, tx);
+		log(INFO) << "Minted " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
+	}
+	return tx;
 }
 
-vnx::optional<hash_t> Wallet::split(const uint32_t& index, const uint64_t& max_amount, const addr_t& currency, const spend_options_t& options) const
+std::shared_ptr<const Transaction>
+Wallet::split(const uint32_t& index, const uint64_t& max_amount, const addr_t& currency, const spend_options_t& options) const
 {
 	if(max_amount == 0) {
 		throw std::logic_error("invalid max_amount");
@@ -199,11 +205,15 @@ vnx::optional<hash_t> Wallet::split(const uint32_t& index, const uint64_t& max_a
 		left = 0;
 	}
 	auto signed_tx = sign_off(index, tx, true, {});
-	send_off(index, signed_tx);
-	return signed_tx->id;
+	if(tx->is_signed()) {
+		send_off(index, signed_tx);
+		log(INFO) << "Split " << total << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
+	}
+	return signed_tx;
 }
 
-hash_t Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, const spend_options_t& options) const
+std::shared_ptr<const Transaction>
+Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, const spend_options_t& options) const
 {
 	if(!contract) {
 		throw std::logic_error("contract cannot be null");
@@ -212,13 +222,15 @@ hash_t Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> con
 	update_cache(index);
 
 	auto tx = wallet->deploy(contract, options);
-	send_off(index, tx);
-
-	log(INFO) << "Deployed " << contract->get_type_name() << " with fee " << tx->calc_cost(params) << " as " << addr_t(tx->id) << " (" << tx->id << ")";
-	return tx->id;
+	if(tx->is_signed()) {
+		send_off(index, tx);
+		log(INFO) << "Deployed " << contract->get_type_name() << " with fee " << tx->calc_cost(params) << " as " << addr_t(tx->id) << " (" << tx->id << ")";
+	}
+	return tx;
 }
 
-hash_t Wallet::execute(const uint32_t& index, const addr_t& address, const vnx::Object& method, const spend_options_t& options) const
+std::shared_ptr<const Transaction>
+Wallet::execute(const uint32_t& index, const addr_t& address, const vnx::Object& method, const spend_options_t& options) const
 {
 	auto contract = node->get_contract(address);
 	if(!contract) {
@@ -246,10 +258,11 @@ hash_t Wallet::execute(const uint32_t& index, const addr_t& address, const vnx::
 	options_.owner_map.emplace_back(address, *owner);
 
 	wallet->complete(tx, wallet->utxo_cache, options_);
-	send_off(index, tx);
-
-	log(INFO) << "Executed " << method["__type"] << " on [" << address << "] with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
-	return tx->id;
+	if(tx->is_signed()) {
+		send_off(index, tx);
+		log(INFO) << "Executed " << method["__type"] << " on [" << address << "] with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
+	}
+	return tx;
 }
 
 std::shared_ptr<const Transaction>

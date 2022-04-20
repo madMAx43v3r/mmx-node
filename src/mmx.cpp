@@ -321,9 +321,9 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Missing destination address argument: -t | --target";
 					goto failed;
 				}
-				const auto txid = wallet.send(index, mojo, target, contract, spend_options);
+				const auto tx = wallet.send(index, mojo, target, contract, spend_options);
 				std::cout << "Sent " << mojo / pow(10, token->decimals) << " " << (token ? token->symbol : "MMX") << " (" << mojo << ") to " << target << std::endl;
-				std::cout << "Transaction ID: " << txid << std::endl;
+				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
 			else if(command == "send_from")
 			{
@@ -342,9 +342,9 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Missing destination address argument: -t | --target";
 					goto failed;
 				}
-				const auto txid = wallet.send_from(index, mojo, target, source, contract, spend_options);
+				const auto tx = wallet.send_from(index, mojo, target, source, contract, spend_options);
 				std::cout << "Sent " << mojo / pow(10, token->decimals) << " " << (token ? token->symbol : "MMX") << " (" << mojo << ") to " << target << std::endl;
-				std::cout << "Transaction ID: " << txid << std::endl;
+				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
 			else if(command == "transfer")
 			{
@@ -352,9 +352,9 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Missing destination address argument: -t | --target";
 					goto failed;
 				}
-				const auto txid = wallet.send(index, 1, target, contract);
+				const auto tx = wallet.send(index, 1, target, contract);
 				std::cout << "Sent " << contract << " to " << target << std::endl;
-				std::cout << "Transaction ID: " << txid << std::endl;
+				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
 			else if(command == "mint")
 			{
@@ -369,9 +369,9 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Missing destination address argument: -t | --target";
 					goto failed;
 				}
-				const auto txid = wallet.mint(index, mojo, target, contract);
+				const auto tx = wallet.mint(index, mojo, target, contract);
 				std::cout << "Minted " << mojo / pow(10, token->decimals) << " (" << mojo << ") " << token->symbol << " to " << target << std::endl;
-				std::cout << "Transaction ID: " << txid << std::endl;
+				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
 			else if(command == "deploy")
 			{
@@ -383,9 +383,9 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Failed to read contract from file: " << file_path;
 					goto failed;
 				}
-				const auto txid = wallet.deploy(index, payload);
-				std::cout << "Deployed " << payload->get_type_name() << " as [" << mmx::addr_t(txid) << "]" << std::endl;
-				std::cout << "Transaction ID: " << txid << std::endl;
+				const auto tx = wallet.deploy(index, payload);
+				std::cout << "Deployed " << payload->get_type_name() << " as [" << mmx::addr_t(tx->id) << "]" << std::endl;
+				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
 			else if(command == "exec")
 			{
@@ -395,11 +395,11 @@ int main(int argc, char** argv)
 				vnx::read_config("$4", args);
 
 				args["__type"] = method;
-				const auto txid = wallet.execute(index, contract, args);
+				const auto tx = wallet.execute(index, contract, args);
 				std::cout << "Executed " << method << " on [" << contract << "] with:" << std::endl;
 				vnx::PrettyPrinter printer(std::cout);
 				args.accept(printer);
-				std::cout << std::endl << "Transaction ID: " << txid << std::endl;
+				std::cout << std::endl << "Transaction ID: " << tx->id << std::endl;
 			}
 			else if(command == "log")
 			{

@@ -20,22 +20,22 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	
 	@Permission(permission_e.SPENDING)
-	hash_t send(uint index, ulong amount, addr_t dst_addr, addr_t currency, spend_options_t options) const;
+	Transaction* send(uint index, ulong amount, addr_t dst_addr, addr_t currency, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
-	hash_t send_from(uint index, ulong amount, addr_t dst_addr, addr_t src_addr, addr_t currency, spend_options_t options) const;
+	Transaction* send_from(uint index, ulong amount, addr_t dst_addr, addr_t src_addr, addr_t currency, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
-	hash_t mint(uint index, ulong amount, addr_t dst_addr, addr_t currency, spend_options_t options) const;
+	Transaction* mint(uint index, ulong amount, addr_t dst_addr, addr_t currency, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
-	hash_t deploy(uint index, Contract* contract, spend_options_t options) const;
+	Transaction* deploy(uint index, Contract* contract, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
-	hash_t execute(uint index, addr_t address, vnx.Object method, spend_options_t options) const;
+	Transaction* execute(uint index, addr_t address, vnx.Object method, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
-	optional<hash_t> split(uint index, ulong max_amount, addr_t currency, spend_options_t options) const;
+	Transaction* split(uint index, ulong max_amount, addr_t currency, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
 	Transaction* complete(uint index, Transaction* tx, spend_options_t options) const;
@@ -82,9 +82,9 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	addr_t get_address(uint index, uint offset) const;
 	
-	address_info_t get_address_info(uint index, uint offset) const;
-	
 	vector<addr_t> get_all_addresses(int index) const;				// (index == -1) -> all wallets
+	
+	address_info_t get_address_info(uint index, uint offset) const;
 	
 	vector<address_info_t> get_all_address_infos(int index) const;
 	
