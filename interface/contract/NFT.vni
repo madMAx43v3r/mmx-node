@@ -11,6 +11,8 @@ class NFT extends mmx.Contract {
 	
 	vnx.Object data;
 	
+	mmx.Solution* solution;
+	
 	
 	bool is_valid() const;
 	

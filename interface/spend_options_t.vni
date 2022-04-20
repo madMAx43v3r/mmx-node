@@ -20,4 +20,6 @@ struct spend_options_t {
 	
 	vector<pair<txio_key_t, utxo_t>> utxo_map;
 	
+	map<addr_t, Contract*> contract_map;
+	
 }

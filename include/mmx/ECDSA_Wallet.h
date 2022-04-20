@@ -10,8 +10,9 @@
 
 #include <mmx/KeyFile.hxx>
 #include <mmx/Transaction.hxx>
-#include <mmx/operation/Mint.hxx>
 #include <mmx/ChainParams.hxx>
+#include <mmx/contract/NFT.hxx>
+#include <mmx/operation/Mint.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/spend_options_t.hxx>
 #include <mmx/skey_t.hpp>
@@ -250,6 +251,7 @@ public:
 					spend_cost.emplace(owner, 0);
 				}
 			}
+			// TODO: check for multi-sig via options.contract_map
 			tx_fees = tx->calc_cost(params)
 					+ spend_cost.size() * params->min_txfee_sign
 					+ tx->execute.size() * params->min_txfee_sign
@@ -258,6 +260,9 @@ public:
 
 			for(const auto& entry : spend_cost) {
 				tx_fees += entry.second;	// spend execution cost
+			}
+			if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(tx->deploy)) {
+				tx_fees += params->min_txfee_sign;
 			}
 
 			if(change > tx_fees) {
@@ -320,11 +325,7 @@ public:
 					continue;
 				}
 			}
-			const auto& keys = get_keypair(owner);
-
-			auto sol = solution::PubKey::create();
-			sol->pubkey = keys.second;
-			sol->signature = signature_t::sign(keys.first, tx->id);
+			const auto sol = sign_msg(owner, tx->id, options);
 
 			in.solution = tx->solutions.size();
 			solution_map[owner] = in.solution;
@@ -343,20 +344,23 @@ public:
 					continue;	// not owned by us
 				}
 			}
-			const auto& keys = get_keypair(owner);
-
-			auto sol = solution::PubKey::create();
-			sol->pubkey = keys.second;
-			sol->signature = signature_t::sign(keys.first, tx->id);
-
 			auto copy = vnx::clone(op);
-			copy->solution = sol;
+			copy->solution = sign_msg(owner, tx->id, options);
 			op = copy;
+		}
+
+		// sign NFT mint
+		if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(tx->deploy))
+		{
+			auto copy = vnx::clone(nft);
+			copy->solution = sign_msg(nft->creator, tx->id, options);
+			tx->deploy = copy;
 		}
 	}
 
-	std::shared_ptr<const Solution> sign_msg(const addr_t& address, const hash_t& msg) const
+	std::shared_ptr<const Solution> sign_msg(const addr_t& address, const hash_t& msg, const spend_options_t& options = {}) const
 	{
+		// TODO: check for multi-sig via options.contract_map
 		const auto& keys = get_keypair(address);
 
 		auto sol = solution::PubKey::create();

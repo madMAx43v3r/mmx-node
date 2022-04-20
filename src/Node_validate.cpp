@@ -325,7 +325,15 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 		if(!tx->deploy->is_valid()) {
 			throw std::logic_error("invalid contract");
 		}
-		if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(tx->deploy)) {
+		if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(tx->deploy))
+		{
+			const auto creator = get_contract_for(nft->creator);
+			{
+				auto op = Operation::create();
+				op->address = nft->creator;
+				op->solution = nft->solution;
+				creator->validate(op, create_exec_context(context, creator, tx));
+			}
 			tx_out_t out;
 			out.contract = tx->id;
 			out.address = nft->creator;
