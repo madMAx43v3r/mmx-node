@@ -1242,15 +1242,10 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork() const
 			prev_best = best_fork;
 			curr_height = iter->first;
 		}
-		fork->score_bonus = 0;
 		if(iter != begin && prev) {
 			fork->total_weight = prev->total_weight + fork->weight;
-			fork->score_bonus = std::min<int32_t>(prev->weight_buffer, params->score_threshold);
-			fork->total_weight += uint128_t(fork->score_bonus) * fork->diff_block->time_diff * fork->diff_block->space_diff;
-			fork->weight_buffer = std::min<int32_t>(std::max(prev->weight_buffer + fork->buffer_delta, 0), params->max_weight_buffer);
 		} else {
 			fork->total_weight = fork->weight;
-			fork->weight_buffer = std::max(fork->buffer_delta, 0);
 		}
 		if(!best_fork
 			|| fork->total_weight > max_weight

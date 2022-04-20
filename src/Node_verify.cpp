@@ -47,13 +47,6 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 	fork->weight *= diff_block->space_diff;
 	fork->weight *= diff_block->time_diff;
 
-	fork->buffer_delta = 0;
-	if(block->proof) {
-		fork->buffer_delta += int32_t(2 * params->score_target) - fork->proof_score;
-	} else {
-		fork->buffer_delta -= params->score_threshold;
-	}
-
 	// check some VDFs during sync
 	if(!fork->is_proof_verified && !fork->is_vdf_verified) {
 		if(vnx::rand64() % vdf_check_divider) {
