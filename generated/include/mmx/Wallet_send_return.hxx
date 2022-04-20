@@ -5,7 +5,7 @@
 #define INCLUDE_mmx_Wallet_send_return_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/hash_t.hpp>
+#include <mmx/Transaction.hxx>
 #include <vnx/Value.h>
 
 
@@ -14,7 +14,7 @@ namespace mmx {
 class MMX_EXPORT Wallet_send_return : public ::vnx::Value {
 public:
 	
-	::mmx::hash_t _ret_0;
+	std::shared_ptr<const ::mmx::Transaction> _ret_0;
 	
 	typedef ::vnx::Value Super;
 	

@@ -138,7 +138,7 @@ WalletAsyncClient::WalletAsyncClient(vnx::Hash64 service_addr)
 {
 }
 
-uint64_t WalletAsyncClient::send(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options, const std::function<void(const ::mmx::hash_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::send(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_send::create();
 	_method->index = index;
 	_method->amount = amount;
@@ -155,7 +155,7 @@ uint64_t WalletAsyncClient::send(const uint32_t& index, const uint64_t& amount, 
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::send_from(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& src_addr, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options, const std::function<void(const ::mmx::hash_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::send_from(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& src_addr, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_send_from::create();
 	_method->index = index;
 	_method->amount = amount;
@@ -173,7 +173,7 @@ uint64_t WalletAsyncClient::send_from(const uint32_t& index, const uint64_t& amo
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::mint(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options, const std::function<void(const ::mmx::hash_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::mint(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_mint::create();
 	_method->index = index;
 	_method->amount = amount;
@@ -190,7 +190,7 @@ uint64_t WalletAsyncClient::mint(const uint32_t& index, const uint64_t& amount, 
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::deploy(const uint32_t& index, std::shared_ptr<const ::mmx::Contract> contract, const ::mmx::spend_options_t& options, const std::function<void(const ::mmx::hash_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::deploy(const uint32_t& index, std::shared_ptr<const ::mmx::Contract> contract, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_deploy::create();
 	_method->index = index;
 	_method->contract = contract;
@@ -205,7 +205,7 @@ uint64_t WalletAsyncClient::deploy(const uint32_t& index, std::shared_ptr<const 
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::execute(const uint32_t& index, const ::mmx::addr_t& address, const ::vnx::Object& method, const ::mmx::spend_options_t& options, const std::function<void(const ::mmx::hash_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::execute(const uint32_t& index, const ::mmx::addr_t& address, const ::vnx::Object& method, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_execute::create();
 	_method->index = index;
 	_method->address = address;
@@ -221,7 +221,7 @@ uint64_t WalletAsyncClient::execute(const uint32_t& index, const ::mmx::addr_t& 
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::split(const uint32_t& index, const uint64_t& max_amount, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options, const std::function<void(const vnx::optional<::mmx::hash_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::split(const uint32_t& index, const uint64_t& max_amount, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_split::create();
 	_method->index = index;
 	_method->max_amount = max_amount;
@@ -1442,7 +1442,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_send_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<::mmx::hash_t>());
+					_callback(_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Transaction>>());
 				} else {
 					throw std::logic_error("WalletAsyncClient: invalid return value");
 				}
@@ -1461,7 +1461,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_send_from_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<::mmx::hash_t>());
+					_callback(_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Transaction>>());
 				} else {
 					throw std::logic_error("WalletAsyncClient: invalid return value");
 				}
@@ -1480,7 +1480,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_mint_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<::mmx::hash_t>());
+					_callback(_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Transaction>>());
 				} else {
 					throw std::logic_error("WalletAsyncClient: invalid return value");
 				}
@@ -1499,7 +1499,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_deploy_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<::mmx::hash_t>());
+					_callback(_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Transaction>>());
 				} else {
 					throw std::logic_error("WalletAsyncClient: invalid return value");
 				}
@@ -1518,7 +1518,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_execute_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<::mmx::hash_t>());
+					_callback(_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Transaction>>());
 				} else {
 					throw std::logic_error("WalletAsyncClient: invalid return value");
 				}
@@ -1537,7 +1537,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_split_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<vnx::optional<::mmx::hash_t>>());
+					_callback(_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Transaction>>());
 				} else {
 					throw std::logic_error("WalletAsyncClient: invalid return value");
 				}
