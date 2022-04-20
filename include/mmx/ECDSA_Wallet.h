@@ -227,7 +227,7 @@ public:
 		uint64_t tx_fees = 0;
 		while(true) {
 			std::unordered_map<addr_t, uint64_t> spend_cost;
-			for(const auto& in : tx->inputs) {
+			for(auto& in : tx->inputs) {
 				addr_t owner;
 				{
 					auto iter = spent_map.find(in.prev);
@@ -244,6 +244,7 @@ public:
 				}
 				auto iter = owner_map.find(owner);
 				if(iter != owner_map.end()) {
+					in.flags |= tx_in_t::IS_EXEC;
 					spend_cost[iter->second] += params->min_txfee_exec;
 				} else {
 					spend_cost.emplace(owner, 0);
@@ -309,7 +310,6 @@ public:
 				auto iter = owner_map.find(owner);
 				if(iter != owner_map.end()) {
 					owner = iter->second;
-					in.flags |= tx_in_t::IS_EXEC;
 				}
 			}
 			{
