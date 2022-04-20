@@ -14,7 +14,7 @@ namespace operation {
 
 vnx::bool_t Mint::is_valid() const
 {
-	return Super::is_valid() && target != hash_t() && amount > 0 && amount <= max_amount;
+	return Super::is_valid() && target != hash_t() && amount > 0 && amount <= MAX_AMOUNT;
 }
 
 hash_t Mint::calc_hash() const
@@ -31,10 +31,6 @@ hash_t Mint::calc_hash() const
 	out.flush();
 
 	return hash_t(buffer);
-}
-
-uint64_t Mint::calc_cost(std::shared_ptr<const ChainParams> params) const {
-	return 0;
 }
 
 

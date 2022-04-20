@@ -149,19 +149,13 @@ void Node::validate(std::shared_ptr<const Transaction> tx) const
 	validate(tx, context, nullptr, fee);
 }
 
-std::shared_ptr<const Context> Node::create_context_for_tx(
+std::shared_ptr<const Context> Node::create_exec_context(
 		std::shared_ptr<const Context> base, std::shared_ptr<const Contract> contract, std::shared_ptr<const Transaction> tx) const
 {
 	auto context = vnx::clone(base);
 	context->txid = tx->id;
 	for(const auto& addr : contract->get_dependency()) {
-		if(auto contract = get_contract(addr)) {
-			context->depends[addr] = contract;
-		} else {
-			auto pubkey = contract::PubKey::create();
-			pubkey->address = addr;
-			context->depends[addr] = pubkey;
-		}
+		context->depends[addr] = get_contract_for(addr);
 	}
 	return context;
 }
@@ -264,7 +258,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 		spend->key = in.prev;
 		spend->utxo = utxo;
 
-		const auto outputs = contract->validate(spend, create_context_for_tx(context, contract, tx));
+		const auto outputs = contract->validate(spend, create_exec_context(context, contract, tx));
 		exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
 
 		amounts[utxo.contract] += utxo.amount;
@@ -303,7 +297,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 			}
 			contract_state[op->address] = copy;
 		}
-		const auto outputs = contract->validate(op, create_context_for_tx(context, contract, tx));
+		const auto outputs = contract->validate(op, create_exec_context(context, contract, tx));
 		exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
 	}
 

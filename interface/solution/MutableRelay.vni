@@ -7,8 +7,6 @@ class MutableRelay extends Solution {
 	Solution* target;
 	
 	
-	bool is_valid() const;
-	
 	ulong calc_cost(mmx.ChainParams* params) const;
 	
 }

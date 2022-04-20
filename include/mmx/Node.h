@@ -73,6 +73,8 @@ protected:
 
 	std::shared_ptr<const Contract> get_contract(const addr_t& address) const override;
 
+	std::shared_ptr<const Contract> get_contract_for(const addr_t& address) const override;
+
 	std::vector<std::shared_ptr<const Contract>> get_contracts(const std::vector<addr_t>& addresses) const override;
 
 	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts_owned(const std::vector<addr_t>& owners) const override;
@@ -215,7 +217,7 @@ private:
 
 	void validate(std::shared_ptr<const Transaction> tx) const;
 
-	std::shared_ptr<const Context> create_context_for_tx(
+	std::shared_ptr<const Context> create_exec_context(
 			std::shared_ptr<const Context> base, std::shared_ptr<const Contract> contract, std::shared_ptr<const Transaction> tx) const;
 
 	std::shared_ptr<const Transaction> validate(std::shared_ptr<const Transaction> tx, std::shared_ptr<const Context> context,

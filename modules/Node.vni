@@ -98,6 +98,9 @@ module Node implements vnx.addons.HttpComponent {
 	Contract* get_contract(addr_t address) const;
 	
 	@Permission(permission_e.PUBLIC)
+	Contract* get_contract_for(addr_t address) const;
+	
+	@Permission(permission_e.PUBLIC)
 	vector<Contract*> get_contracts(vector<addr_t> addresses) const;
 	
 	@Permission(permission_e.PUBLIC)

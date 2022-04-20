@@ -9,6 +9,7 @@
 #include <mmx/Context.hxx>
 #include <mmx/Challenge.hxx>
 #include <mmx/contract/Token.hxx>
+#include <mmx/contract/PubKey.hxx>
 #include <mmx/utxo_entry_t.hpp>
 #include <mmx/stxo_entry_t.hpp>
 #include <mmx/utils.h>
@@ -640,6 +641,19 @@ std::shared_ptr<const Contract> Node::get_contract(const addr_t& address) const
 		}
 	}
 	return contract;
+}
+
+std::shared_ptr<const Contract> Node::get_contract_for(const addr_t& address) const
+{
+	std::shared_ptr<const Contract> out;
+	if(auto contract = get_contract(address)) {
+		out = contract;
+	} else {
+		auto pubkey = contract::PubKey::create();
+		pubkey->address = address;
+		out = pubkey;
+	}
+	return out;
 }
 
 std::vector<std::shared_ptr<const Contract>> Node::get_contracts(const std::vector<addr_t>& addresses) const
