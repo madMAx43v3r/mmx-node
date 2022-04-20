@@ -251,11 +251,12 @@ public:
 			}
 			tx_fees = tx->calc_cost(params)
 					+ spend_cost.size() * params->min_txfee_sign
+					+ tx->execute.size() * params->min_txfee_sign
 					+ params->min_txfee_io	// for change output
 					+ options.extra_fee;
 
 			for(const auto& entry : spend_cost) {
-				tx_fees += entry.second;
+				tx_fees += entry.second;	// spend execution cost
 			}
 
 			if(change > tx_fees) {
