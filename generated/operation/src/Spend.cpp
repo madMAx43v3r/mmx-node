@@ -3,7 +3,6 @@
 
 #include <mmx/operation/package.hxx>
 #include <mmx/operation/Spend.hxx>
-#include <mmx/ChainParams.hxx>
 #include <mmx/Operation.hxx>
 #include <mmx/Operation_calc_cost.hxx>
 #include <mmx/Operation_calc_cost_return.hxx>
@@ -12,8 +11,6 @@
 #include <mmx/Operation_is_valid.hxx>
 #include <mmx/Operation_is_valid_return.hxx>
 #include <mmx/hash_t.hpp>
-#include <mmx/operation/Spend_calc_cost.hxx>
-#include <mmx/operation/Spend_calc_cost_return.hxx>
 #include <mmx/operation/Spend_calc_hash.hxx>
 #include <mmx/operation/Spend_calc_hash_return.hxx>
 #include <mmx/txio_key_t.hxx>
@@ -178,12 +175,11 @@ std::shared_ptr<vnx::TypeCode> Spend::static_create_type_code() {
 	type_code->depends.resize(2);
 	type_code->depends[0] = ::mmx::txio_key_t::static_get_type_code();
 	type_code->depends[1] = ::mmx::utxo_t::static_get_type_code();
-	type_code->methods.resize(5);
+	type_code->methods.resize(4);
 	type_code->methods[0] = ::mmx::Operation_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Operation_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Operation_is_valid::static_get_type_code();
-	type_code->methods[3] = ::mmx::operation::Spend_calc_cost::static_get_type_code();
-	type_code->methods[4] = ::mmx::operation::Spend_calc_hash::static_get_type_code();
+	type_code->methods[3] = ::mmx::operation::Spend_calc_hash::static_get_type_code();
 	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
@@ -237,12 +233,6 @@ std::shared_ptr<vnx::Value> Spend::vnx_call_switch(std::shared_ptr<const vnx::Va
 			auto _args = std::static_pointer_cast<const ::mmx::Operation_is_valid>(_method);
 			auto _return_value = ::mmx::Operation_is_valid_return::create();
 			_return_value->_ret_0 = is_valid();
-			return _return_value;
-		}
-		case 0x601107e8ca5728f6ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::operation::Spend_calc_cost>(_method);
-			auto _return_value = ::mmx::operation::Spend_calc_cost_return::create();
-			_return_value->_ret_0 = calc_cost(_args->params);
 			return _return_value;
 		}
 		case 0xb003cc8eafc55c09ull: {

@@ -7,6 +7,7 @@
 #include <mmx/contract/package.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
+#include <mmx/Solution.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <vnx/Object.hpp>
@@ -21,6 +22,7 @@ public:
 	::mmx::addr_t creator;
 	vnx::optional<::mmx::addr_t> parent;
 	::vnx::Object data;
+	std::shared_ptr<const ::mmx::Solution> solution;
 	
 	typedef ::mmx::Contract Super;
 	
@@ -72,12 +74,13 @@ protected:
 
 template<typename T>
 void NFT::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<NFT>(4);
+	_visitor.template type_begin<NFT>(5);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("creator", 1); _visitor.accept(creator);
 	_visitor.type_field("parent", 2); _visitor.accept(parent);
 	_visitor.type_field("data", 3); _visitor.accept(data);
-	_visitor.template type_end<NFT>(4);
+	_visitor.type_field("solution", 4); _visitor.accept(solution);
+	_visitor.template type_end<NFT>(5);
 }
 
 

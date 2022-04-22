@@ -5,7 +5,6 @@
 #define INCLUDE_mmx_operation_Spend_HXX_
 
 #include <mmx/operation/package.hxx>
-#include <mmx/ChainParams.hxx>
 #include <mmx/Operation.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/txio_key_t.hxx>
@@ -35,7 +34,6 @@ public:
 	const vnx::TypeCode* get_type_code() const override;
 	
 	virtual ::mmx::hash_t calc_hash() const override;
-	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	
 	static std::shared_ptr<Spend> create();
 	std::shared_ptr<vnx::Value> clone() const override;

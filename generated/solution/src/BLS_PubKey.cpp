@@ -7,8 +7,6 @@
 #include <mmx/Solution.hxx>
 #include <mmx/Solution_calc_cost.hxx>
 #include <mmx/Solution_calc_cost_return.hxx>
-#include <mmx/Solution_is_valid.hxx>
-#include <mmx/Solution_is_valid_return.hxx>
 #include <mmx/bls_pubkey_t.hpp>
 #include <mmx/bls_signature_t.hpp>
 #include <mmx/solution/BLS_PubKey_calc_cost.hxx>
@@ -150,10 +148,9 @@ std::shared_ptr<vnx::TypeCode> BLS_PubKey::static_create_type_code() {
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Solution::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<BLS_PubKey>(); };
-	type_code->methods.resize(3);
+	type_code->methods.resize(2);
 	type_code->methods[0] = ::mmx::Solution_calc_cost::static_get_type_code();
-	type_code->methods[1] = ::mmx::Solution_is_valid::static_get_type_code();
-	type_code->methods[2] = ::mmx::solution::BLS_PubKey_calc_cost::static_get_type_code();
+	type_code->methods[1] = ::mmx::solution::BLS_PubKey_calc_cost::static_get_type_code();
 	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
@@ -183,12 +180,6 @@ std::shared_ptr<vnx::Value> BLS_PubKey::vnx_call_switch(std::shared_ptr<const vn
 			auto _args = std::static_pointer_cast<const ::mmx::Solution_calc_cost>(_method);
 			auto _return_value = ::mmx::Solution_calc_cost_return::create();
 			_return_value->_ret_0 = calc_cost(_args->params);
-			return _return_value;
-		}
-		case 0x80842f8f91d6b02bull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Solution_is_valid>(_method);
-			auto _return_value = ::mmx::Solution_is_valid_return::create();
-			_return_value->_ret_0 = is_valid();
 			return _return_value;
 		}
 		case 0xa1a26d5d7a130583ull: {

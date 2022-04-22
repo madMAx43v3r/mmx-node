@@ -6,6 +6,7 @@
 
 #include <vnx/Type.h>
 #include <mmx/package.hxx>
+#include <mmx/Contract.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/txio_key_t.hxx>
 #include <mmx/utxo_t.hxx>
@@ -25,6 +26,7 @@ struct MMX_EXPORT spend_options_t {
 	std::vector<::mmx::txio_key_t> exclude;
 	std::vector<std::pair<::mmx::addr_t, ::mmx::addr_t>> owner_map;
 	std::vector<std::pair<::mmx::txio_key_t, ::mmx::utxo_t>> utxo_map;
+	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> contract_map;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -66,7 +68,7 @@ struct MMX_EXPORT spend_options_t {
 
 template<typename T>
 void spend_options_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<spend_options_t>(9);
+	_visitor.template type_begin<spend_options_t>(10);
 	_visitor.type_field("min_confirm", 0); _visitor.accept(min_confirm);
 	_visitor.type_field("split_output", 1); _visitor.accept(split_output);
 	_visitor.type_field("extra_fee", 2); _visitor.accept(extra_fee);
@@ -76,7 +78,8 @@ void spend_options_t::accept_generic(T& _visitor) const {
 	_visitor.type_field("exclude", 6); _visitor.accept(exclude);
 	_visitor.type_field("owner_map", 7); _visitor.accept(owner_map);
 	_visitor.type_field("utxo_map", 8); _visitor.accept(utxo_map);
-	_visitor.template type_end<spend_options_t>(9);
+	_visitor.type_field("contract_map", 9); _visitor.accept(contract_map);
+	_visitor.template type_end<spend_options_t>(10);
 }
 
 

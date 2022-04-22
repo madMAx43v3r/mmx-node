@@ -23,6 +23,7 @@
 #include <mmx/Contract_transfer_return.hxx>
 #include <mmx/Contract_validate.hxx>
 #include <mmx/Contract_validate_return.hxx>
+#include <mmx/Solution.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/contract/NFT_calc_cost.hxx>
 #include <mmx/contract/NFT_calc_cost_return.hxx>
@@ -43,7 +44,7 @@ namespace contract {
 
 
 const vnx::Hash64 NFT::VNX_TYPE_HASH(0x7cb24b9888a47906ull);
-const vnx::Hash64 NFT::VNX_CODE_HASH(0xeb77509c6d4205bbull);
+const vnx::Hash64 NFT::VNX_CODE_HASH(0xea71442a0e8c28c5ull);
 
 vnx::Hash64 NFT::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -80,6 +81,7 @@ void NFT::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, creator);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, parent);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, data);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, solution);
 	_visitor.type_end(*_type_code);
 }
 
@@ -89,6 +91,7 @@ void NFT::write(std::ostream& _out) const {
 	_out << ", \"creator\": "; vnx::write(_out, creator);
 	_out << ", \"parent\": "; vnx::write(_out, parent);
 	_out << ", \"data\": "; vnx::write(_out, data);
+	_out << ", \"solution\": "; vnx::write(_out, solution);
 	_out << "}";
 }
 
@@ -105,6 +108,7 @@ vnx::Object NFT::to_object() const {
 	_object["creator"] = creator;
 	_object["parent"] = parent;
 	_object["data"] = data;
+	_object["solution"] = solution;
 	return _object;
 }
 
@@ -116,6 +120,8 @@ void NFT::from_object(const vnx::Object& _object) {
 			_entry.second.to(data);
 		} else if(_entry.first == "parent") {
 			_entry.second.to(parent);
+		} else if(_entry.first == "solution") {
+			_entry.second.to(solution);
 		} else if(_entry.first == "version") {
 			_entry.second.to(version);
 		}
@@ -135,6 +141,9 @@ vnx::Variant NFT::get_field(const std::string& _name) const {
 	if(_name == "data") {
 		return vnx::Variant(data);
 	}
+	if(_name == "solution") {
+		return vnx::Variant(solution);
+	}
 	return vnx::Variant();
 }
 
@@ -147,6 +156,8 @@ void NFT::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(parent);
 	} else if(_name == "data") {
 		_value.to(data);
+	} else if(_name == "solution") {
+		_value.to(solution);
 	}
 }
 
@@ -174,7 +185,7 @@ std::shared_ptr<vnx::TypeCode> NFT::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.NFT";
 	type_code->type_hash = vnx::Hash64(0x7cb24b9888a47906ull);
-	type_code->code_hash = vnx::Hash64(0xeb77509c6d4205bbull);
+	type_code->code_hash = vnx::Hash64(0xea71442a0e8c28c5ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::NFT);
@@ -195,7 +206,7 @@ std::shared_ptr<vnx::TypeCode> NFT::static_create_type_code() {
 	type_code->methods[10] = ::mmx::contract::NFT_calc_hash::static_get_type_code();
 	type_code->methods[11] = ::mmx::contract::NFT_is_valid::static_get_type_code();
 	type_code->methods[12] = ::mmx::contract::NFT_num_bytes::static_get_type_code();
-	type_code->fields.resize(4);
+	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -219,6 +230,12 @@ std::shared_ptr<vnx::TypeCode> NFT::static_create_type_code() {
 		field.is_extended = true;
 		field.name = "data";
 		field.code = {24};
+	}
+	{
+		auto& field = type_code->fields[4];
+		field.is_extended = true;
+		field.name = "solution";
+		field.code = {16};
 	}
 	type_code->build();
 	return type_code;
@@ -356,6 +373,7 @@ void read(TypeInput& in, ::mmx::contract::NFT& value, const TypeCode* type_code,
 			case 1: vnx::read(in, value.creator, type_code, _field->code.data()); break;
 			case 2: vnx::read(in, value.parent, type_code, _field->code.data()); break;
 			case 3: vnx::read(in, value.data, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.solution, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -379,6 +397,7 @@ void write(TypeOutput& out, const ::mmx::contract::NFT& value, const TypeCode* t
 	vnx::write(out, value.creator, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.parent, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.data, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.solution, type_code, type_code->fields[4].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::NFT& value) {

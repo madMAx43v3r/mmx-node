@@ -105,6 +105,10 @@ public:
 			const std::function<void(std::shared_ptr<const ::mmx::Contract>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::Contract>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
+	uint64_t get_contract_for(const ::mmx::addr_t& address = ::mmx::addr_t(), 
+			const std::function<void(std::shared_ptr<const ::mmx::Contract>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::Contract>)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
 	uint64_t get_contracts(const std::vector<::mmx::addr_t>& addresses = {}, 
 			const std::function<void(const std::vector<std::shared_ptr<const ::mmx::Contract>>&)>& _callback = std::function<void(const std::vector<std::shared_ptr<const ::mmx::Contract>>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
@@ -236,6 +240,7 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_add_block;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_add_transaction;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::Contract>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_contract;
+	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::Contract>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_contract_for;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::shared_ptr<const ::mmx::Contract>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_contracts;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_contracts_owned;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::Transaction>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_transaction;
