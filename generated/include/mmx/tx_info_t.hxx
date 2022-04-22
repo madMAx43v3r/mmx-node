@@ -12,6 +12,7 @@
 #include <mmx/tx_note_e.hxx>
 #include <mmx/txi_info_t.hxx>
 #include <mmx/txo_info_t.hxx>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 
@@ -30,8 +31,8 @@ public:
 	std::vector<::mmx::txo_info_t> outputs;
 	std::vector<std::shared_ptr<const ::mmx::Operation>> operations;
 	std::shared_ptr<const ::mmx::Contract> deployed;
-	std::map<::mmx::addr_t, uint64_t> input_amounts;
-	std::map<::mmx::addr_t, uint64_t> output_amounts;
+	std::map<::mmx::addr_t, ::mmx::uint128> input_amounts;
+	std::map<::mmx::addr_t, ::mmx::uint128> output_amounts;
 	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> contracts;
 	
 	typedef ::vnx::Value Super;

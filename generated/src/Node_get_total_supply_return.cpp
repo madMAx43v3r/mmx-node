@@ -3,6 +3,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Node_get_total_supply_return.hxx>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -12,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_total_supply_return::VNX_TYPE_HASH(0xe69f15a0766eaf27ull);
-const vnx::Hash64 Node_get_total_supply_return::VNX_CODE_HASH(0xb478456ae5363f36ull);
+const vnx::Hash64 Node_get_total_supply_return::VNX_CODE_HASH(0x5b8892cbac206016ull);
 
 vnx::Hash64 Node_get_total_supply_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -113,7 +114,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_total_supply_return::static_create_type_
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_total_supply.return";
 	type_code->type_hash = vnx::Hash64(0xe69f15a0766eaf27ull);
-	type_code->code_hash = vnx::Hash64(0xb478456ae5363f36ull);
+	type_code->code_hash = vnx::Hash64(0x5b8892cbac206016ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
@@ -122,9 +123,9 @@ std::shared_ptr<vnx::TypeCode> Node_get_total_supply_return::static_create_type_
 	type_code->fields.resize(1);
 	{
 		auto& field = type_code->fields[0];
-		field.data_size = 8;
+		field.is_extended = true;
 		field.name = "_ret_0";
-		field.code = {4};
+		field.code = {11, 2, 4};
 	}
 	type_code->build();
 	return type_code;
@@ -166,14 +167,12 @@ void read(TypeInput& in, ::mmx::Node_get_total_supply_return& value, const TypeC
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
-		if(const auto* const _field = type_code->field_map[0]) {
-			vnx::read_value(_buf + _field->offset, value._ret_0, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
+			case 0: vnx::read(in, value._ret_0, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -192,8 +191,7 @@ void write(TypeOutput& out, const ::mmx::Node_get_total_supply_return& value, co
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(8);
-	vnx::write_value(_buf + 0, value._ret_0);
+	vnx::write(out, value._ret_0, type_code, type_code->fields[0].code.data());
 }
 
 void read(std::istream& in, ::mmx::Node_get_total_supply_return& value) {

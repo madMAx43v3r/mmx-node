@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_Node_get_total_balance_return_HXX_
 
 #include <mmx/package.hxx>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 
@@ -13,7 +14,7 @@ namespace mmx {
 class MMX_EXPORT Node_get_total_balance_return : public ::vnx::Value {
 public:
 	
-	uint64_t _ret_0 = 0;
+	::mmx::uint128 _ret_0;
 	
 	typedef ::vnx::Value Super;
 	

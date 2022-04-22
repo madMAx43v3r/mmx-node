@@ -10,6 +10,7 @@
 #include <mmx/tx_note_e.hxx>
 #include <mmx/txi_info_t.hxx>
 #include <mmx/txo_info_t.hxx>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -19,7 +20,7 @@ namespace mmx {
 
 
 const vnx::Hash64 tx_info_t::VNX_TYPE_HASH(0x44e4a710953f4785ull);
-const vnx::Hash64 tx_info_t::VNX_CODE_HASH(0x40f8fd98b4e9990bull);
+const vnx::Hash64 tx_info_t::VNX_CODE_HASH(0xe25d694d41ae64bcull);
 
 vnx::Hash64 tx_info_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -240,7 +241,7 @@ std::shared_ptr<vnx::TypeCode> tx_info_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.tx_info_t";
 	type_code->type_hash = vnx::Hash64(0x44e4a710953f4785ull);
-	type_code->code_hash = vnx::Hash64(0x40f8fd98b4e9990bull);
+	type_code->code_hash = vnx::Hash64(0xe25d694d41ae64bcull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::tx_info_t);
@@ -314,13 +315,13 @@ std::shared_ptr<vnx::TypeCode> tx_info_t::static_create_type_code() {
 		auto& field = type_code->fields[10];
 		field.is_extended = true;
 		field.name = "input_amounts";
-		field.code = {13, 5, 11, 32, 1, 4};
+		field.code = {13, 5, 11, 32, 1, 11, 2, 4};
 	}
 	{
 		auto& field = type_code->fields[11];
 		field.is_extended = true;
 		field.name = "output_amounts";
-		field.code = {13, 5, 11, 32, 1, 4};
+		field.code = {13, 5, 11, 32, 1, 11, 2, 4};
 	}
 	{
 		auto& field = type_code->fields[12];

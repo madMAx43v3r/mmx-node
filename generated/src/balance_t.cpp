@@ -3,6 +3,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/balance_t.hxx>
+#include <mmx/uint128.hpp>
 
 #include <vnx/vnx.h>
 
@@ -11,7 +12,7 @@ namespace mmx {
 
 
 const vnx::Hash64 balance_t::VNX_TYPE_HASH(0x613173c7e5ce65b4ull);
-const vnx::Hash64 balance_t::VNX_CODE_HASH(0x78fa122062c9c9f5ull);
+const vnx::Hash64 balance_t::VNX_CODE_HASH(0xa77fce0eac67bf3cull);
 
 vnx::Hash64 balance_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -142,34 +143,34 @@ std::shared_ptr<vnx::TypeCode> balance_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.balance_t";
 	type_code->type_hash = vnx::Hash64(0x613173c7e5ce65b4ull);
-	type_code->code_hash = vnx::Hash64(0x78fa122062c9c9f5ull);
+	type_code->code_hash = vnx::Hash64(0xa77fce0eac67bf3cull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::balance_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<balance_t>>(); };
 	type_code->fields.resize(4);
 	{
 		auto& field = type_code->fields[0];
-		field.data_size = 8;
+		field.is_extended = true;
 		field.name = "spendable";
-		field.code = {4};
+		field.code = {11, 2, 4};
 	}
 	{
 		auto& field = type_code->fields[1];
-		field.data_size = 8;
+		field.is_extended = true;
 		field.name = "reserved";
-		field.code = {4};
+		field.code = {11, 2, 4};
 	}
 	{
 		auto& field = type_code->fields[2];
-		field.data_size = 8;
+		field.is_extended = true;
 		field.name = "locked";
-		field.code = {4};
+		field.code = {11, 2, 4};
 	}
 	{
 		auto& field = type_code->fields[3];
-		field.data_size = 8;
+		field.is_extended = true;
 		field.name = "total";
-		field.code = {4};
+		field.code = {11, 2, 4};
 	}
 	type_code->build();
 	return type_code;
@@ -211,23 +212,15 @@ void read(TypeInput& in, ::mmx::balance_t& value, const TypeCode* type_code, con
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
-		if(const auto* const _field = type_code->field_map[0]) {
-			vnx::read_value(_buf + _field->offset, value.spendable, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[1]) {
-			vnx::read_value(_buf + _field->offset, value.reserved, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[2]) {
-			vnx::read_value(_buf + _field->offset, value.locked, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[3]) {
-			vnx::read_value(_buf + _field->offset, value.total, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
+			case 0: vnx::read(in, value.spendable, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.reserved, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.locked, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.total, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -246,11 +239,10 @@ void write(TypeOutput& out, const ::mmx::balance_t& value, const TypeCode* type_
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(32);
-	vnx::write_value(_buf + 0, value.spendable);
-	vnx::write_value(_buf + 8, value.reserved);
-	vnx::write_value(_buf + 16, value.locked);
-	vnx::write_value(_buf + 24, value.total);
+	vnx::write(out, value.spendable, type_code, type_code->fields[0].code.data());
+	vnx::write(out, value.reserved, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.locked, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.total, type_code, type_code->fields[3].code.data());
 }
 
 void read(std::istream& in, ::mmx::balance_t& value) {

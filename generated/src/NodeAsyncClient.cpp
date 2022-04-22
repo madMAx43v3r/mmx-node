@@ -87,6 +87,7 @@
 #include <mmx/tx_info_t.hxx>
 #include <mmx/txio_key_t.hxx>
 #include <mmx/txo_info_t.hxx>
+#include <mmx/uint128.hpp>
 #include <mmx/utxo_entry_t.hxx>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
@@ -430,7 +431,7 @@ uint64_t NodeAsyncClient::get_history_for(const std::vector<::mmx::addr_t>& addr
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_balance(const ::mmx::addr_t& address, const ::mmx::addr_t& currency, const uint32_t& min_confirm, const std::function<void(const uint64_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_balance(const ::mmx::addr_t& address, const ::mmx::addr_t& currency, const uint32_t& min_confirm, const std::function<void(const ::mmx::uint128&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_balance::create();
 	_method->address = address;
 	_method->currency = currency;
@@ -459,7 +460,7 @@ uint64_t NodeAsyncClient::get_balances(const ::mmx::addr_t& address, const uint3
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_total_balance(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& currency, const uint32_t& min_confirm, const std::function<void(const uint64_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_total_balance(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& currency, const uint32_t& min_confirm, const std::function<void(const ::mmx::uint128&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_total_balance::create();
 	_method->addresses = addresses;
 	_method->currency = currency;
@@ -474,7 +475,7 @@ uint64_t NodeAsyncClient::get_total_balance(const std::vector<::mmx::addr_t>& ad
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_total_balances(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm, const std::function<void(const std::map<::mmx::addr_t, uint64_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_total_balances(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm, const std::function<void(const std::map<::mmx::addr_t, ::mmx::uint128>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_total_balances::create();
 	_method->addresses = addresses;
 	_method->min_confirm = min_confirm;
@@ -488,7 +489,7 @@ uint64_t NodeAsyncClient::get_total_balances(const std::vector<::mmx::addr_t>& a
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_virtual_plot_balance(const ::mmx::addr_t& plot_id, const ::mmx::hash_t& block_hash, const std::function<void(const uint64_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_virtual_plot_balance(const ::mmx::addr_t& plot_id, const ::mmx::hash_t& block_hash, const std::function<void(const ::mmx::uint128&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_virtual_plot_balance::create();
 	_method->plot_id = plot_id;
 	_method->block_hash = block_hash;
@@ -502,7 +503,7 @@ uint64_t NodeAsyncClient::get_virtual_plot_balance(const ::mmx::addr_t& plot_id,
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_total_supply(const ::mmx::addr_t& currency, const std::function<void(const uint64_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_total_supply(const ::mmx::addr_t& currency, const std::function<void(const ::mmx::uint128&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_total_supply::create();
 	_method->currency = currency;
 	const auto _request_id = ++vnx_next_id;
@@ -1729,7 +1730,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_balance_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<uint64_t>());
+					_callback(_value->get_field_by_index(0).to<::mmx::uint128>());
 				} else {
 					throw std::logic_error("NodeAsyncClient: invalid return value");
 				}
@@ -1767,7 +1768,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_total_balance_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<uint64_t>());
+					_callback(_value->get_field_by_index(0).to<::mmx::uint128>());
 				} else {
 					throw std::logic_error("NodeAsyncClient: invalid return value");
 				}
@@ -1786,7 +1787,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_total_balances_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<std::map<::mmx::addr_t, uint64_t>>());
+					_callback(_value->get_field_by_index(0).to<std::map<::mmx::addr_t, ::mmx::uint128>>());
 				} else {
 					throw std::logic_error("NodeAsyncClient: invalid return value");
 				}
@@ -1805,7 +1806,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_virtual_plot_balance_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<uint64_t>());
+					_callback(_value->get_field_by_index(0).to<::mmx::uint128>());
 				} else {
 					throw std::logic_error("NodeAsyncClient: invalid return value");
 				}
@@ -1824,7 +1825,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_total_supply_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<uint64_t>());
+					_callback(_value->get_field_by_index(0).to<::mmx::uint128>());
 				} else {
 					throw std::logic_error("NodeAsyncClient: invalid return value");
 				}

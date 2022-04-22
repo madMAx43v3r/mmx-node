@@ -87,6 +87,7 @@
 #include <mmx/tx_info_t.hxx>
 #include <mmx/txio_key_t.hxx>
 #include <mmx/txo_info_t.hxx>
+#include <mmx/uint128.hpp>
 #include <mmx/utxo_entry_t.hxx>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
@@ -429,7 +430,7 @@ std::vector<::mmx::tx_entry_t> NodeClient::get_history_for(const std::vector<::m
 	}
 }
 
-uint64_t NodeClient::get_balance(const ::mmx::addr_t& address, const ::mmx::addr_t& currency, const uint32_t& min_confirm) {
+::mmx::uint128 NodeClient::get_balance(const ::mmx::addr_t& address, const ::mmx::addr_t& currency, const uint32_t& min_confirm) {
 	auto _method = ::mmx::Node_get_balance::create();
 	_method->address = address;
 	_method->currency = currency;
@@ -438,7 +439,7 @@ uint64_t NodeClient::get_balance(const ::mmx::addr_t& address, const ::mmx::addr
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_balance_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<uint64_t>();
+		return _return_value->get_field_by_index(0).to<::mmx::uint128>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}
@@ -458,7 +459,7 @@ std::map<::mmx::addr_t, ::mmx::balance_t> NodeClient::get_balances(const ::mmx::
 	}
 }
 
-uint64_t NodeClient::get_total_balance(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& currency, const uint32_t& min_confirm) {
+::mmx::uint128 NodeClient::get_total_balance(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& currency, const uint32_t& min_confirm) {
 	auto _method = ::mmx::Node_get_total_balance::create();
 	_method->addresses = addresses;
 	_method->currency = currency;
@@ -467,13 +468,13 @@ uint64_t NodeClient::get_total_balance(const std::vector<::mmx::addr_t>& address
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_total_balance_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<uint64_t>();
+		return _return_value->get_field_by_index(0).to<::mmx::uint128>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}
 }
 
-std::map<::mmx::addr_t, uint64_t> NodeClient::get_total_balances(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm) {
+std::map<::mmx::addr_t, ::mmx::uint128> NodeClient::get_total_balances(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm) {
 	auto _method = ::mmx::Node_get_total_balances::create();
 	_method->addresses = addresses;
 	_method->min_confirm = min_confirm;
@@ -481,13 +482,13 @@ std::map<::mmx::addr_t, uint64_t> NodeClient::get_total_balances(const std::vect
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_total_balances_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, uint64_t>>();
+		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, ::mmx::uint128>>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}
 }
 
-uint64_t NodeClient::get_virtual_plot_balance(const ::mmx::addr_t& plot_id, const ::mmx::hash_t& block_hash) {
+::mmx::uint128 NodeClient::get_virtual_plot_balance(const ::mmx::addr_t& plot_id, const ::mmx::hash_t& block_hash) {
 	auto _method = ::mmx::Node_get_virtual_plot_balance::create();
 	_method->plot_id = plot_id;
 	_method->block_hash = block_hash;
@@ -495,20 +496,20 @@ uint64_t NodeClient::get_virtual_plot_balance(const ::mmx::addr_t& plot_id, cons
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_virtual_plot_balance_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<uint64_t>();
+		return _return_value->get_field_by_index(0).to<::mmx::uint128>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}
 }
 
-uint64_t NodeClient::get_total_supply(const ::mmx::addr_t& currency) {
+::mmx::uint128 NodeClient::get_total_supply(const ::mmx::addr_t& currency) {
 	auto _method = ::mmx::Node_get_total_supply::create();
 	_method->currency = currency;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_total_supply_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<uint64_t>();
+		return _return_value->get_field_by_index(0).to<::mmx::uint128>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}

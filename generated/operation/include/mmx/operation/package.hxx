@@ -22,6 +22,7 @@ namespace mmx {
 namespace operation {
 
 
+class Deposit;
 class Mint;
 class Mint_calc_hash;
 class Mint_calc_hash_return;
@@ -39,6 +40,7 @@ class Vote;
 class Vote_is_valid;
 class Vote_is_valid_return;
 
+MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Deposit; ///< \private
 MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Mint; ///< \private
 MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Mint_calc_hash; ///< \private
 MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Mint_calc_hash_return; ///< \private
@@ -62,6 +64,7 @@ MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Vote
 
 namespace vnx {
 
+void read(TypeInput& in, ::mmx::operation::Deposit& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::operation::Mint& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::operation::Mint_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::operation::Mint_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -79,6 +82,7 @@ void read(TypeInput& in, ::mmx::operation::Vote& value, const TypeCode* type_cod
 void read(TypeInput& in, ::mmx::operation::Vote_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::operation::Vote_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 
+void write(TypeOutput& out, const ::mmx::operation::Deposit& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::operation::Mint& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::operation::Mint_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::operation::Mint_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -96,6 +100,7 @@ void write(TypeOutput& out, const ::mmx::operation::Vote& value, const TypeCode*
 void write(TypeOutput& out, const ::mmx::operation::Vote_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::operation::Vote_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 
+void read(std::istream& in, ::mmx::operation::Deposit& value); ///< \private
 void read(std::istream& in, ::mmx::operation::Mint& value); ///< \private
 void read(std::istream& in, ::mmx::operation::Mint_calc_hash& value); ///< \private
 void read(std::istream& in, ::mmx::operation::Mint_calc_hash_return& value); ///< \private
@@ -113,6 +118,7 @@ void read(std::istream& in, ::mmx::operation::Vote& value); ///< \private
 void read(std::istream& in, ::mmx::operation::Vote_is_valid& value); ///< \private
 void read(std::istream& in, ::mmx::operation::Vote_is_valid_return& value); ///< \private
 
+void write(std::ostream& out, const ::mmx::operation::Deposit& value); ///< \private
 void write(std::ostream& out, const ::mmx::operation::Mint& value); ///< \private
 void write(std::ostream& out, const ::mmx::operation::Mint_calc_hash& value); ///< \private
 void write(std::ostream& out, const ::mmx::operation::Mint_calc_hash_return& value); ///< \private
@@ -130,6 +136,7 @@ void write(std::ostream& out, const ::mmx::operation::Vote& value); ///< \privat
 void write(std::ostream& out, const ::mmx::operation::Vote_is_valid& value); ///< \private
 void write(std::ostream& out, const ::mmx::operation::Vote_is_valid_return& value); ///< \private
 
+void accept(Visitor& visitor, const ::mmx::operation::Deposit& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::operation::Mint& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::operation::Mint_calc_hash& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::operation::Mint_calc_hash_return& value); ///< \private
@@ -146,6 +153,29 @@ void accept(Visitor& visitor, const ::mmx::operation::Spend_calc_hash_return& va
 void accept(Visitor& visitor, const ::mmx::operation::Vote& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::operation::Vote_is_valid& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::operation::Vote_is_valid_return& value); ///< \private
+
+/// \private
+template<>
+struct type<::mmx::operation::Deposit> {
+	void read(TypeInput& in, ::mmx::operation::Deposit& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::operation::Deposit& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::operation::Deposit& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::operation::Deposit& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::operation::Deposit& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Deposit& value, bool special = false);
+};
 
 /// \private
 template<>
