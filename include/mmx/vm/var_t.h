@@ -21,10 +21,10 @@ namespace vm {
 enum class vartype_e : uint16_t {
 
 	NIL,
-	REF,
-	UINT,
 	TRUE,
 	FALSE,
+	REF,
+	UINT,
 	STRING,
 	BINARY,
 	ARRAY,
@@ -42,10 +42,10 @@ enum class varflags_e : uint16_t {
 enum class constvar_e : uint32_t {
 
 	NIL,
-	ONE,
-	ZERO,
 	TRUE,
 	FALSE,
+	ZERO,
+	ONE,
 	STRING,
 	BINARY,
 	ARRAY,
@@ -61,7 +61,7 @@ struct var_t {
 	varflags_e flags = varflags_e::NONE;
 
 	union {
-		uint32_t address;
+		uint32_t ref_addr;
 		uint32_t ref_count;
 	};
 
@@ -156,6 +156,85 @@ private:
 	}
 
 };
+
+struct array_t : var_t {
+
+	uint32_t address = 0;
+	uint32_t size = 0;
+
+	array_t() : var_t(vartype_e::ARRAY) {}
+
+};
+
+struct map_t : var_t {
+
+	uint32_t address = 0;
+
+	map_t() : var_t(vartype_e::MAP) {}
+
+};
+
+struct varptr_t {
+
+	var_t* ptr = nullptr;
+
+	varptr_t() = default;
+	varptr_t(const varptr_t&) = default;
+	varptr_t(var_t* ptr) : ptr(ptr) {}
+
+	varptr_t& operator=(var_t* ptr) { this->ptr = ptr; return *this; }
+
+};
+
+
+inline int compare(const var_t& lhs, const var_t& rhs)
+{
+	if(lhs.type != rhs.type) {
+		return lhs.type < rhs.type ? -1 : 1;
+	}
+	switch(lhs.type) {
+		case vartype_e::NIL:
+		case vartype_e::TRUE:
+		case vartype_e::FALSE:
+			return 0;
+		case vartype_e::REF:
+			if(lhs.ref_addr == rhs.ref_addr) {
+				return 0;
+			}
+			return lhs.ref_addr < rhs.ref_addr ? -1 : 1;
+		case vartype_e::UINT: {
+			const auto& L = ((const uint_t&)lhs).value;
+			const auto& R = ((const uint_t&)rhs).value;
+			if(L == R) {
+				return 0;
+			}
+			return L < R ? -1 : 1;
+		}
+		case vartype_e::STRING:
+		case vartype_e::BINARY: {
+			const auto& L = (const binary_t&)lhs;
+			const auto& R = (const binary_t&)rhs;
+			if(L.size == R.size) {
+				return ::memcmp(L.data(), R.data(), L.size);
+			}
+			return L.size < R.size ? -1 : 1;
+		}
+		default:
+			return 0;
+	}
+}
+
+inline bool operator<(const varptr_t& lhs, const varptr_t& rhs)
+{
+	if(!lhs.ptr) { return rhs.ptr; }
+	if(!rhs.ptr) { return false; }
+	return compare(*lhs.ptr, *rhs.ptr) < 0;
+}
+
+
+
+
+
 
 
 } // vm
