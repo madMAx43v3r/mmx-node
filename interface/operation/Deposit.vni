@@ -1,0 +1,11 @@
+package mmx.operation;
+
+class Deposit extends mmx.Operation {
+	
+	addr_t sender;
+	
+	addr_t currency;
+	
+	ulong amount;
+	
+}
