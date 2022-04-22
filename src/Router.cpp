@@ -80,9 +80,9 @@ void Router::main()
 		}
 	}
 	subscribe(input_vdfs, max_queue_ms);
-	subscribe(input_blocks, max_queue_ms);
 	subscribe(input_verified_vdfs, max_queue_ms);
 	subscribe(input_verified_proof, max_queue_ms);
+	subscribe(input_verified_blocks, max_queue_ms);
 	subscribe(input_verified_transactions, max_queue_ms);
 	subscribe(input_transactions, max_queue_ms);
 
