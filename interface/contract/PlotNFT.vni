@@ -1,0 +1,9 @@
+package mmx.contract;
+
+class PlotNFT extends MutableRelay {
+	
+	string name;
+	
+	optional<string> server_url;
+	
+}
