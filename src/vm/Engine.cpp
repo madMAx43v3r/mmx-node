@@ -13,13 +13,13 @@ namespace vm {
 
 Engine::Engine()
 {
-	write(constvar_e::NIL, new var_t(vartype_e::NIL));
-	write(constvar_e::ZERO, new uint_t());
-	write(constvar_e::ONE, new uint_t(1));
-	write(constvar_e::TRUE, new var_t(vartype_e::TRUE));
-	write(constvar_e::FALSE, new var_t(vartype_e::FALSE));
-	write(constvar_e::STRING, string_t::alloc(0));
-	write(constvar_e::BINARY, binary_t::alloc(0));
+	assign(constvar_e::NIL, new var_t(vartype_e::NIL));
+	assign(constvar_e::ZERO, new uint_t());
+	assign(constvar_e::ONE, new uint_t(1));
+	assign(constvar_e::TRUE, new var_t(vartype_e::TRUE));
+	assign(constvar_e::FALSE, new var_t(vartype_e::FALSE));
+	assign(constvar_e::STRING, binary_t::alloc(0, vartype_e::STRING));
+	assign(constvar_e::BINARY, binary_t::alloc(0, vartype_e::BINARY));
 }
 
 void Engine::addref(const uint32_t dst)
@@ -47,20 +47,27 @@ void Engine::unref(const uint32_t dst)
 	}
 }
 
-void Engine::write(const constvar_e dst, var_t* value)
+void Engine::assign(const constvar_e dst, var_t* value)
 {
-	write(uint32_t(dst), value);
+	assign(uint32_t(dst), value);
 }
 
-void Engine::write(const uint32_t dst, var_t* value)
+void Engine::assign(const uint32_t dst, var_t* value)
 {
 	if(value) {
+		switch(value->type) {
+			case vartype_e::STRING:
+			case vartype_e::BINARY:
+				if(((const binary_t*)value)->capacity > MAX_BINARY_SIZE) {
+					throw std::logic_error("capacity > MAX_BINARY_SIZE");
+				}
+		}
 		auto& var = memory[dst];
 		if(var) {
 			if(dst < MEM_STACK) {
 				throw std::logic_error("write once memory at " + std::to_string(dst));
 			}
-			erase(dst, var);
+			erase(var);
 		}
 		var = value;
 	} else {
@@ -74,6 +81,28 @@ void Engine::write(const uint32_t dst, const var_t& src)
 	if(var) {
 		if(dst < MEM_STACK) {
 			throw std::logic_error("write once memory at " + std::to_string(dst));
+		}
+		if(var == &src) {
+			throw std::logic_error("write overlap at " + std::to_string(dst));
+		}
+	}
+	write(var, src);
+
+	if(dst >= MEM_HEAP) {
+		cells_erased.erase(dst);
+	}
+}
+
+void Engine::write(var_t*& var, const var_t& src)
+{
+	uint32_t ref_count = 0;
+	if(var) {
+		if(var->type != vartype_e::REF) {
+			if(src.type == vartype_e::REF) {
+				write(var, read_fail(src.address));
+				return;
+			}
+			ref_count = var->ref_count;
 		}
 		switch(src.type) {
 			case vartype_e::REF:
@@ -94,15 +123,32 @@ void Engine::write(const uint32_t dst, const var_t& src)
 						var->type = src.type;
 						var->flags |= varflags_e::DIRTY;
 						return;
-					// TODO
+				}
+				break;
+			case vartype_e::UINT:
+				if(var->type == vartype_e::UINT) {
+					*((uint_t*)var) = ((const uint_t&)src);
+					return;
+				}
+				break;
+			case vartype_e::STRING:
+			case vartype_e::BINARY:
+				switch(var->type) {
+					case vartype_e::STRING:
+					case vartype_e::BINARY:
+						const auto bvar = (binary_t*)var;
+						const auto bsrc = (const binary_t&)src;
+						if(bvar->capacity < bsrc.size * 4) {
+							if(bvar->assign(bsrc)) {
+								return;
+							}
+						}
 				}
 				break;
 			// TODO
 		}
-		erase(dst, var);
-	}
-	if(dst >= MEM_HEAP) {
-		cells_erased.erase(dst);
+		erase(var);
+		var = nullptr;
 	}
 	switch(src.type) {
 		case vartype_e::REF:
@@ -111,14 +157,23 @@ void Engine::write(const uint32_t dst, const var_t& src)
 		case vartype_e::FALSE:
 			var = new var_t(src.type);
 			break;
-		// TODO
-	}
-	switch(src.type) {
-		case vartype_e::REF:
-			addref(src.address);
-			var->address = src.address;
+		case vartype_e::UINT:
+			var = new uint_t((const uint_t&)src);
+			break;
+		case vartype_e::STRING:
+		case vartype_e::BINARY:
+			var = binary_t::alloc((const binary_t&)src);
 			break;
 		// TODO
+		default:
+			throw std::logic_error("invalid src type");
+	}
+	if(var->type != vartype_e::REF) {
+		var->ref_count = ref_count;
+	}
+	else if(src.type == vartype_e::REF) {
+		addref(src.address);
+		var->address = src.address;
 	}
 	var->flags |= varflags_e::DIRTY;
 }
@@ -128,21 +183,22 @@ void Engine::erase(const uint32_t dst)
 	auto iter = memory.find(dst);
 	if(iter != memory.end()) {
 		if(auto var = iter->second) {
-			erase(dst, var);
+			if(var->type != vartype_e::REF && var->ref_count) {
+				throw std::runtime_error("erase fail at " + std::to_string(dst));
+			}
+			if(dst >= MEM_HEAP) {
+				cells_erased.insert(dst);
+			}
+			erase(var);
 		}
 		memory.erase(iter);
 	}
 }
 
-void Engine::erase(const uint32_t dst, var_t* var)
+void Engine::erase(const var_t* var)
 {
 	if(var->type == vartype_e::REF) {
 		unref(var->address);
-	} else if(var->ref_count) {
-		throw std::runtime_error("erase fail at " + std::to_string(dst));
-	}
-	if(dst >= MEM_HEAP) {
-		cells_erased.insert(dst);
 	}
 	::delete var;
 }

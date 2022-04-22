@@ -28,7 +28,6 @@ constexpr uint32_t MEM_HEAP = MEM_STACK + 0x100000;
 
 class Engine {
 public:
-	uint32_t MAX_STRING_SIZE = std::numeric_limits<uint32_t>::max() - 1;
 	uint32_t MAX_BINARY_SIZE = std::numeric_limits<uint32_t>::max();
 
 	std::map<uint32_t, var_t*> memory;
@@ -38,8 +37,8 @@ public:
 
 	Engine();
 
-	void write(const constvar_e dst, var_t* value);
-	void write(const uint32_t dst, var_t* value);
+	void assign(const constvar_e dst, var_t* value);
+	void assign(const uint32_t dst, var_t* value);
 	void write(const uint32_t dst, const var_t& src);
 
 	void erase(const uint32_t dst);
@@ -58,7 +57,8 @@ protected:
 	void addref(const uint32_t dst);
 	void unref(const uint32_t dst);
 
-	void erase(const uint32_t dst, var_t* var);
+	void erase(const var_t* var);
+	void write(var_t*& var, const var_t& src);
 
 	void protect_fail(const uint32_t address) const;
 

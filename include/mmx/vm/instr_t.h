@@ -14,7 +14,7 @@
 namespace mmx {
 namespace vm {
 
-enum class opcode_e : uint16_t {
+enum class opcode_e : uint8_t {
 
 	NOP,
 	NEW,		// dst, src
@@ -30,26 +30,21 @@ enum class opcode_e : uint16_t {
 	DIV,		// dst, lhs, rhs
 	MOD,		// dst, lhs, rhs
 
+	NOT,		// dst, src
 	XOR,		// dst, lhs, rhs
 	AND,		// dst, lhs, rhs
 	OR,			// dst, lhs, rhs
 	MIN,		// dst, lhs, rhs
 	MAX,		// dst, lhs, rhs
-	NOT,		// dst, src
-
 	SHL,		// dst, src, count
 	SHR,		// dst, src, count
-
-	BW_XOR,		// dst, lhs, rhs
-	BW_AND,		// dst, lhs, rhs
-	BW_OR,		// dst, lhs, rhs
-	BW_NOT,		// dst, src
 
 	CMP_EQ,		// dst, lhs, rhs
 	CMP_NEQ,	// dst, lhs, rhs
 	CMP_LT,		// dst, lhs, rhs
 	CMP_GT,		// dst, lhs, rhs
 
+	TYPE,		// dst, addr
 	SIZE,		// dst, addr
 	GET,		// dst, addr, key
 	FIND,		// dst, addr, key
@@ -59,6 +54,7 @@ enum class opcode_e : uint16_t {
 	PUSH_BACK,		// addr, src
 	POP_BACK,		// dst, addr
 
+	CONVERT,	// dst, src
 	CONCAT,		// dst, src, count, offset
 	MEMCPY,		// dst, src, count, offset
 	SHA256,		// dst, src
@@ -71,14 +67,29 @@ enum class opcode_e : uint16_t {
 
 };
 
-enum class opflags_e : uint16_t {
+enum class opflags_e : uint8_t {
 
 	NONE,
-
-	CATCH_OVERFLOW = 1,
-	CATCH_UNDERFLOW = 2,
+	DEREF_A = 1,
+	DEREF_B = 2,
+	DEREF_C = 4,
+	DEREF_D = 8,
+	CATCH_OVERFLOW = 16,
+	CATCH_UNDERFLOW = 32,
 
 	MASK = 0xFF
+
+};
+
+enum class convflags_e : uint8_t {
+
+	NONE,
+	DEC,
+	HEX,
+	OCT,
+	STRING,
+
+	MASK = 0xF
 
 };
 
@@ -87,6 +98,8 @@ struct instr_t {
 	opcode_e code = opcode_e::NOP;
 
 	opflags_e flags = opflags_e::NONE;
+
+	convflags_e conv_flags[2] = {convflags_e::NONE, convflags_e::NONE};
 
 	union {
 		uint32_t val;
