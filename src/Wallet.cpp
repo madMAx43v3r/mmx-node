@@ -171,7 +171,7 @@ Wallet::split(const uint32_t& index, const uint64_t& max_amount, const addr_t& c
 	auto tx = Transaction::create();
 	tx->note = tx_note_e::SPLIT;
 
-	uint64_t total = 0;
+	uint128_t total = 0;
 	for(const auto& entry : get_utxo_list_for(index, currency, options.min_confirm)) {
 		const auto& utxo = entry.output;
 		if(utxo.amount > max_amount && wallet->is_spendable(entry.key) && !exclude.count(entry.key)) {
@@ -185,6 +185,7 @@ Wallet::split(const uint32_t& index, const uint64_t& max_amount, const addr_t& c
 		return nullptr;
 	}
 	const auto dst_addr = wallet->get_address(0);
+	// reserve some MMX for TX fee
 	const auto num_split = (total - (currency == addr_t() ? std::min<uint64_t>(1000000, total) : 0)) / max_amount;
 
 	auto left = total;

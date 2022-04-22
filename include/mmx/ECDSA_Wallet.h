@@ -172,12 +172,12 @@ public:
 	uint64_t gather_inputs(	std::shared_ptr<Transaction> tx,
 							const std::vector<utxo_entry_t>& utxo_list,
 							std::unordered_map<txio_key_t, utxo_t>& spent_map,
-							uint64_t amount, const addr_t& currency,
+							uint128_t amount, const addr_t& currency,
 							const spend_options_t& options)
 	{
 		const std::unordered_set<txio_key_t> exclude(options.exclude.begin(), options.exclude.end());
 
-		uint64_t change = 0;
+		uint128_t change = 0;
 		for(const auto& entry : utxo_list)
 		{
 			if(amount == 0) {
@@ -214,6 +214,9 @@ public:
 		}
 		if(amount > 0 && options.over_spend) {
 			throw std::logic_error("not enough funds");
+		}
+		if(change.upper()) {
+			throw std::logic_error("change amount overflow");
 		}
 		return change;
 	}
@@ -371,7 +374,7 @@ public:
 
 	void complete(std::shared_ptr<Transaction> tx, const std::vector<utxo_entry_t>& src_utxo, const spend_options_t& options)
 	{
-		std::unordered_map<addr_t, uint64_t> amounts;
+		std::unordered_map<addr_t, uint128_t> amounts;
 		for(const auto& out : tx->outputs) {
 			amounts[out.contract] += out.amount;
 		}
