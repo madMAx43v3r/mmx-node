@@ -2,12 +2,12 @@ package mmx;
 
 struct balance_t {
 	
-	ulong spendable;
+	uint128 spendable;
 	
-	ulong reserved;
+	uint128 reserved;
 	
-	ulong locked;
+	uint128 locked;
 	
-	ulong total;
+	uint128 total;
 	
 }

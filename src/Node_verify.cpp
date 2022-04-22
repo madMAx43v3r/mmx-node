@@ -49,7 +49,7 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 	fork->is_proof_verified = true;
 }
 
-uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const hash_t& block_hash) const
+uint128 Node::get_virtual_plot_balance(const addr_t& plot_id, const hash_t& block_hash) const
 {
 	auto block = get_header(block_hash);
 	if(!block) {
@@ -59,7 +59,7 @@ uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const hash_t& blo
 	const auto height = block->height;
 	const auto since = height - std::min(params->virtual_lifetime, height);
 
-	uint64_t balance = 0;
+	uint128_t balance = 0;
 	for(const auto& entry : get_utxo_list_for({plot_id}, addr_t(), 0, since)) {
 		if(entry.output.height <= std::min(root->height, height)) {
 			balance += entry.output.amount;

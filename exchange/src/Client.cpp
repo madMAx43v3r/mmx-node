@@ -25,6 +25,7 @@
 #include <mmx/exchange/Server_reject.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/Request.hxx>
+#include <mmx/utils.h>
 
 #include <vnx/vnx.h>
 #include <vnx/TcpEndpoint.hxx>
@@ -365,9 +366,12 @@ Client::make_offer(const uint32_t& index, const trade_pair_t& pair, const uint64
 		order.offer_id = offer->id;
 		order.bid = utxo;
 		order.ask.amount = utxo.amount * price;
+		if(price > 1 && order.ask.amount < utxo.amount) {
+			throw std::logic_error("ask amount overflow");
+		}
 		order.ask.currency = pair.ask;
-		offer->bid += order.bid.amount;
-		offer->ask += order.ask.amount;
+		safe_acc(offer->bid, order.bid.amount);
+		safe_acc(offer->ask, order.ask.amount);
 		offer->orders.emplace_back(key, order);
 		limit_order.bids.emplace_back(key, order.ask.amount);
 	}
@@ -400,9 +404,13 @@ Client::make_trade(const uint32_t& index, const trade_pair_t& pair, const uint64
 		const auto& utxo = entry.output;
 		const auto amount = std::min(utxo.amount, bid_left);
 		if(ask) {
-			*order.ask += amount * price;
+			const uint64_t ask_amount = amount * price;
+			if(price > 1 && ask_amount < amount) {
+				throw std::logic_error("ask amount overflow");
+			}
+			safe_acc(*order.ask, ask_amount);
 		}
-		order.bid += amount;
+		safe_acc(order.bid, amount);
 		order.bid_keys.push_back(entry.key);
 		addr_set.insert(utxo.address);
 		bid_left -= amount;
@@ -520,7 +528,7 @@ std::shared_ptr<const Transaction> Client::approve(std::shared_ptr<const Transac
 {
 	std::unordered_set<addr_t> addr_set;
 	std::unordered_set<uint32_t> wallets;
-	std::unordered_map<addr_t, uint64_t> expect_amount;
+	std::unordered_map<addr_t, uint128_t> expect_amount;
 	for(const auto& in : tx->inputs) {
 		auto iter = order_map.find(in.prev);
 		if(iter != order_map.end()) {
@@ -530,7 +538,7 @@ std::shared_ptr<const Transaction> Client::approve(std::shared_ptr<const Transac
 			expect_amount[order.ask.currency] += order.ask.amount;
 		}
 	}
-	std::unordered_map<addr_t, uint64_t> output_amount;
+	std::unordered_map<addr_t, uint128_t> output_amount;
 	for(const auto& out : tx->outputs) {
 		if(addr_set.count(out.address)) {
 			output_amount[out.contract] += out.amount;
@@ -539,8 +547,8 @@ std::shared_ptr<const Transaction> Client::approve(std::shared_ptr<const Transac
 	for(const auto& entry : expect_amount) {
 		auto iter = output_amount.find(entry.first);
 		if(iter == output_amount.end() || iter->second < entry.second) {
-			const uint64_t amount = iter != output_amount.end() ? iter->second : 0;
-			throw std::logic_error("expected amount: " + std::to_string(entry.second) + " != " + std::to_string(amount) + " [" + entry.first.to_string() + "]");
+			const uint128_t amount = iter != output_amount.end() ? iter->second : uint128_0;
+			throw std::logic_error("expected amount: " + entry.second.str(10) + " != " + amount.str(10) + " [" + entry.first.to_string() + "]");
 		}
 	}
 	auto out = vnx::clone(tx);
@@ -585,7 +593,7 @@ void Client::execute_async(const std::string& server, const uint32_t& index, con
 		const auto& utxo = entry->output;
 		if(addr_set.count(utxo.address)) {
 			if(utxo.contract == order.pair.bid) {
-				total_bid += utxo.amount;
+				safe_acc(total_bid, utxo.amount);
 			} else {
 				throw std::logic_error("invalid bid");
 			}
@@ -601,7 +609,7 @@ void Client::execute_async(const std::string& server, const uint32_t& index, con
 	for(const auto& out : order.tx->outputs) {
 		if(addr_set.count(out.address)) {
 			if(out.contract == order.pair.ask) {
-				total_ask += out.amount;
+				safe_acc(total_ask, out.amount);
 			} else {
 				throw std::logic_error("invalid ask");
 			}

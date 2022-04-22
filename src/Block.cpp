@@ -42,11 +42,14 @@ void Block::finalize()
 
 uint64_t Block::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	uint64_t cost = 0;
+	uint128_t cost = 0;
 	for(const auto& tx : tx_list) {
 		if(tx) {
 			cost += tx->calc_cost(params);
 		}
+	}
+	if(cost.upper()) {
+		throw std::logic_error("block cost amount overflow");
 	}
 	return cost;
 }

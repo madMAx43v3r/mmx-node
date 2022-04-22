@@ -83,15 +83,17 @@ protected:
 
 	void add_transaction(std::shared_ptr<const Transaction> tx, const vnx::bool_t& pre_validate = false) override;
 
-	uint64_t get_balance(const addr_t& address, const addr_t& currency, const uint32_t& min_confirm) const override;
+	uint128 get_balance(const addr_t& address, const addr_t& currency, const uint32_t& min_confirm) const override;
 
-	uint64_t get_total_balance(const std::vector<addr_t>& addresses, const addr_t& currency, const uint32_t& min_confirm) const override;
+	uint128 get_total_balance(const std::vector<addr_t>& addresses, const addr_t& currency, const uint32_t& min_confirm) const override;
 
-	std::map<addr_t, uint64_t> get_total_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const override;
+	std::map<addr_t, uint128> get_total_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const override;
 
 	std::map<addr_t, balance_t> get_balances(const addr_t& address, const uint32_t& min_confirm) const override;
 
-	uint64_t get_total_supply(const addr_t& currency) const override;
+	uint128 get_total_supply(const addr_t& currency) const override;
+
+	uint128 get_virtual_plot_balance(const addr_t& plot_id, const hash_t& block_hash) const override;
 
 	std::vector<utxo_entry_t> get_utxo_list(
 			const std::vector<addr_t>& addresses, const uint32_t& min_confirm = 1, const uint32_t& since = 0) const override;
@@ -230,8 +232,6 @@ private:
 	void purge_tree();
 
 	void verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_output) const;
-
-	uint64_t get_virtual_plot_balance(const addr_t& plot_id, const hash_t& block_hash) const;
 
 	void verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, std::shared_ptr<const BlockHeader> diff_block) const;
 

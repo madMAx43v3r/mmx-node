@@ -452,13 +452,13 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 
 	size_t num_purged = 0;
 	size_t num_dependent = 0;
-	uint64_t total_verify_cost = 0;
+	uint128_t total_verify_cost = 0;
 	std::vector<tx_data_t> tx_list;
 	std::unordered_multimap<hash_t, hash_t> dependency;
 
 	{
 		// purge transactions from pool if overflowing
-		uint64_t total_pool_cost = 0;
+		uint128_t total_pool_cost = 0;
 		for(const auto& entry : all_tx) {
 			if(entry.did_validate) {
 				total_pool_cost += entry.cost;
@@ -538,7 +538,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 			return lhs.fee_ratio > rhs.fee_ratio;
 		});
 
-	uint64_t total_cost = 0;
+	uint128_t total_cost = 0;
 	std::vector<tx_data_t> result;
 	std::unordered_set<addr_t> mutated;
 	std::unordered_set<txio_key_t> spent;

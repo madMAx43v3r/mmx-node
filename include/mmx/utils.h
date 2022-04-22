@@ -111,6 +111,29 @@ uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params, std::shar
 	return weight;
 }
 
+inline
+void safe_acc(uint64_t& lhs, const uint64_t& rhs)
+{
+	const auto tmp = uint128_t(lhs) + rhs;
+	if(tmp.upper()) {
+		throw std::runtime_error("accumulate overflow");
+	}
+	lhs = tmp.lower();
+}
+
+inline
+double amount_value(uint128_t amount, const int decimals)
+{
+	int i = 0;
+	for(; amount.upper() && i < decimals; ++i) {
+		amount /= 10;
+	}
+	if(amount.upper()) {
+		return std::numeric_limits<double>::quiet_NaN();
+	}
+	return double(amount.lower()) * pow(10, i - decimals);
+}
+
 
 } // mmx
 

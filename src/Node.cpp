@@ -446,8 +446,8 @@ vnx::optional<tx_info_t> Node::get_tx_info(const hash_t& id) const
 		}
 		auto iter = info.input_amounts.find(addr_t());
 		auto iter2 = info.output_amounts.find(addr_t());
-		info.fee = int64_t(iter != info.input_amounts.end() ? iter->second : 0)
-						- (iter2 != info.output_amounts.end() ? iter2->second : 0);
+		info.fee = int64_t(iter != info.input_amounts.end() ? iter->second.lower() : 0)
+						- (iter2 != info.output_amounts.end() ? iter2->second.lower() : 0);
 		return info;
 	}
 	return nullptr;
@@ -576,14 +576,14 @@ std::vector<tx_entry_t> Node::get_history_for(const std::vector<addr_t>& address
 		const auto& txio = iter.second;
 
 		uint32_t height = 0;
-		std::map<addr_t, std::map<addr_t, int64_t>> delta_map;
+		std::map<addr_t, std::map<addr_t, std::pair<uint128_t, uint128_t>>> delta_map;
 		for(const auto& utxo : txio.outputs) {
-			delta_map[utxo.address][utxo.contract] += utxo.amount;
+			delta_map[utxo.address][utxo.contract].first += utxo.amount;
 			height = utxo.height;
 		}
 		for(const auto& entry : txio.inputs) {
 			const auto& utxo = entry.output;
-			delta_map[utxo.address][utxo.contract] -= utxo.amount;
+			delta_map[utxo.address][utxo.contract].second += utxo.amount;
 			height = entry.spent_height;
 		}
 		for(const auto& entry1 : delta_map) {
@@ -593,15 +593,16 @@ std::vector<tx_entry_t> Node::get_history_for(const std::vector<addr_t>& address
 				out.txid = iter.first;
 				out.contract = entry2.first;
 				out.address = entry1.first;
-				if(entry2.second > 0) {
+				const auto& delta = entry2.second;
+				if(delta.first > delta.second) {
 					out.type = tx_type_e::RECEIVE;
-					out.amount = entry2.second;
+					out.amount = delta.first - delta.second;
 				}
-				if(entry2.second < 0) {
+				if(delta.second > delta.first) {
 					out.type = tx_type_e::SPEND;
-					out.amount = -entry2.second;
+					out.amount = delta.second - delta.first;
 				}
-				if(entry2.second) {
+				if(out.amount != 0) {
 					list.emplace(out.height, out);
 				}
 			}
@@ -726,14 +727,14 @@ void Node::add_transaction(std::shared_ptr<const Transaction> tx, const vnx::boo
 	}
 }
 
-uint64_t Node::get_balance(const addr_t& address, const addr_t& currency, const uint32_t& min_confirm) const
+uint128 Node::get_balance(const addr_t& address, const addr_t& currency, const uint32_t& min_confirm) const
 {
 	return get_total_balance({address}, currency, min_confirm);
 }
 
-uint64_t Node::get_total_balance(const std::vector<addr_t>& addresses, const addr_t& currency, const uint32_t& min_confirm) const
+uint128 Node::get_total_balance(const std::vector<addr_t>& addresses, const addr_t& currency, const uint32_t& min_confirm) const
 {
-	uint64_t total = 0;
+	uint128_t total = 0;
 	for(const auto& entry : get_utxo_list(addresses, min_confirm)) {
 		const auto& utxo = entry.output;
 		if(utxo.contract == currency) {
@@ -743,9 +744,9 @@ uint64_t Node::get_total_balance(const std::vector<addr_t>& addresses, const add
 	return total;
 }
 
-std::map<addr_t, uint64_t> Node::get_total_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const
+std::map<addr_t, uint128> Node::get_total_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const
 {
-	std::map<addr_t, uint64_t> amounts;
+	std::map<addr_t, uint128> amounts;
 	for(const auto& entry : get_utxo_list(addresses, min_confirm)) {
 		const auto& utxo = entry.output;
 		amounts[utxo.contract] += utxo.amount;
@@ -774,9 +775,9 @@ std::map<addr_t, balance_t> Node::get_balances(const addr_t& address, const uint
 	return result;
 }
 
-uint64_t Node::get_total_supply(const addr_t& currency) const
+uint128 Node::get_total_supply(const addr_t& currency) const
 {
-	uint64_t total = 0;
+	uint128_t total = 0;
 	for(const auto& entry : utxo_map) {
 		const auto& utxo = entry.second;
 		if(utxo.contract == currency) {

@@ -12,6 +12,6 @@ struct tx_entry_t {
 	
 	addr_t contract;
 	
-	ulong amount;
+	uint128 amount;
 	
 }

@@ -223,9 +223,9 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 			throw std::logic_error("number of contracts > max_tx_operations");
 		}
 	}
-	uint64_t base_amount = 0;
+	uint128_t base_amount = 0;
 	std::vector<tx_out_t> exec_outputs;
-	std::unordered_map<hash_t, uint64_t> amounts;
+	std::unordered_map<hash_t, uint128_t> amounts;
 	std::unordered_map<addr_t, std::shared_ptr<Contract>> contract_state;
 
 	for(const auto& in : tx->inputs)
@@ -343,11 +343,19 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 	}
 
 	if(base) {
+		if(base_amount.upper()) {
+			throw std::logic_error("coin base output overflow");
+		}
 		fee_amount = base_amount;
 		return nullptr;
 	}
-	fee_amount = amounts[hash_t()];
-
+	{
+		const auto& amount = amounts[hash_t()];
+		if(amount.upper()) {
+			throw std::logic_error("fee amount overflow");
+		}
+		fee_amount = amount;
+	}
 	if(fee_amount < tx_cost) {
 		throw std::logic_error("insufficient fee: " + std::to_string(fee_amount) + " < " + std::to_string(tx_cost));
 	}

@@ -132,27 +132,30 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 	if(!params) {
 		throw std::logic_error("!params");
 	}
-	uint64_t fee = (inputs.size() + outputs.size()) * params->min_txfee_io;
+	uint128_t cost = (inputs.size() + outputs.size()) * params->min_txfee_io;
 
 	for(const auto& in : inputs) {
 		if(in.flags & tx_in_t::IS_EXEC) {
-			fee += params->min_txfee_exec;
+			cost += params->min_txfee_exec;
 		}
 	}
 	for(const auto& op : execute) {
 		if(op) {
-			fee += params->min_txfee_exec + op->calc_cost(params);
+			cost += params->min_txfee_exec + op->calc_cost(params);
 		}
 	}
 	for(const auto& sol : solutions) {
 		if(sol) {
-			fee += sol->calc_cost(params);
+			cost += sol->calc_cost(params);
 		}
 	}
 	if(deploy) {
-		fee += params->min_txfee_deploy + deploy->calc_cost(params);
+		cost += params->min_txfee_deploy + deploy->calc_cost(params);
 	}
-	return fee;
+	if(cost.upper()) {
+		throw std::logic_error("tx cost amount overflow");
+	}
+	return cost;
 }
 
 void Transaction::merge_sign(std::shared_ptr<const Transaction> tx)

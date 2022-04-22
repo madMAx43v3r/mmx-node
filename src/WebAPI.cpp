@@ -298,14 +298,14 @@ public:
 		set(render(value, context));
 	}
 
-	vnx::Object augment(vnx::Object out, const addr_t& contract, const uint64_t amount) {
+	vnx::Object augment(vnx::Object out, const addr_t& contract, const uint128_t amount) {
 		if(context) {
 			if(auto info = context->find_currency(contract)) {
 				if(info->is_nft) {
 					out["is_nft"] = true;
 				} else {
 					out["symbol"] = info->symbol;
-					out["value"] = amount * pow(10, -info->decimals);
+					out["value"] = amount_value(amount, info->decimals);
 				}
 			}
 			out["is_native"] = contract == addr_t();
@@ -329,9 +329,9 @@ public:
 		set(render(value, context));
 	}
 
-	vnx::Object to_output(const addr_t& contract, const uint64_t amount) {
+	vnx::Object to_output(const addr_t& contract, const uint128_t amount) {
 		vnx::Object tmp;
-		tmp["amount"] = amount;
+		tmp["amount"] = amount.str(10);
 		tmp["contract"] = contract.to_string();
 		if(contract == addr_t()) {
 			tmp["is_native"] = true;
@@ -815,7 +815,7 @@ void WebAPI::gather_transactions(	const vnx::request_id_t& request_id, const siz
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 }
 
-void WebAPI::render_address(const vnx::request_id_t& request_id, const addr_t& address, const std::map<addr_t, uint64_t>& balances) const
+void WebAPI::render_address(const vnx::request_id_t& request_id, const addr_t& address, const std::map<addr_t, uint128>& balances) const
 {
 	std::unordered_set<addr_t> addr_set;
 	for(const auto& entry : balances) {
@@ -860,10 +860,10 @@ void WebAPI::render_balances(const vnx::request_id_t& request_id, const vnx::opt
 					} else {
 						const auto& balance = entry.second;
 						vnx::Object row;
-						row["total"] = balance.total * pow(10, -currency->decimals);
-						row["spendable"] = balance.spendable * pow(10, -currency->decimals);
-						row["reserved"] = balance.reserved * pow(10, -currency->decimals);
-						row["locked"] = balance.locked * pow(10, -currency->decimals);
+						row["total"] = amount_value(balance.total, currency->decimals);
+						row["spendable"] = amount_value(balance.spendable, currency->decimals);
+						row["reserved"] = amount_value(balance.reserved, currency->decimals);
+						row["locked"] = amount_value(balance.locked, -currency->decimals);
 						row["symbol"] = currency->symbol;
 						row["contract"] = entry.first.to_string();
 						if(entry.first == addr_t()) {

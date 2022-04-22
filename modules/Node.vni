@@ -116,22 +116,22 @@ module Node implements vnx.addons.HttpComponent {
 	vector<tx_entry_t> get_history_for(vector<addr_t> addresses, int since) const;
 	
 	@Permission(permission_e.PUBLIC)
-	ulong get_balance(addr_t address, addr_t currency, uint min_confirm = 1) const;
+	uint128 get_balance(addr_t address, addr_t currency, uint min_confirm = 1) const;
 	
 	@Permission(permission_e.PUBLIC)
 	map<addr_t, balance_t> get_balances(addr_t address, uint min_confirm = 1) const;
 	
 	@Permission(permission_e.PUBLIC)
-	ulong get_total_balance(vector<addr_t> addresses, addr_t currency, uint min_confirm = 1) const;
+	uint128 get_total_balance(vector<addr_t> addresses, addr_t currency, uint min_confirm = 1) const;
 	
 	@Permission(permission_e.PUBLIC)
-	map<addr_t, ulong> get_total_balances(vector<addr_t> addresses, uint min_confirm = 1) const;
+	map<addr_t, uint128> get_total_balances(vector<addr_t> addresses, uint min_confirm = 1) const;
 	
 	@Permission(permission_e.PUBLIC)
-	ulong get_virtual_plot_balance(addr_t plot_id, hash_t block_hash) const;
+	uint128 get_virtual_plot_balance(addr_t plot_id, hash_t block_hash) const;
 	
 	@Permission(permission_e.PUBLIC)
-	ulong get_total_supply(addr_t currency) const;
+	uint128 get_total_supply(addr_t currency) const;
 	
 	@Permission(permission_e.PUBLIC)
 	vector<utxo_entry_t> get_utxo_list(vector<addr_t> addresses, uint min_confirm = 1, uint since = 0) const;
