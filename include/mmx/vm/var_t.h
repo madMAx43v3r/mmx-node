@@ -32,14 +32,14 @@ enum class vartype_e : uint16_t {
 
 };
 
-enum class varflags_e : uint16_t {
+enum varflags_e : uint16_t {
 
-	NONE = 0,
 	DIRTY = 1,
+	CONST = 2,
 
 };
 
-enum class constvar_e : uint32_t {
+enum constvar_e : uint64_t {
 
 	NIL,
 	TRUE,
@@ -58,11 +58,11 @@ enum class constvar_e : uint32_t {
 struct var_t {
 
 	vartype_e type = vartype_e::NIL;
-	varflags_e flags = varflags_e::NONE;
+	varflags_e flags = 0;
 
 	union {
-		uint32_t ref_addr;
-		uint32_t ref_count;
+		uint64_t ref_addr;
+		uint64_t ref_count;
 	};
 
 	var_t() { ref_count = 0; }
@@ -91,8 +91,8 @@ struct uint_t : var_t {
 
 struct binary_t : var_t {
 
-	uint32_t size = 0;
-	uint32_t capacity = 0;
+	uint64_t size = 0;
+	uint64_t capacity = 0;
 
 	void* data(const size_t offset = 0) {
 		return ((char*)this) + sizeof(binary_t) + offset;
@@ -147,9 +147,6 @@ private:
 			case vartype_e::STRING: size += 1; break;
 			default: throw std::logic_error("invalid binary type");
 		}
-		if(size >= std::numeric_limits<uint32_t>::max()) {
-			throw std::runtime_error("binary size overflow");
-		}
 		auto bin = new(::operator new(sizeof(binary_t) + size)) binary_t(type);
 		bin->capacity = size;
 		return bin;
@@ -159,13 +156,13 @@ private:
 
 struct exvar_t : var_t {
 
-	uint32_t address = 0;
+	uint64_t address = 0;
 
 };
 
 struct array_t : exvar_t {
 
-	uint32_t size = 0;
+	uint64_t size = 0;
 
 	array_t() : var_t(vartype_e::ARRAY) {}
 

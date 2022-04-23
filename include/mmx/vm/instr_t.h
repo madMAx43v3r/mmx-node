@@ -47,12 +47,11 @@ enum class opcode_e : uint8_t {
 	TYPE,		// dst, addr
 	SIZE,		// dst, addr
 	GET,		// dst, addr, key
-	FIND,		// dst, addr, key
-	SET,		// addr, key, rhs
+	SET,		// addr, key, src
 	ERASE,		// addr, key
 
-	PUSH_BACK,		// addr, src
-	POP_BACK,		// dst, addr
+	PUSH_BACK,		// dst, src
+	POP_BACK,		// dst, src
 
 	CONVERT,	// dst, src
 	CONCAT,		// dst, src, count, offset
@@ -63,25 +62,21 @@ enum class opcode_e : uint8_t {
 	SEND,		// addr, currency, amount
 	EVENT,		// name, data
 
-	MASK = 0xFF
-
 };
 
-enum class opflags_e : uint8_t {
+enum opflags_e : uint8_t {
 
-	NONE,
 	DEREF_A = 1,
 	DEREF_B = 2,
 	DEREF_C = 4,
 	DEREF_D = 8,
-	CATCH_OVERFLOW = 16,
-	CATCH_UNDERFLOW = 32,
-
-	MASK = 0xFF
+	HARD_FAIL = 16,
+	CATCH_OVERFLOW = 32,
+	CATCH_UNDERFLOW = 64,
 
 };
 
-enum class convflags_e : uint8_t {
+enum convflags_e : uint8_t {
 
 	NONE,
 	DEC,
@@ -89,44 +84,20 @@ enum class convflags_e : uint8_t {
 	OCT,
 	STRING,
 
-	MASK = 0xF
-
 };
 
 struct instr_t {
 
 	opcode_e code = opcode_e::NOP;
 
-	opflags_e flags = opflags_e::NONE;
+	opflags_e flags = 0;
 
-	convflags_e conv_flags[2] = {convflags_e::NONE, convflags_e::NONE};
+	convflags_e conv_flags[2] = {};
 
-	union {
-		uint32_t val;
-		uint32_t dst;
-		uint32_t addr;
-		uint32_t cond;
-	} a;
-
-	union {
-		uint32_t val;
-		uint32_t src;
-		uint32_t lhs;
-		uint32_t addr;
-		uint32_t key;
-	} b;
-
-	union {
-		uint32_t val;
-		uint32_t rhs;
-		uint32_t key;
-		uint32_t count;
-	} c;
-
-	union {
-		uint32_t val;
-		uint32_t offset;
-	} d;
+	uint32_t a = 0;
+	uint32_t b = 0;
+	uint32_t c = 0;
+	uint32_t d = 0;
 
 };
 
