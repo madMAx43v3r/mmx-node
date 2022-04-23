@@ -88,9 +88,6 @@ protected:
 	void addref(const uint64_t dst);
 	void unref(const uint64_t dst);
 
-	var_t* clone(const var_t& src);
-	var_t* create_ref(const uint64_t& src);
-
 	var_t* write(var_t*& var, const uint64_t* dst, const var_t& src);
 
 	array_t* clone_array(const uint64_t dst, const array_t& src);

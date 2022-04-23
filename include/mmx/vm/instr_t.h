@@ -59,7 +59,8 @@ enum class opcode_e : uint8_t {
 	SHA256,		// dst, src
 
 	LOG,		// level, message
-	SEND,		// addr, currency, amount
+	SEND,		// addr, amount, currency
+	MINT,		// addr, amount
 	EVENT,		// name, data
 
 };

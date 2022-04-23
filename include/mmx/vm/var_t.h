@@ -18,7 +18,7 @@
 namespace mmx {
 namespace vm {
 
-enum class vartype_e : uint16_t {
+enum class vartype_e : uint8_t {
 
 	NIL,
 	TRUE,
@@ -32,7 +32,7 @@ enum class vartype_e : uint16_t {
 
 };
 
-enum varflags_e : uint16_t {
+enum varflags_e : uint8_t {
 
 	DIRTY = 1,
 	CONST = 2,
@@ -58,18 +58,35 @@ enum constvar_e : uint64_t {
 struct var_t {
 
 	vartype_e type = vartype_e::NIL;
+
 	varflags_e flags = 0;
 
-	union {
-		uint64_t ref_addr;
-		uint64_t ref_count;
-	};
+	uint32_t ref_count = 0;
 
-	var_t() { ref_count = 0; }
+	var_t() = default;
 	var_t(const var_t&) = delete;
 	var_t(const vartype_e& type) : type(type) {}
 
-	var_t& operator=(const var_t&) = delete;
+	var_t& operator=(const var_t& rhs) {
+		type = rhs.type;
+		flags |= varflags_e::DIRTY;
+		return *this;
+	}
+
+};
+
+struct ref_t : var_t {
+
+	uint64_t address = 0;
+
+	ref_t() : var_t(vartype_e::REF) {}
+	ref_t(uint64_t address) : var_t(vartype_e::REF), address(address) {}
+
+	ref_t& operator=(const ref_t& rhs) {
+		address = rhs.address;
+		flags |= varflags_e::DIRTY;
+		return *this;
+	}
 
 };
 
@@ -78,11 +95,10 @@ struct uint_t : var_t {
 	uint256_t value = uint256_0;
 
 	uint_t() : var_t(vartype_e::UINT) {}
-	uint_t(const uint_t& src) : uint_t(src.value) {}
 	uint_t(const uint256_t& value) : var_t(vartype_e::UINT) { this->value = value; }
 
-	uint_t& operator=(const uint_t& src) {
-		value = src.value;
+	uint_t& operator=(const uint_t& rhs) {
+		value = rhs.value;
 		flags |= varflags_e::DIRTY;
 		return *this;
 	}
@@ -112,8 +128,8 @@ struct binary_t : var_t {
 		flags |= varflags_e::DIRTY;
 		return true;
 	}
-	binary_t& operator=(const binary_t& src) {
-		if(!assign(src)) {
+	binary_t& operator=(const binary_t& rhs) {
+		if(!assign(rhs)) {
 			throw std::runtime_error("binary assignment overflow");
 		}
 		return *this;
@@ -154,13 +170,7 @@ private:
 
 };
 
-struct exvar_t : var_t {
-
-	uint64_t address = 0;
-
-};
-
-struct array_t : exvar_t {
+struct array_t : ref_t {
 
 	uint64_t size = 0;
 
@@ -168,7 +178,7 @@ struct array_t : exvar_t {
 
 };
 
-struct map_t : exvar_t {
+struct map_t : ref_t {
 
 	map_t() : var_t(vartype_e::MAP) {}
 
@@ -185,11 +195,14 @@ inline int compare(const var_t& lhs, const var_t& rhs)
 		case vartype_e::TRUE:
 		case vartype_e::FALSE:
 			return 0;
-		case vartype_e::REF:
-			if(lhs.ref_addr == rhs.ref_addr) {
+		case vartype_e::REF: {
+			const auto& L = (const ref_t&)lhs;
+			const auto& R = (const ref_t&)rhs;
+			if(L.address == R.address) {
 				return 0;
 			}
-			return lhs.ref_addr < rhs.ref_addr ? -1 : 1;
+			return L.address < R.address ? -1 : 1;
+		}
 		case vartype_e::UINT: {
 			const auto& L = ((const uint_t&)lhs).value;
 			const auto& R = ((const uint_t&)rhs).value;

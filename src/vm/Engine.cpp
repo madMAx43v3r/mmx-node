@@ -32,9 +32,6 @@ void Engine::addref(const uint64_t dst)
 		return;
 	}
 	auto& var = read_fail(dst);
-	if(var.type == vartype_e::REF) {
-		throw std::logic_error("addref fail at " + to_hex(dst));
-	}
 	var.ref_count++;
 	var.flags |= varflags_e::DIRTY;
 }
@@ -45,9 +42,6 @@ void Engine::unref(const uint64_t dst)
 		return;
 	}
 	auto& var = read_fail(dst);
-	if(var.type == vartype_e::REF) {
-		throw std::logic_error("unref fail at " + to_hex(dst));
-	}
 	if(var.ref_count == 0) {
 		throw std::logic_error("unref underflow at " + to_hex(dst));
 	}
@@ -101,7 +95,7 @@ void Engine::assign(const uint64_t dst, const uint64_t key, var_t* value)
 uint64_t Engine::lookup(const uint64_t src)
 {
 	if(src < MEM_EXTERN) {
-		return src;
+		return src;		// constant memory
 	}
 	const auto& var = read_fail(src);
 	const auto iter = key_map.find(&var);
@@ -110,7 +104,7 @@ uint64_t Engine::lookup(const uint64_t src)
 	}
 	if(storage) {
 		if(auto key = storage->lookup(contract, var)) {
-			key_map[read(key)] = key;
+			key_map[&read_fail(key)] = key;
 			return key;
 		}
 	}
@@ -141,38 +135,33 @@ var_t* Engine::write(var_t*& var, const uint64_t* dst, const var_t& src)
 	if(var == &src) {
 		return var;
 	}
-	uint64_t ref_count = 0;
+	uint32_t ref_count = 0;
 	varflags_e flags = varflags_e::DIRTY;
 	if(var) {
 		if(var->flags & varflags_e::CONST) {
 			throw std::logic_error("cannot write to read-only memory");
 		}
-		if(var->type != vartype_e::REF) {
-			if(src.type == vartype_e::REF) {
-				throw std::logic_error("cannot assign reference here");
-			}
-			flags |= var->flags;
-			ref_count = var->ref_count;
-		}
 		switch(src.type) {
-			case vartype_e::REF:
 			case vartype_e::NIL:
 			case vartype_e::TRUE:
 			case vartype_e::FALSE:
 				switch(var->type) {
-					case vartype_e::REF:
-						unref(var->ref_addr);
-						/* no break */
 					case vartype_e::NIL:
 					case vartype_e::TRUE:
 					case vartype_e::FALSE:
-						if(src.type == vartype_e::REF) {
-							addref(src.ref_addr);
-							var->ref_addr = src.ref_addr;
-						}
-						var->type = src.type;
-						var->flags |= varflags_e::DIRTY;
+						*var = src;
 						return var;
+				}
+				break;
+			case vartype_e::REF:
+				switch(var->type) {
+					case vartype_e::REF: {
+						const auto ref = (ref_t*)var;
+						unref(ref->address);
+						*ref = (const ref_t&)src;
+						addref(ref->address);
+						return var;
+					}
 				}
 				break;
 			case vartype_e::UINT:
@@ -196,57 +185,22 @@ var_t* Engine::write(var_t*& var, const uint64_t* dst, const var_t& src)
 				}
 				break;
 		}
+		flags |= var->flags;
+		ref_count = var->ref_count;
 		erase(var);
 	}
 	switch(src.type) {
 		case vartype_e::NIL:
 		case vartype_e::TRUE:
 		case vartype_e::FALSE:
-		case vartype_e::REF:
-		case vartype_e::UINT:
-		case vartype_e::STRING:
-		case vartype_e::BINARY:
-			var = clone(src);
-			break;
-		case vartype_e::ARRAY: {
-			if(!dst) {
-				throw std::logic_error("cannot assign array here");
-			}
-			var = clone_array(*dst, (const array_t&)src);
-			break;
-		}
-		case vartype_e::MAP:
-			if(!dst) {
-				throw std::logic_error("cannot assign map here");
-			}
-			var = clone_map(*dst, (const map_t&)src);
-			break;
-	}
-	if(!var) {
-		throw std::logic_error("invalid src type");
-	}
-	if(dst) {
-		cells_erased.erase(*dst);
-	}
-	if(var->type != vartype_e::REF) {
-		var->ref_count = ref_count;
-	}
-	var->flags = flags;
-	return var;
-}
-
-var_t* Engine::clone(const var_t& src)
-{
-	var_t* var = nullptr;
-	switch(src.type) {
-		case vartype_e::NIL:
-		case vartype_e::TRUE:
-		case vartype_e::FALSE:
 			var = new var_t(src.type);
 			break;
-		case vartype_e::REF:
-			var = create_ref(src.ref_addr);
+		case vartype_e::REF: {
+			const auto address = ((const ref_t&)src).address;
+			addref(address);
+			var = new ref_t(address);
 			break;
+		}
 		case vartype_e::UINT:
 			var = new uint_t((const uint_t&)src);
 			break;
@@ -254,15 +208,26 @@ var_t* Engine::clone(const var_t& src)
 		case vartype_e::BINARY:
 			var = binary_t::alloc((const binary_t&)src);
 			break;
+		case vartype_e::ARRAY:
+			if(!dst) {
+				throw std::logic_error("cannot assign array here");
+			}
+			var = clone_array(*dst, (const array_t&)src);
+			break;
+		case vartype_e::MAP:
+			if(!dst) {
+				throw std::logic_error("cannot assign map here");
+			}
+			var = clone_map(*dst, (const map_t&)src);
+			break;
+		default:
+			throw std::logic_error("invalid type");
 	}
-	return var;
-}
-
-var_t* Engine::create_ref(const uint64_t& src)
-{
-	auto var = new var_t(vartype_e::REF);
-	var->ref_addr = src;
-	addref(src);
+	if(dst && *dst >= MEM_STATIC) {
+		cells_erased.erase(*dst);
+	}
+	var->flags = flags;
+	var->ref_count = ref_count;
 	return var;
 }
 
@@ -298,11 +263,16 @@ void Engine::pop_back(const uint64_t dst, const uint64_t& src)
 array_t* Engine::clone_array(const uint64_t dst, const array_t& src)
 {
 	auto var = new array_t();
-	var->address = dst;
-	for(size_t i = 0; i < src.size; ++i) {
-		write_entry(dst, i, read_entry_fail(src.address, i));
+	try {
+		var->address = dst;
+		for(uint64_t i = 0; i < src.size; ++i) {
+			write_entry(dst, i, read_entry_fail(src.address, i));
+		}
+		var->size = src.size;
+	} catch(...) {
+		delete var;
+		throw;
 	}
-	var->size = src.size;
 	return var;
 }
 
@@ -312,13 +282,18 @@ map_t* Engine::clone_map(const uint64_t dst, const map_t& src)
 		throw std::logic_error("cannot clone map from storage");
 	}
 	auto var = new map_t();
-	var->address = dst;
-	const auto begin = entries.lower_bound(std::make_pair(src.address, 0));
-	const auto end = entries.upper_bound(std::make_pair(src.address + 1, 0));
-	for(auto iter = begin; iter != end; ++iter) {
-		if(auto value = iter->second) {
-			write_entry(dst, iter->first.second, *value);
+	try {
+		var->address = dst;
+		const auto begin = entries.lower_bound(std::make_pair(src.address, 0));
+		const auto end = entries.upper_bound(std::make_pair(src.address + 1, 0));
+		for(auto iter = begin; iter != end; ++iter) {
+			if(auto value = iter->second) {
+				write_entry(dst, iter->first.second, *value);
+			}
 		}
+	} catch(...) {
+		delete var;
+		throw;
 	}
 	return var;
 }
@@ -409,7 +384,7 @@ void Engine::erase(const uint64_t dst)
 	auto iter = memory.find(dst);
 	if(iter != memory.end()) {
 		if(auto var = iter->second) {
-			if(var->type != vartype_e::REF && var->ref_count) {
+			if(var->ref_count) {
 				throw std::runtime_error("cannot erase value with ref_count "
 						+ std::to_string(var->ref_count) + " at " + to_hex(dst));
 			}
@@ -417,7 +392,9 @@ void Engine::erase(const uint64_t dst)
 		}
 		memory.erase(iter);
 	}
-	cells_erased.insert(dst);
+	if(dst >= MEM_STATIC) {
+		cells_erased.insert(dst);
+	}
 }
 
 void Engine::erase(var_t*& var)
@@ -427,11 +404,11 @@ void Engine::erase(var_t*& var)
 	}
 	switch(var->type) {
 		case vartype_e::REF:
-			unref(var->ref_addr);
+			unref(((const ref_t*)var)->address);
 			break;
 		case vartype_e::ARRAY:
 		case vartype_e::MAP:
-			erase_entries(((const exvar_t*)var)->address);
+			erase_entries(((const ref_t*)var)->address);
 			break;
 	}
 	::delete var;
@@ -496,12 +473,9 @@ void Engine::copy(const uint64_t dst, const uint64_t src)
 void Engine::new_copy(const uint64_t dst, const uint64_t src)
 {
 	protect_fail(dst);
-	const auto& var = read_fail(src);
-	const auto addr = alloc();
-	write(addr, var);
-	var_t ref(vartype_e::REF);
-	ref.ref_addr = addr;
-	write(dst, ref);
+	const auto address = alloc();
+	write(address, read_fail(src));
+	write(dst, ref_t(address));
 }
 
 uint64_t Engine::deref(const uint64_t src)
@@ -510,7 +484,7 @@ uint64_t Engine::deref(const uint64_t src)
 	if(var.type != vartype_e::REF) {
 		throw std::logic_error("cannot dereference " + to_hex(src));
 	}
-	return var.ref_addr;
+	return ((const ref_t&)var).address;
 }
 
 uint64_t Engine::deref_if(const uint64_t src, const bool flag)
@@ -531,6 +505,26 @@ void Engine::exec(const instr_t& instr)
 		copy(	deref_if(instr.a, instr.flags & opflags_e::DEREF_A),
 				deref_if(instr.b, instr.flags & opflags_e::DEREF_B));
 		break;
+	case opcode_e::TYPE: {
+		const auto dst = deref_if(instr.a, instr.flags & opflags_e::DEREF_A);
+		const auto addr = deref_if(instr.b, instr.flags & opflags_e::DEREF_B);
+		const auto& var = read_fail(addr);
+		write(dst, uint_t(uint32_t(var.type)));
+		break;
+	}
+	case opcode_e::SIZE: {
+		const auto dst = deref_if(instr.a, instr.flags & opflags_e::DEREF_A);
+		const auto addr = deref_if(instr.b, instr.flags & opflags_e::DEREF_B);
+		const auto& var = read_fail(addr);
+		switch(var.type) {
+			case vartype_e::ARRAY:
+				write(dst, uint_t(((const array_t&)var).size));
+				break;
+			default:
+				write(dst, var_t());
+		}
+		break;
+	}
 	case opcode_e::GET: {
 		const auto dst = deref_if(instr.a, instr.flags & opflags_e::DEREF_A);
 		const auto addr = deref_if(instr.b, instr.flags & opflags_e::DEREF_B);
@@ -554,11 +548,7 @@ void Engine::exec(const instr_t& instr)
 			}
 			case vartype_e::MAP: {
 				const auto key = deref_if(instr.c, instr.flags & opflags_e::DEREF_C);
-				if(instr.flags & opflags_e::HARD_FAIL) {
-					write(dst, read_key_fail(addr, key));
-				} else {
-					write(dst, read_key(addr, key));
-				}
+				write(dst, read_key(addr, key));
 				break;
 			}
 			default: throw std::logic_error("invalid type");
@@ -614,6 +604,10 @@ void Engine::exec(const instr_t& instr)
 		const auto dst = deref_if(instr.a, instr.flags & opflags_e::DEREF_A);
 		const auto src = deref_if(instr.b, instr.flags & opflags_e::DEREF_B);
 		pop_back(dst, src);
+		break;
+	}
+	case opcode_e::CONCAT: {
+		// TODO
 		break;
 	}
 	}
