@@ -1,0 +1,13 @@
+package mmx.contract;
+
+enum arg_type_e {
+	
+	VAR,
+	BOOL,
+	UINT,
+	STRING,
+	BINARY,
+	ARRAY,
+	MAP,
+	
+}

@@ -1,0 +1,15 @@
+package mmx.contract;
+
+class Executable extends Token {
+	
+	map<string, uint> fields;
+	
+	vector<method_t> methods;
+	
+	vector<uchar> binary;
+	
+	vector<vector<uchar>> constants;
+	
+	optional<string> source;
+	
+}

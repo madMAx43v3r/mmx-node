@@ -21,21 +21,15 @@ public:
 
 	virtual var_t* read(const addr_t& contract, const uint32_t address) const = 0;
 
-	virtual var_t* read(const addr_t& contract, const uint32_t address, const var_t& key) const = 0;
-
-	virtual var_t* read(const addr_t& contract, const uint32_t address, const uint32_t index) const = 0;
+	virtual var_t* read(const addr_t& contract, const uint32_t address, const uint32_t key) const = 0;
 
 	virtual void write(const addr_t& contract, const uint32_t address, const var_t& value) = 0;
 
-	virtual void write(const addr_t& contract, const uint32_t address, const var_t& key, const var_t& value) = 0;
-
-	virtual void write(const addr_t& contract, const uint32_t address, const uint32_t index, const var_t& value) = 0;
+	virtual void write(const addr_t& contract, const uint32_t address, const uint32_t key, const var_t& value) = 0;
 
 	virtual void erase(const addr_t& contract, const uint32_t address) = 0;
 
-	virtual void erase(const addr_t& contract, const uint32_t address, const var_t& key) = 0;
-
-	virtual void erase(const addr_t& contract, const uint32_t address, const uint32_t index) = 0;
+	virtual void erase(const addr_t& contract, const uint32_t address, const uint32_t key) = 0;
 
 
 };

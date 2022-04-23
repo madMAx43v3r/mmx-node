@@ -30,22 +30,25 @@ void Engine::addref(const uint32_t dst)
 {
 	const auto var = read_fail(dst);
 	if(var.type == vartype_e::REF) {
-		throw std::logic_error("addref fail at " + std::to_string(dst));
+		throw std::logic_error("addref fail at " + to_hex(dst));
 	}
 	var.ref_count++;
+	var.flags |= varflags_e::DIRTY;
 }
 
 void Engine::unref(const uint32_t dst)
 {
 	const auto var = read_fail(dst);
 	if(var.type == vartype_e::REF) {
-		throw std::logic_error("unref fail at " + std::to_string(dst));
+		throw std::logic_error("unref fail at " + to_hex(dst));
 	}
 	if(var.ref_count == 0) {
-		throw std::logic_error("unref underflow at " + std::to_string(dst));
+		throw std::logic_error("unref underflow at " + to_hex(dst));
 	}
+	var.flags |= varflags_e::DIRTY;
+
 	if(--var.ref_count == 0) {
-		if(dst >= MEM_HEAP) {
+		if(dst >= MEM_STATIC) {
 			erase(dst);
 		}
 	}
@@ -71,33 +74,20 @@ void Engine::assign(const uint32_t dst, var_t* value)
 	}
 	auto& var = memory[dst];
 	if(var) {
-		throw std::logic_error("assign overwrite at " + std::to_string(dst));
+		throw std::logic_error("assign overwrite at " + to_hex(dst));
 	}
 	var = value;
 }
 
-void Engine::assign_entry(const uint32_t dst, var_t* key, var_t* value)
-{
-	if(!key || !value) {
-		throw std::logic_error("!key || !value");
-	}
-	const auto mapkey = std::make_pair(dst, varptr_t(key));
-	auto& var = entries[mapkey];
-	if(var) {
-		throw std::logic_error("assign entry overwrite at " + std::to_string(dst));
-	}
-	var = value;
-}
-
-void Engine::assign_element(const uint32_t dst, const uint32_t index, var_t* value)
+void Engine::assign(const uint32_t dst, const uint32_t key, var_t* value)
 {
 	if(!value) {
 		throw std::logic_error("!value");
 	}
-	const auto key = std::make_pair(dst, index);
-	auto& var = elements[key];
+	const auto mapkey = std::make_pair(dst, key);
+	auto& var = entries[mapkey];
 	if(var) {
-		throw std::logic_error("assign element overwrite at " + vnx::to_string(key));
+		throw std::logic_error("assign overwrite at " + to_hex(dst) + "[" + std::to_string(key) + "]");
 	}
 	var = value;
 }
@@ -182,22 +172,18 @@ void Engine::write(var_t*& var, const uint32_t* dst, const var_t& src)
 			if(!dst) {
 				throw std::logic_error("cannot assign array here");
 			}
-			auto array = new array_t(*dst);
-			array->size = copy_elements(*dst, ((const array_t&)src).address);
-			var = array;
+			var = clone_array(*dst, (const array_t&)src);
 			break;
 		}
-		case vartype_e::MAP: {
+		case vartype_e::MAP:
 			if(!dst) {
 				throw std::logic_error("cannot assign map here");
 			}
-			auto map = new map_t(*dst);
-			// TODO
-			var = map;
+			var = clone_map(*dst, (const map_t&)src);
 			break;
-		}
-		default:
-			throw std::logic_error("invalid src type");
+	}
+	if(!var) {
+		throw std::logic_error("invalid src type");
 	}
 	if(dst) {
 		cells_erased.erase(*dst);
@@ -246,7 +232,7 @@ void Engine::push_back(const uint32_t dst, const var_t& src)
 		throw std::logic_error("invalid type for push_back");
 	}
 	auto array = (array_t&)var;
-	write_element(dst, array.size, src);
+	write_entry(dst, array.size, src);
 	array.size++;
 	array.flags |= varflags_e::DIRTY;
 }
@@ -262,55 +248,89 @@ void Engine::pop_back(const uint32_t dst, const uint32_t& src)
 		throw std::logic_error("pop_back on empty array");
 	}
 	const auto index = array.size - 1;
-	write(dst, read_element(src, index));
-	erase_element(src, index);
+	write(dst, read_entry(src, index));
+	erase_entry(src, index);
 	array.size--;
 	array.flags |= varflags_e::DIRTY;
 }
 
-size_t Engine::copy_elements(const uint32_t dst, const uint32_t src)
+array_t* Engine::clone_array(const uint32_t dst, const array_t& src)
 {
-	size_t count = 0;
-	const auto begin = elements.lower_bound(std::make_pair(src, 0));
-	const auto end = elements.upper_bound(std::make_pair(src + 1, 0));
+	auto var = new array_t();
+	var->address = dst;
+	for(size_t i = 0; i < src.size; ++i) {
+		write_entry(dst, i, read_entry(src.address, i));
+	}
+	var->size = src.size;
+	return var;
+}
+
+map_t* Engine::clone_map(const uint32_t dst, const map_t& src)
+{
+	if(src.address >= MEM_STATIC) {
+		throw std::logic_error("cannot clone map from storage");
+	}
+	auto var = new map_t();
+	var->address = dst;
+	const auto begin = entries.lower_bound(std::make_pair(src.address, 0));
+	const auto end = entries.upper_bound(std::make_pair(src.address + 1, 0));
 	for(auto iter = begin; iter != end; ++iter) {
-		if(auto var = iter->second) {
-			write_element(dst, iter->first.second, *var);
-			count++;
+		if(auto value = iter->second) {
+			write_entry(dst, iter->first.second, *value);
 		}
 	}
-	return count;
+	return var;
 }
 
-void Engine::write_element(const uint32_t dst, const uint32_t index, const var_t& src)
+void Engine::write_entry(const uint32_t dst, const uint32_t key, const var_t& src)
 {
-	const auto key = std::make_pair(dst, index);
-	write(elements[key], nullptr, src);
-	elements_erased.erase(key);
-}
+	const auto mapkey = std::make_pair(dst, key);
+	write(entries[mapkey], nullptr, src);
 
-void Engine::erase_element(const uint32_t dst, const uint32_t index)
-{
-	const auto key = std::make_pair(dst, index);
-	const auto iter = elements.find(key);
-	if(iter != elements.end()) {
-		erase(iter->second);
-		elements.erase(iter);
-		elements_erased.insert(key);
+	if(dst >= MEM_STATIC) {
+		entries_erased.erase(mapkey);
 	}
 }
 
-var_t& Engine::read_element(const uint32_t src, const uint32_t index)
+void Engine::erase_entry(const uint32_t dst, const uint32_t key)
 {
-	const auto key = std::make_pair(src, index);
-	const auto iter = elements.find(key);
-	if(iter == elements.end()) {
+	const auto mapkey = std::make_pair(dst, key);
+	const auto iter = entries.find(mapkey);
+	if(iter != entries.end()) {
+		erase(iter->second);
+		entries.erase(iter);
+	}
+	if(dst >= MEM_STATIC) {
+		entries_erased.insert(mapkey);
+	}
+}
+
+void Engine::erase_entries(const uint32_t dst)
+{
+	if(dst < MEM_STATIC) {
+		const auto begin = entries.lower_bound(std::make_pair(dst, 0));
+		const auto end = entries.upper_bound(std::make_pair(dst + 1, 0));
+		for(auto iter = begin; iter != end; ++iter) {
+			erase(iter->second);
+		}
+		entries.erase(begin, end);
+	}
+	else if(dst < MEM_HEAP) {
+		throw std::logic_error("cannot delete entries at " + to_hex(dst));
+	}
+}
+
+var_t& Engine::read_entry(const uint32_t src, const uint32_t key)
+{
+	const auto mapkey = std::make_pair(src, key);
+	const auto iter = entries.find(mapkey);
+	if(iter == entries.end()) {
 		if(storage) {
-			if(auto var = storage->read(contract, src, index)) {
-				return elements[key] = var;
+			if(auto var = storage->read(contract, src, key)) {
+				return entries[key] = var;
 			}
 		}
-		throw std::logic_error("invalid array access at " + vnx::to_string(key));
+		throw std::logic_error("invalid access at " + to_hex(src) + "[" + std::to_string(key) + "]");
 	}
 	return iter->second;
 }
@@ -322,7 +342,7 @@ void Engine::erase(const uint32_t dst)
 		if(auto var = iter->second) {
 			if(var->type != vartype_e::REF && var->ref_count) {
 				throw std::runtime_error("cannot erase value with ref_count "
-						+ std::to_string(var->ref_count) + " at " + std::to_string(dst));
+						+ std::to_string(var->ref_count) + " at " + to_hex(dst));
 			}
 			erase(var);
 		}
@@ -340,26 +360,9 @@ void Engine::erase(var_t*& var)
 		case vartype_e::REF:
 			unref(var->ref_addr);
 			break;
-		case vartype_e::ARRAY: {
-			const auto address = ((const array_t*)var)->address;
-			const auto begin = elements.lower_bound(std::make_pair(address, 0));
-			const auto end = elements.upper_bound(std::make_pair(address + 1, 0));
-			for(auto iter = begin; iter != end; ++iter) {
-				erase(iter->second);
-				elements_erased.insert(iter->first);
-			}
-			elements.erase(begin, end);
-			break;
-		}
+		case vartype_e::ARRAY:
 		case vartype_e::MAP:
-			const auto address = ((const map_t*)var)->address;
-			const auto begin = entries.lower_bound(std::make_pair(address, varptr_t()));
-			const auto end = entries.upper_bound(std::make_pair(address + 1, varptr_t()));
-			for(auto iter = begin; iter != end; ++iter) {
-				erase(iter->second);
-				entries_erased.insert(iter->first);
-			}
-			entries.erase(begin, end);
+			erase_entries(((const exvar_t*)var)->address);
 			break;
 	}
 	::delete var;
@@ -385,7 +388,7 @@ bool Engine::is_protected(const uint32_t address) const
 void Engine::protect_fail(const uint32_t address) const
 {
 	if(is_protected(address)) {
-		throw std::runtime_error("protect fail at " + std::to_string(address));
+		throw std::runtime_error("protect fail at " + to_hex(address));
 	}
 }
 
@@ -409,7 +412,7 @@ var_t& Engine::read_fail(const uint32_t src)
 	if(auto var = read(src)) {
 		return *var;
 	}
-	throw std::runtime_error("read fail at " + std::to_string(src));
+	throw std::runtime_error("read fail at " + to_hex(src));
 }
 
 void Engine::copy(const uint32_t dst, const uint32_t src)

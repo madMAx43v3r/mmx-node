@@ -1,0 +1,11 @@
+package mmx.contract;
+
+struct method_t {
+	
+	string name;
+	
+	uint entry_point;
+	
+	vector<pair<string, arg_type_e>> args;
+	
+}

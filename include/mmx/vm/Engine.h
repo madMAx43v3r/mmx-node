@@ -16,35 +16,35 @@
 #include <map>
 #include <limits>
 #include <memory>
+#include <string>
+#include <sstream>
 
 
 namespace mmx {
 namespace vm {
 
-constexpr uint32_t MEM_CONST = 0;
-constexpr uint32_t MEM_EXTERN = 0x100000;
-constexpr uint32_t MEM_STATIC = MEM_EXTERN + 0x100000;
-constexpr uint32_t MEM_STACK = MEM_STATIC + 0x100000;
-constexpr uint32_t MEM_HEAP = MEM_STACK + 0x100000;
+constexpr uint32_t MEM_CONST = 0x100000;
+constexpr uint32_t MEM_EXTERN = MEM_CONST + 0x100000;
+constexpr uint32_t MEM_PARAMS = MEM_EXTERN + 0x100000;
+constexpr uint32_t MEM_STACK = MEM_PARAMS + 0x100000;
+constexpr uint32_t MEM_STATIC = MEM_STACK + 0x100000;
+constexpr uint32_t MEM_HEAP = MEM_STATIC + 0x100000;
 
 
 class Engine {
 public:
 	std::map<uint32_t, var_t*> memory;
-	std::map<std::pair<uint32_t, uint32_t>, var_t*> elements;
-	std::map<std::pair<uint32_t, varptr_t>, var_t*> entries;
+	std::map<std::pair<uint32_t, uint32_t>, var_t*> entries;
 
 	std::set<uint32_t> cells_free;
 	std::set<uint32_t> cells_erased;
-	std::set<std::pair<uint32_t, uint32_t>> elements_erased;
-	std::set<std::pair<uint32_t, varptr_t>> entries_erased;
+	std::set<std::pair<uint32_t, uint32_t>> entries_erased;
 
 	Engine(const addr_t& contract, std::shared_ptr<Storage> storage);
 
 	void assign(const constvar_e dst, var_t* value);
 	void assign(const uint32_t dst, var_t* value);
-	void assign_entry(const uint32_t dst, var_t* key, var_t* value);
-	void assign_element(const uint32_t dst, const uint32_t index, var_t* value);
+	void assign(const uint32_t dst, const uint32_t key, var_t* value);
 
 	void write(const uint32_t dst, const var_t& src);
 
@@ -60,7 +60,7 @@ public:
 
 	var_t* read(const uint32_t src);
 	var_t& read_fail(const uint32_t src);
-	var_t& read_element(const uint32_t src, const uint32_t index);
+	var_t& read_entry(const uint32_t src, const uint32_t index);
 
 	void copy(const uint32_t dst, const uint32_t src);
 
@@ -73,9 +73,12 @@ protected:
 
 	void write(var_t*& var, const uint32_t* dst, const var_t& src);
 
-	size_t copy_elements(const uint32_t dst, const uint32_t src);
-	void write_element(const uint32_t dst, const uint32_t index, const var_t& src);
-	void erase_element(const uint32_t dst, const uint32_t index);
+	array_t* clone_array(const uint32_t dst, const array_t& src);
+	map_t* clone_map(const uint32_t dst, const map_t& src);
+
+	void write_entry(const uint32_t dst, const uint32_t key, const var_t& src);
+	void erase_entry(const uint32_t dst, const uint32_t key);
+	void erase_entries(const uint32_t dst);
 
 	void erase(const uint32_t dst);
 	void erase(var_t*& var);
@@ -88,6 +91,12 @@ private:
 
 };
 
+
+inline std::string to_hex(const uint32_t addr) {
+	std::stringstream ss;
+	ss << "0x" << std::hex << addr;
+	return ss.str();
+}
 
 } // vm
 } // mmx

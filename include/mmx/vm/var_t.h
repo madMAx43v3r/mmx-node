@@ -120,21 +120,18 @@ struct binary_t : var_t {
 	}
 
 	static binary_t* alloc(const binary_t& src) {
-		auto bin = alloc_unsafe(src.size, src.type);
+		auto bin = unsafe_alloc(src.size, src.type);
 		bin->size = src.size;
 		::memcpy(bin->data(), src.data(), size);
 		return bin;
 	}
 	static binary_t* alloc(size_t size, const vartype_e type) {
-		auto bin = alloc_unsafe(size, type);
+		auto bin = unsafe_alloc(size, type);
 		::memset(bin->data(), 0, bin->capacity);
 		return bin;
 	}
 	static binary_t* alloc(const std::string& src, const vartype_e type = vartype_e::STRING) {
-		if(src.size() > std::numeric_limits<uint32_t>::max()) {
-			throw std::runtime_error("binary size overflow");
-		}
-		auto bin = alloc_unsafe(src.size(), type);
+		auto bin = unsafe_alloc(src.size(), type);
 		bin->size = src.size();
 		::memcpy(bin->data(), src.c_str(), bin->size);
 		::memset(bin->data(bin->size), 0, bin->capacity - bin->size);
@@ -144,11 +141,14 @@ struct binary_t : var_t {
 private:
 	binary_t(const vartype_e& type) : var_t(type) {}
 
-	static binary_t* alloc_unsafe(size_t size, const vartype_e type) {
+	static binary_t* unsafe_alloc(size_t size, const vartype_e type) {
 		switch(type) {
 			case vartype_e::BINARY: break;
 			case vartype_e::STRING: size += 1; break;
 			default: throw std::logic_error("invalid binary type");
+		}
+		if(size >= std::numeric_limits<uint32_t>::max()) {
+			throw std::runtime_error("binary size overflow");
 		}
 		auto bin = new(::operator new(sizeof(binary_t) + size)) binary_t(type);
 		bin->capacity = size;
@@ -157,32 +157,23 @@ private:
 
 };
 
-struct array_t : var_t {
+struct exvar_t : var_t {
 
 	uint32_t address = 0;
+
+};
+
+struct array_t : exvar_t {
+
 	uint32_t size = 0;
 
 	array_t() : var_t(vartype_e::ARRAY) {}
 
 };
 
-struct map_t : var_t {
-
-	uint32_t address = 0;
+struct map_t : exvar_t {
 
 	map_t() : var_t(vartype_e::MAP) {}
-
-};
-
-struct varptr_t {
-
-	var_t* ptr = nullptr;
-
-	varptr_t() = default;
-	varptr_t(const varptr_t&) = default;
-	varptr_t(var_t* ptr) : ptr(ptr) {}
-
-	varptr_t& operator=(var_t* ptr) { this->ptr = ptr; return *this; }
 
 };
 
