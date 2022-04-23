@@ -16,23 +16,17 @@ namespace vm {
 
 class StorageRocksDB : public Storage {
 public:
-	var_t* read(const addr_t& contract, const uint32_t address) const override;
+	var_t* read(const uint256_t& contract, const uint32_t address) const override;
 
-	var_t* read(const addr_t& contract, const uint32_t address, const var_t& key) const override;
+	var_t* read(const uint256_t& contract, const uint32_t address, const uint32_t key) const override;
 
-	var_t* read(const addr_t& contract, const uint32_t address, const uint32_t index) const override;
+	void write(const uint256_t& contract, const uint32_t address, const var_t& value) override;
 
-	void write(const addr_t& contract, const uint32_t address, const var_t& value) override;
+	void write(const uint256_t& contract, const uint32_t address, const uint32_t key, const var_t& value) override;
 
-	void write(const addr_t& contract, const uint32_t address, const var_t& key, const var_t& value) override;
+	void erase(const uint256_t& contract, const uint32_t address) override;
 
-	void write(const addr_t& contract, const uint32_t address, const uint32_t index, const var_t& value) override;
-
-	void erase(const addr_t& contract, const uint32_t address) override;
-
-	void erase(const addr_t& contract, const uint32_t address, const var_t& key) override;
-
-	void erase(const addr_t& contract, const uint32_t address, const uint32_t index) override;
+	void erase(const uint256_t& contract, const uint32_t address, const uint32_t key) override;
 
 private:
 

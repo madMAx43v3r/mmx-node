@@ -11,9 +11,9 @@
 namespace mmx {
 namespace vm {
 
-Engine::Engine(const addr_t& contract, std::shared_ptr<Storage> storage)
+Engine::Engine(const uint256_t& contract, std::shared_ptr<Storage> backend)
 	:	contract(contract),
-		storage(storage)
+		storage(backend)
 {
 	assign(constvar_e::NIL, new var_t(vartype_e::NIL));
 	assign(constvar_e::TRUE, new var_t(vartype_e::TRUE));
@@ -28,6 +28,9 @@ Engine::Engine(const addr_t& contract, std::shared_ptr<Storage> storage)
 
 void Engine::addref(const uint32_t dst)
 {
+	if(dst < MEM_STACK) {
+		return;
+	}
 	const auto var = read_fail(dst);
 	if(var.type == vartype_e::REF) {
 		throw std::logic_error("addref fail at " + to_hex(dst));
@@ -38,6 +41,9 @@ void Engine::addref(const uint32_t dst)
 
 void Engine::unref(const uint32_t dst)
 {
+	if(dst < MEM_STACK) {
+		return;
+	}
 	const auto var = read_fail(dst);
 	if(var.type == vartype_e::REF) {
 		throw std::logic_error("unref fail at " + to_hex(dst));
@@ -89,18 +95,46 @@ void Engine::assign(const uint32_t dst, const uint32_t key, var_t* value)
 	if(var) {
 		throw std::logic_error("assign overwrite at " + to_hex(dst) + "[" + std::to_string(key) + "]");
 	}
+	if(key >= MEM_STATIC) {
+		addref(key);
+	}
 	var = value;
 }
 
-void Engine::write(const uint32_t dst, const var_t& src)
+uint32_t Engine::lookup(const uint32_t src)
 {
-	write(memory[dst], &dst, src);
+	if(src < MEM_EXTERN) {
+		return src;
+	}
+	if(auto var = read(src)) {
+		const auto iter = key_map.find(var);
+		if(iter != key_map.end()) {
+			return iter->second;
+		}
+		if(storage) {
+			if(auto key = storage->lookup(contract, *var)) {
+				key_map[read(key)] = key;
+				return key;
+			}
+		}
+		const auto key = alloc();
+		key_map[write(key, *var)] = key;
+		keys_added.insert(key);
+		addref(key);
+		return key;
+	}
+	return uint32_t(constvar_e::NIL);
 }
 
-void Engine::write(var_t*& var, const uint32_t* dst, const var_t& src)
+var_t* Engine::write(const uint32_t dst, const var_t& src)
+{
+	return write(memory[dst], &dst, src);
+}
+
+var_t* Engine::write(var_t*& var, const uint32_t* dst, const var_t& src)
 {
 	if(var == &src) {
-		return;
+		return var;
 	}
 	uint32_t ref_count = 0;
 	varflags_e flags = varflags_e::DIRTY;
@@ -108,8 +142,7 @@ void Engine::write(var_t*& var, const uint32_t* dst, const var_t& src)
 		if(var->type != vartype_e::REF) {
 			if(src.type == vartype_e::REF) {
 				// auto dereference src, since we cannot overwrite dst with a reference
-				write(var, dst, read_fail(src.ref_addr));
-				return;
+				return write(var, dst, read_fail(src.ref_addr));
 			}
 			flags |= var->flags;
 			ref_count = var->ref_count;
@@ -132,13 +165,13 @@ void Engine::write(var_t*& var, const uint32_t* dst, const var_t& src)
 						}
 						var->type = src.type;
 						var->flags |= varflags_e::DIRTY;
-						return;
+						return var;
 				}
 				break;
 			case vartype_e::UINT:
 				if(var->type == vartype_e::UINT) {
 					*((uint_t*)var) = ((const uint_t&)src);
-					return;
+					return var;
 				}
 				break;
 			case vartype_e::STRING:
@@ -150,7 +183,7 @@ void Engine::write(var_t*& var, const uint32_t* dst, const var_t& src)
 						const auto bsrc = (const binary_t&)src;
 						if(bvar->capacity < bsrc.size * 4) {
 							if(bvar->assign(bsrc)) {
-								return;
+								return var;
 							}
 						}
 				}
@@ -192,6 +225,7 @@ void Engine::write(var_t*& var, const uint32_t* dst, const var_t& src)
 		var->ref_count = ref_count;
 	}
 	var->flags = flags;
+	return var;
 }
 
 var_t* Engine::clone(const var_t& src)
@@ -232,6 +266,9 @@ void Engine::push_back(const uint32_t dst, const var_t& src)
 		throw std::logic_error("invalid type for push_back");
 	}
 	auto array = (array_t&)var;
+	if(array.size >= MAX_ARRAY_SIZE) {
+		throw std::logic_error("array size overflow at " + to_hex(dst));
+	}
 	write_entry(dst, array.size, src);
 	array.size++;
 	array.flags |= varflags_e::DIRTY;
@@ -292,6 +329,11 @@ void Engine::write_entry(const uint32_t dst, const uint32_t key, const var_t& sr
 	}
 }
 
+void Engine::write_map_entry(const uint32_t dst, const uint32_t key, const var_t& src)
+{
+	write_entry(dst, lookup(key), src);
+}
+
 void Engine::erase_entry(const uint32_t dst, const uint32_t key)
 {
 	const auto mapkey = std::make_pair(dst, key);
@@ -303,6 +345,9 @@ void Engine::erase_entry(const uint32_t dst, const uint32_t key)
 	if(dst >= MEM_STATIC) {
 		entries_erased.insert(mapkey);
 	}
+	if(key >= MEM_STATIC) {
+		unref(key);
+	}
 }
 
 void Engine::erase_entries(const uint32_t dst)
@@ -311,6 +356,10 @@ void Engine::erase_entries(const uint32_t dst)
 		const auto begin = entries.lower_bound(std::make_pair(dst, 0));
 		const auto end = entries.upper_bound(std::make_pair(dst + 1, 0));
 		for(auto iter = begin; iter != end; ++iter) {
+			const auto key = iter->first.second;
+			if(key >= MEM_STATIC) {
+				unref(key);
+			}
 			erase(iter->second);
 		}
 		entries.erase(begin, end);
@@ -369,12 +418,7 @@ void Engine::erase(var_t*& var)
 	var = nullptr;
 }
 
-uint32_t Engine::alloc(const uint32_t src)
-{
-	return alloc(read_fail(src));
-}
-
-uint32_t Engine::alloc(const var_t& src)
+uint32_t Engine::alloc()
 {
 	// TODO
 	// Note: never use address 2^31-1

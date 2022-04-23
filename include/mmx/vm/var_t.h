@@ -215,13 +215,26 @@ inline int compare(const var_t& lhs, const var_t& rhs)
 	}
 }
 
-inline bool operator<(const varptr_t& lhs, const varptr_t& rhs)
-{
-	if(!lhs.ptr) { return rhs.ptr; }
-	if(!rhs.ptr) { return false; }
-	return compare(*lhs.ptr, *rhs.ptr) < 0;
+inline bool operator<(const var_t& L, const var_t& R) const {
+	return compare(L, R) < 0;
+}
+inline bool operator>(const var_t& L, const var_t& R) const {
+	return compare(L, R) > 0;
+}
+inline bool operator==(const var_t& L, const var_t& R) const {
+	return compare(L, R) == 0;
+}
+inline bool operator!=(const var_t& L, const var_t& R) const {
+	return compare(L, R) != 0;
 }
 
+struct varptr_less_t {
+	bool operator()(const var_t*& L, const var_t*& R) const {
+		if(!L) { return R; }
+		if(!R) { return false; }
+		return compare(*L, *R) < 0;
+	}
+};
 
 
 
