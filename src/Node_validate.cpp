@@ -196,8 +196,8 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 		if(tx->fee_ratio != 1024) {
 			throw std::logic_error("invalid coin base fee_ratio");
 		}
-		if(tx->change_addr) {
-			throw std::logic_error("coin base cannot have change_addr");
+		if(tx->sender) {
+			throw std::logic_error("coin base cannot have sender");
 		}
 	} else {
 		if(tx->inputs.empty()) {
@@ -371,9 +371,9 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 			throw std::logic_error("insufficient fee: " + amount.str(10) + " < " + std::to_string(fee_amount));
 		}
 		const uint64_t change = amount - fee_amount;
-		if(change > params->min_txfee_io && tx->change_addr) {
+		if(change > params->min_txfee_io && tx->sender) {
 			tx_out_t out;
-			out.address = *tx->change_addr;
+			out.address = *tx->sender;
 			out.amount = change;
 			exec_outputs.push_back(out);
 		} else {

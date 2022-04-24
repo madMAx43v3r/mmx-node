@@ -14,7 +14,7 @@ class Transaction extends TransactionBase {
 	
 	optional<hash_t> salt;
 	
-	optional<addr_t> change_addr;		// to receive change from fee
+	optional<addr_t> sender;			// to receive change from fee
 	
 	vector<tx_in_t> inputs;
 	

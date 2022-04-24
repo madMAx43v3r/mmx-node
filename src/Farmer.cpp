@@ -143,6 +143,7 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& rew
 	const auto farmer_sk = find_skey(block->proof->farmer_key);
 
 	auto base = Transaction::create();
+	base->expires = block->height;
 	base->salt = block->vdf_output[0];
 
 	auto amount_left = reward_amount;

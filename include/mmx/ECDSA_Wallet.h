@@ -258,7 +258,6 @@ public:
 			tx_fees = tx->calc_cost(params)
 					+ spend_cost.size() * params->min_txfee_sign
 					+ tx->execute.size() * params->min_txfee_sign
-					+ params->min_txfee_io	// for change output
 					+ options.extra_fee;
 
 			for(const auto& entry : spend_cost) {
@@ -267,28 +266,18 @@ public:
 			if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(tx->deploy)) {
 				tx_fees += params->min_txfee_sign;
 			}
+			tx_fees = (uint128_t(tx_fees) * tx->fee_ratio) / 1024;
 
-			if(change > tx_fees) {
-				// we got more than enough, add change output
+			if(change >= tx_fees) {
 				change -= tx_fees;
-				if(change > params->min_txfee_io) {
-					tx_out_t out;
-					out.address = get_address(0);
-					out.amount = change;
-					tx->outputs.push_back(out);
-				}
-				change = 0;
-				break;
-			}
-			if(change == tx_fees) {
-				// perfect match
-				change = 0;
 				break;
 			}
 			// gather more
-			const auto left = tx_fees - change;
-			change += gather_inputs(tx, utxo_cache, spent_map, left, addr_t(), options);
-			change += left;
+			const auto more = tx_fees - change;
+			change += more + gather_inputs(tx, utxo_cache, spent_map, more, addr_t(), options);
+		}
+		if(!tx->sender) {
+			tx->sender = get_address(0);
 		}
 		return tx_fees;
 	}

@@ -65,8 +65,8 @@ hash_t Transaction::calc_hash() const
 	write_field(out, "fee_ratio", 	fee_ratio);
 	write_field(out, "note", 	note);
 	write_field(out, "salt", 	salt);
-	write_field(out, "change_addr", change_addr);
-	write_field(out, "inputs", inputs);
+	write_field(out, "sender",	sender);
+	write_field(out, "inputs",	inputs);
 	write_field(out, "outputs", outputs);
 	write_field(out, "execute");
 	for(const auto& op : execute) {
