@@ -19,7 +19,7 @@ class ChainParams {
 	uint max_vdf_segments = 1024;
 
 	uint max_tx_base_out = 10;
-	uint max_tx_operations = 20;			// number of contracts
+	uint max_tx_operations = 10;			// number of contracts
 	uint recursive_interval = 60480;		// number of blocks per iteration to approximate recursive functions
 	uint virtual_lifetime = 15768000;		// number of blocks balance on virtual plots is valid
 	
