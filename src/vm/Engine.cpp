@@ -15,15 +15,6 @@ Engine::Engine(const addr_t& contract, std::shared_ptr<Storage> storage)
 	:	contract(contract),
 		storage(storage)
 {
-	assign(constvar_e::NIL, new var_t(vartype_e::NIL));
-	assign(constvar_e::TRUE, new var_t(vartype_e::TRUE));
-	assign(constvar_e::FALSE, new var_t(vartype_e::FALSE));
-	assign(constvar_e::ZERO, new uint_t());
-	assign(constvar_e::ONE, new uint_t(1));
-	assign(constvar_e::STRING, binary_t::alloc(0, vartype_e::STRING));
-	assign(constvar_e::BINARY, binary_t::alloc(0, vartype_e::BINARY));
-	assign(constvar_e::ARRAY, new array_t());
-	assign(constvar_e::MAP, new map_t());
 }
 
 void Engine::addref(const uint64_t dst)
@@ -549,6 +540,16 @@ uint64_t Engine::alloc()
 
 void Engine::init()
 {
+	assign(constvar_e::NIL, new var_t(vartype_e::NIL));
+	assign(constvar_e::TRUE, new var_t(vartype_e::TRUE));
+	assign(constvar_e::FALSE, new var_t(vartype_e::FALSE));
+	assign(constvar_e::ZERO, new uint_t());
+	assign(constvar_e::ONE, new uint_t(1));
+	assign(constvar_e::STRING, binary_t::alloc(0, vartype_e::STRING));
+	assign(constvar_e::BINARY, binary_t::alloc(0, vartype_e::BINARY));
+	assign(constvar_e::ARRAY, new array_t());
+	assign(constvar_e::MAP, new map_t());
+
 	if(!read(MEM_HEAP + HAVE_INIT)) {
 		write(MEM_HEAP + HAVE_INIT, var_t(vartype_e::TRUE))->pin();
 		write(MEM_HEAP + NEXT_ALLOC, uint_t(MEM_HEAP + DYNAMIC_START))->pin();
@@ -598,7 +599,7 @@ void Engine::clone(const uint64_t dst, const uint64_t src)
 	write(dst, ref_t(address));
 }
 
-void Engine::jump(const uint64_t dst)
+void Engine::jump(const size_t dst)
 {
 	instr_ptr = dst;
 }
@@ -851,9 +852,28 @@ void Engine::reset()
 
 void Engine::collect()
 {
+	key_map.clear();
+
+	std::vector<ref_t*> refs;
 	for(auto iter = memory.begin(); iter != memory.lower_bound(MEM_STATIC); ++iter)
 	{
-		erase(iter->second);
+		if(auto var = iter->second) {
+			if(var->type == vartype_e::REF) {
+				refs.push_back((ref_t*)var);
+			}
+		}
+	}
+	for(auto iter = entries.begin(); iter != entries.lower_bound(std::make_pair(MEM_STATIC, 0)); ++iter)
+	{
+		if(auto var = iter->second) {
+			if(var->type == vartype_e::REF) {
+				refs.push_back((ref_t*)var);
+			}
+		}
+	}
+	for(auto ref : refs) {
+		unref(ref->address);
+		ref->type = vartype_e::NIL;
 	}
 }
 
@@ -876,6 +896,8 @@ void Engine::commit()
 		}
 	}
 }
+
+
 
 
 

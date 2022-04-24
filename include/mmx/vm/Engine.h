@@ -112,8 +112,8 @@ public:
 	void begin();
 	void run();
 	void step();
+	void jump(const size_t dst);
 	void exec(const instr_t& instr);
-	void jump(const uint64_t dst);
 
 	void reset();
 	void collect();
