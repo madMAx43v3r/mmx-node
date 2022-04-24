@@ -68,7 +68,9 @@ public:
 	var_t* assign(const uint64_t dst, const uint64_t key, var_t* value);
 
 	uint64_t lookup(const uint64_t src);
+	uint64_t lookup(const var_t* var);
 	uint64_t lookup(const var_t& var);
+	uint64_t lookup(const varptr_t& var);
 
 	var_t* write(const uint64_t dst, const var_t* src);
 	var_t* write(const uint64_t dst, const var_t& src);
@@ -81,6 +83,7 @@ public:
 	void erase_entry(const uint64_t dst, const uint64_t key);
 
 	var_t* write_key(const uint64_t dst, const uint64_t key, const var_t& src);
+	var_t* write_key(const uint64_t dst, const varptr_t& key, const varptr_t& var);
 	void erase_key(const uint64_t dst, const uint64_t key);
 
 	void push_back(const uint64_t dst, const var_t& src);
@@ -106,6 +109,7 @@ public:
 	uint64_t deref(const uint64_t src);
 
 	void init();
+	void begin();
 	void run();
 	void step();
 	void exec(const instr_t& instr);

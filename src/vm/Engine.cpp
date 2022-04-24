@@ -114,6 +114,19 @@ uint64_t Engine::lookup(const uint64_t src)
 	return lookup(read_fail(src));
 }
 
+uint64_t Engine::lookup(const var_t* var)
+{
+	if(var) {
+		return lookup(*var);
+	}
+	return constvar_e::NIL;
+}
+
+uint64_t Engine::lookup(const varptr_t& var)
+{
+	return lookup(var.ptr);
+}
+
 uint64_t Engine::lookup(const var_t& var)
 {
 	const auto iter = key_map.find(&var);
@@ -153,43 +166,23 @@ var_t* Engine::write(const uint64_t dst, const varptr_t& var)
 	return write(dst, var.ptr);
 }
 
-var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const varptr_t& var)
-{
-	if(auto value = var.ptr) {
-		switch(value->type) {
-			case vartype_e::ARRAY:
-			case vartype_e::MAP: {
-				const auto heap = alloc();
-				write(heap, value);
-				return write_entry(dst, key, ref_t(heap));
-			}
-		}
-		return write_entry(dst, key, *value);
-	}
-	return write_entry(dst, key, var_t());
-}
-
 var_t* Engine::write(const uint64_t dst, const std::vector<varptr_t>& var)
 {
 	if(var.size() >= MEM_HEAP) {
 		throw std::logic_error("array too large");
 	}
-	auto array = write(dst, array_t(var.size()));
 	for(size_t i = 0; i < var.size(); ++i) {
 		write_entry(dst, i, var[i]);
 	}
-	return array;
+	return write(dst, array_t(var.size()));
 }
 
 var_t* Engine::write(const uint64_t dst, const std::map<varptr_t, varptr_t>& var)
 {
-	auto map = write(dst, map_t());
 	for(const auto& entry : var) {
-		if(auto key = entry.first.ptr) {
-			write_entry(dst, lookup(*key), entry.second);
-		}
+		write_key(dst, entry.first, entry.second);
 	}
-	return map;
+	return write(dst, map_t());
 }
 
 var_t* Engine::write(var_t*& var, const uint64_t* dst, const var_t& src)
@@ -377,9 +370,30 @@ var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const var_t& 
 	return out;
 }
 
+var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const varptr_t& var)
+{
+	if(auto value = var.ptr) {
+		switch(value->type) {
+			case vartype_e::ARRAY:
+			case vartype_e::MAP: {
+				const auto heap = alloc();
+				write(heap, value);
+				return write_entry(dst, key, ref_t(heap));
+			}
+		}
+		return write_entry(dst, key, *value);
+	}
+	return write_entry(dst, key, var_t());
+}
+
 var_t* Engine::write_key(const uint64_t dst, const uint64_t key, const var_t& src)
 {
 	return write_entry(dst, lookup(key), src);
+}
+
+var_t* Engine::write_key(const uint64_t dst, const varptr_t& key, const varptr_t& var)
+{
+	return write_entry(dst, lookup(key), var);
 }
 
 void Engine::erase_entry(const uint64_t dst, const uint64_t key)
@@ -535,11 +549,6 @@ uint64_t Engine::alloc()
 
 void Engine::init()
 {
-	for(auto iter = memory.begin(); iter != memory.lower_bound(MEM_STACK); ++iter) {
-		if(auto var = iter->second) {
-			var->flags |= varflags_e::CONST;
-		}
-	}
 	if(!read(MEM_HEAP + HAVE_INIT)) {
 		write(MEM_HEAP + HAVE_INIT, var_t(vartype_e::TRUE))->pin();
 		write(MEM_HEAP + NEXT_ALLOC, uint_t(MEM_HEAP + DYNAMIC_START))->pin();
@@ -548,21 +557,30 @@ void Engine::init()
 		write(MEM_HEAP + SEND_HISTORY, array_t())->pin();
 		write(MEM_HEAP + MINT_HISTORY, array_t())->pin();
 	}
+}
+
+void Engine::begin()
+{
+	for(auto iter = memory.begin(); iter != memory.lower_bound(MEM_STACK); ++iter) {
+		if(auto var = iter->second) {
+			var->flags |= varflags_e::CONST;
+		}
+	}
 	finished = false;
 }
 
 void Engine::run()
 {
 	while(!finished) {
-		if(instr_ptr >= code.size()) {
-			throw std::logic_error("instr_ptr out of bounds: " + to_hex(instr_ptr) + " > " + to_hex(code.size()));
-		}
 		step();
 	}
 }
 
 void Engine::step()
 {
+	if(instr_ptr >= code.size()) {
+		throw std::logic_error("instr_ptr out of bounds: " + to_hex(instr_ptr) + " > " + to_hex(code.size()));
+	}
 	exec(code[instr_ptr]);
 }
 
