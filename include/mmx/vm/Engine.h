@@ -8,6 +8,7 @@
 #ifndef INCLUDE_MMX_VM_ENGINE_H_
 #define INCLUDE_MMX_VM_ENGINE_H_
 
+#include <mmx/addr_t.hpp>
 #include <mmx/vm/var_t.h>
 #include <mmx/vm/instr_t.h>
 #include <mmx/vm/Storage.h>
@@ -24,41 +25,63 @@ namespace mmx {
 namespace vm {
 
 constexpr uint64_t SEG_SIZE = 0x4000000;
+constexpr uint64_t STACK_SIZE = 16 * SEG_SIZE;
 
 constexpr uint64_t MEM_CONST = SEG_SIZE;
 constexpr uint64_t MEM_EXTERN = MEM_CONST + SEG_SIZE;
 constexpr uint64_t MEM_PARAMS = MEM_EXTERN + SEG_SIZE;
-constexpr uint64_t MEM_STACK = MEM_PARAMS + 16 * SEG_SIZE;
-constexpr uint64_t MEM_STATIC = MEM_STACK + SEG_SIZE;
+constexpr uint64_t MEM_STACK = MEM_PARAMS + SEG_SIZE;
+constexpr uint64_t MEM_STATIC = MEM_STACK + STACK_SIZE;
 constexpr uint64_t MEM_HEAP = uint64_t(1) << 32;
+
+constexpr uint64_t STATIC_SIZE = MEM_HEAP - MEM_STATIC;
+
+enum globalvar_e : uint32_t {
+
+	HAVE_INIT,
+	NEXT_ALLOC,
+	BALANCE,
+	LOG_HISTORY,
+	SEND_HISTORY,
+	MINT_HISTORY,
+	DYNAMIC_START = 0x1000
+
+};
 
 
 class Engine {
 public:
+	bool finished = false;
+	size_t instr_ptr = 0;
+	std::vector<instr_t> code;
+
 	std::map<uint64_t, var_t*> memory;
 	std::map<std::pair<uint64_t, uint64_t>, var_t*> entries;
 	std::map<const var_t*, uint64_t, varptr_less_t> key_map;
 
-	std::set<uint64_t> keys_added;
-	std::set<uint64_t> cells_erased;
-	std::set<std::pair<uint64_t, uint64_t>> entries_erased;
+	Engine(const addr_t& contract, std::shared_ptr<Storage> backend);
 
-	Engine(const uint256_t& contract, std::shared_ptr<Storage> backend);
+	void addref(const uint64_t dst);
+	void unref(const uint64_t dst);
 
-	void assign(const constvar_e dst, var_t* value);
-	void assign(const uint64_t dst, var_t* value);
-	void assign(const uint64_t dst, const uint64_t key, var_t* value);
+	var_t* assign(const uint64_t dst, var_t* value);
+	var_t* assign(const uint64_t dst, const uint64_t key, var_t* value);
 
 	uint64_t lookup(const uint64_t src);
 
 	var_t* write(const uint64_t dst, const var_t* src);
 	var_t* write(const uint64_t dst, const var_t& src);
 
-	void push_back(const uint64_t dst, const var_t& src);
-	void pop_back(const uint64_t dst, const uint64_t& src);
+	void write_entry(const uint64_t dst, const uint64_t key, const var_t& src);
+	void erase_entry(const uint64_t dst, const uint64_t key);
 
 	void write_key(const uint64_t dst, const uint64_t key, const var_t& src);
 	void erase_key(const uint64_t dst, const uint64_t key);
+
+	void push_back(const uint64_t dst, const var_t& src);
+	void pop_back(const uint64_t dst, const uint64_t& src);
+
+	bool erase(const uint64_t dst);
 
 	var_t* read(const uint64_t src);
 	var_t& read_fail(const uint64_t src);
@@ -70,43 +93,42 @@ public:
 	var_t& read_key_fail(const uint64_t src, const uint64_t key);
 
 	void copy(const uint64_t dst, const uint64_t src);
-	void new_copy(const uint64_t dst, const uint64_t src);
+	void clone(const uint64_t dst, const uint64_t src);
+
+	array_t* clone_array(const uint64_t dst, const array_t& src);
+	map_t* clone_map(const uint64_t dst, const map_t& src);
 
 	uint64_t deref(const uint64_t src);
-	uint64_t deref_if(const uint64_t src, const bool flag);
 
+	void init();
+	void run();
+	void step();
 	void exec(const instr_t& instr);
+	void jump(const uint64_t dst);
+
+	void reset();
+	void commit();
 
 	template<typename T>
 	T* read(const uint64_t src, const vartype_e& type);
 	template<typename T>
 	T& read_fail(const uint64_t src, const vartype_e& type);
 
-	bool is_protected(const uint64_t address) const;
-
-protected:
-	void addref(const uint64_t dst);
-	void unref(const uint64_t dst);
-
+private:
+	var_t* assign(var_t*& var, var_t* value);
 	var_t* write(var_t*& var, const uint64_t* dst, const var_t& src);
 
-	array_t* clone_array(const uint64_t dst, const array_t& src);
-	map_t* clone_map(const uint64_t dst, const map_t& src);
-
-	void write_entry(const uint64_t dst, const uint64_t key, const var_t& src);
-
-	void erase_entry(const uint64_t dst, const uint64_t key);
+	bool erase(var_t*& var);
+	bool erase_entry(var_t*& var, const uint64_t dst, const uint64_t key);
 	void erase_entries(const uint64_t dst);
 
-	void erase(const uint64_t dst);
-	void erase(var_t*& var);
+	uint64_t deref_if(const uint64_t src, const bool flag);
+	uint64_t deref_arg(const uint64_t src, const bool flag);
 
 	uint64_t alloc();
 
-	void protect_fail(const uint64_t address) const;
-
 private:
-	uint256_t contract;
+	addr_t contract;
 	std::shared_ptr<Storage> storage;
 
 };

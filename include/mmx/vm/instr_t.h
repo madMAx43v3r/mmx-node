@@ -9,20 +9,21 @@
 #define INCLUDE_MMX_VM_INSTR_T_H_
 
 #include <cstdint>
+#include <string>
 
 
 namespace mmx {
 namespace vm {
 
-enum class opcode_e : uint8_t {
+enum opcode_e : uint8_t {
 
 	NOP,
-	NEW,		// dst, src
+	RET,
+	CLR,		// dst
 	COPY,		// dst, src
-	BEGIN,		// cond
-	END,
-	LOOP,		// cond
-	BREAK,		// cond
+	CLONE,		// dst, src
+	JUMP,		// dst
+	JUMPI,		// dst, cond
 
 	ADD,		// dst, lhs, rhs
 	SUB,		// dst, lhs, rhs
@@ -43,6 +44,8 @@ enum class opcode_e : uint8_t {
 	CMP_NEQ,	// dst, lhs, rhs
 	CMP_LT,		// dst, lhs, rhs
 	CMP_GT,		// dst, lhs, rhs
+	CMP_LTE,	// dst, lhs, rhs
+	CMP_GTE,	// dst, lhs, rhs
 
 	TYPE,		// dst, addr
 	SIZE,		// dst, addr
@@ -50,11 +53,11 @@ enum class opcode_e : uint8_t {
 	SET,		// addr, key, src
 	ERASE,		// addr, key
 
-	PUSH_BACK,		// dst, src
-	POP_BACK,		// dst, src
+	PUSH_BACK,	// dst, src
+	POP_BACK,	// dst, src
 
-	CONVERT,	// dst, src
-	CONCAT,		// dst, src, count, offset
+	CONV,		// dst, src
+	CONCAT,		// dst, src
 	MEMCPY,		// dst, src, count, offset
 	SHA256,		// dst, src
 
@@ -65,25 +68,25 @@ enum class opcode_e : uint8_t {
 
 };
 
-enum opflags_e : uint8_t {
+enum opflags_e : uint16_t {
 
-	DEREF_A = 1,
-	DEREF_B = 2,
-	DEREF_C = 4,
-	DEREF_D = 8,
+	REF_A = 1,
+	REF_B = 2,
+	REF_C = 4,
+	REF_D = 8,
 	HARD_FAIL = 16,
 	CATCH_OVERFLOW = 32,
-	CATCH_UNDERFLOW = 64,
 
 };
 
-enum convflags_e : uint8_t {
+enum convtype_e : uint16_t {
 
-	NONE,
 	DEC,
 	HEX,
-	OCT,
+	UINT,
 	STRING,
+	BINARY,
+	ARRAY,
 
 };
 
@@ -93,7 +96,7 @@ struct instr_t {
 
 	opflags_e flags = 0;
 
-	convflags_e conv_flags[2] = {};
+	convtype_e conv_type = 0;
 
 	uint32_t a = 0;
 	uint32_t b = 0;
@@ -101,6 +104,17 @@ struct instr_t {
 	uint32_t d = 0;
 
 };
+
+struct opcode_info_t {
+
+	std::string name;
+
+	uint32_t nargs = 0;
+
+};
+
+const opcode_info_t& get_opcode_info(opcode_e code);
+
 
 
 } // vm

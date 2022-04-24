@@ -36,10 +36,13 @@ enum varflags_e : uint8_t {
 
 	DIRTY = 1,
 	CONST = 2,
+	STORED = 4,
+	DELETED = 8,
+	KEY = 16,
 
 };
 
-enum constvar_e : uint64_t {
+enum constvar_e : uint32_t {
 
 	NIL,
 	TRUE,
@@ -71,6 +74,13 @@ struct var_t {
 		type = rhs.type;
 		flags |= varflags_e::DIRTY;
 		return *this;
+	}
+
+	var_t* pin() {
+		if(!ref_count) {
+			ref_count = 1;
+		}
+		return this;
 	}
 
 };
@@ -153,10 +163,6 @@ struct binary_t : var_t {
 		::memset(bin->data(bin->size), 0, bin->capacity - bin->size);
 		return bin;
 	}
-
-private:
-	binary_t(const vartype_e& type) : var_t(type) {}
-
 	static binary_t* unsafe_alloc(size_t size, const vartype_e type) {
 		switch(type) {
 			case vartype_e::BINARY: break;
@@ -168,11 +174,14 @@ private:
 		return bin;
 	}
 
+private:
+	binary_t(const vartype_e& type) : var_t(type) {}
+
 };
 
 struct array_t : ref_t {
 
-	uint64_t size = 0;
+	uint32_t size = 0;
 
 	array_t() : var_t(vartype_e::ARRAY) {}
 
