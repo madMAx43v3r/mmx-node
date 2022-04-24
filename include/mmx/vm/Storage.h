@@ -11,16 +11,12 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/vm/var_t.h>
 
-#include <vector>
-
 
 namespace mmx {
 namespace vm {
 
 class Storage {
 public:
-	bool read_only = true;
-
 	virtual ~Storage() {}
 
 	virtual var_t* read(const addr_t& contract, const uint64_t src) const = 0;

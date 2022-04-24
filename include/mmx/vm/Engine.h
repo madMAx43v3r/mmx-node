@@ -59,7 +59,7 @@ public:
 	std::map<std::pair<uint64_t, uint64_t>, var_t*> entries;
 	std::map<const var_t*, uint64_t, varptr_less_t> key_map;
 
-	Engine(const addr_t& contract, std::shared_ptr<Storage> backend);
+	Engine(const addr_t& contract, std::shared_ptr<Storage> storage);
 
 	void addref(const uint64_t dst);
 	void unref(const uint64_t dst);
@@ -68,14 +68,19 @@ public:
 	var_t* assign(const uint64_t dst, const uint64_t key, var_t* value);
 
 	uint64_t lookup(const uint64_t src);
+	uint64_t lookup(const var_t& var);
 
 	var_t* write(const uint64_t dst, const var_t* src);
 	var_t* write(const uint64_t dst, const var_t& src);
+	var_t* write(const uint64_t dst, const varptr_t& var);
+	var_t* write(const uint64_t dst, const std::vector<varptr_t>& var);
+	var_t* write(const uint64_t dst, const std::map<varptr_t, varptr_t>& var);
 
-	void write_entry(const uint64_t dst, const uint64_t key, const var_t& src);
+	var_t* write_entry(const uint64_t dst, const uint64_t key, const var_t& src);
+	var_t* write_entry(const uint64_t dst, const uint64_t key, const varptr_t& var);
 	void erase_entry(const uint64_t dst, const uint64_t key);
 
-	void write_key(const uint64_t dst, const uint64_t key, const var_t& src);
+	var_t* write_key(const uint64_t dst, const uint64_t key, const var_t& src);
 	void erase_key(const uint64_t dst, const uint64_t key);
 
 	void push_back(const uint64_t dst, const var_t& src);
@@ -107,6 +112,7 @@ public:
 	void jump(const uint64_t dst);
 
 	void reset();
+	void collect();
 	void commit();
 
 	template<typename T>

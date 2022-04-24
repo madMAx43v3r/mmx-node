@@ -35,10 +35,11 @@ enum class vartype_e : uint8_t {
 enum varflags_e : uint8_t {
 
 	DIRTY = 1,
-	CONST = 2,
-	STORED = 4,
-	DELETED = 8,
-	KEY = 16,
+	DIRTY_REF = 2,
+	CONST = 4,
+	STORED = 8,
+	DELETED = 16,
+	KEY = 32,
 
 };
 
@@ -60,22 +61,30 @@ enum constvar_e : uint32_t {
 
 struct var_t {
 
-	vartype_e type = vartype_e::NIL;
+	uint32_t ref_count = 0;
 
 	varflags_e flags = 0;
 
-	uint32_t ref_count = 0;
+	vartype_e type = vartype_e::NIL;
 
 	var_t() = default;
 	var_t(const var_t&) = delete;
 	var_t(const vartype_e& type) : type(type) {}
 
-	var_t& operator=(const var_t& rhs) {
-		type = rhs.type;
-		flags |= varflags_e::DIRTY;
-		return *this;
+	void addref() {
+		if(ref_count == std::numeric_limits<typeof(ref_count)>::max()) {
+			throw std::runtime_error("ref_count overflow");
+		}
+		ref_count++;
+		flags |= varflags_e::DIRTY_REF;
 	}
-
+	void unref() {
+		if(!ref_count) {
+			throw std::logic_error("unref underflow");
+		}
+		ref_count--;
+		flags |= varflags_e::DIRTY_REF;
+	}
 	var_t* pin() {
 		if(!ref_count) {
 			ref_count = 1;
@@ -90,7 +99,7 @@ struct ref_t : var_t {
 	uint64_t address = 0;
 
 	ref_t() : var_t(vartype_e::REF) {}
-	ref_t(uint64_t address) : var_t(vartype_e::REF), address(address) {}
+	ref_t(uint64_t address) : ref_t(), address(address) {}
 
 	ref_t& operator=(const ref_t& rhs) {
 		address = rhs.address;
@@ -105,7 +114,7 @@ struct uint_t : var_t {
 	uint256_t value = uint256_0;
 
 	uint_t() : var_t(vartype_e::UINT) {}
-	uint_t(const uint256_t& value) : var_t(vartype_e::UINT) { this->value = value; }
+	uint_t(const uint256_t& value) : uint_t() { this->value = value; }
 
 	uint_t& operator=(const uint_t& rhs) {
 		value = rhs.value;
@@ -117,8 +126,8 @@ struct uint_t : var_t {
 
 struct binary_t : var_t {
 
-	uint64_t size = 0;
-	uint64_t capacity = 0;
+	size_t size = 0;
+	size_t capacity = 0;
 
 	void* data(const size_t offset = 0) {
 		return ((char*)this) + sizeof(binary_t) + offset;
@@ -184,12 +193,51 @@ struct array_t : ref_t {
 	uint32_t size = 0;
 
 	array_t() : var_t(vartype_e::ARRAY) {}
+	array_t(uint32_t size) : array_t(), size(size) {}
 
 };
 
 struct map_t : ref_t {
 
 	map_t() : var_t(vartype_e::MAP) {}
+
+};
+
+struct varptr_t {
+
+	var_t* ptr = nullptr;
+
+	varptr_t() = default;
+	varptr_t(var_t* var) {
+		ptr = var;
+		if(ptr) {
+			ptr->addref();
+		}
+	}
+	varptr_t(const varptr_t& lhs) : varptr_t(lhs.ptr) {}
+
+	~varptr_t() {
+		if(ptr) {
+			ptr->unref();
+			if(!ptr->ref_count) {
+				delete ptr;
+			}
+			ptr = nullptr;
+		}
+	}
+	varptr_t& operator=(const varptr_t& lhs) {
+		if(ptr) {
+			ptr->unref();
+		}
+		ptr = lhs.ptr;
+		if(ptr) {
+			ptr->addref();
+		}
+		return *this;
+	}
+	var_t* get() const {
+		return ptr;
+	}
 
 };
 
@@ -234,6 +282,14 @@ inline int compare(const var_t& lhs, const var_t& rhs)
 	}
 }
 
+struct varptr_less_t {
+	bool operator()(const var_t*& L, const var_t*& R) const {
+		if(!L) { return R; }
+		if(!R) { return false; }
+		return compare(*L, *R) < 0;
+	}
+};
+
 inline bool operator<(const var_t& L, const var_t& R) const {
 	return compare(L, R) < 0;
 }
@@ -246,16 +302,33 @@ inline bool operator==(const var_t& L, const var_t& R) const {
 inline bool operator!=(const var_t& L, const var_t& R) const {
 	return compare(L, R) != 0;
 }
+inline bool operator<(const varptr_t& L, const varptr_t& R) const {
+	return varptr_less_t{}(L.ptr, R.ptr);
+}
 
-struct varptr_less_t {
-	bool operator()(const var_t*& L, const var_t*& R) const {
-		if(!L) { return R; }
-		if(!R) { return false; }
-		return compare(*L, *R) < 0;
+inline size_t num_bytes(const var_t& var)
+{
+	switch(var.type) {
+		case vartype_e::REF:
+			return 8;
+		case vartype_e::UINT:
+			return sizeof(uint256_t);
+		case vartype_e::STRING:
+		case vartype_e::BINARY:
+			return ((const binary_t&)var).size;
+		case vartype_e::ARRAY:
+			return 4;
 	}
-};
+	return 0;
+}
 
-
+inline size_t num_bytes(const var_t* var)
+{
+	if(!var) {
+		return 0;
+	}
+	return num_bytes(*var);
+}
 
 
 

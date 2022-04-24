@@ -11,9 +11,9 @@
 namespace mmx {
 namespace vm {
 
-Engine::Engine(const addr_t& contract, std::shared_ptr<Storage> backend)
+Engine::Engine(const addr_t& contract, std::shared_ptr<Storage> storage)
 	:	contract(contract),
-		storage(backend)
+		storage(storage)
 {
 	assign(constvar_e::NIL, new var_t(vartype_e::NIL));
 	assign(constvar_e::TRUE, new var_t(vartype_e::TRUE));
@@ -31,9 +31,7 @@ void Engine::addref(const uint64_t dst)
 	if(dst < MEM_STACK) {
 		return;
 	}
-	auto& var = read_fail(dst);
-	var.ref_count++;
-	var.flags |= varflags_e::DIRTY;
+	read_fail(dst).addref();
 }
 
 void Engine::unref(const uint64_t dst)
@@ -42,15 +40,13 @@ void Engine::unref(const uint64_t dst)
 		return;
 	}
 	auto& var = read_fail(dst);
-	if(var.ref_count == 0) {
+	if(!var.ref_count) {
 		throw std::logic_error("unref underflow at " + to_hex(dst));
 	}
-	var.flags |= varflags_e::DIRTY;
+	var.unref();
 
-	if(--var.ref_count == 0) {
-		if(dst >= MEM_STATIC) {
-			erase(dst);
-		}
+	if(!var.ref_count && dst >= MEM_HEAP) {
+		erase(dst);
 	}
 }
 
@@ -65,7 +61,11 @@ var_t* Engine::assign(const uint64_t dst, var_t* value)
 			((ref_t*)value)->address = dst;
 			break;
 	}
-	return assign(memory[dst], value);
+	auto& var = memory[dst];
+	if(!var && dst >= MEM_STATIC) {
+		var = storage->read(contract, dst);
+	}
+	return assign(var, value);
 }
 
 var_t* Engine::assign(const uint64_t dst, const uint64_t key, var_t* value)
@@ -80,7 +80,11 @@ var_t* Engine::assign(const uint64_t dst, const uint64_t key, var_t* value)
 			throw std::logic_error("cannot assign array / map here");
 	}
 	const auto mapkey = std::make_pair(dst, key);
-	return assign(entries[mapkey], value);
+	auto& var = entries[mapkey];
+	if(!var && dst >= MEM_STATIC) {
+		var = storage->read(contract, dst, key);
+	}
+	return assign(var, value);
 }
 
 var_t* Engine::assign(var_t*& var, var_t* value)
@@ -107,7 +111,11 @@ uint64_t Engine::lookup(const uint64_t src)
 	if(src < MEM_EXTERN) {
 		return src;		// constant memory
 	}
-	const auto& var = read_fail(src);
+	return lookup(read_fail(src));
+}
+
+uint64_t Engine::lookup(const var_t& var)
+{
 	const auto iter = key_map.find(&var);
 	if(iter != key_map.end()) {
 		return iter->second;
@@ -134,10 +142,54 @@ var_t* Engine::write(const uint64_t dst, const var_t* src)
 var_t* Engine::write(const uint64_t dst, const var_t& src)
 {
 	auto& var = memory[dst];
-	if(!var) {
+	if(!var && dst >= MEM_STATIC) {
 		var = storage->read(contract, dst);
 	}
 	return write(var, &dst, src);
+}
+
+var_t* Engine::write(const uint64_t dst, const varptr_t& var)
+{
+	return write(dst, var.ptr);
+}
+
+var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const varptr_t& var)
+{
+	if(auto value = var.ptr) {
+		switch(value->type) {
+			case vartype_e::ARRAY:
+			case vartype_e::MAP: {
+				const auto heap = alloc();
+				write(heap, value);
+				return write_entry(dst, key, ref_t(heap));
+			}
+		}
+		return write_entry(dst, key, *value);
+	}
+	return write_entry(dst, key, var_t());
+}
+
+var_t* Engine::write(const uint64_t dst, const std::vector<varptr_t>& var)
+{
+	if(var.size() >= MEM_HEAP) {
+		throw std::logic_error("array too large");
+	}
+	auto array = write(dst, array_t(var.size()));
+	for(size_t i = 0; i < var.size(); ++i) {
+		write_entry(dst, i, var[i]);
+	}
+	return array;
+}
+
+var_t* Engine::write(const uint64_t dst, const std::map<varptr_t, varptr_t>& var)
+{
+	auto map = write(dst, map_t());
+	for(const auto& entry : var) {
+		if(auto key = entry.first.ptr) {
+			write_entry(dst, lookup(*key), entry.second);
+		}
+	}
+	return map;
 }
 
 var_t* Engine::write(var_t*& var, const uint64_t* dst, const var_t& src)
@@ -309,24 +361,25 @@ map_t* Engine::clone_map(const uint64_t dst, const map_t& src)
 	return var;
 }
 
-void Engine::write_entry(const uint64_t dst, const uint64_t key, const var_t& src)
+var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const var_t& src)
 {
 	const auto mapkey = std::make_pair(dst, key);
 	auto& var = entries[mapkey];
-	if(!var) {
+	if(!var && dst >= MEM_STATIC) {
 		var = storage->read(contract, dst, key);
 	}
 	const bool is_new = !var;
-	write(var, nullptr, src);
+	const auto out = write(var, nullptr, src);
 
 	if(is_new && key >= MEM_HEAP && dst >= MEM_STATIC) {
 		addref(key);
 	}
+	return out;
 }
 
-void Engine::write_key(const uint64_t dst, const uint64_t key, const var_t& src)
+var_t* Engine::write_key(const uint64_t dst, const uint64_t key, const var_t& src)
 {
-	write_entry(dst, lookup(key), src);
+	return write_entry(dst, lookup(key), src);
 }
 
 void Engine::erase_entry(const uint64_t dst, const uint64_t key)
@@ -421,8 +474,10 @@ var_t* Engine::read(const uint64_t src)
 	if(iter != memory.end()) {
 		return iter->second;
 	}
-	if(auto var = storage->read(contract, src)) {
-		return memory[src] = var;
+	if(src >= MEM_STATIC) {
+		if(auto var = storage->read(contract, src)) {
+			return memory[src] = var;
+		}
 	}
 	return nullptr;
 }
@@ -442,8 +497,10 @@ var_t* Engine::read_entry(const uint64_t src, const uint64_t key)
 	if(iter != entries.end()) {
 		return iter->second;
 	}
-	if(auto var = storage->read(contract, src, key)) {
-		return entries[key] = var;
+	if(src >= MEM_STATIC) {
+		if(auto var = storage->read(contract, src, key)) {
+			return entries[key] = var;
+		}
 	}
 	return nullptr;
 }
@@ -532,7 +589,7 @@ uint64_t Engine::deref(const uint64_t src)
 {
 	const auto& var = read_fail(src);
 	if(var.type != vartype_e::REF) {
-		throw std::logic_error("cannot dereference " + to_hex(src));
+		return src;
 	}
 	return ((const ref_t&)var).address;
 }
@@ -774,23 +831,28 @@ void Engine::reset()
 	// TODO
 }
 
+void Engine::collect()
+{
+	for(auto iter = memory.begin(); iter != memory.lower_bound(MEM_STATIC); ++iter)
+	{
+		erase(iter->second);
+	}
+}
+
 void Engine::commit()
 {
-	const auto memory_begin = memory.lower_bound(MEM_STATIC);
-	const auto entries_begin = entries.lower_bound(std::make_pair(MEM_STATIC, 0));
-
-	for(auto iter = memory_begin; iter != memory.end(); ++iter)
+	for(auto iter = memory.lower_bound(MEM_STATIC); iter != memory.end(); ++iter)
 	{
 		if(auto var = iter->second) {
-			if(var->flags & varflags_e::DIRTY) {
+			if(var->flags & (varflags_e::DIRTY | varflags_e::DIRTY_REF)) {
 				storage->write(contract, iter->first, *var);
 			}
 		}
 	}
-	for(auto iter = entries_begin; iter != entries.end(); ++iter)
+	for(auto iter = entries.lower_bound(std::make_pair(MEM_STATIC, 0)); iter != entries.end(); ++iter)
 	{
 		if(auto var = iter->second) {
-			if(var->flags & varflags_e::DIRTY) {
+			if(var->flags & (varflags_e::DIRTY | varflags_e::DIRTY_REF)) {
 				storage->write(contract, iter->first.first, iter->first.second, *var);
 			}
 		}

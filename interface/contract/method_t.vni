@@ -6,6 +6,6 @@ struct method_t {
 	
 	uint entry_point;
 	
-	vector<pair<string, arg_type_e>> args;
+	vector<pair<arg_type_e, string>> args;
 	
 }
