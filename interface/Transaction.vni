@@ -4,11 +4,17 @@ class Transaction extends TransactionBase {
 	
 	uint version;
 	
-	ulong nonce;
+	uint nonce;
+	
+	uint expires = -1;					// height
+	
+	uint fee_ratio = 1024;				// 1024 = 1.0
 	
 	tx_note_e note;
 	
 	optional<hash_t> salt;
+	
+	optional<addr_t> change_addr;		// to receive change from fee
 	
 	vector<tx_in_t> inputs;
 	

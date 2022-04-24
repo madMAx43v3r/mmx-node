@@ -47,7 +47,7 @@ vnx::bool_t Transaction::is_valid() const
 			return false;
 		}
 	}
-	return version == 0 && calc_hash() == id;
+	return version == 0 && fee_ratio >= 1024 && calc_hash() == id;
 }
 
 hash_t Transaction::calc_hash() const
@@ -61,8 +61,11 @@ hash_t Transaction::calc_hash() const
 	write_bytes(out, get_type_hash());
 	write_field(out, "version", version);
 	write_field(out, "nonce", 	nonce);
+	write_field(out, "expires", expires);
+	write_field(out, "fee_ratio", 	fee_ratio);
 	write_field(out, "note", 	note);
 	write_field(out, "salt", 	salt);
+	write_field(out, "change_addr", change_addr);
 	write_field(out, "inputs", inputs);
 	write_field(out, "outputs", outputs);
 	write_field(out, "execute");

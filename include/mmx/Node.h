@@ -168,7 +168,6 @@ private:
 
 	struct tx_pool_t {
 		bool did_validate = false;
-		double fee_ratio = 0;
 		std::shared_ptr<const Transaction> tx;
 	};
 

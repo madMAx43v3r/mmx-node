@@ -166,6 +166,9 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 	if(!tx->is_valid()) {
 		throw std::logic_error("invalid tx");
 	}
+	if(tx->expires < context->height) {
+		throw std::logic_error("tx expired");
+	}
 	const auto tx_cost = tx->calc_cost(params);
 
 	if(base) {
@@ -186,6 +189,15 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 		}
 		if(!tx->salt || *tx->salt != base->vdf_output[0]) {
 			throw std::logic_error("invalid coin base salt");
+		}
+		if(tx->expires != base->height) {
+			throw std::logic_error("invalid coin base expires");
+		}
+		if(tx->fee_ratio != 1024) {
+			throw std::logic_error("invalid coin base fee_ratio");
+		}
+		if(tx->change_addr) {
+			throw std::logic_error("coin base cannot have change_addr");
 		}
 	} else {
 		if(tx->inputs.empty()) {
@@ -225,7 +237,7 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 	}
 	uint128_t base_amount = 0;
 	std::vector<tx_out_t> exec_outputs;
-	std::unordered_map<hash_t, uint128_t> amounts;
+	std::unordered_map<addr_t, uint128_t> amounts;
 	std::unordered_map<addr_t, std::shared_ptr<Contract>> contract_state;
 
 	for(const auto& in : tx->inputs)
@@ -349,15 +361,24 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 		fee_amount = base_amount;
 		return nullptr;
 	}
+	fee_amount = (uint128_t(tx_cost) * tx->fee_ratio) / 1024;
 	{
-		const auto& amount = amounts[hash_t()];
+		const auto& amount = amounts[addr_t()];
 		if(amount.upper()) {
 			throw std::logic_error("fee amount overflow");
 		}
-		fee_amount = amount;
-	}
-	if(fee_amount < tx_cost) {
-		throw std::logic_error("insufficient fee: " + std::to_string(fee_amount) + " < " + std::to_string(tx_cost));
+		if(amount < fee_amount) {
+			throw std::logic_error("insufficient fee: " + amount.str(10) + " < " + std::to_string(fee_amount));
+		}
+		const uint64_t change = amount - fee_amount;
+		if(change > params->min_txfee_io && tx->change_addr) {
+			tx_out_t out;
+			out.address = *tx->change_addr;
+			out.amount = change;
+			exec_outputs.push_back(out);
+		} else {
+			fee_amount = amount;
+		}
 	}
 	if(tx->exec_outputs.empty()) {
 		if(!exec_outputs.empty()) {

@@ -447,7 +447,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 	// sort transactions by fee ratio known from previous iterations
 	std::sort(all_tx.begin(), all_tx.end(),
 		[](const tx_data_t& lhs, const tx_data_t& rhs) -> bool {
-			return lhs.fee_ratio > rhs.fee_ratio;
+			return lhs.tx->fee_ratio > rhs.tx->fee_ratio;
 		});
 
 	size_t num_purged = 0;
@@ -514,13 +514,11 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 			if(auto new_tx = validate(tx, context, nullptr, entry.fees)) {
 				tx = new_tx;
 			}
-			entry.fee_ratio = entry.fees / double(entry.cost);
 			{
 				auto iter = tx_pool.find(tx->id);
 				if(iter != tx_pool.end()) {
 					auto& info = iter->second;
 					info.did_validate = true;
-					info.fee_ratio = entry.fee_ratio;
 				}
 			}
 		}
@@ -535,7 +533,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 	// sort transactions by fee ratio
 	std::sort(tx_list.begin(), tx_list.end(),
 		[](const tx_data_t& lhs, const tx_data_t& rhs) -> bool {
-			return lhs.fee_ratio > rhs.fee_ratio;
+			return lhs.tx->fee_ratio > rhs.tx->fee_ratio;
 		});
 
 	uint128_t total_cost = 0;
