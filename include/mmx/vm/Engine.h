@@ -62,7 +62,7 @@ public:
 	Engine(const addr_t& contract, std::shared_ptr<Storage> storage);
 
 	void addref(const uint64_t dst);
-	void unref(const uint64_t dst);
+	void unref(const uint64_t dst, const size_t count = 1);
 
 	var_t* assign(const uint64_t dst, var_t* value);
 	var_t* assign(const uint64_t dst, const uint64_t key, var_t* value);

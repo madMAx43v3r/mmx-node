@@ -19,22 +19,17 @@ Engine::Engine(const addr_t& contract, std::shared_ptr<Storage> storage)
 
 void Engine::addref(const uint64_t dst)
 {
-	if(dst < MEM_STACK) {
-		return;
-	}
 	read_fail(dst).addref();
 }
 
-void Engine::unref(const uint64_t dst)
+void Engine::unref(const uint64_t dst, const size_t count)
 {
-	if(dst < MEM_STACK) {
-		return;
-	}
 	auto& var = read_fail(dst);
-	if(!var.ref_count) {
+	if(count > var.ref_count) {
 		throw std::logic_error("unref underflow at " + to_hex(dst));
 	}
-	var.unref();
+	var.ref_count -= count;
+	var.flags |= varflags_e::DIRTY_REF;
 
 	if(!var.ref_count && dst >= MEM_HEAP) {
 		erase(dst);
@@ -355,7 +350,7 @@ var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const var_t& 
 	const bool is_new = !var;
 	const auto out = write(var, nullptr, src);
 
-	if(is_new && key >= MEM_HEAP && dst >= MEM_STATIC) {
+	if(is_new && key >= MEM_HEAP) {
 		addref(key);
 	}
 	return out;
@@ -401,7 +396,7 @@ void Engine::erase_entry(const uint64_t dst, const uint64_t key)
 bool Engine::erase_entry(var_t*& var, const uint64_t dst, const uint64_t key)
 {
 	const auto ret = erase(var);
-	if(key >= MEM_HEAP && dst >= MEM_STATIC) {
+	if(key >= MEM_HEAP) {
 		unref(key);
 	}
 	return ret;
@@ -854,12 +849,13 @@ void Engine::collect()
 {
 	key_map.clear();
 
-	std::vector<ref_t*> refs;
+	std::map<uint64_t, size_t> ref_map;
 	for(auto iter = memory.begin(); iter != memory.lower_bound(MEM_STATIC); ++iter)
 	{
 		if(auto var = iter->second) {
 			if(var->type == vartype_e::REF) {
-				refs.push_back((ref_t*)var);
+				ref_map[((ref_t*)var)->address]++;
+				var->type = vartype_e::NIL;
 			}
 		}
 	}
@@ -867,13 +863,17 @@ void Engine::collect()
 	{
 		if(auto var = iter->second) {
 			if(var->type == vartype_e::REF) {
-				refs.push_back((ref_t*)var);
+				ref_map[((ref_t*)var)->address]++;
+				var->type = vartype_e::NIL;
 			}
 		}
+		const auto key = iter->first.second;
+		if(key >= MEM_HEAP) {
+			ref_map[key]++;
+		}
 	}
-	for(auto ref : refs) {
-		unref(ref->address);
-		ref->type = vartype_e::NIL;
+	for(const auto& entry : ref_map) {
+		unref(entry.first, entry.second);
 	}
 }
 
