@@ -6,9 +6,13 @@ class Executable extends Token {
 	
 	vector<method_t> methods;
 	
+	vector<vector<uchar>> constants;
+	
 	vector<uchar> binary;
 	
-	vector<vector<uchar>> constants;
+	string init_method;
+	
+	vector<vector<uchar>> init_args;
 	
 	optional<string> source;
 	

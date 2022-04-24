@@ -54,7 +54,7 @@ void StorageProxy::write(const addr_t& contract, const uint64_t dst, const var_t
 	}
 	num_write++;
 	if(value.flags & varflags_e::DIRTY) {
-		bytes_write += num_bytes(value);
+		bytes_write += num_bytes(value) * (value.flags & varflags_e::KEY ? 2 : 1);
 	}
 	backend->write(contract, dst, value);
 }

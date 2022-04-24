@@ -2,7 +2,7 @@ package mmx.operation;
 
 import mmx.addr_t;
 
-class Deposit extends mmx.Operation {
+class Deposit extends Execute {
 	
 	addr_t sender;
 	
