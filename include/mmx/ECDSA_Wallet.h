@@ -288,13 +288,20 @@ public:
 	{
 		const std::unordered_map<addr_t, addr_t> owner_map(options.owner_map.begin(), options.owner_map.end());
 
-		tx->finalize();
+		std::unordered_set<txio_key_t> spend_set;
+		if(options.spend_only) {
+			spend_set.insert(options.spend_only->begin(), options.spend_only->end());
+		}
 
+		tx->finalize();
 		std::unordered_map<addr_t, uint32_t> solution_map;
 
 		// sign all inputs
 		for(auto& in : tx->inputs)
 		{
+			if(options.spend_only && !spend_set.count(in.prev)) {
+				continue;		// not allowed to spend this
+			}
 			addr_t owner;
 			{
 				auto iter = spent_map.find(in.prev);
