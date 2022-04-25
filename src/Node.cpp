@@ -498,8 +498,8 @@ std::vector<vnx::optional<txo_info_t>> Node::get_txo_infos(const std::vector<txi
 
 std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id, const bool& include_pending) const
 {
-	auto tx = get_transaction_ex(id, include_pending);
-	if(tx->parent) {
+	const auto tx = get_transaction_ex(id, include_pending);
+	if(tx && tx->parent) {
 		return tx->get_combined();
 	}
 	return tx;
