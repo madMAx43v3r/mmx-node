@@ -97,6 +97,7 @@ add_library(mmx_iface SHARED
 	src/contract/WebData.cpp
 	src/contract/PubKey.cpp
 	src/contract/MultiSig.cpp
+	src/contract/Offer.cpp
 	src/contract/Token.cpp
 	src/contract/TokenBase.cpp
 	src/contract/Staking.cpp
