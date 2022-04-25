@@ -1,0 +1,25 @@
+package mmx.contract;
+
+import mmx.hash_t;
+import mmx.addr_t;
+
+class TokenBase extends mmx.Contract {
+	
+	string name;
+	
+	string symbol;
+	
+	string web_url;
+	
+	string icon_url;
+	
+	int decimals = 6;
+	
+	
+	bool is_valid() const;
+	
+	hash_t calc_hash() const;
+	
+	ulong calc_cost(mmx.ChainParams* params) const;
+	
+}

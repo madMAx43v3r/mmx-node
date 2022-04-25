@@ -3,20 +3,8 @@ package mmx.contract;
 import mmx.hash_t;
 import mmx.addr_t;
 import mmx.ulong_fraction_t;
-import mmx.Solution;
-import mmx.Contract;
 
-class Token extends Contract {
-	
-	string name;
-	
-	string symbol;
-	
-	string web_url;
-	
-	string icon_url;
-	
-	int decimals = 6;
+class Token extends TokenBase {
 	
 	optional<addr_t> owner;
 	

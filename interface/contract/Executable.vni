@@ -1,19 +1,21 @@
 package mmx.contract;
 
-class Executable extends Token {
+import mmx.addr_t;
+
+class Executable extends TokenBase {
 	
 	map<string, uint> fields;
 	
-	vector<method_t> methods;
+	map<string, method_t> methods;
 	
-	vector<vector<uchar>> constants;
+	map<uint, vector<uchar>> constants;
 	
 	vector<uchar> binary;
 	
 	string init_method;
 	
-	vector<vector<uchar>> init_args;
+	vector<vnx.Variant> init_args;
 	
-	optional<string> source;
+	optional<addr_t> source;
 	
 }

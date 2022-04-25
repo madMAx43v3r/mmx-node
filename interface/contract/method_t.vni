@@ -3,9 +3,13 @@ package mmx.contract;
 struct method_t {
 	
 	string name;
+	string info;
+	
+	bool is_const;
+	bool is_public;
 	
 	uint entry_point;
 	
-	vector<pair<arg_type_e, string>> args;
+	vector<string> args;
 	
 }

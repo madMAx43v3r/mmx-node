@@ -56,7 +56,7 @@ enum opcode_e : uint8_t {
 	PUSH_BACK,	// dst, src
 	POP_BACK,	// dst, src
 
-	CONV,		// dst, src
+	CONV,		// dst, src, dflags, sflags
 	CONCAT,		// dst, src
 	MEMCPY,		// dst, src, count, offset
 	SHA256,		// dst, src
@@ -95,8 +95,6 @@ struct instr_t {
 	opcode_e code = opcode_e::NOP;
 
 	opflags_e flags = 0;
-
-	convtype_e conv_type = 0;
 
 	uint32_t a = 0;
 	uint32_t b = 0;
