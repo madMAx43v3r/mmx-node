@@ -150,6 +150,9 @@ void Client::handle(std::shared_ptr<const Block> block)
 
 	for(const auto& base : block->tx_list) {
 		if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
+			if(tx->parent) {
+				tx = tx->get_combined();
+			}
 			// check for completed offers
 			if(pending_approvals.count(tx->id)) {
 				std::map<uint64_t, std::shared_ptr<LocalTrade>> trade_map;
@@ -526,6 +529,9 @@ void Client::post_offers()
 
 std::shared_ptr<const Transaction> Client::approve(std::shared_ptr<const Transaction> tx) const
 {
+	if(tx->parent) {
+		throw std::logic_error("not supported");
+	}
 	std::unordered_set<addr_t> addr_set;
 	std::unordered_set<uint32_t> wallets;
 	std::unordered_map<addr_t, uint128_t> expect_amount;
@@ -537,6 +543,9 @@ std::shared_ptr<const Transaction> Client::approve(std::shared_ptr<const Transac
 			addr_set.insert(order.bid.address);
 			expect_amount[order.ask.currency] += order.ask.amount;
 		}
+	}
+	if(expect_amount.empty()) {
+		throw std::logic_error("empty match");
 	}
 	std::unordered_map<addr_t, uint128_t> output_amount;
 	for(const auto& out : tx->outputs) {

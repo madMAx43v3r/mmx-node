@@ -396,7 +396,8 @@ vnx::optional<uint32_t> Node::get_tx_height(const hash_t& id) const
 
 vnx::optional<tx_info_t> Node::get_tx_info(const hash_t& id) const
 {
-	if(auto tx = get_transaction(id, true)) {
+	if(auto tx = get_transaction(id, true))
+	{
 		tx_info_t info;
 		info.id = id;
 		if(auto height = get_tx_height(id)) {
@@ -420,15 +421,14 @@ vnx::optional<tx_info_t> Node::get_tx_info(const hash_t& id) const
 			}
 			info.inputs.push_back(entry);
 		}
-		for(size_t i = 0; i < tx->outputs.size() + tx->exec_outputs.size(); ++i) {
+		const auto outputs = tx->get_outputs();
+		for(size_t i = 0; i < outputs.size(); ++i) {
 			txo_info_t entry;
 			entry.key = txio_key_t::create_ex(id, i);
 			if(auto txo = get_txo_info(entry.key)) {
 				entry = *txo;
-			} else if(i < tx->outputs.size()) {
-				entry.output.tx_out_t::operator=(tx->outputs[i]);
 			} else {
-				entry.output.tx_out_t::operator=(tx->exec_outputs[i - tx->outputs.size()]);
+				entry.output.tx_out_t::operator=(outputs[i]);
 			}
 			info.outputs.push_back(entry);
 			info.output_amounts[entry.output.contract] += entry.output.amount;
@@ -496,7 +496,16 @@ std::vector<vnx::optional<txo_info_t>> Node::get_txo_infos(const std::vector<txi
 	return res;
 }
 
-std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id, const vnx::bool_t& include_pending) const
+std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id, const bool& include_pending) const
+{
+	auto tx = get_transaction_ex(id, include_pending);
+	if(tx->parent) {
+		return tx->get_combined();
+	}
+	return tx;
+}
+
+std::shared_ptr<const Transaction> Node::get_transaction_ex(const hash_t& id, const bool& include_pending) const
 {
 	// THREAD SAFE (for concurrent reads)
 	if(include_pending) {
@@ -1422,6 +1431,9 @@ void Node::apply(std::shared_ptr<const Block> block) noexcept
 
 void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx, std::shared_ptr<change_log_t> log) noexcept
 {
+	if(tx->parent) {
+		tx = tx->get_combined();
+	}
 	for(size_t i = 0; i < tx->inputs.size(); ++i)
 	{
 		auto iter = utxo_map.find(tx->inputs[i].prev);
@@ -1442,7 +1454,7 @@ void Node::apply(std::shared_ptr<const Block> block, std::shared_ptr<const Trans
 			utxo_map.erase(iter);
 		}
 	}
-	const auto outputs = tx->get_all_outputs();
+	const auto outputs = tx->get_outputs();
 	for(size_t i = 0; i < outputs.size(); ++i)
 	{
 		const auto key = txio_key_t::create_ex(tx->id, i);

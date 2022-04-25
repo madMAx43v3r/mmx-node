@@ -65,7 +65,7 @@ protected:
 
 	std::vector<vnx::optional<txo_info_t>> get_txo_infos(const std::vector<txio_key_t>& keys) const override;
 
-	std::shared_ptr<const Transaction> get_transaction(const hash_t& id, const vnx::bool_t& include_pending = false) const override;
+	std::shared_ptr<const Transaction> get_transaction(const hash_t& id, const bool& include_pending = false) const override;
 
 	std::vector<std::shared_ptr<const Transaction>> get_transactions(const std::vector<hash_t>& ids) const override;
 
@@ -192,6 +192,8 @@ private:
 
 	void add_dummy_blocks(std::shared_ptr<const BlockHeader> prev);
 
+	std::shared_ptr<const Transaction> get_transaction_ex(const hash_t& id, const bool& include_pending) const;
+
 	void validate_pool();
 
 	std::vector<tx_data_t> validate_pending(const uint64_t verify_limit, const uint64_t select_limit, bool only_new);
@@ -221,8 +223,17 @@ private:
 	std::shared_ptr<const Context> create_exec_context(
 			std::shared_ptr<const Context> base, std::shared_ptr<const Contract> contract, std::shared_ptr<const Transaction> tx) const;
 
-	std::shared_ptr<const Transaction> validate(std::shared_ptr<const Transaction> tx, std::shared_ptr<const Context> context,
-												std::shared_ptr<const Block> base, uint64_t& fee_amount) const;
+	void validate(	std::shared_ptr<const Transaction> tx,
+					std::shared_ptr<const Context> context,
+					std::vector<tx_out_t>& outputs,
+					std::vector<tx_out_t>& exec_outputs,
+					std::unordered_set<txio_key_t>& spent,
+					std::unordered_map<addr_t, uint128_t>& amounts,
+					std::unordered_map<addr_t, std::shared_ptr<Contract>>& contract_state) const;
+
+	std::shared_ptr<const Transaction>
+	validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const Context> context,
+				std::shared_ptr<const Block> base, uint64_t& fee_amount) const;
 
 	void validate_diff_adjust(const uint64_t& block, const uint64_t& prev) const;
 

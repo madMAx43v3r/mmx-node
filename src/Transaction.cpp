@@ -47,6 +47,12 @@ vnx::bool_t Transaction::is_valid() const
 			return false;
 		}
 	}
+	if(is_extendable && deploy) {
+		return false;
+	}
+	if(parent && !parent->is_valid()) {
+		return false;
+	}
 	return version == 0 && fee_ratio >= 1024 && calc_hash() == id;
 }
 
@@ -73,6 +79,8 @@ hash_t Transaction::calc_hash() const
 		write_bytes(out, op ? op->calc_hash() : hash_t());
 	}
 	write_field(out, "deploy", deploy ? deploy->calc_hash() : hash_t());
+	write_field(out, "parent", parent ? parent->calc_hash() : hash_t());
+	write_field(out, "is_extendable", is_extendable);
 
 	out.flush();
 
@@ -123,11 +131,27 @@ tx_out_t Transaction::get_output(const uint32_t& index) const
 	throw std::logic_error("no such output");
 }
 
-std::vector<tx_out_t> Transaction::get_all_outputs() const
+std::vector<tx_out_t> Transaction::get_outputs() const
 {
 	auto res = outputs;
 	res.insert(res.end(), exec_outputs.begin(), exec_outputs.end());
 	return res;
+}
+
+std::vector<tx_out_t> Transaction::get_all_outputs() const
+{
+	if(parent) {
+		return get_combined()->get_outputs();
+	}
+	return get_outputs();
+}
+
+std::vector<tx_in_t> Transaction::get_all_inputs() const
+{
+	if(parent) {
+		return get_combined()->inputs;
+	}
+	return inputs;
 }
 
 uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
@@ -135,7 +159,9 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 	if(!params) {
 		throw std::logic_error("!params");
 	}
-	uint128_t cost = (inputs.size() + outputs.size()) * params->min_txfee_io;
+	uint128_t cost = params->min_txfee;
+	cost += inputs.size() * params->min_txfee_io;
+	cost += outputs.size() * params->min_txfee_io;
 
 	for(const auto& in : inputs) {
 		if(in.flags & tx_in_t::IS_EXEC) {
@@ -154,6 +180,9 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 	}
 	if(deploy) {
 		cost += params->min_txfee_deploy + deploy->calc_cost(params);
+	}
+	if(parent) {
+		cost += parent->calc_cost(params);
 	}
 	if(cost.upper()) {
 		throw std::logic_error("tx cost amount overflow");
@@ -192,6 +221,34 @@ vnx::bool_t Transaction::is_signed() const
 	}
 	return true;
 }
+
+void combine(std::shared_ptr<Transaction> out, const Transaction& tx)
+{
+	out->expires = std::min(out->expires, tx.expires);
+	out->inputs.insert(out->inputs.begin(), tx.inputs.begin(), tx.inputs.end());
+	out->outputs.insert(out->outputs.begin(), tx.outputs.begin(), tx.outputs.end());
+	out->exec_outputs.insert(out->exec_outputs.begin(), tx.exec_outputs.begin(), tx.exec_outputs.end());
+	out->execute.insert(out->execute.begin(), tx.execute.begin(), tx.execute.end());
+
+	if(tx.parent) {
+		combine(out, *tx.parent);
+	}
+}
+
+std::shared_ptr<const Transaction> Transaction::get_combined() const
+{
+	auto out = vnx::clone(*this);
+	if(parent) {
+		combine(out, *parent);
+	}
+	return out;
+}
+
+
+
+
+
+
 
 
 } // mmx

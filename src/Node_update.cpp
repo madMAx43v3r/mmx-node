@@ -434,7 +434,8 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 		if(entry.duplicate) {
 			continue;
 		}
-		for(const auto& in : entry.tx->inputs) {
+		for(const auto& in : entry.tx->get_all_inputs())
+		{
 			const auto& prev = in.prev.txid;
 			// check if tx depends on another one which is not in a block yet
 			if(tx_pool.count(prev)) {
@@ -549,8 +550,12 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 		}
 		if(total_cost + entry.cost <= select_limit)
 		{
+			auto tx = entry.tx;
+			if(tx->parent) {
+				tx = tx->get_combined();
+			}
 			bool passed = true;
-			for(const auto& in : entry.tx->inputs) {
+			for(const auto& in : tx->inputs) {
 				// prevent double spending
 				if(!spent.insert(in.prev).second) {
 					entry.invalid = true;
@@ -559,7 +564,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 			}
 			{
 				std::unordered_set<addr_t> addr_set;
-				for(const auto& op : entry.tx->execute) {
+				for(const auto& op : tx->execute) {
 					if(std::dynamic_pointer_cast<const operation::Mutate>(op)) {
 						addr_set.insert(op->address);
 					}

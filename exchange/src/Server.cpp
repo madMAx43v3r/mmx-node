@@ -62,6 +62,9 @@ void Server::handle(std::shared_ptr<const Block> block)
 	std::unordered_map<txio_key_t, hash_t> exec_map;
 	for(const auto& base : block->tx_list) {
 		if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
+			if(tx->parent) {
+				tx = tx->get_combined();
+			}
 			for(const auto& in : tx->inputs) {
 				if(utxo_map.erase(in.prev)) {
 					exec_map[in.prev] = tx->id;
@@ -297,7 +300,7 @@ void Server::place_async(const uint64_t& client, const trade_pair_t& pair, const
 
 void Server::execute_async(std::shared_ptr<const Transaction> tx, const vnx::request_id_t& request_id)
 {
-	if(!tx || !tx->is_valid()) {
+	if(!tx || !tx->is_valid() || tx->parent) {
 		throw std::logic_error("invalid tx");
 	}
 	std::vector<txio_key_t> keys;

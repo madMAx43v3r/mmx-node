@@ -263,7 +263,7 @@ public:
 			for(const auto& entry : spend_cost) {
 				tx_fees += entry.second;	// spend execution cost
 			}
-			if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(tx->deploy)) {
+			if(std::dynamic_pointer_cast<const contract::NFT>(tx->deploy)) {
 				tx_fees += params->min_txfee_sign;
 			}
 			tx_fees = (uint128_t(tx_fees) * tx->fee_ratio) / 1024;

@@ -28,6 +28,10 @@ class Transaction extends TransactionBase {
 	
 	Contract* deploy;
 	
+	Transaction* parent;
+	
+	bool is_extendable;
+	
 	
 	void finalize();
 	
@@ -45,8 +49,14 @@ class Transaction extends TransactionBase {
 	
 	tx_out_t get_output(uint index) const;
 	
+	vector<tx_out_t> get_outputs() const;
+	
 	vector<tx_out_t> get_all_outputs() const;
 	
+	vector<tx_in_t> get_all_inputs() const;
+	
 	ulong calc_cost(ChainParams* params) const;
+	
+	Transaction* get_combined() const;
 	
 }

@@ -75,6 +75,9 @@ void Node::validate(std::shared_ptr<const Block> block) const
 
 		for(const auto& base : block->tx_list) {
 			if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
+				if(tx->parent) {
+					tx = tx->get_combined();
+				}
 				for(const auto& in : tx->inputs) {
 					if(!spent.insert(in.prev).second) {
 						throw std::logic_error("double spend");
@@ -160,88 +163,32 @@ std::shared_ptr<const Context> Node::create_exec_context(
 	return context;
 }
 
-std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const Context> context,
-													std::shared_ptr<const Block> base, uint64_t& fee_amount) const
+void Node::validate(std::shared_ptr<const Transaction> tx,
+					std::shared_ptr<const Context> context,
+					std::vector<tx_out_t>& outputs,
+					std::vector<tx_out_t>& exec_outputs,
+					std::unordered_set<txio_key_t>& spent,
+					std::unordered_map<addr_t, uint128_t>& amounts,
+					std::unordered_map<addr_t, std::shared_ptr<Contract>>& contract_state) const
 {
-	if(!tx->is_valid()) {
-		throw std::logic_error("invalid tx");
-	}
 	if(tx->expires < context->height) {
 		throw std::logic_error("tx expired");
 	}
-	const auto tx_cost = tx->calc_cost(params);
-
-	if(base) {
-		if(tx->deploy) {
-			throw std::logic_error("coin base cannot deploy");
-		}
-		if(!tx->inputs.empty()) {
-			throw std::logic_error("coin base cannot have inputs");
-		}
-		if(!tx->execute.empty()) {
-			throw std::logic_error("coin base cannot have operations");
-		}
-		if(!tx->exec_outputs.empty()) {
-			throw std::logic_error("coin base cannot have execution outputs");
-		}
-		if(tx->outputs.size() > params->max_tx_base_out) {
-			throw std::logic_error("coin base has too many outputs");
-		}
-		if(!tx->salt || *tx->salt != base->vdf_output[0]) {
-			throw std::logic_error("invalid coin base salt");
-		}
-		if(tx->expires != base->height) {
-			throw std::logic_error("invalid coin base expires");
-		}
-		if(tx->fee_ratio != 1024) {
-			throw std::logic_error("invalid coin base fee_ratio");
-		}
-		if(tx->sender) {
-			throw std::logic_error("coin base cannot have sender");
-		}
-	} else {
-		if(tx->inputs.empty()) {
-			throw std::logic_error("tx without input");
-		}
-	}
-	if(tx_cost > params->max_block_cost) {
-		throw std::logic_error("tx cost > max_block_cost");
-	}
+	if(auto parent = tx->parent)
 	{
-		std::unordered_set<txio_key_t> spent;
-		for(const auto& in : tx->inputs) {
-			if(!spent.insert(in.prev).second) {
-				throw std::logic_error("double spend");
-			}
+		if(!parent->is_extendable) {
+			throw std::logic_error("parent not extendable");
 		}
+		if(tx->version != parent->version || tx->note != parent->note) {
+			throw std::logic_error("invalid extension");
+		}
+		validate(parent, context, outputs, exec_outputs, spent, amounts, contract_state);
 	}
-	{
-		std::unordered_set<addr_t> contracts;
-		for(const auto& in : tx->inputs) {
-			if(in.flags & tx_in_t::IS_EXEC) {
-				auto iter = utxo_map.find(in.prev);
-				if(iter != utxo_map.end()) {
-					const auto& utxo = iter->second;
-					contracts.insert(utxo.address);
-				}
-			}
-		}
-		for(const auto& op : tx->execute) {
-			if(op) {
-				contracts.insert(op->address);
-			}
-		}
-		if(contracts.size() > params->max_tx_operations) {
-			throw std::logic_error("number of contracts > max_tx_operations");
-		}
-	}
-	uint128_t base_amount = 0;
-	std::vector<tx_out_t> exec_outputs;
-	std::unordered_map<addr_t, uint128_t> amounts;
-	std::unordered_map<addr_t, std::shared_ptr<Contract>> contract_state;
-
 	for(const auto& in : tx->inputs)
 	{
+		if(!spent.insert(in.prev).second) {
+			throw std::logic_error("double spend");
+		}
 		auto iter = utxo_map.find(in.prev);
 		if(iter == utxo_map.end()) {
 			throw std::logic_error("utxo not found");
@@ -275,7 +222,6 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 
 		amounts[utxo.contract] += utxo.amount;
 	}
-
 	for(const auto& op : tx->execute)
 	{
 		if(!op || !op->is_valid()) {
@@ -312,8 +258,62 @@ std::shared_ptr<const Transaction> Node::validate(	std::shared_ptr<const Transac
 		const auto outputs = contract->validate(op, create_exec_context(context, contract, tx));
 		exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
 	}
+	outputs.insert(outputs.begin(), tx->outputs.begin(), tx->outputs.end());
+}
 
-	for(const auto& out : tx->outputs)
+std::shared_ptr<const Transaction>
+Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const Context> context,
+				std::shared_ptr<const Block> base, uint64_t& fee_amount) const
+{
+	if(!tx->is_valid()) {
+		throw std::logic_error("invalid tx");
+	}
+	if(base) {
+		if(tx->deploy) {
+			throw std::logic_error("coin base cannot deploy");
+		}
+		if(!tx->inputs.empty()) {
+			throw std::logic_error("coin base cannot have inputs");
+		}
+		if(!tx->execute.empty()) {
+			throw std::logic_error("coin base cannot have operations");
+		}
+		if(!tx->exec_outputs.empty()) {
+			throw std::logic_error("coin base cannot have execution outputs");
+		}
+		if(tx->outputs.size() > params->max_tx_base_out) {
+			throw std::logic_error("coin base has too many outputs");
+		}
+		if(!tx->salt || *tx->salt != base->vdf_output[0]) {
+			throw std::logic_error("invalid coin base salt");
+		}
+		if(tx->expires != base->height) {
+			throw std::logic_error("invalid coin base expires");
+		}
+		if(tx->fee_ratio != 1024) {
+			throw std::logic_error("invalid coin base fee_ratio");
+		}
+		if(tx->sender) {
+			throw std::logic_error("coin base cannot have sender");
+		}
+		if(tx->parent || tx->is_extendable) {
+			throw std::logic_error("coin base is not extendable");
+		}
+	}
+	const auto tx_cost = tx->calc_cost(params);
+	if(tx_cost > params->max_block_cost) {
+		throw std::logic_error("tx cost > max_block_cost");
+	}
+	uint128_t base_amount = 0;
+	std::vector<tx_out_t> outputs;
+	std::vector<tx_out_t> exec_outputs;
+	std::unordered_set<txio_key_t> spent;
+	std::unordered_map<addr_t, uint128_t> amounts;
+	std::unordered_map<addr_t, std::shared_ptr<Contract>> contract_state;
+
+	validate(tx, context, outputs, exec_outputs, spent, amounts, contract_state);
+
+	for(const auto& out : outputs)
 	{
 		if(out.amount == 0) {
 			throw std::logic_error("zero amount output");
