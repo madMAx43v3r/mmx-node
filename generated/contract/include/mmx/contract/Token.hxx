@@ -7,10 +7,9 @@
 #include <mmx/contract/package.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/Context.hxx>
-#include <mmx/Contract.hxx>
 #include <mmx/Operation.hxx>
-#include <mmx/Solution.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/contract/TokenBase.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/tx_out_t.hxx>
 #include <mmx/ulong_fraction_t.hxx>
@@ -19,14 +18,9 @@
 namespace mmx {
 namespace contract {
 
-class MMX_CONTRACT_EXPORT Token : public ::mmx::Contract {
+class MMX_CONTRACT_EXPORT Token : public ::mmx::contract::TokenBase {
 public:
 	
-	std::string name;
-	std::string symbol;
-	std::string web_url;
-	std::string icon_url;
-	int32_t decimals = 6;
 	vnx::optional<::mmx::addr_t> owner;
 	vnx::optional<::mmx::ulong_fraction_t> time_factor;
 	std::map<::mmx::addr_t, ::mmx::ulong_fraction_t> stake_factors;
@@ -34,7 +28,7 @@ public:
 	vnx::bool_t is_adjustable = false;
 	uint32_t min_stake_duration = 18;
 	
-	typedef ::mmx::Contract Super;
+	typedef ::mmx::contract::TokenBase Super;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -50,11 +44,11 @@ public:
 	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_hash() const override;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
-	virtual std::vector<::mmx::addr_t> get_dependency() const override;
-	virtual std::vector<::mmx::addr_t> get_parties() const override;
-	virtual vnx::optional<::mmx::addr_t> get_owner() const override;
-	virtual std::vector<::mmx::tx_out_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
-	virtual void transfer(const vnx::optional<::mmx::addr_t>& new_owner = nullptr) override;
+	virtual std::vector<::mmx::addr_t> get_dependency() const;
+	virtual std::vector<::mmx::addr_t> get_parties() const;
+	virtual vnx::optional<::mmx::addr_t> get_owner() const;
+	virtual std::vector<::mmx::tx_out_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const;
+	virtual void transfer(const vnx::optional<::mmx::addr_t>& new_owner = nullptr);
 	virtual void set_time_factor(const vnx::optional<::mmx::ulong_fraction_t>& factor = nullptr);
 	virtual void set_stake_factor(const ::mmx::addr_t& currency = ::mmx::addr_t(), const vnx::optional<::mmx::ulong_fraction_t>& factor = nullptr);
 	

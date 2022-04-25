@@ -73,15 +73,15 @@ namespace mmx {
 
 
 const vnx::Hash64 RouterBase::VNX_TYPE_HASH(0x952c4ef2956f31c4ull);
-const vnx::Hash64 RouterBase::VNX_CODE_HASH(0x59ad5ad41ad65d32ull);
+const vnx::Hash64 RouterBase::VNX_CODE_HASH(0xde6b9d2a22e8cdc1ull);
 
 RouterBase::RouterBase(const std::string& _vnx_name)
 	:	MsgServer::MsgServer(_vnx_name)
 {
 	vnx::read_config(vnx_name + ".input_vdfs", input_vdfs);
-	vnx::read_config(vnx_name + ".input_blocks", input_blocks);
 	vnx::read_config(vnx_name + ".input_verified_vdfs", input_verified_vdfs);
 	vnx::read_config(vnx_name + ".input_verified_proof", input_verified_proof);
+	vnx::read_config(vnx_name + ".input_verified_blocks", input_verified_blocks);
 	vnx::read_config(vnx_name + ".input_verified_transactions", input_verified_transactions);
 	vnx::read_config(vnx_name + ".input_transactions", input_transactions);
 	vnx::read_config(vnx_name + ".output_vdfs", output_vdfs);
@@ -149,9 +149,9 @@ void RouterBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, show_warnings);
 	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, max_msg_size);
 	_visitor.type_field(_type_code->fields[12], 12); vnx::accept(_visitor, input_vdfs);
-	_visitor.type_field(_type_code->fields[13], 13); vnx::accept(_visitor, input_blocks);
-	_visitor.type_field(_type_code->fields[14], 14); vnx::accept(_visitor, input_verified_vdfs);
-	_visitor.type_field(_type_code->fields[15], 15); vnx::accept(_visitor, input_verified_proof);
+	_visitor.type_field(_type_code->fields[13], 13); vnx::accept(_visitor, input_verified_vdfs);
+	_visitor.type_field(_type_code->fields[14], 14); vnx::accept(_visitor, input_verified_proof);
+	_visitor.type_field(_type_code->fields[15], 15); vnx::accept(_visitor, input_verified_blocks);
 	_visitor.type_field(_type_code->fields[16], 16); vnx::accept(_visitor, input_verified_transactions);
 	_visitor.type_field(_type_code->fields[17], 17); vnx::accept(_visitor, input_transactions);
 	_visitor.type_field(_type_code->fields[18], 18); vnx::accept(_visitor, output_vdfs);
@@ -207,9 +207,9 @@ void RouterBase::write(std::ostream& _out) const {
 	_out << ", \"show_warnings\": "; vnx::write(_out, show_warnings);
 	_out << ", \"max_msg_size\": "; vnx::write(_out, max_msg_size);
 	_out << ", \"input_vdfs\": "; vnx::write(_out, input_vdfs);
-	_out << ", \"input_blocks\": "; vnx::write(_out, input_blocks);
 	_out << ", \"input_verified_vdfs\": "; vnx::write(_out, input_verified_vdfs);
 	_out << ", \"input_verified_proof\": "; vnx::write(_out, input_verified_proof);
+	_out << ", \"input_verified_blocks\": "; vnx::write(_out, input_verified_blocks);
 	_out << ", \"input_verified_transactions\": "; vnx::write(_out, input_verified_transactions);
 	_out << ", \"input_transactions\": "; vnx::write(_out, input_transactions);
 	_out << ", \"output_vdfs\": "; vnx::write(_out, output_vdfs);
@@ -272,9 +272,9 @@ vnx::Object RouterBase::to_object() const {
 	_object["show_warnings"] = show_warnings;
 	_object["max_msg_size"] = max_msg_size;
 	_object["input_vdfs"] = input_vdfs;
-	_object["input_blocks"] = input_blocks;
 	_object["input_verified_vdfs"] = input_verified_vdfs;
 	_object["input_verified_proof"] = input_verified_proof;
+	_object["input_verified_blocks"] = input_verified_blocks;
 	_object["input_verified_transactions"] = input_verified_transactions;
 	_object["input_transactions"] = input_transactions;
 	_object["output_vdfs"] = output_vdfs;
@@ -337,12 +337,12 @@ void RouterBase::from_object(const vnx::Object& _object) {
 			_entry.second.to(fixed_peers);
 		} else if(_entry.first == "host") {
 			_entry.second.to(host);
-		} else if(_entry.first == "input_blocks") {
-			_entry.second.to(input_blocks);
 		} else if(_entry.first == "input_transactions") {
 			_entry.second.to(input_transactions);
 		} else if(_entry.first == "input_vdfs") {
 			_entry.second.to(input_vdfs);
+		} else if(_entry.first == "input_verified_blocks") {
+			_entry.second.to(input_verified_blocks);
 		} else if(_entry.first == "input_verified_proof") {
 			_entry.second.to(input_verified_proof);
 		} else if(_entry.first == "input_verified_transactions") {
@@ -467,14 +467,14 @@ vnx::Variant RouterBase::get_field(const std::string& _name) const {
 	if(_name == "input_vdfs") {
 		return vnx::Variant(input_vdfs);
 	}
-	if(_name == "input_blocks") {
-		return vnx::Variant(input_blocks);
-	}
 	if(_name == "input_verified_vdfs") {
 		return vnx::Variant(input_verified_vdfs);
 	}
 	if(_name == "input_verified_proof") {
 		return vnx::Variant(input_verified_proof);
+	}
+	if(_name == "input_verified_blocks") {
+		return vnx::Variant(input_verified_blocks);
 	}
 	if(_name == "input_verified_transactions") {
 		return vnx::Variant(input_verified_transactions);
@@ -617,12 +617,12 @@ void RouterBase::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(max_msg_size);
 	} else if(_name == "input_vdfs") {
 		_value.to(input_vdfs);
-	} else if(_name == "input_blocks") {
-		_value.to(input_blocks);
 	} else if(_name == "input_verified_vdfs") {
 		_value.to(input_verified_vdfs);
 	} else if(_name == "input_verified_proof") {
 		_value.to(input_verified_proof);
+	} else if(_name == "input_verified_blocks") {
+		_value.to(input_verified_blocks);
 	} else if(_name == "input_verified_transactions") {
 		_value.to(input_verified_transactions);
 	} else if(_name == "input_transactions") {
@@ -724,7 +724,7 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Router";
 	type_code->type_hash = vnx::Hash64(0x952c4ef2956f31c4ull);
-	type_code->code_hash = vnx::Hash64(0x59ad5ad41ad65d32ull);
+	type_code->code_hash = vnx::Hash64(0xde6b9d2a22e8cdc1ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::RouterBase);
 	type_code->parents.resize(2);
@@ -849,22 +849,22 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	{
 		auto& field = type_code->fields[13];
 		field.is_extended = true;
-		field.name = "input_blocks";
-		field.value = vnx::to_string("node.verified_blocks");
-		field.code = {12, 5};
-	}
-	{
-		auto& field = type_code->fields[14];
-		field.is_extended = true;
 		field.name = "input_verified_vdfs";
 		field.value = vnx::to_string("node.verified_vdfs");
 		field.code = {12, 5};
 	}
 	{
-		auto& field = type_code->fields[15];
+		auto& field = type_code->fields[14];
 		field.is_extended = true;
 		field.name = "input_verified_proof";
 		field.value = vnx::to_string("node.verified_proof");
+		field.code = {12, 5};
+	}
+	{
+		auto& field = type_code->fields[15];
+		field.is_extended = true;
+		field.name = "input_verified_blocks";
+		field.value = vnx::to_string("node.verified_blocks");
 		field.code = {12, 5};
 	}
 	{
@@ -1472,9 +1472,9 @@ void read(TypeInput& in, ::mmx::RouterBase& value, const TypeCode* type_code, co
 		switch(_field->native_index) {
 			case 1: vnx::read(in, value.host, type_code, _field->code.data()); break;
 			case 12: vnx::read(in, value.input_vdfs, type_code, _field->code.data()); break;
-			case 13: vnx::read(in, value.input_blocks, type_code, _field->code.data()); break;
-			case 14: vnx::read(in, value.input_verified_vdfs, type_code, _field->code.data()); break;
-			case 15: vnx::read(in, value.input_verified_proof, type_code, _field->code.data()); break;
+			case 13: vnx::read(in, value.input_verified_vdfs, type_code, _field->code.data()); break;
+			case 14: vnx::read(in, value.input_verified_proof, type_code, _field->code.data()); break;
+			case 15: vnx::read(in, value.input_verified_blocks, type_code, _field->code.data()); break;
 			case 16: vnx::read(in, value.input_verified_transactions, type_code, _field->code.data()); break;
 			case 17: vnx::read(in, value.input_transactions, type_code, _field->code.data()); break;
 			case 18: vnx::read(in, value.output_vdfs, type_code, _field->code.data()); break;
@@ -1544,9 +1544,9 @@ void write(TypeOutput& out, const ::mmx::RouterBase& value, const TypeCode* type
 	vnx::write_value(_buf + 131, value.do_relay);
 	vnx::write(out, value.host, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.input_vdfs, type_code, type_code->fields[12].code.data());
-	vnx::write(out, value.input_blocks, type_code, type_code->fields[13].code.data());
-	vnx::write(out, value.input_verified_vdfs, type_code, type_code->fields[14].code.data());
-	vnx::write(out, value.input_verified_proof, type_code, type_code->fields[15].code.data());
+	vnx::write(out, value.input_verified_vdfs, type_code, type_code->fields[13].code.data());
+	vnx::write(out, value.input_verified_proof, type_code, type_code->fields[14].code.data());
+	vnx::write(out, value.input_verified_blocks, type_code, type_code->fields[15].code.data());
 	vnx::write(out, value.input_verified_transactions, type_code, type_code->fields[16].code.data());
 	vnx::write(out, value.input_transactions, type_code, type_code->fields[17].code.data());
 	vnx::write(out, value.output_vdfs, type_code, type_code->fields[18].code.data());
