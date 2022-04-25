@@ -27,10 +27,7 @@ vnx::bool_t Token::is_valid() const
 			return false;
 		}
 	}
-	return Super::is_valid() && name.size() <= 128
-			&& symbol.size() >= 2 && symbol.size() <= 6
-			&& symbol != "MMX" && symbol.find_first_of(" \n\t\r\b\f") == std::string::npos
-			&& decimals >= 0 && decimals <= 12;
+	return Super::is_valid();
 }
 
 hash_t Token::calc_hash() const
@@ -63,7 +60,7 @@ hash_t Token::calc_hash() const
 
 uint64_t Token::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	return (name.size() + symbol.size() + web_url.size() + icon_url.size() + (32 + 16) * stake_factors.size()) * params->min_txfee_byte;
+	return Super::calc_cost(params) + ((32 + 16) * stake_factors.size()) * params->min_txfee_byte;
 }
 
 std::vector<addr_t> Token::get_dependency() const {
