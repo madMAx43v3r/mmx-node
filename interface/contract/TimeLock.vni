@@ -27,6 +27,6 @@ class TimeLock extends mmx.Contract {
 	
 	bool is_spendable(mmx.utxo_t utxo, mmx.Context* context) const;
 	
-	vector<mmx.tx_out_t> validate(mmx.Operation* operation, mmx.Context* context) const;
+	vector<mmx.txio_t> validate(mmx.Operation* operation, mmx.Context* context) const;
 	
 }

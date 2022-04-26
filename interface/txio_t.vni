@@ -1,6 +1,6 @@
 package mmx;
 
-struct tx_out_t {
+struct txio_t {
 	
 	addr_t address;
 	

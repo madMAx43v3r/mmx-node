@@ -72,6 +72,7 @@ hash_t Transaction::calc_hash() const
 	write_field(out, "note", 	note);
 	write_field(out, "salt", 	salt);
 	write_field(out, "sender",	sender);
+	write_field(out, "revoke",	revoke);
 	write_field(out, "inputs",	inputs);
 	write_field(out, "outputs", outputs);
 	write_field(out, "execute");
@@ -100,7 +101,7 @@ void Transaction::add_output(const addr_t& currency, const addr_t& address, cons
 	}
 	uint64_t left = amount;
 	for(uint32_t i = 0; i < split; ++i) {
-		tx_out_t out;
+		txio_t out;
 		out.address = address;
 		out.contract = currency;
 		out.amount = i + 1 < split ? amount / split : left;
@@ -117,7 +118,7 @@ std::shared_ptr<const Solution> Transaction::get_solution(const uint32_t& index)
 	return nullptr;
 }
 
-tx_out_t Transaction::get_output(const uint32_t& index) const
+txio_t Transaction::get_output(const uint32_t& index) const
 {
 	if(index < outputs.size()) {
 		return outputs[index];
@@ -131,14 +132,14 @@ tx_out_t Transaction::get_output(const uint32_t& index) const
 	throw std::logic_error("no such output");
 }
 
-std::vector<tx_out_t> Transaction::get_outputs() const
+std::vector<txio_t> Transaction::get_outputs() const
 {
 	auto res = outputs;
 	res.insert(res.end(), exec_outputs.begin(), exec_outputs.end());
 	return res;
 }
 
-std::vector<tx_out_t> Transaction::get_all_outputs() const
+std::vector<txio_t> Transaction::get_all_outputs() const
 {
 	if(parent) {
 		return get_combined()->get_outputs();
@@ -146,7 +147,7 @@ std::vector<tx_out_t> Transaction::get_all_outputs() const
 	return get_outputs();
 }
 
-std::vector<tx_in_t> Transaction::get_all_inputs() const
+std::vector<txin_t> Transaction::get_all_inputs() const
 {
 	if(parent) {
 		return get_combined()->inputs;
@@ -160,11 +161,12 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 		throw std::logic_error("!params");
 	}
 	uint128_t cost = params->min_txfee;
+	cost += revoke.size() * params->min_txfee;
 	cost += inputs.size() * params->min_txfee_io;
 	cost += outputs.size() * params->min_txfee_io;
 
 	for(const auto& in : inputs) {
-		if(in.flags & tx_in_t::IS_EXEC) {
+		if(in.flags & txin_t::IS_EXEC) {
 			cost += params->min_txfee_exec;
 		}
 	}
@@ -225,6 +227,7 @@ vnx::bool_t Transaction::is_signed() const
 void combine(std::shared_ptr<Transaction> out, const Transaction& tx)
 {
 	out->expires = std::min(out->expires, tx.expires);
+	out->revoke.insert(out->revoke.begin(), tx.revoke.begin(), tx.revoke.end());
 	out->inputs.insert(out->inputs.begin(), tx.inputs.begin(), tx.inputs.end());
 	out->outputs.insert(out->outputs.begin(), tx.outputs.begin(), tx.outputs.end());
 	out->exec_outputs.insert(out->exec_outputs.begin(), tx.exec_outputs.begin(), tx.exec_outputs.end());

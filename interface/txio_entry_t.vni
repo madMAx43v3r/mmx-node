@@ -1,0 +1,10 @@
+package mmx;
+
+struct txio_entry_t extends txio_t {
+	
+	txio_key_t key;
+	
+	
+	static txio_entry_t create_ex(txio_key_t key, txio_t txio);
+	
+}

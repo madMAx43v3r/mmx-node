@@ -1,13 +1,9 @@
 package mmx.operation;
 
-import mmx.addr_t;
+import mmx.txio_t;
 
 class Deposit extends Execute {
 	
-	addr_t sender;
-	
-	addr_t currency;
-	
-	ulong amount;
+	vector<txio_t> amounts;
 	
 }

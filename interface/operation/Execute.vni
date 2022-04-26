@@ -1,7 +1,9 @@
 package mmx.operation;
 
+import mmx.addr_t;
+
 class Execute extends mmx.Operation {
 	
-	// TODO
+	addr_t user;
 	
 }

@@ -16,11 +16,13 @@ class Transaction extends TransactionBase {
 	
 	optional<addr_t> sender;			// to receive change from fee
 	
-	vector<tx_in_t> inputs;
+	vector<hash_t> revoke;				// revoke a previous tx
 	
-	vector<tx_out_t> outputs;
+	vector<txin_t> inputs;
 	
-	vector<tx_out_t> exec_outputs;
+	vector<txio_t> outputs;
+	
+	vector<txio_t> exec_outputs;
 	
 	vector<Operation*> execute;
 	
@@ -47,13 +49,13 @@ class Transaction extends TransactionBase {
 	
 	Solution* get_solution(uint index) const;
 	
-	tx_out_t get_output(uint index) const;
+	txio_t get_output(uint index) const;
 	
-	vector<tx_out_t> get_outputs() const;
+	vector<txio_t> get_outputs() const;
 	
-	vector<tx_out_t> get_all_outputs() const;
+	vector<txio_t> get_all_outputs() const;
 	
-	vector<tx_in_t> get_all_inputs() const;
+	vector<txin_t> get_all_inputs() const;
 	
 	ulong calc_cost(ChainParams* params) const;
 	

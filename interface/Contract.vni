@@ -19,7 +19,7 @@ class Contract {
 	
 	bool is_spendable(mmx.utxo_t utxo, mmx.Context* context) const;
 	
-	vector<tx_out_t> validate(Operation* operation, Context* context) const;
+	vector<txio_t> validate(Operation* operation, Context* context) const;
 	
 	void transfer(optional<addr_t> new_owner);
 	
