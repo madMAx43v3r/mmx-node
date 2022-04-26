@@ -10,6 +10,8 @@
 #include <mmx/Challenge.hxx>
 #include <mmx/contract/Token.hxx>
 #include <mmx/contract/PubKey.hxx>
+#include <mmx/operation/Revoke.hxx>
+#include <mmx/operation/Mutate.hxx>
 #include <mmx/utxo_entry_t.hpp>
 #include <mmx/stxo_entry_t.hpp>
 #include <mmx/utils.h>
@@ -1350,9 +1352,6 @@ void Node::apply(std::shared_ptr<const Block> block) noexcept
 		if(tx->parent) {
 			tx = tx->get_combined();
 		}
-		for(const auto& hash : tx->revoke) {
-			revoke_map.insert(hash, tx->id);
-		}
 		const auto outputs = tx->get_outputs();
 		for(size_t i = 0; i < outputs.size(); ++i)
 		{
@@ -1378,6 +1377,9 @@ void Node::apply(std::shared_ptr<const Block> block) noexcept
 		}
 		for(const auto& op : tx->execute)
 		{
+			if(auto revoke = std::dynamic_pointer_cast<const operation::Revoke>(op)) {
+				revoke_map.insert(revoke->txid, std::make_pair(revoke->address, tx->id));
+			}
 			if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op))
 			{
 				std::shared_ptr<const Contract> contract;
@@ -1470,8 +1472,11 @@ bool Node::revert() noexcept
 		if(tx->parent) {
 			tx = tx->get_combined();
 		}
-		for(const auto& hash : tx->revoke) {
-			revoke_map.erase_match(hash, tx->id);
+		for(const auto& op : tx->execute)
+		{
+			if(auto revoke = std::dynamic_pointer_cast<const operation::Revoke>(op)) {
+				revoke_map.erase_match(revoke->txid, std::make_pair(revoke->address, tx->id));
+			}
 		}
 		if(auto contract = tx->deploy) {
 			if(auto owner = contract->get_owner()) {

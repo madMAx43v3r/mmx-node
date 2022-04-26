@@ -16,8 +16,6 @@ class Transaction extends TransactionBase {
 	
 	optional<addr_t> sender;			// to receive change from fee
 	
-	vector<hash_t> revoke;				// revoke a previous tx
-	
 	vector<txin_t> inputs;
 	
 	vector<txio_t> outputs;

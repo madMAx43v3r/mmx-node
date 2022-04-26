@@ -1,0 +1,9 @@
+package mmx.operation;
+
+import mmx.hash_t;
+
+class Revoke extends mmx.Operation {
+	
+	hash_t txid;
+	
+}

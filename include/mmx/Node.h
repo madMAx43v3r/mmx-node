@@ -293,13 +293,13 @@ private:
 	hash_t state_hash;
 
 	vnx::rocksdb::multi_table<uint32_t, addr_t> addr_log;								// [height => address]
+	vnx::rocksdb::multi_table<hash_t, std::pair<addr_t, hash_t>> revoke_map;			// [org txid => [address, txid]]
 	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, txio_entry_t> recv_log;		// [[address, height] => entry]
 	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, txio_entry_t> spend_log;		// [[address, height] => entry]
 
 	vnx::rocksdb::table<addr_t, std::shared_ptr<const Contract>> contract_cache;		// [addr, contract] (finalized only)
 	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, vnx::Object> mutate_log;		// [[addr, height] => method] (finalized only)
 	vnx::rocksdb::multi_table<addr_t, addr_t> owner_map;								// [owner => contract]
-	vnx::rocksdb::multi_table<hash_t, hash_t> revoke_map;								// [txid => txid]
 
 	std::map<std::pair<addr_t, addr_t>, uint128_t> balance_map;							// [[addr, currency] => balance]
 	vnx::rocksdb::table<std::pair<addr_t, addr_t>, std::pair<uint128, uint32_t>> balance_table;		// [[addr, currency] => [balance, height]]
