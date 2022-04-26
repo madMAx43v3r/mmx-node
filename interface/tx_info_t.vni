@@ -12,8 +12,8 @@ class tx_info_t {
 	
 	tx_note_e note;
 	
-	vector<txi_info_t> inputs;
-	vector<txo_info_t> outputs;
+	vector<txin_t> inputs;
+	vector<txout_t> outputs;
 	
 	vector<Operation*> operations;
 	

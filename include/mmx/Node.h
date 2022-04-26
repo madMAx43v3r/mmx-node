@@ -14,7 +14,8 @@
 #include <mmx/TimeLordAsyncClient.hxx>
 #include <mmx/utxo_t.hpp>
 #include <mmx/stxo_t.hpp>
-#include <mmx/txio_key_t.hpp>
+#include <mmx/txio_entry_t.hpp>
+#include <mmx/txout_entry_t.hpp>
 #include <mmx/OCL_VDF.h>
 #include <mmx/operation/Mutate.hxx>
 
@@ -61,15 +62,11 @@ protected:
 
 	vnx::optional<tx_info_t> get_tx_info(const hash_t& id) const override;
 
-	vnx::optional<txo_info_t> get_txo_info(const txio_key_t& key) const override;
-
-	std::vector<vnx::optional<txo_info_t>> get_txo_infos(const std::vector<txio_key_t>& keys) const override;
-
 	std::shared_ptr<const Transaction> get_transaction(const hash_t& id, const bool& include_pending = false) const override;
 
 	std::vector<std::shared_ptr<const Transaction>> get_transactions(const std::vector<hash_t>& ids) const override;
 
-	std::vector<tx_entry_t> get_history_for(const std::vector<addr_t>& addresses, const int32_t& since) const override;
+	std::vector<tx_entry_t> get_history(const std::vector<addr_t>& addresses, const int32_t& since) const override;
 
 	std::shared_ptr<const Contract> get_contract(const addr_t& address) const override;
 
@@ -87,27 +84,13 @@ protected:
 
 	uint128 get_total_balance(const std::vector<addr_t>& addresses, const addr_t& currency, const uint32_t& min_confirm) const override;
 
-	std::map<addr_t, uint128> get_total_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const override;
+	std::map<addr_t, uint128> get_balances(const addr_t& address, const uint32_t& min_confirm) const override;
 
-	std::map<addr_t, balance_t> get_balances(const addr_t& address, const uint32_t& min_confirm) const override;
+	std::map<addr_t, uint128> get_total_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const override;
 
 	uint128 get_total_supply(const addr_t& currency) const override;
 
 	uint128 get_virtual_plot_balance(const addr_t& plot_id, const hash_t& block_hash) const override;
-
-	std::vector<utxo_entry_t> get_utxo_list(
-			const std::vector<addr_t>& addresses, const uint32_t& min_confirm = 1, const uint32_t& since = 0) const override;
-
-	std::vector<utxo_entry_t> get_utxo_list(
-			const std::vector<addr_t>& addresses, const vnx::optional<addr_t> currency, const uint32_t& min_confirm = 1, const uint32_t& since = 0) const;
-
-	std::vector<utxo_entry_t> get_utxo_list_for(
-			const std::vector<addr_t>& addresses, const addr_t& currency, const uint32_t& min_confirm = 1, const uint32_t& since = 0) const override;
-
-	std::vector<utxo_entry_t> get_spendable_utxo_list(
-			const std::vector<addr_t>& addresses, const uint32_t& min_confirm, const uint32_t& since) const override;
-
-	std::vector<stxo_entry_t> get_stxo_list(const std::vector<addr_t>& addresses, const uint32_t& since = 0) const override;
 
 	void on_stuck_timeout();
 
@@ -182,8 +165,6 @@ private:
 
 	void add_dummy_blocks(std::shared_ptr<const BlockHeader> prev);
 
-	std::shared_ptr<const Transaction> get_transaction_ex(const hash_t& id, const bool& include_pending) const;
-
 	void validate_pool();
 
 	std::vector<tx_data_t> validate_pending(const uint64_t verify_limit, const uint64_t select_limit, bool only_new);
@@ -251,6 +232,8 @@ private:
 
 	bool revert() noexcept;
 
+	bool revert(const uint32_t height, std::shared_ptr<const Block> block) noexcept;
+
 	std::shared_ptr<const BlockHeader> get_root() const;
 
 	std::shared_ptr<const BlockHeader> get_peak() const;
@@ -293,9 +276,11 @@ private:
 	hash_t state_hash;
 
 	vnx::rocksdb::multi_table<uint32_t, addr_t> addr_log;								// [height => address]
-	vnx::rocksdb::multi_table<hash_t, std::pair<addr_t, hash_t>> revoke_map;			// [org txid => [address, txid]]
-	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, txio_entry_t> recv_log;		// [[address, height] => entry]
+	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, txout_entry_t> recv_log;		// [[address, height] => entry]
 	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, txio_entry_t> spend_log;		// [[address, height] => entry]
+
+	vnx::rocksdb::multi_table<uint32_t, hash_t> revoke_log;								// [height => txid]
+	vnx::rocksdb::table<hash_t, std::pair<addr_t, hash_t>> revoke_map;					// [org txid] => [address, txid]]
 
 	vnx::rocksdb::table<addr_t, std::shared_ptr<const Contract>> contract_cache;		// [addr, contract] (finalized only)
 	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, vnx::Object> mutate_log;		// [[addr, height] => method] (finalized only)

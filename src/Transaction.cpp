@@ -101,7 +101,7 @@ void Transaction::add_output(const addr_t& currency, const addr_t& address, cons
 	}
 	uint64_t left = amount;
 	for(uint32_t i = 0; i < split; ++i) {
-		txio_t out;
+		txout_t out;
 		out.address = address;
 		out.contract = currency;
 		out.amount = i + 1 < split ? amount / split : left;
@@ -118,7 +118,7 @@ std::shared_ptr<const Solution> Transaction::get_solution(const uint32_t& index)
 	return nullptr;
 }
 
-txio_t Transaction::get_output(const uint32_t& index) const
+txout_t Transaction::get_output(const uint32_t& index) const
 {
 	if(index < outputs.size()) {
 		return outputs[index];
@@ -132,14 +132,14 @@ txio_t Transaction::get_output(const uint32_t& index) const
 	throw std::logic_error("no such output");
 }
 
-std::vector<txio_t> Transaction::get_outputs() const
+std::vector<txout_t> Transaction::get_outputs() const
 {
 	auto res = outputs;
 	res.insert(res.end(), exec_outputs.begin(), exec_outputs.end());
 	return res;
 }
 
-std::vector<txio_t> Transaction::get_all_outputs() const
+std::vector<txout_t> Transaction::get_all_outputs() const
 {
 	if(parent) {
 		return get_combined()->get_outputs();
@@ -161,7 +161,6 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 		throw std::logic_error("!params");
 	}
 	uint128_t cost = params->min_txfee;
-	cost += revoke.size() * params->min_txfee;
 	cost += inputs.size() * params->min_txfee_io;
 	cost += outputs.size() * params->min_txfee_io;
 
@@ -227,7 +226,6 @@ vnx::bool_t Transaction::is_signed() const
 void combine(std::shared_ptr<Transaction> out, const Transaction& tx)
 {
 	out->expires = std::min(out->expires, tx.expires);
-	out->revoke.insert(out->revoke.begin(), tx.revoke.begin(), tx.revoke.end());
 	out->inputs.insert(out->inputs.begin(), tx.inputs.begin(), tx.inputs.end());
 	out->outputs.insert(out->outputs.begin(), tx.outputs.begin(), tx.outputs.end());
 	out->exec_outputs.insert(out->exec_outputs.begin(), tx.exec_outputs.begin(), tx.exec_outputs.end());
@@ -244,6 +242,7 @@ std::shared_ptr<const Transaction> Transaction::get_combined() const
 	if(parent) {
 		combine(out, *parent);
 	}
+	out->parent = nullptr;
 	return out;
 }
 

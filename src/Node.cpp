@@ -12,8 +12,7 @@
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/operation/Revoke.hxx>
 #include <mmx/operation/Mutate.hxx>
-#include <mmx/utxo_entry_t.hpp>
-#include <mmx/stxo_entry_t.hpp>
+#include <mmx/operation/Deposit.hxx>
 #include <mmx/utils.h>
 
 #include <vnx/vnx.h>
@@ -73,51 +72,62 @@ void Node::main()
 		options.max_manifest_file_size = 64 * 1024 * 1024;
 		options.OptimizeForSmallDb();
 
-		stxo_index.open(database_path + "stxo_index", options);
-		saddr_map.open(database_path + "saddr_map", options);
-		stxo_log.open(database_path + "stxo_log", options);
-		tx_index.open(database_path + "tx_index", options);
-		owner_map.open(database_path + "owner_map", options);
-		tx_log.open(database_path + "tx_log", options);
 		addr_log.open(database_path + "addr_log", options);
+		recv_log.open(database_path + "recv_log", options);
+		spend_log.open(database_path + "spend_log", options);
+		revoke_log.open(database_path + "revoke_log", options);
+		revoke_map.open(database_path + "revoke_map", options);
+
 		contract_cache.open(database_path + "contract_cache", options);
 		mutate_log.open(database_path + "mutate_log", options);
-	}
-	is_db_replay = vnx::File(database_path + ".is_synced").create();
+		owner_map.open(database_path + "owner_map", options);
 
+		tx_log.open(database_path + "tx_log", options);
+		tx_index.open(database_path + "tx_index", options);
+		hash_index.open(database_path + "hash_index", options);
+		block_index.open(database_path + "block_index", options);
+		balance_table.open(database_path + "balance_table", options);
+	}
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
 
+	is_replay = true;
 	if(block_chain->exists()) {
-		if(is_db_replay) {
-			log(INFO) << "Creating DB (this may take a while) ...";
-		}
-		const auto time_begin = vnx::get_wall_time_millis();
-
-		int64_t offset = 0;
 		block_chain->open("rb+");
-		while(auto header = read_block(*block_chain, &offset, true)) {
-			if(header->height >= replay_height) {
-				block_chain->seek_to(offset);
-				// preemptively mark end of file since we purge DB entries now
-				vnx::write(block_chain->out, nullptr);
-				block_chain->seek_to(offset);
-				break;
+		uint32_t height = 0;
+		std::pair<int64_t, hash_t> entry;
+		while(block_index.find_last(height, entry)) {
+			is_replay = false;
+			block_chain->seek_to(entry.first);
+			try {
+				int64_t offset = 0;
+				read_block(*block_chain, &offset, true);
+				if(height <= replay_height) {
+					break;
+				}
+			} catch(const std::exception& ex) {
+				log(WARN) << "Failed to read block " << height << ": " << ex.what();
 			}
-			if(auto block = std::dynamic_pointer_cast<const Block>(header)) {
-				apply(block);
-				commit(block);
-			}
-			block_index[header->height] = std::make_pair(offset, header->hash);
+			revert(height, nullptr);
 		}
-		if(auto peak = get_peak()) {
-			log(INFO) << "Loaded " << peak->height + 1 << " blocks from disk, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+		if(is_replay) {
+			const auto time_begin = vnx::get_wall_time_millis();
+			log(INFO) << "Creating DB (this may take a while) ...";
+			int64_t offset = 0;
+			while(auto header = read_block(*block_chain, &offset, true)) {
+				if(auto block = std::dynamic_pointer_cast<const Block>(header)) {
+					apply(block);
+					commit(block);
+				}
+			}
+			if(auto peak = get_peak()) {
+				log(INFO) << "Loaded " << peak->height + 1 << " blocks from disk, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+			}
 		}
 	} else {
 		block_chain->open("wb");
 		block_chain->open("rb+");
 	}
 	is_replay = false;
-	is_db_replay = false;
 	is_synced = !do_sync;
 
 	if(state_hash == hash_t())
@@ -131,84 +141,6 @@ void Node::main()
 
 		apply(genesis);
 		commit(genesis);
-	}
-
-	if(auto peak = get_peak()) {
-		const auto next_height = peak->height + 1;
-		{
-			std::vector<addr_t> addr_list;
-			if(addr_log.find(next_height, addr_list, vnx::rocksdb::GREATER_EQUAL))
-			{
-				const std::set<addr_t> addr_set(addr_list.begin(), addr_list.end());
-				{
-					size_t total = 0;
-					for(const auto& addr : addr_set) {
-						total += saddr_map.erase_range(std::make_pair(addr, next_height), std::make_pair(addr, -1));
-					}
-					log(INFO) << "Purged " << total << " saddr_map entries";
-				}
-				{
-					size_t total = 0;
-					std::set<addr_t> affected;
-					for(const auto& addr : addr_set) {
-						if(auto count = mutate_log.erase_range(std::make_pair(addr, next_height), std::make_pair(addr, -1))) {
-							affected.insert(addr);
-							total += count;
-						}
-					}
-					for(const auto& addr : affected) {
-						if(auto tx = get_transaction(addr)) {
-							if(auto contract = tx->deploy) {
-								auto copy = vnx::clone(contract);
-								std::vector<vnx::Object> mutations;
-								mutate_log.find_range(std::make_pair(addr, 0), std::make_pair(addr, -1), mutations);
-								for(const auto& method : mutations) {
-									copy->vnx_call(vnx::clone(method));
-								}
-								if(mutations.empty()) {
-									contract_cache.erase(addr);
-								} else {
-									contract_cache.insert(addr, copy);
-								}
-							}
-						}
-					}
-					log(INFO) << "Purged " << total << " mutate_log entries";
-					log(INFO) << "Reverted " << affected.size() << " contracts";
-				}
-			}
-			addr_log.erase_all(next_height, vnx::rocksdb::GREATER_EQUAL);
-		}
-		{
-			std::vector<txio_key_t> keys;
-			if(stxo_log.find(next_height, keys, vnx::rocksdb::GREATER_EQUAL))
-			{
-				if(keys.size() > size_t(std::numeric_limits<int>::max())) {
-					throw std::logic_error("keys.size() > INT_MAX");
-				}
-#pragma omp parallel for
-				for(int i = 0; i < int(keys.size()); ++i) {
-					stxo_index.erase(keys[i]);
-				}
-				log(INFO) << "Purged " << keys.size() << " stxo_index entries";
-			}
-			stxo_log.erase_all(next_height, vnx::rocksdb::GREATER_EQUAL);
-		}
-		{
-			std::vector<hash_t> keys;
-			if(tx_log.find(next_height, keys, vnx::rocksdb::GREATER_EQUAL))
-			{
-				if(keys.size() > size_t(std::numeric_limits<int>::max())) {
-					throw std::logic_error("keys.size() > INT_MAX");
-				}
-#pragma omp parallel for
-				for(int i = 0; i < int(keys.size()); ++i) {
-					tx_index.erase(keys[i]);
-				}
-				log(INFO) << "Purged " << keys.size() << " tx_index entries";
-			}
-			tx_log.erase_all(next_height, vnx::rocksdb::GREATER_EQUAL);
-		}
 	}
 
 	subscribe(input_vdfs, max_queue_ms);
@@ -250,19 +182,8 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 			info->time_diff = peak->time_diff;
 			info->space_diff = peak->space_diff;
 			info->block_reward = mmx::calc_block_reward(params, peak->space_diff);
-			info->utxo_count = utxo_map.size();
 			info->total_space = calc_total_netspace(params, peak->space_diff);
-			{
-				std::unordered_set<addr_t> addr_set;
-				for(const auto& entry : utxo_map) {
-					const auto& utxo = entry.second;
-					if(utxo.contract == addr_t()) {
-						info->total_supply += utxo.amount;
-					}
-					addr_set.insert(utxo.address);
-				}
-				info->address_count = addr_set.size();
-			}
+			info->address_count = balance_map.size();
 			network = info;
 		}
 	}
@@ -295,9 +216,9 @@ std::shared_ptr<const BlockHeader> Node::get_block(const hash_t& hash, bool full
 	if(auto block = find_block(hash)) {
 		return full_block ? block : block->get_header();
 	}
-	auto iter = hash_index.find(hash);
-	if(iter != hash_index.end()) {
-		return get_block_at(iter->second, full_block);
+	uint32_t height = 0;
+	if(hash_index.find(hash, height)) {
+		return get_block_at(height, full_block);
 	}
 	return nullptr;
 }
@@ -310,23 +231,12 @@ std::shared_ptr<const Block> Node::get_block_at(const uint32_t& height) const
 std::shared_ptr<const BlockHeader> Node::get_block_at(const uint32_t& height, bool full_block) const
 {
 	// THREAD SAFE (for concurrent reads)
-	auto iter = block_index.find(height);
-	if(iter != block_index.end()) {
+	std::pair<int64_t, hash_t> entry;
+	if(block_index.find(height, entry)) {
 		vnx::File file(block_chain->get_path());
 		file.open("rb");
-		file.seek_to(iter->second.first);
+		file.seek_to(entry.first);
 		return read_block(file, nullptr, full_block);
-	}
-	const auto line = get_fork_line();
-	if(!line.empty()) {
-		const auto offset = line[0]->block->height;
-		if(height >= offset) {
-			const auto index = height - offset;
-			if(index < line.size()) {
-				const auto block = line[index]->block;
-				return full_block ? block : block->get_header();
-			}
-		}
 	}
 	return nullptr;
 }
@@ -352,28 +262,15 @@ std::shared_ptr<const BlockHeader> Node::get_header_at(const uint32_t& height) c
 
 vnx::optional<hash_t> Node::get_block_hash(const uint32_t& height) const
 {
-	auto iter = block_index.find(height);
-	if(iter != block_index.end()) {
-		return iter->second.second;
-	}
-	if(auto block = get_block_at(height, false)) {
-		return block->hash;
+	std::pair<int64_t, hash_t> entry;
+	if(block_index.find(height, entry)) {
+		return entry.second;
 	}
 	return nullptr;
 }
 
 std::vector<hash_t> Node::get_tx_ids_at(const uint32_t& height) const
 {
-	if(auto peak = get_peak()) {
-		if(height <= peak->height) {
-			const auto offset = peak->height - height;
-			if(offset < change_log.size()) {
-				auto iter = change_log.rbegin();
-				std::advance(iter, offset);
-				return (*iter)->tx_added;
-			}
-		}
-	}
 	std::vector<hash_t> list;
 	tx_log.find(height, list);
 	return list;
@@ -381,17 +278,9 @@ std::vector<hash_t> Node::get_tx_ids_at(const uint32_t& height) const
 
 vnx::optional<uint32_t> Node::get_tx_height(const hash_t& id) const
 {
-	{
-		auto iter = tx_map.find(id);
-		if(iter != tx_map.end()) {
-			return iter->second.height;
-		}
-	}
-	{
-		std::pair<int64_t, uint32_t> entry;
-		if(tx_index.find(id, entry)) {
-			return entry.second;
-		}
+	std::pair<int64_t, uint32_t> entry;
+	if(tx_index.find(id, entry)) {
+		return entry.second;
 	}
 	return nullptr;
 }
@@ -400,6 +289,9 @@ vnx::optional<tx_info_t> Node::get_tx_info(const hash_t& id) const
 {
 	if(auto tx = get_transaction(id, true))
 	{
+		if(tx->parent) {
+			tx = tx->get_combined();
+		}
 		tx_info_t info;
 		info.id = id;
 		if(auto height = get_tx_height(id)) {
@@ -408,33 +300,19 @@ vnx::optional<tx_info_t> Node::get_tx_info(const hash_t& id) const
 		}
 		info.note = tx->note;
 		info.cost = tx->calc_cost(params);
+		info.inputs = tx->inputs;
+		info.outputs = tx->get_outputs();
 		info.operations = tx->execute;
 		info.deployed = tx->deploy;
 
 		std::unordered_set<addr_t> contracts;
-		for(const auto& in : tx->inputs) {
-			txi_info_t entry;
-			entry.prev = in.prev;
-			if(auto txo = get_txo_info(in.prev)) {
-				const auto& utxo = txo->output;
-				entry.utxo = utxo;
-				contracts.insert(utxo.contract);
-				info.input_amounts[utxo.contract] += utxo.amount;
-			}
-			info.inputs.push_back(entry);
+		for(const auto& in : info.inputs) {
+			contracts.insert(in.contract);
+			info.input_amounts[in.contract] += in.amount;
 		}
-		const auto outputs = tx->get_outputs();
-		for(size_t i = 0; i < outputs.size(); ++i) {
-			txo_info_t entry;
-			entry.key = txio_key_t::create_ex(id, i);
-			if(auto txo = get_txo_info(entry.key)) {
-				entry = *txo;
-			} else {
-				entry.output.tx_out_t::operator=(outputs[i]);
-			}
-			info.outputs.push_back(entry);
-			info.output_amounts[entry.output.contract] += entry.output.amount;
-			contracts.insert(entry.output.contract);
+		for(const auto& out : info.outputs) {
+			contracts.insert(out.contract);
+			info.output_amounts[out.contract] += out.amount;
 		}
 		for(const auto& op : tx->execute) {
 			if(op) {
@@ -455,70 +333,12 @@ vnx::optional<tx_info_t> Node::get_tx_info(const hash_t& id) const
 	return nullptr;
 }
 
-vnx::optional<txo_info_t> Node::get_txo_info(const txio_key_t& key) const
-{
-	txo_info_t info;
-	info.key = key;
-	{
-		auto iter = utxo_map.find(key);
-		if(iter != utxo_map.end()) {
-			info.output = iter->second;
-			return info;
-		}
-	}
-	{
-		stxo_t stxo;
-		if(stxo_index.find(key, stxo)) {
-			info.output = stxo;
-			info.spent = stxo.spent_key;
-			return info;
-		}
-	}
-	for(const auto& log : change_log) {
-		auto iter = log->utxo_removed.find(key);
-		if(iter != log->utxo_removed.end()) {
-			info.output = iter->second;
-			info.spent = iter->second.spent_key;
-			return info;
-		}
-	}
-	if(auto tx = get_transaction(key.txid)) {
-		info.output = utxo_t::create_ex(tx->get_output(key.index));
-		return info;
-	}
-	return nullptr;
-}
-
-std::vector<vnx::optional<txo_info_t>> Node::get_txo_infos(const std::vector<txio_key_t>& keys) const
-{
-	std::vector<vnx::optional<txo_info_t>> res;
-	for(const auto& key : keys) {
-		res.push_back(get_txo_info(key));
-	}
-	return res;
-}
-
 std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id, const bool& include_pending) const
-{
-	const auto tx = get_transaction_ex(id, include_pending);
-	if(tx && tx->parent) {
-		return tx->get_combined();
-	}
-	return tx;
-}
-
-std::shared_ptr<const Transaction> Node::get_transaction_ex(const hash_t& id, const bool& include_pending) const
 {
 	// THREAD SAFE (for concurrent reads)
 	if(include_pending) {
 		auto iter = tx_pool.find(id);
 		if(iter != tx_pool.end()) {
-			return iter->second.tx;
-		}
-	}
-	{
-		auto iter = tx_map.find(id);
-		if(iter != tx_map.end()) {
 			return iter->second.tx;
 		}
 	}
@@ -559,63 +379,40 @@ std::vector<std::shared_ptr<const Transaction>> Node::get_transactions(const std
 	return list;
 }
 
-std::vector<tx_entry_t> Node::get_history_for(const std::vector<addr_t>& addresses, const int32_t& since) const
+std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, const int32_t& since) const
 {
 	const uint32_t height = get_height();
 	const uint32_t min_height = since >= 0 ? since : std::max<int32_t>(height + since, 0);
 
-	struct txio_t {
-		std::vector<utxo_t> outputs;
-		std::vector<stxo_entry_t> inputs;
-	};
-	std::unordered_map<hash_t, txio_t> txio_map;
-
-	for(const auto& entry : get_utxo_list(addresses, 1, min_height)) {
-		if(entry.output.height >= min_height) {
-			txio_map[entry.key.txid].outputs.push_back(entry.output);
-		}
-	}
-	for(const auto& entry : get_stxo_list(addresses, min_height)) {
-		if(entry.output.height >= min_height) {
-			txio_map[entry.key.txid].outputs.push_back(entry.output);
-		}
-		txio_map[entry.spent_key.txid].inputs.push_back(entry);
-	}
 	std::multimap<uint32_t, tx_entry_t> list;
-
-	for(const auto& iter : txio_map) {
-		const auto& txio = iter.second;
-
-		uint32_t height = 0;
-		std::map<addr_t, std::map<addr_t, std::pair<uint128_t, uint128_t>>> delta_map;
-		for(const auto& utxo : txio.outputs) {
-			delta_map[utxo.address][utxo.contract].first += utxo.amount;
-			height = utxo.height;
-		}
-		for(const auto& entry : txio.inputs) {
-			const auto& utxo = entry.output;
-			delta_map[utxo.address][utxo.contract].second += utxo.amount;
-			height = entry.spent_height;
-		}
-		for(const auto& entry1 : delta_map) {
-			for(const auto& entry2 : entry1.second) {
+	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
+		{
+			std::vector<txout_entry_t> entries;
+			recv_log.find(std::make_pair(address, min_height), entries, vnx::rocksdb::GREATER_EQUAL);
+			for(const auto& entry : entries) {
 				tx_entry_t out;
-				out.height = height;
-				out.txid = iter.first;
-				out.contract = entry2.first;
-				out.address = entry1.first;
-				const auto& delta = entry2.second;
-				if(delta.first > delta.second) {
-					out.type = tx_type_e::RECEIVE;
-					out.amount = delta.first - delta.second;
-				}
-				if(delta.second > delta.first) {
-					out.type = tx_type_e::SPEND;
-					out.amount = delta.second - delta.first;
-				}
-				if(out.amount != 0) {
-					list.emplace(out.height, out);
-				}
+				out.height = entry.height;
+				out.key = entry.key;
+				out.type = tx_type_e::RECEIVE;
+				out.address = entry.address;
+				out.contract = entry.contract;
+				out.sender = entry.sender;
+				out.amount = entry.amount;
+				list.emplace(out.height, out);
+			}
+		}
+		{
+			std::vector<txio_entry_t> entries;
+			spend_log.find(std::make_pair(address, min_height), entries, vnx::rocksdb::GREATER_EQUAL);
+			for(const auto& entry : entries) {
+				tx_entry_t out;
+				out.height = entry.height;
+				out.key = entry.key;
+				out.type = tx_type_e::SPEND;
+				out.address = entry.address;
+				out.contract = entry.contract;
+				out.amount = entry.amount;
+				list.emplace(out.height, out);
 			}
 		}
 	}
@@ -633,23 +430,6 @@ std::shared_ptr<const Contract> Node::get_contract(const addr_t& address) const
 	if(!contract_cache.find(address, contract)) {
 		if(auto tx = get_transaction(address)) {
 			contract = tx->deploy;
-		}
-	}
-	if(contract) {
-		std::shared_ptr<Contract> copy;
-		for(const auto& log : change_log) {
-			auto iter = log->mutated.find(address);
-			if(iter != log->mutated.end()) {
-				for(const auto& op : iter->second) {
-					if(!copy) {
-						copy = vnx::clone(contract);
-					}
-					copy->vnx_call(vnx::clone(op->method));
-				}
-			}
-		}
-		if(copy) {
-			contract = copy;
 		}
 	}
 	return contract;
@@ -686,16 +466,6 @@ std::map<addr_t, std::shared_ptr<const Contract>> Node::get_contracts_owned(cons
 		for(const auto& addr : list) {
 			if(auto contract = get_contract(addr)) {
 				res.emplace(addr, contract);
-			}
-		}
-	}
-	const std::unordered_set<addr_t> owner_set(owners.begin(), owners.end());
-	for(const auto& log : change_log) {
-		for(const auto& entry : log->deployed) {
-			if(auto owner = entry.second->get_owner()) {
-				if(owner_set.count(*owner)) {
-					res.emplace(entry.first, entry.second);
-				}
 			}
 		}
 	}
@@ -746,163 +516,42 @@ uint128 Node::get_balance(const addr_t& address, const addr_t& currency, const u
 uint128 Node::get_total_balance(const std::vector<addr_t>& addresses, const addr_t& currency, const uint32_t& min_confirm) const
 {
 	uint128_t total = 0;
-	for(const auto& entry : get_utxo_list(addresses, min_confirm)) {
-		const auto& utxo = entry.output;
-		if(utxo.contract == currency) {
-			total += utxo.amount;
+	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
+		const auto iter = balance_map.find(std::make_pair(address, currency));
+		if(iter != balance_map.end()) {
+			total += iter->second;
 		}
 	}
 	return total;
 }
 
-std::map<addr_t, uint128> Node::get_total_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const
+std::map<addr_t, uint128> Node::get_balances(const addr_t& address, const uint32_t& min_confirm) const
 {
-	std::map<addr_t, uint128> amounts;
-	for(const auto& entry : get_utxo_list(addresses, min_confirm)) {
-		const auto& utxo = entry.output;
-		amounts[utxo.contract] += utxo.amount;
-	}
-	return amounts;
+	return get_total_balances({address}, min_confirm);
 }
 
-std::map<addr_t, balance_t> Node::get_balances(const addr_t& address, const uint32_t& min_confirm) const
+std::map<addr_t, uint128> Node::get_total_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const
 {
-	auto context = Context::create();
-	context->height = get_height() + 1;
-
-	auto contract = get_contract(address);
-
-	std::map<addr_t, balance_t> result;
-	for(const auto& entry : get_utxo_list({address}, min_confirm)) {
-		const auto& utxo = entry.output;
-		auto& out = result[utxo.contract];
-		if(!contract || contract->is_spendable(utxo, context)) {
-			out.spendable += utxo.amount;
-		} else {
-			out.locked += utxo.amount;
+	std::map<addr_t, balance_t> amounts;
+	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
+		const auto begin = balance_map.lower_bound(std::make_pair(address, addr_t()));
+		const auto end = balance_map.upper_bound(std::make_pair(address, addr_t::ones()));
+		for(auto iter = begin; iter != end; ++iter) {
+			amounts[iter->first.second] += iter->second;
 		}
-		out.total += utxo.amount;
 	}
-	return result;
+	return amounts;
 }
 
 uint128 Node::get_total_supply(const addr_t& currency) const
 {
 	uint128_t total = 0;
-	for(const auto& entry : utxo_map) {
-		const auto& utxo = entry.second;
-		if(utxo.contract == currency) {
-			total += utxo.amount;
+	for(const auto& entry : balance_map) {
+		if(entry.first.second == currency) {
+			total += entry.second;
 		}
 	}
 	return total;
-}
-
-std::vector<utxo_entry_t> Node::get_utxo_list(
-		const std::vector<addr_t>& addresses, const uint32_t& min_confirm, const uint32_t& since) const
-{
-	return get_utxo_list(addresses, nullptr, min_confirm, since);
-}
-
-std::vector<utxo_entry_t> Node::get_utxo_list(
-		const std::vector<addr_t>& addresses, const vnx::optional<addr_t> currency, const uint32_t& min_confirm, const uint32_t& since) const
-{
-	// THREAD SAFE
-	const auto height = get_height();
-	const std::unordered_set<addr_t> addr_set(addresses.begin(), addresses.end());
-
-	const auto filter = [height, currency, min_confirm, since](std::vector<utxo_entry_t>& out, const txio_key_t& key, const utxo_t& utxo)
-	{
-		if(utxo.height >= since && (height - utxo.height) + 1 >= min_confirm && (!currency || utxo.contract == *currency)) {
-			out.push_back(utxo_entry_t::create_ex(key, utxo));
-		}
-	};
-
-	std::vector<utxo_entry_t> out;
-	for(const auto& address : addr_set) {
-		auto iter = addr_map.find(address);
-		if(iter != addr_map.end()) {
-			for(const auto& key : iter->second) {
-				auto iter2 = utxo_map.find(key);
-				if(iter2 != utxo_map.end()) {
-					filter(out, iter2->first, iter2->second);
-				}
-			}
-		}
-	}
-	return out;
-}
-
-std::vector<utxo_entry_t> Node::get_utxo_list_for(
-		const std::vector<addr_t>& addresses, const addr_t& currency, const uint32_t& min_confirm, const uint32_t& since) const
-{
-	return get_utxo_list(addresses, currency, min_confirm, since);
-}
-
-std::vector<utxo_entry_t> Node::get_spendable_utxo_list(
-		const std::vector<addr_t>& addresses, const uint32_t& min_confirm, const uint32_t& since) const
-{
-	auto context = Context::create();
-	context->height = get_height() + 1;
-
-	std::vector<utxo_entry_t> out;
-	for(const auto& address : addresses) {
-		auto contract = get_contract(address);
-		for(const auto& entry : get_utxo_list({address}, min_confirm, since)) {
-			const auto& utxo = entry.output;
-			if(!contract || contract->is_spendable(utxo, context)) {
-				out.push_back(entry);
-			}
-		}
-	}
-	return out;
-}
-
-std::vector<stxo_entry_t> Node::get_stxo_list(const std::vector<addr_t>& addresses, const uint32_t& since) const
-{
-	const std::unordered_set<addr_t> addr_set(addresses.begin(), addresses.end());
-	const std::vector<addr_t> addr_list(addr_set.begin(), addr_set.end());
-
-	std::vector<txio_key_t> keys;
-
-#pragma omp parallel for
-	for(int i = 0; i < int(addr_list.size()); ++i)
-	{
-		std::vector<txio_key_t> keys_;
-		if(saddr_map.find_range(std::make_pair(addr_list[i], since), std::make_pair(addr_list[i], -1), keys_))
-#pragma omp critical
-		{
-			keys.insert(keys.end(), keys_.begin(), keys_.end());
-		}
-	}
-
-	std::vector<stxo_entry_t> out;
-	std::unordered_set<txio_key_t> found;
-
-#pragma omp parallel for
-	for(int i = 0; i < int(keys.size()); ++i)
-	{
-		const auto& key = keys[i];
-		stxo_t stxo;
-		if(stxo_index.find(key, stxo))
-#pragma omp critical
-		{
-			if(found.insert(key).second) {
-				out.push_back(stxo_entry_t::create_ex(key, stxo));
-			}
-		}
-	}
-	for(const auto& log : change_log) {
-		if(log->height >= since) {
-			for(const auto& entry : log->utxo_removed) {
-				const auto& stxo = entry.second;
-				if(addr_set.count(stxo.address)) {
-					out.push_back(stxo_entry_t::create_ex(entry.first, stxo));
-				}
-			}
-		}
-	}
-	return out;
 }
 
 void Node::http_request_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
@@ -1049,7 +698,7 @@ void Node::print_stats()
 		fclose(file);
 	}
 #endif
-	log(INFO) << tx_pool.size() << " tx pool, " << utxo_map.size() << " utxo, " << change_log.size() << " / " << fork_tree.size() << " blocks";
+	log(INFO) << tx_pool.size() << " tx pool, " << balance_map.size() << " addrs, " << fork_tree.size() << " blocks";
 }
 
 void Node::on_stuck_timeout()
@@ -1358,7 +1007,7 @@ void Node::apply(std::shared_ptr<const Block> block) noexcept
 			const auto& out = outputs[i];
 			addr_set.insert(out.address);
 			recv_log.insert(std::make_pair(out.address, block->height),
-					txio_entry_t::create_ex(txio_key_t::create_ex(tx->id, i), out));
+					txout_entry_t::create_ex(txio_key_t::create_ex(tx->id, i), block->height, out));
 
 			const auto key = std::make_pair(out.address, out.contract);
 			balance_set.insert(key);
@@ -1369,7 +1018,7 @@ void Node::apply(std::shared_ptr<const Block> block) noexcept
 			const auto& in = tx->inputs[i];
 			addr_set.insert(in.address);
 			spend_log.insert(std::make_pair(in.address, block->height),
-					txio_entry_t::create_ex(txio_key_t::create_ex(tx->id, i), in));
+					txio_entry_t::create_ex(txio_key_t::create_ex(tx->id, i), block->height, in));
 
 			const auto key = std::make_pair(in.address, in.contract);
 			balance_set.insert(key);
@@ -1377,7 +1026,9 @@ void Node::apply(std::shared_ptr<const Block> block) noexcept
 		}
 		for(const auto& op : tx->execute)
 		{
-			if(auto revoke = std::dynamic_pointer_cast<const operation::Revoke>(op)) {
+			if(auto revoke = std::dynamic_pointer_cast<const operation::Revoke>(op))
+			{
+				revoke_log.insert(block->height, revoke->txid);
 				revoke_map.insert(revoke->txid, std::make_pair(revoke->address, tx->id));
 			}
 			if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op))
@@ -1396,6 +1047,7 @@ void Node::apply(std::shared_ptr<const Block> block) noexcept
 						addr_set.insert(op->address);
 						mutate_log.insert(std::make_pair(op->address, block->height), mutate->method);
 						contract_cache.insert(op->address, copy);
+						// TODO: handle owner change
 					}
 					catch(const std::exception& ex) {
 						Node::log(ERROR) << "apply(): mutate " << op->address << " failed with: " << ex.what();
@@ -1423,24 +1075,20 @@ void Node::apply(std::shared_ptr<const Block> block) noexcept
 
 bool Node::revert() noexcept
 {
-	const auto block = std::dynamic_pointer_cast<const Block>(get_block(state_hash, true));
-	if(!block) {
-		return false;
+	if(auto block = find_block(state_hash)) {
+		return revert(block->height, block);
 	}
-	{
-		std::pair<int64_t, hash_t> entry;
-		if(block_index.find(block->height, entry)) {
-			block_chain->seek_to(entry.first);
-		} else {
-			return false;
-		}
-	}
+	return false;
+}
+
+bool Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noexcept
+{
 	std::vector<addr_t> addr_list;
-	addr_log.find(block->height, addr_list);
+	addr_log.find(height, addr_list);
 
 	std::unordered_set<std::pair<addr_t, addr_t>> balance_set;
 	for(const auto& address : addr_list) {
-		const auto log_key = std::make_pair(address, block->height);
+		const auto log_key = std::make_pair(address, height);
 		{
 			std::vector<txio_entry_t> entries;
 			spend_log.find(log_key, entries, vnx::rocksdb::GREATER_EQUAL);
@@ -1452,7 +1100,7 @@ bool Node::revert() noexcept
 			spend_log.erase_all(log_key, vnx::rocksdb::GREATER_EQUAL);
 		}
 		{
-			std::vector<txio_entry_t> entries;
+			std::vector<txout_entry_t> entries;
 			recv_log.find(log_key, entries);
 			for(const auto& entry : entries) {
 				const auto key = std::make_pair(entry.address, entry.contract);
@@ -1461,41 +1109,68 @@ bool Node::revert() noexcept
 			}
 			recv_log.erase_all(log_key, vnx::rocksdb::GREATER_EQUAL);
 		}
-		// TODO: mutations
 	}
-	addr_log.erase_all(block->height, vnx::rocksdb::GREATER_EQUAL);
+	{
+		std::set<addr_t> affected;
+		for(const auto& addr : addr_list) {
+			if(auto count = mutate_log.erase_range(std::make_pair(addr, height), std::make_pair(addr, -1))) {
+				affected.insert(addr);
+			}
+		}
+		for(const auto& address : affected) {
+			if(auto tx = get_transaction(address)) {
+				if(auto contract = tx->deploy) {
+					auto copy = vnx::clone(contract);
+					std::vector<vnx::Object> mutations;
+					mutate_log.find_range(std::make_pair(address, 0), std::make_pair(address, -1), mutations);
+					for(const auto& method : mutations) {
+						copy->vnx_call(vnx::clone(method));
+					}
+					if(mutations.empty()) {
+						contract_cache.erase(address);
+					} else {
+						contract_cache.insert(address, copy);
+					}
+					// TODO: handle owner change
+				}
+			}
+		}
+		if(affected.size()) {
+			log(INFO) << "Reverted " << affected.size() << " contracts";
+		}
+	}
+	addr_log.erase_all(height, vnx::rocksdb::GREATER_EQUAL);
 
 	for(const auto& key : balance_set) {
-		balance_table.insert(key, std::make_pair(balance_map[key], block->height - 1));
-	}
-	for(auto tx : block->get_all_transactions()) {
-		if(tx->parent) {
-			tx = tx->get_combined();
-		}
-		for(const auto& op : tx->execute)
-		{
-			if(auto revoke = std::dynamic_pointer_cast<const operation::Revoke>(op)) {
-				revoke_map.erase_match(revoke->txid, std::make_pair(revoke->address, tx->id));
-			}
-		}
-		if(auto contract = tx->deploy) {
-			if(auto owner = contract->get_owner()) {
-				owner_map.erase_match(*owner, tx->id);
-			}
-		}
-	}
-	for(const auto& tx : block->tx_list) {
-		tx_pool[tx->id] = {true, tx};
+		balance_table.insert(key, std::make_pair(balance_map[key], height - 1));
 	}
 	{
 		std::vector<hash_t> keys;
-		tx_log.find(block->height, keys, vnx::rocksdb::GREATER_EQUAL);
+		tx_log.find(height, keys, vnx::rocksdb::GREATER_EQUAL);
 		tx_index.erase_many(keys);
-		tx_log.erase_all(block->height, vnx::rocksdb::GREATER_EQUAL);
+		tx_log.erase_all(height, vnx::rocksdb::GREATER_EQUAL);
 	}
-	hash_index.erase(block->hash);
-	block_index.erase(block->height);
-	state_hash = block->prev;
+	{
+		std::vector<hash_t> keys;
+		revoke_log.find(height, keys, vnx::rocksdb::GREATER_EQUAL);
+		revoke_map.erase_many(keys);
+		revoke_log.erase_all(height, vnx::rocksdb::GREATER_EQUAL);
+	}
+	{
+		std::pair<int64_t, hash_t> entry;
+		if(block_index.find(height, entry)) {
+			hash_index.erase(entry.second);
+			block_chain->seek_to(entry.first);
+		}
+	}
+	block_index.erase(height);
+
+	if(block) {
+		for(const auto& tx : block->tx_list) {
+			tx_pool[tx->id] = {true, tx};
+		}
+		state_hash = block->prev;
+	}
 	return true;
 }
 
@@ -1534,9 +1209,9 @@ std::shared_ptr<const BlockHeader> Node::find_header(const hash_t& hash) const
 	if(auto block = find_block(hash)) {
 		return block;
 	}
-	auto iter = hash_index.find(hash);
-	if(iter != hash_index.end()) {
-		auto iter2 = history.find(iter->second);
+	uint32_t height = 0;
+	if(hash_index.find(hash, height)) {
+		auto iter2 = history.find(height);
 		if(iter2 != history.end()) {
 			return iter2->second;
 		}

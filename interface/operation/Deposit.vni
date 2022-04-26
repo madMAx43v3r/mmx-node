@@ -1,9 +1,15 @@
 package mmx.operation;
 
-import mmx.txio_t;
+import mmx.hash_t;
+import mmx.txout_t;
 
 class Deposit extends Execute {
 	
-	vector<txio_t> amounts;
+	txout_t input;
+	
+	
+	bool is_valid() const;
+	
+	hash_t calc_hash() const;
 	
 }

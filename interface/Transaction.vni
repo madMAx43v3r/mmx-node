@@ -18,9 +18,9 @@ class Transaction extends TransactionBase {
 	
 	vector<txin_t> inputs;
 	
-	vector<txio_t> outputs;
+	vector<txout_t> outputs;
 	
-	vector<txio_t> exec_outputs;
+	vector<txout_t> exec_outputs;
 	
 	vector<Operation*> execute;
 	
@@ -47,11 +47,11 @@ class Transaction extends TransactionBase {
 	
 	Solution* get_solution(uint index) const;
 	
-	txio_t get_output(uint index) const;
+	txout_t get_output(uint index) const;
 	
-	vector<txio_t> get_outputs() const;
+	vector<txout_t> get_outputs() const;
 	
-	vector<txio_t> get_all_outputs() const;
+	vector<txout_t> get_all_outputs() const;
 	
 	vector<txin_t> get_all_inputs() const;
 	

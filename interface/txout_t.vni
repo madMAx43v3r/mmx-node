@@ -1,0 +1,7 @@
+package mmx;
+
+struct txout_t extends txio_t {
+	
+	optional<addr_t> sender;
+	
+}

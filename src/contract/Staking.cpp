@@ -74,6 +74,7 @@ std::vector<tx_out_t> Staking::validate(std::shared_ptr<const Operation> operati
 					out.contract = currency;
 					out.address = reward_addr;
 					const auto& factor = iter->second;
+					// TODO: handle overflow
 					out.amount = ((uint256_t(num_blocks) * spend->utxo.amount) * factor.value) / factor.inverse;
 					if(out.amount) {
 						return {out};
