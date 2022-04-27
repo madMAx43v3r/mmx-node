@@ -62,7 +62,7 @@ vnx::optional<addr_t> DataObject::get_owner() const {
 	return owner;
 }
 
-std::vector<tx_out_t> DataObject::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
+std::vector<txout_t> DataObject::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
 	if(!owner) {
 		throw std::logic_error("!owner");

@@ -61,7 +61,7 @@ vnx::optional<addr_t> DataArray::get_owner() const {
 	return owner;
 }
 
-std::vector<tx_out_t> DataArray::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
+std::vector<txout_t> DataArray::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
 	if(!owner) {
 		throw std::logic_error("!owner");

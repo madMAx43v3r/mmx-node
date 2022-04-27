@@ -15,7 +15,7 @@ namespace contract {
 
 vnx::bool_t TimeLock::is_valid() const
 {
-	return Super::is_valid() && owner != addr_t() && (chain_height || delta_height);
+	return Super::is_valid() && owner != addr_t();
 }
 
 hash_t TimeLock::calc_hash() const
@@ -27,8 +27,7 @@ hash_t TimeLock::calc_hash() const
 	write_bytes(out, get_type_hash());
 	write_field(out, "version", version);
 	write_field(out, "owner", 	owner);
-	write_field(out, "chain_height", chain_height);
-	write_field(out, "delta_height", delta_height);
+	write_field(out, "unlock_height", unlock_height);
 	out.flush();
 
 	return hash_t(buffer);
@@ -50,18 +49,7 @@ vnx::optional<addr_t> TimeLock::get_owner() const {
 	return owner;
 }
 
-vnx::bool_t TimeLock::is_spendable(const utxo_t& utxo, std::shared_ptr<const Context> context) const
-{
-	if(chain_height && context->height >= *chain_height) {
-		return true;
-	}
-	if(delta_height && context->height - utxo.height >= *delta_height) {
-		return true;
-	}
-	return false;
-}
-
-std::vector<tx_out_t> TimeLock::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
+std::vector<txout_t> TimeLock::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
 	{
 		auto contract = context->get_contract(owner);
@@ -72,7 +60,7 @@ std::vector<tx_out_t> TimeLock::validate(std::shared_ptr<const Operation> operat
 	}
 	if(auto spend = std::dynamic_pointer_cast<const operation::Spend>(operation))
 	{
-		if(!is_spendable(spend->utxo, context)) {
+		if(context->height < unlock_height) {
 			throw std::logic_error("invalid spend");
 		}
 	}

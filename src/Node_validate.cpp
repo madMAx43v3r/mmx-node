@@ -70,18 +70,25 @@ void Node::validate(std::shared_ptr<const Block> block) const
 		throw std::logic_error("invalid transaction type");
 	}
 	{
-		std::unordered_set<txio_key_t> spent;
+		std::unordered_set<addr_t> tx_set;
 		std::unordered_set<addr_t> mutated;
+		balance_cache_t balance_cache(balance_map);
 
 		for(const auto& base : block->tx_list) {
-			if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
-				if(tx->parent) {
-					tx = tx->get_combined();
+			if(!base) {
+				throw std::logic_error("missing transaction");
+			}
+			auto tx = std::dynamic_pointer_cast<const Transaction>(base);
+			while(tx) {
+				if(!tx_set.insert(tx->id).second) {
+					throw std::logic_error("duplicate transaction");
 				}
 				for(const auto& in : tx->inputs) {
-					if(!spent.insert(in.prev).second) {
-						throw std::logic_error("double spend");
+					const auto balance = balance_cache.get(in.address, in.contract);
+					if(!balance || in.amount > *balance) {
+						throw std::logic_error("not enough funds");
 					}
+					*balance -= in.amount;
 				}
 				{
 					std::unordered_set<addr_t> addr_set;
@@ -96,8 +103,7 @@ void Node::validate(std::shared_ptr<const Block> block) const
 						}
 					}
 				}
-			} else {
-				throw std::logic_error("missing transaction");
+				tx = tx->parent;
 			}
 		}
 	}
@@ -165,62 +171,66 @@ std::shared_ptr<const Context> Node::create_exec_context(
 
 void Node::validate(std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const Context> context,
-					std::vector<tx_out_t>& outputs,
-					std::vector<tx_out_t>& exec_outputs,
-					std::unordered_set<txio_key_t>& spent,
+					std::vector<txout_t>& outputs,
+					std::vector<txout_t>& exec_outputs,
+					balance_cache_t& balance_cache,
 					std::unordered_map<addr_t, uint128_t>& amounts,
 					std::unordered_map<addr_t, std::shared_ptr<Contract>>& contract_state) const
 {
 	if(tx->expires < context->height) {
 		throw std::logic_error("tx expired");
 	}
+	if(tx->is_extendable && tx->deploy) {
+		throw std::logic_error("extendable tx cannot deploy");
+	}
+	if(tx_index.find(tx->id)) {
+		throw std::logic_error("duplicate tx");
+	}
 	if(auto parent = tx->parent)
 	{
 		if(!parent->is_extendable) {
-			throw std::logic_error("parent not extendable");
+			throw std::logic_error("not extendable");
 		}
-		if(tx->version != parent->version || tx->note != parent->note) {
-			throw std::logic_error("invalid extension");
-		}
-		validate(parent, context, outputs, exec_outputs, spent, amounts, contract_state);
+		validate(parent, context, outputs, exec_outputs, balance_cache, amounts, contract_state);
 	}
+	const auto revoked = get_revokations(tx->id);
+
 	for(const auto& in : tx->inputs)
 	{
-		if(!spent.insert(in.prev).second) {
-			throw std::logic_error("double spend");
+		if(revoked.count(in.address)) {
+			throw std::logic_error("tx revoked");
 		}
-		auto iter = utxo_map.find(in.prev);
-		if(iter == utxo_map.end()) {
-			throw std::logic_error("utxo not found");
+		const auto balance = balance_cache.get(in.address, in.contract);
+		if(!balance || in.amount > *balance) {
+			throw std::logic_error("not enough funds");
 		}
-		const auto& utxo = iter->second;
-
 		const auto solution = tx->get_solution(in.solution);
 		if(!solution) {
 			throw std::logic_error("missing solution");
 		}
 		std::shared_ptr<const Contract> contract;
 
-		if(in.flags & tx_in_t::IS_EXEC) {
-			contract = get_contract(utxo.address);
+		if(in.flags & txin_t::IS_EXEC) {
+			contract = get_contract(in.address);
 		} else {
 			auto pubkey = contract::PubKey::create();
-			pubkey->address = utxo.address;
+			pubkey->address = in.address;
 			contract = pubkey;
 		}
 		if(!contract) {
 			throw std::logic_error("no such contract");
 		}
 		auto spend = operation::Spend::create();
-		spend->address = utxo.address;
+		spend->address = in.address;
 		spend->solution = solution;
-		spend->key = in.prev;
-		spend->utxo = utxo;
+		spend->balance = *balance;
+		spend->amount = in.amount;
 
 		const auto outputs = contract->validate(spend, create_exec_context(context, contract, tx));
 		exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
 
-		amounts[utxo.contract] += utxo.amount;
+		*balance -= in.amount;
+		amounts[in.contract] += in.amount;
 	}
 	for(const auto& op : tx->execute)
 	{
@@ -296,8 +306,11 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const Con
 		if(tx->sender) {
 			throw std::logic_error("coin base cannot have sender");
 		}
-		if(tx->parent || tx->is_extendable) {
-			throw std::logic_error("coin base is not extendable");
+		if(tx->parent) {
+			throw std::logic_error("coin base cannot have parent");
+		}
+		if(tx->is_extendable) {
+			throw std::logic_error("coin base cannot be extendable");
 		}
 	}
 	const auto tx_cost = tx->calc_cost(params);
@@ -305,13 +318,13 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const Con
 		throw std::logic_error("tx cost > max_block_cost");
 	}
 	uint128_t base_amount = 0;
-	std::vector<tx_out_t> outputs;
-	std::vector<tx_out_t> exec_outputs;
-	std::unordered_set<txio_key_t> spent;
+	std::vector<txout_t> outputs;
+	std::vector<txout_t> exec_outputs;
+	balance_cache_t balance_cache;
 	std::unordered_map<addr_t, uint128_t> amounts;
 	std::unordered_map<addr_t, std::shared_ptr<Contract>> contract_state;
 
-	validate(tx, context, outputs, exec_outputs, spent, amounts, contract_state);
+	validate(tx, context, outputs, exec_outputs, balance_cache, amounts, contract_state);
 
 	for(const auto& out : outputs)
 	{
@@ -346,7 +359,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const Con
 				op->solution = nft->solution;
 				creator->validate(op, create_exec_context(context, creator, tx));
 			}
-			tx_out_t out;
+			txout_t out;
 			out.contract = tx->id;
 			out.address = nft->creator;
 			out.amount = 1;
@@ -372,7 +385,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const Con
 		}
 		const uint64_t change = amount - fee_amount;
 		if(change > params->min_txfee_io && tx->sender) {
-			tx_out_t out;
+			txout_t out;
 			out.address = *tx->sender;
 			out.amount = change;
 			exec_outputs.push_back(out);

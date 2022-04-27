@@ -1,14 +1,13 @@
 package mmx.operation;
 
 import mmx.hash_t;
-import mmx.utxo_t;
-import mmx.txio_key_t;
+import mmx.uint128;
 
 class Spend extends mmx.Operation {
 	
-	txio_key_t key;			// utxo key
+	uint128 balance;
 	
-	utxo_t utxo;			// utxo to spend
+	ulong amount;
 	
 	
 	hash_t calc_hash() const;

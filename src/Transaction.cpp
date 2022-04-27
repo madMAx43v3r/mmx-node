@@ -47,13 +47,9 @@ vnx::bool_t Transaction::is_valid() const
 			return false;
 		}
 	}
-	if(is_extendable && deploy) {
-		return false;
-	}
-	if(parent && !parent->is_valid()) {
-		return false;
-	}
-	return version == 0 && fee_ratio >= 1024 && calc_hash() == id;
+	return version == 0 && fee_ratio >= 1024
+			&& (!parent || parent->is_valid())
+			&& calc_hash() == id;
 }
 
 hash_t Transaction::calc_hash() const

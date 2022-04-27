@@ -21,6 +21,6 @@ class PuzzleTimeLock extends TimeLock {
 	
 	vector<addr_t> get_parties() const;
 	
-	vector<mmx.txio_t> validate(mmx.Operation* operation, mmx.Context* context) const;
+	vector<mmx.txout_t> validate(mmx.Operation* operation, mmx.Context* context) const;
 	
 }

@@ -44,15 +44,6 @@ hash_t Token::calc_hash() const
 	write_field(out, "icon_url", 	icon_url);
 	write_field(out, "decimals", 	decimals);
 	write_field(out, "owner", 		owner);
-	write_field(out, "time_factor", time_factor);
-	write_field(out, "stake_factors");
-	for(const auto& entry : stake_factors) {
-		write_bytes(out, entry.first);
-		write_bytes(out, entry.second);
-	}
-	write_field(out, "is_mintable", is_mintable);
-	write_field(out, "is_adjustable", is_adjustable);
-	write_field(out, "min_stake_duration", min_stake_duration);
 	out.flush();
 
 	return hash_t(buffer);
@@ -78,7 +69,7 @@ vnx::optional<addr_t> Token::get_owner() const {
 	return owner;
 }
 
-std::vector<tx_out_t> Token::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
+std::vector<txout_t> Token::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
 	if(!owner) {
 		throw std::logic_error("!owner");
@@ -92,10 +83,7 @@ std::vector<tx_out_t> Token::validate(std::shared_ptr<const Operation> operation
 	}
 	if(auto mint = std::dynamic_pointer_cast<const operation::Mint>(operation))
 	{
-		if(!is_mintable) {
-			throw std::logic_error("token not mintable");
-		}
-		tx_out_t out;
+		txout_t out;
 		out.contract = mint->address;
 		out.address = mint->target;
 		out.amount = mint->amount;
@@ -107,26 +95,6 @@ std::vector<tx_out_t> Token::validate(std::shared_ptr<const Operation> operation
 void Token::transfer(const vnx::optional<addr_t>& new_owner)
 {
 	owner = new_owner;
-}
-
-void Token::set_time_factor(const vnx::optional<ulong_fraction_t>& factor)
-{
-	if(!is_adjustable) {
-		throw std::logic_error("token not adjustable");
-	}
-	time_factor = factor;
-}
-
-void Token::set_stake_factor(const addr_t& currency, const vnx::optional<ulong_fraction_t>& factor)
-{
-	if(!is_adjustable) {
-		throw std::logic_error("token not adjustable");
-	}
-	if(factor) {
-		stake_factors[currency] = *factor;
-	} else {
-		stake_factors.erase(currency);
-	}
 }
 
 

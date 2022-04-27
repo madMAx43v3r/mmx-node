@@ -90,7 +90,7 @@ void Node::main()
 	}
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
 
-	is_replay = true;
+	bool is_replay = true;
 	if(block_chain->exists()) {
 		block_chain->open("rb+");
 		uint32_t height = 0;
@@ -100,7 +100,7 @@ void Node::main()
 			block_chain->seek_to(entry.first);
 			try {
 				int64_t offset = 0;
-				read_block(*block_chain, &offset, true);
+				read_block(*block_chain, true, &offset);
 				if(height <= replay_height) {
 					break;
 				}
@@ -113,9 +113,9 @@ void Node::main()
 			const auto time_begin = vnx::get_wall_time_millis();
 			log(INFO) << "Creating DB (this may take a while) ...";
 			int64_t offset = 0;
-			while(auto header = read_block(*block_chain, &offset, true)) {
+			while(auto header = read_block(*block_chain, true, &offset)) {
 				if(auto block = std::dynamic_pointer_cast<const Block>(header)) {
-					apply(block);
+					apply(block, &offset);
 					commit(block);
 				}
 			}
@@ -127,7 +127,6 @@ void Node::main()
 		block_chain->open("wb");
 		block_chain->open("rb+");
 	}
-	is_replay = false;
 	is_synced = !do_sync;
 
 	if(state_hash == hash_t())
@@ -236,7 +235,7 @@ std::shared_ptr<const BlockHeader> Node::get_block_at(const uint32_t& height, bo
 		vnx::File file(block_chain->get_path());
 		file.open("rb");
 		file.seek_to(entry.first);
-		return read_block(file, nullptr, full_block);
+		return read_block(file, full_block);
 	}
 	return nullptr;
 }
@@ -342,21 +341,25 @@ std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id, const
 			return iter->second.tx;
 		}
 	}
-	{
-		std::pair<int64_t, uint32_t> entry;
-		if(tx_index.find(id, entry)) {
-			vnx::File file(block_chain->get_path());
-			file.open("rb");
-			file.seek_to(entry.first);
-			const auto value = vnx::read(file.in);
-			if(auto tx = std::dynamic_pointer_cast<Transaction>(value)) {
-				return tx;
+	std::pair<int64_t, uint32_t> entry;
+	if(tx_index.find(id, entry)) {
+		vnx::File file(block_chain->get_path());
+		file.open("rb");
+		file.seek_to(entry.first);
+		const auto value = vnx::read(file.in);
+		if(auto tx = std::dynamic_pointer_cast<const Transaction>(value)) {
+			while(tx) {
+				if(tx->id == id) {
+					return tx;
+				}
+				tx = tx->parent;
 			}
-			if(auto header = std::dynamic_pointer_cast<BlockHeader>(value)) {
-				if(auto tx = header->tx_base) {
-					if(tx->id == id) {
-						return std::dynamic_pointer_cast<const Transaction>(tx);
-					}
+			return nullptr;
+		}
+		if(auto header = std::dynamic_pointer_cast<const BlockHeader>(value)) {
+			if(auto tx = header->tx_base) {
+				if(tx->id == id) {
+					return std::dynamic_pointer_cast<const Transaction>(tx);
 				}
 			}
 		}
@@ -935,6 +938,17 @@ std::vector<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<f
 	return line;
 }
 
+std::unordered_set<addr_t> Node::get_revokations(const hash_t& txid) const
+{
+	std::unordered_set<addr_t> addrs;
+	std::vector<std::pair<addr_t, hash_t>> entries;
+	revoke_map.find_range(std::make_pair(txid, 0), std::make_pair(txid, -1), entries);
+	for(const auto& entry : entries) {
+		addrs.insert(entry.first);
+	}
+	return addrs;
+}
+
 void Node::purge_tree()
 {
 	const auto root = get_root();
@@ -986,7 +1000,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	publish(block, output_committed_blocks, is_synced ? 0 : BLOCKING);
 }
 
-void Node::apply(std::shared_ptr<const Block> block) noexcept
+void Node::apply(std::shared_ptr<const Block> block, int64_t* file_offset) noexcept
 {
 	if(block->prev != state_hash) {
 		return;
@@ -994,83 +1008,91 @@ void Node::apply(std::shared_ptr<const Block> block) noexcept
 	const auto time_begin = vnx::get_wall_time_millis();
 
 	std::unordered_set<addr_t> addr_set;
+	std::unordered_set<hash_t> revoke_set;
 	std::unordered_set<std::pair<addr_t, addr_t>> balance_set;
 
-	for(auto tx : block->get_all_transactions())
-	{
-		if(tx->parent) {
-			tx = tx->get_combined();
-		}
-		const auto outputs = tx->get_outputs();
-		for(size_t i = 0; i < outputs.size(); ++i)
-		{
-			const auto& out = outputs[i];
-			addr_set.insert(out.address);
-			recv_log.insert(std::make_pair(out.address, block->height),
-					txout_entry_t::create_ex(txio_key_t::create_ex(tx->id, i), block->height, out));
-
-			const auto key = std::make_pair(out.address, out.contract);
-			balance_set.insert(key);
-			balance_map[key] += out.amount;
-		}
-		for(size_t i = 0; i < tx->inputs.size(); ++i)
-		{
-			const auto& in = tx->inputs[i];
-			addr_set.insert(in.address);
-			spend_log.insert(std::make_pair(in.address, block->height),
-					txio_entry_t::create_ex(txio_key_t::create_ex(tx->id, i), block->height, in));
-
-			const auto key = std::make_pair(in.address, in.contract);
-			balance_set.insert(key);
-			balance_map[key] -= in.amount;
-		}
-		for(const auto& op : tx->execute)
-		{
-			if(auto revoke = std::dynamic_pointer_cast<const operation::Revoke>(op))
-			{
-				revoke_log.insert(block->height, revoke->txid);
-				revoke_map.insert(revoke->txid, std::make_pair(revoke->address, tx->id));
-			}
-			if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op))
-			{
-				std::shared_ptr<const Contract> contract;
-				if(!contract_cache.find(op->address, contract)) {
-					if(auto tx = get_transaction(op->address)) {
-						contract = tx->deploy;
-					}
-				}
-				if(contract) {
-					try {
-						auto copy = vnx::clone(contract);
-						copy->vnx_call(vnx::clone(mutate->method));
-
-						addr_set.insert(op->address);
-						mutate_log.insert(std::make_pair(op->address, block->height), mutate->method);
-						contract_cache.insert(op->address, copy);
-						// TODO: handle owner change
-					}
-					catch(const std::exception& ex) {
-						Node::log(ERROR) << "apply(): mutate " << op->address << " failed with: " << ex.what();
-					}
-				}
-			}
-		}
-		if(auto contract = tx->deploy) {
-			if(auto owner = contract->get_owner()) {
-				owner_map.insert(*owner, tx->id);
-			}
-		}
-		tx_pool.erase(tx->id);
+	for(const auto& tx : block->get_all_transactions()) {
+		apply(block, tx, addr_set, revoke_set, balance_set);
 	}
 	addr_log.insert_many(block->height, std::vector<addr_t>(addr_set.begin(), addr_set.end()));
+	revoke_log.insert_many(block->height, std::vector<hash_t>(revoke_set.begin(), revoke_set.end()));
 
 	for(const auto& key : balance_set) {
 		balance_table.insert(key, std::make_pair(balance_map[key], block->height));
 	}
-	if(!is_replay) {
-		write_block(block);
-	}
+	write_block(block, file_offset);
 	state_hash = block->hash;
+}
+
+void Node::apply(	std::shared_ptr<const Block> block,
+					std::shared_ptr<const Transaction> tx,
+					std::unordered_set<addr_t>& addr_set,
+					std::unordered_set<hash_t>& revoke_set,
+					std::unordered_set<std::pair<addr_t, addr_t>>& balance_set) noexcept
+{
+	if(tx->parent) {
+		apply(block, tx->parent, addr_set, revoke_set, balance_set);
+	}
+	const auto outputs = tx->get_outputs();
+	for(size_t i = 0; i < outputs.size(); ++i)
+	{
+		const auto& out = outputs[i];
+		addr_set.insert(out.address);
+		recv_log.insert(std::make_pair(out.address, block->height),
+				txout_entry_t::create_ex(txio_key_t::create_ex(tx->id, i), block->height, out));
+
+		const auto key = std::make_pair(out.address, out.contract);
+		balance_set.insert(key);
+		balance_map[key] += out.amount;
+	}
+	for(size_t i = 0; i < tx->inputs.size(); ++i)
+	{
+		const auto& in = tx->inputs[i];
+		addr_set.insert(in.address);
+		spend_log.insert(std::make_pair(in.address, block->height),
+				txio_entry_t::create_ex(txio_key_t::create_ex(tx->id, i), block->height, in));
+
+		const auto key = std::make_pair(in.address, in.contract);
+		balance_set.insert(key);
+		balance_map[key] -= in.amount;
+	}
+	for(const auto& op : tx->execute)
+	{
+		if(auto revoke = std::dynamic_pointer_cast<const operation::Revoke>(op))
+		{
+			revoke_set.insert(revoke->txid);
+			revoke_map.insert(std::make_pair(revoke->txid, block->height), std::make_pair(revoke->address, tx->id));
+		}
+		if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op))
+		{
+			std::shared_ptr<const Contract> contract;
+			if(!contract_cache.find(op->address, contract)) {
+				if(auto tx = get_transaction(op->address)) {
+					contract = tx->deploy;
+				}
+			}
+			if(contract) {
+				try {
+					auto copy = vnx::clone(contract);
+					copy->vnx_call(vnx::clone(mutate->method));
+
+					addr_set.insert(op->address);
+					mutate_log.insert(std::make_pair(op->address, block->height), mutate->method);
+					contract_cache.insert(op->address, copy);
+					// TODO: handle owner change
+				}
+				catch(const std::exception& ex) {
+					Node::log(ERROR) << "apply(): mutate " << op->address << " failed with: " << ex.what();
+				}
+			}
+		}
+	}
+	if(auto contract = tx->deploy) {
+		if(auto owner = contract->get_owner()) {
+			owner_map.insert(*owner, tx->id);
+		}
+	}
+	tx_pool.erase(tx->id);
 }
 
 bool Node::revert() noexcept
@@ -1153,7 +1175,9 @@ bool Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noe
 	{
 		std::vector<hash_t> keys;
 		revoke_log.find(height, keys, vnx::rocksdb::GREATER_EQUAL);
-		revoke_map.erase_many(keys);
+		for(const auto& txid : keys) {
+			revoke_map.erase_all(std::make_pair(txid, height));
+		}
 		revoke_log.erase_all(height, vnx::rocksdb::GREATER_EQUAL);
 	}
 	{
@@ -1340,7 +1364,7 @@ uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block) const
 	return 0;
 }
 
-std::shared_ptr<const BlockHeader> Node::read_block(vnx::File& file, int64_t* file_offset, bool full_block) const
+std::shared_ptr<const BlockHeader> Node::read_block(vnx::File& file, bool full_block, int64_t* file_offset) const
 {
 	// THREAD SAFE (for concurrent reads)
 	auto& in = file.in;
@@ -1350,34 +1374,20 @@ std::shared_ptr<const BlockHeader> Node::read_block(vnx::File& file, int64_t* fi
 	}
 	try {
 		if(auto header = std::dynamic_pointer_cast<BlockHeader>(vnx::read(in))) {
-			if(is_replay) {
-				block_index.insert(header->height, std::make_pair(offset, header->hash));
-				hash_index.insert(header->hash, header->height);
-				if(auto tx = header->tx_base) {
-					tx_log.insert(header->height, tx->id);
-					tx_index.insert(tx->id, std::make_pair(offset, header->height));
-				}
-			}
 			if(full_block) {
-				std::vector<hash_t> tx_ids;
 				auto block = Block::create();
 				block->BlockHeader::operator=(*header);
 				while(true) {
 					const auto offset = in.get_input_pos();
 					if(auto value = vnx::read(in)) {
 						if(auto tx = std::dynamic_pointer_cast<TransactionBase>(value)) {
-							if(is_replay) {
-								tx_ids.push_back(tx->id);
-								tx_index.insert(tx->id, std::make_pair(offset, block->height));
-							}
 							block->tx_list.push_back(tx);
+						} else {
+							throw std::logic_error("expected transaction");
 						}
 					} else {
 						break;
 					}
-				}
-				if(is_replay) {
-					tx_log.insert_many(block->height, tx_ids);
 				}
 				header = block;
 			}
@@ -1390,34 +1400,44 @@ std::shared_ptr<const BlockHeader> Node::read_block(vnx::File& file, int64_t* fi
 	return nullptr;
 }
 
-void Node::write_block(std::shared_ptr<const Block> block)
+void Node::write_block(std::shared_ptr<const Block> block, int64_t* file_offset)
 {
 	auto& out = block_chain->out;
-	const auto offset = out.get_output_pos();
-	block_index.insert(block->height, std::make_pair(offset, block->hash));
-	hash_index.insert(block->hash, block->height);
+	const auto offset = file_offset ? *file_offset : out.get_output_pos();
+
+	if(auto tx = block->tx_base) {
+		tx_log.insert(block->height, tx->id);
+		tx_index.insert(tx->id, std::make_pair(offset, block->height));
+	}
+	if(!file_offset) {
+		vnx::write(out, block->get_header());
+	}
 
 	std::vector<hash_t> tx_ids;
-	if(auto tx = block->tx_base) {
-		tx_ids.push_back(tx->id);
-	}
 	for(const auto& tx : block->tx_list) {
-		tx_ids.push_back(tx->id);
+		const auto offset = out.get_output_pos();
+		auto parent = tx;
+		while(parent) {
+			tx_ids.push_back(tx->id);
+			tx_index.insert(parent->id, std::make_pair(offset, block->height));
+			if(auto full = std::dynamic_pointer_cast<const Transaction>(parent)) {
+				parent = full->parent;
+			} else {
+				break;
+			}
+		}
+		if(!file_offset) {
+			vnx::write(out, tx);
+		}
 	}
 	tx_log.insert_many(block->height, tx_ids);
 
-	if(auto tx = block->tx_base) {
-		tx_index.insert(tx->id, std::make_pair(offset, block->height));
+	if(!file_offset) {
+		vnx::write(out, nullptr);
+		block_chain->flush();
 	}
-	vnx::write(out, block->get_header());
-
-	for(const auto& tx : block->tx_list) {
-		const auto offset = out.get_output_pos();
-		tx_index.insert(tx->id, std::make_pair(offset, block->height));
-		vnx::write(out, tx);
-	}
-	vnx::write(out, nullptr);
-	block_chain->flush();
+	block_index.insert(block->height, std::make_pair(offset, block->hash));
+	hash_index.insert(block->hash, block->height);
 }
 
 
