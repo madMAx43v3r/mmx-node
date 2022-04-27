@@ -43,22 +43,6 @@ enum varflags_e : uint8_t {
 
 };
 
-enum constvar_e : uint32_t {
-
-	NIL,
-	TRUE,
-	FALSE,
-	ZERO,
-	ONE,
-	STRING,
-	BINARY,
-	ARRAY,
-	MAP,
-
-	END = 0x100
-
-};
-
 struct var_t {
 
 	uint32_t ref_count = 0;
