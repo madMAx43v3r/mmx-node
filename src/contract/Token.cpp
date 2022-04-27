@@ -15,18 +15,6 @@ namespace contract {
 
 vnx::bool_t Token::is_valid() const
 {
-	if(time_factor && !time_factor->inverse) {
-		return false;
-	}
-	for(const auto& entry : stake_factors) {
-		const auto& factor = entry.second;
-		if(!factor.value || !factor.inverse) {
-			return false;
-		}
-		if(uint128_t(factor.value) * 10000 > factor.inverse) {
-			return false;
-		}
-	}
 	return Super::is_valid();
 }
 
@@ -47,11 +35,6 @@ hash_t Token::calc_hash() const
 	out.flush();
 
 	return hash_t(buffer);
-}
-
-uint64_t Token::calc_cost(std::shared_ptr<const ChainParams> params) const
-{
-	return Super::calc_cost(params) + ((32 + 16) * stake_factors.size()) * params->min_txfee_byte;
 }
 
 std::vector<addr_t> Token::get_dependency() const {

@@ -21,8 +21,8 @@ hash_t Spend::calc_hash() const
 	write_bytes(out, get_type_hash());
 	write_field(out, "version", version);
 	write_field(out, "address", address);
-	write_field(out, "key", 	key);
-	write_field(out, "utxo", 	utxo);
+	write_field(out, "balance", balance);
+	write_field(out, "amount", 	amount);
 	out.flush();
 
 	return hash_t(buffer);

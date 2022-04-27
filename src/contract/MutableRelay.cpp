@@ -105,7 +105,11 @@ std::vector<txout_t> MutableRelay::validate(std::shared_ptr<const Operation> ope
 
 void MutableRelay::transfer(const vnx::optional<addr_t>& new_owner)
 {
-	owner = new_owner;
+	if(new_owner) {
+		owner = *new_owner;
+	} else {
+		throw std::logic_error("!new_owner");
+	}
 }
 
 void MutableRelay::unlock(const uint32_t& height)

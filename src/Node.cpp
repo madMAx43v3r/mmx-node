@@ -535,15 +535,28 @@ std::map<addr_t, uint128> Node::get_balances(const addr_t& address, const uint32
 
 std::map<addr_t, uint128> Node::get_total_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const
 {
-	std::map<addr_t, balance_t> amounts;
+	std::map<addr_t, balance_t> totals;
 	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
 		const auto begin = balance_map.lower_bound(std::make_pair(address, addr_t()));
 		const auto end = balance_map.upper_bound(std::make_pair(address, addr_t::ones()));
 		for(auto iter = begin; iter != end; ++iter) {
-			amounts[iter->first.second] += iter->second;
+			totals[iter->first.second] += iter->second;
 		}
 	}
-	return amounts;
+	return totals;
+}
+
+std::map<std::pair<addr_t, addr_t>, uint128> Node::get_all_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const
+{
+	std::map<std::pair<addr_t, addr_t>, uint128> totals;
+	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
+		const auto begin = balance_map.lower_bound(std::make_pair(address, addr_t()));
+		const auto end = balance_map.upper_bound(std::make_pair(address, addr_t::ones()));
+		for(auto iter = begin; iter != end; ++iter) {
+			totals[iter->first] += iter->second;
+		}
+	}
+	return totals;
 }
 
 uint128 Node::get_total_supply(const addr_t& currency) const

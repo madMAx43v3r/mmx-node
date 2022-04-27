@@ -6,9 +6,6 @@
  */
 
 #include <mmx/Wallet.h>
-#include <mmx/utxo_t.hpp>
-#include <mmx/utxo_entry_t.hpp>
-#include <mmx/stxo_entry_t.hpp>
 #include <mmx/contract/Token.hxx>
 #include <mmx/operation/Mutate.hxx>
 #include <mmx/solution/PubKey.hxx>
@@ -122,9 +119,7 @@ Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 			throw std::logic_error("contract has no owner");
 		}
 	}
-	auto tx = wallet->send_from(amount, dst_addr, src_addr, src_owner,
-								node->get_spendable_utxo_list({src_addr}, options.min_confirm),
-								currency, options);
+	auto tx = wallet->send_from(amount, dst_addr, src_addr, src_owner, currency, options);
 	if(tx->is_signed()) {
 		send_off(index, tx);
 		log(INFO) << "Sent " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";

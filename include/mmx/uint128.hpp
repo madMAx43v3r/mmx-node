@@ -10,9 +10,9 @@
 
 #include <uint128_t.h>
 
-#include <vnx/Input.h>
-#include <vnx/Output.h>
-#include <vnx/Visitor.h>
+#include <vnx/Input.hpp>
+#include <vnx/Output.hpp>
+#include <vnx/Variant.hpp>
 
 
 namespace mmx {
@@ -22,6 +22,8 @@ struct uint128 : uint128_t {
 	uint128() : uint128_t(0) {}
 
 	uint128(const uint128&) = default;
+
+	uint128(const uint64_t& value) : uint128_t(value) {}
 
 	uint128(const uint128_t& value) : uint128_t(value) {}
 
@@ -36,6 +38,9 @@ namespace vnx {
 inline
 void read(vnx::TypeInput& in, mmx::uint128& value, const vnx::TypeCode* type_code, const uint16_t* code)
 {
+	if(sizeof(value) != 16) {
+		throw std::logic_error("sizeof(uint128) != 16");
+	}
 	switch(code[0]) {
 		case CODE_STRING:
 		case CODE_ALT_STRING: {
@@ -44,7 +49,7 @@ void read(vnx::TypeInput& in, mmx::uint128& value, const vnx::TypeCode* type_cod
 			try {
 				value = uint128_t(str, 10);
 			} catch(...) {
-				value = 0;
+				value = uint128_0;
 			}
 			break;
 		}
@@ -52,7 +57,7 @@ void read(vnx::TypeInput& in, mmx::uint128& value, const vnx::TypeCode* type_cod
 		case CODE_ALT_UINT64: {
 			uint64_t tmp = 0;
 			vnx::read(in, tmp, type_code, code);
-			value = tmp;
+			value = uint128_t(tmp);
 			break;
 		}
 		case CODE_DYNAMIC:
@@ -65,7 +70,7 @@ void read(vnx::TypeInput& in, mmx::uint128& value, const vnx::TypeCode* type_cod
 				try {
 					value = uint128_t(str, 10);
 				} catch(...) {
-					value = 0;
+					value = uint128_0;
 				}
 			} else {
 				std::array<uint8_t, 16> array = {};

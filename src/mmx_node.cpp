@@ -12,7 +12,7 @@
 #include <mmx/Harvester.h>
 #include <mmx/Router.h>
 #include <mmx/WebAPI.h>
-#include <mmx/exchange/Client.h>
+//#include <mmx/exchange/Client.h>
 #include <mmx/WalletClient.hxx>
 #include <mmx/secp256k1.hpp>
 #include <mmx/utils.h>
@@ -112,11 +112,11 @@ int main(int argc, char** argv)
 			module->database_path = root_path + module->database_path;
 			module.start_detached();
 		}
-		{
-			vnx::Handle<mmx::exchange::Client> module = new mmx::exchange::Client("ExchClient");
-			module->storage_path = root_path + module->storage_path;
-			module.start_detached();
-		}
+//		{
+//			vnx::Handle<mmx::exchange::Client> module = new mmx::exchange::Client("ExchClient");
+//			module->storage_path = root_path + module->storage_path;
+//			module.start_detached();
+//		}
 		{
 			vnx::Handle<vnx::Server> module = new vnx::Server("Server5", vnx::Endpoint::from_url(":11335"));
 			module.start_detached();

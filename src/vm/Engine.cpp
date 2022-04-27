@@ -887,6 +887,18 @@ void Engine::exec(const instr_t& instr)
 	get_frame().instr_ptr++;
 }
 
+void Engine::clear_extern(const uint32_t offset = 0)
+{
+	for(auto iter = memory.lower_bound(MEM_EXTERN + offset); iter != memory.lower_bound(MEM_STACK);)
+	{
+		if(erase(iter->second)) {
+			iter = memory.erase(iter);
+		} else {
+			throw std::logic_error("cannot clear extern at " + to_hex(iter->first));
+		}
+	}
+}
+
 void Engine::clear_stack(const uint32_t offset)
 {
 	for(auto iter = memory.lower_bound(MEM_STACK + offset); iter != memory.lower_bound(MEM_STATIC);)
@@ -894,7 +906,7 @@ void Engine::clear_stack(const uint32_t offset)
 		if(erase(iter->second)) {
 			iter = memory.erase(iter);
 		} else {
-			throw std::logic_error("cannot clear stack");
+			throw std::logic_error("cannot clear stack at " + to_hex(iter->first));
 		}
 	}
 }
@@ -902,7 +914,7 @@ void Engine::clear_stack(const uint32_t offset)
 void Engine::reset()
 {
 	key_map.clear();
-	clear_stack(0);
+	clear_stack();
 }
 
 void Engine::commit()

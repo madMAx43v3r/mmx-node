@@ -178,10 +178,10 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 					std::unordered_map<addr_t, std::shared_ptr<Contract>>& contract_state) const
 {
 	if(tx->expires < context->height) {
-		throw std::logic_error("tx expired");
+		throw std::logic_error("expired tx");
 	}
 	if(tx->is_extendable && tx->deploy) {
-		throw std::logic_error("extendable tx cannot deploy");
+		throw std::logic_error("extendable cannot deploy");
 	}
 	if(tx_index.find(tx->id)) {
 		throw std::logic_error("duplicate tx");
@@ -198,7 +198,7 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 	for(const auto& in : tx->inputs)
 	{
 		if(revoked.count(in.address)) {
-			throw std::logic_error("tx revoked");
+			throw std::logic_error("revoked tx");
 		}
 		const auto balance = balance_cache.get(in.address, in.contract);
 		if(!balance || in.amount > *balance) {
@@ -291,9 +291,6 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const Con
 		if(!tx->exec_outputs.empty()) {
 			throw std::logic_error("coin base cannot have execution outputs");
 		}
-		if(tx->outputs.size() > params->max_tx_base_out) {
-			throw std::logic_error("coin base has too many outputs");
-		}
 		if(!tx->salt || *tx->salt != base->vdf_output[0]) {
 			throw std::logic_error("invalid coin base salt");
 		}
@@ -314,13 +311,19 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const Con
 		}
 	}
 	const auto tx_cost = tx->calc_cost(params);
-	if(tx_cost > params->max_block_cost) {
-		throw std::logic_error("tx cost > max_block_cost");
+	if(base) {
+		if(tx_cost > params->max_txbase_cost) {
+			throw std::logic_error("tx cost > max_txbase_cost");
+		}
+	} else {
+		if(tx_cost > params->max_block_cost) {
+			throw std::logic_error("tx cost > max_block_cost");
+		}
 	}
 	uint128_t base_amount = 0;
 	std::vector<txout_t> outputs;
 	std::vector<txout_t> exec_outputs;
-	balance_cache_t balance_cache;
+	balance_cache_t balance_cache(balance_map);
 	std::unordered_map<addr_t, uint128_t> amounts;
 	std::unordered_map<addr_t, std::shared_ptr<Contract>> contract_state;
 

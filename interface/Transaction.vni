@@ -35,7 +35,9 @@ class Transaction extends TransactionBase {
 	
 	void finalize();
 	
-	void add_output(addr_t currency, addr_t address, ulong amount, uint split = 1);
+	void add_input(addr_t currency, addr_t address, ulong amount);
+	
+	void add_output(addr_t currency, addr_t address, ulong amount, optional<addr_t> sender);
 	
 	void merge_sign(Transaction* tx);
 	
