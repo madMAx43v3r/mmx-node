@@ -73,12 +73,6 @@ hash_t::hash_t(const bytes_t<N>& data)
 }
 
 inline
-hash_t::hash_t(const void* data, const size_t num_bytes)
-{
-	bls::Util::Hash256(bytes.data(), (const uint8_t*)data, num_bytes);
-}
-
-inline
 uint256_t hash_t::to_uint256() const {
 	uint256_t res;
 	::memcpy(&res, bytes.data(), bytes.size());

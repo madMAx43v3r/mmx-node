@@ -13,7 +13,6 @@
 #include <string>
 #include <cstdint>
 
-#include <bls.hpp>
 #include <vnx/Input.hpp>
 #include <vnx/Output.hpp>
 #include <vnx/Variant.hpp>
@@ -110,7 +109,14 @@ bool bytes_t<N>::is_zero() const {
 
 template<size_t N>
 std::string bytes_t<N>::to_string() const {
-	return bls::Util::HexStr(bytes.data(), bytes.size());
+	static const char map[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+	std::string str;
+	str.resize(N * 2);
+	for(size_t i = 0; i < N; ++i) {
+		str[(N - i - 1) * 2] = map[(bytes[i] & 0xF0) >> 4];
+		str[(N - i - 1) * 2 + 1] = map[bytes[i] & 0x0F];
+	}
+	return str;
 }
 
 template<size_t N>
@@ -126,11 +132,34 @@ std::vector<uint8_t> bytes_t<N>::to_vector() const {
 template<size_t N>
 void bytes_t<N>::from_string(const std::string& str)
 {
-	const auto tmp = bls::Util::HexToBytes(str);
-	if(tmp.size() != bytes.size()) {
+	size_t off = 0;
+	if(str.substr(0, 2) == "0x") {
+		off = 2;
+	}
+	if(str.size() - off != N * 2) {
 		throw std::logic_error("input size mismatch");
 	}
-	::memcpy(bytes.data(), tmp.data(), tmp.size());
+	for(size_t i = 0; i < 2 * N; ++i) {
+		uint8_t byte = 0;
+		switch(std::tolower(str[off + i])) {
+			case '1': byte = 1; break;
+			case '2': byte = 2; break;
+			case '3': byte = 3; break;
+			case '4': byte = 4; break;
+			case '5': byte = 5; break;
+			case '6': byte = 6; break;
+			case '7': byte = 7; break;
+			case '8': byte = 8; break;
+			case '9': byte = 9; break;
+			case 'a': byte = 10; break;
+			case 'b': byte = 11; break;
+			case 'c': byte = 12; break;
+			case 'd': byte = 13; break;
+			case 'e': byte = 14; break;
+			case 'f': byte = 15; break;
+		}
+		bytes[i / 2] = byte << (((i + 1) % 2) * 4);
+	}
 }
 
 template<size_t N>
