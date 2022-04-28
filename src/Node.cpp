@@ -100,8 +100,11 @@ void Node::main()
 			block_chain->seek_to(entry.first);
 			try {
 				int64_t offset = 0;
-				read_block(*block_chain, true, &offset);
+				auto block = read_block(*block_chain, true, &offset);
 				if(height <= replay_height) {
+					state_hash = block->hash;
+					history[block->height] = block->get_header();
+					log(INFO) << "Loaded height " << block->height;
 					break;
 				}
 			} catch(const std::exception& ex) {
@@ -207,27 +210,29 @@ vnx::optional<uint32_t> Node::get_synced_height() const
 
 std::shared_ptr<const Block> Node::get_block(const hash_t& hash) const
 {
-	return std::dynamic_pointer_cast<const Block>(get_block(hash, true));
+	return std::dynamic_pointer_cast<const Block>(get_block_ex(hash, true));
 }
 
-std::shared_ptr<const BlockHeader> Node::get_block(const hash_t& hash, bool full_block) const
+std::shared_ptr<const BlockHeader> Node::get_block_ex(const hash_t& hash, bool full_block) const
 {
-	if(auto block = find_block(hash)) {
+	auto iter = fork_tree.find(hash);
+	if(iter != fork_tree.end()) {
+		auto block = iter->second->block;
 		return full_block ? block : block->get_header();
 	}
 	uint32_t height = 0;
 	if(hash_index.find(hash, height)) {
-		return get_block_at(height, full_block);
+		return get_block_at_ex(height, full_block);
 	}
 	return nullptr;
 }
 
 std::shared_ptr<const Block> Node::get_block_at(const uint32_t& height) const
 {
-	return std::dynamic_pointer_cast<const Block>(get_block_at(height, true));
+	return std::dynamic_pointer_cast<const Block>(get_block_at_ex(height, true));
 }
 
-std::shared_ptr<const BlockHeader> Node::get_block_at(const uint32_t& height, bool full_block) const
+std::shared_ptr<const BlockHeader> Node::get_block_at_ex(const uint32_t& height, bool full_block) const
 {
 	// THREAD SAFE (for concurrent reads)
 	std::pair<int64_t, hash_t> entry;
@@ -242,21 +247,16 @@ std::shared_ptr<const BlockHeader> Node::get_block_at(const uint32_t& height, bo
 
 std::shared_ptr<const BlockHeader> Node::get_header(const hash_t& hash) const
 {
-	if(auto header = find_header(hash)) {
-		return header;
-	}
-	return get_block(hash, false);
+	return get_block_ex(hash, false);
 }
 
 std::shared_ptr<const BlockHeader> Node::get_header_at(const uint32_t& height) const
 {
-	{
-		auto iter = history.find(height);
-		if(iter != history.end()) {
-			return iter->second;
-		}
+	auto iter = history.find(height);
+	if(iter != history.end()) {
+		return iter->second;
 	}
-	return get_block_at(height, false);
+	return get_block_at_ex(height, false);
 }
 
 vnx::optional<hash_t> Node::get_block_hash(const uint32_t& height) const
@@ -391,7 +391,7 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
 		{
 			std::vector<txout_entry_t> entries;
-			recv_log.find(std::make_pair(address, min_height), entries, vnx::rocksdb::GREATER_EQUAL);
+			recv_log.find_range(std::make_pair(address, min_height), std::make_pair(address, -1), entries);
 			for(const auto& entry : entries) {
 				tx_entry_t out;
 				out.height = entry.height;
@@ -406,7 +406,7 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 		}
 		{
 			std::vector<txio_entry_t> entries;
-			spend_log.find(std::make_pair(address, min_height), entries, vnx::rocksdb::GREATER_EQUAL);
+			spend_log.find_range(std::make_pair(address, min_height), std::make_pair(address, -1), entries);
 			for(const auto& entry : entries) {
 				tx_entry_t out;
 				out.height = entry.height;
@@ -654,7 +654,7 @@ void Node::handle(std::shared_ptr<const ProofResponse> value)
 	}
 	try {
 		// TODO: race condition with receive of block
-		const auto vdf_block = find_header(request->vdf_block);
+		const auto vdf_block = get_header(request->vdf_block);
 		if(!vdf_block) {
 			throw std::logic_error("no such vdf_block");
 		}
@@ -1108,7 +1108,10 @@ void Node::apply(	std::shared_ptr<const Block> block,
 
 bool Node::revert() noexcept
 {
-	if(auto block = find_block(state_hash)) {
+	if(state_hash == get_root()->hash) {
+		return false;
+	}
+	if(auto block = get_block(state_hash)) {
 		return revert(block->height, block);
 	}
 	return false;
@@ -1223,7 +1226,7 @@ std::shared_ptr<const BlockHeader> Node::get_root() const
 
 std::shared_ptr<const BlockHeader> Node::get_peak() const
 {
-	return find_header(state_hash);
+	return get_header(state_hash);
 }
 
 std::shared_ptr<Node::fork_t> Node::find_fork(const hash_t& hash) const
@@ -1231,29 +1234,6 @@ std::shared_ptr<Node::fork_t> Node::find_fork(const hash_t& hash) const
 	auto iter = fork_tree.find(hash);
 	if(iter != fork_tree.end()) {
 		return iter->second;
-	}
-	return nullptr;
-}
-
-std::shared_ptr<const Block> Node::find_block(const hash_t& hash) const
-{
-	if(auto fork = find_fork(hash)) {
-		return fork->block;
-	}
-	return nullptr;
-}
-
-std::shared_ptr<const BlockHeader> Node::find_header(const hash_t& hash) const
-{
-	if(auto block = find_block(hash)) {
-		return block;
-	}
-	uint32_t height = 0;
-	if(hash_index.find(hash, height)) {
-		auto iter2 = history.find(height);
-		if(iter2 != history.end()) {
-			return iter2->second;
-		}
 	}
 	return nullptr;
 }
@@ -1282,7 +1262,7 @@ std::shared_ptr<const BlockHeader> Node::find_prev_header(	std::shared_ptr<const
 		if(clamped && block->height == 0) {
 			break;
 		}
-		block = find_header(block->prev);
+		block = get_header(block->prev);
 	}
 	return block;
 }

@@ -174,7 +174,7 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof) const
 		if(!proof->infuse[0]) {
 			throw std::logic_error("missing infusion on chain 0");
 		}
-		const auto infused_block = find_header(*proof->infuse[0]);
+		const auto infused_block = get_header(*proof->infuse[0]);
 		if(!infused_block) {
 			throw std::logic_error("unknown block infused on chain 0");
 		}

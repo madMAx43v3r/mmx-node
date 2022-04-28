@@ -26,6 +26,7 @@
 #include <vnx/addons/HttpInterface.h>
 
 #include <uint128_t.h>
+#include <unordered_set>
 
 
 namespace mmx {
@@ -246,15 +247,11 @@ private:
 
 	std::shared_ptr<const BlockHeader> get_peak() const;
 
-	std::shared_ptr<const BlockHeader> get_block(const hash_t& hash, bool full_block) const;
+	std::shared_ptr<const BlockHeader> get_block_ex(const hash_t& hash, bool full_block) const;
 
-	std::shared_ptr<const BlockHeader> get_block_at(const uint32_t& height, bool full_block) const;
+	std::shared_ptr<const BlockHeader> get_block_at_ex(const uint32_t& height, bool full_block) const;
 
 	std::shared_ptr<fork_t> find_fork(const hash_t& hash) const;
-
-	std::shared_ptr<const Block> find_block(const hash_t& hash) const;
-
-	std::shared_ptr<const BlockHeader> find_header(const hash_t& hash) const;
 
 	std::shared_ptr<fork_t> find_prev_fork(std::shared_ptr<fork_t> fork, const size_t distance = 1) const;
 
