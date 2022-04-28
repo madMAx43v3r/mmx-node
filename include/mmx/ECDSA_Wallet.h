@@ -193,7 +193,7 @@ public:
 
 	void gather_fee(std::shared_ptr<Transaction> tx,
 					std::map<std::pair<addr_t, addr_t>, uint128_t>& spent_map,
-					uint64_t extra_input = 0, const spend_options_t& options = {})
+					const spend_options_t& options = {})
 	{
 		uint64_t paid_fee = 0;
 		while(true) {
@@ -226,13 +226,12 @@ public:
 			}
 			tx_fees = (uint128_t(tx_fees) * tx->fee_ratio) / 1024;
 
-			if(paid_fee >= tx_fees + extra_input) {
+			if(paid_fee >= tx_fees) {
 				break;
 			}
-			const auto more = (tx_fees + extra_input + params->min_txfee_io) - paid_fee;
+			const auto more = (tx_fees + params->min_txfee_io) - paid_fee;
 			gather_inputs(tx, spent_map, more, addr_t(), options);
-			paid_fee += more - extra_input;
-			extra_input = 0;
+			paid_fee += more;
 		}
 		if(!tx->sender) {
 			tx->sender = get_address(0);
@@ -333,15 +332,12 @@ public:
 			parent = parent->parent;
 		}
 		std::map<std::pair<addr_t, addr_t>, uint128_t> spent_map;
-		for(auto& entry : missing) {
-			if(auto& amount = entry.second) {
-				if(entry.first != addr_t() || amount.upper()) {
-					gather_inputs(tx, spent_map, amount, entry.first, options);
-					amount = 0;
-				}
+		for(const auto& entry : missing) {
+			if(const auto& amount = entry.second) {
+				gather_inputs(tx, spent_map, amount, entry.first, options);
 			}
 		}
-		gather_fee(tx, spent_map, uint64_t(missing[addr_t()]), options);
+		gather_fee(tx, spent_map, options);
 		sign_off(tx, options);
 	}
 

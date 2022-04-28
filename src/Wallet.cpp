@@ -243,7 +243,7 @@ Wallet::sign_off(	const uint32_t& index, std::shared_ptr<const Transaction> tx,
 			}
 			parent = parent->parent;
 		}
-		wallet->gather_fee(copy, spent_map, 0, options);
+		wallet->gather_fee(copy, spent_map, options);
 	}
 	wallet->sign_off(copy, options);
 	return copy;
