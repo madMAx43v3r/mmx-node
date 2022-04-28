@@ -113,7 +113,7 @@ std::string bytes_t<N>::to_string() const {
 	std::string str;
 	str.resize(N * 2);
 	for(size_t i = 0; i < N; ++i) {
-		str[(N - i - 1) * 2] = map[(bytes[i] & 0xF0) >> 4];
+		str[(N - i - 1) * 2] = map[bytes[i] >> 4];
 		str[(N - i - 1) * 2 + 1] = map[bytes[i] & 0x0F];
 	}
 	return str;
@@ -139,26 +139,8 @@ void bytes_t<N>::from_string(const std::string& str)
 	if(str.size() - off != N * 2) {
 		throw std::logic_error("input size mismatch");
 	}
-	for(size_t i = 0; i < 2 * N; ++i) {
-		uint8_t byte = 0;
-		switch(std::tolower(str[off + i])) {
-			case '1': byte = 1; break;
-			case '2': byte = 2; break;
-			case '3': byte = 3; break;
-			case '4': byte = 4; break;
-			case '5': byte = 5; break;
-			case '6': byte = 6; break;
-			case '7': byte = 7; break;
-			case '8': byte = 8; break;
-			case '9': byte = 9; break;
-			case 'a': byte = 10; break;
-			case 'b': byte = 11; break;
-			case 'c': byte = 12; break;
-			case 'd': byte = 13; break;
-			case 'e': byte = 14; break;
-			case 'f': byte = 15; break;
-		}
-		bytes[i / 2] = byte << (((i + 1) % 2) * 4);
+	for(size_t i = 0; i < N; ++i) {
+		bytes[N - i - 1] = std::stoul(str.substr(off + i * 2, 2), nullptr, 16);
 	}
 }
 

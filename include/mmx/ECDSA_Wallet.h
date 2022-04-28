@@ -144,7 +144,9 @@ public:
 	}
 
 	void gather_inputs(	std::shared_ptr<Transaction> tx,
-						const uint128_t& amount, const addr_t& currency, const spend_options_t& options = {})
+						std::map<std::pair<addr_t, addr_t>, uint128_t>& spent_map,
+						const uint128_t& amount, const addr_t& currency,
+						const spend_options_t& options = {})
 	{
 		if(amount.upper()) {
 			throw std::logic_error("amount too large");
@@ -156,26 +158,42 @@ public:
 
 		for(const auto& entry : balance_map)
 		{
-			if(amount == 0) {
+			if(left == 0) {
 				break;
 			}
-			if(entry.first.second == currency && entry.second)
+			if(entry.first.second == currency)
 			{
+				auto balance = entry.second;
+				{
+					auto iter = spent_map.find(entry.first);
+					if(iter != spent_map.end()) {
+						balance -= iter->second;
+					}
+				}
+				if(!balance) {
+					continue;
+				}
 				txin_t in;
 				in.address = entry.first.first;
 				in.contract = currency;
-				if(left < entry.second) {
+				if(left < balance) {
 					in.amount = left;
 				} else {
-					in.amount = entry.second;
+					in.amount = balance;
 				}
 				left -= in.amount;
 				tx->inputs.push_back(in);
+				spent_map[entry.first] += in.amount;
 			}
+		}
+		if(left) {
+			throw std::logic_error("not enough funds");
 		}
 	}
 
-	void gather_fee(std::shared_ptr<Transaction> tx, uint64_t extra_input = 0, const spend_options_t& options = {})
+	void gather_fee(std::shared_ptr<Transaction> tx,
+					std::map<std::pair<addr_t, addr_t>, uint128_t>& spent_map,
+					uint64_t extra_input = 0, const spend_options_t& options = {})
 	{
 		uint64_t paid_fee = 0;
 		while(true) {
@@ -192,7 +210,7 @@ public:
 						spend_cost.emplace(owner, 0);
 					}
 				}
-				parent = tx->parent;
+				parent = parent->parent;
 			}
 			// TODO: check for multi-sig via options.contract_map
 			uint64_t tx_fees = tx->calc_cost(params)
@@ -211,8 +229,9 @@ public:
 			if(paid_fee >= tx_fees + extra_input) {
 				break;
 			}
-			gather_inputs(tx, (tx_fees + extra_input + params->min_txfee_io) - paid_fee, addr_t(), options);
-			paid_fee = tx_fees;
+			const auto more = (tx_fees + extra_input + params->min_txfee_io) - paid_fee;
+			gather_inputs(tx, spent_map, more, addr_t(), options);
+			paid_fee += more - extra_input;
 			extra_input = 0;
 		}
 		if(!tx->sender) {
@@ -291,7 +310,7 @@ public:
 		return sol;
 	}
 
-	void complete(std::shared_ptr<Transaction> tx, const spend_options_t& options)
+	void complete(std::shared_ptr<Transaction> tx, const spend_options_t& options = {})
 	{
 		std::map<addr_t, uint128_t> missing;
 		std::shared_ptr<const Transaction> parent = tx;
@@ -299,7 +318,7 @@ public:
 			for(const auto& out : parent->outputs) {
 				missing[out.contract] += out.amount;
 			}
-			parent = tx->parent;
+			parent = parent->parent;
 		}
 		parent = tx;
 		while(parent) {
@@ -311,17 +330,18 @@ public:
 					amount = 0;
 				}
 			}
-			parent = tx->parent;
+			parent = parent->parent;
 		}
+		std::map<std::pair<addr_t, addr_t>, uint128_t> spent_map;
 		for(auto& entry : missing) {
 			if(auto& amount = entry.second) {
 				if(entry.first != addr_t() || amount.upper()) {
-					gather_inputs(tx, amount, entry.first, options);
+					gather_inputs(tx, spent_map, amount, entry.first, options);
 					amount = 0;
 				}
 			}
 		}
-		gather_fee(tx, uint64_t(missing[addr_t()]), options);
+		gather_fee(tx, spent_map, uint64_t(missing[addr_t()]), options);
 		sign_off(tx, options);
 	}
 

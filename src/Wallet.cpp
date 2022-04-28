@@ -233,7 +233,17 @@ Wallet::sign_off(	const uint32_t& index, std::shared_ptr<const Transaction> tx,
 
 	auto copy = vnx::clone(tx);
 	if(cover_fee) {
-		wallet->gather_fee(copy, 0, options);
+		std::map<std::pair<addr_t, addr_t>, uint128_t> spent_map;
+		auto parent = tx;
+		while(parent) {
+			for(const auto& in : parent->inputs) {
+				if(wallet->find_address(in.address) >= 0) {
+					spent_map[std::make_pair(in.address, in.contract)] += in.amount;
+				}
+			}
+			parent = parent->parent;
+		}
+		wallet->gather_fee(copy, spent_map, 0, options);
 	}
 	wallet->sign_off(copy, options);
 	return copy;
@@ -318,7 +328,8 @@ std::vector<txin_t> Wallet::gather_inputs_for(	const uint32_t& index, const uint
 	update_cache(index);
 
 	auto tx = Transaction::create();
-	wallet->gather_inputs(tx, amount, currency, options);
+	std::map<std::pair<addr_t, addr_t>, uint128_t> spent_map;
+	wallet->gather_inputs(tx, spent_map, amount, currency, options);
 	return tx->inputs;
 }
 
