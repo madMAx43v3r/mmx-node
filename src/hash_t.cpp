@@ -15,7 +15,6 @@ namespace mmx {
 
 hash_t::hash_t(const void* data, const size_t num_bytes)
 {
-	// TODO: try picosha2
 	bls::Util::Hash256(bytes.data(), (const uint8_t*)data, num_bytes);
 }
 

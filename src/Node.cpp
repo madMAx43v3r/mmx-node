@@ -103,8 +103,6 @@ void Node::main()
 				auto block = read_block(*block_chain, true, &offset);
 				if(height <= replay_height) {
 					state_hash = block->hash;
-					history[block->height] = block->get_header();
-					log(INFO) << "Loaded height " << block->height;
 					break;
 				}
 			} catch(const std::exception& ex) {
@@ -125,6 +123,18 @@ void Node::main()
 			if(auto peak = get_peak()) {
 				log(INFO) << "Loaded " << peak->height + 1 << " blocks from disk, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 			}
+		} else {
+			for(uint32_t i = 0; i < max_history; ++i) {
+				if(i <= height) {
+					if(auto header = get_header_at(height - i)) {
+						history[header->height] = header;
+					}
+				}
+			}
+			balance_table.scan([this, height](const std::pair<addr_t, addr_t>& key, const std::pair<uint128, uint32_t>& value) {
+				balance_map.emplace(key, value.first);
+			});
+			log(INFO) << "Loaded height " << height;
 		}
 	} else {
 		block_chain->open("wb");
@@ -235,6 +245,12 @@ std::shared_ptr<const Block> Node::get_block_at(const uint32_t& height) const
 std::shared_ptr<const BlockHeader> Node::get_block_at_ex(const uint32_t& height, bool full_block) const
 {
 	// THREAD SAFE (for concurrent reads)
+	if(!full_block) {
+		auto iter = history.find(height);
+		if(iter != history.end()) {
+			return iter->second;
+		}
+	}
 	std::pair<int64_t, hash_t> entry;
 	if(block_index.find(height, entry)) {
 		vnx::File file(block_chain->get_path());
@@ -252,10 +268,6 @@ std::shared_ptr<const BlockHeader> Node::get_header(const hash_t& hash) const
 
 std::shared_ptr<const BlockHeader> Node::get_header_at(const uint32_t& height) const
 {
-	auto iter = history.find(height);
-	if(iter != history.end()) {
-		return iter->second;
-	}
 	return get_block_at_ex(height, false);
 }
 
