@@ -360,13 +360,7 @@ std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id, const
 		file.seek_to(entry.first);
 		const auto value = vnx::read(file.in);
 		if(auto tx = std::dynamic_pointer_cast<const Transaction>(value)) {
-			while(tx) {
-				if(tx->id == id) {
-					return tx;
-				}
-				tx = tx->parent;
-			}
-			return nullptr;
+			return tx;
 		}
 		if(auto header = std::dynamic_pointer_cast<const BlockHeader>(value)) {
 			if(auto tx = header->tx_base) {
