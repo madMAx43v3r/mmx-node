@@ -64,7 +64,7 @@ app.component('node-info', {
 					<div class="label">No. UTXO</div>
 				</div>
 				<div class="statistic">
-					<div class="value">{{(data.time_diff / Math.pow(10, 4)).toFixed(3)}} M/s</div>
+					<div class="value">{{(data.time_diff / 8 / Math.pow(10, 3)).toFixed(3)}} M/s</div>
 					<div class="label">VDF Speed</div>
 				</div>
 				<div class="statistic">

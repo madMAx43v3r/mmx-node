@@ -92,6 +92,7 @@ void Node::main()
 
 	bool is_replay = true;
 	if(block_chain->exists()) {
+		const auto time_begin = vnx::get_time_millis();
 		block_chain->open("rb+");
 		uint32_t height = 0;
 		std::pair<int64_t, hash_t> entry;
@@ -111,13 +112,15 @@ void Node::main()
 			revert(height, nullptr);
 		}
 		if(is_replay) {
-			const auto time_begin = vnx::get_wall_time_millis();
 			log(INFO) << "Creating DB (this may take a while) ...";
 			int64_t offset = 0;
 			while(auto header = read_block(*block_chain, true, &offset)) {
 				if(auto block = std::dynamic_pointer_cast<const Block>(header)) {
 					apply(block, &offset);
 					commit(block);
+					if(block->height % 1000 == 999) {
+						log(INFO) << "Height " << block->height << " ...";
+					}
 				}
 			}
 			if(auto peak = get_peak()) {
@@ -134,7 +137,7 @@ void Node::main()
 			balance_table.scan([this, height](const std::pair<addr_t, addr_t>& key, const std::pair<uint128, uint32_t>& value) {
 				balance_map.emplace(key, value.first);
 			});
-			log(INFO) << "Loaded height " << height;
+			log(INFO) << "Loaded height " << height << ", took " << (vnx::get_time_millis() - time_begin) / 1e3 << " sec";
 		}
 	} else {
 		block_chain->open("wb");
