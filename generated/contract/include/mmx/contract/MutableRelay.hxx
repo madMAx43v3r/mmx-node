@@ -11,7 +11,7 @@
 #include <mmx/Operation.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
-#include <mmx/tx_out_t.hxx>
+#include <mmx/txout_t.hxx>
 
 
 namespace mmx {
@@ -44,9 +44,10 @@ public:
 	virtual std::vector<::mmx::addr_t> get_dependency() const override;
 	virtual std::vector<::mmx::addr_t> get_parties() const override;
 	virtual vnx::optional<::mmx::addr_t> get_owner() const override;
-	virtual std::vector<::mmx::tx_out_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
+	virtual std::vector<::mmx::txout_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
+	virtual void transfer(const vnx::optional<::mmx::addr_t>& new_owner = nullptr) override;
 	virtual void unlock(const uint32_t& height = 0);
-	virtual void lock_target(const vnx::optional<::mmx::addr_t>& new_target = nullptr);
+	virtual void lock(const vnx::optional<::mmx::addr_t>& new_target = nullptr, const uint32_t& new_unlock_delay = 0);
 	
 	static std::shared_ptr<MutableRelay> create();
 	std::shared_ptr<vnx::Value> clone() const override;

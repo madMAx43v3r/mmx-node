@@ -3,7 +3,7 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/contract/PubKey_validate_return.hxx>
-#include <mmx/tx_out_t.hxx>
+#include <mmx/txout_t.hxx>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -14,7 +14,7 @@ namespace contract {
 
 
 const vnx::Hash64 PubKey_validate_return::VNX_TYPE_HASH(0xd37debdc13313296ull);
-const vnx::Hash64 PubKey_validate_return::VNX_CODE_HASH(0x9b7d2077fbc8e4d2ull);
+const vnx::Hash64 PubKey_validate_return::VNX_CODE_HASH(0x889cf7f3e435a2c0ull);
 
 vnx::Hash64 PubKey_validate_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -115,14 +115,14 @@ std::shared_ptr<vnx::TypeCode> PubKey_validate_return::static_create_type_code()
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.PubKey.validate.return";
 	type_code->type_hash = vnx::Hash64(0xd37debdc13313296ull);
-	type_code->code_hash = vnx::Hash64(0x9b7d2077fbc8e4d2ull);
+	type_code->code_hash = vnx::Hash64(0x889cf7f3e435a2c0ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
 	type_code->native_size = sizeof(::mmx::contract::PubKey_validate_return);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<PubKey_validate_return>(); };
 	type_code->depends.resize(1);
-	type_code->depends[0] = ::mmx::tx_out_t::static_get_type_code();
+	type_code->depends[0] = ::mmx::txout_t::static_get_type_code();
 	type_code->fields.resize(1);
 	{
 		auto& field = type_code->fields[0];

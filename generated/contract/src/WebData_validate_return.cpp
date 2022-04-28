@@ -3,7 +3,7 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/contract/WebData_validate_return.hxx>
-#include <mmx/tx_out_t.hxx>
+#include <mmx/txout_t.hxx>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -14,7 +14,7 @@ namespace contract {
 
 
 const vnx::Hash64 WebData_validate_return::VNX_TYPE_HASH(0x1baf67b4e006981ull);
-const vnx::Hash64 WebData_validate_return::VNX_CODE_HASH(0xa78b7201dc69ae7full);
+const vnx::Hash64 WebData_validate_return::VNX_CODE_HASH(0xb46aa585c394e86dull);
 
 vnx::Hash64 WebData_validate_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -115,14 +115,14 @@ std::shared_ptr<vnx::TypeCode> WebData_validate_return::static_create_type_code(
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.WebData.validate.return";
 	type_code->type_hash = vnx::Hash64(0x1baf67b4e006981ull);
-	type_code->code_hash = vnx::Hash64(0xa78b7201dc69ae7full);
+	type_code->code_hash = vnx::Hash64(0xb46aa585c394e86dull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
 	type_code->native_size = sizeof(::mmx::contract::WebData_validate_return);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<WebData_validate_return>(); };
 	type_code->depends.resize(1);
-	type_code->depends[0] = ::mmx::tx_out_t::static_get_type_code();
+	type_code->depends[0] = ::mmx::txout_t::static_get_type_code();
 	type_code->fields.resize(1);
 	{
 		auto& field = type_code->fields[0];

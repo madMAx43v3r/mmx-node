@@ -12,7 +12,7 @@ namespace mmx {
 
 
 const vnx::Hash64 balance_t::VNX_TYPE_HASH(0x613173c7e5ce65b4ull);
-const vnx::Hash64 balance_t::VNX_CODE_HASH(0xa77fce0eac67bf3cull);
+const vnx::Hash64 balance_t::VNX_CODE_HASH(0x2e4e6f47e4951ac7ull);
 
 vnx::Hash64 balance_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -143,7 +143,7 @@ std::shared_ptr<vnx::TypeCode> balance_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.balance_t";
 	type_code->type_hash = vnx::Hash64(0x613173c7e5ce65b4ull);
-	type_code->code_hash = vnx::Hash64(0xa77fce0eac67bf3cull);
+	type_code->code_hash = vnx::Hash64(0x2e4e6f47e4951ac7ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::balance_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<balance_t>>(); };
@@ -152,25 +152,25 @@ std::shared_ptr<vnx::TypeCode> balance_t::static_create_type_code() {
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "spendable";
-		field.code = {11, 2, 4};
+		field.code = {11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[1];
 		field.is_extended = true;
 		field.name = "reserved";
-		field.code = {11, 2, 4};
+		field.code = {11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[2];
 		field.is_extended = true;
 		field.name = "locked";
-		field.code = {11, 2, 4};
+		field.code = {11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[3];
 		field.is_extended = true;
 		field.name = "total";
-		field.code = {11, 2, 4};
+		field.code = {11, 16, 1};
 	}
 	type_code->build();
 	return type_code;

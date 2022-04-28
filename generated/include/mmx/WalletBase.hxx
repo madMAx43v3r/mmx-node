@@ -15,11 +15,10 @@
 #include <mmx/balance_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/spend_options_t.hxx>
-#include <mmx/stxo_entry_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_log_entry_t.hxx>
-#include <mmx/txio_key_t.hxx>
-#include <mmx/utxo_entry_t.hxx>
+#include <mmx/txin_t.hxx>
+#include <mmx/uint128.hpp>
 #include <vnx/Module.h>
 #include <vnx/Object.hpp>
 #include <vnx/addons/HttpData.hxx>
@@ -83,24 +82,19 @@ protected:
 	virtual std::shared_ptr<const ::mmx::Transaction> mint(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> deploy(const uint32_t& index, std::shared_ptr<const ::mmx::Contract> contract, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> execute(const uint32_t& index, const ::mmx::addr_t& address, const ::vnx::Object& method, const ::mmx::spend_options_t& options) const = 0;
-	virtual std::shared_ptr<const ::mmx::Transaction> split(const uint32_t& index, const uint64_t& max_amount, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> complete(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> sign_off(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx, const vnx::bool_t& cover_fee, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Solution> sign_msg(const uint32_t& index, const ::mmx::addr_t& address, const ::mmx::hash_t& msg) const = 0;
 	virtual void send_off(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx) const = 0;
-	virtual void mark_spent(const uint32_t& index, const std::vector<::mmx::txio_key_t>& keys) = 0;
-	virtual void reserve(const uint32_t& index, const std::vector<::mmx::txio_key_t>& keys) = 0;
-	virtual void release(const uint32_t& index, const std::vector<::mmx::txio_key_t>& keys) = 0;
+	virtual void mark_spent(const uint32_t& index, const std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128>& amounts) = 0;
+	virtual void reserve(const uint32_t& index, const std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128>& amounts) = 0;
+	virtual void release(const uint32_t& index, const std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128>& amounts) = 0;
 	virtual void release_all() = 0;
 	virtual void reset_cache(const uint32_t& index) = 0;
 	virtual void update_cache(const uint32_t& index) const = 0;
-	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list(const uint32_t& index, const uint32_t& min_confirm) const = 0;
-	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list_for(const uint32_t& index, const ::mmx::addr_t& currency, const uint32_t& min_confirm) const = 0;
-	virtual std::vector<::mmx::stxo_entry_t> get_stxo_list(const uint32_t& index) const = 0;
-	virtual std::vector<::mmx::stxo_entry_t> get_stxo_list_for(const uint32_t& index, const ::mmx::addr_t& currency) const = 0;
-	virtual std::vector<::mmx::utxo_entry_t> gather_utxos_for(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index, const int32_t& since) const = 0;
 	virtual std::vector<::mmx::tx_log_entry_t> get_tx_history(const uint32_t& index, const int32_t& limit, const uint32_t& offset) const = 0;
+	virtual std::vector<::mmx::txin_t> gather_inputs_for(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
 	virtual ::mmx::balance_t get_balance(const uint32_t& index, const ::mmx::addr_t& currency, const uint32_t& min_confirm) const = 0;
 	virtual std::map<::mmx::addr_t, ::mmx::balance_t> get_balances(const uint32_t& index, const uint32_t& min_confirm) const = 0;
 	virtual std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts(const uint32_t& index) const = 0;

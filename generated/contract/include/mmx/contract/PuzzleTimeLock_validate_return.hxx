@@ -5,7 +5,7 @@
 #define INCLUDE_mmx_contract_PuzzleTimeLock_validate_return_HXX_
 
 #include <mmx/contract/package.hxx>
-#include <mmx/tx_out_t.hxx>
+#include <mmx/txout_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -15,7 +15,7 @@ namespace contract {
 class MMX_CONTRACT_EXPORT PuzzleTimeLock_validate_return : public ::vnx::Value {
 public:
 	
-	std::vector<::mmx::tx_out_t> _ret_0;
+	std::vector<::mmx::txout_t> _ret_0;
 	
 	typedef ::vnx::Value Super;
 	

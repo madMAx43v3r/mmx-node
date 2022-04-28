@@ -3,7 +3,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Transaction_get_all_inputs_return.hxx>
-#include <mmx/tx_in_t.hxx>
+#include <mmx/txin_t.hxx>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Transaction_get_all_inputs_return::VNX_TYPE_HASH(0x4fa373e214ff1c91ull);
-const vnx::Hash64 Transaction_get_all_inputs_return::VNX_CODE_HASH(0xa7d28ba6681fff0ull);
+const vnx::Hash64 Transaction_get_all_inputs_return::VNX_CODE_HASH(0x81b31cd4b3047d2eull);
 
 vnx::Hash64 Transaction_get_all_inputs_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -114,14 +114,14 @@ std::shared_ptr<vnx::TypeCode> Transaction_get_all_inputs_return::static_create_
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Transaction.get_all_inputs.return";
 	type_code->type_hash = vnx::Hash64(0x4fa373e214ff1c91ull);
-	type_code->code_hash = vnx::Hash64(0xa7d28ba6681fff0ull);
+	type_code->code_hash = vnx::Hash64(0x81b31cd4b3047d2eull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
 	type_code->native_size = sizeof(::mmx::Transaction_get_all_inputs_return);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Transaction_get_all_inputs_return>(); };
 	type_code->depends.resize(1);
-	type_code->depends[0] = ::mmx::tx_in_t::static_get_type_code();
+	type_code->depends[0] = ::mmx::txin_t::static_get_type_code();
 	type_code->fields.resize(1);
 	{
 		auto& field = type_code->fields[0];

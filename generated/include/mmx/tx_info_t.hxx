@@ -10,8 +10,8 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/tx_note_e.hxx>
-#include <mmx/txi_info_t.hxx>
-#include <mmx/txo_info_t.hxx>
+#include <mmx/txin_t.hxx>
+#include <mmx/txout_t.hxx>
 #include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
@@ -27,8 +27,8 @@ public:
 	int64_t fee = 0;
 	uint64_t cost = 0;
 	::mmx::tx_note_e note;
-	std::vector<::mmx::txi_info_t> inputs;
-	std::vector<::mmx::txo_info_t> outputs;
+	std::vector<::mmx::txin_t> inputs;
+	std::vector<::mmx::txout_t> outputs;
 	std::vector<std::shared_ptr<const ::mmx::Operation>> operations;
 	std::shared_ptr<const ::mmx::Contract> deployed;
 	std::map<::mmx::addr_t, ::mmx::uint128> input_amounts;

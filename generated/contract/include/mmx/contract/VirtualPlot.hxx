@@ -6,12 +6,10 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/ChainParams.hxx>
-#include <mmx/Context.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/bls_pubkey_t.hpp>
 #include <mmx/hash_t.hpp>
-#include <mmx/utxo_t.hxx>
 
 
 namespace mmx {
@@ -39,7 +37,6 @@ public:
 	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_hash() const override;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
-	virtual vnx::bool_t is_spendable(const ::mmx::utxo_t& utxo = ::mmx::utxo_t(), std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
 	virtual void bls_transfer(const ::mmx::bls_pubkey_t& new_farmer_key = ::mmx::bls_pubkey_t());
 	
 	static std::shared_ptr<VirtualPlot> create();

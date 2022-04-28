@@ -20,6 +20,8 @@
 #include <mmx/BlockHeader.hxx>
 #include <mmx/BlockHeader_calc_hash.hxx>
 #include <mmx/BlockHeader_calc_hash_return.hxx>
+#include <mmx/BlockHeader_get_header.hxx>
+#include <mmx/BlockHeader_get_header_return.hxx>
 #include <mmx/BlockHeader_is_valid.hxx>
 #include <mmx/BlockHeader_is_valid_return.hxx>
 #include <mmx/BlockHeader_validate.hxx>
@@ -36,7 +38,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Block::VNX_TYPE_HASH(0x94965d816d328467ull);
-const vnx::Hash64 Block::VNX_CODE_HASH(0xbae4a23f251b612bull);
+const vnx::Hash64 Block::VNX_CODE_HASH(0x40cd3a6578c99ef1ull);
 
 vnx::Hash64 Block::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -297,14 +299,14 @@ std::shared_ptr<vnx::TypeCode> Block::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Block";
 	type_code->type_hash = vnx::Hash64(0x94965d816d328467ull);
-	type_code->code_hash = vnx::Hash64(0xbae4a23f251b612bull);
+	type_code->code_hash = vnx::Hash64(0x40cd3a6578c99ef1ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::Block);
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::BlockHeader::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Block>(); };
-	type_code->methods.resize(10);
+	type_code->methods.resize(11);
 	type_code->methods[0] = ::mmx::Block_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Block_calc_tx_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Block_finalize::static_get_type_code();
@@ -313,8 +315,9 @@ std::shared_ptr<vnx::TypeCode> Block::static_create_type_code() {
 	type_code->methods[5] = ::mmx::Block_is_valid::static_get_type_code();
 	type_code->methods[6] = ::mmx::Block_validate::static_get_type_code();
 	type_code->methods[7] = ::mmx::BlockHeader_calc_hash::static_get_type_code();
-	type_code->methods[8] = ::mmx::BlockHeader_is_valid::static_get_type_code();
-	type_code->methods[9] = ::mmx::BlockHeader_validate::static_get_type_code();
+	type_code->methods[8] = ::mmx::BlockHeader_get_header::static_get_type_code();
+	type_code->methods[9] = ::mmx::BlockHeader_is_valid::static_get_type_code();
+	type_code->methods[10] = ::mmx::BlockHeader_validate::static_get_type_code();
 	type_code->fields.resize(17);
 	{
 		auto& field = type_code->fields[0];
@@ -362,13 +365,13 @@ std::shared_ptr<vnx::TypeCode> Block::static_create_type_code() {
 		auto& field = type_code->fields[7];
 		field.is_extended = true;
 		field.name = "weight";
-		field.code = {11, 2, 4};
+		field.code = {11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[8];
 		field.is_extended = true;
 		field.name = "total_weight";
-		field.code = {11, 2, 4};
+		field.code = {11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[9];
@@ -470,6 +473,12 @@ std::shared_ptr<vnx::Value> Block::vnx_call_switch(std::shared_ptr<const vnx::Va
 			auto _args = std::static_pointer_cast<const ::mmx::BlockHeader_calc_hash>(_method);
 			auto _return_value = ::mmx::BlockHeader_calc_hash_return::create();
 			_return_value->_ret_0 = calc_hash();
+			return _return_value;
+		}
+		case 0xd7c88d66a260d84aull: {
+			auto _args = std::static_pointer_cast<const ::mmx::BlockHeader_get_header>(_method);
+			auto _return_value = ::mmx::BlockHeader_get_header_return::create();
+			_return_value->_ret_0 = get_header();
 			return _return_value;
 		}
 		case 0xee0825f87d03a5ebull: {

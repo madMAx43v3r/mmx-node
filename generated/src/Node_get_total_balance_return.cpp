@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_total_balance_return::VNX_TYPE_HASH(0x3336380a894f52a8ull);
-const vnx::Hash64 Node_get_total_balance_return::VNX_CODE_HASH(0x57013a1b106440f2ull);
+const vnx::Hash64 Node_get_total_balance_return::VNX_CODE_HASH(0x69d274a0a8cade7full);
 
 vnx::Hash64 Node_get_total_balance_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -114,7 +114,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_total_balance_return::static_create_type
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_total_balance.return";
 	type_code->type_hash = vnx::Hash64(0x3336380a894f52a8ull);
-	type_code->code_hash = vnx::Hash64(0x57013a1b106440f2ull);
+	type_code->code_hash = vnx::Hash64(0x69d274a0a8cade7full);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
@@ -125,7 +125,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_total_balance_return::static_create_type
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "_ret_0";
-		field.code = {11, 2, 4};
+		field.code = {11, 16, 1};
 	}
 	type_code->build();
 	return type_code;

@@ -12,9 +12,9 @@
 #include <mmx/TransactionBase.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
-#include <mmx/tx_in_t.hxx>
 #include <mmx/tx_note_e.hxx>
-#include <mmx/tx_out_t.hxx>
+#include <mmx/txin_t.hxx>
+#include <mmx/txout_t.hxx>
 
 
 namespace mmx {
@@ -29,9 +29,9 @@ public:
 	::mmx::tx_note_e note;
 	vnx::optional<::mmx::hash_t> salt;
 	vnx::optional<::mmx::addr_t> sender;
-	std::vector<::mmx::tx_in_t> inputs;
-	std::vector<::mmx::tx_out_t> outputs;
-	std::vector<::mmx::tx_out_t> exec_outputs;
+	std::vector<::mmx::txin_t> inputs;
+	std::vector<::mmx::txout_t> outputs;
+	std::vector<::mmx::txout_t> exec_outputs;
 	std::vector<std::shared_ptr<const ::mmx::Operation>> execute;
 	std::vector<std::shared_ptr<const ::mmx::Solution>> solutions;
 	std::shared_ptr<const ::mmx::Contract> deploy;
@@ -52,16 +52,17 @@ public:
 	const vnx::TypeCode* get_type_code() const override;
 	
 	virtual void finalize();
-	virtual void add_output(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const uint64_t& amount = 0, const uint32_t& split = 1);
+	virtual void add_input(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const uint64_t& amount = 0);
+	virtual void add_output(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const uint64_t& amount = 0, const vnx::optional<::mmx::addr_t>& sender = nullptr);
 	virtual void merge_sign(std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
 	virtual vnx::bool_t is_valid() const;
 	virtual vnx::bool_t is_signed() const;
 	virtual ::mmx::hash_t calc_hash() const override;
 	virtual std::shared_ptr<const ::mmx::Solution> get_solution(const uint32_t& index = 0) const;
-	virtual ::mmx::tx_out_t get_output(const uint32_t& index = 0) const;
-	virtual std::vector<::mmx::tx_out_t> get_outputs() const;
-	virtual std::vector<::mmx::tx_out_t> get_all_outputs() const;
-	virtual std::vector<::mmx::tx_in_t> get_all_inputs() const;
+	virtual ::mmx::txout_t get_output(const uint32_t& index = 0) const;
+	virtual std::vector<::mmx::txout_t> get_outputs() const;
+	virtual std::vector<::mmx::txout_t> get_all_outputs() const;
+	virtual std::vector<::mmx::txin_t> get_all_inputs() const;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	virtual std::shared_ptr<const ::mmx::Transaction> get_combined() const;
 	

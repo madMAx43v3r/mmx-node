@@ -3,7 +3,6 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/contract/Token.hxx>
-#include <mmx/ChainParams.hxx>
 #include <mmx/Context.hxx>
 #include <mmx/Contract_calc_cost.hxx>
 #include <mmx/Contract_calc_cost_return.hxx>
@@ -15,8 +14,6 @@
 #include <mmx/Contract_get_owner_return.hxx>
 #include <mmx/Contract_get_parties.hxx>
 #include <mmx/Contract_get_parties_return.hxx>
-#include <mmx/Contract_is_spendable.hxx>
-#include <mmx/Contract_is_spendable_return.hxx>
 #include <mmx/Contract_is_valid.hxx>
 #include <mmx/Contract_is_valid_return.hxx>
 #include <mmx/Contract_transfer.hxx>
@@ -25,8 +22,6 @@
 #include <mmx/Contract_validate_return.hxx>
 #include <mmx/Operation.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/contract/Token_calc_cost.hxx>
-#include <mmx/contract/Token_calc_cost_return.hxx>
 #include <mmx/contract/Token_calc_hash.hxx>
 #include <mmx/contract/Token_calc_hash_return.hxx>
 #include <mmx/contract/Token_get_dependency.hxx>
@@ -37,10 +32,6 @@
 #include <mmx/contract/Token_get_parties_return.hxx>
 #include <mmx/contract/Token_is_valid.hxx>
 #include <mmx/contract/Token_is_valid_return.hxx>
-#include <mmx/contract/Token_set_stake_factor.hxx>
-#include <mmx/contract/Token_set_stake_factor_return.hxx>
-#include <mmx/contract/Token_set_time_factor.hxx>
-#include <mmx/contract/Token_set_time_factor_return.hxx>
 #include <mmx/contract/Token_transfer.hxx>
 #include <mmx/contract/Token_transfer_return.hxx>
 #include <mmx/contract/Token_validate.hxx>
@@ -53,7 +44,7 @@
 #include <mmx/contract/TokenBase_is_valid.hxx>
 #include <mmx/contract/TokenBase_is_valid_return.hxx>
 #include <mmx/hash_t.hpp>
-#include <mmx/tx_out_t.hxx>
+#include <mmx/txout_t.hxx>
 #include <mmx/ulong_fraction_t.hxx>
 
 #include <vnx/vnx.h>
@@ -64,7 +55,7 @@ namespace contract {
 
 
 const vnx::Hash64 Token::VNX_TYPE_HASH(0x2d8835d6429431b2ull);
-const vnx::Hash64 Token::VNX_CODE_HASH(0xbfaaec7d22ec316eull);
+const vnx::Hash64 Token::VNX_CODE_HASH(0xebabf11f0c98935cull);
 
 vnx::Hash64 Token::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -104,11 +95,6 @@ void Token::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, icon_url);
 	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, decimals);
 	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, owner);
-	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, time_factor);
-	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, stake_factors);
-	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, is_mintable);
-	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, is_adjustable);
-	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, min_stake_duration);
 	_visitor.type_end(*_type_code);
 }
 
@@ -121,11 +107,6 @@ void Token::write(std::ostream& _out) const {
 	_out << ", \"icon_url\": "; vnx::write(_out, icon_url);
 	_out << ", \"decimals\": "; vnx::write(_out, decimals);
 	_out << ", \"owner\": "; vnx::write(_out, owner);
-	_out << ", \"time_factor\": "; vnx::write(_out, time_factor);
-	_out << ", \"stake_factors\": "; vnx::write(_out, stake_factors);
-	_out << ", \"is_mintable\": "; vnx::write(_out, is_mintable);
-	_out << ", \"is_adjustable\": "; vnx::write(_out, is_adjustable);
-	_out << ", \"min_stake_duration\": "; vnx::write(_out, min_stake_duration);
 	_out << "}";
 }
 
@@ -145,11 +126,6 @@ vnx::Object Token::to_object() const {
 	_object["icon_url"] = icon_url;
 	_object["decimals"] = decimals;
 	_object["owner"] = owner;
-	_object["time_factor"] = time_factor;
-	_object["stake_factors"] = stake_factors;
-	_object["is_mintable"] = is_mintable;
-	_object["is_adjustable"] = is_adjustable;
-	_object["min_stake_duration"] = min_stake_duration;
 	return _object;
 }
 
@@ -159,22 +135,12 @@ void Token::from_object(const vnx::Object& _object) {
 			_entry.second.to(decimals);
 		} else if(_entry.first == "icon_url") {
 			_entry.second.to(icon_url);
-		} else if(_entry.first == "is_adjustable") {
-			_entry.second.to(is_adjustable);
-		} else if(_entry.first == "is_mintable") {
-			_entry.second.to(is_mintable);
-		} else if(_entry.first == "min_stake_duration") {
-			_entry.second.to(min_stake_duration);
 		} else if(_entry.first == "name") {
 			_entry.second.to(name);
 		} else if(_entry.first == "owner") {
 			_entry.second.to(owner);
-		} else if(_entry.first == "stake_factors") {
-			_entry.second.to(stake_factors);
 		} else if(_entry.first == "symbol") {
 			_entry.second.to(symbol);
-		} else if(_entry.first == "time_factor") {
-			_entry.second.to(time_factor);
 		} else if(_entry.first == "version") {
 			_entry.second.to(version);
 		} else if(_entry.first == "web_url") {
@@ -205,21 +171,6 @@ vnx::Variant Token::get_field(const std::string& _name) const {
 	if(_name == "owner") {
 		return vnx::Variant(owner);
 	}
-	if(_name == "time_factor") {
-		return vnx::Variant(time_factor);
-	}
-	if(_name == "stake_factors") {
-		return vnx::Variant(stake_factors);
-	}
-	if(_name == "is_mintable") {
-		return vnx::Variant(is_mintable);
-	}
-	if(_name == "is_adjustable") {
-		return vnx::Variant(is_adjustable);
-	}
-	if(_name == "min_stake_duration") {
-		return vnx::Variant(min_stake_duration);
-	}
 	return vnx::Variant();
 }
 
@@ -238,16 +189,6 @@ void Token::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(decimals);
 	} else if(_name == "owner") {
 		_value.to(owner);
-	} else if(_name == "time_factor") {
-		_value.to(time_factor);
-	} else if(_name == "stake_factors") {
-		_value.to(stake_factors);
-	} else if(_name == "is_mintable") {
-		_value.to(is_mintable);
-	} else if(_name == "is_adjustable") {
-		_value.to(is_adjustable);
-	} else if(_name == "min_stake_duration") {
-		_value.to(min_stake_duration);
 	}
 }
 
@@ -275,7 +216,7 @@ std::shared_ptr<vnx::TypeCode> Token::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.Token";
 	type_code->type_hash = vnx::Hash64(0x2d8835d6429431b2ull);
-	type_code->code_hash = vnx::Hash64(0xbfaaec7d22ec316eull);
+	type_code->code_hash = vnx::Hash64(0xebabf11f0c98935cull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::Token);
@@ -283,32 +224,26 @@ std::shared_ptr<vnx::TypeCode> Token::static_create_type_code() {
 	type_code->parents[0] = ::mmx::contract::TokenBase::static_get_type_code();
 	type_code->parents[1] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Token>(); };
-	type_code->depends.resize(1);
-	type_code->depends[0] = ::mmx::ulong_fraction_t::static_get_type_code();
-	type_code->methods.resize(22);
+	type_code->methods.resize(18);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_dependency::static_get_type_code();
 	type_code->methods[3] = ::mmx::Contract_get_owner::static_get_type_code();
 	type_code->methods[4] = ::mmx::Contract_get_parties::static_get_type_code();
-	type_code->methods[5] = ::mmx::Contract_is_spendable::static_get_type_code();
-	type_code->methods[6] = ::mmx::Contract_is_valid::static_get_type_code();
-	type_code->methods[7] = ::mmx::Contract_transfer::static_get_type_code();
-	type_code->methods[8] = ::mmx::Contract_validate::static_get_type_code();
-	type_code->methods[9] = ::mmx::contract::Token_calc_cost::static_get_type_code();
-	type_code->methods[10] = ::mmx::contract::Token_calc_hash::static_get_type_code();
-	type_code->methods[11] = ::mmx::contract::Token_get_dependency::static_get_type_code();
-	type_code->methods[12] = ::mmx::contract::Token_get_owner::static_get_type_code();
-	type_code->methods[13] = ::mmx::contract::Token_get_parties::static_get_type_code();
-	type_code->methods[14] = ::mmx::contract::Token_is_valid::static_get_type_code();
-	type_code->methods[15] = ::mmx::contract::Token_set_stake_factor::static_get_type_code();
-	type_code->methods[16] = ::mmx::contract::Token_set_time_factor::static_get_type_code();
-	type_code->methods[17] = ::mmx::contract::Token_transfer::static_get_type_code();
-	type_code->methods[18] = ::mmx::contract::Token_validate::static_get_type_code();
-	type_code->methods[19] = ::mmx::contract::TokenBase_calc_cost::static_get_type_code();
-	type_code->methods[20] = ::mmx::contract::TokenBase_calc_hash::static_get_type_code();
-	type_code->methods[21] = ::mmx::contract::TokenBase_is_valid::static_get_type_code();
-	type_code->fields.resize(12);
+	type_code->methods[5] = ::mmx::Contract_is_valid::static_get_type_code();
+	type_code->methods[6] = ::mmx::Contract_transfer::static_get_type_code();
+	type_code->methods[7] = ::mmx::Contract_validate::static_get_type_code();
+	type_code->methods[8] = ::mmx::contract::Token_calc_hash::static_get_type_code();
+	type_code->methods[9] = ::mmx::contract::Token_get_dependency::static_get_type_code();
+	type_code->methods[10] = ::mmx::contract::Token_get_owner::static_get_type_code();
+	type_code->methods[11] = ::mmx::contract::Token_get_parties::static_get_type_code();
+	type_code->methods[12] = ::mmx::contract::Token_is_valid::static_get_type_code();
+	type_code->methods[13] = ::mmx::contract::Token_transfer::static_get_type_code();
+	type_code->methods[14] = ::mmx::contract::Token_validate::static_get_type_code();
+	type_code->methods[15] = ::mmx::contract::TokenBase_calc_cost::static_get_type_code();
+	type_code->methods[16] = ::mmx::contract::TokenBase_calc_hash::static_get_type_code();
+	type_code->methods[17] = ::mmx::contract::TokenBase_is_valid::static_get_type_code();
+	type_code->fields.resize(7);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -352,39 +287,6 @@ std::shared_ptr<vnx::TypeCode> Token::static_create_type_code() {
 		field.name = "owner";
 		field.code = {33, 11, 32, 1};
 	}
-	{
-		auto& field = type_code->fields[7];
-		field.is_extended = true;
-		field.name = "time_factor";
-		field.code = {33, 19, 0};
-	}
-	{
-		auto& field = type_code->fields[8];
-		field.is_extended = true;
-		field.name = "stake_factors";
-		field.code = {13, 5, 11, 32, 1, 19, 0};
-	}
-	{
-		auto& field = type_code->fields[9];
-		field.data_size = 1;
-		field.name = "is_mintable";
-		field.value = vnx::to_string(true);
-		field.code = {31};
-	}
-	{
-		auto& field = type_code->fields[10];
-		field.data_size = 1;
-		field.name = "is_adjustable";
-		field.value = vnx::to_string(false);
-		field.code = {31};
-	}
-	{
-		auto& field = type_code->fields[11];
-		field.data_size = 4;
-		field.name = "min_stake_duration";
-		field.value = vnx::to_string(18);
-		field.code = {3};
-	}
 	type_code->build();
 	return type_code;
 }
@@ -421,12 +323,6 @@ std::shared_ptr<vnx::Value> Token::vnx_call_switch(std::shared_ptr<const vnx::Va
 			_return_value->_ret_0 = get_parties();
 			return _return_value;
 		}
-		case 0xd12879d16cac3d5cull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_is_spendable>(_method);
-			auto _return_value = ::mmx::Contract_is_spendable_return::create();
-			_return_value->_ret_0 = is_spendable(_args->utxo, _args->context);
-			return _return_value;
-		}
 		case 0xe3adf9b29a723217ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Contract_is_valid>(_method);
 			auto _return_value = ::mmx::Contract_is_valid_return::create();
@@ -443,12 +339,6 @@ std::shared_ptr<vnx::Value> Token::vnx_call_switch(std::shared_ptr<const vnx::Va
 			auto _args = std::static_pointer_cast<const ::mmx::Contract_validate>(_method);
 			auto _return_value = ::mmx::Contract_validate_return::create();
 			_return_value->_ret_0 = validate(_args->operation, _args->context);
-			return _return_value;
-		}
-		case 0xbf384ca6ba587f13ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::contract::Token_calc_cost>(_method);
-			auto _return_value = ::mmx::contract::Token_calc_cost_return::create();
-			_return_value->_ret_0 = calc_cost(_args->params);
 			return _return_value;
 		}
 		case 0x6f2a87c0dfca0becull: {
@@ -479,18 +369,6 @@ std::shared_ptr<vnx::Value> Token::vnx_call_switch(std::shared_ptr<const vnx::Va
 			auto _args = std::static_pointer_cast<const ::mmx::contract::Token_is_valid>(_method);
 			auto _return_value = ::mmx::contract::Token_is_valid_return::create();
 			_return_value->_ret_0 = is_valid();
-			return _return_value;
-		}
-		case 0xe72a46777bb7e2a3ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::contract::Token_set_stake_factor>(_method);
-			auto _return_value = ::mmx::contract::Token_set_stake_factor_return::create();
-			set_stake_factor(_args->currency, _args->factor);
-			return _return_value;
-		}
-		case 0x33d338ac43ee93e3ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::contract::Token_set_time_factor>(_method);
-			auto _return_value = ::mmx::contract::Token_set_time_factor_return::create();
-			set_time_factor(_args->factor);
 			return _return_value;
 		}
 		case 0xd54ee6345b881a52ull: {
@@ -572,15 +450,6 @@ void read(TypeInput& in, ::mmx::contract::Token& value, const TypeCode* type_cod
 		if(const auto* const _field = type_code->field_map[5]) {
 			vnx::read_value(_buf + _field->offset, value.decimals, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[9]) {
-			vnx::read_value(_buf + _field->offset, value.is_mintable, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[10]) {
-			vnx::read_value(_buf + _field->offset, value.is_adjustable, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[11]) {
-			vnx::read_value(_buf + _field->offset, value.min_stake_duration, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -589,8 +458,6 @@ void read(TypeInput& in, ::mmx::contract::Token& value, const TypeCode* type_cod
 			case 3: vnx::read(in, value.web_url, type_code, _field->code.data()); break;
 			case 4: vnx::read(in, value.icon_url, type_code, _field->code.data()); break;
 			case 6: vnx::read(in, value.owner, type_code, _field->code.data()); break;
-			case 7: vnx::read(in, value.time_factor, type_code, _field->code.data()); break;
-			case 8: vnx::read(in, value.stake_factors, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -609,19 +476,14 @@ void write(TypeOutput& out, const ::mmx::contract::Token& value, const TypeCode*
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(14);
+	char* const _buf = out.write(8);
 	vnx::write_value(_buf + 0, value.version);
 	vnx::write_value(_buf + 4, value.decimals);
-	vnx::write_value(_buf + 8, value.is_mintable);
-	vnx::write_value(_buf + 9, value.is_adjustable);
-	vnx::write_value(_buf + 10, value.min_stake_duration);
 	vnx::write(out, value.name, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.symbol, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.web_url, type_code, type_code->fields[3].code.data());
 	vnx::write(out, value.icon_url, type_code, type_code->fields[4].code.data());
 	vnx::write(out, value.owner, type_code, type_code->fields[6].code.data());
-	vnx::write(out, value.time_factor, type_code, type_code->fields[7].code.data());
-	vnx::write(out, value.stake_factors, type_code, type_code->fields[8].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::Token& value) {

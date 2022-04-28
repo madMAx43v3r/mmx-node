@@ -3,7 +3,7 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/contract/DataArray_validate_return.hxx>
-#include <mmx/tx_out_t.hxx>
+#include <mmx/txout_t.hxx>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -14,7 +14,7 @@ namespace contract {
 
 
 const vnx::Hash64 DataArray_validate_return::VNX_TYPE_HASH(0x34218564793e326ull);
-const vnx::Hash64 DataArray_validate_return::VNX_CODE_HASH(0xc64d24f454440f1ull);
+const vnx::Hash64 DataArray_validate_return::VNX_CODE_HASH(0x1f8505cb5ab906e3ull);
 
 vnx::Hash64 DataArray_validate_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -115,14 +115,14 @@ std::shared_ptr<vnx::TypeCode> DataArray_validate_return::static_create_type_cod
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.DataArray.validate.return";
 	type_code->type_hash = vnx::Hash64(0x34218564793e326ull);
-	type_code->code_hash = vnx::Hash64(0xc64d24f454440f1ull);
+	type_code->code_hash = vnx::Hash64(0x1f8505cb5ab906e3ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
 	type_code->native_size = sizeof(::mmx::contract::DataArray_validate_return);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<DataArray_validate_return>(); };
 	type_code->depends.resize(1);
-	type_code->depends[0] = ::mmx::tx_out_t::static_get_type_code();
+	type_code->depends[0] = ::mmx::txout_t::static_get_type_code();
 	type_code->fields.resize(1);
 	{
 		auto& field = type_code->fields[0];

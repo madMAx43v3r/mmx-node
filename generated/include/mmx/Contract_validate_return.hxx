@@ -5,7 +5,7 @@
 #define INCLUDE_mmx_Contract_validate_return_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/tx_out_t.hxx>
+#include <mmx/txout_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -14,7 +14,7 @@ namespace mmx {
 class MMX_EXPORT Contract_validate_return : public ::vnx::Value {
 public:
 	
-	std::vector<::mmx::tx_out_t> _ret_0;
+	std::vector<::mmx::txout_t> _ret_0;
 	
 	typedef ::vnx::Value Super;
 	

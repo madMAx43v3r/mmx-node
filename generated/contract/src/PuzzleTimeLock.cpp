@@ -16,8 +16,6 @@
 #include <mmx/Contract_get_owner_return.hxx>
 #include <mmx/Contract_get_parties.hxx>
 #include <mmx/Contract_get_parties_return.hxx>
-#include <mmx/Contract_is_spendable.hxx>
-#include <mmx/Contract_is_spendable_return.hxx>
 #include <mmx/Contract_is_valid.hxx>
 #include <mmx/Contract_is_valid_return.hxx>
 #include <mmx/Contract_transfer.hxx>
@@ -49,15 +47,13 @@
 #include <mmx/contract/TimeLock_get_owner_return.hxx>
 #include <mmx/contract/TimeLock_get_parties.hxx>
 #include <mmx/contract/TimeLock_get_parties_return.hxx>
-#include <mmx/contract/TimeLock_is_spendable.hxx>
-#include <mmx/contract/TimeLock_is_spendable_return.hxx>
 #include <mmx/contract/TimeLock_is_valid.hxx>
 #include <mmx/contract/TimeLock_is_valid_return.hxx>
 #include <mmx/contract/TimeLock_validate.hxx>
 #include <mmx/contract/TimeLock_validate_return.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/pubkey_t.hpp>
-#include <mmx/tx_out_t.hxx>
+#include <mmx/txout_t.hxx>
 
 #include <vnx/vnx.h>
 
@@ -67,7 +63,7 @@ namespace contract {
 
 
 const vnx::Hash64 PuzzleTimeLock::VNX_TYPE_HASH(0x3a874a42905e85f6ull);
-const vnx::Hash64 PuzzleTimeLock::VNX_CODE_HASH(0x38881a0ebe8b2b72ull);
+const vnx::Hash64 PuzzleTimeLock::VNX_CODE_HASH(0xdc29c9c21de20b26ull);
 
 vnx::Hash64 PuzzleTimeLock::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -102,10 +98,9 @@ void PuzzleTimeLock::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, version);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, owner);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, chain_height);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, delta_height);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, puzzle);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, target);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, unlock_height);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, puzzle);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, target);
 	_visitor.type_end(*_type_code);
 }
 
@@ -113,8 +108,7 @@ void PuzzleTimeLock::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.contract.PuzzleTimeLock\"";
 	_out << ", \"version\": "; vnx::write(_out, version);
 	_out << ", \"owner\": "; vnx::write(_out, owner);
-	_out << ", \"chain_height\": "; vnx::write(_out, chain_height);
-	_out << ", \"delta_height\": "; vnx::write(_out, delta_height);
+	_out << ", \"unlock_height\": "; vnx::write(_out, unlock_height);
 	_out << ", \"puzzle\": "; vnx::write(_out, puzzle);
 	_out << ", \"target\": "; vnx::write(_out, target);
 	_out << "}";
@@ -131,8 +125,7 @@ vnx::Object PuzzleTimeLock::to_object() const {
 	_object["__type"] = "mmx.contract.PuzzleTimeLock";
 	_object["version"] = version;
 	_object["owner"] = owner;
-	_object["chain_height"] = chain_height;
-	_object["delta_height"] = delta_height;
+	_object["unlock_height"] = unlock_height;
 	_object["puzzle"] = puzzle;
 	_object["target"] = target;
 	return _object;
@@ -140,16 +133,14 @@ vnx::Object PuzzleTimeLock::to_object() const {
 
 void PuzzleTimeLock::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "chain_height") {
-			_entry.second.to(chain_height);
-		} else if(_entry.first == "delta_height") {
-			_entry.second.to(delta_height);
-		} else if(_entry.first == "owner") {
+		if(_entry.first == "owner") {
 			_entry.second.to(owner);
 		} else if(_entry.first == "puzzle") {
 			_entry.second.to(puzzle);
 		} else if(_entry.first == "target") {
 			_entry.second.to(target);
+		} else if(_entry.first == "unlock_height") {
+			_entry.second.to(unlock_height);
 		} else if(_entry.first == "version") {
 			_entry.second.to(version);
 		}
@@ -163,11 +154,8 @@ vnx::Variant PuzzleTimeLock::get_field(const std::string& _name) const {
 	if(_name == "owner") {
 		return vnx::Variant(owner);
 	}
-	if(_name == "chain_height") {
-		return vnx::Variant(chain_height);
-	}
-	if(_name == "delta_height") {
-		return vnx::Variant(delta_height);
+	if(_name == "unlock_height") {
+		return vnx::Variant(unlock_height);
 	}
 	if(_name == "puzzle") {
 		return vnx::Variant(puzzle);
@@ -183,10 +171,8 @@ void PuzzleTimeLock::set_field(const std::string& _name, const vnx::Variant& _va
 		_value.to(version);
 	} else if(_name == "owner") {
 		_value.to(owner);
-	} else if(_name == "chain_height") {
-		_value.to(chain_height);
-	} else if(_name == "delta_height") {
-		_value.to(delta_height);
+	} else if(_name == "unlock_height") {
+		_value.to(unlock_height);
 	} else if(_name == "puzzle") {
 		_value.to(puzzle);
 	} else if(_name == "target") {
@@ -218,7 +204,7 @@ std::shared_ptr<vnx::TypeCode> PuzzleTimeLock::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.PuzzleTimeLock";
 	type_code->type_hash = vnx::Hash64(0x3a874a42905e85f6ull);
-	type_code->code_hash = vnx::Hash64(0x38881a0ebe8b2b72ull);
+	type_code->code_hash = vnx::Hash64(0xdc29c9c21de20b26ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::PuzzleTimeLock);
@@ -226,31 +212,29 @@ std::shared_ptr<vnx::TypeCode> PuzzleTimeLock::static_create_type_code() {
 	type_code->parents[0] = ::mmx::contract::TimeLock::static_get_type_code();
 	type_code->parents[1] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<PuzzleTimeLock>(); };
-	type_code->methods.resize(23);
+	type_code->methods.resize(21);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_dependency::static_get_type_code();
 	type_code->methods[3] = ::mmx::Contract_get_owner::static_get_type_code();
 	type_code->methods[4] = ::mmx::Contract_get_parties::static_get_type_code();
-	type_code->methods[5] = ::mmx::Contract_is_spendable::static_get_type_code();
-	type_code->methods[6] = ::mmx::Contract_is_valid::static_get_type_code();
-	type_code->methods[7] = ::mmx::Contract_transfer::static_get_type_code();
-	type_code->methods[8] = ::mmx::Contract_validate::static_get_type_code();
-	type_code->methods[9] = ::mmx::contract::PuzzleTimeLock_calc_cost::static_get_type_code();
-	type_code->methods[10] = ::mmx::contract::PuzzleTimeLock_calc_hash::static_get_type_code();
-	type_code->methods[11] = ::mmx::contract::PuzzleTimeLock_get_dependency::static_get_type_code();
-	type_code->methods[12] = ::mmx::contract::PuzzleTimeLock_get_parties::static_get_type_code();
-	type_code->methods[13] = ::mmx::contract::PuzzleTimeLock_is_valid::static_get_type_code();
-	type_code->methods[14] = ::mmx::contract::PuzzleTimeLock_validate::static_get_type_code();
-	type_code->methods[15] = ::mmx::contract::TimeLock_calc_cost::static_get_type_code();
-	type_code->methods[16] = ::mmx::contract::TimeLock_calc_hash::static_get_type_code();
-	type_code->methods[17] = ::mmx::contract::TimeLock_get_dependency::static_get_type_code();
-	type_code->methods[18] = ::mmx::contract::TimeLock_get_owner::static_get_type_code();
-	type_code->methods[19] = ::mmx::contract::TimeLock_get_parties::static_get_type_code();
-	type_code->methods[20] = ::mmx::contract::TimeLock_is_spendable::static_get_type_code();
-	type_code->methods[21] = ::mmx::contract::TimeLock_is_valid::static_get_type_code();
-	type_code->methods[22] = ::mmx::contract::TimeLock_validate::static_get_type_code();
-	type_code->fields.resize(6);
+	type_code->methods[5] = ::mmx::Contract_is_valid::static_get_type_code();
+	type_code->methods[6] = ::mmx::Contract_transfer::static_get_type_code();
+	type_code->methods[7] = ::mmx::Contract_validate::static_get_type_code();
+	type_code->methods[8] = ::mmx::contract::PuzzleTimeLock_calc_cost::static_get_type_code();
+	type_code->methods[9] = ::mmx::contract::PuzzleTimeLock_calc_hash::static_get_type_code();
+	type_code->methods[10] = ::mmx::contract::PuzzleTimeLock_get_dependency::static_get_type_code();
+	type_code->methods[11] = ::mmx::contract::PuzzleTimeLock_get_parties::static_get_type_code();
+	type_code->methods[12] = ::mmx::contract::PuzzleTimeLock_is_valid::static_get_type_code();
+	type_code->methods[13] = ::mmx::contract::PuzzleTimeLock_validate::static_get_type_code();
+	type_code->methods[14] = ::mmx::contract::TimeLock_calc_cost::static_get_type_code();
+	type_code->methods[15] = ::mmx::contract::TimeLock_calc_hash::static_get_type_code();
+	type_code->methods[16] = ::mmx::contract::TimeLock_get_dependency::static_get_type_code();
+	type_code->methods[17] = ::mmx::contract::TimeLock_get_owner::static_get_type_code();
+	type_code->methods[18] = ::mmx::contract::TimeLock_get_parties::static_get_type_code();
+	type_code->methods[19] = ::mmx::contract::TimeLock_is_valid::static_get_type_code();
+	type_code->methods[20] = ::mmx::contract::TimeLock_validate::static_get_type_code();
+	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -265,24 +249,18 @@ std::shared_ptr<vnx::TypeCode> PuzzleTimeLock::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[2];
-		field.is_extended = true;
-		field.name = "chain_height";
-		field.code = {33, 3};
+		field.data_size = 4;
+		field.name = "unlock_height";
+		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[3];
-		field.is_extended = true;
-		field.name = "delta_height";
-		field.code = {33, 3};
-	}
-	{
-		auto& field = type_code->fields[4];
 		field.is_extended = true;
 		field.name = "puzzle";
 		field.code = {16};
 	}
 	{
-		auto& field = type_code->fields[5];
+		auto& field = type_code->fields[4];
 		field.is_extended = true;
 		field.name = "target";
 		field.code = {11, 32, 1};
@@ -321,12 +299,6 @@ std::shared_ptr<vnx::Value> PuzzleTimeLock::vnx_call_switch(std::shared_ptr<cons
 			auto _args = std::static_pointer_cast<const ::mmx::Contract_get_parties>(_method);
 			auto _return_value = ::mmx::Contract_get_parties_return::create();
 			_return_value->_ret_0 = get_parties();
-			return _return_value;
-		}
-		case 0xd12879d16cac3d5cull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_is_spendable>(_method);
-			auto _return_value = ::mmx::Contract_is_spendable_return::create();
-			_return_value->_ret_0 = is_spendable(_args->utxo, _args->context);
 			return _return_value;
 		}
 		case 0xe3adf9b29a723217ull: {
@@ -413,12 +385,6 @@ std::shared_ptr<vnx::Value> PuzzleTimeLock::vnx_call_switch(std::shared_ptr<cons
 			_return_value->_ret_0 = get_parties();
 			return _return_value;
 		}
-		case 0x55664f5048dbac47ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::contract::TimeLock_is_spendable>(_method);
-			auto _return_value = ::mmx::contract::TimeLock_is_spendable_return::create();
-			_return_value->_ret_0 = is_spendable(_args->utxo, _args->context);
-			return _return_value;
-		}
 		case 0x33c2731f61a6e75cull: {
 			auto _args = std::static_pointer_cast<const ::mmx::contract::TimeLock_is_valid>(_method);
 			auto _return_value = ::mmx::contract::TimeLock_is_valid_return::create();
@@ -477,14 +443,15 @@ void read(TypeInput& in, ::mmx::contract::PuzzleTimeLock& value, const TypeCode*
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.version, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[2]) {
+			vnx::read_value(_buf + _field->offset, value.unlock_height, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 1: vnx::read(in, value.owner, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.chain_height, type_code, _field->code.data()); break;
-			case 3: vnx::read(in, value.delta_height, type_code, _field->code.data()); break;
-			case 4: vnx::read(in, value.puzzle, type_code, _field->code.data()); break;
-			case 5: vnx::read(in, value.target, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.puzzle, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.target, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -503,13 +470,12 @@ void write(TypeOutput& out, const ::mmx::contract::PuzzleTimeLock& value, const 
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
+	char* const _buf = out.write(8);
 	vnx::write_value(_buf + 0, value.version);
+	vnx::write_value(_buf + 4, value.unlock_height);
 	vnx::write(out, value.owner, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.chain_height, type_code, type_code->fields[2].code.data());
-	vnx::write(out, value.delta_height, type_code, type_code->fields[3].code.data());
-	vnx::write(out, value.puzzle, type_code, type_code->fields[4].code.data());
-	vnx::write(out, value.target, type_code, type_code->fields[5].code.data());
+	vnx::write(out, value.puzzle, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.target, type_code, type_code->fields[4].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::PuzzleTimeLock& value) {

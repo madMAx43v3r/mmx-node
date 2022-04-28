@@ -15,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_virtual_plot_balance::VNX_TYPE_HASH(0x8d4bb6395747b2edull);
-const vnx::Hash64 Node_get_virtual_plot_balance::VNX_CODE_HASH(0x6b49e8b08499ebeaull);
+const vnx::Hash64 Node_get_virtual_plot_balance::VNX_CODE_HASH(0x520a0bbad9954f6cull);
 
 vnx::Hash64 Node_get_virtual_plot_balance::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -126,7 +126,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_virtual_plot_balance::static_create_type
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_virtual_plot_balance";
 	type_code->type_hash = vnx::Hash64(0x8d4bb6395747b2edull);
-	type_code->code_hash = vnx::Hash64(0x6b49e8b08499ebeaull);
+	type_code->code_hash = vnx::Hash64(0x520a0bbad9954f6cull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -145,7 +145,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_virtual_plot_balance::static_create_type
 		auto& field = type_code->fields[1];
 		field.is_extended = true;
 		field.name = "block_hash";
-		field.code = {11, 32, 1};
+		field.code = {33, 11, 32, 1};
 	}
 	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();

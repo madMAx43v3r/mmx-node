@@ -13,7 +13,7 @@
 #include <mmx/contract/TimeLock.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/pubkey_t.hpp>
-#include <mmx/tx_out_t.hxx>
+#include <mmx/txout_t.hxx>
 
 
 namespace mmx {
@@ -43,7 +43,7 @@ public:
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	virtual std::vector<::mmx::addr_t> get_dependency() const override;
 	virtual std::vector<::mmx::addr_t> get_parties() const override;
-	virtual std::vector<::mmx::tx_out_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
+	virtual std::vector<::mmx::txout_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
 	
 	static std::shared_ptr<PuzzleTimeLock> create();
 	std::shared_ptr<vnx::Value> clone() const override;
@@ -77,14 +77,13 @@ protected:
 
 template<typename T>
 void PuzzleTimeLock::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<PuzzleTimeLock>(6);
+	_visitor.template type_begin<PuzzleTimeLock>(5);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("owner", 1); _visitor.accept(owner);
-	_visitor.type_field("chain_height", 2); _visitor.accept(chain_height);
-	_visitor.type_field("delta_height", 3); _visitor.accept(delta_height);
-	_visitor.type_field("puzzle", 4); _visitor.accept(puzzle);
-	_visitor.type_field("target", 5); _visitor.accept(target);
-	_visitor.template type_end<PuzzleTimeLock>(6);
+	_visitor.type_field("unlock_height", 2); _visitor.accept(unlock_height);
+	_visitor.type_field("puzzle", 3); _visitor.accept(puzzle);
+	_visitor.type_field("target", 4); _visitor.accept(target);
+	_visitor.template type_end<PuzzleTimeLock>(5);
 }
 
 

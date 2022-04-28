@@ -7,8 +7,7 @@
 #include <mmx/operation/package.hxx>
 #include <mmx/Operation.hxx>
 #include <mmx/hash_t.hpp>
-#include <mmx/txio_key_t.hxx>
-#include <mmx/utxo_t.hxx>
+#include <mmx/uint128.hpp>
 
 
 namespace mmx {
@@ -17,8 +16,8 @@ namespace operation {
 class MMX_OPERATION_EXPORT Spend : public ::mmx::Operation {
 public:
 	
-	::mmx::txio_key_t key;
-	::mmx::utxo_t utxo;
+	::mmx::uint128 balance;
+	uint64_t amount = 0;
 	
 	typedef ::mmx::Operation Super;
 	
@@ -71,8 +70,8 @@ void Spend::accept_generic(T& _visitor) const {
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("address", 1); _visitor.accept(address);
 	_visitor.type_field("solution", 2); _visitor.accept(solution);
-	_visitor.type_field("key", 3); _visitor.accept(key);
-	_visitor.type_field("utxo", 4); _visitor.accept(utxo);
+	_visitor.type_field("balance", 3); _visitor.accept(balance);
+	_visitor.type_field("amount", 4); _visitor.accept(amount);
 	_visitor.template type_end<Spend>(5);
 }
 

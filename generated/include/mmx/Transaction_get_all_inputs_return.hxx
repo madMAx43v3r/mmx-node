@@ -5,7 +5,7 @@
 #define INCLUDE_mmx_Transaction_get_all_inputs_return_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/tx_in_t.hxx>
+#include <mmx/txin_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -14,7 +14,7 @@ namespace mmx {
 class MMX_EXPORT Transaction_get_all_inputs_return : public ::vnx::Value {
 public:
 	
-	std::vector<::mmx::tx_in_t> _ret_0;
+	std::vector<::mmx::txin_t> _ret_0;
 	
 	typedef ::vnx::Value Super;
 	

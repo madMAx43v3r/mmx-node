@@ -16,8 +16,6 @@
 #include <mmx/Contract_get_owner_return.hxx>
 #include <mmx/Contract_get_parties.hxx>
 #include <mmx/Contract_get_parties_return.hxx>
-#include <mmx/Contract_is_spendable.hxx>
-#include <mmx/Contract_is_spendable_return.hxx>
 #include <mmx/Contract_is_valid.hxx>
 #include <mmx/Contract_is_valid_return.hxx>
 #include <mmx/Contract_transfer.hxx>
@@ -36,15 +34,12 @@
 #include <mmx/contract/TimeLock_get_owner_return.hxx>
 #include <mmx/contract/TimeLock_get_parties.hxx>
 #include <mmx/contract/TimeLock_get_parties_return.hxx>
-#include <mmx/contract/TimeLock_is_spendable.hxx>
-#include <mmx/contract/TimeLock_is_spendable_return.hxx>
 #include <mmx/contract/TimeLock_is_valid.hxx>
 #include <mmx/contract/TimeLock_is_valid_return.hxx>
 #include <mmx/contract/TimeLock_validate.hxx>
 #include <mmx/contract/TimeLock_validate_return.hxx>
 #include <mmx/hash_t.hpp>
-#include <mmx/tx_out_t.hxx>
-#include <mmx/utxo_t.hxx>
+#include <mmx/txout_t.hxx>
 
 #include <vnx/vnx.h>
 
@@ -54,7 +49,7 @@ namespace contract {
 
 
 const vnx::Hash64 TimeLock::VNX_TYPE_HASH(0x56f6f212ed350e5cull);
-const vnx::Hash64 TimeLock::VNX_CODE_HASH(0xe9a0d550974a73b5ull);
+const vnx::Hash64 TimeLock::VNX_CODE_HASH(0x8f465a0560ef23full);
 
 vnx::Hash64 TimeLock::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -89,8 +84,7 @@ void TimeLock::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, version);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, owner);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, chain_height);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, delta_height);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, unlock_height);
 	_visitor.type_end(*_type_code);
 }
 
@@ -98,8 +92,7 @@ void TimeLock::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.contract.TimeLock\"";
 	_out << ", \"version\": "; vnx::write(_out, version);
 	_out << ", \"owner\": "; vnx::write(_out, owner);
-	_out << ", \"chain_height\": "; vnx::write(_out, chain_height);
-	_out << ", \"delta_height\": "; vnx::write(_out, delta_height);
+	_out << ", \"unlock_height\": "; vnx::write(_out, unlock_height);
 	_out << "}";
 }
 
@@ -114,19 +107,16 @@ vnx::Object TimeLock::to_object() const {
 	_object["__type"] = "mmx.contract.TimeLock";
 	_object["version"] = version;
 	_object["owner"] = owner;
-	_object["chain_height"] = chain_height;
-	_object["delta_height"] = delta_height;
+	_object["unlock_height"] = unlock_height;
 	return _object;
 }
 
 void TimeLock::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "chain_height") {
-			_entry.second.to(chain_height);
-		} else if(_entry.first == "delta_height") {
-			_entry.second.to(delta_height);
-		} else if(_entry.first == "owner") {
+		if(_entry.first == "owner") {
 			_entry.second.to(owner);
+		} else if(_entry.first == "unlock_height") {
+			_entry.second.to(unlock_height);
 		} else if(_entry.first == "version") {
 			_entry.second.to(version);
 		}
@@ -140,11 +130,8 @@ vnx::Variant TimeLock::get_field(const std::string& _name) const {
 	if(_name == "owner") {
 		return vnx::Variant(owner);
 	}
-	if(_name == "chain_height") {
-		return vnx::Variant(chain_height);
-	}
-	if(_name == "delta_height") {
-		return vnx::Variant(delta_height);
+	if(_name == "unlock_height") {
+		return vnx::Variant(unlock_height);
 	}
 	return vnx::Variant();
 }
@@ -154,10 +141,8 @@ void TimeLock::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(version);
 	} else if(_name == "owner") {
 		_value.to(owner);
-	} else if(_name == "chain_height") {
-		_value.to(chain_height);
-	} else if(_name == "delta_height") {
-		_value.to(delta_height);
+	} else if(_name == "unlock_height") {
+		_value.to(unlock_height);
 	}
 }
 
@@ -185,32 +170,30 @@ std::shared_ptr<vnx::TypeCode> TimeLock::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.TimeLock";
 	type_code->type_hash = vnx::Hash64(0x56f6f212ed350e5cull);
-	type_code->code_hash = vnx::Hash64(0xe9a0d550974a73b5ull);
+	type_code->code_hash = vnx::Hash64(0x8f465a0560ef23full);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::TimeLock);
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<TimeLock>(); };
-	type_code->methods.resize(17);
+	type_code->methods.resize(15);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_dependency::static_get_type_code();
 	type_code->methods[3] = ::mmx::Contract_get_owner::static_get_type_code();
 	type_code->methods[4] = ::mmx::Contract_get_parties::static_get_type_code();
-	type_code->methods[5] = ::mmx::Contract_is_spendable::static_get_type_code();
-	type_code->methods[6] = ::mmx::Contract_is_valid::static_get_type_code();
-	type_code->methods[7] = ::mmx::Contract_transfer::static_get_type_code();
-	type_code->methods[8] = ::mmx::Contract_validate::static_get_type_code();
-	type_code->methods[9] = ::mmx::contract::TimeLock_calc_cost::static_get_type_code();
-	type_code->methods[10] = ::mmx::contract::TimeLock_calc_hash::static_get_type_code();
-	type_code->methods[11] = ::mmx::contract::TimeLock_get_dependency::static_get_type_code();
-	type_code->methods[12] = ::mmx::contract::TimeLock_get_owner::static_get_type_code();
-	type_code->methods[13] = ::mmx::contract::TimeLock_get_parties::static_get_type_code();
-	type_code->methods[14] = ::mmx::contract::TimeLock_is_spendable::static_get_type_code();
-	type_code->methods[15] = ::mmx::contract::TimeLock_is_valid::static_get_type_code();
-	type_code->methods[16] = ::mmx::contract::TimeLock_validate::static_get_type_code();
-	type_code->fields.resize(4);
+	type_code->methods[5] = ::mmx::Contract_is_valid::static_get_type_code();
+	type_code->methods[6] = ::mmx::Contract_transfer::static_get_type_code();
+	type_code->methods[7] = ::mmx::Contract_validate::static_get_type_code();
+	type_code->methods[8] = ::mmx::contract::TimeLock_calc_cost::static_get_type_code();
+	type_code->methods[9] = ::mmx::contract::TimeLock_calc_hash::static_get_type_code();
+	type_code->methods[10] = ::mmx::contract::TimeLock_get_dependency::static_get_type_code();
+	type_code->methods[11] = ::mmx::contract::TimeLock_get_owner::static_get_type_code();
+	type_code->methods[12] = ::mmx::contract::TimeLock_get_parties::static_get_type_code();
+	type_code->methods[13] = ::mmx::contract::TimeLock_is_valid::static_get_type_code();
+	type_code->methods[14] = ::mmx::contract::TimeLock_validate::static_get_type_code();
+	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -225,15 +208,9 @@ std::shared_ptr<vnx::TypeCode> TimeLock::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[2];
-		field.is_extended = true;
-		field.name = "chain_height";
-		field.code = {33, 3};
-	}
-	{
-		auto& field = type_code->fields[3];
-		field.is_extended = true;
-		field.name = "delta_height";
-		field.code = {33, 3};
+		field.data_size = 4;
+		field.name = "unlock_height";
+		field.code = {3};
 	}
 	type_code->build();
 	return type_code;
@@ -269,12 +246,6 @@ std::shared_ptr<vnx::Value> TimeLock::vnx_call_switch(std::shared_ptr<const vnx:
 			auto _args = std::static_pointer_cast<const ::mmx::Contract_get_parties>(_method);
 			auto _return_value = ::mmx::Contract_get_parties_return::create();
 			_return_value->_ret_0 = get_parties();
-			return _return_value;
-		}
-		case 0xd12879d16cac3d5cull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_is_spendable>(_method);
-			auto _return_value = ::mmx::Contract_is_spendable_return::create();
-			_return_value->_ret_0 = is_spendable(_args->utxo, _args->context);
 			return _return_value;
 		}
 		case 0xe3adf9b29a723217ull: {
@@ -323,12 +294,6 @@ std::shared_ptr<vnx::Value> TimeLock::vnx_call_switch(std::shared_ptr<const vnx:
 			auto _args = std::static_pointer_cast<const ::mmx::contract::TimeLock_get_parties>(_method);
 			auto _return_value = ::mmx::contract::TimeLock_get_parties_return::create();
 			_return_value->_ret_0 = get_parties();
-			return _return_value;
-		}
-		case 0x55664f5048dbac47ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::contract::TimeLock_is_spendable>(_method);
-			auto _return_value = ::mmx::contract::TimeLock_is_spendable_return::create();
-			_return_value->_ret_0 = is_spendable(_args->utxo, _args->context);
 			return _return_value;
 		}
 		case 0x33c2731f61a6e75cull: {
@@ -389,12 +354,13 @@ void read(TypeInput& in, ::mmx::contract::TimeLock& value, const TypeCode* type_
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.version, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[2]) {
+			vnx::read_value(_buf + _field->offset, value.unlock_height, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 1: vnx::read(in, value.owner, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.chain_height, type_code, _field->code.data()); break;
-			case 3: vnx::read(in, value.delta_height, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -413,11 +379,10 @@ void write(TypeOutput& out, const ::mmx::contract::TimeLock& value, const TypeCo
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
+	char* const _buf = out.write(8);
 	vnx::write_value(_buf + 0, value.version);
+	vnx::write_value(_buf + 4, value.unlock_height);
 	vnx::write(out, value.owner, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.chain_height, type_code, type_code->fields[2].code.data());
-	vnx::write(out, value.delta_height, type_code, type_code->fields[3].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::TimeLock& value) {

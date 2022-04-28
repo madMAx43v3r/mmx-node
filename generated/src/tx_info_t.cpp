@@ -8,8 +8,8 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/tx_note_e.hxx>
-#include <mmx/txi_info_t.hxx>
-#include <mmx/txo_info_t.hxx>
+#include <mmx/txin_t.hxx>
+#include <mmx/txout_t.hxx>
 #include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
@@ -20,7 +20,7 @@ namespace mmx {
 
 
 const vnx::Hash64 tx_info_t::VNX_TYPE_HASH(0x44e4a710953f4785ull);
-const vnx::Hash64 tx_info_t::VNX_CODE_HASH(0xe25d694d41ae64bcull);
+const vnx::Hash64 tx_info_t::VNX_CODE_HASH(0x64314e2f81c00a69ull);
 
 vnx::Hash64 tx_info_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -241,15 +241,15 @@ std::shared_ptr<vnx::TypeCode> tx_info_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.tx_info_t";
 	type_code->type_hash = vnx::Hash64(0x44e4a710953f4785ull);
-	type_code->code_hash = vnx::Hash64(0xe25d694d41ae64bcull);
+	type_code->code_hash = vnx::Hash64(0x64314e2f81c00a69ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::tx_info_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<tx_info_t>(); };
 	type_code->depends.resize(3);
 	type_code->depends[0] = ::mmx::tx_note_e::static_get_type_code();
-	type_code->depends[1] = ::mmx::txi_info_t::static_get_type_code();
-	type_code->depends[2] = ::mmx::txo_info_t::static_get_type_code();
+	type_code->depends[1] = ::mmx::txin_t::static_get_type_code();
+	type_code->depends[2] = ::mmx::txout_t::static_get_type_code();
 	type_code->fields.resize(13);
 	{
 		auto& field = type_code->fields[0];
@@ -315,13 +315,13 @@ std::shared_ptr<vnx::TypeCode> tx_info_t::static_create_type_code() {
 		auto& field = type_code->fields[10];
 		field.is_extended = true;
 		field.name = "input_amounts";
-		field.code = {13, 5, 11, 32, 1, 11, 2, 4};
+		field.code = {13, 5, 11, 32, 1, 11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[11];
 		field.is_extended = true;
 		field.name = "output_amounts";
-		field.code = {13, 5, 11, 32, 1, 11, 2, 4};
+		field.code = {13, 5, 11, 32, 1, 11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[12];

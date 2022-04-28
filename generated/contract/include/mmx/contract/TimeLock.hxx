@@ -11,8 +11,7 @@
 #include <mmx/Operation.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
-#include <mmx/tx_out_t.hxx>
-#include <mmx/utxo_t.hxx>
+#include <mmx/txout_t.hxx>
 
 
 namespace mmx {
@@ -22,8 +21,7 @@ class MMX_CONTRACT_EXPORT TimeLock : public ::mmx::Contract {
 public:
 	
 	::mmx::addr_t owner;
-	vnx::optional<uint32_t> chain_height;
-	vnx::optional<uint32_t> delta_height;
+	uint32_t unlock_height = 0;
 	
 	typedef ::mmx::Contract Super;
 	
@@ -44,8 +42,7 @@ public:
 	virtual std::vector<::mmx::addr_t> get_dependency() const override;
 	virtual std::vector<::mmx::addr_t> get_parties() const override;
 	virtual vnx::optional<::mmx::addr_t> get_owner() const override;
-	virtual vnx::bool_t is_spendable(const ::mmx::utxo_t& utxo = ::mmx::utxo_t(), std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
-	virtual std::vector<::mmx::tx_out_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
+	virtual std::vector<::mmx::txout_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
 	
 	static std::shared_ptr<TimeLock> create();
 	std::shared_ptr<vnx::Value> clone() const override;
@@ -79,12 +76,11 @@ protected:
 
 template<typename T>
 void TimeLock::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<TimeLock>(4);
+	_visitor.template type_begin<TimeLock>(3);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("owner", 1); _visitor.accept(owner);
-	_visitor.type_field("chain_height", 2); _visitor.accept(chain_height);
-	_visitor.type_field("delta_height", 3); _visitor.accept(delta_height);
-	_visitor.template type_end<TimeLock>(4);
+	_visitor.type_field("unlock_height", 2); _visitor.accept(unlock_height);
+	_visitor.template type_end<TimeLock>(3);
 }
 
 

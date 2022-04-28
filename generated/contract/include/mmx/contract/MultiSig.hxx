@@ -11,7 +11,7 @@
 #include <mmx/Operation.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
-#include <mmx/tx_out_t.hxx>
+#include <mmx/txout_t.hxx>
 
 
 namespace mmx {
@@ -41,7 +41,7 @@ public:
 	virtual ::mmx::hash_t calc_hash() const override;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	virtual std::vector<::mmx::addr_t> get_parties() const override;
-	virtual std::vector<::mmx::tx_out_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
+	virtual std::vector<::mmx::txout_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
 	virtual void add_owner(const ::mmx::addr_t& address = ::mmx::addr_t());
 	virtual void rem_owner(const ::mmx::addr_t& address = ::mmx::addr_t());
 	virtual void set_num_required(const uint32_t& count = 0);

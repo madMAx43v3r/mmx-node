@@ -16,7 +16,7 @@ class MMX_EXPORT Node_get_virtual_plot_balance : public ::vnx::Value {
 public:
 	
 	::mmx::addr_t plot_id;
-	::mmx::hash_t block_hash;
+	vnx::optional<::mmx::hash_t> block_hash;
 	
 	typedef ::vnx::Value Super;
 	

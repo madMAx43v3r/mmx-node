@@ -12,7 +12,7 @@ namespace mmx {
 
 
 const vnx::Hash64 address_info_t::VNX_TYPE_HASH(0xbafe22d4f9e3d761ull);
-const vnx::Hash64 address_info_t::VNX_CODE_HASH(0x390c3cf69fe68c25ull);
+const vnx::Hash64 address_info_t::VNX_CODE_HASH(0x140824500c818c5bull);
 
 vnx::Hash64 address_info_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -46,18 +46,14 @@ void address_info_t::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_address_info_t;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, address);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, stxo_count);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, utxo_count);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, last_spend_height);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, last_receive_height);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, last_spend_height);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, last_receive_height);
 	_visitor.type_end(*_type_code);
 }
 
 void address_info_t::write(std::ostream& _out) const {
 	_out << "{";
 	_out << "\"address\": "; vnx::write(_out, address);
-	_out << ", \"stxo_count\": "; vnx::write(_out, stxo_count);
-	_out << ", \"utxo_count\": "; vnx::write(_out, utxo_count);
 	_out << ", \"last_spend_height\": "; vnx::write(_out, last_spend_height);
 	_out << ", \"last_receive_height\": "; vnx::write(_out, last_receive_height);
 	_out << "}";
@@ -73,8 +69,6 @@ vnx::Object address_info_t::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.address_info_t";
 	_object["address"] = address;
-	_object["stxo_count"] = stxo_count;
-	_object["utxo_count"] = utxo_count;
 	_object["last_spend_height"] = last_spend_height;
 	_object["last_receive_height"] = last_receive_height;
 	return _object;
@@ -88,10 +82,6 @@ void address_info_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(last_receive_height);
 		} else if(_entry.first == "last_spend_height") {
 			_entry.second.to(last_spend_height);
-		} else if(_entry.first == "stxo_count") {
-			_entry.second.to(stxo_count);
-		} else if(_entry.first == "utxo_count") {
-			_entry.second.to(utxo_count);
 		}
 	}
 }
@@ -99,12 +89,6 @@ void address_info_t::from_object(const vnx::Object& _object) {
 vnx::Variant address_info_t::get_field(const std::string& _name) const {
 	if(_name == "address") {
 		return vnx::Variant(address);
-	}
-	if(_name == "stxo_count") {
-		return vnx::Variant(stxo_count);
-	}
-	if(_name == "utxo_count") {
-		return vnx::Variant(utxo_count);
 	}
 	if(_name == "last_spend_height") {
 		return vnx::Variant(last_spend_height);
@@ -118,10 +102,6 @@ vnx::Variant address_info_t::get_field(const std::string& _name) const {
 void address_info_t::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "address") {
 		_value.to(address);
-	} else if(_name == "stxo_count") {
-		_value.to(stxo_count);
-	} else if(_name == "utxo_count") {
-		_value.to(utxo_count);
 	} else if(_name == "last_spend_height") {
 		_value.to(last_spend_height);
 	} else if(_name == "last_receive_height") {
@@ -153,11 +133,11 @@ std::shared_ptr<vnx::TypeCode> address_info_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.address_info_t";
 	type_code->type_hash = vnx::Hash64(0xbafe22d4f9e3d761ull);
-	type_code->code_hash = vnx::Hash64(0x390c3cf69fe68c25ull);
+	type_code->code_hash = vnx::Hash64(0x140824500c818c5bull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::address_info_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<address_info_t>>(); };
-	type_code->fields.resize(5);
+	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -166,24 +146,12 @@ std::shared_ptr<vnx::TypeCode> address_info_t::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[1];
-		field.data_size = 8;
-		field.name = "stxo_count";
-		field.code = {4};
-	}
-	{
-		auto& field = type_code->fields[2];
-		field.data_size = 8;
-		field.name = "utxo_count";
-		field.code = {4};
-	}
-	{
-		auto& field = type_code->fields[3];
 		field.data_size = 4;
 		field.name = "last_spend_height";
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[4];
+		auto& field = type_code->fields[2];
 		field.data_size = 4;
 		field.name = "last_receive_height";
 		field.code = {3};
@@ -231,15 +199,9 @@ void read(TypeInput& in, ::mmx::address_info_t& value, const TypeCode* type_code
 	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[1]) {
-			vnx::read_value(_buf + _field->offset, value.stxo_count, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[2]) {
-			vnx::read_value(_buf + _field->offset, value.utxo_count, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[3]) {
 			vnx::read_value(_buf + _field->offset, value.last_spend_height, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[4]) {
+		if(const auto* const _field = type_code->field_map[2]) {
 			vnx::read_value(_buf + _field->offset, value.last_receive_height, _field->code.data());
 		}
 	}
@@ -264,11 +226,9 @@ void write(TypeOutput& out, const ::mmx::address_info_t& value, const TypeCode* 
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(24);
-	vnx::write_value(_buf + 0, value.stxo_count);
-	vnx::write_value(_buf + 8, value.utxo_count);
-	vnx::write_value(_buf + 16, value.last_spend_height);
-	vnx::write_value(_buf + 20, value.last_receive_height);
+	char* const _buf = out.write(8);
+	vnx::write_value(_buf + 0, value.last_spend_height);
+	vnx::write_value(_buf + 4, value.last_receive_height);
 	vnx::write(out, value.address, type_code, type_code->fields[0].code.data());
 }
 

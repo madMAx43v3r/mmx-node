@@ -36,7 +36,7 @@ public:
 	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_tx_hash() const;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
-	virtual std::shared_ptr<const ::mmx::BlockHeader> get_header() const;
+	virtual std::shared_ptr<const ::mmx::BlockHeader> get_header() const override;
 	virtual std::vector<std::shared_ptr<const ::mmx::Transaction>> get_all_transactions() const;
 	virtual void validate() const override;
 	

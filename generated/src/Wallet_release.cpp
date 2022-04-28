@@ -4,7 +4,8 @@
 #include <mmx/package.hxx>
 #include <mmx/Wallet_release.hxx>
 #include <mmx/Wallet_release_return.hxx>
-#include <mmx/txio_key_t.hxx>
+#include <mmx/addr_t.hpp>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -14,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_release::VNX_TYPE_HASH(0x2cd72a3370e05db3ull);
-const vnx::Hash64 Wallet_release::VNX_CODE_HASH(0x84454f68876e499bull);
+const vnx::Hash64 Wallet_release::VNX_CODE_HASH(0x78dfeec1fd2ea88dull);
 
 vnx::Hash64 Wallet_release::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,14 +49,14 @@ void Wallet_release::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Wallet_release;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, index);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, keys);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, amounts);
 	_visitor.type_end(*_type_code);
 }
 
 void Wallet_release::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Wallet.release\"";
 	_out << ", \"index\": "; vnx::write(_out, index);
-	_out << ", \"keys\": "; vnx::write(_out, keys);
+	_out << ", \"amounts\": "; vnx::write(_out, amounts);
 	_out << "}";
 }
 
@@ -69,16 +70,16 @@ vnx::Object Wallet_release::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Wallet.release";
 	_object["index"] = index;
-	_object["keys"] = keys;
+	_object["amounts"] = amounts;
 	return _object;
 }
 
 void Wallet_release::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "index") {
+		if(_entry.first == "amounts") {
+			_entry.second.to(amounts);
+		} else if(_entry.first == "index") {
 			_entry.second.to(index);
-		} else if(_entry.first == "keys") {
-			_entry.second.to(keys);
 		}
 	}
 }
@@ -87,8 +88,8 @@ vnx::Variant Wallet_release::get_field(const std::string& _name) const {
 	if(_name == "index") {
 		return vnx::Variant(index);
 	}
-	if(_name == "keys") {
-		return vnx::Variant(keys);
+	if(_name == "amounts") {
+		return vnx::Variant(amounts);
 	}
 	return vnx::Variant();
 }
@@ -96,8 +97,8 @@ vnx::Variant Wallet_release::get_field(const std::string& _name) const {
 void Wallet_release::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "index") {
 		_value.to(index);
-	} else if(_name == "keys") {
-		_value.to(keys);
+	} else if(_name == "amounts") {
+		_value.to(amounts);
 	}
 }
 
@@ -125,14 +126,12 @@ std::shared_ptr<vnx::TypeCode> Wallet_release::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.release";
 	type_code->type_hash = vnx::Hash64(0x2cd72a3370e05db3ull);
-	type_code->code_hash = vnx::Hash64(0x84454f68876e499bull);
+	type_code->code_hash = vnx::Hash64(0x78dfeec1fd2ea88dull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
 	type_code->native_size = sizeof(::mmx::Wallet_release);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Wallet_release>(); };
-	type_code->depends.resize(1);
-	type_code->depends[0] = ::mmx::txio_key_t::static_get_type_code();
 	type_code->return_type = ::mmx::Wallet_release_return::static_get_type_code();
 	type_code->fields.resize(2);
 	{
@@ -144,8 +143,8 @@ std::shared_ptr<vnx::TypeCode> Wallet_release::static_create_type_code() {
 	{
 		auto& field = type_code->fields[1];
 		field.is_extended = true;
-		field.name = "keys";
-		field.code = {12, 19, 0};
+		field.name = "amounts";
+		field.code = {13, 12, 23, 2, 4, 7, 11, 32, 1, 11, 32, 1, 11, 16, 1};
 	}
 	type_code->build();
 	return type_code;
@@ -195,7 +194,7 @@ void read(TypeInput& in, ::mmx::Wallet_release& value, const TypeCode* type_code
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 1: vnx::read(in, value.keys, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.amounts, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -216,7 +215,7 @@ void write(TypeOutput& out, const ::mmx::Wallet_release& value, const TypeCode* 
 	}
 	char* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.index);
-	vnx::write(out, value.keys, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.amounts, type_code, type_code->fields[1].code.data());
 }
 
 void read(std::istream& in, ::mmx::Wallet_release& value) {

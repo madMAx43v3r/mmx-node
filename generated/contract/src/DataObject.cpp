@@ -16,8 +16,6 @@
 #include <mmx/Contract_get_owner_return.hxx>
 #include <mmx/Contract_get_parties.hxx>
 #include <mmx/Contract_get_parties_return.hxx>
-#include <mmx/Contract_is_spendable.hxx>
-#include <mmx/Contract_is_spendable_return.hxx>
 #include <mmx/Contract_is_valid.hxx>
 #include <mmx/Contract_is_valid_return.hxx>
 #include <mmx/Contract_transfer.hxx>
@@ -51,7 +49,7 @@
 #include <mmx/contract/DataObject_validate.hxx>
 #include <mmx/contract/DataObject_validate_return.hxx>
 #include <mmx/hash_t.hpp>
-#include <mmx/tx_out_t.hxx>
+#include <mmx/txout_t.hxx>
 #include <vnx/Object.hpp>
 #include <vnx/Variant.hpp>
 
@@ -192,28 +190,27 @@ std::shared_ptr<vnx::TypeCode> DataObject::static_create_type_code() {
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<DataObject>(); };
-	type_code->methods.resize(21);
+	type_code->methods.resize(20);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_dependency::static_get_type_code();
 	type_code->methods[3] = ::mmx::Contract_get_owner::static_get_type_code();
 	type_code->methods[4] = ::mmx::Contract_get_parties::static_get_type_code();
-	type_code->methods[5] = ::mmx::Contract_is_spendable::static_get_type_code();
-	type_code->methods[6] = ::mmx::Contract_is_valid::static_get_type_code();
-	type_code->methods[7] = ::mmx::Contract_transfer::static_get_type_code();
-	type_code->methods[8] = ::mmx::Contract_validate::static_get_type_code();
-	type_code->methods[9] = ::mmx::contract::DataObject_calc_cost::static_get_type_code();
-	type_code->methods[10] = ::mmx::contract::DataObject_calc_hash::static_get_type_code();
-	type_code->methods[11] = ::mmx::contract::DataObject_clear::static_get_type_code();
-	type_code->methods[12] = ::mmx::contract::DataObject_erase::static_get_type_code();
-	type_code->methods[13] = ::mmx::contract::DataObject_get_dependency::static_get_type_code();
-	type_code->methods[14] = ::mmx::contract::DataObject_get_owner::static_get_type_code();
-	type_code->methods[15] = ::mmx::contract::DataObject_get_parties::static_get_type_code();
-	type_code->methods[16] = ::mmx::contract::DataObject_is_valid::static_get_type_code();
-	type_code->methods[17] = ::mmx::contract::DataObject_num_bytes::static_get_type_code();
-	type_code->methods[18] = ::mmx::contract::DataObject_set::static_get_type_code();
-	type_code->methods[19] = ::mmx::contract::DataObject_transfer::static_get_type_code();
-	type_code->methods[20] = ::mmx::contract::DataObject_validate::static_get_type_code();
+	type_code->methods[5] = ::mmx::Contract_is_valid::static_get_type_code();
+	type_code->methods[6] = ::mmx::Contract_transfer::static_get_type_code();
+	type_code->methods[7] = ::mmx::Contract_validate::static_get_type_code();
+	type_code->methods[8] = ::mmx::contract::DataObject_calc_cost::static_get_type_code();
+	type_code->methods[9] = ::mmx::contract::DataObject_calc_hash::static_get_type_code();
+	type_code->methods[10] = ::mmx::contract::DataObject_clear::static_get_type_code();
+	type_code->methods[11] = ::mmx::contract::DataObject_erase::static_get_type_code();
+	type_code->methods[12] = ::mmx::contract::DataObject_get_dependency::static_get_type_code();
+	type_code->methods[13] = ::mmx::contract::DataObject_get_owner::static_get_type_code();
+	type_code->methods[14] = ::mmx::contract::DataObject_get_parties::static_get_type_code();
+	type_code->methods[15] = ::mmx::contract::DataObject_is_valid::static_get_type_code();
+	type_code->methods[16] = ::mmx::contract::DataObject_num_bytes::static_get_type_code();
+	type_code->methods[17] = ::mmx::contract::DataObject_set::static_get_type_code();
+	type_code->methods[18] = ::mmx::contract::DataObject_transfer::static_get_type_code();
+	type_code->methods[19] = ::mmx::contract::DataObject_validate::static_get_type_code();
 	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
@@ -267,12 +264,6 @@ std::shared_ptr<vnx::Value> DataObject::vnx_call_switch(std::shared_ptr<const vn
 			auto _args = std::static_pointer_cast<const ::mmx::Contract_get_parties>(_method);
 			auto _return_value = ::mmx::Contract_get_parties_return::create();
 			_return_value->_ret_0 = get_parties();
-			return _return_value;
-		}
-		case 0xd12879d16cac3d5cull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_is_spendable>(_method);
-			auto _return_value = ::mmx::Contract_is_spendable_return::create();
-			_return_value->_ret_0 = is_spendable(_args->utxo, _args->context);
 			return _return_value;
 		}
 		case 0xe3adf9b29a723217ull: {

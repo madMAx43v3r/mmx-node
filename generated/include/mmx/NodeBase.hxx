@@ -14,15 +14,10 @@
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/balance_t.hxx>
 #include <mmx/hash_t.hpp>
-#include <mmx/stxo_entry_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_info_t.hxx>
-#include <mmx/txio_key_t.hxx>
-#include <mmx/txo_info_t.hxx>
 #include <mmx/uint128.hpp>
-#include <mmx/utxo_entry_t.hxx>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
 #include <vnx/addons/HttpData.hxx>
@@ -114,8 +109,6 @@ protected:
 	virtual std::shared_ptr<const ::mmx::BlockHeader> get_header(const ::mmx::hash_t& hash) const = 0;
 	virtual std::shared_ptr<const ::mmx::BlockHeader> get_header_at(const uint32_t& height) const = 0;
 	virtual vnx::optional<::mmx::hash_t> get_block_hash(const uint32_t& height) const = 0;
-	virtual vnx::optional<::mmx::txo_info_t> get_txo_info(const ::mmx::txio_key_t& key) const = 0;
-	virtual std::vector<vnx::optional<::mmx::txo_info_t>> get_txo_infos(const std::vector<::mmx::txio_key_t>& keys) const = 0;
 	virtual vnx::optional<uint32_t> get_tx_height(const ::mmx::hash_t& id) const = 0;
 	virtual vnx::optional<::mmx::tx_info_t> get_tx_info(const ::mmx::hash_t& id) const = 0;
 	virtual std::vector<::mmx::hash_t> get_tx_ids_at(const uint32_t& height) const = 0;
@@ -127,17 +120,14 @@ protected:
 	virtual std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts_owned(const std::vector<::mmx::addr_t>& owners) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> get_transaction(const ::mmx::hash_t& id, const vnx::bool_t& include_pending) const = 0;
 	virtual std::vector<std::shared_ptr<const ::mmx::Transaction>> get_transactions(const std::vector<::mmx::hash_t>& ids) const = 0;
-	virtual std::vector<::mmx::tx_entry_t> get_history_for(const std::vector<::mmx::addr_t>& addresses, const int32_t& since) const = 0;
+	virtual std::vector<::mmx::tx_entry_t> get_history(const std::vector<::mmx::addr_t>& addresses, const int32_t& since) const = 0;
 	virtual ::mmx::uint128 get_balance(const ::mmx::addr_t& address, const ::mmx::addr_t& currency, const uint32_t& min_confirm) const = 0;
-	virtual std::map<::mmx::addr_t, ::mmx::balance_t> get_balances(const ::mmx::addr_t& address, const uint32_t& min_confirm) const = 0;
+	virtual std::map<::mmx::addr_t, ::mmx::uint128> get_balances(const ::mmx::addr_t& address, const uint32_t& min_confirm) const = 0;
 	virtual ::mmx::uint128 get_total_balance(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& currency, const uint32_t& min_confirm) const = 0;
 	virtual std::map<::mmx::addr_t, ::mmx::uint128> get_total_balances(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm) const = 0;
-	virtual ::mmx::uint128 get_virtual_plot_balance(const ::mmx::addr_t& plot_id, const ::mmx::hash_t& block_hash) const = 0;
+	virtual std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128> get_all_balances(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm) const = 0;
+	virtual ::mmx::uint128 get_virtual_plot_balance(const ::mmx::addr_t& plot_id, const vnx::optional<::mmx::hash_t>& block_hash) const = 0;
 	virtual ::mmx::uint128 get_total_supply(const ::mmx::addr_t& currency) const = 0;
-	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm, const uint32_t& since) const = 0;
-	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list_for(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& currency, const uint32_t& min_confirm, const uint32_t& since) const = 0;
-	virtual std::vector<::mmx::utxo_entry_t> get_spendable_utxo_list(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm, const uint32_t& since) const = 0;
-	virtual std::vector<::mmx::stxo_entry_t> get_stxo_list(const std::vector<::mmx::addr_t>& addresses, const uint32_t& since) const = 0;
 	virtual void start_sync(const vnx::bool_t& force) = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::Block> _value) {}
 	virtual void handle(std::shared_ptr<const ::mmx::Transaction> _value) {}

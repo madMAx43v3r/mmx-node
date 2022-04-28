@@ -17,7 +17,7 @@ public:
 	::mmx::addr_t currency;
 	::mmx::addr_t address;
 	uint64_t amount = 0;
-	uint32_t split = 1;
+	vnx::optional<::mmx::addr_t> sender;
 	
 	typedef ::vnx::Value Super;
 	
@@ -65,7 +65,7 @@ void Transaction_add_output::accept_generic(T& _visitor) const {
 	_visitor.type_field("currency", 0); _visitor.accept(currency);
 	_visitor.type_field("address", 1); _visitor.accept(address);
 	_visitor.type_field("amount", 2); _visitor.accept(amount);
-	_visitor.type_field("split", 3); _visitor.accept(split);
+	_visitor.type_field("sender", 3); _visitor.accept(sender);
 	_visitor.template type_end<Transaction_add_output>(4);
 }
 

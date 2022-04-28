@@ -3,7 +3,7 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/contract/TimeLock_validate_return.hxx>
-#include <mmx/tx_out_t.hxx>
+#include <mmx/txout_t.hxx>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -14,7 +14,7 @@ namespace contract {
 
 
 const vnx::Hash64 TimeLock_validate_return::VNX_TYPE_HASH(0x24d0a80c385c94eeull);
-const vnx::Hash64 TimeLock_validate_return::VNX_CODE_HASH(0x5bc54e2f6f4aba80ull);
+const vnx::Hash64 TimeLock_validate_return::VNX_CODE_HASH(0x482499ab70b7fc92ull);
 
 vnx::Hash64 TimeLock_validate_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -115,14 +115,14 @@ std::shared_ptr<vnx::TypeCode> TimeLock_validate_return::static_create_type_code
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.TimeLock.validate.return";
 	type_code->type_hash = vnx::Hash64(0x24d0a80c385c94eeull);
-	type_code->code_hash = vnx::Hash64(0x5bc54e2f6f4aba80ull);
+	type_code->code_hash = vnx::Hash64(0x482499ab70b7fc92ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
 	type_code->native_size = sizeof(::mmx::contract::TimeLock_validate_return);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<TimeLock_validate_return>(); };
 	type_code->depends.resize(1);
-	type_code->depends[0] = ::mmx::tx_out_t::static_get_type_code();
+	type_code->depends[0] = ::mmx::txout_t::static_get_type_code();
 	type_code->fields.resize(1);
 	{
 		auto& field = type_code->fields[0];

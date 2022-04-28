@@ -5,7 +5,8 @@
 #define INCLUDE_mmx_Wallet_reserve_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/txio_key_t.hxx>
+#include <mmx/addr_t.hpp>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 
@@ -15,7 +16,7 @@ class MMX_EXPORT Wallet_reserve : public ::vnx::Value {
 public:
 	
 	uint32_t index = 0;
-	std::vector<::mmx::txio_key_t> keys;
+	std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128> amounts;
 	
 	typedef ::vnx::Value Super;
 	
@@ -61,7 +62,7 @@ template<typename T>
 void Wallet_reserve::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<Wallet_reserve>(2);
 	_visitor.type_field("index", 0); _visitor.accept(index);
-	_visitor.type_field("keys", 1); _visitor.accept(keys);
+	_visitor.type_field("amounts", 1); _visitor.accept(amounts);
 	_visitor.template type_end<Wallet_reserve>(2);
 }
 

@@ -15,11 +15,10 @@
 #include <mmx/balance_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/spend_options_t.hxx>
-#include <mmx/stxo_entry_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_log_entry_t.hxx>
-#include <mmx/txio_key_t.hxx>
-#include <mmx/utxo_entry_t.hxx>
+#include <mmx/txin_t.hxx>
+#include <mmx/uint128.hpp>
 #include <vnx/Module.h>
 #include <vnx/Object.hpp>
 #include <vnx/addons/HttpData.hxx>
@@ -45,8 +44,6 @@ public:
 	
 	std::shared_ptr<const ::mmx::Transaction> execute(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const ::vnx::Object& method = ::vnx::Object(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
-	std::shared_ptr<const ::mmx::Transaction> split(const uint32_t& index = 0, const uint64_t& max_amount = 0, const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
-	
 	std::shared_ptr<const ::mmx::Transaction> complete(const uint32_t& index = 0, std::shared_ptr<const ::mmx::Transaction> tx = nullptr, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
 	std::shared_ptr<const ::mmx::Transaction> sign_off(const uint32_t& index = 0, std::shared_ptr<const ::mmx::Transaction> tx = nullptr, const vnx::bool_t& cover_fee = 0, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
@@ -57,17 +54,17 @@ public:
 	
 	void send_off_async(const uint32_t& index = 0, std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
 	
-	void mark_spent(const uint32_t& index = 0, const std::vector<::mmx::txio_key_t>& keys = {});
+	void mark_spent(const uint32_t& index = 0, const std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128>& amounts = {});
 	
-	void mark_spent_async(const uint32_t& index = 0, const std::vector<::mmx::txio_key_t>& keys = {});
+	void mark_spent_async(const uint32_t& index = 0, const std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128>& amounts = {});
 	
-	void reserve(const uint32_t& index = 0, const std::vector<::mmx::txio_key_t>& keys = {});
+	void reserve(const uint32_t& index = 0, const std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128>& amounts = {});
 	
-	void reserve_async(const uint32_t& index = 0, const std::vector<::mmx::txio_key_t>& keys = {});
+	void reserve_async(const uint32_t& index = 0, const std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128>& amounts = {});
 	
-	void release(const uint32_t& index = 0, const std::vector<::mmx::txio_key_t>& keys = {});
+	void release(const uint32_t& index = 0, const std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128>& amounts = {});
 	
-	void release_async(const uint32_t& index = 0, const std::vector<::mmx::txio_key_t>& keys = {});
+	void release_async(const uint32_t& index = 0, const std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128>& amounts = {});
 	
 	void release_all();
 	
@@ -81,19 +78,11 @@ public:
 	
 	void update_cache_async(const uint32_t& index = 0);
 	
-	std::vector<::mmx::utxo_entry_t> get_utxo_list(const uint32_t& index = 0, const uint32_t& min_confirm = 0);
-	
-	std::vector<::mmx::utxo_entry_t> get_utxo_list_for(const uint32_t& index = 0, const ::mmx::addr_t& currency = ::mmx::addr_t(), const uint32_t& min_confirm = 0);
-	
-	std::vector<::mmx::stxo_entry_t> get_stxo_list(const uint32_t& index = 0);
-	
-	std::vector<::mmx::stxo_entry_t> get_stxo_list_for(const uint32_t& index = 0, const ::mmx::addr_t& currency = ::mmx::addr_t());
-	
-	std::vector<::mmx::utxo_entry_t> gather_utxos_for(const uint32_t& index = 0, const uint64_t& amount = 0, const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
-	
 	std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index = 0, const int32_t& since = 0);
 	
 	std::vector<::mmx::tx_log_entry_t> get_tx_history(const uint32_t& index = 0, const int32_t& limit = -1, const uint32_t& offset = 0);
+	
+	std::vector<::mmx::txin_t> gather_inputs_for(const uint32_t& index = 0, const uint64_t& amount = 0, const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
 	::mmx::balance_t get_balance(const uint32_t& index = 0, const ::mmx::addr_t& currency = ::mmx::addr_t(), const uint32_t& min_confirm = 0);
 	
