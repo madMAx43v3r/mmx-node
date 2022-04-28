@@ -149,7 +149,7 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& rew
 	auto amount_left = reward_amount;
 	if(project_addr && amount_left > 0)
 	{
-		tx_out_t out;
+		txout_t out;
 		out.address = *project_addr;
 		out.amount = double(amount_left) * devfee_ratio;
 		if(out.amount > 0) {
@@ -159,7 +159,7 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& rew
 	}
 	if(reward_addr && amount_left > 0)
 	{
-		tx_out_t out;
+		txout_t out;
 		out.address = *reward_addr;
 		out.amount = amount_left;
 		amount_left -= out.amount;

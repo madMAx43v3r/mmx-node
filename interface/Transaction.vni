@@ -16,11 +16,11 @@ class Transaction extends TransactionBase {
 	
 	optional<addr_t> sender;			// to receive change from fee
 	
-	vector<tx_in_t> inputs;
+	vector<txin_t> inputs;
 	
-	vector<tx_out_t> outputs;
+	vector<txout_t> outputs;
 	
-	vector<tx_out_t> exec_outputs;
+	vector<txout_t> exec_outputs;
 	
 	vector<Operation*> execute;
 	
@@ -35,7 +35,9 @@ class Transaction extends TransactionBase {
 	
 	void finalize();
 	
-	void add_output(addr_t currency, addr_t address, ulong amount, uint split = 1);
+	void add_input(addr_t currency, addr_t address, ulong amount);
+	
+	void add_output(addr_t currency, addr_t address, ulong amount, optional<addr_t> sender);
 	
 	void merge_sign(Transaction* tx);
 	
@@ -47,13 +49,13 @@ class Transaction extends TransactionBase {
 	
 	Solution* get_solution(uint index) const;
 	
-	tx_out_t get_output(uint index) const;
+	txout_t get_output(uint index) const;
 	
-	vector<tx_out_t> get_outputs() const;
+	vector<txout_t> get_outputs() const;
 	
-	vector<tx_out_t> get_all_outputs() const;
+	vector<txout_t> get_all_outputs() const;
 	
-	vector<tx_in_t> get_all_inputs() const;
+	vector<txin_t> get_all_inputs() const;
 	
 	ulong calc_cost(ChainParams* params) const;
 	

@@ -405,77 +405,36 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 	for(const auto& iter : tx_pool) {
 		tx_data_t tmp;
 		tmp.tx_pool_t::operator=(iter.second);
+		tmp.cost = tmp.tx->calc_cost(params);
 		all_tx.push_back(tmp);
 	}
 
-	// check for duplicate transactions
-#pragma omp parallel for
-	for(int i = 0; i < int(all_tx.size()); ++i)
-	{
-		auto& entry = all_tx[i];
-		if(tx_map.count(entry.tx->id) || tx_index.find(entry.tx->id)) {
-			entry.duplicate = true;
-		}
-	}
-
-	// purge duplicates from pool first to avoid detecting false dependency
-	size_t num_duplicate = 0;
-	for(const auto& entry : all_tx) {
-		if(entry.duplicate) {
-			num_duplicate += tx_pool.erase(entry.tx->id);
-		}
-	}
-
-	// check for dependency between transactions
-#pragma omp parallel for
-	for(int i = 0; i < int(all_tx.size()); ++i)
-	{
-		auto& entry = all_tx[i];
-		if(entry.duplicate) {
-			continue;
-		}
-		for(const auto& in : entry.tx->get_all_inputs())
-		{
-			const auto& prev = in.prev.txid;
-			// check if tx depends on another one which is not in a block yet
-			if(tx_pool.count(prev)) {
-				entry.depends.push_back(prev);
-			}
-		}
-		entry.cost = entry.tx->calc_cost(params);
-	}
-
-	// sort transactions by fee ratio known from previous iterations
+	// sort transactions by fee ratio
 	std::sort(all_tx.begin(), all_tx.end(),
 		[](const tx_data_t& lhs, const tx_data_t& rhs) -> bool {
 			return lhs.tx->fee_ratio > rhs.tx->fee_ratio;
 		});
 
 	size_t num_purged = 0;
-	size_t num_dependent = 0;
+	uint128_t total_pool_cost = 0;
 	uint128_t total_verify_cost = 0;
 	std::vector<tx_data_t> tx_list;
-	std::unordered_multimap<hash_t, hash_t> dependency;
 
+	// purge transactions from pool if overflowing
 	{
-		// purge transactions from pool if overflowing
-		uint128_t total_pool_cost = 0;
-		for(const auto& entry : all_tx) {
-			if(entry.did_validate) {
-				total_pool_cost += entry.cost;
+		vnx::optional<size_t> cutoff;
+		for(size_t i = 0; i < all_tx.size(); ++i) {
+			const auto& entry = all_tx[i];
+			total_pool_cost += entry.cost;
+			if(total_pool_cost > uint128_t(tx_pool_limit) * params->max_block_cost) {
+				if(!cutoff) {
+					*cutoff = i;
+				}
+				num_purged += tx_pool.erase(entry.tx->id);
 			}
 		}
-		for(auto iter = all_tx.rbegin(); iter != all_tx.rend(); ++iter)
-		{
-			if(total_pool_cost <= tx_pool_limit * params->max_block_cost) {
-				break;
-			}
-			if(iter->did_validate) {
-				// only purge transactions where fee ratio is known already
-				num_purged += tx_pool.erase(iter->tx->id);
-				total_pool_cost -= iter->cost;
-				iter->purged = true;
-			}
+		if(cutoff) {
+			all_tx.resize(*cutoff);
 		}
 	}
 	auto context = Context::create();
@@ -483,25 +442,15 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 
 	// select transactions to verify
 	for(const auto& entry : all_tx) {
-		if(entry.duplicate || entry.purged) {
-			continue;
-		}
-		for(const auto& prev : entry.depends) {
-			dependency.emplace(prev, entry.tx->id);
-		}
 		if(uint32_t(entry.tx->id.to_uint256() & 0x1) != (context->height & 0x1)) {
 			continue;
 		}
 		if(only_new && entry.did_validate) {
 			continue;
 		}
-		if(entry.depends.empty()) {
-			if(total_verify_cost + entry.cost <= verify_limit) {
-				tx_list.push_back(entry);
-				total_verify_cost += entry.cost;
-			}
-		} else {
-			num_dependent++;
+		if(total_verify_cost + entry.cost <= verify_limit) {
+			tx_list.push_back(entry);
+			total_verify_cost += entry.cost;
 		}
 	}
 
@@ -531,16 +480,11 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 		}
 	}
 
-	// sort transactions by fee ratio
-	std::sort(tx_list.begin(), tx_list.end(),
-		[](const tx_data_t& lhs, const tx_data_t& rhs) -> bool {
-			return lhs.tx->fee_ratio > rhs.tx->fee_ratio;
-		});
-
 	uint128_t total_cost = 0;
 	std::vector<tx_data_t> result;
-	std::unordered_set<addr_t> mutated;
-	std::unordered_set<txio_key_t> spent;
+	std::unordered_set<addr_t> tx_set;
+	std::unordered_set<addr_t> mutate_set;
+	balance_cache_t balance_cache(balance_map);
 
 	// select final set of transactions
 	for(auto& entry : tx_list)
@@ -548,68 +492,65 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 		if(entry.invalid) {
 			continue;
 		}
-		if(total_cost + entry.cost <= select_limit)
-		{
-			auto tx = entry.tx;
-			if(tx->parent) {
-				tx = tx->get_combined();
+		if(total_cost + entry.cost > select_limit) {
+			continue;
+		}
+		bool passed = true;
+		auto tx = entry.tx;
+		auto cache = balance_cache;
+		std::unordered_set<addr_t> mutate_addrs;
+		while(tx) {
+			if(tx_set.count(tx->id)) {
+				passed = false;
+				break;
 			}
-			bool passed = true;
 			for(const auto& in : tx->inputs) {
-				// prevent double spending
-				if(!spent.insert(in.prev).second) {
+				const auto balance = cache.get(in.address, in.contract);
+				if(balance || in.amount <= *balance) {
+					*balance -= in.amount;
+				} else {
 					entry.invalid = true;
 					passed = false;
+					break;
 				}
 			}
-			{
-				std::unordered_set<addr_t> addr_set;
-				for(const auto& op : tx->execute) {
-					if(std::dynamic_pointer_cast<const operation::Mutate>(op)) {
-						addr_set.insert(op->address);
-					}
-				}
-				for(const auto& addr : addr_set) {
-					// prevent concurrent mutation
-					if(!mutated.insert(addr).second) {
+			for(const auto& op : tx->execute) {
+				if(std::dynamic_pointer_cast<const operation::Mutate>(op)) {
+					if(mutate_set.count(op->address)) {
 						passed = false;
+						break;
 					}
+					mutate_addrs.insert(op->address);
 				}
 			}
-			if(passed) {
-				result.push_back(entry);
-				total_cost += entry.cost;
-			}
+			tx = tx->parent;
 		}
+		if(!passed) {
+			continue;
+		}
+		tx = entry.tx;
+		while(tx) {
+			tx_set.insert(tx->id);
+			tx = tx->parent;
+		}
+		mutate_set.insert(mutate_addrs.begin(), mutate_addrs.end());
+		balance_cache = cache;
+
+		result.push_back(entry);
+		total_cost += entry.cost;
 	}
 
 	// purge invalid transactions
 	size_t num_invalid = 0;
-	{
-		std::vector<hash_t> invalid;
-		for(const auto& entry : tx_list) {
-			if(entry.invalid) {
-				invalid.push_back(entry.tx->id);
-			}
-		}
-		while(!invalid.empty()) {
-			std::vector<hash_t> more;
-			for(const auto& id : invalid) {
-				const auto range = dependency.equal_range(id);
-				for(auto iter = range.first; iter != range.second; ++iter) {
-					more.push_back(iter->second);
-				}
-				num_invalid += tx_pool.erase(id);
-			}
-			invalid = more;
+	for(const auto& entry : tx_list) {
+		if(entry.invalid) {
+			num_invalid += tx_pool.erase(entry.tx->id);
 		}
 	}
-
 	if(!only_new || !tx_list.empty()) {
 		const auto elapsed = (vnx::get_wall_time_micros() - time_begin) / 1e6;
 		log(INFO) << "Validated" << (only_new ? " new" : "") << " transactions: " << result.size() << " valid, "
-				<< num_invalid << " invalid, " << num_duplicate << " duplicate, " << num_dependent << " dependent, "
-				<< num_purged << " purged, took " << elapsed << " sec";
+				<< num_invalid << " invalid, " << num_purged << " purged, took " << elapsed << " sec";
 	}
 	return result;
 }

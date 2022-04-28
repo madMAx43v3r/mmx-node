@@ -29,8 +29,7 @@ hash_t PuzzleTimeLock::calc_hash() const
 	write_bytes(out, get_type_hash());
 	write_field(out, "version", version);
 	write_field(out, "owner", 	owner);
-	write_field(out, "chain_height", chain_height);
-	write_field(out, "delta_height", delta_height);
+	write_field(out, "unlock_height", unlock_height);
 	write_field(out, "puzzle", puzzle ? puzzle->calc_hash() : hash_t());
 	write_field(out, "target", target);
 	out.flush();
@@ -51,7 +50,7 @@ std::vector<addr_t> PuzzleTimeLock::get_parties() const {
 	return {owner, target};
 }
 
-std::vector<tx_out_t> PuzzleTimeLock::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
+std::vector<txout_t> PuzzleTimeLock::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
 	if(auto claim = std::dynamic_pointer_cast<const solution::PuzzleTimeLock>(operation->solution))
 	{

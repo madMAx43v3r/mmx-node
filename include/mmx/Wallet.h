@@ -42,9 +42,6 @@ protected:
 			const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
 			const addr_t& currency, const spend_options_t& options) const override;
 
-	std::shared_ptr<const Transaction> split(
-			const uint32_t& index, const uint64_t& max_amount, const addr_t& currency, const spend_options_t& options) const override;
-
 	std::shared_ptr<const Transaction> deploy(
 			const uint32_t& index, std::shared_ptr<const Contract> contract, const spend_options_t& options) const override;
 
@@ -61,11 +58,11 @@ protected:
 
 	void send_off(const uint32_t& index, std::shared_ptr<const Transaction> tx) const override;
 
-	void mark_spent(const uint32_t& index, const std::vector<txio_key_t>& keys) override;
+	void mark_spent(const uint32_t& index, const std::map<std::pair<addr_t, addr_t>, uint128>& amounts) override;
 
-	void reserve(const uint32_t& index, const std::vector<txio_key_t>& keys) override;
+	void reserve(const uint32_t& index, const std::map<std::pair<addr_t, addr_t>, uint128>& amounts) override;
 
-	void release(const uint32_t& index, const std::vector<txio_key_t>& keys) override;
+	void release(const uint32_t& index, const std::map<std::pair<addr_t, addr_t>, uint128>& amounts) override;
 
 	void release_all() override;
 
@@ -73,16 +70,8 @@ protected:
 
 	void update_cache(const uint32_t& index) const override;
 
-	std::vector<utxo_entry_t> get_utxo_list(const uint32_t& index, const uint32_t& min_confirm = 1) const override;
-
-	std::vector<utxo_entry_t> get_utxo_list_for(const uint32_t& index, const addr_t& currency, const uint32_t& min_confirm) const override;
-
-	std::vector<stxo_entry_t> get_stxo_list(const uint32_t& index) const override;
-
-	std::vector<stxo_entry_t> get_stxo_list_for(const uint32_t& index, const addr_t& currency) const override;
-
-	std::vector<utxo_entry_t> gather_utxos_for(	const uint32_t& index, const uint64_t& amount,
-												const addr_t& currency, const spend_options_t& options) const override;
+	std::vector<txin_t> gather_inputs_for(	const uint32_t& index, const uint64_t& amount,
+											const addr_t& currency, const spend_options_t& options) const override;
 
 	std::vector<tx_entry_t> get_history(const uint32_t& index, const int32_t& since) const override;
 

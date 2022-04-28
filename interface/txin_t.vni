@@ -1,8 +1,6 @@
 package mmx;
 
-struct tx_in_t {
-	
-	txio_key_t prev;
+struct txin_t extends txio_t {
 	
 	uint solution = -1;
 	

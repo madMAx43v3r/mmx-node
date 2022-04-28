@@ -49,9 +49,19 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 	fork->is_proof_verified = true;
 }
 
-uint128 Node::get_virtual_plot_balance(const addr_t& plot_id, const hash_t& block_hash) const
+uint128 Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::optional<hash_t>& block_hash) const
 {
-	auto block = get_header(block_hash);
+	hash_t hash;
+	if(block_hash) {
+		hash = *block_hash;
+	} else {
+		if(auto peak = get_peak()) {
+			hash = peak->hash;
+		} else {
+			return uint128_0;
+		}
+	}
+	auto block = get_header(hash);
 	if(!block) {
 		throw std::logic_error("no such block");
 	}
@@ -60,12 +70,18 @@ uint128 Node::get_virtual_plot_balance(const addr_t& plot_id, const hash_t& bloc
 	const auto since = height - std::min(params->virtual_lifetime, height);
 
 	uint128_t balance = 0;
-	for(const auto& entry : get_utxo_list_for({plot_id}, addr_t(), 0, since)) {
-		if(entry.output.height <= std::min(root->height, height)) {
-			balance += entry.output.amount;
+	for(const auto& entry : get_history({plot_id}, since)) {
+		if(entry.height <= std::min(root->height, height)) {
+			switch(entry.type) {
+				case tx_type_e::SPEND:
+					balance -= entry.amount; break;
+				case tx_type_e::REWARD:
+				case tx_type_e::RECEIVE:
+					balance += entry.amount;
+			}
 		}
 	}
-	auto fork = find_fork(block_hash);
+	auto fork = find_fork(hash);
 	while(fork) {
 		const auto block = fork->block;
 		if(block->height < since) {
@@ -158,7 +174,7 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof) const
 		if(!proof->infuse[0]) {
 			throw std::logic_error("missing infusion on chain 0");
 		}
-		const auto infused_block = find_header(*proof->infuse[0]);
+		const auto infused_block = get_header(*proof->infuse[0]);
 		if(!infused_block) {
 			throw std::logic_error("unknown block infused on chain 0");
 		}

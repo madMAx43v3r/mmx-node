@@ -26,7 +26,7 @@ class DataObject extends mmx.Contract {
 	
 	optional<addr_t> get_owner() const;
 	
-	vector<mmx.tx_out_t> validate(mmx.Operation* operation, mmx.Context* context) const;
+	vector<mmx.txout_t> validate(mmx.Operation* operation, mmx.Context* context) const;
 	
 	void transfer(optional<addr_t> new_owner);
 	

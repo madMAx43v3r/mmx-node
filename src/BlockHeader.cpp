@@ -53,5 +53,10 @@ void BlockHeader::validate() const
 	}
 }
 
+std::shared_ptr<const BlockHeader> BlockHeader::get_header() const
+{
+	return vnx::clone(*this);
+}
+
 
 } // mmx

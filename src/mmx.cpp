@@ -10,12 +10,10 @@
 #include <mmx/WalletClient.hxx>
 #include <mmx/FarmerClient.hxx>
 #include <mmx/HarvesterClient.hxx>
-#include <mmx/exchange/ClientClient.hxx>
-#include <mmx/exchange/trade_pair_t.hpp>
+//#include <mmx/exchange/ClientClient.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/contract/NFT.hxx>
 #include <mmx/contract/Token.hxx>
-#include <mmx/contract/Staking.hxx>
 #include <mmx/KeyFile.hxx>
 #include <mmx/secp256k1.hpp>
 #include <mmx/hash_t.hpp>
@@ -60,12 +58,12 @@ void show_history(const std::vector<mmx::tx_entry_t>& history, mmx::NodeClient& 
 		}
 		const auto contract = get_contract(node, entry.contract);
 		if(auto nft = std::dynamic_pointer_cast<const mmx::contract::NFT>(contract)) {
-			std::cout << entry.contract << " " << arrow << " " << entry.address << " (" << entry.txid << ")" << std::endl;
+			std::cout << entry.contract << " " << arrow << " " << entry.address << " (" << entry.key.txid << ")" << std::endl;
 		} else {
 			const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(contract);
 			const auto decimals = token ? token->decimals : params->decimals;
 			std::cout << amount_value(entry.amount, decimals) << " " << (token ? token->symbol : "MMX")
-					<< " (" << entry.amount << ") " << arrow << " " << entry.address << " (" << entry.txid << ")" << std::endl;
+					<< " (" << entry.amount << ") " << arrow << " " << entry.address << " (" << entry.key.txid << ")" << std::endl;
 		}
 	}
 }
@@ -142,7 +140,6 @@ int main(int argc, char** argv)
 	}
 
 	mmx::spend_options_t spend_options;
-	spend_options.split_output = std::max<uint32_t>(num_outputs, 1);
 
 	mmx::NodeClient node("Node");
 
@@ -227,17 +224,6 @@ int main(int argc, char** argv)
 					std::cout << "Contract: " << address << " (" << contract->get_type_name();
 					if(auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(contract)) {
 						std::cout << ", " << token->symbol << ", " << token->name;
-					}
-					if(auto staking = std::dynamic_pointer_cast<const mmx::contract::Staking>(contract)) {
-						if(auto contract = get_contract(node, staking->currency)) {
-							if(auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(contract)) {
-								std::cout << ", " << token->symbol;
-							} else {
-								std::cout << ", ???";
-							}
-						} else {
-							std::cout << ", ???";
-						}
 					}
 					std::cout << ")" << std::endl;
 
@@ -502,7 +488,7 @@ int main(int argc, char** argv)
 				int64_t since = 0;
 				vnx::read_config("$4", since);
 
-				show_history(node.get_history_for({address}, since), node, params);
+				show_history(node.get_history({address}, since), node, params);
 			}
 			else if(command == "peers")
 			{
@@ -786,7 +772,7 @@ int main(int argc, char** argv)
 				std::cerr << "Help: mmx farm [info | get | reload]" << std::endl;
 			}
 		}
-		else if(module == "exch") {
+		/*else if(module == "exch") {
 			std::string node_url = ":11331";
 			vnx::read_config("node", node_url);
 
@@ -1043,7 +1029,7 @@ int main(int argc, char** argv)
 			else {
 				std::cerr << "Help: mmx exch [offer | trade | offers | orders | log | price | servers | cancel]" << std::endl;
 			}
-		}
+		}*/
 		else {
 			std::cerr << "Help: mmx [node | wallet | farm | exch]" << std::endl;
 		}

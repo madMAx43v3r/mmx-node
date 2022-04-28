@@ -18,7 +18,6 @@ class ChainParams {
 	uint num_vdf_segments = 760;
 	uint max_vdf_segments = 1024;
 
-	uint max_tx_base_out = 10;
 	uint recursive_interval = 60480;		// number of blocks per iteration to approximate recursive functions
 	uint virtual_lifetime = 15768000;		// number of blocks balance on virtual plots is valid
 	
@@ -44,6 +43,7 @@ class ChainParams {
 	ulong min_txfee_exec = 10000;			// per contract operation
 	ulong min_txfee_deploy = 100000;		// per contract
 	ulong min_txfee_byte = 10;				// per byte of data
+	ulong max_txbase_cost = 10000;
 	ulong max_block_cost = 10000000;
 	
 	double block_time = 10;					// [sec]

@@ -58,7 +58,7 @@ vnx::optional<addr_t> MutableRelay::get_owner() const {
 	return owner;
 }
 
-std::vector<tx_out_t> MutableRelay::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
+std::vector<txout_t> MutableRelay::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
 	if(auto claim = std::dynamic_pointer_cast<const solution::MutableRelay>(operation->solution))
 	{
@@ -103,14 +103,24 @@ std::vector<tx_out_t> MutableRelay::validate(std::shared_ptr<const Operation> op
 	return {};
 }
 
+void MutableRelay::transfer(const vnx::optional<addr_t>& new_owner)
+{
+	if(new_owner) {
+		owner = *new_owner;
+	} else {
+		throw std::logic_error("!new_owner");
+	}
+}
+
 void MutableRelay::unlock(const uint32_t& height)
 {
 	unlock_height = height;
 }
 
-void MutableRelay::lock_target(const vnx::optional<addr_t>& new_target)
+void MutableRelay::lock(const vnx::optional<addr_t>& new_target, const uint32_t& new_unlock_delay)
 {
 	target = new_target;
+	unlock_delay = new_unlock_delay;
 	unlock_height = nullptr;
 }
 

@@ -74,12 +74,6 @@ module Node implements vnx.addons.HttpComponent {
 	optional<hash_t> get_block_hash(uint height) const;
 	
 	@Permission(permission_e.PUBLIC)
-	optional<txo_info_t> get_txo_info(txio_key_t key) const;
-	
-	@Permission(permission_e.PUBLIC)
-	vector<optional<txo_info_t>> get_txo_infos(vector<txio_key_t> keys) const;
-	
-	@Permission(permission_e.PUBLIC)
 	optional<uint> get_tx_height(hash_t id) const;
 	
 	@Permission(permission_e.PUBLIC)
@@ -113,13 +107,13 @@ module Node implements vnx.addons.HttpComponent {
 	vector<Transaction*> get_transactions(vector<hash_t> ids) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<tx_entry_t> get_history_for(vector<addr_t> addresses, int since) const;
+	vector<tx_entry_t> get_history(vector<addr_t> addresses, int since) const;
 	
 	@Permission(permission_e.PUBLIC)
 	uint128 get_balance(addr_t address, addr_t currency, uint min_confirm = 1) const;
 	
 	@Permission(permission_e.PUBLIC)
-	map<addr_t, balance_t> get_balances(addr_t address, uint min_confirm = 1) const;
+	map<addr_t, uint128> get_balances(addr_t address, uint min_confirm = 1) const;
 	
 	@Permission(permission_e.PUBLIC)
 	uint128 get_total_balance(vector<addr_t> addresses, addr_t currency, uint min_confirm = 1) const;
@@ -128,22 +122,13 @@ module Node implements vnx.addons.HttpComponent {
 	map<addr_t, uint128> get_total_balances(vector<addr_t> addresses, uint min_confirm = 1) const;
 	
 	@Permission(permission_e.PUBLIC)
-	uint128 get_virtual_plot_balance(addr_t plot_id, hash_t block_hash) const;
+	map<pair<addr_t, addr_t>, uint128> get_all_balances(vector<addr_t> addresses, uint min_confirm = 1) const;
+	
+	@Permission(permission_e.PUBLIC)
+	uint128 get_virtual_plot_balance(addr_t plot_id, optional<hash_t> block_hash) const;
 	
 	@Permission(permission_e.PUBLIC)
 	uint128 get_total_supply(addr_t currency) const;
-	
-	@Permission(permission_e.PUBLIC)
-	vector<utxo_entry_t> get_utxo_list(vector<addr_t> addresses, uint min_confirm = 1, uint since = 0) const;
-	
-	@Permission(permission_e.PUBLIC)
-	vector<utxo_entry_t> get_utxo_list_for(vector<addr_t> addresses, addr_t currency, uint min_confirm = 1, uint since = 0) const;
-	
-	@Permission(permission_e.PUBLIC)
-	vector<utxo_entry_t> get_spendable_utxo_list(vector<addr_t> addresses, uint min_confirm = 1, uint since = 0) const;
-	
-	@Permission(permission_e.PUBLIC)
-	vector<stxo_entry_t> get_stxo_list(vector<addr_t> addresses, uint since = 0) const;
 	
 	void start_sync(bool force);
 	

@@ -9,14 +9,16 @@
 #define INCLUDE_MMX_NODE_H_
 
 #include <mmx/NodeBase.hxx>
+#include <mmx/Block.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/RouterAsyncClient.hxx>
 #include <mmx/TimeLordAsyncClient.hxx>
-#include <mmx/utxo_t.hpp>
-#include <mmx/stxo_t.hpp>
-#include <mmx/txio_key_t.hpp>
-#include <mmx/OCL_VDF.h>
 #include <mmx/operation/Mutate.hxx>
+#include <mmx/txio_key_t.hpp>
+#include <mmx/txio_entry_t.hpp>
+#include <mmx/txout_entry_t.hpp>
+#include <mmx/OCL_VDF.h>
+#include <mmx/utils.h>
 
 #include <vnx/ThreadPool.h>
 #include <vnx/rocksdb/table.h>
@@ -24,6 +26,7 @@
 #include <vnx/addons/HttpInterface.h>
 
 #include <uint128_t.h>
+#include <unordered_set>
 
 
 namespace mmx {
@@ -61,15 +64,11 @@ protected:
 
 	vnx::optional<tx_info_t> get_tx_info(const hash_t& id) const override;
 
-	vnx::optional<txo_info_t> get_txo_info(const txio_key_t& key) const override;
-
-	std::vector<vnx::optional<txo_info_t>> get_txo_infos(const std::vector<txio_key_t>& keys) const override;
-
 	std::shared_ptr<const Transaction> get_transaction(const hash_t& id, const bool& include_pending = false) const override;
 
 	std::vector<std::shared_ptr<const Transaction>> get_transactions(const std::vector<hash_t>& ids) const override;
 
-	std::vector<tx_entry_t> get_history_for(const std::vector<addr_t>& addresses, const int32_t& since) const override;
+	std::vector<tx_entry_t> get_history(const std::vector<addr_t>& addresses, const int32_t& since) const override;
 
 	std::shared_ptr<const Contract> get_contract(const addr_t& address) const override;
 
@@ -87,27 +86,15 @@ protected:
 
 	uint128 get_total_balance(const std::vector<addr_t>& addresses, const addr_t& currency, const uint32_t& min_confirm) const override;
 
+	std::map<addr_t, uint128> get_balances(const addr_t& address, const uint32_t& min_confirm) const override;
+
 	std::map<addr_t, uint128> get_total_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const override;
 
-	std::map<addr_t, balance_t> get_balances(const addr_t& address, const uint32_t& min_confirm) const override;
+	std::map<std::pair<addr_t, addr_t>, uint128> get_all_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const override;
 
 	uint128 get_total_supply(const addr_t& currency) const override;
 
-	uint128 get_virtual_plot_balance(const addr_t& plot_id, const hash_t& block_hash) const override;
-
-	std::vector<utxo_entry_t> get_utxo_list(
-			const std::vector<addr_t>& addresses, const uint32_t& min_confirm = 1, const uint32_t& since = 0) const override;
-
-	std::vector<utxo_entry_t> get_utxo_list(
-			const std::vector<addr_t>& addresses, const vnx::optional<addr_t> currency, const uint32_t& min_confirm = 1, const uint32_t& since = 0) const;
-
-	std::vector<utxo_entry_t> get_utxo_list_for(
-			const std::vector<addr_t>& addresses, const addr_t& currency, const uint32_t& min_confirm = 1, const uint32_t& since = 0) const override;
-
-	std::vector<utxo_entry_t> get_spendable_utxo_list(
-			const std::vector<addr_t>& addresses, const uint32_t& min_confirm, const uint32_t& since) const override;
-
-	std::vector<stxo_entry_t> get_stxo_list(const std::vector<addr_t>& addresses, const uint32_t& since = 0) const override;
+	uint128 get_virtual_plot_balance(const addr_t& plot_id, const vnx::optional<hash_t>& block_hash) const override;
 
 	void on_stuck_timeout();
 
@@ -151,16 +138,6 @@ private:
 		std::shared_ptr<const BlockHeader> diff_block;
 	};
 
-	struct change_log_t {
-		uint32_t height = 0;
-		hash_t prev_state;
-		std::vector<hash_t> tx_added;
-		std::unordered_map<txio_key_t, utxo_t> utxo_added;			// [utxo key => utxo]
-		std::unordered_map<txio_key_t, stxo_t> utxo_removed;		// [utxo key => [txi key, utxo]]
-		std::unordered_map<addr_t, std::shared_ptr<const Contract>> deployed;
-		std::unordered_map<addr_t, std::vector<std::shared_ptr<const operation::Mutate>>> mutated;
-	};
-
 	struct tx_map_t {
 		uint32_t height = -1;
 		std::shared_ptr<const Transaction> tx;
@@ -173,11 +150,8 @@ private:
 
 	struct tx_data_t : tx_pool_t {
 		bool invalid = false;
-		bool duplicate = false;
-		bool purged = false;
 		uint64_t fees = 0;
 		uint64_t cost = 0;
-		std::vector<hash_t> depends;
 	};
 
 	void update();
@@ -191,8 +165,6 @@ private:
 	void add_fork(std::shared_ptr<fork_t> fork);
 
 	void add_dummy_blocks(std::shared_ptr<const BlockHeader> prev);
-
-	std::shared_ptr<const Transaction> get_transaction_ex(const hash_t& id, const bool& include_pending) const;
 
 	void validate_pool();
 
@@ -216,6 +188,8 @@ private:
 
 	std::vector<std::shared_ptr<fork_t>> get_fork_line(std::shared_ptr<fork_t> fork_head = nullptr) const;
 
+	std::unordered_set<addr_t> get_revokations(const hash_t& txid) const;
+
 	void validate(std::shared_ptr<const Block> block) const;
 
 	void validate(std::shared_ptr<const Transaction> tx) const;
@@ -225,9 +199,9 @@ private:
 
 	void validate(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const Context> context,
-					std::vector<tx_out_t>& outputs,
-					std::vector<tx_out_t>& exec_outputs,
-					std::unordered_set<txio_key_t>& spent,
+					std::vector<txout_t>& outputs,
+					std::vector<txout_t>& exec_outputs,
+					balance_cache_t& balance_cache,
 					std::unordered_map<addr_t, uint128_t>& amounts,
 					std::unordered_map<addr_t, std::shared_ptr<Contract>>& contract_state) const;
 
@@ -257,25 +231,27 @@ private:
 
 	void check_vdf_task(std::shared_ptr<fork_t> fork, std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const BlockHeader> infuse) const noexcept;
 
-	void apply(std::shared_ptr<const Block> block) noexcept;
+	void apply(std::shared_ptr<const Block> block, int64_t* file_offset = nullptr) noexcept;
 
-	void apply(std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx, std::shared_ptr<change_log_t> log) noexcept;
+	void apply(	std::shared_ptr<const Block> block,
+				std::shared_ptr<const Transaction> tx,
+				std::unordered_set<addr_t>& addr_set,
+				std::unordered_set<hash_t>& revoke_set,
+				std::set<std::pair<addr_t, addr_t>>& balance_set) noexcept;
 
 	bool revert() noexcept;
+
+	bool revert(const uint32_t height, std::shared_ptr<const Block> block) noexcept;
 
 	std::shared_ptr<const BlockHeader> get_root() const;
 
 	std::shared_ptr<const BlockHeader> get_peak() const;
 
-	std::shared_ptr<const BlockHeader> get_block(const hash_t& hash, bool full_block) const;
+	std::shared_ptr<const BlockHeader> get_block_ex(const hash_t& hash, bool full_block) const;
 
-	std::shared_ptr<const BlockHeader> get_block_at(const uint32_t& height, bool full_block) const;
+	std::shared_ptr<const BlockHeader> get_block_at_ex(const uint32_t& height, bool full_block) const;
 
 	std::shared_ptr<fork_t> find_fork(const hash_t& hash) const;
-
-	std::shared_ptr<const Block> find_block(const hash_t& hash) const;
-
-	std::shared_ptr<const BlockHeader> find_header(const hash_t& hash) const;
 
 	std::shared_ptr<fork_t> find_prev_fork(std::shared_ptr<fork_t> fork, const size_t distance = 1) const;
 
@@ -297,35 +273,30 @@ private:
 
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block) const;
 
-	std::shared_ptr<const BlockHeader> read_block(vnx::File& file, int64_t* file_offset = nullptr, bool full_block = true) const;
+	std::shared_ptr<const BlockHeader> read_block(vnx::File& file, bool full_block = true, int64_t* file_offset = nullptr) const;
 
-	void write_block(std::shared_ptr<const Block> block);
+	void write_block(std::shared_ptr<const Block> block, int64_t* file_offset = nullptr);
 
 private:
 	hash_t state_hash;
-	std::list<std::shared_ptr<const change_log_t>> change_log;
 
-	std::unordered_map<hash_t, uint32_t> hash_index;								// [block hash => height] (finalized only)
-	vnx::rocksdb::table<txio_key_t, stxo_t> stxo_index;								// [stxo key => [txi key, stxo]] (finalized + spent only)
-	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, txio_key_t> saddr_map;	// [[addr, height] => stxo key] (finalized + spent only)
-	vnx::rocksdb::multi_table<uint32_t, txio_key_t> stxo_log;						// [height => stxo key] (finalized + spent only)
-	vnx::rocksdb::multi_table<uint32_t, addr_t> addr_log;							// [height => address] (finalized only)
+	vnx::rocksdb::multi_table<uint32_t, addr_t> addr_log;								// [height => address]
+	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, txout_entry_t> recv_log;		// [[address, height] => entry]
+	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, txio_entry_t> spend_log;		// [[address, height] => entry]
 
-	vnx::rocksdb::table<addr_t, std::shared_ptr<const Contract>> contract_cache;			// [addr, contract] (finalized only)
-	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, vnx::Object> mutate_log;			// [[addr, height] => method] (finalized only)
-	vnx::rocksdb::multi_table<addr_t, addr_t> owner_map;									// [owner => contract]
+	vnx::rocksdb::multi_table<uint32_t, hash_t> revoke_log;								// [height => txid]
+	vnx::rocksdb::multi_table<std::pair<hash_t, uint32_t>, std::pair<addr_t, hash_t>> revoke_map;	// [[org txid, height]] => [address, txid]]
 
-	mutable vnx::rocksdb::multi_table<uint32_t, hash_t> tx_log;						// [height => txid] (finalized only)
-	mutable vnx::rocksdb::table<hash_t, std::pair<int64_t, uint32_t>> tx_index;		// [txid => [file offset, height]] (finalized only)
+	vnx::rocksdb::table<addr_t, std::shared_ptr<const Contract>> contract_cache;		// [addr, contract] (finalized only)
+	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, vnx::Object> mutate_log;		// [[addr, height] => method] (finalized only)
+	vnx::rocksdb::multi_table<addr_t, addr_t> owner_map;								// [owner => contract]
 
-	std::unordered_map<txio_key_t, utxo_t> utxo_map;								// [utxo key => utxo]
-	std::unordered_map<addr_t, std::unordered_set<txio_key_t>> addr_map;			// [addr => utxo keys] (pending + unspent only)
+	std::map<std::pair<addr_t, addr_t>, uint128_t> balance_map;						// [[addr, currency] => balance]
+	vnx::rocksdb::table<std::pair<addr_t, addr_t>, std::pair<uint128, uint32_t>> balance_table;		// [[addr, currency] => [balance, height]]
 
-	std::unordered_map<hash_t, tx_map_t> tx_map;									// [txid => transaction] (executed + pending only)
 	std::unordered_map<hash_t, tx_pool_t> tx_pool;									// [txid => transaction] (non-executed only)
-
-	std::multimap<uint32_t, std::shared_ptr<fork_t>> fork_index;					// [height => fork] (pending only)
 	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;					// [block hash => fork] (pending only)
+	std::multimap<uint32_t, std::shared_ptr<fork_t>> fork_index;					// [height => fork] (pending only)
 	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;					// [height => block header] (finalized only)
 
 	std::multimap<uint32_t, std::shared_ptr<vdf_point_t>> verified_vdfs;			// [height => output]
@@ -335,11 +306,12 @@ private:
 	std::unordered_multimap<hash_t, std::shared_ptr<const ProofResponse>> proof_map;		// [challenge => proof]
 	std::map<std::pair<hash_t, hash_t>, hash_t> created_blocks;								// [[prev hash, proof hash] => hash]
 
-	bool is_replay = true;
 	bool is_synced = false;
-	bool is_db_replay = false;
 	std::shared_ptr<vnx::File> block_chain;
-	std::unordered_map<uint32_t, std::pair<int64_t, hash_t>> block_index;			// [height => [file offset, block hash]]
+	mutable vnx::rocksdb::table<hash_t, uint32_t> hash_index;							// [block hash => height]
+	mutable vnx::rocksdb::table<hash_t, std::pair<int64_t, uint32_t>> tx_index;			// [txid => [file offset, height]] (finalized only)
+	mutable vnx::rocksdb::table<uint32_t, std::pair<int64_t, hash_t>> block_index;		// [height => [file offset, block hash]]
+	mutable vnx::rocksdb::multi_table<uint32_t, hash_t> tx_log;							// [height => txid] (finalized only)
 
 	uint32_t sync_pos = 0;									// current sync height
 	uint32_t sync_retry = 0;

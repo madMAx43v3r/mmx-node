@@ -29,35 +29,35 @@ constexpr uint64_t STACK_SIZE = 16 * SEG_SIZE;
 
 constexpr uint64_t MEM_CONST = SEG_SIZE;
 constexpr uint64_t MEM_EXTERN = MEM_CONST + SEG_SIZE;
-constexpr uint64_t MEM_PARAMS = MEM_EXTERN + SEG_SIZE;
-constexpr uint64_t MEM_STACK = MEM_PARAMS + SEG_SIZE;
+constexpr uint64_t MEM_STACK = MEM_EXTERN + SEG_SIZE;
 constexpr uint64_t MEM_STATIC = MEM_STACK + STACK_SIZE;
 constexpr uint64_t MEM_HEAP = uint64_t(1) << 32;
 
 constexpr uint64_t STATIC_SIZE = MEM_HEAP - MEM_STATIC;
 
-enum globalvar_e : uint32_t {
+enum externvar_e : uint32_t {
+	BALANCE,
+};
 
+enum globalvar_e : uint32_t {
 	HAVE_INIT,
 	NEXT_ALLOC,
-	BALANCE,
 	LOG_HISTORY,
 	SEND_HISTORY,
 	MINT_HISTORY,
 	DYNAMIC_START = 0x1000
-
 };
 
 
 class Engine {
 public:
-	bool finished = false;
-	size_t instr_ptr = 0;
-	std::vector<instr_t> code;
+	struct frame_t {
+		uint32_t instr_ptr;
+		uint32_t stack_ptr;
+	};
 
-	std::map<uint64_t, var_t*> memory;
-	std::map<std::pair<uint64_t, uint64_t>, var_t*> entries;
-	std::map<const var_t*, uint64_t, varptr_less_t> key_map;
+	std::vector<instr_t> code;
+	std::vector<frame_t> call_stack;
 
 	Engine(const addr_t& contract, std::shared_ptr<Storage> storage);
 
@@ -100,24 +100,32 @@ public:
 	var_t* read_key(const uint64_t src, const uint64_t key);
 	var_t& read_key_fail(const uint64_t src, const uint64_t key);
 
-	void copy(const uint64_t dst, const uint64_t src);
-	void clone(const uint64_t dst, const uint64_t src);
-
 	array_t* clone_array(const uint64_t dst, const array_t& src);
 	map_t* clone_map(const uint64_t dst, const map_t& src);
 
+	void copy(const uint64_t dst, const uint64_t src);
+	void clone(const uint64_t dst, const uint64_t src);
+	void get(const uint64_t dst, const uint64_t addr, const uint64_t key, const opflags_e flags);
+	void set(const uint64_t addr, const uint64_t key, const uint64_t src, const opflags_e flags);
+	void erase(const uint64_t addr, const uint64_t key, const opflags_e flags);
+	void concat(const uint64_t dst, const uint64_t src);
+	void memcpy(const uint64_t dst, const uint64_t src, const uint32_t count, const uint32_t offset);
+
+	const frame_t& get_frame() const;
 	uint64_t deref(const uint64_t src);
 
-	void init();
-	void begin();
+	void begin(const uint32_t instr_ptr);
 	void run();
 	void step();
-	void jump(const size_t dst);
+	void jump(const uint32_t instr_ptr);
+	void call(const uint32_t instr_ptr, const uint32_t stack_ptr);
+	bool ret();
 	void exec(const instr_t& instr);
 
 	void reset();
-	void collect();
 	void commit();
+
+	void clear_extern(const uint32_t offset = 0);
 
 	template<typename T>
 	T* read(const uint64_t src, const vartype_e& type);
@@ -128,18 +136,23 @@ private:
 	var_t* assign(var_t*& var, var_t* value);
 	var_t* write(var_t*& var, const uint64_t* dst, const var_t& src);
 
-	bool erase(var_t*& var);
+	bool erase(var_t*& var, const uint64_t* dst = nullptr);
 	bool erase_entry(var_t*& var, const uint64_t dst, const uint64_t key);
 	void erase_entries(const uint64_t dst);
 
-	uint64_t deref_if(const uint64_t src, const bool flag);
-	uint64_t deref_arg(const uint64_t src, const bool flag);
-
 	uint64_t alloc();
+	uint64_t deref_addr(uint32_t src, const bool flag);
+	uint64_t deref_value(uint32_t src, const bool flag);
+
+	void clear_stack(const uint32_t offset = 0);
 
 private:
 	addr_t contract;
 	std::shared_ptr<Storage> storage;
+
+	std::map<uint64_t, var_t*> memory;
+	std::map<std::pair<uint64_t, uint64_t>, var_t*> entries;
+	std::map<const var_t*, uint64_t, varptr_less_t> key_map;
 
 };
 

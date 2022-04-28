@@ -9,8 +9,9 @@
 #define INCLUDE_MMX_WRITE_BYTES_H_
 
 #include <mmx/hash_t.hpp>
-#include <mmx/tx_in_t.hxx>
-#include <mmx/tx_out_t.hxx>
+#include <mmx/txin_t.hxx>
+#include <mmx/txout_t.hxx>
+#include <mmx/txio_key_t.hxx>
 #include <mmx/ulong_fraction_t.hxx>
 
 #include <vnx/Buffer.hpp>
@@ -107,16 +108,24 @@ inline void write_bytes(vnx::OutputBuffer& out, const txio_key_t& value)
 	write_bytes(out, value.index);
 }
 
-inline void write_bytes(vnx::OutputBuffer& out, const tx_in_t& value)
-{
-	write_bytes(out, value.prev);
-}
-
-inline void write_bytes(vnx::OutputBuffer& out, const tx_out_t& value)
+inline void write_bytes(vnx::OutputBuffer& out, const txio_t& value)
 {
 	write_bytes(out, value.address);
 	write_bytes(out, value.contract);
 	write_bytes(out, value.amount);
+}
+
+inline void write_bytes(vnx::OutputBuffer& out, const txin_t& value)
+{
+	write_bytes(out, (const txio_t&)value);
+}
+
+inline void write_bytes(vnx::OutputBuffer& out, const txout_t& value)
+{
+	write_bytes(out, value.address);
+	write_bytes(out, value.contract);
+	write_bytes(out, value.amount);
+	write_bytes(out, value.sender);
 }
 
 inline void write_bytes(vnx::OutputBuffer& out, const ulong_fraction_t& value) {

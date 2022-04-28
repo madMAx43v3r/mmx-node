@@ -1,13 +1,15 @@
 package mmx.operation;
 
-import mmx.addr_t;
+import mmx.hash_t;
+import mmx.txout_t;
 
 class Deposit extends Execute {
 	
-	addr_t sender;
+	txout_t input;
 	
-	addr_t currency;
 	
-	ulong amount;
+	bool is_valid() const;
+	
+	hash_t calc_hash() const;
 	
 }

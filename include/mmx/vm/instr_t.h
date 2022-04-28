@@ -18,12 +18,13 @@ namespace vm {
 enum opcode_e : uint8_t {
 
 	NOP,
-	RET,
 	CLR,		// dst
 	COPY,		// dst, src
 	CLONE,		// dst, src
 	JUMP,		// dst
 	JUMPI,		// dst, cond
+	CALL,		// dst, stack_ptr
+	RET,
 
 	ADD,		// dst, lhs, rhs
 	SUB,		// dst, lhs, rhs
@@ -70,12 +71,12 @@ enum opcode_e : uint8_t {
 
 enum opflags_e : uint16_t {
 
-	REF_A = 1,
-	REF_B = 2,
-	REF_C = 4,
-	REF_D = 8,
-	HARD_FAIL = 16,
-	CATCH_OVERFLOW = 32,
+	REF_A = (1 << 0),
+	REF_B = (1 << 1),
+	REF_C = (1 << 2),
+	REF_D = (1 << 3),
+	HARD_FAIL = (1 << 4),
+	CATCH_OVERFLOW = (1 << 5),
 
 };
 

@@ -57,11 +57,10 @@ uint128_t calc_proof_score(	std::shared_ptr<const ChainParams> params,
 inline
 uint128_t calc_virtual_score(	std::shared_ptr<const ChainParams> params,
 								const hash_t& challenge, const hash_t& plot_id,
-								const uint64_t balance, const uint64_t space_diff)
+								const uint128_t balance, const uint64_t space_diff)
 {
 	uint256_t divider = (uint256_1 << (256 - params->score_bits)) / (uint128_t(space_diff) * params->virtual_space_constant);
-	divider *= uint128_t(balance);
-	return hash_t(plot_id + challenge).to_uint256() / divider;
+	return hash_t(plot_id + challenge).to_uint256() / (divider * balance);
 }
 
 inline
@@ -133,6 +132,31 @@ double amount_value(uint128_t amount, const int decimals)
 	}
 	return double(amount.lower()) * pow(10, i - decimals);
 }
+
+struct balance_cache_t {
+
+	std::map<std::pair<addr_t, addr_t>, uint128_t> balance;
+	const std::map<std::pair<addr_t, addr_t>, uint128_t>* source = nullptr;
+
+	balance_cache_t(const balance_cache_t&) = default;
+	balance_cache_t(const std::map<std::pair<addr_t, addr_t>, uint128_t>& source) : source(&source) {}
+	balance_cache_t& operator=(const balance_cache_t&) = default;
+
+	uint128_t* get(const addr_t& address, const addr_t& contract)
+	{
+		const auto key = std::make_pair(address, contract);
+		auto iter = balance.find(key);
+		if(iter == balance.end()) {
+			auto iter2 = source->find(key);
+			if(iter2 != source->end()) {
+				iter = balance.insert(*iter2).first;
+			} else {
+				return nullptr;
+			}
+		}
+		return &iter->second;
+	}
+};
 
 
 } // mmx

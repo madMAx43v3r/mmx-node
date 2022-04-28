@@ -33,7 +33,7 @@ add_subdirectory(vnx-addons)
 add_subdirectory(vnx-rocksdb)
 add_subdirectory(libbech32)
 add_subdirectory(bls-signatures)
-add_subdirectory(exchange)
+#add_subdirectory(exchange)
 
 find_package(OpenCL)
 find_package(Threads REQUIRED)
@@ -100,7 +100,6 @@ add_library(mmx_iface SHARED
 	src/contract/Offer.cpp
 	src/contract/Token.cpp
 	src/contract/TokenBase.cpp
-	src/contract/Staking.cpp
 	src/contract/TimeLock.cpp
 	src/contract/PuzzleTimeLock.cpp
 	src/contract/MutableRelay.cpp
@@ -114,6 +113,7 @@ add_library(mmx_iface SHARED
 	src/operation/Mint.cpp
 	src/operation/Spend.cpp
 	src/operation/Mutate.cpp
+	src/operation/Deposit.cpp
 	src/operation/Vote.cpp
 )
 
@@ -176,7 +176,7 @@ endif()
 
 target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_addons vnx_base)
 
-target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_iface mmx_exchange)
+target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_iface)
 
 if(NOT MSVC)
 	target_link_libraries(mmx_modules OpenMP::OpenMP_CXX)
@@ -201,8 +201,8 @@ add_executable(mmx_timelord src/mmx_timelord.cpp)
 add_executable(mmx_harvester src/mmx_harvester.cpp)
 add_executable(mmx_timelord_rewards src/mmx_timelord_rewards.cpp)
 
-target_link_libraries(mmx mmx_iface mmx_exchange)
-target_link_libraries(mmx_node mmx_modules mmx_exchange)
+target_link_libraries(mmx mmx_iface)
+target_link_libraries(mmx_node mmx_modules)
 target_link_libraries(mmx_farmer mmx_modules)
 target_link_libraries(mmx_wallet mmx_modules)
 target_link_libraries(mmx_timelord mmx_modules)

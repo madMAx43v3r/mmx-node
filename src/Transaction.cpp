@@ -47,13 +47,9 @@ vnx::bool_t Transaction::is_valid() const
 			return false;
 		}
 	}
-	if(is_extendable && deploy) {
-		return false;
-	}
-	if(parent && !parent->is_valid()) {
-		return false;
-	}
-	return version == 0 && fee_ratio >= 1024 && calc_hash() == id;
+	return version == 0 && fee_ratio >= 1024
+			&& (!parent || parent->is_valid())
+			&& calc_hash() == id;
 }
 
 hash_t Transaction::calc_hash() const
@@ -87,26 +83,23 @@ hash_t Transaction::calc_hash() const
 	return hash_t(buffer);
 }
 
-void Transaction::add_output(const addr_t& currency, const addr_t& address, const uint64_t& amount, const uint32_t& split)
+void Transaction::add_input(const addr_t& currency, const addr_t& address, const uint64_t& amount)
 {
-	if(split == 0) {
-		throw std::logic_error("split == 0");
-	}
-	if(split > 1000000) {
-		throw std::logic_error("split > 1000000");
-	}
-	if(amount < split) {
-		throw std::logic_error("amount < split");
-	}
-	uint64_t left = amount;
-	for(uint32_t i = 0; i < split; ++i) {
-		tx_out_t out;
-		out.address = address;
-		out.contract = currency;
-		out.amount = i + 1 < split ? amount / split : left;
-		left -= out.amount;
-		outputs.push_back(out);
-	}
+	txin_t in;
+	in.address = address;
+	in.contract = currency;
+	in.amount = amount;
+	inputs.push_back(in);
+}
+
+void Transaction::add_output(const addr_t& currency, const addr_t& address, const uint64_t& amount, const vnx::optional<addr_t>& sender)
+{
+	txout_t out;
+	out.address = address;
+	out.contract = currency;
+	out.amount = amount;
+	out.sender = sender;
+	outputs.push_back(out);
 }
 
 std::shared_ptr<const Solution> Transaction::get_solution(const uint32_t& index) const
@@ -117,7 +110,7 @@ std::shared_ptr<const Solution> Transaction::get_solution(const uint32_t& index)
 	return nullptr;
 }
 
-tx_out_t Transaction::get_output(const uint32_t& index) const
+txout_t Transaction::get_output(const uint32_t& index) const
 {
 	if(index < outputs.size()) {
 		return outputs[index];
@@ -131,27 +124,21 @@ tx_out_t Transaction::get_output(const uint32_t& index) const
 	throw std::logic_error("no such output");
 }
 
-std::vector<tx_out_t> Transaction::get_outputs() const
+std::vector<txout_t> Transaction::get_outputs() const
 {
 	auto res = outputs;
 	res.insert(res.end(), exec_outputs.begin(), exec_outputs.end());
 	return res;
 }
 
-std::vector<tx_out_t> Transaction::get_all_outputs() const
+std::vector<txout_t> Transaction::get_all_outputs() const
 {
-	if(parent) {
-		return get_combined()->get_outputs();
-	}
-	return get_outputs();
+	return parent ? get_combined()->get_outputs() : get_outputs();
 }
 
-std::vector<tx_in_t> Transaction::get_all_inputs() const
+std::vector<txin_t> Transaction::get_all_inputs() const
 {
-	if(parent) {
-		return get_combined()->inputs;
-	}
-	return inputs;
+	return parent ? get_combined()->inputs : inputs;
 }
 
 uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
@@ -164,7 +151,7 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 	cost += outputs.size() * params->min_txfee_io;
 
 	for(const auto& in : inputs) {
-		if(in.flags & tx_in_t::IS_EXEC) {
+		if(in.flags & txin_t::IS_EXEC) {
 			cost += params->min_txfee_exec;
 		}
 	}
@@ -241,6 +228,7 @@ std::shared_ptr<const Transaction> Transaction::get_combined() const
 	if(parent) {
 		combine(out, *parent);
 	}
+	out->parent = nullptr;
 	return out;
 }
 
