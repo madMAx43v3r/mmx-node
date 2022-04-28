@@ -487,7 +487,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 	balance_cache_t balance_cache(balance_map);
 
 	// select final set of transactions
-	for(const auto& entry : tx_list)
+	for(auto& entry : tx_list)
 	{
 		if(entry.invalid) {
 			continue;
@@ -509,6 +509,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 				if(balance || in.amount <= *balance) {
 					*balance -= in.amount;
 				} else {
+					entry.invalid = true;
 					passed = false;
 					break;
 				}
