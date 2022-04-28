@@ -14,6 +14,7 @@
 #include <mmx/RouterAsyncClient.hxx>
 #include <mmx/TimeLordAsyncClient.hxx>
 #include <mmx/operation/Mutate.hxx>
+#include <mmx/txio_key_t.hpp>
 #include <mmx/txio_entry_t.hpp>
 #include <mmx/txout_entry_t.hpp>
 #include <mmx/OCL_VDF.h>
@@ -235,7 +236,7 @@ private:
 				std::shared_ptr<const Transaction> tx,
 				std::unordered_set<addr_t>& addr_set,
 				std::unordered_set<hash_t>& revoke_set,
-				std::unordered_set<std::pair<addr_t, addr_t>>& balance_set) noexcept;
+				std::set<std::pair<addr_t, addr_t>>& balance_set) noexcept;
 
 	bool revert() noexcept;
 

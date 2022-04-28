@@ -67,7 +67,7 @@ void Node::main()
 	vnx::Directory(database_path).create();
 	{
 		::rocksdb::Options options;
-		options.max_open_files = 16;
+		options.max_open_files = 8;
 		options.keep_log_file_num = 3;
 		options.max_manifest_file_size = 64 * 1024 * 1024;
 		options.OptimizeForSmallDb();
@@ -535,7 +535,7 @@ std::map<addr_t, uint128> Node::get_balances(const addr_t& address, const uint32
 
 std::map<addr_t, uint128> Node::get_total_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const
 {
-	std::map<addr_t, balance_t> totals;
+	std::map<addr_t, uint128> totals;
 	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
 		const auto begin = balance_map.lower_bound(std::make_pair(address, addr_t()));
 		const auto end = balance_map.upper_bound(std::make_pair(address, addr_t::ones()));
@@ -1018,11 +1018,9 @@ void Node::apply(std::shared_ptr<const Block> block, int64_t* file_offset) noexc
 	if(block->prev != state_hash) {
 		return;
 	}
-	const auto time_begin = vnx::get_wall_time_millis();
-
 	std::unordered_set<addr_t> addr_set;
 	std::unordered_set<hash_t> revoke_set;
-	std::unordered_set<std::pair<addr_t, addr_t>> balance_set;
+	std::set<std::pair<addr_t, addr_t>> balance_set;
 
 	for(const auto& tx : block->get_all_transactions()) {
 		apply(block, tx, addr_set, revoke_set, balance_set);
@@ -1041,7 +1039,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 					std::shared_ptr<const Transaction> tx,
 					std::unordered_set<addr_t>& addr_set,
 					std::unordered_set<hash_t>& revoke_set,
-					std::unordered_set<std::pair<addr_t, addr_t>>& balance_set) noexcept
+					std::set<std::pair<addr_t, addr_t>>& balance_set) noexcept
 {
 	if(tx->parent) {
 		apply(block, tx->parent, addr_set, revoke_set, balance_set);
@@ -1121,7 +1119,7 @@ bool Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noe
 	std::vector<addr_t> addr_list;
 	addr_log.find(height, addr_list);
 
-	std::unordered_set<std::pair<addr_t, addr_t>> balance_set;
+	std::set<std::pair<addr_t, addr_t>> balance_set;
 	for(const auto& address : addr_list) {
 		const auto log_key = std::make_pair(address, height);
 		{
@@ -1148,7 +1146,7 @@ bool Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noe
 	{
 		std::set<addr_t> affected;
 		for(const auto& addr : addr_list) {
-			if(auto count = mutate_log.erase_range(std::make_pair(addr, height), std::make_pair(addr, -1))) {
+			if(mutate_log.erase_range(std::make_pair(addr, height), std::make_pair(addr, -1))) {
 				affected.insert(addr);
 			}
 		}
@@ -1203,8 +1201,12 @@ bool Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noe
 	block_index.erase(height);
 
 	if(block) {
-		for(const auto& tx : block->tx_list) {
-			tx_pool[tx->id] = {true, tx};
+		for(const auto& base : block->tx_list) {
+			if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
+				auto& entry = tx_pool[tx->id];
+				entry.did_validate = true;
+				entry.tx = tx;
+			}
 		}
 		state_hash = block->prev;
 	}
@@ -1391,7 +1393,6 @@ std::shared_ptr<const BlockHeader> Node::read_block(vnx::File& file, bool full_b
 				auto block = Block::create();
 				block->BlockHeader::operator=(*header);
 				while(true) {
-					const auto offset = in.get_input_pos();
 					if(auto value = vnx::read(in)) {
 						if(auto tx = std::dynamic_pointer_cast<TransactionBase>(value)) {
 							block->tx_list.push_back(tx);

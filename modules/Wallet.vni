@@ -35,9 +35,6 @@ module Wallet implements vnx.addons.HttpComponent {
 	Transaction* execute(uint index, addr_t address, vnx.Object method, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
-	Transaction* split(uint index, ulong max_amount, addr_t currency, spend_options_t options) const;
-	
-	@Permission(permission_e.SPENDING)
 	Transaction* complete(uint index, Transaction* tx, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
@@ -48,11 +45,11 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	void send_off(uint index, Transaction* tx) const;
 	
-	void mark_spent(uint index, vector<txio_key_t> keys);
+	void mark_spent(uint index, map<pair<addr_t, addr_t>, uint128> amounts);
 	
-	void reserve(uint index, vector<txio_key_t> keys);
+	void reserve(uint index, map<pair<addr_t, addr_t>, uint128> amounts);
 	
-	void release(uint index, vector<txio_key_t> keys);
+	void release(uint index, map<pair<addr_t, addr_t>, uint128> amounts);
 	
 	void release_all();
 	
@@ -63,6 +60,8 @@ module Wallet implements vnx.addons.HttpComponent {
 	vector<tx_entry_t> get_history(uint index, int since) const;
 	
 	vector<tx_log_entry_t> get_tx_history(uint index, int limit = -1, uint offset) const;
+	
+	vector<txin_t> gather_inputs_for(uint index, ulong amount, addr_t currency, spend_options_t options) const;
 	
 	balance_t get_balance(uint index, addr_t currency, uint min_confirm = 0) const;
 	

@@ -155,60 +155,6 @@ Wallet::mint(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_a
 }
 
 std::shared_ptr<const Transaction>
-Wallet::split(const uint32_t& index, const uint64_t& max_amount, const addr_t& currency, const spend_options_t& options) const
-{
-	if(max_amount == 0) {
-		throw std::logic_error("invalid max_amount");
-	}
-	const auto wallet = get_wallet(index);
-	const std::unordered_set<txio_key_t> exclude(options.exclude.begin(), options.exclude.end());
-
-	auto tx = Transaction::create();
-	tx->note = tx_note_e::SPLIT;
-
-	uint128_t total = 0;
-	for(const auto& entry : get_utxo_list_for(index, currency, options.min_confirm)) {
-		const auto& utxo = entry.output;
-		if(utxo.amount > max_amount && wallet->is_spendable(entry.key) && !exclude.count(entry.key)) {
-			tx_in_t in;
-			in.prev = entry.key;
-			tx->inputs.push_back(in);
-			total += utxo.amount;
-		}
-	}
-	if(!total) {
-		return nullptr;
-	}
-	const auto dst_addr = wallet->get_address(0);
-	// reserve some MMX for TX fee
-	const auto num_split = (total - (currency == addr_t() ? std::min<uint64_t>(1000000, total) : 0)) / max_amount;
-
-	auto left = total;
-	for(size_t i = 0; i < num_split; ++i) {
-		tx_out_t out;
-		out.contract = currency;
-		out.address = dst_addr;
-		out.amount = max_amount;
-		tx->outputs.push_back(out);
-		left -= out.amount;
-	}
-	if(left && currency != addr_t()) {
-		tx_out_t out;
-		out.contract = currency;
-		out.address = dst_addr;
-		out.amount = left;
-		tx->outputs.push_back(out);
-		left = 0;
-	}
-	auto signed_tx = sign_off(index, tx, true, {});
-	if(tx->is_signed()) {
-		send_off(index, signed_tx);
-		log(INFO) << "Split " << total << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
-	}
-	return signed_tx;
-}
-
-std::shared_ptr<const Transaction>
 Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, const spend_options_t& options) const
 {
 	if(!contract) {
@@ -251,9 +197,9 @@ Wallet::execute(const uint32_t& index, const addr_t& address, const vnx::Object&
 		throw std::logic_error("contract not owned by wallet");
 	}
 	auto options_ = options;
-	options_.owner_map.emplace_back(address, *owner);
+	options_.owner_map.emplace(address, *owner);
 
-	wallet->complete(tx, wallet->utxo_cache, options_);
+	wallet->complete(tx, options_);
 	if(tx->is_signed()) {
 		send_off(index, tx);
 		log(INFO) << "Executed " << method["__type"] << " on [" << address << "] with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
@@ -271,7 +217,7 @@ Wallet::complete(const uint32_t& index, std::shared_ptr<const Transaction> tx, c
 	update_cache(index);
 
 	auto copy = vnx::clone(tx);
-	wallet->complete(copy, wallet->utxo_cache, options);
+	wallet->complete(copy, options);
 	return copy;
 }
 
@@ -285,52 +231,11 @@ Wallet::sign_off(	const uint32_t& index, std::shared_ptr<const Transaction> tx,
 	const auto wallet = get_wallet(index);
 	update_cache(index);
 
-	const std::unordered_map<txio_key_t, utxo_t> utxo_map(options.utxo_map.begin(), options.utxo_map.end());
-
-	int64_t native_change = 0;
-	std::unordered_set<txio_key_t> spent_keys;
-	for(const auto& in : tx->inputs) {
-		auto iter = utxo_map.find(in.prev);
-		if(iter != utxo_map.end()) {
-			const auto& utxo = iter->second;
-			if(utxo.contract == addr_t()) {
-				native_change += utxo.amount;
-			}
-		}
-		spent_keys.insert(in.prev);
-	}
-	std::unordered_map<txio_key_t, utxo_t> spent_map;
-	for(const auto& entry : wallet->utxo_cache) {
-		if(spent_keys.erase(entry.key)) {
-			const auto& utxo = entry.output;
-			if(utxo.contract == addr_t() && !utxo_map.count(entry.key)) {
-				native_change += utxo.amount;
-			}
-			spent_map[entry.key] = utxo;
-		}
-		if(spent_keys.empty()) {
-			break;
-		}
-	}
-	for(const auto& out : tx->outputs) {
-		if(out.contract == addr_t()) {
-			native_change -= out.amount;
-		}
-	}
-
 	auto copy = vnx::clone(tx);
 	if(cover_fee) {
-		for(const auto& key : spent_keys) {
-			if(!utxo_map.count(key)) {
-				throw std::logic_error("unknown input");
-			}
-		}
-		if(native_change < 0) {
-			throw std::logic_error("negative change");
-		}
-		wallet->gather_fee(copy, spent_map, options, native_change);
+		wallet->gather_fee(copy, 0, options);
 	}
-	wallet->sign_off(copy, spent_map, options);
+	wallet->sign_off(copy, options);
 	return copy;
 }
 
@@ -356,34 +261,29 @@ void Wallet::send_off(const uint32_t& index, std::shared_ptr<const Transaction> 
 	}
 }
 
-void Wallet::mark_spent(const uint32_t& index, const std::vector<txio_key_t>& keys)
+void Wallet::mark_spent(const uint32_t& index, const std::map<std::pair<addr_t, addr_t>, uint128>& amounts)
 {
 	const auto wallet = get_wallet(index);
-	for(const auto& key : keys) {
-		wallet->reserved_set.erase(key);
-	}
-	wallet->spent_set.insert(keys.begin(), keys.end());
+	// TODO
 }
 
-void Wallet::reserve(const uint32_t& index, const std::vector<txio_key_t>& keys)
+void Wallet::reserve(const uint32_t& index, const std::map<std::pair<addr_t, addr_t>, uint128>& amounts)
 {
 	const auto wallet = get_wallet(index);
-	wallet->reserved_set.insert(keys.begin(), keys.end());
+	// TODO
 }
 
-void Wallet::release(const uint32_t& index, const std::vector<txio_key_t>& keys)
+void Wallet::release(const uint32_t& index, const std::map<std::pair<addr_t, addr_t>, uint128>& amounts)
 {
 	const auto wallet = get_wallet(index);
-	for(const auto& key : keys) {
-		wallet->reserved_set.erase(key);
-	}
+	// TODO
 }
 
 void Wallet::release_all()
 {
 	for(auto wallet : wallets) {
 		if(wallet) {
-			wallet->reserved_set.clear();
+			wallet->reserved_map.clear();
 		}
 	}
 }
@@ -400,88 +300,32 @@ void Wallet::update_cache(const uint32_t& index) const
 	const auto wallet = get_wallet(index);
 	const auto now = vnx::get_wall_time_millis();
 
-	if(!wallet->last_utxo_update || now - wallet->last_utxo_update > cache_timeout_ms)
+	if(now - wallet->last_update > cache_timeout_ms)
 	{
 		const auto height = node->get_height();
-		const auto all_utxo = node->get_utxo_list(wallet->get_all_addresses(), 1);
-		wallet->update_cache(all_utxo, height);
-		wallet->last_utxo_update = now;
-
-		log(DEBUG) << "Updated cache: " << wallet->utxo_cache.size() << " utxo, " << wallet->utxo_change_cache.size() << " pending change";
+		const auto balance = node->get_all_balances(wallet->get_all_addresses());
+		const auto history = node->get_history(wallet->get_all_addresses(),
+				wallet->height - std::min(params->commit_delay, wallet->height));
+		wallet->update_cache(balance, history, height);
+		wallet->last_update = now;
 	}
 }
 
-std::vector<utxo_entry_t> Wallet::get_utxo_list(const uint32_t& index, const uint32_t& min_confirm) const
+std::vector<txin_t> Wallet::gather_inputs_for(	const uint32_t& index, const uint64_t& amount,
+												const addr_t& currency, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
 	update_cache(index);
 
-	if(min_confirm == 0) {
-		return wallet->utxo_cache;
-	}
-	std::vector<utxo_entry_t> list;
-	for(const auto& entry : wallet->utxo_cache) {
-		const auto& utxo = entry.output;
-		if(utxo.height <= wallet->height && (wallet->height - utxo.height) + 1 >= min_confirm) {
-			list.push_back(entry);
-		}
-	}
-	return list;
-}
-
-std::vector<utxo_entry_t> Wallet::get_utxo_list_for(const uint32_t& index, const addr_t& currency, const uint32_t& min_confirm) const
-{
-	std::vector<utxo_entry_t> res;
-	for(const auto& entry : get_utxo_list(index, min_confirm)) {
-		if(entry.output.contract == currency) {
-			res.push_back(entry);
-		}
-	}
-	return res;
-}
-
-std::vector<stxo_entry_t> Wallet::get_stxo_list(const uint32_t& index) const
-{
-	const auto wallet = get_wallet(index);
-	return node->get_stxo_list(wallet->get_all_addresses());
-}
-
-std::vector<stxo_entry_t> Wallet::get_stxo_list_for(const uint32_t& index, const addr_t& currency) const
-{
-	std::vector<stxo_entry_t> res;
-	for(const auto& entry : get_stxo_list(index)) {
-		if(entry.output.contract == currency) {
-			res.push_back(entry);
-		}
-	}
-	return res;
-}
-
-std::vector<utxo_entry_t> Wallet::gather_utxos_for(	const uint32_t& index, const uint64_t& amount,
-													const addr_t& currency, const spend_options_t& options) const
-{
-	const auto wallet = get_wallet(index);
-	get_utxo_list(index);	// update utxo_cache
-
 	auto tx = Transaction::create();
-
-	std::vector<utxo_entry_t> res;
-	std::unordered_map<txio_key_t, utxo_t> spent_map;
-	wallet->gather_inputs(tx, wallet->utxo_cache, spent_map, amount, currency, options);
-
-	for(const auto& in : tx->inputs) {
-		utxo_entry_t entry;
-		entry.key = in.prev;
-		entry.output = spent_map[in.prev];
-		res.push_back(entry);
-	}
-	return res;
+	wallet->gather_inputs(tx, amount, currency, options);
+	return tx->inputs;
 }
 
 std::vector<tx_entry_t> Wallet::get_history(const uint32_t& index, const int32_t& since) const
 {
 	const auto wallet = get_wallet(index);
-	return node->get_history_for(wallet->get_all_addresses(), since);
+	return node->get_history(wallet->get_all_addresses(), since);
 }
 
 std::vector<tx_log_entry_t> Wallet::get_tx_history(const uint32_t& index, const int32_t& limit_, const uint32_t& offset) const
@@ -515,17 +359,22 @@ balance_t Wallet::get_balance(const uint32_t& index, const addr_t& currency, con
 std::map<addr_t, balance_t> Wallet::get_balances(const uint32_t& index, const uint32_t& min_confirm) const
 {
 	const auto wallet = get_wallet(index);
+	update_cache(index);
 
 	std::map<addr_t, balance_t> amounts;
-	for(const auto& entry : get_utxo_list(index, min_confirm)) {
-		const auto& utxo = entry.output;
-		auto& out = amounts[utxo.contract];
-		if(wallet->reserved_set.count(entry.key)) {
-			out.reserved += utxo.amount;
-		} else if(!wallet->spent_set.count(entry.key) && utxo.height <= wallet->height) {
-			out.spendable += utxo.amount;
+	for(const auto& entry : wallet->balance_map) {
+		amounts[entry.first.second].spendable += entry.second;
+	}
+	for(const auto& entry : wallet->reserved_map) {
+		amounts[entry.first.second].reserved += entry.second;
+	}
+	for(const auto& entry : wallet->pending_map) {
+		for(const auto& entry2 : entry.second) {
+			amounts[entry2.first.second].reserved += entry2.second;
 		}
-		out.total += utxo.amount;
+	}
+	for(auto& entry : amounts) {
+		entry.second.total = entry.second.spendable + entry.second.reserved + entry.second.locked;
 	}
 	return amounts;
 }
@@ -561,16 +410,15 @@ address_info_t Wallet::get_address_info(const uint32_t& index, const uint32_t& o
 {
 	address_info_t info;
 	info.address = get_address(index, offset);
-	const auto utxo_list = node->get_utxo_list({info.address});
-	const auto stxo_list = node->get_stxo_list({info.address});
-	info.utxo_count = utxo_list.size();
-	info.stxo_count = stxo_list.size();
-	for(const auto& entry : utxo_list) {
-		info.last_receive_height = std::max(info.last_receive_height, entry.output.height);
-	}
-	for(const auto& entry : stxo_list) {
-		info.last_receive_height = std::max(info.last_receive_height, entry.output.height);
-		info.last_spend_height = std::max(info.last_spend_height, entry.spent_height);
+	for(const auto& entry : node->get_history({info.address})) {
+		switch(entry.type) {
+			case tx_type_e::REWARD:
+			case tx_type_e::RECEIVE:
+				info.last_receive_height = std::max(info.last_receive_height, entry.height);
+				break;
+			case tx_type_e::SPEND:
+				info.last_spend_height = std::max(info.last_spend_height, entry.height);
+		}
 	}
 	return info;
 }
@@ -578,25 +426,22 @@ address_info_t Wallet::get_address_info(const uint32_t& index, const uint32_t& o
 std::vector<address_info_t> Wallet::get_all_address_infos(const int32_t& index) const
 {
 	const auto addresses = get_all_addresses(index);
-	const auto utxo_list = node->get_utxo_list(addresses);
-	const auto stxo_list = node->get_stxo_list(addresses);
-
 	std::unordered_map<addr_t, size_t> index_map;
 	std::vector<address_info_t> result(addresses.size());
 	for(size_t i = 0; i < addresses.size(); ++i) {
 		index_map[addresses[i]] = i;
 		result[i].address = addresses[i];
 	}
-	for(const auto& entry : utxo_list) {
-		auto& info = result[index_map[entry.output.address]];
-		info.utxo_count++;
-		info.last_receive_height = std::max(info.last_receive_height, entry.output.height);
-	}
-	for(const auto& entry : stxo_list) {
-		auto& info = result[index_map[entry.output.address]];
-		info.stxo_count++;
-		info.last_receive_height = std::max(info.last_receive_height, entry.output.height);
-		info.last_spend_height = std::max(info.last_spend_height, entry.spent_height);
+	for(const auto& entry : node->get_history(addresses)) {
+		auto& info = result[index_map[entry.address]];
+		switch(entry.type) {
+			case tx_type_e::REWARD:
+			case tx_type_e::RECEIVE:
+				info.last_receive_height = std::max(info.last_receive_height, entry.height);
+				break;
+			case tx_type_e::SPEND:
+				info.last_spend_height = std::max(info.last_spend_height, entry.height);
+		}
 	}
 	return result;
 }
