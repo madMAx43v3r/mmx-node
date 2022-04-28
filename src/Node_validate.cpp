@@ -10,6 +10,7 @@
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/operation/Spend.hxx>
 #include <mmx/operation/Mutate.hxx>
+#include <mmx/operation/Revoke.hxx>
 #include <mmx/utils.h>
 
 #include <vnx/vnx.h>
@@ -249,6 +250,12 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 		}
 		if(!contract) {
 			throw std::logic_error("no such contract");
+		}
+		if(auto revoke = std::dynamic_pointer_cast<const operation::Revoke>(op))
+		{
+			if(tx_index.find(revoke->txid)) {
+				throw std::logic_error("tx cannot be revoked anymore");
+			}
 		}
 		if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op))
 		{
