@@ -43,6 +43,9 @@ void TimeLord::main()
 		log(WARN) << "Failed to get reward address from wallet: " << ex.what();
 	}
 	if(reward_addr) {
+		if(*reward_addr == addr_t()) {
+			throw std::logic_error("reward_addr == zero");
+		}
 		log(INFO) << "Reward address: " << reward_addr->to_string();
 	} else {
 		log(WARN) << "No reward address set!";

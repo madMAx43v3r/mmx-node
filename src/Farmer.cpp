@@ -27,6 +27,9 @@ void Farmer::init()
 void Farmer::main()
 {
 	if(reward_addr) {
+		if(*reward_addr == addr_t()) {
+			throw std::logic_error("reward_addr == zero");
+		}
 		log(INFO) << "Reward address: " << reward_addr->to_string();
 	}
 	wallet = std::make_shared<WalletAsyncClient>(wallet_server);
