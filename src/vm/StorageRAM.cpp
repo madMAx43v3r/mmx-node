@@ -104,15 +104,13 @@ void StorageRAM::erase_entries(const addr_t& contract, const uint64_t dst)
 void StorageRAM::erase(const addr_t& contract, var_t* var)
 {
 	switch(var->type) {
-		case vartype_e::REF: {
-			const auto address = ((const ref_t*)var)->address;
-			if(auto var = read(contract, address)) {
+		case vartype_e::REF:
+			if(auto var = read(contract, ((const ref_t*)var)->address)) {
 				if(var->unref()) {
 					erase(contract, var);
 				}
 			}
 			break;
-		}
 		case vartype_e::ARRAY:
 			erase_entries(contract, ((const array_t*)var)->address);
 			break;
