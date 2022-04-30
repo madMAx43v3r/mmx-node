@@ -298,6 +298,9 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const Con
 		if(!tx->exec_outputs.empty()) {
 			throw std::logic_error("coin base cannot have execution outputs");
 		}
+		if(tx->note != tx_note_e::REWARD) {
+			throw std::logic_error("invalid coin base note");
+		}
 		if(!tx->salt || *tx->salt != base->vdf_output[0]) {
 			throw std::logic_error("invalid coin base salt");
 		}
@@ -315,6 +318,10 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const Con
 		}
 		if(tx->is_extendable) {
 			throw std::logic_error("coin base cannot be extendable");
+		}
+	} else {
+		if(tx->note == tx_note_e::REWARD) {
+			throw std::logic_error("invalid note");
 		}
 	}
 	const auto tx_cost = tx->calc_cost(params);
