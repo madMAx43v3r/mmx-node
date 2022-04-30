@@ -18,6 +18,18 @@
 namespace mmx {
 namespace vm {
 
+constexpr uint64_t SEG_SIZE = 0x4000000;
+constexpr uint64_t STACK_SIZE = 16 * SEG_SIZE;
+
+constexpr uint64_t MEM_CONST = SEG_SIZE;
+constexpr uint64_t MEM_EXTERN = MEM_CONST + SEG_SIZE;
+constexpr uint64_t MEM_STACK = MEM_EXTERN + SEG_SIZE;
+constexpr uint64_t MEM_STATIC = MEM_STACK + STACK_SIZE;
+constexpr uint64_t MEM_HEAP = uint64_t(1) << 32;
+
+constexpr uint64_t STATIC_SIZE = MEM_HEAP - MEM_STATIC;
+
+
 enum class vartype_e : uint8_t {
 
 	NIL,

@@ -319,16 +319,12 @@ void Engine::pop_back(const uint64_t dst, const uint64_t& src)
 
 array_t* Engine::clone_array(const uint64_t dst, const array_t& src)
 {
-	auto var = new array_t();
-	try {
-		var->address = dst;
-		for(uint64_t i = 0; i < src.size; ++i) {
-			write_entry(dst, i, read_entry_fail(src.address, i));
-		}
-		var->size = src.size;
-	} catch(...) {
-		delete var; throw;
+	for(uint64_t i = 0; i < src.size; ++i) {
+		write_entry(dst, i, read_entry_fail(src.address, i));
 	}
+	auto var = new array_t();
+	var->address = dst;
+	var->size = src.size;
 	return var;
 }
 
