@@ -34,12 +34,12 @@ enum class vartype_e : uint8_t {
 
 enum varflags_e : uint8_t {
 
-	DIRTY = 1,
-	DIRTY_REF = 2,
-	CONST = 4,
-	STORED = 8,
-	DELETED = 16,
-	KEY = 32,
+	DIRTY = (1 << 0),
+	DIRTY_REF = (1 << 1),
+	CONST = (1 << 2),
+	STORED = (1 << 3),
+	DELETED = (1 << 4),
+	KEY = (1 << 5),
 
 };
 
@@ -61,12 +61,13 @@ struct var_t {
 		ref_count++;
 		flags |= varflags_e::DIRTY_REF;
 	}
-	void unref() {
+	bool unref() {
 		if(!ref_count) {
 			throw std::logic_error("unref underflow");
 		}
 		ref_count--;
 		flags |= varflags_e::DIRTY_REF;
+		return ref_count == 0;
 	}
 	var_t* pin() {
 		if(!ref_count) {
@@ -213,22 +214,21 @@ struct varptr_t {
 			ptr->addref();
 		}
 	}
-	varptr_t(const varptr_t& lhs) : varptr_t(lhs.ptr) {}
+	varptr_t(const varptr_t& other) : varptr_t(other.ptr) {}
 
 	~varptr_t() {
 		if(ptr) {
-			ptr->unref();
-			if(!ptr->ref_count) {
+			if(ptr->unref()) {
 				delete ptr;
 			}
 			ptr = nullptr;
 		}
 	}
-	varptr_t& operator=(const varptr_t& lhs) {
+	varptr_t& operator=(const varptr_t& other) {
 		if(ptr) {
 			ptr->unref();
 		}
-		ptr = lhs.ptr;
+		ptr = other.ptr;
 		if(ptr) {
 			ptr->addref();
 		}

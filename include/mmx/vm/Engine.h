@@ -36,7 +36,10 @@ constexpr uint64_t MEM_HEAP = uint64_t(1) << 32;
 constexpr uint64_t STATIC_SIZE = MEM_HEAP - MEM_STATIC;
 
 enum externvar_e : uint32_t {
+	HEIGHT,
+	TXID,
 	BALANCE,
+	DEPOSIT,
 };
 
 enum globalvar_e : uint32_t {
@@ -62,8 +65,10 @@ public:
 
 	Engine(const addr_t& contract, std::shared_ptr<Storage> storage);
 
+	virtual ~Engine();
+
 	void addref(const uint64_t dst);
-	void unref(const uint64_t dst, const size_t count = 1);
+	void unref(const uint64_t dst);
 
 	var_t* assign(const uint64_t dst, var_t* value);
 	var_t* assign(const uint64_t dst, const uint64_t key, var_t* value);
@@ -84,10 +89,12 @@ public:
 	void erase_entry(const uint64_t dst, const uint64_t key);
 
 	var_t* write_key(const uint64_t dst, const uint64_t key, const var_t& src);
+	var_t* write_key(const uint64_t dst, const var_t& key, const var_t& src);
 	var_t* write_key(const uint64_t dst, const varptr_t& key, const varptr_t& var);
 	void erase_key(const uint64_t dst, const uint64_t key);
 
 	void push_back(const uint64_t dst, const var_t& src);
+	void push_back(const uint64_t dst, const uint64_t src);
 	void pop_back(const uint64_t dst, const uint64_t& src);
 
 	bool erase(const uint64_t dst);
@@ -113,6 +120,7 @@ public:
 	void memcpy(const uint64_t dst, const uint64_t src, const uint32_t count, const uint32_t offset);
 	void conv(const uint64_t dst, const uint64_t src, const uint32_t dflags, const uint32_t sflags);
 	void log(const uint64_t level, const uint64_t msg);
+	void event(const uint64_t name, const uint64_t data);
 
 	const frame_t& get_frame() const;
 	uint64_t deref(const uint64_t src);
@@ -139,7 +147,7 @@ private:
 	var_t* assign(var_t*& var, var_t* value);
 	var_t* write(var_t*& var, const uint64_t* dst, const var_t& src);
 
-	bool erase(var_t*& var, const uint64_t* dst = nullptr);
+	bool erase(var_t*& var);
 	bool erase_entry(var_t*& var, const uint64_t dst, const uint64_t key);
 	void erase_entries(const uint64_t dst);
 

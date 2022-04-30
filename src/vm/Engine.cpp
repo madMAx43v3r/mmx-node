@@ -17,21 +17,27 @@ Engine::Engine(const addr_t& contract, std::shared_ptr<Storage> storage)
 {
 }
 
+Engine::~Engine()
+{
+	key_map.clear();
+	for(const auto& entry : memory) {
+		delete entry.second;
+		entry.second = nullptr;
+	}
+	for(const auto& entry : entries) {
+		delete entry.second;
+		entry.second = nullptr;
+	}
+}
+
 void Engine::addref(const uint64_t dst)
 {
 	read_fail(dst).addref();
 }
 
-void Engine::unref(const uint64_t dst, const size_t count)
+void Engine::unref(const uint64_t dst)
 {
-	auto& var = read_fail(dst);
-	if(count > var.ref_count) {
-		throw std::logic_error("unref underflow at " + to_hex(dst));
-	}
-	var.ref_count -= count;
-	var.flags |= varflags_e::DIRTY_REF;
-
-	if(!var.ref_count && dst >= MEM_HEAP) {
+	if(read_fail(dst).unref()) {
 		erase(dst);
 	}
 }
@@ -289,6 +295,11 @@ void Engine::push_back(const uint64_t dst, const var_t& src)
 	array.flags |= varflags_e::DIRTY;
 }
 
+void Engine::push_back(const uint64_t dst, const uint64_t src)
+{
+	push_back(dst, read_fail(src));
+}
+
 void Engine::pop_back(const uint64_t dst, const uint64_t& src)
 {
 	auto& var = read_fail(src);
@@ -379,6 +390,11 @@ var_t* Engine::write_key(const uint64_t dst, const uint64_t key, const var_t& sr
 	return write_entry(dst, lookup(key), src);
 }
 
+var_t* Engine::write_key(const uint64_t dst, const var_t& key, const var_t& src)
+{
+	return write_entry(dst, lookup(key), src);
+}
+
 var_t* Engine::write_key(const uint64_t dst, const varptr_t& key, const varptr_t& var)
 {
 	return write_entry(dst, lookup(key), var);
@@ -426,7 +442,7 @@ bool Engine::erase(const uint64_t dst)
 {
 	auto iter = memory.find(dst);
 	if(iter != memory.end()) {
-		if(auto& var = iter->second) {
+		if(auto var = iter->second) {
 			if(var->ref_count) {
 				throw std::runtime_error("erase with ref_count "
 						+ std::to_string(var->ref_count) + " at " + to_hex(dst));
@@ -444,7 +460,7 @@ bool Engine::erase(const uint64_t dst)
 	return true;
 }
 
-bool Engine::erase(var_t*& var, const uint64_t* dst)
+bool Engine::erase(var_t*& var)
 {
 	if(!var) {
 		return true;
@@ -558,6 +574,7 @@ void Engine::begin(const uint32_t instr_ptr)
 		write(MEM_HEAP + LOG_HISTORY, array_t())->pin();
 		write(MEM_HEAP + SEND_HISTORY, array_t())->pin();
 		write(MEM_HEAP + MINT_HISTORY, array_t())->pin();
+		write(MEM_HEAP + EVENT_HISTORY, array_t())->pin();
 	}
 	frame_t frame;
 	frame.instr_ptr = instr_ptr;
@@ -789,7 +806,22 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint32_t dflags,
 
 void Engine::log(const uint64_t level, const uint64_t msg)
 {
-	// TODO
+	const auto entry = alloc();
+	write(entry, array_t());
+	push_back(entry, externvar_e::TXID);
+	push_back(entry, uint_t(level));
+	push_back(entry, msg);
+	push_back(globalvar_e::LOG_HISTORY, ref_t(entry));
+}
+
+void Engine::event(const uint64_t name, const uint64_t data)
+{
+	const auto entry = alloc();
+	write(entry, array_t());
+	push_back(entry, externvar_e::TXID);
+	push_back(entry, name);
+	push_back(entry, data);
+	push_back(globalvar_e::EVENT_HISTORY, ref_t(entry));
 }
 
 void Engine::jump(const uint32_t instr_ptr)
@@ -952,12 +984,10 @@ void Engine::exec(const instr_t& instr)
 		erase(	deref_addr(instr.a, instr.flags & opflags_e::REF_A),
 				deref_addr(instr.b, instr.flags & opflags_e::REF_B), instr.flags);
 		break;
-	case opcode_e::PUSH_BACK: {
-		const auto dst = deref_addr(instr.a, instr.flags & opflags_e::REF_A);
-		const auto src = deref_addr(instr.b, instr.flags & opflags_e::REF_B);
-		push_back(dst, read_fail(src));
+	case opcode_e::PUSH_BACK:
+		push_back(	deref_addr(instr.a, instr.flags & opflags_e::REF_A),
+					deref_addr(instr.b, instr.flags & opflags_e::REF_B));
 		break;
-	}
 	case opcode_e::POP_BACK:
 		pop_back(	deref_addr(instr.a, instr.flags & opflags_e::REF_A),
 					deref_addr(instr.b, instr.flags & opflags_e::REF_B));
@@ -976,11 +1006,15 @@ void Engine::exec(const instr_t& instr)
 		log(	deref_value(instr.a, instr.flags & opflags_e::REF_A),
 				deref_addr(instr.b, instr.flags & opflags_e::REF_B));
 		break;
+	case opcode_e::EVENT:
+		event(	deref_addr(instr.a, instr.flags & opflags_e::REF_A),
+				deref_addr(instr.b, instr.flags & opflags_e::REF_B));
+		break;
 	}
 	get_frame().instr_ptr++;
 }
 
-void Engine::clear_extern(const uint32_t offset = 0)
+void Engine::clear_extern(const uint32_t offset)
 {
 	for(auto iter = memory.lower_bound(MEM_EXTERN + offset); iter != memory.lower_bound(MEM_STACK);)
 	{
