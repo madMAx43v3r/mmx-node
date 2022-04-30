@@ -82,12 +82,17 @@ enum opflags_e : uint16_t {
 
 enum convtype_e : uint16_t {
 
+	DEFAULT,
+	BIN,
+	OCT,
 	DEC,
 	HEX,
+	BOOL,
 	UINT,
 	STRING,
 	BINARY,
 	ARRAY,
+	ADDRESS,
 
 };
 

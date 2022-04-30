@@ -16,17 +16,15 @@ namespace vm {
 
 class StorageRocksDB : public Storage {
 public:
-	var_t* read(const uint256_t& contract, const uint32_t address) const override;
+	var_t* read(const addr_t& contract, const uint64_t src) const override;
 
-	var_t* read(const uint256_t& contract, const uint32_t address, const uint32_t key) const override;
+	var_t* read(const addr_t& contract, const uint64_t src, const uint64_t key) const override;
 
-	void write(const uint256_t& contract, const uint32_t address, const var_t& value) override;
+	void write(const addr_t& contract, const uint64_t dst, const var_t& value) override;
 
-	void write(const uint256_t& contract, const uint32_t address, const uint32_t key, const var_t& value) override;
+	void write(const addr_t& contract, const uint64_t dst, const uint64_t key, const var_t& value) override;
 
-	void erase(const uint256_t& contract, const uint32_t address) override;
-
-	void erase(const uint256_t& contract, const uint32_t address, const uint32_t key) override;
+	uint64_t lookup(const addr_t& contract, const var_t& value) const override;
 
 private:
 

@@ -52,7 +52,6 @@ struct var_t {
 	vartype_e type = vartype_e::NIL;
 
 	var_t() = default;
-	var_t(const var_t&) = delete;
 	var_t(const vartype_e& type) : type(type) {}
 
 	void addref() {
@@ -83,6 +82,7 @@ struct ref_t : var_t {
 	uint64_t address = 0;
 
 	ref_t() : var_t(vartype_e::REF) {}
+	ref_t(const ref_t&) = default;
 	ref_t(uint64_t address) : ref_t(), address(address) {}
 
 	ref_t& operator=(const ref_t& rhs) {
@@ -98,6 +98,7 @@ struct uint_t : var_t {
 	uint256_t value = uint256_0;
 
 	uint_t() : var_t(vartype_e::UINT) {}
+	uint_t(const uint_t&) = default;
 	uint_t(const uint256_t& value) : uint_t() { this->value = value; }
 
 	uint_t& operator=(const uint_t& rhs) {
@@ -139,9 +140,12 @@ struct binary_t : var_t {
 	}
 
 	static binary_t* alloc(const binary_t& src) {
-		auto bin = unsafe_alloc(src.size, src.type);
+		return alloc(src, src.type);
+	}
+	static binary_t* alloc(const binary_t& src, const vartype_e type) {
+		auto bin = unsafe_alloc(src.size, type);
 		bin->size = src.size;
-		::memcpy(bin->data(), src.data(), size);
+		::memcpy(bin->data(), src.data(), src.size);
 		return bin;
 	}
 	static binary_t* alloc(size_t size, const vartype_e type) {
@@ -154,6 +158,12 @@ struct binary_t : var_t {
 		bin->size = src.size();
 		::memcpy(bin->data(), src.c_str(), bin->size);
 		::memset(bin->data(bin->size), 0, bin->capacity - bin->size);
+		return bin;
+	}
+	static binary_t* alloc(const void* data, const size_t len, const vartype_e type = vartype_e::BINARY) {
+		auto bin = unsafe_alloc(len, type);
+		bin->size = len;
+		::memcpy(bin->data(), data, len);
 		return bin;
 	}
 	static binary_t* unsafe_alloc(size_t size, const vartype_e type) {
@@ -172,18 +182,23 @@ private:
 
 };
 
-struct array_t : ref_t {
+struct array_t : var_t {
 
+	uint64_t address = 0;
 	uint32_t size = 0;
 
 	array_t() : var_t(vartype_e::ARRAY) {}
+	array_t(const array_t&) = default;
 	array_t(uint32_t size) : array_t(), size(size) {}
 
 };
 
-struct map_t : ref_t {
+struct map_t : var_t {
+
+	uint64_t address = 0;
 
 	map_t() : var_t(vartype_e::MAP) {}
+	map_t(const map_t&) = default;
 
 };
 
@@ -225,6 +240,36 @@ struct varptr_t {
 
 };
 
+
+inline var_t* clone(const var_t& src)
+{
+	switch(src.type) {
+		case vartype_e::NIL:
+		case vartype_e::TRUE:
+		case vartype_e::FALSE:
+			return new var_t(src);
+		case vartype_e::REF:
+			return new ref_t((const ref_t&)src);
+		case vartype_e::UINT:
+			return new uint_t((const uint_t&)src);
+		case vartype_e::STRING:
+		case vartype_e::BINARY:
+			return binary_t::alloc((const binary_t&)src, src.type);
+		case vartype_e::ARRAY:
+			return new array_t((const array_t&)src);
+		case vartype_e::MAP:
+			return new map_t((const map_t&)src);
+	}
+	return nullptr;
+}
+
+inline var_t* clone(const var_t* var)
+{
+	if(var) {
+		return clone(*var);
+	}
+	return nullptr;
+}
 
 inline int compare(const var_t& lhs, const var_t& rhs)
 {

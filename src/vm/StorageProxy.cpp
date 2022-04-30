@@ -64,6 +64,9 @@ void StorageProxy::write(const addr_t& contract, const uint64_t dst, const uint6
 	if(read_only) {
 		throw std::logic_error("read-only storage");
 	}
+	if(value.ref_count) {
+		throw std::logic_error("entries cannot have ref_count > 0");
+	}
 	num_write++;
 	if(value.flags & varflags_e::DIRTY) {
 		bytes_write += num_bytes(value);

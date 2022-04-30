@@ -43,8 +43,10 @@ var_t* Engine::assign(const uint64_t dst, var_t* value)
 	}
 	switch(value->type) {
 		case vartype_e::ARRAY:
+			((array_t*)value)->address = dst;
+			break;
 		case vartype_e::MAP:
-			((ref_t*)value)->address = dst;
+			((map_t*)value)->address = dst;
 			break;
 	}
 	auto& var = memory[dst];
@@ -452,8 +454,10 @@ bool Engine::erase(var_t*& var, const uint64_t* dst)
 			unref(((const ref_t*)var)->address);
 			break;
 		case vartype_e::ARRAY:
+			erase_entries(((const array_t*)var)->address);
+			break;
 		case vartype_e::MAP:
-			erase_entries(((const ref_t*)var)->address);
+			erase_entries(((const map_t*)var)->address);
 			break;
 	}
 	if(var->flags & varflags_e::STORED) {
@@ -576,7 +580,11 @@ void Engine::step()
 	if(instr_ptr >= code.size()) {
 		throw std::logic_error("instr_ptr out of bounds: " + to_hex(instr_ptr) + " > " + to_hex(code.size()));
 	}
-	exec(code[instr_ptr]);
+	try {
+		exec(code[instr_ptr]);
+	} catch(const std::exception& ex) {
+		throw std::runtime_error("exception at ip " + to_hex(instr_ptr) + ": " + ex.what());
+	}
 }
 
 void Engine::copy(const uint64_t dst, const uint64_t src)
@@ -705,6 +713,83 @@ void Engine::memcpy(const uint64_t dst, const uint64_t src, const uint32_t count
 		}
 		default: throw std::logic_error("invalid type");
 	}
+}
+
+void Engine::conv(const uint64_t dst, const uint64_t src, const uint32_t dflags, const uint32_t sflags)
+{
+	const auto& svar = read_fail(src);
+	switch(svar.type) {
+		case vartype_e::UINT: {
+			const auto& sint = (const uint_t&)svar;
+			switch(dflags & 0xFF) {
+				case convtype_e::STRING: {
+					int base = 10;
+					switch((dflags >> 8) & 0xFF) {
+						case convtype_e::DEFAULT: break;
+						case convtype_e::BIN: base = 2; break;
+						case convtype_e::OCT: base = 8; break;
+						case convtype_e::DEC: base = 10; break;
+						case convtype_e::HEX: base = 16; break;
+						default: throw std::logic_error("invalid conversion");
+					}
+					assign(dst, binary_t::alloc(sint.value.str(base)));
+					break;
+				}
+				case convtype_e::BINARY:
+					assign(dst, binary_t::alloc(&sint.value, sizeof(sint.value)));
+					break;
+				case convtype_e::ADDRESS:
+					assign(dst, binary_t::alloc(addr_t(sint.value).to_string()));
+					break;
+				default:
+					throw std::logic_error("invalid conversion");
+			}
+			break;
+		}
+		case vartype_e::STRING: {
+			const auto& sstr = (const binary_t&)svar;
+			switch(dflags & 0xFF) {
+				case convtype_e::UINT: {
+					int base = 10;
+					switch((sflags >> 8) & 0xFF) {
+						case convtype_e::DEFAULT: break;
+						case convtype_e::BIN: base = 2; break;
+						case convtype_e::OCT: base = 8; break;
+						case convtype_e::DEC: base = 10; break;
+						case convtype_e::HEX: base = 16; break;
+						default: throw std::logic_error("invalid conversion");
+					}
+					write(dst, uint_t(uint256_t((const char*)sstr.data(), base)));
+					break;
+				}
+				case convtype_e::BINARY:
+					assign(dst, binary_t::alloc(sstr, vartype_e::BINARY));
+					break;
+				default:
+					throw std::logic_error("invalid conversion");
+			}
+			break;
+		}
+		case vartype_e::BINARY: {
+			const auto& sbin = (const binary_t&)svar;
+			switch(dflags & 0xFF) {
+				case convtype_e::STRING: {
+					assign(dst, binary_t::alloc(vnx::to_hex_string(sbin.data(), sbin.size)));
+					break;
+				}
+				default:
+					throw std::logic_error("invalid conversion");
+			}
+			break;
+		}
+		default:
+			throw std::logic_error("invalid conversion");
+	}
+}
+
+void Engine::log(const uint64_t level, const uint64_t msg)
+{
+	// TODO
 }
 
 void Engine::jump(const uint32_t instr_ptr)
@@ -841,6 +926,10 @@ void Engine::exec(const instr_t& instr)
 		const auto addr = deref_addr(instr.b, instr.flags & opflags_e::REF_B);
 		const auto& var = read_fail(addr);
 		switch(var.type) {
+			case vartype_e::STRING:
+			case vartype_e::BINARY:
+				write(dst, uint_t(((const binary_t&)var).size));
+				break;
 			case vartype_e::ARRAY:
 				write(dst, uint_t(((const array_t&)var).size));
 				break;
@@ -882,6 +971,10 @@ void Engine::exec(const instr_t& instr)
 				deref_addr(instr.b, instr.flags & opflags_e::REF_B),
 				deref_value(instr.c, instr.flags & opflags_e::REF_C),
 				deref_value(instr.d, instr.flags & opflags_e::REF_D));
+		break;
+	case opcode_e::LOG:
+		log(	deref_value(instr.a, instr.flags & opflags_e::REF_A),
+				deref_addr(instr.b, instr.flags & opflags_e::REF_B));
 		break;
 	}
 	get_frame().instr_ptr++;

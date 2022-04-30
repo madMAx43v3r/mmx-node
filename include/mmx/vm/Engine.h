@@ -45,6 +45,7 @@ enum globalvar_e : uint32_t {
 	LOG_HISTORY,
 	SEND_HISTORY,
 	MINT_HISTORY,
+	EVENT_HISTORY,
 	DYNAMIC_START = 0x1000
 };
 
@@ -110,6 +111,8 @@ public:
 	void erase(const uint64_t addr, const uint64_t key, const opflags_e flags);
 	void concat(const uint64_t dst, const uint64_t src);
 	void memcpy(const uint64_t dst, const uint64_t src, const uint32_t count, const uint32_t offset);
+	void conv(const uint64_t dst, const uint64_t src, const uint32_t dflags, const uint32_t sflags);
+	void log(const uint64_t level, const uint64_t msg);
 
 	const frame_t& get_frame() const;
 	uint64_t deref(const uint64_t src);
