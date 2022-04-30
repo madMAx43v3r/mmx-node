@@ -94,8 +94,15 @@ uint64_t StorageRAM::lookup(const addr_t& contract, const var_t& value) const
 void StorageRAM::erase_entries(const addr_t& contract, const uint64_t dst)
 {
 	const auto begin = entries.lower_bound(std::make_pair(std::make_pair(contract, dst), 0));
-	const auto end = entries.lower_bound(std::make_pair(std::make_pair(contract, dst + 1), 0));
-	for(auto iter = begin; iter != end;) {
+	for(auto iter = begin; iter != entries.end() && iter->first.first.second == dst;) {
+		const auto key = iter->first.second;
+		if(key >= MEM_HEAP) {
+			if(auto var = read(contract, key)) {
+				if(var->unref()) {
+					erase(contract, var);
+				}
+			}
+		}
 		erase(contract, iter->second);
 		iter = entries.erase(iter);
 	}

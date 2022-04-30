@@ -333,19 +333,14 @@ map_t* Engine::clone_map(const uint64_t dst, const map_t& src)
 	if(src.address >= MEM_STATIC) {
 		throw std::logic_error("cannot clone map from storage");
 	}
-	auto var = new map_t();
-	try {
-		var->address = dst;
-		const auto begin = entries.lower_bound(std::make_pair(src.address, 0));
-		const auto end = entries.lower_bound(std::make_pair(src.address + 1, 0));
-		for(auto iter = begin; iter != end; ++iter) {
-			if(auto value = iter->second) {
-				write_entry(dst, iter->first.second, *value);
-			}
+	const auto begin = entries.lower_bound(std::make_pair(src.address, 0));
+	for(auto iter = begin; iter != entries.end() && iter->first.first == src.address; ++iter) {
+		if(auto value = iter->second) {
+			write_entry(dst, iter->first.second, *value);
 		}
-	} catch(...) {
-		delete var; throw;
 	}
+	auto var = new map_t();
+	var->address = dst;
 	return var;
 }
 
@@ -424,8 +419,7 @@ void Engine::erase_key(const uint64_t dst, const uint64_t key)
 void Engine::erase_entries(const uint64_t dst)
 {
 	const auto begin = entries.lower_bound(std::make_pair(dst, 0));
-	const auto end = entries.lower_bound(std::make_pair(dst + 1, 0));
-	for(auto iter = begin; iter != end;) {
+	for(auto iter = begin; iter != entries.end() && iter->first.first == dst;) {
 		if(erase(iter->second)) {
 			iter = entries.erase(iter);
 		} else {
