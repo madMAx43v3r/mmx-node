@@ -86,7 +86,9 @@ add_library(mmx_iface SHARED
 	src/ProofOfSpaceNFT.cpp
 	src/ProofResponse.cpp
 	src/secp256k1.cpp
+	src/skey_t.cpp
 	src/hash_t.cpp
+	src/addr_t.cpp
 	src/txio_key_t.cpp
 	src/signature_t.cpp
 	src/bls_signature_t.cpp

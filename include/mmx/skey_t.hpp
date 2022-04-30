@@ -8,9 +8,12 @@
 #ifndef INCLUDE_MMX_SKEY_T_HPP_
 #define INCLUDE_MMX_SKEY_T_HPP_
 
+#include <mmx/hash_t.hpp>
 #include <mmx/bytes_t.hpp>
 
-#include <bls.hpp>
+namespace bls {
+	class PrivateKey;
+}
 
 
 namespace mmx {
@@ -33,16 +36,6 @@ skey_t::skey_t(const hash_t& hash)
 	:	super_t(hash)
 {
 }
-
-inline
-skey_t::skey_t(const bls::PrivateKey& key)
-{
-	if(bls::PrivateKey::PRIVATE_KEY_SIZE != size()) {
-		throw std::logic_error("key size mismatch");
-	}
-	key.Serialize(data());
-}
-
 
 } //mmx
 

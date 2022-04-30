@@ -13,8 +13,6 @@
 #include <string>
 #include <cstdint>
 
-#include <vnx/Input.hpp>
-#include <vnx/Output.hpp>
 #include <vnx/Variant.hpp>
 #include <vnx/Hash64.hpp>
 
@@ -109,14 +107,7 @@ bool bytes_t<N>::is_zero() const {
 
 template<size_t N>
 std::string bytes_t<N>::to_string() const {
-	static const char map[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-	std::string str;
-	str.resize(N * 2);
-	for(size_t i = 0; i < N; ++i) {
-		str[(N - i - 1) * 2] = map[bytes[i] >> 4];
-		str[(N - i - 1) * 2 + 1] = map[bytes[i] & 0x0F];
-	}
-	return str;
+	return vnx::to_hex_string(bytes.data(), N);
 }
 
 template<size_t N>
@@ -170,8 +161,7 @@ std::vector<uint8_t> operator+(const std::vector<uint8_t>& lhs, const bytes_t<N>
 namespace vnx {
 
 template<size_t N>
-void read(vnx::TypeInput& in, mmx::bytes_t<N>& value, const vnx::TypeCode* type_code, const uint16_t* code)
-{
+void read(vnx::TypeInput& in, mmx::bytes_t<N>& value, const vnx::TypeCode* type_code, const uint16_t* code) {
 	switch(code[0]) {
 		case CODE_STRING:
 		case CODE_ALT_STRING: {
@@ -196,17 +186,13 @@ void read(vnx::TypeInput& in, mmx::bytes_t<N>& value, const vnx::TypeCode* type_
 			vnx::Variant tmp;
 			vnx::read(in, tmp, type_code, code);
 			if(tmp.is_string()) {
-				std::string str;
-				tmp.to(str);
 				try {
-					value.from_string(str);
+					value.from_string(tmp.to<std::string>());
 				} catch(...) {
 					value = mmx::bytes_t<N>();
 				}
 			} else {
-				std::array<uint8_t, N> array;
-				tmp.to(array);
-				value = array;
+				tmp.to(value.bytes);
 			}
 			break;
 		}

@@ -11,6 +11,8 @@
 #include <mmx/hash_t.hpp>
 #include <mmx/skey_t.hpp>
 
+#include <bls.hpp>
+
 
 namespace mmx {
 
