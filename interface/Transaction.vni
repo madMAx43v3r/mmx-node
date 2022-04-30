@@ -4,13 +4,13 @@ class Transaction extends TransactionBase {
 	
 	uint version;
 	
-	uint nonce;
-	
 	uint expires = -1;					// height
 	
 	uint fee_ratio = 1024;				// 1024 = 1.0
 	
 	tx_note_e note;
+	
+	ulong nonce;
 	
 	optional<hash_t> salt;
 	
