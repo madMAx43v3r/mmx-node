@@ -572,7 +572,7 @@ uint128 Node::get_total_supply(const addr_t& currency) const
 {
 	uint128_t total = 0;
 	for(const auto& entry : balance_map) {
-		if(entry.first.second == currency) {
+		if(entry.first.first != addr_t() && entry.first.second == currency) {
 			total += entry.second;
 		}
 	}
