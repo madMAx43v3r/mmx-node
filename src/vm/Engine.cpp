@@ -994,6 +994,8 @@ void Engine::exec(const instr_t& instr)
 		event(	deref_addr(instr.a, instr.flags & opflags_e::REF_A),
 				deref_addr(instr.b, instr.flags & opflags_e::REF_B));
 		break;
+	default:
+		throw std::logic_error("invalid op_code: 0x" + vnx::to_hex_string(uint8_t(instr.code)));
 	}
 	get_frame().instr_ptr++;
 }

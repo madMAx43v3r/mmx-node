@@ -231,6 +231,8 @@ var_t* clone(const var_t* var);
 
 int compare(const var_t& lhs, const var_t& rhs);
 
+std::string to_string(const var_t* var);
+
 struct varptr_less_t {
 	bool operator()(const var_t* const& L, const var_t* const& R) const {
 		if(!L) { return R; }

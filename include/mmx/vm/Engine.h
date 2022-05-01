@@ -59,8 +59,8 @@ enum globalvar_e : uint32_t {
 class Engine {
 public:
 	struct frame_t {
-		uint32_t instr_ptr;
-		uint32_t stack_ptr;
+		uint32_t instr_ptr = 0;
+		uint32_t stack_ptr = 0;
 	};
 
 	std::vector<instr_t> code;

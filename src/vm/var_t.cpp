@@ -7,6 +7,8 @@
 
 #include <mmx/vm/var_t.h>
 
+#include <vnx/Util.hpp>
+
 
 namespace mmx {
 namespace vm {
@@ -78,6 +80,39 @@ int compare(const var_t& lhs, const var_t& rhs)
 		}
 		default:
 			return 0;
+	}
+}
+
+std::string to_string(const var_t* var)
+{
+	if(!var) {
+		return "nullptr";
+	}
+	switch(var->type) {
+		case vartype_e::TYPE_NIL:
+			return "null";
+		case vartype_e::TYPE_TRUE:
+			return "true";
+		case vartype_e::TYPE_FALSE:
+			return "false";
+		case vartype_e::TYPE_REF:
+			return "@" + std::to_string(((const ref_t*)var)->address);
+		case vartype_e::TYPE_UINT:
+			return ((const uint_t*)var)->value.str(10);
+		case vartype_e::TYPE_STRING: {
+			auto bin = (const binary_t*)var;
+			return std::string((const char*)bin->data(), bin->size);
+		}
+		case vartype_e::TYPE_BINARY: {
+			auto bin = (const binary_t*)var;
+			return vnx::to_hex_string(bin->data(), bin->size);
+		}
+		case vartype_e::TYPE_ARRAY:
+			return "[" + std::to_string(((const array_t*)var)->address) + "]";
+		case vartype_e::TYPE_MAP:
+			return "{" + std::to_string(((const map_t*)var)->address) + "}";
+		default:
+			return "?";
 	}
 }
 
