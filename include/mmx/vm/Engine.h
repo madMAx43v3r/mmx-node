@@ -193,7 +193,7 @@ T* Engine::read(const uint64_t src, const vartype_e& type)
 template<typename T>
 T& Engine::read_fail(const uint64_t src, const vartype_e& type)
 {
-	auto var = read_fail(src);
+	auto& var = read_fail(src);
 	if(var.type != type) {
 		throw std::logic_error("read type mismatch");
 	}

@@ -55,6 +55,8 @@ var_t* Engine::assign(const uint64_t dst, var_t* value)
 		case TYPE_MAP:
 			((map_t*)value)->address = dst;
 			break;
+		default:
+			break;
 	}
 	auto& var = memory[dst];
 	if(!var && dst >= MEM_STATIC) {
@@ -73,6 +75,8 @@ var_t* Engine::assign(const uint64_t dst, const uint64_t key, var_t* value)
 		case TYPE_MAP:
 			delete value;
 			throw std::logic_error("cannot assign array / map here");
+		default:
+			break;
 	}
 	auto& var = entries[std::make_pair(dst, key)];
 	if(!var && dst >= MEM_STATIC) {
@@ -219,6 +223,8 @@ var_t* Engine::write(var_t*& var, const uint64_t* dst, const var_t& src)
 					case TYPE_FALSE:
 						var->type = src.type;
 						return var;
+					default:
+						break;
 				}
 				break;
 			case TYPE_REF:
@@ -235,6 +241,8 @@ var_t* Engine::write(var_t*& var, const uint64_t* dst, const var_t& src)
 					((uint_t*)var)->value = ((const uint_t&)src).value;
 					return var;
 				}
+				break;
+			default:
 				break;
 		}
 	}
@@ -343,6 +351,8 @@ var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const varptr_
 				write(heap, value);
 				return write_entry(dst, key, ref_t(heap));
 			}
+			default:
+				break;
 		}
 		return write_entry(dst, key, *value);
 	}
@@ -440,6 +450,8 @@ void Engine::clear(var_t* var)
 			erase_entries(dst);
 			break;
 		}
+		default:
+			break;
 	}
 }
 
