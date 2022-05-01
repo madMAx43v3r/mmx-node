@@ -24,6 +24,14 @@
 namespace mmx {
 namespace vm {
 
+constexpr uint64_t INSTR_COST = 16;
+constexpr uint64_t WRITE_COST = 16;
+constexpr uint64_t WRITE_BYTE_COST = 1;
+constexpr uint64_t STOR_READ_COST = 128;
+constexpr uint64_t STOR_WRITE_COST = 1024;
+constexpr uint64_t STOR_READ_BYTE_COST = 2;
+constexpr uint64_t STOR_WRITE_BYTE_COST = 16;
+
 enum externvar_e : uint32_t {
 
 	HEIGHT,
@@ -55,6 +63,16 @@ public:
 
 	std::vector<instr_t> code;
 	std::vector<frame_t> call_stack;
+
+	uint64_t cost = 0;
+	uint64_t credits = 0;
+
+	uint64_t num_instr = 0;
+	uint64_t num_write = 0;
+	uint64_t bytes_write = 0;
+	uint64_t num_stor_read = 0;
+	uint64_t num_stor_write = 0;
+	uint64_t stor_bytes_read = 0;
 
 	Engine(const addr_t& contract, std::shared_ptr<Storage> storage);
 
@@ -90,7 +108,7 @@ public:
 	void push_back(const uint64_t dst, const uint64_t src);
 	void pop_back(const uint64_t dst, const uint64_t& src);
 
-	bool erase(const uint64_t dst);
+	void erase(const uint64_t dst);
 
 	var_t* read(const uint64_t src);
 	var_t& read_fail(const uint64_t src);
@@ -140,8 +158,8 @@ private:
 	var_t* assign(var_t*& var, var_t* value);
 	var_t* write(var_t*& var, const uint64_t* dst, const var_t& src);
 
-	bool erase(var_t*& var);
-	bool erase_entry(var_t*& var, const uint64_t dst, const uint64_t key);
+	void clear(var_t* var);
+	void erase(var_t*& var);
 	void erase_entries(const uint64_t dst);
 
 	uint64_t alloc();

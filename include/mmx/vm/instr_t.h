@@ -66,6 +66,7 @@ enum opcode_e : uint8_t {
 	SEND,		// addr, amount, currency
 	MINT,		// addr, amount
 	EVENT,		// name, data
+	FAIL,		// message
 
 };
 

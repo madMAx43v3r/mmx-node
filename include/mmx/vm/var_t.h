@@ -47,11 +47,10 @@ enum class vartype_e : uint8_t {
 enum varflags_e : uint8_t {
 
 	DIRTY = (1 << 0),
-	DIRTY_REF = (1 << 1),
-	CONST = (1 << 2),
-	STORED = (1 << 3),
-	DELETED = (1 << 4),
-	KEY = (1 << 5),
+	CONST = (1 << 1),
+	STORED = (1 << 2),
+	DELETED = (1 << 3),
+	KEY = (1 << 4),
 
 };
 
@@ -65,20 +64,21 @@ struct var_t {
 
 	var_t() = default;
 	var_t(const vartype_e& type) : type(type) {}
+	var_t(const vartype_e& type, const varflags_e& flags) : type(type), flags(flags) {}
 
 	void addref() {
 		if(ref_count == std::numeric_limits<typeof(ref_count)>::max()) {
 			throw std::runtime_error("ref_count overflow");
 		}
 		ref_count++;
-		flags |= varflags_e::DIRTY_REF;
+		flags |= varflags_e::DIRTY;
 	}
 	bool unref() {
 		if(!ref_count) {
 			throw std::logic_error("unref underflow");
 		}
 		ref_count--;
-		flags |= varflags_e::DIRTY_REF;
+		flags |= varflags_e::DIRTY;
 		return ref_count == 0;
 	}
 	var_t* pin() {
@@ -98,12 +98,6 @@ struct ref_t : var_t {
 	ref_t(const ref_t&) = default;
 	ref_t(uint64_t address) : ref_t(), address(address) {}
 
-	ref_t& operator=(const ref_t& rhs) {
-		address = rhs.address;
-		flags |= varflags_e::DIRTY;
-		return *this;
-	}
-
 };
 
 struct uint_t : var_t {
@@ -113,12 +107,6 @@ struct uint_t : var_t {
 	uint_t() : var_t(vartype_e::UINT) {}
 	uint_t(const uint_t&) = default;
 	uint_t(const uint256_t& value) : uint_t() { this->value = value; }
-
-	uint_t& operator=(const uint_t& rhs) {
-		value = rhs.value;
-		flags |= varflags_e::DIRTY;
-		return *this;
-	}
 
 };
 
@@ -134,36 +122,14 @@ struct binary_t : var_t {
 		return ((const char*)this) + sizeof(binary_t) + offset;
 	}
 
-	bool assign(const binary_t& src) {
-		if(capacity < src.size + (src.type == vartype_e::STRING ? 1 : 0)) {
-			return false;
-		}
-		type = src.type;
-		size = src.size;
-		::memcpy(data(), src.data(), size);
-		::memset(data(size), 0, capacity - size);
-		flags |= varflags_e::DIRTY;
-		return true;
-	}
-	binary_t& operator=(const binary_t& rhs) {
-		if(!assign(rhs)) {
-			throw std::runtime_error("binary assignment overflow");
-		}
-		return *this;
-	}
-
 	static binary_t* alloc(const binary_t& src) {
 		return alloc(src, src.type);
 	}
 	static binary_t* alloc(const binary_t& src, const vartype_e type) {
 		auto bin = unsafe_alloc(src.size, type);
 		bin->size = src.size;
-		::memcpy(bin->data(), src.data(), src.size);
-		return bin;
-	}
-	static binary_t* alloc(size_t size, const vartype_e type) {
-		auto bin = unsafe_alloc(size, type);
-		::memset(bin->data(), 0, bin->capacity);
+		::memcpy(bin->data(), src.data(), bin->size);
+		::memset(bin->data(bin->size), 0, bin->capacity - bin->size);
 		return bin;
 	}
 	static binary_t* alloc(const std::string& src, const vartype_e type = vartype_e::STRING) {
@@ -176,7 +142,13 @@ struct binary_t : var_t {
 	static binary_t* alloc(const void* data, const size_t len, const vartype_e type = vartype_e::BINARY) {
 		auto bin = unsafe_alloc(len, type);
 		bin->size = len;
-		::memcpy(bin->data(), data, len);
+		::memcpy(bin->data(), data, bin->size);
+		::memset(bin->data(bin->size), 0, bin->capacity - bin->size);
+		return bin;
+	}
+	static binary_t* alloc(size_t size, const vartype_e type) {
+		auto bin = unsafe_alloc(size, type);
+		::memset(bin->data(), 0, bin->capacity);
 		return bin;
 	}
 	static binary_t* unsafe_alloc(size_t size, const vartype_e type) {
@@ -253,75 +225,11 @@ struct varptr_t {
 };
 
 
-inline var_t* clone(const var_t& src)
-{
-	switch(src.type) {
-		case vartype_e::NIL:
-		case vartype_e::TRUE:
-		case vartype_e::FALSE:
-			return new var_t(src);
-		case vartype_e::REF:
-			return new ref_t((const ref_t&)src);
-		case vartype_e::UINT:
-			return new uint_t((const uint_t&)src);
-		case vartype_e::STRING:
-		case vartype_e::BINARY:
-			return binary_t::alloc((const binary_t&)src, src.type);
-		case vartype_e::ARRAY:
-			return new array_t((const array_t&)src);
-		case vartype_e::MAP:
-			return new map_t((const map_t&)src);
-	}
-	return nullptr;
-}
+var_t* clone(const var_t& src);
 
-inline var_t* clone(const var_t* var)
-{
-	if(var) {
-		return clone(*var);
-	}
-	return nullptr;
-}
+var_t* clone(const var_t* var);
 
-inline int compare(const var_t& lhs, const var_t& rhs)
-{
-	if(lhs.type != rhs.type) {
-		return lhs.type < rhs.type ? -1 : 1;
-	}
-	switch(lhs.type) {
-		case vartype_e::NIL:
-		case vartype_e::TRUE:
-		case vartype_e::FALSE:
-			return 0;
-		case vartype_e::REF: {
-			const auto& L = (const ref_t&)lhs;
-			const auto& R = (const ref_t&)rhs;
-			if(L.address == R.address) {
-				return 0;
-			}
-			return L.address < R.address ? -1 : 1;
-		}
-		case vartype_e::UINT: {
-			const auto& L = ((const uint_t&)lhs).value;
-			const auto& R = ((const uint_t&)rhs).value;
-			if(L == R) {
-				return 0;
-			}
-			return L < R ? -1 : 1;
-		}
-		case vartype_e::STRING:
-		case vartype_e::BINARY: {
-			const auto& L = (const binary_t&)lhs;
-			const auto& R = (const binary_t&)rhs;
-			if(L.size == R.size) {
-				return ::memcmp(L.data(), R.data(), L.size);
-			}
-			return L.size < R.size ? -1 : 1;
-		}
-		default:
-			return 0;
-	}
-}
+int compare(const var_t& lhs, const var_t& rhs);
 
 struct varptr_less_t {
 	bool operator()(const var_t*& L, const var_t*& R) const {
@@ -353,12 +261,14 @@ inline size_t num_bytes(const var_t& var)
 		case vartype_e::REF:
 			return 8;
 		case vartype_e::UINT:
-			return sizeof(uint256_t);
+			return 32;
 		case vartype_e::STRING:
 		case vartype_e::BINARY:
 			return ((const binary_t&)var).size;
 		case vartype_e::ARRAY:
-			return 4;
+			return 8 + 4;
+		case vartype_e::MAP:
+			return 8;
 	}
 	return 0;
 }
