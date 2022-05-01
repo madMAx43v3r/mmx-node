@@ -867,7 +867,7 @@ void Engine::exec(const instr_t& instr)
 		break;
 	case OP_CLR:
 		if(instr.flags & OPFLAG_REF_A) {
-			throw std::logic_error("de-referencing instr.a not supported");
+			throw std::logic_error("OPFLAG_REF_A not supported");
 		}
 		erase(instr.a);
 		break;
@@ -895,7 +895,7 @@ void Engine::exec(const instr_t& instr)
 	}
 	case OP_CALL:
 		if(instr.flags & OPFLAG_REF_B) {
-			throw std::logic_error("de-referencing instr.b not supported");
+			throw std::logic_error("OPFLAG_REF_B not supported");
 		}
 		call(	deref_value(instr.a, instr.flags & OPFLAG_REF_A),
 				instr.b);
