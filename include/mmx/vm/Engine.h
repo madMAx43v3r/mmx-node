@@ -147,6 +147,9 @@ public:
 	void commit();
 
 	void clear_extern(const uint32_t offset = 0);
+	void clear_stack(const uint32_t offset = 0);
+
+	void dump_memory(const uint64_t begin = 0, const uint64_t end = -1);
 
 	template<typename T>
 	T* read(const uint64_t src, const vartype_e& type);
@@ -164,8 +167,6 @@ private:
 	uint64_t alloc();
 	uint64_t deref_addr(uint32_t src, const bool flag);
 	uint64_t deref_value(uint32_t src, const bool flag);
-
-	void clear_stack(const uint32_t offset = 0);
 
 private:
 	addr_t contract;

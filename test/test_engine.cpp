@@ -30,6 +30,7 @@ int main(int arcv, char** argv)
 		engine.credits = 10000;
 		engine.begin(0);
 		engine.run();
+		engine.dump_memory();
 		std::cout << vm::to_string(engine.read(vm::MEM_STACK + 0)) << std::endl;
 	}
 	return 0;

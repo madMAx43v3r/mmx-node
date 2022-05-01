@@ -8,6 +8,8 @@
 #include <mmx/vm/Engine.h>
 #include <mmx/vm/StorageProxy.h>
 
+#include <iostream>
+
 
 namespace mmx {
 namespace vm {
@@ -1002,8 +1004,7 @@ void Engine::exec(const instr_t& instr)
 
 void Engine::clear_extern(const uint32_t offset)
 {
-	for(auto iter = memory.lower_bound(MEM_EXTERN + offset); iter != memory.lower_bound(MEM_STACK);)
-	{
+	for(auto iter = memory.lower_bound(MEM_EXTERN + offset); iter != memory.lower_bound(MEM_STACK);) {
 		erase(iter->second);
 		iter = memory.erase(iter);
 	}
@@ -1011,8 +1012,7 @@ void Engine::clear_extern(const uint32_t offset)
 
 void Engine::clear_stack(const uint32_t offset)
 {
-	for(auto iter = memory.lower_bound(MEM_STACK + offset); iter != memory.lower_bound(MEM_STATIC);)
-	{
+	for(auto iter = memory.lower_bound(MEM_STACK + offset); iter != memory.lower_bound(MEM_STATIC);) {
 		erase(iter->second);
 		iter = memory.erase(iter);
 	}
@@ -1043,7 +1043,12 @@ void Engine::commit()
 	}
 }
 
-
+void Engine::dump_memory(const uint64_t begin, const uint64_t end)
+{
+	for(auto iter = memory.lower_bound(begin); iter != memory.lower_bound(end); ++iter) {
+		std::cout << "[0x" << std::hex << iter->first << "] " << to_string(iter->second) << std::endl;
+	}
+}
 
 
 
