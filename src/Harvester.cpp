@@ -165,7 +165,7 @@ uint64_t Harvester::get_total_bytes() const
 std::shared_ptr<const FarmInfo> Harvester::get_farm_info() const
 {
 	auto info = FarmInfo::create();
-	info->plot_dirs = plot_dirs;
+	info->plot_dirs = std::vector<std::string>(plot_dirs.begin(), plot_dirs.end());
 	info->total_bytes = total_bytes;
 	for(const auto& entry : plot_map) {
 		if(auto prover = entry.second) {
@@ -175,21 +175,21 @@ std::shared_ptr<const FarmInfo> Harvester::get_farm_info() const
 	return info;
 }
 
-void Harvester::find_plot_dirs(const std::vector<std::string>& dirs, std::vector<std::string>& all_dirs) const
+void Harvester::find_plot_dirs(const std::set<std::string>& dirs, std::set<std::string>& all_dirs) const
 {
-	std::vector<std::string> sub_dirs;
+	std::set<std::string> sub_dirs;
 	for(const auto& path : dirs) {
 		vnx::Directory dir(path);
 		try {
 			dir.open();
 			for(const auto& file : dir.files()) {
 				if(file && file->get_extension() == ".plot") {
-					all_dirs.push_back(path);
+					all_dirs.insert(path);
 					break;
 				}
 			}
 			for(const auto& sub_dir : dir.directories()) {
-				sub_dirs.push_back(sub_dir->get_path());
+				sub_dirs.insert(sub_dir->get_path());
 			}
 		} catch(const std::exception& ex) {
 			log(WARN) << ex.what();
@@ -204,22 +204,24 @@ void Harvester::reload()
 {
 	const auto time_begin = vnx::get_wall_time_millis();
 
-	std::vector<std::string> all_dirs;
+	std::set<std::string> dir_set;
 	if(recursive_search) {
-		find_plot_dirs(plot_dirs, all_dirs);
+		find_plot_dirs(plot_dirs, dir_set);
 	} else {
-		all_dirs = plot_dirs;
+		dir_set = plot_dirs;
 	}
-	std::unordered_set<std::string> missing;
+	const std::vector<std::string> dir_list(dir_set.begin(), dir_set.end());
+
+	std::set<std::string> missing;
 	for(const auto& entry : plot_map) {
 		missing.insert(entry.first);
 	}
 	std::vector<std::pair<std::string, std::shared_ptr<chiapos::DiskProver>>> plots;
 
 #pragma omp parallel for num_threads(num_threads)
-	for(int i = 0; i < int(all_dirs.size()); ++i)
+	for(int i = 0; i < int(dir_list.size()); ++i)
 	{
-		vnx::Directory dir(all_dirs[i]);
+		vnx::Directory dir(dir_list[i]);
 		try {
 			dir.open();
 			for(const auto& file : dir.files())
@@ -279,6 +281,16 @@ void Harvester::reload()
 
 	log(INFO) << "Loaded " << plot_map.size() << " plots, " << total_bytes / pow(1000, 4) << " TB total, took "
 			<< (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+}
+
+void Harvester::add_plot_dir(const std::string& path)
+{
+	plot_dirs.insert(path);
+}
+
+void Harvester::rem_plot_dir(const std::string& path)
+{
+	plot_dirs.erase(path);
 }
 
 void Harvester::update()

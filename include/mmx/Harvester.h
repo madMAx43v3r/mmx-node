@@ -28,6 +28,10 @@ protected:
 
 	void reload() override;
 
+	void add_plot_dir(const std::string& path) override;
+
+	void rem_plot_dir(const std::string& path) override;
+
 	uint64_t get_total_bytes() const override;
 
 	std::shared_ptr<const FarmInfo> get_farm_info() const override;
@@ -35,7 +39,7 @@ protected:
 private:
 	void update();
 
-	void find_plot_dirs(const std::vector<std::string>& dirs, std::vector<std::string>& all_dirs) const;
+	void find_plot_dirs(const std::set<std::string>& dirs, std::set<std::string>& all_dirs) const;
 
 private:
 	size_t total_bytes = 0;
