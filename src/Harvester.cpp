@@ -48,6 +48,9 @@ void Harvester::main()
 
 	farmer = std::make_shared<FarmerClient>(farmer_server);
 
+	http = std::make_shared<vnx::addons::HttpInterface<Harvester>>(this, vnx_name);
+	add_async_client(http);
+
 	set_timer_millis(10000, std::bind(&Harvester::update, this));
 
 	if(reload_interval > 0) {
@@ -302,6 +305,18 @@ void Harvester::update()
 		log(WARN) << "Failed to contact farmer: " << ex.what();
 	}
 	publish(get_farm_info(), output_info);
+}
+
+void Harvester::http_request_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
+									const vnx::request_id_t& request_id) const
+{
+	http->http_request(request, sub_path, request_id, vnx_request->session);
+}
+
+void Harvester::http_request_chunk_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
+											const int64_t& offset, const int64_t& max_bytes, const vnx::request_id_t& request_id) const
+{
+	throw std::logic_error("not implemented");
 }
 
 

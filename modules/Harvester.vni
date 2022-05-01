@@ -1,6 +1,6 @@
 package mmx;
 
-module Harvester {
+module Harvester implements vnx.addons.HttpComponent {
 	
 	vnx.TopicPtr input_challenges = "harvester.challenges";
 	
