@@ -29,6 +29,11 @@ static constexpr uint64_t MEM_HEAP = uint64_t(1) << 32;
 
 static constexpr uint64_t STATIC_SIZE = MEM_HEAP - MEM_STATIC;
 
+static constexpr uint8_t FLAG_DIRTY = (1 << 0);
+static constexpr uint8_t FLAG_CONST = (1 << 1);
+static constexpr uint8_t FLAG_STORED = (1 << 2);
+static constexpr uint8_t FLAG_DELETED = (1 << 3);
+static constexpr uint8_t FLAG_KEY = (1 << 4);
 
 enum vartype_e : uint8_t {
 
@@ -41,16 +46,6 @@ enum vartype_e : uint8_t {
 	TYPE_BINARY,
 	TYPE_ARRAY,
 	TYPE_MAP,
-
-};
-
-struct varflags_e {
-
-	static constexpr uint8_t DIRTY = (1 << 0);
-	static constexpr uint8_t CONST = (1 << 1);
-	static constexpr uint8_t STORED = (1 << 2);
-	static constexpr uint8_t DELETED = (1 << 3);
-	static constexpr uint8_t KEY = (1 << 4);
 
 };
 
@@ -71,14 +66,14 @@ struct var_t {
 			throw std::runtime_error("ref_count overflow");
 		}
 		ref_count++;
-		flags |= varflags_e::DIRTY;
+		flags |= FLAG_DIRTY;
 	}
 	bool unref() {
 		if(!ref_count) {
 			throw std::logic_error("unref underflow");
 		}
 		ref_count--;
-		flags |= varflags_e::DIRTY;
+		flags |= FLAG_DIRTY;
 		return ref_count == 0;
 	}
 	var_t* pin() {

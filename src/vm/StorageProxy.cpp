@@ -20,16 +20,16 @@ StorageProxy::StorageProxy(std::shared_ptr<Storage> backend, bool read_only)
 var_t* StorageProxy::read_ex(var_t* var, const uint64_t src, const uint64_t* key) const
 {
 	if(var) {
-		if(var->flags & varflags_e::DELETED) {
+		if(var->flags & FLAG_DELETED) {
 			delete var;
 			var = nullptr;
 		}
 	}
 	if(var) {
-		var->flags &= ~varflags_e::DIRTY;
-		var->flags |= varflags_e::STORED;
+		var->flags &= ~FLAG_DIRTY;
+		var->flags |= FLAG_STORED;
 		if(read_only) {
-			var->flags |= varflags_e::CONST;
+			var->flags |= FLAG_CONST;
 		}
 	}
 	num_read++;
@@ -52,11 +52,11 @@ void StorageProxy::write(const addr_t& contract, const uint64_t dst, const var_t
 	if(read_only) {
 		throw std::logic_error("read-only storage");
 	}
-	if((value.flags & varflags_e::KEY) && !(value.flags & varflags_e::CONST)) {
+	if((value.flags & FLAG_KEY) && !(value.flags & FLAG_CONST)) {
 		throw std::logic_error("keys need to be const");
 	}
 	num_write++;
-	bytes_write += num_bytes(value) * (value.flags & varflags_e::KEY ? 2 : 1);
+	bytes_write += num_bytes(value) * (value.flags & FLAG_KEY ? 2 : 1);
 	backend->write(contract, dst, value);
 }
 

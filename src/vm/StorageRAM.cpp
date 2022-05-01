@@ -47,10 +47,10 @@ void StorageRAM::write(const addr_t& contract, const uint64_t dst, const var_t& 
 	const auto key = std::make_pair(contract, dst);
 
 	auto var = clone(value);
-	var->flags &= varflags_e::STORED;
+	var->flags &= FLAG_STORED;
 	memory[key] = var;
 
-	if(value.flags & varflags_e::KEY) {
+	if(value.flags & FLAG_KEY) {
 		key_map[contract][var] = dst;
 	}
 }
@@ -60,7 +60,7 @@ void StorageRAM::write(const addr_t& contract, const uint64_t dst, const uint64_
 	const auto mapkey = std::make_pair(std::make_pair(contract, dst), key);
 
 	auto var = clone(value);
-	var->flags &= varflags_e::STORED;
+	var->flags &= FLAG_STORED;
 	entries[mapkey] = var;
 }
 

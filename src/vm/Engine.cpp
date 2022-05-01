@@ -90,11 +90,11 @@ var_t* Engine::assign(const uint64_t dst, const uint64_t key, var_t* value)
 var_t* Engine::assign(var_t*& var, var_t* value)
 {
 	if(var) {
-		if(var->flags & varflags_e::CONST) {
+		if(var->flags & FLAG_CONST) {
 			delete value;
 			throw std::logic_error("read-only memory");
 		}
-		value->flags = (var->flags & ~varflags_e::DELETED) | varflags_e::DIRTY;
+		value->flags = (var->flags & ~FLAG_DELETED) | FLAG_DIRTY;
 		value->ref_count = var->ref_count;
 		try {
 			clear(var);
@@ -144,7 +144,7 @@ uint64_t Engine::lookup(const var_t& var)
 		if(value.ref_count == 0) {
 			throw std::logic_error("lookup(): key with ref_count == 0");
 		}
-		if(!(value.flags & varflags_e::CONST) || !(value.flags & varflags_e::KEY)) {
+		if(!(value.flags & FLAG_CONST) || !(value.flags & FLAG_KEY)) {
 			throw std::logic_error("lookup(): key missing flag CONST / KEY");
 		}
 		key_map[&value] = key;
@@ -152,7 +152,7 @@ uint64_t Engine::lookup(const var_t& var)
 	}
 	const auto key = alloc();
 	const auto value = write(key, var);
-	value->flags |= varflags_e::CONST | varflags_e::KEY;
+	value->flags |= FLAG_CONST | FLAG_KEY;
 	value->addref();
 	key_map[value] = key;
 	return key;
@@ -205,15 +205,15 @@ var_t* Engine::write(var_t*& var, const uint64_t* dst, const var_t& src)
 		return var;
 	}
 	if(var) {
-		if(var->flags & varflags_e::CONST) {
+		if(var->flags & FLAG_CONST) {
 			if(dst) {
 				throw std::logic_error("read-only memory at " + to_hex(*dst));
 			} else {
 				throw std::logic_error("read-only memory");
 			}
 		}
-		var->flags |= varflags_e::DIRTY;
-		var->flags &= ~varflags_e::DELETED;
+		var->flags |= FLAG_DIRTY;
+		var->flags &= ~FLAG_DELETED;
 
 		switch(src.type) {
 			case TYPE_NIL:
@@ -286,7 +286,7 @@ void Engine::push_back(const uint64_t dst, const var_t& src)
 		throw std::runtime_error("push_back overflow at " + to_hex(dst));
 	}
 	write_entry(dst, array.size++, src);
-	array.flags |= varflags_e::DIRTY;
+	array.flags |= FLAG_DIRTY;
 }
 
 void Engine::push_back(const uint64_t dst, const uint64_t src)
@@ -304,7 +304,7 @@ void Engine::pop_back(const uint64_t dst, const uint64_t& src)
 	write(dst, read_entry_fail(src, index));
 	erase_entry(src, index);
 	array.size--;
-	array.flags |= varflags_e::DIRTY;
+	array.flags |= FLAG_DIRTY;
 }
 
 array_t* Engine::clone_array(const uint64_t dst, const array_t& src)
@@ -412,7 +412,7 @@ void Engine::erase(const uint64_t dst)
 
 void Engine::erase(var_t*& var)
 {
-	if(var->flags & varflags_e::CONST) {
+	if(var->flags & FLAG_CONST) {
 		throw std::logic_error("erase on read-only memory");
 	}
 	if(var->ref_count) {
@@ -422,10 +422,10 @@ void Engine::erase(var_t*& var)
 
 	auto prev = var;
 	var = new var_t();
-	if(var->flags & varflags_e::STORED) {
-		var->flags = (prev->flags | varflags_e::DIRTY | varflags_e::DELETED);
+	if(var->flags & FLAG_STORED) {
+		var->flags = (prev->flags | FLAG_DIRTY | FLAG_DELETED);
 	} else {
-		var->flags = varflags_e::DELETED;
+		var->flags = FLAG_DELETED;
 	}
 	delete prev;
 }
@@ -438,7 +438,7 @@ void Engine::clear(var_t* var)
 			break;
 		case TYPE_ARRAY: {
 			const auto dst = ((const array_t*)var)->address;
-			if(dst >= MEM_STATIC && (var->flags & varflags_e::STORED)) {
+			if(dst >= MEM_STATIC && (var->flags & FLAG_STORED)) {
 				throw std::logic_error("cannot erase array in storage");
 			}
 			erase_entries(dst);
@@ -446,7 +446,7 @@ void Engine::clear(var_t* var)
 		}
 		case TYPE_MAP: {
 			const auto dst = ((const map_t*)var)->address;
-			if(dst >= MEM_STATIC && (var->flags & varflags_e::STORED)) {
+			if(dst >= MEM_STATIC && (var->flags & FLAG_STORED)) {
 				throw std::logic_error("cannot erase map in storage");
 			}
 			erase_entries(dst);
@@ -462,7 +462,7 @@ var_t* Engine::read(const uint64_t src)
 	auto iter = memory.find(src);
 	if(iter != memory.end()) {
 		if(auto var = iter->second) {
-			if(var->flags & varflags_e::DELETED) {
+			if(var->flags & FLAG_DELETED) {
 				return nullptr;
 			}
 		}
@@ -490,7 +490,7 @@ var_t* Engine::read_entry(const uint64_t src, const uint64_t key)
 	const auto iter = entries.find(mapkey);
 	if(iter != entries.end()) {
 		if(auto var = iter->second) {
-			if(var->flags & varflags_e::DELETED) {
+			if(var->flags & FLAG_DELETED) {
 				return nullptr;
 			}
 		}
@@ -524,8 +524,8 @@ var_t& Engine::read_key_fail(const uint64_t src, const uint64_t key)
 
 uint64_t Engine::alloc()
 {
-	auto& offset = read_fail<uint_t>(MEM_HEAP + NEXT_ALLOC, TYPE_UINT);
-	offset.flags |= varflags_e::DIRTY;
+	auto& offset = read_fail<uint_t>(MEM_HEAP + GLOBAL_NEXT_ALLOC, TYPE_UINT);
+	offset.flags |= FLAG_DIRTY;
 	if(offset.value == std::numeric_limits<uint64_t>::max()) {
 		throw std::runtime_error("out of memory");
 	}
@@ -536,17 +536,16 @@ void Engine::begin(const uint32_t instr_ptr)
 {
 	for(auto iter = memory.begin(); iter != memory.lower_bound(MEM_STACK); ++iter) {
 		if(auto var = iter->second) {
-			var->flags |= varflags_e::CONST;
+			var->flags |= FLAG_CONST;
 		}
 	}
-	if(!read(MEM_HEAP + HAVE_INIT)) {
-		write(MEM_HEAP + HAVE_INIT, var_t(TYPE_TRUE))->pin();
-		write(MEM_HEAP + NEXT_ALLOC, uint_t(MEM_HEAP + DYNAMIC_START))->pin();
-		write(MEM_HEAP + BALANCE, map_t())->pin();
-		write(MEM_HEAP + LOG_HISTORY, array_t())->pin();
-		write(MEM_HEAP + SEND_HISTORY, array_t())->pin();
-		write(MEM_HEAP + MINT_HISTORY, array_t())->pin();
-		write(MEM_HEAP + EVENT_HISTORY, array_t())->pin();
+	if(!read(MEM_HEAP + GLOBAL_HAVE_INIT)) {
+		write(MEM_HEAP + GLOBAL_HAVE_INIT, var_t(TYPE_TRUE))->pin();
+		write(MEM_HEAP + GLOBAL_NEXT_ALLOC, uint_t(MEM_HEAP + GLOBAL_DYNAMIC_START))->pin();
+		write(MEM_HEAP + GLOBAL_LOG_HISTORY, array_t())->pin();
+		write(MEM_HEAP + GLOBAL_SEND_HISTORY, array_t())->pin();
+		write(MEM_HEAP + GLOBAL_MINT_HISTORY, array_t())->pin();
+		write(MEM_HEAP + GLOBAL_EVENT_HISTORY, array_t())->pin();
 	}
 	frame_t frame;
 	frame.instr_ptr = instr_ptr;
@@ -605,7 +604,7 @@ void Engine::get(const uint64_t dst, const uint64_t addr, const uint64_t key, co
 			if(index < ((const array_t&)var).size) {
 				write(dst, read_entry_fail(addr, index));
 			}
-			else if(flags & opflags_e::HARD_FAIL) {
+			else if(flags & OPFLAG_HARD_FAIL) {
 				throw std::runtime_error("out of bounds");
 			}
 			else {
@@ -617,7 +616,7 @@ void Engine::get(const uint64_t dst, const uint64_t addr, const uint64_t key, co
 			write(dst, read_key(addr, key));
 			break;
 		default:
-			if(flags & opflags_e::HARD_FAIL) {
+			if(flags & OPFLAG_HARD_FAIL) {
 				throw std::logic_error("invalid type");
 			} else {
 				write(dst, var_t());
@@ -634,7 +633,7 @@ void Engine::set(const uint64_t addr, const uint64_t key, const uint64_t src, co
 			if(index < ((const array_t&)var).size) {
 				write_entry(addr, index, read_fail(src));
 			}
-			else if(flags & opflags_e::HARD_FAIL) {
+			else if(flags & OPFLAG_HARD_FAIL) {
 				throw std::runtime_error("out of bounds");
 			}
 			break;
@@ -643,7 +642,7 @@ void Engine::set(const uint64_t addr, const uint64_t key, const uint64_t src, co
 			write_key(addr, key, read_fail(src));
 			break;
 		default:
-			if(flags & opflags_e::HARD_FAIL) {
+			if(flags & OPFLAG_HARD_FAIL) {
 				throw std::logic_error("invalid type");
 			}
 	}
@@ -657,7 +656,7 @@ void Engine::erase(const uint64_t addr, const uint64_t key, const uint8_t flags)
 			erase_key(addr, key);
 			break;
 		default:
-			if(flags & opflags_e::HARD_FAIL) {
+			if(flags & OPFLAG_HARD_FAIL) {
 				throw std::logic_error("invalid type");
 			}
 	}
@@ -787,20 +786,20 @@ void Engine::log(const uint64_t level, const uint64_t msg)
 {
 	const auto entry = alloc();
 	write(entry, array_t());
-	push_back(entry, externvar_e::TXID);
+	push_back(entry, MEM_EXTERN + EXTERN_TXID);
 	push_back(entry, uint_t(level));
 	push_back(entry, msg);
-	push_back(globalvar_e::LOG_HISTORY, ref_t(entry));
+	push_back(MEM_HEAP + GLOBAL_LOG_HISTORY, ref_t(entry));
 }
 
 void Engine::event(const uint64_t name, const uint64_t data)
 {
 	const auto entry = alloc();
 	write(entry, array_t());
-	push_back(entry, externvar_e::TXID);
+	push_back(entry, MEM_EXTERN + EXTERN_TXID);
 	push_back(entry, name);
 	push_back(entry, data);
-	push_back(globalvar_e::EVENT_HISTORY, ref_t(entry));
+	push_back(MEM_HEAP + GLOBAL_EVENT_HISTORY, ref_t(entry));
 }
 
 void Engine::jump(const uint32_t instr_ptr)
@@ -867,26 +866,26 @@ void Engine::exec(const instr_t& instr)
 	case OP_NOP:
 		break;
 	case OP_CLR:
-		if(instr.flags & opflags_e::REF_A) {
+		if(instr.flags & OPFLAG_REF_A) {
 			throw std::logic_error("de-referencing instr.a not supported");
 		}
 		erase(instr.a);
 		break;
 	case OP_COPY:
-		copy(	deref_addr(instr.a, instr.flags & opflags_e::REF_A),
-				deref_addr(instr.b, instr.flags & opflags_e::REF_B));
+		copy(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
+				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
 		break;
 	case OP_CLONE:
-		clone(	deref_addr(instr.a, instr.flags & opflags_e::REF_A),
-				deref_addr(instr.b, instr.flags & opflags_e::REF_B));
+		clone(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
+				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
 		break;
 	case OP_JUMP: {
-		jump(	deref_value(instr.a, instr.flags & opflags_e::REF_A));
+		jump(	deref_value(instr.a, instr.flags & OPFLAG_REF_A));
 		return;
 	}
 	case OP_JUMPI: {
-		const auto dst = deref_value(instr.a, instr.flags & opflags_e::REF_A);
-		const auto cond = deref_addr(instr.b, instr.flags & opflags_e::REF_B);
+		const auto dst = deref_value(instr.a, instr.flags & OPFLAG_REF_A);
+		const auto cond = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
 		const auto& var = read_fail(cond);
 		if(var.type == TYPE_TRUE) {
 			jump(dst);
@@ -895,10 +894,10 @@ void Engine::exec(const instr_t& instr)
 		break;
 	}
 	case OP_CALL:
-		if(instr.flags & opflags_e::REF_B) {
+		if(instr.flags & OPFLAG_REF_B) {
 			throw std::logic_error("de-referencing instr.b not supported");
 		}
-		call(	deref_value(instr.a, instr.flags & opflags_e::REF_A),
+		call(	deref_value(instr.a, instr.flags & OPFLAG_REF_A),
 				instr.b);
 		return;
 	case OP_RET:
@@ -907,41 +906,41 @@ void Engine::exec(const instr_t& instr)
 		}
 		break;
 	case OP_ADD: {
-		const auto dst = deref_addr(instr.a, instr.flags & opflags_e::REF_A);
-		const auto lhs = deref_addr(instr.b, instr.flags & opflags_e::REF_B);
-		const auto rhs = deref_addr(instr.c, instr.flags & opflags_e::REF_C);
+		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
+		const auto lhs = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
+		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
 		const auto& L = read_fail<uint_t>(lhs, TYPE_UINT).value;
 		const auto& R = read_fail<uint_t>(rhs, TYPE_UINT).value;
 		const uint256_t D = L + R;
-		if((instr.flags & opflags_e::CATCH_OVERFLOW) && D < L) {
+		if((instr.flags & OPFLAG_CATCH_OVERFLOW) && D < L) {
 			throw std::runtime_error("integer overflow");
 		}
 		write(dst, uint_t(D));
 		break;
 	}
 	case OP_SUB: {
-		const auto dst = deref_addr(instr.a, instr.flags & opflags_e::REF_A);
-		const auto lhs = deref_addr(instr.b, instr.flags & opflags_e::REF_B);
-		const auto rhs = deref_addr(instr.c, instr.flags & opflags_e::REF_C);
+		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
+		const auto lhs = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
+		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
 		const auto& L = read_fail<uint_t>(lhs, TYPE_UINT).value;
 		const auto& R = read_fail<uint_t>(rhs, TYPE_UINT).value;
 		const uint256_t D = L - R;
-		if((instr.flags & opflags_e::CATCH_OVERFLOW) && D > L) {
+		if((instr.flags & OPFLAG_CATCH_OVERFLOW) && D > L) {
 			throw std::runtime_error("integer overflow");
 		}
 		write(dst, uint_t(D));
 		break;
 	}
 	case OP_TYPE: {
-		const auto dst = deref_addr(instr.a, instr.flags & opflags_e::REF_A);
-		const auto addr = deref_addr(instr.b, instr.flags & opflags_e::REF_B);
+		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
+		const auto addr = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
 		const auto& var = read_fail(addr);
 		write(dst, uint_t(uint32_t(var.type)));
 		break;
 	}
 	case OP_SIZE: {
-		const auto dst = deref_addr(instr.a, instr.flags & opflags_e::REF_A);
-		const auto addr = deref_addr(instr.b, instr.flags & opflags_e::REF_B);
+		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
+		const auto addr = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
 		const auto& var = read_fail(addr);
 		switch(var.type) {
 			case TYPE_STRING:
@@ -957,44 +956,44 @@ void Engine::exec(const instr_t& instr)
 		break;
 	}
 	case OP_GET:
-		get(	deref_addr(instr.a, instr.flags & opflags_e::REF_A),
-				deref_addr(instr.b, instr.flags & opflags_e::REF_B),
-				deref_addr(instr.c, instr.flags & opflags_e::REF_C), instr.flags);
+		get(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
+				deref_addr(instr.b, instr.flags & OPFLAG_REF_B),
+				deref_addr(instr.c, instr.flags & OPFLAG_REF_C), instr.flags);
 		break;
 	case OP_SET:
-		set(	deref_addr(instr.a, instr.flags & opflags_e::REF_A),
-				deref_addr(instr.b, instr.flags & opflags_e::REF_B),
-				deref_addr(instr.c, instr.flags & opflags_e::REF_C), instr.flags);
+		set(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
+				deref_addr(instr.b, instr.flags & OPFLAG_REF_B),
+				deref_addr(instr.c, instr.flags & OPFLAG_REF_C), instr.flags);
 		break;
 	case OP_ERASE:
-		erase(	deref_addr(instr.a, instr.flags & opflags_e::REF_A),
-				deref_addr(instr.b, instr.flags & opflags_e::REF_B), instr.flags);
+		erase(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
+				deref_addr(instr.b, instr.flags & OPFLAG_REF_B), instr.flags);
 		break;
 	case OP_PUSH_BACK:
-		push_back(	deref_addr(instr.a, instr.flags & opflags_e::REF_A),
-					deref_addr(instr.b, instr.flags & opflags_e::REF_B));
+		push_back(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
+					deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
 		break;
 	case OP_POP_BACK:
-		pop_back(	deref_addr(instr.a, instr.flags & opflags_e::REF_A),
-					deref_addr(instr.b, instr.flags & opflags_e::REF_B));
+		pop_back(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
+					deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
 		break;
 	case OP_CONCAT:
-		concat(	deref_addr(instr.a, instr.flags & opflags_e::REF_A),
-				deref_addr(instr.b, instr.flags & opflags_e::REF_B));
+		concat(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
+				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
 		break;
 	case OP_MEMCPY:
-		memcpy(	deref_addr(instr.a, instr.flags & opflags_e::REF_A),
-				deref_addr(instr.b, instr.flags & opflags_e::REF_B),
-				deref_value(instr.c, instr.flags & opflags_e::REF_C),
-				deref_value(instr.d, instr.flags & opflags_e::REF_D));
+		memcpy(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
+				deref_addr(instr.b, instr.flags & OPFLAG_REF_B),
+				deref_value(instr.c, instr.flags & OPFLAG_REF_C),
+				deref_value(instr.d, instr.flags & OPFLAG_REF_D));
 		break;
 	case OP_LOG:
-		log(	deref_value(instr.a, instr.flags & opflags_e::REF_A),
-				deref_addr(instr.b, instr.flags & opflags_e::REF_B));
+		log(	deref_value(instr.a, instr.flags & OPFLAG_REF_A),
+				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
 		break;
 	case OP_EVENT:
-		event(	deref_addr(instr.a, instr.flags & opflags_e::REF_A),
-				deref_addr(instr.b, instr.flags & opflags_e::REF_B));
+		event(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
+				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
 		break;
 	default:
 		throw std::logic_error("invalid op_code: 0x" + vnx::to_hex_string(uint8_t(instr.code)));
@@ -1028,7 +1027,7 @@ void Engine::commit()
 	for(auto iter = memory.lower_bound(MEM_STATIC); iter != memory.end(); ++iter)
 	{
 		if(auto var = iter->second) {
-			if(var->flags & varflags_e::DIRTY) {
+			if(var->flags & FLAG_DIRTY) {
 				storage->write(contract, iter->first, *var);
 			}
 		}
@@ -1036,7 +1035,7 @@ void Engine::commit()
 	for(auto iter = entries.lower_bound(std::make_pair(MEM_STATIC, 0)); iter != entries.end(); ++iter)
 	{
 		if(auto var = iter->second) {
-			if(var->flags & varflags_e::DIRTY) {
+			if(var->flags & FLAG_DIRTY) {
 				storage->write(contract, iter->first.first, iter->first.second, *var);
 			}
 		}
@@ -1046,7 +1045,7 @@ void Engine::commit()
 void Engine::dump_memory(const uint64_t begin, const uint64_t end)
 {
 	for(auto iter = memory.lower_bound(begin); iter != memory.lower_bound(end); ++iter) {
-		std::cout << "[0x" << std::hex << iter->first << "] " << to_string(iter->second) << std::endl;
+		std::cout << "[0x" << std::hex << iter->first << std::dec << "] " << to_string(iter->second) << std::endl;
 	}
 }
 

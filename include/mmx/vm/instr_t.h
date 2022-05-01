@@ -15,6 +15,13 @@
 namespace mmx {
 namespace vm {
 
+static constexpr uint8_t OPFLAG_REF_A = (1 << 0);
+static constexpr uint8_t OPFLAG_REF_B = (1 << 1);
+static constexpr uint8_t OPFLAG_REF_C = (1 << 2);
+static constexpr uint8_t OPFLAG_REF_D = (1 << 3);
+static constexpr uint8_t OPFLAG_HARD_FAIL = (1 << 4);
+static constexpr uint8_t OPFLAG_CATCH_OVERFLOW = (1 << 5);
+
 enum opcode_e : uint8_t {
 
 	OP_NOP,
@@ -67,17 +74,6 @@ enum opcode_e : uint8_t {
 	OP_MINT,		// addr, amount
 	OP_EVENT,		// name, data
 	OP_FAIL,		// message
-
-};
-
-struct opflags_e {
-
-	static constexpr uint8_t REF_A = (1 << 0);
-	static constexpr uint8_t REF_B = (1 << 1);
-	static constexpr uint8_t REF_C = (1 << 2);
-	static constexpr uint8_t REF_D = (1 << 3);
-	static constexpr uint8_t HARD_FAIL = (1 << 4);
-	static constexpr uint8_t CATCH_OVERFLOW = (1 << 5);
 
 };
 
