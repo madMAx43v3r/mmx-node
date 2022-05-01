@@ -23,6 +23,14 @@ public:
 	
 	void reload_async();
 	
+	void add_plot_dir(const std::string& path = "");
+	
+	void add_plot_dir_async(const std::string& path = "");
+	
+	void rem_plot_dir(const std::string& path = "");
+	
+	void rem_plot_dir_async(const std::string& path = "");
+	
 	std::shared_ptr<const ::mmx::FarmInfo> get_farm_info();
 	
 	uint64_t get_total_bytes();

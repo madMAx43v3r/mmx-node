@@ -19,7 +19,7 @@ public:
 	::vnx::TopicPtr input_challenges = "harvester.challenges";
 	::vnx::TopicPtr output_info = "harvester.info";
 	::vnx::TopicPtr output_proofs = "harvester.proof";
-	std::vector<std::string> plot_dirs;
+	std::set<std::string> plot_dirs;
 	std::string farmer_server = "Farmer";
 	int32_t max_queue_ms = 10000;
 	int32_t reload_interval = 3600;
@@ -62,6 +62,8 @@ protected:
 	using Super::handle;
 	
 	virtual void reload() = 0;
+	virtual void add_plot_dir(const std::string& path) = 0;
+	virtual void rem_plot_dir(const std::string& path) = 0;
 	virtual std::shared_ptr<const ::mmx::FarmInfo> get_farm_info() const = 0;
 	virtual uint64_t get_total_bytes() const = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::Challenge> _value) {}

@@ -23,6 +23,14 @@ public:
 			const std::function<void()>& _callback = std::function<void()>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
+	uint64_t add_plot_dir(const std::string& path = "", 
+			const std::function<void()>& _callback = std::function<void()>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t rem_plot_dir(const std::string& path = "", 
+			const std::function<void()>& _callback = std::function<void()>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
 	uint64_t get_farm_info(
 			const std::function<void(std::shared_ptr<const ::mmx::FarmInfo>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::FarmInfo>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
@@ -74,6 +82,8 @@ protected:
 	
 private:
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_reload;
+	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_add_plot_dir;
+	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_rem_plot_dir;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::FarmInfo>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_farm_info;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const uint64_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_total_bytes;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::vnx::Object&)>, std::function<void(const vnx::exception&)>>> vnx_queue_vnx_get_config_object;

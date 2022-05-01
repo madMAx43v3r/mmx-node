@@ -6,12 +6,16 @@
 #include <vnx/NoSuchMethod.hxx>
 #include <mmx/Challenge.hxx>
 #include <mmx/FarmInfo.hxx>
+#include <mmx/Harvester_add_plot_dir.hxx>
+#include <mmx/Harvester_add_plot_dir_return.hxx>
 #include <mmx/Harvester_get_farm_info.hxx>
 #include <mmx/Harvester_get_farm_info_return.hxx>
 #include <mmx/Harvester_get_total_bytes.hxx>
 #include <mmx/Harvester_get_total_bytes_return.hxx>
 #include <mmx/Harvester_reload.hxx>
 #include <mmx/Harvester_reload_return.hxx>
+#include <mmx/Harvester_rem_plot_dir.hxx>
+#include <mmx/Harvester_rem_plot_dir_return.hxx>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
@@ -40,7 +44,7 @@ namespace mmx {
 
 
 const vnx::Hash64 HarvesterBase::VNX_TYPE_HASH(0xc17118896cde1555ull);
-const vnx::Hash64 HarvesterBase::VNX_CODE_HASH(0x2225c1747e3766full);
+const vnx::Hash64 HarvesterBase::VNX_CODE_HASH(0xb009d776ad8c2e54ull);
 
 HarvesterBase::HarvesterBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -219,22 +223,24 @@ std::shared_ptr<vnx::TypeCode> HarvesterBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Harvester";
 	type_code->type_hash = vnx::Hash64(0xc17118896cde1555ull);
-	type_code->code_hash = vnx::Hash64(0x2225c1747e3766full);
+	type_code->code_hash = vnx::Hash64(0xb009d776ad8c2e54ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::HarvesterBase);
-	type_code->methods.resize(12);
-	type_code->methods[0] = ::mmx::Harvester_get_farm_info::static_get_type_code();
-	type_code->methods[1] = ::mmx::Harvester_get_total_bytes::static_get_type_code();
-	type_code->methods[2] = ::mmx::Harvester_reload::static_get_type_code();
-	type_code->methods[3] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
-	type_code->methods[4] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
-	type_code->methods[5] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
-	type_code->methods[6] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
-	type_code->methods[7] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
-	type_code->methods[8] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
-	type_code->methods[9] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
-	type_code->methods[10] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
-	type_code->methods[11] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
+	type_code->methods.resize(14);
+	type_code->methods[0] = ::mmx::Harvester_add_plot_dir::static_get_type_code();
+	type_code->methods[1] = ::mmx::Harvester_get_farm_info::static_get_type_code();
+	type_code->methods[2] = ::mmx::Harvester_get_total_bytes::static_get_type_code();
+	type_code->methods[3] = ::mmx::Harvester_reload::static_get_type_code();
+	type_code->methods[4] = ::mmx::Harvester_rem_plot_dir::static_get_type_code();
+	type_code->methods[5] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
+	type_code->methods[6] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
+	type_code->methods[7] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
+	type_code->methods[8] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
+	type_code->methods[9] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
+	type_code->methods[10] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
+	type_code->methods[11] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
+	type_code->methods[12] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
+	type_code->methods[13] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
 	type_code->fields.resize(9);
 	{
 		auto& field = type_code->fields[0];
@@ -318,6 +324,12 @@ void HarvesterBase::vnx_handle_switch(std::shared_ptr<const vnx::Value> _value) 
 
 std::shared_ptr<vnx::Value> HarvesterBase::vnx_call_switch(std::shared_ptr<const vnx::Value> _method, const vnx::request_id_t& _request_id) {
 	switch(_method->get_type_hash()) {
+		case 0x61714d1c7ecaffddull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Harvester_add_plot_dir>(_method);
+			auto _return_value = ::mmx::Harvester_add_plot_dir_return::create();
+			add_plot_dir(_args->path);
+			return _return_value;
+		}
 		case 0x129f91b9ade2891full: {
 			auto _args = std::static_pointer_cast<const ::mmx::Harvester_get_farm_info>(_method);
 			auto _return_value = ::mmx::Harvester_get_farm_info_return::create();
@@ -334,6 +346,12 @@ std::shared_ptr<vnx::Value> HarvesterBase::vnx_call_switch(std::shared_ptr<const
 			auto _args = std::static_pointer_cast<const ::mmx::Harvester_reload>(_method);
 			auto _return_value = ::mmx::Harvester_reload_return::create();
 			reload();
+			return _return_value;
+		}
+		case 0x57674e56f3ab6076ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Harvester_rem_plot_dir>(_method);
+			auto _return_value = ::mmx::Harvester_rem_plot_dir_return::create();
+			rem_plot_dir(_args->path);
 			return _return_value;
 		}
 		case 0xbbc7f1a01044d294ull: {

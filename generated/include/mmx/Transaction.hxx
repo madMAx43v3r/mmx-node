@@ -23,10 +23,10 @@ class MMX_EXPORT Transaction : public ::mmx::TransactionBase {
 public:
 	
 	uint32_t version = 0;
-	uint32_t nonce = 0;
 	uint32_t expires = -1;
 	uint32_t fee_ratio = 1024;
 	::mmx::tx_note_e note;
+	uint64_t nonce = 0;
 	vnx::optional<::mmx::hash_t> salt;
 	vnx::optional<::mmx::addr_t> sender;
 	std::vector<::mmx::txin_t> inputs;
@@ -101,10 +101,10 @@ void Transaction::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<Transaction>(16);
 	_visitor.type_field("id", 0); _visitor.accept(id);
 	_visitor.type_field("version", 1); _visitor.accept(version);
-	_visitor.type_field("nonce", 2); _visitor.accept(nonce);
-	_visitor.type_field("expires", 3); _visitor.accept(expires);
-	_visitor.type_field("fee_ratio", 4); _visitor.accept(fee_ratio);
-	_visitor.type_field("note", 5); _visitor.accept(note);
+	_visitor.type_field("expires", 2); _visitor.accept(expires);
+	_visitor.type_field("fee_ratio", 3); _visitor.accept(fee_ratio);
+	_visitor.type_field("note", 4); _visitor.accept(note);
+	_visitor.type_field("nonce", 5); _visitor.accept(nonce);
 	_visitor.type_field("salt", 6); _visitor.accept(salt);
 	_visitor.type_field("sender", 7); _visitor.accept(sender);
 	_visitor.type_field("inputs", 8); _visitor.accept(inputs);

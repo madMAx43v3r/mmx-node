@@ -59,12 +59,16 @@
 #include <mmx/Farmer_sign_proof_return.hxx>
 #include <mmx/FarmerKeys.hxx>
 #include <mmx/HarvesterBase.hxx>
+#include <mmx/Harvester_add_plot_dir.hxx>
+#include <mmx/Harvester_add_plot_dir_return.hxx>
 #include <mmx/Harvester_get_farm_info.hxx>
 #include <mmx/Harvester_get_farm_info_return.hxx>
 #include <mmx/Harvester_get_total_bytes.hxx>
 #include <mmx/Harvester_get_total_bytes_return.hxx>
 #include <mmx/Harvester_reload.hxx>
 #include <mmx/Harvester_reload_return.hxx>
+#include <mmx/Harvester_rem_plot_dir.hxx>
+#include <mmx/Harvester_rem_plot_dir_return.hxx>
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/KeyFile.hxx>
 #include <mmx/NetworkInfo.hxx>
@@ -1026,6 +1030,30 @@ void type<::mmx::FarmerKeys>::create_dynamic_code(std::vector<uint16_t>& code, c
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Harvester_add_plot_dir>::get_type_code() {
+	return mmx::vnx_native_type_code_Harvester_add_plot_dir;
+}
+
+void type<::mmx::Harvester_add_plot_dir>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Harvester_add_plot_dir());
+}
+
+void type<::mmx::Harvester_add_plot_dir>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Harvester_add_plot_dir& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Harvester_add_plot_dir_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Harvester_add_plot_dir_return;
+}
+
+void type<::mmx::Harvester_add_plot_dir_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Harvester_add_plot_dir_return());
+}
+
+void type<::mmx::Harvester_add_plot_dir_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Harvester_add_plot_dir_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::Harvester_get_farm_info>::get_type_code() {
 	return mmx::vnx_native_type_code_Harvester_get_farm_info;
 }
@@ -1095,6 +1123,30 @@ void type<::mmx::Harvester_reload_return>::create_dynamic_code(std::vector<uint1
 }
 
 void type<::mmx::Harvester_reload_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Harvester_reload_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Harvester_rem_plot_dir>::get_type_code() {
+	return mmx::vnx_native_type_code_Harvester_rem_plot_dir;
+}
+
+void type<::mmx::Harvester_rem_plot_dir>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Harvester_rem_plot_dir());
+}
+
+void type<::mmx::Harvester_rem_plot_dir>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Harvester_rem_plot_dir& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Harvester_rem_plot_dir_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Harvester_rem_plot_dir_return;
+}
+
+void type<::mmx::Harvester_rem_plot_dir_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Harvester_rem_plot_dir_return());
+}
+
+void type<::mmx::Harvester_rem_plot_dir_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Harvester_rem_plot_dir_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -4480,12 +4532,16 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Farmer_sign_proof_return::static_create_type_code());
 	vnx::register_type_code(::mmx::FarmerKeys::static_create_type_code());
 	vnx::register_type_code(::mmx::HarvesterBase::static_create_type_code());
+	vnx::register_type_code(::mmx::Harvester_add_plot_dir::static_create_type_code());
+	vnx::register_type_code(::mmx::Harvester_add_plot_dir_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Harvester_get_farm_info::static_create_type_code());
 	vnx::register_type_code(::mmx::Harvester_get_farm_info_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Harvester_get_total_bytes::static_create_type_code());
 	vnx::register_type_code(::mmx::Harvester_get_total_bytes_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Harvester_reload::static_create_type_code());
 	vnx::register_type_code(::mmx::Harvester_reload_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Harvester_rem_plot_dir::static_create_type_code());
+	vnx::register_type_code(::mmx::Harvester_rem_plot_dir_return::static_create_type_code());
 	vnx::register_type_code(::mmx::IntervalRequest::static_create_type_code());
 	vnx::register_type_code(::mmx::KeyFile::static_create_type_code());
 	vnx::register_type_code(::mmx::NetworkInfo::static_create_type_code());
@@ -4825,12 +4881,16 @@ const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_proof = vnx::get_typ
 const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_proof_return = vnx::get_type_code(vnx::Hash64(0xfc55b496d43f06fbull));
 const vnx::TypeCode* const vnx_native_type_code_FarmerKeys = vnx::get_type_code(vnx::Hash64(0x9942f861520098b3ull));
 const vnx::TypeCode* const vnx_native_type_code_HarvesterBase = vnx::get_type_code(vnx::Hash64(0xc17118896cde1555ull));
+const vnx::TypeCode* const vnx_native_type_code_Harvester_add_plot_dir = vnx::get_type_code(vnx::Hash64(0x61714d1c7ecaffddull));
+const vnx::TypeCode* const vnx_native_type_code_Harvester_add_plot_dir_return = vnx::get_type_code(vnx::Hash64(0x8b5f7bc4f34fb5d5ull));
 const vnx::TypeCode* const vnx_native_type_code_Harvester_get_farm_info = vnx::get_type_code(vnx::Hash64(0x129f91b9ade2891full));
 const vnx::TypeCode* const vnx_native_type_code_Harvester_get_farm_info_return = vnx::get_type_code(vnx::Hash64(0x87a91b15ec42441full));
 const vnx::TypeCode* const vnx_native_type_code_Harvester_get_total_bytes = vnx::get_type_code(vnx::Hash64(0x36f2104b41d9a25cull));
 const vnx::TypeCode* const vnx_native_type_code_Harvester_get_total_bytes_return = vnx::get_type_code(vnx::Hash64(0xd9a9fe83ba7d6918ull));
 const vnx::TypeCode* const vnx_native_type_code_Harvester_reload = vnx::get_type_code(vnx::Hash64(0xc67a4577de7e85caull));
 const vnx::TypeCode* const vnx_native_type_code_Harvester_reload_return = vnx::get_type_code(vnx::Hash64(0x39fc8cc53bcf4659ull));
+const vnx::TypeCode* const vnx_native_type_code_Harvester_rem_plot_dir = vnx::get_type_code(vnx::Hash64(0x57674e56f3ab6076ull));
+const vnx::TypeCode* const vnx_native_type_code_Harvester_rem_plot_dir_return = vnx::get_type_code(vnx::Hash64(0xb2a8cfb3633bf358ull));
 const vnx::TypeCode* const vnx_native_type_code_IntervalRequest = vnx::get_type_code(vnx::Hash64(0xa4e39be061f13d71ull));
 const vnx::TypeCode* const vnx_native_type_code_KeyFile = vnx::get_type_code(vnx::Hash64(0xdf868931a939cba1ull));
 const vnx::TypeCode* const vnx_native_type_code_NetworkInfo = vnx::get_type_code(vnx::Hash64(0xd984018819746101ull));

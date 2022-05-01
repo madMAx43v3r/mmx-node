@@ -5,12 +5,16 @@
 #include <mmx/HarvesterClient.hxx>
 #include <mmx/Challenge.hxx>
 #include <mmx/FarmInfo.hxx>
+#include <mmx/Harvester_add_plot_dir.hxx>
+#include <mmx/Harvester_add_plot_dir_return.hxx>
 #include <mmx/Harvester_get_farm_info.hxx>
 #include <mmx/Harvester_get_farm_info_return.hxx>
 #include <mmx/Harvester_get_total_bytes.hxx>
 #include <mmx/Harvester_get_total_bytes_return.hxx>
 #include <mmx/Harvester_reload.hxx>
 #include <mmx/Harvester_reload_return.hxx>
+#include <mmx/Harvester_rem_plot_dir.hxx>
+#include <mmx/Harvester_rem_plot_dir_return.hxx>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
@@ -55,6 +59,30 @@ void HarvesterClient::reload() {
 
 void HarvesterClient::reload_async() {
 	auto _method = ::mmx::Harvester_reload::create();
+	vnx_request(_method, true);
+}
+
+void HarvesterClient::add_plot_dir(const std::string& path) {
+	auto _method = ::mmx::Harvester_add_plot_dir::create();
+	_method->path = path;
+	vnx_request(_method, false);
+}
+
+void HarvesterClient::add_plot_dir_async(const std::string& path) {
+	auto _method = ::mmx::Harvester_add_plot_dir::create();
+	_method->path = path;
+	vnx_request(_method, true);
+}
+
+void HarvesterClient::rem_plot_dir(const std::string& path) {
+	auto _method = ::mmx::Harvester_rem_plot_dir::create();
+	_method->path = path;
+	vnx_request(_method, false);
+}
+
+void HarvesterClient::rem_plot_dir_async(const std::string& path) {
+	auto _method = ::mmx::Harvester_rem_plot_dir::create();
+	_method->path = path;
 	vnx_request(_method, true);
 }
 
