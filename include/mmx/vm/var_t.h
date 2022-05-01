@@ -62,7 +62,7 @@ struct var_t {
 	var_t(const vartype_e& type, const uint8_t& flags) : flags(flags), type(type) {}
 
 	void addref() {
-		if(ref_count == std::numeric_limits<typeof(ref_count)>::max()) {
+		if(ref_count == std::numeric_limits<decltype(ref_count)>::max()) {
 			throw std::runtime_error("ref_count overflow");
 		}
 		ref_count++;
