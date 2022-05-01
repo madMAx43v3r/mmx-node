@@ -408,12 +408,22 @@ void Engine::clear(var_t* var)
 		case vartype_e::REF:
 			unref(((const ref_t*)var)->address);
 			break;
-		case vartype_e::ARRAY:
-			erase_entries(((const array_t*)var)->address);
+		case vartype_e::ARRAY: {
+			const auto dst = ((const array_t*)var)->address;
+			if(dst >= MEM_STATIC && (var->flags & varflags_e::STORED)) {
+				throw std::logic_error("cannot erase array in storage");
+			}
+			erase_entries(dst);
 			break;
-		case vartype_e::MAP:
-			erase_entries(((const map_t*)var)->address);
+		}
+		case vartype_e::MAP: {
+			const auto dst = ((const map_t*)var)->address;
+			if(dst >= MEM_STATIC && (var->flags & varflags_e::STORED)) {
+				throw std::logic_error("cannot erase map in storage");
+			}
+			erase_entries(dst);
 			break;
+		}
 	}
 }
 
