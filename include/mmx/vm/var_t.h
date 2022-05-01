@@ -63,14 +63,14 @@ struct var_t {
 
 	void addref() {
 		if(ref_count == std::numeric_limits<decltype(ref_count)>::max()) {
-			throw std::runtime_error("ref_count overflow");
+			throw std::runtime_error("addref() overflow");
 		}
 		ref_count++;
 		flags |= FLAG_DIRTY;
 	}
 	bool unref() {
 		if(!ref_count) {
-			throw std::logic_error("unref underflow");
+			throw std::logic_error("unref() underflow");
 		}
 		ref_count--;
 		flags |= FLAG_DIRTY;
