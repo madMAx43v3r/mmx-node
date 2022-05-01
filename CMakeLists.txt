@@ -130,6 +130,14 @@ if(MSVC)
 	set_target_properties(mmx_iface PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")
 endif()
 
+add_library(mmx_vm SHARED
+	src/vm/Engine.cpp
+	src/vm/instr_t.cpp
+	src/vm/var_t.cpp
+	src/vm/StorageProxy.cpp
+	src/vm/StorageRAM.cpp
+)
+
 add_library(mmx_modules SHARED
 	src/TimeLord.cpp
 	src/Node.cpp
@@ -178,6 +186,8 @@ if(MSVC)
 endif()
 
 target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_addons vnx_base)
+
+target_link_libraries(mmx_vm vnx_rocksdb mmx_iface)
 
 target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_iface)
 

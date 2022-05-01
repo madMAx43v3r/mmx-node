@@ -7,7 +7,7 @@
 
 #include <mmx/vm/instr_t.h>
 
-#define OPCODE_INFO(op, num) g_opcode_info[opcode_e::op] = {#op, num}
+#define OPCODE_INFO(op, num) g_opcode_info[op] = {#op, num}
 
 
 namespace mmx {
@@ -17,30 +17,27 @@ opcode_info_t g_opcode_info[256] = {};
 
 const struct global_init_t {
 	global_init_t() {
-		OPCODE_INFO(NOP, 0);
-		OPCODE_INFO(CLONE, 2);
-		OPCODE_INFO(COPY, 2);
-		OPCODE_INFO(BEGIN, 1);
-		OPCODE_INFO(END, 0);
-		OPCODE_INFO(LOOP, 1);
-		OPCODE_INFO(BREAK, 1);
-		OPCODE_INFO(ADD, 3);
-		OPCODE_INFO(SUB, 3);
-		OPCODE_INFO(MUL, 3);
-		OPCODE_INFO(DIV, 3);
-		OPCODE_INFO(MOD, 3);
-		OPCODE_INFO(NOT, 2);
-		OPCODE_INFO(XOR, 3);
-		OPCODE_INFO(AND, 3);
-		OPCODE_INFO(OR, 3);
-		OPCODE_INFO(MIN, 3);
-		OPCODE_INFO(MAX, 3);
-		OPCODE_INFO(SHL, 3);
-		OPCODE_INFO(SHR, 3);
-		OPCODE_INFO(CMP_EQ, 3);
-		OPCODE_INFO(CMP_NEQ, 3);
-		OPCODE_INFO(CMP_LT, 3);
-		OPCODE_INFO(CMP_GT, 3);
+		OPCODE_INFO(OP_NOP, 0);
+		OPCODE_INFO(OP_CLR, 1);
+		OPCODE_INFO(OP_COPY, 2);
+		OPCODE_INFO(OP_CLONE, 2);
+		OPCODE_INFO(OP_ADD, 3);
+		OPCODE_INFO(OP_SUB, 3);
+		OPCODE_INFO(OP_MUL, 3);
+		OPCODE_INFO(OP_DIV, 3);
+		OPCODE_INFO(OP_MOD, 3);
+		OPCODE_INFO(OP_NOT, 2);
+		OPCODE_INFO(OP_XOR, 3);
+		OPCODE_INFO(OP_AND, 3);
+		OPCODE_INFO(OP_OR, 3);
+		OPCODE_INFO(OP_MIN, 3);
+		OPCODE_INFO(OP_MAX, 3);
+		OPCODE_INFO(OP_SHL, 3);
+		OPCODE_INFO(OP_SHR, 3);
+		OPCODE_INFO(OP_CMP_EQ, 3);
+		OPCODE_INFO(OP_CMP_NEQ, 3);
+		OPCODE_INFO(OP_CMP_LT, 3);
+		OPCODE_INFO(OP_CMP_GT, 3);
 	}
 } global_init;
 

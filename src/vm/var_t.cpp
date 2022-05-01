@@ -14,20 +14,20 @@ namespace vm {
 var_t* clone(const var_t& src)
 {
 	switch(src.type) {
-		case vartype_e::NIL:
-		case vartype_e::TRUE:
-		case vartype_e::FALSE:
+		case vartype_e::TYPE_NIL:
+		case vartype_e::TYPE_TRUE:
+		case vartype_e::TYPE_FALSE:
 			return new var_t(src);
-		case vartype_e::REF:
+		case vartype_e::TYPE_REF:
 			return new ref_t((const ref_t&)src);
-		case vartype_e::UINT:
+		case vartype_e::TYPE_UINT:
 			return new uint_t((const uint_t&)src);
-		case vartype_e::STRING:
-		case vartype_e::BINARY:
+		case vartype_e::TYPE_STRING:
+		case vartype_e::TYPE_BINARY:
 			return binary_t::alloc((const binary_t&)src, src.type);
-		case vartype_e::ARRAY:
+		case vartype_e::TYPE_ARRAY:
 			return new array_t((const array_t&)src);
-		case vartype_e::MAP:
+		case vartype_e::TYPE_MAP:
 			return new map_t((const map_t&)src);
 	}
 	return nullptr;
@@ -47,11 +47,11 @@ int compare(const var_t& lhs, const var_t& rhs)
 		return lhs.type < rhs.type ? -1 : 1;
 	}
 	switch(lhs.type) {
-		case vartype_e::NIL:
-		case vartype_e::TRUE:
-		case vartype_e::FALSE:
+		case vartype_e::TYPE_NIL:
+		case vartype_e::TYPE_TRUE:
+		case vartype_e::TYPE_FALSE:
 			return 0;
-		case vartype_e::REF: {
+		case vartype_e::TYPE_REF: {
 			const auto& L = (const ref_t&)lhs;
 			const auto& R = (const ref_t&)rhs;
 			if(L.address == R.address) {
@@ -59,7 +59,7 @@ int compare(const var_t& lhs, const var_t& rhs)
 			}
 			return L.address < R.address ? -1 : 1;
 		}
-		case vartype_e::UINT: {
+		case vartype_e::TYPE_UINT: {
 			const auto& L = ((const uint_t&)lhs).value;
 			const auto& R = ((const uint_t&)rhs).value;
 			if(L == R) {
@@ -67,8 +67,8 @@ int compare(const var_t& lhs, const var_t& rhs)
 			}
 			return L < R ? -1 : 1;
 		}
-		case vartype_e::STRING:
-		case vartype_e::BINARY: {
+		case vartype_e::TYPE_STRING:
+		case vartype_e::TYPE_BINARY: {
 			const auto& L = (const binary_t&)lhs;
 			const auto& R = (const binary_t&)rhs;
 			if(L.size == R.size) {

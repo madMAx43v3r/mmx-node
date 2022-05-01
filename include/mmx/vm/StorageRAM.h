@@ -31,7 +31,7 @@ public:
 private:
 	std::map<std::pair<addr_t, uint64_t>, var_t*> memory;
 	std::map<std::pair<std::pair<addr_t, uint64_t>, uint64_t>, var_t*> entries;
-	std::map<std::pair<addr_t, const var_t*>, uint64_t, varptr_less_t> key_map;
+	std::map<addr_t, std::map<const var_t*, uint64_t, varptr_less_t>> key_map;
 
 };
 

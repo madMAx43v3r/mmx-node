@@ -17,96 +17,103 @@ namespace vm {
 
 enum opcode_e : uint8_t {
 
-	NOP,
-	CLR,		// dst
-	COPY,		// dst, src
-	CLONE,		// dst, src
-	JUMP,		// dst
-	JUMPI,		// dst, cond
-	CALL,		// dst, stack_ptr
-	RET,
+	OP_NOP,
+	OP_CLR,			// dst
+	OP_COPY,		// dst, src
+	OP_CLONE,		// dst, src
+	OP_JUMP,		// dst
+	OP_JUMPI,		// dst, cond
+	OP_CALL,		// dst, stack_ptr
+	OP_RET,
 
-	ADD,		// dst, lhs, rhs
-	SUB,		// dst, lhs, rhs
-	MUL,		// dst, lhs, rhs
-	DIV,		// dst, lhs, rhs
-	MOD,		// dst, lhs, rhs
+	OP_ADD,			// dst, lhs, rhs
+	OP_SUB,			// dst, lhs, rhs
+	OP_MUL,			// dst, lhs, rhs
+	OP_DIV,			// dst, lhs, rhs
+	OP_MOD,			// dst, lhs, rhs
 
-	NOT,		// dst, src
-	XOR,		// dst, lhs, rhs
-	AND,		// dst, lhs, rhs
-	OR,			// dst, lhs, rhs
-	MIN,		// dst, lhs, rhs
-	MAX,		// dst, lhs, rhs
-	SHL,		// dst, src, count
-	SHR,		// dst, src, count
+	OP_NOT,			// dst, src
+	OP_XOR,			// dst, lhs, rhs
+	OP_AND,			// dst, lhs, rhs
+	OP_OR,			// dst, lhs, rhs
+	OP_MIN,			// dst, lhs, rhs
+	OP_MAX,			// dst, lhs, rhs
+	OP_SHL,			// dst, src, count
+	OP_SHR,			// dst, src, count
 
-	CMP_EQ,		// dst, lhs, rhs
-	CMP_NEQ,	// dst, lhs, rhs
-	CMP_LT,		// dst, lhs, rhs
-	CMP_GT,		// dst, lhs, rhs
-	CMP_LTE,	// dst, lhs, rhs
-	CMP_GTE,	// dst, lhs, rhs
+	OP_CMP_EQ,		// dst, lhs, rhs
+	OP_CMP_NEQ,		// dst, lhs, rhs
+	OP_CMP_LT,		// dst, lhs, rhs
+	OP_CMP_GT,		// dst, lhs, rhs
+	OP_CMP_LTE,		// dst, lhs, rhs
+	OP_CMP_GTE,		// dst, lhs, rhs
 
-	TYPE,		// dst, addr
-	SIZE,		// dst, addr
-	GET,		// dst, addr, key
-	SET,		// addr, key, src
-	ERASE,		// addr, key
+	OP_TYPE,		// dst, addr
+	OP_SIZE,		// dst, addr
+	OP_GET,			// dst, addr, key
+	OP_SET,			// addr, key, src
+	OP_ERASE,		// addr, key
 
-	PUSH_BACK,	// dst, src
-	POP_BACK,	// dst, src
+	OP_PUSH_BACK,	// dst, src
+	OP_POP_BACK,	// dst, src
 
-	CONV,		// dst, src, dflags, sflags
-	CONCAT,		// dst, src
-	MEMCPY,		// dst, src, count, offset
-	SHA256,		// dst, src
+	OP_CONV,		// dst, src, dflags, sflags
+	OP_CONCAT,		// dst, src
+	OP_MEMCPY,		// dst, src, count, offset
+	OP_SHA256,		// dst, src
 
-	LOG,		// level, message
-	SEND,		// addr, amount, currency
-	MINT,		// addr, amount
-	EVENT,		// name, data
-	FAIL,		// message
-
-};
-
-enum opflags_e : uint16_t {
-
-	REF_A = (1 << 0),
-	REF_B = (1 << 1),
-	REF_C = (1 << 2),
-	REF_D = (1 << 3),
-	HARD_FAIL = (1 << 4),
-	CATCH_OVERFLOW = (1 << 5),
+	OP_LOG,			// level, message
+	OP_SEND,		// addr, amount, currency
+	OP_MINT,		// addr, amount
+	OP_EVENT,		// name, data
+	OP_FAIL,		// message
 
 };
 
-enum convtype_e : uint16_t {
+struct opflags_e {
 
-	DEFAULT,
-	BIN,
-	OCT,
-	DEC,
-	HEX,
-	BOOL,
-	UINT,
-	STRING,
-	BINARY,
-	ARRAY,
-	ADDRESS,
+	static constexpr uint8_t REF_A = (1 << 0);
+	static constexpr uint8_t REF_B = (1 << 1);
+	static constexpr uint8_t REF_C = (1 << 2);
+	static constexpr uint8_t REF_D = (1 << 3);
+	static constexpr uint8_t HARD_FAIL = (1 << 4);
+	static constexpr uint8_t CATCH_OVERFLOW = (1 << 5);
+
+};
+
+enum convtype_e {
+
+	CONVTYPE_DEFAULT = 0,
+	CONVTYPE_BIN,
+	CONVTYPE_OCT,
+	CONVTYPE_DEC,
+	CONVTYPE_HEX,
+	CONVTYPE_BOOL,
+	CONVTYPE_UINT,
+	CONVTYPE_STRING,
+	CONVTYPE_BINARY,
+	CONVTYPE_ARRAY,
+	CONVTYPE_ADDRESS,
 
 };
 
 struct instr_t {
 
-	opcode_e code = opcode_e::NOP;
+	opcode_e code = OP_NOP;
 
-	opflags_e flags = 0;
+	uint8_t flags = 0;
 
 	uint32_t a = 0;
 	uint32_t b = 0;
 	uint32_t c = 0;
 	uint32_t d = 0;
+
+	instr_t() = default;
+	instr_t(opcode_e code, uint8_t flags = 0,
+			uint32_t a = 0, uint32_t b = 0, uint32_t c = 0, uint32_t d = 0)
+		:	code(code), flags(flags), a(a), b(b), c(c), d(c)
+	{
+	}
 
 };
 

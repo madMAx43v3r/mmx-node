@@ -51,7 +51,7 @@ void StorageRAM::write(const addr_t& contract, const uint64_t dst, const var_t& 
 	memory[key] = var;
 
 	if(value.flags & varflags_e::KEY) {
-		key_map[std::make_pair(contract, var)] = dst;
+		key_map[contract][var] = dst;
 	}
 }
 
@@ -66,9 +66,13 @@ void StorageRAM::write(const addr_t& contract, const uint64_t dst, const uint64_
 
 uint64_t StorageRAM::lookup(const addr_t& contract, const var_t& value) const
 {
-	auto iter = key_map.find(std::make_pair(contract, &value));
+	auto iter = key_map.find(contract);
 	if(iter != key_map.end()) {
-		return iter->second;
+		const auto& map = iter->second;
+		auto iter2 = map.find(&value);
+		if(iter2 != map.end()) {
+			return iter2->second;
+		}
 	}
 	return 0;
 }

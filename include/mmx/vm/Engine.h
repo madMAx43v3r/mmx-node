@@ -24,13 +24,15 @@
 namespace mmx {
 namespace vm {
 
-constexpr uint64_t INSTR_COST = 16;
-constexpr uint64_t WRITE_COST = 16;
-constexpr uint64_t WRITE_BYTE_COST = 1;
-constexpr uint64_t STOR_READ_COST = 128;
-constexpr uint64_t STOR_WRITE_COST = 1024;
-constexpr uint64_t STOR_READ_BYTE_COST = 2;
-constexpr uint64_t STOR_WRITE_BYTE_COST = 16;
+class StorageProxy;
+
+static constexpr uint64_t INSTR_COST = 16;
+static constexpr uint64_t WRITE_COST = 16;
+static constexpr uint64_t WRITE_BYTE_COST = 1;
+static constexpr uint64_t STOR_READ_COST = 128;
+static constexpr uint64_t STOR_WRITE_COST = 1024;
+static constexpr uint64_t STOR_READ_BYTE_COST = 2;
+static constexpr uint64_t STOR_WRITE_BYTE_COST = 16;
 
 enum externvar_e : uint32_t {
 
@@ -70,11 +72,8 @@ public:
 	uint64_t num_instr = 0;
 	uint64_t num_write = 0;
 	uint64_t bytes_write = 0;
-	uint64_t num_stor_read = 0;
-	uint64_t num_stor_write = 0;
-	uint64_t stor_bytes_read = 0;
 
-	Engine(const addr_t& contract, std::shared_ptr<Storage> storage);
+	Engine(const addr_t& contract, std::shared_ptr<Storage> backend, bool read_only);
 
 	virtual ~Engine();
 
@@ -124,16 +123,16 @@ public:
 
 	void copy(const uint64_t dst, const uint64_t src);
 	void clone(const uint64_t dst, const uint64_t src);
-	void get(const uint64_t dst, const uint64_t addr, const uint64_t key, const opflags_e flags);
-	void set(const uint64_t addr, const uint64_t key, const uint64_t src, const opflags_e flags);
-	void erase(const uint64_t addr, const uint64_t key, const opflags_e flags);
+	void get(const uint64_t dst, const uint64_t addr, const uint64_t key, const uint8_t flags);
+	void set(const uint64_t addr, const uint64_t key, const uint64_t src, const uint8_t flags);
+	void erase(const uint64_t addr, const uint64_t key, const uint8_t flags);
 	void concat(const uint64_t dst, const uint64_t src);
 	void memcpy(const uint64_t dst, const uint64_t src, const uint32_t count, const uint32_t offset);
 	void conv(const uint64_t dst, const uint64_t src, const uint32_t dflags, const uint32_t sflags);
 	void log(const uint64_t level, const uint64_t msg);
 	void event(const uint64_t name, const uint64_t data);
 
-	const frame_t& get_frame() const;
+	frame_t& get_frame();
 	uint64_t deref(const uint64_t src);
 
 	void begin(const uint32_t instr_ptr);
@@ -170,7 +169,7 @@ private:
 
 private:
 	addr_t contract;
-	std::shared_ptr<Storage> storage;
+	std::shared_ptr<StorageProxy> storage;
 
 	std::map<uint64_t, var_t*> memory;
 	std::map<std::pair<uint64_t, uint64_t>, var_t*> entries;
@@ -198,7 +197,7 @@ T& Engine::read_fail(const uint64_t src, const vartype_e& type)
 	if(var.type != type) {
 		throw std::logic_error("read type mismatch");
 	}
-	return (T*)var;
+	return (T&)var;
 }
 
 inline std::string to_hex(const uint64_t addr) {
