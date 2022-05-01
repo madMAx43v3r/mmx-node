@@ -34,6 +34,7 @@ add_subdirectory(vnx-rocksdb)
 add_subdirectory(libbech32)
 add_subdirectory(bls-signatures)
 #add_subdirectory(exchange)
+add_subdirectory(test)
 
 find_package(OpenCL)
 find_package(Threads REQUIRED)
