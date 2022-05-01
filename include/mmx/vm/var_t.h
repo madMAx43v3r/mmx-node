@@ -79,6 +79,7 @@ struct var_t {
 	var_t* pin() {
 		if(!ref_count) {
 			ref_count = 1;
+			flags |= FLAG_DIRTY;
 		}
 		return this;
 	}
