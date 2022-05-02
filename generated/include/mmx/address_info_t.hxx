@@ -15,6 +15,8 @@ struct MMX_EXPORT address_info_t {
 	
 	
 	::mmx::addr_t address;
+	uint32_t num_spend = 0;
+	uint32_t num_receive = 0;
 	uint32_t last_spend_height = 0;
 	uint32_t last_receive_height = 0;
 	
@@ -58,11 +60,13 @@ struct MMX_EXPORT address_info_t {
 
 template<typename T>
 void address_info_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<address_info_t>(3);
+	_visitor.template type_begin<address_info_t>(5);
 	_visitor.type_field("address", 0); _visitor.accept(address);
-	_visitor.type_field("last_spend_height", 1); _visitor.accept(last_spend_height);
-	_visitor.type_field("last_receive_height", 2); _visitor.accept(last_receive_height);
-	_visitor.template type_end<address_info_t>(3);
+	_visitor.type_field("num_spend", 1); _visitor.accept(num_spend);
+	_visitor.type_field("num_receive", 2); _visitor.accept(num_receive);
+	_visitor.type_field("last_spend_height", 3); _visitor.accept(last_spend_height);
+	_visitor.type_field("last_receive_height", 4); _visitor.accept(last_receive_height);
+	_visitor.template type_end<address_info_t>(5);
 }
 
 
