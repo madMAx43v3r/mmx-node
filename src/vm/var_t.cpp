@@ -26,7 +26,7 @@ var_t* clone(const var_t& src)
 			return new uint_t((const uint_t&)src);
 		case vartype_e::TYPE_STRING:
 		case vartype_e::TYPE_BINARY:
-			return binary_t::alloc((const binary_t&)src, src.type);
+			return binary_t::clone((const binary_t&)src);
 		case vartype_e::TYPE_ARRAY:
 			return new array_t((const array_t&)src);
 		case vartype_e::TYPE_MAP:

@@ -118,6 +118,12 @@ struct binary_t : var_t {
 		return ((const char*)this) + sizeof(binary_t) + offset;
 	}
 
+	static binary_t* clone(const binary_t& src) {
+		auto bin = alloc(src);
+		bin->ref_count = src.ref_count;
+		bin->flags = src.flags;
+		return bin;
+	}
 	static binary_t* alloc(const binary_t& src) {
 		return alloc(src, src.type);
 	}
