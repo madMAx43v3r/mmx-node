@@ -65,7 +65,7 @@ enum opcode_e : uint8_t {
 	OP_POP_BACK,	// dst, src
 
 	OP_CONV,		// dst, src, dflags, sflags
-	OP_CONCAT,		// dst, src
+	OP_CONCAT,		// dst, lhs, rhs
 	OP_MEMCPY,		// dst, src, count, offset
 	OP_SHA256,		// dst, src
 

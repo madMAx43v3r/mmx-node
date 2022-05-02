@@ -126,7 +126,7 @@ public:
 	void get(const uint64_t dst, const uint64_t addr, const uint64_t key, const uint8_t flags);
 	void set(const uint64_t addr, const uint64_t key, const uint64_t src, const uint8_t flags);
 	void erase(const uint64_t addr, const uint64_t key, const uint8_t flags);
-	void concat(const uint64_t dst, const uint64_t src);
+	void concat(const uint64_t dst, const uint64_t lhs, const uint64_t rhs);
 	void memcpy(const uint64_t dst, const uint64_t src, const uint32_t count, const uint32_t offset);
 	void conv(const uint64_t dst, const uint64_t src, const uint32_t dflags, const uint32_t sflags);
 	void log(const uint64_t level, const uint64_t msg);

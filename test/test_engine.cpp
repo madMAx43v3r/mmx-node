@@ -69,7 +69,7 @@ int main(int arcv, char** argv)
 		engine.write(vm::MEM_CONST + 0, vm::var_t());
 		engine.write(vm::MEM_CONST + 1, vm::uint_t());
 		engine.write(vm::MEM_CONST + 2, vm::uint_t(1));
-		engine.write(vm::MEM_CONST + 3, vm::uint_t(1000));
+		engine.write(vm::MEM_CONST + 3, vm::uint_t(10000));
 
 		auto& code = engine.code;
 		code.emplace_back(vm::OP_COPY, 0, vm::MEM_STACK + 0, vm::MEM_CONST + 1);

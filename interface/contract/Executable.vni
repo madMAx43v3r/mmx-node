@@ -8,13 +8,11 @@ class Executable extends TokenBase {
 	
 	map<string, method_t> methods;
 	
-	map<uint, vector<uchar>> constants;
-	
-	vector<uchar> binary;
-	
 	string init_method;
 	
 	vector<vnx.Variant> init_args;
+	
+	vector<uchar> binary;
 	
 	optional<addr_t> source;
 	

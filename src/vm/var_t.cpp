@@ -83,6 +83,160 @@ int compare(const var_t& lhs, const var_t& rhs)
 	}
 }
 
+std::pair<uint8_t*, size_t> serialize(const var_t& src, bool with_rc, bool with_vf)
+{
+	std::pair<uint8_t*, size_t> out = {nullptr, 1};
+	if(with_rc) {
+		out.second += 4;
+	}
+	if(with_vf) {
+		out.second += 1;
+	}
+	switch(src.type) {
+		case TYPE_REF:
+			out.second += 8; break;
+		case TYPE_UINT:
+			out.second += 32; break;
+		case TYPE_STRING:
+		case TYPE_BINARY:
+			out.second += 4 + size_t(((const binary_t&)src).size); break;
+		case TYPE_ARRAY:
+			out.second += 12; break;
+		case TYPE_MAP:
+			out.second += 8; break;
+		default: break;
+	}
+	out.first = new uint8_t[out.second];
+
+	size_t offset = 0;
+	::memcpy(out.first + offset, &src.type, 1); offset += 1;
+	if(with_vf) {
+		::memcpy(out.first + offset, &src.flags, 1); offset += 1;
+	}
+	if(with_rc) {
+		::memcpy(out.first + offset, &src.ref_count, 4); offset += 4;
+	}
+	switch(src.type) {
+		case TYPE_REF:
+			::memcpy(out.first + offset, &((const ref_t&)src).address, 8); offset += 8;
+			break;
+		case TYPE_UINT:
+			::memcpy(out.first + offset, &((const uint_t&)src).value, 32); offset += 32;
+			break;
+		case TYPE_STRING:
+		case TYPE_BINARY: {
+			const auto& bin = (const binary_t&)src;
+			::memcpy(out.first + offset, &bin.size, 4); offset += 4;
+			::memcpy(out.first + offset, bin.data(), bin.size); offset += bin.size;
+			break;
+		}
+		case TYPE_ARRAY:
+			::memcpy(out.first + offset, &((const array_t&)src).address, 8); offset += 8;
+			::memcpy(out.first + offset, &((const array_t&)src).size, 4); offset += 4;
+			break;
+		case TYPE_MAP:
+			::memcpy(out.first + offset, &((const map_t&)src).address, 8); offset += 8;
+			break;
+		default: break;
+	}
+	return out;
+}
+
+std::pair<var_t*, size_t> deserialize(const uint8_t* data, const size_t length, bool with_rc, bool with_vf)
+{
+	std::pair<var_t*, size_t> out = {nullptr, 0};
+	if(length < 1) {
+		throw std::runtime_error("unexpected eof");
+	}
+	size_t offset = 0;
+	auto type = vartype_e(data[offset]); offset += 1;
+
+	uint8_t flags = 0;
+	uint32_t ref_count = 0;
+	if(with_vf) {
+		if(length < offset + 1) {
+			throw std::runtime_error("unexpected eof");
+		}
+		flags = data[offset]; offset += 1;
+	}
+	if(with_rc) {
+		if(length < offset + 4) {
+			throw std::runtime_error("unexpected eof");
+		}
+		::memcpy(&ref_count, data + offset, 4); offset += 4;
+	}
+	switch(type) {
+		case TYPE_NIL:
+		case TYPE_TRUE:
+		case TYPE_FALSE:
+			out.first = new var_t(type);
+			break;
+		case TYPE_REF: {
+			if(length < offset + 8) {
+				throw std::runtime_error("unexpected eof");
+			}
+			auto var = new ref_t();
+			::memcpy(&var->address, data + offset, 8); offset += 8;
+			out.first = var;
+			break;
+		}
+		case TYPE_UINT: {
+			if(length < offset + 32) {
+				throw std::runtime_error("unexpected eof");
+			}
+			auto var = new uint_t();
+			::memcpy(&var->value, data + offset, 32); offset += 32;
+			out.first = var;
+			break;
+		}
+		case TYPE_STRING:
+		case TYPE_BINARY: {
+			if(length < offset + 4) {
+				throw std::runtime_error("unexpected eof");
+			}
+			uint32_t size = 0;
+			::memcpy(&size, data + offset, 4); offset += 4;
+			if(length < offset + size) {
+				throw std::runtime_error("unexpected eof");
+			}
+			auto bin = binary_t::unsafe_alloc(size, type);
+			bin->size = size;
+			::memcpy(bin->data(), data + offset, bin->size);
+			::memset(bin->data(bin->size), 0, bin->capacity - bin->size);
+			offset += size;
+			out.first = bin;
+			break;
+		}
+		case TYPE_ARRAY: {
+			if(length < offset + 12) {
+				throw std::runtime_error("unexpected eof");
+			}
+			auto var = new array_t();
+			::memcpy(&var->address, data + offset, 8); offset += 8;
+			::memcpy(&var->size, data + offset, 8); offset += 4;
+			out.first = var;
+			break;
+		}
+		case TYPE_MAP: {
+			if(length < offset + 8) {
+				throw std::runtime_error("unexpected eof");
+			}
+			auto var = new map_t();
+			::memcpy(&var->address, data + offset, 8); offset += 8;
+			out.first = var;
+			break;
+		}
+		default:
+			throw std::runtime_error("invalid type");
+	}
+	if(auto var = out.first) {
+		var->flags = flags;
+		var->ref_count = ref_count;
+	}
+	out.second = offset;
+	return out;
+}
+
 std::string to_string(const var_t* var)
 {
 	if(!var) {

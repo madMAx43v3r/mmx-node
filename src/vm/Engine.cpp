@@ -286,8 +286,18 @@ var_t* Engine::write(var_t*& var, const uint64_t* dst, const var_t& src)
 
 void Engine::push_back(const uint64_t dst, const var_t& src)
 {
+	if(src.type == TYPE_ARRAY) {
+		const auto& array = (const array_t&)src;
+		if(dst == array.address) {
+			throw std::logic_error("dst == src");
+		}
+		for(uint32_t i = 0; i < array.size; ++i) {
+			push_back(dst, read_entry_fail(array.address, i));
+		}
+		return;
+	}
 	auto& array = read_fail<array_t>(dst, TYPE_ARRAY);
-	if(array.size == std::min<uint32_t>(MEM_HEAP - 1, std::numeric_limits<uint32_t>::max())) {
+	if(array.size >= std::min<uint32_t>(MEM_HEAP - 1, std::numeric_limits<uint32_t>::max())) {
 		throw std::runtime_error("push_back overflow at " + to_hex(dst));
 	}
 	write_entry(dst, array.size++, src);
@@ -296,11 +306,17 @@ void Engine::push_back(const uint64_t dst, const var_t& src)
 
 void Engine::push_back(const uint64_t dst, const uint64_t src)
 {
+	if(dst == src) {
+		throw std::logic_error("dst == src");
+	}
 	push_back(dst, read_fail(src));
 }
 
 void Engine::pop_back(const uint64_t dst, const uint64_t& src)
 {
+	if(dst == src) {
+		throw std::logic_error("dst == src");
+	}
 	auto& array = read_fail<array_t>(src, TYPE_ARRAY);
 	if(array.size == 0) {
 		throw std::logic_error("pop_back underflow at " + to_hex(dst));
@@ -314,7 +330,10 @@ void Engine::pop_back(const uint64_t dst, const uint64_t& src)
 
 array_t* Engine::clone_array(const uint64_t dst, const array_t& src)
 {
-	for(uint64_t i = 0; i < src.size; ++i) {
+	if(dst == src.address) {
+		throw std::logic_error("dst == src");
+	}
+	for(uint32_t i = 0; i < src.size; ++i) {
 		write_entry(dst, i, read_entry_fail(src.address, i));
 	}
 	auto var = new array_t();
@@ -325,6 +344,9 @@ array_t* Engine::clone_array(const uint64_t dst, const array_t& src)
 
 map_t* Engine::clone_map(const uint64_t dst, const map_t& src)
 {
+	if(dst == src.address) {
+		throw std::logic_error("dst == src");
+	}
 	if(src.address >= MEM_STATIC) {
 		throw std::logic_error("cannot clone map from storage");
 	}
@@ -667,29 +689,23 @@ void Engine::erase(const uint64_t addr, const uint64_t key, const uint8_t flags)
 	}
 }
 
-void Engine::concat(const uint64_t dst, const uint64_t src)
+void Engine::concat(const uint64_t dst, const uint64_t lhs, const uint64_t rhs)
 {
-	const auto& dvar = read_fail(dst);
-	const auto& svar = read_fail(src);
-	if(dvar.type != svar.type) {
+	const auto& lvar = read_fail(lhs);
+	const auto& rvar = read_fail(rhs);
+	if(lvar.type != rvar.type) {
 		throw std::logic_error("type mismatch");
 	}
-	switch(dvar.type) {
+	switch(lvar.type) {
 		case TYPE_STRING:
 		case TYPE_BINARY: {
-			const auto& L = (const binary_t&)dvar;
-			const auto& R = (const binary_t&)svar;
-			auto res = binary_t::unsafe_alloc(L.size + R.size, dvar.type);
+			const auto& L = (const binary_t&)lvar;
+			const auto& R = (const binary_t&)rvar;
+			const auto size = uint64_t(L.size) + R.size;
+			auto res = binary_t::unsafe_alloc(size, lvar.type);
 			::memcpy(res->data(), L.data(), L.size);
 			::memcpy(res->data(L.size), R.data(), R.size);
 			assign(dst, res);
-			break;
-		}
-		case TYPE_ARRAY: {
-			const auto& R = (const array_t&)svar;
-			for(uint64_t i = 0; i < R.size; ++i) {
-				push_back(dst, read_entry_fail(src, i));
-			}
 			break;
 		}
 		default: throw std::logic_error("invalid type");
@@ -1006,7 +1022,8 @@ void Engine::exec(const instr_t& instr)
 		break;
 	case OP_CONCAT:
 		concat(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
-				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
+				deref_addr(instr.b, instr.flags & OPFLAG_REF_B),
+				deref_addr(instr.c, instr.flags & OPFLAG_REF_C));
 		break;
 	case OP_MEMCPY:
 		memcpy(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),

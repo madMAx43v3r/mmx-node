@@ -108,8 +108,8 @@ struct uint_t : var_t {
 
 struct binary_t : var_t {
 
-	size_t size = 0;
-	size_t capacity = 0;
+	uint32_t size = 0;
+	uint32_t capacity = 0;
 
 	void* data(const size_t offset = 0) {
 		return ((char*)this) + sizeof(binary_t) + offset;
@@ -141,9 +141,9 @@ struct binary_t : var_t {
 		::memset(bin->data(bin->size), 0, bin->capacity - bin->size);
 		return bin;
 	}
-	static binary_t* alloc(const void* data, const size_t len, const vartype_e type = TYPE_BINARY) {
-		auto bin = unsafe_alloc(len, type);
-		bin->size = len;
+	static binary_t* alloc(const void* data, const size_t size, const vartype_e type = TYPE_BINARY) {
+		auto bin = unsafe_alloc(size, type);
+		bin->size = size;
 		::memcpy(bin->data(), data, bin->size);
 		::memset(bin->data(bin->size), 0, bin->capacity - bin->size);
 		return bin;
@@ -154,6 +154,9 @@ struct binary_t : var_t {
 		return bin;
 	}
 	static binary_t* unsafe_alloc(size_t size, const vartype_e type) {
+		if(size >= std::numeric_limits<uint32_t>::max()) {
+			throw std::logic_error("binary size overflow");
+		}
 		switch(type) {
 			case TYPE_BINARY: break;
 			case TYPE_STRING: size += 1; break;
@@ -232,6 +235,10 @@ var_t* clone(const var_t& src);
 var_t* clone(const var_t* var);
 
 int compare(const var_t& lhs, const var_t& rhs);
+
+std::pair<uint8_t*, size_t> serialize(const var_t& src, bool with_rc = true, bool with_vf = true);
+
+std::pair<var_t*, size_t> deserialize(const uint8_t* data, const size_t length, bool with_rc = true, bool with_vf = true);
 
 std::string to_string(const var_t* var);
 
