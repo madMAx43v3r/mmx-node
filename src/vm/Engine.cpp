@@ -935,6 +935,29 @@ void Engine::exec(const instr_t& instr)
 		write(dst, uint_t(D));
 		break;
 	}
+	case OP_CMP_EQ:
+	case OP_CMP_NEQ:
+	case OP_CMP_LT:
+	case OP_CMP_GT:
+	case OP_CMP_LTE:
+	case OP_CMP_GTE: {
+		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
+		const auto lhs = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
+		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
+		const auto cmp = compare(read_fail(lhs), read_fail(rhs));
+		bool res = false;
+		switch(instr.code) {
+			case OP_CMP_EQ: res = (cmp == 0); break;
+			case OP_CMP_NEQ: res = !(cmp == 0); break;
+			case OP_CMP_LT: res = (cmp < 0); break;
+			case OP_CMP_GT: res = (cmp > 0); break;
+			case OP_CMP_LTE: res = (cmp <= 0); break;
+			case OP_CMP_GTE: res = (cmp >= 0); break;
+			default: break;
+		}
+		write(dst, var_t(res ? TYPE_TRUE : TYPE_FALSE));
+		break;
+	}
 	case OP_TYPE: {
 		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
 		const auto addr = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);

@@ -16,20 +16,20 @@ namespace vm {
 var_t* clone(const var_t& src)
 {
 	switch(src.type) {
-		case vartype_e::TYPE_NIL:
-		case vartype_e::TYPE_TRUE:
-		case vartype_e::TYPE_FALSE:
+		case TYPE_NIL:
+		case TYPE_TRUE:
+		case TYPE_FALSE:
 			return new var_t(src);
-		case vartype_e::TYPE_REF:
+		case TYPE_REF:
 			return new ref_t((const ref_t&)src);
-		case vartype_e::TYPE_UINT:
+		case TYPE_UINT:
 			return new uint_t((const uint_t&)src);
-		case vartype_e::TYPE_STRING:
-		case vartype_e::TYPE_BINARY:
+		case TYPE_STRING:
+		case TYPE_BINARY:
 			return binary_t::clone((const binary_t&)src);
-		case vartype_e::TYPE_ARRAY:
+		case TYPE_ARRAY:
 			return new array_t((const array_t&)src);
-		case vartype_e::TYPE_MAP:
+		case TYPE_MAP:
 			return new map_t((const map_t&)src);
 	}
 	return nullptr;
@@ -49,11 +49,11 @@ int compare(const var_t& lhs, const var_t& rhs)
 		return lhs.type < rhs.type ? -1 : 1;
 	}
 	switch(lhs.type) {
-		case vartype_e::TYPE_NIL:
-		case vartype_e::TYPE_TRUE:
-		case vartype_e::TYPE_FALSE:
+		case TYPE_NIL:
+		case TYPE_TRUE:
+		case TYPE_FALSE:
 			return 0;
-		case vartype_e::TYPE_REF: {
+		case TYPE_REF: {
 			const auto& L = (const ref_t&)lhs;
 			const auto& R = (const ref_t&)rhs;
 			if(L.address == R.address) {
@@ -61,7 +61,7 @@ int compare(const var_t& lhs, const var_t& rhs)
 			}
 			return L.address < R.address ? -1 : 1;
 		}
-		case vartype_e::TYPE_UINT: {
+		case TYPE_UINT: {
 			const auto& L = ((const uint_t&)lhs).value;
 			const auto& R = ((const uint_t&)rhs).value;
 			if(L == R) {
@@ -69,8 +69,8 @@ int compare(const var_t& lhs, const var_t& rhs)
 			}
 			return L < R ? -1 : 1;
 		}
-		case vartype_e::TYPE_STRING:
-		case vartype_e::TYPE_BINARY: {
+		case TYPE_STRING:
+		case TYPE_BINARY: {
 			const auto& L = (const binary_t&)lhs;
 			const auto& R = (const binary_t&)rhs;
 			if(L.size == R.size) {
@@ -89,29 +89,29 @@ std::string to_string(const var_t* var)
 		return "nullptr";
 	}
 	switch(var->type) {
-		case vartype_e::TYPE_NIL:
+		case TYPE_NIL:
 			return "null";
-		case vartype_e::TYPE_TRUE:
+		case TYPE_TRUE:
 			return "true";
-		case vartype_e::TYPE_FALSE:
+		case TYPE_FALSE:
 			return "false";
-		case vartype_e::TYPE_REF:
+		case TYPE_REF:
 			return "<0x" + vnx::to_hex_string(((const ref_t*)var)->address) + ">";
-		case vartype_e::TYPE_UINT:
+		case TYPE_UINT:
 			return ((const uint_t*)var)->value.str(10);
-		case vartype_e::TYPE_STRING: {
+		case TYPE_STRING: {
 			auto bin = (const binary_t*)var;
 			return "\"" + std::string((const char*)bin->data(), bin->size) + "\"";
 		}
-		case vartype_e::TYPE_BINARY: {
+		case TYPE_BINARY: {
 			auto bin = (const binary_t*)var;
 			return "0x" + vnx::to_hex_string(bin->data(), bin->size);
 		}
-		case vartype_e::TYPE_ARRAY: {
+		case TYPE_ARRAY: {
 			auto array = (const array_t*)var;
 			return "[0x" + vnx::to_hex_string(array->address) + "," + std::to_string(array->size) + "]";
 		}
-		case vartype_e::TYPE_MAP:
+		case TYPE_MAP:
 			return "{0x" + vnx::to_hex_string(((const map_t*)var)->address) + "}";
 		default:
 			return "?";

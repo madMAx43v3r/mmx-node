@@ -28,7 +28,7 @@ var_t* StorageRAM::read(const addr_t& contract, const uint64_t src) const
 {
 	auto iter = memory.find(std::make_pair(contract, src));
 	if(iter != memory.end()) {
-		return iter->second;
+		return clone(iter->second);
 	}
 	return nullptr;
 }
@@ -37,7 +37,7 @@ var_t* StorageRAM::read(const addr_t& contract, const uint64_t src, const uint64
 {
 	auto iter = entries.find(std::make_pair(std::make_pair(contract, src), key));
 	if(iter != entries.end()) {
-		return iter->second;
+		return clone(iter->second);
 	}
 	return nullptr;
 }
@@ -46,8 +46,14 @@ void StorageRAM::write(const addr_t& contract, const uint64_t dst, const var_t& 
 {
 	const auto key = std::make_pair(contract, dst);
 
-	auto var = clone(value);
-	memory[key] = var;
+	auto& var = memory[key];
+	if(var) {
+		if(var->flags & FLAG_KEY) {
+			throw std::logic_error("cannot overwrite key");
+		}
+		delete var;
+	}
+	var = clone(value);
 
 	if(value.flags & FLAG_KEY) {
 		key_map[contract][var] = dst;
@@ -58,8 +64,11 @@ void StorageRAM::write(const addr_t& contract, const uint64_t dst, const uint64_
 {
 	const auto mapkey = std::make_pair(std::make_pair(contract, dst), key);
 
-	auto var = clone(value);
-	entries[mapkey] = var;
+	auto& var = entries[mapkey];
+	if(var) {
+		delete var;
+	}
+	var = clone(value);
 }
 
 uint64_t StorageRAM::lookup(const addr_t& contract, const var_t& value) const
