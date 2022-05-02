@@ -125,7 +125,6 @@ if(MSVC)
 	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 	set_target_properties(mmx_iface PROPERTIES ENABLE_EXPORTS 1)
 	set_target_properties(mmx_iface PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
-	
 	set_target_properties(mmx_iface PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")
 endif()
 
@@ -180,12 +179,10 @@ target_include_directories(mmx_chiapos
 if(MSVC)
 	set_target_properties(mmx_modules PROPERTIES ENABLE_EXPORTS 1)
 	set_target_properties(mmx_modules PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
-	
 	set_target_properties(mmx_modules PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")
 
 	#set_target_properties(mmx_vm PROPERTIES ENABLE_EXPORTS 1)
 	set_target_properties(mmx_vm PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
-	
 	#set_target_properties(mmx_vm PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")	
 endif()
 
