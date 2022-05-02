@@ -425,9 +425,11 @@ address_info_t Wallet::get_address_info(const uint32_t& index, const uint32_t& o
 		switch(entry.type) {
 			case tx_type_e::REWARD:
 			case tx_type_e::RECEIVE:
+				info.num_receive++;
 				info.last_receive_height = std::max(info.last_receive_height, entry.height);
 				break;
 			case tx_type_e::SPEND:
+				info.num_spend++;
 				info.last_spend_height = std::max(info.last_spend_height, entry.height);
 		}
 	}
@@ -448,9 +450,11 @@ std::vector<address_info_t> Wallet::get_all_address_infos(const int32_t& index) 
 		switch(entry.type) {
 			case tx_type_e::REWARD:
 			case tx_type_e::RECEIVE:
+				info.num_receive++;
 				info.last_receive_height = std::max(info.last_receive_height, entry.height);
 				break;
 			case tx_type_e::SPEND:
+				info.num_spend++;
 				info.last_spend_height = std::max(info.last_spend_height, entry.height);
 		}
 	}
