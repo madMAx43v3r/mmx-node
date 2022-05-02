@@ -111,9 +111,6 @@ var_t* Engine::assign(var_t*& var, var_t* value)
 
 uint64_t Engine::lookup(const uint64_t src)
 {
-	if(src < MEM_EXTERN) {
-		return src;		// constant memory
-	}
 	return lookup(read_fail(src));
 }
 
@@ -259,7 +256,7 @@ var_t* Engine::write(var_t*& var, const uint64_t* dst, const var_t& src)
 			return assign(var, new ref_t(address));
 		}
 		case TYPE_UINT:
-			return assign(var, new uint_t((const uint_t&)src));
+			return assign(var, new uint_t(((const uint_t&)src).value));
 		case TYPE_STRING:
 		case TYPE_BINARY:
 			return assign(var, binary_t::alloc((const binary_t&)src));
@@ -539,6 +536,8 @@ void Engine::begin(const uint32_t instr_ptr)
 			var->flags |= FLAG_CONST;
 		}
 	}
+	call_stack.clear();
+
 	if(!read(MEM_HEAP + GLOBAL_HAVE_INIT)) {
 		write(MEM_HEAP + GLOBAL_HAVE_INIT, var_t(TYPE_TRUE))->pin();
 		write(MEM_HEAP + GLOBAL_NEXT_ALLOC, uint_t(MEM_HEAP + GLOBAL_DYNAMIC_START))->pin();
@@ -561,10 +560,7 @@ void Engine::run()
 
 void Engine::step()
 {
-	if(call_stack.empty()) {
-		throw std::logic_error("empty call stack");
-	}
-	const auto instr_ptr = call_stack.back().instr_ptr;
+	const auto instr_ptr = get_frame().instr_ptr;
 	if(instr_ptr >= code.size()) {
 		throw std::logic_error("instr_ptr out of bounds: " + to_hex(instr_ptr) + " > " + to_hex(code.size()));
 	}
@@ -577,7 +573,7 @@ void Engine::step()
 	try {
 		exec(code[instr_ptr]);
 	} catch(const std::exception& ex) {
-		throw std::runtime_error("exception at ip " + to_hex(instr_ptr) + ": " + ex.what());
+		throw std::runtime_error("exception at " + to_hex(instr_ptr) + ": " + ex.what());
 	}
 }
 
@@ -590,9 +586,9 @@ void Engine::copy(const uint64_t dst, const uint64_t src)
 
 void Engine::clone(const uint64_t dst, const uint64_t src)
 {
-	const auto address = alloc();
-	write(address, read_fail(src));
-	write(dst, ref_t(address));
+	const auto addr = alloc();
+	write(addr, read_fail(src));
+	write(dst, ref_t(addr));
 }
 
 void Engine::get(const uint64_t dst, const uint64_t addr, const uint64_t key, const uint8_t flags)
@@ -817,7 +813,6 @@ void Engine::call(const uint32_t instr_ptr, const uint32_t stack_ptr)
 
 bool Engine::ret()
 {
-	clear_stack(get_frame().stack_ptr + 1);
 	call_stack.pop_back();
 	return call_stack.empty();
 }
@@ -1004,7 +999,8 @@ void Engine::exec(const instr_t& instr)
 void Engine::clear_extern(const uint32_t offset)
 {
 	for(auto iter = memory.lower_bound(MEM_EXTERN + offset); iter != memory.lower_bound(MEM_STACK);) {
-		erase(iter->second);
+		clear(iter->second);
+		delete iter->second;
 		iter = memory.erase(iter);
 	}
 }
@@ -1012,7 +1008,8 @@ void Engine::clear_extern(const uint32_t offset)
 void Engine::clear_stack(const uint32_t offset)
 {
 	for(auto iter = memory.lower_bound(MEM_STACK + offset); iter != memory.lower_bound(MEM_STATIC);) {
-		erase(iter->second);
+		clear(iter->second);
+		delete iter->second;
 		iter = memory.erase(iter);
 	}
 }
@@ -1020,6 +1017,7 @@ void Engine::clear_stack(const uint32_t offset)
 void Engine::reset()
 {
 	clear_stack();
+	call_stack.clear();
 }
 
 void Engine::commit()
@@ -1045,7 +1043,19 @@ void Engine::commit()
 void Engine::dump_memory(const uint64_t begin, const uint64_t end)
 {
 	for(auto iter = memory.lower_bound(begin); iter != memory.lower_bound(end); ++iter) {
-		std::cout << "[0x" << std::hex << iter->first << std::dec << "] " << to_string(iter->second) << std::endl;
+		std::cout << "[0x" << std::hex << iter->first << std::dec << "] " << to_string(iter->second);
+		if(auto var = iter->second) {
+			std::cout << "    (vf: 0x" << std::hex << int(var->flags) << std::dec << ") (rc: " << var->ref_count << ")";
+		}
+		std::cout << std::endl;
+	}
+	for(auto iter = entries.lower_bound(std::make_pair(begin, 0)); iter != entries.lower_bound(std::make_pair(end, 0)); ++iter) {
+		std::cout << "[0x" << std::hex << iter->first.first << std::dec << "]"
+				<< "[0x" << std::hex << iter->first.second << std::dec << "] " << to_string(iter->second);
+		if(auto var = iter->second) {
+			std::cout << "    (vf: 0x" << std::hex << int(var->flags) << std::dec << ")";
+		}
+		std::cout << std::endl;
 	}
 }
 

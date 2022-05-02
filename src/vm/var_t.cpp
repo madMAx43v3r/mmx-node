@@ -96,7 +96,7 @@ std::string to_string(const var_t* var)
 		case vartype_e::TYPE_FALSE:
 			return "false";
 		case vartype_e::TYPE_REF:
-			return "<0x" + std::to_string(((const ref_t*)var)->address) + ">";
+			return "<0x" + vnx::to_hex_string(((const ref_t*)var)->address) + ">";
 		case vartype_e::TYPE_UINT:
 			return ((const uint_t*)var)->value.str(10);
 		case vartype_e::TYPE_STRING: {
@@ -107,8 +107,10 @@ std::string to_string(const var_t* var)
 			auto bin = (const binary_t*)var;
 			return "0x" + vnx::to_hex_string(bin->data(), bin->size);
 		}
-		case vartype_e::TYPE_ARRAY:
-			return "[0x" + vnx::to_hex_string(((const array_t*)var)->address) + "]";
+		case vartype_e::TYPE_ARRAY: {
+			auto array = (const array_t*)var;
+			return "[0x" + vnx::to_hex_string(array->address) + "," + std::to_string(array->size) + "]";
+		}
 		case vartype_e::TYPE_MAP:
 			return "{0x" + vnx::to_hex_string(((const map_t*)var)->address) + "}";
 		default:
