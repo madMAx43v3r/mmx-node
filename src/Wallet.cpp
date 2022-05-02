@@ -419,21 +419,7 @@ std::vector<addr_t> Wallet::get_all_addresses(const int32_t& index) const
 
 address_info_t Wallet::get_address_info(const uint32_t& index, const uint32_t& offset) const
 {
-	address_info_t info;
-	info.address = get_address(index, offset);
-	for(const auto& entry : node->get_history({info.address})) {
-		switch(entry.type) {
-			case tx_type_e::REWARD:
-			case tx_type_e::RECEIVE:
-				info.num_receive++;
-				info.last_receive_height = std::max(info.last_receive_height, entry.height);
-				break;
-			case tx_type_e::SPEND:
-				info.num_spend++;
-				info.last_spend_height = std::max(info.last_spend_height, entry.height);
-		}
-	}
-	return info;
+	return node->get_address_info(get_address(index, offset));
 }
 
 std::vector<address_info_t> Wallet::get_all_address_infos(const int32_t& index) const
@@ -451,10 +437,12 @@ std::vector<address_info_t> Wallet::get_all_address_infos(const int32_t& index) 
 			case tx_type_e::REWARD:
 			case tx_type_e::RECEIVE:
 				info.num_receive++;
+				info.total_receive[entry.contract] += entry.amount;
 				info.last_receive_height = std::max(info.last_receive_height, entry.height);
 				break;
 			case tx_type_e::SPEND:
 				info.num_spend++;
+				info.total_spend[entry.contract] += entry.amount;
 				info.last_spend_height = std::max(info.last_spend_height, entry.height);
 		}
 	}

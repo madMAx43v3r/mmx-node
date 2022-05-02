@@ -10,4 +10,7 @@ struct address_info_t {
 	uint last_spend_height;
 	uint last_receive_height;
 	
+	map<addr_t, uint128> total_spend;
+	map<addr_t, uint128> total_receive;
+	
 }

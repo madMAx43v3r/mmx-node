@@ -92,6 +92,8 @@ protected:
 
 	std::map<std::pair<addr_t, addr_t>, uint128> get_all_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const override;
 
+	address_info_t get_address_info(const addr_t& address) const override;
+
 	uint128 get_total_supply(const addr_t& currency) const override;
 
 	uint128 get_virtual_plot_balance(const addr_t& plot_id, const vnx::optional<hash_t>& block_hash) const override;

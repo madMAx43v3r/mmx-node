@@ -580,6 +580,26 @@ uint128 Node::get_total_supply(const addr_t& currency) const
 	return total;
 }
 
+address_info_t Node::get_address_info(const addr_t& address) const
+{
+	address_info_t info;
+	for(const auto& entry : get_history({address}, 0)) {
+		switch(entry.type) {
+			case tx_type_e::REWARD:
+			case tx_type_e::RECEIVE:
+				info.num_receive++;
+				info.total_receive[entry.contract] += entry.amount;
+				info.last_receive_height = std::max(info.last_receive_height, entry.height);
+				break;
+			case tx_type_e::SPEND:
+				info.num_spend++;
+				info.total_spend[entry.contract] += entry.amount;
+				info.last_spend_height = std::max(info.last_spend_height, entry.height);
+		}
+	}
+	return info;
+}
+
 void Node::http_request_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
 								const vnx::request_id_t& request_id) const
 {
