@@ -12,6 +12,8 @@
 #include <mmx/Node_add_block_return.hxx>
 #include <mmx/Node_add_transaction.hxx>
 #include <mmx/Node_add_transaction_return.hxx>
+#include <mmx/Node_get_address_info.hxx>
+#include <mmx/Node_get_address_info_return.hxx>
 #include <mmx/Node_get_all_balances.hxx>
 #include <mmx/Node_get_all_balances_return.hxx>
 #include <mmx/Node_get_balance.hxx>
@@ -70,6 +72,7 @@
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/address_info_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_info_t.hxx>
@@ -456,6 +459,19 @@ std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128> NodeClient::ge
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+::mmx::address_info_t NodeClient::get_address_info(const ::mmx::addr_t& address) {
+	auto _method = ::mmx::Node_get_address_info::create();
+	_method->address = address;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_address_info_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<::mmx::address_info_t>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}

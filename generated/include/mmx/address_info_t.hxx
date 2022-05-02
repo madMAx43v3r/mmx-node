@@ -7,6 +7,7 @@
 #include <vnx/Type.h>
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/uint128.hpp>
 
 
 namespace mmx {
@@ -19,6 +20,8 @@ struct MMX_EXPORT address_info_t {
 	uint32_t num_receive = 0;
 	uint32_t last_spend_height = 0;
 	uint32_t last_receive_height = 0;
+	std::map<::mmx::addr_t, ::mmx::uint128> total_spend;
+	std::map<::mmx::addr_t, ::mmx::uint128> total_receive;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -60,13 +63,15 @@ struct MMX_EXPORT address_info_t {
 
 template<typename T>
 void address_info_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<address_info_t>(5);
+	_visitor.template type_begin<address_info_t>(7);
 	_visitor.type_field("address", 0); _visitor.accept(address);
 	_visitor.type_field("num_spend", 1); _visitor.accept(num_spend);
 	_visitor.type_field("num_receive", 2); _visitor.accept(num_receive);
 	_visitor.type_field("last_spend_height", 3); _visitor.accept(last_spend_height);
 	_visitor.type_field("last_receive_height", 4); _visitor.accept(last_receive_height);
-	_visitor.template type_end<address_info_t>(5);
+	_visitor.type_field("total_spend", 5); _visitor.accept(total_spend);
+	_visitor.type_field("total_receive", 6); _visitor.accept(total_receive);
+	_visitor.template type_end<address_info_t>(7);
 }
 
 

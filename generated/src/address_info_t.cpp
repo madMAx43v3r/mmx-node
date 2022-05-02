@@ -4,6 +4,7 @@
 #include <mmx/package.hxx>
 #include <mmx/address_info_t.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/uint128.hpp>
 
 #include <vnx/vnx.h>
 
@@ -12,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 address_info_t::VNX_TYPE_HASH(0xbafe22d4f9e3d761ull);
-const vnx::Hash64 address_info_t::VNX_CODE_HASH(0x53f9d250edfe35d0ull);
+const vnx::Hash64 address_info_t::VNX_CODE_HASH(0xb732c9804ba4b540ull);
 
 vnx::Hash64 address_info_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -50,6 +51,8 @@ void address_info_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, num_receive);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, last_spend_height);
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, last_receive_height);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, total_spend);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, total_receive);
 	_visitor.type_end(*_type_code);
 }
 
@@ -60,6 +63,8 @@ void address_info_t::write(std::ostream& _out) const {
 	_out << ", \"num_receive\": "; vnx::write(_out, num_receive);
 	_out << ", \"last_spend_height\": "; vnx::write(_out, last_spend_height);
 	_out << ", \"last_receive_height\": "; vnx::write(_out, last_receive_height);
+	_out << ", \"total_spend\": "; vnx::write(_out, total_spend);
+	_out << ", \"total_receive\": "; vnx::write(_out, total_receive);
 	_out << "}";
 }
 
@@ -77,6 +82,8 @@ vnx::Object address_info_t::to_object() const {
 	_object["num_receive"] = num_receive;
 	_object["last_spend_height"] = last_spend_height;
 	_object["last_receive_height"] = last_receive_height;
+	_object["total_spend"] = total_spend;
+	_object["total_receive"] = total_receive;
 	return _object;
 }
 
@@ -92,6 +99,10 @@ void address_info_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(num_receive);
 		} else if(_entry.first == "num_spend") {
 			_entry.second.to(num_spend);
+		} else if(_entry.first == "total_receive") {
+			_entry.second.to(total_receive);
+		} else if(_entry.first == "total_spend") {
+			_entry.second.to(total_spend);
 		}
 	}
 }
@@ -112,6 +123,12 @@ vnx::Variant address_info_t::get_field(const std::string& _name) const {
 	if(_name == "last_receive_height") {
 		return vnx::Variant(last_receive_height);
 	}
+	if(_name == "total_spend") {
+		return vnx::Variant(total_spend);
+	}
+	if(_name == "total_receive") {
+		return vnx::Variant(total_receive);
+	}
 	return vnx::Variant();
 }
 
@@ -126,6 +143,10 @@ void address_info_t::set_field(const std::string& _name, const vnx::Variant& _va
 		_value.to(last_spend_height);
 	} else if(_name == "last_receive_height") {
 		_value.to(last_receive_height);
+	} else if(_name == "total_spend") {
+		_value.to(total_spend);
+	} else if(_name == "total_receive") {
+		_value.to(total_receive);
 	}
 }
 
@@ -153,11 +174,11 @@ std::shared_ptr<vnx::TypeCode> address_info_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.address_info_t";
 	type_code->type_hash = vnx::Hash64(0xbafe22d4f9e3d761ull);
-	type_code->code_hash = vnx::Hash64(0x53f9d250edfe35d0ull);
+	type_code->code_hash = vnx::Hash64(0xb732c9804ba4b540ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::address_info_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<address_info_t>>(); };
-	type_code->fields.resize(5);
+	type_code->fields.resize(7);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -187,6 +208,18 @@ std::shared_ptr<vnx::TypeCode> address_info_t::static_create_type_code() {
 		field.data_size = 4;
 		field.name = "last_receive_height";
 		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[5];
+		field.is_extended = true;
+		field.name = "total_spend";
+		field.code = {13, 5, 11, 32, 1, 11, 16, 1};
+	}
+	{
+		auto& field = type_code->fields[6];
+		field.is_extended = true;
+		field.name = "total_receive";
+		field.code = {13, 5, 11, 32, 1, 11, 16, 1};
 	}
 	type_code->build();
 	return type_code;
@@ -246,6 +279,8 @@ void read(TypeInput& in, ::mmx::address_info_t& value, const TypeCode* type_code
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.address, type_code, _field->code.data()); break;
+			case 5: vnx::read(in, value.total_spend, type_code, _field->code.data()); break;
+			case 6: vnx::read(in, value.total_receive, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -270,6 +305,8 @@ void write(TypeOutput& out, const ::mmx::address_info_t& value, const TypeCode* 
 	vnx::write_value(_buf + 8, value.last_spend_height);
 	vnx::write_value(_buf + 12, value.last_receive_height);
 	vnx::write(out, value.address, type_code, type_code->fields[0].code.data());
+	vnx::write(out, value.total_spend, type_code, type_code->fields[5].code.data());
+	vnx::write(out, value.total_receive, type_code, type_code->fields[6].code.data());
 }
 
 void read(std::istream& in, ::mmx::address_info_t& value) {
