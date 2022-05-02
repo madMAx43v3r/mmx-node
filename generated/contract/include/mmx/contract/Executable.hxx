@@ -19,10 +19,9 @@ public:
 	
 	std::map<std::string, uint32_t> fields;
 	std::map<std::string, ::mmx::contract::method_t> methods;
-	std::map<uint32_t, std::vector<uint8_t>> constants;
-	std::vector<uint8_t> binary;
 	std::string init_method;
 	std::vector<::vnx::Variant> init_args;
+	std::vector<uint8_t> binary;
 	vnx::optional<::mmx::addr_t> source;
 	
 	typedef ::mmx::contract::TokenBase Super;
@@ -70,7 +69,7 @@ protected:
 
 template<typename T>
 void Executable::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Executable>(13);
+	_visitor.template type_begin<Executable>(12);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("name", 1); _visitor.accept(name);
 	_visitor.type_field("symbol", 2); _visitor.accept(symbol);
@@ -79,12 +78,11 @@ void Executable::accept_generic(T& _visitor) const {
 	_visitor.type_field("decimals", 5); _visitor.accept(decimals);
 	_visitor.type_field("fields", 6); _visitor.accept(fields);
 	_visitor.type_field("methods", 7); _visitor.accept(methods);
-	_visitor.type_field("constants", 8); _visitor.accept(constants);
-	_visitor.type_field("binary", 9); _visitor.accept(binary);
-	_visitor.type_field("init_method", 10); _visitor.accept(init_method);
-	_visitor.type_field("init_args", 11); _visitor.accept(init_args);
-	_visitor.type_field("source", 12); _visitor.accept(source);
-	_visitor.template type_end<Executable>(13);
+	_visitor.type_field("init_method", 8); _visitor.accept(init_method);
+	_visitor.type_field("init_args", 9); _visitor.accept(init_args);
+	_visitor.type_field("binary", 10); _visitor.accept(binary);
+	_visitor.type_field("source", 11); _visitor.accept(source);
+	_visitor.template type_end<Executable>(12);
 }
 
 
