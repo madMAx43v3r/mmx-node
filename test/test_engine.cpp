@@ -45,8 +45,32 @@ int main(int arcv, char** argv)
 		engine.begin(0);
 		engine.run();
 		engine.dump_memory();
+		engine.commit();
 		std::cout << "Cost: " << engine.cost << std::endl;
-		engine.reset();
+	}
+	{
+		vm::Engine engine(addr_t(), backend, true);
+		engine.write(vm::MEM_CONST + 0, vm::var_t());
+		engine.write(vm::MEM_CONST + 1, vm::uint_t(1337));
+		engine.write(vm::MEM_CONST + 2, vm::map_t());
+		engine.assign(vm::MEM_CONST + 3, vm::binary_t::alloc("value"));
+		engine.write(vm::MEM_CONST + 4, vm::uint_t(11337));
+		engine.write(vm::MEM_CONST + 5, vm::array_t());
+
+		auto& code = engine.code;
+		code.emplace_back(vm::OP_NOP);
+		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 0, vm::MEM_STATIC + 0, vm::MEM_CONST + 3);
+		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 1, vm::MEM_STATIC + 1, 0);
+		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 2, vm::MEM_STATIC + 1, 1);
+		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 3, vm::MEM_STATIC + 1, 2);
+		code.emplace_back(vm::OP_RET);
+
+		engine.credits = 10000;
+		engine.begin(0);
+		engine.run();
+		engine.dump_memory();
+		engine.commit();
+		std::cout << "Cost: " << engine.cost << std::endl;
 	}
 	return 0;
 }
