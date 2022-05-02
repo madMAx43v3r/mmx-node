@@ -9,10 +9,8 @@ if(NOT MSVC)
 endif()
 
 if(MSVC)
-	add_definitions(/MP /openmp)
+	add_definitions(/openmp ${CUSTOM_ADD_DEFINITIONS})
 	
-	find_library(OpenCL_LIBRARY OpenCL HINTS ${OpenCL_LIBRARIES})
-
 	find_library(secp256k1_LIBRARY secp256k1 HINTS ${secp256k1_LIBRARIES})
 	add_library(secp256k1 INTERFACE IMPORTED)
 	set_target_properties(secp256k1 PROPERTIES INTERFACE_LINK_LIBRARIES ${secp256k1_LIBRARY})
@@ -183,7 +181,12 @@ if(MSVC)
 	set_target_properties(mmx_modules PROPERTIES ENABLE_EXPORTS 1)
 	set_target_properties(mmx_modules PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 	
-	set_target_properties(mmx_modules PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")	
+	set_target_properties(mmx_modules PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")
+
+	#set_target_properties(mmx_vm PROPERTIES ENABLE_EXPORTS 1)
+	set_target_properties(mmx_vm PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
+	
+	#set_target_properties(mmx_vm PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")	
 endif()
 
 target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_addons vnx_base)
