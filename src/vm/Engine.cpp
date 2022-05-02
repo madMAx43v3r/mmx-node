@@ -249,30 +249,38 @@ var_t* Engine::write(var_t*& var, const uint64_t* dst, const var_t& src)
 		case TYPE_NIL:
 		case TYPE_TRUE:
 		case TYPE_FALSE:
-			return assign(var, new var_t(src.type));
+			assign(var, new var_t(src.type));
+			break;
 		case TYPE_REF: {
 			const auto address = ((const ref_t&)src).address;
 			addref(address);
-			return assign(var, new ref_t(address));
+			assign(var, new ref_t(address));
+			break;
 		}
 		case TYPE_UINT:
-			return assign(var, new uint_t(((const uint_t&)src).value));
+			assign(var, new uint_t(((const uint_t&)src).value));
+			break;
 		case TYPE_STRING:
 		case TYPE_BINARY:
-			return assign(var, binary_t::alloc((const binary_t&)src));
+			assign(var, binary_t::alloc((const binary_t&)src));
+			break;
 		case TYPE_ARRAY:
 			if(!dst) {
 				throw std::logic_error("cannot assign array here");
 			}
-			return assign(var, clone_array(*dst, (const array_t&)src));
+			assign(var, clone_array(*dst, (const array_t&)src));
+			break;
 		case TYPE_MAP:
 			if(!dst) {
 				throw std::logic_error("cannot assign map here");
 			}
-			return assign(var, clone_map(*dst, (const map_t&)src));
+			assign(var, clone_map(*dst, (const map_t&)src));
+			break;
 		default:
 			throw std::logic_error("invalid type");
 	}
+	var->flags |= FLAG_DIRTY;
+	var->flags &= ~FLAG_DELETED;
 	return var;
 }
 
@@ -534,6 +542,7 @@ void Engine::begin(const uint32_t instr_ptr)
 	for(auto iter = memory.begin(); iter != memory.lower_bound(MEM_STACK); ++iter) {
 		if(auto var = iter->second) {
 			var->flags |= FLAG_CONST;
+			var->flags &= ~FLAG_DIRTY;
 		}
 	}
 	call_stack.clear();
@@ -1045,7 +1054,7 @@ void Engine::dump_memory(const uint64_t begin, const uint64_t end)
 	for(auto iter = memory.lower_bound(begin); iter != memory.lower_bound(end); ++iter) {
 		std::cout << "[0x" << std::hex << iter->first << std::dec << "] " << to_string(iter->second);
 		if(auto var = iter->second) {
-			std::cout << "    (vf: 0x" << std::hex << int(var->flags) << std::dec << ") (rc: " << var->ref_count << ")";
+			std::cout << "\t\t(vf: 0x" << std::hex << int(var->flags) << std::dec << ") (rc: " << var->ref_count << ")";
 		}
 		std::cout << std::endl;
 	}
@@ -1053,7 +1062,7 @@ void Engine::dump_memory(const uint64_t begin, const uint64_t end)
 		std::cout << "[0x" << std::hex << iter->first.first << std::dec << "]"
 				<< "[0x" << std::hex << iter->first.second << std::dec << "] " << to_string(iter->second);
 		if(auto var = iter->second) {
-			std::cout << "    (vf: 0x" << std::hex << int(var->flags) << std::dec << ")";
+			std::cout << "\t\t(vf: 0x" << std::hex << int(var->flags) << std::dec << ")";
 		}
 		std::cout << std::endl;
 	}
