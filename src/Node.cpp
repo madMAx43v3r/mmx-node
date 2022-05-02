@@ -1035,8 +1035,8 @@ void Node::apply(std::shared_ptr<const Block> block, int64_t* file_offset) noexc
 	for(const auto& tx : block->get_all_transactions()) {
 		apply(block, tx, addr_set, revoke_set, balance_set);
 	}
-	addr_log.insert_many(block->height, std::vector<addr_t>(addr_set.begin(), addr_set.end()));
-	revoke_log.insert_many(block->height, std::vector<hash_t>(revoke_set.begin(), revoke_set.end()));
+	addr_log.insert(block->height, std::vector<addr_t>(addr_set.begin(), addr_set.end()));
+	revoke_log.insert(block->height, std::vector<hash_t>(revoke_set.begin(), revoke_set.end()));
 
 	for(const auto& key : balance_set) {
 		balance_table.insert(key, std::make_pair(balance_map[key], block->height));
@@ -1122,18 +1122,24 @@ bool Node::revert() noexcept
 		return false;
 	}
 	if(auto block = get_block(state_hash)) {
-		return revert(block->height, block);
+		revert(block->height, block);
+		return true;
 	}
 	return false;
 }
 
 void Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noexcept
 {
-	std::vector<addr_t> addr_list;
-	addr_log.find(height, addr_list);
+	std::vector<std::vector<addr_t>> addr_list;
+	addr_log.find_greater_equal(height, addr_list);
+
+	std::unordered_set<addr_t> addr_set;
+	for(const auto& list : addr_list) {
+		addr_set.insert(list.begin(), list.end());
+	}
 
 	std::set<std::pair<addr_t, addr_t>> balance_set;
-	for(const auto& address : addr_list) {
+	for(const auto& address : addr_set) {
 		const auto log_key = std::make_pair(address, height);
 		{
 			std::vector<txio_entry_t> entries;
@@ -1158,9 +1164,9 @@ void Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noe
 	}
 	{
 		std::set<addr_t> affected;
-		for(const auto& addr : addr_list) {
-			if(mutate_log.erase_range(std::make_pair(addr, height), std::make_pair(addr, -1))) {
-				affected.insert(addr);
+		for(const auto& address : addr_set) {
+			if(mutate_log.erase_range(std::make_pair(address, height), std::make_pair(address, -1))) {
+				affected.insert(address);
 			}
 		}
 		for(const auto& address : affected) {
@@ -1168,7 +1174,7 @@ void Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noe
 				if(auto contract = tx->deploy) {
 					auto copy = vnx::clone(contract);
 					std::vector<vnx::Object> mutations;
-					mutate_log.find_range(std::make_pair(address, 0), std::make_pair(address, -1), mutations);
+					mutate_log.find_range(std::make_pair(address, 0), std::make_pair(address, height), mutations);
 					for(const auto& method : mutations) {
 						copy->vnx_call(vnx::clone(method));
 					}
@@ -1185,24 +1191,28 @@ void Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noe
 			log(INFO) << "Reverted " << affected.size() << " contracts";
 		}
 	}
-	addr_log.erase_all(height, vnx::rocksdb::GREATER_EQUAL);
+	addr_log.erase_greater_equal(height);
 
 	for(const auto& key : balance_set) {
 		balance_table.insert(key, std::make_pair(balance_map[key], height - 1));
 	}
 	{
-		std::vector<hash_t> keys;
-		tx_log.find(height, keys, vnx::rocksdb::GREATER_EQUAL);
-		tx_index.erase_many(keys);
-		tx_log.erase_all(height, vnx::rocksdb::GREATER_EQUAL);
+		std::vector<std::vector<hash_t>> all_keys;
+		tx_log.find_greater_equal(height, all_keys);
+		for(const auto& keys : all_keys) {
+			tx_index.erase_many(keys);
+		}
+		tx_log.erase_greater_equal(height);
 	}
 	{
-		std::vector<hash_t> keys;
-		revoke_log.find(height, keys, vnx::rocksdb::GREATER_EQUAL);
-		for(const auto& txid : keys) {
-			revoke_map.erase_all(std::make_pair(txid, height));
+		std::vector<std::vector<hash_t>> all_keys;
+		revoke_log.find_greater_equal(height, all_keys);
+		for(const auto& keys : all_keys) {
+			for(const auto& txid : keys) {
+				revoke_map.erase_all(std::make_pair(txid, height));
+			}
 		}
-		revoke_log.erase_all(height, vnx::rocksdb::GREATER_EQUAL);
+		revoke_log.erase_greater_equal(height);
 	}
 	{
 		std::pair<int64_t, hash_t> entry;
@@ -1408,15 +1418,15 @@ void Node::write_block(std::shared_ptr<const Block> block, int64_t* file_offset)
 	auto& out = block_chain->out;
 	const auto offset = file_offset ? *file_offset : out.get_output_pos();
 
+	std::vector<hash_t> tx_ids;
 	if(auto tx = block->tx_base) {
-		tx_log.insert(block->height, tx->id);
+		tx_ids.push_back(tx->id);
 		tx_index.insert(tx->id, std::make_pair(offset, block->height));
 	}
 	if(!file_offset) {
 		vnx::write(out, block->get_header());
 	}
 
-	std::vector<hash_t> tx_ids;
 	for(const auto& tx : block->tx_list) {
 		const auto offset = out.get_output_pos();
 		auto parent = tx;
@@ -1433,7 +1443,7 @@ void Node::write_block(std::shared_ptr<const Block> block, int64_t* file_offset)
 			vnx::write(out, tx);
 		}
 	}
-	tx_log.insert_many(block->height, tx_ids);
+	tx_log.insert(block->height, tx_ids);
 
 	if(!file_offset) {
 		vnx::write(out, nullptr);

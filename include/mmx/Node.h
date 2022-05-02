@@ -280,15 +280,15 @@ private:
 private:
 	hash_t state_hash;
 
-	vnx::rocksdb::multi_table<uint32_t, addr_t> addr_log;								// [height => address]
+	vnx::rocksdb::table<uint32_t, std::vector<addr_t>> addr_log;						// [height => addresses]
 	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, txout_entry_t> recv_log;		// [[address, height] => entry]
 	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, txio_entry_t> spend_log;		// [[address, height] => entry]
 
-	vnx::rocksdb::multi_table<uint32_t, hash_t> revoke_log;								// [height => txid]
+	vnx::rocksdb::table<uint32_t, std::vector<hash_t>> revoke_log;						// [height => txids]
 	vnx::rocksdb::multi_table<std::pair<hash_t, uint32_t>, std::pair<addr_t, hash_t>> revoke_map;	// [[org txid, height]] => [address, txid]]
 
-	vnx::rocksdb::table<addr_t, std::shared_ptr<const Contract>> contract_cache;		// [addr, contract] (finalized only)
-	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, vnx::Object> mutate_log;		// [[addr, height] => method] (finalized only)
+	vnx::rocksdb::table<addr_t, std::shared_ptr<const Contract>> contract_cache;		// [addr, contract]
+	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, vnx::Object> mutate_log;		// [[addr, height] => method]
 	vnx::rocksdb::multi_table<addr_t, addr_t> owner_map;								// [owner => contract]
 
 	std::map<std::pair<addr_t, addr_t>, uint128_t> balance_map;						// [[addr, currency] => balance]
@@ -309,9 +309,9 @@ private:
 	bool is_synced = false;
 	std::shared_ptr<vnx::File> block_chain;
 	mutable vnx::rocksdb::table<hash_t, uint32_t> hash_index;							// [block hash => height]
-	mutable vnx::rocksdb::table<hash_t, std::pair<int64_t, uint32_t>> tx_index;			// [txid => [file offset, height]] (finalized only)
+	mutable vnx::rocksdb::table<hash_t, std::pair<int64_t, uint32_t>> tx_index;			// [txid => [file offset, height]]
 	mutable vnx::rocksdb::table<uint32_t, std::pair<int64_t, hash_t>> block_index;		// [height => [file offset, block hash]]
-	mutable vnx::rocksdb::multi_table<uint32_t, hash_t> tx_log;							// [height => txid] (finalized only)
+	mutable vnx::rocksdb::table<uint32_t, std::vector<hash_t>> tx_log;					// [height => txids]
 
 	uint32_t sync_pos = 0;									// current sync height
 	uint32_t sync_retry = 0;
