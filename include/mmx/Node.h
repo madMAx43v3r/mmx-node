@@ -241,7 +241,7 @@ private:
 
 	bool revert() noexcept;
 
-	bool revert(const uint32_t height, std::shared_ptr<const Block> block) noexcept;
+	void revert(const uint32_t height, std::shared_ptr<const Block> block) noexcept;
 
 	std::shared_ptr<const BlockHeader> get_root() const;
 

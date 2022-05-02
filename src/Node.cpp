@@ -104,6 +104,7 @@ void Node::main()
 				auto block = read_block(*block_chain, true, &offset);
 				if(height <= replay_height) {
 					state_hash = block->hash;
+					revert(height + 1, nullptr);
 					break;
 				}
 			} catch(const std::exception& ex) {
@@ -1126,7 +1127,7 @@ bool Node::revert() noexcept
 	return false;
 }
 
-bool Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noexcept
+void Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noexcept
 {
 	std::vector<addr_t> addr_list;
 	addr_log.find(height, addr_list);
@@ -1222,7 +1223,6 @@ bool Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noe
 		}
 		state_hash = block->prev;
 	}
-	return true;
 }
 
 std::shared_ptr<const BlockHeader> Node::get_root() const
