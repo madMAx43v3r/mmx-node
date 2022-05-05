@@ -123,7 +123,7 @@ public:
 			balance_map[entry.first] -= entry.second;
 		}
 		for(const auto& entry : history) {
-			pending_map.erase(entry.key.txid);
+			pending_map.erase(entry.txid);
 		}
 		for(const auto& entry : pending_map) {
 			for(const auto& pending : entry.second) {

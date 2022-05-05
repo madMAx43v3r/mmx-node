@@ -58,12 +58,12 @@ void show_history(const std::vector<mmx::tx_entry_t>& history, mmx::NodeClient& 
 		}
 		const auto contract = get_contract(node, entry.contract);
 		if(auto nft = std::dynamic_pointer_cast<const mmx::contract::NFT>(contract)) {
-			std::cout << entry.contract << " " << arrow << " " << entry.address << " (" << entry.key.txid << ")" << std::endl;
+			std::cout << entry.contract << " " << arrow << " " << entry.address << " (" << entry.txid << ")" << std::endl;
 		} else {
 			const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(contract);
 			const auto decimals = token ? token->decimals : params->decimals;
 			std::cout << amount_value(entry.amount, decimals) << " " << (token ? token->symbol : "MMX")
-					<< " (" << entry.amount << ") " << arrow << " " << entry.address << " (" << entry.key.txid << ")" << std::endl;
+					<< " (" << entry.amount << ") " << arrow << " " << entry.address << " (" << entry.txid << ")" << std::endl;
 		}
 	}
 }

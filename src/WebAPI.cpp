@@ -6,6 +6,9 @@
  */
 
 #include <mmx/WebAPI.h>
+#include <mmx/txio_key_t.hpp>
+//#include <mmx/exchange/trade_pair_t.hpp>
+#include <mmx/uint128.hpp>
 #include <mmx/utils.h>
 
 #include <mmx/contract/Data.hxx>
@@ -22,9 +25,7 @@
 #include <mmx/operation/Mutate.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/solution/MultiSig.hxx>
-//#include <mmx/exchange/trade_pair_t.hpp>
 #include <mmx/permission_e.hxx>
-#include <mmx/uint128.hpp>
 
 #include <vnx/vnx.h>
 #include <vnx/ProcessClient.hxx>

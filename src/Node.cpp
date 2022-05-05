@@ -17,6 +17,7 @@
 
 #include <vnx/vnx.h>
 
+#include <tuple>
 #include <atomic>
 #include <algorithm>
 
@@ -397,36 +398,52 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 	const uint32_t height = get_height();
 	const uint32_t min_height = since >= 0 ? since : std::max<int32_t>(height + since, 0);
 
-	std::multimap<uint32_t, tx_entry_t> list;
+	struct entry_t {
+		uint32_t height = 0;
+		uint128_t recv = uint128_0;
+		uint128_t spent = uint128_0;
+	};
+	std::map<std::tuple<addr_t, hash_t, addr_t>, entry_t> delta_map;
+
 	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
 		{
 			std::vector<txout_entry_t> entries;
 			recv_log.find_range(std::make_pair(address, min_height), std::make_pair(address, -1), entries);
 			for(const auto& entry : entries) {
-				tx_entry_t out;
-				out.height = entry.height;
-				out.key = entry.key;
-				out.type = tx_type_e::RECEIVE;
-				out.address = entry.address;
-				out.contract = entry.contract;
-				out.sender = entry.sender;
-				out.amount = entry.amount;
-				list.emplace(out.height, out);
+				auto& delta = delta_map[std::make_tuple(entry.address, entry.key.txid, entry.contract)];
+				delta.height = entry.height;
+				delta.recv += entry.amount;
 			}
 		}
 		{
 			std::vector<txio_entry_t> entries;
 			spend_log.find_range(std::make_pair(address, min_height), std::make_pair(address, -1), entries);
 			for(const auto& entry : entries) {
-				tx_entry_t out;
-				out.height = entry.height;
-				out.key = entry.key;
-				out.type = tx_type_e::SPEND;
-				out.address = entry.address;
-				out.contract = entry.contract;
-				out.amount = entry.amount;
-				list.emplace(out.height, out);
+				auto& delta = delta_map[std::make_tuple(entry.address, entry.key.txid, entry.contract)];
+				delta.height = entry.height;
+				delta.spent += entry.amount;
 			}
+		}
+	}
+	std::multimap<uint32_t, tx_entry_t> list;
+	for(const auto& entry : delta_map) {
+		const auto& delta = entry.second;
+		tx_entry_t out;
+		out.height = delta.height;
+		out.txid = std::get<1>(entry.first);
+		out.address = std::get<0>(entry.first);
+		out.contract = std::get<2>(entry.first);
+		if(delta.recv > delta.spent) {
+			tx_entry_t out;
+			out.type = tx_type_e::RECEIVE;
+			out.amount = delta.recv - delta.spent;
+		}
+		if(delta.recv < delta.spent) {
+			out.type = tx_type_e::SPEND;
+			out.amount = delta.spent - delta.recv;
+		}
+		if(out.amount) {
+			list.emplace(out.height, out);
 		}
 	}
 	std::vector<tx_entry_t> res;
