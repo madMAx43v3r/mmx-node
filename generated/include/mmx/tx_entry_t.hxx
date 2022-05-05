@@ -7,8 +7,8 @@
 #include <vnx/Type.h>
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/hash_t.hpp>
 #include <mmx/tx_type_e.hxx>
-#include <mmx/txio_key_t.hxx>
 #include <mmx/uint128.hpp>
 
 
@@ -18,11 +18,10 @@ struct MMX_EXPORT tx_entry_t {
 	
 	
 	uint32_t height = 0;
-	::mmx::txio_key_t key;
+	::mmx::hash_t txid;
 	::mmx::tx_type_e type;
 	::mmx::addr_t address;
 	::mmx::addr_t contract;
-	vnx::optional<::mmx::addr_t> sender;
 	::mmx::uint128 amount;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
@@ -65,15 +64,14 @@ struct MMX_EXPORT tx_entry_t {
 
 template<typename T>
 void tx_entry_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<tx_entry_t>(7);
+	_visitor.template type_begin<tx_entry_t>(6);
 	_visitor.type_field("height", 0); _visitor.accept(height);
-	_visitor.type_field("key", 1); _visitor.accept(key);
+	_visitor.type_field("txid", 1); _visitor.accept(txid);
 	_visitor.type_field("type", 2); _visitor.accept(type);
 	_visitor.type_field("address", 3); _visitor.accept(address);
 	_visitor.type_field("contract", 4); _visitor.accept(contract);
-	_visitor.type_field("sender", 5); _visitor.accept(sender);
-	_visitor.type_field("amount", 6); _visitor.accept(amount);
-	_visitor.template type_end<tx_entry_t>(7);
+	_visitor.type_field("amount", 5); _visitor.accept(amount);
+	_visitor.template type_end<tx_entry_t>(6);
 }
 
 
