@@ -19,6 +19,7 @@
 #include <mmx/Contract_transfer_return.hxx>
 #include <mmx/Contract_validate.hxx>
 #include <mmx/Contract_validate_return.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/contract/MutableRelay.hxx>
 #include <mmx/contract/MutableRelay_calc_cost.hxx>
 #include <mmx/contract/MutableRelay_calc_cost_return.hxx>
@@ -40,6 +41,12 @@
 #include <mmx/contract/MutableRelay_unlock_return.hxx>
 #include <mmx/contract/MutableRelay_validate.hxx>
 #include <mmx/contract/MutableRelay_validate_return.hxx>
+#include <mmx/contract/PlotNFT_is_valid.hxx>
+#include <mmx/contract/PlotNFT_is_valid_return.hxx>
+#include <mmx/contract/PlotNFT_lock.hxx>
+#include <mmx/contract/PlotNFT_lock_return.hxx>
+#include <mmx/contract/PlotNFT_lock_pool.hxx>
+#include <mmx/contract/PlotNFT_lock_pool_return.hxx>
 
 #include <vnx/vnx.h>
 
@@ -47,6 +54,7 @@
 namespace mmx {
 namespace contract {
 
+const uint32_t PlotNFT::MAX_UNLOCK_DELAY;
 
 const vnx::Hash64 PlotNFT::VNX_TYPE_HASH(0x7705f4da286543dull);
 const vnx::Hash64 PlotNFT::VNX_CODE_HASH(0x182490bd3ef9b843ull);
@@ -218,7 +226,7 @@ std::shared_ptr<vnx::TypeCode> PlotNFT::static_create_type_code() {
 	type_code->parents[0] = ::mmx::contract::MutableRelay::static_get_type_code();
 	type_code->parents[1] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<PlotNFT>(); };
-	type_code->methods.resize(18);
+	type_code->methods.resize(21);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_dependency::static_get_type_code();
@@ -237,6 +245,9 @@ std::shared_ptr<vnx::TypeCode> PlotNFT::static_create_type_code() {
 	type_code->methods[15] = ::mmx::contract::MutableRelay_transfer::static_get_type_code();
 	type_code->methods[16] = ::mmx::contract::MutableRelay_unlock::static_get_type_code();
 	type_code->methods[17] = ::mmx::contract::MutableRelay_validate::static_get_type_code();
+	type_code->methods[18] = ::mmx::contract::PlotNFT_is_valid::static_get_type_code();
+	type_code->methods[19] = ::mmx::contract::PlotNFT_lock::static_get_type_code();
+	type_code->methods[20] = ::mmx::contract::PlotNFT_lock_pool::static_get_type_code();
 	type_code->fields.resize(7);
 	{
 		auto& field = type_code->fields[0];
@@ -393,6 +404,24 @@ std::shared_ptr<vnx::Value> PlotNFT::vnx_call_switch(std::shared_ptr<const vnx::
 			auto _args = std::static_pointer_cast<const ::mmx::contract::MutableRelay_validate>(_method);
 			auto _return_value = ::mmx::contract::MutableRelay_validate_return::create();
 			_return_value->_ret_0 = validate(_args->operation, _args->context);
+			return _return_value;
+		}
+		case 0xee4e1a5d6185e72bull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::PlotNFT_is_valid>(_method);
+			auto _return_value = ::mmx::contract::PlotNFT_is_valid_return::create();
+			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+		case 0x760d22b52e9389a2ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::PlotNFT_lock>(_method);
+			auto _return_value = ::mmx::contract::PlotNFT_lock_return::create();
+			lock(_args->new_target, _args->new_unlock_delay);
+			return _return_value;
+		}
+		case 0xb607c281c752c61aull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::PlotNFT_lock_pool>(_method);
+			auto _return_value = ::mmx::contract::PlotNFT_lock_pool_return::create();
+			lock_pool(_args->new_target, _args->new_unlock_delay, _args->new_server_url);
 			return _return_value;
 		}
 	}

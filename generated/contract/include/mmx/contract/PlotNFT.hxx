@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_contract_PlotNFT_HXX_
 
 #include <mmx/contract/package.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/contract/MutableRelay.hxx>
 
 
@@ -13,6 +14,7 @@ namespace contract {
 
 class MMX_CONTRACT_EXPORT PlotNFT : public ::mmx::contract::MutableRelay {
 public:
+	static const uint32_t MAX_UNLOCK_DELAY = 10000;
 	
 	std::string name;
 	vnx::optional<std::string> server_url;
@@ -29,6 +31,10 @@ public:
 	vnx::Hash64 get_type_hash() const override;
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
+	
+	virtual vnx::bool_t is_valid() const override;
+	virtual void lock(const vnx::optional<::mmx::addr_t>& new_target = nullptr, const uint32_t& new_unlock_delay = 0) override;
+	virtual void lock_pool(const vnx::optional<::mmx::addr_t>& new_target = nullptr, const uint32_t& new_unlock_delay = 0, const vnx::optional<std::string>& new_server_url = nullptr);
 	
 	static std::shared_ptr<PlotNFT> create();
 	std::shared_ptr<vnx::Value> clone() const override;
