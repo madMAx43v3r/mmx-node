@@ -109,13 +109,14 @@ std::pair<uint8_t*, size_t> serialize(const var_t& src, bool with_rc, bool with_
 	out.first = (uint8_t*)::malloc(out.second);
 
 	size_t offset = 0;
-	::memcpy(out.first + offset, &src.type, 1); offset += 1;
-	if(with_vf) {
-		::memcpy(out.first + offset, &src.flags, 1); offset += 1;
-	}
 	if(with_rc) {
 		::memcpy(out.first + offset, &src.ref_count, 4); offset += 4;
 	}
+	if(with_vf) {
+		::memcpy(out.first + offset, &src.flags, 1); offset += 1;
+	}
+	::memcpy(out.first + offset, &src.type, 1); offset += 1;
+
 	switch(src.type) {
 		case TYPE_REF:
 			::memcpy(out.first + offset, &((const ref_t&)src).address, 8); offset += 8;
@@ -145,27 +146,29 @@ std::pair<uint8_t*, size_t> serialize(const var_t& src, bool with_rc, bool with_
 std::pair<var_t*, size_t> deserialize(const void* data_, const size_t length, bool with_rc, bool with_vf)
 {
 	std::pair<var_t*, size_t> out = {nullptr, 0};
-	if(length < 1) {
-		throw std::runtime_error("unexpected eof");
-	}
+
 	size_t offset = 0;
 	const uint8_t* data = (const uint8_t*)data_;
-	auto type = vartype_e(data[offset]); offset += 1;
 
 	uint8_t flags = 0;
 	uint32_t ref_count = 0;
-	if(with_vf) {
-		if(length < offset + 1) {
-			throw std::runtime_error("unexpected eof");
-		}
-		flags = data[offset]; offset += 1;
-	}
 	if(with_rc) {
 		if(length < offset + 4) {
 			throw std::runtime_error("unexpected eof");
 		}
 		::memcpy(&ref_count, data + offset, 4); offset += 4;
 	}
+	if(with_vf) {
+		if(length < offset + 1) {
+			throw std::runtime_error("unexpected eof");
+		}
+		flags = data[offset]; offset += 1;
+	}
+	if(length < offset + 1) {
+		throw std::runtime_error("unexpected eof");
+	}
+	const auto type = vartype_e(data[offset]); offset += 1;
+
 	switch(type) {
 		case TYPE_NIL:
 		case TYPE_TRUE:

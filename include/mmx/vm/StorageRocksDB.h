@@ -44,7 +44,8 @@ public:
 
 private:
 	vnx::rocksdb::raw_table table;
-	vnx::rocksdb::raw_table index;
+	vnx::rocksdb::raw_table table_entries;
+	vnx::rocksdb::raw_table table_index;
 	vnx::rocksdb::table<std::pair<uint32_t, addr_t>, contract::height_info_t> table_log;
 
 	std::map<addr_t, contract::height_info_t> log_buffer;

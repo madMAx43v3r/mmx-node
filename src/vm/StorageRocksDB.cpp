@@ -53,12 +53,17 @@ std::pair<uint8_t*, size_t> write_index_key(const addr_t& contract, const std::p
 StorageRocksDB::StorageRocksDB(const std::string& database_path)
 {
 	::rocksdb::Options options;
-	options.max_open_files = 64;
+	options.max_open_files = 16;
 	options.keep_log_file_num = 3;
 	options.max_manifest_file_size = 256 * 1024 * 1024;
 
 	table.open(database_path + "storage", options);
+	table_entries.open(database_path + "storage_entries", options);
+	table_index.open(database_path + "storage_index", options);
+
 	options.max_open_files = 4;
+	options.max_manifest_file_size = 64 * 1024 * 1024;
+
 	table_log.open(database_path + "storage_log", options);
 }
 
@@ -70,8 +75,11 @@ var_t* StorageRocksDB::read(const addr_t& contract, const uint64_t src) const
 {
 	const auto key = get_key(contract, src, -1);
 	vnx::rocksdb::raw_ptr_t value;
-	if(table.find_prev(std::make_pair(key.data(), key.size()), value, 40)) {
-		return deserialize(value.data(), value.size()).first;
+	vnx::rocksdb::raw_ptr_t found_key;
+	if(table.find_prev(std::make_pair(key.data(), key.size()), value, &found_key)) {
+		if(found_key.size() == key.size() && ::memcmp(found_key.data(), key.data(), 40) == 0) {
+			return deserialize(value.data(), value.size()).first;
+		}
 	}
 	return nullptr;
 }
@@ -80,8 +88,11 @@ var_t* StorageRocksDB::read(const addr_t& contract, const uint64_t src, const ui
 {
 	const auto entry_key = get_entry_key(contract, src, key, -1);
 	vnx::rocksdb::raw_ptr_t value;
-	if(table.find_prev(std::make_pair(entry_key.data(), entry_key.size()), value, 48)) {
-		return deserialize(value.data(), value.size(), false).first;
+	vnx::rocksdb::raw_ptr_t found_key;
+	if(table_entries.find_prev(std::make_pair(entry_key.data(), entry_key.size()), value, &found_key)) {
+		if(found_key.size() == entry_key.size() && ::memcmp(found_key.data(), entry_key.data(), 48) == 0) {
+			return deserialize(value.data(), value.size(), false).first;
+		}
 	}
 	return nullptr;
 }
@@ -94,7 +105,7 @@ void StorageRocksDB::write(const addr_t& contract, const uint64_t dst, const var
 
 	if(value.flags & FLAG_KEY) {
 		const auto key = write_index_key(contract, std::make_pair(data.first + 5, data.second - 5));
-		index.insert(key, std::make_pair(&dst, sizeof(dst)));
+		table_index.insert(key, std::make_pair(&dst, sizeof(dst)));
 		::free(key.first);
 	}
 	::free(data.first);
@@ -106,7 +117,7 @@ void StorageRocksDB::write(const addr_t& contract, const uint64_t dst, const uin
 {
 	const auto entry_key = get_entry_key(contract, dst, key, height);
 	const auto data = serialize(value, false);
-	table.insert(std::make_pair(entry_key.data(), entry_key.size()), data);
+	table_entries.insert(std::make_pair(entry_key.data(), entry_key.size()), data);
 	::free(data.first);
 
 	log_buffer[contract].entry_keys.emplace_back(dst, key);
@@ -118,7 +129,7 @@ uint64_t StorageRocksDB::lookup(const addr_t& contract, const var_t& value) cons
 	const auto key = write_index_key(contract, data);
 	uint64_t out = 0;
 	vnx::rocksdb::raw_ptr_t tmp;
-	if(index.find(key, tmp)) {
+	if(table_index.find(key, tmp)) {
 		::memcpy(&out, tmp.data(), std::min(tmp.size(), sizeof(out)));
 	}
 	::free(key.first);
