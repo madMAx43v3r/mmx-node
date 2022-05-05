@@ -567,14 +567,17 @@ uint64_t Engine::alloc()
 
 void Engine::begin(const uint32_t instr_ptr)
 {
+	call_stack.clear();
+
+	for(auto iter = memory.begin(); iter != memory.lower_bound(MEM_EXTERN); ++iter) {
+		key_map[iter->second] = iter->first;
+	}
 	for(auto iter = memory.begin(); iter != memory.lower_bound(MEM_STACK); ++iter) {
 		if(auto var = iter->second) {
 			var->flags |= FLAG_CONST;
 			var->flags &= ~FLAG_DIRTY;
 		}
 	}
-	call_stack.clear();
-
 	if(!read(MEM_HEAP + GLOBAL_HAVE_INIT)) {
 		write(MEM_HEAP + GLOBAL_HAVE_INIT, var_t(TYPE_TRUE))->pin();
 		write(MEM_HEAP + GLOBAL_NEXT_ALLOC, uint_t(MEM_HEAP + GLOBAL_DYNAMIC_START))->pin();
