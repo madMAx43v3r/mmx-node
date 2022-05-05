@@ -223,6 +223,7 @@
 #include <mmx/contract/WebData_update_return.hxx>
 #include <mmx/contract/WebData_validate.hxx>
 #include <mmx/contract/WebData_validate_return.hxx>
+#include <mmx/contract/height_info_t.hxx>
 #include <mmx/contract/method_t.hxx>
 
 #include <mmx/contract/package.hxx>
@@ -2896,6 +2897,18 @@ void type<::mmx::contract::WebData_validate_return>::create_dynamic_code(std::ve
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::contract::height_info_t>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_height_info_t;
+}
+
+void type<::mmx::contract::height_info_t>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::height_info_t());
+}
+
+void type<::mmx::contract::height_info_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::height_info_t& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::contract::method_t>::get_type_code() {
 	return mmx::contract::vnx_native_type_code_method_t;
 }
@@ -3139,6 +3152,7 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::WebData_update_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::WebData_validate::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::WebData_validate_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::height_info_t::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::method_t::static_create_type_code());
 }
 
@@ -3370,6 +3384,7 @@ const vnx::TypeCode* const vnx_native_type_code_WebData_update = vnx::get_type_c
 const vnx::TypeCode* const vnx_native_type_code_WebData_update_return = vnx::get_type_code(vnx::Hash64(0x1d1083a20aa7a388ull));
 const vnx::TypeCode* const vnx_native_type_code_WebData_validate = vnx::get_type_code(vnx::Hash64(0x5b5602c1e2ec9e40ull));
 const vnx::TypeCode* const vnx_native_type_code_WebData_validate_return = vnx::get_type_code(vnx::Hash64(0x1baf67b4e006981ull));
+const vnx::TypeCode* const vnx_native_type_code_height_info_t = vnx::get_type_code(vnx::Hash64(0xb034d507ccd54761ull));
 const vnx::TypeCode* const vnx_native_type_code_method_t = vnx::get_type_code(vnx::Hash64(0x1f62512698176a39ull));
 
 } // namespace mmx
