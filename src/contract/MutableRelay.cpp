@@ -65,6 +65,9 @@ std::vector<txout_t> MutableRelay::validate(std::shared_ptr<const Operation> ope
 		if(!target) {
 			throw std::logic_error("!target");
 		}
+		if(unlock_height && context->height >= *unlock_height) {
+			throw std::logic_error("contract is not locked");
+		}
 		auto contract = context->get_contract(*target);
 		if(!contract) {
 			throw std::logic_error("missing dependency");
