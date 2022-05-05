@@ -135,6 +135,7 @@ add_library(mmx_vm SHARED
 	src/vm/var_t.cpp
 	src/vm/StorageProxy.cpp
 	src/vm/StorageRAM.cpp
+	src/vm/StorageCache.cpp
 	src/vm/StorageRocksDB.cpp
 )
 
