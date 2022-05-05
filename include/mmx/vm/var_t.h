@@ -238,7 +238,7 @@ int compare(const var_t& lhs, const var_t& rhs);
 
 std::pair<uint8_t*, size_t> serialize(const var_t& src, bool with_rc = true, bool with_vf = true);
 
-std::pair<var_t*, size_t> deserialize(const uint8_t* data, const size_t length, bool with_rc = true, bool with_vf = true);
+std::pair<var_t*, size_t> deserialize(const void* data, const size_t length, bool with_rc = true, bool with_vf = true);
 
 std::string to_string(const var_t* var);
 

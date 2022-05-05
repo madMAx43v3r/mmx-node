@@ -1,0 +1,8 @@
+package mmx.contract;
+
+struct height_info_t {
+	
+	vector<ulong> keys;
+	vector<pair<ulong, ulong>> entry_keys;
+	
+}

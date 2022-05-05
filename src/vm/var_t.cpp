@@ -106,7 +106,7 @@ std::pair<uint8_t*, size_t> serialize(const var_t& src, bool with_rc, bool with_
 			out.second += 8; break;
 		default: break;
 	}
-	out.first = new uint8_t[out.second];
+	out.first = (uint8_t*)::malloc(out.second);
 
 	size_t offset = 0;
 	::memcpy(out.first + offset, &src.type, 1); offset += 1;
@@ -142,13 +142,14 @@ std::pair<uint8_t*, size_t> serialize(const var_t& src, bool with_rc, bool with_
 	return out;
 }
 
-std::pair<var_t*, size_t> deserialize(const uint8_t* data, const size_t length, bool with_rc, bool with_vf)
+std::pair<var_t*, size_t> deserialize(const void* data_, const size_t length, bool with_rc, bool with_vf)
 {
 	std::pair<var_t*, size_t> out = {nullptr, 0};
 	if(length < 1) {
 		throw std::runtime_error("unexpected eof");
 	}
 	size_t offset = 0;
+	const uint8_t* data = (const uint8_t*)data_;
 	auto type = vartype_e(data[offset]); offset += 1;
 
 	uint8_t flags = 0;
