@@ -103,6 +103,7 @@ add_library(mmx_iface SHARED
 	src/contract/Token.cpp
 	src/contract/TokenBase.cpp
 	src/contract/TimeLock.cpp
+	src/contract/PlotNFT.cpp
 	src/contract/PuzzleTimeLock.cpp
 	src/contract/MutableRelay.cpp
 	src/contract/VirtualPlot.cpp

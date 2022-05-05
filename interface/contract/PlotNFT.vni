@@ -1,9 +1,21 @@
 package mmx.contract;
 
+import mmx.addr_t;
+
 class PlotNFT extends MutableRelay {
 	
 	string name;
 	
 	optional<string> server_url;
+	
+	
+	static const uint MAX_UNLOCK_DELAY = 10000;
+	
+	
+	bool is_valid() const;
+	
+	void lock(optional<addr_t> new_target, uint new_unlock_delay);
+	
+	void lock_pool(optional<addr_t> new_target, uint new_unlock_delay, optional<string> new_server_url);
 	
 }
