@@ -78,6 +78,22 @@ int compare(const var_t& lhs, const var_t& rhs)
 			}
 			return L.size < R.size ? -1 : 1;
 		}
+		case TYPE_ARRAY: {
+			const auto& L = (const array_t&)lhs;
+			const auto& R = (const array_t&)rhs;
+			if(L.address == R.address) {
+				return 0;
+			}
+			return L.address < R.address ? -1 : 1;
+		}
+		case TYPE_MAP: {
+			const auto& L = (const map_t&)lhs;
+			const auto& R = (const map_t&)rhs;
+			if(L.address == R.address) {
+				return 0;
+			}
+			return L.address < R.address ? -1 : 1;
+		}
 		default:
 			return 0;
 	}
