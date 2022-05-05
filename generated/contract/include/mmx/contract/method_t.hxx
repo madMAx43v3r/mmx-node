@@ -18,6 +18,7 @@ struct MMX_CONTRACT_EXPORT method_t {
 	std::string info;
 	vnx::bool_t is_const = 0;
 	vnx::bool_t is_public = 0;
+	vnx::bool_t is_payable = 0;
 	uint32_t entry_point = 0;
 	std::vector<std::string> args;
 	
@@ -61,14 +62,15 @@ struct MMX_CONTRACT_EXPORT method_t {
 
 template<typename T>
 void method_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<method_t>(6);
+	_visitor.template type_begin<method_t>(7);
 	_visitor.type_field("name", 0); _visitor.accept(name);
 	_visitor.type_field("info", 1); _visitor.accept(info);
 	_visitor.type_field("is_const", 2); _visitor.accept(is_const);
 	_visitor.type_field("is_public", 3); _visitor.accept(is_public);
-	_visitor.type_field("entry_point", 4); _visitor.accept(entry_point);
-	_visitor.type_field("args", 5); _visitor.accept(args);
-	_visitor.template type_end<method_t>(6);
+	_visitor.type_field("is_payable", 4); _visitor.accept(is_payable);
+	_visitor.type_field("entry_point", 5); _visitor.accept(entry_point);
+	_visitor.type_field("args", 6); _visitor.accept(args);
+	_visitor.template type_end<method_t>(7);
 }
 
 
