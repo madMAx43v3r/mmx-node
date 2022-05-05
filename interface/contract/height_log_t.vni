@@ -1,8 +1,11 @@
 package mmx.contract;
 
-struct height_info_t {
+struct height_log_t {
 	
 	vector<ulong> keys;
+	
+	vector<ulong> index_values;
+	
 	vector<pair<ulong, ulong>> entry_keys;
 	
 }

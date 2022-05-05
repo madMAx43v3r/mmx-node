@@ -9,7 +9,7 @@
 #define INCLUDE_MMX_VM_STORAGEROCKSDB_H_
 
 #include <mmx/vm/Storage.h>
-#include <mmx/contract/height_info_t.hxx>
+#include <mmx/contract/height_log_t.hxx>
 
 #include <vnx/rocksdb/table.h>
 #include <vnx/rocksdb/raw_table.h>
@@ -46,9 +46,10 @@ private:
 	vnx::rocksdb::raw_table table;
 	vnx::rocksdb::raw_table table_entries;
 	vnx::rocksdb::raw_table table_index;
-	vnx::rocksdb::table<std::pair<uint32_t, addr_t>, contract::height_info_t> table_log;
 
-	std::map<addr_t, contract::height_info_t> log_buffer;
+	vnx::rocksdb::table<std::pair<uint32_t, addr_t>, contract::height_log_t> table_log;
+
+	std::map<addr_t, contract::height_log_t> log_buffer;
 
 };
 
