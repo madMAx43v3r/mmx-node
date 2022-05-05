@@ -81,7 +81,7 @@ var_t* StorageRocksDB::read(const addr_t& contract, const uint64_t src, const ui
 	const auto entry_key = get_entry_key(contract, src, key, -1);
 	vnx::rocksdb::raw_ptr_t value;
 	if(table.find_prev(std::make_pair(entry_key.data(), entry_key.size()), value, 48)) {
-		return deserialize(value.data(), value.size()).first;
+		return deserialize(value.data(), value.size(), false).first;
 	}
 	return nullptr;
 }
@@ -93,7 +93,7 @@ void StorageRocksDB::write(const addr_t& contract, const uint64_t dst, const var
 	table.insert(std::make_pair(key.data(), key.size()), data);
 
 	if(value.flags & FLAG_KEY) {
-		const auto key = write_index_key(contract, data);
+		const auto key = write_index_key(contract, std::make_pair(data.first + 5, data.second - 5));
 		index.insert(key, std::make_pair(&dst, sizeof(dst)));
 		::free(key.first);
 	}
@@ -114,7 +114,7 @@ void StorageRocksDB::write(const addr_t& contract, const uint64_t dst, const uin
 
 uint64_t StorageRocksDB::lookup(const addr_t& contract, const var_t& value) const
 {
-	const auto data = serialize(value);
+	const auto data = serialize(value, false, false);
 	const auto key = write_index_key(contract, data);
 	uint64_t out = 0;
 	vnx::rocksdb::raw_ptr_t tmp;
