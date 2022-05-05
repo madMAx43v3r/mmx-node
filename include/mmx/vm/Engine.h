@@ -201,12 +201,6 @@ T& Engine::read_fail(const uint64_t src, const vartype_e& type)
 	return (T&)var;
 }
 
-inline std::string to_hex(const uint64_t addr) {
-	std::stringstream ss;
-	ss << "0x" << std::hex << addr;
-	return ss.str();
-}
-
 
 } // vm
 } // mmx

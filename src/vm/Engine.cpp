@@ -14,6 +14,12 @@
 namespace mmx {
 namespace vm {
 
+std::string to_hex(const uint64_t addr) {
+	std::stringstream ss;
+	ss << "0x" << std::hex << addr;
+	return ss.str();
+}
+
 Engine::Engine(const addr_t& contract, std::shared_ptr<Storage> backend, bool read_only)
 	:	contract(contract),
 		storage(std::make_shared<StorageProxy>(backend, read_only))
