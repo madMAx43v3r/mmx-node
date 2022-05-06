@@ -12,8 +12,6 @@
 #include <mmx/utils.h>
 
 #include <mmx/contract/Data.hxx>
-#include <mmx/contract/DataArray.hxx>
-#include <mmx/contract/DataObject.hxx>
 #include <mmx/contract/MultiSig.hxx>
 #include <mmx/contract/NFT.hxx>
 #include <mmx/contract/MutableRelay.hxx>
@@ -414,10 +412,6 @@ public:
 		} else if(auto value = std::dynamic_pointer_cast<const contract::PuzzleTimeLock>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::Data>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::DataArray>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::DataObject>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::MutableRelay>(base)) {
 			set(render(value, context));
