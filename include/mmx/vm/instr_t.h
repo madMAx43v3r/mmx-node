@@ -78,7 +78,7 @@ enum opcode_e : uint8_t {
 
 };
 
-enum convtype_e {
+enum convtype_e : uint8_t {
 
 	CONVTYPE_DEFAULT = 0,
 	CONVTYPE_BASE_2,
@@ -108,9 +108,7 @@ struct instr_t {
 	instr_t() = default;
 	instr_t(opcode_e code, uint8_t flags = 0,
 			uint32_t a = 0, uint32_t b = 0, uint32_t c = 0, uint32_t d = 0)
-		:	code(code), flags(flags), a(a), b(b), c(c), d(c)
-	{
-	}
+		:	code(code), flags(flags), a(a), b(b), c(c), d(c) {}
 
 };
 

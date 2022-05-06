@@ -1223,7 +1223,7 @@ void Engine::exec(const instr_t& instr)
 		bool res = false;
 		switch(instr.code) {
 			case OP_CMP_EQ: res = (cmp == 0); break;
-			case OP_CMP_NEQ: res = !(cmp == 0); break;
+			case OP_CMP_NEQ: res = (cmp != 0); break;
 			case OP_CMP_LT: res = (cmp < 0); break;
 			case OP_CMP_GT: res = (cmp > 0); break;
 			case OP_CMP_LTE: res = (cmp <= 0); break;
