@@ -7,6 +7,8 @@
 
 #include <mmx/vm/Engine.h>
 #include <mmx/vm/StorageRAM.h>
+#include <mmx/vm/StorageCache.h>
+#include <mmx/vm/StorageRocksDB.h>
 
 #include <iostream>
 
@@ -15,9 +17,13 @@ using namespace mmx;
 
 int main(int arcv, char** argv)
 {
-	auto backend = std::make_shared<vm::StorageRAM>();
+//	auto storage = std::make_shared<vm::StorageRAM>();
+	auto backend = std::make_shared<vm::StorageRocksDB>("tmp/");
+	backend->height = 1;
+	backend->revert();
+	auto storage = std::make_shared<vm::StorageCache>(backend);
 	{
-		vm::Engine engine(addr_t(), backend, false);
+		vm::Engine engine(addr_t(), storage, false);
 		engine.write(vm::MEM_CONST + 0, vm::var_t());
 		engine.write(vm::MEM_CONST + 1, vm::uint_t(1337));
 		engine.write(vm::MEM_CONST + 2, vm::map_t());
@@ -39,15 +45,17 @@ int main(int arcv, char** argv)
 		code.emplace_back(vm::OP_PUSH_BACK, vm::OPFLAG_REF_A, vm::MEM_STATIC + 1, vm::MEM_CONST + 3);
 		code.emplace_back(vm::OP_RET);
 
-		engine.credits = 10000;
+		engine.total_gas = 10000;
 		engine.begin(0);
 		engine.run();
 		engine.dump_memory();
 		engine.commit();
-		std::cout << "Cost: " << engine.cost << std::endl;
+		std::cout << "Cost: " << engine.total_cost << std::endl;
 	}
+	storage->commit();
+	backend->commit();
 	{
-		vm::Engine engine(addr_t(), backend, true);
+		vm::Engine engine(addr_t(), storage, true);
 		engine.write(vm::MEM_CONST + 0, vm::var_t());
 		engine.assign(vm::MEM_CONST + 3, vm::binary_t::alloc("value"));
 
@@ -58,14 +66,14 @@ int main(int arcv, char** argv)
 		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 3, vm::MEM_STATIC + 1, 2);
 		code.emplace_back(vm::OP_RET);
 
-		engine.credits = 10000;
+		engine.total_gas = 10000;
 		engine.begin(0);
 		engine.run();
 		engine.dump_memory();
-		std::cout << "Cost: " << engine.cost << std::endl;
+		std::cout << "Cost: " << engine.total_cost << std::endl;
 	}
 	{
-		vm::Engine engine(addr_t(), backend, true);
+		vm::Engine engine(addr_t(), storage, true);
 		engine.write(vm::MEM_CONST + 0, vm::var_t());
 		engine.write(vm::MEM_CONST + 1, vm::uint_t());
 		engine.write(vm::MEM_CONST + 2, vm::uint_t(1));
@@ -79,11 +87,11 @@ int main(int arcv, char** argv)
 		code.emplace_back(vm::OP_JUMP, 0, 1);
 		code.emplace_back(vm::OP_RET);
 
-		engine.credits = 1000000;
+		engine.total_gas = 1000000;
 		engine.begin(0);
 		engine.run();
 		engine.dump_memory();
-		std::cout << "Cost: " << engine.cost << std::endl;
+		std::cout << "Cost: " << engine.total_cost << std::endl;
 	}
 	return 0;
 }

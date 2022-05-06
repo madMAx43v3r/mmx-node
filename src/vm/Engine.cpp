@@ -115,7 +115,7 @@ var_t* Engine::assign(var_t*& var, var_t* value)
 	}
 	var = value;
 	num_write++;
-	bytes_write += num_bytes(value);
+	num_bytes_write += num_bytes(value);
 	return var;
 }
 
@@ -608,16 +608,17 @@ void Engine::step()
 	if(instr_ptr >= code.size()) {
 		throw std::logic_error("instr_ptr out of bounds: " + to_hex(instr_ptr) + " > " + to_hex(code.size()));
 	}
-	cost = num_instr * INSTR_COST + num_write * WRITE_COST + bytes_write * WRITE_BYTE_COST
-			+ (storage->num_read + storage->num_lookup) * STOR_READ_COST
-			+ (storage->bytes_read + storage->bytes_lookup) * STOR_READ_BYTE_COST;
-	if(cost >= credits) {
-		throw std::runtime_error("out of credits: " + std::to_string(cost) + " > " + std::to_string(credits));
-	}
 	try {
 		exec(code[instr_ptr]);
 	} catch(const std::exception& ex) {
 		throw std::runtime_error("exception at " + to_hex(instr_ptr) + ": " + ex.what());
+	}
+	total_cost = num_instr * INSTR_COST + num_calls * CALL_COST
+			+ num_write * WRITE_COST + num_bytes_write * WRITE_BYTE_COST
+			+ storage->num_read * STOR_READ_COST + storage->num_bytes_read * STOR_READ_BYTE_COST
+			+ num_bytes_sha256 * SHA256_BYTE_COST;
+	if(total_cost > total_gas) {
+		throw std::runtime_error("out of gas: " + std::to_string(total_cost) + " > " + std::to_string(total_gas));
 	}
 }
 
@@ -744,6 +745,25 @@ void Engine::memcpy(const uint64_t dst, const uint64_t src, const uint32_t count
 	}
 }
 
+void Engine::sha256(const uint64_t dst, const uint64_t src)
+{
+	const auto& svar = read_fail(src);
+	switch(svar.type) {
+		case TYPE_STRING:
+		case TYPE_BINARY: {
+			const auto& sbin = (const binary_t&)svar;
+			const auto num_bytes = std::max<uint32_t>(sbin.size, 64);
+			if(num_bytes * SHA256_BYTE_COST > total_gas - total_cost) {
+				throw std::runtime_error("insufficient gas");
+			}
+			num_bytes_sha256 += num_bytes;
+			write(dst, uint_t(hash_t(sbin.data(), sbin.size).to_uint256()));
+			break;
+		}
+		default: throw std::logic_error("invalid type");
+	}
+}
+
 void Engine::conv(const uint64_t dst, const uint64_t src, const uint32_t dflags, const uint32_t sflags)
 {
 	const auto& svar = read_fail(src);
@@ -847,6 +867,7 @@ void Engine::call(const uint32_t instr_ptr, const uint32_t stack_ptr)
 	frame.instr_ptr = instr_ptr;
 	frame.stack_ptr = get_frame().stack_ptr + stack_ptr;
 	call_stack.push_back(frame);
+	num_calls++;
 }
 
 bool Engine::ret()
@@ -964,6 +985,7 @@ void Engine::exec(const instr_t& instr)
 		write(dst, uint_t(D));
 		break;
 	}
+	// TODO
 	case OP_CMP_EQ:
 	case OP_CMP_NEQ:
 	case OP_CMP_LT:
@@ -1044,6 +1066,10 @@ void Engine::exec(const instr_t& instr)
 				deref_value(instr.c, instr.flags & OPFLAG_REF_C),
 				deref_value(instr.d, instr.flags & OPFLAG_REF_D));
 		break;
+	case OP_SHA256:
+		sha256(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
+				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
+		break;
 	case OP_LOG:
 		log(	deref_value(instr.a, instr.flags & OPFLAG_REF_A),
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
@@ -1052,6 +1078,9 @@ void Engine::exec(const instr_t& instr)
 		event(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
 		break;
+	case OP_FAIL:
+		throw std::runtime_error("failed with: " + to_string(read(
+				deref_addr(instr.a, instr.flags & OPFLAG_REF_A))));
 	default:
 		throw std::logic_error("invalid op_code: 0x" + vnx::to_hex_string(uint8_t(instr.code)));
 	}

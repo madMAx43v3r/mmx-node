@@ -33,7 +33,7 @@ var_t* StorageProxy::read_ex(var_t* var, const uint64_t src, const uint64_t* key
 		}
 	}
 	num_read++;
-	bytes_read += num_bytes(var);
+	num_bytes_read += num_bytes(var);
 	return var;
 }
 
@@ -55,8 +55,8 @@ void StorageProxy::write(const addr_t& contract, const uint64_t dst, const var_t
 	if((value.flags & FLAG_KEY) && !(value.flags & FLAG_CONST)) {
 		throw std::logic_error("keys need to be const");
 	}
-	num_write++;
-	bytes_write += num_bytes(value) * (value.flags & FLAG_KEY ? 2 : 1);
+	num_write += (value.flags & FLAG_KEY ? 2 : 1);
+	num_bytes_write += num_bytes(value) * (value.flags & FLAG_KEY ? 2 : 1);
 	backend->write(contract, dst, value);
 }
 
@@ -69,14 +69,14 @@ void StorageProxy::write(const addr_t& contract, const uint64_t dst, const uint6
 		throw std::logic_error("entries cannot have ref_count > 0");
 	}
 	num_write++;
-	bytes_write += num_bytes(value);
+	num_bytes_write += num_bytes(value);
 	backend->write(contract, dst, key, value);
 }
 
 uint64_t StorageProxy::lookup(const addr_t& contract, const var_t& value) const
 {
-	num_lookup++;
-	bytes_lookup += num_bytes(value);
+	num_read++;
+	num_bytes_read += num_bytes(value);
 	return backend->lookup(contract, value);
 }
 

@@ -27,12 +27,14 @@ namespace vm {
 class StorageProxy;
 
 static constexpr uint64_t INSTR_COST = 16;
+static constexpr uint64_t CALL_COST = 64;
 static constexpr uint64_t WRITE_COST = 16;
 static constexpr uint64_t WRITE_BYTE_COST = 1;
 static constexpr uint64_t STOR_READ_COST = 128;
 static constexpr uint64_t STOR_WRITE_COST = 1024;
 static constexpr uint64_t STOR_READ_BYTE_COST = 2;
 static constexpr uint64_t STOR_WRITE_BYTE_COST = 16;
+static constexpr uint64_t SHA256_BYTE_COST = 32;
 
 enum externvar_e : uint32_t {
 
@@ -66,12 +68,14 @@ public:
 	std::vector<instr_t> code;
 	std::vector<frame_t> call_stack;
 
-	uint64_t cost = 0;
-	uint64_t credits = 0;
+	uint64_t total_gas = 0;
+	uint64_t total_cost = 0;
 
 	uint64_t num_instr = 0;
+	uint64_t num_calls = 0;
 	uint64_t num_write = 0;
-	uint64_t bytes_write = 0;
+	uint64_t num_bytes_write = 0;
+	uint64_t num_bytes_sha256 = 0;
 
 	Engine(const addr_t& contract, std::shared_ptr<Storage> backend, bool read_only);
 
@@ -129,6 +133,7 @@ public:
 	void concat(const uint64_t dst, const uint64_t lhs, const uint64_t rhs);
 	void memcpy(const uint64_t dst, const uint64_t src, const uint32_t count, const uint32_t offset);
 	void conv(const uint64_t dst, const uint64_t src, const uint32_t dflags, const uint32_t sflags);
+	void sha256(const uint64_t dst, const uint64_t src);
 	void log(const uint64_t level, const uint64_t msg);
 	void event(const uint64_t name, const uint64_t data);
 
