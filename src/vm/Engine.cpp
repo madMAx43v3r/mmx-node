@@ -768,17 +768,41 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint32_t dflags,
 {
 	const auto& svar = read_fail(src);
 	switch(svar.type) {
+		case TYPE_NIL:
+			switch(dflags & 0xFF) {
+				case CONVTYPE_BOOL: write(dst, var_t(TYPE_FALSE)); break;
+				case CONVTYPE_UINT: write(dst, uint_t()); break;
+				default: throw std::logic_error("invalid conversion");
+			}
+			break;
+		case TYPE_TRUE:
+			switch(dflags & 0xFF) {
+				case CONVTYPE_BOOL: write(dst, var_t(TYPE_TRUE)); break;
+				case CONVTYPE_UINT: write(dst, uint_t(1)); break;
+				default: throw std::logic_error("invalid conversion");
+			}
+			break;
+		case TYPE_FALSE:
+			switch(dflags & 0xFF) {
+				case CONVTYPE_BOOL: write(dst, var_t(TYPE_FALSE)); break;
+				case CONVTYPE_UINT: write(dst, uint_t()); break;
+				default: throw std::logic_error("invalid conversion");
+			}
+			break;
 		case TYPE_UINT: {
 			const auto& sint = (const uint_t&)svar;
 			switch(dflags & 0xFF) {
+				case CONVTYPE_BOOL:
+					write(dst, var_t(sint.value != uint256_0 ? TYPE_TRUE : TYPE_FALSE));
+					break;
 				case CONVTYPE_STRING: {
 					int base = 10;
 					switch((dflags >> 8) & 0xFF) {
 						case CONVTYPE_DEFAULT: break;
-						case CONVTYPE_BIN: base = 2; break;
-						case CONVTYPE_OCT: base = 8; break;
-						case CONVTYPE_DEC: base = 10; break;
-						case CONVTYPE_HEX: base = 16; break;
+						case CONVTYPE_BASE_2: base = 2; break;
+						case CONVTYPE_BASE_8: base = 8; break;
+						case CONVTYPE_BASE_10: base = 10; break;
+						case CONVTYPE_BASE_16: base = 16; break;
 						default: throw std::logic_error("invalid conversion");
 					}
 					assign(dst, binary_t::alloc(sint.value.str(base)));
@@ -798,14 +822,17 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint32_t dflags,
 		case TYPE_STRING: {
 			const auto& sstr = (const binary_t&)svar;
 			switch(dflags & 0xFF) {
+				case CONVTYPE_BOOL:
+					write(dst, var_t(sstr.size ? TYPE_TRUE : TYPE_FALSE));
+					break;
 				case CONVTYPE_UINT: {
 					int base = 10;
-					switch((sflags >> 8) & 0xFF) {
+					switch(sflags & 0xFF) {
 						case CONVTYPE_DEFAULT: break;
-						case CONVTYPE_BIN: base = 2; break;
-						case CONVTYPE_OCT: base = 8; break;
-						case CONVTYPE_DEC: base = 10; break;
-						case CONVTYPE_HEX: base = 16; break;
+						case CONVTYPE_BASE_2: base = 2; break;
+						case CONVTYPE_BASE_8: base = 8; break;
+						case CONVTYPE_BASE_10: base = 10; break;
+						case CONVTYPE_BASE_16: base = 16; break;
 						default: throw std::logic_error("invalid conversion");
 					}
 					write(dst, uint_t(uint256_t((const char*)sstr.data(), base)));
@@ -822,6 +849,9 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint32_t dflags,
 		case TYPE_BINARY: {
 			const auto& sbin = (const binary_t&)svar;
 			switch(dflags & 0xFF) {
+				case CONVTYPE_BOOL:
+					write(dst, var_t(sbin.size ? TYPE_TRUE : TYPE_FALSE));
+					break;
 				case CONVTYPE_STRING: {
 					assign(dst, binary_t::alloc(vnx::to_hex_string(sbin.data(), sbin.size)));
 					break;
@@ -832,7 +862,10 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint32_t dflags,
 			break;
 		}
 		default:
-			throw std::logic_error("invalid conversion");
+			switch(dflags & 0xFF) {
+				case CONVTYPE_BOOL: write(dst, var_t(TYPE_TRUE)); break;
+				default: throw std::logic_error("invalid conversion");
+			}
 	}
 }
 
@@ -947,6 +980,16 @@ void Engine::exec(const instr_t& instr)
 		}
 		break;
 	}
+	case OP_JUMPN: {
+		const auto dst = deref_value(instr.a, instr.flags & OPFLAG_REF_A);
+		const auto cond = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
+		const auto& var = read_fail(cond);
+		if(var.type != TYPE_TRUE) {
+			jump(dst);
+			return;
+		}
+		break;
+	}
 	case OP_CALL:
 		if(instr.flags & OPFLAG_REF_B) {
 			throw std::logic_error("OPFLAG_REF_B not supported");
@@ -985,7 +1028,188 @@ void Engine::exec(const instr_t& instr)
 		write(dst, uint_t(D));
 		break;
 	}
-	// TODO
+	case OP_MUL: {
+		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
+		const auto lhs = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
+		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
+		const auto& L = read_fail<uint_t>(lhs, TYPE_UINT).value;
+		const auto& R = read_fail<uint_t>(rhs, TYPE_UINT).value;
+		const uint256_t D = L * R;
+		if((instr.flags & OPFLAG_CATCH_OVERFLOW) && (D < L && D < R)) {
+			throw std::runtime_error("integer overflow");
+		}
+		write(dst, uint_t(D));
+		break;
+	}
+	case OP_DIV: {
+		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
+		const auto lhs = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
+		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
+		const auto& L = read_fail<uint_t>(lhs, TYPE_UINT).value;
+		const auto& R = read_fail<uint_t>(rhs, TYPE_UINT).value;
+		if(R == uint256_0) {
+			throw std::runtime_error("division by zero");
+		}
+		write(dst, uint_t(L / R));
+		break;
+	}
+	case OP_MOD: {
+		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
+		const auto lhs = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
+		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
+		const auto& L = read_fail<uint_t>(lhs, TYPE_UINT).value;
+		const auto& R = read_fail<uint_t>(rhs, TYPE_UINT).value;
+		if(R == uint256_0) {
+			throw std::runtime_error("division by zero");
+		}
+		write(dst, uint_t(L % R));
+		break;
+	}
+	case OP_NOT: {
+		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
+		const auto src = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
+		const auto& var = read_fail(src);
+		switch(var.type) {
+			case TYPE_NIL: write(dst, var_t(TYPE_TRUE)); break;
+			case TYPE_TRUE: write(dst, var_t(TYPE_FALSE)); break;
+			case TYPE_FALSE: write(dst, var_t(TYPE_TRUE)); break;
+			case TYPE_UINT:
+				write(dst, uint_t(~((const uint_t&)var).value));
+				break;
+			default: throw std::runtime_error("invalid type");
+		}
+		break;
+	}
+	case OP_XOR: {
+		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
+		const auto lhs = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
+		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
+		const auto& L = read_fail(lhs);
+		const auto& R = read_fail(rhs);
+		switch(L.type) {
+			case TYPE_TRUE:
+				switch(R.type) {
+					case TYPE_TRUE: write(dst, var_t(TYPE_FALSE)); break;
+					case TYPE_FALSE: write(dst, var_t(TYPE_TRUE)); break;
+					default: throw std::runtime_error("type mismatch");
+				}
+				break;
+			case TYPE_FALSE:
+				switch(R.type) {
+					case TYPE_TRUE: write(dst, var_t(TYPE_TRUE)); break;
+					case TYPE_FALSE: write(dst, var_t(TYPE_FALSE)); break;
+					default: throw std::runtime_error("type mismatch");
+				}
+				break;
+			case TYPE_UINT:
+				if(R.type == TYPE_UINT) {
+					write(dst, uint_t(((const uint_t&)L).value ^ ((const uint_t&)R).value));
+				} else {
+					throw std::runtime_error("type mismatch");
+				}
+				break;
+			default: throw std::runtime_error("invalid type");
+		}
+		break;
+	}
+	case OP_AND: {
+		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
+		const auto lhs = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
+		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
+		const auto& L = read_fail(lhs);
+		const auto& R = read_fail(rhs);
+		switch(L.type) {
+			case TYPE_TRUE:
+				switch(R.type) {
+					case TYPE_TRUE: write(dst, var_t(TYPE_TRUE)); break;
+					case TYPE_FALSE: write(dst, var_t(TYPE_FALSE)); break;
+					default: throw std::runtime_error("type mismatch");
+				}
+				break;
+			case TYPE_FALSE:
+				switch(R.type) {
+					case TYPE_TRUE:
+					case TYPE_FALSE: write(dst, var_t(TYPE_FALSE)); break;
+					default: throw std::runtime_error("type mismatch");
+				}
+				break;
+			case TYPE_UINT:
+				if(R.type == TYPE_UINT) {
+					write(dst, uint_t(((const uint_t&)L).value & ((const uint_t&)R).value));
+				} else {
+					throw std::runtime_error("type mismatch");
+				}
+				break;
+			default: throw std::runtime_error("invalid type");
+		}
+		break;
+	}
+	case OP_OR: {
+		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
+		const auto lhs = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
+		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
+		const auto& L = read_fail(lhs);
+		const auto& R = read_fail(rhs);
+		switch(L.type) {
+			case TYPE_TRUE:
+				switch(R.type) {
+					case TYPE_TRUE:
+					case TYPE_FALSE: write(dst, var_t(TYPE_TRUE)); break;
+					default: throw std::runtime_error("type mismatch");
+				}
+				break;
+			case TYPE_FALSE:
+				switch(R.type) {
+					case TYPE_TRUE: write(dst, var_t(TYPE_TRUE)); break;
+					case TYPE_FALSE: write(dst, var_t(TYPE_FALSE)); break;
+					default: throw std::runtime_error("type mismatch");
+				}
+				break;
+			case TYPE_UINT:
+				if(R.type == TYPE_UINT) {
+					write(dst, uint_t(((const uint_t&)L).value | ((const uint_t&)R).value));
+				} else {
+					throw std::runtime_error("type mismatch");
+				}
+				break;
+			default: throw std::runtime_error("invalid type");
+		}
+		break;
+	}
+	case OP_MIN: {
+		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
+		const auto lhs = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
+		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
+		const auto& L = read_fail<uint_t>(lhs, TYPE_UINT).value;
+		const auto& R = read_fail<uint_t>(rhs, TYPE_UINT).value;
+		write(dst, uint_t(L < R ? L : R));
+		break;
+	}
+	case OP_MAX: {
+		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
+		const auto lhs = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
+		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
+		const auto& L = read_fail<uint_t>(lhs, TYPE_UINT).value;
+		const auto& R = read_fail<uint_t>(rhs, TYPE_UINT).value;
+		write(dst, uint_t(L > R ? L : R));
+		break;
+	}
+	case OP_SHL: {
+		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
+		const auto src = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
+		const auto count = deref_value(instr.c, instr.flags & OPFLAG_REF_C);
+		const auto& sint = read_fail<uint_t>(src, TYPE_UINT);
+		write(dst, uint_t(sint.value << count));
+		break;
+	}
+	case OP_SHR: {
+		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
+		const auto src = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
+		const auto count = deref_value(instr.c, instr.flags & OPFLAG_REF_C);
+		const auto& sint = read_fail<uint_t>(src, TYPE_UINT);
+		write(dst, uint_t(sint.value >> count));
+		break;
+	}
 	case OP_CMP_EQ:
 	case OP_CMP_NEQ:
 	case OP_CMP_LT:
@@ -1054,6 +1278,12 @@ void Engine::exec(const instr_t& instr)
 	case OP_POP_BACK:
 		pop_back(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
 					deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
+		break;
+	case OP_CONV:
+		conv(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
+				deref_addr(instr.b, instr.flags & OPFLAG_REF_B),
+				deref_value(instr.c, instr.flags & OPFLAG_REF_C),
+				deref_value(instr.d, instr.flags & OPFLAG_REF_D));
 		break;
 	case OP_CONCAT:
 		concat(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),

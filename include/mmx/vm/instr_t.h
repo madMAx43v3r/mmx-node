@@ -30,6 +30,7 @@ enum opcode_e : uint8_t {
 	OP_CLONE,		// dst, src
 	OP_JUMP,		// dst
 	OP_JUMPI,		// dst, cond
+	OP_JUMPN,		// dst, cond
 	OP_CALL,		// dst, stack_ptr
 	OP_RET,
 
@@ -80,10 +81,10 @@ enum opcode_e : uint8_t {
 enum convtype_e {
 
 	CONVTYPE_DEFAULT = 0,
-	CONVTYPE_BIN,
-	CONVTYPE_OCT,
-	CONVTYPE_DEC,
-	CONVTYPE_HEX,
+	CONVTYPE_BASE_2,
+	CONVTYPE_BASE_8,
+	CONVTYPE_BASE_10,
+	CONVTYPE_BASE_16,
 	CONVTYPE_BOOL,
 	CONVTYPE_UINT,
 	CONVTYPE_STRING,
