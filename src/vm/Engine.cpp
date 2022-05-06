@@ -46,8 +46,12 @@ void Engine::addref(const uint64_t dst)
 
 void Engine::unref(const uint64_t dst)
 {
-	if(read_fail(dst).unref()) {
-		erase(dst);
+	auto& var = read_fail(dst);
+	if(var.unref()) {
+		// cannot erase stored arrays or maps
+		if(!(var.flags & FLAG_STORED) || (var.type != TYPE_ARRAY && var.type != TYPE_MAP)) {
+			erase(dst);
+		}
 	}
 }
 
@@ -471,7 +475,7 @@ void Engine::clear(var_t* var)
 			break;
 		case TYPE_ARRAY: {
 			const auto dst = ((const array_t*)var)->address;
-			if(dst >= MEM_STATIC && (var->flags & FLAG_STORED)) {
+			if(var->flags & FLAG_STORED) {
 				throw std::logic_error("cannot erase array in storage");
 			}
 			erase_entries(dst);
@@ -479,7 +483,7 @@ void Engine::clear(var_t* var)
 		}
 		case TYPE_MAP: {
 			const auto dst = ((const map_t*)var)->address;
-			if(dst >= MEM_STATIC && (var->flags & FLAG_STORED)) {
+			if(var->flags & FLAG_STORED) {
 				throw std::logic_error("cannot erase map in storage");
 			}
 			erase_entries(dst);
