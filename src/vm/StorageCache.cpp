@@ -46,7 +46,17 @@ uint64_t StorageCache::lookup(const addr_t& contract, const var_t& value) const
 
 void StorageCache::commit()
 {
-	// TODO
+	for(const auto& entry : memory) {
+		if(auto var = entry.second) {
+			backend->write(entry.first.first, entry.first.second, *var);
+		}
+	}
+	for(const auto& entry : entries) {
+		if(auto var = entry.second) {
+			backend->write(std::get<0>(entry.first), std::get<1>(entry.first), std::get<2>(entry.first), *var);
+		}
+	}
+	clear();
 }
 
 

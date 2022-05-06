@@ -13,15 +13,7 @@ namespace vm {
 
 StorageRAM::~StorageRAM()
 {
-	key_map.clear();
-	for(auto& entry : memory) {
-		delete entry.second;
-		entry.second = nullptr;
-	}
-	for(auto& entry : entries) {
-		delete entry.second;
-		entry.second = nullptr;
-	}
+	clear();
 }
 
 var_t* StorageRAM::read(const addr_t& contract, const uint64_t src) const
@@ -35,7 +27,7 @@ var_t* StorageRAM::read(const addr_t& contract, const uint64_t src) const
 
 var_t* StorageRAM::read(const addr_t& contract, const uint64_t src, const uint64_t key) const
 {
-	auto iter = entries.find(std::make_pair(std::make_pair(contract, src), key));
+	auto iter = entries.find(std::make_tuple(contract, src, key));
 	if(iter != entries.end()) {
 		return clone(iter->second);
 	}
@@ -62,7 +54,7 @@ void StorageRAM::write(const addr_t& contract, const uint64_t dst, const var_t& 
 
 void StorageRAM::write(const addr_t& contract, const uint64_t dst, const uint64_t key, const var_t& value)
 {
-	const auto mapkey = std::make_pair(std::make_pair(contract, dst), key);
+	const auto mapkey = std::make_tuple(contract, dst, key);
 
 	auto& var = entries[mapkey];
 	if(var) {
@@ -82,6 +74,19 @@ uint64_t StorageRAM::lookup(const addr_t& contract, const var_t& value) const
 		}
 	}
 	return 0;
+}
+
+void StorageRAM::clear()
+{
+	key_map.clear();
+	for(auto& entry : memory) {
+		delete entry.second;
+		entry.second = nullptr;
+	}
+	for(auto& entry : entries) {
+		delete entry.second;
+		entry.second = nullptr;
+	}
 }
 
 
