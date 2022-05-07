@@ -15,8 +15,8 @@
 
 namespace mmx {
 
-struct hash_t : bytes_t<32> {
-
+class hash_t : public bytes_t<32> {
+public:
 	typedef bytes_t<32> super_t;
 
 	hash_t() = default;

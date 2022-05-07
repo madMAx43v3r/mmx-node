@@ -16,8 +16,8 @@
 
 namespace mmx {
 
-struct bls_pubkey_t : bytes_t<48> {
-
+class bls_pubkey_t : public bytes_t<48> {
+public:
 	typedef bytes_t<48> super_t;
 
 	bls_pubkey_t() = default;

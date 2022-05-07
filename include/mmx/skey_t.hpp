@@ -18,8 +18,8 @@ namespace bls {
 
 namespace mmx {
 
-struct skey_t : bytes_t<32> {
-
+class skey_t : public bytes_t<32> {
+public:
 	typedef bytes_t<32> super_t;
 
 	skey_t() = default;

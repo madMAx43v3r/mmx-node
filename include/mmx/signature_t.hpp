@@ -18,8 +18,8 @@
 
 namespace mmx {
 
-struct signature_t : bytes_t<64> {
-
+class signature_t : public bytes_t<64> {
+public:
 	typedef bytes_t<64> super_t;
 
 	signature_t() = default;

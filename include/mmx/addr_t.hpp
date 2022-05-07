@@ -14,8 +14,8 @@
 
 namespace mmx {
 
-struct addr_t : hash_t {
-
+class addr_t : public hash_t {
+public:
 	typedef hash_t super_t;
 
 	addr_t() = default;

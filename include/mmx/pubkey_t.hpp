@@ -15,8 +15,8 @@
 
 namespace mmx {
 
-struct pubkey_t : bytes_t<33> {
-
+class pubkey_t : public bytes_t<33> {
+public:
 	typedef bytes_t<33> super_t;
 
 	pubkey_t() = default;

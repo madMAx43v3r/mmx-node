@@ -20,8 +20,8 @@
 namespace mmx {
 
 template<size_t N>
-struct bytes_t {
-
+class bytes_t {
+public:
 	std::array<uint8_t, N> bytes = {};
 
 	bytes_t() = default;

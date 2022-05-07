@@ -19,8 +19,8 @@
 
 namespace mmx {
 
-struct uint128 : uint128_t {
-
+class uint128 : public uint128_t {
+public:
 	uint128() : uint128_t(0) {}
 
 	uint128(const uint128&) = default;
