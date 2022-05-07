@@ -905,6 +905,7 @@ void Engine::call(const uint32_t instr_ptr, const uint32_t stack_ptr)
 
 bool Engine::ret()
 {
+	clear_stack(get_frame().stack_ptr + 1);
 	call_stack.pop_back();
 	return call_stack.empty();
 }
