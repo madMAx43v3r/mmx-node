@@ -10,6 +10,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 
 namespace mmx {
@@ -61,7 +62,6 @@ enum opcode_e : uint8_t {
 	OP_GET,			// dst, addr, key
 	OP_SET,			// addr, key, src
 	OP_ERASE,		// addr, key
-
 	OP_PUSH_BACK,	// dst, src
 	OP_POP_BACK,	// dst, src
 
@@ -121,6 +121,10 @@ struct opcode_info_t {
 };
 
 const opcode_info_t& get_opcode_info(opcode_e code);
+
+std::pair<uint8_t*, size_t> serialize(const std::vector<instr_t>& code);
+
+size_t deserialize(std::vector<instr_t>& code, const void* data, const size_t length);
 
 
 

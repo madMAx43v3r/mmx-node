@@ -77,7 +77,9 @@ var_t* StorageRocksDB::read(const addr_t& contract, const uint64_t src) const
 	vnx::rocksdb::raw_ptr_t found_key;
 	if(table.find_prev(std::make_pair(key.data(), key.size()), value, &found_key)) {
 		if(found_key.size() == key.size() && ::memcmp(found_key.data(), key.data(), 40) == 0) {
-			return deserialize(value.data(), value.size()).first;
+			var_t* var = nullptr;
+			deserialize(var, value.data(), value.size());
+			return var;
 		}
 	}
 	return nullptr;
@@ -90,7 +92,9 @@ var_t* StorageRocksDB::read(const addr_t& contract, const uint64_t src, const ui
 	vnx::rocksdb::raw_ptr_t found_key;
 	if(table_entries.find_prev(std::make_pair(entry_key.data(), entry_key.size()), value, &found_key)) {
 		if(found_key.size() == entry_key.size() && ::memcmp(found_key.data(), entry_key.data(), 48) == 0) {
-			return deserialize(value.data(), value.size(), false).first;
+			var_t* var = nullptr;
+			deserialize(var, value.data(), value.size(), false);
+			return var;
 		}
 	}
 	return nullptr;
