@@ -101,68 +101,66 @@ int compare(const var_t& lhs, const var_t& rhs)
 
 std::pair<uint8_t*, size_t> serialize(const var_t& src, bool with_rc, bool with_vf)
 {
-	std::pair<uint8_t*, size_t> out = {nullptr, 1};
+	size_t length = 1;
 	if(with_rc) {
-		out.second += 4;
+		length += 4;
 	}
 	if(with_vf) {
-		out.second += 1;
+		length += 1;
 	}
 	switch(src.type) {
 		case TYPE_REF:
-			out.second += 8; break;
+			length += 8; break;
 		case TYPE_UINT:
-			out.second += 32; break;
+			length += 32; break;
 		case TYPE_STRING:
 		case TYPE_BINARY:
-			out.second += 4 + size_t(((const binary_t&)src).size); break;
+			length += 4 + size_t(((const binary_t&)src).size); break;
 		case TYPE_ARRAY:
-			out.second += 12; break;
+			length += 12; break;
 		case TYPE_MAP:
-			out.second += 8; break;
+			length += 8; break;
 		default: break;
 	}
-	out.first = (uint8_t*)::malloc(out.second);
+	auto data = (uint8_t*)::malloc(length);
 
 	size_t offset = 0;
 	if(with_rc) {
-		::memcpy(out.first + offset, &src.ref_count, 4); offset += 4;
+		::memcpy(data + offset, &src.ref_count, 4); offset += 4;
 	}
 	if(with_vf) {
-		::memcpy(out.first + offset, &src.flags, 1); offset += 1;
+		::memcpy(data + offset, &src.flags, 1); offset += 1;
 	}
-	::memcpy(out.first + offset, &src.type, 1); offset += 1;
+	::memcpy(data + offset, &src.type, 1); offset += 1;
 
 	switch(src.type) {
 		case TYPE_REF:
-			::memcpy(out.first + offset, &((const ref_t&)src).address, 8); offset += 8;
+			::memcpy(data + offset, &((const ref_t&)src).address, 8); offset += 8;
 			break;
 		case TYPE_UINT:
-			::memcpy(out.first + offset, &((const uint_t&)src).value, 32); offset += 32;
+			::memcpy(data + offset, &((const uint_t&)src).value, 32); offset += 32;
 			break;
 		case TYPE_STRING:
 		case TYPE_BINARY: {
 			const auto& bin = (const binary_t&)src;
-			::memcpy(out.first + offset, &bin.size, 4); offset += 4;
-			::memcpy(out.first + offset, bin.data(), bin.size); offset += bin.size;
+			::memcpy(data + offset, &bin.size, 4); offset += 4;
+			::memcpy(data + offset, bin.data(), bin.size); offset += bin.size;
 			break;
 		}
 		case TYPE_ARRAY:
-			::memcpy(out.first + offset, &((const array_t&)src).address, 8); offset += 8;
-			::memcpy(out.first + offset, &((const array_t&)src).size, 4); offset += 4;
+			::memcpy(data + offset, &((const array_t&)src).address, 8); offset += 8;
+			::memcpy(data + offset, &((const array_t&)src).size, 4); offset += 4;
 			break;
 		case TYPE_MAP:
-			::memcpy(out.first + offset, &((const map_t&)src).address, 8); offset += 8;
+			::memcpy(data + offset, &((const map_t&)src).address, 8); offset += 8;
 			break;
 		default: break;
 	}
-	return out;
+	return std::make_pair(data, length);
 }
 
-std::pair<var_t*, size_t> deserialize(const void* data_, const size_t length, bool with_rc, bool with_vf)
+size_t deserialize(var_t*& out, const void* data_, const size_t length, bool with_rc, bool with_vf)
 {
-	std::pair<var_t*, size_t> out = {nullptr, 0};
-
 	size_t offset = 0;
 	const uint8_t* data = (const uint8_t*)data_;
 
@@ -189,7 +187,7 @@ std::pair<var_t*, size_t> deserialize(const void* data_, const size_t length, bo
 		case TYPE_NIL:
 		case TYPE_TRUE:
 		case TYPE_FALSE:
-			out.first = new var_t(type);
+			out = new var_t(type);
 			break;
 		case TYPE_REF: {
 			if(length < offset + 8) {
@@ -197,7 +195,7 @@ std::pair<var_t*, size_t> deserialize(const void* data_, const size_t length, bo
 			}
 			auto var = new ref_t();
 			::memcpy(&var->address, data + offset, 8); offset += 8;
-			out.first = var;
+			out = var;
 			break;
 		}
 		case TYPE_UINT: {
@@ -206,7 +204,7 @@ std::pair<var_t*, size_t> deserialize(const void* data_, const size_t length, bo
 			}
 			auto var = new uint_t();
 			::memcpy(&var->value, data + offset, 32); offset += 32;
-			out.first = var;
+			out = var;
 			break;
 		}
 		case TYPE_STRING:
@@ -224,7 +222,7 @@ std::pair<var_t*, size_t> deserialize(const void* data_, const size_t length, bo
 			::memcpy(bin->data(), data + offset, bin->size);
 			::memset(bin->data(bin->size), 0, bin->capacity - bin->size);
 			offset += size;
-			out.first = bin;
+			out = bin;
 			break;
 		}
 		case TYPE_ARRAY: {
@@ -234,7 +232,7 @@ std::pair<var_t*, size_t> deserialize(const void* data_, const size_t length, bo
 			auto var = new array_t();
 			::memcpy(&var->address, data + offset, 8); offset += 8;
 			::memcpy(&var->size, data + offset, 8); offset += 4;
-			out.first = var;
+			out = var;
 			break;
 		}
 		case TYPE_MAP: {
@@ -243,18 +241,17 @@ std::pair<var_t*, size_t> deserialize(const void* data_, const size_t length, bo
 			}
 			auto var = new map_t();
 			::memcpy(&var->address, data + offset, 8); offset += 8;
-			out.first = var;
+			out = var;
 			break;
 		}
 		default:
 			throw std::runtime_error("invalid type");
 	}
-	if(auto var = out.first) {
-		var->flags = flags;
-		var->ref_count = ref_count;
+	if(out) {
+		out->flags = flags;
+		out->ref_count = ref_count;
 	}
-	out.second = offset;
-	return out;
+	return offset;
 }
 
 std::string to_string(const var_t* var)
