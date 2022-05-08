@@ -252,7 +252,7 @@ void Node::load(	std::shared_ptr<vm::Engine> engine,
 void Node::execute(	std::shared_ptr<vm::Engine> engine,
 					std::shared_ptr<const contract::Executable> executable,
 					const std::string& method_name, const std::vector<vnx::Variant>& args,
-					const bool read_only, const txout_t* deposit)
+					const bool is_const, const bool is_public, const txout_t* deposit)
 {
 	const contract::method_t* method = nullptr;
 	{
@@ -262,13 +262,13 @@ void Node::execute(	std::shared_ptr<vm::Engine> engine,
 		}
 		method = &iter->second;
 	}
-	if(!method->is_public) {
+	if(is_public && !method->is_public) {
 		throw std::runtime_error("method is not public");
 	}
-	if(read_only && !method->is_const) {
+	if(is_const && !method->is_const) {
 		throw std::runtime_error("method is non-const");
 	}
-	if(!read_only && method->is_const) {
+	if(!is_const && method->is_const) {
 		throw std::runtime_error("method is const");
 	}
 	if(deposit && !method->is_payable) {

@@ -234,7 +234,7 @@ private:
 	void execute(	std::shared_ptr<vm::Engine> engine,
 					std::shared_ptr<const contract::Executable> executable,
 					const std::string& method_name, const std::vector<vnx::Variant>& args,
-					const bool read_only, const txout_t* deposit = nullptr);
+					const bool is_const, const bool is_public = true, const txout_t* deposit = nullptr);
 
 	void validate(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const execution_context_t> context,

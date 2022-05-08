@@ -47,9 +47,7 @@ vnx::bool_t Transaction::is_valid() const
 			return false;
 		}
 	}
-	return version == 0 && fee_ratio >= 1024
-			&& (!parent || parent->is_valid())
-			&& calc_hash() == id;
+	return version == 0 && fee_ratio >= 1024 && (!parent || parent->is_valid()) && calc_hash() == id;
 }
 
 hash_t Transaction::calc_hash() const
@@ -221,6 +219,7 @@ void combine(std::shared_ptr<Transaction> out, const Transaction& tx)
 	out->expires = std::min(out->expires, tx.expires);
 	out->inputs.insert(out->inputs.begin(), tx.inputs.begin(), tx.inputs.end());
 	out->outputs.insert(out->outputs.begin(), tx.outputs.begin(), tx.outputs.end());
+	out->exec_inputs.insert(out->exec_inputs.begin(), tx.exec_inputs.begin(), tx.exec_inputs.end());
 	out->exec_outputs.insert(out->exec_outputs.begin(), tx.exec_outputs.begin(), tx.exec_outputs.end());
 	out->execute.insert(out->execute.begin(), tx.execute.begin(), tx.execute.end());
 
@@ -238,12 +237,6 @@ std::shared_ptr<const Transaction> Transaction::get_combined() const
 	out->parent = nullptr;
 	return out;
 }
-
-
-
-
-
-
 
 
 } // mmx
