@@ -14,7 +14,7 @@ namespace operation {
 
 vnx::bool_t Deposit::is_valid() const
 {
-	return Super::is_valid() && input.amount > 0;
+	return Super::is_valid() && amount > 0;
 }
 
 hash_t Deposit::calc_hash() const
@@ -24,9 +24,12 @@ hash_t Deposit::calc_hash() const
 	vnx::OutputBuffer out(&stream);
 
 	write_bytes(out, get_type_hash());
-	write_field(out, "version", version);
-	write_field(out, "address", address);
-	write_field(out, "input", 	input);
+	write_field(out, "version", 	version);
+	write_field(out, "address", 	address);
+	// TODO
+	write_field(out, "currency", 	currency);
+	write_field(out, "amount", 		amount);
+	write_field(out, "sender", 		sender);
 	out.flush();
 
 	return hash_t(buffer);

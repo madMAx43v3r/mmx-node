@@ -21,6 +21,10 @@
 #include <mmx/utils.h>
 #include <mmx/balance_cache_t.h>
 
+#include <mmx/vm/Engine.h>
+#include <mmx/vm/StorageCache.h>
+#include <mmx/vm/StorageRocksDB.h>
+
 #include <vnx/ThreadPool.h>
 #include <vnx/rocksdb/table.h>
 #include <vnx/rocksdb/multi_table.h>
@@ -64,6 +68,8 @@ protected:
 	std::vector<hash_t> get_tx_ids_at(const uint32_t& height) const override;
 
 	vnx::optional<tx_info_t> get_tx_info(const hash_t& id) const override;
+
+	vnx::optional<tx_info_t> get_tx_info_for(std::shared_ptr<const Transaction> tx) const;
 
 	std::shared_ptr<const Transaction> get_transaction(const hash_t& id, const bool& include_pending = false) const override;
 
@@ -131,12 +137,13 @@ private:
 
 	struct execution_context_t {
 		std::shared_ptr<const Context> block;
+		std::shared_ptr<vm::StorageCache> storage;
 		std::unordered_map<hash_t, std::unordered_set<hash_t>> wait_map;
 		std::unordered_map<hash_t, std::shared_ptr<waitcond_t>> signal_map;
 		std::unordered_map<addr_t, std::shared_ptr<contract_state_t>> contract_map;
-
 		void wait(const hash_t& txid) const;
 		void signal(const hash_t& txid) const;
+		std::shared_ptr<contract_state_t> get_state(const addr_t& contract) const;
 	};
 
 	struct vdf_point_t {
@@ -221,12 +228,21 @@ private:
 	std::shared_ptr<const Context> create_context(
 			std::shared_ptr<const Context> base, std::shared_ptr<const Contract> contract, std::shared_ptr<const Transaction> tx) const;
 
+	void load(	std::shared_ptr<vm::Engine> engine,
+				std::shared_ptr<const contract::Executable> executable);
+
+	void execute(	std::shared_ptr<vm::Engine> engine,
+					std::shared_ptr<const contract::Executable> executable,
+					const std::string& method_name, const std::vector<vnx::Variant>& args,
+					const bool read_only, const txout_t* deposit = nullptr);
+
 	void validate(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const execution_context_t> context,
 					std::vector<txin_t>& exec_inputs,
 					std::vector<txout_t>& outputs,
 					std::vector<txout_t>& exec_outputs,
 					balance_cache_t& balance_cache,
+					std::shared_ptr<vm::StorageCache> storage_cache,
 					std::unordered_map<addr_t, uint128_t>& amounts) const;
 
 	std::shared_ptr<const Transaction>
@@ -332,6 +348,7 @@ private:
 
 	bool is_synced = false;
 	std::shared_ptr<vnx::File> block_chain;
+	std::shared_ptr<vm::StorageRocksDB> storage;
 	mutable vnx::rocksdb::table<hash_t, uint32_t> hash_index;							// [block hash => height]
 	mutable vnx::rocksdb::table<hash_t, std::pair<int64_t, uint32_t>> tx_index;			// [txid => [file offset, height]]
 	mutable vnx::rocksdb::table<uint32_t, std::pair<int64_t, hash_t>> block_index;		// [height => [file offset, block hash]]

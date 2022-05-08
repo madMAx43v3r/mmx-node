@@ -6,4 +6,8 @@ class Execute extends mmx.Operation {
 	
 	addr_t user;
 	
+	string method;
+	
+	vector<vnx.Variant> args;
+	
 }

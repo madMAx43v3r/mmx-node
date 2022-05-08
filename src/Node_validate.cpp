@@ -8,9 +8,11 @@
 #include <mmx/Node.h>
 #include <mmx/contract/NFT.hxx>
 #include <mmx/contract/PubKey.hxx>
+#include <mmx/contract/Executable.hxx>
 #include <mmx/operation/Spend.hxx>
 #include <mmx/operation/Mutate.hxx>
 #include <mmx/operation/Execute.hxx>
+#include <mmx/operation/Deposit.hxx>
 #include <mmx/operation/Revoke.hxx>
 #include <mmx/utils.h>
 
@@ -49,6 +51,15 @@ void Node::execution_context_t::signal(const hash_t& txid) const
 		}
 		entry->signal.notify_all();
 	}
+}
+
+std::shared_ptr<Node::contract_state_t> Node::execution_context_t::get_state(const addr_t& contract) const
+{
+	auto iter = contract_map.find(contract);
+	if(iter != contract_map.end()) {
+		return iter->second;
+	}
+	return nullptr;
 }
 
 std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const Block> block) const
@@ -94,6 +105,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	}
 
 	auto context = std::make_shared<execution_context_t>();
+	context->storage = std::make_shared<vm::StorageCache>(storage);
 	{
 		auto base = Context::create();
 		base->height = block->height;
@@ -211,6 +223,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 void Node::validate(std::shared_ptr<const Transaction> tx) const
 {
 	auto context = std::make_shared<execution_context_t>();
+	context->storage = std::make_shared<vm::StorageCache>(storage);
 	{
 		auto base = Context::create();
 		base->height = get_height() + 1;
@@ -231,12 +244,63 @@ std::shared_ptr<const Context> Node::create_context(
 	return context;
 }
 
+void Node::load(	std::shared_ptr<vm::Engine> engine,
+					std::shared_ptr<const contract::Executable> executable)
+{
+	// TODO
+	engine->init();
+}
+
+void Node::execute(	std::shared_ptr<vm::Engine> engine,
+					std::shared_ptr<const contract::Executable> executable,
+					const std::string& method_name, const std::vector<vnx::Variant>& args,
+					const bool read_only, const txout_t* deposit)
+{
+	const contract::method_t* method = nullptr;
+	{
+		auto iter = executable->methods.find(method_name);
+		if(iter == executable->methods.end()) {
+			throw std::runtime_error("no such method: " + method_name);
+		}
+		method = &iter->second;
+	}
+	if(!method->is_public) {
+		throw std::runtime_error("method is not public");
+	}
+	if(read_only && !method->is_const) {
+		throw std::runtime_error("method is non-const");
+	}
+	if(!read_only && method->is_const) {
+		throw std::runtime_error("method is const");
+	}
+	if(deposit && !method->is_payable) {
+		throw std::runtime_error("method is not payable");
+	}
+	if(!deposit && method->is_payable) {
+		throw std::runtime_error("method requires deposit");
+	}
+	if(deposit) {
+		const auto addr = vm::MEM_EXTERN + vm::EXTERN_DEPOSIT;
+		engine->assign(addr, new vm::array_t());
+		engine->push_back(addr, vm::uint_t(deposit->contract));
+		engine->push_back(addr, vm::uint_t(deposit->amount));
+		if(deposit->sender) {
+			engine->push_back(addr, vm::uint_t(*deposit->sender));
+		} else {
+			engine->push_back(addr, vm::var_t());
+		}
+	}
+	// TODO
+	engine->clear_stack();
+}
+
 void Node::validate(std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const execution_context_t> context,
 					std::vector<txin_t>& exec_inputs,
 					std::vector<txout_t>& outputs,
 					std::vector<txout_t>& exec_outputs,
 					balance_cache_t& balance_cache,
+					std::shared_ptr<vm::StorageCache> storage_cache,
 					std::unordered_map<addr_t, uint128_t>& amounts) const
 {
 	if(tx->expires < context->block->height) {
@@ -252,7 +316,7 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 		if(!parent->is_extendable) {
 			throw std::logic_error("not extendable");
 		}
-		validate(parent, context, exec_inputs, outputs, exec_outputs, balance_cache, amounts);
+		validate(parent, context, exec_inputs, outputs, exec_outputs, balance_cache, storage_cache, amounts);
 	}
 	const auto revoked = get_revokations(tx->id);
 
@@ -272,11 +336,8 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 		std::shared_ptr<const Contract> contract;
 
 		if(in.flags & txin_t::IS_EXEC) {
-			auto iter = context->contract_map.find(in.address);
-			if(iter != context->contract_map.end()) {
-				if(auto state = iter->second) {
-					contract = state->data;
-				}
+			if(auto state = context->get_state(in.address)) {
+				contract = state->data;
 			}
 			if(!contract) {
 				contract = get_contract(in.address);
@@ -306,13 +367,7 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 		if(!op || !op->is_valid()) {
 			throw std::logic_error("invalid operation");
 		}
-		std::shared_ptr<contract_state_t> state;
-		{
-			auto iter = context->contract_map.find(op->address);
-			if(iter != context->contract_map.end()) {
-				state = iter->second;
-			}
-		}
+		const auto state = context->get_state(op->address);
 		if(!state) {
 			throw std::logic_error("missing contract state");
 		}
@@ -323,13 +378,17 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 		if(!contract) {
 			throw std::logic_error("no such contract");
 		}
+		{
+			const auto outputs = contract->validate(op, create_context(context->block, contract, tx));
+			exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
+		}
 		if(auto revoke = std::dynamic_pointer_cast<const operation::Revoke>(op))
 		{
 			if(tx_index.find(revoke->txid)) {
 				throw std::logic_error("tx cannot be revoked anymore");
 			}
 		}
-		if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op))
+		else if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op))
 		{
 			auto copy = vnx::clone(contract);
 			try {
@@ -344,12 +403,38 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 			}
 			state->data = copy;
 		}
-		if(auto execute = std::dynamic_pointer_cast<const operation::Execute>(op))
+		else if(auto execute = std::dynamic_pointer_cast<const operation::Execute>(op))
 		{
+			const auto state = context->get_state(op->address);
+			if(!state) {
+				throw std::logic_error("missing contract state");
+			}
+			std::shared_ptr<const Contract> contract = state->data;
+			if(!contract) {
+				contract = get_contract(op->address);
+			}
+			if(!contract) {
+				throw std::logic_error("no such contract");
+			}
+			const auto executable = std::dynamic_pointer_cast<const contract::Executable>(contract);
+			if(!executable) {
+				throw std::logic_error("not an executable");
+			}
+			auto engine = std::make_shared<vm::Engine>(op->address, storage_cache, false);
+
+			vnx::optional<txout_t> with_deposit;
+			if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(execute)) {
+				txout_t out;
+				out.address = op->address;
+				out.contract = deposit->currency;
+				out.amount = deposit->amount;
+				out.sender = deposit->sender;
+				outputs.push_back(out);
+				with_deposit = out;
+			}
+			engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::uint_t(execute->user));
 			// TODO
 		}
-		const auto outputs = contract->validate(op, create_context(context->block, contract, tx));
-		exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
 	}
 	outputs.insert(outputs.end(), tx->outputs.begin(), tx->outputs.end());
 }
@@ -416,8 +501,9 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 	std::vector<txout_t> exec_outputs;
 	balance_cache_t balance_cache(&balance_map);
 	std::unordered_map<addr_t, uint128_t> amounts;
+	auto storage_cache = std::make_shared<vm::StorageCache>(context->storage);
 
-	validate(tx, context, exec_inputs, outputs, exec_outputs, balance_cache, amounts);
+	validate(tx, context, exec_inputs, outputs, exec_outputs, balance_cache, storage_cache, amounts);
 
 	for(const auto& out : outputs) {
 		if(out.amount == 0) {
@@ -483,12 +569,14 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 			fee_amount = amount;
 		}
 	}
+	std::shared_ptr<Transaction> out = nullptr;
+
 	if(tx->exec_inputs.empty() && tx->exec_outputs.empty()) {
 		if(!exec_inputs.empty() || !exec_outputs.empty()) {
 			auto copy = vnx::clone(tx);
 			copy->exec_inputs = exec_inputs;
 			copy->exec_outputs = exec_outputs;
-			return copy;
+			out = copy;
 		}
 	} else {
 		if(tx->exec_inputs.size() != exec_inputs.size()) {
@@ -519,7 +607,8 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 			}
 		}
 	}
-	return nullptr;
+	storage_cache->commit();
+	return out;
 }
 
 void Node::validate_diff_adjust(const uint64_t& block, const uint64_t& prev) const

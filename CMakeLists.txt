@@ -191,7 +191,7 @@ target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_addons vnx_ba
 
 target_link_libraries(mmx_vm vnx_rocksdb mmx_iface)
 
-target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_iface)
+target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_vm mmx_iface)
 
 if(NOT MSVC)
 	target_link_libraries(mmx_modules OpenMP::OpenMP_CXX)
