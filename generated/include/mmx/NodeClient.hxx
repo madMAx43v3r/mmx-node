@@ -56,6 +56,8 @@ public:
 	
 	vnx::optional<::mmx::tx_info_t> get_tx_info(const ::mmx::hash_t& id = ::mmx::hash_t());
 	
+	vnx::optional<::mmx::tx_info_t> get_tx_info_for(std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
+	
 	std::vector<::mmx::hash_t> get_tx_ids_at(const uint32_t& height = 0);
 	
 	void add_block(std::shared_ptr<const ::mmx::Block> block = nullptr);

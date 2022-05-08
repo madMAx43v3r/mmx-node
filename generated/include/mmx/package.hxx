@@ -149,6 +149,8 @@ class Node_get_tx_ids_at;
 class Node_get_tx_ids_at_return;
 class Node_get_tx_info;
 class Node_get_tx_info_return;
+class Node_get_tx_info_for;
+class Node_get_tx_info_for_return;
 class Node_get_virtual_plot_balance;
 class Node_get_virtual_plot_balance_return;
 class Node_start_sync;
@@ -503,6 +505,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_id
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_ids_at_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info_for; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info_for_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plot_balance; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plot_balance_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_start_sync; ///< \private
@@ -854,6 +858,8 @@ void read(TypeInput& in, ::mmx::Node_get_tx_ids_at& value, const TypeCode* type_
 void read(TypeInput& in, ::mmx::Node_get_tx_ids_at_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_tx_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_tx_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_tx_info_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_tx_info_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_virtual_plot_balance& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_virtual_plot_balance_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_start_sync& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1208,6 +1214,8 @@ void write(TypeOutput& out, const ::mmx::Node_get_tx_ids_at& value, const TypeCo
 void write(TypeOutput& out, const ::mmx::Node_get_tx_ids_at_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_tx_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_tx_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_tx_info_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_tx_info_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_virtual_plot_balance& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_virtual_plot_balance_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_start_sync& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1562,6 +1570,8 @@ void read(std::istream& in, ::mmx::Node_get_tx_ids_at& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_tx_ids_at_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_tx_info& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_tx_info_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_tx_info_for& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_tx_info_for_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_virtual_plot_balance& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_virtual_plot_balance_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_start_sync& value); ///< \private
@@ -1916,6 +1926,8 @@ void write(std::ostream& out, const ::mmx::Node_get_tx_ids_at& value); ///< \pri
 void write(std::ostream& out, const ::mmx::Node_get_tx_ids_at_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_tx_info& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_tx_info_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_tx_info_for& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_tx_info_for_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_virtual_plot_balance& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_virtual_plot_balance_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_start_sync& value); ///< \private
@@ -2270,6 +2282,8 @@ void accept(Visitor& visitor, const ::mmx::Node_get_tx_ids_at& value); ///< \pri
 void accept(Visitor& visitor, const ::mmx::Node_get_tx_ids_at_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_tx_info& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_tx_info_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_tx_info_for& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_tx_info_for_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plot_balance& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plot_balance_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_start_sync& value); ///< \private
@@ -5429,6 +5443,52 @@ struct type<::mmx::Node_get_tx_info_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_tx_info_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_tx_info_for> {
+	void read(TypeInput& in, ::mmx::Node_get_tx_info_for& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_tx_info_for& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_tx_info_for& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_tx_info_for& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_tx_info_for& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_tx_info_for& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_tx_info_for_return> {
+	void read(TypeInput& in, ::mmx::Node_get_tx_info_for_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_tx_info_for_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_tx_info_for_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_tx_info_for_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_tx_info_for_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_tx_info_for_return& value, bool special = false);
 };
 
 /// \private

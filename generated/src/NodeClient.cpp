@@ -64,6 +64,8 @@
 #include <mmx/Node_get_tx_ids_at_return.hxx>
 #include <mmx/Node_get_tx_info.hxx>
 #include <mmx/Node_get_tx_info_return.hxx>
+#include <mmx/Node_get_tx_info_for.hxx>
+#include <mmx/Node_get_tx_info_for_return.hxx>
 #include <mmx/Node_get_virtual_plot_balance.hxx>
 #include <mmx/Node_get_virtual_plot_balance_return.hxx>
 #include <mmx/Node_start_sync.hxx>
@@ -252,6 +254,19 @@ vnx::optional<::mmx::tx_info_t> NodeClient::get_tx_info(const ::mmx::hash_t& id)
 	_method->id = id;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_tx_info_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<vnx::optional<::mmx::tx_info_t>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+vnx::optional<::mmx::tx_info_t> NodeClient::get_tx_info_for(std::shared_ptr<const ::mmx::Transaction> tx) {
+	auto _method = ::mmx::Node_get_tx_info_for::create();
+	_method->tx = tx;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_tx_info_for_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<vnx::optional<::mmx::tx_info_t>>();

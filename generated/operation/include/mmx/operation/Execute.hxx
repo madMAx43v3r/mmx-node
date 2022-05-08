@@ -7,6 +7,7 @@
 #include <mmx/operation/package.hxx>
 #include <mmx/Operation.hxx>
 #include <mmx/addr_t.hpp>
+#include <vnx/Variant.hpp>
 
 
 namespace mmx {
@@ -16,6 +17,8 @@ class MMX_OPERATION_EXPORT Execute : public ::mmx::Operation {
 public:
 	
 	::mmx::addr_t user;
+	std::string method;
+	std::vector<::vnx::Variant> args;
 	
 	typedef ::mmx::Operation Super;
 	
@@ -62,12 +65,14 @@ protected:
 
 template<typename T>
 void Execute::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Execute>(4);
+	_visitor.template type_begin<Execute>(6);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("address", 1); _visitor.accept(address);
 	_visitor.type_field("solution", 2); _visitor.accept(solution);
 	_visitor.type_field("user", 3); _visitor.accept(user);
-	_visitor.template type_end<Execute>(4);
+	_visitor.type_field("method", 4); _visitor.accept(method);
+	_visitor.type_field("args", 5); _visitor.accept(args);
+	_visitor.template type_end<Execute>(6);
 }
 
 

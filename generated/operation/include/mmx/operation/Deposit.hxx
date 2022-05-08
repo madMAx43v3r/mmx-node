@@ -5,9 +5,9 @@
 #define INCLUDE_mmx_operation_Deposit_HXX_
 
 #include <mmx/operation/package.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/operation/Execute.hxx>
-#include <mmx/txout_t.hxx>
 
 
 namespace mmx {
@@ -16,7 +16,9 @@ namespace operation {
 class MMX_OPERATION_EXPORT Deposit : public ::mmx::operation::Execute {
 public:
 	
-	::mmx::txout_t input;
+	::mmx::addr_t currency;
+	uint64_t amount = 0;
+	vnx::optional<::mmx::addr_t> sender;
 	
 	typedef ::mmx::operation::Execute Super;
 	
@@ -66,13 +68,17 @@ protected:
 
 template<typename T>
 void Deposit::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Deposit>(5);
+	_visitor.template type_begin<Deposit>(9);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("address", 1); _visitor.accept(address);
 	_visitor.type_field("solution", 2); _visitor.accept(solution);
 	_visitor.type_field("user", 3); _visitor.accept(user);
-	_visitor.type_field("input", 4); _visitor.accept(input);
-	_visitor.template type_end<Deposit>(5);
+	_visitor.type_field("method", 4); _visitor.accept(method);
+	_visitor.type_field("args", 5); _visitor.accept(args);
+	_visitor.type_field("currency", 6); _visitor.accept(currency);
+	_visitor.type_field("amount", 7); _visitor.accept(amount);
+	_visitor.type_field("sender", 8); _visitor.accept(sender);
+	_visitor.template type_end<Deposit>(9);
 }
 
 
