@@ -80,6 +80,9 @@ module Node implements vnx.addons.HttpComponent {
 	optional<tx_info_t> get_tx_info(hash_t id) const;
 	
 	@Permission(permission_e.PUBLIC)
+	optional<tx_info_t> get_tx_info_for(Transaction* tx) const;
+	
+	@Permission(permission_e.PUBLIC)
 	vector<hash_t> get_tx_ids_at(uint height) const;
 	
 	@Permission(PUBLISH)

@@ -303,50 +303,57 @@ vnx::optional<uint32_t> Node::get_tx_height(const hash_t& id) const
 
 vnx::optional<tx_info_t> Node::get_tx_info(const hash_t& id) const
 {
-	if(auto tx = get_transaction(id, true))
-	{
-		if(tx->parent) {
-			tx = tx->get_combined();
-		}
-		tx_info_t info;
-		info.id = id;
-		if(auto height = get_tx_height(id)) {
-			info.height = *height;
-			info.block = get_block_hash(*height);
-		}
-		info.note = tx->note;
-		info.cost = tx->calc_cost(params);
-		info.inputs = tx->inputs;
-		info.outputs = tx->get_outputs();
-		info.operations = tx->execute;
-		info.deployed = tx->deploy;
-
-		std::unordered_set<addr_t> contracts;
-		for(const auto& in : info.inputs) {
-			contracts.insert(in.contract);
-			info.input_amounts[in.contract] += in.amount;
-		}
-		for(const auto& out : info.outputs) {
-			contracts.insert(out.contract);
-			info.output_amounts[out.contract] += out.amount;
-		}
-		for(const auto& op : tx->execute) {
-			if(op) {
-				contracts.insert(op->address);
-			}
-		}
-		for(const auto& addr : contracts) {
-			if(auto contract = get_contract(addr)) {
-				info.contracts[addr] = contract;
-			}
-		}
-		auto iter = info.input_amounts.find(addr_t());
-		auto iter2 = info.output_amounts.find(addr_t());
-		info.fee = int64_t(iter != info.input_amounts.end() ? iter->second.lower() : 0)
-						- (iter2 != info.output_amounts.end() ? iter2->second.lower() : 0);
-		return info;
+	if(auto tx = get_transaction(id, true)) {
+		return get_tx_info_for(tx);
 	}
 	return nullptr;
+}
+
+vnx::optional<tx_info_t> Node::get_tx_info_for(std::shared_ptr<const Transaction> tx) const
+{
+	if(!tx) {
+		return nullptr;
+	}
+	if(tx->parent) {
+		tx = tx->get_combined();
+	}
+	tx_info_t info;
+	info.id = tx->id;
+	if(auto height = get_tx_height(tx->id)) {
+		info.height = *height;
+		info.block = get_block_hash(*height);
+	}
+	info.note = tx->note;
+	info.cost = tx->calc_cost(params);
+	info.inputs = tx->get_inputs();
+	info.outputs = tx->get_outputs();
+	info.operations = tx->execute;
+	info.deployed = tx->deploy;
+
+	std::unordered_set<addr_t> contracts;
+	for(const auto& in : info.inputs) {
+		contracts.insert(in.contract);
+		info.input_amounts[in.contract] += in.amount;
+	}
+	for(const auto& out : info.outputs) {
+		contracts.insert(out.contract);
+		info.output_amounts[out.contract] += out.amount;
+	}
+	for(const auto& op : tx->execute) {
+		if(op) {
+			contracts.insert(op->address);
+		}
+	}
+	for(const auto& addr : contracts) {
+		if(auto contract = get_contract(addr)) {
+			info.contracts[addr] = contract;
+		}
+	}
+	auto iter = info.input_amounts.find(addr_t());
+	auto iter2 = info.output_amounts.find(addr_t());
+	info.fee = int64_t(iter != info.input_amounts.end() ? iter->second.lower() : 0)
+					- (iter2 != info.output_amounts.end() ? iter2->second.lower() : 0);
+	return info;
 }
 
 std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id, const bool& include_pending) const
