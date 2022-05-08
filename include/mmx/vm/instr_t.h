@@ -71,8 +71,8 @@ enum opcode_e : uint8_t {
 	OP_SHA256,		// dst, src
 
 	OP_LOG,			// level, message
-	OP_SEND,		// addr, amount, currency
-	OP_MINT,		// addr, amount
+	OP_SEND,		// address, amount, currency
+	OP_MINT,		// address, amount
 	OP_EVENT,		// name, data
 	OP_FAIL,		// message
 

@@ -46,6 +46,7 @@ int main(int arcv, char** argv)
 		code.emplace_back(vm::OP_RET);
 
 		engine.total_gas = 10000;
+		engine.init();
 		engine.begin(0);
 		engine.run();
 		engine.dump_memory();
@@ -61,12 +62,13 @@ int main(int arcv, char** argv)
 
 		auto& code = engine.code;
 		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 0, vm::MEM_STATIC + 0, vm::MEM_CONST + 3);
-		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 1, vm::MEM_STATIC + 1, 0);
-		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 2, vm::MEM_STATIC + 1, 1);
-		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 3, vm::MEM_STATIC + 1, 2);
+		code.emplace_back(vm::OP_GET, 0, vm::MEM_STATIC + 10, vm::MEM_STATIC + 1, 0);
+		code.emplace_back(vm::OP_GET, 0, vm::MEM_STATIC + 11, vm::MEM_STATIC + 1, 1);
+		code.emplace_back(vm::OP_GET, 0, vm::MEM_STATIC + 12, vm::MEM_STATIC + 1, 2);
 		code.emplace_back(vm::OP_RET);
 
 		engine.total_gas = 10000;
+		engine.init();
 		engine.begin(0);
 		engine.run();
 		engine.dump_memory();
@@ -88,6 +90,7 @@ int main(int arcv, char** argv)
 		code.emplace_back(vm::OP_RET);
 
 		engine.total_gas = 1000000;
+		engine.init();
 		engine.begin(0);
 		engine.run();
 		engine.dump_memory();

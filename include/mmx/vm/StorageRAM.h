@@ -12,6 +12,7 @@
 
 #include <map>
 #include <tuple>
+#include <mutex>
 #include <unordered_map>
 
 
@@ -35,6 +36,7 @@ public:
 	void clear();
 
 protected:
+	mutable std::mutex mutex;
 	std::map<std::pair<addr_t, uint64_t>, var_t*> memory;
 	std::map<std::tuple<addr_t, uint64_t, uint64_t>, var_t*> entries;
 	std::unordered_map<addr_t, std::map<const var_t*, uint64_t, varptr_less_t>> key_map;

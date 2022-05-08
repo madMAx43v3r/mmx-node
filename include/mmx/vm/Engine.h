@@ -9,6 +9,7 @@
 #define INCLUDE_MMX_VM_ENGINE_H_
 
 #include <mmx/addr_t.hpp>
+#include <mmx/txout_t.hxx>
 #include <mmx/vm/var_t.h>
 #include <mmx/vm/instr_t.h>
 #include <mmx/vm/Storage.h>
@@ -40,6 +41,7 @@ enum externvar_e : uint32_t {
 
 	EXTERN_HEIGHT,
 	EXTERN_TXID,
+	EXTERN_USER,
 	EXTERN_BALANCE,
 	EXTERN_DEPOSIT,
 
@@ -68,6 +70,9 @@ public:
 	std::vector<instr_t> code;
 	std::vector<frame_t> call_stack;
 
+	std::vector<txout_t> outputs;
+	std::vector<txout_t> mint_outputs;
+
 	uint64_t total_gas = 0;
 	uint64_t total_cost = 0;
 
@@ -87,10 +92,10 @@ public:
 	var_t* assign(const uint64_t dst, var_t* value);
 	var_t* assign(const uint64_t dst, const uint64_t key, var_t* value);
 
-	uint64_t lookup(const uint64_t src);
-	uint64_t lookup(const var_t* var);
-	uint64_t lookup(const var_t& var);
-	uint64_t lookup(const varptr_t& var);
+	uint64_t lookup(const uint64_t src, const bool read_only);
+	uint64_t lookup(const var_t* var, const bool read_only);
+	uint64_t lookup(const var_t& var, const bool read_only);
+	uint64_t lookup(const varptr_t& var, const bool read_only);
 
 	var_t* write(const uint64_t dst, const var_t* src);
 	var_t* write(const uint64_t dst, const var_t& src);
@@ -102,12 +107,13 @@ public:
 	var_t* write_entry(const uint64_t dst, const uint64_t key, const varptr_t& var);
 	void erase_entry(const uint64_t dst, const uint64_t key);
 
-	var_t* write_key(const uint64_t dst, const uint64_t key, const var_t& src);
-	var_t* write_key(const uint64_t dst, const var_t& key, const var_t& src);
+	var_t* write_key(const uint64_t dst, const uint64_t key, const var_t& var);
+	var_t* write_key(const uint64_t dst, const var_t& key, const var_t& var);
 	var_t* write_key(const uint64_t dst, const varptr_t& key, const varptr_t& var);
 	void erase_key(const uint64_t dst, const uint64_t key);
 
-	void push_back(const uint64_t dst, const var_t& src);
+	void push_back(const uint64_t dst, const var_t& var);
+	void push_back(const uint64_t dst, const varptr_t& var);
 	void push_back(const uint64_t dst, const uint64_t src);
 	void pop_back(const uint64_t dst, const uint64_t& src);
 
@@ -136,10 +142,13 @@ public:
 	void sha256(const uint64_t dst, const uint64_t src);
 	void log(const uint64_t level, const uint64_t msg);
 	void event(const uint64_t name, const uint64_t data);
+	void send(const uint64_t address, const uint64_t amount, const uint64_t currency);
+	void mint(const uint64_t address, const uint64_t amount);
 
 	frame_t& get_frame();
 	uint64_t deref(const uint64_t src);
 
+	void init();
 	void begin(const uint32_t instr_ptr);
 	void run();
 	void step();
@@ -160,6 +169,10 @@ public:
 	T* read(const uint64_t src, const vartype_e& type);
 	template<typename T>
 	T& read_fail(const uint64_t src, const vartype_e& type);
+	template<typename T>
+	T* read_key(const uint64_t src, const uint64_t key, const vartype_e& type);
+	template<typename T>
+	T& read_key_fail(const uint64_t src, const uint64_t key, const vartype_e& type);
 
 private:
 	var_t* assign(var_t*& var, var_t* value);
@@ -200,6 +213,28 @@ template<typename T>
 T& Engine::read_fail(const uint64_t src, const vartype_e& type)
 {
 	auto& var = read_fail(src);
+	if(var.type != type) {
+		throw std::logic_error("read type mismatch");
+	}
+	return (T&)var;
+}
+
+template<typename T>
+T* Engine::read_key(const uint64_t src, const uint64_t key, const vartype_e& type)
+{
+	if(auto var = read_key(src, key)) {
+		if(var->type != type) {
+			throw std::logic_error("read type mismatch");
+		}
+		return (T*)var;
+	}
+	return nullptr;
+}
+
+template<typename T>
+T& Engine::read_key_fail(const uint64_t src, const uint64_t key, const vartype_e& type)
+{
+	auto& var = read_key_fail(src, key);
 	if(var.type != type) {
 		throw std::logic_error("read type mismatch");
 	}

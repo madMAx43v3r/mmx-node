@@ -18,6 +18,8 @@ StorageRAM::~StorageRAM()
 
 var_t* StorageRAM::read(const addr_t& contract, const uint64_t src) const
 {
+	std::lock_guard lock(mutex);
+
 	auto iter = memory.find(std::make_pair(contract, src));
 	if(iter != memory.end()) {
 		return clone(iter->second);
@@ -27,6 +29,8 @@ var_t* StorageRAM::read(const addr_t& contract, const uint64_t src) const
 
 var_t* StorageRAM::read(const addr_t& contract, const uint64_t src, const uint64_t key) const
 {
+	std::lock_guard lock(mutex);
+
 	auto iter = entries.find(std::make_tuple(contract, src, key));
 	if(iter != entries.end()) {
 		return clone(iter->second);
@@ -37,6 +41,8 @@ var_t* StorageRAM::read(const addr_t& contract, const uint64_t src, const uint64
 void StorageRAM::write(const addr_t& contract, const uint64_t dst, const var_t& value)
 {
 	const auto key = std::make_pair(contract, dst);
+
+	std::lock_guard lock(mutex);
 
 	auto& var = memory[key];
 	if(var) {
@@ -56,6 +62,8 @@ void StorageRAM::write(const addr_t& contract, const uint64_t dst, const uint64_
 {
 	const auto mapkey = std::make_tuple(contract, dst, key);
 
+	std::lock_guard lock(mutex);
+
 	auto& var = entries[mapkey];
 	if(var) {
 		delete var;
@@ -65,6 +73,8 @@ void StorageRAM::write(const addr_t& contract, const uint64_t dst, const uint64_
 
 uint64_t StorageRAM::lookup(const addr_t& contract, const var_t& value) const
 {
+	std::lock_guard lock(mutex);
+
 	auto iter = key_map.find(contract);
 	if(iter != key_map.end()) {
 		const auto& map = iter->second;
@@ -78,6 +88,8 @@ uint64_t StorageRAM::lookup(const addr_t& contract, const var_t& value) const
 
 void StorageRAM::clear()
 {
+	std::lock_guard lock(mutex);
+
 	key_map.clear();
 	for(auto& entry : memory) {
 		delete entry.second;

@@ -8,6 +8,8 @@
 #ifndef INCLUDE_MMX_VM_VAR_T_H_
 #define INCLUDE_MMX_VM_VAR_T_H_
 
+#include <mmx/hash_t.hpp>
+
 #include <uint256_t.h>
 
 #include <cstdint>
@@ -103,6 +105,7 @@ struct uint_t : var_t {
 	uint_t() : var_t(TYPE_UINT) {}
 	uint_t(const uint_t&) = default;
 	uint_t(const uint256_t& value) : uint_t() { this->value = value; }
+	uint_t(const hash_t& value) : uint_t(value.to_uint256()) {}
 
 };
 
@@ -179,7 +182,6 @@ struct array_t : var_t {
 
 	array_t() : var_t(TYPE_ARRAY) {}
 	array_t(const array_t&) = default;
-	array_t(uint32_t size) : array_t() { this->size = size; }
 
 };
 

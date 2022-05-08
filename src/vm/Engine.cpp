@@ -119,34 +119,34 @@ var_t* Engine::assign(var_t*& var, var_t* value)
 	return var;
 }
 
-uint64_t Engine::lookup(const uint64_t src)
+uint64_t Engine::lookup(const uint64_t src, const bool read_only)
 {
-	return lookup(read_fail(src));
+	return lookup(read_fail(src), read_only);
 }
 
-uint64_t Engine::lookup(const var_t* var)
+uint64_t Engine::lookup(const var_t* var, const bool read_only)
 {
 	if(var) {
-		return lookup(*var);
+		return lookup(*var, read_only);
 	}
 	return 0;
 }
 
-uint64_t Engine::lookup(const varptr_t& var)
+uint64_t Engine::lookup(const varptr_t& var, const bool read_only)
 {
-	return lookup(var.ptr);
+	return lookup(var.ptr, read_only);
 }
 
-uint64_t Engine::lookup(const var_t& var)
+uint64_t Engine::lookup(const var_t& var, const bool read_only)
 {
+	if(var.type == TYPE_NIL) {
+		throw std::runtime_error("invalid key type");
+	}
 	const auto iter = key_map.find(&var);
 	if(iter != key_map.end()) {
 		return iter->second;
 	}
 	if(auto key = storage->lookup(contract, var)) {
-		if(key < MEM_STATIC) {
-			throw std::logic_error("lookup(): key < MEM_STATIC");
-		}
 		auto& value = read_fail(key);
 		if(value.ref_count == 0) {
 			throw std::logic_error("lookup(): key with ref_count == 0");
@@ -156,6 +156,9 @@ uint64_t Engine::lookup(const var_t& var)
 		}
 		key_map[&value] = key;
 		return key;
+	}
+	if(read_only) {
+		return 0;
 	}
 	const auto key = alloc();
 	const auto value = write(key, var);
@@ -192,18 +195,20 @@ var_t* Engine::write(const uint64_t dst, const std::vector<varptr_t>& var)
 	if(var.size() >= MEM_HEAP) {
 		throw std::logic_error("array too large");
 	}
-	for(size_t i = 0; i < var.size(); ++i) {
-		write_entry(dst, i, var[i]);
+	auto array = assign(dst, new array_t());
+	for(const auto& entry : var) {
+		push_back(dst, entry);
 	}
-	return write(dst, array_t(var.size()));
+	return array;
 }
 
 var_t* Engine::write(const uint64_t dst, const std::map<varptr_t, varptr_t>& var)
 {
+	auto map = assign(dst, new map_t());
 	for(const auto& entry : var) {
 		write_key(dst, entry.first, entry.second);
 	}
-	return write(dst, map_t());
+	return map;
 }
 
 var_t* Engine::write(var_t*& var, const uint64_t* dst, const var_t& src)
@@ -294,10 +299,10 @@ var_t* Engine::write(var_t*& var, const uint64_t* dst, const var_t& src)
 	return var;
 }
 
-void Engine::push_back(const uint64_t dst, const var_t& src)
+void Engine::push_back(const uint64_t dst, const var_t& var)
 {
-	if(src.type == TYPE_ARRAY) {
-		const auto& array = (const array_t&)src;
+	if(var.type == TYPE_ARRAY) {
+		const auto& array = (const array_t&)var;
 		if(dst == array.address) {
 			throw std::logic_error("dst == src");
 		}
@@ -310,8 +315,17 @@ void Engine::push_back(const uint64_t dst, const var_t& src)
 	if(array.size >= std::min<uint32_t>(MEM_HEAP - 1, std::numeric_limits<uint32_t>::max())) {
 		throw std::runtime_error("push_back overflow at " + to_hex(dst));
 	}
-	write_entry(dst, array.size++, src);
+	write_entry(dst, array.size++, var);
 	array.flags |= FLAG_DIRTY;
+}
+
+void Engine::push_back(const uint64_t dst, const varptr_t& var)
+{
+	if(auto value = var.ptr) {
+		push_back(dst, *value);
+	} else {
+		push_back(dst, var_t());
+	}
 }
 
 void Engine::push_back(const uint64_t dst, const uint64_t src)
@@ -373,6 +387,15 @@ map_t* Engine::clone_map(const uint64_t dst, const map_t& src)
 
 var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const var_t& src)
 {
+	switch(src.type) {
+		case TYPE_ARRAY:
+		case TYPE_MAP: {
+			const auto heap = alloc();
+			write(heap, src);
+			return write_entry(dst, key, ref_t(heap));
+		}
+		default: break;
+	}
 	auto& var = entries[std::make_pair(dst, key)];
 	if(!var && dst >= MEM_STATIC) {
 		var = storage->read(contract, dst, key);
@@ -383,34 +406,24 @@ var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const var_t& 
 var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const varptr_t& var)
 {
 	if(auto value = var.ptr) {
-		switch(value->type) {
-			case TYPE_ARRAY:
-			case TYPE_MAP: {
-				const auto heap = alloc();
-				write(heap, value);
-				return write_entry(dst, key, ref_t(heap));
-			}
-			default:
-				break;
-		}
 		return write_entry(dst, key, *value);
 	}
 	return write_entry(dst, key, var_t());
 }
 
-var_t* Engine::write_key(const uint64_t dst, const uint64_t key, const var_t& src)
+var_t* Engine::write_key(const uint64_t dst, const uint64_t key, const var_t& var)
 {
-	return write_entry(dst, lookup(key), src);
+	return write_entry(dst, lookup(key, false), var);
 }
 
-var_t* Engine::write_key(const uint64_t dst, const var_t& key, const var_t& src)
+var_t* Engine::write_key(const uint64_t dst, const var_t& key, const var_t& var)
 {
-	return write_entry(dst, lookup(key), src);
+	return write_entry(dst, lookup(key, false), var);
 }
 
 var_t* Engine::write_key(const uint64_t dst, const varptr_t& key, const varptr_t& var)
 {
-	return write_entry(dst, lookup(key), var);
+	return write_entry(dst, lookup(key, false), var);
 }
 
 void Engine::erase_entry(const uint64_t dst, const uint64_t key)
@@ -423,7 +436,9 @@ void Engine::erase_entry(const uint64_t dst, const uint64_t key)
 
 void Engine::erase_key(const uint64_t dst, const uint64_t key)
 {
-	erase_entry(dst, lookup(key));
+	if(auto addr = lookup(key, true)) {
+		erase_entry(dst, addr);
+	}
 }
 
 void Engine::erase_entries(const uint64_t dst)
@@ -551,12 +566,18 @@ var_t& Engine::read_entry_fail(const uint64_t src, const uint64_t key)
 
 var_t* Engine::read_key(const uint64_t src, const uint64_t key)
 {
-	return read_entry(src, lookup(key));
+	if(auto addr = lookup(key, true)) {
+		return read_entry(src, addr);
+	}
+	return nullptr;
 }
 
 var_t& Engine::read_key_fail(const uint64_t src, const uint64_t key)
 {
-	return read_entry_fail(src, lookup(key));
+	if(auto addr = lookup(key, true)) {
+		return read_entry_fail(src, addr);
+	}
+	throw std::logic_error("no such key at " + to_hex(src));
 }
 
 uint64_t Engine::alloc()
@@ -569,26 +590,30 @@ uint64_t Engine::alloc()
 	return offset.value++;
 }
 
+void Engine::init()
+{
+	for(auto iter = memory.lower_bound(1); iter != memory.lower_bound(MEM_EXTERN); ++iter) {
+		key_map.emplace(iter->second, iter->first);
+	}
+	if(!read(MEM_HEAP + GLOBAL_HAVE_INIT)) {
+		assign(MEM_HEAP + GLOBAL_HAVE_INIT, new var_t(TYPE_TRUE))->pin();
+		assign(MEM_HEAP + GLOBAL_NEXT_ALLOC, new uint_t(MEM_HEAP + GLOBAL_DYNAMIC_START))->pin();
+		assign(MEM_HEAP + GLOBAL_LOG_HISTORY, new array_t())->pin();
+		assign(MEM_HEAP + GLOBAL_SEND_HISTORY, new array_t())->pin();
+		assign(MEM_HEAP + GLOBAL_MINT_HISTORY, new array_t())->pin();
+		assign(MEM_HEAP + GLOBAL_EVENT_HISTORY, new array_t())->pin();
+	}
+}
+
 void Engine::begin(const uint32_t instr_ptr)
 {
 	call_stack.clear();
 
-	for(auto iter = memory.begin(); iter != memory.lower_bound(MEM_EXTERN); ++iter) {
-		key_map[iter->second] = iter->first;
-	}
 	for(auto iter = memory.begin(); iter != memory.lower_bound(MEM_STACK); ++iter) {
 		if(auto var = iter->second) {
 			var->flags |= FLAG_CONST;
 			var->flags &= ~FLAG_DIRTY;
 		}
-	}
-	if(!read(MEM_HEAP + GLOBAL_HAVE_INIT)) {
-		write(MEM_HEAP + GLOBAL_HAVE_INIT, var_t(TYPE_TRUE))->pin();
-		write(MEM_HEAP + GLOBAL_NEXT_ALLOC, uint_t(MEM_HEAP + GLOBAL_DYNAMIC_START))->pin();
-		write(MEM_HEAP + GLOBAL_LOG_HISTORY, array_t())->pin();
-		write(MEM_HEAP + GLOBAL_SEND_HISTORY, array_t())->pin();
-		write(MEM_HEAP + GLOBAL_MINT_HISTORY, array_t())->pin();
-		write(MEM_HEAP + GLOBAL_EVENT_HISTORY, array_t())->pin();
 	}
 	frame_t frame;
 	frame.instr_ptr = instr_ptr;
@@ -887,6 +912,40 @@ void Engine::event(const uint64_t name, const uint64_t data)
 	push_back(entry, name);
 	push_back(entry, data);
 	push_back(MEM_HEAP + GLOBAL_EVENT_HISTORY, ref_t(entry));
+}
+
+void Engine::send(const uint64_t address, const uint64_t amount, const uint64_t currency)
+{
+	const auto value = read_fail<uint_t>(amount, TYPE_UINT).value;
+	if(value >> 64) {
+		throw std::runtime_error("amount too large");
+	}
+	auto balance = read_key<uint_t>(MEM_EXTERN + EXTERN_BALANCE, currency, TYPE_UINT);
+	if(!balance || balance->value < value) {
+		throw std::runtime_error("insufficient funds");
+	}
+	balance->value -= value;
+
+	txout_t out;
+	out.contract = read_fail<uint_t>(currency, TYPE_UINT).value;
+	out.address = read_fail<uint_t>(address, TYPE_UINT).value;
+	out.amount = value;
+	out.sender = contract;
+	outputs.push_back(out);
+}
+
+void Engine::mint(const uint64_t address, const uint64_t amount)
+{
+	const auto value = read_fail<uint_t>(amount, TYPE_UINT).value;
+	if(value >> 64) {
+		throw std::runtime_error("amount too large");
+	}
+	txout_t out;
+	out.contract = contract;
+	out.address = read_fail<uint_t>(address, TYPE_UINT).value;
+	out.amount = value;
+	out.sender = contract;
+	mint_outputs.push_back(out);
 }
 
 void Engine::jump(const uint32_t instr_ptr)
@@ -1305,6 +1364,15 @@ void Engine::exec(const instr_t& instr)
 		log(	deref_value(instr.a, instr.flags & OPFLAG_REF_A),
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
 		break;
+	case OP_SEND:
+		send(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
+				deref_addr(instr.b, instr.flags & OPFLAG_REF_B),
+				deref_addr(instr.c, instr.flags & OPFLAG_REF_C));
+		break;
+	case OP_MINT:
+		mint(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
+				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
+		break;
 	case OP_EVENT:
 		event(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
@@ -1349,6 +1417,7 @@ void Engine::commit()
 		if(auto var = iter->second) {
 			if(var->flags & FLAG_DIRTY) {
 				storage->write(contract, iter->first, *var);
+				var->flags &= ~FLAG_DIRTY;
 			}
 		}
 	}
@@ -1357,6 +1426,7 @@ void Engine::commit()
 		if(auto var = iter->second) {
 			if(var->flags & FLAG_DIRTY) {
 				storage->write(contract, iter->first.first, iter->first.second, *var);
+				var->flags &= ~FLAG_DIRTY;
 			}
 		}
 	}
@@ -1380,12 +1450,6 @@ void Engine::dump_memory(const uint64_t begin, const uint64_t end)
 		std::cout << std::endl;
 	}
 }
-
-
-
-
-
-
 
 
 } // vm
