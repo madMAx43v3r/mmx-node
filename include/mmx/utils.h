@@ -133,31 +133,6 @@ double amount_value(uint128_t amount, const int decimals)
 	return double(amount.lower()) * pow(10, i - decimals);
 }
 
-struct balance_cache_t {
-
-	std::map<std::pair<addr_t, addr_t>, uint128_t> balance;
-	const std::map<std::pair<addr_t, addr_t>, uint128_t>* source = nullptr;
-
-	balance_cache_t(const balance_cache_t&) = default;
-	balance_cache_t(const std::map<std::pair<addr_t, addr_t>, uint128_t>& source) : source(&source) {}
-	balance_cache_t& operator=(const balance_cache_t&) = default;
-
-	uint128_t* get(const addr_t& address, const addr_t& contract)
-	{
-		const auto key = std::make_pair(address, contract);
-		auto iter = balance.find(key);
-		if(iter == balance.end()) {
-			auto iter2 = source->find(key);
-			if(iter2 != source->end()) {
-				iter = balance.insert(*iter2).first;
-			} else {
-				return nullptr;
-			}
-		}
-		return &iter->second;
-	}
-};
-
 
 } // mmx
 

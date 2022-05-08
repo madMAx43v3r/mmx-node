@@ -20,6 +20,8 @@ class Transaction extends TransactionBase {
 	
 	vector<txout_t> outputs;
 	
+	vector<txin_t> exec_inputs;
+	
 	vector<txout_t> exec_outputs;
 	
 	vector<Operation*> execute;
@@ -51,11 +53,13 @@ class Transaction extends TransactionBase {
 	
 	txout_t get_output(uint index) const;
 	
+	vector<txin_t> get_inputs() const;
+	
 	vector<txout_t> get_outputs() const;
 	
-	vector<txout_t> get_all_outputs() const;
-	
 	vector<txin_t> get_all_inputs() const;
+	
+	vector<txout_t> get_all_outputs() const;
 	
 	ulong calc_cost(ChainParams* params) const;
 	

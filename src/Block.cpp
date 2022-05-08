@@ -14,6 +14,11 @@ namespace mmx {
 
 vnx::bool_t Block::is_valid() const
 {
+	for(const auto& tx : tx_list) {
+		if(!tx) {
+			return false;
+		}
+	}
 	return BlockHeader::is_valid() && (!proof || proof->is_valid()) && tx_count == tx_list.size() && calc_tx_hash() == tx_hash;
 }
 
@@ -63,16 +68,12 @@ std::shared_ptr<const BlockHeader> Block::get_header() const
 
 std::vector<std::shared_ptr<const Transaction>> Block::get_all_transactions() const
 {
-	std::vector<std::shared_ptr<const Transaction>> res;
-	if(auto tx = std::dynamic_pointer_cast<const Transaction>(tx_base)) {
-		res.push_back(tx);
+	std::vector<std::shared_ptr<const Transaction>> list;
+	if(auto tx = tx_base) {
+		list.push_back(tx);
 	}
-	for(const auto& base : tx_list) {
-		if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
-			res.push_back(tx);
-		}
-	}
-	return res;
+	list.insert(list.end(), tx_list.begin(), tx_list.end());
+	return list;
 }
 
 void Block::validate() const

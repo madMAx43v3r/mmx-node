@@ -124,6 +124,13 @@ txout_t Transaction::get_output(const uint32_t& index) const
 	throw std::logic_error("no such output");
 }
 
+std::vector<txin_t> Transaction::get_inputs() const
+{
+	auto res = inputs;
+	res.insert(res.end(), exec_inputs.begin(), exec_inputs.end());
+	return res;
+}
+
 std::vector<txout_t> Transaction::get_outputs() const
 {
 	auto res = outputs;
@@ -131,14 +138,14 @@ std::vector<txout_t> Transaction::get_outputs() const
 	return res;
 }
 
+std::vector<txin_t> Transaction::get_all_inputs() const
+{
+	return parent ? get_combined()->get_inputs() : get_inputs();
+}
+
 std::vector<txout_t> Transaction::get_all_outputs() const
 {
 	return parent ? get_combined()->get_outputs() : get_outputs();
-}
-
-std::vector<txin_t> Transaction::get_all_inputs() const
-{
-	return parent ? get_combined()->inputs : inputs;
 }
 
 uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const

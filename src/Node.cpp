@@ -1261,12 +1261,10 @@ void Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noe
 	block_index.erase(height);
 
 	if(block) {
-		for(const auto& base : block->tx_list) {
-			if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
-				auto& entry = tx_pool[tx->id];
-				entry.did_validate = true;
-				entry.tx = tx;
-			}
+		for(const auto& tx : block->tx_list) {
+			auto& entry = tx_pool[tx->id];
+			entry.did_validate = true;
+			entry.tx = tx;
 		}
 		state_hash = block->prev;
 	}
@@ -1430,7 +1428,7 @@ std::shared_ptr<const BlockHeader> Node::read_block(vnx::File& file, bool full_b
 				block->BlockHeader::operator=(*header);
 				while(true) {
 					if(auto value = vnx::read(in)) {
-						if(auto tx = std::dynamic_pointer_cast<TransactionBase>(value)) {
+						if(auto tx = std::dynamic_pointer_cast<Transaction>(value)) {
 							block->tx_list.push_back(tx);
 						} else {
 							throw std::logic_error("expected transaction");
@@ -1464,17 +1462,12 @@ void Node::write_block(std::shared_ptr<const Block> block, int64_t* file_offset)
 		vnx::write(out, block->get_header());
 	}
 
-	for(const auto& tx : block->tx_list) {
+	for(auto tx : block->tx_list) {
 		const auto offset = out.get_output_pos();
-		auto parent = tx;
-		while(parent) {
+		while(tx) {
 			tx_ids.push_back(tx->id);
-			tx_index.insert(parent->id, std::make_pair(offset, block->height));
-			if(auto full = std::dynamic_pointer_cast<const Transaction>(parent)) {
-				parent = full->parent;
-			} else {
-				break;
-			}
+			tx_index.insert(tx->id, std::make_pair(offset, block->height));
+			tx = tx->parent;
 		}
 		if(!file_offset) {
 			vnx::write(out, tx);

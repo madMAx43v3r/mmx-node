@@ -22,7 +22,7 @@ class BlockHeader {
 	
 	ProofOfSpace* proof;
 	
-	TransactionBase* tx_base;
+	Transaction* tx_base;
 	
 	uint tx_count;
 	
