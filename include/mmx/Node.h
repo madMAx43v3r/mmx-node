@@ -19,6 +19,7 @@
 #include <mmx/txout_entry_t.hpp>
 #include <mmx/OCL_VDF.h>
 #include <mmx/utils.h>
+#include <mmx/balance_cache_t.h>
 
 #include <vnx/ThreadPool.h>
 #include <vnx/rocksdb/table.h>
@@ -117,6 +118,27 @@ protected:
 	void handle(std::shared_ptr<const ProofResponse> value) override;
 
 private:
+	struct waitcond_t {
+		std::mutex mutex;
+		std::condition_variable signal;
+		bool do_wait = true;
+	};
+
+	struct contract_state_t {
+		std::shared_ptr<Contract> data;
+		std::shared_ptr<balance_cache_t> balance;
+	};
+
+	struct execution_context_t {
+		std::shared_ptr<const Context> block;
+		std::unordered_map<hash_t, std::unordered_set<hash_t>> wait_map;
+		std::unordered_map<hash_t, std::shared_ptr<waitcond_t>> signal_map;
+		std::unordered_map<addr_t, std::shared_ptr<contract_state_t>> contract_map;
+
+		void wait(const hash_t& txid) const;
+		void signal(const hash_t& txid) const;
+	};
+
 	struct vdf_point_t {
 		uint32_t height = -1;
 		uint64_t vdf_start = 0;
@@ -192,23 +214,23 @@ private:
 
 	std::unordered_set<addr_t> get_revokations(const hash_t& txid) const;
 
-	void validate(std::shared_ptr<const Block> block) const;
+	std::shared_ptr<execution_context_t> validate(std::shared_ptr<const Block> block) const;
 
 	void validate(std::shared_ptr<const Transaction> tx) const;
 
-	std::shared_ptr<const Context> create_exec_context(
+	std::shared_ptr<const Context> create_context(
 			std::shared_ptr<const Context> base, std::shared_ptr<const Contract> contract, std::shared_ptr<const Transaction> tx) const;
 
 	void validate(	std::shared_ptr<const Transaction> tx,
-					std::shared_ptr<const Context> context,
+					std::shared_ptr<const execution_context_t> context,
+					std::vector<txin_t>& exec_inputs,
 					std::vector<txout_t>& outputs,
 					std::vector<txout_t>& exec_outputs,
 					balance_cache_t& balance_cache,
-					std::unordered_map<addr_t, uint128_t>& amounts,
-					std::unordered_map<addr_t, std::shared_ptr<Contract>>& contract_state) const;
+					std::unordered_map<addr_t, uint128_t>& amounts) const;
 
 	std::shared_ptr<const Transaction>
-	validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const Context> context,
+	validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const execution_context_t> context,
 				std::shared_ptr<const Block> base, uint64_t& fee_amount) const;
 
 	void validate_diff_adjust(const uint64_t& block, const uint64_t& prev) const;

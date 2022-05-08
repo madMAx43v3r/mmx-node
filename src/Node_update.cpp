@@ -10,6 +10,8 @@
 #include <mmx/TimeInfusion.hxx>
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/operation/Mutate.hxx>
+#include <mmx/operation/Revoke.hxx>
+#include <mmx/operation/Execute.hxx>
 #include <mmx/utils.h>
 
 #include <vnx/vnx.h>
@@ -437,12 +439,16 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 			all_tx.resize(*cutoff);
 		}
 	}
-	auto context = Context::create();
-	context->height = peak->height + 1;
+	auto context = std::make_shared<execution_context_t>();
+	{
+		auto base = Context::create();
+		base->height = peak->height + 1;
+		context->block = base;
+	}
 
 	// select transactions to verify
 	for(const auto& entry : all_tx) {
-		if(uint32_t(entry.tx->id.to_uint256() & 0x1) != (context->height & 0x1)) {
+		if(uint32_t(entry.tx->id.to_uint256() & 0x1) != (context->block->height & 0x1)) {
 			continue;
 		}
 		if(only_new && entry.did_validate) {
@@ -454,22 +460,63 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 		}
 	}
 
+	// prepare synchronization
+	{
+		std::unordered_map<addr_t, std::vector<hash_t>> mutate_map;
+		for(const auto& entry : tx_list) {
+			std::unordered_set<addr_t> mutate_set;
+			{
+				auto tx = entry.tx;
+				while(tx) {
+					for(const auto& in : tx->inputs) {
+						if(in.flags & txin_t::IS_EXEC) {
+							const auto& list = mutate_map[in.address];
+							if(!list.empty()) {
+								context->wait_map[tx->id].insert(list.back());
+							}
+						}
+					}
+					for(const auto& op : tx->execute) {
+						if(std::dynamic_pointer_cast<const operation::Mutate>(op)
+							|| std::dynamic_pointer_cast<const operation::Execute>(op))
+						{
+							mutate_set.insert(op->address);
+						}
+					}
+					tx = tx->parent;
+				}
+			}
+			for(const auto& address : mutate_set) {
+				{
+					auto& list = mutate_map[address];
+					if(!list.empty()) {
+						context->wait_map[entry.tx->id].insert(list.back());
+					}
+					list.push_back(entry.tx->id);
+				}
+				context->contract_map.emplace(address, std::make_shared<contract_state_t>());
+			}
+			if(!mutate_set.empty()) {
+				context->signal_map.emplace(entry.tx->id, std::make_shared<waitcond_t>());
+			}
+		}
+	}
+
 	// verify transactions in parallel
 #pragma omp parallel for
 	for(int i = 0; i < int(tx_list.size()); ++i)
 	{
 		auto& entry = tx_list[i];
 		auto& tx = entry.tx;
+		context->wait(tx->id);
 		try {
 			if(auto new_tx = validate(tx, context, nullptr, entry.fees)) {
 				tx = new_tx;
 			}
-			{
-				auto iter = tx_pool.find(tx->id);
-				if(iter != tx_pool.end()) {
-					auto& info = iter->second;
-					info.did_validate = true;
-				}
+			auto iter = tx_pool.find(tx->id);
+			if(iter != tx_pool.end()) {
+				auto& info = iter->second;
+				info.did_validate = true;
 			}
 		}
 		catch(const std::exception& ex) {
@@ -478,13 +525,14 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 			}
 			entry.invalid = true;
 		}
+		context->signal(tx->id);
 	}
 
 	uint128_t total_cost = 0;
 	std::vector<tx_data_t> result;
 	std::unordered_set<addr_t> tx_set;
-	std::unordered_set<addr_t> mutate_set;
-	balance_cache_t balance_cache(balance_map);
+	std::multiset<std::pair<hash_t, addr_t>> revoked;
+	balance_cache_t balance_cache(&balance_map);
 
 	// select final set of transactions
 	for(auto& entry : tx_list)
@@ -496,48 +544,50 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 			continue;
 		}
 		bool passed = true;
-		auto tx = entry.tx;
-		auto cache = balance_cache;
-		std::unordered_set<addr_t> mutate_addrs;
-		while(tx) {
-			if(tx_set.count(tx->id)) {
-				passed = false;
-				break;
-			}
-			for(const auto& in : tx->inputs) {
-				const auto balance = cache.get(in.address, in.contract);
-				if(balance || in.amount <= *balance) {
-					*balance -= in.amount;
-				} else {
-					entry.invalid = true;
+		std::unordered_set<addr_t> tmp_set;
+		std::multiset<std::pair<hash_t, addr_t>> tmp_revoke;
+		balance_cache_t tmp_cache(&balance_cache);
+		{
+			auto tx = entry.tx;
+			while(tx) {
+				if(tx_set.count(tx->id)) {
 					passed = false;
-					break;
 				}
-			}
-			for(const auto& op : tx->execute) {
-				if(std::dynamic_pointer_cast<const operation::Mutate>(op)) {
-					if(mutate_set.count(op->address)) {
+				tmp_set.insert(tx->id);
+
+				for(const auto& in : tx->get_inputs()) {
+					const auto key = std::make_pair(tx->id, in.address);
+					if(revoked.count(key) || tmp_revoke.count(key)) {
 						passed = false;
-						break;
 					}
-					mutate_addrs.insert(op->address);
+					const auto balance = tmp_cache.get(in.address, in.contract);
+					if(balance || in.amount <= *balance) {
+						*balance -= in.amount;
+					} else {
+						passed = false;
+						entry.invalid = true;
+					}
 				}
+				for(const auto& op : tx->execute) {
+					if(auto revoke = std::dynamic_pointer_cast<const operation::Revoke>(op)) {
+						if(tx_set.count(revoke->txid) || tmp_set.count(revoke->txid)) {
+							passed = false;
+						}
+						tmp_revoke.emplace(revoke->txid, revoke->address);
+					}
+				}
+				tx = tx->parent;
 			}
-			tx = tx->parent;
 		}
 		if(!passed) {
 			continue;
 		}
-		tx = entry.tx;
-		while(tx) {
-			tx_set.insert(tx->id);
-			tx = tx->parent;
-		}
-		mutate_set.insert(mutate_addrs.begin(), mutate_addrs.end());
-		balance_cache = cache;
+		tx_set.insert(tmp_set.begin(), tmp_set.end());
+		revoked.insert(tmp_revoke.begin(), tmp_revoke.end());
+		balance_cache.apply(tmp_cache);
 
-		result.push_back(entry);
 		total_cost += entry.cost;
+		result.push_back(entry);
 	}
 
 	// purge invalid transactions
