@@ -71,13 +71,12 @@ uint128 Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::optiona
 
 	uint128_t balance = 0;
 	for(const auto& entry : get_history({plot_id}, since)) {
-		if(entry.height <= std::min(root->height, height)) {
+		if(entry.contract == addr_t() && entry.height <= std::min(root->height, height)) {
 			switch(entry.type) {
-				case tx_type_e::SPEND:
-					balance -= entry.amount; break;
 				case tx_type_e::REWARD:
 				case tx_type_e::RECEIVE:
-					balance += entry.amount;
+					balance += entry.amount; break;
+				default: break;
 			}
 		}
 	}
@@ -89,7 +88,7 @@ uint128 Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::optiona
 		}
 		for(const auto& tx : block->get_all_transactions()) {
 			for(const auto& out : tx->get_all_outputs()) {
-				if(out.contract == addr_t() && out.address == plot_id) {
+				if(out.address == plot_id && out.contract == addr_t()) {
 					balance += out.amount;
 				}
 			}
