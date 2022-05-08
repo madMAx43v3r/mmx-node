@@ -12,10 +12,10 @@ namespace mmx {
 
 struct MMX_EXPORT txin_t : ::mmx::txio_t {
 	
-	static const uint16_t IS_EXEC = 1;
+	static const uint8_t IS_EXEC = 1;
 	
-	uint32_t solution = -1;
-	uint16_t flags = 0;
+	uint8_t solution = -1;
+	uint8_t flags = 0;
 	
 	typedef ::mmx::txio_t Super;
 	

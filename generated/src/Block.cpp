@@ -28,7 +28,6 @@
 #include <mmx/BlockHeader_validate_return.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/Transaction.hxx>
-#include <mmx/TransactionBase.hxx>
 #include <mmx/hash_t.hpp>
 
 #include <vnx/vnx.h>

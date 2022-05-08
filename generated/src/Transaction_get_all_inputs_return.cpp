@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Transaction_get_all_inputs_return::VNX_TYPE_HASH(0x4fa373e214ff1c91ull);
-const vnx::Hash64 Transaction_get_all_inputs_return::VNX_CODE_HASH(0x81b31cd4b3047d2eull);
+const vnx::Hash64 Transaction_get_all_inputs_return::VNX_CODE_HASH(0x8d54cd56b0139411ull);
 
 vnx::Hash64 Transaction_get_all_inputs_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -114,7 +114,7 @@ std::shared_ptr<vnx::TypeCode> Transaction_get_all_inputs_return::static_create_
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Transaction.get_all_inputs.return";
 	type_code->type_hash = vnx::Hash64(0x4fa373e214ff1c91ull);
-	type_code->code_hash = vnx::Hash64(0x81b31cd4b3047d2eull);
+	type_code->code_hash = vnx::Hash64(0x8d54cd56b0139411ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;

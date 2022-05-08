@@ -31,6 +31,7 @@ public:
 	vnx::optional<::mmx::addr_t> sender;
 	std::vector<::mmx::txin_t> inputs;
 	std::vector<::mmx::txout_t> outputs;
+	std::vector<::mmx::txin_t> exec_inputs;
 	std::vector<::mmx::txout_t> exec_outputs;
 	std::vector<std::shared_ptr<const ::mmx::Operation>> execute;
 	std::vector<std::shared_ptr<const ::mmx::Solution>> solutions;
@@ -60,9 +61,10 @@ public:
 	virtual ::mmx::hash_t calc_hash() const override;
 	virtual std::shared_ptr<const ::mmx::Solution> get_solution(const uint32_t& index = 0) const;
 	virtual ::mmx::txout_t get_output(const uint32_t& index = 0) const;
+	virtual std::vector<::mmx::txin_t> get_inputs() const;
 	virtual std::vector<::mmx::txout_t> get_outputs() const;
-	virtual std::vector<::mmx::txout_t> get_all_outputs() const;
 	virtual std::vector<::mmx::txin_t> get_all_inputs() const;
+	virtual std::vector<::mmx::txout_t> get_all_outputs() const;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	virtual std::shared_ptr<const ::mmx::Transaction> get_combined() const;
 	
@@ -98,7 +100,7 @@ protected:
 
 template<typename T>
 void Transaction::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Transaction>(16);
+	_visitor.template type_begin<Transaction>(17);
 	_visitor.type_field("id", 0); _visitor.accept(id);
 	_visitor.type_field("version", 1); _visitor.accept(version);
 	_visitor.type_field("expires", 2); _visitor.accept(expires);
@@ -109,13 +111,14 @@ void Transaction::accept_generic(T& _visitor) const {
 	_visitor.type_field("sender", 7); _visitor.accept(sender);
 	_visitor.type_field("inputs", 8); _visitor.accept(inputs);
 	_visitor.type_field("outputs", 9); _visitor.accept(outputs);
-	_visitor.type_field("exec_outputs", 10); _visitor.accept(exec_outputs);
-	_visitor.type_field("execute", 11); _visitor.accept(execute);
-	_visitor.type_field("solutions", 12); _visitor.accept(solutions);
-	_visitor.type_field("deploy", 13); _visitor.accept(deploy);
-	_visitor.type_field("parent", 14); _visitor.accept(parent);
-	_visitor.type_field("is_extendable", 15); _visitor.accept(is_extendable);
-	_visitor.template type_end<Transaction>(16);
+	_visitor.type_field("exec_inputs", 10); _visitor.accept(exec_inputs);
+	_visitor.type_field("exec_outputs", 11); _visitor.accept(exec_outputs);
+	_visitor.type_field("execute", 12); _visitor.accept(execute);
+	_visitor.type_field("solutions", 13); _visitor.accept(solutions);
+	_visitor.type_field("deploy", 14); _visitor.accept(deploy);
+	_visitor.type_field("parent", 15); _visitor.accept(parent);
+	_visitor.type_field("is_extendable", 16); _visitor.accept(is_extendable);
+	_visitor.template type_end<Transaction>(17);
 }
 
 

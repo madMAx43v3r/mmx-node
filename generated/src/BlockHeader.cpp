@@ -12,7 +12,7 @@
 #include <mmx/BlockHeader_validate.hxx>
 #include <mmx/BlockHeader_validate_return.hxx>
 #include <mmx/ProofOfSpace.hxx>
-#include <mmx/TransactionBase.hxx>
+#include <mmx/Transaction.hxx>
 #include <mmx/bls_signature_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/uint128.hpp>
