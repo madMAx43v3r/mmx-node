@@ -164,13 +164,11 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 				tx = tx->parent;
 			}
 			for(const auto& address : mutate_set) {
-				{
-					auto& list = mutate_map[address];
-					if(!list.empty()) {
-						context->wait_map[tx->id].insert(list.back());
-					}
-					list.push_back(tx->id);
+				auto& list = mutate_map[address];
+				if(!list.empty()) {
+					context->wait_map[tx->id].insert(list.back());
 				}
+				list.push_back(tx->id);
 				context->contract_map.emplace(address, std::make_shared<contract_state_t>());
 			}
 			if(!mutate_set.empty()) {
@@ -496,8 +494,8 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 		}
 	}
 	uint128_t base_amount = 0;
-	std::vector<txout_t> outputs;
 	std::vector<txin_t> exec_inputs;
+	std::vector<txout_t> outputs;
 	std::vector<txout_t> exec_outputs;
 	balance_cache_t balance_cache(&balance_map);
 	std::unordered_map<addr_t, uint128_t> amounts;
@@ -571,14 +569,16 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 	}
 	std::shared_ptr<Transaction> out = nullptr;
 
-	if(tx->exec_inputs.empty() && tx->exec_outputs.empty()) {
+	if(tx->exec_inputs.empty() && tx->exec_outputs.empty())
+	{
 		if(!exec_inputs.empty() || !exec_outputs.empty()) {
 			auto copy = vnx::clone(tx);
 			copy->exec_inputs = exec_inputs;
 			copy->exec_outputs = exec_outputs;
 			out = copy;
 		}
-	} else {
+	}
+	else {
 		if(tx->exec_inputs.size() != exec_inputs.size()) {
 			throw std::logic_error("exec_inputs count mismatch");
 		}

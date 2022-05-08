@@ -487,13 +487,11 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 				}
 			}
 			for(const auto& address : mutate_set) {
-				{
-					auto& list = mutate_map[address];
-					if(!list.empty()) {
-						context->wait_map[entry.tx->id].insert(list.back());
-					}
-					list.push_back(entry.tx->id);
+				auto& list = mutate_map[address];
+				if(!list.empty()) {
+					context->wait_map[entry.tx->id].insert(list.back());
 				}
+				list.push_back(entry.tx->id);
 				context->contract_map.emplace(address, std::make_shared<contract_state_t>());
 			}
 			if(!mutate_set.empty()) {
