@@ -665,7 +665,7 @@ void Engine::step()
 	} catch(const std::exception& ex) {
 		throw std::runtime_error("exception at " + to_hex(instr_ptr) + ": " + ex.what());
 	}
-	total_cost = num_instr * INSTR_COST + num_calls * CALL_COST
+	total_cost = num_instr * INSTR_COST
 			+ num_write * WRITE_COST + num_bytes_write * WRITE_BYTE_COST
 			+ storage->num_read * STOR_READ_COST + storage->num_bytes_read * STOR_READ_BYTE_COST
 			+ num_bytes_sha256 * SHA256_BYTE_COST + outputs.size() * SEND_COST + mint_outputs.size() * MINT_COST;
@@ -988,7 +988,6 @@ void Engine::call(const uint32_t instr_ptr, const uint32_t stack_ptr)
 	frame.instr_ptr = instr_ptr;
 	frame.stack_ptr = get_frame().stack_ptr + stack_ptr;
 	call_stack.push_back(frame);
-	num_calls++;
 }
 
 bool Engine::ret()

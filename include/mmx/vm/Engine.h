@@ -28,7 +28,6 @@ namespace vm {
 class StorageProxy;
 
 static constexpr uint64_t INSTR_COST = 16;
-static constexpr uint64_t CALL_COST = 64;
 static constexpr uint64_t SEND_COST = 1024;
 static constexpr uint64_t MINT_COST = 512;
 static constexpr uint64_t WRITE_COST = 16;
@@ -79,7 +78,6 @@ public:
 	uint64_t total_cost = 0;
 
 	uint64_t num_instr = 0;
-	uint64_t num_calls = 0;
 	uint64_t num_write = 0;
 	uint64_t num_bytes_write = 0;
 	uint64_t num_bytes_sha256 = 0;
