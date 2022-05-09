@@ -5,8 +5,10 @@
 #define INCLUDE_mmx_operation_Execute_HXX_
 
 #include <mmx/operation/package.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/Operation.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/hash_t.hpp>
 #include <vnx/Variant.hpp>
 
 
@@ -32,6 +34,10 @@ public:
 	vnx::Hash64 get_type_hash() const override;
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
+	
+	virtual vnx::bool_t is_valid() const override;
+	virtual ::mmx::hash_t calc_hash() const override;
+	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	
 	static std::shared_ptr<Execute> create();
 	std::shared_ptr<vnx::Value> clone() const override;

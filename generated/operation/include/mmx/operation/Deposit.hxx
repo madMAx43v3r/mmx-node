@@ -33,8 +33,8 @@ public:
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
 	
-	virtual vnx::bool_t is_valid() const;
-	virtual ::mmx::hash_t calc_hash() const;
+	virtual vnx::bool_t is_valid() const override;
+	virtual ::mmx::hash_t calc_hash() const override;
 	
 	static std::shared_ptr<Deposit> create();
 	std::shared_ptr<vnx::Value> clone() const override;

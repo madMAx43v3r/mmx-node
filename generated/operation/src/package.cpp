@@ -7,6 +7,12 @@
 #include <mmx/operation/Deposit_is_valid.hxx>
 #include <mmx/operation/Deposit_is_valid_return.hxx>
 #include <mmx/operation/Execute.hxx>
+#include <mmx/operation/Execute_calc_cost.hxx>
+#include <mmx/operation/Execute_calc_cost_return.hxx>
+#include <mmx/operation/Execute_calc_hash.hxx>
+#include <mmx/operation/Execute_calc_hash_return.hxx>
+#include <mmx/operation/Execute_is_valid.hxx>
+#include <mmx/operation/Execute_is_valid_return.hxx>
 #include <mmx/operation/Mint.hxx>
 #include <mmx/operation/Mint_calc_hash.hxx>
 #include <mmx/operation/Mint_calc_hash_return.hxx>
@@ -18,6 +24,8 @@
 #include <mmx/operation/Mutate_calc_hash.hxx>
 #include <mmx/operation/Mutate_calc_hash_return.hxx>
 #include <mmx/operation/Revoke.hxx>
+#include <mmx/operation/Revoke_calc_hash.hxx>
+#include <mmx/operation/Revoke_calc_hash_return.hxx>
 #include <mmx/operation/Spend.hxx>
 #include <mmx/operation/Spend_calc_hash.hxx>
 #include <mmx/operation/Spend_calc_hash_return.hxx>
@@ -101,6 +109,78 @@ void type<::mmx::operation::Execute>::create_dynamic_code(std::vector<uint16_t>&
 }
 
 void type<::mmx::operation::Execute>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Execute& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::operation::Execute_calc_cost>::get_type_code() {
+	return mmx::operation::vnx_native_type_code_Execute_calc_cost;
+}
+
+void type<::mmx::operation::Execute_calc_cost>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::operation::Execute_calc_cost());
+}
+
+void type<::mmx::operation::Execute_calc_cost>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Execute_calc_cost& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::operation::Execute_calc_cost_return>::get_type_code() {
+	return mmx::operation::vnx_native_type_code_Execute_calc_cost_return;
+}
+
+void type<::mmx::operation::Execute_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::operation::Execute_calc_cost_return());
+}
+
+void type<::mmx::operation::Execute_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Execute_calc_cost_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::operation::Execute_calc_hash>::get_type_code() {
+	return mmx::operation::vnx_native_type_code_Execute_calc_hash;
+}
+
+void type<::mmx::operation::Execute_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::operation::Execute_calc_hash());
+}
+
+void type<::mmx::operation::Execute_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Execute_calc_hash& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::operation::Execute_calc_hash_return>::get_type_code() {
+	return mmx::operation::vnx_native_type_code_Execute_calc_hash_return;
+}
+
+void type<::mmx::operation::Execute_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::operation::Execute_calc_hash_return());
+}
+
+void type<::mmx::operation::Execute_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Execute_calc_hash_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::operation::Execute_is_valid>::get_type_code() {
+	return mmx::operation::vnx_native_type_code_Execute_is_valid;
+}
+
+void type<::mmx::operation::Execute_is_valid>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::operation::Execute_is_valid());
+}
+
+void type<::mmx::operation::Execute_is_valid>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Execute_is_valid& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::operation::Execute_is_valid_return>::get_type_code() {
+	return mmx::operation::vnx_native_type_code_Execute_is_valid_return;
+}
+
+void type<::mmx::operation::Execute_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::operation::Execute_is_valid_return());
+}
+
+void type<::mmx::operation::Execute_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Execute_is_valid_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -236,6 +316,30 @@ void type<::mmx::operation::Revoke>::create_dynamic_code(std::vector<uint16_t>& 
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::operation::Revoke_calc_hash>::get_type_code() {
+	return mmx::operation::vnx_native_type_code_Revoke_calc_hash;
+}
+
+void type<::mmx::operation::Revoke_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::operation::Revoke_calc_hash());
+}
+
+void type<::mmx::operation::Revoke_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Revoke_calc_hash& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::operation::Revoke_calc_hash_return>::get_type_code() {
+	return mmx::operation::vnx_native_type_code_Revoke_calc_hash_return;
+}
+
+void type<::mmx::operation::Revoke_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::operation::Revoke_calc_hash_return());
+}
+
+void type<::mmx::operation::Revoke_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Revoke_calc_hash_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::operation::Spend>::get_type_code() {
 	return mmx::operation::vnx_native_type_code_Spend;
 }
@@ -323,6 +427,12 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::operation::Deposit_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::operation::Deposit_is_valid_return::static_create_type_code());
 	vnx::register_type_code(::mmx::operation::Execute::static_create_type_code());
+	vnx::register_type_code(::mmx::operation::Execute_calc_cost::static_create_type_code());
+	vnx::register_type_code(::mmx::operation::Execute_calc_cost_return::static_create_type_code());
+	vnx::register_type_code(::mmx::operation::Execute_calc_hash::static_create_type_code());
+	vnx::register_type_code(::mmx::operation::Execute_calc_hash_return::static_create_type_code());
+	vnx::register_type_code(::mmx::operation::Execute_is_valid::static_create_type_code());
+	vnx::register_type_code(::mmx::operation::Execute_is_valid_return::static_create_type_code());
 	vnx::register_type_code(::mmx::operation::Mint::static_create_type_code());
 	vnx::register_type_code(::mmx::operation::Mint_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::operation::Mint_calc_hash_return::static_create_type_code());
@@ -334,6 +444,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::operation::Mutate_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::operation::Mutate_calc_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::operation::Revoke::static_create_type_code());
+	vnx::register_type_code(::mmx::operation::Revoke_calc_hash::static_create_type_code());
+	vnx::register_type_code(::mmx::operation::Revoke_calc_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::operation::Spend::static_create_type_code());
 	vnx::register_type_code(::mmx::operation::Spend_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::operation::Spend_calc_hash_return::static_create_type_code());
@@ -354,6 +466,12 @@ const vnx::TypeCode* const vnx_native_type_code_Deposit_calc_hash_return = vnx::
 const vnx::TypeCode* const vnx_native_type_code_Deposit_is_valid = vnx::get_type_code(vnx::Hash64(0x3b22c556a0cbcfd0ull));
 const vnx::TypeCode* const vnx_native_type_code_Deposit_is_valid_return = vnx::get_type_code(vnx::Hash64(0x2e61222b75beb7c8ull));
 const vnx::TypeCode* const vnx_native_type_code_Execute = vnx::get_type_code(vnx::Hash64(0x8cd9012d9098c1d1ull));
+const vnx::TypeCode* const vnx_native_type_code_Execute_calc_cost = vnx::get_type_code(vnx::Hash64(0x86d9fdad63fe7567ull));
+const vnx::TypeCode* const vnx_native_type_code_Execute_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xcea7676edcad6f07ull));
+const vnx::TypeCode* const vnx_native_type_code_Execute_calc_hash = vnx::get_type_code(vnx::Hash64(0x56cb36cb066c0198ull));
+const vnx::TypeCode* const vnx_native_type_code_Execute_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xb5f13a625a72027bull));
+const vnx::TypeCode* const vnx_native_type_code_Execute_is_valid = vnx::get_type_code(vnx::Hash64(0x172377d5b2daeda3ull));
+const vnx::TypeCode* const vnx_native_type_code_Execute_is_valid_return = vnx::get_type_code(vnx::Hash64(0xa739a4ce26de045ull));
 const vnx::TypeCode* const vnx_native_type_code_Mint = vnx::get_type_code(vnx::Hash64(0x936aeac3aa6373c0ull));
 const vnx::TypeCode* const vnx_native_type_code_Mint_calc_hash = vnx::get_type_code(vnx::Hash64(0xf916632c29371b49ull));
 const vnx::TypeCode* const vnx_native_type_code_Mint_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xa5d0ca626c2642f3ull));
@@ -365,6 +483,8 @@ const vnx::TypeCode* const vnx_native_type_code_Mutate_calc_cost_return = vnx::g
 const vnx::TypeCode* const vnx_native_type_code_Mutate_calc_hash = vnx::get_type_code(vnx::Hash64(0x77e4cc572eca1ff6ull));
 const vnx::TypeCode* const vnx_native_type_code_Mutate_calc_hash_return = vnx::get_type_code(vnx::Hash64(0x922e207282f9aa82ull));
 const vnx::TypeCode* const vnx_native_type_code_Revoke = vnx::get_type_code(vnx::Hash64(0xa8f48fce29a667d8ull));
+const vnx::TypeCode* const vnx_native_type_code_Revoke_calc_hash = vnx::get_type_code(vnx::Hash64(0x8449177cbcd7fc9cull));
+const vnx::TypeCode* const vnx_native_type_code_Revoke_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xf1b8f62d880c6b2cull));
 const vnx::TypeCode* const vnx_native_type_code_Spend = vnx::get_type_code(vnx::Hash64(0xfa01bec4331109c3ull));
 const vnx::TypeCode* const vnx_native_type_code_Spend_calc_hash = vnx::get_type_code(vnx::Hash64(0xb003cc8eafc55c09ull));
 const vnx::TypeCode* const vnx_native_type_code_Spend_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xbdcae3a6c3ba9dd8ull));

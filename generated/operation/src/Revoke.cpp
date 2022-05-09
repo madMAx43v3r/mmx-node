@@ -11,6 +11,8 @@
 #include <mmx/Operation_is_valid.hxx>
 #include <mmx/Operation_is_valid_return.hxx>
 #include <mmx/hash_t.hpp>
+#include <mmx/operation/Revoke_calc_hash.hxx>
+#include <mmx/operation/Revoke_calc_hash_return.hxx>
 
 #include <vnx/vnx.h>
 
@@ -158,10 +160,11 @@ std::shared_ptr<vnx::TypeCode> Revoke::static_create_type_code() {
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Operation::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Revoke>(); };
-	type_code->methods.resize(3);
+	type_code->methods.resize(4);
 	type_code->methods[0] = ::mmx::Operation_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Operation_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Operation_is_valid::static_get_type_code();
+	type_code->methods[3] = ::mmx::operation::Revoke_calc_hash::static_get_type_code();
 	type_code->fields.resize(4);
 	{
 		auto& field = type_code->fields[0];
@@ -209,6 +212,12 @@ std::shared_ptr<vnx::Value> Revoke::vnx_call_switch(std::shared_ptr<const vnx::V
 			auto _args = std::static_pointer_cast<const ::mmx::Operation_is_valid>(_method);
 			auto _return_value = ::mmx::Operation_is_valid_return::create();
 			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+		case 0x8449177cbcd7fc9cull: {
+			auto _args = std::static_pointer_cast<const ::mmx::operation::Revoke_calc_hash>(_method);
+			auto _return_value = ::mmx::operation::Revoke_calc_hash_return::create();
+			_return_value->_ret_0 = calc_hash();
 			return _return_value;
 		}
 	}

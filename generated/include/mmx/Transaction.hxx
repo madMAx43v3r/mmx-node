@@ -21,7 +21,7 @@ namespace mmx {
 
 class MMX_EXPORT Transaction : public ::mmx::TransactionBase {
 public:
-	static const uint32_t MAX_SOLUTIONS = 254;
+	static const uint32_t MAX_SOLUTIONS = 255;
 	
 	uint32_t version = 0;
 	uint32_t expires = -1;
