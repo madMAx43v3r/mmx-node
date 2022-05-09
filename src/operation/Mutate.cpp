@@ -29,7 +29,7 @@ hash_t Mutate::calc_hash() const
 
 uint64_t Mutate::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	uint32_t payload = 0;
+	uint64_t payload = 0;
 	for(const auto& entry : method.field) {
 		payload += entry.first.size();
 		payload += entry.second.data.size();

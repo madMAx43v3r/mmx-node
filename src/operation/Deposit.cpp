@@ -26,7 +26,9 @@ hash_t Deposit::calc_hash() const
 	write_bytes(out, get_type_hash());
 	write_field(out, "version", 	version);
 	write_field(out, "address", 	address);
-	// TODO
+	write_field(out, "user", 		user);
+	write_field(out, "method", 		method);
+	write_field(out, "args", 		args);
 	write_field(out, "currency", 	currency);
 	write_field(out, "amount", 		amount);
 	write_field(out, "sender", 		sender);
