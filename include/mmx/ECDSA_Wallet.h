@@ -199,19 +199,21 @@ public:
 		uint64_t paid_fee = 0;
 		while(true) {
 			std::unordered_map<addr_t, uint64_t> spend_cost;
-			std::shared_ptr<const Transaction> parent = tx;
-			while(parent) {
-				for(const auto& in : parent->inputs)
-				{
-					addr_t owner = in.address;
-					auto iter = options.owner_map.find(owner);
-					if(iter != options.owner_map.end()) {
-						spend_cost[iter->second] += params->min_txfee_exec;
-					} else {
-						spend_cost.emplace(owner, 0);
+			{
+				std::shared_ptr<const Transaction> parent = tx;
+				while(parent) {
+					for(const auto& in : parent->inputs)
+					{
+						addr_t owner = in.address;
+						auto iter = options.owner_map.find(owner);
+						if(iter != options.owner_map.end()) {
+							spend_cost[iter->second] += params->min_txfee_exec;
+						} else {
+							spend_cost.emplace(owner, 0);
+						}
 					}
+					parent = parent->parent;
 				}
-				parent = parent->parent;
 			}
 			// TODO: check for multi-sig via options.contract_map
 			uint64_t tx_fees = tx->calc_cost(params)
