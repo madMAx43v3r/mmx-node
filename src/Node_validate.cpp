@@ -283,9 +283,19 @@ void set_deposit(std::shared_ptr<vm::Engine> engine, const txout_t& deposit)
 }
 
 void load(	std::shared_ptr<vm::Engine> engine,
-			std::shared_ptr<const contract::Executable> executable)
+			std::shared_ptr<const contract::Executable> data)
 {
-	// TODO
+	uint64_t dst = 0;
+	size_t offset = 0;
+	while(offset < data->constant.size()) {
+		vm::var_t* var = nullptr;
+		offset += vm::deserialize(var, data->constant.data() + offset, data->constant.size() - offset, false, false);
+		if(dst >= vm::MEM_EXTERN) {
+			throw std::runtime_error("constant memory overflow");
+		}
+		engine->assign(dst++, var);
+	}
+	vm::deserialize(engine->code, data->binary.data(), data->binary.size());
 	engine->init();
 }
 
