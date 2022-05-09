@@ -34,7 +34,7 @@ class Transaction extends TransactionBase {
 	
 	bool is_extendable;
 	
-	static const uint MAX_SOLUTIONS = 254;
+	static const uint MAX_SOLUTIONS = 255;
 	
 	
 	void finalize();

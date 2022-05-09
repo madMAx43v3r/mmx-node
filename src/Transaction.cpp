@@ -47,7 +47,8 @@ vnx::bool_t Transaction::is_valid() const
 			return false;
 		}
 	}
-	return version == 0 && fee_ratio >= 1024 && nonce && (!parent || parent->is_valid()) && calc_hash() == id;
+	return version == 0 && fee_ratio >= 1024 && nonce && solutions.size() <= MAX_SOLUTIONS
+			&& (!parent || parent->is_valid()) && calc_hash() == id;
 }
 
 hash_t Transaction::calc_hash() const
