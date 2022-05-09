@@ -17,7 +17,7 @@ StorageProxy::StorageProxy(std::shared_ptr<Storage> backend, bool read_only)
 {
 }
 
-var_t* StorageProxy::read_ex(var_t* var, const uint64_t src, const uint64_t* key) const
+var_t* StorageProxy::read_ex(var_t* var) const
 {
 	if(var) {
 		if(var->flags & FLAG_DELETED) {
@@ -39,12 +39,12 @@ var_t* StorageProxy::read_ex(var_t* var, const uint64_t src, const uint64_t* key
 
 var_t* StorageProxy::read(const addr_t& contract, const uint64_t src) const
 {
-	return read_ex(backend->read(contract, src), src);
+	return read_ex(backend->read(contract, src));
 }
 
 var_t* StorageProxy::read(const addr_t& contract, const uint64_t src, const uint64_t key) const
 {
-	return read_ex(backend->read(contract, src, key), src, &key);
+	return read_ex(backend->read(contract, src, key));
 }
 
 void StorageProxy::write(const addr_t& contract, const uint64_t dst, const var_t& value)

@@ -37,7 +37,7 @@ public:
 	uint64_t lookup(const addr_t& contract, const var_t& value) const override;
 
 private:
-	var_t* read_ex(var_t* var, const uint64_t src, const uint64_t* key = nullptr) const;
+	var_t* read_ex(var_t* var) const;
 
 };
 
