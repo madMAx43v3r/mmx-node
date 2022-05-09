@@ -568,7 +568,22 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 			mmx::execute(engine, *method, execute->args);
 			tx_cost += engine->total_cost;
 
-			// TODO: engine outputs + mint_outputs + state->balance
+			for(const auto& out : engine->outputs)
+			{
+				auto& amount = state->balance[out.contract];
+				if(out.amount > amount) {
+					throw std::logic_error("contract over-spend");
+				}
+				amount -= out.amount;
+
+				txin_t in;
+				in.address = op->address;
+				in.contract = out.contract;
+				in.amount = out.amount;
+				exec_inputs.push_back(in);
+				exec_outputs.push_back(out);
+			}
+			exec_outputs.insert(exec_outputs.end(), engine->mint_outputs.begin(), engine->mint_outputs.end());
 		}
 	}
 	if(tx->deploy) {
