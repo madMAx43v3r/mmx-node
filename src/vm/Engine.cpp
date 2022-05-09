@@ -745,9 +745,7 @@ void Engine::erase(const uint64_t addr, const uint64_t key, const uint8_t flags)
 			erase_key(addr, key);
 			break;
 		default:
-			if(flags & OPFLAG_HARD_FAIL) {
-				throw std::logic_error("invalid type");
-			}
+			throw std::logic_error("invalid type");
 	}
 }
 
