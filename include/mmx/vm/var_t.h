@@ -49,6 +49,12 @@ enum vartype_e : uint8_t {
 	TYPE_ARRAY,
 	TYPE_MAP,
 
+	TYPE_UINT16,
+	TYPE_UINT32,
+	TYPE_UINT64,
+	TYPE_UINT128,
+	TYPE_UINT256,
+
 };
 
 struct var_t {

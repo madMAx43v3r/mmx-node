@@ -31,8 +31,9 @@ var_t* clone(const var_t& src)
 			return new array_t((const array_t&)src);
 		case TYPE_MAP:
 			return new map_t((const map_t&)src);
+		default:
+			return nullptr;
 	}
-	return nullptr;
 }
 
 var_t* clone(const var_t* var)
@@ -137,9 +138,36 @@ std::pair<uint8_t*, size_t> serialize(const var_t& src, bool with_rc, bool with_
 		case TYPE_REF:
 			::memcpy(data + offset, &((const ref_t&)src).address, 8); offset += 8;
 			break;
-		case TYPE_UINT:
-			::memcpy(data + offset, &((const uint_t&)src).value, 32); offset += 32;
+		case TYPE_UINT: {
+			const auto& val_256 = ((const uint_t&)src).value;
+			if(val_256.upper()) {
+				data[offset - 1] = TYPE_UINT256;
+				::memcpy(data + offset, &val_256, 32); offset += 32;
+			} else {
+				const auto& val_128 = val_256.lower();
+				if(val_128.upper()) {
+					data[offset - 1] = TYPE_UINT128;
+					::memcpy(data + offset, &val_128, 16); offset += 16;
+				} else {
+					const auto& val_64 = val_128.lower();
+					if(val_64 >> 32) {
+						data[offset - 1] = TYPE_UINT64;
+						::memcpy(data + offset, &val_64, 8); offset += 8;
+					} else {
+						const uint32_t val_32 = val_64;
+						if(val_32 >> 16) {
+							data[offset - 1] = TYPE_UINT32;
+							::memcpy(data + offset, &val_32, 4); offset += 4;
+						} else {
+							const uint16_t val_16 = val_32;
+							data[offset - 1] = TYPE_UINT16;
+							::memcpy(data + offset, &val_16, 2); offset += 2;
+						}
+					}
+				}
+			}
 			break;
+		}
 		case TYPE_STRING:
 		case TYPE_BINARY: {
 			const auto& bin = (const binary_t&)src;
@@ -156,7 +184,7 @@ std::pair<uint8_t*, size_t> serialize(const var_t& src, bool with_rc, bool with_
 			break;
 		default: break;
 	}
-	return std::make_pair(data, length);
+	return std::make_pair(data, offset);
 }
 
 size_t deserialize(var_t*& out, const void* data_, const size_t length, bool with_rc, bool with_vf)
@@ -198,12 +226,53 @@ size_t deserialize(var_t*& out, const void* data_, const size_t length, bool wit
 			out = var;
 			break;
 		}
-		case TYPE_UINT: {
-			if(length < offset + 32) {
+		case TYPE_UINT:
+		case TYPE_UINT16:
+		case TYPE_UINT32:
+		case TYPE_UINT64:
+		case TYPE_UINT128:
+		case TYPE_UINT256: {
+			size_t size = 32;
+			switch(type) {
+				case TYPE_UINT16:  size = 2; break;
+				case TYPE_UINT32:  size = 4; break;
+				case TYPE_UINT64:  size = 8; break;
+				case TYPE_UINT128: size = 16; break;
+				default: break;
+			}
+			if(length < offset + size) {
 				throw std::runtime_error("unexpected eof");
 			}
 			auto var = new uint_t();
-			::memcpy(&var->value, data + offset, 32); offset += 32;
+			switch(type) {
+				case TYPE_UINT16: {
+					uint16_t tmp = 0;
+					::memcpy(&tmp, data + offset, size);
+					var->value = tmp;
+					break;
+				}
+				case TYPE_UINT32: {
+					uint32_t tmp = 0;
+					::memcpy(&tmp, data + offset, size);
+					var->value = tmp;
+					break;
+				}
+				case TYPE_UINT64: {
+					uint64_t tmp = 0;
+					::memcpy(&tmp, data + offset, size);
+					var->value = tmp;
+					break;
+				}
+				case TYPE_UINT128: {
+					uint128_t tmp = 0;
+					::memcpy(&tmp, data + offset, size);
+					var->value = uint256_t(tmp);
+					break;
+				}
+				default:
+					::memcpy(&var->value, data + offset, size);
+			}
+			offset += size;
 			out = var;
 			break;
 		}
