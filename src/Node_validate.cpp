@@ -10,6 +10,7 @@
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/contract/Executable.hxx>
 #include <mmx/operation/Spend.hxx>
+#include <mmx/operation/Mint.hxx>
 #include <mmx/operation/Mutate.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
@@ -578,9 +579,11 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 		{
 			const auto creator = get_contract_for(nft->creator);
 			{
-				auto op = Operation::create();
-				op->address = nft->creator;
+				auto op = operation::Mint::create();
+				op->address = tx->id;
 				op->solution = nft->solution;
+				op->target = nft->creator;
+				op->amount = 1;
 				creator->validate(op, create_context(context->block, creator, tx));
 			}
 			txout_t out;
