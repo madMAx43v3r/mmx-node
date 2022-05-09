@@ -283,19 +283,20 @@ void set_deposit(std::shared_ptr<vm::Engine> engine, const txout_t& deposit)
 }
 
 void load(	std::shared_ptr<vm::Engine> engine,
-			std::shared_ptr<const contract::Executable> data)
+			const void* constant, const size_t constant_size,
+			const void* binary, const size_t binary_size)
 {
 	uint64_t dst = 0;
 	size_t offset = 0;
-	while(offset < data->constant.size()) {
+	while(offset < constant_size) {
 		vm::var_t* var = nullptr;
-		offset += vm::deserialize(var, data->constant.data() + offset, data->constant.size() - offset, false, false);
+		offset += vm::deserialize(var, ((const uint8_t*)constant) + offset, constant_size - offset, false, false);
 		if(dst >= vm::MEM_EXTERN) {
 			throw std::runtime_error("constant memory overflow");
 		}
 		engine->assign(dst++, var);
 	}
-	vm::deserialize(engine->code, data->binary.data(), data->binary.size());
+	vm::deserialize(engine->code, binary, binary_size);
 	engine->init();
 }
 
@@ -303,9 +304,6 @@ void execute(	std::shared_ptr<vm::Engine> engine,
 				const contract::method_t& method,
 				const std::vector<vnx::Variant>& args)
 {
-	engine->total_cost = 0;
-	engine->clear_stack();
-
 	// TODO
 	engine->begin(method.entry_point);
 	engine->run();
@@ -537,7 +535,8 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 				storage_cache = std::make_shared<vm::StorageCache>(context->storage);
 			}
 			auto engine = std::make_shared<vm::Engine>(op->address, storage_cache, false);
-			mmx::load(engine, executable);
+			mmx::load(engine, 	executable->constant.data(), executable->constant.size(),
+								executable->binary.data(), executable->binary.size());
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(context->block->height));
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::uint_t(tx->id));
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::uint_t(execute->user));
