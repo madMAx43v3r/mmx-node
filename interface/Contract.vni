@@ -13,8 +13,6 @@ class Contract {
 	
 	vector<addr_t> get_dependency() const;
 	
-	vector<addr_t> get_parties() const;
-	
 	optional<addr_t> get_owner() const;
 	
 	vector<txout_t> validate(Operation* operation, Context* context) const;

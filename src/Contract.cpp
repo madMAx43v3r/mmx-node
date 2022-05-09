@@ -37,10 +37,6 @@ std::vector<addr_t> Contract::get_dependency() const {
 	return {};
 }
 
-std::vector<addr_t> Contract::get_parties() const {
-	return {};
-}
-
 vnx::optional<addr_t> Contract::get_owner() const {
 	return nullptr;
 }

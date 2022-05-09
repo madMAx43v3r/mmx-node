@@ -18,8 +18,6 @@ class MultiSig extends mmx.Contract {
 	
 	ulong calc_cost(mmx.ChainParams* params) const;
 	
-	vector<addr_t> get_parties() const;
-	
 	vector<mmx.txout_t> validate(mmx.Operation* operation, mmx.Context* context) const;
 	
 	void add_owner(addr_t address);

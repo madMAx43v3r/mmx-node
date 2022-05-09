@@ -38,10 +38,6 @@ uint64_t MultiSig::calc_cost(std::shared_ptr<const ChainParams> params) const
 	return 32 * owners.size() * params->min_txfee_byte;
 }
 
-std::vector<addr_t> MultiSig::get_parties() const {
-	return owners;
-}
-
 std::vector<txout_t> MultiSig::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
 	if(auto solution = std::dynamic_pointer_cast<const solution::PubKey>(operation->solution))

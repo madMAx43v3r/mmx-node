@@ -41,10 +41,6 @@ std::vector<addr_t> TimeLock::get_dependency() const {
 	return {owner};
 }
 
-std::vector<addr_t> TimeLock::get_parties() const {
-	return {owner};
-}
-
 vnx::optional<addr_t> TimeLock::get_owner() const {
 	return owner;
 }

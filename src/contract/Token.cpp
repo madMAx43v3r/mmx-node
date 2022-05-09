@@ -44,10 +44,6 @@ std::vector<addr_t> Token::get_dependency() const {
 	return {};
 }
 
-std::vector<addr_t> Token::get_parties() const {
-	return get_dependency();
-}
-
 vnx::optional<addr_t> Token::get_owner() const {
 	return owner;
 }

@@ -50,10 +50,6 @@ std::vector<addr_t> MutableRelay::get_dependency() const {
 	return {owner};
 }
 
-std::vector<addr_t> MutableRelay::get_parties() const {
-	return get_dependency();
-}
-
 vnx::optional<addr_t> MutableRelay::get_owner() const {
 	return owner;
 }

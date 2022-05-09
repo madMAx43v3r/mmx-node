@@ -15,8 +15,6 @@ class Token extends TokenBase {
 	
 	vector<addr_t> get_dependency() const;
 	
-	vector<addr_t> get_parties() const;
-	
 	optional<addr_t> get_owner() const;
 	
 	vector<mmx.txout_t> validate(mmx.Operation* operation, mmx.Context* context) const;

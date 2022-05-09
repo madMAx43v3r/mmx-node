@@ -46,10 +46,6 @@ std::vector<addr_t> PuzzleTimeLock::get_dependency() const {
 	return {owner, target};
 }
 
-std::vector<addr_t> PuzzleTimeLock::get_parties() const {
-	return {owner, target};
-}
-
 std::vector<txout_t> PuzzleTimeLock::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
 	if(auto claim = std::dynamic_pointer_cast<const solution::PuzzleTimeLock>(operation->solution))
