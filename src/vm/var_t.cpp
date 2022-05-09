@@ -219,9 +219,8 @@ size_t deserialize(var_t*& out, const void* data_, const size_t length, bool wit
 			}
 			auto bin = binary_t::unsafe_alloc(size, type);
 			bin->size = size;
-			::memcpy(bin->data(), data + offset, bin->size);
+			::memcpy(bin->data(), data + offset, bin->size); offset += size;
 			::memset(bin->data(bin->size), 0, bin->capacity - bin->size);
-			offset += size;
 			out = bin;
 			break;
 		}
@@ -231,7 +230,7 @@ size_t deserialize(var_t*& out, const void* data_, const size_t length, bool wit
 			}
 			auto var = new array_t();
 			::memcpy(&var->address, data + offset, 8); offset += 8;
-			::memcpy(&var->size, data + offset, 8); offset += 4;
+			::memcpy(&var->size, data + offset, 4); offset += 4;
 			out = var;
 			break;
 		}
