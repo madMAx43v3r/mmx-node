@@ -13,8 +13,6 @@
 #include <mmx/Contract_get_dependency_return.hxx>
 #include <mmx/Contract_get_owner.hxx>
 #include <mmx/Contract_get_owner_return.hxx>
-#include <mmx/Contract_get_parties.hxx>
-#include <mmx/Contract_get_parties_return.hxx>
 #include <mmx/Contract_is_valid.hxx>
 #include <mmx/Contract_is_valid_return.hxx>
 #include <mmx/Contract_transfer.hxx>
@@ -196,18 +194,17 @@ std::shared_ptr<vnx::TypeCode> TokenBase::static_create_type_code() {
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<TokenBase>(); };
-	type_code->methods.resize(11);
+	type_code->methods.resize(10);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_dependency::static_get_type_code();
 	type_code->methods[3] = ::mmx::Contract_get_owner::static_get_type_code();
-	type_code->methods[4] = ::mmx::Contract_get_parties::static_get_type_code();
-	type_code->methods[5] = ::mmx::Contract_is_valid::static_get_type_code();
-	type_code->methods[6] = ::mmx::Contract_transfer::static_get_type_code();
-	type_code->methods[7] = ::mmx::Contract_validate::static_get_type_code();
-	type_code->methods[8] = ::mmx::contract::TokenBase_calc_cost::static_get_type_code();
-	type_code->methods[9] = ::mmx::contract::TokenBase_calc_hash::static_get_type_code();
-	type_code->methods[10] = ::mmx::contract::TokenBase_is_valid::static_get_type_code();
+	type_code->methods[4] = ::mmx::Contract_is_valid::static_get_type_code();
+	type_code->methods[5] = ::mmx::Contract_transfer::static_get_type_code();
+	type_code->methods[6] = ::mmx::Contract_validate::static_get_type_code();
+	type_code->methods[7] = ::mmx::contract::TokenBase_calc_cost::static_get_type_code();
+	type_code->methods[8] = ::mmx::contract::TokenBase_calc_hash::static_get_type_code();
+	type_code->methods[9] = ::mmx::contract::TokenBase_is_valid::static_get_type_code();
 	type_code->fields.resize(6);
 	{
 		auto& field = type_code->fields[0];
@@ -274,12 +271,6 @@ std::shared_ptr<vnx::Value> TokenBase::vnx_call_switch(std::shared_ptr<const vnx
 			auto _args = std::static_pointer_cast<const ::mmx::Contract_get_owner>(_method);
 			auto _return_value = ::mmx::Contract_get_owner_return::create();
 			_return_value->_ret_0 = get_owner();
-			return _return_value;
-		}
-		case 0x6f7a46e940a18a57ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_get_parties>(_method);
-			auto _return_value = ::mmx::Contract_get_parties_return::create();
-			_return_value->_ret_0 = get_parties();
 			return _return_value;
 		}
 		case 0xe3adf9b29a723217ull: {

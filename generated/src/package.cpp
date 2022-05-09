@@ -39,8 +39,6 @@
 #include <mmx/Contract_get_dependency_return.hxx>
 #include <mmx/Contract_get_owner.hxx>
 #include <mmx/Contract_get_owner_return.hxx>
-#include <mmx/Contract_get_parties.hxx>
-#include <mmx/Contract_get_parties_return.hxx>
 #include <mmx/Contract_is_valid.hxx>
 #include <mmx/Contract_is_valid_return.hxx>
 #include <mmx/Contract_transfer.hxx>
@@ -817,30 +815,6 @@ void type<::mmx::Contract_get_owner_return>::create_dynamic_code(std::vector<uin
 }
 
 void type<::mmx::Contract_get_owner_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Contract_get_owner_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::Contract_get_parties>::get_type_code() {
-	return mmx::vnx_native_type_code_Contract_get_parties;
-}
-
-void type<::mmx::Contract_get_parties>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::Contract_get_parties());
-}
-
-void type<::mmx::Contract_get_parties>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Contract_get_parties& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::Contract_get_parties_return>::get_type_code() {
-	return mmx::vnx_native_type_code_Contract_get_parties_return;
-}
-
-void type<::mmx::Contract_get_parties_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::Contract_get_parties_return());
-}
-
-void type<::mmx::Contract_get_parties_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Contract_get_parties_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -4590,8 +4564,6 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Contract_get_dependency_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Contract_get_owner::static_create_type_code());
 	vnx::register_type_code(::mmx::Contract_get_owner_return::static_create_type_code());
-	vnx::register_type_code(::mmx::Contract_get_parties::static_create_type_code());
-	vnx::register_type_code(::mmx::Contract_get_parties_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Contract_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::Contract_is_valid_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Contract_transfer::static_create_type_code());
@@ -4945,8 +4917,6 @@ const vnx::TypeCode* const vnx_native_type_code_Contract_get_dependency = vnx::g
 const vnx::TypeCode* const vnx_native_type_code_Contract_get_dependency_return = vnx::get_type_code(vnx::Hash64(0x6c9f13b65e090bc0ull));
 const vnx::TypeCode* const vnx_native_type_code_Contract_get_owner = vnx::get_type_code(vnx::Hash64(0x8fe2c64fdc8f0680ull));
 const vnx::TypeCode* const vnx_native_type_code_Contract_get_owner_return = vnx::get_type_code(vnx::Hash64(0x5653cc8e598701aull));
-const vnx::TypeCode* const vnx_native_type_code_Contract_get_parties = vnx::get_type_code(vnx::Hash64(0x6f7a46e940a18a57ull));
-const vnx::TypeCode* const vnx_native_type_code_Contract_get_parties_return = vnx::get_type_code(vnx::Hash64(0xcc4c976d288371cbull));
 const vnx::TypeCode* const vnx_native_type_code_Contract_is_valid = vnx::get_type_code(vnx::Hash64(0xe3adf9b29a723217ull));
 const vnx::TypeCode* const vnx_native_type_code_Contract_is_valid_return = vnx::get_type_code(vnx::Hash64(0xfd57da6c8c9d2940ull));
 const vnx::TypeCode* const vnx_native_type_code_Contract_transfer = vnx::get_type_code(vnx::Hash64(0xd41bec275faff1ffull));
