@@ -19,10 +19,10 @@
 #include <mmx/Transaction_finalize_return.hxx>
 #include <mmx/Transaction_get_all_inputs.hxx>
 #include <mmx/Transaction_get_all_inputs_return.hxx>
+#include <mmx/Transaction_get_all_operations.hxx>
+#include <mmx/Transaction_get_all_operations_return.hxx>
 #include <mmx/Transaction_get_all_outputs.hxx>
 #include <mmx/Transaction_get_all_outputs_return.hxx>
-#include <mmx/Transaction_get_combined.hxx>
-#include <mmx/Transaction_get_combined_return.hxx>
 #include <mmx/Transaction_get_inputs.hxx>
 #include <mmx/Transaction_get_inputs_return.hxx>
 #include <mmx/Transaction_get_output.hxx>
@@ -334,8 +334,8 @@ std::shared_ptr<vnx::TypeCode> Transaction::static_create_type_code() {
 	type_code->methods[3] = ::mmx::Transaction_calc_hash::static_get_type_code();
 	type_code->methods[4] = ::mmx::Transaction_finalize::static_get_type_code();
 	type_code->methods[5] = ::mmx::Transaction_get_all_inputs::static_get_type_code();
-	type_code->methods[6] = ::mmx::Transaction_get_all_outputs::static_get_type_code();
-	type_code->methods[7] = ::mmx::Transaction_get_combined::static_get_type_code();
+	type_code->methods[6] = ::mmx::Transaction_get_all_operations::static_get_type_code();
+	type_code->methods[7] = ::mmx::Transaction_get_all_outputs::static_get_type_code();
 	type_code->methods[8] = ::mmx::Transaction_get_inputs::static_get_type_code();
 	type_code->methods[9] = ::mmx::Transaction_get_output::static_get_type_code();
 	type_code->methods[10] = ::mmx::Transaction_get_outputs::static_get_type_code();
@@ -492,16 +492,16 @@ std::shared_ptr<vnx::Value> Transaction::vnx_call_switch(std::shared_ptr<const v
 			_return_value->_ret_0 = get_all_inputs();
 			return _return_value;
 		}
+		case 0xd780f64dfbd92e32ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Transaction_get_all_operations>(_method);
+			auto _return_value = ::mmx::Transaction_get_all_operations_return::create();
+			_return_value->_ret_0 = get_all_operations();
+			return _return_value;
+		}
 		case 0x450d1b5d483217a6ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Transaction_get_all_outputs>(_method);
 			auto _return_value = ::mmx::Transaction_get_all_outputs_return::create();
 			_return_value->_ret_0 = get_all_outputs();
-			return _return_value;
-		}
-		case 0x2c8ec4ee8bb53a69ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Transaction_get_combined>(_method);
-			auto _return_value = ::mmx::Transaction_get_combined_return::create();
-			_return_value->_ret_0 = get_combined();
 			return _return_value;
 		}
 		case 0xe331dbd53bb4762eull: {

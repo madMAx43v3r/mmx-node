@@ -6,6 +6,7 @@
 
 #include <mmx/operation/package.hxx>
 #include <mmx/Operation.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/uint128.hpp>
 
@@ -16,6 +17,7 @@ namespace operation {
 class MMX_OPERATION_EXPORT Spend : public ::mmx::Operation {
 public:
 	
+	::mmx::addr_t currency;
 	::mmx::uint128 balance;
 	uint64_t amount = 0;
 	
@@ -66,13 +68,14 @@ protected:
 
 template<typename T>
 void Spend::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Spend>(5);
+	_visitor.template type_begin<Spend>(6);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("address", 1); _visitor.accept(address);
 	_visitor.type_field("solution", 2); _visitor.accept(solution);
-	_visitor.type_field("balance", 3); _visitor.accept(balance);
-	_visitor.type_field("amount", 4); _visitor.accept(amount);
-	_visitor.template type_end<Spend>(5);
+	_visitor.type_field("currency", 3); _visitor.accept(currency);
+	_visitor.type_field("balance", 4); _visitor.accept(balance);
+	_visitor.type_field("amount", 5); _visitor.accept(amount);
+	_visitor.template type_end<Spend>(6);
 }
 
 

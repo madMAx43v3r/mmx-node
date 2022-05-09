@@ -65,8 +65,8 @@ public:
 	virtual std::vector<::mmx::txout_t> get_outputs() const;
 	virtual std::vector<::mmx::txin_t> get_all_inputs() const;
 	virtual std::vector<::mmx::txout_t> get_all_outputs() const;
+	virtual std::vector<std::shared_ptr<const ::mmx::Operation>> get_all_operations() const;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
-	virtual std::shared_ptr<const ::mmx::Transaction> get_combined() const;
 	
 	static std::shared_ptr<Transaction> create();
 	std::shared_ptr<vnx::Value> clone() const override;
