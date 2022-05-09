@@ -314,9 +314,6 @@ vnx::optional<tx_info_t> Node::get_tx_info_for(std::shared_ptr<const Transaction
 	if(!tx) {
 		return nullptr;
 	}
-	if(tx->parent) {
-		tx = tx->get_combined();
-	}
 	tx_info_t info;
 	info.id = tx->id;
 	if(auto height = get_tx_height(tx->id)) {
@@ -325,9 +322,9 @@ vnx::optional<tx_info_t> Node::get_tx_info_for(std::shared_ptr<const Transaction
 	}
 	info.note = tx->note;
 	info.cost = tx->calc_cost(params);
-	info.inputs = tx->get_inputs();
-	info.outputs = tx->get_outputs();
-	info.operations = tx->execute;
+	info.inputs = tx->get_all_inputs();
+	info.outputs = tx->get_all_outputs();
+	info.operations = tx->get_all_operations();
 	info.deployed = tx->deploy;
 
 	std::unordered_set<addr_t> contracts;

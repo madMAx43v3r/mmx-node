@@ -61,8 +61,8 @@ class Transaction extends TransactionBase {
 	
 	vector<txout_t> get_all_outputs() const;
 	
-	ulong calc_cost(ChainParams* params) const;
+	vector<Operation*> get_all_operations() const;
 	
-	Transaction* get_combined() const;
+	ulong calc_cost(ChainParams* params) const;
 	
 }

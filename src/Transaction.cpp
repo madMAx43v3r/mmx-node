@@ -138,12 +138,37 @@ std::vector<txout_t> Transaction::get_outputs() const
 
 std::vector<txin_t> Transaction::get_all_inputs() const
 {
-	return parent ? get_combined()->get_inputs() : get_inputs();
+	auto out = get_inputs();
+	auto tx = parent;
+	while(tx) {
+		const auto tmp = tx->get_inputs();
+		out.insert(out.begin(), tmp.begin(), tmp.end());
+		tx = tx->parent;
+	}
+	return out;
 }
 
 std::vector<txout_t> Transaction::get_all_outputs() const
 {
-	return parent ? get_combined()->get_outputs() : get_outputs();
+	auto out = get_outputs();
+	auto tx = parent;
+	while(tx) {
+		const auto tmp = tx->get_outputs();
+		out.insert(out.begin(), tmp.begin(), tmp.end());
+		tx = tx->parent;
+	}
+	return out;
+}
+
+std::vector<std::shared_ptr<const Operation>> Transaction::get_all_operations() const
+{
+	auto out = execute;
+	auto tx = parent;
+	while(tx) {
+		out.insert(out.begin(), tx->execute.begin(), tx->execute.end());
+		tx = tx->parent;
+	}
+	return out;
 }
 
 uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
@@ -212,30 +237,6 @@ vnx::bool_t Transaction::is_signed() const
 		}
 	}
 	return true;
-}
-
-void combine(std::shared_ptr<Transaction> out, const Transaction& tx)
-{
-	out->expires = std::min(out->expires, tx.expires);
-	out->inputs.insert(out->inputs.begin(), tx.inputs.begin(), tx.inputs.end());
-	out->outputs.insert(out->outputs.begin(), tx.outputs.begin(), tx.outputs.end());
-	out->exec_inputs.insert(out->exec_inputs.begin(), tx.exec_inputs.begin(), tx.exec_inputs.end());
-	out->exec_outputs.insert(out->exec_outputs.begin(), tx.exec_outputs.begin(), tx.exec_outputs.end());
-	out->execute.insert(out->execute.begin(), tx.execute.begin(), tx.execute.end());
-
-	if(tx.parent) {
-		combine(out, *tx.parent);
-	}
-}
-
-std::shared_ptr<const Transaction> Transaction::get_combined() const
-{
-	auto out = vnx::clone(*this);
-	if(parent) {
-		combine(out, *parent);
-	}
-	out->parent = nullptr;
-	return out;
 }
 
 
