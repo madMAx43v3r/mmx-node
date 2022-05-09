@@ -169,7 +169,12 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 					context->wait_map[tx->id].insert(list.back());
 				}
 				list.push_back(tx->id);
-				context->contract_map.emplace(address, std::make_shared<contract_state_t>());
+
+				auto& state = context->contract_map[address];
+				if(!state) {
+					state = std::make_shared<contract_state_t>();
+					state->balance = get_balances(address);
+				}
 			}
 			if(!mutate_set.empty()) {
 				context->signal_map.emplace(tx->id, std::make_shared<waitcond_t>());
@@ -186,12 +191,13 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		const auto& tx = block->tx_list[i];
 		context->wait(tx->id);
 		try {
-			uint64_t fees = 0;
-			if(validate(tx, context, nullptr, fees)) {
+			uint64_t fee = 0;
+			uint64_t cost = 0;
+			if(validate(tx, context, nullptr, fee, cost)) {
 				throw std::logic_error("missing exec_inputs or exec_outputs");
 			}
-			total_fees += fees;
-			total_cost += tx->calc_cost(params);
+			total_fees += fee;
+			total_cost += cost;
 		} catch(...) {
 #pragma omp critical
 			failed_ex = std::current_exception();
@@ -205,8 +211,9 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		throw std::logic_error("block cost too high: " + std::to_string(uint64_t(total_cost)));
 	}
 	uint64_t base_spent = 0;
+	uint64_t base_cost = 0;
 	if(auto tx = block->tx_base) {
-		if(validate(tx, context, block, base_spent)) {
+		if(validate(tx, context, block, base_spent, base_cost)) {
 			throw std::logic_error("invalid tx_base");
 		}
 	}
@@ -228,7 +235,8 @@ void Node::validate(std::shared_ptr<const Transaction> tx) const
 		context->block = base;
 	}
 	uint64_t fee = 0;
-	validate(tx, context, nullptr, fee);
+	uint64_t cost = 0;
+	validate(tx, context, nullptr, fee, cost);
 }
 
 std::shared_ptr<const Context> Node::create_context(
@@ -242,63 +250,67 @@ std::shared_ptr<const Context> Node::create_context(
 	return context;
 }
 
-void Node::load(	std::shared_ptr<vm::Engine> engine,
-					std::shared_ptr<const contract::Executable> executable)
+const contract::method_t* find_method(std::shared_ptr<const contract::Executable> executable, const std::string& method_name)
+{
+	auto iter = executable->methods.find(method_name);
+	if(iter != executable->methods.end()) {
+		return &iter->second;
+	}
+	return nullptr;
+}
+
+void set_balance(std::shared_ptr<vm::Engine> engine, const std::map<addr_t, uint128>& balance)
+{
+	const auto addr = vm::MEM_EXTERN + vm::EXTERN_BALANCE;
+	engine->assign(addr, new vm::map_t());
+	for(const auto& entry : balance) {
+		engine->write_key(addr, vm::uint_t(entry.first), vm::uint_t(entry.second));
+	}
+}
+
+void set_deposit(std::shared_ptr<vm::Engine> engine, const txout_t& deposit)
+{
+	const auto addr = vm::MEM_EXTERN + vm::EXTERN_DEPOSIT;
+	engine->assign(addr, new vm::array_t());
+	engine->push_back(addr, vm::uint_t(deposit.contract));
+	engine->push_back(addr, vm::uint_t(deposit.amount));
+	if(deposit.sender) {
+		engine->push_back(addr, vm::uint_t(*deposit.sender));
+	} else {
+		engine->push_back(addr, vm::var_t());
+	}
+}
+
+void load(	std::shared_ptr<vm::Engine> engine,
+			std::shared_ptr<const contract::Executable> executable)
 {
 	// TODO
 	engine->init();
 }
 
-void Node::execute(	std::shared_ptr<vm::Engine> engine,
-					std::shared_ptr<const contract::Executable> executable,
-					const std::string& method_name, const std::vector<vnx::Variant>& args,
-					const bool is_const, const bool is_public, const txout_t* deposit)
+void execute(	std::shared_ptr<vm::Engine> engine,
+				const contract::method_t& method,
+				const std::vector<vnx::Variant>& args)
 {
-	const contract::method_t* method = nullptr;
-	{
-		auto iter = executable->methods.find(method_name);
-		if(iter == executable->methods.end()) {
-			throw std::runtime_error("no such method: " + method_name);
-		}
-		method = &iter->second;
-	}
-	if(is_public && !method->is_public) {
-		throw std::runtime_error("method is not public");
-	}
-	if(is_const && !method->is_const) {
-		throw std::runtime_error("method is non-const");
-	}
-	if(!is_const && method->is_const) {
-		throw std::runtime_error("method is const");
-	}
-	if(deposit && !method->is_payable) {
-		throw std::runtime_error("method is not payable");
-	}
-	if(!deposit && method->is_payable) {
-		throw std::runtime_error("method requires deposit");
-	}
-	if(deposit) {
-		const auto addr = vm::MEM_EXTERN + vm::EXTERN_DEPOSIT;
-		engine->assign(addr, new vm::array_t());
-		engine->push_back(addr, vm::uint_t(deposit->contract));
-		engine->push_back(addr, vm::uint_t(deposit->amount));
-		if(deposit->sender) {
-			engine->push_back(addr, vm::uint_t(*deposit->sender));
-		} else {
-			engine->push_back(addr, vm::var_t());
-		}
-	}
-	// TODO
+	engine->total_cost = 0;
 	engine->clear_stack();
+
+	// TODO
+	engine->begin(method.entry_point);
+	engine->run();
+
+	if(!method.is_const) {
+		engine->commit();
+	}
+	if(engine->total_cost > engine->total_gas) {
+		throw std::logic_error("insufficient gas: " + std::to_string(engine->total_cost) + " > " + std::to_string(engine->total_gas));
+	}
 }
 
 void Node::validate(std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const execution_context_t> context,
-					std::vector<txin_t>& exec_inputs,
-					std::vector<txout_t>& outputs,
 					std::vector<txout_t>& exec_outputs,
 					balance_cache_t& balance_cache,
-					std::shared_ptr<vm::StorageCache> storage_cache,
 					std::unordered_map<addr_t, uint128_t>& amounts) const
 {
 	if(tx->expires < context->block->height) {
@@ -314,7 +326,7 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 		if(!parent->is_extendable) {
 			throw std::logic_error("not extendable");
 		}
-		validate(parent, context, exec_inputs, outputs, exec_outputs, balance_cache, storage_cache, amounts);
+		validate(parent, context, exec_outputs, balance_cache, amounts);
 	}
 	const auto revoked = get_revokations(tx->id);
 
@@ -351,6 +363,7 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 		auto spend = operation::Spend::create();
 		spend->address = in.address;
 		spend->solution = solution;
+		spend->currency = in.contract;
 		spend->balance = *balance;
 		spend->amount = in.amount;
 
@@ -360,86 +373,11 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 		*balance -= in.amount;
 		amounts[in.contract] += in.amount;
 	}
-	for(const auto& op : tx->execute)
-	{
-		if(!op || !op->is_valid()) {
-			throw std::logic_error("invalid operation");
-		}
-		const auto state = context->get_state(op->address);
-		if(!state) {
-			throw std::logic_error("missing contract state");
-		}
-		std::shared_ptr<const Contract> contract = state->data;
-		if(!contract) {
-			contract = get_contract(op->address);
-		}
-		if(!contract) {
-			throw std::logic_error("no such contract");
-		}
-		{
-			const auto outputs = contract->validate(op, create_context(context->block, contract, tx));
-			exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
-		}
-		if(auto revoke = std::dynamic_pointer_cast<const operation::Revoke>(op))
-		{
-			if(tx_index.find(revoke->txid)) {
-				throw std::logic_error("tx cannot be revoked anymore");
-			}
-		}
-		else if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op))
-		{
-			auto copy = vnx::clone(contract);
-			try {
-				if(!copy->vnx_call(vnx::clone(mutate->method))) {
-					throw std::logic_error("no such method");
-				}
-				if(!copy->is_valid()) {
-					throw std::logic_error("invalid mutation");
-				}
-			} catch(const std::exception& ex) {
-				throw std::logic_error("mutate failed with: " + std::string(ex.what()));
-			}
-			state->data = copy;
-		}
-		else if(auto execute = std::dynamic_pointer_cast<const operation::Execute>(op))
-		{
-			const auto state = context->get_state(op->address);
-			if(!state) {
-				throw std::logic_error("missing contract state");
-			}
-			std::shared_ptr<const Contract> contract = state->data;
-			if(!contract) {
-				contract = get_contract(op->address);
-			}
-			if(!contract) {
-				throw std::logic_error("no such contract");
-			}
-			const auto executable = std::dynamic_pointer_cast<const contract::Executable>(contract);
-			if(!executable) {
-				throw std::logic_error("not an executable");
-			}
-			auto engine = std::make_shared<vm::Engine>(op->address, storage_cache, false);
-
-			vnx::optional<txout_t> with_deposit;
-			if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(execute)) {
-				txout_t out;
-				out.address = op->address;
-				out.contract = deposit->currency;
-				out.amount = deposit->amount;
-				out.sender = deposit->sender;
-				outputs.push_back(out);
-				with_deposit = out;
-			}
-			engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::uint_t(execute->user));
-			// TODO
-		}
-	}
-	outputs.insert(outputs.end(), tx->outputs.begin(), tx->outputs.end());
 }
 
 std::shared_ptr<const Transaction>
 Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const execution_context_t> context,
-				std::shared_ptr<const Block> base, uint64_t& fee_amount) const
+				std::shared_ptr<const Block> base, uint64_t& tx_fee, uint64_t& tx_cost) const
 {
 	if(!tx->is_valid()) {
 		throw std::logic_error("invalid tx");
@@ -483,27 +421,19 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 			throw std::logic_error("invalid note");
 		}
 	}
-	const auto tx_cost = tx->calc_cost(params);
-	if(base) {
-		if(tx_cost > params->max_txbase_cost) {
-			throw std::logic_error("tx cost > max_txbase_cost");
-		}
-	} else {
-		if(tx_cost > params->max_block_cost) {
-			throw std::logic_error("tx cost > max_block_cost");
-		}
-	}
+	tx_cost = tx->calc_cost(params);
+
 	uint128_t base_amount = 0;
 	std::vector<txin_t> exec_inputs;
-	std::vector<txout_t> outputs;
 	std::vector<txout_t> exec_outputs;
 	balance_cache_t balance_cache(&balance_map);
 	std::unordered_map<addr_t, uint128_t> amounts;
-	auto storage_cache = std::make_shared<vm::StorageCache>(context->storage);
+	std::shared_ptr<vm::StorageCache> storage_cache;
 
-	validate(tx, context, exec_inputs, outputs, exec_outputs, balance_cache, storage_cache, amounts);
+	validate(tx, context, exec_outputs, balance_cache, amounts);
 
-	for(const auto& out : outputs) {
+	for(const auto& out : tx->get_all_outputs())
+	{
 		if(out.amount == 0) {
 			throw std::logic_error("zero amount output");
 		}
@@ -519,6 +449,125 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 				throw std::logic_error("tx over-spend");
 			}
 			value -= out.amount;
+		}
+	}
+	if(amounts[addr_t()].upper()) {
+		throw std::logic_error("fee amount overflow");
+	}
+
+	for(const auto& op : tx->get_all_operations())
+	{
+		if(!op || !op->is_valid()) {
+			throw std::logic_error("invalid operation");
+		}
+		const auto state = context->get_state(op->address);
+		if(!state) {
+			throw std::logic_error("missing contract state");
+		}
+		auto contract = state->data;
+		if(!contract) {
+			contract = get_contract(op->address);
+		}
+		if(!contract) {
+			throw std::logic_error("no such contract");
+		}
+		{
+			const auto outputs = contract->validate(op, create_context(context->block, contract, tx));
+			exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
+		}
+		if(auto revoke = std::dynamic_pointer_cast<const operation::Revoke>(op))
+		{
+			if(tx_index.find(revoke->txid)) {
+				throw std::logic_error("tx cannot be revoked anymore");
+			}
+		}
+		else if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op))
+		{
+			auto copy = vnx::clone(contract);
+			try {
+				if(!copy->vnx_call(vnx::clone(mutate->method))) {
+					throw std::logic_error("no such method");
+				}
+				if(!copy->is_valid()) {
+					throw std::logic_error("invalid mutation");
+				}
+			} catch(const std::exception& ex) {
+				throw std::logic_error("mutate failed with: " + std::string(ex.what()));
+			}
+			state->data = copy;
+		}
+		else if(auto execute = std::dynamic_pointer_cast<const operation::Execute>(op))
+		{
+			const auto state = context->get_state(op->address);
+			if(!state) {
+				throw std::logic_error("missing contract state");
+			}
+			if(!state->data) {
+				state->data = get_contract(op->address);
+			}
+			if(!state->data) {
+				throw std::logic_error("no such contract");
+			}
+			const auto executable = std::dynamic_pointer_cast<const contract::Executable>(state->data);
+			if(!executable) {
+				throw std::logic_error("not an executable");
+			}
+			auto method = find_method(executable, execute->method);
+			if(!method) {
+				throw std::logic_error("no such method");
+			}
+			if(!method->is_public) {
+				throw std::logic_error("method not public");
+			}
+			if(method->is_const) {
+				throw std::logic_error("method is const");
+			}
+			if(!storage_cache) {
+				storage_cache = std::make_shared<vm::StorageCache>(context->storage);
+			}
+			auto engine = std::make_shared<vm::Engine>(op->address, storage_cache, false);
+			mmx::load(engine, executable);
+			engine->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(context->block->height));
+			engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::uint_t(tx->id));
+			engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::uint_t(execute->user));
+			mmx::set_balance(engine, state->balance);
+
+			if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(execute))
+			{
+				if(!method->is_payable) {
+					throw std::logic_error("method not payable");
+				}
+				txout_t out;
+				out.address = op->address;
+				out.contract = deposit->currency;
+				out.amount = deposit->amount;
+				out.sender = deposit->sender;
+
+				auto& value = amounts[out.contract];
+				if(out.amount > value) {
+					throw std::logic_error("tx over-spend");
+				}
+				value -= out.amount;
+
+				set_deposit(engine, out);
+				exec_outputs.push_back(out);
+			}
+			else if(method->is_payable) {
+				throw std::logic_error("method requires deposit");
+			}
+			{
+				auto gas_left = std::min<uint64_t>(amounts[addr_t()], params->max_block_cost);
+				if(tx_cost <= gas_left) {
+					gas_left -= tx_cost;
+				} else {
+					gas_left = 0;
+				}
+				engine->total_gas = gas_left;
+			}
+			mmx::execute(engine, *method, execute->args);
+			tx_cost += engine->total_cost;
+
+			// TODO: engine outputs + mint_outputs + state->balance
 		}
 	}
 	if(tx->deploy) {
@@ -541,30 +590,40 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 			exec_outputs.push_back(out);
 		}
 	}
+
 	if(base) {
+		if(tx_cost > params->max_txbase_cost) {
+			throw std::logic_error("tx cost > max_txbase_cost");
+		}
 		if(base_amount.upper()) {
 			throw std::logic_error("coin base output overflow");
 		}
-		fee_amount = base_amount;
+		tx_fee = base_amount;
 		return nullptr;
 	}
-	fee_amount = (uint128_t(tx_cost) * tx->fee_ratio) / 1024;
+	if(tx_cost > params->max_block_cost) {
+		throw std::logic_error("tx cost > max_block_cost");
+	}
 	{
-		const auto& amount = amounts[addr_t()];
+		const auto amount = (uint128_t(tx_cost) * tx->fee_ratio) / 1024;
 		if(amount.upper()) {
 			throw std::logic_error("fee amount overflow");
 		}
-		if(amount < fee_amount) {
-			throw std::logic_error("insufficient fee: " + amount.str(10) + " < " + std::to_string(fee_amount));
+		tx_fee = amount;
+	}
+	{
+		const uint64_t amount = amounts[addr_t()];
+		if(amount < tx_fee) {
+			throw std::logic_error("insufficient fee: " + std::to_string(amount) + " < " + std::to_string(tx_fee));
 		}
-		const uint64_t change = amount - fee_amount;
+		const uint64_t change = amount - tx_fee;
 		if(change > params->min_txfee_io && tx->sender) {
 			txout_t out;
 			out.address = *tx->sender;
 			out.amount = change;
 			exec_outputs.push_back(out);
 		} else {
-			fee_amount = amount;
+			tx_fee = amount;
 		}
 	}
 	std::shared_ptr<Transaction> out = nullptr;

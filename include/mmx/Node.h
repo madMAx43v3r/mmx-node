@@ -89,15 +89,15 @@ protected:
 
 	void add_transaction(std::shared_ptr<const Transaction> tx, const vnx::bool_t& pre_validate = false) override;
 
-	uint128 get_balance(const addr_t& address, const addr_t& currency, const uint32_t& min_confirm) const override;
+	uint128 get_balance(const addr_t& address, const addr_t& currency, const uint32_t& min_confirm = 1) const override;
 
-	uint128 get_total_balance(const std::vector<addr_t>& addresses, const addr_t& currency, const uint32_t& min_confirm) const override;
+	uint128 get_total_balance(const std::vector<addr_t>& addresses, const addr_t& currency, const uint32_t& min_confirm = 1) const override;
 
-	std::map<addr_t, uint128> get_balances(const addr_t& address, const uint32_t& min_confirm) const override;
+	std::map<addr_t, uint128> get_balances(const addr_t& address, const uint32_t& min_confirm = 1) const override;
 
-	std::map<addr_t, uint128> get_total_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const override;
+	std::map<addr_t, uint128> get_total_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm =1) const override;
 
-	std::map<std::pair<addr_t, addr_t>, uint128> get_all_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const override;
+	std::map<std::pair<addr_t, addr_t>, uint128> get_all_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm = 1) const override;
 
 	address_info_t get_address_info(const addr_t& address) const override;
 
@@ -131,8 +131,8 @@ private:
 	};
 
 	struct contract_state_t {
-		std::shared_ptr<Contract> data;
-		std::shared_ptr<balance_cache_t> balance;
+		std::map<addr_t, uint128> balance;
+		std::shared_ptr<const Contract> data;
 	};
 
 	struct execution_context_t {
@@ -181,7 +181,7 @@ private:
 
 	struct tx_data_t : tx_pool_t {
 		bool invalid = false;
-		uint64_t fees = 0;
+		uint64_t fee = 0;
 		uint64_t cost = 0;
 	};
 
@@ -228,26 +228,15 @@ private:
 	std::shared_ptr<const Context> create_context(
 			std::shared_ptr<const Context> base, std::shared_ptr<const Contract> contract, std::shared_ptr<const Transaction> tx) const;
 
-	void load(	std::shared_ptr<vm::Engine> engine,
-				std::shared_ptr<const contract::Executable> executable);
-
-	void execute(	std::shared_ptr<vm::Engine> engine,
-					std::shared_ptr<const contract::Executable> executable,
-					const std::string& method_name, const std::vector<vnx::Variant>& args,
-					const bool is_const, const bool is_public = true, const txout_t* deposit = nullptr);
-
 	void validate(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const execution_context_t> context,
-					std::vector<txin_t>& exec_inputs,
-					std::vector<txout_t>& outputs,
 					std::vector<txout_t>& exec_outputs,
 					balance_cache_t& balance_cache,
-					std::shared_ptr<vm::StorageCache> storage_cache,
 					std::unordered_map<addr_t, uint128_t>& amounts) const;
 
 	std::shared_ptr<const Transaction>
 	validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const execution_context_t> context,
-				std::shared_ptr<const Block> base, uint64_t& fee_amount) const;
+				std::shared_ptr<const Block> base, uint64_t& tx_fee, uint64_t& tx_cost) const;
 
 	void validate_diff_adjust(const uint64_t& block, const uint64_t& prev) const;
 

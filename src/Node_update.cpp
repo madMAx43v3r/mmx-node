@@ -492,7 +492,12 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 					context->wait_map[entry.tx->id].insert(list.back());
 				}
 				list.push_back(entry.tx->id);
-				context->contract_map.emplace(address, std::make_shared<contract_state_t>());
+
+				auto& state = context->contract_map[address];
+				if(!state) {
+					state = std::make_shared<contract_state_t>();
+					state->balance = get_balances(address);
+				}
 			}
 			if(!mutate_set.empty()) {
 				context->signal_map.emplace(entry.tx->id, std::make_shared<waitcond_t>());
@@ -508,7 +513,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 		auto& tx = entry.tx;
 		context->wait(tx->id);
 		try {
-			if(auto new_tx = validate(tx, context, nullptr, entry.fees)) {
+			if(auto new_tx = validate(tx, context, nullptr, entry.fee, entry.cost)) {
 				tx = new_tx;
 			}
 			auto iter = tx_pool.find(tx->id);
@@ -631,7 +636,7 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	uint64_t total_fees = 0;
 	for(const auto& entry : tx_list) {
 		block->tx_list.push_back(entry.tx);
-		total_fees += entry.fees;
+		total_fees += entry.fee;
 	}
 
 	const auto prev_fork = find_fork(prev->hash);
