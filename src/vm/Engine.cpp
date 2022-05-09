@@ -843,6 +843,9 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint32_t dflags,
 				case CONVTYPE_BOOL:
 					write(dst, var_t(sint.value != uint256_0 ? TYPE_TRUE : TYPE_FALSE));
 					break;
+				case CONVTYPE_UINT:
+					write(dst, svar);
+					break;
 				case CONVTYPE_STRING: {
 					int base = 10;
 					switch((dflags >> 8) & 0xFF) {
@@ -886,6 +889,9 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint32_t dflags,
 					write(dst, uint_t(uint256_t((const char*)sstr.data(), base)));
 					break;
 				}
+				case CONVTYPE_STRING:
+					write(dst, svar);
+					break;
 				case CONVTYPE_BINARY:
 					assign(dst, binary_t::alloc(sstr, TYPE_BINARY));
 					break;
@@ -900,10 +906,12 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint32_t dflags,
 				case CONVTYPE_BOOL:
 					write(dst, var_t(sbin.size ? TYPE_TRUE : TYPE_FALSE));
 					break;
-				case CONVTYPE_STRING: {
+				case CONVTYPE_STRING:
 					assign(dst, binary_t::alloc(vnx::to_hex_string(sbin.data(), sbin.size)));
 					break;
-				}
+				case CONVTYPE_BINARY:
+					write(dst, svar);
+					break;
 				default:
 					throw std::logic_error("invalid conversion");
 			}
