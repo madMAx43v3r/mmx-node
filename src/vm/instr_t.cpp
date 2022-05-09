@@ -82,7 +82,8 @@ std::pair<uint8_t*, size_t> serialize(const std::vector<instr_t>& code)
 	auto data = (uint8_t*)::malloc(length);
 
 	size_t offset = 0;
-	for(const auto& instr : code) {
+	for(const auto& instr : code)
+	{
 		data[offset] = instr.code;
 		data[offset + 1] = instr.flags;
 		offset += 2;
@@ -101,7 +102,7 @@ std::pair<uint8_t*, size_t> serialize(const std::vector<instr_t>& code)
 			::memcpy(data + offset, &instr.d, 4); offset += 4;
 		}
 	}
-	return std::make_pair(data, length);
+	return std::make_pair(data, offset);
 }
 
 size_t deserialize(std::vector<instr_t>& code, const void* data_, const size_t length)
