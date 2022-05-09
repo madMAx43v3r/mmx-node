@@ -36,7 +36,9 @@ int main(int arcv, char** argv)
 		code.emplace_back(vm::OP_COPY, vm::OPFLAG_REF_B, vm::MEM_STACK + 0, vm::MEM_STACK + 1);
 		code.emplace_back(vm::OP_COPY, 0, vm::MEM_STATIC + 0, vm::MEM_CONST + 2);
 		code.emplace_back(vm::OP_CLONE, 0, vm::MEM_STACK + 3, vm::MEM_CONST + 3);
+		code.emplace_back(vm::OP_CONCAT, 0, vm::MEM_STACK + 4, vm::MEM_CONST + 3, vm::MEM_CONST + 3);
 		code.emplace_back(vm::OP_SET, 0, vm::MEM_STATIC + 0, vm::MEM_CONST + 3, vm::MEM_CONST + 1);
+		code.emplace_back(vm::OP_SET, 0, vm::MEM_STATIC + 0, vm::MEM_STACK + 4, vm::MEM_CONST + 3);
 		code.emplace_back(vm::OP_SET, vm::OPFLAG_REF_B, vm::MEM_STATIC + 0, vm::MEM_STACK + 3, vm::MEM_CONST + 4);
 		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 2, vm::MEM_STATIC + 0, vm::MEM_CONST + 3);
 		code.emplace_back(vm::OP_COPY, 0, vm::MEM_STATIC + 1, vm::MEM_CONST + 5);
