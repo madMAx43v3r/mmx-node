@@ -29,6 +29,8 @@ class StorageProxy;
 
 static constexpr uint64_t INSTR_COST = 16;
 static constexpr uint64_t CALL_COST = 64;
+static constexpr uint64_t SEND_COST = 1024;
+static constexpr uint64_t MINT_COST = 512;
 static constexpr uint64_t WRITE_COST = 16;
 static constexpr uint64_t WRITE_BYTE_COST = 1;
 static constexpr uint64_t STOR_READ_COST = 128;

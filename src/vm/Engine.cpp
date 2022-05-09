@@ -668,7 +668,7 @@ void Engine::step()
 	total_cost = num_instr * INSTR_COST + num_calls * CALL_COST
 			+ num_write * WRITE_COST + num_bytes_write * WRITE_BYTE_COST
 			+ storage->num_read * STOR_READ_COST + storage->num_bytes_read * STOR_READ_BYTE_COST
-			+ num_bytes_sha256 * SHA256_BYTE_COST;
+			+ num_bytes_sha256 * SHA256_BYTE_COST + outputs.size() * SEND_COST + mint_outputs.size() * MINT_COST;
 	if(total_cost > total_gas) {
 		throw std::runtime_error("out of gas: " + std::to_string(total_cost) + " > " + std::to_string(total_gas));
 	}
