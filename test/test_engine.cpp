@@ -45,6 +45,31 @@ int main(int arcv, char** argv)
 		code.emplace_back(vm::OP_PUSH_BACK, vm::OPFLAG_REF_A, vm::MEM_STATIC + 1, vm::MEM_CONST + 3);
 		code.emplace_back(vm::OP_RET);
 
+		engine.total_gas = 100000;
+		engine.init();
+		engine.begin(0);
+		engine.run();
+		engine.dump_memory();
+		engine.commit();
+		std::cout << "Cost: " << engine.total_cost << std::endl;
+	}
+	storage->commit();
+	backend->commit();
+	{
+		vm::Engine engine(addr_t(), storage, false);
+		engine.write(vm::MEM_CONST + 0, vm::var_t());
+		engine.write(vm::MEM_CONST + 1, vm::uint_t());
+		engine.write(vm::MEM_CONST + 2, vm::uint_t(1));
+		engine.assign(vm::MEM_CONST + 3, vm::binary_t::alloc("value"));
+
+		auto& code = engine.code;
+		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 0, vm::MEM_STATIC + 0, vm::MEM_CONST + 3);
+		code.emplace_back(vm::OP_ERASE, 0, vm::MEM_STATIC + 0, vm::MEM_CONST + 3);
+		code.emplace_back(vm::OP_GET, 0, vm::MEM_STATIC + 16, vm::MEM_STATIC + 1, vm::MEM_CONST + 1);
+		code.emplace_back(vm::OP_GET, 0, vm::MEM_STATIC + 17, vm::MEM_STATIC + 1, vm::MEM_CONST + 2);
+		code.emplace_back(vm::OP_POP_BACK, 0, vm::MEM_STATIC + 18, vm::MEM_STATIC + 1);
+		code.emplace_back(vm::OP_RET);
+
 		engine.total_gas = 10000;
 		engine.init();
 		engine.begin(0);
@@ -56,15 +81,18 @@ int main(int arcv, char** argv)
 	storage->commit();
 	backend->commit();
 	{
-		vm::Engine engine(addr_t(), storage, true);
+		vm::Engine engine(addr_t(), storage, false);
 		engine.write(vm::MEM_CONST + 0, vm::var_t());
+		engine.write(vm::MEM_CONST + 1, vm::uint_t());
+		engine.write(vm::MEM_CONST + 2, vm::uint_t(1));
 		engine.assign(vm::MEM_CONST + 3, vm::binary_t::alloc("value"));
+		engine.write(vm::MEM_CONST + 4, vm::uint_t(2));
 
 		auto& code = engine.code;
 		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 0, vm::MEM_STATIC + 0, vm::MEM_CONST + 3);
-		code.emplace_back(vm::OP_GET, 0, vm::MEM_STATIC + 10, vm::MEM_STATIC + 1, 0);
-		code.emplace_back(vm::OP_GET, 0, vm::MEM_STATIC + 11, vm::MEM_STATIC + 1, 1);
-		code.emplace_back(vm::OP_GET, 0, vm::MEM_STATIC + 12, vm::MEM_STATIC + 1, 2);
+		code.emplace_back(vm::OP_GET, 0, vm::MEM_STATIC + 32, vm::MEM_STATIC + 1, vm::MEM_CONST + 1);
+		code.emplace_back(vm::OP_GET, 0, vm::MEM_STATIC + 33, vm::MEM_STATIC + 1, vm::MEM_CONST + 2);
+		code.emplace_back(vm::OP_GET, 0, vm::MEM_STATIC + 34, vm::MEM_STATIC + 1, vm::MEM_CONST + 4);
 		code.emplace_back(vm::OP_RET);
 
 		engine.total_gas = 10000;
@@ -72,6 +100,7 @@ int main(int arcv, char** argv)
 		engine.begin(0);
 		engine.run();
 		engine.dump_memory();
+		engine.commit();
 		std::cout << "Cost: " << engine.total_cost << std::endl;
 	}
 	{
