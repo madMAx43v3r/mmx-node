@@ -53,6 +53,7 @@
 
 namespace mmx {
 
+const uint32_t Transaction::MAX_SOLUTIONS;
 
 const vnx::Hash64 Transaction::VNX_TYPE_HASH(0xce0462acdceaa5bcull);
 const vnx::Hash64 Transaction::VNX_CODE_HASH(0xb8b9800340511b04ull);

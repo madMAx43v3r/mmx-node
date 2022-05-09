@@ -11,6 +11,7 @@
 namespace mmx {
 
 const uint8_t txin_t::IS_EXEC;
+const uint8_t txin_t::NO_SOLUTION;
 
 const vnx::Hash64 txin_t::VNX_TYPE_HASH(0xda6587114a2413full);
 const vnx::Hash64 txin_t::VNX_CODE_HASH(0x6e9c15013d179cacull);

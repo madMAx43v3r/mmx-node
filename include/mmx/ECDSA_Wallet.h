@@ -13,6 +13,7 @@
 #include <mmx/ChainParams.hxx>
 #include <mmx/contract/NFT.hxx>
 #include <mmx/operation/Mint.hxx>
+#include <mmx/operation/Execute.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/spend_options_t.hxx>
 #include <mmx/skey_t.hpp>
@@ -244,11 +245,15 @@ public:
 			throw std::logic_error("not yet supported");
 		}
 		tx->finalize();
+
 		std::unordered_map<addr_t, uint32_t> solution_map;
 
 		// sign all inputs
 		for(auto& in : tx->inputs)
 		{
+			if(in.solution != txin_t::NO_SOLUTION) {
+				continue;
+			}
 			addr_t owner = in.address;
 			{
 				auto iter = options.owner_map.find(owner);
@@ -275,13 +280,18 @@ public:
 		// sign all operations
 		for(auto& op : tx->execute)
 		{
+			if(op->solution) {
+				continue;
+			}
 			addr_t owner = op->address;
-			{
+
+			if(auto execute = std::dynamic_pointer_cast<const operation::Execute>(op)) {
+				owner = execute->user;
+			}
+			else {
 				auto iter = options.owner_map.find(op->address);
 				if(iter != options.owner_map.end()) {
 					owner = iter->second;
-				} else {
-					continue;	// not owned by us
 				}
 			}
 			auto copy = vnx::clone(op);
@@ -292,9 +302,11 @@ public:
 		// sign NFT mint
 		if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(tx->deploy))
 		{
-			auto copy = vnx::clone(nft);
-			copy->solution = sign_msg(nft->creator, tx->id, options);
-			tx->deploy = copy;
+			if(!nft->solution) {
+				auto copy = vnx::clone(nft);
+				copy->solution = sign_msg(nft->creator, tx->id, options);
+				tx->deploy = copy;
+			}
 		}
 	}
 
