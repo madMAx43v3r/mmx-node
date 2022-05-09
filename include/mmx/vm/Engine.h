@@ -82,6 +82,9 @@ public:
 	uint64_t num_bytes_write = 0;
 	uint64_t num_bytes_sha256 = 0;
 
+	const addr_t contract;
+	const std::shared_ptr<StorageProxy> storage;
+
 	Engine(const addr_t& contract, std::shared_ptr<Storage> backend, bool read_only);
 
 	virtual ~Engine();
@@ -187,9 +190,7 @@ private:
 	uint64_t deref_value(uint32_t src, const bool flag);
 
 private:
-	addr_t contract;
-	std::shared_ptr<StorageProxy> storage;
-
+	bool have_init = false;
 	std::map<uint64_t, var_t*> memory;
 	std::map<std::pair<uint64_t, uint64_t>, var_t*> entries;
 	std::map<const var_t*, uint64_t, varptr_less_t> key_map;

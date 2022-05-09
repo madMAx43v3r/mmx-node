@@ -60,6 +60,10 @@ var_t* Engine::assign(const uint64_t dst, var_t* value)
 	if(!value) {
 		return nullptr;
 	}
+	if(have_init && dst < MEM_EXTERN) {
+		delete value;
+		throw std::logic_error("already initialized");
+	}
 	switch(value->type) {
 		case TYPE_ARRAY:
 			((array_t*)value)->address = dst;
@@ -82,11 +86,15 @@ var_t* Engine::assign(const uint64_t dst, const uint64_t key, var_t* value)
 	if(!value) {
 		return nullptr;
 	}
+	if(have_init && dst < MEM_EXTERN) {
+		delete value;
+		throw std::logic_error("already initialized");
+	}
 	switch(value->type) {
 		case TYPE_ARRAY:
 		case TYPE_MAP:
 			delete value;
-			throw std::logic_error("cannot assign array / map here");
+			throw std::logic_error("cannot assign array or map as entry");
 		default:
 			break;
 	}
@@ -178,6 +186,9 @@ var_t* Engine::write(const uint64_t dst, const var_t* src)
 
 var_t* Engine::write(const uint64_t dst, const var_t& src)
 {
+	if(have_init && dst < MEM_EXTERN) {
+		throw std::logic_error("already initialized");
+	}
 	auto& var = memory[dst];
 	if(!var && dst >= MEM_STATIC) {
 		var = storage->read(contract, dst);
@@ -387,6 +398,9 @@ map_t* Engine::clone_map(const uint64_t dst, const map_t& src)
 
 var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const var_t& src)
 {
+	if(have_init && dst < MEM_EXTERN) {
+		throw std::logic_error("already initialized");
+	}
 	switch(src.type) {
 		case TYPE_ARRAY:
 		case TYPE_MAP: {
@@ -592,6 +606,9 @@ uint64_t Engine::alloc()
 
 void Engine::init()
 {
+	if(have_init) {
+		throw std::logic_error("already initialized");
+	}
 	for(auto iter = memory.lower_bound(1); iter != memory.lower_bound(MEM_EXTERN); ++iter) {
 		key_map.emplace(iter->second, iter->first);
 	}
@@ -603,6 +620,7 @@ void Engine::init()
 		assign(MEM_HEAP + GLOBAL_MINT_HISTORY, new array_t())->pin();
 		assign(MEM_HEAP + GLOBAL_EVENT_HISTORY, new array_t())->pin();
 	}
+	have_init = true;
 }
 
 void Engine::begin(const uint32_t instr_ptr)
@@ -1430,6 +1448,7 @@ void Engine::commit()
 			}
 		}
 	}
+	total_cost += storage->num_write * STOR_WRITE_COST + storage->num_bytes_write * STOR_WRITE_BYTE_COST;
 }
 
 void Engine::dump_memory(const uint64_t begin, const uint64_t end)
