@@ -765,6 +765,7 @@ void Engine::concat(const uint64_t dst, const uint64_t lhs, const uint64_t rhs)
 			auto res = binary_t::unsafe_alloc(size, lvar.type);
 			::memcpy(res->data(), L.data(), L.size);
 			::memcpy(res->data(L.size), R.data(), R.size);
+			res->size = size;
 			assign(dst, res);
 			break;
 		}
