@@ -693,14 +693,12 @@ void Engine::get(const uint64_t dst, const uint64_t addr, const uint64_t key, co
 	const auto& var = read_fail(addr);
 	switch(var.type) {
 		case TYPE_ARRAY: {
-			const auto index = key;
-			if(index < ((const array_t&)var).size) {
-				write(dst, read_entry_fail(addr, index));
-			}
-			else if(flags & OPFLAG_HARD_FAIL) {
-				throw std::runtime_error("out of bounds");
-			}
-			else {
+			const auto& index = read_fail<uint_t>(key, TYPE_UINT);
+			if(index.value < ((const array_t&)var).size) {
+				write(dst, read_entry_fail(addr, uint64_t(index.value)));
+			} else if(flags & OPFLAG_HARD_FAIL) {
+				throw std::runtime_error("index out of bounds");
+			} else {
 				write(dst, var_t());
 			}
 			break;
@@ -722,13 +720,11 @@ void Engine::set(const uint64_t addr, const uint64_t key, const uint64_t src, co
 	const auto& var = read_fail(addr);
 	switch(var.type) {
 		case TYPE_ARRAY: {
-			const auto index = key;
-			if(index < ((const array_t&)var).size) {
-				write_entry(addr, index, read_fail(src));
+			const auto& index = read_fail<uint_t>(key, TYPE_UINT);
+			if(index.value >= ((const array_t&)var).size) {
+				throw std::runtime_error("index out of bounds");
 			}
-			else if(flags & OPFLAG_HARD_FAIL) {
-				throw std::runtime_error("out of bounds");
-			}
+			write_entry(addr, uint64_t(index.value), read_fail(src));
 			break;
 		}
 		case TYPE_MAP:
