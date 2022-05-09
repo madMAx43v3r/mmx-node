@@ -323,7 +323,7 @@ void Engine::push_back(const uint64_t dst, const var_t& var)
 		return;
 	}
 	auto& array = read_fail<array_t>(dst, TYPE_ARRAY);
-	if(array.size >= std::min<uint32_t>(MEM_HEAP - 1, std::numeric_limits<uint32_t>::max())) {
+	if(array.size >= std::numeric_limits<uint32_t>::max()) {
 		throw std::runtime_error("push_back overflow at " + to_hex(dst));
 	}
 	write_entry(dst, array.size++, var);
