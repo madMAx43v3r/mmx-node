@@ -497,7 +497,7 @@ void Engine::erase(var_t*& var)
 
 	auto prev = var;
 	var = new var_t();
-	if(var->flags & FLAG_STORED) {
+	if(prev->flags & FLAG_STORED) {
 		var->flags = (prev->flags | FLAG_DIRTY | FLAG_DELETED);
 	} else {
 		var->flags = FLAG_DELETED;
