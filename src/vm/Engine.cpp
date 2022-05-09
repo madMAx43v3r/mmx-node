@@ -442,7 +442,13 @@ var_t* Engine::write_key(const uint64_t dst, const varptr_t& key, const varptr_t
 
 void Engine::erase_entry(const uint64_t dst, const uint64_t key)
 {
-	const auto iter = entries.find(std::make_pair(dst, key));
+	const auto mapkey = std::make_pair(dst, key);
+	auto iter = entries.find(mapkey);
+	if(iter == entries.end() && dst >= MEM_STATIC) {
+		if(auto var = storage->read(contract, dst, key)) {
+			iter = entries.emplace(mapkey, var).first;
+		}
+	}
 	if(iter != entries.end()) {
 		erase(iter->second);
 	}
@@ -478,6 +484,9 @@ void Engine::erase(const uint64_t dst)
 
 void Engine::erase(var_t*& var)
 {
+	if(!var) {
+		return;
+	}
 	if(var->flags & FLAG_CONST) {
 		throw std::logic_error("erase on read-only memory");
 	}
