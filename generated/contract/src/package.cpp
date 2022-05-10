@@ -19,6 +19,10 @@
 #include <mmx/contract/Data_validate.hxx>
 #include <mmx/contract/Data_validate_return.hxx>
 #include <mmx/contract/Executable.hxx>
+#include <mmx/contract/Executable_calc_cost.hxx>
+#include <mmx/contract/Executable_calc_cost_return.hxx>
+#include <mmx/contract/Executable_calc_hash.hxx>
+#include <mmx/contract/Executable_calc_hash_return.hxx>
 #include <mmx/contract/Executable_is_valid.hxx>
 #include <mmx/contract/Executable_is_valid_return.hxx>
 #include <mmx/contract/Identity.hxx>
@@ -390,6 +394,54 @@ void type<::mmx::contract::Executable>::create_dynamic_code(std::vector<uint16_t
 }
 
 void type<::mmx::contract::Executable>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::Executable_calc_cost>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_Executable_calc_cost;
+}
+
+void type<::mmx::contract::Executable_calc_cost>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::Executable_calc_cost());
+}
+
+void type<::mmx::contract::Executable_calc_cost>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable_calc_cost& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::Executable_calc_cost_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_Executable_calc_cost_return;
+}
+
+void type<::mmx::contract::Executable_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::Executable_calc_cost_return());
+}
+
+void type<::mmx::contract::Executable_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable_calc_cost_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::Executable_calc_hash>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_Executable_calc_hash;
+}
+
+void type<::mmx::contract::Executable_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::Executable_calc_hash());
+}
+
+void type<::mmx::contract::Executable_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable_calc_hash& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::Executable_calc_hash_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_Executable_calc_hash_return;
+}
+
+void type<::mmx::contract::Executable_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::Executable_calc_hash_return());
+}
+
+void type<::mmx::contract::Executable_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable_calc_hash_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -2220,6 +2272,10 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::Data_validate::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Data_validate_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Executable::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::Executable_calc_cost::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::Executable_calc_cost_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::Executable_calc_hash::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::Executable_calc_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Executable_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Executable_is_valid_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Identity::static_create_type_code());
@@ -2396,6 +2452,10 @@ const vnx::TypeCode* const vnx_native_type_code_Data_transfer_return = vnx::get_
 const vnx::TypeCode* const vnx_native_type_code_Data_validate = vnx::get_type_code(vnx::Hash64(0x17de02619513f20cull));
 const vnx::TypeCode* const vnx_native_type_code_Data_validate_return = vnx::get_type_code(vnx::Hash64(0x665ccb0bd661c914ull));
 const vnx::TypeCode* const vnx_native_type_code_Executable = vnx::get_type_code(vnx::Hash64(0xfa6a3ac9103ebb12ull));
+const vnx::TypeCode* const vnx_native_type_code_Executable_calc_cost = vnx::get_type_code(vnx::Hash64(0x5637ec4f54b3d1baull));
+const vnx::TypeCode* const vnx_native_type_code_Executable_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xe290488c6b3548a6ull));
+const vnx::TypeCode* const vnx_native_type_code_Executable_calc_hash = vnx::get_type_code(vnx::Hash64(0x862527293121a545ull));
+const vnx::TypeCode* const vnx_native_type_code_Executable_calc_hash_return = vnx::get_type_code(vnx::Hash64(0x99c61580edea25daull));
 const vnx::TypeCode* const vnx_native_type_code_Executable_is_valid = vnx::get_type_code(vnx::Hash64(0xb8eff28f88909a73ull));
 const vnx::TypeCode* const vnx_native_type_code_Executable_is_valid_return = vnx::get_type_code(vnx::Hash64(0x92797cb1785e1d24ull));
 const vnx::TypeCode* const vnx_native_type_code_Identity = vnx::get_type_code(vnx::Hash64(0x69710dd250a33c5eull));

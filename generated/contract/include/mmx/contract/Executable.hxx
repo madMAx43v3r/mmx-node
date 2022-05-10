@@ -5,9 +5,11 @@
 #define INCLUDE_mmx_contract_Executable_HXX_
 
 #include <mmx/contract/package.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/contract/TokenBase.hxx>
 #include <mmx/contract/method_t.hxx>
+#include <mmx/hash_t.hpp>
 #include <vnx/Variant.hpp>
 
 
@@ -39,6 +41,8 @@ public:
 	const vnx::TypeCode* get_type_code() const override;
 	
 	virtual vnx::bool_t is_valid() const override;
+	virtual ::mmx::hash_t calc_hash() const override;
+	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	
 	static std::shared_ptr<Executable> create();
 	std::shared_ptr<vnx::Value> clone() const override;

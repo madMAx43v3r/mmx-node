@@ -3,6 +3,7 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/contract/Executable.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/Contract_calc_cost.hxx>
 #include <mmx/Contract_calc_cost_return.hxx>
 #include <mmx/Contract_calc_hash.hxx>
@@ -18,6 +19,10 @@
 #include <mmx/Contract_validate.hxx>
 #include <mmx/Contract_validate_return.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/contract/Executable_calc_cost.hxx>
+#include <mmx/contract/Executable_calc_cost_return.hxx>
+#include <mmx/contract/Executable_calc_hash.hxx>
+#include <mmx/contract/Executable_calc_hash_return.hxx>
 #include <mmx/contract/Executable_is_valid.hxx>
 #include <mmx/contract/Executable_is_valid_return.hxx>
 #include <mmx/contract/TokenBase.hxx>
@@ -28,6 +33,7 @@
 #include <mmx/contract/TokenBase_is_valid.hxx>
 #include <mmx/contract/TokenBase_is_valid_return.hxx>
 #include <mmx/contract/method_t.hxx>
+#include <mmx/hash_t.hpp>
 #include <vnx/Variant.hpp>
 
 #include <vnx/vnx.h>
@@ -269,7 +275,7 @@ std::shared_ptr<vnx::TypeCode> Executable::static_create_type_code() {
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Executable>(); };
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::contract::method_t::static_get_type_code();
-	type_code->methods.resize(11);
+	type_code->methods.resize(13);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_dependency::static_get_type_code();
@@ -277,10 +283,12 @@ std::shared_ptr<vnx::TypeCode> Executable::static_create_type_code() {
 	type_code->methods[4] = ::mmx::Contract_is_valid::static_get_type_code();
 	type_code->methods[5] = ::mmx::Contract_transfer::static_get_type_code();
 	type_code->methods[6] = ::mmx::Contract_validate::static_get_type_code();
-	type_code->methods[7] = ::mmx::contract::Executable_is_valid::static_get_type_code();
-	type_code->methods[8] = ::mmx::contract::TokenBase_calc_cost::static_get_type_code();
-	type_code->methods[9] = ::mmx::contract::TokenBase_calc_hash::static_get_type_code();
-	type_code->methods[10] = ::mmx::contract::TokenBase_is_valid::static_get_type_code();
+	type_code->methods[7] = ::mmx::contract::Executable_calc_cost::static_get_type_code();
+	type_code->methods[8] = ::mmx::contract::Executable_calc_hash::static_get_type_code();
+	type_code->methods[9] = ::mmx::contract::Executable_is_valid::static_get_type_code();
+	type_code->methods[10] = ::mmx::contract::TokenBase_calc_cost::static_get_type_code();
+	type_code->methods[11] = ::mmx::contract::TokenBase_calc_hash::static_get_type_code();
+	type_code->methods[12] = ::mmx::contract::TokenBase_is_valid::static_get_type_code();
 	type_code->fields.resize(13);
 	{
 		auto& field = type_code->fields[0];
@@ -407,6 +415,18 @@ std::shared_ptr<vnx::Value> Executable::vnx_call_switch(std::shared_ptr<const vn
 			auto _args = std::static_pointer_cast<const ::mmx::Contract_validate>(_method);
 			auto _return_value = ::mmx::Contract_validate_return::create();
 			_return_value->_ret_0 = validate(_args->operation, _args->context);
+			return _return_value;
+		}
+		case 0x5637ec4f54b3d1baull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::Executable_calc_cost>(_method);
+			auto _return_value = ::mmx::contract::Executable_calc_cost_return::create();
+			_return_value->_ret_0 = calc_cost(_args->params);
+			return _return_value;
+		}
+		case 0x862527293121a545ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::Executable_calc_hash>(_method);
+			auto _return_value = ::mmx::contract::Executable_calc_hash_return::create();
+			_return_value->_ret_0 = calc_hash();
 			return _return_value;
 		}
 		case 0xb8eff28f88909a73ull: {

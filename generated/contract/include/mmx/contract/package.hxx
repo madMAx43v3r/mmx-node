@@ -40,6 +40,10 @@ class Data_transfer_return;
 class Data_validate;
 class Data_validate_return;
 class Executable;
+class Executable_calc_cost;
+class Executable_calc_cost_return;
+class Executable_calc_hash;
+class Executable_calc_hash_return;
 class Executable_is_valid;
 class Executable_is_valid_return;
 class Identity;
@@ -209,6 +213,10 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Data_
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Data_validate; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Data_validate_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_calc_cost; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_calc_cost_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_calc_hash; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_calc_hash_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_is_valid; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_is_valid_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Identity; ///< \private
@@ -384,6 +392,10 @@ void read(TypeInput& in, ::mmx::contract::Data_transfer_return& value, const Typ
 void read(TypeInput& in, ::mmx::contract::Data_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Data_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Executable& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::Executable_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::Executable_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::Executable_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::Executable_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Executable_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Executable_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Identity& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -553,6 +565,10 @@ void write(TypeOutput& out, const ::mmx::contract::Data_transfer_return& value, 
 void write(TypeOutput& out, const ::mmx::contract::Data_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Data_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Executable& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::Executable_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::Executable_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::Executable_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::Executable_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Executable_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Executable_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Identity& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -722,6 +738,10 @@ void read(std::istream& in, ::mmx::contract::Data_transfer_return& value); ///< 
 void read(std::istream& in, ::mmx::contract::Data_validate& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Data_validate_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Executable& value); ///< \private
+void read(std::istream& in, ::mmx::contract::Executable_calc_cost& value); ///< \private
+void read(std::istream& in, ::mmx::contract::Executable_calc_cost_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::Executable_calc_hash& value); ///< \private
+void read(std::istream& in, ::mmx::contract::Executable_calc_hash_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Executable_is_valid& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Executable_is_valid_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Identity& value); ///< \private
@@ -891,6 +911,10 @@ void write(std::ostream& out, const ::mmx::contract::Data_transfer_return& value
 void write(std::ostream& out, const ::mmx::contract::Data_validate& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Data_validate_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Executable& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::Executable_calc_cost& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::Executable_calc_cost_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::Executable_calc_hash& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::Executable_calc_hash_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Executable_is_valid& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Executable_is_valid_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Identity& value); ///< \private
@@ -1060,6 +1084,10 @@ void accept(Visitor& visitor, const ::mmx::contract::Data_transfer_return& value
 void accept(Visitor& visitor, const ::mmx::contract::Data_validate& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Data_validate_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Executable& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::Executable_calc_cost& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::Executable_calc_cost_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::Executable_calc_hash& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::Executable_calc_hash_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Executable_is_valid& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Executable_is_valid_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Identity& value); ///< \private
@@ -1623,6 +1651,98 @@ struct type<::mmx::contract::Executable> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::Executable_calc_cost> {
+	void read(TypeInput& in, ::mmx::contract::Executable_calc_cost& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::Executable_calc_cost& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::Executable_calc_cost& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::Executable_calc_cost& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::Executable_calc_cost& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable_calc_cost& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::Executable_calc_cost_return> {
+	void read(TypeInput& in, ::mmx::contract::Executable_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::Executable_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::Executable_calc_cost_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::Executable_calc_cost_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::Executable_calc_cost_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable_calc_cost_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::Executable_calc_hash> {
+	void read(TypeInput& in, ::mmx::contract::Executable_calc_hash& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::Executable_calc_hash& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::Executable_calc_hash& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::Executable_calc_hash& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::Executable_calc_hash& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable_calc_hash& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::Executable_calc_hash_return> {
+	void read(TypeInput& in, ::mmx::contract::Executable_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::Executable_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::Executable_calc_hash_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::Executable_calc_hash_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::Executable_calc_hash_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable_calc_hash_return& value, bool special = false);
 };
 
 /// \private
