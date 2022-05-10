@@ -406,15 +406,6 @@ var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const var_t& 
 	if(have_init && dst < MEM_EXTERN) {
 		throw std::logic_error("already initialized");
 	}
-	switch(src.type) {
-		case TYPE_ARRAY:
-		case TYPE_MAP: {
-			const auto heap = alloc();
-			write(heap, src);
-			return write_entry(dst, key, ref_t(heap));
-		}
-		default: break;
-	}
 	auto& var = entries[std::make_pair(dst, key)];
 	if(!var && dst >= MEM_STATIC) {
 		var = storage->read(contract, dst, key);
