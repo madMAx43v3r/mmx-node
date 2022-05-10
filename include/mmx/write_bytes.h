@@ -13,6 +13,7 @@
 #include <mmx/txout_t.hxx>
 #include <mmx/txio_key_t.hxx>
 #include <mmx/ulong_fraction_t.hxx>
+#include <mmx/contract/method_t.hxx>
 
 #include <vnx/Buffer.hpp>
 #include <vnx/Output.hpp>
@@ -133,6 +134,17 @@ inline void write_bytes(vnx::OutputBuffer& out, const ulong_fraction_t& value) {
 	write_bytes(out, value.inverse);
 }
 
+inline void write_bytes(vnx::OutputBuffer& out, const contract::method_t& value)
+{
+	write_field(out, "name", value.name);
+	write_field(out, "info", value.info);
+	write_field(out, "is_const", value.is_const);
+	write_field(out, "is_public", value.is_public);
+	write_field(out, "is_payable", value.is_payable);
+	write_field(out, "entry_point", value.entry_point);
+	write_field(out, "args", value.args);
+}
+
 template<typename T>
 void write_bytes(vnx::OutputBuffer& out, const vnx::optional<T>& value) {
 	if(value) {
@@ -154,6 +166,14 @@ template<typename T>
 void write_bytes(vnx::OutputBuffer& out, const std::vector<T>& value) {
 	for(const auto& elem : value) {
 		write_bytes(out, elem);
+	}
+}
+
+template<typename K, typename V>
+void write_bytes(vnx::OutputBuffer& out, const std::map<K, V>& value) {
+	for(const auto& entry : value) {
+		write_bytes(out, entry.first);
+		write_bytes(out, entry.second);
 	}
 }
 

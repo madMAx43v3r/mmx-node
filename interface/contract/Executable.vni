@@ -1,5 +1,6 @@
 package mmx.contract;
 
+import mmx.hash_t;
 import mmx.addr_t;
 
 class Executable extends TokenBase {
@@ -21,6 +22,8 @@ class Executable extends TokenBase {
 	
 	bool is_valid() const;
 	
-	// TODO
+	hash_t calc_hash() const;
+	
+	ulong calc_cost(mmx.ChainParams* params) const;
 	
 }
