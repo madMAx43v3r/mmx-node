@@ -145,16 +145,10 @@ void StorageRocksDB::commit()
 		table_log.insert(std::make_pair(height, entry.first), entry.second);
 	}
 	log_buffer.clear();
-	height++;
 }
 
-void StorageRocksDB::revert()
+void StorageRocksDB::revert(const uint32_t height)
 {
-	if(height == 0) {
-		return;
-	}
-	height--;
-
 	std::vector<std::pair<std::pair<uint32_t, addr_t>, contract::height_log_t>> entries;
 	table_log.find_greater_equal(std::make_pair(height, addr_t()), entries);
 
@@ -182,6 +176,7 @@ void StorageRocksDB::revert()
 			table_entries.erase(std::make_pair(key.data(), key.size()));
 		}
 	}
+	table_log.erase_greater_equal(std::make_pair(height, addr_t()));
 }
 
 

@@ -40,7 +40,7 @@ public:
 
 	void commit();
 
-	void revert();
+	void revert(const uint32_t height);
 
 private:
 	vnx::rocksdb::raw_table table;

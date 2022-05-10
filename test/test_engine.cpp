@@ -19,8 +19,7 @@ int main(int arcv, char** argv)
 {
 //	auto storage = std::make_shared<vm::StorageRAM>();
 	auto backend = std::make_shared<vm::StorageRocksDB>("tmp/");
-	backend->height = 1;
-	backend->revert();
+	backend->revert(0);
 	auto storage = std::make_shared<vm::StorageCache>(backend);
 	{
 		vm::Engine engine(addr_t(), storage, false);
@@ -57,6 +56,7 @@ int main(int arcv, char** argv)
 		engine.commit();
 		std::cout << "Cost: " << engine.total_cost << std::endl;
 	}
+	backend->height++;
 	storage->commit();
 	backend->commit();
 	{
@@ -82,6 +82,7 @@ int main(int arcv, char** argv)
 		engine.commit();
 		std::cout << "Cost: " << engine.total_cost << std::endl;
 	}
+	backend->height++;
 	storage->commit();
 	backend->commit();
 	{
