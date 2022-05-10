@@ -90,6 +90,7 @@ void Node::main()
 		balance_table.open(database_path + "balance_table", options);
 	}
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
+	storage = std::make_shared<vm::StorageRocksDB>(database_path);
 
 	bool is_replay = true;
 	if(block_chain->exists()) {
@@ -118,7 +119,7 @@ void Node::main()
 			int64_t offset = 0;
 			while(auto header = read_block(*block_chain, true, &offset)) {
 				if(auto block = std::dynamic_pointer_cast<const Block>(header)) {
-					apply(block, &offset);
+					apply(block, validate(block), &offset);
 					commit(block);
 					if(block->height % 1000 == 999) {
 						log(INFO) << "Height " << block->height << " ...";
@@ -156,7 +157,7 @@ void Node::main()
 		genesis->vdf_output[1] = hash_t(params->vdf_seed);
 		genesis->finalize();
 
-		apply(genesis);
+		apply(genesis, nullptr);
 		commit(genesis);
 	}
 
@@ -928,7 +929,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 		}
 		if(!fork->is_verified) {
 			try {
-				validate(block);
+				fork->context = validate(block);
 
 				if(!fork->is_vdf_verified) {
 					if(auto prev = find_prev_header(block)) {
@@ -957,7 +958,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 				publish(block, output_verified_blocks);
 			}
 		}
-		apply(block);
+		apply(block, fork->context);
 	}
 	return did_fork ? forked_at : nullptr;
 }
@@ -1064,7 +1065,8 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	publish(block, output_committed_blocks, is_synced ? 0 : BLOCKING);
 }
 
-void Node::apply(std::shared_ptr<const Block> block, int64_t* file_offset) noexcept
+void Node::apply(	std::shared_ptr<const Block> block,
+					std::shared_ptr<const execution_context_t> context, int64_t* file_offset) noexcept
 {
 	if(block->prev != state_hash) {
 		return;
@@ -1082,6 +1084,20 @@ void Node::apply(std::shared_ptr<const Block> block, int64_t* file_offset) noexc
 	for(const auto& key : balance_set) {
 		balance_table.insert(key, std::make_pair(balance_map[key], block->height));
 	}
+	storage->height = block->height;
+
+	if(context) {
+		for(const auto& entry : context->contract_map) {
+			const auto& state = entry.second;
+			if(state->is_mutated) {
+				// TODO: handle owner change
+				contract_cache.insert(entry.first, state->data);
+			}
+		}
+		context->storage->commit();
+	}
+	storage->commit();
+
 	write_block(block, file_offset);
 	state_hash = block->hash;
 }
@@ -1125,28 +1141,10 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			revoke_set.insert(revoke->txid);
 			revoke_map.insert(std::make_pair(revoke->txid, block->height), std::make_pair(revoke->address, tx->id));
 		}
-		if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op))
+		else if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op))
 		{
-			std::shared_ptr<const Contract> contract;
-			if(!contract_cache.find(op->address, contract)) {
-				if(auto tx = get_transaction(op->address)) {
-					contract = tx->deploy;
-				}
-			}
-			if(contract) {
-				try {
-					auto copy = vnx::clone(contract);
-					copy->vnx_call(vnx::clone(mutate->method));
-
-					addr_set.insert(op->address);
-					mutate_log.insert(std::make_pair(op->address, block->height), mutate->method);
-					contract_cache.insert(op->address, copy);
-					// TODO: handle owner change
-				}
-				catch(const std::exception& ex) {
-					Node::log(ERROR) << "apply(): mutate " << op->address << " failed with: " << ex.what();
-				}
-			}
+			addr_set.insert(op->address);
+			mutate_log.insert(std::make_pair(op->address, block->height), mutate->method);
 		}
 	}
 	if(auto contract = tx->deploy) {
@@ -1255,6 +1253,7 @@ void Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noe
 		}
 		revoke_log.erase_greater_equal(height);
 	}
+	storage->revert(height);
 	{
 		std::pair<int64_t, hash_t> entry;
 		if(block_index.find(height, entry)) {

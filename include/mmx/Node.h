@@ -131,6 +131,7 @@ private:
 	};
 
 	struct contract_state_t {
+		bool is_mutated = false;
 		std::map<addr_t, uint128> balance;
 		std::shared_ptr<const Contract> data;
 	};
@@ -167,6 +168,7 @@ private:
 		std::shared_ptr<const Block> block;
 		std::shared_ptr<const vdf_point_t> vdf_point;
 		std::shared_ptr<const BlockHeader> diff_block;
+		std::shared_ptr<const execution_context_t> context;
 	};
 
 	struct tx_map_t {
@@ -270,7 +272,8 @@ private:
 
 	void check_vdf_task(std::shared_ptr<fork_t> fork, std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const BlockHeader> infuse) const noexcept;
 
-	void apply(std::shared_ptr<const Block> block, int64_t* file_offset = nullptr) noexcept;
+	void apply(	std::shared_ptr<const Block> block,
+				std::shared_ptr<const execution_context_t> context, int64_t* file_offset = nullptr) noexcept;
 
 	void apply(	std::shared_ptr<const Block> block,
 				std::shared_ptr<const Transaction> tx,

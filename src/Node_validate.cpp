@@ -538,6 +538,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 				throw std::logic_error("mutate failed with: " + std::string(ex.what()));
 			}
 			state->data = copy;
+			state->is_mutated = true;
 		}
 		else if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op))
 		{
