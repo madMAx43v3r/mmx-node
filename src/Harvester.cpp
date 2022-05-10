@@ -144,6 +144,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 		out->proof = proof;
 
 		try {
+			// TODO: have node sign it after verify
 			out->farmer_sig = farmer->sign_proof(proof);
 			publish(out, output_proofs);
 		}
