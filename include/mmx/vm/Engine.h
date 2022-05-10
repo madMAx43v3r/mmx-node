@@ -93,7 +93,8 @@ public:
 	void unref(const uint64_t dst);
 
 	var_t* assign(const uint64_t dst, var_t* value);
-	var_t* assign(const uint64_t dst, const uint64_t key, var_t* value);
+	var_t* assign_entry(const uint64_t dst, const uint64_t key, var_t* value);
+	var_t* assign_key(const uint64_t dst, const uint64_t key, var_t* value);
 
 	uint64_t lookup(const uint64_t src, const bool read_only);
 	uint64_t lookup(const var_t* var, const bool read_only);
@@ -150,6 +151,7 @@ public:
 
 	frame_t& get_frame();
 	uint64_t deref(const uint64_t src);
+	uint64_t alloc();
 
 	void init();
 	void begin(const uint32_t instr_ptr);
@@ -185,7 +187,6 @@ private:
 	void erase(var_t*& var);
 	void erase_entries(const uint64_t dst);
 
-	uint64_t alloc();
 	uint64_t deref_addr(uint32_t src, const bool flag);
 	uint64_t deref_value(uint32_t src, const bool flag);
 

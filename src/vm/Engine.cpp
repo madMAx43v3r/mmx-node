@@ -81,7 +81,7 @@ var_t* Engine::assign(const uint64_t dst, var_t* value)
 	return assign(var, value);
 }
 
-var_t* Engine::assign(const uint64_t dst, const uint64_t key, var_t* value)
+var_t* Engine::assign_entry(const uint64_t dst, const uint64_t key, var_t* value)
 {
 	if(!value) {
 		return nullptr;
@@ -103,6 +103,11 @@ var_t* Engine::assign(const uint64_t dst, const uint64_t key, var_t* value)
 		var = storage->read(contract, dst, key);
 	}
 	return assign(var, value);
+}
+
+var_t* Engine::assign_key(const uint64_t dst, const uint64_t key, var_t* value)
+{
+	return assign_entry(dst, lookup(key, false), value);
 }
 
 var_t* Engine::assign(var_t*& var, var_t* value)
