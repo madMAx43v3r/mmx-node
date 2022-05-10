@@ -38,6 +38,8 @@ public:
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
 	
+	virtual vnx::bool_t is_valid() const override;
+	
 	static std::shared_ptr<Executable> create();
 	std::shared_ptr<vnx::Value> clone() const override;
 	

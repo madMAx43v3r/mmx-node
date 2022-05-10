@@ -18,9 +18,9 @@ namespace operation {
 class MMX_OPERATION_EXPORT Execute : public ::mmx::Operation {
 public:
 	
-	::mmx::addr_t user;
 	std::string method;
 	std::vector<::vnx::Variant> args;
+	vnx::optional<::mmx::addr_t> user;
 	
 	typedef ::mmx::Operation Super;
 	
@@ -75,9 +75,9 @@ void Execute::accept_generic(T& _visitor) const {
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("address", 1); _visitor.accept(address);
 	_visitor.type_field("solution", 2); _visitor.accept(solution);
-	_visitor.type_field("user", 3); _visitor.accept(user);
-	_visitor.type_field("method", 4); _visitor.accept(method);
-	_visitor.type_field("args", 5); _visitor.accept(args);
+	_visitor.type_field("method", 3); _visitor.accept(method);
+	_visitor.type_field("args", 4); _visitor.accept(args);
+	_visitor.type_field("user", 5); _visitor.accept(user);
 	_visitor.template type_end<Execute>(6);
 }
 

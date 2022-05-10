@@ -19,6 +19,8 @@
 #include <mmx/contract/Data_validate.hxx>
 #include <mmx/contract/Data_validate_return.hxx>
 #include <mmx/contract/Executable.hxx>
+#include <mmx/contract/Executable_is_valid.hxx>
+#include <mmx/contract/Executable_is_valid_return.hxx>
 #include <mmx/contract/Identity.hxx>
 #include <mmx/contract/MultiSig.hxx>
 #include <mmx/contract/MultiSig_add_owner.hxx>
@@ -388,6 +390,30 @@ void type<::mmx::contract::Executable>::create_dynamic_code(std::vector<uint16_t
 }
 
 void type<::mmx::contract::Executable>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::Executable_is_valid>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_Executable_is_valid;
+}
+
+void type<::mmx::contract::Executable_is_valid>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::Executable_is_valid());
+}
+
+void type<::mmx::contract::Executable_is_valid>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable_is_valid& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::Executable_is_valid_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_Executable_is_valid_return;
+}
+
+void type<::mmx::contract::Executable_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::Executable_is_valid_return());
+}
+
+void type<::mmx::contract::Executable_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable_is_valid_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -2194,6 +2220,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::Data_validate::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Data_validate_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Executable::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::Executable_is_valid::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::Executable_is_valid_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Identity::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig_add_owner::static_create_type_code());
@@ -2368,6 +2396,8 @@ const vnx::TypeCode* const vnx_native_type_code_Data_transfer_return = vnx::get_
 const vnx::TypeCode* const vnx_native_type_code_Data_validate = vnx::get_type_code(vnx::Hash64(0x17de02619513f20cull));
 const vnx::TypeCode* const vnx_native_type_code_Data_validate_return = vnx::get_type_code(vnx::Hash64(0x665ccb0bd661c914ull));
 const vnx::TypeCode* const vnx_native_type_code_Executable = vnx::get_type_code(vnx::Hash64(0xfa6a3ac9103ebb12ull));
+const vnx::TypeCode* const vnx_native_type_code_Executable_is_valid = vnx::get_type_code(vnx::Hash64(0xb8eff28f88909a73ull));
+const vnx::TypeCode* const vnx_native_type_code_Executable_is_valid_return = vnx::get_type_code(vnx::Hash64(0x92797cb1785e1d24ull));
 const vnx::TypeCode* const vnx_native_type_code_Identity = vnx::get_type_code(vnx::Hash64(0x69710dd250a33c5eull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig = vnx::get_type_code(vnx::Hash64(0x7d674c5f7297dedull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_add_owner = vnx::get_type_code(vnx::Hash64(0xaa2e4c882b71dd83ull));
