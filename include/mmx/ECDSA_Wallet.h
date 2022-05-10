@@ -287,10 +287,13 @@ public:
 			}
 			addr_t owner = op->address;
 
-			if(auto execute = std::dynamic_pointer_cast<const operation::Execute>(op)) {
-				owner = execute->user;
-			}
-			else {
+			if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op)) {
+				if(exec->user) {
+					owner = *exec->user;
+				} else {
+					continue;
+				}
+			} else {
 				auto iter = options.owner_map.find(op->address);
 				if(iter != options.owner_map.end()) {
 					owner = iter->second;

@@ -19,6 +19,8 @@ class Executable extends TokenBase {
 	vector<vnx.Variant> init_args;
 	
 	
+	bool is_valid() const;
+	
 	// TODO
 	
 }

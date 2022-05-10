@@ -5,11 +5,11 @@ import mmx.addr_t;
 
 class Execute extends mmx.Operation {
 	
-	addr_t user;
-	
 	string method;
 	
 	vector<vnx.Variant> args;
+	
+	optional<addr_t> user;
 	
 	
 	bool is_valid() const;
