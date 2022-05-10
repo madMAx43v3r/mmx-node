@@ -491,7 +491,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 
 				auto& value = amounts[out.contract];
 				if(out.amount > value) {
-					throw std::logic_error("tx over-spend");
+					throw std::logic_error("deposit over-spend");
 				}
 				value -= out.amount;
 
@@ -612,7 +612,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 			throw std::logic_error("exec_outputs count mismatch");
 		}
 		for(const auto& in : tx->exec_inputs) {
-			if(in.solution != std::numeric_limits<decltype(in.solution)>::max()) {
+			if(in.solution != txin_t::NO_SOLUTION) {
 				throw std::logic_error("invalid exec_input");
 			}
 		}
