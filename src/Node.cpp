@@ -119,7 +119,7 @@ void Node::main()
 			int64_t offset = 0;
 			while(auto header = read_block(*block_chain, true, &offset)) {
 				if(auto block = std::dynamic_pointer_cast<const Block>(header)) {
-					apply(block, validate(block), &offset);
+					apply(block, block->height > 0 ? validate(block) : nullptr, &offset);
 					commit(block);
 					if(block->height % 1000 == 999) {
 						log(INFO) << "Height " << block->height << " ...";
