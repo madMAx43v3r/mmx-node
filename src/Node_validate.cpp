@@ -16,6 +16,7 @@
 #include <mmx/operation/Deposit.hxx>
 #include <mmx/operation/Revoke.hxx>
 #include <mmx/utils.h>
+#include <mmx/vm_interface.h>
 
 #include <vnx/vnx.h>
 
@@ -249,71 +250,6 @@ std::shared_ptr<const Context> Node::create_context(
 		context->depends[addr] = get_contract_for(addr);
 	}
 	return context;
-}
-
-const contract::method_t* find_method(std::shared_ptr<const contract::Executable> executable, const std::string& method_name)
-{
-	auto iter = executable->methods.find(method_name);
-	if(iter != executable->methods.end()) {
-		return &iter->second;
-	}
-	return nullptr;
-}
-
-void set_balance(std::shared_ptr<vm::Engine> engine, const std::map<addr_t, uint128>& balance)
-{
-	const auto addr = vm::MEM_EXTERN + vm::EXTERN_BALANCE;
-	engine->assign(addr, new vm::map_t());
-	for(const auto& entry : balance) {
-		engine->write_key(addr, vm::uint_t(entry.first), vm::uint_t(entry.second));
-	}
-}
-
-void set_deposit(std::shared_ptr<vm::Engine> engine, const txout_t& deposit)
-{
-	const auto addr = vm::MEM_EXTERN + vm::EXTERN_DEPOSIT;
-	engine->assign(addr, new vm::array_t());
-	engine->push_back(addr, vm::uint_t(deposit.contract));
-	engine->push_back(addr, vm::uint_t(deposit.amount));
-	if(deposit.sender) {
-		engine->push_back(addr, vm::uint_t(*deposit.sender));
-	} else {
-		engine->push_back(addr, vm::var_t());
-	}
-}
-
-void load(	std::shared_ptr<vm::Engine> engine,
-			const void* constant, const size_t constant_size,
-			const void* binary, const size_t binary_size)
-{
-	uint64_t dst = 0;
-	size_t offset = 0;
-	while(offset < constant_size) {
-		vm::var_t* var = nullptr;
-		offset += vm::deserialize(var, ((const uint8_t*)constant) + offset, constant_size - offset, false, false);
-		if(dst >= vm::MEM_EXTERN) {
-			throw std::runtime_error("constant memory overflow");
-		}
-		engine->assign(dst++, var);
-	}
-	vm::deserialize(engine->code, binary, binary_size);
-	engine->init();
-}
-
-void execute(	std::shared_ptr<vm::Engine> engine,
-				const contract::method_t& method,
-				const std::vector<vnx::Variant>& args)
-{
-	// TODO
-	engine->begin(method.entry_point);
-	engine->run();
-
-	if(!method.is_const) {
-		engine->commit();
-	}
-	if(engine->total_cost > engine->total_gas) {
-		throw std::logic_error("insufficient gas: " + std::to_string(engine->total_cost) + " > " + std::to_string(engine->total_gas));
-	}
 }
 
 void Node::validate(std::shared_ptr<const Transaction> tx,
@@ -615,6 +551,10 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 			out.address = nft->creator;
 			out.amount = 1;
 			exec_outputs.push_back(out);
+		}
+		else if(auto executable = std::dynamic_pointer_cast<const contract::Executable>(tx->deploy))
+		{
+			// TODO
 		}
 	}
 
