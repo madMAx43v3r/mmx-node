@@ -229,7 +229,7 @@ void execute(	std::shared_ptr<vm::Engine> engine,
 				const std::vector<vnx::Variant>& args)
 {
 	for(size_t i = 0; i < args.size(); ++i) {
-		assign(engine, i + 1, args[i]);
+		assign(engine, vm::MEM_STACK + 1 + i, args[i]);
 	}
 	engine->begin(method.entry_point);
 	engine->run();

@@ -349,6 +349,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 
 void Node::validate(std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const execution_context_t> context,
+					std::vector<txout_t>& outputs,
 					std::vector<txout_t>& exec_outputs,
 					balance_cache_t& balance_cache,
 					std::unordered_map<addr_t, uint128_t>& amounts) const
@@ -366,7 +367,7 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 		if(!parent->is_extendable) {
 			throw std::logic_error("not extendable");
 		}
-		validate(parent, context, exec_outputs, balance_cache, amounts);
+		validate(parent, context, outputs, exec_outputs, balance_cache, amounts);
 	}
 	const auto revoked = get_revokations(tx->id);
 
@@ -413,6 +414,7 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 		*balance -= in.amount;
 		amounts[in.contract] += in.amount;
 	}
+	outputs.insert(outputs.end(), tx->outputs.begin(), tx->outputs.end());
 }
 
 std::shared_ptr<const Transaction>
@@ -465,14 +467,15 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 
 	uint128_t base_amount = 0;
 	std::vector<txin_t> exec_inputs;
+	std::vector<txout_t> outputs;
 	std::vector<txout_t> exec_outputs;
 	balance_cache_t balance_cache(&balance_map);
 	std::unordered_map<addr_t, uint128_t> amounts;
 	std::shared_ptr<vm::StorageCache> storage_cache;
 
-	validate(tx, context, exec_outputs, balance_cache, amounts);
+	validate(tx, context, outputs, exec_outputs, balance_cache, amounts);
 
-	for(const auto& out : tx->get_all_outputs())
+	for(const auto& out : outputs)
 	{
 		if(out.amount == 0) {
 			throw std::logic_error("zero amount output");
@@ -631,10 +634,12 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 	}
 	else {
 		if(tx->exec_inputs.size() != exec_inputs.size()) {
-			throw std::logic_error("exec_inputs count mismatch");
+			throw std::logic_error("exec_inputs count mismatch"
+					+ std::to_string(tx->exec_inputs.size()) + " != " + std::to_string(exec_inputs.size()));
 		}
 		if(tx->exec_outputs.size() != exec_outputs.size()) {
-			throw std::logic_error("exec_outputs count mismatch");
+			throw std::logic_error("exec_outputs count mismatch: "
+					+ std::to_string(tx->exec_outputs.size()) + " != " + std::to_string(exec_outputs.size()));
 		}
 		for(const auto& in : tx->exec_inputs) {
 			if(in.solution != txin_t::NO_SOLUTION) {
@@ -658,7 +663,9 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 			}
 		}
 	}
-	storage_cache->commit();
+	if(storage_cache) {
+		storage_cache->commit();
+	}
 	return out;
 }
 

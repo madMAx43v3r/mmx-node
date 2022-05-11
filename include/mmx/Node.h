@@ -242,6 +242,7 @@ private:
 
 	void validate(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const execution_context_t> context,
+					std::vector<txout_t>& outputs,
 					std::vector<txout_t>& exec_outputs,
 					balance_cache_t& balance_cache,
 					std::unordered_map<addr_t, uint128_t>& amounts) const;

@@ -439,7 +439,6 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 		out.address = std::get<0>(entry.first);
 		out.contract = std::get<2>(entry.first);
 		if(delta.recv > delta.spent) {
-			tx_entry_t out;
 			out.type = tx_type_e::RECEIVE;
 			out.amount = delta.recv - delta.spent;
 		}
@@ -1463,12 +1462,13 @@ void Node::write_block(std::shared_ptr<const Block> block, int64_t* file_offset)
 		vnx::write(out, block->get_header());
 	}
 
-	for(auto tx : block->tx_list) {
+	for(const auto& tx : block->tx_list) {
 		const auto offset = out.get_output_pos();
-		while(tx) {
-			tx_ids.push_back(tx->id);
-			tx_index.insert(tx->id, std::make_pair(offset, block->height));
-			tx = tx->parent;
+		auto base = tx;
+		while(base) {
+			tx_ids.push_back(base->id);
+			tx_index.insert(base->id, std::make_pair(offset, block->height));
+			base = base->parent;
 		}
 		if(!file_offset) {
 			vnx::write(out, tx);

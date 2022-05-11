@@ -440,6 +440,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 		}
 	}
 	auto context = std::make_shared<execution_context_t>();
+	context->storage = std::make_shared<vm::StorageCache>(storage);
 	{
 		auto base = Context::create();
 		base->height = peak->height + 1;

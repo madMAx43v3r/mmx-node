@@ -108,7 +108,7 @@ struct instr_t {
 	instr_t() = default;
 	instr_t(opcode_e code, uint8_t flags = 0,
 			uint32_t a = 0, uint32_t b = 0, uint32_t c = 0, uint32_t d = 0)
-		:	code(code), flags(flags), a(a), b(b), c(c), d(c) {}
+		:	code(code), flags(flags), a(a), b(b), c(c), d(d) {}
 
 };
 

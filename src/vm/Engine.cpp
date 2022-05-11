@@ -815,21 +815,21 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint32_t dflags,
 			switch(dflags & 0xFF) {
 				case CONVTYPE_BOOL: write(dst, var_t(TYPE_FALSE)); break;
 				case CONVTYPE_UINT: write(dst, uint_t()); break;
-				default: throw std::logic_error("invalid conversion");
+				default: throw std::logic_error("invalid conversion: NIL to " + to_hex(dflags));
 			}
 			break;
 		case TYPE_TRUE:
 			switch(dflags & 0xFF) {
 				case CONVTYPE_BOOL: write(dst, var_t(TYPE_TRUE)); break;
 				case CONVTYPE_UINT: write(dst, uint_t(1)); break;
-				default: throw std::logic_error("invalid conversion");
+				default: throw std::logic_error("invalid conversion: TRUE to " + to_hex(dflags));
 			}
 			break;
 		case TYPE_FALSE:
 			switch(dflags & 0xFF) {
 				case CONVTYPE_BOOL: write(dst, var_t(TYPE_FALSE)); break;
 				case CONVTYPE_UINT: write(dst, uint_t()); break;
-				default: throw std::logic_error("invalid conversion");
+				default: throw std::logic_error("invalid conversion: FALSE to " + to_hex(dflags));
 			}
 			break;
 		case TYPE_UINT: {
@@ -843,13 +843,14 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint32_t dflags,
 					break;
 				case CONVTYPE_STRING: {
 					int base = 10;
-					switch((dflags >> 8) & 0xFF) {
+					const auto bflags = (dflags >> 8) & 0xFF;
+					switch(bflags) {
 						case CONVTYPE_DEFAULT: break;
 						case CONVTYPE_BASE_2: base = 2; break;
 						case CONVTYPE_BASE_8: base = 8; break;
 						case CONVTYPE_BASE_10: base = 10; break;
 						case CONVTYPE_BASE_16: base = 16; break;
-						default: throw std::logic_error("invalid conversion");
+						default: throw std::logic_error("invalid conversion: UINT to STRING with base " + to_hex(bflags));
 					}
 					assign(dst, binary_t::alloc(sint.value.str(base)));
 					break;
@@ -861,7 +862,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint32_t dflags,
 					assign(dst, binary_t::alloc(addr_t(sint.value).to_string()));
 					break;
 				default:
-					throw std::logic_error("invalid conversion");
+					throw std::logic_error("invalid conversion: UINT to " + to_hex(dflags));
 			}
 			break;
 		}
@@ -880,7 +881,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint32_t dflags,
 						case CONVTYPE_BASE_10: base = 10; break;
 						case CONVTYPE_BASE_16: base = 16; break;
 						case CONVTYPE_ADDRESS: base = 32; break;
-						default: throw std::logic_error("invalid conversion");
+						default: throw std::logic_error("invalid conversion: STRING to UINT with base " + to_hex(sflags));
 					}
 					if(base == 32) {
 						write(dst, uint_t(addr_t(sstr.to_string())));
@@ -896,7 +897,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint32_t dflags,
 					assign(dst, binary_t::alloc(sstr, TYPE_BINARY));
 					break;
 				default:
-					throw std::logic_error("invalid conversion");
+					throw std::logic_error("invalid conversion: STRING to " + to_hex(dflags));
 			}
 			break;
 		}
@@ -908,7 +909,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint32_t dflags,
 					break;
 				case CONVTYPE_UINT: {
 					if(sbin.size > 32) {
-						throw std::runtime_error("source size > 32");
+						throw std::runtime_error("invalid conversion: BINARY to UINT: source size > 32");
 					}
 					uint_t var;
 					::memcpy(&var.value, sbin.data(), sbin.size);
@@ -922,14 +923,14 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint32_t dflags,
 					write(dst, svar);
 					break;
 				default:
-					throw std::logic_error("invalid conversion");
+					throw std::logic_error("invalid conversion: BINARY to " + to_hex(dflags));
 			}
 			break;
 		}
 		default:
 			switch(dflags & 0xFF) {
 				case CONVTYPE_BOOL: write(dst, var_t(TYPE_TRUE)); break;
-				default: throw std::logic_error("invalid conversion");
+				default: throw std::logic_error("invalid conversion: " + to_hex(svar.type) + " to " + to_hex(dflags));
 			}
 	}
 }

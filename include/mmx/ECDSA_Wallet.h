@@ -157,6 +157,7 @@ public:
 		}
 		uint64_t left = amount;
 
+		// TODO: reuse existing inputs if possible
 		for(const auto& entry : balance_map)
 		{
 			if(left == 0) {
@@ -234,7 +235,8 @@ public:
 			if(paid_fee >= tx_fees) {
 				break;
 			}
-			const auto more = (tx_fees + params->min_txfee_io) - paid_fee;
+			const auto more = (tx_fees + params->min_txfee_io
+								+ (spend_cost.empty() ? params->min_txfee_sign : 0)) - paid_fee;
 			gather_inputs(tx, spent_map, more, addr_t(), options);
 			paid_fee += more;
 		}
