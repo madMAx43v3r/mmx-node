@@ -32,8 +32,8 @@
 #include <mmx/Node_get_contract_for_return.hxx>
 #include <mmx/Node_get_contracts.hxx>
 #include <mmx/Node_get_contracts_return.hxx>
-#include <mmx/Node_get_contracts_owned.hxx>
-#include <mmx/Node_get_contracts_owned_return.hxx>
+#include <mmx/Node_get_contracts_by.hxx>
+#include <mmx/Node_get_contracts_by_return.hxx>
 #include <mmx/Node_get_header.hxx>
 #include <mmx/Node_get_header_return.hxx>
 #include <mmx/Node_get_header_at.hxx>
@@ -354,14 +354,14 @@ uint64_t NodeAsyncClient::get_contracts(const std::vector<::mmx::addr_t>& addres
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_contracts_owned(const std::vector<::mmx::addr_t>& owners, const std::function<void(const std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
-	auto _method = ::mmx::Node_get_contracts_owned::create();
-	_method->owners = owners;
+uint64_t NodeAsyncClient::get_contracts_by(const std::vector<::mmx::addr_t>& addresses, const std::function<void(const std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+	auto _method = ::mmx::Node_get_contracts_by::create();
+	_method->addresses = addresses;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
 		vnx_pending[_request_id] = 18;
-		vnx_queue_get_contracts_owned[_request_id] = std::make_pair(_callback, _error_callback);
+		vnx_queue_get_contracts_by[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
 	return _request_id;
@@ -901,10 +901,10 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			break;
 		}
 		case 18: {
-			const auto _iter = vnx_queue_get_contracts_owned.find(_request_id);
-			if(_iter != vnx_queue_get_contracts_owned.end()) {
+			const auto _iter = vnx_queue_get_contracts_by.find(_request_id);
+			if(_iter != vnx_queue_get_contracts_by.end()) {
 				const auto _callback = std::move(_iter->second.second);
-				vnx_queue_get_contracts_owned.erase(_iter);
+				vnx_queue_get_contracts_by.erase(_iter);
 				_lock.unlock();
 				if(_callback) {
 					_callback(_ex);
@@ -1532,15 +1532,15 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			break;
 		}
 		case 18: {
-			const auto _iter = vnx_queue_get_contracts_owned.find(_request_id);
-			if(_iter == vnx_queue_get_contracts_owned.end()) {
+			const auto _iter = vnx_queue_get_contracts_by.find(_request_id);
+			if(_iter == vnx_queue_get_contracts_by.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
 			}
 			const auto _callback = std::move(_iter->second.first);
-			vnx_queue_get_contracts_owned.erase(_iter);
+			vnx_queue_get_contracts_by.erase(_iter);
 			_lock.unlock();
 			if(_callback) {
-				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_contracts_owned_return>(_value)) {
+				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_contracts_by_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
 					_callback(_value->get_field_by_index(0).to<std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>>());

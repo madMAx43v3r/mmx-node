@@ -33,8 +33,8 @@
 #include <mmx/Node_get_contract_for_return.hxx>
 #include <mmx/Node_get_contracts.hxx>
 #include <mmx/Node_get_contracts_return.hxx>
-#include <mmx/Node_get_contracts_owned.hxx>
-#include <mmx/Node_get_contracts_owned_return.hxx>
+#include <mmx/Node_get_contracts_by.hxx>
+#include <mmx/Node_get_contracts_by_return.hxx>
 #include <mmx/Node_get_header.hxx>
 #include <mmx/Node_get_header_return.hxx>
 #include <mmx/Node_get_header_at.hxx>
@@ -585,7 +585,7 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	type_code->methods[9] = ::mmx::Node_get_contract::static_get_type_code();
 	type_code->methods[10] = ::mmx::Node_get_contract_for::static_get_type_code();
 	type_code->methods[11] = ::mmx::Node_get_contracts::static_get_type_code();
-	type_code->methods[12] = ::mmx::Node_get_contracts_owned::static_get_type_code();
+	type_code->methods[12] = ::mmx::Node_get_contracts_by::static_get_type_code();
 	type_code->methods[13] = ::mmx::Node_get_header::static_get_type_code();
 	type_code->methods[14] = ::mmx::Node_get_header_at::static_get_type_code();
 	type_code->methods[15] = ::mmx::Node_get_height::static_get_type_code();
@@ -954,10 +954,10 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 			_return_value->_ret_0 = get_contracts(_args->addresses);
 			return _return_value;
 		}
-		case 0x867544b29550d588ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_get_contracts_owned>(_method);
-			auto _return_value = ::mmx::Node_get_contracts_owned_return::create();
-			_return_value->_ret_0 = get_contracts_owned(_args->owners);
+		case 0xe7c397362a63f57cull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_contracts_by>(_method);
+			auto _return_value = ::mmx::Node_get_contracts_by_return::create();
+			_return_value->_ret_0 = get_contracts_by(_args->addresses);
 			return _return_value;
 		}
 		case 0xf17a5d0c180db198ull: {

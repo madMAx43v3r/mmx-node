@@ -74,7 +74,7 @@ public:
 	
 	std::vector<std::shared_ptr<const ::mmx::Contract>> get_contracts(const std::vector<::mmx::addr_t>& addresses = {});
 	
-	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts_owned(const std::vector<::mmx::addr_t>& owners = {});
+	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts_by(const std::vector<::mmx::addr_t>& addresses = {});
 	
 	std::shared_ptr<const ::mmx::Transaction> get_transaction(const ::mmx::hash_t& id = ::mmx::hash_t(), const vnx::bool_t& include_pending = 0);
 	

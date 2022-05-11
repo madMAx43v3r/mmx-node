@@ -32,8 +32,8 @@
 #include <mmx/Node_get_contract_for_return.hxx>
 #include <mmx/Node_get_contracts.hxx>
 #include <mmx/Node_get_contracts_return.hxx>
-#include <mmx/Node_get_contracts_owned.hxx>
-#include <mmx/Node_get_contracts_owned_return.hxx>
+#include <mmx/Node_get_contracts_by.hxx>
+#include <mmx/Node_get_contracts_by_return.hxx>
 #include <mmx/Node_get_header.hxx>
 #include <mmx/Node_get_header_return.hxx>
 #include <mmx/Node_get_header_at.hxx>
@@ -353,11 +353,11 @@ std::vector<std::shared_ptr<const ::mmx::Contract>> NodeClient::get_contracts(co
 	}
 }
 
-std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> NodeClient::get_contracts_owned(const std::vector<::mmx::addr_t>& owners) {
-	auto _method = ::mmx::Node_get_contracts_owned::create();
-	_method->owners = owners;
+std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> NodeClient::get_contracts_by(const std::vector<::mmx::addr_t>& addresses) {
+	auto _method = ::mmx::Node_get_contracts_by::create();
+	_method->addresses = addresses;
 	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_contracts_owned_return>(_return_value)) {
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_contracts_by_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>>();
