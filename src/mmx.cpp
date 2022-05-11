@@ -14,6 +14,7 @@
 #include <mmx/Contract.hxx>
 #include <mmx/contract/NFT.hxx>
 #include <mmx/contract/Token.hxx>
+#include <mmx/contract/Executable.hxx>
 #include <mmx/KeyFile.hxx>
 #include <mmx/secp256k1.hpp>
 #include <mmx/hash_t.hpp>
@@ -90,6 +91,8 @@ int main(int argc, char** argv)
 	options["t"] = "target";
 	options["x"] = "contract";
 	options["y"] = "yes";
+	options["r"] = "fee-ratio";
+	options["l"] = "gas-limit";
 	options["node"] = "address";
 	options["file"] = "path";
 	options["index"] = "0..?";
@@ -100,6 +103,8 @@ int main(int argc, char** argv)
 	options["source"] = "address";
 	options["target"] = "address";
 	options["contract"] = "address";
+	options["fee-ratio"] = ">= 1";
+	options["gas-limit"] = "MMX";
 
 	vnx::write_config("log_level", 2);
 
@@ -116,6 +121,8 @@ int main(int argc, char** argv)
 	int64_t num_outputs = 0;
 	double amount = 0;
 	double bid_amount = 0;
+	double fee_ratio = 1;
+	double gas_limit = 1;
 	bool pre_accept = false;
 	vnx::read_config("$1", module);
 	vnx::read_config("$2", command);
@@ -129,6 +136,8 @@ int main(int argc, char** argv)
 	vnx::read_config("source", source_addr);
 	vnx::read_config("target", target_addr);
 	vnx::read_config("contract", contract_addr);
+	vnx::read_config("fee-ratio", fee_ratio);
+	vnx::read_config("gas-limit", gas_limit);
 
 	bool did_fail = false;
 	auto params = mmx::get_params();
@@ -140,6 +149,7 @@ int main(int argc, char** argv)
 	}
 
 	mmx::spend_options_t spend_options;
+	spend_options.fee_ratio = fee_ratio * 1024;
 
 	mmx::NodeClient node("Node");
 
@@ -338,7 +348,7 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Missing destination address argument: -t | --target";
 					goto failed;
 				}
-				const auto tx = wallet.send(index, 1, target, contract);
+				const auto tx = wallet.send(index, 1, target, contract, spend_options);
 				std::cout << "Sent " << contract << " to " << target << std::endl;
 				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
@@ -355,7 +365,7 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Missing destination address argument: -t | --target";
 					goto failed;
 				}
-				const auto tx = wallet.mint(index, mojo, target, contract);
+				const auto tx = wallet.mint(index, mojo, target, contract, spend_options);
 				std::cout << "Minted " << mojo / pow(10, token->decimals) << " (" << mojo << ") " << token->symbol << " to " << target << std::endl;
 				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
@@ -369,7 +379,10 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Failed to read contract from file: " << file_path;
 					goto failed;
 				}
-				const auto tx = wallet.deploy(index, payload);
+				if(std::dynamic_pointer_cast<const mmx::contract::Executable>(payload)) {
+					spend_options.extra_fee = gas_limit * 1e6;
+				}
+				const auto tx = wallet.deploy(index, payload, spend_options);
 				std::cout << "Deployed " << payload->get_type_name() << " as [" << mmx::addr_t(tx->id) << "]" << std::endl;
 				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
@@ -381,7 +394,7 @@ int main(int argc, char** argv)
 				vnx::read_config("$4", args);
 
 				args["__type"] = method;
-				const auto tx = wallet.execute(index, contract, args);
+				const auto tx = wallet.execute(index, contract, args, spend_options);
 				std::cout << "Executed " << method << " on [" << contract << "] with:" << std::endl;
 				vnx::PrettyPrinter printer(std::cout);
 				args.accept(printer);

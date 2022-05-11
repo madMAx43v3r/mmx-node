@@ -4,6 +4,8 @@ struct spend_options_t {
 	
 	uint min_confirm = 1;
 	
+	uint fee_ratio = 1024;
+	
 	ulong extra_fee;
 	
 	optional<addr_t> sender;

@@ -196,6 +196,8 @@ public:
 					std::map<std::pair<addr_t, addr_t>, uint128_t>& spent_map,
 					const spend_options_t& options = {})
 	{
+		tx->fee_ratio = options.fee_ratio;
+
 		uint64_t paid_fee = 0;
 		while(true) {
 			std::unordered_map<addr_t, uint64_t> spend_cost;
