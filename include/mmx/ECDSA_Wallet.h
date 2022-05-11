@@ -331,24 +331,28 @@ public:
 	void complete(std::shared_ptr<Transaction> tx, const spend_options_t& options = {})
 	{
 		std::map<addr_t, uint128_t> missing;
-		std::shared_ptr<const Transaction> parent = tx;
-		while(parent) {
-			for(const auto& out : parent->outputs) {
-				missing[out.contract] += out.amount;
-			}
-			parent = parent->parent;
-		}
-		parent = tx;
-		while(parent) {
-			for(const auto& in : parent->inputs) {
-				auto& amount = missing[in.contract];
-				if(in.amount < amount) {
-					amount -= in.amount;
-				} else {
-					amount = 0;
+		{
+			std::shared_ptr<const Transaction> parent = tx;
+			while(parent) {
+				for(const auto& out : parent->outputs) {
+					missing[out.contract] += out.amount;
 				}
+				parent = parent->parent;
 			}
-			parent = parent->parent;
+		}
+		{
+			std::shared_ptr<const Transaction> parent = tx;
+			while(parent) {
+				for(const auto& in : parent->inputs) {
+					auto& amount = missing[in.contract];
+					if(in.amount < amount) {
+						amount -= in.amount;
+					} else {
+						amount = 0;
+					}
+				}
+				parent = parent->parent;
+			}
 		}
 		std::map<std::pair<addr_t, addr_t>, uint128_t> spent_map;
 		for(const auto& entry : missing) {
