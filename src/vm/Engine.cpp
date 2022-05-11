@@ -879,9 +879,14 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint32_t dflags,
 						case CONVTYPE_BASE_8: base = 8; break;
 						case CONVTYPE_BASE_10: base = 10; break;
 						case CONVTYPE_BASE_16: base = 16; break;
+						case CONVTYPE_ADDRESS: base = 32; break;
 						default: throw std::logic_error("invalid conversion");
 					}
-					write(dst, uint_t(uint256_t((const char*)sstr.data(), base)));
+					if(base == 32) {
+						write(dst, uint_t(addr_t(sstr.to_string())));
+					} else {
+						write(dst, uint_t(uint256_t(sstr.c_str(), base)));
+					}
 					break;
 				}
 				case CONVTYPE_STRING:
@@ -901,6 +906,15 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint32_t dflags,
 				case CONVTYPE_BOOL:
 					write(dst, var_t(sbin.size ? TYPE_TRUE : TYPE_FALSE));
 					break;
+				case CONVTYPE_UINT: {
+					if(sbin.size > 32) {
+						throw std::runtime_error("source size > 32");
+					}
+					uint_t var;
+					::memcpy(&var.value, sbin.data(), sbin.size);
+					write(dst, var);
+					break;
+				}
 				case CONVTYPE_STRING:
 					assign(dst, binary_t::alloc(vnx::to_hex_string(sbin.data(), sbin.size)));
 					break;

@@ -126,6 +126,12 @@ struct binary_t : var_t {
 	const void* data(const size_t offset = 0) const {
 		return ((const char*)this) + sizeof(binary_t) + offset;
 	}
+	const char* c_str() const {
+		return (const char*)data();
+	}
+	std::string to_string() const {
+		return std::string(c_str(), size);
+	}
 
 	static binary_t* clone(const binary_t& src) {
 		auto bin = alloc(src);
