@@ -83,7 +83,7 @@ protected:
 
 	std::vector<std::shared_ptr<const Contract>> get_contracts(const std::vector<addr_t>& addresses) const override;
 
-	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts_owned(const std::vector<addr_t>& owners) const override;
+	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts_by(const std::vector<addr_t>& addresses) const override;
 
 	void add_block(std::shared_ptr<const Block> block) override;
 
@@ -331,7 +331,7 @@ private:
 
 	vnx::rocksdb::table<addr_t, std::shared_ptr<const Contract>> contract_cache;		// [addr, contract]
 	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, vnx::Object> mutate_log;		// [[addr, height] => method]
-	vnx::rocksdb::multi_table<addr_t, addr_t> owner_map;								// [owner => contract]
+	vnx::rocksdb::multi_table<addr_t, addr_t> deploy_map;								// [sender => contract]
 
 	std::map<std::pair<addr_t, addr_t>, uint128_t> balance_map;						// [[addr, currency] => balance]
 	vnx::rocksdb::table<std::pair<addr_t, addr_t>, std::pair<uint128, uint32_t>> balance_table;		// [[addr, currency] => [balance, height]]

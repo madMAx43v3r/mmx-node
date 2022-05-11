@@ -81,7 +81,7 @@ void Node::main()
 
 		contract_cache.open(database_path + "contract_cache", options);
 		mutate_log.open(database_path + "mutate_log", options);
-		owner_map.open(database_path + "owner_map", options);
+		deploy_map.open(database_path + "deploy_map", options);
 
 		tx_log.open(database_path + "tx_log", options);
 		tx_index.open(database_path + "tx_index", options);
@@ -492,12 +492,12 @@ std::vector<std::shared_ptr<const Contract>> Node::get_contracts(const std::vect
 	return res;
 }
 
-std::map<addr_t, std::shared_ptr<const Contract>> Node::get_contracts_owned(const std::vector<addr_t>& owners) const
+std::map<addr_t, std::shared_ptr<const Contract>> Node::get_contracts_by(const std::vector<addr_t>& addresses) const
 {
 	std::map<addr_t, std::shared_ptr<const Contract>> res;
-	for(const auto& owner : owners) {
+	for(const auto& address : addresses) {
 		std::vector<addr_t> list;
-		owner_map.find(owner, list);
+		deploy_map.find(address, list);
 		for(const auto& addr : list) {
 			if(auto contract = get_contract(addr)) {
 				res.emplace(addr, contract);
@@ -1090,7 +1090,6 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		for(const auto& entry : context->contract_map) {
 			const auto& state = entry.second;
 			if(state->is_mutated) {
-				// TODO: handle owner change
 				contract_cache.insert(entry.first, state->data);
 			}
 		}
@@ -1148,8 +1147,8 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		}
 	}
 	if(auto contract = tx->deploy) {
-		if(auto owner = contract->get_owner()) {
-			owner_map.insert(*owner, tx->id);
+		if(tx->sender) {
+			deploy_map.insert(*tx->sender, tx->id);
 		}
 	}
 	tx_pool.erase(tx->id);
@@ -1222,7 +1221,6 @@ void Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noe
 					} else {
 						contract_cache.insert(address, copy);
 					}
-					// TODO: handle owner change
 				}
 			}
 		}
