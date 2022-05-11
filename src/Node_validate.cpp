@@ -317,9 +317,6 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		mmx::set_deposit(engine, out);
 		exec_outputs.push_back(out);
 	}
-	else if(method->is_payable) {
-		throw std::logic_error("method requires deposit");
-	}
 	{
 		auto gas_left = std::min<uint64_t>(amounts[addr_t()], params->max_block_cost);
 		if(tx_cost <= gas_left) {
