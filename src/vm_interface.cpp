@@ -96,6 +96,7 @@ public:
 			engine->write(frame.dst, vm::var_t());
 		}
 	}
+
 	void visit(const bool& value) override {
 		const auto var = vm::var_t(value ? vm::TYPE_TRUE : vm::TYPE_FALSE);
 		auto& frame = stack.back();
@@ -107,6 +108,7 @@ public:
 			engine->write(frame.dst, var);
 		}
 	}
+
 	void visit(const uint8_t& value) override {
 		visit(uint256_t(value));
 	}
@@ -119,6 +121,7 @@ public:
 	void visit(const uint64_t& value) override {
 		visit(uint256_t(value));
 	}
+
 	void visit(const int8_t& value) override {
 		visit(uint256_t(value));
 	}
@@ -131,12 +134,14 @@ public:
 	void visit(const int64_t& value) override {
 		visit(uint256_t(value));
 	}
+
 	void visit(const vnx::float32_t& value) override {
 		visit(uint256_t(int64_t(value)));
 	}
 	void visit(const vnx::float64_t& value) override {
 		visit(uint256_t(int64_t(value)));
 	}
+
 	void visit(const std::string& value) override {
 		const auto var = vm::binary_t::alloc(value);
 		auto& frame = stack.back();
@@ -149,6 +154,7 @@ public:
 			engine->assign(frame.dst, var);
 		}
 	}
+
 	void visit(const uint256_t& value) {
 		const auto var = vm::uint_t(value);
 		auto& frame = stack.back();
