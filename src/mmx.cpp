@@ -408,6 +408,7 @@ int main(int argc, char** argv)
 				vnx::read_config("$3", method);
 				vnx::read_config("$4", args);
 
+				spend_options.extra_fee = gas_limit * 1e6;
 				const auto tx = wallet.execute(index, contract, method, args, spend_options);
 				std::cout << "Executed " << method << "() on [" << contract << "] with ";
 				vnx::PrettyPrinter printer(std::cout);
