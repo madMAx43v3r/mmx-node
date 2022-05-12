@@ -13,7 +13,6 @@
 #include <mmx/contract/Executable.hxx>
 #include <mmx/operation/Revoke.hxx>
 #include <mmx/operation/Mutate.hxx>
-#include <mmx/operation/Deposit.hxx>
 #include <mmx/utils.h>
 #include <mmx/vm/Engine.h>
 #include <mmx/vm_interface.h>
@@ -646,6 +645,24 @@ std::map<vm::varptr_t, vm::varptr_t> Node::read_storage_map(const addr_t& contra
 		}
 	}
 	return out;
+}
+
+vnx::Variant Node::call_contract(const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args) const
+{
+	if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(get_contract(address))) {
+		auto func = mmx::find_method(exec, method);
+		if(!func) {
+			throw std::runtime_error("no such method");
+		}
+		if(!func->is_const) {
+			throw std::runtime_error("method is not const");
+		}
+		auto engine = std::make_shared<vm::Engine>(address, storage, true);
+		mmx::load(engine, exec);
+		mmx::execute(engine, *func, args, params->max_block_cost);
+		return mmx::read(engine, vm::MEM_STACK);
+	}
+	throw std::runtime_error("no such contract");
 }
 
 uint128 Node::get_total_supply(const addr_t& currency) const

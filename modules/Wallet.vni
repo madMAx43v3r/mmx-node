@@ -32,7 +32,10 @@ module Wallet implements vnx.addons.HttpComponent {
 	Transaction* deploy(uint index, Contract* contract, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
-	Transaction* execute(uint index, addr_t address, vnx.Object method, spend_options_t options) const;
+	Transaction* mutate(uint index, addr_t address, vnx.Object method, spend_options_t options) const;
+	
+	@Permission(permission_e.SPENDING)
+	Transaction* execute(uint index, addr_t address, string method, vector<vnx.Variant> args, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
 	Transaction* complete(uint index, Transaction* tx, spend_options_t options) const;

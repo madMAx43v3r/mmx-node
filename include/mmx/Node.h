@@ -111,6 +111,8 @@ protected:
 
 	std::map<vm::varptr_t, vm::varptr_t> read_storage_map(const addr_t& contract, const uint64_t& address, const uint32_t& height) const override;
 
+	vnx::Variant call_contract(const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args) const override;
+
 	address_info_t get_address_info(const addr_t& address) const override;
 
 	uint128 get_total_supply(const addr_t& currency) const override;

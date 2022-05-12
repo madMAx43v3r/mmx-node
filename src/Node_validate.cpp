@@ -315,16 +315,13 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		mmx::set_deposit(engine, out);
 		exec_outputs.push_back(out);
 	}
-	{
-		auto gas_left = std::min<uint64_t>(amounts[addr_t()], params->max_block_cost);
-		if(tx_cost <= gas_left) {
-			gas_left -= tx_cost;
-		} else {
-			gas_left = 0;
-		}
-		engine->total_gas = gas_left;
+	auto total_gas = std::min<uint64_t>(amounts[addr_t()], params->max_block_cost);
+	if(tx_cost <= total_gas) {
+		total_gas -= tx_cost;
+	} else {
+		total_gas = 0;
 	}
-	mmx::execute(engine, *method, exec->args);
+	mmx::execute(engine, *method, exec->args, total_gas);
 	tx_cost += engine->total_cost;
 
 	for(const auto& out : engine->outputs)

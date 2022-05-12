@@ -8,6 +8,7 @@
 #include <mmx/Wallet.h>
 #include <mmx/contract/Token.hxx>
 #include <mmx/operation/Mutate.hxx>
+#include <mmx/operation/Execute.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/utils.h>
 
@@ -172,7 +173,7 @@ Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, 
 }
 
 std::shared_ptr<const Transaction>
-Wallet::execute(const uint32_t& index, const addr_t& address, const vnx::Object& method, const spend_options_t& options) const
+Wallet::mutate(const uint32_t& index, const addr_t& address, const vnx::Object& method, const spend_options_t& options) const
 {
 	auto contract = node->get_contract(address);
 	if(!contract) {
@@ -202,7 +203,31 @@ Wallet::execute(const uint32_t& index, const addr_t& address, const vnx::Object&
 	wallet->complete(tx, options_);
 	if(tx->is_signed()) {
 		send_off(index, tx);
-		log(INFO) << "Executed " << method["__type"] << " on [" << address << "] with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
+		log(INFO) << "Mutated [" << address << "] via " << method["__type"] << " with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
+	}
+	return tx;
+}
+
+std::shared_ptr<const Transaction> Wallet::execute(
+			const uint32_t& index, const addr_t& address, const std::string& method,
+			const std::vector<vnx::Variant>& args, const spend_options_t& options) const
+{
+	const auto wallet = get_wallet(index);
+	update_cache(index);
+
+	auto op = operation::Execute::create();
+	op->address = address;
+	op->method = method;
+	op->args = args;
+
+	auto tx = Transaction::create();
+	tx->note = tx_note_e::EXECUTE;
+	tx->execute.push_back(op);
+
+	wallet->complete(tx, options);
+	if(tx->is_signed()) {
+		send_off(index, tx);
+		log(INFO) << "Executed " << method << " on [" << address << "] with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
 	}
 	return tx;
 }

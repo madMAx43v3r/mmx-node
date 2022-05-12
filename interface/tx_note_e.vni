@@ -13,6 +13,7 @@ enum tx_note_e {
 	MINT,
 	DEPLOY,
 	MUTATE,
+	EXECUTE,
 	OTHER
 	
 }

@@ -226,13 +226,67 @@ void assign(std::shared_ptr<vm::Engine> engine, const uint64_t dst, const vnx::V
 	vnx::accept(visitor, value);
 }
 
+vnx::Variant convert(std::shared_ptr<vm::Engine> engine, const vm::var_t* var)
+{
+	if(var) {
+		switch(var->type) {
+			case vm::TYPE_NIL:
+				return vnx::Variant(nullptr);
+			case vm::TYPE_TRUE:
+				return vnx::Variant(true);
+			case vm::TYPE_FALSE:
+				return vnx::Variant(false);
+			case vm::TYPE_REF:
+				return convert(engine, engine->read(((const vm::ref_t*)var)->address));
+			case vm::TYPE_UINT: {
+				const auto& value = ((const vm::uint_t*)var)->value;
+				if(!value.upper()) {
+					if(!value.lower().upper()) {
+						return vnx::Variant(value.lower().lower());
+					}
+					return vnx::Variant(mmx::uint128(value.lower()));
+				}
+				return vnx::Variant(hash_t::from_bytes(value));
+			}
+			case vm::TYPE_STRING:
+				return vnx::Variant(((const vm::binary_t*)var)->to_string());
+			case vm::TYPE_BINARY:
+				return vnx::Variant(((const vm::binary_t*)var)->to_hex_string());
+			case vm::TYPE_ARRAY: {
+				const auto array = (const vm::array_t*)var;
+				std::vector<vnx::Variant> tmp;
+				for(uint64_t i = 0; i < array->size; ++i) {
+					tmp.push_back(convert(engine, engine->read_entry(array->address, i)));
+				}
+				return vnx::Variant(tmp);
+			}
+			case vm::TYPE_MAP: {
+				const auto map = (const vm::map_t*)var;
+				std::map<vnx::Variant, vnx::Variant> tmp;
+				for(const auto& entry : engine->find_entries(map->address)) {
+					tmp[convert(engine, engine->read(entry.first))] = convert(engine, entry.second);
+				}
+				return vnx::Variant(tmp);
+			}
+			default:
+				break;
+		}
+	}
+	return vnx::Variant();
+}
+
+vnx::Variant read(std::shared_ptr<vm::Engine> engine, const uint64_t address)
+{
+	return convert(engine, engine->read(address));
+}
+
 void execute(	std::shared_ptr<vm::Engine> engine,
-				const contract::method_t& method,
-				const std::vector<vnx::Variant>& args)
+				const contract::method_t& method, const std::vector<vnx::Variant>& args, const uint64_t total_gas)
 {
 	for(size_t i = 0; i < args.size(); ++i) {
 		assign(engine, vm::MEM_STACK + 1 + i, args[i]);
 	}
+	engine->total_gas = total_gas;
 	engine->begin(method.entry_point);
 	engine->run();
 

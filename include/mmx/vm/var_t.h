@@ -10,6 +10,7 @@
 
 #include <mmx/hash_t.hpp>
 
+#include <vnx/Util.h>
 #include <uint256_t.h>
 
 #include <cstdint>
@@ -131,6 +132,9 @@ struct binary_t : var_t {
 	}
 	std::string to_string() const {
 		return std::string(c_str(), size);
+	}
+	std::string to_hex_string() const {
+		return vnx::to_hex_string(c_str(), size);
 	}
 
 	static binary_t* clone(const binary_t& src) {

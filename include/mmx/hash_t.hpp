@@ -41,6 +41,8 @@ public:
 
 	static hash_t random();
 
+	static hash_t from_bytes(const uint256_t& bytes);
+
 	static hash_t from_bytes(const std::vector<uint8_t>& bytes);
 
 	static hash_t from_bytes(const std::array<uint8_t, 32>& bytes);
@@ -48,7 +50,6 @@ public:
 	static hash_t from_bytes(const void* data);
 
 };
-
 
 inline
 hash_t::hash_t(const std::string& data)
@@ -91,6 +92,11 @@ hash_t hash_t::ones() {
 inline
 hash_t hash_t::empty() {
 	return hash_t(nullptr, 0);
+}
+
+inline
+hash_t hash_t::from_bytes(const uint256_t& bytes) {
+	return from_bytes(&bytes);
 }
 
 inline

@@ -32,9 +32,10 @@ void load(	std::shared_ptr<vm::Engine> engine,
 
 void assign(std::shared_ptr<vm::Engine> engine, const uint64_t dst, const vnx::Variant& value);
 
+vnx::Variant read(std::shared_ptr<vm::Engine> engine, const uint64_t address);
+
 void execute(	std::shared_ptr<vm::Engine> engine,
-				const contract::method_t& method,
-				const std::vector<vnx::Variant>& args);
+				const contract::method_t& method, const std::vector<vnx::Variant>& args, const uint64_t total_gas);
 
 
 } // mmx

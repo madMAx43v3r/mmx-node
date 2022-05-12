@@ -387,7 +387,7 @@ int main(int argc, char** argv)
 				std::cout << "Deployed " << payload->get_type_name() << " as [" << mmx::addr_t(tx->id) << "]" << std::endl;
 				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
-			else if(command == "exec")
+			else if(command == "mutate")
 			{
 				std::string method;
 				vnx::Object args;
@@ -395,10 +395,23 @@ int main(int argc, char** argv)
 				vnx::read_config("$4", args);
 
 				args["__type"] = method;
-				const auto tx = wallet.execute(index, contract, args, spend_options);
+				const auto tx = wallet.mutate(index, contract, args, spend_options);
 				std::cout << "Executed " << method << " on [" << contract << "] with:" << std::endl;
 				vnx::PrettyPrinter printer(std::cout);
 				args.accept(printer);
+				std::cout << std::endl << "Transaction ID: " << tx->id << std::endl;
+			}
+			else if(command == "exec")
+			{
+				std::string method;
+				std::vector<vnx::Variant> args;
+				vnx::read_config("$3", method);
+				vnx::read_config("$4", args);
+
+				const auto tx = wallet.execute(index, contract, method, args, spend_options);
+				std::cout << "Executed " << method << "() on [" << contract << "] with ";
+				vnx::PrettyPrinter printer(std::cout);
+				vnx::accept(printer, args);
 				std::cout << std::endl << "Transaction ID: " << tx->id << std::endl;
 			}
 			else if(command == "log")
@@ -442,7 +455,7 @@ int main(int argc, char** argv)
 						<< std::endl << wallet.seed_value << std::endl;
 			}
 			else {
-				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | transfer | mint | deploy | exec | create | accounts | keys]" << std::endl;
+				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | transfer | mint | deploy | mutate | exec | create | accounts | keys]" << std::endl;
 			}
 		}
 		else if(module == "node")
@@ -749,6 +762,18 @@ int main(int argc, char** argv)
 					std::cout << "[0x" << std::hex << entry.first << std::dec << "] " << entry.second.to_string() << std::endl;
 				}
 			}
+			else if(command == "call")
+			{
+				std::string method;
+				std::vector<vnx::Variant> args;
+				vnx::read_config("$3", method);
+				vnx::read_config("$4", args);
+
+				const auto res = node.call_contract(contract, method, args);
+				vnx::PrettyPrinter printer(std::cout);
+				vnx::accept(printer, res);
+				std::cout << std::endl;
+			}
 			else if(command == "fetch")
 			{
 				std::string subject;
@@ -786,7 +811,7 @@ int main(int argc, char** argv)
 				}
 			}
 			else {
-				std::cerr << "Help: mmx node [info | peers | tx | get | read | dump | fetch | balance | history | sync]" << std::endl;
+				std::cerr << "Help: mmx node [info | peers | tx | get | call | read | dump | fetch | balance | history | sync]" << std::endl;
 			}
 		}
 		else if(module == "farm")

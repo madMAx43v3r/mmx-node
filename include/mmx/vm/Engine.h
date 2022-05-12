@@ -169,6 +169,8 @@ public:
 	void clear_extern(const uint32_t offset = 0);
 	void clear_stack(const uint32_t offset = 0);
 
+	std::map<uint64_t, const var_t*> find_entries(const uint64_t dst) const;
+
 	void dump_memory(const uint64_t begin = 0, const uint64_t end = -1);
 
 	template<typename T>

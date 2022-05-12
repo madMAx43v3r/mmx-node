@@ -45,8 +45,12 @@ protected:
 	std::shared_ptr<const Transaction> deploy(
 			const uint32_t& index, std::shared_ptr<const Contract> contract, const spend_options_t& options) const override;
 
-	std::shared_ptr<const Transaction> execute(
+	std::shared_ptr<const Transaction> mutate(
 			const uint32_t& index, const addr_t& address, const vnx::Object& method, const spend_options_t& options) const override;
+
+	std::shared_ptr<const Transaction> execute(
+			const uint32_t& index, const addr_t& address, const std::string& method,
+			const std::vector<vnx::Variant>& args, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> complete(
 			const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const;

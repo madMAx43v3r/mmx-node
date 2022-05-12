@@ -1473,6 +1473,16 @@ void Engine::commit()
 	total_cost += storage->num_write * STOR_WRITE_COST + storage->num_bytes_write * STOR_WRITE_BYTE_COST;
 }
 
+std::map<uint64_t, const var_t*> Engine::find_entries(const uint64_t dst) const
+{
+	std::map<uint64_t, const var_t*> out;
+	const auto begin = entries.lower_bound(std::make_pair(dst, 0));
+	for(auto iter = begin; iter != entries.end() && iter->first.first == dst; ++iter) {
+		out[iter->first.second] = iter->second;
+	}
+	return out;
+}
+
 void Engine::dump_memory(const uint64_t begin, const uint64_t end)
 {
 	for(auto iter = memory.lower_bound(begin); iter != memory.lower_bound(end); ++iter) {
