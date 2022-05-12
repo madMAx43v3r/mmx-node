@@ -12,6 +12,8 @@
 #include <mmx/Node_add_block_return.hxx>
 #include <mmx/Node_add_transaction.hxx>
 #include <mmx/Node_add_transaction_return.hxx>
+#include <mmx/Node_call_contract.hxx>
+#include <mmx/Node_call_contract_return.hxx>
 #include <mmx/Node_dump_storage.hxx>
 #include <mmx/Node_dump_storage_return.hxx>
 #include <mmx/Node_get_address_info.hxx>
@@ -112,6 +114,7 @@
 #include <vnx/ModuleInterface_vnx_stop.hxx>
 #include <vnx/ModuleInterface_vnx_stop_return.hxx>
 #include <vnx/TopicPtr.hpp>
+#include <vnx/Variant.hpp>
 #include <vnx/addons/HttpComponent_http_request.hxx>
 #include <vnx/addons/HttpComponent_http_request_return.hxx>
 #include <vnx/addons/HttpComponent_http_request_chunk.hxx>
@@ -575,6 +578,21 @@ std::map<::mmx::vm::varptr_t, ::mmx::vm::varptr_t> NodeClient::read_storage_map(
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::map<::mmx::vm::varptr_t, ::mmx::vm::varptr_t>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+::vnx::Variant NodeClient::call_contract(const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args) {
+	auto _method = ::mmx::Node_call_contract::create();
+	_method->address = address;
+	_method->method = method;
+	_method->args = args;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_call_contract_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<::vnx::Variant>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}

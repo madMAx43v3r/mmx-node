@@ -96,6 +96,8 @@ class Node_add_block;
 class Node_add_block_return;
 class Node_add_transaction;
 class Node_add_transaction_return;
+class Node_call_contract;
+class Node_call_contract_return;
 class Node_dump_storage;
 class Node_dump_storage_return;
 class Node_get_address_info;
@@ -333,6 +335,8 @@ class Wallet_mark_spent;
 class Wallet_mark_spent_return;
 class Wallet_mint;
 class Wallet_mint_return;
+class Wallet_mutate;
+class Wallet_mutate_return;
 class Wallet_release;
 class Wallet_release_return;
 class Wallet_release_all;
@@ -462,6 +466,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_add_block
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_add_block_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_add_transaction; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_add_transaction_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_call_contract; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_call_contract_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_dump_storage; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_dump_storage_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_address_info; ///< \private
@@ -699,6 +705,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_mark_sp
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_mark_spent_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_mint; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_mint_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_mutate; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_mutate_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_release; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_release_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_release_all; ///< \private
@@ -825,6 +833,8 @@ void read(TypeInput& in, ::mmx::Node_add_block& value, const TypeCode* type_code
 void read(TypeInput& in, ::mmx::Node_add_block_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_add_transaction& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_add_transaction_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_call_contract& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_call_contract_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_dump_storage& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_dump_storage_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_address_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1062,6 +1072,8 @@ void read(TypeInput& in, ::mmx::Wallet_mark_spent& value, const TypeCode* type_c
 void read(TypeInput& in, ::mmx::Wallet_mark_spent_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Wallet_mint& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Wallet_mint_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Wallet_mutate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Wallet_mutate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Wallet_release& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Wallet_release_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Wallet_release_all& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1191,6 +1203,8 @@ void write(TypeOutput& out, const ::mmx::Node_add_block& value, const TypeCode* 
 void write(TypeOutput& out, const ::mmx::Node_add_block_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_add_transaction& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_add_transaction_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_call_contract& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_call_contract_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_dump_storage& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_dump_storage_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_address_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1428,6 +1442,8 @@ void write(TypeOutput& out, const ::mmx::Wallet_mark_spent& value, const TypeCod
 void write(TypeOutput& out, const ::mmx::Wallet_mark_spent_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Wallet_mint& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Wallet_mint_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Wallet_mutate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Wallet_mutate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Wallet_release& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Wallet_release_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Wallet_release_all& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1557,6 +1573,8 @@ void read(std::istream& in, ::mmx::Node_add_block& value); ///< \private
 void read(std::istream& in, ::mmx::Node_add_block_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_add_transaction& value); ///< \private
 void read(std::istream& in, ::mmx::Node_add_transaction_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_call_contract& value); ///< \private
+void read(std::istream& in, ::mmx::Node_call_contract_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_dump_storage& value); ///< \private
 void read(std::istream& in, ::mmx::Node_dump_storage_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_address_info& value); ///< \private
@@ -1794,6 +1812,8 @@ void read(std::istream& in, ::mmx::Wallet_mark_spent& value); ///< \private
 void read(std::istream& in, ::mmx::Wallet_mark_spent_return& value); ///< \private
 void read(std::istream& in, ::mmx::Wallet_mint& value); ///< \private
 void read(std::istream& in, ::mmx::Wallet_mint_return& value); ///< \private
+void read(std::istream& in, ::mmx::Wallet_mutate& value); ///< \private
+void read(std::istream& in, ::mmx::Wallet_mutate_return& value); ///< \private
 void read(std::istream& in, ::mmx::Wallet_release& value); ///< \private
 void read(std::istream& in, ::mmx::Wallet_release_return& value); ///< \private
 void read(std::istream& in, ::mmx::Wallet_release_all& value); ///< \private
@@ -1923,6 +1943,8 @@ void write(std::ostream& out, const ::mmx::Node_add_block& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_add_block_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_add_transaction& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_add_transaction_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_call_contract& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_call_contract_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_dump_storage& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_dump_storage_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_address_info& value); ///< \private
@@ -2160,6 +2182,8 @@ void write(std::ostream& out, const ::mmx::Wallet_mark_spent& value); ///< \priv
 void write(std::ostream& out, const ::mmx::Wallet_mark_spent_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Wallet_mint& value); ///< \private
 void write(std::ostream& out, const ::mmx::Wallet_mint_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Wallet_mutate& value); ///< \private
+void write(std::ostream& out, const ::mmx::Wallet_mutate_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Wallet_release& value); ///< \private
 void write(std::ostream& out, const ::mmx::Wallet_release_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Wallet_release_all& value); ///< \private
@@ -2289,6 +2313,8 @@ void accept(Visitor& visitor, const ::mmx::Node_add_block& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_add_block_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_add_transaction& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_add_transaction_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_call_contract& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_call_contract_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_dump_storage& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_dump_storage_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_address_info& value); ///< \private
@@ -2526,6 +2552,8 @@ void accept(Visitor& visitor, const ::mmx::Wallet_mark_spent& value); ///< \priv
 void accept(Visitor& visitor, const ::mmx::Wallet_mark_spent_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Wallet_mint& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Wallet_mint_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Wallet_mutate& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Wallet_mutate_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Wallet_release& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Wallet_release_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Wallet_release_all& value); ///< \private
@@ -4272,6 +4300,52 @@ struct type<::mmx::Node_add_transaction_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_add_transaction_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_call_contract> {
+	void read(TypeInput& in, ::mmx::Node_call_contract& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_call_contract& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_call_contract& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_call_contract& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_call_contract& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_call_contract& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_call_contract_return> {
+	void read(TypeInput& in, ::mmx::Node_call_contract_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_call_contract_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_call_contract_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_call_contract_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_call_contract_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_call_contract_return& value, bool special = false);
 };
 
 /// \private
@@ -9711,6 +9785,52 @@ struct type<::mmx::Wallet_mint_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_mint_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Wallet_mutate> {
+	void read(TypeInput& in, ::mmx::Wallet_mutate& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Wallet_mutate& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Wallet_mutate& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Wallet_mutate& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Wallet_mutate& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_mutate& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Wallet_mutate_return> {
+	void read(TypeInput& in, ::mmx::Wallet_mutate_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Wallet_mutate_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Wallet_mutate_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Wallet_mutate_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Wallet_mutate_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_mutate_return& value, bool special = false);
 };
 
 /// \private

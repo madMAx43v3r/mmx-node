@@ -11,7 +11,7 @@ namespace mmx {
 
 
 const vnx::Hash64 tx_note_e::VNX_TYPE_HASH(0x347c1deca0a9c9cull);
-const vnx::Hash64 tx_note_e::VNX_CODE_HASH(0x7425037e9dfb4897ull);
+const vnx::Hash64 tx_note_e::VNX_CODE_HASH(0x94dd18f47d35ea5cull);
 
 vnx::Hash64 tx_note_e::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -46,6 +46,7 @@ vnx::bool_t tx_note_e::is_valid() const {
 		case BURN: return true;
 		case CLAIM: return true;
 		case DEPLOY: return true;
+		case EXECUTE: return true;
 		case MINT: return true;
 		case MUTATE: return true;
 		case OFFER: return true;
@@ -64,6 +65,7 @@ std::string tx_note_e::to_string() const {
 		case BURN: return "\"BURN\"";
 		case CLAIM: return "\"CLAIM\"";
 		case DEPLOY: return "\"DEPLOY\"";
+		case EXECUTE: return "\"EXECUTE\"";
 		case MINT: return "\"MINT\"";
 		case MUTATE: return "\"MUTATE\"";
 		case OFFER: return "\"OFFER\"";
@@ -82,6 +84,7 @@ std::string tx_note_e::to_string_value() const {
 		case BURN: return "BURN";
 		case CLAIM: return "CLAIM";
 		case DEPLOY: return "DEPLOY";
+		case EXECUTE: return "EXECUTE";
 		case MINT: return "MINT";
 		case MUTATE: return "MUTATE";
 		case OFFER: return "OFFER";
@@ -100,6 +103,7 @@ std::string tx_note_e::to_string_value_full() const {
 		case BURN: return "mmx.tx_note_e.BURN";
 		case CLAIM: return "mmx.tx_note_e.CLAIM";
 		case DEPLOY: return "mmx.tx_note_e.DEPLOY";
+		case EXECUTE: return "mmx.tx_note_e.EXECUTE";
 		case MINT: return "mmx.tx_note_e.MINT";
 		case MUTATE: return "mmx.tx_note_e.MUTATE";
 		case OFFER: return "mmx.tx_note_e.OFFER";
@@ -126,6 +130,7 @@ void tx_note_e::from_string_value(const std::string& _name) {
 		if(_name == "BURN") value = BURN;
 		else if(_name == "CLAIM") value = CLAIM;
 		else if(_name == "DEPLOY") value = DEPLOY;
+		else if(_name == "EXECUTE") value = EXECUTE;
 		else if(_name == "MINT") value = MINT;
 		else if(_name == "MUTATE") value = MUTATE;
 		else if(_name == "OFFER") value = OFFER;
@@ -147,6 +152,7 @@ void tx_note_e::accept(vnx::Visitor& _visitor) const {
 		case BURN: _name = "BURN"; break;
 		case CLAIM: _name = "CLAIM"; break;
 		case DEPLOY: _name = "DEPLOY"; break;
+		case EXECUTE: _name = "EXECUTE"; break;
 		case MINT: _name = "MINT"; break;
 		case MUTATE: _name = "MUTATE"; break;
 		case OFFER: _name = "OFFER"; break;
@@ -165,6 +171,7 @@ void tx_note_e::write(std::ostream& _out) const {
 		case BURN: _out << "\"BURN\""; break;
 		case CLAIM: _out << "\"CLAIM\""; break;
 		case DEPLOY: _out << "\"DEPLOY\""; break;
+		case EXECUTE: _out << "\"EXECUTE\""; break;
 		case MINT: _out << "\"MINT\""; break;
 		case MUTATE: _out << "\"MUTATE\""; break;
 		case OFFER: _out << "\"OFFER\""; break;
@@ -234,7 +241,7 @@ std::shared_ptr<vnx::TypeCode> tx_note_e::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.tx_note_e";
 	type_code->type_hash = vnx::Hash64(0x347c1deca0a9c9cull);
-	type_code->code_hash = vnx::Hash64(0x7425037e9dfb4897ull);
+	type_code->code_hash = vnx::Hash64(0x94dd18f47d35ea5cull);
 	type_code->is_native = true;
 	type_code->is_enum = true;
 	type_code->native_size = sizeof(::mmx::tx_note_e);
@@ -249,6 +256,7 @@ std::shared_ptr<vnx::TypeCode> tx_note_e::static_create_type_code() {
 	type_code->enum_map[1273454750] = "BURN";
 	type_code->enum_map[3251493825] = "CLAIM";
 	type_code->enum_map[251696509] = "DEPLOY";
+	type_code->enum_map[356250251] = "EXECUTE";
 	type_code->enum_map[2140500429] = "MINT";
 	type_code->enum_map[2579166487] = "MUTATE";
 	type_code->enum_map[1549148948] = "OFFER";
