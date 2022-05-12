@@ -13,8 +13,8 @@
 namespace mmx {
 namespace vm {
 
-typedef std::array<uint8_t, 44> key_t;
-typedef std::array<uint8_t, 52> entry_key_t;
+typedef std::array<char, 44> key_t;
+typedef std::array<char, 52> entry_key_t;
 
 key_t get_key(const addr_t& contract, uint64_t dst, uint32_t height)
 {
@@ -24,6 +24,20 @@ key_t get_key(const addr_t& contract, uint64_t dst, uint32_t height)
 	::memcpy(out.data() + contract.size(), &dst, 8);
 	height = vnx::flip_bytes(height);
 	::memcpy(out.data() + contract.size() + 8, &height, 4);
+	return out;
+}
+
+std::tuple<addr_t, uint64_t, uint32_t> read_key(const char* data, const size_t length)
+{
+	if(length < 44) {
+		throw std::runtime_error("unexpected eof");
+	}
+	std::tuple<addr_t, uint64_t, uint32_t> out;
+	::memcpy(&std::get<0>(out), data, 32);
+	::memcpy(&std::get<1>(out), data + 32, 8);
+	::memcpy(&std::get<2>(out), data + 40, 4);
+	std::get<1>(out) = vnx::flip_bytes(std::get<1>(out));
+	std::get<2>(out) = vnx::flip_bytes(std::get<2>(out));
 	return out;
 }
 
@@ -37,6 +51,22 @@ entry_key_t get_entry_key(const addr_t& contract, uint64_t dst, uint64_t key, ui
 	::memcpy(out.data() + contract.size() + 8, &key, 8);
 	height = vnx::flip_bytes(height);
 	::memcpy(out.data() + contract.size() + 16, &height, 4);
+	return out;
+}
+
+std::tuple<addr_t, uint64_t, uint64_t, uint32_t> read_entry_key(const char* data, const size_t length)
+{
+	if(length < 52) {
+		throw std::runtime_error("unexpected eof");
+	}
+	std::tuple<addr_t, uint64_t, uint64_t, uint32_t> out;
+	::memcpy(&std::get<0>(out), data, 32);
+	::memcpy(&std::get<1>(out), data + 32, 8);
+	::memcpy(&std::get<2>(out), data + 40, 8);
+	::memcpy(&std::get<3>(out), data + 48, 4);
+	std::get<1>(out) = vnx::flip_bytes(std::get<1>(out));
+	std::get<2>(out) = vnx::flip_bytes(std::get<2>(out));
+	std::get<3>(out) = vnx::flip_bytes(std::get<3>(out));
 	return out;
 }
 
@@ -72,7 +102,12 @@ StorageRocksDB::~StorageRocksDB()
 
 var_t* StorageRocksDB::read(const addr_t& contract, const uint64_t src) const
 {
-	const auto key = get_key(contract, src, -1);
+	return read_ex(contract, src, -1);
+}
+
+var_t* StorageRocksDB::read_ex(const addr_t& contract, const uint64_t src, const uint32_t height) const
+{
+	const auto key = get_key(contract, src, height);
 	vnx::rocksdb::raw_ptr_t value;
 	vnx::rocksdb::raw_ptr_t found_key;
 	if(table.find_prev(std::make_pair(key.data(), key.size()), value, &found_key)) {
@@ -177,6 +212,77 @@ void StorageRocksDB::revert(const uint32_t height)
 		}
 	}
 	table_log.erase_greater_equal(std::make_pair(height, addr_t()));
+}
+
+std::vector<std::pair<uint64_t, varptr_t>> StorageRocksDB::find_range(
+		const addr_t& contract, const uint64_t begin, const uint64_t end, const uint32_t height) const
+{
+	std::vector<std::pair<uint64_t, varptr_t>> out;
+	std::unique_ptr<::rocksdb::Iterator> iter(table.iterator());
+
+	if(begin >= end) {
+		return out;
+	}
+	uint64_t address = end - 1;
+	while(address >= begin) {
+		const auto key_begin = get_key(contract, address, height);
+		iter->SeekForPrev(::rocksdb::Slice(key_begin.data(), key_begin.size()));
+		if(!iter->Valid()) {
+			break;
+		}
+		const auto key = read_key(iter->key().data(), iter->key().size());
+		address = std::get<1>(key);
+		if(std::get<0>(key) != contract || address < begin) {
+			break;
+		}
+		var_t* var = nullptr;
+		deserialize(var, iter->value().data(), iter->value().size());
+		out.emplace_back(address, var);
+		if(address == 0) {
+			break;
+		}
+		address--;
+	}
+	return out;
+}
+
+std::vector<std::pair<uint64_t, varptr_t>> StorageRocksDB::find_entries(
+		const addr_t& contract, const uint64_t address, const uint32_t height) const
+{
+	std::vector<std::pair<uint64_t, varptr_t>> out;
+	std::unique_ptr<::rocksdb::Iterator> iter(table_entries.iterator());
+
+	uint64_t entry = -1;
+	while(true) {
+		const auto key_begin = get_entry_key(contract, address, entry, height);
+		iter->SeekForPrev(::rocksdb::Slice(key_begin.data(), key_begin.size()));
+		if(!iter->Valid()) {
+			break;
+		}
+		const auto key = read_entry_key(iter->key().data(), iter->key().size());
+		if(std::get<0>(key) != contract || std::get<1>(key) != address) {
+			break;
+		}
+		entry = std::get<2>(key);
+		var_t* var = nullptr;
+		deserialize(var, iter->value().data(), iter->value().size(), false);
+		out.emplace_back(entry, var);
+		if(entry == 0) {
+			break;
+		}
+		entry--;
+	}
+	return out;
+}
+
+std::vector<varptr_t> StorageRocksDB::read_array(
+		const addr_t& contract, const uint64_t address, const uint32_t height) const
+{
+	std::vector<varptr_t> out;
+	for(const auto& entry : find_entries(contract, address, height)) {
+		out.push_back(entry.second);
+	}
+	return out;
 }
 
 

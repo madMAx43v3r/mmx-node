@@ -9,6 +9,7 @@
 #define INCLUDE_MMX_VM_STORAGEROCKSDB_H_
 
 #include <mmx/vm/Storage.h>
+#include <mmx/vm/varptr_t.hpp>
 #include <mmx/contract/height_log_t.hxx>
 
 #include <vnx/rocksdb/table.h>
@@ -30,6 +31,8 @@ public:
 
 	var_t* read(const addr_t& contract, const uint64_t src) const override;
 
+	var_t* read_ex(const addr_t& contract, const uint64_t src, const uint32_t height) const;
+
 	var_t* read(const addr_t& contract, const uint64_t src, const uint64_t key) const override;
 
 	void write(const addr_t& contract, const uint64_t dst, const var_t& value) override;
@@ -41,6 +44,15 @@ public:
 	void commit();
 
 	void revert(const uint32_t height);
+
+	std::vector<std::pair<uint64_t, varptr_t>> find_range(
+			const addr_t& contract, const uint64_t begin, const uint64_t end, const uint32_t height = -1) const;
+
+	std::vector<std::pair<uint64_t, varptr_t>> find_entries(
+			const addr_t& contract, const uint64_t address, const uint32_t height = -1) const;
+
+	std::vector<varptr_t> read_array(
+			const addr_t& contract, const uint64_t address, const uint32_t height = -1) const;
 
 private:
 	vnx::rocksdb::raw_table table;

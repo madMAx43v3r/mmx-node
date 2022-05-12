@@ -1,5 +1,7 @@
 package mmx;
 
+import mmx.vm.varptr_t;
+
 module Node implements vnx.addons.HttpComponent {
 	
 	vnx.TopicPtr input_vdfs = "network.vdfs";
@@ -126,6 +128,24 @@ module Node implements vnx.addons.HttpComponent {
 	
 	@Permission(permission_e.PUBLIC)
 	map<pair<addr_t, addr_t>, uint128> get_all_balances(vector<addr_t> addresses, uint min_confirm = 1) const;
+	
+	@Permission(permission_e.PUBLIC)
+	map<string, varptr_t> read_storage(addr_t contract, uint height = -1) const;
+	
+	@Permission(permission_e.PUBLIC)
+	map<ulong, varptr_t> dump_storage(addr_t contract, uint height = -1) const;
+	
+	@Permission(permission_e.PUBLIC)
+	varptr_t read_storage_var(addr_t contract, ulong address, uint height = -1) const;
+	
+	@Permission(permission_e.PUBLIC)
+	pair<varptr_t, ulong> read_storage_field(addr_t contract, string name, uint height = -1) const;
+	
+	@Permission(permission_e.PUBLIC)
+	vector<varptr_t> read_storage_array(addr_t contract, ulong address, uint height = -1) const;
+	
+	@Permission(permission_e.PUBLIC)
+	map<varptr_t, varptr_t> read_storage_map(addr_t contract, ulong address, uint height = -1) const;
 	
 	@Permission(permission_e.PUBLIC)
 	address_info_t get_address_info(addr_t address) const;

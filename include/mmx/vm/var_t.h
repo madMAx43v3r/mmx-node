@@ -206,44 +206,6 @@ struct map_t : var_t {
 
 };
 
-struct varptr_t {
-
-	var_t* ptr = nullptr;
-
-	varptr_t() = default;
-	varptr_t(var_t* var) {
-		ptr = var;
-		if(ptr) {
-			ptr->addref();
-		}
-	}
-	varptr_t(const varptr_t& other) : varptr_t(other.ptr) {}
-
-	~varptr_t() {
-		if(ptr) {
-			if(ptr->unref()) {
-				delete ptr;
-			}
-			ptr = nullptr;
-		}
-	}
-	varptr_t& operator=(const varptr_t& other) {
-		if(ptr) {
-			ptr->unref();
-		}
-		ptr = other.ptr;
-		if(ptr) {
-			ptr->addref();
-		}
-		return *this;
-	}
-	var_t* get() const {
-		return ptr;
-	}
-
-};
-
-
 var_t* clone(const var_t& src);
 
 var_t* clone(const var_t* var);
@@ -275,9 +237,6 @@ inline bool operator==(const var_t& L, const var_t& R) {
 }
 inline bool operator!=(const var_t& L, const var_t& R) {
 	return compare(L, R) != 0;
-}
-inline bool operator<(const varptr_t& L, const varptr_t& R) {
-	return varptr_less_t{}(L.ptr, R.ptr);
 }
 
 inline size_t num_bytes(const var_t& var)

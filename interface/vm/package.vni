@@ -1,0 +1,3 @@
+package mmx.vm;
+
+extern varptr_t = {12, 1};

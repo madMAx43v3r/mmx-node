@@ -19,6 +19,7 @@
 #include <mmx/secp256k1.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/utils.h>
+#include <mmx/vm/var_t.h>
 
 #include <vnx/vnx.h>
 #include <vnx/Proxy.h>
@@ -689,6 +690,65 @@ int main(int argc, char** argv)
 					std::cerr << "Help: mmx node get [height | tx | contract | balance | amount | block | header | peers | netspace | supply]" << std::endl;
 				}
 			}
+			else if(command == "read")
+			{
+				std::string address;
+				vnx::read_config("$3", address);
+
+				if(address.empty()) {
+					std::cout << "{" << std::endl;
+					for(const auto& entry : node.read_storage(contract)) {
+						std::cout << "  \"" << entry.first << "\": " << entry.second.to_string() << "," << std::endl;
+					}
+					std::cout << "}" << std::endl;
+				} else {
+					vnx::Variant tmp;
+					vnx::from_string(address, tmp);
+
+					uint64_t addr = 0;
+					mmx::vm::varptr_t var;
+					if(tmp.is_string()) {
+						const auto res = node.read_storage_field(contract, address);
+						var = res.first;
+						addr = res.second;
+					} else {
+						var = node.read_storage_var(contract, tmp.to<uint64_t>());
+					}
+					if(var) {
+						switch(var->type) {
+							case mmx::vm::TYPE_ARRAY: {
+								std::cout << '[';
+								int i = 0;
+								for(const auto& entry : node.read_storage_array(contract, addr)) {
+									if(i++) {
+										std::cout << ", ";
+									}
+									std::cout << entry.to_string();
+								}
+								std::cout << ']' << std::endl;
+								break;
+							}
+							case mmx::vm::TYPE_MAP:
+								std::cout << '{' << std::endl;
+								for(const auto& entry : node.read_storage_map(contract, addr)) {
+									std::cout << "  " << entry.first.to_string() << ": " << entry.second.to_string() << ',' << std::endl;
+								}
+								std::cout << '}' << std::endl;
+								break;
+							default:
+								std::cout << var.to_string() << std::endl;
+						}
+					} else {
+						std::cout << var.to_string() << std::endl;
+					}
+				}
+			}
+			else if(command == "dump")
+			{
+				for(const auto& entry : node.dump_storage(contract)) {
+					std::cout << "[0x" << std::hex << entry.first << std::dec << "] " << entry.second.to_string() << std::endl;
+				}
+			}
 			else if(command == "fetch")
 			{
 				std::string subject;
@@ -726,7 +786,7 @@ int main(int argc, char** argv)
 				}
 			}
 			else {
-				std::cerr << "Help: mmx node [info | peers | tx | get | fetch | balance | history | sync]" << std::endl;
+				std::cerr << "Help: mmx node [info | peers | tx | get | read | dump | fetch | balance | history | sync]" << std::endl;
 			}
 		}
 		else if(module == "farm")

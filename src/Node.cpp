@@ -10,10 +10,13 @@
 #include <mmx/Challenge.hxx>
 #include <mmx/contract/Token.hxx>
 #include <mmx/contract/PubKey.hxx>
+#include <mmx/contract/Executable.hxx>
 #include <mmx/operation/Revoke.hxx>
 #include <mmx/operation/Mutate.hxx>
 #include <mmx/operation/Deposit.hxx>
 #include <mmx/utils.h>
+#include <mmx/vm/Engine.h>
+#include <mmx/vm_interface.h>
 
 #include <vnx/vnx.h>
 
@@ -588,6 +591,61 @@ std::map<std::pair<addr_t, addr_t>, uint128> Node::get_all_balances(const std::v
 		}
 	}
 	return totals;
+}
+
+std::map<std::string, vm::varptr_t> Node::read_storage(const addr_t& contract, const uint32_t& height) const
+{
+	std::map<std::string, vm::varptr_t> out;
+	if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(get_contract(contract))) {
+		for(const auto& entry : exec->fields) {
+			if(auto var = storage->read(contract, entry.second)) {
+				out[entry.first] = var;
+			}
+		}
+	}
+	return out;
+}
+
+std::map<uint64_t, vm::varptr_t> Node::dump_storage(const addr_t& contract, const uint32_t& height) const
+{
+	const auto entries = storage->find_range(contract, vm::MEM_STATIC, -1, height);
+	return std::map<uint64_t, vm::varptr_t>(entries.begin(), entries.end());
+}
+
+vm::varptr_t Node::read_storage_var(const addr_t& contract, const uint64_t& address, const uint32_t& height) const
+{
+	return storage->read_ex(contract, address, height);
+}
+
+std::pair<vm::varptr_t, uint64_t> Node::read_storage_field(const addr_t& contract, const std::string& name, const uint32_t& height) const
+{
+	if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(get_contract(contract))) {
+		auto iter = exec->fields.find(name);
+		if(iter != exec->fields.end()) {
+			return std::make_pair(read_storage_var(contract, iter->second, height), iter->second);
+		}
+	}
+	return {};
+}
+
+std::vector<vm::varptr_t> Node::read_storage_array(const addr_t& contract, const uint64_t& address, const uint32_t& height) const
+{
+	return storage->read_array(contract, address, height);
+}
+
+std::map<vm::varptr_t, vm::varptr_t> Node::read_storage_map(const addr_t& contract, const uint64_t& address, const uint32_t& height) const
+{
+	std::map<vm::varptr_t, vm::varptr_t> out;
+	if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(get_contract(contract))) {
+		auto engine = std::make_shared<vm::Engine>(contract, storage, true);
+		mmx::load(engine, exec);
+		for(const auto& entry : storage->find_entries(contract, address, height)) {
+			if(auto key = engine->read(entry.first)) {
+				out[vm::clone(key)] = entry.second;
+			}
+		}
+	}
+	return out;
 }
 
 uint128 Node::get_total_supply(const addr_t& currency) const

@@ -11,6 +11,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/txout_t.hxx>
 #include <mmx/vm/var_t.h>
+#include <mmx/vm/varptr_t.hpp>
 #include <mmx/vm/instr_t.h>
 #include <mmx/vm/Storage.h>
 

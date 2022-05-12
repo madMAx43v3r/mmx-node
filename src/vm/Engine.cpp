@@ -147,7 +147,7 @@ uint64_t Engine::lookup(const var_t* var, const bool read_only)
 
 uint64_t Engine::lookup(const varptr_t& var, const bool read_only)
 {
-	return lookup(var.ptr, read_only);
+	return lookup(var.get(), read_only);
 }
 
 uint64_t Engine::lookup(const var_t& var, const bool read_only)
@@ -203,7 +203,7 @@ var_t* Engine::write(const uint64_t dst, const var_t& src)
 
 var_t* Engine::write(const uint64_t dst, const varptr_t& var)
 {
-	return write(dst, var.ptr);
+	return write(dst, var.get());
 }
 
 var_t* Engine::write(const uint64_t dst, const std::vector<varptr_t>& var)
@@ -337,7 +337,7 @@ void Engine::push_back(const uint64_t dst, const var_t& var)
 
 void Engine::push_back(const uint64_t dst, const varptr_t& var)
 {
-	if(auto value = var.ptr) {
+	if(auto value = var.get()) {
 		push_back(dst, *value);
 	} else {
 		push_back(dst, var_t());
@@ -415,7 +415,7 @@ var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const var_t& 
 
 var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const varptr_t& var)
 {
-	if(auto value = var.ptr) {
+	if(auto value = var.get()) {
 		return write_entry(dst, key, *value);
 	}
 	return write_entry(dst, key, var_t());

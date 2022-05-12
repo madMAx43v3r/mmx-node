@@ -99,6 +99,18 @@ protected:
 
 	std::map<std::pair<addr_t, addr_t>, uint128> get_all_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm = 1) const override;
 
+	std::map<std::string, vm::varptr_t> read_storage(const addr_t& contract, const uint32_t& height) const override;
+
+	std::map<uint64_t, vm::varptr_t> dump_storage(const addr_t& contract, const uint32_t& height) const override;
+
+	vm::varptr_t read_storage_var(const addr_t& contract, const uint64_t& address, const uint32_t& height) const override;
+
+	std::pair<vm::varptr_t, uint64_t> read_storage_field(const addr_t& contract, const std::string& name, const uint32_t& height) const override;
+
+	std::vector<vm::varptr_t> read_storage_array(const addr_t& contract, const uint64_t& address, const uint32_t& height) const override;
+
+	std::map<vm::varptr_t, vm::varptr_t> read_storage_map(const addr_t& contract, const uint64_t& address, const uint32_t& height) const override;
+
 	address_info_t get_address_info(const addr_t& address) const override;
 
 	uint128 get_total_supply(const addr_t& currency) const override;

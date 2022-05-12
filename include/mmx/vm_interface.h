@@ -52,21 +52,37 @@ void set_deposit(std::shared_ptr<vm::Engine> engine, const txout_t& deposit)
 }
 
 inline
-void load(	std::shared_ptr<vm::Engine> engine,
-			const void* constant, const size_t constant_size,
-			const void* binary, const size_t binary_size)
+std::vector<vm::varptr_t> get_constants(const void* constant, const size_t constant_size)
 {
-	uint64_t dst = 0;
 	size_t offset = 0;
+	std::vector<vm::varptr_t> out;
 	while(offset < constant_size) {
 		vm::var_t* var = nullptr;
-		offset += vm::deserialize(var, ((const uint8_t*)constant) + offset, constant_size - offset, false, false);
-		if(dst >= vm::MEM_EXTERN) {
+		offset += vm::deserialize(var,
+				((const uint8_t*)constant) + offset, constant_size - offset, false, false);
+		if(out.size() >= vm::MEM_EXTERN) {
 			throw std::runtime_error("constant memory overflow");
 		}
-		engine->assign(dst++, var);
+		out.push_back(var);
 	}
-	vm::deserialize(engine->code, binary, binary_size);
+	return out;
+}
+
+inline
+std::vector<vm::varptr_t> get_constants(std::shared_ptr<const contract::Executable> exec)
+{
+	return get_constants(exec->constant.data(), exec->constant.size());
+}
+
+inline
+void load(	std::shared_ptr<vm::Engine> engine,
+			std::shared_ptr<const contract::Executable> exec)
+{
+	uint64_t dst = 0;
+	for(auto& var : get_constants(exec)) {
+		engine->assign(dst++, var.release());
+	}
+	vm::deserialize(engine->code, exec->binary.data(), exec->binary.size());
 	engine->init();
 }
 

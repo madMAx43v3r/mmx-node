@@ -286,9 +286,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		storage_cache = std::make_shared<vm::StorageCache>(context->storage);
 	}
 	auto engine = std::make_shared<vm::Engine>(exec->address, storage_cache, false);
-
-	mmx::load(engine, 	executable->constant.data(), executable->constant.size(),
-						executable->binary.data(), executable->binary.size());
+	mmx::load(engine, executable);
 
 	engine->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(context->block->height));
 	engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::uint_t(tx->id));

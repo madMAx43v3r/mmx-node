@@ -130,10 +130,19 @@ if(MSVC)
 	set_target_properties(mmx_iface PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")
 endif()
 
+file(GLOB GENERATED_VM_SOURCE_FILES
+	generated/vm/src/*.cpp
+)
+
+add_library(mmx_vm_iface SHARED
+	${GENERATED_VM_SOURCE_FILES}
+	src/vm/var_t.cpp
+	src/vm/varptr_t.cpp
+)
+
 add_library(mmx_vm SHARED
 	src/vm/Engine.cpp
 	src/vm/instr_t.cpp
-	src/vm/var_t.cpp
 	src/vm/StorageProxy.cpp
 	src/vm/StorageRAM.cpp
 	src/vm/StorageCache.cpp
@@ -169,6 +178,12 @@ target_include_directories(mmx_iface
 		generated/solution/include
 )
 
+target_include_directories(mmx_vm_iface
+	PUBLIC
+		include
+		generated/vm/include
+)
+
 target_include_directories(uint256_t
 	PUBLIC uint256_t uint256_t/uint128_t
 )
@@ -190,7 +205,9 @@ if(MSVC)
 	#set_target_properties(mmx_vm PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")	
 endif()
 
-target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_addons vnx_base)
+target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_base vnx_addons mmx_vm_iface)
+
+target_link_libraries(mmx_vm_iface uint256_t vnx_base)
 
 target_link_libraries(mmx_vm vnx_rocksdb mmx_iface)
 

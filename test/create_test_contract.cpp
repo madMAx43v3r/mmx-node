@@ -7,6 +7,7 @@
 
 #include <mmx/vm/var_t.h>
 #include <mmx/vm/instr_t.h>
+#include <mmx/vm/varptr_t.hpp>
 
 #include <mmx/contract/Executable.hxx>
 
@@ -53,7 +54,7 @@ int main(int argc, char** argv)
 	exec->fields["owner"] = MEM_STATIC + 3;
 
 	for(const auto& var : constant) {
-		auto data = serialize(*var.ptr, false, false);
+		auto data = serialize(*var.get(), false, false);
 		exec->constant.insert(exec->constant.end(), data.first, data.first + data.second);
 		::free(data.first);
 	}
