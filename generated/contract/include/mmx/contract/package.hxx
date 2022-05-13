@@ -46,6 +46,8 @@ class Executable_calc_hash;
 class Executable_calc_hash_return;
 class Executable_is_valid;
 class Executable_is_valid_return;
+class Executable_validate;
+class Executable_validate_return;
 class Identity;
 class MultiSig;
 class MultiSig_add_owner;
@@ -219,6 +221,8 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Execu
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_calc_hash_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_is_valid; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_is_valid_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_validate; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_validate_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Identity; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_add_owner; ///< \private
@@ -398,6 +402,8 @@ void read(TypeInput& in, ::mmx::contract::Executable_calc_hash& value, const Typ
 void read(TypeInput& in, ::mmx::contract::Executable_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Executable_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Executable_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::Executable_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::Executable_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Identity& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig_add_owner& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -571,6 +577,8 @@ void write(TypeOutput& out, const ::mmx::contract::Executable_calc_hash& value, 
 void write(TypeOutput& out, const ::mmx::contract::Executable_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Executable_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Executable_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::Executable_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::Executable_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Identity& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig_add_owner& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -744,6 +752,8 @@ void read(std::istream& in, ::mmx::contract::Executable_calc_hash& value); ///< 
 void read(std::istream& in, ::mmx::contract::Executable_calc_hash_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Executable_is_valid& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Executable_is_valid_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::Executable_validate& value); ///< \private
+void read(std::istream& in, ::mmx::contract::Executable_validate_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Identity& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig_add_owner& value); ///< \private
@@ -917,6 +927,8 @@ void write(std::ostream& out, const ::mmx::contract::Executable_calc_hash& value
 void write(std::ostream& out, const ::mmx::contract::Executable_calc_hash_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Executable_is_valid& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Executable_is_valid_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::Executable_validate& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::Executable_validate_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Identity& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig_add_owner& value); ///< \private
@@ -1090,6 +1102,8 @@ void accept(Visitor& visitor, const ::mmx::contract::Executable_calc_hash& value
 void accept(Visitor& visitor, const ::mmx::contract::Executable_calc_hash_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Executable_is_valid& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Executable_is_valid_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::Executable_validate& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::Executable_validate_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Identity& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig_add_owner& value); ///< \private
@@ -1789,6 +1803,52 @@ struct type<::mmx::contract::Executable_is_valid_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable_is_valid_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::Executable_validate> {
+	void read(TypeInput& in, ::mmx::contract::Executable_validate& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::Executable_validate& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::Executable_validate& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::Executable_validate& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::Executable_validate& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable_validate& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::Executable_validate_return> {
+	void read(TypeInput& in, ::mmx::contract::Executable_validate_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::Executable_validate_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::Executable_validate_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::Executable_validate_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::Executable_validate_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable_validate_return& value, bool special = false);
 };
 
 /// \private
