@@ -122,7 +122,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		if(auto tx = block->tx_base) {
 			tx_set.insert(tx->id);
 		}
-		for(auto tx : block->tx_list) {
+		for(const auto& tx : block->tx_list) {
 			if(!tx) {
 				throw std::logic_error("missing transaction");
 			}
@@ -130,40 +130,43 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 				throw std::logic_error("invalid inclusion");
 			}
 			std::unordered_set<addr_t> mutate_set;
-			while(tx) {
-				if(!tx_set.insert(tx->id).second) {
-					throw std::logic_error("duplicate transaction");
-				}
-				for(const auto& in : tx->inputs) {
-					if(revoked.count(std::make_pair(tx->id, in.address))) {
-						throw std::logic_error("tx has been revoked");
+			{
+				auto txi = tx;
+				while(txi) {
+					if(!tx_set.insert(txi->id).second) {
+						throw std::logic_error("duplicate transaction");
 					}
-					if(in.flags & txin_t::IS_EXEC) {
-						const auto& list = mutate_map[in.address];
-						if(!list.empty()) {
-							context->wait_map[tx->id].insert(list.back());
+					for(const auto& in : txi->inputs) {
+						if(revoked.count(std::make_pair(txi->id, in.address))) {
+							throw std::logic_error("tx has been revoked");
+						}
+						if(in.flags & txin_t::IS_EXEC) {
+							const auto& list = mutate_map[in.address];
+							if(!list.empty()) {
+								context->wait_map[txi->id].insert(list.back());
+							}
+						}
+						const auto balance = balance_cache.get(in.address, in.contract);
+						if(!balance || in.amount > *balance) {
+							throw std::logic_error("insufficient funds");
+						}
+						*balance -= in.amount;
+					}
+					for(const auto& op : txi->execute) {
+						if(std::dynamic_pointer_cast<const operation::Mutate>(op)
+							|| std::dynamic_pointer_cast<const operation::Execute>(op))
+						{
+							mutate_set.insert(op->address);
+						}
+						if(auto revoke = std::dynamic_pointer_cast<const operation::Revoke>(op)) {
+							if(tx_set.count(revoke->txid)) {
+								throw std::logic_error("tx cannot be revoked anymore");
+							}
+							revoked.emplace(revoke->txid, revoke->address);
 						}
 					}
-					const auto balance = balance_cache.get(in.address, in.contract);
-					if(!balance || in.amount > *balance) {
-						throw std::logic_error("insufficient funds");
-					}
-					*balance -= in.amount;
+					txi = txi->parent;
 				}
-				for(const auto& op : tx->execute) {
-					if(std::dynamic_pointer_cast<const operation::Mutate>(op)
-						|| std::dynamic_pointer_cast<const operation::Execute>(op))
-					{
-						mutate_set.insert(op->address);
-					}
-					if(auto revoke = std::dynamic_pointer_cast<const operation::Revoke>(op)) {
-						if(tx_set.count(revoke->txid)) {
-							throw std::logic_error("tx cannot be revoked anymore");
-						}
-						revoked.emplace(revoke->txid, revoke->address);
-					}
-				}
-				tx = tx->parent;
 			}
 			for(const auto& address : mutate_set) {
 				auto& list = mutate_map[address];
@@ -236,6 +239,21 @@ void Node::validate(std::shared_ptr<const Transaction> tx) const
 		base->height = get_height() + 1;
 		context->block = base;
 	}
+	{
+		std::unordered_set<addr_t> mutate_set;
+		for(const auto& op : tx->get_all_operations()) {
+			if(std::dynamic_pointer_cast<const operation::Mutate>(op)
+				|| std::dynamic_pointer_cast<const operation::Execute>(op))
+			{
+				mutate_set.insert(op->address);
+			}
+		}
+		for(const auto& address : mutate_set) {
+			auto& state = context->contract_map[address];
+			state = std::make_shared<contract_state_t>();
+			state->balance = get_balances(address);
+		}
+	}
 	uint64_t fee = 0;
 	uint64_t cost = 0;
 	validate(tx, context, nullptr, fee, cost);
@@ -281,6 +299,13 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	}
 	if(method->is_const) {
 		throw std::logic_error("method is const");
+	}
+	if(exec->user) {
+		if(auto contract = get_contract_for(*exec->user)) {
+			contract->validate(exec, create_context(context->block, contract, tx));
+		} else {
+			throw std::logic_error("no such user");
+		}
 	}
 	if(!storage_cache) {
 		storage_cache = std::make_shared<vm::StorageCache>(context->storage);
@@ -537,10 +562,6 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 		}
 		else if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op))
 		{
-			const auto state = context->get_state(op->address);
-			if(!state) {
-				throw std::logic_error("missing contract state");
-			}
 			if(!state->data) {
 				state->data = get_contract(op->address);
 			}

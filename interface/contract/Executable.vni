@@ -26,4 +26,6 @@ class Executable extends TokenBase {
 	
 	ulong calc_cost(mmx.ChainParams* params) const;
 	
+	vector<mmx.txout_t> validate(mmx.Operation* operation, mmx.Context* context) const;
+	
 }

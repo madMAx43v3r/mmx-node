@@ -8,6 +8,8 @@ struct spend_options_t {
 	
 	ulong extra_fee;
 	
+	optional<addr_t> user;
+	
 	optional<addr_t> sender;
 	
 	map<addr_t, addr_t> owner_map;
