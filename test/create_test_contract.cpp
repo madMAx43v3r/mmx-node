@@ -29,6 +29,11 @@ int main(int argc, char** argv)
 	constant.push_back(new uint_t(1337));
 	constant.push_back(binary_t::alloc("test"));		// 0x8
 
+	exec->fields["array"] = MEM_STATIC + 0;
+	exec->fields["map"] = MEM_STATIC + 1;
+	exec->fields["value"] = MEM_STATIC + 2;
+	exec->fields["owner"] = MEM_STATIC + 3;
+
 	std::vector<instr_t> code;
 	{
 		mmx::contract::method_t method;
@@ -48,10 +53,59 @@ int main(int argc, char** argv)
 		code.emplace_back(OP_RET);
 		exec->methods["init"] = method;
 	}
-	exec->fields["array"] = MEM_STATIC + 0;
-	exec->fields["map"] = MEM_STATIC + 1;
-	exec->fields["value"] = MEM_STATIC + 2;
-	exec->fields["owner"] = MEM_STATIC + 3;
+	while(code.size() < 50) {
+		code.emplace_back(OP_NOP);
+	}
+	{
+		mmx::contract::method_t method;
+		method.name = "push_back";
+		method.args = {"value"};
+		method.is_public = true;
+		method.entry_point = code.size();
+		code.emplace_back(OP_PUSH_BACK, 0, MEM_STATIC + 0, MEM_STACK + 1);
+		code.emplace_back(OP_RET);
+		exec->methods["push_back"] = method;
+	}
+	while(code.size() < 60) {
+		code.emplace_back(OP_NOP);
+	}
+	{
+		mmx::contract::method_t method;
+		method.name = "insert";
+		method.args = {"key", "value"};
+		method.is_public = true;
+		method.entry_point = code.size();
+		code.emplace_back(OP_SET, 0, MEM_STATIC + 1, MEM_STACK + 1, MEM_STACK + 2);
+		code.emplace_back(OP_RET);
+		exec->methods["insert"] = method;
+	}
+	while(code.size() < 70) {
+		code.emplace_back(OP_NOP);
+	}
+	{
+		mmx::contract::method_t method;
+		method.name = "set_value";
+		method.args = {"value"};
+		method.is_public = true;
+		method.entry_point = code.size();
+		code.emplace_back(OP_COPY, 0, MEM_STATIC + 2, MEM_STACK + 1);
+		code.emplace_back(OP_RET);
+		exec->methods["set_value"] = method;
+	}
+	while(code.size() < 80) {
+		code.emplace_back(OP_NOP);
+	}
+	{
+		mmx::contract::method_t method;
+		method.name = "read_array";
+		method.args = {"index"};
+		method.is_const = true;
+		method.is_public = true;
+		method.entry_point = code.size();
+		code.emplace_back(OP_GET, 0, MEM_STACK + 0, MEM_STATIC + 0, MEM_STACK + 1);
+		code.emplace_back(OP_RET);
+		exec->methods["read_array"] = method;
+	}
 
 	for(const auto& var : constant) {
 		auto data = serialize(*var.get(), false, false);
