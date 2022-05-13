@@ -243,6 +243,7 @@ std::vector<std::pair<uint64_t, varptr_t>> StorageRocksDB::find_range(
 		}
 		address--;
 	}
+	std::reverse(out.begin(), out.end());
 	return out;
 }
 
@@ -272,6 +273,7 @@ std::vector<std::pair<uint64_t, varptr_t>> StorageRocksDB::find_entries(
 		}
 		entry--;
 	}
+	std::reverse(out.begin(), out.end());
 	return out;
 }
 

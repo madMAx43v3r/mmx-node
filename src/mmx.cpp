@@ -726,7 +726,8 @@ int main(int argc, char** argv)
 						var = res.first;
 						addr = res.second;
 					} else {
-						var = node.read_storage_var(contract, tmp.to<uint64_t>());
+						addr = tmp.to<uint64_t>();
+						var = node.read_storage_var(contract, addr);
 					}
 					if(var) {
 						switch(var->type) {
