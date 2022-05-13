@@ -228,7 +228,7 @@ std::shared_ptr<const Transaction> Wallet::execute(
 	wallet->complete(tx, options);
 	if(tx->is_signed()) {
 		send_off(index, tx);
-		log(INFO) << "Executed " << method << " on [" << address << "] with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
+		log(INFO) << "Executed " << method << "() on [" << address << "] with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
 	}
 	return tx;
 }
