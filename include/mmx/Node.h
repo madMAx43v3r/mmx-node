@@ -155,6 +155,7 @@ private:
 	struct execution_context_t {
 		std::shared_ptr<const Context> block;
 		std::shared_ptr<vm::StorageCache> storage;
+		std::unordered_map<addr_t, std::vector<hash_t>> mutate_map;
 		std::unordered_map<hash_t, std::unordered_set<hash_t>> wait_map;
 		std::unordered_map<hash_t, std::shared_ptr<waitcond_t>> signal_map;
 		std::unordered_map<addr_t, std::shared_ptr<contract_state_t>> contract_map;
@@ -246,9 +247,9 @@ private:
 	std::shared_ptr<const Context> create_context(
 			std::shared_ptr<const Context> base, std::shared_ptr<const Contract> contract, std::shared_ptr<const Transaction> tx) const;
 
-	void setup_context(	std::shared_ptr<execution_context_t> context,
-						std::shared_ptr<const Transaction> tx,
-						std::unordered_map<addr_t, std::vector<hash_t>>& mutate_map) const;
+	std::shared_ptr<execution_context_t> new_exec_context() const;
+
+	void setup_context(std::shared_ptr<execution_context_t> context, std::shared_ptr<const Transaction> tx) const;
 
 	void execute(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const execution_context_t> context,
@@ -257,8 +258,18 @@ private:
 					std::vector<txin_t>& exec_inputs,
 					std::vector<txout_t>& exec_outputs,
 					std::unordered_map<addr_t, uint128_t>& amounts,
-					std::shared_ptr<vm::StorageCache>& storage_cache,
-					uint64_t& tx_cost, const bool is_public = true) const;
+					std::shared_ptr<vm::StorageCache> storage_cache,
+					uint64_t& tx_cost, const bool is_public) const;
+
+	void execute(	std::shared_ptr<const Transaction> tx,
+					std::shared_ptr<const execution_context_t> context,
+					std::shared_ptr<contract_state_t> state,
+					std::vector<txin_t>& exec_inputs,
+					std::vector<txout_t>& exec_outputs,
+					std::shared_ptr<vm::StorageCache> storage_cache,
+					std::shared_ptr<vm::Engine> engine,
+					const std::string& method_name,
+					uint64_t& tx_cost, const bool is_public) const;
 
 	void validate(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const execution_context_t> context,

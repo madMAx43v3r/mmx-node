@@ -670,8 +670,10 @@ vnx::Variant Node::call_contract(const addr_t& address, const std::string& metho
 			throw std::runtime_error("method is not const");
 		}
 		auto engine = std::make_shared<vm::Engine>(address, storage, true);
+		engine->total_gas = params->max_block_cost;
 		mmx::load(engine, exec);
-		mmx::execute(engine, *func, args, params->max_block_cost);
+		mmx::set_args(engine, args);
+		mmx::execute(engine, *func);
 		return mmx::read(engine, vm::MEM_STACK);
 	}
 	throw std::runtime_error("no such contract");

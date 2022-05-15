@@ -65,8 +65,8 @@ enum globalvar_e : uint32_t {
 class Engine {
 public:
 	struct frame_t {
-		uint32_t instr_ptr = 0;
-		uint32_t stack_ptr = 0;
+		uint64_t instr_ptr = 0;
+		uint64_t stack_ptr = 0;
 	};
 
 	std::vector<instr_t> code;
@@ -78,13 +78,10 @@ public:
 	uint64_t total_gas = 0;
 	uint64_t total_cost = 0;
 
-	uint64_t num_instr = 0;
-	uint64_t num_write = 0;
-	uint64_t num_bytes_write = 0;
-	uint64_t num_bytes_sha256 = 0;
-
 	const addr_t contract;
 	const std::shared_ptr<StorageProxy> storage;
+
+	std::function<void(const std::string& name, const std::string& method, const uint32_t nargs)> remote;
 
 	Engine(const addr_t& contract, std::shared_ptr<Storage> backend, bool read_only);
 
@@ -142,32 +139,34 @@ public:
 	void set(const uint64_t addr, const uint64_t key, const uint64_t src, const uint8_t flags);
 	void erase(const uint64_t addr, const uint64_t key, const uint8_t flags);
 	void concat(const uint64_t dst, const uint64_t lhs, const uint64_t rhs);
-	void memcpy(const uint64_t dst, const uint64_t src, const uint32_t count, const uint32_t offset);
-	void conv(const uint64_t dst, const uint64_t src, const uint32_t dflags, const uint32_t sflags);
+	void memcpy(const uint64_t dst, const uint64_t src, const uint64_t count, const uint64_t offset);
+	void conv(const uint64_t dst, const uint64_t src, const uint64_t dflags, const uint64_t sflags);
 	void sha256(const uint64_t dst, const uint64_t src);
 	void log(const uint64_t level, const uint64_t msg);
 	void event(const uint64_t name, const uint64_t data);
 	void send(const uint64_t address, const uint64_t amount, const uint64_t currency);
 	void mint(const uint64_t address, const uint64_t amount);
+	void rcall(const uint64_t name, const uint64_t method, const uint64_t stack_ptr, const uint64_t nargs);
 
 	frame_t& get_frame();
 	uint64_t deref(const uint64_t src);
 	uint64_t alloc();
 
 	void init();
-	void begin(const uint32_t instr_ptr);
+	void begin(const uint64_t instr_ptr);
 	void run();
 	void step();
-	void jump(const uint32_t instr_ptr);
-	void call(const uint32_t instr_ptr, const uint32_t stack_ptr);
+	void check_gas() const;
+	void jump(const uint64_t instr_ptr);
+	void call(const uint64_t instr_ptr, const uint64_t stack_ptr);
 	bool ret();
 	void exec(const instr_t& instr);
 
 	void reset();
 	void commit();
 
-	void clear_extern(const uint32_t offset = 0);
-	void clear_stack(const uint32_t offset = 0);
+	void clear_extern(const uint64_t offset = 0);
+	void clear_stack(const uint64_t offset = 0);
 
 	std::map<uint64_t, const var_t*> find_entries(const uint64_t dst) const;
 

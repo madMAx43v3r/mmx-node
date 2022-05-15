@@ -432,8 +432,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 			all_tx.resize(*cutoff);
 		}
 	}
-	auto context = std::make_shared<execution_context_t>();
-	context->storage = std::make_shared<vm::StorageCache>(storage);
+	auto context = new_exec_context();
 	{
 		auto base = Context::create();
 		base->height = peak->height + 1;
@@ -455,11 +454,8 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 	}
 
 	// prepare synchronization
-	{
-		std::unordered_map<addr_t, std::vector<hash_t>> mutate_map;
-		for(const auto& entry : tx_list) {
-			setup_context(context, entry.tx, mutate_map);
-		}
+	for(const auto& entry : tx_list) {
+		setup_context(context, entry.tx);
 	}
 
 	// verify transactions in parallel

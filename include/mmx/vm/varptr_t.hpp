@@ -51,15 +51,6 @@ public:
 		return ptr;
 	}
 
-	var_t* release() {
-		if(ptr) {
-			ptr->unref();
-		}
-		const auto tmp = ptr;
-		ptr = nullptr;
-		return tmp;
-	}
-
 	std::string to_string() const {
 		return vm::to_string(ptr);
 	}

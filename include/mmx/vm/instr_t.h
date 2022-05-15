@@ -32,7 +32,7 @@ enum opcode_e : uint8_t {
 	OP_JUMP,		// dst
 	OP_JUMPI,		// dst, cond
 	OP_JUMPN,		// dst, cond
-	OP_CALL,		// dst, stack_ptr
+	OP_CALL,		// addr, stack_ptr
 	OP_RET,
 
 	OP_ADD,			// dst, lhs, rhs
@@ -75,6 +75,7 @@ enum opcode_e : uint8_t {
 	OP_MINT,		// address, amount
 	OP_EVENT,		// name, data
 	OP_FAIL,		// message
+	OP_RCALL,		// name, method, stack_ptr, nargs
 
 };
 

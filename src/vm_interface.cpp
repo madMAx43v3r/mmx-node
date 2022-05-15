@@ -42,36 +42,88 @@ void set_deposit(std::shared_ptr<vm::Engine> engine, const txout_t& deposit)
 	}
 }
 
-std::vector<vm::varptr_t> get_constants(const void* constant, const size_t constant_size)
+std::vector<vm::var_t*> read_constants(const void* constant, const size_t constant_size)
 {
 	size_t offset = 0;
-	std::vector<vm::varptr_t> out;
+	std::vector<vm::var_t*> out;
 	while(offset < constant_size) {
 		vm::var_t* var = nullptr;
-		offset += vm::deserialize(var,
-				((const uint8_t*)constant) + offset, constant_size - offset, false, false);
-		if(out.size() >= vm::MEM_EXTERN) {
-			throw std::runtime_error("constant memory overflow");
-		}
+		offset += vm::deserialize(var, ((const uint8_t*)constant) + offset, constant_size - offset, false, false);
 		out.push_back(var);
 	}
 	return out;
 }
 
-std::vector<vm::varptr_t> get_constants(std::shared_ptr<const contract::Executable> exec)
+std::vector<vm::var_t*> read_constants(std::shared_ptr<const contract::Executable> exec)
 {
-	return get_constants(exec->constant.data(), exec->constant.size());
+	return read_constants(exec->constant.data(), exec->constant.size());
 }
 
 void load(	std::shared_ptr<vm::Engine> engine,
 			std::shared_ptr<const contract::Executable> exec)
 {
 	uint64_t dst = 0;
-	for(auto& var : get_constants(exec)) {
-		engine->assign(dst++, var.release());
+	for(auto var : read_constants(exec)) {
+		if(dst < vm::MEM_EXTERN) {
+			engine->assign(dst++, var);
+		} else {
+			delete var;
+		}
+	}
+	if(dst >= vm::MEM_EXTERN) {
+		throw std::runtime_error("constant memory overflow");
 	}
 	vm::deserialize(engine->code, exec->binary.data(), exec->binary.size());
 	engine->init();
+}
+
+void copy(	std::shared_ptr<vm::Engine> dst, std::shared_ptr<vm::Engine> src,
+			const uint64_t dst_addr, const uint64_t* dst_key, const vm::var_t* var)
+{
+	vm::var_t* out = nullptr;
+	if(var) {
+		switch(var->type) {
+			case vm::TYPE_REF: {
+				const auto heap = dst->alloc();
+				copy(dst, src, heap, ((const vm::ref_t*)var)->address);
+				out = new vm::ref_t(heap);
+				break;
+			}
+			case vm::TYPE_ARRAY: {
+				const auto array = (const vm::array_t*)var;
+				for(uint64_t i = 0; i < array->size; ++i) {
+					copy(dst, src, dst_addr, &i, src->read_entry(array->address, i));
+				}
+				out = new vm::array_t(array->size);
+				break;
+			}
+			case vm::TYPE_MAP: {
+				const auto map = (const vm::map_t*)var;
+				for(const auto& entry : src->find_entries(map->address)) {
+					const auto key = dst->lookup(src->read(entry.first), false);
+					copy(dst, src, dst_addr, &key, entry.second);
+				}
+				out = new vm::map_t();
+				break;
+			}
+			default:
+				out = clone(var);
+		}
+	}
+	if(!out) {
+		out = new vm::var_t();
+	}
+	if(dst_key) {
+		dst->assign_entry(dst_addr, *dst_key, out);
+	} else {
+		dst->assign(dst_addr, out);
+	}
+	dst->check_gas();
+}
+
+void copy(std::shared_ptr<vm::Engine> dst, std::shared_ptr<vm::Engine> src, const uint64_t dst_addr, const uint64_t src_addr)
+{
+	copy(dst, src, dst_addr, nullptr, src->read(src_addr));
 }
 
 class AssignTo : public vnx::Visitor {
@@ -169,7 +221,7 @@ public:
 
 	void list_begin(size_t size) override {
 		const auto addr = engine->alloc();
-		engine->assign(addr, new vm::array_t());
+		engine->assign(addr, new vm::array_t(size));
 		stack.emplace_back(addr);
 	}
 	void list_element(size_t index) override {
@@ -286,22 +338,26 @@ vnx::Variant read(std::shared_ptr<vm::Engine> engine, const uint64_t address)
 	return convert(engine, engine->read(address));
 }
 
-void execute(	std::shared_ptr<vm::Engine> engine,
-				const contract::method_t& method, const std::vector<vnx::Variant>& args, const uint64_t total_gas)
+void set_args(std::shared_ptr<vm::Engine> engine, const std::vector<vnx::Variant>& args)
 {
 	for(size_t i = 0; i < args.size(); ++i) {
-		assign(engine, vm::MEM_STACK + 1 + i, args[i]);
+		const auto dst = vm::MEM_STACK + 1 + i;
+		if(dst >= vm::MEM_STATIC) {
+			throw std::runtime_error("stack overflow");
+		}
+		assign(engine, dst, args[i]);
 	}
-	engine->total_gas = total_gas;
+}
+
+void execute(std::shared_ptr<vm::Engine> engine, const contract::method_t& method)
+{
 	engine->begin(method.entry_point);
 	engine->run();
 
 	if(!method.is_const) {
 		engine->commit();
 	}
-	if(engine->total_cost > engine->total_gas) {
-		throw std::logic_error("insufficient gas: " + std::to_string(engine->total_cost) + " > " + std::to_string(engine->total_gas));
-	}
+	engine->check_gas();
 }
 
 

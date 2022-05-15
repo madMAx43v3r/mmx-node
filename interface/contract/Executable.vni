@@ -9,7 +9,7 @@ class Executable extends TokenBase {
 	
 	map<string, method_t> methods;
 	
-	vector<addr_t> depends;
+	map<string, addr_t> depends;
 	
 	vector<uchar> constant;
 	

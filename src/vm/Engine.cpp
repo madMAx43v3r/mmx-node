@@ -77,6 +77,7 @@ var_t* Engine::assign(const uint64_t dst, var_t* value)
 	auto& var = memory[dst];
 	if(!var && dst >= MEM_STATIC) {
 		var = storage->read(contract, dst);
+		total_cost += STOR_READ_COST + num_bytes(var) * STOR_READ_BYTE_COST;
 	}
 	return assign(var, value);
 }
@@ -101,6 +102,7 @@ var_t* Engine::assign_entry(const uint64_t dst, const uint64_t key, var_t* value
 	auto& var = entries[std::make_pair(dst, key)];
 	if(!var && dst >= MEM_STATIC) {
 		var = storage->read(contract, dst, key);
+		total_cost += STOR_READ_COST + num_bytes(var) * STOR_READ_BYTE_COST;
 	}
 	return assign(var, value);
 }
@@ -127,8 +129,7 @@ var_t* Engine::assign(var_t*& var, var_t* value)
 		}
 	}
 	var = value;
-	num_write++;
-	num_bytes_write += num_bytes(value);
+	total_cost += WRITE_COST + num_bytes(var) * WRITE_BYTE_COST;
 	return var;
 }
 
@@ -159,6 +160,8 @@ uint64_t Engine::lookup(const var_t& var, const bool read_only)
 	if(iter != key_map.end()) {
 		return iter->second;
 	}
+	total_cost += STOR_READ_COST + num_bytes(var) * STOR_READ_BYTE_COST;
+
 	if(auto key = storage->lookup(contract, var)) {
 		auto& value = read_fail(key);
 		if(value.ref_count == 0) {
@@ -197,6 +200,7 @@ var_t* Engine::write(const uint64_t dst, const var_t& src)
 	auto& var = memory[dst];
 	if(!var && dst >= MEM_STATIC) {
 		var = storage->read(contract, dst);
+		total_cost += STOR_READ_COST + num_bytes(var) * STOR_READ_BYTE_COST;
 	}
 	return write(var, &dst, src);
 }
@@ -214,6 +218,7 @@ var_t* Engine::write(const uint64_t dst, const std::vector<varptr_t>& var)
 	auto array = assign(dst, new array_t());
 	for(const auto& entry : var) {
 		push_back(dst, entry);
+		check_gas();
 	}
 	return array;
 }
@@ -223,6 +228,7 @@ var_t* Engine::write(const uint64_t dst, const std::map<varptr_t, varptr_t>& var
 	auto map = assign(dst, new map_t());
 	for(const auto& entry : var) {
 		write_key(dst, entry.first, entry.second);
+		check_gas();
 	}
 	return map;
 }
@@ -322,8 +328,9 @@ void Engine::push_back(const uint64_t dst, const var_t& var)
 		if(dst == array.address) {
 			throw std::logic_error("dst == src");
 		}
-		for(uint32_t i = 0; i < array.size; ++i) {
+		for(uint64_t i = 0; i < array.size; ++i) {
 			push_back(dst, read_entry_fail(array.address, i));
+			check_gas();
 		}
 		return;
 	}
@@ -373,13 +380,11 @@ array_t* Engine::clone_array(const uint64_t dst, const array_t& src)
 	if(dst == src.address) {
 		throw std::logic_error("dst == src");
 	}
-	for(uint32_t i = 0; i < src.size; ++i) {
+	for(uint64_t i = 0; i < src.size; ++i) {
 		write_entry(dst, i, read_entry_fail(src.address, i));
+		check_gas();
 	}
-	auto var = new array_t();
-	var->address = dst;
-	var->size = src.size;
-	return var;
+	return new array_t(src.size);
 }
 
 map_t* Engine::clone_map(const uint64_t dst, const map_t& src)
@@ -394,11 +399,10 @@ map_t* Engine::clone_map(const uint64_t dst, const map_t& src)
 	for(auto iter = begin; iter != entries.end() && iter->first.first == src.address; ++iter) {
 		if(auto value = iter->second) {
 			write_entry(dst, iter->first.second, *value);
+			check_gas();
 		}
 	}
-	auto var = new map_t();
-	var->address = dst;
-	return var;
+	return new map_t();
 }
 
 var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const var_t& src)
@@ -409,6 +413,7 @@ var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const var_t& 
 	auto& var = entries[std::make_pair(dst, key)];
 	if(!var && dst >= MEM_STATIC) {
 		var = storage->read(contract, dst, key);
+		total_cost += STOR_READ_COST + num_bytes(var) * STOR_READ_BYTE_COST;
 	}
 	return write(var, nullptr, src);
 }
@@ -443,7 +448,9 @@ void Engine::erase_entry(const uint64_t dst, const uint64_t key)
 	if(iter == entries.end() && dst >= MEM_STATIC) {
 		if(auto var = storage->read(contract, dst, key)) {
 			iter = entries.emplace(mapkey, var).first;
+			total_cost += num_bytes(var) * STOR_READ_BYTE_COST;
 		}
+		total_cost += STOR_READ_COST;
 	}
 	if(iter != entries.end()) {
 		erase(iter->second);
@@ -462,6 +469,7 @@ void Engine::erase_entries(const uint64_t dst)
 	const auto begin = entries.lower_bound(std::make_pair(dst, 0));
 	for(auto iter = begin; iter != entries.end() && iter->first.first == dst; ++iter) {
 		erase(iter->second);
+		check_gas();
 	}
 }
 
@@ -474,7 +482,9 @@ void Engine::erase(const uint64_t dst)
 	else if(dst >= MEM_STATIC) {
 		if(auto var = storage->read(contract, dst)) {
 			erase(memory[dst] = var);
+			total_cost += num_bytes(var) * STOR_READ_BYTE_COST;
 		}
+		total_cost += STOR_READ_COST;
 	}
 }
 
@@ -498,6 +508,7 @@ void Engine::erase(var_t*& var)
 	} else {
 		var->flags = FLAG_DELETED;
 	}
+	total_cost += WRITE_COST;
 	delete prev;
 }
 
@@ -540,7 +551,9 @@ var_t* Engine::read(const uint64_t src)
 		return iter->second;
 	}
 	if(src >= MEM_STATIC) {
+		total_cost += STOR_READ_COST;
 		if(auto var = storage->read(contract, src)) {
+			total_cost += num_bytes(var) * STOR_READ_BYTE_COST;
 			return memory[src] = var;
 		}
 	}
@@ -568,7 +581,9 @@ var_t* Engine::read_entry(const uint64_t src, const uint64_t key)
 		return iter->second;
 	}
 	if(src >= MEM_STATIC) {
+		total_cost += STOR_READ_COST;
 		if(auto var = storage->read(contract, src, key)) {
+			total_cost += num_bytes(var) * STOR_READ_BYTE_COST;
 			return entries[mapkey] = var;
 		}
 	}
@@ -603,7 +618,7 @@ uint64_t Engine::alloc()
 {
 	auto& offset = read_fail<uint_t>(MEM_HEAP + GLOBAL_NEXT_ALLOC, TYPE_UINT);
 	offset.flags |= FLAG_DIRTY;
-	if(offset.value == std::numeric_limits<uint64_t>::max()) {
+	if(offset.value == 0) {
 		throw std::runtime_error("out of memory");
 	}
 	return offset.value++;
@@ -628,7 +643,7 @@ void Engine::init()
 	have_init = true;
 }
 
-void Engine::begin(const uint32_t instr_ptr)
+void Engine::begin(const uint64_t instr_ptr)
 {
 	call_stack.clear();
 
@@ -658,13 +673,14 @@ void Engine::step()
 	}
 	try {
 		exec(code[instr_ptr]);
+		check_gas();
 	} catch(const std::exception& ex) {
 		throw std::runtime_error("exception at " + to_hex(instr_ptr) + ": " + ex.what());
 	}
-	total_cost = num_instr * INSTR_COST
-			+ num_write * WRITE_COST + num_bytes_write * WRITE_BYTE_COST
-			+ storage->num_read * STOR_READ_COST + storage->num_bytes_read * STOR_READ_BYTE_COST
-			+ num_bytes_sha256 * SHA256_BYTE_COST + outputs.size() * SEND_COST + mint_outputs.size() * MINT_COST;
+}
+
+void Engine::check_gas() const
+{
 	if(total_cost > total_gas) {
 		throw std::runtime_error("out of gas: " + std::to_string(total_cost) + " > " + std::to_string(total_gas));
 	}
@@ -769,7 +785,7 @@ void Engine::concat(const uint64_t dst, const uint64_t lhs, const uint64_t rhs)
 	}
 }
 
-void Engine::memcpy(const uint64_t dst, const uint64_t src, const uint32_t count, const uint32_t offset)
+void Engine::memcpy(const uint64_t dst, const uint64_t src, const uint64_t count, const uint64_t offset)
 {
 	const auto& svar = read_fail(src);
 	switch(svar.type) {
@@ -795,11 +811,8 @@ void Engine::sha256(const uint64_t dst, const uint64_t src)
 		case TYPE_STRING:
 		case TYPE_BINARY: {
 			const auto& sbin = (const binary_t&)svar;
-			const auto num_bytes = std::max<uint32_t>(sbin.size, 64);
-			if(num_bytes * SHA256_BYTE_COST > total_gas - total_cost) {
-				throw std::runtime_error("insufficient gas");
-			}
-			num_bytes_sha256 += num_bytes;
+			total_cost += std::max<uint32_t>(sbin.size + (64 - sbin.size % 64) % 64, 64) * SHA256_BYTE_COST;
+			check_gas();
 			write(dst, uint_t(hash_t(sbin.data(), sbin.size).to_uint256()));
 			break;
 		}
@@ -807,7 +820,7 @@ void Engine::sha256(const uint64_t dst, const uint64_t src)
 	}
 }
 
-void Engine::conv(const uint64_t dst, const uint64_t src, const uint32_t dflags, const uint32_t sflags)
+void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags, const uint64_t sflags)
 {
 	const auto& svar = read_fail(src);
 	switch(svar.type) {
@@ -973,6 +986,7 @@ void Engine::send(const uint64_t address, const uint64_t amount, const uint64_t 
 	out.amount = value;
 	out.sender = contract;
 	outputs.push_back(out);
+	total_cost += SEND_COST;
 }
 
 void Engine::mint(const uint64_t address, const uint64_t amount)
@@ -987,18 +1001,42 @@ void Engine::mint(const uint64_t address, const uint64_t amount)
 	out.amount = value;
 	out.sender = contract;
 	mint_outputs.push_back(out);
+	total_cost += MINT_COST;
 }
 
-void Engine::jump(const uint32_t instr_ptr)
+void Engine::rcall(const uint64_t name, const uint64_t method, const uint64_t stack_ptr, const uint64_t nargs)
+{
+	if(stack_ptr >= STACK_SIZE) {
+		throw std::logic_error("stack overflow");
+	}
+	if(nargs > 4096) {
+		throw std::logic_error("nargs > 4096");
+	}
+	if(!remote) {
+		throw std::logic_error("unable to make remote calls");
+	}
+	auto frame = get_frame();
+	frame.stack_ptr += stack_ptr;
+	call_stack.push_back(frame);
+
+	remote(	read_fail<binary_t>(name, TYPE_STRING).to_string(),
+			read_fail<binary_t>(method, TYPE_STRING).to_string(), nargs);
+	ret();
+}
+
+void Engine::jump(const uint64_t instr_ptr)
 {
 	get_frame().instr_ptr = instr_ptr;
 }
 
-void Engine::call(const uint32_t instr_ptr, const uint32_t stack_ptr)
+void Engine::call(const uint64_t instr_ptr, const uint64_t stack_ptr)
 {
-	frame_t frame;
+	if(stack_ptr >= STACK_SIZE) {
+		throw std::logic_error("stack overflow");
+	}
+	auto frame = get_frame();
 	frame.instr_ptr = instr_ptr;
-	frame.stack_ptr = get_frame().stack_ptr + stack_ptr;
+	frame.stack_ptr += stack_ptr;
 	call_stack.push_back(frame);
 }
 
@@ -1030,8 +1068,8 @@ uint64_t Engine::deref_addr(uint32_t src, const bool flag)
 {
 	if(src >= MEM_STACK && src < MEM_STATIC) {
 		const auto& frame = get_frame();
-		if(uint64_t(frame.stack_ptr) + src >= MEM_STATIC) {
-			throw std::logic_error("stack overflow");
+		if(uint64_t(src) + frame.stack_ptr >= MEM_STATIC) {
+			throw std::runtime_error("stack overflow");
 		}
 		src += frame.stack_ptr;
 	}
@@ -1048,7 +1086,8 @@ uint64_t Engine::deref_value(uint32_t src, const bool flag)
 
 void Engine::exec(const instr_t& instr)
 {
-	num_instr++;
+	total_cost += INSTR_COST;
+
 	switch(instr.code) {
 	case OP_NOP:
 		break;
@@ -1420,13 +1459,19 @@ void Engine::exec(const instr_t& instr)
 	case OP_FAIL:
 		throw std::runtime_error("failed with: " + to_string(read(
 				deref_addr(instr.a, instr.flags & OPFLAG_REF_A))));
+	case OP_RCALL:
+		rcall(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
+				deref_addr(instr.b, instr.flags & OPFLAG_REF_B),
+				deref_value(instr.c, instr.flags & OPFLAG_REF_C),
+				deref_value(instr.d, instr.flags & OPFLAG_REF_D));
+		break;
 	default:
 		throw std::logic_error("invalid op_code: 0x" + vnx::to_hex_string(uint8_t(instr.code)));
 	}
 	get_frame().instr_ptr++;
 }
 
-void Engine::clear_extern(const uint32_t offset)
+void Engine::clear_extern(const uint64_t offset)
 {
 	for(auto iter = memory.lower_bound(MEM_EXTERN + offset); iter != memory.lower_bound(MEM_STACK);) {
 		clear(iter->second);
@@ -1435,7 +1480,7 @@ void Engine::clear_extern(const uint32_t offset)
 	}
 }
 
-void Engine::clear_stack(const uint32_t offset)
+void Engine::clear_stack(const uint64_t offset)
 {
 	for(auto iter = memory.lower_bound(MEM_STACK + offset); iter != memory.lower_bound(MEM_STATIC);) {
 		clear(iter->second);
@@ -1457,6 +1502,7 @@ void Engine::commit()
 		if(auto var = iter->second) {
 			if(var->flags & FLAG_DIRTY) {
 				storage->write(contract, iter->first, *var);
+				total_cost += (STOR_WRITE_COST + num_bytes(var) * STOR_WRITE_BYTE_COST) * (var->flags & FLAG_KEY ? 2 : 1);
 				var->flags &= ~FLAG_DIRTY;
 			}
 		}
@@ -1466,11 +1512,12 @@ void Engine::commit()
 		if(auto var = iter->second) {
 			if(var->flags & FLAG_DIRTY) {
 				storage->write(contract, iter->first.first, iter->first.second, *var);
+				total_cost += STOR_WRITE_COST + num_bytes(var) * STOR_WRITE_BYTE_COST;
 				var->flags &= ~FLAG_DIRTY;
 			}
 		}
 	}
-	total_cost += storage->num_write * STOR_WRITE_COST + storage->num_bytes_write * STOR_WRITE_BYTE_COST;
+	check_gas();
 }
 
 std::map<uint64_t, const var_t*> Engine::find_entries(const uint64_t dst) const

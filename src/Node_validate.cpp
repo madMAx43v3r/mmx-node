@@ -64,13 +64,19 @@ std::shared_ptr<Node::contract_state_t> Node::execution_context_t::get_state(con
 	return nullptr;
 }
 
+std::shared_ptr<Node::execution_context_t> Node::new_exec_context() const
+{
+	auto context = std::make_shared<execution_context_t>();
+	context->storage = std::make_shared<vm::StorageCache>(storage);
+	return context;
+}
+
 void Node::setup_context(	std::shared_ptr<execution_context_t> context,
-							std::shared_ptr<const Transaction> tx,
-							std::unordered_map<addr_t, std::vector<hash_t>>& mutate_map) const
+							std::shared_ptr<const Transaction> tx) const
 {
 	for(const auto& in : tx->get_all_inputs()) {
 		if(in.flags & txin_t::IS_EXEC) {
-			const auto& list = mutate_map[in.address];
+			const auto& list = context->mutate_map[in.address];
 			if(!list.empty()) {
 				context->wait_map[tx->id].insert(list.back());
 			}
@@ -95,9 +101,9 @@ void Node::setup_context(	std::shared_ptr<execution_context_t> context,
 				state->balance = get_balances(address);
 			}
 			if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(state->data)) {
-				for(const auto& addr : exec->depends) {
-					if(mutate_set.insert(addr).second) {
-						more.push_back(addr);
+				for(const auto& entry : exec->depends) {
+					if(mutate_set.insert(entry.second).second) {
+						more.push_back(entry.second);
 					}
 				}
 			}
@@ -105,7 +111,7 @@ void Node::setup_context(	std::shared_ptr<execution_context_t> context,
 		list = std::move(more);
 	}
 	for(const auto& address : mutate_set) {
-		auto& list = mutate_map[address];
+		auto& list = context->mutate_map[address];
 		if(!list.empty()) {
 			context->wait_map[tx->id].insert(list.back());
 		}
@@ -159,8 +165,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		throw std::logic_error("invalid block total_weight");
 	}
 
-	auto context = std::make_shared<execution_context_t>();
-	context->storage = std::make_shared<vm::StorageCache>(storage);
+	auto context = new_exec_context();
 	{
 		auto base = Context::create();
 		base->height = block->height;
@@ -168,7 +173,6 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	}
 	{
 		std::unordered_set<addr_t> tx_set;
-		std::unordered_map<addr_t, std::vector<hash_t>> mutate_map;
 		std::multiset<std::pair<hash_t, addr_t>> revoked;
 		balance_cache_t balance_cache(&balance_map);
 
@@ -211,7 +215,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 					txi = txi->parent;
 				}
 			}
-			setup_context(context, tx, mutate_map);
+			setup_context(context, tx);
 		}
 	}
 	std::exception_ptr failed_ex;
@@ -260,15 +264,13 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 
 void Node::validate(std::shared_ptr<const Transaction> tx) const
 {
-	auto context = std::make_shared<execution_context_t>();
-	context->storage = std::make_shared<vm::StorageCache>(storage);
+	auto context = new_exec_context();
 	{
 		auto base = Context::create();
 		base->height = get_height() + 1;
 		context->block = base;
 	}
-	std::unordered_map<addr_t, std::vector<hash_t>> mutate_map;
-	setup_context(context, tx, mutate_map);
+	setup_context(context, tx);
 
 	uint64_t fee = 0;
 	uint64_t cost = 0;
@@ -293,54 +295,24 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 					std::vector<txin_t>& exec_inputs,
 					std::vector<txout_t>& exec_outputs,
 					std::unordered_map<addr_t, uint128_t>& amounts,
-					std::shared_ptr<vm::StorageCache>& storage_cache,
+					std::shared_ptr<vm::StorageCache> storage_cache,
 					uint64_t& tx_cost, const bool is_public) const
 {
-	if(!state->data) {
-		throw std::logic_error("no such contract");
-	}
-	const auto executable = std::dynamic_pointer_cast<const contract::Executable>(state->data);
-	if(!executable) {
-		throw std::logic_error("not an executable");
-	}
-	auto method = mmx::find_method(executable, exec->method);
-	if(!method) {
-		throw std::logic_error("no such method");
-	}
-	if(is_public && !method->is_public) {
-		throw std::logic_error("method is not public");
-	}
-	if(!is_public && method->is_public) {
-		throw std::logic_error("method is public");
-	}
-	if(method->is_const) {
-		throw std::logic_error("method is const");
-	}
+	auto engine = std::make_shared<vm::Engine>(exec->address, storage_cache, false);
+
+	auto total_gas = std::min<uint64_t>(amounts[addr_t()], params->max_block_cost);
+	total_gas -= std::min(tx_cost, total_gas);
+	engine->total_gas = total_gas;
+
 	if(exec->user) {
 		if(auto contract = get_contract_for(*exec->user)) {
 			contract->validate(exec, create_context(context->block, contract, tx));
 		} else {
 			throw std::logic_error("no such user");
 		}
-	}
-	if(!storage_cache) {
-		storage_cache = std::make_shared<vm::StorageCache>(context->storage);
-	}
-	auto engine = std::make_shared<vm::Engine>(exec->address, storage_cache, false);
-	mmx::load(engine, executable);
-
-	engine->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(context->block->height));
-	engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::uint_t(tx->id));
-	if(exec->user) {
 		engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::uint_t(*exec->user));
 	}
-	mmx::set_balance(engine, state->balance);
-
-	if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(exec))
-	{
-		if(!method->is_payable) {
-			throw std::logic_error("method not payable");
-		}
+	if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(exec)) {
 		txout_t out;
 		out.address = exec->address;
 		out.contract = deposit->currency;
@@ -356,14 +328,77 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		mmx::set_deposit(engine, out);
 		exec_outputs.push_back(out);
 	}
-	auto total_gas = std::min<uint64_t>(amounts[addr_t()], params->max_block_cost);
-	if(tx_cost <= total_gas) {
-		total_gas -= tx_cost;
-	} else {
-		total_gas = 0;
-	}
-	mmx::execute(engine, *method, exec->args, total_gas);
+	mmx::set_args(engine, exec->args);
+	execute(tx, context, state, exec_inputs, exec_outputs, storage_cache, engine, exec->method, tx_cost, is_public);
 	tx_cost += engine->total_cost;
+}
+
+void Node::execute(	std::shared_ptr<const Transaction> tx,
+					std::shared_ptr<const execution_context_t> context,
+					std::shared_ptr<contract_state_t> state,
+					std::vector<txin_t>& exec_inputs,
+					std::vector<txout_t>& exec_outputs,
+					std::shared_ptr<vm::StorageCache> storage_cache,
+					std::shared_ptr<vm::Engine> engine,
+					const std::string& method_name,
+					uint64_t& tx_cost, const bool is_public) const
+{
+	if(!state || !state->data) {
+		throw std::logic_error("no such contract");
+	}
+	const auto executable = std::dynamic_pointer_cast<const contract::Executable>(state->data);
+	if(!executable) {
+		throw std::logic_error("not an executable");
+	}
+	auto method = mmx::find_method(executable, method_name);
+	if(!method) {
+		throw std::logic_error("no such method");
+	}
+	if(is_public && !method->is_public) {
+		throw std::logic_error("method is not public");
+	}
+	if(!is_public && method->is_public) {
+		throw std::logic_error("method is public");
+	}
+	if(method->is_const) {
+		throw std::logic_error("method is const");
+	}
+	mmx::load(engine, executable);
+
+	engine->remote = [this, tx, context, executable, storage_cache, engine, &exec_inputs, &exec_outputs, &tx_cost]
+		(const std::string& name, const std::string& method, const uint32_t nargs)
+	{
+		auto iter = executable->depends.find(name);
+		if(iter != executable->depends.end()) {
+			throw std::runtime_error("no such external contract: " + name);
+		}
+		const auto& address = iter->second;
+
+		auto state = context->get_state(address);
+		auto child = std::make_shared<vm::Engine>(address, storage_cache, false);
+		child->total_gas = engine->total_gas - std::min(engine->total_cost, engine->total_gas);
+
+		const auto stack_ptr = engine->get_frame().stack_ptr;
+		for(uint32_t i = 0; i < nargs; ++i) {
+			mmx::copy(child, engine, vm::MEM_STACK + 1 + i, vm::MEM_STACK + stack_ptr + 1 + i);
+		}
+		child->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::uint_t(engine->contract));
+
+		execute(tx, context, state, exec_inputs, exec_outputs, storage_cache, child, method, tx_cost, true);
+
+		mmx::copy(engine, child, vm::MEM_STACK + stack_ptr, vm::MEM_STACK);
+
+		const auto cost = child->total_cost + params->min_txfee_exec;
+		engine->total_gas -= std::min(cost, engine->total_gas);
+		engine->check_gas();
+		tx_cost += cost;
+	};
+
+	engine->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(context->block->height));
+	engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::uint_t(tx->id));
+	mmx::set_balance(engine, state->balance);
+
+	mmx::execute(engine, *method);
 
 	for(const auto& out : engine->outputs)
 	{
@@ -374,7 +409,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		amount -= out.amount;
 
 		txin_t in;
-		in.address = exec->address;
+		in.address = engine->contract;
 		in.contract = out.contract;
 		in.amount = out.amount;
 		exec_inputs.push_back(in);
@@ -506,7 +541,6 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 	std::vector<txout_t> exec_outputs;
 	balance_cache_t balance_cache(&balance_map);
 	std::unordered_map<addr_t, uint128_t> amounts;
-	std::shared_ptr<vm::StorageCache> storage_cache;
 
 	validate(tx, context, outputs, exec_outputs, balance_cache, amounts);
 
@@ -532,6 +566,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 	if(amounts[addr_t()].upper()) {
 		throw std::logic_error("fee amount overflow");
 	}
+	auto storage_cache = std::make_shared<vm::StorageCache>(context->storage);
 
 	for(const auto& op : tx->get_all_operations())
 	{
@@ -577,7 +612,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 		}
 		else if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op))
 		{
-			execute(tx, context, state, exec, exec_inputs, exec_outputs, amounts, storage_cache, tx_cost);
+			execute(tx, context, state, exec, exec_inputs, exec_outputs, amounts, storage_cache, tx_cost, true);
 		}
 	}
 	if(tx->deploy) {
@@ -687,9 +722,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 			}
 		}
 	}
-	if(storage_cache) {
-		storage_cache->commit();
-	}
+	storage_cache->commit();
 	return out;
 }
 

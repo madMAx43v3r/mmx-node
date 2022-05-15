@@ -19,11 +19,6 @@ public:
 	const std::shared_ptr<Storage> backend;
 	const bool read_only;
 
-	mutable uint64_t num_read = 0;
-	mutable uint64_t num_write = 0;
-	mutable uint64_t num_bytes_read = 0;
-	mutable uint64_t num_bytes_write = 0;
-
 	StorageProxy(std::shared_ptr<Storage> backend, bool read_only);
 
 	var_t* read(const addr_t& contract, const uint64_t src) const override;

@@ -23,19 +23,20 @@ void set_balance(std::shared_ptr<vm::Engine> engine, const std::map<addr_t, uint
 
 void set_deposit(std::shared_ptr<vm::Engine> engine, const txout_t& deposit);
 
-std::vector<vm::varptr_t> get_constants(const void* constant, const size_t constant_size);
-
-std::vector<vm::varptr_t> get_constants(std::shared_ptr<const contract::Executable> exec);
+std::vector<vm::var_t*> read_constants(std::shared_ptr<const contract::Executable> exec);
 
 void load(	std::shared_ptr<vm::Engine> engine,
 			std::shared_ptr<const contract::Executable> exec);
+
+void copy(std::shared_ptr<vm::Engine> dst, std::shared_ptr<vm::Engine> src, const uint64_t dst_addr, const uint64_t src_addr);
 
 void assign(std::shared_ptr<vm::Engine> engine, const uint64_t dst, const vnx::Variant& value);
 
 vnx::Variant read(std::shared_ptr<vm::Engine> engine, const uint64_t address);
 
-void execute(	std::shared_ptr<vm::Engine> engine,
-				const contract::method_t& method, const std::vector<vnx::Variant>& args, const uint64_t total_gas);
+void set_args(std::shared_ptr<vm::Engine> engine, const std::vector<vnx::Variant>& args);
+
+void execute(std::shared_ptr<vm::Engine> engine, const contract::method_t& method);
 
 
 } // mmx

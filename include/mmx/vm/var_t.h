@@ -198,6 +198,7 @@ struct array_t : var_t {
 
 	array_t() : var_t(TYPE_ARRAY) {}
 	array_t(const array_t&) = default;
+	array_t(uint32_t size) : array_t() { this->size = size; }
 
 };
 
