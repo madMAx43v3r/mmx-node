@@ -552,11 +552,13 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 				}
 				tmp_set.insert(tx->id);
 
-				for(const auto& in : tx->get_inputs()) {
-					const auto key = std::make_pair(tx->id, in.address);
+				if(tx->sender) {
+					const auto key = std::make_pair(tx->id, *tx->sender);
 					if(revoked.count(key) || tmp_revoke.count(key)) {
 						passed = false;
 					}
+				}
+				for(const auto& in : tx->get_inputs()) {
 					const auto balance = tmp_cache.get(in.address, in.contract);
 					if(balance || in.amount <= *balance) {
 						*balance -= in.amount;

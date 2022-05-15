@@ -240,15 +240,15 @@ public:
 			gather_inputs(tx, spent_map, more, addr_t(), options);
 			paid_fee += more;
 		}
-		if(!tx->sender) {
-			tx->sender = get_address(0);
-		}
 	}
 
 	void sign_off(std::shared_ptr<Transaction> tx, const spend_options_t& options = {})
 	{
 		if(options.budget_map) {
 			throw std::logic_error("not yet supported");
+		}
+		if(!tx->sender) {
+			tx->sender = get_address(0);
 		}
 		tx->finalize();
 

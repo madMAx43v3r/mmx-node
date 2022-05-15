@@ -137,10 +137,12 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 					if(!tx_set.insert(txi->id).second) {
 						throw std::logic_error("duplicate transaction");
 					}
-					for(const auto& in : txi->inputs) {
-						if(revoked.count(std::make_pair(txi->id, in.address))) {
+					if(txi->sender) {
+						if(revoked.count(std::make_pair(txi->id, *txi->sender))) {
 							throw std::logic_error("tx has been revoked");
 						}
+					}
+					for(const auto& in : txi->inputs) {
 						if(in.flags & txin_t::IS_EXEC) {
 							const auto& list = mutate_map[in.address];
 							if(!list.empty()) {
@@ -392,11 +394,13 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 	}
 	const auto revoked = get_revokations(tx->id);
 
-	for(const auto& in : tx->inputs)
-	{
-		if(revoked.count(in.address)) {
+	if(tx->sender) {
+		if(revoked.count(*tx->sender)) {
 			throw std::logic_error("tx has been revoked");
 		}
+	}
+	for(const auto& in : tx->inputs)
+	{
 		const auto balance = balance_cache.get(in.address, in.contract);
 		if(!balance || in.amount > *balance) {
 			throw std::logic_error("insufficient funds");
