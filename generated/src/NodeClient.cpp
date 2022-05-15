@@ -38,6 +38,8 @@
 #include <mmx/Node_get_contracts_return.hxx>
 #include <mmx/Node_get_contracts_by.hxx>
 #include <mmx/Node_get_contracts_by_return.hxx>
+#include <mmx/Node_get_exec_history.hxx>
+#include <mmx/Node_get_exec_history_return.hxx>
 #include <mmx/Node_get_header.hxx>
 #include <mmx/Node_get_header_return.hxx>
 #include <mmx/Node_get_header_at.hxx>
@@ -89,6 +91,7 @@
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/address_info_t.hxx>
+#include <mmx/exec_entry_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_info_t.hxx>
@@ -490,6 +493,20 @@ std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128> NodeClient::ge
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::vector<::mmx::exec_entry_t> NodeClient::get_exec_history(const ::mmx::addr_t& address, const int32_t& since) {
+	auto _method = ::mmx::Node_get_exec_history::create();
+	_method->address = address;
+	_method->since = since;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_exec_history_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::exec_entry_t>>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}

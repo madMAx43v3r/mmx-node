@@ -15,6 +15,7 @@
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/address_info_t.hxx>
+#include <mmx/exec_entry_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_info_t.hxx>
@@ -93,6 +94,8 @@ public:
 	std::map<::mmx::addr_t, ::mmx::uint128> get_total_balances(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& min_confirm = 1);
 	
 	std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128> get_all_balances(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& min_confirm = 1);
+	
+	std::vector<::mmx::exec_entry_t> get_exec_history(const ::mmx::addr_t& address = ::mmx::addr_t(), const int32_t& since = 0);
 	
 	std::map<std::string, ::mmx::vm::varptr_t> read_storage(const ::mmx::addr_t& contract = ::mmx::addr_t(), const uint32_t& height = -1);
 	

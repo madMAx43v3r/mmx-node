@@ -15,6 +15,7 @@
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/address_info_t.hxx>
+#include <mmx/exec_entry_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_info_t.hxx>
@@ -144,6 +145,10 @@ public:
 			const std::function<void(const std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128>&)>& _callback = std::function<void(const std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
+	uint64_t get_exec_history(const ::mmx::addr_t& address = ::mmx::addr_t(), const int32_t& since = 0, 
+			const std::function<void(const std::vector<::mmx::exec_entry_t>&)>& _callback = std::function<void(const std::vector<::mmx::exec_entry_t>&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
 	uint64_t read_storage(const ::mmx::addr_t& contract = ::mmx::addr_t(), const uint32_t& height = -1, 
 			const std::function<void(const std::map<std::string, ::mmx::vm::varptr_t>&)>& _callback = std::function<void(const std::map<std::string, ::mmx::vm::varptr_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
@@ -265,6 +270,7 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::uint128&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_total_balance;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<::mmx::addr_t, ::mmx::uint128>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_total_balances;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_all_balances;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::exec_entry_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_exec_history;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<std::string, ::mmx::vm::varptr_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_read_storage;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<uint64_t, ::mmx::vm::varptr_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_dump_storage;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::vm::varptr_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_read_storage_var;
