@@ -1208,9 +1208,10 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		balance_set.insert(key);
 		balance_map[key] += out.amount;
 	}
-	for(size_t i = 0; i < tx->inputs.size(); ++i)
+	const auto inputs = tx->get_inputs();
+	for(size_t i = 0; i < inputs.size(); ++i)
 	{
-		const auto& in = tx->inputs[i];
+		const auto& in = inputs[i];
 		addr_set.insert(in.address);
 		spend_log.insert(std::make_pair(in.address, block->height),
 				txio_entry_t::create_ex(txio_key_t::create_ex(tx->id, i), block->height, in));
