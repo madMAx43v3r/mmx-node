@@ -24,7 +24,7 @@ public:
 	
 	std::map<std::string, uint32_t> fields;
 	std::map<std::string, ::mmx::contract::method_t> methods;
-	std::vector<::mmx::addr_t> depends;
+	std::map<std::string, ::mmx::addr_t> depends;
 	std::vector<uint8_t> constant;
 	std::vector<uint8_t> binary;
 	vnx::optional<::mmx::addr_t> source;

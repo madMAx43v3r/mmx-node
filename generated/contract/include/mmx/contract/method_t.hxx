@@ -33,6 +33,8 @@ struct MMX_CONTRACT_EXPORT method_t {
 	std::string get_type_name() const;
 	const vnx::TypeCode* get_type_code() const;
 	
+	uint64_t num_bytes() const;
+	
 	static std::shared_ptr<method_t> create();
 	std::shared_ptr<method_t> clone() const;
 	

@@ -33,8 +33,6 @@
 #include <mmx/contract/PuzzleTimeLock_validate.hxx>
 #include <mmx/contract/PuzzleTimeLock_validate_return.hxx>
 #include <mmx/contract/TimeLock.hxx>
-#include <mmx/contract/TimeLock_calc_cost.hxx>
-#include <mmx/contract/TimeLock_calc_cost_return.hxx>
 #include <mmx/contract/TimeLock_calc_hash.hxx>
 #include <mmx/contract/TimeLock_calc_hash_return.hxx>
 #include <mmx/contract/TimeLock_get_dependency.hxx>
@@ -206,7 +204,7 @@ std::shared_ptr<vnx::TypeCode> PuzzleTimeLock::static_create_type_code() {
 	type_code->parents[0] = ::mmx::contract::TimeLock::static_get_type_code();
 	type_code->parents[1] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<PuzzleTimeLock>(); };
-	type_code->methods.resize(18);
+	type_code->methods.resize(17);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_dependency::static_get_type_code();
@@ -219,12 +217,11 @@ std::shared_ptr<vnx::TypeCode> PuzzleTimeLock::static_create_type_code() {
 	type_code->methods[9] = ::mmx::contract::PuzzleTimeLock_get_dependency::static_get_type_code();
 	type_code->methods[10] = ::mmx::contract::PuzzleTimeLock_is_valid::static_get_type_code();
 	type_code->methods[11] = ::mmx::contract::PuzzleTimeLock_validate::static_get_type_code();
-	type_code->methods[12] = ::mmx::contract::TimeLock_calc_cost::static_get_type_code();
-	type_code->methods[13] = ::mmx::contract::TimeLock_calc_hash::static_get_type_code();
-	type_code->methods[14] = ::mmx::contract::TimeLock_get_dependency::static_get_type_code();
-	type_code->methods[15] = ::mmx::contract::TimeLock_get_owner::static_get_type_code();
-	type_code->methods[16] = ::mmx::contract::TimeLock_is_valid::static_get_type_code();
-	type_code->methods[17] = ::mmx::contract::TimeLock_validate::static_get_type_code();
+	type_code->methods[12] = ::mmx::contract::TimeLock_calc_hash::static_get_type_code();
+	type_code->methods[13] = ::mmx::contract::TimeLock_get_dependency::static_get_type_code();
+	type_code->methods[14] = ::mmx::contract::TimeLock_get_owner::static_get_type_code();
+	type_code->methods[15] = ::mmx::contract::TimeLock_is_valid::static_get_type_code();
+	type_code->methods[16] = ::mmx::contract::TimeLock_validate::static_get_type_code();
 	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
@@ -332,12 +329,6 @@ std::shared_ptr<vnx::Value> PuzzleTimeLock::vnx_call_switch(std::shared_ptr<cons
 			auto _args = std::static_pointer_cast<const ::mmx::contract::PuzzleTimeLock_validate>(_method);
 			auto _return_value = ::mmx::contract::PuzzleTimeLock_validate_return::create();
 			_return_value->_ret_0 = validate(_args->operation, _args->context);
-			return _return_value;
-		}
-		case 0x6650bddacd4a3634ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::contract::TimeLock_calc_cost>(_method);
-			auto _return_value = ::mmx::contract::TimeLock_calc_cost_return::create();
-			_return_value->_ret_0 = calc_cost(_args->params);
 			return _return_value;
 		}
 		case 0xb64276bca8d842cbull: {

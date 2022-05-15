@@ -3,7 +3,6 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
-#include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/Contract_calc_cost.hxx>
 #include <mmx/Contract_calc_cost_return.hxx>
@@ -23,8 +22,6 @@
 #include <mmx/bls_pubkey_t.hpp>
 #include <mmx/contract/VirtualPlot_bls_transfer.hxx>
 #include <mmx/contract/VirtualPlot_bls_transfer_return.hxx>
-#include <mmx/contract/VirtualPlot_calc_cost.hxx>
-#include <mmx/contract/VirtualPlot_calc_cost_return.hxx>
 #include <mmx/contract/VirtualPlot_calc_hash.hxx>
 #include <mmx/contract/VirtualPlot_calc_hash_return.hxx>
 #include <mmx/contract/VirtualPlot_is_valid.hxx>
@@ -167,7 +164,7 @@ std::shared_ptr<vnx::TypeCode> VirtualPlot::static_create_type_code() {
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<VirtualPlot>(); };
-	type_code->methods.resize(11);
+	type_code->methods.resize(10);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_dependency::static_get_type_code();
@@ -176,9 +173,8 @@ std::shared_ptr<vnx::TypeCode> VirtualPlot::static_create_type_code() {
 	type_code->methods[5] = ::mmx::Contract_transfer::static_get_type_code();
 	type_code->methods[6] = ::mmx::Contract_validate::static_get_type_code();
 	type_code->methods[7] = ::mmx::contract::VirtualPlot_bls_transfer::static_get_type_code();
-	type_code->methods[8] = ::mmx::contract::VirtualPlot_calc_cost::static_get_type_code();
-	type_code->methods[9] = ::mmx::contract::VirtualPlot_calc_hash::static_get_type_code();
-	type_code->methods[10] = ::mmx::contract::VirtualPlot_is_valid::static_get_type_code();
+	type_code->methods[8] = ::mmx::contract::VirtualPlot_calc_hash::static_get_type_code();
+	type_code->methods[9] = ::mmx::contract::VirtualPlot_is_valid::static_get_type_code();
 	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
@@ -250,12 +246,6 @@ std::shared_ptr<vnx::Value> VirtualPlot::vnx_call_switch(std::shared_ptr<const v
 			auto _args = std::static_pointer_cast<const ::mmx::contract::VirtualPlot_bls_transfer>(_method);
 			auto _return_value = ::mmx::contract::VirtualPlot_bls_transfer_return::create();
 			bls_transfer(_args->new_farmer_key);
-			return _return_value;
-		}
-		case 0xfed2dc74861bef28ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::contract::VirtualPlot_calc_cost>(_method);
-			auto _return_value = ::mmx::contract::VirtualPlot_calc_cost_return::create();
-			_return_value->_ret_0 = calc_cost(_args->params);
 			return _return_value;
 		}
 		case 0x2ec01712e3899bd7ull: {
