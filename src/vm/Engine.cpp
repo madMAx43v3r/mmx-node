@@ -16,7 +16,7 @@ namespace vm {
 
 std::string to_hex(const uint64_t addr) {
 	std::stringstream ss;
-	ss << "0x" << std::hex << addr;
+	ss << "0x" << std::uppercase << std::hex << addr;
 	return ss.str();
 }
 
