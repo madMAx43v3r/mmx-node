@@ -49,7 +49,7 @@ namespace contract {
 
 
 const vnx::Hash64 Executable::VNX_TYPE_HASH(0xfa6a3ac9103ebb12ull);
-const vnx::Hash64 Executable::VNX_CODE_HASH(0x1e2049e2fed7a851ull);
+const vnx::Hash64 Executable::VNX_CODE_HASH(0x74e6405a8c01084cull);
 
 vnx::Hash64 Executable::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -90,11 +90,12 @@ void Executable::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, decimals);
 	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, fields);
 	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, methods);
-	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, constant);
-	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, binary);
-	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, source);
-	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, init_method);
-	_visitor.type_field(_type_code->fields[12], 12); vnx::accept(_visitor, init_args);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, depends);
+	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, constant);
+	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, binary);
+	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, source);
+	_visitor.type_field(_type_code->fields[12], 12); vnx::accept(_visitor, init_method);
+	_visitor.type_field(_type_code->fields[13], 13); vnx::accept(_visitor, init_args);
 	_visitor.type_end(*_type_code);
 }
 
@@ -108,6 +109,7 @@ void Executable::write(std::ostream& _out) const {
 	_out << ", \"decimals\": "; vnx::write(_out, decimals);
 	_out << ", \"fields\": "; vnx::write(_out, fields);
 	_out << ", \"methods\": "; vnx::write(_out, methods);
+	_out << ", \"depends\": "; vnx::write(_out, depends);
 	_out << ", \"constant\": "; vnx::write(_out, constant);
 	_out << ", \"binary\": "; vnx::write(_out, binary);
 	_out << ", \"source\": "; vnx::write(_out, source);
@@ -133,6 +135,7 @@ vnx::Object Executable::to_object() const {
 	_object["decimals"] = decimals;
 	_object["fields"] = fields;
 	_object["methods"] = methods;
+	_object["depends"] = depends;
 	_object["constant"] = constant;
 	_object["binary"] = binary;
 	_object["source"] = source;
@@ -149,6 +152,8 @@ void Executable::from_object(const vnx::Object& _object) {
 			_entry.second.to(constant);
 		} else if(_entry.first == "decimals") {
 			_entry.second.to(decimals);
+		} else if(_entry.first == "depends") {
+			_entry.second.to(depends);
 		} else if(_entry.first == "fields") {
 			_entry.second.to(fields);
 		} else if(_entry.first == "icon_url") {
@@ -198,6 +203,9 @@ vnx::Variant Executable::get_field(const std::string& _name) const {
 	if(_name == "methods") {
 		return vnx::Variant(methods);
 	}
+	if(_name == "depends") {
+		return vnx::Variant(depends);
+	}
 	if(_name == "constant") {
 		return vnx::Variant(constant);
 	}
@@ -233,6 +241,8 @@ void Executable::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(fields);
 	} else if(_name == "methods") {
 		_value.to(methods);
+	} else if(_name == "depends") {
+		_value.to(depends);
 	} else if(_name == "constant") {
 		_value.to(constant);
 	} else if(_name == "binary") {
@@ -270,7 +280,7 @@ std::shared_ptr<vnx::TypeCode> Executable::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.Executable";
 	type_code->type_hash = vnx::Hash64(0xfa6a3ac9103ebb12ull);
-	type_code->code_hash = vnx::Hash64(0x1e2049e2fed7a851ull);
+	type_code->code_hash = vnx::Hash64(0x74e6405a8c01084cull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::Executable);
@@ -295,7 +305,7 @@ std::shared_ptr<vnx::TypeCode> Executable::static_create_type_code() {
 	type_code->methods[11] = ::mmx::contract::TokenBase_calc_cost::static_get_type_code();
 	type_code->methods[12] = ::mmx::contract::TokenBase_calc_hash::static_get_type_code();
 	type_code->methods[13] = ::mmx::contract::TokenBase_is_valid::static_get_type_code();
-	type_code->fields.resize(13);
+	type_code->fields.resize(14);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -348,29 +358,35 @@ std::shared_ptr<vnx::TypeCode> Executable::static_create_type_code() {
 	{
 		auto& field = type_code->fields[8];
 		field.is_extended = true;
-		field.name = "constant";
-		field.code = {12, 1};
+		field.name = "depends";
+		field.code = {12, 11, 32, 1};
 	}
 	{
 		auto& field = type_code->fields[9];
 		field.is_extended = true;
-		field.name = "binary";
+		field.name = "constant";
 		field.code = {12, 1};
 	}
 	{
 		auto& field = type_code->fields[10];
 		field.is_extended = true;
+		field.name = "binary";
+		field.code = {12, 1};
+	}
+	{
+		auto& field = type_code->fields[11];
+		field.is_extended = true;
 		field.name = "source";
 		field.code = {33, 11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[11];
+		auto& field = type_code->fields[12];
 		field.is_extended = true;
 		field.name = "init_method";
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[12];
+		auto& field = type_code->fields[13];
 		field.is_extended = true;
 		field.name = "init_args";
 		field.code = {12, 17};
@@ -523,11 +539,12 @@ void read(TypeInput& in, ::mmx::contract::Executable& value, const TypeCode* typ
 			case 4: vnx::read(in, value.icon_url, type_code, _field->code.data()); break;
 			case 6: vnx::read(in, value.fields, type_code, _field->code.data()); break;
 			case 7: vnx::read(in, value.methods, type_code, _field->code.data()); break;
-			case 8: vnx::read(in, value.constant, type_code, _field->code.data()); break;
-			case 9: vnx::read(in, value.binary, type_code, _field->code.data()); break;
-			case 10: vnx::read(in, value.source, type_code, _field->code.data()); break;
-			case 11: vnx::read(in, value.init_method, type_code, _field->code.data()); break;
-			case 12: vnx::read(in, value.init_args, type_code, _field->code.data()); break;
+			case 8: vnx::read(in, value.depends, type_code, _field->code.data()); break;
+			case 9: vnx::read(in, value.constant, type_code, _field->code.data()); break;
+			case 10: vnx::read(in, value.binary, type_code, _field->code.data()); break;
+			case 11: vnx::read(in, value.source, type_code, _field->code.data()); break;
+			case 12: vnx::read(in, value.init_method, type_code, _field->code.data()); break;
+			case 13: vnx::read(in, value.init_args, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -555,11 +572,12 @@ void write(TypeOutput& out, const ::mmx::contract::Executable& value, const Type
 	vnx::write(out, value.icon_url, type_code, type_code->fields[4].code.data());
 	vnx::write(out, value.fields, type_code, type_code->fields[6].code.data());
 	vnx::write(out, value.methods, type_code, type_code->fields[7].code.data());
-	vnx::write(out, value.constant, type_code, type_code->fields[8].code.data());
-	vnx::write(out, value.binary, type_code, type_code->fields[9].code.data());
-	vnx::write(out, value.source, type_code, type_code->fields[10].code.data());
-	vnx::write(out, value.init_method, type_code, type_code->fields[11].code.data());
-	vnx::write(out, value.init_args, type_code, type_code->fields[12].code.data());
+	vnx::write(out, value.depends, type_code, type_code->fields[8].code.data());
+	vnx::write(out, value.constant, type_code, type_code->fields[9].code.data());
+	vnx::write(out, value.binary, type_code, type_code->fields[10].code.data());
+	vnx::write(out, value.source, type_code, type_code->fields[11].code.data());
+	vnx::write(out, value.init_method, type_code, type_code->fields[12].code.data());
+	vnx::write(out, value.init_args, type_code, type_code->fields[13].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::Executable& value) {
