@@ -18,6 +18,9 @@
 #include <mmx/contract/Token.hxx>
 #include <mmx/contract/TimeLock.hxx>
 #include <mmx/contract/PuzzleTimeLock.hxx>
+#include <mmx/contract/Executable.hxx>
+#include <mmx/contract/PlotNFT.hxx>
+#include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/operation/Mint.hxx>
 #include <mmx/operation/Spend.hxx>
 #include <mmx/operation/Mutate.hxx>
@@ -416,6 +419,12 @@ public:
 		} else if(auto value = std::dynamic_pointer_cast<const contract::MutableRelay>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::MultiSig>(base)) {
+			set(render(value, context));
+		} else if(auto value = std::dynamic_pointer_cast<const contract::Executable>(base)) {
+			set(render(value, context));
+		} else if(auto value = std::dynamic_pointer_cast<const contract::PlotNFT>(base)) {
+			set(render(value, context));
+		} else if(auto value = std::dynamic_pointer_cast<const contract::VirtualPlot>(base)) {
 			set(render(value, context));
 		} else {
 			set(base);
