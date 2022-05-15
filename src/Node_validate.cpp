@@ -655,11 +655,6 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 			throw std::logic_error("exec_outputs count mismatch: "
 					+ std::to_string(tx->exec_outputs.size()) + " != " + std::to_string(exec_outputs.size()));
 		}
-		for(const auto& in : tx->exec_inputs) {
-			if(in.solution != txin_t::NO_SOLUTION) {
-				throw std::logic_error("invalid exec_input");
-			}
-		}
 		for(size_t i = 0; i < exec_inputs.size(); ++i) {
 			const auto& lhs = exec_inputs[i];
 			const auto& rhs = tx->exec_inputs[i];
