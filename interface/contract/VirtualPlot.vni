@@ -15,8 +15,6 @@ class VirtualPlot extends mmx.Contract {
 	
 	hash_t calc_hash() const;
 	
-	ulong calc_cost(mmx.ChainParams* params) const;
-	
 	void bls_transfer(bls_pubkey_t new_farmer_key);
 	
 }

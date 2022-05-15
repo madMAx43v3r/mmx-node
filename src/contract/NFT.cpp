@@ -37,7 +37,7 @@ uint64_t NFT::num_bytes() const
 {
 	uint64_t num_bytes = 0;
 	for(const auto& entry : data.field) {
-		num_bytes += entry.first.size();
+		num_bytes += 4 + entry.first.size();
 		num_bytes += entry.second.size();
 	}
 	return num_bytes;

@@ -38,11 +38,6 @@ hash_t MutableRelay::calc_hash() const
 	return hash_t(buffer);
 }
 
-uint64_t MutableRelay::calc_cost(std::shared_ptr<const ChainParams> params) const
-{
-	return 0;
-}
-
 std::vector<addr_t> MutableRelay::get_dependency() const {
 	if(target) {
 		return {owner, *target};

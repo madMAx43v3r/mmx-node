@@ -55,16 +55,12 @@ uint64_t Executable::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
 	uint64_t payload = 0;
 	for(const auto& entry : fields) {
-		payload += entry.first.size();
+		payload += 4 + entry.first.size() + 4;
 	}
 	for(const auto& entry : methods) {
-		const auto& method = entry.second;
-		for(const auto& entry : method.args) {
-			payload += entry.size();
-		}
-		payload += entry.first.size() + method.name.size() + method.info.size();
+		payload += 4 + entry.first.size() + entry.second.num_bytes();
 	}
-	payload += constant.size() + binary.size() + init_method.size();
+	payload += depends.size() * 32 + constant.size() + binary.size() + init_method.size();
 
 	for(const auto& arg : init_args) {
 		payload += arg.size();

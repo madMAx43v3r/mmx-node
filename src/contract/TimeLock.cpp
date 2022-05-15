@@ -33,10 +33,6 @@ hash_t TimeLock::calc_hash() const
 	return hash_t(buffer);
 }
 
-uint64_t TimeLock::calc_cost(std::shared_ptr<const ChainParams> params) const {
-	return 0;
-}
-
 std::vector<addr_t> TimeLock::get_dependency() const {
 	return {owner};
 }

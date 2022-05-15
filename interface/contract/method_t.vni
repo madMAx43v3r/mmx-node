@@ -13,4 +13,7 @@ struct method_t {
 	
 	vector<string> args;
 	
+	
+	ulong num_bytes() const;
+	
 }

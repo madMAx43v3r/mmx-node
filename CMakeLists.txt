@@ -107,6 +107,7 @@ add_library(mmx_iface SHARED
 	src/contract/VirtualPlot.cpp
 	src/contract/VoteSheet.cpp
 	src/contract/Executable.cpp
+	src/contract/method_t.cpp
 	src/solution/PubKey.cpp
 	src/solution/MultiSig.cpp
 	src/solution/PuzzleTimeLock.cpp
