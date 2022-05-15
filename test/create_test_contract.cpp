@@ -106,6 +106,47 @@ int main(int argc, char** argv)
 		code.emplace_back(OP_RET);
 		exec->methods["read_array"] = method;
 	}
+	while(code.size() < 90) {
+		code.emplace_back(OP_NOP);
+	}
+	{
+		mmx::contract::method_t method;
+		method.name = "mint";
+		method.args = {"address", "amount"};
+		method.is_public = true;
+		method.entry_point = code.size();
+		code.emplace_back(OP_CONV, 0, MEM_STACK + 3, MEM_STACK + 1, CONVTYPE_UINT, CONVTYPE_ADDRESS);
+		code.emplace_back(OP_MINT, 0, MEM_STACK + 3, MEM_STACK + 2);
+		code.emplace_back(OP_RET);
+		exec->methods["mint"] = method;
+	}
+	while(code.size() < 100) {
+		code.emplace_back(OP_NOP);
+	}
+	{
+		mmx::contract::method_t method;
+		method.name = "deposit";
+		method.is_public = true;
+		method.is_payable = true;
+		method.entry_point = code.size();
+		code.emplace_back(OP_RET);
+		exec->methods["deposit"] = method;
+	}
+	while(code.size() < 110) {
+		code.emplace_back(OP_NOP);
+	}
+	{
+		mmx::contract::method_t method;
+		method.name = "withdraw";
+		method.is_public = true;
+		method.args = {"address", "amount", "currency"};
+		method.entry_point = code.size();
+		code.emplace_back(OP_CONV, 0, MEM_STACK + 4, MEM_STACK + 1, CONVTYPE_UINT, CONVTYPE_ADDRESS);
+		code.emplace_back(OP_CONV, 0, MEM_STACK + 5, MEM_STACK + 3, CONVTYPE_UINT, CONVTYPE_ADDRESS);
+		code.emplace_back(OP_SEND, 0, MEM_STACK + 4, MEM_STACK + 2, MEM_STACK + 5);
+		code.emplace_back(OP_RET);
+		exec->methods["withdraw"] = method;
+	}
 
 	for(const auto& var : constant) {
 		auto data = serialize(*var.get(), false, false);
