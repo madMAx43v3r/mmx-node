@@ -184,7 +184,7 @@ inline void write_field(vnx::OutputBuffer& out, const std::string& name) {
 
 template<typename T>
 void write_field(vnx::OutputBuffer& out, const std::string& name, const T& value) {
-	write_field(out, name);
+	write_field(out, "__field::" + name);
 	write_bytes(out, value);
 }
 
