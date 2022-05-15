@@ -480,12 +480,20 @@ app.component('account-addresses', {
 			<tr>
 				<th>Index</th>
 				<th>Address</th>
+				<th>N(Recv)</th>
+				<th>N(Spend)</th>
+				<th>Last Recv</th>
+				<th>Last Spend</th>
 			</tr>
 			</thead>
 			<tbody>
 			<tr v-for="(item, index) in data" :key="index">
 				<td>{{index}}</td>
 				<td><router-link :to="'/explore/address/' + item">{{item}}</router-link></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
 			</tr>
 			</tbody>
 		</table>
