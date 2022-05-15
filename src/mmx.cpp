@@ -13,7 +13,7 @@
 //#include <mmx/exchange/ClientClient.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/contract/NFT.hxx>
-#include <mmx/contract/Token.hxx>
+#include <mmx/contract/TokenBase.hxx>
 #include <mmx/contract/Executable.hxx>
 #include <mmx/KeyFile.hxx>
 #include <mmx/secp256k1.hpp>
@@ -38,9 +38,9 @@ std::shared_ptr<const mmx::Contract> get_contract(mmx::NodeClient& node, const m
 	return iter->second;
 }
 
-std::shared_ptr<const mmx::contract::Token> get_token(mmx::NodeClient& node, const mmx::addr_t& address, bool fail = true)
+std::shared_ptr<const mmx::contract::TokenBase> get_token(mmx::NodeClient& node, const mmx::addr_t& address, bool fail = true)
 {
-	auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(get_contract(node, address));
+	auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(get_contract(node, address));
 	if(!token && fail) {
 		throw std::logic_error("no such token: " + address.to_string());
 	}
@@ -62,7 +62,7 @@ void show_history(const std::vector<mmx::tx_entry_t>& history, mmx::NodeClient& 
 		if(auto nft = std::dynamic_pointer_cast<const mmx::contract::NFT>(contract)) {
 			std::cout << entry.contract << " " << arrow << " " << entry.address << " (" << entry.txid << ")" << std::endl;
 		} else {
-			const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(contract);
+			const auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract);
 			const auto decimals = token ? token->decimals : params->decimals;
 			std::cout << amount_value(entry.amount, decimals) << " " << (token ? token->symbol : "MMX")
 					<< " (" << entry.amount << ") " << arrow << " " << entry.address << " (" << entry.txid << ")" << std::endl;
@@ -143,7 +143,7 @@ int main(int argc, char** argv)
 	bool did_fail = false;
 	auto params = mmx::get_params();
 	{
-		auto token = mmx::contract::Token::create();
+		auto token = mmx::contract::TokenBase::create();
 		token->decimals = params->decimals;
 		token->symbol = "MMX";
 		contract_cache[mmx::addr_t()] = token;
@@ -233,7 +233,7 @@ int main(int argc, char** argv)
 					const auto& address = entry.first;
 					const auto& contract = entry.second;
 					std::cout << "Contract: " << address << " (" << contract->get_type_name();
-					if(auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(contract)) {
+					if(auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract)) {
 						std::cout << ", " << token->symbol << ", " << token->name;
 					}
 					std::cout << ")" << std::endl;
@@ -485,7 +485,7 @@ int main(int argc, char** argv)
 				{
 					const auto contract = get_contract(node, entry.first);
 					if(!std::dynamic_pointer_cast<const mmx::contract::NFT>(contract)) {
-						const auto token = std::dynamic_pointer_cast<const mmx::contract::Token>(contract);
+						const auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract);
 						const auto decimals = token ? token->decimals : params->decimals;
 						std::cout << "Balance: " << amount_value(entry.second, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.second << ")" << std::endl;
 					}

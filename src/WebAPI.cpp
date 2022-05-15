@@ -70,7 +70,7 @@ public:
 			currency.is_nft = true;
 			currency.symbol = "NFT";
 		}
-		else if(auto token = std::dynamic_pointer_cast<const contract::Token>(contract)) {
+		else if(auto token = std::dynamic_pointer_cast<const contract::TokenBase>(contract)) {
 			auto& currency = currency_map[address];
 			currency.decimals = token->decimals;
 			currency.symbol = token->symbol;
@@ -1350,7 +1350,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					try {
 						uint64_t amount = 0;
 						const auto value = args["amount"].to<double>();
-						if(auto token = std::dynamic_pointer_cast<const contract::Token>(contract)) {
+						if(auto token = std::dynamic_pointer_cast<const contract::TokenBase>(contract)) {
 							amount = value * pow(10, token->decimals);
 						} else if(currency == addr_t()) {
 							amount = value * pow(10, params->decimals);
