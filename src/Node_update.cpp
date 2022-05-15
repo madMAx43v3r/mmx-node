@@ -47,32 +47,32 @@ void Node::add_dummy_blocks(std::shared_ptr<const BlockHeader> prev)
 {
 	if(auto vdf_point = find_next_vdf_point(prev))
 	{
-		auto block = Block::create();
-		block->version = 0;
-		block->prev = prev->hash;
-		block->height = prev->height + 1;
-		block->time_diff = prev->time_diff;
-		block->space_diff = calc_new_space_diff(params, prev->space_diff, params->score_threshold);
-		block->vdf_iters = vdf_point->vdf_iters;
-		block->vdf_output = vdf_point->output;
-		block->weight = calc_block_weight(params, prev, nullptr, false);
-		block->total_weight = prev->total_weight + block->weight;
-		block->finalize();
-		add_block(block);
-
-		hash_t vdf_challenge;
-		if(find_vdf_challenge(block, vdf_challenge)) {
-			const auto challenge = get_challenge(block, vdf_challenge);
-			for(const auto& response : find_proof(challenge)) {
-				const auto& proof = response->proof;
-				auto copy = vnx::clone(block);
-				copy->proof = proof;
-				copy->space_diff = calc_new_space_diff(params, prev->space_diff, proof->score);
-				copy->weight = calc_block_weight(params, prev, proof, false);
-				copy->total_weight = prev->total_weight + copy->weight;
-				copy->finalize();
-				add_block(copy);
+		std::vector<std::shared_ptr<const ProofOfSpace>> proofs = {nullptr};
+		{
+			hash_t vdf_challenge;
+			if(find_vdf_challenge(prev, vdf_challenge, 1)) {
+				const auto challenge = get_challenge(prev, vdf_challenge, 1);
+				for(const auto& response : find_proof(challenge)) {
+					proofs.push_back(response->proof);
+				}
 			}
+		}
+		const auto diff_block = get_diff_header(prev, 1);
+
+		for(const auto& proof : proofs) {
+			auto block = Block::create();
+			block->version = 0;
+			block->prev = prev->hash;
+			block->height = prev->height + 1;
+			block->proof = proof;
+			block->time_diff = prev->time_diff;
+			block->space_diff = calc_new_space_diff(params, prev->space_diff, proof ? proof->score : params->score_threshold);
+			block->vdf_iters = vdf_point->vdf_iters;
+			block->vdf_output = vdf_point->output;
+			block->weight = calc_block_weight(params, diff_block, proof, false);
+			block->total_weight = prev->total_weight + block->weight;
+			block->finalize();
+			add_block(block);
 		}
 	}
 }
@@ -274,14 +274,12 @@ void Node::update()
 		auto vdf_iters = peak->vdf_iters;
 		for(uint32_t i = 0; i <= params->infuse_delay; ++i)
 		{
-			if(auto diff_block = find_diff_header(peak, i + 1))
+			if(auto prev = find_prev_header(peak, params->infuse_delay - i))
 			{
-				if(auto prev = find_prev_header(peak, params->infuse_delay - i))
-				{
-					infuse->values[vdf_iters] = prev->hash;
-				}
-				vdf_iters += diff_block->time_diff * params->time_diff_constant;
+				infuse->values[vdf_iters] = prev->hash;
 			}
+			auto diff_block = get_diff_header(peak, i + 1);
+			vdf_iters += diff_block->time_diff * params->time_diff_constant;
 		}
 		publish(infuse, output_timelord_infuse);
 	}
@@ -293,7 +291,7 @@ void Node::update()
 		{
 			if(prev->height >= params->challenge_interval)
 			{
-				if(auto diff_block = find_prev_header(prev, params->challenge_interval, true))
+				if(auto diff_block = find_prev_header(prev, params->challenge_interval))
 				{
 					auto infuse = TimeInfusion::create();
 					infuse->chain = 1;
@@ -309,20 +307,18 @@ void Node::update()
 		auto vdf_iters = peak->vdf_iters;
 		for(uint32_t i = 0; i < params->infuse_delay; ++i)
 		{
-			if(auto diff_block = find_diff_header(peak, i + 1))
-			{
-				auto request = IntervalRequest::create();
-				request->begin = vdf_iters;
-				if(i == 0) {
-					request->has_start = true;
-					request->start_values = peak->vdf_output;
-				}
-				vdf_iters += diff_block->time_diff * params->time_diff_constant;
-				request->end = vdf_iters;
-				request->height = peak->height + i + 1;
-				request->num_segments = params->num_vdf_segments;
-				publish(request, output_interval_request);
+			auto request = IntervalRequest::create();
+			request->begin = vdf_iters;
+			if(i == 0) {
+				request->has_start = true;
+				request->start_values = peak->vdf_output;
 			}
+			auto diff_block = get_diff_header(peak, i + 1);
+			vdf_iters += diff_block->time_diff * params->time_diff_constant;
+			request->end = vdf_iters;
+			request->height = peak->height + i + 1;
+			request->num_segments = params->num_vdf_segments;
+			publish(request, output_interval_request);
 		}
 	}
 
@@ -372,17 +368,14 @@ void Node::update()
 	// publish challenges
 	for(uint32_t i = 0; i <= params->challenge_delay; ++i)
 	{
-		if(auto diff_block = find_diff_header(peak, i))
+		if(auto vdf_block = find_prev_header(peak, params->challenge_delay - i, true))
 		{
-			if(auto vdf_block = find_prev_header(peak, params->challenge_delay - i, true))
-			{
-				auto value = Challenge::create();
-				value->height = peak->height + i;
-				value->vdf_block = vdf_block->hash;
-				value->challenge = get_challenge(peak, vdf_block->vdf_output[1], i);
-				value->space_diff = diff_block->space_diff;
-				publish(value, output_challenges);
-			}
+			auto value = Challenge::create();
+			value->height = peak->height + i;
+			value->vdf_block = vdf_block->hash;
+			value->challenge = get_challenge(peak, vdf_block->vdf_output[1], i);
+			value->space_diff = get_diff_header(peak, i)->space_diff;
+			publish(value, output_challenges);
 		}
 	}
 }
@@ -667,7 +660,8 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 		// set new space difficulty
 		block->space_diff = calc_new_space_diff(params, prev->space_diff, response->proof->score);
 	}
-	block->weight = calc_block_weight(params, prev, block->proof, true);
+	const auto diff_block = get_diff_header(prev, 1);
+	block->weight = calc_block_weight(params, diff_block, block->proof, true);
 	block->total_weight = prev->total_weight + block->weight;
 	block->finalize();
 

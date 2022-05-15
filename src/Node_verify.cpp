@@ -180,10 +180,7 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof) const
 		if(infused_block->height + std::min(params->infuse_delay + 1, proof->height) != proof->height) {
 			throw std::logic_error("invalid block height infused on chain 0");
 		}
-		const auto diff_block = find_diff_header(infused_block, params->infuse_delay + 1);
-		if(!diff_block) {
-			throw std::logic_error("cannot verify");
-		}
+		const auto diff_block = get_diff_header(infused_block, params->infuse_delay + 1);
 		const auto expected_iters = diff_block->time_diff * params->time_diff_constant;
 		if(proof_iters != expected_iters) {
 			throw std::logic_error("wrong number of iterations: " + std::to_string(proof_iters) + " != " + std::to_string(expected_iters));

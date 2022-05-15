@@ -98,7 +98,8 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->space_diff != calc_new_space_diff(params, prev->space_diff, proof_score)) {
 		throw std::logic_error("invalid space_diff adjust");
 	}
-	const auto weight = calc_block_weight(params, prev, block->proof, block->farmer_sig);
+	const auto diff_block = get_diff_header(block);
+	const auto weight = calc_block_weight(params, diff_block, block->proof, block->farmer_sig);
 	if(block->weight != weight) {
 		throw std::logic_error("invalid block weight: " + block->weight.str(10) + " != " + weight.str(10));
 	}

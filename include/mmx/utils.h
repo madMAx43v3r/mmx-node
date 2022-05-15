@@ -98,15 +98,15 @@ uint64_t calc_new_space_diff(std::shared_ptr<const ChainParams> params, const ui
 }
 
 inline
-uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> prev,
+uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> diff_block,
 							std::shared_ptr<const ProofOfSpace> proof, const bool with_farmer_sig)
 {
 	uint128_t weight = with_farmer_sig ? 2 : 1;
 	if(proof) {
 		weight += params->score_threshold - proof->score;
 	}
-	weight *= prev->space_diff;
-	weight *= prev->time_diff;
+	weight *= diff_block->space_diff;
+	weight *= diff_block->time_diff;
 	return weight;
 }
 

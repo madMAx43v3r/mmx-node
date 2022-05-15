@@ -799,10 +799,7 @@ void Node::handle(std::shared_ptr<const ProofResponse> value)
 		if(request->height != vdf_block->height + params->challenge_delay) {
 			throw std::logic_error("invalid height");
 		}
-		const auto diff_block = find_diff_header(vdf_block, params->challenge_delay);
-		if(!diff_block) {
-			throw std::logic_error("missing difficulty block");
-		}
+		const auto diff_block = get_diff_header(vdf_block, params->challenge_delay);
 		const auto challenge = hash_t(diff_block->hash + vdf_block->vdf_output[1]);
 		if(request->challenge != challenge) {
 			throw std::logic_error("invalid challenge");
@@ -1435,12 +1432,17 @@ std::shared_ptr<const BlockHeader> Node::find_diff_header(std::shared_ptr<const 
 	return nullptr;
 }
 
+std::shared_ptr<const BlockHeader> Node::get_diff_header(std::shared_ptr<const BlockHeader> block, uint32_t offset) const
+{
+	if(auto header = find_diff_header(block, offset)) {
+		return header;
+	}
+	throw std::logic_error("cannot find diff header");
+}
+
 hash_t Node::get_challenge(std::shared_ptr<const BlockHeader> block, const hash_t& vdf_challenge, uint32_t offset) const
 {
-	if(auto diff_block = find_diff_header(block, offset)) {
-		return hash_t(diff_block->hash + vdf_challenge);
-	}
-	return hash_t();
+	return hash_t(get_diff_header(block, offset)->hash + vdf_challenge);
 }
 
 bool Node::find_vdf_challenge(std::shared_ptr<const BlockHeader> block, hash_t& vdf_challenge, uint32_t offset) const
@@ -1506,10 +1508,7 @@ uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block) const
 	if(!block->proof) {
 		return 0;
 	}
-	if(auto diff_block = find_diff_header(block)) {
-		return mmx::calc_block_reward(params, diff_block->space_diff);
-	}
-	return 0;
+	return mmx::calc_block_reward(params, get_diff_header(block)->space_diff);
 }
 
 std::shared_ptr<const BlockHeader> Node::read_block(vnx::File& file, bool full_block, int64_t* file_offset) const
