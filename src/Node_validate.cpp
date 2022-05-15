@@ -454,9 +454,6 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 		if(!tx->execute.empty()) {
 			throw std::logic_error("coin base cannot have operations");
 		}
-		if(!tx->exec_outputs.empty()) {
-			throw std::logic_error("coin base cannot have execution outputs");
-		}
 		if(tx->note != tx_note_e::REWARD) {
 			throw std::logic_error("invalid coin base note");
 		}
@@ -610,31 +607,32 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 			throw std::logic_error("coin base output overflow");
 		}
 		tx_fee = base_amount;
-		return nullptr;
 	}
-	if(tx_cost > params->max_block_cost) {
-		throw std::logic_error("tx cost > max_block_cost");
-	}
-	{
-		const auto amount = (uint128_t(tx_cost) * tx->fee_ratio) / 1024;
-		if(amount.upper()) {
-			throw std::logic_error("fee amount overflow");
+	else {
+		if(tx_cost > params->max_block_cost) {
+			throw std::logic_error("tx cost > max_block_cost");
 		}
-		tx_fee = amount;
-	}
-	{
-		const uint64_t amount = amounts[addr_t()];
-		if(amount < tx_fee) {
-			throw std::logic_error("insufficient fee: " + std::to_string(amount) + " < " + std::to_string(tx_fee));
-		}
-		const uint64_t change = amount - tx_fee;
-		if(change > params->min_txfee_io && tx->sender) {
-			txout_t out;
-			out.address = *tx->sender;
-			out.amount = change;
-			exec_outputs.push_back(out);
-		} else {
+		{
+			const auto amount = (uint128_t(tx_cost) * tx->fee_ratio) / 1024;
+			if(amount.upper()) {
+				throw std::logic_error("fee amount overflow");
+			}
 			tx_fee = amount;
+		}
+		{
+			const uint64_t amount = amounts[addr_t()];
+			if(amount < tx_fee) {
+				throw std::logic_error("insufficient fee: " + std::to_string(amount) + " < " + std::to_string(tx_fee));
+			}
+			const uint64_t change = amount - tx_fee;
+			if(change > params->min_txfee_io && tx->sender) {
+				txout_t out;
+				out.address = *tx->sender;
+				out.amount = change;
+				exec_outputs.push_back(out);
+			} else {
+				tx_fee = amount;
+			}
 		}
 	}
 	std::shared_ptr<Transaction> out = nullptr;
