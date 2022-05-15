@@ -45,7 +45,6 @@ app.component('account-menu', {
 			<router-link class="item" :class="{active: $route.meta.page == 'addresses'}" :to="'/wallet/account/' + index + '/addresses'">Addresses</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'send'}" :to="'/wallet/account/' + index + '/send'">Send</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'offer'}" :to="'/wallet/account/' + index + '/offer'">Offer</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'split'}" :to="'/wallet/account/' + index + '/split'">Split</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'history'}" :to="'/wallet/account/' + index + '/history'">History</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'log'}" :to="'/wallet/account/' + index + '/log'">Log</router-link>
 			<router-link class="item" :class="{active: $route.meta.page == 'details'}" :to="'/wallet/account/' + index + '/details'">Details</router-link>
@@ -822,9 +821,6 @@ app.component('account-send-form', {
 			address: "",
 			currency: null,
 			confirmed: false,
-			options: {
-				split_output: 1
-			},
 			result: null,
 			error: null
 		}
@@ -871,7 +867,6 @@ app.component('account-send-form', {
 				req.src_addr = this.source;
 			}
 			req.dst_addr = this.target;
-			req.options = this.options;
 			fetch('/wapi/wallet/send', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
@@ -942,15 +937,9 @@ app.component('account-send-form', {
 						</option>
 					</select>
 				</div>
-				<div class="two fields">
-					<div class="fourteen wide field">
-						<label>Destination Address</label>
-						<input type="text" v-model="target" :disabled="!!address || !!target_" placeholder="mmx1..."/>
-					</div>
-					<div class="two wide field">
-						<label>No. Chunks</label>
-						<input type="text" v-model.number="options.split_output" style="text-align: right"/>
-					</div>
+				<div class="field">
+					<label>Destination Address</label>
+					<input type="text" v-model="target" :disabled="!!address || !!target_" placeholder="mmx1..."/>
 				</div>
 				<div class="two fields">
 					<div class="four wide field">
@@ -985,111 +974,6 @@ app.component('account-send-form', {
 		`
 })
 
-app.component('account-split-form', {
-	props: {
-		index: Number
-	},
-	data() {
-		return {
-			balances: [],
-			amount: null,
-			currency: null,
-			confirmed: false,
-			result: null,
-			error: null
-		}
-	},
-	methods: {
-		update() {
-			fetch('/wapi/wallet/balance?index=' + this.index)
-				.then(response => response.json())
-				.then(data => this.balances = data.balances);
-		},
-		submit() {
-			this.confirmed = false;
-			const req = {};
-			req.index = this.index;
-			req.amount = this.amount;
-			req.currency = this.currency;
-			fetch('/wapi/wallet/split', {body: JSON.stringify(req), method: "post"})
-				.then(response => {
-					if(response.ok) {
-						response.json().then(data => {
-							if(data && data != "null") {
-								this.result = data;
-							} else {
-								this.error = "nothing to split";
-							}
-						});
-					} else {
-						response.text().then(data => {
-							this.error = data;
-						});
-					}
-					this.update();
-					this.$refs.balance.update();
-					this.$refs.history.update();
-				});
-		}
-	},
-	created() {
-		this.update();
-	},
-	mounted() {
-		$('.ui.checkbox').checkbox();
-	},
-	watch: {
-		amount(value) {
-			// TODO: validate
-		},
-		result(value) {
-			if(value) {
-				this.error = null;
-			}
-		},
-		error(value) {
-			if(value) {
-				this.result = null;
-			}
-		}
-	},
-	template: `
-		<account-balance :index="index" ref="balance"></account-balance>
-		<div class="ui raised segment">
-			<form class="ui form">
-				<div class="two fields">
-					<div class="four wide field">
-						<label>Max Coin Amount</label>
-						<input type="text" v-model.number="amount" placeholder="1.23" style="text-align: right"/>
-					</div>
-					<div class="twelve wide field">
-						<label>Currency</label>
-						<select v-model="currency">
-							<option v-for="item in balances" :key="item.contract" :value="item.contract">
-								{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
-							</option>
-						</select>
-					</div>
-				</div>
-				<div class="inline field">
-					<div class="ui toggle checkbox">
-						<input type="checkbox" class="hidden" v-model="confirmed">
-						<label>Confirm</label>
-					</div>
-				</div>
-				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">Split</div>
-			</form>
-		</div>
-		<div class="ui message" :class="{hidden: !result}">
-			Transaction has been sent: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
-		</div>
-		<div class="ui negative message" :class="{hidden: !error}">
-			Failed with: <b>{{error}}</b>
-		</div>
-		<account-tx-history :index="index" :limit="10" ref="history"></account-tx-history>
-		`
-})
-
 app.component('account-offer-form', {
 	props: {
 		index: Number
@@ -1102,7 +986,6 @@ app.component('account-offer-form', {
 			ask_symbol: "MMX",
 			bid_currency: null,
 			ask_currency: null,
-			num_chunks: 1,
 			confirmed: false,
 			timer: null,
 			result: null,
@@ -1135,7 +1018,6 @@ app.component('account-offer-form', {
 			req.pair = pair;
 			req.bid = this.bid_amount;
 			req.ask = this.ask_amount;
-			req.num_chunks = this.num_chunks;
 			fetch('/wapi/exchange/offer', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
@@ -1216,17 +1098,13 @@ app.component('account-offer-form', {
 						<label>Offer Amount</label>
 						<input type="text" v-model.number="bid_amount" placeholder="1.23" style="text-align: right"/>
 					</div>
-					<div class="ten wide field">
+					<div class="twelve wide field">
 						<label>Offer Currency</label>
 						<select v-model="bid_currency">
 							<option v-for="item in balances" :key="item.contract" :value="item.contract">
 								{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
 							</option>
 						</select>
-					</div>
-					<div class="two wide field">
-						<label>No. Chunks</label>
-						<input type="text" v-model.number="num_chunks" style="text-align: right"/>
 					</div>
 				</div>
 				<div class="two fields">
