@@ -99,6 +99,8 @@ protected:
 
 	std::map<std::pair<addr_t, addr_t>, uint128> get_all_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm = 1) const override;
 
+	std::vector<exec_entry_t> get_exec_history(const addr_t& address, const int32_t& since) const override;
+
 	std::map<std::string, vm::varptr_t> read_storage(const addr_t& contract, const uint32_t& height) const override;
 
 	std::map<uint64_t, vm::varptr_t> dump_storage(const addr_t& contract, const uint32_t& height) const override;
@@ -340,6 +342,7 @@ private:
 	vnx::rocksdb::table<uint32_t, std::vector<addr_t>> addr_log;						// [height => addresses]
 	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, txout_entry_t> recv_log;		// [[address, height] => entry]
 	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, txio_entry_t> spend_log;		// [[address, height] => entry]
+	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, exec_entry_t> exec_log;		// [[address, height] => entry]
 
 	vnx::rocksdb::table<uint32_t, std::vector<hash_t>> revoke_log;						// [height => txids]
 	vnx::rocksdb::multi_table<std::pair<hash_t, uint32_t>, std::pair<addr_t, hash_t>> revoke_map;	// [[org txid, height]] => [address, txid]]

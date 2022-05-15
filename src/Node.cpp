@@ -13,6 +13,7 @@
 #include <mmx/contract/Executable.hxx>
 #include <mmx/operation/Revoke.hxx>
 #include <mmx/operation/Mutate.hxx>
+#include <mmx/operation/Execute.hxx>
 #include <mmx/utils.h>
 #include <mmx/vm/Engine.h>
 #include <mmx/vm_interface.h>
@@ -78,6 +79,7 @@ void Node::main()
 		addr_log.open(database_path + "addr_log", options);
 		recv_log.open(database_path + "recv_log", options);
 		spend_log.open(database_path + "spend_log", options);
+		exec_log.open(database_path + "exec_log", options);
 		revoke_log.open(database_path + "revoke_log", options);
 		revoke_map.open(database_path + "revoke_map", options);
 
@@ -590,6 +592,16 @@ std::map<std::pair<addr_t, addr_t>, uint128> Node::get_all_balances(const std::v
 		}
 	}
 	return totals;
+}
+
+std::vector<exec_entry_t> Node::get_exec_history(const addr_t& address, const int32_t& since) const
+{
+	const uint32_t height = get_height();
+	const uint32_t min_height = since >= 0 ? since : std::max<int32_t>(height + since, 0);
+
+	std::vector<exec_entry_t> entries;
+	exec_log.find_range(std::make_pair(address, min_height), std::make_pair(address, -1), entries);
+	return entries;
 }
 
 std::map<std::string, vm::varptr_t> Node::read_storage(const addr_t& contract, const uint32_t& height) const
@@ -1219,6 +1231,16 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			addr_set.insert(op->address);
 			mutate_log.insert(std::make_pair(op->address, block->height), mutate->method);
 		}
+		else if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op))
+		{
+			addr_set.insert(op->address);
+			exec_entry_t entry;
+			entry.height = block->height;
+			entry.txid = tx->id;
+			entry.method = exec->method;
+			entry.args = exec->args;
+			exec_log.insert(std::make_pair(op->address, block->height), entry);
+		}
 	}
 	if(auto contract = tx->deploy) {
 		if(tx->sender) {
@@ -1280,6 +1302,7 @@ void Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noe
 			if(mutate_log.erase_range(std::make_pair(address, height), std::make_pair(address, -1))) {
 				affected.insert(address);
 			}
+			exec_log.erase_range(std::make_pair(address, height), std::make_pair(address, -1));
 		}
 		for(const auto& address : affected) {
 			if(auto tx = get_transaction(address)) {
