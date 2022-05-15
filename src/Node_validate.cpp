@@ -64,6 +64,58 @@ std::shared_ptr<Node::contract_state_t> Node::execution_context_t::get_state(con
 	return nullptr;
 }
 
+void Node::setup_context(	std::shared_ptr<execution_context_t> context,
+							std::shared_ptr<const Transaction> tx,
+							std::unordered_map<addr_t, std::vector<hash_t>>& mutate_map) const
+{
+	for(const auto& in : tx->get_all_inputs()) {
+		if(in.flags & txin_t::IS_EXEC) {
+			const auto& list = mutate_map[in.address];
+			if(!list.empty()) {
+				context->wait_map[tx->id].insert(list.back());
+			}
+		}
+	}
+	std::unordered_set<addr_t> mutate_set;
+	for(const auto& op : tx->get_all_operations()) {
+		if(std::dynamic_pointer_cast<const operation::Mutate>(op)
+			|| std::dynamic_pointer_cast<const operation::Execute>(op))
+		{
+			mutate_set.insert(op->address);
+		}
+	}
+	auto list = std::vector<addr_t>(mutate_set.begin(), mutate_set.end());
+	while(!list.empty()) {
+		std::vector<addr_t> more;
+		for(const auto& address : list) {
+			auto& state = context->contract_map[address];
+			if(!state) {
+				state = std::make_shared<contract_state_t>();
+				state->data = get_contract(address);
+				state->balance = get_balances(address);
+			}
+			if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(state->data)) {
+				for(const auto& addr : exec->depends) {
+					if(mutate_set.insert(addr).second) {
+						more.push_back(addr);
+					}
+				}
+			}
+		}
+		list = std::move(more);
+	}
+	for(const auto& address : mutate_set) {
+		auto& list = mutate_map[address];
+		if(!list.empty()) {
+			context->wait_map[tx->id].insert(list.back());
+		}
+		list.push_back(tx->id);
+	}
+	if(!mutate_set.empty()) {
+		context->signal_map.emplace(tx->id, std::make_shared<waitcond_t>());
+	}
+}
+
 std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const Block> block) const
 {
 	// Note: block hash, tx_hash, tx_count already verified together with proof
@@ -130,7 +182,6 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 			if(uint32_t(tx->id.to_uint256() & 0x1) != (context->block->height & 0x1)) {
 				throw std::logic_error("invalid inclusion");
 			}
-			std::unordered_set<addr_t> mutate_set;
 			{
 				auto txi = tx;
 				while(txi) {
@@ -143,12 +194,6 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 						}
 					}
 					for(const auto& in : txi->inputs) {
-						if(in.flags & txin_t::IS_EXEC) {
-							const auto& list = mutate_map[in.address];
-							if(!list.empty()) {
-								context->wait_map[txi->id].insert(list.back());
-							}
-						}
 						const auto balance = balance_cache.get(in.address, in.contract);
 						if(!balance || in.amount > *balance) {
 							throw std::logic_error("insufficient funds");
@@ -156,11 +201,6 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 						*balance -= in.amount;
 					}
 					for(const auto& op : txi->execute) {
-						if(std::dynamic_pointer_cast<const operation::Mutate>(op)
-							|| std::dynamic_pointer_cast<const operation::Execute>(op))
-						{
-							mutate_set.insert(op->address);
-						}
 						if(auto revoke = std::dynamic_pointer_cast<const operation::Revoke>(op)) {
 							if(tx_set.count(revoke->txid)) {
 								throw std::logic_error("tx cannot be revoked anymore");
@@ -171,22 +211,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 					txi = txi->parent;
 				}
 			}
-			for(const auto& address : mutate_set) {
-				auto& list = mutate_map[address];
-				if(!list.empty()) {
-					context->wait_map[tx->id].insert(list.back());
-				}
-				list.push_back(tx->id);
-
-				auto& state = context->contract_map[address];
-				if(!state) {
-					state = std::make_shared<contract_state_t>();
-					state->balance = get_balances(address);
-				}
-			}
-			if(!mutate_set.empty()) {
-				context->signal_map.emplace(tx->id, std::make_shared<waitcond_t>());
-			}
+			setup_context(context, tx, mutate_map);
 		}
 	}
 	std::exception_ptr failed_ex;
@@ -242,21 +267,9 @@ void Node::validate(std::shared_ptr<const Transaction> tx) const
 		base->height = get_height() + 1;
 		context->block = base;
 	}
-	{
-		std::unordered_set<addr_t> mutate_set;
-		for(const auto& op : tx->get_all_operations()) {
-			if(std::dynamic_pointer_cast<const operation::Mutate>(op)
-				|| std::dynamic_pointer_cast<const operation::Execute>(op))
-			{
-				mutate_set.insert(op->address);
-			}
-		}
-		for(const auto& address : mutate_set) {
-			auto& state = context->contract_map[address];
-			state = std::make_shared<contract_state_t>();
-			state->balance = get_balances(address);
-		}
-	}
+	std::unordered_map<addr_t, std::vector<hash_t>> mutate_map;
+	setup_context(context, tx, mutate_map);
+
 	uint64_t fee = 0;
 	uint64_t cost = 0;
 	validate(tx, context, nullptr, fee, cost);
@@ -564,9 +577,6 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 		}
 		else if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op))
 		{
-			if(!state->data) {
-				state->data = get_contract(op->address);
-			}
 			execute(tx, context, state, exec, exec_inputs, exec_outputs, amounts, storage_cache, tx_cost);
 		}
 	}

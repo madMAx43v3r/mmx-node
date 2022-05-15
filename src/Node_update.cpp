@@ -458,44 +458,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 	{
 		std::unordered_map<addr_t, std::vector<hash_t>> mutate_map;
 		for(const auto& entry : tx_list) {
-			std::unordered_set<addr_t> mutate_set;
-			{
-				auto tx = entry.tx;
-				while(tx) {
-					for(const auto& in : tx->inputs) {
-						if(in.flags & txin_t::IS_EXEC) {
-							const auto& list = mutate_map[in.address];
-							if(!list.empty()) {
-								context->wait_map[tx->id].insert(list.back());
-							}
-						}
-					}
-					for(const auto& op : tx->execute) {
-						if(std::dynamic_pointer_cast<const operation::Mutate>(op)
-							|| std::dynamic_pointer_cast<const operation::Execute>(op))
-						{
-							mutate_set.insert(op->address);
-						}
-					}
-					tx = tx->parent;
-				}
-			}
-			for(const auto& address : mutate_set) {
-				auto& list = mutate_map[address];
-				if(!list.empty()) {
-					context->wait_map[entry.tx->id].insert(list.back());
-				}
-				list.push_back(entry.tx->id);
-
-				auto& state = context->contract_map[address];
-				if(!state) {
-					state = std::make_shared<contract_state_t>();
-					state->balance = get_balances(address);
-				}
-			}
-			if(!mutate_set.empty()) {
-				context->signal_map.emplace(entry.tx->id, std::make_shared<waitcond_t>());
-			}
+			setup_context(context, entry.tx, mutate_map);
 		}
 	}
 

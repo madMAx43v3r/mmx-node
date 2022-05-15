@@ -40,6 +40,7 @@ hash_t Executable::calc_hash() const
 	write_field(out, "decimals", 	decimals);
 	write_field(out, "fields", 		fields);
 	write_field(out, "methods", 	methods);
+	write_field(out, "depends", 	depends);
 	write_field(out, "constant", 	constant);
 	write_field(out, "binary", 		binary);
 	write_field(out, "source", 		source);

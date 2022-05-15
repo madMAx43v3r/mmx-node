@@ -246,6 +246,10 @@ private:
 	std::shared_ptr<const Context> create_context(
 			std::shared_ptr<const Context> base, std::shared_ptr<const Contract> contract, std::shared_ptr<const Transaction> tx) const;
 
+	void setup_context(	std::shared_ptr<execution_context_t> context,
+						std::shared_ptr<const Transaction> tx,
+						std::unordered_map<addr_t, std::vector<hash_t>>& mutate_map) const;
+
 	void execute(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const execution_context_t> context,
 					std::shared_ptr<contract_state_t> state,
