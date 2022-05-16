@@ -195,7 +195,7 @@ public:
 	}
 
 	void visit(const std::string& value) override {
-		const auto var = vm::binary_t::alloc(value);
+		auto var = vm::binary_t::alloc(value);
 		auto& frame = stack.back();
 		if(frame.lookup) {
 			frame.key = engine->lookup(var, false);
