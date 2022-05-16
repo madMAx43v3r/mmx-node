@@ -119,7 +119,7 @@ var_t* Engine::assign(var_t*& var, var_t* value)
 			delete value;
 			throw std::logic_error("read-only memory");
 		}
-		value->flags = (var->flags & ~FLAG_DELETED) | FLAG_DIRTY;
+		value->flags = var->flags;
 		value->ref_count = var->ref_count;
 		try {
 			clear(var);
@@ -129,6 +129,8 @@ var_t* Engine::assign(var_t*& var, var_t* value)
 		}
 	}
 	var = value;
+	var->flags |= FLAG_DIRTY;
+	var->flags &= ~FLAG_DELETED;
 	total_cost += WRITE_COST + num_bytes(var) * WRITE_BYTE_COST;
 	return var;
 }
@@ -316,8 +318,6 @@ var_t* Engine::write(var_t*& var, const uint64_t* dst, const var_t& src)
 		default:
 			throw std::logic_error("invalid type");
 	}
-	var->flags |= FLAG_DIRTY;
-	var->flags &= ~FLAG_DELETED;
 	return var;
 }
 
