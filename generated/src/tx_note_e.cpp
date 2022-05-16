@@ -11,7 +11,7 @@ namespace mmx {
 
 
 const vnx::Hash64 tx_note_e::VNX_TYPE_HASH(0x347c1deca0a9c9cull);
-const vnx::Hash64 tx_note_e::VNX_CODE_HASH(0x94dd18f47d35ea5cull);
+const vnx::Hash64 tx_note_e::VNX_CODE_HASH(0xa02ba3e4a4b0d998ull);
 
 vnx::Hash64 tx_note_e::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -46,13 +46,13 @@ vnx::bool_t tx_note_e::is_valid() const {
 		case BURN: return true;
 		case CLAIM: return true;
 		case DEPLOY: return true;
+		case DEPOSIT: return true;
 		case EXECUTE: return true;
 		case MINT: return true;
 		case MUTATE: return true;
 		case OFFER: return true;
 		case OTHER: return true;
 		case REWARD: return true;
-		case SPLIT: return true;
 		case TRADE: return true;
 		case TRANSFER: return true;
 		case WITHDRAW: return true;
@@ -65,13 +65,13 @@ std::string tx_note_e::to_string() const {
 		case BURN: return "\"BURN\"";
 		case CLAIM: return "\"CLAIM\"";
 		case DEPLOY: return "\"DEPLOY\"";
+		case DEPOSIT: return "\"DEPOSIT\"";
 		case EXECUTE: return "\"EXECUTE\"";
 		case MINT: return "\"MINT\"";
 		case MUTATE: return "\"MUTATE\"";
 		case OFFER: return "\"OFFER\"";
 		case OTHER: return "\"OTHER\"";
 		case REWARD: return "\"REWARD\"";
-		case SPLIT: return "\"SPLIT\"";
 		case TRADE: return "\"TRADE\"";
 		case TRANSFER: return "\"TRANSFER\"";
 		case WITHDRAW: return "\"WITHDRAW\"";
@@ -84,13 +84,13 @@ std::string tx_note_e::to_string_value() const {
 		case BURN: return "BURN";
 		case CLAIM: return "CLAIM";
 		case DEPLOY: return "DEPLOY";
+		case DEPOSIT: return "DEPOSIT";
 		case EXECUTE: return "EXECUTE";
 		case MINT: return "MINT";
 		case MUTATE: return "MUTATE";
 		case OFFER: return "OFFER";
 		case OTHER: return "OTHER";
 		case REWARD: return "REWARD";
-		case SPLIT: return "SPLIT";
 		case TRADE: return "TRADE";
 		case TRANSFER: return "TRANSFER";
 		case WITHDRAW: return "WITHDRAW";
@@ -103,13 +103,13 @@ std::string tx_note_e::to_string_value_full() const {
 		case BURN: return "mmx.tx_note_e.BURN";
 		case CLAIM: return "mmx.tx_note_e.CLAIM";
 		case DEPLOY: return "mmx.tx_note_e.DEPLOY";
+		case DEPOSIT: return "mmx.tx_note_e.DEPOSIT";
 		case EXECUTE: return "mmx.tx_note_e.EXECUTE";
 		case MINT: return "mmx.tx_note_e.MINT";
 		case MUTATE: return "mmx.tx_note_e.MUTATE";
 		case OFFER: return "mmx.tx_note_e.OFFER";
 		case OTHER: return "mmx.tx_note_e.OTHER";
 		case REWARD: return "mmx.tx_note_e.REWARD";
-		case SPLIT: return "mmx.tx_note_e.SPLIT";
 		case TRADE: return "mmx.tx_note_e.TRADE";
 		case TRANSFER: return "mmx.tx_note_e.TRANSFER";
 		case WITHDRAW: return "mmx.tx_note_e.WITHDRAW";
@@ -130,13 +130,13 @@ void tx_note_e::from_string_value(const std::string& _name) {
 		if(_name == "BURN") value = BURN;
 		else if(_name == "CLAIM") value = CLAIM;
 		else if(_name == "DEPLOY") value = DEPLOY;
+		else if(_name == "DEPOSIT") value = DEPOSIT;
 		else if(_name == "EXECUTE") value = EXECUTE;
 		else if(_name == "MINT") value = MINT;
 		else if(_name == "MUTATE") value = MUTATE;
 		else if(_name == "OFFER") value = OFFER;
 		else if(_name == "OTHER") value = OTHER;
 		else if(_name == "REWARD") value = REWARD;
-		else if(_name == "SPLIT") value = SPLIT;
 		else if(_name == "TRADE") value = TRADE;
 		else if(_name == "TRANSFER") value = TRANSFER;
 		else if(_name == "WITHDRAW") value = WITHDRAW;
@@ -152,13 +152,13 @@ void tx_note_e::accept(vnx::Visitor& _visitor) const {
 		case BURN: _name = "BURN"; break;
 		case CLAIM: _name = "CLAIM"; break;
 		case DEPLOY: _name = "DEPLOY"; break;
+		case DEPOSIT: _name = "DEPOSIT"; break;
 		case EXECUTE: _name = "EXECUTE"; break;
 		case MINT: _name = "MINT"; break;
 		case MUTATE: _name = "MUTATE"; break;
 		case OFFER: _name = "OFFER"; break;
 		case OTHER: _name = "OTHER"; break;
 		case REWARD: _name = "REWARD"; break;
-		case SPLIT: _name = "SPLIT"; break;
 		case TRADE: _name = "TRADE"; break;
 		case TRANSFER: _name = "TRANSFER"; break;
 		case WITHDRAW: _name = "WITHDRAW"; break;
@@ -171,13 +171,13 @@ void tx_note_e::write(std::ostream& _out) const {
 		case BURN: _out << "\"BURN\""; break;
 		case CLAIM: _out << "\"CLAIM\""; break;
 		case DEPLOY: _out << "\"DEPLOY\""; break;
+		case DEPOSIT: _out << "\"DEPOSIT\""; break;
 		case EXECUTE: _out << "\"EXECUTE\""; break;
 		case MINT: _out << "\"MINT\""; break;
 		case MUTATE: _out << "\"MUTATE\""; break;
 		case OFFER: _out << "\"OFFER\""; break;
 		case OTHER: _out << "\"OTHER\""; break;
 		case REWARD: _out << "\"REWARD\""; break;
-		case SPLIT: _out << "\"SPLIT\""; break;
 		case TRADE: _out << "\"TRADE\""; break;
 		case TRANSFER: _out << "\"TRANSFER\""; break;
 		case WITHDRAW: _out << "\"WITHDRAW\""; break;
@@ -241,7 +241,7 @@ std::shared_ptr<vnx::TypeCode> tx_note_e::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.tx_note_e";
 	type_code->type_hash = vnx::Hash64(0x347c1deca0a9c9cull);
-	type_code->code_hash = vnx::Hash64(0x94dd18f47d35ea5cull);
+	type_code->code_hash = vnx::Hash64(0xa02ba3e4a4b0d998ull);
 	type_code->is_native = true;
 	type_code->is_enum = true;
 	type_code->native_size = sizeof(::mmx::tx_note_e);
@@ -256,13 +256,13 @@ std::shared_ptr<vnx::TypeCode> tx_note_e::static_create_type_code() {
 	type_code->enum_map[1273454750] = "BURN";
 	type_code->enum_map[3251493825] = "CLAIM";
 	type_code->enum_map[251696509] = "DEPLOY";
+	type_code->enum_map[4272391094] = "DEPOSIT";
 	type_code->enum_map[356250251] = "EXECUTE";
 	type_code->enum_map[2140500429] = "MINT";
 	type_code->enum_map[2579166487] = "MUTATE";
 	type_code->enum_map[1549148948] = "OFFER";
 	type_code->enum_map[3605757838] = "OTHER";
 	type_code->enum_map[3842121424] = "REWARD";
-	type_code->enum_map[1454128272] = "SPLIT";
 	type_code->enum_map[329618288] = "TRADE";
 	type_code->enum_map[858544509] = "TRANSFER";
 	type_code->enum_map[4266232802] = "WITHDRAW";

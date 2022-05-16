@@ -20,7 +20,7 @@ namespace mmx {
 
 
 const vnx::Hash64 tx_info_t::VNX_TYPE_HASH(0x44e4a710953f4785ull);
-const vnx::Hash64 tx_info_t::VNX_CODE_HASH(0xc7c68c4e8485369ull);
+const vnx::Hash64 tx_info_t::VNX_CODE_HASH(0xe7c9805c680d2a88ull);
 
 vnx::Hash64 tx_info_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -241,7 +241,7 @@ std::shared_ptr<vnx::TypeCode> tx_info_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.tx_info_t";
 	type_code->type_hash = vnx::Hash64(0x44e4a710953f4785ull);
-	type_code->code_hash = vnx::Hash64(0xc7c68c4e8485369ull);
+	type_code->code_hash = vnx::Hash64(0xe7c9805c680d2a88ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::tx_info_t);
