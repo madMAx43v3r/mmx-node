@@ -9,6 +9,7 @@
 #include <mmx/contract/Token.hxx>
 #include <mmx/operation/Mutate.hxx>
 #include <mmx/operation/Execute.hxx>
+#include <mmx/operation/Deposit.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/utils.h>
 
@@ -226,6 +227,36 @@ std::shared_ptr<const Transaction> Wallet::execute(
 	}
 	auto tx = Transaction::create();
 	tx->note = tx_note_e::EXECUTE;
+	tx->execute.push_back(op);
+
+	wallet->complete(tx, options);
+	if(tx->is_signed()) {
+		send_off(index, tx);
+		log(INFO) << "Executed " << method << "() on [" << address << "] with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
+	}
+	return tx;
+}
+
+std::shared_ptr<const Transaction> Wallet::deposit(
+			const uint32_t& index, const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args,
+			const uint64_t& amount, const addr_t& currency, const spend_options_t& options) const
+{
+	const auto wallet = get_wallet(index);
+	update_cache(index);
+
+	auto op = operation::Deposit::create();
+	op->address = address;
+	op->method = method;
+	op->args = args;
+	op->amount = amount;
+	op->currency = currency;
+	op->user = options.user;
+
+	if(!op->user) {
+		op->user = wallet->get_address(0);
+	}
+	auto tx = Transaction::create();
+	tx->note = tx_note_e::DEPOSIT;
 	tx->execute.push_back(op);
 
 	wallet->complete(tx, options);

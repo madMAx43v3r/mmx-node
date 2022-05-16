@@ -6,7 +6,6 @@ enum tx_note_e {
 	TRANSFER,
 	WITHDRAW,
 	CLAIM,
-	SPLIT,
 	BURN,
 	OFFER,
 	TRADE,
@@ -14,6 +13,7 @@ enum tx_note_e {
 	DEPLOY,
 	MUTATE,
 	EXECUTE,
+	DEPOSIT,
 	OTHER
 	
 }

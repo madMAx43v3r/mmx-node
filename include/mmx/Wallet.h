@@ -52,6 +52,10 @@ protected:
 			const uint32_t& index, const addr_t& address, const std::string& method,
 			const std::vector<vnx::Variant>& args, const spend_options_t& options) const override;
 
+	std::shared_ptr<const Transaction> deposit(
+			const uint32_t& index, const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args,
+			const uint64_t& amount, const addr_t& currency, const spend_options_t& options) const override;
+
 	std::shared_ptr<const Transaction> complete(
 			const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const;
 

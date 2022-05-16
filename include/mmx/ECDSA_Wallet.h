@@ -14,6 +14,7 @@
 #include <mmx/contract/NFT.hxx>
 #include <mmx/operation/Mint.hxx>
 #include <mmx/operation/Execute.hxx>
+#include <mmx/operation/Deposit.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/spend_options_t.hxx>
 #include <mmx/skey_t.hpp>
@@ -340,18 +341,23 @@ public:
 	{
 		std::map<addr_t, uint128_t> missing;
 		{
-			std::shared_ptr<const Transaction> parent = tx;
-			while(parent) {
-				for(const auto& out : parent->outputs) {
+			std::shared_ptr<const Transaction> txi = tx;
+			while(txi) {
+				for(const auto& out : txi->outputs) {
 					missing[out.contract] += out.amount;
 				}
-				parent = parent->parent;
+				for(const auto& op : txi->execute) {
+					if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(op)) {
+						missing[deposit->currency] += deposit->amount;
+					}
+				}
+				txi = txi->parent;
 			}
 		}
 		{
-			std::shared_ptr<const Transaction> parent = tx;
-			while(parent) {
-				for(const auto& in : parent->inputs) {
+			std::shared_ptr<const Transaction> txi = tx;
+			while(txi) {
+				for(const auto& in : txi->inputs) {
 					auto& amount = missing[in.contract];
 					if(in.amount < amount) {
 						amount -= in.amount;
@@ -359,7 +365,7 @@ public:
 						amount = 0;
 					}
 				}
-				parent = parent->parent;
+				txi = txi->parent;
 			}
 		}
 		std::map<std::pair<addr_t, addr_t>, uint128_t> spent_map;
