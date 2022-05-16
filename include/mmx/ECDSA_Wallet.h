@@ -149,18 +149,54 @@ public:
 	void gather_inputs(	std::shared_ptr<Transaction> tx,
 						std::map<std::pair<addr_t, addr_t>, uint128_t>& spent_map,
 						const uint128_t& amount, const addr_t& currency,
-						const spend_options_t& options = {})
+						const spend_options_t& options = {}) const
 	{
 		if(amount.upper()) {
 			throw std::logic_error("amount too large");
 		}
 		uint64_t left = amount;
 
-		// TODO: reuse existing inputs if possible
+		// try to reuse existing inputs if possible
+		for(auto& in : tx->inputs)
+		{
+			if(left == 0) {
+				return;
+			}
+			if(in.contract == currency && find_address(in.address) >= 0)
+			{
+				auto iter = balance_map.find(std::make_pair(in.address, in.contract));
+				if(iter != balance_map.end())
+				{
+					auto balance = iter->second;
+					{
+						auto iter2 = spent_map.find(iter->first);
+						if(iter2 != spent_map.end()) {
+							balance -= iter2->second;
+						}
+					}
+					uint64_t amount = 0;
+					if(balance >= left) {
+						amount = left;
+					} else {
+						amount = balance;
+					}
+					if((uint128_t(in.amount) + amount).upper()) {
+						amount = uint64_t(-1) - in.amount;
+					}
+					if(amount) {
+						in.amount += amount;
+						spent_map[iter->first] += amount;
+						left -= amount;
+					}
+				}
+			}
+		}
+
+		// create new inputs
 		for(const auto& entry : balance_map)
 		{
 			if(left == 0) {
-				break;
+				return;
 			}
 			if(entry.first.second == currency)
 			{
@@ -182,9 +218,9 @@ public:
 				} else {
 					in.amount = balance;
 				}
+				spent_map[entry.first] += in.amount;
 				left -= in.amount;
 				tx->inputs.push_back(in);
-				spent_map[entry.first] += in.amount;
 			}
 		}
 		if(left) {
@@ -194,7 +230,7 @@ public:
 
 	void gather_fee(std::shared_ptr<Transaction> tx,
 					std::map<std::pair<addr_t, addr_t>, uint128_t>& spent_map,
-					const spend_options_t& options = {})
+					const spend_options_t& options = {}) const
 	{
 		tx->fee_ratio = options.fee_ratio;
 
@@ -234,14 +270,13 @@ public:
 			if(paid_fee >= tx_fees) {
 				break;
 			}
-			const auto more = (tx_fees + params->min_txfee_io
-								+ (spend_cost.empty() ? params->min_txfee_sign : 0)) - paid_fee;
+			const auto more = tx_fees - paid_fee;
 			gather_inputs(tx, spent_map, more, addr_t(), options);
 			paid_fee += more;
 		}
 	}
 
-	void sign_off(std::shared_ptr<Transaction> tx, const spend_options_t& options = {})
+	void sign_off(std::shared_ptr<Transaction> tx, const spend_options_t& options = {}) const
 	{
 		if(!tx->sender) {
 			tx->sender = get_address(0);
@@ -333,7 +368,7 @@ public:
 		return nullptr;
 	}
 
-	void complete(std::shared_ptr<Transaction> tx, const spend_options_t& options = {})
+	void complete(std::shared_ptr<Transaction> tx, const spend_options_t& options = {}) const
 	{
 		std::map<addr_t, uint128_t> missing;
 		{
@@ -375,7 +410,7 @@ public:
 	}
 
 	std::shared_ptr<Transaction> send(	const uint64_t& amount, const addr_t& dst_addr,
-										const addr_t& currency, const spend_options_t& options)
+										const addr_t& currency, const spend_options_t& options) const
 	{
 		if(amount == 0) {
 			throw std::logic_error("amount cannot be zero");
@@ -392,7 +427,7 @@ public:
 
 	std::shared_ptr<Transaction> send_from(	const uint64_t& amount, const addr_t& dst_addr,
 											const addr_t& src_addr, const addr_t& src_owner,
-											const addr_t& currency, const spend_options_t& options)
+											const addr_t& currency, const spend_options_t& options) const
 	{
 		if(amount == 0) {
 			throw std::logic_error("amount cannot be zero");
@@ -413,7 +448,7 @@ public:
 	}
 
 	std::shared_ptr<Transaction> mint(	const uint64_t& amount, const addr_t& dst_addr, const addr_t& currency,
-										const addr_t& owner, const spend_options_t& options)
+										const addr_t& owner, const spend_options_t& options) const
 	{
 		if(amount == 0) {
 			throw std::logic_error("amount cannot be zero");
@@ -440,7 +475,7 @@ public:
 		return tx;
 	}
 
-	std::shared_ptr<Transaction> deploy(std::shared_ptr<const Contract> contract, const spend_options_t& options)
+	std::shared_ptr<Transaction> deploy(std::shared_ptr<const Contract> contract, const spend_options_t& options) const
 	{
 		if(!contract || !contract->is_valid()) {
 			throw std::logic_error("invalid contract");
