@@ -360,9 +360,6 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	if(!is_public && method->is_public) {
 		throw std::logic_error("method is public");
 	}
-	if(method->is_const) {
-		throw std::logic_error("method is const");
-	}
 	mmx::load(engine, executable);
 
 	engine->remote = [this, tx, context, executable, storage_cache, engine, &exec_inputs, &exec_outputs, &tx_cost]
