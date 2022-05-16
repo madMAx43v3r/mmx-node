@@ -154,9 +154,6 @@ public:
 		if(amount.upper()) {
 			throw std::logic_error("amount too large");
 		}
-		if(options.budget_map) {
-			throw std::logic_error("not yet supported");
-		}
 		uint64_t left = amount;
 
 		// TODO: reuse existing inputs if possible
@@ -246,14 +243,10 @@ public:
 
 	void sign_off(std::shared_ptr<Transaction> tx, const spend_options_t& options = {})
 	{
-		if(options.budget_map) {
-			throw std::logic_error("not yet supported");
-		}
-		tx->salt = genesis_hash;
-
 		if(!tx->sender) {
 			tx->sender = get_address(0);
 		}
+		tx->salt = genesis_hash;
 		tx->finalize();
 
 		std::unordered_map<addr_t, uint32_t> solution_map;

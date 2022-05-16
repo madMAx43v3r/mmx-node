@@ -16,6 +16,4 @@ struct spend_options_t {
 	
 	map<addr_t, Contract*> contract_map;
 	
-	optional<map<addr_t, uint128>> budget_map;
-	
 }
