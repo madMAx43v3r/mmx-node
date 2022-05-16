@@ -237,6 +237,7 @@ vnx::bool_t Transaction::is_signed() const
 		if(in.solution >= solutions.size()) {
 			return false;
 		}
+		// TODO: handle multi-sig
 	}
 	return true;
 }
