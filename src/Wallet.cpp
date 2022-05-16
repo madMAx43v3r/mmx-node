@@ -221,6 +221,9 @@ std::shared_ptr<const Transaction> Wallet::execute(
 	op->args = args;
 	op->user = options.user;
 
+	if(!op->user) {
+		op->user = wallet->get_address(0);
+	}
 	auto tx = Transaction::create();
 	tx->note = tx_note_e::EXECUTE;
 	tx->execute.push_back(op);
