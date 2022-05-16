@@ -82,13 +82,13 @@ public:
 		return keypairs.at(index);
 	}
 
-	std::pair<skey_t, pubkey_t> get_keypair(const addr_t& addr) const
+	vnx::optional<std::pair<skey_t, pubkey_t>> find_keypair(const addr_t& addr) const
 	{
 		auto iter = keypair_map.find(addr);
-		if(iter == keypair_map.end()) {
-			throw std::logic_error("unknown address");
+		if(iter != keypair_map.end()) {
+			return iter->second;
 		}
-		return iter->second;
+		return nullptr;
 	}
 
 	skey_t generate_skey(const std::vector<uint32_t>& path) const
@@ -276,11 +276,12 @@ public:
 					continue;
 				}
 			}
-			const auto sol = sign_msg(owner, tx->id, options);
-
-			in.solution = tx->solutions.size();
-			solution_map[owner] = in.solution;
-			tx->solutions.push_back(sol);
+			if(auto sol = sign_msg(owner, tx->id, options))
+			{
+				in.solution = tx->solutions.size();
+				solution_map[owner] = in.solution;
+				tx->solutions.push_back(sol);
+			}
 		}
 
 		// sign all operations
@@ -303,18 +304,22 @@ public:
 					owner = iter->second;
 				}
 			}
-			auto copy = vnx::clone(op);
-			copy->solution = sign_msg(owner, tx->id, options);
-			op = copy;
+			if(auto sol = sign_msg(owner, tx->id, options)) {
+				auto copy = vnx::clone(op);
+				copy->solution = sol;
+				op = copy;
+			}
 		}
 
 		// sign NFT mint
 		if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(tx->deploy))
 		{
 			if(!nft->solution) {
-				auto copy = vnx::clone(nft);
-				copy->solution = sign_msg(nft->creator, tx->id, options);
-				tx->deploy = copy;
+				if(auto sol = sign_msg(nft->creator, tx->id, options)) {
+					auto copy = vnx::clone(nft);
+					copy->solution = sol;
+					tx->deploy = copy;
+				}
 			}
 		}
 	}
@@ -322,12 +327,13 @@ public:
 	std::shared_ptr<const Solution> sign_msg(const addr_t& address, const hash_t& msg, const spend_options_t& options = {}) const
 	{
 		// TODO: check for multi-sig via options.contract_map
-		const auto& keys = get_keypair(address);
-
-		auto sol = solution::PubKey::create();
-		sol->pubkey = keys.second;
-		sol->signature = signature_t::sign(keys.first, msg);
-		return sol;
+		if(auto keys = find_keypair(address)) {
+			auto sol = solution::PubKey::create();
+			sol->pubkey = keys->second;
+			sol->signature = signature_t::sign(keys->first, msg);
+			return sol;
+		}
+		return nullptr;
 	}
 
 	void complete(std::shared_ptr<Transaction> tx, const spend_options_t& options = {})
