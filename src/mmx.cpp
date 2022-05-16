@@ -396,7 +396,7 @@ int main(int argc, char** argv)
 
 				args["__type"] = method;
 				const auto tx = wallet.mutate(index, contract, args, spend_options);
-				std::cout << "Executed " << method << " on [" << contract << "] with:" << std::endl;
+				std::cout << "Executed " << method << " with:" << std::endl;
 				vnx::PrettyPrinter printer(std::cout);
 				args.accept(printer);
 				std::cout << std::endl << "Transaction ID: " << tx->id << std::endl;
@@ -410,7 +410,7 @@ int main(int argc, char** argv)
 
 				spend_options.extra_fee = gas_limit * 1e6;
 				const auto tx = wallet.execute(index, contract, method, args, spend_options);
-				std::cout << "Executed " << method << "() on [" << contract << "] with ";
+				std::cout << "Executed " << method << " with ";
 				vnx::PrettyPrinter printer(std::cout);
 				vnx::accept(printer, args);
 				std::cout << std::endl << "Transaction ID: " << tx->id << std::endl;
