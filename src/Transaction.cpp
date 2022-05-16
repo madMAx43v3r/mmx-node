@@ -69,7 +69,8 @@ hash_t Transaction::calc_hash() const
 	write_field(out, "sender",	sender);
 	write_field(out, "inputs",	inputs);
 	write_field(out, "outputs", outputs);
-	write_field(out, "execute");
+	write_bytes(out, "execute");
+	write_bytes(out, uint64_t(execute.size()));
 	for(const auto& op : execute) {
 		write_bytes(out, op ? op->calc_hash() : hash_t());
 	}
