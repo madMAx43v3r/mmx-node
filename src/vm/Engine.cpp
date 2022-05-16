@@ -384,7 +384,9 @@ array_t* Engine::clone_array(const uint64_t dst, const array_t& src)
 		write_entry(dst, i, read_entry_fail(src.address, i));
 		check_gas();
 	}
-	return new array_t(src.size);
+	auto var = new array_t(src.size);
+	var->address = dst;
+	return var;
 }
 
 map_t* Engine::clone_map(const uint64_t dst, const map_t& src)
@@ -402,7 +404,9 @@ map_t* Engine::clone_map(const uint64_t dst, const map_t& src)
 			check_gas();
 		}
 	}
-	return new map_t();
+	auto var = new map_t();
+	var->address = dst;
+	return var;
 }
 
 var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const var_t& src)
