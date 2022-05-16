@@ -206,10 +206,22 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 			info->block_reward = mmx::calc_block_reward(params, peak->space_diff);
 			info->total_space = calc_total_netspace(params, peak->space_diff);
 			info->address_count = balance_map.size();
+			info->genesis_hash = get_genesis_hash();
 			network = info;
 		}
 	}
 	return network;
+}
+
+hash_t Node::get_genesis_hash() const
+{
+	if(!genesis) {
+		genesis = get_header_at(0);
+		if(!genesis) {
+			throw std::logic_error("have no genesis");
+		}
+	}
+	return genesis->hash;
 }
 
 uint32_t Node::get_height() const

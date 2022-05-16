@@ -30,8 +30,9 @@ class ECDSA_Wallet {
 public:
 	const account_t config;
 
-	ECDSA_Wallet(std::shared_ptr<const KeyFile> key_file, const account_t& config, std::shared_ptr<const ChainParams> params)
-		:	config(config), params(params)
+	ECDSA_Wallet(	std::shared_ptr<const KeyFile> key_file, const account_t& config,
+					std::shared_ptr<const ChainParams> params, const addr_t& genesis_hash)
+		:	config(config), params(params), genesis_hash(genesis_hash)
 	{
 		if(key_file->seed_value == hash_t()) {
 			throw std::logic_error("seed == zero");
@@ -248,6 +249,8 @@ public:
 		if(options.budget_map) {
 			throw std::logic_error("not yet supported");
 		}
+		tx->salt = genesis_hash;
+
 		if(!tx->sender) {
 			tx->sender = get_address(0);
 		}
@@ -478,7 +481,8 @@ private:
 	std::vector<std::pair<skey_t, pubkey_t>> keypairs;
 	std::unordered_map<addr_t, std::pair<skey_t, pubkey_t>> keypair_map;
 
-	std::shared_ptr<const ChainParams> params;
+	const std::shared_ptr<const ChainParams> params;
+	const hash_t genesis_hash;
 
 };
 

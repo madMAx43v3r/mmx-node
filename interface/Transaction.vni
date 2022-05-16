@@ -12,7 +12,7 @@ class Transaction extends TransactionBase {
 	
 	ulong nonce;
 	
-	optional<hash_t> salt;
+	hash_t salt;
 	
 	optional<addr_t> sender;			// to receive change from fee
 	

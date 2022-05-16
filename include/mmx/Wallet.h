@@ -132,6 +132,7 @@ private:
 
 	mutable vnx::rocksdb::multi_table<addr_t, tx_log_entry_t> tx_log;
 
+	hash_t genesis_hash;
 	std::shared_ptr<const ChainParams> params;
 	std::shared_ptr<vnx::addons::HttpInterface<Wallet>> http;
 

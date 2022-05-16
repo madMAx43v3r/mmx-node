@@ -49,6 +49,8 @@ protected:
 
 	std::shared_ptr<const NetworkInfo> get_network_info() const override;
 
+	hash_t get_genesis_hash() const override;
+
 	uint32_t get_height() const override;
 
 	vnx::optional<uint32_t> get_synced_height() const override;
@@ -277,6 +279,7 @@ private:
 
 	void validate(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const execution_context_t> context,
+					std::shared_ptr<const Block> base,
 					std::vector<txout_t>& outputs,
 					std::vector<txout_t>& exec_outputs,
 					balance_cache_t& balance_cache,
@@ -406,7 +409,9 @@ private:
 	std::shared_ptr<vnx::Timer> update_timer;
 
 	std::shared_ptr<const ChainParams> params;
+	mutable std::shared_ptr<const BlockHeader> genesis;
 	mutable std::shared_ptr<const NetworkInfo> network;
+
 	std::shared_ptr<RouterAsyncClient> router;
 	std::shared_ptr<TimeLordAsyncClient> timelord;
 	std::shared_ptr<vnx::addons::HttpInterface<Node>> http;

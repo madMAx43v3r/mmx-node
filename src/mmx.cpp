@@ -499,7 +499,6 @@ int main(int argc, char** argv)
 				std::cout << "Netspace: " << info->total_space / pow(1000, 5) << " PB" << std::endl;
 				std::cout << "Reward:   " << info->block_reward / 1e6 << " MMX" << std::endl;
 				std::cout << "Supply:   " << info->total_supply / 1e6 << " MMX" << std::endl;
-				std::cout << "N(UTXO):    " << info->utxo_count << std::endl;
 				std::cout << "N(Address): " << info->address_count << std::endl;
 				for(uint32_t i = 0; i < 10 && i < info->height; ++i) {
 					const auto hash = node.get_block_hash(info->height - i);

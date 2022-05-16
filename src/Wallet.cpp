@@ -59,6 +59,8 @@ void Wallet::main()
 	http = std::make_shared<vnx::addons::HttpInterface<Wallet>>(this, vnx_name);
 	add_async_client(http);
 
+	genesis_hash = node->get_genesis_hash();
+
 	for(size_t i = 0; i < key_files.size(); ++i) {
 		account_t config;
 		config.name = "Default";
@@ -77,6 +79,7 @@ void Wallet::main()
 			log(WARN) << ex.what();
 		}
 	}
+
 	Super::main();
 }
 
@@ -559,7 +562,7 @@ void Wallet::add_account(const uint32_t& index, const account_t& config)
 		if(enable_bls) {
 			bls_wallets[index] = std::make_shared<BLS_Wallet>(key_file, 11337);
 		}
-		wallets[index] = std::make_shared<ECDSA_Wallet>(key_file, config, params);
+		wallets[index] = std::make_shared<ECDSA_Wallet>(key_file, config, params, genesis_hash);
 	} else {
 		throw std::runtime_error("failed to read key file: " + key_path);
 	}

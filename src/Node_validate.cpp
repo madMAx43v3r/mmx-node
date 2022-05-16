@@ -457,25 +457,65 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 
 void Node::validate(std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const execution_context_t> context,
+					std::shared_ptr<const Block> base,
 					std::vector<txout_t>& outputs,
 					std::vector<txout_t>& exec_outputs,
 					balance_cache_t& balance_cache,
 					std::unordered_map<addr_t, uint128_t>& amounts) const
 {
+	if(auto parent = tx->parent) {
+		if(!parent->is_extendable) {
+			throw std::logic_error("parent not extendable");
+		}
+		validate(parent, context, base, outputs, exec_outputs, balance_cache, amounts);
+	}
 	if(tx->expires < context->block->height) {
-		throw std::logic_error("expired tx");
+		throw std::logic_error("tx expired");
 	}
 	if(tx->is_extendable && tx->deploy) {
-		throw std::logic_error("extendable cannot deploy");
+		throw std::logic_error("extendable tx cannot deploy");
+	}
+	if(base) {
+		if(tx->deploy) {
+			throw std::logic_error("coin base cannot deploy");
+		}
+		if(!tx->inputs.empty()) {
+			throw std::logic_error("coin base cannot have inputs");
+		}
+		if(!tx->execute.empty()) {
+			throw std::logic_error("coin base cannot have operations");
+		}
+		if(tx->note != tx_note_e::REWARD) {
+			throw std::logic_error("invalid coin base note");
+		}
+		if(tx->salt != base->prev) {
+			throw std::logic_error("invalid coin base salt");
+		}
+		if(tx->expires != base->height) {
+			throw std::logic_error("invalid coin base expires");
+		}
+		if(tx->fee_ratio != 1024) {
+			throw std::logic_error("invalid coin base fee_ratio");
+		}
+		if(tx->sender) {
+			throw std::logic_error("coin base cannot have sender");
+		}
+		if(tx->parent) {
+			throw std::logic_error("coin base cannot have parent");
+		}
+		if(tx->is_extendable) {
+			throw std::logic_error("coin base cannot be extendable");
+		}
+	} else {
+		if(tx->note == tx_note_e::REWARD) {
+			throw std::logic_error("invalid note");
+		}
+		if(tx->salt != get_genesis_hash()) {
+			throw std::logic_error("invalid salt");
+		}
 	}
 	if(tx_index.find(tx->id)) {
 		throw std::logic_error("duplicate tx");
-	}
-	if(auto parent = tx->parent) {
-		if(!parent->is_extendable) {
-			throw std::logic_error("not extendable");
-		}
-		validate(parent, context, outputs, exec_outputs, balance_cache, amounts);
 	}
 	const auto revoked = get_revokations(tx->id);
 
@@ -529,42 +569,6 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 	if(!tx->is_valid()) {
 		throw std::logic_error("invalid tx");
 	}
-	if(base) {
-		if(tx->deploy) {
-			throw std::logic_error("coin base cannot deploy");
-		}
-		if(!tx->inputs.empty()) {
-			throw std::logic_error("coin base cannot have inputs");
-		}
-		if(!tx->execute.empty()) {
-			throw std::logic_error("coin base cannot have operations");
-		}
-		if(tx->note != tx_note_e::REWARD) {
-			throw std::logic_error("invalid coin base note");
-		}
-		if(!tx->salt || *tx->salt != base->vdf_output[0]) {
-			throw std::logic_error("invalid coin base salt");
-		}
-		if(tx->expires != base->height) {
-			throw std::logic_error("invalid coin base expires");
-		}
-		if(tx->fee_ratio != 1024) {
-			throw std::logic_error("invalid coin base fee_ratio");
-		}
-		if(tx->sender) {
-			throw std::logic_error("coin base cannot have sender");
-		}
-		if(tx->parent) {
-			throw std::logic_error("coin base cannot have parent");
-		}
-		if(tx->is_extendable) {
-			throw std::logic_error("coin base cannot be extendable");
-		}
-	} else {
-		if(tx->note == tx_note_e::REWARD) {
-			throw std::logic_error("invalid note");
-		}
-	}
 	tx_cost = tx->calc_cost(params);
 
 	uint128_t base_amount = 0;
@@ -574,7 +578,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 	balance_cache_t balance_cache(&balance_map);
 	std::unordered_map<addr_t, uint128_t> amounts;
 
-	validate(tx, context, outputs, exec_outputs, balance_cache, amounts);
+	validate(tx, context, base, outputs, exec_outputs, balance_cache, amounts);
 
 	for(const auto& out : outputs)
 	{

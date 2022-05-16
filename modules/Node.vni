@@ -55,6 +55,9 @@ module Node implements vnx.addons.HttpComponent {
 	NetworkInfo* get_network_info() const;
 	
 	@Permission(permission_e.PUBLIC)
+	hash_t get_genesis_hash() const;
+	
+	@Permission(permission_e.PUBLIC)
 	uint get_height() const;
 	
 	@Permission(permission_e.PUBLIC)
