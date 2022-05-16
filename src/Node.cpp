@@ -97,12 +97,15 @@ void Node::main()
 	storage = std::make_shared<vm::StorageRocksDB>(database_path);
 
 	bool is_replay = true;
-	if(block_chain->exists()) {
+	if(block_chain->exists())
+	{
 		const auto time_begin = vnx::get_time_millis();
 		block_chain->open("rb+");
+
 		uint32_t height = 0;
 		std::pair<int64_t, hash_t> entry;
-		while(block_index.find_last(height, entry)) {
+		while(block_index.find_last(height, entry))
+		{
 			is_replay = false;
 			block_chain->seek_to(entry.first);
 			try {
@@ -125,7 +128,7 @@ void Node::main()
 				if(auto block = std::dynamic_pointer_cast<const Block>(header)) {
 					apply(block, block->height > 0 ? validate(block) : nullptr, &offset);
 					commit(block);
-					if(block->height % 1000 == 999) {
+					if(block->height % 1000 == 0) {
 						log(INFO) << "Height " << block->height << " ...";
 					}
 				}
