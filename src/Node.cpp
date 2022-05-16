@@ -475,15 +475,12 @@ std::shared_ptr<const Contract> Node::get_contract(const addr_t& address) const
 
 std::shared_ptr<const Contract> Node::get_contract_for(const addr_t& address) const
 {
-	std::shared_ptr<const Contract> out;
 	if(auto contract = get_contract(address)) {
-		out = contract;
-	} else {
-		auto pubkey = contract::PubKey::create();
-		pubkey->address = address;
-		out = pubkey;
+		return contract;
 	}
-	return out;
+	auto pubkey = contract::PubKey::create();
+	pubkey->address = address;
+	return pubkey;
 }
 
 std::vector<std::shared_ptr<const Contract>> Node::get_contracts(const std::vector<addr_t>& addresses) const

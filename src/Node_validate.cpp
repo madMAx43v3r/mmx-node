@@ -55,13 +55,44 @@ void Node::execution_context_t::signal(const hash_t& txid) const
 	}
 }
 
-std::shared_ptr<Node::contract_state_t> Node::execution_context_t::get_state(const addr_t& contract) const
+void Node::execution_context_t::setup_wait(const hash_t& txid, const addr_t& address)
 {
-	auto iter = contract_map.find(contract);
+	const auto& list = mutate_map[address];
+	if(!list.empty()) {
+		wait_map[txid].insert(list.back());
+	}
+}
+
+std::shared_ptr<Node::contract_state_t> Node::execution_context_t::find_state(const addr_t& address) const
+{
+	auto iter = contract_map.find(address);
 	if(iter != contract_map.end()) {
 		return iter->second;
 	}
 	return nullptr;
+}
+
+std::shared_ptr<const Contract> Node::execution_context_t::find_contract(const addr_t& address) const
+{
+	if(auto state = find_state(address)) {
+		return state->data;
+	}
+	return nullptr;
+}
+
+std::shared_ptr<const Context>
+Node::execution_context_t::get_context(std::shared_ptr<const Transaction> tx, std::shared_ptr<const Contract> contract) const
+{
+	auto out = vnx::clone(block);
+	out->txid = tx->id;
+	if(contract) {
+		for(const auto& address : contract->get_dependency()) {
+			if(auto contract = find_contract(address)) {
+				out->depends[address] = contract;
+			}
+		}
+	}
+	return out;
 }
 
 std::shared_ptr<Node::execution_context_t> Node::new_exec_context() const
@@ -71,35 +102,58 @@ std::shared_ptr<Node::execution_context_t> Node::new_exec_context() const
 	return context;
 }
 
+std::shared_ptr<Node::contract_state_t>
+Node::get_context_state(std::shared_ptr<execution_context_t> context, const addr_t& address) const
+{
+	auto& state = context->contract_map[address];
+	if(!state) {
+		state = std::make_shared<contract_state_t>();
+		state->data = get_contract_for(address);
+		state->balance = get_balances(address);
+	}
+	return state;
+}
+
+void Node::setup_context_wait(std::shared_ptr<execution_context_t> context, const hash_t& txid, const addr_t& address) const
+{
+	auto state = get_context_state(context, address);
+	if(auto contract = state->data) {
+		for(const auto& address : contract->get_dependency()) {
+			context->setup_wait(txid, address);
+		}
+	}
+	context->setup_wait(txid, address);
+}
+
 void Node::setup_context(	std::shared_ptr<execution_context_t> context,
 							std::shared_ptr<const Transaction> tx) const
 {
 	for(const auto& in : tx->get_all_inputs()) {
 		if(in.flags & txin_t::IS_EXEC) {
-			const auto& list = context->mutate_map[in.address];
-			if(!list.empty()) {
-				context->wait_map[tx->id].insert(list.back());
-			}
+			setup_context_wait(context, tx->id, in.address);
 		}
 	}
 	std::unordered_set<addr_t> mutate_set;
 	for(const auto& op : tx->get_all_operations()) {
-		if(std::dynamic_pointer_cast<const operation::Mutate>(op)
-			|| std::dynamic_pointer_cast<const operation::Execute>(op))
-		{
+		if(std::dynamic_pointer_cast<const operation::Mutate>(op)) {
 			mutate_set.insert(op->address);
+		} else if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op)) {
+			mutate_set.insert(op->address);
+			if(exec->user) {
+				setup_context_wait(context, tx->id, *exec->user);
+			}
+		} else if(op) {
+			setup_context_wait(context, tx->id, op->address);
 		}
+	}
+	if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(tx->deploy)) {
+		setup_context_wait(context, tx->id, nft->creator);
 	}
 	auto list = std::vector<addr_t>(mutate_set.begin(), mutate_set.end());
 	while(!list.empty()) {
 		std::vector<addr_t> more;
 		for(const auto& address : list) {
-			auto& state = context->contract_map[address];
-			if(!state) {
-				state = std::make_shared<contract_state_t>();
-				state->data = get_contract(address);
-				state->balance = get_balances(address);
-			}
+			auto state = get_context_state(context, address);
 			if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(state->data)) {
 				for(const auto& entry : exec->depends) {
 					if(mutate_set.insert(entry.second).second) {
@@ -111,11 +165,8 @@ void Node::setup_context(	std::shared_ptr<execution_context_t> context,
 		list = std::move(more);
 	}
 	for(const auto& address : mutate_set) {
-		auto& list = context->mutate_map[address];
-		if(!list.empty()) {
-			context->wait_map[tx->id].insert(list.back());
-		}
-		list.push_back(tx->id);
+		setup_context_wait(context, tx->id, address);
+		context->mutate_map[address].push_back(tx->id);
 	}
 	if(!mutate_set.empty()) {
 		context->signal_map.emplace(tx->id, std::make_shared<waitcond_t>());
@@ -277,17 +328,6 @@ void Node::validate(std::shared_ptr<const Transaction> tx) const
 	validate(tx, context, nullptr, fee, cost);
 }
 
-std::shared_ptr<const Context> Node::create_context(
-		std::shared_ptr<const Context> base, std::shared_ptr<const Contract> contract, std::shared_ptr<const Transaction> tx) const
-{
-	auto context = vnx::clone(base);
-	context->txid = tx->id;
-	for(const auto& addr : contract->get_dependency()) {
-		context->depends[addr] = get_contract_for(addr);
-	}
-	return context;
-}
-
 void Node::execute(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const execution_context_t> context,
 					std::shared_ptr<contract_state_t> state,
@@ -305,8 +345,8 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	engine->total_gas = total_gas;
 
 	if(exec->user) {
-		if(auto contract = get_contract_for(*exec->user)) {
-			contract->validate(exec, create_context(context->block, contract, tx));
+		if(auto contract = context->find_contract(*exec->user)) {
+			contract->validate(exec, context->get_context(tx, contract));
 		} else {
 			throw std::logic_error("no such user");
 		}
@@ -371,7 +411,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		}
 		const auto& address = iter->second;
 
-		auto state = context->get_state(address);
+		auto state = context->find_state(address);
 		auto child = std::make_shared<vm::Engine>(address, storage_cache, false);
 		child->total_gas = engine->total_gas - std::min(engine->total_cost, engine->total_gas);
 
@@ -457,12 +497,7 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 		std::shared_ptr<const Contract> contract;
 
 		if(in.flags & txin_t::IS_EXEC) {
-			if(auto state = context->get_state(in.address)) {
-				contract = state->data;
-			}
-			if(!contract) {
-				contract = get_contract(in.address);
-			}
+			contract = context->find_contract(in.address);
 		} else {
 			auto pubkey = contract::PubKey::create();
 			pubkey->address = in.address;
@@ -478,7 +513,7 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 		spend->balance = *balance;
 		spend->amount = in.amount;
 
-		const auto outputs = contract->validate(spend, create_context(context->block, contract, tx));
+		const auto outputs = contract->validate(spend, context->get_context(tx, contract));
 		exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
 
 		*balance -= in.amount;
@@ -570,19 +605,16 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 		if(!op || !op->is_valid()) {
 			throw std::logic_error("invalid operation");
 		}
-		const auto state = context->get_state(op->address);
+		const auto state = context->find_state(op->address);
 		if(!state) {
 			throw std::logic_error("missing contract state");
 		}
-		auto contract = state->data;
-		if(!contract) {
-			contract = get_contract(op->address);
-		}
+		const auto contract = state->data;
 		if(!contract) {
 			throw std::logic_error("no such contract");
 		}
 		{
-			const auto outputs = contract->validate(op, create_context(context->block, contract, tx));
+			const auto outputs = contract->validate(op, context->get_context(tx, contract));
 			exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
 		}
 		if(auto revoke = std::dynamic_pointer_cast<const operation::Revoke>(op))
@@ -618,14 +650,17 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 		}
 		if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(tx->deploy))
 		{
-			const auto creator = get_contract_for(nft->creator);
+			const auto creator = context->find_contract(nft->creator);
+			if(!creator) {
+				throw std::logic_error("no such creator");
+			}
 			{
 				auto op = operation::Mint::create();
 				op->address = tx->id;
 				op->solution = nft->solution;
 				op->target = nft->creator;
 				op->amount = 1;
-				creator->validate(op, create_context(context->block, creator, tx));
+				creator->validate(op, context->get_context(tx, creator));
 			}
 			txout_t out;
 			out.contract = tx->id;

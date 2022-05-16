@@ -161,7 +161,10 @@ private:
 		std::unordered_map<addr_t, std::shared_ptr<contract_state_t>> contract_map;
 		void wait(const hash_t& txid) const;
 		void signal(const hash_t& txid) const;
-		std::shared_ptr<contract_state_t> get_state(const addr_t& contract) const;
+		void setup_wait(const hash_t& txid, const addr_t& address);
+		std::shared_ptr<contract_state_t> find_state(const addr_t& address) const;
+		std::shared_ptr<const Contract> find_contract(const addr_t& address) const;
+		std::shared_ptr<const Context> get_context(std::shared_ptr<const Transaction> tx, std::shared_ptr<const Contract> contract) const;
 	};
 
 	struct vdf_point_t {
@@ -244,10 +247,11 @@ private:
 
 	void validate(std::shared_ptr<const Transaction> tx) const;
 
-	std::shared_ptr<const Context> create_context(
-			std::shared_ptr<const Context> base, std::shared_ptr<const Contract> contract, std::shared_ptr<const Transaction> tx) const;
-
 	std::shared_ptr<execution_context_t> new_exec_context() const;
+
+	std::shared_ptr<Node::contract_state_t> get_context_state(std::shared_ptr<execution_context_t> context, const addr_t& address) const;
+
+	void setup_context_wait(std::shared_ptr<execution_context_t> context, const hash_t& txid, const addr_t& address) const;
 
 	void setup_context(std::shared_ptr<execution_context_t> context, std::shared_ptr<const Transaction> tx) const;
 
