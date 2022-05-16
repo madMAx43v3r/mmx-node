@@ -28,7 +28,7 @@ public:
 	uint32_t fee_ratio = 1024;
 	::mmx::tx_note_e note;
 	uint64_t nonce = 0;
-	vnx::optional<::mmx::hash_t> salt;
+	::mmx::hash_t salt;
 	vnx::optional<::mmx::addr_t> sender;
 	std::vector<::mmx::txin_t> inputs;
 	std::vector<::mmx::txout_t> outputs;

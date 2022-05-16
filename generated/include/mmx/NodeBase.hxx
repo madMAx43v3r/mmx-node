@@ -106,6 +106,7 @@ protected:
 	
 	virtual std::shared_ptr<const ::mmx::ChainParams> get_params() const = 0;
 	virtual std::shared_ptr<const ::mmx::NetworkInfo> get_network_info() const = 0;
+	virtual ::mmx::hash_t get_genesis_hash() const = 0;
 	virtual uint32_t get_height() const = 0;
 	virtual vnx::optional<uint32_t> get_synced_height() const = 0;
 	virtual std::shared_ptr<const ::mmx::Block> get_block(const ::mmx::hash_t& hash) const = 0;

@@ -45,6 +45,10 @@ public:
 			const std::function<void(std::shared_ptr<const ::mmx::NetworkInfo>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::NetworkInfo>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
+	uint64_t get_genesis_hash(
+			const std::function<void(const ::mmx::hash_t&)>& _callback = std::function<void(const ::mmx::hash_t&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
 	uint64_t get_height(
 			const std::function<void(const uint32_t&)>& _callback = std::function<void(const uint32_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
@@ -245,6 +249,7 @@ protected:
 private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::ChainParams>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_params;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::NetworkInfo>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_network_info;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::hash_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_genesis_hash;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const uint32_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_height;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const vnx::optional<uint32_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_synced_height;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::Block>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_block;

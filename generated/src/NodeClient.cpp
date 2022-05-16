@@ -40,6 +40,8 @@
 #include <mmx/Node_get_contracts_by_return.hxx>
 #include <mmx/Node_get_exec_history.hxx>
 #include <mmx/Node_get_exec_history_return.hxx>
+#include <mmx/Node_get_genesis_hash.hxx>
+#include <mmx/Node_get_genesis_hash_return.hxx>
 #include <mmx/Node_get_header.hxx>
 #include <mmx/Node_get_header_return.hxx>
 #include <mmx/Node_get_header_at.hxx>
@@ -161,6 +163,18 @@ std::shared_ptr<const ::mmx::NetworkInfo> NodeClient::get_network_info() {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::NetworkInfo>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+::mmx::hash_t NodeClient::get_genesis_hash() {
+	auto _method = ::mmx::Node_get_genesis_hash::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_genesis_hash_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<::mmx::hash_t>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}

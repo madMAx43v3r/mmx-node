@@ -41,6 +41,8 @@ public:
 	
 	std::shared_ptr<const ::mmx::NetworkInfo> get_network_info();
 	
+	::mmx::hash_t get_genesis_hash();
+	
 	uint32_t get_height();
 	
 	vnx::optional<uint32_t> get_synced_height();

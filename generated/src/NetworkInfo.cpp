@@ -3,6 +3,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/NetworkInfo.hxx>
+#include <mmx/hash_t.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -12,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 NetworkInfo::VNX_TYPE_HASH(0xd984018819746101ull);
-const vnx::Hash64 NetworkInfo::VNX_CODE_HASH(0xc157c97b0dbb71c7ull);
+const vnx::Hash64 NetworkInfo::VNX_CODE_HASH(0x978d4c5b2ff366a5ull);
 
 vnx::Hash64 NetworkInfo::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -52,8 +53,8 @@ void NetworkInfo::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, block_reward);
 	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, total_space);
 	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, total_supply);
-	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, utxo_count);
-	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, address_count);
+	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, address_count);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, genesis_hash);
 	_visitor.type_end(*_type_code);
 }
 
@@ -66,8 +67,8 @@ void NetworkInfo::write(std::ostream& _out) const {
 	_out << ", \"block_reward\": "; vnx::write(_out, block_reward);
 	_out << ", \"total_space\": "; vnx::write(_out, total_space);
 	_out << ", \"total_supply\": "; vnx::write(_out, total_supply);
-	_out << ", \"utxo_count\": "; vnx::write(_out, utxo_count);
 	_out << ", \"address_count\": "; vnx::write(_out, address_count);
+	_out << ", \"genesis_hash\": "; vnx::write(_out, genesis_hash);
 	_out << "}";
 }
 
@@ -87,8 +88,8 @@ vnx::Object NetworkInfo::to_object() const {
 	_object["block_reward"] = block_reward;
 	_object["total_space"] = total_space;
 	_object["total_supply"] = total_supply;
-	_object["utxo_count"] = utxo_count;
 	_object["address_count"] = address_count;
+	_object["genesis_hash"] = genesis_hash;
 	return _object;
 }
 
@@ -98,6 +99,8 @@ void NetworkInfo::from_object(const vnx::Object& _object) {
 			_entry.second.to(address_count);
 		} else if(_entry.first == "block_reward") {
 			_entry.second.to(block_reward);
+		} else if(_entry.first == "genesis_hash") {
+			_entry.second.to(genesis_hash);
 		} else if(_entry.first == "height") {
 			_entry.second.to(height);
 		} else if(_entry.first == "is_synced") {
@@ -110,8 +113,6 @@ void NetworkInfo::from_object(const vnx::Object& _object) {
 			_entry.second.to(total_space);
 		} else if(_entry.first == "total_supply") {
 			_entry.second.to(total_supply);
-		} else if(_entry.first == "utxo_count") {
-			_entry.second.to(utxo_count);
 		}
 	}
 }
@@ -138,11 +139,11 @@ vnx::Variant NetworkInfo::get_field(const std::string& _name) const {
 	if(_name == "total_supply") {
 		return vnx::Variant(total_supply);
 	}
-	if(_name == "utxo_count") {
-		return vnx::Variant(utxo_count);
-	}
 	if(_name == "address_count") {
 		return vnx::Variant(address_count);
+	}
+	if(_name == "genesis_hash") {
+		return vnx::Variant(genesis_hash);
 	}
 	return vnx::Variant();
 }
@@ -162,10 +163,10 @@ void NetworkInfo::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(total_space);
 	} else if(_name == "total_supply") {
 		_value.to(total_supply);
-	} else if(_name == "utxo_count") {
-		_value.to(utxo_count);
 	} else if(_name == "address_count") {
 		_value.to(address_count);
+	} else if(_name == "genesis_hash") {
+		_value.to(genesis_hash);
 	}
 }
 
@@ -193,7 +194,7 @@ std::shared_ptr<vnx::TypeCode> NetworkInfo::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.NetworkInfo";
 	type_code->type_hash = vnx::Hash64(0xd984018819746101ull);
-	type_code->code_hash = vnx::Hash64(0xc157c97b0dbb71c7ull);
+	type_code->code_hash = vnx::Hash64(0x978d4c5b2ff366a5ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::NetworkInfo);
@@ -244,14 +245,14 @@ std::shared_ptr<vnx::TypeCode> NetworkInfo::static_create_type_code() {
 	{
 		auto& field = type_code->fields[7];
 		field.data_size = 8;
-		field.name = "utxo_count";
+		field.name = "address_count";
 		field.code = {4};
 	}
 	{
 		auto& field = type_code->fields[8];
-		field.data_size = 8;
-		field.name = "address_count";
-		field.code = {4};
+		field.is_extended = true;
+		field.name = "genesis_hash";
+		field.code = {11, 32, 1};
 	}
 	type_code->build();
 	return type_code;
@@ -323,14 +324,12 @@ void read(TypeInput& in, ::mmx::NetworkInfo& value, const TypeCode* type_code, c
 			vnx::read_value(_buf + _field->offset, value.total_supply, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[7]) {
-			vnx::read_value(_buf + _field->offset, value.utxo_count, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[8]) {
 			vnx::read_value(_buf + _field->offset, value.address_count, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
+			case 8: vnx::read(in, value.genesis_hash, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -349,7 +348,7 @@ void write(TypeOutput& out, const ::mmx::NetworkInfo& value, const TypeCode* typ
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(61);
+	char* const _buf = out.write(53);
 	vnx::write_value(_buf + 0, value.is_synced);
 	vnx::write_value(_buf + 1, value.height);
 	vnx::write_value(_buf + 5, value.time_diff);
@@ -357,8 +356,8 @@ void write(TypeOutput& out, const ::mmx::NetworkInfo& value, const TypeCode* typ
 	vnx::write_value(_buf + 21, value.block_reward);
 	vnx::write_value(_buf + 29, value.total_space);
 	vnx::write_value(_buf + 37, value.total_supply);
-	vnx::write_value(_buf + 45, value.utxo_count);
-	vnx::write_value(_buf + 53, value.address_count);
+	vnx::write_value(_buf + 45, value.address_count);
+	vnx::write(out, value.genesis_hash, type_code, type_code->fields[8].code.data());
 }
 
 void read(std::istream& in, ::mmx::NetworkInfo& value) {
