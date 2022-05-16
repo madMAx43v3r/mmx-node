@@ -101,10 +101,22 @@ Wallet::send(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_a
 	const auto wallet = get_wallet(index);
 	update_cache(index);
 
-	auto tx = wallet->send(amount, dst_addr, currency, options);
-	send_off(index, tx);
+	if(amount == 0) {
+		throw std::logic_error("amount cannot be zero");
+	}
+	if(dst_addr == addr_t()) {
+		throw std::logic_error("dst_addr cannot be zero");
+	}
+	auto tx = Transaction::create();
+	tx->note = tx_note_e::TRANSFER;
+	tx->add_output(currency, dst_addr, amount, options.sender);
 
-	log(INFO) << "Sent " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
+	wallet->complete(tx, options);
+
+	if(tx->is_signed()) {
+		send_off(index, tx);
+		log(INFO) << "Sent " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
+	}
 	return tx;
 }
 
@@ -116,15 +128,27 @@ Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 	const auto wallet = get_wallet(index);
 	update_cache(index);
 
-	auto src_owner = src_addr;
+	auto options_ = options;
 	if(auto contract = node->get_contract(src_addr)) {
 		if(auto owner = contract->get_owner()) {
-			src_owner = *owner;
+			options_.owner_map.emplace(src_addr, *owner);
 		} else {
 			throw std::logic_error("contract has no owner");
 		}
 	}
-	auto tx = wallet->send_from(amount, dst_addr, src_addr, src_owner, currency, options);
+	if(amount == 0) {
+		throw std::logic_error("amount cannot be zero");
+	}
+	if(dst_addr == addr_t()) {
+		throw std::logic_error("dst_addr cannot be zero");
+	}
+	auto tx = Transaction::create();
+	tx->note = tx_note_e::WITHDRAW;
+	tx->add_input(currency, src_addr, amount);
+	tx->add_output(currency, dst_addr, amount, options.sender);
+
+	wallet->complete(tx, options_);
+
 	if(tx->is_signed()) {
 		send_off(index, tx);
 		log(INFO) << "Sent " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
@@ -148,10 +172,29 @@ Wallet::mint(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_a
 	const auto wallet = get_wallet(index);
 	update_cache(index);
 
-	if(wallet->find_address(owner) < 0) {
-		throw std::logic_error("token not owned by wallet");
+	if(amount == 0) {
+		throw std::logic_error("amount cannot be zero");
 	}
-	auto tx = wallet->mint(amount, dst_addr, currency, owner, options);
+	if(dst_addr == addr_t()) {
+		throw std::logic_error("dst_addr cannot be zero");
+	}
+	auto tx = Transaction::create();
+	tx->note = tx_note_e::MINT;
+
+	auto op = operation::Mint::create();
+	op->amount = amount;
+	op->target = dst_addr;
+	op->address = currency;
+	if(!op->is_valid()) {
+		throw std::logic_error("invalid operation");
+	}
+	tx->execute.push_back(op);
+
+	auto options_ = options;
+	options_.owner_map.emplace(currency, owner);
+
+	wallet->complete(tx, options_);
+
 	if(tx->is_signed()) {
 		send_off(index, tx);
 		log(INFO) << "Minted " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
@@ -168,7 +211,15 @@ Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, 
 	const auto wallet = get_wallet(index);
 	update_cache(index);
 
-	auto tx = wallet->deploy(contract, options);
+	if(!contract || !contract->is_valid()) {
+		throw std::logic_error("invalid contract");
+	}
+	auto tx = Transaction::create();
+	tx->note = tx_note_e::DEPLOY;
+	tx->deploy = contract;
+
+	wallet->complete(tx, options);
+
 	if(tx->is_signed()) {
 		send_off(index, tx);
 		log(INFO) << "Deployed " << contract->get_type_name() << " with fee " << tx->calc_cost(params) << " as " << addr_t(tx->id) << " (" << tx->id << ")";
@@ -205,6 +256,7 @@ Wallet::mutate(const uint32_t& index, const addr_t& address, const vnx::Object& 
 	options_.owner_map.emplace(address, *owner);
 
 	wallet->complete(tx, options_);
+
 	if(tx->is_signed()) {
 		send_off(index, tx);
 		log(INFO) << "Mutated [" << address << "] via " << method["__type"] << " with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
@@ -233,6 +285,7 @@ std::shared_ptr<const Transaction> Wallet::execute(
 	tx->execute.push_back(op);
 
 	wallet->complete(tx, options);
+
 	if(tx->is_signed()) {
 		send_off(index, tx);
 		log(INFO) << "Executed " << method << "() on [" << address << "] with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
@@ -263,6 +316,7 @@ std::shared_ptr<const Transaction> Wallet::deposit(
 	tx->execute.push_back(op);
 
 	wallet->complete(tx, options);
+
 	if(tx->is_signed()) {
 		send_off(index, tx);
 		log(INFO) << "Executed " << method << "() on [" << address << "] with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
