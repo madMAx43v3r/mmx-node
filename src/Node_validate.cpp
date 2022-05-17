@@ -352,6 +352,8 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		}
 		engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::uint_t(*exec->user));
 	}
+	engine->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::uint_t(exec->address));
+
 	if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(exec)) {
 		txout_t out;
 		out.address = exec->address;
@@ -420,6 +422,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 			mmx::copy(child, engine, vm::MEM_STACK + 1 + i, vm::MEM_STACK + stack_ptr + 1 + i);
 		}
 		child->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::uint_t(engine->contract));
+		child->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::uint_t(address));
 
 		execute(tx, context, state, exec_inputs, exec_outputs, storage_cache, child, method, tx_cost, true);
 
