@@ -63,6 +63,8 @@ protected:
 	std::shared_ptr<const Transaction> accept_offer(
 			const uint32_t& index, std::shared_ptr<const Transaction> offer, const spend_options_t& options) const override;
 
+	std::shared_ptr<const Transaction> revoke(const uint32_t& index, std::shared_ptr<const Transaction> prev, const spend_options_t& options) const override;
+
 	std::shared_ptr<const Transaction> complete(
 			const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const;
 

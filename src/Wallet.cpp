@@ -10,6 +10,7 @@
 #include <mmx/operation/Mutate.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
+#include <mmx/operation/Revoke.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/utils.h>
 
@@ -370,8 +371,37 @@ std::shared_ptr<const Transaction> Wallet::accept_offer(
 	return tx;
 }
 
-std::shared_ptr<const Transaction>
-Wallet::complete(const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const
+std::shared_ptr<const Transaction> Wallet::revoke(
+		const uint32_t& index, std::shared_ptr<const Transaction> prev, const spend_options_t& options) const
+{
+	if(!prev) {
+		throw std::runtime_error("no such transaction");
+	}
+	if(!prev->sender) {
+		throw std::runtime_error("transaction cannot be revoked");
+	}
+	const auto wallet = get_wallet(index);
+	update_cache(index);
+
+	auto tx = Transaction::create();
+	tx->note = tx_note_e::REVOKE;
+
+	auto op = operation::Revoke::create();
+	op->address = *prev->sender;
+	op->txid = prev->id;
+	tx->execute.push_back(op);
+
+	wallet->complete(tx, options);
+
+	if(tx->is_signed()) {
+		send_off(index, tx);
+		log(INFO) << "Revoked " << prev->id << " with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
+	}
+	return tx;
+}
+
+std::shared_ptr<const Transaction> Wallet::complete(
+		const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const
 {
 	if(!tx) {
 		return nullptr;
@@ -384,9 +414,8 @@ Wallet::complete(const uint32_t& index, std::shared_ptr<const Transaction> tx, c
 	return copy;
 }
 
-std::shared_ptr<const Transaction>
-Wallet::sign_off(	const uint32_t& index, std::shared_ptr<const Transaction> tx,
-					const vnx::bool_t& cover_fee, const spend_options_t& options) const
+std::shared_ptr<const Transaction> Wallet::sign_off(
+		const uint32_t& index, std::shared_ptr<const Transaction> tx, const vnx::bool_t& cover_fee, const spend_options_t& options) const
 {
 	if(!tx) {
 		return nullptr;
