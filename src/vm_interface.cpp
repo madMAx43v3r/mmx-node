@@ -351,6 +351,7 @@ void set_args(std::shared_ptr<vm::Engine> engine, const std::vector<vnx::Variant
 
 void execute(std::shared_ptr<vm::Engine> engine, const contract::method_t& method)
 {
+	engine->clear_stack(1 + method.args.size());
 	engine->begin(method.entry_point);
 	engine->run();
 
