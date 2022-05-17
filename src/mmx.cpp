@@ -13,6 +13,7 @@
 //#include <mmx/exchange/ClientClient.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/contract/NFT.hxx>
+#include <mmx/contract/Offer.hxx>
 #include <mmx/contract/TokenBase.hxx>
 #include <mmx/contract/Executable.hxx>
 #include <mmx/KeyFile.hxx>
@@ -451,7 +452,7 @@ int main(int argc, char** argv)
 				vnx::accept(printer, args);
 				std::cout << std::endl << "Transaction ID: " << tx->id << std::endl;
 			}
-			else if(command == "make_offer")
+			else if(command == "offer" || command == "make_offer")
 			{
 				const auto bid = contract;
 				const auto ask = ask_currency;
@@ -473,11 +474,18 @@ int main(int argc, char** argv)
 						<< " for " << ask_amount << " " << ask_token->symbol << std::endl;
 
 				auto offer = wallet.make_offer(index, offset, bid_value, bid, ask_value, ask, spend_options);
-				if(file_name.empty()) {
-					file_name = "offer_" + vnx::get_date_string_ex("%Y%m%d_%H%M%S", true) + ".dat";
+				if(command == "offer") {
+					auto contract = mmx::contract::Offer::create();
+					contract->base = offer;
+					auto tx = wallet.deploy(index, contract, spend_options);
+					std::cout << "Transaction ID: " << tx->id << std::endl;
+				} else {
+					if(file_name.empty()) {
+						file_name = "offer_" + vnx::get_date_string_ex("%Y%m%d_%H%M%S", true) + ".dat";
+					}
+					std::cout << "Writing to file: " << file_name << std::endl;
+					vnx::write_to_file(file_name, offer);
 				}
-				std::cout << "Writing to file: " << file_name << std::endl;
-				vnx::write_to_file(file_name, offer);
 			}
 			else if(command == "accept")
 			{
@@ -511,7 +519,7 @@ int main(int argc, char** argv)
 				}
 				if(pre_accept || accept_prompt()) {
 					auto tx = wallet.accept_offer(index, offer, spend_options);
-					std::cout << std::endl << "Transaction ID: " << tx->id << std::endl;
+					std::cout << "Transaction ID: " << tx->id << std::endl;
 				}
 			}
 			else if(command == "log")
