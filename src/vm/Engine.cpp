@@ -1537,17 +1537,17 @@ std::map<uint64_t, const var_t*> Engine::find_entries(const uint64_t dst) const
 void Engine::dump_memory(const uint64_t begin, const uint64_t end)
 {
 	for(auto iter = memory.lower_bound(begin); iter != memory.lower_bound(end); ++iter) {
-		std::cout << "[0x" << std::hex << iter->first << std::dec << "] " << to_string(iter->second);
+		std::cout << "[" << to_hex(iter->first) << "] " << to_string(iter->second);
 		if(auto var = iter->second) {
-			std::cout << "\t\t(vf: 0x" << std::hex << int(var->flags) << std::dec << ") (rc: " << var->ref_count << ")";
+			std::cout << "\t\t(vf: " << to_hex(int(var->flags)) << ") (rc: " << var->ref_count << ")";
 		}
 		std::cout << std::endl;
 	}
 	for(auto iter = entries.lower_bound(std::make_pair(begin, 0)); iter != entries.lower_bound(std::make_pair(end, 0)); ++iter) {
-		std::cout << "[0x" << std::hex << iter->first.first << std::dec << "]"
-				<< "[0x" << std::hex << iter->first.second << std::dec << "] " << to_string(iter->second);
+		std::cout << "[" << to_hex(iter->first.first) << "]"
+				<< "[" << to_hex(iter->first.second) << "] " << to_string(iter->second);
 		if(auto var = iter->second) {
-			std::cout << "\t\t(vf: 0x" << std::hex << int(var->flags) << std::dec << ")";
+			std::cout << "\t\t(vf: " << to_hex(int(var->flags)) << ")";
 		}
 		std::cout << std::endl;
 	}
