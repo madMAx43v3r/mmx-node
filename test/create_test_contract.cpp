@@ -125,7 +125,7 @@ int main(int argc, char** argv)
 		method.args = {"address", "amount", "currency"};
 		method.entry_point = code.size();
 		code.emplace_back(OP_CMP_EQ, 0, MEM_STACK + 10, MEM_EXTERN + EXTERN_USER, MEM_STATIC + 3);
-		code.emplace_back(OP_JUMPI, 0, 3, MEM_STACK + 10);
+		code.emplace_back(OP_JUMPI, 0, method.entry_point + 3, MEM_STACK + 10);
 		code.emplace_back(OP_FAIL, 0, MEM_CONST + 9);
 		code.emplace_back(OP_CONV, 0, MEM_STACK + 4, MEM_STACK + 1, CONVTYPE_UINT, CONVTYPE_ADDRESS);
 		code.emplace_back(OP_CONV, 0, MEM_STACK + 5, MEM_STACK + 3, CONVTYPE_UINT, CONVTYPE_ADDRESS);
