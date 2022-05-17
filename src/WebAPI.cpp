@@ -20,6 +20,7 @@
 #include <mmx/contract/PuzzleTimeLock.hxx>
 #include <mmx/contract/Executable.hxx>
 #include <mmx/contract/PlotNFT.hxx>
+#include <mmx/contract/Offer.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/operation/Mint.hxx>
 #include <mmx/operation/Spend.hxx>
@@ -290,13 +291,7 @@ public:
 	}
 
 	void accept(const txio_key_t& value) {
-		auto tmp = render(value, context);
-		tmp["key"] = value.to_string_value();
-		set(tmp);
-	}
-
-	void accept(const txin_t& value) {
-		set(render(value, context));
+		set(value.to_string_value());
 	}
 
 	vnx::Object augment(vnx::Object out, const addr_t& contract, const uint128_t amount) {
@@ -312,6 +307,10 @@ public:
 			out["is_native"] = contract == addr_t();
 		}
 		return out;
+	}
+
+	void accept(const txin_t& value) {
+		set(augment(render(value), value.contract, value.amount));
 	}
 
 	void accept(const txout_t& value) {
@@ -425,6 +424,8 @@ public:
 		} else if(auto value = std::dynamic_pointer_cast<const contract::PlotNFT>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::VirtualPlot>(base)) {
+			set(render(value, context));
+		} else if(auto value = std::dynamic_pointer_cast<const contract::Offer>(base)) {
 			set(render(value, context));
 		} else {
 			set(base);
@@ -773,7 +774,7 @@ void WebAPI::render_transactions(	const vnx::request_id_t& request_id, size_t li
 	for(size_t i = 0; i < limit; ++i) {
 		node->get_tx_info(tx_ids[offset + i],
 			[this, job, i](const vnx::optional<tx_info_t>& info) {
-				if(info) {
+				if(info && !info->is_extendable) {
 					auto context = get_context();
 					for(const auto& entry : info->contracts) {
 						context->add_contract(entry.first, entry.second);
@@ -781,7 +782,13 @@ void WebAPI::render_transactions(	const vnx::request_id_t& request_id, size_t li
 					job->result[i] = render_value(info, context);
 				}
 				if(--job->num_left == 0) {
-					respond(job->request_id, render_value(job->result));
+					std::vector<vnx::Variant> out;
+					for(auto& entry : job->result) {
+						if(!entry.empty()) {
+							out.push_back(std::move(entry));
+						}
+					}
+					respond(job->request_id, render_value(out));
 				}
 			});
 	}
