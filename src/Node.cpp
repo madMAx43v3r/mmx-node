@@ -673,8 +673,8 @@ std::map<vm::varptr_t, vm::varptr_t> Node::read_storage_map(const addr_t& contra
 
 vnx::Variant Node::call_contract(const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args) const
 {
-	if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(get_contract(address))) {
-		auto func = mmx::find_method(exec, method);
+	if(auto executable = std::dynamic_pointer_cast<const contract::Executable>(get_contract(address))) {
+		auto func = mmx::find_method(executable, method);
 		if(!func) {
 			throw std::runtime_error("no such method");
 		}
@@ -683,7 +683,14 @@ vnx::Variant Node::call_contract(const addr_t& address, const std::string& metho
 		}
 		auto engine = std::make_shared<vm::Engine>(address, storage, true);
 		engine->total_gas = params->max_block_cost;
-		mmx::load(engine, exec);
+		mmx::load(engine, executable);
+		if(auto peak = get_peak()) {
+			engine->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(peak->height));
+		}
+		engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::uint_t());
+		engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::uint_t());
+		engine->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::uint_t(address));
+		mmx::set_balance(engine, get_balances(address));
 		mmx::set_args(engine, args);
 		mmx::execute(engine, *func);
 		return mmx::read(engine, vm::MEM_STACK);
