@@ -406,7 +406,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		(const std::string& name, const std::string& method, const uint32_t nargs)
 	{
 		auto iter = executable->depends.find(name);
-		if(iter != executable->depends.end()) {
+		if(iter == executable->depends.end()) {
 			throw std::runtime_error("no such external contract: " + name);
 		}
 		const auto& address = iter->second;
