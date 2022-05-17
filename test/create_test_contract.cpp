@@ -8,6 +8,7 @@
 #include <mmx/vm/var_t.h>
 #include <mmx/vm/instr_t.h>
 #include <mmx/vm/varptr_t.hpp>
+#include <mmx/vm/Engine.h>
 
 #include <mmx/contract/Executable.hxx>
 
@@ -28,6 +29,9 @@ int main(int argc, char** argv)
 	constant.push_back(new map_t());
 	constant.push_back(new uint_t(1337));
 	constant.push_back(binary_t::alloc("test"));		// 0x8
+	constant.push_back(binary_t::alloc("invalid user"));
+	constant.push_back(binary_t::alloc("other"));
+	constant.push_back(binary_t::alloc("set_value"));
 
 	exec->fields["array"] = MEM_STATIC + 0;
 	exec->fields["map"] = MEM_STATIC + 1;
@@ -53,9 +57,6 @@ int main(int argc, char** argv)
 		code.emplace_back(OP_RET);
 		exec->methods["init"] = method;
 	}
-	while(code.size() < 50) {
-		code.emplace_back(OP_NOP);
-	}
 	{
 		mmx::contract::method_t method;
 		method.name = "push_back";
@@ -65,9 +66,6 @@ int main(int argc, char** argv)
 		code.emplace_back(OP_PUSH_BACK, 0, MEM_STATIC + 0, MEM_STACK + 1);
 		code.emplace_back(OP_RET);
 		exec->methods["push_back"] = method;
-	}
-	while(code.size() < 60) {
-		code.emplace_back(OP_NOP);
 	}
 	{
 		mmx::contract::method_t method;
@@ -79,9 +77,6 @@ int main(int argc, char** argv)
 		code.emplace_back(OP_RET);
 		exec->methods["insert"] = method;
 	}
-	while(code.size() < 70) {
-		code.emplace_back(OP_NOP);
-	}
 	{
 		mmx::contract::method_t method;
 		method.name = "set_value";
@@ -91,9 +86,6 @@ int main(int argc, char** argv)
 		code.emplace_back(OP_COPY, 0, MEM_STATIC + 2, MEM_STACK + 1);
 		code.emplace_back(OP_RET);
 		exec->methods["set_value"] = method;
-	}
-	while(code.size() < 80) {
-		code.emplace_back(OP_NOP);
 	}
 	{
 		mmx::contract::method_t method;
@@ -106,9 +98,6 @@ int main(int argc, char** argv)
 		code.emplace_back(OP_RET);
 		exec->methods["read_array"] = method;
 	}
-	while(code.size() < 90) {
-		code.emplace_back(OP_NOP);
-	}
 	{
 		mmx::contract::method_t method;
 		method.name = "mint";
@@ -120,9 +109,6 @@ int main(int argc, char** argv)
 		code.emplace_back(OP_RET);
 		exec->methods["mint"] = method;
 	}
-	while(code.size() < 100) {
-		code.emplace_back(OP_NOP);
-	}
 	{
 		mmx::contract::method_t method;
 		method.name = "deposit";
@@ -132,20 +118,31 @@ int main(int argc, char** argv)
 		code.emplace_back(OP_RET);
 		exec->methods["deposit"] = method;
 	}
-	while(code.size() < 110) {
-		code.emplace_back(OP_NOP);
-	}
 	{
 		mmx::contract::method_t method;
 		method.name = "withdraw";
 		method.is_public = true;
 		method.args = {"address", "amount", "currency"};
 		method.entry_point = code.size();
+		code.emplace_back(OP_CMP_EQ, 0, MEM_STACK + 10, MEM_EXTERN + EXTERN_USER, MEM_STATIC + 3);
+		code.emplace_back(OP_JUMPI, 0, 3, MEM_STACK + 10);
+		code.emplace_back(OP_FAIL, 0, MEM_CONST + 9);
 		code.emplace_back(OP_CONV, 0, MEM_STACK + 4, MEM_STACK + 1, CONVTYPE_UINT, CONVTYPE_ADDRESS);
 		code.emplace_back(OP_CONV, 0, MEM_STACK + 5, MEM_STACK + 3, CONVTYPE_UINT, CONVTYPE_ADDRESS);
 		code.emplace_back(OP_SEND, 0, MEM_STACK + 4, MEM_STACK + 2, MEM_STACK + 5);
 		code.emplace_back(OP_RET);
 		exec->methods["withdraw"] = method;
+	}
+	{
+		mmx::contract::method_t method;
+		method.name = "cross_call";
+		method.is_public = true;
+		method.args = {"value"};
+		method.entry_point = code.size();
+		code.emplace_back(OP_COPY, 0, MEM_STACK + 3, MEM_STACK + 1);
+		code.emplace_back(OP_RCALL, 0, MEM_CONST + 10, MEM_CONST + 11, 2, 1);
+		code.emplace_back(OP_RET);
+		exec->methods["cross_call"] = method;
 	}
 
 	for(const auto& var : constant) {
@@ -160,6 +157,7 @@ int main(int argc, char** argv)
 	}
 	exec->symbol = "XYZ";
 	exec->name = "XYZ Coin";
+	exec->depends["other"] = std::string("mmx1q0rs30csp2pgy4v597gtcdu8paevjnuf9pzkcrhfma8c7kaxlztspdaak9");
 	exec->init_method = "init";
 	exec->init_args.emplace_back("mmx1nn8u9etvnghq7x8atj2y55he76z9yvxalc9t3nx8ym0xqr4yuzvsdf8jp8");
 
