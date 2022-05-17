@@ -975,6 +975,9 @@ void Engine::event(const uint64_t name, const uint64_t data)
 void Engine::send(const uint64_t address, const uint64_t amount, const uint64_t currency)
 {
 	const auto value = read_fail<uint_t>(amount, TYPE_UINT).value;
+	if(value == 0) {
+		return;
+	}
 	if(value >> 64) {
 		throw std::runtime_error("amount too large");
 	}
@@ -996,6 +999,9 @@ void Engine::send(const uint64_t address, const uint64_t amount, const uint64_t 
 void Engine::mint(const uint64_t address, const uint64_t amount)
 {
 	const auto value = read_fail<uint_t>(amount, TYPE_UINT).value;
+	if(value == 0) {
+		return;
+	}
 	if(value >> 64) {
 		throw std::runtime_error("amount too large");
 	}
