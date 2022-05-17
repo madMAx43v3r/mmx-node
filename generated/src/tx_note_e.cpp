@@ -11,7 +11,7 @@ namespace mmx {
 
 
 const vnx::Hash64 tx_note_e::VNX_TYPE_HASH(0x347c1deca0a9c9cull);
-const vnx::Hash64 tx_note_e::VNX_CODE_HASH(0xa02ba3e4a4b0d998ull);
+const vnx::Hash64 tx_note_e::VNX_CODE_HASH(0xf9b41283f5453134ull);
 
 vnx::Hash64 tx_note_e::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -52,6 +52,7 @@ vnx::bool_t tx_note_e::is_valid() const {
 		case MUTATE: return true;
 		case OFFER: return true;
 		case OTHER: return true;
+		case REVOKE: return true;
 		case REWARD: return true;
 		case TRADE: return true;
 		case TRANSFER: return true;
@@ -71,6 +72,7 @@ std::string tx_note_e::to_string() const {
 		case MUTATE: return "\"MUTATE\"";
 		case OFFER: return "\"OFFER\"";
 		case OTHER: return "\"OTHER\"";
+		case REVOKE: return "\"REVOKE\"";
 		case REWARD: return "\"REWARD\"";
 		case TRADE: return "\"TRADE\"";
 		case TRANSFER: return "\"TRANSFER\"";
@@ -90,6 +92,7 @@ std::string tx_note_e::to_string_value() const {
 		case MUTATE: return "MUTATE";
 		case OFFER: return "OFFER";
 		case OTHER: return "OTHER";
+		case REVOKE: return "REVOKE";
 		case REWARD: return "REWARD";
 		case TRADE: return "TRADE";
 		case TRANSFER: return "TRANSFER";
@@ -109,6 +112,7 @@ std::string tx_note_e::to_string_value_full() const {
 		case MUTATE: return "mmx.tx_note_e.MUTATE";
 		case OFFER: return "mmx.tx_note_e.OFFER";
 		case OTHER: return "mmx.tx_note_e.OTHER";
+		case REVOKE: return "mmx.tx_note_e.REVOKE";
 		case REWARD: return "mmx.tx_note_e.REWARD";
 		case TRADE: return "mmx.tx_note_e.TRADE";
 		case TRANSFER: return "mmx.tx_note_e.TRANSFER";
@@ -136,6 +140,7 @@ void tx_note_e::from_string_value(const std::string& _name) {
 		else if(_name == "MUTATE") value = MUTATE;
 		else if(_name == "OFFER") value = OFFER;
 		else if(_name == "OTHER") value = OTHER;
+		else if(_name == "REVOKE") value = REVOKE;
 		else if(_name == "REWARD") value = REWARD;
 		else if(_name == "TRADE") value = TRADE;
 		else if(_name == "TRANSFER") value = TRANSFER;
@@ -158,6 +163,7 @@ void tx_note_e::accept(vnx::Visitor& _visitor) const {
 		case MUTATE: _name = "MUTATE"; break;
 		case OFFER: _name = "OFFER"; break;
 		case OTHER: _name = "OTHER"; break;
+		case REVOKE: _name = "REVOKE"; break;
 		case REWARD: _name = "REWARD"; break;
 		case TRADE: _name = "TRADE"; break;
 		case TRANSFER: _name = "TRANSFER"; break;
@@ -177,6 +183,7 @@ void tx_note_e::write(std::ostream& _out) const {
 		case MUTATE: _out << "\"MUTATE\""; break;
 		case OFFER: _out << "\"OFFER\""; break;
 		case OTHER: _out << "\"OTHER\""; break;
+		case REVOKE: _out << "\"REVOKE\""; break;
 		case REWARD: _out << "\"REWARD\""; break;
 		case TRADE: _out << "\"TRADE\""; break;
 		case TRANSFER: _out << "\"TRANSFER\""; break;
@@ -241,7 +248,7 @@ std::shared_ptr<vnx::TypeCode> tx_note_e::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.tx_note_e";
 	type_code->type_hash = vnx::Hash64(0x347c1deca0a9c9cull);
-	type_code->code_hash = vnx::Hash64(0xa02ba3e4a4b0d998ull);
+	type_code->code_hash = vnx::Hash64(0xf9b41283f5453134ull);
 	type_code->is_native = true;
 	type_code->is_enum = true;
 	type_code->native_size = sizeof(::mmx::tx_note_e);
@@ -262,6 +269,7 @@ std::shared_ptr<vnx::TypeCode> tx_note_e::static_create_type_code() {
 	type_code->enum_map[2579166487] = "MUTATE";
 	type_code->enum_map[1549148948] = "OFFER";
 	type_code->enum_map[3605757838] = "OTHER";
+	type_code->enum_map[3821531424] = "REVOKE";
 	type_code->enum_map[3842121424] = "REWARD";
 	type_code->enum_map[329618288] = "TRADE";
 	type_code->enum_map[858544509] = "TRANSFER";
