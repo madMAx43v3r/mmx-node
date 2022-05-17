@@ -119,6 +119,7 @@ void Node::setup_context_wait(std::shared_ptr<execution_context_t> context, cons
 	auto state = get_context_state(context, address);
 	if(auto contract = state->data) {
 		for(const auto& address : contract->get_dependency()) {
+			get_context_state(context, address);
 			context->setup_wait(txid, address);
 		}
 	}
