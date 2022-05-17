@@ -412,7 +412,7 @@ int main(int argc, char** argv)
 				std::shared_ptr<const mmx::Transaction> tx;
 				if(command == "exec") {
 					tx = wallet.execute(index, contract, method, args, spend_options);
-					std::cout << "Executed " << method << " with ";
+					std::cout << "Executed " << method << "() with ";
 				} else {
 					if(method.empty()) {
 						method = "deposit";
