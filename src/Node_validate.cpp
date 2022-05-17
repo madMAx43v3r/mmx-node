@@ -572,6 +572,9 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 	if(!tx->is_valid()) {
 		throw std::logic_error("invalid tx");
 	}
+	if(tx->is_extendable) {
+		throw std::logic_error("incomplete tx");
+	}
 	tx_cost = tx->calc_cost(params);
 
 	uint128_t base_amount = 0;
