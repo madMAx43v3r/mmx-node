@@ -141,11 +141,11 @@ std::vector<txout_t> Transaction::get_outputs() const
 std::vector<txin_t> Transaction::get_all_inputs() const
 {
 	auto out = get_inputs();
-	auto tx = parent;
-	while(tx) {
-		const auto tmp = tx->get_inputs();
+	auto txi = parent;
+	while(txi) {
+		const auto tmp = txi->get_inputs();
 		out.insert(out.begin(), tmp.begin(), tmp.end());
-		tx = tx->parent;
+		txi = txi->parent;
 	}
 	return out;
 }
@@ -153,11 +153,11 @@ std::vector<txin_t> Transaction::get_all_inputs() const
 std::vector<txout_t> Transaction::get_all_outputs() const
 {
 	auto out = get_outputs();
-	auto tx = parent;
-	while(tx) {
-		const auto tmp = tx->get_outputs();
+	auto txi = parent;
+	while(txi) {
+		const auto tmp = txi->get_outputs();
 		out.insert(out.begin(), tmp.begin(), tmp.end());
-		tx = tx->parent;
+		txi = txi->parent;
 	}
 	return out;
 }
@@ -240,6 +240,18 @@ vnx::bool_t Transaction::is_signed() const
 		// TODO: handle multi-sig
 	}
 	return true;
+}
+
+std::map<addr_t, std::pair<uint128, uint128>> Transaction::get_balance() const
+{
+	std::map<addr_t, std::pair<uint128, uint128>> balance;
+	for(const auto& in : get_all_inputs()) {
+		balance[in.contract].first += in.amount;
+	}
+	for(const auto& out : get_all_outputs()) {
+		balance[out.contract].second += out.amount;
+	}
+	return balance;
 }
 
 

@@ -324,6 +324,52 @@ std::shared_ptr<const Transaction> Wallet::deposit(
 	return tx;
 }
 
+std::shared_ptr<const Transaction> Wallet::make_offer(
+			const uint32_t& index, const uint32_t& address, const uint64_t& bid_amount, const addr_t& bid_currency,
+			const uint64_t& ask_amount, const addr_t& ask_currency, const spend_options_t& options) const
+{
+	const auto wallet = get_wallet(index);
+	update_cache(index);
+
+	auto tx = Transaction::create();
+	tx->note = tx_note_e::OFFER;
+	tx->is_extendable = true;
+	tx->add_input(bid_currency, wallet->get_address(address), bid_amount);
+	tx->add_output(ask_currency, wallet->get_address(address), ask_amount);
+	wallet->sign_off(tx, options);
+	return tx;
+}
+
+std::shared_ptr<const Transaction> Wallet::accept_offer(
+			const uint32_t& index, std::shared_ptr<const Transaction> offer, const spend_options_t& options) const
+{
+	const auto wallet = get_wallet(index);
+	update_cache(index);
+
+	auto tx = Transaction::create();
+	tx->note = tx_note_e::TRADE;
+	tx->parent = offer;
+
+	for(const auto& entry : tx->get_balance()) {
+		const auto& input = entry.second.first;
+		const auto& output = entry.second.second;
+		if(input > output) {
+			const auto amount = input - output;
+			if(amount.upper()) {
+				throw std::logic_error("amount overflow");
+			}
+			tx->add_output(entry.first, wallet->get_address(0), amount);
+		}
+	}
+	wallet->complete(tx, options);
+
+	if(tx->is_signed()) {
+		send_off(index, tx);
+		log(INFO) << "Accepted offer with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
+	}
+	return tx;
+}
+
 std::shared_ptr<const Transaction>
 Wallet::complete(const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const
 {

@@ -70,6 +70,18 @@ void show_history(const std::vector<mmx::tx_entry_t>& history, mmx::NodeClient& 
 	}
 }
 
+bool accept_prompt()
+{
+	std::cout << "Accept (y): ";
+	std::string input;
+	std::getline(std::cin, input);
+	if(input == "y") {
+		return true;
+	}
+	std::cout << "Aborted" << std::endl;
+	return false;
+}
+
 
 int main(int argc, char** argv)
 {
@@ -84,26 +96,28 @@ int main(int argc, char** argv)
 	options["n"] = "node";
 	options["f"] = "file";
 	options["j"] = "index";
-	options["k"] = "server";
+	options["k"] = "offset";
 	options["a"] = "amount";
-	options["b"] = "bid";
-	options["m"] = "outputs";
+	options["b"] = "ask-amount";
+	options["m"] = "count";
 	options["s"] = "source";
 	options["t"] = "target";
 	options["x"] = "contract";
+	options["z"] = "ask-currency";
 	options["y"] = "yes";
 	options["r"] = "fee-ratio";
 	options["l"] = "gas-limit";
 	options["node"] = "address";
 	options["file"] = "path";
 	options["index"] = "0..?";
-	options["server"] = "index";
+	options["offset"] = "0..?";
 	options["amount"] = "123.456";
 	options["bid"] = "123.456";
 	options["outputs"] = "count";
 	options["source"] = "address";
 	options["target"] = "address";
 	options["contract"] = "address";
+	options["ask-currency"] = "address";
 	options["fee-ratio"] = ">= 1";
 	options["gas-limit"] = "MMX";
 
@@ -117,11 +131,12 @@ int main(int argc, char** argv)
 	std::string source_addr;
 	std::string target_addr;
 	std::string contract_addr;
+	std::string ask_currency_addr;
 	int64_t index = 0;
-	int64_t server_index = 0;
-	int64_t num_outputs = 0;
+	int64_t offset = 0;
+	int64_t num_count = 0;
 	double amount = 0;
-	double bid_amount = 0;
+	double ask_amount = 0;
 	double fee_ratio = 1;
 	double gas_limit = 1;
 	bool pre_accept = false;
@@ -130,13 +145,14 @@ int main(int argc, char** argv)
 	vnx::read_config("yes", pre_accept);
 	vnx::read_config("file", file_name);
 	vnx::read_config("index", index);
-	vnx::read_config("server", server_index);
+	vnx::read_config("offset", offset);
 	vnx::read_config("amount", amount);
-	vnx::read_config("bid", bid_amount);
-	vnx::read_config("outputs", num_outputs);
+	vnx::read_config("ask-amount", ask_amount);
+	vnx::read_config("count", num_count);
 	vnx::read_config("source", source_addr);
 	vnx::read_config("target", target_addr);
 	vnx::read_config("contract", contract_addr);
+	vnx::read_config("ask-currency", ask_currency_addr);
 	vnx::read_config("fee-ratio", fee_ratio);
 	vnx::read_config("gas-limit", gas_limit);
 
@@ -157,6 +173,7 @@ int main(int argc, char** argv)
 	mmx::addr_t source;
 	mmx::addr_t target;
 	mmx::addr_t contract;
+	mmx::addr_t ask_currency;
 	try {
 		if(!source_addr.empty()) {
 			source.from_string(source_addr);
@@ -178,7 +195,15 @@ int main(int argc, char** argv)
 			contract.from_string(contract_addr);
 		}
 	} catch(std::exception& ex) {
-		vnx::log_error() << "Invalid contract: " << ex.what();
+		vnx::log_error() << "Invalid address: " << ex.what();
+		goto failed;
+	}
+	try {
+		if(!ask_currency_addr.empty()) {
+			ask_currency.from_string(ask_currency_addr);
+		}
+	} catch(std::exception& ex) {
+		vnx::log_error() << "Invalid address: " << ex.what();
 		goto failed;
 	}
 
@@ -426,6 +451,69 @@ int main(int argc, char** argv)
 				vnx::accept(printer, args);
 				std::cout << std::endl << "Transaction ID: " << tx->id << std::endl;
 			}
+			else if(command == "make_offer")
+			{
+				const auto bid = contract;
+				const auto ask = ask_currency;
+				if(bid == ask) {
+					vnx::log_error() << "Ask == Bid!";
+					goto failed;
+				}
+				const auto bid_token = get_token(node, bid);
+				const auto ask_token = get_token(node, ask);
+				const auto bid_symbol = bid_token->symbol;
+
+				const uint64_t bid_value = amount * pow(10, bid_token->decimals);
+				const uint64_t ask_value = ask_amount * pow(10, ask_token->decimals);
+				if(bid_value == 0 || ask_value == 0) {
+					vnx::log_error() << "Invalid amount! (-a | -b)";
+					goto failed;
+				}
+				std::cout << "Offering " << amount << " " << bid_token->symbol
+						<< " for " << ask_amount << " " << ask_token->symbol << std::endl;
+
+				auto offer = wallet.make_offer(index, offset, bid_value, bid, ask_value, ask, spend_options);
+				if(file_name.empty()) {
+					file_name = "offer_" + vnx::get_date_string_ex("%Y%m%d_%H%M%S", true) + ".dat";
+				}
+				std::cout << "Writing to file: " << file_name << std::endl;
+				vnx::write_to_file(file_name, offer);
+			}
+			else if(command == "accept")
+			{
+				if(file_name.empty()) {
+					vnx::log_error() << "Missing file name (-f)";
+					goto failed;
+				}
+				auto offer = vnx::read_from_file<mmx::Transaction>(file_name);
+				if(!offer) {
+					vnx::log_error() << "Failed to read from file: " << file_name;
+					goto failed;
+				}
+				for(const auto& entry : offer->get_balance()) {
+					const auto token = get_token(node, entry.first);
+					const auto& input = entry.second.first;
+					const auto& output = entry.second.second;
+					if(input > output) {
+						const auto amount = input - output;
+						if(amount.upper()) {
+							throw std::logic_error("amount overflow");
+						}
+						std::cout << "You receive: " << amount.lower() / pow(10, token->decimals) << " " << token->symbol << std::endl;
+					}
+					if(input < output) {
+						const auto amount = output - input;
+						if(amount.upper()) {
+							throw std::logic_error("amount overflow");
+						}
+						std::cout << "They ask for: " << amount.lower() / pow(10, token->decimals) << " " << token->symbol << std::endl;
+					}
+				}
+				if(pre_accept || accept_prompt()) {
+					auto tx = wallet.accept_offer(index, offer, spend_options);
+					std::cout << std::endl << "Transaction ID: " << tx->id << std::endl;
+				}
+			}
 			else if(command == "log")
 			{
 				int64_t since = 0;
@@ -467,7 +555,7 @@ int main(int argc, char** argv)
 						<< std::endl << wallet.seed_value << std::endl;
 			}
 			else {
-				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | transfer | mint | deploy | mutate | exec | create | accounts | keys]" << std::endl;
+				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | transfer | make_offer | accept | mint | deploy | mutate | exec | create | accounts | keys]" << std::endl;
 			}
 		}
 		else if(module == "node")

@@ -51,6 +51,8 @@ class Transaction extends TransactionBase {
 	
 	hash_t calc_hash() const;
 	
+	ulong calc_cost(ChainParams* params) const;
+	
 	Solution* get_solution(uint index) const;
 	
 	txout_t get_output(uint index) const;
@@ -65,6 +67,6 @@ class Transaction extends TransactionBase {
 	
 	vector<Operation*> get_all_operations() const;
 	
-	ulong calc_cost(ChainParams* params) const;
+	map<addr_t, pair<uint128, uint128>> get_balance() const;
 	
 }

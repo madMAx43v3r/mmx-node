@@ -56,6 +56,13 @@ protected:
 			const uint32_t& index, const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args,
 			const uint64_t& amount, const addr_t& currency, const spend_options_t& options) const override;
 
+	std::shared_ptr<const Transaction> make_offer(
+			const uint32_t& index, const uint32_t& address, const uint64_t& bid_amount, const addr_t& bid_currency,
+			const uint64_t& ask_amount, const addr_t& ask_currency, const spend_options_t& options) const override;
+
+	std::shared_ptr<const Transaction> accept_offer(
+			const uint32_t& index, std::shared_ptr<const Transaction> offer, const spend_options_t& options) const override;
+
 	std::shared_ptr<const Transaction> complete(
 			const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const;
 
