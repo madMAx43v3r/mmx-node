@@ -4,6 +4,8 @@ class tx_info_t {
 	
 	hash_t id;
 	
+	uint expires;
+	
 	optional<uint> height;
 	optional<hash_t> block;
 	
@@ -11,6 +13,10 @@ class tx_info_t {
 	ulong cost;
 	
 	tx_note_e note;
+	
+	bool is_extendable;
+	
+	optional<addr_t> sender;
 	
 	vector<txin_t> inputs;
 	vector<txout_t> outputs;

@@ -338,16 +338,19 @@ vnx::optional<tx_info_t> Node::get_tx_info_for(std::shared_ptr<const Transaction
 	}
 	tx_info_t info;
 	info.id = tx->id;
+	info.expires = tx->expires;
 	if(auto height = get_tx_height(tx->id)) {
 		info.height = *height;
 		info.block = get_block_hash(*height);
 	}
 	info.note = tx->note;
+	info.sender = tx->sender;
 	info.cost = tx->calc_cost(params);
 	info.inputs = tx->get_all_inputs();
 	info.outputs = tx->get_all_outputs();
 	info.operations = tx->get_all_operations();
 	info.deployed = tx->deploy;
+	info.is_extendable = tx->is_extendable;
 
 	std::unordered_set<addr_t> contracts;
 	for(const auto& in : info.inputs) {
