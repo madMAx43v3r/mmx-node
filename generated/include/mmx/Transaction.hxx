@@ -15,6 +15,7 @@
 #include <mmx/tx_note_e.hxx>
 #include <mmx/txin_t.hxx>
 #include <mmx/txout_t.hxx>
+#include <mmx/uint128.hpp>
 
 
 namespace mmx {
@@ -60,6 +61,7 @@ public:
 	virtual vnx::bool_t is_valid() const;
 	virtual vnx::bool_t is_signed() const;
 	virtual ::mmx::hash_t calc_hash() const override;
+	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	virtual std::shared_ptr<const ::mmx::Solution> get_solution(const uint32_t& index = 0) const;
 	virtual ::mmx::txout_t get_output(const uint32_t& index = 0) const;
 	virtual std::vector<::mmx::txin_t> get_inputs() const;
@@ -67,7 +69,7 @@ public:
 	virtual std::vector<::mmx::txin_t> get_all_inputs() const;
 	virtual std::vector<::mmx::txout_t> get_all_outputs() const;
 	virtual std::vector<std::shared_ptr<const ::mmx::Operation>> get_all_operations() const;
-	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
+	virtual std::map<::mmx::addr_t, std::pair<::mmx::uint128, ::mmx::uint128>> get_balance() const;
 	
 	static std::shared_ptr<Transaction> create();
 	std::shared_ptr<vnx::Value> clone() const override;

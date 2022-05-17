@@ -49,6 +49,10 @@ public:
 	
 	std::shared_ptr<const ::mmx::Transaction> deposit(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const std::string& method = "", const std::vector<::vnx::Variant>& args = {}, const uint64_t& amount = 0, const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
+	std::shared_ptr<const ::mmx::Transaction> make_offer(const uint32_t& index = 0, const uint32_t& address = 0, const uint64_t& bid_amount = 0, const ::mmx::addr_t& bid_currency = ::mmx::addr_t(), const uint64_t& ask_amount = 0, const ::mmx::addr_t& ask_currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
+	
+	std::shared_ptr<const ::mmx::Transaction> accept_offer(const uint32_t& index = 0, std::shared_ptr<const ::mmx::Transaction> offer = nullptr, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
+	
 	std::shared_ptr<const ::mmx::Transaction> complete(const uint32_t& index = 0, std::shared_ptr<const ::mmx::Transaction> tx = nullptr, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
 	std::shared_ptr<const ::mmx::Transaction> sign_off(const uint32_t& index = 0, std::shared_ptr<const ::mmx::Transaction> tx = nullptr, const vnx::bool_t& cover_fee = 0, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());

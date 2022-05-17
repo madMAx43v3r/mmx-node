@@ -7,6 +7,8 @@
 #include <mmx/FarmerKeys.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/Transaction.hxx>
+#include <mmx/Wallet_accept_offer.hxx>
+#include <mmx/Wallet_accept_offer_return.hxx>
 #include <mmx/Wallet_add_account.hxx>
 #include <mmx/Wallet_add_account_return.hxx>
 #include <mmx/Wallet_complete.hxx>
@@ -51,6 +53,8 @@
 #include <mmx/Wallet_get_master_seed_return.hxx>
 #include <mmx/Wallet_get_tx_history.hxx>
 #include <mmx/Wallet_get_tx_history_return.hxx>
+#include <mmx/Wallet_make_offer.hxx>
+#include <mmx/Wallet_make_offer_return.hxx>
 #include <mmx/Wallet_mark_spent.hxx>
 #include <mmx/Wallet_mark_spent_return.hxx>
 #include <mmx/Wallet_mint.hxx>
@@ -243,6 +247,40 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::deposit(const uint32_t& 
 	_method->options = options;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_deposit_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Transaction>>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
+std::shared_ptr<const ::mmx::Transaction> WalletClient::make_offer(const uint32_t& index, const uint32_t& address, const uint64_t& bid_amount, const ::mmx::addr_t& bid_currency, const uint64_t& ask_amount, const ::mmx::addr_t& ask_currency, const ::mmx::spend_options_t& options) {
+	auto _method = ::mmx::Wallet_make_offer::create();
+	_method->index = index;
+	_method->address = address;
+	_method->bid_amount = bid_amount;
+	_method->bid_currency = bid_currency;
+	_method->ask_amount = ask_amount;
+	_method->ask_currency = ask_currency;
+	_method->options = options;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_make_offer_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Transaction>>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
+std::shared_ptr<const ::mmx::Transaction> WalletClient::accept_offer(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> offer, const ::mmx::spend_options_t& options) {
+	auto _method = ::mmx::Wallet_accept_offer::create();
+	_method->index = index;
+	_method->offer = offer;
+	_method->options = options;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_accept_offer_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Transaction>>();
