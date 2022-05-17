@@ -870,7 +870,7 @@ void Node::print_stats()
 		fclose(file);
 	}
 #endif
-	log(INFO) << tx_pool.size() << " tx pool, " << balance_map.size() << " addrs, " << fork_tree.size() << " blocks";
+	log(INFO) << tx_pool.size() << " tx pool, " << balance_map.size() << " addresses, " << fork_tree.size() << " blocks";
 }
 
 void Node::on_stuck_timeout()
