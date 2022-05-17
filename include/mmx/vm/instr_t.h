@@ -35,13 +35,13 @@ enum opcode_e : uint8_t {
 	OP_CALL,		// addr, stack_ptr
 	OP_RET,
 
-	OP_ADD,			// dst, lhs, rhs
+	OP_ADD = 0x20,	// dst, lhs, rhs
 	OP_SUB,			// dst, lhs, rhs
 	OP_MUL,			// dst, lhs, rhs
 	OP_DIV,			// dst, lhs, rhs
 	OP_MOD,			// dst, lhs, rhs
 
-	OP_NOT,			// dst, src
+	OP_NOT = 0x40,	// dst, src
 	OP_XOR,			// dst, lhs, rhs
 	OP_AND,			// dst, lhs, rhs
 	OP_OR,			// dst, lhs, rhs
@@ -49,15 +49,20 @@ enum opcode_e : uint8_t {
 	OP_MAX,			// dst, lhs, rhs
 	OP_SHL,			// dst, src, count
 	OP_SHR,			// dst, src, count
+	OP_SAR,			// dst, src, count
 
-	OP_CMP_EQ,		// dst, lhs, rhs
-	OP_CMP_NEQ,		// dst, lhs, rhs
-	OP_CMP_LT,		// dst, lhs, rhs
-	OP_CMP_GT,		// dst, lhs, rhs
-	OP_CMP_LTE,		// dst, lhs, rhs
-	OP_CMP_GTE,		// dst, lhs, rhs
+	OP_CMP_EQ = 0x60,	// dst, lhs, rhs
+	OP_CMP_NEQ,			// dst, lhs, rhs
+	OP_CMP_LT,			// dst, lhs, rhs
+	OP_CMP_GT,			// dst, lhs, rhs
+	OP_CMP_LTE,			// dst, lhs, rhs
+	OP_CMP_GTE,			// dst, lhs, rhs
+	OP_CMP_SLT,			// dst, lhs, rhs
+	OP_CMP_SGT,			// dst, lhs, rhs
+	OP_CMP_SLTE,		// dst, lhs, rhs
+	OP_CMP_SGTE,		// dst, lhs, rhs
 
-	OP_TYPE,		// dst, addr
+	OP_TYPE = 0x80,	// dst, addr
 	OP_SIZE,		// dst, addr
 	OP_GET,			// dst, addr, key
 	OP_SET,			// addr, key, src
@@ -65,12 +70,12 @@ enum opcode_e : uint8_t {
 	OP_PUSH_BACK,	// dst, src
 	OP_POP_BACK,	// dst, src
 
-	OP_CONV,		// dst, src, dflags, sflags
+	OP_CONV = 0xA0,	// dst, src, dflags, sflags
 	OP_CONCAT,		// dst, lhs, rhs
 	OP_MEMCPY,		// dst, src, count, offset
 	OP_SHA256,		// dst, src
 
-	OP_LOG,			// level, message
+	OP_LOG = 0xC0,	// level, message
 	OP_SEND,		// address, amount, currency
 	OP_MINT,		// address, amount
 	OP_EVENT,		// name, data

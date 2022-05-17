@@ -853,7 +853,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 			const auto& sint = (const uint_t&)svar;
 			switch(dflags & 0xFF) {
 				case CONVTYPE_BOOL:
-					write(dst, var_t(sint.value != uint256_0 ? TYPE_TRUE : TYPE_FALSE));
+					write(dst, var_t(sint.value != uint256_0));
 					break;
 				case CONVTYPE_UINT:
 					write(dst, svar);
@@ -887,7 +887,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 			const auto& sstr = (const binary_t&)svar;
 			switch(dflags & 0xFF) {
 				case CONVTYPE_BOOL:
-					write(dst, var_t(sstr.size ? TYPE_TRUE : TYPE_FALSE));
+					write(dst, var_t(bool(sstr.size)));
 					break;
 				case CONVTYPE_UINT: {
 					int base = 10;
@@ -922,7 +922,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 			const auto& sbin = (const binary_t&)svar;
 			switch(dflags & 0xFF) {
 				case CONVTYPE_BOOL:
-					write(dst, var_t(sbin.size ? TYPE_TRUE : TYPE_FALSE));
+					write(dst, var_t(bool(sbin.size)));
 					break;
 				case CONVTYPE_UINT: {
 					if(sbin.size > 32) {
@@ -1347,16 +1347,28 @@ void Engine::exec(const instr_t& instr)
 		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
 		const auto src = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
 		const auto count = deref_value(instr.c, instr.flags & OPFLAG_REF_C);
-		const auto& sint = read_fail<uint_t>(src, TYPE_UINT);
-		write(dst, uint_t(sint.value << count));
+		const auto& value = read_fail<uint_t>(src, TYPE_UINT).value;
+		write(dst, uint_t(value << count));
 		break;
 	}
 	case OP_SHR: {
 		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
 		const auto src = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
 		const auto count = deref_value(instr.c, instr.flags & OPFLAG_REF_C);
-		const auto& sint = read_fail<uint_t>(src, TYPE_UINT);
-		write(dst, uint_t(sint.value >> count));
+		const auto& value = read_fail<uint_t>(src, TYPE_UINT).value;
+		write(dst, uint_t(value >> count));
+		break;
+	}
+	case OP_SAR: {
+		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
+		const auto src = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
+		const auto count = deref_value(instr.c, instr.flags & OPFLAG_REF_C);
+		const auto& value = read_fail<uint_t>(src, TYPE_UINT).value;
+		auto tmp = value >> count;
+		if(value >> 255) {
+			tmp |= uint256_max << (256 - count);
+		}
+		write(dst, uint_t(tmp));
 		break;
 	}
 	case OP_CMP_EQ:
@@ -1379,7 +1391,29 @@ void Engine::exec(const instr_t& instr)
 			case OP_CMP_GTE: res = (cmp >= 0); break;
 			default: break;
 		}
-		write(dst, var_t(res ? TYPE_TRUE : TYPE_FALSE));
+		write(dst, var_t(res));
+		break;
+	}
+	case OP_CMP_SLT:
+	case OP_CMP_SGT:
+	case OP_CMP_SLTE:
+	case OP_CMP_SGTE: {
+		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
+		const auto lhs = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
+		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
+		const auto& L = read_fail<uint_t>(lhs, TYPE_UINT).value;
+		const auto& R = read_fail<uint_t>(rhs, TYPE_UINT).value;
+		const bool lneg = L >> 255;
+		const bool rneg = R >> 255;
+		bool res = false;
+		switch(instr.code) {
+			case OP_CMP_SLT: res = (lneg == rneg ? L < R : lneg); break;
+			case OP_CMP_SGT: res = (lneg == rneg ? L > R : rneg); break;
+			case OP_CMP_SLTE: res = (lneg == rneg ? L <= R : lneg); break;
+			case OP_CMP_SGTE: res = (lneg == rneg ? L >= R : rneg); break;
+			default: break;
+		}
+		write(dst, var_t(res));
 		break;
 	}
 	case OP_TYPE: {

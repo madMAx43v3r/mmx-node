@@ -70,6 +70,9 @@ struct var_t {
 	var_t(const vartype_e& type) : type(type) {}
 	var_t(const vartype_e& type, const uint8_t& flags) : flags(flags), type(type) {}
 
+	explicit var_t(bool value) {
+		type = value ? TYPE_TRUE : TYPE_FALSE;
+	}
 	void addref() {
 		if(ref_count == std::numeric_limits<decltype(ref_count)>::max()) {
 			throw std::runtime_error("addref() overflow");
