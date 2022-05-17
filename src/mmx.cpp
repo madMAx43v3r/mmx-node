@@ -401,7 +401,7 @@ int main(int argc, char** argv)
 				args.accept(printer);
 				std::cout << std::endl << "Transaction ID: " << tx->id << std::endl;
 			}
-			else if(command == "exec")
+			else if(command == "exec" || command == "deposit")
 			{
 				std::string method;
 				std::vector<vnx::Variant> args;
@@ -409,8 +409,19 @@ int main(int argc, char** argv)
 				vnx::read_config("$4", args);
 
 				spend_options.extra_fee = gas_limit * 1e6;
-				const auto tx = wallet.execute(index, contract, method, args, spend_options);
-				std::cout << "Executed " << method << " with ";
+				std::shared_ptr<const mmx::Transaction> tx;
+				if(command == "exec") {
+					tx = wallet.execute(index, contract, method, args, spend_options);
+					std::cout << "Executed " << method << " with ";
+				} else {
+					if(method.empty()) {
+						method = "deposit";
+					}
+					const auto token = get_token(node, contract);
+					const int64_t mojo = amount * pow(10, token->decimals);
+					tx = wallet.deposit(index, target, method, args, mojo, contract, spend_options);
+					std::cout << "Deposited " << amount << " " << token->symbol << " via " << method << "() with ";
+				}
 				vnx::PrettyPrinter printer(std::cout);
 				vnx::accept(printer, args);
 				std::cout << std::endl << "Transaction ID: " << tx->id << std::endl;
