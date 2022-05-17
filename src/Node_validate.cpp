@@ -521,13 +521,12 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 	if(tx_index.find(tx->id)) {
 		throw std::logic_error("duplicate tx");
 	}
-	const auto revoked = get_revokations(tx->id);
-
 	if(tx->sender) {
-		if(revoked.count(*tx->sender)) {
+		if(is_revoked(tx->id, *tx->sender)) {
 			throw std::logic_error("tx has been revoked");
 		}
 	}
+
 	for(const auto& in : tx->inputs)
 	{
 		const auto balance = balance_cache.get(in.address, in.contract);

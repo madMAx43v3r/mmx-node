@@ -373,6 +373,18 @@ vnx::optional<tx_info_t> Node::get_tx_info_for(std::shared_ptr<const Transaction
 	return info;
 }
 
+vnx::optional<hash_t> Node::is_revoked(const hash_t& txid, const addr_t& sender) const
+{
+	std::vector<std::pair<addr_t, hash_t>> entries;
+	revoke_map.find_range(std::make_pair(txid, 0), std::make_pair(txid, -1), entries);
+	for(const auto& entry : entries) {
+		if(entry.first == sender) {
+			return entry.second;
+		}
+	}
+	return nullptr;
+}
+
 std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id, const bool& include_pending) const
 {
 	// THREAD SAFE (for concurrent reads)
@@ -1105,17 +1117,6 @@ std::vector<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<f
 	}
 	std::reverse(line.begin(), line.end());
 	return line;
-}
-
-std::unordered_set<addr_t> Node::get_revokations(const hash_t& txid) const
-{
-	std::unordered_set<addr_t> addrs;
-	std::vector<std::pair<addr_t, hash_t>> entries;
-	revoke_map.find_range(std::make_pair(txid, 0), std::make_pair(txid, -1), entries);
-	for(const auto& entry : entries) {
-		addrs.insert(entry.first);
-	}
-	return addrs;
 }
 
 void Node::purge_tree()

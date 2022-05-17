@@ -73,6 +73,8 @@ protected:
 
 	vnx::optional<tx_info_t> get_tx_info_for(std::shared_ptr<const Transaction> tx) const;
 
+	vnx::optional<hash_t> is_revoked(const hash_t& txid, const addr_t& sender) const override;
+
 	std::shared_ptr<const Transaction> get_transaction(const hash_t& id, const bool& include_pending = false) const override;
 
 	std::vector<std::shared_ptr<const Transaction>> get_transactions(const std::vector<hash_t>& ids) const override;
@@ -242,8 +244,6 @@ private:
 	std::shared_ptr<fork_t> find_best_fork() const;
 
 	std::vector<std::shared_ptr<fork_t>> get_fork_line(std::shared_ptr<fork_t> fork_head = nullptr) const;
-
-	std::unordered_set<addr_t> get_revokations(const hash_t& txid) const;
 
 	std::shared_ptr<execution_context_t> validate(std::shared_ptr<const Block> block) const;
 
