@@ -262,6 +262,15 @@ int main(int argc, char** argv)
 					if(auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract)) {
 						std::cout << ", " << token->symbol << ", " << token->name;
 					}
+					else if(auto offer = std::dynamic_pointer_cast<const mmx::contract::Offer>(contract)) {
+						if(offer->base->sender && node.is_revoked(offer->base->id, *offer->base->sender)) {
+							std::cout << ", revoked";
+						} else if(auto height = node.get_tx_height(offer->base->id)) {
+							std::cout << ", accepted at height " << *height;
+						} else {
+							std::cout << ", open";
+						}
+					}
 					std::cout << ")" << std::endl;
 
 					for(const auto& entry : node.get_total_balances({address}))
@@ -489,14 +498,25 @@ int main(int argc, char** argv)
 			}
 			else if(command == "accept")
 			{
-				if(file_name.empty()) {
-					vnx::log_error() << "Missing file name (-f)";
-					goto failed;
-				}
-				auto offer = vnx::read_from_file<mmx::Transaction>(file_name);
-				if(!offer) {
-					vnx::log_error() << "Failed to read from file: " << file_name;
-					goto failed;
+				mmx::addr_t address;
+				vnx::read_config("$3", address);
+
+				std::shared_ptr<const mmx::Transaction> offer;
+				if(address != mmx::addr_t()) {
+					if(auto contract = std::dynamic_pointer_cast<const mmx::contract::Offer>(node.get_contract(address))) {
+						offer = contract->base;
+					}
+					if(!offer) {
+						vnx::log_error() << "No such offer: " << address; goto failed;
+					}
+				} else {
+					if(file_name.empty()) {
+						vnx::log_error() << "Missing file name (-f) or address"; goto failed;
+					}
+					offer = vnx::read_from_file<mmx::Transaction>(file_name);
+					if(!offer) {
+						vnx::log_error() << "Failed to read from file: " << file_name; goto failed;
+					}
 				}
 				for(const auto& entry : offer->get_balance()) {
 					const auto token = get_token(node, entry.first);
@@ -507,18 +527,40 @@ int main(int argc, char** argv)
 						if(amount.upper()) {
 							throw std::logic_error("amount overflow");
 						}
-						std::cout << "You receive: " << amount.lower() / pow(10, token->decimals) << " " << token->symbol << std::endl;
+						std::cout << "You receive: " << amount.lower() / pow(10, token->decimals)
+								<< " " << token->symbol << " [" << entry.first << "]" << std::endl;
 					}
 					if(input < output) {
 						const auto amount = output - input;
 						if(amount.upper()) {
 							throw std::logic_error("amount overflow");
 						}
-						std::cout << "They ask for: " << amount.lower() / pow(10, token->decimals) << " " << token->symbol << std::endl;
+						std::cout << "They ask for: " << amount.lower() / pow(10, token->decimals)
+								<< " " << token->symbol << " [" << entry.first << "]" << std::endl;
 					}
 				}
 				if(pre_accept || accept_prompt()) {
 					auto tx = wallet.accept_offer(index, offer, spend_options);
+					std::cout << "Transaction ID: " << tx->id << std::endl;
+				}
+			}
+			else if(command == "revoke")
+			{
+				mmx::addr_t address;
+				vnx::read_config("$3", address);
+
+				std::shared_ptr<const mmx::Transaction> prev;
+				if(address != mmx::addr_t()) {
+					if(auto contract = node.get_contract(address)) {
+						if(auto offer = std::dynamic_pointer_cast<const mmx::contract::Offer>(contract)) {
+							prev = offer->base;
+						}
+					}
+				} else if(!file_name.empty()) {
+					prev = vnx::read_from_file<mmx::Transaction>(file_name);
+				}
+				if(prev) {
+					auto tx = wallet.revoke(index, prev, spend_options);
 					std::cout << "Transaction ID: " << tx->id << std::endl;
 				}
 			}
@@ -563,7 +605,7 @@ int main(int argc, char** argv)
 						<< std::endl << wallet.seed_value << std::endl;
 			}
 			else {
-				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | transfer | make_offer | accept | mint | deploy | mutate | exec | create | accounts | keys]" << std::endl;
+				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | transfer | make_offer | offer | accept | revoke | mint | deploy | mutate | exec | create | accounts | keys]" << std::endl;
 			}
 		}
 		else if(module == "node")
