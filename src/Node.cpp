@@ -9,6 +9,7 @@
 #include <mmx/Context.hxx>
 #include <mmx/Challenge.hxx>
 #include <mmx/contract/Token.hxx>
+#include <mmx/contract/Offer.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/contract/Executable.hxx>
 #include <mmx/operation/Revoke.hxx>
@@ -86,6 +87,7 @@ void Node::main()
 		contract_cache.open(database_path + "contract_cache", options);
 		mutate_log.open(database_path + "mutate_log", options);
 		deploy_map.open(database_path + "deploy_map", options);
+		offer_log.open(database_path + "offer_log", options);
 
 		tx_log.open(database_path + "tx_log", options);
 		tx_index.open(database_path + "tx_index", options);
@@ -1270,6 +1272,9 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	if(auto contract = tx->deploy) {
 		if(tx->sender) {
 			deploy_map.insert(*tx->sender, tx->id);
+		}
+		if(std::dynamic_pointer_cast<const contract::Offer>(contract)) {
+			offer_log.insert(block->height, addr_t(tx->id));
 		}
 	}
 	tx_pool.erase(tx->id);

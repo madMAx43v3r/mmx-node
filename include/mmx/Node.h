@@ -374,6 +374,7 @@ private:
 	vnx::rocksdb::table<addr_t, std::shared_ptr<const Contract>> contract_cache;		// [addr, contract]
 	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, vnx::Object> mutate_log;		// [[addr, height] => method]
 	vnx::rocksdb::multi_table<addr_t, addr_t> deploy_map;								// [sender => contract]
+	vnx::rocksdb::multi_table<uint32_t, addr_t> offer_log;								// [height => contract]
 
 	std::map<std::pair<addr_t, addr_t>, uint128_t> balance_map;						// [[addr, currency] => balance]
 	vnx::rocksdb::table<std::pair<addr_t, addr_t>, std::pair<uint128, uint32_t>> balance_table;		// [[addr, currency] => [balance, height]]
