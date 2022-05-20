@@ -86,6 +86,12 @@ uint64_t calc_total_netspace(std::shared_ptr<const ChainParams> params, const ui
 }
 
 inline
+uint64_t calc_virtual_plot_size(std::shared_ptr<const ChainParams> params, const uint64_t balance)
+{
+	return (762 * ((uint128_t(balance) * params->space_diff_constant) / (params->virtual_space_constant))) / 1000;
+}
+
+inline
 uint64_t calc_new_space_diff(std::shared_ptr<const ChainParams> params, const uint64_t prev_diff, const uint32_t proof_score)
 {
 	int64_t delta = prev_diff * (int64_t(params->score_target) - proof_score);

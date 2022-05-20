@@ -273,7 +273,9 @@ int main(int argc, char** argv)
 						}
 					}
 					else if(auto plot = std::dynamic_pointer_cast<const mmx::contract::VirtualPlot>(contract)) {
-						std::cout << ", " << node.get_virtual_plot_balance(entry.first) / pow(10, params->decimals) << " MMX";
+						const auto balance = node.get_virtual_plot_balance(entry.first);
+						std::cout << ", " << balance / pow(10, params->decimals) << " MMX";
+						std::cout << ", " << mmx::calc_virtual_plot_size(params, balance) / pow(1024, 3) << " GiB";
 					}
 					std::cout << ")" << std::endl;
 
@@ -993,7 +995,8 @@ int main(int argc, char** argv)
 			if(command == "info")
 			{
 				std::cout << "Total space: " << info->total_bytes / pow(1000, 4) << " TB" << std::endl;
-				std::cout << "Total balance: " << info->total_balance / pow(10, params->decimals) << " MMX" << std::endl;
+				std::cout << "Total balance: " << info->total_balance / pow(10, params->decimals) << " MMX ("
+						<< mmx::calc_virtual_plot_size(params, info->total_balance) / pow(1000, 4) << " TB)" << std::endl;
 				for(const auto& entry : info->plot_count) {
 					std::cout << "K" << int(entry.first) << ": " << entry.second << " plots" << std::endl;
 				}
