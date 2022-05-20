@@ -675,7 +675,7 @@ uint64_t NodeAsyncClient::get_virtual_plots_for(const ::mmx::bls_pubkey_t& farme
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_virtual_plot_balance(const ::mmx::addr_t& plot_id, const vnx::optional<::mmx::hash_t>& block_hash, const std::function<void(const ::mmx::uint128&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_virtual_plot_balance(const ::mmx::addr_t& plot_id, const vnx::optional<::mmx::hash_t>& block_hash, const std::function<void(const uint64_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_virtual_plot_balance::create();
 	_method->plot_id = plot_id;
 	_method->block_hash = block_hash;
@@ -2256,7 +2256,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_virtual_plot_balance_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<::mmx::uint128>());
+					_callback(_value->get_field_by_index(0).to<uint64_t>());
 				} else {
 					throw std::logic_error("NodeAsyncClient: invalid return value");
 				}

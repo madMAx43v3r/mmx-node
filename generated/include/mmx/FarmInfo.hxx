@@ -5,8 +5,6 @@
 #define INCLUDE_mmx_FarmInfo_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/addr_t.hpp>
-#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 
@@ -16,7 +14,6 @@ class MMX_EXPORT FarmInfo : public ::vnx::Value {
 public:
 	
 	std::vector<std::string> plot_dirs;
-	std::map<::mmx::addr_t, ::mmx::uint128> virtual_plots;
 	std::map<uint8_t, uint32_t> plot_count;
 	uint64_t total_bytes = 0;
 	uint64_t total_balance = 0;
@@ -66,13 +63,12 @@ protected:
 
 template<typename T>
 void FarmInfo::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<FarmInfo>(5);
+	_visitor.template type_begin<FarmInfo>(4);
 	_visitor.type_field("plot_dirs", 0); _visitor.accept(plot_dirs);
-	_visitor.type_field("virtual_plots", 1); _visitor.accept(virtual_plots);
-	_visitor.type_field("plot_count", 2); _visitor.accept(plot_count);
-	_visitor.type_field("total_bytes", 3); _visitor.accept(total_bytes);
-	_visitor.type_field("total_balance", 4); _visitor.accept(total_balance);
-	_visitor.template type_end<FarmInfo>(5);
+	_visitor.type_field("plot_count", 1); _visitor.accept(plot_count);
+	_visitor.type_field("total_bytes", 2); _visitor.accept(total_bytes);
+	_visitor.type_field("total_balance", 3); _visitor.accept(total_balance);
+	_visitor.template type_end<FarmInfo>(4);
 }
 
 

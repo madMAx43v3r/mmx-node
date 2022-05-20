@@ -674,7 +674,7 @@ std::vector<std::pair<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>> No
 	}
 }
 
-::mmx::uint128 NodeClient::get_virtual_plot_balance(const ::mmx::addr_t& plot_id, const vnx::optional<::mmx::hash_t>& block_hash) {
+uint64_t NodeClient::get_virtual_plot_balance(const ::mmx::addr_t& plot_id, const vnx::optional<::mmx::hash_t>& block_hash) {
 	auto _method = ::mmx::Node_get_virtual_plot_balance::create();
 	_method->plot_id = plot_id;
 	_method->block_hash = block_hash;
@@ -682,7 +682,7 @@ std::vector<std::pair<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>> No
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_virtual_plot_balance_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<::mmx::uint128>();
+		return _return_value->get_field_by_index(0).to<uint64_t>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}
