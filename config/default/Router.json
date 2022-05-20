@@ -4,6 +4,7 @@
 	"max_sync_peers": 8,
 	"max_connections": 64,
 	"max_queue_ms": 5000,
+	"max_msg_size": 16777216,
 	"stats_interval_ms": 60000,
 	"connect_interval_ms": 10000,
 	"connection_timeout_ms": 60000,
