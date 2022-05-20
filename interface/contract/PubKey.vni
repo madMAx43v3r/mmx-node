@@ -12,6 +12,8 @@ class PubKey extends mmx.Contract {
 	
 	hash_t calc_hash() const;
 	
+	ulong calc_cost(mmx.ChainParams* params) const;
+	
 	vector<addr_t> get_dependency() const;
 	
 	optional<addr_t> get_owner() const;
