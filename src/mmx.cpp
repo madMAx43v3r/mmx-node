@@ -273,7 +273,7 @@ int main(int argc, char** argv)
 						}
 					}
 					else if(auto plot = std::dynamic_pointer_cast<const mmx::contract::VirtualPlot>(contract)) {
-						std::cout << ", " << node.get_virtual_plot_balance(entry.first).lower() / pow(10, params->decimals) << " MMX";
+						std::cout << ", " << node.get_virtual_plot_balance(entry.first) / pow(10, params->decimals) << " MMX";
 					}
 					std::cout << ")" << std::endl;
 

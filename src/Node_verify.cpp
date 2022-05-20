@@ -49,7 +49,7 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 	fork->is_proof_verified = true;
 }
 
-uint128 Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::optional<hash_t>& block_hash) const
+uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::optional<hash_t>& block_hash) const
 {
 	hash_t hash;
 	if(block_hash) {
@@ -95,6 +95,9 @@ uint128 Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::optiona
 		}
 		fork = fork->prev.lock();
 	}
+	if(balance.upper()) {
+		throw std::logic_error("balance overflow");
+	}
 	return balance;
 }
 
@@ -108,7 +111,7 @@ void Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t&
 	if(!check_plot_filter(params, challenge, proof->plot_id)) {
 		throw std::logic_error("plot filter failed");
 	}
-	uint32_t score = -1;
+	uint256_t score = uint256_max;
 
 	if(auto og_proof = std::dynamic_pointer_cast<const ProofOfSpaceOG>(proof))
 	{

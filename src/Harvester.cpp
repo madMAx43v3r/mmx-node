@@ -72,7 +72,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	const auto time_begin = vnx::get_time_micros();
 
 	uint32_t best_index = 0;
-	uint128_t best_score = ~uint128_0;
+	uint256_t best_score = uint256_max;
 	std::shared_ptr<chiapos::Proof> best_proof;
 	std::shared_ptr<chiapos::DiskProver> best_plot;
 	vnx::optional<std::pair<addr_t, virtual_plot_t>> best_vplot;
@@ -94,7 +94,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 			virtual_plots.push_back(entry);
 		}
 	}
-	std::vector<std::vector<uint128_t>> scores(plots.size());
+	std::vector<std::vector<uint256_t>> scores(plots.size());
 
 	const auto num_threads_ = std::min<uint32_t>(num_threads, plots.size());
 #pragma omp parallel for num_threads(num_threads_)
@@ -198,7 +198,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 
 	if(!id_map.empty()) {
 		log(INFO) << plots.size() << " plots were eligible for height " << value->height
-				<< ", best score was " << (best_score != ~uint128_0 ? best_score.str() : "N/A")
+				<< ", best score was " << (best_score != uint256_max ? best_score.str() : "N/A")
 				<< ", took " << (vnx::get_time_micros() - time_begin) / 1e6 << " sec";
 	}
 }

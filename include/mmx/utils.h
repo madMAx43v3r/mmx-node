@@ -45,7 +45,7 @@ bool check_plot_filter(	std::shared_ptr<const ChainParams> params,
 }
 
 inline
-uint128_t calc_proof_score(	std::shared_ptr<const ChainParams> params,
+uint256_t calc_proof_score(	std::shared_ptr<const ChainParams> params,
 							const uint8_t ksize, const hash_t& quality, const uint64_t space_diff)
 {
 	uint256_t divider = (uint256_1 << (256 - params->score_bits)) / (uint128_t(space_diff) * params->space_diff_constant);
@@ -55,9 +55,9 @@ uint128_t calc_proof_score(	std::shared_ptr<const ChainParams> params,
 }
 
 inline
-uint128_t calc_virtual_score(	std::shared_ptr<const ChainParams> params,
+uint256_t calc_virtual_score(	std::shared_ptr<const ChainParams> params,
 								const hash_t& challenge, const hash_t& plot_id,
-								const uint128_t balance, const uint64_t space_diff)
+								const uint64_t balance, const uint64_t space_diff)
 {
 	uint256_t divider = (uint256_1 << (256 - params->score_bits)) / (uint128_t(space_diff) * params->virtual_space_constant);
 	return hash_t(plot_id + challenge).to_uint256() / (divider * balance);

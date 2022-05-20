@@ -125,7 +125,7 @@ protected:
 
 	std::vector<std::pair<addr_t, std::shared_ptr<const Contract>>> get_virtual_plots_for(const bls_pubkey_t& farmer_key) const;
 
-	uint128 get_virtual_plot_balance(const addr_t& plot_id, const vnx::optional<hash_t>& block_hash) const override;
+	uint64_t get_virtual_plot_balance(const addr_t& plot_id, const vnx::optional<hash_t>& block_hash) const override;
 
 	void on_stuck_timeout();
 
