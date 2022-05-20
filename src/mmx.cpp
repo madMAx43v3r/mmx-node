@@ -13,6 +13,7 @@
 //#include <mmx/exchange/ClientClient.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/contract/NFT.hxx>
+#include <mmx/contract/PlotNFT.hxx>
 #include <mmx/contract/Offer.hxx>
 #include <mmx/contract/TokenBase.hxx>
 #include <mmx/contract/Executable.hxx>
@@ -276,6 +277,15 @@ int main(int argc, char** argv)
 						const auto balance = node.get_virtual_plot_balance(entry.first);
 						std::cout << ", " << balance / pow(10, params->decimals) << " MMX";
 						std::cout << ", " << mmx::calc_virtual_plot_size(params, balance) / pow(1024, 3) << " GiB";
+					}
+					else if(auto nft = std::dynamic_pointer_cast<const mmx::contract::PlotNFT>(contract)) {
+						std::cout << ", name = " << nft->name << ", ";
+						if(nft->unlock_height) {
+							std::cout << "unlocked at " << *nft->unlock_height;
+						} else {
+							std::cout << "locked";
+						}
+						std::cout << ", server = " << vnx::to_string(nft->server_url);
 					}
 					std::cout << ")" << std::endl;
 
