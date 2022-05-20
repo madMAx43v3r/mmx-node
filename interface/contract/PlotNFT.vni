@@ -1,5 +1,6 @@
 package mmx.contract;
 
+import mmx.hash_t;
 import mmx.addr_t;
 
 class PlotNFT extends MutableRelay {
@@ -14,7 +15,9 @@ class PlotNFT extends MutableRelay {
 	
 	bool is_valid() const;
 	
-	// TODO
+	hash_t calc_hash() const;
+	
+	ulong calc_cost(mmx.ChainParams* params) const;
 	
 	void lock(optional<addr_t> new_target, uint new_unlock_delay);
 	
