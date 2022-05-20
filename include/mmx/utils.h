@@ -66,7 +66,7 @@ uint256_t calc_virtual_score(	std::shared_ptr<const ChainParams> params,
 inline
 uint64_t calc_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
 {
-	return ((uint128_t(space_diff) * params->space_diff_constant * params->reward_factor.value) << (params->plot_filter + params->score_bits))
+	return ((uint256_t(space_diff) * params->space_diff_constant * params->reward_factor.value) << (params->plot_filter + params->score_bits))
 			/ params->score_target / params->reward_factor.inverse;
 }
 
@@ -82,7 +82,7 @@ inline
 uint64_t calc_total_netspace(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
 {
 	return 0.762 * uint64_t(
-			((uint128_t(space_diff) * params->space_diff_constant) << (params->plot_filter + params->score_bits)) / params->score_target);
+			((uint256_t(space_diff) * params->space_diff_constant) << (params->plot_filter + params->score_bits)) / params->score_target);
 }
 
 inline
@@ -101,12 +101,15 @@ inline
 uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> diff_block,
 							std::shared_ptr<const ProofOfSpace> proof, const bool with_farmer_sig)
 {
-	uint128_t weight = with_farmer_sig ? 2 : 1;
+	uint256_t weight = with_farmer_sig ? 2 : 1;
 	if(proof) {
 		weight += params->score_threshold - proof->score;
 	}
 	weight *= diff_block->space_diff;
 	weight *= diff_block->time_diff;
+	if(weight.upper()) {
+		throw std::logic_error("weight overflow");
+	}
 	return weight;
 }
 
