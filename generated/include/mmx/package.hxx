@@ -70,6 +70,8 @@ class FarmInfo;
 class FarmerBase;
 class Farmer_get_farm_info;
 class Farmer_get_farm_info_return;
+class Farmer_get_farmer_keys;
+class Farmer_get_farmer_keys_return;
 class Farmer_get_mac_addr;
 class Farmer_get_mac_addr_return;
 class Farmer_sign_block;
@@ -160,6 +162,8 @@ class Node_get_tx_info_for;
 class Node_get_tx_info_for_return;
 class Node_get_virtual_plot_balance;
 class Node_get_virtual_plot_balance_return;
+class Node_get_virtual_plots_for;
+class Node_get_virtual_plots_for_return;
 class Node_is_revoked;
 class Node_is_revoked_return;
 class Node_read_storage;
@@ -457,6 +461,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_FarmInfo; ///<
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_FarmerBase; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_farm_info; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_farm_info_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_farmer_keys; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_farmer_keys_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_mac_addr; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_mac_addr_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_block; ///< \private
@@ -547,6 +553,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_in
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info_for_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plot_balance; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plot_balance_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_for; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_for_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_is_revoked; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_is_revoked_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_read_storage; ///< \private
@@ -841,6 +849,8 @@ void read(TypeInput& in, ::mmx::FarmInfo& value, const TypeCode* type_code, cons
 void read(TypeInput& in, ::mmx::FarmerBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Farmer_get_farm_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Farmer_get_farm_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Farmer_get_farmer_keys& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Farmer_get_farmer_keys_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Farmer_get_mac_addr& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Farmer_get_mac_addr_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Farmer_sign_block& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -931,6 +941,8 @@ void read(TypeInput& in, ::mmx::Node_get_tx_info_for& value, const TypeCode* typ
 void read(TypeInput& in, ::mmx::Node_get_tx_info_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_virtual_plot_balance& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_virtual_plot_balance_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_virtual_plots_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_virtual_plots_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_is_revoked& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_is_revoked_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_read_storage& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1228,6 +1240,8 @@ void write(TypeOutput& out, const ::mmx::FarmInfo& value, const TypeCode* type_c
 void write(TypeOutput& out, const ::mmx::FarmerBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Farmer_get_farm_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Farmer_get_farm_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Farmer_get_farmer_keys& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Farmer_get_farmer_keys_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Farmer_get_mac_addr& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Farmer_get_mac_addr_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Farmer_sign_block& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1318,6 +1332,8 @@ void write(TypeOutput& out, const ::mmx::Node_get_tx_info_for& value, const Type
 void write(TypeOutput& out, const ::mmx::Node_get_tx_info_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_virtual_plot_balance& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_virtual_plot_balance_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_virtual_plots_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_virtual_plots_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_is_revoked& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_is_revoked_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_read_storage& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1615,6 +1631,8 @@ void read(std::istream& in, ::mmx::FarmInfo& value); ///< \private
 void read(std::istream& in, ::mmx::FarmerBase& value); ///< \private
 void read(std::istream& in, ::mmx::Farmer_get_farm_info& value); ///< \private
 void read(std::istream& in, ::mmx::Farmer_get_farm_info_return& value); ///< \private
+void read(std::istream& in, ::mmx::Farmer_get_farmer_keys& value); ///< \private
+void read(std::istream& in, ::mmx::Farmer_get_farmer_keys_return& value); ///< \private
 void read(std::istream& in, ::mmx::Farmer_get_mac_addr& value); ///< \private
 void read(std::istream& in, ::mmx::Farmer_get_mac_addr_return& value); ///< \private
 void read(std::istream& in, ::mmx::Farmer_sign_block& value); ///< \private
@@ -1705,6 +1723,8 @@ void read(std::istream& in, ::mmx::Node_get_tx_info_for& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_tx_info_for_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_virtual_plot_balance& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_virtual_plot_balance_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_virtual_plots_for& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_virtual_plots_for_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_is_revoked& value); ///< \private
 void read(std::istream& in, ::mmx::Node_is_revoked_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_read_storage& value); ///< \private
@@ -2002,6 +2022,8 @@ void write(std::ostream& out, const ::mmx::FarmInfo& value); ///< \private
 void write(std::ostream& out, const ::mmx::FarmerBase& value); ///< \private
 void write(std::ostream& out, const ::mmx::Farmer_get_farm_info& value); ///< \private
 void write(std::ostream& out, const ::mmx::Farmer_get_farm_info_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Farmer_get_farmer_keys& value); ///< \private
+void write(std::ostream& out, const ::mmx::Farmer_get_farmer_keys_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Farmer_get_mac_addr& value); ///< \private
 void write(std::ostream& out, const ::mmx::Farmer_get_mac_addr_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Farmer_sign_block& value); ///< \private
@@ -2092,6 +2114,8 @@ void write(std::ostream& out, const ::mmx::Node_get_tx_info_for& value); ///< \p
 void write(std::ostream& out, const ::mmx::Node_get_tx_info_for_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_virtual_plot_balance& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_virtual_plot_balance_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_virtual_plots_for& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_virtual_plots_for_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_is_revoked& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_is_revoked_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_read_storage& value); ///< \private
@@ -2389,6 +2413,8 @@ void accept(Visitor& visitor, const ::mmx::FarmInfo& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::FarmerBase& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Farmer_get_farm_info& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Farmer_get_farm_info_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Farmer_get_farmer_keys& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Farmer_get_farmer_keys_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Farmer_get_mac_addr& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Farmer_get_mac_addr_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Farmer_sign_block& value); ///< \private
@@ -2479,6 +2505,8 @@ void accept(Visitor& visitor, const ::mmx::Node_get_tx_info_for& value); ///< \p
 void accept(Visitor& visitor, const ::mmx::Node_get_tx_info_for_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plot_balance& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plot_balance_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plots_for& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plots_for_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_is_revoked& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_is_revoked_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_read_storage& value); ///< \private
@@ -3827,6 +3855,52 @@ struct type<::mmx::Farmer_get_farm_info_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_get_farm_info_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Farmer_get_farmer_keys> {
+	void read(TypeInput& in, ::mmx::Farmer_get_farmer_keys& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Farmer_get_farmer_keys& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Farmer_get_farmer_keys& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Farmer_get_farmer_keys& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Farmer_get_farmer_keys& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_get_farmer_keys& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Farmer_get_farmer_keys_return> {
+	void read(TypeInput& in, ::mmx::Farmer_get_farmer_keys_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Farmer_get_farmer_keys_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Farmer_get_farmer_keys_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Farmer_get_farmer_keys_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Farmer_get_farmer_keys_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_get_farmer_keys_return& value, bool special = false);
 };
 
 /// \private
@@ -5891,6 +5965,52 @@ struct type<::mmx::Node_get_virtual_plot_balance_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_virtual_plot_balance_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_virtual_plots_for> {
+	void read(TypeInput& in, ::mmx::Node_get_virtual_plots_for& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_virtual_plots_for& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_virtual_plots_for& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_virtual_plots_for& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plots_for& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_virtual_plots_for& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_virtual_plots_for_return> {
+	void read(TypeInput& in, ::mmx::Node_get_virtual_plots_for_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_virtual_plots_for_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_virtual_plots_for_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_virtual_plots_for_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plots_for_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_virtual_plots_for_return& value, bool special = false);
 };
 
 /// \private

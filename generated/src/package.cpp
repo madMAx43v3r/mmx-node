@@ -49,6 +49,8 @@
 #include <mmx/FarmerBase.hxx>
 #include <mmx/Farmer_get_farm_info.hxx>
 #include <mmx/Farmer_get_farm_info_return.hxx>
+#include <mmx/Farmer_get_farmer_keys.hxx>
+#include <mmx/Farmer_get_farmer_keys_return.hxx>
 #include <mmx/Farmer_get_mac_addr.hxx>
 #include <mmx/Farmer_get_mac_addr_return.hxx>
 #include <mmx/Farmer_sign_block.hxx>
@@ -139,6 +141,8 @@
 #include <mmx/Node_get_tx_info_for_return.hxx>
 #include <mmx/Node_get_virtual_plot_balance.hxx>
 #include <mmx/Node_get_virtual_plot_balance_return.hxx>
+#include <mmx/Node_get_virtual_plots_for.hxx>
+#include <mmx/Node_get_virtual_plots_for_return.hxx>
 #include <mmx/Node_is_revoked.hxx>
 #include <mmx/Node_is_revoked_return.hxx>
 #include <mmx/Node_read_storage.hxx>
@@ -956,6 +960,30 @@ void type<::mmx::Farmer_get_farm_info_return>::create_dynamic_code(std::vector<u
 }
 
 void type<::mmx::Farmer_get_farm_info_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_get_farm_info_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Farmer_get_farmer_keys>::get_type_code() {
+	return mmx::vnx_native_type_code_Farmer_get_farmer_keys;
+}
+
+void type<::mmx::Farmer_get_farmer_keys>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Farmer_get_farmer_keys());
+}
+
+void type<::mmx::Farmer_get_farmer_keys>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_get_farmer_keys& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Farmer_get_farmer_keys_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Farmer_get_farmer_keys_return;
+}
+
+void type<::mmx::Farmer_get_farmer_keys_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Farmer_get_farmer_keys_return());
+}
+
+void type<::mmx::Farmer_get_farmer_keys_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_get_farmer_keys_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -2012,6 +2040,30 @@ void type<::mmx::Node_get_virtual_plot_balance_return>::create_dynamic_code(std:
 }
 
 void type<::mmx::Node_get_virtual_plot_balance_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_virtual_plot_balance_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_virtual_plots_for>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_virtual_plots_for;
+}
+
+void type<::mmx::Node_get_virtual_plots_for>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_virtual_plots_for());
+}
+
+void type<::mmx::Node_get_virtual_plots_for>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_virtual_plots_for& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_virtual_plots_for_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_virtual_plots_for_return;
+}
+
+void type<::mmx::Node_get_virtual_plots_for_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_virtual_plots_for_return());
+}
+
+void type<::mmx::Node_get_virtual_plots_for_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_virtual_plots_for_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -5003,6 +5055,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::FarmerBase::static_create_type_code());
 	vnx::register_type_code(::mmx::Farmer_get_farm_info::static_create_type_code());
 	vnx::register_type_code(::mmx::Farmer_get_farm_info_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Farmer_get_farmer_keys::static_create_type_code());
+	vnx::register_type_code(::mmx::Farmer_get_farmer_keys_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Farmer_get_mac_addr::static_create_type_code());
 	vnx::register_type_code(::mmx::Farmer_get_mac_addr_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Farmer_sign_block::static_create_type_code());
@@ -5093,6 +5147,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Node_get_tx_info_for_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_virtual_plot_balance::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_virtual_plot_balance_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_virtual_plots_for::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_virtual_plots_for_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_is_revoked::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_is_revoked_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_read_storage::static_create_type_code());
@@ -5389,6 +5445,8 @@ const vnx::TypeCode* const vnx_native_type_code_FarmInfo = vnx::get_type_code(vn
 const vnx::TypeCode* const vnx_native_type_code_FarmerBase = vnx::get_type_code(vnx::Hash64(0xff732ba14d9d1abull));
 const vnx::TypeCode* const vnx_native_type_code_Farmer_get_farm_info = vnx::get_type_code(vnx::Hash64(0x7e72655f6f215b5aull));
 const vnx::TypeCode* const vnx_native_type_code_Farmer_get_farm_info_return = vnx::get_type_code(vnx::Hash64(0xccf47453b394d3e3ull));
+const vnx::TypeCode* const vnx_native_type_code_Farmer_get_farmer_keys = vnx::get_type_code(vnx::Hash64(0x784507b4594a776aull));
+const vnx::TypeCode* const vnx_native_type_code_Farmer_get_farmer_keys_return = vnx::get_type_code(vnx::Hash64(0xdb382c476694095full));
 const vnx::TypeCode* const vnx_native_type_code_Farmer_get_mac_addr = vnx::get_type_code(vnx::Hash64(0xe9ced9f6feb676b3ull));
 const vnx::TypeCode* const vnx_native_type_code_Farmer_get_mac_addr_return = vnx::get_type_code(vnx::Hash64(0x9e4caad2ffaba990ull));
 const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_block = vnx::get_type_code(vnx::Hash64(0x6924b10f345eb316ull));
@@ -5479,6 +5537,8 @@ const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info_for = vnx::get_
 const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info_for_return = vnx::get_type_code(vnx::Hash64(0xfd527dc84681a04ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plot_balance = vnx::get_type_code(vnx::Hash64(0x8d4bb6395747b2edull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plot_balance_return = vnx::get_type_code(vnx::Hash64(0x5f8806b53d8c9742ull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_for = vnx::get_type_code(vnx::Hash64(0x2dadcbd2c7c72b6eull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_for_return = vnx::get_type_code(vnx::Hash64(0x9564674e5dba5be1ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_is_revoked = vnx::get_type_code(vnx::Hash64(0xd4d8744d29cf2e17ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_is_revoked_return = vnx::get_type_code(vnx::Hash64(0xa08ed5c7b36ae954ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_read_storage = vnx::get_type_code(vnx::Hash64(0xd74cd2b291cb9cd6ull));

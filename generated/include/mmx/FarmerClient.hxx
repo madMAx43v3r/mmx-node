@@ -9,6 +9,7 @@
 #include <mmx/FarmInfo.hxx>
 #include <mmx/ProofOfSpace.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/bls_pubkey_t.hpp>
 #include <mmx/bls_signature_t.hpp>
 #include <vnx/Hash64.hpp>
 #include <vnx/Module.h>
@@ -24,6 +25,8 @@ public:
 	FarmerClient(vnx::Hash64 service_addr);
 	
 	::vnx::Hash64 get_mac_addr();
+	
+	std::vector<::mmx::bls_pubkey_t> get_farmer_keys();
 	
 	std::shared_ptr<const ::mmx::FarmInfo> get_farm_info();
 	

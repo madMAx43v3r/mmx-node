@@ -9,6 +9,7 @@
 #include <mmx/FarmInfo.hxx>
 #include <mmx/ProofOfSpace.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/bls_pubkey_t.hpp>
 #include <mmx/bls_signature_t.hpp>
 #include <vnx/Hash64.hpp>
 #include <vnx/Module.h>
@@ -25,6 +26,10 @@ public:
 	
 	uint64_t get_mac_addr(
 			const std::function<void(const ::vnx::Hash64&)>& _callback = std::function<void(const ::vnx::Hash64&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t get_farmer_keys(
+			const std::function<void(const std::vector<::mmx::bls_pubkey_t>&)>& _callback = std::function<void(const std::vector<::mmx::bls_pubkey_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_farm_info(
@@ -82,6 +87,7 @@ protected:
 	
 private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::vnx::Hash64&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_mac_addr;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::bls_pubkey_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_farmer_keys;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::FarmInfo>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_farm_info;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::bls_signature_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_sign_proof;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::BlockHeader>)>, std::function<void(const vnx::exception&)>>> vnx_queue_sign_block;

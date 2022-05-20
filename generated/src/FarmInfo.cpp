@@ -3,6 +3,8 @@
 
 #include <mmx/package.hxx>
 #include <mmx/FarmInfo.hxx>
+#include <mmx/addr_t.hpp>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -12,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 FarmInfo::VNX_TYPE_HASH(0xa2701372b9137f0eull);
-const vnx::Hash64 FarmInfo::VNX_CODE_HASH(0x53b09e8f811c1d07ull);
+const vnx::Hash64 FarmInfo::VNX_CODE_HASH(0xf215fb08d845cf31ull);
 
 vnx::Hash64 FarmInfo::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -46,16 +48,20 @@ void FarmInfo::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_FarmInfo;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, plot_dirs);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, plot_count);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, total_bytes);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, virtual_plots);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, plot_count);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, total_bytes);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, total_balance);
 	_visitor.type_end(*_type_code);
 }
 
 void FarmInfo::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.FarmInfo\"";
 	_out << ", \"plot_dirs\": "; vnx::write(_out, plot_dirs);
+	_out << ", \"virtual_plots\": "; vnx::write(_out, virtual_plots);
 	_out << ", \"plot_count\": "; vnx::write(_out, plot_count);
 	_out << ", \"total_bytes\": "; vnx::write(_out, total_bytes);
+	_out << ", \"total_balance\": "; vnx::write(_out, total_balance);
 	_out << "}";
 }
 
@@ -69,8 +75,10 @@ vnx::Object FarmInfo::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.FarmInfo";
 	_object["plot_dirs"] = plot_dirs;
+	_object["virtual_plots"] = virtual_plots;
 	_object["plot_count"] = plot_count;
 	_object["total_bytes"] = total_bytes;
+	_object["total_balance"] = total_balance;
 	return _object;
 }
 
@@ -80,8 +88,12 @@ void FarmInfo::from_object(const vnx::Object& _object) {
 			_entry.second.to(plot_count);
 		} else if(_entry.first == "plot_dirs") {
 			_entry.second.to(plot_dirs);
+		} else if(_entry.first == "total_balance") {
+			_entry.second.to(total_balance);
 		} else if(_entry.first == "total_bytes") {
 			_entry.second.to(total_bytes);
+		} else if(_entry.first == "virtual_plots") {
+			_entry.second.to(virtual_plots);
 		}
 	}
 }
@@ -90,11 +102,17 @@ vnx::Variant FarmInfo::get_field(const std::string& _name) const {
 	if(_name == "plot_dirs") {
 		return vnx::Variant(plot_dirs);
 	}
+	if(_name == "virtual_plots") {
+		return vnx::Variant(virtual_plots);
+	}
 	if(_name == "plot_count") {
 		return vnx::Variant(plot_count);
 	}
 	if(_name == "total_bytes") {
 		return vnx::Variant(total_bytes);
+	}
+	if(_name == "total_balance") {
+		return vnx::Variant(total_balance);
 	}
 	return vnx::Variant();
 }
@@ -102,10 +120,14 @@ vnx::Variant FarmInfo::get_field(const std::string& _name) const {
 void FarmInfo::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "plot_dirs") {
 		_value.to(plot_dirs);
+	} else if(_name == "virtual_plots") {
+		_value.to(virtual_plots);
 	} else if(_name == "plot_count") {
 		_value.to(plot_count);
 	} else if(_name == "total_bytes") {
 		_value.to(total_bytes);
+	} else if(_name == "total_balance") {
+		_value.to(total_balance);
 	}
 }
 
@@ -133,12 +155,12 @@ std::shared_ptr<vnx::TypeCode> FarmInfo::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.FarmInfo";
 	type_code->type_hash = vnx::Hash64(0xa2701372b9137f0eull);
-	type_code->code_hash = vnx::Hash64(0x53b09e8f811c1d07ull);
+	type_code->code_hash = vnx::Hash64(0xf215fb08d845cf31ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::FarmInfo);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<FarmInfo>(); };
-	type_code->fields.resize(3);
+	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -148,13 +170,25 @@ std::shared_ptr<vnx::TypeCode> FarmInfo::static_create_type_code() {
 	{
 		auto& field = type_code->fields[1];
 		field.is_extended = true;
+		field.name = "virtual_plots";
+		field.code = {13, 5, 11, 32, 1, 11, 16, 1};
+	}
+	{
+		auto& field = type_code->fields[2];
+		field.is_extended = true;
 		field.name = "plot_count";
 		field.code = {13, 3, 1, 3};
 	}
 	{
-		auto& field = type_code->fields[2];
+		auto& field = type_code->fields[3];
 		field.data_size = 8;
 		field.name = "total_bytes";
+		field.code = {4};
+	}
+	{
+		auto& field = type_code->fields[4];
+		field.data_size = 8;
+		field.name = "total_balance";
 		field.code = {4};
 	}
 	type_code->build();
@@ -205,14 +239,18 @@ void read(TypeInput& in, ::mmx::FarmInfo& value, const TypeCode* type_code, cons
 	}
 	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
-		if(const auto* const _field = type_code->field_map[2]) {
+		if(const auto* const _field = type_code->field_map[3]) {
 			vnx::read_value(_buf + _field->offset, value.total_bytes, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[4]) {
+			vnx::read_value(_buf + _field->offset, value.total_balance, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.plot_dirs, type_code, _field->code.data()); break;
-			case 1: vnx::read(in, value.plot_count, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.virtual_plots, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.plot_count, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -231,10 +269,12 @@ void write(TypeOutput& out, const ::mmx::FarmInfo& value, const TypeCode* type_c
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(8);
+	char* const _buf = out.write(16);
 	vnx::write_value(_buf + 0, value.total_bytes);
+	vnx::write_value(_buf + 8, value.total_balance);
 	vnx::write(out, value.plot_dirs, type_code, type_code->fields[0].code.data());
-	vnx::write(out, value.plot_count, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.virtual_plots, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.plot_count, type_code, type_code->fields[2].code.data());
 }
 
 void read(std::istream& in, ::mmx::FarmInfo& value) {

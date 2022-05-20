@@ -23,6 +23,7 @@ public:
 	::vnx::TopicPtr output_info = "harvester.info";
 	::vnx::TopicPtr output_proofs = "harvester.proof";
 	std::set<std::string> plot_dirs;
+	std::string node_server = "Node";
 	std::string farmer_server = "Farmer";
 	int32_t max_queue_ms = 10000;
 	int32_t reload_interval = 3600;
@@ -82,17 +83,18 @@ protected:
 
 template<typename T>
 void HarvesterBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<HarvesterBase>(9);
+	_visitor.template type_begin<HarvesterBase>(10);
 	_visitor.type_field("input_challenges", 0); _visitor.accept(input_challenges);
 	_visitor.type_field("output_info", 1); _visitor.accept(output_info);
 	_visitor.type_field("output_proofs", 2); _visitor.accept(output_proofs);
 	_visitor.type_field("plot_dirs", 3); _visitor.accept(plot_dirs);
-	_visitor.type_field("farmer_server", 4); _visitor.accept(farmer_server);
-	_visitor.type_field("max_queue_ms", 5); _visitor.accept(max_queue_ms);
-	_visitor.type_field("reload_interval", 6); _visitor.accept(reload_interval);
-	_visitor.type_field("num_threads", 7); _visitor.accept(num_threads);
-	_visitor.type_field("recursive_search", 8); _visitor.accept(recursive_search);
-	_visitor.template type_end<HarvesterBase>(9);
+	_visitor.type_field("node_server", 4); _visitor.accept(node_server);
+	_visitor.type_field("farmer_server", 5); _visitor.accept(farmer_server);
+	_visitor.type_field("max_queue_ms", 6); _visitor.accept(max_queue_ms);
+	_visitor.type_field("reload_interval", 7); _visitor.accept(reload_interval);
+	_visitor.type_field("num_threads", 8); _visitor.accept(num_threads);
+	_visitor.type_field("recursive_search", 9); _visitor.accept(recursive_search);
+	_visitor.template type_end<HarvesterBase>(10);
 }
 
 

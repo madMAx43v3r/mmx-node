@@ -7,6 +7,8 @@
 #include <mmx/FarmInfo.hxx>
 #include <mmx/Farmer_get_farm_info.hxx>
 #include <mmx/Farmer_get_farm_info_return.hxx>
+#include <mmx/Farmer_get_farmer_keys.hxx>
+#include <mmx/Farmer_get_farmer_keys_return.hxx>
 #include <mmx/Farmer_get_mac_addr.hxx>
 #include <mmx/Farmer_get_mac_addr_return.hxx>
 #include <mmx/Farmer_sign_block.hxx>
@@ -15,6 +17,7 @@
 #include <mmx/Farmer_sign_proof_return.hxx>
 #include <mmx/ProofOfSpace.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/bls_pubkey_t.hpp>
 #include <mmx/bls_signature_t.hpp>
 #include <vnx/Hash64.hpp>
 #include <vnx/Module.h>
@@ -66,12 +69,24 @@ uint64_t FarmerAsyncClient::get_mac_addr(const std::function<void(const ::vnx::H
 	return _request_id;
 }
 
+uint64_t FarmerAsyncClient::get_farmer_keys(const std::function<void(const std::vector<::mmx::bls_pubkey_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+	auto _method = ::mmx::Farmer_get_farmer_keys::create();
+	const auto _request_id = ++vnx_next_id;
+	{
+		std::lock_guard<std::mutex> _lock(vnx_mutex);
+		vnx_pending[_request_id] = 1;
+		vnx_queue_get_farmer_keys[_request_id] = std::make_pair(_callback, _error_callback);
+	}
+	vnx_request(_method, _request_id);
+	return _request_id;
+}
+
 uint64_t FarmerAsyncClient::get_farm_info(const std::function<void(std::shared_ptr<const ::mmx::FarmInfo>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Farmer_get_farm_info::create();
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 1;
+		vnx_pending[_request_id] = 2;
 		vnx_queue_get_farm_info[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -84,7 +99,7 @@ uint64_t FarmerAsyncClient::sign_proof(std::shared_ptr<const ::mmx::ProofOfSpace
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 2;
+		vnx_pending[_request_id] = 3;
 		vnx_queue_sign_proof[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -98,7 +113,7 @@ uint64_t FarmerAsyncClient::sign_block(std::shared_ptr<const ::mmx::BlockHeader>
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 3;
+		vnx_pending[_request_id] = 4;
 		vnx_queue_sign_block[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -110,7 +125,7 @@ uint64_t FarmerAsyncClient::vnx_get_config_object(const std::function<void(const
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 4;
+		vnx_pending[_request_id] = 5;
 		vnx_queue_vnx_get_config_object[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -123,7 +138,7 @@ uint64_t FarmerAsyncClient::vnx_get_config(const std::string& name, const std::f
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 5;
+		vnx_pending[_request_id] = 6;
 		vnx_queue_vnx_get_config[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -136,7 +151,7 @@ uint64_t FarmerAsyncClient::vnx_set_config_object(const ::vnx::Object& config, c
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 6;
+		vnx_pending[_request_id] = 7;
 		vnx_queue_vnx_set_config_object[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -150,7 +165,7 @@ uint64_t FarmerAsyncClient::vnx_set_config(const std::string& name, const ::vnx:
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 7;
+		vnx_pending[_request_id] = 8;
 		vnx_queue_vnx_set_config[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -162,7 +177,7 @@ uint64_t FarmerAsyncClient::vnx_get_type_code(const std::function<void(const ::v
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 8;
+		vnx_pending[_request_id] = 9;
 		vnx_queue_vnx_get_type_code[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -174,7 +189,7 @@ uint64_t FarmerAsyncClient::vnx_get_module_info(const std::function<void(std::sh
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 9;
+		vnx_pending[_request_id] = 10;
 		vnx_queue_vnx_get_module_info[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -186,7 +201,7 @@ uint64_t FarmerAsyncClient::vnx_restart(const std::function<void()>& _callback, 
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 10;
+		vnx_pending[_request_id] = 11;
 		vnx_queue_vnx_restart[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -198,7 +213,7 @@ uint64_t FarmerAsyncClient::vnx_stop(const std::function<void()>& _callback, con
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 11;
+		vnx_pending[_request_id] = 12;
 		vnx_queue_vnx_stop[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -210,7 +225,7 @@ uint64_t FarmerAsyncClient::vnx_self_test(const std::function<void(const vnx::bo
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 12;
+		vnx_pending[_request_id] = 13;
 		vnx_queue_vnx_self_test[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -239,6 +254,18 @@ int32_t FarmerAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			break;
 		}
 		case 1: {
+			const auto _iter = vnx_queue_get_farmer_keys.find(_request_id);
+			if(_iter != vnx_queue_get_farmer_keys.end()) {
+				const auto _callback = std::move(_iter->second.second);
+				vnx_queue_get_farmer_keys.erase(_iter);
+				_lock.unlock();
+				if(_callback) {
+					_callback(_ex);
+				}
+			}
+			break;
+		}
+		case 2: {
 			const auto _iter = vnx_queue_get_farm_info.find(_request_id);
 			if(_iter != vnx_queue_get_farm_info.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -250,7 +277,7 @@ int32_t FarmerAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 2: {
+		case 3: {
 			const auto _iter = vnx_queue_sign_proof.find(_request_id);
 			if(_iter != vnx_queue_sign_proof.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -262,7 +289,7 @@ int32_t FarmerAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 3: {
+		case 4: {
 			const auto _iter = vnx_queue_sign_block.find(_request_id);
 			if(_iter != vnx_queue_sign_block.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -274,7 +301,7 @@ int32_t FarmerAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 4: {
+		case 5: {
 			const auto _iter = vnx_queue_vnx_get_config_object.find(_request_id);
 			if(_iter != vnx_queue_vnx_get_config_object.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -286,7 +313,7 @@ int32_t FarmerAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 5: {
+		case 6: {
 			const auto _iter = vnx_queue_vnx_get_config.find(_request_id);
 			if(_iter != vnx_queue_vnx_get_config.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -298,7 +325,7 @@ int32_t FarmerAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 6: {
+		case 7: {
 			const auto _iter = vnx_queue_vnx_set_config_object.find(_request_id);
 			if(_iter != vnx_queue_vnx_set_config_object.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -310,7 +337,7 @@ int32_t FarmerAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 7: {
+		case 8: {
 			const auto _iter = vnx_queue_vnx_set_config.find(_request_id);
 			if(_iter != vnx_queue_vnx_set_config.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -322,7 +349,7 @@ int32_t FarmerAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 8: {
+		case 9: {
 			const auto _iter = vnx_queue_vnx_get_type_code.find(_request_id);
 			if(_iter != vnx_queue_vnx_get_type_code.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -334,7 +361,7 @@ int32_t FarmerAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 9: {
+		case 10: {
 			const auto _iter = vnx_queue_vnx_get_module_info.find(_request_id);
 			if(_iter != vnx_queue_vnx_get_module_info.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -346,7 +373,7 @@ int32_t FarmerAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 10: {
+		case 11: {
 			const auto _iter = vnx_queue_vnx_restart.find(_request_id);
 			if(_iter != vnx_queue_vnx_restart.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -358,7 +385,7 @@ int32_t FarmerAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 11: {
+		case 12: {
 			const auto _iter = vnx_queue_vnx_stop.find(_request_id);
 			if(_iter != vnx_queue_vnx_stop.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -370,7 +397,7 @@ int32_t FarmerAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 12: {
+		case 13: {
 			const auto _iter = vnx_queue_vnx_self_test.find(_request_id);
 			if(_iter != vnx_queue_vnx_self_test.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -415,6 +442,25 @@ int32_t FarmerAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			break;
 		}
 		case 1: {
+			const auto _iter = vnx_queue_get_farmer_keys.find(_request_id);
+			if(_iter == vnx_queue_get_farmer_keys.end()) {
+				throw std::runtime_error("FarmerAsyncClient: callback not found");
+			}
+			const auto _callback = std::move(_iter->second.first);
+			vnx_queue_get_farmer_keys.erase(_iter);
+			_lock.unlock();
+			if(_callback) {
+				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Farmer_get_farmer_keys_return>(_value)) {
+					_callback(_result->_ret_0);
+				} else if(_value && !_value->is_void()) {
+					_callback(_value->get_field_by_index(0).to<std::vector<::mmx::bls_pubkey_t>>());
+				} else {
+					throw std::logic_error("FarmerAsyncClient: invalid return value");
+				}
+			}
+			break;
+		}
+		case 2: {
 			const auto _iter = vnx_queue_get_farm_info.find(_request_id);
 			if(_iter == vnx_queue_get_farm_info.end()) {
 				throw std::runtime_error("FarmerAsyncClient: callback not found");
@@ -433,7 +479,7 @@ int32_t FarmerAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 2: {
+		case 3: {
 			const auto _iter = vnx_queue_sign_proof.find(_request_id);
 			if(_iter == vnx_queue_sign_proof.end()) {
 				throw std::runtime_error("FarmerAsyncClient: callback not found");
@@ -452,7 +498,7 @@ int32_t FarmerAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 3: {
+		case 4: {
 			const auto _iter = vnx_queue_sign_block.find(_request_id);
 			if(_iter == vnx_queue_sign_block.end()) {
 				throw std::runtime_error("FarmerAsyncClient: callback not found");
@@ -471,7 +517,7 @@ int32_t FarmerAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 4: {
+		case 5: {
 			const auto _iter = vnx_queue_vnx_get_config_object.find(_request_id);
 			if(_iter == vnx_queue_vnx_get_config_object.end()) {
 				throw std::runtime_error("FarmerAsyncClient: callback not found");
@@ -490,7 +536,7 @@ int32_t FarmerAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 5: {
+		case 6: {
 			const auto _iter = vnx_queue_vnx_get_config.find(_request_id);
 			if(_iter == vnx_queue_vnx_get_config.end()) {
 				throw std::runtime_error("FarmerAsyncClient: callback not found");
@@ -509,7 +555,7 @@ int32_t FarmerAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 6: {
+		case 7: {
 			const auto _iter = vnx_queue_vnx_set_config_object.find(_request_id);
 			if(_iter == vnx_queue_vnx_set_config_object.end()) {
 				throw std::runtime_error("FarmerAsyncClient: callback not found");
@@ -522,7 +568,7 @@ int32_t FarmerAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 7: {
+		case 8: {
 			const auto _iter = vnx_queue_vnx_set_config.find(_request_id);
 			if(_iter == vnx_queue_vnx_set_config.end()) {
 				throw std::runtime_error("FarmerAsyncClient: callback not found");
@@ -535,7 +581,7 @@ int32_t FarmerAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 8: {
+		case 9: {
 			const auto _iter = vnx_queue_vnx_get_type_code.find(_request_id);
 			if(_iter == vnx_queue_vnx_get_type_code.end()) {
 				throw std::runtime_error("FarmerAsyncClient: callback not found");
@@ -554,7 +600,7 @@ int32_t FarmerAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 9: {
+		case 10: {
 			const auto _iter = vnx_queue_vnx_get_module_info.find(_request_id);
 			if(_iter == vnx_queue_vnx_get_module_info.end()) {
 				throw std::runtime_error("FarmerAsyncClient: callback not found");
@@ -573,7 +619,7 @@ int32_t FarmerAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 10: {
+		case 11: {
 			const auto _iter = vnx_queue_vnx_restart.find(_request_id);
 			if(_iter == vnx_queue_vnx_restart.end()) {
 				throw std::runtime_error("FarmerAsyncClient: callback not found");
@@ -586,7 +632,7 @@ int32_t FarmerAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 11: {
+		case 12: {
 			const auto _iter = vnx_queue_vnx_stop.find(_request_id);
 			if(_iter == vnx_queue_vnx_stop.end()) {
 				throw std::runtime_error("FarmerAsyncClient: callback not found");
@@ -599,7 +645,7 @@ int32_t FarmerAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 12: {
+		case 13: {
 			const auto _iter = vnx_queue_vnx_self_test.find(_request_id);
 			if(_iter == vnx_queue_vnx_self_test.end()) {
 				throw std::runtime_error("FarmerAsyncClient: callback not found");
