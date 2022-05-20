@@ -65,6 +65,8 @@ class MultiSig_set_num_required_return;
 class MultiSig_validate;
 class MultiSig_validate_return;
 class MutableRelay;
+class MutableRelay_calc_cost;
+class MutableRelay_calc_cost_return;
 class MutableRelay_calc_hash;
 class MutableRelay_calc_hash_return;
 class MutableRelay_get_dependency;
@@ -98,6 +100,10 @@ class Offer_calc_hash_return;
 class Offer_is_valid;
 class Offer_is_valid_return;
 class PlotNFT;
+class PlotNFT_calc_cost;
+class PlotNFT_calc_cost_return;
+class PlotNFT_calc_hash;
+class PlotNFT_calc_hash_return;
 class PlotNFT_is_valid;
 class PlotNFT_is_valid_return;
 class PlotNFT_lock;
@@ -105,6 +111,8 @@ class PlotNFT_lock_return;
 class PlotNFT_lock_pool;
 class PlotNFT_lock_pool_return;
 class PubKey;
+class PubKey_calc_cost;
+class PubKey_calc_cost_return;
 class PubKey_calc_hash;
 class PubKey_calc_hash_return;
 class PubKey_get_dependency;
@@ -127,6 +135,8 @@ class PuzzleTimeLock_is_valid_return;
 class PuzzleTimeLock_validate;
 class PuzzleTimeLock_validate_return;
 class TimeLock;
+class TimeLock_calc_cost;
+class TimeLock_calc_cost_return;
 class TimeLock_calc_hash;
 class TimeLock_calc_hash_return;
 class TimeLock_get_dependency;
@@ -234,6 +244,8 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Multi
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_validate; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_validate_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MutableRelay; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MutableRelay_calc_cost; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MutableRelay_calc_cost_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MutableRelay_calc_hash; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MutableRelay_calc_hash_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MutableRelay_get_dependency; ///< \private
@@ -267,6 +279,10 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Offer
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Offer_is_valid; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Offer_is_valid_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PlotNFT; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PlotNFT_calc_cost; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PlotNFT_calc_cost_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PlotNFT_calc_hash; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PlotNFT_calc_hash_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PlotNFT_is_valid; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PlotNFT_is_valid_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PlotNFT_lock; ///< \private
@@ -274,6 +290,8 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PlotN
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PlotNFT_lock_pool; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PlotNFT_lock_pool_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey_calc_cost; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey_calc_cost_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey_calc_hash; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey_calc_hash_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey_get_dependency; ///< \private
@@ -296,6 +314,8 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Puzzl
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PuzzleTimeLock_validate; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PuzzleTimeLock_validate_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLock; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLock_calc_cost; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLock_calc_cost_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLock_calc_hash; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLock_calc_hash_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLock_get_dependency; ///< \private
@@ -409,6 +429,8 @@ void read(TypeInput& in, ::mmx::contract::MultiSig_set_num_required_return& valu
 void read(TypeInput& in, ::mmx::contract::MultiSig_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MutableRelay& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::MutableRelay_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::MutableRelay_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MutableRelay_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MutableRelay_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MutableRelay_get_dependency& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -442,6 +464,10 @@ void read(TypeInput& in, ::mmx::contract::Offer_calc_hash_return& value, const T
 void read(TypeInput& in, ::mmx::contract::Offer_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Offer_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::PlotNFT& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::PlotNFT_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::PlotNFT_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::PlotNFT_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::PlotNFT_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::PlotNFT_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::PlotNFT_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::PlotNFT_lock& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -449,6 +475,8 @@ void read(TypeInput& in, ::mmx::contract::PlotNFT_lock_return& value, const Type
 void read(TypeInput& in, ::mmx::contract::PlotNFT_lock_pool& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::PlotNFT_lock_pool_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::PubKey& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::PubKey_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::PubKey_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::PubKey_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::PubKey_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::PubKey_get_dependency& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -471,6 +499,8 @@ void read(TypeInput& in, ::mmx::contract::PuzzleTimeLock_is_valid_return& value,
 void read(TypeInput& in, ::mmx::contract::PuzzleTimeLock_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::PuzzleTimeLock_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::TimeLock& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::TimeLock_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::TimeLock_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::TimeLock_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::TimeLock_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::TimeLock_get_dependency& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -578,6 +608,8 @@ void write(TypeOutput& out, const ::mmx::contract::MultiSig_set_num_required_ret
 void write(TypeOutput& out, const ::mmx::contract::MultiSig_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MutableRelay& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::MutableRelay_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::MutableRelay_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MutableRelay_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MutableRelay_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MutableRelay_get_dependency& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -611,6 +643,10 @@ void write(TypeOutput& out, const ::mmx::contract::Offer_calc_hash_return& value
 void write(TypeOutput& out, const ::mmx::contract::Offer_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Offer_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::PlotNFT& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::PlotNFT_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::PlotNFT_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::PlotNFT_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::PlotNFT_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::PlotNFT_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::PlotNFT_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::PlotNFT_lock& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -618,6 +654,8 @@ void write(TypeOutput& out, const ::mmx::contract::PlotNFT_lock_return& value, c
 void write(TypeOutput& out, const ::mmx::contract::PlotNFT_lock_pool& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::PlotNFT_lock_pool_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::PubKey& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::PubKey_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::PubKey_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::PubKey_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::PubKey_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::PubKey_get_dependency& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -640,6 +678,8 @@ void write(TypeOutput& out, const ::mmx::contract::PuzzleTimeLock_is_valid_retur
 void write(TypeOutput& out, const ::mmx::contract::PuzzleTimeLock_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::PuzzleTimeLock_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::TimeLock& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::TimeLock_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::TimeLock_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::TimeLock_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::TimeLock_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::TimeLock_get_dependency& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -747,6 +787,8 @@ void read(std::istream& in, ::mmx::contract::MultiSig_set_num_required_return& v
 void read(std::istream& in, ::mmx::contract::MultiSig_validate& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig_validate_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MutableRelay& value); ///< \private
+void read(std::istream& in, ::mmx::contract::MutableRelay_calc_cost& value); ///< \private
+void read(std::istream& in, ::mmx::contract::MutableRelay_calc_cost_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MutableRelay_calc_hash& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MutableRelay_calc_hash_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MutableRelay_get_dependency& value); ///< \private
@@ -780,6 +822,10 @@ void read(std::istream& in, ::mmx::contract::Offer_calc_hash_return& value); ///
 void read(std::istream& in, ::mmx::contract::Offer_is_valid& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Offer_is_valid_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::PlotNFT& value); ///< \private
+void read(std::istream& in, ::mmx::contract::PlotNFT_calc_cost& value); ///< \private
+void read(std::istream& in, ::mmx::contract::PlotNFT_calc_cost_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::PlotNFT_calc_hash& value); ///< \private
+void read(std::istream& in, ::mmx::contract::PlotNFT_calc_hash_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::PlotNFT_is_valid& value); ///< \private
 void read(std::istream& in, ::mmx::contract::PlotNFT_is_valid_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::PlotNFT_lock& value); ///< \private
@@ -787,6 +833,8 @@ void read(std::istream& in, ::mmx::contract::PlotNFT_lock_return& value); ///< \
 void read(std::istream& in, ::mmx::contract::PlotNFT_lock_pool& value); ///< \private
 void read(std::istream& in, ::mmx::contract::PlotNFT_lock_pool_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::PubKey& value); ///< \private
+void read(std::istream& in, ::mmx::contract::PubKey_calc_cost& value); ///< \private
+void read(std::istream& in, ::mmx::contract::PubKey_calc_cost_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::PubKey_calc_hash& value); ///< \private
 void read(std::istream& in, ::mmx::contract::PubKey_calc_hash_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::PubKey_get_dependency& value); ///< \private
@@ -809,6 +857,8 @@ void read(std::istream& in, ::mmx::contract::PuzzleTimeLock_is_valid_return& val
 void read(std::istream& in, ::mmx::contract::PuzzleTimeLock_validate& value); ///< \private
 void read(std::istream& in, ::mmx::contract::PuzzleTimeLock_validate_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::TimeLock& value); ///< \private
+void read(std::istream& in, ::mmx::contract::TimeLock_calc_cost& value); ///< \private
+void read(std::istream& in, ::mmx::contract::TimeLock_calc_cost_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::TimeLock_calc_hash& value); ///< \private
 void read(std::istream& in, ::mmx::contract::TimeLock_calc_hash_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::TimeLock_get_dependency& value); ///< \private
@@ -916,6 +966,8 @@ void write(std::ostream& out, const ::mmx::contract::MultiSig_set_num_required_r
 void write(std::ostream& out, const ::mmx::contract::MultiSig_validate& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig_validate_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MutableRelay& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::MutableRelay_calc_cost& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::MutableRelay_calc_cost_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MutableRelay_calc_hash& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MutableRelay_calc_hash_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MutableRelay_get_dependency& value); ///< \private
@@ -949,6 +1001,10 @@ void write(std::ostream& out, const ::mmx::contract::Offer_calc_hash_return& val
 void write(std::ostream& out, const ::mmx::contract::Offer_is_valid& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Offer_is_valid_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::PlotNFT& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::PlotNFT_calc_cost& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::PlotNFT_calc_cost_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::PlotNFT_calc_hash& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::PlotNFT_calc_hash_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::PlotNFT_is_valid& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::PlotNFT_is_valid_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::PlotNFT_lock& value); ///< \private
@@ -956,6 +1012,8 @@ void write(std::ostream& out, const ::mmx::contract::PlotNFT_lock_return& value)
 void write(std::ostream& out, const ::mmx::contract::PlotNFT_lock_pool& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::PlotNFT_lock_pool_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::PubKey& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::PubKey_calc_cost& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::PubKey_calc_cost_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::PubKey_calc_hash& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::PubKey_calc_hash_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::PubKey_get_dependency& value); ///< \private
@@ -978,6 +1036,8 @@ void write(std::ostream& out, const ::mmx::contract::PuzzleTimeLock_is_valid_ret
 void write(std::ostream& out, const ::mmx::contract::PuzzleTimeLock_validate& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::PuzzleTimeLock_validate_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::TimeLock& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::TimeLock_calc_cost& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::TimeLock_calc_cost_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::TimeLock_calc_hash& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::TimeLock_calc_hash_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::TimeLock_get_dependency& value); ///< \private
@@ -1085,6 +1145,8 @@ void accept(Visitor& visitor, const ::mmx::contract::MultiSig_set_num_required_r
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig_validate& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig_validate_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MutableRelay& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::MutableRelay_calc_cost& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::MutableRelay_calc_cost_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MutableRelay_calc_hash& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MutableRelay_calc_hash_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MutableRelay_get_dependency& value); ///< \private
@@ -1118,6 +1180,10 @@ void accept(Visitor& visitor, const ::mmx::contract::Offer_calc_hash_return& val
 void accept(Visitor& visitor, const ::mmx::contract::Offer_is_valid& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Offer_is_valid_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::PlotNFT& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::PlotNFT_calc_cost& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::PlotNFT_calc_cost_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::PlotNFT_calc_hash& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::PlotNFT_calc_hash_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::PlotNFT_is_valid& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::PlotNFT_is_valid_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::PlotNFT_lock& value); ///< \private
@@ -1125,6 +1191,8 @@ void accept(Visitor& visitor, const ::mmx::contract::PlotNFT_lock_return& value)
 void accept(Visitor& visitor, const ::mmx::contract::PlotNFT_lock_pool& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::PlotNFT_lock_pool_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::PubKey& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::PubKey_calc_cost& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::PubKey_calc_cost_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::PubKey_calc_hash& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::PubKey_calc_hash_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::PubKey_get_dependency& value); ///< \private
@@ -1147,6 +1215,8 @@ void accept(Visitor& visitor, const ::mmx::contract::PuzzleTimeLock_is_valid_ret
 void accept(Visitor& visitor, const ::mmx::contract::PuzzleTimeLock_validate& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::PuzzleTimeLock_validate_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::TimeLock& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::TimeLock_calc_cost& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::TimeLock_calc_cost_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::TimeLock_calc_hash& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::TimeLock_calc_hash_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::TimeLock_get_dependency& value); ///< \private
@@ -2202,6 +2272,52 @@ struct type<::mmx::contract::MutableRelay> {
 
 /// \private
 template<>
+struct type<::mmx::contract::MutableRelay_calc_cost> {
+	void read(TypeInput& in, ::mmx::contract::MutableRelay_calc_cost& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::MutableRelay_calc_cost& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::MutableRelay_calc_cost& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::MutableRelay_calc_cost& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::MutableRelay_calc_cost& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_calc_cost& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::MutableRelay_calc_cost_return> {
+	void read(TypeInput& in, ::mmx::contract::MutableRelay_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::MutableRelay_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::MutableRelay_calc_cost_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::MutableRelay_calc_cost_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::MutableRelay_calc_cost_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_calc_cost_return& value, bool special = false);
+};
+
+/// \private
+template<>
 struct type<::mmx::contract::MutableRelay_calc_hash> {
 	void read(TypeInput& in, ::mmx::contract::MutableRelay_calc_hash& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
@@ -2961,6 +3077,98 @@ struct type<::mmx::contract::PlotNFT> {
 
 /// \private
 template<>
+struct type<::mmx::contract::PlotNFT_calc_cost> {
+	void read(TypeInput& in, ::mmx::contract::PlotNFT_calc_cost& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::PlotNFT_calc_cost& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::PlotNFT_calc_cost& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::PlotNFT_calc_cost& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::PlotNFT_calc_cost& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_calc_cost& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::PlotNFT_calc_cost_return> {
+	void read(TypeInput& in, ::mmx::contract::PlotNFT_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::PlotNFT_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::PlotNFT_calc_cost_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::PlotNFT_calc_cost_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::PlotNFT_calc_cost_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_calc_cost_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::PlotNFT_calc_hash> {
+	void read(TypeInput& in, ::mmx::contract::PlotNFT_calc_hash& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::PlotNFT_calc_hash& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::PlotNFT_calc_hash& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::PlotNFT_calc_hash& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::PlotNFT_calc_hash& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_calc_hash& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::PlotNFT_calc_hash_return> {
+	void read(TypeInput& in, ::mmx::contract::PlotNFT_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::PlotNFT_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::PlotNFT_calc_hash_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::PlotNFT_calc_hash_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::PlotNFT_calc_hash_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_calc_hash_return& value, bool special = false);
+};
+
+/// \private
+template<>
 struct type<::mmx::contract::PlotNFT_is_valid> {
 	void read(TypeInput& in, ::mmx::contract::PlotNFT_is_valid& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
@@ -3118,6 +3326,52 @@ struct type<::mmx::contract::PubKey> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PubKey& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::PubKey_calc_cost> {
+	void read(TypeInput& in, ::mmx::contract::PubKey_calc_cost& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::PubKey_calc_cost& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::PubKey_calc_cost& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::PubKey_calc_cost& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::PubKey_calc_cost& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PubKey_calc_cost& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::PubKey_calc_cost_return> {
+	void read(TypeInput& in, ::mmx::contract::PubKey_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::PubKey_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::PubKey_calc_cost_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::PubKey_calc_cost_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::PubKey_calc_cost_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PubKey_calc_cost_return& value, bool special = false);
 };
 
 /// \private
@@ -3624,6 +3878,52 @@ struct type<::mmx::contract::TimeLock> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TimeLock& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::TimeLock_calc_cost> {
+	void read(TypeInput& in, ::mmx::contract::TimeLock_calc_cost& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::TimeLock_calc_cost& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::TimeLock_calc_cost& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::TimeLock_calc_cost& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::TimeLock_calc_cost& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TimeLock_calc_cost& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::TimeLock_calc_cost_return> {
+	void read(TypeInput& in, ::mmx::contract::TimeLock_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::TimeLock_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::TimeLock_calc_cost_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::TimeLock_calc_cost_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::TimeLock_calc_cost_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TimeLock_calc_cost_return& value, bool special = false);
 };
 
 /// \private

@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_contract_MutableRelay_HXX_
 
 #include <mmx/contract/package.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/Context.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/Operation.hxx>
@@ -39,6 +40,7 @@ public:
 	
 	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_hash() const override;
+	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	virtual std::vector<::mmx::addr_t> get_dependency() const override;
 	virtual vnx::optional<::mmx::addr_t> get_owner() const override;
 	virtual std::vector<::mmx::txout_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;

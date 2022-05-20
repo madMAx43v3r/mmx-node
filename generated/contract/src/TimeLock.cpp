@@ -3,6 +3,7 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/contract/TimeLock.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/Context.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/Contract_calc_cost.hxx>
@@ -21,6 +22,8 @@
 #include <mmx/Contract_validate_return.hxx>
 #include <mmx/Operation.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/contract/TimeLock_calc_cost.hxx>
+#include <mmx/contract/TimeLock_calc_cost_return.hxx>
 #include <mmx/contract/TimeLock_calc_hash.hxx>
 #include <mmx/contract/TimeLock_calc_hash_return.hxx>
 #include <mmx/contract/TimeLock_get_dependency.hxx>
@@ -170,7 +173,7 @@ std::shared_ptr<vnx::TypeCode> TimeLock::static_create_type_code() {
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<TimeLock>(); };
-	type_code->methods.resize(12);
+	type_code->methods.resize(13);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_dependency::static_get_type_code();
@@ -178,11 +181,12 @@ std::shared_ptr<vnx::TypeCode> TimeLock::static_create_type_code() {
 	type_code->methods[4] = ::mmx::Contract_is_valid::static_get_type_code();
 	type_code->methods[5] = ::mmx::Contract_transfer::static_get_type_code();
 	type_code->methods[6] = ::mmx::Contract_validate::static_get_type_code();
-	type_code->methods[7] = ::mmx::contract::TimeLock_calc_hash::static_get_type_code();
-	type_code->methods[8] = ::mmx::contract::TimeLock_get_dependency::static_get_type_code();
-	type_code->methods[9] = ::mmx::contract::TimeLock_get_owner::static_get_type_code();
-	type_code->methods[10] = ::mmx::contract::TimeLock_is_valid::static_get_type_code();
-	type_code->methods[11] = ::mmx::contract::TimeLock_validate::static_get_type_code();
+	type_code->methods[7] = ::mmx::contract::TimeLock_calc_cost::static_get_type_code();
+	type_code->methods[8] = ::mmx::contract::TimeLock_calc_hash::static_get_type_code();
+	type_code->methods[9] = ::mmx::contract::TimeLock_get_dependency::static_get_type_code();
+	type_code->methods[10] = ::mmx::contract::TimeLock_get_owner::static_get_type_code();
+	type_code->methods[11] = ::mmx::contract::TimeLock_is_valid::static_get_type_code();
+	type_code->methods[12] = ::mmx::contract::TimeLock_validate::static_get_type_code();
 	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
@@ -248,6 +252,12 @@ std::shared_ptr<vnx::Value> TimeLock::vnx_call_switch(std::shared_ptr<const vnx:
 			auto _args = std::static_pointer_cast<const ::mmx::Contract_validate>(_method);
 			auto _return_value = ::mmx::Contract_validate_return::create();
 			_return_value->_ret_0 = validate(_args->operation, _args->context);
+			return _return_value;
+		}
+		case 0x6650bddacd4a3634ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::TimeLock_calc_cost>(_method);
+			auto _return_value = ::mmx::contract::TimeLock_calc_cost_return::create();
+			_return_value->_ret_0 = calc_cost(_args->params);
 			return _return_value;
 		}
 		case 0xb64276bca8d842cbull: {
