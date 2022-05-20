@@ -979,6 +979,11 @@ int main(int argc, char** argv)
 			proxy->forward_list = {"Farmer", "Harvester", "Node"};
 			proxy.start_detached();
 
+			try {
+				params = node.get_params();
+			} catch(...) {
+				// ignore
+			}
 			mmx::FarmerClient farmer("Farmer");
 			mmx::HarvesterClient harvester("Harvester");
 
