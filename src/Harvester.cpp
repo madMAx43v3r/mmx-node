@@ -326,12 +326,14 @@ void Harvester::reload()
 
 	// gather virtual plots
 	virtual_map.clear();
+	total_balance = 0;
 	for(const auto& farmer_key : farmer->get_farmer_keys()) {
 		for(const auto& entry : node->get_virtual_plots_for(farmer_key)) {
 			if(auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(entry.second)) {
 				auto& info = virtual_map[entry.first];
 				info.farmer_key = farmer_key;
 				info.balance = node->get_virtual_plot_balance(entry.first);
+				total_balance += info.balance;
 			}
 		}
 	}
@@ -341,7 +343,8 @@ void Harvester::reload()
 	// check challenges again
 	already_checked.clear();
 
-	log(INFO) << "Loaded " << plot_map.size() << " plots, " << virtual_map.size() << " vplots, " << total_bytes / pow(1000, 4) << " TB total, took "
+	log(INFO) << "Loaded " << plot_map.size() << " plots, " << virtual_map.size() << " virtual plots, "
+			<< total_bytes / pow(1000, 4) << " TB total, " << total_balance / pow(10, params->decimals) << " MMX total, took "
 			<< (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 }
 

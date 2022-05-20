@@ -757,7 +757,6 @@ std::vector<std::pair<addr_t, std::shared_ptr<const Contract>>> Node::get_virtua
 {
 	std::unordered_map<addr_t, std::shared_ptr<const Contract>> out;
 	vplot_log.scan([this, &out, farmer_key](const uint32_t& key, const addr_t& address) {
-		log(INFO) << key << ": " << address;
 		if(auto contract = get_contract(address)) {
 			if(auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(contract)) {
 				if(plot->farmer_key == farmer_key) {
