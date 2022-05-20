@@ -32,6 +32,10 @@ hash_t VirtualPlot::calc_hash() const
 	return hash_t(buffer);
 }
 
+uint64_t VirtualPlot::calc_cost(std::shared_ptr<const ChainParams> params) const {
+	return 0;
+}
+
 void VirtualPlot::bls_transfer(const bls_pubkey_t& new_farmer_key)
 {
 	farmer_key = new_farmer_key;

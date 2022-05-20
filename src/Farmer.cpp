@@ -18,7 +18,9 @@ Farmer::Farmer(const std::string& _vnx_name)
 
 void Farmer::init()
 {
-	vnx::open_pipe(vnx_name, this, 1000);
+	pipe = vnx::open_pipe(vnx_name, this, 1000);
+	pipe->pause();
+
 	vnx::open_pipe(vnx_get_id(), this, 1000);
 
 	subscribe(input_info, 1000);
@@ -32,6 +34,7 @@ void Farmer::main()
 		}
 		log(INFO) << "Reward address: " << reward_addr->to_string();
 	}
+
 	wallet = std::make_shared<WalletAsyncClient>(wallet_server);
 	add_async_client(wallet);
 
@@ -47,6 +50,15 @@ vnx::Hash64 Farmer::get_mac_addr() const
 	return vnx_get_id();
 }
 
+std::vector<bls_pubkey_t> Farmer::get_farmer_keys() const
+{
+	std::vector<bls_pubkey_t> out;
+	for(const auto& entry : key_map) {
+		out.push_back(entry.first);
+	}
+	return out;
+}
+
 std::shared_ptr<const FarmInfo> Farmer::get_farm_info() const
 {
 	auto info = FarmInfo::create();
@@ -57,6 +69,7 @@ std::shared_ptr<const FarmInfo> Farmer::get_farm_info() const
 			}
 			info->plot_dirs.insert(info->plot_dirs.end(), value->plot_dirs.begin(), value->plot_dirs.end());
 			info->total_bytes += value->total_bytes;
+			info->total_balance += value->total_balance;
 		}
 	}
 	return info;
@@ -73,6 +86,7 @@ void Farmer::update()
 					log(INFO) << "Got Farmer Key: " << keys->farmer_public_key;
 				}
 			}
+			pipe->resume();
 		},
 		[this](const vnx::exception& ex) {
 			log(WARN) << "Failed to get keys from wallet: " << ex.what();

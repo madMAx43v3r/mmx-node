@@ -9,6 +9,7 @@
 #include <mmx/FarmerClient.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/ProofOfSpaceOG.hxx>
+#include <mmx/ProofOfStake.hxx>
 #include <mmx/utils.h>
 
 #include <bls.hpp>
@@ -46,6 +47,7 @@ void Harvester::main()
 	}
 	params = get_params();
 
+	node = std::make_shared<NodeClient>(node_server);
 	farmer = std::make_shared<FarmerClient>(farmer_server);
 
 	http = std::make_shared<vnx::addons::HttpInterface<Harvester>>(this, vnx_name);
@@ -73,7 +75,10 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	uint128_t best_score = ~uint128_0;
 	std::shared_ptr<chiapos::Proof> best_proof;
 	std::shared_ptr<chiapos::DiskProver> best_plot;
+	vnx::optional<std::pair<addr_t, virtual_plot_t>> best_vplot;
+
 	std::vector<std::shared_ptr<chiapos::DiskProver>> plots;
+	std::vector<std::pair<addr_t, virtual_plot_t>> virtual_plots;
 
 	for(const auto& entry : id_map)
 	{
@@ -81,6 +86,12 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 			if(auto prover = plot_map[entry.second]) {
 				plots.push_back(prover);
 			}
+		}
+	}
+	for(const auto& entry : virtual_map)
+	{
+		if(check_plot_filter(params, value->challenge, entry.first)) {
+			virtual_plots.push_back(entry);
 		}
 	}
 	std::vector<std::vector<uint128_t>> scores(plots.size());
@@ -118,6 +129,21 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 			}
 		}
 	}
+
+	for(const auto& entry : virtual_plots)
+	{
+		const auto score = calc_virtual_score(params, value->challenge, entry.first, entry.second.balance, value->space_diff);
+		if(score < params->score_threshold) {
+			if(score < best_score) {
+				best_plot = nullptr;
+				best_vplot = entry;
+			}
+		}
+		if(score < best_score) {
+			best_score = score;
+		}
+	}
+
 	if(best_plot) {
 		try {
 			best_proof = best_plot->get_full_proof(value->challenge.bytes, best_index);
@@ -125,27 +151,43 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 			log(WARN) << "Failed to fetch proof: " << ex.what() << " (" << best_plot->get_file_path() << ")";
 		}
 	}
-	if(best_proof) {
+	if(best_proof || best_vplot) {
 		auto out = ProofResponse::create();
 		out->request = value;
 		out->farmer_addr = farmer_addr;
 
-		const auto local_sk = derive_local_key(best_proof->master_sk);
+		if(best_proof) {
+			const auto local_sk = derive_local_key(best_proof->master_sk);
 
-		auto proof = ProofOfSpaceOG::create();
-		proof->ksize = best_proof->k;
-		proof->score = best_score;
-		proof->plot_id = hash_t::from_bytes(best_proof->id);
-		proof->proof_bytes = best_proof->proof;
-		proof->local_key = local_sk.GetG1Element();
-		proof->farmer_key = bls_pubkey_t::super_t(best_proof->farmer_key);
-		proof->pool_key = bls_pubkey_t::super_t(best_proof->pool_key);
-		proof->local_sig = bls_signature_t::sign(local_sk, proof->calc_hash());
-		out->proof = proof;
+			auto proof = ProofOfSpaceOG::create();
+			proof->ksize = best_proof->k;
+			proof->score = best_score;
+			proof->plot_id = hash_t::from_bytes(best_proof->id);
+			proof->proof_bytes = best_proof->proof;
+			proof->local_key = local_sk.GetG1Element();
+			proof->farmer_key = bls_pubkey_t::super_t(best_proof->farmer_key);
+			proof->pool_key = bls_pubkey_t::super_t(best_proof->pool_key);
+			proof->local_sig = bls_signature_t::sign(local_sk, proof->calc_hash());
+			out->proof = proof;
+		}
+		else if(best_vplot) {
+			auto proof = ProofOfStake::create();
+			proof->score = best_score;
+			proof->plot_id = best_vplot->first;
+			proof->contract = best_vplot->first;
+			proof->farmer_key = best_vplot->second.farmer_key;
+			out->proof = proof;
+		}
 
 		try {
 			// TODO: have node sign it after verify
-			out->farmer_sig = farmer->sign_proof(proof);
+			out->farmer_sig = farmer->sign_proof(out->proof);
+
+			if(auto proof = std::dynamic_pointer_cast<const ProofOfStake>(out->proof)) {
+				auto copy = vnx::clone(proof);
+				copy->farmer_sig = out->farmer_sig;
+				out->proof = copy;
+			}
 			publish(out, output_proofs);
 		}
 		catch(const std::exception& ex) {
@@ -175,6 +217,9 @@ std::shared_ptr<const FarmInfo> Harvester::get_farm_info() const
 		if(auto prover = entry.second) {
 			info->plot_count[prover->get_ksize()]++;
 		}
+	}
+	for(const auto& entry : virtual_map) {
+		info->total_balance += entry.second.balance;
 	}
 	return info;
 }
@@ -278,12 +323,25 @@ void Harvester::reload()
 		id_map[plot_id] = file_name;
 		total_bytes += vnx::File(file_name).file_size();
 	}
+
+	// gather virtual plots
+	virtual_map.clear();
+	for(const auto& farmer_key : farmer->get_farmer_keys()) {
+		for(const auto& entry : node->get_virtual_plots_for(farmer_key)) {
+			if(auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(entry.second)) {
+				auto& info = virtual_map[entry.first];
+				info.farmer_key = farmer_key;
+				info.balance = node->get_virtual_plot_balance(entry.first);
+			}
+		}
+	}
+
 	update();
 
 	// check challenges again
 	already_checked.clear();
 
-	log(INFO) << "Loaded " << plot_map.size() << " plots, " << total_bytes / pow(1000, 4) << " TB total, took "
+	log(INFO) << "Loaded " << plot_map.size() << " plots, " << virtual_map.size() << " vplots, " << total_bytes / pow(1000, 4) << " TB total, took "
 			<< (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 }
 

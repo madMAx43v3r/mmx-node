@@ -123,6 +123,8 @@ protected:
 
 	uint128 get_total_supply(const addr_t& currency) const override;
 
+	std::vector<std::pair<addr_t, std::shared_ptr<const Contract>>> get_virtual_plots_for(const bls_pubkey_t& farmer_key) const;
+
 	uint128 get_virtual_plot_balance(const addr_t& plot_id, const vnx::optional<hash_t>& block_hash) const override;
 
 	void on_stuck_timeout();
@@ -375,6 +377,7 @@ private:
 	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, vnx::Object> mutate_log;		// [[addr, height] => method]
 	vnx::rocksdb::multi_table<addr_t, addr_t> deploy_map;								// [sender => contract]
 	vnx::rocksdb::multi_table<uint32_t, addr_t> offer_log;								// [height => contract]
+	vnx::rocksdb::multi_table<uint32_t, addr_t> vplot_log;								// [height => contract]
 
 	std::map<std::pair<addr_t, addr_t>, uint128_t> balance_map;						// [[addr, currency] => balance]
 	vnx::rocksdb::table<std::pair<addr_t, addr_t>, std::pair<uint128, uint32_t>> balance_table;		// [[addr, currency] => [balance, height]]

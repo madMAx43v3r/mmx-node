@@ -9,6 +9,7 @@ module Harvester implements vnx.addons.HttpComponent {
 	
 	set<string> plot_dirs;
 	
+	string node_server = "Node";
 	string farmer_server = "Farmer";
 	
 	int max_queue_ms = 10000;				// [ms]

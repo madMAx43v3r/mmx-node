@@ -16,6 +16,7 @@
 #include <mmx/contract/Offer.hxx>
 #include <mmx/contract/TokenBase.hxx>
 #include <mmx/contract/Executable.hxx>
+#include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/KeyFile.hxx>
 #include <mmx/secp256k1.hpp>
 #include <mmx/hash_t.hpp>
@@ -270,6 +271,9 @@ int main(int argc, char** argv)
 						} else {
 							std::cout << ", open";
 						}
+					}
+					else if(auto plot = std::dynamic_pointer_cast<const mmx::contract::VirtualPlot>(contract)) {
+						std::cout << ", " << node.get_virtual_plot_balance(entry.first).lower() / pow(10, params->decimals) << " MMX";
 					}
 					std::cout << ")" << std::endl;
 
@@ -989,6 +993,7 @@ int main(int argc, char** argv)
 			if(command == "info")
 			{
 				std::cout << "Total space: " << info->total_bytes / pow(1000, 4) << " TB" << std::endl;
+				std::cout << "Total balance: " << info->total_balance / pow(10, params->decimals) << " MMX" << std::endl;
 				for(const auto& entry : info->plot_count) {
 					std::cout << "K" << int(entry.first) << ": " << entry.second << " plots" << std::endl;
 				}

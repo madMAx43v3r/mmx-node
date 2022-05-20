@@ -26,6 +26,8 @@ protected:
 
 	vnx::Hash64 get_mac_addr() const override;
 
+	std::vector<bls_pubkey_t> get_farmer_keys() const override;
+
 	std::shared_ptr<const FarmInfo> get_farm_info() const override;
 
 	bls_signature_t sign_proof(std::shared_ptr<const ProofOfSpace> proof) const override;
@@ -41,6 +43,7 @@ private:
 	skey_t find_skey(const bls_pubkey_t& pubkey) const;
 
 private:
+	std::shared_ptr<vnx::Pipe> pipe;
 	std::shared_ptr<WalletAsyncClient> wallet;
 
 	std::unordered_map<bls_pubkey_t, skey_t> key_map;

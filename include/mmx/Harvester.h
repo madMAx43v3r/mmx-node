@@ -10,6 +10,8 @@
 
 #include <mmx/HarvesterBase.hxx>
 #include <mmx/FarmerClient.hxx>
+#include <mmx/NodeClient.hxx>
+#include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/chiapos.h>
 
 #include <vnx/addons/HttpInterface.h>
@@ -50,14 +52,21 @@ private:
 	void find_plot_dirs(const std::set<std::string>& dirs, std::set<std::string>& all_dirs) const;
 
 private:
+	struct virtual_plot_t {
+		uint64_t balance = 0;
+		bls_pubkey_t farmer_key;
+	};
+
 	size_t total_bytes = 0;
 	vnx::Hash64 farmer_addr;
+	std::shared_ptr<NodeClient> node;
 	std::shared_ptr<FarmerClient> farmer;
 	std::shared_ptr<const ChainParams> params;
 
 	std::unordered_set<hash_t> already_checked;
 	std::unordered_map<hash_t, std::string> id_map;
 	std::unordered_map<std::string, std::shared_ptr<chiapos::DiskProver>> plot_map;
+	std::unordered_map<addr_t, virtual_plot_t> virtual_map;
 
 	std::shared_ptr<vnx::addons::HttpInterface<Harvester>> http;
 

@@ -163,6 +163,9 @@ module Node implements vnx.addons.HttpComponent {
 	address_info_t get_address_info(addr_t address) const;
 	
 	@Permission(permission_e.PUBLIC)
+	vector<pair<addr_t, Contract*>> get_virtual_plots_for(bls_pubkey_t farmer_key) const;
+	
+	@Permission(permission_e.PUBLIC)
 	uint128 get_virtual_plot_balance(addr_t plot_id, optional<hash_t> block_hash) const;
 	
 	@Permission(permission_e.PUBLIC)

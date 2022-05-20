@@ -12,6 +12,7 @@
 #include <mmx/contract/Offer.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/contract/Executable.hxx>
+#include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/operation/Revoke.hxx>
 #include <mmx/operation/Mutate.hxx>
 #include <mmx/operation/Execute.hxx>
@@ -88,6 +89,7 @@ void Node::main()
 		mutate_log.open(database_path + "mutate_log", options);
 		deploy_map.open(database_path + "deploy_map", options);
 		offer_log.open(database_path + "offer_log", options);
+		vplot_log.open(database_path + "vplot_log", options);
 
 		tx_log.open(database_path + "tx_log", options);
 		tx_index.open(database_path + "tx_index", options);
@@ -751,6 +753,22 @@ address_info_t Node::get_address_info(const addr_t& address) const
 	return info;
 }
 
+std::vector<std::pair<addr_t, std::shared_ptr<const Contract>>> Node::get_virtual_plots_for(const bls_pubkey_t& farmer_key) const
+{
+	std::unordered_map<addr_t, std::shared_ptr<const Contract>> out;
+	vplot_log.scan([this, &out, farmer_key](const uint32_t& key, const addr_t& address) {
+		log(INFO) << key << ": " << address;
+		if(auto contract = get_contract(address)) {
+			if(auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(contract)) {
+				if(plot->farmer_key == farmer_key) {
+					out[address] = plot;
+				}
+			}
+		}
+	});
+	return std::vector<std::pair<addr_t, std::shared_ptr<const Contract>>>(out.begin(), out.end());
+}
+
 void Node::http_request_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
 								const vnx::request_id_t& request_id) const
 {
@@ -1279,6 +1297,9 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		if(std::dynamic_pointer_cast<const contract::Offer>(contract)) {
 			offer_log.insert(block->height, addr_t(tx->id));
 		}
+		if(auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(contract)) {
+			vplot_log.insert(block->height, addr_t(tx->id));
+		}
 	}
 	tx_pool.erase(tx->id);
 }
@@ -1359,6 +1380,9 @@ void Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noe
 		}
 	}
 	addr_log.erase_greater_equal(height);
+
+	offer_log.erase_all(height, vnx::rocksdb::GREATER_EQUAL);
+	vplot_log.erase_all(height, vnx::rocksdb::GREATER_EQUAL);
 
 	for(const auto& key : balance_set) {
 		balance_table.insert(key, std::make_pair(balance_map[key], height - 1));
