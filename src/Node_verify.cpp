@@ -270,6 +270,17 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::sha
 	log(INFO) << "Verified VDF for height " << proof->height <<
 			(prev ? ", delta = " + std::to_string((point->recv_time - prev->recv_time) / 1e6) + " sec" : "") << ", took " << elapsed << " sec";
 
+	// add dummy blocks
+	{
+		std::vector<std::shared_ptr<const Block>> blocks;
+		for(const auto& entry : fork_index) {
+			blocks.push_back(entry.second->block);
+		}
+		for(const auto& prev : blocks) {
+			add_dummy_blocks(prev);
+		}
+		add_dummy_blocks(get_root());
+	}
 	add_task(std::bind(&Node::update, this));
 }
 

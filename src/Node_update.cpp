@@ -83,18 +83,6 @@ void Node::update()
 
 	check_vdfs();
 
-	// add dummy blocks
-	{
-		std::vector<std::shared_ptr<const Block>> blocks;
-		for(const auto& entry : fork_index) {
-			blocks.push_back(entry.second->block);
-		}
-		for(const auto& prev : blocks) {
-			add_dummy_blocks(prev);
-		}
-		add_dummy_blocks(get_root());
-	}
-
 	// verify proof where possible
 	std::vector<std::shared_ptr<fork_t>> to_verify;
 	{
