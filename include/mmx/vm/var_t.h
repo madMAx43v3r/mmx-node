@@ -41,8 +41,8 @@ static constexpr uint8_t FLAG_KEY = (1 << 4);
 enum vartype_e : uint8_t {
 
 	TYPE_NIL,
-	TYPE_TRUE,
 	TYPE_FALSE,
+	TYPE_TRUE,
 	TYPE_REF,
 	TYPE_UINT,
 	TYPE_STRING,
