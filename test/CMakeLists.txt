@@ -7,5 +7,6 @@ target_link_libraries(create_test_contract mmx_vm)
 
 if(MSVC)
 	target_include_directories(test_engine PUBLIC ${MMXIFACE_BINARY_DIR})
-	target_include_directories(create_test_contract PUBLIC ${MMXIFACE_BINARY_DIR})	
+	target_include_directories(create_test_contract PUBLIC ${MMXIFACE_BINARY_DIR})
+	target_include_directories(create_test_contract2 PUBLIC ${MMXIFACE_BINARY_DIR})
 endif()
