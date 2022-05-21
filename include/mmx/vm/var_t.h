@@ -247,8 +247,7 @@ inline bool operator!=(const var_t& lhs, const var_t& rhs) {
 	return compare(lhs, rhs) != 0;
 }
 
-inline size_t num_bytes(const var_t& var)
-{
+inline size_t num_bytes(const var_t& var) {
 	switch(var.type) {
 		case TYPE_REF:
 			return 8;
@@ -266,12 +265,8 @@ inline size_t num_bytes(const var_t& var)
 	}
 }
 
-inline size_t num_bytes(const var_t* var)
-{
-	if(!var) {
-		return 0;
-	}
-	return num_bytes(*var);
+inline size_t num_bytes(const var_t* var) {
+	return var ? num_bytes(*var) : 0;
 }
 
 
