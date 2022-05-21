@@ -3,7 +3,7 @@
 	"block_time": 8,
 	"plot_filter": 8,
 	"min_ksize": 26,
-	"infuse_delay": 5,
+	"infuse_delay": 4,
 	"challenge_delay": 8,
 	"challenge_interval": 64,
 	"commit_delay": 24,
