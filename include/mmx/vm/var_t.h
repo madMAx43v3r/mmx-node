@@ -220,6 +220,8 @@ var_t* clone(const var_t* var);
 
 int compare(const var_t& lhs, const var_t& rhs);
 
+int compare(const var_t* lhs, const var_t* rhs);
+
 std::pair<uint8_t*, size_t> serialize(const var_t& src, bool with_rc = true, bool with_vf = true);
 
 size_t deserialize(var_t*& var, const void* data, const size_t length, bool with_rc = true, bool with_vf = true);
@@ -227,24 +229,22 @@ size_t deserialize(var_t*& var, const void* data, const size_t length, bool with
 std::string to_string(const var_t* var);
 
 struct varptr_less_t {
-	bool operator()(const var_t* const& L, const var_t* const& R) const {
-		if(!L) { return R; }
-		if(!R) { return false; }
-		return compare(*L, *R) < 0;
+	bool operator()(const var_t* const& lhs, const var_t* const& rhs) const {
+		return compare(lhs, rhs) < 0;
 	}
 };
 
-inline bool operator<(const var_t& L, const var_t& R) {
-	return compare(L, R) < 0;
+inline bool operator<(const var_t& lhs, const var_t& rhs) {
+	return compare(lhs, rhs) < 0;
 }
-inline bool operator>(const var_t& L, const var_t& R) {
-	return compare(L, R) > 0;
+inline bool operator>(const var_t& lhs, const var_t& rhs) {
+	return compare(lhs, rhs) > 0;
 }
-inline bool operator==(const var_t& L, const var_t& R) {
-	return compare(L, R) == 0;
+inline bool operator==(const var_t& lhs, const var_t& rhs) {
+	return compare(lhs, rhs) == 0;
 }
-inline bool operator!=(const var_t& L, const var_t& R) {
-	return compare(L, R) != 0;
+inline bool operator!=(const var_t& lhs, const var_t& rhs) {
+	return compare(lhs, rhs) != 0;
 }
 
 inline size_t num_bytes(const var_t& var)

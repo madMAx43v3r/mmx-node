@@ -100,6 +100,17 @@ int compare(const var_t& lhs, const var_t& rhs)
 	}
 }
 
+int compare(const var_t* lhs, const var_t* rhs)
+{
+	if(lhs && rhs) {
+		return compare(*lhs, *rhs);
+	}
+	if(!lhs && !rhs) {
+		return 0;
+	}
+	return rhs ? -1 : 1;
+}
+
 std::pair<uint8_t*, size_t> serialize(const var_t& src, bool with_rc, bool with_vf)
 {
 	size_t length = 1;

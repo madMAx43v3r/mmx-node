@@ -80,8 +80,20 @@ private:
 
 };
 
-inline bool operator<(const varptr_t& L, const varptr_t& R) {
-	return varptr_less_t{}(L.get(), R.get());
+inline bool operator<(const varptr_t& lhs, const varptr_t& rhs) {
+	return compare(lhs.get(), rhs.get()) < 0;
+}
+
+inline bool operator>(const varptr_t& lhs, const varptr_t& rhs) {
+	return compare(lhs.get(), rhs.get()) > 0;
+}
+
+inline bool operator==(const varptr_t& lhs, const varptr_t& rhs) {
+	return compare(lhs.get(), rhs.get()) == 0;
+}
+
+inline bool operator!=(const varptr_t& lhs, const varptr_t& rhs) {
+	return compare(lhs.get(), rhs.get()) != 0;
 }
 
 
