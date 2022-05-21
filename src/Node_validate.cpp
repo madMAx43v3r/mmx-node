@@ -405,9 +405,14 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	}
 	mmx::load(engine, executable);
 
-	engine->remote = [this, tx, context, executable, storage_cache, engine, &exec_inputs, &exec_outputs, &tx_cost]
+	std::weak_ptr<vm::Engine> parent = engine;
+	engine->remote = [this, tx, context, executable, storage_cache, parent, &exec_inputs, &exec_outputs, &tx_cost]
 		(const std::string& name, const std::string& method, const uint32_t nargs)
 	{
+		auto engine = parent.lock();
+		if(!engine) {
+			throw std::logic_error("!engine");
+		}
 		auto iter = executable->depends.find(name);
 		if(iter == executable->depends.end()) {
 			throw std::runtime_error("no such external contract: " + name);
