@@ -137,7 +137,7 @@ struct binary_t : var_t {
 		return std::string(c_str(), size);
 	}
 	std::string to_hex_string() const {
-		return vnx::to_hex_string(c_str(), size);
+		return vnx::to_hex_string(c_str(), size, false);
 	}
 
 	static binary_t* clone(const binary_t& src) {

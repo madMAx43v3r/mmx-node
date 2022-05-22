@@ -107,7 +107,7 @@ bool bytes_t<N>::is_zero() const {
 
 template<size_t N>
 std::string bytes_t<N>::to_string() const {
-	return vnx::to_hex_string(bytes.data(), N);
+	return vnx::to_hex_string(bytes.data(), N, false);
 }
 
 template<size_t N>
@@ -131,7 +131,7 @@ void bytes_t<N>::from_string(const std::string& str)
 		throw std::logic_error("input size mismatch");
 	}
 	for(size_t i = 0; i < N; ++i) {
-		bytes[N - i - 1] = std::stoul(str.substr(off + i * 2, 2), nullptr, 16);
+		bytes[i] = std::stoul(str.substr(off + i * 2, 2), nullptr, 16);
 	}
 }
 

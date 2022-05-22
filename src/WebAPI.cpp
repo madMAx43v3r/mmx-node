@@ -289,7 +289,7 @@ public:
 	}
 
 	void accept(const std::vector<uint8_t>& value) {
-		set(bls::Util::HexStr(value.data(), value.size()));
+		set(vnx::to_hex_string(value.data(), value.size()));
 	}
 
 	void accept(const txio_key_t& value) {

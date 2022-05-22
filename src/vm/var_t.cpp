@@ -355,7 +355,7 @@ std::string to_string(const var_t* var)
 		}
 		case TYPE_BINARY: {
 			auto bin = (const binary_t*)var;
-			return "0x" + vnx::to_hex_string(bin->data(), bin->size);
+			return "0x" + vnx::to_hex_string(bin->data(), bin->size, false);
 		}
 		case TYPE_ARRAY: {
 			auto array = (const array_t*)var;
