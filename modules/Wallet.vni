@@ -23,6 +23,9 @@ module Wallet implements vnx.addons.HttpComponent {
 	Transaction* send(uint index, ulong amount, addr_t dst_addr, addr_t currency, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
+	Transaction* send_many(uint index, map<addr_t, ulong> amounts, addr_t currency, spend_options_t options) const;
+	
+	@Permission(permission_e.SPENDING)
 	Transaction* send_from(uint index, ulong amount, addr_t dst_addr, addr_t src_addr, addr_t currency, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)

@@ -122,6 +122,34 @@ Wallet::send(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_a
 }
 
 std::shared_ptr<const Transaction>
+Wallet::send_many(	const uint32_t& index, const std::map<addr_t, uint64_t>& amounts,
+					const addr_t& currency, const spend_options_t& options) const
+{
+	const auto wallet = get_wallet(index);
+	update_cache(index);
+
+	auto tx = Transaction::create();
+	tx->note = tx_note_e::TRANSFER;
+
+	for(const auto& entry : amounts) {
+		if(entry.first == addr_t()) {
+			throw std::logic_error("address cannot be zero");
+		}
+		if(entry.second == 0) {
+			throw std::logic_error("amount cannot be zero");
+		}
+		tx->add_output(currency, entry.first, entry.second, options.sender);
+	}
+	wallet->complete(tx, options);
+
+	if(tx->is_signed()) {
+		send_off(index, tx);
+		log(INFO) << "Sent many with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
+	}
+	return tx;
+}
+
+std::shared_ptr<const Transaction>
 Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 					const addr_t& dst_addr, const addr_t& src_addr,
 					const addr_t& currency, const spend_options_t& options) const

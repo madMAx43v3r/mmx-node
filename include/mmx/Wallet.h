@@ -34,6 +34,10 @@ protected:
 			const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
 			const addr_t& currency, const spend_options_t& options) const override;
 
+	std::shared_ptr<const Transaction> send_many(
+			const uint32_t& index, const std::map<addr_t, uint64_t>& amounts,
+			const addr_t& currency, const spend_options_t& options) const override;
+
 	std::shared_ptr<const Transaction> send_from(
 			const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& src_addr,
 			const addr_t& currency, const spend_options_t& options) const override;
