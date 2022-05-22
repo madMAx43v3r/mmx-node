@@ -11,8 +11,3 @@ target_link_libraries(create_test_contract2 mmx_vm)
 
 target_link_libraries(vm_engine_tests mmx_vm)
 
-if(MSVC)
-	target_include_directories(test_engine PUBLIC ${MMXIFACE_BINARY_DIR})
-	target_include_directories(create_test_contract PUBLIC ${MMXIFACE_BINARY_DIR})
-	target_include_directories(create_test_contract2 PUBLIC ${MMXIFACE_BINARY_DIR})
-endif()

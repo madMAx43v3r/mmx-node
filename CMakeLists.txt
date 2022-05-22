@@ -15,7 +15,7 @@ if(MSVC)
 	add_library(secp256k1 INTERFACE IMPORTED)
 	set_target_properties(secp256k1 PROPERTIES INTERFACE_LINK_LIBRARIES ${secp256k1_LIBRARY})
 
-	set(MMXIFACE_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} CACHE STRING "")
+	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
 set(ARITH "easy" CACHE STRING "BLS ARITH")
@@ -125,7 +125,6 @@ add_library(mmx_iface SHARED
 if(MSVC)
 	include(GenerateExportHeader)
 	GENERATE_EXPORT_HEADER(mmx_iface)
-	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 	set_target_properties(mmx_iface PROPERTIES ENABLE_EXPORTS 1)
 	set_target_properties(mmx_iface PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 	set_target_properties(mmx_iface PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")
@@ -202,9 +201,8 @@ if(MSVC)
 	set_target_properties(mmx_modules PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 	set_target_properties(mmx_modules PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")
 
-	#set_target_properties(mmx_vm PROPERTIES ENABLE_EXPORTS 1)
+	set_target_properties(mmx_vm_iface PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 	set_target_properties(mmx_vm PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
-	#set_target_properties(mmx_vm PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")	
 endif()
 
 target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_base vnx_addons mmx_vm_iface)
