@@ -215,7 +215,9 @@ private:
 
 	void update();
 
-	void check_vdfs();
+	void verify_vdfs();
+
+	void verify_proofs();
 
 	void print_stats();
 
@@ -296,6 +298,8 @@ private:
 	void commit(std::shared_ptr<const Block> block) noexcept;
 
 	void purge_tree();
+
+	bool verify(std::shared_ptr<const ProofResponse> value);
 
 	void verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_output) const;
 
@@ -389,6 +393,7 @@ private:
 
 	std::multimap<uint32_t, std::shared_ptr<vdf_point_t>> verified_vdfs;			// [height => output]
 	std::multimap<uint32_t, std::shared_ptr<const ProofOfTime>> pending_vdfs;		// [height => proof]
+	std::list<std::shared_ptr<const ProofResponse>> pending_proofs;
 
 	std::unordered_multimap<uint32_t, hash_t> challenge_map;								// [height => challenge]
 	std::unordered_multimap<hash_t, std::shared_ptr<const ProofResponse>> proof_map;		// [challenge => proof]

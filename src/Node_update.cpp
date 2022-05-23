@@ -19,7 +19,7 @@
 
 namespace mmx {
 
-void Node::check_vdfs()
+void Node::verify_vdfs()
 {
 	for(auto iter = pending_vdfs.begin(); iter != pending_vdfs.end();) {
 		const auto& proof = iter->second;
@@ -28,9 +28,20 @@ void Node::check_vdfs()
 				handle(proof);
 			});
 			iter = pending_vdfs.erase(iter);
-			continue;
+		} else {
+			iter++;
 		}
-		iter++;
+	}
+}
+
+void Node::verify_proofs()
+{
+	for(auto iter = pending_proofs.begin(); iter != pending_proofs.end();) {
+		if(verify(*iter)) {
+			iter = pending_proofs.erase(iter);
+		} else {
+			iter++;
+		}
 	}
 }
 
@@ -81,7 +92,8 @@ void Node::update()
 {
 	const auto time_begin = vnx::get_wall_time_micros();
 
-	check_vdfs();
+	verify_vdfs();
+	verify_proofs();
 
 	// verify proof where possible
 	std::vector<std::shared_ptr<fork_t>> to_verify;

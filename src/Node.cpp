@@ -846,50 +846,10 @@ void Node::handle(std::shared_ptr<const ProofResponse> value)
 		return;
 	}
 	const auto root = get_root();
-	const auto request = value->request;
-	if(request->height < root->height) {
+	if(value->request->height < root->height) {
 		return;
 	}
-	try {
-		// TODO: race condition with receive of block
-		const auto vdf_block = get_header(request->vdf_block);
-		if(!vdf_block) {
-			throw std::logic_error("no such vdf_block");
-		}
-		if(request->height != vdf_block->height + params->challenge_delay) {
-			throw std::logic_error("invalid height");
-		}
-		const auto diff_block = get_diff_header(vdf_block, params->challenge_delay);
-		const auto challenge = hash_t(diff_block->hash + vdf_block->vdf_output[1]);
-		if(request->challenge != challenge) {
-			throw std::logic_error("invalid challenge");
-		}
-		if(request->space_diff != diff_block->space_diff) {
-			throw std::logic_error("invalid space_diff");
-		}
-		verify_proof(value->proof, challenge, diff_block);
-
-		if(value->proof->score >= params->score_threshold) {
-			throw std::logic_error("invalid score");
-		}
-		auto iter = proof_map.find(challenge);
-		if(iter == proof_map.end() || value->proof->score <= iter->second->proof->score)
-		{
-			if(iter == proof_map.end()) {
-				challenge_map.emplace(request->height, challenge);
-			}
-			else if(value->proof->score < iter->second->proof->score) {
-				proof_map.erase(challenge);
-			}
-			proof_map.emplace(challenge, value);
-
-			log(DEBUG) << "Got new best proof for height " << request->height << " with score " << value->proof->score;
-		}
-		publish(value, output_verified_proof);
-	}
-	catch(const std::exception& ex) {
-		log(WARN) << "Got invalid proof: " << ex.what();
-	}
+	pending_proofs.push_back(value);
 }
 
 #ifdef WITH_JEMALLOC

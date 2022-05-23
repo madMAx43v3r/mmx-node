@@ -17,6 +17,51 @@
 
 namespace mmx {
 
+bool Node::verify(std::shared_ptr<const ProofResponse> value)
+{
+	const auto request = value->request;
+	const auto vdf_block = get_header(request->vdf_block);
+	if(!vdf_block) {
+		return false;
+	}
+	try {
+		if(request->height != vdf_block->height + params->challenge_delay) {
+			throw std::logic_error("invalid height");
+		}
+		const auto diff_block = get_diff_header(vdf_block, params->challenge_delay);
+		const auto challenge = hash_t(diff_block->hash + vdf_block->vdf_output[1]);
+		if(request->challenge != challenge) {
+			throw std::logic_error("invalid challenge");
+		}
+		if(request->space_diff != diff_block->space_diff) {
+			throw std::logic_error("invalid space_diff");
+		}
+		verify_proof(value->proof, challenge, diff_block);
+
+		if(value->proof->score >= params->score_threshold) {
+			throw std::logic_error("invalid score");
+		}
+		auto iter = proof_map.find(challenge);
+		if(iter == proof_map.end() || value->proof->score <= iter->second->proof->score)
+		{
+			if(iter == proof_map.end()) {
+				challenge_map.emplace(request->height, challenge);
+			}
+			else if(value->proof->score < iter->second->proof->score) {
+				proof_map.erase(challenge);
+			}
+			proof_map.emplace(challenge, value);
+
+			log(DEBUG) << "Got new best proof for height " << request->height << " with score " << value->proof->score;
+		}
+		publish(value, output_verified_proof);
+	}
+	catch(const std::exception& ex) {
+		log(WARN) << "Got invalid proof: " << ex.what();
+	}
+	return true;
+}
+
 void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challenge) const
 {
 	const auto block = fork->block;
@@ -287,7 +332,7 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::sha
 void Node::verify_vdf_failed(std::shared_ptr<const ProofOfTime> proof)
 {
 	vdf_verify_pending.erase(proof->height);
-	check_vdfs();
+	verify_vdfs();
 }
 
 void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) const noexcept
