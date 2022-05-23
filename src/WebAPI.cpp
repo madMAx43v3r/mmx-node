@@ -1409,6 +1409,45 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "POST wallet/send {...}");
 		}
 	}
+	else if(sub_path == "/wallet/send_many") {
+		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
+		if(request->payload.size()) {
+			vnx::Object args;
+			vnx::from_string(request->payload.as_string(), args);
+			const auto currency = args["currency"].to<addr_t>();
+			node->get_contract(currency,
+				[this, request_id, args, currency](std::shared_ptr<const Contract> contract) {
+					try {
+						double factor = 1;
+						if(auto token = std::dynamic_pointer_cast<const contract::TokenBase>(contract)) {
+							factor = pow(10, token->decimals);
+						} else if(currency == addr_t()) {
+							factor = pow(10, params->decimals);
+						} else {
+							throw std::logic_error("invalid currency");
+						}
+						std::map<addr_t, uint64_t> amounts;
+						for(const auto& entry : args["amounts"].to<std::map<addr_t, double>>()) {
+							amounts[entry.first] = entry.second * factor;
+						}
+						const auto index = args["index"].to<uint32_t>();
+						const auto options = args["options"].to<spend_options_t>();
+						wallet->send_many(index, amounts, currency, options,
+							[this, request_id](std::shared_ptr<const Transaction> tx) {
+								vnx::Variant res;
+								if(tx) { res = tx->id.to_string(); }
+								respond(request_id, res);
+							},
+							std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+					} catch(std::exception& ex) {
+						respond_ex(request_id, ex);
+					}
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "POST wallet/send_many {...}");
+		}
+	}
 	else if(sub_path == "/wallet/deploy") {
 		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
 		const auto iter_index = query.find("index");
