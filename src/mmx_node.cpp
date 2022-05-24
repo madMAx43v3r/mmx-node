@@ -130,7 +130,8 @@ int main(int argc, char** argv)
 	}
 	{
 		vnx::Handle<vnx::addons::HttpServer> module = new vnx::addons::HttpServer("HttpServer");
-		module->default_access = "ADMIN";
+		module->default_access = "DEFAULT";
+		module->components["/server/"] = "HttpServer";
 		module->components["/wapi/"] = "WebAPI";
 		module->components["/api/node/"] = "Node";
 		module->components["/api/wallet/"] = "Wallet";

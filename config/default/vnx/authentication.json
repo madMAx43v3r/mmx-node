@@ -3,5 +3,11 @@
 		"USER": ["mmx.permission_e.PUBLIC", "PUBLISH"],
 		"ADMIN": ["mmx.permission_e.PUBLIC", "mmx.permission_e.SPENDING"],
 		"NETWORK": ["mmx.permission_e.PUBLIC"]
-	}
+	},
+	"users": [
+		{
+			"name": "mmx-admin",
+			"access_roles": ["ADMIN"]
+		}
+	]
 }
