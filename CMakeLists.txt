@@ -236,6 +236,7 @@ add_executable(mmx_wallet src/mmx_wallet.cpp)
 add_executable(mmx_timelord src/mmx_timelord.cpp)
 add_executable(mmx_harvester src/mmx_harvester.cpp)
 add_executable(mmx_timelord_rewards src/mmx_timelord_rewards.cpp)
+add_executable(generate_passwd src/generate_passwd.cpp)
 
 target_link_libraries(mmx mmx_iface)
 target_link_libraries(mmx_node mmx_modules)
@@ -244,6 +245,7 @@ target_link_libraries(mmx_wallet mmx_modules)
 target_link_libraries(mmx_timelord mmx_modules)
 target_link_libraries(mmx_harvester mmx_modules)
 target_link_libraries(mmx_timelord_rewards mmx_modules)
+target_link_libraries(generate_passwd mmx_iface)
 
 add_executable(tx_bench src/tx_bench.cpp)
 

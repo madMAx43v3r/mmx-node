@@ -38,6 +38,7 @@
 /.cproject
 /.pydevproject
 /config/local
+/PASSWD
 /NETWORK
 /testnet*
 /tmp

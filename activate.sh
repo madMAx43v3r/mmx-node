@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [ ! -f PASSWD ]; then
+	./build/generate_passwd > PASSWD
+	./build/vnx-base/tools/vnxpasswd -c config/default/ config/local/ -u mmx-admin -p $(cat PASSWD)
+	echo "PASSWD=$(cat PASSWD)"
+fi
+
 if [ -f NETWORK ]; then
 	NETWORK=$(cat NETWORK)
 else
