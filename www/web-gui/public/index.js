@@ -445,7 +445,7 @@ app.component('main-menu', {
 				<router-link class="item" :class="{active: $route.meta.is_node}" to="/node/">Node</router-link>
 				<router-link class="item" :class="{active: $route.meta.is_wallet}" to="/wallet/">Wallet</router-link>
 				<router-link class="item" :class="{active: $route.meta.is_explorer}" to="/explore/">Explore</router-link>
-				<router-link class="item" :class="{active: $route.meta.is_exchange}" to="/exchange/">Exchange</router-link>
+				<!--<router-link class="item" :class="{active: $route.meta.is_exchange}" to="/exchange/">Exchange</router-link>-->
 				<div class="right menu">
 					<router-link class="item" to="/settings/">Settings</router-link>
 				</div>
