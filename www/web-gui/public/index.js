@@ -381,7 +381,7 @@ const Login = {
 		<div class="ui raised segment">
 			<form class="ui form">
 				<div class="field">
-					<label>Password</label>
+					<label>Password (see PASSWD file)</label>
 					<input type="password" v-model="passwd">
 				</div>
 				<div @click="submit" class="ui submit button">Login</div>

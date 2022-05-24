@@ -6,6 +6,8 @@ if [ ! -f PASSWD ]; then
 	echo "PASSWD=$(cat PASSWD)"
 fi
 
+chmod 600 PASSWD
+
 if [ -f NETWORK ]; then
 	NETWORK=$(cat NETWORK)
 else
