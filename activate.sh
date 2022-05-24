@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ ! -d config/local ]; then
+	cp -r config/local_init config/local
+	echo "Initialized config/local/ with defaults."
+fi
+
 if [ ! -f PASSWD ]; then
 	./build/generate_passwd > PASSWD
 	./build/vnx-base/tools/vnxpasswd -c config/default/ config/local/ -u mmx-admin -p $(cat PASSWD)
@@ -16,11 +21,6 @@ else
 fi
 
 echo NETWORK=${NETWORK}
-
-if [ ! -d config/local ]; then
-	cp -r config/local_init config/local
-	echo "Initialized config/local/ with defaults."
-fi
 
 export MMX_NETWORK=${NETWORK}/
 export PATH=$PATH:$PWD/build:$PWD/build/exchange
