@@ -1553,10 +1553,12 @@ std::shared_ptr<const BlockHeader> Node::read_block(
 	if(block_offset) {
 		*block_offset = offset;
 	}
+	if(tx_offsets) {
+		tx_offsets->clear();
+	}
 	try {
 		if(auto header = std::dynamic_pointer_cast<BlockHeader>(vnx::read(in))) {
 			if(tx_offsets) {
-				tx_offsets->clear();
 				if(auto tx = header->tx_base) {
 					tx_offsets->emplace_back(tx->id, offset);
 				}
