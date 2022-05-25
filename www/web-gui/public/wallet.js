@@ -1253,8 +1253,7 @@ app.component('create-locked-contract', {
 	data() {
 		return {
 			owner: null,
-			chain_height: null,
-			delta_height: null,
+			unlock_height: null,
 			valid: false,
 			confirmed: false,
 			result: null,
@@ -1263,7 +1262,7 @@ app.component('create-locked-contract', {
 	},
 	methods: {
 		check_valid() {
-			this.valid = this.owner && (this.chain_height || this.delta_height);
+			this.valid = this.owner && this.unlock_height;
 			if(!this.valid) {
 				this.confirmed = false;
 			}
@@ -1273,8 +1272,7 @@ app.component('create-locked-contract', {
 			const contract = {};
 			contract.__type = "mmx.contract.TimeLock";
 			contract.owner = this.owner;
-			contract.chain_height = this.chain_height;
-			contract.delta_height = this.delta_height;
+			contract.unlock_height = this.unlock_height;
 			fetch('/wapi/wallet/deploy?index=' + this.index, {body: JSON.stringify(contract), method: "post"})
 				.then(response => {
 					if(response.ok) {
@@ -1292,10 +1290,7 @@ app.component('create-locked-contract', {
 		owner(value) {
 			this.check_valid();
 		},
-		chain_height(value) {
-			this.check_valid();
-		},
-		delta_height(value) {
+		unlock_height(value) {
 			this.check_valid();
 		},
 		result(value) {
@@ -1320,11 +1315,7 @@ app.component('create-locked-contract', {
 				</div>
 				<div class="field">
 					<label>Unlock at Chain Height</label>
-					<input type="text" v-model.number="chain_height"/>
-				</div>
-				<div class="field">
-					<label>Unlock after N Blocks (starting at time of deposit)</label>
-					<input type="text" v-model.number="delta_height"/>
+					<input type="text" v-model.number="unlock_height"/>
 				</div>
 				<div class="inline field">
 					<div class="ui toggle checkbox" :class="{disabled: !valid}">
