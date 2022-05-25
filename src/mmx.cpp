@@ -575,8 +575,8 @@ int main(int argc, char** argv)
 				} else if(!file_name.empty()) {
 					prev = vnx::read_from_file<mmx::Transaction>(file_name);
 				}
-				if(prev) {
-					auto tx = wallet.revoke(index, prev, spend_options);
+				if(prev && prev->sender) {
+					auto tx = wallet.revoke(index, prev->id, *prev->sender, spend_options);
 					std::cout << "Transaction ID: " << tx->id << std::endl;
 				}
 			}

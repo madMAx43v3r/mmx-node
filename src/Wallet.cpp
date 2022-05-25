@@ -400,14 +400,8 @@ std::shared_ptr<const Transaction> Wallet::accept_offer(
 }
 
 std::shared_ptr<const Transaction> Wallet::revoke(
-		const uint32_t& index, std::shared_ptr<const Transaction> prev, const spend_options_t& options) const
+		const uint32_t& index, const hash_t& txid, const addr_t& address, const spend_options_t& options) const
 {
-	if(!prev) {
-		throw std::runtime_error("no such transaction");
-	}
-	if(!prev->sender) {
-		throw std::runtime_error("transaction cannot be revoked");
-	}
 	const auto wallet = get_wallet(index);
 	update_cache(index);
 
@@ -415,15 +409,15 @@ std::shared_ptr<const Transaction> Wallet::revoke(
 	tx->note = tx_note_e::REVOKE;
 
 	auto op = operation::Revoke::create();
-	op->address = *prev->sender;
-	op->txid = prev->id;
+	op->address = address;
+	op->txid = txid;
 	tx->execute.push_back(op);
 
 	wallet->complete(tx, options);
 
 	if(tx->is_signed()) {
 		send_off(index, tx);
-		log(INFO) << "Revoked " << prev->id << " with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
+		log(INFO) << "Revoked " << txid << " with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
 	}
 	return tx;
 }
