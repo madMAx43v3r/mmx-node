@@ -3,8 +3,9 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Wallet_revoke.hxx>
-#include <mmx/Transaction.hxx>
 #include <mmx/Wallet_revoke_return.hxx>
+#include <mmx/addr_t.hpp>
+#include <mmx/hash_t.hpp>
 #include <mmx/spend_options_t.hxx>
 #include <vnx/Value.h>
 
@@ -15,7 +16,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_revoke::VNX_TYPE_HASH(0x7470bb05bf1610caull);
-const vnx::Hash64 Wallet_revoke::VNX_CODE_HASH(0x9708f2e843b74471ull);
+const vnx::Hash64 Wallet_revoke::VNX_CODE_HASH(0xb259e20231bafa04ull);
 
 vnx::Hash64 Wallet_revoke::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,15 +50,17 @@ void Wallet_revoke::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Wallet_revoke;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, index);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, prev);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, options);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, txid);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, address);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, options);
 	_visitor.type_end(*_type_code);
 }
 
 void Wallet_revoke::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Wallet.revoke\"";
 	_out << ", \"index\": "; vnx::write(_out, index);
-	_out << ", \"prev\": "; vnx::write(_out, prev);
+	_out << ", \"txid\": "; vnx::write(_out, txid);
+	_out << ", \"address\": "; vnx::write(_out, address);
 	_out << ", \"options\": "; vnx::write(_out, options);
 	_out << "}";
 }
@@ -72,19 +75,22 @@ vnx::Object Wallet_revoke::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Wallet.revoke";
 	_object["index"] = index;
-	_object["prev"] = prev;
+	_object["txid"] = txid;
+	_object["address"] = address;
 	_object["options"] = options;
 	return _object;
 }
 
 void Wallet_revoke::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "index") {
+		if(_entry.first == "address") {
+			_entry.second.to(address);
+		} else if(_entry.first == "index") {
 			_entry.second.to(index);
 		} else if(_entry.first == "options") {
 			_entry.second.to(options);
-		} else if(_entry.first == "prev") {
-			_entry.second.to(prev);
+		} else if(_entry.first == "txid") {
+			_entry.second.to(txid);
 		}
 	}
 }
@@ -93,8 +99,11 @@ vnx::Variant Wallet_revoke::get_field(const std::string& _name) const {
 	if(_name == "index") {
 		return vnx::Variant(index);
 	}
-	if(_name == "prev") {
-		return vnx::Variant(prev);
+	if(_name == "txid") {
+		return vnx::Variant(txid);
+	}
+	if(_name == "address") {
+		return vnx::Variant(address);
 	}
 	if(_name == "options") {
 		return vnx::Variant(options);
@@ -105,8 +114,10 @@ vnx::Variant Wallet_revoke::get_field(const std::string& _name) const {
 void Wallet_revoke::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "index") {
 		_value.to(index);
-	} else if(_name == "prev") {
-		_value.to(prev);
+	} else if(_name == "txid") {
+		_value.to(txid);
+	} else if(_name == "address") {
+		_value.to(address);
 	} else if(_name == "options") {
 		_value.to(options);
 	}
@@ -136,7 +147,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_revoke::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.revoke";
 	type_code->type_hash = vnx::Hash64(0x7470bb05bf1610caull);
-	type_code->code_hash = vnx::Hash64(0x9708f2e843b74471ull);
+	type_code->code_hash = vnx::Hash64(0xb259e20231bafa04ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -146,7 +157,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_revoke::static_create_type_code() {
 	type_code->depends[0] = ::mmx::spend_options_t::static_get_type_code();
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Wallet_revoke_return::static_get_type_code();
-	type_code->fields.resize(3);
+	type_code->fields.resize(4);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -156,11 +167,17 @@ std::shared_ptr<vnx::TypeCode> Wallet_revoke::static_create_type_code() {
 	{
 		auto& field = type_code->fields[1];
 		field.is_extended = true;
-		field.name = "prev";
-		field.code = {16};
+		field.name = "txid";
+		field.code = {11, 32, 1};
 	}
 	{
 		auto& field = type_code->fields[2];
+		field.is_extended = true;
+		field.name = "address";
+		field.code = {11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[3];
 		field.is_extended = true;
 		field.name = "options";
 		field.code = {19, 0};
@@ -214,8 +231,9 @@ void read(TypeInput& in, ::mmx::Wallet_revoke& value, const TypeCode* type_code,
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 1: vnx::read(in, value.prev, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.options, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.txid, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.address, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.options, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -236,8 +254,9 @@ void write(TypeOutput& out, const ::mmx::Wallet_revoke& value, const TypeCode* t
 	}
 	char* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.index);
-	vnx::write(out, value.prev, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.options, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.txid, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.address, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.options, type_code, type_code->fields[3].code.data());
 }
 
 void read(std::istream& in, ::mmx::Wallet_revoke& value) {

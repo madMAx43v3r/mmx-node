@@ -55,7 +55,7 @@ public:
 	
 	std::shared_ptr<const ::mmx::Transaction> accept_offer(const uint32_t& index = 0, std::shared_ptr<const ::mmx::Transaction> offer = nullptr, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
-	std::shared_ptr<const ::mmx::Transaction> revoke(const uint32_t& index = 0, std::shared_ptr<const ::mmx::Transaction> prev = nullptr, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
+	std::shared_ptr<const ::mmx::Transaction> revoke(const uint32_t& index = 0, const ::mmx::hash_t& txid = ::mmx::hash_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
 	std::shared_ptr<const ::mmx::Transaction> complete(const uint32_t& index = 0, std::shared_ptr<const ::mmx::Transaction> tx = nullptr, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	

@@ -651,7 +651,7 @@ std::shared_ptr<vnx::Value> WalletBase::vnx_call_switch(std::shared_ptr<const vn
 		case 0x7470bb05bf1610caull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Wallet_revoke>(_method);
 			auto _return_value = ::mmx::Wallet_revoke_return::create();
-			_return_value->_ret_0 = revoke(_args->index, _args->prev, _args->options);
+			_return_value->_ret_0 = revoke(_args->index, _args->txid, _args->address, _args->options);
 			return _return_value;
 		}
 		case 0x3842658ae3c2d5ebull: {

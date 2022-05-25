@@ -5,7 +5,8 @@
 #define INCLUDE_mmx_Wallet_revoke_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/Transaction.hxx>
+#include <mmx/addr_t.hpp>
+#include <mmx/hash_t.hpp>
 #include <mmx/spend_options_t.hxx>
 #include <vnx/Value.h>
 
@@ -16,7 +17,8 @@ class MMX_EXPORT Wallet_revoke : public ::vnx::Value {
 public:
 	
 	uint32_t index = 0;
-	std::shared_ptr<const ::mmx::Transaction> prev;
+	::mmx::hash_t txid;
+	::mmx::addr_t address;
 	::mmx::spend_options_t options;
 	
 	typedef ::vnx::Value Super;
@@ -61,11 +63,12 @@ public:
 
 template<typename T>
 void Wallet_revoke::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Wallet_revoke>(3);
+	_visitor.template type_begin<Wallet_revoke>(4);
 	_visitor.type_field("index", 0); _visitor.accept(index);
-	_visitor.type_field("prev", 1); _visitor.accept(prev);
-	_visitor.type_field("options", 2); _visitor.accept(options);
-	_visitor.template type_end<Wallet_revoke>(3);
+	_visitor.type_field("txid", 1); _visitor.accept(txid);
+	_visitor.type_field("address", 2); _visitor.accept(address);
+	_visitor.type_field("options", 3); _visitor.accept(options);
+	_visitor.template type_end<Wallet_revoke>(4);
 }
 
 

@@ -75,7 +75,7 @@ public:
 			const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::Transaction>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t revoke(const uint32_t& index = 0, std::shared_ptr<const ::mmx::Transaction> prev = nullptr, const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
+	uint64_t revoke(const uint32_t& index = 0, const ::mmx::hash_t& txid = ::mmx::hash_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
 			const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::Transaction>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	

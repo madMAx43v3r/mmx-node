@@ -309,10 +309,11 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::accept_offer(const uint3
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::revoke(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> prev, const ::mmx::spend_options_t& options) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::revoke(const uint32_t& index, const ::mmx::hash_t& txid, const ::mmx::addr_t& address, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_revoke::create();
 	_method->index = index;
-	_method->prev = prev;
+	_method->txid = txid;
+	_method->address = address;
 	_method->options = options;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_revoke_return>(_return_value)) {

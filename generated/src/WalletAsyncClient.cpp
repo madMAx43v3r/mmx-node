@@ -309,10 +309,11 @@ uint64_t WalletAsyncClient::accept_offer(const uint32_t& index, std::shared_ptr<
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::revoke(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> prev, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::revoke(const uint32_t& index, const ::mmx::hash_t& txid, const ::mmx::addr_t& address, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_revoke::create();
 	_method->index = index;
-	_method->prev = prev;
+	_method->txid = txid;
+	_method->address = address;
 	_method->options = options;
 	const auto _request_id = ++vnx_next_id;
 	{
