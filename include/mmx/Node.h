@@ -318,7 +318,7 @@ private:
 	void check_vdf_task(std::shared_ptr<fork_t> fork, std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const BlockHeader> infuse) const noexcept;
 
 	void apply(	std::shared_ptr<const Block> block,
-				std::shared_ptr<const execution_context_t> context, int64_t* file_offset = nullptr) noexcept;
+				std::shared_ptr<const execution_context_t> context, bool is_replay = false) noexcept;
 
 	void apply(	std::shared_ptr<const Block> block,
 				std::shared_ptr<const Transaction> tx,
@@ -362,9 +362,10 @@ private:
 
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block) const;
 
-	std::shared_ptr<const BlockHeader> read_block(vnx::File& file, bool full_block = true, int64_t* file_offset = nullptr) const;
+	std::shared_ptr<const BlockHeader> read_block(vnx::File& file, bool full_block = true,
+			int64_t* block_offset = nullptr, std::vector<std::pair<hash_t, int64_t>>* tx_offsets = nullptr) const;
 
-	void write_block(std::shared_ptr<const Block> block, int64_t* file_offset = nullptr);
+	void write_block(std::shared_ptr<const Block> block, bool is_replay = false);
 
 private:
 	hash_t state_hash;

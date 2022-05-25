@@ -115,8 +115,7 @@ void Node::main()
 			is_replay = false;
 			block_chain->seek_to(entry.first);
 			try {
-				int64_t offset = 0;
-				auto block = read_block(*block_chain, true, &offset);
+				auto block = read_block(*block_chain, true);
 				if(height <= replay_height) {
 					state_hash = block->hash;
 					revert(height + 1, nullptr);
@@ -129,11 +128,21 @@ void Node::main()
 		}
 		if(is_replay) {
 			log(INFO) << "Creating DB (this may take a while) ...";
-			int64_t offset = 0;
-			while(auto header = read_block(*block_chain, true, &offset)) {
+			int64_t block_offset = 0;
+			std::vector<std::pair<hash_t, int64_t>> tx_offsets;
+			while(auto header = read_block(*block_chain, true, &block_offset, &tx_offsets)) {
 				if(auto block = std::dynamic_pointer_cast<const Block>(header)) {
-					apply(block, block->height > 0 ? validate(block) : nullptr, &offset);
+					try {
+						apply(block, block->height > 0 ? validate(block) : nullptr, true);
+					} catch(std::exception& ex) {
+						log(ERROR) << "Block validation at height " << block->height << " failed with: " << ex.what();
+						return;
+					}
 					commit(block);
+					for(const auto& entry : tx_offsets) {
+						tx_index.insert(entry.first, std::make_pair(entry.second, block->height));
+					}
+					block_index.insert(block->height, std::make_pair(block_offset, block->hash));
 					if(block->height % 1000 == 0) {
 						log(INFO) << "Height " << block->height << " ...";
 					}
@@ -1164,7 +1173,7 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 }
 
 void Node::apply(	std::shared_ptr<const Block> block,
-					std::shared_ptr<const execution_context_t> context, int64_t* file_offset) noexcept
+					std::shared_ptr<const execution_context_t> context, bool is_replay) noexcept
 {
 	if(block->prev != state_hash) {
 		return;
@@ -1195,7 +1204,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	}
 	storage->commit();
 
-	write_block(block, file_offset);
+	write_block(block, is_replay);
 	state_hash = block->hash;
 }
 
@@ -1535,22 +1544,37 @@ uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block) const
 	return mmx::calc_block_reward(params, get_diff_header(block)->space_diff);
 }
 
-std::shared_ptr<const BlockHeader> Node::read_block(vnx::File& file, bool full_block, int64_t* file_offset) const
+std::shared_ptr<const BlockHeader> Node::read_block(
+		vnx::File& file, bool full_block, int64_t* block_offset, std::vector<std::pair<hash_t, int64_t>>* tx_offsets) const
 {
 	// THREAD SAFE (for concurrent reads)
 	auto& in = file.in;
 	const auto offset = in.get_input_pos();
-	if(file_offset) {
-		*file_offset = offset;
+	if(block_offset) {
+		*block_offset = offset;
 	}
 	try {
 		if(auto header = std::dynamic_pointer_cast<BlockHeader>(vnx::read(in))) {
+			if(tx_offsets) {
+				tx_offsets->clear();
+				if(auto tx = header->tx_base) {
+					tx_offsets->emplace_back(tx->id, offset);
+				}
+			}
 			if(full_block) {
 				auto block = Block::create();
 				block->BlockHeader::operator=(*header);
 				while(true) {
+					const auto offset = in.get_input_pos();
 					if(auto value = vnx::read(in)) {
-						if(auto tx = std::dynamic_pointer_cast<Transaction>(value)) {
+						if(auto tx = std::dynamic_pointer_cast<const Transaction>(value)) {
+							if(tx_offsets) {
+								auto txi = tx;
+								while(txi) {
+									tx_offsets->emplace_back(tx->id, offset);
+									txi = txi->parent;
+								}
+							}
 							block->tx_list.push_back(tx);
 						} else {
 							throw std::logic_error("expected transaction");
@@ -1570,39 +1594,43 @@ std::shared_ptr<const BlockHeader> Node::read_block(vnx::File& file, bool full_b
 	return nullptr;
 }
 
-void Node::write_block(std::shared_ptr<const Block> block, int64_t* file_offset)
+void Node::write_block(std::shared_ptr<const Block> block, bool is_replay)
 {
 	auto& out = block_chain->out;
-	const auto offset = file_offset ? *file_offset : out.get_output_pos();
+	const auto offset = out.get_output_pos();
 
 	std::vector<hash_t> tx_ids;
 	if(auto tx = block->tx_base) {
+		if(!is_replay) {
+			tx_index.insert(tx->id, std::make_pair(offset, block->height));
+		}
 		tx_ids.push_back(tx->id);
-		tx_index.insert(tx->id, std::make_pair(offset, block->height));
 	}
-	if(!file_offset) {
+	if(!is_replay) {
 		vnx::write(out, block->get_header());
 	}
 
 	for(const auto& tx : block->tx_list) {
 		const auto offset = out.get_output_pos();
-		auto base = tx;
-		while(base) {
-			tx_ids.push_back(base->id);
-			tx_index.insert(base->id, std::make_pair(offset, block->height));
-			base = base->parent;
+		auto txi = tx;
+		while(txi) {
+			if(!is_replay) {
+				tx_index.insert(txi->id, std::make_pair(offset, block->height));
+			}
+			tx_ids.push_back(txi->id);
+			txi = txi->parent;
 		}
-		if(!file_offset) {
+		if(!is_replay) {
 			vnx::write(out, tx);
 		}
 	}
 	tx_log.insert(block->height, tx_ids);
 
-	if(!file_offset) {
+	if(!is_replay) {
 		vnx::write(out, nullptr);
 		block_chain->flush();
+		block_index.insert(block->height, std::make_pair(offset, block->hash));
 	}
-	block_index.insert(block->height, std::make_pair(offset, block->hash));
 	hash_index.insert(block->hash, block->height);
 }
 
