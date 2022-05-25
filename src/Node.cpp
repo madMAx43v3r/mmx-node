@@ -368,6 +368,15 @@ vnx::optional<tx_info_t> Node::get_tx_info_for(std::shared_ptr<const Transaction
 			contracts.insert(op->address);
 		}
 	}
+	{
+		auto txi = tx;
+		while(txi) {
+			if(auto tx = txi->parent) {
+				info.parents.push_back(tx->id);
+			}
+			txi = txi->parent;
+		}
+	}
 	for(const auto& addr : contracts) {
 		if(auto contract = get_contract(addr)) {
 			info.contracts[addr] = contract;

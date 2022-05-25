@@ -23,6 +23,8 @@ class tx_info_t {
 	
 	vector<Operation*> operations;
 	
+	vector<hash_t> parents;
+	
 	Contract* deployed;
 	
 	map<addr_t, uint128> input_amounts;
