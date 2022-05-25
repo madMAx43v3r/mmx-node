@@ -51,6 +51,7 @@ void Wallet::main()
 		options.max_open_files = 4;
 		options.keep_log_file_num = 3;
 		options.target_file_size_multiplier = 4;
+		options.avoid_flush_during_recovery = true;
 		options.max_manifest_file_size = 8 * 1024 * 1024;
 		options.OptimizeForSmallDb();
 

@@ -76,6 +76,7 @@ void Node::main()
 		options.max_open_files = 8;
 		options.keep_log_file_num = 3;
 		options.target_file_size_multiplier = 4;
+		options.avoid_flush_during_recovery = true;
 		options.max_manifest_file_size = 64 * 1024 * 1024;
 		options.OptimizeForSmallDb();
 
