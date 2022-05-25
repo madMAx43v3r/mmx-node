@@ -27,6 +27,7 @@
 #include <mmx/operation/Mutate.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
+#include <mmx/operation/Revoke.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/solution/MultiSig.hxx>
 #include <mmx/permission_e.hxx>
@@ -394,6 +395,8 @@ public:
 		} else if(auto value = std::dynamic_pointer_cast<const operation::Deposit>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const operation::Execute>(base)) {
+			set(render(value, context));
+		} else if(auto value = std::dynamic_pointer_cast<const operation::Revoke>(base)) {
 			set(render(value, context));
 		} else {
 			set(base);
@@ -778,9 +781,10 @@ void WebAPI::render_transactions(	const vnx::request_id_t& request_id, size_t li
 		return;
 	}
 	for(size_t i = 0; i < limit; ++i) {
-		node->get_tx_info(tx_ids[offset + i],
-			[this, job, i](const vnx::optional<tx_info_t>& info) {
-				if(info && !info->is_extendable) {
+		const auto txid = tx_ids[offset + i];
+		node->get_tx_info(txid,
+			[this, job, txid, i](const vnx::optional<tx_info_t>& info) {
+				if(info && info->id == txid) {
 					auto context = get_context();
 					for(const auto& entry : info->contracts) {
 						context->add_contract(entry.first, entry.second);
@@ -924,6 +928,59 @@ void WebAPI::render_tx_history(const vnx::request_id_t& request_id, const std::v
 					respond(job->request_id, render_value(job->result));
 				}
 			});
+	}
+}
+
+void WebAPI::render_offers(const vnx::request_id_t& request_id, const std::map<addr_t, std::shared_ptr<const contract::Offer>>& offers) const
+{
+	struct job_t {
+		size_t num_left = 0;
+		vnx::request_id_t request_id;
+		std::vector<vnx::Object> result;
+	};
+	auto job = std::make_shared<job_t>();
+	job->num_left = offers.size();
+	job->request_id = request_id;
+	job->result.resize(offers.size());
+
+	if(!job->num_left) {
+		respond(request_id, render_value(job->result));
+		return;
+	}
+	size_t i = 0;
+	for(const auto& entry : offers) {
+		const auto& tx = entry.second->base;
+		job->result[i]["id"] = entry.first.to_string();
+		node->get_tx_height(entry.first,
+			[this, job, i](const vnx::optional<uint32_t>& height) {
+				if(height) {
+					job->result[i]["time"] = get_context()->get_time(*height);
+				}
+				job->result[i]["height"] = height;
+			});
+		if(tx->sender) {
+			node->is_revoked(tx->id, *tx->sender,
+				[this, job, i](const vnx::optional<::mmx::hash_t>& txid) {
+					if(txid) {
+						job->result[i]["revoked_by"] = txid->to_string();
+					}
+					job->result[i]["revoked"] = bool(txid);
+				});
+		}
+		node->get_tx_info_for(tx,
+			[this, job, i](const vnx::optional<tx_info_t>& info) {
+				if(info) {
+					auto context = get_context();
+					for(const auto& entry : info->contracts) {
+						context->add_contract(entry.first, entry.second);
+					}
+					job->result[i]["base"] = render_value(info, context);
+				}
+				if(--job->num_left == 0) {
+					respond(job->request_id, render_value(job->result));
+				}
+			});
+		i++;
 	}
 }
 
@@ -1361,6 +1418,25 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "wallet/history?index|limit|offset|since");
 		}
 	}
+	else if(sub_path == "/wallet/offers") {
+		const auto iter_index = query.find("index");
+		if(iter_index != query.end()) {
+			const uint32_t index = vnx::from_string_value<int64_t>(iter_index->second);
+			wallet->get_contracts(index,
+				[this, request_id](const std::map<addr_t, std::shared_ptr<const Contract>>& contracts) {
+					std::map<addr_t, std::shared_ptr<const contract::Offer>> out;
+					for(const auto& entry : contracts) {
+						if(auto offer = std::dynamic_pointer_cast<const contract::Offer>(entry.second)) {
+							out.emplace(entry.first, offer);
+						}
+					}
+					render_offers(request_id, out);
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "wallet/offers?index");
+		}
+	}
 	else if(sub_path == "/wallet/send") {
 		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
 		if(request->payload.size()) {
@@ -1464,6 +1540,65 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
 			respond_status(request_id, 404, "POST wallet/deploy?index {...}");
+		}
+	}
+	else if(sub_path == "/wallet/offer") {
+		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
+		if(request->payload.size()) {
+			vnx::Object args;
+			vnx::from_string(request->payload.as_string(), args);
+			const auto bid_currency = args["bid_currency"].to<addr_t>();
+			const auto ask_currency = args["ask_currency"].to<addr_t>();
+			get_context({bid_currency, ask_currency}, request_id,
+				[this, request_id, args, bid_currency, ask_currency](std::shared_ptr<RenderContext> context) {
+					try {
+						uint64_t bid_amount = 0;
+						uint64_t ask_amount = 0;
+						if(auto currency = context->find_currency(bid_currency)) {
+							bid_amount = args["bid"].to<double>() * pow(10, currency->decimals);
+						} else {
+							throw std::logic_error("invalid bid currency");
+						}
+						if(auto currency = context->find_currency(ask_currency)) {
+							ask_amount = args["ask"].to<double>() * pow(10, currency->decimals);
+						} else {
+							throw std::logic_error("invalid ask currency");
+						}
+						const auto index = args["index"].to<uint32_t>();
+						wallet->make_offer(index, 0, bid_amount, bid_currency, ask_amount, ask_currency, {},
+							[this, request_id, index](std::shared_ptr<const Transaction> tx) {
+								auto offer = mmx::contract::Offer::create();
+								offer->base = tx;
+								wallet->deploy(index, offer, {},
+									[this, request_id](std::shared_ptr<const Transaction> tx) {
+										respond(request_id, vnx::Variant(tx->id.to_string()));
+									},
+									std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+							},
+							std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+					} catch(std::exception& ex) {
+						respond_ex(request_id, ex);
+					}
+				});
+		} else {
+			respond_status(request_id, 404, "POST wallet/offer {...}");
+		}
+	}
+	else if(sub_path == "/wallet/revoke") {
+		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
+		if(request->payload.size()) {
+			vnx::Object args;
+			vnx::from_string(request->payload.as_string(), args);
+			const auto index = args["index"].to<uint32_t>();
+			const auto txid = args["txid"].to<hash_t>();
+			const auto address = args["address"].to<addr_t>();
+			wallet->revoke(index, txid, address, {},
+				[this, request_id](std::shared_ptr<const Transaction> tx) {
+					respond(request_id, vnx::Variant(tx->id.to_string()));
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "POST wallet/revoke {...}");
 		}
 	}
 	/*else if(sub_path == "/exchange/offer") {

@@ -1,4 +1,8 @@
 
+function validate_address(address) {
+	return address.length == 62 && address.startsWith("mmx1");
+}
+
 var app = Vue.createApp({
 })
 

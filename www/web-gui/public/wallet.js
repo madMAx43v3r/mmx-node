@@ -855,7 +855,7 @@ app.component('account-send-form', {
 		},
 		submit() {
 			this.confirmed = false;
-			if(this.target.length != 62 || !this.target.startsWith("mmx1")) {
+			if(!validate_address(this.target)) {
 				this.error = "invalid destination address";
 				return;
 			}
@@ -870,13 +870,9 @@ app.component('account-send-form', {
 			fetch('/wapi/wallet/send', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
-						response.json().then(data => {
-							this.result = data;
-						});
+						response.json().then(data => this.result = data);
 					} else {
-						response.text().then(data => {
-							this.error = data;
-						});
+						response.text().then(data => this.error = data);
 					}
 					this.update();
 					this.$refs.balance.update();
@@ -998,48 +994,24 @@ app.component('account-offer-form', {
 				.then(response => response.json())
 				.then(data => this.balances = data.balances);
 		},
-		update_balance() {
-			this.update();
-			this.$refs.balance.update();
-		},
 		submit() {
 			this.confirmed = false;
-			if(this.ask_currency) {
-				if(this.ask_currency.length != 62 || !this.ask_currency.startsWith("mmx1")) {
-					this.error = "invalid currency address";
-					return;
-				}
+			if(this.ask_currency && !validate_address(this.ask_currency)) {
+				this.error = "invalid currency address";
+				return;
 			}
 			const req = {};
 			req.index = this.index;
-			const pair = {};
-			pair.bid = this.bid_currency;
-			pair.ask = this.ask_currency;
-			req.pair = pair;
 			req.bid = this.bid_amount;
 			req.ask = this.ask_amount;
-			fetch('/wapi/exchange/offer', {body: JSON.stringify(req), method: "post"})
+			req.bid_currency = this.bid_currency;
+			req.ask_currency = this.ask_currency;
+			fetch('/wapi/wallet/offer', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
-						response.json().then(data => {
-							fetch('/wapi/exchange/place?id=' + data.id)
-								.then(response => {
-										if(response.ok) {
-											this.result = data;
-											this.update();
-											this.$refs.balance.update();
-											this.$refs.offers.update();
-										} else {
-											response.text().then(data => {
-												this.error = data;
-											});
-										}
-									});
-						});
+						response.json().then(data => this.result = data);
 					} else {
-						response.text().then(data => {
-							this.error = data;
-						});
+						response.text().then(data => this.error = data);
 					}
 				});
 		}
@@ -1131,22 +1103,18 @@ app.component('account-offer-form', {
 			</form>
 		</div>
 		<div class="ui message" :class="{hidden: !result}">
-			<template v-if="result">
-				[<b>{{result.id}}</b>] Offering <b>{{result.bid_value}}</b> [{{result.bid_symbol}}] for <b>{{result.ask_value}}</b> [{{result.ask_symbol}}]
-			</template>
+			Transaction has been sent: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
 		</div>
 		<div class="ui negative message" :class="{hidden: !error}">
 			Failed with: <b>{{error}}</b>
 		</div>
-		<account-offers @offer-cancel="update_balance" :index="index" ref="offers"></account-offers>
+		<account-offers :index="index" ref="offers"></account-offers>
 		`
 })
 
 app.component('account-offers', {
 	props: {
-		index: Number,
-		bid: String,
-		ask: String
+		index: Number
 	},
 	emits: [
 		"offer-cancel"
@@ -1154,26 +1122,45 @@ app.component('account-offers', {
 	data() {
 		return {
 			data: [],
+			error: null,
+			result: null,
 			timer: null
 		}
 	},
 	methods: {
 		update() {
-			fetch('/wapi/exchange/offers?wallet=' + this.index + (this.bid ? '&bid=' + this.bid : '') + (this.ask ? '&ask=' + this.ask : ''))
+			fetch('/wapi/wallet/offers?index=' + this.index)
 				.then(response => response.json())
-				.then(data => this.data = data);
+				.then(data => this.data = data.sort((L, R) => R.height - L.height));
 		},
-		cancel(id) {
-			fetch('/api/exchange/cancel_offer?id=' + id)
+		cancel(id, sender) {
+			const args = {};
+			args.index = this.index;
+			args.txid = id;
+			args.address = sender;
+			fetch('/wapi/wallet/revoke', {body: JSON.stringify(args), method: "post"})
 				.then(response => {
-					this.update();
-					this.$emit('offer-cancel', id);
+					if(response.ok) {
+						response.json().then(data => this.result = data);
+					} else {
+						response.text().then(data => this.error = data);
+					}
 				});
 		}
 	},
 	watch: {
 		index(value) {
 			this.update();
+		},
+		result(value) {
+			if(value) {
+				this.error = null;
+			}
+		},
+		error(value) {
+			if(value) {
+				this.result = null;
+			}
 		}
 	},
 	created() {
@@ -1187,41 +1174,46 @@ app.component('account-offers', {
 		<table class="ui table striped">
 			<thead>
 			<tr>
-				<th>ID</th>
-				<template v-if="bid && ask">
-					<th>Type</th>
-				</template>
-				<th colspan="2">Amount</th>
+				<th>Height</th>
+				<th colspan="2">Offer</th>
 				<th colspan="2">Receive</th>
-				<th colspan="2">Price</th>
-				<th colspan="2">Price</th>
-				<th>Orders</th>
+				<th>Address</th>
 				<th>Status</th>
+				<th>Time</th>
 				<th>Actions</th>
 			</tr>
 			</thead>
 			<tbody>
 			<tr v-for="item in data" :key="item.id">
-				<td>{{item.id}}</td>
-				<template v-if="bid && ask">
-					<td :class="item.type == 'BUY' ? 'positive' : 'negative'">{{item.type}}</td>
-				</template>
-				<td class="collapsing"><b>{{item.bid_value}}</b></td>
-				<td>{{item.bid_symbol}}</td>
-				<td class="collapsing"><b>{{item.ask_value}}</b></td>
-				<td>{{item.ask_symbol}}</td>
-				<td class="collapsing"><b>{{(item.ask_value / item.bid_value).toPrecision(5)}}</b></td>
-				<td>{{item.ask_symbol}} / {{item.bid_symbol}}</td>
-				<td class="collapsing"><b>{{(item.bid_value / item.ask_value).toPrecision(5)}}</b></td>
-				<td>{{item.bid_symbol}} / {{item.ask_symbol}}</td>
-				<td>{{item.orders.length}}</td>
-				<td :class="{positive: item.bid_sold >= item.bid}">{{(100 * item.bid_sold / item.bid).toPrecision(3)}} %</td>
+				<td>{{item.height}}</td>
+				<td class="collapsing"><b>{{item.base.input_amounts[0].value}}</b></td>
+				<td>{{item.base.input_amounts[0].symbol}}</td>
+				<td class="collapsing"><b>{{item.base.output_amounts[0].value}}</b></td>
+				<td>{{item.base.output_amounts[0].symbol}}</td>
+				<td><router-link :to="'/explore/address/' + item.id">{{item.id.substr(0, 16)}}...</router-link></td>
+				<td :class="{positive: !item.base.height, negative: item.revoked}">
+					<template v-if="item.base.height">
+						<router-link :to="'/explore/transaction/' + item.base.id">Accepted</router-link>
+					</template>
+					<template v-else>
+						{{item.revoked ? "Revoked" : "Open"}}
+					</template>
+				</td>
+				<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 				<td>
-					<div class="ui tiny compact button" @click="cancel(item.id)">{{item.bid_sold < item.bid ? 'Cancel' : 'Delete'}}</div>
+					<template v-if="!item.revoked && !item.base.height">
+						<div class="ui tiny compact button" @click="cancel(item.base.id, item.base.sender)">Revoke</div>
+					</template>
 				</td>
 			</tr>
 			</tbody>
 		</table>
+		<div class="ui message" :class="{hidden: !result}">
+			Transaction has been sent: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
+		</div>
+		<div class="ui negative message" :class="{hidden: !error}">
+			Failed with: <b>{{error}}</b>
+		</div>
 		`
 })
 
