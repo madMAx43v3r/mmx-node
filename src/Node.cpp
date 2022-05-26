@@ -163,6 +163,15 @@ void Node::main()
 			});
 			log(INFO) << "Loaded height " << height << ", took " << (vnx::get_time_millis() - time_begin) / 1e3 << " sec";
 		}
+		if(do_sync) {
+			history.erase(history.lower_bound(height - std::min(params->commit_delay, height)), history.end());
+			for(uint32_t i = 0; i < params->commit_delay; ++i) {
+				revert();
+			}
+			if(auto peak = get_peak()) {
+				log(DEBUG) << "Reverted back to height " << peak->height;
+			}
+		}
 	} else {
 		block_chain->open("wb");
 		block_chain->open("rb+");
