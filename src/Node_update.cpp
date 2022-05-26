@@ -374,7 +374,6 @@ void Node::update()
 		{
 			auto value = Challenge::create();
 			value->height = peak->height + i;
-			value->vdf_block = vdf_block->hash;
 			value->challenge = get_challenge(peak, vdf_block->vdf_output[1], i);
 			value->space_diff = get_diff_header(peak, i)->space_diff;
 			publish(value, output_challenges);

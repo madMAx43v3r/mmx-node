@@ -4,8 +4,6 @@ class Challenge {
 	
 	uint height;
 	
-	hash_t vdf_block;
-	
 	hash_t challenge;
 	
 	ulong space_diff;
