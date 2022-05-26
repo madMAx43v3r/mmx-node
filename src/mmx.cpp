@@ -795,29 +795,37 @@ int main(int argc, char** argv)
 				}
 				else if(subject == "block")
 				{
-					int64_t height = 0;
-					vnx::read_config("$4", height);
+					std::string arg;
+					vnx::read_config("$4", arg);
 
-					const auto block = node.get_block_at(height);
-					{
-						std::stringstream ss;
-						vnx::PrettyPrinter printer(ss);
-						vnx::accept(printer, block);
-						std::cout << ss.str() << std::endl;
+					std::shared_ptr<const mmx::Block> block;
+					if(arg.size() == 64) {
+						mmx::hash_t hash;
+						hash.from_string(arg);
+						block = node.get_block(hash);
+					} else {
+						block = node.get_block_at(std::strtoul(arg.c_str(), nullptr, 10));
 					}
+					vnx::PrettyPrinter printer(std::cout);
+					vnx::accept(printer, block);
+					std::cout << std::endl;
 				}
 				else if(subject == "header")
 				{
-					int64_t height = 0;
-					vnx::read_config("$4", height);
+					std::string arg;
+					vnx::read_config("$4", arg);
 
-					const auto header = node.get_header_at(height);
-					{
-						std::stringstream ss;
-						vnx::PrettyPrinter printer(ss);
-						vnx::accept(printer, header);
-						std::cout << ss.str() << std::endl;
+					std::shared_ptr<const mmx::BlockHeader> block;
+					if(arg.size() == 64) {
+						mmx::hash_t hash;
+						hash.from_string(arg);
+						block = node.get_header(hash);
+					} else {
+						block = node.get_header_at(std::strtoul(arg.c_str(), nullptr, 10));
 					}
+					vnx::PrettyPrinter printer(std::cout);
+					vnx::accept(printer, block);
+					std::cout << std::endl;
 				}
 				else if(subject == "tx")
 				{
