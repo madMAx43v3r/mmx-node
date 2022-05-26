@@ -859,10 +859,6 @@ void Node::handle(std::shared_ptr<const ProofResponse> value)
 	if(!is_synced || !value->is_valid()) {
 		return;
 	}
-	const auto root = get_root();
-	if(value->request->height < root->height) {
-		return;
-	}
 	pending_proofs.push_back(value);
 }
 

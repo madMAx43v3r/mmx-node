@@ -36,8 +36,10 @@ void Node::verify_vdfs()
 
 void Node::verify_proofs()
 {
+	const auto root = get_root();
 	for(auto iter = pending_proofs.begin(); iter != pending_proofs.end();) {
-		if(verify(*iter)) {
+		const auto& response = *iter;
+		if(response->request->height < root->height || verify(response)) {
 			iter = pending_proofs.erase(iter);
 		} else {
 			iter++;
