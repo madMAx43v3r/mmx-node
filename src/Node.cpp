@@ -78,7 +78,6 @@ void Node::main()
 		options.target_file_size_multiplier = 4;
 		options.avoid_flush_during_recovery = true;
 		options.max_manifest_file_size = 64 * 1024 * 1024;
-		options.OptimizeForSmallDb();
 
 		addr_log.open(database_path + "addr_log", options);
 		recv_log.open(database_path + "recv_log", options);
