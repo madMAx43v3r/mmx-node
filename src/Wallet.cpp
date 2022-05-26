@@ -358,6 +358,9 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 			const uint32_t& index, const uint32_t& address, const uint64_t& bid_amount, const addr_t& bid_currency,
 			const uint64_t& ask_amount, const addr_t& ask_currency, const spend_options_t& options) const
 {
+	if(bid_amount == 0 || ask_amount == 0) {
+		throw std::logic_error("amount cannot be zero");
+	}
 	const auto wallet = get_wallet(index);
 	update_cache(index);
 
