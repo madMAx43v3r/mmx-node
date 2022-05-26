@@ -15,7 +15,6 @@ class MMX_EXPORT Challenge : public ::vnx::Value {
 public:
 	
 	uint32_t height = 0;
-	::mmx::hash_t vdf_block;
 	::mmx::hash_t challenge;
 	uint64_t space_diff = 0;
 	
@@ -64,12 +63,11 @@ protected:
 
 template<typename T>
 void Challenge::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Challenge>(4);
+	_visitor.template type_begin<Challenge>(3);
 	_visitor.type_field("height", 0); _visitor.accept(height);
-	_visitor.type_field("vdf_block", 1); _visitor.accept(vdf_block);
-	_visitor.type_field("challenge", 2); _visitor.accept(challenge);
-	_visitor.type_field("space_diff", 3); _visitor.accept(space_diff);
-	_visitor.template type_end<Challenge>(4);
+	_visitor.type_field("challenge", 1); _visitor.accept(challenge);
+	_visitor.type_field("space_diff", 2); _visitor.accept(space_diff);
+	_visitor.template type_end<Challenge>(3);
 }
 
 
