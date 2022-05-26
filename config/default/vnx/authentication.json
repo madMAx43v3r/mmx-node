@@ -1,8 +1,22 @@
 {
 	"permissions": {
-		"USER": ["mmx.permission_e.PUBLIC", "PUBLISH"],
-		"ADMIN": ["mmx.permission_e.PUBLIC", "mmx.permission_e.SPENDING"],
-		"NETWORK": ["mmx.permission_e.PUBLIC"]
+		"USER": [
+			"mmx.permission_e.PUBLIC",
+			"vnx.addons.permission_e.HTTP_REQUEST",
+			"vnx.addons.permission_e.FILE_DOWNLOAD",
+			"PUBLISH"
+		],
+		"ADMIN": [
+			"mmx.permission_e.PUBLIC",
+			"vnx.addons.permission_e.HTTP_REQUEST",
+			"vnx.addons.permission_e.FILE_DOWNLOAD",
+			"mmx.permission_e.SPENDING"
+		],
+		"NETWORK": [
+			"mmx.permission_e.PUBLIC",
+			"vnx.addons.permission_e.HTTP_REQUEST",
+			"vnx.addons.permission_e.FILE_DOWNLOAD"
+		]
 	},
 	"users": [
 		{
