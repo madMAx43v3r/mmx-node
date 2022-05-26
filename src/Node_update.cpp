@@ -370,7 +370,7 @@ void Node::update()
 	// publish challenges
 	for(uint32_t i = 0; i <= params->challenge_delay; ++i)
 	{
-		if(auto vdf_block = find_prev_header(peak, params->challenge_delay - i, true))
+		if(auto vdf_block = find_prev_header(peak, params->challenge_delay - i))
 		{
 			auto value = Challenge::create();
 			value->height = peak->height + i;
