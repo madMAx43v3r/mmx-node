@@ -147,7 +147,6 @@ app.component('account-balance', {
 				<th class="two wide">Spendable</th>
 				<th class="two wide">Token</th>
 				<th>Contract</th>
-				<th>More</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -157,9 +156,6 @@ app.component('account-balance', {
 				<td><b>{{item.spendable}}</b></td>
 				<td>{{item.symbol}}</td>
 				<td><router-link :to="'/explore/address/' + item.contract">{{item.is_native ? '' : item.contract}}</router-link></td>
-				<td>
-					<router-link :to="'/wallet/account/' + index + '/coins/' + item.contract">Coins</router-link>
-				</td>
 			</tr>
 			</tbody>
 		</table>
@@ -213,7 +209,6 @@ app.component('balance-table', {
 				<th class="two wide">Spendable</th>
 				<th class="two wide">Token</th>
 				<th>Contract</th>
-				<th>More</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -223,7 +218,6 @@ app.component('balance-table', {
 				<td><b>{{item.spendable}}</b></td>
 				<td>{{item.symbol}}</td>
 				<td><router-link :to="'/explore/address/' + item.contract">{{item.is_native ? '' : item.contract}}</router-link></td>
-				<td><router-link :to="'/explore/address/coins/' + address + '/' + item.contract">Coins</router-link></td>
 			</tr>
 			</tbody>
 		</table>
@@ -493,88 +487,6 @@ app.component('account-addresses', {
 				<td></td>
 				<td></td>
 				<td></td>
-			</tr>
-			</tbody>
-		</table>
-		`
-})
-
-app.component('account-coins', {
-	props: {
-		index: Number,
-		currency: String,
-		limit: Number
-	},
-	data() {
-		return {
-			data: []
-		}
-	},
-	methods: {
-		update() {
-			fetch('/wapi/wallet/coins?limit=' + this.limit + '&index=' + this.index + '&currency=' + this.currency)
-				.then(response => response.json())
-				.then(data => this.data = data);
-		}
-	},
-	created() {
-		this.update()
-	},
-	template: `
-		<coins-table :data="data"></coins-table>
-		`
-})
-
-app.component('address-coins', {
-	props: {
-		address: String,
-		currency: String,
-		limit: Number
-	},
-	data() {
-		return {
-			data: []
-		}
-	},
-	methods: {
-		update() {
-			fetch('/wapi/address/coins?limit=' + this.limit + '&id=' + this.address + '&currency=' + this.currency)
-				.then(response => response.json())
-				.then(data => this.data = data);
-		}
-	},
-	created() {
-		this.update()
-	},
-	template: `
-		<div class="ui large labels">
-			<div class="ui horizontal label">Coins</div>
-			<div class="ui horizontal label">{{address}}</div>
-		</div>
-		<coins-table :data="data"></coins-table>
-		`
-})
-
-app.component('coins-table', {
-	props: {
-		data: Object
-	},
-	template: `
-		<table class="ui compact table striped">
-			<thead>
-			<tr>
-				<th>Height</th>
-				<th>Amount</th>
-				<th></th>
-				<th>Address</th>
-			</tr>
-			</thead>
-			<tbody>
-			<tr v-for="item in data" :key="item.key">
-				<td>{{item.output.height == 4294967295 ? "pending" : item.output.height}}</td>
-				<td class="collapsing"><b>{{item.output.value}}</b></td>
-				<td><router-link :to="'/explore/address/' + item.output.contract">{{item.output.symbol}}</router-link></td>
-				<td><router-link :to="'/explore/address/' + item.output.address">{{item.output.address}}</router-link></td>
 			</tr>
 			</tbody>
 		</table>
