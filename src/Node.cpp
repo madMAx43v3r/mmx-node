@@ -275,7 +275,7 @@ std::shared_ptr<const BlockHeader> Node::get_block_ex(const hash_t& hash, bool f
 {
 	auto iter = fork_tree.find(hash);
 	if(iter != fork_tree.end()) {
-		auto block = iter->second->block;
+		const auto& block = iter->second->block;
 		return full_block ? block : block->get_header();
 	}
 	uint32_t height = 0;
