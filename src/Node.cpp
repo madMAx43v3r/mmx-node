@@ -1308,7 +1308,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 bool Node::revert() noexcept
 {
 	auto root = get_root();
-	if(!root || state_hash == root->hash) {
+	if(root && state_hash == root->hash) {
 		return false;
 	}
 	if(auto block = get_block(state_hash)) {
