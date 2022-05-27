@@ -26,6 +26,7 @@
 
 #include <vnx/vnx.h>
 #include <vnx/Proxy.h>
+#include <vnx/ProxyClient.hxx>
 
 #include <filesystem>
 
@@ -135,6 +136,8 @@ int main(int argc, char** argv)
 	std::string target_addr;
 	std::string contract_addr;
 	std::string ask_currency_addr;
+	std::string user = "mmx-admin";
+	std::string passwd;
 	int64_t index = 0;
 	int64_t offset = 0;
 	int64_t num_count = 0;
@@ -166,6 +169,10 @@ int main(int argc, char** argv)
 		token->decimals = params->decimals;
 		token->symbol = "MMX";
 		contract_cache[mmx::addr_t()] = token;
+	}
+	if(passwd.empty()) {
+		std::ifstream stream(mmx_home + "PASSWD");
+		stream >> passwd;
 	}
 
 	mmx::spend_options_t spend_options;
@@ -996,7 +1003,10 @@ int main(int argc, char** argv)
 			vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
 			proxy->forward_list = {"Farmer", "Harvester", "Node"};
 			proxy.start_detached();
-
+			{
+				vnx::ProxyClient client(proxy.get_name());
+				client.login(user, passwd);
+			}
 			try {
 				params = node.get_params();
 			} catch(...) {
