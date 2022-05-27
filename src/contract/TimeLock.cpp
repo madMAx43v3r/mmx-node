@@ -45,6 +45,10 @@ vnx::optional<addr_t> TimeLock::get_owner() const {
 	return owner;
 }
 
+vnx::bool_t TimeLock::is_locked(std::shared_ptr<const Context> context) const {
+	return context->height < unlock_height;
+}
+
 std::vector<txout_t> TimeLock::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
 	{

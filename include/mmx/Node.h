@@ -99,6 +99,8 @@ protected:
 
 	std::map<addr_t, uint128> get_balances(const addr_t& address, const uint32_t& min_confirm = 1) const override;
 
+	std::map<addr_t, balance_t> get_contract_balances(const addr_t& address, const uint32_t& min_confirm) const;
+
 	std::map<addr_t, uint128> get_total_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm =1) const override;
 
 	std::map<std::pair<addr_t, addr_t>, uint128> get_all_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm = 1) const override;

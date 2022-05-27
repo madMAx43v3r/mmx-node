@@ -127,6 +127,9 @@ module Node implements vnx.addons.HttpComponent {
 	map<addr_t, uint128> get_balances(addr_t address, uint min_confirm = 1) const;
 	
 	@Permission(permission_e.PUBLIC)
+	map<addr_t, balance_t> get_contract_balances(addr_t address, uint min_confirm = 1) const;
+	
+	@Permission(permission_e.PUBLIC)
 	uint128 get_total_balance(vector<addr_t> addresses, addr_t currency, uint min_confirm = 1) const;
 	
 	@Permission(permission_e.PUBLIC)

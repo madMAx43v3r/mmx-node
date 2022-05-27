@@ -865,7 +865,7 @@ void WebAPI::render_balances(const vnx::request_id_t& request_id, const vnx::opt
 						row["total"] = amount_value(balance.total, currency->decimals);
 						row["spendable"] = amount_value(balance.spendable, currency->decimals);
 						row["reserved"] = amount_value(balance.reserved, currency->decimals);
-						row["locked"] = amount_value(balance.locked, -currency->decimals);
+						row["locked"] = amount_value(balance.locked, currency->decimals);
 						row["symbol"] = currency->symbol;
 						row["contract"] = entry.first.to_string();
 						if(entry.first == addr_t()) {
@@ -1250,15 +1250,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				currency = vnx::from_string<addr_t>(iter_currency->second);
 			}
 			const auto address = vnx::from_string_value<addr_t>(iter_id->second);
-			node->get_balances(address, 1,
-				[this, currency, request_id](const std::map<addr_t, uint128>& balances) {
-					std::map<addr_t, balance_t> tmp;
-					for(const auto& entry : balances) {
-						auto& bal = tmp[entry.first];
-						bal.spendable = entry.second;
-						bal.total = entry.second;
-					}
-					render_balances(request_id, currency, tmp);
+			node->get_contract_balances(address, 1,
+				[this, currency, request_id](const std::map<addr_t, balance_t>& balances) {
+					render_balances(request_id, currency, balances);
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {

@@ -53,6 +53,10 @@ vnx::optional<addr_t> MutableRelay::get_owner() const {
 	return owner;
 }
 
+vnx::bool_t MutableRelay::is_locked(std::shared_ptr<const Context> context) const {
+	return !unlock_height || context->height < *unlock_height;
+}
+
 std::vector<txout_t> MutableRelay::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
 	if(auto claim = std::dynamic_pointer_cast<const solution::MutableRelay>(operation->solution))
@@ -94,7 +98,7 @@ std::vector<txout_t> MutableRelay::validate(std::shared_ptr<const Operation> ope
 		}
 	}
 	if(target) {
-		if(!unlock_height || context->height < *unlock_height) {
+		if(is_locked(context)) {
 			throw std::logic_error("contract is locked");
 		}
 	}

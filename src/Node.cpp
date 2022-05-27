@@ -628,6 +628,28 @@ std::map<addr_t, uint128> Node::get_balances(const addr_t& address, const uint32
 	return get_total_balances({address}, min_confirm);
 }
 
+std::map<addr_t, balance_t> Node::get_contract_balances(const addr_t& address, const uint32_t& min_confirm) const
+{
+	std::map<addr_t, balance_t> out;
+	auto context = Context::create();
+	context->height = get_height() + 1;
+	auto contract = get_contract(address);
+	for(const auto& entry : get_total_balances({address}, min_confirm)) {
+		auto& tmp = out[entry.first];
+		if(contract) {
+			if(contract->is_locked(context)) {
+				tmp.locked = entry.second;
+			} else {
+				tmp.spendable = entry.second;
+			}
+		} else {
+			tmp.spendable = entry.second;
+		}
+		tmp.total = entry.second;
+	}
+	return out;
+}
+
 std::map<addr_t, uint128> Node::get_total_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const
 {
 	std::map<addr_t, uint128> totals;

@@ -21,6 +21,8 @@ class TimeLock extends mmx.Contract {
 	
 	optional<addr_t> get_owner() const;
 	
+	bool is_locked(mmx.Context* context) const;
+	
 	vector<mmx.txout_t> validate(mmx.Operation* operation, mmx.Context* context) const;
 	
 }

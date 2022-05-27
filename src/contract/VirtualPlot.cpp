@@ -36,6 +36,10 @@ uint64_t VirtualPlot::calc_cost(std::shared_ptr<const ChainParams> params) const
 	return 0;
 }
 
+vnx::bool_t VirtualPlot::is_locked(std::shared_ptr<const Context> context) const {
+	return true;
+}
+
 void VirtualPlot::bls_transfer(const bls_pubkey_t& new_farmer_key)
 {
 	farmer_key = new_farmer_key;

@@ -41,6 +41,10 @@ vnx::optional<addr_t> Contract::get_owner() const {
 	return nullptr;
 }
 
+vnx::bool_t Contract::is_locked(std::shared_ptr<const Context> context) const {
+	return !get_owner();
+}
+
 std::vector<txout_t> Contract::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
 	throw std::logic_error("invalid operation");
