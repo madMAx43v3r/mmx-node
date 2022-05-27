@@ -129,7 +129,8 @@ void Node::main()
 			log(INFO) << "Creating DB (this may take a while) ...";
 			int64_t block_offset = 0;
 			std::vector<std::pair<hash_t, int64_t>> tx_offsets;
-			while(auto header = read_block(*block_chain, true, &block_offset, &tx_offsets)) {
+			while(auto header = read_block(*block_chain, true, &block_offset, &tx_offsets))
+			{
 				if(auto block = std::dynamic_pointer_cast<const Block>(header)) {
 					try {
 						apply(block, block->height > 0 ? validate(block) : nullptr, true);
