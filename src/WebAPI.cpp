@@ -31,6 +31,9 @@
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/solution/MultiSig.hxx>
 #include <mmx/permission_e.hxx>
+#include <mmx/ProofOfSpaceOG.hxx>
+#include <mmx/ProofOfSpaceNFT.hxx>
+#include <mmx/ProofOfStake.hxx>
 
 #include <vnx/vnx.h>
 #include <vnx/ProcessClient.hxx>
@@ -441,8 +444,16 @@ public:
 		}
 	}
 
-	void accept(std::shared_ptr<const ProofOfSpace> value) {
-		set(render(value, context));
+	void accept(std::shared_ptr<const ProofOfSpace> base) {
+		if(auto value = std::dynamic_pointer_cast<const ProofOfSpaceOG>(base)) {
+			set(render(value, context));
+		} else if(auto value = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(base)) {
+			set(render(value, context));
+		} else if(auto value = std::dynamic_pointer_cast<const ProofOfStake>(base)) {
+			set(render(value, context));
+		} else {
+			set(render(base, context));
+		}
 	}
 
 	void accept(std::shared_ptr<const BlockHeader> value) {
