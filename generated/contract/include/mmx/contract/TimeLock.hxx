@@ -41,6 +41,7 @@ public:
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	virtual std::vector<::mmx::addr_t> get_dependency() const override;
 	virtual vnx::optional<::mmx::addr_t> get_owner() const override;
+	virtual vnx::bool_t is_locked(std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
 	virtual std::vector<::mmx::txout_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
 	
 	static std::shared_ptr<TimeLock> create();

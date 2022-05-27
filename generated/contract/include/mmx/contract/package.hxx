@@ -73,6 +73,8 @@ class MutableRelay_get_dependency;
 class MutableRelay_get_dependency_return;
 class MutableRelay_get_owner;
 class MutableRelay_get_owner_return;
+class MutableRelay_is_locked;
+class MutableRelay_is_locked_return;
 class MutableRelay_is_valid;
 class MutableRelay_is_valid_return;
 class MutableRelay_lock;
@@ -143,6 +145,8 @@ class TimeLock_get_dependency;
 class TimeLock_get_dependency_return;
 class TimeLock_get_owner;
 class TimeLock_get_owner_return;
+class TimeLock_is_locked;
+class TimeLock_is_locked_return;
 class TimeLock_is_valid;
 class TimeLock_is_valid_return;
 class TimeLock_validate;
@@ -174,6 +178,8 @@ class VirtualPlot_calc_cost;
 class VirtualPlot_calc_cost_return;
 class VirtualPlot_calc_hash;
 class VirtualPlot_calc_hash_return;
+class VirtualPlot_is_locked;
+class VirtualPlot_is_locked_return;
 class VirtualPlot_is_valid;
 class VirtualPlot_is_valid_return;
 class VoteSheet;
@@ -252,6 +258,8 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Mutab
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MutableRelay_get_dependency_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MutableRelay_get_owner; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MutableRelay_get_owner_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MutableRelay_is_locked; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MutableRelay_is_locked_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MutableRelay_is_valid; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MutableRelay_is_valid_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MutableRelay_lock; ///< \private
@@ -322,6 +330,8 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeL
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLock_get_dependency_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLock_get_owner; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLock_get_owner_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLock_is_locked; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLock_is_locked_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLock_is_valid; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLock_is_valid_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLock_validate; ///< \private
@@ -353,6 +363,8 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Virtu
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_cost_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_hash; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_hash_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_locked; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_locked_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_valid; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_valid_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VoteSheet; ///< \private
@@ -437,6 +449,8 @@ void read(TypeInput& in, ::mmx::contract::MutableRelay_get_dependency& value, co
 void read(TypeInput& in, ::mmx::contract::MutableRelay_get_dependency_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MutableRelay_get_owner& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MutableRelay_get_owner_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::MutableRelay_is_locked& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::MutableRelay_is_locked_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MutableRelay_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MutableRelay_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MutableRelay_lock& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -507,6 +521,8 @@ void read(TypeInput& in, ::mmx::contract::TimeLock_get_dependency& value, const 
 void read(TypeInput& in, ::mmx::contract::TimeLock_get_dependency_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::TimeLock_get_owner& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::TimeLock_get_owner_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::TimeLock_is_locked& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::TimeLock_is_locked_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::TimeLock_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::TimeLock_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::TimeLock_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -538,6 +554,8 @@ void read(TypeInput& in, ::mmx::contract::VirtualPlot_calc_cost& value, const Ty
 void read(TypeInput& in, ::mmx::contract::VirtualPlot_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::VirtualPlot_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::VirtualPlot_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::VirtualPlot_is_locked& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::VirtualPlot_is_locked_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::VirtualPlot_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::VirtualPlot_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::VoteSheet& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -616,6 +634,8 @@ void write(TypeOutput& out, const ::mmx::contract::MutableRelay_get_dependency& 
 void write(TypeOutput& out, const ::mmx::contract::MutableRelay_get_dependency_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MutableRelay_get_owner& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MutableRelay_get_owner_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::MutableRelay_is_locked& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::MutableRelay_is_locked_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MutableRelay_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MutableRelay_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MutableRelay_lock& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -686,6 +706,8 @@ void write(TypeOutput& out, const ::mmx::contract::TimeLock_get_dependency& valu
 void write(TypeOutput& out, const ::mmx::contract::TimeLock_get_dependency_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::TimeLock_get_owner& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::TimeLock_get_owner_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::TimeLock_is_locked& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::TimeLock_is_locked_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::TimeLock_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::TimeLock_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::TimeLock_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -717,6 +739,8 @@ void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_calc_cost& value,
 void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_is_locked& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_is_locked_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::VoteSheet& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -795,6 +819,8 @@ void read(std::istream& in, ::mmx::contract::MutableRelay_get_dependency& value)
 void read(std::istream& in, ::mmx::contract::MutableRelay_get_dependency_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MutableRelay_get_owner& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MutableRelay_get_owner_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::MutableRelay_is_locked& value); ///< \private
+void read(std::istream& in, ::mmx::contract::MutableRelay_is_locked_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MutableRelay_is_valid& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MutableRelay_is_valid_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MutableRelay_lock& value); ///< \private
@@ -865,6 +891,8 @@ void read(std::istream& in, ::mmx::contract::TimeLock_get_dependency& value); //
 void read(std::istream& in, ::mmx::contract::TimeLock_get_dependency_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::TimeLock_get_owner& value); ///< \private
 void read(std::istream& in, ::mmx::contract::TimeLock_get_owner_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::TimeLock_is_locked& value); ///< \private
+void read(std::istream& in, ::mmx::contract::TimeLock_is_locked_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::TimeLock_is_valid& value); ///< \private
 void read(std::istream& in, ::mmx::contract::TimeLock_is_valid_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::TimeLock_validate& value); ///< \private
@@ -896,6 +924,8 @@ void read(std::istream& in, ::mmx::contract::VirtualPlot_calc_cost& value); ///<
 void read(std::istream& in, ::mmx::contract::VirtualPlot_calc_cost_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::VirtualPlot_calc_hash& value); ///< \private
 void read(std::istream& in, ::mmx::contract::VirtualPlot_calc_hash_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::VirtualPlot_is_locked& value); ///< \private
+void read(std::istream& in, ::mmx::contract::VirtualPlot_is_locked_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::VirtualPlot_is_valid& value); ///< \private
 void read(std::istream& in, ::mmx::contract::VirtualPlot_is_valid_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::VoteSheet& value); ///< \private
@@ -974,6 +1004,8 @@ void write(std::ostream& out, const ::mmx::contract::MutableRelay_get_dependency
 void write(std::ostream& out, const ::mmx::contract::MutableRelay_get_dependency_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MutableRelay_get_owner& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MutableRelay_get_owner_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::MutableRelay_is_locked& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::MutableRelay_is_locked_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MutableRelay_is_valid& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MutableRelay_is_valid_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MutableRelay_lock& value); ///< \private
@@ -1044,6 +1076,8 @@ void write(std::ostream& out, const ::mmx::contract::TimeLock_get_dependency& va
 void write(std::ostream& out, const ::mmx::contract::TimeLock_get_dependency_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::TimeLock_get_owner& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::TimeLock_get_owner_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::TimeLock_is_locked& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::TimeLock_is_locked_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::TimeLock_is_valid& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::TimeLock_is_valid_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::TimeLock_validate& value); ///< \private
@@ -1075,6 +1109,8 @@ void write(std::ostream& out, const ::mmx::contract::VirtualPlot_calc_cost& valu
 void write(std::ostream& out, const ::mmx::contract::VirtualPlot_calc_cost_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::VirtualPlot_calc_hash& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::VirtualPlot_calc_hash_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::VirtualPlot_is_locked& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::VirtualPlot_is_locked_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::VirtualPlot_is_valid& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::VirtualPlot_is_valid_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::VoteSheet& value); ///< \private
@@ -1153,6 +1189,8 @@ void accept(Visitor& visitor, const ::mmx::contract::MutableRelay_get_dependency
 void accept(Visitor& visitor, const ::mmx::contract::MutableRelay_get_dependency_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MutableRelay_get_owner& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MutableRelay_get_owner_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::MutableRelay_is_locked& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::MutableRelay_is_locked_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MutableRelay_is_valid& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MutableRelay_is_valid_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MutableRelay_lock& value); ///< \private
@@ -1223,6 +1261,8 @@ void accept(Visitor& visitor, const ::mmx::contract::TimeLock_get_dependency& va
 void accept(Visitor& visitor, const ::mmx::contract::TimeLock_get_dependency_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::TimeLock_get_owner& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::TimeLock_get_owner_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::TimeLock_is_locked& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::TimeLock_is_locked_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::TimeLock_is_valid& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::TimeLock_is_valid_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::TimeLock_validate& value); ///< \private
@@ -1254,6 +1294,8 @@ void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_calc_cost& valu
 void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_calc_cost_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_calc_hash& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_calc_hash_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_is_locked& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_is_locked_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_is_valid& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_is_valid_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::VoteSheet& value); ///< \private
@@ -2452,6 +2494,52 @@ struct type<::mmx::contract::MutableRelay_get_owner_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_get_owner_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::MutableRelay_is_locked> {
+	void read(TypeInput& in, ::mmx::contract::MutableRelay_is_locked& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::MutableRelay_is_locked& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::MutableRelay_is_locked& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::MutableRelay_is_locked& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::MutableRelay_is_locked& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_is_locked& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::MutableRelay_is_locked_return> {
+	void read(TypeInput& in, ::mmx::contract::MutableRelay_is_locked_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::MutableRelay_is_locked_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::MutableRelay_is_locked_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::MutableRelay_is_locked_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::MutableRelay_is_locked_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_is_locked_return& value, bool special = false);
 };
 
 /// \private
@@ -4066,6 +4154,52 @@ struct type<::mmx::contract::TimeLock_get_owner_return> {
 
 /// \private
 template<>
+struct type<::mmx::contract::TimeLock_is_locked> {
+	void read(TypeInput& in, ::mmx::contract::TimeLock_is_locked& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::TimeLock_is_locked& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::TimeLock_is_locked& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::TimeLock_is_locked& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::TimeLock_is_locked& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TimeLock_is_locked& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::TimeLock_is_locked_return> {
+	void read(TypeInput& in, ::mmx::contract::TimeLock_is_locked_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::TimeLock_is_locked_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::TimeLock_is_locked_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::TimeLock_is_locked_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::TimeLock_is_locked_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TimeLock_is_locked_return& value, bool special = false);
+};
+
+/// \private
+template<>
 struct type<::mmx::contract::TimeLock_is_valid> {
 	void read(TypeInput& in, ::mmx::contract::TimeLock_is_valid& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
@@ -4775,6 +4909,52 @@ struct type<::mmx::contract::VirtualPlot_calc_hash_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot_calc_hash_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::VirtualPlot_is_locked> {
+	void read(TypeInput& in, ::mmx::contract::VirtualPlot_is_locked& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_is_locked& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::VirtualPlot_is_locked& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::VirtualPlot_is_locked& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_is_locked& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot_is_locked& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::VirtualPlot_is_locked_return> {
+	void read(TypeInput& in, ::mmx::contract::VirtualPlot_is_locked_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_is_locked_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::VirtualPlot_is_locked_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::VirtualPlot_is_locked_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_is_locked_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot_is_locked_return& value, bool special = false);
 };
 
 /// \private

@@ -15,6 +15,7 @@
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/address_info_t.hxx>
+#include <mmx/balance_t.hxx>
 #include <mmx/bls_pubkey_t.hpp>
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/hash_t.hpp>
@@ -93,6 +94,8 @@ public:
 	::mmx::uint128 get_balance(const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::addr_t& currency = ::mmx::addr_t(), const uint32_t& min_confirm = 1);
 	
 	std::map<::mmx::addr_t, ::mmx::uint128> get_balances(const ::mmx::addr_t& address = ::mmx::addr_t(), const uint32_t& min_confirm = 1);
+	
+	std::map<::mmx::addr_t, ::mmx::balance_t> get_contract_balances(const ::mmx::addr_t& address = ::mmx::addr_t(), const uint32_t& min_confirm = 1);
 	
 	::mmx::uint128 get_total_balance(const std::vector<::mmx::addr_t>& addresses = {}, const ::mmx::addr_t& currency = ::mmx::addr_t(), const uint32_t& min_confirm = 1);
 	

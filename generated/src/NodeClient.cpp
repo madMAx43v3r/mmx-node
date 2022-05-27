@@ -32,6 +32,8 @@
 #include <mmx/Node_get_block_hash_return.hxx>
 #include <mmx/Node_get_contract.hxx>
 #include <mmx/Node_get_contract_return.hxx>
+#include <mmx/Node_get_contract_balances.hxx>
+#include <mmx/Node_get_contract_balances_return.hxx>
 #include <mmx/Node_get_contract_for.hxx>
 #include <mmx/Node_get_contract_for_return.hxx>
 #include <mmx/Node_get_contracts.hxx>
@@ -97,6 +99,7 @@
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/address_info_t.hxx>
+#include <mmx/balance_t.hxx>
 #include <mmx/bls_pubkey_t.hpp>
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/hash_t.hpp>
@@ -483,6 +486,20 @@ std::map<::mmx::addr_t, ::mmx::uint128> NodeClient::get_balances(const ::mmx::ad
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, ::mmx::uint128>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::map<::mmx::addr_t, ::mmx::balance_t> NodeClient::get_contract_balances(const ::mmx::addr_t& address, const uint32_t& min_confirm) {
+	auto _method = ::mmx::Node_get_contract_balances::create();
+	_method->address = address;
+	_method->min_confirm = min_confirm;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_contract_balances_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, ::mmx::balance_t>>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}

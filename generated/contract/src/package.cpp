@@ -52,6 +52,8 @@
 #include <mmx/contract/MutableRelay_get_dependency_return.hxx>
 #include <mmx/contract/MutableRelay_get_owner.hxx>
 #include <mmx/contract/MutableRelay_get_owner_return.hxx>
+#include <mmx/contract/MutableRelay_is_locked.hxx>
+#include <mmx/contract/MutableRelay_is_locked_return.hxx>
 #include <mmx/contract/MutableRelay_is_valid.hxx>
 #include <mmx/contract/MutableRelay_is_valid_return.hxx>
 #include <mmx/contract/MutableRelay_lock.hxx>
@@ -122,6 +124,8 @@
 #include <mmx/contract/TimeLock_get_dependency_return.hxx>
 #include <mmx/contract/TimeLock_get_owner.hxx>
 #include <mmx/contract/TimeLock_get_owner_return.hxx>
+#include <mmx/contract/TimeLock_is_locked.hxx>
+#include <mmx/contract/TimeLock_is_locked_return.hxx>
 #include <mmx/contract/TimeLock_is_valid.hxx>
 #include <mmx/contract/TimeLock_is_valid_return.hxx>
 #include <mmx/contract/TimeLock_validate.hxx>
@@ -153,6 +157,8 @@
 #include <mmx/contract/VirtualPlot_calc_cost_return.hxx>
 #include <mmx/contract/VirtualPlot_calc_hash.hxx>
 #include <mmx/contract/VirtualPlot_calc_hash_return.hxx>
+#include <mmx/contract/VirtualPlot_is_locked.hxx>
+#include <mmx/contract/VirtualPlot_is_locked_return.hxx>
 #include <mmx/contract/VirtualPlot_is_valid.hxx>
 #include <mmx/contract/VirtualPlot_is_valid_return.hxx>
 #include <mmx/contract/VoteSheet.hxx>
@@ -796,6 +802,30 @@ void type<::mmx::contract::MutableRelay_get_owner_return>::create_dynamic_code(s
 }
 
 void type<::mmx::contract::MutableRelay_get_owner_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_get_owner_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::MutableRelay_is_locked>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_MutableRelay_is_locked;
+}
+
+void type<::mmx::contract::MutableRelay_is_locked>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::MutableRelay_is_locked());
+}
+
+void type<::mmx::contract::MutableRelay_is_locked>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_is_locked& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::MutableRelay_is_locked_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_MutableRelay_is_locked_return;
+}
+
+void type<::mmx::contract::MutableRelay_is_locked_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::MutableRelay_is_locked_return());
+}
+
+void type<::mmx::contract::MutableRelay_is_locked_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_is_locked_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -1639,6 +1669,30 @@ void type<::mmx::contract::TimeLock_get_owner_return>::create_dynamic_code(std::
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::contract::TimeLock_is_locked>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_TimeLock_is_locked;
+}
+
+void type<::mmx::contract::TimeLock_is_locked>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::TimeLock_is_locked());
+}
+
+void type<::mmx::contract::TimeLock_is_locked>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TimeLock_is_locked& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::TimeLock_is_locked_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_TimeLock_is_locked_return;
+}
+
+void type<::mmx::contract::TimeLock_is_locked_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::TimeLock_is_locked_return());
+}
+
+void type<::mmx::contract::TimeLock_is_locked_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TimeLock_is_locked_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::contract::TimeLock_is_valid>::get_type_code() {
 	return mmx::contract::vnx_native_type_code_TimeLock_is_valid;
 }
@@ -2008,6 +2062,30 @@ void type<::mmx::contract::VirtualPlot_calc_hash_return>::create_dynamic_code(st
 }
 
 void type<::mmx::contract::VirtualPlot_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot_calc_hash_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::VirtualPlot_is_locked>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_VirtualPlot_is_locked;
+}
+
+void type<::mmx::contract::VirtualPlot_is_locked>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::VirtualPlot_is_locked());
+}
+
+void type<::mmx::contract::VirtualPlot_is_locked>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot_is_locked& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::VirtualPlot_is_locked_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_VirtualPlot_is_locked_return;
+}
+
+void type<::mmx::contract::VirtualPlot_is_locked_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::VirtualPlot_is_locked_return());
+}
+
+void type<::mmx::contract::VirtualPlot_is_locked_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot_is_locked_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -2383,6 +2461,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::MutableRelay_get_dependency_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MutableRelay_get_owner::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MutableRelay_get_owner_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::MutableRelay_is_locked::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::MutableRelay_is_locked_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MutableRelay_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MutableRelay_is_valid_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MutableRelay_lock::static_create_type_code());
@@ -2453,6 +2533,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::TimeLock_get_dependency_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::TimeLock_get_owner::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::TimeLock_get_owner_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::TimeLock_is_locked::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::TimeLock_is_locked_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::TimeLock_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::TimeLock_is_valid_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::TimeLock_validate::static_create_type_code());
@@ -2484,6 +2566,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::VirtualPlot_calc_cost_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::VirtualPlot_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::VirtualPlot_calc_hash_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::VirtualPlot_is_locked::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::VirtualPlot_is_locked_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::VirtualPlot_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::VirtualPlot_is_valid_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::VoteSheet::static_create_type_code());
@@ -2569,6 +2653,8 @@ const vnx::TypeCode* const vnx_native_type_code_MutableRelay_get_dependency = vn
 const vnx::TypeCode* const vnx_native_type_code_MutableRelay_get_dependency_return = vnx::get_type_code(vnx::Hash64(0x516cf9103cfc94ffull));
 const vnx::TypeCode* const vnx_native_type_code_MutableRelay_get_owner = vnx::get_type_code(vnx::Hash64(0x6d290dd119ab1599ull));
 const vnx::TypeCode* const vnx_native_type_code_MutableRelay_get_owner_return = vnx::get_type_code(vnx::Hash64(0xc382d975b0b3e00bull));
+const vnx::TypeCode* const vnx_native_type_code_MutableRelay_is_locked = vnx::get_type_code(vnx::Hash64(0x79b24a4efe1ef9afull));
+const vnx::TypeCode* const vnx_native_type_code_MutableRelay_is_locked_return = vnx::get_type_code(vnx::Hash64(0x6d930f397e8eae61ull));
 const vnx::TypeCode* const vnx_native_type_code_MutableRelay_is_valid = vnx::get_type_code(vnx::Hash64(0x32aee56f284c5167ull));
 const vnx::TypeCode* const vnx_native_type_code_MutableRelay_is_valid_return = vnx::get_type_code(vnx::Hash64(0xc591d5e4066eb3e2ull));
 const vnx::TypeCode* const vnx_native_type_code_MutableRelay_lock = vnx::get_type_code(vnx::Hash64(0xff880885af6179ecull));
@@ -2639,6 +2725,8 @@ const vnx::TypeCode* const vnx_native_type_code_TimeLock_get_dependency = vnx::g
 const vnx::TypeCode* const vnx_native_type_code_TimeLock_get_dependency_return = vnx::get_type_code(vnx::Hash64(0x1a563b8d1b1e5637ull));
 const vnx::TypeCode* const vnx_native_type_code_TimeLock_get_owner = vnx::get_type_code(vnx::Hash64(0x5b8f7fefce4e16a6ull));
 const vnx::TypeCode* const vnx_native_type_code_TimeLock_get_owner_return = vnx::get_type_code(vnx::Hash64(0xd4729bce1238ae82ull));
+const vnx::TypeCode* const vnx_native_type_code_TimeLock_is_locked = vnx::get_type_code(vnx::Hash64(0x4f14387029fbfa90ull));
+const vnx::TypeCode* const vnx_native_type_code_TimeLock_is_locked_return = vnx::get_type_code(vnx::Hash64(0x7a634d82dc05e0e8ull));
 const vnx::TypeCode* const vnx_native_type_code_TimeLock_is_valid = vnx::get_type_code(vnx::Hash64(0x33c2731f61a6e75cull));
 const vnx::TypeCode* const vnx_native_type_code_TimeLock_is_valid_return = vnx::get_type_code(vnx::Hash64(0x39f514ddf4a30515ull));
 const vnx::TypeCode* const vnx_native_type_code_TimeLock_validate = vnx::get_type_code(vnx::Hash64(0x127de0e96bc85819ull));
@@ -2670,6 +2758,8 @@ const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_cost = vnx::get
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xac85fcecbe875f5aull));
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_hash = vnx::get_type_code(vnx::Hash64(0x2ec01712e3899bd7ull));
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xd7d3a1e038583226ull));
+const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_locked = vnx::get_type_code(vnx::Hash64(0xd79659de62aa238cull));
+const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_locked_return = vnx::get_type_code(vnx::Hash64(0x15fda7c95c9ffb8ull));
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_valid = vnx::get_type_code(vnx::Hash64(0xe97074988602acadull));
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_valid_return = vnx::get_type_code(vnx::Hash64(0xd5a16e6bb7e26611ull));
 const vnx::TypeCode* const vnx_native_type_code_VoteSheet = vnx::get_type_code(vnx::Hash64(0xdaac9a8f3f87ad6aull));

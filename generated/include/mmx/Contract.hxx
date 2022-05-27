@@ -39,6 +39,7 @@ public:
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	virtual std::vector<::mmx::addr_t> get_dependency() const;
 	virtual vnx::optional<::mmx::addr_t> get_owner() const;
+	virtual vnx::bool_t is_locked(std::shared_ptr<const ::mmx::Context> context = nullptr) const;
 	virtual std::vector<::mmx::txout_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const;
 	virtual void transfer(const vnx::optional<::mmx::addr_t>& new_owner = nullptr);
 	
