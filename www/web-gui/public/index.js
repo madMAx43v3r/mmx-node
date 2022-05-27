@@ -1,6 +1,6 @@
 
 function validate_address(address) {
-	return address.length == 62 && address.startsWith("mmx1");
+	return address && address.length == 62 && address.startsWith("mmx1");
 }
 
 var app = Vue.createApp({
@@ -139,20 +139,20 @@ const AccountOptions = {
 		<create-account :index="index"></create-account>
 	`
 }
-const AccountCreateStaking = {
-	props: {
-		index: Number
-	},
-	template: `
-		<create-staking-contract :index="index"></create-staking-contract>
-	`
-}
 const AccountCreateLocked = {
 	props: {
 		index: Number
 	},
 	template: `
 		<create-locked-contract :index="index"></create-locked-contract>
+	`
+}
+const AccountCreateVirtualPlot = {
+	props: {
+		index: Number
+	},
+	template: `
+		<create-virtual-plot-contract :index="index"></create-virtual-plot-contract>
 	`
 }
 
@@ -419,8 +419,8 @@ const routes = [
 			{ path: 'log', component: AccountLog, meta: { page: 'log' } },
 			{ path: 'details', component: AccountDetails, meta: { page: 'details' } },
 			{ path: 'options', component: AccountOptions, meta: { page: 'options' } },
-			{ path: 'create/staking', component: AccountCreateStaking },
 			{ path: 'create/locked', component: AccountCreateLocked },
+			{ path: 'create/virtualplot', component: AccountCreateVirtualPlot },
 			{ path: 'coins/:currency', component: AccountCoins, props: route => ({currency: route.params.currency}) },
 		]
 	},

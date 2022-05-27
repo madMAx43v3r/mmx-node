@@ -1150,6 +1150,7 @@ app.component('create-contract-menu', {
 					<label>Contract Type</label>
 					<select v-model="type">
 						<option value="locked">mmx.contract.TimeLock</option>
+						<option value="virtualplot">mmx.contract.VirtualPlot</option>
 					</select>
 				</div>
 				<div @click="submit" class="ui submit button" :class="{disabled: !type}">Create</div>
@@ -1174,7 +1175,7 @@ app.component('create-locked-contract', {
 	},
 	methods: {
 		check_valid() {
-			this.valid = this.owner && this.unlock_height;
+			this.valid = validate_address(this.owner) && this.unlock_height;
 			if(!this.valid) {
 				this.confirmed = false;
 			}
@@ -1228,6 +1229,104 @@ app.component('create-locked-contract', {
 				<div class="field">
 					<label>Unlock at Chain Height</label>
 					<input type="text" v-model.number="unlock_height"/>
+				</div>
+				<div class="inline field">
+					<div class="ui toggle checkbox" :class="{disabled: !valid}">
+						<input type="checkbox" class="hidden" v-model="confirmed">
+						<label>Confirm</label>
+					</div>
+				</div>
+				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">Deploy</div>
+			</form>
+		</div>
+		<div class="ui message" :class="{hidden: !result}">
+			<template v-if="result">
+				Deployed as: <b>{{result}}</b>
+			</template>
+		</div>
+		<div class="ui negative message" :class="{hidden: !error}">
+			Failed with: <b>{{error}}</b>
+		</div>
+		`
+})
+
+app.component('create-virtual-plot-contract', {
+	props: {
+		index: Number
+	},
+	data() {
+		return {
+			farmer_key: null,
+			reward_address: null,
+			valid: false,
+			confirmed: false,
+			result: null,
+			error: null
+		}
+	},
+	methods: {
+		check_valid() {
+			this.valid = this.farmer_key && (!this.reward_address || validate_address(this.reward_address));
+			if(!this.valid) {
+				this.confirmed = false;
+			}
+		},
+		submit() {
+			this.confirmed = false;
+			const contract = {};
+			contract.__type = "mmx.contract.VirtualPlot";
+			contract.farmer_key = this.farmer_key;
+			if(this.reward_address) {
+				contract.reward_address = this.reward_address;
+			}
+			fetch('/wapi/wallet/deploy?index=' + this.index, {body: JSON.stringify(contract), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						response.json().then(data => this.result = data);
+					} else {
+						response.text().then(data => this.error = data);
+					}
+				});
+		}
+	},
+	created() {
+		fetch('/wapi/wallet/keys?index=' + this.index)
+				.then(response => response.json())
+				.then(data => this.farmer_key = data.farmer_public_key);
+	},
+	mounted() {
+		$('.ui.checkbox').checkbox();
+	},
+	watch: {
+		farmer_key(value) {
+			this.check_valid();
+		},
+		reward_address(value) {
+			this.check_valid();
+		},
+		result(value) {
+			if(value) {
+				this.error = null;
+			}
+		},
+		error(value) {
+			if(value) {
+				this.result = null;
+			}
+		}
+	},
+	template: `
+		<div class="ui large label">Create</div>
+		<div class="ui large label">mmx.contract.VirtualPlot</div>
+		<div class="ui raised segment">
+			<form class="ui form" id="form">
+				<div class="field">
+					<label>Farmer Public Key</label>
+					<input type="text" v-model="farmer_key"/>
+				</div>
+				<div class="field">
+					<label>Reward Address (optional, for pooling)</label>
+					<input type="text" v-model="reward_address" placeholder="<default>"/>
 				</div>
 				<div class="inline field">
 					<div class="ui toggle checkbox" :class="{disabled: !valid}">
