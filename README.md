@@ -21,7 +21,7 @@ Furthermore, thanks to an efficient implementation, it will provide low transact
 A mainnet launch is planned in Q4 2022.
 Currently we are running _testnet5_, so the coins farmed right now are _not worth anything_.
 
-See `#mmx-news` and `#mmx-general` on discord: https://discord.gg/pQwkebKnPB
+See `#mmx-news` and `#mmx-general` on discord: https://discord.gg/BswFhNkMzY
 
 ## Installation / Setup / Usage
 
