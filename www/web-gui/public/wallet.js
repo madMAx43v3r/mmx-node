@@ -1266,7 +1266,8 @@ app.component('create-virtual-plot-contract', {
 	},
 	methods: {
 		check_valid() {
-			this.valid = this.farmer_key && (!this.reward_address || validate_address(this.reward_address));
+			this.valid = (this.farmer_key && this.farmer_key.length == 96)
+						&& (!this.reward_address || validate_address(this.reward_address));
 			if(!this.valid) {
 				this.confirmed = false;
 			}
