@@ -109,21 +109,12 @@ void Node::main()
 
 		uint32_t height = 0;
 		std::pair<int64_t, hash_t> entry;
-		while(block_index.find_last(height, entry))
+		for(uint32_t i = 0; block_index.find_last(height, entry) && (i < params->commit_delay || height > replay_height); ++i)
 		{
 			is_replay = false;
+			state_hash = entry.second;
 			block_chain->seek_to(entry.first);
-			try {
-				auto block = read_block(*block_chain, true);
-				if(height <= replay_height) {
-					state_hash = block->hash;
-					revert(height + 1, nullptr);
-					break;
-				}
-			} catch(const std::exception& ex) {
-				log(WARN) << "Failed to read block " << height << ": " << ex.what();
-			}
-			revert(height, nullptr);
+			revert(height + 1, nullptr);
 		}
 		if(is_replay) {
 			log(INFO) << "Creating DB (this may take a while) ...";
@@ -163,15 +154,6 @@ void Node::main()
 				balance_map.emplace(key, value.first);
 			});
 			log(INFO) << "Loaded height " << height << ", took " << (vnx::get_time_millis() - time_begin) / 1e3 << " sec";
-		}
-		if(do_sync) {
-			history.erase(history.lower_bound(height - std::min(params->commit_delay, height)), history.end());
-			for(uint32_t i = 0; i < params->commit_delay; ++i) {
-				revert();
-			}
-			if(auto peak = get_peak()) {
-				log(DEBUG) << "Reverted back to height " << peak->height;
-			}
 		}
 	} else {
 		block_chain->open("wb");
