@@ -1325,26 +1325,27 @@ void Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noe
 
 	std::set<std::pair<addr_t, addr_t>> balance_set;
 	for(const auto& address : addr_set) {
-		const auto log_key = std::make_pair(address, height);
+		const auto begin = std::make_pair(address, height);
+		const auto end = std::make_pair(address, -1);
 		{
 			std::vector<txio_entry_t> entries;
-			spend_log.find(log_key, entries, vnx::rocksdb::GREATER_EQUAL);
+			spend_log.find_range(begin, end, entries);
 			for(const auto& entry : entries) {
 				const auto key = std::make_pair(entry.address, entry.contract);
 				balance_set.insert(key);
 				balance_map[key] += entry.amount;
 			}
-			spend_log.erase_all(log_key, vnx::rocksdb::GREATER_EQUAL);
+			spend_log.erase_range(begin, end);
 		}
 		{
 			std::vector<txout_entry_t> entries;
-			recv_log.find(log_key, entries);
+			recv_log.find_range(begin, end, entries);
 			for(const auto& entry : entries) {
 				const auto key = std::make_pair(entry.address, entry.contract);
 				balance_set.insert(key);
 				balance_map[key] -= entry.amount;
 			}
-			recv_log.erase_all(log_key, vnx::rocksdb::GREATER_EQUAL);
+			recv_log.erase_range(begin, end);
 		}
 	}
 	{
