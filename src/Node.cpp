@@ -106,6 +106,10 @@ void Node::main()
 		const auto time_begin = vnx::get_time_millis();
 		block_chain->open("rb+");
 
+		balance_table.scan([this](const std::pair<addr_t, addr_t>& key, const std::pair<uint128, uint32_t>& value) {
+			balance_map[key] = value.first;
+		});
+
 		bool is_replay = true;
 		uint32_t height = -1;
 		std::pair<int64_t, hash_t> entry;
@@ -151,9 +155,6 @@ void Node::main()
 					}
 				}
 			}
-			balance_table.scan([this, height](const std::pair<addr_t, addr_t>& key, const std::pair<uint128, uint32_t>& value) {
-				balance_map.emplace(key, value.first);
-			});
 			log(INFO) << "Loaded height " << height << ", took " << (vnx::get_time_millis() - time_begin) / 1e3 << " sec";
 		}
 	} else {
