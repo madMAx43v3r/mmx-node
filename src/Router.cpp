@@ -404,7 +404,7 @@ void Router::update()
 			peer->hash_queue.pop();
 		}
 		// check for timeout
-		if(connection_timeout_ms > 0 && now_ms - peer->last_receive_ms > connection_timeout_ms) {
+		if(connection_timeout_ms > 0 && now_ms - std::max(peer->last_receive_ms, peer->connected_since_ms) > connection_timeout_ms) {
 			log(INFO) << "Peer " << peer->address << " timed out";
 			disconnect(entry.first);
 		}
