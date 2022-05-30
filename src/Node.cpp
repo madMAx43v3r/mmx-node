@@ -1063,7 +1063,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 
 				if(!fork->is_vdf_verified) {
 					if(auto prev = find_prev_header(block)) {
-						if(auto infuse = find_prev_header(block, params->infuse_delay + 1, true)) {
+						if(auto infuse = find_prev_header(block, params->infuse_delay + 1)) {
 							log(INFO) << "Checking VDF for block at height " << block->height << " ...";
 							vdf_threads->add_task(std::bind(&Node::check_vdf_task, this, fork, prev, infuse));
 						} else {
