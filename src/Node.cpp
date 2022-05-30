@@ -1433,7 +1433,12 @@ void Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noe
 	vplot_log.erase_all(height, vnx::rocksdb::GREATER_EQUAL);
 
 	for(const auto& key : balance_set) {
-		balance_table.insert(key, std::make_pair(balance_map[key], height - 1));
+		if(const auto& balance = balance_map[key]) {
+			balance_table.insert(key, std::make_pair(balance, height - 1));
+		} else {
+			balance_map.erase(key);
+			balance_table.erase(key);
+		}
 	}
 	{
 		std::vector<std::vector<hash_t>> all_keys;
