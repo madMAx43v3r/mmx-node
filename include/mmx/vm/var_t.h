@@ -13,6 +13,7 @@
 #include <vnx/Util.h>
 #include <uint256_t.h>
 
+#include <limits>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
