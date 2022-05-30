@@ -534,6 +534,52 @@ std::shared_ptr<const Contract> Node::get_contract_for(const addr_t& address) co
 	return pubkey;
 }
 
+std::shared_ptr<const Contract> Node::get_contract_at(const addr_t& address, const hash_t& block_hash) const
+{
+	auto fork = find_fork(block_hash);
+	auto block = fork ? fork->block : get_header(block_hash);
+	if(!block) {
+		throw std::logic_error("no such block");
+	}
+	auto height = get_tx_height(address);
+	if(height && *height > block->height) {
+		return nullptr;
+	}
+	std::shared_ptr<const Contract> contract;
+	if(auto tx = get_transaction(address)) {
+		contract = tx->deploy;
+	}
+	if(contract) {
+		std::vector<vnx::Object> mutations;
+		if(mutate_log.find_range(std::make_pair(address, 0), std::make_pair(address, block->height + 1), mutations)) {
+			auto copy = vnx::clone(contract);
+			for(const auto& method : mutations) {
+				copy->vnx_call(vnx::clone(method));
+			}
+			contract = copy;
+		}
+	}
+	for(const auto& fork_i : get_fork_line(fork)) {
+		const auto& block = fork_i->block;
+		for(const auto& tx : block->tx_list) {
+			for(const auto& op : tx->get_all_operations()) {
+				if(op->address == address && block->height > get_height()) {
+					if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op)) {
+						if(auto copy = vnx::clone(contract)) {
+							copy->vnx_call(vnx::clone(mutate->method));
+							contract = copy;
+						}
+					}
+				}
+			}
+			if(tx->id == address) {
+				contract = tx->deploy;
+			}
+		}
+	}
+	return contract;
+}
+
 std::vector<std::shared_ptr<const Contract>> Node::get_contracts(const std::vector<addr_t>& addresses) const
 {
 	std::vector<std::shared_ptr<const Contract>> res;
