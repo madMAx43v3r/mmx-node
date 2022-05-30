@@ -1295,6 +1295,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	{
 		const auto& out = outputs[i];
 		addr_set.insert(out.address);
+		// TODO: performance issue after revert
 		recv_log.insert(std::make_pair(out.address, block->height),
 				txout_entry_t::create_ex(txio_key_t::create_ex(tx->id, i), block->height, out));
 
@@ -1307,6 +1308,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	{
 		const auto& in = inputs[i];
 		addr_set.insert(in.address);
+		// TODO: performance issue after revert
 		spend_log.insert(std::make_pair(in.address, block->height),
 				txio_entry_t::create_ex(txio_key_t::create_ex(tx->id, i), block->height, in));
 
