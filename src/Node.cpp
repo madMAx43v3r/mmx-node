@@ -8,6 +8,9 @@
 #include <mmx/Node.h>
 #include <mmx/Context.hxx>
 #include <mmx/Challenge.hxx>
+#include <mmx/ProofOfStake.hxx>
+#include <mmx/ProofOfSpaceOG.hxx>
+#include <mmx/ProofOfSpaceNFT.hxx>
 #include <mmx/contract/Token.hxx>
 #include <mmx/contract/Offer.hxx>
 #include <mmx/contract/PubKey.hxx>
@@ -1176,9 +1179,17 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 	verified_vdfs.erase(verified_vdfs.begin(), verified_vdfs.upper_bound(block->height));
 
 	if(is_synced) {
+		std::string ksize = "N/A";
+		if(auto proof = std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)) {
+			ksize = std::to_string(proof->ksize);
+		} else if(auto proof = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(block->proof)) {
+			ksize = std::to_string(proof->ksize);
+		} else if(auto proof = std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
+			ksize = "VP";
+		}
 		Node::log(INFO)
 				<< "Committed height " << block->height << " with: ntx = " << block->tx_list.size()
-				<< ", score = " << (block->proof ? block->proof->score : params->score_threshold)
+				<< ", k = " << ksize << ", score = " << (block->proof ? block->proof->score : params->score_threshold)
 				<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff;
 	}
 	publish(block, output_committed_blocks, is_synced ? 0 : BLOCKING);
