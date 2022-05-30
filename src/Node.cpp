@@ -109,6 +109,7 @@ void Node::main()
 		const auto time_begin = vnx::get_time_millis();
 		block_chain->open("rb+");
 
+		// load balance table
 		balance_table.scan([this](const std::pair<addr_t, addr_t>& key, const std::pair<uint128, uint32_t>& value) {
 			balance_map[key] = value.first;
 		});
@@ -116,10 +117,12 @@ void Node::main()
 		bool is_replay = true;
 		uint32_t height = -1;
 		std::pair<int64_t, hash_t> entry;
+		// revert last commit_delay blocks
 		for(uint32_t i = 0; block_index.find_last(height, entry) && (i < params->commit_delay || height >= replay_height); ++i) {
 			is_replay = false;
 			revert(height, nullptr);
 		}
+		// set state to last block
 		if(block_index.find_last(height, entry)) {
 			state_hash = entry.second;
 			block_chain->seek_to(entry.first);
@@ -151,6 +154,7 @@ void Node::main()
 				log(INFO) << "Loaded " << peak->height + 1 << " blocks from disk, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 			}
 		} else {
+			// load history
 			for(uint32_t i = 0; i < max_history; ++i) {
 				if(i <= height) {
 					if(auto header = get_header_at(height - i)) {
