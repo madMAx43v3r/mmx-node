@@ -191,6 +191,7 @@ private:
 	struct fork_t {
 		bool is_invalid = false;
 		bool is_verified = false;
+		bool is_connected = false;
 		bool is_vdf_verified = false;
 		bool is_proof_verified = false;
 		int64_t recv_time = 0;

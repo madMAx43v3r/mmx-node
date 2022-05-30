@@ -109,12 +109,8 @@ void Node::update()
 			const auto& block = fork->block;
 			if(!fork->prev.lock()) {
 				if(auto prev = find_fork(block->prev)) {
-					if(prev->is_invalid) {
-						fork->is_invalid = true;
-					}
 					fork->prev = prev;
-				}
-				else if(is_synced) {
+				} else if(is_synced) {
 					// fetch missing previous
 					const auto hash = block->prev;
 					const auto height = block->height - 1;
@@ -127,8 +123,14 @@ void Node::update()
 			if(!fork->diff_block) {
 				fork->diff_block = find_diff_header(block);
 			}
+			if(auto prev = fork->prev.lock()) {
+				fork->is_invalid = prev->is_invalid;
+				fork->is_connected = prev->is_connected;
+			} else if(fork->block->prev == root->hash) {
+				fork->is_connected = true;
+			}
 			const auto prev = find_prev_header(block);
-			if(!prev || fork->is_invalid || !fork->diff_block) {
+			if(!prev || fork->is_invalid || !fork->diff_block || !fork->is_connected) {
 				continue;
 			}
 			bool vdf_passed = false;

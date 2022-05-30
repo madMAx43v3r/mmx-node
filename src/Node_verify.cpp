@@ -104,7 +104,8 @@ uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::option
 			return uint128_0;
 		}
 	}
-	auto block = get_header(hash);
+	auto fork = find_fork(hash);
+	auto block = fork ? fork->block : get_header(hash);
 	if(!block) {
 		throw std::logic_error("no such block");
 	}
@@ -123,9 +124,8 @@ uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::option
 			}
 		}
 	}
-	auto fork = find_fork(hash);
 	while(fork) {
-		const auto block = fork->block;
+		const auto& block = fork->block;
 		if(block->height < since) {
 			break;
 		}
@@ -144,7 +144,8 @@ uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::option
 	return balance;
 }
 
-void Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, std::shared_ptr<const BlockHeader> diff_block) const
+void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge,
+							std::shared_ptr<const BlockHeader> diff_block) const
 {
 	if(!proof->is_valid()) {
 		throw std::logic_error("invalid proof");
@@ -171,16 +172,16 @@ void Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t&
 	}
 	else if(auto stake = std::dynamic_pointer_cast<const ProofOfStake>(proof))
 	{
-		const auto plot_id = stake->contract;
-		const auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(get_contract(plot_id));
+		const auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(
+				get_contract_at(stake->contract, diff_block->hash));
 		if(!plot) {
 			throw std::logic_error("no such virtual plot");
 		}
 		if(stake->farmer_key != plot->farmer_key) {
 			throw std::logic_error("invalid farmer key");
 		}
-		const auto balance = get_virtual_plot_balance(plot_id, diff_block->hash);
-		score = calc_virtual_score(params, challenge, plot_id, balance, diff_block->space_diff);
+		const auto balance = get_virtual_plot_balance(stake->contract, diff_block->hash);
+		score = calc_virtual_score(params, challenge, stake->contract, balance, diff_block->space_diff);
 	}
 	else {
 		throw std::logic_error("invalid proof type");
