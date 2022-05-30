@@ -5,7 +5,7 @@ if [ ! -d config/local ]; then
 	echo "Initialized config/local/ with defaults."
 fi
 
-if [ ! -f PASSWD ]; then
+if [ ! -f PASSWD ] || [ ! -s PASSWD ]; then
 	./build/generate_passwd > PASSWD
 	./build/vnx-base/tools/vnxpasswd -c config/default/ config/local/ -u mmx-admin -p $(cat PASSWD)
 	echo "PASSWD=$(cat PASSWD)"
