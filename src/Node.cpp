@@ -1506,19 +1506,7 @@ std::shared_ptr<Node::fork_t> Node::find_prev_fork(std::shared_ptr<fork_t> fork,
 std::shared_ptr<const BlockHeader> Node::find_prev_header(	std::shared_ptr<const BlockHeader> block,
 															const size_t distance, bool clamped) const
 {
-	if(distance > 1 && block && (block->height >= distance || clamped))
-	{
-		const auto height = block->height > distance ? block->height - distance : 0;
-		auto iter = history.find(height);
-		if(iter != history.end()) {
-			return iter->second;
-		}
-	}
-	for(size_t i = 0; block && i < distance; ++i)
-	{
-		if(clamped && block->height == 0) {
-			break;
-		}
+	for(size_t i = 0; block && i < distance && (block->height || !clamped); ++i) {
 		block = get_header(block->prev);
 	}
 	return block;
