@@ -101,20 +101,21 @@ void Node::main()
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
 	storage = std::make_shared<vm::StorageRocksDB>(database_path);
 
-	bool is_replay = true;
 	if(block_chain->exists())
 	{
 		const auto time_begin = vnx::get_time_millis();
 		block_chain->open("rb+");
 
-		uint32_t height = 0;
+		bool is_replay = true;
+		uint32_t height = -1;
 		std::pair<int64_t, hash_t> entry;
-		for(uint32_t i = 0; block_index.find_last(height, entry) && (i < params->commit_delay || height > replay_height); ++i)
-		{
+		for(uint32_t i = 0; block_index.find_last(height, entry) && (i < params->commit_delay || height >= replay_height); ++i) {
 			is_replay = false;
+			revert(height, nullptr);
+		}
+		if(block_index.find_last(height, entry)) {
 			state_hash = entry.second;
 			block_chain->seek_to(entry.first);
-			revert(height + 1, nullptr);
 		}
 		if(is_replay) {
 			log(INFO) << "Creating DB (this may take a while) ...";
