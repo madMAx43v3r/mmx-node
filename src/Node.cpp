@@ -115,6 +115,7 @@ void Node::main()
 		});
 
 		bool is_replay = true;
+		bool is_revert = false;
 		uint32_t height = -1;
 		std::pair<int64_t, hash_t> entry;
 		// set state to last block
@@ -122,6 +123,7 @@ void Node::main()
 		{
 			is_replay = false;
 			if(height >= replay_height) {
+				is_revert = true;
 				revert(height, nullptr);
 			} else {
 				state_hash = entry.second;
@@ -135,6 +137,18 @@ void Node::main()
 				}
 				break;
 			}
+		}
+		if(is_revert) {
+			recv_log.flush();
+			spend_log.flush();
+			exec_log.flush();
+			revoke_map.flush();
+			mutate_log.flush();
+			deploy_map.flush();
+			offer_log.flush();
+			vplot_log.flush();
+			tx_index.flush();
+			balance_table.flush();
 		}
 		if(is_replay) {
 			log(INFO) << "Creating DB (this may take a while) ...";
