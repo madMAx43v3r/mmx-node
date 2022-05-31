@@ -90,8 +90,10 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	}
 	for(const auto& entry : virtual_map)
 	{
-		if(check_plot_filter(params, value->challenge, entry.first)) {
-			virtual_plots.push_back(entry);
+		if(entry.second.balance) {
+			if(check_plot_filter(params, value->challenge, entry.first)) {
+				virtual_plots.push_back(entry);
+			}
 		}
 	}
 	std::vector<std::vector<uint256_t>> scores(plots.size());
