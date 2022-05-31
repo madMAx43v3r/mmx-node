@@ -30,37 +30,61 @@ protected:
 
 	void main() override;
 
-	hash_t send(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
-				const addr_t& currency, const spend_options_t& options) const override;
+	std::shared_ptr<const Transaction> send(
+			const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
+			const addr_t& currency, const spend_options_t& options) const override;
 
-	hash_t send_from(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& src_addr,
-						const addr_t& currency, const spend_options_t& options) const override;
+	std::shared_ptr<const Transaction> send_many(
+			const uint32_t& index, const std::map<addr_t, uint64_t>& amounts,
+			const addr_t& currency, const spend_options_t& options) const override;
 
-	hash_t mint(const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
-				const addr_t& currency, const spend_options_t& options) const override;
+	std::shared_ptr<const Transaction> send_from(
+			const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& src_addr,
+			const addr_t& currency, const spend_options_t& options) const override;
 
-	vnx::optional<hash_t> split(const uint32_t& index, const uint64_t& max_amount, const addr_t& currency, const spend_options_t& options) const override;
+	std::shared_ptr<const Transaction> mint(
+			const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
+			const addr_t& currency, const spend_options_t& options) const override;
 
-	hash_t deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, const spend_options_t& options) const override;
+	std::shared_ptr<const Transaction> deploy(
+			const uint32_t& index, std::shared_ptr<const Contract> contract, const spend_options_t& options) const override;
 
-	hash_t execute(const uint32_t& index, const addr_t& address, const vnx::Object& method, const spend_options_t& options) const override;
+	std::shared_ptr<const Transaction> mutate(
+			const uint32_t& index, const addr_t& address, const vnx::Object& method, const spend_options_t& options) const override;
 
-	std::shared_ptr<const Transaction>
-	complete(const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const;
+	std::shared_ptr<const Transaction> execute(
+			const uint32_t& index, const addr_t& address, const std::string& method,
+			const std::vector<vnx::Variant>& args, const spend_options_t& options) const override;
 
-	std::shared_ptr<const Transaction>
-	sign_off(	const uint32_t& index, std::shared_ptr<const Transaction> tx,
-				const vnx::bool_t& cover_fee, const spend_options_t& options) const override;
+	std::shared_ptr<const Transaction> deposit(
+			const uint32_t& index, const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args,
+			const uint64_t& amount, const addr_t& currency, const spend_options_t& options) const override;
+
+	std::shared_ptr<const Transaction> make_offer(
+			const uint32_t& index, const uint32_t& address, const uint64_t& bid_amount, const addr_t& bid_currency,
+			const uint64_t& ask_amount, const addr_t& ask_currency, const spend_options_t& options) const override;
+
+	std::shared_ptr<const Transaction> accept_offer(
+			const uint32_t& index, std::shared_ptr<const Transaction> offer, const spend_options_t& options) const override;
+
+	std::shared_ptr<const Transaction> revoke(
+			const uint32_t& index, const hash_t& txid, const addr_t& address, const spend_options_t& options) const override;
+
+	std::shared_ptr<const Transaction> complete(
+			const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const;
+
+	std::shared_ptr<const Transaction> sign_off(
+			const uint32_t& index, std::shared_ptr<const Transaction> tx, const vnx::bool_t& cover_fee, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Solution> sign_msg(const uint32_t& index, const addr_t& address, const hash_t& msg) const override;
 
 	void send_off(const uint32_t& index, std::shared_ptr<const Transaction> tx) const override;
 
-	void mark_spent(const uint32_t& index, const std::vector<txio_key_t>& keys) override;
+	void mark_spent(const uint32_t& index, const std::map<std::pair<addr_t, addr_t>, uint128>& amounts) override;
 
-	void reserve(const uint32_t& index, const std::vector<txio_key_t>& keys) override;
+	void reserve(const uint32_t& index, const std::map<std::pair<addr_t, addr_t>, uint128>& amounts) override;
 
-	void release(const uint32_t& index, const std::vector<txio_key_t>& keys) override;
+	void release(const uint32_t& index, const std::map<std::pair<addr_t, addr_t>, uint128>& amounts) override;
 
 	void release_all() override;
 
@@ -68,16 +92,8 @@ protected:
 
 	void update_cache(const uint32_t& index) const override;
 
-	std::vector<utxo_entry_t> get_utxo_list(const uint32_t& index, const uint32_t& min_confirm = 1) const override;
-
-	std::vector<utxo_entry_t> get_utxo_list_for(const uint32_t& index, const addr_t& currency, const uint32_t& min_confirm) const override;
-
-	std::vector<stxo_entry_t> get_stxo_list(const uint32_t& index) const override;
-
-	std::vector<stxo_entry_t> get_stxo_list_for(const uint32_t& index, const addr_t& currency) const override;
-
-	std::vector<utxo_entry_t> gather_utxos_for(	const uint32_t& index, const uint64_t& amount,
-												const addr_t& currency, const spend_options_t& options) const override;
+	std::vector<txin_t> gather_inputs_for(	const uint32_t& index, const uint64_t& amount,
+											const addr_t& currency, const spend_options_t& options) const override;
 
 	std::vector<tx_entry_t> get_history(const uint32_t& index, const int32_t& since) const override;
 
@@ -92,6 +108,10 @@ protected:
 	addr_t get_address(const uint32_t& index, const uint32_t& offset) const override;
 
 	std::vector<addr_t> get_all_addresses(const int32_t& index) const override;
+
+	address_info_t get_address_info(const uint32_t& index, const uint32_t& offset) const;
+
+	std::vector<address_info_t> get_all_address_infos(const int32_t& index) const;
 
 	std::shared_ptr<const FarmerKeys> get_farmer_keys(const uint32_t& index) const override;
 
@@ -126,6 +146,7 @@ private:
 
 	mutable vnx::rocksdb::multi_table<addr_t, tx_log_entry_t> tx_log;
 
+	hash_t genesis_hash;
 	std::shared_ptr<const ChainParams> params;
 	std::shared_ptr<vnx::addons::HttpInterface<Wallet>> http;
 

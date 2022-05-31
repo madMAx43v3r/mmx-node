@@ -1,10 +1,11 @@
 package mmx.contract;
 
 import mmx.hash_t;
+import mmx.addr_t;
 
 class WebData extends mmx.Contract {
 	
-	// TODO: optional<addr_t> owner;
+	optional<addr_t> owner;
 	
 	string mime_type;
 	
@@ -15,6 +16,18 @@ class WebData extends mmx.Contract {
 	
 	hash_t calc_hash() const;
 	
+	ulong num_bytes() const;
+	
 	ulong calc_cost(mmx.ChainParams* params) const;
+	
+	vector<addr_t> get_dependency() const;
+	
+	optional<addr_t> get_owner() const;
+	
+	vector<mmx.txout_t> validate(mmx.Operation* operation, mmx.Context* context) const;
+	
+	void transfer(optional<addr_t> new_owner);
+	
+	void update(vnx.Buffer new_payload);
 	
 }

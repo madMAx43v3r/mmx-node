@@ -11,10 +11,14 @@ class NFT extends mmx.Contract {
 	
 	vnx.Object data;
 	
+	mmx.Solution* solution;
+	
 	
 	bool is_valid() const;
 	
 	hash_t calc_hash() const;
+	
+	ulong num_bytes() const;
 	
 	ulong calc_cost(mmx.ChainParams* params) const;
 	

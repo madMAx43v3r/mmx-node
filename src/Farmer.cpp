@@ -18,7 +18,9 @@ Farmer::Farmer(const std::string& _vnx_name)
 
 void Farmer::init()
 {
-	vnx::open_pipe(vnx_name, this, 1000);
+	pipe = vnx::open_pipe(vnx_name, this, 1000);
+	pipe->pause();
+
 	vnx::open_pipe(vnx_get_id(), this, 1000);
 
 	subscribe(input_info, 1000);
@@ -27,6 +29,9 @@ void Farmer::init()
 void Farmer::main()
 {
 	if(reward_addr) {
+		if(*reward_addr == addr_t()) {
+			throw std::logic_error("reward_addr == zero");
+		}
 		log(INFO) << "Reward address: " << reward_addr->to_string();
 	}
 	wallet = std::make_shared<WalletAsyncClient>(wallet_server);
@@ -44,6 +49,15 @@ vnx::Hash64 Farmer::get_mac_addr() const
 	return vnx_get_id();
 }
 
+std::vector<bls_pubkey_t> Farmer::get_farmer_keys() const
+{
+	std::vector<bls_pubkey_t> out;
+	for(const auto& entry : key_map) {
+		out.push_back(entry.first);
+	}
+	return out;
+}
+
 std::shared_ptr<const FarmInfo> Farmer::get_farm_info() const
 {
 	auto info = FarmInfo::create();
@@ -54,6 +68,7 @@ std::shared_ptr<const FarmInfo> Farmer::get_farm_info() const
 			}
 			info->plot_dirs.insert(info->plot_dirs.end(), value->plot_dirs.begin(), value->plot_dirs.end());
 			info->total_bytes += value->total_bytes;
+			info->total_balance += value->total_balance;
 		}
 	}
 	return info;
@@ -70,6 +85,7 @@ void Farmer::update()
 					log(INFO) << "Got Farmer Key: " << keys->farmer_public_key;
 				}
 			}
+			pipe->resume();
 		},
 		[this](const vnx::exception& ex) {
 			log(WARN) << "Failed to get keys from wallet: " << ex.what();
@@ -114,29 +130,43 @@ void Farmer::handle(std::shared_ptr<const FarmInfo> value)
 	}
 }
 
+skey_t Farmer::find_skey(const bls_pubkey_t& pubkey) const
+{
+	auto iter = key_map.find(pubkey);
+	if(iter == key_map.end()) {
+		throw std::logic_error("unknown farmer key: " + pubkey.to_string());
+	}
+	return iter->second;
+}
+
+bls_signature_t Farmer::sign_proof(std::shared_ptr<const ProofOfSpace> proof) const
+{
+	if(!proof) {
+		throw std::logic_error("!proof");
+	}
+	return bls_signature_t::sign(find_skey(proof->farmer_key), proof->calc_hash());
+}
+
 std::shared_ptr<const BlockHeader>
 Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& reward_amount) const
 {
+	if(!block) {
+		throw std::logic_error("!block");
+	}
 	if(!block->proof) {
-		throw std::logic_error("invalid proof");
+		throw std::logic_error("!proof");
 	}
-	skey_t farmer_sk;
-	{
-		auto iter = key_map.find(block->proof->farmer_key);
-		if(iter == key_map.end()) {
-			throw std::logic_error("unknown farmer key: " + block->proof->farmer_key.to_string());
-		}
-		farmer_sk = iter->second;
-	}
+	const auto farmer_sk = find_skey(block->proof->farmer_key);
+
 	auto base = Transaction::create();
-	// TODO: use random nonce to make block hash unpredictable in case of no tx
-	base->nonce = block->height;
-	base->salt = block->vdf_output[0];
+	base->expires = block->height;
+	base->note = tx_note_e::REWARD;
+	base->salt = block->prev;
 
 	auto amount_left = reward_amount;
 	if(project_addr && amount_left > 0)
 	{
-		tx_out_t out;
+		txout_t out;
 		out.address = *project_addr;
 		out.amount = double(amount_left) * devfee_ratio;
 		if(out.amount > 0) {
@@ -146,7 +176,7 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& rew
 	}
 	if(reward_addr && amount_left > 0)
 	{
-		tx_out_t out;
+		txout_t out;
 		out.address = *reward_addr;
 		out.amount = amount_left;
 		amount_left -= out.amount;
@@ -155,6 +185,7 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& rew
 	base->finalize();
 
 	auto copy = vnx::clone(block);
+	copy->nonce = vnx::rand64();
 	copy->tx_base = base;
 	copy->hash = copy->calc_hash();
 	copy->farmer_sig = bls_signature_t::sign(farmer_sk, copy->hash);

@@ -1,14 +1,15 @@
 package mmx;
 
-module Harvester {
+module Harvester implements vnx.addons.HttpComponent {
 	
 	vnx.TopicPtr input_challenges = "harvester.challenges";
 	
 	vnx.TopicPtr output_info = "harvester.info";
 	vnx.TopicPtr output_proofs = "harvester.proof";
 	
-	vector<string> plot_dirs;
+	set<string> plot_dirs;
 	
+	string node_server = "Node";
 	string farmer_server = "Farmer";
 	
 	int max_queue_ms = 10000;				// [ms]
@@ -21,6 +22,10 @@ module Harvester {
 	
 	
 	void reload();
+	
+	void add_plot_dir(string path);
+	
+	void rem_plot_dir(string path);
 	
 	FarmInfo* get_farm_info() const;
 	

@@ -62,6 +62,9 @@ void Server::handle(std::shared_ptr<const Block> block)
 	std::unordered_map<txio_key_t, hash_t> exec_map;
 	for(const auto& base : block->tx_list) {
 		if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
+			if(tx->parent) {
+				tx = tx->get_combined();
+			}
 			for(const auto& in : tx->inputs) {
 				if(utxo_map.erase(in.prev)) {
 					exec_map[in.prev] = tx->id;
@@ -262,7 +265,6 @@ void Server::place_async(const uint64_t& client, const trade_pair_t& pair, const
 					return;
 				}
 			}
-			uint64_t total_bid = 0;
 			std::vector<order_t> result;
 			for(size_t i = 0; i < entries.size() && i < order.bids.size(); ++i) {
 				if(const auto& entry = entries[i]) {
@@ -279,7 +281,6 @@ void Server::place_async(const uint64_t& client, const trade_pair_t& pair, const
 						tmp.bid_key = bid.first;
 						result.push_back(tmp);
 					}
-					total_bid += utxo.amount;
 				}
 			}
 			if(!result.empty()) {
@@ -299,7 +300,7 @@ void Server::place_async(const uint64_t& client, const trade_pair_t& pair, const
 
 void Server::execute_async(std::shared_ptr<const Transaction> tx, const vnx::request_id_t& request_id)
 {
-	if(!tx || !tx->is_valid()) {
+	if(!tx || !tx->is_valid() || tx->parent) {
 		throw std::logic_error("invalid tx");
 	}
 	std::vector<txio_key_t> keys;
@@ -314,7 +315,7 @@ void Server::execute_async(std::shared_ptr<const Transaction> tx, const vnx::req
 			try {
 				auto job = std::make_shared<trade_job_t>();
 				std::unordered_set<addr_t> input_addrs;
-				std::unordered_map<addr_t, uint64_t> input_amount;
+				std::unordered_map<addr_t, uint128_t> input_amount;
 				for(size_t i = 0; i < entries.size() && i < tx->inputs.size(); ++i) {
 					const auto& in = tx->inputs[i];
 					if(!is_open(in.prev)) {
@@ -339,11 +340,11 @@ void Server::execute_async(std::shared_ptr<const Transaction> tx, const vnx::req
 						throw std::logic_error("invalid input");
 					}
 				}
-				std::unordered_map<addr_t, uint64_t> output_amount;
+				std::unordered_map<addr_t, uint128_t> output_amount;
 				for(const auto& out : tx->outputs) {
 					output_amount[out.contract] += out.amount;
 				}
-				std::unordered_map<addr_t, uint64_t> left_amount = input_amount;
+				std::unordered_map<addr_t, uint128_t> left_amount = input_amount;
 				for(const auto& entry : output_amount) {
 					auto& left = left_amount[entry.first];
 					if(entry.second > left) {
@@ -362,7 +363,7 @@ void Server::execute_async(std::shared_ptr<const Transaction> tx, const vnx::req
 				const auto fee_amount = left_amount[addr_t()];
 				const auto fee_needed = tx->calc_cost(params) + (input_addrs.size() - tx->solutions.size()) * params->min_txfee_sign;
 				if(fee_amount < fee_needed) {
-					throw std::logic_error("insufficient fee: " + std::to_string(fee_amount) + " < " + std::to_string(fee_needed));
+					throw std::logic_error("insufficient fee: " + fee_amount.str(10) + " < " + std::to_string(fee_needed));
 				}
 
 				auto request = Client_approve::create();
@@ -412,7 +413,7 @@ void Server::match_async(const trade_order_t& order, const vnx::request_id_t& re
 						&& bid_addr_set.count(utxo.address)
 						&& utxo.contract == order.pair.bid)
 					{
-						max_bid += utxo.amount;
+						safe_acc(max_bid, utxo.amount);
 						const auto& key = order.bid_keys[i];
 						bid_keys.emplace_back(key, utxo.amount);
 					}
@@ -450,15 +451,15 @@ void Server::match_async(const trade_order_t& order, const vnx::request_id_t& re
 						continue;
 					}
 					const auto& utxo = iter->second;
-					output_map[utxo.address] += order.ask;
+					safe_acc(output_map[utxo.address], order.ask);
 					{
 						tx_in_t input;
 						input.prev = order.bid_key;
 						tx->inputs.push_back(input);
 					}
 					bid_left -= order.ask;
-					result.bid += order.ask;
-					result.ask += order.bid;
+					safe_acc(result.bid, order.ask);
+					safe_acc(result.ask, order.bid);
 				}
 			}
 			if(output_map.empty()) {
@@ -546,8 +547,8 @@ ulong_fraction_t Server::get_price(const addr_t& want, const amount_t& have) con
 			}
 			const auto& order = entry.second;
 			if(order.ask <= left && utxo_map.count(order.bid_key) && is_open(order.bid_key)) {
-				price.value += order.bid;
-				price.inverse += order.ask;
+				safe_acc(price.value, order.bid);
+				safe_acc(price.inverse, order.ask);
 				left -= order.ask;
 			}
 		}

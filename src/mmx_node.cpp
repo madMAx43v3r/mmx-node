@@ -12,7 +12,7 @@
 #include <mmx/Harvester.h>
 #include <mmx/Router.h>
 #include <mmx/WebAPI.h>
-#include <mmx/exchange/Client.h>
+//#include <mmx/exchange/Client.h>
 #include <mmx/WalletClient.hxx>
 #include <mmx/secp256k1.hpp>
 #include <mmx/utils.h>
@@ -51,8 +51,8 @@ int main(int argc, char** argv)
 
 	const auto params = mmx::get_params();
 
-	if(params->vdf_seed == "test1" || params->vdf_seed == "test2" || params->vdf_seed == "test3" || params->vdf_seed == "test4") {
-		vnx::log_error() << "This version is not compatible with testnet 1/2/3, please remove NETWORK file and try again to switch to testnet4.";
+	if(params->vdf_seed == "test1" || params->vdf_seed == "test2" || params->vdf_seed == "test3" || params->vdf_seed == "test4" || params->vdf_seed == "test5") {
+		vnx::log_error() << "This version is not compatible with testnet 1-5, please remove NETWORK file and try again to switch to testnet6.";
 		vnx::close();
 		return -1;
 	}
@@ -60,13 +60,11 @@ int main(int argc, char** argv)
 	bool with_wallet = true;
 	bool with_timelord = true;
 	bool with_harvester = true;
-	bool light_mode = false;
 	std::string public_endpoint = "0.0.0.0:11330";
 	vnx::read_config("wallet", with_wallet);
 	vnx::read_config("farmer", with_farmer);
 	vnx::read_config("timelord", with_timelord);
 	vnx::read_config("harvester", with_harvester);
-	vnx::read_config("light_mode", light_mode);
 	vnx::read_config("public_endpoint", public_endpoint);
 
 #ifdef WITH_OPENCL
@@ -80,14 +78,6 @@ int main(int argc, char** argv)
 	}
 #endif
 
-	if(light_mode) {
-		with_farmer = false;
-		with_timelord = false;
-		root_path += "light_node/";
-	}
-	if(!root_path.empty()) {
-		vnx::Directory(root_path).create();
-	}
 	if(with_farmer) {
 		with_wallet = true;
 	} else {
@@ -122,29 +112,15 @@ int main(int argc, char** argv)
 			module->database_path = root_path + module->database_path;
 			module.start_detached();
 		}
-		{
-			vnx::Handle<mmx::exchange::Client> module = new mmx::exchange::Client("ExchClient");
-			module->storage_path = root_path + module->storage_path;
-			module.start_detached();
-		}
+//		{
+//			vnx::Handle<mmx::exchange::Client> module = new mmx::exchange::Client("ExchClient");
+//			module->storage_path = root_path + module->storage_path;
+//			module.start_detached();
+//		}
 		{
 			vnx::Handle<vnx::Server> module = new vnx::Server("Server5", vnx::Endpoint::from_url(":11335"));
 			module.start_detached();
 		}
-	}
-	if(light_mode) {
-		std::vector<mmx::addr_t> light_set;
-		vnx::File file(root_path + "light_address_set.dat");
-		if(file.exists()) {
-			file.open("rb");
-			vnx::read_generic(file.in, light_set);
-		} else {
-			mmx::WalletClient wallet("Wallet");
-			light_set = wallet.get_all_addresses(-1);
-			file.open("wb");
-			vnx::write_generic(file.out, light_set);
-		}
-		vnx::write_config("light_address_set", light_set);
 	}
 	{
 		vnx::Handle<vnx::addons::FileServer> module = new vnx::addons::FileServer("FileServer_1");
@@ -154,10 +130,13 @@ int main(int argc, char** argv)
 	}
 	{
 		vnx::Handle<vnx::addons::HttpServer> module = new vnx::addons::HttpServer("HttpServer");
+		module->default_access = "NETWORK";
+		module->components["/server/"] = "HttpServer";
 		module->components["/wapi/"] = "WebAPI";
 		module->components["/api/node/"] = "Node";
 		module->components["/api/wallet/"] = "Wallet";
 		module->components["/api/router/"] = "Router";
+		module->components["/api/harvester/"] = "Harvester";
 		module->components["/api/exchange/"] = "ExchClient";
 		module->components["/gui/"] = "FileServer_1";
 		module.start_detached();

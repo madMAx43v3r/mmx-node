@@ -17,7 +17,11 @@ module Farmer {
 	
 	vnx.Hash64 get_mac_addr() const;
 	
+	vector<bls_pubkey_t> get_farmer_keys() const;
+	
 	FarmInfo* get_farm_info() const;
+	
+	bls_signature_t sign_proof(ProofOfSpace* proof) const;
 	
 	BlockHeader* sign_block(BlockHeader* block, ulong reward_amount) const;
 	

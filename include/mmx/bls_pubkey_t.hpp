@@ -11,11 +11,13 @@
 #include <mmx/hash_t.hpp>
 #include <mmx/skey_t.hpp>
 
+#include <bls.hpp>
+
 
 namespace mmx {
 
-struct bls_pubkey_t : bytes_t<48> {
-
+class bls_pubkey_t : public bytes_t<48> {
+public:
 	typedef bytes_t<48> super_t;
 
 	bls_pubkey_t() = default;
@@ -56,7 +58,7 @@ bls::G1Element bls_pubkey_t::to_bls() const
 inline
 hash_t bls_pubkey_t::get_addr() const
 {
-	return hash_t(bytes.data(), bytes.size());
+	return hash_t(bytes);
 }
 
 } // mmx

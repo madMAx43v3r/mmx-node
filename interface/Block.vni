@@ -2,7 +2,7 @@ package mmx;
 
 class Block extends BlockHeader {
 	
-	vector<TransactionBase*> tx_list;
+	vector<Transaction*> tx_list;
 	
 	
 	void finalize();
@@ -14,5 +14,9 @@ class Block extends BlockHeader {
 	ulong calc_cost(ChainParams* params) const;
 	
 	BlockHeader* get_header() const;
+	
+	vector<Transaction*> get_all_transactions() const;
+	
+	void validate() const;
 	
 }

@@ -14,16 +14,18 @@
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/address_info_t.hxx>
 #include <mmx/balance_t.hxx>
+#include <mmx/bls_pubkey_t.hpp>
+#include <mmx/exec_entry_t.hxx>
 #include <mmx/hash_t.hpp>
-#include <mmx/stxo_entry_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_info_t.hxx>
-#include <mmx/txio_key_t.hxx>
-#include <mmx/txo_info_t.hxx>
-#include <mmx/utxo_entry_t.hxx>
+#include <mmx/uint128.hpp>
+#include <mmx/vm/varptr_t.hpp>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
+#include <vnx/Variant.hpp>
 #include <vnx/addons/HttpData.hxx>
 #include <vnx/addons/HttpRequest.hxx>
 #include <vnx/addons/HttpResponse.hxx>
@@ -41,6 +43,8 @@ public:
 	
 	std::shared_ptr<const ::mmx::NetworkInfo> get_network_info();
 	
+	::mmx::hash_t get_genesis_hash();
+	
 	uint32_t get_height();
 	
 	vnx::optional<uint32_t> get_synced_height();
@@ -55,15 +59,15 @@ public:
 	
 	vnx::optional<::mmx::hash_t> get_block_hash(const uint32_t& height = 0);
 	
-	vnx::optional<::mmx::txo_info_t> get_txo_info(const ::mmx::txio_key_t& key = ::mmx::txio_key_t());
-	
-	std::vector<vnx::optional<::mmx::txo_info_t>> get_txo_infos(const std::vector<::mmx::txio_key_t>& keys = {});
-	
 	vnx::optional<uint32_t> get_tx_height(const ::mmx::hash_t& id = ::mmx::hash_t());
 	
 	vnx::optional<::mmx::tx_info_t> get_tx_info(const ::mmx::hash_t& id = ::mmx::hash_t());
 	
+	vnx::optional<::mmx::tx_info_t> get_tx_info_for(std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
+	
 	std::vector<::mmx::hash_t> get_tx_ids_at(const uint32_t& height = 0);
+	
+	vnx::optional<::mmx::hash_t> is_revoked(const ::mmx::hash_t& txid = ::mmx::hash_t(), const ::mmx::addr_t& sender = ::mmx::addr_t());
 	
 	void add_block(std::shared_ptr<const ::mmx::Block> block = nullptr);
 	
@@ -75,33 +79,55 @@ public:
 	
 	std::shared_ptr<const ::mmx::Contract> get_contract(const ::mmx::addr_t& address = ::mmx::addr_t());
 	
+	std::shared_ptr<const ::mmx::Contract> get_contract_for(const ::mmx::addr_t& address = ::mmx::addr_t());
+	
 	std::vector<std::shared_ptr<const ::mmx::Contract>> get_contracts(const std::vector<::mmx::addr_t>& addresses = {});
 	
-	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts_owned(const std::vector<::mmx::addr_t>& owners = {});
+	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts_by(const std::vector<::mmx::addr_t>& addresses = {});
+	
+	std::shared_ptr<const ::mmx::Contract> get_contract_at(const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::hash_t& block_hash = ::mmx::hash_t());
 	
 	std::shared_ptr<const ::mmx::Transaction> get_transaction(const ::mmx::hash_t& id = ::mmx::hash_t(), const vnx::bool_t& include_pending = 0);
 	
 	std::vector<std::shared_ptr<const ::mmx::Transaction>> get_transactions(const std::vector<::mmx::hash_t>& ids = {});
 	
-	std::vector<::mmx::tx_entry_t> get_history_for(const std::vector<::mmx::addr_t>& addresses = {}, const int32_t& since = 0);
+	std::vector<::mmx::tx_entry_t> get_history(const std::vector<::mmx::addr_t>& addresses = {}, const int32_t& since = 0);
 	
-	uint64_t get_balance(const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::addr_t& currency = ::mmx::addr_t(), const uint32_t& min_confirm = 1);
+	::mmx::uint128 get_balance(const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::addr_t& currency = ::mmx::addr_t(), const uint32_t& min_confirm = 1);
 	
-	std::map<::mmx::addr_t, ::mmx::balance_t> get_balances(const ::mmx::addr_t& address = ::mmx::addr_t(), const uint32_t& min_confirm = 1);
+	std::map<::mmx::addr_t, ::mmx::uint128> get_balances(const ::mmx::addr_t& address = ::mmx::addr_t(), const uint32_t& min_confirm = 1);
 	
-	uint64_t get_total_balance(const std::vector<::mmx::addr_t>& addresses = {}, const ::mmx::addr_t& currency = ::mmx::addr_t(), const uint32_t& min_confirm = 1);
+	std::map<::mmx::addr_t, ::mmx::balance_t> get_contract_balances(const ::mmx::addr_t& address = ::mmx::addr_t(), const uint32_t& min_confirm = 1);
 	
-	std::map<::mmx::addr_t, uint64_t> get_total_balances(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& min_confirm = 1);
+	::mmx::uint128 get_total_balance(const std::vector<::mmx::addr_t>& addresses = {}, const ::mmx::addr_t& currency = ::mmx::addr_t(), const uint32_t& min_confirm = 1);
 	
-	uint64_t get_total_supply(const ::mmx::addr_t& currency = ::mmx::addr_t());
+	std::map<::mmx::addr_t, ::mmx::uint128> get_total_balances(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& min_confirm = 1);
 	
-	std::vector<::mmx::utxo_entry_t> get_utxo_list(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& min_confirm = 1, const uint32_t& since = 0);
+	std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128> get_all_balances(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& min_confirm = 1);
 	
-	std::vector<::mmx::utxo_entry_t> get_utxo_list_for(const std::vector<::mmx::addr_t>& addresses = {}, const ::mmx::addr_t& currency = ::mmx::addr_t(), const uint32_t& min_confirm = 1, const uint32_t& since = 0);
+	std::vector<::mmx::exec_entry_t> get_exec_history(const ::mmx::addr_t& address = ::mmx::addr_t(), const int32_t& since = 0);
 	
-	std::vector<::mmx::utxo_entry_t> get_spendable_utxo_list(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& min_confirm = 1, const uint32_t& since = 0);
+	std::map<std::string, ::mmx::vm::varptr_t> read_storage(const ::mmx::addr_t& contract = ::mmx::addr_t(), const uint32_t& height = -1);
 	
-	std::vector<::mmx::stxo_entry_t> get_stxo_list(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& since = 0);
+	std::map<uint64_t, ::mmx::vm::varptr_t> dump_storage(const ::mmx::addr_t& contract = ::mmx::addr_t(), const uint32_t& height = -1);
+	
+	::mmx::vm::varptr_t read_storage_var(const ::mmx::addr_t& contract = ::mmx::addr_t(), const uint64_t& address = 0, const uint32_t& height = -1);
+	
+	std::pair<::mmx::vm::varptr_t, uint64_t> read_storage_field(const ::mmx::addr_t& contract = ::mmx::addr_t(), const std::string& name = "", const uint32_t& height = -1);
+	
+	std::vector<::mmx::vm::varptr_t> read_storage_array(const ::mmx::addr_t& contract = ::mmx::addr_t(), const uint64_t& address = 0, const uint32_t& height = -1);
+	
+	std::map<::mmx::vm::varptr_t, ::mmx::vm::varptr_t> read_storage_map(const ::mmx::addr_t& contract = ::mmx::addr_t(), const uint64_t& address = 0, const uint32_t& height = -1);
+	
+	::vnx::Variant call_contract(const ::mmx::addr_t& address = ::mmx::addr_t(), const std::string& method = "", const std::vector<::vnx::Variant>& args = {});
+	
+	::mmx::address_info_t get_address_info(const ::mmx::addr_t& address = ::mmx::addr_t());
+	
+	std::vector<std::pair<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>> get_virtual_plots_for(const ::mmx::bls_pubkey_t& farmer_key = ::mmx::bls_pubkey_t());
+	
+	uint64_t get_virtual_plot_balance(const ::mmx::addr_t& plot_id = ::mmx::addr_t(), const vnx::optional<::mmx::hash_t>& block_hash = nullptr);
+	
+	::mmx::uint128 get_total_supply(const ::mmx::addr_t& currency = ::mmx::addr_t());
 	
 	void start_sync(const vnx::bool_t& force = 0);
 	

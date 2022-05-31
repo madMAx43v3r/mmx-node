@@ -9,6 +9,7 @@
 #include <mmx/ProofResponse_is_valid_return.hxx>
 #include <mmx/ProofResponse_validate.hxx>
 #include <mmx/ProofResponse_validate_return.hxx>
+#include <mmx/bls_signature_t.hpp>
 #include <vnx/Hash64.hpp>
 #include <vnx/Value.h>
 
@@ -19,7 +20,7 @@ namespace mmx {
 
 
 const vnx::Hash64 ProofResponse::VNX_TYPE_HASH(0x816e898b36befae0ull);
-const vnx::Hash64 ProofResponse::VNX_CODE_HASH(0x4fc87443ef52718ull);
+const vnx::Hash64 ProofResponse::VNX_CODE_HASH(0xc2d9593335870223ull);
 
 vnx::Hash64 ProofResponse::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -54,7 +55,7 @@ void ProofResponse::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, request);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, proof);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, score);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, farmer_sig);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, farmer_addr);
 	_visitor.type_end(*_type_code);
 }
@@ -63,7 +64,7 @@ void ProofResponse::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.ProofResponse\"";
 	_out << ", \"request\": "; vnx::write(_out, request);
 	_out << ", \"proof\": "; vnx::write(_out, proof);
-	_out << ", \"score\": "; vnx::write(_out, score);
+	_out << ", \"farmer_sig\": "; vnx::write(_out, farmer_sig);
 	_out << ", \"farmer_addr\": "; vnx::write(_out, farmer_addr);
 	_out << "}";
 }
@@ -79,7 +80,7 @@ vnx::Object ProofResponse::to_object() const {
 	_object["__type"] = "mmx.ProofResponse";
 	_object["request"] = request;
 	_object["proof"] = proof;
-	_object["score"] = score;
+	_object["farmer_sig"] = farmer_sig;
 	_object["farmer_addr"] = farmer_addr;
 	return _object;
 }
@@ -88,12 +89,12 @@ void ProofResponse::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "farmer_addr") {
 			_entry.second.to(farmer_addr);
+		} else if(_entry.first == "farmer_sig") {
+			_entry.second.to(farmer_sig);
 		} else if(_entry.first == "proof") {
 			_entry.second.to(proof);
 		} else if(_entry.first == "request") {
 			_entry.second.to(request);
-		} else if(_entry.first == "score") {
-			_entry.second.to(score);
 		}
 	}
 }
@@ -105,8 +106,8 @@ vnx::Variant ProofResponse::get_field(const std::string& _name) const {
 	if(_name == "proof") {
 		return vnx::Variant(proof);
 	}
-	if(_name == "score") {
-		return vnx::Variant(score);
+	if(_name == "farmer_sig") {
+		return vnx::Variant(farmer_sig);
 	}
 	if(_name == "farmer_addr") {
 		return vnx::Variant(farmer_addr);
@@ -119,8 +120,8 @@ void ProofResponse::set_field(const std::string& _name, const vnx::Variant& _val
 		_value.to(request);
 	} else if(_name == "proof") {
 		_value.to(proof);
-	} else if(_name == "score") {
-		_value.to(score);
+	} else if(_name == "farmer_sig") {
+		_value.to(farmer_sig);
 	} else if(_name == "farmer_addr") {
 		_value.to(farmer_addr);
 	}
@@ -150,7 +151,7 @@ std::shared_ptr<vnx::TypeCode> ProofResponse::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.ProofResponse";
 	type_code->type_hash = vnx::Hash64(0x816e898b36befae0ull);
-	type_code->code_hash = vnx::Hash64(0x4fc87443ef52718ull);
+	type_code->code_hash = vnx::Hash64(0xc2d9593335870223ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ProofResponse);
@@ -173,9 +174,9 @@ std::shared_ptr<vnx::TypeCode> ProofResponse::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[2];
-		field.data_size = 4;
-		field.name = "score";
-		field.code = {3};
+		field.is_extended = true;
+		field.name = "farmer_sig";
+		field.code = {11, 96, 1};
 	}
 	{
 		auto& field = type_code->fields[3];
@@ -241,16 +242,14 @@ void read(TypeInput& in, ::mmx::ProofResponse& value, const TypeCode* type_code,
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
-		if(const auto* const _field = type_code->field_map[2]) {
-			vnx::read_value(_buf + _field->offset, value.score, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.request, type_code, _field->code.data()); break;
 			case 1: vnx::read(in, value.proof, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.farmer_sig, type_code, _field->code.data()); break;
 			case 3: vnx::read(in, value.farmer_addr, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
@@ -270,10 +269,9 @@ void write(TypeOutput& out, const ::mmx::ProofResponse& value, const TypeCode* t
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
-	vnx::write_value(_buf + 0, value.score);
 	vnx::write(out, value.request, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.proof, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.farmer_sig, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.farmer_addr, type_code, type_code->fields[3].code.data());
 }
 

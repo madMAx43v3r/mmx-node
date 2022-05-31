@@ -9,6 +9,9 @@
 #include <mmx/FarmInfo.hxx>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
+#include <vnx/addons/HttpData.hxx>
+#include <vnx/addons/HttpRequest.hxx>
+#include <vnx/addons/HttpResponse.hxx>
 
 
 namespace mmx {
@@ -23,9 +26,21 @@ public:
 	
 	void reload_async();
 	
+	void add_plot_dir(const std::string& path = "");
+	
+	void add_plot_dir_async(const std::string& path = "");
+	
+	void rem_plot_dir(const std::string& path = "");
+	
+	void rem_plot_dir_async(const std::string& path = "");
+	
 	std::shared_ptr<const ::mmx::FarmInfo> get_farm_info();
 	
 	uint64_t get_total_bytes();
+	
+	std::shared_ptr<const ::vnx::addons::HttpResponse> http_request(std::shared_ptr<const ::vnx::addons::HttpRequest> request = nullptr, const std::string& sub_path = "");
+	
+	std::shared_ptr<const ::vnx::addons::HttpData> http_request_chunk(std::shared_ptr<const ::vnx::addons::HttpRequest> request = nullptr, const std::string& sub_path = "", const int64_t& offset = 0, const int64_t& max_bytes = 0);
 	
 	::vnx::Object vnx_get_config_object();
 	

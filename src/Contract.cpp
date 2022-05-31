@@ -11,7 +11,8 @@
 
 namespace mmx {
 
-vnx::bool_t Contract::is_valid() const {
+vnx::bool_t Contract::is_valid() const
+{
 	return version == 0;
 }
 
@@ -22,21 +23,17 @@ hash_t Contract::calc_hash() const
 	vnx::OutputBuffer out(&stream);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
+	write_field(out, "version", version);
 	out.flush();
 
 	return hash_t(buffer);
 }
 
 uint64_t Contract::calc_cost(std::shared_ptr<const ChainParams> params) const {
-	return (8 + 4) * params->min_txfee_byte;
+	throw std::logic_error("not implemented");
 }
 
 std::vector<addr_t> Contract::get_dependency() const {
-	return {};
-}
-
-std::vector<addr_t> Contract::get_parties() const {
 	return {};
 }
 
@@ -44,12 +41,11 @@ vnx::optional<addr_t> Contract::get_owner() const {
 	return nullptr;
 }
 
-vnx::bool_t Contract::is_spendable(const utxo_t& utxo, std::shared_ptr<const Context> context) const
-{
-	return true;
+vnx::bool_t Contract::is_locked(std::shared_ptr<const Context> context) const {
+	return !get_owner();
 }
 
-std::vector<tx_out_t> Contract::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
+std::vector<txout_t> Contract::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
 	throw std::logic_error("invalid operation");
 }

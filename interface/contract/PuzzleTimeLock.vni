@@ -1,0 +1,24 @@
+package mmx.contract;
+
+import mmx.hash_t;
+import mmx.addr_t;
+import mmx.pubkey_t;
+
+class PuzzleTimeLock extends TimeLock {
+	
+	mmx.Contract* puzzle;			// to unlock for target
+	
+	addr_t target;					// beneficiary
+	
+	
+	bool is_valid() const;
+	
+	hash_t calc_hash() const;
+	
+	ulong calc_cost(mmx.ChainParams* params) const;
+	
+	vector<addr_t> get_dependency() const;
+	
+	vector<mmx.txout_t> validate(mmx.Operation* operation, mmx.Context* context) const;
+	
+}

@@ -11,18 +11,16 @@
 namespace mmx {
 namespace solution {
 
-vnx::bool_t MultiSig::is_valid() const
+uint64_t MultiSig::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	size_t count = 0;
+	uint64_t cost = 0;
 	for(const auto& sol : solutions) {
 		if(sol) {
-			count++;
+			cost += sol->calc_cost(params);
 		}
 	}
-	return count <= MAX_SIGNATURES;
+	return cost;
 }
-
-// TODO: cost per signature
 
 
 } // solution

@@ -3,7 +3,6 @@
 
 #include <mmx/operation/package.hxx>
 #include <mmx/operation/Spend.hxx>
-#include <mmx/ChainParams.hxx>
 #include <mmx/Operation.hxx>
 #include <mmx/Operation_calc_cost.hxx>
 #include <mmx/Operation_calc_cost_return.hxx>
@@ -11,13 +10,11 @@
 #include <mmx/Operation_calc_hash_return.hxx>
 #include <mmx/Operation_is_valid.hxx>
 #include <mmx/Operation_is_valid_return.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
-#include <mmx/operation/Spend_calc_cost.hxx>
-#include <mmx/operation/Spend_calc_cost_return.hxx>
 #include <mmx/operation/Spend_calc_hash.hxx>
 #include <mmx/operation/Spend_calc_hash_return.hxx>
-#include <mmx/txio_key_t.hxx>
-#include <mmx/utxo_t.hxx>
+#include <mmx/uint128.hpp>
 
 #include <vnx/vnx.h>
 
@@ -27,7 +24,7 @@ namespace operation {
 
 
 const vnx::Hash64 Spend::VNX_TYPE_HASH(0xfa01bec4331109c3ull);
-const vnx::Hash64 Spend::VNX_CODE_HASH(0xe2222f62677e1424ull);
+const vnx::Hash64 Spend::VNX_CODE_HASH(0x5c98ef61fa78dafdull);
 
 vnx::Hash64 Spend::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -63,8 +60,9 @@ void Spend::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, version);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, address);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, solution);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, key);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, utxo);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, currency);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, balance);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, amount);
 	_visitor.type_end(*_type_code);
 }
 
@@ -73,8 +71,9 @@ void Spend::write(std::ostream& _out) const {
 	_out << ", \"version\": "; vnx::write(_out, version);
 	_out << ", \"address\": "; vnx::write(_out, address);
 	_out << ", \"solution\": "; vnx::write(_out, solution);
-	_out << ", \"key\": "; vnx::write(_out, key);
-	_out << ", \"utxo\": "; vnx::write(_out, utxo);
+	_out << ", \"currency\": "; vnx::write(_out, currency);
+	_out << ", \"balance\": "; vnx::write(_out, balance);
+	_out << ", \"amount\": "; vnx::write(_out, amount);
 	_out << "}";
 }
 
@@ -90,8 +89,9 @@ vnx::Object Spend::to_object() const {
 	_object["version"] = version;
 	_object["address"] = address;
 	_object["solution"] = solution;
-	_object["key"] = key;
-	_object["utxo"] = utxo;
+	_object["currency"] = currency;
+	_object["balance"] = balance;
+	_object["amount"] = amount;
 	return _object;
 }
 
@@ -99,12 +99,14 @@ void Spend::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "address") {
 			_entry.second.to(address);
-		} else if(_entry.first == "key") {
-			_entry.second.to(key);
+		} else if(_entry.first == "amount") {
+			_entry.second.to(amount);
+		} else if(_entry.first == "balance") {
+			_entry.second.to(balance);
+		} else if(_entry.first == "currency") {
+			_entry.second.to(currency);
 		} else if(_entry.first == "solution") {
 			_entry.second.to(solution);
-		} else if(_entry.first == "utxo") {
-			_entry.second.to(utxo);
 		} else if(_entry.first == "version") {
 			_entry.second.to(version);
 		}
@@ -121,11 +123,14 @@ vnx::Variant Spend::get_field(const std::string& _name) const {
 	if(_name == "solution") {
 		return vnx::Variant(solution);
 	}
-	if(_name == "key") {
-		return vnx::Variant(key);
+	if(_name == "currency") {
+		return vnx::Variant(currency);
 	}
-	if(_name == "utxo") {
-		return vnx::Variant(utxo);
+	if(_name == "balance") {
+		return vnx::Variant(balance);
+	}
+	if(_name == "amount") {
+		return vnx::Variant(amount);
 	}
 	return vnx::Variant();
 }
@@ -137,10 +142,12 @@ void Spend::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(address);
 	} else if(_name == "solution") {
 		_value.to(solution);
-	} else if(_name == "key") {
-		_value.to(key);
-	} else if(_name == "utxo") {
-		_value.to(utxo);
+	} else if(_name == "currency") {
+		_value.to(currency);
+	} else if(_name == "balance") {
+		_value.to(balance);
+	} else if(_name == "amount") {
+		_value.to(amount);
 	}
 }
 
@@ -168,23 +175,19 @@ std::shared_ptr<vnx::TypeCode> Spend::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.operation.Spend";
 	type_code->type_hash = vnx::Hash64(0xfa01bec4331109c3ull);
-	type_code->code_hash = vnx::Hash64(0xe2222f62677e1424ull);
+	type_code->code_hash = vnx::Hash64(0x5c98ef61fa78dafdull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::operation::Spend);
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Operation::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Spend>(); };
-	type_code->depends.resize(2);
-	type_code->depends[0] = ::mmx::txio_key_t::static_get_type_code();
-	type_code->depends[1] = ::mmx::utxo_t::static_get_type_code();
-	type_code->methods.resize(5);
+	type_code->methods.resize(4);
 	type_code->methods[0] = ::mmx::Operation_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Operation_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Operation_is_valid::static_get_type_code();
-	type_code->methods[3] = ::mmx::operation::Spend_calc_cost::static_get_type_code();
-	type_code->methods[4] = ::mmx::operation::Spend_calc_hash::static_get_type_code();
-	type_code->fields.resize(5);
+	type_code->methods[3] = ::mmx::operation::Spend_calc_hash::static_get_type_code();
+	type_code->fields.resize(6);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -206,14 +209,20 @@ std::shared_ptr<vnx::TypeCode> Spend::static_create_type_code() {
 	{
 		auto& field = type_code->fields[3];
 		field.is_extended = true;
-		field.name = "key";
-		field.code = {19, 0};
+		field.name = "currency";
+		field.code = {11, 32, 1};
 	}
 	{
 		auto& field = type_code->fields[4];
 		field.is_extended = true;
-		field.name = "utxo";
-		field.code = {19, 1};
+		field.name = "balance";
+		field.code = {11, 16, 1};
+	}
+	{
+		auto& field = type_code->fields[5];
+		field.data_size = 8;
+		field.name = "amount";
+		field.code = {4};
 	}
 	type_code->build();
 	return type_code;
@@ -237,12 +246,6 @@ std::shared_ptr<vnx::Value> Spend::vnx_call_switch(std::shared_ptr<const vnx::Va
 			auto _args = std::static_pointer_cast<const ::mmx::Operation_is_valid>(_method);
 			auto _return_value = ::mmx::Operation_is_valid_return::create();
 			_return_value->_ret_0 = is_valid();
-			return _return_value;
-		}
-		case 0x601107e8ca5728f6ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::operation::Spend_calc_cost>(_method);
-			auto _return_value = ::mmx::operation::Spend_calc_cost_return::create();
-			_return_value->_ret_0 = calc_cost(_args->params);
 			return _return_value;
 		}
 		case 0xb003cc8eafc55c09ull: {
@@ -297,13 +300,16 @@ void read(TypeInput& in, ::mmx::operation::Spend& value, const TypeCode* type_co
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.version, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[5]) {
+			vnx::read_value(_buf + _field->offset, value.amount, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 1: vnx::read(in, value.address, type_code, _field->code.data()); break;
 			case 2: vnx::read(in, value.solution, type_code, _field->code.data()); break;
-			case 3: vnx::read(in, value.key, type_code, _field->code.data()); break;
-			case 4: vnx::read(in, value.utxo, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.currency, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.balance, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -322,12 +328,13 @@ void write(TypeOutput& out, const ::mmx::operation::Spend& value, const TypeCode
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
+	char* const _buf = out.write(12);
 	vnx::write_value(_buf + 0, value.version);
+	vnx::write_value(_buf + 4, value.amount);
 	vnx::write(out, value.address, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.solution, type_code, type_code->fields[2].code.data());
-	vnx::write(out, value.key, type_code, type_code->fields[3].code.data());
-	vnx::write(out, value.utxo, type_code, type_code->fields[4].code.data());
+	vnx::write(out, value.currency, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.balance, type_code, type_code->fields[4].code.data());
 }
 
 void read(std::istream& in, ::mmx::operation::Spend& value) {

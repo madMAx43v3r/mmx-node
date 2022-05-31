@@ -4,8 +4,10 @@ class FarmInfo {
 	
 	vector<string> plot_dirs;
 	
-	map<uchar, uint> plot_count;
+	map<uchar, uint> plot_count;			// [ksize => count]
 	
 	ulong total_bytes;
+	
+	ulong total_balance;					// virtual plots [MMX]
 	
 }

@@ -1,0 +1,19 @@
+package mmx.operation;
+
+import mmx.hash_t;
+import mmx.addr_t;
+
+class Deposit extends Execute {
+	
+	addr_t currency;
+	
+	ulong amount;
+	
+	optional<addr_t> sender;
+	
+	
+	bool is_valid() const;
+	
+	hash_t calc_hash() const;
+	
+}

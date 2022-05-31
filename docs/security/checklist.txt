@@ -1,0 +1,7 @@
+
+all fields are hashed, except signatures
+null pointers are handled everywhere
+file permissions on sensitive files are owner access only
+maximum size of all data structures is limited
+cross origin requests
+integer overflows on addition (amount, fee, tx cost, etc)

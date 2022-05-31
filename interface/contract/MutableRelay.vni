@@ -1,0 +1,37 @@
+package mmx.contract;
+
+import mmx.hash_t;
+import mmx.addr_t;
+
+class MutableRelay extends mmx.Contract {
+	
+	addr_t owner;
+	
+	optional<addr_t> target;
+	
+	optional<uint> unlock_height;			// height at which owner can withdraw
+	
+	uint unlock_delay = 100;				// number of blocks
+	
+	
+	bool is_valid() const;
+	
+	hash_t calc_hash() const;
+	
+	ulong calc_cost(mmx.ChainParams* params) const;
+	
+	vector<addr_t> get_dependency() const;
+	
+	optional<addr_t> get_owner() const;
+	
+	bool is_locked(mmx.Context* context) const;
+	
+	vector<mmx.txout_t> validate(mmx.Operation* operation, mmx.Context* context) const;
+	
+	void transfer(optional<addr_t> new_owner);
+	
+	void unlock(uint height);
+	
+	void lock(optional<addr_t> new_target, uint new_unlock_delay);
+	
+}

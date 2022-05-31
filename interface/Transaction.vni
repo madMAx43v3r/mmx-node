@@ -4,17 +4,25 @@ class Transaction extends TransactionBase {
 	
 	uint version;
 	
-	ulong nonce;
+	uint expires = -1;					// height
+	
+	uint fee_ratio = 1024;				// 1024 = 1.0
 	
 	tx_note_e note;
 	
-	optional<hash_t> salt;
+	ulong nonce;
 	
-	vector<tx_in_t> inputs;
+	hash_t salt;
 	
-	vector<tx_out_t> outputs;
+	optional<addr_t> sender;			// to receive change from fee
 	
-	vector<tx_out_t> exec_outputs;
+	vector<txin_t> inputs;
+	
+	vector<txout_t> outputs;
+	
+	vector<txin_t> exec_inputs;
+	
+	vector<txout_t> exec_outputs;
 	
 	vector<Operation*> execute;
 	
@@ -22,10 +30,18 @@ class Transaction extends TransactionBase {
 	
 	Contract* deploy;
 	
+	Transaction* parent;
+	
+	bool is_extendable;
+	
+	static const uint MAX_SOLUTIONS = 255;
+	
 	
 	void finalize();
 	
-	void add_output(addr_t currency, addr_t address, ulong amount, uint split = 1);
+	void add_input(addr_t currency, addr_t address, ulong amount);
+	
+	void add_output(addr_t currency, addr_t address, ulong amount, optional<addr_t> sender);
 	
 	void merge_sign(Transaction* tx);
 	
@@ -35,12 +51,22 @@ class Transaction extends TransactionBase {
 	
 	hash_t calc_hash() const;
 	
+	ulong calc_cost(ChainParams* params) const;
+	
 	Solution* get_solution(uint index) const;
 	
-	tx_out_t get_output(uint index) const;
+	txout_t get_output(uint index) const;
 	
-	vector<tx_out_t> get_all_outputs() const;
+	vector<txin_t> get_inputs() const;
 	
-	ulong calc_cost(ChainParams* params) const;
+	vector<txout_t> get_outputs() const;
+	
+	vector<txin_t> get_all_inputs() const;
+	
+	vector<txout_t> get_all_outputs() const;
+	
+	vector<Operation*> get_all_operations() const;
+	
+	map<addr_t, pair<uint128, uint128>> get_balance() const;
 	
 }

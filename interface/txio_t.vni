@@ -1,0 +1,11 @@
+package mmx;
+
+struct txio_t {
+	
+	addr_t address;
+	
+	addr_t contract;
+	
+	ulong amount;
+	
+}

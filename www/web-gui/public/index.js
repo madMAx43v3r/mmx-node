@@ -1,4 +1,8 @@
 
+function validate_address(address) {
+	return address && address.length == 62 && address.startsWith("mmx1");
+}
+
 var app = Vue.createApp({
 })
 
@@ -135,20 +139,20 @@ const AccountOptions = {
 		<create-account :index="index"></create-account>
 	`
 }
-const AccountCreateStaking = {
-	props: {
-		index: Number
-	},
-	template: `
-		<create-staking-contract :index="index"></create-staking-contract>
-	`
-}
 const AccountCreateLocked = {
 	props: {
 		index: Number
 	},
 	template: `
 		<create-locked-contract :index="index"></create-locked-contract>
+	`
+}
+const AccountCreateVirtualPlot = {
+	props: {
+		index: Number
+	},
+	template: `
+		<create-virtual-plot-contract :index="index"></create-virtual-plot-contract>
 	`
 }
 
@@ -357,8 +361,45 @@ const Settings = {
 	`
 }
 
+const Login = {
+	data() {
+		return {
+			passwd: null,
+			error: null
+		}
+	},
+	methods: {
+		submit() {
+			this.error = null;
+			fetch('/server/login?user=mmx-admin&passwd_plain=' + this.passwd)
+				.then(response => {
+					if(response.ok) {
+						this.$router.push("/");
+					} else {
+						this.error = "Login failed!";
+					}
+				});
+		}
+	},
+	template: `
+		<div class="ui raised segment">
+			<form class="ui form">
+				<div class="field">
+					<label>Password (see PASSWD file)</label>
+					<input type="password" v-model="passwd">
+				</div>
+				<div @click="submit" class="ui submit button">Login</div>
+			</form>
+		</div>
+		<div class="ui negative message" :class="{hidden: !error}">
+			<b>{{error}}</b>
+		</div>
+		`
+}
+
 const routes = [
 	{ path: '/', redirect: "/node" },
+	{ path: '/login', component: Login, meta: { is_login: true } },
 	{ path: '/wallet', component: Wallet, meta: { is_wallet: true } },
 	{ path: '/wallet/create', component: WalletCreate, meta: { is_wallet: true } },
 	{ path: '/wallet/account/:index',
@@ -378,8 +419,8 @@ const routes = [
 			{ path: 'log', component: AccountLog, meta: { page: 'log' } },
 			{ path: 'details', component: AccountDetails, meta: { page: 'details' } },
 			{ path: 'options', component: AccountOptions, meta: { page: 'options' } },
-			{ path: 'create/staking', component: AccountCreateStaking },
 			{ path: 'create/locked', component: AccountCreateLocked },
+			{ path: 'create/virtualplot', component: AccountCreateVirtualPlot },
 			{ path: 'coins/:currency', component: AccountCoins, props: route => ({currency: route.params.currency}) },
 		]
 	},
@@ -439,15 +480,45 @@ const router = VueRouter.createRouter({
 app.use(router)
 
 app.component('main-menu', {
+	methods: {
+		update() {
+			this.loading = true;
+			fetch('/server/session')
+				.then(response => response.json())
+				.then(data => {
+					if(!data.user) {
+						this.$router.push("/login");
+					}
+				});
+		},
+		logout() {
+			fetch('/server/logout')
+				.then(response => {
+					if(response.ok) {
+						this.$router.push("/login");
+					}
+				});
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 5000);
+	},
+	unmounted() {
+		clearInterval(this.timer);
+	},
 	template: `
 		<div class="ui large top menu">
 			<div class="ui container">
 				<router-link class="item" :class="{active: $route.meta.is_node}" to="/node/">Node</router-link>
 				<router-link class="item" :class="{active: $route.meta.is_wallet}" to="/wallet/">Wallet</router-link>
 				<router-link class="item" :class="{active: $route.meta.is_explorer}" to="/explore/">Explore</router-link>
-				<router-link class="item" :class="{active: $route.meta.is_exchange}" to="/exchange/">Exchange</router-link>
+				<!--<router-link class="item" :class="{active: $route.meta.is_exchange}" to="/exchange/">Exchange</router-link>-->
 				<div class="right menu">
 					<router-link class="item" to="/settings/">Settings</router-link>
+					<template v-if="!$route.meta.is_login">
+						<a class="item" @click="logout">Logout</a>
+					</template>
 				</div>
 			</div>
 		</div>

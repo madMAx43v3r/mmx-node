@@ -3,10 +3,11 @@
 cd $(dirname "$0")
 
 ./vnx-base/codegen.sh
-./vnx-addons/codegen.sh
+./vnx-addons/codegen.sh ../vnx-base/interface/
 
-vnxcppcodegen --cleanup generated/ mmx interface/ modules/ vnx-base/interface/ vnx-addons/interface/ vnx-addons/modules/ interface/wallet/
+vnxcppcodegen --cleanup generated/ mmx interface/ modules/ interface/vm/ vnx-base/interface/ vnx-addons/interface/ vnx-addons/modules/ interface/wallet/
 vnxcppcodegen --cleanup generated/contract/ mmx.contract interface/contract/ interface/ vnx-base/interface/
 vnxcppcodegen --cleanup generated/operation/ mmx.operation interface/operation/ interface/ vnx-base/interface/
 vnxcppcodegen --cleanup generated/solution/ mmx.solution interface/solution/ interface/ vnx-base/interface/
-vnxcppcodegen --cleanup exchange/generated/ mmx.exchange exchange/interface/ exchange/modules/ interface/ vnx-addons/interface/ vnx-addons/modules/ vnx-base/interface/
+vnxcppcodegen --cleanup generated/vm/ mmx.vm interface/vm/ vnx-base/interface/
+#vnxcppcodegen --cleanup exchange/generated/ mmx.exchange exchange/interface/ exchange/modules/ interface/ vnx-addons/interface/ vnx-addons/modules/ vnx-base/interface/

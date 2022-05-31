@@ -1,0 +1,14 @@
+package mmx.solution;
+
+import mmx.Solution;
+
+class PuzzleTimeLock extends Solution {
+	
+	Solution* puzzle;
+	
+	Solution* target;
+	
+	
+	ulong calc_cost(mmx.ChainParams* params) const;
+	
+}

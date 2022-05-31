@@ -1,0 +1,28 @@
+package mmx.contract;
+
+import mmx.hash_t;
+import mmx.addr_t;
+import mmx.Contract;
+
+class TimeLock extends mmx.Contract {
+	
+	addr_t owner;
+	
+	uint unlock_height;
+	
+	
+	bool is_valid() const;
+	
+	hash_t calc_hash() const;
+	
+	ulong calc_cost(mmx.ChainParams* params) const;
+	
+	vector<addr_t> get_dependency() const;
+	
+	optional<addr_t> get_owner() const;
+	
+	bool is_locked(mmx.Context* context) const;
+	
+	vector<mmx.txout_t> validate(mmx.Operation* operation, mmx.Context* context) const;
+	
+}

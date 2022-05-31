@@ -11,4 +11,6 @@ class VoteSheet extends mmx.Contract {
 	
 	bool is_valid() const;
 	
+	// TODO
+	
 }

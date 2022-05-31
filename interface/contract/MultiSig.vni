@@ -7,10 +7,10 @@ class MultiSig extends mmx.Contract {
 	
 	uint num_required;
 	
+	// TODO: set<addr_t>
 	vector<addr_t> owners;
 	
-	// TODO: increase to 10000
-	static const uint MAX_OWNERS = 100;
+	static const uint MAX_OWNERS = 10000;
 	
 	
 	bool is_valid() const;
@@ -19,15 +19,13 @@ class MultiSig extends mmx.Contract {
 	
 	ulong calc_cost(mmx.ChainParams* params) const;
 	
-	vector<addr_t> get_parties() const;
-	
-	vector<mmx.tx_out_t> validate(mmx.Operation* operation, mmx.Context* context) const;
+	vector<mmx.txout_t> validate(mmx.Operation* operation, mmx.Context* context) const;
 	
 	void add_owner(addr_t address);
 	
 	void rem_owner(addr_t address);
 	
-	// TODO: void set_num_required(uint count);
+	void set_num_required(uint count);
 	
 }
 

@@ -80,9 +80,9 @@ void Router::main()
 		}
 	}
 	subscribe(input_vdfs, max_queue_ms);
-	subscribe(input_blocks, max_queue_ms);
 	subscribe(input_verified_vdfs, max_queue_ms);
 	subscribe(input_verified_proof, max_queue_ms);
+	subscribe(input_verified_blocks, max_queue_ms);
 	subscribe(input_verified_transactions, max_queue_ms);
 	subscribe(input_transactions, max_queue_ms);
 
@@ -304,7 +304,9 @@ void Router::fetch_block_at_async(const uint32_t& height, const std::string& add
 
 void Router::handle(std::shared_ptr<const Block> block)
 {
-	if(!block->proof) {
+	verified_peak_height = block->height;
+
+	if(!block->farmer_sig) {
 		return;
 	}
 	if(relay_msg_hash(block->hash, block_credits)) {
@@ -328,6 +330,9 @@ void Router::handle(std::shared_ptr<const Block> block)
 
 void Router::handle(std::shared_ptr<const Transaction> tx)
 {
+	if(!tx->is_valid()) {
+		return;
+	}
 	if(relay_msg_hash(tx->id)) {
 		broadcast(tx, tx->id, {node_type_e::FULL_NODE});
 		tx_counter++;
@@ -336,7 +341,7 @@ void Router::handle(std::shared_ptr<const Transaction> tx)
 
 void Router::handle(std::shared_ptr<const ProofOfTime> proof)
 {
-	if(proof->height > verified_vdf_height) {
+	if(proof->height > verified_peak_height) {
 		const auto hash = proof->calc_hash();
 		if(relay_msg_hash(hash, vdf_credits)) {
 			if(vnx_sample && vnx_sample->topic == input_vdfs) {
@@ -346,23 +351,21 @@ void Router::handle(std::shared_ptr<const ProofOfTime> proof)
 			vdf_counter++;
 		}
 	}
-	verified_vdf_height = std::max(proof->height, verified_vdf_height);
 }
 
 void Router::handle(std::shared_ptr<const ProofResponse> value)
 {
-	if(auto proof = value->proof) {
-		const auto hash = proof->calc_hash();
-		if(relay_msg_hash(hash, proof_credits)) {
-			if(vnx::get_pipe(value->farmer_addr)) {
-				log(INFO) << "Broadcasting proof for height " << value->request->height << " with score " << value->score;
-			}
-			broadcast(value, hash, {node_type_e::FULL_NODE});
-			proof_counter++;
+	const auto proof = value->proof;
+	const auto hash = proof->calc_hash();
+	if(relay_msg_hash(hash, proof_credits)) {
+		if(vnx::get_pipe(value->farmer_addr)) {
+			log(INFO) << "Broadcasting proof for height " << value->request->height << " with score " << proof->score;
 		}
-		const auto farmer_id = hash_t(proof->farmer_key);
-		farmer_credits[farmer_id] += proof_credits;
+		broadcast(value, hash, {node_type_e::FULL_NODE});
+		proof_counter++;
 	}
+	const auto farmer_id = hash_t(proof->farmer_key);
+	farmer_credits[farmer_id] += proof_credits;
 }
 
 uint32_t Router::send_request(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Value> method, bool reliable)
@@ -387,17 +390,23 @@ void Router::update()
 {
 	const auto now_ms = vnx::get_wall_time_millis();
 
+	const uint64_t add_tx_credits =
+			(uint64_t(params->max_block_cost) * update_interval_ms) / uint32_t(params->block_time * 1e3) / std::max<size_t>(peer_map.size(), 1);
+
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
-		// TODO: check for peer timeout and disconnect
 		peer->credits = std::min(peer->credits, max_node_credits);
-		peer->tx_credits = std::min(peer->tx_credits +
-				uint64_t(params->max_block_cost * update_interval_ms / (params->block_time * 1e3) / peer_map.size()), params->max_block_cost);
+		peer->tx_credits = std::min(peer->tx_credits + add_tx_credits, params->max_block_cost);
 
 		// clear old hashes
 		while(peer->sent_hashes.size() > max_sent_cache) {
 			peer->sent_hashes.erase(peer->hash_queue.front());
 			peer->hash_queue.pop();
+		}
+		// check for timeout
+		if(connection_timeout_ms > 0 && now_ms - std::max(peer->last_receive_ms, peer->connected_since_ms) > connection_timeout_ms) {
+			log(INFO) << "Peer " << peer->address << " timed out";
+			disconnect(entry.first);
 		}
 	}
 
@@ -815,7 +824,7 @@ void Router::query()
 					fork_check.hash_count.clear();
 				}
 				else {
-					const auto height = *sync_height - params->finality_delay;
+					const auto height = *sync_height - params->infuse_delay;
 					node->get_block_hash(height,
 						[this, height](const vnx::optional<hash_t>& hash) {
 							if(hash) {
@@ -982,7 +991,7 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> proof)
 
 void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 {
-	if(!block->is_valid() || !block->proof) {
+	if(!block->is_valid() || !block->farmer_sig) {
 		return;
 	}
 	if(!receive_msg_hash(block->hash, client)) {
@@ -1045,10 +1054,10 @@ void Router::on_proof(uint64_t client, std::shared_ptr<const ProofResponse> resp
 					proof_counter++;
 				}
 			} else {
-				log(DEBUG) << "A farmer has insufficient credits to relay proof for height " << request->height << " with score " << response->score << ", verifying first.";
+				log(DEBUG) << "A farmer has insufficient credits to relay proof for height " << request->height << " with score " << proof->score << ", verifying first.";
 			}
 		} else {
-			log(DEBUG) << "Got proof from an unknown farmer at height " << request->height << " with score " << response->score << ", verifying first.";
+			log(DEBUG) << "Got proof from an unknown farmer at height " << request->height << " with score " << proof->score << ", verifying first.";
 		}
 	} else {
 		relay_msg_hash(hash);
@@ -1373,7 +1382,6 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 					const auto& pair = value->_ret_0;
 					if(pair.second.verify(pair.first, hash_t(peer->challenge.bytes))) {
 						peer->node_id = pair.first.get_addr();
-						// TODO: load credits
 					} else {
 						log(WARN) << "Peer " << peer->address << " failed to verify identity!";
 					}

@@ -15,8 +15,8 @@
 
 namespace mmx {
 
-struct hash_t : bytes_t<32> {
-
+class hash_t : public bytes_t<32> {
+public:
 	typedef bytes_t<32> super_t;
 
 	hash_t() = default;
@@ -41,12 +41,15 @@ struct hash_t : bytes_t<32> {
 
 	static hash_t random();
 
+	static hash_t from_bytes(const uint256_t& bytes);
+
 	static hash_t from_bytes(const std::vector<uint8_t>& bytes);
 
 	static hash_t from_bytes(const std::array<uint8_t, 32>& bytes);
 
-};
+	static hash_t from_bytes(const void* data);
 
+};
 
 inline
 hash_t::hash_t(const std::string& data)
@@ -73,12 +76,6 @@ hash_t::hash_t(const bytes_t<N>& data)
 }
 
 inline
-hash_t::hash_t(const void* data, const size_t num_bytes)
-{
-	bls::Util::Hash256(bytes.data(), (const uint8_t*)data, num_bytes);
-}
-
-inline
 uint256_t hash_t::to_uint256() const {
 	uint256_t res;
 	::memcpy(&res, bytes.data(), bytes.size());
@@ -98,21 +95,30 @@ hash_t hash_t::empty() {
 }
 
 inline
+hash_t hash_t::from_bytes(const uint256_t& bytes) {
+	return from_bytes(&bytes);
+}
+
+inline
 hash_t hash_t::from_bytes(const std::vector<uint8_t>& bytes)
 {
-	hash_t res;
-	if(bytes.size() != res.size()) {
+	if(bytes.size() != 32) {
 		throw std::logic_error("hash size mismatch");
 	}
-	::memcpy(res.data(), bytes.data(), bytes.size());
-	return res;
+	return from_bytes(bytes.data());
 }
 
 inline
 hash_t hash_t::from_bytes(const std::array<uint8_t, 32>& bytes)
 {
+	return from_bytes(bytes.data());
+}
+
+inline
+hash_t hash_t::from_bytes(const void* data)
+{
 	hash_t res;
-	::memcpy(res.data(), bytes.data(), bytes.size());
+	::memcpy(res.data(), data, 32);
 	return res;
 }
 

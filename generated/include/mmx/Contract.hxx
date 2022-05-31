@@ -10,8 +10,7 @@
 #include <mmx/Operation.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
-#include <mmx/tx_out_t.hxx>
-#include <mmx/utxo_t.hxx>
+#include <mmx/txout_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -39,10 +38,9 @@ public:
 	virtual ::mmx::hash_t calc_hash() const;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	virtual std::vector<::mmx::addr_t> get_dependency() const;
-	virtual std::vector<::mmx::addr_t> get_parties() const;
 	virtual vnx::optional<::mmx::addr_t> get_owner() const;
-	virtual vnx::bool_t is_spendable(const ::mmx::utxo_t& utxo = ::mmx::utxo_t(), std::shared_ptr<const ::mmx::Context> context = nullptr) const;
-	virtual std::vector<::mmx::tx_out_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const;
+	virtual vnx::bool_t is_locked(std::shared_ptr<const ::mmx::Context> context = nullptr) const;
+	virtual std::vector<::mmx::txout_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const;
 	virtual void transfer(const vnx::optional<::mmx::addr_t>& new_owner = nullptr);
 	
 	static std::shared_ptr<Contract> create();

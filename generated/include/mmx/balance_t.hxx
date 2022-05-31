@@ -6,6 +6,7 @@
 
 #include <vnx/Type.h>
 #include <mmx/package.hxx>
+#include <mmx/uint128.hpp>
 
 
 namespace mmx {
@@ -13,10 +14,10 @@ namespace mmx {
 struct MMX_EXPORT balance_t {
 	
 	
-	uint64_t spendable = 0;
-	uint64_t reserved = 0;
-	uint64_t locked = 0;
-	uint64_t total = 0;
+	::mmx::uint128 spendable;
+	::mmx::uint128 reserved;
+	::mmx::uint128 locked;
+	::mmx::uint128 total;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;

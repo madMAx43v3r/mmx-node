@@ -12,6 +12,14 @@
 #include <mmx/Node_add_block_return.hxx>
 #include <mmx/Node_add_transaction.hxx>
 #include <mmx/Node_add_transaction_return.hxx>
+#include <mmx/Node_call_contract.hxx>
+#include <mmx/Node_call_contract_return.hxx>
+#include <mmx/Node_dump_storage.hxx>
+#include <mmx/Node_dump_storage_return.hxx>
+#include <mmx/Node_get_address_info.hxx>
+#include <mmx/Node_get_address_info_return.hxx>
+#include <mmx/Node_get_all_balances.hxx>
+#include <mmx/Node_get_all_balances_return.hxx>
 #include <mmx/Node_get_balance.hxx>
 #include <mmx/Node_get_balance_return.hxx>
 #include <mmx/Node_get_balances.hxx>
@@ -24,26 +32,32 @@
 #include <mmx/Node_get_block_hash_return.hxx>
 #include <mmx/Node_get_contract.hxx>
 #include <mmx/Node_get_contract_return.hxx>
+#include <mmx/Node_get_contract_at.hxx>
+#include <mmx/Node_get_contract_at_return.hxx>
+#include <mmx/Node_get_contract_balances.hxx>
+#include <mmx/Node_get_contract_balances_return.hxx>
+#include <mmx/Node_get_contract_for.hxx>
+#include <mmx/Node_get_contract_for_return.hxx>
 #include <mmx/Node_get_contracts.hxx>
 #include <mmx/Node_get_contracts_return.hxx>
-#include <mmx/Node_get_contracts_owned.hxx>
-#include <mmx/Node_get_contracts_owned_return.hxx>
+#include <mmx/Node_get_contracts_by.hxx>
+#include <mmx/Node_get_contracts_by_return.hxx>
+#include <mmx/Node_get_exec_history.hxx>
+#include <mmx/Node_get_exec_history_return.hxx>
+#include <mmx/Node_get_genesis_hash.hxx>
+#include <mmx/Node_get_genesis_hash_return.hxx>
 #include <mmx/Node_get_header.hxx>
 #include <mmx/Node_get_header_return.hxx>
 #include <mmx/Node_get_header_at.hxx>
 #include <mmx/Node_get_header_at_return.hxx>
 #include <mmx/Node_get_height.hxx>
 #include <mmx/Node_get_height_return.hxx>
-#include <mmx/Node_get_history_for.hxx>
-#include <mmx/Node_get_history_for_return.hxx>
+#include <mmx/Node_get_history.hxx>
+#include <mmx/Node_get_history_return.hxx>
 #include <mmx/Node_get_network_info.hxx>
 #include <mmx/Node_get_network_info_return.hxx>
 #include <mmx/Node_get_params.hxx>
 #include <mmx/Node_get_params_return.hxx>
-#include <mmx/Node_get_spendable_utxo_list.hxx>
-#include <mmx/Node_get_spendable_utxo_list_return.hxx>
-#include <mmx/Node_get_stxo_list.hxx>
-#include <mmx/Node_get_stxo_list_return.hxx>
 #include <mmx/Node_get_synced_height.hxx>
 #include <mmx/Node_get_synced_height_return.hxx>
 #include <mmx/Node_get_total_balance.hxx>
@@ -62,28 +76,39 @@
 #include <mmx/Node_get_tx_ids_at_return.hxx>
 #include <mmx/Node_get_tx_info.hxx>
 #include <mmx/Node_get_tx_info_return.hxx>
-#include <mmx/Node_get_txo_info.hxx>
-#include <mmx/Node_get_txo_info_return.hxx>
-#include <mmx/Node_get_txo_infos.hxx>
-#include <mmx/Node_get_txo_infos_return.hxx>
-#include <mmx/Node_get_utxo_list.hxx>
-#include <mmx/Node_get_utxo_list_return.hxx>
-#include <mmx/Node_get_utxo_list_for.hxx>
-#include <mmx/Node_get_utxo_list_for_return.hxx>
+#include <mmx/Node_get_tx_info_for.hxx>
+#include <mmx/Node_get_tx_info_for_return.hxx>
+#include <mmx/Node_get_virtual_plot_balance.hxx>
+#include <mmx/Node_get_virtual_plot_balance_return.hxx>
+#include <mmx/Node_get_virtual_plots_for.hxx>
+#include <mmx/Node_get_virtual_plots_for_return.hxx>
+#include <mmx/Node_is_revoked.hxx>
+#include <mmx/Node_is_revoked_return.hxx>
+#include <mmx/Node_read_storage.hxx>
+#include <mmx/Node_read_storage_return.hxx>
+#include <mmx/Node_read_storage_array.hxx>
+#include <mmx/Node_read_storage_array_return.hxx>
+#include <mmx/Node_read_storage_field.hxx>
+#include <mmx/Node_read_storage_field_return.hxx>
+#include <mmx/Node_read_storage_map.hxx>
+#include <mmx/Node_read_storage_map_return.hxx>
+#include <mmx/Node_read_storage_var.hxx>
+#include <mmx/Node_read_storage_var_return.hxx>
 #include <mmx/Node_start_sync.hxx>
 #include <mmx/Node_start_sync_return.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/address_info_t.hxx>
 #include <mmx/balance_t.hxx>
+#include <mmx/bls_pubkey_t.hpp>
+#include <mmx/exec_entry_t.hxx>
 #include <mmx/hash_t.hpp>
-#include <mmx/stxo_entry_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_info_t.hxx>
-#include <mmx/txio_key_t.hxx>
-#include <mmx/txo_info_t.hxx>
-#include <mmx/utxo_entry_t.hxx>
+#include <mmx/uint128.hpp>
+#include <mmx/vm/varptr_t.hpp>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
@@ -104,6 +129,7 @@
 #include <vnx/ModuleInterface_vnx_stop.hxx>
 #include <vnx/ModuleInterface_vnx_stop_return.hxx>
 #include <vnx/TopicPtr.hpp>
+#include <vnx/Variant.hpp>
 #include <vnx/addons/HttpComponent_http_request.hxx>
 #include <vnx/addons/HttpComponent_http_request_return.hxx>
 #include <vnx/addons/HttpComponent_http_request_chunk.hxx>
@@ -147,6 +173,18 @@ std::shared_ptr<const ::mmx::NetworkInfo> NodeClient::get_network_info() {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::NetworkInfo>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+::mmx::hash_t NodeClient::get_genesis_hash() {
+	auto _method = ::mmx::Node_get_genesis_hash::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_genesis_hash_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<::mmx::hash_t>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}
@@ -241,32 +279,6 @@ vnx::optional<::mmx::hash_t> NodeClient::get_block_hash(const uint32_t& height) 
 	}
 }
 
-vnx::optional<::mmx::txo_info_t> NodeClient::get_txo_info(const ::mmx::txio_key_t& key) {
-	auto _method = ::mmx::Node_get_txo_info::create();
-	_method->key = key;
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_txo_info_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<vnx::optional<::mmx::txo_info_t>>();
-	} else {
-		throw std::logic_error("NodeClient: invalid return value");
-	}
-}
-
-std::vector<vnx::optional<::mmx::txo_info_t>> NodeClient::get_txo_infos(const std::vector<::mmx::txio_key_t>& keys) {
-	auto _method = ::mmx::Node_get_txo_infos::create();
-	_method->keys = keys;
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_txo_infos_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::vector<vnx::optional<::mmx::txo_info_t>>>();
-	} else {
-		throw std::logic_error("NodeClient: invalid return value");
-	}
-}
-
 vnx::optional<uint32_t> NodeClient::get_tx_height(const ::mmx::hash_t& id) {
 	auto _method = ::mmx::Node_get_tx_height::create();
 	_method->id = id;
@@ -293,6 +305,19 @@ vnx::optional<::mmx::tx_info_t> NodeClient::get_tx_info(const ::mmx::hash_t& id)
 	}
 }
 
+vnx::optional<::mmx::tx_info_t> NodeClient::get_tx_info_for(std::shared_ptr<const ::mmx::Transaction> tx) {
+	auto _method = ::mmx::Node_get_tx_info_for::create();
+	_method->tx = tx;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_tx_info_for_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<vnx::optional<::mmx::tx_info_t>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
 std::vector<::mmx::hash_t> NodeClient::get_tx_ids_at(const uint32_t& height) {
 	auto _method = ::mmx::Node_get_tx_ids_at::create();
 	_method->height = height;
@@ -301,6 +326,20 @@ std::vector<::mmx::hash_t> NodeClient::get_tx_ids_at(const uint32_t& height) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::vector<::mmx::hash_t>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+vnx::optional<::mmx::hash_t> NodeClient::is_revoked(const ::mmx::hash_t& txid, const ::mmx::addr_t& sender) {
+	auto _method = ::mmx::Node_is_revoked::create();
+	_method->txid = txid;
+	_method->sender = sender;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_is_revoked_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<vnx::optional<::mmx::hash_t>>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}
@@ -345,6 +384,19 @@ std::shared_ptr<const ::mmx::Contract> NodeClient::get_contract(const ::mmx::add
 	}
 }
 
+std::shared_ptr<const ::mmx::Contract> NodeClient::get_contract_for(const ::mmx::addr_t& address) {
+	auto _method = ::mmx::Node_get_contract_for::create();
+	_method->address = address;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_contract_for_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Contract>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
 std::vector<std::shared_ptr<const ::mmx::Contract>> NodeClient::get_contracts(const std::vector<::mmx::addr_t>& addresses) {
 	auto _method = ::mmx::Node_get_contracts::create();
 	_method->addresses = addresses;
@@ -358,14 +410,28 @@ std::vector<std::shared_ptr<const ::mmx::Contract>> NodeClient::get_contracts(co
 	}
 }
 
-std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> NodeClient::get_contracts_owned(const std::vector<::mmx::addr_t>& owners) {
-	auto _method = ::mmx::Node_get_contracts_owned::create();
-	_method->owners = owners;
+std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> NodeClient::get_contracts_by(const std::vector<::mmx::addr_t>& addresses) {
+	auto _method = ::mmx::Node_get_contracts_by::create();
+	_method->addresses = addresses;
 	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_contracts_owned_return>(_return_value)) {
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_contracts_by_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::shared_ptr<const ::mmx::Contract> NodeClient::get_contract_at(const ::mmx::addr_t& address, const ::mmx::hash_t& block_hash) {
+	auto _method = ::mmx::Node_get_contract_at::create();
+	_method->address = address;
+	_method->block_hash = block_hash;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_contract_at_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Contract>>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}
@@ -398,12 +464,12 @@ std::vector<std::shared_ptr<const ::mmx::Transaction>> NodeClient::get_transacti
 	}
 }
 
-std::vector<::mmx::tx_entry_t> NodeClient::get_history_for(const std::vector<::mmx::addr_t>& addresses, const int32_t& since) {
-	auto _method = ::mmx::Node_get_history_for::create();
+std::vector<::mmx::tx_entry_t> NodeClient::get_history(const std::vector<::mmx::addr_t>& addresses, const int32_t& since) {
+	auto _method = ::mmx::Node_get_history::create();
 	_method->addresses = addresses;
 	_method->since = since;
 	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_history_for_return>(_return_value)) {
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_history_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::vector<::mmx::tx_entry_t>>();
@@ -412,7 +478,7 @@ std::vector<::mmx::tx_entry_t> NodeClient::get_history_for(const std::vector<::m
 	}
 }
 
-uint64_t NodeClient::get_balance(const ::mmx::addr_t& address, const ::mmx::addr_t& currency, const uint32_t& min_confirm) {
+::mmx::uint128 NodeClient::get_balance(const ::mmx::addr_t& address, const ::mmx::addr_t& currency, const uint32_t& min_confirm) {
 	auto _method = ::mmx::Node_get_balance::create();
 	_method->address = address;
 	_method->currency = currency;
@@ -421,18 +487,32 @@ uint64_t NodeClient::get_balance(const ::mmx::addr_t& address, const ::mmx::addr
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_balance_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<uint64_t>();
+		return _return_value->get_field_by_index(0).to<::mmx::uint128>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}
 }
 
-std::map<::mmx::addr_t, ::mmx::balance_t> NodeClient::get_balances(const ::mmx::addr_t& address, const uint32_t& min_confirm) {
+std::map<::mmx::addr_t, ::mmx::uint128> NodeClient::get_balances(const ::mmx::addr_t& address, const uint32_t& min_confirm) {
 	auto _method = ::mmx::Node_get_balances::create();
 	_method->address = address;
 	_method->min_confirm = min_confirm;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_balances_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, ::mmx::uint128>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::map<::mmx::addr_t, ::mmx::balance_t> NodeClient::get_contract_balances(const ::mmx::addr_t& address, const uint32_t& min_confirm) {
+	auto _method = ::mmx::Node_get_contract_balances::create();
+	_method->address = address;
+	_method->min_confirm = min_confirm;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_contract_balances_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, ::mmx::balance_t>>();
@@ -441,7 +521,7 @@ std::map<::mmx::addr_t, ::mmx::balance_t> NodeClient::get_balances(const ::mmx::
 	}
 }
 
-uint64_t NodeClient::get_total_balance(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& currency, const uint32_t& min_confirm) {
+::mmx::uint128 NodeClient::get_total_balance(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& currency, const uint32_t& min_confirm) {
 	auto _method = ::mmx::Node_get_total_balance::create();
 	_method->addresses = addresses;
 	_method->currency = currency;
@@ -450,13 +530,13 @@ uint64_t NodeClient::get_total_balance(const std::vector<::mmx::addr_t>& address
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_total_balance_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<uint64_t>();
+		return _return_value->get_field_by_index(0).to<::mmx::uint128>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}
 }
 
-std::map<::mmx::addr_t, uint64_t> NodeClient::get_total_balances(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm) {
+std::map<::mmx::addr_t, ::mmx::uint128> NodeClient::get_total_balances(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm) {
 	auto _method = ::mmx::Node_get_total_balances::create();
 	_method->addresses = addresses;
 	_method->min_confirm = min_confirm;
@@ -464,17 +544,175 @@ std::map<::mmx::addr_t, uint64_t> NodeClient::get_total_balances(const std::vect
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_total_balances_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, uint64_t>>();
+		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, ::mmx::uint128>>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}
 }
 
-uint64_t NodeClient::get_total_supply(const ::mmx::addr_t& currency) {
-	auto _method = ::mmx::Node_get_total_supply::create();
-	_method->currency = currency;
+std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128> NodeClient::get_all_balances(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm) {
+	auto _method = ::mmx::Node_get_all_balances::create();
+	_method->addresses = addresses;
+	_method->min_confirm = min_confirm;
 	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_total_supply_return>(_return_value)) {
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_all_balances_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::vector<::mmx::exec_entry_t> NodeClient::get_exec_history(const ::mmx::addr_t& address, const int32_t& since) {
+	auto _method = ::mmx::Node_get_exec_history::create();
+	_method->address = address;
+	_method->since = since;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_exec_history_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::exec_entry_t>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::map<std::string, ::mmx::vm::varptr_t> NodeClient::read_storage(const ::mmx::addr_t& contract, const uint32_t& height) {
+	auto _method = ::mmx::Node_read_storage::create();
+	_method->contract = contract;
+	_method->height = height;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_read_storage_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::map<std::string, ::mmx::vm::varptr_t>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::map<uint64_t, ::mmx::vm::varptr_t> NodeClient::dump_storage(const ::mmx::addr_t& contract, const uint32_t& height) {
+	auto _method = ::mmx::Node_dump_storage::create();
+	_method->contract = contract;
+	_method->height = height;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_dump_storage_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::map<uint64_t, ::mmx::vm::varptr_t>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+::mmx::vm::varptr_t NodeClient::read_storage_var(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) {
+	auto _method = ::mmx::Node_read_storage_var::create();
+	_method->contract = contract;
+	_method->address = address;
+	_method->height = height;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_read_storage_var_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<::mmx::vm::varptr_t>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::pair<::mmx::vm::varptr_t, uint64_t> NodeClient::read_storage_field(const ::mmx::addr_t& contract, const std::string& name, const uint32_t& height) {
+	auto _method = ::mmx::Node_read_storage_field::create();
+	_method->contract = contract;
+	_method->name = name;
+	_method->height = height;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_read_storage_field_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::pair<::mmx::vm::varptr_t, uint64_t>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::vector<::mmx::vm::varptr_t> NodeClient::read_storage_array(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) {
+	auto _method = ::mmx::Node_read_storage_array::create();
+	_method->contract = contract;
+	_method->address = address;
+	_method->height = height;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_read_storage_array_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::vm::varptr_t>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::map<::mmx::vm::varptr_t, ::mmx::vm::varptr_t> NodeClient::read_storage_map(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) {
+	auto _method = ::mmx::Node_read_storage_map::create();
+	_method->contract = contract;
+	_method->address = address;
+	_method->height = height;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_read_storage_map_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::map<::mmx::vm::varptr_t, ::mmx::vm::varptr_t>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+::vnx::Variant NodeClient::call_contract(const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args) {
+	auto _method = ::mmx::Node_call_contract::create();
+	_method->address = address;
+	_method->method = method;
+	_method->args = args;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_call_contract_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<::vnx::Variant>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+::mmx::address_info_t NodeClient::get_address_info(const ::mmx::addr_t& address) {
+	auto _method = ::mmx::Node_get_address_info::create();
+	_method->address = address;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_address_info_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<::mmx::address_info_t>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::vector<std::pair<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>> NodeClient::get_virtual_plots_for(const ::mmx::bls_pubkey_t& farmer_key) {
+	auto _method = ::mmx::Node_get_virtual_plots_for::create();
+	_method->farmer_key = farmer_key;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_virtual_plots_for_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<std::pair<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+uint64_t NodeClient::get_virtual_plot_balance(const ::mmx::addr_t& plot_id, const vnx::optional<::mmx::hash_t>& block_hash) {
+	auto _method = ::mmx::Node_get_virtual_plot_balance::create();
+	_method->plot_id = plot_id;
+	_method->block_hash = block_hash;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_virtual_plot_balance_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<uint64_t>();
@@ -483,61 +721,14 @@ uint64_t NodeClient::get_total_supply(const ::mmx::addr_t& currency) {
 	}
 }
 
-std::vector<::mmx::utxo_entry_t> NodeClient::get_utxo_list(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm, const uint32_t& since) {
-	auto _method = ::mmx::Node_get_utxo_list::create();
-	_method->addresses = addresses;
-	_method->min_confirm = min_confirm;
-	_method->since = since;
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_utxo_list_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::vector<::mmx::utxo_entry_t>>();
-	} else {
-		throw std::logic_error("NodeClient: invalid return value");
-	}
-}
-
-std::vector<::mmx::utxo_entry_t> NodeClient::get_utxo_list_for(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& currency, const uint32_t& min_confirm, const uint32_t& since) {
-	auto _method = ::mmx::Node_get_utxo_list_for::create();
-	_method->addresses = addresses;
+::mmx::uint128 NodeClient::get_total_supply(const ::mmx::addr_t& currency) {
+	auto _method = ::mmx::Node_get_total_supply::create();
 	_method->currency = currency;
-	_method->min_confirm = min_confirm;
-	_method->since = since;
 	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_utxo_list_for_return>(_return_value)) {
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_total_supply_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::vector<::mmx::utxo_entry_t>>();
-	} else {
-		throw std::logic_error("NodeClient: invalid return value");
-	}
-}
-
-std::vector<::mmx::utxo_entry_t> NodeClient::get_spendable_utxo_list(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm, const uint32_t& since) {
-	auto _method = ::mmx::Node_get_spendable_utxo_list::create();
-	_method->addresses = addresses;
-	_method->min_confirm = min_confirm;
-	_method->since = since;
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_spendable_utxo_list_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::vector<::mmx::utxo_entry_t>>();
-	} else {
-		throw std::logic_error("NodeClient: invalid return value");
-	}
-}
-
-std::vector<::mmx::stxo_entry_t> NodeClient::get_stxo_list(const std::vector<::mmx::addr_t>& addresses, const uint32_t& since) {
-	auto _method = ::mmx::Node_get_stxo_list::create();
-	_method->addresses = addresses;
-	_method->since = since;
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_stxo_list_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::vector<::mmx::stxo_entry_t>>();
+		return _return_value->get_field_by_index(0).to<::mmx::uint128>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}

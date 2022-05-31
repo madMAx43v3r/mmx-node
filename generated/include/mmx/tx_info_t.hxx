@@ -10,8 +10,9 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/tx_note_e.hxx>
-#include <mmx/txi_info_t.hxx>
-#include <mmx/txo_info_t.hxx>
+#include <mmx/txin_t.hxx>
+#include <mmx/txout_t.hxx>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 
@@ -21,17 +22,21 @@ class MMX_EXPORT tx_info_t : public ::vnx::Value {
 public:
 	
 	::mmx::hash_t id;
+	uint32_t expires = 0;
 	vnx::optional<uint32_t> height;
 	vnx::optional<::mmx::hash_t> block;
 	int64_t fee = 0;
 	uint64_t cost = 0;
 	::mmx::tx_note_e note;
-	std::vector<::mmx::txi_info_t> inputs;
-	std::vector<::mmx::txo_info_t> outputs;
+	vnx::bool_t is_extendable = 0;
+	vnx::optional<::mmx::addr_t> sender;
+	std::vector<::mmx::txin_t> inputs;
+	std::vector<::mmx::txout_t> outputs;
 	std::vector<std::shared_ptr<const ::mmx::Operation>> operations;
+	std::vector<::mmx::hash_t> parents;
 	std::shared_ptr<const ::mmx::Contract> deployed;
-	std::map<::mmx::addr_t, uint64_t> input_amounts;
-	std::map<::mmx::addr_t, uint64_t> output_amounts;
+	std::map<::mmx::addr_t, ::mmx::uint128> input_amounts;
+	std::map<::mmx::addr_t, ::mmx::uint128> output_amounts;
 	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> contracts;
 	
 	typedef ::vnx::Value Super;
@@ -79,21 +84,25 @@ protected:
 
 template<typename T>
 void tx_info_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<tx_info_t>(13);
+	_visitor.template type_begin<tx_info_t>(17);
 	_visitor.type_field("id", 0); _visitor.accept(id);
-	_visitor.type_field("height", 1); _visitor.accept(height);
-	_visitor.type_field("block", 2); _visitor.accept(block);
-	_visitor.type_field("fee", 3); _visitor.accept(fee);
-	_visitor.type_field("cost", 4); _visitor.accept(cost);
-	_visitor.type_field("note", 5); _visitor.accept(note);
-	_visitor.type_field("inputs", 6); _visitor.accept(inputs);
-	_visitor.type_field("outputs", 7); _visitor.accept(outputs);
-	_visitor.type_field("operations", 8); _visitor.accept(operations);
-	_visitor.type_field("deployed", 9); _visitor.accept(deployed);
-	_visitor.type_field("input_amounts", 10); _visitor.accept(input_amounts);
-	_visitor.type_field("output_amounts", 11); _visitor.accept(output_amounts);
-	_visitor.type_field("contracts", 12); _visitor.accept(contracts);
-	_visitor.template type_end<tx_info_t>(13);
+	_visitor.type_field("expires", 1); _visitor.accept(expires);
+	_visitor.type_field("height", 2); _visitor.accept(height);
+	_visitor.type_field("block", 3); _visitor.accept(block);
+	_visitor.type_field("fee", 4); _visitor.accept(fee);
+	_visitor.type_field("cost", 5); _visitor.accept(cost);
+	_visitor.type_field("note", 6); _visitor.accept(note);
+	_visitor.type_field("is_extendable", 7); _visitor.accept(is_extendable);
+	_visitor.type_field("sender", 8); _visitor.accept(sender);
+	_visitor.type_field("inputs", 9); _visitor.accept(inputs);
+	_visitor.type_field("outputs", 10); _visitor.accept(outputs);
+	_visitor.type_field("operations", 11); _visitor.accept(operations);
+	_visitor.type_field("parents", 12); _visitor.accept(parents);
+	_visitor.type_field("deployed", 13); _visitor.accept(deployed);
+	_visitor.type_field("input_amounts", 14); _visitor.accept(input_amounts);
+	_visitor.type_field("output_amounts", 15); _visitor.accept(output_amounts);
+	_visitor.type_field("contracts", 16); _visitor.accept(contracts);
+	_visitor.template type_end<tx_info_t>(17);
 }
 
 

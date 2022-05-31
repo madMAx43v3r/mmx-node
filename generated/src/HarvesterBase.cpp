@@ -6,12 +6,16 @@
 #include <vnx/NoSuchMethod.hxx>
 #include <mmx/Challenge.hxx>
 #include <mmx/FarmInfo.hxx>
+#include <mmx/Harvester_add_plot_dir.hxx>
+#include <mmx/Harvester_add_plot_dir_return.hxx>
 #include <mmx/Harvester_get_farm_info.hxx>
 #include <mmx/Harvester_get_farm_info_return.hxx>
 #include <mmx/Harvester_get_total_bytes.hxx>
 #include <mmx/Harvester_get_total_bytes_return.hxx>
 #include <mmx/Harvester_reload.hxx>
 #include <mmx/Harvester_reload_return.hxx>
+#include <mmx/Harvester_rem_plot_dir.hxx>
+#include <mmx/Harvester_rem_plot_dir_return.hxx>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
@@ -32,6 +36,13 @@
 #include <vnx/ModuleInterface_vnx_stop.hxx>
 #include <vnx/ModuleInterface_vnx_stop_return.hxx>
 #include <vnx/TopicPtr.hpp>
+#include <vnx/addons/HttpComponent_http_request.hxx>
+#include <vnx/addons/HttpComponent_http_request_return.hxx>
+#include <vnx/addons/HttpComponent_http_request_chunk.hxx>
+#include <vnx/addons/HttpComponent_http_request_chunk_return.hxx>
+#include <vnx/addons/HttpData.hxx>
+#include <vnx/addons/HttpRequest.hxx>
+#include <vnx/addons/HttpResponse.hxx>
 
 #include <vnx/vnx.h>
 
@@ -40,7 +51,7 @@ namespace mmx {
 
 
 const vnx::Hash64 HarvesterBase::VNX_TYPE_HASH(0xc17118896cde1555ull);
-const vnx::Hash64 HarvesterBase::VNX_CODE_HASH(0x2225c1747e3766full);
+const vnx::Hash64 HarvesterBase::VNX_CODE_HASH(0x455e8e8435072332ull);
 
 HarvesterBase::HarvesterBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -49,6 +60,7 @@ HarvesterBase::HarvesterBase(const std::string& _vnx_name)
 	vnx::read_config(vnx_name + ".output_info", output_info);
 	vnx::read_config(vnx_name + ".output_proofs", output_proofs);
 	vnx::read_config(vnx_name + ".plot_dirs", plot_dirs);
+	vnx::read_config(vnx_name + ".node_server", node_server);
 	vnx::read_config(vnx_name + ".farmer_server", farmer_server);
 	vnx::read_config(vnx_name + ".max_queue_ms", max_queue_ms);
 	vnx::read_config(vnx_name + ".reload_interval", reload_interval);
@@ -75,11 +87,12 @@ void HarvesterBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, output_info);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, output_proofs);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, plot_dirs);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, farmer_server);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, max_queue_ms);
-	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, reload_interval);
-	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, num_threads);
-	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, recursive_search);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, node_server);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, farmer_server);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, max_queue_ms);
+	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, reload_interval);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, num_threads);
+	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, recursive_search);
 	_visitor.type_end(*_type_code);
 }
 
@@ -89,6 +102,7 @@ void HarvesterBase::write(std::ostream& _out) const {
 	_out << ", \"output_info\": "; vnx::write(_out, output_info);
 	_out << ", \"output_proofs\": "; vnx::write(_out, output_proofs);
 	_out << ", \"plot_dirs\": "; vnx::write(_out, plot_dirs);
+	_out << ", \"node_server\": "; vnx::write(_out, node_server);
 	_out << ", \"farmer_server\": "; vnx::write(_out, farmer_server);
 	_out << ", \"max_queue_ms\": "; vnx::write(_out, max_queue_ms);
 	_out << ", \"reload_interval\": "; vnx::write(_out, reload_interval);
@@ -110,6 +124,7 @@ vnx::Object HarvesterBase::to_object() const {
 	_object["output_info"] = output_info;
 	_object["output_proofs"] = output_proofs;
 	_object["plot_dirs"] = plot_dirs;
+	_object["node_server"] = node_server;
 	_object["farmer_server"] = farmer_server;
 	_object["max_queue_ms"] = max_queue_ms;
 	_object["reload_interval"] = reload_interval;
@@ -126,6 +141,8 @@ void HarvesterBase::from_object(const vnx::Object& _object) {
 			_entry.second.to(input_challenges);
 		} else if(_entry.first == "max_queue_ms") {
 			_entry.second.to(max_queue_ms);
+		} else if(_entry.first == "node_server") {
+			_entry.second.to(node_server);
 		} else if(_entry.first == "num_threads") {
 			_entry.second.to(num_threads);
 		} else if(_entry.first == "output_info") {
@@ -155,6 +172,9 @@ vnx::Variant HarvesterBase::get_field(const std::string& _name) const {
 	if(_name == "plot_dirs") {
 		return vnx::Variant(plot_dirs);
 	}
+	if(_name == "node_server") {
+		return vnx::Variant(node_server);
+	}
 	if(_name == "farmer_server") {
 		return vnx::Variant(farmer_server);
 	}
@@ -182,6 +202,8 @@ void HarvesterBase::set_field(const std::string& _name, const vnx::Variant& _val
 		_value.to(output_proofs);
 	} else if(_name == "plot_dirs") {
 		_value.to(plot_dirs);
+	} else if(_name == "node_server") {
+		_value.to(node_server);
 	} else if(_name == "farmer_server") {
 		_value.to(farmer_server);
 	} else if(_name == "max_queue_ms") {
@@ -219,23 +241,27 @@ std::shared_ptr<vnx::TypeCode> HarvesterBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Harvester";
 	type_code->type_hash = vnx::Hash64(0xc17118896cde1555ull);
-	type_code->code_hash = vnx::Hash64(0x2225c1747e3766full);
+	type_code->code_hash = vnx::Hash64(0x455e8e8435072332ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::HarvesterBase);
-	type_code->methods.resize(12);
-	type_code->methods[0] = ::mmx::Harvester_get_farm_info::static_get_type_code();
-	type_code->methods[1] = ::mmx::Harvester_get_total_bytes::static_get_type_code();
-	type_code->methods[2] = ::mmx::Harvester_reload::static_get_type_code();
-	type_code->methods[3] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
-	type_code->methods[4] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
-	type_code->methods[5] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
-	type_code->methods[6] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
-	type_code->methods[7] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
-	type_code->methods[8] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
-	type_code->methods[9] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
-	type_code->methods[10] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
-	type_code->methods[11] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
-	type_code->fields.resize(9);
+	type_code->methods.resize(16);
+	type_code->methods[0] = ::mmx::Harvester_add_plot_dir::static_get_type_code();
+	type_code->methods[1] = ::mmx::Harvester_get_farm_info::static_get_type_code();
+	type_code->methods[2] = ::mmx::Harvester_get_total_bytes::static_get_type_code();
+	type_code->methods[3] = ::mmx::Harvester_reload::static_get_type_code();
+	type_code->methods[4] = ::mmx::Harvester_rem_plot_dir::static_get_type_code();
+	type_code->methods[5] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
+	type_code->methods[6] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
+	type_code->methods[7] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
+	type_code->methods[8] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
+	type_code->methods[9] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
+	type_code->methods[10] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
+	type_code->methods[11] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
+	type_code->methods[12] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
+	type_code->methods[13] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
+	type_code->methods[14] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
+	type_code->methods[15] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
+	type_code->fields.resize(10);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -266,33 +292,40 @@ std::shared_ptr<vnx::TypeCode> HarvesterBase::static_create_type_code() {
 	{
 		auto& field = type_code->fields[4];
 		field.is_extended = true;
+		field.name = "node_server";
+		field.value = vnx::to_string("Node");
+		field.code = {32};
+	}
+	{
+		auto& field = type_code->fields[5];
+		field.is_extended = true;
 		field.name = "farmer_server";
 		field.value = vnx::to_string("Farmer");
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[5];
+		auto& field = type_code->fields[6];
 		field.data_size = 4;
 		field.name = "max_queue_ms";
 		field.value = vnx::to_string(10000);
 		field.code = {7};
 	}
 	{
-		auto& field = type_code->fields[6];
+		auto& field = type_code->fields[7];
 		field.data_size = 4;
 		field.name = "reload_interval";
 		field.value = vnx::to_string(3600);
 		field.code = {7};
 	}
 	{
-		auto& field = type_code->fields[7];
+		auto& field = type_code->fields[8];
 		field.data_size = 4;
 		field.name = "num_threads";
 		field.value = vnx::to_string(0);
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[8];
+		auto& field = type_code->fields[9];
 		field.data_size = 1;
 		field.name = "recursive_search";
 		field.value = vnx::to_string(true);
@@ -318,6 +351,12 @@ void HarvesterBase::vnx_handle_switch(std::shared_ptr<const vnx::Value> _value) 
 
 std::shared_ptr<vnx::Value> HarvesterBase::vnx_call_switch(std::shared_ptr<const vnx::Value> _method, const vnx::request_id_t& _request_id) {
 	switch(_method->get_type_hash()) {
+		case 0x61714d1c7ecaffddull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Harvester_add_plot_dir>(_method);
+			auto _return_value = ::mmx::Harvester_add_plot_dir_return::create();
+			add_plot_dir(_args->path);
+			return _return_value;
+		}
 		case 0x129f91b9ade2891full: {
 			auto _args = std::static_pointer_cast<const ::mmx::Harvester_get_farm_info>(_method);
 			auto _return_value = ::mmx::Harvester_get_farm_info_return::create();
@@ -334,6 +373,12 @@ std::shared_ptr<vnx::Value> HarvesterBase::vnx_call_switch(std::shared_ptr<const
 			auto _args = std::static_pointer_cast<const ::mmx::Harvester_reload>(_method);
 			auto _return_value = ::mmx::Harvester_reload_return::create();
 			reload();
+			return _return_value;
+		}
+		case 0x57674e56f3ab6076ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Harvester_rem_plot_dir>(_method);
+			auto _return_value = ::mmx::Harvester_rem_plot_dir_return::create();
+			rem_plot_dir(_args->path);
 			return _return_value;
 		}
 		case 0xbbc7f1a01044d294ull: {
@@ -390,11 +435,33 @@ std::shared_ptr<vnx::Value> HarvesterBase::vnx_call_switch(std::shared_ptr<const
 			vnx_stop();
 			return _return_value;
 		}
+		case 0xe0b6c38f619bad92ull: {
+			auto _args = std::static_pointer_cast<const ::vnx::addons::HttpComponent_http_request>(_method);
+			http_request_async(_args->request, _args->sub_path, _request_id);
+			return nullptr;
+		}
+		case 0x97e79d08440406d5ull: {
+			auto _args = std::static_pointer_cast<const ::vnx::addons::HttpComponent_http_request_chunk>(_method);
+			http_request_chunk_async(_args->request, _args->sub_path, _args->offset, _args->max_bytes, _request_id);
+			return nullptr;
+		}
 	}
 	auto _ex = vnx::NoSuchMethod::create();
 	_ex->dst_mac = vnx_request ? vnx_request->dst_mac : vnx::Hash64();
 	_ex->method = _method->get_type_name();
 	return _ex;
+}
+
+void HarvesterBase::http_request_async_return(const vnx::request_id_t& _request_id, const std::shared_ptr<const ::vnx::addons::HttpResponse>& _ret_0) const {
+	auto _return_value = ::vnx::addons::HttpComponent_http_request_return::create();
+	_return_value->_ret_0 = _ret_0;
+	vnx_async_return(_request_id, _return_value);
+}
+
+void HarvesterBase::http_request_chunk_async_return(const vnx::request_id_t& _request_id, const std::shared_ptr<const ::vnx::addons::HttpData>& _ret_0) const {
+	auto _return_value = ::vnx::addons::HttpComponent_http_request_chunk_return::create();
+	_return_value->_ret_0 = _ret_0;
+	vnx_async_return(_request_id, _return_value);
 }
 
 
@@ -435,16 +502,16 @@ void read(TypeInput& in, ::mmx::HarvesterBase& value, const TypeCode* type_code,
 	}
 	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
-		if(const auto* const _field = type_code->field_map[5]) {
+		if(const auto* const _field = type_code->field_map[6]) {
 			vnx::read_value(_buf + _field->offset, value.max_queue_ms, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[6]) {
+		if(const auto* const _field = type_code->field_map[7]) {
 			vnx::read_value(_buf + _field->offset, value.reload_interval, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[7]) {
+		if(const auto* const _field = type_code->field_map[8]) {
 			vnx::read_value(_buf + _field->offset, value.num_threads, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[8]) {
+		if(const auto* const _field = type_code->field_map[9]) {
 			vnx::read_value(_buf + _field->offset, value.recursive_search, _field->code.data());
 		}
 	}
@@ -454,7 +521,8 @@ void read(TypeInput& in, ::mmx::HarvesterBase& value, const TypeCode* type_code,
 			case 1: vnx::read(in, value.output_info, type_code, _field->code.data()); break;
 			case 2: vnx::read(in, value.output_proofs, type_code, _field->code.data()); break;
 			case 3: vnx::read(in, value.plot_dirs, type_code, _field->code.data()); break;
-			case 4: vnx::read(in, value.farmer_server, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.node_server, type_code, _field->code.data()); break;
+			case 5: vnx::read(in, value.farmer_server, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -482,7 +550,8 @@ void write(TypeOutput& out, const ::mmx::HarvesterBase& value, const TypeCode* t
 	vnx::write(out, value.output_info, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.output_proofs, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.plot_dirs, type_code, type_code->fields[3].code.data());
-	vnx::write(out, value.farmer_server, type_code, type_code->fields[4].code.data());
+	vnx::write(out, value.node_server, type_code, type_code->fields[4].code.data());
+	vnx::write(out, value.farmer_server, type_code, type_code->fields[5].code.data());
 }
 
 void read(std::istream& in, ::mmx::HarvesterBase& value) {

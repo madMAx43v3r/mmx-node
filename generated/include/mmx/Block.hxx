@@ -7,7 +7,7 @@
 #include <mmx/package.hxx>
 #include <mmx/BlockHeader.hxx>
 #include <mmx/ChainParams.hxx>
-#include <mmx/TransactionBase.hxx>
+#include <mmx/Transaction.hxx>
 #include <mmx/hash_t.hpp>
 
 
@@ -16,7 +16,7 @@ namespace mmx {
 class MMX_EXPORT Block : public ::mmx::BlockHeader {
 public:
 	
-	std::vector<std::shared_ptr<const ::mmx::TransactionBase>> tx_list;
+	std::vector<std::shared_ptr<const ::mmx::Transaction>> tx_list;
 	
 	typedef ::mmx::BlockHeader Super;
 	
@@ -35,7 +35,9 @@ public:
 	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_tx_hash() const;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
-	virtual std::shared_ptr<const ::mmx::BlockHeader> get_header() const;
+	virtual std::shared_ptr<const ::mmx::BlockHeader> get_header() const override;
+	virtual std::vector<std::shared_ptr<const ::mmx::Transaction>> get_all_transactions() const;
+	virtual void validate() const override;
 	
 	static std::shared_ptr<Block> create();
 	std::shared_ptr<vnx::Value> clone() const override;
@@ -69,22 +71,25 @@ protected:
 
 template<typename T>
 void Block::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Block>(14);
+	_visitor.template type_begin<Block>(17);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("hash", 1); _visitor.accept(hash);
 	_visitor.type_field("prev", 2); _visitor.accept(prev);
 	_visitor.type_field("height", 3); _visitor.accept(height);
-	_visitor.type_field("time_diff", 4); _visitor.accept(time_diff);
-	_visitor.type_field("space_diff", 5); _visitor.accept(space_diff);
-	_visitor.type_field("vdf_iters", 6); _visitor.accept(vdf_iters);
-	_visitor.type_field("vdf_output", 7); _visitor.accept(vdf_output);
-	_visitor.type_field("proof", 8); _visitor.accept(proof);
-	_visitor.type_field("tx_base", 9); _visitor.accept(tx_base);
-	_visitor.type_field("tx_count", 10); _visitor.accept(tx_count);
-	_visitor.type_field("tx_hash", 11); _visitor.accept(tx_hash);
-	_visitor.type_field("farmer_sig", 12); _visitor.accept(farmer_sig);
-	_visitor.type_field("tx_list", 13); _visitor.accept(tx_list);
-	_visitor.template type_end<Block>(14);
+	_visitor.type_field("nonce", 4); _visitor.accept(nonce);
+	_visitor.type_field("time_diff", 5); _visitor.accept(time_diff);
+	_visitor.type_field("space_diff", 6); _visitor.accept(space_diff);
+	_visitor.type_field("weight", 7); _visitor.accept(weight);
+	_visitor.type_field("total_weight", 8); _visitor.accept(total_weight);
+	_visitor.type_field("vdf_iters", 9); _visitor.accept(vdf_iters);
+	_visitor.type_field("vdf_output", 10); _visitor.accept(vdf_output);
+	_visitor.type_field("proof", 11); _visitor.accept(proof);
+	_visitor.type_field("tx_base", 12); _visitor.accept(tx_base);
+	_visitor.type_field("tx_count", 13); _visitor.accept(tx_count);
+	_visitor.type_field("tx_hash", 14); _visitor.accept(tx_hash);
+	_visitor.type_field("farmer_sig", 15); _visitor.accept(farmer_sig);
+	_visitor.type_field("tx_list", 16); _visitor.accept(tx_list);
+	_visitor.template type_end<Block>(17);
 }
 
 

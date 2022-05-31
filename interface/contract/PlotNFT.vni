@@ -3,18 +3,14 @@ package mmx.contract;
 import mmx.hash_t;
 import mmx.addr_t;
 
-// TODO: rename to something generic
-
-class PlotNFT extends mmx.Contract {
+class PlotNFT extends MutableRelay {
 	
-	addr_t owner;
+	string name;
 	
-	optional<addr_t> target;
+	optional<string> server_url;
 	
-	optional<uint> unlock_height;				// height at which owner can withdraw
 	
-	// TODO: make it a param
-	static const uint UNLOCK_DELAY = 100;		// number of blocks
+	static const uint MAX_UNLOCK_DELAY = 10000;
 	
 	
 	bool is_valid() const;
@@ -23,16 +19,8 @@ class PlotNFT extends mmx.Contract {
 	
 	ulong calc_cost(mmx.ChainParams* params) const;
 	
-	vector<addr_t> get_dependency() const;
+	void lock(optional<addr_t> new_target, uint new_unlock_delay);
 	
-	vector<addr_t> get_parties() const;
-	
-	optional<addr_t> get_owner() const;
-	
-	vector<mmx.tx_out_t> validate(mmx.Operation* operation, mmx.Context* context) const;
-	
-	void unlock(uint height);
-	
-	void lock_target(optional<addr_t> new_target);
+	void lock_pool(optional<addr_t> new_target, uint new_unlock_delay, optional<string> new_server_url);
 	
 }

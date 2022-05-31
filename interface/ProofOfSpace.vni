@@ -4,19 +4,11 @@ class ProofOfSpace {
 	
 	uint version;
 	
-	uchar ksize;
-	
-	ulong score;
+	uint score;
 	
 	hash_t plot_id;
 	
-	vector<uchar> proof_bytes;
-	
-	bls_pubkey_t local_key;
 	bls_pubkey_t farmer_key;
-	bls_pubkey_t pool_key;
-	
-	bls_signature_t local_sig;
 	
 	
 	bool is_valid() const;

@@ -4,8 +4,8 @@ class Challenge {
 	
 	uint height;
 	
-	ulong space_diff;
-	
 	hash_t challenge;
+	
+	ulong space_diff;
 	
 }

@@ -12,24 +12,14 @@
 
 namespace mmx {
 
-void Block::finalize()
-{
-	tx_count = tx_list.size();
-	tx_hash = calc_tx_hash();
-	hash = calc_hash();
-}
-
 vnx::bool_t Block::is_valid() const
 {
-	if(tx_base && !std::dynamic_pointer_cast<const Transaction>(tx_base)) {
-		return false;
-	}
-	for(const auto& base : tx_list) {
-		if(!std::dynamic_pointer_cast<const Transaction>(base)) {
+	for(const auto& tx : tx_list) {
+		if(!tx) {
 			return false;
 		}
 	}
-	return BlockHeader::is_valid() && (!proof || proof->is_valid()) && calc_tx_hash() == tx_hash;
+	return BlockHeader::is_valid() && (!proof || proof->is_valid()) && tx_count == tx_list.size() && calc_tx_hash() == tx_hash;
 }
 
 mmx::hash_t Block::calc_tx_hash() const
@@ -48,13 +38,23 @@ mmx::hash_t Block::calc_tx_hash() const
 	return hash_t(buffer);
 }
 
+void Block::finalize()
+{
+	tx_count = tx_list.size();
+	tx_hash = calc_tx_hash();
+	hash = calc_hash();
+}
+
 uint64_t Block::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	uint64_t cost = 0;
+	uint128_t cost = 0;
 	for(const auto& tx : tx_list) {
 		if(tx) {
 			cost += tx->calc_cost(params);
 		}
+	}
+	if(cost.upper()) {
+		throw std::logic_error("block cost amount overflow");
 	}
 	return cost;
 }
@@ -64,6 +64,30 @@ std::shared_ptr<const BlockHeader> Block::get_header() const
 	auto header = BlockHeader::create();
 	header->operator=(*this);
 	return header;
+}
+
+std::vector<std::shared_ptr<const Transaction>> Block::get_all_transactions() const
+{
+	std::vector<std::shared_ptr<const Transaction>> list;
+	if(auto tx = tx_base) {
+		list.push_back(tx);
+	}
+	list.insert(list.end(), tx_list.begin(), tx_list.end());
+	return list;
+}
+
+void Block::validate() const
+{
+	Super::validate();
+
+	if(!farmer_sig) {
+		if(nonce) {
+			throw std::logic_error("invalid block nonce");
+		}
+		if(tx_base || tx_list.size()) {
+			throw std::logic_error("cannot have transactions");
+		}
+	}
 }
 
 

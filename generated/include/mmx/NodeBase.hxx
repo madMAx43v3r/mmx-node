@@ -14,16 +14,18 @@
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/address_info_t.hxx>
 #include <mmx/balance_t.hxx>
+#include <mmx/bls_pubkey_t.hpp>
+#include <mmx/exec_entry_t.hxx>
 #include <mmx/hash_t.hpp>
-#include <mmx/stxo_entry_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_info_t.hxx>
-#include <mmx/txio_key_t.hxx>
-#include <mmx/txo_info_t.hxx>
-#include <mmx/utxo_entry_t.hxx>
+#include <mmx/uint128.hpp>
+#include <mmx/vm/varptr_t.hpp>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
+#include <vnx/Variant.hpp>
 #include <vnx/addons/HttpData.hxx>
 #include <vnx/addons/HttpRequest.hxx>
 #include <vnx/addons/HttpResponse.hxx>
@@ -54,16 +56,15 @@ public:
 	int32_t validate_interval_ms = 10000;
 	int32_t sync_loss_delay = 60;
 	uint32_t max_history = 1000;
+	uint32_t max_fork_length = 20000;
 	uint32_t tx_pool_limit = 100;
-	uint32_t max_fork_length = 100000;
 	uint32_t max_sync_jobs = 64;
 	uint32_t num_sync_retries = 3;
 	uint32_t replay_height = -1;
 	uint32_t num_vdf_threads = 8;
-	uint32_t vdf_check_divider = 10000;
+	uint32_t vdf_check_divider = 5000;
 	int32_t opencl_device = 0;
 	vnx::bool_t do_sync = true;
-	vnx::bool_t light_mode = false;
 	vnx::bool_t show_warnings = false;
 	std::string storage_path;
 	std::string database_path = "db/";
@@ -107,6 +108,7 @@ protected:
 	
 	virtual std::shared_ptr<const ::mmx::ChainParams> get_params() const = 0;
 	virtual std::shared_ptr<const ::mmx::NetworkInfo> get_network_info() const = 0;
+	virtual ::mmx::hash_t get_genesis_hash() const = 0;
 	virtual uint32_t get_height() const = 0;
 	virtual vnx::optional<uint32_t> get_synced_height() const = 0;
 	virtual std::shared_ptr<const ::mmx::Block> get_block(const ::mmx::hash_t& hash) const = 0;
@@ -114,28 +116,39 @@ protected:
 	virtual std::shared_ptr<const ::mmx::BlockHeader> get_header(const ::mmx::hash_t& hash) const = 0;
 	virtual std::shared_ptr<const ::mmx::BlockHeader> get_header_at(const uint32_t& height) const = 0;
 	virtual vnx::optional<::mmx::hash_t> get_block_hash(const uint32_t& height) const = 0;
-	virtual vnx::optional<::mmx::txo_info_t> get_txo_info(const ::mmx::txio_key_t& key) const = 0;
-	virtual std::vector<vnx::optional<::mmx::txo_info_t>> get_txo_infos(const std::vector<::mmx::txio_key_t>& keys) const = 0;
 	virtual vnx::optional<uint32_t> get_tx_height(const ::mmx::hash_t& id) const = 0;
 	virtual vnx::optional<::mmx::tx_info_t> get_tx_info(const ::mmx::hash_t& id) const = 0;
+	virtual vnx::optional<::mmx::tx_info_t> get_tx_info_for(std::shared_ptr<const ::mmx::Transaction> tx) const = 0;
 	virtual std::vector<::mmx::hash_t> get_tx_ids_at(const uint32_t& height) const = 0;
+	virtual vnx::optional<::mmx::hash_t> is_revoked(const ::mmx::hash_t& txid, const ::mmx::addr_t& sender) const = 0;
 	virtual void add_block(std::shared_ptr<const ::mmx::Block> block) = 0;
 	virtual void add_transaction(std::shared_ptr<const ::mmx::Transaction> tx, const vnx::bool_t& pre_validate) = 0;
 	virtual std::shared_ptr<const ::mmx::Contract> get_contract(const ::mmx::addr_t& address) const = 0;
+	virtual std::shared_ptr<const ::mmx::Contract> get_contract_for(const ::mmx::addr_t& address) const = 0;
 	virtual std::vector<std::shared_ptr<const ::mmx::Contract>> get_contracts(const std::vector<::mmx::addr_t>& addresses) const = 0;
-	virtual std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts_owned(const std::vector<::mmx::addr_t>& owners) const = 0;
+	virtual std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts_by(const std::vector<::mmx::addr_t>& addresses) const = 0;
+	virtual std::shared_ptr<const ::mmx::Contract> get_contract_at(const ::mmx::addr_t& address, const ::mmx::hash_t& block_hash) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> get_transaction(const ::mmx::hash_t& id, const vnx::bool_t& include_pending) const = 0;
 	virtual std::vector<std::shared_ptr<const ::mmx::Transaction>> get_transactions(const std::vector<::mmx::hash_t>& ids) const = 0;
-	virtual std::vector<::mmx::tx_entry_t> get_history_for(const std::vector<::mmx::addr_t>& addresses, const int32_t& since) const = 0;
-	virtual uint64_t get_balance(const ::mmx::addr_t& address, const ::mmx::addr_t& currency, const uint32_t& min_confirm) const = 0;
-	virtual std::map<::mmx::addr_t, ::mmx::balance_t> get_balances(const ::mmx::addr_t& address, const uint32_t& min_confirm) const = 0;
-	virtual uint64_t get_total_balance(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& currency, const uint32_t& min_confirm) const = 0;
-	virtual std::map<::mmx::addr_t, uint64_t> get_total_balances(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm) const = 0;
-	virtual uint64_t get_total_supply(const ::mmx::addr_t& currency) const = 0;
-	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm, const uint32_t& since) const = 0;
-	virtual std::vector<::mmx::utxo_entry_t> get_utxo_list_for(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& currency, const uint32_t& min_confirm, const uint32_t& since) const = 0;
-	virtual std::vector<::mmx::utxo_entry_t> get_spendable_utxo_list(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm, const uint32_t& since) const = 0;
-	virtual std::vector<::mmx::stxo_entry_t> get_stxo_list(const std::vector<::mmx::addr_t>& addresses, const uint32_t& since) const = 0;
+	virtual std::vector<::mmx::tx_entry_t> get_history(const std::vector<::mmx::addr_t>& addresses, const int32_t& since) const = 0;
+	virtual ::mmx::uint128 get_balance(const ::mmx::addr_t& address, const ::mmx::addr_t& currency, const uint32_t& min_confirm) const = 0;
+	virtual std::map<::mmx::addr_t, ::mmx::uint128> get_balances(const ::mmx::addr_t& address, const uint32_t& min_confirm) const = 0;
+	virtual std::map<::mmx::addr_t, ::mmx::balance_t> get_contract_balances(const ::mmx::addr_t& address, const uint32_t& min_confirm) const = 0;
+	virtual ::mmx::uint128 get_total_balance(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& currency, const uint32_t& min_confirm) const = 0;
+	virtual std::map<::mmx::addr_t, ::mmx::uint128> get_total_balances(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm) const = 0;
+	virtual std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128> get_all_balances(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm) const = 0;
+	virtual std::vector<::mmx::exec_entry_t> get_exec_history(const ::mmx::addr_t& address, const int32_t& since) const = 0;
+	virtual std::map<std::string, ::mmx::vm::varptr_t> read_storage(const ::mmx::addr_t& contract, const uint32_t& height) const = 0;
+	virtual std::map<uint64_t, ::mmx::vm::varptr_t> dump_storage(const ::mmx::addr_t& contract, const uint32_t& height) const = 0;
+	virtual ::mmx::vm::varptr_t read_storage_var(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) const = 0;
+	virtual std::pair<::mmx::vm::varptr_t, uint64_t> read_storage_field(const ::mmx::addr_t& contract, const std::string& name, const uint32_t& height) const = 0;
+	virtual std::vector<::mmx::vm::varptr_t> read_storage_array(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) const = 0;
+	virtual std::map<::mmx::vm::varptr_t, ::mmx::vm::varptr_t> read_storage_map(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) const = 0;
+	virtual ::vnx::Variant call_contract(const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args) const = 0;
+	virtual ::mmx::address_info_t get_address_info(const ::mmx::addr_t& address) const = 0;
+	virtual std::vector<std::pair<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>> get_virtual_plots_for(const ::mmx::bls_pubkey_t& farmer_key) const = 0;
+	virtual uint64_t get_virtual_plot_balance(const ::mmx::addr_t& plot_id, const vnx::optional<::mmx::hash_t>& block_hash) const = 0;
+	virtual ::mmx::uint128 get_total_supply(const ::mmx::addr_t& currency) const = 0;
 	virtual void start_sync(const vnx::bool_t& force) = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::Block> _value) {}
 	virtual void handle(std::shared_ptr<const ::mmx::Transaction> _value) {}
@@ -153,7 +166,7 @@ protected:
 
 template<typename T>
 void NodeBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<NodeBase>(35);
+	_visitor.template type_begin<NodeBase>(34);
 	_visitor.type_field("input_vdfs", 0); _visitor.accept(input_vdfs);
 	_visitor.type_field("input_proof", 1); _visitor.accept(input_proof);
 	_visitor.type_field("input_blocks", 2); _visitor.accept(input_blocks);
@@ -174,8 +187,8 @@ void NodeBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("validate_interval_ms", 17); _visitor.accept(validate_interval_ms);
 	_visitor.type_field("sync_loss_delay", 18); _visitor.accept(sync_loss_delay);
 	_visitor.type_field("max_history", 19); _visitor.accept(max_history);
-	_visitor.type_field("tx_pool_limit", 20); _visitor.accept(tx_pool_limit);
-	_visitor.type_field("max_fork_length", 21); _visitor.accept(max_fork_length);
+	_visitor.type_field("max_fork_length", 20); _visitor.accept(max_fork_length);
+	_visitor.type_field("tx_pool_limit", 21); _visitor.accept(tx_pool_limit);
 	_visitor.type_field("max_sync_jobs", 22); _visitor.accept(max_sync_jobs);
 	_visitor.type_field("num_sync_retries", 23); _visitor.accept(num_sync_retries);
 	_visitor.type_field("replay_height", 24); _visitor.accept(replay_height);
@@ -183,13 +196,12 @@ void NodeBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("vdf_check_divider", 26); _visitor.accept(vdf_check_divider);
 	_visitor.type_field("opencl_device", 27); _visitor.accept(opencl_device);
 	_visitor.type_field("do_sync", 28); _visitor.accept(do_sync);
-	_visitor.type_field("light_mode", 29); _visitor.accept(light_mode);
-	_visitor.type_field("show_warnings", 30); _visitor.accept(show_warnings);
-	_visitor.type_field("storage_path", 31); _visitor.accept(storage_path);
-	_visitor.type_field("database_path", 32); _visitor.accept(database_path);
-	_visitor.type_field("router_name", 33); _visitor.accept(router_name);
-	_visitor.type_field("timelord_name", 34); _visitor.accept(timelord_name);
-	_visitor.template type_end<NodeBase>(35);
+	_visitor.type_field("show_warnings", 29); _visitor.accept(show_warnings);
+	_visitor.type_field("storage_path", 30); _visitor.accept(storage_path);
+	_visitor.type_field("database_path", 31); _visitor.accept(database_path);
+	_visitor.type_field("router_name", 32); _visitor.accept(router_name);
+	_visitor.type_field("timelord_name", 33); _visitor.accept(timelord_name);
+	_visitor.template type_end<NodeBase>(34);
 }
 
 

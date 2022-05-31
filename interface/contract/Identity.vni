@@ -1,0 +1,13 @@
+package mmx.contract;
+
+import mmx.addr_t;
+
+class Identity extends mmx.Contract {
+	
+	addr_t entity;
+	
+	addr_t authority;
+	
+	mmx.Solution* solution;
+	
+}

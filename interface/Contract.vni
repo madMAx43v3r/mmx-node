@@ -13,13 +13,11 @@ class Contract {
 	
 	vector<addr_t> get_dependency() const;
 	
-	vector<addr_t> get_parties() const;
-	
 	optional<addr_t> get_owner() const;
 	
-	bool is_spendable(mmx.utxo_t utxo, mmx.Context* context) const;
+	bool is_locked(Context* context) const;
 	
-	vector<tx_out_t> validate(Operation* operation, Context* context) const;
+	vector<txout_t> validate(Operation* operation, Context* context) const;
 	
 	void transfer(optional<addr_t> new_owner);
 	

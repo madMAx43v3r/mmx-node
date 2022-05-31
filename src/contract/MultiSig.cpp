@@ -14,9 +14,9 @@
 namespace mmx {
 namespace contract {
 
-vnx::bool_t MultiSig::is_valid() const {
-	return Contract::is_valid() && num_required > 0 && owners.size() >= num_required
-			&& num_required <= solution::MultiSig::MAX_SIGNATURES && owners.size() <= MAX_OWNERS;
+vnx::bool_t MultiSig::is_valid() const
+{
+	return Super::is_valid() && num_required > 0 && owners.size() >= num_required && owners.size() <= MAX_OWNERS;
 }
 
 hash_t MultiSig::calc_hash() const
@@ -26,24 +26,19 @@ hash_t MultiSig::calc_hash() const
 	vnx::OutputBuffer out(&stream);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
-	for(const auto& address : owners) {
-		write_bytes(out, address);
-	}
+	write_field(out, "version", version);
+	write_field(out, "owners", owners);
 	out.flush();
 
 	return hash_t(buffer);
 }
 
-uint64_t MultiSig::calc_cost(std::shared_ptr<const ChainParams> params) const {
-	return (8 + 4 + 32 * owners.size()) * params->min_txfee_byte;
+uint64_t MultiSig::calc_cost(std::shared_ptr<const ChainParams> params) const
+{
+	return 32 * owners.size() * params->min_txfee_byte;
 }
 
-std::vector<addr_t> MultiSig::get_parties() const {
-	return owners;
-}
-
-std::vector<tx_out_t> MultiSig::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
+std::vector<txout_t> MultiSig::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
 	if(auto solution = std::dynamic_pointer_cast<const solution::PubKey>(operation->solution))
 	{
@@ -72,13 +67,16 @@ std::vector<tx_out_t> MultiSig::validate(std::shared_ptr<const Operation> operat
 		{
 			if(const auto& sol = solution->solutions[i])
 			{
-				if(sol->pubkey.get_addr() != owners[i]) {
-					throw std::logic_error("invalid pubkey at index " + std::to_string(i));
+				if(auto solution = std::dynamic_pointer_cast<const solution::PubKey>(sol))
+				{
+					if(solution->pubkey.get_addr() != owners[i]) {
+						throw std::logic_error("invalid pubkey at index " + std::to_string(i));
+					}
+					if(!solution->signature.verify(solution->pubkey, context->txid)) {
+						throw std::logic_error("invalid signature at index " + std::to_string(i));
+					}
+					count++;
 				}
-				if(!sol->signature.verify(sol->pubkey, context->txid)) {
-					throw std::logic_error("invalid signature at index " + std::to_string(i));
-				}
-				count++;
 			}
 		}
 		if(count < num_required) {
@@ -104,6 +102,11 @@ void MultiSig::rem_owner(const addr_t& address)
 			break;
 		}
 	}
+}
+
+void MultiSig::set_num_required(const uint32_t& count)
+{
+	num_required = count;
 }
 
 

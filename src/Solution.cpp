@@ -10,9 +10,9 @@
 
 namespace mmx {
 
-vnx::bool_t Solution::is_valid() const
+uint64_t Solution::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	return false;
+	throw std::logic_error("not implemented");
 }
 
 

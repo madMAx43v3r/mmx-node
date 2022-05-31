@@ -10,6 +10,8 @@
 #include <mmx/TimeInfusion.hxx>
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/operation/Mutate.hxx>
+#include <mmx/operation/Revoke.hxx>
+#include <mmx/operation/Execute.hxx>
 #include <mmx/utils.h>
 
 #include <vnx/vnx.h>
@@ -17,7 +19,7 @@
 
 namespace mmx {
 
-void Node::check_vdfs()
+void Node::verify_vdfs()
 {
 	for(auto iter = pending_vdfs.begin(); iter != pending_vdfs.end();) {
 		const auto& proof = iter->second;
@@ -26,9 +28,22 @@ void Node::check_vdfs()
 				handle(proof);
 			});
 			iter = pending_vdfs.erase(iter);
-			continue;
+		} else {
+			iter++;
 		}
-		iter++;
+	}
+}
+
+void Node::verify_proofs()
+{
+	const auto root = get_root();
+	for(auto iter = pending_proofs.begin(); iter != pending_proofs.end();) {
+		const auto& response = *iter;
+		if(response->request->height < root->height || verify(response)) {
+			iter = pending_proofs.erase(iter);
+		} else {
+			iter++;
+		}
 	}
 }
 
@@ -38,50 +53,49 @@ void Node::add_fork(std::shared_ptr<fork_t> fork)
 	if(fork_tree.emplace(block->hash, fork).second) {
 		fork_index.emplace(block->height, fork);
 	}
-	if(add_dummy_block(block)) {
-		fork->has_dummy_block = true;
-	}
+	add_dummy_blocks(block);
 }
 
-bool Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
+void Node::add_dummy_blocks(std::shared_ptr<const BlockHeader> prev)
 {
 	if(auto vdf_point = find_next_vdf_point(prev))
 	{
-		auto block = Block::create();
-		block->version = 0;
-		block->prev = prev->hash;
-		block->height = prev->height + 1;
-		block->time_diff = prev->time_diff;
-		// TODO: reduce space_diff
-		block->space_diff = prev->space_diff;
-		block->vdf_iters = vdf_point->vdf_iters;
-		block->vdf_output = vdf_point->output;
-		block->finalize();
-		add_block(block);
-		return true;
+		std::vector<std::shared_ptr<const ProofOfSpace>> proofs = {nullptr};
+		{
+			hash_t vdf_challenge;
+			if(find_vdf_challenge(prev, vdf_challenge, 1)) {
+				const auto challenge = get_challenge(prev, vdf_challenge, 1);
+				for(const auto& response : find_proof(challenge)) {
+					proofs.push_back(response->proof);
+				}
+			}
+		}
+		const auto diff_block = get_diff_header(prev, 1);
+
+		for(const auto& proof : proofs) {
+			auto block = Block::create();
+			block->version = 0;
+			block->prev = prev->hash;
+			block->height = prev->height + 1;
+			block->proof = proof;
+			block->time_diff = prev->time_diff;
+			block->space_diff = calc_new_space_diff(params, prev->space_diff, proof ? proof->score : params->score_threshold);
+			block->vdf_iters = vdf_point->vdf_iters;
+			block->vdf_output = vdf_point->output;
+			block->weight = calc_block_weight(params, diff_block, proof, false);
+			block->total_weight = prev->total_weight + block->weight;
+			block->finalize();
+			add_block(block);
+		}
 	}
-	return false;
 }
 
 void Node::update()
 {
 	const auto time_begin = vnx::get_wall_time_micros();
 
-	check_vdfs();
-
-	// add dummy blocks
-	{
-		std::vector<std::shared_ptr<const Block>> blocks;
-		for(const auto& entry : fork_index) {
-			const auto& fork = entry.second;
-			if(!fork->has_dummy_block) {
-				blocks.push_back(fork->block);
-			}
-		}
-		for(const auto& block : blocks) {
-			add_dummy_block(block);
-		}
-	}
+	verify_vdfs();
+	verify_proofs();
 
 	// verify proof where possible
 	std::vector<std::shared_ptr<fork_t>> to_verify;
@@ -95,23 +109,13 @@ void Node::update()
 			const auto& block = fork->block;
 			if(!fork->prev.lock()) {
 				if(auto prev = find_fork(block->prev)) {
-					if(prev->is_invalid) {
-						fork->is_invalid = true;
-					}
 					fork->prev = prev;
-				}
-				else if(is_synced) {
+				} else if(is_synced) {
 					// fetch missing previous
 					const auto hash = block->prev;
 					const auto height = block->height - 1;
-					if(!fetch_pending.count(hash) && height > root->height)
-					{
-						fetch_pending.insert(hash);
-						router->fetch_block(hash, nullptr,
-								std::bind(&Node::fetch_result, this, hash, std::placeholders::_1),
-								[this, hash](const vnx::exception&) {
-									fetch_pending.erase(hash);
-								});
+					if(!fetch_pending.count(hash) && height > root->height) {
+						fetch_block(hash);
 						log(WARN) << "Fetching missed block at height " << height << " with hash " << hash;
 					}
 				}
@@ -119,18 +123,24 @@ void Node::update()
 			if(!fork->diff_block) {
 				fork->diff_block = find_diff_header(block);
 			}
-			if(fork->is_invalid || !fork->diff_block) {
-				continue;
+			if(auto prev = fork->prev.lock()) {
+				fork->is_invalid = prev->is_invalid;
+				fork->is_connected = prev->is_connected;
+			} else if(fork->block->prev == root->hash) {
+				fork->is_connected = true;
 			}
 			const auto prev = find_prev_header(block);
-			if(!prev) {
-				continue;	// wait for previous block
+			if(!prev || fork->is_invalid || !fork->diff_block || !fork->is_connected) {
+				continue;
 			}
 			bool vdf_passed = false;
 			if(auto point = find_vdf_point(block->height, prev->vdf_iters, block->vdf_iters, prev->vdf_output, block->vdf_output)) {
 				vdf_passed = true;
 				fork->is_vdf_verified = true;
 				fork->vdf_point = point;
+			}
+			else if(is_synced) {
+				// TODO: fetch missing vdf
 			}
 			if(vdf_passed || !is_synced) {
 				to_verify.push_back(fork);
@@ -190,7 +200,7 @@ void Node::update()
 			}
 			if(!is_synced && fork_line.size() < max_fork_length) {
 				// check if there is a competing fork at this height
-				const auto finalized_height = peak->height - std::min(params->finality_delay + 1, peak->height);
+				const auto finalized_height = peak->height - std::min(params->infuse_delay + 1, peak->height);
 				if(		std::distance(fork_index.lower_bound(block->height), fork_index.upper_bound(block->height)) > 1
 					&&	std::distance(fork_index.lower_bound(finalized_height), fork_index.upper_bound(finalized_height)) > 1)
 				{
@@ -215,8 +225,10 @@ void Node::update()
 		stuck_timer->reset();
 		if(auto fork = find_fork(peak->hash))
 		{
+			auto proof = fork->block->proof;
 			auto vdf_point = fork->vdf_point;
-			log(INFO) << "New peak at height " << peak->height << " with score " << std::to_string(fork->proof_score)
+			log(INFO) << "New peak at height " << peak->height
+					<< " with score " << (proof ? proof->score : params->score_threshold) << (peak->farmer_sig ? "" : " (dummy)")
 					<< (is_synced && forked_at ? ", forked at " + std::to_string(forked_at->height) : "")
 					<< (is_synced && vdf_point ? ", delay " + std::to_string((fork->recv_time - vdf_point->recv_time) / 1e6) + " sec" : "")
 					<< ", took " << elapsed << " sec";
@@ -259,26 +271,19 @@ void Node::update()
 		update_timer->reset();
 		return;
 	}
-	if(light_mode) {
-		return;
-	}
 	{
 		// publish time infusions for VDF 0
 		auto infuse = TimeInfusion::create();
 		infuse->chain = 0;
 		auto vdf_iters = peak->vdf_iters;
-		for(uint32_t i = 0; i <= params->finality_delay; ++i)
+		for(uint32_t i = 0; i <= params->infuse_delay; ++i)
 		{
-			if(auto diff_block = find_diff_header(peak, i + 1))
+			if(auto prev = find_prev_header(peak, params->infuse_delay - i))
 			{
-				if(auto prev = find_prev_header(peak, params->finality_delay - i, true))
-				{
-					if(vdf_iters > 0) {
-						infuse->values[vdf_iters] = prev->hash;
-					}
-				}
-				vdf_iters += diff_block->time_diff * params->time_diff_constant;
+				infuse->values[vdf_iters] = prev->hash;
 			}
+			auto diff_block = get_diff_header(peak, i + 1);
+			vdf_iters += diff_block->time_diff * params->time_diff_constant;
 		}
 		publish(infuse, output_timelord_infuse);
 	}
@@ -290,11 +295,11 @@ void Node::update()
 		{
 			if(prev->height >= params->challenge_interval)
 			{
-				if(auto diff_block = find_prev_header(prev, params->challenge_interval, true))
+				if(auto diff_block = find_prev_header(prev, params->challenge_interval))
 				{
 					auto infuse = TimeInfusion::create();
 					infuse->chain = 1;
-					const auto vdf_iters = prev->vdf_iters + diff_block->time_diff * params->time_diff_constant * params->finality_delay;
+					const auto vdf_iters = prev->vdf_iters + diff_block->time_diff * params->time_diff_constant * params->infuse_delay;
 					infuse->values[vdf_iters] = prev->hash;
 					publish(infuse, output_timelord_infuse);
 				}
@@ -304,22 +309,20 @@ void Node::update()
 	{
 		// request next VDF proofs
 		auto vdf_iters = peak->vdf_iters;
-		for(uint32_t i = 0; i < params->finality_delay; ++i)
+		for(uint32_t i = 0; i < params->infuse_delay; ++i)
 		{
-			if(auto diff_block = find_diff_header(peak, i + 1))
-			{
-				auto request = IntervalRequest::create();
-				request->begin = vdf_iters;
-				if(i == 0) {
-					request->has_start = true;
-					request->start_values = peak->vdf_output;
-				}
-				vdf_iters += diff_block->time_diff * params->time_diff_constant;
-				request->end = vdf_iters;
-				request->height = peak->height + i + 1;
-				request->num_segments = params->num_vdf_segments;
-				publish(request, output_interval_request);
+			auto request = IntervalRequest::create();
+			request->begin = vdf_iters;
+			if(i == 0) {
+				request->has_start = true;
+				request->start_values = peak->vdf_output;
 			}
+			auto diff_block = get_diff_header(peak, i + 1);
+			vdf_iters += diff_block->time_diff * params->time_diff_constant;
+			request->end = vdf_iters;
+			request->height = peak->height + i + 1;
+			request->num_segments = params->num_vdf_segments;
+			publish(request, output_interval_request);
 		}
 	}
 
@@ -327,7 +330,6 @@ void Node::update()
 	{
 		auto prev = peak;
 		bool made_block = false;
-		std::shared_ptr<fork_t> best_fork;
 		for(uint32_t i = 0; prev && i <= 1; ++i)
 		{
 			if(prev->height < root->height) {
@@ -338,21 +340,19 @@ void Node::update()
 			{
 				const auto challenge = get_challenge(prev, vdf_challenge, 1);
 
-				auto iter = proof_map.find(challenge);
-				if(iter != proof_map.end()) {
-					const auto proof = iter->second;
+				for(const auto& response : find_proof(challenge)) {
 					// check if it's our proof
-					if(vnx::get_pipe(proof->farmer_addr))
-					{
-						// check if we have a better proof
-						if(!best_fork || proof->score < best_fork->proof_score) {
+					if(vnx::get_pipe(response->farmer_addr)) {
+						const auto key = std::make_pair(prev->hash, response->proof->calc_hash());
+						if(!created_blocks.count(key)) {
 							try {
-								if(make_block(prev, proof)) {
+								if(auto block = make_block(prev, response)) {
+									add_block(block);
 									made_block = true;
+									created_blocks[key] = block->hash;
 								}
 							}
 							catch(const std::exception& ex) {
-								proof_map.erase(iter);
 								log(WARN) << "Failed to create a block: " << ex.what();
 							}
 							// revert back to peak
@@ -361,7 +361,6 @@ void Node::update()
 					}
 				}
 			}
-			best_fork = find_fork(prev->hash);
 			prev = find_prev_header(prev);
 		}
 		if(made_block) {
@@ -373,18 +372,13 @@ void Node::update()
 	// publish challenges
 	for(uint32_t i = 0; i <= params->challenge_delay; ++i)
 	{
-		hash_t vdf_challenge;
-		if(find_vdf_challenge(peak, vdf_challenge, i))
+		if(auto vdf_block = find_prev_header(peak, params->challenge_delay - i))
 		{
-			const auto challenge = get_challenge(peak, vdf_challenge, i);
-
 			auto value = Challenge::create();
 			value->height = peak->height + i;
-			value->challenge = challenge;
-			if(auto diff_block = find_diff_header(peak, i)) {
-				value->space_diff = diff_block->space_diff;
-				publish(value, output_challenges);
-			}
+			value->challenge = get_challenge(peak, vdf_block->vdf_output[1], i);
+			value->space_diff = get_diff_header(peak, i)->space_diff;
+			publish(value, output_challenges);
 		}
 	}
 }
@@ -409,101 +403,63 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 	for(const auto& iter : tx_pool) {
 		tx_data_t tmp;
 		tmp.tx_pool_t::operator=(iter.second);
+		tmp.cost = tmp.tx->calc_cost(params);
 		all_tx.push_back(tmp);
 	}
 
-	// check for duplicate transactions
-#pragma omp parallel for
-	for(int i = 0; i < int(all_tx.size()); ++i)
-	{
-		auto& entry = all_tx[i];
-		if(tx_map.count(entry.tx->id) || tx_index.find(entry.tx->id)) {
-			entry.duplicate = true;
-		}
-	}
-
-	// purge duplicates from pool first to avoid detecting false dependency
-	size_t num_duplicate = 0;
-	for(const auto& entry : all_tx) {
-		if(entry.duplicate) {
-			num_duplicate += tx_pool.erase(entry.tx->id);
-		}
-	}
-
-	// check for dependency between transactions
-#pragma omp parallel for
-	for(int i = 0; i < int(all_tx.size()); ++i)
-	{
-		auto& entry = all_tx[i];
-		if(entry.duplicate) {
-			continue;
-		}
-		for(const auto& in : entry.tx->inputs) {
-			const auto& prev = in.prev.txid;
-			// check if tx depends on another one which is not in a block yet
-			if(tx_pool.count(prev)) {
-				entry.depends.push_back(prev);
-			}
-		}
-		entry.cost = entry.tx->calc_cost(params);
-	}
-
-	// sort transactions by fee ratio known from previous iterations
+	// sort transactions by fee ratio
 	std::sort(all_tx.begin(), all_tx.end(),
 		[](const tx_data_t& lhs, const tx_data_t& rhs) -> bool {
-			return lhs.fee_ratio > rhs.fee_ratio;
+			return lhs.tx->fee_ratio > rhs.tx->fee_ratio;
 		});
 
 	size_t num_purged = 0;
-	size_t num_dependent = 0;
-	uint64_t total_verify_cost = 0;
+	uint128_t total_pool_cost = 0;
+	uint128_t total_verify_cost = 0;
 	std::vector<tx_data_t> tx_list;
-	std::unordered_multimap<hash_t, hash_t> dependency;
 
+	// purge transactions from pool if overflowing
 	{
-		// purge transactions from pool if overflowing
-		uint64_t total_pool_cost = 0;
-		for(const auto& entry : all_tx) {
-			if(entry.did_validate) {
-				total_pool_cost += entry.cost;
+		vnx::optional<size_t> cutoff;
+		for(size_t i = 0; i < all_tx.size(); ++i) {
+			const auto& entry = all_tx[i];
+			total_pool_cost += entry.cost;
+			if(total_pool_cost > uint128_t(tx_pool_limit) * params->max_block_cost) {
+				if(!cutoff) {
+					*cutoff = i;
+				}
+				num_purged += tx_pool.erase(entry.tx->id);
 			}
 		}
-		for(auto iter = all_tx.rbegin(); iter != all_tx.rend(); ++iter)
-		{
-			if(total_pool_cost <= tx_pool_limit * params->max_block_cost) {
-				break;
-			}
-			if(iter->did_validate) {
-				// only purge transactions where fee ratio is known already
-				num_purged += tx_pool.erase(iter->tx->id);
-				total_pool_cost -= iter->cost;
-				iter->purged = true;
-			}
+		if(cutoff) {
+			all_tx.resize(*cutoff);
 		}
+	}
+	auto context = new_exec_context();
+	{
+		auto base = Context::create();
+		base->height = peak->height + 1;
+		context->block = base;
 	}
 
 	// select transactions to verify
 	for(const auto& entry : all_tx) {
-		if(entry.duplicate || entry.purged) {
+		if(uint32_t(entry.tx->id.to_uint256() & 0x1) != (context->block->height & 0x1)) {
 			continue;
-		}
-		for(const auto& prev : entry.depends) {
-			dependency.emplace(prev, entry.tx->id);
 		}
 		if(only_new && entry.did_validate) {
 			continue;
 		}
-		if(entry.depends.empty()) {
-			if(total_verify_cost + entry.cost <= verify_limit) {
-				tx_list.push_back(entry);
-				total_verify_cost += entry.cost;
-			}
-		} else {
-			num_dependent++;
+		if(total_verify_cost + entry.cost <= verify_limit) {
+			tx_list.push_back(entry);
+			total_verify_cost += entry.cost;
 		}
 	}
-	auto context = Context::create();
-	context->height = peak->height + 1;
+
+	// prepare synchronization
+	for(const auto& entry : tx_list) {
+		setup_context(context, entry.tx);
+	}
 
 	// verify transactions in parallel
 #pragma omp parallel for
@@ -511,23 +467,15 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 	{
 		auto& entry = tx_list[i];
 		auto& tx = entry.tx;
+		context->wait(tx->id);
 		try {
-			if(!tx->exec_outputs.empty()) {
-				auto copy = vnx::clone(tx);
-				copy->exec_outputs.clear();
-				tx = copy;
-			}
-			if(auto new_tx = validate(tx, context, nullptr, entry.fees)) {
+			if(auto new_tx = validate(tx, context, nullptr, entry.fee, entry.cost)) {
 				tx = new_tx;
 			}
-			entry.fee_ratio = entry.fees / double(entry.cost);
-			{
-				auto iter = tx_pool.find(tx->id);
-				if(iter != tx_pool.end()) {
-					auto& info = iter->second;
-					info.did_validate = true;
-					info.fee_ratio = entry.fee_ratio;
-				}
+			auto iter = tx_pool.find(tx->id);
+			if(iter != tx_pool.end()) {
+				auto& info = iter->second;
+				info.did_validate = true;
 			}
 		}
 		catch(const std::exception& ex) {
@@ -536,18 +484,14 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 			}
 			entry.invalid = true;
 		}
+		context->signal(tx->id);
 	}
 
-	// sort transactions by fee ratio
-	std::sort(tx_list.begin(), tx_list.end(),
-		[](const tx_data_t& lhs, const tx_data_t& rhs) -> bool {
-			return lhs.fee_ratio > rhs.fee_ratio;
-		});
-
-	uint64_t total_cost = 0;
+	uint128_t total_cost = 0;
 	std::vector<tx_data_t> result;
-	std::unordered_set<addr_t> mutated;
-	std::unordered_set<txio_key_t> spent;
+	std::unordered_set<addr_t> tx_set;
+	std::multiset<std::pair<hash_t, addr_t>> revoked;
+	balance_cache_t balance_cache(&balance_map);
 
 	// select final set of transactions
 	for(auto& entry : tx_list)
@@ -555,76 +499,81 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 		if(entry.invalid) {
 			continue;
 		}
-		if(total_cost + entry.cost <= select_limit)
+		if(total_cost + entry.cost > select_limit) {
+			continue;
+		}
+		bool passed = true;
+		std::unordered_set<addr_t> tmp_set;
+		std::multiset<std::pair<hash_t, addr_t>> tmp_revoke;
+		balance_cache_t tmp_cache(&balance_cache);
 		{
-			bool passed = true;
-			for(const auto& in : entry.tx->inputs) {
-				// prevent double spending
-				if(!spent.insert(in.prev).second) {
-					entry.invalid = true;
+			auto tx = entry.tx;
+			while(tx) {
+				if(tx_set.count(tx->id)) {
 					passed = false;
 				}
-			}
-			{
-				std::unordered_set<addr_t> addr_set;
-				for(const auto& op : entry.tx->execute) {
-					if(std::dynamic_pointer_cast<const operation::Mutate>(op)) {
-						addr_set.insert(op->address);
-					}
-				}
-				for(const auto& addr : addr_set) {
-					// prevent concurrent mutation
-					if(!mutated.insert(addr).second) {
+				tmp_set.insert(tx->id);
+
+				if(tx->sender) {
+					const auto key = std::make_pair(tx->id, *tx->sender);
+					if(revoked.count(key) || tmp_revoke.count(key)) {
 						passed = false;
 					}
 				}
-			}
-			if(passed) {
-				result.push_back(entry);
-				total_cost += entry.cost;
+				for(const auto& in : tx->get_inputs()) {
+					const auto balance = tmp_cache.get(in.address, in.contract);
+					if(balance || in.amount <= *balance) {
+						*balance -= in.amount;
+					} else {
+						passed = false;
+						entry.invalid = true;
+					}
+				}
+				for(const auto& op : tx->execute) {
+					if(auto revoke = std::dynamic_pointer_cast<const operation::Revoke>(op)) {
+						if(tx_set.count(revoke->txid) || tmp_set.count(revoke->txid)) {
+							passed = false;
+						}
+						tmp_revoke.emplace(revoke->txid, revoke->address);
+					}
+				}
+				tx = tx->parent;
 			}
 		}
+		if(!passed) {
+			continue;
+		}
+		tx_set.insert(tmp_set.begin(), tmp_set.end());
+		revoked.insert(tmp_revoke.begin(), tmp_revoke.end());
+		balance_cache.apply(tmp_cache);
+
+		total_cost += entry.cost;
+		result.push_back(entry);
 	}
 
 	// purge invalid transactions
 	size_t num_invalid = 0;
-	{
-		std::vector<hash_t> invalid;
-		for(const auto& entry : tx_list) {
-			if(entry.invalid) {
-				invalid.push_back(entry.tx->id);
-			}
-		}
-		while(!invalid.empty()) {
-			std::vector<hash_t> more;
-			for(const auto& id : invalid) {
-				const auto range = dependency.equal_range(id);
-				for(auto iter = range.first; iter != range.second; ++iter) {
-					more.push_back(iter->second);
-				}
-				num_invalid += tx_pool.erase(id);
-			}
-			invalid = more;
+	for(const auto& entry : tx_list) {
+		if(entry.invalid) {
+			num_invalid += tx_pool.erase(entry.tx->id);
 		}
 	}
-
 	if(!only_new || !tx_list.empty()) {
 		const auto elapsed = (vnx::get_wall_time_micros() - time_begin) / 1e6;
 		log(INFO) << "Validated" << (only_new ? " new" : "") << " transactions: " << result.size() << " valid, "
-				<< num_invalid << " invalid, " << num_duplicate << " duplicate, " << num_dependent << " dependent, "
-				<< num_purged << " purged, took " << elapsed << " sec";
+				<< num_invalid << " invalid, " << num_purged << " purged, took " << elapsed << " sec";
 	}
 	return result;
 }
 
-bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response)
+std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response)
 {
 	const auto time_begin = vnx::get_wall_time_micros();
 
 	// find VDF output
 	const auto vdf_point = find_next_vdf_point(prev);
 	if(!vdf_point) {
-		return false;
+		return nullptr;
 	}
 
 	// reset state to previous block
@@ -637,6 +586,7 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	block->space_diff = prev->space_diff;
 	block->vdf_iters = vdf_point->vdf_iters;
 	block->vdf_output = vdf_point->output;
+	block->proof = response->proof;
 
 	const auto tx_list = validate_pending(2 * params->max_block_cost, params->max_block_cost, false);
 
@@ -644,65 +594,39 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	uint64_t total_fees = 0;
 	for(const auto& entry : tx_list) {
 		block->tx_list.push_back(entry.tx);
-		total_fees += entry.fees;
+		total_fees += entry.fee;
 	}
 
 	const auto prev_fork = find_fork(prev->hash);
 
 	// set new time difficulty
-	if(auto fork = find_prev_fork(prev_fork, params->finality_delay)) {
+	if(auto fork = find_prev_fork(prev_fork, params->infuse_delay))
+	{
 		if(auto point = fork->vdf_point) {
-			const int64_t time_delta = (vdf_point->recv_time - point->recv_time) / (params->finality_delay + 1);
+			const int64_t time_delta = (vdf_point->recv_time - point->recv_time) / (params->infuse_delay + 1);
 			if(time_delta > 0) {
 				const double gain = 0.1;
 				if(auto diff_block = fork->diff_block) {
 					double new_diff = params->block_time * diff_block->time_diff / (time_delta * 1e-6);
 					new_diff = prev->time_diff * (1 - gain) + new_diff * gain;
-					block->time_diff = std::max<int64_t>(new_diff + 0.5, 1);
+					block->time_diff = std::max<uint64_t>(std::max<int64_t>(new_diff + 0.5, 1), params->min_time_diff);
 				}
 			}
 		}
 	}
 	{
-		// set new space difficulty
-		double avg_score = response->score;
-		{
-			uint32_t counter = 1;
-			auto fork = prev_fork;
-			for(uint32_t i = 1; i < params->finality_delay && fork; ++i) {
-				avg_score += fork->proof_score;
-				fork = fork->prev.lock();
-				counter++;
-			}
-			avg_score /= counter;
-		}
-		// TODO: based on current score only with integer math
-		double delta = prev->space_diff * (params->score_target - avg_score);
-		delta /= params->score_target;
-		delta /= (1 << params->max_diff_adjust);
-
-		int64_t update = 0;
-		if(delta > 0 && delta < 1) {
-			update = 1;
-		} else if(delta < 0 && delta > -1) {
-			update = -1;
-		} else {
-			update = delta + 0.5;
-		}
-		const int64_t new_diff = prev->space_diff + update;
-		block->space_diff = std::max<int64_t>(new_diff, 1);
-	}
-	{
+		// limit time diff update
 		const auto max_update = std::max<uint64_t>(prev->time_diff >> params->max_diff_adjust, 1);
 		block->time_diff = std::min(block->time_diff, prev->time_diff + max_update);
 		block->time_diff = std::max(block->time_diff, prev->time_diff - max_update);
 	}
 	{
-		const auto max_update = std::max<uint64_t>(prev->space_diff >> params->max_diff_adjust, 1);
-		block->space_diff = std::min(block->space_diff, prev->space_diff + max_update);
-		block->space_diff = std::max(block->space_diff, prev->space_diff - max_update);
+		// set new space difficulty
+		block->space_diff = calc_new_space_diff(params, prev->space_diff, response->proof->score);
 	}
-	block->proof = response->proof;
+	const auto diff_block = get_diff_header(prev, 1);
+	block->weight = calc_block_weight(params, diff_block, block->proof, true);
+	block->total_weight = prev->total_weight + block->weight;
 	block->finalize();
 
 	FarmerClient farmer(response->farmer_addr);
@@ -713,19 +637,15 @@ bool Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<c
 	if(!result) {
 		throw std::logic_error("farmer refused to sign block");
 	}
-	block->tx_base = result->tx_base;
-	block->farmer_sig = result->farmer_sig;
-	block->hash = block->calc_hash();
-
-	add_block(block);
+	block->BlockHeader::operator=(*result);
 
 	const auto elapsed = (vnx::get_wall_time_micros() - time_begin) / 1e6;
 	log(INFO) << "Created block at height " << block->height << " with: ntx = " << block->tx_list.size()
-			<< ", score = " << response->score << ", reward = " << final_reward / pow(10, params->decimals) << " MMX"
+			<< ", score = " << response->proof->score << ", reward = " << final_reward / pow(10, params->decimals) << " MMX"
 			<< ", nominal = " << block_reward / pow(10, params->decimals) << " MMX"
 			<< ", fees = " << total_fees / pow(10, params->decimals) << " MMX"
 			<< ", took " << elapsed << " sec";
-	return true;
+	return block;
 }
 
 

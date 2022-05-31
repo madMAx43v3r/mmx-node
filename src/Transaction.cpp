@@ -47,7 +47,8 @@ vnx::bool_t Transaction::is_valid() const
 			return false;
 		}
 	}
-	return calc_hash() == id;
+	return version == 0 && fee_ratio >= 1024 && nonce && solutions.size() <= MAX_SOLUTIONS
+			&& (!parent || parent->is_valid()) && calc_hash() == id;
 }
 
 hash_t Transaction::calc_hash() const
@@ -59,47 +60,46 @@ hash_t Transaction::calc_hash() const
 	buffer.reserve(4 * 1024);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
-	write_bytes(out, nonce);
-	// TODO: write_bytes(out, note);
-	write_bytes(out, salt);
-
-	for(const auto& tx : inputs) {
-		write_bytes(out, tx);
-	}
-	for(const auto& tx : outputs) {
-		write_bytes(out, tx);
-	}
+	write_field(out, "version", version);
+	write_field(out, "expires", expires);
+	write_field(out, "fee_ratio", 	fee_ratio);
+	write_field(out, "note", 	note);
+	write_field(out, "nonce", 	nonce);
+	write_field(out, "salt", 	salt);
+	write_field(out, "sender",	sender);
+	write_field(out, "inputs",	inputs);
+	write_field(out, "outputs", outputs);
+	write_bytes(out, "execute");
+	write_bytes(out, uint64_t(execute.size()));
 	for(const auto& op : execute) {
 		write_bytes(out, op ? op->calc_hash() : hash_t());
 	}
-	write_bytes(out, deploy ? deploy->calc_hash() : hash_t());
+	write_field(out, "deploy", deploy ? deploy->calc_hash() : hash_t());
+	write_field(out, "parent", parent ? parent->calc_hash() : hash_t());
+	write_field(out, "is_extendable", is_extendable);
 
 	out.flush();
 
 	return hash_t(buffer);
 }
 
-void Transaction::add_output(const addr_t& currency, const addr_t& address, const uint64_t& amount, const uint32_t& split)
+void Transaction::add_input(const addr_t& currency, const addr_t& address, const uint64_t& amount)
 {
-	if(split == 0) {
-		throw std::logic_error("split == 0");
-	}
-	if(split > 1000000) {
-		throw std::logic_error("split > 1000000");
-	}
-	if(amount < split) {
-		throw std::logic_error("amount < split");
-	}
-	uint64_t left = amount;
-	for(uint32_t i = 0; i < split; ++i) {
-		tx_out_t out;
-		out.address = address;
-		out.contract = currency;
-		out.amount = i + 1 < split ? amount / split : left;
-		left -= out.amount;
-		outputs.push_back(out);
-	}
+	txin_t in;
+	in.address = address;
+	in.contract = currency;
+	in.amount = amount;
+	inputs.push_back(in);
+}
+
+void Transaction::add_output(const addr_t& currency, const addr_t& address, const uint64_t& amount, const vnx::optional<addr_t>& sender)
+{
+	txout_t out;
+	out.address = address;
+	out.contract = currency;
+	out.amount = amount;
+	out.sender = sender;
+	outputs.push_back(out);
 }
 
 std::shared_ptr<const Solution> Transaction::get_solution(const uint32_t& index) const
@@ -110,7 +110,7 @@ std::shared_ptr<const Solution> Transaction::get_solution(const uint32_t& index)
 	return nullptr;
 }
 
-tx_out_t Transaction::get_output(const uint32_t& index) const
+txout_t Transaction::get_output(const uint32_t& index) const
 {
 	if(index < outputs.size()) {
 		return outputs[index];
@@ -124,11 +124,53 @@ tx_out_t Transaction::get_output(const uint32_t& index) const
 	throw std::logic_error("no such output");
 }
 
-std::vector<tx_out_t> Transaction::get_all_outputs() const
+std::vector<txin_t> Transaction::get_inputs() const
+{
+	auto res = inputs;
+	res.insert(res.end(), exec_inputs.begin(), exec_inputs.end());
+	return res;
+}
+
+std::vector<txout_t> Transaction::get_outputs() const
 {
 	auto res = outputs;
 	res.insert(res.end(), exec_outputs.begin(), exec_outputs.end());
 	return res;
+}
+
+std::vector<txin_t> Transaction::get_all_inputs() const
+{
+	auto out = get_inputs();
+	auto txi = parent;
+	while(txi) {
+		const auto tmp = txi->get_inputs();
+		out.insert(out.begin(), tmp.begin(), tmp.end());
+		txi = txi->parent;
+	}
+	return out;
+}
+
+std::vector<txout_t> Transaction::get_all_outputs() const
+{
+	auto out = get_outputs();
+	auto txi = parent;
+	while(txi) {
+		const auto tmp = txi->get_outputs();
+		out.insert(out.begin(), tmp.begin(), tmp.end());
+		txi = txi->parent;
+	}
+	return out;
+}
+
+std::vector<std::shared_ptr<const Operation>> Transaction::get_all_operations() const
+{
+	auto out = execute;
+	auto tx = parent;
+	while(tx) {
+		out.insert(out.begin(), tx->execute.begin(), tx->execute.end());
+		tx = tx->parent;
+	}
+	return out;
 }
 
 uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
@@ -136,28 +178,35 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 	if(!params) {
 		throw std::logic_error("!params");
 	}
-	uint64_t fee = (inputs.size() + outputs.size()) * params->min_txfee_io;
+	uint128_t cost = params->min_txfee;
+	cost += inputs.size() * params->min_txfee_io;
+	cost += outputs.size() * params->min_txfee_io;
 
 	for(const auto& in : inputs) {
-		if(in.flags & tx_in_t::IS_EXEC) {
-			fee += params->min_txfee_exec;
+		if(in.flags & txin_t::IS_EXEC) {
+			cost += params->min_txfee_exec;
 		}
 	}
 	for(const auto& op : execute) {
 		if(op) {
-			fee += params->min_txfee_exec + op->calc_cost(params);
+			cost += params->min_txfee_exec + op->calc_cost(params);
 		}
 	}
 	for(const auto& sol : solutions) {
 		if(sol) {
-			fee += params->min_txfee_sign;
-			// TODO: fee += sol->calc_cost(params);
+			cost += sol->calc_cost(params);
 		}
 	}
 	if(deploy) {
-		fee += deploy->calc_cost(params);
+		cost += params->min_txfee_deploy + deploy->calc_cost(params);
 	}
-	return fee;
+	if(parent) {
+		cost += parent->calc_cost(params);
+	}
+	if(cost.upper()) {
+		throw std::logic_error("tx cost amount overflow");
+	}
+	return cost;
 }
 
 void Transaction::merge_sign(std::shared_ptr<const Transaction> tx)
@@ -188,8 +237,21 @@ vnx::bool_t Transaction::is_signed() const
 		if(in.solution >= solutions.size()) {
 			return false;
 		}
+		// TODO: handle multi-sig
 	}
 	return true;
+}
+
+std::map<addr_t, std::pair<uint128, uint128>> Transaction::get_balance() const
+{
+	std::map<addr_t, std::pair<uint128, uint128>> balance;
+	for(const auto& in : get_all_inputs()) {
+		balance[in.contract].first += in.amount;
+	}
+	for(const auto& out : get_all_outputs()) {
+		balance[out.contract].second += out.amount;
+	}
+	return balance;
 }
 
 

@@ -18,6 +18,9 @@ class BLS_Wallet {
 public:
 	BLS_Wallet(std::shared_ptr<const KeyFile> key_file, const int port)
 	{
+		if(key_file->seed_value == hash_t()) {
+			throw std::logic_error("seed == zero");
+		}
 		bls::AugSchemeMPL MPL;
 		const bls::PrivateKey master_sk = MPL.KeyGen(key_file->seed_value.to_vector());
 		this->master_sk = std::make_shared<bls::PrivateKey>(master_sk);

@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Transaction_add_output::VNX_TYPE_HASH(0x479ef0d3de1f6ea3ull);
-const vnx::Hash64 Transaction_add_output::VNX_CODE_HASH(0xeebb1b27bb949142ull);
+const vnx::Hash64 Transaction_add_output::VNX_CODE_HASH(0x8aeb0e0810bfadbcull);
 
 vnx::Hash64 Transaction_add_output::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -50,7 +50,7 @@ void Transaction_add_output::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, currency);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, address);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, amount);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, split);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, sender);
 	_visitor.type_end(*_type_code);
 }
 
@@ -59,7 +59,7 @@ void Transaction_add_output::write(std::ostream& _out) const {
 	_out << ", \"currency\": "; vnx::write(_out, currency);
 	_out << ", \"address\": "; vnx::write(_out, address);
 	_out << ", \"amount\": "; vnx::write(_out, amount);
-	_out << ", \"split\": "; vnx::write(_out, split);
+	_out << ", \"sender\": "; vnx::write(_out, sender);
 	_out << "}";
 }
 
@@ -75,7 +75,7 @@ vnx::Object Transaction_add_output::to_object() const {
 	_object["currency"] = currency;
 	_object["address"] = address;
 	_object["amount"] = amount;
-	_object["split"] = split;
+	_object["sender"] = sender;
 	return _object;
 }
 
@@ -87,8 +87,8 @@ void Transaction_add_output::from_object(const vnx::Object& _object) {
 			_entry.second.to(amount);
 		} else if(_entry.first == "currency") {
 			_entry.second.to(currency);
-		} else if(_entry.first == "split") {
-			_entry.second.to(split);
+		} else if(_entry.first == "sender") {
+			_entry.second.to(sender);
 		}
 	}
 }
@@ -103,8 +103,8 @@ vnx::Variant Transaction_add_output::get_field(const std::string& _name) const {
 	if(_name == "amount") {
 		return vnx::Variant(amount);
 	}
-	if(_name == "split") {
-		return vnx::Variant(split);
+	if(_name == "sender") {
+		return vnx::Variant(sender);
 	}
 	return vnx::Variant();
 }
@@ -116,8 +116,8 @@ void Transaction_add_output::set_field(const std::string& _name, const vnx::Vari
 		_value.to(address);
 	} else if(_name == "amount") {
 		_value.to(amount);
-	} else if(_name == "split") {
-		_value.to(split);
+	} else if(_name == "sender") {
+		_value.to(sender);
 	}
 }
 
@@ -145,7 +145,7 @@ std::shared_ptr<vnx::TypeCode> Transaction_add_output::static_create_type_code()
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Transaction.add_output";
 	type_code->type_hash = vnx::Hash64(0x479ef0d3de1f6ea3ull);
-	type_code->code_hash = vnx::Hash64(0xeebb1b27bb949142ull);
+	type_code->code_hash = vnx::Hash64(0x8aeb0e0810bfadbcull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -173,10 +173,9 @@ std::shared_ptr<vnx::TypeCode> Transaction_add_output::static_create_type_code()
 	}
 	{
 		auto& field = type_code->fields[3];
-		field.data_size = 4;
-		field.name = "split";
-		field.value = vnx::to_string(1);
-		field.code = {3};
+		field.is_extended = true;
+		field.name = "sender";
+		field.code = {33, 11, 32, 1};
 	}
 	type_code->build();
 	return type_code;
@@ -223,14 +222,12 @@ void read(TypeInput& in, ::mmx::Transaction_add_output& value, const TypeCode* t
 		if(const auto* const _field = type_code->field_map[2]) {
 			vnx::read_value(_buf + _field->offset, value.amount, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[3]) {
-			vnx::read_value(_buf + _field->offset, value.split, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.currency, type_code, _field->code.data()); break;
 			case 1: vnx::read(in, value.address, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.sender, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -249,11 +246,11 @@ void write(TypeOutput& out, const ::mmx::Transaction_add_output& value, const Ty
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(12);
+	char* const _buf = out.write(8);
 	vnx::write_value(_buf + 0, value.amount);
-	vnx::write_value(_buf + 8, value.split);
 	vnx::write(out, value.currency, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.address, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.sender, type_code, type_code->fields[3].code.data());
 }
 
 void read(std::istream& in, ::mmx::Transaction_add_output& value) {

@@ -19,21 +19,22 @@ hash_t Mutate::calc_hash() const
 	vnx::OutputBuffer out(&stream);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
-	write_bytes(out, address);
-	write_bytes(out, method);
+	write_field(out, "version", version);
+	write_field(out, "address", address);
+	write_field(out, "method", 	method);
 	out.flush();
 
 	return hash_t(buffer);
 }
 
-uint64_t Mutate::calc_cost(std::shared_ptr<const ChainParams> params) const {
-	uint32_t payload = 0;
+uint64_t Mutate::calc_cost(std::shared_ptr<const ChainParams> params) const
+{
+	uint64_t payload = 0;
 	for(const auto& entry : method.field) {
 		payload += entry.first.size();
 		payload += entry.second.data.size();
 	}
-	return (8 + 4 + 32 + payload) * params->min_txfee_byte * 3;
+	return Super::calc_cost(params) + payload * params->min_txfee_byte * 3;
 }
 
 

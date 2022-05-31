@@ -1,0 +1,16 @@
+package mmx;
+
+struct address_info_t {
+	
+	addr_t address;
+	
+	uint num_spend;
+	uint num_receive;
+	
+	uint last_spend_height;
+	uint last_receive_height;
+	
+	map<addr_t, uint128> total_spend;
+	map<addr_t, uint128> total_receive;
+	
+}

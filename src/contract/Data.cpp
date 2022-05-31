@@ -19,16 +19,22 @@ hash_t Data::calc_hash() const
 	vnx::OutputBuffer out(&stream);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
-	write_bytes(out, owner);
-	write_bytes(out, value);
+	write_field(out, "version", version);
+	write_field(out, "owner", 	owner);
+	write_field(out, "value", 	value);
 	out.flush();
 
 	return hash_t(buffer);
 }
 
-uint64_t Data::calc_cost(std::shared_ptr<const ChainParams> params) const {
-	return (8 + 4 + (owner ? 32 : 0) + value.size()) * params->min_txfee_byte;
+uint64_t Data::num_bytes() const
+{
+	return value.size();
+}
+
+uint64_t Data::calc_cost(std::shared_ptr<const ChainParams> params) const
+{
+	return num_bytes() * params->min_txfee_byte;
 }
 
 std::vector<addr_t> Data::get_dependency() const {
@@ -38,15 +44,11 @@ std::vector<addr_t> Data::get_dependency() const {
 	return {};
 }
 
-std::vector<addr_t> Data::get_parties() const {
-	return get_dependency();
-}
-
 vnx::optional<addr_t> Data::get_owner() const {
 	return owner;
 }
 
-std::vector<tx_out_t> Data::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
+std::vector<txout_t> Data::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
 	if(!owner) {
 		throw std::logic_error("!owner");

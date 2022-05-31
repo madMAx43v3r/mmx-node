@@ -4,6 +4,7 @@
 #include <mmx/package.hxx>
 #include <mmx/Node_get_total_balances_return.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -13,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_total_balances_return::VNX_TYPE_HASH(0x9332c7a83f7644d7ull);
-const vnx::Hash64 Node_get_total_balances_return::VNX_CODE_HASH(0x329e353899d4f81eull);
+const vnx::Hash64 Node_get_total_balances_return::VNX_CODE_HASH(0xf94eb47d52857af5ull);
 
 vnx::Hash64 Node_get_total_balances_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -114,7 +115,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_total_balances_return::static_create_typ
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_total_balances.return";
 	type_code->type_hash = vnx::Hash64(0x9332c7a83f7644d7ull);
-	type_code->code_hash = vnx::Hash64(0x329e353899d4f81eull);
+	type_code->code_hash = vnx::Hash64(0xf94eb47d52857af5ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
@@ -125,7 +126,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_total_balances_return::static_create_typ
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "_ret_0";
-		field.code = {13, 5, 11, 32, 1, 4};
+		field.code = {13, 5, 11, 32, 1, 11, 16, 1};
 	}
 	type_code->build();
 	return type_code;

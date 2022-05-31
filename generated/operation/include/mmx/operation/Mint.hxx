@@ -5,7 +5,6 @@
 #define INCLUDE_mmx_operation_Mint_HXX_
 
 #include <mmx/operation/package.hxx>
-#include <mmx/ChainParams.hxx>
 #include <mmx/Operation.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
@@ -16,7 +15,7 @@ namespace operation {
 
 class MMX_OPERATION_EXPORT Mint : public ::mmx::Operation {
 public:
-	static const uint64_t max_amount = 1000000000000;
+	static const uint64_t MAX_AMOUNT = 1000000000000;
 	
 	::mmx::addr_t target;
 	uint64_t amount = 0;
@@ -36,7 +35,6 @@ public:
 	
 	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_hash() const override;
-	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	
 	static std::shared_ptr<Mint> create();
 	std::shared_ptr<vnx::Value> clone() const override;

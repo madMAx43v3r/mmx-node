@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_NetworkInfo_HXX_
 
 #include <mmx/package.hxx>
+#include <mmx/hash_t.hpp>
 #include <vnx/Value.h>
 
 
@@ -20,8 +21,8 @@ public:
 	uint64_t block_reward = 0;
 	uint64_t total_space = 0;
 	uint64_t total_supply = 0;
-	uint64_t utxo_count = 0;
 	uint64_t address_count = 0;
+	::mmx::hash_t genesis_hash;
 	
 	typedef ::vnx::Value Super;
 	
@@ -76,8 +77,8 @@ void NetworkInfo::accept_generic(T& _visitor) const {
 	_visitor.type_field("block_reward", 4); _visitor.accept(block_reward);
 	_visitor.type_field("total_space", 5); _visitor.accept(total_space);
 	_visitor.type_field("total_supply", 6); _visitor.accept(total_supply);
-	_visitor.type_field("utxo_count", 7); _visitor.accept(utxo_count);
-	_visitor.type_field("address_count", 8); _visitor.accept(address_count);
+	_visitor.type_field("address_count", 7); _visitor.accept(address_count);
+	_visitor.type_field("genesis_hash", 8); _visitor.accept(genesis_hash);
 	_visitor.template type_end<NetworkInfo>(9);
 }
 

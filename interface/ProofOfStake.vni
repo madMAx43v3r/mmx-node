@@ -1,0 +1,14 @@
+package mmx;
+
+class ProofOfStake extends ProofOfSpace {
+	
+	addr_t contract;
+	
+	bls_signature_t farmer_sig;
+	
+	
+	hash_t calc_hash() const;
+	
+	void validate() const;
+	
+}

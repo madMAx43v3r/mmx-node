@@ -7,6 +7,7 @@
 #include <mmx/package.hxx>
 #include <mmx/Challenge.hxx>
 #include <mmx/ProofOfSpace.hxx>
+#include <mmx/bls_signature_t.hpp>
 #include <vnx/Hash64.hpp>
 #include <vnx/Value.h>
 
@@ -18,7 +19,7 @@ public:
 	
 	std::shared_ptr<const ::mmx::Challenge> request;
 	std::shared_ptr<const ::mmx::ProofOfSpace> proof;
-	uint32_t score = 0;
+	::mmx::bls_signature_t farmer_sig;
 	::vnx::Hash64 farmer_addr;
 	
 	typedef ::vnx::Value Super;
@@ -72,7 +73,7 @@ void ProofResponse::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<ProofResponse>(4);
 	_visitor.type_field("request", 0); _visitor.accept(request);
 	_visitor.type_field("proof", 1); _visitor.accept(proof);
-	_visitor.type_field("score", 2); _visitor.accept(score);
+	_visitor.type_field("farmer_sig", 2); _visitor.accept(farmer_sig);
 	_visitor.type_field("farmer_addr", 3); _visitor.accept(farmer_addr);
 	_visitor.template type_end<ProofResponse>(4);
 }

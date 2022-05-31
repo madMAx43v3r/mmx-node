@@ -9,6 +9,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/tx_type_e.hxx>
+#include <mmx/uint128.hpp>
 
 
 namespace mmx {
@@ -21,7 +22,7 @@ struct MMX_EXPORT tx_entry_t {
 	::mmx::tx_type_e type;
 	::mmx::addr_t address;
 	::mmx::addr_t contract;
-	uint64_t amount = 0;
+	::mmx::uint128 amount;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;

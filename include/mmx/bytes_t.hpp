@@ -13,9 +13,6 @@
 #include <string>
 #include <cstdint>
 
-#include <bls.hpp>
-#include <vnx/Input.hpp>
-#include <vnx/Output.hpp>
 #include <vnx/Variant.hpp>
 #include <vnx/Hash64.hpp>
 
@@ -23,8 +20,8 @@
 namespace mmx {
 
 template<size_t N>
-struct bytes_t {
-
+class bytes_t {
+public:
 	std::array<uint8_t, N> bytes = {};
 
 	bytes_t() = default;
@@ -110,7 +107,7 @@ bool bytes_t<N>::is_zero() const {
 
 template<size_t N>
 std::string bytes_t<N>::to_string() const {
-	return bls::Util::HexStr(bytes.data(), bytes.size());
+	return vnx::to_hex_string(bytes.data(), N, false);
 }
 
 template<size_t N>
@@ -120,19 +117,22 @@ vnx::Hash64 bytes_t<N>::crc64() const {
 
 template<size_t N>
 std::vector<uint8_t> bytes_t<N>::to_vector() const {
-	std::vector<uint8_t> res(N);
-	::memcpy(res.data(), bytes.data(), N);
-	return res;
+	return std::vector<uint8_t>(bytes.begin(), bytes.end());
 }
 
 template<size_t N>
 void bytes_t<N>::from_string(const std::string& str)
 {
-	const auto tmp = bls::Util::HexToBytes(str);
-	if(tmp.size() != bytes.size()) {
+	size_t off = 0;
+	if(str.substr(0, 2) == "0x") {
+		off = 2;
+	}
+	if(str.size() - off != N * 2) {
 		throw std::logic_error("input size mismatch");
 	}
-	::memcpy(bytes.data(), tmp.data(), tmp.size());
+	for(size_t i = 0; i < N; ++i) {
+		bytes[i] = std::stoul(str.substr(off + i * 2, 2), nullptr, 16);
+	}
 }
 
 template<size_t N>
@@ -142,9 +142,16 @@ std::ostream& operator<<(std::ostream& out, const bytes_t<N>& bytes) {
 
 template<size_t N, size_t M>
 std::vector<uint8_t> operator+(const bytes_t<N>& lhs, const bytes_t<M>& rhs) {
-	std::vector<uint8_t> res(N + M);
-	::memcpy(res.data(), lhs.bytes.data(), N);
-	::memcpy(res.data() + N, rhs.bytes.data(), M);
+	std::vector<uint8_t> res;
+	res.insert(res.end(), lhs.bytes.begin(), lhs.bytes.end());
+	res.insert(res.end(), rhs.bytes.begin(), rhs.bytes.end());
+	return res;
+}
+
+template<size_t N>
+std::vector<uint8_t> operator+(const std::vector<uint8_t>& lhs, const bytes_t<N>& rhs) {
+	auto res = lhs;
+	res.insert(res.end(), rhs.bytes.begin(), rhs.bytes.end());
 	return res;
 }
 
@@ -154,8 +161,7 @@ std::vector<uint8_t> operator+(const bytes_t<N>& lhs, const bytes_t<M>& rhs) {
 namespace vnx {
 
 template<size_t N>
-void read(vnx::TypeInput& in, mmx::bytes_t<N>& value, const vnx::TypeCode* type_code, const uint16_t* code)
-{
+void read(vnx::TypeInput& in, mmx::bytes_t<N>& value, const vnx::TypeCode* type_code, const uint16_t* code) {
 	switch(code[0]) {
 		case CODE_STRING:
 		case CODE_ALT_STRING: {
@@ -180,17 +186,13 @@ void read(vnx::TypeInput& in, mmx::bytes_t<N>& value, const vnx::TypeCode* type_
 			vnx::Variant tmp;
 			vnx::read(in, tmp, type_code, code);
 			if(tmp.is_string()) {
-				std::string str;
-				tmp.to(str);
 				try {
-					value.from_string(str);
+					value.from_string(tmp.to<std::string>());
 				} catch(...) {
 					value = mmx::bytes_t<N>();
 				}
 			} else {
-				std::array<uint8_t, N> array;
-				tmp.to(array);
-				value = array;
+				tmp.to(value.bytes);
 			}
 			break;
 		}

@@ -1,0 +1,19 @@
+package mmx.contract;
+
+struct method_t {
+	
+	string name;
+	string info;
+	
+	bool is_const;
+	bool is_public;
+	bool is_payable;
+	
+	uint entry_point;
+	
+	vector<string> args;
+	
+	
+	ulong num_bytes() const;
+	
+}

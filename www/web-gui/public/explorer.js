@@ -430,6 +430,14 @@ app.component('transaction-view', {
 					<td class="two wide">Confirmed</td>
 					<td colspan="2">{{data.confirm}}</td>
 				</tr>
+				<tr v-if="data.expires != 4294967295">
+					<td class="two wide">Expires</td>
+					<td colspan="2">{{data.expires}}</td>
+				</tr>
+				<tr>
+					<td class="two wide">Note</td>
+					<td colspan="2">{{data.note}}</td>
+				</tr>
 				<tr v-if="data.time">
 					<td class="two wide">Time</td>
 					<td colspan="2">{{new Date(data.time * 1000).toLocaleString()}}</td>
@@ -437,6 +445,10 @@ app.component('transaction-view', {
 				<tr v-if="data.deployed">
 					<td class="two wide">Address</td>
 					<td colspan="2"><router-link :to="'/explore/address/' + data.address">{{data.address}}</router-link></td>
+				</tr>
+				<tr v-if="data.sender">
+					<td class="two wide">Sender</td>
+					<td colspan="2"><router-link :to="'/explore/address/' + data.sender">{{data.sender}}</router-link></td>
 				</tr>
 				<tr>
 					<td class="two wide">Cost</td>
@@ -457,21 +469,19 @@ app.component('transaction-view', {
 					<th>Amount</th>
 					<th>Token</th>
 					<th>Address</th>
-					<th></th>
 				</tr>
 				</thead>
 				<tbody>
 				<tr v-for="(item, index) in data.inputs" :key="index">
 					<td class="two wide">Input[{{index}}]</td>
-					<td class="collapsing"><b>{{item.utxo.value}}</b></td>
-					<template v-if="item.utxo.is_native">
-						<td>{{item.utxo.symbol}}</td>
+					<td class="collapsing"><b>{{item.value}}</b></td>
+					<template v-if="item.is_native">
+						<td>{{item.symbol}}</td>
 					</template>
-					<template v-if="!item.utxo.is_native">
-						<td><router-link :to="'/explore/address/' + item.utxo.contract">{{item.utxo.is_nft ? "[NFT]" : item.utxo.symbol}}</router-link></td>
+					<template v-if="!item.is_native">
+						<td><router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}</router-link></td>
 					</template>
-					<td><router-link :to="'/explore/address/' + item.utxo.address">{{item.utxo.address}}</router-link></td>
-					<td><router-link :to="'/explore/transaction/' + item.prev.txid">Prev</router-link></td>
+					<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
 				</tr>
 				</tbody>
 			</table>
@@ -482,21 +492,19 @@ app.component('transaction-view', {
 					<th>Amount</th>
 					<th>Token</th>
 					<th>Address</th>
-					<th></th>
 				</tr>
 				</thead>
 				<tbody>
 				<tr v-for="(item, index) in data.outputs" :key="index">
 					<td class="two wide">Output[{{index}}]</td>
-					<td class="collapsing"><b>{{item.output.value}}</b></td>
-					<template v-if="item.output.is_native">
-						<td>{{item.output.symbol}}</td>
+					<td class="collapsing"><b>{{item.value}}</b></td>
+					<template v-if="item.is_native">
+						<td>{{item.symbol}}</td>
 					</template>
-					<template v-if="!item.output.is_native">
-						<td><router-link :to="'/explore/address/' + item.output.contract">{{item.output.is_nft ? "[NFT]" : item.output.symbol}}</router-link></td>
+					<template v-if="!item.is_native">
+						<td><router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}</router-link></td>
 					</template>
-					<td><router-link :to="'/explore/address/' + item.output.address">{{item.output.address}}</router-link></td>
-					<td><template v-if="item.spent"><router-link :to="'/explore/transaction/' + item.spent.txid">Next</router-link></template></td>
+					<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
 				</tr>
 				</tbody>
 			</table>

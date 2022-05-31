@@ -1,5 +1,7 @@
 package mmx;
 
+extern uint128 = {11, 16, 1};
+
 extern hash_t = {11, 32, 1};
 extern addr_t = {11, 32, 1};
 

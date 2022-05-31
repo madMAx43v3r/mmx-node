@@ -14,7 +14,8 @@ class NetworkInfo {
 	ulong total_space;			// [bytes]
 	ulong total_supply;			// MMX * 1e6
 	
-	ulong utxo_count;
 	ulong address_count;
+	
+	hash_t genesis_hash;
 	
 }

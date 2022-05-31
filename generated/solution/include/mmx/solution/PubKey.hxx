@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_solution_PubKey_HXX_
 
 #include <mmx/solution/package.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/pubkey_t.hpp>
 #include <mmx/signature_t.hpp>
@@ -32,7 +33,7 @@ public:
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
 	
-	virtual vnx::bool_t is_valid() const override;
+	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	
 	static std::shared_ptr<PubKey> create();
 	std::shared_ptr<vnx::Value> clone() const override;

@@ -6,9 +6,8 @@
 
 #include <vnx/Type.h>
 #include <mmx/package.hxx>
+#include <mmx/Contract.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/txio_key_t.hxx>
-#include <mmx/utxo_t.hxx>
 
 
 namespace mmx {
@@ -17,14 +16,12 @@ struct MMX_EXPORT spend_options_t {
 	
 	
 	uint32_t min_confirm = 1;
-	uint32_t split_output = 1;
+	uint32_t fee_ratio = 1024;
 	uint64_t extra_fee = 0;
-	vnx::bool_t over_spend = true;
-	vnx::bool_t pending_change = false;
-	vnx::optional<::mmx::addr_t> change_addr;
-	std::vector<::mmx::txio_key_t> exclude;
-	std::vector<std::pair<::mmx::addr_t, ::mmx::addr_t>> owner_map;
-	std::vector<std::pair<::mmx::txio_key_t, ::mmx::utxo_t>> utxo_map;
+	vnx::optional<::mmx::addr_t> user;
+	vnx::optional<::mmx::addr_t> sender;
+	std::map<::mmx::addr_t, ::mmx::addr_t> owner_map;
+	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> contract_map;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -66,17 +63,15 @@ struct MMX_EXPORT spend_options_t {
 
 template<typename T>
 void spend_options_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<spend_options_t>(9);
+	_visitor.template type_begin<spend_options_t>(7);
 	_visitor.type_field("min_confirm", 0); _visitor.accept(min_confirm);
-	_visitor.type_field("split_output", 1); _visitor.accept(split_output);
+	_visitor.type_field("fee_ratio", 1); _visitor.accept(fee_ratio);
 	_visitor.type_field("extra_fee", 2); _visitor.accept(extra_fee);
-	_visitor.type_field("over_spend", 3); _visitor.accept(over_spend);
-	_visitor.type_field("pending_change", 4); _visitor.accept(pending_change);
-	_visitor.type_field("change_addr", 5); _visitor.accept(change_addr);
-	_visitor.type_field("exclude", 6); _visitor.accept(exclude);
-	_visitor.type_field("owner_map", 7); _visitor.accept(owner_map);
-	_visitor.type_field("utxo_map", 8); _visitor.accept(utxo_map);
-	_visitor.template type_end<spend_options_t>(9);
+	_visitor.type_field("user", 3); _visitor.accept(user);
+	_visitor.type_field("sender", 4); _visitor.accept(sender);
+	_visitor.type_field("owner_map", 5); _visitor.accept(owner_map);
+	_visitor.type_field("contract_map", 6); _visitor.accept(contract_map);
+	_visitor.template type_end<spend_options_t>(7);
 }
 
 

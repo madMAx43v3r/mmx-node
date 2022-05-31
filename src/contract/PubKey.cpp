@@ -13,8 +13,9 @@
 namespace mmx {
 namespace contract {
 
-vnx::bool_t PubKey::is_valid() const {
-	return Contract::is_valid() && address != addr_t();
+vnx::bool_t PubKey::is_valid() const
+{
+	return Super::is_valid() && address != addr_t();
 }
 
 hash_t PubKey::calc_hash() const
@@ -24,30 +25,26 @@ hash_t PubKey::calc_hash() const
 	vnx::OutputBuffer out(&stream);
 
 	write_bytes(out, get_type_hash());
-	write_bytes(out, version);
-	write_bytes(out, address);
+	write_field(out, "version", version);
+	write_field(out, "address", address);
 	out.flush();
 
 	return hash_t(buffer);
 }
 
 uint64_t PubKey::calc_cost(std::shared_ptr<const ChainParams> params) const {
-	return (8 + 4 + 32) * params->min_txfee_byte;
+	return 0;
 }
 
 std::vector<addr_t> PubKey::get_dependency() const {
 	return {};
 }
 
-std::vector<addr_t> PubKey::get_parties() const {
-	return {address};
-}
-
 vnx::optional<addr_t> PubKey::get_owner() const {
 	return address;
 }
 
-std::vector<tx_out_t> PubKey::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
+std::vector<txout_t> PubKey::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
 {
 	if(auto solution = std::dynamic_pointer_cast<const solution::PubKey>(operation->solution))
 	{

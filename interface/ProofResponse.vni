@@ -6,9 +6,7 @@ class ProofResponse {
 	
 	ProofOfSpace* proof;
 	
-	// TOOD: farmer_sig for proof
-	
-	uint score;
+	bls_signature_t farmer_sig;
 	
 	vnx.Hash64 farmer_addr;
 	

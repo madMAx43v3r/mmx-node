@@ -28,9 +28,9 @@ class MMX_EXPORT RouterBase : public ::vnx::addons::MsgServer {
 public:
 	
 	::vnx::TopicPtr input_vdfs = "timelord.proofs";
-	::vnx::TopicPtr input_blocks = "node.verified_blocks";
 	::vnx::TopicPtr input_verified_vdfs = "node.verified_vdfs";
 	::vnx::TopicPtr input_verified_proof = "node.verified_proof";
+	::vnx::TopicPtr input_verified_blocks = "node.verified_blocks";
 	::vnx::TopicPtr input_verified_transactions = "node.verified_transactions";
 	::vnx::TopicPtr input_transactions = "node.transactions";
 	::vnx::TopicPtr output_vdfs = "network.vdfs";
@@ -149,9 +149,9 @@ void RouterBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("show_warnings", 10); _visitor.accept(show_warnings);
 	_visitor.type_field("max_msg_size", 11); _visitor.accept(max_msg_size);
 	_visitor.type_field("input_vdfs", 12); _visitor.accept(input_vdfs);
-	_visitor.type_field("input_blocks", 13); _visitor.accept(input_blocks);
-	_visitor.type_field("input_verified_vdfs", 14); _visitor.accept(input_verified_vdfs);
-	_visitor.type_field("input_verified_proof", 15); _visitor.accept(input_verified_proof);
+	_visitor.type_field("input_verified_vdfs", 13); _visitor.accept(input_verified_vdfs);
+	_visitor.type_field("input_verified_proof", 14); _visitor.accept(input_verified_proof);
+	_visitor.type_field("input_verified_blocks", 15); _visitor.accept(input_verified_blocks);
 	_visitor.type_field("input_verified_transactions", 16); _visitor.accept(input_verified_transactions);
 	_visitor.type_field("input_transactions", 17); _visitor.accept(input_transactions);
 	_visitor.type_field("output_vdfs", 18); _visitor.accept(output_vdfs);

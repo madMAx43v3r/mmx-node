@@ -17,8 +17,8 @@
 
 namespace mmx {
 
-struct bls_signature_t : bytes_t<96> {
-
+class bls_signature_t : public bytes_t<96> {
+public:
 	typedef bytes_t<96> super_t;
 
 	bls_signature_t() = default;

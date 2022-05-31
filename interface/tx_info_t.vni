@@ -4,6 +4,8 @@ class tx_info_t {
 	
 	hash_t id;
 	
+	uint expires;
+	
 	optional<uint> height;
 	optional<hash_t> block;
 	
@@ -12,15 +14,21 @@ class tx_info_t {
 	
 	tx_note_e note;
 	
-	vector<txi_info_t> inputs;
-	vector<txo_info_t> outputs;
+	bool is_extendable;
+	
+	optional<addr_t> sender;
+	
+	vector<txin_t> inputs;
+	vector<txout_t> outputs;
 	
 	vector<Operation*> operations;
 	
+	vector<hash_t> parents;
+	
 	Contract* deployed;
 	
-	map<addr_t, ulong> input_amounts;
-	map<addr_t, ulong> output_amounts;
+	map<addr_t, uint128> input_amounts;
+	map<addr_t, uint128> output_amounts;
 	
 	map<addr_t, Contract*> contracts;
 	

@@ -4,6 +4,7 @@
 #include <mmx/contract/package.hxx>
 #include <mmx/contract/WebData.hxx>
 #include <mmx/ChainParams.hxx>
+#include <mmx/Context.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/Contract_calc_cost.hxx>
 #include <mmx/Contract_calc_cost_return.hxx>
@@ -13,23 +14,36 @@
 #include <mmx/Contract_get_dependency_return.hxx>
 #include <mmx/Contract_get_owner.hxx>
 #include <mmx/Contract_get_owner_return.hxx>
-#include <mmx/Contract_get_parties.hxx>
-#include <mmx/Contract_get_parties_return.hxx>
-#include <mmx/Contract_is_spendable.hxx>
-#include <mmx/Contract_is_spendable_return.hxx>
+#include <mmx/Contract_is_locked.hxx>
+#include <mmx/Contract_is_locked_return.hxx>
 #include <mmx/Contract_is_valid.hxx>
 #include <mmx/Contract_is_valid_return.hxx>
 #include <mmx/Contract_transfer.hxx>
 #include <mmx/Contract_transfer_return.hxx>
 #include <mmx/Contract_validate.hxx>
 #include <mmx/Contract_validate_return.hxx>
+#include <mmx/Operation.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/contract/WebData_calc_cost.hxx>
 #include <mmx/contract/WebData_calc_cost_return.hxx>
 #include <mmx/contract/WebData_calc_hash.hxx>
 #include <mmx/contract/WebData_calc_hash_return.hxx>
+#include <mmx/contract/WebData_get_dependency.hxx>
+#include <mmx/contract/WebData_get_dependency_return.hxx>
+#include <mmx/contract/WebData_get_owner.hxx>
+#include <mmx/contract/WebData_get_owner_return.hxx>
 #include <mmx/contract/WebData_is_valid.hxx>
 #include <mmx/contract/WebData_is_valid_return.hxx>
+#include <mmx/contract/WebData_num_bytes.hxx>
+#include <mmx/contract/WebData_num_bytes_return.hxx>
+#include <mmx/contract/WebData_transfer.hxx>
+#include <mmx/contract/WebData_transfer_return.hxx>
+#include <mmx/contract/WebData_update.hxx>
+#include <mmx/contract/WebData_update_return.hxx>
+#include <mmx/contract/WebData_validate.hxx>
+#include <mmx/contract/WebData_validate_return.hxx>
 #include <mmx/hash_t.hpp>
+#include <mmx/txout_t.hxx>
 #include <vnx/Buffer.hpp>
 
 #include <vnx/vnx.h>
@@ -40,7 +54,7 @@ namespace contract {
 
 
 const vnx::Hash64 WebData::VNX_TYPE_HASH(0xf7c226b211c088c4ull);
-const vnx::Hash64 WebData::VNX_CODE_HASH(0x1f49299db4776797ull);
+const vnx::Hash64 WebData::VNX_CODE_HASH(0xd8f8e56963da97f2ull);
 
 vnx::Hash64 WebData::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -74,14 +88,16 @@ void WebData::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::contract::vnx_native_type_code_WebData;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, version);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, mime_type);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, payload);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, owner);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, mime_type);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, payload);
 	_visitor.type_end(*_type_code);
 }
 
 void WebData::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.contract.WebData\"";
 	_out << ", \"version\": "; vnx::write(_out, version);
+	_out << ", \"owner\": "; vnx::write(_out, owner);
 	_out << ", \"mime_type\": "; vnx::write(_out, mime_type);
 	_out << ", \"payload\": "; vnx::write(_out, payload);
 	_out << "}";
@@ -97,6 +113,7 @@ vnx::Object WebData::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.contract.WebData";
 	_object["version"] = version;
+	_object["owner"] = owner;
 	_object["mime_type"] = mime_type;
 	_object["payload"] = payload;
 	return _object;
@@ -106,6 +123,8 @@ void WebData::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "mime_type") {
 			_entry.second.to(mime_type);
+		} else if(_entry.first == "owner") {
+			_entry.second.to(owner);
 		} else if(_entry.first == "payload") {
 			_entry.second.to(payload);
 		} else if(_entry.first == "version") {
@@ -117,6 +136,9 @@ void WebData::from_object(const vnx::Object& _object) {
 vnx::Variant WebData::get_field(const std::string& _name) const {
 	if(_name == "version") {
 		return vnx::Variant(version);
+	}
+	if(_name == "owner") {
+		return vnx::Variant(owner);
 	}
 	if(_name == "mime_type") {
 		return vnx::Variant(mime_type);
@@ -130,6 +152,8 @@ vnx::Variant WebData::get_field(const std::string& _name) const {
 void WebData::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "version") {
 		_value.to(version);
+	} else if(_name == "owner") {
+		_value.to(owner);
 	} else if(_name == "mime_type") {
 		_value.to(mime_type);
 	} else if(_name == "payload") {
@@ -161,27 +185,32 @@ std::shared_ptr<vnx::TypeCode> WebData::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.WebData";
 	type_code->type_hash = vnx::Hash64(0xf7c226b211c088c4ull);
-	type_code->code_hash = vnx::Hash64(0x1f49299db4776797ull);
+	type_code->code_hash = vnx::Hash64(0xd8f8e56963da97f2ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::WebData);
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<WebData>(); };
-	type_code->methods.resize(12);
+	type_code->methods.resize(17);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_dependency::static_get_type_code();
 	type_code->methods[3] = ::mmx::Contract_get_owner::static_get_type_code();
-	type_code->methods[4] = ::mmx::Contract_get_parties::static_get_type_code();
-	type_code->methods[5] = ::mmx::Contract_is_spendable::static_get_type_code();
-	type_code->methods[6] = ::mmx::Contract_is_valid::static_get_type_code();
-	type_code->methods[7] = ::mmx::Contract_transfer::static_get_type_code();
-	type_code->methods[8] = ::mmx::Contract_validate::static_get_type_code();
-	type_code->methods[9] = ::mmx::contract::WebData_calc_cost::static_get_type_code();
-	type_code->methods[10] = ::mmx::contract::WebData_calc_hash::static_get_type_code();
-	type_code->methods[11] = ::mmx::contract::WebData_is_valid::static_get_type_code();
-	type_code->fields.resize(3);
+	type_code->methods[4] = ::mmx::Contract_is_locked::static_get_type_code();
+	type_code->methods[5] = ::mmx::Contract_is_valid::static_get_type_code();
+	type_code->methods[6] = ::mmx::Contract_transfer::static_get_type_code();
+	type_code->methods[7] = ::mmx::Contract_validate::static_get_type_code();
+	type_code->methods[8] = ::mmx::contract::WebData_calc_cost::static_get_type_code();
+	type_code->methods[9] = ::mmx::contract::WebData_calc_hash::static_get_type_code();
+	type_code->methods[10] = ::mmx::contract::WebData_get_dependency::static_get_type_code();
+	type_code->methods[11] = ::mmx::contract::WebData_get_owner::static_get_type_code();
+	type_code->methods[12] = ::mmx::contract::WebData_is_valid::static_get_type_code();
+	type_code->methods[13] = ::mmx::contract::WebData_num_bytes::static_get_type_code();
+	type_code->methods[14] = ::mmx::contract::WebData_transfer::static_get_type_code();
+	type_code->methods[15] = ::mmx::contract::WebData_update::static_get_type_code();
+	type_code->methods[16] = ::mmx::contract::WebData_validate::static_get_type_code();
+	type_code->fields.resize(4);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -191,11 +220,17 @@ std::shared_ptr<vnx::TypeCode> WebData::static_create_type_code() {
 	{
 		auto& field = type_code->fields[1];
 		field.is_extended = true;
+		field.name = "owner";
+		field.code = {33, 11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[2];
+		field.is_extended = true;
 		field.name = "mime_type";
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[2];
+		auto& field = type_code->fields[3];
 		field.is_extended = true;
 		field.name = "payload";
 		field.code = {12, 1};
@@ -230,16 +265,10 @@ std::shared_ptr<vnx::Value> WebData::vnx_call_switch(std::shared_ptr<const vnx::
 			_return_value->_ret_0 = get_owner();
 			return _return_value;
 		}
-		case 0x6f7a46e940a18a57ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_get_parties>(_method);
-			auto _return_value = ::mmx::Contract_get_parties_return::create();
-			_return_value->_ret_0 = get_parties();
-			return _return_value;
-		}
-		case 0xd12879d16cac3d5cull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_is_spendable>(_method);
-			auto _return_value = ::mmx::Contract_is_spendable_return::create();
-			_return_value->_ret_0 = is_spendable(_args->utxo, _args->context);
+		case 0x9b7981d03b3aeab6ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Contract_is_locked>(_method);
+			auto _return_value = ::mmx::Contract_is_locked_return::create();
+			_return_value->_ret_0 = is_locked(_args->context);
 			return _return_value;
 		}
 		case 0xe3adf9b29a723217ull: {
@@ -272,10 +301,46 @@ std::shared_ptr<vnx::Value> WebData::vnx_call_switch(std::shared_ptr<const vnx::
 			_return_value->_ret_0 = calc_hash();
 			return _return_value;
 		}
+		case 0x6f74c99b3f8ec6aaull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::WebData_get_dependency>(_method);
+			auto _return_value = ::mmx::contract::WebData_get_dependency_return::create();
+			_return_value->_ret_0 = get_dependency();
+			return _return_value;
+		}
+		case 0x6641548a08e3081ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::WebData_get_owner>(_method);
+			auto _return_value = ::mmx::contract::WebData_get_owner_return::create();
+			_return_value->_ret_0 = get_owner();
+			return _return_value;
+		}
 		case 0x7ae99137e8822105ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::contract::WebData_is_valid>(_method);
 			auto _return_value = ::mmx::contract::WebData_is_valid_return::create();
 			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+		case 0xcc1f554d1bf66504ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::WebData_num_bytes>(_method);
+			auto _return_value = ::mmx::contract::WebData_num_bytes_return::create();
+			_return_value->_ret_0 = num_bytes();
+			return _return_value;
+		}
+		case 0x4d5f84a22d5fe2edull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::WebData_transfer>(_method);
+			auto _return_value = ::mmx::contract::WebData_transfer_return::create();
+			transfer(_args->new_owner);
+			return _return_value;
+		}
+		case 0x4c38371a5ecce03cull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::WebData_update>(_method);
+			auto _return_value = ::mmx::contract::WebData_update_return::create();
+			update(_args->new_payload);
+			return _return_value;
+		}
+		case 0x5b5602c1e2ec9e40ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::WebData_validate>(_method);
+			auto _return_value = ::mmx::contract::WebData_validate_return::create();
+			_return_value->_ret_0 = validate(_args->operation, _args->context);
 			return _return_value;
 		}
 	}
@@ -327,8 +392,9 @@ void read(TypeInput& in, ::mmx::contract::WebData& value, const TypeCode* type_c
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 1: vnx::read(in, value.mime_type, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.payload, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.owner, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.mime_type, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.payload, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -349,8 +415,9 @@ void write(TypeOutput& out, const ::mmx::contract::WebData& value, const TypeCod
 	}
 	char* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.version);
-	vnx::write(out, value.mime_type, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.payload, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.owner, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.mime_type, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.payload, type_code, type_code->fields[3].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::WebData& value) {

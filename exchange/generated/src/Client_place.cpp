@@ -130,7 +130,6 @@ std::shared_ptr<vnx::TypeCode> Client_place::static_create_type_code() {
 		field.name = "offer";
 		field.code = {16};
 	}
-	type_code->permission = "mmx.permission_e.SPENDING";
 	type_code->build();
 	return type_code;
 }

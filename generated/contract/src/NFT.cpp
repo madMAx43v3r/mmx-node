@@ -13,16 +13,15 @@
 #include <mmx/Contract_get_dependency_return.hxx>
 #include <mmx/Contract_get_owner.hxx>
 #include <mmx/Contract_get_owner_return.hxx>
-#include <mmx/Contract_get_parties.hxx>
-#include <mmx/Contract_get_parties_return.hxx>
-#include <mmx/Contract_is_spendable.hxx>
-#include <mmx/Contract_is_spendable_return.hxx>
+#include <mmx/Contract_is_locked.hxx>
+#include <mmx/Contract_is_locked_return.hxx>
 #include <mmx/Contract_is_valid.hxx>
 #include <mmx/Contract_is_valid_return.hxx>
 #include <mmx/Contract_transfer.hxx>
 #include <mmx/Contract_transfer_return.hxx>
 #include <mmx/Contract_validate.hxx>
 #include <mmx/Contract_validate_return.hxx>
+#include <mmx/Solution.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/contract/NFT_calc_cost.hxx>
 #include <mmx/contract/NFT_calc_cost_return.hxx>
@@ -30,6 +29,8 @@
 #include <mmx/contract/NFT_calc_hash_return.hxx>
 #include <mmx/contract/NFT_is_valid.hxx>
 #include <mmx/contract/NFT_is_valid_return.hxx>
+#include <mmx/contract/NFT_num_bytes.hxx>
+#include <mmx/contract/NFT_num_bytes_return.hxx>
 #include <mmx/hash_t.hpp>
 #include <vnx/Object.hpp>
 
@@ -41,7 +42,7 @@ namespace contract {
 
 
 const vnx::Hash64 NFT::VNX_TYPE_HASH(0x7cb24b9888a47906ull);
-const vnx::Hash64 NFT::VNX_CODE_HASH(0xeb77509c6d4205bbull);
+const vnx::Hash64 NFT::VNX_CODE_HASH(0xea71442a0e8c28c5ull);
 
 vnx::Hash64 NFT::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -78,6 +79,7 @@ void NFT::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, creator);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, parent);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, data);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, solution);
 	_visitor.type_end(*_type_code);
 }
 
@@ -87,6 +89,7 @@ void NFT::write(std::ostream& _out) const {
 	_out << ", \"creator\": "; vnx::write(_out, creator);
 	_out << ", \"parent\": "; vnx::write(_out, parent);
 	_out << ", \"data\": "; vnx::write(_out, data);
+	_out << ", \"solution\": "; vnx::write(_out, solution);
 	_out << "}";
 }
 
@@ -103,6 +106,7 @@ vnx::Object NFT::to_object() const {
 	_object["creator"] = creator;
 	_object["parent"] = parent;
 	_object["data"] = data;
+	_object["solution"] = solution;
 	return _object;
 }
 
@@ -114,6 +118,8 @@ void NFT::from_object(const vnx::Object& _object) {
 			_entry.second.to(data);
 		} else if(_entry.first == "parent") {
 			_entry.second.to(parent);
+		} else if(_entry.first == "solution") {
+			_entry.second.to(solution);
 		} else if(_entry.first == "version") {
 			_entry.second.to(version);
 		}
@@ -133,6 +139,9 @@ vnx::Variant NFT::get_field(const std::string& _name) const {
 	if(_name == "data") {
 		return vnx::Variant(data);
 	}
+	if(_name == "solution") {
+		return vnx::Variant(solution);
+	}
 	return vnx::Variant();
 }
 
@@ -145,6 +154,8 @@ void NFT::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(parent);
 	} else if(_name == "data") {
 		_value.to(data);
+	} else if(_name == "solution") {
+		_value.to(solution);
 	}
 }
 
@@ -172,7 +183,7 @@ std::shared_ptr<vnx::TypeCode> NFT::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.NFT";
 	type_code->type_hash = vnx::Hash64(0x7cb24b9888a47906ull);
-	type_code->code_hash = vnx::Hash64(0xeb77509c6d4205bbull);
+	type_code->code_hash = vnx::Hash64(0xea71442a0e8c28c5ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::NFT);
@@ -184,15 +195,15 @@ std::shared_ptr<vnx::TypeCode> NFT::static_create_type_code() {
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_dependency::static_get_type_code();
 	type_code->methods[3] = ::mmx::Contract_get_owner::static_get_type_code();
-	type_code->methods[4] = ::mmx::Contract_get_parties::static_get_type_code();
-	type_code->methods[5] = ::mmx::Contract_is_spendable::static_get_type_code();
-	type_code->methods[6] = ::mmx::Contract_is_valid::static_get_type_code();
-	type_code->methods[7] = ::mmx::Contract_transfer::static_get_type_code();
-	type_code->methods[8] = ::mmx::Contract_validate::static_get_type_code();
-	type_code->methods[9] = ::mmx::contract::NFT_calc_cost::static_get_type_code();
-	type_code->methods[10] = ::mmx::contract::NFT_calc_hash::static_get_type_code();
-	type_code->methods[11] = ::mmx::contract::NFT_is_valid::static_get_type_code();
-	type_code->fields.resize(4);
+	type_code->methods[4] = ::mmx::Contract_is_locked::static_get_type_code();
+	type_code->methods[5] = ::mmx::Contract_is_valid::static_get_type_code();
+	type_code->methods[6] = ::mmx::Contract_transfer::static_get_type_code();
+	type_code->methods[7] = ::mmx::Contract_validate::static_get_type_code();
+	type_code->methods[8] = ::mmx::contract::NFT_calc_cost::static_get_type_code();
+	type_code->methods[9] = ::mmx::contract::NFT_calc_hash::static_get_type_code();
+	type_code->methods[10] = ::mmx::contract::NFT_is_valid::static_get_type_code();
+	type_code->methods[11] = ::mmx::contract::NFT_num_bytes::static_get_type_code();
+	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -216,6 +227,12 @@ std::shared_ptr<vnx::TypeCode> NFT::static_create_type_code() {
 		field.is_extended = true;
 		field.name = "data";
 		field.code = {24};
+	}
+	{
+		auto& field = type_code->fields[4];
+		field.is_extended = true;
+		field.name = "solution";
+		field.code = {16};
 	}
 	type_code->build();
 	return type_code;
@@ -247,16 +264,10 @@ std::shared_ptr<vnx::Value> NFT::vnx_call_switch(std::shared_ptr<const vnx::Valu
 			_return_value->_ret_0 = get_owner();
 			return _return_value;
 		}
-		case 0x6f7a46e940a18a57ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_get_parties>(_method);
-			auto _return_value = ::mmx::Contract_get_parties_return::create();
-			_return_value->_ret_0 = get_parties();
-			return _return_value;
-		}
-		case 0xd12879d16cac3d5cull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_is_spendable>(_method);
-			auto _return_value = ::mmx::Contract_is_spendable_return::create();
-			_return_value->_ret_0 = is_spendable(_args->utxo, _args->context);
+		case 0x9b7981d03b3aeab6ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Contract_is_locked>(_method);
+			auto _return_value = ::mmx::Contract_is_locked_return::create();
+			_return_value->_ret_0 = is_locked(_args->context);
 			return _return_value;
 		}
 		case 0xe3adf9b29a723217ull: {
@@ -293,6 +304,12 @@ std::shared_ptr<vnx::Value> NFT::vnx_call_switch(std::shared_ptr<const vnx::Valu
 			auto _args = std::static_pointer_cast<const ::mmx::contract::NFT_is_valid>(_method);
 			auto _return_value = ::mmx::contract::NFT_is_valid_return::create();
 			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+		case 0xf3c6c4128c2b3725ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::NFT_num_bytes>(_method);
+			auto _return_value = ::mmx::contract::NFT_num_bytes_return::create();
+			_return_value->_ret_0 = num_bytes();
 			return _return_value;
 		}
 	}
@@ -347,6 +364,7 @@ void read(TypeInput& in, ::mmx::contract::NFT& value, const TypeCode* type_code,
 			case 1: vnx::read(in, value.creator, type_code, _field->code.data()); break;
 			case 2: vnx::read(in, value.parent, type_code, _field->code.data()); break;
 			case 3: vnx::read(in, value.data, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.solution, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -370,6 +388,7 @@ void write(TypeOutput& out, const ::mmx::contract::NFT& value, const TypeCode* t
 	vnx::write(out, value.creator, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.parent, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.data, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.solution, type_code, type_code->fields[4].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::NFT& value) {

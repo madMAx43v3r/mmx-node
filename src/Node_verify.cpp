@@ -6,6 +6,9 @@
  */
 
 #include <mmx/Node.h>
+#include <mmx/ProofOfSpaceOG.hxx>
+#include <mmx/ProofOfStake.hxx>
+#include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/chiapos.h>
 #include <mmx/utils.h>
 
@@ -13,6 +16,49 @@
 
 
 namespace mmx {
+
+bool Node::verify(std::shared_ptr<const ProofResponse> value)
+{
+	const auto request = value->request;
+	const auto vdf_block = get_header_at(request->height - params->challenge_delay);
+	if(!vdf_block) {
+		log(DEBUG) << "Missing vdf_block for proof at height " << request->height << " with score " << value->proof->score;
+		return false;
+	}
+	try {
+		const auto diff_block = get_diff_header(vdf_block, params->challenge_delay);
+		const auto challenge = hash_t(diff_block->hash + vdf_block->vdf_output[1]);
+		if(request->challenge != challenge) {
+			throw std::logic_error("invalid challenge");
+		}
+		if(request->space_diff != diff_block->space_diff) {
+			throw std::logic_error("invalid space_diff");
+		}
+		verify_proof(value->proof, challenge, diff_block);
+
+		if(value->proof->score >= params->score_threshold) {
+			throw std::logic_error("invalid score");
+		}
+		auto iter = proof_map.find(challenge);
+		if(iter == proof_map.end() || value->proof->score <= iter->second->proof->score)
+		{
+			if(iter == proof_map.end()) {
+				challenge_map.emplace(request->height, challenge);
+			}
+			else if(value->proof->score < iter->second->proof->score) {
+				proof_map.erase(challenge);
+			}
+			proof_map.emplace(challenge, value);
+
+			log(DEBUG) << "Got new best proof for height " << request->height << " with score " << value->proof->score;
+		}
+		publish(value, output_verified_proof);
+	}
+	catch(const std::exception& ex) {
+		log(WARN) << "Got invalid proof: " << ex.what();
+	}
+	return true;
+}
 
 void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challenge) const
 {
@@ -34,36 +80,7 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 
 	if(auto proof = block->proof) {
 		const auto challenge = get_challenge(block, vdf_challenge);
-		fork->proof_score = verify_proof(proof, challenge, diff_block->space_diff);
-
-		if(proof->score != fork->proof_score) {
-			throw std::logic_error("invalid proof score");
-		}
-
-		// check if block has a weak proof
-		const auto iter = proof_map.find(challenge);
-		if(iter != proof_map.end()) {
-			if(fork->proof_score > iter->second->score) {
-				fork->has_weak_proof = true;
-				log(INFO) << "Got weak proof block for height " << block->height << " with score " << fork->proof_score << " > " << iter->second->score;
-			}
-		}
-	} else {
-		fork->proof_score = params->score_threshold;
-	}
-
-	fork->weight = 1;
-	if(block->proof) {
-		fork->weight += params->score_threshold - fork->proof_score;
-	}
-	fork->weight *= diff_block->space_diff;
-	fork->weight *= diff_block->time_diff;
-
-	fork->buffer_delta = 0;
-	if(!block->proof || fork->has_weak_proof) {
-		fork->buffer_delta -= params->score_threshold;
-	} else {
-		fork->buffer_delta += int32_t(2 * params->score_target) - fork->proof_score;
+		verify_proof(proof, challenge, diff_block);
 	}
 
 	// check some VDFs during sync
@@ -75,34 +92,113 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 	fork->is_proof_verified = true;
 }
 
-uint32_t Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, const uint64_t space_diff) const
+uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::optional<hash_t>& block_hash) const
+{
+	hash_t hash;
+	if(block_hash) {
+		hash = *block_hash;
+	} else {
+		if(auto peak = get_peak()) {
+			hash = peak->hash;
+		} else {
+			return uint128_0;
+		}
+	}
+	auto fork = find_fork(hash);
+	auto block = fork ? fork->block : get_header(hash);
+	if(!block) {
+		throw std::logic_error("no such block");
+	}
+	const auto root = get_root();
+	const auto height = block->height;
+	const auto since = height - std::min(params->virtual_lifetime, height);
+
+	uint128_t balance = 0;
+	for(const auto& entry : get_history({plot_id}, since)) {
+		if(entry.contract == addr_t() && entry.height <= std::min(root->height, height)) {
+			switch(entry.type) {
+				case tx_type_e::REWARD:
+				case tx_type_e::RECEIVE:
+					balance += entry.amount; break;
+				default: break;
+			}
+		}
+	}
+	while(fork) {
+		const auto& block = fork->block;
+		if(block->height < since) {
+			break;
+		}
+		for(const auto& tx : block->get_all_transactions()) {
+			for(const auto& out : tx->get_all_outputs()) {
+				if(out.address == plot_id && out.contract == addr_t()) {
+					balance += out.amount;
+				}
+			}
+		}
+		fork = fork->prev.lock();
+	}
+	if(balance.upper()) {
+		throw std::logic_error("balance overflow");
+	}
+	return balance;
+}
+
+void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge,
+							std::shared_ptr<const BlockHeader> diff_block) const
 {
 	if(!proof->is_valid()) {
 		throw std::logic_error("invalid proof");
-	}
-	if(proof->ksize < params->min_ksize) {
-		throw std::logic_error("ksize too small");
-	}
-	if(proof->ksize > params->max_ksize) {
-		throw std::logic_error("ksize too big");
 	}
 	proof->validate();
 
 	if(!check_plot_filter(params, challenge, proof->plot_id)) {
 		throw std::logic_error("plot filter failed");
 	}
-	const auto quality = hash_t::from_bytes(chiapos::verify(
-			proof->ksize, proof->plot_id.bytes, challenge.bytes, proof->proof_bytes.data(), proof->proof_bytes.size()));
+	uint256_t score = uint256_max;
 
-	const auto score = calc_proof_score(params, proof->ksize, quality, space_diff);
-	if(score >= params->score_threshold) {
-		throw std::logic_error("invalid score");
+	if(auto og_proof = std::dynamic_pointer_cast<const ProofOfSpaceOG>(proof))
+	{
+		if(og_proof->ksize < params->min_ksize) {
+			throw std::logic_error("ksize too small");
+		}
+		if(og_proof->ksize > params->max_ksize) {
+			throw std::logic_error("ksize too big");
+		}
+		const auto quality = hash_t::from_bytes(chiapos::verify(
+				og_proof->ksize, proof->plot_id.bytes, challenge.bytes, og_proof->proof_bytes.data(), og_proof->proof_bytes.size()));
+
+		score = calc_proof_score(params, og_proof->ksize, quality, diff_block->space_diff);
 	}
-	return score;
+	else if(auto stake = std::dynamic_pointer_cast<const ProofOfStake>(proof))
+	{
+		const auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(
+				get_contract_at(stake->contract, diff_block->hash));
+		if(!plot) {
+			throw std::logic_error("no such virtual plot");
+		}
+		if(stake->farmer_key != plot->farmer_key) {
+			throw std::logic_error("invalid farmer key");
+		}
+		const auto balance = get_virtual_plot_balance(stake->contract, diff_block->hash);
+		score = calc_virtual_score(params, challenge, stake->contract, balance, diff_block->space_diff);
+	}
+	else {
+		throw std::logic_error("invalid proof type");
+	}
+	if(score != proof->score) {
+		throw std::logic_error("proof score mismatch");
+	}
+	if(score >= params->score_threshold) {
+		throw std::logic_error("score >= score_threshold");
+	}
 }
 
 void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof) const
 {
+	if(proof->version != 0) {
+		throw std::logic_error("invalid version");
+	}
 	// check number of segments
 	if(proof->segments.size() < params->min_vdf_segments) {
 		throw std::logic_error("not enough segments: " + std::to_string(proof->segments.size()));
@@ -119,21 +215,19 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof) const
 	}
 
 	// check proper infusions
-	if(proof->start > 0) {
+	if(proof->height > params->infuse_delay)
+	{
 		if(!proof->infuse[0]) {
 			throw std::logic_error("missing infusion on chain 0");
 		}
-		const auto infused_block = find_header(*proof->infuse[0]);
+		const auto infused_block = get_header(*proof->infuse[0]);
 		if(!infused_block) {
 			throw std::logic_error("unknown block infused on chain 0");
 		}
-		if(infused_block->height + std::min(params->finality_delay + 1, proof->height) != proof->height) {
+		if(infused_block->height + std::min(params->infuse_delay + 1, proof->height) != proof->height) {
 			throw std::logic_error("invalid block height infused on chain 0");
 		}
-		const auto diff_block = find_diff_header(infused_block, params->finality_delay + 1);
-		if(!diff_block) {
-			throw std::logic_error("cannot verify");
-		}
+		const auto diff_block = get_diff_header(infused_block, params->infuse_delay + 1);
 		const auto expected_iters = diff_block->time_diff * params->time_diff_constant;
 		if(proof_iters != expected_iters) {
 			throw std::logic_error("wrong number of iterations: " + std::to_string(proof_iters) + " != " + std::to_string(expected_iters));
@@ -149,6 +243,13 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof) const
 			}
 		} else if(proof->infuse[1]) {
 			throw std::logic_error("invalid infusion on chain 1");
+		}
+	} else {
+		if(proof->infuse[0]) {
+			throw std::logic_error("invalid infusion on chain 0");
+		}
+		if(proof->infuse[1]) {
+			throw std::logic_error("invalid infusion on chain 0");
 		}
 	}
 	vdf_threads->add_task(std::bind(&Node::verify_vdf_task, this, proof));
@@ -213,44 +314,24 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::sha
 	log(INFO) << "Verified VDF for height " << proof->height <<
 			(prev ? ", delta = " + std::to_string((point->recv_time - prev->recv_time) / 1e6) + " sec" : "") << ", took " << elapsed << " sec";
 
-	// add dummy blocks in case no proof is found
+	// add dummy blocks
 	{
-		std::vector<std::shared_ptr<const BlockHeader>> prev_blocks;
-		if(auto root = get_root()) {
-			if(root->height + 1 == proof->height) {
-				prev_blocks.push_back(root);
-			}
+		std::vector<std::shared_ptr<const Block>> blocks;
+		for(const auto& entry : fork_index) {
+			blocks.push_back(entry.second->block);
 		}
-		for(auto iter = fork_index.lower_bound(proof->height - 1); iter != fork_index.upper_bound(proof->height - 1); ++iter) {
-			prev_blocks.push_back(iter->second->block);
+		for(const auto& prev : blocks) {
+			add_dummy_blocks(prev);
 		}
-		const auto infused_hash = proof->infuse[0];
-		for(auto prev : prev_blocks) {
-			if(infused_hash) {
-				if(auto infused = find_prev_header(prev, params->finality_delay, true)) {
-					if(infused->hash != *infused_hash) {
-						continue;
-					}
-				}
-			}
-			auto block = Block::create();
-			block->prev = prev->hash;
-			block->height = proof->height;
-			block->time_diff = prev->time_diff;
-			block->space_diff = prev->space_diff;
-			block->vdf_iters = point->vdf_iters;
-			block->vdf_output = point->output;
-			block->finalize();
-			add_block(block);
-		}
+		add_dummy_blocks(get_root());
 	}
-	update();
+	add_task(std::bind(&Node::update, this));
 }
 
 void Node::verify_vdf_failed(std::shared_ptr<const ProofOfTime> proof)
 {
 	vdf_verify_pending.erase(proof->height);
-	check_vdfs();
+	verify_vdfs();
 }
 
 void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) const noexcept

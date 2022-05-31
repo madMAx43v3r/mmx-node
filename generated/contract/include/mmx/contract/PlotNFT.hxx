@@ -6,26 +6,22 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/ChainParams.hxx>
-#include <mmx/Context.hxx>
-#include <mmx/Contract.hxx>
-#include <mmx/Operation.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/contract/MutableRelay.hxx>
 #include <mmx/hash_t.hpp>
-#include <mmx/tx_out_t.hxx>
 
 
 namespace mmx {
 namespace contract {
 
-class MMX_CONTRACT_EXPORT PlotNFT : public ::mmx::Contract {
+class MMX_CONTRACT_EXPORT PlotNFT : public ::mmx::contract::MutableRelay {
 public:
-	static const uint32_t UNLOCK_DELAY = 100;
+	static const uint32_t MAX_UNLOCK_DELAY = 10000;
 	
-	::mmx::addr_t owner;
-	vnx::optional<::mmx::addr_t> target;
-	vnx::optional<uint32_t> unlock_height;
+	std::string name;
+	vnx::optional<std::string> server_url;
 	
-	typedef ::mmx::Contract Super;
+	typedef ::mmx::contract::MutableRelay Super;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -41,12 +37,8 @@ public:
 	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_hash() const override;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
-	virtual std::vector<::mmx::addr_t> get_dependency() const override;
-	virtual std::vector<::mmx::addr_t> get_parties() const override;
-	virtual vnx::optional<::mmx::addr_t> get_owner() const override;
-	virtual std::vector<::mmx::tx_out_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
-	virtual void unlock(const uint32_t& height = 0);
-	virtual void lock_target(const vnx::optional<::mmx::addr_t>& new_target = nullptr);
+	virtual void lock(const vnx::optional<::mmx::addr_t>& new_target = nullptr, const uint32_t& new_unlock_delay = 0) override;
+	virtual void lock_pool(const vnx::optional<::mmx::addr_t>& new_target = nullptr, const uint32_t& new_unlock_delay = 0, const vnx::optional<std::string>& new_server_url = nullptr);
 	
 	static std::shared_ptr<PlotNFT> create();
 	std::shared_ptr<vnx::Value> clone() const override;
@@ -80,12 +72,15 @@ protected:
 
 template<typename T>
 void PlotNFT::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<PlotNFT>(4);
+	_visitor.template type_begin<PlotNFT>(7);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("owner", 1); _visitor.accept(owner);
 	_visitor.type_field("target", 2); _visitor.accept(target);
 	_visitor.type_field("unlock_height", 3); _visitor.accept(unlock_height);
-	_visitor.template type_end<PlotNFT>(4);
+	_visitor.type_field("unlock_delay", 4); _visitor.accept(unlock_delay);
+	_visitor.type_field("name", 5); _visitor.accept(name);
+	_visitor.type_field("server_url", 6); _visitor.accept(server_url);
+	_visitor.template type_end<PlotNFT>(7);
 }
 
 

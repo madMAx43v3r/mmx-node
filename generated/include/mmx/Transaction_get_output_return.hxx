@@ -5,7 +5,7 @@
 #define INCLUDE_mmx_Transaction_get_output_return_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/tx_out_t.hxx>
+#include <mmx/txout_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -14,7 +14,7 @@ namespace mmx {
 class MMX_EXPORT Transaction_get_output_return : public ::vnx::Value {
 public:
 	
-	::mmx::tx_out_t _ret_0;
+	::mmx::txout_t _ret_0;
 	
 	typedef ::vnx::Value Super;
 	

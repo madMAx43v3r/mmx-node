@@ -54,11 +54,12 @@ module Client extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	
 	void cancel_all();
 	
+	@Permission(mmx.permission_e.SPENDING)
 	OfferBundle* make_offer(uint wallet, trade_pair_t pair, ulong bid, ulong ask, uint num_chunks = 1) const;
 	
+	@Permission(mmx.permission_e.SPENDING)
 	trade_order_t make_trade(uint wallet, trade_pair_t pair, ulong bid, optional<ulong> ask) const;
 	
-	@Permission(mmx.permission_e.SPENDING)
 	void place(OfferBundle* offer);
 	
 	@Permission(mmx.permission_e.SPENDING)

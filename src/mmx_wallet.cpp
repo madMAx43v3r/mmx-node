@@ -7,7 +7,7 @@
 
 #include <mmx/Wallet.h>
 #include <mmx/WebAPI.h>
-#include <mmx/exchange/Client.h>
+//#include <mmx/exchange/Client.h>
 
 #include <vnx/addons/FileServer.h>
 #include <vnx/addons/HttpServer.h>
@@ -70,11 +70,11 @@ int main(int argc, char** argv)
 		module->database_path = root_path + module->database_path;
 		module.start_detached();
 	}
-	{
-		vnx::Handle<mmx::exchange::Client> module = new mmx::exchange::Client("ExchClient");
-		module->storage_path = root_path + module->storage_path;
-		module.start_detached();
-	}
+//	{
+//		vnx::Handle<mmx::exchange::Client> module = new mmx::exchange::Client("ExchClient");
+//		module->storage_path = root_path + module->storage_path;
+//		module.start_detached();
+//	}
 	{
 		vnx::Handle<vnx::addons::FileServer> module = new vnx::addons::FileServer("FileServer_1");
 		module->www_root = "www/web-gui/public/";
@@ -83,6 +83,8 @@ int main(int argc, char** argv)
 	}
 	{
 		vnx::Handle<vnx::addons::HttpServer> module = new vnx::addons::HttpServer("HttpServer");
+		module->default_access = "NETWORK";
+		module->components["/server/"] = "HttpServer";
 		module->components["/wapi/"] = "WebAPI";
 		module->components["/api/node/"] = "Node";
 		module->components["/api/wallet/"] = "Wallet";

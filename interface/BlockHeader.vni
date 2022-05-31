@@ -9,21 +9,20 @@ class BlockHeader {
 	
 	uint height;
 	
-	// TODO: ulong nonce;
+	ulong nonce;
 	
 	ulong time_diff;
 	ulong space_diff;
 	
-	// TODO: uint128 weight;
-	// TODO: uint128 total_weight;
-	// TODO: uint weight_buffer;
+	uint128 weight;
+	uint128 total_weight;
 	
 	ulong vdf_iters;
 	hash_t vdf_output[2];
 	
 	ProofOfSpace* proof;
 	
-	TransactionBase* tx_base;
+	Transaction* tx_base;
 	
 	uint tx_count;
 	
@@ -37,5 +36,7 @@ class BlockHeader {
 	hash_t calc_hash() const;
 	
 	void validate() const;
+	
+	BlockHeader* get_header() const;
 	
 }

@@ -9,6 +9,9 @@
 #include <mmx/FarmInfo.hxx>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
+#include <vnx/addons/HttpData.hxx>
+#include <vnx/addons/HttpRequest.hxx>
+#include <vnx/addons/HttpResponse.hxx>
 
 
 namespace mmx {
@@ -19,7 +22,8 @@ public:
 	::vnx::TopicPtr input_challenges = "harvester.challenges";
 	::vnx::TopicPtr output_info = "harvester.info";
 	::vnx::TopicPtr output_proofs = "harvester.proof";
-	std::vector<std::string> plot_dirs;
+	std::set<std::string> plot_dirs;
+	std::string node_server = "Node";
 	std::string farmer_server = "Farmer";
 	int32_t max_queue_ms = 10000;
 	int32_t reload_interval = 3600;
@@ -62,9 +66,15 @@ protected:
 	using Super::handle;
 	
 	virtual void reload() = 0;
+	virtual void add_plot_dir(const std::string& path) = 0;
+	virtual void rem_plot_dir(const std::string& path) = 0;
 	virtual std::shared_ptr<const ::mmx::FarmInfo> get_farm_info() const = 0;
 	virtual uint64_t get_total_bytes() const = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::Challenge> _value) {}
+	virtual void http_request_async(std::shared_ptr<const ::vnx::addons::HttpRequest> request, const std::string& sub_path, const vnx::request_id_t& _request_id) const = 0;
+	void http_request_async_return(const vnx::request_id_t& _request_id, const std::shared_ptr<const ::vnx::addons::HttpResponse>& _ret_0) const;
+	virtual void http_request_chunk_async(std::shared_ptr<const ::vnx::addons::HttpRequest> request, const std::string& sub_path, const int64_t& offset, const int64_t& max_bytes, const vnx::request_id_t& _request_id) const = 0;
+	void http_request_chunk_async_return(const vnx::request_id_t& _request_id, const std::shared_ptr<const ::vnx::addons::HttpData>& _ret_0) const;
 	
 	void vnx_handle_switch(std::shared_ptr<const vnx::Value> _value) override;
 	std::shared_ptr<vnx::Value> vnx_call_switch(std::shared_ptr<const vnx::Value> _method, const vnx::request_id_t& _request_id) override;
@@ -73,17 +83,18 @@ protected:
 
 template<typename T>
 void HarvesterBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<HarvesterBase>(9);
+	_visitor.template type_begin<HarvesterBase>(10);
 	_visitor.type_field("input_challenges", 0); _visitor.accept(input_challenges);
 	_visitor.type_field("output_info", 1); _visitor.accept(output_info);
 	_visitor.type_field("output_proofs", 2); _visitor.accept(output_proofs);
 	_visitor.type_field("plot_dirs", 3); _visitor.accept(plot_dirs);
-	_visitor.type_field("farmer_server", 4); _visitor.accept(farmer_server);
-	_visitor.type_field("max_queue_ms", 5); _visitor.accept(max_queue_ms);
-	_visitor.type_field("reload_interval", 6); _visitor.accept(reload_interval);
-	_visitor.type_field("num_threads", 7); _visitor.accept(num_threads);
-	_visitor.type_field("recursive_search", 8); _visitor.accept(recursive_search);
-	_visitor.template type_end<HarvesterBase>(9);
+	_visitor.type_field("node_server", 4); _visitor.accept(node_server);
+	_visitor.type_field("farmer_server", 5); _visitor.accept(farmer_server);
+	_visitor.type_field("max_queue_ms", 6); _visitor.accept(max_queue_ms);
+	_visitor.type_field("reload_interval", 7); _visitor.accept(reload_interval);
+	_visitor.type_field("num_threads", 8); _visitor.accept(num_threads);
+	_visitor.type_field("recursive_search", 9); _visitor.accept(recursive_search);
+	_visitor.template type_end<HarvesterBase>(10);
 }
 
 

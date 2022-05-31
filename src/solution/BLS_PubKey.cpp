@@ -11,9 +11,9 @@
 namespace mmx {
 namespace solution {
 
-vnx::bool_t BLS_PubKey::is_valid() const
+uint64_t BLS_PubKey::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	return true;
+	return params->min_txfee_sign;
 }
 
 

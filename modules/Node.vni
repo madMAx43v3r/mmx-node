@@ -1,5 +1,7 @@
 package mmx;
 
+import mmx.vm.varptr_t;
+
 module Node implements vnx.addons.HttpComponent {
 	
 	vnx.TopicPtr input_vdfs = "network.vdfs";
@@ -24,21 +26,20 @@ module Node implements vnx.addons.HttpComponent {
 	int validate_interval_ms = 10000;		// to validate pending transactions [ms]
 	int sync_loss_delay = 60;				// when to re-sync if stuck [sec]
 	
-	uint max_history = 1000;
+	uint max_history = 1000;				// max block header history
+	uint max_fork_length = 20000;			// to keep in memory at most (during sync)
 	uint tx_pool_limit = 100;				// number of full blocks
-	uint max_fork_length = 100000;			// to keep in memory at most
 	
 	uint max_sync_jobs = 64;				// number of parallel requests
 	uint num_sync_retries = 3;				// how often to retry when reaching a peak
 	uint replay_height = -1;				// to limit reloading from disk and force resync
 	
 	uint num_vdf_threads = 8;
-	uint vdf_check_divider = 10000;			// how many VDFs to verify during sync
+	uint vdf_check_divider = 5000;			// how many VDFs to verify during sync
 	
 	int opencl_device = 0;					// device to use for VDF verification (-1 to disable)
 	
 	bool do_sync = true;
-	bool light_mode = false;
 	bool show_warnings = false;
 	
 	string storage_path;
@@ -52,6 +53,9 @@ module Node implements vnx.addons.HttpComponent {
 	
 	@Permission(permission_e.PUBLIC)
 	NetworkInfo* get_network_info() const;
+	
+	@Permission(permission_e.PUBLIC)
+	hash_t get_genesis_hash() const;
 	
 	@Permission(permission_e.PUBLIC)
 	uint get_height() const;
@@ -75,19 +79,19 @@ module Node implements vnx.addons.HttpComponent {
 	optional<hash_t> get_block_hash(uint height) const;
 	
 	@Permission(permission_e.PUBLIC)
-	optional<txo_info_t> get_txo_info(txio_key_t key) const;
-	
-	@Permission(permission_e.PUBLIC)
-	vector<optional<txo_info_t>> get_txo_infos(vector<txio_key_t> keys) const;
-	
-	@Permission(permission_e.PUBLIC)
 	optional<uint> get_tx_height(hash_t id) const;
 	
 	@Permission(permission_e.PUBLIC)
 	optional<tx_info_t> get_tx_info(hash_t id) const;
 	
 	@Permission(permission_e.PUBLIC)
+	optional<tx_info_t> get_tx_info_for(Transaction* tx) const;
+	
+	@Permission(permission_e.PUBLIC)
 	vector<hash_t> get_tx_ids_at(uint height) const;
+	
+	@Permission(permission_e.PUBLIC)
+	optional<hash_t> is_revoked(hash_t txid, addr_t sender) const;
 	
 	@Permission(PUBLISH)
 	void add_block(Block* block);
@@ -99,10 +103,16 @@ module Node implements vnx.addons.HttpComponent {
 	Contract* get_contract(addr_t address) const;
 	
 	@Permission(permission_e.PUBLIC)
+	Contract* get_contract_for(addr_t address) const;
+	
+	@Permission(permission_e.PUBLIC)
+	Contract* get_contract_at(addr_t address, hash_t block_hash) const;
+	
+	@Permission(permission_e.PUBLIC)
 	vector<Contract*> get_contracts(vector<addr_t> addresses) const;
 	
 	@Permission(permission_e.PUBLIC)
-	map<addr_t, Contract*> get_contracts_owned(vector<addr_t> owners) const;
+	map<addr_t, Contract*> get_contracts_by(vector<addr_t> addresses) const;
 	
 	@Permission(permission_e.PUBLIC)
 	Transaction* get_transaction(hash_t id, bool include_pending) const;
@@ -111,34 +121,61 @@ module Node implements vnx.addons.HttpComponent {
 	vector<Transaction*> get_transactions(vector<hash_t> ids) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<tx_entry_t> get_history_for(vector<addr_t> addresses, int since) const;
+	vector<tx_entry_t> get_history(vector<addr_t> addresses, int since) const;
 	
 	@Permission(permission_e.PUBLIC)
-	ulong get_balance(addr_t address, addr_t currency, uint min_confirm = 1) const;
+	uint128 get_balance(addr_t address, addr_t currency, uint min_confirm = 1) const;
 	
 	@Permission(permission_e.PUBLIC)
-	map<addr_t, balance_t> get_balances(addr_t address, uint min_confirm = 1) const;
+	map<addr_t, uint128> get_balances(addr_t address, uint min_confirm = 1) const;
 	
 	@Permission(permission_e.PUBLIC)
-	ulong get_total_balance(vector<addr_t> addresses, addr_t currency, uint min_confirm = 1) const;
+	map<addr_t, balance_t> get_contract_balances(addr_t address, uint min_confirm = 1) const;
 	
 	@Permission(permission_e.PUBLIC)
-	map<addr_t, ulong> get_total_balances(vector<addr_t> addresses, uint min_confirm = 1) const;
+	uint128 get_total_balance(vector<addr_t> addresses, addr_t currency, uint min_confirm = 1) const;
 	
 	@Permission(permission_e.PUBLIC)
-	ulong get_total_supply(addr_t currency) const;
+	map<addr_t, uint128> get_total_balances(vector<addr_t> addresses, uint min_confirm = 1) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<utxo_entry_t> get_utxo_list(vector<addr_t> addresses, uint min_confirm = 1, uint since = 0) const;
+	map<pair<addr_t, addr_t>, uint128> get_all_balances(vector<addr_t> addresses, uint min_confirm = 1) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<utxo_entry_t> get_utxo_list_for(vector<addr_t> addresses, addr_t currency, uint min_confirm = 1, uint since = 0) const;
+	vector<exec_entry_t> get_exec_history(addr_t address, int since) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<utxo_entry_t> get_spendable_utxo_list(vector<addr_t> addresses, uint min_confirm = 1, uint since = 0) const;
+	map<string, varptr_t> read_storage(addr_t contract, uint height = -1) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<stxo_entry_t> get_stxo_list(vector<addr_t> addresses, uint since = 0) const;
+	map<ulong, varptr_t> dump_storage(addr_t contract, uint height = -1) const;
+	
+	@Permission(permission_e.PUBLIC)
+	varptr_t read_storage_var(addr_t contract, ulong address, uint height = -1) const;
+	
+	@Permission(permission_e.PUBLIC)
+	pair<varptr_t, ulong> read_storage_field(addr_t contract, string name, uint height = -1) const;
+	
+	@Permission(permission_e.PUBLIC)
+	vector<varptr_t> read_storage_array(addr_t contract, ulong address, uint height = -1) const;
+	
+	@Permission(permission_e.PUBLIC)
+	map<varptr_t, varptr_t> read_storage_map(addr_t contract, ulong address, uint height = -1) const;
+	
+	@Permission(permission_e.PUBLIC)
+	vnx.Variant call_contract(addr_t address, string method, vector<vnx.Variant> args) const;
+	
+	@Permission(permission_e.PUBLIC)
+	address_info_t get_address_info(addr_t address) const;
+	
+	@Permission(permission_e.PUBLIC)
+	vector<pair<addr_t, Contract*>> get_virtual_plots_for(bls_pubkey_t farmer_key) const;
+	
+	@Permission(permission_e.PUBLIC)
+	ulong get_virtual_plot_balance(addr_t plot_id, optional<hash_t> block_hash) const;
+	
+	@Permission(permission_e.PUBLIC)
+	uint128 get_total_supply(addr_t currency) const;
 	
 	void start_sync(bool force);
 	
