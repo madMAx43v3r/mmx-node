@@ -117,26 +117,29 @@ void Node::main()
 		bool is_replay = true;
 		uint32_t height = -1;
 		std::pair<int64_t, hash_t> entry;
-		// revert last commit_delay blocks
-		for(uint32_t i = 0; block_index.find_last(height, entry) && (i < params->commit_delay || height >= replay_height); ++i) {
-			is_replay = false;
-			revert(height, nullptr);
-		}
 		// set state to last block
-		if(block_index.find_last(height, entry)) {
-			state_hash = entry.second;
-			block_chain->seek_to(entry.first);
-			const auto block = read_block(*block_chain, true);
-			if(!block) {
-				throw std::runtime_error("failed to read block " + std::to_string(height));
-			}
-			if(block->height != height) {
-				throw std::runtime_error("expected block height " + std::to_string(height) + " but got " + std::to_string(block->height));
+		while(block_index.find_last(height, entry))
+		{
+			is_replay = false;
+			if(height >= replay_height) {
+				revert(height, nullptr);
+			} else {
+				state_hash = entry.second;
+				block_chain->seek_to(entry.first);
+				const auto block = std::dynamic_pointer_cast<const Block>(read_block(*block_chain, true));
+				if(!block) {
+					throw std::runtime_error("failed to read block " + std::to_string(height));
+				}
+				if(block->height != height) {
+					throw std::runtime_error("expected block height " + std::to_string(height) + " but got " + std::to_string(block->height));
+				}
+				break;
 			}
 		}
 		if(is_replay) {
 			log(INFO) << "Creating DB (this may take a while) ...";
 			int64_t block_offset = 0;
+			std::list<std::shared_ptr<const Block>> history;
 			std::vector<std::pair<hash_t, int64_t>> tx_offsets;
 			while(auto header = read_block(*block_chain, true, &block_offset, &tx_offsets))
 			{
@@ -147,7 +150,11 @@ void Node::main()
 						log(ERROR) << "Block validation at height " << block->height << " failed with: " << ex.what();
 						return;
 					}
-					commit(block);
+					history.push_back(block);
+					if(history.size() > params->commit_delay) {
+						commit(history.front());
+						history.pop_front();
+					}
 					for(const auto& entry : tx_offsets) {
 						tx_index.insert(entry.first, std::make_pair(entry.second, block->height));
 					}
@@ -158,19 +165,30 @@ void Node::main()
 				}
 			}
 			if(auto peak = get_peak()) {
-				log(INFO) << "Loaded " << peak->height + 1 << " blocks from disk, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+				log(INFO) << "Loaded height " << peak->height << " from disk, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 			}
 		} else {
-			// load history
-			for(uint32_t i = 0; i < max_history; ++i) {
+			// load history and fork tree
+			for(int64_t i = max_history; i >= 0; --i) {
 				if(i <= height) {
-					if(auto header = get_header_at(height - i)) {
-						history[header->height] = header;
+					if(i < params->commit_delay) {
+						if(auto block = get_block_at(height - i)) {
+							add_block(block);
+						}
+					} else {
+						if(auto header = get_header_at(height - i)) {
+							history[header->height] = header;
+						}
 					}
 				}
 			}
 			log(INFO) << "Loaded height " << height << ", took " << (vnx::get_time_millis() - time_begin) / 1e3 << " sec";
 		}
+		const auto offset = block_chain->get_input_pos();
+		block_chain->seek_to(offset);
+		vnx::write(block_chain->out, nullptr);	// temporary end of block_chain.dat
+		block_chain->seek_to(offset);
+		block_chain->flush();
 	} else {
 		block_chain->open("wb");
 		block_chain->open("rb+");
@@ -1469,10 +1487,11 @@ void Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noe
 	storage->revert(height);
 	{
 		std::vector<std::pair<int64_t, hash_t>> entries;
-		block_index.find_greater_equal(height, entries);
-		for(const auto& entry : entries) {
-			hash_index.erase(entry.second);
-			block_chain->seek_to(entry.first);
+		if(block_index.find_greater_equal(height, entries)) {
+			for(const auto& entry : entries) {
+				hash_index.erase(entry.second);
+			}
+			block_chain->seek_to(entries.front().first);
 		}
 	}
 	block_index.erase_greater_equal(height);
@@ -1705,8 +1724,11 @@ void Node::write_block(std::shared_ptr<const Block> block, bool is_replay)
 	tx_log.insert(block->height, tx_ids);
 
 	if(!is_replay) {
-		vnx::write(out, nullptr);
+		vnx::write(out, nullptr);	// end of block
+		const auto end = out.get_output_pos();
+		vnx::write(out, nullptr);	// temporary end of block_chain.dat
 		block_chain->flush();
+		block_chain->seek_to(end);
 		block_index.insert(block->height, std::make_pair(offset, block->hash));
 	}
 	hash_index.insert(block->hash, block->height);
