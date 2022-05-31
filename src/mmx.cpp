@@ -124,6 +124,8 @@ int main(int argc, char** argv)
 	options["ask-currency"] = "address";
 	options["fee-ratio"] = ">= 1";
 	options["gas-limit"] = "MMX";
+	options["user"] = "mmx-admin";
+	options["passwd"] = "PASSWD";
 
 	vnx::write_config("log_level", 2);
 
@@ -161,6 +163,8 @@ int main(int argc, char** argv)
 	vnx::read_config("ask-currency", ask_currency_addr);
 	vnx::read_config("fee-ratio", fee_ratio);
 	vnx::read_config("gas-limit", gas_limit);
+	vnx::read_config("user", user);
+	vnx::read_config("passwd", passwd);
 
 	bool did_fail = false;
 	auto params = mmx::get_params();
