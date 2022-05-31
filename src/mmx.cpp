@@ -514,6 +514,7 @@ int main(int argc, char** argv)
 					auto contract = mmx::contract::Offer::create();
 					contract->base = offer;
 					auto tx = wallet.deploy(index, contract, spend_options);
+					std::cout << "Contract: " << mmx::addr_t(tx->id) << std::endl;
 					std::cout << "Transaction ID: " << tx->id << std::endl;
 				} else {
 					if(file_name.empty()) {
