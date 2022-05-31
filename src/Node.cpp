@@ -126,6 +126,13 @@ void Node::main()
 		if(block_index.find_last(height, entry)) {
 			state_hash = entry.second;
 			block_chain->seek_to(entry.first);
+			const auto block = read_block(*block_chain, true);
+			if(!block) {
+				throw std::runtime_error("failed to read block " + std::to_string(height));
+			}
+			if(block->height != height) {
+				throw std::runtime_error("expected block height " + std::to_string(height) + " but got " + std::to_string(block->height));
+			}
 		}
 		if(is_replay) {
 			log(INFO) << "Creating DB (this may take a while) ...";
