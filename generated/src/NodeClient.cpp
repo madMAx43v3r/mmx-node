@@ -397,6 +397,20 @@ std::shared_ptr<const ::mmx::Contract> NodeClient::get_contract_for(const ::mmx:
 	}
 }
 
+std::shared_ptr<const ::mmx::Contract> NodeClient::get_contract_at(const ::mmx::addr_t& address, const ::mmx::hash_t& block_hash) {
+	auto _method = ::mmx::Node_get_contract_at::create();
+	_method->address = address;
+	_method->block_hash = block_hash;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_contract_at_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Contract>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
 std::vector<std::shared_ptr<const ::mmx::Contract>> NodeClient::get_contracts(const std::vector<::mmx::addr_t>& addresses) {
 	auto _method = ::mmx::Node_get_contracts::create();
 	_method->addresses = addresses;
@@ -418,20 +432,6 @@ std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> NodeClient::get_
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>>();
-	} else {
-		throw std::logic_error("NodeClient: invalid return value");
-	}
-}
-
-std::shared_ptr<const ::mmx::Contract> NodeClient::get_contract_at(const ::mmx::addr_t& address, const ::mmx::hash_t& block_hash) {
-	auto _method = ::mmx::Node_get_contract_at::create();
-	_method->address = address;
-	_method->block_hash = block_hash;
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_contract_at_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Contract>>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}

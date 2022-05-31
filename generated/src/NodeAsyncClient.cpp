@@ -398,13 +398,27 @@ uint64_t NodeAsyncClient::get_contract_for(const ::mmx::addr_t& address, const s
 	return _request_id;
 }
 
+uint64_t NodeAsyncClient::get_contract_at(const ::mmx::addr_t& address, const ::mmx::hash_t& block_hash, const std::function<void(std::shared_ptr<const ::mmx::Contract>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+	auto _method = ::mmx::Node_get_contract_at::create();
+	_method->address = address;
+	_method->block_hash = block_hash;
+	const auto _request_id = ++vnx_next_id;
+	{
+		std::lock_guard<std::mutex> _lock(vnx_mutex);
+		vnx_pending[_request_id] = 19;
+		vnx_queue_get_contract_at[_request_id] = std::make_pair(_callback, _error_callback);
+	}
+	vnx_request(_method, _request_id);
+	return _request_id;
+}
+
 uint64_t NodeAsyncClient::get_contracts(const std::vector<::mmx::addr_t>& addresses, const std::function<void(const std::vector<std::shared_ptr<const ::mmx::Contract>>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_contracts::create();
 	_method->addresses = addresses;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 19;
+		vnx_pending[_request_id] = 20;
 		vnx_queue_get_contracts[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -417,22 +431,8 @@ uint64_t NodeAsyncClient::get_contracts_by(const std::vector<::mmx::addr_t>& add
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 20;
-		vnx_queue_get_contracts_by[_request_id] = std::make_pair(_callback, _error_callback);
-	}
-	vnx_request(_method, _request_id);
-	return _request_id;
-}
-
-uint64_t NodeAsyncClient::get_contract_at(const ::mmx::addr_t& address, const ::mmx::hash_t& block_hash, const std::function<void(std::shared_ptr<const ::mmx::Contract>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
-	auto _method = ::mmx::Node_get_contract_at::create();
-	_method->address = address;
-	_method->block_hash = block_hash;
-	const auto _request_id = ++vnx_next_id;
-	{
-		std::lock_guard<std::mutex> _lock(vnx_mutex);
 		vnx_pending[_request_id] = 21;
-		vnx_queue_get_contract_at[_request_id] = std::make_pair(_callback, _error_callback);
+		vnx_queue_get_contracts_by[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
 	return _request_id;
@@ -1128,6 +1128,18 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			break;
 		}
 		case 19: {
+			const auto _iter = vnx_queue_get_contract_at.find(_request_id);
+			if(_iter != vnx_queue_get_contract_at.end()) {
+				const auto _callback = std::move(_iter->second.second);
+				vnx_queue_get_contract_at.erase(_iter);
+				_lock.unlock();
+				if(_callback) {
+					_callback(_ex);
+				}
+			}
+			break;
+		}
+		case 20: {
 			const auto _iter = vnx_queue_get_contracts.find(_request_id);
 			if(_iter != vnx_queue_get_contracts.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1139,23 +1151,11 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 20: {
+		case 21: {
 			const auto _iter = vnx_queue_get_contracts_by.find(_request_id);
 			if(_iter != vnx_queue_get_contracts_by.end()) {
 				const auto _callback = std::move(_iter->second.second);
 				vnx_queue_get_contracts_by.erase(_iter);
-				_lock.unlock();
-				if(_callback) {
-					_callback(_ex);
-				}
-			}
-			break;
-		}
-		case 21: {
-			const auto _iter = vnx_queue_get_contract_at.find(_request_id);
-			if(_iter != vnx_queue_get_contract_at.end()) {
-				const auto _callback = std::move(_iter->second.second);
-				vnx_queue_get_contract_at.erase(_iter);
 				_lock.unlock();
 				if(_callback) {
 					_callback(_ex);
@@ -1922,6 +1922,25 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			break;
 		}
 		case 19: {
+			const auto _iter = vnx_queue_get_contract_at.find(_request_id);
+			if(_iter == vnx_queue_get_contract_at.end()) {
+				throw std::runtime_error("NodeAsyncClient: callback not found");
+			}
+			const auto _callback = std::move(_iter->second.first);
+			vnx_queue_get_contract_at.erase(_iter);
+			_lock.unlock();
+			if(_callback) {
+				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_contract_at_return>(_value)) {
+					_callback(_result->_ret_0);
+				} else if(_value && !_value->is_void()) {
+					_callback(_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Contract>>());
+				} else {
+					throw std::logic_error("NodeAsyncClient: invalid return value");
+				}
+			}
+			break;
+		}
+		case 20: {
 			const auto _iter = vnx_queue_get_contracts.find(_request_id);
 			if(_iter == vnx_queue_get_contracts.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -1940,7 +1959,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 20: {
+		case 21: {
 			const auto _iter = vnx_queue_get_contracts_by.find(_request_id);
 			if(_iter == vnx_queue_get_contracts_by.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -1953,25 +1972,6 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
 					_callback(_value->get_field_by_index(0).to<std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>>());
-				} else {
-					throw std::logic_error("NodeAsyncClient: invalid return value");
-				}
-			}
-			break;
-		}
-		case 21: {
-			const auto _iter = vnx_queue_get_contract_at.find(_request_id);
-			if(_iter == vnx_queue_get_contract_at.end()) {
-				throw std::runtime_error("NodeAsyncClient: callback not found");
-			}
-			const auto _callback = std::move(_iter->second.first);
-			vnx_queue_get_contract_at.erase(_iter);
-			_lock.unlock();
-			if(_callback) {
-				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_contract_at_return>(_value)) {
-					_callback(_result->_ret_0);
-				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Contract>>());
 				} else {
 					throw std::logic_error("NodeAsyncClient: invalid return value");
 				}
