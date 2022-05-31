@@ -1369,6 +1369,7 @@ void Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noe
 {
 	std::vector<std::vector<addr_t>> addr_list;
 	addr_log.find_greater_equal(height, addr_list);
+	addr_log.erase_greater_equal(height);
 
 	std::unordered_set<addr_t> addr_set;
 	for(const auto& list : addr_list) {
@@ -1429,8 +1430,6 @@ void Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noe
 			log(INFO) << "Reverted " << affected.size() << " contracts";
 		}
 	}
-	addr_log.erase_greater_equal(height);
-
 	offer_log.erase_all(height, vnx::rocksdb::GREATER_EQUAL);
 	vplot_log.erase_all(height, vnx::rocksdb::GREATER_EQUAL);
 
@@ -1462,13 +1461,14 @@ void Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noe
 	}
 	storage->revert(height);
 	{
-		std::pair<int64_t, hash_t> entry;
-		if(block_index.find(height, entry)) {
+		std::vector<std::pair<int64_t, hash_t>> entries;
+		block_index.find_greater_equal(height, entries);
+		for(const auto& entry : entries) {
 			hash_index.erase(entry.second);
 			block_chain->seek_to(entry.first);
 		}
 	}
-	block_index.erase(height);
+	block_index.erase_greater_equal(height);
 
 	if(block) {
 		for(const auto& tx : block->tx_list) {
