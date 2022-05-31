@@ -19,7 +19,7 @@ For example the variable supply will stabilize the price, one of the key propert
 Furthermore, thanks to an efficient implementation, it will provide low transaction fees even at high throughput.
 
 A mainnet launch is planned in Q4 2022.
-Currently we are running _testnet5_, so the coins farmed right now are _not worth anything_.
+Currently we are running _testnet6_, so the coins farmed right now are _not worth anything_.
 
 See `#mmx-news` and `#mmx-general` on discord: https://discord.gg/BswFhNkMzY
 
