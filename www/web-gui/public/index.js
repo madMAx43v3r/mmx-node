@@ -504,8 +504,22 @@ app.component('main-menu', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 5000);
 	},
+	mounted() {
+		if(this.isWinGUI) 
+		{
+			$("body").css("background-color", "#f2f2f2")
+			$('#content').css("padding", "10px 10px 100px 10px");
+			$('#content').css("float", "left");
+		}
+	},	
 	unmounted() {
 		clearInterval(this.timer);
+	},
+	computed: {
+		isWinGUI() {
+			let agent = navigator.userAgent;
+			return agent.indexOf("mmx.gui.win") > 0;
+		}
 	},
 	template: `
 		<div class="ui large top menu">
@@ -516,7 +530,7 @@ app.component('main-menu', {
 				<!--<router-link class="item" :class="{active: $route.meta.is_exchange}" to="/exchange/">Exchange</router-link>-->
 				<div class="right menu">
 					<router-link class="item" to="/settings/">Settings</router-link>
-					<template v-if="!$route.meta.is_login">
+					<template v-if="!$route.meta.is_login && !isWinGUI">
 						<a class="item" @click="logout">Logout</a>
 					</template>
 				</div>

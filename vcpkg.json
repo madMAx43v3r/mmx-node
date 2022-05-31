@@ -1,0 +1,11 @@
+{
+    "name": "mmx-node",
+    "version-string": "0.6.0",
+    "dependencies": [
+        "gmp",
+        "zlib",
+        "opencl",
+        "rocksdb",
+        "secp256k1"
+    ]
+}

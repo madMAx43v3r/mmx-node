@@ -251,3 +251,7 @@ add_executable(tx_bench src/tx_bench.cpp)
 
 target_link_libraries(tx_bench mmx_iface)
 
+
+if (MSVC)
+include(cmake/win_pack.cmake)
+endif()
