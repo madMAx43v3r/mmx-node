@@ -1014,7 +1014,7 @@ void Node::sync_more()
 	if(vdf_threads->get_num_pending()) {
 		return;
 	}
-	const size_t max_pending = !sync_retry ? std::max(std::min<int>(max_sync_pending, max_sync_jobs), 2) : 1;
+	const size_t max_pending = !sync_retry ? std::max(std::min<int>(max_sync_pending, max_sync_jobs), 2) : 2;
 
 	while(sync_pending.size() < max_pending && (!sync_peak || sync_pos < *sync_peak))
 	{
