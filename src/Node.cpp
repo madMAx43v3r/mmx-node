@@ -171,12 +171,13 @@ void Node::main()
 			// load history and fork tree
 			for(int64_t i = max_history; i >= 0; --i) {
 				if(i <= height) {
-					if(i < params->commit_delay) {
-						if(auto block = get_block_at(height - i)) {
+					const auto index = height - i;
+					if(i < params->commit_delay && index > 0) {
+						if(auto block = get_block_at(index)) {
 							add_block(block);
 						}
 					} else {
-						if(auto header = get_header_at(height - i)) {
+						if(auto header = get_header_at(index)) {
 							history[header->height] = header;
 						}
 					}
