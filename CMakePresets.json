@@ -1,0 +1,55 @@
+{
+    "version": 4,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 11,
+        "patch": 0
+    },
+    "configurePresets": [
+
+        {
+            "name": "windows-base",
+            "hidden": true,
+            "description": "Sets Visual Studio generator, build directory",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {                                
+                "CMAKE_TOOLCHAIN_FILE": {
+                    "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                    "type": "FILEPATH"
+                },
+                "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/cmake/custom-triplets",
+                "VCPKG_TARGET_TRIPLET": "x64-windows-mmx",
+
+                "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/build/${presetName}/!bin",
+                "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/build/${presetName}/!bin",
+
+                "MMX_WIN_PACK": "$env{MMX_WIN_PACK}"
+            }
+        },
+
+        {
+            "name": "windows-release",
+            "displayName": "Windows x64 Release",
+            "description": "Sets Visual Studio generator, build directory",
+            "inherits": "windows-base",
+            "cacheVariables": {
+                "CUSTOM_ADD_DEFINITIONS": "/EHsc /MP /W1 /O2",
+                "MMX_VERSION": "$env{MMX_VERSION}"
+            },
+            "warnings": {
+                "dev": false
+            }
+        }
+
+    ],
+
+    "buildPresets": [
+        {
+            "name": "windows-release",
+            "configurePreset": "windows-release",
+            "configuration": "Release"
+        }        
+    ] 
+
+}

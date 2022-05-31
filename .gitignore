@@ -32,6 +32,9 @@
 *.app
 *.dat
 
+*.bak
+CMakeUserPresets.json
+
 /build
 /.settings
 /.project
