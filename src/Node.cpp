@@ -164,15 +164,16 @@ void Node::main()
 						log(ERROR) << "Block validation at height " << block->height << " failed with: " << ex.what();
 						return;
 					}
+					for(const auto& entry : tx_offsets) {
+						tx_index.insert(entry.first, std::make_pair(entry.second, block->height));
+					}
+					block_index.insert(block->height, std::make_pair(block_offset, block->hash));
+
 					history.push_back(block);
 					if(history.size() > params->commit_delay) {
 						commit(history.front());
 						history.pop_front();
 					}
-					for(const auto& entry : tx_offsets) {
-						tx_index.insert(entry.first, std::make_pair(entry.second, block->height));
-					}
-					block_index.insert(block->height, std::make_pair(block_offset, block->hash));
 					if(block->height % 1000 == 0) {
 						log(INFO) << "Height " << block->height << " ...";
 					}
@@ -1715,11 +1716,10 @@ void Node::write_block(std::shared_ptr<const Block> block, bool is_replay)
 	const auto offset = out.get_output_pos();
 
 	std::vector<hash_t> tx_ids;
+	std::vector<std::pair<hash_t, int64_t>> tx_list;
 	if(auto tx = block->tx_base) {
-		if(!is_replay) {
-			tx_index.insert(tx->id, std::make_pair(offset, block->height));
-		}
 		tx_ids.push_back(tx->id);
+		tx_list.emplace_back(tx->id, offset);
 	}
 	if(!is_replay) {
 		vnx::write(out, block->get_header());
@@ -1729,10 +1729,8 @@ void Node::write_block(std::shared_ptr<const Block> block, bool is_replay)
 		const auto offset = out.get_output_pos();
 		auto txi = tx;
 		while(txi) {
-			if(!is_replay) {
-				tx_index.insert(txi->id, std::make_pair(offset, block->height));
-			}
 			tx_ids.push_back(txi->id);
+			tx_list.emplace_back(txi->id, offset);
 			txi = txi->parent;
 		}
 		if(!is_replay) {
@@ -1742,6 +1740,9 @@ void Node::write_block(std::shared_ptr<const Block> block, bool is_replay)
 	tx_log.insert(block->height, tx_ids);
 
 	if(!is_replay) {
+		for(const auto& entry : tx_list) {
+			tx_index.insert(entry.first, std::make_pair(entry.second, block->height));
+		}
 		vnx::write(out, nullptr);	// end of block
 		const auto end = out.get_output_pos();
 		vnx::write(out, nullptr);	// temporary end of block_chain.dat
