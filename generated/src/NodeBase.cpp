@@ -57,6 +57,8 @@
 #include <mmx/Node_get_history_return.hxx>
 #include <mmx/Node_get_network_info.hxx>
 #include <mmx/Node_get_network_info_return.hxx>
+#include <mmx/Node_get_offers.hxx>
+#include <mmx/Node_get_offers_return.hxx>
 #include <mmx/Node_get_params.hxx>
 #include <mmx/Node_get_params_return.hxx>
 #include <mmx/Node_get_synced_height.hxx>
@@ -106,6 +108,7 @@
 #include <mmx/bls_pubkey_t.hpp>
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/hash_t.hpp>
+#include <mmx/offer_data_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_info_t.hxx>
 #include <mmx/uint128.hpp>
@@ -603,7 +606,7 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	type_code->code_hash = vnx::Hash64(0x8ba549321d7253d9ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::NodeBase);
-	type_code->methods.resize(55);
+	type_code->methods.resize(56);
 	type_code->methods[0] = ::mmx::Node_add_block::static_get_type_code();
 	type_code->methods[1] = ::mmx::Node_add_transaction::static_get_type_code();
 	type_code->methods[2] = ::mmx::Node_call_contract::static_get_type_code();
@@ -628,37 +631,38 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	type_code->methods[21] = ::mmx::Node_get_height::static_get_type_code();
 	type_code->methods[22] = ::mmx::Node_get_history::static_get_type_code();
 	type_code->methods[23] = ::mmx::Node_get_network_info::static_get_type_code();
-	type_code->methods[24] = ::mmx::Node_get_params::static_get_type_code();
-	type_code->methods[25] = ::mmx::Node_get_synced_height::static_get_type_code();
-	type_code->methods[26] = ::mmx::Node_get_total_balance::static_get_type_code();
-	type_code->methods[27] = ::mmx::Node_get_total_balances::static_get_type_code();
-	type_code->methods[28] = ::mmx::Node_get_total_supply::static_get_type_code();
-	type_code->methods[29] = ::mmx::Node_get_transaction::static_get_type_code();
-	type_code->methods[30] = ::mmx::Node_get_transactions::static_get_type_code();
-	type_code->methods[31] = ::mmx::Node_get_tx_height::static_get_type_code();
-	type_code->methods[32] = ::mmx::Node_get_tx_ids_at::static_get_type_code();
-	type_code->methods[33] = ::mmx::Node_get_tx_info::static_get_type_code();
-	type_code->methods[34] = ::mmx::Node_get_tx_info_for::static_get_type_code();
-	type_code->methods[35] = ::mmx::Node_get_virtual_plot_balance::static_get_type_code();
-	type_code->methods[36] = ::mmx::Node_get_virtual_plots_for::static_get_type_code();
-	type_code->methods[37] = ::mmx::Node_is_revoked::static_get_type_code();
-	type_code->methods[38] = ::mmx::Node_read_storage::static_get_type_code();
-	type_code->methods[39] = ::mmx::Node_read_storage_array::static_get_type_code();
-	type_code->methods[40] = ::mmx::Node_read_storage_field::static_get_type_code();
-	type_code->methods[41] = ::mmx::Node_read_storage_map::static_get_type_code();
-	type_code->methods[42] = ::mmx::Node_read_storage_var::static_get_type_code();
-	type_code->methods[43] = ::mmx::Node_start_sync::static_get_type_code();
-	type_code->methods[44] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
-	type_code->methods[45] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
-	type_code->methods[46] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
-	type_code->methods[47] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
-	type_code->methods[48] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
-	type_code->methods[49] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
-	type_code->methods[50] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
-	type_code->methods[51] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
-	type_code->methods[52] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
-	type_code->methods[53] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
-	type_code->methods[54] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
+	type_code->methods[24] = ::mmx::Node_get_offers::static_get_type_code();
+	type_code->methods[25] = ::mmx::Node_get_params::static_get_type_code();
+	type_code->methods[26] = ::mmx::Node_get_synced_height::static_get_type_code();
+	type_code->methods[27] = ::mmx::Node_get_total_balance::static_get_type_code();
+	type_code->methods[28] = ::mmx::Node_get_total_balances::static_get_type_code();
+	type_code->methods[29] = ::mmx::Node_get_total_supply::static_get_type_code();
+	type_code->methods[30] = ::mmx::Node_get_transaction::static_get_type_code();
+	type_code->methods[31] = ::mmx::Node_get_transactions::static_get_type_code();
+	type_code->methods[32] = ::mmx::Node_get_tx_height::static_get_type_code();
+	type_code->methods[33] = ::mmx::Node_get_tx_ids_at::static_get_type_code();
+	type_code->methods[34] = ::mmx::Node_get_tx_info::static_get_type_code();
+	type_code->methods[35] = ::mmx::Node_get_tx_info_for::static_get_type_code();
+	type_code->methods[36] = ::mmx::Node_get_virtual_plot_balance::static_get_type_code();
+	type_code->methods[37] = ::mmx::Node_get_virtual_plots_for::static_get_type_code();
+	type_code->methods[38] = ::mmx::Node_is_revoked::static_get_type_code();
+	type_code->methods[39] = ::mmx::Node_read_storage::static_get_type_code();
+	type_code->methods[40] = ::mmx::Node_read_storage_array::static_get_type_code();
+	type_code->methods[41] = ::mmx::Node_read_storage_field::static_get_type_code();
+	type_code->methods[42] = ::mmx::Node_read_storage_map::static_get_type_code();
+	type_code->methods[43] = ::mmx::Node_read_storage_var::static_get_type_code();
+	type_code->methods[44] = ::mmx::Node_start_sync::static_get_type_code();
+	type_code->methods[45] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
+	type_code->methods[46] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
+	type_code->methods[47] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
+	type_code->methods[48] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
+	type_code->methods[49] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
+	type_code->methods[50] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
+	type_code->methods[51] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
+	type_code->methods[52] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
+	type_code->methods[53] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
+	type_code->methods[54] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
+	type_code->methods[55] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
 	type_code->fields.resize(34);
 	{
 		auto& field = type_code->fields[0];
@@ -1068,6 +1072,12 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_network_info>(_method);
 			auto _return_value = ::mmx::Node_get_network_info_return::create();
 			_return_value->_ret_0 = get_network_info();
+			return _return_value;
+		}
+		case 0x62e5e37dd72d3175ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_offers>(_method);
+			auto _return_value = ::mmx::Node_get_offers_return::create();
+			_return_value->_ret_0 = get_offers(_args->since);
 			return _return_value;
 		}
 		case 0x6384b34900c2e465ull: {
