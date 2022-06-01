@@ -1686,7 +1686,7 @@ std::shared_ptr<const BlockHeader> Node::read_block(
 							if(tx_offsets) {
 								auto txi = tx;
 								while(txi) {
-									tx_offsets->emplace_back(tx->id, offset);
+									tx_offsets->emplace_back(txi->id, offset);
 									txi = txi->parent;
 								}
 							}
