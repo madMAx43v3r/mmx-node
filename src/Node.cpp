@@ -1302,7 +1302,12 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	revoke_log.insert(block->height, std::vector<hash_t>(revoke_set.begin(), revoke_set.end()));
 
 	for(const auto& key : balance_set) {
-		balance_table.insert(key, std::make_pair(balance_map[key], block->height));
+		if(const auto& balance = balance_map[key]) {
+			balance_table.insert(key, std::make_pair(balance, block->height));
+		} else {
+			balance_map.erase(key);
+			balance_table.erase(key);
+		}
 	}
 	storage->height = block->height;
 
