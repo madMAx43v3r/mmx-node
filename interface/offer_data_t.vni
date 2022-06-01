@@ -1,0 +1,15 @@
+package mmx;
+
+struct offer_data_t {
+	
+	uint height;
+		
+	addr_t address;
+	
+	Transaction* offer;
+	
+	bool is_open;
+	bool is_revoked;
+	bool is_covered;
+	
+}

@@ -131,6 +131,8 @@ protected:
 
 	uint64_t get_virtual_plot_balance(const addr_t& plot_id, const vnx::optional<hash_t>& block_hash) const override;
 
+	std::vector<offer_data_t> get_offers(const uint32_t& since) const;
+
 	void on_stuck_timeout();
 
 	void start_sync(const vnx::bool_t& force) override;

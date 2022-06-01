@@ -893,6 +893,45 @@ std::vector<std::pair<addr_t, std::shared_ptr<const Contract>>> Node::get_virtua
 	return std::vector<std::pair<addr_t, std::shared_ptr<const Contract>>>(out.begin(), out.end());
 }
 
+std::vector<offer_data_t> Node::get_offers(const uint32_t& since) const
+{
+	std::vector<addr_t> entries;
+	offer_log.find_range(since, -1, entries);
+
+	std::vector<offer_data_t> out;
+	for(const auto& address : entries) {
+		if(auto offer = std::dynamic_pointer_cast<const contract::Offer>(get_contract(address))) {
+			offer_data_t data;
+			data.height = *get_tx_height(address);
+			data.address = address;
+			if(const auto& tx = offer->base) {
+				data.offer = tx;
+				if(tx->sender) {
+					data.is_revoked = is_revoked(tx->id, *tx->sender);
+				}
+				if(!data.is_revoked) {
+					data.is_open = !get_tx_height(tx->id);
+				}
+				if(data.is_open) {
+					data.is_covered = true;
+					std::map<std::pair<addr_t, addr_t>, uint128_t> inputs;
+					for(const auto& in : tx->get_all_inputs()) {
+						inputs[std::make_pair(in.address, in.contract)] += in.amount;
+					}
+					for(const auto& entry : inputs) {
+						auto iter = balance_map.find(entry.first);
+						if(iter == balance_map.end() || iter->second < entry.second) {
+							data.is_covered = false;
+						}
+					}
+				}
+			}
+			out.push_back(data);
+		}
+	}
+	return out;
+}
+
 void Node::http_request_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
 								const vnx::request_id_t& request_id) const
 {

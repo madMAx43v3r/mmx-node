@@ -555,7 +555,7 @@ int main(int argc, char** argv)
 						if(amount.upper()) {
 							throw std::logic_error("amount overflow");
 						}
-						std::cout << "You receive: " << amount.lower() / pow(10, token->decimals)
+						std::cout << "You receive:  " << amount.lower() / pow(10, token->decimals)
 								<< " " << token->symbol << " [" << entry.first << "]" << std::endl;
 					}
 					if(input < output) {
@@ -996,8 +996,51 @@ int main(int argc, char** argv)
 					std::cerr << "Help: mmx node fetch [block | header]" << std::endl;
 				}
 			}
+			else if(command == "offers")
+			{
+				std::string filter;
+				vnx::read_config("$3", filter);
+
+				for(const auto& data : node.get_offers())
+				{
+					if(data.is_revoked) {
+						if(!filter.empty() && filter != "revoked") {
+							continue;
+						}
+						std::cout << "REVOKED";
+					} else if(data.is_open) {
+						if(!filter.empty() && filter != "open") {
+							continue;
+						}
+						std::cout << "OPEN";
+						if(!data.is_covered) {
+							std::cout << " NOT COVERED";
+						}
+					} else {
+						if(!filter.empty() && filter != "closed") {
+							continue;
+						}
+						std::cout << "CLOSED";
+					}
+					std::cout << " [" << data.address << "] [" << data.height << "] " << std::endl;
+
+					for(const auto& entry : data.offer->get_balance()) {
+						const auto token = get_token(node, entry.first);
+						const auto& input = entry.second.first;
+						const auto& output = entry.second.second;
+						if(input > output) {
+							std::cout << "  They offer:   " << (input - output).lower() / pow(10, token->decimals)
+									<< " " << token->symbol << " [" << entry.first << "]" << std::endl;
+						}
+						if(input < output) {
+							std::cout << "  They ask for: " << (output - input).lower() / pow(10, token->decimals)
+									<< " " << token->symbol << " [" << entry.first << "]" << std::endl;
+						}
+					}
+				}
+			}
 			else {
-				std::cerr << "Help: mmx node [info | peers | tx | get | call | read | dump | fetch | balance | history | sync]" << std::endl;
+				std::cerr << "Help: mmx node [info | peers | tx | get | call | read | dump | fetch | balance | history | offers | sync]" << std::endl;
 			}
 		}
 		else if(module == "farm")
