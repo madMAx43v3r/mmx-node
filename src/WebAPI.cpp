@@ -450,7 +450,9 @@ public:
 		} else if(auto value = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const ProofOfStake>(base)) {
-			set(render(value, context));
+			auto tmp = render(*value, context);
+			tmp["ksize"] = "VP";
+			set(tmp);
 		} else {
 			set(render(base, context));
 		}
