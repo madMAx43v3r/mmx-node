@@ -501,8 +501,11 @@ app.component('main-menu', {
 		}
 	},
 	created() {
-		this.update();
-		this.timer = setInterval(() => { this.update(); }, 5000);
+		if(!this.isWinGUI) 
+		{
+			this.update();
+			this.timer = setInterval(() => { this.update(); }, 5000);
+		}
 	},
 	mounted() {
 		if(this.isWinGUI) 
