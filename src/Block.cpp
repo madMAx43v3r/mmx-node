@@ -84,6 +84,9 @@ void Block::validate() const
 		if(nonce) {
 			throw std::logic_error("invalid block nonce");
 		}
+		if(proof) {
+			// TODO: throw std::logic_error("proof without farmer_sig");
+		}
 		if(tx_base || tx_list.size()) {
 			throw std::logic_error("cannot have transactions");
 		}
