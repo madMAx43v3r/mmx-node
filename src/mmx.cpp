@@ -547,7 +547,6 @@ int main(int argc, char** argv)
 					}
 				}
 				for(const auto& entry : offer->get_balance()) {
-					const auto token = get_token(node, entry.first);
 					const auto& input = entry.second.first;
 					const auto& output = entry.second.second;
 					if(input > output) {
@@ -555,14 +554,20 @@ int main(int argc, char** argv)
 						if(amount.upper()) {
 							throw std::logic_error("amount overflow");
 						}
+						const auto token = get_token(node, entry.first);
 						std::cout << "You receive:  " << amount.lower() / pow(10, token->decimals)
 								<< " " << token->symbol << " [" << entry.first << "]" << std::endl;
 					}
+				}
+				for(const auto& entry : offer->get_balance()) {
+					const auto& input = entry.second.first;
+					const auto& output = entry.second.second;
 					if(input < output) {
 						const auto amount = output - input;
 						if(amount.upper()) {
 							throw std::logic_error("amount overflow");
 						}
+						const auto token = get_token(node, entry.first);
 						std::cout << "They ask for: " << amount.lower() / pow(10, token->decimals)
 								<< " " << token->symbol << " [" << entry.first << "]" << std::endl;
 					}
@@ -1025,14 +1030,19 @@ int main(int argc, char** argv)
 					std::cout << " [" << data.address << "] [" << data.height << "] " << std::endl;
 
 					for(const auto& entry : data.offer->get_balance()) {
-						const auto token = get_token(node, entry.first);
 						const auto& input = entry.second.first;
 						const auto& output = entry.second.second;
 						if(input > output) {
+							const auto token = get_token(node, entry.first);
 							std::cout << "  They offer:   " << (input - output).lower() / pow(10, token->decimals)
 									<< " " << token->symbol << " [" << entry.first << "]" << std::endl;
 						}
+					}
+					for(const auto& entry : data.offer->get_balance()) {
+						const auto& input = entry.second.first;
+						const auto& output = entry.second.second;
 						if(input < output) {
+							const auto token = get_token(node, entry.first);
 							std::cout << "  They ask for: " << (output - input).lower() / pow(10, token->decimals)
 									<< " " << token->symbol << " [" << entry.first << "]" << std::endl;
 						}
