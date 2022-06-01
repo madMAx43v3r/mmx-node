@@ -6,6 +6,8 @@ function validate_address(address) {
 var app = Vue.createApp({
 })
 
+app.config.globalProperties.isWinGUI = navigator.userAgent.indexOf("mmx.gui.win") > 0;
+
 const Wallet = {
 	template: '<wallet-summary></wallet-summary>'
 }
@@ -517,12 +519,6 @@ app.component('main-menu', {
 	},	
 	unmounted() {
 		clearInterval(this.timer);
-	},
-	computed: {
-		isWinGUI() {
-			let agent = navigator.userAgent;
-			return agent.indexOf("mmx.gui.win") > 0;
-		}
 	},
 	template: `
 		<div class="ui large top menu">
