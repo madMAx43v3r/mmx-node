@@ -220,7 +220,7 @@ std::shared_ptr<vnx::Value> VirtualPlot::vnx_call_switch(std::shared_ptr<const v
 		case 0x622fcf1cba1952edull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Contract_calc_hash>(_method);
 			auto _return_value = ::mmx::Contract_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash();
+			_return_value->_ret_0 = calc_hash(_args->full_hash);
 			return _return_value;
 		}
 		case 0x989dd3da956ebbd0ull: {
@@ -274,7 +274,7 @@ std::shared_ptr<vnx::Value> VirtualPlot::vnx_call_switch(std::shared_ptr<const v
 		case 0x2ec01712e3899bd7ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::contract::VirtualPlot_calc_hash>(_method);
 			auto _return_value = ::mmx::contract::VirtualPlot_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash();
+			_return_value->_ret_0 = calc_hash(_args->full_hash);
 			return _return_value;
 		}
 		case 0xd79659de62aa238cull: {

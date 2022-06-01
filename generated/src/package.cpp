@@ -19,6 +19,8 @@
 #include <mmx/BlockHeader.hxx>
 #include <mmx/BlockHeader_calc_hash.hxx>
 #include <mmx/BlockHeader_calc_hash_return.hxx>
+#include <mmx/BlockHeader_get_full_hash.hxx>
+#include <mmx/BlockHeader_get_full_hash_return.hxx>
 #include <mmx/BlockHeader_get_header.hxx>
 #include <mmx/BlockHeader_get_header_return.hxx>
 #include <mmx/BlockHeader_is_valid.hxx>
@@ -27,6 +29,8 @@
 #include <mmx/BlockHeader_validate_return.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/Challenge.hxx>
+#include <mmx/Challenge_calc_hash.hxx>
+#include <mmx/Challenge_calc_hash_return.hxx>
 #include <mmx/Context.hxx>
 #include <mmx/Context_get_contract.hxx>
 #include <mmx/Context_get_contract_return.hxx>
@@ -202,13 +206,21 @@
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofOfTime_calc_hash.hxx>
 #include <mmx/ProofOfTime_calc_hash_return.hxx>
+#include <mmx/ProofOfTime_get_full_hash.hxx>
+#include <mmx/ProofOfTime_get_full_hash_return.hxx>
 #include <mmx/ProofOfTime_get_num_iters.hxx>
 #include <mmx/ProofOfTime_get_num_iters_return.hxx>
 #include <mmx/ProofOfTime_get_output.hxx>
 #include <mmx/ProofOfTime_get_output_return.hxx>
 #include <mmx/ProofOfTime_get_vdf_iters.hxx>
 #include <mmx/ProofOfTime_get_vdf_iters_return.hxx>
+#include <mmx/ProofOfTime_is_valid.hxx>
+#include <mmx/ProofOfTime_is_valid_return.hxx>
+#include <mmx/ProofOfTime_validate.hxx>
+#include <mmx/ProofOfTime_validate_return.hxx>
 #include <mmx/ProofResponse.hxx>
+#include <mmx/ProofResponse_calc_hash.hxx>
+#include <mmx/ProofResponse_calc_hash_return.hxx>
 #include <mmx/ProofResponse_is_valid.hxx>
 #include <mmx/ProofResponse_is_valid_return.hxx>
 #include <mmx/ProofResponse_validate.hxx>
@@ -244,6 +256,8 @@
 #include <mmx/Solution.hxx>
 #include <mmx/Solution_calc_cost.hxx>
 #include <mmx/Solution_calc_cost_return.hxx>
+#include <mmx/Solution_calc_hash.hxx>
+#include <mmx/Solution_calc_hash_return.hxx>
 #include <mmx/TimeInfusion.hxx>
 #include <mmx/TimeLordBase.hxx>
 #include <mmx/TimeLord_stop_vdf.hxx>
@@ -626,6 +640,30 @@ void type<::mmx::BlockHeader_calc_hash_return>::create_dynamic_code(std::vector<
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::BlockHeader_get_full_hash>::get_type_code() {
+	return mmx::vnx_native_type_code_BlockHeader_get_full_hash;
+}
+
+void type<::mmx::BlockHeader_get_full_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::BlockHeader_get_full_hash());
+}
+
+void type<::mmx::BlockHeader_get_full_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::BlockHeader_get_full_hash& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::BlockHeader_get_full_hash_return>::get_type_code() {
+	return mmx::vnx_native_type_code_BlockHeader_get_full_hash_return;
+}
+
+void type<::mmx::BlockHeader_get_full_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::BlockHeader_get_full_hash_return());
+}
+
+void type<::mmx::BlockHeader_get_full_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::BlockHeader_get_full_hash_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::BlockHeader_get_header>::get_type_code() {
 	return mmx::vnx_native_type_code_BlockHeader_get_header;
 }
@@ -719,6 +757,30 @@ void type<::mmx::Challenge>::create_dynamic_code(std::vector<uint16_t>& code) {
 }
 
 void type<::mmx::Challenge>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Challenge& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Challenge_calc_hash>::get_type_code() {
+	return mmx::vnx_native_type_code_Challenge_calc_hash;
+}
+
+void type<::mmx::Challenge_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Challenge_calc_hash());
+}
+
+void type<::mmx::Challenge_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Challenge_calc_hash& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Challenge_calc_hash_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Challenge_calc_hash_return;
+}
+
+void type<::mmx::Challenge_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Challenge_calc_hash_return());
+}
+
+void type<::mmx::Challenge_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Challenge_calc_hash_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -2786,6 +2848,30 @@ void type<::mmx::ProofOfTime_calc_hash_return>::create_dynamic_code(std::vector<
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::ProofOfTime_get_full_hash>::get_type_code() {
+	return mmx::vnx_native_type_code_ProofOfTime_get_full_hash;
+}
+
+void type<::mmx::ProofOfTime_get_full_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::ProofOfTime_get_full_hash());
+}
+
+void type<::mmx::ProofOfTime_get_full_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofOfTime_get_full_hash& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::ProofOfTime_get_full_hash_return>::get_type_code() {
+	return mmx::vnx_native_type_code_ProofOfTime_get_full_hash_return;
+}
+
+void type<::mmx::ProofOfTime_get_full_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::ProofOfTime_get_full_hash_return());
+}
+
+void type<::mmx::ProofOfTime_get_full_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofOfTime_get_full_hash_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::ProofOfTime_get_num_iters>::get_type_code() {
 	return mmx::vnx_native_type_code_ProofOfTime_get_num_iters;
 }
@@ -2858,6 +2944,54 @@ void type<::mmx::ProofOfTime_get_vdf_iters_return>::create_dynamic_code(std::vec
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::ProofOfTime_is_valid>::get_type_code() {
+	return mmx::vnx_native_type_code_ProofOfTime_is_valid;
+}
+
+void type<::mmx::ProofOfTime_is_valid>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::ProofOfTime_is_valid());
+}
+
+void type<::mmx::ProofOfTime_is_valid>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofOfTime_is_valid& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::ProofOfTime_is_valid_return>::get_type_code() {
+	return mmx::vnx_native_type_code_ProofOfTime_is_valid_return;
+}
+
+void type<::mmx::ProofOfTime_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::ProofOfTime_is_valid_return());
+}
+
+void type<::mmx::ProofOfTime_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofOfTime_is_valid_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::ProofOfTime_validate>::get_type_code() {
+	return mmx::vnx_native_type_code_ProofOfTime_validate;
+}
+
+void type<::mmx::ProofOfTime_validate>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::ProofOfTime_validate());
+}
+
+void type<::mmx::ProofOfTime_validate>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofOfTime_validate& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::ProofOfTime_validate_return>::get_type_code() {
+	return mmx::vnx_native_type_code_ProofOfTime_validate_return;
+}
+
+void type<::mmx::ProofOfTime_validate_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::ProofOfTime_validate_return());
+}
+
+void type<::mmx::ProofOfTime_validate_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofOfTime_validate_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::ProofResponse>::get_type_code() {
 	return mmx::vnx_native_type_code_ProofResponse;
 }
@@ -2867,6 +3001,30 @@ void type<::mmx::ProofResponse>::create_dynamic_code(std::vector<uint16_t>& code
 }
 
 void type<::mmx::ProofResponse>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofResponse& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::ProofResponse_calc_hash>::get_type_code() {
+	return mmx::vnx_native_type_code_ProofResponse_calc_hash;
+}
+
+void type<::mmx::ProofResponse_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::ProofResponse_calc_hash());
+}
+
+void type<::mmx::ProofResponse_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofResponse_calc_hash& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::ProofResponse_calc_hash_return>::get_type_code() {
+	return mmx::vnx_native_type_code_ProofResponse_calc_hash_return;
+}
+
+void type<::mmx::ProofResponse_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::ProofResponse_calc_hash_return());
+}
+
+void type<::mmx::ProofResponse_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofResponse_calc_hash_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -3275,6 +3433,30 @@ void type<::mmx::Solution_calc_cost_return>::create_dynamic_code(std::vector<uin
 }
 
 void type<::mmx::Solution_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Solution_calc_cost_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Solution_calc_hash>::get_type_code() {
+	return mmx::vnx_native_type_code_Solution_calc_hash;
+}
+
+void type<::mmx::Solution_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Solution_calc_hash());
+}
+
+void type<::mmx::Solution_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Solution_calc_hash& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Solution_calc_hash_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Solution_calc_hash_return;
+}
+
+void type<::mmx::Solution_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Solution_calc_hash_return());
+}
+
+void type<::mmx::Solution_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Solution_calc_hash_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -5168,6 +5350,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::BlockHeader::static_create_type_code());
 	vnx::register_type_code(::mmx::BlockHeader_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::BlockHeader_calc_hash_return::static_create_type_code());
+	vnx::register_type_code(::mmx::BlockHeader_get_full_hash::static_create_type_code());
+	vnx::register_type_code(::mmx::BlockHeader_get_full_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::BlockHeader_get_header::static_create_type_code());
 	vnx::register_type_code(::mmx::BlockHeader_get_header_return::static_create_type_code());
 	vnx::register_type_code(::mmx::BlockHeader_is_valid::static_create_type_code());
@@ -5176,6 +5360,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::BlockHeader_validate_return::static_create_type_code());
 	vnx::register_type_code(::mmx::ChainParams::static_create_type_code());
 	vnx::register_type_code(::mmx::Challenge::static_create_type_code());
+	vnx::register_type_code(::mmx::Challenge_calc_hash::static_create_type_code());
+	vnx::register_type_code(::mmx::Challenge_calc_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Context::static_create_type_code());
 	vnx::register_type_code(::mmx::Context_get_contract::static_create_type_code());
 	vnx::register_type_code(::mmx::Context_get_contract_return::static_create_type_code());
@@ -5351,13 +5537,21 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::ProofOfTime::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofOfTime_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofOfTime_calc_hash_return::static_create_type_code());
+	vnx::register_type_code(::mmx::ProofOfTime_get_full_hash::static_create_type_code());
+	vnx::register_type_code(::mmx::ProofOfTime_get_full_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofOfTime_get_num_iters::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofOfTime_get_num_iters_return::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofOfTime_get_output::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofOfTime_get_output_return::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofOfTime_get_vdf_iters::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofOfTime_get_vdf_iters_return::static_create_type_code());
+	vnx::register_type_code(::mmx::ProofOfTime_is_valid::static_create_type_code());
+	vnx::register_type_code(::mmx::ProofOfTime_is_valid_return::static_create_type_code());
+	vnx::register_type_code(::mmx::ProofOfTime_validate::static_create_type_code());
+	vnx::register_type_code(::mmx::ProofOfTime_validate_return::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofResponse::static_create_type_code());
+	vnx::register_type_code(::mmx::ProofResponse_calc_hash::static_create_type_code());
+	vnx::register_type_code(::mmx::ProofResponse_calc_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofResponse_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofResponse_is_valid_return::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofResponse_validate::static_create_type_code());
@@ -5393,6 +5587,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Solution::static_create_type_code());
 	vnx::register_type_code(::mmx::Solution_calc_cost::static_create_type_code());
 	vnx::register_type_code(::mmx::Solution_calc_cost_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Solution_calc_hash::static_create_type_code());
+	vnx::register_type_code(::mmx::Solution_calc_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::TimeInfusion::static_create_type_code());
 	vnx::register_type_code(::mmx::TimeLordBase::static_create_type_code());
 	vnx::register_type_code(::mmx::TimeLord_stop_vdf::static_create_type_code());
@@ -5569,6 +5765,8 @@ const vnx::TypeCode* const vnx_native_type_code_Block_validate_return = vnx::get
 const vnx::TypeCode* const vnx_native_type_code_BlockHeader = vnx::get_type_code(vnx::Hash64(0xcaae941a2fc712a6ull));
 const vnx::TypeCode* const vnx_native_type_code_BlockHeader_calc_hash = vnx::get_type_code(vnx::Hash64(0xc525b15a3f7ee317ull));
 const vnx::TypeCode* const vnx_native_type_code_BlockHeader_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xc0147d9c9c93de5cull));
+const vnx::TypeCode* const vnx_native_type_code_BlockHeader_get_full_hash = vnx::get_type_code(vnx::Hash64(0x448d0ee44ea4ae66ull));
+const vnx::TypeCode* const vnx_native_type_code_BlockHeader_get_full_hash_return = vnx::get_type_code(vnx::Hash64(0x568b2fcf6308997cull));
 const vnx::TypeCode* const vnx_native_type_code_BlockHeader_get_header = vnx::get_type_code(vnx::Hash64(0xd7c88d66a260d84aull));
 const vnx::TypeCode* const vnx_native_type_code_BlockHeader_get_header_return = vnx::get_type_code(vnx::Hash64(0xc691f683161c6f7cull));
 const vnx::TypeCode* const vnx_native_type_code_BlockHeader_is_valid = vnx::get_type_code(vnx::Hash64(0xee0825f87d03a5ebull));
@@ -5577,6 +5775,8 @@ const vnx::TypeCode* const vnx_native_type_code_BlockHeader_validate = vnx::get_
 const vnx::TypeCode* const vnx_native_type_code_BlockHeader_validate_return = vnx::get_type_code(vnx::Hash64(0x37ed485c972b21dull));
 const vnx::TypeCode* const vnx_native_type_code_ChainParams = vnx::get_type_code(vnx::Hash64(0x51bba8d28881e8e7ull));
 const vnx::TypeCode* const vnx_native_type_code_Challenge = vnx::get_type_code(vnx::Hash64(0x4bf49f8022405249ull));
+const vnx::TypeCode* const vnx_native_type_code_Challenge_calc_hash = vnx::get_type_code(vnx::Hash64(0xfd336f4fe0150c72ull));
+const vnx::TypeCode* const vnx_native_type_code_Challenge_calc_hash_return = vnx::get_type_code(vnx::Hash64(0x847bf0721d8e62c8ull));
 const vnx::TypeCode* const vnx_native_type_code_Context = vnx::get_type_code(vnx::Hash64(0x4c0f99bb7370b6ccull));
 const vnx::TypeCode* const vnx_native_type_code_Context_get_contract = vnx::get_type_code(vnx::Hash64(0x1f4d1db80d454fcbull));
 const vnx::TypeCode* const vnx_native_type_code_Context_get_contract_return = vnx::get_type_code(vnx::Hash64(0x852f76838933bfeaull));
@@ -5752,13 +5952,21 @@ const vnx::TypeCode* const vnx_native_type_code_ProofOfStake_validate_return = v
 const vnx::TypeCode* const vnx_native_type_code_ProofOfTime = vnx::get_type_code(vnx::Hash64(0xa84a63942b8e5c6aull));
 const vnx::TypeCode* const vnx_native_type_code_ProofOfTime_calc_hash = vnx::get_type_code(vnx::Hash64(0xfbe7b8fb426a914full));
 const vnx::TypeCode* const vnx_native_type_code_ProofOfTime_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xa17fd72e3bcf8883ull));
+const vnx::TypeCode* const vnx_native_type_code_ProofOfTime_get_full_hash = vnx::get_type_code(vnx::Hash64(0x9bffe7ccb4fdf8f3ull));
+const vnx::TypeCode* const vnx_native_type_code_ProofOfTime_get_full_hash_return = vnx::get_type_code(vnx::Hash64(0x8827d7175dce5cdcull));
 const vnx::TypeCode* const vnx_native_type_code_ProofOfTime_get_num_iters = vnx::get_type_code(vnx::Hash64(0x6572055c0dbeeb1aull));
 const vnx::TypeCode* const vnx_native_type_code_ProofOfTime_get_num_iters_return = vnx::get_type_code(vnx::Hash64(0xb554585d04cc83d2ull));
 const vnx::TypeCode* const vnx_native_type_code_ProofOfTime_get_output = vnx::get_type_code(vnx::Hash64(0x836cbbed3b492046ull));
 const vnx::TypeCode* const vnx_native_type_code_ProofOfTime_get_output_return = vnx::get_type_code(vnx::Hash64(0xc5cd3b94f87c3879ull));
 const vnx::TypeCode* const vnx_native_type_code_ProofOfTime_get_vdf_iters = vnx::get_type_code(vnx::Hash64(0xf9d7d387b2b87128ull));
 const vnx::TypeCode* const vnx_native_type_code_ProofOfTime_get_vdf_iters_return = vnx::get_type_code(vnx::Hash64(0x7689da36ad1708caull));
+const vnx::TypeCode* const vnx_native_type_code_ProofOfTime_is_valid = vnx::get_type_code(vnx::Hash64(0xe1d118adf0c2d963ull));
+const vnx::TypeCode* const vnx_native_type_code_ProofOfTime_is_valid_return = vnx::get_type_code(vnx::Hash64(0xad09f2e178781ab8ull));
+const vnx::TypeCode* const vnx_native_type_code_ProofOfTime_validate = vnx::get_type_code(vnx::Hash64(0xc06e8b5bfaac6626ull));
+const vnx::TypeCode* const vnx_native_type_code_ProofOfTime_validate_return = vnx::get_type_code(vnx::Hash64(0xb02c4e30b4878b43ull));
 const vnx::TypeCode* const vnx_native_type_code_ProofResponse = vnx::get_type_code(vnx::Hash64(0x816e898b36befae0ull));
+const vnx::TypeCode* const vnx_native_type_code_ProofResponse_calc_hash = vnx::get_type_code(vnx::Hash64(0x4f34bfc7bf487289ull));
+const vnx::TypeCode* const vnx_native_type_code_ProofResponse_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xfdb77db2eb043b25ull));
 const vnx::TypeCode* const vnx_native_type_code_ProofResponse_is_valid = vnx::get_type_code(vnx::Hash64(0xc52089d6664814f3ull));
 const vnx::TypeCode* const vnx_native_type_code_ProofResponse_is_valid_return = vnx::get_type_code(vnx::Hash64(0x553a845c55c74364ull));
 const vnx::TypeCode* const vnx_native_type_code_ProofResponse_validate = vnx::get_type_code(vnx::Hash64(0xe49f1a206c26abb6ull));
@@ -5794,6 +6002,8 @@ const vnx::TypeCode* const vnx_native_type_code_Router_sign_msg_return = vnx::ge
 const vnx::TypeCode* const vnx_native_type_code_Solution = vnx::get_type_code(vnx::Hash64(0x9f693babd1a91ccdull));
 const vnx::TypeCode* const vnx_native_type_code_Solution_calc_cost = vnx::get_type_code(vnx::Hash64(0xb8838a691144ca1eull));
 const vnx::TypeCode* const vnx_native_type_code_Solution_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xa6e602a441df68d6ull));
+const vnx::TypeCode* const vnx_native_type_code_Solution_calc_hash = vnx::get_type_code(vnx::Hash64(0x6891410f74d6bee1ull));
+const vnx::TypeCode* const vnx_native_type_code_Solution_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xddb05fa8c70005aaull));
 const vnx::TypeCode* const vnx_native_type_code_TimeInfusion = vnx::get_type_code(vnx::Hash64(0x7c38bc7150b0d98bull));
 const vnx::TypeCode* const vnx_native_type_code_TimeLordBase = vnx::get_type_code(vnx::Hash64(0x311081636f6570efull));
 const vnx::TypeCode* const vnx_native_type_code_TimeLord_stop_vdf = vnx::get_type_code(vnx::Hash64(0xf7f78eb9f371e6e7ull));

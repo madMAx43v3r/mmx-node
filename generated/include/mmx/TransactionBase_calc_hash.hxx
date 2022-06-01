@@ -13,6 +13,7 @@ namespace mmx {
 class MMX_EXPORT TransactionBase_calc_hash : public ::vnx::Value {
 public:
 	
+	vnx::bool_t full_hash = false;
 	
 	typedef ::vnx::Value Super;
 	
@@ -56,8 +57,9 @@ public:
 
 template<typename T>
 void TransactionBase_calc_hash::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<TransactionBase_calc_hash>(0);
-	_visitor.template type_end<TransactionBase_calc_hash>(0);
+	_visitor.template type_begin<TransactionBase_calc_hash>(1);
+	_visitor.type_field("full_hash", 0); _visitor.accept(full_hash);
+	_visitor.template type_end<TransactionBase_calc_hash>(1);
 }
 
 

@@ -286,7 +286,7 @@ std::shared_ptr<vnx::Value> ProofOfSpaceOG::vnx_call_switch(std::shared_ptr<cons
 		case 0x4056d25a9096f144ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::ProofOfSpace_calc_hash>(_method);
 			auto _return_value = ::mmx::ProofOfSpace_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash();
+			_return_value->_ret_0 = calc_hash(_args->full_hash);
 			return _return_value;
 		}
 		case 0x143933f39ea710d1ull: {
@@ -304,7 +304,7 @@ std::shared_ptr<vnx::Value> ProofOfSpaceOG::vnx_call_switch(std::shared_ptr<cons
 		case 0x4a11b54880622aa5ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::ProofOfSpaceOG_calc_hash>(_method);
 			auto _return_value = ::mmx::ProofOfSpaceOG_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash();
+			_return_value->_ret_0 = calc_hash(_args->full_hash);
 			return _return_value;
 		}
 		case 0x8ef9e410ae347fedull: {

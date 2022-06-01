@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_ProofOfTime_HXX_
 
 #include <mmx/package.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/pubkey_t.hpp>
@@ -18,6 +19,7 @@ namespace mmx {
 class MMX_EXPORT ProofOfTime : public ::vnx::Value {
 public:
 	
+	::mmx::hash_t hash;
 	uint32_t version = 0;
 	uint32_t height = 0;
 	uint64_t start = 0;
@@ -41,10 +43,13 @@ public:
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
 	
+	virtual vnx::bool_t is_valid(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	virtual ::mmx::hash_t calc_hash() const;
+	virtual ::mmx::hash_t get_full_hash() const;
 	virtual ::mmx::hash_t get_output(const uint32_t& chain = 0) const;
 	virtual uint64_t get_num_iters() const;
 	virtual uint64_t get_vdf_iters() const;
+	virtual void validate() const;
 	
 	static std::shared_ptr<ProofOfTime> create();
 	std::shared_ptr<vnx::Value> clone() const override;
@@ -78,17 +83,18 @@ protected:
 
 template<typename T>
 void ProofOfTime::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ProofOfTime>(9);
-	_visitor.type_field("version", 0); _visitor.accept(version);
-	_visitor.type_field("height", 1); _visitor.accept(height);
-	_visitor.type_field("start", 2); _visitor.accept(start);
-	_visitor.type_field("input", 3); _visitor.accept(input);
-	_visitor.type_field("infuse", 4); _visitor.accept(infuse);
-	_visitor.type_field("segments", 5); _visitor.accept(segments);
-	_visitor.type_field("timelord_reward", 6); _visitor.accept(timelord_reward);
-	_visitor.type_field("timelord_key", 7); _visitor.accept(timelord_key);
-	_visitor.type_field("timelord_sig", 8); _visitor.accept(timelord_sig);
-	_visitor.template type_end<ProofOfTime>(9);
+	_visitor.template type_begin<ProofOfTime>(10);
+	_visitor.type_field("hash", 0); _visitor.accept(hash);
+	_visitor.type_field("version", 1); _visitor.accept(version);
+	_visitor.type_field("height", 2); _visitor.accept(height);
+	_visitor.type_field("start", 3); _visitor.accept(start);
+	_visitor.type_field("input", 4); _visitor.accept(input);
+	_visitor.type_field("infuse", 5); _visitor.accept(infuse);
+	_visitor.type_field("segments", 6); _visitor.accept(segments);
+	_visitor.type_field("timelord_reward", 7); _visitor.accept(timelord_reward);
+	_visitor.type_field("timelord_key", 8); _visitor.accept(timelord_key);
+	_visitor.type_field("timelord_sig", 9); _visitor.accept(timelord_sig);
+	_visitor.template type_end<ProofOfTime>(10);
 }
 
 

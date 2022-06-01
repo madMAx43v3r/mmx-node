@@ -50,6 +50,7 @@ public:
 	
 	virtual vnx::bool_t is_valid() const;
 	virtual ::mmx::hash_t calc_hash() const;
+	virtual ::mmx::hash_t get_full_hash() const;
 	virtual void validate() const;
 	virtual std::shared_ptr<const ::mmx::BlockHeader> get_header() const;
 	

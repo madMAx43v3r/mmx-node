@@ -8,6 +8,7 @@
 #include <mmx/Challenge.hxx>
 #include <mmx/ProofOfSpace.hxx>
 #include <mmx/bls_signature_t.hpp>
+#include <mmx/hash_t.hpp>
 #include <vnx/Hash64.hpp>
 #include <vnx/Value.h>
 
@@ -17,6 +18,7 @@ namespace mmx {
 class MMX_EXPORT ProofResponse : public ::vnx::Value {
 public:
 	
+	::mmx::hash_t hash;
 	std::shared_ptr<const ::mmx::Challenge> request;
 	std::shared_ptr<const ::mmx::ProofOfSpace> proof;
 	::mmx::bls_signature_t farmer_sig;
@@ -36,6 +38,7 @@ public:
 	const vnx::TypeCode* get_type_code() const override;
 	
 	virtual vnx::bool_t is_valid() const;
+	virtual ::mmx::hash_t calc_hash(const vnx::bool_t& full_hash = false) const;
 	virtual void validate() const;
 	
 	static std::shared_ptr<ProofResponse> create();
@@ -70,12 +73,13 @@ protected:
 
 template<typename T>
 void ProofResponse::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ProofResponse>(4);
-	_visitor.type_field("request", 0); _visitor.accept(request);
-	_visitor.type_field("proof", 1); _visitor.accept(proof);
-	_visitor.type_field("farmer_sig", 2); _visitor.accept(farmer_sig);
-	_visitor.type_field("farmer_addr", 3); _visitor.accept(farmer_addr);
-	_visitor.template type_end<ProofResponse>(4);
+	_visitor.template type_begin<ProofResponse>(5);
+	_visitor.type_field("hash", 0); _visitor.accept(hash);
+	_visitor.type_field("request", 1); _visitor.accept(request);
+	_visitor.type_field("proof", 2); _visitor.accept(proof);
+	_visitor.type_field("farmer_sig", 3); _visitor.accept(farmer_sig);
+	_visitor.type_field("farmer_addr", 4); _visitor.accept(farmer_addr);
+	_visitor.template type_end<ProofResponse>(5);
 }
 
 

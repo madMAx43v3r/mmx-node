@@ -7,6 +7,7 @@
 #include <mmx/solution/package.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/Solution.hxx>
+#include <mmx/hash_t.hpp>
 
 
 namespace mmx {
@@ -30,6 +31,7 @@ public:
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
 	
+	virtual ::mmx::hash_t calc_hash() const override;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	
 	static std::shared_ptr<MultiSig> create();

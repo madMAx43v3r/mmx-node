@@ -14,7 +14,7 @@ namespace contract {
 
 
 const vnx::Hash64 Executable_calc_hash::VNX_TYPE_HASH(0x862527293121a545ull);
-const vnx::Hash64 Executable_calc_hash::VNX_CODE_HASH(0x41a72c93f4ec9488ull);
+const vnx::Hash64 Executable_calc_hash::VNX_CODE_HASH(0x13bc8a5e451cdad3ull);
 
 vnx::Hash64 Executable_calc_hash::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -47,11 +47,13 @@ void Executable_calc_hash::write(vnx::TypeOutput& _out, const vnx::TypeCode* _ty
 void Executable_calc_hash::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::contract::vnx_native_type_code_Executable_calc_hash;
 	_visitor.type_begin(*_type_code);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, full_hash);
 	_visitor.type_end(*_type_code);
 }
 
 void Executable_calc_hash::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.contract.Executable.calc_hash\"";
+	_out << ", \"full_hash\": "; vnx::write(_out, full_hash);
 	_out << "}";
 }
 
@@ -64,17 +66,29 @@ void Executable_calc_hash::read(std::istream& _in) {
 vnx::Object Executable_calc_hash::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.contract.Executable.calc_hash";
+	_object["full_hash"] = full_hash;
 	return _object;
 }
 
 void Executable_calc_hash::from_object(const vnx::Object& _object) {
+	for(const auto& _entry : _object.field) {
+		if(_entry.first == "full_hash") {
+			_entry.second.to(full_hash);
+		}
+	}
 }
 
 vnx::Variant Executable_calc_hash::get_field(const std::string& _name) const {
+	if(_name == "full_hash") {
+		return vnx::Variant(full_hash);
+	}
 	return vnx::Variant();
 }
 
 void Executable_calc_hash::set_field(const std::string& _name, const vnx::Variant& _value) {
+	if(_name == "full_hash") {
+		_value.to(full_hash);
+	}
 }
 
 /// \private
@@ -101,7 +115,7 @@ std::shared_ptr<vnx::TypeCode> Executable_calc_hash::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.Executable.calc_hash";
 	type_code->type_hash = vnx::Hash64(0x862527293121a545ull);
-	type_code->code_hash = vnx::Hash64(0x41a72c93f4ec9488ull);
+	type_code->code_hash = vnx::Hash64(0x13bc8a5e451cdad3ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -109,6 +123,13 @@ std::shared_ptr<vnx::TypeCode> Executable_calc_hash::static_create_type_code() {
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Executable_calc_hash>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::contract::Executable_calc_hash_return::static_get_type_code();
+	type_code->fields.resize(1);
+	{
+		auto& field = type_code->fields[0];
+		field.data_size = 1;
+		field.name = "full_hash";
+		field.code = {31};
+	}
 	type_code->build();
 	return type_code;
 }
@@ -150,8 +171,11 @@ void read(TypeInput& in, ::mmx::contract::Executable_calc_hash& value, const Typ
 			}
 		}
 	}
-	in.read(type_code->total_field_size);
+	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
+		if(const auto* const _field = type_code->field_map[0]) {
+			vnx::read_value(_buf + _field->offset, value.full_hash, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -173,6 +197,8 @@ void write(TypeOutput& out, const ::mmx::contract::Executable_calc_hash& value, 
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
+	char* const _buf = out.write(1);
+	vnx::write_value(_buf + 0, value.full_hash);
 }
 
 void read(std::istream& in, ::mmx::contract::Executable_calc_hash& value) {

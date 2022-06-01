@@ -10,6 +10,9 @@
 #include <mmx/Operation_calc_hash_return.hxx>
 #include <mmx/Operation_is_valid.hxx>
 #include <mmx/Operation_is_valid_return.hxx>
+#include <mmx/hash_t.hpp>
+#include <mmx/operation/Vote_calc_hash.hxx>
+#include <mmx/operation/Vote_calc_hash_return.hxx>
 #include <mmx/operation/Vote_is_valid.hxx>
 #include <mmx/operation/Vote_is_valid_return.hxx>
 
@@ -159,11 +162,12 @@ std::shared_ptr<vnx::TypeCode> Vote::static_create_type_code() {
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Operation::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Vote>(); };
-	type_code->methods.resize(4);
+	type_code->methods.resize(5);
 	type_code->methods[0] = ::mmx::Operation_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Operation_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Operation_is_valid::static_get_type_code();
-	type_code->methods[3] = ::mmx::operation::Vote_is_valid::static_get_type_code();
+	type_code->methods[3] = ::mmx::operation::Vote_calc_hash::static_get_type_code();
+	type_code->methods[4] = ::mmx::operation::Vote_is_valid::static_get_type_code();
 	type_code->fields.resize(4);
 	{
 		auto& field = type_code->fields[0];
@@ -204,13 +208,19 @@ std::shared_ptr<vnx::Value> Vote::vnx_call_switch(std::shared_ptr<const vnx::Val
 		case 0x8915923a542631d9ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Operation_calc_hash>(_method);
 			auto _return_value = ::mmx::Operation_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash();
+			_return_value->_ret_0 = calc_hash(_args->full_hash);
 			return _return_value;
 		}
 		case 0x3b2ec6e0a968cf51ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Operation_is_valid>(_method);
 			auto _return_value = ::mmx::Operation_is_valid_return::create();
 			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+		case 0xa5b24bfd2485340dull: {
+			auto _args = std::static_pointer_cast<const ::mmx::operation::Vote_calc_hash>(_method);
+			auto _return_value = ::mmx::operation::Vote_calc_hash_return::create();
+			_return_value->_ret_0 = calc_hash(_args->full_hash);
 			return _return_value;
 		}
 		case 0x33d205da08794730ull: {

@@ -149,7 +149,7 @@ std::shared_ptr<vnx::Value> TransactionBase::vnx_call_switch(std::shared_ptr<con
 		case 0xc2f558b6b824dcdull: {
 			auto _args = std::static_pointer_cast<const ::mmx::TransactionBase_calc_hash>(_method);
 			auto _return_value = ::mmx::TransactionBase_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash();
+			_return_value->_ret_0 = calc_hash(_args->full_hash);
 			return _return_value;
 		}
 	}

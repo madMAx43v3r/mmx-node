@@ -60,7 +60,7 @@ public:
 	virtual void merge_sign(std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
 	virtual vnx::bool_t is_valid() const;
 	virtual vnx::bool_t is_signed() const;
-	virtual ::mmx::hash_t calc_hash() const override;
+	virtual ::mmx::hash_t calc_hash(const vnx::bool_t& full_hash = false) const override;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	virtual std::shared_ptr<const ::mmx::Solution> get_solution(const uint32_t& index = 0) const;
 	virtual ::mmx::txout_t get_output(const uint32_t& index = 0) const;

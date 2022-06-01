@@ -409,7 +409,7 @@ std::shared_ptr<vnx::Value> Executable::vnx_call_switch(std::shared_ptr<const vn
 		case 0x622fcf1cba1952edull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Contract_calc_hash>(_method);
 			auto _return_value = ::mmx::Contract_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash();
+			_return_value->_ret_0 = calc_hash(_args->full_hash);
 			return _return_value;
 		}
 		case 0x989dd3da956ebbd0ull: {
@@ -457,7 +457,7 @@ std::shared_ptr<vnx::Value> Executable::vnx_call_switch(std::shared_ptr<const vn
 		case 0x862527293121a545ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::contract::Executable_calc_hash>(_method);
 			auto _return_value = ::mmx::contract::Executable_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash();
+			_return_value->_ret_0 = calc_hash(_args->full_hash);
 			return _return_value;
 		}
 		case 0xb8eff28f88909a73ull: {
@@ -481,7 +481,7 @@ std::shared_ptr<vnx::Value> Executable::vnx_call_switch(std::shared_ptr<const vn
 		case 0x174a1238420b859full: {
 			auto _args = std::static_pointer_cast<const ::mmx::contract::TokenBase_calc_hash>(_method);
 			auto _return_value = ::mmx::contract::TokenBase_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash();
+			_return_value->_ret_0 = calc_hash(_args->full_hash);
 			return _return_value;
 		}
 		case 0x771fd1948e99a4b4ull: {

@@ -482,7 +482,7 @@ std::shared_ptr<vnx::Value> Transaction::vnx_call_switch(std::shared_ptr<const v
 		case 0xe972a4170a40f2ecull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Transaction_calc_hash>(_method);
 			auto _return_value = ::mmx::Transaction_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash();
+			_return_value->_ret_0 = calc_hash(_args->full_hash);
 			return _return_value;
 		}
 		case 0x75a626fc20f09905ull: {
@@ -566,7 +566,7 @@ std::shared_ptr<vnx::Value> Transaction::vnx_call_switch(std::shared_ptr<const v
 		case 0xc2f558b6b824dcdull: {
 			auto _args = std::static_pointer_cast<const ::mmx::TransactionBase_calc_hash>(_method);
 			auto _return_value = ::mmx::TransactionBase_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash();
+			_return_value->_ret_0 = calc_hash(_args->full_hash);
 			return _return_value;
 		}
 	}

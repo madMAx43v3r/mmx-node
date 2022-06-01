@@ -194,7 +194,7 @@ std::shared_ptr<vnx::Value> ProofOfSpace::vnx_call_switch(std::shared_ptr<const 
 		case 0x4056d25a9096f144ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::ProofOfSpace_calc_hash>(_method);
 			auto _return_value = ::mmx::ProofOfSpace_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash();
+			_return_value->_ret_0 = calc_hash(_args->full_hash);
 			return _return_value;
 		}
 		case 0x143933f39ea710d1ull: {

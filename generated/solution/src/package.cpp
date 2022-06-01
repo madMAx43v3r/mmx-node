@@ -4,18 +4,28 @@
 #include <mmx/solution/BLS_PubKey.hxx>
 #include <mmx/solution/BLS_PubKey_calc_cost.hxx>
 #include <mmx/solution/BLS_PubKey_calc_cost_return.hxx>
+#include <mmx/solution/BLS_PubKey_calc_hash.hxx>
+#include <mmx/solution/BLS_PubKey_calc_hash_return.hxx>
 #include <mmx/solution/MultiSig.hxx>
 #include <mmx/solution/MultiSig_calc_cost.hxx>
 #include <mmx/solution/MultiSig_calc_cost_return.hxx>
+#include <mmx/solution/MultiSig_calc_hash.hxx>
+#include <mmx/solution/MultiSig_calc_hash_return.hxx>
 #include <mmx/solution/MutableRelay.hxx>
 #include <mmx/solution/MutableRelay_calc_cost.hxx>
 #include <mmx/solution/MutableRelay_calc_cost_return.hxx>
+#include <mmx/solution/MutableRelay_calc_hash.hxx>
+#include <mmx/solution/MutableRelay_calc_hash_return.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/solution/PubKey_calc_cost.hxx>
 #include <mmx/solution/PubKey_calc_cost_return.hxx>
+#include <mmx/solution/PubKey_calc_hash.hxx>
+#include <mmx/solution/PubKey_calc_hash_return.hxx>
 #include <mmx/solution/PuzzleTimeLock.hxx>
 #include <mmx/solution/PuzzleTimeLock_calc_cost.hxx>
 #include <mmx/solution/PuzzleTimeLock_calc_cost_return.hxx>
+#include <mmx/solution/PuzzleTimeLock_calc_hash.hxx>
+#include <mmx/solution/PuzzleTimeLock_calc_hash_return.hxx>
 
 #include <mmx/solution/package.hxx>
 #include <vnx/vnx.h>
@@ -60,6 +70,30 @@ void type<::mmx::solution::BLS_PubKey_calc_cost_return>::create_dynamic_code(std
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::solution::BLS_PubKey_calc_hash>::get_type_code() {
+	return mmx::solution::vnx_native_type_code_BLS_PubKey_calc_hash;
+}
+
+void type<::mmx::solution::BLS_PubKey_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::solution::BLS_PubKey_calc_hash());
+}
+
+void type<::mmx::solution::BLS_PubKey_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::BLS_PubKey_calc_hash& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::solution::BLS_PubKey_calc_hash_return>::get_type_code() {
+	return mmx::solution::vnx_native_type_code_BLS_PubKey_calc_hash_return;
+}
+
+void type<::mmx::solution::BLS_PubKey_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::solution::BLS_PubKey_calc_hash_return());
+}
+
+void type<::mmx::solution::BLS_PubKey_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::BLS_PubKey_calc_hash_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::solution::MultiSig>::get_type_code() {
 	return mmx::solution::vnx_native_type_code_MultiSig;
 }
@@ -93,6 +127,30 @@ void type<::mmx::solution::MultiSig_calc_cost_return>::create_dynamic_code(std::
 }
 
 void type<::mmx::solution::MultiSig_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::MultiSig_calc_cost_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::solution::MultiSig_calc_hash>::get_type_code() {
+	return mmx::solution::vnx_native_type_code_MultiSig_calc_hash;
+}
+
+void type<::mmx::solution::MultiSig_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::solution::MultiSig_calc_hash());
+}
+
+void type<::mmx::solution::MultiSig_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::MultiSig_calc_hash& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::solution::MultiSig_calc_hash_return>::get_type_code() {
+	return mmx::solution::vnx_native_type_code_MultiSig_calc_hash_return;
+}
+
+void type<::mmx::solution::MultiSig_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::solution::MultiSig_calc_hash_return());
+}
+
+void type<::mmx::solution::MultiSig_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::MultiSig_calc_hash_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -132,6 +190,30 @@ void type<::mmx::solution::MutableRelay_calc_cost_return>::create_dynamic_code(s
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::solution::MutableRelay_calc_hash>::get_type_code() {
+	return mmx::solution::vnx_native_type_code_MutableRelay_calc_hash;
+}
+
+void type<::mmx::solution::MutableRelay_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::solution::MutableRelay_calc_hash());
+}
+
+void type<::mmx::solution::MutableRelay_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::MutableRelay_calc_hash& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::solution::MutableRelay_calc_hash_return>::get_type_code() {
+	return mmx::solution::vnx_native_type_code_MutableRelay_calc_hash_return;
+}
+
+void type<::mmx::solution::MutableRelay_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::solution::MutableRelay_calc_hash_return());
+}
+
+void type<::mmx::solution::MutableRelay_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::MutableRelay_calc_hash_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::solution::PubKey>::get_type_code() {
 	return mmx::solution::vnx_native_type_code_PubKey;
 }
@@ -165,6 +247,30 @@ void type<::mmx::solution::PubKey_calc_cost_return>::create_dynamic_code(std::ve
 }
 
 void type<::mmx::solution::PubKey_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::PubKey_calc_cost_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::solution::PubKey_calc_hash>::get_type_code() {
+	return mmx::solution::vnx_native_type_code_PubKey_calc_hash;
+}
+
+void type<::mmx::solution::PubKey_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::solution::PubKey_calc_hash());
+}
+
+void type<::mmx::solution::PubKey_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::PubKey_calc_hash& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::solution::PubKey_calc_hash_return>::get_type_code() {
+	return mmx::solution::vnx_native_type_code_PubKey_calc_hash_return;
+}
+
+void type<::mmx::solution::PubKey_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::solution::PubKey_calc_hash_return());
+}
+
+void type<::mmx::solution::PubKey_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::PubKey_calc_hash_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -204,6 +310,30 @@ void type<::mmx::solution::PuzzleTimeLock_calc_cost_return>::create_dynamic_code
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::solution::PuzzleTimeLock_calc_hash>::get_type_code() {
+	return mmx::solution::vnx_native_type_code_PuzzleTimeLock_calc_hash;
+}
+
+void type<::mmx::solution::PuzzleTimeLock_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::solution::PuzzleTimeLock_calc_hash());
+}
+
+void type<::mmx::solution::PuzzleTimeLock_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::PuzzleTimeLock_calc_hash& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::solution::PuzzleTimeLock_calc_hash_return>::get_type_code() {
+	return mmx::solution::vnx_native_type_code_PuzzleTimeLock_calc_hash_return;
+}
+
+void type<::mmx::solution::PuzzleTimeLock_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::solution::PuzzleTimeLock_calc_hash_return());
+}
+
+void type<::mmx::solution::PuzzleTimeLock_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::solution::PuzzleTimeLock_calc_hash_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 
 } // namespace vnx
 
@@ -216,18 +346,28 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::solution::BLS_PubKey::static_create_type_code());
 	vnx::register_type_code(::mmx::solution::BLS_PubKey_calc_cost::static_create_type_code());
 	vnx::register_type_code(::mmx::solution::BLS_PubKey_calc_cost_return::static_create_type_code());
+	vnx::register_type_code(::mmx::solution::BLS_PubKey_calc_hash::static_create_type_code());
+	vnx::register_type_code(::mmx::solution::BLS_PubKey_calc_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::solution::MultiSig::static_create_type_code());
 	vnx::register_type_code(::mmx::solution::MultiSig_calc_cost::static_create_type_code());
 	vnx::register_type_code(::mmx::solution::MultiSig_calc_cost_return::static_create_type_code());
+	vnx::register_type_code(::mmx::solution::MultiSig_calc_hash::static_create_type_code());
+	vnx::register_type_code(::mmx::solution::MultiSig_calc_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::solution::MutableRelay::static_create_type_code());
 	vnx::register_type_code(::mmx::solution::MutableRelay_calc_cost::static_create_type_code());
 	vnx::register_type_code(::mmx::solution::MutableRelay_calc_cost_return::static_create_type_code());
+	vnx::register_type_code(::mmx::solution::MutableRelay_calc_hash::static_create_type_code());
+	vnx::register_type_code(::mmx::solution::MutableRelay_calc_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::solution::PubKey::static_create_type_code());
 	vnx::register_type_code(::mmx::solution::PubKey_calc_cost::static_create_type_code());
 	vnx::register_type_code(::mmx::solution::PubKey_calc_cost_return::static_create_type_code());
+	vnx::register_type_code(::mmx::solution::PubKey_calc_hash::static_create_type_code());
+	vnx::register_type_code(::mmx::solution::PubKey_calc_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::solution::PuzzleTimeLock::static_create_type_code());
 	vnx::register_type_code(::mmx::solution::PuzzleTimeLock_calc_cost::static_create_type_code());
 	vnx::register_type_code(::mmx::solution::PuzzleTimeLock_calc_cost_return::static_create_type_code());
+	vnx::register_type_code(::mmx::solution::PuzzleTimeLock_calc_hash::static_create_type_code());
+	vnx::register_type_code(::mmx::solution::PuzzleTimeLock_calc_hash_return::static_create_type_code());
 }
 
 static struct vnx_static_init {
@@ -239,18 +379,28 @@ static struct vnx_static_init {
 const vnx::TypeCode* const vnx_native_type_code_BLS_PubKey = vnx::get_type_code(vnx::Hash64(0x7c86776dea7df29ull));
 const vnx::TypeCode* const vnx_native_type_code_BLS_PubKey_calc_cost = vnx::get_type_code(vnx::Hash64(0xa1a26d5d7a130583ull));
 const vnx::TypeCode* const vnx_native_type_code_BLS_PubKey_calc_cost_return = vnx::get_type_code(vnx::Hash64(0x266fa02d5de22829ull));
+const vnx::TypeCode* const vnx_native_type_code_BLS_PubKey_calc_hash = vnx::get_type_code(vnx::Hash64(0x71b0a63b1f81717cull));
+const vnx::TypeCode* const vnx_native_type_code_BLS_PubKey_calc_hash_return = vnx::get_type_code(vnx::Hash64(0x5d39fd21db3d4555ull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig = vnx::get_type_code(vnx::Hash64(0x64ffa2f8fc8dffd1ull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_calc_cost = vnx::get_type_code(vnx::Hash64(0xfb2b838b50eecb72ull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_calc_cost_return = vnx::get_type_code(vnx::Hash64(0x79657a74d9b800aaull));
+const vnx::TypeCode* const vnx_native_type_code_MultiSig_calc_hash = vnx::get_type_code(vnx::Hash64(0x2b3948ed357cbf8dull));
+const vnx::TypeCode* const vnx_native_type_code_MultiSig_calc_hash_return = vnx::get_type_code(vnx::Hash64(0x23327785f676dd6ull));
 const vnx::TypeCode* const vnx_native_type_code_MutableRelay = vnx::get_type_code(vnx::Hash64(0xb24be687cfb0d240ull));
 const vnx::TypeCode* const vnx_native_type_code_MutableRelay_calc_cost = vnx::get_type_code(vnx::Hash64(0x674107e535eeab08ull));
 const vnx::TypeCode* const vnx_native_type_code_MutableRelay_calc_cost_return = vnx::get_type_code(vnx::Hash64(0x14a6a24e0202a0d8ull));
+const vnx::TypeCode* const vnx_native_type_code_MutableRelay_calc_hash = vnx::get_type_code(vnx::Hash64(0xb753cc83507cdff7ull));
+const vnx::TypeCode* const vnx_native_type_code_MutableRelay_calc_hash_return = vnx::get_type_code(vnx::Hash64(0x6ff0ff4284ddcda4ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey = vnx::get_type_code(vnx::Hash64(0xe47af6fcacfcefa5ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_calc_cost = vnx::get_type_code(vnx::Hash64(0xf065d06ca573eff7ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_calc_cost_return = vnx::get_type_code(vnx::Hash64(0x856844fb6a20021aull));
+const vnx::TypeCode* const vnx_native_type_code_PubKey_calc_hash = vnx::get_type_code(vnx::Hash64(0x20771b0ac0e19b08ull));
+const vnx::TypeCode* const vnx_native_type_code_PubKey_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xfe3e19f7ecff6f66ull));
 const vnx::TypeCode* const vnx_native_type_code_PuzzleTimeLock = vnx::get_type_code(vnx::Hash64(0xecc16008af0c68a0ull));
 const vnx::TypeCode* const vnx_native_type_code_PuzzleTimeLock_calc_cost = vnx::get_type_code(vnx::Hash64(0xe80b704304473c53ull));
 const vnx::TypeCode* const vnx_native_type_code_PuzzleTimeLock_calc_cost_return = vnx::get_type_code(vnx::Hash64(0x918526bc951dad8cull));
+const vnx::TypeCode* const vnx_native_type_code_PuzzleTimeLock_calc_hash = vnx::get_type_code(vnx::Hash64(0x3819bb2561d548acull));
+const vnx::TypeCode* const vnx_native_type_code_PuzzleTimeLock_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xead37bb013c2c0f0ull));
 
 } // namespace mmx
 } // namespace solution

@@ -20,6 +20,8 @@
 #include <mmx/BlockHeader.hxx>
 #include <mmx/BlockHeader_calc_hash.hxx>
 #include <mmx/BlockHeader_calc_hash_return.hxx>
+#include <mmx/BlockHeader_get_full_hash.hxx>
+#include <mmx/BlockHeader_get_full_hash_return.hxx>
 #include <mmx/BlockHeader_get_header.hxx>
 #include <mmx/BlockHeader_get_header_return.hxx>
 #include <mmx/BlockHeader_is_valid.hxx>
@@ -305,7 +307,7 @@ std::shared_ptr<vnx::TypeCode> Block::static_create_type_code() {
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::BlockHeader::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Block>(); };
-	type_code->methods.resize(11);
+	type_code->methods.resize(12);
 	type_code->methods[0] = ::mmx::Block_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Block_calc_tx_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Block_finalize::static_get_type_code();
@@ -314,9 +316,10 @@ std::shared_ptr<vnx::TypeCode> Block::static_create_type_code() {
 	type_code->methods[5] = ::mmx::Block_is_valid::static_get_type_code();
 	type_code->methods[6] = ::mmx::Block_validate::static_get_type_code();
 	type_code->methods[7] = ::mmx::BlockHeader_calc_hash::static_get_type_code();
-	type_code->methods[8] = ::mmx::BlockHeader_get_header::static_get_type_code();
-	type_code->methods[9] = ::mmx::BlockHeader_is_valid::static_get_type_code();
-	type_code->methods[10] = ::mmx::BlockHeader_validate::static_get_type_code();
+	type_code->methods[8] = ::mmx::BlockHeader_get_full_hash::static_get_type_code();
+	type_code->methods[9] = ::mmx::BlockHeader_get_header::static_get_type_code();
+	type_code->methods[10] = ::mmx::BlockHeader_is_valid::static_get_type_code();
+	type_code->methods[11] = ::mmx::BlockHeader_validate::static_get_type_code();
 	type_code->fields.resize(17);
 	{
 		auto& field = type_code->fields[0];
@@ -472,6 +475,12 @@ std::shared_ptr<vnx::Value> Block::vnx_call_switch(std::shared_ptr<const vnx::Va
 			auto _args = std::static_pointer_cast<const ::mmx::BlockHeader_calc_hash>(_method);
 			auto _return_value = ::mmx::BlockHeader_calc_hash_return::create();
 			_return_value->_ret_0 = calc_hash();
+			return _return_value;
+		}
+		case 0x448d0ee44ea4ae66ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::BlockHeader_get_full_hash>(_method);
+			auto _return_value = ::mmx::BlockHeader_get_full_hash_return::create();
+			_return_value->_ret_0 = get_full_hash();
 			return _return_value;
 		}
 		case 0xd7c88d66a260d84aull: {

@@ -36,7 +36,7 @@ public:
 	const vnx::TypeCode* get_type_code() const override;
 	
 	virtual vnx::bool_t is_valid() const override;
-	virtual ::mmx::hash_t calc_hash() const override;
+	virtual ::mmx::hash_t calc_hash(const vnx::bool_t& full_hash = 0) const override;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	virtual vnx::bool_t is_locked(std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
 	virtual void bls_transfer(const ::mmx::bls_pubkey_t& new_farmer_key = ::mmx::bls_pubkey_t());

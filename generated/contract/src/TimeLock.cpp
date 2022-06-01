@@ -227,7 +227,7 @@ std::shared_ptr<vnx::Value> TimeLock::vnx_call_switch(std::shared_ptr<const vnx:
 		case 0x622fcf1cba1952edull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Contract_calc_hash>(_method);
 			auto _return_value = ::mmx::Contract_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash();
+			_return_value->_ret_0 = calc_hash(_args->full_hash);
 			return _return_value;
 		}
 		case 0x989dd3da956ebbd0ull: {
@@ -275,7 +275,7 @@ std::shared_ptr<vnx::Value> TimeLock::vnx_call_switch(std::shared_ptr<const vnx:
 		case 0xb64276bca8d842cbull: {
 			auto _args = std::static_pointer_cast<const ::mmx::contract::TimeLock_calc_hash>(_method);
 			auto _return_value = ::mmx::contract::TimeLock_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash();
+			_return_value->_ret_0 = calc_hash(_args->full_hash);
 			return _return_value;
 		}
 		case 0x52192103fb3346fdull: {

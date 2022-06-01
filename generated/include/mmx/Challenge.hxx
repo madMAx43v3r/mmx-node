@@ -31,6 +31,8 @@ public:
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
 	
+	virtual ::mmx::hash_t calc_hash() const;
+	
 	static std::shared_ptr<Challenge> create();
 	std::shared_ptr<vnx::Value> clone() const override;
 	

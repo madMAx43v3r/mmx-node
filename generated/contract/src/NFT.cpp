@@ -249,7 +249,7 @@ std::shared_ptr<vnx::Value> NFT::vnx_call_switch(std::shared_ptr<const vnx::Valu
 		case 0x622fcf1cba1952edull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Contract_calc_hash>(_method);
 			auto _return_value = ::mmx::Contract_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash();
+			_return_value->_ret_0 = calc_hash(_args->full_hash);
 			return _return_value;
 		}
 		case 0x989dd3da956ebbd0ull: {
@@ -297,7 +297,7 @@ std::shared_ptr<vnx::Value> NFT::vnx_call_switch(std::shared_ptr<const vnx::Valu
 		case 0xd4708d4451c536cdull: {
 			auto _args = std::static_pointer_cast<const ::mmx::contract::NFT_calc_hash>(_method);
 			auto _return_value = ::mmx::contract::NFT_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash();
+			_return_value->_ret_0 = calc_hash(_args->full_hash);
 			return _return_value;
 		}
 		case 0xfc70fda3036d3a08ull: {

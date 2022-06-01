@@ -235,7 +235,7 @@ std::shared_ptr<vnx::Value> ProofOfStake::vnx_call_switch(std::shared_ptr<const 
 		case 0x4056d25a9096f144ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::ProofOfSpace_calc_hash>(_method);
 			auto _return_value = ::mmx::ProofOfSpace_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash();
+			_return_value->_ret_0 = calc_hash(_args->full_hash);
 			return _return_value;
 		}
 		case 0x143933f39ea710d1ull: {
@@ -253,7 +253,7 @@ std::shared_ptr<vnx::Value> ProofOfStake::vnx_call_switch(std::shared_ptr<const 
 		case 0xcf1c6e96bc600859ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::ProofOfStake_calc_hash>(_method);
 			auto _return_value = ::mmx::ProofOfStake_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash();
+			_return_value->_ret_0 = calc_hash(_args->full_hash);
 			return _return_value;
 		}
 		case 0x2bcfbf7eadceda92ull: {

@@ -14,6 +14,7 @@ namespace contract {
 class MMX_CONTRACT_EXPORT VirtualPlot_calc_hash : public ::vnx::Value {
 public:
 	
+	vnx::bool_t full_hash = 0;
 	
 	typedef ::vnx::Value Super;
 	
@@ -57,8 +58,9 @@ public:
 
 template<typename T>
 void VirtualPlot_calc_hash::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<VirtualPlot_calc_hash>(0);
-	_visitor.template type_end<VirtualPlot_calc_hash>(0);
+	_visitor.template type_begin<VirtualPlot_calc_hash>(1);
+	_visitor.type_field("full_hash", 0); _visitor.accept(full_hash);
+	_visitor.template type_end<VirtualPlot_calc_hash>(1);
 }
 
 

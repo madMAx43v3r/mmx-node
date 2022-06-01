@@ -38,7 +38,7 @@ public:
 	const vnx::TypeCode* get_type_code() const override;
 	
 	virtual vnx::bool_t is_valid() const override;
-	virtual ::mmx::hash_t calc_hash() const override;
+	virtual ::mmx::hash_t calc_hash(const vnx::bool_t& full_hash = 0) const override;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	virtual std::vector<::mmx::txout_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
 	virtual void add_owner(const ::mmx::addr_t& address = ::mmx::addr_t());

@@ -35,7 +35,7 @@ public:
 	const vnx::TypeCode* get_type_code() const override;
 	
 	virtual vnx::bool_t is_valid() const override;
-	virtual ::mmx::hash_t calc_hash() const override;
+	virtual ::mmx::hash_t calc_hash(const vnx::bool_t& full_hash = 0) const override;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	virtual void lock(const vnx::optional<::mmx::addr_t>& new_target = nullptr, const uint32_t& new_unlock_delay = 0) override;
 	virtual void lock_pool(const vnx::optional<::mmx::addr_t>& new_target = nullptr, const uint32_t& new_unlock_delay = 0, const vnx::optional<std::string>& new_server_url = nullptr);
