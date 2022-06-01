@@ -611,7 +611,7 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 		block->space_diff = calc_new_space_diff(params, prev->space_diff, response->proof->score);
 	}
 	const auto diff_block = get_diff_header(prev, 1);
-	block->weight = calc_block_weight(params, diff_block, block->proof, true);
+	block->weight = calc_block_weight(params, diff_block, block, true);
 	block->total_weight = prev->total_weight + block->weight;
 	block->finalize();
 
