@@ -522,7 +522,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 				}
 				for(const auto& in : tx->get_inputs()) {
 					const auto balance = tmp_cache.get(in.address, in.contract);
-					if(balance || in.amount <= *balance) {
+					if(balance && in.amount <= *balance) {
 						*balance -= in.amount;
 					} else {
 						passed = false;
