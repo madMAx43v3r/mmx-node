@@ -1371,7 +1371,6 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 							disconnect(peer->client);
 						}
 						peer_set.erase(peer->address);
-						synced_peers.erase(peer->client);
 					}
 				}
 			}

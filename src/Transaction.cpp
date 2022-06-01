@@ -62,7 +62,7 @@ hash_t Transaction::calc_hash() const
 	write_bytes(out, get_type_hash());
 	write_field(out, "version", version);
 	write_field(out, "expires", expires);
-	write_field(out, "fee_ratio", 	fee_ratio);
+	write_field(out, "fee_ratio", fee_ratio);
 	write_field(out, "note", 	note);
 	write_field(out, "nonce", 	nonce);
 	write_field(out, "salt", 	salt);

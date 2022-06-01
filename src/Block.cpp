@@ -23,7 +23,7 @@ vnx::bool_t Block::is_valid() const
 			&& tx_count == tx_list.size() && calc_tx_hash() == tx_hash;
 }
 
-mmx::hash_t Block::calc_tx_hash() const
+hash_t Block::calc_tx_hash() const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);

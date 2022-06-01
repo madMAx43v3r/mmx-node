@@ -16,7 +16,7 @@ vnx::bool_t BlockHeader::is_valid() const
 	return version == 0 && calc_hash() == hash;
 }
 
-mmx::hash_t BlockHeader::calc_hash() const
+hash_t BlockHeader::calc_hash() const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);

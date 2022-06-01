@@ -488,10 +488,10 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 		if(tx->deploy) {
 			throw std::logic_error("coin base cannot deploy");
 		}
-		if(!tx->inputs.empty()) {
+		if(tx->inputs.size()) {
 			throw std::logic_error("coin base cannot have inputs");
 		}
-		if(!tx->execute.empty()) {
+		if(tx->execute.size()) {
 			throw std::logic_error("coin base cannot have operations");
 		}
 		if(tx->note != tx_note_e::REWARD) {
