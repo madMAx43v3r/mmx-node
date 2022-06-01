@@ -122,23 +122,18 @@ void Node::update()
 			if(auto prev = fork->prev.lock()) {
 				fork->is_invalid = prev->is_invalid;
 				fork->is_connected = prev->is_connected;
-			} else if(fork->block->prev == root->hash) {
+			} else if(block->prev == root->hash) {
 				fork->is_connected = true;
 			}
 			const auto prev = find_prev_header(block);
 			if(!prev || fork->is_invalid || !fork->diff_block || !fork->is_connected) {
 				continue;
 			}
-			bool vdf_passed = false;
 			if(auto point = find_vdf_point(block->height, prev->vdf_iters, block->vdf_iters, prev->vdf_output, block->vdf_output)) {
-				vdf_passed = true;
-				fork->is_vdf_verified = true;
 				fork->vdf_point = point;
+				fork->is_vdf_verified = true;
 			}
-			else if(is_synced) {
-				// TODO: fetch missing vdf
-			}
-			if(vdf_passed || !is_synced) {
+			if(fork->vdf_point || !is_synced) {
 				to_verify.push_back(fork);
 			}
 		}
