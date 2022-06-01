@@ -105,11 +105,22 @@ uint64_t calc_new_space_diff(std::shared_ptr<const ChainParams> params, const ui
 
 inline
 uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> diff_block,
-							std::shared_ptr<const ProofOfSpace> proof, const bool with_farmer_sig)
+							std::shared_ptr<const BlockHeader> block, bool have_farmer_sig)
 {
-	uint256_t weight = with_farmer_sig ? 2 : 1;
-	if(proof) {
-		weight += params->score_threshold - proof->score;
+	uint256_t weight = 0;
+	// TODO: remove height switch
+	if(block->height > 200000) {
+		if(block->proof) {
+			weight += params->score_threshold;
+			weight += params->score_threshold - block->proof->score;
+		} else {
+			weight += 1;
+		}
+	} else {
+		 weight = have_farmer_sig ? 2 : 1;
+		 if(block->proof) {
+			 weight += params->score_threshold - block->proof->score;
+		 }
 	}
 	weight *= diff_block->space_diff;
 	weight *= diff_block->time_diff;
