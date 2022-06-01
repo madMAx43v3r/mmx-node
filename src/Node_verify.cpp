@@ -301,7 +301,7 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::sha
 	if(elapsed > params->block_time) {
 		log(WARN) << "VDF verification took longer than block interval, unable to keep sync!";
 	}
-	else if(elapsed > 0.7 * params->block_time) {
+	else if(elapsed > 0.5 * params->block_time) {
 		log(WARN) << "VDF verification took longer than recommended: " << elapsed << " sec";
 	}
 
@@ -315,15 +315,13 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::sha
 			(prev ? ", delta = " + std::to_string((point->recv_time - prev->recv_time) / 1e6) + " sec" : "") << ", took " << elapsed << " sec";
 
 	// add dummy blocks
-	{
-		std::vector<std::shared_ptr<const Block>> blocks;
-		for(const auto& entry : fork_index) {
-			blocks.push_back(entry.second->block);
-		}
-		for(const auto& prev : blocks) {
-			add_dummy_blocks(prev);
-		}
-		add_dummy_blocks(get_root());
+	const auto root = get_root();
+	if(proof->height == root->height + 1) {
+		add_dummy_blocks(root);
+	}
+	const auto range = fork_index.equal_range(proof->height - 1);
+	for(auto iter = range.first; iter != range.second; ++iter) {
+		add_dummy_blocks(iter->second->block);
 	}
 	add_task(std::bind(&Node::update, this));
 }
