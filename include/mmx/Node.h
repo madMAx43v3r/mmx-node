@@ -210,21 +210,16 @@ private:
 	};
 
 	struct tx_pool_t {
-		bool did_validate = false;
-		std::shared_ptr<const Transaction> tx;
-	};
-
-	struct tx_data_t : tx_pool_t {
-		bool invalid = false;
-		uint64_t fee = 0;
+		bool is_valid = false;
 		uint64_t cost = 0;
+		uint64_t fee = 0;
+		hash_t full_hash;
+		std::shared_ptr<const Transaction> tx;
 	};
 
 	void update();
 
 	void verify_vdfs();
-
-	void verify_proofs();
 
 	void print_stats();
 
@@ -236,7 +231,7 @@ private:
 
 	void validate_pool();
 
-	std::vector<tx_data_t> validate_pending(const uint64_t verify_limit, const uint64_t select_limit, bool only_new);
+	std::vector<tx_pool_t> validate_pending(const uint64_t verify_limit, const uint64_t select_limit, bool only_new);
 
 	std::shared_ptr<const Block> make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response);
 
@@ -401,7 +396,6 @@ private:
 
 	std::multimap<uint32_t, std::shared_ptr<vdf_point_t>> verified_vdfs;			// [height => output]
 	std::multimap<uint32_t, std::shared_ptr<const ProofOfTime>> pending_vdfs;		// [height => proof]
-	std::list<std::shared_ptr<const ProofResponse>> pending_proofs;
 
 	std::unordered_multimap<uint32_t, hash_t> challenge_map;								// [height => challenge]
 	std::unordered_multimap<hash_t, std::shared_ptr<const ProofResponse>> proof_map;		// [challenge => proof]
@@ -421,6 +415,11 @@ private:
 	std::set<uint32_t> sync_pending;						// set of heights
 	vnx::optional<uint32_t> sync_peak;						// max height we can sync
 	std::unordered_set<hash_t> fetch_pending;				// block hash
+
+
+	std::vector<std::shared_ptr<fork_t>> pending_forks;
+	std::vector<std::shared_ptr<const ProofResponse>> pending_proofs;
+	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> pending_transactions;
 
 	std::shared_ptr<vnx::Timer> stuck_timer;
 	std::shared_ptr<vnx::Timer> update_timer;

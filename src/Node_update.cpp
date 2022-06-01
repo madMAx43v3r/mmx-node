@@ -34,28 +34,6 @@ void Node::verify_vdfs()
 	}
 }
 
-void Node::verify_proofs()
-{
-	const auto root = get_root();
-	for(auto iter = pending_proofs.begin(); iter != pending_proofs.end();) {
-		const auto& response = *iter;
-		if(response->request->height < root->height || verify(response)) {
-			iter = pending_proofs.erase(iter);
-		} else {
-			iter++;
-		}
-	}
-}
-
-void Node::add_fork(std::shared_ptr<fork_t> fork)
-{
-	const auto& block = fork->block;
-	if(fork_tree.emplace(block->hash, fork).second) {
-		fork_index.emplace(block->height, fork);
-	}
-	add_dummy_blocks(block);
-}
-
 void Node::add_dummy_blocks(std::shared_ptr<const BlockHeader> prev)
 {
 	if(auto vdf_point = find_next_vdf_point(prev))
@@ -81,7 +59,39 @@ void Node::update()
 	const auto time_begin = vnx::get_wall_time_micros();
 
 	verify_vdfs();
-	verify_proofs();
+
+	// verify proof responses
+	for(auto iter = pending_proofs.begin(); iter != pending_proofs.end();) {
+		if(verify(*iter)) {
+			iter = pending_proofs.erase(iter);
+		} else {
+			iter++;
+		}
+	}
+
+	// pre-validate new blocks
+#pragma omp parallel for if(!is_synced)
+	for(int i = 0; i < int(pending_forks.size()); ++i)
+	{
+		const auto& fork = pending_forks[i];
+		const auto& block = fork->block;
+		try {
+			if(!block->is_valid()) {
+				throw std::logic_error("invalid block");
+			}
+			block->validate();
+		}
+		catch(const std::exception& ex) {
+			fork->is_invalid = true;
+			log(WARN) << "Pre-validation failed for a block at height " << block->height << " with: " << ex.what();
+		}
+	}
+	for(const auto& fork : pending_forks) {
+		if(!fork->is_invalid) {
+			add_fork(fork);
+		}
+	}
+	pending_forks.clear();
 
 	// verify proof where possible
 	std::vector<std::shared_ptr<fork_t>> to_verify;
@@ -322,10 +332,8 @@ void Node::update()
 				break;
 			}
 			hash_t vdf_challenge;
-			if(find_vdf_challenge(prev, vdf_challenge, 1))
-			{
+			if(find_vdf_challenge(prev, vdf_challenge, 1)) {
 				const auto challenge = get_challenge(prev, vdf_challenge, 1);
-
 				for(const auto& response : find_proof(challenge)) {
 					// check if it's our proof
 					if(vnx::get_pipe(response->farmer_addr)) {
@@ -376,7 +384,7 @@ void Node::validate_pool()
 	}
 }
 
-std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit, const uint64_t select_limit, const bool only_new)
+std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit, const uint64_t select_limit, const bool only_new)
 {
 	const auto peak = get_peak();
 	if(!peak) {
@@ -384,25 +392,30 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 	}
 	const auto time_begin = vnx::get_wall_time_micros();
 
-	std::vector<tx_data_t> all_tx;
-
-	for(const auto& iter : tx_pool) {
-		tx_data_t tmp;
-		tmp.tx_pool_t::operator=(iter.second);
-		tmp.cost = tmp.tx->calc_cost(params);
-		all_tx.push_back(tmp);
+	std::vector<tx_pool_t> all_tx;
+	for(const auto& entry : tx_pool) {
+		all_tx.push_back(entry.second);
+	}
+	for(const auto& entry : pending_transactions) {
+		if(const auto& tx = entry.second) {
+			tx_pool_t out;
+			out.tx = tx;
+			out.cost = tx->calc_cost(params);
+			out.full_hash = entry.first;
+			all_tx.push_back(out);
+		}
 	}
 
 	// sort transactions by fee ratio
 	std::sort(all_tx.begin(), all_tx.end(),
-		[](const tx_data_t& lhs, const tx_data_t& rhs) -> bool {
+		[](const tx_pool_t& lhs, const tx_pool_t& rhs) -> bool {
 			return lhs.tx->fee_ratio > rhs.tx->fee_ratio;
 		});
 
 	size_t num_purged = 0;
 	uint128_t total_pool_cost = 0;
 	uint128_t total_verify_cost = 0;
-	std::vector<tx_data_t> tx_list;
+	std::vector<tx_pool_t> tx_list;
 
 	// purge transactions from pool if overflowing
 	{
@@ -414,7 +427,8 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 				if(!cutoff) {
 					*cutoff = i;
 				}
-				num_purged += tx_pool.erase(entry.tx->id);
+				tx_pool.erase(entry.tx->id);
+				num_purged++;
 			}
 		}
 		if(cutoff) {
@@ -430,10 +444,10 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 
 	// select transactions to verify
 	for(const auto& entry : all_tx) {
-		if(uint32_t(entry.tx->id.to_uint256() & 0x1) != (context->block->height & 0x1)) {
+		if(only_new && entry.is_valid) {
 			continue;
 		}
-		if(only_new && entry.did_validate) {
+		if(uint32_t(entry.tx->id.to_uint256() & 0x1) != (context->block->height & 0x1)) {
 			continue;
 		}
 		if(total_verify_cost + entry.cost <= verify_limit) {
@@ -458,23 +472,33 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 			if(auto new_tx = validate(tx, context, nullptr, entry.fee, entry.cost)) {
 				tx = new_tx;
 			}
-			auto iter = tx_pool.find(tx->id);
-			if(iter != tx_pool.end()) {
-				auto& info = iter->second;
-				info.did_validate = true;
-			}
+			entry.is_valid = true;
 		}
 		catch(const std::exception& ex) {
 			if(show_warnings) {
 				log(WARN) << "TX validation failed with: " << ex.what();
 			}
-			entry.invalid = true;
+			entry.is_valid = false;
 		}
 		context->signal(tx->id);
 	}
 
+	// update tx_pool
+	size_t num_invalid = 0;
+	for(const auto& entry : tx_list) {
+		const auto& tx = entry.tx;
+		if(entry.is_valid) {
+			tx_pool[tx->id] = entry;
+		} else {
+			num_invalid++;
+		}
+		if(!pending_transactions.erase(entry.full_hash) && !entry.is_valid) {
+			tx_pool.erase(tx->id);
+		}
+	}
+
 	uint128_t total_cost = 0;
-	std::vector<tx_data_t> result;
+	std::vector<tx_pool_t> result;
 	std::unordered_set<addr_t> tx_set;
 	std::multiset<std::pair<hash_t, addr_t>> revoked;
 	balance_cache_t balance_cache(&balance_map);
@@ -482,10 +506,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 	// select final set of transactions
 	for(auto& entry : tx_list)
 	{
-		if(entry.invalid) {
-			continue;
-		}
-		if(total_cost + entry.cost > select_limit) {
+		if(!entry.is_valid || total_cost + entry.cost > select_limit) {
 			continue;
 		}
 		bool passed = true;
@@ -512,7 +533,7 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 						*balance -= in.amount;
 					} else {
 						passed = false;
-						entry.invalid = true;
+						entry.is_valid = false;
 					}
 				}
 				for(const auto& op : tx->execute) {
@@ -537,13 +558,6 @@ std::vector<Node::tx_data_t> Node::validate_pending(const uint64_t verify_limit,
 		result.push_back(entry);
 	}
 
-	// purge invalid transactions
-	size_t num_invalid = 0;
-	for(const auto& entry : tx_list) {
-		if(entry.invalid) {
-			num_invalid += tx_pool.erase(entry.tx->id);
-		}
-	}
 	if(!only_new || !tx_list.empty()) {
 		const auto elapsed = (vnx::get_wall_time_micros() - time_begin) / 1e6;
 		log(INFO) << "Validated" << (only_new ? " new" : "") << " transactions: " << result.size() << " valid, "
