@@ -1,11 +1,14 @@
 package mmx.solution;
 
+import mmx.hash_t;
 import mmx.Solution;
 
 class MutableRelay extends Solution {
 	
 	Solution* target;
 	
+	
+	hash_t calc_hash() const;
 	
 	ulong calc_cost(mmx.ChainParams* params) const;
 	

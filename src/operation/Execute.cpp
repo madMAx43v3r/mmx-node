@@ -17,7 +17,7 @@ vnx::bool_t Execute::is_valid() const
 	return Super::is_valid() && !method.empty();
 }
 
-hash_t Execute::calc_hash() const
+hash_t Execute::calc_hash(const vnx::bool_t& full_hash) const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
@@ -29,6 +29,10 @@ hash_t Execute::calc_hash() const
 	write_field(out, "method", 	method);
 	write_field(out, "args", 	args);
 	write_field(out, "user", 	user);
+
+	if(full_hash) {
+		write_field(out, "solution", solution ? solution->calc_hash() : hash_t());
+	}
 	out.flush();
 
 	return hash_t(buffer);

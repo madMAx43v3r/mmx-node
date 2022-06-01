@@ -19,7 +19,7 @@ vnx::bool_t MultiSig::is_valid() const
 	return Super::is_valid() && num_required > 0 && owners.size() >= num_required && owners.size() <= MAX_OWNERS;
 }
 
-hash_t MultiSig::calc_hash() const
+hash_t MultiSig::calc_hash(const vnx::bool_t& full_hash) const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);

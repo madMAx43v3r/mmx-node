@@ -12,7 +12,7 @@
 namespace mmx {
 namespace operation {
 
-hash_t Mutate::calc_hash() const
+hash_t Mutate::calc_hash(const vnx::bool_t& full_hash) const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
@@ -22,6 +22,10 @@ hash_t Mutate::calc_hash() const
 	write_field(out, "version", version);
 	write_field(out, "address", address);
 	write_field(out, "method", 	method);
+
+	if(full_hash) {
+		write_field(out, "solution", solution ? solution->calc_hash() : hash_t());
+	}
 	out.flush();
 
 	return hash_t(buffer);

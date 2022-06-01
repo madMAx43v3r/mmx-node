@@ -11,7 +11,15 @@
 
 namespace mmx {
 
-mmx::hash_t ProofOfTime::calc_hash() const
+bool ProofOfTime::is_valid(std::shared_ptr<const ChainParams> params) const
+{
+	return version == 0
+		&& segments.size() >= params->min_vdf_segments
+		&& segments.size() <= params->max_vdf_segments
+		&& calc_hash() == hash;
+}
+
+hash_t ProofOfTime::calc_hash() const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
@@ -33,7 +41,12 @@ mmx::hash_t ProofOfTime::calc_hash() const
 	return hash_t(buffer);
 }
 
-mmx::hash_t ProofOfTime::get_output(const uint32_t& chain) const
+hash_t ProofOfTime::get_full_hash() const
+{
+	return hash_t(hash + timelord_sig);
+}
+
+hash_t ProofOfTime::get_output(const uint32_t& chain) const
 {
 	if(chain > 1) {
 		throw std::logic_error("invalid chain");
@@ -57,6 +70,13 @@ uint64_t ProofOfTime::get_num_iters() const
 uint64_t ProofOfTime::get_vdf_iters() const
 {
 	return start + get_num_iters();
+}
+
+void ProofOfTime::validate() const
+{
+	if(!timelord_sig.verify(timelord_key, calc_hash())) {
+		throw std::logic_error("invalid timelord signature");
+	}
 }
 
 

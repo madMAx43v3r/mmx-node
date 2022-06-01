@@ -18,7 +18,7 @@ vnx::bool_t TimeLock::is_valid() const
 	return Super::is_valid() && owner != addr_t();
 }
 
-hash_t TimeLock::calc_hash() const
+hash_t TimeLock::calc_hash(const vnx::bool_t& full_hash) const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);

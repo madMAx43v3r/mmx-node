@@ -182,6 +182,8 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 		}
 
 		try {
+			out->hash = out->calc_hash();
+			// TODO: sign response hash
 			// TODO: have node sign it after verify
 			out->farmer_sig = farmer->sign_proof(out->proof);
 

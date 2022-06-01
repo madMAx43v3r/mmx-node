@@ -5,7 +5,7 @@ class TransactionBase {
 	hash_t id;
 	
 	
-	hash_t calc_hash() const;
+	hash_t calc_hash(bool full_hash = false) const;
 	
 	ulong calc_cost(ChainParams* params) const;
 	

@@ -17,7 +17,7 @@ vnx::bool_t WebData::is_valid() const
 	return Super::is_valid() && mime_type.size() <= 256;
 }
 
-hash_t WebData::calc_hash() const
+hash_t WebData::calc_hash(const vnx::bool_t& full_hash) const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);

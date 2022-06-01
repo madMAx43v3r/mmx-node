@@ -1,5 +1,7 @@
 package mmx.solution;
 
+import mmx.hash_t;
+
 class MultiSig extends mmx.Solution {
 	
 	// TODO: map<addr_t, mmx.Solution*>
@@ -7,6 +9,8 @@ class MultiSig extends mmx.Solution {
 	
 	// TODO: uint required
 	
+	
+	hash_t calc_hash() const;
 	
 	ulong calc_cost(mmx.ChainParams* params) const;
 	

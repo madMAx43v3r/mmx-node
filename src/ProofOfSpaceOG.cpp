@@ -16,7 +16,7 @@ vnx::bool_t ProofOfSpaceOG::is_valid() const
 	return Super::is_valid() && ksize > 0 && proof_bytes.size() <= 512;
 }
 
-mmx::hash_t ProofOfSpaceOG::calc_hash() const
+mmx::hash_t ProofOfSpaceOG::calc_hash(const vnx::bool_t& full_hash) const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
@@ -33,6 +33,10 @@ mmx::hash_t ProofOfSpaceOG::calc_hash() const
 	write_field(out, "local_key", 	local_key);
 	write_field(out, "farmer_key", 	farmer_key);
 	write_field(out, "pool_key", 	pool_key);
+
+	if(full_hash) {
+		write_field(out, "local_sig", local_sig);
+	}
 	out.flush();
 
 	return hash_t(buffer);

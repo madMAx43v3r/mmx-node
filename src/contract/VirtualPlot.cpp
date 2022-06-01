@@ -17,7 +17,7 @@ vnx::bool_t VirtualPlot::is_valid() const
 	return Super::is_valid() && farmer_key != bls_pubkey_t() && (!reward_address || *reward_address != addr_t());
 }
 
-hash_t VirtualPlot::calc_hash() const
+hash_t VirtualPlot::calc_hash(const vnx::bool_t& full_hash) const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);

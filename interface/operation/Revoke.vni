@@ -7,6 +7,6 @@ class Revoke extends mmx.Operation {
 	hash_t txid;
 	
 	
-	hash_t calc_hash() const;
+	hash_t calc_hash(bool full_hash) const;
 	
 }

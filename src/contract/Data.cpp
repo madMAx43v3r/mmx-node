@@ -12,7 +12,7 @@
 namespace mmx {
 namespace contract {
 
-hash_t Data::calc_hash() const
+hash_t Data::calc_hash(const vnx::bool_t& full_hash) const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);

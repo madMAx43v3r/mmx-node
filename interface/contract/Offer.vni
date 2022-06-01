@@ -10,7 +10,7 @@ class Offer extends mmx.Contract {
 	
 	bool is_valid() const;
 	
-	hash_t calc_hash() const;
+	hash_t calc_hash(bool full_hash) const;
 	
 	ulong calc_cost(mmx.ChainParams* params) const;
 	

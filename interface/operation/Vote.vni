@@ -1,10 +1,14 @@
 package mmx.operation;
 
+import mmx.hash_t;
+
 class Vote extends mmx.Operation {
 	
 	optional<uint> option;
 	
 	
 	bool is_valid() const;
+	
+	hash_t calc_hash(bool full_hash) const;
 	
 }

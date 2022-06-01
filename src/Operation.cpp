@@ -16,18 +16,9 @@ vnx::bool_t Operation::is_valid() const
 	return version == 0;
 }
 
-hash_t Operation::calc_hash() const
+hash_t Operation::calc_hash(const vnx::bool_t& full_hash) const
 {
-	std::vector<uint8_t> buffer;
-	vnx::VectorOutputStream stream(&buffer);
-	vnx::OutputBuffer out(&stream);
-
-	write_bytes(out, get_type_hash());
-	write_field(out, "version", version);
-	write_field(out, "address", address);
-	out.flush();
-
-	return hash_t(buffer);
+	throw std::logic_error("not implemented");
 }
 
 uint64_t Operation::calc_cost(std::shared_ptr<const ChainParams> params) const

@@ -13,6 +13,6 @@ class Spend extends mmx.Operation {
 	ulong amount;
 	
 	
-	hash_t calc_hash() const;
+	hash_t calc_hash(bool full_hash) const;
 	
 }

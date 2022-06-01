@@ -8,4 +8,7 @@ class Challenge {
 	
 	ulong space_diff;
 	
+	
+	hash_t calc_hash() const;
+	
 }

@@ -2,6 +2,8 @@ package mmx;
 
 class ProofOfTime {
 	
+	hash_t hash;
+	
 	uint version;
 	
 	uint height;
@@ -20,12 +22,18 @@ class ProofOfTime {
 	signature_t timelord_sig;
 	
 	
+	bool is_valid(ChainParams* params) const;
+	
 	hash_t calc_hash() const;
+	
+	hash_t get_full_hash() const;
 	
 	hash_t get_output(uint chain) const;			// final segment output
 	
 	ulong get_num_iters() const;					// relative (sum of segment iters)
 	
 	ulong get_vdf_iters() const;					// absolute output iters
+	
+	void validate() const;
 	
 }

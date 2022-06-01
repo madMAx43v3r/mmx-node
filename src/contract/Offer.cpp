@@ -17,7 +17,7 @@ vnx::bool_t Offer::is_valid() const
 	return Super::is_valid() && base && base->is_extendable;
 }
 
-hash_t Offer::calc_hash() const
+hash_t Offer::calc_hash(const vnx::bool_t& full_hash) const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);

@@ -18,7 +18,7 @@ vnx::bool_t PubKey::is_valid() const
 	return Super::is_valid() && address != addr_t();
 }
 
-hash_t PubKey::calc_hash() const
+hash_t PubKey::calc_hash(const vnx::bool_t& full_hash) const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);

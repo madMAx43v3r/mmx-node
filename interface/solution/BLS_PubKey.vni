@@ -1,5 +1,6 @@
 package mmx.solution;
 
+import mmx.hash_t;
 import mmx.bls_pubkey_t;
 import mmx.bls_signature_t;
 
@@ -9,6 +10,8 @@ class BLS_PubKey extends mmx.Solution {
 	
 	bls_signature_t signature;
 	
+	
+	hash_t calc_hash() const;
 	
 	ulong calc_cost(mmx.ChainParams* params) const;
 	

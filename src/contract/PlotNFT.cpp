@@ -17,7 +17,7 @@ vnx::bool_t PlotNFT::is_valid() const
 	return Super::is_valid() && unlock_delay <= MAX_UNLOCK_DELAY;
 }
 
-hash_t PlotNFT::calc_hash() const
+hash_t PlotNFT::calc_hash(const vnx::bool_t& full_hash) const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);

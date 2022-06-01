@@ -78,6 +78,7 @@ add_library(mmx_iface SHARED
 	src/Operation.cpp
 	src/Context.cpp
 	src/Contract.cpp
+	src/Challenge.cpp
 	src/Solution.cpp
 	src/ProofOfTime.cpp
 	src/ProofOfSpace.cpp

@@ -16,20 +16,13 @@ vnx::bool_t Contract::is_valid() const
 	return version == 0;
 }
 
-hash_t Contract::calc_hash() const
+hash_t Contract::calc_hash(const vnx::bool_t& full_hash) const
 {
-	std::vector<uint8_t> buffer;
-	vnx::VectorOutputStream stream(&buffer);
-	vnx::OutputBuffer out(&stream);
-
-	write_bytes(out, get_type_hash());
-	write_field(out, "version", version);
-	out.flush();
-
-	return hash_t(buffer);
+	throw std::logic_error("not implemented");
 }
 
-uint64_t Contract::calc_cost(std::shared_ptr<const ChainParams> params) const {
+uint64_t Contract::calc_cost(std::shared_ptr<const ChainParams> params) const
+{
 	throw std::logic_error("not implemented");
 }
 

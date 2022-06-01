@@ -35,6 +35,8 @@ class BlockHeader {
 	
 	hash_t calc_hash() const;
 	
+	hash_t get_full_hash() const;
+	
 	void validate() const;
 	
 	BlockHeader* get_header() const;

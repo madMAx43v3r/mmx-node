@@ -33,12 +33,19 @@ hash_t BlockHeader::calc_hash() const
 	write_field(out, "space_diff", 	space_diff);
 	write_field(out, "vdf_iters", 	vdf_iters);
 	write_field(out, "vdf_output", 	vdf_output);
+	// TODO: use full hash
 	write_field(out, "proof", 		proof ? proof->calc_hash() : hash_t());
+	// TODO: use full hash
 	write_field(out, "tx_base", 	tx_base ? tx_base->calc_hash() : hash_t());
 	write_field(out, "tx_hash", 	tx_hash);
 	out.flush();
 
 	return hash_t(buffer);
+}
+
+hash_t BlockHeader::get_full_hash() const
+{
+	return farmer_sig ? hash_t(hash + *farmer_sig) : hash;
 }
 
 void BlockHeader::validate() const

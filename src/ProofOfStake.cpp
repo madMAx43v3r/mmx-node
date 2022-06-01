@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-mmx::hash_t ProofOfStake::calc_hash() const
+mmx::hash_t ProofOfStake::calc_hash(const vnx::bool_t& full_hash) const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
@@ -32,9 +32,6 @@ mmx::hash_t ProofOfStake::calc_hash() const
 
 void ProofOfStake::validate() const
 {
-	if(!farmer_sig.verify(farmer_key, calc_hash())) {
-		throw std::logic_error("invalid proof signature");
-	}
 }
 
 
