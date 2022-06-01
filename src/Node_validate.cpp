@@ -515,6 +515,9 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 		if(tx->is_extendable) {
 			throw std::logic_error("coin base cannot be extendable");
 		}
+		if(tx->solutions.size()) {
+			throw std::logic_error("coin base cannot have solutions");
+		}
 	} else {
 		if(tx->note == tx_note_e::REWARD) {
 			throw std::logic_error("invalid note");
