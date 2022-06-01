@@ -19,7 +19,8 @@ vnx::bool_t Block::is_valid() const
 			return false;
 		}
 	}
-	return BlockHeader::is_valid() && (!proof || proof->is_valid()) && tx_count == tx_list.size() && calc_tx_hash() == tx_hash;
+	return BlockHeader::is_valid() && (!proof || proof->is_valid())
+			&& tx_count == tx_list.size() && calc_tx_hash() == tx_hash;
 }
 
 mmx::hash_t Block::calc_tx_hash() const
