@@ -29,7 +29,6 @@ module Router extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	uint max_connect_threads = 32;			// maximum parallel connect attempts
 	
 	uint min_sync_peers = 2;				// minimum peers needed for syncing
-	uint max_sync_peers = 4;				// maximum peers to check for different blocks
 	
 	uint max_sent_cache = 20000;
 	uint max_hash_cache = 100000;

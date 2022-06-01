@@ -105,21 +105,14 @@ private:
 		uint64_t received_from = -1;
 	};
 
-	enum sync_state_e {
-		FETCH_HASHES,
-		FETCH_BLOCKS
-	};
-
 	struct sync_job_t {
 		bool is_done = false;
 		uint32_t height = 0;
-		sync_state_e state = FETCH_HASHES;
 		int64_t start_time_ms = 0;
 		std::unordered_set<uint64_t> failed;
 		std::unordered_set<uint64_t> pending;
 		std::unordered_set<uint64_t> succeeded;
 		std::unordered_map<uint32_t, uint64_t> request_map;				// [request id, client]
-		std::unordered_map<hash_t, std::set<uint64_t>> hash_map;		// [block hash => clients who have it]
 		std::unordered_map<hash_t, std::shared_ptr<const Block>> blocks;
 	};
 
