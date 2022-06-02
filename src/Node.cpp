@@ -1255,9 +1255,10 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork() const
 
 std::vector<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<fork_t> fork_head) const
 {
+	const auto root = get_root();
 	std::vector<std::shared_ptr<fork_t>> line;
 	auto fork = fork_head ? fork_head : find_fork(state_hash);
-	while(fork) {
+	while(fork && fork->block->height > root->height) {
 		line.push_back(fork);
 		fork = fork->prev.lock();
 	}
