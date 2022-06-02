@@ -173,6 +173,7 @@ void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t
 		if(!plot) {
 			throw std::logic_error("no such virtual plot");
 		}
+		// TODO: check reward address if set
 		if(stake->farmer_key != plot->farmer_key) {
 			throw std::logic_error("invalid farmer key");
 		}
