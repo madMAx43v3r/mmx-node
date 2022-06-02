@@ -511,6 +511,9 @@ app.component('account-details', {
 			fetch('/wapi/wallet/keys?index=' + this.index)
 				.then(response => response.json())
 				.then(data => this.keys = data);
+		},
+		copyKeysToPlotter() {
+			window.mmx.copyKeysToPlotter(JSON.stringify(this.keys))
 		}
 	},
 	created() {
@@ -519,6 +522,8 @@ app.component('account-details', {
 	template: `
 		<object-table :data="account"></object-table>
 		<object-table :data="keys"></object-table>
+
+		<div v-if="isWinGUI && this.keys" @click="copyKeysToPlotter" class="ui submit primary button">Copy keys to plotter</div>
 		`
 })
 

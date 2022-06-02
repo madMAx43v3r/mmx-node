@@ -31,7 +31,6 @@ add_custom_command(TARGET mmx_node_gui POST_BUILD
 )
 set(mmx_node_gui_RELEASE_DIR ${mmx_node_gui_SOURCE_DIR}/MMX_Node_GUI/bin/Release)
 install(DIRECTORY ${mmx_node_gui_RELEASE_DIR}/locales/ DESTINATION ./cefsharp/locales COMPONENT gui)
-install(DIRECTORY ${mmx_node_gui_RELEASE_DIR}/swiftshader/ DESTINATION ./cefsharp/swiftshader COMPONENT gui)
 install(FILES 
 	"${mmx_node_gui_RELEASE_DIR}/MMX Node GUI.exe"
 	${mmx_node_gui_RELEASE_DIR}/MaterialSkin.dll
