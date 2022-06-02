@@ -1691,11 +1691,19 @@ std::vector<std::shared_ptr<const ProofResponse>> Node::find_proof(const hash_t&
 
 uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block) const
 {
-	// TODO: remove height switch
-	if(!block->proof || (std::dynamic_pointer_cast<const ProofOfStake>(block->proof) && block->height > 100000)) {
+	if(!block->proof) {
 		return 0;
 	}
-	return mmx::calc_block_reward(params, get_diff_header(block)->space_diff);
+	if(std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
+		// TODO: remove height switches
+		if(block->height > 200000) {
+			return 0;
+		} else if(block->height > 100000) {
+			return params->min_reward;
+		}
+	}
+	const auto reward = mmx::calc_block_reward(params, get_diff_header(block)->space_diff);
+	return std::max(reward, params->min_reward);
 }
 
 std::shared_ptr<const BlockHeader> Node::read_block(
