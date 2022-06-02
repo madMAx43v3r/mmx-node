@@ -184,7 +184,7 @@ void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t
 		throw std::logic_error("invalid proof type");
 	}
 	if(score != proof->score) {
-		throw std::logic_error("proof score mismatch");
+		throw std::logic_error("proof score mismatch: expected " + std::to_string(proof->score) + " but got " + score.str(10));
 	}
 	if(score >= params->score_threshold) {
 		throw std::logic_error("score >= score_threshold");
