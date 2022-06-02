@@ -107,12 +107,11 @@ uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::option
 		throw std::logic_error("no such block");
 	}
 	const auto root = get_root();
-	const auto height = block->height;
-	const auto since = height - std::min(params->virtual_lifetime, height);
+	const auto since = block->height - std::min(params->virtual_lifetime, block->height);
 
 	uint128_t balance = 0;
 	for(const auto& entry : get_history({plot_id}, since)) {
-		if(entry.contract == addr_t() && entry.height <= std::min(root->height, height)) {
+		if(entry.contract == addr_t() && entry.height <= std::min(root->height, block->height)) {
 			switch(entry.type) {
 				case tx_type_e::REWARD:
 				case tx_type_e::RECEIVE:
@@ -123,7 +122,7 @@ uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::option
 	}
 	while(fork) {
 		const auto& block = fork->block;
-		if(block->height < since) {
+		if(block->height <= root->height || block->height < since) {
 			break;
 		}
 		for(const auto& tx : block->get_all_transactions()) {
