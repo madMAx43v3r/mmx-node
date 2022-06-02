@@ -323,14 +323,15 @@ void Node::update()
 	}
 
 	// try to make a block
+	bool made_block = false;
+	for(uint32_t i = 0; i < params->infuse_delay && i <= peak->height; ++i)
 	{
-		auto prev = peak;
-		bool made_block = false;
-		for(uint32_t i = 0; prev && i <= 1; ++i)
-		{
-			if(prev->height < root->height) {
-				break;
-			}
+		const auto height = peak->height - i;
+		if(height < root->height) {
+			break;
+		}
+		if(auto fork = find_best_fork(height)) {
+			const auto& prev = fork->block;
 			hash_t vdf_challenge;
 			if(find_vdf_challenge(prev, vdf_challenge, 1)) {
 				const auto challenge = get_challenge(prev, vdf_challenge, 1);
@@ -355,12 +356,11 @@ void Node::update()
 					}
 				}
 			}
-			prev = find_prev_header(prev);
 		}
-		if(made_block) {
-			// update again right away
-			add_task(std::bind(&Node::update, this));
-		}
+	}
+	if(made_block) {
+		// update again right away
+		add_task(std::bind(&Node::update, this));
 	}
 
 	// publish challenges

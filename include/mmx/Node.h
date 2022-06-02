@@ -247,7 +247,7 @@ private:
 
 	std::shared_ptr<const BlockHeader> fork_to(std::shared_ptr<fork_t> fork_head);
 
-	std::shared_ptr<fork_t> find_best_fork() const;
+	std::shared_ptr<fork_t> find_best_fork(const uint32_t height = -1) const;
 
 	std::vector<std::shared_ptr<fork_t>> get_fork_line(std::shared_ptr<fork_t> fork_head = nullptr) const;
 
