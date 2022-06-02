@@ -595,8 +595,9 @@ std::shared_ptr<const Contract> Node::get_contract_at(const addr_t& address, con
 		contract = tx->deploy;
 	}
 	if(contract) {
+		const auto root = get_root();
 		std::vector<vnx::Object> mutations;
-		if(mutate_log.find_range(std::make_pair(address, 0), std::make_pair(address, block->height + 1), mutations)) {
+		if(mutate_log.find_range(std::make_pair(address, 0), std::make_pair(address, std::min(root->height, block->height) + 1), mutations)) {
 			auto copy = vnx::clone(contract);
 			for(const auto& method : mutations) {
 				copy->vnx_call(vnx::clone(method));
