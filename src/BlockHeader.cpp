@@ -57,11 +57,6 @@ void BlockHeader::validate() const
 		if(!farmer_sig->verify(proof->farmer_key, hash)) {
 			throw std::logic_error("invalid farmer signature");
 		}
-	} else {
-		// TODO: remove height switch
-		if(proof && height > 200000) {
-			throw std::logic_error("proof without farmer_sig");
-		}
 	}
 }
 

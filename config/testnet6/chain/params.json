@@ -6,7 +6,7 @@
 	"infuse_delay": 4,
 	"challenge_delay": 8,
 	"challenge_interval": 64,
-	"commit_delay": 32,
+	"commit_delay": 24,
 	"min_vdf_segments": 510,
 	"vdf_seed": "test6",
 	"reward_factor": {

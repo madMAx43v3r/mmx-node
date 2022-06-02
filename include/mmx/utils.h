@@ -113,7 +113,9 @@ uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params, std::shar
 	// TODO: remove height switch
 	if(block->height > 200000) {
 		if(block->proof) {
-			weight += params->score_threshold;
+			if(have_farmer_sig) {
+				weight += params->score_threshold;
+			}
 			weight += params->score_threshold - block->proof->score;
 		} else {
 			weight += 1;
