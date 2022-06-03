@@ -139,8 +139,11 @@ public:
 	{
 		while(tx) {
 			for(const auto& in : tx->inputs) {
-				balance_map[std::make_pair(in.address, in.contract)] -= in.amount;
-				pending_map[tx->id][std::make_pair(in.address, in.contract)] += in.amount;
+				if(find_address(in.address) >= 0) {
+					const auto key = std::make_pair(in.address, in.contract);
+					balance_map[key] -= in.amount;
+					pending_map[tx->id][key] += in.amount;
+				}
 			}
 			tx = tx->parent;
 		}
