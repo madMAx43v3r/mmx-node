@@ -462,6 +462,13 @@ std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id, const
 		if(iter != tx_pool.end()) {
 			return iter->second.tx;
 		}
+		for(const auto& entry : pending_transactions) {
+			if(const auto& tx = entry.second) {
+				if(tx->id == id) {
+					return tx;
+				}
+			}
+		}
 	}
 	std::pair<int64_t, uint32_t> entry;
 	if(tx_index.find(id, entry)) {
