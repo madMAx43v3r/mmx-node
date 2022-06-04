@@ -8,12 +8,14 @@ struct spend_options_t {
 	
 	ulong extra_fee;
 	
-	optional<addr_t> user;
+	optional<uint> expire_at;					// overrides delta if set
+	optional<uint> expire_delta;				// expire at current height + delta
 	
-	optional<addr_t> sender;
+	optional<addr_t> user;
+	optional<addr_t> sender;					// for tx outputs
+	optional<addr_t> tx_sender;					// for tx itself
 	
 	map<addr_t, addr_t> owner_map;
-	
 	map<addr_t, Contract*> contract_map;
 	
 }

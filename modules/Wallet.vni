@@ -13,6 +13,7 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	uint max_key_files = 100;
 	uint num_addresses = 100;
+	uint default_expire = 100;				// when transactions expire
 	
 	int cache_timeout_ms = 1000;			// how often to update from node [ms]
 	

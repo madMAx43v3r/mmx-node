@@ -235,7 +235,7 @@ public:
 					std::map<std::pair<addr_t, addr_t>, uint128_t>& spent_map,
 					const spend_options_t& options = {}) const
 	{
-		tx->fee_ratio = options.fee_ratio;
+		tx->fee_ratio = std::max(tx->fee_ratio, options.fee_ratio);
 
 		uint64_t paid_fee = 0;
 		while(true) {
@@ -276,9 +276,6 @@ public:
 
 	void sign_off(std::shared_ptr<Transaction> tx, const spend_options_t& options = {}) const
 	{
-		if(!tx->sender) {
-			tx->sender = get_address(0);
-		}
 		tx->salt = genesis_hash;
 		tx->finalize();
 
@@ -368,6 +365,19 @@ public:
 
 	void complete(std::shared_ptr<Transaction> tx, const spend_options_t& options = {}) const
 	{
+		if(options.expire_at) {
+			tx->expires = std::min(tx->expires, *options.expire_at);
+		} else if(options.expire_delta) {
+			tx->expires = std::min(tx->expires, height + *options.expire_delta);
+		}
+		if(!tx->sender) {
+			if(options.tx_sender) {
+				tx->sender = *options.tx_sender;
+			} else {
+				tx->sender = get_address(0);
+			}
+		}
+
 		std::map<addr_t, uint128_t> missing;
 		{
 			std::shared_ptr<const Transaction> txi = tx;
