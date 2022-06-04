@@ -1622,7 +1622,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			node->get_contract(address,
 				[this, request_id, index](std::shared_ptr<const Contract> contract) {
 					if(auto offer = std::dynamic_pointer_cast<const contract::Offer>(contract)) {
-						wallet->accept_offer(index, offer->base, {},
+						spend_options_t options;
+						options.expire_delta = 10;
+						wallet->accept_offer(index, offer->base, options,
 							[this, request_id](std::shared_ptr<const Transaction> tx) {
 								respond(request_id, vnx::Variant(tx->id.to_string()));
 							},
