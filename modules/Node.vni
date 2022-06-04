@@ -29,6 +29,7 @@ module Node implements vnx.addons.HttpComponent {
 	uint max_history = 1000;				// max block header history
 	uint max_fork_length = 20000;			// to keep in memory at most (during sync)
 	uint tx_pool_limit = 100;				// number of full blocks
+	uint tx_verify_interval = 1000;			// number of blocks
 	
 	uint max_sync_jobs = 64;				// number of parallel requests
 	uint num_sync_retries = 3;				// how often to retry when reaching a peak

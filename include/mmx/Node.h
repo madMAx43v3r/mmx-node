@@ -211,6 +211,7 @@ private:
 
 	struct tx_pool_t {
 		bool is_valid = false;
+		uint32_t last_check = 0;
 		uint64_t cost = 0;
 		uint64_t fee = 0;
 		hash_t full_hash;

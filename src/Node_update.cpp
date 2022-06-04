@@ -444,7 +444,7 @@ std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit,
 
 	// select transactions to verify
 	for(const auto& entry : all_tx) {
-		if(only_new && entry.is_valid) {
+		if(only_new && entry.is_valid && entry.last_check + tx_verify_interval > peak->height) {
 			continue;
 		}
 		if(uint32_t(entry.tx->id.to_uint256() & 0x1) != (context->block->height & 0x1)) {
@@ -480,6 +480,7 @@ std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit,
 			}
 			entry.is_valid = false;
 		}
+		entry.last_check = peak->height;
 		context->signal(tx->id);
 	}
 
