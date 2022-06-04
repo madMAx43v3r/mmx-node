@@ -573,6 +573,9 @@ int main(int argc, char** argv)
 					}
 				}
 				if(pre_accept || accept_prompt()) {
+					if(!spend_options.expire_delta) {
+						spend_options.expire_delta = 10;
+					}
 					auto tx = wallet.accept_offer(index, offer, spend_options);
 					std::cout << "Transaction ID: " << tx->id << std::endl;
 				}
