@@ -31,7 +31,7 @@
 <% block.rewards.forEach(function(entry, index) { %>
 <tr>
 <td><b>Reward[<%= index %>]</b></td>
-<td><%= entry.amount %> | <a href="address?addr=<%= entry.address %>"><%= entry.address %></a></td>
+<td><%= entry.value %> | <a href="address?addr=<%= entry.address %>"><%= entry.address %></a></td>
 </tr>
 <% }); %>
 

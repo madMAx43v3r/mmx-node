@@ -14,18 +14,8 @@
 </td>
 </tr>
 <tr>
-<td><b>Input</b></td>
-<td><%= tx.input_amount %></td>
-<td>MMX</td>
-</tr>
-<tr>
-<td><b>Output</b></td>
-<td><%= tx.output_amount %></td>
-<td>MMX</td>
-</tr>
-<tr>
 <td><b>Fee</b></td>
-<td><%= tx.fee_amount %></td>
+<td><%= tx.fee.value %></td>
 <td>MMX</td>
 </tr>
 </tbody>
@@ -47,7 +37,7 @@
 <% if(input.utxo) { %>
 <tr>
 <td><b>Input[<%= index %>]</b></td>
-<td><%= input.amount %></td>
+<td><%= input.value %></td>
 <td>
 <% if(input.contract) { %>
 <a href="/address?addr=<%= input.contract %>"><%= input.symbol %></a>
@@ -64,7 +54,7 @@
 <% tx.outputs.forEach(function(output, index) { %>
 <tr>
 <td><b>Output[<%= index %>]</b></td>
-<td><%= output.amount %></td>
+<td><%= output.value %></td>
 <td>
 <% if(output.contract) { %>
 <a href="/address?addr=<%= output.contract %>"><%= output.symbol %></a>
@@ -73,9 +63,6 @@
 <% } %>
 </td>
 <td><a href="address?addr=<%= output.address %>"><%= output.address %></a></td>
-<% if(output.spent) { %>
-<td><a href="transaction?id=<%= output.spent.txid %>">Next</a></td>
-<% } %>
 </tr>
 <% }); %>
 </tbody>

@@ -6,6 +6,8 @@ const app = express();
 const port = 3000;
 const host = 'http://localhost:11380';
 
+axios.defaults.headers.common['x-api-token'] = '94660788ae448af0a59793ad1b7d2f971406a421103f9559408b63ac560e1404';
+
 app.set('views', './views');
 app.set('view engine', 'ejs');
 
@@ -13,8 +15,6 @@ app.use(express.static('data'));
 app.use(express.static("public"));
 
 const MMX_ADDR = "mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev";
-
-const contract_cache = new Map();
 
 function to_hex(a)
 {
@@ -43,79 +43,22 @@ function on_error(res, ex)
 function parse_block(data)
 {
 	let block = data;
-	block.hash = to_hex(block.hash);
-	block.prev = to_hex(block.prev);
 	if(block.proof) {
 		block.ksize = block.proof.ksize;
 		block.score = block.proof.score;
-		block.pool_key = to_hex(block.proof.pool_key);
-		block.farmer_key = to_hex(block.proof.farmer_key);
+		block.pool_key = block.proof.pool_key;
+		block.farmer_key = block.proof.farmer_key;
 	}
 	block.reward = 0;
 	block.rewards = [];
 	if(block.tx_base) {
 		for(const out of block.tx_base.outputs) {
 			block.reward += out.amount;
-			block.rewards.push({address: to_addr(out.address), amount: to_balance(out.amount)});
+			block.rewards.push({address: out.address, value: out.value});
 		}
 		block.reward = to_balance(block.reward);
 	}
-	for(const tx of block.tx_list) {
-		tx.id = to_hex(tx.id);
-		for(const input of tx.inputs) {
-			input.prev.txid = to_hex(input.prev.txid);
-		}
-		for(const out of tx.outputs) {
-			out.amount = to_balance(out.amount);
-			out.address = to_addr(out.address);
-			out.contract = to_addr(out.contract);
-			if(out.contract == MMX_ADDR) {
-				out.contract = null;
-				out.currency = "MMX";
-			} else {
-				out.currency = "Token";
-			}
-		}
-	}
-	block.tx_count = block.tx_list.length;
 	return block
-}
-
-async function get_contract(address)
-{
-	if(contract_cache.has(address)) {
-		return contract_cache.get(address);
-	}
-	const ret = await axios.get(host + '/api/node/get_contract?address=' + address);
-	const contract = ret.data;
-	if(contract) {
-		if(contract.__type == "mmx.contract.NFT") {
-			contract.creator = to_addr(contract.creator);
-			if(contract.parent) {
-				contract.parent = to_addr(contract.parent);
-			}
-		}
-		if(contract.__type == "mmx.contract.Token") {
-			if(contract.owner) {
-				contract.owner = to_addr(contract.owner);
-			}
-			contract.stake_factors.forEach((entry) => {
-				entry[0] = to_addr(entry[0]);
-			});
-		}
-		if(contract.__type == "mmx.contract.Staking") {
-			contract.owner = to_addr(contract.owner);
-			contract.currency = to_addr(contract.currency);
-			contract.reward_addr = to_addr(contract.reward_addr);
-		}
-		if(contract.__type == "mmx.contract.MultiSig") {
-			contract.stake_factors.forEach((addr) => {
-				addr = to_addr(addr);
-			});
-		}
-	}
-	contract_cache.set(address, contract);
-	return contract;
 }
 
 function on_block(res, ret)
@@ -140,7 +83,7 @@ async function on_recent_blocks(res, ret)
 	var blocks = [];
 	for(let i = 0; i < 30 && i < height; i++) {
 		try {
-			const ret = await axios.get(host + '/api/node/get_block_at?height=' + (height - i));
+			const ret = await axios.get(host + '/wapi/header?height=' + (height - i));
 			blocks.push(parse_block(ret.data));
 		} catch(err) {
 			break;
@@ -170,7 +113,7 @@ async function on_address(res, address)
 	ret = await axios.get(host + '/wapi/address?id=' + address);
 	const contract = ret.data.contract;
 	const all_balances = ret.data.balances;
-	ret = await axios.get(host + '/wapi/address/history?limit=10000&id=' + address);
+	ret = await axios.get(host + '/wapi/address/history?limit=1000&id=' + address);
 	const history = ret.data;
 	
 	let nfts = [];
@@ -195,64 +138,6 @@ async function on_address(res, address)
 
 async function on_transaction(res, tx)
 {
-	tx.id = to_hex(tx.id);
-	if(tx.block) {
-		tx.block = to_hex(tx.block);
-	}
-	tx.input_amount = 0;
-	for(const input of tx.inputs) {
-		input.prev.txid = to_hex(input.prev.txid);
-		if(input.utxo) {
-			input.amount = to_balance(input.utxo.amount);
-			input.address = to_addr(input.utxo.address);
-			input.contract = to_addr(input.utxo.contract);
-			
-			const contract = await get_contract(input.contract);
-			if(contract) {
-				if(contract.__type == "mmx.contract.NFT") {
-					input.amount = 1;
-					input.symbol = "NFT";
-				}
-				if(contract.__type == "mmx.contract.Token") {
-					input.symbol = contract.symbol;
-				}
-			} else {
-				input.symbol = "MMX";
-				input.contract = null;
-				tx.input_amount += input.utxo.amount;
-			}
-		}
-	}
-	tx.output_amount = 0;
-	for(const out of tx.outputs) {
-		if(out.spent) {
-			out.spent.txid = to_hex(out.spent.txid);
-		}
-		out.amount = to_balance(out.output.amount);
-		out.address = to_addr(out.output.address);
-		out.contract = to_addr(out.output.contract);
-		
-		const contract = await get_contract(out.contract);
-		if(contract) {
-			if(contract.__type == "mmx.contract.NFT") {
-				out.amount = 1;
-				out.symbol = "NFT";
-			}
-			if(contract.__type == "mmx.contract.Token") {
-				out.symbol = contract.symbol;
-			}
-		} else {
-			out.symbol = "MMX";
-			out.contract = null;
-			tx.output_amount += out.output.amount;
-		}
-	}
-	tx.fee_amount = tx.input_amount - tx.output_amount;
-	
-	tx.input_amount = to_balance(tx.input_amount);
-	tx.output_amount = to_balance(tx.output_amount);
-	tx.fee_amount = to_balance(tx.fee_amount);
-	
 	let args = {};
 	args.body = 'transaction';
 	args.tx = tx;
@@ -277,11 +162,11 @@ app.get('/transactions', (req, res) => {
 
 app.get('/block', (req, res) => {
 	if(req.query.hash) {
-		axios.get(host + '/api/node/get_block?hash=' + req.query.hash)
+		axios.get(host + '/wapi/block?hash=' + req.query.hash)
 			.then(on_block.bind(null, res))
 			.catch(on_error.bind(null, res));
 	} else if(req.query.height) {
-		axios.get(host + '/api/node/get_block_at?height=' + req.query.height)
+		axios.get(host + '/wapi/block?height=' + req.query.height)
 			.then(on_block.bind(null, res))
 			.catch(on_error.bind(null, res));
 	} else {
@@ -303,7 +188,7 @@ app.get('/transaction', (req, res) => {
 		res.status(404).send("missing id param");
 		return;
 	}
-	axios.get(host + '/api/node/get_tx_info?id=' + req.query.id)
+	axios.get(host + '/wapi/transaction?id=' + req.query.id)
 		.then((ret) => {
 			const tx = ret.data;
 			if(tx) {
