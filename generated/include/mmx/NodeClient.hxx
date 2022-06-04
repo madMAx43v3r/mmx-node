@@ -128,7 +128,7 @@ public:
 	
 	uint64_t get_virtual_plot_balance(const ::mmx::addr_t& plot_id = ::mmx::addr_t(), const vnx::optional<::mmx::hash_t>& block_hash = nullptr);
 	
-	std::vector<::mmx::offer_data_t> get_offers(const uint32_t& since = 0);
+	std::vector<::mmx::offer_data_t> get_offers(const uint32_t& since = 0, const vnx::bool_t& is_open = 0, const vnx::bool_t& is_covered = 0);
 	
 	::mmx::uint128 get_total_supply(const ::mmx::addr_t& currency = ::mmx::addr_t());
 	

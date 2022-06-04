@@ -208,7 +208,7 @@ public:
 			const std::function<void(const uint64_t&)>& _callback = std::function<void(const uint64_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_offers(const uint32_t& since = 0, 
+	uint64_t get_offers(const uint32_t& since = 0, const vnx::bool_t& is_open = 0, const vnx::bool_t& is_covered = 0, 
 			const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback = std::function<void(const std::vector<::mmx::offer_data_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	

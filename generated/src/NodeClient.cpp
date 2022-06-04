@@ -724,9 +724,11 @@ uint64_t NodeClient::get_virtual_plot_balance(const ::mmx::addr_t& plot_id, cons
 	}
 }
 
-std::vector<::mmx::offer_data_t> NodeClient::get_offers(const uint32_t& since) {
+std::vector<::mmx::offer_data_t> NodeClient::get_offers(const uint32_t& since, const vnx::bool_t& is_open, const vnx::bool_t& is_covered) {
 	auto _method = ::mmx::Node_get_offers::create();
 	_method->since = since;
+	_method->is_open = is_open;
+	_method->is_covered = is_covered;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_offers_return>(_return_value)) {
 		return _result->_ret_0;

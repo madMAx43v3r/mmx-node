@@ -725,9 +725,11 @@ uint64_t NodeAsyncClient::get_virtual_plot_balance(const ::mmx::addr_t& plot_id,
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_offers(const uint32_t& since, const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_offers(const uint32_t& since, const vnx::bool_t& is_open, const vnx::bool_t& is_covered, const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_offers::create();
 	_method->since = since;
+	_method->is_open = is_open;
+	_method->is_covered = is_covered;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
