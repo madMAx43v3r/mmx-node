@@ -58,24 +58,6 @@ const AccountAddresses = {
 		<account-addresses :index="index" :limit="1000"></account-addresses>
 	`
 }
-const AccountCoins = {
-	props: {
-		index: Number,
-		currency: String
-	},
-	template: `
-		<account-coins :index="index" :currency="currency" :limit="1000"></account-coins>
-	`
-}
-const AddressCoins = {
-	props: {
-		address: String,
-		currency: String
-	},
-	template: `
-		<address-coins :address="address" :currency="currency" :limit="1000"></address-coins>
-	`
-}
 const AccountSend = {
 	props: {
 		index: Number
@@ -156,6 +138,28 @@ const AccountCreateVirtualPlot = {
 	template: `
 		<create-virtual-plot-contract :index="index"></create-virtual-plot-contract>
 	`
+}
+
+const Market = {
+	props: {
+		wallet: Number,
+		bid: null,
+		ask: null,
+	},
+	template: `
+		<market-menu :wallet_="wallet" :bid_="bid" :ask_="ask" :page="$route.meta.page"></market-menu>
+		<router-view :key="$route.path" :wallet="wallet" :bid="bid" :ask="ask"></router-view>
+		`
+}
+const MarketOffers = {
+	props: {
+		wallet: Number,
+		bid: null,
+		ask: null,
+	},
+	template: `
+		<market-offers ref="orders" :wallet="wallet" :bid="bid" :ask="ask" :limit="200"></market-offers>
+		`
 }
 
 const Exchange = {
@@ -423,7 +427,18 @@ const routes = [
 			{ path: 'options', component: AccountOptions, meta: { page: 'options' } },
 			{ path: 'create/locked', component: AccountCreateLocked },
 			{ path: 'create/virtualplot', component: AccountCreateVirtualPlot },
-			{ path: 'coins/:currency', component: AccountCoins, props: route => ({currency: route.params.currency}) },
+		]
+	},
+	{ path: '/market',
+		component: Market,
+		meta: { is_market: true },
+		props: route => ({
+			wallet: parseInt(route.params.wallet),
+			bid: route.params.bid == 'null' ? null : route.params.bid,
+			ask: route.params.ask == 'null' ? null : route.params.ask,
+		}),
+		children: [
+			{ path: 'offers/:wallet/:bid/:ask', component: MarketOffers, meta: { page: 'offers' } },
 		]
 	},
 	{ path: '/exchange',
@@ -453,9 +468,6 @@ const routes = [
 			{ path: 'block/height/:height', component: ExploreBlock, meta: { page: 'block' } },
 			{ path: 'address/:address', component: ExploreAddress, meta: { page: 'address' } },
 			{ path: 'transaction/:id', component: ExploreTransaction, meta: { page: 'transaction' } },
-			{ path: 'address/coins/:address/:currency', component: AddressCoins, meta: { page: 'address_coins' },
-				props: route => ({address: route.params.address, currency: route.params.currency})
-			},
 		]
 	},
 	{ path: '/node',
@@ -526,6 +538,7 @@ app.component('main-menu', {
 				<router-link class="item" :class="{active: $route.meta.is_node}" to="/node/">Node</router-link>
 				<router-link class="item" :class="{active: $route.meta.is_wallet}" to="/wallet/">Wallet</router-link>
 				<router-link class="item" :class="{active: $route.meta.is_explorer}" to="/explore/">Explore</router-link>
+				<router-link class="item" :class="{active: $route.meta.is_market}" to="/market/">Market</router-link>
 				<!--<router-link class="item" :class="{active: $route.meta.is_exchange}" to="/exchange/">Exchange</router-link>-->
 				<div class="right menu">
 					<router-link class="item" to="/settings/">Settings</router-link>

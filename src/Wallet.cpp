@@ -376,6 +376,9 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 std::shared_ptr<const Transaction> Wallet::accept_offer(
 			const uint32_t& index, std::shared_ptr<const Transaction> offer, const spend_options_t& options) const
 {
+	if(!offer) {
+		throw std::logic_error("offer == null");
+	}
 	const auto wallet = get_wallet(index);
 	update_cache(index);
 

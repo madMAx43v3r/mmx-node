@@ -58,7 +58,7 @@ app.component('exchange-menu', {
 				}
 				this.$router.push('/exchange/' + page + '/' + this.wallet + '/' + this.server + '/' + this.bid + '/' + this.ask);
 				this.$emit('update-bid-symbol', this.bid_symbol_map.get(this.bid));
-				this.$emit('update-ask-symbol', this.bid_symbol_map.get(this.ask));
+				this.$emit('update-ask-symbol', this.ask_symbol_map.get(this.ask));
 			}
 		}
 	},
