@@ -122,11 +122,22 @@ public:
 		balance_map.clear();
 		balance_map.insert(balances.begin(), balances.end());
 
-		for(const auto& entry : reserved_map) {
-			balance_map[entry.first] -= entry.second;
+		std::vector<hash_t> expired;
+		for(const auto& entry : pending_tx) {
+			if(entry.second < height) {
+				expired.push_back(entry.first);
+			}
+		}
+		for(const auto& txid : expired) {
+			pending_tx.erase(txid);
+			pending_map.erase(txid);
 		}
 		for(const auto& entry : history) {
+			pending_tx.erase(entry.txid);
 			pending_map.erase(entry.txid);
+		}
+		for(const auto& entry : reserved_map) {
+			balance_map[entry.first] -= entry.second;
 		}
 		for(const auto& entry : pending_map) {
 			for(const auto& pending : entry.second) {
@@ -137,6 +148,9 @@ public:
 
 	void update_from(std::shared_ptr<const Transaction> tx)
 	{
+		if(tx) {
+			pending_tx[tx->id] = tx->expires;
+		}
 		while(tx) {
 			for(const auto& in : tx->inputs) {
 				if(find_address(in.address) >= 0) {
@@ -422,14 +436,16 @@ public:
 		last_update = 0;
 		balance_map.clear();
 		reserved_map.clear();
+		pending_tx.clear();
 		pending_map.clear();
 	}
 
 	uint32_t height = 0;
 	int64_t last_update = 0;
-	std::map<std::pair<addr_t, addr_t>, uint128_t> balance_map;
-	std::map<std::pair<addr_t, addr_t>, uint128_t> reserved_map;
-	std::map<hash_t, std::map<std::pair<addr_t, addr_t>, uint128_t>> pending_map;
+	std::map<std::pair<addr_t, addr_t>, uint128_t> balance_map;									// [[address, currency] => balance]
+	std::map<std::pair<addr_t, addr_t>, uint128_t> reserved_map;								// [[address, currency] => balance]
+	std::unordered_map<hash_t, uint32_t> pending_tx;											// [txid => height]
+	std::unordered_map<hash_t, std::map<std::pair<addr_t, addr_t>, uint128_t>> pending_map;		// [txid => [[address, currency] => balance]]
 
 private:
 	skey_t master_sk;
