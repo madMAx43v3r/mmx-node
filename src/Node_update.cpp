@@ -533,7 +533,6 @@ std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit,
 						*balance -= in.amount;
 					} else {
 						passed = false;
-						entry.is_valid = false;
 					}
 				}
 				for(const auto& op : tx->execute) {
