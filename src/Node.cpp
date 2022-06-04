@@ -858,7 +858,7 @@ std::vector<std::pair<addr_t, std::shared_ptr<const Contract>>> Node::get_virtua
 	return std::vector<std::pair<addr_t, std::shared_ptr<const Contract>>>(out.begin(), out.end());
 }
 
-std::vector<offer_data_t> Node::get_offers(const uint32_t& since) const
+std::vector<offer_data_t> Node::get_offers(const uint32_t& since, const vnx::bool_t& is_open, const vnx::bool_t& is_covered) const
 {
 	std::vector<addr_t> entries;
 	offer_log.find_range(since, -1, entries);
@@ -866,10 +866,10 @@ std::vector<offer_data_t> Node::get_offers(const uint32_t& since) const
 	std::vector<offer_data_t> out;
 	for(const auto& address : entries) {
 		if(auto offer = std::dynamic_pointer_cast<const contract::Offer>(get_contract(address))) {
-			offer_data_t data;
-			data.height = *get_tx_height(address);
-			data.address = address;
 			if(const auto& tx = offer->base) {
+				offer_data_t data;
+				data.height = *get_tx_height(address);
+				data.address = address;
 				data.offer = tx;
 				if(tx->sender) {
 					data.is_revoked = is_revoked(tx->id, *tx->sender);
@@ -890,8 +890,10 @@ std::vector<offer_data_t> Node::get_offers(const uint32_t& since) const
 						}
 					}
 				}
+				if(!is_open || (data.is_open && (!is_covered || data.is_covered))) {
+					out.push_back(data);
+				}
 			}
-			out.push_back(data);
 		}
 	}
 	return out;
