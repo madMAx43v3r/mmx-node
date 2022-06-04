@@ -40,6 +40,7 @@ public:
 	std::string node_server = "Node";
 	uint32_t max_key_files = 100;
 	uint32_t num_addresses = 100;
+	uint32_t default_expire = 100;
 	int32_t cache_timeout_ms = 1000;
 	vnx::bool_t enable_bls = true;
 	
@@ -129,7 +130,7 @@ protected:
 
 template<typename T>
 void WalletBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<WalletBase>(10);
+	_visitor.template type_begin<WalletBase>(11);
 	_visitor.type_field("key_files", 0); _visitor.accept(key_files);
 	_visitor.type_field("accounts", 1); _visitor.accept(accounts);
 	_visitor.type_field("config_path", 2); _visitor.accept(config_path);
@@ -138,9 +139,10 @@ void WalletBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("node_server", 5); _visitor.accept(node_server);
 	_visitor.type_field("max_key_files", 6); _visitor.accept(max_key_files);
 	_visitor.type_field("num_addresses", 7); _visitor.accept(num_addresses);
-	_visitor.type_field("cache_timeout_ms", 8); _visitor.accept(cache_timeout_ms);
-	_visitor.type_field("enable_bls", 9); _visitor.accept(enable_bls);
-	_visitor.template type_end<WalletBase>(10);
+	_visitor.type_field("default_expire", 8); _visitor.accept(default_expire);
+	_visitor.type_field("cache_timeout_ms", 9); _visitor.accept(cache_timeout_ms);
+	_visitor.type_field("enable_bls", 10); _visitor.accept(enable_bls);
+	_visitor.template type_end<WalletBase>(11);
 }
 
 

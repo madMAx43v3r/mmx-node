@@ -132,7 +132,7 @@ namespace mmx {
 
 
 const vnx::Hash64 WalletBase::VNX_TYPE_HASH(0x62207fd96d3aead7ull);
-const vnx::Hash64 WalletBase::VNX_CODE_HASH(0x99cd5aea106f2bcull);
+const vnx::Hash64 WalletBase::VNX_CODE_HASH(0x85503617f20d38e6ull);
 
 WalletBase::WalletBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -145,6 +145,7 @@ WalletBase::WalletBase(const std::string& _vnx_name)
 	vnx::read_config(vnx_name + ".node_server", node_server);
 	vnx::read_config(vnx_name + ".max_key_files", max_key_files);
 	vnx::read_config(vnx_name + ".num_addresses", num_addresses);
+	vnx::read_config(vnx_name + ".default_expire", default_expire);
 	vnx::read_config(vnx_name + ".cache_timeout_ms", cache_timeout_ms);
 	vnx::read_config(vnx_name + ".enable_bls", enable_bls);
 }
@@ -172,8 +173,9 @@ void WalletBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, node_server);
 	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, max_key_files);
 	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, num_addresses);
-	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, cache_timeout_ms);
-	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, enable_bls);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, default_expire);
+	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, cache_timeout_ms);
+	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, enable_bls);
 	_visitor.type_end(*_type_code);
 }
 
@@ -187,6 +189,7 @@ void WalletBase::write(std::ostream& _out) const {
 	_out << ", \"node_server\": "; vnx::write(_out, node_server);
 	_out << ", \"max_key_files\": "; vnx::write(_out, max_key_files);
 	_out << ", \"num_addresses\": "; vnx::write(_out, num_addresses);
+	_out << ", \"default_expire\": "; vnx::write(_out, default_expire);
 	_out << ", \"cache_timeout_ms\": "; vnx::write(_out, cache_timeout_ms);
 	_out << ", \"enable_bls\": "; vnx::write(_out, enable_bls);
 	_out << "}";
@@ -209,6 +212,7 @@ vnx::Object WalletBase::to_object() const {
 	_object["node_server"] = node_server;
 	_object["max_key_files"] = max_key_files;
 	_object["num_addresses"] = num_addresses;
+	_object["default_expire"] = default_expire;
 	_object["cache_timeout_ms"] = cache_timeout_ms;
 	_object["enable_bls"] = enable_bls;
 	return _object;
@@ -224,6 +228,8 @@ void WalletBase::from_object(const vnx::Object& _object) {
 			_entry.second.to(config_path);
 		} else if(_entry.first == "database_path") {
 			_entry.second.to(database_path);
+		} else if(_entry.first == "default_expire") {
+			_entry.second.to(default_expire);
 		} else if(_entry.first == "enable_bls") {
 			_entry.second.to(enable_bls);
 		} else if(_entry.first == "key_files") {
@@ -265,6 +271,9 @@ vnx::Variant WalletBase::get_field(const std::string& _name) const {
 	if(_name == "num_addresses") {
 		return vnx::Variant(num_addresses);
 	}
+	if(_name == "default_expire") {
+		return vnx::Variant(default_expire);
+	}
 	if(_name == "cache_timeout_ms") {
 		return vnx::Variant(cache_timeout_ms);
 	}
@@ -291,6 +300,8 @@ void WalletBase::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(max_key_files);
 	} else if(_name == "num_addresses") {
 		_value.to(num_addresses);
+	} else if(_name == "default_expire") {
+		_value.to(default_expire);
 	} else if(_name == "cache_timeout_ms") {
 		_value.to(cache_timeout_ms);
 	} else if(_name == "enable_bls") {
@@ -322,7 +333,7 @@ std::shared_ptr<vnx::TypeCode> WalletBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet";
 	type_code->type_hash = vnx::Hash64(0x62207fd96d3aead7ull);
-	type_code->code_hash = vnx::Hash64(0x99cd5aea106f2bcull);
+	type_code->code_hash = vnx::Hash64(0x85503617f20d38e6ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::WalletBase);
 	type_code->depends.resize(1);
@@ -378,7 +389,7 @@ std::shared_ptr<vnx::TypeCode> WalletBase::static_create_type_code() {
 	type_code->methods[47] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
 	type_code->methods[48] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
 	type_code->methods[49] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
-	type_code->fields.resize(10);
+	type_code->fields.resize(11);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -434,12 +445,19 @@ std::shared_ptr<vnx::TypeCode> WalletBase::static_create_type_code() {
 	{
 		auto& field = type_code->fields[8];
 		field.data_size = 4;
+		field.name = "default_expire";
+		field.value = vnx::to_string(100);
+		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[9];
+		field.data_size = 4;
 		field.name = "cache_timeout_ms";
 		field.value = vnx::to_string(1000);
 		field.code = {7};
 	}
 	{
-		auto& field = type_code->fields[9];
+		auto& field = type_code->fields[10];
 		field.data_size = 1;
 		field.name = "enable_bls";
 		field.value = vnx::to_string(true);
@@ -824,9 +842,12 @@ void read(TypeInput& in, ::mmx::WalletBase& value, const TypeCode* type_code, co
 			vnx::read_value(_buf + _field->offset, value.num_addresses, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[8]) {
-			vnx::read_value(_buf + _field->offset, value.cache_timeout_ms, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.default_expire, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[9]) {
+			vnx::read_value(_buf + _field->offset, value.cache_timeout_ms, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[10]) {
 			vnx::read_value(_buf + _field->offset, value.enable_bls, _field->code.data());
 		}
 	}
@@ -856,11 +877,12 @@ void write(TypeOutput& out, const ::mmx::WalletBase& value, const TypeCode* type
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(13);
+	char* const _buf = out.write(17);
 	vnx::write_value(_buf + 0, value.max_key_files);
 	vnx::write_value(_buf + 4, value.num_addresses);
-	vnx::write_value(_buf + 8, value.cache_timeout_ms);
-	vnx::write_value(_buf + 12, value.enable_bls);
+	vnx::write_value(_buf + 8, value.default_expire);
+	vnx::write_value(_buf + 12, value.cache_timeout_ms);
+	vnx::write_value(_buf + 16, value.enable_bls);
 	vnx::write(out, value.key_files, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.accounts, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.config_path, type_code, type_code->fields[2].code.data());
