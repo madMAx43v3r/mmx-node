@@ -476,7 +476,7 @@ std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit,
 		}
 		catch(const std::exception& ex) {
 			if(show_warnings) {
-				log(WARN) << "TX validation failed with: " << ex.what();
+				log(WARN) << "TX validation failed with: " << ex.what() << " (" << tx->id << ")";
 			}
 			entry.is_valid = false;
 		}
