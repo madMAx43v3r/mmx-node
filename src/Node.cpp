@@ -1272,10 +1272,13 @@ std::vector<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<f
 	auto fork = fork_head ? fork_head : find_fork(state_hash);
 	while(fork && fork->block->height > root->height) {
 		line.push_back(fork);
+		if(fork->block->prev == root->hash) {
+			std::reverse(line.begin(), line.end());
+			return line;
+		}
 		fork = fork->prev.lock();
 	}
-	std::reverse(line.begin(), line.end());
-	return line;
+	return {};
 }
 
 void Node::purge_tree()
