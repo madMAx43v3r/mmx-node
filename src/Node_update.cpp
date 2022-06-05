@@ -493,6 +493,7 @@ std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit,
 		} else {
 			num_invalid++;
 		}
+		// erase from pool if it didn't came from pending map (and is invalid)
 		if(!pending_transactions.erase(entry.full_hash) && !entry.is_valid) {
 			tx_pool.erase(tx->id);
 		}
