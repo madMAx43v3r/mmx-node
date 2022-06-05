@@ -411,13 +411,10 @@ void Router::update()
 	}
 
 	// clear seen hashes
-	if(hash_queue.size() > max_hash_cache) {
-		const auto num_clear = hash_queue.size() - max_hash_cache;
-		for(size_t i = 0; i < num_clear && !hash_queue.empty(); ++i) {
-			const auto hash = hash_queue.front();
-			hash_info.erase(hash);
-			hash_queue.pop();
-		}
+	while(hash_queue.size() > max_hash_cache) {
+		const auto hash = hash_queue.front();
+		hash_info.erase(hash);
+		hash_queue.pop();
 	}
 
 	// check if we lost sync due to response timeout
