@@ -1249,15 +1249,17 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork(const uint32_t height) const
 		if(prev && prev->is_invalid) {
 			fork->is_invalid = true;
 		}
-		if(!fork->is_proof_verified || fork->is_invalid) {
-			continue;
+		if((prev && prev->is_all_proof_verified) || (block->prev == root->hash)) {
+			fork->is_all_proof_verified = fork->is_proof_verified;
 		}
-		if(!best_fork
-			|| block->total_weight > max_weight
-			|| (block->total_weight == max_weight && block->hash < best_fork->block->hash))
-		{
-			best_fork = fork;
-			max_weight = block->total_weight;
+		if(fork->is_all_proof_verified && !fork->is_invalid) {
+			if(!best_fork
+				|| block->total_weight > max_weight
+				|| (block->total_weight == max_weight && block->hash < best_fork->block->hash))
+			{
+				best_fork = fork;
+				max_weight = block->total_weight;
+			}
 		}
 	}
 	return best_fork;

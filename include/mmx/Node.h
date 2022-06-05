@@ -196,6 +196,7 @@ private:
 		bool is_connected = false;
 		bool is_vdf_verified = false;
 		bool is_proof_verified = false;
+		bool is_all_proof_verified = false;
 		int64_t recv_time = 0;
 		std::weak_ptr<fork_t> prev;
 		std::shared_ptr<const Block> block;
