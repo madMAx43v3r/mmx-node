@@ -1296,6 +1296,16 @@ void Node::purge_tree()
 			iter++;
 		}
 	}
+	for(auto iter = fork_tree.begin(); iter != fork_tree.end();)
+	{
+		const auto& fork = iter->second;
+		const auto& block = fork->block;
+		if(block->height <= root->height) {
+			iter = fork_tree.erase(iter);
+		} else {
+			iter++;
+		}
+	}
 }
 
 void Node::commit(std::shared_ptr<const Block> block) noexcept
