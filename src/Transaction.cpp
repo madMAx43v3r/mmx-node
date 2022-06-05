@@ -79,6 +79,8 @@ hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "is_extendable", is_extendable);
 
 	if(full_hash) {
+		// TODO: write_bytes(out, "solutions");
+		// TODO: write_bytes(out, uint64_t(solutions.size()));
 		for(const auto& sol : solutions) {
 			write_bytes(out, sol ? sol->calc_hash() : hash_t());
 		}
