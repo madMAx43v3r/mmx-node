@@ -38,7 +38,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: "build"
-          path: ./build/${{ env.CMAKE_BUILD_PRESET }}/!bin/Release/*.*
+          path: ./build/${{ env.CMAKE_BUILD_PRESET }}/!bin/Release/
 
       - name: Run CPack
         run: cpack -C Release --config build/${{ env.CMAKE_BUILD_PRESET }}/CPackConfig.cmake -B build/${{ env.CMAKE_BUILD_PRESET }}/!package
