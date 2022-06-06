@@ -614,6 +614,11 @@ bool Router::process(std::shared_ptr<const Return> ret)
 			}
 		}
 		else if(auto hash = job->hash) {
+			if(job->pending.empty() && job->failed.size() >= min_sync_peers) {
+				job->is_done = true;
+				fetch_block_async_return(request_id, nullptr);
+				continue;
+			}
 			if(job->pending.size() < min_sync_peers) {
 				auto clients = synced_peers;
 				for(auto id : job->failed) {
@@ -621,12 +626,6 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				}
 				for(auto id : job->pending) {
 					clients.erase(id);
-				}
-				if(clients.empty() && job->failed.size() >= min_sync_peers)
-				{
-					job->is_done = true;
-					fetch_block_async_return(request_id, nullptr);
-					continue;
 				}
 				for(auto client : get_subset(clients, min_sync_peers - job->pending.size(), rand_engine))
 				{
