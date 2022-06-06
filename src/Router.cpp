@@ -442,7 +442,7 @@ void Router::update()
 		// check for sync job timeouts
 		for(auto& entry : sync_jobs) {
 			auto& job = entry.second;
-			if(now_ms - job->start_time_ms > fetch_timeout_ms) {
+			if(now_ms - std::max(job->start_time_ms, job->last_recv_ms) > fetch_timeout_ms) {
 				for(auto client : job->pending) {
 					synced_peers.erase(client);
 				}
@@ -460,7 +460,7 @@ void Router::update()
 	// check for fetch job timeouts
 	for(auto iter = fetch_jobs.begin(); iter != fetch_jobs.end();) {
 		const auto job = iter->second;
-		if(now_ms - job->start_time_ms > fetch_timeout_ms) {
+		if(now_ms - std::max(job->start_time_ms, job->last_recv_ms) > fetch_timeout_ms) {
 			vnx_async_return_ex_what(iter->first, "fetch timeout");
 			iter = fetch_jobs.erase(iter);
 		} else {
@@ -473,6 +473,8 @@ void Router::update()
 
 bool Router::process(std::shared_ptr<const Return> ret)
 {
+	const auto now_ms = vnx::get_wall_time_millis();
+
 	bool did_consume = false;
 	for(auto& entry : sync_jobs)
 	{
@@ -499,15 +501,22 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				}
 				job->pending.erase(client);
 				job->request_map.erase(iter);
+				job->last_recv_ms = now_ms;
 				did_consume = true;
 			} else {
 				continue;
 			}
 		}
-		if(job->failed.size() + job->succeeded.size() < min_sync_peers)
-		{
-			if(job->pending.empty())
-			{
+		// check for disconnects
+		for(auto iter = job->pending.begin(); iter != job->pending.end();) {
+			if(synced_peers.count(*iter)) {
+				iter++;
+			} else {
+				iter = job->pending.erase(iter);
+			}
+		}
+		if(job->failed.size() + job->succeeded.size() < min_sync_peers) {
+			if(job->pending.empty()) {
 				auto clients = synced_peers;
 				for(auto id : job->failed) {
 					clients.erase(id);
@@ -577,6 +586,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				}
 				job->pending.erase(client);
 				job->request_map.erase(iter);
+				job->last_recv_ms = now_ms;
 				did_consume = true;
 			} else {
 				continue;
@@ -584,6 +594,14 @@ bool Router::process(std::shared_ptr<const Return> ret)
 		}
 		if(job->is_done) {
 			continue;
+		}
+		// check for disconnects
+		for(auto iter = job->pending.begin(); iter != job->pending.end();) {
+			if(synced_peers.count(*iter)) {
+				iter++;
+			} else {
+				iter = job->pending.erase(iter);
+			}
 		}
 		if(auto address = job->from_peer) {
 			if(job->request_map.empty()) {
@@ -612,23 +630,21 @@ bool Router::process(std::shared_ptr<const Return> ret)
 					job->request_map[id] = peer->client;
 				}
 			}
-		}
-		else if(auto hash = job->hash) {
-			if(job->pending.empty() && job->failed.size() >= min_sync_peers) {
+		} else if(auto hash = job->hash) {
+			auto clients = synced_peers;
+			for(auto id : job->failed) {
+				clients.erase(id);
+			}
+			for(auto id : job->pending) {
+				clients.erase(id);
+			}
+			if(clients.empty() && job->pending.empty()) {
 				job->is_done = true;
 				fetch_block_async_return(request_id, nullptr);
 				continue;
 			}
 			if(job->pending.size() < min_sync_peers) {
-				auto clients = synced_peers;
-				for(auto id : job->failed) {
-					clients.erase(id);
-				}
-				for(auto id : job->pending) {
-					clients.erase(id);
-				}
-				for(auto client : get_subset(clients, min_sync_peers - job->pending.size(), rand_engine))
-				{
+				for(auto client : get_subset(clients, min_sync_peers - job->pending.size(), rand_engine)) {
 					auto req = Node_get_block::create();
 					req->hash = *hash;
 					const auto id = send_request(client, req);
@@ -636,8 +652,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 					job->pending.insert(client);
 				}
 			}
-		}
-		else {
+		} else {
 			job->is_done = true;
 			vnx_async_return_ex_what(request_id, "invalid request");
 		}
