@@ -100,8 +100,10 @@ void Farmer::update()
 				}
 				wallet->get_address(accounts.begin()->first, 0,
 					[this](const addr_t& address) {
+						if(!reward_addr) {
+							log(INFO) << "Reward address: " << address.to_string();
+						}
 						reward_addr = address;
-						log(INFO) << "Reward address: " << address.to_string();
 					},
 					[this](const vnx::exception& ex) {
 						log(WARN) << "Failed to get reward address from wallet: " << ex.what();
