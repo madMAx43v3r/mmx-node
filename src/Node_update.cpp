@@ -186,16 +186,21 @@ void Node::update()
 		// verify and apply new fork
 		try {
 			forked_at = fork_to(best_fork);
-		}
-		catch(...) {
+		} catch(...) {
 			continue;	// try again
 		}
-		purge_tree();
+		break;
+	}
 
-		const auto peak = best_fork->block;
-		const auto fork_line = get_fork_line();
-
+	const auto peak = get_peak();
+	if(!peak) {
+		log(WARN) << "Have no peak!";
+		return;
+	}
+	{
 		// commit to disk
+		bool did_commit = false;
+		const auto fork_line = get_fork_line();
 		const auto commit_delay = is_synced || sync_retry ? params->commit_delay : max_sync_ahead;
 		for(size_t i = 0; i + commit_delay < fork_line.size(); ++i)
 		{
@@ -213,14 +218,11 @@ void Node::update()
 				}
 			}
 			commit(block);
+			did_commit = true;
 		}
-		break;
-	}
-
-	const auto peak = get_peak();
-	if(!peak) {
-		log(WARN) << "Have no peak!";
-		return;
+		if(did_commit) {
+			purge_tree();
+		}
 	}
 	const auto root = get_root();
 	const auto elapsed = (vnx::get_wall_time_micros() - time_begin) / 1e6;
