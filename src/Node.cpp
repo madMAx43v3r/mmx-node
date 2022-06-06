@@ -1080,10 +1080,8 @@ void Node::sync_more()
 	const auto peak_height = get_height();
 	if(peak_height + max_sync_ahead < sync_pos) {
 		if(sync_pending.empty()) {
-			const auto replay_height = peak_height - std::min<uint32_t>(max_sync_ahead, peak_height);
-			vnx::write_config("Node.replay_height", replay_height);
-			log(ERROR) << "Sync failed, restarting at " << replay_height;
-			exit();
+			log(ERROR) << "Sync failed, restarting ...";
+			start_sync(true);
 		}
 		return;
 	}
