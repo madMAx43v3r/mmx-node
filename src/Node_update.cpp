@@ -124,7 +124,7 @@ void Node::update()
 					// fetch missing previous
 					const auto hash = block->prev;
 					const auto height = block->height - 1;
-					if(!fetch_pending.count(hash) && height > root->height) {
+					if(!purged_blocks.count(hash) && !fetch_pending.count(hash) && height > root->height) {
 						fetch_block(hash);
 						log(WARN) << "Fetching missed block at height " << height << " with hash " << hash;
 					}

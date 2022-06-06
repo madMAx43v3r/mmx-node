@@ -402,6 +402,7 @@ private:
 	std::unordered_multimap<uint32_t, hash_t> challenge_map;								// [height => challenge]
 	std::unordered_multimap<hash_t, std::shared_ptr<const ProofResponse>> proof_map;		// [challenge => proof]
 	std::map<std::pair<hash_t, hash_t>, hash_t> created_blocks;								// [[prev hash, proof hash] => hash]
+	std::unordered_set<hash_t> purged_blocks;
 
 	bool is_synced = false;
 	std::shared_ptr<vnx::File> block_chain;

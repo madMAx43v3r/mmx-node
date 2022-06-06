@@ -972,7 +972,7 @@ bool Node::recv_height(const uint32_t& height)
 
 void Node::handle(std::shared_ptr<const Block> block)
 {
-	if(!recv_height(block->height)) {
+	if(!recv_height(block->height) || purged_blocks.count(block->prev)) {
 		return;
 	}
 	add_block(block);
@@ -1057,6 +1057,7 @@ void Node::start_sync(const vnx::bool_t& force)
 	sync_peak = nullptr;
 	sync_retry = 0;
 	is_synced = false;
+	purged_blocks.clear();
 
 	timelord->stop_vdf(
 		[this]() {
@@ -1293,17 +1294,16 @@ std::vector<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<f
 void Node::purge_tree()
 {
 	const auto root = get_root();
-	std::unordered_set<hash_t> purged;
 	for(auto iter = fork_index.begin(); iter != fork_index.end();)
 	{
 		const auto& fork = iter->second;
 		const auto& block = fork->block;
 		if(block->height <= root->height
-			|| purged.count(block->prev)
+			|| purged_blocks.count(block->prev)
 			|| (!is_synced && fork->is_invalid))
 		{
 			if(fork_tree.erase(block->hash)) {
-				purged.insert(block->hash);
+				purged_blocks.insert(block->hash);
 			}
 			iter = fork_index.erase(iter);
 		} else {
@@ -1319,6 +1319,9 @@ void Node::purge_tree()
 		} else {
 			iter++;
 		}
+	}
+	if(purged_blocks.size() > 100000) {
+		purged_blocks.clear();
 	}
 }
 
