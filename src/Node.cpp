@@ -1077,6 +1077,14 @@ void Node::sync_more()
 	if(vdf_threads->get_num_pending()) {
 		return;
 	}
+	const auto peak_height = get_height();
+	if(peak_height + 3 * max_sync_jobs < sync_pos) {
+		const auto replay_height = peak_height - std::min<uint32_t>(max_sync_jobs * 4, peak_height);
+		vnx::write_config("Node.replay_height", replay_height);
+		log(ERROR) << "Sync failed, restarting with --Node.replay_height " << replay_height;
+		exit();
+		return;
+	}
 	const size_t max_pending = !sync_retry ? std::max(std::min<int>(max_sync_pending, max_sync_jobs), 2) : 2;
 
 	while(sync_pending.size() < max_pending && (!sync_peak || sync_pos < *sync_peak))
