@@ -249,7 +249,7 @@ void Node::update()
 			sync_peak = nullptr;
 			sync_retry++;
 		}
-		else if(peak->height + params->commit_delay + 1 < *sync_peak)
+		else if(peak->height + 3 < *sync_peak)
 		{
 			const auto replay_height = peak->height - std::min<uint32_t>(1000, peak->height);
 			vnx::write_config("Node.replay_height", replay_height);
