@@ -196,7 +196,8 @@ void Node::update()
 		const auto fork_line = get_fork_line();
 
 		// commit to disk
-		for(size_t i = 0; i + params->commit_delay < fork_line.size(); ++i)
+		const auto commit_delay = is_synced || sync_retry ? params->commit_delay : max_sync_ahead;
+		for(size_t i = 0; i + commit_delay < fork_line.size(); ++i)
 		{
 			const auto& fork = fork_line[i];
 			const auto& block = fork->block;
@@ -205,9 +206,8 @@ void Node::update()
 			}
 			if(!is_synced && fork_line.size() < max_fork_length) {
 				// check if there is a competing fork at this height
-				const auto finalized_height = peak->height - std::min(params->infuse_delay + 1, peak->height);
 				if(		std::distance(fork_index.lower_bound(block->height), fork_index.upper_bound(block->height)) > 1
-					&&	std::distance(fork_index.lower_bound(finalized_height), fork_index.upper_bound(finalized_height)) > 1)
+					&&	std::distance(fork_index.lower_bound(peak->height), fork_index.upper_bound(peak->height)) > 1)
 				{
 					break;
 				}
@@ -253,7 +253,7 @@ void Node::update()
 		{
 			const auto replay_height = peak->height - std::min<uint32_t>(1000, peak->height);
 			vnx::write_config("Node.replay_height", replay_height);
-			log(ERROR) << "Sync failed, it appears we have forked from the network a while ago, restarting with --Node.replay_height " << replay_height;
+			log(ERROR) << "Sync failed, restarting at " << replay_height;
 			exit();
 			return;
 		}
