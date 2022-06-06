@@ -972,7 +972,11 @@ bool Node::recv_height(const uint32_t& height)
 
 void Node::handle(std::shared_ptr<const Block> block)
 {
-	if(!recv_height(block->height) || purged_blocks.count(block->prev)) {
+	if(!recv_height(block->height)) {
+		return;
+	}
+	if(purged_blocks.count(block->prev)) {
+		purged_blocks.insert(block->hash);
 		return;
 	}
 	add_block(block);
