@@ -32,6 +32,7 @@ module Node implements vnx.addons.HttpComponent {
 	uint tx_verify_interval = 1000;			// number of blocks
 	
 	uint max_sync_jobs = 64;				// number of parallel requests
+	uint max_sync_ahead = 1000;				// how many blocks to fetch ahead at most
 	uint num_sync_retries = 3;				// how often to retry when reaching a peak
 	uint replay_height = -1;				// to limit reloading from disk and force resync
 	
