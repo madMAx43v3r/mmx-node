@@ -249,17 +249,9 @@ void Node::update()
 			sync_peak = nullptr;
 			sync_retry++;
 		}
-		else if(peak->height + 3 < *sync_peak)
-		{
-			const auto replay_height = peak->height - std::min<uint32_t>(1000, peak->height);
-			vnx::write_config("Node.replay_height", replay_height);
-			log(ERROR) << "Sync failed, restarting at " << replay_height;
-			exit();
-			return;
-		}
 		else {
-			is_synced = true;
 			log(INFO) << "Finished sync at height " << peak->height;
+			is_synced = true;
 		}
 	}
 	if(!is_synced) {
