@@ -768,7 +768,7 @@ void Router::query()
 								req->height = height;
 								for(const auto& entry : peer_map) {
 									const auto& peer = entry.second;
-									if(peer->is_synced && peer->is_outbound && peer->info.type == node_type_e::FULL_NODE) {
+									if(peer->is_synced && peer->info.type == node_type_e::FULL_NODE) {
 										const auto id = send_request(peer, req);
 										fork_check.request_map[id] = peer->client;
 									}
