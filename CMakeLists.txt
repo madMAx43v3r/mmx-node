@@ -152,6 +152,7 @@ add_library(mmx_vm SHARED
 )
 
 add_library(mmx_modules SHARED
+	src/DataBase.cpp
 	src/TimeLord.cpp
 	src/Node.cpp
 	src/Node_update.cpp
