@@ -515,8 +515,10 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				iter = job->pending.erase(iter);
 			}
 		}
-		if(job->failed.size() + job->succeeded.size() < min_sync_peers) {
-			if(job->pending.empty()) {
+		const auto num_returns = job->failed.size() + job->succeeded.size();
+		if(num_returns < min_sync_peers) {
+			const auto num_left = min_sync_peers - num_returns;
+			if(job->pending.size() < num_left) {
 				auto clients = synced_peers;
 				for(auto id : job->failed) {
 					clients.erase(id);
@@ -524,7 +526,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				for(auto id : job->succeeded) {
 					clients.erase(id);
 				}
-				for(auto client : get_subset(clients, 1, rand_engine))
+				for(auto client : get_subset(clients, num_left, rand_engine))
 				{
 					auto req = Node_get_block_at::create();
 					req->height = job->height;
