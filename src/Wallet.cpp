@@ -395,6 +395,7 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 
 	auto tx = Transaction::create();
 	tx->note = tx_note_e::OFFER;
+	tx->sender = wallet->get_address(0);
 	tx->is_extendable = true;
 	tx->add_input(bid_currency, wallet->get_address(address), bid_amount);
 	tx->add_output(ask_currency, wallet->get_address(address), ask_amount);
