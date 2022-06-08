@@ -397,8 +397,10 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 	tx->note = tx_note_e::OFFER;
 	tx->sender = wallet->get_address(0);
 	tx->is_extendable = true;
-	tx->add_input(bid_currency, wallet->get_address(address), bid_amount);
 	tx->add_output(ask_currency, wallet->get_address(address), ask_amount);
+
+	std::map<std::pair<addr_t, addr_t>, uint128_t> spent_map;
+	wallet->gather_inputs(tx, spent_map, bid_amount, bid_currency, options);
 	wallet->sign_off(tx, options);
 	return tx;
 }
