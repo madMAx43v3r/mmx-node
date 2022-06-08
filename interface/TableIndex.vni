@@ -1,0 +1,12 @@
+package mmx;
+
+class TableIndex {
+	
+	uint version;
+	
+	ulong next_block_id;
+	
+	vector<string> blocks;
+	vector<string> deleted;
+	
+}
