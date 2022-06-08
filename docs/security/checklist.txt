@@ -6,3 +6,5 @@ maximum size of all data structures is limited
 cross origin requests
 integer overflows on addition (amount, fee, tx cost, etc)
 not hashing solutions for message relay / map storage
+allocating too much memory during deserialize
+recursion limit for deserialize
