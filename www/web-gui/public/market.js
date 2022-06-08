@@ -203,7 +203,7 @@ app.component('market-offers', {
 						<td>You Receive</td>
 						<td>
 							<b>{{entry.value}}</b> {{entry.symbol}} 
-							<template v-if="entry.contract != 'mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev'">
+							<template v-if="!entry.is_native">
 								- [<router-link :to="'/explore/address/' + entry.contract">{{entry.contract}}</router-link>]
 							</template>
 						</td>
@@ -214,7 +214,7 @@ app.component('market-offers', {
 						<td>You Pay</td>
 						<td>
 							<b>{{entry.value}}</b> {{entry.symbol}} 
-							<template v-if="entry.contract != 'mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev'">
+							<template v-if="!entry.is_native">
 								- [<router-link :to="'/explore/address/' + entry.contract">{{entry.contract}}</router-link>]
 							</template>
 						</td>
