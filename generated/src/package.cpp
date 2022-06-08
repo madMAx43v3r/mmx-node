@@ -258,6 +258,7 @@
 #include <mmx/Solution_calc_cost_return.hxx>
 #include <mmx/Solution_calc_hash.hxx>
 #include <mmx/Solution_calc_hash_return.hxx>
+#include <mmx/TableIndex.hxx>
 #include <mmx/TimeInfusion.hxx>
 #include <mmx/TimeLordBase.hxx>
 #include <mmx/TimeLord_stop_vdf.hxx>
@@ -3460,6 +3461,18 @@ void type<::mmx::Solution_calc_hash_return>::create_dynamic_code(std::vector<uin
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::TableIndex>::get_type_code() {
+	return mmx::vnx_native_type_code_TableIndex;
+}
+
+void type<::mmx::TableIndex>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::TableIndex());
+}
+
+void type<::mmx::TableIndex>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::TableIndex& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::TimeInfusion>::get_type_code() {
 	return mmx::vnx_native_type_code_TimeInfusion;
 }
@@ -5589,6 +5602,7 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Solution_calc_cost_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Solution_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::Solution_calc_hash_return::static_create_type_code());
+	vnx::register_type_code(::mmx::TableIndex::static_create_type_code());
 	vnx::register_type_code(::mmx::TimeInfusion::static_create_type_code());
 	vnx::register_type_code(::mmx::TimeLordBase::static_create_type_code());
 	vnx::register_type_code(::mmx::TimeLord_stop_vdf::static_create_type_code());
@@ -6004,6 +6018,7 @@ const vnx::TypeCode* const vnx_native_type_code_Solution_calc_cost = vnx::get_ty
 const vnx::TypeCode* const vnx_native_type_code_Solution_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xa6e602a441df68d6ull));
 const vnx::TypeCode* const vnx_native_type_code_Solution_calc_hash = vnx::get_type_code(vnx::Hash64(0x6891410f74d6bee1ull));
 const vnx::TypeCode* const vnx_native_type_code_Solution_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xddb05fa8c70005aaull));
+const vnx::TypeCode* const vnx_native_type_code_TableIndex = vnx::get_type_code(vnx::Hash64(0xbbb2e8ceb4359eddull));
 const vnx::TypeCode* const vnx_native_type_code_TimeInfusion = vnx::get_type_code(vnx::Hash64(0x7c38bc7150b0d98bull));
 const vnx::TypeCode* const vnx_native_type_code_TimeLordBase = vnx::get_type_code(vnx::Hash64(0x311081636f6570efull));
 const vnx::TypeCode* const vnx_native_type_code_TimeLord_stop_vdf = vnx::get_type_code(vnx::Hash64(0xf7f78eb9f371e6e7ull));

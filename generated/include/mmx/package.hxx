@@ -279,6 +279,7 @@ class Solution_calc_cost;
 class Solution_calc_cost_return;
 class Solution_calc_hash;
 class Solution_calc_hash_return;
+class TableIndex;
 class TimeInfusion;
 class TimeLordBase;
 class TimeLord_stop_vdf;
@@ -695,6 +696,7 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Solution_calc_
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Solution_calc_cost_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Solution_calc_hash; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Solution_calc_hash_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TableIndex; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeInfusion; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLordBase; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLord_stop_vdf; ///< \private
@@ -1108,6 +1110,7 @@ void read(TypeInput& in, ::mmx::Solution_calc_cost& value, const TypeCode* type_
 void read(TypeInput& in, ::mmx::Solution_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Solution_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Solution_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::TableIndex& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::TimeInfusion& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::TimeLordBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::TimeLord_stop_vdf& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1524,6 +1527,7 @@ void write(TypeOutput& out, const ::mmx::Solution_calc_cost& value, const TypeCo
 void write(TypeOutput& out, const ::mmx::Solution_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Solution_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Solution_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::TableIndex& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::TimeInfusion& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::TimeLordBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::TimeLord_stop_vdf& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1940,6 +1944,7 @@ void read(std::istream& in, ::mmx::Solution_calc_cost& value); ///< \private
 void read(std::istream& in, ::mmx::Solution_calc_cost_return& value); ///< \private
 void read(std::istream& in, ::mmx::Solution_calc_hash& value); ///< \private
 void read(std::istream& in, ::mmx::Solution_calc_hash_return& value); ///< \private
+void read(std::istream& in, ::mmx::TableIndex& value); ///< \private
 void read(std::istream& in, ::mmx::TimeInfusion& value); ///< \private
 void read(std::istream& in, ::mmx::TimeLordBase& value); ///< \private
 void read(std::istream& in, ::mmx::TimeLord_stop_vdf& value); ///< \private
@@ -2356,6 +2361,7 @@ void write(std::ostream& out, const ::mmx::Solution_calc_cost& value); ///< \pri
 void write(std::ostream& out, const ::mmx::Solution_calc_cost_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Solution_calc_hash& value); ///< \private
 void write(std::ostream& out, const ::mmx::Solution_calc_hash_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::TableIndex& value); ///< \private
 void write(std::ostream& out, const ::mmx::TimeInfusion& value); ///< \private
 void write(std::ostream& out, const ::mmx::TimeLordBase& value); ///< \private
 void write(std::ostream& out, const ::mmx::TimeLord_stop_vdf& value); ///< \private
@@ -2772,6 +2778,7 @@ void accept(Visitor& visitor, const ::mmx::Solution_calc_cost& value); ///< \pri
 void accept(Visitor& visitor, const ::mmx::Solution_calc_cost_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Solution_calc_hash& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Solution_calc_hash_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::TableIndex& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::TimeInfusion& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::TimeLordBase& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::TimeLord_stop_vdf& value); ///< \private
@@ -8828,6 +8835,29 @@ struct type<::mmx::Solution_calc_hash_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Solution_calc_hash_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::TableIndex> {
+	void read(TypeInput& in, ::mmx::TableIndex& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::TableIndex& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::TableIndex& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::TableIndex& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::TableIndex& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::TableIndex& value, bool special = false);
 };
 
 /// \private
