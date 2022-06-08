@@ -42,10 +42,10 @@ Table::Table(const std::string& file_path, const std::function<bool(const db_val
 	for(const auto& name : index->blocks) {
 		blocks.push_back(read_block(name));
 	}
-//	for(const auto& name : index->deleted) {
-//		vnx::File(file_path + name).remove();
-//	}
-//	index->deleted.clear();
+	for(const auto& name : index->delete_files) {
+		vnx::File(file_path + name).remove();
+	}
+	index->delete_files.clear();
 
 	// purge left-over data
 	revert(index->version);
@@ -157,7 +157,31 @@ std::shared_ptr<db_val_t> Table::find(std::shared_ptr<db_val_t> key) const
 	for(auto iter = mem_block.lower_bound(std::make_pair(key, 0)); iter != mem_block.end() && *iter->first.first == *key; ++iter) {
 		value = iter->second;
 	}
+	if(value) {
+		return value;
+	}
+	for(auto iter = blocks.rbegin(); iter != blocks.rend(); ++iter) {
+		auto res = key;
+		find(*iter, res, &value);
+		if(res && *res == *key) {
+			break;
+		}
+	}
 	return value;
+}
+
+size_t Table::find(std::shared_ptr<block_t> block, std::shared_ptr<db_val_t>& key, std::shared_ptr<db_val_t>* value) const
+{
+	vnx::File file(file_path + block->name);
+	file.open("rb");
+	return find(block, file, key, value);
+}
+
+size_t Table::find(std::shared_ptr<block_t> block, vnx::File& file, std::shared_ptr<db_val_t>& key, std::shared_ptr<db_val_t>* value) const
+{
+	size_t pos = block->index.size() / 2;
+	// TODO
+	return pos;
 }
 
 void Table::commit(const uint32_t new_version)

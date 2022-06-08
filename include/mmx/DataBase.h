@@ -114,6 +114,10 @@ private:
 
 	std::shared_ptr<block_t> read_block(const std::string& name) const;
 
+	size_t find(std::shared_ptr<block_t> block, std::shared_ptr<db_val_t>& key, std::shared_ptr<db_val_t>* value = nullptr) const;
+
+	size_t find(std::shared_ptr<block_t> block, vnx::File& file, std::shared_ptr<db_val_t>& key, std::shared_ptr<db_val_t>* value = nullptr) const;
+
 	void flush();
 
 	void write_index();

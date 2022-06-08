@@ -7,6 +7,7 @@ class TableIndex {
 	ulong next_block_id;
 	
 	vector<string> blocks;
-	vector<string> deleted;
+	
+	vector<string> delete_files;
 	
 }
