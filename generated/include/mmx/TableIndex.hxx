@@ -16,7 +16,7 @@ public:
 	uint32_t version = 0;
 	uint64_t next_block_id = 0;
 	std::vector<std::string> blocks;
-	std::vector<std::string> deleted;
+	std::vector<std::string> delete_files;
 	
 	typedef ::vnx::Value Super;
 	
@@ -67,7 +67,7 @@ void TableIndex::accept_generic(T& _visitor) const {
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("next_block_id", 1); _visitor.accept(next_block_id);
 	_visitor.type_field("blocks", 2); _visitor.accept(blocks);
-	_visitor.type_field("deleted", 3); _visitor.accept(deleted);
+	_visitor.type_field("delete_files", 3); _visitor.accept(delete_files);
 	_visitor.template type_end<TableIndex>(4);
 }
 

@@ -12,7 +12,7 @@ namespace mmx {
 
 
 const vnx::Hash64 TableIndex::VNX_TYPE_HASH(0xbbb2e8ceb4359eddull);
-const vnx::Hash64 TableIndex::VNX_CODE_HASH(0xe814a5bc31138015ull);
+const vnx::Hash64 TableIndex::VNX_CODE_HASH(0x20a603b7f279dff8ull);
 
 vnx::Hash64 TableIndex::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,7 +48,7 @@ void TableIndex::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, version);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, next_block_id);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, blocks);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, deleted);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, delete_files);
 	_visitor.type_end(*_type_code);
 }
 
@@ -57,7 +57,7 @@ void TableIndex::write(std::ostream& _out) const {
 	_out << ", \"version\": "; vnx::write(_out, version);
 	_out << ", \"next_block_id\": "; vnx::write(_out, next_block_id);
 	_out << ", \"blocks\": "; vnx::write(_out, blocks);
-	_out << ", \"deleted\": "; vnx::write(_out, deleted);
+	_out << ", \"delete_files\": "; vnx::write(_out, delete_files);
 	_out << "}";
 }
 
@@ -73,7 +73,7 @@ vnx::Object TableIndex::to_object() const {
 	_object["version"] = version;
 	_object["next_block_id"] = next_block_id;
 	_object["blocks"] = blocks;
-	_object["deleted"] = deleted;
+	_object["delete_files"] = delete_files;
 	return _object;
 }
 
@@ -81,8 +81,8 @@ void TableIndex::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "blocks") {
 			_entry.second.to(blocks);
-		} else if(_entry.first == "deleted") {
-			_entry.second.to(deleted);
+		} else if(_entry.first == "delete_files") {
+			_entry.second.to(delete_files);
 		} else if(_entry.first == "next_block_id") {
 			_entry.second.to(next_block_id);
 		} else if(_entry.first == "version") {
@@ -101,8 +101,8 @@ vnx::Variant TableIndex::get_field(const std::string& _name) const {
 	if(_name == "blocks") {
 		return vnx::Variant(blocks);
 	}
-	if(_name == "deleted") {
-		return vnx::Variant(deleted);
+	if(_name == "delete_files") {
+		return vnx::Variant(delete_files);
 	}
 	return vnx::Variant();
 }
@@ -114,8 +114,8 @@ void TableIndex::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(next_block_id);
 	} else if(_name == "blocks") {
 		_value.to(blocks);
-	} else if(_name == "deleted") {
-		_value.to(deleted);
+	} else if(_name == "delete_files") {
+		_value.to(delete_files);
 	}
 }
 
@@ -143,7 +143,7 @@ std::shared_ptr<vnx::TypeCode> TableIndex::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.TableIndex";
 	type_code->type_hash = vnx::Hash64(0xbbb2e8ceb4359eddull);
-	type_code->code_hash = vnx::Hash64(0xe814a5bc31138015ull);
+	type_code->code_hash = vnx::Hash64(0x20a603b7f279dff8ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::TableIndex);
@@ -170,7 +170,7 @@ std::shared_ptr<vnx::TypeCode> TableIndex::static_create_type_code() {
 	{
 		auto& field = type_code->fields[3];
 		field.is_extended = true;
-		field.name = "deleted";
+		field.name = "delete_files";
 		field.code = {12, 32};
 	}
 	type_code->build();
@@ -231,7 +231,7 @@ void read(TypeInput& in, ::mmx::TableIndex& value, const TypeCode* type_code, co
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 2: vnx::read(in, value.blocks, type_code, _field->code.data()); break;
-			case 3: vnx::read(in, value.deleted, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.delete_files, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -254,7 +254,7 @@ void write(TypeOutput& out, const ::mmx::TableIndex& value, const TypeCode* type
 	vnx::write_value(_buf + 0, value.version);
 	vnx::write_value(_buf + 4, value.next_block_id);
 	vnx::write(out, value.blocks, type_code, type_code->fields[2].code.data());
-	vnx::write(out, value.deleted, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.delete_files, type_code, type_code->fields[3].code.data());
 }
 
 void read(std::istream& in, ::mmx::TableIndex& value) {
