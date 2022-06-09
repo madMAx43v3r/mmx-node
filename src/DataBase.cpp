@@ -19,15 +19,15 @@ std::string to_number(const T& value, const size_t n_zero)
 	return std::string(n_zero - std::min(n_zero, tmp.length()), '0') + tmp;
 }
 
-const std::function<bool(const db_val_t&, const db_val_t&)> Table::default_comparator =
+const std::function<int64_t(const db_val_t&, const db_val_t&)> Table::default_comparator =
 	[](const db_val_t& lhs, const db_val_t& rhs) -> bool {
 		if(lhs.size == rhs.size) {
-			return ::memcmp(lhs.data, rhs.data, lhs.size) < 0;
+			return ::memcmp(lhs.data, rhs.data, lhs.size);
 		}
-		return lhs.size < rhs.size;
+		return int64_t(lhs.size) - int64_t(rhs.size);
 	};
 
-Table::Table(const std::string& file_path, const std::function<bool(const db_val_t&, const db_val_t&)>& comparator)
+Table::Table(const std::string& file_path, const std::function<int64_t(const db_val_t&, const db_val_t&)>& comparator)
 	:	file_path(file_path), comparator(comparator), mem_block(mem_compare_t(this))
 {
 	debug_log.open(file_path + "debug.log", std::ios_base::app);
@@ -103,21 +103,34 @@ std::shared_ptr<Table::block_t> Table::read_block(const std::string& name) const
 	return block;
 }
 
-void Table::read_entry(vnx::TypeInput& in, uint32_t& version, std::shared_ptr<db_val_t>& key, std::shared_ptr<db_val_t>& value)
+void Table::read_entry(vnx::TypeInput& in, uint32_t& version, std::shared_ptr<db_val_t>& key, std::shared_ptr<db_val_t>& value) const
+{
+	read_key(in, version, key);
+	read_value(in, value);
+}
+
+void Table::read_key_at(vnx::File& file, int64_t offset, uint32_t& version, std::shared_ptr<db_val_t>& key) const
+{
+	file.seek_to(offset);
+	read_key(file.in, version, key);
+}
+
+void Table::read_key(vnx::TypeInput& in, uint32_t& version, std::shared_ptr<db_val_t>& key) const
 {
 	vnx::read(in, version);
-	{
-		uint32_t size = 0;
-		vnx::read(in, size);
-		key = std::make_shared<db_val_t>(size);
-		in.read(key->data, key->size);
-	}
-	{
-		uint32_t size = 0;
-		vnx::read(in, size);
-		value = std::make_shared<db_val_t>(size);
-		in.read(value->data, value->size);
-	}
+
+	uint32_t size = 0;
+	vnx::read(in, size);
+	key = std::make_shared<db_val_t>(size);
+	in.read(key->data, key->size);
+}
+
+void Table::read_value(vnx::TypeInput& in, std::shared_ptr<db_val_t>& value) const
+{
+	uint32_t size = 0;
+	vnx::read(in, size);
+	value = std::make_shared<db_val_t>(size);
+	in.read(value->data, value->size);
 }
 
 void Table::write_entry(vnx::TypeOutput& out, uint32_t version, std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t> value)
@@ -179,8 +192,84 @@ size_t Table::find(std::shared_ptr<block_t> block, std::shared_ptr<db_val_t>& ke
 
 size_t Table::find(std::shared_ptr<block_t> block, vnx::File& file, std::shared_ptr<db_val_t>& key, std::shared_ptr<db_val_t>* value) const
 {
-	size_t pos = block->index.size() / 2;
-	// TODO
+	const auto end = block->index.size();
+	if(end == 0) {
+		key = nullptr;
+		if(value) {
+			*value = nullptr;
+		}
+		return 0;
+	}
+	auto pos = end / 2;
+	auto delta = (pos + 1) / 2;
+	while(pos < end && delta > 0) {
+		uint32_t version;
+		std::shared_ptr<db_val_t> key_i;
+		read_key_at(file, block->index[pos], version, key_i);
+		auto res = comparator(*key, *key_i);
+		if(res == 0) {
+			bool skip = false;
+			auto prev = pos;
+			while(true) {
+				if(res < 0) {
+					if(!skip) {
+						pos--;
+					}
+					break;
+				}
+				if(res > 0) {
+					pos = prev + 1;
+					skip = true;
+				}
+				if(skip) {
+					pos++;
+				} else if(version < block->max_version) {
+					if(pos + 1 >= end) {
+						break;
+					}
+					pos++;
+				} else if(version > block->max_version) {
+					if(pos == 0) {
+						break;
+					}
+					pos--;
+				} else {
+					break;
+				}
+				if(pos >= end) {
+					break;
+				}
+				read_key_at(file, block->index[pos], version, key_i);
+				res = comparator(*key, *key_i);
+			}
+			break;
+		}
+		if(res < 0) {
+			if(pos < delta) {
+				pos = 0;
+			} else {
+				pos -= delta;
+			}
+			delta /= 2;
+		} else {
+			pos += delta;
+			delta /= 2;
+		}
+	}
+	uint32_t version;
+	if(pos < end) {
+		read_key_at(file, block->index[pos], version, key);
+	} else {
+		pos = end;
+		key = nullptr;
+	}
+	if(value) {
+		if(pos < end) {
+			read_value(file.in, *value);
+		} else {
+			*value = nullptr;
+		}
+	}
 	return pos;
 }
 
@@ -191,7 +280,7 @@ void Table::commit(const uint32_t new_version)
 	}
 	write_log->flush();
 
-	if(mem_block_size >= max_block_size) {
+	if(mem_block.size() * entry_overhead + mem_block_size >= max_block_size) {
 		flush();
 	}
 	index->version = new_version;

@@ -67,23 +67,25 @@ protected:
 		Table* table = nullptr;
 		mem_compare_t(Table* table) : table(table) {}
 		bool operator()(const std::pair<std::shared_ptr<db_val_t>, uint32_t>& lhs, const std::pair<std::shared_ptr<db_val_t>, uint32_t>& rhs) const {
-			if(*lhs.first == *rhs.first) {
+			const auto res = table->comparator(*lhs.first, *rhs.first);
+			if(res == 0) {
 				return lhs.second < rhs.second;
 			}
-			return table->comparator(*lhs.first, *rhs.first);
+			return res < 0;
 		}
 	};
 
 public:
-	uint32_t level_factor = 4;
-	uint64_t max_block_size = 16 * 1024 * 1024;
+	int level_factor = 4;
+	size_t max_block_size = 16 * 1024 * 1024;
 
 	const std::string file_path;
-	const std::function<bool(const db_val_t&, const db_val_t&)> comparator;
+	const std::function<int64_t(const db_val_t&, const db_val_t&)> comparator;
 
-	static const std::function<bool(const db_val_t&, const db_val_t&)> default_comparator;
+	static constexpr uint32_t entry_overhead = 20;
+	static const std::function<int64_t(const db_val_t&, const db_val_t&)> default_comparator;
 
-	Table(const std::string& file_path, const std::function<bool(const db_val_t&, const db_val_t&)>& comparator);
+	Table(const std::string& file_path, const std::function<int64_t(const db_val_t&, const db_val_t&)>& comparator);
 
 	void insert(std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t> value);
 
@@ -106,7 +108,13 @@ public:
 	};
 
 private:
-	void read_entry(vnx::TypeInput& in, uint32_t& version, std::shared_ptr<db_val_t>& key, std::shared_ptr<db_val_t>& value);
+	void read_entry(vnx::TypeInput& in, uint32_t& version, std::shared_ptr<db_val_t>& key, std::shared_ptr<db_val_t>& value) const;
+
+	void read_key_at(vnx::File& file, int64_t offset, uint32_t& version, std::shared_ptr<db_val_t>& key) const;
+
+	void read_key(vnx::TypeInput& in, uint32_t& version, std::shared_ptr<db_val_t>& key) const;
+
+	void read_value(vnx::TypeInput& in, std::shared_ptr<db_val_t>& value) const;
 
 	void write_entry(vnx::TypeOutput& out, uint32_t version, std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t> value);
 
@@ -127,7 +135,7 @@ private:
 	std::shared_ptr<vnx::File> write_log;
 	std::list<std::shared_ptr<block_t>> blocks;
 
-	uint64_t mem_block_size = 0;
+	size_t mem_block_size = 0;
 	std::map<std::pair<std::shared_ptr<db_val_t>, uint32_t>, std::shared_ptr<db_val_t>, mem_compare_t> mem_block;
 
 };
