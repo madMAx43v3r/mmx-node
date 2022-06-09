@@ -19,17 +19,18 @@ std::string to_number(const T& value, const size_t n_zero)
 	return std::string(n_zero - std::min(n_zero, tmp.length()), '0') + tmp;
 }
 
-const std::function<int64_t(const db_val_t&, const db_val_t&)> Table::default_comparator =
-	[](const db_val_t& lhs, const db_val_t& rhs) -> bool {
+const std::function<int(const db_val_t&, const db_val_t&)> Table::default_comparator =
+	[](const db_val_t& lhs, const db_val_t& rhs) -> int {
 		if(lhs.size == rhs.size) {
 			return ::memcmp(lhs.data, rhs.data, lhs.size);
 		}
-		return int64_t(lhs.size) - int64_t(rhs.size);
+		return lhs.size < rhs.size ? -1 : 1;
 	};
 
-Table::Table(const std::string& file_path, const std::function<int64_t(const db_val_t&, const db_val_t&)>& comparator)
+Table::Table(const std::string& file_path, const std::function<int(const db_val_t&, const db_val_t&)>& comparator)
 	:	file_path(file_path), comparator(comparator), mem_block(mem_compare_t(this))
 {
+	vnx::Directory(file_path).create();
 	debug_log.open(file_path + "debug.log", std::ios_base::app);
 
 	index = vnx::read_from_file<TableIndex>(file_path + "index.dat");
@@ -40,7 +41,10 @@ Table::Table(const std::string& file_path, const std::function<int64_t(const db_
 		debug_log << "Loaded table at version " << index->version << std::endl;
 	}
 	for(const auto& name : index->blocks) {
-		blocks.push_back(read_block(name));
+		auto block = read_block(name);
+		blocks.push_back(block);
+		debug_log << "Loaded block " << block->name << " with " << block->index.size() << " entries, min_version = "
+			<< block->min_version << ", max_version = " << block->max_version << std::endl;
 	}
 	for(const auto& name : index->delete_files) {
 		vnx::File(file_path + name).remove();
@@ -50,10 +54,10 @@ Table::Table(const std::string& file_path, const std::function<int64_t(const db_
 	// purge left-over data
 	revert(index->version);
 
-	write_log->open(file_path + "write_log.dat", "ab");
-	write_log->open("rb+");
+	write_log.open(file_path + "write_log.dat", "ab");
+	write_log.open("rb+");
 	{
-		auto& in = write_log->in;
+		auto& in = write_log.in;
 		auto offset = in.get_input_pos();
 		const auto min_version = blocks.empty() ? 0 : blocks.back()->max_version + 1;
 		while(true) {
@@ -61,7 +65,7 @@ Table::Table(const std::string& file_path, const std::function<int64_t(const db_
 				uint32_t version;
 				std::shared_ptr<db_val_t> key;
 				std::shared_ptr<db_val_t> value;
-				read_entry(write_log->in, version, key, value);
+				read_entry(write_log.in, version, key, value);
 				if(version >= min_version && version <= index->version) {
 					insert_entry(version, key, value);
 				}
@@ -74,7 +78,7 @@ Table::Table(const std::string& file_path, const std::function<int64_t(const db_
 				debug_log << "Reading from write_log.dat failed with: " << ex.what() << std::endl;
 			}
 		}
-		write_log->seek_to(offset);
+		write_log.seek_to(offset);
 		debug_log << "Loaded " << mem_block.size() << " entries from write_log.dat" << std::endl;
 	}
 }
@@ -85,11 +89,12 @@ std::shared_ptr<Table::block_t> Table::read_block(const std::string& name) const
 	block->name = name;
 
 	vnx::File file(file_path + name);
-	auto& in = file.in;
+	file.open("rb");
 
+	auto& in = file.in;
 	uint16_t format = 0;
 	vnx::read(in, format);
-	if(format != 0) {
+	if(format > 0) {
 		throw std::runtime_error("invalid block format: " + std::to_string(format));
 	}
 	vnx::read(in, block->level);
@@ -147,7 +152,7 @@ void Table::insert(std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t> valu
 	if(!key || !value) {
 		throw std::logic_error("!key || !value");
 	}
-	write_entry(write_log->out, index->version, key, value);
+	write_entry(write_log.out, index->version, key, value);
 	insert_entry(index->version, key, value);
 }
 
@@ -174,100 +179,68 @@ std::shared_ptr<db_val_t> Table::find(std::shared_ptr<db_val_t> key) const
 		return value;
 	}
 	for(auto iter = blocks.rbegin(); iter != blocks.rend(); ++iter) {
-		auto res = key;
-		find(*iter, res, &value);
-		if(res && *res == *key) {
+		value = find(*iter, key);
+		if(value) {
 			break;
 		}
 	}
 	return value;
 }
 
-size_t Table::find(std::shared_ptr<block_t> block, std::shared_ptr<db_val_t>& key, std::shared_ptr<db_val_t>* value) const
+std::shared_ptr<db_val_t> Table::find(std::shared_ptr<block_t> block, std::shared_ptr<db_val_t> key) const
 {
 	vnx::File file(file_path + block->name);
 	file.open("rb");
-	return find(block, file, key, value);
+
+	const auto pos = find(file, block, key);
+	std::shared_ptr<db_val_t> value;
+	if(pos < block->index.size()) {
+		uint32_t version;
+		std::shared_ptr<db_val_t> res;
+		read_key_at(file, block->index[pos], version, res);
+		if(*res == *key) {
+			read_value(file.in, value);
+		}
+	}
+	return value;
 }
 
-size_t Table::find(std::shared_ptr<block_t> block, vnx::File& file, std::shared_ptr<db_val_t>& key, std::shared_ptr<db_val_t>* value) const
+size_t Table::find(vnx::File& file, std::shared_ptr<block_t> block, std::shared_ptr<db_val_t> key) const
 {
-	const auto end = block->index.size();
-	if(end == 0) {
-		key = nullptr;
-		if(value) {
-			*value = nullptr;
-		}
+	if(block->index.empty()) {
 		return 0;
 	}
-	auto pos = end / 2;
-	auto delta = (pos + 1) / 2;
-	while(pos < end && delta > 0) {
+	size_t L = 0;
+	size_t R = block->index.size() - 1;
+	while(L != R) {
+		const auto pos = (L + R + 1) / 2;
 		uint32_t version;
 		std::shared_ptr<db_val_t> key_i;
 		read_key_at(file, block->index[pos], version, key_i);
-		auto res = comparator(*key, *key_i);
-		if(res == 0) {
-			bool skip = false;
-			auto prev = pos;
-			while(true) {
-				if(res < 0) {
-					if(!skip) {
-						pos--;
-					}
-					break;
-				}
-				if(res > 0) {
-					pos = prev + 1;
-					skip = true;
-				}
-				if(skip) {
-					pos++;
-				} else if(version < block->max_version) {
-					if(pos + 1 >= end) {
-						break;
-					}
-					pos++;
-				} else if(version > block->max_version) {
-					if(pos == 0) {
-						break;
-					}
-					pos--;
-				} else {
-					break;
-				}
-				if(pos >= end) {
-					break;
-				}
-				read_key_at(file, block->index[pos], version, key_i);
-				res = comparator(*key, *key_i);
-			}
+		if(comparator(*key, *key_i) < 0) {
+			R = pos - 1;
+		} else {
+			L = pos;
+		}
+	}
+	auto pos = L;
+	const auto last = pos;
+	while(true) {
+		uint32_t version;
+		std::shared_ptr<db_val_t> key_i;
+		read_key_at(file, block->index[pos], version, key_i);
+		const auto res = comparator(*key, *key_i);
+		if(res > 0) {
+			pos = last + 1;
 			break;
 		}
-		if(res < 0) {
-			if(pos < delta) {
-				pos = 0;
-			} else {
-				pos -= delta;
+		if(version > block->max_version) {
+			if(pos == 0) {
+				break;
 			}
-			delta /= 2;
+			pos--;
 		} else {
-			pos += delta;
-			delta /= 2;
-		}
-	}
-	uint32_t version;
-	if(pos < end) {
-		read_key_at(file, block->index[pos], version, key);
-	} else {
-		pos = end;
-		key = nullptr;
-	}
-	if(value) {
-		if(pos < end) {
-			read_value(file.in, *value);
-		} else {
-			*value = nullptr;
+			break;
 		}
 	}
 	return pos;
@@ -278,7 +251,7 @@ void Table::commit(const uint32_t new_version)
 	if(new_version <= index->version) {
 		throw std::logic_error("commit(): new version <= current version");
 	}
-	write_log->flush();
+	write_log.flush();
 
 	if(mem_block.size() * entry_overhead + mem_block_size >= max_block_size) {
 		flush();
@@ -300,13 +273,16 @@ void Table::revert(const uint32_t new_version)
 		if(block->min_version >= new_version) {
 			// delete block
 			vnx::File(file_path + block->name).remove();
+			debug_log << "Deleted block " << block->name << " in revert to version " << new_version << std::endl;
 			iter = blocks.erase(iter);
 		} else if(block->max_version >= new_version) {
 			// update max version
 			vnx::File file(file_path + block->name);
+			file.open("rb+");
 			file.seek_to(2 + 4 + 8);
 			block->max_version = new_version - 1;
 			vnx::write(file.out, block->max_version);
+			debug_log << "Updated block " << block->name << " with max_version of " << block->max_version << std::endl;
 			iter++;
 		} else {
 			iter++;
@@ -342,7 +318,7 @@ void Table::flush()
 	file.open("wb+");
 
 	auto& out = file.out;
-	file.seek_to(2 + 20 + mem_block.size() * 8);
+	file.seek_to(22 + mem_block.size() * 8);
 	for(const auto& entry : mem_block) {
 		const auto& version = entry.first.second;
 		block->min_version = std::min(version, block->min_version);
@@ -367,7 +343,10 @@ void Table::flush()
 	write_index();
 
 	// clear log after writing index
-	write_log->open("wb");
+	write_log.open("wb");
+
+	debug_log << "Flushed block " << block->name << " with " << block->index.size()
+			<< " entries, min_version = " << block->min_version << ", max_version = " << block->max_version << std::endl;
 }
 
 void Table::write_index()

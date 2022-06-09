@@ -58,11 +58,6 @@ protected:
 		std::vector<int64_t> index;
 	};
 
-	struct key_t {
-		uint32_t version = -1;
-		std::shared_ptr<db_val_t> data;
-	};
-
 	struct mem_compare_t {
 		Table* table = nullptr;
 		mem_compare_t(Table* table) : table(table) {}
@@ -80,12 +75,12 @@ public:
 	size_t max_block_size = 16 * 1024 * 1024;
 
 	const std::string file_path;
-	const std::function<int64_t(const db_val_t&, const db_val_t&)> comparator;
+	const std::function<int(const db_val_t&, const db_val_t&)> comparator;
 
 	static constexpr uint32_t entry_overhead = 20;
-	static const std::function<int64_t(const db_val_t&, const db_val_t&)> default_comparator;
+	static const std::function<int(const db_val_t&, const db_val_t&)> default_comparator;
 
-	Table(const std::string& file_path, const std::function<int64_t(const db_val_t&, const db_val_t&)>& comparator);
+	Table(const std::string& file_path, const std::function<int(const db_val_t&, const db_val_t&)>& comparator = default_comparator);
 
 	void insert(std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t> value);
 
@@ -94,6 +89,8 @@ public:
 	void commit(const uint32_t new_version);
 
 	void revert(const uint32_t new_version);
+
+	void flush();
 
 	uint32_t current_version() const {
 		return index->version;
@@ -122,17 +119,15 @@ private:
 
 	std::shared_ptr<block_t> read_block(const std::string& name) const;
 
-	size_t find(std::shared_ptr<block_t> block, std::shared_ptr<db_val_t>& key, std::shared_ptr<db_val_t>* value = nullptr) const;
+	std::shared_ptr<db_val_t> find(std::shared_ptr<block_t> block, std::shared_ptr<db_val_t> key) const;
 
-	size_t find(std::shared_ptr<block_t> block, vnx::File& file, std::shared_ptr<db_val_t>& key, std::shared_ptr<db_val_t>* value = nullptr) const;
-
-	void flush();
+	size_t find(vnx::File& file, std::shared_ptr<block_t> block, std::shared_ptr<db_val_t> key) const;
 
 	void write_index();
 
 	std::ofstream debug_log;
 	std::shared_ptr<TableIndex> index;
-	std::shared_ptr<vnx::File> write_log;
+	vnx::File write_log;
 	std::list<std::shared_ptr<block_t>> blocks;
 
 	size_t mem_block_size = 0;
