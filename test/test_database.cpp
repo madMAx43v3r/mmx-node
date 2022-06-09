@@ -40,9 +40,14 @@ int main(int argc, char** argv)
 {
 	vnx::init("test_database", argc, argv);
 	{
-		mmx::Table table("tmp/test_table/");
-		table.revert(0);
 		const uint32_t num_entries = 10;
+		mmx::Table table("tmp/test_table/");
+		if(table.current_version() == 1) {
+			for(uint32_t i = 0; i < num_entries; ++i) {
+				vnx::test::expect(db_read<uint64_t>(table.find(db_write(uint32_t(i)))), i);
+			}
+		}
+		table.revert(0);
 		for(uint32_t i = 0; i < num_entries; ++i) {
 			table.insert(db_write(uint32_t(i)), db_write(uint64_t(i)));
 		}
@@ -50,15 +55,15 @@ int main(int argc, char** argv)
 		for(uint32_t i = 0; i < num_entries; ++i) {
 			vnx::test::expect(db_read<uint64_t>(table.find(db_write(uint32_t(i)))), i);
 		}
-		for(uint32_t i = num_entries; i > 0; --i) {
+		for(uint32_t i = 2 * num_entries; i > 0; --i) {
 			table.insert(db_write(uint32_t(i - 1)), db_write(uint64_t(i)));
 		}
 		table.commit(2);
-		for(uint32_t i = 0; i < num_entries; ++i) {
+		for(uint32_t i = 0; i < 2 * num_entries; ++i) {
 			vnx::test::expect(db_read<uint64_t>(table.find(db_write(uint32_t(i)))), i + 1);
 		}
 		table.flush();
-		for(uint32_t i = 0; i < num_entries; ++i) {
+		for(uint32_t i = 0; i < 2 * num_entries; ++i) {
 			vnx::test::expect(db_read<uint64_t>(table.find(db_write(uint32_t(i)))), i + 1);
 		}
 		table.revert(1);

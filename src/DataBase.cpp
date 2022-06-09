@@ -43,7 +43,7 @@ Table::Table(const std::string& file_path, const std::function<int(const db_val_
 	for(const auto& name : index->blocks) {
 		auto block = read_block(name);
 		blocks.push_back(block);
-		debug_log << "Loaded block " << block->name << " with " << block->index.size() << " entries, min_version = "
+		debug_log << "Loaded block " << block->name << " at level " << block->level << " with " << block->index.size() << " entries, min_version = "
 			<< block->min_version << ", max_version = " << block->max_version << std::endl;
 	}
 	for(const auto& name : index->delete_files) {
@@ -279,7 +279,7 @@ void Table::revert(const uint32_t new_version)
 			// update max version
 			vnx::File file(file_path + block->name);
 			file.open("rb+");
-			file.seek_to(2 + 4 + 8);
+			file.seek_to(10);
 			block->max_version = new_version - 1;
 			vnx::write(file.out, block->max_version);
 			debug_log << "Updated block " << block->name << " with max_version of " << block->max_version << std::endl;
