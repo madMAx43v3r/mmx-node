@@ -54,6 +54,8 @@ protected:
 		uint32_t level = 0;
 		uint32_t min_version = 0;
 		uint32_t max_version = 0;
+		uint64_t total_count = 0;
+		uint64_t index_offset = 0;
 		std::string name;
 		std::vector<int64_t> index;
 	};
@@ -79,7 +81,7 @@ public:
 	const std::function<int(const db_val_t&, const db_val_t&)> comparator;
 
 	static constexpr uint32_t entry_overhead = 20;
-	static constexpr uint32_t block_header_size = 22;
+	static constexpr uint32_t block_header_size = 30;
 	static const std::function<int(const db_val_t&, const db_val_t&)> default_comparator;
 
 	Table(const std::string& file_path, const std::function<int(const db_val_t&, const db_val_t&)>& comparator = default_comparator);

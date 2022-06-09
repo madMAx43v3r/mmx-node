@@ -45,7 +45,7 @@ Table::Table(const std::string& file_path, const std::function<int(const db_val_
 	for(const auto& name : index->blocks) {
 		auto block = read_block(name);
 		blocks.push_back(block);
-		debug_log << "Loaded block " << block->name << " at level " << block->level << " with " << block->index.size()
+		debug_log << "Loaded block " << block->name << " at level " << block->level << " with " << block->index.size() << " / " << block->total_count
 				<< " entries, min_version = " << block->min_version << ", max_version = " << block->max_version << std::endl;
 	}
 	for(const auto& name : index->delete_files) {
@@ -102,7 +102,10 @@ std::shared_ptr<Table::block_t> Table::read_block(const std::string& name) const
 	vnx::read(in, block->level);
 	vnx::read(in, block->min_version);
 	vnx::read(in, block->max_version);
+	vnx::read(in, block->total_count);
+	vnx::read(in, block->index_offset);
 
+	file.seek_to(block->index_offset);
 	uint64_t index_size = 0;
 	vnx::read(in, index_size);
 	block->index.resize(index_size);
@@ -209,30 +212,12 @@ std::shared_ptr<db_val_t> Table::find(std::shared_ptr<block_t> block, std::share
 
 size_t Table::find(vnx::File& file, std::shared_ptr<block_t> block, std::shared_ptr<db_val_t> key) const
 {
-	if(block->index.empty()) {
+	if(!key || block->index.empty()) {
 		return 0;
 	}
-	const auto end = block->index.size();
-
-	if(!key) {
-		// advance version of first entry
-		size_t pos = end;
-		for(size_t i = 0; i < end; ++i) {
-			uint32_t version;
-			std::shared_ptr<db_val_t> key_i;
-			read_key_at(file, block->index[i], version, key_i);
-
-			if(key && *key_i != *key) {
-				break;
-			}
-			pos = i;
-			key = key_i;
-		}
-		return pos;
-	}
-	// find right most entry or successor
+	// find match or successor
 	size_t L = 0;
-	size_t R = end - 1;
+	size_t R = block->index.size() - 1;
 	while(L != R) {
 		const auto pos = (L + R + 1) / 2;
 		uint32_t version;
@@ -244,42 +229,7 @@ size_t Table::find(vnx::File& file, std::shared_ptr<block_t> block, std::shared_
 			L = pos;
 		}
 	}
-	// advance version if successor
-	auto pos = L;
-	bool advance = false;
-	while(pos < end) {
-		uint32_t version;
-		std::shared_ptr<db_val_t> key_i;
-		read_key_at(file, block->index[pos], version, key_i);
-		const auto res = comparator(*key, *key_i);
-		if(res == 0) {
-			if(advance) {
-				if(pos + 1 < end) {
-					pos++;
-				} else {
-					break;
-				}
-			} else {
-				break;
-			}
-		} else if(res < 0) {
-			if(advance) {
-				pos--;
-				break;
-			} else {
-				if(pos + 1 < end) {
-					pos++;
-				} else {
-					break;
-				}
-				key = key_i;
-				advance = true;
-			}
-		} else {
-			pos++;
-		}
-	}
-	return pos;
+	return L;
 }
 
 void Table::commit(const uint32_t new_version)
@@ -324,32 +274,48 @@ void Table::revert(const uint32_t new_version)
 			dst.open("wb");
 			auto& in = src.in;
 			auto& out = dst.out;
-			src.seek_to(block_header_size + block->index.size() * 8);
-			dst.seek_to(block_header_size + block->index.size() * 8);
-			for(size_t i = 0; i < block->index.size(); ++i) {
+			src.seek_to(block_header_size);
+			dst.seek_to(block_header_size);
+
+			int64_t offset = -1;
+			std::shared_ptr<db_val_t> prev;
+			for(size_t i = 0; i < block->total_count; ++i) {
 				uint32_t version;
 				std::shared_ptr<db_val_t> key;
 				std::shared_ptr<db_val_t> value;
 				read_entry(in, version, key, value);
 				if(version < new_version) {
+					if(prev && *key != *prev) {
+						new_block->index.push_back(offset);
+					}
 					new_block->max_version = std::max(version, new_block->max_version);
-					new_block->index.push_back(out.get_output_pos());
+					new_block->total_count++;
+					offset = out.get_output_pos();
 					write_entry(out, version, key, value);
+					prev = key;
 				}
 			}
+			new_block->index_offset = out.get_output_pos();
+			new_block->index.push_back(offset);
 			src.close();
+
 			dst.seek_begin();
 			vnx::write(out, uint16_t(0));
 			vnx::write(out, new_block->level);
 			vnx::write(out, new_block->min_version);
 			vnx::write(out, new_block->max_version);
+			vnx::write(out, new_block->total_count);
+			vnx::write(out, new_block->index_offset);
+
+			dst.seek_to(new_block->index_offset);
 			vnx::write(out, uint64_t(new_block->index.size()));
 			out.write(new_block->index.data(), new_block->index.size() * 8);
 			dst.close();
 			std::rename(dst.get_path().c_str(), src.get_path().c_str());
 
 			debug_log << "Rewrote block " << block->name << " with max_version = " << new_block->max_version
-					<< ", " << new_block->index.size() << " / " << block->index.size() << " entries" << std::endl;
+					<< ", " << new_block->index.size() << " / " << new_block->total_count << " entries"
+					<< ", from " << block->index.size() << " / " << block->total_count << " entries" << std::endl;
 			*iter = new_block;
 			iter++;
 		} else {
@@ -394,19 +360,35 @@ void Table::flush()
 	file.open("wb+");
 
 	auto& out = file.out;
-	file.seek_to(block_header_size + mem_block.size() * 8);
+	file.seek_to(block_header_size);
+
+	int64_t offset = -1;
+	std::shared_ptr<db_val_t> prev;
 	for(const auto& entry : mem_block) {
 		const auto& version = entry.first.second;
+		const auto& key = entry.first.first;
+		if(prev && *key != *prev) {
+			block->index.push_back(offset);
+		}
+		block->total_count++;
 		block->min_version = std::min(version, block->min_version);
 		block->max_version = std::max(version, block->max_version);
-		block->index.push_back(out.get_output_pos());
-		write_entry(out, version, entry.first.first, entry.second);
+		offset = out.get_output_pos();
+		write_entry(out, version, key, entry.second);
+		prev = key;
 	}
+	block->index.push_back(offset);
+	block->index_offset = out.get_output_pos();
+
 	file.seek_begin();
 	vnx::write(out, uint16_t(0));
 	vnx::write(out, block->level);
 	vnx::write(out, block->min_version);
 	vnx::write(out, block->max_version);
+	vnx::write(out, block->total_count);
+	vnx::write(out, block->index_offset);
+
+	file.seek_to(block->index_offset);
 	vnx::write(out, uint64_t(block->index.size()));
 	out.write(block->index.data(), block->index.size() * 8);
 	file.close();
@@ -421,7 +403,7 @@ void Table::flush()
 	// clear log after writing index
 	write_log.open("wb");
 
-	debug_log << "Flushed block " << block->name << " with " << block->index.size()
+	debug_log << "Flushed block " << block->name << " with " << block->index.size() << " / " << block->total_count
 			<< " entries, min_version = " << block->min_version << ", max_version = " << block->max_version << std::endl;
 }
 
