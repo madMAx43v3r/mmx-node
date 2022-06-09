@@ -151,8 +151,11 @@ add_library(mmx_vm SHARED
 	src/vm/StorageRocksDB.cpp
 )
 
-add_library(mmx_modules SHARED
+add_library(mmx_db SHARED
 	src/DataBase.cpp
+)
+
+add_library(mmx_modules SHARED
 	src/TimeLord.cpp
 	src/Node.cpp
 	src/Node_update.cpp
@@ -214,7 +217,9 @@ target_link_libraries(mmx_vm_iface uint256_t vnx_base)
 
 target_link_libraries(mmx_vm vnx_rocksdb mmx_iface)
 
-target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_vm mmx_iface)
+target_link_libraries(mmx_db mmx_iface)
+
+target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_vm mmx_db mmx_iface)
 
 if(NOT MSVC)
 	target_link_libraries(mmx_modules OpenMP::OpenMP_CXX)
