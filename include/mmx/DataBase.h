@@ -59,8 +59,9 @@ protected:
 	};
 
 	struct mem_compare_t {
-		Table* table = nullptr;
-		mem_compare_t(Table* table) : table(table) {}
+		const Table* table = nullptr;
+		mem_compare_t(const Table* table) : table(table) {}
+
 		bool operator()(const std::pair<std::shared_ptr<db_val_t>, uint32_t>& lhs, const std::pair<std::shared_ptr<db_val_t>, uint32_t>& rhs) const {
 			const auto res = table->comparator(*lhs.first, *rhs.first);
 			if(res == 0) {
@@ -78,6 +79,7 @@ public:
 	const std::function<int(const db_val_t&, const db_val_t&)> comparator;
 
 	static constexpr uint32_t entry_overhead = 20;
+	static constexpr uint32_t block_header_size = 22;
 	static const std::function<int(const db_val_t&, const db_val_t&)> default_comparator;
 
 	Table(const std::string& file_path, const std::function<int(const db_val_t&, const db_val_t&)>& comparator = default_comparator);
@@ -99,9 +101,24 @@ public:
 	class Iterator {
 	public:
 		Iterator(std::shared_ptr<const Table> table);
+
+		bool is_valid() const;
+		uint32_t version() const;
+		std::shared_ptr<db_val_t> key() const;
+		std::shared_ptr<db_val_t> value() const;
+
+		void prev();
+		void next();
+		void seek(std::shared_ptr<db_val_t> key);
 	private:
+		struct pointer_t {
+			size_t pos = 0;
+			std::shared_ptr<block_t> block;
+			std::shared_ptr<vnx::File> file;
+			std::map<std::pair<std::shared_ptr<db_val_t>, uint32_t>, std::shared_ptr<db_val_t>, mem_compare_t>::const_iterator iter;
+		};
 		std::shared_ptr<const Table> table;
-		std::map<std::pair<std::shared_ptr<db_val_t>, uint32_t>, std::shared_ptr<vnx::File>, mem_compare_t> block_map;
+		std::map<std::pair<std::shared_ptr<db_val_t>, uint32_t>, pointer_t, mem_compare_t> block_map;
 	};
 
 private:
@@ -142,6 +159,8 @@ public:
 	void commit(const uint32_t new_version);
 
 	void revert(const uint32_t new_version);
+
+	void recover();
 
 private:
 	std::map<std::string, std::shared_ptr<Table>> table_map;

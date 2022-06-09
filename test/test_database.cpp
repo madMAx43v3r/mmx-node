@@ -40,18 +40,23 @@ int main(int argc, char** argv)
 {
 	vnx::init("test_database", argc, argv);
 	{
-		const uint32_t num_entries = 10;
+		const uint32_t num_entries = 100;
+
 		mmx::Table table("tmp/test_table/");
+		table.max_block_size = 1024 * 1024;
+
 		if(table.current_version() == 1) {
 			for(uint32_t i = 0; i < num_entries; ++i) {
 				vnx::test::expect(db_read<uint64_t>(table.find(db_write(uint32_t(i)))), i);
 			}
 		}
 		table.revert(0);
+
 		for(uint32_t i = 0; i < num_entries; ++i) {
 			table.insert(db_write(uint32_t(i)), db_write(uint64_t(i)));
 		}
 		table.commit(1);
+
 		for(uint32_t i = 0; i < num_entries; ++i) {
 			vnx::test::expect(db_read<uint64_t>(table.find(db_write(uint32_t(i)))), i);
 		}
@@ -59,14 +64,20 @@ int main(int argc, char** argv)
 			table.insert(db_write(uint32_t(i - 1)), db_write(uint64_t(i)));
 		}
 		table.commit(2);
+
 		for(uint32_t i = 0; i < 2 * num_entries; ++i) {
 			vnx::test::expect(db_read<uint64_t>(table.find(db_write(uint32_t(i)))), i + 1);
 		}
 		table.flush();
+
 		for(uint32_t i = 0; i < 2 * num_entries; ++i) {
 			vnx::test::expect(db_read<uint64_t>(table.find(db_write(uint32_t(i)))), i + 1);
 		}
+		if(table.find(db_write(uint32_t(3 * num_entries)))) {
+			throw std::logic_error("found something");
+		}
 		table.revert(1);
+
 		for(uint32_t i = 0; i < num_entries; ++i) {
 			vnx::test::expect(db_read<uint64_t>(table.find(db_write(uint32_t(i)))), i);
 		}
