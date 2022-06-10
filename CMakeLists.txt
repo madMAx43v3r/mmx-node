@@ -209,6 +209,10 @@ if(MSVC)
 
 	set_target_properties(mmx_vm_iface PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 	set_target_properties(mmx_vm PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
+
+	GENERATE_EXPORT_HEADER(mmx_db)
+	#set_target_properties(mmx_db PROPERTIES ENABLE_EXPORTS 1)
+	set_target_properties(mmx_db PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 endif()
 
 target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_base vnx_addons mmx_vm_iface)
