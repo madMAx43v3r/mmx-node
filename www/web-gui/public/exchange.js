@@ -514,7 +514,7 @@ app.component('exchange-trade-form', {
 			Traded <b>{{result.order.bid_value}}</b> [{{result.order.bid_symbol}}] for <b>{{result.order.ask_value}}</b> [{{result.order.ask_symbol}}]
 		</div>
 		<div class="ui negative message" v-if="error">
-			Failed with: <b>{{error}}</b>
+			{{ $t('common.failed_with') }}: <b>{{error}}</b>
 		</div>
 		`
 })
@@ -684,7 +684,7 @@ app.component('exchange-offer-form', {
 			</template>
 		</div>
 		<div class="ui negative message" :class="{hidden: !error}">
-			Failed with: <b>{{error}}</b>
+			{{ $t('common.failed_with') }}: <b>{{error}}</b>
 		</div>
 		`
 })

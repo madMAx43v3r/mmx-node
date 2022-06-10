@@ -28,7 +28,7 @@ app.component('wallet-summary', {
 			<account-summary :index="item[0]" :account="item[1]"></account-summary>
 		</div>
 		<router-link to="/wallet/create">
-			<button class="ui button">New Wallet</button>
+			<button class="ui button">{{ $t('wallet_summary.new_wallet') }}</button>
 		</router-link>
 		`
 })
@@ -39,15 +39,15 @@ app.component('account-menu', {
 	},
 	template: `
 		<div class="ui large pointing menu">
-			<router-link class="item" :class="{active: $route.meta.page == 'balance'}" :to="'/wallet/account/' + index">Balance</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'nfts'}" :to="'/wallet/account/' + index + '/nfts'">NFTs</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'contracts'}" :to="'/wallet/account/' + index + '/contracts'">Contracts</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'addresses'}" :to="'/wallet/account/' + index + '/addresses'">Addresses</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'send'}" :to="'/wallet/account/' + index + '/send'">Send</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'offer'}" :to="'/wallet/account/' + index + '/offer'">Offer</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'history'}" :to="'/wallet/account/' + index + '/history'">History</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'log'}" :to="'/wallet/account/' + index + '/log'">Log</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'details'}" :to="'/wallet/account/' + index + '/details'">Details</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'balance'}" :to="'/wallet/account/' + index">{{ $t('account_menu.balance') }}</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'nfts'}" :to="'/wallet/account/' + index + '/nfts'">{{ $t('account_menu.nfts') }}</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'contracts'}" :to="'/wallet/account/' + index + '/contracts'">{{ $t('account_menu.contracts') }}</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'addresses'}" :to="'/wallet/account/' + index + '/addresses'">{{ $t('account_menu.addresses') }}</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'send'}" :to="'/wallet/account/' + index + '/send'">{{ $t('account_menu.send') }}</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'offer'}" :to="'/wallet/account/' + index + '/offer'">{{ $t('account_menu.offer') }}</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'history'}" :to="'/wallet/account/' + index + '/history'">{{ $t('account_menu.history') }}</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'log'}" :to="'/wallet/account/' + index + '/log'">{{ $t('account_menu.log') }}</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'details'}" :to="'/wallet/account/' + index + '/details'">{{ $t('account_menu.details') }}</router-link>
 			<router-link class="right item" :class="{active: $route.meta.page == 'options'}" :to="'/wallet/account/' + index + '/options'"><i class="cog icon"></i></router-link>
 		</div>
 		`
@@ -86,7 +86,7 @@ app.component('account-header', {
 	},
 	template: `
 		<div class="ui large labels">
-			<div class="ui horizontal label">Wallet #{{index}}</div>
+			<div class="ui horizontal label">{{ $t('account_header.wallet') }} #{{index}}</div>
 			<div class="ui horizontal label">{{address}}</div>
 		</div>
 		`
@@ -142,11 +142,11 @@ app.component('account-balance', {
 		<table class="ui table" v-if="data">
 			<thead>
 			<tr>
-				<th class="two wide">Balance</th>
-				<th class="two wide">Reserved</th>
-				<th class="two wide">Spendable</th>
-				<th class="two wide">Token</th>
-				<th>Contract</th>
+				<th class="two wide">{{ $t('account_balance.balance') }}</th>
+				<th class="two wide">{{ $t('account_balance.reserved') }}</th>
+				<th class="two wide">{{ $t('account_balance.spendable') }}</th>
+				<th class="two wide">{{ $t('account_balance.token') }}</th>
+				<th>{{ $t('account_balance.contract') }}</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -204,11 +204,11 @@ app.component('balance-table', {
 		<table class="ui table" v-if="data && (data.length || show_empty)">
 			<thead>
 			<tr>
-				<th class="two wide">Balance</th>
-				<th class="two wide">Locked</th>
-				<th class="two wide">Spendable</th>
-				<th class="two wide">Token</th>
-				<th>Contract</th>
+				<th class="two wide">{{ $t('balance_table.balance') }}</th>
+				<th class="two wide">{{ $t('balance_table.locked') }}</th>
+				<th class="two wide">{{ $t('balance_table.spendable') }}</th>
+				<th class="two wide">{{ $t('balance_table.token') }}</th>
+				<th>{{ $t('balance_table.contract') }}</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -296,13 +296,13 @@ app.component('account-history', {
 		<table class="ui compact table striped" v-if="data">
 			<thead>
 			<tr>
-				<th>Height</th>
-				<th>Type</th>
-				<th>Amount</th>
-				<th>Token</th>
-				<th>Address</th>
-				<th>Link</th>
-				<th>Time</th>
+				<th>{{ $t('account_history.height') }}</th>
+				<th>{{ $t('account_history.type') }}</th>
+				<th>{{ $t('account_history.amount') }}</th>
+				<th>{{ $t('account_history.token') }}</th>
+				<th>{{ $t('account_history.address') }}</th>
+				<th>{{ $t('account_history.link') }}</th>
+				<th>{{ $t('account_history.time') }}</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -362,10 +362,10 @@ app.component('account-tx-history', {
 		<table class="ui compact table striped" v-if="data">
 			<thead>
 			<tr>
-				<th>Height</th>
-				<th>Confirmed</th>
-				<th>Transaction ID</th>
-				<th>Time</th>
+				<th>{{ $t('account_tx_history.height') }}</th>
+				<th>{{ $t('account_tx_history.confirmed') }}</th>
+				<th>{{ $t('account_tx_history.transaction_id') }}</th>
+				<th>{{ $t('account_tx_history.time') }}</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -374,7 +374,7 @@ app.component('account-tx-history', {
 					<td><router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link></td>
 				</template>
 				<template v-else>
-					<td><i>pending</i></td>
+					<td><i>{{ $t('account_tx_history.pending') }}</i></td>
 				</template>
 				<td>{{item.confirm ? item.confirm > 1000 ? "> 1000" : item.confirm : 0}}</td>
 				<td><router-link :to="'/explore/transaction/' + item.id">{{item.id}}</router-link></td>
@@ -407,8 +407,8 @@ app.component('account-contract-summary', {
 			</div>
 			<object-table :data="contract"></object-table>
 			<balance-table :address="address"></balance-table>
-			<div @click="deposit" class="ui submit button">Deposit</div>
-			<div @click="withdraw" class="ui submit button">Withdraw</div>
+			<div @click="deposit" class="ui submit button">{{ $t('account_contract_summary.deposit') }}</div>
+			<div @click="withdraw" class="ui submit button">{{ $t('account_contract_summary.withdraw') }}</div>
 		</div>
 		`
 })
@@ -471,12 +471,12 @@ app.component('account-addresses', {
 		<table class="ui compact definition table striped">
 			<thead>
 			<tr>
-				<th>Index</th>
-				<th>Address</th>
-				<th>N(Recv)</th>
-				<th>N(Spend)</th>
-				<th>Last Recv</th>
-				<th>Last Spend</th>
+				<th>{{ $t('account_addresses.index') }}</th>
+				<th>{{ $t('account_addresses.address') }}</th>
+				<th>{{ $t('account_addresses.n_recv') }}</th>
+				<th>{{ $t('account_addresses.n_spend') }}</th>
+				<th>{{ $t('account_addresses.last_recv') }}</th>
+				<th>{{ $t('account_addresses.last_spend') }}</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -523,7 +523,7 @@ app.component('account-details', {
 		<object-table :data="account"></object-table>
 		<object-table :data="keys"></object-table>
 
-		<div v-if="isWinGUI && this.keys" @click="copyKeysToPlotter" class="ui submit primary button">Copy keys to plotter</div>
+		<div v-if="isWinGUI && this.keys" @click="copyKeysToPlotter" class="ui submit primary button">{{ $t('account_details.copy_keys_to_plotter') }}</div>
 		`
 })
 
@@ -564,14 +564,14 @@ app.component('account-actions', {
 	},
 	template: `
 		<div class="ui raised segment">
-			<div @click="reset_cache" class="ui button">Reset Cache</div>
-			<div @click="show_seed" class="ui button">Show Seed</div>
+			<div @click="reset_cache" class="ui button">{{ $t('account_actions.reset_cache') }}</div>
+			<div @click="show_seed" class="ui button">{{ $t('account_actions.show_seed') }}</div>
 		</div>
 		<div class="ui message" :class="{hidden: !info}">
 			<b>{{info}}</b>
 		</div>
 		<div class="ui negative message" :class="{hidden: !error}">
-			Failed with: <b>{{error}}</b>
+			{{ $t('common.failed_with') }}: <b>{{error}}</b>
 		</div>
 		<div class="ui modal" ref="seed_modal">
 			<div class="content">
@@ -631,23 +631,23 @@ app.component('create-account', {
 			<form class="ui form">
 				<div class="three fields">
 					<div class="three wide field">
-						<label>Account Index</label>
+						<label>{{ $t('create_account.account_index') }}</label>
 						<input type="text" v-model.number="offset" style="text-align: right"/>
 					</div>
 					<div class="nine wide field">
-						<label>Account Name</label>
+						<label>{{ $t('create_account.account_name') }}</label>
 						<input type="text" v-model="name"/>
 					</div>
 					<div class="four wide field">
-						<label>Number of Addresses</label>
+						<label>{{ $t('create_account.number_of_addresses') }}</label>
 						<input type="text" v-model.number="num_addresses" style="text-align: right"/>
 					</div>
 				</div>
-				<div @click="submit" class="ui submit primary button">Create Account</div>
+				<div @click="submit" class="ui submit primary button">{{ $t('create_account.create_account') }}</div>
 			</form>
 		</div>
 		<div class="ui negative message" :class="{hidden: !error}">
-			Failed with: <b>{{error}}</b>
+			{{ $t('common.failed_with') }}: <b>{{error}}</b>
 		</div>
 		`
 })
@@ -695,29 +695,29 @@ app.component('create-wallet', {
 			<form class="ui form">
 				<div class="two fields">
 					<div class="twelve wide field">
-						<label>Account Name</label>
+						<label>{{ $t('create_wallet.account_name') }}</label>
 						<input type="text" v-model="name"/>
 					</div>
 					<div class="four wide field">
-						<label>Number of Addresses</label>
+						<label>{{ $t('create_wallet.number_of_addresses') }}</label>
 						<input type="text" v-model.number="num_addresses" style="text-align: right"/>
 					</div>
 				</div>
 				<div class="inline field">
 					<div class="ui toggle checkbox">
 						<input type="checkbox" class="hidden" v-model="with_seed">
-						<label>Use Custom Seed</label>
+						<label>{{ $t('create_wallet.use_custom_seed') }}</label>
 					</div>
 				</div>
 				<div class="field">
-					<label>Seed Hash (optional, hex string, 64 chars)</label>
-					<input type="text" v-model="seed" placeholder="<random>" :disabled="!with_seed"/>
+					<label>{{ $t('create_wallet.seed_hash') }}</label>
+					<input type="text" v-model="seed" :placeholder="$t('create_wallet.placeholder')" :disabled="!with_seed"/>
 				</div>
-				<div @click="submit" class="ui submit primary button">Create Wallet</div>
+				<div @click="submit" class="ui submit primary button">{{ $t('create_wallet.create_wallet') }}</div>
 			</form>
 		</div>
 		<div class="ui negative message" :class="{hidden: !error}">
-			Failed with: <b>{{error}}</b>
+			{{ $t('common.failed_with') }}: <b>{{error}}</b>
 		</div>
 		`
 })
@@ -838,29 +838,29 @@ app.component('account-send-form', {
 		<div class="ui raised segment">
 			<form class="ui form">
 				<div class="field" v-if="!!source">
-					<label>Source Address</label>
+					<label>{{ $t('account_send_form.source_address') }}</label>
 					<input type="text" v-model="source" disabled/>
 				</div>
 				<div class="field">
-					<label>Destination</label>
+					<label>{{ $t('account_send_form.destination') }}</label>
 					<select v-model="address" :disabled="!!target_">
-						<option value="">Address Input</option>
+						<option value="">{{ $t('account_send_form.address_input') }}</option>
 						<option v-for="item in accounts" :key="item.account" :value="item.address">
-							Wallet #{{item.account}} ({{item.address}})
+						{{ $t('account_send_form.wallet') }} #{{item.account}} ({{item.address}})
 						</option>
 					</select>
 				</div>
 				<div class="field">
-					<label>Destination Address</label>
+					<label>{{ $t('account_send_form.destination_address') }}</label>
 					<input type="text" v-model="target" :disabled="!!address || !!target_" placeholder="mmx1..."/>
 				</div>
 				<div class="two fields">
 					<div class="four wide field">
-						<label>Amount</label>
+						<label>{{ $t('account_send_form.amount') }}</label>
 						<input type="text" v-model.number="amount" placeholder="1.23" style="text-align: right"/>
 					</div>
 					<div class="twelve wide field">
-						<label>Currency</label>
+						<label>{{ $t('account_send_form.currency') }}</label>
 						<select v-model="currency">
 							<option v-for="item in balances" :key="item.contract" :value="item.contract">
 								{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
@@ -871,17 +871,17 @@ app.component('account-send-form', {
 				<div class="inline field">
 					<div class="ui toggle checkbox">
 						<input type="checkbox" class="hidden" v-model="confirmed">
-						<label>Confirm</label>
+						<label>{{ $t('account_send_form.confirm') }}</label>
 					</div>
 				</div>
-				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">Send</div>
+				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">{{ $t('account_send_form.send') }}</div>
 			</form>
 		</div>
 		<div class="ui message" :class="{hidden: !result}">
-			Transaction has been sent: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
+			{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
 		</div>
 		<div class="ui negative message" :class="{hidden: !error}">
-			Failed with: <b>{{error}}</b>
+			{{ $t('common.failed_with') }}: <b>{{error}}</b>
 		</div>
 		<account-tx-history :index="index" :limit="10" ref="history"></account-tx-history>
 		`
@@ -984,11 +984,11 @@ app.component('account-offer-form', {
 			<form class="ui form" id="form">
 				<div class="three fields">
 					<div class="four wide field">
-						<label>Offer Amount</label>
+						<label>{{ $t('account_offer_form.offer_amount') }}</label>
 						<input type="text" v-model.number="bid_amount" placeholder="1.23" style="text-align: right"/>
 					</div>
 					<div class="twelve wide field">
-						<label>Offer Currency</label>
+						<label>{{ $t('account_offer_form.offer_currency') }}</label>
 						<select v-model="bid_currency">
 							<option v-for="item in balances" :key="item.contract" :value="item.contract">
 								{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
@@ -998,32 +998,32 @@ app.component('account-offer-form', {
 				</div>
 				<div class="two fields">
 					<div class="four wide field">
-						<label>Receive Amount</label>
+						<label>{{ $t('account_offer_form.receive_amount') }}</label>
 						<input type="text" v-model.number="ask_amount" placeholder="1.23" style="text-align: right"/>
 					</div>
 					<div class="two wide field">
-						<label>Symbol</label>
+						<label>{{ $t('account_offer_form.symbol') }}</label>
 						<input type="text" v-model="ask_symbol" disabled/>
 					</div>
 					<div class="ten wide field">
-						<label>Receive Currency Contract</label>
+						<label>{{ $t('account_offer_form.receive_currency_contract') }}</label>
 						<input type="text" v-model="ask_currency" placeholder="mmx1..."/>
 					</div>
 				</div>
 				<div class="inline field">
 					<div class="ui toggle checkbox">
 						<input type="checkbox" class="hidden" v-model="confirmed">
-						<label>Confirm</label>
+						<label>{{ $t('account_offer_form.confirm') }}</label>
 					</div>
 				</div>
-				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">Offer</div>
+				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">{{ $t('account_offer_form.offer') }}</div>
 			</form>
 		</div>
 		<div class="ui message" :class="{hidden: !result}">
-			Transaction has been sent: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
+			{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
 		</div>
 		<div class="ui negative message" :class="{hidden: !error}">
-			Failed with: <b>{{error}}</b>
+			{{ $t('common.failed_with') }}: <b>{{error}}</b>
 		</div>
 		<account-offers :index="index" ref="offers"></account-offers>
 		`
@@ -1091,13 +1091,13 @@ app.component('account-offers', {
 		<table class="ui table striped">
 			<thead>
 			<tr>
-				<th>Height</th>
-				<th colspan="2">Offer</th>
-				<th colspan="2">Receive</th>
-				<th>Address</th>
-				<th>Status</th>
-				<th>Time</th>
-				<th>Actions</th>
+				<th>{{ $t('account_offers.height') }}</th>
+				<th colspan="2">{{ $t('account_offers.offer') }}</th>
+				<th colspan="2">{{ $t('account_offers.receive') }}</th>
+				<th>{{ $t('account_offers.address') }}</th>
+				<th>{{ $t('account_offers.status') }}</th>
+				<th>{{ $t('account_offers.time') }}</th>
+				<th>{{ $t('account_offers.actions') }}</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -1110,26 +1110,26 @@ app.component('account-offers', {
 				<td><router-link :to="'/explore/address/' + item.id">{{item.id.substr(0, 16)}}...</router-link></td>
 				<td :class="{positive: !item.base.height, negative: item.revoked}">
 					<template v-if="item.base.height">
-						<router-link :to="'/explore/transaction/' + item.base.id">Accepted</router-link>
+						<router-link :to="'/explore/transaction/' + item.base.id">{{item.base.input_amounts[0].accepted}}</router-link>
 					</template>
 					<template v-else>
-						{{item.revoked ? "Revoked" : "Open"}}
+						{{item.revoked ? $t('account_offers.revoked') : $t('account_offers.open') }}
 					</template>
 				</td>
 				<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 				<td>
 					<template v-if="!item.revoked && !item.base.height">
-						<div class="ui tiny compact button" @click="cancel(item.base.id, item.base.sender)">Revoke</div>
+						<div class="ui tiny compact button" @click="cancel(item.base.id, item.base.sender)">{{ $t('account_offers.revoke') }}</div>
 					</template>
 				</td>
 			</tr>
 			</tbody>
 		</table>
 		<div class="ui message" :class="{hidden: !result}">
-			Transaction has been sent: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
+			{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
 		</div>
 		<div class="ui negative message" :class="{hidden: !error}">
-			Failed with: <b>{{error}}</b>
+			{{ $t('common.failed_with') }}: <b>{{error}}</b>
 		</div>
 		`
 })
@@ -1152,13 +1152,13 @@ app.component('create-contract-menu', {
 		<div class="ui raised segment">
 			<form class="ui form">
 				<div class="field">
-					<label>Contract Type</label>
+					<label>{{ $t('create_contract_menu.contract_type') }}</label>
 					<select v-model="type">
 						<option value="locked">mmx.contract.TimeLock</option>
 						<option value="virtualplot">mmx.contract.VirtualPlot</option>
 					</select>
 				</div>
-				<div @click="submit" class="ui submit button" :class="{disabled: !type}">Create</div>
+				<div @click="submit" class="ui submit button" :class="{disabled: !type}">{{ $t('common.create') }}</div>
 			</form>
 		</div>
 		`
@@ -1223,34 +1223,34 @@ app.component('create-locked-contract', {
 		}
 	},
 	template: `
-		<div class="ui large label">Create</div>
+		<div class="ui large label">{{ $t('common.create') }}</div>
 		<div class="ui large label">mmx.contract.TimeLock</div>
 		<div class="ui raised segment">
 			<form class="ui form" id="form">
 				<div class="field">
-					<label>Owner Address</label>
+					<label>{{ $t('create_locked_contract.owner_address') }}</label>
 					<input type="text" v-model="owner" placeholder="mmx1..."/>
 				</div>
 				<div class="field">
-					<label>Unlock at Chain Height</label>
+					<label>{{ $t('create_locked_contract.unlock_height') }}</label>
 					<input type="text" v-model.number="unlock_height"/>
 				</div>
 				<div class="inline field">
 					<div class="ui toggle checkbox" :class="{disabled: !valid}">
 						<input type="checkbox" class="hidden" v-model="confirmed">
-						<label>Confirm</label>
+						<label>{{ $t('common.confirm') }}</label>
 					</div>
 				</div>
-				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">Deploy</div>
+				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">{{ $t('common.deploy') }}</div>
 			</form>
 		</div>
 		<div class="ui message" :class="{hidden: !result}">
 			<template v-if="result">
-				Deployed as: <b>{{result}}</b>
+				{{ $t('common.deployed_as') }}: <b>{{result}}</b>
 			</template>
 		</div>
 		<div class="ui negative message" :class="{hidden: !error}">
-			Failed with: <b>{{error}}</b>
+			{{ $t('common.failed_with') }}: <b>{{error}}</b>
 		</div>
 		`
 })
@@ -1322,34 +1322,34 @@ app.component('create-virtual-plot-contract', {
 		}
 	},
 	template: `
-		<div class="ui large label">Create</div>
+		<div class="ui large label">{{ $t('common.create') }}</div>
 		<div class="ui large label">mmx.contract.VirtualPlot</div>
 		<div class="ui raised segment">
 			<form class="ui form" id="form">
 				<div class="field">
-					<label>Farmer Public Key</label>
+					<label>{{ $t('create_virtual_plot_contract.farmer_public_key') }}</label>
 					<input type="text" v-model="farmer_key"/>
 				</div>
 				<div class="field">
-					<label>Reward Address (optional, for pooling)</label>
-					<input type="text" v-model="reward_address" placeholder="<default>"/>
+					<label>{{ $t('create_virtual_plot_contract.reward_address') }}</label>
+					<input type="text" v-model="reward_address" :placeholder="$t('common.reward_address_placeholder')"/>
 				</div>
 				<div class="inline field">
 					<div class="ui toggle checkbox" :class="{disabled: !valid}">
 						<input type="checkbox" class="hidden" v-model="confirmed">
-						<label>Confirm</label>
+						<label>{{ $t('common.confirm') }}</label>
 					</div>
 				</div>
-				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">Deploy</div>
+				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">{{ $t('common.deploy') }}</div>
 			</form>
 		</div>
 		<div class="ui message" :class="{hidden: !result}">
 			<template v-if="result">
-				Deployed as: <b>{{result}}</b>
+				{{ $t('common.deployed_as') }}: <b>{{result}}</b>
 			</template>
 		</div>
 		<div class="ui negative message" :class="{hidden: !error}">
-			Failed with: <b>{{error}}</b>
+			{{ $t('common.failed_with') }}: <b>{{error}}</b>
 		</div>
 		`
 })

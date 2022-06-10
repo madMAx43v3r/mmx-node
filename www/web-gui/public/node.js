@@ -2,12 +2,12 @@
 app.component('node-menu', {
 	template: `
 		<div class="ui large pointing menu">
-			<router-link class="item" :class="{active: $route.meta.page == 'log'}" to="/node/log">Log</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'peers'}" to="/node/peers">Peers</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'blocks'}" to="/node/blocks">Blocks</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'netspace'}" to="/node/netspace">Netspace</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'vdf_speed'}" to="/node/vdf_speed">VDF Speed</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'reward'}" to="/node/reward">Block Reward</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'log'}" to="/node/log">{{ $t('node_menu.log') }}</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'peers'}" to="/node/peers">{{ $t('node_menu.peers') }}</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'blocks'}" to="/node/blocks">{{ $t('node_menu.blocks') }}</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'netspace'}" to="/node/netspace">{{ $t('node_menu.netspace') }}</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'vdf_speed'}" to="/node/vdf_speed">{{ $t('node_menu.vdf_speed') }}</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'reward'}" to="/node/reward">{{ $t('node_menu.block_reward') }}</router-link>
 		</div>
 		`
 })
@@ -36,20 +36,20 @@ app.component('node-info', {
 		<div class="ui segment" v-if="data">
 			<div class="ui four tiny statistics">
 				<div class="statistic">
-					<div class="value">{{data.is_synced ? "Yes": "No"}}</div>
-					<div class="label">Synced</div>
+					<div class="value">{{data.is_synced ? $t('common.yes') : $t('common.no') }}</div>
+					<div class="label">{{ $t('node_info.synced') }}</div>
 				</div>
 				<div class="statistic">
 					<div class="value">{{data.height}}</div>
-					<div class="label">Height</div>
+					<div class="label">{{ $t('node_info.height') }}</div>
 				</div>
 				<div class="statistic">
 					<div class="value">{{(data.total_space / Math.pow(1000, 5)).toFixed(3)}} PB</div>
-					<div class="label">Netspace</div>
+					<div class="label">{{ $t('node_info.netspace') }}</div>
 				</div>
 				<div class="statistic">
 					<div class="value">{{(data.total_supply / Math.pow(10, 6)).toFixed(0)}} MMX</div>
-					<div class="label">Supply</div>
+					<div class="label">{{ $t('node_info.supply') }}</div>
 				</div>
 			</div>
 		</div>
@@ -57,17 +57,17 @@ app.component('node-info', {
 			<div class="ui four tiny statistics">
 				<div class="statistic">
 					<div class="value">{{data.address_count}}</div>
-					<div class="label">No. Address</div>
+					<div class="label">{{ $t('node_info.no_addresss') }}</div>
 				</div>
 				<div class="statistic">
 				</div>
 				<div class="statistic">
 					<div class="value">{{(data.time_diff / 8 / Math.pow(10, 3)).toFixed(3)}} M/s</div>
-					<div class="label">VDF Speed</div>
+					<div class="label">{{ $t('node_info.vdf_speed') }}</div>
 				</div>
 				<div class="statistic">
 					<div class="value">{{(data.block_reward.value).toFixed(3)}} MMX</div>
-					<div class="label">Block Reward</div>
+					<div class="label">{{ $t('node_info.block_reward') }}</div>
 				</div>
 			</div>
 		</div>
@@ -99,17 +99,17 @@ app.component('node-peers', {
 		<table class="ui compact definition table striped" v-if="data">
 			<thead>
 			<tr>
-				<th>IP</th>
-				<th>Height</th>
-				<th>Type</th>
-				<th>Version</th>
-				<th>Receive</th>
-				<th>Send</th>
-				<th>Ping</th>
-				<th>Duration</th>
-				<th>Credits</th>
-				<th>TX Gas</th>
-				<th>Connection</th>
+				<th>{{ $t('node_peers.ip') }}</th>
+				<th>{{ $t('node_peers.height') }}</th>
+				<th>{{ $t('node_peers.type') }}</th>
+				<th>{{ $t('node_peers.version') }}</th>
+				<th>{{ $t('node_peers.received') }}</th>
+				<th>{{ $t('node_peers.send') }}</th>
+				<th>{{ $t('node_peers.ping') }}</th>
+				<th>{{ $t('node_peers.duration') }}</th>
+				<th>{{ $t('node_peers.credits') }}</th>
+				<th>{{ $t('node_peers.tx_gas') }}</th>
+				<th>{{ $t('node_peers.connection') }}</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -124,7 +124,7 @@ app.component('node-peers', {
 				<td><b>{{(item.connect_time_ms / 1000 / 60).toFixed()}}</b> min</td>
 				<td>{{item.credits}}</td>
 				<td><b>{{(item.tx_credits / Math.pow(10, 6)).toFixed(3)}}</b> MMX</td>
-				<td>{{item.is_outbound ? "outbound" : "inbound"}}</td>
+				<td>{{item.is_outbound ? $t('node_peers.outbound') : $t('node_peers.inbound') }}</td>
 			</tr>
 			</tbody>
 		</table>
@@ -140,9 +140,9 @@ app.component('netspace-graph', {
 		return {
 			data: null,
 			layout: {
-				title: "Netspace (PB)",
+				title: this.$t('netspace_graph.title', ['PB']),
 				xaxis: {
-					title: "Height"
+					title: this.$t('common.height')
 				},
 				yaxis: {
 					title: "PB"
@@ -196,9 +196,9 @@ app.component('vdf-speed-graph', {
 		return {
 			data: null,
 			layout: {
-				title: "VDF Speed (M/s)",
+				title: this.$t('vdf_speed_graph.title', ['M/s']),
 				xaxis: {
-					title: "Height"
+					title: this.$t('common.height')
 				},
 				yaxis: {
 					title: "M/s"
@@ -252,9 +252,9 @@ app.component('block-reward-graph', {
 		return {
 			data: null,
 			layout: {
-				title: "Block Reward (MMX)",
+				title: this.$t('block_reward_graph.title', ['MMX']),
 				xaxis: {
-					title: "Height"
+					title: this.$t('common.height')
 				},
 				yaxis: {
 					title: "MMX"
@@ -311,13 +311,13 @@ app.component('node-log', {
 	},
 	template: `
 		<div class="ui menu">
-			<div class="link item" :class="{active: !module}" @click="module = null">Terminal</div>
-			<div class="link item" :class="{active: module == 'Node'}" @click="module = 'Node'">Node</div>
-			<div class="link item" :class="{active: module == 'Router'}" @click="module = 'Router'">Router</div>
-			<div class="link item" :class="{active: module == 'Wallet'}" @click="module = 'Wallet'">Wallet</div>
-			<div class="link item" :class="{active: module == 'Farmer'}" @click="module = 'Farmer'">Farmer</div>
-			<div class="link item" :class="{active: module == 'Harvester'}" @click="module = 'Harvester'">Harvester</div>
-			<div class="link item" :class="{active: module == 'TimeLord'}" @click="module = 'TimeLord'">TimeLord</div>
+			<div class="link item" :class="{active: !module}" @click="module = null">{{ $t('node_log.terminal') }}</div>
+			<div class="link item" :class="{active: module == 'Node'}" @click="module = 'Node'">{{ $t('node_log.node') }}</div>
+			<div class="link item" :class="{active: module == 'Router'}" @click="module = 'Router'">{{ $t('node_log.router') }}</div>
+			<div class="link item" :class="{active: module == 'Wallet'}" @click="module = 'Wallet'">{{ $t('node_log.wallet') }}</div>
+			<div class="link item" :class="{active: module == 'Farmer'}" @click="module = 'Farmer'">{{ $t('node_log.farmer') }}</div>
+			<div class="link item" :class="{active: module == 'Harvester'}" @click="module = 'Harvester'">{{ $t('node_log.harvester') }}</div>
+			<div class="link item" :class="{active: module == 'TimeLord'}" @click="module = 'TimeLord'">{{ $t('node_log.timelord') }}</div>
 		</div>
 		<node-log-table :limit="limit" :level="level" :module="module"></node-log-table>
 		`

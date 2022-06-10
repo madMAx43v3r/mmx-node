@@ -57,24 +57,24 @@ app.component('market-menu', {
 	template: `
 		<div class="ui form segment">
 			<div class="field">
-				<label>Wallet</label>
+				<label>{{ $t('market_menu.wallet') }}</label>
 				<select v-model="wallet">
-					<option v-for="item in wallets" :key="item[0]" :value="item[0]">Wallet #{{item[0]}}</option>
+					<option v-for="item in wallets" :key="item[0]" :value="item[0]">{{ $t('market_menu.wallet') }} #{{item[0]}}</option>
 				</select>
 			</div>
 			<div class="field">
-				<label>They Offer</label>
+				<label>{{ $t('market_menu.they_offer') }}</label>
 				<select v-model="bid">
-					<option :value="null">Anything</option>
+					<option :value="null">{{ $t('market_menu.anything') }}</option>
 					<option v-for="item in tokens" :key="item.currency" :value="item.currency">
 						{{item.symbol}}<template v-if="item.currency != 'mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev'"> - [{{item.currency}}]</template>
 					</option>
 				</select>
 			</div>
 			<div class="field">
-				<label>They Ask</label>
+				<label>{{ $t('market_menu.they_ask') }}</label>
 				<select v-model="ask">
-					<option :value="null">Anything</option>
+					<option :value="null">{{ $t('market_menu.anything') }}</option>
 					<option v-for="item in tokens" :key="item.currency" :value="item.currency">
 						{{item.symbol}}<template v-if="item.currency != 'mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev'"> - [{{item.currency}}]</template>
 					</option>
@@ -82,7 +82,7 @@ app.component('market-menu', {
 			</div>
 		</div>
 		<div class="ui large pointing menu">
-			<a class="item" :class="{active: $route.meta.page == 'offers'}" @click="submit('offers')">Offers</a>
+			<a class="item" :class="{active: $route.meta.page == 'offers'}" @click="submit('offers')">{{ $t('market_menu.offers') }}</a>
 		</div>
 		`
 })
@@ -153,20 +153,20 @@ app.component('market-offers', {
 	},
 	template: `
 		<div class="ui message" v-if="result">
-			Transaction has been sent: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
+			{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
 		</div>
 		<div class="ui negative message" v-if="error">
-			Failed with: <b>{{error}}</b>
+			{{ $t('common.failed_with') }}: <b>{{error}}</b>
 		</div>
 		<table class="ui table striped">
 			<thead>
-				<th>They Offer</th>
-				<th>They Ask</th>
+				<th>{{ $t('market_offers.they_offer') }}</th>
+				<th>{{ $t('market_offers.they_ask') }}</th>
 				<template v-if="bid && ask">
-					<th>Price</th>
+					<th>{{ $t('market_offers.price') }}</th>
 				</template>
-				<th>Time</th>
-				<th>Link</th>
+				<th>{{ $t('market_offers.time') }}</th>
+				<th>{{ $t('market_offers.link') }}</th>
 				<th></th>
 			</thead>
 			<tbody>
@@ -185,22 +185,22 @@ app.component('market-offers', {
 						<td><b>{{item.price}}</b></td>
 					</template>
 					<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
-					<td><router-link :to="'/explore/address/' + item.address">Address</router-link></td>
-					<td><div class="ui tiny compact button" @click="confirm(item)">Accept</div></td>
+					<td><router-link :to="'/explore/address/' + item.address">{{ $t('market_offers.address') }}</router-link></td>
+					<td><div class="ui tiny compact button" @click="confirm(item)">{{ $t('market_offers.accept') }}</div></td>
 				</tr>
 			</tbody>
 		</table>
 		<div class="ui modal" ref="confirm">
-			<div class="header">Accept Offer</div>
+			<div class="header">{{ $t('market_offers.accept_offer') }}</div>
 			<div class="content">
 				<table class="ui definition table striped">
 				<tr>
-					<td>Address</td>
+					<td>{{ $t('common.address') }}</td>
 					<td><router-link :to="'/explore/address/' + offer.address">{{offer.address}}</router-link></td>
 				</tr>
 				<tr>
 					<template v-for="entry in offer.bids">
-						<td>You Receive</td>
+						<td>{{ $t('market_offers.you_receive') }}</td>
 						<td>
 							<b>{{entry.value}}</b> {{entry.symbol}} 
 							<template v-if="!entry.is_native">
@@ -211,7 +211,7 @@ app.component('market-offers', {
 				</tr>
 				<tr>
 					<template v-for="entry in offer.asks">
-						<td>You Pay</td>
+						<td>{{ $t('market_offers.you_pay') }}</td>
 						<td>
 							<b>{{entry.value}}</b> {{entry.symbol}} 
 							<template v-if="!entry.is_native">
@@ -223,8 +223,8 @@ app.component('market-offers', {
 				</table>
 			</div>
 			<div class="actions">
-				<div class="ui positive approve button" @click="accept(offer)">Accept</div>
-				<div class="ui negative cancel button">Cancel</div>
+				<div class="ui positive approve button" @click="accept(offer)">{{ $t('market_offers.accept') }}</div>
+				<div class="ui negative cancel button">{{ $t('market_offers.cancel') }}</div>
 			</div>
 		</div>
 		`
