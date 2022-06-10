@@ -255,14 +255,12 @@ void Table::revert(const uint32_t new_version)
 		index->version = new_version;
 		write_index();
 	}
-	for(auto iter = blocks.begin(); iter != blocks.end();) {
-		const auto& block = *iter;
+	std::set<std::string> deleted_blocks;
+	for(auto& block : blocks) {
 		if(block->min_version >= new_version) {
-			// delete block
-			index->delete_files.push_back(block->name);
-			debug_log << "Deleted block " << block->name << " in revert to version " << new_version << std::endl;
-			iter = blocks.erase(iter);
-		} else if(block->max_version >= new_version) {
+			deleted_blocks.insert(block->name);
+		}
+		else if(block->max_version >= new_version) {
 			auto new_block = std::make_shared<block_t>();
 			new_block->name = block->name;
 			new_block->level = block->level;
@@ -316,15 +314,30 @@ void Table::revert(const uint32_t new_version)
 			debug_log << "Rewrote block " << block->name << " with max_version = " << new_block->max_version
 					<< ", " << new_block->index.size() << " / " << new_block->total_count << " entries"
 					<< ", from " << block->index.size() << " / " << block->total_count << " entries" << std::endl;
-			*iter = new_block;
-			iter++;
-		} else {
-			iter++;
+			block = new_block;
 		}
 	}
-	index->blocks.clear();
-	for(const auto& block : blocks) {
-		index->blocks.push_back(block->name);
+	if(deleted_blocks.size()) {
+		index->blocks.clear();
+		for(auto iter = blocks.begin(); iter != blocks.end();) {
+			const auto block = *iter;
+			if(deleted_blocks.count(block->name)) {
+				debug_log << "Deleted block " << block->name << " in revert to version " << new_version << std::endl;
+				index->delete_files.push_back(block->name);
+				iter = blocks.erase(iter);
+			} else {
+				index->blocks.push_back(block->name);
+				iter++;
+			}
+		}
+		write_index();
+	}
+	if(index->delete_files.size()) {
+		for(const auto& name : index->delete_files) {
+			vnx::File(file_path + name).remove();
+		}
+		index->delete_files.clear();
+		write_index();
 	}
 	for(auto iter = mem_block.begin(); iter != mem_block.end();) {
 		const auto& key = iter->first;
@@ -334,15 +347,6 @@ void Table::revert(const uint32_t new_version)
 		} else {
 			iter++;
 		}
-	}
-	write_index();
-
-	if(index->delete_files.size()) {
-		for(const auto& name : index->delete_files) {
-			vnx::File(file_path + name).remove();
-		}
-		index->delete_files.clear();
-		write_index();
 	}
 }
 
@@ -423,16 +427,14 @@ Table::Iterator::Iterator(std::shared_ptr<const Table> table)
 		auto file = std::make_shared<vnx::File>(table->file_path + block->name);
 		file->open("rb");
 
-		const auto pos = table->find(*file, block, nullptr);
-		if(pos < block->index.size()) {
-			uint32_t version;
-			std::shared_ptr<db_val_t> key;
-			table->read_key_at(*file, block->index[pos], version, key);
-			auto& entry = block_map[std::make_pair(key, version)];
-			entry.block = block;
-			entry.file = file;
-			entry.pos = pos;
-		}
+		uint32_t version;
+		std::shared_ptr<db_val_t> key;
+		table->read_key_at(*file, block->index[0], version, key);
+
+		auto& entry = block_map[std::make_pair(key, version)];
+		entry.block = block;
+		entry.file = file;
+		entry.pos = 0;
 	}
 	if(!table->mem_block.empty()) {
 		const auto iter = table->mem_block.begin();
