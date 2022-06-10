@@ -29,38 +29,11 @@ FetchContent_MakeAvailable(mmx_node_gui)
 add_custom_command(TARGET mmx_node_gui POST_BUILD
 	COMMAND ${CMAKE_MAKE_PROGRAM} MMX_Node_GUI.sln -restore -m /property:Configuration=Release /p:OutputPath=${mmx_node_gui_SOURCE_DIR}/MMX_Node_GUI/bin/Release WORKING_DIRECTORY ${mmx_node_gui_SOURCE_DIR} 
 )
-set(mmx_node_gui_RELEASE_DIR ${mmx_node_gui_SOURCE_DIR}/MMX_Node_GUI/bin/Release)
-install(DIRECTORY ${mmx_node_gui_RELEASE_DIR}/locales/ DESTINATION ./cefsharp/locales COMPONENT gui)
-install(FILES 
-	"${mmx_node_gui_RELEASE_DIR}/MMX Node GUI.exe"
-	${mmx_node_gui_RELEASE_DIR}/MaterialSkin.dll
-	${mmx_node_gui_RELEASE_DIR}/Newtonsoft.Json.dll
-	${mmx_node_gui_RELEASE_DIR}/Microsoft.WindowsAPICodePack.dll
-	${mmx_node_gui_RELEASE_DIR}/Microsoft.WindowsAPICodePack.Shell.dll	
-DESTINATION ./ COMPONENT gui)
-install(FILES
-	${mmx_node_gui_RELEASE_DIR}/CefSharp.BrowserSubprocess.Core.dll 
-	${mmx_node_gui_RELEASE_DIR}/CefSharp.BrowserSubprocess.exe
-	${mmx_node_gui_RELEASE_DIR}/CefSharp.Core.dll
-	${mmx_node_gui_RELEASE_DIR}/CefSharp.Core.Runtime.dll
-	${mmx_node_gui_RELEASE_DIR}/CefSharp.dll
-	${mmx_node_gui_RELEASE_DIR}/CefSharp.WinForms.dll
-	${mmx_node_gui_RELEASE_DIR}/chrome_100_percent.pak
-	${mmx_node_gui_RELEASE_DIR}/chrome_200_percent.pak	
-	${mmx_node_gui_RELEASE_DIR}/chrome_elf.dll
-	${mmx_node_gui_RELEASE_DIR}/d3dcompiler_47.dll
-	${mmx_node_gui_RELEASE_DIR}/icudtl.dat
-	${mmx_node_gui_RELEASE_DIR}/libcef.dll
-	${mmx_node_gui_RELEASE_DIR}/libEGL.dll
-	${mmx_node_gui_RELEASE_DIR}/libGLESv2.dll
-	${mmx_node_gui_RELEASE_DIR}/LICENSE.txt
-	${mmx_node_gui_RELEASE_DIR}/resources.pak
-	${mmx_node_gui_RELEASE_DIR}/snapshot_blob.bin
-	${mmx_node_gui_RELEASE_DIR}/v8_context_snapshot.bin
-	${mmx_node_gui_RELEASE_DIR}/vk_swiftshader.dll
-	${mmx_node_gui_RELEASE_DIR}/vk_swiftshader_icd.json
-	${mmx_node_gui_RELEASE_DIR}/vulkan-1.dll
-DESTINATION ./cefsharp COMPONENT gui)
+
+set(mmx_node_gui_RELEASE_DIR ${mmx_node_gui_SOURCE_DIR}/MMX_Node_GUI/bin/CPack_Release)
+
+install(DIRECTORY ${mmx_node_gui_RELEASE_DIR}/ DESTINATION ./ COMPONENT gui)
+
 install(TARGETS mmx mmx_node mmx_farmer mmx_wallet mmx_timelord mmx_harvester mmx_timelord_rewards RUNTIME DESTINATION ./ COMPONENT applications)
 install(TARGETS mmx_vm mmx_vm_iface mmx_iface mmx_modules mmx_chiapos RUNTIME DESTINATION ./ COMPONENT applications)
 install(TARGETS vnx_base vnx_addons vnx_rocksdb url_cpp llhttp RUNTIME DESTINATION ./ COMPONENT applications)

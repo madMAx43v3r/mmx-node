@@ -13,6 +13,11 @@
 #include <vnx/File.h>
 #include <fstream>
 
+#ifdef _MSC_VER
+#include <mmx_db_export.h>
+#else
+#define MMX_DB_EXPORT
+#endif
 
 namespace mmx {
 
@@ -82,7 +87,7 @@ public:
 
 	static constexpr uint32_t entry_overhead = 20;
 	static constexpr uint32_t block_header_size = 30;
-	static const std::function<int(const db_val_t&, const db_val_t&)> default_comparator;
+	MMX_DB_EXPORT static const std::function<int(const db_val_t&, const db_val_t&)> default_comparator;
 
 	Table(const std::string& file_path, const std::function<int(const db_val_t&, const db_val_t&)>& comparator = default_comparator);
 
