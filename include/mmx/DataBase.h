@@ -65,6 +65,15 @@ protected:
 		std::vector<int64_t> index;
 	};
 
+	struct key_compare_t {
+		const Table* table = nullptr;
+		key_compare_t(const Table* table) : table(table) {}
+
+		bool operator()(const std::shared_ptr<db_val_t>& lhs, const std::shared_ptr<db_val_t>& rhs) const {
+			return table->comparator(*lhs, *rhs) < 0;
+		}
+	};
+
 	struct mem_compare_t {
 		const Table* table = nullptr;
 		mem_compare_t(const Table* table) : table(table) {}
@@ -116,16 +125,19 @@ public:
 
 		void prev();
 		void next();
+		void seek_begin();
 		void seek(std::shared_ptr<db_val_t> key);
 	private:
 		struct pointer_t {
-			size_t pos = 0;
+			size_t pos = -1;
+			uint32_t version = -1;
 			std::shared_ptr<block_t> block;
+			std::shared_ptr<db_val_t> value;
 			std::shared_ptr<vnx::File> file;
-			std::map<std::pair<std::shared_ptr<db_val_t>, uint32_t>, std::shared_ptr<db_val_t>, mem_compare_t>::const_iterator iter;
+			std::map<std::shared_ptr<db_val_t>, std::pair<std::shared_ptr<db_val_t>, uint32_t>, key_compare_t>::const_iterator iter;
 		};
 		std::shared_ptr<const Table> table;
-		std::map<std::pair<std::shared_ptr<db_val_t>, uint32_t>, pointer_t, mem_compare_t> block_map;
+		std::map<std::shared_ptr<db_val_t>, pointer_t, key_compare_t> block_map;
 	};
 
 private:
@@ -137,6 +149,8 @@ private:
 
 	void read_value(vnx::TypeInput& in, std::shared_ptr<db_val_t>& value) const;
 
+	void read_value_at(vnx::File& file, int64_t offset, std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t>& value) const;
+
 	void write_entry(vnx::TypeOutput& out, uint32_t version, std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t> value);
 
 	void insert_entry(uint32_t version, std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t> value);
@@ -145,7 +159,7 @@ private:
 
 	std::shared_ptr<db_val_t> find(std::shared_ptr<block_t> block, std::shared_ptr<db_val_t> key) const;
 
-	size_t find(vnx::File& file, std::shared_ptr<block_t> block, std::shared_ptr<db_val_t> key) const;
+	size_t lower_bound(vnx::File& file, std::shared_ptr<block_t> block, uint32_t& version, std::shared_ptr<db_val_t>& key, bool& is_match) const;
 
 	void write_index();
 
@@ -155,6 +169,7 @@ private:
 	std::list<std::shared_ptr<block_t>> blocks;
 
 	size_t mem_block_size = 0;
+	std::map<std::shared_ptr<db_val_t>, std::pair<std::shared_ptr<db_val_t>, uint32_t>, key_compare_t> mem_index;
 	std::map<std::pair<std::shared_ptr<db_val_t>, uint32_t>, std::shared_ptr<db_val_t>, mem_compare_t> mem_block;
 
 };
