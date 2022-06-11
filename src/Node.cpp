@@ -74,6 +74,7 @@ void Node::main()
 
 	vnx::Directory(storage_path).create();
 	vnx::Directory(database_path).create();
+	const auto time_begin = vnx::get_wall_time_millis();
 	{
 		::rocksdb::Options options;
 		options.max_open_files = 8;
@@ -106,7 +107,6 @@ void Node::main()
 
 	if(block_chain->exists())
 	{
-		const auto time_begin = vnx::get_time_millis();
 		block_chain->open("rb+");
 
 		// load balance table
@@ -180,7 +180,7 @@ void Node::main()
 				}
 			}
 			if(auto peak = get_peak()) {
-				log(INFO) << "Loaded height " << peak->height << " from disk, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+				log(INFO) << "Replayed height " << peak->height << " from disk, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 			}
 		} else {
 			// load history and fork tree
@@ -198,7 +198,7 @@ void Node::main()
 					}
 				}
 			}
-			log(INFO) << "Loaded height " << height << ", took " << (vnx::get_time_millis() - time_begin) / 1e3 << " sec";
+			log(INFO) << "Loaded height " << height << ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 		}
 		const auto offset = block_chain->get_input_pos();
 		block_chain->seek_to(offset);
