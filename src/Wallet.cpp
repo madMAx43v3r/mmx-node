@@ -119,7 +119,7 @@ Wallet::send(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_a
 	}
 	wallet->complete(tx, options_);
 
-	if(tx->is_signed()) {
+	if(tx->is_signed() && options_.auto_send) {
 		send_off(index, tx);
 		log(INFO) << "Sent " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
 	}
@@ -151,7 +151,7 @@ Wallet::send_many(	const uint32_t& index, const std::map<addr_t, uint64_t>& amou
 	}
 	wallet->complete(tx, options_);
 
-	if(tx->is_signed()) {
+	if(tx->is_signed() && options_.auto_send) {
 		send_off(index, tx);
 		log(INFO) << "Sent many with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
 	}
@@ -190,7 +190,7 @@ Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 
 	wallet->complete(tx, options_);
 
-	if(tx->is_signed()) {
+	if(tx->is_signed() && options_.auto_send) {
 		send_off(index, tx);
 		log(INFO) << "Sent " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
 	}
@@ -239,7 +239,7 @@ Wallet::mint(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_a
 
 	wallet->complete(tx, options_);
 
-	if(tx->is_signed()) {
+	if(tx->is_signed() && options_.auto_send) {
 		send_off(index, tx);
 		log(INFO) << "Minted " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
 	}
@@ -268,7 +268,7 @@ Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, 
 	}
 	wallet->complete(tx, options_);
 
-	if(tx->is_signed()) {
+	if(tx->is_signed() && options_.auto_send) {
 		send_off(index, tx);
 		log(INFO) << "Deployed " << contract->get_type_name() << " with fee " << tx->calc_cost(params) << " as " << addr_t(tx->id) << " (" << tx->id << ")";
 	}
@@ -308,7 +308,7 @@ Wallet::mutate(const uint32_t& index, const addr_t& address, const vnx::Object& 
 
 	wallet->complete(tx, options_);
 
-	if(tx->is_signed()) {
+	if(tx->is_signed() && options_.auto_send) {
 		send_off(index, tx);
 		log(INFO) << "Mutated [" << address << "] via " << method["__type"] << " with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
 	}
@@ -341,7 +341,7 @@ std::shared_ptr<const Transaction> Wallet::execute(
 	}
 	wallet->complete(tx, options_);
 
-	if(tx->is_signed()) {
+	if(tx->is_signed() && options_.auto_send) {
 		send_off(index, tx);
 		log(INFO) << "Executed " << method << "() on [" << address << "] with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
 	}
@@ -376,7 +376,7 @@ std::shared_ptr<const Transaction> Wallet::deposit(
 	}
 	wallet->complete(tx, options_);
 
-	if(tx->is_signed()) {
+	if(tx->is_signed() && options_.auto_send) {
 		send_off(index, tx);
 		log(INFO) << "Executed " << method << "() on [" << address << "] with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
 	}
@@ -435,7 +435,7 @@ std::shared_ptr<const Transaction> Wallet::accept_offer(
 	}
 	wallet->complete(tx, options_);
 
-	if(tx->is_signed()) {
+	if(tx->is_signed() && options_.auto_send) {
 		send_off(index, tx);
 		log(INFO) << "Accepted offer with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
 	}
@@ -462,7 +462,7 @@ std::shared_ptr<const Transaction> Wallet::revoke(
 	}
 	wallet->complete(tx, options_);
 
-	if(tx->is_signed()) {
+	if(tx->is_signed() && options_.auto_send) {
 		send_off(index, tx);
 		log(INFO) << "Revoked " << txid << " with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
 	}

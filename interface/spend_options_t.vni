@@ -2,6 +2,8 @@ package mmx;
 
 struct spend_options_t {
 	
+	bool auto_send = true;
+	
 	uint min_confirm = 1;
 	
 	uint fee_ratio = 1024;
