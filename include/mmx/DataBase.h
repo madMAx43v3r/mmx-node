@@ -12,6 +12,7 @@
 
 #include <vnx/File.h>
 #include <fstream>
+#include <mutex>
 
 #ifdef _MSC_VER
 #include <mmx_db_export.h>
@@ -117,6 +118,7 @@ public:
 	class Iterator {
 	public:
 		Iterator(std::shared_ptr<const Table> table);
+		~Iterator();
 
 		bool is_valid() const;
 		uint32_t version() const;
@@ -127,6 +129,8 @@ public:
 		void next();
 		void seek_begin();
 		void seek(std::shared_ptr<db_val_t> key);
+		void seek_prev(std::shared_ptr<db_val_t> key);
+		void seek_for_prev(std::shared_ptr<db_val_t> key);
 	private:
 		struct pointer_t {
 			size_t pos = -1;
@@ -136,6 +140,11 @@ public:
 			std::shared_ptr<vnx::File> file;
 			std::map<std::shared_ptr<db_val_t>, std::pair<std::shared_ptr<db_val_t>, uint32_t>, key_compare_t>::const_iterator iter;
 		};
+
+		void seek(std::shared_ptr<db_val_t> key, const int mode);
+		std::map<std::shared_ptr<db_val_t>, pointer_t, key_compare_t>::const_iterator current() const;
+
+		int direction = 0;
 		std::shared_ptr<const Table> table;
 		std::map<std::shared_ptr<db_val_t>, pointer_t, key_compare_t> block_map;
 	};
@@ -171,6 +180,9 @@ private:
 	size_t mem_block_size = 0;
 	std::map<std::shared_ptr<db_val_t>, std::pair<std::shared_ptr<db_val_t>, uint32_t>, key_compare_t> mem_index;
 	std::map<std::pair<std::shared_ptr<db_val_t>, uint32_t>, std::shared_ptr<db_val_t>, mem_compare_t> mem_block;
+
+	mutable std::mutex mutex;
+	mutable int64_t write_lock = 0;
 
 };
 

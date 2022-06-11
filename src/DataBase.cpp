@@ -163,6 +163,12 @@ void Table::insert(std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t> valu
 	if(!key || !value) {
 		throw std::logic_error("!key || !value");
 	}
+	{
+		std::lock_guard lock(mutex);
+		if(write_lock) {
+			throw std::logic_error("table is write locked");
+		}
+	}
 	write_entry(write_log.out, index->version, key, value);
 	insert_entry(index->version, key, value);
 }
@@ -383,6 +389,12 @@ void Table::revert(const uint32_t new_version)
 
 void Table::flush()
 {
+	{
+		std::lock_guard lock(mutex);
+		if(write_lock) {
+			throw std::logic_error("table is write locked");
+		}
+	}
 	if(mem_block.empty()) {
 		return;
 	}
@@ -452,45 +464,121 @@ void Table::write_index()
 Table::Iterator::Iterator(std::shared_ptr<const Table> table)
 	:	table(table), block_map(key_compare_t(table.get()))
 {
+	std::lock_guard lock(table->mutex);
+	table->write_lock++;
+}
+
+Table::Iterator::~Iterator()
+{
+	std::lock_guard lock(table->mutex);
+	table->write_lock--;
 }
 
 bool Table::Iterator::is_valid() const
 {
-	return !block_map.empty();
+	return !block_map.empty() && direction;
 }
 
-uint32_t Table::Iterator::version() const
+std::map<std::shared_ptr<db_val_t>, Table::Iterator::pointer_t, Table::key_compare_t>::const_iterator
+Table::Iterator::current() const
 {
 	if(!is_valid()) {
 		throw std::logic_error("iterator not valid");
 	}
-	return block_map.begin()->second.version;
+	if(direction > 0) {
+		return block_map.begin();
+	} else {
+		return --block_map.end();
+	}
+}
+
+uint32_t Table::Iterator::version() const
+{
+	return current()->second.version;
 }
 
 std::shared_ptr<db_val_t> Table::Iterator::key() const
 {
-	if(is_valid()) {
-		return block_map.begin()->first;
-	}
-	return nullptr;
+	return current()->first;
 }
 
 std::shared_ptr<db_val_t> Table::Iterator::value() const
 {
-	if(!is_valid()) {
-		return nullptr;
-	}
-	return block_map.begin()->second.value;
+	return current()->second.value;
 }
 
 void Table::Iterator::prev()
 {
-	// TODO
+	if(!is_valid()) {
+		throw std::logic_error("iterator not valid");
+	}
+	if(direction < 0) {
+		const auto iter = --block_map.end();
+		const auto& entry = iter->second;
+		if(const auto& block = entry.block) {
+			if(entry.pos > 0) {
+				const auto pos = entry.pos - 1;
+				uint32_t version;
+				std::shared_ptr<db_val_t> key;
+				table->read_key_at(*entry.file, block->index[pos], version, key);
+				auto& next = block_map[key];
+				next.block = block;
+				next.file = entry.file;
+				next.version = version;
+				next.pos = pos;
+				table->read_value(next.file->in, next.value);
+			}
+		} else {
+			if(entry.iter != table->mem_index.begin()) {
+				auto iter = entry.iter; iter--;
+				auto& next = block_map[iter->first];
+				next.iter = iter;
+				next.version = iter->second.second;
+				next.value = iter->second.first;
+			}
+		}
+		block_map.erase(iter);
+	}
+	else {
+		seek_prev(key());
+	}
 }
 
 void Table::Iterator::next()
 {
-	// TODO
+	if(!is_valid()) {
+		throw std::logic_error("iterator not valid");
+	}
+	if(direction > 0) {
+		const auto iter = block_map.begin();
+		const auto& entry = iter->second;
+		if(const auto& block = entry.block) {
+			const auto pos = entry.pos + 1;
+			if(pos < block->index.size()) {
+				uint32_t version;
+				std::shared_ptr<db_val_t> key;
+				table->read_key_at(*entry.file, block->index[pos], version, key);
+				auto& next = block_map[key];
+				next.block = block;
+				next.file = entry.file;
+				next.version = version;
+				next.pos = pos;
+				table->read_value(next.file->in, next.value);
+			}
+		} else {
+			auto iter = entry.iter; iter++;
+			if(iter != table->mem_index.end()) {
+				auto& next = block_map[iter->first];
+				next.iter = iter;
+				next.version = iter->second.second;
+				next.value = iter->second.first;
+			}
+		}
+		block_map.erase(iter);
+	}
+	else {
+		seek(key(), 1);
+	}
 }
 
 void Table::Iterator::seek_begin()
@@ -500,6 +588,11 @@ void Table::Iterator::seek_begin()
 
 void Table::Iterator::seek(std::shared_ptr<db_val_t> key)
 {
+	seek(key, 0);
+}
+
+void Table::Iterator::seek(std::shared_ptr<db_val_t> key, const int mode)
+{
 	block_map.clear();
 
 	for(const auto& block : table->blocks) {
@@ -508,7 +601,19 @@ void Table::Iterator::seek(std::shared_ptr<db_val_t> key)
 
 		auto res = key;
 		uint32_t version; bool is_match;
-		const auto pos = table->lower_bound(*file, block, version, res, is_match);
+		auto pos = table->lower_bound(*file, block, version, res, is_match);
+		if(mode < 0) {
+			if(pos == 0) {
+				continue;
+			}
+			table->read_key_at(*file, block->index[--pos], version, res);
+		}
+		else if(mode > 0) {
+			if(pos + 1 >= block->index.size()) {
+				continue;
+			}
+			table->read_key_at(*file, block->index[++pos], version, res);
+		}
 		if(!res) {
 			continue;
 		}
@@ -520,7 +625,18 @@ void Table::Iterator::seek(std::shared_ptr<db_val_t> key)
 		table->read_value(file->in, entry.value);
 	}
 	if(!table->mem_index.empty()) {
-		const auto iter = key ? table->mem_index.lower_bound(key) : table->mem_index.begin();
+		auto iter = key ? table->mem_index.lower_bound(key) : table->mem_index.begin();
+		if(mode < 0) {
+			if(iter != table->mem_index.begin()) {
+				iter--;
+			} else {
+				iter = table->mem_index.end();
+			}
+		} else if(mode > 0) {
+			if(iter != table->mem_index.end()) {
+				iter++;
+			}
+		}
 		if(iter != table->mem_index.end()) {
 			auto& entry = block_map[iter->first];
 			entry.iter = iter;
@@ -528,8 +644,21 @@ void Table::Iterator::seek(std::shared_ptr<db_val_t> key)
 			entry.value = iter->second.first;
 		}
 	}
+	direction = mode >= 0 ? 1 : -1;
 }
 
+void Table::Iterator::seek_prev(std::shared_ptr<db_val_t> key)
+{
+	seek(key, -1);
+}
+
+void Table::Iterator::seek_for_prev(std::shared_ptr<db_val_t> key_)
+{
+	seek(key_);
+	if(is_valid() && *key() != *key_) {
+		prev();
+	}
+}
 
 
 } // mmx
