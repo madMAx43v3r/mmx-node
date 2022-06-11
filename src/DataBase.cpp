@@ -624,20 +624,21 @@ void Table::Iterator::seek(std::shared_ptr<db_val_t> key, const int mode)
 		entry.pos = pos;
 		table->read_value(file->in, entry.value);
 	}
-	if(!table->mem_index.empty()) {
-		auto iter = key ? table->mem_index.lower_bound(key) : table->mem_index.begin();
+	const auto& mem_index = table->mem_index;
+	if(!mem_index.empty()) {
+		auto iter = key ? mem_index.lower_bound(key) : mem_index.begin();
 		if(mode < 0) {
-			if(iter != table->mem_index.begin()) {
+			if(iter != mem_index.begin()) {
 				iter--;
 			} else {
-				iter = table->mem_index.end();
+				iter = mem_index.end();
 			}
 		} else if(mode > 0) {
-			if(iter != table->mem_index.end()) {
+			if(iter != mem_index.end()) {
 				iter++;
 			}
 		}
-		if(iter != table->mem_index.end()) {
+		if(iter != mem_index.end()) {
 			auto& entry = block_map[iter->first];
 			entry.iter = iter;
 			entry.version = iter->second.second;
