@@ -201,7 +201,7 @@ void Node::update()
 		// commit to disk
 		bool did_commit = false;
 		const auto fork_line = get_fork_line();
-		const auto commit_delay = is_synced || sync_retry ? params->commit_delay : max_sync_ahead;
+		const auto commit_delay = is_synced || sync_retry ? params->commit_delay : 2 * max_sync_ahead;
 		for(size_t i = 0; i + commit_delay < fork_line.size(); ++i)
 		{
 			const auto& fork = fork_line[i];
