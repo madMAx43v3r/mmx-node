@@ -15,6 +15,7 @@ namespace mmx {
 struct MMX_EXPORT spend_options_t {
 	
 	
+	vnx::bool_t auto_send = true;
 	uint32_t min_confirm = 1;
 	uint32_t fee_ratio = 1024;
 	uint64_t extra_fee = 0;
@@ -66,18 +67,19 @@ struct MMX_EXPORT spend_options_t {
 
 template<typename T>
 void spend_options_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<spend_options_t>(10);
-	_visitor.type_field("min_confirm", 0); _visitor.accept(min_confirm);
-	_visitor.type_field("fee_ratio", 1); _visitor.accept(fee_ratio);
-	_visitor.type_field("extra_fee", 2); _visitor.accept(extra_fee);
-	_visitor.type_field("expire_at", 3); _visitor.accept(expire_at);
-	_visitor.type_field("expire_delta", 4); _visitor.accept(expire_delta);
-	_visitor.type_field("user", 5); _visitor.accept(user);
-	_visitor.type_field("sender", 6); _visitor.accept(sender);
-	_visitor.type_field("tx_sender", 7); _visitor.accept(tx_sender);
-	_visitor.type_field("owner_map", 8); _visitor.accept(owner_map);
-	_visitor.type_field("contract_map", 9); _visitor.accept(contract_map);
-	_visitor.template type_end<spend_options_t>(10);
+	_visitor.template type_begin<spend_options_t>(11);
+	_visitor.type_field("auto_send", 0); _visitor.accept(auto_send);
+	_visitor.type_field("min_confirm", 1); _visitor.accept(min_confirm);
+	_visitor.type_field("fee_ratio", 2); _visitor.accept(fee_ratio);
+	_visitor.type_field("extra_fee", 3); _visitor.accept(extra_fee);
+	_visitor.type_field("expire_at", 4); _visitor.accept(expire_at);
+	_visitor.type_field("expire_delta", 5); _visitor.accept(expire_delta);
+	_visitor.type_field("user", 6); _visitor.accept(user);
+	_visitor.type_field("sender", 7); _visitor.accept(sender);
+	_visitor.type_field("tx_sender", 8); _visitor.accept(tx_sender);
+	_visitor.type_field("owner_map", 9); _visitor.accept(owner_map);
+	_visitor.type_field("contract_map", 10); _visitor.accept(contract_map);
+	_visitor.template type_end<spend_options_t>(11);
 }
 
 
