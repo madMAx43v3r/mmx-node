@@ -1,0 +1,262 @@
+{
+    "common": {
+        "yes": "Да",
+        "no": "Нет",
+
+        "default": "по умолчанию",
+
+        "node": "Узел",
+        "wallet": "Кошелёк",
+        "height": "Высота",
+        "blocks": "Блоки",
+        "balance": "Баланс",
+        "token": "Токен",
+        "hash": "Хэш",
+        "reward": "Награда",
+        "amount": "Сумма",
+        "address": "Адрес",
+        "type": "Тип",
+        "time": "Время",
+        "fee": "Комиссия",
+        "pending": "ожидается",
+
+        "confirm": "Подтвердить",
+        "deploy": "Развернуть",
+        "create": "Создать",
+
+        "transaction_has_been_sent": "Транзакция отправлена",
+        "failed_with": "Ошибка",
+        "deployed_as": "Развёрнут как",
+
+        "link": "Ссылка"
+    },
+
+    "main_menu": {
+        "explore": "Проводник",
+        "market": "Рынок",
+        "exchange": "Биржа",
+        "settings": "Настройки",
+        "logout": "Выйти"
+    },
+
+    "node_common": {
+        "vdf_speed": "Скорость VDF",
+        "block_reward": "Награда за блок",
+        "netspace": "Пространство сети"
+    },
+
+    "node_menu": {
+        "log": "Журнал",
+        "peers": "Пиры"
+    },
+
+    "node_info": {
+        "synced": "Синхронизировано",
+        "supply": "Эмиссия",
+        "no_addresss": "Количество адресов"
+    },
+
+    "node_log": {   
+        "terminal": "Терминал",
+        "router": "Маршрутизатор",
+        "farmer": "Фермер",
+        "harvester": "Комбайн",
+        "timelord": "Таймлорд"
+    },
+
+    "node_peers": {
+        "version": "Версия",
+        "received": "Загрузка",
+        "send": "Отдача",
+        "ping": "Пинг",
+        "duration": "Время",
+        "credits": "Кредиты",
+        "tx_gas": "TX Газ",
+        "connection": "Соединение",
+        "outbound": "исходящее",
+        "inbound": "входящее"
+    },    
+
+    "wallet_summary": {
+        "new": "Новый"
+    },
+
+    "account_menu": {
+        "nfts": "NFT",
+        "contracts": "Контракты",
+        "addresses": "Адреса",
+        "send": "Отправить",
+        "offer": "Офферы",
+        "history": "История",
+        "details": "Подробности"
+    },
+
+    "account_send_form": {
+
+        "source_address": "Исходный адрес",
+        "destination": "Получатель",
+        "destination_address": "Адрес получателя",
+        "address_input": "Ввод адреса",
+        "currency": "Валюта",
+        "send": "Отправить"
+    },    
+
+    "balance_table": {
+        "locked": "Заблокировано",
+        "spendable": "Доступно",        
+        "contract": "Контракт"
+    },
+
+    "account_balance": {
+        "reserved": "Зарезервировано"
+    },
+
+    "account_history": {
+        "link": "@:common.link"
+    },    
+
+    "account_offers": {
+        "offer": "Предложить",
+        "receive": "Получить",
+        "status": "Статус",
+        "actions": "Действия",
+        "revoke": "Отозвать",
+
+        "accepted": "Принято",
+        "revoked": "Отозвано",
+        "open": "Открыто"        
+    },
+
+    "account_offer_form": {
+        "offer_amount": "Сумма оффера",
+        "offer_currency": "Валюта оффера",
+        "receive_amount": "Сумма получения",
+        "receive_currency_contract": "Валюта получения (контракт)",
+        "symbol": "Символ",
+        "offer": "Предложить"        
+    },
+
+    "explore_menu": {
+        "transactions": "Транзакции",
+        "address": "Адрес",
+        "block_height": "Высота блока"
+    },
+
+    "explore_blocks": {       
+        "score": "Оценка"
+    },
+
+    "explore_transactions": {        
+        "transaction_id": "ID транзакции"
+    },
+
+    "block_view": {
+        "previous": "Предыдущий",
+        "next": "Следующий",
+        "block": "Блок",
+        "no_such_block": "Нет такого блока!",
+
+        "time_diff": "Time Diff",
+        "space_diff": "Space Diff",
+        "vdf_iterations": "Итерации VDF",
+        "tx_base": "TX Base",
+        "tx_count": "Кол-во транзакций",
+        "k_size": "K Размер",
+        "proof_score": "Оценка доказательства",
+        "plot_id": "ID плота",
+        "farmer_key": "Ключ фермера",
+        
+        "inputs": "Входы",
+        "outputs": "Выходы",
+        "operations": "Операции"
+
+    },
+
+    "transaction_view": {
+
+        "transaction": "Транзакция",
+        "confirmed": "Подтверждения",
+        "expires": "Истекает",
+        "note": "Заметка",
+
+        "sender": "Отправитель",
+        "cost": "Стоимость",
+
+        "input": "Ввод",
+        "output": "Вывод"
+
+    },
+
+    "create_contract_menu": {
+        "contract_type": "Тип контракта"     
+    },
+
+    "account_contract_summary": {
+        "deposit": "Вклад",
+        "withdraw": "Вывод"
+    },
+
+    "node_settings": {
+        "language": "Язык",
+        "enable_timelord": "Включить Таймлорд",
+        "farmer_reward_address": "Адрес награды Фермера",
+        "timeLord_reward_address": "Адрес награды Таймлорда",
+        "reward_address_placeholder": "<по умолчанию>",
+        "restart_needed": "(необходим перезапуск)"
+    },
+
+    "create_locked_contract": {
+        "owner_address": "Адрес владельца",
+        "unlock_height": "Высота разблокировки"
+    },
+
+    "create_virtual_plot_contract": {
+        "farmer_public_key": "Публичный ключ Фермера",
+        "reward_address": "Адрес награды (опционально, для пулинга)"
+    },
+
+    "account_details": {
+        "copy_keys_to_plotter": "Копировать ключи в плоттер"
+    },
+    
+    "account_actions": {
+        "reset_cache": "Сбросить кэш",
+        "show_seed": "Показать мнемонику"
+    },
+    
+    "create_account": {
+        "account_index": "Индекс аккаунта",
+        "account_name": "Имя аккаунта",
+        "number_of_addresses": "Количество адресов",
+        "create_account": "Создать аккаунт"
+    },
+    
+    "create_wallet": {
+        "use_custom_seed": "Использовать пользовательскую мнемонику",
+        "seed_hash": "Хеш мнемоники (опционально, шестнадцатеричная строка, 64 символа)",
+        "placeholder": "<случайный>",
+        "create_wallet": "Создать Кошелек"        
+    },
+
+    "market_menu": {
+        "they_offer": "Предлагают",
+        "they_ask": "Запрашивают",
+        "anything": "Всё",
+        "offers": "Офферы"
+    },
+    
+    "market_offers": {
+        "price": "Цена",
+        "accept": "Принять",
+        "cancel": "Отменить",
+
+        "accept_offer": "Принять оффер",
+        "you_receive": "Вы получите",
+        "you_pay": "Вы платите"        
+    },
+
+    "login": {
+        "password_label": "Пароль (см. файл PASSWD)",
+        "login": "Войти"
+    }    
+}
