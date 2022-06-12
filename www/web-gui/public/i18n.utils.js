@@ -52,7 +52,6 @@ function customFallback(messages) {
 }   
 
 function loadLanguageAsync(locale) {
-    console.log('loadLanguageAsync', locale);
 	if (i18n.locale === locale) {
 		return Promise.resolve(setI18nLanguage(locale))
 	}
