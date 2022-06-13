@@ -1,0 +1,216 @@
+{
+    "common": {
+        "yes": "Sim",
+        "no": "Não",
+        "default": "Por omissão",
+        "node": "Node",
+        "wallet": "Wallet",
+        "height": "Height",
+        "blocks": "Blocks",
+        "balance": "Saldo",
+        "token": "Token",
+        "hash": "Hash",
+        "reward": "Recompensa",
+        "amount": "Montante",
+        "address": "Endereço",
+        "type": "Tipo",
+        "time": "Tempo",
+        "fee": "Taxa",
+        "pending": "pendente",
+        "confirm": "Confirmar",
+        "deploy": "Deploy",
+        "create": "Criar",
+        "transaction_has_been_sent": "A transacção foi enviada",
+        "failed_with": "Falhou com ",
+        "deployed_as": "Deployed as",
+        "link": "Link"
+    },
+    "main_menu": {
+        "explore": "Explorar",
+        "market": "Mercado",
+        "exchange": "Exchange",
+        "settings": "Definições",
+        "logout": "Sair"
+    },
+    "node_common": {
+        "vdf_speed": "Velocidade do VDF",
+        "block_reward": "Recompensa pelo bloco",
+        "netspace": "Dimensão da rede"
+    },
+    "node_menu": {
+        "log": "Log",
+        "peers": "Peers"
+    },
+    "node_info": {
+        "synced": "Sincronizado",
+        "supply": "Oferta",
+        "no_addresss": "Num endereços"
+    },
+    "node_log": {
+        "terminal": "Terminal",
+        "router": "Router",
+        "farmer": "Farmer",
+        "harvester": "Harvester",
+        "timelord": "TimeLord"
+    },
+    "node_peers": {
+        "version": "Versão",
+        "received": "Recebido",
+        "send": "Enviar",
+        "ping": "Ping",
+        "duration": "Duração",
+        "credits": "Créditos",
+        "tx_gas": "TX Gas",
+        "connection": "Conexão",
+        "outbound": "saída",
+        "inbound": "entrada"
+    },
+    "wallet_summary": {
+        "new": "Criar"
+    },
+    "account_menu": {
+        "nfts": "NFTs",
+        "contracts": "Contratos",
+        "addresses": "Endereços",
+        "send": "Enviar",
+        "offer": "Oferta",
+        "history": "Histórico",
+        "details": "Detalhes"
+    },
+    "account_send_form": {
+        "source_address": "Endereço de origem",
+        "destination": "Destino",
+        "destination_address": "Endereço de destino",
+        "address_input": "Introduza o endereço",
+        "currency": "Moeda",
+        "send": "Enviar"
+    },
+    "balance_table": {
+        "locked": "Bloqueado",
+        "spendable": "Pode ser gasto",
+        "contract": "Contrato"
+    },
+    "account_balance": {
+        "reserved": "Reservado"
+    },
+    "account_history": {
+        "link": "@:common.link"
+    },
+    "account_offers": {
+        "offer": "Oferta",
+        "receive": "Receber",
+        "status": "Estado",
+        "actions": "Acções",
+        "revoke": "Revogar",
+        "accepted": "Aceite",
+        "revoked": "Revogado",
+        "open": "Abrir"
+    },
+    "account_offer_form": {
+        "offer_amount": "Montante da oferta",
+        "offer_currency": "Moeda da oferta",
+        "receive_amount": "Montante recebido",
+        "receive_currency_contract": "Contrato para receber a moeda",
+        "symbol": "Simbolo",
+        "offer": "Oferta"
+    },
+    "explore_menu": {
+        "transactions": "Transacções",
+        "address": "@.lower:common.address",
+        "block_height": "height do bloco"
+    },
+    "explore_blocks": {
+        "score": "Pontuação"
+    },
+    "explore_transactions": {
+        "transaction_id": "ID da transacção"
+    },
+    "block_view": {
+        "previous": "Anterior",
+        "next": "Seguinte",
+        "block": "Bloco",
+        "no_such_block": "O bloco não existe!",
+        "time_diff": "Diferença de tempo",
+        "space_diff": "Diferença de espaço",
+        "vdf_iterations": "Iterações VDF",
+        "tx_base": "TX Base",
+        "tx_count": "TX Contador",
+        "k_size": "K Tamanho",
+        "proof_score": "Prova da pontuação",
+        "plot_id": "Plot ID",
+        "farmer_key": "Chave do Farmer",
+        "inputs": "Entradas",
+        "outputs": "Saidas",
+        "operations": "Operações"
+    },
+    "transaction_view": {
+        "transaction": "Transacção",
+        "confirmed": "Confirmado",
+        "expires": "Expira",
+        "note": "Nota",
+        "sender": "Quem enviou",
+        "cost": "Custo",
+        "input": "Entrada",
+        "output": "Saida"
+    },
+    "create_contract_menu": {
+        "contract_type": "Tipo de contrato"
+    },
+    "account_contract_summary": {
+        "deposit": "Depositar",
+        "withdraw": "Levantar"
+    },
+    "node_settings": {
+        "language": "Idioma",
+        "enable_timelord": "Activar o TimeLord",
+        "farmer_reward_address": "Endereço de recompensa do Farmer",
+        "timeLord_reward_address": "Endereço de recompensa do TimeLord",
+        "reward_address_placeholder": "<по умолчанию>",
+        "restart_needed": "(é necessário reiniciar para produzir efeito)"
+    },
+    "create_locked_contract": {
+        "owner_address": "Endereço do proprietário",
+        "unlock_height": "Desbloqueado no Chain Height"
+    },
+    "create_virtual_plot_contract": {
+        "farmer_public_key": "Farmer Public Key",
+        "reward_address": "Endereço de recompensa (opcional, para pooling)"
+    },
+    "account_details": {
+        "copy_keys_to_plotter": "Copiar chaves para o plotter"
+    },
+    "account_actions": {
+        "reset_cache": "Limpar Cache",
+        "show_seed": "Mostrar Seed"
+    },
+    "create_account": {
+        "account_index": "Índice da conta",
+        "account_name": "Nome da conta",
+        "number_of_addresses": "Número de endereços",
+        "create_account": "Criar conta"
+    },
+    "create_wallet": {
+        "use_custom_seed": "Usar Seed personalizada",
+        "seed_hash": "Seed Hash (opcional, string hexadecimal, 64 caracteres)",
+        "placeholder": "<aleatório>",
+        "create_wallet": "Criar Wallet"
+    },
+    "market_menu": {
+        "they_offer": "Oferecido por outro",
+        "they_ask": "Pediram",
+        "anything": "Qualquer coisa",
+        "offers": "Ofertas"
+    },
+    "market_offers": {
+        "price": "Preço",
+        "accept": "Aceitar",
+        "cancel": "Cancelar",
+        "accept_offer": "Aceitar oferta",
+        "you_receive": "Vais receber",
+        "you_pay": "Vais pagar"
+    },
+    "login": {
+        "password_label": "Palavra-passe (ver o ficheiro PASSWD)",
+        "login": "Entrar"
+    }
+}
