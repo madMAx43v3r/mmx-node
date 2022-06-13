@@ -392,6 +392,11 @@ const langEN = {
         "accept_offer": "Accept Offer",
         "you_receive": "You Receive",
         "you_pay": "You Pay"
+    },
+
+    "login": {
+        "password_label": "Password (see PASSWD file)",
+        "login": "Login",
     }
 
 }

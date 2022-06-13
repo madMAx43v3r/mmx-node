@@ -416,10 +416,10 @@ const Login = {
 		<div class="ui raised segment">
 			<form class="ui form">
 				<div class="field">
-					<label>Password (see PASSWD file)</label>
+					<label>{{ $t('login.password_label') }}</label>
 					<input type="password" v-model="passwd">
 				</div>
-				<div @click="submit" class="ui submit button">Login</div>
+				<div @click="submit" class="ui submit button">{{ $t('login.login') }}</div>
 			</form>
 		</div>
 		<div class="ui negative message" :class="{hidden: !error}">
