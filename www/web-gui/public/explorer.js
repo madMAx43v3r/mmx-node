@@ -32,11 +32,11 @@ app.component('explore-menu', {
 	},
 	template: `
 		<div class="ui large pointing menu">
-			<router-link class="item" :class="{active: $route.meta.page == 'blocks'}" to="/explore/blocks">Blocks</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'transactions'}" to="/explore/transactions">Transactions</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'blocks'}" to="/explore/blocks">{{ $t('explore_menu.blocks') }}</router-link>
+			<router-link class="item" :class="{active: $route.meta.page == 'transactions'}" to="/explore/transactions">{{ $t('explore_menu.transactions') }}</router-link>
 			<div class="item" style="flex-grow:1;">
 				<div class="ui transparent icon input" :class="{error: !!error}">
-					<input type="text" v-model="input" v-on:keyup.enter="submit" placeholder="address | transaction id | block height">
+					<input type="text" v-model="input" v-on:keyup.enter="submit" :placeholder="$t('explore_menu.placeholder')">
 					<i class="search link icon" @click="submit"></i>
 				</div>
 			</div>
@@ -89,14 +89,14 @@ app.component('explore-blocks', {
 		<table class="ui compact table striped" v-if="data">
 			<thead>
 			<tr>
-				<th>Height</th>
-				<th>TX</th>
-				<th>K</th>
-				<th>Score</th>
-				<th>Reward</th>
-				<th>T-Diff</th>
-				<th>S-Diff</th>
-				<th>Hash</th>
+				<th>{{ $t('explore_blocks.height') }}</th>
+				<th>{{ $t('explore_blocks.tx') }}</th>
+				<th>{{ $t('explore_blocks.k') }}</th>
+				<th>{{ $t('explore_blocks.score') }}</th>
+				<th>{{ $t('explore_blocks.reward') }}</th>
+				<th>{{ $t('explore_blocks.tdiff') }}</th>
+				<th>{{ $t('explore_blocks.sdiff') }}</th>
+				<th>{{ $t('explore_blocks.hash') }}</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -151,13 +151,13 @@ app.component('explore-transactions', {
 		<table class="ui compact table striped" v-if="data">
 			<thead>
 			<tr>
-				<th>Height</th>
-				<th>Type</th>
-				<th>Fee</th>
-				<th>N(in)</th>
-				<th>N(out)</th>
-				<th>N(op)</th>
-				<th>Transaction ID</th>
+				<th>{{ $t('explore_transactions.height') }}</th>
+				<th>{{ $t('explore_transactions.type') }}</th>
+				<th>{{ $t('explore_transactions.fee') }}</th>
+				<th>{{ $t('explore_transactions.n_in') }}</th>
+				<th>{{ $t('explore_transactions.n_out') }}</th>
+				<th>{{ $t('explore_transactions.n_op') }}</th>
+				<th>{{ $t('explore_transactions.transaction_id') }}</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -227,11 +227,11 @@ app.component('block-view', {
 	template: `
 		<template v-if="data">
 			<div class="ui large pointing menu">
-				<router-link class="item" :to="'/explore/block/hash/' + data.prev">Previous</router-link>
-				<router-link class="right item" :to="'/explore/block/height/' + (data.height + 1)">Next</router-link>
+				<router-link class="item" :to="'/explore/block/hash/' + data.prev">{{ $t('block_view.previous') }}</router-link>
+				<router-link class="right item" :to="'/explore/block/height/' + (data.height + 1)">{{ $t('block_view.next') }}</router-link>
 			</div>
 			<div class="ui large labels">
-				<div class="ui horizontal label">Block</div>
+				<div class="ui horizontal label">{{ $t('block_view.block') }}</div>
 				<div class="ui horizontal label">{{data.height}}</div>
 				<div class="ui horizontal label">{{data.hash}}</div>
 			</div>
@@ -239,14 +239,14 @@ app.component('block-view', {
 		<template v-if="!data && height">
 			<div class="ui large pointing menu">
 				<template v-if="height > 0">
-					<router-link class="item" :to="'/explore/block/height/' + (height - 1)">Previous</router-link>
+					<router-link class="item" :to="'/explore/block/height/' + (height - 1)">{{ $t('block_view.previous') }}</router-link>
 				</template>
-				<router-link class="right item" :to="'/explore/block/height/' + (height + 1)">Next</router-link>
+				<router-link class="right item" :to="'/explore/block/height/' + (height + 1)">{{ $t('block_view.next') }}</router-link>
 			</div>
 		</template>
 		<template v-if="!data && !loading">
-			<div class="ui large negative message">
-				No such block!
+			<div class="ui large negative message">				
+				{{ $t('block_view.no_such_block') }}
 			</div>
 		</template>
 		<template v-if="!data && loading">
@@ -256,58 +256,58 @@ app.component('block-view', {
 			<table class="ui definition table striped">
 				<tbody>
 				<tr>
-					<td class="two wide">Height</td>
+					<td class="two wide">{{ $t('block_view.height') }}</td>
 					<td>{{data.height}}</td>
 				</tr>
 				<tr>
-					<td class="two wide">Hash</td>
+					<td class="two wide">{{ $t('block_view.hash') }}</td>
 					<td>{{data.hash}}</td>
 				</tr>
 				<tr>
-					<td class="two wide">Previous</td>
+					<td class="two wide">{{ $t('block_view.previous') }}</td>
 					<td>{{data.prev}}</td>
 				</tr>
 				<tr>
-					<td class="two wide">Time</td>
+					<td class="two wide">{{ $t('block_view.time') }}</td>
 					<td>{{new Date(data.time * 1000).toLocaleString()}}</td>
 				</tr>
 				<tr>
-					<td class="two wide">Time Diff</td>
+					<td class="two wide">{{ $t('block_view.time_diff') }}</td>
 					<td>{{data.time_diff}}</td>
 				</tr>
 				<tr>
-					<td class="two wide">Space Diff</td>
+					<td class="two wide">{{ $t('block_view.space_diff') }}</td>
 					<td>{{data.space_diff}}</td>
 				</tr>
 				<tr>
-					<td class="two wide">VDF Iterations</td>
+					<td class="two wide">{{ $t('block_view.vdf_iterations') }}</td>
 					<td>{{data.vdf_iters}}</td>
 				</tr>
 				<template v-if="data.tx_base">
 					<tr>
-						<td class="two wide">TX Base</td>
+						<td class="two wide">{{ $t('block_view.tx_base') }}</td>
 						<td><router-link :to="'/explore/transaction/' + data.tx_base.id">{{data.tx_base.id}}</router-link></td>
 					</tr>
 				</template>
 				<template v-if="data.proof">
 					<tr>
-						<td class="two wide">TX Count</td>
+						<td class="two wide">{{ $t('block_view.tx_count') }}</td>
 						<td>{{data.tx_count}}</td>
 					</tr>
 					<tr>
-						<td class="two wide">K Size</td>
+						<td class="two wide">{{ $t('block_view.k_size') }}</td>
 						<td>{{data.proof.ksize}}</td>
 					</tr>
 					<tr>
-						<td class="two wide">Proof Score</td>
+						<td class="two wide">{{ $t('block_view.proof_score') }}</td>
 						<td>{{data.proof.score}}</td>
 					</tr>
 					<tr>
-						<td class="two wide">Plot ID</td>
+						<td class="two wide">{{ $t('block_view.plot_id') }}</td>
 						<td>{{data.proof.plot_id}}</td>
 					</tr>
 					<tr>
-						<td class="two wide">Farmer Key</td>
+						<td class="two wide">{{ $t('block_view.farmer_key') }}</td>
 						<td>{{data.proof.farmer_key}}</td>
 					</tr>
 				</template>
@@ -317,14 +317,14 @@ app.component('block-view', {
 				<thead>
 				<tr>
 					<th></th>
-					<th>Amount</th>
+					<th>{{ $t('block_view.amount') }}</th>
 					<th></th>
-					<th>Address</th>
+					<th>{{ $t('block_view.address') }}</th>
 				</tr>
 				</thead>
 				<tbody>
 				<tr v-for="(item, index) in data.tx_base.outputs" :key="index">
-					<td class="two wide">Reward[{{index}}]</td>
+					<td class="two wide">{{ $t('block_view.reward') }}[{{index}}]</td>
 					<td class="collapsing"><b>{{item.value}}</b></td>
 					<td>{{item.symbol}}</td>
 					<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
@@ -335,10 +335,10 @@ app.component('block-view', {
 				<thead>
 				<tr>
 					<th></th>
-					<th>Inputs</th>
-					<th>Outputs</th>
-					<th>Operations</th>
-					<th>Transaction ID</th>
+					<th>{{ $t('block_view.inputs') }}</th>
+					<th>{{ $t('block_view.outputs') }}</th>
+					<th>{{ $t('block_view.operations') }}</th>
+					<th>{{ $t('block_view.transaction_id') }}</th>
 				</tr>
 				</thead>
 				<tbody>
@@ -403,7 +403,7 @@ app.component('transaction-view', {
 	},
 	template: `
 		<div class="ui large labels">
-			<div class="ui horizontal label">Transaction</div>
+			<div class="ui horizontal label">{{ $t('transaction_view.transaction') }}</div>
 			<div class="ui horizontal label">{{id}}</div>
 		</div>
 		<template v-if="!data && !loading">
@@ -418,7 +418,7 @@ app.component('transaction-view', {
 			<table class="ui definition table striped">
 				<tbody>
 				<tr>
-					<td class="two wide">Height</td>
+					<td class="two wide">{{ $t('transaction_view.height') }}</td>
 					<td colspan="2">
 						<template v-if="data.height">
 							<router-link :to="'/explore/block/height/' + data.height">{{data.height}}</router-link>
@@ -427,36 +427,36 @@ app.component('transaction-view', {
 					</td>
 				</tr>
 				<tr v-if="data.confirm">
-					<td class="two wide">Confirmed</td>
+					<td class="two wide">{{ $t('transaction_view.confirmed') }}</td>
 					<td colspan="2">{{data.confirm}}</td>
 				</tr>
 				<tr v-if="data.expires != 4294967295">
-					<td class="two wide">Expires</td>
+					<td class="two wide">{{ $t('transaction_view.expires') }}</td>
 					<td colspan="2">{{data.expires}}</td>
 				</tr>
 				<tr>
-					<td class="two wide">Note</td>
+					<td class="two wide">{{ $t('transaction_view.note') }}</td>
 					<td colspan="2">{{data.note}}</td>
 				</tr>
 				<tr v-if="data.time">
-					<td class="two wide">Time</td>
+					<td class="two wide">{{ $t('transaction_view.time') }}</td>
 					<td colspan="2">{{new Date(data.time * 1000).toLocaleString()}}</td>
 				</tr>
 				<tr v-if="data.deployed">
-					<td class="two wide">Address</td>
+					<td class="two wide">{{ $t('transaction_view.address') }}</td>
 					<td colspan="2"><router-link :to="'/explore/address/' + data.address">{{data.address}}</router-link></td>
 				</tr>
 				<tr v-if="data.sender">
-					<td class="two wide">Sender</td>
+					<td class="two wide">{{ $t('transaction_view.sender') }}</td>
 					<td colspan="2"><router-link :to="'/explore/address/' + data.sender">{{data.sender}}</router-link></td>
 				</tr>
 				<tr>
-					<td class="two wide">Cost</td>
+					<td class="two wide">{{ $t('transaction_view.cost') }}</td>
 					<td class="collapsing"><b>{{data.cost.value}}</b></td>
 					<td>MMX</td>
 				</tr>
 				<tr>
-					<td class="two wide">Fee</td>
+					<td class="two wide">{{ $t('transaction_view.fee') }}</td>
 					<td class="collapsing"><b>{{data.fee.value}}</b></td>
 					<td>MMX</td>
 				</tr>
@@ -466,14 +466,14 @@ app.component('transaction-view', {
 				<thead>
 				<tr>
 					<th></th>
-					<th>Amount</th>
-					<th>Token</th>
-					<th>Address</th>
+					<th>{{ $t('transaction_view.amount') }}</th>
+					<th>{{ $t('transaction_view.token') }}</th>
+					<th>{{ $t('transaction_view.address') }}</th>
 				</tr>
 				</thead>
 				<tbody>
 				<tr v-for="(item, index) in data.inputs" :key="index">
-					<td class="two wide">Input[{{index}}]</td>
+					<td class="two wide">{{ $t('transaction_view.input') }}[{{index}}]</td>
 					<td class="collapsing"><b>{{item.value}}</b></td>
 					<template v-if="item.is_native">
 						<td>{{item.symbol}}</td>
@@ -489,14 +489,14 @@ app.component('transaction-view', {
 				<thead>
 				<tr>
 					<th></th>
-					<th>Amount</th>
-					<th>Token</th>
-					<th>Address</th>
+					<th>{{ $t('transaction_view.amount') }}</th>
+					<th>{{ $t('transaction_view.token') }}</th>
+					<th>{{ $t('transaction_view.address') }}</th>
 				</tr>
 				</thead>
 				<tbody>
 				<tr v-for="(item, index) in data.outputs" :key="index">
-					<td class="two wide">Output[{{index}}]</td>
+					<td class="two wide">{{ $t('transaction_view.output') }}[{{index}}]</td>
 					<td class="collapsing"><b>{{item.value}}</b></td>
 					<template v-if="item.is_native">
 						<td>{{item.symbol}}</td>
@@ -622,13 +622,13 @@ app.component('address-history-table', {
 		<table class="ui compact table striped" v-if="data && (data.length || show_empty)">
 			<thead>
 			<tr>
-				<th>Height</th>
-				<th>Type</th>
-				<th>Amount</th>
-				<th>Token</th>
-				<th>Address</th>
-				<th>Link</th>
-				<th>Time</th>
+				<th>{{ $t('address_history_table.height') }}</th>
+				<th>{{ $t('address_history_table.type') }}</th>
+				<th>{{ $t('address_history_table.amount') }}</th>
+				<th>{{ $t('address_history_table.token') }}</th>
+				<th>{{ $t('address_history_table.address') }}</th>
+				<th>{{ $t('address_history_table.link') }}</th>
+				<th>{{ $t('address_history_table.time') }}</th>
 			</tr>
 			</thead>
 			<tbody>

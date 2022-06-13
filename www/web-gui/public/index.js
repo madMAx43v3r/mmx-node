@@ -4,7 +4,32 @@ function validate_address(address) {
 }
 
 var app = Vue.createApp({
-})
+	beforeMount() {
+		(async () => {
+
+			var locale = 'en';
+
+			if(this.isWinGUI) {
+				locale = window.mmx.locale;
+				setInterval( () => { 
+					locale = window.mmx.locale;	
+					if (i18n.locale != locale) {
+						loadLanguageAsync(locale);
+					}
+				}, 1000);
+			} else {
+				locale = localStorage.getItem('language')
+			}
+
+			if (locale) {
+				await loadLanguageAsync(locale);
+			} else {
+				setI18nLanguage('en');
+			}
+
+		})()
+	}
+});
 
 app.config.globalProperties.isWinGUI = navigator.userAgent.indexOf("mmx.gui.win") > 0;
 
@@ -391,10 +416,10 @@ const Login = {
 		<div class="ui raised segment">
 			<form class="ui form">
 				<div class="field">
-					<label>Password (see PASSWD file)</label>
+					<label>{{ $t('login.password_label') }}</label>
 					<input type="password" v-model="passwd">
 				</div>
-				<div @click="submit" class="ui submit button">Login</div>
+				<div @click="submit" class="ui submit button">{{ $t('login.login') }}</div>
 			</form>
 		</div>
 		<div class="ui negative message" :class="{hidden: !error}">
@@ -535,15 +560,15 @@ app.component('main-menu', {
 	template: `
 		<div class="ui large top menu">
 			<div class="ui container">
-				<router-link class="item" :class="{active: $route.meta.is_node}" to="/node/">Node</router-link>
-				<router-link class="item" :class="{active: $route.meta.is_wallet}" to="/wallet/">Wallet</router-link>
-				<router-link class="item" :class="{active: $route.meta.is_explorer}" to="/explore/">Explore</router-link>
-				<router-link class="item" :class="{active: $route.meta.is_market}" to="/market/">Market</router-link>
-				<!--<router-link class="item" :class="{active: $route.meta.is_exchange}" to="/exchange/">Exchange</router-link>-->
+				<router-link class="item" :class="{active: $route.meta.is_node}" to="/node/">{{ $t('main_menu.node') }}</router-link>
+				<router-link class="item" :class="{active: $route.meta.is_wallet}" to="/wallet/">{{ $t('main_menu.wallet') }}</router-link>
+				<router-link class="item" :class="{active: $route.meta.is_explorer}" to="/explore/">{{ $t('main_menu.explore') }}</router-link>
+				<router-link class="item" :class="{active: $route.meta.is_market}" to="/market/">{{ $t('main_menu.market') }}</router-link>
+				<!--<router-link class="item" :class="{active: $route.meta.is_exchange}" to="/exchange/">{{ $t('main_menu.exchange') }}</router-link>-->
 				<div class="right menu">
-					<router-link class="item" to="/settings/">Settings</router-link>
+					<router-link class="item" to="/settings/">{{ $t('main_menu.settings') }}</router-link>
 					<template v-if="!$route.meta.is_login && !isWinGUI">
-						<a class="item" @click="logout">Logout</a>
+						<a class="item" @click="logout">{{ $t('main_menu.logout') }}</a>
 					</template>
 				</div>
 			</div>
