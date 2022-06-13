@@ -1,0 +1,217 @@
+﻿{
+    "common": {
+	"Indonesian_Translation_Version": "v0.1 by limsandy",
+        "yes": "Ya",
+        "no": "Tidak",
+        "default": "Setelan Awal",
+        "node": "Node",
+        "wallet": "Dompet",
+        "height": "Ketinggian",
+        "blocks": "Blok",
+        "balance": "Saldo",
+        "token": "Token",
+        "hash": "Hash",
+        "reward": "Imbalan",
+        "amount": "Jumlah",
+        "address": "Alamat",
+        "type": "Tipe",
+        "time": "Waktu",
+        "fee": "Biaya",
+        "pending": "Menunggu",
+        "confirm": "Memastikan",
+        "deploy": "Terapkan",
+        "create": "Buat",
+        "transaction_has_been_sent": "Transaksi telah dikirim",
+        "failed_with": "Gagal karena",
+        "deployed_as": "Diterapkan sebagai",
+        "link": "Tautan"
+    },
+    "main_menu": {
+        "explore": "Jelajah",
+        "market": "Bursa",
+        "exchange": "Exchange",
+        "settings": "Pengaturan",
+        "logout": "Keluar"
+    },
+    "node_common": {
+        "vdf_speed": "Kecepatan VDF",
+        "block_reward": "Imbalan Blok",
+        "netspace": "Ruang di Jaringan"
+    },
+    "node_menu": {
+        "log": "Berkas",
+        "peers": "Rekan"
+    },
+    "node_info": {
+        "synced": "Sinkronisasi",
+        "supply": "Pasokan",
+        "no_addresss": "Jumlah Alamat"
+    },
+    "node_log": {
+        "terminal": "Terminal",
+        "router": "Ruter",
+        "farmer": "Farmer",
+        "harvester": "Harvester",
+        "timelord": "TimeLord"
+    },
+    "node_peers": {
+        "version": "Versi",
+        "received": "Diterima",
+        "send": "Kirim",
+        "ping": "Ping",
+        "duration": "Durasi",
+        "credits": "Kredit",
+        "tx_gas": "Biaya TX",
+        "connection": "Koneksi",
+        "outbound": "Keluar",
+        "inbound": "Masuk"
+    },
+    "wallet_summary": {
+        "new": "Baru"
+    },
+    "account_menu": {
+        "nfts": "NFTs",
+        "contracts": "Kontrak",
+        "addresses": "Alamat",
+        "send": "Kirim",
+        "offer": "Tawarkan",
+        "history": "Sejarah",
+        "details": "Rincian"
+    },
+    "account_send_form": {
+        "source_address": "Alamat Sumber",
+        "destination": "Tujuan",
+        "destination_address": "Alamat Tujuan",
+        "address_input": "Alamat Masukan",
+        "currency": "Mata Uang",
+        "send": "Kirim"
+    },
+    "balance_table": {
+        "locked": "Dikunci",
+        "spendable": "Bisa Dibelanjakan",
+        "contract": "Kontrak"
+    },
+    "account_balance": {
+        "reserved": "Cadangan"
+    },
+    "account_history": {
+        "link": "Tautan"
+    },
+    "account_offers": {
+        "offer": "Tawaran",
+        "receive": "Terima",
+        "status": "Status",
+        "actions": "Tindakan",
+        "revoke": "Batalkan",
+        "accepted": "Diterima",
+        "revoked": "Dibatalkan",
+        "open": "Buka"
+    },
+    "account_offer_form": {
+        "offer_amount": "Jumlah Tawaran",
+        "offer_currency": "Mata Uang Tawaran",
+        "receive_amount": "Jumlah Diterima",
+        "receive_currency_contract": "Terima Mata Uang Kontrak",
+        "symbol": "Simbol",
+        "offer": "Tawaran"
+    },
+    "explore_menu": {
+        "transactions": "Transaksi",
+        "address": "Alamat",
+        "block_height": "Ketinggian blok"
+    },
+    "explore_blocks": {
+        "score": "Skor"
+    },
+    "explore_transactions": {
+        "transaction_id": "ID Transaksi"
+    },
+    "block_view": {
+        "previous": "Sebelumnya",
+        "next": "Berikutnya",
+        "block": "Blok",
+        "no_such_block": "Tidak ada blok demikian!",
+        "time_diff": "Perbedaan Waktu",
+        "space_diff": "Perbedaan Ruang",
+        "vdf_iterations": "VDF Iterasi",
+        "tx_base": "TX Dasar",
+        "tx_count": "TX Jumlah",
+        "k_size": "Ukuran k",
+        "proof_score": "Skor Bukti",
+        "plot_id": "ID Plot",
+        "farmer_key": "Kunci Farmer",
+        "inputs": "Masukan",
+        "outputs": "Keluaran",
+        "operations": "Operasi"
+    },
+    "transaction_view": {
+        "transaction": "Transaksi",
+        "confirmed": "Dipastikan",
+        "expires": "Lewat Kadaluarsa",
+        "note": "Catatan",
+        "sender": "Pengirim",
+        "cost": "Biaya",
+        "input": "Masukan",
+        "output": "Keluaran"
+    },
+    "create_contract_menu": {
+        "contract_type": "Tipe Kontrak"
+    },
+    "account_contract_summary": {
+        "deposit": "Setoran",
+        "withdraw": "Tarikan"
+    },
+    "node_settings": {
+        "language": "Bahasa",
+        "enable_timelord": "Nyalakan TimeLord",
+        "farmer_reward_address": "Alamat Imbalan Farmer",
+        "timeLord_reward_address": "Alamat Imbalan TimeLord",
+        "reward_address_placeholder": "Alamat Imbalan Sementara",
+        "restart_needed": "Perlu Dimulai Ulang"
+    },
+    "create_locked_contract": {
+        "owner_address": "Alamat Pemilik",
+        "unlock_height": "Dibuat Pada Ketinggian Blok"
+    },
+    "create_virtual_plot_contract": {
+        "farmer_public_key": "Kunci Umum Farmer",
+        "reward_address": "Alamat Imbalan (untuk pooling)"
+    },
+    "account_details": {
+        "copy_keys_to_plotter": "Salin Kunci ke plotter"
+    },
+    "account_actions": {
+        "reset_cache": "Bersihkan Cache",
+        "show_seed": "Tunjukkan Seed"
+    },
+    "create_account": {
+        "account_index": "Indeks Akun",
+        "account_name": "Nama Akun",
+        "number_of_addresses": "Jumlah Alamat",
+        "create_account": "Buat Akun"
+    },
+    "create_wallet": {
+        "use_custom_seed": "Pakai Seed Sendiri",
+        "seed_hash": "Seed Hash (optional, hex string, 64 karakter)",
+        "placeholder": "Sementara",
+        "create_wallet": "Buat Dompet"
+    },
+    "market_menu": {
+        "they_offer": "Tawaran Mereka",
+        "they_ask": "Tuntutan Mereka",
+        "anything": "Apa Aja",
+        "offers": "Tawaran"
+    },
+    "market_offers": {
+        "price": "Harga",
+        "accept": "Terima",
+        "cancel": "Batalkan",
+        "accept_offer": "Terima Tawaran",
+        "you_receive": "Kamu Menerima",
+        "you_pay": "Kamu Bayar"
+    },
+    "login": {
+        "password_label": "Password (lihat file PASSWD)",
+        "login": "Masuk"
+    }
+}
