@@ -32,8 +32,8 @@
     },
 
     "main_menu": {
-        "explore": "Проводник",
-        "market": "Рынок",
+        "explore": "Обозреватель",
+        "market": "Торговля",
         "exchange": "Биржа",
         "settings": "Настройки",
         "logout": "Выйти"
