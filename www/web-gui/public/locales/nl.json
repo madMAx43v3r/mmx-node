@@ -1,0 +1,212 @@
+{
+    "common": {
+        "yes": "Ja",
+        "no": "Nee",
+        "default": "standaard",
+        "node": "Node",
+        "wallet": "Portemonnee",
+        "height": "Hoogte",
+        "blocks": "Blokken",
+        "balance": "Saldo",
+        "token": "Token",
+        "hash": "Hash",
+        "reward": "Beloning",
+        "amount": "Aantal",
+        "address": "Adres",
+        "type": "Type",
+        "time": "Tijd",
+        "fee": "Tarief",
+        "pending": "in afwachting",
+        "confirm": "Bevestigen",
+        "deploy": "Implementeren",
+        "create": "Creëren",
+        "transaction_has_been_sent": "Transactie is verzonden",
+        "failed_with": "Mislukt met",
+        "deployed_as": "Geïmplementeerd als",
+        "link": "Link"
+    },
+    "main_menu": {
+        "explore": "Ontdekken",
+        "market": "Markt",
+        "exchange": "Beurs",
+        "settings": "Instellingen",
+        "logout": "Uitloggen"
+    },
+    "node_common": {
+        "vdf_speed": "VDF snelheid",
+        "block_reward": "Blok beloning",
+        "netspace": "Netruimte"
+    },
+    "node_menu": {
+        "log": "Log",
+        "peers": "Peers"
+    },
+    "node_info": {
+        "synced": "Gesynchroniseerd",
+        "supply": "Aanbod",
+        "no_addresss": "Nr. adressen"
+    },
+    "node_log": {
+        "terminal": "Terminal",
+        "router": "Router",
+        "farmer": "Farmer",
+        "harvester": "Harvester",
+        "timelord": "TimeLord"
+    },
+    "node_peers": {
+        "version": "Versie",
+        "received": "Ontvangen",
+        "send": "Verzonden",
+        "ping": "Ping",
+        "duration": "Looptijd",
+        "credits": "Krediet",
+        "tx_gas": "TX Gas",
+        "connection": "Verbinding",
+        "outbound": "uitgaand",
+        "inbound": "inkomend"
+    },
+    "wallet_summary": {
+        "new": "Nieuw"
+    },
+    "account_menu": {
+        "nfts": "NFTs",
+        "contracts": "Contracten",
+        "addresses": "Adressen",
+        "send": "Versturen",
+        "offer": "Bieden",
+        "history": "Geschiedenis",
+        "details": "Details"
+    },
+    "account_send_form": {
+        "source_address": "Bronadres",
+        "destination": "Bestemming",
+        "destination_address": "Bestemmingsadres",
+        "address_input": "Adresinvoer",
+        "currency": "Valuta",
+        "send": "Versturen"
+    },
+    "balance_table": {
+        "locked": "Op slot",
+        "spendable": "Besteedbaar",
+        "contract": "Contract"
+    },
+    "account_balance": {
+        "reserved": "Gereserveerd"
+    },
+    "account_offers": {
+        "offer": "Bieden",
+        "receive": "Ontvangen",
+        "status": "Status",
+        "actions": "Acties",
+        "revoke": "Intrekken",
+        "accepted": "Geaccepteerd",
+        "revoked": "Ingetrokken",
+        "open": "Open"
+    },
+    "account_offer_form": {
+        "offer_amount": "Te verzenden bedrag",
+        "offer_currency": "Te verzenden valuta",
+        "receive_amount": "Te ontvangen bedrag",
+        "receive_currency_contract": "Te ontvangen valuta contract",
+        "symbol": "Symbool",
+        "offer": "Bieden"
+    },
+    "explore_menu": {
+        "transactions": "Transacties",
+        "block_height": "blokhoogte"
+    },
+    "explore_blocks": {
+        "score": "Score"
+    },
+    "explore_transactions": {
+        "transaction_id": "Transactie ID"
+    },
+    "block_view": {
+        "previous": "Vorige",
+        "next": "Volgende",
+        "block": "Blok",
+        "no_such_block": "Blok bestaat niet!",
+        "time_diff": "Tijdsverschil",
+        "space_diff": "Ruimte verschil",
+        "vdf_iterations": "VDF iteraties",
+        "tx_base": "TX basis",
+        "tx_count": "TX aantal",
+        "k_size": "K maat",
+        "proof_score": "Bewijsscore",
+        "plot_id": "Plot ID",
+        "farmer_key": "Farmer sleutel",
+        "inputs": "Ingangen",
+        "outputs": "Uitgangen",
+        "operations": "Operaties"
+    },
+    "transaction_view": {
+        "transaction": "Transactie",
+        "confirmed": "Bevestigd",
+        "expires": "Verloopt",
+        "note": "Opmerking",
+        "sender": "Afzender",
+        "cost": "Kosten",
+        "input": "Invoer",
+        "output": "Uitvoer"
+    },
+    "create_contract_menu": {
+        "contract_type": "Contract type"
+    },
+    "account_contract_summary": {
+        "deposit": "Storten",
+        "withdraw": "Opnemen"
+    },
+    "node_settings": {
+        "language": "Taal",
+        "enable_timelord": "TimeLord inschakelen",
+        "farmer_reward_address": "Farmer beloningsadres",
+        "timeLord_reward_address": "TimeLord beloningsadres",
+        "reward_address_placeholder": "beloningsadres",
+        "restart_needed": "(herstart nodig om toe te passen)"
+    },
+    "create_locked_contract": {
+        "owner_address": "Eigenaar adres",
+        "unlock_height": "Ontgrendelen op blokhoogte"
+    },
+    "create_virtual_plot_contract": {
+        "farmer_public_key": "Farmer publieke sleutel",
+        "reward_address": "Beloningsadres (optioneel, voor poolen)"
+    },
+    "account_details": {
+        "copy_keys_to_plotter": "Kopieer sleutels naar plotter"
+    },
+    "account_actions": {
+        "reset_cache": "Cache resetten",
+        "show_seed": "Toon seed"
+    },
+    "create_account": {
+        "account_index": "Account index",
+        "account_name": "Accountnaam",
+        "number_of_addresses": "Aantal adressen",
+        "create_account": "Account aanmaken"
+    },
+    "create_wallet": {
+        "use_custom_seed": "Gebruik aangepaste seed",
+        "seed_hash": "Seed hash (optioneel, hex string, 64 karakters)",
+        "placeholder": "<random>",
+        "create_wallet": "Portemonnee maken"
+    },
+    "market_menu": {
+        "they_offer": "Zij bieden aan",
+        "they_ask": "Zij vragen",
+        "anything": "Alles",
+        "offers": "Aanbiedingen"
+    },
+    "market_offers": {
+        "price": "Prijs",
+        "accept": "Accepteren",
+        "cancel": "Annuleren",
+        "accept_offer": "Aanbieding accepteren",
+        "you_receive": "Jij ontvangt",
+        "you_pay": "Jij betaald"
+    },
+    "login": {
+        "password_label": "Wachtwoord (zie PASSWD bestand)",
+        "login": "Log in"
+    }
+}
