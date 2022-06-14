@@ -1,12 +1,12 @@
 
 const availableLanguages = {
     "en": "English",
-    //"id": "Bahasa Indonesia",
+    "id": "Bahasa Indonesia",
     //"de": "Deutsch",
-    //"es", "Español",
-    //"nl": "Nederlands",
-    //"pt": "Português",
-    //"ru": "Русский",
+    //"es": "Español",
+    "nl": "Nederlands",
+    "pt": "Português",
+    "ru": "Русский",
     //"uk": "Українська"
 };
 
