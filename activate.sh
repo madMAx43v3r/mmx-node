@@ -11,7 +11,8 @@ if [ ! -f PASSWD ] || [[ $(cat PASSWD | wc -c) -lt 64 ]]; then
 	echo "PASSWD=$(cat PASSWD)"
 fi
 
-chmod 600 PASSWD
+chmod 400 PASSWD
+cp PASSWD config/local/passwd
 
 if [ -f NETWORK ]; then
 	NETWORK=$(cat NETWORK)
