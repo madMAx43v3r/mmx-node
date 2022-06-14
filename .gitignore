@@ -45,4 +45,5 @@ CMakeUserPresets.json
 /NETWORK
 /testnet*
 /tmp
-
+/.idea
+/_deps
