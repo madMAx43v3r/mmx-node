@@ -5,14 +5,14 @@ if [ ! -d config/local ]; then
 	echo "Initialized config/local/ with defaults."
 fi
 
-if [ ! -f PASSWD ] || [[ $(cat PASSWD | wc -c) -lt 64 ]]; then
-	./build/generate_passwd > PASSWD
-	./build/vnx-base/tools/vnxpasswd -c config/default/ config/local/ -u mmx-admin -p $(cat PASSWD)
-	echo "PASSWD=$(cat PASSWD)"
+if [ ! -f config/local/passwd ] || [[ $(cat config/local/passwd | wc -c) -lt 64 ]]; then
+	./build/generate_passwd > config/local/passwd
+	./build/vnx-base/tools/vnxpasswd -c config/default/ config/local/ -u mmx-admin -p $(cat config/local/passwd)
 fi
 
-chmod 400 PASSWD
-cp PASSWD config/local/passwd
+chmod 600 config/local/passwd
+cp config/local/passwd PASSWD
+echo "PASSWD=$(cat PASSWD)"
 
 if [ -f NETWORK ]; then
 	NETWORK=$(cat NETWORK)
