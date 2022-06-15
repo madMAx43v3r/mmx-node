@@ -111,10 +111,6 @@
         "reserved": "Зарезервировано"
     },
 
-    "account_history": {
-        "link": "@:common.link"
-    },    
-
     "account_offers": {
         "offer": "Предложить",
         "receive": "Получить",
@@ -138,7 +134,6 @@
 
     "explore_menu": {
         "transactions": "Транзакции",
-        "address": "Адрес",
         "block_height": "Высота блока"
     },
 
