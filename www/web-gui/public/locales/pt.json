@@ -93,9 +93,6 @@
     "account_balance": {
         "reserved": "Reservado"
     },
-    "account_history": {
-        "link": "@:common.link"
-    },
     "account_offers": {
         "offer": "Oferta",
         "receive": "Receber",
@@ -116,7 +113,6 @@
     },
     "explore_menu": {
         "transactions": "Transacções",
-        "address": "@.lower:common.address",
         "block_height": "height do bloco"
     },
     "explore_blocks": {
