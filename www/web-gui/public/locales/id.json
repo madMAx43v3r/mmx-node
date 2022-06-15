@@ -94,9 +94,6 @@
     "account_balance": {
         "reserved": "Cadangan"
     },
-    "account_history": {
-        "link": "Tautan"
-    },
     "account_offers": {
         "offer": "Tawaran",
         "receive": "Terima",
@@ -117,7 +114,6 @@
     },
     "explore_menu": {
         "transactions": "Transaksi",
-        "address": "Alamat",
         "block_height": "Ketinggian blok"
     },
     "explore_blocks": {
