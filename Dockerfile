@@ -13,8 +13,14 @@ COPY ["activate.sh", "run_*.sh", "docker-entrypoint.sh", "./"]
 COPY config ./config
 COPY kernel ./kernel
 COPY www ./www
+
 ENV MMX_HOME="/data/"
 VOLUME /data
+
+# node p2p port
+EXPOSE 12336/tcp
+# http api port
+EXPOSE 11380/tcp
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["./run_node.sh"]
