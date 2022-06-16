@@ -2,4 +2,4 @@
 
 source ./activate.sh
 
-mmx_exch_server -c config/${NETWORK}/ config/local/
+mmx_exch_server -c config/${NETWORK}/ "${MMX_HOME}config/local/"

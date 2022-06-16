@@ -13,7 +13,8 @@ COPY ["activate.sh", "run_*.sh", "docker-entrypoint.sh", "./"]
 COPY config ./config
 COPY kernel ./kernel
 COPY www ./www
-VOLUME /app/config/local
+ENV MMX_HOME="/data/"
+VOLUME /data
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["./run_node.sh"]
