@@ -7,7 +7,7 @@ const availableLanguages = {
     "nl": "Nederlands",
     "pt": "Português",
     "ru": "Русский",
-    //"uk": "Українська"
+    "uk": "Українська"
 };
 
 const defaultLocale = 'en';
