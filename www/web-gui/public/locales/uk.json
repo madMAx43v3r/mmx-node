@@ -1,0 +1,216 @@
+{
+    "common": {
+        "yes": "Так",
+        "no": "Ні",
+        "default": "за умовчанням",
+        "node": "Вузол",
+        "wallet": "Гаманець",
+        "height": "Висота",
+        "blocks": "Блоки",
+        "balance": "Баланс",
+        "token": "Токен",
+        "hash": "Хеш",
+        "reward": "Нагорода",
+        "amount": "Сума",
+        "address": "Адреса",
+        "type": "Тип",
+        "time": "Час",
+        "fee": "Комісія",
+        "pending": "очікується",
+        "confirm": "Підтвердити",
+        "deploy": "Розгорнути",
+        "create": "Створити",
+        "transaction_has_been_sent": "Переказ був надісланий",
+        "failed_with": "Помилка",
+        "deployed_as": "Розгорнути як",
+        "link": "Посилання"
+    },
+    "main_menu": {
+        "explore": "Провідник",
+        "market": "Ринок",
+        "exchange": "Біржа",
+        "settings": "Налаштування",
+        "logout": "Вийти"
+    },
+    "node_common": {
+        "vdf_speed": "Швидкість VDF",
+        "block_reward": "Винагорода за блок",
+        "netspace": "Мережевий простір"
+    },
+    "node_menu": {
+        "log": "Журнал",
+        "peers": "Піри"
+    },
+    "node_info": {
+        "synced": "Синхронізовано",
+        "supply": "Емісія",
+        "no_addresss": "Кількість адрес"
+    },
+    "node_log": {
+        "terminal": "Термінал",
+        "router": "Маршрутизатор",
+        "farmer": "Фермер",
+        "harvester": "Комбайн",
+        "timelord": "Таймлорд"
+    },
+    "node_peers": {
+        "version": "Версія",
+        "received": "Завантеження",
+        "send": "Віддача",
+        "ping": "Пінг",
+        "duration": "Час",
+        "credits": "Кредити",
+        "tx_gas": "TX Газ",
+        "connection": "З'єднання",
+        "outbound": "вихідний",
+        "inbound": "вхідний"
+    },
+    "wallet_summary": {
+        "new": "Новий"
+    },
+    "account_menu": {
+        "nfts": "NFT",
+        "contracts": "Контакти",
+        "addresses": "Адреси",
+        "send": "Відправити",
+        "offer": "Пропозиція",
+        "history": "Історія",
+        "details": "Детальніше"
+    },
+    "account_send_form": {
+        "source_address": "Адреса джерела",
+        "destination": "Отримувач",
+        "destination_address": "Адреса отримувача",
+        "address_input": "Введення адреси",
+        "currency": "Валюта",
+        "send": "Відправити"
+    },
+    "balance_table": {
+        "locked": "Заблоковано",
+        "spendable": "Доступно",
+        "contract": "Контракт"
+    },
+    "account_balance": {
+        "reserved": "Зарезервовано"
+    },
+    "account_history": {
+        "link": "@:common.link"
+    },
+    "account_offers": {
+        "offer": "Пропонувати",
+        "receive": "Отримати",
+        "status": "Статус",
+        "actions": "Дії",
+        "revoke": "Відкликати",
+        "accepted": "Прийгято",
+        "revoked": "Скасовано",
+        "open": "Відчинено"
+    },
+    "account_offer_form": {
+        "offer_amount": "Сума пропозиції",
+        "offer_currency": "Валюта пропозиції",
+        "receive_amount": "Отримати суму",
+        "receive_currency_contract": "Валюта отримання (контракт)",
+        "symbol": "Символ",
+        "offer": "Пропозиція"
+    },
+    "explore_menu": {
+        "transactions": "Транзакції",
+        "address": "Адреса",
+        "block_height": "Висота блоку"
+    },
+    "explore_blocks": {
+        "score": "Оцінка"
+    },
+    "explore_transactions": {
+        "transaction_id": "ID Транзакції"
+    },
+    "block_view": {
+        "previous": "Попередній",
+        "next": "Наступний",
+        "block": "Блок",
+        "no_such_block": "Немає такого блоку!",
+        "time_diff": "Time Diff",
+        "space_diff": "Space Diff",
+        "vdf_iterations": "Ітерації VDF",
+        "tx_base": "TX Base",
+        "tx_count": "Кількість транзакцій",
+        "k_size": "K Розмір",
+        "proof_score": "Оцінка доказу",
+        "plot_id": "ID плоту",
+        "farmer_key": "Ключ фермера",
+        "inputs": "Входи",
+        "outputs": "Виходи",
+        "operations": "Операції"
+    },
+    "transaction_view": {
+        "transaction": "Транзакція",
+        "confirmed": "Підтверджено",
+        "expires": "Термін дії закінчується",
+        "note": "Замітка",
+        "sender": "Відправник",
+        "cost": "Вартість",
+        "input": "Вхідні дані",
+        "output": "Вихідні дані"
+    },
+    "create_contract_menu": {
+        "contract_type": "Тип контракту"
+    },
+    "account_contract_summary": {
+        "deposit": "Депозит",
+        "withdraw": "Зняти"
+    },
+    "node_settings": {
+        "language": "Мова",
+        "enable_timelord": "Вибрати Таймлорд",
+        "farmer_reward_address": "Адреса винагороди фермера",
+        "timeLord_reward_address": "Адреса винагороди Таймлорда",
+        "reward_address_placeholder": "<за умовчанням>",
+        "restart_needed": "(Для застосування, необхідне перезавантеження)"
+    },
+    "create_locked_contract": {
+        "owner_address": "Адреса власника",
+        "unlock_height": "Висота розблокування"
+    },
+    "create_virtual_plot_contract": {
+        "farmer_public_key": "Відкритий ключ фермера",
+        "reward_address": "Алреса винагороди (опціонально, для об'єднання)"
+    },
+    "account_details": {
+        "copy_keys_to_plotter": "Копіювати ключі в плоттер"
+    },
+    "account_actions": {
+        "reset_cache": "Скинути кеш",
+        "show_seed": "Показати насіння"
+    },
+    "create_account": {
+        "account_index": "Індекс аккаунту",
+        "account_name": "Ім'я аккаунту",
+        "number_of_addresses": "Кількість адрес",
+        "create_account": "Створити аккаунт"
+    },
+    "create_wallet": {
+        "use_custom_seed": "Use Custom Seed",
+        "seed_hash": "Seed Hash (optional, hex string, 64 chars)",
+        "placeholder": "<Випадковий>",
+        "create_wallet": "Створити гаманець"
+    },
+    "market_menu": {
+        "they_offer": "Пропонують",
+        "they_ask": "Запитують",
+        "anything": "Усе",
+        "offers": "Пропозиції"
+    },
+    "market_offers": {
+        "price": "Ціна",
+        "accept": "Прийняти",
+        "cancel": "Відмінити",
+        "accept_offer": "Прийняти пропозицію",
+        "you_receive": "Ви отримуєте",
+        "you_pay": "Ти платиш"
+    },
+    "login": {
+        "password_label": "Пароль (оглянути файл PASSWD)",
+        "login": "Увійти"
+    }
+}
