@@ -2,7 +2,7 @@
 const availableLanguages = {
     "en": "English",
     "id": "Bahasa Indonesia",
-    //"de": "Deutsch",
+    "de": "Deutsch",
     //"es": "Español",
     "nl": "Nederlands",
     "pt": "Português",
