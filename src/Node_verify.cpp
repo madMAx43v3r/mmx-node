@@ -171,11 +171,11 @@ void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t
 		const auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(
 				get_contract_at(stake->contract, diff_block->hash));
 		if(!plot) {
-			throw std::logic_error("no such virtual plot");
+			throw std::logic_error("no such virtual plot: " + stake->contract.to_string());
 		}
 		// TODO: check reward address if set
 		if(stake->farmer_key != plot->farmer_key) {
-			throw std::logic_error("invalid farmer key");
+			throw std::logic_error("invalid farmer key: " + stake->farmer_key.to_string());
 		}
 		const auto balance = get_virtual_plot_balance(stake->contract, diff_block->hash);
 		score = calc_virtual_score(params, challenge, stake->contract, balance, diff_block->space_diff);
