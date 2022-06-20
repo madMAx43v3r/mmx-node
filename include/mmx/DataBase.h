@@ -32,6 +32,9 @@ struct db_val_t {
 			data = (uint8_t*)::malloc(size);
 		}
 	}
+	db_val_t(const void* data, const uint32_t size) : size(size) {
+		::memcpy(this->data, data, size);
+	}
 	db_val_t(const db_val_t&) = delete;
 
 	~db_val_t() {
@@ -97,7 +100,9 @@ public:
 
 	static constexpr uint32_t entry_overhead = 20;
 	static constexpr uint32_t block_header_size = 30;
-	MMX_DB_EXPORT static const std::function<int(const db_val_t&, const db_val_t&)> default_comparator;
+
+	MMX_DB_EXPORT
+	static const std::function<int(const db_val_t&, const db_val_t&)> default_comparator;
 
 	Table(const std::string& file_path, const std::function<int(const db_val_t&, const db_val_t&)>& comparator = default_comparator);
 
@@ -128,7 +133,9 @@ public:
 		void prev();
 		void next();
 		void seek_begin();
+		void seek_last();
 		void seek(std::shared_ptr<db_val_t> key);
+		void seek_next(std::shared_ptr<db_val_t> key);
 		void seek_prev(std::shared_ptr<db_val_t> key);
 		void seek_for_prev(std::shared_ptr<db_val_t> key);
 	private:

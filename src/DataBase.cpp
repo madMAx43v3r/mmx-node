@@ -219,16 +219,10 @@ std::shared_ptr<db_val_t> Table::find(std::shared_ptr<block_t> block, std::share
 
 size_t Table::lower_bound(vnx::File& file, std::shared_ptr<block_t> block, uint32_t& version, std::shared_ptr<db_val_t>& key, bool& is_match) const
 {
-	const auto end = block->index.size();
 	if(!key) {
-		if(end) {
-			read_key_at(file, block->index[0], version, key);
-		} else {
-			version = -1;
-		}
-		is_match = false;
-		return 0;
+		throw std::logic_error("!key");
 	}
+	const auto end = block->index.size();
 	// find match or successor
 	size_t L = 0;
 	size_t R = end;
@@ -538,8 +532,7 @@ void Table::Iterator::prev()
 			}
 		}
 		block_map.erase(iter);
-	}
-	else {
+	} else {
 		seek_prev(key());
 	}
 }
@@ -575,15 +568,19 @@ void Table::Iterator::next()
 			}
 		}
 		block_map.erase(iter);
-	}
-	else {
-		seek(key(), 1);
+	} else {
+		seek_next(key());
 	}
 }
 
 void Table::Iterator::seek_begin()
 {
-	seek(nullptr);
+	seek(nullptr, 0);
+}
+
+void Table::Iterator::seek_last()
+{
+	seek(nullptr, -1);
 }
 
 void Table::Iterator::seek(std::shared_ptr<db_val_t> key)
@@ -595,13 +592,29 @@ void Table::Iterator::seek(std::shared_ptr<db_val_t> key, const int mode)
 {
 	block_map.clear();
 
-	for(const auto& block : table->blocks) {
+	for(const auto& block : table->blocks)
+	{
+		const auto end = block->index.size();
 		auto file = std::make_shared<vnx::File>(table->file_path + block->name);
 		file->open("rb");
 
+		bool is_match = false;
+		uint32_t version = -1;
+		size_t pos = 0;
 		auto res = key;
-		uint32_t version; bool is_match;
-		auto pos = table->lower_bound(*file, block, version, res, is_match);
+		if(res) {
+			pos = table->lower_bound(*file, block, version, res, is_match);
+		}
+		else if(mode == 0) {
+			if(pos < end) {
+				table->read_key_at(*file, block->index[pos], version, res);
+			} else {
+				continue;
+			}
+		}
+		else if(mode < 0) {
+			pos = end;
+		}
 		if(mode < 0) {
 			if(pos == 0) {
 				continue;
@@ -609,7 +622,7 @@ void Table::Iterator::seek(std::shared_ptr<db_val_t> key, const int mode)
 			table->read_key_at(*file, block->index[--pos], version, res);
 		}
 		else if(mode > 0) {
-			if(pos + 1 >= block->index.size()) {
+			if(pos + 1 >= end) {
 				continue;
 			}
 			table->read_key_at(*file, block->index[++pos], version, res);
@@ -626,7 +639,12 @@ void Table::Iterator::seek(std::shared_ptr<db_val_t> key, const int mode)
 	}
 	const auto& mem_index = table->mem_index;
 	if(!mem_index.empty()) {
-		auto iter = key ? mem_index.lower_bound(key) : mem_index.begin();
+		auto iter = mem_index.begin();
+		if(key) {
+			iter = mem_index.lower_bound(key);
+		} else if(mode < 0) {
+			iter = mem_index.end();
+		}
 		if(mode < 0) {
 			if(iter != mem_index.begin()) {
 				iter--;
@@ -646,6 +664,11 @@ void Table::Iterator::seek(std::shared_ptr<db_val_t> key, const int mode)
 		}
 	}
 	direction = mode >= 0 ? 1 : -1;
+}
+
+void Table::Iterator::seek_next(std::shared_ptr<db_val_t> key)
+{
+	seek(key, 1);
 }
 
 void Table::Iterator::seek_prev(std::shared_ptr<db_val_t> key)
