@@ -32,7 +32,7 @@ struct db_val_t {
 			data = (uint8_t*)::malloc(size);
 		}
 	}
-	db_val_t(const void* data, const uint32_t size) : size(size) {
+	db_val_t(const void* data, const uint32_t size) : db_val_t(size) {
 		::memcpy(this->data, data, size);
 	}
 	db_val_t(const db_val_t&) = delete;

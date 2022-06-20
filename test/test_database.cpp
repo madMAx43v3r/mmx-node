@@ -6,6 +6,7 @@
  */
 
 #include <mmx/DataBase.h>
+#include <mmx/table.h>
 
 #include <vnx/vnx.h>
 #include <vnx/test/Test.h>
@@ -112,6 +113,38 @@ int main(int argc, char** argv)
 
 		for(uint32_t i = 0; i < num_entries; ++i) {
 			vnx::test::expect(db_read<uint64_t>(table->find(db_write(uint32_t(i * 2)))), i);
+		}
+	}
+	{
+		mmx::uint_table<uint32_t, std::string> table("tmp/uint_table/");
+		table.revert(0);
+		table.insert(3, "dfhgdfgdfgdfg");
+		table.insert(1, "sdfsdfsdf");
+		{
+			std::string value;
+			const auto res = table.find(1, value);
+			vnx::test::expect(res, true);
+			vnx::test::expect(value, "sdfsdfsdf");
+		}
+		{
+			std::string value;
+			const auto res = table.find(3, value);
+			vnx::test::expect(res, true);
+			vnx::test::expect(value, "dfhgdfgdfgdfg");
+		}
+		table.commit(1);
+		table.flush();
+		{
+			std::string value;
+			const auto res = table.find(1, value);
+			vnx::test::expect(res, true);
+			vnx::test::expect(value, "sdfsdfsdf");
+		}
+		{
+			std::string value;
+			const auto res = table.find(3, value);
+			vnx::test::expect(res, true);
+			vnx::test::expect(value, "dfhgdfgdfgdfg");
 		}
 	}
 	vnx::close();
