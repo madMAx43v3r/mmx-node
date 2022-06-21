@@ -7,6 +7,7 @@
 
 #include <mmx/DataBase.h>
 #include <mmx/table.h>
+#include <mmx/multi_table.h>
 
 #include <vnx/vnx.h>
 #include <vnx/test/Test.h>
@@ -146,6 +147,47 @@ int main(int argc, char** argv)
 			vnx::test::expect(res, true);
 			vnx::test::expect(value, "dfhgdfgdfgdfg");
 		}
+		table.scan([](const uint32_t& key, const std::string& value) {
+			std::cout << key << " => " << value << std::endl;
+		});
+	}
+	{
+		mmx::uint_multi_table<uint32_t, std::string> table("tmp/uint_multi_table/");
+		table.revert(0);
+		table.insert(1, "234523345");
+		table.insert(3, "dfhgdfgdfgdfg");
+		table.insert(1, "sdfsdfsdf");
+		{
+			std::vector<std::string> value;
+			const auto res = table.find(1, value);
+			vnx::test::expect(res, size_t(2));
+			vnx::test::expect(value[0], "234523345");
+			vnx::test::expect(value[1], "sdfsdfsdf");
+		}
+		{
+			std::vector<std::string> value;
+			const auto res = table.find(3, value);
+			vnx::test::expect(res, size_t(1));
+			vnx::test::expect(value[0], "dfhgdfgdfgdfg");
+		}
+		table.commit(1);
+		table.flush();
+		{
+			std::vector<std::string> value;
+			const auto res = table.find(1, value);
+			vnx::test::expect(res, size_t(2));
+			vnx::test::expect(value[0], "234523345");
+			vnx::test::expect(value[1], "sdfsdfsdf");
+		}
+		{
+			std::vector<std::string> value;
+			const auto res = table.find(3, value);
+			vnx::test::expect(res, size_t(1));
+			vnx::test::expect(value[0], "dfhgdfgdfgdfg");
+		}
+		table.scan([](const uint32_t& key, const std::string& value) {
+			std::cout << key << " => " << value << std::endl;
+		});
 	}
 	vnx::close();
 	return 0;

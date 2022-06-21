@@ -219,7 +219,7 @@ protected:
 		return std::make_shared<db_val_t>(stream.out.get_buffer(), stream.out.get_buffer_pos());
 	}
 
-private:
+protected:
 	std::shared_ptr<Table> db;
 
 	stream_t stream;
