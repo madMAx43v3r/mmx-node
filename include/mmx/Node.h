@@ -20,14 +20,14 @@
 #include <mmx/OCL_VDF.h>
 #include <mmx/utils.h>
 #include <mmx/balance_cache_t.h>
+#include <mmx/table.h>
+#include <mmx/multi_table.h>
 
 #include <mmx/vm/Engine.h>
 #include <mmx/vm/StorageCache.h>
 #include <mmx/vm/StorageRocksDB.h>
 
 #include <vnx/ThreadPool.h>
-#include <vnx/rocksdb/table.h>
-#include <vnx/rocksdb/multi_table.h>
 #include <vnx/addons/HttpInterface.h>
 
 #include <uint128_t.h>
@@ -322,17 +322,13 @@ private:
 	void check_vdf_task(std::shared_ptr<fork_t> fork, std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const BlockHeader> infuse) const noexcept;
 
 	void apply(	std::shared_ptr<const Block> block,
-				std::shared_ptr<const execution_context_t> context, bool is_replay = false) noexcept;
+				std::shared_ptr<const execution_context_t> context, bool is_replay = false);
 
 	void apply(	std::shared_ptr<const Block> block,
 				std::shared_ptr<const Transaction> tx,
-				std::unordered_set<addr_t>& addr_set,
-				std::unordered_set<hash_t>& revoke_set,
-				std::set<std::pair<addr_t, addr_t>>& balance_set) noexcept;
+				std::set<std::pair<addr_t, addr_t>>& balance_set);
 
-	bool revert() noexcept;
-
-	void revert(const uint32_t height, std::shared_ptr<const Block> block) noexcept;
+	void revert(const uint32_t height);
 
 	std::shared_ptr<const BlockHeader> get_root() const;
 
@@ -372,24 +368,22 @@ private:
 	void write_block(std::shared_ptr<const Block> block, bool is_replay = false);
 
 private:
+	DataBase db;
 	hash_t state_hash;
 
-	vnx::rocksdb::table<uint32_t, std::vector<addr_t>> addr_log;						// [height => addresses]
-	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, txout_entry_t> recv_log;		// [[address, height] => entry]
-	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, txio_entry_t> spend_log;		// [[address, height] => entry]
-	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, exec_entry_t> exec_log;		// [[address, height] => entry]
+	hash_uint_multi_table<addr_t, uint32_t, txout_entry_t> recv_log;			// [[address, height] => entry]
+	hash_uint_multi_table<addr_t, uint32_t, txio_entry_t> spend_log;			// [[address, height] => entry]
+	hash_uint_multi_table<addr_t, uint32_t, exec_entry_t> exec_log;				// [[address, height] => entry]
+	hash_multi_table<hash_t, std::pair<addr_t, hash_t>> revoke_map;				// [[org txid, height]] => [address, txid]]
 
-	vnx::rocksdb::table<uint32_t, std::vector<hash_t>> revoke_log;						// [height => txids]
-	vnx::rocksdb::multi_table<std::pair<hash_t, uint32_t>, std::pair<addr_t, hash_t>> revoke_map;	// [[org txid, height]] => [address, txid]]
+	hash_table<addr_t, std::shared_ptr<const Contract>> contract_cache;			// [addr, contract]
+	hash_uint_multi_table<addr_t, uint32_t, vnx::Object> mutate_log;			// [[addr, height] => method]
+	hash_multi_table<addr_t, addr_t> deploy_map;								// [sender => contract]
+	uint_multi_table<uint32_t, addr_t> offer_log;								// [height => contract]
+	uint_multi_table<uint32_t, addr_t> vplot_log;								// [height => contract]
 
-	vnx::rocksdb::table<addr_t, std::shared_ptr<const Contract>> contract_cache;		// [addr, contract]
-	vnx::rocksdb::multi_table<std::pair<addr_t, uint32_t>, vnx::Object> mutate_log;		// [[addr, height] => method]
-	vnx::rocksdb::multi_table<addr_t, addr_t> deploy_map;								// [sender => contract]
-	vnx::rocksdb::multi_table<uint32_t, addr_t> offer_log;								// [height => contract]
-	vnx::rocksdb::multi_table<uint32_t, addr_t> vplot_log;								// [height => contract]
-
-	std::map<std::pair<addr_t, addr_t>, uint128_t> balance_map;						// [[addr, currency] => balance]
-	vnx::rocksdb::table<std::pair<addr_t, addr_t>, std::pair<uint128, uint32_t>> balance_table;		// [[addr, currency] => [balance, height]]
+	balance_table_t<uint128> balance_table;										// [[addr, currency] => balance]
+	std::map<std::pair<addr_t, addr_t>, uint128_t> balance_map;					// [[addr, currency] => balance]
 
 	std::unordered_map<hash_t, tx_pool_t> tx_pool;									// [txid => transaction] (non-executed only)
 	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;					// [block hash => fork] (pending only)
@@ -407,10 +401,10 @@ private:
 	bool is_synced = false;
 	std::shared_ptr<vnx::File> block_chain;
 	std::shared_ptr<vm::StorageRocksDB> storage;
-	mutable vnx::rocksdb::table<hash_t, uint32_t> hash_index;							// [block hash => height]
-	mutable vnx::rocksdb::table<hash_t, std::pair<int64_t, uint32_t>> tx_index;			// [txid => [file offset, height]]
-	mutable vnx::rocksdb::table<uint32_t, std::pair<int64_t, hash_t>> block_index;		// [height => [file offset, block hash]]
-	mutable vnx::rocksdb::table<uint32_t, std::vector<hash_t>> tx_log;					// [height => txids]
+	mutable hash_table<hash_t, uint32_t> hash_index;							// [block hash => height]
+	mutable hash_table<hash_t, std::pair<int64_t, uint32_t>> tx_index;			// [txid => [file offset, height]]
+	mutable uint_table<uint32_t, std::pair<int64_t, hash_t>> block_index;		// [height => [file offset, block hash]]
+	mutable uint_table<uint32_t, std::vector<hash_t>> tx_log;					// [height => txids]
 
 	uint32_t sync_pos = 0;									// current sync height
 	uint32_t sync_retry = 0;

@@ -74,81 +74,68 @@ void Node::main()
 
 	vnx::Directory(storage_path).create();
 	vnx::Directory(database_path).create();
+
 	const auto time_begin = vnx::get_wall_time_millis();
 	{
-		::rocksdb::Options options;
-		options.max_open_files = 8;
-		options.keep_log_file_num = 3;
-		options.target_file_size_multiplier = 4;
-		options.avoid_flush_during_recovery = true;
-		options.max_manifest_file_size = 64 * 1024 * 1024;
+		db.add(recv_log.open(database_path + "recv_log/"));
+		db.add(spend_log.open(database_path + "spend_log/"));
+		db.add(exec_log.open(database_path + "exec_log/"));
+		db.add(revoke_map.open(database_path + "revoke_map/"));
 
-		addr_log.open(database_path + "addr_log", options);
-		recv_log.open(database_path + "recv_log", options);
-		spend_log.open(database_path + "spend_log", options);
-		exec_log.open(database_path + "exec_log", options);
-		revoke_log.open(database_path + "revoke_log", options);
-		revoke_map.open(database_path + "revoke_map", options);
+		db.add(contract_cache.open(database_path + "contract_cache/"));
+		db.add(mutate_log.open(database_path + "mutate_log/"));
+		db.add(deploy_map.open(database_path + "deploy_map/"));
+		db.add(offer_log.open(database_path + "offer_log/"));
+		db.add(vplot_log.open(database_path + "vplot_log/"));
 
-		contract_cache.open(database_path + "contract_cache", options);
-		mutate_log.open(database_path + "mutate_log", options);
-		deploy_map.open(database_path + "deploy_map", options);
-		offer_log.open(database_path + "offer_log", options);
-		vplot_log.open(database_path + "vplot_log", options);
+		db.add(tx_log.open(database_path + "tx_log/"));
+		db.add(tx_index.open(database_path + "tx_index/"));
+		db.add(hash_index.open(database_path + "hash_index/"));
+		db.add(block_index.open(database_path + "block_index/"));
+		db.add(balance_table.open(database_path + "balance_table/"));
+	}
+	// TODO: pass db
+	storage = std::make_shared<vm::StorageRocksDB>(database_path);
 
-		tx_log.open(database_path + "tx_log", options);
-		tx_index.open(database_path + "tx_index", options);
-		hash_index.open(database_path + "hash_index", options);
-		block_index.open(database_path + "block_index", options);
-		balance_table.open(database_path + "balance_table", options);
+	auto db_height = db.recover();
+	if(db_height > replay_height) {
+		log(INFO) << "Reverting to height " << replay_height << " ...";
+		db.revert(replay_height);
+		db_height = replay_height;
+	}
+
+	// load balance table
+	balance_table.scan([this](const std::pair<addr_t, addr_t>& key, const uint128& value) {
+		if(value) {
+			balance_map[key] = value;
+		}
+	});
+
+	if(db_height) {
+		log(INFO) << "Loaded DB at height " << db_height << ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 	}
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
-	storage = std::make_shared<vm::StorageRocksDB>(database_path);
 
 	if(block_chain->exists())
 	{
 		block_chain->open("rb+");
 
-		// load balance table
-		balance_table.scan([this](const std::pair<addr_t, addr_t>& key, const std::pair<uint128, uint32_t>& value) {
-			balance_map[key] = value.first;
-		});
-
 		bool is_replay = true;
-		bool is_revert = false;
 		uint32_t height = -1;
 		std::pair<int64_t, hash_t> entry;
 		// set state to last block
-		while(block_index.find_last(height, entry))
+		if(block_index.find_last(height, entry))
 		{
 			is_replay = false;
-			if(height >= replay_height) {
-				is_revert = true;
-				revert(height, nullptr);
-			} else {
-				state_hash = entry.second;
-				block_chain->seek_to(entry.first);
-				const auto block = std::dynamic_pointer_cast<const Block>(read_block(*block_chain, true));
-				if(!block) {
-					throw std::runtime_error("failed to read block " + std::to_string(height));
-				}
-				if(block->height != height) {
-					throw std::runtime_error("expected block height " + std::to_string(height) + " but got " + std::to_string(block->height));
-				}
-				break;
+			state_hash = entry.second;
+			block_chain->seek_to(entry.first);
+			const auto block = std::dynamic_pointer_cast<const Block>(read_block(*block_chain, true));
+			if(!block) {
+				throw std::runtime_error("failed to read block " + std::to_string(height));
 			}
-		}
-		if(is_revert) {
-			recv_log.flush();
-			spend_log.flush();
-			exec_log.flush();
-			revoke_map.flush();
-			mutate_log.flush();
-			deploy_map.flush();
-			offer_log.flush();
-			vplot_log.flush();
-			tx_index.flush();
-			balance_table.flush();
+			if(block->height != height) {
+				throw std::runtime_error("expected block height " + std::to_string(height) + " but got " + std::to_string(block->height));
+			}
 		}
 		if(is_replay) {
 			log(INFO) << "Creating DB (this may take a while) ...";
@@ -198,7 +185,6 @@ void Node::main()
 					}
 				}
 			}
-			log(INFO) << "Loaded height " << height << ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 		}
 		const auto offset = block_chain->get_input_pos();
 		block_chain->seek_to(offset);
@@ -445,7 +431,7 @@ vnx::optional<tx_info_t> Node::get_tx_info_for(std::shared_ptr<const Transaction
 vnx::optional<hash_t> Node::is_revoked(const hash_t& txid, const addr_t& sender) const
 {
 	std::vector<std::pair<addr_t, hash_t>> entries;
-	revoke_map.find_range(std::make_pair(txid, 0), std::make_pair(txid, -1), entries);
+	revoke_map.find(txid, entries);
 	for(const auto& entry : entries) {
 		if(entry.first == sender) {
 			return entry.second;
@@ -1164,17 +1150,17 @@ std::shared_ptr<const BlockHeader> Node::fork_to(const hash_t& state)
 	if(auto fork = find_fork(state)) {
 		return fork_to(fork);
 	}
-	if(auto root = get_root()) {
-		if(state == root->hash) {
-			while(revert());
-			return nullptr;
-		}
+	const auto root = get_root();
+	if(state == root->hash) {
+		revert(root->height + 1);
+		return nullptr;
 	}
-	throw std::logic_error("cannot fork");
+	throw std::logic_error("cannot fork to " + state.to_string());
 }
 
 std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_head)
 {
+	const auto root = get_root();
 	const auto prev_state = state_hash;
 	const auto fork_line = get_fork_line(fork_head);
 
@@ -1182,26 +1168,43 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 	std::shared_ptr<const BlockHeader> forked_at;
 
 	// bring state back in line
-	while(true) {
-		bool found = false;
-		for(const auto& fork : fork_line)
-		{
-			const auto& block = fork->block;
-			if(block->hash == state_hash) {
-				found = true;
-				forked_at = block;
+	{
+		auto peak = find_fork(state_hash);
+		while(peak) {
+			bool found = false;
+			for(const auto& fork : fork_line) {
+				if(fork->block->hash == peak->block->hash) {
+					found = true;
+					forked_at = fork->block;
+					break;
+				}
+			}
+			if(found) {
 				break;
 			}
-		}
-		if(found) {
-			break;
-		}
-		did_fork = true;
+			did_fork = true;
 
-		if(!revert()) {
-			forked_at = get_root();
-			break;
+			// add removed tx back to pool
+			for(const auto& tx : peak->block->tx_list) {
+				auto& entry = tx_pool[tx->id];
+				entry.tx = tx;
+				entry.is_valid = true;
+				entry.last_check = peak->block->height;
+				entry.full_hash = tx->calc_hash(true);
+			}
+			if(peak->block->prev == root->hash) {
+				forked_at = root;
+				break;
+			}
+			peak = peak->prev.lock();
 		}
+	}
+	if(forked_at) {
+		if(did_fork) {
+			revert(forked_at->height + 1);
+		}
+	} else {
+		throw std::logic_error("cannot fork to " + fork_head->block->hash.to_string());
 	}
 
 	// verify and apply
@@ -1367,19 +1370,17 @@ void Node::commit(std::shared_ptr<const Block> block) noexcept
 }
 
 void Node::apply(	std::shared_ptr<const Block> block,
-					std::shared_ptr<const execution_context_t> context, bool is_replay) noexcept
+					std::shared_ptr<const execution_context_t> context, bool is_replay)
 {
 	if(block->prev != state_hash) {
-		return;
+		throw std::logic_error("block->prev != state_hash");
 	}
 	std::unordered_set<hash_t> tx_set;
-	std::unordered_set<addr_t> addr_set;
-	std::unordered_set<hash_t> revoke_set;
 	std::set<std::pair<addr_t, addr_t>> balance_set;
 
 	for(const auto& tx : block->get_all_transactions()) {
 		tx_set.insert(tx->id);
-		apply(block, tx, addr_set, revoke_set, balance_set);
+		apply(block, tx, balance_set);
 	}
 	for(auto iter = pending_transactions.begin(); iter != pending_transactions.end();) {
 		if(tx_set.count(iter->second->id)) {
@@ -1388,15 +1389,11 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			iter++;
 		}
 	}
-	addr_log.insert(block->height, std::vector<addr_t>(addr_set.begin(), addr_set.end()));
-	revoke_log.insert(block->height, std::vector<hash_t>(revoke_set.begin(), revoke_set.end()));
-
 	for(const auto& key : balance_set) {
-		if(const auto& balance = balance_map[key]) {
-			balance_table.insert(key, std::make_pair(balance, block->height));
-		} else {
+		const auto& balance = balance_map[key];
+		balance_table.insert(key, balance);
+		if(!balance) {
 			balance_map.erase(key);
-			balance_table.erase(key);
 		}
 	}
 	storage->height = block->height;
@@ -1413,23 +1410,22 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	storage->commit();
 
 	write_block(block, is_replay);
+
+	db.commit(block->height + 1);
 	state_hash = block->hash;
 }
 
 void Node::apply(	std::shared_ptr<const Block> block,
 					std::shared_ptr<const Transaction> tx,
-					std::unordered_set<addr_t>& addr_set,
-					std::unordered_set<hash_t>& revoke_set,
-					std::set<std::pair<addr_t, addr_t>>& balance_set) noexcept
+					std::set<std::pair<addr_t, addr_t>>& balance_set)
 {
 	if(tx->parent) {
-		apply(block, tx->parent, addr_set, revoke_set, balance_set);
+		apply(block, tx->parent, balance_set);
 	}
 	const auto outputs = tx->get_outputs();
 	for(size_t i = 0; i < outputs.size(); ++i)
 	{
 		const auto& out = outputs[i];
-		addr_set.insert(out.address);
 		recv_log.insert(std::make_pair(out.address, block->height),
 				txout_entry_t::create_ex(txio_key_t::create_ex(tx->id, i), block->height, out));
 
@@ -1441,7 +1437,6 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	for(size_t i = 0; i < inputs.size(); ++i)
 	{
 		const auto& in = inputs[i];
-		addr_set.insert(in.address);
 		spend_log.insert(std::make_pair(in.address, block->height),
 				txio_entry_t::create_ex(txio_key_t::create_ex(tx->id, i), block->height, in));
 
@@ -1453,17 +1448,14 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	{
 		if(auto revoke = std::dynamic_pointer_cast<const operation::Revoke>(op))
 		{
-			revoke_set.insert(revoke->txid);
-			revoke_map.insert(std::make_pair(revoke->txid, block->height), std::make_pair(revoke->address, tx->id));
+			revoke_map.insert(revoke->txid, std::make_pair(revoke->address, tx->id));
 		}
 		else if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op))
 		{
-			addr_set.insert(op->address);
 			mutate_log.insert(std::make_pair(op->address, block->height), mutate->method);
 		}
 		else if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op))
 		{
-			addr_set.insert(op->address);
 			exec_entry_t entry;
 			entry.height = block->height;
 			entry.txid = tx->id;
@@ -1486,133 +1478,16 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	tx_pool.erase(tx->id);
 }
 
-bool Node::revert() noexcept
+void Node::revert(const uint32_t height)
 {
-	if(!history.empty() && state_hash == get_root()->hash) {
-		return false;
-	}
-	if(auto block = get_block(state_hash)) {
-		revert(block->height, block);
-		return true;
-	}
-	return false;
-}
-
-void Node::revert(const uint32_t height, std::shared_ptr<const Block> block) noexcept
-{
-	std::vector<std::vector<addr_t>> addr_list;
-	addr_log.find_greater_equal(height, addr_list);
-	addr_log.erase_greater_equal(height);
-
-	std::unordered_set<addr_t> addr_set;
-	for(const auto& list : addr_list) {
-		addr_set.insert(list.begin(), list.end());
-	}
-
-	std::set<std::pair<addr_t, addr_t>> balance_set;
-	for(const auto& address : addr_set) {
-		const auto begin = std::make_pair(address, height);
-		const auto end = std::make_pair(address, -1);
-		{
-			std::vector<txio_entry_t> entries;
-			spend_log.find_range(begin, end, entries);
-			for(const auto& entry : entries) {
-				const auto key = std::make_pair(entry.address, entry.contract);
-				balance_set.insert(key);
-				balance_map[key] += entry.amount;
-			}
-			spend_log.erase_range(begin, end);
-		}
-		{
-			std::vector<txout_entry_t> entries;
-			recv_log.find_range(begin, end, entries);
-			for(const auto& entry : entries) {
-				const auto key = std::make_pair(entry.address, entry.contract);
-				balance_set.insert(key);
-				balance_map[key] -= entry.amount;
-			}
-			recv_log.erase_range(begin, end);
-		}
-	}
-	{
-		std::set<addr_t> affected;
-		for(const auto& address : addr_set) {
-			if(mutate_log.erase_range(std::make_pair(address, height), std::make_pair(address, -1))) {
-				affected.insert(address);
-			}
-			exec_log.erase_range(std::make_pair(address, height), std::make_pair(address, -1));
-		}
-		for(const auto& address : affected) {
-			if(auto tx = get_transaction(address)) {
-				if(auto contract = tx->deploy) {
-					auto copy = vnx::clone(contract);
-					std::vector<vnx::Object> mutations;
-					mutate_log.find_range(std::make_pair(address, 0), std::make_pair(address, height), mutations);
-					for(const auto& method : mutations) {
-						copy->vnx_call(vnx::clone(method));
-					}
-					if(mutations.empty()) {
-						contract_cache.erase(address);
-					} else {
-						contract_cache.insert(address, copy);
-					}
-				}
-			}
-		}
-		if(affected.size()) {
-			log(INFO) << "Reverted " << affected.size() << " contracts";
-		}
-	}
-	offer_log.erase_all(height, vnx::rocksdb::GREATER_EQUAL);
-	vplot_log.erase_all(height, vnx::rocksdb::GREATER_EQUAL);
-
-	for(const auto& key : balance_set) {
-		if(const auto& balance = balance_map[key]) {
-			balance_table.insert(key, std::make_pair(balance, height - 1));
-		} else {
-			balance_map.erase(key);
-			balance_table.erase(key);
-		}
-	}
-	{
-		std::vector<std::vector<hash_t>> all_keys;
-		tx_log.find_greater_equal(height, all_keys);
-		for(const auto& keys : all_keys) {
-			tx_index.erase_many(keys);
-		}
-		tx_log.erase_greater_equal(height);
-	}
-	{
-		std::vector<std::vector<hash_t>> all_keys;
-		revoke_log.find_greater_equal(height, all_keys);
-		for(const auto& keys : all_keys) {
-			for(const auto& txid : keys) {
-				revoke_map.erase_all(std::make_pair(txid, height));
-			}
-		}
-		revoke_log.erase_greater_equal(height);
-	}
+	db.revert(height);
 	storage->revert(height);
-	{
-		std::vector<std::pair<int64_t, hash_t>> entries;
-		if(block_index.find_greater_equal(height, entries)) {
-			for(const auto& entry : entries) {
-				hash_index.erase(entry.second);
-			}
-			block_chain->seek_to(entries.front().first);
-		}
-	}
-	block_index.erase_greater_equal(height);
 
-	if(block) {
-		for(const auto& tx : block->tx_list) {
-			auto& entry = tx_pool[tx->id];
-			entry.tx = tx;
-			entry.is_valid = true;
-			entry.last_check = block->height;
-			entry.full_hash = tx->calc_hash(true);
-		}
-		state_hash = block->prev;
+	std::pair<int64_t, hash_t> entry;
+	if(block_index.find_last(entry)) {
+		state_hash = entry.second;
+	} else {
+		state_hash = hash_t();
 	}
 }
 
