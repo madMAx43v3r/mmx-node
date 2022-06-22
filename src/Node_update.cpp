@@ -174,9 +174,9 @@ void Node::update()
 	std::shared_ptr<const BlockHeader> forked_at;
 
 	// choose best fork
-	while(true) {
+	while(vnx::do_run())
+	{
 		forked_at = nullptr;
-
 		const auto best_fork = find_best_fork();
 
 		if(!best_fork || best_fork->block->hash == state_hash) {

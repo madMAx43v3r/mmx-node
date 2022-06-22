@@ -111,7 +111,7 @@ void Node::main()
 	});
 
 	if(db_height) {
-		log(INFO) << "Loaded DB at height " << db_height << ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+		log(INFO) << "Loaded DB at height " << (db_height - 1) << ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 	}
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
 
@@ -135,6 +135,9 @@ void Node::main()
 			if(block->height != height) {
 				throw std::runtime_error("expected block height " + std::to_string(height) + " but got " + std::to_string(block->height));
 			}
+			if(block->hash != state_hash) {
+				throw std::runtime_error("expected block hash " + state_hash.to_string());
+			}
 		}
 		if(is_replay) {
 			log(INFO) << "Creating DB (this may take a while) ...";
@@ -154,6 +157,7 @@ void Node::main()
 						tx_index.insert(entry.first, std::make_pair(entry.second, block->height));
 					}
 					block_index.insert(block->height, std::make_pair(block_offset, block->hash));
+					db.commit(block->height + 1);
 
 					history.push_back(block);
 					if(history.size() > params->commit_delay) {
@@ -1250,7 +1254,11 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 				publish(block, output_verified_blocks);
 			}
 		}
-		apply(block, fork->context);
+		try {
+			apply(block, fork->context);
+		} catch(const std::exception& ex) {
+			log(ERROR) << "apply() at height " << block->height << " failed with: " << ex.what();
+		}
 	}
 	return did_fork ? forked_at : nullptr;
 }
@@ -1410,9 +1418,11 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		context->storage->commit();
 	}
 	write_block(block, is_replay);
-
-	db.commit(block->height + 1);
 	state_hash = block->hash;
+
+	if(!is_replay) {
+		db.commit(block->height + 1);
+	}
 }
 
 void Node::apply(	std::shared_ptr<const Block> block,
