@@ -456,7 +456,7 @@ void Table::write_index()
 
 
 Table::Iterator::Iterator(std::shared_ptr<const Table> table)
-	:	table(table), block_map(key_compare_t(table.get()))
+	:	table(table), block_map(compare_t(this))
 {
 	std::lock_guard lock(table->mutex);
 	table->write_lock++;
@@ -468,32 +468,41 @@ Table::Iterator::~Iterator()
 	table->write_lock--;
 }
 
+bool Table::Iterator::compare_t::operator()(
+		const std::pair<std::shared_ptr<db_val_t>, uint32_t>& lhs, const std::pair<std::shared_ptr<db_val_t>, uint32_t>& rhs) const
+{
+	if(!iter->direction) {
+		throw std::logic_error("!direction");
+	}
+	const auto res = iter->table->comparator(*lhs.first, *rhs.first);
+	if(res == 0) {
+		return lhs.second > rhs.second;
+	}
+	return iter->direction > 0 ? res < 0 : res > 0;
+}
+
 bool Table::Iterator::is_valid() const
 {
 	return !block_map.empty() && direction;
 }
 
-std::map<std::shared_ptr<db_val_t>, Table::Iterator::pointer_t, Table::key_compare_t>::const_iterator
+std::map<std::pair<std::shared_ptr<db_val_t>, uint32_t>, Table::Iterator::pointer_t, Table::key_compare_t>::const_iterator
 Table::Iterator::current() const
 {
 	if(!is_valid()) {
 		throw std::logic_error("iterator not valid");
 	}
-	if(direction > 0) {
-		return block_map.begin();
-	} else {
-		return --block_map.end();
-	}
+	return block_map.begin();
 }
 
 uint32_t Table::Iterator::version() const
 {
-	return current()->second.version;
+	return current()->first.second;
 }
 
 std::shared_ptr<db_val_t> Table::Iterator::key() const
 {
-	return current()->first;
+	return current()->first.first;
 }
 
 std::shared_ptr<db_val_t> Table::Iterator::value() const
@@ -507,33 +516,36 @@ void Table::Iterator::prev()
 		throw std::logic_error("iterator not valid");
 	}
 	if(direction < 0) {
-		const auto iter = --block_map.end();
-		const auto& entry = iter->second;
-		if(const auto& block = entry.block) {
-			if(entry.pos > 0) {
-				const auto pos = entry.pos - 1;
-				uint32_t version;
-				std::shared_ptr<db_val_t> key;
-				table->read_key_at(*entry.file, block->index[pos], version, key);
-				auto& next = block_map[key];
-				if(version >= next.version) {
+		auto iter = block_map.begin();
+		const auto prev = iter->first.first;
+		// iterate until next key
+		while(iter != block_map.end() && *iter->first.first == *prev) {
+			const auto& entry = iter->second;
+			if(const auto& block = entry.block) {
+				if(entry.pos > 0) {
+					const auto pos = entry.pos - 1;
+					uint32_t version;
+					std::shared_ptr<db_val_t> key;
+					table->read_key_at(*entry.file, block->index[pos], version, key);
+
+					pointer_t next;
 					next.block = block;
 					next.file = entry.file;
-					next.version = version;
 					next.pos = pos;
 					table->read_value(entry.file->in, next.value);
+					block_map[std::make_pair(key, version)] = next;
+				}
+			} else {
+				if(entry.iter != table->mem_index.begin()) {
+					auto iter = entry.iter; iter--;
+					pointer_t next;
+					next.iter = iter;
+					next.value = iter->second.first;
+					block_map[std::make_pair(iter->first, iter->second.second)] = next;
 				}
 			}
-		} else {
-			if(entry.iter != table->mem_index.begin()) {
-				auto iter = entry.iter; iter--;
-				auto& next = block_map[iter->first];
-				next.iter = iter;
-				next.version = iter->second.second;
-				next.value = iter->second.first;
-			}
+			iter = block_map.erase(iter);
 		}
-		block_map.erase(iter);
 	} else {
 		seek_prev(key());
 	}
@@ -545,33 +557,36 @@ void Table::Iterator::next()
 		throw std::logic_error("iterator not valid");
 	}
 	if(direction > 0) {
-		const auto iter = block_map.begin();
-		const auto& entry = iter->second;
-		if(const auto& block = entry.block) {
-			const auto pos = entry.pos + 1;
-			if(pos < block->index.size()) {
-				uint32_t version;
-				std::shared_ptr<db_val_t> key;
-				table->read_key_at(*entry.file, block->index[pos], version, key);
-				auto& next = block_map[key];
-				if(version >= next.version) {
+		auto iter = block_map.begin();
+		const auto prev = iter->first.first;
+		// iterate until next key
+		while(iter != block_map.end() && *iter->first.first == *prev) {
+			const auto& entry = iter->second;
+			if(const auto& block = entry.block) {
+				const auto pos = entry.pos + 1;
+				if(pos < block->index.size()) {
+					uint32_t version;
+					std::shared_ptr<db_val_t> key;
+					table->read_key_at(*entry.file, block->index[pos], version, key);
+
+					pointer_t next;
 					next.block = block;
 					next.file = entry.file;
-					next.version = version;
 					next.pos = pos;
 					table->read_value(entry.file->in, next.value);
+					block_map[std::make_pair(key, version)] = next;
+				}
+			} else {
+				auto iter = entry.iter; iter++;
+				if(iter != table->mem_index.end()) {
+					pointer_t next;
+					next.iter = iter;
+					next.value = iter->second.first;
+					block_map[std::make_pair(iter->first, iter->second.second)] = next;
 				}
 			}
-		} else {
-			auto iter = entry.iter; iter++;
-			if(iter != table->mem_index.end()) {
-				auto& next = block_map[iter->first];
-				next.iter = iter;
-				next.version = iter->second.second;
-				next.value = iter->second.first;
-			}
+			iter = block_map.erase(iter);
 		}
-		block_map.erase(iter);
 	} else {
 		seek_next(key());
 	}
@@ -595,6 +610,7 @@ void Table::Iterator::seek(std::shared_ptr<db_val_t> key)
 void Table::Iterator::seek(std::shared_ptr<db_val_t> key, const int mode)
 {
 	block_map.clear();
+	direction = mode >= 0 ? 1 : -1;
 
 	for(const auto& block : table->blocks)
 	{
@@ -634,14 +650,12 @@ void Table::Iterator::seek(std::shared_ptr<db_val_t> key, const int mode)
 		if(!res) {
 			continue;
 		}
-		auto& entry = block_map[res];
-		if(version >= entry.version) {
-			entry.block = block;
-			entry.file = file;
-			entry.version = version;
-			entry.pos = pos;
-			table->read_value(file->in, entry.value);
-		}
+		pointer_t entry;
+		entry.block = block;
+		entry.file = file;
+		entry.pos = pos;
+		table->read_value(file->in, entry.value);
+		block_map[std::make_pair(res, version)] = entry;
 	}
 	const auto& mem_index = table->mem_index;
 	if(!mem_index.empty()) {
@@ -663,13 +677,12 @@ void Table::Iterator::seek(std::shared_ptr<db_val_t> key, const int mode)
 			}
 		}
 		if(iter != mem_index.end()) {
-			auto& entry = block_map[iter->first];
+			pointer_t entry;
 			entry.iter = iter;
-			entry.version = iter->second.second;
 			entry.value = iter->second.first;
+			block_map[std::make_pair(iter->first, iter->second.second)] = entry;
 		}
 	}
-	direction = mode >= 0 ? 1 : -1;
 }
 
 void Table::Iterator::seek_next(std::shared_ptr<db_val_t> key)

@@ -71,6 +71,8 @@ int main(int argc, char** argv)
 				i++;
 			}
 		}
+		table->flush();
+
 		for(uint32_t i = 2 * num_entries; i > 0; --i) {
 			table->insert(db_write(uint32_t((i - 1) * 2)), db_write(uint64_t(i)));
 		}

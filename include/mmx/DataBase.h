@@ -149,19 +149,24 @@ public:
 	private:
 		struct pointer_t {
 			size_t pos = -1;
-			uint32_t version = 0;
 			std::shared_ptr<block_t> block;
 			std::shared_ptr<db_val_t> value;
 			std::shared_ptr<vnx::File> file;
 			std::map<std::shared_ptr<db_val_t>, std::pair<std::shared_ptr<db_val_t>, uint32_t>, key_compare_t>::const_iterator iter;
 		};
 
+		struct compare_t {
+			const Iterator* iter = nullptr;
+			compare_t(const Iterator* iter) : iter(iter) {}
+			bool operator()(const std::pair<std::shared_ptr<db_val_t>, uint32_t>& lhs, const std::pair<std::shared_ptr<db_val_t>, uint32_t>& rhs) const;
+		};
+
 		void seek(std::shared_ptr<db_val_t> key, const int mode);
-		std::map<std::shared_ptr<db_val_t>, pointer_t, key_compare_t>::const_iterator current() const;
+		std::map<std::pair<std::shared_ptr<db_val_t>, uint32_t>, pointer_t, key_compare_t>::const_iterator current() const;
 
 		int direction = 0;
 		std::shared_ptr<const Table> table;
-		std::map<std::shared_ptr<db_val_t>, pointer_t, key_compare_t> block_map;
+		std::map<std::pair<std::shared_ptr<db_val_t>, uint32_t>, pointer_t, compare_t> block_map;
 	};
 
 private:
