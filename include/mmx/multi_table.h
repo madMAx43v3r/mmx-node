@@ -49,7 +49,7 @@ public:
 		std::pair<K, I> key_(key, std::numeric_limits<I>::max());
 		{
 			Table::Iterator iter(db);
-			iter.seek_for_prev(write(key_));
+			iter.seek_prev(write(key_));
 			key_.second = 0;
 
 			if(iter.is_valid()) {
@@ -99,7 +99,7 @@ public:
 		std::pair<K, I> key_(key, std::numeric_limits<I>::max());
 
 		Table::Iterator iter(db);
-		iter.seek_for_prev(write(key_));
+		iter.seek_prev(write(key_));
 		while(iter.is_valid() && values.size() < limit)
 		{
 			read(iter.key(), key_, super_t::key_type, super_t::key_code);
