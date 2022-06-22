@@ -362,20 +362,15 @@ void Table::revert(const uint32_t new_version)
 		index->delete_files.clear();
 		write_index();
 	}
+	mem_index.clear();
+
 	for(auto iter = mem_block.begin(); iter != mem_block.end();) {
 		const auto& key = iter->first;
 		if(key.second >= new_version) {
 			mem_block_size -= key.first->size + iter->second->size;
 			iter = mem_block.erase(iter);
 		} else {
-			iter++;
-		}
-	}
-	for(auto iter = mem_index.begin(); iter != mem_index.end();) {
-		const auto& entry = iter->second;
-		if(entry.second >= new_version) {
-			iter = mem_index.erase(iter);
-		} else {
+			mem_index[key.first] = std::make_pair(iter->second, key.second);
 			iter++;
 		}
 	}
