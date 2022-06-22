@@ -685,4 +685,34 @@ void Table::Iterator::seek_for_prev(std::shared_ptr<db_val_t> key_)
 }
 
 
+void DataBase::add(std::shared_ptr<Table> table)
+{
+	tables.push_back(table);
+}
+
+void DataBase::commit(const uint32_t new_version)
+{
+	for(const auto& table : tables) {
+		table->commit(new_version);
+	}
+}
+
+void DataBase::revert(const uint32_t new_version)
+{
+	for(const auto& table : tables) {
+		table->revert(new_version);
+	}
+}
+
+uint32_t DataBase::recover()
+{
+	uint32_t min_version = -1;
+	for(const auto& table : tables) {
+		min_version = std::min(table->current_version(), min_version);
+	}
+	revert(min_version);
+	return min_version;
+}
+
+
 } // mmx

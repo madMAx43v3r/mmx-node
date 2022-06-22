@@ -195,16 +195,16 @@ private:
 
 class DataBase {
 public:
-	void add_table(std::shared_ptr<Table> table);
+	void add(std::shared_ptr<Table> table);
 
 	void commit(const uint32_t new_version);
 
 	void revert(const uint32_t new_version);
 
-	void recover();
+	uint32_t recover();
 
 private:
-	std::map<std::string, std::shared_ptr<Table>> table_map;
+	std::vector<std::shared_ptr<Table>> tables;
 
 };
 

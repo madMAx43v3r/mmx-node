@@ -38,10 +38,10 @@ public:
 		close();
 	}
 
-	void open(const std::string& file_path)
+	std::shared_ptr<Table> open(const std::string& file_path)
 	{
 		close();
-		db = std::make_shared<Table>(file_path);
+		return db = std::make_shared<Table>(file_path);
 	}
 
 	void close() {
@@ -71,7 +71,7 @@ public:
 
 	bool find_first(V& value) const
 	{
-		V dummy;
+		K dummy;
 		return find_first(dummy, value);
 	}
 
@@ -91,7 +91,7 @@ public:
 
 	bool find_last(V& value) const
 	{
-		V dummy;
+		K dummy;
 		return find_last(dummy, value);
 	}
 
@@ -182,6 +182,10 @@ public:
 		db->flush();
 	}
 
+	std::shared_ptr<Table> get_table() const {
+		return db;
+	}
+
 protected:
 	struct stream_t {
 		vnx::Memory memory;
@@ -269,10 +273,10 @@ protected:
 };
 
 template<typename V>
-class balance_table : public table<std::pair<addr_t, addr_t>, V> {
+class balance_table_t : public table<std::pair<addr_t, addr_t>, V> {
 public:
-	balance_table() : table<std::pair<addr_t, addr_t>, V>() {}
-	balance_table(const std::string& file_path) : table<std::pair<addr_t, addr_t>, V>(file_path) {}
+	balance_table_t() : table<std::pair<addr_t, addr_t>, V>() {}
+	balance_table_t(const std::string& file_path) : table<std::pair<addr_t, addr_t>, V>(file_path) {}
 protected:
 	void read(std::shared_ptr<const db_val_t> entry, std::pair<addr_t, addr_t>& key) const override {
 		if(entry->size != 64) {
