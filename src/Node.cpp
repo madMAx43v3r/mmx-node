@@ -1258,7 +1258,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 		try {
 			apply(block, fork->context);
 		} catch(const std::exception& ex) {
-			log(ERROR) << "apply() at height " << block->height << " failed with: " << ex.what();
+			log(ERROR) << "Applying block at height " << block->height << " failed with: " << ex.what();
 		}
 	}
 	return did_fork ? forked_at : nullptr;
