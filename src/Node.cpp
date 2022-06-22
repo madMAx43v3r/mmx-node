@@ -111,7 +111,8 @@ void Node::main()
 	});
 
 	if(db_height) {
-		log(INFO) << "Loaded DB at height " << (db_height - 1) << ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+		log(INFO) << "Loaded DB at height " << (db_height - 1) << ", " << balance_map.size()
+				<< " balances, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 	}
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
 
