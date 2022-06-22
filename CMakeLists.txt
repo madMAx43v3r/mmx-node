@@ -219,7 +219,7 @@ target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_base vnx_addo
 
 target_link_libraries(mmx_vm_iface uint256_t vnx_base)
 
-target_link_libraries(mmx_vm vnx_rocksdb mmx_iface)
+target_link_libraries(mmx_vm mmx_db mmx_iface)
 
 target_link_libraries(mmx_db mmx_iface)
 

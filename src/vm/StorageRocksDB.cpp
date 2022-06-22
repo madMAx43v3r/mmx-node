@@ -13,89 +13,70 @@
 namespace mmx {
 namespace vm {
 
-typedef std::array<char, 44> key_t;
-typedef std::array<char, 52> entry_key_t;
+// TODO: use to_big_endian() function instead of flip_bytes()
 
-key_t get_key(const addr_t& contract, uint64_t dst, uint32_t height)
+std::shared_ptr<db_val_t> get_key(const addr_t& contract, uint64_t dst)
 {
-	key_t out;
-	::memcpy(out.data(), contract.data(), contract.size());
+	auto out = std::make_shared<db_val_t>(40);
+	::memcpy(out->data, contract.data(), contract.size());
 	dst = vnx::flip_bytes(dst);
-	::memcpy(out.data() + contract.size(), &dst, 8);
-	height = vnx::flip_bytes(height);
-	::memcpy(out.data() + contract.size() + 8, &height, 4);
+	::memcpy(out->data + contract.size(), &dst, 8);
 	return out;
 }
 
-std::tuple<addr_t, uint64_t, uint32_t> read_key(const char* data, const size_t length)
+std::tuple<addr_t, uint64_t> read_key(std::shared_ptr<const db_val_t> key)
 {
-	if(length < 44) {
-		throw std::runtime_error("unexpected eof");
+	if(key->size < 40) {
+		throw std::runtime_error("key size underflow");
 	}
-	std::tuple<addr_t, uint64_t, uint32_t> out;
-	::memcpy(&std::get<0>(out), data, 32);
-	::memcpy(&std::get<1>(out), data + 32, 8);
-	::memcpy(&std::get<2>(out), data + 40, 4);
+	std::pair<addr_t, uint64_t> out;
+	::memcpy(std::get<0>(out).data(), key->data, 32);
+	::memcpy(&std::get<1>(out), key->data + 32, 8);
 	std::get<1>(out) = vnx::flip_bytes(std::get<1>(out));
-	std::get<2>(out) = vnx::flip_bytes(std::get<2>(out));
 	return out;
 }
 
-entry_key_t get_entry_key(const addr_t& contract, uint64_t dst, uint64_t key, uint32_t height)
+std::shared_ptr<db_val_t> get_entry_key(const addr_t& contract, uint64_t dst, uint64_t key)
 {
-	entry_key_t out;
-	::memcpy(out.data(), contract.data(), contract.size());
+	auto out = std::make_shared<db_val_t>(48);
+	::memcpy(out->data, contract.data(), contract.size());
 	dst = vnx::flip_bytes(dst);
-	::memcpy(out.data() + contract.size(), &dst, 8);
+	::memcpy(out->data + contract.size(), &dst, 8);
 	key = vnx::flip_bytes(key);
-	::memcpy(out.data() + contract.size() + 8, &key, 8);
-	height = vnx::flip_bytes(height);
-	::memcpy(out.data() + contract.size() + 16, &height, 4);
+	::memcpy(out->data + contract.size() + 8, &key, 8);
 	return out;
 }
 
-std::tuple<addr_t, uint64_t, uint64_t, uint32_t> read_entry_key(const char* data, const size_t length)
+std::tuple<addr_t, uint64_t, uint64_t> read_entry_key(std::shared_ptr<const db_val_t> key)
 {
-	if(length < 52) {
-		throw std::runtime_error("unexpected eof");
+	if(key->size < 48) {
+		throw std::runtime_error("key size underflow");
 	}
-	std::tuple<addr_t, uint64_t, uint64_t, uint32_t> out;
-	::memcpy(&std::get<0>(out), data, 32);
-	::memcpy(&std::get<1>(out), data + 32, 8);
-	::memcpy(&std::get<2>(out), data + 40, 8);
-	::memcpy(&std::get<3>(out), data + 48, 4);
+	std::tuple<addr_t, uint64_t, uint64_t> out;
+	::memcpy(&std::get<0>(out), key->data, 32);
+	::memcpy(&std::get<1>(out), key->data + 32, 8);
+	::memcpy(&std::get<2>(out), key->data + 40, 8);
 	std::get<1>(out) = vnx::flip_bytes(std::get<1>(out));
 	std::get<2>(out) = vnx::flip_bytes(std::get<2>(out));
-	std::get<3>(out) = vnx::flip_bytes(std::get<3>(out));
 	return out;
 }
 
-std::pair<uint8_t*, size_t> write_index_key(const addr_t& contract, const std::pair<uint8_t*, size_t>& value)
+std::shared_ptr<db_val_t> write_index_key(const addr_t& contract, const std::pair<uint8_t*, size_t>& value)
 {
-	std::pair<uint8_t*, size_t> out;
-	out.second = contract.size() + value.second;
-	out.first = (uint8_t*)::malloc(out.second);
-	::memcpy(out.first, contract.data(), contract.size());
-	::memcpy(out.first + contract.size(), value.first, value.second);
+	auto out = std::make_shared<db_val_t>(contract.size() + value.second);
+	::memcpy(out->data, contract.data(), contract.size());
+	::memcpy(out->data + contract.size(), value.first, value.second);
 	return out;
 }
 
-StorageRocksDB::StorageRocksDB(const std::string& database_path)
+StorageRocksDB::StorageRocksDB(const std::string& database_path, DataBase& db)
 {
-	::rocksdb::Options options;
-	options.max_open_files = 16;
-	options.keep_log_file_num = 3;
-	options.target_file_size_multiplier = 4;
-	options.avoid_flush_during_recovery = true;
-	options.max_manifest_file_size = 64 * 1024 * 1024;
-
-	table.open(database_path + "storage", options);
-	table_entries.open(database_path + "storage_entries", options);
-	table_index.open(database_path + "storage_index", options);
-
-	options.max_open_files = 4;
-
-	table_log.open(database_path + "storage_log", options);
+	table = std::make_shared<Table>(database_path + "storage/");
+	table_entries = std::make_shared<Table>(database_path + "storage_entries/");
+	table_index = std::make_shared<Table>(database_path + "storage_index/");
+	db.add(table);
+	db.add(table_entries);
+	db.add(table_index);
 }
 
 StorageRocksDB::~StorageRocksDB()
@@ -104,178 +85,110 @@ StorageRocksDB::~StorageRocksDB()
 
 var_t* StorageRocksDB::read(const addr_t& contract, const uint64_t src) const
 {
-	return read_ex(contract, src, -1);
-}
-
-var_t* StorageRocksDB::read_ex(const addr_t& contract, const uint64_t src, const uint32_t height) const
-{
-	const auto key = get_key(contract, src, height);
-	vnx::rocksdb::raw_ptr_t value;
-	vnx::rocksdb::raw_ptr_t found_key;
-	if(table.find_prev(std::make_pair(key.data(), key.size()), value, &found_key)) {
-		if(found_key.size() == key.size() && ::memcmp(found_key.data(), key.data(), 40) == 0) {
-			var_t* var = nullptr;
-			deserialize(var, value.data(), value.size());
-			return var;
-		}
+	const auto key = get_key(contract, src);
+	if(auto value = table->find(key)) {
+		var_t* var = nullptr;
+		deserialize(var, value->data, value->size);
+		return var;
 	}
 	return nullptr;
 }
 
+var_t* StorageRocksDB::read_ex(const addr_t& contract, const uint64_t src, const uint32_t height) const
+{
+	// TODO: consider height
+	return read(contract, src);
+}
+
 var_t* StorageRocksDB::read(const addr_t& contract, const uint64_t src, const uint64_t key) const
 {
-	const auto entry_key = get_entry_key(contract, src, key, -1);
-	vnx::rocksdb::raw_ptr_t value;
-	vnx::rocksdb::raw_ptr_t found_key;
-	if(table_entries.find_prev(std::make_pair(entry_key.data(), entry_key.size()), value, &found_key)) {
-		if(found_key.size() == entry_key.size() && ::memcmp(found_key.data(), entry_key.data(), 48) == 0) {
-			var_t* var = nullptr;
-			deserialize(var, value.data(), value.size(), false);
-			return var;
-		}
+	const auto entry_key = get_entry_key(contract, src, key);
+	if(auto value = table_entries->find(entry_key)) {
+		var_t* var = nullptr;
+		deserialize(var, value->data, value->size, false);
+		return var;
 	}
 	return nullptr;
 }
 
 void StorageRocksDB::write(const addr_t& contract, const uint64_t dst, const var_t& value)
 {
-	const auto key = get_key(contract, dst, height);
+	const auto key = get_key(contract, dst);
 	const auto data = serialize(value);
-	table.insert(std::make_pair(key.data(), key.size()), data);
-	log_buffer[contract].keys.push_back(dst);
 
 	if(value.flags & FLAG_KEY) {
 		const auto key = write_index_key(contract, std::make_pair(data.first + 5, data.second - 5));
-		table_index.insert(key, std::make_pair(&dst, sizeof(dst)));
-		log_buffer[contract].index_values.push_back(dst);
-		::free(key.first);
+		table_index->insert(key, std::make_shared<db_val_t>(&dst, sizeof(dst)));
 	}
-	::free(data.first);
+	table->insert(key, std::make_shared<db_val_t>(data.first, data.second, false));
 }
 
 void StorageRocksDB::write(const addr_t& contract, const uint64_t dst, const uint64_t key, const var_t& value)
 {
-	const auto entry_key = get_entry_key(contract, dst, key, height);
+	const auto entry_key = get_entry_key(contract, dst, key);
 	const auto data = serialize(value, false);
-	table_entries.insert(std::make_pair(entry_key.data(), entry_key.size()), data);
-	log_buffer[contract].entry_keys.emplace_back(dst, key);
-	::free(data.first);
+	table_entries->insert(entry_key, std::make_shared<db_val_t>(data.first, data.second, false));
 }
 
 uint64_t StorageRocksDB::lookup(const addr_t& contract, const var_t& value) const
 {
 	const auto data = serialize(value, false, false);
 	const auto key = write_index_key(contract, data);
-	uint64_t out = 0;
-	vnx::rocksdb::raw_ptr_t tmp;
-	if(table_index.find(key, tmp)) {
-		::memcpy(&out, tmp.data(), std::min(tmp.size(), sizeof(out)));
-	}
-	::free(key.first);
 	::free(data.first);
+
+	uint64_t out = 0;
+	if(auto value = table_index->find(key)) {
+		if(value->size < sizeof(out)) {
+			throw std::runtime_error("value underflow");
+		}
+		::memcpy(&out, value->data, sizeof(out));
+	}
 	return out;
-}
-
-void StorageRocksDB::commit()
-{
-	for(const auto& entry : log_buffer) {
-		table_log.insert(std::make_pair(height, entry.first), entry.second);
-	}
-	log_buffer.clear();
-}
-
-void StorageRocksDB::revert(const uint32_t height)
-{
-	std::vector<std::pair<std::pair<uint32_t, addr_t>, contract::height_log_t>> entries;
-	table_log.find_greater_equal(std::make_pair(height, addr_t()), entries);
-
-	// TODO: parallel for
-	for(const auto& entry : entries)
-	{
-		const auto& height = entry.first.first;
-		const auto& contract = entry.first.second;
-		for(const auto& addr : entry.second.index_values) {
-			if(auto var = read(contract, addr)) {
-				const auto data = serialize(*var, false, false);
-				const auto key = write_index_key(contract, data);
-				table_index.erase(key);
-				::free(key.first);
-				::free(data.first);
-				delete var;
-			}
-		}
-		for(const auto& addr : entry.second.keys) {
-			const auto key = get_key(contract, addr, height);
-			table.erase(std::make_pair(key.data(), key.size()));
-		}
-		for(const auto& addr : entry.second.entry_keys) {
-			const auto key = get_entry_key(contract, addr.first, addr.second, height);
-			table_entries.erase(std::make_pair(key.data(), key.size()));
-		}
-	}
-	table_log.erase_greater_equal(std::make_pair(height, addr_t()));
 }
 
 std::vector<std::pair<uint64_t, varptr_t>> StorageRocksDB::find_range(
 		const addr_t& contract, const uint64_t begin, const uint64_t end, const uint32_t height) const
 {
+	// TODO: consider height argument
 	std::vector<std::pair<uint64_t, varptr_t>> out;
-	std::unique_ptr<::rocksdb::Iterator> iter(table.iterator());
 
-	if(begin >= end) {
-		return out;
-	}
-	uint64_t address = end - 1;
-	while(address >= begin) {
-		const auto key_begin = get_key(contract, address, height);
-		iter->SeekForPrev(::rocksdb::Slice(key_begin.data(), key_begin.size()));
-		if(!iter->Valid()) {
-			break;
-		}
-		const auto key = read_key(iter->key().data(), iter->key().size());
-		address = std::get<1>(key);
-		if(std::get<0>(key) != contract || address < begin) {
+	Table::Iterator iter(table);
+	iter.seek(get_key(contract, begin));
+	while(iter.is_valid()) {
+		const auto key = read_key(iter.key());
+		const auto address = std::get<1>(key);
+		if(std::get<0>(key) != contract || address >= end) {
 			break;
 		}
 		var_t* var = nullptr;
-		deserialize(var, iter->value().data(), iter->value().size());
+		const auto& value = iter.value();
+		deserialize(var, value->data, value->size);
 		out.emplace_back(address, var);
-		if(address == 0) {
-			break;
-		}
-		address--;
+		iter.next();
 	}
-	std::reverse(out.begin(), out.end());
 	return out;
 }
 
 std::vector<std::pair<uint64_t, varptr_t>> StorageRocksDB::find_entries(
 		const addr_t& contract, const uint64_t address, const uint32_t height) const
 {
+	// TODO: consider height argument
 	std::vector<std::pair<uint64_t, varptr_t>> out;
-	std::unique_ptr<::rocksdb::Iterator> iter(table_entries.iterator());
 
-	uint64_t entry = -1;
-	while(true) {
-		const auto key_begin = get_entry_key(contract, address, entry, height);
-		iter->SeekForPrev(::rocksdb::Slice(key_begin.data(), key_begin.size()));
-		if(!iter->Valid()) {
-			break;
-		}
-		const auto key = read_entry_key(iter->key().data(), iter->key().size());
+	Table::Iterator iter(table_entries);
+	iter.seek(get_entry_key(contract, address, 0));
+	while(iter.is_valid()) {
+		const auto key = read_entry_key(iter.key());
 		if(std::get<0>(key) != contract || std::get<1>(key) != address) {
 			break;
 		}
-		entry = std::get<2>(key);
 		var_t* var = nullptr;
-		deserialize(var, iter->value().data(), iter->value().size(), false);
+		const auto entry = std::get<2>(key);
+		const auto& value = iter.value();
+		deserialize(var, value->data, value->size, false);
 		out.emplace_back(entry, var);
-		if(entry == 0) {
-			break;
-		}
-		entry--;
+		iter.next();
 	}
-	std::reverse(out.begin(), out.end());
 	return out;
 }
 

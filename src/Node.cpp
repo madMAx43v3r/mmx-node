@@ -94,8 +94,7 @@ void Node::main()
 		db.add(block_index.open(database_path + "block_index/"));
 		db.add(balance_table.open(database_path + "balance_table/"));
 	}
-	// TODO: pass db
-	storage = std::make_shared<vm::StorageRocksDB>(database_path);
+	storage = std::make_shared<vm::StorageRocksDB>(database_path, db);
 
 	auto db_height = db.recover();
 	if(db_height > replay_height) {
@@ -1396,8 +1395,6 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			balance_map.erase(key);
 		}
 	}
-	storage->height = block->height;
-
 	if(context) {
 		for(const auto& entry : context->contract_map) {
 			const auto& state = entry.second;
@@ -1407,8 +1404,6 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		}
 		context->storage->commit();
 	}
-	storage->commit();
-
 	write_block(block, is_replay);
 
 	db.commit(block->height + 1);
@@ -1481,7 +1476,6 @@ void Node::apply(	std::shared_ptr<const Block> block,
 void Node::revert(const uint32_t height)
 {
 	db.revert(height);
-	storage->revert(height);
 
 	std::pair<int64_t, hash_t> entry;
 	if(block_index.find_last(entry)) {
