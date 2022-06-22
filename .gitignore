@@ -43,6 +43,7 @@ CMakeUserPresets.json
 /config/local
 /PASSWD
 /NETWORK
+/DB_VERSION
 /testnet*
 /tmp
 /.idea

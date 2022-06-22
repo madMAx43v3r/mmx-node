@@ -24,5 +24,11 @@ fi
 
 echo NETWORK=${NETWORK}
 
+if [ ! -f "${MMX_HOME}DB_VERSION" ]; then
+	rm -r "${MMX_HOME}${NETWORK}/db"
+	echo "Deleted old DB"
+	echo "MMX1" > "${MMX_HOME}DB_VERSION"
+fi
+
 export MMX_NETWORK=${NETWORK}/
 export PATH=$PATH:$PWD/build:$PWD/build/exchange
