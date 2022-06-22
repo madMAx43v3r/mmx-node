@@ -1480,10 +1480,10 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			deploy_map.insert(*tx->sender, tx->id);
 		}
 		if(std::dynamic_pointer_cast<const contract::Offer>(contract)) {
-			offer_log.insert(block->height, addr_t(tx->id));
+			offer_log.insert(block->height, tx->id);
 		}
 		if(auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(contract)) {
-			vplot_log.insert(block->height, addr_t(tx->id));
+			vplot_log.insert(block->height, tx->id);
 		}
 	}
 	tx_pool.erase(tx->id);
