@@ -141,7 +141,7 @@ public:
 	private:
 		struct pointer_t {
 			size_t pos = -1;
-			uint32_t version = -1;
+			uint32_t version = 0;
 			std::shared_ptr<block_t> block;
 			std::shared_ptr<db_val_t> value;
 			std::shared_ptr<vnx::File> file;

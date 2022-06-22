@@ -516,11 +516,13 @@ void Table::Iterator::prev()
 				std::shared_ptr<db_val_t> key;
 				table->read_key_at(*entry.file, block->index[pos], version, key);
 				auto& next = block_map[key];
-				next.block = block;
-				next.file = entry.file;
-				next.version = version;
-				next.pos = pos;
-				table->read_value(next.file->in, next.value);
+				if(version >= next.version) {
+					next.block = block;
+					next.file = entry.file;
+					next.version = version;
+					next.pos = pos;
+					table->read_value(entry.file->in, next.value);
+				}
 			}
 		} else {
 			if(entry.iter != table->mem_index.begin()) {
@@ -552,11 +554,13 @@ void Table::Iterator::next()
 				std::shared_ptr<db_val_t> key;
 				table->read_key_at(*entry.file, block->index[pos], version, key);
 				auto& next = block_map[key];
-				next.block = block;
-				next.file = entry.file;
-				next.version = version;
-				next.pos = pos;
-				table->read_value(next.file->in, next.value);
+				if(version >= next.version) {
+					next.block = block;
+					next.file = entry.file;
+					next.version = version;
+					next.pos = pos;
+					table->read_value(entry.file->in, next.value);
+				}
 			}
 		} else {
 			auto iter = entry.iter; iter++;
@@ -631,11 +635,13 @@ void Table::Iterator::seek(std::shared_ptr<db_val_t> key, const int mode)
 			continue;
 		}
 		auto& entry = block_map[res];
-		entry.block = block;
-		entry.file = file;
-		entry.version = version;
-		entry.pos = pos;
-		table->read_value(file->in, entry.value);
+		if(version >= entry.version) {
+			entry.block = block;
+			entry.file = file;
+			entry.version = version;
+			entry.pos = pos;
+			table->read_value(file->in, entry.value);
+		}
 	}
 	const auto& mem_index = table->mem_index;
 	if(!mem_index.empty()) {
