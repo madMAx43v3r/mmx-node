@@ -164,6 +164,11 @@ void Node::main()
 						log(INFO) << "Height " << block->height << " ...";
 					}
 				}
+				if(!vnx::do_run()) {
+					log(WARN) << "Process interrupted, reverting DB ...";
+					db.revert(0);
+					return;
+				}
 			}
 			if(auto peak = get_peak()) {
 				log(INFO) << "Replayed height " << peak->height << " from disk, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
