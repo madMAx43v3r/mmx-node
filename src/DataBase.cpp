@@ -31,9 +31,9 @@ Table::Table(const std::string& file_path, const std::function<int(const db_val_
 	:	file_path(file_path), comparator(comparator), mem_index(key_compare_t(this)), mem_block(mem_compare_t(this))
 {
 	vnx::Directory(file_path).create();
-	debug_log.open(file_path + "debug.log", std::ios_base::app);
+	debug_log.open(file_path + "/debug.log", std::ios_base::app);
 
-	index = vnx::read_from_file<TableIndex>(file_path + "index.dat");
+	index = vnx::read_from_file<TableIndex>(file_path + "/index.dat");
 	if(!index) {
 		index = TableIndex::create();
 		debug_log << "Initialized table" << std::endl;
@@ -49,14 +49,14 @@ Table::Table(const std::string& file_path, const std::function<int(const db_val_
 				<< " entries, min_version = " << block->min_version << ", max_version = " << block->max_version << std::endl;
 	}
 	for(const auto& name : index->delete_files) {
-		vnx::File(file_path + name).remove();
+		vnx::File(file_path + '/' + name).remove();
 	}
 	index->delete_files.clear();
 
 	// purge left-over data
 	revert(index->version);
 
-	write_log.open(file_path + "write_log.dat", "ab");
+	write_log.open(file_path + "/write_log.dat", "ab");
 	write_log.open("rb+");
 	{
 		auto& in = write_log.in;
@@ -90,7 +90,7 @@ std::shared_ptr<Table::block_t> Table::read_block(const std::string& name) const
 	auto block = std::make_shared<block_t>();
 	block->name = name;
 
-	vnx::File file(file_path + name);
+	vnx::File file(file_path + '/' + name);
 	file.open("rb");
 
 	auto& in = file.in;
@@ -203,7 +203,7 @@ std::shared_ptr<db_val_t> Table::find(std::shared_ptr<db_val_t> key) const
 
 std::shared_ptr<db_val_t> Table::find(std::shared_ptr<block_t> block, std::shared_ptr<db_val_t> key) const
 {
-	vnx::File file(file_path + block->name);
+	vnx::File file(file_path + '/' + block->name);
 	file.open("rb");
 
 	auto res = key;
@@ -289,8 +289,8 @@ void Table::revert(const uint32_t new_version)
 			new_block->level = block->level;
 			new_block->min_version = block->min_version;
 
-			vnx::File src(file_path + block->name);
-			vnx::File dst(file_path + block->name + ".tmp");
+			vnx::File src(file_path + '/' + block->name);
+			vnx::File dst(file_path + '/' + block->name + ".tmp");
 			src.open("rb");
 			dst.open("wb");
 			auto& in = src.in;
@@ -357,7 +357,7 @@ void Table::revert(const uint32_t new_version)
 	}
 	if(index->delete_files.size()) {
 		for(const auto& name : index->delete_files) {
-			vnx::File(file_path + name).remove();
+			vnx::File(file_path + '/' + name).remove();
 		}
 		index->delete_files.clear();
 		write_index();
@@ -397,7 +397,7 @@ void Table::flush()
 	block->name = to_number(index->next_block_id++, 6) + ".dat";
 	block->index.reserve(mem_index.size());
 
-	vnx::File file(file_path + block->name);
+	vnx::File file(file_path + '/' + block->name);
 	file.open("wb+");
 
 	auto& out = file.out;
@@ -451,7 +451,7 @@ void Table::flush()
 
 void Table::write_index()
 {
-	vnx::write_to_file(file_path + "index.dat", index);
+	vnx::write_to_file(file_path + "/index.dat", index);
 }
 
 
@@ -615,7 +615,7 @@ void Table::Iterator::seek(std::shared_ptr<db_val_t> key, const int mode)
 	for(const auto& block : table->blocks)
 	{
 		const auto end = block->index.size();
-		auto file = std::make_shared<vnx::File>(table->file_path + block->name);
+		auto file = std::make_shared<vnx::File>(table->file_path + '/' + block->name);
 		file->open("rb");
 
 		bool is_match = false;

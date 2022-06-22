@@ -71,9 +71,9 @@ std::shared_ptr<db_val_t> write_index_key(const addr_t& contract, const std::pai
 
 StorageRocksDB::StorageRocksDB(const std::string& database_path, DataBase& db)
 {
-	table = std::make_shared<Table>(database_path + "storage/");
-	table_entries = std::make_shared<Table>(database_path + "storage_entries/");
-	table_index = std::make_shared<Table>(database_path + "storage_index/");
+	table = std::make_shared<Table>(database_path + "storage");
+	table_entries = std::make_shared<Table>(database_path + "storage_entries");
+	table_index = std::make_shared<Table>(database_path + "storage_index");
 	db.add(table);
 	db.add(table_entries);
 	db.add(table_index);

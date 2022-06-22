@@ -77,22 +77,22 @@ void Node::main()
 
 	const auto time_begin = vnx::get_wall_time_millis();
 	{
-		db.add(recv_log.open(database_path + "recv_log/"));
-		db.add(spend_log.open(database_path + "spend_log/"));
-		db.add(exec_log.open(database_path + "exec_log/"));
-		db.add(revoke_map.open(database_path + "revoke_map/"));
+		db.add(recv_log.open(database_path + "recv_log"));
+		db.add(spend_log.open(database_path + "spend_log"));
+		db.add(exec_log.open(database_path + "exec_log"));
+		db.add(revoke_map.open(database_path + "revoke_map"));
 
-		db.add(contract_cache.open(database_path + "contract_cache/"));
-		db.add(mutate_log.open(database_path + "mutate_log/"));
-		db.add(deploy_map.open(database_path + "deploy_map/"));
-		db.add(offer_log.open(database_path + "offer_log/"));
-		db.add(vplot_log.open(database_path + "vplot_log/"));
+		db.add(contract_cache.open(database_path + "contract_cache"));
+		db.add(mutate_log.open(database_path + "mutate_log"));
+		db.add(deploy_map.open(database_path + "deploy_map"));
+		db.add(offer_log.open(database_path + "offer_log"));
+		db.add(vplot_log.open(database_path + "vplot_log"));
 
-		db.add(tx_log.open(database_path + "tx_log/"));
-		db.add(tx_index.open(database_path + "tx_index/"));
-		db.add(hash_index.open(database_path + "hash_index/"));
-		db.add(block_index.open(database_path + "block_index/"));
-		db.add(balance_table.open(database_path + "balance_table/"));
+		db.add(tx_log.open(database_path + "tx_log"));
+		db.add(tx_index.open(database_path + "tx_index"));
+		db.add(hash_index.open(database_path + "hash_index"));
+		db.add(block_index.open(database_path + "block_index"));
+		db.add(balance_table.open(database_path + "balance_table"));
 	}
 	storage = std::make_shared<vm::StorageRocksDB>(database_path, db);
 

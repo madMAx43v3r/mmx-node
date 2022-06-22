@@ -42,7 +42,7 @@ int main(int argc, char** argv)
 	{
 		const uint32_t num_entries = 100;
 
-		auto table = std::make_shared<mmx::Table>("tmp/test_table/");
+		auto table = std::make_shared<mmx::Table>("tmp/test_table");
 		table->max_block_size = 1024 * 1024;
 
 		if(table->current_version() == 1) {
@@ -119,7 +119,7 @@ int main(int argc, char** argv)
 		}
 	}
 	{
-		mmx::uint_table<uint32_t, std::string> table("tmp/uint_table/");
+		mmx::uint_table<uint32_t, std::string> table("tmp/uint_table");
 		table.revert(0);
 		table.insert(3, "dfhgdfgdfgdfg");
 		table.insert(1, "sdfsdfsdf");
@@ -154,7 +154,7 @@ int main(int argc, char** argv)
 		});
 	}
 	{
-		mmx::uint_multi_table<uint32_t, std::string> table("tmp/uint_multi_table/");
+		mmx::uint_multi_table<uint32_t, std::string> table("tmp/uint_multi_table");
 		table.revert(0);
 		table.insert(1, "234523345");
 		table.insert(3, "dfhgdfgdfgdfg");
