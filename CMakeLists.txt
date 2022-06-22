@@ -19,6 +19,7 @@ if(NOT MSVC)
 		set(DISABLE_OPENCL 1)
 	endif()
 else()
+	add_compile_definitions(TARGET_FILENAME=$(TargetName)$(TargetExt))
 	add_definitions(/openmp ${CUSTOM_ADD_DEFINITIONS})
 	
 	find_library(secp256k1_LIBRARY secp256k1 HINTS ${secp256k1_LIBRARIES})

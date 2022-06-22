@@ -58,21 +58,25 @@ function(generate_product_version outfiles)
     if (NOT PRODUCT_BUNDLE OR "${PRODUCT_BUNDLE}" STREQUAL "")
         set(PRODUCT_BUNDLE "${PRODUCT_NAME}")
     endif()
-    if (NOT PRODUCT_ICON OR "${PRODUCT_ICON}" STREQUAL "")
-        set(PRODUCT_ICON "${CMAKE_SOURCE_DIR}/product.ico")
-    endif()
+    # if (NOT PRODUCT_ICON OR "${PRODUCT_ICON}" STREQUAL "")
+    #     set(PRODUCT_ICON "${CMAKE_SOURCE_DIR}/product.ico")
+    # endif()
 
-    if (NOT PRODUCT_VERSION_MAJOR EQUAL 0 AND (NOT PRODUCT_VERSION_MAJOR OR "${PRODUCT_VERSION_MAJOR}" STREQUAL ""))
-        set(PRODUCT_VERSION_MAJOR 1)
+    if (NOT PRODUCT_VERSION_MAJOR OR "${PRODUCT_VERSION_MAJOR}" STREQUAL "")
+        set(PRODUCT_VERSION_MAJOR 0)
     endif()
-    if (NOT PRODUCT_VERSION_MINOR EQUAL 0 AND (NOT PRODUCT_VERSION_MINOR OR "${PRODUCT_VERSION_MINOR}" STREQUAL ""))
+    if (NOT PRODUCT_VERSION_MINOR OR "${PRODUCT_VERSION_MINOR}" STREQUAL "")
         set(PRODUCT_VERSION_MINOR 0)
     endif()
-    if (NOT PRODUCT_VERSION_PATCH EQUAL 0 AND (NOT PRODUCT_VERSION_PATCH OR "${PRODUCT_VERSION_PATCH}" STREQUAL ""))
+    if (NOT PRODUCT_VERSION_PATCH OR "${PRODUCT_VERSION_PATCH}" STREQUAL "")
         set(PRODUCT_VERSION_PATCH 0)
     endif()
-    if (NOT PRODUCT_VERSION_REVISION EQUAL 0 AND (NOT PRODUCT_VERSION_REVISION OR "${PRODUCT_VERSION_REVISION}" STREQUAL ""))
+    if (NOT PRODUCT_VERSION_REVISION OR "${PRODUCT_VERSION_REVISION}" STREQUAL "")
         set(PRODUCT_VERSION_REVISION 0)
+    endif()
+
+    if (NOT PRODUCT_NAME OR "${PRODUCT_NAME}" STREQUAL "")
+        set(PRODUCT_NAME "")
     endif()
 
     if (NOT PRODUCT_COMPANY_COPYRIGHT OR "${PRODUCT_COMPANY_COPYRIGHT}" STREQUAL "")
@@ -92,8 +96,8 @@ function(generate_product_version outfiles)
         set(PRODUCT_FILE_DESCRIPTION "${PRODUCT_NAME}")
     endif()
 
-    set (_VersionInfoFile ${CMAKE_CURRENT_BINARY_DIR}/VersionInfo.h)
-    set (_VersionResourceFile ${CMAKE_CURRENT_BINARY_DIR}/VersionResource.rc)
+    set (_VersionInfoFile ${CMAKE_CURRENT_BINARY_DIR}/VersionInfo/VersionInfo_${PRODUCT_NAME}.h)
+    set (_VersionResourceFile ${CMAKE_CURRENT_BINARY_DIR}/VersionInfo/VersionResource_${PRODUCT_NAME}.rc)
     configure_file(
         ${GenerateProductVersionCurrentDir}/VersionInfo.in
         ${_VersionInfoFile}
@@ -101,7 +105,7 @@ function(generate_product_version outfiles)
     configure_file(
         ${GenerateProductVersionCurrentDir}/VersionResource.rc
         ${_VersionResourceFile}
-        COPYONLY)
+        @ONLY)
     list(APPEND ${outfiles} ${_VersionInfoFile} ${_VersionResourceFile})
     set (${outfiles} ${${outfiles}} PARENT_SCOPE)
 endfunction()
