@@ -1341,24 +1341,16 @@ void Node::commit(std::shared_ptr<const Block> block)
 	history[height] = block->get_header();
 
 	if(height > 0) {
-		auto& current = balance_log[height];
-		{
-			auto iter = balance_log.lower_bound(height - 1);
-			while(iter != balance_log.end()) {
-				if(iter->first < height) {
-					for(const auto& entry : iter->second) {
-						current.emplace(entry);
-					}
+		const auto iter = balance_log.find(height - 1);
+		if(iter != balance_log.end()) {
+			auto& current = balance_log[height];
+			for(const auto& entry : iter->second) {
+				if(entry.second) {
+					current.emplace(entry);
 				}
-				if(iter == balance_log.begin()) {
-					break;
-				}
-				iter--;
 			}
+			balance_log.erase(iter);
 		}
-	}
-	while(!balance_log.empty() && balance_log.begin()->first < height) {
-		balance_log.erase(balance_log.begin());
 	}
 	{
 		const auto range = challenge_map.equal_range(height);
