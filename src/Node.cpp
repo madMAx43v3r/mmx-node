@@ -495,8 +495,8 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 
 	struct entry_t {
 		uint32_t height = 0;
-		uint128_t recv = uint128_0;
-		uint128_t spent = uint128_0;
+		uint128_t recv = 0;
+		uint128_t spent = 0;
 	};
 	std::map<std::tuple<addr_t, hash_t, addr_t>, entry_t> delta_map;
 
