@@ -93,7 +93,7 @@ protected:
 		bool operator()(const std::pair<std::shared_ptr<db_val_t>, uint32_t>& lhs, const std::pair<std::shared_ptr<db_val_t>, uint32_t>& rhs) const {
 			const auto res = table->comparator(*lhs.first, *rhs.first);
 			if(res == 0) {
-				return lhs.second < rhs.second;
+				return lhs.second > rhs.second;
 			}
 			return res < 0;
 		}

@@ -298,7 +298,6 @@ void Table::revert(const uint32_t new_version)
 			src.seek_to(block_header_size);
 			dst.seek_to(block_header_size);
 
-			int64_t offset = -1;
 			std::shared_ptr<db_val_t> prev;
 			for(size_t i = 0; i < block->total_count; ++i) {
 				uint32_t version;
@@ -306,18 +305,16 @@ void Table::revert(const uint32_t new_version)
 				std::shared_ptr<db_val_t> value;
 				read_entry(in, version, key, value);
 				if(version < new_version) {
-					if(prev && *key != *prev) {
-						new_block->index.push_back(offset);
+					if(!prev || *key != *prev) {
+						new_block->index.push_back(out.get_output_pos());
 					}
 					new_block->max_version = std::max(version, new_block->max_version);
 					new_block->total_count++;
-					offset = out.get_output_pos();
 					write_entry(out, version, key, value);
 					prev = key;
 				}
 			}
 			new_block->index_offset = out.get_output_pos();
-			new_block->index.push_back(offset);
 			src.close();
 
 			dst.seek_begin();
@@ -362,7 +359,6 @@ void Table::revert(const uint32_t new_version)
 		index->delete_files.clear();
 		write_index();
 	}
-	mem_index.clear();
 
 	for(auto iter = mem_block.begin(); iter != mem_block.end();) {
 		const auto& key = iter->first;
@@ -370,7 +366,24 @@ void Table::revert(const uint32_t new_version)
 			mem_block_size -= key.first->size + iter->second->size;
 			iter = mem_block.erase(iter);
 		} else {
-			mem_index[key.first] = std::make_pair(iter->second, key.second);
+			iter++;
+		}
+	}
+	for(auto iter = mem_index.begin(); iter != mem_index.end();) {
+		const auto& key = iter->first;
+		if(iter->second.second >= new_version) {
+			if(!mem_block.empty()) {
+				const auto found = mem_block.lower_bound(std::make_pair(key, -1));
+				if(found != mem_block.end()) {
+					if(*found->first.first == *key) {
+						iter->second = std::make_pair(found->second, found->first.second);
+						iter++;
+						continue;
+					}
+				}
+			}
+			iter = mem_index.erase(iter);
+		} else {
 			iter++;
 		}
 	}
@@ -398,22 +411,19 @@ void Table::flush()
 	auto& out = file.out;
 	file.seek_to(block_header_size);
 
-	int64_t offset = -1;
 	std::shared_ptr<db_val_t> prev;
 	for(const auto& entry : mem_block) {
 		const auto& version = entry.first.second;
 		const auto& key = entry.first.first;
-		if(prev && *key != *prev) {
-			block->index.push_back(offset);
+		if(!prev || *key != *prev) {
+			block->index.push_back(out.get_output_pos());
 		}
 		block->total_count++;
 		block->min_version = std::min(version, block->min_version);
 		block->max_version = std::max(version, block->max_version);
-		offset = out.get_output_pos();
 		write_entry(out, version, key, entry.second);
 		prev = key;
 	}
-	block->index.push_back(offset);
 	block->index_offset = out.get_output_pos();
 
 	file.seek_begin();
@@ -706,9 +716,8 @@ void DataBase::add(std::shared_ptr<Table> table)
 
 void DataBase::commit(const uint32_t new_version)
 {
-#pragma omp parallel for
-	for(int i = 0; i < int(tables.size()); ++i) {
-		tables[i]->commit(new_version);
+	for(const auto& table : tables) {
+		table->commit(new_version);
 	}
 }
 
