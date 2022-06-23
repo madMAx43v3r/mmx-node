@@ -326,7 +326,7 @@ private:
 
 	void apply(	std::shared_ptr<const Block> block,
 				std::shared_ptr<const Transaction> tx,
-				std::map<std::pair<addr_t, addr_t>, std::pair<uint128_t, uint128_t>>& delta_map);
+				std::set<std::pair<addr_t, addr_t>>& balance_set);
 
 	void revert(const uint32_t height);
 
@@ -371,17 +371,19 @@ private:
 	DataBase db;
 	hash_t state_hash;
 
-	balance_table_t<uint128> balance_table;										// [[addr, currency] => balance]
 	hash_uint_multi_table<addr_t, uint32_t, txout_entry_t> recv_log;			// [[address, height] => entry]
 	hash_uint_multi_table<addr_t, uint32_t, txio_entry_t> spend_log;			// [[address, height] => entry]
 	hash_uint_multi_table<addr_t, uint32_t, exec_entry_t> exec_log;				// [[address, height] => entry]
-	hash_multi_table<hash_t, std::pair<addr_t, hash_t>> revoke_map;				// [org txid] => [address, txid]]
+	hash_multi_table<hash_t, std::pair<addr_t, hash_t>> revoke_map;				// [[org txid, height]] => [address, txid]]
 
 	hash_table<addr_t, std::shared_ptr<const Contract>> contract_cache;			// [addr, contract]
 	hash_uint_multi_table<addr_t, uint32_t, vnx::Object> mutate_log;			// [[addr, height] => method]
 	hash_multi_table<addr_t, addr_t> deploy_map;								// [sender => contract]
 	uint_multi_table<uint32_t, addr_t> offer_log;								// [height => contract]
 	uint_multi_table<uint32_t, addr_t> vplot_log;								// [height => contract]
+
+	balance_table_t<uint128> balance_table;										// [[addr, currency] => balance]
+	std::map<std::pair<addr_t, addr_t>, uint128_t> balance_map;					// [[addr, currency] => balance]
 
 	std::unordered_map<hash_t, tx_pool_t> tx_pool;									// [txid => transaction] (non-executed only)
 	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;					// [block hash => fork] (pending only)
