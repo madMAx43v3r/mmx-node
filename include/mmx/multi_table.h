@@ -82,9 +82,9 @@ public:
 				break;
 			}
 			try {
-				V tmp = V();
-				read(iter.value(), tmp, super_t::value_type, super_t::value_code);
-				values.push_back(std::move(tmp));
+				V value;
+				read(iter.value(), value, super_t::value_type, super_t::value_code);
+				values.push_back(std::move(value));
 			} catch(...) {
 				// ignore
 			}
@@ -107,9 +107,9 @@ public:
 				break;
 			}
 			try {
-				V tmp = V();
-				read(iter.value(), tmp, super_t::value_type, super_t::value_code);
-				values.push_back(std::move(tmp));
+				V value;
+				read(iter.value(), value, super_t::value_type, super_t::value_code);
+				values.push_back(std::move(value));
 			} catch(...) {
 				// ignore
 			}
@@ -131,9 +131,9 @@ public:
 				break;
 			}
 			try {
-				V tmp = V();
-				read(iter.value(), tmp, super_t::value_type, super_t::value_code);
-				values.push_back(std::move(tmp));
+				V value;
+				read(iter.value(), value, super_t::value_type, super_t::value_code);
+				values.push_back(std::move(value));
 			} catch(...) {
 				// ignore
 			}
@@ -177,7 +177,8 @@ public:
 	using super_t::commit;
 	using super_t::revert;
 	using super_t::flush;
-	using super_t::get_table;
+	using super_t::iterator;
+	using super_t::get_impl;
 
 };
 

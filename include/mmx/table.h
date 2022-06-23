@@ -117,9 +117,9 @@ public:
 		iter.seek(write(key));
 		while(iter.is_valid()) {
 			try {
-				V tmp = V();
-				read(iter.value(), tmp, value_type, value_code);
-				values.push_back(std::move(tmp));
+				V value;
+				read(iter.value(), value, value_type, value_code);
+				values.push_back(std::move(value));
 			} catch(...) {
 				// ignore
 			}
@@ -146,6 +146,55 @@ public:
 			iter.next();
 		}
 		return values.size();
+	}
+
+	size_t find_range(const K& begin, const K& end, std::vector<V>& result) const
+	{
+		result.clear();
+
+		Table::Iterator iter(db);
+		iter.seek(write(begin));
+		while(iter.is_valid()) {
+			K key;
+			read(iter.key(), key);
+			if(!(key < end)) {
+				break;
+			}
+			try {
+				V value;
+				read(iter.value(), value, value_type, value_code);
+				result.push_back(std::move(value));
+			} catch(...) {
+				// ignore
+			}
+			iter.next();
+		}
+		return result.size();
+	}
+
+	size_t find_range(const K& begin, const K& end, std::vector<std::pair<K, V>>& result) const
+	{
+		result.clear();
+
+		Table::Iterator iter(db);
+		iter.seek(write(begin));
+		while(iter.is_valid()) {
+			K key;
+			read(iter.key(), key);
+			if(!(key < end)) {
+				break;
+			}
+			try {
+				std::pair<K, V> tmp;
+				tmp.first = key;
+				read(iter.value(), tmp.second, value_type, value_code);
+				result.push_back(std::move(tmp));
+			} catch(...) {
+				// ignore
+			}
+			iter.next();
+		}
+		return result.size();
 	}
 
 	void scan(const std::function<void(const K&, const V&)>& callback) const
@@ -182,7 +231,11 @@ public:
 		db->flush();
 	}
 
-	std::shared_ptr<Table> get_table() const {
+	Table::Iterator iterator() const {
+		return Table::Iterator(db);
+	}
+
+	std::shared_ptr<Table> get_impl() const {
 		return db;
 	}
 

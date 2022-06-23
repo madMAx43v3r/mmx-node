@@ -130,6 +130,7 @@ public:
 
 	class Iterator {
 	public:
+		Iterator() = default;
 		Iterator(std::shared_ptr<const Table> table);
 		~Iterator();
 
