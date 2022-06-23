@@ -27,3 +27,9 @@ IF NOT EXIST "%MMX_HOME%\PASSWD" (
 
 	CALL vnxpasswd -c config\default\ %MMX_HOME%\config\local\ -u mmx-admin -p %%PASSWD%%
 )
+
+IF NOT EXIST "%MMX_HOME%\DB_VERSION" (
+	RMDIR /s /q "%MMX_HOME%\%NETWORK%\db"
+	ECHO Deleted old DB
+	ECHO MMX1 > "%MMX_HOME%\DB_VERSION"
+)
