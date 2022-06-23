@@ -103,16 +103,8 @@ void Node::main()
 		db_height = replay_height;
 	}
 
-	// load balance table
-	balance_table.scan([this](const std::pair<addr_t, addr_t>& key, const uint128& value) {
-		if(value) {
-			balance_map[key] = value;
-		}
-	});
-
 	if(db_height) {
-		log(INFO) << "Loaded DB at height " << (db_height - 1) << ", " << balance_map.size()
-				<< " balances, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+		log(INFO) << "Loaded DB at height " << (db_height - 1) << ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 	}
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
 
@@ -260,7 +252,6 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 			info->block_reward = mmx::calc_block_reward(params, peak->space_diff);
 			info->total_space = calc_total_netspace(params, peak->space_diff);
 			info->total_supply = get_total_supply(addr_t());
-			info->address_count = balance_map.size();
 			info->genesis_hash = get_genesis_hash();
 			network = info;
 		}
@@ -661,9 +652,9 @@ uint128 Node::get_total_balance(const std::vector<addr_t>& addresses, const addr
 {
 	uint128_t total = 0;
 	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
-		const auto iter = balance_map.find(std::make_pair(address, currency));
-		if(iter != balance_map.end()) {
-			total += iter->second;
+		uint128 value;
+		if(balance_table.find(std::make_pair(address, currency), value)) {
+			total += value;
 		}
 	}
 	return total;
@@ -700,10 +691,10 @@ std::map<addr_t, uint128> Node::get_total_balances(const std::vector<addr_t>& ad
 {
 	std::map<addr_t, uint128> totals;
 	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
-		const auto begin = balance_map.lower_bound(std::make_pair(address, addr_t()));
-		const auto end = balance_map.upper_bound(std::make_pair(address, addr_t::ones()));
-		for(auto iter = begin; iter != end; ++iter) {
-			totals[iter->first.second] += iter->second;
+		std::vector<std::pair<std::pair<addr_t, addr_t>, uint128>> entries;
+		balance_table.find_range(std::make_pair(address, addr_t()), std::make_pair(address, addr_t::ones()), entries);
+		for(const auto& entry : entries) {
+			totals[entry.first.second] += entry.second;
 		}
 	}
 	return totals;
@@ -713,10 +704,10 @@ std::map<std::pair<addr_t, addr_t>, uint128> Node::get_all_balances(const std::v
 {
 	std::map<std::pair<addr_t, addr_t>, uint128> totals;
 	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
-		const auto begin = balance_map.lower_bound(std::make_pair(address, addr_t()));
-		const auto end = balance_map.upper_bound(std::make_pair(address, addr_t::ones()));
-		for(auto iter = begin; iter != end; ++iter) {
-			totals[iter->first] += iter->second;
+		std::vector<std::pair<std::pair<addr_t, addr_t>, uint128>> entries;
+		balance_table.find_range(std::make_pair(address, addr_t()), std::make_pair(address, addr_t::ones()), entries);
+		for(const auto& entry : entries) {
+			totals[entry.first] += entry.second;
 		}
 	}
 	return totals;
@@ -817,11 +808,12 @@ vnx::Variant Node::call_contract(const addr_t& address, const std::string& metho
 uint128 Node::get_total_supply(const addr_t& currency) const
 {
 	uint128_t total = 0;
-	for(const auto& entry : balance_map) {
-		if(entry.first.first != addr_t() && entry.first.second == currency) {
-			total += entry.second;
-		}
-	}
+	balance_table.scan(
+		[currency, &total](const std::pair<addr_t, addr_t>& key, const uint128& value) {
+			if(key.first != addr_t() && key.second == currency) {
+				total += value;
+			}
+		});
 	return total;
 }
 
@@ -886,8 +878,10 @@ std::vector<offer_data_t> Node::get_offers(const uint32_t& since, const vnx::boo
 						inputs[std::make_pair(in.address, in.contract)] += in.amount;
 					}
 					for(const auto& entry : inputs) {
-						auto iter = balance_map.find(entry.first);
-						if(iter == balance_map.end() || iter->second < entry.second) {
+						uint128 value = 0;
+						if(balance_table.find(entry.first, value)) {
+							data.is_covered = value >= entry.second;
+						} else {
 							data.is_covered = false;
 						}
 					}
@@ -1036,7 +1030,7 @@ void Node::print_stats()
 		fclose(file);
 	}
 #endif
-	log(INFO) << tx_pool.size() << " tx pool, " << balance_map.size() << " addresses, " << fork_tree.size() << " blocks";
+	log(INFO) << tx_pool.size() << " tx pool, " << fork_tree.size() << " blocks";
 }
 
 void Node::on_stuck_timeout()
@@ -1389,11 +1383,11 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		throw std::logic_error("block->prev != state_hash");
 	}
 	std::unordered_set<hash_t> tx_set;
-	std::set<std::pair<addr_t, addr_t>> balance_set;
+	std::map<std::pair<addr_t, addr_t>, std::pair<uint128_t, uint128_t>> delta_map;
 
 	for(const auto& tx : block->get_all_transactions()) {
 		tx_set.insert(tx->id);
-		apply(block, tx, balance_set);
+		apply(block, tx, delta_map);
 	}
 	for(auto iter = pending_transactions.begin(); iter != pending_transactions.end();) {
 		if(tx_set.count(iter->second->id)) {
@@ -1402,12 +1396,13 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			iter++;
 		}
 	}
-	for(const auto& key : balance_set) {
-		const auto& balance = balance_map[key];
-		balance_table.insert(key, balance);
-		if(!balance) {
-			balance_map.erase(key);
-		}
+	for(const auto& entry : delta_map) {
+		uint128 balance = 0;
+		// TODO: parallel read ?
+		balance_table.find(entry.first, balance);
+		balance += entry.second.first;
+		balance -= entry.second.second;
+		balance_table.insert(entry.first, balance);
 	}
 	if(context) {
 		for(const auto& entry : context->contract_map) {
@@ -1428,10 +1423,10 @@ void Node::apply(	std::shared_ptr<const Block> block,
 
 void Node::apply(	std::shared_ptr<const Block> block,
 					std::shared_ptr<const Transaction> tx,
-					std::set<std::pair<addr_t, addr_t>>& balance_set)
+					std::map<std::pair<addr_t, addr_t>, std::pair<uint128_t, uint128_t>>& delta_map)
 {
 	if(tx->parent) {
-		apply(block, tx->parent, balance_set);
+		apply(block, tx->parent, delta_map);
 	}
 	const auto outputs = tx->get_outputs();
 	for(size_t i = 0; i < outputs.size(); ++i)
@@ -1439,10 +1434,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		const auto& out = outputs[i];
 		recv_log.insert(std::make_pair(out.address, block->height),
 				txout_entry_t::create_ex(txio_key_t::create_ex(tx->id, i), block->height, out));
-
-		const auto key = std::make_pair(out.address, out.contract);
-		balance_set.insert(key);
-		balance_map[key] += out.amount;
+		delta_map[std::make_pair(out.address, out.contract)].first += out.amount;
 	}
 	const auto inputs = tx->get_inputs();
 	for(size_t i = 0; i < inputs.size(); ++i)
@@ -1450,10 +1442,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		const auto& in = inputs[i];
 		spend_log.insert(std::make_pair(in.address, block->height),
 				txio_entry_t::create_ex(txio_key_t::create_ex(tx->id, i), block->height, in));
-
-		const auto key = std::make_pair(in.address, in.contract);
-		balance_set.insert(key);
-		balance_map[key] -= in.amount;
+		delta_map[std::make_pair(in.address, in.contract)].second += in.amount;
 	}
 	for(const auto& op : tx->execute)
 	{
