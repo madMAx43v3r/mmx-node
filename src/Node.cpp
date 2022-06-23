@@ -1499,6 +1499,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 
 void Node::revert(const uint32_t height)
 {
+	const auto time_begin = vnx::get_wall_time_millis();
 	db.revert(height);
 
 	balance_map.clear();
@@ -1535,6 +1536,10 @@ void Node::revert(const uint32_t height)
 		state_hash = entry.second;
 	} else {
 		state_hash = hash_t();
+	}
+	const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
+	if(elapsed > 1) {
+		log(WARN) << "Reverting to height " << int64_t(height) - 1 << " took " << elapsed << " sec";
 	}
 }
 
