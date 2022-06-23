@@ -250,7 +250,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 						}
 					}
 					for(const auto& in : txi->inputs) {
-						const auto balance = balance_cache.get(in.address, in.contract);
+						const auto balance = balance_cache.find(in.address, in.contract);
 						if(!balance || in.amount > *balance) {
 							throw std::logic_error("insufficient funds");
 						}
@@ -537,7 +537,7 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 
 	for(const auto& in : tx->inputs)
 	{
-		const auto balance = balance_cache.get(in.address, in.contract);
+		const auto balance = balance_cache.find(in.address, in.contract);
 		if(!balance || in.amount > *balance) {
 			throw std::logic_error("insufficient funds");
 		}

@@ -524,7 +524,7 @@ std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit,
 					}
 				}
 				for(const auto& in : tx->get_inputs()) {
-					const auto balance = tmp_cache.get(in.address, in.contract);
+					const auto balance = tmp_cache.find(in.address, in.contract);
 					if(balance && in.amount <= *balance) {
 						*balance -= in.amount;
 					} else {

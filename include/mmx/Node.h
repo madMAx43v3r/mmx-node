@@ -325,8 +325,7 @@ private:
 				std::shared_ptr<const execution_context_t> context, bool is_replay = false);
 
 	void apply(	std::shared_ptr<const Block> block,
-				std::shared_ptr<const Transaction> tx,
-				std::set<std::pair<addr_t, addr_t>>& balance_set);
+				std::shared_ptr<const Transaction> tx, balance_cache_t& balance_cache);
 
 	void revert(const uint32_t height);
 
@@ -382,8 +381,9 @@ private:
 	uint_multi_table<uint32_t, addr_t> offer_log;								// [height => contract]
 	uint_multi_table<uint32_t, addr_t> vplot_log;								// [height => contract]
 
-	balance_table_t<uint128> balance_table;										// [[addr, currency] => balance]
-	std::map<std::pair<addr_t, addr_t>, uint128_t> balance_map;					// [[addr, currency] => balance]
+	balance_table_t<uint128> balance_table;												// [[addr, currency] => balance]
+	std::map<std::pair<addr_t, addr_t>, uint128_t> balance_map;							// [[addr, currency] => balance]
+	std::map<uint32_t, std::map<std::pair<addr_t, addr_t>, uint128_t>> balance_log;		// [height => [addr, currency] => balance]
 
 	std::unordered_map<hash_t, tx_pool_t> tx_pool;									// [txid => transaction] (non-executed only)
 	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;					// [block hash => fork] (pending only)
