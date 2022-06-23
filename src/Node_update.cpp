@@ -187,6 +187,7 @@ void Node::update()
 		try {
 			forked_at = fork_to(best_fork);
 		} catch(...) {
+			best_fork->is_invalid = true;
 			continue;	// try again
 		}
 		break;

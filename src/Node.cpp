@@ -96,7 +96,7 @@ void Node::main()
 	}
 	storage = std::make_shared<vm::StorageRocksDB>(database_path, db);
 	{
-		const auto height = std::min(db.recover(), replay_height);
+		const auto height = std::min(db.min_version(), replay_height);
 		revert(height);
 		if(height) {
 			log(INFO) << "Loaded DB at height " << (height - 1) << ", " << balance_map.size()
@@ -116,7 +116,6 @@ void Node::main()
 		if(block_index.find_last(height, entry))
 		{
 			is_replay = false;
-			state_hash = entry.second;
 			block_chain->seek_to(entry.first);
 			const auto block = std::dynamic_pointer_cast<const Block>(read_block(*block_chain, true));
 			if(!block) {
@@ -1202,7 +1201,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 			revert(forked_at->height + 1);
 		}
 	} else {
-		throw std::logic_error("cannot fork to " + fork_head->block->hash.to_string());
+		throw std::logic_error("cannot fork to block at height " + std::to_string(fork_head->block->height));
 	}
 
 	// verify and apply
@@ -1244,11 +1243,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 				publish(block, output_verified_blocks);
 			}
 		}
-		try {
-			apply(block, fork->context);
-		} catch(const std::exception& ex) {
-			log(ERROR) << "Applying block at height " << block->height << " failed with: " << ex.what();
-		}
+		apply(block, fork->context);
 	}
 	return did_fork ? forked_at : nullptr;
 }
@@ -1334,19 +1329,36 @@ void Node::purge_tree()
 	}
 }
 
-void Node::commit(std::shared_ptr<const Block> block) noexcept
+void Node::commit(std::shared_ptr<const Block> block)
 {
-	if(!history.empty() && block->prev != get_root()->hash) {
-		return;
+	if(!history.empty()) {
+		const auto root = get_root();
+		if(block->prev != root->hash) {
+			throw std::logic_error("cannot commit height " + std::to_string(block->height) + " after " + std::to_string(root->height));
+		}
 	}
 	const auto height = block->height;
 	history[height] = block->get_header();
-	{
-		auto& next = balance_log[height + 1];
-		for(const auto& entry : balance_log[height]) {
-			next.emplace(entry);
+
+	if(height > 0) {
+		auto& current = balance_log[height];
+		{
+			auto iter = balance_log.lower_bound(height - 1);
+			while(iter != balance_log.end()) {
+				if(iter->first < height) {
+					for(const auto& entry : iter->second) {
+						current.emplace(entry);
+					}
+				}
+				if(iter == balance_log.begin()) {
+					break;
+				}
+				iter--;
+			}
 		}
-		balance_log.erase(height);
+	}
+	while(!balance_log.empty() && balance_log.begin()->first < height) {
+		balance_log.erase(balance_log.begin());
 	}
 	{
 		const auto range = challenge_map.equal_range(height);
@@ -1403,14 +1415,18 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	for(const auto& entry : balance_cache.balance) {
 		const auto& key = entry.first;
 		const auto& new_balance = entry.second;
-		auto& balance = balance_map[key];
-		prev_balance[key] = balance;
-		balance_table.insert(key, new_balance);
-		if(new_balance) {
-			balance = new_balance;
-		} else {
-			balance_map.erase(key);
+		const auto iter = balance_map.find(key);
+		if(iter != balance_map.end()) {
+			if(new_balance) {
+				iter->second = new_balance;
+			} else {
+				balance_map.erase(iter);
+			}
+		} else if(new_balance) {
+			balance_map[key] = new_balance;
 		}
+		prev_balance[key] = new_balance;
+		balance_table.insert(key, new_balance);
 	}
 	if(context) {
 		for(const auto& entry : context->contract_map) {
@@ -1496,9 +1512,9 @@ void Node::revert(const uint32_t height)
 	balance_map.clear();
 	if(height == 0) {
 		balance_log.clear();
-	} else if(!balance_log.empty() && balance_log.begin()->first <= height) {
+	} else if(!balance_log.empty() && balance_log.begin()->first < height) {
 		for(const auto& log_entry : balance_log) {
-			if(log_entry.first <= height) {
+			if(log_entry.first < height) {
 				for(const auto& entry : log_entry.second) {
 					const auto& key = entry.first;
 					if(const auto& balance = entry.second) {
@@ -1509,10 +1525,10 @@ void Node::revert(const uint32_t height)
 				}
 			}
 		}
-		balance_log.erase(balance_log.upper_bound(height), balance_log.end());
+		balance_log.erase(balance_log.lower_bound(height), balance_log.end());
 	} else {
 		balance_log.clear();
-		auto& prev_balance = balance_log[height];
+		auto& prev_balance = balance_log[height - 1];
 		balance_table.scan(
 			[this, &prev_balance](const std::pair<addr_t, addr_t>& key, const uint128& value) {
 				if(value) {

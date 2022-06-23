@@ -718,14 +718,23 @@ void DataBase::revert(const uint32_t new_version)
 	}
 }
 
-uint32_t DataBase::recover()
+uint32_t DataBase::min_version() const
 {
+	if(tables.empty()) {
+		return 0;
+	}
 	uint32_t min_version = -1;
 	for(const auto& table : tables) {
 		min_version = std::min(table->current_version(), min_version);
 	}
-	revert(min_version);
 	return min_version;
+}
+
+uint32_t DataBase::recover()
+{
+	const auto version = min_version();
+	revert(version);
+	return version;
 }
 
 

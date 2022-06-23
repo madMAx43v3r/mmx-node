@@ -55,7 +55,7 @@ public:
 		if(auto value = find(address, contract)) {
 			return *value;
 		}
-		return balance[std::make_pair(address, contract)];
+		return balance[std::make_pair(address, contract)] = 0;
 	}
 
 	void apply(const balance_cache_t& cache)

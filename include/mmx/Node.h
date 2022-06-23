@@ -299,7 +299,7 @@ private:
 
 	void validate_diff_adjust(const uint64_t& block, const uint64_t& prev) const;
 
-	void commit(std::shared_ptr<const Block> block) noexcept;
+	void commit(std::shared_ptr<const Block> block);
 
 	void purge_tree();
 
