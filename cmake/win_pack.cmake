@@ -35,7 +35,7 @@ set(mmx_node_gui_RELEASE_DIR ${mmx_node_gui_SOURCE_DIR}/MMX_Node_GUI/bin/CPack_R
 install(DIRECTORY ${mmx_node_gui_RELEASE_DIR}/ DESTINATION ./ COMPONENT gui)
 
 install(TARGETS mmx mmx_node mmx_farmer mmx_wallet mmx_timelord mmx_harvester mmx_timelord_rewards RUNTIME DESTINATION ./ COMPONENT applications)
-install(TARGETS mmx_vm mmx_vm_iface mmx_iface mmx_modules mmx_chiapos RUNTIME DESTINATION ./ COMPONENT applications)
+install(TARGETS mmx_db mmx_vm mmx_vm_iface mmx_iface mmx_modules mmx_chiapos RUNTIME DESTINATION ./ COMPONENT applications)
 install(TARGETS vnx_base vnx_addons vnx_rocksdb url_cpp llhttp RUNTIME DESTINATION ./ COMPONENT applications)
 install(TARGETS vnxpasswd generate_passwd RUNTIME DESTINATION ./ COMPONENT applications)
 install(TARGETS automy_basic_opencl RUNTIME DESTINATION ./ COMPONENT applications)
