@@ -706,15 +706,17 @@ void DataBase::add(std::shared_ptr<Table> table)
 
 void DataBase::commit(const uint32_t new_version)
 {
-	for(const auto& table : tables) {
-		table->commit(new_version);
+#pragma omp parallel for
+	for(int i = 0; i < int(tables.size()); ++i) {
+		tables[i]->commit(new_version);
 	}
 }
 
 void DataBase::revert(const uint32_t new_version)
 {
-	for(const auto& table : tables) {
-		table->revert(new_version);
+#pragma omp parallel for
+	for(int i = 0; i < int(tables.size()); ++i) {
+		tables[i]->revert(new_version);
 	}
 }
 
