@@ -274,8 +274,9 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	std::atomic<uint64_t> total_fees {0};
 	std::atomic<uint64_t> total_cost {0};
 
-#pragma omp parallel for
-	for(int i = 0; i < int(block->tx_list.size()); ++i)
+	const auto tx_count = block->tx_list.size();
+#pragma omp parallel for if(tx_count >= 16)
+	for(int i = 0; i < int(tx_count); ++i)
 	{
 		const auto& tx = block->tx_list[i];
 		context->wait(tx->id);
