@@ -13,11 +13,6 @@
 
 namespace mmx {
 
-enum key_mode_e {
-	EQUAL,
-	GREATER_EQUAL
-};
-
 template<typename K, typename V, typename I = uint32_t>
 class multi_table : protected table<std::pair<K, I>, V> {
 private:
@@ -69,7 +64,7 @@ public:
 		}
 	}
 
-	size_t find(const K& key, std::vector<V>& values, const key_mode_e mode = EQUAL) const
+	size_t find(const K& key, std::vector<V>& values, const bool greater_equal = false) const
 	{
 		values.clear();
 		std::pair<K, I> key_(key, 0);
@@ -78,7 +73,7 @@ public:
 		iter.seek(write(key_));
 		while(iter.is_valid()) {
 			read(iter.key(), key_);
-			if(mode == EQUAL && !(key_.first == key)) {
+			if(!greater_equal && !(key_.first == key)) {
 				break;
 			}
 			try {
