@@ -288,7 +288,7 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 
 void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::shared_ptr<vdf_point_t> point)
 {
-	if(is_synced && !verified_vdfs.count(proof->height)) {
+	if(is_synced && proof->height > get_height()) {
 		log(INFO) << "-------------------------------------------------------------------------------";
 	}
 	verified_vdfs.emplace(proof->height, point);
