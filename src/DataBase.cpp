@@ -432,7 +432,7 @@ void Table::flush()
 	// clear log after writing index
 	write_log.open("wb");
 
-	debug_log << "Flushed block " << block->name << " with " << block->index.size() << " / " << block->total_count
+	debug_log << "Flushed " << block->name << " with " << block->index.size() << " / " << block->total_count
 			<< " entries, min_version = " << block->min_version << ", max_version = " << block->max_version << std::endl;
 
 	check_rewrite();
@@ -561,13 +561,13 @@ void Table::check_rewrite()
 	}
 	write_index();
 
-	debug_log << "Wrote block " << block->name << " at level " << block->level
+	debug_log << "Wrote " << block->name << " at level " << block->level
 			<< " with " << block->index.size() << " / " << block->total_count
 			<< " entries, min_version = " << block->min_version << ", max_version = " << block->max_version << std::endl;
 
 	for(const auto& name : index->delete_files) {
 		vnx::File(file_path + '/' + name).remove();
-		debug_log << "Deleted block " << name << std::endl;
+		debug_log << "Deleted " << name << std::endl;
 	}
 	index->delete_files.clear();
 	write_index();
