@@ -1345,12 +1345,16 @@ void Node::commit(std::shared_ptr<const Block> block)
 	if(height > 0) {
 		const auto iter = balance_log.find(height - 1);
 		if(iter != balance_log.end()) {
-			auto& current = balance_log[height];
-			for(const auto& entry : iter->second) {
+			auto& prev = iter->second;
+			auto& next = balance_log[height];
+			for(const auto& entry : next) {
 				if(entry.second) {
-					current.emplace(entry);
+					prev[entry.first] = entry.second;
+				} else {
+					prev.erase(entry.first);
 				}
 			}
+			next = std::move(prev);
 			balance_log.erase(iter);
 		}
 	}
