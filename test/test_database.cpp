@@ -42,8 +42,9 @@ int main(int argc, char** argv)
 	{
 		const uint32_t num_entries = 100;
 
-		auto table = std::make_shared<mmx::Table>("tmp/test_table");
-		table->max_block_size = 1024 * 1024;
+		mmx::Table::options_t options;
+		options.max_block_size = 1024 * 1024;
+		auto table = std::make_shared<mmx::Table>("tmp/test_table", options);
 
 		if(table->current_version() == 1) {
 			for(uint32_t i = 0; i < num_entries; ++i) {
