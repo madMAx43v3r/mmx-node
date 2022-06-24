@@ -47,6 +47,7 @@ const langEN = {
     "node_common": {
         "vdf_speed": "VDF Speed",
         "block_reward": "Block Reward",
+        "tx_fees": "Transaction Fees",
         "netspace": "Netspace"
     },
 
@@ -109,6 +110,10 @@ const langEN = {
 
     "block_reward_graph": {
         "title": "@:node_common.block_reward ({0})"
+    },
+    
+    "tx_fees_graph": {
+        "title": "@:node_common.tx_fees ({0})"
     },
 
     "wallet_summary": {

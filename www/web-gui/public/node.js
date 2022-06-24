@@ -250,9 +250,19 @@ app.component('block-reward-graph', {
 	},
 	data() {
 		return {
-			data: null,
-			layout: {
+			base_data: null,
+			fee_data: null,
+			base_layout: {
 				title: this.$t('block_reward_graph.title', ['MMX']),
+				xaxis: {
+					title: this.$t('common.height')
+				},
+				yaxis: {
+					title: "MMX"
+				}
+			},
+			fee_layout: {
+				title: this.$t('tx_fees_graph.title', ['MMX']),
 				xaxis: {
 					title: this.$t('common.height')
 				},
@@ -270,15 +280,25 @@ app.component('block-reward-graph', {
 			fetch('/wapi/node/graph/blocks?limit=' + this.limit + '&step=' + (this.step ? this.step : 90))
 				.then(response => response.json())
 				.then(data => {
-					const tmp = {x: [], y: [], type: "scatter"};
-					for(const item of data) {
-						if(item.reward > 0) {
+					{
+						const tmp = {x: [], y: [], type: "scatter"};
+						for(const item of data) {
 							tmp.x.push(item.height);
-							tmp.y.push(item.reward);
+							tmp.y.push(item.base_reward);
 						}
+						this.base_data = [tmp];
+					}
+					{
+						const tmp = {x: [], y: [], type: "scatter"};
+						for(const item of data) {
+							if(item.tx_fees > 0) {
+								tmp.x.push(item.height);
+								tmp.y.push(item.tx_fees);
+							}
+						}
+						this.fee_data = [tmp];
 					}
 					this.loading = false;
-					this.data = [tmp];
 				});
 		}
 	},
@@ -290,12 +310,20 @@ app.component('block-reward-graph', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<template v-if="!data && loading">
+		<template v-if="!base_data && loading">
 			<div class="ui basic loading placeholder segment"></div>
 		</template>
-		<template v-if="data">
+		<template v-if="base_data">
 			<div class="ui segment">
-				<vue-plotly :data="data" :layout="layout" :display-mode-bar="false"></vue-plotly>
+				<vue-plotly :data="base_data" :layout="base_layout" :display-mode-bar="false"></vue-plotly>
+			</div>
+		</template>
+		<template v-if="!fee_data && loading">
+			<div class="ui basic loading placeholder segment"></div>
+		</template>
+		<template v-if="fee_data">
+			<div class="ui segment">
+				<vue-plotly :data="fee_data" :layout="fee_layout" :display-mode-bar="false"></vue-plotly>
 			</div>
 		</template>
 		`
