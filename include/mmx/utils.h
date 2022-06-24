@@ -110,21 +110,13 @@ uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params, std::shar
 							std::shared_ptr<const BlockHeader> block, bool have_farmer_sig)
 {
 	uint256_t weight = 0;
-	// TODO: remove height switch
-	if(block->height > 200000) {
-		if(block->proof) {
-			if(have_farmer_sig) {
-				weight += params->score_threshold;
-			}
-			weight += params->score_threshold - block->proof->score;
-		} else {
-			weight += 1;
+	if(block->proof) {
+		if(have_farmer_sig) {
+			weight += params->score_threshold;
 		}
+		weight += params->score_threshold - block->proof->score;
 	} else {
-		 weight = have_farmer_sig ? 2 : 1;
-		 if(block->proof) {
-			 weight += params->score_threshold - block->proof->score;
-		 }
+		weight += 1;
 	}
 	weight *= diff_block->space_diff;
 	weight *= diff_block->time_diff;

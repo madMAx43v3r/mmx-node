@@ -1680,12 +1680,7 @@ uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block) const
 		return 0;
 	}
 	if(std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
-		// TODO: remove height switches
-		if(block->height > 200000) {
-			return 0;
-		} else if(block->height > 100000) {
-			return params->min_reward;
-		}
+		return 0;
 	}
 	const auto reward = mmx::calc_block_reward(params, get_diff_header(block)->space_diff);
 	return std::max(reward, params->min_reward);
