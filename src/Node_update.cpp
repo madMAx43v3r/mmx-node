@@ -186,8 +186,9 @@ void Node::update()
 		// verify and apply new fork
 		try {
 			forked_at = fork_to(best_fork);
-		} catch(...) {
+		} catch(const std::exception& ex) {
 			best_fork->is_invalid = true;
+			log(WARN) << "Forking to height " << best_fork->block->height << " failed with: " << ex.what();
 			continue;	// try again
 		}
 		break;

@@ -1164,8 +1164,10 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 	bool did_fork = false;
 	std::shared_ptr<const BlockHeader> forked_at;
 
-	// bring state back in line
-	{
+	if(state_hash == root->hash) {
+		forked_at = root;
+	} else {
+		// bring state back in line
 		auto peak = find_fork(state_hash);
 		while(peak) {
 			bool found = false;
@@ -1231,10 +1233,10 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 				fork->is_verified = true;
 			}
 			catch(const std::exception& ex) {
-				log(WARN) << "Block verification failed for height " << block->height << " with: " << ex.what();
+				log(WARN) << "Block validation failed for height " << block->height << " with: " << ex.what();
 				fork->is_invalid = true;
 				fork_to(prev_state);
-				throw;
+				throw std::runtime_error("validation failed");
 			}
 			if(is_synced) {
 				if(auto point = fork->vdf_point) {
