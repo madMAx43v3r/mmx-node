@@ -561,7 +561,8 @@ void Table::check_rewrite()
 	}
 	write_index();
 
-	debug_log << "Wrote block " << block->name << " at level " << block->level << " with " << block->index.size() << " / " << block->total_count
+	debug_log << "Wrote block " << block->name << " at level " << block->level
+			<< " with " << block->index.size() << " / " << block->total_count
 			<< " entries, min_version = " << block->min_version << ", max_version = " << block->max_version << std::endl;
 
 	for(const auto& name : index->delete_files) {
