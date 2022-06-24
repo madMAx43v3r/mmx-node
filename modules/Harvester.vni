@@ -19,6 +19,7 @@ module Harvester implements vnx.addons.HttpComponent {
 	uint num_threads = 0;					// 0 = number of plot_dirs
 	
 	bool recursive_search = true;
+	bool farm_virtual_plots = true;
 	
 	
 	void reload();
