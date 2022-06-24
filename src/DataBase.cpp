@@ -528,16 +528,21 @@ void Table::check_rewrite()
 		return;
 	}
 	uint32_t level = 0;
+	auto iter_begin = blocks.begin();
+	auto iter_end = iter_begin;
 	std::list<std::shared_ptr<block_t>> selected;
-	for(const auto& block : blocks) {
+	for(auto iter = blocks.begin(); iter != blocks.end(); ++iter) {
+		const auto& block = *iter;
 		if(selected.empty() || block->level == level) {
 			selected.push_back(block);
 			if(selected.size() > options.level_factor) {
+				iter_end = iter;
 				break;
 			}
 		} else {
 			selected.clear();
 			selected.push_back(block);
+			iter_begin = iter;
 		}
 		level = block->level;
 	}
@@ -547,17 +552,12 @@ void Table::check_rewrite()
 	selected.pop_back();
 
 	const auto block = rewrite(selected, level + 1, index->next_block_id++);
-	blocks.push_back(block);
 
-	for(const auto& old_block : selected) {
-		for(auto iter = blocks.begin(); iter != blocks.end();) {
-			if((*iter)->name == old_block->name) {
-				iter = blocks.erase(iter);
-			} else {
-				iter++;
-			}
-		}
-		index->delete_files.push_back(old_block->name);
+	blocks.insert(iter_begin, block);
+	blocks.erase(iter_begin, iter_end);
+
+	for(const auto& block : selected) {
+		index->delete_files.push_back(block->name);
 	}
 	write_index();
 
