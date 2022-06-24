@@ -1511,20 +1511,20 @@ void Node::revert(const uint32_t height)
 	balance_map.clear();
 	if(height == 0) {
 		balance_log.clear();
-	} else if(!balance_log.empty() && balance_log.begin()->first < height) {
+	}
+	else if(!balance_log.empty() && balance_log.begin()->first < height)
+	{
+		balance_log.erase(balance_log.lower_bound(height), balance_log.end());
 		for(const auto& log_entry : balance_log) {
-			if(log_entry.first < height) {
-				for(const auto& entry : log_entry.second) {
-					const auto& key = entry.first;
-					if(const auto& balance = entry.second) {
-						balance_map[key] = balance;
-					} else {
-						balance_map.erase(key);
-					}
+			for(const auto& entry : log_entry.second) {
+				const auto& key = entry.first;
+				if(const auto& balance = entry.second) {
+					balance_map[key] = balance;
+				} else {
+					balance_map.erase(key);
 				}
 			}
 		}
-		balance_log.erase(balance_log.lower_bound(height), balance_log.end());
 	} else {
 		balance_log.clear();
 		auto& prev_balance = balance_log[height - 1];
