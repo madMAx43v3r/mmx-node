@@ -236,11 +236,14 @@ void Node::update()
 		{
 			auto proof = fork->block->proof;
 			auto vdf_point = fork->vdf_point;
+			std::stringstream ss_delay;
+			if(is_synced && vdf_point) {
+				ss_delay << ", delay " << (fork->recv_time - vdf_point->recv_time) / 1000 / 1e3 << " sec";
+			}
 			log(INFO) << "New peak at height " << peak->height
 					<< " with score " << (proof ? proof->score : params->score_threshold) << (peak->farmer_sig ? "" : " (dummy)")
 					<< (is_synced && forked_at ? ", forked at " + std::to_string(forked_at->height) : "")
-					<< (is_synced && vdf_point ? ", delay " + std::to_string((fork->recv_time - vdf_point->recv_time) / 1000 / 1e3) + " sec" : "")
-					<< ", took " << elapsed << " sec";
+					<< ss_delay.str() << ", took " << elapsed << " sec";
 		}
 	}
 

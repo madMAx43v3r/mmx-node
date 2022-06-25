@@ -308,8 +308,11 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::sha
 			prev = iter->second;
 		}
 	}
-	log(INFO) << "Verified VDF for height " << proof->height <<
-			(prev ? ", delta = " + std::to_string((point->recv_time - prev->recv_time) / 1e6) + " sec" : "") << ", took " << elapsed << " sec";
+	std::stringstream ss_delta;
+	if(prev) {
+		ss_delta << ", delta = " << (point->recv_time - prev->recv_time) / 1000 / 1e3 << " sec" ;
+	}
+	log(INFO) << "Verified VDF for height " << proof->height << ss_delta.str() << ", took " << elapsed << " sec";
 
 	// add dummy blocks
 	const auto root = get_root();
