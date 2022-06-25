@@ -9,8 +9,7 @@
 #define INCLUDE_MMX_BALANCE_CACHE_T_H_
 
 #include <mmx/addr_t.hpp>
-
-#include <uint128_t.h>
+#include <mmx/uint128.hpp>
 
 #include <map>
 
@@ -23,11 +22,11 @@ public:
 
 	balance_cache_t(balance_cache_t* parent) : parent(parent) {}
 
-	balance_cache_t(const std::map<std::pair<addr_t, addr_t>, uint128_t>* source) : source(source) {}
+	balance_cache_t(const std::map<std::pair<addr_t, addr_t>, uint128>* source) : source(source) {}
 
 	balance_cache_t& operator=(const balance_cache_t&) = default;
 
-	uint128_t* find(const addr_t& address, const addr_t& contract)
+	uint128* find(const addr_t& address, const addr_t& contract)
 	{
 		const auto key = std::make_pair(address, contract);
 		auto iter = balance.find(key);
@@ -51,7 +50,7 @@ public:
 		return &iter->second;
 	}
 
-	uint128_t& get(const addr_t& address, const addr_t& contract) {
+	uint128& get(const addr_t& address, const addr_t& contract) {
 		if(auto value = find(address, contract)) {
 			return *value;
 		}
@@ -65,11 +64,11 @@ public:
 		}
 	}
 
-	std::map<std::pair<addr_t, addr_t>, uint128_t> balance;
+	std::map<std::pair<addr_t, addr_t>, uint128> balance;
 
 private:
 	balance_cache_t* const parent = nullptr;
-	const std::map<std::pair<addr_t, addr_t>, uint128_t>* const source = nullptr;
+	const std::map<std::pair<addr_t, addr_t>, uint128>* const source = nullptr;
 
 };
 

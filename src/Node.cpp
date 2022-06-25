@@ -1341,23 +1341,6 @@ void Node::commit(std::shared_ptr<const Block> block)
 	}
 	const auto height = block->height;
 	history[height] = block->get_header();
-
-	if(height > 0) {
-		const auto iter = balance_log.find(height - 1);
-		if(iter != balance_log.end()) {
-			auto& prev = iter->second;
-			auto& next = balance_log[height];
-			for(const auto& entry : next) {
-				if(entry.second) {
-					prev[entry.first] = entry.second;
-				} else {
-					prev.erase(entry.first);
-				}
-			}
-			next = std::move(prev);
-			balance_log.erase(iter);
-		}
-	}
 	{
 		const auto range = challenge_map.equal_range(height);
 		for(auto iter = range.first; iter != range.second; ++iter) {
@@ -1369,8 +1352,16 @@ void Node::commit(std::shared_ptr<const Block> block)
 		history.erase(history.begin());
 	}
 	fork_tree.erase(block->hash);
-	pending_vdfs.erase(pending_vdfs.begin(), pending_vdfs.upper_bound(height));
-	verified_vdfs.erase(verified_vdfs.begin(), verified_vdfs.upper_bound(height));
+
+	if(!balance_log.empty()) {
+		balance_log.erase(balance_log.begin(), balance_log.upper_bound(height));
+	}
+	if(!pending_vdfs.empty()) {
+		pending_vdfs.erase(pending_vdfs.begin(), pending_vdfs.upper_bound(height));
+	}
+	if(!verified_vdfs.empty()) {
+		verified_vdfs.erase(verified_vdfs.begin(), verified_vdfs.upper_bound(height));
+	}
 
 	if(is_synced) {
 		std::string ksize = "N/A";
@@ -1409,12 +1400,18 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			iter++;
 		}
 	}
-	auto& prev_balance = balance_log[block->height];
+	auto& balance_delta = balance_log[block->height];
 	for(const auto& entry : balance_cache.balance) {
 		const auto& key = entry.first;
 		const auto& new_balance = entry.second;
 		const auto iter = balance_map.find(key);
 		if(iter != balance_map.end()) {
+			if(new_balance > iter->second) {
+				balance_delta.added[key] = new_balance - iter->second;
+			}
+			if(new_balance < iter->second) {
+				balance_delta.removed[key] = iter->second - new_balance;
+			}
 			if(new_balance) {
 				iter->second = new_balance;
 			} else {
@@ -1422,8 +1419,8 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			}
 		} else if(new_balance) {
 			balance_map[key] = new_balance;
+			balance_delta.added[key] = new_balance;
 		}
-		prev_balance[key] = new_balance;
 		balance_table.insert(key, new_balance);
 	}
 	if(context) {
@@ -1514,32 +1511,26 @@ void Node::revert(const uint32_t height)
 	}
 	db.revert(height);
 
-	balance_map.clear();
-	if(height == 0) {
-		balance_log.clear();
-	}
-	else if(!balance_log.empty() && balance_log.begin()->first < height)
-	{
-		balance_log.erase(balance_log.lower_bound(height), balance_log.end());
-		for(const auto& log_entry : balance_log) {
-			for(const auto& entry : log_entry.second) {
-				const auto& key = entry.first;
-				if(const auto& balance = entry.second) {
-					balance_map[key] = balance;
-				} else {
-					balance_map.erase(key);
+	if(!balance_log.empty() && balance_log.begin()->first <= height) {
+		for(auto iter = balance_log.rbegin(); iter != balance_log.rend() && iter->first >= height; ++iter) {
+			for(const auto& entry : iter->second.removed) {
+				balance_map[entry.first] += entry.second;
+			}
+			for(const auto& entry : iter->second.added) {
+				if(!(balance_map[entry.first] -= entry.second)) {
+					balance_map.erase(entry.first);
 				}
 			}
 		}
+		balance_log.erase(balance_log.lower_bound(height), balance_log.end());
 	} else {
+		balance_map.clear();
 		balance_log.clear();
-		auto& prev_balance = balance_log[height - 1];
 		balance_table.scan(
-			[this, &prev_balance](const std::pair<addr_t, addr_t>& key, const uint128& value) {
+			[this](const std::pair<addr_t, addr_t>& key, const uint128& value) {
 				if(value) {
 					balance_map[key] = value;
 				}
-				prev_balance[key] = value;
 			});
 	}
 
