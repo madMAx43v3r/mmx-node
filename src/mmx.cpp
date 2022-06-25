@@ -381,7 +381,7 @@ int main(int argc, char** argv)
 					goto failed;
 				}
 				const auto tx = wallet.send(index, mojo, target, contract, spend_options);
-				std::cout << "Sent " << mojo / pow(10, token->decimals) << " " << (token ? token->symbol : "MMX") << " (" << mojo << ") to " << target << std::endl;
+				std::cout << "Sent " << mojo / pow(10, token->decimals) << " " << token->symbol << " (" << mojo << ") to " << target << std::endl;
 				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
 			else if(command == "send_from")
@@ -402,7 +402,7 @@ int main(int argc, char** argv)
 					goto failed;
 				}
 				const auto tx = wallet.send_from(index, mojo, target, source, contract, spend_options);
-				std::cout << "Sent " << mojo / pow(10, token->decimals) << " " << (token ? token->symbol : "MMX") << " (" << mojo << ") to " << target << std::endl;
+				std::cout << "Sent " << mojo / pow(10, token->decimals) << " " << token->symbol << " (" << mojo << ") to " << target << std::endl;
 				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
 			else if(command == "transfer")
@@ -784,16 +784,20 @@ int main(int argc, char** argv)
 				}
 				size_t i = 0;
 				for(const auto& in : tx->get_all_inputs()) {
+					std::cout << "Input[" << i++ << "]: ";
 					if(auto token = get_token(node, in.contract, false)) {
-						std::cout << "Input[" << i++ << "]: " << in.amount / pow(10, token->decimals)
-								<< " " << token->symbol << " (" << in.amount << ") <- " << in.address << std::endl;
+						std::cout << in.amount / pow(10, token->decimals) << " " << token->symbol << " (" << in.amount << ") <- " << in.address << std::endl;
+					} else {
+						std::cout << in.amount << " [" << in.contract << "]" << std::endl;
 					}
 				}
 				i = 0;
 				for(const auto& out : tx->get_all_outputs()) {
+					std::cout << "Output[" << i++ << "]: ";
 					if(auto token = get_token(node, out.contract, false)) {
-						std::cout << "Output[" << i++ << "]: " << out.amount / pow(10, token->decimals)
-								<< " " << token->symbol << " (" << out.amount << ") -> " << out.address << std::endl;
+						std::cout << out.amount / pow(10, token->decimals) << " " << token->symbol << " (" << out.amount << ") -> " << out.address << std::endl;
+					} else {
+						std::cout << out.amount << " [" << out.contract << "]" << std::endl;
 					}
 				}
 			}
@@ -1044,18 +1048,28 @@ int main(int argc, char** argv)
 						const auto& input = entry.second.first;
 						const auto& output = entry.second.second;
 						if(input > output) {
-							const auto token = get_token(node, entry.first);
-							std::cout << "  They offer:   " << (input - output).lower() / pow(10, token->decimals)
-									<< " " << token->symbol << " [" << entry.first << "]" << std::endl;
+							std::cout << "  They offer:   ";
+							const auto amount = (input - output).lower();
+							if(auto token = get_token(node, entry.first)) {
+								std::cout << amount / pow(10, token->decimals) << " " << token->symbol << " [" << entry.first << "]";
+							} else {
+								std::cout << amount << " [" << entry.first << "]";
+							}
+							std::cout << std::endl;
 						}
 					}
 					for(const auto& entry : data.offer->get_balance()) {
 						const auto& input = entry.second.first;
 						const auto& output = entry.second.second;
 						if(input < output) {
-							const auto token = get_token(node, entry.first);
-							std::cout << "  They ask for: " << (output - input).lower() / pow(10, token->decimals)
-									<< " " << token->symbol << " [" << entry.first << "]" << std::endl;
+							std::cout << "  They ask for: ";
+							const auto amount = (output - input).lower();
+							if(auto token = get_token(node, entry.first)) {
+								std::cout << amount / pow(10, token->decimals) << " " << token->symbol << " [" << entry.first << "]";
+							} else {
+								std::cout << amount << " [" << entry.first << "]";
+							}
+							std::cout << std::endl;
 						}
 					}
 				}
