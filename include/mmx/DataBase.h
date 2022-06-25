@@ -35,6 +35,14 @@ struct db_val_t {
 	db_val_t(const void* data, const uint32_t size) : db_val_t(size) {
 		::memcpy(this->data, data, size);
 	}
+	db_val_t(void* data, const uint32_t size, bool copy = true) : size(size) {
+		if(copy) {
+			this->data = (uint8_t*)::malloc(size);
+			::memcpy(this->data, data, size);
+		} else {
+			this->data = (uint8_t*)data;
+		}
+	}
 	db_val_t(const db_val_t&) = delete;
 
 	~db_val_t() {
@@ -74,7 +82,7 @@ protected:
 		key_compare_t(const Table* table) : table(table) {}
 
 		bool operator()(const std::shared_ptr<db_val_t>& lhs, const std::shared_ptr<db_val_t>& rhs) const {
-			return table->comparator(*lhs, *rhs) < 0;
+			return table->options.comparator(*lhs, *rhs) < 0;
 		}
 	};
 
@@ -83,28 +91,25 @@ protected:
 		mem_compare_t(const Table* table) : table(table) {}
 
 		bool operator()(const std::pair<std::shared_ptr<db_val_t>, uint32_t>& lhs, const std::pair<std::shared_ptr<db_val_t>, uint32_t>& rhs) const {
-			const auto res = table->comparator(*lhs.first, *rhs.first);
+			const auto res = table->options.comparator(*lhs.first, *rhs.first);
 			if(res == 0) {
-				return lhs.second < rhs.second;
+				return lhs.second > rhs.second;
 			}
 			return res < 0;
 		}
 	};
 
 public:
-	int level_factor = 4;
-	size_t max_block_size = 16 * 1024 * 1024;
+	struct options_t {
+		size_t level_factor = 4;
+		size_t max_block_size = 4 * 1024 * 1024;
+		std::function<int(const db_val_t&, const db_val_t&)> comparator = default_comparator;
+	};
 
+	const options_t options;
 	const std::string file_path;
-	const std::function<int(const db_val_t&, const db_val_t&)> comparator;
 
-	static constexpr uint32_t entry_overhead = 20;
-	static constexpr uint32_t block_header_size = 30;
-
-	MMX_DB_EXPORT
-	static const std::function<int(const db_val_t&, const db_val_t&)> default_comparator;
-
-	Table(const std::string& file_path, const std::function<int(const db_val_t&, const db_val_t&)>& comparator = default_comparator);
+	Table(const std::string& file_path, const options_t& options = default_options);
 
 	void insert(std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t> value);
 
@@ -122,6 +127,8 @@ public:
 
 	class Iterator {
 	public:
+		Iterator() = default;
+		Iterator(const Table* table);
 		Iterator(std::shared_ptr<const Table> table);
 		~Iterator();
 
@@ -141,22 +148,38 @@ public:
 	private:
 		struct pointer_t {
 			size_t pos = -1;
-			uint32_t version = -1;
 			std::shared_ptr<block_t> block;
 			std::shared_ptr<db_val_t> value;
 			std::shared_ptr<vnx::File> file;
 			std::map<std::shared_ptr<db_val_t>, std::pair<std::shared_ptr<db_val_t>, uint32_t>, key_compare_t>::const_iterator iter;
 		};
 
+		struct compare_t {
+			const Iterator* iter = nullptr;
+			compare_t(const Iterator* iter) : iter(iter) {}
+			bool operator()(const std::pair<std::shared_ptr<db_val_t>, uint32_t>& lhs, const std::pair<std::shared_ptr<db_val_t>, uint32_t>& rhs) const;
+		};
+
 		void seek(std::shared_ptr<db_val_t> key, const int mode);
-		std::map<std::shared_ptr<db_val_t>, pointer_t, key_compare_t>::const_iterator current() const;
+		void seek(const std::list<std::shared_ptr<block_t>>& blocks, std::shared_ptr<db_val_t> key, const int mode);
+		std::map<std::pair<std::shared_ptr<db_val_t>, uint32_t>, pointer_t, key_compare_t>::const_iterator current() const;
 
 		int direction = 0;
-		std::shared_ptr<const Table> table;
-		std::map<std::shared_ptr<db_val_t>, pointer_t, key_compare_t> block_map;
+		const Table* table = nullptr;
+		std::shared_ptr<const Table> p_table;
+		std::map<std::pair<std::shared_ptr<db_val_t>, uint32_t>, pointer_t, compare_t> block_map;
 	};
 
+	MMX_DB_EXPORT
+	static const std::function<int(const db_val_t&, const db_val_t&)> default_comparator;
+
+	MMX_DB_EXPORT
+	static const options_t default_options;
+
 private:
+	static constexpr uint32_t entry_overhead = 20;
+	static constexpr uint32_t block_header_size = 30;
+
 	void read_entry(vnx::TypeInput& in, uint32_t& version, std::shared_ptr<db_val_t>& key, std::shared_ptr<db_val_t>& value) const;
 
 	void read_key_at(vnx::File& file, int64_t offset, uint32_t& version, std::shared_ptr<db_val_t>& key) const;
@@ -167,7 +190,7 @@ private:
 
 	void read_value_at(vnx::File& file, int64_t offset, std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t>& value) const;
 
-	void write_entry(vnx::TypeOutput& out, uint32_t version, std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t> value);
+	void write_entry(vnx::TypeOutput& out, uint32_t version, std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t> value) const;
 
 	void insert_entry(uint32_t version, std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t> value);
 
@@ -176,6 +199,14 @@ private:
 	std::shared_ptr<db_val_t> find(std::shared_ptr<block_t> block, std::shared_ptr<db_val_t> key) const;
 
 	size_t lower_bound(vnx::File& file, std::shared_ptr<block_t> block, uint32_t& version, std::shared_ptr<db_val_t>& key, bool& is_match) const;
+
+	std::shared_ptr<block_t> rewrite(std::list<std::shared_ptr<block_t>> blocks, const uint32_t level, const uint64_t new_block_id) const;
+
+	void check_rewrite();
+
+	void write_block_header(vnx::TypeOutput& out, std::shared_ptr<block_t> block) const;
+
+	void write_block_index(vnx::TypeOutput& out, std::shared_ptr<block_t> block) const;
 
 	void write_index();
 
@@ -195,16 +226,18 @@ private:
 
 class DataBase {
 public:
-	void add_table(std::shared_ptr<Table> table);
+	void add(std::shared_ptr<Table> table);
 
 	void commit(const uint32_t new_version);
 
 	void revert(const uint32_t new_version);
 
-	void recover();
+	uint32_t min_version() const;
+
+	uint32_t recover();
 
 private:
-	std::map<std::string, std::shared_ptr<Table>> table_map;
+	std::vector<std::shared_ptr<Table>> tables;
 
 };
 

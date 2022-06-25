@@ -70,7 +70,7 @@ void Node::add_dummy_blocks(std::shared_ptr<const BlockHeader> prev)
 
 void Node::update()
 {
-	const auto time_begin = vnx::get_wall_time_micros();
+	const auto time_begin = vnx::get_wall_time_millis();
 
 	verify_vdfs();
 
@@ -174,9 +174,9 @@ void Node::update()
 	std::shared_ptr<const BlockHeader> forked_at;
 
 	// choose best fork
-	while(true) {
+	while(vnx::do_run())
+	{
 		forked_at = nullptr;
-
 		const auto best_fork = find_best_fork();
 
 		if(!best_fork || best_fork->block->hash == state_hash) {
@@ -186,7 +186,9 @@ void Node::update()
 		// verify and apply new fork
 		try {
 			forked_at = fork_to(best_fork);
-		} catch(...) {
+		} catch(const std::exception& ex) {
+			best_fork->is_invalid = true;
+			log(WARN) << "Forking to height " << best_fork->block->height << " failed with: " << ex.what();
 			continue;	// try again
 		}
 		break;
@@ -225,7 +227,7 @@ void Node::update()
 		}
 	}
 	const auto root = get_root();
-	const auto elapsed = (vnx::get_wall_time_micros() - time_begin) / 1e6;
+	const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
 
 	if(!prev_peak || peak->hash != prev_peak->hash)
 	{
@@ -234,11 +236,14 @@ void Node::update()
 		{
 			auto proof = fork->block->proof;
 			auto vdf_point = fork->vdf_point;
+			std::stringstream ss_delay;
+			if(is_synced && vdf_point) {
+				ss_delay << ", delay " << (fork->recv_time - vdf_point->recv_time) / 1000 / 1e3 << " sec";
+			}
 			log(INFO) << "New peak at height " << peak->height
 					<< " with score " << (proof ? proof->score : params->score_threshold) << (peak->farmer_sig ? "" : " (dummy)")
 					<< (is_synced && forked_at ? ", forked at " + std::to_string(forked_at->height) : "")
-					<< (is_synced && vdf_point ? ", delay " + std::to_string((fork->recv_time - vdf_point->recv_time) / 1e6) + " sec" : "")
-					<< ", took " << elapsed << " sec";
+					<< ss_delay.str() << ", took " << elapsed << " sec";
 		}
 	}
 
@@ -384,7 +389,7 @@ std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit,
 	if(!peak) {
 		return {};
 	}
-	const auto time_begin = vnx::get_wall_time_micros();
+	const auto time_begin = vnx::get_wall_time_millis();
 
 	std::vector<tx_pool_t> all_tx;
 	for(const auto& entry : tx_pool) {
@@ -524,7 +529,7 @@ std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit,
 					}
 				}
 				for(const auto& in : tx->get_inputs()) {
-					const auto balance = tmp_cache.get(in.address, in.contract);
+					const auto balance = tmp_cache.find(in.address, in.contract);
 					if(balance && in.amount <= *balance) {
 						*balance -= in.amount;
 					} else {
@@ -554,7 +559,7 @@ std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit,
 	}
 
 	if(!only_new || !tx_list.empty()) {
-		const auto elapsed = (vnx::get_wall_time_micros() - time_begin) / 1e6;
+		const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
 		log(INFO) << "Validated" << (only_new ? " new" : "") << " transactions: " << result.size() << " valid, "
 				<< num_invalid << " invalid, " << num_purged << " purged, took " << elapsed << " sec";
 	}
@@ -563,7 +568,7 @@ std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit,
 
 std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response)
 {
-	const auto time_begin = vnx::get_wall_time_micros();
+	const auto time_begin = vnx::get_wall_time_millis();
 
 	// find VDF output
 	const auto vdf_point = find_next_vdf_point(prev);
@@ -634,7 +639,7 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	}
 	block->BlockHeader::operator=(*result);
 
-	const auto elapsed = (vnx::get_wall_time_micros() - time_begin) / 1e6;
+	const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
 	log(INFO) << "Created block at height " << block->height << " with: ntx = " << block->tx_list.size()
 			<< ", score = " << response->proof->score << ", reward = " << final_reward / pow(10, params->decimals) << " MMX"
 			<< ", nominal = " << block_reward / pow(10, params->decimals) << " MMX"

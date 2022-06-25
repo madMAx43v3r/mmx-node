@@ -27,7 +27,7 @@ public:
 
 	balance_cache_t& operator=(const balance_cache_t&) = default;
 
-	uint128_t* get(const addr_t& address, const addr_t& contract)
+	uint128_t* find(const addr_t& address, const addr_t& contract)
 	{
 		const auto key = std::make_pair(address, contract);
 		auto iter = balance.find(key);
@@ -41,14 +41,21 @@ public:
 				}
 			}
 			if(parent) {
-				if(auto bal = parent->get(address, contract)) {
-					iter = balance.emplace(key, *bal).first;
+				if(auto value = parent->find(address, contract)) {
+					iter = balance.emplace(key, *value).first;
 				} else {
 					return nullptr;
 				}
 			}
 		}
 		return &iter->second;
+	}
+
+	uint128_t& get(const addr_t& address, const addr_t& contract) {
+		if(auto value = find(address, contract)) {
+			return *value;
+		}
+		return balance[std::make_pair(address, contract)] = 0;
 	}
 
 	void apply(const balance_cache_t& cache)
@@ -58,9 +65,9 @@ public:
 		}
 	}
 
-private:
 	std::map<std::pair<addr_t, addr_t>, uint128_t> balance;
 
+private:
 	balance_cache_t* const parent = nullptr;
 	const std::map<std::pair<addr_t, addr_t>, uint128_t>* const source = nullptr;
 

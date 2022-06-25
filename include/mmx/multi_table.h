@@ -13,11 +13,6 @@
 
 namespace mmx {
 
-enum key_mode_e {
-	EQUAL,
-	GREATER_EQUAL
-};
-
 template<typename K, typename V, typename I = uint32_t>
 class multi_table : protected table<std::pair<K, I>, V> {
 private:
@@ -36,13 +31,8 @@ public:
 	{
 	}
 
-	void open(const std::string& file_path) {
-		super_t::open(file_path);
-	}
-
-	void close() {
-		super_t::close();
-	}
+	using super_t::open;
+	using super_t::close;
 
 	void insert(const K& key, const V& value)
 	{
@@ -54,7 +44,7 @@ public:
 		std::pair<K, I> key_(key, std::numeric_limits<I>::max());
 		{
 			Table::Iterator iter(db);
-			iter.seek_for_prev(write(key_));
+			iter.seek_prev(write(key_));
 			key_.second = 0;
 
 			if(iter.is_valid()) {
@@ -74,7 +64,7 @@ public:
 		}
 	}
 
-	size_t find(const K& key, std::vector<V>& values, const key_mode_e mode = EQUAL) const
+	size_t find(const K& key, std::vector<V>& values, const bool greater_equal = false) const
 	{
 		values.clear();
 		std::pair<K, I> key_(key, 0);
@@ -83,13 +73,13 @@ public:
 		iter.seek(write(key_));
 		while(iter.is_valid()) {
 			read(iter.key(), key_);
-			if(mode == EQUAL && !(key_.first == key)) {
+			if(!greater_equal && !(key_.first == key)) {
 				break;
 			}
 			try {
-				V tmp = V();
-				read(iter.value(), tmp, super_t::value_type, super_t::value_code);
-				values.push_back(std::move(tmp));
+				V value;
+				read(iter.value(), value, super_t::value_type, super_t::value_code);
+				values.push_back(std::move(value));
 			} catch(...) {
 				// ignore
 			}
@@ -104,7 +94,7 @@ public:
 		std::pair<K, I> key_(key, std::numeric_limits<I>::max());
 
 		Table::Iterator iter(db);
-		iter.seek_for_prev(write(key_));
+		iter.seek_prev(write(key_));
 		while(iter.is_valid() && values.size() < limit)
 		{
 			read(iter.key(), key_, super_t::key_type, super_t::key_code);
@@ -112,9 +102,9 @@ public:
 				break;
 			}
 			try {
-				V tmp = V();
-				read(iter.value(), tmp, super_t::value_type, super_t::value_code);
-				values.push_back(std::move(tmp));
+				V value;
+				read(iter.value(), value, super_t::value_type, super_t::value_code);
+				values.push_back(std::move(value));
 			} catch(...) {
 				// ignore
 			}
@@ -136,9 +126,9 @@ public:
 				break;
 			}
 			try {
-				V tmp = V();
-				read(iter.value(), tmp, super_t::value_type, super_t::value_code);
-				values.push_back(std::move(tmp));
+				V value;
+				read(iter.value(), value, super_t::value_type, super_t::value_code);
+				values.push_back(std::move(value));
 			} catch(...) {
 				// ignore
 			}
@@ -179,17 +169,11 @@ public:
 		});
 	}
 
-	void commit(const uint32_t new_version) {
-		super_t::commit(new_version);
-	}
-
-	void revert(const uint32_t new_version) {
-		super_t::revert(new_version);
-	}
-
-	void flush() {
-		super_t::flush();
-	}
+	using super_t::commit;
+	using super_t::revert;
+	using super_t::flush;
+	using super_t::iterator;
+	using super_t::get_impl;
 
 };
 
@@ -233,6 +217,31 @@ protected:
 		auto out = std::make_shared<mmx::db_val_t>(key.first.size() + sizeof(I));
 		::memcpy(out->data, key.first.data(), key.first.size());
 		vnx::write_value(out->data + key.first.size(), vnx::flip_bytes(key.second));
+		return out;
+	}
+};
+
+template<typename K, typename H, typename V, typename I = uint32_t>
+class hash_uint_multi_table : public multi_table<std::pair<K, H>, V, I> {
+public:
+	hash_uint_multi_table() : multi_table<std::pair<K, H>, V, I>() {}
+	hash_uint_multi_table(const std::string& file_path) : multi_table<std::pair<K, H>, V, I>(file_path) {}
+protected:
+	void read(std::shared_ptr<const db_val_t> entry, std::pair<std::pair<K, H>, I>& key) const override {
+		if(entry->size != key.first.first.size() + sizeof(H) + sizeof(I)) {
+			throw std::logic_error("key size mismatch");
+		}
+		auto* src = entry->data;
+		::memcpy(key.first.first.data(), src, key.first.first.size()); src += key.first.first.size();
+		key.first.second = vnx::flip_bytes(*((const H*)src)); src += sizeof(H);
+		key.second = vnx::flip_bytes(*((const I*)src));
+	}
+	std::shared_ptr<db_val_t> write(const std::pair<std::pair<K, H>, I>& key) const override {
+		auto out = std::make_shared<mmx::db_val_t>(key.first.first.size() + sizeof(H) + sizeof(I));
+		auto* dst = out->data;
+		::memcpy(dst, key.first.first.data(), key.first.first.size()); dst += key.first.first.size();
+		vnx::write_value(dst, vnx::flip_bytes(key.first.second)); dst += sizeof(H);
+		vnx::write_value(dst, vnx::flip_bytes(key.second));
 		return out;
 	}
 };

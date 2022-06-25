@@ -250,7 +250,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 						}
 					}
 					for(const auto& in : txi->inputs) {
-						const auto balance = balance_cache.get(in.address, in.contract);
+						const auto balance = balance_cache.find(in.address, in.contract);
 						if(!balance || in.amount > *balance) {
 							throw std::logic_error("insufficient funds");
 						}
@@ -274,8 +274,9 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	std::atomic<uint64_t> total_fees {0};
 	std::atomic<uint64_t> total_cost {0};
 
-#pragma omp parallel for
-	for(int i = 0; i < int(block->tx_list.size()); ++i)
+	const auto tx_count = block->tx_list.size();
+#pragma omp parallel for if(is_synced || tx_count >= 64)
+	for(int i = 0; i < int(tx_count); ++i)
 	{
 		const auto& tx = block->tx_list[i];
 		context->wait(tx->id);
@@ -537,7 +538,7 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 
 	for(const auto& in : tx->inputs)
 	{
-		const auto balance = balance_cache.get(in.address, in.contract);
+		const auto balance = balance_cache.find(in.address, in.contract);
 		if(!balance || in.amount > *balance) {
 			throw std::logic_error("insufficient funds");
 		}

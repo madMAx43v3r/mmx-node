@@ -10,10 +10,7 @@
 
 #include <mmx/vm/Storage.h>
 #include <mmx/vm/varptr_t.hpp>
-#include <mmx/contract/height_log_t.hxx>
-
-#include <vnx/rocksdb/table.h>
-#include <vnx/rocksdb/raw_table.h>
+#include <mmx/DataBase.h>
 
 #include <map>
 
@@ -23,11 +20,9 @@ namespace vm {
 
 class StorageRocksDB : public Storage {
 public:
-	StorageRocksDB(const std::string& database_path);
+	StorageRocksDB(const std::string& database_path, DataBase& db);
 
 	~StorageRocksDB();
-
-	uint32_t height = 0;
 
 	var_t* read(const addr_t& contract, const uint64_t src) const override;
 
@@ -41,10 +36,6 @@ public:
 
 	uint64_t lookup(const addr_t& contract, const var_t& value) const override;
 
-	void commit();
-
-	void revert(const uint32_t height);
-
 	std::vector<std::pair<uint64_t, varptr_t>> find_range(
 			const addr_t& contract, const uint64_t begin, const uint64_t end, const uint32_t height = -1) const;
 
@@ -55,13 +46,9 @@ public:
 			const addr_t& contract, const uint64_t address, const uint32_t height = -1) const;
 
 private:
-	vnx::rocksdb::raw_table table;
-	vnx::rocksdb::raw_table table_entries;
-	vnx::rocksdb::raw_table table_index;
-
-	vnx::rocksdb::table<std::pair<uint32_t, addr_t>, contract::height_log_t> table_log;
-
-	std::map<addr_t, contract::height_log_t> log_buffer;
+	std::shared_ptr<Table> table;
+	std::shared_ptr<Table> table_entries;
+	std::shared_ptr<Table> table_index;
 
 };
 

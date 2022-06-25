@@ -204,7 +204,6 @@ class WebData_update;
 class WebData_update_return;
 class WebData_validate;
 class WebData_validate_return;
-struct height_log_t;
 struct method_t;
 
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Data; ///< \private
@@ -389,7 +388,6 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WebDa
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WebData_update_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WebData_validate; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WebData_validate_return; ///< \private
-MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_height_log_t; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_method_t; ///< \private
 
 } // namespace mmx
@@ -580,7 +578,6 @@ void read(TypeInput& in, ::mmx::contract::WebData_update& value, const TypeCode*
 void read(TypeInput& in, ::mmx::contract::WebData_update_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::WebData_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::WebData_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::contract::height_log_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::method_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 
 void write(TypeOutput& out, const ::mmx::contract::Data& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -765,7 +762,6 @@ void write(TypeOutput& out, const ::mmx::contract::WebData_update& value, const 
 void write(TypeOutput& out, const ::mmx::contract::WebData_update_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::WebData_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::WebData_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::contract::height_log_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::method_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 
 void read(std::istream& in, ::mmx::contract::Data& value); ///< \private
@@ -950,7 +946,6 @@ void read(std::istream& in, ::mmx::contract::WebData_update& value); ///< \priva
 void read(std::istream& in, ::mmx::contract::WebData_update_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::WebData_validate& value); ///< \private
 void read(std::istream& in, ::mmx::contract::WebData_validate_return& value); ///< \private
-void read(std::istream& in, ::mmx::contract::height_log_t& value); ///< \private
 void read(std::istream& in, ::mmx::contract::method_t& value); ///< \private
 
 void write(std::ostream& out, const ::mmx::contract::Data& value); ///< \private
@@ -1135,7 +1130,6 @@ void write(std::ostream& out, const ::mmx::contract::WebData_update& value); ///
 void write(std::ostream& out, const ::mmx::contract::WebData_update_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::WebData_validate& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::WebData_validate_return& value); ///< \private
-void write(std::ostream& out, const ::mmx::contract::height_log_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::method_t& value); ///< \private
 
 void accept(Visitor& visitor, const ::mmx::contract::Data& value); ///< \private
@@ -1320,7 +1314,6 @@ void accept(Visitor& visitor, const ::mmx::contract::WebData_update& value); ///
 void accept(Visitor& visitor, const ::mmx::contract::WebData_update_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::WebData_validate& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::WebData_validate_return& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::contract::height_log_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::method_t& value); ///< \private
 
 /// \private
@@ -5507,29 +5500,6 @@ struct type<::mmx::contract::WebData_validate_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::WebData_validate_return& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::contract::height_log_t> {
-	void read(TypeInput& in, ::mmx::contract::height_log_t& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::contract::height_log_t& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::contract::height_log_t& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::contract::height_log_t& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::contract::height_log_t& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::height_log_t& value, bool special = false);
 };
 
 /// \private

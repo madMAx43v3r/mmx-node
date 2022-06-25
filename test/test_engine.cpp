@@ -17,9 +17,10 @@ using namespace mmx;
 
 int main(int arcv, char** argv)
 {
+	mmx::DataBase db;
 //	auto storage = std::make_shared<vm::StorageRAM>();
-	auto backend = std::make_shared<vm::StorageRocksDB>("tmp/");
-	backend->revert(0);
+	auto backend = std::make_shared<vm::StorageRocksDB>("tmp/", db);
+	db.revert(0);
 	auto storage = std::make_shared<vm::StorageCache>(backend);
 	{
 		vm::Engine engine(addr_t(), storage, false);
@@ -56,9 +57,8 @@ int main(int arcv, char** argv)
 		engine.commit();
 		std::cout << "Cost: " << engine.total_cost << std::endl;
 	}
-	backend->height++;
 	storage->commit();
-	backend->commit();
+	db.commit(1);
 	{
 		vm::Engine engine(addr_t(), storage, false);
 		engine.write(vm::MEM_CONST + 0, vm::var_t());
@@ -82,9 +82,8 @@ int main(int arcv, char** argv)
 		engine.commit();
 		std::cout << "Cost: " << engine.total_cost << std::endl;
 	}
-	backend->height++;
 	storage->commit();
-	backend->commit();
+	db.commit(2);
 	{
 		vm::Engine engine(addr_t(), storage, true);
 		engine.write(vm::MEM_CONST + 0, vm::var_t());

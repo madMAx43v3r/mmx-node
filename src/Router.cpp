@@ -517,7 +517,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 		}
 		const auto num_returns = job->failed.size() + job->succeeded.size();
 		if(num_returns < min_sync_peers) {
-			const auto num_left = min_sync_peers - num_returns;
+			const auto num_left = 1 + min_sync_peers - num_returns;
 			if(job->pending.size() < num_left) {
 				auto clients = synced_peers;
 				for(auto id : job->failed) {

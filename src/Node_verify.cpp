@@ -288,13 +288,13 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 
 void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::shared_ptr<vdf_point_t> point)
 {
-	if(is_synced && !verified_vdfs.count(proof->height)) {
+	if(is_synced && proof->height > get_height()) {
 		log(INFO) << "-------------------------------------------------------------------------------";
 	}
 	verified_vdfs.emplace(proof->height, point);
 	vdf_verify_pending.erase(proof->height);
 
-	const auto elapsed = (vnx::get_wall_time_micros() - point->recv_time) / 1e6;
+	const auto elapsed = (vnx::get_wall_time_micros() - point->recv_time) / 1000 / 1e3;
 	if(elapsed > params->block_time) {
 		log(WARN) << "VDF verification took longer than block interval, unable to keep sync!";
 	}
@@ -308,8 +308,11 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::sha
 			prev = iter->second;
 		}
 	}
-	log(INFO) << "Verified VDF for height " << proof->height <<
-			(prev ? ", delta = " + std::to_string((point->recv_time - prev->recv_time) / 1e6) + " sec" : "") << ", took " << elapsed << " sec";
+	std::stringstream ss_delta;
+	if(prev) {
+		ss_delta << ", delta = " << (point->recv_time - prev->recv_time) / 1000 / 1e3 << " sec" ;
+	}
+	log(INFO) << "Verified VDF for height " << proof->height << ss_delta.str() << ", took " << elapsed << " sec";
 
 	// add dummy blocks
 	const auto root = get_root();
@@ -374,7 +377,7 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) const noexc
 void Node::check_vdf_task(std::shared_ptr<fork_t> fork, std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const BlockHeader> infuse) const noexcept
 {
 	// MAY NOT ACCESS ANY NODE DATA EXCEPT "params"
-	const auto time_begin = vnx::get_wall_time_micros();
+	const auto time_begin = vnx::get_wall_time_millis();
 	const auto& block = fork->block;
 
 	auto point = prev->vdf_output;
@@ -392,7 +395,7 @@ void Node::check_vdf_task(std::shared_ptr<fork_t> fork, std::shared_ptr<const Bl
 	}
 	if(point == block->vdf_output) {
 		fork->is_vdf_verified = true;
-		const auto elapsed = (vnx::get_wall_time_micros() - time_begin) / 1e6;
+		const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
 		log(INFO) << "VDF check for height " << block->height << " passed, took " << elapsed << " sec";
 	} else {
 		fork->is_invalid = true;
