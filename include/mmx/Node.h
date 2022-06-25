@@ -19,6 +19,7 @@
 #include <mmx/txout_entry_t.hpp>
 #include <mmx/OCL_VDF.h>
 #include <mmx/utils.h>
+#include <mmx/uint128.hpp>
 #include <mmx/balance_cache_t.h>
 #include <mmx/table.h>
 #include <mmx/multi_table.h>
@@ -30,7 +31,6 @@
 #include <vnx/ThreadPool.h>
 #include <vnx/addons/HttpInterface.h>
 
-#include <uint128_t.h>
 #include <unordered_set>
 
 
@@ -276,7 +276,7 @@ private:
 					std::shared_ptr<const operation::Execute> exec,
 					std::vector<txin_t>& exec_inputs,
 					std::vector<txout_t>& exec_outputs,
-					std::unordered_map<addr_t, uint128_t>& amounts,
+					std::unordered_map<addr_t, uint128>& amounts,
 					std::shared_ptr<vm::StorageCache> storage_cache,
 					uint64_t& tx_cost, const bool is_public) const;
 
@@ -296,7 +296,7 @@ private:
 					std::vector<txout_t>& outputs,
 					std::vector<txout_t>& exec_outputs,
 					balance_cache_t& balance_cache,
-					std::unordered_map<addr_t, uint128_t>& amounts) const;
+					std::unordered_map<addr_t, uint128>& amounts) const;
 
 	std::shared_ptr<const Transaction>
 	validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const execution_context_t> context,

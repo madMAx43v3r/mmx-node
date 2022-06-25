@@ -869,7 +869,7 @@ std::vector<offer_data_t> Node::get_offers(const uint32_t& since, const vnx::boo
 				}
 				if(data.is_open) {
 					data.is_covered = true;
-					std::map<std::pair<addr_t, addr_t>, uint128_t> inputs;
+					std::map<std::pair<addr_t, addr_t>, uint128> inputs;
 					for(const auto& in : tx->get_all_inputs()) {
 						inputs[std::make_pair(in.address, in.contract)] += in.amount;
 					}
