@@ -1543,6 +1543,27 @@ void Node::revert(const uint32_t height)
 			});
 	}
 
+	// TODO: remove
+	if(false) {
+		bool fail = false;
+		balance_table.scan(
+			[this, &fail](const std::pair<addr_t, addr_t>& key, const uint128& value) {
+				auto iter = balance_map.find(key);
+				if(iter != balance_map.end()) {
+					if(iter->second != value) {
+						log(ERROR) << "balance_map mismatch: " << iter->second.str(10) << " != " << value.str(10) << " for " << vnx::to_string(key);
+						fail = true;
+					}
+				} else if(value) {
+					log(ERROR) << "Missing balance_map entry for " << vnx::to_string(key);
+					fail = true;
+				}
+			});
+		if(fail) {
+			throw std::logic_error("balance_map error");
+		}
+	}
+
 	std::pair<int64_t, hash_t> entry;
 	if(block_index.find_last(entry)) {
 		state_hash = entry.second;
