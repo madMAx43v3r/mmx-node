@@ -17,6 +17,18 @@
 
 int main(int argc, char** argv)
 {
+	std::string mmx_home;
+	std::string mmx_network;
+	if(auto path = ::getenv("MMX_HOME")) {
+		mmx_home = path;
+	}
+	if(auto path = ::getenv("MMX_NETWORK")) {
+		mmx_network = path;
+	}
+	auto root_path = mmx_home + mmx_network;
+
+	vnx::write_config("mmx_farmer.log_file_path", root_path + "logs/");
+
 	mmx::secp256k1_init();
 
 	std::map<std::string, std::string> options;
