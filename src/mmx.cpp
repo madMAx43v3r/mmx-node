@@ -783,10 +783,18 @@ int main(int argc, char** argv)
 					std::cout << "Confirmations: none yet" << std::endl;
 				}
 				size_t i = 0;
-				for(const auto& out : tx->outputs) {
-					const auto token = get_token(node, out.contract);
-					std::cout << "Output[" << i++ << "]: " << out.amount / pow(10, token->decimals)
-							<< " " << token->symbol << " (" << out.amount << ") -> " << out.address << std::endl;
+				for(const auto& in : tx->get_all_inputs()) {
+					if(auto token = get_token(node, in.contract, false)) {
+						std::cout << "Input[" << i++ << "]: " << in.amount / pow(10, token->decimals)
+								<< " " << token->symbol << " (" << in.amount << ") <- " << in.address << std::endl;
+					}
+				}
+				i = 0;
+				for(const auto& out : tx->get_all_outputs()) {
+					if(auto token = get_token(node, out.contract, false)) {
+						std::cout << "Output[" << i++ << "]: " << out.amount / pow(10, token->decimals)
+								<< " " << token->symbol << " (" << out.amount << ") -> " << out.address << std::endl;
+					}
 				}
 			}
 			else if(command == "get")
