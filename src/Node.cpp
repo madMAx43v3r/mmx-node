@@ -140,7 +140,8 @@ void Node::main()
 						apply(block, block->height > 0 ? validate(block) : nullptr, true);
 					} catch(std::exception& ex) {
 						log(ERROR) << "Block validation at height " << block->height << " failed with: " << ex.what();
-						return;
+						block_chain->seek_to(block_offset);
+						break;
 					}
 					for(const auto& entry : tx_offsets) {
 						tx_index.insert(entry.first, std::make_pair(entry.second, block->height));
@@ -158,8 +159,7 @@ void Node::main()
 					}
 				}
 				if(!vnx::do_run()) {
-					log(WARN) << "Process interrupted, reverting DB ...";
-					db.revert(0);
+					log(WARN) << "DB replay interrupted";
 					return;
 				}
 			}
