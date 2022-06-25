@@ -149,8 +149,13 @@ void Node::main()
 					block_index.insert(block->height, std::make_pair(block_offset, block->hash));
 					db.commit(block->height + 1);
 
+					auto fork = std::make_shared<fork_t>();
+					fork->block = block;
+					fork_tree[block->hash] = fork;
+					fork_index.emplace(block->height, fork);
+
 					history.push_back(block);
-					if(history.size() > params->commit_delay) {
+					if(history.size() > params->commit_delay || block->height == 0) {
 						commit(history.front());
 						history.pop_front();
 					}
@@ -1361,6 +1366,9 @@ void Node::commit(std::shared_ptr<const Block> block)
 	}
 	if(!verified_vdfs.empty()) {
 		verified_vdfs.erase(verified_vdfs.begin(), verified_vdfs.upper_bound(height));
+	}
+	if(block->height % 16) {
+		purge_tree();
 	}
 
 	if(is_synced) {

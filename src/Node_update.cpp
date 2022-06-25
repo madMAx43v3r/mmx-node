@@ -201,7 +201,6 @@ void Node::update()
 	}
 	{
 		// commit to disk
-		bool did_commit = false;
 		const auto fork_line = get_fork_line();
 		const auto commit_delay = is_synced || sync_retry ? params->commit_delay : 2 * max_sync_ahead;
 		for(size_t i = 0; i + commit_delay < fork_line.size(); ++i)
@@ -220,10 +219,6 @@ void Node::update()
 				}
 			}
 			commit(block);
-			did_commit = true;
-		}
-		if(did_commit) {
-			purge_tree();
 		}
 	}
 	const auto root = get_root();
