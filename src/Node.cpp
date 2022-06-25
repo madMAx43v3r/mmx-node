@@ -1506,7 +1506,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 void Node::revert(const uint32_t height)
 {
 	const auto time_begin = vnx::get_wall_time_millis();
-	{
+	if(block_chain) {
 		std::pair<int64_t, hash_t> entry;
 		if(block_index.find(height, entry)) {
 			block_chain->seek_to(entry.first);
