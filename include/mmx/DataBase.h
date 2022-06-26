@@ -63,6 +63,17 @@ struct db_val_t {
 		}
 		return true;
 	}
+
+	template<typename T>
+	T to() const {
+		if(size != sizeof(T)) {
+			throw std::logic_error("data size mismatch");
+		}
+		return *((const T*)data);
+	}
+	std::string to_string() const {
+		return std::string((const char*)data, size);
+	}
 };
 
 class Table {

@@ -54,23 +54,27 @@ Table::Table(const std::string& file_path, const options_t& options)
 	}
 	index->delete_files.clear();
 
-	// purge left-over data
-	revert(index->version);
-
 	write_log.open(file_path + "/write_log.dat", "ab");
 	write_log.open("rb+");
 	{
 		auto& in = write_log.in;
 		auto offset = in.get_input_pos();
 		const auto min_version = blocks.empty() ? 0 : blocks.back()->max_version + 1;
+		std::multimap<uint32_t, std::pair<std::shared_ptr<db_val_t>, std::shared_ptr<db_val_t>>> entries;
 		while(true) {
 			try {
 				uint32_t version;
 				std::shared_ptr<db_val_t> key;
 				std::shared_ptr<db_val_t> value;
 				read_entry(write_log.in, version, key, value);
-				if(version >= min_version && version < index->version) {
-					insert_entry(version, key, value);
+				if(version == uint32_t(-1)) {
+					const auto cmd = key->to_string();
+					if(cmd == "revert") {
+						const auto height = value->to<uint32_t>();
+						entries.erase(entries.lower_bound(height), entries.end());
+					}
+				} else if(version >= min_version && version < index->version) {
+					entries.emplace(version, std::make_pair(key, value));
 				}
 				offset = in.get_input_pos();
 			}
@@ -82,8 +86,16 @@ Table::Table(const std::string& file_path, const options_t& options)
 			}
 		}
 		write_log.seek_to(offset);
+
+		for(const auto& entry : entries) {
+			insert_entry(entry.first, entry.second.first, entry.second.second);
+		}
 		debug_log << "Loaded " << mem_index.size() << " / " << mem_block.size() << " entries from write_log.dat" << std::endl;
 	}
+
+	// purge left-over data
+	revert(index->version);
+
 	check_rewrite();
 }
 
@@ -257,6 +269,9 @@ size_t Table::lower_bound(vnx::File& file, std::shared_ptr<block_t> block, uint3
 
 void Table::commit(const uint32_t new_version)
 {
+	if(new_version == uint32_t(-1)) {
+		throw std::logic_error("invalid version");
+	}
 	if(new_version <= index->version) {
 		throw std::logic_error("commit(): new version <= current version");
 	}
@@ -277,6 +292,12 @@ void Table::revert(const uint32_t new_version)
 	if(new_version != index->version) {
 		index->version = new_version;
 		write_index();
+	}
+	{
+		const std::string cmd = "revert";
+		write_entry(write_log.out, -1,
+				std::make_shared<db_val_t>(cmd.c_str(), cmd.size()),
+				std::make_shared<db_val_t>(&new_version, sizeof(new_version)));
 	}
 	std::set<std::string> deleted_blocks;
 	for(auto& block : blocks) {
