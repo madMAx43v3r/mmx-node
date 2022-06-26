@@ -508,7 +508,7 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
 		{
 			std::vector<txout_entry_t> entries;
-			recv_log.find_range(std::make_pair(address, min_height), std::make_pair(address, -1), entries);
+			recv_log.find_range(std::make_tuple(address, min_height, 0), std::make_tuple(address, -1, -1), entries);
 			for(const auto& entry : entries) {
 				auto& delta = delta_map[std::make_tuple(entry.address, entry.key.txid, entry.contract)];
 				delta.height = entry.height;
@@ -517,7 +517,7 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 		}
 		{
 			std::vector<txio_entry_t> entries;
-			spend_log.find_range(std::make_pair(address, min_height), std::make_pair(address, -1), entries);
+			spend_log.find_range(std::make_tuple(address, min_height, 0), std::make_tuple(address, -1, -1), entries);
 			for(const auto& entry : entries) {
 				auto& delta = delta_map[std::make_tuple(entry.address, entry.key.txid, entry.contract)];
 				delta.height = entry.height;
@@ -592,7 +592,7 @@ std::shared_ptr<const Contract> Node::get_contract_at(const addr_t& address, con
 	if(contract) {
 		const auto root = get_root();
 		std::vector<vnx::Object> mutations;
-		if(mutate_log.find_range(std::make_pair(address, 0), std::make_pair(address, std::min(root->height, block->height) + 1), mutations)) {
+		if(mutate_log.find_range(std::make_tuple(address, 0, 0), std::make_tuple(address, std::min(root->height, block->height) + 1, -1), mutations)) {
 			auto copy = vnx::clone(contract);
 			for(const auto& method : mutations) {
 				copy->vnx_call(vnx::clone(method));
@@ -721,7 +721,7 @@ std::vector<exec_entry_t> Node::get_exec_history(const addr_t& address, const in
 	const uint32_t min_height = since >= 0 ? since : std::max<int32_t>(height + since, 0);
 
 	std::vector<exec_entry_t> entries;
-	exec_log.find_range(std::make_pair(address, min_height), std::make_pair(address, -1), entries);
+	exec_log.find_range(std::make_tuple(address, min_height, 0), std::make_tuple(address, -1, -1), entries);
 	return entries;
 }
 
@@ -1395,11 +1395,12 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		throw std::logic_error("block->prev != state_hash");
 	}
 	std::unordered_set<hash_t> tx_set;
+	std::unordered_map<addr_t, uint32_t> addr_count;
 	balance_cache_t balance_cache(&balance_map);
 
 	for(const auto& tx : block->get_all_transactions()) {
 		tx_set.insert(tx->id);
-		apply(block, tx, balance_cache);
+		apply(block, tx, balance_cache, addr_count);
 	}
 	for(auto iter = pending_transactions.begin(); iter != pending_transactions.end();) {
 		if(tx_set.count(iter->second->id)) {
@@ -1448,17 +1449,17 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	}
 }
 
-void Node::apply(	std::shared_ptr<const Block> block,
-					std::shared_ptr<const Transaction> tx, balance_cache_t& balance_cache)
+void Node::apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx,
+					balance_cache_t& balance_cache, std::unordered_map<addr_t, uint32_t>& addr_count)
 {
 	if(tx->parent) {
-		apply(block, tx->parent, balance_cache);
+		apply(block, tx->parent, balance_cache, addr_count);
 	}
 	const auto outputs = tx->get_outputs();
 	for(size_t i = 0; i < outputs.size(); ++i)
 	{
 		const auto& out = outputs[i];
-		recv_log.insert(std::make_pair(out.address, block->height),
+		recv_log.insert(std::make_tuple(out.address, block->height, addr_count[out.address]++),
 				txout_entry_t::create_ex(txio_key_t::create_ex(tx->id, i), block->height, out));
 
 		balance_cache.get(out.address, out.contract) += out.amount;
@@ -1467,7 +1468,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	for(size_t i = 0; i < inputs.size(); ++i)
 	{
 		const auto& in = inputs[i];
-		spend_log.insert(std::make_pair(in.address, block->height),
+		spend_log.insert(std::make_tuple(in.address, block->height, addr_count[in.address]++),
 				txio_entry_t::create_ex(txio_key_t::create_ex(tx->id, i), block->height, in));
 
 		if(auto balance = balance_cache.find(in.address, in.contract)) {
@@ -1482,7 +1483,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		}
 		else if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op))
 		{
-			mutate_log.insert(std::make_pair(op->address, block->height), mutate->method);
+			mutate_log.insert(std::make_tuple(op->address, block->height, addr_count[op->address]++), mutate->method);
 		}
 		else if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op))
 		{
@@ -1491,7 +1492,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			entry.txid = tx->id;
 			entry.method = exec->method;
 			entry.args = exec->args;
-			exec_log.insert(std::make_pair(op->address, block->height), entry);
+			exec_log.insert(std::make_tuple(op->address, block->height, addr_count[op->address]++), entry);
 		}
 	}
 	if(auto contract = tx->deploy) {

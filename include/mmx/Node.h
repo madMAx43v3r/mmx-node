@@ -329,8 +329,8 @@ private:
 	void apply(	std::shared_ptr<const Block> block,
 				std::shared_ptr<const execution_context_t> context, bool is_replay = false);
 
-	void apply(	std::shared_ptr<const Block> block,
-				std::shared_ptr<const Transaction> tx, balance_cache_t& balance_cache);
+	void apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx,
+				balance_cache_t& balance_cache, std::unordered_map<addr_t, uint32_t>& addr_count);
 
 	void revert(const uint32_t height);
 
@@ -375,14 +375,15 @@ private:
 	DataBase db;
 	hash_t state_hash;
 
-	hash_uint_multi_table<addr_t, uint32_t, txout_entry_t> recv_log;			// [[address, height] => entry]
-	hash_uint_multi_table<addr_t, uint32_t, txio_entry_t> spend_log;			// [[address, height] => entry]
-	hash_uint_multi_table<addr_t, uint32_t, exec_entry_t> exec_log;				// [[address, height] => entry]
-	hash_multi_table<hash_t, std::pair<addr_t, hash_t>> revoke_map;				// [[org txid, height]] => [address, txid]]
+	hash_uint_uint_table<addr_t, uint32_t, uint32_t, txout_entry_t> recv_log;	// [[address, height, counter] => entry]
+	hash_uint_uint_table<addr_t, uint32_t, uint32_t, txio_entry_t> spend_log;	// [[address, height, counter] => entry]
+	hash_uint_uint_table<addr_t, uint32_t, uint32_t, exec_entry_t> exec_log;	// [[address, height, counter] => entry]
+	hash_multi_table<hash_t, std::pair<addr_t, hash_t>> revoke_map;				// [[org txid] => [address, txid]]
 
 	hash_table<addr_t, std::shared_ptr<const Contract>> contract_cache;			// [addr, contract]
-	hash_uint_multi_table<addr_t, uint32_t, vnx::Object> mutate_log;			// [[addr, height] => method]
+	hash_uint_uint_table<addr_t, uint32_t, uint32_t, vnx::Object> mutate_log;	// [[addr, height] => method]
 	hash_multi_table<addr_t, addr_t> deploy_map;								// [sender => contract]
+	// TODO: use manual counter instead of multi_table
 	uint_multi_table<uint32_t, addr_t> offer_log;								// [height => contract]
 	uint_multi_table<uint32_t, addr_t> vplot_log;								// [height => contract]
 

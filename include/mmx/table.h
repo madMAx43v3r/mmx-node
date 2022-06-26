@@ -17,6 +17,8 @@
 #include <vnx/Memory.hpp>
 #include <vnx/Buffer.hpp>
 
+#include <tuple>
+
 
 namespace mmx {
 
@@ -321,6 +323,33 @@ protected:
 	std::shared_ptr<db_val_t> write(const K& key) const override {
 		auto out = std::make_shared<mmx::db_val_t>(key.size());
 		::memcpy(out->data, key.data(), key.size());
+		return out;
+	}
+};
+
+template<typename K, typename H, typename I, typename V>
+class hash_uint_uint_table : public table<std::tuple<K, H, I>, V> {
+public:
+	hash_uint_uint_table() : table<std::tuple<K, H, I>, V>() {}
+	hash_uint_uint_table(const std::string& file_path) : table<std::tuple<K, H, I>, V>(file_path) {}
+protected:
+	void read(std::shared_ptr<const db_val_t> entry, std::tuple<K, H, I>& key) const override {
+		auto& hash = std::get<0>(key);
+		if(entry->size != hash.size() + sizeof(H) + sizeof(I)) {
+			throw std::logic_error("key size mismatch");
+		}
+		auto* src = entry->data;
+		::memcpy(hash.data(), src, hash.size()); src += hash.size();
+		std::get<1>(key) = vnx::flip_bytes(*((const H*)src)); src += sizeof(H);
+		std::get<2>(key) = vnx::flip_bytes(*((const I*)src));
+	}
+	std::shared_ptr<db_val_t> write(const std::tuple<K, H, I>& key) const override {
+		const auto& hash = std::get<0>(key);
+		auto out = std::make_shared<mmx::db_val_t>(hash.size() + sizeof(H) + sizeof(I));
+		auto* dst = out->data;
+		::memcpy(dst, hash.data(), hash.size()); dst += hash.size();
+		vnx::write_value(dst, vnx::flip_bytes(std::get<1>(key))); dst += sizeof(H);
+		vnx::write_value(dst, vnx::flip_bytes(std::get<2>(key)));
 		return out;
 	}
 };
