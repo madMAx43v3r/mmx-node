@@ -177,7 +177,7 @@ void Node::update()
 	while(vnx::do_run())
 	{
 		forked_at = nullptr;
-		const auto best_fork = find_best_fork();
+		const auto best_fork = find_best_fork(prev_peak ? prev_peak->height + max_sync_jobs : -1);
 
 		if(!best_fork || best_fork->block->hash == state_hash) {
 			break;	// no change
