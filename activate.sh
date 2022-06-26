@@ -6,14 +6,15 @@ if [ ! -d "${MMX_HOME}config/local" ]; then
 	echo "Initialized ${MMX_HOME}config/local/ with defaults."
 fi
 
-if [ ! -f "${MMX_HOME}config/local/passwd" ] || [[ $(cat "${MMX_HOME}config/local/passwd" | wc -c) -lt 64 ]]; then
-	./build/generate_passwd > "${MMX_HOME}config/local/passwd"
-	./build/vnx-base/tools/vnxpasswd -c config/default/ "${MMX_HOME}config/local/" -u mmx-admin -p $(cat "${MMX_HOME}config/local/passwd")
+PASSWD_PATH="${MMX_HOME}config/local/passwd"
+if [ ! -f "${PASSWD_PATH}" ] || [[ $(cat "${PASSWD_PATH}" | wc -c) -lt 64 ]]; then
+	./build/generate_passwd > "${PASSWD_PATH}"
+	./build/vnx-base/tools/vnxpasswd -c config/default/ "${MMX_HOME}config/local/" -u mmx-admin -p $(cat "${PASSWD_PATH}")
+	echo "PASSWD=$(cat "${PASSWD_PATH}")"
 fi
 
-chmod 600 "${MMX_HOME}config/local/passwd"
-cp "${MMX_HOME}config/local/passwd" "${MMX_HOME}PASSWD"
-echo "PASSWD=$(cat "${MMX_HOME}PASSWD")"
+chmod 600 "${PASSWD_PATH}"
+cp "${PASSWD_PATH}" "${MMX_HOME}PASSWD"
 
 if [ -f "${MMX_HOME}NETWORK" ]; then
 	NETWORK=$(cat "${MMX_HOME}NETWORK")
