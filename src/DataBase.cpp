@@ -284,6 +284,8 @@ void Table::revert(const uint32_t new_version)
 			deleted_blocks.insert(block->name);
 		}
 		else if(block->max_version >= new_version) {
+			const auto time_begin = vnx::get_wall_time_millis();
+
 			auto new_block = std::make_shared<block_t>();
 			new_block->name = block->name;
 			new_block->level = block->level;
@@ -327,7 +329,8 @@ void Table::revert(const uint32_t new_version)
 
 			debug_log << "Rewrote block " << block->name << " with max_version = " << new_block->max_version
 					<< ", " << new_block->index.size() << " / " << new_block->total_count << " entries"
-					<< ", from " << block->index.size() << " / " << block->total_count << " entries" << std::endl;
+					<< ", from " << block->index.size() << " / " << block->total_count << " entries"
+					<< ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec" << std::endl;
 			block = new_block;
 		}
 	}
@@ -390,6 +393,8 @@ void Table::flush()
 	if(mem_block.empty()) {
 		return;
 	}
+	const auto time_begin = vnx::get_wall_time_millis();
+
 	auto block = std::make_shared<block_t>();
 	block->min_version = -1;
 	block->name = to_number(index->next_block_id++, 6) + ".dat";
@@ -433,7 +438,8 @@ void Table::flush()
 	write_log.open("wb");
 
 	debug_log << "Flushed " << block->name << " with " << block->index.size() << " / " << block->total_count
-			<< " entries, min_version = " << block->min_version << ", max_version = " << block->max_version << std::endl;
+			<< " entries, min_version = " << block->min_version << ", max_version = " << block->max_version
+			<< ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec" << std::endl;
 
 	check_rewrite();
 }
@@ -551,6 +557,7 @@ void Table::check_rewrite()
 	}
 	selected.pop_back();
 
+	const auto time_begin = vnx::get_wall_time_millis();
 	const auto block = rewrite(selected, level + 1, index->next_block_id++);
 
 	blocks.insert(iter_begin, block);
@@ -563,7 +570,8 @@ void Table::check_rewrite()
 
 	debug_log << "Wrote " << block->name << " at level " << block->level
 			<< " with " << block->index.size() << " / " << block->total_count
-			<< " entries, min_version = " << block->min_version << ", max_version = " << block->max_version << std::endl;
+			<< " entries, min_version = " << block->min_version << ", max_version = " << block->max_version
+			<< ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec" << std::endl;
 
 	for(const auto& name : index->delete_files) {
 		vnx::File(file_path + '/' + name).remove();
