@@ -242,24 +242,24 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 				auto txi = tx;
 				while(txi) {
 					if(!tx_set.insert(txi->id).second) {
-						throw std::logic_error("duplicate transaction");
+						throw std::logic_error("duplicate tx in same block: " + txi->id.to_string());
 					}
 					if(txi->sender) {
 						if(revoked.count(std::make_pair(txi->id, *txi->sender))) {
-							throw std::logic_error("tx has been revoked");
+							throw std::logic_error("tx has been revoked: " + txi->id.to_string());
 						}
 					}
 					for(const auto& in : txi->inputs) {
 						const auto balance = balance_cache.find(in.address, in.contract);
 						if(!balance || in.amount > *balance) {
-							throw std::logic_error("insufficient funds");
+							throw std::logic_error("insufficient funds for " + in.address.to_string());
 						}
 						*balance -= in.amount;
 					}
 					for(const auto& op : txi->execute) {
 						if(auto revoke = std::dynamic_pointer_cast<const operation::Revoke>(op)) {
 							if(tx_set.count(revoke->txid)) {
-								throw std::logic_error("tx cannot be revoked anymore");
+								throw std::logic_error("tx cannot be revoked anymore: " + revoke->txid.to_string());
 							}
 							revoked.emplace(revoke->txid, revoke->address);
 						}
@@ -270,6 +270,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 			setup_context(context, tx);
 		}
 	}
+	hash_t failed_tx;
 	std::exception_ptr failed_ex;
 	std::atomic<uint64_t> total_fees {0};
 	std::atomic<uint64_t> total_cost {0};
@@ -290,12 +291,17 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 			total_cost += cost;
 		} catch(...) {
 #pragma omp critical
+			failed_tx = tx->id;
 			failed_ex = std::current_exception();
 		}
 		context->signal(tx->id);
 	}
 	if(failed_ex) {
-		std::rethrow_exception(failed_ex);
+		try {
+			std::rethrow_exception(failed_ex);
+		} catch(const std::exception& ex) {
+			throw std::logic_error(std::string(ex.what()) + " (" + failed_tx.to_string() + ")");
+		}
 	}
 	if(total_cost > params->max_block_cost) {
 		throw std::logic_error("block cost too high: " + std::to_string(uint64_t(total_cost)));
@@ -521,10 +527,10 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 		}
 	} else {
 		if(tx->note == tx_note_e::REWARD) {
-			throw std::logic_error("invalid note");
+			throw std::logic_error("invalid note: " + vnx::to_string(tx->note));
 		}
 		if(tx->salt != get_genesis_hash()) {
-			throw std::logic_error("invalid salt");
+			throw std::logic_error("invalid salt: " + tx->salt.to_string());
 		}
 	}
 	if(tx_index.find(tx->id)) {
@@ -540,7 +546,7 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 	{
 		const auto balance = balance_cache.find(in.address, in.contract);
 		if(!balance || in.amount > *balance) {
-			throw std::logic_error("insufficient funds");
+			throw std::logic_error("insufficient funds for " + in.address.to_string());
 		}
 		const auto solution = tx->get_solution(in.solution);
 		if(!solution) {
@@ -556,7 +562,7 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 			contract = pubkey;
 		}
 		if(!contract) {
-			throw std::logic_error("no such contract");
+			throw std::logic_error("no such contract: " + in.address.to_string());
 		}
 		auto spend = operation::Spend::create();
 		spend->address = in.address;
@@ -630,7 +636,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 		}
 		const auto contract = state->data;
 		if(!contract) {
-			throw std::logic_error("no such contract");
+			throw std::logic_error("no such contract: " + op->address.to_string());
 		}
 		{
 			const auto outputs = contract->validate(op, context->get_context(tx, contract));
@@ -639,7 +645,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 		if(auto revoke = std::dynamic_pointer_cast<const operation::Revoke>(op))
 		{
 			if(tx_index.find(revoke->txid)) {
-				throw std::logic_error("tx cannot be revoked anymore");
+				throw std::logic_error("tx cannot be revoked anymore: " + revoke->txid.to_string());
 			}
 		}
 		else if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op))
@@ -647,7 +653,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 			auto copy = vnx::clone(contract);
 			try {
 				if(!copy->vnx_call(vnx::clone(mutate->method))) {
-					throw std::logic_error("no such method");
+					throw std::logic_error("no such method: " + mutate->method["__type"].to_string());
 				}
 				if(!copy->is_valid()) {
 					throw std::logic_error("invalid mutation");
@@ -671,7 +677,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 		{
 			const auto creator = context->find_contract(nft->creator);
 			if(!creator) {
-				throw std::logic_error("no such creator");
+				throw std::logic_error("no such creator: " + nft->creator.to_string());
 			}
 			{
 				auto op = operation::Mint::create();
