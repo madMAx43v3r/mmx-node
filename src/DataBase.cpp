@@ -298,6 +298,7 @@ void Table::revert(const uint32_t new_version)
 		write_entry(write_log.out, -1,
 				std::make_shared<db_val_t>(cmd.c_str(), cmd.size()),
 				std::make_shared<db_val_t>(&new_version, sizeof(new_version)));
+		write_log.flush();
 	}
 	std::set<std::string> deleted_blocks;
 	for(auto& block : blocks) {
