@@ -99,15 +99,17 @@ app.component('market-offers', {
 	],
 	data() {
 		return {
-			data: [],
+			data: null,
 			offer: {},
 			timer: null,
 			result: null,
-			error: null
+			error: null,
+			loading: false
 		}
 	},
 	methods: {
 		update() {
+			this.loading = true;
 			let query = '/wapi/node/offers?limit=' + this.limit;
 			if(this.bid) {
 				query += '&bid=' + this.bid;
@@ -117,7 +119,10 @@ app.component('market-offers', {
 			}
 			fetch(query)
 				.then(response => response.json())
-				.then(data => this.data = data);
+				.then(data => {
+					this.loading = false;
+					this.data = data;
+				});
 		},
 		confirm(offer) {
 			this.offer = offer;
@@ -158,38 +163,43 @@ app.component('market-offers', {
 		<div class="ui negative message" v-if="error">
 			{{ $t('common.failed_with') }}: <b>{{error}}</b>
 		</div>
-		<table class="ui table striped">
-			<thead>
-				<th>{{ $t('market_offers.they_offer') }}</th>
-				<th>{{ $t('market_offers.they_ask') }}</th>
-				<template v-if="bid && ask">
-					<th>{{ $t('market_offers.price') }}</th>
-				</template>
-				<th>{{ $t('market_offers.time') }}</th>
-				<th>{{ $t('market_offers.link') }}</th>
-				<th></th>
-			</thead>
-			<tbody>
-				<tr v-for="item in data">
-					<td>
-						<template v-for="(entry, index) in item.bids">
-							<template v-if="index">, </template><b>{{entry.value}}</b> {{entry.symbol}}
-						</template>
-					</td>
-					<td>
-						<template v-for="(entry, index) in item.asks">
-							<template v-if="index">, </template><b>{{entry.value}}</b> {{entry.symbol}}
-						</template>
-					</td>
+		<template v-if="!data && loading">
+			<div class="ui basic loading placeholder segment"></div>
+		</template>
+		<template v-if="data">
+			<table class="ui table striped">
+				<thead>
+					<th>{{ $t('market_offers.they_offer') }}</th>
+					<th>{{ $t('market_offers.they_ask') }}</th>
 					<template v-if="bid && ask">
-						<td><b>{{item.price}}</b></td>
+						<th>{{ $t('market_offers.price') }}</th>
 					</template>
-					<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
-					<td><router-link :to="'/explore/address/' + item.address">{{ $t('market_offers.address') }}</router-link></td>
-					<td><div class="ui tiny compact button" @click="confirm(item)">{{ $t('market_offers.accept') }}</div></td>
-				</tr>
-			</tbody>
-		</table>
+					<th>{{ $t('market_offers.time') }}</th>
+					<th>{{ $t('market_offers.link') }}</th>
+					<th></th>
+				</thead>
+				<tbody>
+					<tr v-for="item in data">
+						<td>
+							<template v-for="(entry, index) in item.bids">
+								<template v-if="index">, </template><b>{{entry.value}}</b> {{entry.symbol}}
+							</template>
+						</td>
+						<td>
+							<template v-for="(entry, index) in item.asks">
+								<template v-if="index">, </template><b>{{entry.value}}</b> {{entry.symbol}}
+							</template>
+						</td>
+						<template v-if="bid && ask">
+							<td><b>{{item.price}}</b></td>
+						</template>
+						<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
+						<td><router-link :to="'/explore/address/' + item.address">{{ $t('market_offers.address') }}</router-link></td>
+						<td><div class="ui tiny compact button" @click="confirm(item)">{{ $t('market_offers.accept') }}</div></td>
+					</tr>
+				</tbody>
+			</table>
+		</template>
 		<div class="ui modal" ref="confirm">
 			<div class="header">{{ $t('market_offers.accept_offer') }}</div>
 			<div class="content">
