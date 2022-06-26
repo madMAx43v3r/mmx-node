@@ -69,7 +69,7 @@ Table::Table(const std::string& file_path, const options_t& options)
 				std::shared_ptr<db_val_t> key;
 				std::shared_ptr<db_val_t> value;
 				read_entry(write_log.in, version, key, value);
-				if(version >= min_version && version <= index->version) {
+				if(version >= min_version && version < index->version) {
 					insert_entry(version, key, value);
 				}
 				offset = in.get_input_pos();
