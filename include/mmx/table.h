@@ -308,6 +308,28 @@ protected:
 	}
 };
 
+template<typename K, typename I, typename V>
+class uint_uint_table : public table<std::pair<K, I>, V> {
+public:
+	uint_uint_table() : table<std::pair<K, I>, V>() {}
+	uint_uint_table(const std::string& file_path) : table<std::pair<K, I>, V>(file_path) {}
+protected:
+	// TODO: use a to_big_endian() function
+	void read(std::shared_ptr<const db_val_t> entry, std::pair<K, I>& key) const override {
+		if(entry->size != sizeof(K) + sizeof(I)) {
+			throw std::logic_error("key size mismatch");
+		}
+		key.first = vnx::flip_bytes(*((const K*)entry->data));
+		key.second = vnx::flip_bytes(*((const I*)(entry->data + sizeof(K))));
+	}
+	std::shared_ptr<db_val_t> write(const std::pair<K, I>& key) const override {
+		auto out = std::make_shared<mmx::db_val_t>(sizeof(K) + sizeof(I));
+		vnx::write_value(out->data, vnx::flip_bytes(key.first));
+		vnx::write_value(out->data + sizeof(K), vnx::flip_bytes(key.second));
+		return out;
+	}
+};
+
 template<typename K, typename V>
 class hash_table : public table<K, V> {
 public:

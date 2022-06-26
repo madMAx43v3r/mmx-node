@@ -841,7 +841,7 @@ address_info_t Node::get_address_info(const addr_t& address) const
 std::vector<std::pair<addr_t, std::shared_ptr<const Contract>>> Node::get_virtual_plots_for(const bls_pubkey_t& farmer_key) const
 {
 	std::unordered_map<addr_t, std::shared_ptr<const Contract>> out;
-	vplot_log.scan([this, &out, farmer_key](const uint32_t& key, const addr_t& address) {
+	vplot_log.scan([this, &out, farmer_key](const std::pair<uint32_t, uint32_t>& key, const addr_t& address) {
 		if(auto contract = get_contract(address)) {
 			if(auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(contract)) {
 				if(plot->farmer_key == farmer_key) {
@@ -856,7 +856,7 @@ std::vector<std::pair<addr_t, std::shared_ptr<const Contract>>> Node::get_virtua
 std::vector<offer_data_t> Node::get_offers(const uint32_t& since, const vnx::bool_t& is_open, const vnx::bool_t& is_covered) const
 {
 	std::vector<addr_t> entries;
-	offer_log.find_range(since, -1, entries);
+	offer_log.find_range(std::make_pair(since, 0), std::make_pair(-1, -1), entries);
 
 	std::vector<offer_data_t> out;
 	for(const auto& address : entries) {
@@ -1394,13 +1394,14 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	if(block->prev != state_hash) {
 		throw std::logic_error("block->prev != state_hash");
 	}
+	uint32_t counter = 0;
 	std::unordered_set<hash_t> tx_set;
 	std::unordered_map<addr_t, uint32_t> addr_count;
 	balance_cache_t balance_cache(&balance_map);
 
 	for(const auto& tx : block->get_all_transactions()) {
 		tx_set.insert(tx->id);
-		apply(block, tx, balance_cache, addr_count);
+		apply(block, tx, balance_cache, addr_count, counter);
 	}
 	for(auto iter = pending_transactions.begin(); iter != pending_transactions.end();) {
 		if(tx_set.count(iter->second->id)) {
@@ -1450,10 +1451,10 @@ void Node::apply(	std::shared_ptr<const Block> block,
 }
 
 void Node::apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx,
-					balance_cache_t& balance_cache, std::unordered_map<addr_t, uint32_t>& addr_count)
+					balance_cache_t& balance_cache, std::unordered_map<addr_t, uint32_t>& addr_count, uint32_t& counter)
 {
 	if(tx->parent) {
-		apply(block, tx->parent, balance_cache, addr_count);
+		apply(block, tx->parent, balance_cache, addr_count, counter);
 	}
 	const auto outputs = tx->get_outputs();
 	for(size_t i = 0; i < outputs.size(); ++i)
@@ -1500,10 +1501,10 @@ void Node::apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Tran
 			deploy_map.insert(*tx->sender, tx->id);
 		}
 		if(std::dynamic_pointer_cast<const contract::Offer>(contract)) {
-			offer_log.insert(block->height, tx->id);
+			offer_log.insert(std::make_pair(block->height, counter++), tx->id);
 		}
 		if(auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(contract)) {
-			vplot_log.insert(block->height, tx->id);
+			vplot_log.insert(std::make_pair(block->height, counter++), tx->id);
 		}
 	}
 	tx_pool.erase(tx->id);

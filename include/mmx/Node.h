@@ -330,7 +330,7 @@ private:
 				std::shared_ptr<const execution_context_t> context, bool is_replay = false);
 
 	void apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx,
-				balance_cache_t& balance_cache, std::unordered_map<addr_t, uint32_t>& addr_count);
+				balance_cache_t& balance_cache, std::unordered_map<addr_t, uint32_t>& addr_count, uint32_t& counter);
 
 	void revert(const uint32_t height);
 
@@ -383,9 +383,8 @@ private:
 	hash_table<addr_t, std::shared_ptr<const Contract>> contract_cache;			// [addr, contract]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, vnx::Object> mutate_log;	// [[addr, height] => method]
 	hash_multi_table<addr_t, addr_t> deploy_map;								// [sender => contract]
-	// TODO: use manual counter instead of multi_table
-	uint_multi_table<uint32_t, addr_t> offer_log;								// [height => contract]
-	uint_multi_table<uint32_t, addr_t> vplot_log;								// [height => contract]
+	uint_uint_table<uint32_t, uint32_t, addr_t> offer_log;						// [[height, counter] => contract]
+	uint_uint_table<uint32_t, uint32_t, addr_t> vplot_log;						// [[height, counter] => contract]
 
 	balance_table_t<uint128> balance_table;										// [[addr, currency] => balance]
 	std::map<std::pair<addr_t, addr_t>, uint128> balance_map;					// [[addr, currency] => balance]
