@@ -1,0 +1,213 @@
+{
+    "common": {
+        "yes": "是的",
+        "no": "否",
+        "default": "默认的",
+        "node": "节点",
+        "wallet": "钱包",
+        "height": "高度",
+        "blocks": "区块",
+        "balance": "余额",
+        "token": "代币",
+        "hash": "哈希",
+        "reward": "奖励",
+        "amount": "数量",
+        "address": "地址",
+        "type": "类型",
+        "time": "时间",
+        "fee": "费用",
+        "pending": "等待中",
+        "confirm": "确认",
+        "deploy": " 部署",
+        "create": "创建",
+        "transaction_has_been_sent": "交易已发送 ",
+        "failed_with": "失败原因",
+        "deployed_as": "部署为 ",
+        "link": "链接"
+    },
+    "main_menu": {
+        "explore": "浏览器",
+        "market": "市场",
+        "exchange": "交换",
+        "settings": "设置",
+        "logout": "退出"
+    },
+    "node_common": {
+        "vdf_speed": "VDF 速度",
+        "block_reward": "区块奖励",
+        "tx_fees": "交易费",
+        "netspace": "网络空间"
+    },
+    "node_menu": {
+        "log": "日志",
+        "peers": "节点"
+    },
+    "node_info": {
+        "synced": "已同步",
+        "supply": "供应",
+        "no_addresss": "No. Addresss"
+    },
+    "node_log": {
+        "terminal": "终端",
+        "router": "路由",
+        "farmer": "农民",
+        "harvester": "收割机",
+        "timelord": "时间领主"
+    },
+    "node_peers": {
+        "version": "版本",
+        "received": "已接收",
+        "send": "发送",
+        "ping": "Ping",
+        "duration": "期间",
+        "credits": "信用",
+        "tx_gas": "TX Gas",
+        "connection": "连接",
+        "outbound": "向外的",
+        "inbound": "向内的"
+    },
+    "wallet_summary": {
+        "new": "新建"
+    },
+    "account_menu": {
+        "nfts": "NFTs",
+        "contracts": "合同",
+        "addresses": "地址",
+        "send": "发送",
+        "offer": "提供",
+        "history": "历史",
+        "details": "详情"
+    },
+    "account_send_form": {
+        "source_address": "源地址",
+        "destination": "目的地",
+        "destination_address": "目的地地址",
+        "address_input": "地址输入",
+        "currency": "货币",
+        "send": "发送"
+    },
+    "balance_table": {
+        "locked": "已锁定",
+        "spendable": "可花费",
+        "contract": "合同"
+    },
+    "account_balance": {
+        "reserved": "保留的"
+    },
+    "account_offers": {
+        "offer": "提供",
+        "receive": "收到",
+        "status": "状态",
+        "actions": "行动",
+        "revoke": "撤销",
+        "accepted": "已收到",
+        "revoked": "已撤销",
+        "open": "打开"
+    },
+    "account_offer_form": {
+        "offer_amount": "提供的数量",
+        "offer_currency": "提供的货币",
+        "receive_amount": "接收的数量",
+        "receive_currency_contract": "接收货币合同",
+        "symbol": "标志",
+        "offer": "提供"
+    },
+    "explore_menu": {
+        "transactions": "交易",
+        "block_height": "区块高度"
+    },
+    "explore_blocks": {
+        "score": "分数"
+    },
+    "explore_transactions": {
+        "transaction_id": "交易ID"
+    },
+    "block_view": {
+        "previous": "先前的",
+        "next": "接下来的",
+        "block": "区块",
+        "no_such_block": "没有这个区块",
+        "time_diff": "时间差异",
+        "space_diff": "空间差异",
+        "vdf_iterations": "VDF 迭代次数",
+        "tx_base": "TX 基数",
+        "tx_count": "TX 总数",
+        "k_size": "K 大小",
+        "proof_score": "证明分数",
+        "plot_id": "Plot ID",
+        "farmer_key": "农民密钥",
+        "inputs": "输入",
+        "outputs": "输出",
+        "operations": "操作"
+    },
+    "transaction_view": {
+        "transaction": "交易",
+        "confirmed": "确认的",
+        "expires": "过期",
+        "note": "笔记",
+        "sender": "发送人",
+        "cost": "费用",
+        "input": "输入",
+        "output": "输出"
+    },
+    "create_contract_menu": {
+        "contract_type": "合同类型"
+    },
+    "account_contract_summary": {
+        "deposit": "押金",
+        "withdraw": "撤回"
+    },
+    "node_settings": {
+        "language": "语言",
+        "enable_timelord": "开启时间领主",
+        "farmer_reward_address": "农民奖励地址",
+        "timeLord_reward_address": "时间领主奖励地址",
+        "reward_address_placeholder": "<默认奖励地址>",
+        "restart_needed": "(需要重新启动)"
+    },
+    "create_locked_contract": {
+        "owner_address": "所有者地址",
+        "unlock_height": "在某区块高度解锁"
+    },
+    "create_virtual_plot_contract": {
+        "farmer_public_key": "农民公钥",
+        "reward_address": "奖励地址 (可选的, 用于池)"
+    },
+    "account_details": {
+        "copy_keys_to_plotter": "将密钥复制到绘图仪"
+    },
+    "account_actions": {
+        "reset_cache": "重置缓存",
+        "show_seed": "显示种子"
+    },
+    "create_account": {
+        "account_index": "账户序号",
+        "account_name": "账户名称",
+        "number_of_addresses": "地址数量",
+        "create_account": "创建帐户"
+    },
+    "create_wallet": {
+        "use_custom_seed": "使用自定义种子",
+        "seed_hash": "种子哈希 (可选的, 十六进制字符串, 64字符)",
+        "placeholder": "<random>",
+        "create_wallet": "创建钱包"
+    },
+    "market_menu": {
+        "they_offer": "他们提供",
+        "they_ask": "他们问",
+        "anything": "任何事物",
+        "offers": "提供物"
+    },
+    "market_offers": {
+        "price": "价格",
+        "accept": "接受",
+        "cancel": "取消",
+        "accept_offer": "接受报价",
+        "you_receive": "你收到",
+        "you_pay": "你支付"
+    },
+    "login": {
+        "password_label": "密码 (查看密码文件)",
+        "login": "登录"
+    }
+}
