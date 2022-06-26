@@ -69,7 +69,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	if(already_checked.count(value->challenge)) {
 		return;
 	}
-	const auto time_begin = vnx::get_time_micros();
+	const auto time_begin = vnx::get_wall_time_millis();
 
 	uint32_t best_index = 0;
 	uint256_t best_score = uint256_max;
@@ -203,7 +203,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	if(!id_map.empty()) {
 		log(INFO) << plots.size() << " plots were eligible for height " << value->height
 				<< ", best score was " << (best_score != uint256_max ? best_score.str() : "N/A")
-				<< ", took " << (vnx::get_time_micros() - time_begin) / 1e6 << " sec";
+				<< ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 	}
 }
 
