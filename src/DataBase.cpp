@@ -19,6 +19,51 @@ std::string to_number(const T& value, const size_t n_zero)
 	return std::string(n_zero - std::min(n_zero, tmp.length()), '0') + tmp;
 }
 
+void read_key(vnx::TypeInput& in, uint32_t& version, std::shared_ptr<db_val_t>& key)
+{
+	vnx::read(in, version);
+
+	uint32_t size = 0;
+	vnx::read(in, size);
+	key = std::make_shared<db_val_t>(size);
+	in.read(key->data, key->size);
+}
+
+void read_key_at(vnx::File& file, int64_t offset, uint32_t& version, std::shared_ptr<db_val_t>& key)
+{
+	file.seek_to(offset);
+	read_key(file.in, version, key);
+}
+
+void read_value(vnx::TypeInput& in, std::shared_ptr<db_val_t>& value)
+{
+	uint32_t size = 0;
+	vnx::read(in, size);
+	value = std::make_shared<db_val_t>(size);
+	in.read(value->data, value->size);
+}
+
+void read_value_at(vnx::File& file, int64_t offset, std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t>& value)
+{
+	file.seek_to(offset + 8 + key->size);
+	read_value(file.in, value);
+}
+
+void read_entry(vnx::TypeInput& in, uint32_t& version, std::shared_ptr<db_val_t>& key, std::shared_ptr<db_val_t>& value)
+{
+	read_key(in, version, key);
+	read_value(in, value);
+}
+
+void write_entry(vnx::TypeOutput& out, uint32_t version, std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t> value)
+{
+	vnx::write(out, version);
+	vnx::write(out, key->size);
+	out.write(key->data, key->size);
+	vnx::write(out, value->size);
+	out.write(value->data, value->size);
+}
+
 const std::function<int(const db_val_t&, const db_val_t&)> Table::default_comparator =
 	[](const db_val_t& lhs, const db_val_t& rhs) -> int {
 		if(lhs.size == rhs.size) {
@@ -125,51 +170,6 @@ std::shared_ptr<Table::block_t> Table::read_block(const std::string& name) const
 	block->index.resize(index_size);
 	in.read(block->index.data(), block->index.size() * 8);
 	return block;
-}
-
-void Table::read_entry(vnx::TypeInput& in, uint32_t& version, std::shared_ptr<db_val_t>& key, std::shared_ptr<db_val_t>& value) const
-{
-	read_key(in, version, key);
-	read_value(in, value);
-}
-
-void Table::read_key_at(vnx::File& file, int64_t offset, uint32_t& version, std::shared_ptr<db_val_t>& key) const
-{
-	file.seek_to(offset);
-	read_key(file.in, version, key);
-}
-
-void Table::read_key(vnx::TypeInput& in, uint32_t& version, std::shared_ptr<db_val_t>& key) const
-{
-	vnx::read(in, version);
-
-	uint32_t size = 0;
-	vnx::read(in, size);
-	key = std::make_shared<db_val_t>(size);
-	in.read(key->data, key->size);
-}
-
-void Table::read_value(vnx::TypeInput& in, std::shared_ptr<db_val_t>& value) const
-{
-	uint32_t size = 0;
-	vnx::read(in, size);
-	value = std::make_shared<db_val_t>(size);
-	in.read(value->data, value->size);
-}
-
-void Table::read_value_at(vnx::File& file, int64_t offset, std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t>& value) const
-{
-	file.seek_to(offset + 8 + key->size);
-	read_value(file.in, value);
-}
-
-void Table::write_entry(vnx::TypeOutput& out, uint32_t version, std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t> value) const
-{
-	vnx::write(out, version);
-	vnx::write(out, key->size);
-	out.write(key->data, key->size);
-	vnx::write(out, value->size);
-	out.write(value->data, value->size);
 }
 
 void Table::insert(std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t> value)
@@ -714,13 +714,13 @@ void Table::Iterator::prev()
 					const auto pos = entry.pos - 1;
 					uint32_t version;
 					std::shared_ptr<db_val_t> key;
-					table->read_key_at(*entry.file, block->index[pos], version, key);
+					read_key_at(*entry.file, block->index[pos], version, key);
 
 					pointer_t next;
 					next.block = block;
 					next.file = entry.file;
 					next.pos = pos;
-					table->read_value(entry.file->in, next.value);
+					read_value(entry.file->in, next.value);
 					block_map[std::make_pair(key, version)] = next;
 				}
 			} else {
@@ -755,13 +755,13 @@ void Table::Iterator::next()
 				if(pos < block->index.size()) {
 					uint32_t version;
 					std::shared_ptr<db_val_t> key;
-					table->read_key_at(*entry.file, block->index[pos], version, key);
+					read_key_at(*entry.file, block->index[pos], version, key);
 
 					pointer_t next;
 					next.block = block;
 					next.file = entry.file;
 					next.pos = pos;
-					table->read_value(entry.file->in, next.value);
+					read_value(entry.file->in, next.value);
 					block_map[std::make_pair(key, version)] = next;
 				}
 			} else {
@@ -847,7 +847,7 @@ void Table::Iterator::seek(const std::list<std::shared_ptr<block_t>>& blocks, st
 		}
 		else if(mode == 0) {
 			if(pos < end) {
-				table->read_key_at(*file, block->index[pos], version, res);
+				read_key_at(*file, block->index[pos], version, res);
 			} else {
 				continue;
 			}
@@ -859,13 +859,13 @@ void Table::Iterator::seek(const std::list<std::shared_ptr<block_t>>& blocks, st
 			if(pos == 0) {
 				continue;
 			}
-			table->read_key_at(*file, block->index[--pos], version, res);
+			read_key_at(*file, block->index[--pos], version, res);
 		}
 		else if(mode > 0) {
 			if(pos + 1 >= end) {
 				continue;
 			}
-			table->read_key_at(*file, block->index[++pos], version, res);
+			read_key_at(*file, block->index[++pos], version, res);
 		}
 		if(!res) {
 			continue;
@@ -874,7 +874,7 @@ void Table::Iterator::seek(const std::list<std::shared_ptr<block_t>>& blocks, st
 		entry.block = block;
 		entry.file = file;
 		entry.pos = pos;
-		table->read_value(file->in, entry.value);
+		read_value(file->in, entry.value);
 		block_map[std::make_pair(res, version)] = entry;
 	}
 }

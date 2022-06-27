@@ -191,18 +191,6 @@ private:
 	static constexpr uint32_t entry_overhead = 20;
 	static constexpr uint32_t block_header_size = 30;
 
-	void read_entry(vnx::TypeInput& in, uint32_t& version, std::shared_ptr<db_val_t>& key, std::shared_ptr<db_val_t>& value) const;
-
-	void read_key_at(vnx::File& file, int64_t offset, uint32_t& version, std::shared_ptr<db_val_t>& key) const;
-
-	void read_key(vnx::TypeInput& in, uint32_t& version, std::shared_ptr<db_val_t>& key) const;
-
-	void read_value(vnx::TypeInput& in, std::shared_ptr<db_val_t>& value) const;
-
-	void read_value_at(vnx::File& file, int64_t offset, std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t>& value) const;
-
-	void write_entry(vnx::TypeOutput& out, uint32_t version, std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t> value) const;
-
 	void insert_entry(uint32_t version, std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t> value);
 
 	std::shared_ptr<block_t> read_block(const std::string& name) const;
