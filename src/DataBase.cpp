@@ -419,6 +419,7 @@ void Table::revert(const uint32_t new_version)
 			iter++;
 		}
 	}
+	curr_version = new_version;
 }
 
 void Table::flush()
