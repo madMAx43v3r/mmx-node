@@ -345,6 +345,7 @@ void Table::revert(const uint32_t new_version)
 		auto& block = *iter;
 		if(block->min_version >= new_version) {
 			block->file.remove();
+			debug_log << "Deleted " << block->name << std::endl;
 			iter = blocks.erase(iter);
 			continue;
 		}
