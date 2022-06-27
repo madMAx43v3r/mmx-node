@@ -22,6 +22,7 @@
 #include <mmx/utils.h>
 #include <mmx/vm/Engine.h>
 #include <mmx/vm_interface.h>
+#include <mmx/Router.h>
 
 #include <vnx/vnx.h>
 
@@ -224,6 +225,11 @@ void Node::main()
 
 	update_timer = set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
 	stuck_timer = set_timer_millis(sync_loss_delay * 1000, std::bind(&Node::on_stuck_timeout, this));
+
+	vnx::Handle<mmx::Router> router = new mmx::Router("Router");
+	router->node_server = vnx_name;
+	router->storage_path = storage_path;
+	router.start();
 
 	update();
 

@@ -141,11 +141,6 @@ int main(int argc, char** argv)
 		module->components["/gui/"] = "FileServer_1";
 		module.start_detached();
 	}
-	{
-		vnx::Handle<mmx::Router> module = new mmx::Router("Router");
-		module->storage_path = root_path + module->storage_path;
-		module.start_detached();
-	}
 	if(with_timelord) {
 		{
 			vnx::Handle<mmx::TimeLord> module = new mmx::TimeLord("TimeLord");
