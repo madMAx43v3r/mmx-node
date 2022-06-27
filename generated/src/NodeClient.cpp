@@ -76,6 +76,8 @@
 #include <mmx/Node_get_tx_height_return.hxx>
 #include <mmx/Node_get_tx_ids_at.hxx>
 #include <mmx/Node_get_tx_ids_at_return.hxx>
+#include <mmx/Node_get_tx_ids_since.hxx>
+#include <mmx/Node_get_tx_ids_since_return.hxx>
 #include <mmx/Node_get_tx_info.hxx>
 #include <mmx/Node_get_tx_info_return.hxx>
 #include <mmx/Node_get_tx_info_for.hxx>
@@ -326,6 +328,19 @@ std::vector<::mmx::hash_t> NodeClient::get_tx_ids_at(const uint32_t& height) {
 	_method->height = height;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_tx_ids_at_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::hash_t>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::vector<::mmx::hash_t> NodeClient::get_tx_ids_since(const uint32_t& height) {
+	auto _method = ::mmx::Node_get_tx_ids_since::create();
+	_method->height = height;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_tx_ids_since_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::vector<::mmx::hash_t>>();

@@ -168,6 +168,8 @@ class Node_get_tx_height;
 class Node_get_tx_height_return;
 class Node_get_tx_ids_at;
 class Node_get_tx_ids_at_return;
+class Node_get_tx_ids_since;
+class Node_get_tx_ids_since_return;
 class Node_get_tx_info;
 class Node_get_tx_info_return;
 class Node_get_tx_info_for;
@@ -585,6 +587,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_he
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_height_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_ids_at; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_ids_at_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_ids_since; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_ids_since_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info_for; ///< \private
@@ -999,6 +1003,8 @@ void read(TypeInput& in, ::mmx::Node_get_tx_height& value, const TypeCode* type_
 void read(TypeInput& in, ::mmx::Node_get_tx_height_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_tx_ids_at& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_tx_ids_at_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_tx_ids_since& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_tx_ids_since_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_tx_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_tx_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_tx_info_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1416,6 +1422,8 @@ void write(TypeOutput& out, const ::mmx::Node_get_tx_height& value, const TypeCo
 void write(TypeOutput& out, const ::mmx::Node_get_tx_height_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_tx_ids_at& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_tx_ids_at_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_tx_ids_since& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_tx_ids_since_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_tx_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_tx_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_tx_info_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1833,6 +1841,8 @@ void read(std::istream& in, ::mmx::Node_get_tx_height& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_tx_height_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_tx_ids_at& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_tx_ids_at_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_tx_ids_since& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_tx_ids_since_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_tx_info& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_tx_info_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_tx_info_for& value); ///< \private
@@ -2250,6 +2260,8 @@ void write(std::ostream& out, const ::mmx::Node_get_tx_height& value); ///< \pri
 void write(std::ostream& out, const ::mmx::Node_get_tx_height_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_tx_ids_at& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_tx_ids_at_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_tx_ids_since& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_tx_ids_since_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_tx_info& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_tx_info_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_tx_info_for& value); ///< \private
@@ -2667,6 +2679,8 @@ void accept(Visitor& visitor, const ::mmx::Node_get_tx_height& value); ///< \pri
 void accept(Visitor& visitor, const ::mmx::Node_get_tx_height_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_tx_ids_at& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_tx_ids_at_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_tx_ids_since& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_tx_ids_since_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_tx_info& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_tx_info_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_tx_info_for& value); ///< \private
@@ -6285,6 +6299,52 @@ struct type<::mmx::Node_get_tx_ids_at_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_tx_ids_at_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_tx_ids_since> {
+	void read(TypeInput& in, ::mmx::Node_get_tx_ids_since& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_tx_ids_since& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_tx_ids_since& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_tx_ids_since& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_tx_ids_since& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_tx_ids_since& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_tx_ids_since_return> {
+	void read(TypeInput& in, ::mmx::Node_get_tx_ids_since_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_tx_ids_since_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_tx_ids_since_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_tx_ids_since_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_tx_ids_since_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_tx_ids_since_return& value, bool special = false);
 };
 
 /// \private
