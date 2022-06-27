@@ -108,7 +108,7 @@ Table::Table(const std::string& root_path, const options_t& options)
 		for(const auto& entry : block_map) {
 			const auto block = read_block(entry.second);
 			block_list.push_back(block);
-			debug_log << "Loaded block " << block->name << " at level " << block->level << " with " << block->index.size() << " / " << block->total_count
+			debug_log << "Loaded " << block->name << " at level " << block->level << " with " << block->index.size() << " / " << block->total_count
 					<< " entries, min_version = " << block->min_version << ", max_version = " << block->max_version << std::endl;
 		}
 		std::sort(block_list.begin(), block_list.end(),
