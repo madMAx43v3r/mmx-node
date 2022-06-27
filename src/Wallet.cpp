@@ -574,10 +574,10 @@ void Wallet::update_cache(const uint32_t& index) const
 	if(now - wallet->last_update > cache_timeout_ms)
 	{
 		const auto height = node->get_height();
-		const auto balance = node->get_all_balances(wallet->get_all_addresses());
-		const auto history = node->get_history(wallet->get_all_addresses(),
-				wallet->height - std::min(params->commit_delay, wallet->height));
-		wallet->update_cache(balance, history, height);
+		const auto balances = node->get_all_balances(wallet->get_all_addresses());
+		const auto history = wallet->pending_tx.empty() ? std::vector<hash_t>() :
+				node->get_tx_ids_since(wallet->height - std::min(params->commit_delay, wallet->height));
+		wallet->update_cache(balances, history, height);
 		wallet->last_update = now;
 	}
 }

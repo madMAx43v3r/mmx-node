@@ -116,7 +116,7 @@ public:
 	}
 
 	void update_cache(	const std::map<std::pair<addr_t, addr_t>, uint128>& balances,
-						const std::vector<tx_entry_t>& history, const uint32_t height)
+						const std::vector<hash_t>& history, const uint32_t height)
 	{
 		this->height = height;
 		balance_map.clear();
@@ -132,9 +132,9 @@ public:
 			pending_tx.erase(txid);
 			pending_map.erase(txid);
 		}
-		for(const auto& entry : history) {
-			pending_tx.erase(entry.txid);
-			pending_map.erase(entry.txid);
+		for(const auto& txid : history) {
+			pending_tx.erase(txid);
+			pending_map.erase(txid);
 		}
 		for(const auto& entry : reserved_map) {
 			balance_map[entry.first] -= entry.second;

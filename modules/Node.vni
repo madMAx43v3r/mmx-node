@@ -93,6 +93,9 @@ module Node implements vnx.addons.HttpComponent {
 	vector<hash_t> get_tx_ids_at(uint height) const;
 	
 	@Permission(permission_e.PUBLIC)
+	vector<hash_t> get_tx_ids_since(uint height) const;
+	
+	@Permission(permission_e.PUBLIC)
 	optional<hash_t> is_revoked(hash_t txid, addr_t sender) const;
 	
 	@Permission(PUBLISH)
