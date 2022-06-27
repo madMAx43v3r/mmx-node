@@ -347,7 +347,13 @@ void Table::revert(const uint32_t new_version)
 			dst.seek_to(new_block->index_offset);
 			write_block_index(out, new_block);
 			dst.close();
-			std::rename(dst.get_path().c_str(), src.get_path().c_str());
+
+#ifdef _WIN32
+			std::remove(src.get_path().c_str());
+#endif
+			if(std::rename(dst.get_path().c_str(), src.get_path().c_str())) {
+				throw std::runtime_error("rename('" + dst.get_path() + "', '" + src.get_path() + "') failed with: " + std::string(strerror(errno)));
+			}
 
 			debug_log << "Rewrote block " << block->name << " with max_version = " << new_block->max_version
 					<< ", " << new_block->index.size() << " / " << new_block->total_count << " entries"
