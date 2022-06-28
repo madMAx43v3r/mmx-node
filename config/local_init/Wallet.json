@@ -1,3 +1,4 @@
 {
-	"key_files": []
+	"key_files+": [],
+	"token_whitelist+": []
 }
