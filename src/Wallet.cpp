@@ -657,6 +657,27 @@ std::map<addr_t, balance_t> Wallet::get_balances(const uint32_t& index, const ui
 	return amounts;
 }
 
+std::map<addr_t, balance_t> Wallet::get_total_balances_for(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const
+{
+	std::map<addr_t, balance_t> amounts;
+	for(const auto& entry : node->get_total_balances(addresses, min_confirm)) {
+		auto& balance = amounts[entry.first];
+		balance.total = entry.second;
+		balance.spendable = balance.total;
+		balance.is_validated = token_whitelist.count(entry.first);
+	}
+	return amounts;
+}
+
+std::map<addr_t, balance_t> Wallet::get_contract_balances(const addr_t& address, const uint32_t& min_confirm) const
+{
+	auto amounts = node->get_contract_balances(address, min_confirm);
+	for(auto& entry : amounts) {
+		entry.second.is_validated = token_whitelist.count(entry.first);
+	}
+	return amounts;
+}
+
 std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts(const uint32_t& index) const
 {
 	const auto wallet = get_wallet(index);

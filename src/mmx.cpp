@@ -248,12 +248,14 @@ int main(int argc, char** argv)
 				std::vector<mmx::addr_t> nfts;
 				for(const auto& entry : wallet.get_balances(index))
 				{
+					const auto& balance = entry.second;
 					const auto contract = get_contract(node, entry.first);
 					if(std::dynamic_pointer_cast<const mmx::contract::NFT>(contract)) {
 						nfts.push_back(entry.first);
 					}
 					else if(auto token = get_token(node, entry.first, false)) {
-						std::cout << "Balance: " << amount_value(entry.second.total, token->decimals) << " " << token->symbol << " (" << entry.second.total << ")";
+						std::cout << "Balance: " << amount_value(balance.total, token->decimals) << " " << token->symbol
+								<< (balance.is_validated ? "" : "?") << " (" << balance.total << ")";
 						if(entry.first != mmx::addr_t()) {
 							std::cout << " [" << entry.first << "]";
 						}
@@ -300,10 +302,12 @@ int main(int argc, char** argv)
 					}
 					std::cout << ")" << std::endl;
 
-					for(const auto& entry : node.get_total_balances({address}))
+					for(const auto& entry : wallet.get_total_balances_for({address}))
 					{
+						const auto& balance = entry.second;
 						if(auto token = get_token(node, entry.first, false)) {
-							std::cout << "  Balance: " << amount_value(entry.second, token->decimals) << " " << token->symbol << " (" << entry.second << ")";
+							std::cout << "  Balance: " << amount_value(balance.total, token->decimals) << " " << token->symbol
+									<< (balance.is_validated ? "" : "?") << " (" << balance.total << ")";
 							if(entry.first != mmx::addr_t()) {
 								std::cout << " [" << entry.first << "]";
 							}

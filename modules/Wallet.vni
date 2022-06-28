@@ -90,6 +90,10 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	map<addr_t, balance_t> get_balances(uint index, uint min_confirm = 0) const;
 	
+	map<addr_t, balance_t> get_total_balances_for(vector<addr_t> addresses, uint min_confirm = 1) const;
+	
+	map<addr_t, balance_t> get_contract_balances(addr_t address, uint min_confirm = 1) const;
+	
 	map<addr_t, Contract*> get_contracts(uint index) const;
 	
 	addr_t get_address(uint index, uint offset) const;
