@@ -154,7 +154,7 @@ app.component('account-balance', {
 				<td>{{item.total}}</td>
 				<td>{{item.reserved}}</td>
 				<td><b>{{item.spendable}}</b></td>
-				<td>{{item.symbol}}</td>
+				<td :class="{disabled: !item.is_validated}">{{item.symbol}}</td>
 				<td><router-link :to="'/explore/address/' + item.contract">{{item.is_native ? '' : item.contract}}</router-link></td>
 			</tr>
 			</tbody>
@@ -313,8 +313,8 @@ app.component('account-history', {
 				<template v-if="item.is_native">
 					<td>{{item.symbol}}</td>
 				</template>
-				<template v-if="!item.is_native">
-					<td><router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}</router-link></td>
+				<template v-else>
+					<td><router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}{{item.is_validated ? "" : "?"}}</router-link></td>
 				</template>
 				<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
 				<td><router-link :to="'/explore/transaction/' + item.txid">TX</router-link></td>
@@ -893,6 +893,7 @@ app.component('account-offer-form', {
 	},
 	data() {
 		return {
+			tokens: [],
 			balances: [],
 			bid_amount: null,
 			ask_amount: null,
@@ -907,6 +908,9 @@ app.component('account-offer-form', {
 	},
 	methods: {
 		update() {
+			fetch('/wapi/wallet/tokens')
+				.then(response => response.json())
+				.then(data => this.tokens = data);
 			fetch('/wapi/wallet/balance?index=' + this.index)
 				.then(response => response.json())
 				.then(data => this.balances = data.balances);
@@ -1007,7 +1011,11 @@ app.component('account-offer-form', {
 					</div>
 					<div class="ten wide field">
 						<label>{{ $t('account_offer_form.receive_currency_contract') }}</label>
-						<input type="text" v-model="ask_currency" placeholder="mmx1..."/>
+						<select v-model="ask_currency">
+							<option v-for="item in tokens" :key="item.currency" :value="item.currency">
+								{{item.symbol}}<template v-if="item.currency != 'mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev'"> - [{{item.currency}}]</template>
+							</option>
+						</select>
 					</div>
 				</div>
 				<div class="inline field">
@@ -1110,7 +1118,7 @@ app.component('account-offers', {
 				<td><router-link :to="'/explore/address/' + item.id">{{item.id.substr(0, 16)}}...</router-link></td>
 				<td :class="{positive: !item.base.height, negative: item.revoked}">
 					<template v-if="item.base.height">
-						<router-link :to="'/explore/transaction/' + item.base.id">{{item.base.input_amounts[0].accepted}}</router-link>
+						<router-link :to="'/explore/transaction/' + item.base.id">{{ $t('account_offers.accepted') }}</router-link>
 					</template>
 					<template v-else>
 						{{item.revoked ? $t('account_offers.revoked') : $t('account_offers.open') }}

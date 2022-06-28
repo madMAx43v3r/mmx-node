@@ -127,6 +127,12 @@ protected:
 
 	void create_wallet(const account_t& config, const vnx::optional<hash_t>& seed) override;
 
+	std::set<addr_t> get_token_list() const override;
+
+	void add_token(const addr_t& address) override;
+
+	void rem_token(const addr_t& address) override;
+
 	hash_t get_master_seed(const uint32_t& index) const override;
 
 	void http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,

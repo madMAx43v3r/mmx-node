@@ -42,6 +42,7 @@ void Wallet::main()
 		throw std::logic_error("too many key files");
 	}
 	params = get_params();
+	token_whitelist.insert(addr_t());
 
 	vnx::Directory(config_path).create();
 	vnx::Directory(storage_path).create();
@@ -597,7 +598,11 @@ std::vector<txin_t> Wallet::gather_inputs_for(	const uint32_t& index, const uint
 std::vector<tx_entry_t> Wallet::get_history(const uint32_t& index, const int32_t& since) const
 {
 	const auto wallet = get_wallet(index);
-	return node->get_history(wallet->get_all_addresses(), since);
+	auto result = node->get_history(wallet->get_all_addresses(), since);
+	for(auto& entry : result) {
+		entry.is_validated = token_whitelist.count(entry.contract);
+	}
+	return result;
 }
 
 std::vector<tx_log_entry_t> Wallet::get_tx_history(const uint32_t& index, const int32_t& limit_, const uint32_t& offset) const
@@ -647,6 +652,7 @@ std::map<addr_t, balance_t> Wallet::get_balances(const uint32_t& index, const ui
 	}
 	for(auto& entry : amounts) {
 		entry.second.total = entry.second.spendable + entry.second.reserved + entry.second.locked;
+		entry.second.is_validated = token_whitelist.count(entry.first);
 	}
 	return amounts;
 }
@@ -818,6 +824,23 @@ void Wallet::create_wallet(const account_t& config_, const vnx::optional<hash_t>
 	std::filesystem::permissions(key_path, std::filesystem::perms::owner_read | std::filesystem::perms::owner_write);
 
 	create_account(config);
+}
+
+std::set<addr_t> Wallet::get_token_list() const
+{
+	return token_whitelist;
+}
+
+void Wallet::add_token(const addr_t& address)
+{
+	token_whitelist.insert(address);
+}
+
+void Wallet::rem_token(const addr_t& address)
+{
+	if(address != addr_t()) {
+		token_whitelist.erase(address);
+	}
 }
 
 hash_t Wallet::get_master_seed(const uint32_t& index) const

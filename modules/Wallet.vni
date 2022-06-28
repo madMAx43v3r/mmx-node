@@ -19,6 +19,8 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	bool enable_bls = true;
 	
+	set<addr_t> token_whitelist;
+	
 	
 	@Permission(permission_e.SPENDING)
 	Transaction* send(uint index, ulong amount, addr_t dst_addr, addr_t currency, spend_options_t options) const;
@@ -107,6 +109,12 @@ module Wallet implements vnx.addons.HttpComponent {
 	void create_account(account_t config);
 	
 	void create_wallet(account_t config, optional<hash_t> seed);
+	
+	set<addr_t> get_token_list() const;
+	
+	void add_token(addr_t address);
+	
+	void rem_token(addr_t address);
 	
 	@Permission(permission_e.SPENDING)
 	hash_t get_master_seed(uint index) const;

@@ -28,6 +28,9 @@ app.component('market-menu', {
 						this.wallet = data[0][0];
 					}
 				});
+			fetch('/wapi/wallet/tokens')
+				.then(response => response.json())
+				.then(data => this.tokens = data);
 		},
 		submit(page) {
 			if(!page) {
@@ -101,6 +104,8 @@ app.component('market-offers', {
 		return {
 			data: null,
 			offer: {},
+			tokens: new Set(),
+			accepted: new Set(),
 			timer: null,
 			result: null,
 			error: null,
@@ -123,6 +128,14 @@ app.component('market-offers', {
 					this.loading = false;
 					this.data = data;
 				});
+			fetch('/wapi/wallet/tokens')
+				.then(response => response.json())
+				.then(data => {
+					this.tokens.clear();
+					for(const token of data) {
+						this.tokens.add(token.currency);
+					}
+				});
 		},
 		confirm(offer) {
 			this.offer = offer;
@@ -138,6 +151,7 @@ app.component('market-offers', {
 						response.json().then(data => {
 							this.error = null;
 							this.result = data;
+							this.accepted.add(offer.address);
 							this.$emit('accept-offer', {offer: offer, result: data});
 						});
 					} else {
@@ -179,15 +193,29 @@ app.component('market-offers', {
 					<th></th>
 				</thead>
 				<tbody>
-					<tr v-for="item in data">
+					<tr v-for="item in data" :key="item.address" :class="{positive: accepted.has(item.address)}">
 						<td>
 							<template v-for="(entry, index) in item.bids">
-								<template v-if="index">, </template><b>{{entry.value}}</b> {{entry.symbol}}
+								<template v-if="index">, </template><b>{{entry.value}}</b>&nbsp;
+								<template v-if="entry.is_native">{{entry.symbol}}</template>
+								<template v-else>
+									<router-link :to="'/explore/address/' + entry.contract">
+										<template v-if="tokens.has(entry.contract)">{{entry.symbol}}</template>
+										<template v-else>{{entry.symbol}}?</template>
+									</router-link>
+								</template>
 							</template>
 						</td>
 						<td>
 							<template v-for="(entry, index) in item.asks">
-								<template v-if="index">, </template><b>{{entry.value}}</b> {{entry.symbol}}
+								<template v-if="index">, </template><b>{{entry.value}}</b>&nbsp;
+								<template v-if="entry.is_native">{{entry.symbol}}</template>
+								<template v-else>
+									<router-link :to="'/explore/address/' + entry.contract">
+										<template v-if="tokens.has(entry.contract)">{{entry.symbol}}</template>
+										<template v-else>{{entry.symbol}}?</template>
+									</router-link>
+								</template>
 							</template>
 						</td>
 						<template v-if="bid && ask">
@@ -195,7 +223,11 @@ app.component('market-offers', {
 						</template>
 						<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 						<td><router-link :to="'/explore/address/' + item.address">{{ $t('market_offers.address') }}</router-link></td>
-						<td><div class="ui tiny compact button" @click="confirm(item)">{{ $t('market_offers.accept') }}</div></td>
+						<td>
+							<template v-if="!accepted.has(item.address)">
+								<div class="ui tiny compact button" @click="confirm(item)">{{ $t('market_offers.accept') }}</div>
+							</template>
+						</td>
 					</tr>
 				</tbody>
 			</table>

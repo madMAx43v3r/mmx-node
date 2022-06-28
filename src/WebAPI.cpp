@@ -887,10 +887,12 @@ void WebAPI::render_balances(const vnx::request_id_t& request_id, const vnx::opt
 						row["reserved"] = amount_value(balance.reserved, currency->decimals);
 						row["locked"] = amount_value(balance.locked, currency->decimals);
 						row["symbol"] = currency->symbol;
+						row["decimals"] = currency->decimals;
 						row["contract"] = entry.first.to_string();
 						if(entry.first == addr_t()) {
 							row["is_native"] = true;
 						}
+						row["is_validated"] = balance.is_validated;
 						rows.push_back(row);
 					}
 				}
@@ -1389,6 +1391,27 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		} else {
 			respond_status(request_id, 404, "wallet/address?index|limit|offset");
 		}
+	}
+	else if(sub_path == "/wallet/tokens") {
+		wallet->get_token_list(
+			[this, request_id](const std::set<addr_t>& tokens) {
+				get_context(std::unordered_set<addr_t>(tokens.begin(), tokens.end()), request_id,
+					[this, request_id, tokens](std::shared_ptr<RenderContext> context) {
+						std::vector<vnx::Object> res;
+						for(const auto& addr : tokens) {
+							vnx::Object tmp;
+							tmp["currency"] = addr.to_string();
+							if(auto token = context->find_currency(addr)) {
+								tmp["symbol"] = token->symbol;
+								tmp["decimals"] = token->decimals;
+								tmp["is_nft"] = token->is_nft;
+							}
+							res.push_back(tmp);
+						}
+						respond(request_id, vnx::Variant(res));
+					});
+			},
+			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 	}
 	else if(sub_path == "/wallet/history") {
 		const auto iter_index = query.find("index");
