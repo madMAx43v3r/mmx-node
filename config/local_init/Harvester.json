@@ -1,5 +1,6 @@
 {
 	"num_threads": 16,
 	"reload_interval": 3600,
+	"recursive_search": true,
 	"plot_dirs": []
 }
