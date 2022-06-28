@@ -164,8 +164,6 @@ public:
 			size_t pos = -1;
 			std::shared_ptr<block_t> block;
 			std::shared_ptr<db_val_t> value;
-			// TODO: use FileSectionInputStream
-			std::shared_ptr<vnx::File> file;
 			std::map<std::shared_ptr<db_val_t>, std::pair<std::shared_ptr<db_val_t>, uint32_t>, key_compare_t>::const_iterator iter;
 		};
 
@@ -201,7 +199,7 @@ private:
 
 	std::shared_ptr<db_val_t> find(std::shared_ptr<block_t> block, std::shared_ptr<db_val_t> key) const;
 
-	size_t lower_bound(vnx::File& file, std::shared_ptr<block_t> block, uint32_t& version, std::shared_ptr<db_val_t>& key, bool& is_match) const;
+	size_t lower_bound(std::shared_ptr<block_t> block, uint32_t& version, std::shared_ptr<db_val_t>& key, bool& is_match) const;
 
 	std::shared_ptr<block_t> rewrite(std::list<std::shared_ptr<block_t>> blocks, const uint32_t level) const;
 
