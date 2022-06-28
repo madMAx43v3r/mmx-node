@@ -25,10 +25,12 @@ fi
 
 echo NETWORK=${NETWORK}
 
-if [ ! -f "${MMX_HOME}DB_VERSION" ]; then
+NEW_DB_VERSION=MMX2
+DB_VERSION_PATH="${MMX_HOME}DB_VERSION"
+if [ ! -f "${DB_VERSION_PATH}" ] || [ $(cat "${DB_VERSION_PATH}") != ${NEW_DB_VERSION} ]; then
 	rm -r "${MMX_HOME}${NETWORK}/db"
 	echo "Deleted old DB"
-	echo "MMX1" > "${MMX_HOME}DB_VERSION"
+	echo ${NEW_DB_VERSION} > "${DB_VERSION_PATH}"
 fi
 
 export MMX_NETWORK=${NETWORK}/

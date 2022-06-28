@@ -8,9 +8,8 @@
 #ifndef INCLUDE_MMX_DB_DATABASE_H_
 #define INCLUDE_MMX_DB_DATABASE_H_
 
-#include <mmx/TableIndex.hxx>
-
 #include <vnx/File.h>
+
 #include <fstream>
 #include <mutex>
 
@@ -19,6 +18,7 @@
 #else
 #define MMX_DB_EXPORT
 #endif
+
 
 namespace mmx {
 
@@ -43,6 +43,8 @@ struct db_val_t {
 			this->data = (uint8_t*)data;
 		}
 	}
+	db_val_t(const std::string& value) : db_val_t(value.c_str(), value.size()) {}
+
 	db_val_t(const db_val_t&) = delete;
 
 	~db_val_t() {
@@ -84,6 +86,7 @@ protected:
 		uint32_t max_version = 0;
 		uint64_t total_count = 0;
 		uint64_t index_offset = 0;
+		vnx::File file;
 		std::string name;
 		std::vector<int64_t> index;
 	};
@@ -118,7 +121,7 @@ public:
 	};
 
 	const options_t options;
-	const std::string file_path;
+	const std::string root_path;
 
 	Table(const std::string& file_path, const options_t& options = default_options);
 
@@ -133,7 +136,7 @@ public:
 	void flush();
 
 	uint32_t current_version() const {
-		return index->version;
+		return curr_version;
 	}
 
 	class Iterator {
@@ -161,6 +164,7 @@ public:
 			size_t pos = -1;
 			std::shared_ptr<block_t> block;
 			std::shared_ptr<db_val_t> value;
+			// TODO: use FileSectionInputStream
 			std::shared_ptr<vnx::File> file;
 			std::map<std::shared_ptr<db_val_t>, std::pair<std::shared_ptr<db_val_t>, uint32_t>, key_compare_t>::const_iterator iter;
 		};
@@ -199,7 +203,7 @@ private:
 
 	size_t lower_bound(vnx::File& file, std::shared_ptr<block_t> block, uint32_t& version, std::shared_ptr<db_val_t>& key, bool& is_match) const;
 
-	std::shared_ptr<block_t> rewrite(std::list<std::shared_ptr<block_t>> blocks, const uint32_t level, const uint64_t new_block_id) const;
+	std::shared_ptr<block_t> rewrite(std::list<std::shared_ptr<block_t>> blocks, const uint32_t level) const;
 
 	void check_rewrite();
 
@@ -207,10 +211,17 @@ private:
 
 	void write_block_index(vnx::TypeOutput& out, std::shared_ptr<block_t> block) const;
 
-	void write_index();
+	std::shared_ptr<block_t> create_block(const uint32_t level, const std::string& name) const;
 
-	std::ofstream debug_log;
-	std::shared_ptr<TableIndex> index;
+	void finish_block(std::shared_ptr<block_t> block) const;
+
+	void rename(std::shared_ptr<block_t> block, const uint64_t new_index) const;
+	void rename(std::shared_ptr<block_t> block, const std::string& new_name) const;
+
+private:
+	uint32_t curr_version = 0;
+	uint64_t next_block_id = 0;
+
 	vnx::File write_log;
 	std::list<std::shared_ptr<block_t>> blocks;
 
@@ -220,6 +231,8 @@ private:
 
 	mutable std::mutex mutex;
 	mutable int64_t write_lock = 0;
+
+	std::ofstream debug_log;
 
 };
 

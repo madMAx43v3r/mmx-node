@@ -163,6 +163,7 @@ void Node::main()
 					if(block->height % 1000 == 0) {
 						log(INFO) << "Height " << block->height << " ...";
 					}
+					vnx_process(false);
 				}
 				if(!vnx::do_run()) {
 					log(WARN) << "DB replay interrupted";
