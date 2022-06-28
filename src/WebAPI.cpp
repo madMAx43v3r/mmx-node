@@ -1064,35 +1064,25 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 
 			std::string file;
 			vnx::optional<std::string> field;
-			vnx::optional<vnx::Variant> new_value;
-
-			if(key == "timelord") {
-				file = key;
-				new_value = value;
-			}
-			else if(key == "Farmer.reward_addr" || key == "TimeLord.reward_addr") {
-				file = key.substr(0, key.find('.')) + ".json";
-				field = "reward_addr";
-				if(value.is_string()) {
-					addr_t address;
-					address.from_string(value.to_string_value());
-					new_value = vnx::Variant(address.to_string());
+			{
+				const auto pos = key.find('.');
+				if(pos == std::string::npos) {
+					file = key;
 				} else {
-					new_value = vnx::Variant();
+					file = key.substr(0, pos) + ".json";
+					field = key.substr(pos + 1);
 				}
 			}
-			if(new_value) {
-				if(field) {
-					const auto path = config_path + file;
-					auto object = vnx::read_config_file(path);
-					object[*field] = *new_value;
-					vnx::write_config_file(path, object);
-					log(INFO) << "Updated '" << *field << "'" << ": " << *new_value << " (in " << path << ")";
-				} else {
-					const auto path = config_path + file;
-					std::ofstream(path) << *new_value << std::endl;
-					log(INFO) << "Updated " << path << ": " << *new_value;
-				}
+			if(field) {
+				const auto path = config_path + file;
+				auto object = vnx::read_config_file(path);
+				object[*field] = value;
+				vnx::write_config_file(path, object);
+				log(INFO) << "Updated '" << *field << "'" << ": " << value << " (in " << path << ")";
+			} else {
+				const auto path = config_path + file;
+				std::ofstream(path) << value << std::endl;
+				log(INFO) << "Updated " << path << ": " << value;
 			}
 			respond_status(request_id, 200);
 		} else {
