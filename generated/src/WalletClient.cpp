@@ -45,6 +45,8 @@
 #include <mmx/Wallet_get_balance_return.hxx>
 #include <mmx/Wallet_get_balances.hxx>
 #include <mmx/Wallet_get_balances_return.hxx>
+#include <mmx/Wallet_get_contract_balances.hxx>
+#include <mmx/Wallet_get_contract_balances_return.hxx>
 #include <mmx/Wallet_get_contracts.hxx>
 #include <mmx/Wallet_get_contracts_return.hxx>
 #include <mmx/Wallet_get_farmer_keys.hxx>
@@ -55,6 +57,8 @@
 #include <mmx/Wallet_get_master_seed_return.hxx>
 #include <mmx/Wallet_get_token_list.hxx>
 #include <mmx/Wallet_get_token_list_return.hxx>
+#include <mmx/Wallet_get_total_balances_for.hxx>
+#include <mmx/Wallet_get_total_balances_for_return.hxx>
 #include <mmx/Wallet_get_tx_history.hxx>
 #include <mmx/Wallet_get_tx_history_return.hxx>
 #include <mmx/Wallet_make_offer.hxx>
@@ -533,6 +537,34 @@ std::map<::mmx::addr_t, ::mmx::balance_t> WalletClient::get_balances(const uint3
 	_method->min_confirm = min_confirm;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_balances_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, ::mmx::balance_t>>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
+std::map<::mmx::addr_t, ::mmx::balance_t> WalletClient::get_total_balances_for(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm) {
+	auto _method = ::mmx::Wallet_get_total_balances_for::create();
+	_method->addresses = addresses;
+	_method->min_confirm = min_confirm;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_total_balances_for_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, ::mmx::balance_t>>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
+std::map<::mmx::addr_t, ::mmx::balance_t> WalletClient::get_contract_balances(const ::mmx::addr_t& address, const uint32_t& min_confirm) {
+	auto _method = ::mmx::Wallet_get_contract_balances::create();
+	_method->address = address;
+	_method->min_confirm = min_confirm;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_contract_balances_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, ::mmx::balance_t>>();

@@ -101,6 +101,10 @@ public:
 	
 	std::map<::mmx::addr_t, ::mmx::balance_t> get_balances(const uint32_t& index = 0, const uint32_t& min_confirm = 0);
 	
+	std::map<::mmx::addr_t, ::mmx::balance_t> get_total_balances_for(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& min_confirm = 1);
+	
+	std::map<::mmx::addr_t, ::mmx::balance_t> get_contract_balances(const ::mmx::addr_t& address = ::mmx::addr_t(), const uint32_t& min_confirm = 1);
+	
 	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts(const uint32_t& index = 0);
 	
 	::mmx::addr_t get_address(const uint32_t& index = 0, const uint32_t& offset = 0);
