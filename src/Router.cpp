@@ -1322,7 +1322,7 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 			if(auto value = std::dynamic_pointer_cast<const Router_get_id_return>(result)) {
 				if(value->_ret_0 == get_id()) {
 					if(auto peer = find_peer(client)) {
-						log(INFO) << "Discovered our own address: " << peer->address;
+						log(INFO) << "Discovered our own address (or duplicate node ID?): " << peer->address;
 						self_addrs.insert(peer->address);
 						block_peers.insert(peer->address);
 					}
