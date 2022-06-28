@@ -18,6 +18,7 @@ struct MMX_EXPORT balance_t {
 	::mmx::uint128 reserved;
 	::mmx::uint128 locked;
 	::mmx::uint128 total;
+	vnx::bool_t is_validated = 0;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -59,12 +60,13 @@ struct MMX_EXPORT balance_t {
 
 template<typename T>
 void balance_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<balance_t>(4);
+	_visitor.template type_begin<balance_t>(5);
 	_visitor.type_field("spendable", 0); _visitor.accept(spendable);
 	_visitor.type_field("reserved", 1); _visitor.accept(reserved);
 	_visitor.type_field("locked", 2); _visitor.accept(locked);
 	_visitor.type_field("total", 3); _visitor.accept(total);
-	_visitor.template type_end<balance_t>(4);
+	_visitor.type_field("is_validated", 4); _visitor.accept(is_validated);
+	_visitor.template type_end<balance_t>(5);
 }
 
 

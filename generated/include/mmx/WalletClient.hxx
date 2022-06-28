@@ -127,6 +127,16 @@ public:
 	
 	void create_wallet_async(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<::mmx::hash_t>& seed = nullptr);
 	
+	std::set<::mmx::addr_t> get_token_list();
+	
+	void add_token(const ::mmx::addr_t& address = ::mmx::addr_t());
+	
+	void add_token_async(const ::mmx::addr_t& address = ::mmx::addr_t());
+	
+	void rem_token(const ::mmx::addr_t& address = ::mmx::addr_t());
+	
+	void rem_token_async(const ::mmx::addr_t& address = ::mmx::addr_t());
+	
 	::mmx::hash_t get_master_seed(const uint32_t& index = 0);
 	
 	std::shared_ptr<const ::mmx::FarmerKeys> get_farmer_keys(const uint32_t& index = 0);

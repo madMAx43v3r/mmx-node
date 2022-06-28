@@ -11,6 +11,8 @@
 #include <mmx/Wallet_accept_offer_return.hxx>
 #include <mmx/Wallet_add_account.hxx>
 #include <mmx/Wallet_add_account_return.hxx>
+#include <mmx/Wallet_add_token.hxx>
+#include <mmx/Wallet_add_token_return.hxx>
 #include <mmx/Wallet_complete.hxx>
 #include <mmx/Wallet_complete_return.hxx>
 #include <mmx/Wallet_create_account.hxx>
@@ -51,6 +53,8 @@
 #include <mmx/Wallet_get_history_return.hxx>
 #include <mmx/Wallet_get_master_seed.hxx>
 #include <mmx/Wallet_get_master_seed_return.hxx>
+#include <mmx/Wallet_get_token_list.hxx>
+#include <mmx/Wallet_get_token_list_return.hxx>
 #include <mmx/Wallet_get_tx_history.hxx>
 #include <mmx/Wallet_get_tx_history_return.hxx>
 #include <mmx/Wallet_make_offer.hxx>
@@ -65,6 +69,8 @@
 #include <mmx/Wallet_release_return.hxx>
 #include <mmx/Wallet_release_all.hxx>
 #include <mmx/Wallet_release_all_return.hxx>
+#include <mmx/Wallet_rem_token.hxx>
+#include <mmx/Wallet_rem_token_return.hxx>
 #include <mmx/Wallet_reserve.hxx>
 #include <mmx/Wallet_reserve_return.hxx>
 #include <mmx/Wallet_reset_cache.hxx>
@@ -664,6 +670,42 @@ void WalletClient::create_wallet_async(const ::mmx::account_t& config, const vnx
 	auto _method = ::mmx::Wallet_create_wallet::create();
 	_method->config = config;
 	_method->seed = seed;
+	vnx_request(_method, true);
+}
+
+std::set<::mmx::addr_t> WalletClient::get_token_list() {
+	auto _method = ::mmx::Wallet_get_token_list::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_token_list_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::set<::mmx::addr_t>>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
+void WalletClient::add_token(const ::mmx::addr_t& address) {
+	auto _method = ::mmx::Wallet_add_token::create();
+	_method->address = address;
+	vnx_request(_method, false);
+}
+
+void WalletClient::add_token_async(const ::mmx::addr_t& address) {
+	auto _method = ::mmx::Wallet_add_token::create();
+	_method->address = address;
+	vnx_request(_method, true);
+}
+
+void WalletClient::rem_token(const ::mmx::addr_t& address) {
+	auto _method = ::mmx::Wallet_rem_token::create();
+	_method->address = address;
+	vnx_request(_method, false);
+}
+
+void WalletClient::rem_token_async(const ::mmx::addr_t& address) {
+	auto _method = ::mmx::Wallet_rem_token::create();
+	_method->address = address;
 	vnx_request(_method, true);
 }
 

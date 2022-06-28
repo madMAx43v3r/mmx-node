@@ -43,6 +43,7 @@ public:
 	uint32_t default_expire = 100;
 	int32_t cache_timeout_ms = 1000;
 	vnx::bool_t enable_bls = true;
+	std::set<::mmx::addr_t> token_whitelist;
 	
 	typedef ::vnx::Module Super;
 	
@@ -115,6 +116,9 @@ protected:
 	virtual void add_account(const uint32_t& index, const ::mmx::account_t& config) = 0;
 	virtual void create_account(const ::mmx::account_t& config) = 0;
 	virtual void create_wallet(const ::mmx::account_t& config, const vnx::optional<::mmx::hash_t>& seed) = 0;
+	virtual std::set<::mmx::addr_t> get_token_list() const = 0;
+	virtual void add_token(const ::mmx::addr_t& address) = 0;
+	virtual void rem_token(const ::mmx::addr_t& address) = 0;
 	virtual ::mmx::hash_t get_master_seed(const uint32_t& index) const = 0;
 	virtual std::shared_ptr<const ::mmx::FarmerKeys> get_farmer_keys(const uint32_t& index) const = 0;
 	virtual std::vector<std::shared_ptr<const ::mmx::FarmerKeys>> get_all_farmer_keys() const = 0;
@@ -130,7 +134,7 @@ protected:
 
 template<typename T>
 void WalletBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<WalletBase>(11);
+	_visitor.template type_begin<WalletBase>(12);
 	_visitor.type_field("key_files", 0); _visitor.accept(key_files);
 	_visitor.type_field("accounts", 1); _visitor.accept(accounts);
 	_visitor.type_field("config_path", 2); _visitor.accept(config_path);
@@ -142,7 +146,8 @@ void WalletBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("default_expire", 8); _visitor.accept(default_expire);
 	_visitor.type_field("cache_timeout_ms", 9); _visitor.accept(cache_timeout_ms);
 	_visitor.type_field("enable_bls", 10); _visitor.accept(enable_bls);
-	_visitor.template type_end<WalletBase>(11);
+	_visitor.type_field("token_whitelist", 11); _visitor.accept(token_whitelist);
+	_visitor.template type_end<WalletBase>(12);
 }
 
 

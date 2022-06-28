@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_contract_balances_return::VNX_TYPE_HASH(0x4974c6093398e264ull);
-const vnx::Hash64 Node_get_contract_balances_return::VNX_CODE_HASH(0xede37c9e1337cefbull);
+const vnx::Hash64 Node_get_contract_balances_return::VNX_CODE_HASH(0x58929f206c4bc64eull);
 
 vnx::Hash64 Node_get_contract_balances_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -115,7 +115,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_contract_balances_return::static_create_
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_contract_balances.return";
 	type_code->type_hash = vnx::Hash64(0x4974c6093398e264ull);
-	type_code->code_hash = vnx::Hash64(0xede37c9e1337cefbull);
+	type_code->code_hash = vnx::Hash64(0x58929f206c4bc64eull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;

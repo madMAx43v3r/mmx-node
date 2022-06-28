@@ -12,7 +12,7 @@ namespace mmx {
 
 
 const vnx::Hash64 balance_t::VNX_TYPE_HASH(0x613173c7e5ce65b4ull);
-const vnx::Hash64 balance_t::VNX_CODE_HASH(0x2e4e6f47e4951ac7ull);
+const vnx::Hash64 balance_t::VNX_CODE_HASH(0x9b34210a248d52bcull);
 
 vnx::Hash64 balance_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,6 +49,7 @@ void balance_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, reserved);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, locked);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, total);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, is_validated);
 	_visitor.type_end(*_type_code);
 }
 
@@ -58,6 +59,7 @@ void balance_t::write(std::ostream& _out) const {
 	_out << ", \"reserved\": "; vnx::write(_out, reserved);
 	_out << ", \"locked\": "; vnx::write(_out, locked);
 	_out << ", \"total\": "; vnx::write(_out, total);
+	_out << ", \"is_validated\": "; vnx::write(_out, is_validated);
 	_out << "}";
 }
 
@@ -74,12 +76,15 @@ vnx::Object balance_t::to_object() const {
 	_object["reserved"] = reserved;
 	_object["locked"] = locked;
 	_object["total"] = total;
+	_object["is_validated"] = is_validated;
 	return _object;
 }
 
 void balance_t::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "locked") {
+		if(_entry.first == "is_validated") {
+			_entry.second.to(is_validated);
+		} else if(_entry.first == "locked") {
 			_entry.second.to(locked);
 		} else if(_entry.first == "reserved") {
 			_entry.second.to(reserved);
@@ -104,6 +109,9 @@ vnx::Variant balance_t::get_field(const std::string& _name) const {
 	if(_name == "total") {
 		return vnx::Variant(total);
 	}
+	if(_name == "is_validated") {
+		return vnx::Variant(is_validated);
+	}
 	return vnx::Variant();
 }
 
@@ -116,6 +124,8 @@ void balance_t::set_field(const std::string& _name, const vnx::Variant& _value) 
 		_value.to(locked);
 	} else if(_name == "total") {
 		_value.to(total);
+	} else if(_name == "is_validated") {
+		_value.to(is_validated);
 	}
 }
 
@@ -143,11 +153,11 @@ std::shared_ptr<vnx::TypeCode> balance_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.balance_t";
 	type_code->type_hash = vnx::Hash64(0x613173c7e5ce65b4ull);
-	type_code->code_hash = vnx::Hash64(0x2e4e6f47e4951ac7ull);
+	type_code->code_hash = vnx::Hash64(0x9b34210a248d52bcull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::balance_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<balance_t>>(); };
-	type_code->fields.resize(4);
+	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -171,6 +181,12 @@ std::shared_ptr<vnx::TypeCode> balance_t::static_create_type_code() {
 		field.is_extended = true;
 		field.name = "total";
 		field.code = {11, 16, 1};
+	}
+	{
+		auto& field = type_code->fields[4];
+		field.data_size = 1;
+		field.name = "is_validated";
+		field.code = {31};
 	}
 	type_code->build();
 	return type_code;
@@ -212,8 +228,11 @@ void read(TypeInput& in, ::mmx::balance_t& value, const TypeCode* type_code, con
 			}
 		}
 	}
-	in.read(type_code->total_field_size);
+	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
+		if(const auto* const _field = type_code->field_map[4]) {
+			vnx::read_value(_buf + _field->offset, value.is_validated, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -239,6 +258,8 @@ void write(TypeOutput& out, const ::mmx::balance_t& value, const TypeCode* type_
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
+	char* const _buf = out.write(1);
+	vnx::write_value(_buf + 0, value.is_validated);
 	vnx::write(out, value.spendable, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.reserved, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.locked, type_code, type_code->fields[2].code.data());
