@@ -536,13 +536,13 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				}
 			}
 		} else {
-			uint64_t total_size = 0;
+			uint64_t max_block_size = 0;
 			for(const auto& entry : job->blocks) {
-				total_size += entry.second->calc_cost(params);
+				max_block_size = std::max(entry.second->calc_cost(params), max_block_size);
 			}
 			log(DEBUG) << "Got " << job->blocks.size() << " blocks for height " << job->height << " by fetching "
 					<< job->succeeded.size() + job->failed.size() << " times, " << job->failed.size() << " failed"
-					<< ", average size = " << total_size / pow(10, params->decimals) / job->blocks.size() << " MMX,"
+					<< ", size = " << max_block_size / pow(10, params->decimals) << " MMX"
 					<< ", took " << (now_ms - job->start_time_ms) / 1e3 << " sec";
 			// we are done with the job
 			std::vector<std::shared_ptr<const Block>> blocks;
