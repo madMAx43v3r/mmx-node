@@ -176,6 +176,9 @@ int main(int argc, char** argv)
 		module->database_path = root_path + module->database_path;
 		module.start();
 		module.wait();
+		if(!module->do_restart) {
+			break;
+		}
 	}
 	vnx::close();
 
