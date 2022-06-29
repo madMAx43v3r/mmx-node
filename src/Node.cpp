@@ -1137,7 +1137,7 @@ void Node::sync_result(const uint32_t& height, const std::vector<std::shared_ptr
 				sync_peak = height;
 			}
 		}
-		if(!sync_retry && height % max_sync_jobs == 0) {
+		if((!sync_retry && height % max_sync_jobs == 0) || sync_pending.empty()) {
 			update();
 		} else {
 			sync_more();
