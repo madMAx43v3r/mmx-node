@@ -406,6 +406,7 @@ private:
 	std::unordered_set<hash_t> purged_blocks;
 
 	bool is_synced = false;
+	bool is_sync_fail = false;
 	std::shared_ptr<vnx::File> block_chain;
 	std::shared_ptr<vm::StorageRocksDB> storage;
 	mutable hash_table<hash_t, uint32_t> hash_index;							// [block hash => height]
