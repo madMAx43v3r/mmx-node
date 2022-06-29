@@ -536,8 +536,14 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				}
 			}
 		} else {
+			uint64_t total_size = 0;
+			for(const auto& entry : job->blocks) {
+				total_size += entry.second->calc_cost(params);
+			}
 			log(DEBUG) << "Got " << job->blocks.size() << " blocks for height " << job->height << " by fetching "
-					<< job->succeeded.size() + job->failed.size() << " times, " << job->failed.size() << " failed";
+					<< job->succeeded.size() + job->failed.size() << " times, " << job->failed.size() << " failed"
+					<< ", average size = " << total_size / pow(10, params->decimals) / job->blocks.size() << " MMX,"
+					<< ", took " << (now_ms - job->start_time_ms) / 1e3 << " sec";
 			// we are done with the job
 			std::vector<std::shared_ptr<const Block>> blocks;
 			for(const auto& entry : job->blocks) {
@@ -575,7 +581,8 @@ bool Router::process(std::shared_ptr<const Return> ret)
 							job->is_done = true;
 							fetch_block_async_return(request_id, result->_ret_0);
 							log(DEBUG) << "Got block " << *job->hash << " by fetching "
-									<< job->pending.size() + job->failed.size() << " times, " << job->failed.size() << " failed";
+									<< job->pending.size() + job->failed.size() << " times, " << job->failed.size() << " failed, took"
+									<< (now_ms - job->start_time_ms) / 1e3 << " sec";
 						} else {
 							job->failed.insert(client);
 						}

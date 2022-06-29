@@ -226,20 +226,28 @@ void Node::update()
 
 	if(!prev_peak || peak->hash != prev_peak->hash)
 	{
-		stuck_timer->reset();
 		if(auto fork = find_fork(peak->hash))
 		{
-			auto proof = fork->block->proof;
-			auto vdf_point = fork->vdf_point;
-			std::stringstream ss_delay;
-			if(is_synced && vdf_point) {
-				ss_delay << ", delay " << (fork->recv_time - vdf_point->recv_time) / 1000 / 1e3 << " sec";
+			const auto proof = fork->block->proof;
+			std::stringstream msg;
+			msg << "New peak at height " << peak->height << " with score " << (proof ? proof->score : params->score_threshold);
+			if(!peak->farmer_sig) {
+				msg << " (dummy)";
 			}
-			log(INFO) << "New peak at height " << peak->height
-					<< " with score " << (proof ? proof->score : params->score_threshold) << (peak->farmer_sig ? "" : " (dummy)")
-					<< (is_synced && forked_at ? ", forked at " + std::to_string(forked_at->height) : "")
-					<< ss_delay.str() << ", took " << elapsed << " sec";
+			if(is_synced) {
+				if(forked_at) {
+					msg << ", forked at " << forked_at->height;
+				}
+				if(auto vdf_point = fork->vdf_point) {
+					msg << ", delay " << (fork->recv_time - vdf_point->recv_time) / 1000 / 1e3 << " sec";
+				}
+			} else {
+				msg << ", " << sync_pending.size() << " pending";
+			}
+			msg << ", took " << elapsed << " sec";
+			log(INFO) << msg.str();
 		}
+		stuck_timer->reset();
 	}
 
 	if(!is_synced && sync_peak && sync_pending.empty())
