@@ -246,7 +246,6 @@ std::shared_ptr<const PeerInfo> Router::get_peer_info() const
 		peer.height = state->height;
 		peer.version = state->info.version;
 		peer.credits = state->credits;
-		peer.tx_credits = state->tx_credits;
 		peer.ping_ms = state->ping_ms;
 		peer.bytes_send = state->bytes_send;
 		peer.bytes_recv = state->bytes_recv;
@@ -315,18 +314,6 @@ void Router::handle(std::shared_ptr<const Block> block)
 		broadcast(block, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
 		block_counter++;
 	}
-	for(const auto& tx : block->tx_list) {
-		auto iter = hash_info.find(tx->calc_hash(true));
-		if(iter != hash_info.end()) {
-			auto& info = iter->second;
-			if(info.received_from != uint64_t(-1)) {
-				if(auto peer = find_peer(info.received_from)) {
-					peer->tx_credits += tx->calc_cost(params);
-				}
-			}
-			info.did_relay = true;
-		}
-	}
 }
 
 void Router::handle(std::shared_ptr<const Transaction> tx)
@@ -388,13 +375,9 @@ void Router::update()
 {
 	const auto now_ms = vnx::get_wall_time_millis();
 
-	const uint64_t add_tx_credits =
-			(uint64_t(params->max_block_cost) * update_interval_ms) / uint32_t(params->block_time * 1e3) / std::max<size_t>(peer_map.size(), 1);
-
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
 		peer->credits = std::min(peer->credits, max_node_credits);
-		peer->tx_credits = std::min(peer->tx_credits + add_tx_credits, params->max_block_cost);
 
 		// clear old hashes
 		while(peer->sent_hashes.size() > max_sent_cache) {
@@ -1047,15 +1030,9 @@ void Router::on_transaction(uint64_t client, std::shared_ptr<const Transaction> 
 	const auto hash = tx->calc_hash(true);
 	const auto is_new = receive_msg_hash(hash, client);
 	if(do_relay) {
-		if(auto peer = find_peer(client)) {
-			const auto tx_cost = tx->calc_cost(params);
-			if(peer->tx_credits >= tx_cost) {
-				if(relay_msg_hash(hash)) {
-					peer->tx_credits -= tx_cost;
-					relay(client, tx, hash, {node_type_e::FULL_NODE});
-					tx_counter++;
-				}
-			}
+		if(relay_msg_hash(hash)) {
+			relay(client, tx, hash, {node_type_e::FULL_NODE});
+			tx_counter++;
 		}
 	} else {
 		relay_msg_hash(hash);

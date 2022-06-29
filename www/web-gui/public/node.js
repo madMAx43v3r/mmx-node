@@ -110,7 +110,6 @@ app.component('node-peers', {
 				<th>{{ $t('node_peers.ping') }}</th>
 				<th>{{ $t('node_peers.duration') }}</th>
 				<th>{{ $t('node_peers.credits') }}</th>
-				<th>{{ $t('node_peers.tx_gas') }}</th>
 				<th>{{ $t('node_peers.connection') }}</th>
 			</tr>
 			</thead>
@@ -125,7 +124,6 @@ app.component('node-peers', {
 				<td><b>{{item.ping_ms}}</b> ms</td>
 				<td><b>{{(item.connect_time_ms / 1000 / 60).toFixed()}}</b> min</td>
 				<td>{{item.credits}}</td>
-				<td><b>{{(item.tx_credits / Math.pow(10, 6)).toFixed(3)}}</b> MMX</td>
 				<td>{{item.is_outbound ? $t('node_peers.outbound') : $t('node_peers.inbound') }}</td>
 			</tr>
 			</tbody>
