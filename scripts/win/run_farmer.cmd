@@ -1,4 +1,5 @@
 @ECHO OFF
+TITLE MMX Farmer Run Script
 
 CALL .\activate.cmd
 

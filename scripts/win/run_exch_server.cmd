@@ -1,4 +1,5 @@
 @ECHO OFF
+TITLE MMX Exchange Server Run Script
 
 CALL .\activate.cmd
 

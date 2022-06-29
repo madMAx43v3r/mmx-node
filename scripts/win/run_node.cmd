@@ -1,4 +1,5 @@
 @ECHO OFF
+TITLE MMX Node Run Script
 
 CALL .\activate.cmd
 

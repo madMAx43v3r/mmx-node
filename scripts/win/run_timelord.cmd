@@ -1,4 +1,5 @@
 @ECHO OFF
+TITLE MMX Timelord Run Script
 
 CALL activate.cmd
 
