@@ -12,7 +12,7 @@ namespace mmx {
 
 
 const vnx::Hash64 peer_info_t::VNX_TYPE_HASH(0xce0ff32e89625afbull);
-const vnx::Hash64 peer_info_t::VNX_CODE_HASH(0xb66fe269af179b4cull);
+const vnx::Hash64 peer_info_t::VNX_CODE_HASH(0xc4a5e9f77ba7411cull);
 
 vnx::Hash64 peer_info_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,17 +48,16 @@ void peer_info_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, address);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, type);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, credits);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, tx_credits);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, ping_ms);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, height);
-	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, version);
-	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, recv_timeout_ms);
-	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, connect_time_ms);
-	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, bytes_send);
-	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, bytes_recv);
-	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, is_synced);
-	_visitor.type_field(_type_code->fields[12], 12); vnx::accept(_visitor, is_blocked);
-	_visitor.type_field(_type_code->fields[13], 13); vnx::accept(_visitor, is_outbound);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, ping_ms);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, height);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, version);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, recv_timeout_ms);
+	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, connect_time_ms);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, bytes_send);
+	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, bytes_recv);
+	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, is_synced);
+	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, is_blocked);
+	_visitor.type_field(_type_code->fields[12], 12); vnx::accept(_visitor, is_outbound);
 	_visitor.type_end(*_type_code);
 }
 
@@ -67,7 +66,6 @@ void peer_info_t::write(std::ostream& _out) const {
 	_out << "\"address\": "; vnx::write(_out, address);
 	_out << ", \"type\": "; vnx::write(_out, type);
 	_out << ", \"credits\": "; vnx::write(_out, credits);
-	_out << ", \"tx_credits\": "; vnx::write(_out, tx_credits);
 	_out << ", \"ping_ms\": "; vnx::write(_out, ping_ms);
 	_out << ", \"height\": "; vnx::write(_out, height);
 	_out << ", \"version\": "; vnx::write(_out, version);
@@ -93,7 +91,6 @@ vnx::Object peer_info_t::to_object() const {
 	_object["address"] = address;
 	_object["type"] = type;
 	_object["credits"] = credits;
-	_object["tx_credits"] = tx_credits;
 	_object["ping_ms"] = ping_ms;
 	_object["height"] = height;
 	_object["version"] = version;
@@ -131,8 +128,6 @@ void peer_info_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(ping_ms);
 		} else if(_entry.first == "recv_timeout_ms") {
 			_entry.second.to(recv_timeout_ms);
-		} else if(_entry.first == "tx_credits") {
-			_entry.second.to(tx_credits);
 		} else if(_entry.first == "type") {
 			_entry.second.to(type);
 		} else if(_entry.first == "version") {
@@ -150,9 +145,6 @@ vnx::Variant peer_info_t::get_field(const std::string& _name) const {
 	}
 	if(_name == "credits") {
 		return vnx::Variant(credits);
-	}
-	if(_name == "tx_credits") {
-		return vnx::Variant(tx_credits);
 	}
 	if(_name == "ping_ms") {
 		return vnx::Variant(ping_ms);
@@ -194,8 +186,6 @@ void peer_info_t::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(type);
 	} else if(_name == "credits") {
 		_value.to(credits);
-	} else if(_name == "tx_credits") {
-		_value.to(tx_credits);
 	} else if(_name == "ping_ms") {
 		_value.to(ping_ms);
 	} else if(_name == "height") {
@@ -243,13 +233,13 @@ std::shared_ptr<vnx::TypeCode> peer_info_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.peer_info_t";
 	type_code->type_hash = vnx::Hash64(0xce0ff32e89625afbull);
-	type_code->code_hash = vnx::Hash64(0xb66fe269af179b4cull);
+	type_code->code_hash = vnx::Hash64(0xc4a5e9f77ba7411cull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::peer_info_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<peer_info_t>>(); };
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::node_type_e::static_get_type_code();
-	type_code->fields.resize(14);
+	type_code->fields.resize(13);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -270,66 +260,60 @@ std::shared_ptr<vnx::TypeCode> peer_info_t::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[3];
-		field.data_size = 8;
-		field.name = "tx_credits";
-		field.code = {4};
-	}
-	{
-		auto& field = type_code->fields[4];
 		field.data_size = 4;
 		field.name = "ping_ms";
 		field.code = {7};
 	}
 	{
-		auto& field = type_code->fields[5];
+		auto& field = type_code->fields[4];
 		field.data_size = 4;
 		field.name = "height";
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[6];
+		auto& field = type_code->fields[5];
 		field.data_size = 4;
 		field.name = "version";
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[7];
+		auto& field = type_code->fields[6];
 		field.data_size = 8;
 		field.name = "recv_timeout_ms";
 		field.code = {8};
 	}
 	{
-		auto& field = type_code->fields[8];
+		auto& field = type_code->fields[7];
 		field.data_size = 8;
 		field.name = "connect_time_ms";
 		field.code = {8};
 	}
 	{
-		auto& field = type_code->fields[9];
+		auto& field = type_code->fields[8];
 		field.data_size = 8;
 		field.name = "bytes_send";
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[10];
+		auto& field = type_code->fields[9];
 		field.data_size = 8;
 		field.name = "bytes_recv";
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[11];
+		auto& field = type_code->fields[10];
 		field.data_size = 1;
 		field.name = "is_synced";
 		field.code = {31};
 	}
 	{
-		auto& field = type_code->fields[12];
+		auto& field = type_code->fields[11];
 		field.data_size = 1;
 		field.name = "is_blocked";
 		field.code = {31};
 	}
 	{
-		auto& field = type_code->fields[13];
+		auto& field = type_code->fields[12];
 		field.data_size = 1;
 		field.name = "is_outbound";
 		field.code = {31};
@@ -380,36 +364,33 @@ void read(TypeInput& in, ::mmx::peer_info_t& value, const TypeCode* type_code, c
 			vnx::read_value(_buf + _field->offset, value.credits, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[3]) {
-			vnx::read_value(_buf + _field->offset, value.tx_credits, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[4]) {
 			vnx::read_value(_buf + _field->offset, value.ping_ms, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[5]) {
+		if(const auto* const _field = type_code->field_map[4]) {
 			vnx::read_value(_buf + _field->offset, value.height, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[6]) {
+		if(const auto* const _field = type_code->field_map[5]) {
 			vnx::read_value(_buf + _field->offset, value.version, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[7]) {
+		if(const auto* const _field = type_code->field_map[6]) {
 			vnx::read_value(_buf + _field->offset, value.recv_timeout_ms, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[8]) {
+		if(const auto* const _field = type_code->field_map[7]) {
 			vnx::read_value(_buf + _field->offset, value.connect_time_ms, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[9]) {
+		if(const auto* const _field = type_code->field_map[8]) {
 			vnx::read_value(_buf + _field->offset, value.bytes_send, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[10]) {
+		if(const auto* const _field = type_code->field_map[9]) {
 			vnx::read_value(_buf + _field->offset, value.bytes_recv, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[11]) {
+		if(const auto* const _field = type_code->field_map[10]) {
 			vnx::read_value(_buf + _field->offset, value.is_synced, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[12]) {
+		if(const auto* const _field = type_code->field_map[11]) {
 			vnx::read_value(_buf + _field->offset, value.is_blocked, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[13]) {
+		if(const auto* const _field = type_code->field_map[12]) {
 			vnx::read_value(_buf + _field->offset, value.is_outbound, _field->code.data());
 		}
 	}
@@ -435,19 +416,18 @@ void write(TypeOutput& out, const ::mmx::peer_info_t& value, const TypeCode* typ
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(59);
+	char* const _buf = out.write(51);
 	vnx::write_value(_buf + 0, value.credits);
-	vnx::write_value(_buf + 4, value.tx_credits);
-	vnx::write_value(_buf + 12, value.ping_ms);
-	vnx::write_value(_buf + 16, value.height);
-	vnx::write_value(_buf + 20, value.version);
-	vnx::write_value(_buf + 24, value.recv_timeout_ms);
-	vnx::write_value(_buf + 32, value.connect_time_ms);
-	vnx::write_value(_buf + 40, value.bytes_send);
-	vnx::write_value(_buf + 48, value.bytes_recv);
-	vnx::write_value(_buf + 56, value.is_synced);
-	vnx::write_value(_buf + 57, value.is_blocked);
-	vnx::write_value(_buf + 58, value.is_outbound);
+	vnx::write_value(_buf + 4, value.ping_ms);
+	vnx::write_value(_buf + 8, value.height);
+	vnx::write_value(_buf + 12, value.version);
+	vnx::write_value(_buf + 16, value.recv_timeout_ms);
+	vnx::write_value(_buf + 24, value.connect_time_ms);
+	vnx::write_value(_buf + 32, value.bytes_send);
+	vnx::write_value(_buf + 40, value.bytes_recv);
+	vnx::write_value(_buf + 48, value.is_synced);
+	vnx::write_value(_buf + 49, value.is_blocked);
+	vnx::write_value(_buf + 50, value.is_outbound);
 	vnx::write(out, value.address, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.type, type_code, type_code->fields[1].code.data());
 }
