@@ -12,49 +12,49 @@
 
 #include <mmx/contract/Executable.hxx>
 
-using namespace mmx::vm;
+using namespace mmx;
 
 
 int main(int argc, char** argv)
 {
 	auto exec = mmx::contract::Executable::create();
 
-	std::vector<varptr_t> constant;
-	constant.push_back(new var_t());
-	constant.push_back(new var_t(TYPE_TRUE));
-	constant.push_back(new var_t(TYPE_FALSE));
-	constant.push_back(new uint_t(0));
-	constant.push_back(new uint_t(1));					// 0x4
-	constant.push_back(new array_t());
-	constant.push_back(new map_t());
-	constant.push_back(new uint_t(1337));
-	constant.push_back(binary_t::alloc("test"));		// 0x8
-	constant.push_back(binary_t::alloc("invalid user"));
-	constant.push_back(binary_t::alloc("other"));
-	constant.push_back(binary_t::alloc("set_value"));
+	std::vector<vm::varptr_t> constant;
+	constant.push_back(new vm::var_t());
+	constant.push_back(new vm::var_t(vm::TYPE_TRUE));
+	constant.push_back(new vm::var_t(vm::TYPE_FALSE));
+	constant.push_back(new vm::uint_t(0));
+	constant.push_back(new vm::uint_t(1));					// 0x4
+	constant.push_back(new vm::array_t());
+	constant.push_back(new vm::map_t());
+	constant.push_back(new vm::uint_t(1337));
+	constant.push_back(vm::binary_t::alloc("test"));		// 0x8
+	constant.push_back(vm::binary_t::alloc("invalid user"));
+	constant.push_back(vm::binary_t::alloc("other"));
+	constant.push_back(vm::binary_t::alloc("set_value"));
 
-	exec->fields["array"] = MEM_STATIC + 0;
-	exec->fields["map"] = MEM_STATIC + 1;
-	exec->fields["value"] = MEM_STATIC + 2;
-	exec->fields["owner"] = MEM_STATIC + 3;
+	exec->fields["array"] = vm::MEM_STATIC + 0;
+	exec->fields["map"] = vm::MEM_STATIC + 1;
+	exec->fields["value"] = vm::MEM_STATIC + 2;
+	exec->fields["owner"] = vm::MEM_STATIC + 3;
 
-	std::vector<instr_t> code;
+	std::vector<vm::instr_t> code;
 	{
 		mmx::contract::method_t method;
 		method.name = "init";
 		method.args = {"owner"};
 		method.entry_point = code.size();
-		code.emplace_back(OP_COPY, 0, MEM_STATIC + 0, 0x5);
-		code.emplace_back(OP_COPY, 0, MEM_STATIC + 1, 0x6);
-		code.emplace_back(OP_COPY, 0, MEM_STATIC + 2, 0x7);
-		code.emplace_back(OP_CONV, 0, MEM_STATIC + 3, MEM_STACK + 1, CONVTYPE_UINT, CONVTYPE_ADDRESS);
-		code.emplace_back(OP_PUSH_BACK, 0, MEM_STATIC + 0, 0x7);
-		code.emplace_back(OP_PUSH_BACK, 0, MEM_STATIC + 0, 0x8);
-		code.emplace_back(OP_SET, 0, MEM_STATIC + 1, 0x8, 0x7);
-		code.emplace_back(OP_CLONE, 0, MEM_STACK + 2, 0x6);
-		code.emplace_back(OP_SET, 0, MEM_STACK + 2, 0x7, 0x8);
-		code.emplace_back(OP_SET, 0, MEM_STATIC + 1, 0x7, MEM_STACK + 2);
-		code.emplace_back(OP_RET);
+		code.emplace_back(vm::OP_COPY, 0, vm::MEM_STATIC + 0, 0x5);
+		code.emplace_back(vm::OP_COPY, 0, vm::MEM_STATIC + 1, 0x6);
+		code.emplace_back(vm::OP_COPY, 0, vm::MEM_STATIC + 2, 0x7);
+		code.emplace_back(vm::OP_CONV, 0, vm::MEM_STATIC + 3, vm::MEM_STACK + 1, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
+		code.emplace_back(vm::OP_PUSH_BACK, 0, vm::MEM_STATIC + 0, 0x7);
+		code.emplace_back(vm::OP_PUSH_BACK, 0, vm::MEM_STATIC + 0, 0x8);
+		code.emplace_back(vm::OP_SET, 0, vm::MEM_STATIC + 1, 0x8, 0x7);
+		code.emplace_back(vm::OP_CLONE, 0, vm::MEM_STACK + 2, 0x6);
+		code.emplace_back(vm::OP_SET, 0, vm::MEM_STACK + 2, 0x7, 0x8);
+		code.emplace_back(vm::OP_SET, 0, vm::MEM_STATIC + 1, 0x7, vm::MEM_STACK + 2);
+		code.emplace_back(vm::OP_RET);
 		exec->methods["init"] = method;
 	}
 	{
@@ -63,8 +63,8 @@ int main(int argc, char** argv)
 		method.args = {"value"};
 		method.is_public = true;
 		method.entry_point = code.size();
-		code.emplace_back(OP_PUSH_BACK, 0, MEM_STATIC + 0, MEM_STACK + 1);
-		code.emplace_back(OP_RET);
+		code.emplace_back(vm::OP_PUSH_BACK, 0, vm::MEM_STATIC + 0, vm::MEM_STACK + 1);
+		code.emplace_back(vm::OP_RET);
 		exec->methods["push_back"] = method;
 	}
 	{
@@ -73,8 +73,8 @@ int main(int argc, char** argv)
 		method.args = {"key", "value"};
 		method.is_public = true;
 		method.entry_point = code.size();
-		code.emplace_back(OP_SET, 0, MEM_STATIC + 1, MEM_STACK + 1, MEM_STACK + 2);
-		code.emplace_back(OP_RET);
+		code.emplace_back(vm::OP_SET, 0, vm::MEM_STATIC + 1, vm::MEM_STACK + 1, vm::MEM_STACK + 2);
+		code.emplace_back(vm::OP_RET);
 		exec->methods["insert"] = method;
 	}
 	{
@@ -83,8 +83,8 @@ int main(int argc, char** argv)
 		method.args = {"value"};
 		method.is_public = true;
 		method.entry_point = code.size();
-		code.emplace_back(OP_COPY, 0, MEM_STATIC + 2, MEM_STACK + 1);
-		code.emplace_back(OP_RET);
+		code.emplace_back(vm::OP_COPY, 0, vm::MEM_STATIC + 2, vm::MEM_STACK + 1);
+		code.emplace_back(vm::OP_RET);
 		exec->methods["set_value"] = method;
 	}
 	{
@@ -94,8 +94,8 @@ int main(int argc, char** argv)
 		method.is_const = true;
 		method.is_public = true;
 		method.entry_point = code.size();
-		code.emplace_back(OP_GET, 0, MEM_STACK + 0, MEM_STATIC + 0, MEM_STACK + 1);
-		code.emplace_back(OP_RET);
+		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 0, vm::MEM_STATIC + 0, vm::MEM_STACK + 1);
+		code.emplace_back(vm::OP_RET);
 		exec->methods["read_array"] = method;
 	}
 	{
@@ -104,9 +104,9 @@ int main(int argc, char** argv)
 		method.args = {"address", "amount"};
 		method.is_public = true;
 		method.entry_point = code.size();
-		code.emplace_back(OP_CONV, 0, MEM_STACK + 3, MEM_STACK + 1, CONVTYPE_UINT, CONVTYPE_ADDRESS);
-		code.emplace_back(OP_MINT, 0, MEM_STACK + 3, MEM_STACK + 2);
-		code.emplace_back(OP_RET);
+		code.emplace_back(vm::OP_CONV, 0, vm::MEM_STACK + 3, vm::MEM_STACK + 1, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
+		code.emplace_back(vm::OP_MINT, 0, vm::MEM_STACK + 3, vm::MEM_STACK + 2);
+		code.emplace_back(vm::OP_RET);
 		exec->methods["mint"] = method;
 	}
 	{
@@ -115,7 +115,7 @@ int main(int argc, char** argv)
 		method.is_public = true;
 		method.is_payable = true;
 		method.entry_point = code.size();
-		code.emplace_back(OP_RET);
+		code.emplace_back(vm::OP_RET);
 		exec->methods["deposit"] = method;
 	}
 	{
@@ -124,13 +124,13 @@ int main(int argc, char** argv)
 		method.is_public = true;
 		method.args = {"address", "amount", "currency"};
 		method.entry_point = code.size();
-		code.emplace_back(OP_CMP_EQ, 0, MEM_STACK + 10, MEM_EXTERN + EXTERN_USER, MEM_STATIC + 3);
-		code.emplace_back(OP_JUMPI, 0, method.entry_point + 3, MEM_STACK + 10);
-		code.emplace_back(OP_FAIL, 0, MEM_CONST + 9);
-		code.emplace_back(OP_CONV, 0, MEM_STACK + 4, MEM_STACK + 1, CONVTYPE_UINT, CONVTYPE_ADDRESS);
-		code.emplace_back(OP_CONV, 0, MEM_STACK + 5, MEM_STACK + 3, CONVTYPE_UINT, CONVTYPE_ADDRESS);
-		code.emplace_back(OP_SEND, 0, MEM_STACK + 4, MEM_STACK + 2, MEM_STACK + 5);
-		code.emplace_back(OP_RET);
+		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, vm::MEM_EXTERN + vm::EXTERN_USER, vm::MEM_STATIC + 3);
+		code.emplace_back(vm::OP_JUMPI, 0, method.entry_point + 3, vm::MEM_STACK + 10);
+		code.emplace_back(vm::OP_FAIL, 0, vm::MEM_CONST + 9);
+		code.emplace_back(vm::OP_CONV, 0, vm::MEM_STACK + 4, vm::MEM_STACK + 1, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
+		code.emplace_back(vm::OP_CONV, 0, vm::MEM_STACK + 5, vm::MEM_STACK + 3, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
+		code.emplace_back(vm::OP_SEND, 0, vm::MEM_STACK + 4, vm::MEM_STACK + 2, vm::MEM_STACK + 5);
+		code.emplace_back(vm::OP_RET);
 		exec->methods["withdraw"] = method;
 	}
 	{
@@ -139,9 +139,9 @@ int main(int argc, char** argv)
 		method.is_public = true;
 		method.args = {"value"};
 		method.entry_point = code.size();
-		code.emplace_back(OP_COPY, 0, MEM_STACK + 3, MEM_STACK + 1);
-		code.emplace_back(OP_RCALL, 0, MEM_CONST + 10, MEM_CONST + 11, 2, 1);
-		code.emplace_back(OP_RET);
+		code.emplace_back(vm::OP_COPY, 0, vm::MEM_STACK + 3, vm::MEM_STACK + 1);
+		code.emplace_back(vm::OP_RCALL, 0, vm::MEM_CONST + 10, vm::MEM_CONST + 11, 2, 1);
+		code.emplace_back(vm::OP_RET);
 		exec->methods["cross_call"] = method;
 	}
 
