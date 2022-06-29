@@ -109,7 +109,7 @@ Table::Table(const std::string& root_path, const options_t& options)
 			if(name.is_ulong()) {
 				const auto index = name.to<uint64_t>();
 				block_map[index] = file->get_name();
-				next_block_id = index + 1;
+				next_block_id = std::max(next_block_id, index + 1);
 			}
 		}
 	}
