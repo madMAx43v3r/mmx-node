@@ -143,6 +143,7 @@ Table::Table(const std::string& root_path, const options_t& options)
 	}
 	write_log.open(root_path + "/write_log.dat", "ab");
 	write_log.open("rb+");
+	write_log.lock_exclusive();
 	{
 		auto& in = write_log.in;
 		auto offset = in.get_input_pos();
@@ -195,6 +196,7 @@ std::shared_ptr<Table::block_t> Table::read_block(const std::string& name) const
 	auto block = std::make_shared<block_t>();
 	block->name = name;
 	block->file.open(root_path + '/' + name, "rb");
+	block->file.lock_exclusive();
 
 	auto& in = block->file.in;
 	uint16_t format = 0;
@@ -472,6 +474,7 @@ void Table::flush()
 
 	// clear log after writing index
 	write_log.open("wb");
+	write_log.lock_exclusive();
 
 	debug_log << "Flushed " << block->name << " with " << block->index.size() << " / " << block->total_count
 			<< " entries, min_version = " << block->min_version << ", max_version = " << block->max_version
@@ -648,6 +651,7 @@ void Table::rename(std::shared_ptr<block_t> block, const std::string& new_name) 
 	block->name = new_name;
 	block->file.rename(root_path + '/' + block->name);
 	block->file.open("rb");
+	block->file.lock_exclusive();
 }
 
 Table::Iterator::Iterator(const Table* table)
