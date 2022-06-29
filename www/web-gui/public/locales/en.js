@@ -47,6 +47,7 @@ const langEN = {
     "node_common": {
         "vdf_speed": "VDF Speed",
         "block_reward": "Block Reward",
+        "block_size": "Block Size",
         "tx_fees": "Transaction Fees",
         "netspace": "Netspace"
     },
@@ -69,7 +70,8 @@ const langEN = {
         "height": "@:common.height",
         "netspace": "@:node_common.netspace",
         "vdf_speed": "@:node_common.vdf_speed",
-        "block_reward": "@:node_common.block_reward"
+        "block_reward": "@:node_common.block_reward",
+        "block_size": "@:node_common.block_size"
     },
 
     "node_log": {   

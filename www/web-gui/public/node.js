@@ -60,6 +60,8 @@ app.component('node-info', {
 					<div class="label">{{ $t('node_info.no_addresss') }}</div>
 				</div>
 				<div class="statistic">
+					<div class="value">{{(data.block_size * 100).toFixed(2)}} %</div>
+					<div class="label">{{ $t('node_info.block_size') }}</div>
 				</div>
 				<div class="statistic">
 					<div class="value">{{(data.time_diff / 8 / Math.pow(10, 3)).toFixed(3)}} M/s</div>

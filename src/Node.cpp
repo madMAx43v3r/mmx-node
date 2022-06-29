@@ -262,6 +262,18 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 			info->total_supply = get_total_supply(addr_t());
 			info->address_count = balance_map.size();
 			info->genesis_hash = get_genesis_hash();
+			{
+				size_t num_blocks = 0;
+				for(const auto& fork : get_fork_line()) {
+					if(fork->block->proof) {
+						info->block_size += fork->block->calc_cost(params) / double(params->max_block_cost);
+						num_blocks++;
+					}
+				}
+				if(num_blocks) {
+					info->block_size /= num_blocks;
+				}
+			}
 			network = info;
 		}
 	}

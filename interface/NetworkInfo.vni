@@ -16,6 +16,8 @@ class NetworkInfo {
 	
 	ulong address_count;
 	
+	double block_size;			// 0 to 1
+	
 	hash_t genesis_hash;
 	
 }
