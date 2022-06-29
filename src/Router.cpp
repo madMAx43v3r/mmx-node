@@ -76,6 +76,9 @@ void Router::main()
 			throw std::logic_error("min_sync_peers > max_connections");
 		}
 	}
+	tx_bandwidth = max_tx_upload * params->max_block_cost * pow(10, -params->decimals) / params->block_time;
+	log(INFO) << "TX upload limit: " << tx_bandwidth << " MMX/s";
+
 	subscribe(input_vdfs, max_queue_ms);
 	subscribe(input_verified_vdfs, max_queue_ms);
 	subscribe(input_verified_proof, max_queue_ms);
@@ -1086,6 +1089,9 @@ void Router::recv_notify(const hash_t& msg_hash, const uint64_t* source)
 void Router::send()
 {
 	const auto now = vnx::get_wall_time_micros();
+	tx_credits += tx_bandwidth * send_interval_ms / 1000;
+	tx_credits = std::min(tx_credits, tx_bandwidth);
+
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
 		for(auto iter = peer->send_queue.begin(); iter != peer->send_queue.end() && iter->first < now;) {
@@ -1157,23 +1163,32 @@ bool Router::send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg, boo
 
 bool Router::send_to(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Value> msg, bool reliable)
 {
-	if(peer->is_blocked && !reliable) {
-		switch(msg->get_type_code()->type_hash) {
+	if(!reliable && peer->is_blocked) {
+		switch(msg->get_type_hash()) {
 			case Block::VNX_TYPE_ID: block_drop_counter++; break;
 			case Transaction::VNX_TYPE_ID: tx_drop_counter++; break;
 			case ProofOfTime::VNX_TYPE_ID: vdf_drop_counter++; break;
 			case ProofResponse::VNX_TYPE_ID: proof_drop_counter++; break;
-			case Request::VNX_TYPE_ID:
+			default:
 				if(auto req = std::dynamic_pointer_cast<const Request>(msg)) {
 					auto ret = Return::create();
 					ret->id = req->id;
 					ret->result = vnx::OverflowException::create();
 					add_task(std::bind(&Router::on_return, this, peer->client, ret));
 				}
-				break;
 		}
-		drop_counter++;
 		return false;
+	}
+	if(!reliable) {
+		if(auto tx = std::dynamic_pointer_cast<const Transaction>(msg)) {
+			std::uniform_real_distribution<double> dist(0, 1);
+			if(dist(rand_engine) > tx_credits / tx_bandwidth) {
+				tx_drop_counter++;
+				return false;
+			}
+			tx_credits -= tx->calc_cost(params) * pow(10, -params->decimals);
+			tx_credits = std::max(tx_credits, 0.);
+		}
 	}
 	Super::send_to(peer, msg);
 	return true;

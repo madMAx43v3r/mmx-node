@@ -223,6 +223,8 @@ private:
 	std::queue<hash_t> hash_queue;
 	std::unordered_map<hash_t, hash_info_t> hash_info;
 
+	double tx_credits = 0;
+	double tx_bandwidth = 0;
 	std::map<hash_t, uint32_t> farmer_credits;
 
 	mutable std::unordered_map<vnx::request_id_t, std::shared_ptr<sync_job_t>> sync_jobs;
@@ -251,7 +253,6 @@ private:
 	size_t proof_counter = 0;
 	size_t upload_counter = 0;
 
-	size_t drop_counter = 0;
 	size_t tx_drop_counter = 0;
 	size_t vdf_drop_counter = 0;
 	size_t proof_drop_counter = 0;

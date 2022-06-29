@@ -48,6 +48,7 @@ module Router extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	node_type_e mode = FULL_NODE;
 	
 	bool do_relay = true;
+	double max_tx_upload = 2;				// relative to full block per block interval
 	
 	set<string> seed_peers;
 	set<string> fixed_peers;
