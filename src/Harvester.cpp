@@ -283,10 +283,7 @@ void Harvester::reload()
 #pragma omp critical
 				missing.erase(file_name);
 
-				if(plot_map.count(file_name)) {
-					continue;
-				}
-				if(file->get_extension() == ".plot") {
+				if(!plot_map.count(file_name) && file->get_extension() == ".plot") {
 					try {
 						auto prover = std::make_shared<chiapos::DiskProver>(file_name);
 #pragma omp critical
@@ -299,7 +296,6 @@ void Harvester::reload()
 			}
 		} catch(const std::exception& ex) {
 			log(WARN) << ex.what();
-			continue;
 		}
 	}
 
