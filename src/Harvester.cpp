@@ -323,11 +323,15 @@ void Harvester::reload()
 	// add new plots
 	for(const auto& entry : plots) {
 		const auto& plot = entry.second;
-		const auto farmer_key = bls_pubkey_t::super_t(plot->get_farmer_key());
-		if(farmer_keys.count(farmer_key)) {
-			plot_map.insert(entry);
-		} else {
-			log(WARN) << "Unknown farmer key " << farmer_key << " for plot: " << entry.first;
+		try {
+			const auto farmer_key = bls_pubkey_t::super_t(plot->get_farmer_key());
+			if(farmer_keys.count(farmer_key)) {
+				plot_map.insert(entry);
+			} else {
+				log(WARN) << "Unknown farmer key " << farmer_key << " for plot: " << entry.first;
+			}
+		} catch(const std::exception& ex) {
+			log(WARN) << "Invalid plot: " << entry.first << " (" << ex.what() << ")";
 		}
 	}
 
