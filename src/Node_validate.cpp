@@ -488,8 +488,13 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 	if(tx->expires < context->block->height) {
 		throw std::logic_error("tx expired");
 	}
-	if(tx->is_extendable && tx->deploy) {
-		throw std::logic_error("extendable tx cannot deploy");
+	if(tx->is_extendable) {
+		if(tx->deploy) {
+			throw std::logic_error("extendable tx cannot deploy");
+		}
+		if(tx->exec_inputs.size() || tx->exec_outputs.size()) {
+			throw std::logic_error("extendable tx cannot have execution inputs/outputs");
+		}
 	}
 	if(base) {
 		if(tx->deploy) {
