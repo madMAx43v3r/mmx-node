@@ -23,7 +23,6 @@ module Node implements vnx.addons.HttpComponent {
 	
 	int max_queue_ms = 10000;				// [ms]
 	int update_interval_ms = 1000;			// [ms]
-	int validate_interval_ms = 10000;		// to validate pending transactions [ms]
 	int sync_loss_delay = 60;				// when to re-sync if stuck [sec]
 	
 	uint max_history = 1000;				// max block header history
