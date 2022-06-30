@@ -122,11 +122,6 @@ hash_t hash_t::from_bytes(const void* data)
 	return res;
 }
 
-inline
-bool operator<(const hash_t& lhs, const hash_t& rhs) {
-	return ::memcmp(lhs.data(), rhs.data(), 32) < 0;
-}
-
 } // mmx
 
 

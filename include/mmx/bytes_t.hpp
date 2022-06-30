@@ -136,6 +136,11 @@ void bytes_t<N>::from_string(const std::string& str)
 }
 
 template<size_t N>
+bool operator<(const bytes_t<N>& lhs, const bytes_t<N>& rhs) {
+	return ::memcmp(lhs.data(), rhs.data(), N) < 0;
+}
+
+template<size_t N>
 std::ostream& operator<<(std::ostream& out, const bytes_t<N>& bytes) {
 	return out << bytes.to_string();
 }
