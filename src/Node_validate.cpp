@@ -742,7 +742,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 			}
 		}
 	}
-	std::shared_ptr<Transaction> out = nullptr;
+	std::shared_ptr<Transaction> out;
 
 	if(tx->exec_inputs.empty() && tx->exec_outputs.empty())
 	{

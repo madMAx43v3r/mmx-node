@@ -591,7 +591,7 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	block->vdf_output = vdf_point->output;
 	block->proof = response->proof;
 
-	const auto tx_list = validate_pending(2 * params->max_block_cost, params->max_block_cost, false);
+	const auto tx_list = validate_pending(params->max_block_cost * 2, params->max_block_cost, false);
 
 	// select transactions
 	uint64_t total_fees = 0;
