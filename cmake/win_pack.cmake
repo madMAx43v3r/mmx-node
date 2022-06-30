@@ -82,7 +82,12 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(mmx_node_gui)
 add_custom_command(TARGET mmx_node_gui POST_BUILD
-	COMMAND ${CMAKE_MAKE_PROGRAM} MMX_Node_GUI.sln -restore -m /property:Configuration=Release /p:OutputPath=${mmx_node_gui_SOURCE_DIR}/MMX_Node_GUI/bin/Release WORKING_DIRECTORY ${mmx_node_gui_SOURCE_DIR} 
+	COMMAND ${CMAKE_MAKE_PROGRAM} MMX_Node_GUI.sln -restore -m 
+			/p:Configuration=Release
+			/p:OutputPath=${mmx_node_gui_SOURCE_DIR}/MMX_Node_GUI/bin/Release
+			/p:Version=${MMX_VERSION_STRING}
+			/p:FileVersion=${MMX_VERSION_STRING}
+		WORKING_DIRECTORY ${mmx_node_gui_SOURCE_DIR}
 )
 
 set(mmx_node_gui_RELEASE_DIR ${mmx_node_gui_SOURCE_DIR}/MMX_Node_GUI/bin/CPack_Release)
