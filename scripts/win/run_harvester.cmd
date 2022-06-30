@@ -1,4 +1,5 @@
 @ECHO OFF
+TITLE MMX Harvester Run Script
 
 CALL .\activate.cmd
 
