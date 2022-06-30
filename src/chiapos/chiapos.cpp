@@ -42,6 +42,16 @@ std::vector<uint8_t> DiskProver::get_plot_id() const
 	return prover->GetId();
 }
 
+std::vector<uint8_t> DiskProver::get_farmer_key() const
+{
+	auto* prover = (::DiskProver*)impl;
+	const auto memo = prover->GetMemo();
+	if(memo.size() == 128) {
+		return std::vector<uint8_t>(memo.begin() + 48, memo.begin() + 96);
+	}
+	throw std::logic_error("invalid plot memo");
+}
+
 std::vector<std::array<uint8_t, 32>> DiskProver::get_qualities(const std::array<uint8_t, 32>& challenge) const
 {
 	auto* prover = (::DiskProver*)impl;

@@ -41,6 +41,8 @@ public:
 
 	std::vector<uint8_t> get_plot_id() const;
 
+	std::vector<uint8_t> get_farmer_key() const;
+
 	std::vector<std::array<uint8_t, 32>> get_qualities(const std::array<uint8_t, 32>& challenge) const;
 
 	std::shared_ptr<Proof> get_full_proof(const std::array<uint8_t, 32>& challenge, const size_t index) const;

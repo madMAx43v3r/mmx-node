@@ -315,8 +315,21 @@ void Harvester::reload()
 		log(INFO) << "Found " << plots.size() << " new plots";
 	}
 
+	std::set<bls_pubkey_t> farmer_keys;
+	for(const auto& key : farmer->get_farmer_keys()) {
+		farmer_keys.insert(key);
+	}
+
 	// add new plots
-	plot_map.insert(plots.begin(), plots.end());
+	for(const auto& entry : plots) {
+		const auto& plot = entry.second;
+		const auto farmer_key = bls_pubkey_t::super_t(plot->get_farmer_key());
+		if(farmer_keys.count(farmer_key)) {
+			plot_map.insert(entry);
+		} else {
+			log(WARN) << "Unknown farmer key " << farmer_key << " for plot: " << entry.first;
+		}
+	}
 
 	id_map.clear();
 	total_bytes = 0;
@@ -332,7 +345,7 @@ void Harvester::reload()
 	virtual_map.clear();
 	total_balance = 0;
 	if(farm_virtual_plots) {
-		for(const auto& farmer_key : farmer->get_farmer_keys()) {
+		for(const auto& farmer_key : farmer_keys) {
 			for(const auto& entry : node->get_virtual_plots_for(farmer_key)) {
 				if(auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(entry.second)) {
 					auto& info = virtual_map[entry.first];
