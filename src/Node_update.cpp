@@ -469,10 +469,16 @@ std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit,
 	{
 		auto& entry = tx_list[i];
 		auto& tx = entry.tx;
+		if(tx->exec_inputs.size() || tx->exec_outputs.size()) {
+			auto copy = vnx::clone(tx);
+			copy->exec_inputs.clear();
+			copy->exec_outputs.clear();
+			tx = copy;
+		}
 		context->wait(tx->id);
 		try {
-			if(auto new_tx = validate(tx, context, nullptr, entry.fee, entry.cost)) {
-				tx = new_tx;
+			if(auto copy = validate(tx, context, nullptr, entry.fee, entry.cost)) {
+				tx = copy;
 			}
 			entry.is_valid = true;
 		}
