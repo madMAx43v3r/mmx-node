@@ -179,7 +179,7 @@ void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t
 		}
 		const auto balance = get_virtual_plot_balance(stake->contract, diff_block->hash);
 		if(balance == 0) {
-			throw std::logic_error("virtual plot has zero balance: " + stake->contract.to_string());
+			throw std::logic_error("virtual plot (still) has zero balance: " + stake->contract.to_string());
 		}
 		score = calc_virtual_score(params, challenge, stake->contract, balance, diff_block->space_diff);
 	}
