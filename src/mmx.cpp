@@ -241,82 +241,91 @@ int main(int argc, char** argv)
 
 			if(command == "show")
 			{
-				int num_addrs = 1;
-				vnx::read_config("$3", num_addrs);
+				std::string subject;
+				vnx::read_config("$3", subject);
 
-				bool is_empty = true;
-				std::vector<mmx::addr_t> nfts;
-				for(const auto& entry : wallet.get_balances(index))
+				if(subject.empty() || subject == "balance")
 				{
-					const auto& balance = entry.second;
-					const auto contract = get_contract(node, entry.first);
-					if(std::dynamic_pointer_cast<const mmx::contract::NFT>(contract)) {
-						nfts.push_back(entry.first);
-					}
-					else if(auto token = get_token(node, entry.first, false)) {
-						std::cout << "Balance: " << amount_value(balance.total, token->decimals) << " " << token->symbol
-								<< (balance.is_validated ? "" : "?") << " (" << balance.total << ")";
-						if(entry.first != mmx::addr_t()) {
-							std::cout << " [" << entry.first << "]";
-						}
-						std::cout << std::endl;
-						is_empty = false;
-					}
-				}
-				if(is_empty) {
-					std::cout << "Balance: 0 MMX" << std::endl;
-				}
-				for(const auto& addr : nfts) {
-					std::cout << "NFT: " << addr << std::endl;
-				}
-				for(const auto& entry : wallet.get_contracts(index))
-				{
-					const auto& address = entry.first;
-					const auto& contract = entry.second;
-					std::cout << "Contract: " << address << " (" << contract->get_type_name();
-					if(auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract)) {
-						std::cout << ", " << token->symbol << ", " << token->name;
-					}
-					else if(auto offer = std::dynamic_pointer_cast<const mmx::contract::Offer>(contract)) {
-						if(offer->base->sender && node.is_revoked(offer->base->id, *offer->base->sender)) {
-							std::cout << ", revoked";
-						} else if(auto height = node.get_tx_height(offer->base->id)) {
-							std::cout << ", accepted at height " << *height;
-						} else {
-							std::cout << ", open";
-						}
-					}
-					else if(auto plot = std::dynamic_pointer_cast<const mmx::contract::VirtualPlot>(contract)) {
-						const auto balance = node.get_virtual_plot_balance(entry.first);
-						std::cout << ", " << balance / pow(10, params->decimals) << " MMX";
-						std::cout << ", " << mmx::calc_virtual_plot_size(params, balance) / pow(1024, 3) << " GiB";
-					}
-					else if(auto nft = std::dynamic_pointer_cast<const mmx::contract::PlotNFT>(contract)) {
-						std::cout << ", name = " << nft->name << ", ";
-						if(nft->unlock_height) {
-							std::cout << "unlocked at " << *nft->unlock_height;
-						} else {
-							std::cout << "locked";
-						}
-						std::cout << ", server = " << vnx::to_string(nft->server_url);
-					}
-					std::cout << ")" << std::endl;
-
-					for(const auto& entry : wallet.get_total_balances_for({address}))
+					bool is_empty = true;
+					std::vector<mmx::addr_t> nfts;
+					for(const auto& entry : wallet.get_balances(index))
 					{
 						const auto& balance = entry.second;
-						if(auto token = get_token(node, entry.first, false)) {
-							std::cout << "  Balance: " << amount_value(balance.total, token->decimals) << " " << token->symbol
+						const auto contract = get_contract(node, entry.first);
+						if(std::dynamic_pointer_cast<const mmx::contract::NFT>(contract)) {
+							nfts.push_back(entry.first);
+						}
+						else if(auto token = get_token(node, entry.first, false)) {
+							std::cout << "Balance: " << amount_value(balance.total, token->decimals) << " " << token->symbol
 									<< (balance.is_validated ? "" : "?") << " (" << balance.total << ")";
 							if(entry.first != mmx::addr_t()) {
 								std::cout << " [" << entry.first << "]";
 							}
 							std::cout << std::endl;
+							is_empty = false;
+						}
+					}
+					if(is_empty) {
+						std::cout << "Balance: 0 MMX" << std::endl;
+					}
+					for(const auto& addr : nfts) {
+						std::cout << "NFT: " << addr << std::endl;
+					}
+				}
+				if(subject.empty() || subject == "contracts")
+				{
+					for(const auto& entry : wallet.get_contracts(index))
+					{
+						const auto& address = entry.first;
+						const auto& contract = entry.second;
+						std::cout << "Contract: " << address << " (" << contract->get_type_name();
+						if(auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract)) {
+							std::cout << ", " << token->symbol << ", " << token->name;
+						}
+						else if(auto offer = std::dynamic_pointer_cast<const mmx::contract::Offer>(contract)) {
+							if(offer->base->sender && node.is_revoked(offer->base->id, *offer->base->sender)) {
+								std::cout << ", revoked";
+							} else if(auto height = node.get_tx_height(offer->base->id)) {
+								std::cout << ", accepted at height " << *height;
+							} else {
+								std::cout << ", open";
+							}
+						}
+						else if(auto plot = std::dynamic_pointer_cast<const mmx::contract::VirtualPlot>(contract)) {
+							const auto balance = node.get_virtual_plot_balance(entry.first);
+							std::cout << ", " << balance / pow(10, params->decimals) << " MMX";
+							std::cout << ", " << mmx::calc_virtual_plot_size(params, balance) / pow(1024, 3) << " GiB";
+						}
+						else if(auto nft = std::dynamic_pointer_cast<const mmx::contract::PlotNFT>(contract)) {
+							std::cout << ", name = " << nft->name << ", ";
+							if(nft->unlock_height) {
+								std::cout << "unlocked at " << *nft->unlock_height;
+							} else {
+								std::cout << "locked";
+							}
+							std::cout << ", server = " << vnx::to_string(nft->server_url);
+						}
+						std::cout << ")" << std::endl;
+
+						for(const auto& entry : wallet.get_total_balances_for({address}))
+						{
+							const auto& balance = entry.second;
+							if(auto token = get_token(node, entry.first, false)) {
+								std::cout << "  Balance: " << amount_value(balance.total, token->decimals) << " " << token->symbol
+										<< (balance.is_validated ? "" : "?") << " (" << balance.total << ")";
+								if(entry.first != mmx::addr_t()) {
+									std::cout << " [" << entry.first << "]";
+								}
+								std::cout << std::endl;
+							}
 						}
 					}
 				}
-				for(int i = 0; i < num_addrs; ++i) {
+				for(int i = 0; i < 1; ++i) {
 					std::cout << "Address[" << i << "]: " << wallet.get_address(index, i) << std::endl;
+				}
+				if(subject.empty()) {
+					std::cout << "Help: mmx wallet show [balance | contracts]" << std::endl;
 				}
 			}
 			else if(command == "accounts")
