@@ -234,7 +234,6 @@ void Harvester::find_plot_dirs(const std::set<std::string>& dirs, std::set<std::
 	for(const auto& path : dirs) {
 		vnx::Directory dir(path);
 		try {
-			dir.open();
 			for(const auto& file : dir.files()) {
 				if(file && file->get_extension() == ".plot") {
 					all_dirs.insert(path);
@@ -242,7 +241,10 @@ void Harvester::find_plot_dirs(const std::set<std::string>& dirs, std::set<std::
 				}
 			}
 			for(const auto& sub_dir : dir.directories()) {
-				sub_dirs.insert(sub_dir->get_path());
+				const auto name = sub_dir->get_name();
+				if(name != "System Volume Information" && name != "$RECYCLE.BIN") {
+					sub_dirs.insert(sub_dir->get_path());
+				}
 			}
 		} catch(const std::exception& ex) {
 			log(WARN) << ex.what();
@@ -276,7 +278,6 @@ void Harvester::reload()
 	{
 		vnx::Directory dir(dir_list[i]);
 		try {
-			dir.open();
 			for(const auto& file : dir.files())
 			{
 				const auto file_name = file->get_path();
