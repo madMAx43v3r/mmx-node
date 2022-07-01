@@ -59,6 +59,9 @@ uint256_t calc_virtual_score(	std::shared_ptr<const ChainParams> params,
 								const hash_t& challenge, const hash_t& plot_id,
 								const uint64_t balance, const uint64_t space_diff)
 {
+	if(balance == 0) {
+		throw std::logic_error("zero balance");
+	}
 	uint256_t divider = (uint256_1 << (256 - params->score_bits)) / (uint128_t(space_diff) * params->virtual_space_constant);
 	return hash_t(plot_id + challenge).to_uint256() / (divider * balance);
 }

@@ -175,9 +175,12 @@ void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t
 		}
 		// TODO: check reward address if set
 		if(stake->farmer_key != plot->farmer_key) {
-			throw std::logic_error("invalid farmer key: " + stake->farmer_key.to_string());
+			throw std::logic_error("invalid farmer key for virtual plot: " + stake->farmer_key.to_string());
 		}
 		const auto balance = get_virtual_plot_balance(stake->contract, diff_block->hash);
+		if(balance == 0) {
+			throw std::logic_error("virtual plot has zero balance: " + stake->contract.to_string());
+		}
 		score = calc_virtual_score(params, challenge, stake->contract, balance, diff_block->space_diff);
 	}
 	else {
