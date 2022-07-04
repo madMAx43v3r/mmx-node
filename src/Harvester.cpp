@@ -317,17 +317,36 @@ void Harvester::reload()
 		farmer_keys.insert(key);
 	}
 
-	// add new plots
-	for(const auto& entry : plots) {
+	// validate and add new plots
+#pragma omp parallel for
+	for(int i = 0; i < int(plots.size()); ++i)
+	{
+		const auto& entry = plots[i];
 		const auto& plot = entry.second;
 		try {
-			const auto farmer_key = bls_pubkey_t::super_t(plot->get_farmer_key());
-			if(farmer_keys.count(farmer_key)) {
-				plot_map.insert(entry);
-			} else {
-				log(WARN) << "Unknown farmer key " << farmer_key << " for plot: " << entry.first;
+			const bls_pubkey_t farmer_key = bls_pubkey_t::super_t(plot->get_farmer_key());
+			if(!farmer_keys.count(farmer_key)) {
+				throw std::logic_error("unknown farmer key: " + farmer_key.to_string());
 			}
-		} catch(const std::exception& ex) {
+			const auto plot_id = hash_t::from_bytes(plot->get_plot_id());
+			const auto pool_key = plot->get_pool_key();
+			const auto local_sk = derive_local_key(plot->get_master_skey());
+			const auto local_key = local_sk.GetG1Element();
+
+			const bls_pubkey_t plot_key = local_key + farmer_key.to_bls();
+			if(!pool_key.empty()) {
+				const uint32_t port = 11337;
+				const bls_pubkey_t pool_key_ = bls_pubkey_t::super_t(pool_key);
+				if(hash_t(hash_t(pool_key_ + plot_key) + bytes_t<4>(&port, 4)) != plot_id) {
+					throw std::logic_error("invalid keys or port");
+				}
+			} else {
+				throw std::logic_error("invalid plot type");
+			}
+#pragma omp critical
+			plot_map.insert(entry);
+		}
+		catch(const std::exception& ex) {
 			log(WARN) << "Invalid plot: " << entry.first << " (" << ex.what() << ")";
 		}
 	}
