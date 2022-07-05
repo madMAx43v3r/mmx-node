@@ -250,16 +250,14 @@ void Node::update()
 		stuck_timer->reset();
 	}
 
-	if(!is_synced && sync_peak && sync_pending.empty())
+	if(!is_synced && sync_peak && sync_pending.empty() && !vdf_threads->get_num_running())
 	{
-		if(sync_retry < num_sync_retries)
-		{
+		if(sync_retry < num_sync_retries) {
 			log(INFO) << "Reached sync peak at height " << *sync_peak - 1;
 			sync_pos = *sync_peak;
 			sync_peak = nullptr;
 			sync_retry++;
-		}
-		else {
+		} else {
 			log(INFO) << "Finished sync at height " << peak->height;
 			is_synced = true;
 		}
