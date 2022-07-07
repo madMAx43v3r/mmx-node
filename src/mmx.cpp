@@ -1122,9 +1122,11 @@ int main(int argc, char** argv)
 
 			if(command == "info")
 			{
-				std::cout << "Total space: " << info->total_bytes / pow(1000, 4) << " TB" << std::endl;
-				std::cout << "Total balance: " << info->total_balance / pow(10, params->decimals) << " MMX ("
-						<< mmx::calc_virtual_plot_size(params, info->total_balance) / pow(1000, 4) << " TB)" << std::endl;
+				std::cout << "Physical size: " << info->total_bytes / pow(1000, 4) << " TB" << std::endl;
+				const auto virtual_bytes = mmx::calc_virtual_plot_size(params, info->total_balance);
+				std::cout << "Virtual size:  " << info->total_balance / pow(10, params->decimals) << " MMX ("
+						<< virtual_bytes / pow(1000, 4) << " TB)" << std::endl;
+				std::cout << "Total size:    " << (info->total_bytes + virtual_bytes) / pow(1000, 4) << " TB" << std::endl;
 				for(const auto& entry : info->plot_count) {
 					std::cout << "K" << int(entry.first) << ": " << entry.second << " plots" << std::endl;
 				}
