@@ -135,6 +135,7 @@ int main(int argc, char** argv)
 		module->components["/wapi/"] = "WebAPI";
 		module->components["/api/node/"] = "Node";
 		module->components["/api/wallet/"] = "Wallet";
+		module->components["/api/farmer/"] = "Farmer";
 		module->components["/api/router/"] = "Router";
 		module->components["/api/harvester/"] = "Harvester";
 		module->components["/api/exchange/"] = "ExchClient";

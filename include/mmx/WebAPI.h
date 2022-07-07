@@ -11,6 +11,7 @@
 #include <mmx/WebAPIBase.hxx>
 #include <mmx/NodeAsyncClient.hxx>
 #include <mmx/WalletAsyncClient.hxx>
+#include <mmx/FarmerAsyncClient.hxx>
 #include <mmx/contract/Offer.hxx>
 //#include <mmx/exchange/ClientAsyncClient.hxx>
 #include <mmx/Block.hxx>
@@ -89,6 +90,7 @@ private:
 private:
 	std::shared_ptr<NodeAsyncClient> node;
 	std::shared_ptr<WalletAsyncClient> wallet;
+	std::shared_ptr<FarmerAsyncClient> farmer;
 //	std::shared_ptr<exchange::ClientAsyncClient> exch_client;
 	std::shared_ptr<const ChainParams> params;
 

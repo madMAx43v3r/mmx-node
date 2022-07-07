@@ -123,15 +123,20 @@ void WebAPI::init()
 void WebAPI::main()
 {
 	subscribe(input_blocks, 10000);
+	subscribe(input_blocks, 10000);
 
 	node = std::make_shared<NodeAsyncClient>(node_server);
 	wallet = std::make_shared<WalletAsyncClient>(wallet_server);
+	farmer = std::make_shared<FarmerAsyncClient>(farmer_server);
 //	exch_client = std::make_shared<exchange::ClientAsyncClient>(exchange_server);
 	add_async_client(node);
 	add_async_client(wallet);
+	add_async_client(farmer);
 //	add_async_client(exch_client);
 
 	set_timer_millis(1000, std::bind(&WebAPI::update, this));
+
+	update();
 
 	Super::main();
 }
@@ -1658,6 +1663,15 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "POST wallet/accept {...}");
 		}
 	}
+	else if(sub_path == "/farmer/info") {
+		farmer->get_farm_info(
+			[this, request_id](std::shared_ptr<const FarmInfo> info) {
+				auto out = render(*info);
+				out["total_virtual_bytes"] = mmx::calc_virtual_plot_size(params, info->total_balance);
+				respond(request_id, vnx::Variant(out));
+			},
+			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+	}
 	else if(sub_path == "/node/offers") {
 		vnx::optional<addr_t> bid;
 		vnx::optional<addr_t> ask;
@@ -2133,7 +2147,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			"config/get", "config/set",
 			"node/info", "node/log", "header", "headers", "block", "blocks", "transaction", "transactions", "address", "contract",
 			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/coins", "wallet/history",
-			"wallet/send", "wallet/revoke", "wallet/accept", "node/offers",
+			"wallet/send", "wallet/revoke", "wallet/accept", "farmer/info", "node/offers",
 			"exchange/offer", "exchange/place", "exchange/offers", "exchange/pairs", "exchange/orders", "exchange/price",
 			"exchange/trade", "exchange/history", "exchange/trades", "exchange/min_trade"
 		};

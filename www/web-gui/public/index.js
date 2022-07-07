@@ -351,6 +351,7 @@ const ExploreTransaction = {
 const Node = {
 	template: `
 		<node-info></node-info>
+		<farmer-info></farmer-info>
 		<node-menu></node-menu>
 		<router-view></router-view>
 	`
