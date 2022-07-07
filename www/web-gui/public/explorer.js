@@ -63,12 +63,14 @@ app.component('explore-blocks', {
 				.then(data => {
 					this.loading = false;
 					for(const block of data) {
-						if(block.tx_base) {
+						if(block.proof) {
 							block.reward = 0;
-							for(const out of block.tx_base.outputs) {
-								block.reward += out.amount;
+							if(block.tx_base) {
+								for(const out of block.tx_base.outputs) {
+									block.reward += out.amount;
+								}
+								block.reward /= 1000000;
 							}
-							block.reward /= 1000000;
 						}
 					}
 					this.data = data;
@@ -105,7 +107,7 @@ app.component('explore-blocks', {
 				<td>{{item.tx_count}}</td>
 				<td>{{item.proof ? item.proof.ksize : ""}}</td>
 				<td>{{item.proof ? item.proof.score : ""}}</td>
-				<td><template v-if="item.reward">{{(item.reward).toPrecision(6)}}</template></td>
+				<td>{{item.reward != null ? item.reward.toFixed(3) : ""}}</td>
 				<td>{{item.time_diff}}</td>
 				<td>{{item.space_diff}}</td>
 				<td><router-link :to="'/explore/block/hash/' + item.hash">{{item.hash}}</router-link></td>
