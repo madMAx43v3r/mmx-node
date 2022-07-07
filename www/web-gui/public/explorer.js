@@ -63,14 +63,12 @@ app.component('explore-blocks', {
 				.then(data => {
 					this.loading = false;
 					for(const block of data) {
-						if(block.proof) {
+						if(block.tx_base) {
 							block.reward = 0;
-							if(block.tx_base) {
-								for(const out of block.tx_base.outputs) {
-									block.reward += out.amount;
-								}
-								block.reward /= 1000000;
+							for(const out of block.tx_base.outputs) {
+								block.reward += out.amount;
 							}
+							block.reward /= 1000000;
 						}
 					}
 					this.data = data;
@@ -105,9 +103,9 @@ app.component('explore-blocks', {
 			<tr v-for="item in data" :key="item.hash">
 				<td><router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link></td>
 				<td>{{item.tx_count}}</td>
-				<td>{{item.proof ? item.proof.ksize : ""}}</td>
-				<td>{{item.proof ? item.proof.score : ""}}</td>
-				<td>{{item.reward != null ? item.reward.toFixed(3) : ""}}</td>
+				<td>{{item.proof ? item.proof.ksize : null}}</td>
+				<td>{{item.proof ? item.proof.score : null}}</td>
+				<td>{{item.reward != null ? item.reward.toFixed(3) : null}}</td>
 				<td>{{item.time_diff}}</td>
 				<td>{{item.space_diff}}</td>
 				<td><router-link :to="'/explore/block/hash/' + item.hash">{{item.hash}}</router-link></td>
