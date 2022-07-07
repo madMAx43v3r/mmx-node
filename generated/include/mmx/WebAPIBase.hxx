@@ -22,6 +22,7 @@ public:
 	::vnx::TopicPtr input_blocks = "node.verified_blocks";
 	std::string node_server = "Node";
 	std::string wallet_server = "Wallet";
+	std::string farmer_server = "Farmer";
 	std::string exchange_server = "ExchClient";
 	std::string config_path;
 	uint32_t max_log_history = 10000;
@@ -76,14 +77,15 @@ protected:
 
 template<typename T>
 void WebAPIBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<WebAPIBase>(6);
+	_visitor.template type_begin<WebAPIBase>(7);
 	_visitor.type_field("input_blocks", 0); _visitor.accept(input_blocks);
 	_visitor.type_field("node_server", 1); _visitor.accept(node_server);
 	_visitor.type_field("wallet_server", 2); _visitor.accept(wallet_server);
-	_visitor.type_field("exchange_server", 3); _visitor.accept(exchange_server);
-	_visitor.type_field("config_path", 4); _visitor.accept(config_path);
-	_visitor.type_field("max_log_history", 5); _visitor.accept(max_log_history);
-	_visitor.template type_end<WebAPIBase>(6);
+	_visitor.type_field("farmer_server", 3); _visitor.accept(farmer_server);
+	_visitor.type_field("exchange_server", 4); _visitor.accept(exchange_server);
+	_visitor.type_field("config_path", 5); _visitor.accept(config_path);
+	_visitor.type_field("max_log_history", 6); _visitor.accept(max_log_history);
+	_visitor.template type_end<WebAPIBase>(7);
 }
 
 
