@@ -389,6 +389,7 @@ const NodeBlockReward = {
 const Settings = {
 	template: `
 		<node-settings></node-settings>
+		<wallet-settings></wallet-settings>
 	`
 }
 

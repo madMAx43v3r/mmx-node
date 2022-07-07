@@ -854,11 +854,32 @@ std::set<addr_t> Wallet::get_token_list() const
 
 void Wallet::add_token(const addr_t& address)
 {
+	const std::string path = config_path + "Wallet.json";
+	auto object = vnx::read_config_file(path);
+	{
+		auto& whitelist = object["token_whitelist+"];
+		auto tmp = whitelist.to<std::set<addr_t>>();
+		tmp.insert(address);
+		whitelist = tmp;
+	}
+	vnx::write_config_file(path, object);
 	token_whitelist.insert(address);
 }
 
 void Wallet::rem_token(const addr_t& address)
 {
+	const std::string path = config_path + "Wallet.json";
+	auto object = vnx::read_config_file(path);
+	{
+		auto& whitelist = object["token_whitelist+"];
+		auto tmp = whitelist.to<std::set<addr_t>>();
+		if(!tmp.erase(address)) {
+			throw std::logic_error("cannot remove token: " + address.to_string());
+		}
+		whitelist = tmp;
+	}
+	vnx::write_config_file(path, object);
+
 	if(address != addr_t()) {
 		token_whitelist.erase(address);
 	}

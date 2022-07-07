@@ -44,6 +44,7 @@ namespace mmx {
 struct currency_t {
 	bool is_nft = false;
 	int decimals = 0;
+	std::string name;
 	std::string symbol;
 };
 
@@ -84,6 +85,7 @@ public:
 			auto& currency = currency_map[address];
 			currency.decimals = token->decimals;
 			currency.symbol = token->symbol;
+			currency.name = token->name;
 		}
 	}
 
@@ -1402,9 +1404,11 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 							vnx::Object tmp;
 							tmp["currency"] = addr.to_string();
 							if(auto token = context->find_currency(addr)) {
+								tmp["name"] = token->name;
 								tmp["symbol"] = token->symbol;
 								tmp["decimals"] = token->decimals;
 								tmp["is_nft"] = token->is_nft;
+								tmp["is_native"] = addr == addr_t();
 							}
 							res.push_back(tmp);
 						}

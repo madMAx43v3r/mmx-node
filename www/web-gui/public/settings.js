@@ -122,3 +122,116 @@ app.component('node-settings', {
 		</div>
 		`
 })
+
+app.component('wallet-settings', {
+	data() {
+		return {
+			error: null,
+			result: null,
+			loading: true,
+			tokens: [],
+			new_token_addr: null
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/wallet/tokens')
+				.then(response => response.json())
+				.then(data => {this.tokens = data; this.loading = false;});
+		},
+		add_token(address) {
+			fetch('/api/wallet/add_token?address=' + address)
+				.then(response => {
+					if(response.ok) {
+						this.update();
+						this.result = "Added token to whitelist: " + address;
+					} else {
+						response.text().then(data => {
+							this.error = data;
+						});
+					}
+				});
+		},
+		rem_token(address) {
+			fetch('/api/wallet/rem_token?address=' + address)
+				.then(response => {
+					if(response.ok) {
+						this.update();
+						this.result = "Removed token from whitelist: " + address;
+					} else {
+						response.text().then(data => {
+							this.error = data;
+						});
+					}
+				});
+		}
+	},
+	created() {
+		this.update();
+	},
+	watch: {
+		result(value) {
+			if(value) {
+				this.error = null;
+			}
+		},
+		error(value) {
+			if(value) {
+				this.result = null;
+			}
+		}
+	},
+	template: `
+		<template v-if="loading">
+			<div class="ui basic loading placeholder segment"></div>
+		</template>
+		<template v-else>
+			<div class="ui segment">
+				<form class="ui form">
+					<div class="field">
+						<label>Token Whitelist</label>
+						<table class="ui table striped">
+							<thead>
+							<tr>
+								<th>Name</th>
+								<th>Symbol</th>
+								<th>Contract</th>
+								<th></th>
+							</tr>
+							</thead>
+							<tbody>
+							<template v-for="item in tokens" :key="item.currency">
+								<template v-if="!item.is_native">
+									<tr>
+										<td>{{item.name}}</td>
+										<td>{{item.symbol}}</td>
+										<td><router-link :to="'/explore/address/' + item.currency">{{item.currency}}</router-link></td>
+										<td><div class="ui tiny button" @click="rem_token(item.currency)">Remove</div></td>
+									</tr>
+								</template>
+							</template>
+							</tbody>
+						</table>
+					</div>
+					<div class="ui segment">
+						<div class="two field">
+							<div class="field">
+								<label>Token Address</label>
+								<input type="text" v-model="new_token_addr" placeholder="mmx1..."/>
+							</div>
+							<div class="field">
+								<div class="ui primary button" @click="add_token(new_token_addr)">Add Token</div>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+		</template>
+		<div class="ui message" v-if="result">
+			<b>{{result}}</b>
+		</div>
+		<div class="ui negative message" v-if="error">
+			{{ $t('common.failed_with') }}: <b>{{error}}</b>
+		</div>
+		`
+})
