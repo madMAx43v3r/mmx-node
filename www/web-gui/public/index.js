@@ -509,7 +509,7 @@ const routes = [
 			{ path: 'reward', component: NodeBlockReward, meta: { page: 'reward' } },
 		]
 	},
-	{ path: '/settings', component: Settings },
+	{ path: '/settings', component: Settings, meta: { is_settings: true } },
 ]
 
 const router = VueRouter.createRouter({
@@ -567,7 +567,7 @@ app.component('main-menu', {
 				<router-link class="item" :class="{active: $route.meta.is_market}" to="/market/">{{ $t('main_menu.market') }}</router-link>
 				<!--<router-link class="item" :class="{active: $route.meta.is_exchange}" to="/exchange/">{{ $t('main_menu.exchange') }}</router-link>-->
 				<div class="right menu">
-					<router-link class="item" to="/settings/">{{ $t('main_menu.settings') }}</router-link>
+					<router-link class="item" to="/settings/" :class="{active: $route.meta.is_settings}">{{ $t('main_menu.settings') }}</router-link>
 					<template v-if="!$route.meta.is_login && !isWinGUI">
 						<a class="item" @click="logout">{{ $t('main_menu.logout') }}</a>
 					</template>
