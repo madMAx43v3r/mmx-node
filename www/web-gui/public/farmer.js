@@ -27,15 +27,15 @@ app.component('farmer-info', {
 					<div class="label">Virtual Balance</div>
 				</div>
 				<div class="statistic">
-					<div class="value">{{(data.total_virtual_bytes / Math.pow(1000, 4)).toFixed(2)}} TB</div>
+					<div class="value">{{(data.total_virtual_bytes / Math.pow(1000, 4)).toFixed(3)}} TB</div>
 					<div class="label">Virtual Size</div>
 				</div>
 				<div class="statistic">
-					<div class="value">{{(data.total_bytes / Math.pow(1000, 4)).toFixed(2)}} TB</div>
+					<div class="value">{{(data.total_bytes / Math.pow(1000, 4)).toFixed(3)}} TB</div>
 					<div class="label">Physical Size</div>
 				</div>
 				<div class="statistic">
-					<div class="value">{{((data.total_bytes + data.total_virtual_bytes) / Math.pow(1000, 4)).toFixed(2)}} TB</div>
+					<div class="value">{{((data.total_bytes + data.total_virtual_bytes) / Math.pow(1000, 4)).toFixed(3)}} TB</div>
 					<div class="label">Total Farm Size</div>
 				</div>
 			</div>
