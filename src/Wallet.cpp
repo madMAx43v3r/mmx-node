@@ -858,8 +858,11 @@ void Wallet::add_token(const addr_t& address)
 	auto object = vnx::read_config_file(path);
 	{
 		auto& whitelist = object["token_whitelist+"];
-		auto tmp = whitelist.to<std::set<addr_t>>();
-		tmp.insert(address);
+		std::set<std::string> tmp;
+		for(const auto& token : whitelist.to<std::set<addr_t>>()) {
+			tmp.insert(token.to_string());
+		}
+		tmp.insert(address.to_string());
 		whitelist = tmp;
 	}
 	vnx::write_config_file(path, object);
@@ -872,8 +875,11 @@ void Wallet::rem_token(const addr_t& address)
 	auto object = vnx::read_config_file(path);
 	{
 		auto& whitelist = object["token_whitelist+"];
-		auto tmp = whitelist.to<std::set<addr_t>>();
-		if(!tmp.erase(address)) {
+		std::set<std::string> tmp;
+		for(const auto& token : whitelist.to<std::set<addr_t>>()) {
+			tmp.insert(token.to_string());
+		}
+		if(!tmp.erase(address.to_string())) {
 			throw std::logic_error("cannot remove token: " + address.to_string());
 		}
 		whitelist = tmp;
