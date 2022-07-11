@@ -31,7 +31,7 @@ var app = Vue.createApp({
 	}
 });
 
-app.config.globalProperties.isWinGUI = navigator.userAgent.indexOf("mmx.gui.win") > 0;
+app.config.globalProperties.isWinGUI = typeof window.mmx !== 'undefined';
 
 const Wallet = {
 	template: '<wallet-summary></wallet-summary>'
