@@ -1,25 +1,24 @@
 # mmx-node
 
-MMX is a blockchain written from scratch using Chia's Proof Of Space and a SHA256 VDF similar to Solana.
+MMX is a blockchain written from scratch using proven logic from Chia's Proof of Space and SHA256 VDF similar to Solana.
 
-It's main features are as follows:
-- High performance (1000 transactions per second or more)
+Main features are:
+- High performance code (1000 transactions per second or more)
 - Custom high-level VM for smart contracts (similar to JavaScript)
-- Variable supply (block reward scales with netspace, but also is capped by TX fees)
-- Consistent block times (every 10 seconds a block is created)
+- Variable supply (block reward scales with netspace, but also capped by TX fees)
+- Consistent block times (created every 8 seconds)
 - Native token and NFT support (atomic swaps with standard transactions)
-- Non-interactive offers for off-chain / on-chain trading (like in Chia)
+- Non-interactive offers for off- and on-chain trading (like in Chia)
 - Energy efficient Proof of Space (same as Chia)
 - Standard ECDSA signatures for seamless integration (same as Bitcoin)
 
-MMX is desiged to be a blockchain that can actually be used as a currency.
+MMX is designed to be a blockchain that can be used as an actual currency.
 
-For example the variable supply will stabilize the price, one of the key properties of any currency.
+Variable supply will stabilize the price, one of the key properties of any currency.
 
-Furthermore, thanks to an efficient implementation, it will provide low transaction fees even at high throughput.
+Thanks to an efficient implementation, it will provide low transaction fees, even at high throughput.
 
-A mainnet launch is planned in Q4 2022.
-Currently we are running _testnet6_, so the coins farmed right now are _not worth anything_.
+Launch of mainnet is planned for Q4 2022. Currently _testnet6_ is running. Coins farmed on testnet are _not worth anything_, now or in the future.
 
 See `#mmx-news` and `#mmx-general` on discord: https://discord.gg/BswFhNkMzY
 
@@ -34,6 +33,6 @@ Please take a look at the Wiki:
 
 ## WebGUI
 
-To access the WebGUI go to: http://localhost:11380/gui/
+To access WebGUI, go to: http://localhost:11380/gui/
 
-It's only available on localhost since it allows spending from your wallet.
+Only available on localhost, because of _full access_ to your wallet.
