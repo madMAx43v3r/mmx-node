@@ -122,9 +122,9 @@ void sha256_avx2_64_x8(uint8_t* out, uint8_t* in, const uint32_t length)
 		::memcpy(in + i * 64 + length, &end_bit, 1);
 		::memcpy(in + i * 64 + 56, &num_bits, 8);
 
-		for(int k = 0; k < 16; ++k) {
-			auto& val = ((uint32_t*)in)[i * 16 + k];
-			val = bswap_32(val);
+		__m128i* input_mm = reinterpret_cast<__m128i*>(in + i * 64);
+		for(int k = 0; k < 4; ++k) {
+			input_mm[k] = _mm_shuffle_epi8(input_mm[k], MASK);
 		}
 	}
 
