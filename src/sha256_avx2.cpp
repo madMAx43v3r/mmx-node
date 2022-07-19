@@ -6,10 +6,14 @@
  */
 
 #include <sha256_avx2.h>
+#include <mmx/hash_t.hpp>
 
 #include <cstring>
 #include <stdexcept>
 #include <immintrin.h>
+
+
+#ifdef __AVX2__
 
 #define u32 uint32_t
 #define u256 __m256i
@@ -69,17 +73,19 @@ static const u32 RC[] = {
     T1 = ADD32(SIGMA0_AVX(a), MAJ_AVX(a, b, c)); \
     h = ADD32(T0, T1);
 
+static const __m128i MASK = _mm_set_epi64x(0x0c0d0e0f08090a0b, 0x0405060700010203);
 
-uint32_t bswap_32(const uint32_t val) {
+
+inline uint32_t bswap_32(const uint32_t val) {
 	return ((val & 0xFF) << 24) | ((val & 0xFF00) << 8) | ((val & 0xFF0000) >> 8) | ((val & 0xFF000000) >> 24);
 }
 
-uint64_t bswap_64(const uint64_t val) {
+inline uint64_t bswap_64(const uint64_t val) {
 	return (uint64_t(bswap_32(val)) << 32) | bswap_32(val >> 32);
 }
 
 // Transpose 8 vectors containing 32-bit values
-void transpose(u256 s[8])
+inline void transpose(u256 s[8])
 {
     u256 tmp0[8];
     u256 tmp1[8];
@@ -109,7 +115,7 @@ void transpose(u256 s[8])
     s[7] = _mm256_permute2x128_si256(tmp1[3], tmp1[7], 0x31);
 }
 
-void sha256_avx2_64_x8(uint8_t* out, uint8_t* in, const uint32_t length)
+void sha256_avx2_64_x8(uint8_t* out, uint8_t* in, const uint64_t length)
 {
 	if(length >= 56) {
 		throw std::logic_error("length >= 56");
@@ -122,9 +128,9 @@ void sha256_avx2_64_x8(uint8_t* out, uint8_t* in, const uint32_t length)
 		::memcpy(in + i * 64 + length, &end_bit, 1);
 		::memcpy(in + i * 64 + 56, &num_bits, 8);
 
-		for(int k = 0; k < 16; ++k) {
-			auto& val = ((uint32_t*)in)[i * 16 + k];
-			val = bswap_32(val);
+		__m128i* input_mm = reinterpret_cast<__m128i*>(in + i * 64);
+		for(int k = 0; k < 4; ++k) {
+			input_mm[k] = _mm_shuffle_epi8(input_mm[k], MASK);
 		}
 	}
 
@@ -285,6 +291,24 @@ void sha256_avx2_64_x8(uint8_t* out, uint8_t* in, const uint32_t length)
 			auto& val = ((uint32_t*)out)[i * 8 + k];
 			val = bswap_32(val);
 		}
+	}
+}
+
+#else
+
+void sha256_avx2_64_x8(uint8_t* out, uint8_t* in, const uint64_t length)
+{
+	sha256_64_x8(out, in, length);
+}
+
+#endif // __AVX2__
+
+
+void sha256_64_x8(uint8_t* out, uint8_t* in, const uint64_t length)
+{
+	for(int i = 0; i < 8; ++i) {
+		const mmx::hash_t hash(in + i * 64, length);
+		::memcpy(out + i * 32, hash.data(), 32);
 	}
 }
 
