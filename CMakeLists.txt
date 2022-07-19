@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 if(NOT MSVC)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function -march=native")
 endif()
 
 if(MSVC)
@@ -140,6 +140,7 @@ add_library(mmx_vm_iface SHARED
 	${GENERATED_VM_SOURCE_FILES}
 	src/vm/var_t.cpp
 	src/vm/varptr_t.cpp
+	src/sha256_avx2.cpp
 )
 
 add_library(mmx_vm SHARED
@@ -202,6 +203,8 @@ target_include_directories(mmx_chiapos
 	PRIVATE chiapos/src chiapos/lib/include
 )
 
+target_include_directories(mmx_db PUBLIC include)
+
 if(MSVC)
 	set_target_properties(mmx_modules PROPERTIES ENABLE_EXPORTS 1)
 	set_target_properties(mmx_modules PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
@@ -221,7 +224,7 @@ target_link_libraries(mmx_vm_iface uint256_t vnx_base)
 
 target_link_libraries(mmx_vm mmx_db mmx_iface)
 
-target_link_libraries(mmx_db mmx_iface)
+target_link_libraries(mmx_db uint256_t vnx_base)
 
 target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_vm mmx_db mmx_iface)
 

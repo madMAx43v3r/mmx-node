@@ -13,6 +13,7 @@
 #include <mmx/utils.h>
 
 #include <vnx/vnx.h>
+#include <sha256_avx2.h>
 
 
 namespace mmx {
@@ -98,7 +99,7 @@ uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::option
 		if(auto peak = get_peak()) {
 			hash = peak->hash;
 		} else {
-			return uint128_0;
+			return 0;
 		}
 	}
 	auto fork = find_fork(hash);
@@ -261,27 +262,57 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 	bool is_valid = !segments.empty();
 	size_t invalid_segment = -1;
 
+	constexpr uint32_t batch_size = 16;
+	const uint32_t num_chunks = (segments.size() + batch_size - 1) / batch_size;
+
 #pragma omp parallel for
-	for(int i = 0; i < int(segments.size()); ++i)
+	for(int chunk = 0; chunk < int(num_chunks); ++chunk)
 	{
 		if(!is_valid) {
 			continue;
 		}
-		hash_t point;
-		if(i > 0) {
-			point = segments[i-1].output[chain];
-		} else {
-			point = proof->input[chain];
-			if(auto infuse = proof->infuse[chain]) {
-				point = hash_t(point + *infuse);
+		const auto num_lanes = std::min<uint32_t>(batch_size, segments.size() - chunk * batch_size);
+
+		uint32_t max_iters = 0;
+		hash_t point[batch_size];
+		uint8_t hash[batch_size][32];
+		uint8_t input[batch_size][64];
+
+		for(uint32_t j = 0; j < num_lanes; ++j)
+		{
+			const uint32_t i = chunk * batch_size + j;
+			if(i > 0) {
+				point[j] = segments[i-1].output[chain];
+			} else {
+				point[j] = proof->input[chain];
+				if(auto infuse = proof->infuse[chain]) {
+					point[j] = hash_t(point[j] + *infuse);
+				}
+			}
+			max_iters = std::max(max_iters, segments[i].num_iters);
+		}
+		for(uint32_t k = 0; k < max_iters; ++k)
+		{
+			for(uint32_t j = 0; j < num_lanes; ++j) {
+				::memcpy(input[j], point[j].data(), 32);
+			}
+			sha256_avx2_64_x8(hash[0], input[0], 32);
+			sha256_avx2_64_x8(hash[8], input[8], 32);
+
+			for(uint32_t j = 0; j < num_lanes; ++j) {
+				const uint32_t i = chunk * batch_size + j;
+				if(k < segments[i].num_iters) {
+					::memcpy(point[j].data(), hash[j], 32);
+				}
 			}
 		}
-		for(size_t k = 0; k < segments[i].num_iters; ++k) {
-			point = hash_t(point.bytes);
-		}
-		if(point != segments[i].output[chain]) {
-			is_valid = false;
-			invalid_segment = i;
+		for(uint32_t j = 0; j < num_lanes; ++j)
+		{
+			const uint32_t i = chunk * batch_size + j;
+			if(point[j] != segments[i].output[chain]) {
+				is_valid = false;
+				invalid_segment = i;
+			}
 		}
 	}
 	if(!is_valid) {
