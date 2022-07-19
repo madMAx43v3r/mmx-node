@@ -13,6 +13,7 @@
 #include <mmx/utils.h>
 
 #include <vnx/vnx.h>
+#include <sha256_mb.h>
 
 
 namespace mmx {
@@ -259,29 +260,70 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 {
 	const auto& segments = proof->segments;
 	bool is_valid = !segments.empty();
-	size_t invalid_segment = -1;
+	uint32_t invalid_segment = -1;
+
+	constexpr uint32_t batch_size = 16;
+	const uint32_t num_chunks = (segments.size() + batch_size - 1) / batch_size;
 
 #pragma omp parallel for
-	for(int i = 0; i < int(segments.size()); ++i)
+	for(int chunk = 0; chunk < int(num_chunks); ++chunk)
 	{
 		if(!is_valid) {
 			continue;
 		}
-		hash_t point;
-		if(i > 0) {
-			point = segments[i-1].output[chain];
-		} else {
-			point = proof->input[chain];
-			if(auto infuse = proof->infuse[chain]) {
-				point = hash_t(point + *infuse);
+		const auto num_lanes = std::min<uint32_t>(batch_size, segments.size() - chunk * batch_size);
+
+		uint32_t max_iters = 0;
+		hash_t point[batch_size];
+
+		SHA256_HASH_CTX_MGR mgr = {};
+		SHA256_HASH_CTX ctx[batch_size] = {};
+		sha256_ctx_mgr_init(&mgr);
+
+		for(uint32_t j = 0; j < num_lanes; ++j) {
+			const uint32_t i = chunk * batch_size + j;
+			if(i > 0) {
+				point[j] = segments[i-1].output[chain];
+			} else {
+				point[j] = proof->input[chain];
+				if(auto infuse = proof->infuse[chain]) {
+					point[j] = hash_t(point[j] + *infuse);
+				}
+			}
+			max_iters = std::max(max_iters, segments[i].num_iters);
+			hash_ctx_init(&ctx[j]);
+			ctx[j].user_data = point[j].data();
+		}
+		for(uint32_t k = 0; k < max_iters; ++k) {
+			for(uint32_t j = 0; j < num_lanes; ++j) {
+				const uint32_t i = chunk * batch_size + j;
+				if(k < segments[i].num_iters) {
+					sha256_ctx_mgr_submit(&mgr, &ctx[j], point[j].data(), 32, HASH_ENTIRE);
+				}
+			}
+			while(sha256_ctx_mgr_flush(&mgr));
+
+			for(uint32_t j = 0; j < num_lanes; ++j) {
+				if(ctx[j].error != HASH_CTX_ERROR_NONE) {
+					throw std::runtime_error("sha256 error: " + std::to_string(ctx[j].error));
+				}
+				if(ctx[j].status != HASH_CTX_STS_COMPLETE) {
+					throw std::runtime_error("sha256 status != HASH_CTX_STS_COMPLETE (" + std::to_string(ctx[j].status) + ")");
+				}
+				for(uint32_t i = 0; i < 8; ++i) {
+					const auto tmp = vnx::flip_bytes(ctx[j].job.result_digest[i]);
+					::memcpy(point[j].data() + i * 4, &tmp, 4);
+				}
 			}
 		}
-		for(size_t k = 0; k < segments[i].num_iters; ++k) {
-			point = hash_t(point.bytes);
-		}
-		if(point != segments[i].output[chain]) {
-			is_valid = false;
-			invalid_segment = i;
+		for(uint32_t j = 0; j < num_lanes; ++j) {
+			const uint32_t i = chunk * batch_size + j;
+			if(point[j] != segments[i].output[chain]) {
+				is_valid = false;
+				invalid_segment = i;
+//				log(ERROR) << point[j] << " != " << segments[i].output[chain]
+//						<< " (j=" << j << ", num_iters=" << segments[i].num_iters << ", max_iters=" << max_iters << ")";
+			}
 		}
 	}
 	if(!is_valid) {

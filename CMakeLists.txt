@@ -60,8 +60,14 @@ endif()
 if(NOT MSVC AND WITH_SECP256K1)
 	message(STATUS "Using secp256k1")
 	include_directories(secp256k1/include)
-	link_directories(secp256k1/.libs)
+	find_library(SECP256K1_LIBRARY secp256k1 HINTS ${CMAKE_CURRENT_SOURCE_DIR}/secp256k1/.libs)
 endif()
+
+include_directories(lib/isa-l_crypto/include)
+find_library(ISAL_CRYPTO_LIBRARY isal_crypto HINTS
+	${CMAKE_CURRENT_SOURCE_DIR}/lib/isa-l_crypto/bin
+	${CMAKE_CURRENT_SOURCE_DIR}/lib/isa-l_crypto/.libs
+)
 
 file(GLOB GENERATED_SOURCE_FILES
 	generated/src/*.cpp
@@ -202,6 +208,8 @@ target_include_directories(mmx_chiapos
 	PRIVATE chiapos/src chiapos/lib/include
 )
 
+target_include_directories(mmx_db PUBLIC include)
+
 if(MSVC)
 	set_target_properties(mmx_modules PROPERTIES ENABLE_EXPORTS 1)
 	set_target_properties(mmx_modules PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
@@ -215,13 +223,13 @@ if(MSVC)
 	set_target_properties(mmx_db PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 endif()
 
-target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_base vnx_addons mmx_vm_iface)
+target_link_libraries(mmx_db uint256_t vnx_base)
 
 target_link_libraries(mmx_vm_iface uint256_t vnx_base)
 
-target_link_libraries(mmx_vm mmx_db mmx_iface)
+target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls ${ISAL_CRYPTO_LIBRARY} vnx_base vnx_addons mmx_vm_iface)
 
-target_link_libraries(mmx_db mmx_iface)
+target_link_libraries(mmx_vm mmx_db mmx_iface)
 
 target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_vm mmx_db mmx_iface)
 
