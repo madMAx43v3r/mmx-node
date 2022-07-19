@@ -64,7 +64,7 @@ app.component('node-info', {
 					<div class="label">{{ $t('node_info.block_size') }}</div>
 				</div>
 				<div class="statistic">
-					<div class="value">{{(data.time_diff / 8 / Math.pow(10, 3)).toFixed(3)}} M/s</div>
+					<div class="value">{{(data.time_diff / 10 / Math.pow(10, 3)).toFixed(3)}} M/s</div>
 					<div class="label">{{ $t('node_info.vdf_speed') }}</div>
 				</div>
 				<div class="statistic">

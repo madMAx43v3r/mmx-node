@@ -32,8 +32,8 @@ class ChainParams {
 	ulong space_diff_constant = 100000000;
 	ulong virtual_space_constant = 500;
 	
-	ulong min_time_diff = 10000;
-	ulong initial_time_diff = 10000;		// [iters/sec]
+	ulong min_time_diff = 50000;
+	ulong initial_time_diff = 50000;		// [iters/sec]
 	ulong initial_space_diff = 10;
 	
 	ulong min_txfee = 100;					// per tx
