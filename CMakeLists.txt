@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 if(NOT MSVC)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function -march=native")
 endif()
 
 if(MSVC)
@@ -140,6 +140,7 @@ add_library(mmx_vm_iface SHARED
 	${GENERATED_VM_SOURCE_FILES}
 	src/vm/var_t.cpp
 	src/vm/varptr_t.cpp
+	src/sha256_avx2.cpp
 )
 
 add_library(mmx_vm SHARED
