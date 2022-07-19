@@ -7,7 +7,7 @@ add_executable(create_test_contract2 create_test_contract2.cpp)
 add_executable(vm_engine_tests vm/engine_tests.cpp)
 
 target_link_libraries(test_engine mmx_vm)
-target_link_libraries(test_database mmx_db)
+target_link_libraries(test_database mmx_db mmx_iface)
 target_link_libraries(create_test_contract mmx_vm)
 target_link_libraries(create_test_contract2 mmx_vm)
 
