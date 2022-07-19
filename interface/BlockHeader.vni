@@ -19,6 +19,7 @@ class BlockHeader {
 	
 	ulong vdf_iters;
 	hash_t vdf_output[2];
+	vector<ProofOfTimeVote> vdf_votes;
 	
 	ProofOfSpace* proof;
 	
@@ -27,6 +28,8 @@ class BlockHeader {
 	uint tx_count;
 	
 	hash_t tx_hash;
+	
+	optional<node_account_t> node_info;
 	
 	optional<bls_signature_t> farmer_sig;
 	

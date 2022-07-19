@@ -1,0 +1,9 @@
+package mmx;
+
+struct node_account_t {
+	
+	pubkey_t key;
+	
+	addr_t address;
+	
+}
