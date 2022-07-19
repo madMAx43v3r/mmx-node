@@ -98,7 +98,7 @@ uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::option
 		if(auto peak = get_peak()) {
 			hash = peak->hash;
 		} else {
-			return uint128_0;
+			return 0;
 		}
 	}
 	auto fork = find_fork(hash);
