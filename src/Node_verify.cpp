@@ -296,8 +296,8 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 			for(uint32_t j = 0; j < num_lanes; ++j) {
 				::memcpy(input[j], point[j].data(), 32);
 			}
-			sha256_avx2_64_x8(hash[0], input[0], 32);
-			sha256_avx2_64_x8(hash[8], input[8], 32);
+			sha256_64_x8(hash[0], input[0], 32);
+			sha256_64_x8(hash[8], input[8], 32);
 
 			for(uint32_t j = 0; j < num_lanes; ++j) {
 				const uint32_t i = chunk * batch_size + j;
