@@ -13,8 +13,6 @@
 #include <immintrin.h>
 
 
-#ifdef __AVX2__
-
 #define u32 uint32_t
 #define u256 __m256i
 
@@ -294,21 +292,44 @@ void sha256_avx2_64_x8(uint8_t* out, uint8_t* in, const uint64_t length)
 	}
 }
 
+#ifdef _WIN32
+#define cpuid(info, x)    __cpuidex(info, x, 0)
 #else
-
-void sha256_avx2_64_x8(uint8_t* out, uint8_t* in, const uint64_t length)
-{
-	sha256_64_x8(out, in, length);
+#include <cpuid.h>
+void cpuid(int info[4], int InfoType) {
+	__cpuid_count(InfoType, 0, info[0], info[1], info[2], info[3]);
 }
+#endif
 
-#endif // __AVX2__
+inline bool avx2_support() {
+	bool HW_AVX2 = false;
 
+	int info[4];
+	cpuid(info, 0);
+	int nIds = info[0];
+
+	cpuid(info, 0x80000000);
+	unsigned nExIds = info[0];
+
+	if (nIds >= 0x00000007) {
+		cpuid(info, 0x00000007);
+		HW_AVX2 = (info[1] & ((int)1 << 5)) != 0;
+	}
+
+	return HW_AVX2;
+}
 
 void sha256_64_x8(uint8_t* out, uint8_t* in, const uint64_t length)
 {
-	for(int i = 0; i < 8; ++i) {
-		const mmx::hash_t hash(in + i * 64, length);
-		::memcpy(out + i * 32, hash.data(), 32);
+	static bool avx2 = avx2_support();
+
+	if (avx2) {
+		sha256_avx2_64_x8(out, in, length);
+	} else {
+		for (int i = 0; i < 8; ++i) {
+			const mmx::hash_t hash(in + i * 64, length);
+			::memcpy(out + i * 32, hash.data(), 32);
+		}
 	}
 }
 

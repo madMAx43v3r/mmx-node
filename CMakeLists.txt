@@ -122,6 +122,7 @@ add_library(mmx_iface SHARED
 	src/operation/Deposit.cpp
 	src/operation/Execute.cpp
 	src/operation/Vote.cpp
+	src/sha256_avx2.cpp
 )
 
 if(MSVC)
@@ -140,7 +141,6 @@ add_library(mmx_vm_iface SHARED
 	${GENERATED_VM_SOURCE_FILES}
 	src/vm/var_t.cpp
 	src/vm/varptr_t.cpp
-	src/sha256_avx2.cpp
 )
 
 add_library(mmx_vm SHARED
