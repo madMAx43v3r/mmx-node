@@ -16,12 +16,7 @@ namespace mmx {
 
 hash_t::hash_t(const void* data, const size_t num_bytes)
 {
-	static bool have_init = false;
-	static bool have_sha_ni = false;
-	if(!have_init) {
-		have_init = true;
-		have_sha_ni = sha256_ni_available();
-	}
+	static bool have_sha_ni = sha256_ni_available();
 	if(have_sha_ni) {
 		sha256_ni(bytes.data(), (const uint8_t*)data, num_bytes);
 	} else {

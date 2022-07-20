@@ -14,6 +14,15 @@
 #include <immintrin.h>
 
 
+#ifdef _WIN32
+#define cpuid(info, x)    __cpuidex(info, x, 0)
+#else
+#include <cpuid.h>
+void cpuid(int info[4], int InfoType) {
+	__cpuid_count(InfoType, 0, info[0], info[1], info[2], info[3]);
+}
+#endif
+
 #define u32 uint32_t
 #define u256 __m256i
 
@@ -116,18 +125,6 @@ inline void transpose(u256 s[8])
 
 void sha256_avx2_64_x8(uint8_t* out, uint8_t* in, const uint64_t length)
 {
-	static bool have_init = false;
-	static bool have_sha_ni = false;
-	if(!have_init) {
-		have_init = true;
-		have_sha_ni = sha256_ni_available();
-	}
-	if(have_sha_ni) {
-		for(int i = 0; i < 8; ++i) {
-			sha256_ni(out + i * 32, in + i * 64, length);
-		}
-		return;
-	}
 	if(length >= 56) {
 		throw std::logic_error("length >= 56");
 	}
@@ -305,16 +302,8 @@ void sha256_avx2_64_x8(uint8_t* out, uint8_t* in, const uint64_t length)
 	}
 }
 
-#ifdef _WIN32
-#define cpuid(info, x)    __cpuidex(info, x, 0)
-#else
-#include <cpuid.h>
-void cpuid(int info[4], int InfoType) {
-	__cpuid_count(InfoType, 0, info[0], info[1], info[2], info[3]);
-}
-#endif
-
-inline bool avx2_support() {
+bool avx2_available()
+{
 	bool HW_AVX2 = false;
 
 	int info[4];
@@ -334,9 +323,14 @@ inline bool avx2_support() {
 
 void sha256_64_x8(uint8_t* out, uint8_t* in, const uint64_t length)
 {
-	static bool avx2 = avx2_support();
+	static bool have_avx2 = avx2_available();
+	static bool have_sha_ni = sha256_ni_available();
 
-	if (avx2) {
+	if(have_sha_ni) {
+		for(int i = 0; i < 8; ++i) {
+			sha256_ni(out + i * 32, in + i * 64, length);
+		}
+	} else if(have_avx2) {
 		sha256_avx2_64_x8(out, in, length);
 	} else {
 		for (int i = 0; i < 8; ++i) {
