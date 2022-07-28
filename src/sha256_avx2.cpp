@@ -23,6 +23,16 @@ void cpuid(int info[4], int InfoType) {
 }
 #endif
 
+static uint64_t xgetbv() {
+#if defined(_MSC_VER)
+  return _xgetbv(0);
+#else
+  uint32_t eax = 0, edx = 0;
+  __asm__ __volatile__("xgetbv\n" : "=a"(eax), "=d"(edx) : "c"(0));
+  return ((uint64_t)edx << 32) | eax;
+#endif
+}
+
 #define u32 uint32_t
 #define u256 __m256i
 
@@ -308,16 +318,19 @@ bool avx2_available()
 
 	int info[4];
 	cpuid(info, 0);
-	int nIds = info[0];
+	const int nIds = info[0];
 
-	cpuid(info, 0x80000000);
-	unsigned nExIds = info[0];
+	cpuid(info, 1);
 
-	if (nIds >= 0x00000007) {
-		cpuid(info, 0x00000007);
-		HW_AVX2 = (info[1] & ((int)1 << 5)) != 0;
+	if(info[2] & (1UL << 27)) { // OSXSAVE
+		const uint64_t mask = xgetbv();
+		if((mask & 6) == 6) { // SSE and AVX states
+			if(nIds >= 7) {
+				cpuid(info, 7);
+				HW_AVX2 = (info[1] & ((int)1 << 5)) != 0;
+			}
+		}
 	}
-
 	return HW_AVX2;
 }
 
