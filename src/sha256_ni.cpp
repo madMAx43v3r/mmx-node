@@ -267,6 +267,12 @@ bool sha256_ni_available()
 //	);
 
 	int info[4];
+	cpuid(info, 0);
+	const int nIds = info[0];
+
+	if(nIds < 7) {
+		return false;
+	}
 	cpuid(info, 7);
 
 	// Intel® SHA Extensions feature bit is EBX[29]
