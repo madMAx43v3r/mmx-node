@@ -233,15 +233,15 @@ void sha256_ni(uint8_t* out, const uint8_t* in, const uint64_t length)
 	if(num_blocks) {
 		compress_digest(state, in, num_blocks);
 	}
-	const auto reminder = length % 64;
-	const auto final_blocks = (reminder + 9 + 63) / 64;
+	const auto remain = length % 64;
+	const auto final_blocks = (remain + 9 + 63) / 64;
 	const uint64_t num_bits = bswap_64(length * 8);
 	const uint8_t end_bit = 0x80;
 
 	uint8_t last[128] = {};
-	::memcpy(last, in + num_blocks * 64, reminder);
-	::memset(last + reminder, 0, sizeof(last) - reminder);
-	::memcpy(last + reminder, &end_bit, 1);
+	::memcpy(last, in + num_blocks * 64, remain);
+	::memset(last + remain, 0, sizeof(last) - remain);
+	::memcpy(last + remain, &end_bit, 1);
 	::memcpy(last + final_blocks * 64 - 8, &num_bits, 8);
 
 	compress_digest(state, last, final_blocks);
