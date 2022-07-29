@@ -14,6 +14,7 @@
 #include <immintrin.h>
 
 #ifdef _WIN32
+#include <intrin.h>
 #define cpuid(info, x)    __cpuidex(info, x, 0)
 #else
 #include <cpuid.h>
