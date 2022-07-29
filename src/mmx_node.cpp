@@ -16,6 +16,8 @@
 #include <mmx/WalletClient.hxx>
 #include <mmx/secp256k1.hpp>
 #include <mmx/utils.h>
+#include <sha256_ni.h>
+#include <sha256_avx2.h>
 
 #include <vnx/vnx.h>
 #include <vnx/Server.h>
@@ -77,6 +79,9 @@ int main(int argc, char** argv)
 		vnx::log_info() << "No OpenCL GPU platform found: " << ex.what();
 	}
 #endif
+
+	vnx::log_info() << "AVX2 support:   " << (avx2_available() ? "yes" : "no");
+	vnx::log_info() << "SHA-NI support: " << (sha256_ni_available() ? "yes" : "no");
 
 	if(with_farmer) {
 		with_wallet = true;
