@@ -13,12 +13,11 @@
 #include <stdexcept>
 #include <immintrin.h>
 
-
 #ifdef _WIN32
 #define cpuid(info, x)    __cpuidex(info, x, 0)
 #else
 #include <cpuid.h>
-void cpuid(int info[4], int InfoType) {
+inline void cpuid(int info[4], int InfoType) {
 	__cpuid_count(InfoType, 0, info[0], info[1], info[2], info[3]);
 }
 #endif

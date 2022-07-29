@@ -10,6 +10,15 @@
 #include <cstring>
 #include <immintrin.h>
 
+#ifdef _WIN32
+#define cpuid(info, x)    __cpuidex(info, x, 0)
+#else
+#include <cpuid.h>
+inline void cpuid(int info[4], int InfoType) {
+	__cpuid_count(InfoType, 0, info[0], info[1], info[2], info[3]);
+}
+#endif
+
 
 alignas(64)
 static const uint32_t K[] = {
@@ -245,20 +254,23 @@ void sha256_ni(uint8_t* out, const uint8_t* in, const uint64_t length)
 
 bool sha256_ni_available()
 {
-	int a, b, c, d;
+//	int a, b, c, d;
+//
+//	// Look for CPUID.7.0.EBX[29]
+//	// EAX = 7, ECX = 0
+//	a = 7;
+//	c = 0;
+//
+//	asm volatile ("cpuid"
+//		:"=a"(a), "=b"(b), "=c"(c), "=d"(d)
+//		:"a"(a), "c"(c)
+//	);
 
-	// Look for CPUID.7.0.EBX[29]
-	// EAX = 7, ECX = 0
-	a = 7;
-	c = 0;
-
-	asm volatile ("cpuid"
-		:"=a"(a), "=b"(b), "=c"(c), "=d"(d)
-		:"a"(a), "c"(c)
-	);
+	int info[4];
+	cpuid(info, 7);
 
 	// Intel® SHA Extensions feature bit is EBX[29]
-	return ((b >> 29) & 1);
+	return ((info[1] >> 29) & 1);
 }
 
 
