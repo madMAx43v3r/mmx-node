@@ -425,7 +425,7 @@ std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit,
 			total_pool_cost += entry.cost;
 			if(total_pool_cost > uint128_t(tx_pool_limit) * params->max_block_cost) {
 				if(!cutoff) {
-					*cutoff = i;
+					cutoff = i;
 				}
 				tx_pool.erase(entry.tx->id);
 				num_purged++;
