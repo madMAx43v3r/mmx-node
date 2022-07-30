@@ -396,6 +396,14 @@ std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit,
 	for(const auto& entry : tx_pool) {
 		all_tx.push_back(entry.second);
 	}
+
+	// sort transactions by fee ratio
+	std::sort(all_tx.begin(), all_tx.end(),
+		[](const tx_pool_t& lhs, const tx_pool_t& rhs) -> bool {
+			return lhs.tx->fee_ratio > rhs.tx->fee_ratio;
+		});
+
+	// add pending transactions (not yet verified once)
 	for(const auto& entry : pending_transactions) {
 		if(const auto& tx = entry.second) {
 			tx_pool_t out;
@@ -405,12 +413,6 @@ std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit,
 			all_tx.push_back(out);
 		}
 	}
-
-	// sort transactions by fee ratio
-	std::sort(all_tx.begin(), all_tx.end(),
-		[](const tx_pool_t& lhs, const tx_pool_t& rhs) -> bool {
-			return lhs.tx->fee_ratio > rhs.tx->fee_ratio;
-		});
 
 	size_t num_purged = 0;
 	uint128_t total_pool_cost = 0;
