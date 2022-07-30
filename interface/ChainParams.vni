@@ -42,8 +42,10 @@ class ChainParams {
 	ulong min_txfee_exec = 10000;			// per contract operation
 	ulong min_txfee_deploy = 100000;		// per contract
 	ulong min_txfee_byte = 10;				// per byte of data
+	
 	ulong max_txbase_cost = 10000;
 	ulong max_block_cost = 10000000;
+	ulong max_block_reward = 5000000;		// TODO
 	
 	double block_time = 10;					// [sec]
 	
