@@ -396,6 +396,14 @@ std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit,
 	for(const auto& entry : tx_pool) {
 		all_tx.push_back(entry.second);
 	}
+
+	// sort transactions by fee ratio
+	std::sort(all_tx.begin(), all_tx.end(),
+		[](const tx_pool_t& lhs, const tx_pool_t& rhs) -> bool {
+			return lhs.tx->fee_ratio > rhs.tx->fee_ratio;
+		});
+
+	// add pending transactions (not yet verified once)
 	for(const auto& entry : pending_transactions) {
 		if(const auto& tx = entry.second) {
 			tx_pool_t out;
@@ -406,26 +414,21 @@ std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit,
 		}
 	}
 
-	// sort transactions by fee ratio
-	std::sort(all_tx.begin(), all_tx.end(),
-		[](const tx_pool_t& lhs, const tx_pool_t& rhs) -> bool {
-			return lhs.tx->fee_ratio > rhs.tx->fee_ratio;
-		});
-
 	size_t num_purged = 0;
 	uint128_t total_pool_cost = 0;
 	uint128_t total_verify_cost = 0;
 	std::vector<tx_pool_t> tx_list;
 
 	// purge transactions from pool if overflowing
+	const auto max_pool_cost = uint128_t(tx_pool_limit) * params->max_block_cost;
 	{
 		vnx::optional<size_t> cutoff;
 		for(size_t i = 0; i < all_tx.size(); ++i) {
 			const auto& entry = all_tx[i];
 			total_pool_cost += entry.cost;
-			if(total_pool_cost > uint128_t(tx_pool_limit) * params->max_block_cost) {
+			if(total_pool_cost > max_pool_cost) {
 				if(!cutoff) {
-					*cutoff = i;
+					cutoff = i;
 				}
 				tx_pool.erase(entry.tx->id);
 				num_purged++;
@@ -568,7 +571,8 @@ std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit,
 	if(!only_new || !tx_list.empty()) {
 		const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
 		log(INFO) << "Validated" << (only_new ? " new" : "") << " transactions: " << result.size() << " valid, "
-				<< num_invalid << " invalid, " << num_purged << " purged, took " << elapsed << " sec";
+				<< num_invalid << " invalid, " << num_purged << " purged, "
+				<< uint64_t((10000 * total_pool_cost) / max_pool_cost) / 100. << " % mem pool, took " << elapsed << " sec";
 	}
 	return result;
 }
