@@ -228,6 +228,12 @@ private:
 		std::map<std::pair<addr_t, addr_t>, uint128> removed;
 	};
 
+	struct proof_data_t {
+		uint32_t height = 0;
+		vnx::Hash64 farmer_mac;
+		std::shared_ptr<const ProofOfSpace> proof;
+	};
+
 	void update();
 
 	void verify_vdfs();
@@ -244,7 +250,7 @@ private:
 
 	std::vector<tx_pool_t> validate_pending(const uint64_t verify_limit, const uint64_t select_limit, bool only_new);
 
-	std::shared_ptr<const Block> make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response);
+	std::shared_ptr<const Block> make_block(std::shared_ptr<const BlockHeader> prev, const proof_data_t& proof_data);
 
 	void sync_more();
 
@@ -312,9 +318,12 @@ private:
 
 	void purge_tree();
 
+	bool add_proof(	const uint32_t height, const hash_t& challenge,
+					std::shared_ptr<const ProofOfSpace> proof, const vnx::Hash64 farmer_mac);
+
 	bool verify(std::shared_ptr<const ProofResponse> value);
 
-	void verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_output) const;
+	void verify_proof(std::shared_ptr<fork_t> fork, const hash_t& challenge) const;
 
 	void verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, std::shared_ptr<const BlockHeader> diff_block) const;
 
@@ -366,7 +375,7 @@ private:
 
 	std::shared_ptr<Node::vdf_point_t> find_next_vdf_point(std::shared_ptr<const BlockHeader> block) const;
 
-	std::vector<std::shared_ptr<const ProofResponse>> find_proof(const hash_t& challenge) const;
+	std::vector<std::pair<hash_t, Node::proof_data_t>> find_proof(const hash_t& challenge) const;
 
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block) const;
 
@@ -403,9 +412,9 @@ private:
 	std::multimap<uint32_t, std::shared_ptr<vdf_point_t>> verified_vdfs;			// [height => output]
 	std::multimap<uint32_t, std::shared_ptr<const ProofOfTime>> pending_vdfs;		// [height => proof]
 
-	std::unordered_multimap<uint32_t, hash_t> challenge_map;								// [height => challenge]
-	std::unordered_multimap<hash_t, std::shared_ptr<const ProofResponse>> proof_map;		// [challenge => proof]
-	std::map<std::pair<hash_t, hash_t>, hash_t> created_blocks;								// [[prev hash, proof hash] => hash]
+	std::unordered_map<hash_t, std::map<hash_t, proof_data_t>> proof_map;			// [challenge => best proofs]
+	std::unordered_multimap<uint32_t, hash_t> challenge_map;						// [height => challenge]
+	std::map<std::pair<hash_t, hash_t>, hash_t> created_blocks;						// [[prev hash, proof hash] => hash]
 	std::unordered_set<hash_t> purged_blocks;
 
 	bool is_synced = false;

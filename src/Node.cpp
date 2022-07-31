@@ -1726,12 +1726,14 @@ std::shared_ptr<Node::vdf_point_t> Node::find_next_vdf_point(std::shared_ptr<con
 	return nullptr;
 }
 
-std::vector<std::shared_ptr<const ProofResponse>> Node::find_proof(const hash_t& challenge) const
+std::vector<std::pair<hash_t, Node::proof_data_t>> Node::find_proof(const hash_t& challenge) const
 {
-	std::vector<std::shared_ptr<const ProofResponse>> res;
-	const auto range = proof_map.equal_range(challenge);
-	for(auto iter = range.first; iter != range.second; ++iter) {
-		res.push_back(iter->second);
+	std::vector<std::pair<hash_t, Node::proof_data_t>> res;
+	const auto iter = proof_map.find(challenge);
+	if(iter != proof_map.end()) {
+		for(const auto& entry : iter->second) {
+			res.push_back(entry);
+		}
 	}
 	return res;
 }

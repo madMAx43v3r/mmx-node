@@ -43,8 +43,8 @@ void Node::add_dummy_blocks(std::shared_ptr<const BlockHeader> prev)
 			hash_t vdf_challenge;
 			if(find_vdf_challenge(prev, vdf_challenge, 1)) {
 				const auto challenge = get_challenge(prev, vdf_challenge, 1);
-				for(const auto& response : find_proof(challenge)) {
-					proofs.push_back(response->proof);
+				for(const auto& entry : find_proof(challenge)) {
+					proofs.push_back(entry.second.proof);
 				}
 			}
 		}
@@ -160,8 +160,12 @@ void Node::update()
 		const auto& block = fork->block;
 		try {
 			hash_t vdf_challenge;
-			if(find_vdf_challenge(block, vdf_challenge)) {
-				verify_proof(fork, vdf_challenge);
+			if(find_vdf_challenge(block, vdf_challenge))
+			{
+				const auto challenge = get_challenge(block, vdf_challenge);
+				verify_proof(fork, challenge);
+#pragma omp critical
+				add_proof(block->height, challenge, block->proof, vnx::Hash64());
 			}
 		}
 		catch(const std::exception& ex) {
@@ -330,18 +334,22 @@ void Node::update()
 		if(height < root->height) {
 			break;
 		}
-		if(auto fork = find_best_fork(height)) {
+		if(auto fork = find_best_fork(height))
+		{
 			const auto& prev = fork->block;
 			hash_t vdf_challenge;
-			if(find_vdf_challenge(prev, vdf_challenge, 1)) {
+			if(find_vdf_challenge(prev, vdf_challenge, 1))
+			{
 				const auto challenge = get_challenge(prev, vdf_challenge, 1);
-				for(const auto& response : find_proof(challenge)) {
+				for(const auto& entry : find_proof(challenge))
+				{
 					// check if it's our proof
-					if(vnx::get_pipe(response->farmer_addr)) {
-						const auto key = std::make_pair(prev->hash, response->proof->calc_hash());
+					if(vnx::get_pipe(entry.second.farmer_mac))
+					{
+						const auto key = std::make_pair(prev->hash, entry.first);
 						if(!created_blocks.count(key)) {
 							try {
-								if(auto block = make_block(prev, response)) {
+								if(auto block = make_block(prev, entry.second)) {
 									add_block(block);
 									made_block = true;
 									created_blocks[key] = block->hash;
@@ -577,7 +585,7 @@ std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit,
 	return result;
 }
 
-std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const ProofResponse> response)
+std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader> prev, const proof_data_t& proof_data)
 {
 	const auto time_begin = vnx::get_wall_time_millis();
 
@@ -597,7 +605,7 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	block->space_diff = prev->space_diff;
 	block->vdf_iters = vdf_point->vdf_iters;
 	block->vdf_output = vdf_point->output;
-	block->proof = response->proof;
+	block->proof = proof_data.proof;
 
 	const auto tx_list = validate_pending(params->max_block_cost * 2, params->max_block_cost, false);
 
@@ -633,14 +641,14 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	}
 	{
 		// set new space difficulty
-		block->space_diff = calc_new_space_diff(params, prev->space_diff, response->proof->score);
+		block->space_diff = calc_new_space_diff(params, prev->space_diff, block->proof->score);
 	}
 	const auto diff_block = get_diff_header(prev, 1);
 	block->weight = calc_block_weight(params, diff_block, block, true);
 	block->total_weight = prev->total_weight + block->weight;
 	block->finalize();
 
-	FarmerClient farmer(response->farmer_addr);
+	FarmerClient farmer(proof_data.farmer_mac);
 	const auto block_reward = calc_block_reward(block);
 	const auto final_reward = calc_final_block_reward(params, block_reward, total_fees);
 	const auto result = farmer.sign_block(block, final_reward);
@@ -652,7 +660,7 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 
 	const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
 	log(INFO) << "Created block at height " << block->height << " with: ntx = " << block->tx_list.size()
-			<< ", score = " << response->proof->score << ", reward = " << final_reward / pow(10, params->decimals) << " MMX"
+			<< ", score = " << block->proof->score << ", reward = " << final_reward / pow(10, params->decimals) << " MMX"
 			<< ", nominal = " << block_reward / pow(10, params->decimals) << " MMX"
 			<< ", fees = " << total_fees / pow(10, params->decimals) << " MMX"
 			<< ", took " << elapsed << " sec";
