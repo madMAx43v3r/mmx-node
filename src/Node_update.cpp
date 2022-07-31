@@ -164,8 +164,11 @@ void Node::update()
 			{
 				const auto challenge = get_challenge(block, vdf_challenge);
 				verify_proof(fork, challenge);
+
+				if(auto proof = block->proof) {
 #pragma omp critical
-				add_proof(block->height, challenge, block->proof, vnx::Hash64());
+					add_proof(block->height, challenge, proof, vnx::Hash64());
+				}
 			}
 		}
 		catch(const std::exception& ex) {

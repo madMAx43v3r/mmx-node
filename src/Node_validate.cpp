@@ -291,8 +291,10 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 			total_cost += cost;
 		} catch(...) {
 #pragma omp critical
-			failed_tx = tx->id;
-			failed_ex = std::current_exception();
+			{
+				failed_tx = tx->id;
+				failed_ex = std::current_exception();
+			}
 		}
 		context->signal(tx->id);
 	}
