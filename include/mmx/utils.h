@@ -110,7 +110,7 @@ uint64_t calc_new_space_diff(std::shared_ptr<const ChainParams> params, const ui
 
 inline
 uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> diff_block,
-							std::shared_ptr<const BlockHeader> block, bool have_farmer_sig)
+							std::shared_ptr<const BlockHeader> block, const bool have_farmer_sig)
 {
 	uint256_t weight = 0;
 	// TODO: remove height switch
