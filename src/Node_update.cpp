@@ -431,6 +431,7 @@ std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit,
 					cutoff = i;
 				}
 				tx_pool.erase(entry.tx->id);
+				pending_transactions.erase(entry.full_hash);
 				num_purged++;
 			}
 		}
