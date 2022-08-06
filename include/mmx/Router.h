@@ -251,6 +251,7 @@ private:
 	size_t block_counter = 0;
 	size_t proof_counter = 0;
 	size_t upload_counter = 0;
+	double tx_upload_sum = 0;
 
 	size_t tx_drop_counter = 0;
 	size_t vdf_drop_counter = 0;

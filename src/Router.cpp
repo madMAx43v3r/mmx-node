@@ -86,7 +86,6 @@ void Router::main()
 	subscribe(input_verified_transactions, max_queue_ms);
 	subscribe(input_transactions, max_queue_ms);
 
-	peer_set = seed_peers;
 	{
 		vnx::File file(storage_path + "known_peers.dat");
 		if(file.exists()) {
@@ -682,6 +681,7 @@ void Router::connect()
 	if(synced_peers.size() < num_peers_out)
 	{
 		std::set<std::string> peers;
+		peer_set.insert(seed_peers.begin(), seed_peers.end());
 		for(const auto& address : peer_set) {
 			bool connected = false;
 			for(const auto& entry : peer_map) {
@@ -830,17 +830,11 @@ void Router::add_peer(const std::string& address, const int sock)
 	connecting_peers.erase(address);
 
 	if(sock >= 0) {
-		if(synced_peers.size() >= num_peers_out) {
-			vnx::TcpEndpoint().close(sock);
-			return;
-		}
 		const auto client = add_client(sock, address);
-
 		if(auto peer = find_peer(client)) {
 			peer->is_outbound = true;
 		}
-	}
-	else if(!seed_peers.count(address)) {
+	} else {
 		peer_set.erase(address);
 	}
 }
@@ -876,9 +870,10 @@ void Router::print_stats()
 			  << " vdf/s, " << float(proof_counter * 1000) / stats_interval_ms
 			  << " proof/s, " << float(block_counter * 1000) / stats_interval_ms
 			  << " block/s, " << synced_peers.size() << " / " <<  peer_map.size() << " / " << peer_set.size()
-			  << " peers, " << upload_counter << " upload, "
+			  << " peers, " << float(tx_upload_sum * 1000) / stats_interval_ms << " MMX/s tx upload, "
 			  << tx_drop_counter << " / " << vdf_drop_counter << " / " << proof_drop_counter << " / " << block_drop_counter << " dropped";
 	tx_counter = 0;
+	tx_upload_sum = 0;
 	vdf_counter = 0;
 	proof_counter = 0;
 	block_counter = 0;
@@ -1163,8 +1158,10 @@ bool Router::send_to(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Va
 				tx_drop_counter++;
 				return false;
 			}
-			tx_credits -= tx->calc_cost(params) * pow(10, -params->decimals);
+			const auto cost = tx->calc_cost(params) * pow(10, -params->decimals);
+			tx_credits -= cost;
 			tx_credits = std::max(tx_credits, 0.);
+			tx_upload_sum += cost;
 		}
 	}
 	Super::send_to(peer, msg);
