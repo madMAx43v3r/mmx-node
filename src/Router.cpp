@@ -86,7 +86,6 @@ void Router::main()
 	subscribe(input_verified_transactions, max_queue_ms);
 	subscribe(input_transactions, max_queue_ms);
 
-	peer_set = seed_peers;
 	{
 		vnx::File file(storage_path + "known_peers.dat");
 		if(file.exists()) {
@@ -682,6 +681,7 @@ void Router::connect()
 	if(synced_peers.size() < num_peers_out)
 	{
 		std::set<std::string> peers;
+		peer_set.insert(seed_peers.begin(), seed_peers.end());
 		for(const auto& address : peer_set) {
 			bool connected = false;
 			for(const auto& entry : peer_map) {
@@ -834,8 +834,7 @@ void Router::add_peer(const std::string& address, const int sock)
 		if(auto peer = find_peer(client)) {
 			peer->is_outbound = true;
 		}
-	}
-	else if(!seed_peers.count(address)) {
+	} else {
 		peer_set.erase(address);
 	}
 }
