@@ -830,12 +830,7 @@ void Router::add_peer(const std::string& address, const int sock)
 	connecting_peers.erase(address);
 
 	if(sock >= 0) {
-		if(synced_peers.size() >= num_peers_out) {
-			vnx::TcpEndpoint().close(sock);
-			return;
-		}
 		const auto client = add_client(sock, address);
-
 		if(auto peer = find_peer(client)) {
 			peer->is_outbound = true;
 		}
