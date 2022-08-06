@@ -876,7 +876,7 @@ void Router::print_stats()
 			  << " vdf/s, " << float(proof_counter * 1000) / stats_interval_ms
 			  << " proof/s, " << float(block_counter * 1000) / stats_interval_ms
 			  << " block/s, " << synced_peers.size() << " / " <<  peer_map.size() << " / " << peer_set.size()
-			  << " peers, " << float(tx_upload_sum * 1e3 / stats_interval_ms) << " MMX/s tx upload, "
+			  << " peers, " << float(tx_upload_sum * 1000) / stats_interval_ms << " MMX/s tx upload, "
 			  << tx_drop_counter << " / " << vdf_drop_counter << " / " << proof_drop_counter << " / " << block_drop_counter << " dropped";
 	tx_counter = 0;
 	tx_upload_sum = 0;
