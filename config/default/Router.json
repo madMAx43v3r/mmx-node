@@ -11,5 +11,5 @@
 	"relay_target_ms": 2000,
 	"max_hash_cache": 200000,
 	"max_sent_cache": 20000,
-	"max_tx_upload" : 2
+	"max_tx_upload" : 0.5
 }
