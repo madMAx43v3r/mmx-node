@@ -876,9 +876,10 @@ void Router::print_stats()
 			  << " vdf/s, " << float(proof_counter * 1000) / stats_interval_ms
 			  << " proof/s, " << float(block_counter * 1000) / stats_interval_ms
 			  << " block/s, " << synced_peers.size() << " / " <<  peer_map.size() << " / " << peer_set.size()
-			  << " peers, " << upload_counter << " upload, "
+			  << " peers, " << tx_upload_sum * 1e3 / stats_interval_ms << " MMX/s tx upload, "
 			  << tx_drop_counter << " / " << vdf_drop_counter << " / " << proof_drop_counter << " / " << block_drop_counter << " dropped";
 	tx_counter = 0;
+	tx_upload_sum = 0;
 	vdf_counter = 0;
 	proof_counter = 0;
 	block_counter = 0;
@@ -1163,8 +1164,10 @@ bool Router::send_to(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Va
 				tx_drop_counter++;
 				return false;
 			}
-			tx_credits -= tx->calc_cost(params) * pow(10, -params->decimals);
+			const auto cost = tx->calc_cost(params) * pow(10, -params->decimals);
+			tx_credits -= cost;
 			tx_credits = std::max(tx_credits, 0.);
+			tx_upload_sum += cost;
 		}
 	}
 	Super::send_to(peer, msg);
