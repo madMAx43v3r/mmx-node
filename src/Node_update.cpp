@@ -209,21 +209,13 @@ void Node::update()
 	{
 		// commit to disk
 		const auto fork_line = get_fork_line();
-		const auto commit_delay = is_synced || sync_retry ? params->commit_delay : 2 * max_sync_ahead;
+		const auto commit_delay = is_synced || sync_retry ? params->commit_delay : max_fork_length;
 		for(size_t i = 0; i + commit_delay < fork_line.size(); ++i)
 		{
 			const auto& fork = fork_line[i];
 			const auto& block = fork->block;
 			if(!fork->is_vdf_verified) {
 				break;	// wait for VDF verify
-			}
-			if(!is_synced && fork_line.size() < max_fork_length) {
-				// check if there is a competing fork at this height
-				if(		std::distance(fork_index.lower_bound(block->height), fork_index.upper_bound(block->height)) > 1
-					&&	std::distance(fork_index.lower_bound(peak->height), fork_index.upper_bound(peak->height)) > 1)
-				{
-					break;
-				}
 			}
 			commit(block);
 		}
