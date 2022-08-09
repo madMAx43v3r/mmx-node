@@ -391,7 +391,7 @@ app.component('node-log-table', {
 	template: `
 		<table class="ui small very compact table striped" v-if="data">
 			<tbody>
-			<tr v-for="item in data" :class="{error: item.level == 1, warning: item.level == 2}">
+			<tr v-for="item in data" :key="item.id" :class="{error: item.level == 1, warning: item.level == 2}">
 				<td class="collapsing"><code>{{new Date(item.time / 1000).toLocaleTimeString()}}</code></td>
 				<td><code><b>{{item.module}}</b></code></td>
 				<td><code>{{item.message}}</code></td>

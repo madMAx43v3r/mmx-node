@@ -162,7 +162,7 @@ void WebAPI::handle(std::shared_ptr<const Block> block)
 
 void WebAPI::handle(std::shared_ptr<const vnx::LogMsg> value)
 {
-	log_history.push_back(value);
+	log_history.emplace_back(value, log_counter++);
 	while(log_history.size() > max_log_history) {
 		log_history.pop_front();
 	}
@@ -1129,9 +1129,12 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			if(res.size() >= limit) {
 				break;
 			}
-			if((*iter)->level <= level) {
-				if(iter_module == query.end() || (*iter)->module == iter_module->second) {
-					res.push_back((*iter)->to_object());
+			const auto& msg = iter->first;
+			if(msg->level <= level) {
+				if(iter_module == query.end() || msg->module == iter_module->second) {
+					auto tmp = msg->to_object();
+					tmp["id"] = iter->second;
+					res.push_back(tmp);
 				}
 			}
 		}
