@@ -108,6 +108,7 @@ install(DIRECTORY www/ DESTINATION www COMPONENT applications)
 install(DIRECTORY scripts/win/ DESTINATION ./ COMPONENT applications)
 install(FILES ${PROJECT_SOURCE_DIR}/LICENSE DESTINATION ./ COMPONENT applications)
 
+
 include(FetchContent)
 FetchContent_Declare(plotter_k32
 URL https://github.com/MMX-World/mmx-plotter/releases/download/1.1.8/chia_plot-1.1.8.exe
@@ -116,6 +117,7 @@ DOWNLOAD_NO_EXTRACT true
 )
 FetchContent_MakeAvailable(plotter_k32)
 set (MMX_PLOTTER_K32_PATH ${plotter_k32_SOURCE_DIR}/chia_plot-1.1.8.exe)
+
 FetchContent_Declare(plotter_k34
 URL https://github.com/MMX-World/mmx-plotter/releases/download/1.1.8/chia_plot_k34-1.1.8.exe
 URL_HASH SHA256=3329661BCE509A08638E99352A9607C3ADEAB11DD4B462895FCBEFDC4F22231F
@@ -123,6 +125,14 @@ DOWNLOAD_NO_EXTRACT true
 )
 FetchContent_MakeAvailable(plotter_k34)
 set (MMX_PLOTTER_K34_PATH ${plotter_k34_SOURCE_DIR}/chia_plot_k34-1.1.8.exe)
+
+FetchContent_Declare(plotter_bladebit
+URL https://github.com/MMX-World/bladebit/releases/download/v1.2.5/bladebit.exe
+URL_HASH SHA256=BAAB6CB0493268CB8071E0D3FF57919F9C0E8D09D730686DFD550FBCD1FE9D0C
+DOWNLOAD_NO_EXTRACT true
+)
+FetchContent_MakeAvailable(plotter_bladebit)
+set (PLOTTER_BLADEBIT_PATH ${plotter_bladebit_SOURCE_DIR}/bladebit.exe)
 
 # include(ExternalProject)
 # ExternalProject_Add(mmx_plotter
@@ -141,6 +151,7 @@ set (MMX_PLOTTER_K34_PATH ${plotter_k34_SOURCE_DIR}/chia_plot_k34-1.1.8.exe)
 
 install(FILES ${MMX_PLOTTER_K32_PATH} DESTINATION ./ RENAME mmx_plot.exe COMPONENT plotters)
 install(FILES ${MMX_PLOTTER_K34_PATH} DESTINATION ./ RENAME mmx_plot_k34.exe COMPONENT plotters)
+install(FILES ${PLOTTER_BLADEBIT_PATH} DESTINATION ./ RENAME bladebit.exe COMPONENT plotters)
 
 set(CPACK_PACKAGE_NAME "MMX Node")
 set(CPACK_PACKAGE_VENDOR "madMAx43v3r")
