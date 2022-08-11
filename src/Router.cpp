@@ -704,28 +704,6 @@ void Router::connect()
 			connect_threads->add_task(std::bind(&Router::connect_task, this, address));
 		}
 	}
-
-	std::set<std::shared_ptr<peer_t>> outbound_synced;
-	for(const auto& entry : peer_map) {
-		const auto& peer = entry.second;
-		if(peer->is_outbound && peer->is_synced && !fixed_peers.count(peer->address)) {
-			outbound_synced.insert(peer);
-		}
-	}
-	size_t num_disconnect = 0;
-	if(is_synced) {
-		if(synced_peers.size() > num_peers_out + 1) {
-			num_disconnect = synced_peers.size() - num_peers_out;
-		}
-	} else {
-		if(outbound_synced.size() > num_peers_out + 1) {
-			num_disconnect = outbound_synced.size() - num_peers_out;
-		}
-	}
-	for(const auto& peer : get_subset(outbound_synced, num_disconnect, rand_engine)) {
-		log(INFO) << "Disconnecting from " << peer->address << " to reduce connections";
-		disconnect(peer->client);
-	}
 }
 
 void Router::query()
