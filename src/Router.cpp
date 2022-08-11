@@ -678,7 +678,16 @@ void Router::connect()
 		}
 	}
 
-	if(synced_peers.size() < num_peers_out)
+	std::set<std::shared_ptr<peer_t>> outbound_synced;
+	for(const auto& entry : peer_map) {
+		const auto& peer = entry.second;
+		if(peer->is_outbound && peer->is_synced && !fixed_peers.count(peer->address)) {
+			outbound_synced.insert(peer);
+		}
+	}
+
+	// check if we want more peers
+	if(outbound_synced.size() < num_peers_out)
 	{
 		std::set<std::string> peers;
 		peer_set.insert(seed_peers.begin(), seed_peers.end());
@@ -686,14 +695,15 @@ void Router::connect()
 			bool connected = false;
 			for(const auto& entry : peer_map) {
 				if(address == entry.second->address) {
-					connected = true;
+					connected = true; break;
 				}
 			}
 			if(!connected && !block_peers.count(address) && !connecting_peers.count(address)) {
 				peers.insert(address);
 			}
 		}
-		for(const auto& address : get_subset(peers, num_peers_out, rand_engine))
+		const auto num_connect = num_peers_out - outbound_synced.size();
+		for(const auto& address : get_subset(peers, num_connect, rand_engine))
 		{
 			if(connect_threads->get_num_running() >= max_connect_threads) {
 				break;
@@ -705,13 +715,7 @@ void Router::connect()
 		}
 	}
 
-	std::set<std::shared_ptr<peer_t>> outbound_synced;
-	for(const auto& entry : peer_map) {
-		const auto& peer = entry.second;
-		if(peer->is_outbound && peer->is_synced && !fixed_peers.count(peer->address)) {
-			outbound_synced.insert(peer);
-		}
-	}
+	// disconnect if we have too many outbound synced peers
 	size_t num_disconnect = 0;
 	if(outbound_synced.size() > num_peers_out + 1) {
 		num_disconnect = outbound_synced.size() - num_peers_out;
