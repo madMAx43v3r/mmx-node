@@ -71,7 +71,7 @@ protected:
 
 template<typename T>
 void Block::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Block>(17);
+	_visitor.template type_begin<Block>(20);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("hash", 1); _visitor.accept(hash);
 	_visitor.type_field("prev", 2); _visitor.accept(prev);
@@ -86,10 +86,13 @@ void Block::accept_generic(T& _visitor) const {
 	_visitor.type_field("proof", 11); _visitor.accept(proof);
 	_visitor.type_field("tx_base", 12); _visitor.accept(tx_base);
 	_visitor.type_field("tx_count", 13); _visitor.accept(tx_count);
-	_visitor.type_field("tx_hash", 14); _visitor.accept(tx_hash);
-	_visitor.type_field("farmer_sig", 15); _visitor.accept(farmer_sig);
-	_visitor.type_field("tx_list", 16); _visitor.accept(tx_list);
-	_visitor.template type_end<Block>(17);
+	_visitor.type_field("tx_fees", 14); _visitor.accept(tx_fees);
+	_visitor.type_field("tx_cost", 15); _visitor.accept(tx_cost);
+	_visitor.type_field("tx_hash", 16); _visitor.accept(tx_hash);
+	_visitor.type_field("node_info", 17); _visitor.accept(node_info);
+	_visitor.type_field("farmer_sig", 18); _visitor.accept(farmer_sig);
+	_visitor.type_field("tx_list", 19); _visitor.accept(tx_list);
+	_visitor.template type_end<Block>(20);
 }
 
 

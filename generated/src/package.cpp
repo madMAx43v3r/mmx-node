@@ -400,6 +400,7 @@
 #include <mmx/address_info_t.hxx>
 #include <mmx/balance_t.hxx>
 #include <mmx/exec_entry_t.hxx>
+#include <mmx/node_account_t.hxx>
 #include <mmx/node_info_t.hxx>
 #include <mmx/node_type_e.hxx>
 #include <mmx/offer_data_t.hxx>
@@ -5176,6 +5177,18 @@ void type<::mmx::hash_t>::create_dynamic_code(std::vector<uint16_t>& code, const
 	const std::vector<int> tmp = {11, 32, 1};
 	code.insert(code.end(), tmp.begin(), tmp.end());}
 
+const TypeCode* type<::mmx::node_account_t>::get_type_code() {
+	return mmx::vnx_native_type_code_node_account_t;
+}
+
+void type<::mmx::node_account_t>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::node_account_t());
+}
+
+void type<::mmx::node_account_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::node_account_t& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::node_info_t>::get_type_code() {
 	return mmx::vnx_native_type_code_node_info_t;
 }
@@ -5887,6 +5900,7 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::address_info_t::static_create_type_code());
 	vnx::register_type_code(::mmx::balance_t::static_create_type_code());
 	vnx::register_type_code(::mmx::exec_entry_t::static_create_type_code());
+	vnx::register_type_code(::mmx::node_account_t::static_create_type_code());
 	vnx::register_type_code(::mmx::node_info_t::static_create_type_code());
 	vnx::register_type_code(::mmx::node_type_e::static_create_type_code());
 	vnx::register_type_code(::mmx::offer_data_t::static_create_type_code());
@@ -6314,6 +6328,7 @@ const vnx::TypeCode* const vnx_native_type_code_account_t = vnx::get_type_code(v
 const vnx::TypeCode* const vnx_native_type_code_address_info_t = vnx::get_type_code(vnx::Hash64(0xbafe22d4f9e3d761ull));
 const vnx::TypeCode* const vnx_native_type_code_balance_t = vnx::get_type_code(vnx::Hash64(0x613173c7e5ce65b4ull));
 const vnx::TypeCode* const vnx_native_type_code_exec_entry_t = vnx::get_type_code(vnx::Hash64(0xd30282844b1862a4ull));
+const vnx::TypeCode* const vnx_native_type_code_node_account_t = vnx::get_type_code(vnx::Hash64(0xfb00cb02b53252e0ull));
 const vnx::TypeCode* const vnx_native_type_code_node_info_t = vnx::get_type_code(vnx::Hash64(0xda45b5e3a527588eull));
 const vnx::TypeCode* const vnx_native_type_code_node_type_e = vnx::get_type_code(vnx::Hash64(0xa5de458f1ce5539aull));
 const vnx::TypeCode* const vnx_native_type_code_offer_data_t = vnx::get_type_code(vnx::Hash64(0xc97a08a709a5f1efull));
