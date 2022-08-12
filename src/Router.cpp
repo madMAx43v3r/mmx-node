@@ -805,7 +805,8 @@ void Router::save_data()
 		vnx::File file(storage_path + "known_peers.dat");
 		try {
 			file.open("wb");
-			vnx::write_generic(file.out, peer_set);
+			const auto peers = get_connected_peers();
+			vnx::write_generic(file.out, std::set<std::string>(peers.begin(), peers.end()));
 			file.close();
 		}
 		catch(const std::exception& ex) {
