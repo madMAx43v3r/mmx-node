@@ -682,7 +682,7 @@ void Router::connect()
 	std::set<std::shared_ptr<peer_t>> outbound_synced;
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
-		if(peer->is_outbound && peer->is_synced && !fixed_peers.count(peer->address)) {
+		if(peer->is_outbound && peer->is_synced) {
 			outbound_synced.insert(peer);
 		}
 	}
