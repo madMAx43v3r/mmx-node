@@ -390,7 +390,7 @@ void Router::update()
 			disconnect(entry.first);
 		}
 		// check for manual disconnect
-		if(disconnect_interval && (now_ms - peer->connected_since_ms) / 1000 > disconnect_interval) {
+		if(disconnect_interval && !peer->is_outbound && (now_ms - peer->connected_since_ms) / 1000 > disconnect_interval) {
 			log(INFO) << "Disconnecting peer " << peer->address << " due to interval exceeded";
 			disconnect(entry.first);
 		}
