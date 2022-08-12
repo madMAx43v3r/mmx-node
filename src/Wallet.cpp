@@ -611,6 +611,7 @@ std::vector<tx_log_entry_t> Wallet::get_tx_history(const uint32_t& index, const 
 	const size_t limit = limit_ >= 0 ? limit_ : uint32_t(-1);
 
 	std::vector<tx_log_entry_t> res;
+	// TODO: check for expired txs
 	tx_log.find_last(wallet->get_address(0), res, limit + offset);
 	if(offset) {
 		const auto tmp = std::move(res);

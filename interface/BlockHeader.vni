@@ -27,6 +27,9 @@ class BlockHeader {
 	
 	uint tx_count;
 	
+	ulong tx_fees;	// TODO
+	ulong tx_cost;	// TDOO
+	
 	hash_t tx_hash;
 	
 	optional<node_account_t> node_info;

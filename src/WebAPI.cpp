@@ -703,6 +703,7 @@ void WebAPI::render_block_graph(const vnx::request_id_t& request_id, size_t limi
 					}
 					out["reward"] = total / pow(10, params->decimals);
 					const auto base_reward = calc_block_reward(params, block->space_diff);
+					// TODO: fix formula
 					out["tx_fees"] = (total - std::min(base_reward, total)) / pow(10, params->decimals);
 					out["base_reward"] = base_reward / pow(10, params->decimals);
 				}
