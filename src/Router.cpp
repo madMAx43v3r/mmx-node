@@ -686,6 +686,7 @@ void Router::connect()
 		}
 	}
 
+	size_t total_outbound = 0;
 	std::set<std::shared_ptr<peer_t>> outbound_synced;
 	std::set<std::shared_ptr<peer_t>> outbound_not_synced;
 	for(const auto& entry : peer_map) {
@@ -697,11 +698,12 @@ void Router::connect()
 			else if(now_ms - peer->connected_since_ms > connection_timeout_ms) {
 				outbound_not_synced.insert(peer);
 			}
+			total_outbound++;
 		}
 	}
 
 	// check if we want more peers
-	if(outbound_synced.size() < num_peers_out)
+	if(outbound_synced.size() < num_peers_out && total_outbound < 2 * num_peers_out)
 	{
 		std::set<std::string> peers;
 		peer_set.insert(seed_peers.begin(), seed_peers.end());
