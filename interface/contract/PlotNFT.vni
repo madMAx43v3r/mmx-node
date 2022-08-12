@@ -27,4 +27,6 @@ class PlotNFT extends MutableRelay {
 	
 	void lock_pool(optional<addr_t> new_target, uint new_unlock_delay, optional<string> new_server_url);
 	
+// 	void set_reward_addr(optional<addr_t> new_reward_addr);
+	
 }
