@@ -19,7 +19,6 @@ class BlockHeader {
 	
 	ulong vdf_iters;
 	hash_t vdf_output[2];
-	vector<ProofOfTimeVote> vdf_votes;
 	
 	ProofOfSpace* proof;
 	
