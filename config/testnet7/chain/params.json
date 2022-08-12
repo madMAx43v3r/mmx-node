@@ -23,7 +23,7 @@
 	"min_txfee_deploy": 10000,
 	"min_txfee_byte": 10,
 	"max_block_cost": 10000000,
-	"min_time_diff": 500000,
+	"min_time_diff": 50000,
 	"initial_time_diff": 50000,
 	"initial_space_diff": 1,
 	"time_diff_constant": 1000,
