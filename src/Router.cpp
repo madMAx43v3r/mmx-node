@@ -388,6 +388,11 @@ void Router::update()
 			log(INFO) << "Peer " << peer->address << " timed out";
 			disconnect(entry.first);
 		}
+		// check for manual disconnect
+		if(disconnect_interval && (now_ms - peer->connected_since_ms) / 1000 > disconnect_interval) {
+			log(INFO) << "Disconnecting peer " << peer->address << " due to interval exceeded";
+			disconnect(entry.first);
+		}
 	}
 
 	// limit farmer credits
