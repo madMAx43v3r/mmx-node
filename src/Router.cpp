@@ -664,6 +664,8 @@ bool Router::process(std::shared_ptr<const Return> ret)
 
 void Router::connect()
 {
+	const auto now_ms = vnx::get_wall_time_millis();
+
 	for(const auto& address : fixed_peers)
 	{
 		bool connected = false;
@@ -680,10 +682,16 @@ void Router::connect()
 	}
 
 	std::set<std::shared_ptr<peer_t>> outbound_synced;
+	std::set<std::shared_ptr<peer_t>> outbound_not_synced;
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
-		if(peer->is_outbound && peer->is_synced) {
-			outbound_synced.insert(peer);
+		if(peer->is_outbound) {
+			if(peer->is_synced) {
+				outbound_synced.insert(peer);
+			}
+			else if(now_ms - peer->connected_since_ms > connection_timeout_ms) {
+				outbound_not_synced.insert(peer);
+			}
 		}
 	}
 
@@ -717,13 +725,27 @@ void Router::connect()
 	}
 
 	// disconnect if we have too many outbound synced peers
-	size_t num_disconnect = 0;
-	if(outbound_synced.size() > num_peers_out + 1) {
-		num_disconnect = outbound_synced.size() - num_peers_out;
+	{
+		size_t num_disconnect = 0;
+		if(outbound_synced.size() > num_peers_out + 1) {
+			num_disconnect = outbound_synced.size() - num_peers_out;
+		}
+		for(const auto& peer : get_subset(outbound_synced, num_disconnect, rand_engine)) {
+			log(INFO) << "Disconnecting from " << peer->address << " to reduce connections to synced peers";
+			disconnect(peer->client);
+		}
 	}
-	for(const auto& peer : get_subset(outbound_synced, num_disconnect, rand_engine)) {
-		log(INFO) << "Disconnecting from " << peer->address << " to reduce connections";
-		disconnect(peer->client);
+
+	// disconnect if we have too many outbound non-synced peers
+	{
+		size_t num_disconnect = 0;
+		if(outbound_not_synced.size() > num_peers_out) {
+			num_disconnect = outbound_not_synced.size() - num_peers_out;
+		}
+		for(const auto& peer : get_subset(outbound_not_synced, num_disconnect, rand_engine)) {
+			log(INFO) << "Disconnecting from " << peer->address << " to reduce connections to non-synced peers";
+			disconnect(peer->client);
+		}
 	}
 }
 
