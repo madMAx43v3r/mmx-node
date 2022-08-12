@@ -114,7 +114,7 @@ app.component('node-peers', {
 			</tr>
 			</thead>
 			<tbody>
-			<tr v-for="item in data.peers">
+			<tr v-for="item in data.peers" :key="item.id">
 				<td>{{item.address}}</td>
 				<td>{{item.is_synced ? "" : "!"}}{{item.height}}</td>
 				<td>{{item.type}}</td>

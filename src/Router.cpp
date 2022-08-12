@@ -240,6 +240,7 @@ std::shared_ptr<const PeerInfo> Router::get_peer_info() const
 	for(const auto& entry : peer_map) {
 		const auto& state = entry.second;
 		peer_info_t peer;
+		peer.id = entry.first;
 		peer.type = state->info.type;
 		peer.address = state->address;
 		peer.height = state->height;
