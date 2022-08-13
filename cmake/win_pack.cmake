@@ -38,7 +38,7 @@ set(MMX_ICON "${CMAKE_CURRENT_SOURCE_DIR}/mmx.ico")
 set(MMX_FRIENDLY_STRING "MMX Node ${MMX_VERSION}")
 
 list(APPEND APP_FILES
-	mmx mmx_node mmx_farmer mmx_wallet mmx_timelord mmx_harvester mmx_timelord_rewards
+	mmx mmx_node mmx_farmer mmx_wallet mmx_timelord mmx_harvester
 	mmx_db mmx_vm mmx_vm_iface mmx_iface mmx_modules mmx_chiapos
 	vnx_base vnx_addons url_cpp llhttp
 	vnxpasswd generate_passwd
@@ -46,6 +46,7 @@ list(APPEND APP_FILES
 )
 
 list(APPEND TOOL_FILES
+	mmx_timelord_rewards
 	tx_bench
 )
 foreach(APPFILE IN LISTS APP_FILES TOOL_FILES)
@@ -84,13 +85,13 @@ FetchContent_MakeAvailable(mmx_node_gui)
 add_custom_command(TARGET mmx_node_gui POST_BUILD
 	COMMAND ${CMAKE_MAKE_PROGRAM} MMX_Node_GUI.sln -restore -m 
 			/p:Configuration=Release
-			/p:OutputPath=${mmx_node_gui_SOURCE_DIR}/MMX_Node_GUI/bin/Release
+			/p:OutputPath=${mmx_node_gui_SOURCE_DIR}/bin/Release
 			/p:Version=${MMX_VERSION_STRING}
 			/p:FileVersion=${MMX_VERSION_STRING}
 		WORKING_DIRECTORY ${mmx_node_gui_SOURCE_DIR}
 )
 
-set(mmx_node_gui_RELEASE_DIR ${mmx_node_gui_SOURCE_DIR}/MMX_Node_GUI/bin/CPack_Release)
+set(mmx_node_gui_RELEASE_DIR ${mmx_node_gui_SOURCE_DIR}/bin/CPack_Release)
 
 install(DIRECTORY ${mmx_node_gui_RELEASE_DIR}/ DESTINATION ./ COMPONENT gui)
 
@@ -192,12 +193,12 @@ set(CPACK_NSIS_MENU_LINKS
 #"run_node.cmd" "MMX Node"
 #"run_light_node.cmd" "MMX Light Node"
 #"http://localhost:11380/gui/" "MMX Node WebGUI"
-"MMX Node GUI.exe" "MMX Node GUI"
+"MmxGui.exe" "MMX Node"
 )
 set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
 
 set(CPACK_NSIS_MUI_ICON ${MMX_ICON})
-set(CPACK_NSIS_INSTALLED_ICON_NAME "MMX Node GUI.exe")
+set(CPACK_NSIS_INSTALLED_ICON_NAME "MmxGui.exe")
 
 # Must be after the last CPACK macros
 include(CPack)
