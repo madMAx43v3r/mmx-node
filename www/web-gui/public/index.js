@@ -326,7 +326,7 @@ const Node = {
 			<node-info></node-info>
 			<farmer-info></farmer-info>
 			<node-menu></node-menu>
-			<router-view></router-view>
+			<router-view class="mt-3"></router-view>
 		</div>
 	`
 }
