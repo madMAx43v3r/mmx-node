@@ -38,6 +38,26 @@ std::shared_ptr<const ChainParams> get_params()
 }
 
 inline
+double to_value(const uint64_t amount, const int decimals) {
+	return amount * pow(10, -decimals);
+}
+
+inline
+double to_value(const uint64_t amount, std::shared_ptr<const ChainParams> params) {
+	return amount * pow(10, -params->decimals);
+}
+
+inline
+uint64_t to_amount(const double value, const int decimals) {
+	return value * pow(10, decimals);
+}
+
+inline
+uint64_t to_amount(const double value, std::shared_ptr<const ChainParams> params) {
+	return value * pow(10, params->decimals);
+}
+
+inline
 bool check_plot_filter(	std::shared_ptr<const ChainParams> params,
 						const hash_t& challenge, const hash_t& plot_id)
 {
