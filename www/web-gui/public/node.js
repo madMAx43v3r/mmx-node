@@ -385,8 +385,13 @@ Vue.component('node-log-table', {
 	},
 	data() {
 		return {
-			data: null,
+			data: [],
 			timer: null,
+			headers: [
+				{ text: 'Time', value: 'time' },
+				{ text: 'Module', value: 'module' },
+				{ text: 'Message', value: 'message' },
+			],	
 		}
 	},
 	methods: {
@@ -415,15 +420,17 @@ Vue.component('node-log-table', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<v-table>
-			<tbody>
-				<tr v-for="item in data" :key="item.time">
-					<td><code>{{new Date(item.time / 1000).toLocaleTimeString()}}</code></td>
-					<td><code>{{ item.module }}</code></td>
-					<td><code>{{ item.message }}</code></td>
-				</tr>
-			</tbody>
-		</v-table>
+		<v-data-table
+			:headers="headers"
+			:items="data"
+			disable-sort="true"
+			hide-default-header
+			hide-default-footer
+		>
+			<template v-slot:item.time="{ item }">
+				{{new Date(item.time / 1000).toLocaleTimeString()}}
+			</template>
+		</v-data-table>		
 		`
 })
 
