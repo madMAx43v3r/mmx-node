@@ -288,8 +288,10 @@ const ExchangeOffers = {
 
 const Explore = {
 	template: `
+	<div>
 		<explore-menu></explore-menu>
 		<router-view></router-view>
+	</div>
 	`
 }
 const ExploreBlocks = {
