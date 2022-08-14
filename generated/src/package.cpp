@@ -409,6 +409,7 @@
 #include <mmx/spend_options_t.hxx>
 #include <mmx/time_segment_t.hxx>
 #include <mmx/tx_entry_t.hxx>
+#include <mmx/tx_exec_result_t.hxx>
 #include <mmx/tx_info_t.hxx>
 #include <mmx/tx_log_entry_t.hxx>
 #include <mmx/tx_note_e.hxx>
@@ -5329,6 +5330,18 @@ void type<::mmx::tx_entry_t>::create_dynamic_code(std::vector<uint16_t>& code, c
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::tx_exec_result_t>::get_type_code() {
+	return mmx::vnx_native_type_code_tx_exec_result_t;
+}
+
+void type<::mmx::tx_exec_result_t>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::tx_exec_result_t());
+}
+
+void type<::mmx::tx_exec_result_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::tx_exec_result_t& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::tx_info_t>::get_type_code() {
 	return mmx::vnx_native_type_code_tx_info_t;
 }
@@ -5909,6 +5922,7 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::spend_options_t::static_create_type_code());
 	vnx::register_type_code(::mmx::time_segment_t::static_create_type_code());
 	vnx::register_type_code(::mmx::tx_entry_t::static_create_type_code());
+	vnx::register_type_code(::mmx::tx_exec_result_t::static_create_type_code());
 	vnx::register_type_code(::mmx::tx_info_t::static_create_type_code());
 	vnx::register_type_code(::mmx::tx_log_entry_t::static_create_type_code());
 	vnx::register_type_code(::mmx::tx_note_e::static_create_type_code());
@@ -6337,6 +6351,7 @@ const vnx::TypeCode* const vnx_native_type_code_permission_e = vnx::get_type_cod
 const vnx::TypeCode* const vnx_native_type_code_spend_options_t = vnx::get_type_code(vnx::Hash64(0x37f7c6d377362e95ull));
 const vnx::TypeCode* const vnx_native_type_code_time_segment_t = vnx::get_type_code(vnx::Hash64(0x344b7baf0798fe2aull));
 const vnx::TypeCode* const vnx_native_type_code_tx_entry_t = vnx::get_type_code(vnx::Hash64(0x438cda5719015870ull));
+const vnx::TypeCode* const vnx_native_type_code_tx_exec_result_t = vnx::get_type_code(vnx::Hash64(0xd4c88a84145b5148ull));
 const vnx::TypeCode* const vnx_native_type_code_tx_info_t = vnx::get_type_code(vnx::Hash64(0x44e4a710953f4785ull));
 const vnx::TypeCode* const vnx_native_type_code_tx_log_entry_t = vnx::get_type_code(vnx::Hash64(0xc29d95c24aff8b43ull));
 const vnx::TypeCode* const vnx_native_type_code_tx_note_e = vnx::get_type_code(vnx::Hash64(0x347c1deca0a9c9cull));

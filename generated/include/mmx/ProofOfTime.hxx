@@ -29,6 +29,7 @@ public:
 	vnx::optional<::mmx::addr_t> timelord_reward;
 	::mmx::pubkey_t timelord_key;
 	::mmx::signature_t timelord_sig;
+	::mmx::hash_t content_hash;
 	
 	typedef ::vnx::Value Super;
 	
@@ -83,7 +84,7 @@ protected:
 
 template<typename T>
 void ProofOfTime::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ProofOfTime>(10);
+	_visitor.template type_begin<ProofOfTime>(11);
 	_visitor.type_field("hash", 0); _visitor.accept(hash);
 	_visitor.type_field("version", 1); _visitor.accept(version);
 	_visitor.type_field("height", 2); _visitor.accept(height);
@@ -94,7 +95,8 @@ void ProofOfTime::accept_generic(T& _visitor) const {
 	_visitor.type_field("timelord_reward", 7); _visitor.accept(timelord_reward);
 	_visitor.type_field("timelord_key", 8); _visitor.accept(timelord_key);
 	_visitor.type_field("timelord_sig", 9); _visitor.accept(timelord_sig);
-	_visitor.template type_end<ProofOfTime>(10);
+	_visitor.type_field("content_hash", 10); _visitor.accept(content_hash);
+	_visitor.template type_end<ProofOfTime>(11);
 }
 
 

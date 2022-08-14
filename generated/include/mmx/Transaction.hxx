@@ -12,6 +12,7 @@
 #include <mmx/TransactionBase.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
+#include <mmx/tx_exec_result_t.hxx>
 #include <mmx/tx_note_e.hxx>
 #include <mmx/txin_t.hxx>
 #include <mmx/txout_t.hxx>
@@ -40,6 +41,8 @@ public:
 	std::shared_ptr<const ::mmx::Contract> deploy;
 	std::shared_ptr<const ::mmx::Transaction> parent;
 	vnx::bool_t is_extendable = 0;
+	vnx::optional<::mmx::tx_exec_result_t> exec_result;
+	::mmx::hash_t content_hash;
 	
 	typedef ::mmx::TransactionBase Super;
 	
@@ -103,7 +106,7 @@ protected:
 
 template<typename T>
 void Transaction::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Transaction>(17);
+	_visitor.template type_begin<Transaction>(19);
 	_visitor.type_field("id", 0); _visitor.accept(id);
 	_visitor.type_field("version", 1); _visitor.accept(version);
 	_visitor.type_field("expires", 2); _visitor.accept(expires);
@@ -121,7 +124,9 @@ void Transaction::accept_generic(T& _visitor) const {
 	_visitor.type_field("deploy", 14); _visitor.accept(deploy);
 	_visitor.type_field("parent", 15); _visitor.accept(parent);
 	_visitor.type_field("is_extendable", 16); _visitor.accept(is_extendable);
-	_visitor.template type_end<Transaction>(17);
+	_visitor.type_field("exec_result", 17); _visitor.accept(exec_result);
+	_visitor.type_field("content_hash", 18); _visitor.accept(content_hash);
+	_visitor.template type_end<Transaction>(19);
 }
 
 

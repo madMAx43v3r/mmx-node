@@ -32,7 +32,7 @@ namespace mmx {
 
 
 const vnx::Hash64 ProofOfTime::VNX_TYPE_HASH(0xa84a63942b8e5c6aull);
-const vnx::Hash64 ProofOfTime::VNX_CODE_HASH(0xdedfd00a885ca8cbull);
+const vnx::Hash64 ProofOfTime::VNX_CODE_HASH(0xc80f7cbb81983df2ull);
 
 vnx::Hash64 ProofOfTime::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -75,6 +75,7 @@ void ProofOfTime::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, timelord_reward);
 	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, timelord_key);
 	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, timelord_sig);
+	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, content_hash);
 	_visitor.type_end(*_type_code);
 }
 
@@ -90,6 +91,7 @@ void ProofOfTime::write(std::ostream& _out) const {
 	_out << ", \"timelord_reward\": "; vnx::write(_out, timelord_reward);
 	_out << ", \"timelord_key\": "; vnx::write(_out, timelord_key);
 	_out << ", \"timelord_sig\": "; vnx::write(_out, timelord_sig);
+	_out << ", \"content_hash\": "; vnx::write(_out, content_hash);
 	_out << "}";
 }
 
@@ -112,12 +114,15 @@ vnx::Object ProofOfTime::to_object() const {
 	_object["timelord_reward"] = timelord_reward;
 	_object["timelord_key"] = timelord_key;
 	_object["timelord_sig"] = timelord_sig;
+	_object["content_hash"] = content_hash;
 	return _object;
 }
 
 void ProofOfTime::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "hash") {
+		if(_entry.first == "content_hash") {
+			_entry.second.to(content_hash);
+		} else if(_entry.first == "hash") {
 			_entry.second.to(hash);
 		} else if(_entry.first == "height") {
 			_entry.second.to(height);
@@ -172,6 +177,9 @@ vnx::Variant ProofOfTime::get_field(const std::string& _name) const {
 	if(_name == "timelord_sig") {
 		return vnx::Variant(timelord_sig);
 	}
+	if(_name == "content_hash") {
+		return vnx::Variant(content_hash);
+	}
 	return vnx::Variant();
 }
 
@@ -196,6 +204,8 @@ void ProofOfTime::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(timelord_key);
 	} else if(_name == "timelord_sig") {
 		_value.to(timelord_sig);
+	} else if(_name == "content_hash") {
+		_value.to(content_hash);
 	}
 }
 
@@ -223,7 +233,7 @@ std::shared_ptr<vnx::TypeCode> ProofOfTime::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.ProofOfTime";
 	type_code->type_hash = vnx::Hash64(0xa84a63942b8e5c6aull);
-	type_code->code_hash = vnx::Hash64(0xdedfd00a885ca8cbull);
+	type_code->code_hash = vnx::Hash64(0xc80f7cbb81983df2ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ProofOfTime);
@@ -238,7 +248,7 @@ std::shared_ptr<vnx::TypeCode> ProofOfTime::static_create_type_code() {
 	type_code->methods[4] = ::mmx::ProofOfTime_get_vdf_iters::static_get_type_code();
 	type_code->methods[5] = ::mmx::ProofOfTime_is_valid::static_get_type_code();
 	type_code->methods[6] = ::mmx::ProofOfTime_validate::static_get_type_code();
-	type_code->fields.resize(10);
+	type_code->fields.resize(11);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -298,6 +308,12 @@ std::shared_ptr<vnx::TypeCode> ProofOfTime::static_create_type_code() {
 		field.is_extended = true;
 		field.name = "timelord_sig";
 		field.code = {11, 64, 1};
+	}
+	{
+		auto& field = type_code->fields[10];
+		field.is_extended = true;
+		field.name = "content_hash";
+		field.code = {11, 32, 1};
 	}
 	type_code->build();
 	return type_code;
@@ -408,6 +424,7 @@ void read(TypeInput& in, ::mmx::ProofOfTime& value, const TypeCode* type_code, c
 			case 7: vnx::read(in, value.timelord_reward, type_code, _field->code.data()); break;
 			case 8: vnx::read(in, value.timelord_key, type_code, _field->code.data()); break;
 			case 9: vnx::read(in, value.timelord_sig, type_code, _field->code.data()); break;
+			case 10: vnx::read(in, value.content_hash, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -437,6 +454,7 @@ void write(TypeOutput& out, const ::mmx::ProofOfTime& value, const TypeCode* typ
 	vnx::write(out, value.timelord_reward, type_code, type_code->fields[7].code.data());
 	vnx::write(out, value.timelord_key, type_code, type_code->fields[8].code.data());
 	vnx::write(out, value.timelord_sig, type_code, type_code->fields[9].code.data());
+	vnx::write(out, value.content_hash, type_code, type_code->fields[10].code.data());
 }
 
 void read(std::istream& in, ::mmx::ProofOfTime& value) {
