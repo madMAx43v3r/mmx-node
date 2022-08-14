@@ -1,18 +1,18 @@
 
-app.component('node-menu', {
+Vue.component('node-menu', {
 	template: `
-		<div class="ui large pointing menu">
-			<router-link class="item" :class="{active: $route.meta.page == 'log'}" to="/node/log">{{ $t('node_menu.log') }}</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'peers'}" to="/node/peers">{{ $t('node_menu.peers') }}</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'blocks'}" to="/node/blocks">{{ $t('node_menu.blocks') }}</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'netspace'}" to="/node/netspace">{{ $t('node_menu.netspace') }}</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'vdf_speed'}" to="/node/vdf_speed">{{ $t('node_menu.vdf_speed') }}</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'reward'}" to="/node/reward">{{ $t('node_menu.block_reward') }}</router-link>
-		</div>
+		<v-tabs>
+			<v-tab to="/node/log">{{ $t('node_menu.log') }}</v-tab>
+			<v-tab to="/node/peers">{{ $t('node_menu.peers') }}</v-tab>
+			<v-tab to="/node/blocks">{{ $t('node_menu.blocks') }}</v-tab>
+			<v-tab to="/node/netspace">{{ $t('node_menu.netspace') }}</v-tab>
+			<v-tab to="/node/vdf_speed">{{ $t('node_menu.vdf_speed') }}</v-tab>
+			<v-tab to="/node/reward">{{ $t('node_menu.block_reward') }}</v-tab>
+		</v-tabs>
 		`
 })
 
-app.component('node-info', {
+Vue.component('node-info', {
 	data() {
 		return {
 			data: null
@@ -33,50 +33,70 @@ app.component('node-info', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<div class="ui segment" v-if="data">
-			<div class="ui four tiny statistics">
-				<div class="statistic">
-					<div class="value">{{data.is_synced ? $t('common.yes') : $t('common.no') }}</div>
-					<div class="label">{{ $t('node_info.synced') }}</div>
-				</div>
-				<div class="statistic">
-					<div class="value">{{data.height}}</div>
-					<div class="label">{{ $t('node_info.height') }}</div>
-				</div>
-				<div class="statistic">
-					<div class="value">{{(data.total_space / Math.pow(1000, 5)).toFixed(3)}} PB</div>
-					<div class="label">{{ $t('node_info.netspace') }}</div>
-				</div>
-				<div class="statistic">
-					<div class="value">{{(data.total_supply / Math.pow(10, 6)).toFixed(0)}} MMX</div>
-					<div class="label">{{ $t('node_info.supply') }}</div>
-				</div>
-			</div>
-		</div>
-		<div class="ui segment" v-if="data">
-			<div class="ui four tiny statistics">
-				<div class="statistic">
-					<div class="value">{{data.address_count}}</div>
-					<div class="label">{{ $t('node_info.no_addresss') }}</div>
-				</div>
-				<div class="statistic">
-					<div class="value">{{(data.block_size * 100).toFixed(2)}} %</div>
-					<div class="label">{{ $t('node_info.block_size') }}</div>
-				</div>
-				<div class="statistic">
-					<div class="value">{{(data.time_diff / 10 / Math.pow(10, 3)).toFixed(3)}} M/s</div>
-					<div class="label">{{ $t('node_info.vdf_speed') }}</div>
-				</div>
-				<div class="statistic">
-					<div class="value">{{(data.block_reward.value).toFixed(3)}} MMX</div>
-					<div class="label">{{ $t('node_info.block_reward') }}</div>
-				</div>
-			</div>
+		<div v-if="data">
+		<v-container fluid id="features" class="pb-0">
+
+			<v-col cols="12">
+				<v-row align="center" justify="space-around">
+					<v-col cols="12" xl="3" md="3" sm="6" class="text-center">
+						<v-card>
+							<v-card-title>{{data.is_synced ? $t('common.yes') : $t('common.no') }}</v-card-title>
+							<v-card-text>{{ $t('node_info.synced') }}</v-card-text>
+						</v-card>
+					</v-col>
+					<v-col cols="12" xl="3" md="3" sm="6" class="text-center">					
+						<v-card>
+							<v-card-title>{{data.height}}</v-card-title>
+							<v-card-text>{{ $t('node_info.height') }}</v-card-text>
+						</v-card>
+					</v-col>
+					<v-col cols="12" xl="3" md="3" sm="6" class="text-center">	
+						<v-card>
+							<v-card-title>{{(data.total_space / Math.pow(1000, 5)).toFixed(3)}} PB</v-card-title>
+							<v-card-text>{{ $t('node_info.netspace') }}</v-card-text>
+						</v-card>
+					</v-col>
+					<v-col cols="12" xl="3" md="3" sm="6" class="text-center">
+						<v-card>
+							<v-card-title>{{(data.total_supply / Math.pow(10, 6)).toFixed(0)}} MMX</v-card-title>
+							<v-card-text>{{ $t('node_info.supply') }}</v-card-text>
+						</v-card>
+					</v-col>
+				</v-row>
+				<v-row align="center" justify="space-around">
+					<v-col cols="12" xl="3" md="3" sm="6" class="text-center">
+						<v-card>
+							<v-card-title>{{data.address_count}}</v-card-title>
+							<v-card-text>{{ $t('node_info.no_addresss') }}</v-card-text>
+						</v-card>
+					</v-col>
+					<v-col cols="12" xl="3" md="3" sm="6" class="text-center">
+						<v-card>
+							<v-card-title>{{(data.block_size * 100).toFixed(2)}} %</v-card-title>
+							<v-card-text>{{ $t('node_info.block_size') }}</v-card-text>
+						</v-card>
+					</v-col>
+					<v-col cols="12" xl="3" md="3" sm="6" class="text-center">
+						<v-card>
+							<v-card-title>{{(data.time_diff / 8 / Math.pow(10, 3)).toFixed(3)}} M/s</v-card-title>
+							<v-card-text>{{ $t('node_info.vdf_speed') }}</v-card-text>
+						</v-card>
+					</v-col>
+					<v-col cols="12" xl="3" md="3" sm="6" class="text-center">
+						<v-card>
+							<v-card-title>{{(data.block_reward.value).toFixed(3)}} MMX</v-card-title>
+							<v-card-text>{{ $t('node_info.block_reward') }}</v-card-text>
+						</v-card>
+					</v-col>													
+				</v-row>
+			</v-col>
+
+		</v-container>
 		</div>
 		`
 })
 
-app.component('node-peers', {
+Vue.component('node-peers', {
 	data() {
 		return {
 			data: null,
@@ -114,7 +134,7 @@ app.component('node-peers', {
 			</tr>
 			</thead>
 			<tbody>
-			<tr v-for="item in data.peers" :key="item.id">
+			<tr v-for="item in data.peers">
 				<td>{{item.address}}</td>
 				<td>{{item.is_synced ? "" : "!"}}{{item.height}}</td>
 				<td>{{item.type}}</td>
@@ -131,7 +151,7 @@ app.component('node-peers', {
 		`
 })
 
-app.component('netspace-graph', {
+Vue.component('netspace-graph', {
 	props: {
 		limit: Number,
 		step: Number
@@ -187,7 +207,7 @@ app.component('netspace-graph', {
 		`
 })
 
-app.component('vdf-speed-graph', {
+Vue.component('vdf-speed-graph', {
 	props: {
 		limit: Number,
 		step: Number
@@ -243,7 +263,7 @@ app.component('vdf-speed-graph', {
 		`
 })
 
-app.component('block-reward-graph', {
+Vue.component('block-reward-graph', {
 	props: {
 		limit: Number,
 		step: Number
@@ -329,29 +349,35 @@ app.component('block-reward-graph', {
 		`
 })
 
-app.component('node-log', {
+Vue.component('node-log', {
 	data() {
 		return {
 			limit: 100,
 			level: 3,
-			module: null
+			module: null,
+			currentItem: null
 		}
 	},
 	template: `
-		<div class="ui menu">
-			<div class="link item" :class="{active: !module}" @click="module = null">{{ $t('node_log.terminal') }}</div>
-			<div class="link item" :class="{active: module == 'Node'}" @click="module = 'Node'">{{ $t('node_log.node') }}</div>
-			<div class="link item" :class="{active: module == 'Router'}" @click="module = 'Router'">{{ $t('node_log.router') }}</div>
-			<div class="link item" :class="{active: module == 'Wallet'}" @click="module = 'Wallet'">{{ $t('node_log.wallet') }}</div>
-			<div class="link item" :class="{active: module == 'Farmer'}" @click="module = 'Farmer'">{{ $t('node_log.farmer') }}</div>
-			<div class="link item" :class="{active: module == 'Harvester'}" @click="module = 'Harvester'">{{ $t('node_log.harvester') }}</div>
-			<div class="link item" :class="{active: module == 'TimeLord'}" @click="module = 'TimeLord'">{{ $t('node_log.timelord') }}</div>
+		<div>
+			<v-tabs v-model="currentItem">
+				<v-tab @click="module = null">{{ $t('node_log.terminal') }}</v-tab>
+				<v-tab @click="module = 'Node'">{{ $t('node_log.node') }}</v-tab>
+				<v-tab @click="module = 'Router'">{{ $t('node_log.router') }}</v-tab>
+				<v-tab @click="module = 'Wallet'">{{ $t('node_log.wallet') }}</v-tab>
+				<v-tab @click="module = 'Farmer'">{{ $t('node_log.farmer') }}</v-tab>
+				<v-tab @click="module = 'Harvester'">{{ $t('node_log.harvester') }}</v-tab>
+				<v-tab @click="module = 'TimeLord'">{{ $t('node_log.timelord') }}</v-tab>
+			</v-tabs>
+
+	  		<node-log-table :limit="limit" :level="level" :module="module"></node-log-table>
+
 		</div>
-		<node-log-table :limit="limit" :level="level" :module="module"></node-log-table>
+		
 		`
 })
 
-app.component('node-log-table', {
+Vue.component('node-log-table', {
 	props: {
 		limit: Number,
 		level: Number,
@@ -389,15 +415,15 @@ app.component('node-log-table', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<table class="ui small very compact table striped" v-if="data">
+		<v-table>
 			<tbody>
-			<tr v-for="item in data" :key="item.id" :class="{error: item.level == 1, warning: item.level == 2}">
-				<td class="collapsing"><code>{{new Date(item.time / 1000).toLocaleTimeString()}}</code></td>
-				<td><code><b>{{item.module}}</b></code></td>
-				<td><code>{{item.message}}</code></td>
-			</tr>
+				<tr v-for="item in data" :key="item.time">
+					<td><code>{{new Date(item.time / 1000).toLocaleTimeString()}}</code></td>
+					<td><code>{{ item.module }}</code></td>
+					<td><code>{{ item.message }}</code></td>
+				</tr>
 			</tbody>
-		</table>
+		</v-table>
 		`
 })
 
