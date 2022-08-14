@@ -99,6 +99,7 @@ Vue.component('explore-blocks', {
 			:loading="loading"
 			disable-sort="true"
 			hide-default-footer
+			class="elevation-2"
 		>
 			<template v-slot:item.height="{ item }">
 				<router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link>
