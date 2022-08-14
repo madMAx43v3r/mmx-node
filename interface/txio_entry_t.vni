@@ -6,6 +6,8 @@ struct txio_entry_t extends txio_t {
 	
 	uint height;
 	
+	// TODO: tx_type_e note;
+	
 	
 	static txio_entry_t create_ex(txio_key_t key, uint height, txio_t txio);
 	

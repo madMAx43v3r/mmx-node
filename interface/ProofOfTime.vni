@@ -19,13 +19,18 @@ class ProofOfTime {
 	optional<addr_t> timelord_reward;
 	
 	pubkey_t timelord_key;
+	
 	signature_t timelord_sig;
+	
+	hash_t content_hash;
 	
 	
 	bool is_valid(ChainParams* params) const;
 	
+	// TODO: bool full_hash
 	hash_t calc_hash() const;
 	
+	// TODO: obsolete
 	hash_t get_full_hash() const;
 	
 	hash_t get_output(uint chain) const;			// final segment output

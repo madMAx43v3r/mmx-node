@@ -4,6 +4,7 @@ enum tx_type_e {
 	
 	SPEND,
 	RECEIVE,
-	REWARD
+	REWARD,
+	TXFEE
 	
 }

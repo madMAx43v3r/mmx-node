@@ -30,6 +30,7 @@ class BlockHeader {
 	ulong tx_cost;	// TDOO
 	
 	hash_t tx_hash;
+	hash_t content_hash;
 	
 	optional<node_account_t> node_info;
 	
@@ -38,8 +39,10 @@ class BlockHeader {
 	
 	bool is_valid() const;
 	
+	// TODO: bool full_hash
 	hash_t calc_hash() const;
 	
+	// TODO: obsolete
 	hash_t get_full_hash() const;
 	
 	void validate() const;
