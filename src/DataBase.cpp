@@ -193,6 +193,7 @@ Table::Table(const std::string& root_path, const options_t& options)
 
 std::shared_ptr<Table::block_t> Table::read_block(const std::string& name) const
 {
+	// TODO: handle unexpected read errors here
 	auto block = std::make_shared<block_t>();
 	block->name = name;
 	block->file.open(root_path + '/' + name, "rb");

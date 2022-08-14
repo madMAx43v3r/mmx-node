@@ -45,6 +45,7 @@ hash_t BlockHeader::calc_hash() const
 
 hash_t BlockHeader::get_full_hash() const
 {
+	// TODO: use calc_hash(true)
 	return farmer_sig ? hash_t(hash + *farmer_sig) : hash;
 }
 
