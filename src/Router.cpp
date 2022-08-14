@@ -79,8 +79,8 @@ void Router::main()
 	tx_upload_bandwidth = max_tx_upload * to_value(params->max_block_cost, params) / params->block_time;
 	max_pending_cost_value = max_pending_cost * to_value(params->max_block_cost, params);
 
-	log(INFO) << "Global tx upload limit: " << tx_upload_bandwidth << " MMX/s";
-	log(INFO) << "Peer tx pending upload limit: " << max_pending_cost_value << " MMX";
+	log(INFO) << "Global TX upload limit: " << tx_upload_bandwidth << " MMX/s";
+	log(INFO) << "Peer TX upload pending limit: " << max_pending_cost_value << " MMX";
 
 	subscribe(input_vdfs, max_queue_ms);
 	subscribe(input_verified_vdfs, max_queue_ms);
