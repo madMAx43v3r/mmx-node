@@ -99,8 +99,20 @@ Vue.component('node-info', {
 Vue.component('node-peers', {
 	data() {
 		return {
-			data: null,
-			timer: null
+			data: [],
+			timer: null,
+			headers: [
+				{ text: this.$t('node_peers.ip'), value: 'address' },
+				{ text: this.$t('node_peers.height'), value: 'height' },
+				{ text: this.$t('node_peers.type'), value: 'type' },
+				{ text: this.$t('node_peers.version'), value: 'version' },
+				{ text: this.$t('node_peers.received'), value: 'received' },
+				{ text: this.$t('node_peers.send'), value: 'send' },
+				{ text: this.$t('node_peers.ping'), value: 'ping' },
+				{ text: this.$t('node_peers.duration'), value: 'duration' },
+				{ text: this.$t('node_peers.credits'), value: 'credits' },
+				{ text: this.$t('node_peers.connection'), value: 'connection' },
+			]
 		}
 	},
 	methods: {
@@ -118,21 +130,41 @@ Vue.component('node-peers', {
 		clearInterval(this.timer);
 	},
 	template: `
+
+		<v-data-table
+			:headers="headers"
+			:items="data.peers"
+			disable-sort="true"
+			hide-default-footer
+			class="elevation-2"
+		>
+			<template v-slot:item.height="{ item }">
+				{{item.is_synced ? "" : "!"}}{{item.height}}
+			</template>
+			
+			<template v-slot:item.version="{ item }">
+				{{(item.version / 100).toFixed()}}.{{item.version % 100}}
+			</template>
+			
+			<template v-slot:item.received="{ item }">
+				<b>{{(item.bytes_recv / item.connect_time_ms / 1.024).toFixed(1)}}</b> KB/s
+			</template>
+			
+			<template v-slot:item.send="{ item }">
+				<b>{{(item.bytes_send / item.connect_time_ms / 1.024).toFixed(1)}}</b> KB/s
+			</template>	
+			
+			<template v-slot:item.ping="{ item }">
+				<b>{{item.ping_ms}}</b> ms
+			</template>
+
+			<template v-slot:item.connection="{ item }">
+				{{item.is_outbound ? $t('node_peers.outbound') : $t('node_peers.inbound') }}
+			</template>				
+		</v-data-table>	
+
 		<table class="ui compact definition table striped" v-if="data">
-			<thead>
-			<tr>
-				<th>{{ $t('node_peers.ip') }}</th>
-				<th>{{ $t('node_peers.height') }}</th>
-				<th>{{ $t('node_peers.type') }}</th>
-				<th>{{ $t('node_peers.version') }}</th>
-				<th>{{ $t('node_peers.received') }}</th>
-				<th>{{ $t('node_peers.send') }}</th>
-				<th>{{ $t('node_peers.ping') }}</th>
-				<th>{{ $t('node_peers.duration') }}</th>
-				<th>{{ $t('node_peers.credits') }}</th>
-				<th>{{ $t('node_peers.connection') }}</th>
-			</tr>
-			</thead>
+
 			<tbody>
 			<tr v-for="item in data.peers">
 				<td>{{item.address}}</td>
@@ -355,7 +387,7 @@ Vue.component('node-log', {
 			limit: 100,
 			level: 3,
 			module: null,
-			currentItem: null
+			currentItem: 0
 		}
 	},
 	template: `
