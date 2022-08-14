@@ -168,7 +168,7 @@ void WebAPI::handle(std::shared_ptr<const vnx::LogMsg> value)
 	}
 }
 
-vnx::Object to_amount(const int64_t& value, const int decimals)
+vnx::Object to_amount_object(const int64_t& value, const int decimals)
 {
 	vnx::Object res;
 	res["value"] = value * pow(10, -decimals);
@@ -347,8 +347,8 @@ public:
 	void accept(const tx_info_t& value) {
 		auto tmp = render(value, context);
 		if(context) {
-			tmp["fee"] = to_amount(value.fee, context->params->decimals);
-			tmp["cost"] = to_amount(value.cost, context->params->decimals);
+			tmp["fee"] = to_amount_object(value.fee, context->params->decimals);
+			tmp["cost"] = to_amount_object(value.cost, context->params->decimals);
 			if(auto height = value.height) {
 				tmp["time"] = context->get_time(*height);
 				tmp["confirm"] = context->curr_height >= *height ? 1 + context->curr_height - *height : 0;
@@ -1112,7 +1112,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					auto context = get_context();
 					res = render(*info);
 					res["time"] = context->get_time(info->height);
-					res["block_reward"] = to_amount(info->block_reward, params->decimals);
+					res["block_reward"] = to_amount_object(info->block_reward, params->decimals);
 				}
 				respond(request_id, res);
 			},
