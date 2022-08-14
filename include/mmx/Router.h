@@ -87,7 +87,7 @@ private:
 		int32_t ping_ms = 0;
 		int64_t last_receive_ms = 0;
 		int64_t connected_since_ms = 0;
-		double total_pending_cost = 0;
+		double pending_cost = 0;
 		hash_t challenge;
 		node_info_t info;
 		std::string address;

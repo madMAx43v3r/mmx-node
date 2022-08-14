@@ -746,8 +746,9 @@ int main(int argc, char** argv)
 					std::cout << ", " << recv / 1024 << "." << (recv * 10 / 1024) % 10 << " KB/s recv";
 					std::cout << ", " << send / 1024 << "." << (send * 10 / 1024) % 10 << " KB/s send";
 					std::cout << ", since " << (peer.connect_time_ms / 60000) << " min";
-					std::cout << ", " << peer.credits << " credits";
 					std::cout << ", " << peer.ping_ms << " ms ping";
+					std::cout << ", " << peer.credits << " credits";
+					std::cout << ", " << peer.pending_cost << " pending";
 					std::cout << ", " << (peer.recv_timeout_ms / 100) / 10. << " sec timeout";
 					if(peer.is_outbound) {
 						std::cout << ", outbound";

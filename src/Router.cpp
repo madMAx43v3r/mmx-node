@@ -79,8 +79,8 @@ void Router::main()
 	tx_upload_bandwidth = max_tx_upload * to_value(params->max_block_cost, params) / params->block_time;
 	max_pending_cost_value = max_pending_cost * to_value(params->max_block_cost, params);
 
-	log(INFO) << "TX global upload limit: " << tx_upload_bandwidth << " MMX/s";
-	log(INFO) << "TX peer pending limit: " << max_pending_cost_value << " MMX";
+	log(INFO) << "Global tx upload limit: " << tx_upload_bandwidth << " MMX/s";
+	log(INFO) << "Peer tx pending upload limit: " << max_pending_cost_value << " MMX";
 
 	subscribe(input_vdfs, max_queue_ms);
 	subscribe(input_verified_vdfs, max_queue_ms);
@@ -252,6 +252,7 @@ std::shared_ptr<const PeerInfo> Router::get_peer_info() const
 		peer.ping_ms = state->ping_ms;
 		peer.bytes_send = state->bytes_send;
 		peer.bytes_recv = state->bytes_recv;
+		peer.pending_cost = state->pending_cost;
 		peer.is_synced = state->is_synced;
 		peer.is_blocked = state->is_blocked;
 		peer.is_outbound = state->is_outbound;
@@ -381,6 +382,7 @@ void Router::update()
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
 		peer->credits = std::min(peer->credits, max_node_credits);
+		peer->pending_cost = std::max<double>(peer->pending_cost, 0) * 0.99;
 
 		// clear old hashes
 		while(peer->sent_hashes.size() > max_sent_cache) {
@@ -1079,7 +1081,7 @@ void Router::on_recv_note(uint64_t client, std::shared_ptr<const ReceiveNote> no
 		}
 		auto iter = peer->pending_map.find(note->hash);
 		if(iter != peer->pending_map.end()) {
-			peer->total_pending_cost -= iter->second;
+			peer->pending_cost -= iter->second;
 			peer->pending_map.erase(iter);
 		}
 	}
@@ -1091,9 +1093,7 @@ void Router::recv_notify(const hash_t& msg_hash, const uint64_t* source)
 	note->time = vnx::get_wall_time_micros();
 	note->hash = msg_hash;
 	for(const auto& entry : peer_map) {
-		if(!source || entry.first != *source) {
-			send_to(entry.second, note, true);
-		}
+		send_to(entry.second, note, true);
 	}
 }
 
@@ -1192,7 +1192,7 @@ bool Router::send_to(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Va
 	}
 	if(!reliable) {
 		if(auto tx = std::dynamic_pointer_cast<const Transaction>(msg)) {
-			if(peer->total_pending_cost >= max_pending_cost_value) {
+			if(peer->pending_cost >= max_pending_cost_value) {
 				tx_drop_counter++;
 				return false;
 			}
@@ -1203,7 +1203,7 @@ bool Router::send_to(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Va
 			}
 			// TODO: use static_cost
 			const auto cost = to_value(tx->calc_cost(params), params);
-			peer->total_pending_cost += cost;
+			peer->pending_cost += cost;
 			// TODO: use content_hash
 			peer->pending_map[tx->calc_hash(true)] = cost;
 
