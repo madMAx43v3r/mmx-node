@@ -360,20 +360,21 @@ Vue.component('node-log', {
 	},
 	template: `
 		<div>
-			<v-tabs v-model="currentItem">
-				<v-tab @click="module = null">{{ $t('node_log.terminal') }}</v-tab>
-				<v-tab @click="module = 'Node'">{{ $t('node_log.node') }}</v-tab>
-				<v-tab @click="module = 'Router'">{{ $t('node_log.router') }}</v-tab>
-				<v-tab @click="module = 'Wallet'">{{ $t('node_log.wallet') }}</v-tab>
-				<v-tab @click="module = 'Farmer'">{{ $t('node_log.farmer') }}</v-tab>
-				<v-tab @click="module = 'Harvester'">{{ $t('node_log.harvester') }}</v-tab>
-				<v-tab @click="module = 'TimeLord'">{{ $t('node_log.timelord') }}</v-tab>
-			</v-tabs>
-
+			<v-btn-toggle
+				v-model="currentItem"
+				dense
+				class="mb-2"
+			>
+				<v-btn @click="module = null">{{ $t('node_log.terminal') }}</v-btn>
+				<v-btn @click="module = 'Node'">{{ $t('node_log.node') }}</v-btn>
+				<v-btn @click="module = 'Router'">{{ $t('node_log.router') }}</v-btn>
+				<v-btn @click="module = 'Wallet'">{{ $t('node_log.wallet') }}</v-btn>
+				<v-btn @click="module = 'Farmer'">{{ $t('node_log.farmer') }}</v-btn>
+				<v-btn @click="module = 'Harvester'">{{ $t('node_log.harvester') }}</v-btn>
+				<v-btn @click="module = 'TimeLord'">{{ $t('node_log.timelord') }}</v-btn>
+			</v-btn-toggle>
 	  		<node-log-table :limit="limit" :level="level" :module="module"></node-log-table>
-
-		</div>
-		
+		</div>		
 		`
 })
 
@@ -426,6 +427,7 @@ Vue.component('node-log-table', {
 			disable-sort="true"
 			hide-default-header
 			hide-default-footer
+			class="elevation-2"
 		>
 			<template v-slot:item.time="{ item }">
 				{{new Date(item.time / 1000).toLocaleTimeString()}}
