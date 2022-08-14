@@ -1,5 +1,5 @@
 
-app.component('explore-menu', {
+Vue.component('explore-menu', {
 	data() {
 		return {
 			input: null,
@@ -44,15 +44,25 @@ app.component('explore-menu', {
 	`
 })
 
-app.component('explore-blocks', {
+Vue.component('explore-blocks', {
 	props: {
 		limit: Number
 	},
 	data() {
 		return {
-			data: null,
+			data: [],
 			timer: null,
-			loading: false
+			loading: false,
+			headers: [
+				{ text: this.$t('explore_blocks.height'), value: 'height' },
+				{ text: this.$t('explore_blocks.tx'), value: 'tx_count' },
+				{ text: this.$t('explore_blocks.k'), value: 'ksize' },
+				{ text: this.$t('explore_blocks.score'), value: 'score' },
+				{ text: this.$t('explore_blocks.reward'), value: 'reward' },
+				{ text: this.$t('explore_blocks.tdiff'), value: 'height' },
+				{ text: this.$t('explore_blocks.sdiff'), value: 'height' },
+				{ text: this.$t('explore_blocks.hash'), value: 'hash' },
+			]
 		}
 	},
 	methods: {
@@ -83,39 +93,38 @@ app.component('explore-blocks', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<template v-if="!data && loading">
-			<div class="ui basic loading placeholder segment"></div>
-		</template>
-		<table class="ui compact table striped" v-if="data">
-			<thead>
-			<tr>
-				<th>{{ $t('explore_blocks.height') }}</th>
-				<th>{{ $t('explore_blocks.tx') }}</th>
-				<th>{{ $t('explore_blocks.k') }}</th>
-				<th>{{ $t('explore_blocks.score') }}</th>
-				<th>{{ $t('explore_blocks.reward') }}</th>
-				<th>{{ $t('explore_blocks.tdiff') }}</th>
-				<th>{{ $t('explore_blocks.sdiff') }}</th>
-				<th>{{ $t('explore_blocks.hash') }}</th>
-			</tr>
-			</thead>
-			<tbody>
-			<tr v-for="item in data" :key="item.hash">
-				<td><router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link></td>
-				<td>{{item.tx_count}}</td>
-				<td>{{item.proof ? item.proof.ksize : null}}</td>
-				<td>{{item.proof ? item.proof.score : null}}</td>
-				<td>{{item.reward != null ? item.reward.toFixed(3) : null}}</td>
-				<td>{{item.time_diff}}</td>
-				<td>{{item.space_diff}}</td>
-				<td><router-link :to="'/explore/block/hash/' + item.hash">{{item.hash}}</router-link></td>
-			</tr>
-			</tbody>
-		</table>
+		<v-data-table
+			:headers="headers"
+			:items="data"
+			:loading="loading"
+			disable-sort="true"
+			hide-default-footer
+		>
+			<template v-slot:item.height="{ item }">
+				<router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link>
+			</template>
+
+			<template v-slot:item.ksize="{ item }">
+				{{item.proof ? item.proof.ksize : null}}
+			</template>
+
+			<template v-slot:item.score="{ item }">
+				{{item.proof ? item.proof.score : null}}
+			</template>
+
+			<template v-slot:item.reward="{ item }">
+				{{item.reward != null ? item.reward.toFixed(3) : null}}
+			</template>			
+
+			<template v-slot:item.hash="{ item }">
+				<router-link :to="'/explore/block/hash/' + item.hash">{{item.hash}}</router-link>
+			</template>		
+
+		</v-data-table>
 		`
 })
 
-app.component('explore-transactions', {
+Vue.component('explore-transactions', {
 	props: {
 		limit: Number
 	},
@@ -175,7 +184,7 @@ app.component('explore-transactions', {
 		`
 })
 
-app.component('block-view', {
+Vue.component('block-view', {
 	props: {
 		hash: String,
 		height: Number
@@ -307,8 +316,8 @@ app.component('block-view', {
 						<td>{{data.proof.plot_id}}</td>
 					</tr>
 					<tr>
-						<td class="two wide">{{ $t('block_view.farmer_key') }}</td>
-						<td>{{data.proof.farmer_key}}</td>
+						<td class="two wide">{{ $t('block_view.Vue._key') }}</td>
+						<td>{{data.proof.Vue._key}}</td>
 					</tr>
 				</template>
 				</tbody>
@@ -355,7 +364,7 @@ app.component('block-view', {
 		`
 })
 
-app.component('transaction-view', {
+Vue.component('transaction-view', {
 	props: {
 		id: String
 	},
@@ -525,7 +534,7 @@ app.component('transaction-view', {
 		`
 })
 
-app.component('address-view', {
+Vue.component('address-view', {
 	props: {
 		address: String
 	},
@@ -576,7 +585,7 @@ app.component('address-view', {
 		`
 })
 
-app.component('address-history-table', {
+Vue.component('address-history-table', {
 	props: {
 		address: String,
 		limit: Number,
@@ -651,7 +660,7 @@ app.component('address-history-table', {
 		`
 })
 
-app.component('object-table', {
+Vue.component('object-table', {
 	props: {
 		data: Object
 	},
