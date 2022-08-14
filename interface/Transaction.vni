@@ -34,7 +34,11 @@ class Transaction extends TransactionBase {
 	
 	bool is_extendable;
 	
-	static const uint MAX_SOLUTIONS = 255;
+	optional<tx_exec_result_t> exec_result;
+	
+	hash_t content_hash;				// full hash including signatures and exec result
+	
+	static const uint MAX_SOLUTIONS = 255;		// TODO: obsolete
 	
 	
 	void finalize();

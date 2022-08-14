@@ -76,8 +76,11 @@ void Router::main()
 			throw std::logic_error("min_sync_peers > max_connections");
 		}
 	}
-	tx_bandwidth = max_tx_upload * params->max_block_cost * pow(10, -params->decimals) / params->block_time;
-	log(INFO) << "TX upload limit: " << tx_bandwidth << " MMX/s";
+	tx_upload_bandwidth = max_tx_upload * to_value(params->max_block_cost, params) / params->block_time;
+	max_pending_cost_value = max_pending_cost * to_value(params->max_block_cost, params);
+
+	log(INFO) << "TX global upload limit: " << tx_upload_bandwidth << " MMX/s";
+	log(INFO) << "TX peer pending limit: " << max_pending_cost_value << " MMX";
 
 	subscribe(input_vdfs, max_queue_ms);
 	subscribe(input_verified_vdfs, max_queue_ms);
@@ -533,7 +536,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 			}
 			log(DEBUG) << "Got " << job->blocks.size() << " blocks for height " << job->height << " by fetching "
 					<< job->succeeded.size() + job->failed.size() << " times, " << job->failed.size() << " failed"
-					<< ", size = " << max_block_size / pow(10, params->decimals) << " MMX"
+					<< ", size = " << to_value(max_block_size, params) << " MMX"
 					<< ", took " << (now_ms - job->start_time_ms) / 1e3 << " sec";
 			// we are done with the job
 			std::vector<std::shared_ptr<const Block>> blocks;
@@ -956,8 +959,8 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> value)
 				log(DEBUG) << "Peer " << peer->address << " has insufficient credits to relay VDF for height " << value->height << ", verifying first.";
 			}
 		}
-	} else {
-		relay_msg_hash(hash);
+	} else if(relay_msg_hash(hash)) {
+		vdf_counter++;
 	}
 	if(is_new) {
 		publish(value, output_vdfs);
@@ -995,8 +998,8 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 		} else {
 			log(DEBUG) << "Got block from an unknown farmer at height " << block->height << ", verifying first.";
 		}
-	} else {
-		relay_msg_hash(hash);
+	} else if(relay_msg_hash(hash)) {
+		block_counter++;
 	}
 	if(is_new) {
 		publish(block, output_blocks);
@@ -1042,8 +1045,8 @@ void Router::on_proof(uint64_t client, std::shared_ptr<const ProofResponse> valu
 			log(DEBUG) << "Got proof from an unknown farmer at height " << value->request->height
 					<< " with score " << value->proof->score << ", verifying first.";
 		}
-	} else {
-		relay_msg_hash(hash);
+	} else if(relay_msg_hash(hash)) {
+		proof_counter++;
 	}
 	if(is_new) {
 		publish(value, output_proof);
@@ -1052,15 +1055,16 @@ void Router::on_proof(uint64_t client, std::shared_ptr<const ProofResponse> valu
 
 void Router::on_transaction(uint64_t client, std::shared_ptr<const Transaction> tx)
 {
+	if(tx->exec_result) {
+		return;
+	}
 	const auto hash = tx->calc_hash(true);
 	const auto is_new = receive_msg_hash(hash, client);
-	if(do_relay) {
-		if(relay_msg_hash(hash)) {
+	if(relay_msg_hash(hash)) {
+		if(do_relay) {
 			relay(client, tx, hash, {node_type_e::FULL_NODE});
-			tx_counter++;
 		}
-	} else {
-		relay_msg_hash(hash);
+		tx_counter++;
 	}
 	if(is_new) {
 		publish(tx, output_transactions);
@@ -1072,6 +1076,11 @@ void Router::on_recv_note(uint64_t client, std::shared_ptr<const ReceiveNote> no
 	if(auto peer = find_peer(client)) {
 		if(peer->sent_hashes.insert(note->hash).second) {
 			peer->hash_queue.push(note->hash);
+		}
+		auto iter = peer->pending_map.find(note->hash);
+		if(iter != peer->pending_map.end()) {
+			peer->total_pending_cost -= iter->second;
+			peer->pending_map.erase(iter);
 		}
 	}
 }
@@ -1091,8 +1100,8 @@ void Router::recv_notify(const hash_t& msg_hash, const uint64_t* source)
 void Router::send()
 {
 	const auto now = vnx::get_wall_time_micros();
-	tx_credits += tx_bandwidth * send_interval_ms / 1000;
-	tx_credits = std::min(tx_credits, tx_bandwidth);
+	tx_upload_credits += tx_upload_bandwidth * send_interval_ms / 1000;
+	tx_upload_credits = std::min(tx_upload_credits, tx_upload_bandwidth);
 
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
@@ -1183,14 +1192,23 @@ bool Router::send_to(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Va
 	}
 	if(!reliable) {
 		if(auto tx = std::dynamic_pointer_cast<const Transaction>(msg)) {
-			std::uniform_real_distribution<double> dist(0, 1);
-			if(dist(rand_engine) > tx_credits / tx_bandwidth) {
+			if(peer->total_pending_cost >= max_pending_cost_value) {
 				tx_drop_counter++;
 				return false;
 			}
-			const auto cost = tx->calc_cost(params) * pow(10, -params->decimals);
-			tx_credits -= cost;
-			tx_credits = std::max(tx_credits, 0.);
+			std::uniform_real_distribution<double> dist(0, 1);
+			if(dist(rand_engine) > tx_upload_credits / tx_upload_bandwidth) {
+				tx_drop_counter++;
+				return false;
+			}
+			// TODO: use static_cost
+			const auto cost = to_value(tx->calc_cost(params), params);
+			peer->total_pending_cost += cost;
+			// TODO: use content_hash
+			peer->pending_map[tx->calc_hash(true)] = cost;
+
+			tx_upload_credits -= cost;
+			tx_upload_credits = std::max(tx_upload_credits, 0.);
 			tx_upload_sum += cost;
 		}
 	}
