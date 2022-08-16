@@ -362,22 +362,25 @@ Vue.component('block-reward-graph', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<template v-if="!base_data && loading">
-			<div class="ui basic loading placeholder segment"></div>
-		</template>
-		<template v-if="base_data">
-			<div class="ui segment">
-				<vue-plotly :data="base_data" :layout="base_layout" :display-mode-bar="false"></vue-plotly>
+
+		<div>
+			<div>
+				<v-card v-if="!base_data && loading" class="d-flex align-center justify-center" min-height="250">
+					<v-progress-circular indeterminate color="primary" justify="center" align="center" class="fill-height"></v-progress-circular>
+				</v-card>
+				<v-card v-if="base_data">
+					<vue-plotly :data="base_data" :layout="base_layout" :display-mode-bar="false"></vue-plotly>
+				</v-card>
 			</div>
-		</template>
-		<template v-if="!fee_data && loading">
-			<div class="ui basic loading placeholder segment"></div>
-		</template>
-		<template v-if="fee_data">
-			<div class="ui segment">
-				<vue-plotly :data="fee_data" :layout="fee_layout" :display-mode-bar="false"></vue-plotly>
-			</div>
-		</template>
+			<div class="mt-2">
+				<v-card v-if="!fee_data && loading" class="d-flex align-center justify-center" min-height="250">
+					<v-progress-circular indeterminate color="primary" justify="center" align="center" class="fill-height"></v-progress-circular>
+				</v-card>
+				<v-card v-if="fee_data">
+					<vue-plotly :data="fee_data" :layout="fee_layout" :display-mode-bar="false"></vue-plotly>
+				</v-card>
+			</div>			
+		</div>
 		`
 })
 
