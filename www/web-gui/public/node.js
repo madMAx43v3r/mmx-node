@@ -29,7 +29,7 @@ Vue.component('node-info', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 5000);
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
@@ -126,7 +126,7 @@ Vue.component('node-peers', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 5000);
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
@@ -224,7 +224,7 @@ Vue.component('netspace-graph', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 60 * 1000);
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
@@ -280,7 +280,7 @@ Vue.component('vdf-speed-graph', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 60 * 1000);
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
@@ -358,7 +358,7 @@ Vue.component('block-reward-graph', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 60 * 1000);
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
@@ -449,7 +449,7 @@ Vue.component('node-log-table', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 2000);
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `

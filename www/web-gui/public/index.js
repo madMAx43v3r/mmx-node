@@ -442,7 +442,7 @@ Vue.component('main-menu', {
 			$('#content').css("float", "left");
 		}
 	},	
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `

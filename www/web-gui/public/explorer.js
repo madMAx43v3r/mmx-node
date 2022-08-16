@@ -89,7 +89,7 @@ Vue.component('explore-blocks', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 10000);
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
@@ -151,7 +151,7 @@ Vue.component('explore-transactions', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 10000);
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
@@ -408,7 +408,7 @@ Vue.component('transaction-view', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 10000);
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
@@ -622,7 +622,7 @@ Vue.component('address-history-table', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 60000);
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
