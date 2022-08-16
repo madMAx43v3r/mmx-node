@@ -10,6 +10,10 @@
     <script src="https://cdn.jsdelivr.net/npm/vue-router@3.5.4/dist/vue-router.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vuetify@2.6.9/dist/vuetify.min.js"></script>
 
+    <script src="assets/plotly-2.9.0.min.js"></script>
+    <script src="vue-plotly.js" defer></script>
+
+
     <script src="index.js" defer></script>
     <script src="node.js" defer></script>
     <script src="farmer.js" defer></script>
@@ -19,6 +23,16 @@
     <script src="i18n.utils.js" defer></script>
 
     <script src="mount.js" defer></script> 
+
+    <style>
+        .theme--light.v-data-table tbody tr:nth-of-type(even) {
+            background-color: rgba(0, 0, 0, .03);
+        }
+        .theme--dark.v-data-table tbody tr:nth-of-type(even) {
+            background-color: rgba(0, 0, 0, .5);
+        }
+    </style>
+        
 </head>
 <body>
 

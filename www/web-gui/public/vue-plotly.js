@@ -59,7 +59,7 @@ const regex = /-(\w)/g;
 const camelize = cached(str => str.replace(regex, (_, c) => (c ? c.toUpperCase() : "")));
 
 
-app.component('vue-plotly',
+Vue.component('vue-plotly',
 {
   inheritAttrs: false,
   props: {
