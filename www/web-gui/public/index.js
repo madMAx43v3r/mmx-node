@@ -453,6 +453,7 @@ Vue.component('main-menu', {
 			<v-tab to="/market">{{ $t('main_menu.market') }}</v-tab>
 		</v-tabs>
 		`
+		//TODO
 		// 		<div class="right menu">
 		// 			<router-link class="item" to="/settings/" :class="{active: $route.meta.is_settings}">{{ $t('main_menu.settings') }}</router-link>
 		// 			<template v-if="!$route.meta.is_login && !isWinGUI">
