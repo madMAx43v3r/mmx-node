@@ -31,16 +31,21 @@ Vue.component('explore-menu', {
 		}
 	},
 	template: `
-		<div class="ui large pointing menu">
-			<router-link class="item" :class="{active: $route.meta.page == 'blocks'}" to="/explore/blocks">{{ $t('explore_menu.blocks') }}</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'transactions'}" to="/explore/transactions">{{ $t('explore_menu.transactions') }}</router-link>
+		<v-tabs>
+			<v-tab to="/explore/blocks">{{ $t('explore_menu.blocks') }}</v-tab>
+			<v-tab to="/explore/transactions">{{ $t('explore_menu.transactions') }}</v-tab>
 			<div class="item" style="flex-grow:1;">
-				<div class="ui transparent icon input" :class="{error: !!error}">
-					<input type="text" v-model="input" v-on:keyup.enter="submit" :placeholder="$t('explore_menu.placeholder')">
-					<i class="search link icon" @click="submit"></i>
+			    <!-- TODO error class -->
+				<div :class="{error: !!error}">
+					<v-text-field 
+						v-model="input" 
+						@keyup.enter="submit"
+						@click:append="submit" 
+						:placeholder="$t('explore_menu.placeholder')"
+						append-icon="mdi-database-search-outline"></v-text-field>
 				</div>
-			</div>
-		</div>
+			</div>			
+		</v-tabs>
 	`
 })
 
