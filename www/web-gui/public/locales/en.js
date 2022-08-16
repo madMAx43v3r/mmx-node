@@ -236,7 +236,7 @@ const langEN = {
         "address": "@.lower:common.address",
         "block_height": "block height",
 
-        "placeholder": "@.lower:explore_menu.address {'|'} @.lower:explore_menu.transaction_id  {'|'}  @.lower:explore_menu.block_height"
+        "placeholder": "@.lower:explore_menu.address | @.lower:explore_menu.transaction_id | @.lower:explore_menu.block_height"
     },
 
     "explore_blocks": {
