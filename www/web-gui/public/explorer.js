@@ -96,7 +96,7 @@ Vue.component('explore-blocks', {
 		<v-data-table
 			:headers="headers"
 			:items="data"
-			:loading="loading"
+			:loading="!data && loading"
 			disable-sort="true"
 			hide-default-footer
 			class="elevation-2"

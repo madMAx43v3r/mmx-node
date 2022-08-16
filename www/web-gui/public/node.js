@@ -228,14 +228,14 @@ Vue.component('netspace-graph', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<template v-if="!data && loading">
-			<div class="ui basic loading placeholder segment"></div>
-		</template>
-		<template v-if="data">
-			<div class="ui segment">
+		<div>
+			<v-card v-if="!data && loading" class="d-flex align-center justify-center" min-height="250">
+				<v-progress-circular indeterminate color="primary" justify="center" align="center" class="fill-height"></v-progress-circular>
+			</v-card>
+			<v-card v-if="data">
 				<vue-plotly :data="data" :layout="layout" :display-mode-bar="false"></vue-plotly>
-			</div>
-		</template>
+			</v-card>
+		</div>		
 		`
 })
 
