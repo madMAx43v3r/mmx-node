@@ -16,7 +16,7 @@ Vue.component('farmer-info', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 10000);
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
