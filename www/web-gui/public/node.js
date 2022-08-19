@@ -101,6 +101,7 @@ Vue.component('node-peers', {
 		return {
 			data: [],
 			timer: null,
+			loaded: false,
 			headers: [
 				{ text: this.$t('node_peers.ip'), value: 'address' },
 				{ text: this.$t('node_peers.height'), value: 'height' },
@@ -119,7 +120,10 @@ Vue.component('node-peers', {
 		update() {
 			fetch('/api/router/get_peer_info')
 				.then(response => response.json())
-				.then(data => this.data = data);
+				.then(data => {
+					this.data = data; 
+					this.loaded = true;
+				});
 		}
 	},
 	created() {
@@ -134,6 +138,7 @@ Vue.component('node-peers', {
 		<v-data-table
 			:headers="headers"
 			:items="data.peers"
+			:loading="!loaded"
 			disable-sort="true"
 			hide-default-footer
 			class="elevation-2"
@@ -229,9 +234,7 @@ Vue.component('netspace-graph', {
 	},
 	template: `
 		<div>
-			<v-card v-if="!data && loading" class="d-flex align-center justify-center" min-height="250">
-				<v-progress-circular indeterminate color="primary" justify="center" align="center" class="fill-height"></v-progress-circular>
-			</v-card>
+			<v-progress-linear indeterminate v-if="!data && loading"></v-progress-linear>
 			<v-card v-if="data">
 				<vue-plotly :data="data" :layout="layout" :display-mode-bar="false"></vue-plotly>
 			</v-card>
@@ -285,9 +288,7 @@ Vue.component('vdf-speed-graph', {
 	},
 	template: `
 		<div>
-			<v-card v-if="!data && loading" class="d-flex align-center justify-center" min-height="250">
-				<v-progress-circular indeterminate color="primary" justify="center" align="center" class="fill-height"></v-progress-circular>
-			</v-card>
+			<v-progress-linear indeterminate v-if="!data && loading"></v-progress-linear>
 			<v-card v-if="data">
 				<vue-plotly :data="data" :layout="layout" :display-mode-bar="false"></vue-plotly>
 			</v-card>
@@ -364,22 +365,15 @@ Vue.component('block-reward-graph', {
 	template: `
 
 		<div>
-			<div>
-				<v-card v-if="!base_data && loading" class="d-flex align-center justify-center" min-height="250">
-					<v-progress-circular indeterminate color="primary" justify="center" align="center" class="fill-height"></v-progress-circular>
-				</v-card>
-				<v-card v-if="base_data">
-					<vue-plotly :data="base_data" :layout="base_layout" :display-mode-bar="false"></vue-plotly>
-				</v-card>
-			</div>
-			<div class="mt-2">
-				<v-card v-if="!fee_data && loading" class="d-flex align-center justify-center" min-height="250">
-					<v-progress-circular indeterminate color="primary" justify="center" align="center" class="fill-height"></v-progress-circular>
-				</v-card>
-				<v-card v-if="fee_data">
-					<vue-plotly :data="fee_data" :layout="fee_layout" :display-mode-bar="false"></vue-plotly>
-				</v-card>
-			</div>			
+			<v-progress-linear indeterminate v-if="!(base_data && fee_data) && loading"></v-progress-linear>
+
+			<v-card v-if="base_data">
+				<vue-plotly :data="base_data" :layout="base_layout" :display-mode-bar="false"></vue-plotly>
+			</v-card>
+
+			<v-card v-if="fee_data">
+				<vue-plotly :data="fee_data" :layout="fee_layout" :display-mode-bar="false"></vue-plotly>
+			</v-card>		
 		</div>
 		`
 })
@@ -423,6 +417,7 @@ Vue.component('node-log-table', {
 		return {
 			data: [],
 			timer: null,
+			loaded: false,
 			headers: [
 				{ text: 'Time', value: 'time' },
 				{ text: 'Module', value: 'module' },
@@ -434,7 +429,10 @@ Vue.component('node-log-table', {
 		update() {
 			fetch('/wapi/node/log?limit=' + this.limit + "&level=" + this.level + (this.module ? "&module=" + this.module : ""))
 				.then(response => response.json())
-				.then(data => this.data = data);
+				.then(data => {
+					this.data = data;
+					this.loaded = true;
+				});
 		}
 	},
 	watch: {
@@ -459,6 +457,7 @@ Vue.component('node-log-table', {
 		<v-data-table
 			:headers="headers"
 			:items="data"
+			:loading="!loaded"
 			disable-sort="true"
 			hide-default-header
 			hide-default-footer

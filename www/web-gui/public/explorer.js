@@ -57,26 +57,25 @@ Vue.component('explore-blocks', {
 		return {
 			data: [],
 			timer: null,
-			loading: false,
+			loaded: false,
 			headers: [
 				{ text: this.$t('explore_blocks.height'), value: 'height' },
 				{ text: this.$t('explore_blocks.tx'), value: 'tx_count' },
 				{ text: this.$t('explore_blocks.k'), value: 'ksize' },
 				{ text: this.$t('explore_blocks.score'), value: 'score' },
 				{ text: this.$t('explore_blocks.reward'), value: 'reward' },
-				{ text: this.$t('explore_blocks.tdiff'), value: 'height' },
-				{ text: this.$t('explore_blocks.sdiff'), value: 'height' },
+				{ text: this.$t('explore_blocks.tdiff'), value: 'time_diff' },
+				{ text: this.$t('explore_blocks.sdiff'), value: 'space_diff' },
 				{ text: this.$t('explore_blocks.hash'), value: 'hash' },
 			]
 		}
 	},
 	methods: {
 		update() {
-			this.loading = true;
 			fetch('/wapi/headers?limit=' + this.limit)
 				.then(response => response.json())
 				.then(data => {
-					this.loading = false;
+					this.loaded = true;
 					for(const block of data) {
 						if(block.tx_base) {
 							block.reward = 0;
@@ -101,7 +100,7 @@ Vue.component('explore-blocks', {
 		<v-data-table
 			:headers="headers"
 			:items="data"
-			:loading="!data && loading"
+			:loading="!loaded"
 			disable-sort="true"
 			hide-default-footer
 			class="elevation-2"
