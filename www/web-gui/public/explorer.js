@@ -247,133 +247,155 @@ Vue.component('block-view', {
 		this.update();
 	},
 	template: `
-		<template v-if="data">
-			<div class="ui large pointing menu">
-				<router-link class="item" :to="'/explore/block/hash/' + data.prev">{{ $t('block_view.previous') }}</router-link>
-				<router-link class="right item" :to="'/explore/block/height/' + (data.height + 1)">{{ $t('block_view.next') }}</router-link>
-			</div>
-			<div class="ui large labels">
-				<div class="ui horizontal label">{{ $t('block_view.block') }}</div>
-				<div class="ui horizontal label">{{data.height}}</div>
-				<div class="ui horizontal label">{{data.hash}}</div>
-			</div>
-		</template>
-		<template v-if="!data && height">
-			<div class="ui large pointing menu">
-				<template v-if="height > 0">
-					<router-link class="item" :to="'/explore/block/height/' + (height - 1)">{{ $t('block_view.previous') }}</router-link>
+		<div>
+
+			<v-toolbar dense flat class="pa-0 no-padding">
+				<template v-if="data">
+					<v-btn :to="'/explore/block/hash/' + data.prev"><v-icon>mdi-arrow-left</v-icon>{{ $t('block_view.previous') }}</v-btn>
+					<v-spacer></v-spacer>
+					<v-btn :to="'/explore/block/height/' + (data.height + 1)">{{ $t('block_view.next') }}<v-icon>mdi-arrow-right</v-icon></v-btn>
 				</template>
-				<router-link class="right item" :to="'/explore/block/height/' + (height + 1)">{{ $t('block_view.next') }}</router-link>
-			</div>
-		</template>
-		<template v-if="!data && !loading">
-			<div class="ui large negative message">				
-				{{ $t('block_view.no_such_block') }}
-			</div>
-		</template>
-		<template v-if="!data && loading">
-			<div class="ui basic loading placeholder segment"></div>
-		</template>
-		<template v-if="data">
-			<table class="ui definition table striped">
-				<tbody>
-				<tr>
-					<td class="two wide">{{ $t('block_view.height') }}</td>
-					<td>{{data.height}}</td>
-				</tr>
-				<tr>
-					<td class="two wide">{{ $t('block_view.hash') }}</td>
-					<td>{{data.hash}}</td>
-				</tr>
-				<tr>
-					<td class="two wide">{{ $t('block_view.previous') }}</td>
-					<td>{{data.prev}}</td>
-				</tr>
-				<tr>
-					<td class="two wide">{{ $t('block_view.time') }}</td>
-					<td>{{new Date(data.time * 1000).toLocaleString()}}</td>
-				</tr>
-				<tr>
-					<td class="two wide">{{ $t('block_view.time_diff') }}</td>
-					<td>{{data.time_diff}}</td>
-				</tr>
-				<tr>
-					<td class="two wide">{{ $t('block_view.space_diff') }}</td>
-					<td>{{data.space_diff}}</td>
-				</tr>
-				<tr>
-					<td class="two wide">{{ $t('block_view.vdf_iterations') }}</td>
-					<td>{{data.vdf_iters}}</td>
-				</tr>
-				<template v-if="data.tx_base">
-					<tr>
-						<td class="two wide">{{ $t('block_view.tx_base') }}</td>
-						<td><router-link :to="'/explore/transaction/' + data.tx_base.id">{{data.tx_base.id}}</router-link></td>
-					</tr>
+
+				<template v-if="!data && height">
+					<div v-if="height > 0">
+						<v-btn :to="'/explore/block/height/' + (height - 1)"><v-icon>mdi-arrow-left</v-icon>{{ $t('block_view.previous') }}</v-btn>
+					</div>
+					<v-spacer></v-spacer>
+					<v-btn :to="'/explore/block/height/' + (height + 1)">{{ $t('block_view.next') }}<v-icon>mdi-arrow-right</v-icon></v-btn>
 				</template>
-				<template v-if="data.proof">
-					<tr>
-						<td class="two wide">{{ $t('block_view.tx_count') }}</td>
-						<td>{{data.tx_count}}</td>
-					</tr>
-					<tr>
-						<td class="two wide">{{ $t('block_view.k_size') }}</td>
-						<td>{{data.proof.ksize}}</td>
-					</tr>
-					<tr>
-						<td class="two wide">{{ $t('block_view.proof_score') }}</td>
-						<td>{{data.proof.score}}</td>
-					</tr>
-					<tr>
-						<td class="two wide">{{ $t('block_view.plot_id') }}</td>
-						<td>{{data.proof.plot_id}}</td>
-					</tr>
-					<tr>
-						<td class="two wide">{{ $t('block_view.Vue._key') }}</td>
-						<td>{{data.proof.Vue._key}}</td>
-					</tr>
-				</template>
-				</tbody>
-			</table>
-			<table class="ui definition table striped" v-if="data.tx_base">
-				<thead>
-				<tr>
-					<th></th>
-					<th>{{ $t('block_view.amount') }}</th>
-					<th></th>
-					<th>{{ $t('block_view.address') }}</th>
-				</tr>
-				</thead>
-				<tbody>
-				<tr v-for="(item, index) in data.tx_base.outputs" :key="index">
-					<td class="two wide">{{ $t('block_view.reward') }}[{{index}}]</td>
-					<td class="collapsing"><b>{{item.value}}</b></td>
-					<td>{{item.symbol}}</td>
-					<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
-				</tr>
-				</tbody>
-			</table>
-			<table class="ui compact definition table striped" v-if="data.tx_list.length">
-				<thead>
-				<tr>
-					<th></th>
-					<th>{{ $t('block_view.inputs') }}</th>
-					<th>{{ $t('block_view.outputs') }}</th>
-					<th>{{ $t('block_view.operations') }}</th>
-					<th>{{ $t('block_view.transaction_id') }}</th>
-				</tr>
-				</thead>
-				<tbody>
-				<tr v-for="(item, index) in data.tx_list" :key="index">
-					<td class="two wide">TX[{{index}}]</td>
-					<td>{{item.inputs.length}}</td>
-					<td>{{item.outputs.length + item.exec_outputs.length}}</td>
-					<td>{{item.execute.length}}</td>
-					<td><router-link :to="'/explore/transaction/' + item.id">{{item.id}}</router-link></td>
-				</tr>
-				</tbody>
-			</table>
-		</template>
+				<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
+			</v-toolbar>
+
+			<template v-if="data">
+				<v-chip label>{{ $t('block_view.block') }}</v-chip>
+				<v-chip label>{{ data.height }}</v-chip>
+				<v-chip label>{{ data.hash }}</v-chip>
+			</template>
+
+			<template v-if="!data && !loading">							
+				<v-alert
+					border="right"
+					colored-border
+					type="warning"
+					elevation="2"
+				>
+					{{ $t('block_view.no_such_block') }}
+				</v-alert>
+			</template>
+
+			<template v-if="data">
+				<v-card class="my-2">
+					<v-simple-table class="rounded">
+						<template v-slot:default>
+							<tbody>
+								<tr>
+									<td class="two wide">{{ $t('block_view.height') }}</td>
+									<td>{{data.height}}</td>
+								</tr>
+								<tr>
+									<td class="two wide">{{ $t('block_view.hash') }}</td>
+									<td>{{data.hash}}</td>
+								</tr>
+								<tr>
+									<td class="two wide">{{ $t('block_view.previous') }}</td>
+									<td>{{data.prev}}</td>
+								</tr>
+								<tr>
+									<td class="two wide">{{ $t('block_view.time') }}</td>
+									<td>{{new Date(data.time * 1000).toLocaleString()}}</td>
+								</tr>
+								<tr>
+									<td class="two wide">{{ $t('block_view.time_diff') }}</td>
+									<td>{{data.time_diff}}</td>
+								</tr>
+								<tr>
+									<td class="two wide">{{ $t('block_view.space_diff') }}</td>
+									<td>{{data.space_diff}}</td>
+								</tr>
+								<tr>
+									<td class="two wide">{{ $t('block_view.vdf_iterations') }}</td>
+									<td>{{data.vdf_iters}}</td>
+								</tr>
+								<template v-if="data.tx_base">
+									<tr>
+										<td class="two wide">{{ $t('block_view.tx_base') }}</td>
+										<td><router-link :to="'/explore/transaction/' + data.tx_base.id">{{data.tx_base.id}}</router-link></td>
+									</tr>
+								</template>
+								<template v-if="data.proof">
+									<tr>
+										<td class="two wide">{{ $t('block_view.tx_count') }}</td>
+										<td>{{data.tx_count}}</td>
+									</tr>
+									<tr>
+										<td class="two wide">{{ $t('block_view.k_size') }}</td>
+										<td>{{data.proof.ksize}}</td>
+									</tr>
+									<tr>
+										<td class="two wide">{{ $t('block_view.proof_score') }}</td>
+										<td>{{data.proof.score}}</td>
+									</tr>
+									<tr>
+										<td class="two wide">{{ $t('block_view.plot_id') }}</td>
+										<td>{{data.proof.plot_id}}</td>
+									</tr>
+									<tr>
+										<td class="two wide">{{ $t('block_view.farmer_key') }}</td>
+										<td>{{data.proof.farmer_key}}</td>
+									</tr>
+								</template>
+							</tbody>
+						</template>
+					</v-simple-table>
+				</v-card>
+
+				<v-card class="my-2">
+					<v-simple-table v-if="data.tx_base">
+						<template v-slot:default>
+							<thead>
+								<tr>
+									<th></th>
+									<th>{{ $t('block_view.amount') }}</th>
+									<th></th>
+									<th>{{ $t('block_view.address') }}</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr v-for="(item, index) in data.tx_base.outputs" :key="index">
+									<td class="two wide">{{ $t('block_view.reward') }}[{{index}}]</td>
+									<td class="collapsing"><b>{{item.value}}</b></td>
+									<td>{{item.symbol}}</td>
+									<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
+								</tr>
+							</tbody>
+						</template>
+					</v-simple-table>
+				</v-card>
+
+				<v-card class="my-2">
+					<v-simple-table v-if="data.tx_list.length">
+						<thead>
+							<tr>
+								<th></th>
+								<th>{{ $t('block_view.inputs') }}</th>
+								<th>{{ $t('block_view.outputs') }}</th>
+								<th>{{ $t('block_view.operations') }}</th>
+								<th>{{ $t('block_view.transaction_id') }}</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for="(item, index) in data.tx_list" :key="index">
+								<td class="two wide">TX[{{index}}]</td>
+								<td>{{item.inputs.length}}</td>
+								<td>{{item.outputs.length + item.exec_outputs.length}}</td>
+								<td>{{item.execute.length}}</td>
+								<td><router-link :to="'/explore/transaction/' + item.id">{{item.id}}</router-link></td>
+							</tr>
+						</tbody>
+					</v-simple-table>
+				</v-card>
+			</template>
+		</div>
 		`
 })
 
