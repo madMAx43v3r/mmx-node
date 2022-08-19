@@ -31,7 +31,7 @@ Vue.component('explore-menu', {
 		}
 	},
 	template: `
-		<v-tabs>
+		<v-tabs class="mb-2">
 			<v-tab to="/explore/blocks">{{ $t('explore_menu.blocks') }}</v-tab>
 			<v-tab to="/explore/transactions">{{ $t('explore_menu.transactions') }}</v-tab>
 			<div class="item" style="flex-grow:1;">
@@ -135,18 +135,26 @@ Vue.component('explore-transactions', {
 	},
 	data() {
 		return {
-			data: null,
+			data: [],
 			timer: null,
-			loading: false
+			loaded: false,
+			headers: [
+				{ text: this.$t('explore_transactions.height'), value: 'height' },
+				{ text: this.$t('explore_transactions.type'), value: 'type' },
+				{ text: this.$t('explore_transactions.fee'), value: 'fee' },
+				{ text: this.$t('explore_transactions.n_in'), value: 'inputs.length' },
+				{ text: this.$t('explore_transactions.n_out'), value: 'outputs.length' },
+				{ text: this.$t('explore_transactions.n_op'), value: 'operations.length' },
+				{ text: this.$t('explore_transactions.transaction_id'), value: 'transaction_id' },
+			]
 		}
 	},
 	methods: {
 		update() {
-			this.loading = true;
 			fetch('/wapi/transactions?limit=' + this.limit)
 				.then(response => response.json())
 				.then(data => {
-					this.loading = false;
+					this.loaded = true;
 					this.data = data;
 				});
 		}
@@ -159,33 +167,31 @@ Vue.component('explore-transactions', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<template v-if="!data && loading">
-			<div class="ui basic loading placeholder segment"></div>
-		</template>
-		<table class="ui compact table striped" v-if="data">
-			<thead>
-			<tr>
-				<th>{{ $t('explore_transactions.height') }}</th>
-				<th>{{ $t('explore_transactions.type') }}</th>
-				<th>{{ $t('explore_transactions.fee') }}</th>
-				<th>{{ $t('explore_transactions.n_in') }}</th>
-				<th>{{ $t('explore_transactions.n_out') }}</th>
-				<th>{{ $t('explore_transactions.n_op') }}</th>
-				<th>{{ $t('explore_transactions.transaction_id') }}</th>
-			</tr>
-			</thead>
-			<tbody>
-			<tr v-for="item in data" :key="item.id">
-				<td><router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link></td>
-				<td>{{item.note ? item.note : ""}}</td>
-				<td><b>{{item.fee.value}}</b></td>
-				<td>{{item.inputs.length}}</td>
-				<td>{{item.outputs.length}}</td>
-				<td>{{item.operations.length}}</td>
-				<td><router-link :to="'/explore/transaction/' + item.id">{{item.id}}</router-link></td>
-			</tr>
-			</tbody>
-		</table>
+		<v-data-table
+			:headers="headers"
+			:items="data"
+			:loading="!loaded"
+			disable-sort="true"
+			hide-default-footer
+			class="elevation-2"
+		>
+			<template v-slot:item.height="{ item }">
+				<router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link>
+			</template>
+
+			<template v-slot:item.type="{ item }">
+				{{item.note ? item.note : ""}}
+			</template>
+
+			<template v-slot:item.fee="{ item }">
+				<b>{{item.fee.value}}</b>
+			</template>
+
+			<template v-slot:item.transaction_id="{ item }">
+				<router-link :to="'/explore/transaction/' + item.id">{{item.id}}</router-link>
+			</template>
+
+		</v-data-table>
 		`
 })
 
