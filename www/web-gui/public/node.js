@@ -419,7 +419,7 @@ Vue.component('node-log-table', {
 			timer: null,
 			loaded: false,
 			headers: [
-				{ text: 'Time', value: 'time' },
+				{ text: 'Time', value: 'time', align: 'left'},
 				{ text: 'Module', value: 'module' },
 				{ text: 'Message', value: 'message' },
 			],	
@@ -463,9 +463,9 @@ Vue.component('node-log-table', {
 			hide-default-footer
 			class="elevation-2"
 		>
-			<template v-slot:item.time="{ item }">
-				{{new Date(item.time / 1000).toLocaleTimeString()}}
-			</template>
+			<template v-slot:item.time="{ item }" width="1%">
+				{{ new Date(item.time / 1000).toLocaleTimeString() }}
+			</template>	
 		</v-data-table>		
 		`
 })
