@@ -285,7 +285,7 @@ Vue.component('block-view', {
 
 			<template v-if="data">
 				<v-card class="my-2">
-					<v-simple-table class="rounded">
+					<v-simple-table>
 						<template v-slot:default>
 							<tbody>
 								<tr>
@@ -445,127 +445,139 @@ Vue.component('transaction-view', {
 	beforeDestroy() {
 		clearInterval(this.timer);
 	},
+	//TODO: i18n No such transaction!
 	template: `
-		<div class="ui large labels">
-			<div class="ui horizontal label">{{ $t('transaction_view.transaction') }}</div>
-			<div class="ui horizontal label">{{id}}</div>
-		</div>
-		<template v-if="!data && !loading">
-			<div class="ui large negative message">
+	<div>
+		<v-chip label>{{ $t('transaction_view.transaction') }}</v-chip>
+		<v-chip label>{{ id }}</v-chip>
+		<template v-if="!data && !loading">							
+			<v-alert
+				border="right"
+				colored-border
+				type="warning"
+				elevation="2"
+			>
 				No such transaction!
-			</div>
+			</v-alert>
 		</template>
-		<template v-if="!data && loading">
-			<div class="ui basic loading placeholder segment"></div>
-		</template>
+
 		<template v-if="data">
-			<table class="ui definition table striped">
-				<tbody>
-				<tr>
-					<td class="two wide">{{ $t('transaction_view.height') }}</td>
-					<td colspan="2">
-						<template v-if="data.height">
-							<router-link :to="'/explore/block/height/' + data.height">{{data.height}}</router-link>
+			<v-card class="my-2">				
+				<v-simple-table>
+					<tbody>
+					<tr>
+						<td class="two wide">{{ $t('transaction_view.height') }}</td>
+						<td colspan="2">
+							<template v-if="data.height">
+								<router-link :to="'/explore/block/height/' + data.height">{{data.height}}</router-link>
+							</template>
+							<template v-if="!data.height"><i>pending</i></template>
+						</td>
+					</tr>
+					<tr v-if="data.confirm">
+						<td class="two wide">{{ $t('transaction_view.confirmed') }}</td>
+						<td colspan="2">{{data.confirm}}</td>
+					</tr>
+					<tr v-if="data.expires != 4294967295">
+						<td class="two wide">{{ $t('transaction_view.expires') }}</td>
+						<td colspan="2">{{data.expires}}</td>
+					</tr>
+					<tr>
+						<td class="two wide">{{ $t('transaction_view.note') }}</td>
+						<td colspan="2">{{data.note}}</td>
+					</tr>
+					<tr v-if="data.time">
+						<td class="two wide">{{ $t('transaction_view.time') }}</td>
+						<td colspan="2">{{new Date(data.time * 1000).toLocaleString()}}</td>
+					</tr>
+					<tr v-if="data.deployed">
+						<td class="two wide">{{ $t('transaction_view.address') }}</td>
+						<td colspan="2"><router-link :to="'/explore/address/' + data.address">{{data.address}}</router-link></td>
+					</tr>
+					<tr v-if="data.sender">
+						<td class="two wide">{{ $t('transaction_view.sender') }}</td>
+						<td colspan="2"><router-link :to="'/explore/address/' + data.sender">{{data.sender}}</router-link></td>
+					</tr>
+					<tr>
+						<td class="two wide">{{ $t('transaction_view.cost') }}</td>
+						<td class="collapsing"><b>{{data.cost.value}}</b></td>
+						<td>MMX</td>
+					</tr>
+					<tr>
+						<td class="two wide">{{ $t('transaction_view.fee') }}</td>
+						<td class="collapsing"><b>{{data.fee.value}}</b></td>
+						<td>MMX</td>
+					</tr>
+					</tbody>
+				</v-simple-table>
+			</v-card>
+
+			<v-card class="my-2">
+				<v-simple-table v-if="data.inputs.length">
+					<thead>
+					<tr>
+						<th></th>
+						<th>{{ $t('transaction_view.amount') }}</th>
+						<th>{{ $t('transaction_view.token') }}</th>
+						<th>{{ $t('transaction_view.address') }}</th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr v-for="(item, index) in data.inputs" :key="index">
+						<td class="two wide">{{ $t('transaction_view.input') }}[{{index}}]</td>
+						<td class="collapsing"><b>{{item.value}}</b></td>
+						<template v-if="item.is_native">
+							<td>{{item.symbol}}</td>
 						</template>
-						<template v-if="!data.height"><i>pending</i></template>
-					</td>
-				</tr>
-				<tr v-if="data.confirm">
-					<td class="two wide">{{ $t('transaction_view.confirmed') }}</td>
-					<td colspan="2">{{data.confirm}}</td>
-				</tr>
-				<tr v-if="data.expires != 4294967295">
-					<td class="two wide">{{ $t('transaction_view.expires') }}</td>
-					<td colspan="2">{{data.expires}}</td>
-				</tr>
-				<tr>
-					<td class="two wide">{{ $t('transaction_view.note') }}</td>
-					<td colspan="2">{{data.note}}</td>
-				</tr>
-				<tr v-if="data.time">
-					<td class="two wide">{{ $t('transaction_view.time') }}</td>
-					<td colspan="2">{{new Date(data.time * 1000).toLocaleString()}}</td>
-				</tr>
-				<tr v-if="data.deployed">
-					<td class="two wide">{{ $t('transaction_view.address') }}</td>
-					<td colspan="2"><router-link :to="'/explore/address/' + data.address">{{data.address}}</router-link></td>
-				</tr>
-				<tr v-if="data.sender">
-					<td class="two wide">{{ $t('transaction_view.sender') }}</td>
-					<td colspan="2"><router-link :to="'/explore/address/' + data.sender">{{data.sender}}</router-link></td>
-				</tr>
-				<tr>
-					<td class="two wide">{{ $t('transaction_view.cost') }}</td>
-					<td class="collapsing"><b>{{data.cost.value}}</b></td>
-					<td>MMX</td>
-				</tr>
-				<tr>
-					<td class="two wide">{{ $t('transaction_view.fee') }}</td>
-					<td class="collapsing"><b>{{data.fee.value}}</b></td>
-					<td>MMX</td>
-				</tr>
-				</tbody>
-			</table>
-			<table class="ui compact definition table striped" v-if="data.inputs.length">
-				<thead>
-				<tr>
-					<th></th>
-					<th>{{ $t('transaction_view.amount') }}</th>
-					<th>{{ $t('transaction_view.token') }}</th>
-					<th>{{ $t('transaction_view.address') }}</th>
-				</tr>
-				</thead>
-				<tbody>
-				<tr v-for="(item, index) in data.inputs" :key="index">
-					<td class="two wide">{{ $t('transaction_view.input') }}[{{index}}]</td>
-					<td class="collapsing"><b>{{item.value}}</b></td>
-					<template v-if="item.is_native">
-						<td>{{item.symbol}}</td>
-					</template>
-					<template v-if="!item.is_native">
-						<td><router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}</router-link></td>
-					</template>
-					<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
-				</tr>
-				</tbody>
-			</table>
-			<table class="ui compact definition table striped" v-if="data.outputs.length">
-				<thead>
-				<tr>
-					<th></th>
-					<th>{{ $t('transaction_view.amount') }}</th>
-					<th>{{ $t('transaction_view.token') }}</th>
-					<th>{{ $t('transaction_view.address') }}</th>
-				</tr>
-				</thead>
-				<tbody>
-				<tr v-for="(item, index) in data.outputs" :key="index">
-					<td class="two wide">{{ $t('transaction_view.output') }}[{{index}}]</td>
-					<td class="collapsing"><b>{{item.value}}</b></td>
-					<template v-if="item.is_native">
-						<td>{{item.symbol}}</td>
-					</template>
-					<template v-if="!item.is_native">
-						<td><router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}</router-link></td>
-					</template>
-					<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
-				</tr>
-				</tbody>
-			</table>
-			<template v-for="(op, index) in data.operations" :key="index">
-				<div class="ui segment">
-					<div class="ui large label">Operation[{{index}}]</div>
-					<div class="ui large label">{{op.__type}}</div>
-					<object-table :data="op"></object-table>
-				</div>
-			</template>
-			<template v-if="data.deployed">
-				<div class="ui segment">
-					<div class="ui large label">{{data.deployed.__type}}</div>
-					<object-table :data="data.deployed"></object-table>
-				</div>
-			</template>
+						<template v-if="!item.is_native">
+							<td><router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}</router-link></td>
+						</template>
+						<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
+					</tr>
+					</tbody>
+				</v-simple-table>
+			</v-card>
+
+			<v-card class="my-2">
+				<v-simple-table v-if="data.outputs.length">
+					<thead>
+					<tr>
+						<th></th>
+						<th>{{ $t('transaction_view.amount') }}</th>
+						<th>{{ $t('transaction_view.token') }}</th>
+						<th>{{ $t('transaction_view.address') }}</th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr v-for="(item, index) in data.outputs" :key="index">
+						<td class="two wide">{{ $t('transaction_view.output') }}[{{index}}]</td>
+						<td class="collapsing"><b>{{item.value}}</b></td>
+						<template v-if="item.is_native">
+							<td>{{item.symbol}}</td>
+						</template>
+						<template v-if="!item.is_native">
+							<td><router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}</router-link></td>
+						</template>
+						<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
+					</tr>
+					</tbody>
+				</v-simple-table>
+				<template v-for="(op, index) in data.operations" :key="index">
+					<div class="ui segment">
+						<div class="ui large label">Operation[{{index}}]</div>
+						<div class="ui large label">{{op.__type}}</div>
+						<object-table :data="op"></object-table>
+					</div>
+				</template>
+				<template v-if="data.deployed">
+					<div class="ui segment">
+						<div class="ui large label">{{data.deployed.__type}}</div>
+						<object-table :data="data.deployed"></object-table>
+					</div>
+				</template>
+			</v-card>
 		</template>
+	</div>
 		`
 })
 
@@ -723,16 +735,14 @@ Vue.component('object-table', {
 	template: `
 		<v-card>
 			<v-simple-table>
-				<template v-slot:default>
-					<tbody>
+				<tbody>
 					<template v-for="(value, key) in data" :key="key">
 						<tr v-if="key != '__type'">
 							<td class="collapsing">{{key}}</td>
 							<td>{{value}}</td>
 						</tr>
 					</template>
-					</tbody>
-				</template>
+				</tbody>
 			</v-simple-table>
 		</v-card>
 		`
