@@ -605,18 +605,22 @@ Vue.component('address-view', {
 		this.update();
 	},
 	template: `
-		<div class="ui large labels">
-			<div class="ui horizontal label">Address</div>
-			<div class="ui horizontal label">{{address}}</div>
-		</div>
+	<div>
+		<v-chip label>Address</v-chip>
+		<v-chip label>{{ address }}</v-chip>
+		</v-card-title-header>
+
 		<balance-table :address="address" :show_empty="true"></balance-table>
+
 		<template v-if="data">
 			<div class="ui segment">
 				<div class="ui large label">{{data.__type}}</div>
 				<object-table :data="data"></object-table>
 			</div>
 		</template>
-		<address-history-table :address="address" :limit="200" :show_empty="false"></address-history-table>
+
+		<address-history-table :address="address" :limit="200" :show_empty="false" class="my-2"></address-history-table>
+	</div>
 		`
 })
 
@@ -628,19 +632,29 @@ Vue.component('address-history-table', {
 	},
 	data() {
 		return {
-			data: null,
-			loading: false,
-			timer: null
+			data: [],
+			loaded: false,
+			timer: null,
+			headers: [
+				{ text: this.$t('address_history_table.height'), value: 'height'},
+				{ text: this.$t('address_history_table.type'), value: 'type'},
+				{ text: this.$t('address_history_table.amount'), value: 'amount'},
+				{ text: this.$t('address_history_table.token'), value: 'token'},
+				{ text: this.$t('address_history_table.address'), value: 'address'},
+				{ text: this.$t('address_history_table.link'), value: 'link'},
+				{ text: this.$t('address_history_table.time'), value: 'time'},
+			],			
 		}
 	},
 	methods: {
 		update() {
-			this.loading = true;
 			fetch('/wapi/address/history?limit=' + this.limit + '&id=' + this.address)
 				.then(response => response.json())
 				.then(data => {
-					this.loading = false;
+					this.loaded = true;
 					this.data = data;
+				}).catch(() => {
+					this.loaded = true;
 				});
 		}
 	},
@@ -660,38 +674,47 @@ Vue.component('address-history-table', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<template v-if="!data && loading">
-			<div class="ui basic loading placeholder segment"></div>
-		</template>
-		<table class="ui compact table striped" v-if="data && (data.length || show_empty)">
-			<thead>
-			<tr>
-				<th>{{ $t('address_history_table.height') }}</th>
-				<th>{{ $t('address_history_table.type') }}</th>
-				<th>{{ $t('address_history_table.amount') }}</th>
-				<th>{{ $t('address_history_table.token') }}</th>
-				<th>{{ $t('address_history_table.address') }}</th>
-				<th>{{ $t('address_history_table.link') }}</th>
-				<th>{{ $t('address_history_table.time') }}</th>
-			</tr>
-			</thead>
-			<tbody>
-			<tr v-for="item in data">
-				<td><router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link></td>
-				<td>{{item.type}}</td>
-				<td><b>{{item.value}}</b></td>
+		<v-data-table
+			:headers="headers"
+			:items="data"
+			:loading="!loaded"
+			hide-default-footer
+			disable-sort
+			disable-pagination
+			class="elevation-2"
+			v-if="!loaded || loaded && (data.length || show_empty)"
+		>
+			<template v-slot:item.height="{ item }">
+				<router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link>
+			</template>
+
+			<template v-slot:item.amount="{ item }">
+				<b>{{ item.value }}</b>
+			</template>
+
+			<template v-slot:item.token="{ item }">
 				<template v-if="item.is_native">
-					<td>{{item.symbol}}</td>
+					{{item.symbol}}
 				</template>
-				<template v-if="!item.is_native">
-					<td><router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}</router-link></td>
+				<template v-else>
+					<router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}</router-link>
 				</template>
-				<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
-				<td><router-link :to="'/explore/transaction/' + item.txid">TX</router-link></td>
-				<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
-			</tr>
-			</tbody>
-		</table>
+			</template>
+
+
+			<template v-slot:item.address="{ item }">
+				<router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link>
+			</template>
+
+			<template v-slot:item.link="{ item }">
+				<router-link :to="'/explore/transaction/' + item.txid">TX</router-link>
+			</template>
+
+			<template v-slot:item.time="{ item }">
+				{{ new Date(item.time * 1000).toLocaleString() }}
+			</template>
+
+		</v-data-table>
 		`
 })
 
