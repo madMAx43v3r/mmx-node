@@ -612,12 +612,10 @@ Vue.component('address-view', {
 
 		<balance-table :address="address" :show_empty="true"></balance-table>
 
-		<template v-if="data">
-			<div class="ui segment">
-				<div class="ui large label">{{data.__type}}</div>
-				<object-table :data="data"></object-table>
-			</div>
-		</template>
+		<div v-if="data">
+			<v-chip label class="my-2">{{ data.__type }}</v-chip>
+			<object-table :data="data"></object-table>
+		</div>
 
 		<address-history-table :address="address" :limit="200" :show_empty="false" class="my-2"></address-history-table>
 	</div>
@@ -723,15 +721,19 @@ Vue.component('object-table', {
 		data: Object
 	},
 	template: `
-		<table class="ui definition table striped">
-			<tbody>
-			<template v-for="(value, key) in data" :key="key">
-				<tr v-if="key != '__type'">
-					<td class="collapsing">{{key}}</td>
-					<td>{{value}}</td>
-				</tr>
-			</template>
-			</tbody>
-		</table>
+		<v-card>
+			<v-simple-table>
+				<template v-slot:default>
+					<tbody>
+					<template v-for="(value, key) in data" :key="key">
+						<tr v-if="key != '__type'">
+							<td class="collapsing">{{key}}</td>
+							<td>{{value}}</td>
+						</tr>
+					</template>
+					</tbody>
+				</template>
+			</v-simple-table>
+		</v-card>
 		`
 })
