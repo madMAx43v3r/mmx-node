@@ -134,13 +134,13 @@ Vue.component('node-peers', {
 		clearInterval(this.timer);
 	},
 	template: `
-
 		<v-data-table
 			:headers="headers"
 			:items="data.peers"
 			:loading="!loaded"
-			disable-sort="true"
 			hide-default-footer
+			disable-sort
+			disable-pagination
 			class="elevation-2"
 		>
 			<template v-slot:item.height="{ item }">
@@ -458,9 +458,11 @@ Vue.component('node-log-table', {
 			:headers="headers"
 			:items="data"
 			:loading="!loaded"
-			disable-sort="true"
 			hide-default-header
 			hide-default-footer
+			disable-sort
+			disable-pagination
+			dense
 			class="elevation-2"
 		>
 			<template v-slot:item.time="{ item }" width="1%">
