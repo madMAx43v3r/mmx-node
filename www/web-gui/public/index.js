@@ -390,17 +390,24 @@ const Login = {
 	},
 	template: `
 		<div>
+			<!-- TODO add validation rulues -->
 			<v-text-field
 				v-model="passwd"
 				:label="$t('login.password_label')"
-				hint="See PASSWD file"
 				required
 				type="password"/>
 			<v-btn color="success" class="mr-4" @click="submit">{{ $t('login.login') }}</v-btn>
-			<!-- TODO -->
-			<div :class="{hidden: !error}">
-				<b>{{error}}</b>
-			</div>			
+
+			<v-alert
+				border="right"
+				colored-border
+				type="error"
+				elevation="2"
+				v-if="error"
+			>
+				{{ error }}
+			</v-alert>
+
 		</div>
 		`
 }
@@ -428,18 +435,16 @@ Vue.component('main-menu', {
 		}
 	},
 	created() {
-		if(!this.isWinGUI) 
+		if(!this.$isWinGUI) 
 		{
 			this.update();
 			this.timer = setInterval(() => { this.update(); }, 5000);
 		}
 	},
 	mounted() {
-		if(this.isWinGUI) 
+		if(this.$isWinGUI) 
 		{
-			$("body").css("background-color", "#f2f2f2")
-			$('#content').css("padding", "10px 10px 100px 10px");
-			$('#content').css("float", "left");
+
 		}
 	},	
 	beforeDestroy() {
@@ -451,14 +456,12 @@ Vue.component('main-menu', {
 			<v-tab to="/wallet">{{ $t('main_menu.wallet') }}</v-tab>
 			<v-tab to="/explore">{{ $t('main_menu.explore') }}</v-tab>
 			<v-tab to="/market">{{ $t('main_menu.market') }}</v-tab>
+			<v-spacer></v-spacer>
+			<v-tab to="/settings">{{ $t('main_menu.settings') }}</v-tab>
+			<template v-if="!$route.meta.is_login && !$isWinGUI">
+				<v-tab @click="logout">{{ $t('main_menu.logout') }}</v-tab>
+			</template>
 		</v-tabs>
 		`
-		//TODO
-		// 		<div class="right menu">
-		// 			<router-link class="item" to="/settings/" :class="{active: $route.meta.is_settings}">{{ $t('main_menu.settings') }}</router-link>
-		// 			<template v-if="!$route.meta.is_login && !isWinGUI">
-		// 				<a class="item" @click="logout">{{ $t('main_menu.logout') }}</a>
-		// 			</template>
-		// 		</div>		
 })
 
