@@ -604,13 +604,13 @@ Vue.component('address-view', {
 	created() {
 		this.update();
 	},
+	//TODO: i18n Address
 	template: `
 	<div>
 		<v-chip label>Address</v-chip>
 		<v-chip label>{{ address }}</v-chip>
-		</v-card-title-header>
 
-		<balance-table :address="address" :show_empty="true"></balance-table>
+		<balance-table :address="address" :show_empty="true" class="my-2"></balance-table>
 
 		<div v-if="data">
 			<v-chip label class="my-2">{{ data.__type }}</v-chip>
