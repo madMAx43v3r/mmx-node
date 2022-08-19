@@ -1,5 +1,5 @@
 
-app.component('wallet-summary', {
+Vue.component('wallet-summary', {
 	data() {
 		return {
 			data: null,
@@ -33,7 +33,7 @@ app.component('wallet-summary', {
 		`
 })
 
-app.component('account-menu', {
+Vue.component('account-menu', {
 	props: {
 		index: Number
 	},
@@ -53,7 +53,7 @@ app.component('account-menu', {
 		`
 })
 
-app.component('account-header', {
+Vue.component('account-header', {
 	props: {
 		index: Number,
 		account: Object
@@ -92,7 +92,7 @@ app.component('account-header', {
 		`
 })
 
-app.component('account-summary', {
+Vue.component('account-summary', {
 	props: {
 		index: Number,
 		account: Object
@@ -106,7 +106,7 @@ app.component('account-summary', {
 		`
 })
 
-app.component('account-balance', {
+Vue.component('account-balance', {
 	props: {
 		index: Number
 	},
@@ -132,7 +132,7 @@ app.component('account-balance', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 10000);
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
@@ -162,16 +162,24 @@ app.component('account-balance', {
 		`
 })
 
-app.component('balance-table', {
+Vue.component('balance-table', {
 	props: {
 		address: String,
 		show_empty: Boolean
 	},
 	data() {
 		return {
-			data: null,
+			data: [],
 			loading: false,
-			timer: null
+			loaded: false,
+			timer: null,
+			headers: [
+				{ text: this.$t('balance_table.balance'), value: 'total'},
+				{ text: this.$t('balance_table.locked'), value: 'locked'},
+				{ text: this.$t('balance_table.spendable'), value: 'spendable'},
+				{ text: this.$t('balance_table.token'), value: 'symbol'},
+				{ text: this.$t('balance_table.contract'), value: 'contract'},
+			]
 		}
 	},
 	methods: {
@@ -181,6 +189,7 @@ app.component('balance-table', {
 				.then(response => response.json())
 				.then(data => {
 					this.loading = false;
+					this.loaded = true;
 					this.data = data.balances;
 				});
 		}
@@ -194,13 +203,33 @@ app.component('balance-table', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 10000);
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
+		<v-data-table
+			:headers="headers"
+			:items="data"
+			:loading="!loaded"
+			hide-default-footer
+			disable-sort
+			disable-pagination
+			class="elevation-2"
+			v-if="!loaded || loaded && (data.length || show_empty)"
+		>
+			<template v-slot:item.spendable="{ item }">
+				<b>{{item.spendable}}</b>
+			</template>
+
+			<template v-slot:item.contract="{ item }">
+				<router-link :to="'/explore/address/' + item.contract">{{item.is_native ? '' : item.contract}}</router-link>
+			</template>
+		</v-data-table>
+
 		<template v-if="!data && loading">
 			<div class="ui basic loading placeholder segment"></div>
 		</template>
+
 		<table class="ui table" v-if="data && (data.length || show_empty)">
 			<thead>
 			<tr>
@@ -224,7 +253,7 @@ app.component('balance-table', {
 		`
 })
 
-app.component('nft-table', {
+Vue.component('nft-table', {
 	props: {
 		index: Number
 	},
@@ -259,7 +288,7 @@ app.component('nft-table', {
 		`
 })
 
-app.component('account-history', {
+Vue.component('account-history', {
 	props: {
 		index: Number,
 		limit: Number
@@ -286,7 +315,7 @@ app.component('account-history', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 60000);
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
@@ -325,7 +354,7 @@ app.component('account-history', {
 		`
 })
 
-app.component('account-tx-history', {
+Vue.component('account-tx-history', {
 	props: {
 		index: Number,
 		limit: Number
@@ -352,7 +381,7 @@ app.component('account-tx-history', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 10000);
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
@@ -385,7 +414,7 @@ app.component('account-tx-history', {
 		`
 })
 
-app.component('account-contract-summary', {
+Vue.component('account-contract-summary', {
 	props: {
 		index: Number,
 		address: String,
@@ -413,7 +442,7 @@ app.component('account-contract-summary', {
 		`
 })
 
-app.component('account-contracts', {
+Vue.component('account-contracts', {
 	props: {
 		index: Number
 	},
@@ -447,7 +476,7 @@ app.component('account-contracts', {
 		`
 })
 
-app.component('account-addresses', {
+Vue.component('account-addresses', {
 	props: {
 		index: Number,
 		limit: Number
@@ -493,7 +522,7 @@ app.component('account-addresses', {
 		`
 })
 
-app.component('account-details', {
+Vue.component('account-details', {
 	props: {
 		index: Number
 	},
@@ -527,7 +556,7 @@ app.component('account-details', {
 		`
 })
 
-app.component('account-actions', {
+Vue.component('account-actions', {
 	props: {
 		index: Number
 	},
@@ -581,7 +610,7 @@ app.component('account-actions', {
 		`
 })
 
-app.component('create-account', {
+Vue.component('create-account', {
 	props: {
 		index: Number
 	},
@@ -652,7 +681,7 @@ app.component('create-account', {
 		`
 })
 
-app.component('create-wallet', {
+Vue.component('create-wallet', {
 	data() {
 		return {
 			name: null,
@@ -722,7 +751,7 @@ app.component('create-wallet', {
 		`
 })
 
-app.component('account-send-form', {
+Vue.component('account-send-form', {
 	props: {
 		index: Number,
 		target_: String,
@@ -887,7 +916,7 @@ app.component('account-send-form', {
 		`
 })
 
-app.component('account-offer-form', {
+Vue.component('account-offer-form', {
 	props: {
 		index: Number
 	},
@@ -944,7 +973,7 @@ app.component('account-offer-form', {
 	mounted() {
 		$('.ui.checkbox').checkbox();
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	watch: {
@@ -1037,7 +1066,7 @@ app.component('account-offer-form', {
 		`
 })
 
-app.component('account-offers', {
+Vue.component('account-offers', {
 	props: {
 		index: Number
 	},
@@ -1092,7 +1121,7 @@ app.component('account-offers', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 30000);
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
@@ -1142,7 +1171,7 @@ app.component('account-offers', {
 		`
 })
 
-app.component('create-contract-menu', {
+Vue.component('create-contract-menu', {
 	props: {
 		index: Number
 	},
@@ -1172,7 +1201,7 @@ app.component('create-contract-menu', {
 		`
 })
 
-app.component('create-locked-contract', {
+Vue.component('create-locked-contract', {
 	props: {
 		index: Number
 	},
@@ -1263,7 +1292,7 @@ app.component('create-locked-contract', {
 		`
 })
 
-app.component('create-virtual-plot-contract', {
+Vue.component('create-virtual-plot-contract', {
 	props: {
 		index: Number
 	},
