@@ -112,6 +112,8 @@ const router = new VueRouter({
 	routes,
 })
 
+Vue.prototype.$isWinGUI = typeof window.mmx !== 'undefined';
+
 var app = new Vue({
 	el: '#app',
 	vuetify: new Vuetify(),
@@ -146,5 +148,5 @@ var app = new Vue({
 
 });
 
-Vue.prototype.$isWinGUI = typeof window.mmx !== 'undefined';
+
 
