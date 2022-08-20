@@ -450,15 +450,15 @@ Vue.component('account-contract-summary', {
 		}
 	},
 	template: `
-		<div class="ui raised segment">
-			<div class="ui large labels">
-				<div class="ui horizontal label">{{contract.__type}}</div>
-				<div class="ui horizontal label">{{address}}</div>
-			</div>
-			<object-table :data="contract"></object-table>
-			<balance-table :address="address"></balance-table>
-			<div @click="deposit" class="ui submit button">{{ $t('account_contract_summary.deposit') }}</div>
-			<div @click="withdraw" class="ui submit button">{{ $t('account_contract_summary.withdraw') }}</div>
+		<v-card class="my-2">
+			<v-card-text>			
+				<v-chip label>{{contract.__type}}</v-chip>
+				<v-chip label>{{address}}</v-chip>
+				<object-table :data="contract" class="my-2"></object-table>
+				<balance-table :address="address"></balance-table>
+				<v-btn @click="deposit">{{ $t('account_contract_summary.deposit') }}</v-btn>
+				<v-btn @click="withdraw">{{ $t('account_contract_summary.withdraw') }}</v-btn>
+			</v-card-text>
 		</div>
 		`
 })
@@ -488,12 +488,14 @@ Vue.component('account-contracts', {
 		this.update();
 	},
 	template: `
+		<div>
 		<template v-if="!data && loading">
-			<div class="ui basic loading placeholder segment"></div>
+			<v-progress-linear indeterminate absolute top></v-progress-linear>
 		</template>
 		<template v-if="data">
 			<account-contract-summary v-for="item in data" :key="item[0]" :index="index" :address="item[0]" :contract="item[1]"></account-contract-summary>
 		</template>
+		</div>
 		`
 })
 
@@ -570,10 +572,12 @@ Vue.component('account-details', {
 		this.update();
 	},
 	template: `
-		<object-table :data="account"></object-table>
-		<object-table :data="keys"></object-table>
+		<div>
+			<object-table :data="account"></object-table>
+			<object-table :data="keys"></object-table>
 
-		<div v-if="isWinGUI && this.keys" @click="copyKeysToPlotter" class="ui submit primary button">{{ $t('account_details.copy_keys_to_plotter') }}</div>
+			<div v-if="isWinGUI && this.keys" @click="copyKeysToPlotter" class="ui submit primary button">{{ $t('account_details.copy_keys_to_plotter') }}</div>
+		</div>
 		`
 })
 
@@ -1198,7 +1202,11 @@ Vue.component('create-contract-menu', {
 	},
 	data() {
 		return {
-			type: null
+			type: null,
+			types: [
+				{ value: "locked", text: "mmx.contract.TimeLock" },
+				{ value: "virtualplot", text: "mmx.contract.VirtualPlot" },
+			]
 		}
 	},
 	methods: {
@@ -1207,18 +1215,13 @@ Vue.component('create-contract-menu', {
 		}
 	},
 	template: `
-		<div class="ui raised segment">
-			<form class="ui form">
-				<div class="field">
-					<label>{{ $t('create_contract_menu.contract_type') }}</label>
-					<select v-model="type">
-						<option value="locked">mmx.contract.TimeLock</option>
-						<option value="virtualplot">mmx.contract.VirtualPlot</option>
-					</select>
-				</div>
-				<div @click="submit" class="ui submit button" :class="{disabled: !type}">{{ $t('common.create') }}</div>
-			</form>
-		</div>
+		<v-card>
+			<v-card-text>
+				<v-select v-model="type" :items="types" :label="$t('create_contract_menu.contract_type')">
+				</v-select>
+				<v-btn @click="submit" :disabled="!type">{{ $t('common.create') }}</v-btn>
+			</v-card-text>
+		</v-card>
 		`
 })
 
