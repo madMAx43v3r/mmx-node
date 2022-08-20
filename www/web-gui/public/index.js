@@ -320,7 +320,7 @@ const ExploreTransaction = {
 	`
 }
 
-const Node = {
+const NodeView = {
 	template: `
 		<div>
 			<node-info></node-info>
@@ -363,8 +363,10 @@ const NodeBlockReward = {
 
 const Settings = {
 	template: `
-		<node-settings></node-settings>
-		<wallet-settings></wallet-settings>
+		<div>
+			<node-settings></node-settings>
+			<wallet-settings></wallet-settings>
+		</div>
 	`
 }
 
@@ -399,7 +401,7 @@ const Login = {
 			<v-btn color="success" class="mr-4" @click="submit">{{ $t('login.login') }}</v-btn>
 
 			<v-alert
-				border="right"
+				border="left"
 				colored-border
 				type="error"
 				elevation="2"

@@ -1,5 +1,5 @@
 
-app.component('node-settings', {
+Vue.component('node-settings', {
 	data() {
 		return {
 			error: null,
@@ -73,57 +73,65 @@ app.component('node-settings', {
 		}
 	},
 	template: `
-		<template v-if="loading">
-			<div class="ui basic loading placeholder segment"></div>
-		</template>
-		<template v-else>
-			<template v-if="!isWinGUI">
-				<div class="ui segment">
-					<form class="ui form">
-						<div class="field">
-							<label>{{ $t('node_settings.language') }}</label>
-							<select v-model="$i18n.locale">
-								<option v-for="(language, code) in availableLanguages" :value="code">{{language}}</option>
-							</select>
-						</div>
-					</form>
-				</div>
-			</template>
-			<div class="ui segment">
-				<form class="ui form">
-					<div class="field">
-						<div class="ui checkbox">
-							<input type="checkbox" v-model="timelord">
-							<label>{{ $t('node_settings.enable_timelord') }}</label>
-						</div>
-					</div>
-				</form>
-			</div>
-			<div class="ui segment">
-				<form class="ui form">
-					<div class="field">
-						<label>{{ $t('node_settings.farmer_reward_address') }}</label>
-						<input type="text" v-model.lazy="farmer_reward_addr" :placeholder="$t('common.reward_address_placeholder')"/>
-					</div>
-					<div class="field">
-						<label>{{ $t('node_settings.timeLord_reward_address') }}</label>
-						<input type="text" v-model.lazy="timelord_reward_addr" :placeholder="$t('common.reward_address_placeholder')"/>
-					</div>
-				</form>
-			</div>
-		</template>
-		<div class="ui message" v-if="result">
-			Set <b>{{result.key}}</b> to
-			<b><template v-if="result.value != null"> '{{result.value}}' </template><template v-else> null </template></b>
-			<template v-if="result.restart">{{ $t('node_settings.restart_needed') }}</template>
-		</div>
-		<div class="ui negative message" v-if="error">
-			{{ $t('common.failed_with') }}: <b>{{error}}</b>
-		</div>
+		<v-card>
+			<v-card-text>
+
+				<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
+				<v-select
+					v-model="$i18n.locale"
+					:label="$t('node_settings.language')"
+					:items="availableLanguages" 
+					item-text="language"
+					item-value="code">
+				</v-select>
+
+				<v-checkbox
+      				v-model="timelord"
+      				:label="$t('node_settings.enable_timelord')"
+    			></v-checkbox>
+
+				<v-text-field
+					:label="$t('node_settings.farmer_reward_address')"
+					:placeholder="$t('common.reward_address_placeholder')"
+					:value="farmer_reward_addr" @change="value => farmer_reward_addr = value"	
+          		></v-text-field>
+
+				<v-text-field
+					:label="$t('node_settings.timeLord_reward_address')"
+					:placeholder="$t('common.reward_address_placeholder')"
+					:value="timelord_reward_addr" @change="value => timelord_reward_addr = value"					
+				></v-text-field>
+
+				<template v-if="result">							
+					<v-alert
+						border="left"
+						colored-border
+						type="info"
+						elevation="2"
+					>
+						Set <b>{{result.key}}</b> to
+						<b><template v-if="result.value != null"> '{{result.value}}' </template><template v-else> null </template></b>
+						<template v-if="result.restart">{{ $t('node_settings.restart_needed') }}</template>
+					</v-alert>
+				</template>		
+			
+				<template v-if="error">							
+					<v-alert
+						border="left"
+						colored-border
+						type="warning"
+						elevation="2"
+					>
+						{{ $t('common.failed_with') }}: <b>{{error}}</b>
+					</v-alert>
+				</template>
+
+			</v-card-text>
+		</v-card>
 		`
 })
 
-app.component('wallet-settings', {
+Vue.component('wallet-settings', {
 	data() {
 		return {
 			error: null,
@@ -182,6 +190,7 @@ app.component('wallet-settings', {
 		}
 	},
 	template: `
+	<div>
 		<template v-if="loading">
 			<div class="ui basic loading placeholder segment"></div>
 		</template>
@@ -233,5 +242,6 @@ app.component('wallet-settings', {
 		<div class="ui negative message" v-if="error">
 			{{ $t('common.failed_with') }}: <b>{{error}}</b>
 		</div>
+	</div>
 		`
 })

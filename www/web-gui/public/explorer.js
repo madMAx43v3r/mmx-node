@@ -274,7 +274,7 @@ Vue.component('block-view', {
 
 			<template v-if="!data && !loading">							
 				<v-alert
-					border="right"
+					border="left"
 					colored-border
 					type="warning"
 					elevation="2"
@@ -452,7 +452,7 @@ Vue.component('transaction-view', {
 		<v-chip label>{{ id }}</v-chip>
 		<template v-if="!data && !loading">							
 			<v-alert
-				border="right"
+				border="left"
 				colored-border
 				type="warning"
 				elevation="2"
