@@ -14,9 +14,13 @@ const Account = {
 		index: Number
 	},
 	template: `
-		<account-header :index="index"></account-header>
-		<account-menu :index="index"></account-menu>
-		<router-view :index="index"></router-view>
+		<v-card>
+			<v-card-text>
+				<account-header :index="index"></account-header>
+				<account-menu :index="index" class="my-2"></account-menu>
+				<router-view :index="index"></router-view>
+			</v-card-text>
+		</v-card>
 	`
 }
 const AccountHome = {
@@ -24,8 +28,10 @@ const AccountHome = {
 		index: Number
 	},
 	template: `
-		<account-balance :index="index"></account-balance>
-		<account-history :index="index" :limit="50"></account-history>
+		<div>
+			<account-balance :index="index"></account-balance>
+			<account-history :index="index" :limit="50"></account-history>
+		</div>
 	`
 }
 const AccountNFTs = {
@@ -41,8 +47,10 @@ const AccountContracts = {
 		index: Number
 	},
 	template: `
-		<create-contract-menu :index="index"></create-contract-menu>
-		<account-contracts :index="index"></account-contracts>
+		<div>
+			<create-contract-menu :index="index"></create-contract-menu>
+			<account-contracts :index="index"></account-contracts>
+		</div>
 	`
 }
 const AccountAddresses = {
@@ -114,8 +122,10 @@ const AccountOptions = {
 		index: Number
 	},
 	template: `
-		<account-actions :index="index"></account-actions>
-		<create-account :index="index"></create-account>
+		<div>
+			<account-actions :index="index"></account-actions>
+			<create-account :index="index"></create-account>
+		</div>
 	`
 }
 const AccountCreateLocked = {
@@ -142,8 +152,10 @@ const Market = {
 		ask: null,
 	},
 	template: `
-		<market-menu :wallet_="wallet" :bid_="bid" :ask_="ask" :page="$route.meta.page"></market-menu>
-		<router-view :key="$route.path" :wallet="wallet" :bid="bid" :ask="ask"></router-view>
+		<div>
+			<market-menu :wallet_="wallet" :bid_="bid" :ask_="ask" :page="$route.meta.page"></market-menu>
+			<router-view :key="$route.path" :wallet="wallet" :bid="bid" :ask="ask"></router-view>
+		</div>
 		`
 }
 const MarketOffers = {
@@ -179,10 +191,12 @@ const Exchange = {
 		}
 	},
 	template: `
-		<exchange-menu @update-bid-symbol="update_bid_symbol" @update-ask-symbol="update_ask_symbol"
-			:wallet_="wallet" :server_="server" :bid_="bid" :ask_="ask" :page="$route.meta.page">
-		</exchange-menu>
-		<router-view :key="$route.path" :wallet="wallet" :server="server" :bid="bid" :ask="ask" :bid_symbol="bid_symbol" :ask_symbol="ask_symbol"></router-view>
+		<div>
+			<exchange-menu @update-bid-symbol="update_bid_symbol" @update-ask-symbol="update_ask_symbol"
+				:wallet_="wallet" :server_="server" :bid_="bid" :ask_="ask" :page="$route.meta.page">
+			</exchange-menu>
+			<router-view :key="$route.path" :wallet="wallet" :server="server" :bid="bid" :ask="ask" :bid_symbol="bid_symbol" :ask_symbol="ask_symbol"></router-view>
+		</div>
 		`
 }
 const ExchangeMarket = {
@@ -200,6 +214,7 @@ const ExchangeMarket = {
 		}
 	},
 	template: `
+	<div>
 		<div class="ui two column grid">
 			<div class="column">
 				<exchange-trade-form @trade-executed="update"
@@ -217,6 +232,7 @@ const ExchangeMarket = {
 			</div>
 		</div>
 		<exchange-orders ref="orders" :server="server" :bid="bid" :ask="ask" :flip="false" :limit="100"></exchange-orders>
+	</div>
 		`
 }
 
@@ -265,6 +281,7 @@ const ExchangeOffers = {
 		}
 	},
 	template: `
+	<div>
 		<div class="ui two column grid">
 			<div class="column">
 				<exchange-offer-form ref="bid_form" @offer-created="update_created"
@@ -283,6 +300,7 @@ const ExchangeOffers = {
 		</div>
 		<exchange-orders ref="orders" :server="server" :bid="bid" :ask="ask" :flip="true" :limit="5"></exchange-orders>
 		<account-offers ref="offers" @offer-cancel="update_cancel" :index="wallet" :bid="bid" :ask="ask"></account-offers>
+	</div>
 		`
 }
 
