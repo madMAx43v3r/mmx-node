@@ -73,6 +73,7 @@ Vue.component('node-settings', {
 		}
 	},
 	template: `
+	<div>
 		<v-card>
 			<v-card-text>
 
@@ -102,32 +103,33 @@ Vue.component('node-settings', {
 					:value="timelord_reward_addr" @change="value => timelord_reward_addr = value"					
 				></v-text-field>
 
-				<template v-if="result">							
-					<v-alert
-						border="left"
-						colored-border
-						type="info"
-						elevation="2"
-					>
-						Set <b>{{result.key}}</b> to
-						<b><template v-if="result.value != null"> '{{result.value}}' </template><template v-else> null </template></b>
-						<template v-if="result.restart">{{ $t('node_settings.restart_needed') }}</template>
-					</v-alert>
-				</template>		
-			
-				<template v-if="error">							
-					<v-alert
-						border="left"
-						colored-border
-						type="warning"
-						elevation="2"
-					>
-						{{ $t('common.failed_with') }}: <b>{{error}}</b>
-					</v-alert>
-				</template>
-
 			</v-card-text>
 		</v-card>
+
+		<template v-if="result">							
+			<v-alert
+				border="left"
+				colored-border
+				type="info"
+				elevation="2"
+			>
+				Set <b>{{result.key}}</b> to
+				<b><template v-if="result.value != null"> '{{result.value}}' </template><template v-else> null </template></b>
+				<template v-if="result.restart">{{ $t('node_settings.restart_needed') }}</template>
+			</v-alert>
+		</template>		
+
+		<template v-if="error">							
+			<v-alert
+				border="left"
+				colored-border
+				type="warning"
+				elevation="2"
+			>
+				{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
+		</template>
+	</div>	
 		`
 })
 
@@ -189,59 +191,71 @@ Vue.component('wallet-settings', {
 			}
 		}
 	},
+	// TODO: i18n
 	template: `
 	<div>
-		<template v-if="loading">
-			<div class="ui basic loading placeholder segment"></div>
-		</template>
-		<template v-else>
-			<div class="ui segment">
-				<form class="ui form">
-					<div class="field">
-						<label>Token Whitelist</label>
-						<table class="ui table striped">
-							<thead>
+		<v-card class="my-2">
+			<v-card-title>Token Whitelist</v-card-title>
+			<v-card-text>
+				<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
+				<v-simple-table>
+					<thead>
+					<tr>
+						<th>Name</th>
+						<th>Symbol</th>
+						<th>Contract</th>
+						<th></th>
+					</tr>
+					</thead>
+					<tbody>
+					<template v-for="item in tokens" :key="item.currency">
+						<template v-if="!item.is_native">
 							<tr>
-								<th>Name</th>
-								<th>Symbol</th>
-								<th>Contract</th>
-								<th></th>
+								<td>{{item.name}}</td>
+								<td>{{item.symbol}}</td>
+								<td><router-link :to="'/explore/address/' + item.currency">{{item.currency}}</router-link></td>
+								<td><div class="ui tiny button" @click="rem_token(item.currency)">Remove</div></td>
 							</tr>
-							</thead>
-							<tbody>
-							<template v-for="item in tokens" :key="item.currency">
-								<template v-if="!item.is_native">
-									<tr>
-										<td>{{item.name}}</td>
-										<td>{{item.symbol}}</td>
-										<td><router-link :to="'/explore/address/' + item.currency">{{item.currency}}</router-link></td>
-										<td><div class="ui tiny button" @click="rem_token(item.currency)">Remove</div></td>
-									</tr>
-								</template>
-							</template>
-							</tbody>
-						</table>
-					</div>
-					<div class="ui segment">
-						<div class="two field">
-							<div class="field">
-								<label>Token Address</label>
-								<input type="text" v-model="new_token_addr" placeholder="mmx1..."/>
-							</div>
-							<div class="field">
-								<div class="ui primary button" @click="add_token(new_token_addr)">Add Token</div>
-							</div>
-						</div>
-					</div>
-				</form>
-			</div>
-		</template>
-		<div class="ui message" v-if="result">
-			<b>{{result}}</b>
-		</div>
-		<div class="ui negative message" v-if="error">
-			{{ $t('common.failed_with') }}: <b>{{error}}</b>
-		</div>
+						</template>
+					</template>
+					</tbody>
+				</v-simple-table>			
+			</v-card-text>
+		</v-card>
+
+		<v-card>
+			<v-card-text>
+				<v-text-field
+					label="Token Address"
+					v-model="new_token_addr" 
+					placeholder="mmx1..."					
+				></v-text-field>
+				<v-btn @click="add_token(new_token_addr)" color="primary">Add Token</v-btn>			
+			</v-card-text>
+		</v-card>
+
+		<template v-if="result">							
+			<v-alert
+				border="left"
+				colored-border
+				type="info"
+				elevation="2"
+			>
+				<b>{{result}}</b>
+			</v-alert>
+		</template>		
+
+		<template v-if="error">							
+			<v-alert
+				border="left"
+				colored-border
+				type="warning"
+				elevation="2"
+			>
+				{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
+		</template>			
+
 	</div>
 		`
 })
