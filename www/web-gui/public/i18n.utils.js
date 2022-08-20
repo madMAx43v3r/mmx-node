@@ -1,11 +1,33 @@
 
+const availableLanguages = [
+    { code: "en", language: "English" },
+    { code: "id", language: "Bahasa Indonesia" },
+    { code: "de", language: "Deutsch" },
+    { code: "es", language: "Español" },
+    { code: "nl", language: "Nederlands" },
+    { code: "pt", language: "Português" },
+    { code: "ru", language: "Русский" },
+    { code: "uk", language: "Українська" },
+    { code: "zh", language: "简体中文" }
+];
+
+const defaultLocale = 'en';
+const loadedLanguages = ['en']
+
+const i18n = new VueI18n({
+    globalInjection: true,
+    legacy: false,
+    locale: 'en',
+    fallbackLocale: 'en',
+    messages: { 
+        'en': langEN
+    }
+})
+
+
 function setI18nLanguage(locale) {
 
-    if (i18n.mode === 'legacy') {
-        i18n.global.locale = locale
-    } else {
-        i18n.global.locale.value = locale
-    }
+    i18n.locale = locale
 
     /**
      * NOTE:
@@ -52,22 +74,24 @@ function customFallback(messages) {
 }   
 
 function loadLanguageAsync(locale) {
-	if (i18n.locale === locale) {
-		return Promise.resolve(setI18nLanguage(locale))
-	}
+    //console.log('loadLanguageAsync', locale);
+
+	//if (i18n.locale === locale) {
+	//	return Promise.resolve(setI18nLanguage(locale))
+	//}
 
 	if (loadedLanguages.includes(locale)) {
 		return Promise.resolve(setI18nLanguage(locale))
 	}
 
-    if (availableLanguages[locale]) {
-
+    if (availableLanguages.filter( lang => lang.code == locale ).length > 0 ) {
         return fetch(`./locales/${locale}.json`).then(
             response => response.json()     
         ).then(
             messages => {            
                 messages = customFallback(messages);
-                i18n.global.setLocaleMessage(locale, messages)
+                i18n.setLocaleMessage(locale, messages);
+                //console.log('setLocaleMessage', locale, messages);
                 loadedLanguages.push(locale)
                 return setI18nLanguage(locale)
             },

@@ -19,12 +19,13 @@
     <script src="farmer.js" defer></script>
     <script src="wallet.js" defer></script>
     <script src="explorer.js" defer></script>
+    <script src="settings.js" defer></script>
         
 
     <script src="locales/en.js" defer></script>
     <script src="i18n.utils.js" defer></script>
-
     <script src="mount.js" defer></script> 
+
 
     <style>
         .theme--light.v-data-table tbody tr:nth-of-type(even) {
@@ -37,8 +38,6 @@
             padding-left: 0px;
             padding-right: 0px;
         }
-</style>
-
     </style>
         
 </head>
@@ -46,13 +45,17 @@
 
     <div id="app">
         <v-app>
-            <v-main>                
-                <v-container class="pt-0">
-                    <main-menu></main-menu>
+            <v-app-bar app>
+                <main-menu></main-menu>
+            </v-app-bar>
+            <v-main>
+                <v-container fluid>
                     <router-view></router-view>
                 </v-container>
             </v-main>
-        </v-app>
+            <v-footer app>
+            </v-footer>
+          </v-app>
     </div>
 
 </body>

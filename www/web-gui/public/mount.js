@@ -1,30 +1,4 @@
 
-const availableLanguages = {
-    "en": "English",
-    "id": "Bahasa Indonesia",
-    "de": "Deutsch",
-    "es": "Español",
-    "nl": "Nederlands",
-    "pt": "Português",
-    "ru": "Русский",
-    "uk": "Українська",
-    "zh": "简体中文"
-};
-
-const defaultLocale = 'en';
-const loadedLanguages = ['en']
-
-const i18n = new VueI18n({
-    globalInjection: true,
-    legacy: false,
-    locale: 'en',
-    fallbackLocale: 'en',
-    messages: { 
-        'en': langEN
-    }
-})
-
-
 const routes = [
 	{ path: '/', redirect: "/node" },
 	{ path: '/login', component: Login, meta: { is_login: true } },
@@ -93,7 +67,7 @@ const routes = [
 		]
 	},
 	{ path: '/node',
-		component: Node,
+		component: NodeView,
 		redirect: "/node/log",
 		meta: { is_node: true },
 		children: [
@@ -119,32 +93,37 @@ var app = new Vue({
 	vuetify: new Vuetify(),
 	router: router,
     i18n: i18n,
+	data: () => ({
+		items: ['Foo', 'Bar', 'Fizz', 'Buzz'],
+	  }),
+	beforeMount() {
+		(async () => {
 
-	// beforeMount() {
-	// 	(async () => {
+			var locale;
 
-	// 		var locale = 'en';
+			if(this.$isWinGUI) {
+				locale = window.mmx.locale;
+				setInterval( () => { 
+					locale = window.mmx.locale;	
+					if (i18n.locale != locale) {
+						loadLanguageAsync(locale);
+					}
+				}, 1000);
+			} else {
+				locale = localStorage.getItem('language')
+			}
 
-	// 		if(this.isWinGUI) {
-	// 			locale = window.mmx.locale;
-	// 			setInterval( () => { 
-	// 				locale = window.mmx.locale;	
-	// 				if (i18n.locale != locale) {
-	// 					loadLanguageAsync(locale);
-	// 				}
-	// 			}, 1000);
-	// 		} else {
-	// 			locale = localStorage.getItem('language')
-	// 		}
+			if (locale) {
+				await loadLanguageAsync(locale);
+			} else {
+				setI18nLanguage('en');
+			}
 
-	// 		if (locale) {
-	// 			await loadLanguageAsync(locale);
-	// 		} else {
-	// 			setI18nLanguage('en');
-	// 		}
+		})()
+	},
+	beforeDestroy() {
 
-	// 	})()
-	// }
+	}
 
 });
 
