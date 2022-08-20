@@ -334,10 +334,12 @@ Vue.component('account-history', {
 		clearInterval(this.timer);
 	},
 	template: `
+		<div>
+
 		<template v-if="!data && loading">
-			<div class="ui basic loading placeholder segment"></div>
+			<v-progress-linear indeterminate absolute top></v-progress-linear>
 		</template>
-		<table class="ui compact table striped" v-if="data">
+		<v-simple-table v-if="data">
 			<thead>
 			<tr>
 				<th>{{ $t('account_history.height') }}</th>
@@ -365,7 +367,9 @@ Vue.component('account-history', {
 				<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 			</tr>
 			</tbody>
-		</table>
+		</v-simple-table>
+
+		</div>
 		`
 })
 
@@ -400,10 +404,11 @@ Vue.component('account-tx-history', {
 		clearInterval(this.timer);
 	},
 	template: `
+		<div>
 		<template v-if="!data && loading">
-			<div class="ui basic loading placeholder segment"></div>
+			<v-progress-linear indeterminate absolute top></v-progress-linear>
 		</template>
-		<table class="ui compact table striped" v-if="data">
+		<v-simple-table v-if="data">
 			<thead>
 			<tr>
 				<th>{{ $t('account_tx_history.height') }}</th>
@@ -425,7 +430,8 @@ Vue.component('account-tx-history', {
 				<td>{{new Date(item.time).toLocaleString()}}</td>
 			</tr>
 			</tbody>
-		</table>
+		</v-simple-table>
+		</div>
 		`
 })
 
@@ -512,7 +518,7 @@ Vue.component('account-addresses', {
 		this.update()
 	},
 	template: `
-		<table class="ui compact definition table striped">
+		<v-simple-table>
 			<thead>
 			<tr>
 				<th>{{ $t('account_addresses.index') }}</th>
@@ -533,7 +539,7 @@ Vue.component('account-addresses', {
 				<td></td>
 			</tr>
 			</tbody>
-		</table>
+		</v-simple-table>
 		`
 })
 
