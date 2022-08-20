@@ -468,7 +468,7 @@ Vue.component('node-log-table', {
 			<template v-slot:item.time="{ item }" width="1%">
 				{{ new Date(item.time / 1000).toLocaleTimeString() }}
 			</template>
-		</v-data-table>		
+		</v-data-table>
 		`
 })
 

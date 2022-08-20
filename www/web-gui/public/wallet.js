@@ -21,15 +21,15 @@ Vue.component('wallet-summary', {
 		this.update();
 	},
 	template: `
-		<template v-if="!data && loading">
-			<div class="ui basic loading placeholder segment"></div>
-		</template>
-		<div class="ui raised segment" v-for="item in data" :key="item[0]">
-			<account-summary :index="item[0]" :account="item[1]"></account-summary>
-		</div>
-		<router-link to="/wallet/create">
-			<button class="ui button">{{ $t('wallet_summary.new_wallet') }}</button>
-		</router-link>
+	<div>
+				<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
+
+				<div v-for="item in data" :key="item[0]">
+					<account-summary :index="item[0]" :account="item[1]"></account-summary>
+				</div>
+
+				<v-btn to="/wallet/create" color="primary">{{ $t('wallet_summary.new_wallet') }}</v-btn>
+	</div>
 		`
 })
 
@@ -38,18 +38,18 @@ Vue.component('account-menu', {
 		index: Number
 	},
 	template: `
-		<div class="ui large pointing menu">
-			<router-link class="item" :class="{active: $route.meta.page == 'balance'}" :to="'/wallet/account/' + index">{{ $t('account_menu.balance') }}</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'nfts'}" :to="'/wallet/account/' + index + '/nfts'">{{ $t('account_menu.nfts') }}</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'contracts'}" :to="'/wallet/account/' + index + '/contracts'">{{ $t('account_menu.contracts') }}</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'addresses'}" :to="'/wallet/account/' + index + '/addresses'">{{ $t('account_menu.addresses') }}</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'send'}" :to="'/wallet/account/' + index + '/send'">{{ $t('account_menu.send') }}</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'offer'}" :to="'/wallet/account/' + index + '/offer'">{{ $t('account_menu.offer') }}</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'history'}" :to="'/wallet/account/' + index + '/history'">{{ $t('account_menu.history') }}</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'log'}" :to="'/wallet/account/' + index + '/log'">{{ $t('account_menu.log') }}</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'details'}" :to="'/wallet/account/' + index + '/details'">{{ $t('account_menu.details') }}</router-link>
-			<router-link class="right item" :class="{active: $route.meta.page == 'options'}" :to="'/wallet/account/' + index + '/options'"><i class="cog icon"></i></router-link>
-		</div>
+		<v-btn-toggle>
+			<v-btn :to="'/wallet/account/' + index">{{ $t('account_menu.balance') }}</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/nfts'">{{ $t('account_menu.nfts') }}</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/contracts'">{{ $t('account_menu.contracts') }}</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/addresses'">{{ $t('account_menu.addresses') }}</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/send'">{{ $t('account_menu.send') }}</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/offer'">{{ $t('account_menu.offer') }}</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/history'">{{ $t('account_menu.history') }}</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/log'">{{ $t('account_menu.log') }}</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/details'">{{ $t('account_menu.details') }}</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/options'"><v-icon>mdi-cog</v-icon></v-btn>
+		</v-btn-toggle>
 		`
 })
 
@@ -85,9 +85,9 @@ Vue.component('account-header', {
 		this.update()
 	},
 	template: `
-		<div class="ui large labels">
-			<div class="ui horizontal label">{{ $t('account_header.wallet') }} #{{index}}</div>
-			<div class="ui horizontal label">{{address}}</div>
+		<div>
+			<v-chip label>{{ $t('account_header.wallet') }} #{{index}}</v-chip>
+			<v-chip label>{{ address }}</v-chip>
 		</div>
 		`
 })
@@ -98,11 +98,13 @@ Vue.component('account-summary', {
 		account: Object
 	},
 	template: `
-		<div>
-			<account-header :index="index" :account="account"></account-header>
-			<account-menu :index="index"></account-menu>
-			<account-balance :index="index"></account-balance>
-		</div>
+		<v-card class="my-2">
+			<v-card-text>
+				<account-header :index="index" :account="account"></account-header>
+				<account-menu :index="index" class="my-2"></account-menu>				
+				<account-balance :index="index"></account-balance>
+			</v-card-text>
+		</v-card>
 		`
 })
 
@@ -112,9 +114,18 @@ Vue.component('account-balance', {
 	},
 	data() {
 		return {
-			data: null,
+			data: [],
 			loading: false,
-			timer: null
+			loaded: false,
+			timer: null,
+			headers: [
+				{ text: this.$t('account_balance.balance'), value: 'total' },
+				{ text: this.$t('account_balance.reserved'), value: 'reserved' },
+				{ text: this.$t('account_balance.spendable'), value: 'spendable' },
+				{ text: this.$t('account_balance.token'), value: 'token' },
+				{ text: this.$t('account_balance.contract'), value: 'contract' },
+
+			]
 		}
 	},
 	methods: {
@@ -123,6 +134,7 @@ Vue.component('account-balance', {
 			fetch('/wapi/wallet/balance?index=' + this.index)
 				.then(response => response.json())
 				.then(data => {
+					this.loaded = true;
 					this.loading = false;
 					this.data = data.balances;
 				});
@@ -136,29 +148,32 @@ Vue.component('account-balance', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<template v-if="!data && loading">
-			<div class="ui basic loading placeholder segment"></div>
-		</template>
-		<table class="ui table" v-if="data">
-			<thead>
-			<tr>
-				<th class="two wide">{{ $t('account_balance.balance') }}</th>
-				<th class="two wide">{{ $t('account_balance.reserved') }}</th>
-				<th class="two wide">{{ $t('account_balance.spendable') }}</th>
-				<th class="two wide">{{ $t('account_balance.token') }}</th>
-				<th>{{ $t('account_balance.contract') }}</th>
-			</tr>
-			</thead>
-			<tbody>
-			<tr v-for="item in data" :key="item.contract">
-				<td>{{item.total}}</td>
-				<td>{{item.reserved}}</td>
-				<td><b>{{item.spendable}}</b></td>
-				<td :class="{disabled: !item.is_validated}">{{item.symbol}}</td>
-				<td><router-link :to="'/explore/address/' + item.contract">{{item.is_native ? '' : item.contract}}</router-link></td>
-			</tr>
-			</tbody>
-		</table>
+		<div>
+			<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
+			<v-data-table
+				:headers="headers"
+				:items="data"
+				:loading="!loaded"
+				hide-default-footer
+				disable-sort
+				disable-pagination
+				class="elevation-2"
+			>
+				<template v-slot:item.contract="{ item }">
+					<router-link :to="'/explore/address/' + item.contract">{{item.is_native ? '' : item.contract}}</router-link>
+				</template>
+
+				<template v-slot:item.spendable="{ item }">
+					<b>{{item.spendable}}</b>
+				</template>
+
+				<template v-slot:item.token="{ item }">
+					<div :class="{'text--disabled': !item.is_validated}">{{item.symbol}}</div>
+				</template>
+
+			</v-data-table>
+			
+		</div>
 		`
 })
 
