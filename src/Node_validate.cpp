@@ -216,6 +216,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->total_weight != prev->total_weight + block->weight) {
 		throw std::logic_error("invalid block total_weight");
 	}
+	// TODO: maximum VP limit in recent blocks
 
 	auto context = new_exec_context();
 	{

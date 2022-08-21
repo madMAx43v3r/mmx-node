@@ -239,6 +239,8 @@ int main(int argc, char** argv)
 			}
 			mmx::WalletClient wallet("Wallet");
 
+			// TODO: default to lowest available wallet index, not zero
+
 			if(command == "show")
 			{
 				std::string subject;
