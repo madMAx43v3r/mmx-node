@@ -294,7 +294,7 @@ int main(int argc, char** argv)
 						else if(auto plot = std::dynamic_pointer_cast<const mmx::contract::VirtualPlot>(contract)) {
 							const auto balance = node.get_virtual_plot_balance(entry.first);
 							std::cout << ", " << balance / pow(10, params->decimals) << " MMX";
-							std::cout << ", " << mmx::calc_virtual_plot_size(params, balance) / pow(1000, 3) << " TB";
+							std::cout << ", " << mmx::calc_virtual_plot_size(params, balance) / pow(1000, 4) << " TB";
 						}
 						else if(auto nft = std::dynamic_pointer_cast<const mmx::contract::PlotNFT>(contract)) {
 							std::cout << ", name = " << nft->name << ", ";
