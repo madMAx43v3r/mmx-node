@@ -424,6 +424,7 @@ const Login = {
 				type="error"
 				elevation="2"
 				v-if="error"
+				class="my-2"
 			>
 				{{ error }}
 			</v-alert>

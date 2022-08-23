@@ -112,6 +112,7 @@ Vue.component('node-settings', {
 				colored-border
 				type="info"
 				elevation="2"
+				class="my-2"
 			>
 				Set <b>{{result.key}}</b> to
 				<b><template v-if="result.value != null"> '{{result.value}}' </template><template v-else> null </template></b>
@@ -125,6 +126,7 @@ Vue.component('node-settings', {
 				colored-border
 				type="warning"
 				elevation="2"
+				class="my-2"
 			>
 				{{ $t('common.failed_with') }}: <b>{{error}}</b>
 			</v-alert>
@@ -214,7 +216,7 @@ Vue.component('wallet-settings', {
 								<td>{{item.name}}</td>
 								<td>{{item.symbol}}</td>
 								<td><router-link :to="'/explore/address/' + item.currency">{{item.currency}}</router-link></td>
-								<td><div class="ui tiny button" @click="rem_token(item.currency)">Remove</div></td>
+								<td><v-btn depressed @click="rem_token(item.currency)">Remove</v-btn></td>
 							</tr>
 						</template>
 					</template>
@@ -240,6 +242,7 @@ Vue.component('wallet-settings', {
 				colored-border
 				type="info"
 				elevation="2"
+				class="my-2"
 			>
 				<b>{{result}}</b>
 			</v-alert>
@@ -251,6 +254,7 @@ Vue.component('wallet-settings', {
 				colored-border
 				type="warning"
 				elevation="2"
+				class="my-2"
 			>
 				{{ $t('common.failed_with') }}: <b>{{error}}</b>
 			</v-alert>

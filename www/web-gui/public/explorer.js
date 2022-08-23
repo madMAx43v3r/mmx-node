@@ -276,6 +276,7 @@ Vue.component('block-view', {
 					colored-border
 					type="warning"
 					elevation="2"
+					class="my-2"
 				>
 					{{ $t('block_view.no_such_block') }}
 				</v-alert>
@@ -454,6 +455,7 @@ Vue.component('transaction-view', {
 				colored-border
 				type="warning"
 				elevation="2"
+				class="my-2"
 			>
 				No such transaction!
 			</v-alert>
