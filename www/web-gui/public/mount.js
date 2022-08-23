@@ -83,12 +83,12 @@ const routes = [
 ]
 
 const router = new VueRouter({
-	routes,
+	routes
 })
 
-Vue.prototype.$isWinGUI = typeof window.mmx !== 'undefined';
-
 var vuetify = new Vuetify();
+
+Vue.prototype.$isWinGUI = typeof window.mmx !== 'undefined';
 
 var app = new Vue({
 	el: '#app',
