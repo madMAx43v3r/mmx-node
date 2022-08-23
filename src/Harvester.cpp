@@ -183,15 +183,9 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 
 		try {
 			out->hash = out->calc_hash();
-			// TODO: sign response hash
 			// TODO: have node sign it after verify
-			out->farmer_sig = farmer->sign_proof(out->proof);
-
-			if(auto proof = std::dynamic_pointer_cast<const ProofOfStake>(out->proof)) {
-				auto copy = vnx::clone(proof);
-				copy->farmer_sig = out->farmer_sig;
-				out->proof = copy;
-			}
+			out->farmer_sig = farmer->sign_proof(out);
+			out->content_hash = out->calc_hash(true);
 			publish(out, output_proofs);
 		}
 		catch(const std::exception& ex) {

@@ -9,10 +9,7 @@ class Block extends BlockHeader {
 	
 	bool is_valid() const;
 	
-	// TOOD: bool full_hash
 	hash_t calc_tx_hash() const;
-	
-	ulong calc_cost(ChainParams* params) const;
 	
 	BlockHeader* get_header() const;
 	

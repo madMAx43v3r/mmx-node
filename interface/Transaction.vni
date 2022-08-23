@@ -7,27 +7,22 @@ class Transaction extends TransactionBase {
 	uint expires = -1;					// height
 	
 	uint fee_ratio = 1024;				// 1024 = 1.0
-	// TODO: uint static_cost;
-	// TODO: uint max_fee_amount;
+	
+	uint static_cost;
+	
+	uint max_fee_amount;
 	
 	tx_note_e note;
 	
 	ulong nonce;
 	
-	// TODO: optional, only for tx_base (use sender to make it chain unique)
-	hash_t salt;
+	optional<hash_t> salt;
 	
 	optional<addr_t> sender;			// to pay for tx fee
 	
 	vector<txin_t> inputs;
 	
 	vector<txout_t> outputs;
-	
-	// TODO: remove
-	vector<txin_t> exec_inputs;
-	
-	// TODO: remove
-	vector<txout_t> exec_outputs;
 	
 	vector<Operation*> execute;
 	
@@ -41,9 +36,7 @@ class Transaction extends TransactionBase {
 	
 	optional<tx_exec_result_t> exec_result;
 	
-	hash_t content_hash;				// full hash including signatures and exec result
-	
-	static const uint MAX_SOLUTIONS = 255;		// TODO: obsolete
+	hash_t content_hash;				// full hash including solutions and exec_result
 	
 	
 	void finalize();

@@ -27,11 +27,7 @@ class ProofOfTime {
 	
 	bool is_valid(ChainParams* params) const;
 	
-	// TODO: bool full_hash
-	hash_t calc_hash() const;
-	
-	// TODO: obsolete
-	hash_t get_full_hash() const;
+	pair<hash_t, hash_t> calc_hash() const;
 	
 	hash_t get_output(uint chain) const;			// final segment output
 	

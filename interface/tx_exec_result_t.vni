@@ -6,6 +6,8 @@ struct tx_exec_result_t {
 	
 	uint total_cost;			// static cost + exec cost
 	
+	uint total_fee;
+	
 	vector<txin_t> inputs;
 	
 	vector<txout_t> outputs;
@@ -13,5 +15,10 @@ struct tx_exec_result_t {
 	optional<string> message;
 	
 	static const uint MAX_MESSAGE_LENGTH = 128;
+	
+	
+	bool is_valid() const;
+	
+	hash_t calc_hash() const;
 	
 }

@@ -239,6 +239,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 			if(uint32_t(tx->id.to_uint256() & 0x1) != (context->block->height & 0x1)) {
 				throw std::logic_error("invalid inclusion");
 			}
+			// TODO: subtract tx fee
 			{
 				auto txi = tx;
 				while(txi) {
@@ -491,12 +492,15 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 	if(tx->expires < context->block->height) {
 		throw std::logic_error("tx expired");
 	}
+	if(tx->static_cost != tx->calc_cost(params)) {
+		throw std::logic_error("invalid static_cost");
+	}
 	if(tx->is_extendable) {
 		if(tx->deploy) {
 			throw std::logic_error("extendable tx cannot deploy");
 		}
-		if(tx->exec_inputs.size() || tx->exec_outputs.size()) {
-			throw std::logic_error("extendable tx cannot have execution inputs/outputs");
+		if(tx->exec_result) {
+			throw std::logic_error("extendable tx cannot have exec_result");
 		}
 	}
 	if(base) {
@@ -512,7 +516,7 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 		if(tx->note != tx_note_e::REWARD) {
 			throw std::logic_error("invalid coin base note");
 		}
-		if(tx->salt != base->prev) {
+		if(!tx->salt || *tx->salt != base->prev) {
 			throw std::logic_error("invalid coin base salt");
 		}
 		if(tx->expires != base->height) {
@@ -533,12 +537,12 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 		if(tx->solutions.size()) {
 			throw std::logic_error("coin base cannot have solutions");
 		}
+		if(tx->max_fee_amount != 0) {
+			throw std::logic_error("coin base invalid max_fee_amount");
+		}
 	} else {
 		if(tx->note == tx_note_e::REWARD) {
 			throw std::logic_error("invalid note: " + vnx::to_string(tx->note));
-		}
-		if(tx->salt != get_genesis_hash()) {
-			throw std::logic_error("invalid salt: " + tx->salt.to_string());
 		}
 	}
 	if(tx_index.find(tx->id)) {
@@ -734,32 +738,28 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 			}
 			tx_fee = amount;
 		}
-		{
-			const uint64_t amount = amounts[addr_t()];
-			if(amount < tx_fee) {
-				throw std::logic_error("insufficient fee: " + std::to_string(amount) + " < " + std::to_string(tx_fee));
-			}
-			const uint64_t change = amount - tx_fee;
-			if(change > params->min_txfee_io && tx->sender) {
-				txout_t out;
-				out.address = *tx->sender;
-				out.amount = change;
-				exec_outputs.push_back(out);
-			} else {
-				tx_fee = amount;
-			}
+		if(tx_fee > tx->max_fee_amount) {
+			throw std::logic_error("tx fee greater than limit");
 		}
+		if(!tx->sender) {
+			throw std::logic_error("missing tx sender");
+		}
+		// TODO: check balance to cover fee
 	}
 	std::shared_ptr<Transaction> out;
 
-	if(tx->exec_inputs.empty() && tx->exec_outputs.empty())
+	if(!tx->exec_result)
 	{
-		if(!exec_inputs.empty() || !exec_outputs.empty()) {
-			auto copy = vnx::clone(tx);
-			copy->exec_inputs = exec_inputs;
-			copy->exec_outputs = exec_outputs;
-			out = copy;
-		}
+		tx_exec_result_t result;
+		result.did_fail = false;
+		result.total_cost = tx_cost;
+		result.total_fee = tx_fee;
+		result.inputs = exec_inputs;
+		result.outputs = exec_outputs;
+
+		auto copy = vnx::clone(tx);
+		copy->exec_result = result;
+		out = copy;
 	}
 	else {
 		if(tx->exec_inputs.size() != exec_inputs.size()) {

@@ -245,6 +245,7 @@ public:
 		}
 	}
 
+	// TODO: obsolete ?
 	void gather_fee(std::shared_ptr<Transaction> tx,
 					std::map<std::pair<addr_t, addr_t>, uint128_t>& spent_map,
 					const spend_options_t& options = {}) const
@@ -290,7 +291,6 @@ public:
 
 	void sign_off(std::shared_ptr<Transaction> tx, const spend_options_t& options = {}) const
 	{
-		tx->salt = genesis_hash;
 		tx->finalize();
 
 		std::unordered_map<addr_t, uint32_t> solution_map;
@@ -363,6 +363,9 @@ public:
 				}
 			}
 		}
+
+		// compute final content hash
+		tx->content_hash = tx->calc_hash(true);
 	}
 
 	std::shared_ptr<const Solution> sign_msg(const addr_t& address, const hash_t& msg, const spend_options_t& options = {}) const
@@ -391,6 +394,7 @@ public:
 				tx->sender = get_address(0);
 			}
 		}
+		tx->static_cost = tx->calc_cost(params);
 
 		std::map<addr_t, uint128_t> missing;
 		{
@@ -427,7 +431,6 @@ public:
 				gather_inputs(tx, spent_map, amount, entry.first, options);
 			}
 		}
-		gather_fee(tx, spent_map, options);
 		sign_off(tx, options);
 	}
 

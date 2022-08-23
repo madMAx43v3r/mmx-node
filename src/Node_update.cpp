@@ -530,6 +530,7 @@ std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit,
 		balance_cache_t tmp_cache(&balance_cache);
 		{
 			auto tx = entry.tx;
+			// TODO: subtract tx fee
 			while(tx) {
 				if(tx_set.count(tx->id)) {
 					passed = false;
@@ -653,6 +654,7 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 		throw std::logic_error("farmer refused to sign block");
 	}
 	block->BlockHeader::operator=(*result);
+	block->content_hash = block->calc_hash().second;
 
 	const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
 	log(INFO) << "Created block at height " << block->height << " with: ntx = " << block->tx_list.size()

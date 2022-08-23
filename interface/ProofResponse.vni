@@ -12,6 +12,8 @@ class ProofResponse {
 	
 	vnx.Hash64 farmer_addr;
 	
+	hash_t content_hash;
+	
 	
 	bool is_valid() const;
 	

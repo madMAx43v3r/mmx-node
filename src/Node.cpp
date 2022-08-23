@@ -209,6 +209,7 @@ void Node::main()
 	if(state_hash == hash_t())
 	{
 		auto genesis = Block::create();
+		genesis->nonce = params->port;
 		genesis->time_diff = params->initial_time_diff;
 		genesis->space_diff = params->initial_space_diff;
 		genesis->vdf_output[0] = hash_t(params->vdf_seed);
@@ -949,9 +950,7 @@ void Node::add_block(std::shared_ptr<const Block> block)
 
 	if(block->farmer_sig) {
 		pending_forks.push_back(fork);
-	}
-	else if(block->is_valid()) {
-		block->validate();
+	} else {
 		add_fork(fork);
 	}
 }
@@ -971,7 +970,7 @@ void Node::add_transaction(std::shared_ptr<const Transaction> tx, const vnx::boo
 	if(pre_validate) {
 		validate(tx);
 	}
-	pending_transactions[tx->calc_hash(true)] = tx;
+	pending_transactions[tx->content_hash] = tx;
 
 	if(!vnx_sample) {
 		publish(tx, output_transactions);
@@ -1041,7 +1040,7 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 
 void Node::handle(std::shared_ptr<const ProofResponse> value)
 {
-	if(!is_synced || !value->is_valid() || !recv_height(value->request->height)) {
+	if(!is_synced || !recv_height(value->request->height)) {
 		return;
 	}
 	pending_proofs.push_back(value);

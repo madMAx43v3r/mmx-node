@@ -14,13 +14,9 @@ namespace mmx {
 
 vnx::bool_t Block::is_valid() const
 {
-	for(const auto& tx : tx_list) {
-		if(!tx) {
-			return false;
-		}
-	}
-	return BlockHeader::is_valid() && (!proof || proof->is_valid())
-			&& tx_count == tx_list.size() && calc_tx_hash() == tx_hash;
+	return BlockHeader::is_valid()
+			&& tx_count == tx_list.size()
+			&& calc_tx_hash() == tx_hash;
 }
 
 hash_t Block::calc_tx_hash() const
@@ -32,8 +28,7 @@ hash_t Block::calc_tx_hash() const
 	buffer.reserve(1024 * 1024);
 
 	for(const auto& tx : tx_list) {
-		// TODO: use full hash
-		write_bytes(out, tx ? tx->calc_hash() : hash_t());
+		write_bytes(out, tx ? tx->calc_hash(true) : hash_t());
 	}
 	out.flush();
 
@@ -42,23 +37,17 @@ hash_t Block::calc_tx_hash() const
 
 void Block::finalize()
 {
+	tx_cost = 0;
+	tx_fees = 0;
+	for(const auto& tx : tx_list) {
+		if(const auto& res = tx->exec_result) {
+			tx_cost += res->total_cost;
+			tx_fees += res->total_fee;
+		}
+	}
 	tx_count = tx_list.size();
 	tx_hash = calc_tx_hash();
 	hash = calc_hash();
-}
-
-uint64_t Block::calc_cost(std::shared_ptr<const ChainParams> params) const
-{
-	uint128_t cost = 0;
-	for(const auto& tx : tx_list) {
-		if(tx) {
-			cost += tx->calc_cost(params);
-		}
-	}
-	if(cost.upper()) {
-		throw std::logic_error("block cost amount overflow");
-	}
-	return cost;
 }
 
 std::shared_ptr<const BlockHeader> Block::get_header() const
@@ -82,6 +71,21 @@ void Block::validate() const
 {
 	Super::validate();
 
+	uint64_t total_tx_cost = 0;
+	uint64_t total_tx_fees = 0;
+	for(const auto& tx : tx_list) {
+		if(!tx || !tx->exec_result) {
+			throw std::logic_error("missing tx exec_result");
+		}
+		total_tx_cost += tx->exec_result->total_cost;
+		total_tx_fees += tx->exec_result->total_fee;
+	}
+	if(tx_cost != total_tx_cost) {
+		throw std::logic_error("invalid tx_cost");
+	}
+	if(tx_fees != total_tx_fees) {
+		throw std::logic_error("invalid tx_fees");
+	}
 	if(!farmer_sig) {
 		if(nonce) {
 			throw std::logic_error("invalid block nonce");

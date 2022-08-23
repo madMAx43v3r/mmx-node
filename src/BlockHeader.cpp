@@ -13,10 +13,14 @@ namespace mmx {
 
 vnx::bool_t BlockHeader::is_valid() const
 {
-	return version == 0 && calc_hash() == hash;
+	const auto all_hash = calc_hash();
+	return version == 0
+			&& (!proof || proof->is_valid())
+			&& (!tx_base || tx_base->is_valid())
+			&& all_hash.first == hash && all_hash.second == content_hash;
 }
 
-hash_t BlockHeader::calc_hash() const
+std::pair<hash_t, hash_t> BlockHeader::calc_hash() const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
@@ -31,22 +35,25 @@ hash_t BlockHeader::calc_hash() const
 	write_field(out, "nonce", 		nonce);
 	write_field(out, "time_diff", 	time_diff);
 	write_field(out, "space_diff", 	space_diff);
+	write_field(out, "weight", 		weight);
+	write_field(out, "total_weight", total_weight);
 	write_field(out, "vdf_iters", 	vdf_iters);
 	write_field(out, "vdf_output", 	vdf_output);
-	// TODO: use full hash
-	write_field(out, "proof", 		proof ? proof->calc_hash() : hash_t());
-	// TODO: use full hash
-	write_field(out, "tx_base", 	tx_base ? tx_base->calc_hash() : hash_t());
+	write_field(out, "proof", 		proof ? proof->calc_hash(true) : hash_t());
+	write_field(out, "tx_base", 	tx_base ? tx_base->calc_hash(true) : hash_t());
+	write_field(out, "tx_count", 	tx_count);
+	write_field(out, "tx_cost", 	tx_cost);
+	write_field(out, "tx_fees", 	tx_fees);
 	write_field(out, "tx_hash", 	tx_hash);
 	out.flush();
 
-	return hash_t(buffer);
-}
+	std::pair<hash_t, hash_t> res;
+	res.first = hash_t(buffer);
 
-hash_t BlockHeader::get_full_hash() const
-{
-	// TODO: use calc_hash(true)
-	return farmer_sig ? hash_t(hash + *farmer_sig) : hash;
+	write_field(out, "farmer_sig", farmer_sig);
+	out.flush();
+	res.second = hash_t(buffer);
+	return res;
 }
 
 void BlockHeader::validate() const

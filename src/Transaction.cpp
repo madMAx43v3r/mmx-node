@@ -47,9 +47,10 @@ vnx::bool_t Transaction::is_valid() const
 			return false;
 		}
 	}
-	// TODO: verify content_hash too
-	return version == 0 && fee_ratio >= 1024 && nonce && solutions.size() <= MAX_SOLUTIONS
-			&& (!parent || parent->is_valid()) && calc_hash() == id;
+	return version == 0 && fee_ratio >= 1024 && nonce
+			&& (!parent || parent->is_valid())
+			&& (!exec_result || exec_result->is_valid())
+			&& calc_hash() == id && calc_hash(true) == content_hash;
 }
 
 hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
@@ -64,6 +65,8 @@ hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "version", version);
 	write_field(out, "expires", expires);
 	write_field(out, "fee_ratio", fee_ratio);
+	write_field(out, "static_cost", static_cost);
+	write_field(out, "max_fee_amount", max_fee_amount);
 	write_field(out, "note", 	note);
 	write_field(out, "nonce", 	nonce);
 	write_field(out, "salt", 	salt);
@@ -80,11 +83,12 @@ hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "is_extendable", is_extendable);
 
 	if(full_hash) {
-		// TODO: write_bytes(out, "solutions");
-		// TODO: write_bytes(out, uint64_t(solutions.size()));
+		write_bytes(out, "solutions");
+		write_bytes(out, uint64_t(solutions.size()));
 		for(const auto& sol : solutions) {
 			write_bytes(out, sol ? sol->calc_hash() : hash_t());
 		}
+		write_field(out, "exec_result", exec_result ? exec_result->calc_hash() : hash_t());
 	}
 	out.flush();
 
