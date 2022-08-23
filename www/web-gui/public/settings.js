@@ -8,7 +8,11 @@ Vue.component('node-settings', {
 			timelord: null,
 			farmer_reward_addr: "null",
 			timelord_reward_addr: "null",
-			availableLanguages: availableLanguages
+			availableLanguages: availableLanguages,
+			themes: [
+				{ value: false, text: "Light" },
+				{ value: true, text: "Dark" }
+			]
 		}
 	},
 	methods: {
@@ -70,14 +74,16 @@ Vue.component('node-settings', {
 		'$i18n.locale': async function (newVal, oldVal) {
 			localStorage.setItem('language', newVal);
 			await loadLanguageAsync(newVal);			
-		}
+		},
+		'$vuetify.theme.dark': async function (newVal, oldVal) {
+			localStorage.setItem('theme_dark', newVal);
+			console.log(newVal);
+		}		
 	},
 	template: `
 	<div>
 		<v-card>
 			<v-card-text>
-
-				<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
 				<v-select
 					v-model="$i18n.locale"
 					:label="$t('node_settings.language')"
@@ -85,6 +91,22 @@ Vue.component('node-settings', {
 					item-text="language"
 					item-value="code">
 				</v-select>
+				
+				<v-select
+					v-model="$vuetify.theme.dark"
+					label="Theme"
+					:items="themes" 
+					item-text="text"
+					item-value="value">
+				</v-select>
+
+			</v-card-text>			
+		</v-card>
+
+		<v-card class="my-2">
+			<v-card-text>
+
+				<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
 
 				<v-checkbox
       				v-model="timelord"
