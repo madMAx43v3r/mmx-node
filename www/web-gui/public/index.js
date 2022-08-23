@@ -410,25 +410,29 @@ const Login = {
 	},
 	template: `
 		<div>
-			<!-- TODO add validation rulues -->
-			<v-text-field
-				v-model="passwd"
-				:label="$t('login.password_label')"
-				required
-				type="password"/>
-			<v-btn color="success" class="mr-4" @click="submit">{{ $t('login.login') }}</v-btn>
+			<v-card>
+				<v-card-text>
+					<!-- TODO add validation rulues -->
+					<v-text-field
+						v-model="passwd"
+						:label="$t('login.password_label')"
+						required
+						type="password"/>
+					<v-btn color="success" @click="submit">{{ $t('login.login') }}</v-btn>
+				</v-card-text>
+			</v-card>
 
 			<v-alert
 				border="left"
 				colored-border
 				type="error"
+				dismissible
 				elevation="2"
 				v-if="error"
 				class="my-2"
 			>
 				{{ error }}
 			</v-alert>
-
 		</div>
 		`
 }
