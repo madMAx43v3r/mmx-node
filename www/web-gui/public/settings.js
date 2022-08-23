@@ -238,7 +238,7 @@ Vue.component('wallet-settings', {
 								<td>{{item.name}}</td>
 								<td>{{item.symbol}}</td>
 								<td><router-link :to="'/explore/address/' + item.currency">{{item.currency}}</router-link></td>
-								<td><v-btn depressed @click="rem_token(item.currency)">Remove</v-btn></td>
+								<td><v-btn outlined @click="rem_token(item.currency)">Remove</v-btn></td>
 							</tr>
 						</template>
 					</template>
@@ -254,7 +254,7 @@ Vue.component('wallet-settings', {
 					v-model="new_token_addr" 
 					placeholder="mmx1..."					
 				></v-text-field>
-				<v-btn @click="add_token(new_token_addr)" color="primary">Add Token</v-btn>			
+				<v-btn @click="add_token(new_token_addr)" outlined color="primary">Add Token</v-btn>			
 			</v-card-text>
 		</v-card>
 

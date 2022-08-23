@@ -418,7 +418,7 @@ const Login = {
 						:label="$t('login.password_label')"
 						required
 						type="password"/>
-					<v-btn color="success" @click="submit">{{ $t('login.login') }}</v-btn>
+					<v-btn outlined color="primary" @click="submit">{{ $t('login.login') }}</v-btn>
 				</v-card-text>
 			</v-card>
 
