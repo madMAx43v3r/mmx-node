@@ -496,14 +496,10 @@ Vue.component('account-contracts', {
 		this.update();
 	},
 	template: `
-		<div>
-		<template v-if="!data && loading">
-			<v-progress-linear indeterminate absolute top></v-progress-linear>
-		</template>
-		<template v-if="data">
-			<account-contract-summary v-for="item in data" :key="item[0]" :index="index" :address="item[0]" :contract="item[1]"></account-contract-summary>
-		</template>
-		</div>
+		<v-card outlined color="transparent">
+			<v-progress-linear  v-if="!data && loading" indeterminate absolute top></v-progress-linear>
+			<account-contract-summary v-if="data" v-for="item in data" :key="item[0]" :index="index" :address="item[0]" :contract="item[1]"></account-contract-summary>
+		</v-card>
 		`
 })
 
@@ -755,7 +751,7 @@ Vue.component('create-account', {
 			>
 				{{ $t('common.failed_with') }}: <b>{{error}}</b>
 			</v-alert>
-			
+
 		</div>
 
 		`
