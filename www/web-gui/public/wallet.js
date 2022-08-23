@@ -590,9 +590,9 @@ Vue.component('account-details', {
 	template: `
 		<div>
 			<object-table :data="account"></object-table>
-			<object-table :data="keys"></object-table>
+			<object-table :data="keys" class="my-2"></object-table>
 
-			<div v-if="$isWinGUI && this.keys" @click="copyKeysToPlotter" class="ui submit primary button">{{ $t('account_details.copy_keys_to_plotter') }}</div>
+			<v-btn v-if="$isWinGUI && this.keys" @click="copyKeysToPlotter" color="primary">{{ $t('account_details.copy_keys_to_plotter') }}</v-btn>
 		</div>
 		`
 })
