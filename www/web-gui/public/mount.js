@@ -88,17 +88,17 @@ const router = new VueRouter({
 
 Vue.prototype.$isWinGUI = typeof window.mmx !== 'undefined';
 
+var vuetify = new Vuetify();
+
 var app = new Vue({
 	el: '#app',
-	vuetify: new Vuetify(),
+	vuetify: vuetify,
 	router: router,
     i18n: i18n,
-	data: () => ({
-		items: ['Foo', 'Bar', 'Fizz', 'Buzz'],
-	  }),
+
 	beforeMount() {
 		(async () => {
-
+					
 			var locale;
 
 			if(this.$isWinGUI) {
@@ -108,9 +108,12 @@ var app = new Vue({
 					if (i18n.locale != locale) {
 						loadLanguageAsync(locale);
 					}
+
+					this.$vuetify.theme.dark = window.mmx.theme_dark;
 				}, 1000);
 			} else {
-				locale = localStorage.getItem('language')
+				locale = localStorage.getItem('language');
+				this.$vuetify.theme.dark = localStorage.getItem('theme_dark') === 'true';
 			}
 
 			if (locale) {
@@ -121,6 +124,7 @@ var app = new Vue({
 
 		})()
 	},
+
 	beforeDestroy() {
 
 	}
