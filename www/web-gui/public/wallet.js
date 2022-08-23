@@ -584,7 +584,7 @@ Vue.component('account-details', {
 			<object-table :data="account"></object-table>
 			<object-table :data="keys"></object-table>
 
-			<div v-if="isWinGUI && this.keys" @click="copyKeysToPlotter" class="ui submit primary button">{{ $t('account_details.copy_keys_to_plotter') }}</div>
+			<div v-if="$isWinGUI && this.keys" @click="copyKeysToPlotter" class="ui submit primary button">{{ $t('account_details.copy_keys_to_plotter') }}</div>
 		</div>
 		`
 })
@@ -625,20 +625,65 @@ Vue.component('account-actions', {
 		}
 	},
 	template: `
-		<div class="ui raised segment">
-			<div @click="reset_cache" class="ui button">{{ $t('account_actions.reset_cache') }}</div>
-			<div @click="show_seed" class="ui button">{{ $t('account_actions.show_seed') }}</div>
-		</div>
-		<div class="ui message" :class="{hidden: !info}">
-			<b>{{info}}</b>
-		</div>
-		<div class="ui negative message" :class="{hidden: !error}">
-			{{ $t('common.failed_with') }}: <b>{{error}}</b>
-		</div>
-		<div class="ui modal" ref="seed_modal">
-			<div class="content">
-				<object-table :data="seed"></object-table>
-			</div>
+		<div>
+			<v-card>
+				<v-card-text>
+					<v-btn @click="reset_cache">{{ $t('account_actions.reset_cache') }}</v-btn>
+
+					<v-dialog
+						transition="dialog-top-transition"
+						max-width="700"
+					>
+						<template v-slot:activator="{ on, attrs }">
+							<v-btn @click="show_seed" v-on="on">{{ $t('account_actions.show_seed') }}</v-btn>
+						</template>
+						<template v-slot:default="dialog">
+							<v-card>
+								<v-toolbar
+								color="primary"
+								dark
+								>
+								</v-toolbar>
+								<v-card-text>
+									<v-container>
+										<object-table :data="seed"></object-table>
+									</v-container>
+								</v-card-text>
+								<v-card-actions class="justify-end">
+									<v-btn
+										text
+										@click="dialog.value = false"
+									>Close</v-btn>
+								</v-card-actions>
+							</v-card>
+						</template>
+					</v-dialog>
+
+				</v-card-text>
+			</v-card>
+
+			<v-alert
+				border="left"
+				colored-border
+				type="info"
+				elevation="2"
+				v-if="info"
+				class="my-2"
+			>
+				{{info}}
+			</v-alert>
+
+			<v-alert
+				border="left"
+				colored-border
+				type="error"
+				elevation="2"
+				v-if="error"
+				class="my-2"
+			>
+				{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
+	
 		</div>
 		`
 })
