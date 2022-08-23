@@ -734,28 +734,30 @@ Vue.component('create-account', {
 		this.update();
 	},
 	template: `
-		<div class="ui raised segment">
-			<form class="ui form">
-				<div class="three fields">
-					<div class="three wide field">
-						<label>{{ $t('create_account.account_index') }}</label>
-						<input type="text" v-model.number="offset" style="text-align: right"/>
-					</div>
-					<div class="nine wide field">
-						<label>{{ $t('create_account.account_name') }}</label>
-						<input type="text" v-model="name"/>
-					</div>
-					<div class="four wide field">
-						<label>{{ $t('create_account.number_of_addresses') }}</label>
-						<input type="text" v-model.number="num_addresses" style="text-align: right"/>
-					</div>
-				</div>
-				<div @click="submit" class="ui submit primary button">{{ $t('create_account.create_account') }}</div>
-			</form>
+		<div>
+
+			<v-card>
+				<v-card-text>
+					<v-text-field type="text" :label="$t('create_account.account_index')" v-model.number="offset"/>
+					<v-text-field type="text" :label="$t('create_account.account_name')" v-model="name"/>
+					<v-text-field type="text" :label="$t('create_account.number_of_addresses')" v-model.number="num_addresses"/>
+					<v-btn @click="submit">{{ $t('create_account.create_account') }}</v-btn>
+				</v-card-text>
+			</v-card>
+
+			<v-alert
+				border="left"
+				colored-border
+				type="error"
+				elevation="2"
+				v-if="error"
+				class="my-2"
+			>
+				{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
+			
 		</div>
-		<div class="ui negative message" :class="{hidden: !error}">
-			{{ $t('common.failed_with') }}: <b>{{error}}</b>
-		</div>
+
 		`
 })
 

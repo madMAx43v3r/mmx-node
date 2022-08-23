@@ -124,7 +124,7 @@ const AccountOptions = {
 	template: `
 		<div>
 			<account-actions :index="index"></account-actions>
-			<create-account :index="index"></create-account>
+			<create-account :index="index" class="my-2"></create-account>
 		</div>
 	`
 }
