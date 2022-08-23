@@ -388,9 +388,16 @@ Vue.component('account-tx-history', {
 	},
 	data() {
 		return {
-			data: null,
+			data: [],
 			loading: false,
-			timer: null
+			loaded: false,
+			timer: null,
+			headers: [
+				{ text: this.$t('account_tx_history.height'), value: 'height' },
+				{ text: this.$t('account_tx_history.confirmed'), value: 'confirmed' },
+				{ text: this.$t('account_tx_history.transaction_id'), value: 'transaction_id' },
+				{ text: this.$t('account_tx_history.time'), value: 'time' },
+			]			
 		}
 	},
 	methods: {
@@ -400,6 +407,7 @@ Vue.component('account-tx-history', {
 				.then(response => response.json())
 				.then(data => {
 					this.loading = false;
+					this.loaded = true;
 					this.data = data;
 				});
 		}
@@ -412,34 +420,38 @@ Vue.component('account-tx-history', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<div>
-		<template v-if="!data && loading">
-			<v-progress-linear indeterminate absolute top></v-progress-linear>
-		</template>
-		<v-simple-table v-if="data">
-			<thead>
-			<tr>
-				<th>{{ $t('account_tx_history.height') }}</th>
-				<th>{{ $t('account_tx_history.confirmed') }}</th>
-				<th>{{ $t('account_tx_history.transaction_id') }}</th>
-				<th>{{ $t('account_tx_history.time') }}</th>
-			</tr>
-			</thead>
-			<tbody>
-			<tr v-for="item in data" :key="item.txid">
+		<v-data-table
+			:headers="headers"
+			:items="data"
+			:loading="!loaded"
+			hide-default-footer
+			disable-sort
+			disable-pagination
+			class="elevation-2"
+		>
+
+			<template v-slot:item.height="{ item }">
 				<template v-if="item.height">
-					<td><router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link></td>
+					<router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link>
 				</template>
 				<template v-else>
-					<td><i>{{ $t('account_tx_history.pending') }}</i></td>
+					<i>{{ $t('account_tx_history.pending') }}</i>
 				</template>
-				<td>{{item.confirm ? item.confirm > 1000 ? "> 1000" : item.confirm : 0}}</td>
-				<td><router-link :to="'/explore/transaction/' + item.id">{{item.id}}</router-link></td>
-				<td>{{new Date(item.time).toLocaleString()}}</td>
-			</tr>
-			</tbody>
-		</v-simple-table>
-		</div>
+			</template>
+
+			<template v-slot:item.transaction_id="{ item }">
+				<router-link :to="'/explore/transaction/' + item.id">{{item.id}}</router-link>
+			</template>
+
+			<template v-slot:item.confirmed="{ item }">
+				{{item.confirm ? item.confirm > 1000 ? "> 1000" : item.confirm : 0}}
+			</template>								
+
+			<template v-slot:item.time="{ item }">
+				{{new Date(item.time).toLocaleString()}}
+			</template>
+
+		</v-data-table>
 		`
 })
 
