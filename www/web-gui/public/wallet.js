@@ -522,7 +522,15 @@ Vue.component('account-addresses', {
 	},
 	data() {
 		return {
-			data: []
+			data: [],
+			headers: [
+				{ text: this.$t('account_addresses.index'), value: 'index' },
+				{ text: this.$t('account_addresses.address'), value: 'address' },
+				{ text: this.$t('account_addresses.n_recv'), value: 'n_recv' },
+				{ text: this.$t('account_addresses.n_spend'), value: 'n_spend' },
+				{ text: this.$t('account_addresses.last_recv'), value: 'last_recv' },
+				{ text: this.$t('account_addresses.last_spend'), value: 'last_spend' },
+			]
 		}
 	},
 	methods: {
@@ -536,28 +544,23 @@ Vue.component('account-addresses', {
 		this.update()
 	},
 	template: `
-		<v-simple-table>
-			<thead>
-			<tr>
-				<th>{{ $t('account_addresses.index') }}</th>
-				<th>{{ $t('account_addresses.address') }}</th>
-				<th>{{ $t('account_addresses.n_recv') }}</th>
-				<th>{{ $t('account_addresses.n_spend') }}</th>
-				<th>{{ $t('account_addresses.last_recv') }}</th>
-				<th>{{ $t('account_addresses.last_spend') }}</th>
-			</tr>
-			</thead>
-			<tbody>
-			<tr v-for="(item, index) in data" :key="index">
-				<td>{{index}}</td>
-				<td><router-link :to="'/explore/address/' + item">{{item}}</router-link></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-			</tr>
-			</tbody>
-		</v-simple-table>
+		<v-data-table
+			:headers="headers"
+			:items="data"
+			hide-default-footer
+			disable-sort
+			disable-pagination
+			class="elevation-2"
+		>
+			<template v-slot:item.index="{ item, index }">
+				{{ index }}
+			</template>	
+
+			<template v-slot:item.address="{ item }">
+				<router-link :to="'/explore/address/' + item">{{item}}</router-link>
+			</template>				
+		
+		</v-data-table>
 		`
 })
 
