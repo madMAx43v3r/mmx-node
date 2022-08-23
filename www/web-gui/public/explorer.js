@@ -34,17 +34,15 @@ Vue.component('explore-menu', {
 		<v-tabs class="mb-2">
 			<v-tab to="/explore/blocks">{{ $t('explore_menu.blocks') }}</v-tab>
 			<v-tab to="/explore/transactions">{{ $t('explore_menu.transactions') }}</v-tab>
-			<div class="item" style="flex-grow:1;">
-			    <!-- TODO error class -->
-				<div :class="{error: !!error}">
-					<v-text-field 
-						v-model="input" 
-						@keyup.enter="submit"
-						@click:append="submit" 
-						:placeholder="$t('explore_menu.placeholder')"
-						append-icon="mdi-database-search-outline"></v-text-field>
-				</div>
-			</div>			
+
+			<v-text-field class="mx-2"
+				v-model="input"
+				@keyup.enter="submit"
+				@click:append="submit"
+				:error="error"
+				:placeholder="$t('explore_menu.placeholder')"
+				append-icon="mdi-database-search-outline"></v-text-field>
+		
 		</v-tabs>
 	`
 })
