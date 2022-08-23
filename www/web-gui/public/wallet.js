@@ -28,7 +28,7 @@ Vue.component('wallet-summary', {
 				<account-summary :index="item[0]" :account="item[1]"></account-summary>
 			</div>
 
-			<v-btn to="/wallet/create" color="primary">{{ $t('wallet_summary.new_wallet') }}</v-btn>
+			<v-btn to="/wallet/create" outlined color="primary">{{ $t('wallet_summary.new_wallet') }}</v-btn>
 		</div>
 		`
 })
@@ -268,7 +268,10 @@ Vue.component('nft-table', {
 	},
 	data() {
 		return {
-			nfts: []
+			nfts: [],
+			headers: [
+				{ text: 'NFT', value: 'item' },
+			]
 		}
 	},
 	methods: {
@@ -282,18 +285,18 @@ Vue.component('nft-table', {
 		this.update()
 	},
 	template: `
-		<table class="ui table">
-			<thead>
-			<tr>
-				<th>NFT</th>
-			</tr>
-			</thead>
-			<tbody>
-			<tr v-for="item in nfts" :key="item">
-				<td><router-link :to="'/explore/address/' + item">{{item}}</router-link></td>
-			</tr>
-			</tbody>
-		</table>
+		<v-data-table
+			:headers="headers"
+			:items="nfts"
+			hide-default-footer
+			disable-sort
+			disable-pagination
+			class="elevation-2"
+		>
+			<template v-slot:item.item="{ item }">
+				<router-link :to="'/explore/address/' + item">{{item}}</router-link>
+			</template>
+		</v-data-table>
 		`
 })
 
@@ -476,8 +479,10 @@ Vue.component('account-contract-summary', {
 				<v-chip label>{{address}}</v-chip>
 				<object-table :data="contract" class="my-2"></object-table>
 				<balance-table :address="address"></balance-table>
-				<v-btn @click="deposit">{{ $t('account_contract_summary.deposit') }}</v-btn>
-				<v-btn @click="withdraw">{{ $t('account_contract_summary.withdraw') }}</v-btn>
+				<div class="mt-4">
+					<v-btn outlined @click="deposit">{{ $t('account_contract_summary.deposit') }}</v-btn>
+					<v-btn outlined @click="withdraw">{{ $t('account_contract_summary.withdraw') }}</v-btn>
+				</div>
 			</v-card-text>
 		</div>
 		`
@@ -608,7 +613,8 @@ Vue.component('account-actions', {
 		return {
 			seed: null,
 			info: null,
-			error: null
+			error: null,
+			dialog: false
 		}
 	},
 	methods: {
@@ -631,7 +637,7 @@ Vue.component('account-actions', {
 				.then(response => response.json())
 				.then(data => {
 					this.seed = data;
-					$(this.$refs.seed_modal).modal('show');
+					this.dialog = true;
 				});
 		}
 	},
@@ -639,14 +645,14 @@ Vue.component('account-actions', {
 		<div>
 			<v-card>
 				<v-card-text>
-					<v-btn @click="reset_cache">{{ $t('account_actions.reset_cache') }}</v-btn>
+					<v-btn outlined @click="reset_cache">{{ $t('account_actions.reset_cache') }}</v-btn>
 
-					<v-dialog
+					<v-dialog v-model="dialog"
 						transition="dialog-top-transition"
 						max-width="700"
 					>
 						<template v-slot:activator="{ on, attrs }">
-							<v-btn @click="show_seed" v-on="on">{{ $t('account_actions.show_seed') }}</v-btn>
+							<v-btn outlined @click="show_seed">{{ $t('account_actions.show_seed') }}</v-btn>
 						</template>
 						<template v-slot:default="dialog">
 							<v-card>
@@ -677,6 +683,7 @@ Vue.component('account-actions', {
 				border="left"
 				colored-border
 				type="info"
+				dismissible
 				elevation="2"
 				v-if="info"
 				class="my-2"
@@ -746,13 +753,20 @@ Vue.component('create-account', {
 	},
 	template: `
 		<div>
-
 			<v-card>
 				<v-card-text>
-					<v-text-field type="text" :label="$t('create_account.account_index')" v-model.number="offset"/>
-					<v-text-field type="text" :label="$t('create_account.account_name')" v-model="name"/>
-					<v-text-field type="text" :label="$t('create_account.number_of_addresses')" v-model.number="num_addresses"/>
-					<v-btn @click="submit">{{ $t('create_account.create_account') }}</v-btn>
+					<v-row >
+						<v-col>
+							<v-text-field type="text" :label="$t('create_account.account_index')" v-model.number="offset" class="text-align-right"/>
+						</v-col>
+						<v-col cols="6">							
+							<v-text-field type="text" :label="$t('create_account.account_name')" v-model="name"/>
+						</v-col>
+						<v-col>
+							<v-text-field type="text" :label="$t('create_account.number_of_addresses')" v-model.number="num_addresses"/>						
+						</v-col>
+					</v-row>
+					<v-btn outlined @click="submit">{{ $t('create_account.create_account') }}</v-btn>
 				</v-card-text>
 			</v-card>
 
@@ -808,7 +822,8 @@ Vue.component('create-wallet', {
 		}
 	},
 	mounted() {
-		$('.ui.checkbox').checkbox();
+		//TODO
+		//$('.ui.checkbox').checkbox();
 	},
 	template: `
 		<div class="ui raised segment">
@@ -928,7 +943,8 @@ Vue.component('account-send-form', {
 		this.update();
 	},
 	mounted() {
-		$('.ui.checkbox').checkbox();
+		// TODO
+		//$('.ui.checkbox').checkbox();
 	},
 	watch: {
 		address(value) {
@@ -1062,7 +1078,8 @@ Vue.component('account-offer-form', {
 		this.timer = setInterval(() => { this.update(); }, 10000);
 	},
 	mounted() {
-		$('.ui.checkbox').checkbox();
+		//TODO
+		//$('.ui.checkbox').checkbox();
 	},
 	beforeDestroy() {
 		clearInterval(this.timer);
@@ -1075,7 +1092,7 @@ Vue.component('account-offer-form', {
 			// TODO: validate
 		},
 		ask_currency(value) {
-			if(value) {
+			if(value && value !== 'mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev') {
 				fetch('/wapi/contract?id=' + value)
 					.then(response => {
 						if(response.ok) {
@@ -1103,57 +1120,98 @@ Vue.component('account-offer-form', {
 		}
 	},
 	template: `
-		<account-balance :index="index" ref="balance"></account-balance>
-		<div class="ui raised segment">
-			<form class="ui form" id="form">
-				<div class="three fields">
-					<div class="four wide field">
-						<label>{{ $t('account_offer_form.offer_amount') }}</label>
-						<input type="text" v-model.number="bid_amount" placeholder="1.23" style="text-align: right"/>
-					</div>
-					<div class="twelve wide field">
-						<label>{{ $t('account_offer_form.offer_currency') }}</label>
-						<select v-model="bid_currency">
-							<option v-for="item in balances" :key="item.contract" :value="item.contract">
-								{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
-							</option>
-						</select>
-					</div>
-				</div>
-				<div class="two fields">
-					<div class="four wide field">
-						<label>{{ $t('account_offer_form.receive_amount') }}</label>
-						<input type="text" v-model.number="ask_amount" placeholder="1.23" style="text-align: right"/>
-					</div>
-					<div class="two wide field">
-						<label>{{ $t('account_offer_form.symbol') }}</label>
-						<input type="text" v-model="ask_symbol" disabled/>
-					</div>
-					<div class="ten wide field">
-						<label>{{ $t('account_offer_form.receive_currency_contract') }}</label>
-						<select v-model="ask_currency">
-							<option v-for="item in tokens" :key="item.currency" :value="item.currency">
-								{{item.symbol}}<template v-if="item.currency != 'mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev'"> - [{{item.currency}}]</template>
-							</option>
-						</select>
-					</div>
-				</div>
-				<div class="inline field">
-					<div class="ui toggle checkbox">
-						<input type="checkbox" class="hidden" v-model="confirmed">
-						<label>{{ $t('account_offer_form.confirm') }}</label>
-					</div>
-				</div>
-				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">{{ $t('account_offer_form.offer') }}</div>
-			</form>
-		</div>
-		<div class="ui message" :class="{hidden: !result}">
+		<div>
+			<account-balance :index="index" ref="balance"></account-balance>
+			<v-card class="my-2">
+				<v-card-text>
+
+					<v-row>
+						<v-col cols="3">
+							<v-text-field class="text-align-right"
+								:label="$t('account_offer_form.offer_amount')"
+								placeholder="1.23"
+								v-model.number="bid_amount"	
+							></v-text-field>
+						</v-col>
+						<v-col>
+							<v-select
+								v-model="bid_currency"
+								:label="$t('account_offer_form.offer_currency')"
+								:items="balances" 
+								item-text="contract"
+								item-value="contract">
+
+								<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">
+									{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
+								</template>
+
+							</v-select>
+						</v-col>
+					</v-row>
+
+					<v-row>
+						<v-col cols="3">
+							<v-text-field class="text-align-right"
+								:label="$t('account_offer_form.receive_amount')"
+								placeholder="1.23"
+								v-model.number="ask_amount"	
+							></v-text-field>
+						</v-col>
+						<v-col cols="1">
+							<v-text-field
+								:label="$t('account_offer_form.symbol')"
+								placeholder="1.23"
+								v-model="ask_symbol"
+								disabled
+							></v-text-field>
+						</v-col>
+						<v-col>
+							<v-select
+								v-model="ask_currency"
+								:label="$t('account_offer_form.receive_currency_contract')"
+								:items="tokens" 
+								item-text="currency"
+								item-value="currency">
+
+								<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">
+									{{item.symbol}}<template v-if="item.currency != 'mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev'"> - [{{item.currency}}]</template>
+								</template>
+
+							</v-select>
+						</v-col>
+					</v-row>
+
+					<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')"></v-switch>
+					<v-btn @click="submit" outlined color="primary" :disabled="!confirmed">{{ $t('account_offer_form.offer') }}</v-btn>
+
+				</v-card-text>
+			</v-card>
+
+			<v-alert
+				border="left"
+				colored-border
+				type="info"
+				elevation="2"
+				v-if="result"
+				class="my-2"
+			>
 			{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
+			</v-alert>
+
+			<v-alert
+				border="left"
+				colored-border
+				type="error"
+				elevation="2"
+				v-if="error"
+				class="my-2"
+			>
+				{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
+
+			<account-offers :index="index" ref="offers"></account-offers>
+
 		</div>
-		<div class="ui negative message" :class="{hidden: !error}">
-			{{ $t('common.failed_with') }}: <b>{{error}}</b>
-		</div>
-		<account-offers :index="index" ref="offers"></account-offers>
 		`
 })
 
@@ -1285,7 +1343,7 @@ Vue.component('create-contract-menu', {
 			<v-card-text>
 				<v-select v-model="type" :items="types" :label="$t('create_contract_menu.contract_type')">
 				</v-select>
-				<v-btn @click="submit" :disabled="!type">{{ $t('common.create') }}</v-btn>
+				<v-btn outlined @click="submit" :disabled="!type">{{ $t('common.create') }}</v-btn>
 			</v-card-text>
 		</v-card>
 		`
@@ -1329,7 +1387,8 @@ Vue.component('create-locked-contract', {
 		}
 	},
 	mounted() {
-		$('.ui.checkbox').checkbox();
+		//TODO
+		//$('.ui.checkbox').checkbox();
 	},
 	watch: {
 		owner(value) {
@@ -1428,7 +1487,8 @@ Vue.component('create-virtual-plot-contract', {
 				.then(data => this.farmer_key = data.farmer_public_key);
 	},
 	mounted() {
-		$('.ui.checkbox').checkbox();
+		//TODO
+		//$('.ui.checkbox').checkbox();
 	},
 	watch: {
 		farmer_key(value) {
