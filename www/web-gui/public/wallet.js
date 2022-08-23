@@ -967,59 +967,106 @@ Vue.component('account-send-form', {
 				this.result = null;
 			}
 		}
+	},	
+	computed: {
+		selectAccounts() {
+			var result = [];
+			
+			result.push({ text: this.$t('account_send_form.address_input'), value: ""});
+
+			this.accounts.map(item => {
+				result.push(
+					{
+						text: `${this.$t('account_send_form.wallet') } #${item.account} (${item.address})`,
+						value: item.address
+					}
+				);
+			});
+
+			return result;
+		}
 	},
 	template: `
+	<div>
 		<balance-table :address="source" :show_empty="true" v-if="source" ref="balance"></balance-table>
 		<account-balance :index="index" v-if="!source" ref="balance"></account-balance>
-		<div class="ui raised segment">
-			<form class="ui form">
-				<div class="field" v-if="!!source">
-					<label>{{ $t('account_send_form.source_address') }}</label>
-					<input type="text" v-model="source" disabled/>
-				</div>
-				<div class="field">
-					<label>{{ $t('account_send_form.destination') }}</label>
-					<select v-model="address" :disabled="!!target_">
-						<option value="">{{ $t('account_send_form.address_input') }}</option>
-						<option v-for="item in accounts" :key="item.account" :value="item.address">
-						{{ $t('account_send_form.wallet') }} #{{item.account}} ({{item.address}})
-						</option>
-					</select>
-				</div>
-				<div class="field">
-					<label>{{ $t('account_send_form.destination_address') }}</label>
-					<input type="text" v-model="target" :disabled="!!address || !!target_" placeholder="mmx1..."/>
-				</div>
-				<div class="two fields">
-					<div class="four wide field">
-						<label>{{ $t('account_send_form.amount') }}</label>
-						<input type="text" v-model.number="amount" placeholder="1.23" style="text-align: right"/>
-					</div>
-					<div class="twelve wide field">
-						<label>{{ $t('account_send_form.currency') }}</label>
-						<select v-model="currency">
-							<option v-for="item in balances" :key="item.contract" :value="item.contract">
+
+		<v-card class="my-2">
+			<v-card-text>
+				<v-text-field 
+					v-if="!!source"
+					v-model="source" 
+					:label="$t('account_send_form.source_address')" disabled>
+				</v-text-field>
+
+				<v-select 
+					v-model="address"
+					:label="$t('account_send_form.destination')"
+					:items="selectAccounts"
+					item-text="text"
+					item-value="value"
+					:disabled="!!target_">
+				</v-select>
+
+				<v-text-field 
+					v-model="target"
+					:label="$t('account_send_form.destination_address')"
+					:disabled="!!address || !!target_" placeholder="mmx1...">
+				</v-text-field>
+
+				<v-row>
+					<v-col cols="3">
+						<v-text-field class="text-align-right"
+						:label="$t('account_send_form.amount')"
+						v-model.number="amount" placeholder="1.23"
+						></v-text-field>
+					</v-col>
+					<v-col>
+						<v-select
+							v-model="currency"
+							:label="$t('account_send_form.currency')"
+							:items="balances"
+							item-text="contract"
+							item-value="contract">
+
+							<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">
 								{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
-							</option>
-						</select>
-					</div>
-				</div>
-				<div class="inline field">
-					<div class="ui toggle checkbox">
-						<input type="checkbox" class="hidden" v-model="confirmed">
-						<label>{{ $t('account_send_form.confirm') }}</label>
-					</div>
-				</div>
-				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">{{ $t('account_send_form.send') }}</div>
-			</form>
-		</div>
-		<div class="ui message" :class="{hidden: !result}">
+							</template>
+
+						</v-select>
+					</v-col>
+				</v-row>
+
+				<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')"></v-switch>
+				<v-btn @click="submit" outlined color="primary" :disabled="!confirmed">{{ $t('account_send_form.send') }}</v-btn>
+
+			</v-card-text>
+		</v-card>
+
+		<v-alert
+			border="left"
+			colored-border
+			type="info"
+			elevation="2"
+			v-if="result"
+			class="my-2"
+		>
 			{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
-		</div>
-		<div class="ui negative message" :class="{hidden: !error}">
+		</v-alert>
+
+		<v-alert
+			border="left"
+			colored-border
+			type="error"
+			elevation="2"
+			v-if="error"
+			class="my-2"
+		>
 			{{ $t('common.failed_with') }}: <b>{{error}}</b>
-		</div>
+		</v-alert>
+
 		<account-tx-history :index="index" :limit="10" ref="history"></account-tx-history>
+	</div>
 		`
 })
 
