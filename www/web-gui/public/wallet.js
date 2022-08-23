@@ -21,15 +21,15 @@ Vue.component('wallet-summary', {
 		this.update();
 	},
 	template: `
-	<div>
-				<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
+		<div>
+			<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
 
-				<div v-for="item in data" :key="item[0]">
-					<account-summary :index="item[0]" :account="item[1]"></account-summary>
-				</div>
+			<div v-for="item in data" :key="item[0]">
+				<account-summary :index="item[0]" :account="item[1]"></account-summary>
+			</div>
 
-				<v-btn to="/wallet/create" color="primary">{{ $t('wallet_summary.new_wallet') }}</v-btn>
-	</div>
+			<v-btn to="/wallet/create" color="primary">{{ $t('wallet_summary.new_wallet') }}</v-btn>
+		</div>
 		`
 })
 
@@ -39,7 +39,7 @@ Vue.component('account-menu', {
 	},
 	template: `
 		<v-btn-toggle>
-			<v-btn :to="'/wallet/account/' + index">{{ $t('account_menu.balance') }}</v-btn>
+			<v-btn :to="'/wallet/account/' + index" exact>{{ $t('account_menu.balance') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/nfts'">{{ $t('account_menu.nfts') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/contracts'">{{ $t('account_menu.contracts') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/addresses'">{{ $t('account_menu.addresses') }}</v-btn>
@@ -115,7 +115,6 @@ Vue.component('account-balance', {
 	data() {
 		return {
 			data: [],
-			loading: false,
 			loaded: false,
 			timer: null,
 			headers: [
@@ -135,7 +134,6 @@ Vue.component('account-balance', {
 				.then(response => response.json())
 				.then(data => {
 					this.loaded = true;
-					this.loading = false;
 					this.data = data.balances;
 				});
 		}
@@ -148,32 +146,28 @@ Vue.component('account-balance', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<div>
-			<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
-			<v-data-table
-				:headers="headers"
-				:items="data"
-				:loading="!loaded"
-				hide-default-footer
-				disable-sort
-				disable-pagination
-				class="elevation-2"
-			>
-				<template v-slot:item.contract="{ item }">
-					<router-link :to="'/explore/address/' + item.contract">{{item.is_native ? '' : item.contract}}</router-link>
-				</template>
+		<v-data-table
+			:headers="headers"
+			:items="data"
+			:loading="!loaded"
+			hide-default-footer
+			disable-sort
+			disable-pagination
+			class="elevation-2"
+		>
+			<template v-slot:item.contract="{ item }">
+				<router-link :to="'/explore/address/' + item.contract">{{item.is_native ? '' : item.contract}}</router-link>
+			</template>
 
-				<template v-slot:item.spendable="{ item }">
-					<b>{{item.spendable}}</b>
-				</template>
+			<template v-slot:item.spendable="{ item }">
+				<b>{{item.spendable}}</b>
+			</template>
 
-				<template v-slot:item.token="{ item }">
-					<div :class="{'text--disabled': !item.is_validated}">{{item.symbol}}</div>
-				</template>
+			<template v-slot:item.token="{ item }">
+				<div :class="{'text--disabled': !item.is_validated}">{{item.symbol}}</div>
+			</template>
 
-			</v-data-table>
-			
-		</div>
+		</v-data-table>
 		`
 })
 
@@ -310,9 +304,19 @@ Vue.component('account-history', {
 	},
 	data() {
 		return {
-			data: null,
+			data: [],
 			loading: false,
-			timer: null
+			loaded: false,
+			timer: null,
+			headers: [
+				{ text: this.$t('account_history.height'), value: 'height' },
+				{ text: this.$t('account_history.type'), value: 'type' },
+				{ text: this.$t('account_history.amount'), value: 'value' },
+				{ text: this.$t('account_history.token'), value: 'token' },
+				{ text: this.$t('account_history.address'), value: 'address' },
+				{ text: this.$t('account_history.link'), value: 'link' },
+				{ text: this.$t('account_history.time'), value: 'time' },
+			]
 		}
 	},
 	methods: {
@@ -322,6 +326,7 @@ Vue.component('account-history', {
 				.then(response => response.json())
 				.then(data => {
 					this.loading = false;
+					this.loaded = true;
 					this.data = data;
 				});
 		}
@@ -334,42 +339,45 @@ Vue.component('account-history', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<div>
+		<v-data-table
+			:headers="headers"
+			:items="data"
+			:loading="!loaded"
+			hide-default-footer
+			disable-sort
+			disable-pagination
+			class="elevation-2"
+		>
+			<template v-slot:item.height="{ item }">
+				<router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link>
+			</template>	
 
-		<template v-if="!data && loading">
-			<v-progress-linear indeterminate absolute top></v-progress-linear>
-		</template>
-		<v-simple-table v-if="data">
-			<thead>
-			<tr>
-				<th>{{ $t('account_history.height') }}</th>
-				<th>{{ $t('account_history.type') }}</th>
-				<th>{{ $t('account_history.amount') }}</th>
-				<th>{{ $t('account_history.token') }}</th>
-				<th>{{ $t('account_history.address') }}</th>
-				<th>{{ $t('account_history.link') }}</th>
-				<th>{{ $t('account_history.time') }}</th>
-			</tr>
-			</thead>
-			<tbody>
-			<tr v-for="item in data">
-				<td><router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link></td>
-				<td>{{item.type}}</td>
-				<td><b>{{item.value}}</b></td>
+			<template v-slot:item.value="{ item }">
+				<b>{{item.value}}</b>
+			</template>
+
+			<template v-slot:item.token="{ item }">
 				<template v-if="item.is_native">
-					<td>{{item.symbol}}</td>
+					{{item.symbol}}
 				</template>
 				<template v-else>
-					<td><router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}{{item.is_validated ? "" : "?"}}</router-link></td>
+					<router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}{{item.is_validated ? "" : "?"}}</router-link>
 				</template>
-				<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
-				<td><router-link :to="'/explore/transaction/' + item.txid">TX</router-link></td>
-				<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
-			</tr>
-			</tbody>
-		</v-simple-table>
+			</template>
 
-		</div>
+			<template v-slot:item.address="{ item }">
+				<router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link>
+			</template>
+			
+			<template v-slot:item.link="{ item }">
+				<router-link :to="'/explore/transaction/' + item.txid">TX</router-link>
+			</template>
+
+			<template v-slot:item.time="{ item }">
+				{{new Date(item.time * 1000).toLocaleString()}}
+			</template>
+
+		</v-data-table>
 		`
 })
 
