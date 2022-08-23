@@ -29,7 +29,7 @@ const AccountHome = {
 	},
 	template: `
 		<div>
-			<account-balance :index="index"></account-balance>
+			<account-balance :index="index" class="my-2"></account-balance>
 			<account-history :index="index" :limit="50"></account-history>
 		</div>
 	`
