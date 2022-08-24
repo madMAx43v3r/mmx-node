@@ -1602,34 +1602,56 @@ Vue.component('create-virtual-plot-contract', {
 		}
 	},
 	template: `
-		<div class="ui large label">{{ $t('common.create') }}</div>
-		<div class="ui large label">mmx.contract.VirtualPlot</div>
-		<div class="ui raised segment">
-			<form class="ui form" id="form">
-				<div class="field">
-					<label>{{ $t('create_virtual_plot_contract.farmer_public_key') }}</label>
-					<input type="text" v-model="farmer_key"/>
-				</div>
-				<div class="field">
-					<label>{{ $t('create_virtual_plot_contract.reward_address') }}</label>
-					<input type="text" v-model="reward_address" :placeholder="$t('common.reward_address_placeholder')"/>
-				</div>
-				<div class="inline field">
-					<div class="ui toggle checkbox" :class="{disabled: !valid}">
-						<input type="checkbox" class="hidden" v-model="confirmed">
-						<label>{{ $t('common.confirm') }}</label>
-					</div>
-				</div>
-				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">{{ $t('common.deploy') }}</div>
-			</form>
-		</div>
-		<div class="ui message" :class="{hidden: !result}">
-			<template v-if="result">
+		<div>
+			<v-chip label>{{ $t('common.create') }}</v-chip>
+			<v-chip label>mmx.contract.VirtualPlot</v-chip>
+
+			<v-card class="my-2">
+				<v-card-text>
+					<v-text-field 
+						:label="$t('create_virtual_plot_contract.farmer_public_key')"
+						v-model="farmer_key">
+					</v-text-field>
+
+					<v-text-field 
+						:label="$t('create_virtual_plot_contract.reward_address')"
+						v-model="reward_address" 
+						:placeholder="$t('common.reward_address_placeholder')">
+					</v-text-field>
+
+					<v-switch 
+						v-model="confirmed"
+						:disabled="!valid"
+						:label="$t('common.confirm')">
+					</v-switch>
+
+					<v-btn @click="submit" outlined color="primary" :disabled="!valid">{{ $t('common.deploy') }}</v-btn>
+
+				</v-card-text>
+			</v-card>
+
+			<v-alert
+				border="left"
+				colored-border
+				type="info"
+				v-if="result"
+				elevation="2"
+				class="my-2"
+			>
 				{{ $t('common.deployed_as') }}: <b>{{result}}</b>
-			</template>
-		</div>
-		<div class="ui negative message" :class="{hidden: !error}">
-			{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
+
+			<v-alert
+				border="left"
+				colored-border
+				type="error"
+				v-if="error"
+				elevation="2"
+				class="my-2"
+			>
+				{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
+
 		</div>
 		`
 })
