@@ -821,10 +821,6 @@ Vue.component('create-wallet', {
 				});
 		}
 	},
-	mounted() {
-		//TODO
-		//$('.ui.checkbox').checkbox();
-	},
 	template: `
 		<div>
 			<v-card>
@@ -965,10 +961,6 @@ Vue.component('account-send-form', {
 			this.target = this.target_;
 		}
 		this.update();
-	},
-	mounted() {
-		// TODO
-		//$('.ui.checkbox').checkbox();
 	},
 	watch: {
 		address(value) {
@@ -1147,10 +1139,6 @@ Vue.component('account-offer-form', {
 	created() {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 10000);
-	},
-	mounted() {
-		//TODO
-		//$('.ui.checkbox').checkbox();
 	},
 	beforeDestroy() {
 		clearInterval(this.timer);
@@ -1457,10 +1445,6 @@ Vue.component('create-locked-contract', {
 				});
 		}
 	},
-	mounted() {
-		//TODO
-		//$('.ui.checkbox').checkbox();
-	},
 	watch: {
 		owner(value) {
 			this.check_valid();
@@ -1578,10 +1562,6 @@ Vue.component('create-virtual-plot-contract', {
 		fetch('/wapi/wallet/keys?index=' + this.index)
 				.then(response => response.json())
 				.then(data => this.farmer_key = data.farmer_public_key);
-	},
-	mounted() {
-		//TODO
-		//$('.ui.checkbox').checkbox();
 	},
 	watch: {
 		farmer_key(value) {
