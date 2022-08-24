@@ -234,12 +234,26 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		}
 		for(const auto& tx : block->tx_list) {
 			if(!tx) {
-				throw std::logic_error("missing transaction");
+				throw std::logic_error("null tx");
 			}
 			if(uint32_t(tx->id.to_uint256() & 0x1) != (context->block->height & 0x1)) {
-				throw std::logic_error("invalid inclusion");
+				throw std::logic_error("invalid tx inclusion");
 			}
-			// TODO: subtract tx fee
+			if(!tx->sender) {
+				throw std::logic_error("tx missing sender: " + tx->id.to_string());
+			}
+			if(!tx->exec_result) {
+				throw std::logic_error("tx missing exec_result: " + tx->id.to_string());
+			}
+			{
+				// subtract tx fee
+				const auto balance = balance_cache.find(*tx->sender, addr_t());
+				const auto total_fee = tx->exec_result->total_fee;
+				if(!balance || total_fee > *balance) {
+					throw std::logic_error("insufficient funds to cover tx fee for " + tx->sender->to_string());
+				}
+				*balance -= total_fee;
+			}
 			{
 				auto txi = tx;
 				while(txi) {
