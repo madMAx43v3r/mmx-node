@@ -29,7 +29,7 @@ const eventsName = [
   "Unhover"
 ];
 
-const events = eventsName
+const eventsP = eventsName
   .map(evt => evt.toLocaleLowerCase())
   .map(eventName => ({
     completeName: "plotly_" + eventName,
@@ -56,7 +56,7 @@ function cached(fn) {
 }
 
 const regex = /-(\w)/g;
-const camelize = cached(str => str.replace(regex, (_, c) => (c ? c.toUpperCase() : "")));
+const camelizeP = cached(str => str.replace(regex, (_, c) => (c ? c.toUpperCase() : "")));
 
 
 Vue.component('vue-plotly',
@@ -83,7 +83,7 @@ Vue.component('vue-plotly',
   },
   mounted() {
     Plotly.newPlot(this.$el, this.data, this.innerLayout, this.options);
-    events.forEach(evt => {
+    eventsP.forEach(evt => {
       this.$el.on(evt.completeName, evt.handler(this));
     });
   },
@@ -111,7 +111,7 @@ Vue.component('vue-plotly',
   computed: {
     options() {
       const optionsFromAttrs = Object.keys(this.$attrs).reduce((acc, key) => {
-        acc[camelize(key)] = this.$attrs[key];
+        acc[camelizeP(key)] = this.$attrs[key];
         return acc;
       }, {});
       return {
@@ -121,7 +121,7 @@ Vue.component('vue-plotly',
     }
   },
   beforeDestroy() {
-    events.forEach(event => this.$el.removeAllListeners(event.completeName));
+    eventsP.forEach(event => this.$el.removeAllListeners(event.completeName));
     Plotly.purge(this.$el);
   },
   methods: {
