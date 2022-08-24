@@ -81,77 +81,77 @@ Vue.component('node-settings', {
 		}		
 	},
 	template: `
-	<div>
-		<v-card>
-			<v-card-text>
-				<v-select
-					v-model="$i18n.locale"
-					:label="$t('node_settings.language')"
-					:items="availableLanguages" 
-					item-text="language"
-					item-value="code">
-				</v-select>
-				
-				<v-select
-					v-model="$vuetify.theme.dark"
-					label="Theme"
-					:items="themes" 
-					item-text="text"
-					item-value="value">
-				</v-select>
+		<div>
+			<v-card>
+				<v-card-text>
+					<v-select
+						v-model="$i18n.locale"
+						:label="$t('node_settings.language')"
+						:items="availableLanguages" 
+						item-text="language"
+						item-value="code">
+					</v-select>
+					
+					<v-select
+						v-model="$vuetify.theme.dark"
+						label="Theme"
+						:items="themes" 
+						item-text="text"
+						item-value="value">
+					</v-select>
 
-			</v-card-text>			
-		</v-card>
+				</v-card-text>			
+			</v-card>
 
-		<v-card class="my-2">
-			<v-card-text>
+			<v-card class="my-2">
+				<v-card-text>
 
-				<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
+					<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
 
-				<v-checkbox
-      				v-model="timelord"
-      				:label="$t('node_settings.enable_timelord')"
-    			></v-checkbox>
+					<v-checkbox
+						v-model="timelord"
+						:label="$t('node_settings.enable_timelord')"
+					></v-checkbox>
 
-				<v-text-field
-					:label="$t('node_settings.farmer_reward_address')"
-					:placeholder="$t('common.reward_address_placeholder')"
-					:value="farmer_reward_addr" @change="value => farmer_reward_addr = value"	
-          		></v-text-field>
+					<v-text-field
+						:label="$t('node_settings.farmer_reward_address')"
+						:placeholder="$t('common.reward_address_placeholder')"
+						:value="farmer_reward_addr" @change="value => farmer_reward_addr = value"	
+					></v-text-field>
 
-				<v-text-field
-					:label="$t('node_settings.timeLord_reward_address')"
-					:placeholder="$t('common.reward_address_placeholder')"
-					:value="timelord_reward_addr" @change="value => timelord_reward_addr = value"					
-				></v-text-field>
+					<v-text-field
+						:label="$t('node_settings.timeLord_reward_address')"
+						:placeholder="$t('common.reward_address_placeholder')"
+						:value="timelord_reward_addr" @change="value => timelord_reward_addr = value"					
+					></v-text-field>
 
-			</v-card-text>
-		</v-card>
-						
-		<v-alert
-			border="left"
-			colored-border
-			type="info"
-			v-if="result"
-			elevation="2"
-			class="my-2"
-		>
-			Set <b>{{result.key}}</b> to
-			<b><template v-if="result.value != null"> '{{result.value}}' </template><template v-else> null </template></b>
-			<template v-if="result.restart">{{ $t('node_settings.restart_needed') }}</template>
-		</v-alert>	
+				</v-card-text>
+			</v-card>
 							
-		<v-alert
-			border="left"
-			colored-border
-			type="error"
-			v-if="error"
-			elevation="2"
-			class="my-2"
-		>
-			{{ $t('common.failed_with') }}: <b>{{error}}</b>
-		</v-alert>
-	</div>	
+			<v-alert
+				border="left"
+				colored-border
+				type="info"
+				v-if="result"
+				elevation="2"
+				class="my-2"
+			>
+				Set <b>{{result.key}}</b> to
+				<b><template v-if="result.value != null"> '{{result.value}}' </template><template v-else> null </template></b>
+				<template v-if="result.restart">{{ $t('node_settings.restart_needed') }}</template>
+			</v-alert>	
+								
+			<v-alert
+				border="left"
+				colored-border
+				type="error"
+				v-if="error"
+				elevation="2"
+				class="my-2"
+			>
+				{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
+		</div>	
 		`
 })
 
@@ -215,69 +215,69 @@ Vue.component('wallet-settings', {
 	},
 	// TODO: i18n
 	template: `
-	<div>
-		<v-card class="my-2">
-			<v-card-title>Token Whitelist</v-card-title>
-			<v-card-text>
-				<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
-				<v-simple-table>
-					<thead>
-					<tr>
-						<th>Name</th>
-						<th>Symbol</th>
-						<th>Contract</th>
-						<th></th>
-					</tr>
-					</thead>
-					<tbody>
-					<template v-for="item in tokens" :key="item.currency">
-						<template v-if="!item.is_native">
-							<tr>
-								<td>{{item.name}}</td>
-								<td>{{item.symbol}}</td>
-								<td><router-link :to="'/explore/address/' + item.currency">{{item.currency}}</router-link></td>
-								<td><v-btn outlined @click="rem_token(item.currency)">Remove</v-btn></td>
-							</tr>
+		<div>
+			<v-card class="my-2">
+				<v-card-title>Token Whitelist</v-card-title>
+				<v-card-text>
+					<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
+					<v-simple-table>
+						<thead>
+						<tr>
+							<th>Name</th>
+							<th>Symbol</th>
+							<th>Contract</th>
+							<th></th>
+						</tr>
+						</thead>
+						<tbody>
+						<template v-for="item in tokens" :key="item.currency">
+							<template v-if="!item.is_native">
+								<tr>
+									<td>{{item.name}}</td>
+									<td>{{item.symbol}}</td>
+									<td><router-link :to="'/explore/address/' + item.currency">{{item.currency}}</router-link></td>
+									<td><v-btn outlined @click="rem_token(item.currency)">Remove</v-btn></td>
+								</tr>
+							</template>
 						</template>
-					</template>
-					</tbody>
-				</v-simple-table>			
-			</v-card-text>
-		</v-card>
+						</tbody>
+					</v-simple-table>			
+				</v-card-text>
+			</v-card>
 
-		<v-card>
-			<v-card-text>
-				<v-text-field
-					label="Token Address"
-					v-model="new_token_addr" 
-					placeholder="mmx1..."					
-				></v-text-field>
-				<v-btn @click="add_token(new_token_addr)" outlined color="primary">Add Token</v-btn>			
-			</v-card-text>
-		</v-card>
+			<v-card>
+				<v-card-text>
+					<v-text-field
+						label="Token Address"
+						v-model="new_token_addr" 
+						placeholder="mmx1..."					
+					></v-text-field>
+					<v-btn @click="add_token(new_token_addr)" outlined color="primary">Add Token</v-btn>			
+				</v-card-text>
+			</v-card>
+								
+			<v-alert
+				border="left"
+				colored-border
+				type="info"
+				v-if="result"
+				elevation="2"
+				class="my-2"
+			>
+				<b>{{result}}</b>
+			</v-alert>
 							
-		<v-alert
-			border="left"
-			colored-border
-			type="info"
-			v-if="result"
-			elevation="2"
-			class="my-2"
-		>
-			<b>{{result}}</b>
-		</v-alert>
-						
-		<v-alert
-			border="left"
-			colored-border
-			type="error"
-			v-if="error"
-			elevation="2"
-			class="my-2"
-		>
-			{{ $t('common.failed_with') }}: <b>{{error}}</b>
-		</v-alert>
+			<v-alert
+				border="left"
+				colored-border
+				type="error"
+				v-if="error"
+				elevation="2"
+				class="my-2"
+			>
+				{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
 
-	</div>
+		</div>
 		`
 })

@@ -214,25 +214,25 @@ const ExchangeMarket = {
 		}
 	},
 	template: `
-	<div>
-		<div class="ui two column grid">
-			<div class="column">
-				<exchange-trade-form @trade-executed="update"
-					:wallet="wallet" :server="server"
-					:bid_symbol="ask_symbol" :ask_symbol="bid_symbol"
-					:bid_currency="ask" :ask_currency="bid" :action="'Buy ' + bid_symbol">
-				</exchange-trade-form>
+		<div>
+			<div class="ui two column grid">
+				<div class="column">
+					<exchange-trade-form @trade-executed="update"
+						:wallet="wallet" :server="server"
+						:bid_symbol="ask_symbol" :ask_symbol="bid_symbol"
+						:bid_currency="ask" :ask_currency="bid" :action="'Buy ' + bid_symbol">
+					</exchange-trade-form>
+				</div>
+				<div class="column">
+					<exchange-trade-form @trade-executed="update"
+						:wallet="wallet" :server="server"
+						:bid_symbol="bid_symbol" :ask_symbol="ask_symbol"
+						:bid_currency="bid" :ask_currency="ask" :action="'Sell ' + bid_symbol">
+					</exchange-trade-form>
+				</div>
 			</div>
-			<div class="column">
-				<exchange-trade-form @trade-executed="update"
-					:wallet="wallet" :server="server"
-					:bid_symbol="bid_symbol" :ask_symbol="ask_symbol"
-					:bid_currency="bid" :ask_currency="ask" :action="'Sell ' + bid_symbol">
-				</exchange-trade-form>
-			</div>
+			<exchange-orders ref="orders" :server="server" :bid="bid" :ask="ask" :flip="false" :limit="100"></exchange-orders>
 		</div>
-		<exchange-orders ref="orders" :server="server" :bid="bid" :ask="ask" :flip="false" :limit="100"></exchange-orders>
-	</div>
 		`
 }
 
@@ -281,26 +281,26 @@ const ExchangeOffers = {
 		}
 	},
 	template: `
-	<div>
-		<div class="ui two column grid">
-			<div class="column">
-				<exchange-offer-form ref="bid_form" @offer-created="update_created"
-					:wallet="wallet" :server="server"
-					:bid_symbol="bid_symbol" :ask_symbol="ask_symbol" :flip="false"
-					:bid_currency="bid" :ask_currency="ask">
-				</exchange-offer-form>
+		<div>
+			<div class="ui two column grid">
+				<div class="column">
+					<exchange-offer-form ref="bid_form" @offer-created="update_created"
+						:wallet="wallet" :server="server"
+						:bid_symbol="bid_symbol" :ask_symbol="ask_symbol" :flip="false"
+						:bid_currency="bid" :ask_currency="ask">
+					</exchange-offer-form>
+				</div>
+				<div class="column">
+					<exchange-offer-form ref="ask_form" @offer-created="update_created"
+						:wallet="wallet" :server="server"
+						:bid_symbol="ask_symbol" :ask_symbol="bid_symbol" :flip="true"
+						:bid_currency="ask" :ask_currency="bid">
+					</exchange-offer-form>
+				</div>
 			</div>
-			<div class="column">
-				<exchange-offer-form ref="ask_form" @offer-created="update_created"
-					:wallet="wallet" :server="server"
-					:bid_symbol="ask_symbol" :ask_symbol="bid_symbol" :flip="true"
-					:bid_currency="ask" :ask_currency="bid">
-				</exchange-offer-form>
-			</div>
+			<exchange-orders ref="orders" :server="server" :bid="bid" :ask="ask" :flip="true" :limit="5"></exchange-orders>
+			<account-offers ref="offers" @offer-cancel="update_cancel" :index="wallet" :bid="bid" :ask="ask"></account-offers>
 		</div>
-		<exchange-orders ref="orders" :server="server" :bid="bid" :ask="ask" :flip="true" :limit="5"></exchange-orders>
-		<account-offers ref="offers" @offer-cancel="update_cancel" :index="wallet" :bid="bid" :ask="ask"></account-offers>
-	</div>
 		`
 }
 

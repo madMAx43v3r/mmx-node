@@ -619,19 +619,19 @@ Vue.component('address-view', {
 	},
 	//TODO: i18n Address
 	template: `
-	<div>
-		<v-chip label>Address</v-chip>
-		<v-chip label>{{ address }}</v-chip>
+		<div>
+			<v-chip label>Address</v-chip>
+			<v-chip label>{{ address }}</v-chip>
 
-		<balance-table :address="address" :show_empty="true" class="my-2"></balance-table>
+			<balance-table :address="address" :show_empty="true" class="my-2"></balance-table>
 
-		<div v-if="data">
-			<v-chip label class="my-2">{{ data.__type }}</v-chip>
-			<object-table :data="data"></object-table>
+			<div v-if="data">
+				<v-chip label class="my-2">{{ data.__type }}</v-chip>
+				<object-table :data="data"></object-table>
+			</div>
+
+			<address-history-table :address="address" :limit="200" :show_empty="false" class="my-2"></address-history-table>
 		</div>
-
-		<address-history-table :address="address" :limit="200" :show_empty="false" class="my-2"></address-history-table>
-	</div>
 		`
 })
 
