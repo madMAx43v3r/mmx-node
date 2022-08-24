@@ -34,64 +34,103 @@ Vue.component('node-info', {
 	},
 	template: `
 		<div v-if="data">
-		<v-container fluid id="features" class="pb-0">
 
-			<v-col cols="12">
-				<v-row align="center" justify="space-around">
-					<v-col cols="12" xl="3" md="3" sm="6" class="text-center">
-						<v-card>
-							<v-card-title>{{data.is_synced ? $t('common.yes') : $t('common.no') }}</v-card-title>
-							<v-card-text>{{ $t('node_info.synced') }}</v-card-text>
-						</v-card>
-					</v-col>
-					<v-col cols="12" xl="3" md="3" sm="6" class="text-center">					
-						<v-card>
-							<v-card-title>{{data.height}}</v-card-title>
-							<v-card-text>{{ $t('node_info.height') }}</v-card-text>
-						</v-card>
-					</v-col>
-					<v-col cols="12" xl="3" md="3" sm="6" class="text-center">	
-						<v-card>
-							<v-card-title>{{(data.total_space / Math.pow(1000, 5)).toFixed(3)}} PB</v-card-title>
-							<v-card-text>{{ $t('node_info.netspace') }}</v-card-text>
-						</v-card>
-					</v-col>
-					<v-col cols="12" xl="3" md="3" sm="6" class="text-center">
-						<v-card>
-							<v-card-title>{{(data.total_supply / Math.pow(10, 6)).toFixed(0)}} MMX</v-card-title>
-							<v-card-text>{{ $t('node_info.supply') }}</v-card-text>
-						</v-card>
-					</v-col>
-				</v-row>
-				<v-row align="center" justify="space-around">
-					<v-col cols="12" xl="3" md="3" sm="6" class="text-center">
-						<v-card>
-							<v-card-title>{{data.address_count}}</v-card-title>
-							<v-card-text>{{ $t('node_info.no_addresss') }}</v-card-text>
-						</v-card>
-					</v-col>
-					<v-col cols="12" xl="3" md="3" sm="6" class="text-center">
-						<v-card>
-							<v-card-title>{{(data.block_size * 100).toFixed(2)}} %</v-card-title>
-							<v-card-text>{{ $t('node_info.block_size') }}</v-card-text>
-						</v-card>
-					</v-col>
-					<v-col cols="12" xl="3" md="3" sm="6" class="text-center">
-						<v-card>
-							<v-card-title>{{(data.time_diff / 8 / Math.pow(10, 3)).toFixed(3)}} M/s</v-card-title>
-							<v-card-text>{{ $t('node_info.vdf_speed') }}</v-card-text>
-						</v-card>
-					</v-col>
-					<v-col cols="12" xl="3" md="3" sm="6" class="text-center">
-						<v-card>
-							<v-card-title>{{(data.block_reward.value).toFixed(3)}} MMX</v-card-title>
-							<v-card-text>{{ $t('node_info.block_reward') }}</v-card-text>
-						</v-card>
-					</v-col>													
-				</v-row>
-			</v-col>
+			<v-row align="center" justify="space-around" class="mt-1">
+				<v-col cols="12" class="py-1">			
+					<v-card>					
+						<v-card-title>
+							<v-row align="center" justify="space-around">
 
-		</v-container>
+								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">
+									<v-row align="center" justify="space-around">
+										{{ data.is_synced ? $t('common.yes') : $t('common.no') }}
+									</v-row>
+									<v-row align="center" justify="space-around" class="subtitle-1">
+										{{ $t('node_info.synced') }}
+									</v-row>
+								</v-col>
+
+								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
+									<v-row align="center" justify="space-around">
+										{{ data.height }}
+									</v-row>
+									<v-row align="center" justify="space-around" class="subtitle-1">
+										{{ $t('node_info.height') }}
+									</v-row>
+								</v-col>
+
+								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
+									<v-row align="center" justify="space-around">
+										{{ (data.total_space / Math.pow(1000, 5)).toFixed(3) }} PB
+									</v-row>
+									<v-row align="center" justify="space-around" class="subtitle-1">
+										{{ $t('node_info.netspace') }}
+									</v-row>
+								</v-col>
+
+								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
+									<v-row align="center" justify="space-around">
+										{{ (data.total_supply / Math.pow(10, 6)).toFixed(0) }} MMX
+									</v-row>
+									<v-row align="center" justify="space-around" class="subtitle-1">
+										{{ $t('node_info.supply') }}
+									</v-row>
+								</v-col>															
+
+							</v-row>
+						</v-card-title>
+					</v-card>
+				</v-col>
+			</v-row>
+
+			<v-row align="center" justify="space-around">
+				<v-col cols="12" class="py-0">			
+					<v-card>					
+						<v-card-title>
+							<v-row align="center" justify="space-around">
+
+								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">
+									<v-row align="center" justify="space-around">
+										{{ data.address_count }}
+									</v-row>
+									<v-row align="center" justify="space-around" class="subtitle-1">
+										{{ $t('node_info.no_addresss') }}
+									</v-row>
+								</v-col>
+
+								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
+									<v-row align="center" justify="space-around">
+										{{ (data.block_size * 100).toFixed(2) }} %
+									</v-row>
+									<v-row align="center" justify="space-around" class="subtitle-1">
+										{{ $t('node_info.block_size') }}
+									</v-row>
+								</v-col>
+
+								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
+									<v-row align="center" justify="space-around">
+										{{ (data.time_diff / 8 / Math.pow(10, 3)).toFixed(3) }} M/s
+									</v-row>
+									<v-row align="center" justify="space-around" class="subtitle-1">
+										{{ $t('node_info.vdf_speed') }}
+									</v-row>
+								</v-col>
+
+								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
+									<v-row align="center" justify="space-around">
+										{{ (data.block_reward.value).toFixed(3) }} MMX
+									</v-row>
+									<v-row align="center" justify="space-around" class="subtitle-1">
+										{{ $t('node_info.block_reward') }}
+									</v-row>
+								</v-col>															
+
+							</v-row>
+						</v-card-title>
+					</v-card>
+				</v-col>
+			</v-row>
+
 		</div>
 		`
 })
