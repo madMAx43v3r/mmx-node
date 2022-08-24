@@ -1003,86 +1003,86 @@ Vue.component('account-send-form', {
 		}
 	},
 	template: `
-	<div>
-		<balance-table :address="source" :show_empty="true" v-if="source" ref="balance"></balance-table>
-		<account-balance :index="index" v-if="!source" ref="balance"></account-balance>
+		<div>
+			<balance-table :address="source" :show_empty="true" v-if="source" ref="balance"></balance-table>
+			<account-balance :index="index" v-if="!source" ref="balance"></account-balance>
 
-		<v-card class="my-2">
-			<v-card-text>
-				<v-text-field 
-					v-if="!!source"
-					v-model="source" 
-					:label="$t('account_send_form.source_address')" disabled>
-				</v-text-field>
+			<v-card class="my-2">
+				<v-card-text>
+					<v-text-field 
+						v-if="!!source"
+						v-model="source" 
+						:label="$t('account_send_form.source_address')" disabled>
+					</v-text-field>
 
-				<v-select 
-					v-model="address"
-					:label="$t('account_send_form.destination')"
-					:items="selectAccounts"
-					item-text="text"
-					item-value="value"
-					:disabled="!!target_">
-				</v-select>
+					<v-select 
+						v-model="address"
+						:label="$t('account_send_form.destination')"
+						:items="selectAccounts"
+						item-text="text"
+						item-value="value"
+						:disabled="!!target_">
+					</v-select>
 
-				<v-text-field 
-					v-model="target"
-					:label="$t('account_send_form.destination_address')"
-					:disabled="!!address || !!target_" placeholder="mmx1...">
-				</v-text-field>
+					<v-text-field 
+						v-model="target"
+						:label="$t('account_send_form.destination_address')"
+						:disabled="!!address || !!target_" placeholder="mmx1...">
+					</v-text-field>
 
-				<v-row>
-					<v-col cols="3">
-						<v-text-field class="text-align-right"
-						:label="$t('account_send_form.amount')"
-						v-model.number="amount" placeholder="1.23"
-						></v-text-field>
-					</v-col>
-					<v-col>
-						<v-select
-							v-model="currency"
-							:label="$t('account_send_form.currency')"
-							:items="balances"
-							item-text="contract"
-							item-value="contract">
+					<v-row>
+						<v-col cols="3">
+							<v-text-field class="text-align-right"
+							:label="$t('account_send_form.amount')"
+							v-model.number="amount" placeholder="1.23"
+							></v-text-field>
+						</v-col>
+						<v-col>
+							<v-select
+								v-model="currency"
+								:label="$t('account_send_form.currency')"
+								:items="balances"
+								item-text="contract"
+								item-value="contract">
 
-							<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">
-								{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
-							</template>
+								<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">
+									{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
+								</template>
 
-						</v-select>
-					</v-col>
-				</v-row>
+							</v-select>
+						</v-col>
+					</v-row>
 
-				<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')"></v-switch>
-				<v-btn @click="submit" outlined color="primary" :disabled="!confirmed">{{ $t('account_send_form.send') }}</v-btn>
+					<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')"></v-switch>
+					<v-btn @click="submit" outlined color="primary" :disabled="!confirmed">{{ $t('account_send_form.send') }}</v-btn>
 
-			</v-card-text>
-		</v-card>
+				</v-card-text>
+			</v-card>
 
-		<v-alert
-			border="left"
-			colored-border
-			type="info"
-			elevation="2"
-			v-if="result"
-			class="my-2"
-		>
-			{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
-		</v-alert>
+			<v-alert
+				border="left"
+				colored-border
+				type="info"
+				elevation="2"
+				v-if="result"
+				class="my-2"
+			>
+				{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
+			</v-alert>
 
-		<v-alert
-			border="left"
-			colored-border
-			type="error"
-			elevation="2"
-			v-if="error"
-			class="my-2"
-		>
-			{{ $t('common.failed_with') }}: <b>{{error}}</b>
-		</v-alert>
+			<v-alert
+				border="left"
+				colored-border
+				type="error"
+				elevation="2"
+				v-if="error"
+				class="my-2"
+			>
+				{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
 
-		<account-tx-history :index="index" :limit="10" ref="history"></account-tx-history>
-	</div>
+			<account-tx-history :index="index" :limit="10" ref="history"></account-tx-history>
+		</div>
 		`
 })
 
