@@ -826,34 +826,58 @@ Vue.component('create-wallet', {
 		//$('.ui.checkbox').checkbox();
 	},
 	template: `
-		<div class="ui raised segment">
-			<form class="ui form">
-				<div class="two fields">
-					<div class="twelve wide field">
-						<label>{{ $t('create_wallet.account_name') }}</label>
-						<input type="text" v-model="name"/>
-					</div>
-					<div class="four wide field">
-						<label>{{ $t('create_wallet.number_of_addresses') }}</label>
-						<input type="text" v-model.number="num_addresses" style="text-align: right"/>
-					</div>
-				</div>
-				<div class="inline field">
-					<div class="ui toggle checkbox">
-						<input type="checkbox" class="hidden" v-model="with_seed">
-						<label>{{ $t('create_wallet.use_custom_seed') }}</label>
-					</div>
-				</div>
-				<div class="field">
-					<label>{{ $t('create_wallet.seed_hash') }}</label>
-					<input type="text" v-model="seed" :placeholder="$t('create_wallet.placeholder')" :disabled="!with_seed"/>
-				</div>
-				<div @click="submit" class="ui submit primary button">{{ $t('create_wallet.create_wallet') }}</div>
-			</form>
+		<div>
+			<v-card>
+				<v-card-text>
+
+					<v-row>
+						<v-col>
+							<v-text-field
+								v-model="name"
+								:label="$t('create_wallet.account_name')">
+							</v-text-field>
+						</v-col>
+						<v-col cols=4>
+
+							<v-text-field
+								v-model.number="num_addresses"
+								:label="$t('create_wallet.number_of_addresses')"
+								class="text-align-right">
+							</v-text-field>
+						</v-col>
+					</v-row>
+
+					<v-checkbox
+						v-model="with_seed"
+						:label="$t('create_wallet.use_custom_seed')">
+					</v-checkbox>
+
+					<v-text-field
+						v-model="seed"
+						:label="$t('create_wallet.seed_hash')"
+						:placeholder="$t('create_wallet.placeholder')" 
+						:disabled="!with_seed">
+					</v-text-field>
+
+					<v-btn @click="submit" outlined color="primary">{{ $t('create_wallet.create_wallet') }}</v-btn>
+
+				</v-card-text>
+
+			</v-card>
+							
+			<v-alert
+				border="left"
+				colored-border
+				type="error"
+				v-if="error"
+				elevation="2"
+				class="my-2"
+			>
+				{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
+
 		</div>
-		<div class="ui negative message" :class="{hidden: !error}">
-			{{ $t('common.failed_with') }}: <b>{{error}}</b>
-		</div>
+
 		`
 })
 
