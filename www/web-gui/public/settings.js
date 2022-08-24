@@ -127,32 +127,30 @@ Vue.component('node-settings', {
 
 			</v-card-text>
 		</v-card>
-
-		<template v-if="result">							
-			<v-alert
-				border="left"
-				colored-border
-				type="info"
-				elevation="2"
-				class="my-2"
-			>
-				Set <b>{{result.key}}</b> to
-				<b><template v-if="result.value != null"> '{{result.value}}' </template><template v-else> null </template></b>
-				<template v-if="result.restart">{{ $t('node_settings.restart_needed') }}</template>
-			</v-alert>
-		</template>		
-
-		<template v-if="error">							
-			<v-alert
-				border="left"
-				colored-border
-				type="warning"
-				elevation="2"
-				class="my-2"
-			>
-				{{ $t('common.failed_with') }}: <b>{{error}}</b>
-			</v-alert>
-		</template>
+						
+		<v-alert
+			border="left"
+			colored-border
+			type="info"
+			v-if="result"
+			elevation="2"
+			class="my-2"
+		>
+			Set <b>{{result.key}}</b> to
+			<b><template v-if="result.value != null"> '{{result.value}}' </template><template v-else> null </template></b>
+			<template v-if="result.restart">{{ $t('node_settings.restart_needed') }}</template>
+		</v-alert>	
+							
+		<v-alert
+			border="left"
+			colored-border
+			type="error"
+			v-if="error"
+			elevation="2"
+			class="my-2"
+		>
+			{{ $t('common.failed_with') }}: <b>{{error}}</b>
+		</v-alert>
 	</div>	
 		`
 })
@@ -257,30 +255,28 @@ Vue.component('wallet-settings', {
 				<v-btn @click="add_token(new_token_addr)" outlined color="primary">Add Token</v-btn>			
 			</v-card-text>
 		</v-card>
-
-		<template v-if="result">							
-			<v-alert
-				border="left"
-				colored-border
-				type="info"
-				elevation="2"
-				class="my-2"
-			>
-				<b>{{result}}</b>
-			</v-alert>
-		</template>		
-
-		<template v-if="error">							
-			<v-alert
-				border="left"
-				colored-border
-				type="warning"
-				elevation="2"
-				class="my-2"
-			>
-				{{ $t('common.failed_with') }}: <b>{{error}}</b>
-			</v-alert>
-		</template>			
+							
+		<v-alert
+			border="left"
+			colored-border
+			type="info"
+			v-if="result"
+			elevation="2"
+			class="my-2"
+		>
+			<b>{{result}}</b>
+		</v-alert>
+						
+		<v-alert
+			border="left"
+			colored-border
+			type="error"
+			v-if="error"
+			elevation="2"
+			class="my-2"
+		>
+			{{ $t('common.failed_with') }}: <b>{{error}}</b>
+		</v-alert>
 
 	</div>
 		`

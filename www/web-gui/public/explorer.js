@@ -270,17 +270,18 @@ Vue.component('block-view', {
 				<v-chip label>{{ data.hash }}</v-chip>
 			</template>
 
-			<template v-if="!data && !loading">							
-				<v-alert
-					border="left"
-					colored-border
-					type="warning"
-					elevation="2"
-					class="my-2"
-				>
-					{{ $t('block_view.no_such_block') }}
-				</v-alert>
-			</template>
+						
+			<v-alert
+				border="left"
+				colored-border
+				type="error"
+				v-if="!data && !loading"
+				elevation="2"
+				class="my-2"
+			>
+				{{ $t('block_view.no_such_block') }}
+			</v-alert>
+
 
 			<template v-if="data">
 				<v-card class="my-2">
@@ -449,17 +450,17 @@ Vue.component('transaction-view', {
 	<div>
 		<v-chip label>{{ $t('transaction_view.transaction') }}</v-chip>
 		<v-chip label>{{ id }}</v-chip>
-		<template v-if="!data && !loading">							
-			<v-alert
-				border="left"
-				colored-border
-				type="warning"
-				elevation="2"
-				class="my-2"
-			>
-				No such transaction!
-			</v-alert>
-		</template>
+						
+		<v-alert
+			border="left"
+			colored-border
+			type="error"
+			v-if="!data && !loading"
+			elevation="2"
+			class="my-2"
+		>
+			No such transaction!
+		</v-alert>
 
 		<template v-if="data">
 			<v-card class="my-2">				
