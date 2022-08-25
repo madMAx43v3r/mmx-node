@@ -235,7 +235,7 @@ Vue.component('wallet-settings', {
 									<td>{{item.name}}</td>
 									<td>{{item.symbol}}</td>
 									<td><router-link :to="'/explore/address/' + item.currency">{{item.currency}}</router-link></td>
-									<td><v-btn outlined @click="rem_token(item.currency)">Remove</v-btn></td>
+									<td><v-btn outlined text @click="rem_token(item.currency)">Remove</v-btn></td>
 								</tr>
 							</template>
 						</template>

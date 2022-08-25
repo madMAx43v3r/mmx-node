@@ -426,7 +426,6 @@ const Login = {
 				border="left"
 				colored-border
 				type="error"
-				dismissible
 				elevation="2"
 				v-if="error"
 				class="my-2"
