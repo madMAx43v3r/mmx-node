@@ -146,7 +146,8 @@ Vue.component('market-offers', {
 			timer: null,
 			result: null,
 			error: null,
-			loading: false
+			loading: false,
+			dialog: false
 		}
 	},
 	methods: {
@@ -176,7 +177,7 @@ Vue.component('market-offers', {
 		},
 		confirm(offer) {
 			this.offer = offer;
-			$(this.$refs.confirm).modal('show');
+			this.dialog = true;
 		},
 		accept(offer) {
 			const req = {};
@@ -189,7 +190,7 @@ Vue.component('market-offers', {
 							this.error = null;
 							this.result = data;
 							this.accepted.add(offer.address);
-							this.$emit('accept-offer', {offer: offer, result: data});
+							this.$emit('accept-offer', {offer: offer, result: data});							
 						});
 					} else {
 						response.text().then(data => {
@@ -197,6 +198,7 @@ Vue.component('market-offers', {
 							this.result = null;
 						});
 					}
+					this.dialog = false;
 				});
 		}
 	},
@@ -208,103 +210,137 @@ Vue.component('market-offers', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<div class="ui message" v-if="result">
-			{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
-		</div>
-		<div class="ui negative message" v-if="error">
-			{{ $t('common.failed_with') }}: <b>{{error}}</b>
-		</div>
-		<template v-if="!data && loading">
-			<div class="ui basic loading placeholder segment"></div>
-		</template>
-		<template v-if="data">
-			<table class="ui table striped">
-				<thead>
-					<th>{{ $t('market_offers.they_offer') }}</th>
-					<th>{{ $t('market_offers.they_ask') }}</th>
-					<template v-if="bid && ask">
-						<th>{{ $t('market_offers.price') }}</th>
-					</template>
-					<th>{{ $t('market_offers.time') }}</th>
-					<th>{{ $t('market_offers.link') }}</th>
-					<th></th>
-				</thead>
-				<tbody>
-					<tr v-for="item in data" :key="item.address" :class="{positive: accepted.has(item.address)}">
-						<td>
-							<template v-for="(entry, index) in item.bids">
-								<template v-if="index">, </template><b>{{entry.value}}</b>&nbsp;
-								<template v-if="entry.is_native">{{entry.symbol}}</template>
-								<template v-else>
-									<router-link :to="'/explore/address/' + entry.contract">
-										<template v-if="tokens.has(entry.contract)">{{entry.symbol}}</template>
-										<template v-else>{{entry.symbol}}?</template>
-									</router-link>
+		<div>
+			<v-alert
+				border="left"
+				colored-border
+				type="info"
+				elevation="2"
+				v-if="result"
+				class="my-2"
+			>
+				{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
+			</v-alert>
+
+			<v-alert
+				border="left"
+				colored-border
+				type="error"
+				elevation="2"
+				v-if="error"
+				class="my-2"
+			>
+				{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
+
+			<v-dialog v-model="dialog"
+				transition="dialog-top-transition"
+				max-width="700"
+			>
+				<template v-slot:default="dialog">
+					<v-card>
+						<v-toolbar color="primary" dark>
+							{{ $t('market_offers.accept_offer') }}
+						</v-toolbar>
+						<v-card-text>
+							<v-container>
+								<v-simple-table>
+									<tbody>
+									<tr>
+										<td>{{ $t('common.address') }}</td>
+										<td><router-link :to="'/explore/address/' + offer.address">{{offer.address}}</router-link></td>
+									</tr>
+									<tr>
+										<template v-for="entry in offer.bids">
+											<td>{{ $t('market_offers.you_receive') }}</td>
+											<td>
+												<b>{{entry.value}}</b> {{entry.symbol}} 
+												<template v-if="!entry.is_native">
+													- [<router-link :to="'/explore/address/' + entry.contract">{{entry.contract}}</router-link>]
+												</template>
+											</td>
+										</template>
+									</tr>
+									<tr>
+										<template v-for="entry in offer.asks">
+											<td>{{ $t('market_offers.you_pay') }}</td>
+											<td>
+												<b>{{entry.value}}</b> {{entry.symbol}} 
+												<template v-if="!entry.is_native">
+													- [<router-link :to="'/explore/address/' + entry.contract">{{entry.contract}}</router-link>]
+												</template>
+											</td>
+										</template>
+									</tr>
+									</tbody>					
+								</v-simple-table>
+							</v-container>
+						</v-card-text>
+						<v-card-actions class="justify-end">
+							<v-btn text color="primary" @click="accept(offer)">{{ $t('market_offers.accept') }}</v-btn>
+							<v-btn text @click="dialog.value = false">{{ $t('market_offers.cancel') }}</v-btn>
+						</v-card-actions>
+					</v-card>
+				</template>
+			</v-dialog>		
+
+			<v-card>
+				<v-progress-linear indeterminate v-if="!data && loading"></v-progress-linear>
+				<v-card-text>
+					<template v-if="data">
+						<v-simple-table>
+							<thead>
+								<th>{{ $t('market_offers.they_offer') }}</th>
+								<th>{{ $t('market_offers.they_ask') }}</th>
+								<template v-if="bid && ask">
+									<th>{{ $t('market_offers.price') }}</th>
 								</template>
-							</template>
-						</td>
-						<td>
-							<template v-for="(entry, index) in item.asks">
-								<template v-if="index">, </template><b>{{entry.value}}</b>&nbsp;
-								<template v-if="entry.is_native">{{entry.symbol}}</template>
-								<template v-else>
-									<router-link :to="'/explore/address/' + entry.contract">
-										<template v-if="tokens.has(entry.contract)">{{entry.symbol}}</template>
-										<template v-else>{{entry.symbol}}?</template>
-									</router-link>
-								</template>
-							</template>
-						</td>
-						<template v-if="bid && ask">
-							<td><b>{{item.price}}</b></td>
-						</template>
-						<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
-						<td><router-link :to="'/explore/address/' + item.address">{{ $t('market_offers.address') }}</router-link></td>
-						<td>
-							<template v-if="!accepted.has(item.address)">
-								<div class="ui tiny compact button" @click="confirm(item)">{{ $t('market_offers.accept') }}</div>
-							</template>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-		</template>
-		<div class="ui modal" ref="confirm">
-			<div class="header">{{ $t('market_offers.accept_offer') }}</div>
-			<div class="content">
-				<table class="ui definition table striped">
-				<tr>
-					<td>{{ $t('common.address') }}</td>
-					<td><router-link :to="'/explore/address/' + offer.address">{{offer.address}}</router-link></td>
-				</tr>
-				<tr>
-					<template v-for="entry in offer.bids">
-						<td>{{ $t('market_offers.you_receive') }}</td>
-						<td>
-							<b>{{entry.value}}</b> {{entry.symbol}} 
-							<template v-if="!entry.is_native">
-								- [<router-link :to="'/explore/address/' + entry.contract">{{entry.contract}}</router-link>]
-							</template>
-						</td>
-					</template>
-				</tr>
-				<tr>
-					<template v-for="entry in offer.asks">
-						<td>{{ $t('market_offers.you_pay') }}</td>
-						<td>
-							<b>{{entry.value}}</b> {{entry.symbol}} 
-							<template v-if="!entry.is_native">
-								- [<router-link :to="'/explore/address/' + entry.contract">{{entry.contract}}</router-link>]
-							</template>
-						</td>
-					</template>
-				</tr>
-				</table>
-			</div>
-			<div class="actions">
-				<div class="ui positive approve button" @click="accept(offer)">{{ $t('market_offers.accept') }}</div>
-				<div class="ui negative cancel button">{{ $t('market_offers.cancel') }}</div>
-			</div>
+								<th>{{ $t('market_offers.time') }}</th>
+								<th>{{ $t('market_offers.link') }}</th>
+								<th></th>
+							</thead>
+							<tbody>
+								<tr v-for="item in data" :key="item.address" :class="{positive: accepted.has(item.address)}">
+									<td>
+										<template v-for="(entry, index) in item.bids">
+											<template v-if="index">, </template><b>{{entry.value}}</b>&nbsp;
+											<template v-if="entry.is_native">{{entry.symbol}}</template>
+											<template v-else>
+												<router-link :to="'/explore/address/' + entry.contract">
+													<template v-if="tokens.has(entry.contract)">{{entry.symbol}}</template>
+													<template v-else>{{entry.symbol}}?</template>
+												</router-link>
+											</template>
+										</template>
+									</td>
+									<td>
+										<template v-for="(entry, index) in item.asks">
+											<template v-if="index">, </template><b>{{entry.value}}</b>&nbsp;
+											<template v-if="entry.is_native">{{entry.symbol}}</template>
+											<template v-else>
+												<router-link :to="'/explore/address/' + entry.contract">
+													<template v-if="tokens.has(entry.contract)">{{entry.symbol}}</template>
+													<template v-else>{{entry.symbol}}?</template>
+												</router-link>
+											</template>
+										</template>
+									</td>
+									<template v-if="bid && ask">
+										<td><b>{{item.price}}</b></td>
+									</template>
+									<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
+									<td><router-link :to="'/explore/address/' + item.address">{{ $t('market_offers.address') }}</router-link></td>
+									<td>
+										<template v-if="!accepted.has(item.address)">
+											<v-btn outlined text @click="confirm(item)">{{ $t('market_offers.accept') }}</v-btn>
+										</template>
+									</td>
+								</tr>
+							</tbody>
+						</v-simple-table>
+					</template>	
+				</v-card-text>
+			</v-card>
 		</div>
 		`
 })
