@@ -1328,7 +1328,7 @@ Vue.component('account-offers', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<table class="ui table striped">
+		<v-simple-table>
 			<thead>
 			<tr>
 				<th>{{ $t('account_offers.height') }}</th>
@@ -1348,7 +1348,7 @@ Vue.component('account-offers', {
 				<td class="collapsing"><b>{{item.base.output_amounts[0].value}}</b></td>
 				<td>{{item.base.output_amounts[0].symbol}}</td>
 				<td><router-link :to="'/explore/address/' + item.id">{{item.id.substr(0, 16)}}...</router-link></td>
-				<td :class="{positive: !item.base.height, negative: item.revoked}">
+				<td :class="{'green lighten-5 green--text': !item.base.height && !item.revoked, 'red lighten-5 red--text text--lighten-2': item.revoked}">
 					<template v-if="item.base.height">
 						<router-link :to="'/explore/transaction/' + item.base.id">{{ $t('account_offers.accepted') }}</router-link>
 					</template>
@@ -1359,12 +1359,12 @@ Vue.component('account-offers', {
 				<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 				<td>
 					<template v-if="!item.revoked && !item.base.height">
-						<div class="ui tiny compact button" @click="cancel(item.base.id, item.base.sender)">{{ $t('account_offers.revoke') }}</div>
+						<v-btn outlined text @click="cancel(item.base.id, item.base.sender)">{{ $t('account_offers.revoke') }}</v-btn>
 					</template>
 				</td>
 			</tr>
 			</tbody>
-		</table>
+		</v-simple-table>
 		<div class="ui message" :class="{hidden: !result}">
 			{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
 		</div>
