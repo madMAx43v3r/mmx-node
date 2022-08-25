@@ -656,11 +656,7 @@ Vue.component('account-actions', {
 						</template>
 						<template v-slot:default="dialog">
 							<v-card>
-								<v-toolbar
-								color="primary"
-								dark
-								>
-								</v-toolbar>
+								<v-toolbar color="primary" dark></v-toolbar>
 								<v-card-text>
 									<v-container>
 										<object-table :data="seed"></object-table>
@@ -683,7 +679,6 @@ Vue.component('account-actions', {
 				border="left"
 				colored-border
 				type="info"
-				dismissible
 				elevation="2"
 				v-if="info"
 				class="my-2"
