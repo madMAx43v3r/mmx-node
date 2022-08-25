@@ -1,5 +1,5 @@
 
-app.component('market-menu', {
+Vue.component('market-menu', {
 	props: {
 		wallet_: Number,
 		bid_: null,
@@ -13,6 +13,7 @@ app.component('market-menu', {
 			tokens: [],
 			bid: null,
 			ask: null,
+			currentItem: 0
 		}
 	},
 	methods: {
@@ -40,7 +41,7 @@ app.component('market-menu', {
 					page = "offers";
 				}
 			}
-			this.$router.push('/market/' + page + '/' + this.wallet + '/' + this.bid + '/' + this.ask);
+			this.$router.push('/market/' + page + '/' + this.wallet + '/' + this.bid + '/' + this.ask).catch(()=>{});
 		}
 	},
 	created() {
@@ -57,40 +58,76 @@ app.component('market-menu', {
 			this.submit();
 		}
 	},
+	computed: {
+		selectItems() {
+			var result = [];
+			
+			result.push({ text: this.$t('market_menu.anything'), value: null});
+
+			this.tokens.map(item => {
+				var text = item.symbol;
+				if(item.currency != 'mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev') {
+					text += ` - [${item.currency}]`;
+				}
+				result.push(
+					{
+						text: text,
+						value: item.currency
+					}
+				);
+			});
+
+			return result;
+		}
+	},	
 	template: `
-		<div class="ui form segment">
-			<div class="field">
-				<label>{{ $t('market_menu.wallet') }}</label>
-				<select v-model="wallet">
-					<option v-for="item in wallets" :key="item[0]" :value="item[0]">{{ $t('market_menu.wallet') }} #{{item[0]}}</option>
-				</select>
-			</div>
-			<div class="field">
-				<label>{{ $t('market_menu.they_offer') }}</label>
-				<select v-model="bid">
-					<option :value="null">{{ $t('market_menu.anything') }}</option>
-					<option v-for="item in tokens" :key="item.currency" :value="item.currency">
-						{{item.symbol}}<template v-if="item.currency != 'mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev'"> - [{{item.currency}}]</template>
-					</option>
-				</select>
-			</div>
-			<div class="field">
-				<label>{{ $t('market_menu.they_ask') }}</label>
-				<select v-model="ask">
-					<option :value="null">{{ $t('market_menu.anything') }}</option>
-					<option v-for="item in tokens" :key="item.currency" :value="item.currency">
-						{{item.symbol}}<template v-if="item.currency != 'mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev'"> - [{{item.currency}}]</template>
-					</option>
-				</select>
-			</div>
+		<div>
+			<v-card>
+				<v-card-text>
+				
+					<v-select
+						v-model="wallet"
+						:items="wallets"
+						:lablel="$t('market_menu.wallet')"
+						item-text="[0]"
+						item-value="[0]">
+						<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">
+							{{ $t('market_menu.wallet') }} #{{item[0]}}
+						</template>				
+					</v-select>
+
+					<v-select
+						v-model="bid"
+						:items="selectItems"
+						:label="$t('market_menu.they_offer')"
+						item-text="text"
+						item-value="value"
+					></v-select>
+
+					<v-select
+						v-model="ask"
+						:items="selectItems"
+						:label="$t('market_menu.they_ask')"
+						item-text="text"
+						item-value="value"			
+					></v-select>
+
+				</v-card-text>
+			</v-card>
+
+			<v-btn-toggle
+				v-model="currentItem"
+				dense
+				class="my-2"
+			>
+				<v-btn @click="submit('offers')">{{ $t('market_menu.offers') }}</v-btn>
+			</v-btn-toggle>
 		</div>
-		<div class="ui large pointing menu">
-			<a class="item" :class="{active: $route.meta.page == 'offers'}" @click="submit('offers')">{{ $t('market_menu.offers') }}</a>
-		</div>
+
 		`
 })
 
-app.component('market-offers', {
+Vue.component('market-offers', {
 	props: {
 		wallet: Number,
 		bid: null,
@@ -167,7 +204,7 @@ app.component('market-offers', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 60000);
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
