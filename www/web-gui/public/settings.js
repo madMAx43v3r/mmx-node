@@ -81,7 +81,7 @@ Vue.component('node-settings', {
 	},
 	template: `
 		<div>
-			<v-card>
+			<v-card v-if="!$isWinGUI">
 				<v-card-text>
 					<v-select
 						v-model="$i18n.locale"
