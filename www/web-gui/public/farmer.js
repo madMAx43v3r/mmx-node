@@ -20,8 +20,7 @@ Vue.component('farmer-info', {
 		clearInterval(this.timer);
 	},
 	template: `
-
-		<div v-if="data">
+		<div>
 			<v-row class="my-2 py-0">
 				<v-col cols="12" class="my-0 py-0">			
 					<v-card>					
@@ -30,7 +29,8 @@ Vue.component('farmer-info', {
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">
 									<v-row align="center" justify="space-around">
-										{{ (data.total_balance / 1e6).toFixed(2) }} MMX
+										<div v-if="data">{{ (data.total_balance / 1e6).toFixed(2) }} MMX</div>
+										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
 										Virtual Balance
@@ -39,7 +39,8 @@ Vue.component('farmer-info', {
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
 									<v-row align="center" justify="space-around">
-										{{ (data.total_virtual_bytes / Math.pow(1000, 4)).toFixed(3) }} TB
+										<div v-if="data">{{ (data.total_virtual_bytes / Math.pow(1000, 4)).toFixed(3) }} TB</div>
+										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
 										Virtual Size
@@ -48,7 +49,8 @@ Vue.component('farmer-info', {
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
 									<v-row align="center" justify="space-around">
-										{{ (data.total_bytes / Math.pow(1000, 4)).toFixed(3) }} TB
+										<div v-if="data">{{ (data.total_bytes / Math.pow(1000, 4)).toFixed(3) }} TB</div>
+										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
 										Physical Size
@@ -57,7 +59,8 @@ Vue.component('farmer-info', {
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
 									<v-row align="center" justify="space-around">
-										{{ ((data.total_bytes + data.total_virtual_bytes) / Math.pow(1000, 4)).toFixed(3) }} TB
+										<div v-if="data">{{ ((data.total_bytes + data.total_virtual_bytes) / Math.pow(1000, 4)).toFixed(3) }} TB</div>
+										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
 										Total Farm Size
