@@ -102,9 +102,12 @@ var app = new Vue({
 			var locale;
 
 			if(this.$isWinGUI) {
+				
 				locale = window.mmx.locale;
+				this.$vuetify.theme.dark = window.mmx.theme_dark;
+
 				setInterval( () => { 
-					locale = window.mmx.locale;	
+					var locale = window.mmx.locale;	
 					if (i18n.locale != locale) {
 						loadLanguageAsync(locale);
 					}
