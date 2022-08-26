@@ -273,9 +273,13 @@ Vue.component('netspace-graph', {
 	},
 	template: `
 		<div>
-			<v-progress-linear indeterminate v-if="!data && loading"></v-progress-linear>
-			<v-card v-if="data">
-				<vue-plotly :data="data" :layout="layout" :display-mode-bar="false"></vue-plotly>
+			<v-card>
+				<v-skeleton-loader type="image@3" height="482" v-if="!data && loading"></v-skeleton-loader>
+				<v-fade-transition>					
+					<v-card-text v-if="data">
+						<vue-plotly :data="data" :layout="layout" :display-mode-bar="false"></vue-plotly>
+					</v-card-text>
+				</v-fade-transition>
 			</v-card>
 		</div>
 		`
@@ -327,9 +331,13 @@ Vue.component('vdf-speed-graph', {
 	},
 	template: `
 		<div>
-			<v-progress-linear indeterminate v-if="!data && loading"></v-progress-linear>
-			<v-card v-if="data">
-				<vue-plotly :data="data" :layout="layout" :display-mode-bar="false"></vue-plotly>
+			<v-card>
+				<v-skeleton-loader type="image@3" height="482" v-if="!data && loading"></v-skeleton-loader>
+				<v-fade-transition>					
+					<v-card-text v-if="data">
+						<vue-plotly :data="data" :layout="layout" :display-mode-bar="false"></vue-plotly>
+					</v-card-text>
+				</v-fade-transition>
 			</v-card>
 		</div>
 		`
@@ -402,17 +410,26 @@ Vue.component('block-reward-graph', {
 		clearInterval(this.timer);
 	},
 	template: `
-
 		<div>
-			<v-progress-linear indeterminate v-if="!(base_data && fee_data) && loading"></v-progress-linear>
 
-			<v-card v-if="base_data">
-				<vue-plotly :data="base_data" :layout="base_layout" :display-mode-bar="false"></vue-plotly>
+			<v-card>
+				<v-skeleton-loader type="image@3" height="482" v-if="!base_data && loading"></v-skeleton-loader>
+				<v-fade-transition>					
+					<v-card-text v-if="base_data">
+						<vue-plotly :data="base_data" :layout="base_layout" :display-mode-bar="false"></vue-plotly>
+					</v-card-text>
+				</v-fade-transition>
+			</v-card>				
+		
+			<v-card class="my-2">
+				<v-skeleton-loader type="image@3" height="482" v-if="!fee_data && loading"></v-skeleton-loader>
+				<v-fade-transition>
+					<v-card-text v-if="fee_data">
+						<vue-plotly :data="fee_data" :layout="fee_layout" :display-mode-bar="false"></vue-plotly>
+					</v-card-text>
+				</v-fade-transition>
 			</v-card>
-
-			<v-card v-if="fee_data">
-				<vue-plotly :data="fee_data" :layout="fee_layout" :display-mode-bar="false"></vue-plotly>
-			</v-card>		
+			
 		</div>
 		`
 })
