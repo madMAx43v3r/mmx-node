@@ -64,7 +64,7 @@ const darkTemplate = {
           {
               "marker": {
                   "line": {
-                      "color": "rgb(17,17,17)",
+                      "color": "rgb(30,30,30)",
                       "width": 0.5
                   },
                   "pattern": {
@@ -86,7 +86,7 @@ const darkTemplate = {
               },
               "marker": {
                   "line": {
-                      "color": "rgb(17,17,17)",
+                      "color": "rgb(30,30,30)",
                       "width": 0.5
                   },
                   "pattern": {
@@ -589,7 +589,7 @@ const darkTemplate = {
                       "color": "#506784"
                   },
                   "line": {
-                      "color": "rgb(17,17,17)"
+                      "color": "rgb(30,30,30)"
                   }
               },
               "header": {
@@ -597,7 +597,7 @@ const darkTemplate = {
                       "color": "#2a3f5f"
                   },
                   "line": {
-                      "color": "rgb(17,17,17)"
+                      "color": "rgb(30,30,30)"
                   }
               },
               "type": "table"
@@ -765,9 +765,9 @@ const darkTemplate = {
           "color": "#f2f5fa"
       },
       "geo": {
-          "bgcolor": "rgb(17,17,17)",
-          "lakecolor": "rgb(17,17,17)",
-          "landcolor": "rgb(17,17,17)",
+          "bgcolor": "rgb(30,30,30)",
+          "lakecolor": "rgb(30,30,30)",
+          "landcolor": "rgb(30,30,30)",
           "showlakes": true,
           "showland": true,
           "subunitcolor": "#506784"
@@ -779,15 +779,15 @@ const darkTemplate = {
       "mapbox": {
           "style": "dark"
       },
-      "paper_bgcolor": "rgb(17,17,17)",
-      "plot_bgcolor": "rgb(17,17,17)",
+      "paper_bgcolor": "rgb(30,30,30)",
+      "plot_bgcolor": "rgb(30,30,30)",
       "polar": {
           "angularaxis": {
               "gridcolor": "#506784",
               "linecolor": "#506784",
               "ticks": ""
           },
-          "bgcolor": "rgb(17,17,17)",
+          "bgcolor": "rgb(30,30,30)",
           "radialaxis": {
               "gridcolor": "#506784",
               "linecolor": "#506784",
@@ -796,7 +796,7 @@ const darkTemplate = {
       },
       "scene": {
           "xaxis": {
-              "backgroundcolor": "rgb(17,17,17)",
+              "backgroundcolor": "rgb(30,30,30)",
               "gridcolor": "#506784",
               "gridwidth": 2,
               "linecolor": "#506784",
@@ -805,7 +805,7 @@ const darkTemplate = {
               "zerolinecolor": "#C8D4E3"
           },
           "yaxis": {
-              "backgroundcolor": "rgb(17,17,17)",
+              "backgroundcolor": "rgb(30,30,30)",
               "gridcolor": "#506784",
               "gridwidth": 2,
               "linecolor": "#506784",
@@ -814,7 +814,7 @@ const darkTemplate = {
               "zerolinecolor": "#C8D4E3"
           },
           "zaxis": {
-              "backgroundcolor": "rgb(17,17,17)",
+              "backgroundcolor": "rgb(30,30,30)",
               "gridcolor": "#506784",
               "gridwidth": 2,
               "linecolor": "#506784",
@@ -830,7 +830,7 @@ const darkTemplate = {
       },
       "sliderdefaults": {
           "bgcolor": "#C8D4E3",
-          "bordercolor": "rgb(17,17,17)",
+          "bordercolor": "rgb(30,30,30)",
           "borderwidth": 1,
           "tickwidth": 0
       },
@@ -845,16 +845,14 @@ const darkTemplate = {
               "linecolor": "#506784",
               "ticks": ""
           },
-          "bgcolor": "rgb(17,17,17)",
+          "bgcolor": "rgb(30,30,30)",
           "caxis": {
               "gridcolor": "#506784",
               "linecolor": "#506784",
               "ticks": ""
           }
       },
-      "title": {
-          "x": 0.05
-      },
+
       "updatemenudefaults": {
           "bgcolor": "#506784",
           "borderwidth": 0
