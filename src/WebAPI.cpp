@@ -1680,6 +1680,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const auto iter_limit = query.find("limit");
 		const auto iter_offset = query.find("offset");
 		const auto iter_since = query.find("since");
+		const auto iter_open = query.find("is_open");
+		const auto iter_covered = query.find("is_covered");
 		if(iter_bid != query.end()) {
 			bid = vnx::from_string_value<addr_t>(iter_bid->second);
 		}
@@ -1689,7 +1691,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
 		const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
 		const int32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
-		node->get_offers(0, true, true,
+		const bool is_open = iter_open != query.end() ? vnx::from_string<bool>(iter_open->second) : true;
+		const bool is_covered = iter_covered != query.end() ? vnx::from_string<bool>(iter_covered->second) : true;
+		node->get_offers(0, is_open, is_covered,
 			[this, request_id, bid, ask, limit, offset, since](const std::vector<offer_data_t>& offers) {
 				std::vector<std::pair<offer_data_t, double>> result;
 				std::unordered_set<addr_t> addr_set;
