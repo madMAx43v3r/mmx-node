@@ -22,8 +22,8 @@ Vue.component('farmer-info', {
 	template: `
 
 		<div v-if="data">
-			<v-row align="center" justify="space-around" class="my-2">
-				<v-col cols="12">			
+			<v-row class="my-2 py-0">
+				<v-col cols="12" class="my-0 py-0">			
 					<v-card>					
 						<v-card-title>
 							<v-row align="center" justify="space-around">
