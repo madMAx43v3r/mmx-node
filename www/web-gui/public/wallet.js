@@ -14,7 +14,11 @@ Vue.component('wallet-summary', {
 				.then(data => {
 					this.loading = false;
 					this.data = data;
-				});
+				})
+				.catch(error => {
+					setTimeout(this.update, 1000);
+                    throw(error);
+                });
 		}
 	},
 	created() {
@@ -28,7 +32,7 @@ Vue.component('wallet-summary', {
 				<account-summary :index="item[0]" :account="item[1]"></account-summary>
 			</div>
 
-			<v-btn to="/wallet/create" outlined color="primary">{{ $t('wallet_summary.new_wallet') }}</v-btn>
+			<v-btn to="/wallet/create" outlined color="primary" class="my-2">{{ $t('wallet_summary.new_wallet') }}</v-btn>
 		</div>
 		`
 })
@@ -87,7 +91,7 @@ Vue.component('account-header', {
 	template: `
 		<div>
 			<v-chip label>{{ $t('account_header.wallet') }} #{{index}}</v-chip>
-			<v-chip label>{{ address }}</v-chip>
+			<v-chip label style="min-width: 500px">{{ address }}</v-chip>
 		</div>
 		`
 })
@@ -155,6 +159,12 @@ Vue.component('account-balance', {
 			disable-pagination
 			class="elevation-2"
 		>
+
+			<template v-slot:progress>
+				<v-progress-linear indeterminate absolute top></v-progress-linear>
+				<v-skeleton-loader type="table-row-divider@3" />
+			</template>
+
 			<template v-slot:item.contract="{ item }">
 				<router-link :to="'/explore/address/' + item.contract">{{item.is_native ? '' : item.contract}}</router-link>
 			</template>
