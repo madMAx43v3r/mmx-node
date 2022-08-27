@@ -739,7 +739,7 @@ Vue.component('object-table', {
 				<tbody>
 					<template v-for="(value, key) in data" :key="key">
 						<tr v-if="key != '__type'">
-							<td class="collapsing">{{key}}</td>
+							<td class="key-cell">{{key}}</td>
 							<td>{{value}}</td>
 						</tr>
 					</template>
