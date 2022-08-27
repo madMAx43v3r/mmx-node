@@ -214,7 +214,7 @@ Vue.component('market-offers', {
 			<v-alert
 				border="left"
 				colored-border
-				type="info"
+				type="success"
 				elevation="2"
 				v-if="result"
 				class="my-2"
