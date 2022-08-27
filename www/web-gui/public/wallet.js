@@ -83,6 +83,10 @@ Vue.component('account-header', {
 			fetch('/wapi/wallet/address?index=' + this.index)
 				.then(response => response.json())
 				.then(data => this.address = data[0]);
+		},
+		copyToClipboard(address) {
+			navigator.clipboard.writeText(address).then(() => {				
+			});
 		}
 	},
 	created() {
@@ -91,7 +95,12 @@ Vue.component('account-header', {
 	template: `
 		<div>
 			<v-chip label>{{ $t('account_header.wallet') }} #{{index}}</v-chip>
-			<v-chip label style="min-width: 500px">{{ address }}</v-chip>
+			<v-chip label style="min-width: 500px">
+				{{ address }}
+				<v-btn v-if="address" @click="copyToClipboard(address)" text icon class="pr-0">
+					<v-icon small>mdi-content-copy</v-icon>
+				</btn>
+			</v-chip>
 		</div>
 		`
 })
