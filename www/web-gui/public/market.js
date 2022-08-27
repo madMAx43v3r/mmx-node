@@ -285,8 +285,13 @@ Vue.component('market-offers', {
 			</v-dialog>		
 
 			<v-card>
-				<v-progress-linear indeterminate v-if="!data && loading"></v-progress-linear>
 				<v-card-text>
+
+					<div v-if="!data && loading">
+						<v-progress-linear indeterminate absolute top></v-progress-linear>
+						<v-skeleton-loader type="table-row-divider@6"/>
+					</div>	
+
 					<template v-if="data">
 						<v-simple-table>
 							<thead>
