@@ -57,7 +57,7 @@ Vue.component('explore-blocks', {
 			timer: null,
 			loaded: false,
 			headers: [
-				{ text: this.$t('explore_blocks.height'), value: 'height' },
+				{ text: this.$t('explore_blocks.height'), value: 'height', width: "5%"},
 				{ text: this.$t('explore_blocks.tx'), value: 'tx_count' },
 				{ text: this.$t('explore_blocks.k'), value: 'ksize' },
 				{ text: this.$t('explore_blocks.score'), value: 'score' },

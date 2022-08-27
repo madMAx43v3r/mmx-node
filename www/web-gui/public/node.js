@@ -149,16 +149,16 @@ Vue.component('node-peers', {
 			timer: null,
 			loaded: false,
 			headers: [
-				{ text: this.$t('node_peers.ip'), value: 'address' },
-				{ text: this.$t('node_peers.height'), value: 'height' },
-				{ text: this.$t('node_peers.type'), value: 'type' },
-				{ text: this.$t('node_peers.version'), value: 'version' },
-				{ text: this.$t('node_peers.received'), value: 'received' },
-				{ text: this.$t('node_peers.send'), value: 'send' },
-				{ text: this.$t('node_peers.ping'), value: 'ping' },
-				{ text: this.$t('node_peers.duration'), value: 'duration' },
-				{ text: this.$t('node_peers.credits'), value: 'credits' },
-				{ text: this.$t('node_peers.connection'), value: 'connection' },
+				{ text: this.$t('node_peers.ip'), value: 'address', width: "5%" },
+				{ text: this.$t('node_peers.height'), value: 'height', width: "5%" },
+				{ text: this.$t('node_peers.type'), value: 'type', width: "5%"},
+				{ text: this.$t('node_peers.version'), value: 'version', width: "5%" },
+				{ text: this.$t('node_peers.received'), value: 'received', width: "10%" },
+				{ text: this.$t('node_peers.send'), value: 'send', width: "10%" },
+				{ text: this.$t('node_peers.ping'), value: 'ping', width: "10%" },
+				{ text: this.$t('node_peers.duration'), value: 'duration', width: "10%" },
+				{ text: this.$t('node_peers.credits'), value: 'credits', width: "10%" },
+				{ text: this.$t('node_peers.connection'), value: 'connection', width: "10%" },
 			]
 		}
 	},
@@ -208,6 +208,10 @@ Vue.component('node-peers', {
 			<template v-slot:item.ping="{ item }">
 				<b>{{item.ping_ms}}</b> ms
 			</template>
+
+			<template v-slot:item.duration="{ item }">
+				<b>{{(item.connect_time_ms / 1000 / 60).toFixed()}}</b> min
+			</template>			
 
 			<template v-slot:item.connection="{ item }">
 				{{item.is_outbound ? $t('node_peers.outbound') : $t('node_peers.inbound') }}
