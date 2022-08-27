@@ -343,8 +343,8 @@ const NodeView = {
 		<div>
 			<node-info></node-info>
 			<farmer-info></farmer-info>
-			<node-menu></node-menu>
-			<router-view class="mt-3"></router-view>
+			<node-menu class="mt-4"></node-menu>
+			<router-view class="mt-2"></router-view>
 		</div>
 	`
 }

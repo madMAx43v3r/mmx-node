@@ -23,7 +23,7 @@ Vue.component('farmer-info', {
 		<div>
 			<v-row class="my-2 py-0">
 				<v-col cols="12" class="my-0 py-0">			
-					<v-card>					
+					<v-card min-height="90">					
 						<v-card-title>
 							<v-row align="center" justify="space-around">
 
