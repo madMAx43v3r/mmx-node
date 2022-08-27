@@ -659,7 +659,7 @@ Vue.component('account-actions', {
 
 					<v-dialog v-model="dialog"
 						transition="dialog-top-transition"
-						max-width="700"
+						max-width="800"
 					>
 						<template v-slot:activator="{ on, attrs }">
 							<v-btn outlined @click="show_seed">{{ $t('account_actions.show_seed') }}</v-btn>
