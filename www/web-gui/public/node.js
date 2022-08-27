@@ -486,8 +486,8 @@ Vue.component('node-log-table', {
 			timer: null,
 			loaded: false,
 			headers: [
-				{ text: 'Time', value: 'time', align: 'left', width: "5%"},
-				{ text: 'Module', value: 'module', width: "5%"},
+				{ text: 'Time', value: 'time', align: 'left', width: "10%"},
+				{ text: 'Module', value: 'module', width: "10%"},
 				{ text: 'Message', value: 'message' },
 			],	
 		}
