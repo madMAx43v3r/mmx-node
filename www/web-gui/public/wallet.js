@@ -697,7 +697,7 @@ Vue.component('account-actions', {
 			<v-alert
 				border="left"
 				colored-border
-				type="info"
+				type="success"
 				elevation="2"
 				v-if="info"
 				class="my-2"
@@ -1076,7 +1076,7 @@ Vue.component('account-send-form', {
 			<v-alert
 				border="left"
 				colored-border
-				type="info"
+				type="success"
 				elevation="2"
 				v-if="result"
 				class="my-2"
@@ -1263,7 +1263,7 @@ Vue.component('account-offer-form', {
 			<v-alert
 				border="left"
 				colored-border
-				type="info"
+				type="success"
 				elevation="2"
 				v-if="result"
 				class="my-2"
@@ -1509,7 +1509,7 @@ Vue.component('create-locked-contract', {
 			<v-alert
 				border="left"
 				colored-border
-				type="info"
+				type="success"
 				v-if="result"
 				elevation="2"
 				class="my-2"
@@ -1627,7 +1627,7 @@ Vue.component('create-virtual-plot-contract', {
 			<v-alert
 				border="left"
 				colored-border
-				type="info"
+				type="success"
 				v-if="result"
 				elevation="2"
 				class="my-2"

@@ -130,7 +130,7 @@ Vue.component('node-settings', {
 			<v-alert
 				border="left"
 				colored-border
-				type="info"
+				type="success"
 				v-if="result"
 				elevation="2"
 				class="my-2"
@@ -258,7 +258,7 @@ Vue.component('wallet-settings', {
 			<v-alert
 				border="left"
 				colored-border
-				type="info"
+				type="success"
 				v-if="result"
 				elevation="2"
 				class="my-2"
