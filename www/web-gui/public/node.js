@@ -532,12 +532,16 @@ Vue.component('node-log-table', {
 				dense
 				class="elevation-2"
 			>
-				<template v-slot:item.time="{ item }" width="1%">
+				<template v-slot:progress>
+					<v-progress-linear indeterminate absolute top></v-progress-linear>
+					<v-skeleton-loader type="table-row-divider@6" />
+				</template>
+
+				<template v-slot:item.time="{ item }">
 					{{ new Date(item.time / 1000).toLocaleTimeString() }}
 				</template>
-			</v-data-table>
 
-			<v-skeleton-loader v-if="!loaded" type="table-row-divider@6" />
+			</v-data-table>			
 		</div>
 		`
 })
