@@ -88,7 +88,7 @@ Vue.component('market-menu', {
 		}
 	},	
 	template: `
-		<div>
+		<div class="my-2">
 			<div v-if="loading">
 				<v-card>
 					<v-card-text>
