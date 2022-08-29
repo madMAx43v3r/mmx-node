@@ -299,58 +299,58 @@ Vue.component('block-view', {
 						<template v-slot:default>
 							<tbody>
 								<tr>
-									<td class="two wide">{{ $t('block_view.height') }}</td>
+									<td class="key-cell">{{ $t('block_view.height') }}</td>
 									<td>{{data.height}}</td>
 								</tr>
 								<tr>
-									<td class="two wide">{{ $t('block_view.hash') }}</td>
+									<td class="key-cell">{{ $t('block_view.hash') }}</td>
 									<td>{{data.hash}}</td>
 								</tr>
 								<tr>
-									<td class="two wide">{{ $t('block_view.previous') }}</td>
+									<td class="key-cell">{{ $t('block_view.previous') }}</td>
 									<td>{{data.prev}}</td>
 								</tr>
 								<tr>
-									<td class="two wide">{{ $t('block_view.time') }}</td>
+									<td class="key-cell">{{ $t('block_view.time') }}</td>
 									<td>{{new Date(data.time * 1000).toLocaleString()}}</td>
 								</tr>
 								<tr>
-									<td class="two wide">{{ $t('block_view.time_diff') }}</td>
+									<td class="key-cell">{{ $t('block_view.time_diff') }}</td>
 									<td>{{data.time_diff}}</td>
 								</tr>
 								<tr>
-									<td class="two wide">{{ $t('block_view.space_diff') }}</td>
+									<td class="key-cell">{{ $t('block_view.space_diff') }}</td>
 									<td>{{data.space_diff}}</td>
 								</tr>
 								<tr>
-									<td class="two wide">{{ $t('block_view.vdf_iterations') }}</td>
+									<td class="key-cell">{{ $t('block_view.vdf_iterations') }}</td>
 									<td>{{data.vdf_iters}}</td>
 								</tr>
 								<template v-if="data.tx_base">
 									<tr>
-										<td class="two wide">{{ $t('block_view.tx_base') }}</td>
+										<td class="key-cell">{{ $t('block_view.tx_base') }}</td>
 										<td><router-link :to="'/explore/transaction/' + data.tx_base.id">{{data.tx_base.id}}</router-link></td>
 									</tr>
 								</template>
 								<template v-if="data.proof">
 									<tr>
-										<td class="two wide">{{ $t('block_view.tx_count') }}</td>
+										<td class="key-cell">{{ $t('block_view.tx_count') }}</td>
 										<td>{{data.tx_count}}</td>
 									</tr>
 									<tr>
-										<td class="two wide">{{ $t('block_view.k_size') }}</td>
+										<td class="key-cell">{{ $t('block_view.k_size') }}</td>
 										<td>{{data.proof.ksize}}</td>
 									</tr>
 									<tr>
-										<td class="two wide">{{ $t('block_view.proof_score') }}</td>
+										<td class="key-cell">{{ $t('block_view.proof_score') }}</td>
 										<td>{{data.proof.score}}</td>
 									</tr>
 									<tr>
-										<td class="two wide">{{ $t('block_view.plot_id') }}</td>
+										<td class="key-cell">{{ $t('block_view.plot_id') }}</td>
 										<td>{{data.proof.plot_id}}</td>
 									</tr>
 									<tr>
-										<td class="two wide">{{ $t('block_view.farmer_key') }}</td>
+										<td class="key-cell">{{ $t('block_view.farmer_key') }}</td>
 										<td>{{data.proof.farmer_key}}</td>
 									</tr>
 								</template>
@@ -364,7 +364,7 @@ Vue.component('block-view', {
 						<template v-slot:default>
 							<thead>
 								<tr>
-									<th></th>
+									<th class="key-cell"></th>
 									<th>{{ $t('block_view.amount') }}</th>
 									<th></th>
 									<th>{{ $t('block_view.address') }}</th>
@@ -372,8 +372,8 @@ Vue.component('block-view', {
 							</thead>
 							<tbody>
 								<tr v-for="(item, index) in data.tx_base.outputs" :key="index">
-									<td class="two wide">{{ $t('block_view.reward') }}[{{index}}]</td>
-									<td class="collapsing"><b>{{item.value}}</b></td>
+									<td class="key-cell">{{ $t('block_view.reward') }}[{{index}}]</td>
+									<td><b>{{item.value}}</b></td>
 									<td>{{item.symbol}}</td>
 									<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
 								</tr>
@@ -386,7 +386,7 @@ Vue.component('block-view', {
 					<v-simple-table v-if="data.tx_list.length">
 						<thead>
 							<tr>
-								<th></th>
+								<th class="key-cell"></th>
 								<th>{{ $t('block_view.inputs') }}</th>
 								<th>{{ $t('block_view.outputs') }}</th>
 								<th>{{ $t('block_view.operations') }}</th>
@@ -395,7 +395,7 @@ Vue.component('block-view', {
 						</thead>
 						<tbody>
 							<tr v-for="(item, index) in data.tx_list" :key="index">
-								<td class="two wide">TX[{{index}}]</td>
+								<td class="key-cell">TX[{{index}}]</td>
 								<td>{{item.inputs.length}}</td>
 								<td>{{item.outputs.length + item.exec_outputs.length}}</td>
 								<td>{{item.execute.length}}</td>
@@ -477,7 +477,7 @@ Vue.component('transaction-view', {
 				<v-simple-table>
 					<tbody>
 					<tr>
-						<td class="two wide">{{ $t('transaction_view.height') }}</td>
+						<td class="key-cell">{{ $t('transaction_view.height') }}</td>
 						<td colspan="2">
 							<template v-if="data.height">
 								<router-link :to="'/explore/block/height/' + data.height">{{data.height}}</router-link>
@@ -486,36 +486,36 @@ Vue.component('transaction-view', {
 						</td>
 					</tr>
 					<tr v-if="data.confirm">
-						<td class="two wide">{{ $t('transaction_view.confirmed') }}</td>
+						<td class="key-cell">{{ $t('transaction_view.confirmed') }}</td>
 						<td colspan="2">{{data.confirm}}</td>
 					</tr>
 					<tr v-if="data.expires != 4294967295">
-						<td class="two wide">{{ $t('transaction_view.expires') }}</td>
+						<td class="key-cell">{{ $t('transaction_view.expires') }}</td>
 						<td colspan="2">{{data.expires}}</td>
 					</tr>
 					<tr>
-						<td class="two wide">{{ $t('transaction_view.note') }}</td>
+						<td class="key-cell">{{ $t('transaction_view.note') }}</td>
 						<td colspan="2">{{data.note}}</td>
 					</tr>
 					<tr v-if="data.time">
-						<td class="two wide">{{ $t('transaction_view.time') }}</td>
+						<td class="key-cell">{{ $t('transaction_view.time') }}</td>
 						<td colspan="2">{{new Date(data.time * 1000).toLocaleString()}}</td>
 					</tr>
 					<tr v-if="data.deployed">
-						<td class="two wide">{{ $t('transaction_view.address') }}</td>
+						<td class="key-cell">{{ $t('transaction_view.address') }}</td>
 						<td colspan="2"><router-link :to="'/explore/address/' + data.address">{{data.address}}</router-link></td>
 					</tr>
 					<tr v-if="data.sender">
-						<td class="two wide">{{ $t('transaction_view.sender') }}</td>
+						<td class="key-cell">{{ $t('transaction_view.sender') }}</td>
 						<td colspan="2"><router-link :to="'/explore/address/' + data.sender">{{data.sender}}</router-link></td>
 					</tr>
 					<tr>
-						<td class="two wide">{{ $t('transaction_view.cost') }}</td>
+						<td class="key-cell">{{ $t('transaction_view.cost') }}</td>
 						<td class="collapsing"><b>{{data.cost.value}}</b></td>
 						<td>MMX</td>
 					</tr>
 					<tr>
-						<td class="two wide">{{ $t('transaction_view.fee') }}</td>
+						<td class="key-cell">{{ $t('transaction_view.fee') }}</td>
 						<td class="collapsing"><b>{{data.fee.value}}</b></td>
 						<td>MMX</td>
 					</tr>
@@ -527,7 +527,7 @@ Vue.component('transaction-view', {
 				<v-simple-table v-if="data.inputs.length">
 					<thead>
 					<tr>
-						<th></th>
+						<th class="key-cell"></th>
 						<th>{{ $t('transaction_view.amount') }}</th>
 						<th>{{ $t('transaction_view.token') }}</th>
 						<th>{{ $t('transaction_view.address') }}</th>
@@ -535,8 +535,8 @@ Vue.component('transaction-view', {
 					</thead>
 					<tbody>
 					<tr v-for="(item, index) in data.inputs" :key="index">
-						<td class="two wide">{{ $t('transaction_view.input') }}[{{index}}]</td>
-						<td class="collapsing"><b>{{item.value}}</b></td>
+						<td class="key-cell">{{ $t('transaction_view.input') }}[{{index}}]</td>
+						<td><b>{{item.value}}</b></td>
 						<template v-if="item.is_native">
 							<td>{{item.symbol}}</td>
 						</template>
@@ -553,7 +553,7 @@ Vue.component('transaction-view', {
 				<v-simple-table v-if="data.outputs.length">
 					<thead>
 					<tr>
-						<th></th>
+						<th class="key-cell"></th>
 						<th>{{ $t('transaction_view.amount') }}</th>
 						<th>{{ $t('transaction_view.token') }}</th>
 						<th>{{ $t('transaction_view.address') }}</th>
@@ -561,8 +561,8 @@ Vue.component('transaction-view', {
 					</thead>
 					<tbody>
 					<tr v-for="(item, index) in data.outputs" :key="index">
-						<td class="two wide">{{ $t('transaction_view.output') }}[{{index}}]</td>
-						<td class="collapsing"><b>{{item.value}}</b></td>
+						<td class="key-cell">{{ $t('transaction_view.output') }}[{{index}}]</td>
+						<td><b>{{item.value}}</b></td>
 						<template v-if="item.is_native">
 							<td>{{item.symbol}}</td>
 						</template>
