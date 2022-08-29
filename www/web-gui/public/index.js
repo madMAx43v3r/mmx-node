@@ -306,10 +306,12 @@ const ExchangeOffers = {
 
 const Explore = {
 	template: `
-	<div>
-		<explore-menu></explore-menu>
-		<router-view></router-view>
-	</div>
+	<v-card class="my-2">
+		<v-card-text>
+			<explore-menu></explore-menu>
+			<router-view></router-view>
+		</v-card-text>
+	</v-card>
 	`
 }
 const ExploreBlocks = {

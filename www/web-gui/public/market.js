@@ -92,6 +92,7 @@ Vue.component('market-menu', {
 			<div v-if="loading">
 				<v-card>
 					<v-card-text>
+						<v-progress-linear indeterminate absolute top></v-progress-linear>
 						<v-skeleton-loader type="heading" class="my-6"/>
 						<v-skeleton-loader type="heading" class="my-6"/>
 						<v-skeleton-loader type="heading" class="my-6"/>

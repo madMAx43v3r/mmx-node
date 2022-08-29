@@ -41,7 +41,7 @@ Vue.component('explore-menu', {
 				@click:append="submit"
 				:error="error"
 				:placeholder="$t('explore_menu.placeholder')"
-				append-icon="mdi-database-search-outline"></v-text-field>
+				append-icon="mdi-magnify"></v-text-field>
 		
 		</v-tabs>
 	`
