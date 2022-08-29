@@ -4,7 +4,8 @@ Vue.component('market-menu', {
 		wallet_: Number,
 		bid_: null,
 		ask_: null,
-		page: String
+		page: String, 
+		loading: false
 	},
 	data() {
 		return {
@@ -18,9 +19,11 @@ Vue.component('market-menu', {
 	},
 	methods: {
 		update() {
+			this.loading = true;
 			fetch('/api/wallet/get_all_accounts')
 				.then(response => response.json())
 				.then(data => {
+					this.loading = false;
 					this.wallets = data;
 					if(!this.wallet && this.wallet_) {
 						this.wallet = this.wallet_;
@@ -28,6 +31,10 @@ Vue.component('market-menu', {
 					else if(data.length > 0) {
 						this.wallet = data[0][0];
 					}
+				})
+				.catch(error => {
+					setTimeout(this.update, 1000);
+					throw(error);
 				});
 			fetch('/wapi/wallet/tokens')
 				.then(response => response.json())
@@ -82,46 +89,61 @@ Vue.component('market-menu', {
 	},	
 	template: `
 		<div>
-			<v-card>
-				<v-card-text>
-				
-					<v-select
-						v-model="wallet"
-						:items="wallets"
-						:lablel="$t('market_menu.wallet')"
-						item-text="[0]"
-						item-value="[0]">
-						<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">
-							{{ $t('market_menu.wallet') }} #{{item[0]}}
-						</template>				
-					</v-select>
+			<div v-if="loading">
+				<v-card>
+					<v-card-text>
+						<v-skeleton-loader type="heading" class="my-6"/>
+						<v-skeleton-loader type="heading" class="my-6"/>
+						<v-skeleton-loader type="heading" class="my-6"/>
+					</v-card-text>
+				</v-card>
 
-					<v-select
-						v-model="bid"
-						:items="selectItems"
-						:label="$t('market_menu.they_offer')"
-						item-text="text"
-						item-value="value"
-					></v-select>
+				<v-skeleton-loader type="button" class="my-6"/>
+			</div>
 
-					<v-select
-						v-model="ask"
-						:items="selectItems"
-						:label="$t('market_menu.they_ask')"
-						item-text="text"
-						item-value="value"			
-					></v-select>
+			<div v-if="!loading">
+				<v-card>
+					<v-card-text>					
 
-				</v-card-text>
-			</v-card>
+						<v-select
+							v-model="wallet"
+							:items="wallets"
+							:lablel="$t('market_menu.wallet')"						
+							item-text="[0]"
+							item-value="[0]">
+							<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">
+								{{ $t('market_menu.wallet') }} #{{item[0]}}
+							</template>				
+						</v-select>
 
-			<v-btn-toggle
-				v-model="currentItem"
-				dense
-				class="my-2"
-			>
-				<v-btn @click="submit('offers')">{{ $t('market_menu.offers') }}</v-btn>
-			</v-btn-toggle>
+						<v-select
+							v-model="bid"
+							:items="selectItems"
+							:label="$t('market_menu.they_offer')"
+							item-text="text"
+							item-value="value"
+						></v-select>
+
+						<v-select
+							v-model="ask"
+							:items="selectItems"
+							:label="$t('market_menu.they_ask')"
+							item-text="text"
+							item-value="value"			
+						></v-select>
+
+					</v-card-text>
+				</v-card>
+
+				<v-btn-toggle
+					v-model="currentItem"
+					dense
+					class="my-2"
+				>
+					<v-btn @click="submit('offers')">{{ $t('market_menu.offers') }}</v-btn>
+				</v-btn-toggle>
+			</div>
+
 		</div>
 
 		`
