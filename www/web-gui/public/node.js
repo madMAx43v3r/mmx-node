@@ -500,6 +500,22 @@ Vue.component('node-log-table', {
 					this.data = data;
 					this.loaded = true;
 				});
+		},
+		itemClass(item) {
+			var result = "";
+
+			switch(item.level) {
+				case 1:
+					result = 'error';
+					break;
+				case 2:
+					result = 'warning';
+					break;
+				default:
+					result = '';				
+			}
+
+			return result;
 		}
 	},
 	watch: {
@@ -525,7 +541,8 @@ Vue.component('node-log-table', {
 			<v-data-table
 				:headers="headers"
 				:items="data"
-				:loading="!loaded"				
+				:loading="!loaded"
+				:item-class="itemClass"				
 				hide-default-footer
 				disable-sort
 				disable-pagination
