@@ -97,8 +97,8 @@ Vue.component('account-header', {
 			<v-chip label>{{ $t('account_header.wallet') }} #{{index}}</v-chip>
 			<v-chip label style="min-width: 500px">
 				{{ address }}
-				<v-btn v-if="address" @click="copyToClipboard(address)" text icon class="pr-0">
-					<v-icon small>mdi-content-copy</v-icon>
+				<v-btn v-if="address" @click="copyToClipboard(address)" text icon>
+					<v-icon small class="pr-0">mdi-content-copy</v-icon>
 				</btn>
 			</v-chip>
 		</div>
