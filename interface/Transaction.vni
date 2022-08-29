@@ -18,7 +18,7 @@ class Transaction extends TransactionBase {
 	
 	optional<hash_t> salt;
 	
-	optional<addr_t> sender;			// to pay for tx fee
+	optional<addr_t> sender;			// to pay for tx fee (first signature)
 	
 	vector<txin_t> inputs;
 	
@@ -34,7 +34,7 @@ class Transaction extends TransactionBase {
 	
 	bool is_extendable;
 	
-	optional<tx_exec_result_t> exec_result;
+	optional<exec_result_t> exec_result;
 	
 	hash_t content_hash;				// full hash including solutions and exec_result
 	

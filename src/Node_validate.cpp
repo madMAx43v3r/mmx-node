@@ -764,7 +764,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const exe
 
 	if(!tx->exec_result)
 	{
-		tx_exec_result_t result;
+		exec_result_t result;
 		result.did_fail = false;
 		result.total_cost = tx_cost;
 		result.total_fee = tx_fee;

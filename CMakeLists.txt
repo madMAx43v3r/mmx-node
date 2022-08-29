@@ -94,7 +94,7 @@ add_library(mmx_iface SHARED
 	src/txio_key_t.cpp
 	src/signature_t.cpp
 	src/bls_signature_t.cpp
-	src/tx_exec_result_t.cpp
+	src/exec_result_t.cpp
 	src/contract/NFT.cpp
 	src/contract/Data.cpp
 	src/contract/WebData.cpp

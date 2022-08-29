@@ -74,6 +74,7 @@ enum opcode_e : uint8_t {
 	OP_CONCAT,		// dst, lhs, rhs
 	OP_MEMCPY,		// dst, src, count, offset
 	OP_SHA256,		// dst, src
+	OP_VERIFY,		// TODO: hash, pubkey, signature
 
 	OP_LOG = 0xC0,	// level, message
 	OP_SEND,		// address, amount, currency

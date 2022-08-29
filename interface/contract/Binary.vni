@@ -3,15 +3,21 @@ package mmx.contract;
 import mmx.hash_t;
 import mmx.addr_t;
 
-class TokenBase extends mmx.Contract {
+class Binary extends mmx.Contract {
 	
 	string name;
 	
-	string symbol;
+	map<string, uint> fields;
 	
-	int decimals = 6;
+	map<string, method_t> methods;
 	
-	// TODO: optional<addr_t> meta_data;
+	vector<uchar> constant;
+	
+	vector<uchar> binary;
+	
+	string source;
+	
+	string compiler;
 	
 	
 	bool is_valid() const;

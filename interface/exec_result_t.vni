@@ -1,6 +1,6 @@
 package mmx;
 
-struct tx_exec_result_t {
+struct exec_result_t {
 	
 	bool did_fail;
 	

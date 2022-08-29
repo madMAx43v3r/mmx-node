@@ -1,22 +1,22 @@
 /*
- * tx_exec_result_t.cpp
+ * exec_result_t.cpp
  *
  *  Created on: Aug 23, 2022
  *      Author: mad
  */
 
-#include <mmx/tx_exec_result_t.hxx>
+#include <mmx/exec_result_t.hxx>
 #include <mmx/write_bytes.h>
 
 
 namespace mmx {
 
-vnx::bool_t tx_exec_result_t::is_valid() const
+vnx::bool_t exec_result_t::is_valid() const
 {
 	return !message || message->size() <= MAX_MESSAGE_LENGTH;
 }
 
-hash_t tx_exec_result_t::calc_hash() const
+hash_t exec_result_t::calc_hash() const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
