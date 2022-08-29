@@ -370,6 +370,11 @@ Vue.component('account-history', {
 			disable-pagination
 			class="elevation-2"
 		>
+			<template v-slot:progress>
+				<v-progress-linear indeterminate absolute top></v-progress-linear>
+				<v-skeleton-loader type="table-row-divider@6" />
+			</template>
+
 			<template v-slot:item.height="{ item }">
 				<router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link>
 			</template>	
@@ -451,6 +456,11 @@ Vue.component('account-tx-history', {
 			disable-pagination
 			class="elevation-2"
 		>
+
+			<template v-slot:progress>
+				<v-progress-linear indeterminate absolute top></v-progress-linear>
+				<v-skeleton-loader type="table-row-divider@6" />
+			</template>
 
 			<template v-slot:item.height="{ item }">
 				<template v-if="item.height">
