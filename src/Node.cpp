@@ -906,7 +906,10 @@ std::vector<offer_data_t> Node::get_offers(const uint32_t& since, const vnx::boo
 					data.is_revoked = is_revoked(tx->id, *tx->sender);
 				}
 				if(!data.is_revoked) {
-					data.is_open = !get_tx_height(tx->id);
+					if(auto height = get_tx_height(tx->id)) {
+						data.is_open = false;
+						data.close_height = *height;
+					}
 				}
 				if(data.is_open) {
 					data.is_covered = true;

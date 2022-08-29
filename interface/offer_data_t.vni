@@ -3,6 +3,7 @@ package mmx;
 struct offer_data_t {
 	
 	uint height;
+	uint close_height = -1;
 		
 	addr_t address;
 	
