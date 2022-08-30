@@ -46,8 +46,8 @@
             text-align: right;
         }
         .key-cell {
-            min-width:150px; 
-            width:5%;
+            min-width: 150px; 
+            width: 5%;
         }
         .theme--dark .key-cell {
             background-color: black;
@@ -58,25 +58,12 @@
         .v-tabs-bar {
             background-color: transparent !important;
         }
+
     </style>
 </head>
 <body>
     <div id="app">
-        <v-app>            
-            <v-app-bar app dense>
-                <v-container>
-                        <main-menu></main-menu>                    
-                </v-container>
-            </v-app-bar>
-            <v-main>
-                <v-container>
-                    <router-view></router-view>
-                </v-container>
-            </v-main>
-            <v-footer app>
-            </v-footer>
-        </v-app>
+        <app></app>
     </div>
-
 </body>
 </html>
