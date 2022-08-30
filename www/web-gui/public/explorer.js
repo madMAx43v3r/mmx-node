@@ -574,15 +574,15 @@ Vue.component('transaction-view', {
 					</tbody>
 				</v-simple-table>
 				<template v-for="(op, index) in data.operations" :key="index">
-					<div class="ui segment">
-						<div class="ui large label">Operation[{{index}}]</div>
-						<div class="ui large label">{{op.__type}}</div>
+					<div>
+						<v-chip label>Operation[{{index}}]</v-chip>
+						<v-chip label>{{op.__type}}</v-chip>
 						<object-table :data="op"></object-table>
 					</div>
 				</template>
 				<template v-if="data.deployed">
-					<div class="ui segment">
-						<div class="ui large label">{{data.deployed.__type}}</div>
+					<div>
+						<v-chip label>{{data.deployed.__type}}</v-chip>
 						<object-table :data="data.deployed"></object-table>
 					</div>
 				</template>
