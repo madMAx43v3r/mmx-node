@@ -491,3 +491,42 @@ Vue.component('main-menu', {
 		`
 })
 
+Vue.component('app', {
+	computed: {
+		colClass(){
+			var result = '';
+			if(!this.$isWinGUI) {
+				result = 'cols-12 col-xl-8 offset-xl-2';
+			}
+			return result;
+		},
+		fluid() {
+			return this.$isWinGUI || !(this.$vuetify.breakpoint.xl || this.$vuetify.breakpoint.lg);
+		}
+	},
+	template: `
+		<v-app>
+			<v-app-bar app dense>
+				<v-container :fluid="fluid" class="main_container">
+					<v-row>
+						<v-col :class="colClass">
+							<main-menu></main-menu>
+						</v-col>
+					</v-row>
+				</v-container>
+			</v-app-bar>
+			<v-main>
+				<v-container :fluid="fluid" class="main_container">
+					<v-row>
+						<v-col :class="colClass">
+							<router-view></router-view>
+						</v-col>
+					</v-row>
+				</v-container>                
+			</v-main>
+			<!--v-footer app>
+			</v-footer-->
+		</v-app>
+		`
+})
+
