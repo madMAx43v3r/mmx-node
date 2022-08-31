@@ -440,6 +440,11 @@ const Login = {
 
 Vue.component('main-menu', {
 	methods: {
+		data() {
+			return {
+				timer: null
+			}
+		},		
 		update() {
 			fetch('/server/session')
 				.then(response => response.json())
@@ -467,17 +472,12 @@ Vue.component('main-menu', {
 			this.timer = setInterval(() => { this.update(); }, 5000);
 		}
 	},
-	mounted() {
-		if(this.$isWinGUI) 
-		{
-
-		}
-	},	
 	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
 		<v-tabs>
+			<status/>
 			<v-tab to="/node">{{ $t('main_menu.node') }}</v-tab>
 			<v-tab to="/wallet">{{ $t('main_menu.wallet') }}</v-tab>
 			<v-tab to="/explore">{{ $t('main_menu.explore') }}</v-tab>
@@ -488,6 +488,109 @@ Vue.component('main-menu', {
 				<v-tab @click="logout">{{ $t('main_menu.logout') }}</v-tab>
 			</template>
 		</v-tabs>
+		`
+})
+
+const AppStatus = {
+	DisconnectedFromNode: "DisconnectedFromNode",
+	Connecting: "Connecting",
+	Syncing: "Syncing",
+	Synced: "Synced"
+}
+
+Vue.component('status', {
+	data() {
+		return {
+			timer: null,
+			session_fails: 99,
+			peer_fails: 99,
+			synced_fails: 99,
+		}
+	},
+	methods: {
+		async update() {
+
+			if(!this.connectedToNetwork) {
+				await fetch('/server/session')
+					.then( () => this.session_fails = 0 )
+					.catch( () => this.session_fails++ );
+			}
+
+			if(this.connectedToNode && !this.synced) {
+				await fetch('/api/router/get_peer_info')
+					.then( response => response.json() )
+					.then( data => {
+						if(data.peers && data.peers.length > 0) {
+							this.peer_fails = 0
+						} else {
+							this.peer_fails++
+						}
+					})
+					.catch( () => this.peer_fails++ );
+			}
+
+			if(this.connectedToNetwork) {
+				await fetch('/wapi/node/info')
+					.then( response => response.json() )
+					.then( data => {
+						if(data.is_synced) {
+							this.synced_fails = 0
+						} else {
+							this.synced_fails++
+						}
+					})
+					.catch( () => this.synced_fails++ );				
+			}
+			
+			// console.log('--------------------------------');
+			// console.log('session_fails', this.session_fails);
+			// console.log('connectedToNode', this.connectedToNode);
+
+			// console.log('peer_fails', this.peer_fails);
+			// console.log('connectedToNetwork', this.connectedToNetwork);
+
+			// console.log('synced_fails', this.synced_fails);
+			// console.log('synced', this.synced);			
+		},
+	},
+	computed: {
+		connectedToNode() {
+			return this.session_fails < 1;
+		},
+		connectedToNetwork() {
+			return this.connectedToNode && this.peer_fails < 1;
+		},
+		synced() {
+			return this.connectedToNetwork && this.synced_fails == 0;
+		},
+		status() {
+			let result = AppStatus.DisconnectedFromNode
+			if(this.connectedToNode) {
+				result = AppStatus.Connecting;
+				if(this.connectedToNetwork) {
+					result = AppStatus.Syncing;
+					if(this.synced) {
+						result = AppStatus.Synced;
+					}
+				}
+			}
+			return result;
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 5000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<div class="d-flex align-center px-5">
+			<v-icon color="red"    v-if="status == AppStatus.Connecting">mdi-connection</v-icon>
+			<v-icon color="yellow" v-else-if="status == AppStatus.Syncing">mdi-sync</v-icon>
+			<v-icon color="green"  v-else-if="status == AppStatus.Synced">mdi-cloud-check</v-icon>
+			<v-icon color="red"    v-else>mdi-emoticon-dead</v-icon>
+		</div>
 		`
 })
 
