@@ -61,7 +61,7 @@ void Node::main()
 			size_t dev_name_len = 0;
 			clGetDeviceInfo(devices[opencl_device], CL_DEVICE_NAME, sizeof(dev_name), dev_name, &dev_name_len);
 
-			log(INFO) << "Using OpenCL GPU device [" << opencl_device << "] " << std::string(dev_name, dev_name_len)
+			log(INFO) << "Using OpenCL GPU device [" << opencl_device << "] " << std::string(dev_name, dev_name_len > 0 ? dev_name_len - 1 : 0)
 					<< " (total of " << devices.size() << " found)";
 		}
 		else if(devices.size()) {
