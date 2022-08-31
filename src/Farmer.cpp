@@ -38,7 +38,7 @@ void Farmer::main()
 	wallet->vnx_set_non_blocking(true);
 	add_async_client(wallet);
 
-	set_timer_millis(10000, std::bind(&Farmer::update, this));
+	set_timer_millis(60 * 1000, std::bind(&Farmer::update, this));
 
 	update();
 
