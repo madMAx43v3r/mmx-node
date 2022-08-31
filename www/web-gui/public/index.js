@@ -533,6 +533,7 @@ Vue.component('status', {
 				await fetch('/wapi/node/info')
 					.then( response => response.json() )
 					.then( data => {
+						this.$root.nodeInfo = data
 						if(data.is_synced) {
 							this.synced_fails = 0
 						} else {
