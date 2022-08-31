@@ -18,19 +18,24 @@ Vue.component('node-info', {
 			data: null
 		}
 	},
-	methods: {
-		update() {
-			fetch('/wapi/node/info')
-				.then(response => response.json())
-				.then(data => this.data = data);
+	// methods: {
+	// 	update() {
+	// 		fetch('/wapi/node/info')
+	// 			.then(response => response.json())
+	// 			.then(data => this.data = data);
+	// 	}
+	// },
+	// created() {
+	// 	this.update();
+	// 	this.timer = setInterval(() => { this.update(); }, 5000);
+	// },
+	// beforeDestroy() {
+	// 	clearInterval(this.timer);
+	// },
+	computed: {
+		nodeInfo() {
+			return this.$root.nodeInfo;
 		}
-	},
-	created() {
-		this.update();
-		this.timer = setInterval(() => { this.update(); }, 5000);
-	},
-	beforeDestroy() {
-		clearInterval(this.timer);
 	},
 	template: `
 		<div>
@@ -42,7 +47,7 @@ Vue.component('node-info', {
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">
 									<v-row align="center" justify="space-around">										
-										<div v-if="data">{{ data.is_synced ? $t('common.yes') : $t('common.no') }}</div>
+										<div v-if="nodeInfo">{{ nodeInfo.is_synced ? $t('common.yes') : $t('common.no') }}</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"/>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
@@ -52,7 +57,7 @@ Vue.component('node-info', {
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
 									<v-row align="center" justify="space-around" width=100>									
-										<div v-if="data">{{ data.height }}</div>
+										<div v-if="nodeInfo">{{ nodeInfo.height }}</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"/>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
@@ -62,7 +67,7 @@ Vue.component('node-info', {
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
 									<v-row align="center" justify="space-around">
-										<div v-if="data">{{ (data.total_space / Math.pow(1000, 5)).toFixed(3) }} PB</div>
+										<div v-if="nodeInfo">{{ (nodeInfo.total_space / Math.pow(1000, 5)).toFixed(3) }} PB</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"/>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
@@ -72,7 +77,7 @@ Vue.component('node-info', {
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
 									<v-row align="center" justify="space-around">
-										<div v-if="data">{{ (data.total_supply / Math.pow(10, 6)).toFixed(0) }} MMX</div>
+										<div v-if="nodeInfo">{{ (nodeInfo.total_supply / Math.pow(10, 6)).toFixed(0) }} MMX</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"/>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
@@ -94,7 +99,7 @@ Vue.component('node-info', {
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">
 									<v-row align="center" justify="space-around">
-										<div v-if="data">{{ data.address_count }}</div>
+										<div v-if="nodeInfo">{{ nodeInfo.address_count }}</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"/>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
@@ -104,7 +109,7 @@ Vue.component('node-info', {
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
 									<v-row align="center" justify="space-around">
-										<div v-if="data">{{ (data.block_size * 100).toFixed(2) }} %</div>
+										<div v-if="nodeInfo">{{ (nodeInfo.block_size * 100).toFixed(2) }} %</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"/>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
@@ -114,7 +119,7 @@ Vue.component('node-info', {
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
 									<v-row align="center" justify="space-around">
-										<div v-if="data">{{ (data.time_diff / 8 / Math.pow(10, 3)).toFixed(3) }} M/s</div>
+										<div v-if="nodeInfo">{{ (nodeInfo.time_diff / 8 / Math.pow(10, 3)).toFixed(3) }} M/s</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"/>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
@@ -124,7 +129,7 @@ Vue.component('node-info', {
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
 									<v-row align="center" justify="space-around">
-										<div v-if="data">{{ (data.block_reward.value).toFixed(3) }} MMX</div>
+										<div v-if="nodeInfo">{{ (nodeInfo.block_reward.value).toFixed(3) }} MMX</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"/>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">

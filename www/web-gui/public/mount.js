@@ -91,6 +91,9 @@ var vuetify = new Vuetify();
 Vue.prototype.$isWinGUI = typeof window.mmx !== 'undefined';
 
 var app = new Vue({
+	data: {
+		nodeInfo: null
+	},
 	el: '#app',
 	vuetify: vuetify,
 	router: router,
