@@ -64,6 +64,9 @@ int main(int argc, char** argv)
 	}
 	{
 		vnx::Handle<mmx::Wallet> module = new mmx::Wallet("Wallet");
+		module->config_path = mmx_home + module->config_path;
+		module->storage_path = mmx_home + module->storage_path;
+		module->database_path = root_path + module->database_path;
 		module.start_detached();
 	}
 	{
