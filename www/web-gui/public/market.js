@@ -258,7 +258,7 @@ Vue.component('market-offers', {
 
 			<v-dialog v-model="dialog"
 				transition="dialog-top-transition"
-				max-width="700"
+				max-width="800"
 			>
 				<template v-slot:default="dialog">
 					<v-card>
