@@ -19,9 +19,11 @@ int main(int argc, char** argv)
 	std::string mmx_network;
 	if(auto path = ::getenv("MMX_HOME")) {
 		mmx_home = path;
+		std::cerr << "MMX_HOME = " << mmx_home << std::endl;
 	}
 	if(auto path = ::getenv("MMX_NETWORK")) {
 		mmx_network = path;
+		std::cerr << "MMX_NETWORK = " << mmx_network << std::endl;
 	}
 	auto root_path = mmx_home + mmx_network;
 
