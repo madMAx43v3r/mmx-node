@@ -492,7 +492,8 @@ Vue.component('main-menu', {
 })
 
 const AppStatus = {
-	DisconnectedFromNode: "DisconnectedFromNode",
+	DisconnectedFromNode: "Disconnected from node",
+	LoggedOff: "Logged off",
 	Connecting: "Connecting",
 	Syncing: "Syncing",
 	Synced: "Synced"
@@ -510,13 +511,13 @@ Vue.component('status', {
 	methods: {
 		async update() {
 
-			if(!this.connectedToNetwork) {
+			if(this.status == AppStatus.DisconnectedFromNode || this.status == AppStatus.Connecting) {
 				await fetch('/server/session')
 					.then( () => this.session_fails = 0 )
 					.catch( () => this.session_fails++ );
 			}
 
-			if(this.connectedToNode && !this.synced) {
+			if(this.status == AppStatus.Connecting || this.status == AppStatus.Syncing) {
 				await fetch('/api/router/get_peer_info')
 					.then( response => response.json() )
 					.then( data => {
@@ -529,7 +530,7 @@ Vue.component('status', {
 					.catch( () => this.peer_fails++ );
 			}
 
-			if(this.connectedToNetwork) {
+			if(this.status == AppStatus.Syncing || this.status == AppStatus.Synced) {
 				await fetch('/wapi/node/info')
 					.then( response => response.json() )
 					.then( data => {
@@ -540,7 +541,10 @@ Vue.component('status', {
 							this.synced_fails++
 						}
 					})
-					.catch( () => this.synced_fails++ );				
+					.catch( () => {
+						this.synced_fails++;
+						this.$root.nodeInfo = null;
+					} );				
 			}
 			
 			// console.log('--------------------------------');
@@ -558,23 +562,31 @@ Vue.component('status', {
 		connectedToNode() {
 			return this.session_fails < 1;
 		},
+		loggedIn() {
+			return !this.$route.meta.is_login || this.$isWinGUI;
+		},
 		connectedToNetwork() {
-			return this.connectedToNode && this.peer_fails < 1;
+			return this.peer_fails < 1;
 		},
 		synced() {
-			return this.connectedToNetwork && this.synced_fails == 0;
+			return this.synced_fails == 0;
 		},
 		status() {
 			let result = AppStatus.DisconnectedFromNode
 			if(this.connectedToNode) {
-				result = AppStatus.Connecting;
-				if(this.connectedToNetwork) {
-					result = AppStatus.Syncing;
-					if(this.synced) {
-						result = AppStatus.Synced;
+				if(this.loggedIn) {					
+					result = AppStatus.Connecting;
+					if(this.connectedToNetwork) {
+						result = AppStatus.Syncing;
+						if(this.synced) {
+							result = AppStatus.Synced;
+						}
 					}
+				} else {
+					result = AppStatus.LoggedOff;
 				}
 			}
+			//console.log(result)
 			return result;
 		}
 	},
@@ -587,12 +599,45 @@ Vue.component('status', {
 	},
 	template: `
 		<div class="d-flex align-center px-5">
-			<v-icon color="red"    v-if="status == AppStatus.Connecting">mdi-connection</v-icon>
-			<v-icon color="yellow darken-3" v-else-if="status == AppStatus.Syncing">mdi-sync</v-icon>
-			<v-icon color="green"  v-else-if="status == AppStatus.Synced">mdi-cloud-check</v-icon>
-			<v-icon color="red"    v-else>mdi-emoticon-dead</v-icon>
+
+			<t-icon v-if="status == AppStatus.Connecting"
+				color="red"
+				:tooltip="AppStatus.Connecting">mdi-connection</t-icon>
+
+			<t-icon v-else-if="status == AppStatus.Syncing"
+				color="yellow darken-3" 
+				:tooltip="AppStatus.Syncing">mdi-sync</t-icon>
+
+			<t-icon v-else-if="status == AppStatus.Synced"
+				color="green" 
+				:tooltip="AppStatus.Synced">mdi-cloud-check</t-icon>
+
+			<t-icon v-else-if="status == AppStatus.LoggedOff" 
+				color="red" 
+				:tooltip="AppStatus.LoggedOff">mdi-shield-key</t-icon>
+
+			<t-icon v-else
+				color="red" 
+				:tooltip="AppStatus.DisconnectedFromNode">mdi-emoticon-dead</t-icon>
+
 		</div>
 		`
+})
+
+Vue.component('t-icon', {
+	props: {
+		color: String,
+		tooltip: String
+	},	
+	template: `
+		<v-tooltip bottom v-if="tooltip">
+			<template v-slot:activator="{ on, attrs }">
+				<v-icon :color="color" v-on="on"><slot /></v-icon>
+			</template>
+			<span>{{tooltip}}</span>
+		</v-tooltip>	
+		<v-icon :color="color" v-else><slot /></v-icon>		
+	`
 })
 
 Vue.component('app', {
