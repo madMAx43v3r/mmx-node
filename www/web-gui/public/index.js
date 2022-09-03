@@ -588,7 +588,7 @@ Vue.component('status', {
 	template: `
 		<div class="d-flex align-center px-5">
 			<v-icon color="red"    v-if="status == AppStatus.Connecting">mdi-connection</v-icon>
-			<v-icon color="yellow" v-else-if="status == AppStatus.Syncing">mdi-sync</v-icon>
+			<v-icon color="yellow darken-3" v-else-if="status == AppStatus.Syncing">mdi-sync</v-icon>
 			<v-icon color="green"  v-else-if="status == AppStatus.Synced">mdi-cloud-check</v-icon>
 			<v-icon color="red"    v-else>mdi-emoticon-dead</v-icon>
 		</div>
