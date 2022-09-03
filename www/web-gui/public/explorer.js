@@ -743,14 +743,46 @@ Vue.component('object-table', {
 	props: {
 		data: Object
 	},
+	data() {
+		return {
+			tt: [],
+		}
+	},
+	methods: {
+		stringify(value) {
+			return JSON.stringify(value, null, 4);
+		}
+	},
 	template: `
 		<v-card>
-			<v-simple-table>
+			<v-simple-table class="object-table">
 				<tbody>
 					<template v-for="(value, key) in data" :key="key">
 						<tr v-if="key != '__type'">
-							<td class="key-cell">{{key}}</td>
-							<td>{{value}}</td>
+							<td class="key-cell">{{ key }}</td>
+
+							<td v-if="value instanceof Object">
+
+									<v-btn-toggle v-model="tt[key]" class="float-right mr-n4">
+										<v-btn fab x-small> 
+											<v-icon v-if="tt[key] != 0">mdi-arrow-expand</v-icon>
+											<v-icon v-else>mdi-arrow-collapse</v-icon>
+										</v-btn>
+									</v-btn-toggle>				
+		
+
+								<div v-if="tt[key] != 0" style="overflow-wrap: anywhere;">
+									{{ value }}
+								</div>
+
+								<div v-else>
+									<div style="white-space: pre-wrap; overflow-wrap: anywhere;">{{ stringify(value) }}</div>
+								</div>
+
+							</td>
+							<td v-else>
+								{{ value }}
+							</td>
 						</tr>
 					</template>
 				</tbody>

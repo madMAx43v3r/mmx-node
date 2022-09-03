@@ -32,12 +32,16 @@
 
 
     <style>
-        .theme--light.v-data-table tbody tr:nth-of-type(odd) {
+        .theme--light.v-data-table tbody tr:nth-of-type(odd) td {
             background-color: rgba(0, 0, 0, .03);
         }
-        .theme--dark.v-data-table tbody tr:nth-of-type(odd) {
+        .theme--dark.v-data-table tbody tr:nth-of-type(odd) td {
             background-color: rgba(0, 0, 0, .5);
         }
+        .v-data-table.object-table tr:hover {
+            background: transparent !important;
+        }
+
         .no-padding .v-toolbar__content {
             padding-left: 0px;
             padding-right: 0px;
@@ -50,10 +54,10 @@
             width: 5%;
         }
         .theme--dark .key-cell {
-            background-color: black;
+            background-color: black !important;
         }
         .theme--light .key-cell {
-            background-color: #EEEEEE;
+            background-color: #EEEEEE !important;
         }
         .v-tabs-bar {
             background-color: transparent !important;
