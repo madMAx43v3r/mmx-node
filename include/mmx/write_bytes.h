@@ -132,7 +132,6 @@ inline void write_bytes(vnx::OutputBuffer& out, const txout_t& value)
 	write_bytes(out, value.address);
 	write_bytes(out, value.contract);
 	write_bytes(out, value.amount);
-	write_bytes(out, value.sender);
 }
 
 inline void write_bytes(vnx::OutputBuffer& out, const ulong_fraction_t& value)

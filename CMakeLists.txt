@@ -118,7 +118,6 @@ add_library(mmx_iface SHARED
 	src/solution/BLS_PubKey.cpp
 	src/operation/Mint.cpp
 	src/operation/Spend.cpp
-	src/operation/Revoke.cpp
 	src/operation/Mutate.cpp
 	src/operation/Deposit.cpp
 	src/operation/Execute.cpp

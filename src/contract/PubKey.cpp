@@ -8,6 +8,7 @@
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/write_bytes.h>
+#include <mmx/exception.h>
 
 
 namespace mmx {
@@ -49,14 +50,14 @@ std::vector<txout_t> PubKey::validate(std::shared_ptr<const Operation> operation
 	if(auto solution = std::dynamic_pointer_cast<const solution::PubKey>(operation->solution))
 	{
 		if(solution->pubkey.get_addr() != address) {
-			throw std::logic_error("invalid pubkey");
+			throw mmx::invalid_solution("wrong pubkey");
 		}
 		if(!solution->signature.verify(solution->pubkey, context->txid)) {
-			throw std::logic_error("invalid signature");
+			throw mmx::invalid_solution("invalid signature");
 		}
 		return {};
 	}
-	throw std::logic_error("invalid solution");
+	throw mmx::invalid_solution("invalid type");
 }
 
 

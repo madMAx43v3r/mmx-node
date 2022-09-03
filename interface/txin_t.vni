@@ -2,7 +2,7 @@ package mmx;
 
 struct txin_t extends txio_t {
 	
-	uchar solution = -1;
+	ushort solution = -1;
 	
 	uchar flags;
 	

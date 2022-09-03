@@ -82,6 +82,7 @@ enum opcode_e : uint8_t {
 	OP_EVENT,		// name, data
 	OP_FAIL,		// message
 	OP_RCALL,		// name, method, stack_ptr, nargs
+	OP_DEPOSIT,		// TODO
 
 };
 

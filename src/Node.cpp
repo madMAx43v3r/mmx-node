@@ -228,7 +228,7 @@ void Node::main()
 	subscribe(input_harvester_proof, max_queue_ms);
 
 	set_timer_millis(60 * 1000, std::bind(&Node::print_stats, this));
-	set_timer_millis(params->block_time * 1000, std::bind(&Node::validate_pool, this));
+	set_timer_millis(params->block_time * 1000, std::bind(&Node::purge_tx_pool, this));
 
 	update_timer = set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
 	stuck_timer = set_timer_millis(sync_loss_delay * 1000, std::bind(&Node::on_stuck_timeout, this));

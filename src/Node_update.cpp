@@ -10,7 +10,6 @@
 #include <mmx/TimeInfusion.hxx>
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/operation/Mutate.hxx>
-#include <mmx/operation/Revoke.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/utils.h>
 
@@ -380,14 +379,114 @@ void Node::update()
 	}
 }
 
-void Node::validate_pool()
+void Node::purge_tx_pool()
 {
-	for(const auto& entry : validate_pending(params->max_block_cost, params->max_block_cost, true)) {
-		publish(entry.tx, output_verified_transactions);
+	std::vector<tx_pool_t> all_tx;
+	for(const auto& entry : tx_pool) {
+		all_tx.push_back(entry.second);
+	}
+
+	// sort transactions by fee ratio
+	std::sort(all_tx.begin(), all_tx.end(),
+		[](const tx_pool_t& lhs, const tx_pool_t& rhs) -> bool {
+			return lhs.tx->fee_ratio > rhs.tx->fee_ratio;
+		});
+
+	size_t num_purged = 0;
+	uint128_t total_pool_cost = 0;
+	const auto max_pool_cost = uint128_t(tx_pool_limit) * params->max_block_cost;
+
+	// purge transactions from pool if overflowing
+	for(const auto& entry : all_tx) {
+		if(total_pool_cost + entry.cost > max_pool_cost) {
+			tx_pool.erase(entry.tx->id);
+			num_purged++;
+		} else {
+			total_pool_cost += entry.cost;
+		}
 	}
 }
 
-std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit, const uint64_t select_limit, const bool only_new)
+void Node::validate_new()
+{
+	const auto peak = get_peak();
+	if(!peak) {
+		return;
+	}
+	const auto time_begin = vnx::get_wall_time_millis();
+
+	// purge duplicates
+	for(auto iter = pending_transactions.begin(); iter != pending_transactions.end();) {
+		if(tx_pool.count(iter->second->id)) {
+			iter = pending_transactions.erase(iter);
+		} else {
+			iter++;
+		}
+	}
+
+	// select non-overlapping set
+	std::vector<tx_pool_t> tx_list;
+	std::unordered_set<hash_t> tx_set;
+	for(const auto& entry : pending_transactions) {
+		if(const auto& tx = entry.second) {
+			if(tx_set.insert(tx->id).second) {
+				tx_pool_t tmp;
+				tmp.tx = tx;
+				tx_list.push_back(tmp);
+			}
+		}
+	}
+
+	auto context = new_exec_context();
+	{
+		auto base = Context::create();
+		base->height = peak->height + 1;
+		context->block = base;
+	}
+
+	// prepare synchronization
+	for(const auto& entry : tx_list) {
+		setup_context(context, entry.tx);
+	}
+
+	// verify transactions in parallel
+#pragma omp parallel for
+	for(int i = 0; i < int(tx_list.size()); ++i)
+	{
+		auto& entry = tx_list[i];
+		entry.is_valid = false;
+
+		const auto& tx = entry.tx;
+		context->wait(tx->id);
+		try {
+			if(auto res = validate(tx, context)) {
+				entry.cost = res->total_cost;
+				entry.fee = res->total_fee;
+				entry.is_valid = true;
+			}
+		} catch(const std::exception& ex) {
+			if(show_warnings) {
+				log(WARN) << "TX validation failed with: " << ex.what() << " (" << tx->id << ")";
+			}
+		}
+		context->signal(tx->id);
+	}
+
+	// update tx pool
+	size_t num_invalid = 0;
+	for(const auto& entry : tx_list) {
+		const auto& tx = entry.tx;
+		if(entry.is_valid) {
+			tx_pool[tx->id] = entry;
+			publish(tx, output_verified_transactions);
+		} else {
+			num_invalid++;
+		}
+		pending_transactions.erase(tx->content_hash);
+	}
+}
+
+std::vector<Node::tx_pool_t> Node::validate_for_block(const uint64_t verify_limit, const uint64_t select_limit)
 {
 	const auto peak = get_peak();
 	if(!peak) {
@@ -406,55 +505,18 @@ std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit,
 			return lhs.tx->fee_ratio > rhs.tx->fee_ratio;
 		});
 
-	// add pending transactions (not yet verified once)
-	for(const auto& entry : pending_transactions) {
-		if(const auto& tx = entry.second) {
-			tx_pool_t out;
-			out.tx = tx;
-			out.cost = tx->calc_cost(params);
-			out.full_hash = entry.first;
-			all_tx.push_back(out);
-		}
-	}
-
-	size_t num_purged = 0;
-	uint128_t total_pool_cost = 0;
-	uint128_t total_verify_cost = 0;
-	std::vector<tx_pool_t> tx_list;
-
-	// purge transactions from pool if overflowing
-	const auto max_pool_cost = uint128_t(tx_pool_limit) * params->max_block_cost;
-	{
-		vnx::optional<size_t> cutoff;
-		for(size_t i = 0; i < all_tx.size(); ++i) {
-			const auto& entry = all_tx[i];
-			total_pool_cost += entry.cost;
-			if(total_pool_cost > max_pool_cost) {
-				if(!cutoff) {
-					cutoff = i;
-				}
-				tx_pool.erase(entry.tx->id);
-				pending_transactions.erase(entry.full_hash);
-				num_purged++;
-			}
-		}
-		if(cutoff) {
-			all_tx.resize(*cutoff);
-		}
-	}
 	auto context = new_exec_context();
 	{
 		auto base = Context::create();
 		base->height = peak->height + 1;
 		context->block = base;
 	}
+	std::vector<tx_pool_t> tx_list;
+	uint128_t total_verify_cost = 0;
 
 	// select transactions to verify
 	for(const auto& entry : all_tx) {
-		if(only_new && entry.is_valid && entry.last_check + tx_verify_interval > peak->height) {
-			continue;
-		}
-		if(uint32_t(entry.tx->id.to_uint256() & 0x1) != (context->block->height & 0x1)) {
+		if(!check_tx_inclusion(entry.tx->id, context->block->height)) {
 			continue;
 		}
 		if(total_verify_cost + entry.cost <= verify_limit) {
@@ -473,111 +535,77 @@ std::vector<Node::tx_pool_t> Node::validate_pending(const uint64_t verify_limit,
 	for(int i = 0; i < int(tx_list.size()); ++i)
 	{
 		auto& entry = tx_list[i];
+		entry.is_valid = false;
+
 		auto& tx = entry.tx;
-		if(tx->exec_inputs.size() || tx->exec_outputs.size()) {
-			auto copy = vnx::clone(tx);
-			copy->exec_inputs.clear();
-			copy->exec_outputs.clear();
-			tx = copy;
-		}
 		context->wait(tx->id);
 		try {
-			if(auto copy = validate(tx, context, nullptr, entry.fee, entry.cost)) {
-				tx = copy;
+			if(auto res = validate(tx, context)) {
+				{
+					auto copy = vnx::clone(tx);
+					copy->exec_result = res;
+					tx = copy;
+				}
+				entry.cost = res->total_cost;
+				entry.fee = res->total_fee;
+				entry.is_valid = true;
 			}
-			entry.is_valid = true;
-		}
-		catch(const std::exception& ex) {
+		} catch(const std::exception& ex) {
 			if(show_warnings) {
 				log(WARN) << "TX validation failed with: " << ex.what() << " (" << tx->id << ")";
 			}
-			entry.is_valid = false;
 		}
-		entry.last_check = peak->height;
 		context->signal(tx->id);
-	}
-
-	// update tx_pool
-	size_t num_invalid = 0;
-	for(const auto& entry : tx_list) {
-		const auto& tx = entry.tx;
-		if(entry.is_valid) {
-			tx_pool[tx->id] = entry;
-		} else {
-			num_invalid++;
-		}
-		// erase from pool if it didn't came from pending map (and is invalid)
-		if(!pending_transactions.erase(entry.full_hash) && !entry.is_valid) {
-			tx_pool.erase(tx->id);
-		}
 	}
 
 	uint128_t total_cost = 0;
 	std::vector<tx_pool_t> result;
-	std::unordered_set<addr_t> tx_set;
-	std::multiset<std::pair<hash_t, addr_t>> revoked;
 	balance_cache_t balance_cache(&balance_map);
 
 	// select final set of transactions
 	for(auto& entry : tx_list)
 	{
-		if(!entry.is_valid || total_cost + entry.cost > select_limit) {
+		if(!entry.is_valid) {
+			tx_pool.erase(entry.tx->id);
+			continue;
+		}
+		if(total_cost + entry.cost > select_limit) {
 			continue;
 		}
 		bool passed = true;
-		std::unordered_set<addr_t> tmp_set;
-		std::multiset<std::pair<hash_t, addr_t>> tmp_revoke;
 		balance_cache_t tmp_cache(&balance_cache);
 		{
 			auto tx = entry.tx;
-			// TODO: subtract tx fee
-			while(tx) {
-				if(tx_set.count(tx->id)) {
+			{
+				const auto balance = tmp_cache.find(*tx->sender, addr_t());
+				if(balance && entry.fee <= *balance) {
+					*balance -= entry.fee;
+				} else {
 					passed = false;
 				}
-				tmp_set.insert(tx->id);
-
-				if(tx->sender) {
-					const auto key = std::make_pair(tx->id, *tx->sender);
-					if(revoked.count(key) || tmp_revoke.count(key)) {
-						passed = false;
-					}
-				}
-				for(const auto& in : tx->get_inputs()) {
-					const auto balance = tmp_cache.find(in.address, in.contract);
-					if(balance && in.amount <= *balance) {
-						*balance -= in.amount;
-					} else {
-						passed = false;
-					}
-				}
-				for(const auto& op : tx->execute) {
-					if(auto revoke = std::dynamic_pointer_cast<const operation::Revoke>(op)) {
-						if(tx_set.count(revoke->txid) || tmp_set.count(revoke->txid)) {
+			}
+			if(!tx->exec_result->did_fail) {
+				auto txi = tx;
+				while(txi) {
+					for(const auto& in : txi->get_inputs()) {
+						const auto balance = tmp_cache.find(in.address, in.contract);
+						if(balance && in.amount <= *balance) {
+							*balance -= in.amount;
+						} else {
 							passed = false;
 						}
-						tmp_revoke.emplace(revoke->txid, revoke->address);
 					}
+					txi = txi->parent;
 				}
-				tx = tx->parent;
 			}
 		}
 		if(!passed) {
 			continue;
 		}
-		tx_set.insert(tmp_set.begin(), tmp_set.end());
-		revoked.insert(tmp_revoke.begin(), tmp_revoke.end());
 		balance_cache.apply(tmp_cache);
 
 		total_cost += entry.cost;
 		result.push_back(entry);
-	}
-
-	if(!only_new || !tx_list.empty()) {
-		const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
-		log(INFO) << "Validated" << (only_new ? " new" : "") << " transactions: " << result.size() << " valid, "
-				<< num_invalid << " invalid, " << num_purged << " purged, "
-				<< uint64_t((10000 * total_pool_cost) / max_pool_cost) / 100. << " % mem pool, took " << elapsed << " sec";
 	}
 	return result;
 }
@@ -604,7 +632,7 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	block->vdf_output = vdf_point->output;
 	block->proof = proof_data.proof;
 
-	const auto tx_list = validate_pending(params->max_block_cost * 2, params->max_block_cost, false);
+	const auto tx_list = validate_for_block((3 * params->max_block_cost) / 2, params->max_block_cost);
 
 	// select transactions
 	uint64_t total_fees = 0;

@@ -58,6 +58,12 @@ uint64_t to_amount(const double value, std::shared_ptr<const ChainParams> params
 }
 
 inline
+bool check_tx_inclusion(const hash_t& txid, const uint32_t height)
+{
+	return uint32_t(txid.to_uint256() & 0x1) == (height & 0x1);
+}
+
+inline
 bool check_plot_filter(	std::shared_ptr<const ChainParams> params,
 						const hash_t& challenge, const hash_t& plot_id)
 {

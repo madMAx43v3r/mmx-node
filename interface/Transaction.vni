@@ -38,6 +38,8 @@ class Transaction extends TransactionBase {
 	
 	hash_t content_hash;				// full hash including solutions and exec_result
 	
+	static const uint MAX_SOLUTIONS = 65535;		// limit of 16-bit solution index
+	
 	
 	void finalize();
 	

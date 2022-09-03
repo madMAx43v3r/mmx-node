@@ -180,7 +180,7 @@ private:
 		void setup_wait(const hash_t& txid, const addr_t& address);
 		std::shared_ptr<contract_state_t> find_state(const addr_t& address) const;
 		std::shared_ptr<const Contract> find_contract(const addr_t& address) const;
-		std::shared_ptr<const Context> get_context(std::shared_ptr<const Transaction> tx, std::shared_ptr<const Contract> contract) const;
+		std::shared_ptr<const Context> get_context_for(std::shared_ptr<const Transaction> tx, std::shared_ptr<const Contract> contract) const;
 	};
 
 	struct vdf_point_t {
@@ -216,10 +216,8 @@ private:
 
 	struct tx_pool_t {
 		bool is_valid = false;
-		uint32_t last_check = 0;
-		uint64_t cost = 0;
-		uint64_t fee = 0;
-		hash_t full_hash;
+		uint32_t cost = 0;
+		uint32_t fee = 0;
 		std::shared_ptr<const Transaction> tx;
 	};
 
@@ -246,9 +244,11 @@ private:
 
 	void add_dummy_blocks(std::shared_ptr<const BlockHeader> prev);
 
-	void validate_pool();
+	void purge_tx_pool();
 
-	std::vector<tx_pool_t> validate_pending(const uint64_t verify_limit, const uint64_t select_limit, bool only_new);
+	void validate_new();
+
+	std::vector<tx_pool_t> validate_for_block(const uint64_t verify_limit, const uint64_t select_limit);
 
 	std::shared_ptr<const Block> make_block(std::shared_ptr<const BlockHeader> prev, const proof_data_t& proof_data);
 
@@ -308,9 +308,9 @@ private:
 					balance_cache_t& balance_cache,
 					std::unordered_map<addr_t, uint128>& amounts) const;
 
-	std::shared_ptr<const Transaction>
+	std::shared_ptr<const exec_result_t>
 	validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const execution_context_t> context,
-				std::shared_ptr<const Block> base, uint64_t& tx_fee, uint64_t& tx_cost) const;
+				std::shared_ptr<const Block> base = nullptr) const;
 
 	void validate_diff_adjust(const uint64_t& block, const uint64_t& prev) const;
 
