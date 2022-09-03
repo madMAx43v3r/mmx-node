@@ -259,17 +259,17 @@ Vue.component('block-view', {
 
 			<v-toolbar dense flat class="pa-0 no-padding">
 				<template v-if="data">
-					<v-btn :to="'/explore/block/hash/' + data.prev"><v-icon>mdi-arrow-left</v-icon>{{ $t('block_view.previous') }}</v-btn>
+					<v-btn outlined :to="'/explore/block/hash/' + data.prev"><v-icon>mdi-arrow-left</v-icon>{{ $t('block_view.previous') }}</v-btn>
 					<v-spacer></v-spacer>
-					<v-btn :to="'/explore/block/height/' + (data.height + 1)">{{ $t('block_view.next') }}<v-icon>mdi-arrow-right</v-icon></v-btn>
+					<v-btn outlined :to="'/explore/block/height/' + (data.height + 1)">{{ $t('block_view.next') }}<v-icon>mdi-arrow-right</v-icon></v-btn>
 				</template>
 
 				<template v-if="!data && height">
 					<div v-if="height > 0">
-						<v-btn :to="'/explore/block/height/' + (height - 1)"><v-icon>mdi-arrow-left</v-icon>{{ $t('block_view.previous') }}</v-btn>
+						<v-btn outlined :to="'/explore/block/height/' + (height - 1)"><v-icon>mdi-arrow-left</v-icon>{{ $t('block_view.previous') }}</v-btn>
 					</div>
 					<v-spacer></v-spacer>
-					<v-btn :to="'/explore/block/height/' + (height + 1)">{{ $t('block_view.next') }}<v-icon>mdi-arrow-right</v-icon></v-btn>
+					<v-btn outlined :to="'/explore/block/height/' + (height + 1)">{{ $t('block_view.next') }}<v-icon>mdi-arrow-right</v-icon></v-btn>
 				</template>
 				<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
 			</v-toolbar>
