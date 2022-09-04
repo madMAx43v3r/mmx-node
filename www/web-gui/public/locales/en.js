@@ -58,6 +58,13 @@ const enLocale = {
         "no_addresss": "No. Addresss"
     },
 
+    "farmer_info": {
+        "virtual_balance": "Virtual Balance",
+        "virtual_size": "Virtual Size",
+        "physical_size": "Physical Size",
+        "total_farm_size": "Total Farm Size"
+    },
+
     "node_log": {   
         "terminal": "Terminal",
         "router": "Router",
@@ -92,6 +99,14 @@ const enLocale = {
         "history": "History",
         "details": "Details"
     },
+
+    "account_addresses": {
+        "index": "#",
+        "n_recv": "N(Recv)",
+        "n_spend": "N(Spend)",
+        "last_recv": "Last Recv",
+        "last_spend": "Last Spend"
+    },    
 
     "account_send_form": {
         "source_address": "Source Address",
@@ -187,7 +202,9 @@ const enLocale = {
         "cost": "Cost",
 
         "input": "Input",
-        "output": "Output"
+        "output": "Output",
+
+        "no_such_transaction": "No such transaction!"
     },
 
     "create_contract_menu": {

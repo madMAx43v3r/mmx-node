@@ -34,6 +34,22 @@ const commonLocale = {
         "type": "@:common.type"
     },
 
+    "netspace_graph": {
+        "title": "@:node_common.netspace ({0})"
+    },
+
+    "vdf_speed_graph": {
+        "title": "@:node_common.vdf_speed ({0})"
+    },
+
+    "block_reward_graph": {
+        "title": "@:node_common.block_reward ({0})"
+    },
+    
+    "tx_fees_graph": {
+        "title": "@:node_common.tx_fees ({0})"
+    },    
+
     "wallet_summary": {
         "new_wallet": "@:wallet_summary.new @:common.wallet"
     },
@@ -43,16 +59,12 @@ const commonLocale = {
         "log": "@:node_menu.log"
     },
 
-    "account_addresses": {
-        "n_recv": "N(Recv)",
-        "n_spend": "N(Spend)",
-        "last_recv": "Last Recv",
-        "last_spend": "Last Spend"
+    "account_header": {
+        "wallet": "@:common.wallet"
     },    
 
     "account_addresses": {
-        "index": "#",
-        "address": "@:common.address"
+        "address": "@:common.address",
     },
 
     "account_send_form": {
@@ -103,7 +115,6 @@ const commonLocale = {
 
     "explore_menu": {
         "blocks": "@:common.blocks",
-        "transactions": "Transactions",
 
         "transaction_id": "@:explore_transactions.transaction_id",
         "address": "@.lower:common.address",

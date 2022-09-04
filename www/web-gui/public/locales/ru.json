@@ -42,7 +42,7 @@
     "node_common": {
         "vdf_speed": "Скорость VDF",
         "block_reward": "Награда за блок",
-        "block_size": "Размер блока",
+        "block_size": "Объем блока",
         "tx_fees": "Комиссии",
         "netspace": "Пространство сети"
     },
@@ -57,6 +57,13 @@
         "supply": "Эмиссия",
         "no_addresss": "Количество адресов"
     },
+
+    "farmer_info": {
+        "virtual_balance": "Виртуальный баланс",
+        "virtual_size": "Виртуальный объем",
+        "physical_size": "Физический объем",
+        "total_farm_size": "Общий объем фермы"
+    },    
 
     "node_log": {   
         "terminal": "Терминал",
@@ -177,7 +184,9 @@
         "cost": "Стоимость",
 
         "input": "Ввод",
-        "output": "Вывод"
+        "output": "Вывод",
+
+        "no_such_transaction": "Нет такой транзакции!"
     },
 
     "create_contract_menu": {
