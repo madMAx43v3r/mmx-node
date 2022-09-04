@@ -20,10 +20,9 @@ const i18n = new VueI18n({
     locale: 'en',
     fallbackLocale: 'en',
     messages: { 
-        'en': langEN
+        'en': mergeDeep(commonLocale, enLocale)
     }
 })
-
 
 function setI18nLanguage(locale) {
 
@@ -39,38 +38,38 @@ function setI18nLanguage(locale) {
     document.querySelector('html').setAttribute('lang', locale)
 }
 
-function customFallback(messages) {
-    function nestedLoop(obj1, obj2) {
-        const res = {};
-        function recurse(obj1, obj2, res) {
-            for (const key in obj1) {
-                let value1 = obj1[key];
-                let value2 = obj2[key];
-                if(value1 != undefined) {
-                    if (value1 && typeof value1 === 'object') {
-                        if(value2) {
-                            res[key] = value2;
-                            recurse(value1, value2, res[key]);
-                        } else {
-                            res[key] = value1;
-                        }                        
-                    } else {
-                        //console.log(key, value1, value2);
-                        if(value2) {
-                            res[key] = value2;
-                        } else {
-                            res[key] = value1;
-                        }
-                    }
-                }
+
+function isObject(item) {
+    return (item && typeof item === 'object' && !Array.isArray(item));
+}
+  
+function mergeDeep(target, ...sources) {
+
+    if (!sources.length) return target;
+    const source = sources.shift();
+
+    if (isObject(target) && isObject(source)) {
+        for (const key in source) {
+            if (isObject(source[key])) {
+                if (!target[key]) Object.assign(target, {
+                    [key]: {}
+                });
+                mergeDeep(target[key], source[key]);
+            } else {
+                Object.assign(target, {
+                    [key]: source[key]
+                });
             }
         }
-        recurse(obj1,obj2,res);
-        return res;
     }
 
-    messages = nestedLoop(langEN, messages)
-    return messages;
+    return mergeDeep(target, ...sources);
+}
+
+
+function customFallback(messages) {
+    let result = mergeDeep(commonLocale, enLocale, messages)
+    return result;
 }   
 
 function loadLanguageAsync(locale) {
