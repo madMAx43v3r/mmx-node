@@ -318,14 +318,17 @@ Vue.component('market-offers', {
 					<template v-if="data">
 						<v-simple-table>
 							<thead>
-								<th>{{ $t('market_offers.they_offer') }}</th>
-								<th>{{ $t('market_offers.they_ask') }}</th>
-								<template v-if="bid && ask">
-									<th>{{ $t('market_offers.price') }}</th>
-								</template>
-								<th>{{ $t('market_offers.time') }}</th>
-								<th>{{ $t('market_offers.link') }}</th>
-								<th></th>
+								<tr>
+									<th>{{ $t('market_offers.they_offer') }}</th>
+									<th>{{ $t('market_offers.they_ask') }}</th>
+									<template v-if="bid && ask">
+										<th>{{ $t('market_offers.price') }}</th>
+									</template>
+									<th>{{ $t('market_offers.time') }}</th>
+									<th>{{ $t('market_offers.link') }}</th>
+									
+									<th></th>
+								</tr>
 							</thead>
 							<tbody>
 								<tr v-for="item in data" :key="item.address" :class="{positive: accepted.has(item.address)}">
