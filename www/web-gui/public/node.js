@@ -491,9 +491,9 @@ Vue.component('node-log-table', {
 			timer: null,
 			loaded: false,
 			headers: [
-				{ text: 'Time', value: 'time', align: 'left', width: "10%"},
-				{ text: 'Module', value: 'module', width: "10%"},
-				{ text: 'Message', value: 'message' },
+				{ text: this.$t('node_log_table.time'), value: 'time', align: 'left', width: "10%"},
+				{ text: this.$t('node_log_table.module'), value: 'module', width: "10%"},
+				{ text: this.$t('node_log_table.message'), value: 'message' },
 			],	
 		}
 	},

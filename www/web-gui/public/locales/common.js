@@ -28,6 +28,10 @@ const commonLocale = {
         "node": "@:common.node"
     },
 
+    "node_log_table": {
+        "time": "@:common.time",
+    },
+
     "node_peers": {
     	"ip": "IP",        
         "height": "@:common.height",
