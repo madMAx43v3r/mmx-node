@@ -42,6 +42,8 @@
     "node_common": {
         "vdf_speed": "Скорость VDF",
         "block_reward": "Награда за блок",
+        "block_size": "Размер блока",
+        "tx_fees": "Комиссии",
         "netspace": "Пространство сети"
     },
 
@@ -75,7 +77,7 @@
         "connection": "Соединение",
         "outbound": "исходящее",
         "inbound": "входящее"
-    },    
+    },
 
     "wallet_summary": {
         "new": "Новый"
@@ -92,14 +94,13 @@
     },
 
     "account_send_form": {
-
         "source_address": "Исходный адрес",
         "destination": "Получатель",
         "destination_address": "Адрес получателя",
         "address_input": "Ввод адреса",
         "currency": "Валюта",
         "send": "Отправить"
-    },    
+    },
 
     "balance_table": {
         "locked": "Заблокировано",
@@ -120,7 +121,7 @@
 
         "accepted": "Принято",
         "revoked": "Отозвано",
-        "open": "Открыто"        
+        "open": "Открыто"
     },
 
     "account_offer_form": {
@@ -129,7 +130,7 @@
         "receive_amount": "Сумма получения",
         "receive_currency_contract": "Валюта получения (контракт)",
         "symbol": "Символ",
-        "offer": "Предложить"        
+        "offer": "Предложить"
     },
 
     "explore_menu": {
@@ -137,11 +138,11 @@
         "block_height": "Высота блока"
     },
 
-    "explore_blocks": {       
+    "explore_blocks": {
         "score": "Оценка"
     },
 
-    "explore_transactions": {        
+    "explore_transactions": {
         "transaction_id": "ID транзакции"
     },
 
@@ -164,11 +165,9 @@
         "inputs": "Входы",
         "outputs": "Выходы",
         "operations": "Операции"
-
     },
 
     "transaction_view": {
-
         "transaction": "Транзакция",
         "confirmed": "Подтверждения",
         "expires": "Истекает",
@@ -179,7 +178,6 @@
 
         "input": "Ввод",
         "output": "Вывод"
-
     },
 
     "create_contract_menu": {
@@ -196,7 +194,6 @@
         "enable_timelord": "Включить Таймлорд",
         "farmer_reward_address": "Адрес награды Фермера",
         "timeLord_reward_address": "Адрес награды Таймлорда",
-        "reward_address_placeholder": "<по умолчанию>",
         "restart_needed": "(необходим перезапуск)"
     },
 
@@ -209,28 +206,28 @@
         "farmer_public_key": "Публичный ключ Фермера",
         "reward_address": "Адрес награды (опционально, для пулинга)"
     },
-
+    
     "account_details": {
         "copy_keys_to_plotter": "Копировать ключи в плоттер"
     },
-    
+
     "account_actions": {
         "reset_cache": "Сбросить кэш",
         "show_seed": "Показать мнемонику"
     },
-    
+
     "create_account": {
         "account_index": "Индекс аккаунта",
         "account_name": "Имя аккаунта",
         "number_of_addresses": "Количество адресов",
         "create_account": "Создать аккаунт"
     },
-    
+
     "create_wallet": {
         "use_custom_seed": "Использовать пользовательскую мнемонику",
         "seed_hash": "Хеш мнемоники (опционально, шестнадцатеричная строка, 64 символа)",
         "placeholder": "<случайный>",
-        "create_wallet": "Создать Кошелек"        
+        "create_wallet": "Создать Кошелек"
     },
 
     "market_menu": {
@@ -239,7 +236,7 @@
         "anything": "Всё",
         "offers": "Офферы"
     },
-    
+
     "market_offers": {
         "price": "Цена",
         "accept": "Принять",
@@ -253,5 +250,5 @@
     "login": {
         "password_label": "Пароль (см. файл PASSWD)",
         "login": "Войти"
-    }    
+    }
 }
