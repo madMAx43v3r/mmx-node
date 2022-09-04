@@ -152,8 +152,12 @@ Vue.component('node-peers', {
 		return {
 			data: [],
 			timer: null,
-			loaded: false,
-			headers: [
+			loaded: false
+		}
+	},
+	computed: {
+		headers() {
+			return [
 				{ text: this.$t('node_peers.ip'), value: 'address', width: "5%" },
 				{ text: this.$t('node_peers.height'), value: 'height', width: "5%" },
 				{ text: this.$t('node_peers.type'), value: 'type', width: "5%"},
@@ -489,12 +493,16 @@ Vue.component('node-log-table', {
 		return {
 			data: [],
 			timer: null,
-			loaded: false,
-			headers: [
+			loaded: false
+		}
+	},
+	computed: {
+		headers() {
+			return [
 				{ text: this.$t('node_log_table.time'), value: 'time', align: 'left', width: "10%"},
 				{ text: this.$t('node_log_table.module'), value: 'module', width: "10%"},
 				{ text: this.$t('node_log_table.message'), value: 'message' },
-			],	
+			]
 		}
 	},
 	methods: {
