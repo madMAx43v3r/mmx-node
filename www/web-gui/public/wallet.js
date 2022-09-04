@@ -42,7 +42,7 @@ Vue.component('account-menu', {
 		index: Number
 	},
 	template: `
-		<v-btn-toggle>
+		<v-btn-toggle class="d-flex flex-wrap">
 			<v-btn :to="'/wallet/account/' + index" exact>{{ $t('account_menu.balance') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/nfts'">{{ $t('account_menu.nfts') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/contracts'">{{ $t('account_menu.contracts') }}</v-btn>
