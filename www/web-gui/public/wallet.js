@@ -524,7 +524,9 @@ Vue.component('account-contracts', {
 	data() {
 		return {
 			data: null,
-			loading: false
+			loading: false,
+			contractFilter: null,
+			contractFilterValues: []
 		}
 	},
 	methods: {
@@ -535,16 +537,31 @@ Vue.component('account-contracts', {
 				.then(data => {
 					this.loading = false;
 					this.data = data;
+					this.contractFilter = Array.from(Array(data.length).keys())
+					this.contractFilterValues = data.map(item => item[1].__type).filter((value, index, self) => self.indexOf(value) === index)
 				});
 		}
 	},
 	created() {
 		this.update();
 	},
+	computed: {
+		selectedContractFilterValues() {
+			return this.contractFilterValues.filter((value, index, self) => this.contractFilter.some( i => i === index) );
+		},
+		filteredData() {
+			return this.data?.filter( (item, index, self) => this.selectedContractFilterValues.some( r => item[1].__type == r) );
+		}
+	},
 	template: `
 		<v-card outlined color="transparent">
 			<v-progress-linear  v-if="!data && loading" indeterminate absolute top></v-progress-linear>
-			<account-contract-summary v-if="data" v-for="item in data" :key="item[0]" :index="index" :address="item[0]" :contract="item[1]"></account-contract-summary>
+
+			<v-chip-group column multiple v-model="contractFilter">
+				<v-chip v-for="item in contractFilterValues" filter outlined>{{item}}</v-chip>
+			</v-chip-group>
+
+			<account-contract-summary v-if="filteredData" v-for="item in filteredData" :key="item[0]" :index="index" :address="item[0]" :contract="item[1]"></account-contract-summary>
 		</v-card>
 		`
 })
