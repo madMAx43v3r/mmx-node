@@ -455,7 +455,6 @@ Vue.component('transaction-view', {
 	beforeDestroy() {
 		clearInterval(this.timer);
 	},
-	//TODO: i18n No such transaction!
 	template: `
 	<div>
 		<v-chip label>{{ $t('transaction_view.transaction') }}</v-chip>
@@ -469,7 +468,7 @@ Vue.component('transaction-view', {
 			elevation="2"
 			class="my-2"
 		>
-			No such transaction!
+			{{ $t('transaction_view.no_such_transaction') }}
 		</v-alert>
 
 		<template v-if="data">
@@ -627,10 +626,9 @@ Vue.component('address-view', {
 	created() {
 		this.update();
 	},
-	//TODO: i18n Address
 	template: `
 		<div>
-			<v-chip label>Address</v-chip>
+			<v-chip label>{{ $t('common.address') }}</v-chip>
 			<v-chip label>{{ address }}</v-chip>
 
 			<balance-table :address="address" :show_empty="true" class="my-2"></balance-table>

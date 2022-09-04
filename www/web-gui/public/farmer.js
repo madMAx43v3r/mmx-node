@@ -33,7 +33,7 @@ Vue.component('farmer-info', {
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
-										Virtual Balance
+										{{ $t('farmer_info.virtual_balance') }} 
 									</v-row>
 								</v-col>
 
@@ -43,7 +43,7 @@ Vue.component('farmer-info', {
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
-										Virtual Size
+										{{ $t('farmer_info.virtual_size') }}
 									</v-row>
 								</v-col>
 
@@ -53,7 +53,7 @@ Vue.component('farmer-info', {
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
-										Physical Size
+										 {{ $t('farmer_info.physical_size') }}
 									</v-row>
 								</v-col>
 
@@ -63,7 +63,7 @@ Vue.component('farmer-info', {
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
-										Total Farm Size
+										{{ $t('farmer_info.total_farm_size') }}
 									</v-row>
 								</v-col>															
 
