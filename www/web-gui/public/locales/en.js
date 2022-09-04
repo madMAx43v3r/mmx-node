@@ -30,7 +30,7 @@ const langEN = {
 
         "link": "Link",
 
-        "reward_address_placeholder": "{'<'}@.lower:common.default{'>'}"
+        "reward_address_placeholder": "<@.lower:common.default>"
     },
 
     "main_menu": {
