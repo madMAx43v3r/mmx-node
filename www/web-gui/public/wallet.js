@@ -129,14 +129,17 @@ Vue.component('account-balance', {
 		return {
 			data: [],
 			loaded: false,
-			timer: null,
-			headers: [
+			timer: null
+		}
+	},
+	computed: {
+		headers() {
+			return [
 				{ text: this.$t('account_balance.balance'), value: 'total' },
 				{ text: this.$t('account_balance.reserved'), value: 'reserved' },
 				{ text: this.$t('account_balance.spendable'), value: 'spendable' },
 				{ text: this.$t('account_balance.token'), value: 'token' },
-				{ text: this.$t('account_balance.contract'), value: 'contract' },
-
+				{ text: this.$t('account_balance.contract'), value: 'contract' }
 			]
 		}
 	},
@@ -200,8 +203,12 @@ Vue.component('balance-table', {
 			data: [],
 			loading: false,
 			loaded: false,
-			timer: null,
-			headers: [
+			timer: null
+		}
+	},
+	computed: {
+		headers() {
+			return [
 				{ text: this.$t('balance_table.balance'), value: 'total'},
 				{ text: this.$t('balance_table.locked'), value: 'locked'},
 				{ text: this.$t('balance_table.spendable'), value: 'spendable'},
@@ -287,8 +294,12 @@ Vue.component('nft-table', {
 	},
 	data() {
 		return {
-			nfts: [],
-			headers: [
+			nfts: []
+		}
+	},
+	computed: {
+		headers() {
+			return [
 				{ text: 'NFT', value: 'item' },
 			]
 		}
@@ -329,8 +340,12 @@ Vue.component('account-history', {
 			data: [],
 			loading: false,
 			loaded: false,
-			timer: null,
-			headers: [
+			timer: null 
+		}
+	},
+	computed: {
+		headers() {
+			return [
 				{ text: this.$t('account_history.height'), value: 'height' },
 				{ text: this.$t('account_history.type'), value: 'type' },
 				{ text: this.$t('account_history.amount'), value: 'value' },
@@ -418,13 +433,17 @@ Vue.component('account-tx-history', {
 			data: [],
 			loading: false,
 			loaded: false,
-			timer: null,
-			headers: [
+			timer: null			
+		}
+	},
+	computed: {
+		headers() {
+			return [
 				{ text: this.$t('account_tx_history.height'), value: 'height' },
 				{ text: this.$t('account_tx_history.confirmed'), value: 'confirmed' },
 				{ text: this.$t('account_tx_history.transaction_id'), value: 'transaction_id' },
 				{ text: this.$t('account_tx_history.time'), value: 'time' },
-			]			
+			]
 		}
 	},
 	methods: {
@@ -573,8 +592,12 @@ Vue.component('account-addresses', {
 	},
 	data() {
 		return {
-			data: [],
-			headers: [
+			data: [] 
+		}
+	},
+	computed: {
+		headers() {
+			return [
 				{ text: this.$t('account_addresses.index'), value: 'index' },
 				{ text: this.$t('account_addresses.address'), value: 'address' },
 				{ text: this.$t('account_addresses.n_recv'), value: 'n_recv' },

@@ -55,8 +55,12 @@ Vue.component('explore-blocks', {
 		return {
 			data: [],
 			timer: null,
-			loaded: false,
-			headers: [
+			loaded: false
+		}
+	},
+	computed: {
+		headers() {
+			return [
 				{ text: this.$t('explore_blocks.height'), value: 'height', width: "5%"},
 				{ text: this.$t('explore_blocks.tx'), value: 'tx_count' },
 				{ text: this.$t('explore_blocks.k'), value: 'ksize' },
@@ -141,8 +145,12 @@ Vue.component('explore-transactions', {
 		return {
 			data: [],
 			timer: null,
-			loaded: false,
-			headers: [
+			loaded: false
+		}
+	},
+	computed: {
+		headers() {
+			return [
 				{ text: this.$t('explore_transactions.height'), value: 'height' },
 				{ text: this.$t('explore_transactions.type'), value: 'type' },
 				{ text: this.$t('explore_transactions.fee'), value: 'fee' },
@@ -653,8 +661,12 @@ Vue.component('address-history-table', {
 		return {
 			data: [],
 			loaded: false,
-			timer: null,
-			headers: [
+			timer: null		
+		}
+	},	
+	computed: {
+		headers() {
+			return [
 				{ text: this.$t('address_history_table.height'), value: 'height'},
 				{ text: this.$t('address_history_table.type'), value: 'type'},
 				{ text: this.$t('address_history_table.amount'), value: 'amount'},
@@ -662,7 +674,7 @@ Vue.component('address-history-table', {
 				{ text: this.$t('address_history_table.address'), value: 'address'},
 				{ text: this.$t('address_history_table.link'), value: 'link'},
 				{ text: this.$t('address_history_table.time'), value: 'time'},
-			],			
+			]
 		}
 	},
 	methods: {
