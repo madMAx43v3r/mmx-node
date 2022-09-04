@@ -76,6 +76,11 @@ const enLocale = {
         "timelord": "TimeLord"
     },
 
+    "node_log_table": {
+        "module": "Module",
+        "message": "Message"
+    },
+
     "node_peers": {
         "version": "Version",
         "received": "Received",
