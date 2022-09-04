@@ -73,9 +73,15 @@ const commonLocale = {
         "confirm": "@:common.confirm"
     },
 
+    "wallet_settings": {
+        "symbol": "@:common.symbol",
+        "contract": "@:common.contract"
+    },
+
     "balance_table": {
         "token": "@:common.token",
-        "balance": "@:common.balance"
+        "balance": "@:common.balance",
+        "contract": "@:common.contract"
     },
 
     "account_balance": {

@@ -11,10 +11,12 @@
         "blocks": "Блоки",
         "balance": "Баланс",
         "token": "Токен",
+        "symbol": "Символ",
         "hash": "Хэш",
         "reward": "Награда",
         "amount": "Сумма",
         "address": "Адрес",
+        "contract": "Контракт",        
         "type": "Тип",
         "time": "Время",
         "fee": "Комиссия",
@@ -23,7 +25,8 @@
         "confirm": "Подтвердить",
         "deploy": "Развернуть",
         "create": "Создать",
-
+		"remove": "Удалить",
+		
         "transaction_has_been_sent": "Транзакция отправлена",
         "failed_with": "Ошибка",
         "deployed_as": "Развёрнут как",
@@ -111,8 +114,7 @@
 
     "balance_table": {
         "locked": "Заблокировано",
-        "spendable": "Доступно",        
-        "contract": "Контракт"
+        "spendable": "Доступно"
     },
 
     "account_balance": {
@@ -203,7 +205,18 @@
         "enable_timelord": "Включить Таймлорд",
         "farmer_reward_address": "Адрес награды Фермера",
         "timeLord_reward_address": "Адрес награды Таймлорда",
-        "restart_needed": "(необходим перезапуск)"
+        "restart_needed": "(необходим перезапуск)",
+
+        "theme": "Тема",
+        "light": "Светлая",
+        "dark": "Темная"        
+    },
+
+    "wallet_settings": {
+        "token_whitelist": "Белый список токенов",
+        "name": "Название",
+        "token_address": "Адрес токена",
+        "add_token": "Добавить токен"
     },
 
     "create_locked_contract": {

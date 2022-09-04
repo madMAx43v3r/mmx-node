@@ -10,8 +10,8 @@ Vue.component('node-settings', {
 			timelord_reward_addr: "null",
 			availableLanguages: availableLanguages,
 			themes: [
-				{ value: false, text: "Light" },
-				{ value: true, text: "Dark" }
+				{ value: false, text: this.$t('node_settings.light') },
+				{ value: true, text: this.$t('node_settings.dark') }
 			]
 		}
 	},
@@ -93,7 +93,7 @@ Vue.component('node-settings', {
 					
 					<v-select
 						v-model="$vuetify.theme.dark"
-						label="Theme"
+						:label="$t('node_settings.theme')"
 						:items="themes" 
 						item-text="text"
 						item-value="value">
@@ -216,15 +216,15 @@ Vue.component('wallet-settings', {
 	template: `
 		<div>
 			<v-card class="my-2">
-				<v-card-title>Token Whitelist</v-card-title>
+				<v-card-title>{{ $t('wallet_settings.token_whitelist') }}</v-card-title>
 				<v-card-text>
 					<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
 					<v-simple-table>
 						<thead>
 						<tr>
-							<th>Name</th>
-							<th>Symbol</th>
-							<th>Contract</th>
+							<th>{{ $t('wallet_settings.name') }}</th>
+							<th>{{ $t('wallet_settings.symbol') }}</th>
+							<th>{{ $t('wallet_settings.contract') }}</th>
 							<th></th>
 						</tr>
 						</thead>
@@ -235,7 +235,7 @@ Vue.component('wallet-settings', {
 									<td>{{item.name}}</td>
 									<td>{{item.symbol}}</td>
 									<td><router-link :to="'/explore/address/' + item.currency">{{item.currency}}</router-link></td>
-									<td><v-btn outlined text @click="rem_token(item.currency)">Remove</v-btn></td>
+									<td><v-btn outlined text @click="rem_token(item.currency)">{{ $t('common.remove') }}</v-btn></td>
 								</tr>
 							</template>
 						</template>
@@ -247,11 +247,11 @@ Vue.component('wallet-settings', {
 			<v-card>
 				<v-card-text>
 					<v-text-field
-						label="Token Address"
+						:label="$t('wallet_settings.token_address')"
 						v-model="new_token_addr" 
 						placeholder="mmx1..."					
 					></v-text-field>
-					<v-btn @click="add_token(new_token_addr)" outlined color="primary">Add Token</v-btn>			
+					<v-btn @click="add_token(new_token_addr)" outlined color="primary">{{ $t('wallet_settings.add_token') }}</v-btn>
 				</v-card-text>
 			</v-card>
 								

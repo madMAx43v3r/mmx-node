@@ -11,10 +11,12 @@ const enLocale = {
         "blocks": "Blocks",
         "balance": "Balance",
         "token": "Token",
+        "symbol": "Symbol",
         "hash": "Hash",
         "reward": "Reward",
         "amount": "Amount",
         "address": "Address",
+        "contract": "Contract",
         "type": "Type",
         "time": "Time",
         "fee": "Fee",        
@@ -23,6 +25,7 @@ const enLocale = {
         "confirm": "Confirm",
         "deploy": "Deploy",
         "create": "Create",
+        "remove": "Remove",
 
         "transaction_has_been_sent": "Transaction has been sent",
         "failed_with": "Failed with",
@@ -106,7 +109,7 @@ const enLocale = {
         "n_spend": "N(Spend)",
         "last_recv": "Last Recv",
         "last_spend": "Last Spend"
-    },    
+	},    
 
     "account_send_form": {
         "source_address": "Source Address",
@@ -119,8 +122,7 @@ const enLocale = {
 
     "balance_table": {
         "locked": "Locked",
-        "spendable": "Spendable",
-        "contract": "Contract"
+        "spendable": "Spendable"
     },
 
     "account_balance": {
@@ -221,7 +223,18 @@ const enLocale = {
         "enable_timelord": "Enable TimeLord",
         "farmer_reward_address": "Farmer Reward Address",
         "timeLord_reward_address": "TimeLord Reward Address",
-        "restart_needed": "(restart needed to apply)"
+        "restart_needed": "(restart needed to apply)",
+
+        "theme": "Theme",
+        "light": "Light",
+        "dark": "Dark"
+    },
+
+    "wallet_settings": {
+        "token_whitelist": "Token Whitelist",
+        "name": "Name",
+        "token_address": "Token Address",
+        "add_token": "Add Token"
     },
 
     "create_locked_contract": {
