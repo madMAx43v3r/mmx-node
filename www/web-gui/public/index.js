@@ -3,6 +3,8 @@ function validate_address(address) {
 	return address && address.length == 62 && address.startsWith("mmx1");
 }
 
+const MMX_ADDR = "mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev";
+
 const Wallet = {
 	template: '<wallet-summary></wallet-summary>'
 }
