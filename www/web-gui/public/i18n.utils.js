@@ -20,7 +20,7 @@ const i18n = new VueI18n({
     locale: 'en',
     fallbackLocale: 'en',
     messages: { 
-        'en': mergeDeep(commonLocale, enLocale)
+        'en': mergeDeep({}, commonLocale, enLocale)
     }
 })
 
@@ -67,8 +67,8 @@ function mergeDeep(target, ...sources) {
 }
 
 
-function customFallback(messages) {
-    let result = mergeDeep(commonLocale, enLocale, messages)
+function customFallback(msg) {
+    let result = mergeDeep({}, commonLocale, enLocale, msg)
     return result;
 }   
 
