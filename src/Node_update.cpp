@@ -381,7 +381,10 @@ void Node::update()
 
 void Node::purge_tx_pool()
 {
+	const auto time_begin = vnx::get_wall_time_millis();
+
 	std::vector<tx_pool_t> all_tx;
+	all_tx.reserve(tx_pool.size());
 	for(const auto& entry : tx_pool) {
 		all_tx.push_back(entry.second);
 	}
@@ -394,30 +397,50 @@ void Node::purge_tx_pool()
 
 	size_t num_purged = 0;
 	uint128_t total_pool_cost = 0;
+	std::unordered_map<addr_t, uint128_t> total_fee_map;		// [sender => total fee]
+
 	const auto max_pool_cost = uint128_t(tx_pool_limit) * params->max_block_cost;
 
 	// purge transactions from pool if overflowing
 	for(const auto& entry : all_tx) {
-		if(total_pool_cost + entry.cost > max_pool_cost) {
-			tx_pool.erase(entry.tx->id);
+		const auto& tx = entry.tx;
+		uint128_t total_fee_spent = 0;
+		if(tx->sender) {
+			total_fee_spent = (total_fee_map[*tx->sender] += tx->max_fee_amount);
+		}
+		total_pool_cost += tx->static_cost;
+
+		if(total_pool_cost > max_pool_cost
+			|| (tx->sender && total_fee_spent > get_balance(*tx->sender, addr_t())))
+		{
+			tx_pool.erase(tx->id);
 			num_purged++;
 		} else {
-			total_pool_cost += entry.cost;
+			min_pool_fee_ratio = tx->fee_ratio;
 		}
+	}
+	if(total_pool_cost < max_pool_cost || all_tx.empty()) {
+		min_pool_fee_ratio = 0;
+	}
+	if(total_pool_cost || num_purged) {
+		log(INFO) << uint64_t((total_pool_cost * 10000) / max_pool_cost) / 100. << " % mem pool, "
+				<< min_pool_fee_ratio / 1024. << " min free ratio, " << num_purged << " purged, took "
+				<< (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 	}
 }
 
 void Node::validate_new()
 {
 	const auto peak = get_peak();
-	if(!peak) {
+	if(!peak || !is_synced) {
 		return;
 	}
-	const auto time_begin = vnx::get_wall_time_millis();
+	const auto time_begin = vnx::get_wall_time_micros();
 
-	// purge duplicates
+	// drop anything with too low fee ratio
 	for(auto iter = pending_transactions.begin(); iter != pending_transactions.end();) {
-		if(tx_pool.count(iter->second->id)) {
+		const auto& tx = iter->second;
+		if(tx->fee_ratio <= min_pool_fee_ratio) {
 			iter = pending_transactions.erase(iter);
 		} else {
 			iter++;
@@ -446,12 +469,13 @@ void Node::validate_new()
 
 	// prepare synchronization
 	for(const auto& entry : tx_list) {
-		setup_context(context, entry.tx);
+		prepare_context(context, entry.tx);
 	}
 
 	// verify transactions in parallel
-#pragma omp parallel for
-	for(int i = 0; i < int(tx_list.size()); ++i)
+	const auto tx_count = tx_list.size();
+#pragma omp parallel for if(tx_count >= 16)
+	for(int i = 0; i < int(tx_count); ++i)
 	{
 		auto& entry = tx_list[i];
 		entry.is_valid = false;
@@ -484,6 +508,7 @@ void Node::validate_new()
 		}
 		pending_transactions.erase(tx->content_hash);
 	}
+	total_pre_validate_time += vnx::get_wall_time_micros() - time_begin;
 }
 
 std::vector<Node::tx_pool_t> Node::validate_for_block(const uint64_t verify_limit, const uint64_t select_limit)
@@ -495,6 +520,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block(const uint64_t verify_limi
 	const auto time_begin = vnx::get_wall_time_millis();
 
 	std::vector<tx_pool_t> all_tx;
+	all_tx.reserve(tx_pool.size());
 	for(const auto& entry : tx_pool) {
 		all_tx.push_back(entry.second);
 	}
@@ -527,7 +553,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block(const uint64_t verify_limi
 
 	// prepare synchronization
 	for(const auto& entry : tx_list) {
-		setup_context(context, entry.tx);
+		prepare_context(context, entry.tx);
 	}
 
 	// verify transactions in parallel

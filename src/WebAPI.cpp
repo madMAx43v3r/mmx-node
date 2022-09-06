@@ -314,7 +314,7 @@ public:
 					out["is_nft"] = true;
 				} else {
 					out["symbol"] = info->symbol;
-					out["value"] = amount_value(amount, info->decimals);
+					out["value"] = to_value_128(amount, info->decimals);
 				}
 			}
 			out["is_native"] = contract == addr_t();
@@ -890,10 +890,10 @@ void WebAPI::render_balances(const vnx::request_id_t& request_id, const vnx::opt
 					} else {
 						const auto& balance = entry.second;
 						vnx::Object row;
-						row["total"] = amount_value(balance.total, currency->decimals);
-						row["spendable"] = amount_value(balance.spendable, currency->decimals);
-						row["reserved"] = amount_value(balance.reserved, currency->decimals);
-						row["locked"] = amount_value(balance.locked, currency->decimals);
+						row["total"] = to_value_128(balance.total, currency->decimals);
+						row["spendable"] = to_value_128(balance.spendable, currency->decimals);
+						row["reserved"] = to_value_128(balance.reserved, currency->decimals);
+						row["locked"] = to_value_128(balance.locked, currency->decimals);
 						row["symbol"] = currency->symbol;
 						row["decimals"] = currency->decimals;
 						row["contract"] = entry.first.to_string();

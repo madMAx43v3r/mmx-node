@@ -9,6 +9,6 @@ struct txin_t extends txio_t {
 	
 	static const uchar IS_EXEC = 1;
 	
-	static const uchar NO_SOLUTION = -1;
+	static const ushort NO_SOLUTION = -1;
 	
 }

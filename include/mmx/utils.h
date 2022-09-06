@@ -139,23 +139,15 @@ uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params, std::shar
 							std::shared_ptr<const BlockHeader> block, const bool have_farmer_sig)
 {
 	uint256_t weight = 0;
-	// TODO: remove height switch
-	if(block->height > 200000) {
-		if(block->proof) {
-			if(have_farmer_sig) {
-				weight += params->score_threshold;
-			}
-			weight += params->score_threshold - block->proof->score;
-		} else {
-			weight += 1;
+	if(block->proof) {
+		if(have_farmer_sig) {
+			weight += params->score_threshold;
 		}
+		weight += params->score_threshold - block->proof->score;
+		weight *= diff_block->space_diff;
 	} else {
-		 weight = have_farmer_sig ? 2 : 1;
-		 if(block->proof) {
-			 weight += params->score_threshold - block->proof->score;
-		 }
+		weight += 1;
 	}
-	weight *= diff_block->space_diff;
 	weight *= diff_block->time_diff;
 	if(weight.upper()) {
 		throw std::logic_error("weight overflow");
@@ -173,8 +165,22 @@ void safe_acc(uint64_t& lhs, const uint64_t& rhs)
 	lhs = tmp.lower();
 }
 
+template<typename T, typename S>
+T clamped_sub(const T L, const S R)
+{
+	if(L > R) {
+		return L - R;
+	}
+	return T(0);
+}
+
+template<typename T, typename S>
+void clamped_sub_assign(T& L, const S R) {
+	L = clamped_sub(L, R);
+}
+
 inline
-double amount_value(uint128_t amount, const int decimals)
+double to_value_128(uint128_t amount, const int decimals)
 {
 	int i = 0;
 	for(; amount.upper() && i < decimals; ++i) {

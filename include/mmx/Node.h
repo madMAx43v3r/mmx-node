@@ -278,7 +278,7 @@ private:
 
 	void setup_context_wait(std::shared_ptr<execution_context_t> context, const hash_t& txid, const addr_t& address) const;
 
-	void setup_context(std::shared_ptr<execution_context_t> context, std::shared_ptr<const Transaction> tx) const;
+	void prepare_context(std::shared_ptr<execution_context_t> context, std::shared_ptr<const Transaction> tx) const;
 
 	void execute(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const execution_context_t> context,
@@ -388,10 +388,10 @@ private:
 	DataBase db;
 	hash_t state_hash;
 
-	hash_uint_uint_table<addr_t, uint32_t, uint32_t, txout_entry_t> recv_log;	// [[address, height, counter] => entry]
+	hash_uint_uint_table<addr_t, uint32_t, uint32_t, txio_entry_t> recv_log;	// [[address, height, counter] => entry]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, txio_entry_t> spend_log;	// [[address, height, counter] => entry]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, exec_entry_t> exec_log;	// [[address, height, counter] => entry]
-	hash_multi_table<hash_t, std::pair<addr_t, hash_t>> revoke_map;				// [[org txid] => [address, txid]]
+	hash_multi_table<hash_t, std::pair<addr_t, hash_t>> revoke_map;				// TODO: obsolete [[org txid] => [address, txid]]
 
 	hash_table<addr_t, std::shared_ptr<const Contract>> contract_cache;			// [addr, contract]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, vnx::Object> mutate_log;	// [[addr, height] => method]
@@ -419,6 +419,7 @@ private:
 
 	bool is_synced = false;
 	bool is_sync_fail = false;
+	uint32_t min_pool_fee_ratio = 0;
 	std::shared_ptr<vnx::File> block_chain;
 	std::shared_ptr<vm::StorageRocksDB> storage;
 	mutable hash_table<hash_t, uint32_t> hash_index;							// [block hash => height]
@@ -433,7 +434,6 @@ private:
 	vnx::optional<uint32_t> sync_peak;						// max height we can sync
 	std::unordered_set<hash_t> fetch_pending;				// block hash
 
-
 	std::vector<std::shared_ptr<fork_t>> pending_forks;
 	std::vector<std::shared_ptr<const ProofResponse>> pending_proofs;
 	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> pending_transactions;
@@ -442,7 +442,7 @@ private:
 	std::shared_ptr<vnx::Timer> update_timer;
 
 	std::shared_ptr<const ChainParams> params;
-	mutable std::shared_ptr<const BlockHeader> genesis;
+	mutable std::shared_ptr<const BlockHeader> genesis;		// TODO: obsolete
 	mutable std::shared_ptr<const NetworkInfo> network;
 
 	std::shared_ptr<RouterAsyncClient> router;
@@ -453,6 +453,8 @@ private:
 	std::unordered_set<uint32_t> vdf_verify_pending;		// height
 	std::shared_ptr<OCL_VDF> opencl_vdf[2];
 	std::shared_ptr<vnx::ThreadPool> vdf_threads;
+
+	int64_t total_pre_validate_time = 0;
 
 	friend class vnx::addons::HttpInterface<Node>;
 

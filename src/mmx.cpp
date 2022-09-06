@@ -68,7 +68,7 @@ void show_history(const std::vector<mmx::tx_entry_t>& history, mmx::NodeClient& 
 		} else {
 			const auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract);
 			const auto decimals = token ? token->decimals : params->decimals;
-			std::cout << amount_value(entry.amount, decimals) << " " << (token ? token->symbol : "MMX")
+			std::cout << to_value_128(entry.amount, decimals) << " " << (token ? token->symbol : "MMX")
 					<< " (" << entry.amount << ") " << arrow << " " << entry.address << " (" << entry.txid << ")" << std::endl;
 		}
 	}
@@ -258,7 +258,7 @@ int main(int argc, char** argv)
 							nfts.push_back(entry.first);
 						}
 						else if(auto token = get_token(node, entry.first, false)) {
-							std::cout << "Balance: " << amount_value(balance.total, token->decimals) << " " << token->symbol
+							std::cout << "Balance: " << to_value_128(balance.total, token->decimals) << " " << token->symbol
 									<< (balance.is_validated ? "" : "?") << " (" << balance.total << ")";
 							if(entry.first != mmx::addr_t()) {
 								std::cout << " [" << entry.first << "]";
@@ -313,7 +313,7 @@ int main(int argc, char** argv)
 						{
 							const auto& balance = entry.second;
 							if(auto token = get_token(node, entry.first, false)) {
-								std::cout << "  Balance: " << amount_value(balance.total, token->decimals) << " " << token->symbol
+								std::cout << "  Balance: " << to_value_128(balance.total, token->decimals) << " " << token->symbol
 										<< (balance.is_validated ? "" : "?") << " (" << balance.total << ")";
 								if(entry.first != mmx::addr_t()) {
 									std::cout << " [" << entry.first << "]";
@@ -366,7 +366,7 @@ int main(int argc, char** argv)
 				else if(subject == "balance")
 				{
 					const auto token = get_token(node, contract);
-					std::cout << amount_value(wallet.get_balance(index, contract).total, token ? token->decimals : params->decimals) << std::endl;
+					std::cout << to_value_128(wallet.get_balance(index, contract).total, token ? token->decimals : params->decimals) << std::endl;
 				}
 				else if(subject == "contracts")
 				{
@@ -687,7 +687,7 @@ int main(int argc, char** argv)
 					if(!std::dynamic_pointer_cast<const mmx::contract::NFT>(contract)) {
 						const auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract);
 						const auto decimals = token ? token->decimals : params->decimals;
-						std::cout << "Balance: " << amount_value(entry.second, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.second << ")" << std::endl;
+						std::cout << "Balance: " << to_value_128(entry.second, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.second << ")" << std::endl;
 					}
 				}
 			}
@@ -829,7 +829,7 @@ int main(int argc, char** argv)
 					vnx::read_config("$4", address);
 
 					const auto token = get_token(node, contract);
-					std::cout << amount_value(node.get_balance(address, contract), token->decimals) << std::endl;
+					std::cout << to_value_128(node.get_balance(address, contract), token->decimals) << std::endl;
 				}
 				else if(subject == "amount")
 				{

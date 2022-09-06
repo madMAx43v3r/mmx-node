@@ -109,7 +109,9 @@ Node::get_context_state(std::shared_ptr<execution_context_t> context, const addr
 	if(!state) {
 		state = std::make_shared<contract_state_t>();
 		state->data = get_contract_for(address);
-		state->balance = get_balances(address);
+		if(std::dynamic_pointer_cast<const contract::Executable>(state->data)) {
+			state->balance = get_balances(address);
+		}
 	}
 	return state;
 }
@@ -126,8 +128,7 @@ void Node::setup_context_wait(std::shared_ptr<execution_context_t> context, cons
 	context->setup_wait(txid, address);
 }
 
-void Node::setup_context(	std::shared_ptr<execution_context_t> context,
-							std::shared_ptr<const Transaction> tx) const
+void Node::prepare_context(std::shared_ptr<execution_context_t> context, std::shared_ptr<const Transaction> tx) const
 {
 	for(const auto& in : tx->get_all_inputs()) {
 		if(in.flags & txin_t::IS_EXEC) {
@@ -269,7 +270,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 					txi = txi->parent;
 				}
 			}
-			setup_context(context, tx);
+			prepare_context(context, tx);
 		}
 	}
 	hash_t failed_tx;
@@ -329,7 +330,7 @@ void Node::validate(std::shared_ptr<const Transaction> tx) const
 		base->height = get_height() + 1;
 		context->block = base;
 	}
-	setup_context(context, tx);
+	prepare_context(context, tx);
 
 	validate(tx, context);
 }
@@ -757,11 +758,12 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			if(tx_fee > tx->max_fee_amount) {
 				throw std::logic_error("tx fee > max_fee_amount");
 			}
-			const auto balance = balance_cache.find(*tx->sender, addr_t());
-			if(!balance || tx_fee > *balance) {
-				throw std::logic_error("insufficient funds for tx fee");
+		}
+
+		for(const auto& entry : amounts) {
+			if(entry.second) {
+				throw std::logic_error("left-over amount");
 			}
-			*balance -= tx_fee;
 		}
 	} catch(const mmx::static_failure& ex) {
 		throw;
