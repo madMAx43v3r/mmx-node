@@ -1215,7 +1215,7 @@ Vue.component('account-offer-form', {
 			// TODO: validate
 		},
 		ask_currency(value) {
-			if(value && value !== 'mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev') {
+			if(value && value !== MMX_ADDR) {
 				fetch('/wapi/contract?id=' + value)
 					.then(response => {
 						if(response.ok) {
@@ -1297,7 +1297,7 @@ Vue.component('account-offer-form', {
 								item-value="currency">
 
 								<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">
-									{{item.symbol}}<template v-if="item.currency != 'mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev'"> - [{{item.currency}}]</template>
+									{{item.symbol}}<template v-if="item.currency != MMX_ADDR"> - [{{item.currency}}]</template>
 								</template>
 
 							</v-select>

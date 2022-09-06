@@ -73,7 +73,7 @@ Vue.component('market-menu', {
 
 			this.tokens.map(item => {
 				var text = item.symbol;
-				if(item.currency != 'mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev') {
+				if(item.currency != MMX_ADDR) {
 					text += ` - [${item.currency}]`;
 				}
 				result.push(
