@@ -187,7 +187,7 @@ protected:
 	// TODO: use a to_big_endian() function
 	void read(std::shared_ptr<const db_val_t> entry, std::pair<K, I>& key) const override {
 		if(entry->size != sizeof(K) + sizeof(I)) {
-			throw std::logic_error("key size mismatch: " + std::to_string(entry->size) + " (" + get_path() + ")");
+			throw std::logic_error("key size mismatch: " + std::to_string(entry->size) + " (" + multi_table<K, V, I>::get_path() + ")");
 		}
 		key.first = vnx::flip_bytes(*((const K*)entry->data));
 		key.second = vnx::flip_bytes(*((const I*)(entry->data + sizeof(K))));
@@ -208,7 +208,7 @@ public:
 protected:
 	void read(std::shared_ptr<const db_val_t> entry, std::pair<K, I>& key) const override {
 		if(entry->size != key.first.size() + sizeof(I)) {
-			throw std::logic_error("key size mismatch: " + std::to_string(entry->size) + " (" + get_path() + ")");
+			throw std::logic_error("key size mismatch: " + std::to_string(entry->size) + " (" + multi_table<K, V, I>::get_path() + ")");
 		}
 		::memcpy(key.first.data(), entry->data, key.first.size());
 		key.second = vnx::flip_bytes(*((const I*)(entry->data + key.first.size())));
@@ -229,7 +229,7 @@ public:
 protected:
 	void read(std::shared_ptr<const db_val_t> entry, std::pair<std::pair<K, H>, I>& key) const override {
 		if(entry->size != key.first.first.size() + sizeof(H) + sizeof(I)) {
-			throw std::logic_error("key size mismatch: " + std::to_string(entry->size) + " (" + get_path() + ")");
+			throw std::logic_error("key size mismatch: " + std::to_string(entry->size) + " (" + multi_table<std::pair<K, H>, V, I>::get_path() + ")");
 		}
 		auto* src = entry->data;
 		::memcpy(key.first.first.data(), src, key.first.first.size()); src += key.first.first.size();
