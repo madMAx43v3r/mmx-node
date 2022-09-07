@@ -1117,7 +1117,7 @@ Vue.component('account-send-form', {
 						</v-col>
 					</v-row>
 
-					<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')"></v-switch>
+					<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')" class="d-inline-block"></v-switch><br>
 					<v-btn @click="submit" outlined color="primary" :disabled="!confirmed">{{ $t('account_send_form.send') }}</v-btn>
 
 				</v-card-text>
@@ -1304,7 +1304,7 @@ Vue.component('account-offer-form', {
 						</v-col>
 					</v-row>
 
-					<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')"></v-switch>
+					<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')" class="d-inline-block"></v-switch><br>
 					<v-btn @click="submit" outlined color="primary" :disabled="!confirmed">{{ $t('account_offer_form.offer') }}</v-btn>
 
 				</v-card-text>
@@ -1548,8 +1548,9 @@ Vue.component('create-locked-contract', {
 					<v-switch 
 						v-model="confirmed"
 						:disabled="!valid"
-						:label="$t('common.confirm')">
-					</v-switch>
+						:label="$t('common.confirm')"
+						class="d-inline-block">
+					</v-switch><br>
 
 					<v-btn @click="submit" outlined color="primary" :disabled="!valid">{{ $t('common.deploy') }}</v-btn>
 
@@ -1666,8 +1667,9 @@ Vue.component('create-virtual-plot-contract', {
 					<v-switch 
 						v-model="confirmed"
 						:disabled="!valid"
-						:label="$t('common.confirm')">
-					</v-switch>
+						:label="$t('common.confirm')"
+						class="d-inline-block">
+					</v-switch><br>
 
 					<v-btn @click="submit" outlined color="primary" :disabled="!valid">{{ $t('common.deploy') }}</v-btn>
 
