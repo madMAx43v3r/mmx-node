@@ -9,7 +9,7 @@
 #define INCLUDE_MMX_VM_INTERFACE_H_
 
 #include <mmx/vm/Engine.h>
-#include <mmx/contract/Executable.hxx>
+#include <mmx/contract/Binary.hxx>
 
 #include <vnx/Visitor.h>
 #include <vnx/Variant.hpp>
@@ -17,16 +17,16 @@
 
 namespace mmx {
 
-const contract::method_t* find_method(std::shared_ptr<const contract::Executable> executable, const std::string& method_name);
+const contract::method_t* find_method(std::shared_ptr<const contract::Binary> binary, const std::string& method_name);
 
 void set_balance(std::shared_ptr<vm::Engine> engine, const std::map<addr_t, uint128>& balance);
 
 void set_deposit(std::shared_ptr<vm::Engine> engine, const txout_t& deposit);
 
-std::vector<vm::var_t*> read_constants(std::shared_ptr<const contract::Executable> exec);
+std::vector<vm::var_t*> read_constants(std::shared_ptr<const contract::Binary> binary);
 
 void load(	std::shared_ptr<vm::Engine> engine,
-			std::shared_ptr<const contract::Executable> exec);
+			std::shared_ptr<const contract::Binary> binary);
 
 void copy(std::shared_ptr<vm::Engine> dst, std::shared_ptr<vm::Engine> src, const uint64_t dst_addr, const uint64_t src_addr);
 

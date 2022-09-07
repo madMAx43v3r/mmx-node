@@ -569,7 +569,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block(const uint64_t verify_limi
 			if(auto res = validate(tx, context)) {
 				{
 					auto copy = vnx::clone(tx);
-					copy->exec_result = res;
+					copy->exec_result = *res;
 					tx = copy;
 				}
 				entry.cost = res->total_cost;

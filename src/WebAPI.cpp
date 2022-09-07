@@ -6,7 +6,6 @@
  */
 
 #include <mmx/WebAPI.h>
-#include <mmx/txio_key_t.hpp>
 //#include <mmx/exchange/trade_pair_t.hpp>
 #include <mmx/uint128.hpp>
 #include <mmx/utils.h>
@@ -27,7 +26,6 @@
 #include <mmx/operation/Mutate.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
-#include <mmx/operation/Revoke.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/solution/MultiSig.hxx>
 #include <mmx/permission_e.hxx>
@@ -303,10 +301,6 @@ public:
 		set(vnx::to_hex_string(value.data(), value.size()));
 	}
 
-	void accept(const txio_key_t& value) {
-		set(value.to_string_value());
-	}
-
 	vnx::Object augment(vnx::Object out, const addr_t& contract, const uint128_t amount) {
 		if(context) {
 			if(auto info = context->find_currency(contract)) {
@@ -409,8 +403,6 @@ public:
 		} else if(auto value = std::dynamic_pointer_cast<const operation::Deposit>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const operation::Execute>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const operation::Revoke>(base)) {
 			set(render(value, context));
 		} else {
 			set(base);
@@ -723,10 +715,10 @@ void WebAPI::render_block(const vnx::request_id_t& request_id, std::shared_ptr<c
 	std::unordered_set<addr_t> addr_set;
 	for(const auto& base : block->tx_list) {
 		if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
-			for(const auto& out : tx->outputs) {
-				addr_set.insert(out.contract);
+			for(const auto& in : tx->get_all_inputs()) {
+				addr_set.insert(in.contract);
 			}
-			for(const auto& out : tx->exec_outputs) {
+			for(const auto& out : tx->get_all_outputs()) {
 				addr_set.insert(out.contract);
 			}
 			for(const auto& op : tx->execute) {

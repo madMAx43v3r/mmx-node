@@ -11,10 +11,10 @@
 
 namespace mmx {
 
-const contract::method_t* find_method(std::shared_ptr<const contract::Executable> executable, const std::string& method_name)
+const contract::method_t* find_method(std::shared_ptr<const contract::Binary> binary, const std::string& method_name)
 {
-	auto iter = executable->methods.find(method_name);
-	if(iter != executable->methods.end()) {
+	auto iter = binary->methods.find(method_name);
+	if(iter != binary->methods.end()) {
 		return &iter->second;
 	}
 	return nullptr;
@@ -35,11 +35,6 @@ void set_deposit(std::shared_ptr<vm::Engine> engine, const txout_t& deposit)
 	engine->assign(addr, new vm::array_t());
 	engine->push_back(addr, vm::uint_t(deposit.contract));
 	engine->push_back(addr, vm::uint_t(deposit.amount));
-	if(deposit.sender) {
-		engine->push_back(addr, vm::uint_t(*deposit.sender));
-	} else {
-		engine->push_back(addr, vm::var_t());
-	}
 }
 
 std::vector<vm::var_t*> read_constants(const void* constant, const size_t constant_size)
@@ -54,16 +49,16 @@ std::vector<vm::var_t*> read_constants(const void* constant, const size_t consta
 	return out;
 }
 
-std::vector<vm::var_t*> read_constants(std::shared_ptr<const contract::Executable> exec)
+std::vector<vm::var_t*> read_constants(std::shared_ptr<const contract::Binary> binary)
 {
-	return read_constants(exec->constant.data(), exec->constant.size());
+	return read_constants(binary->constant.data(), binary->constant.size());
 }
 
 void load(	std::shared_ptr<vm::Engine> engine,
-			std::shared_ptr<const contract::Executable> exec)
+			std::shared_ptr<const contract::Binary> binary)
 {
 	uint64_t dst = 0;
-	for(auto var : read_constants(exec)) {
+	for(auto var : read_constants(binary)) {
 		if(dst < vm::MEM_EXTERN) {
 			engine->assign(dst++, var);
 		} else {
@@ -73,7 +68,7 @@ void load(	std::shared_ptr<vm::Engine> engine,
 	if(dst >= vm::MEM_EXTERN) {
 		throw std::runtime_error("constant memory overflow");
 	}
-	vm::deserialize(engine->code, exec->binary.data(), exec->binary.size());
+	vm::deserialize(engine->code, binary->binary.data(), binary->binary.size());
 	engine->init();
 }
 

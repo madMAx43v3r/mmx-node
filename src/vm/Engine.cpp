@@ -991,7 +991,6 @@ void Engine::send(const uint64_t address, const uint64_t amount, const uint64_t 
 	out.contract = read_fail<uint_t>(currency, TYPE_UINT).value;
 	out.address = read_fail<uint_t>(address, TYPE_UINT).value;
 	out.amount = value;
-	out.sender = contract;
 	outputs.push_back(out);
 	total_cost += SEND_COST;
 }
@@ -1009,7 +1008,6 @@ void Engine::mint(const uint64_t address, const uint64_t amount)
 	out.contract = contract;
 	out.address = read_fail<uint_t>(address, TYPE_UINT).value;
 	out.amount = value;
-	out.sender = contract;
 	mint_outputs.push_back(out);
 	total_cost += MINT_COST;
 }

@@ -8,6 +8,7 @@
 #include <mmx/Node.h>
 #include <mmx/contract/NFT.hxx>
 #include <mmx/contract/PubKey.hxx>
+#include <mmx/contract/Binary.hxx>
 #include <mmx/contract/Executable.hxx>
 #include <mmx/operation/Spend.hxx>
 #include <mmx/operation/Mint.hxx>
@@ -397,17 +398,21 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	if(!executable) {
 		throw std::logic_error("not an executable");
 	}
-	auto method = mmx::find_method(executable, method_name);
+	const auto binary = std::dynamic_pointer_cast<const contract::Binary>(get_contract(executable->binary));
+	if(!executable) {
+		throw std::logic_error("no such binary: " + executable->binary.to_string());
+	}
+	auto method = mmx::find_method(binary, method_name);
 	if(!method) {
-		throw std::logic_error("no such method");
+		throw std::logic_error("no such method: " + method_name);
 	}
 	if(is_public && !method->is_public) {
-		throw std::logic_error("method is not public");
+		throw std::logic_error("method is not public: " + method_name);
 	}
 	if(!is_public && method->is_public) {
-		throw std::logic_error("method is public");
+		throw std::logic_error("method is public: " + method_name);
 	}
-	mmx::load(engine, executable);
+	mmx::load(engine, binary);
 
 	std::weak_ptr<vm::Engine> parent = engine;
 	engine->remote = [this, tx, context, executable, storage_cache, parent, &exec_inputs, &exec_outputs, &tx_cost]
@@ -770,11 +775,10 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 	} catch(...) {
 		failed_ex = std::current_exception();
 	}
-	std::shared_ptr<const exec_result_t> out;
+	std::shared_ptr<exec_result_t> out;
 
 	if(!tx->exec_result) {
 		out = std::make_shared<exec_result_t>();
-		out->did_fail = failed_ex;
 		out->total_cost = tx_cost;
 		out->total_fee = tx_fee;
 		out->inputs = exec_inputs;
@@ -785,6 +789,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				std::rethrow_exception(failed_ex);
 			} catch(const std::exception& ex) {
 				out->message = ex.what();
+				out->did_fail = true;
 			}
 		}
 	} else {

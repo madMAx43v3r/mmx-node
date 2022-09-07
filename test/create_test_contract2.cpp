@@ -10,6 +10,7 @@
 #include <mmx/vm/varptr_t.hpp>
 #include <mmx/vm/Engine.h>
 
+#include <mmx/contract/Binary.hxx>
 #include <mmx/contract/Executable.hxx>
 
 using namespace mmx;
@@ -17,6 +18,7 @@ using namespace mmx;
 
 int main(int argc, char** argv)
 {
+	auto bin = mmx::contract::Binary::create();
 	auto exec = mmx::contract::Executable::create();
 
 	std::vector<vm::varptr_t> constant;
@@ -31,10 +33,10 @@ int main(int argc, char** argv)
 	constant.push_back(new vm::uint_t(1000000000));			// initial price values [8]
 	constant.push_back(vm::binary_t::alloc("invalid token"));
 
-	exec->fields["price"] = vm::MEM_STATIC + 0;
-	exec->fields["inv_price"] = vm::MEM_STATIC + 1;
-	exec->fields["token"] = vm::MEM_STATIC + 2;
-	exec->fields["last_height"] = vm::MEM_STATIC + 3;
+	bin->fields["price"] = vm::MEM_STATIC + 0;
+	bin->fields["inv_price"] = vm::MEM_STATIC + 1;
+	bin->fields["token"] = vm::MEM_STATIC + 2;
+	bin->fields["last_height"] = vm::MEM_STATIC + 3;
 
 	std::vector<vm::instr_t> code;
 	{
@@ -47,7 +49,7 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_CONV, 0, vm::MEM_STATIC + 2, vm::MEM_STACK + 1, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
 		code.emplace_back(vm::OP_COPY, 0, vm::MEM_STATIC + 3, vm::MEM_EXTERN + vm::EXTERN_HEIGHT);
 		code.emplace_back(vm::OP_RET);
-		exec->methods["init"] = method;
+		bin->methods["init"] = method;
 	}
 	{
 		mmx::contract::method_t method;
@@ -59,7 +61,7 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_ADD, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STATIC + 1, vm::MEM_STATIC + 1, vm::MEM_STACK + 1);
 		code.emplace_back(vm::OP_COPY, 0, vm::MEM_STATIC + 3, vm::MEM_EXTERN + vm::EXTERN_HEIGHT);
 		code.emplace_back(vm::OP_RET);
-		exec->methods["update"] = method;
+		bin->methods["update"] = method;
 	}
 	{
 		mmx::contract::method_t method;
@@ -73,14 +75,14 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 2, vm::MEM_STACK + 2, vm::MEM_STATIC + 2);
 		code.emplace_back(vm::OP_JUMPI, 0, method.entry_point + 5, vm::MEM_STACK + 2);
 		code.emplace_back(vm::OP_FAIL, 0, 9);
-		code.emplace_back(vm::OP_CALL, 0, exec->methods["update"].entry_point, 2);
+		code.emplace_back(vm::OP_CALL, 0, bin->methods["update"].entry_point, 2);
 		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 2, vm::MEM_EXTERN + vm::EXTERN_DEPOSIT, 4);
 		code.emplace_back(vm::OP_ADD, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STATIC + 0, vm::MEM_STATIC + 0, vm::MEM_STACK + 2);
 		code.emplace_back(vm::OP_MUL, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 2, vm::MEM_STACK + 2, vm::MEM_STATIC + 1);
 		code.emplace_back(vm::OP_DIV, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 2, vm::MEM_STACK + 2, vm::MEM_STATIC + 0);
 		code.emplace_back(vm::OP_MINT, 0, vm::MEM_STACK + 1, vm::MEM_STACK + 2);
 		code.emplace_back(vm::OP_RET);
-		exec->methods["mint"] = method;
+		bin->methods["mint"] = method;
 	}
 	{
 		mmx::contract::method_t method;
@@ -94,32 +96,34 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 2, vm::MEM_STACK + 2, vm::MEM_EXTERN + vm::EXTERN_ADDRESS);
 		code.emplace_back(vm::OP_JUMPI, 0, method.entry_point + 5, vm::MEM_STACK + 2);
 		code.emplace_back(vm::OP_FAIL, 0, 9);
-		code.emplace_back(vm::OP_CALL, 0, exec->methods["update"].entry_point, 2);
+		code.emplace_back(vm::OP_CALL, 0, bin->methods["update"].entry_point, 2);
 		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 2, vm::MEM_EXTERN + vm::EXTERN_DEPOSIT, 4);
 		code.emplace_back(vm::OP_ADD, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STATIC + 1, vm::MEM_STATIC + 1, vm::MEM_STACK + 2);
 		code.emplace_back(vm::OP_MUL, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 2, vm::MEM_STACK + 2, vm::MEM_STATIC + 0);
 		code.emplace_back(vm::OP_DIV, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 2, vm::MEM_STACK + 2, vm::MEM_STATIC + 1);
 		code.emplace_back(vm::OP_SEND, 0, vm::MEM_STACK + 1, vm::MEM_STACK + 2, vm::MEM_STATIC + 2);
 		code.emplace_back(vm::OP_RET);
-		exec->methods["burn"] = method;
+		bin->methods["burn"] = method;
 	}
 
 	for(const auto& var : constant) {
 		auto data = serialize(*var.get(), false, false);
-		exec->constant.insert(exec->constant.end(), data.first, data.first + data.second);
+		bin->constant.insert(bin->constant.end(), data.first, data.first + data.second);
 		::free(data.first);
 	}
 	{
 		auto data = serialize(code);
-		exec->binary = std::vector<uint8_t>(data.first, data.first + data.second);
+		bin->binary = std::vector<uint8_t>(data.first, data.first + data.second);
 		::free(data.first);
 	}
 	exec->symbol = "MMT";
 	exec->name = "MMT Algo Token";
+	exec->binary = std::string("...");
 	exec->init_method = "init";
 	exec->init_args.emplace_back("mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev");
 
-	vnx::write_to_file(argc > 1 ? argv[1] : "contract.dat", exec);
+	vnx::write_to_file(argc > 1 ? argv[1] : "binary.dat", bin);
+	vnx::write_to_file(argc > 2 ? argv[2] : "executable.dat", exec);
 
 	return 0;
 }

@@ -29,8 +29,6 @@ hash_t TokenBase::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "version", 	version);
 	write_field(out, "name", 		name);
 	write_field(out, "symbol", 		symbol);
-	write_field(out, "web_url", 	web_url);
-	write_field(out, "icon_url", 	icon_url);
 	write_field(out, "decimals", 	decimals);
 	out.flush();
 
@@ -39,7 +37,7 @@ hash_t TokenBase::calc_hash(const vnx::bool_t& full_hash) const
 
 uint64_t TokenBase::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	return (name.size() + symbol.size() + web_url.size() + icon_url.size()) * params->min_txfee_byte;
+	return (name.size() + symbol.size()) * params->min_txfee_byte;
 }
 
 

@@ -10,7 +10,6 @@
 #include <mmx/operation/Mutate.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
-#include <mmx/operation/Revoke.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/utils.h>
 
@@ -112,7 +111,7 @@ Wallet::send(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_a
 	}
 	auto tx = Transaction::create();
 	tx->note = tx_note_e::TRANSFER;
-	tx->add_output(currency, dst_addr, amount, options.sender);
+	tx->add_output(currency, dst_addr, amount);
 
 	auto options_ = options;
 	if(!options_.expire_delta) {
@@ -144,7 +143,7 @@ Wallet::send_many(	const uint32_t& index, const std::map<addr_t, uint64_t>& amou
 		if(entry.second == 0) {
 			throw std::logic_error("amount cannot be zero");
 		}
-		tx->add_output(currency, entry.first, entry.second, options.sender);
+		tx->add_output(currency, entry.first, entry.second);
 	}
 	auto options_ = options;
 	if(!options_.expire_delta) {
@@ -187,7 +186,7 @@ Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 	auto tx = Transaction::create();
 	tx->note = tx_note_e::WITHDRAW;
 	tx->add_input(currency, src_addr, amount);
-	tx->add_output(currency, dst_addr, amount, options.sender);
+	tx->add_output(currency, dst_addr, amount);
 
 	wallet->complete(tx, options_);
 
@@ -446,28 +445,7 @@ std::shared_ptr<const Transaction> Wallet::accept_offer(
 std::shared_ptr<const Transaction> Wallet::revoke(
 		const uint32_t& index, const hash_t& txid, const addr_t& address, const spend_options_t& options) const
 {
-	const auto wallet = get_wallet(index);
-	update_cache(index);
-
-	auto tx = Transaction::create();
-	tx->note = tx_note_e::REVOKE;
-
-	auto op = operation::Revoke::create();
-	op->address = address;
-	op->txid = txid;
-	tx->execute.push_back(op);
-
-	auto options_ = options;
-	if(!options_.expire_delta) {
-		options_.expire_delta = default_expire;
-	}
-	wallet->complete(tx, options_);
-
-	if(tx->is_signed() && options_.auto_send) {
-		send_off(index, tx);
-		log(INFO) << "Revoked " << txid << " with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
-	}
-	return tx;
+	throw std::logic_error("obsolete");
 }
 
 std::shared_ptr<const Transaction> Wallet::complete(

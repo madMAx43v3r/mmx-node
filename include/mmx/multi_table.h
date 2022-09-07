@@ -57,7 +57,7 @@ public:
 		}
 		for(const auto& value : values) {
 			if(key_.second == std::numeric_limits<I>::max()) {
-				throw std::runtime_error("key space overflow");
+				throw std::runtime_error("key space overflow (" + super_t::get_path() + ")");
 			}
 			super_t::insert(key_, value);
 			key_.second++;

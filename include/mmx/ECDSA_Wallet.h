@@ -20,7 +20,6 @@
 #include <mmx/skey_t.hpp>
 #include <mmx/addr_t.hpp>
 #include <mmx/pubkey_t.hpp>
-#include <mmx/txio_key_t.hpp>
 #include <mmx/account_t.hxx>
 
 

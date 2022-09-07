@@ -529,9 +529,9 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				}
 			}
 		} else {
-			uint64_t max_block_size = 0;
+			uint32_t max_block_size = 0;
 			for(const auto& entry : job->blocks) {
-				max_block_size = std::max(entry.second->calc_cost(params), max_block_size);
+				max_block_size = std::max(entry.second->tx_cost, max_block_size);
 			}
 			log(DEBUG) << "Got " << job->blocks.size() << " blocks for height " << job->height << " by fetching "
 					<< job->succeeded.size() + job->failed.size() << " times, " << job->failed.size() << " failed"

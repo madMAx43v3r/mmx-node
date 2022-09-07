@@ -14,9 +14,7 @@
 #include <mmx/RouterAsyncClient.hxx>
 #include <mmx/TimeLordAsyncClient.hxx>
 #include <mmx/operation/Mutate.hxx>
-#include <mmx/txio_key_t.hpp>
 #include <mmx/txio_entry_t.hpp>
-#include <mmx/txout_entry_t.hpp>
 #include <mmx/OCL_VDF.h>
 #include <mmx/utils.h>
 #include <mmx/uint128.hpp>

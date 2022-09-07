@@ -142,12 +142,12 @@ skey_t Farmer::find_skey(const bls_pubkey_t& pubkey) const
 	return iter->second;
 }
 
-bls_signature_t Farmer::sign_proof(std::shared_ptr<const ProofOfSpace> proof) const
+bls_signature_t Farmer::sign_proof(std::shared_ptr<const ProofResponse> value) const
 {
-	if(!proof) {
+	if(!value || !value->proof) {
 		throw std::logic_error("!proof");
 	}
-	return bls_signature_t::sign(find_skey(proof->farmer_key), proof->calc_hash());
+	return bls_signature_t::sign(find_skey(value->proof->farmer_key), value->calc_hash());
 }
 
 std::shared_ptr<const BlockHeader>
@@ -190,7 +190,7 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& rew
 	auto copy = vnx::clone(block);
 	copy->nonce = vnx::rand64();
 	copy->tx_base = base;
-	copy->hash = copy->calc_hash();
+	copy->hash = copy->calc_hash().first;
 	copy->farmer_sig = bls_signature_t::sign(farmer_sk, copy->hash);
 	return copy;
 }

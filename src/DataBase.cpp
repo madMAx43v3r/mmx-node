@@ -320,6 +320,7 @@ void Table::commit(const uint32_t new_version)
 		throw std::logic_error("commit(): new version <= current version");
 	}
 	{
+		// TODO: these can accumulate to form large write_log.dat files
 		const std::string cmd = "commit";
 		write_entry(write_log.out, -1,
 				std::make_shared<db_val_t>(cmd.c_str(), cmd.size()),

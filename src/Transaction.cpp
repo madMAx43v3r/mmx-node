@@ -105,13 +105,12 @@ void Transaction::add_input(const addr_t& currency, const addr_t& address, const
 	inputs.push_back(in);
 }
 
-void Transaction::add_output(const addr_t& currency, const addr_t& address, const uint64_t& amount, const vnx::optional<addr_t>& sender)
+void Transaction::add_output(const addr_t& currency, const addr_t& address, const uint64_t& amount)
 {
 	txout_t out;
 	out.address = address;
 	out.contract = currency;
 	out.amount = amount;
-	out.sender = sender;
 	outputs.push_back(out);
 }
 
@@ -128,10 +127,10 @@ txout_t Transaction::get_output(const uint32_t& index) const
 	if(index < outputs.size()) {
 		return outputs[index];
 	}
-	if(index >= outputs.size()) {
+	if(index >= outputs.size() && exec_result) {
 		const auto offset = index - outputs.size();
-		if(offset < exec_outputs.size()) {
-			return exec_outputs[offset];
+		if(offset < exec_result->outputs.size()) {
+			return exec_result->outputs[offset];
 		}
 	}
 	throw std::logic_error("no such output");
@@ -140,14 +139,18 @@ txout_t Transaction::get_output(const uint32_t& index) const
 std::vector<txin_t> Transaction::get_inputs() const
 {
 	auto res = inputs;
-	res.insert(res.end(), exec_inputs.begin(), exec_inputs.end());
+	if(exec_result) {
+		res.insert(res.end(), exec_result->inputs.begin(), exec_result->inputs.end());
+	}
 	return res;
 }
 
 std::vector<txout_t> Transaction::get_outputs() const
 {
 	auto res = outputs;
-	res.insert(res.end(), exec_outputs.begin(), exec_outputs.end());
+	if(exec_result) {
+		res.insert(res.end(), exec_result->outputs.begin(), exec_result->outputs.end());
+	}
 	return res;
 }
 

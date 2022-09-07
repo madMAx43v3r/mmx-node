@@ -13,7 +13,6 @@
 #include <mmx/ChainParams.hxx>
 #include <mmx/BLS_Wallet.h>
 #include <mmx/ECDSA_Wallet.h>
-#include <mmx/txio_key_t.hpp>
 
 #include <vnx/rocksdb/multi_table.h>
 #include <vnx/addons/HttpInterface.h>

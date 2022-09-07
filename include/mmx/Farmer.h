@@ -30,7 +30,7 @@ protected:
 
 	std::shared_ptr<const FarmInfo> get_farm_info() const override;
 
-	bls_signature_t sign_proof(std::shared_ptr<const ProofOfSpace> proof) const override;
+	bls_signature_t sign_proof(std::shared_ptr<const ProofResponse> proof) const override;
 
 	std::shared_ptr<const BlockHeader>
 	sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& reward_amount) const override;

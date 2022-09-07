@@ -16,12 +16,6 @@ namespace contract {
 
 bool Executable::is_valid() const
 {
-	for(const auto& entry : methods) {
-		const auto& method = entry.second;
-		if(method.is_payable && method.is_const) {
-			return false;
-		}
-	}
 	return Super::is_valid();
 }
 
@@ -35,17 +29,11 @@ hash_t Executable::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "version", 	version);
 	write_field(out, "name", 		name);
 	write_field(out, "symbol", 		symbol);
-	write_field(out, "web_url", 	web_url);
-	write_field(out, "icon_url", 	icon_url);
 	write_field(out, "decimals", 	decimals);
-	write_field(out, "fields", 		fields);
-	write_field(out, "methods", 	methods);
-	write_field(out, "depends", 	depends);
-	write_field(out, "constant", 	constant);
 	write_field(out, "binary", 		binary);
-	write_field(out, "source", 		source);
 	write_field(out, "init_method", init_method);
 	write_field(out, "init_args", 	init_args);
+	write_field(out, "depends", 	depends);
 	out.flush();
 
 	return hash_t(buffer);
@@ -53,15 +41,7 @@ hash_t Executable::calc_hash(const vnx::bool_t& full_hash) const
 
 uint64_t Executable::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	uint64_t payload = 0;
-	for(const auto& entry : fields) {
-		payload += 4 + entry.first.size() + 4;
-	}
-	for(const auto& entry : methods) {
-		payload += 4 + entry.first.size() + entry.second.num_bytes();
-	}
-	payload += depends.size() * 32 + constant.size() + binary.size() + init_method.size();
-
+	uint64_t payload = depends.size() * 32 + init_method.size();
 	for(const auto& arg : init_args) {
 		payload += arg.size();
 	}
