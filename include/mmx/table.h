@@ -241,6 +241,10 @@ public:
 		return db;
 	}
 
+	std::string get_path() const {
+		return db->root_path;
+	}
+
 protected:
 	struct stream_t {
 		vnx::Memory memory;
@@ -297,7 +301,7 @@ protected:
 	// TODO: use a to_big_endian() function
 	void read(std::shared_ptr<const db_val_t> entry, K& key) const override {
 		if(entry->size != sizeof(K)) {
-			throw std::logic_error("key size mismatch");
+			throw std::logic_error("key size mismatch: " + std::to_string(entry->size) + " (" + get_path() + ")");
 		}
 		key = vnx::flip_bytes(*((const K*)entry->data));
 	}
@@ -317,7 +321,7 @@ protected:
 	// TODO: use a to_big_endian() function
 	void read(std::shared_ptr<const db_val_t> entry, std::pair<K, I>& key) const override {
 		if(entry->size != sizeof(K) + sizeof(I)) {
-			throw std::logic_error("key size mismatch");
+			throw std::logic_error("key size mismatch: " + std::to_string(entry->size) + " (" + get_path() + ")");
 		}
 		key.first = vnx::flip_bytes(*((const K*)entry->data));
 		key.second = vnx::flip_bytes(*((const I*)(entry->data + sizeof(K))));
@@ -338,7 +342,7 @@ public:
 protected:
 	void read(std::shared_ptr<const db_val_t> entry, K& key) const override {
 		if(entry->size != key.size()) {
-			throw std::logic_error("key size mismatch");
+			throw std::logic_error("key size mismatch: " + std::to_string(entry->size) + " (" + get_path() + ")");
 		}
 		::memcpy(key.data(), entry->data, key.size());
 	}
@@ -358,7 +362,7 @@ protected:
 	void read(std::shared_ptr<const db_val_t> entry, std::tuple<K, H, I>& key) const override {
 		auto& hash = std::get<0>(key);
 		if(entry->size != hash.size() + sizeof(H) + sizeof(I)) {
-			throw std::logic_error("key size mismatch");
+			throw std::logic_error("key size mismatch: " + std::to_string(entry->size) + " (" + get_path() + ")");
 		}
 		auto* src = entry->data;
 		::memcpy(hash.data(), src, hash.size()); src += hash.size();
@@ -384,7 +388,7 @@ public:
 protected:
 	void read(std::shared_ptr<const db_val_t> entry, std::pair<addr_t, addr_t>& key) const override {
 		if(entry->size != 64) {
-			throw std::logic_error("key size mismatch");
+			throw std::logic_error("key size mismatch: " + std::to_string(entry->size) + " (" + get_path() + ")");
 		}
 		::memcpy(key.first.data(), entry->data, 32);
 		::memcpy(key.second.data(), entry->data + 32, 32);
