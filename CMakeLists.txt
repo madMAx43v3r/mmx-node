@@ -30,8 +30,8 @@ set(VNX_BUILD_TOOLS ON CACHE STRING "VNX_BUILD_TOOLS")
 add_subdirectory(vnx-base)
 add_subdirectory(vnx-addons)
 add_subdirectory(vnx-rocksdb)
-add_subdirectory(libbech32)
-add_subdirectory(bls-signatures)
+add_subdirectory(lib/libbech32)
+add_subdirectory(lib/bls-signatures)
 #add_subdirectory(exchange)
 add_subdirectory(test)
 
@@ -59,8 +59,8 @@ endif()
 
 if(NOT MSVC AND WITH_SECP256K1)
 	message(STATUS "Using secp256k1")
-	include_directories(secp256k1/include)
-	link_directories(secp256k1/.libs)
+	include_directories(lib/secp256k1/include)
+	link_directories(lib/secp256k1/.libs)
 endif()
 
 file(GLOB GENERATED_SOURCE_FILES

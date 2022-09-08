@@ -1,8 +1,8 @@
 [submodule "bls-signatures"]
-	path = bls-signatures
+	path = lib/bls-signatures
 	url = https://github.com/Chia-Network/bls-signatures.git
 [submodule "secp256k1"]
-	path = secp256k1
+	path = lib/secp256k1
 	url = https://github.com/bitcoin-core/secp256k1.git
 [submodule "chiapos"]
 	path = chiapos
@@ -11,7 +11,7 @@
 	path = uint256_t
 	url = https://github.com/calccrypto/uint256_t.git
 [submodule "libbech32"]
-	path = libbech32
+	path = lib/libbech32
 	url = https://github.com/dcdpr/libbech32.git
 [submodule "vnx-addons"]
 	path = vnx-addons
