@@ -517,8 +517,6 @@ std::vector<Node::tx_pool_t> Node::validate_for_block(const uint64_t verify_limi
 	if(!peak) {
 		return {};
 	}
-	const auto time_begin = vnx::get_wall_time_millis();
-
 	std::vector<tx_pool_t> all_tx;
 	all_tx.reserve(tx_pool.size());
 	for(const auto& entry : tx_pool) {
