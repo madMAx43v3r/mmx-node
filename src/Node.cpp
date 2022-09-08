@@ -879,6 +879,7 @@ address_info_t Node::get_address_info(const addr_t& address) const
 				info.last_receive_height = std::max(info.last_receive_height, entry.height);
 				break;
 			case tx_type_e::SPEND:
+			case tx_type_e::TXFEE:
 				info.num_spend++;
 				info.total_spend[entry.contract] += entry.amount;
 				info.last_spend_height = std::max(info.last_spend_height, entry.height);
