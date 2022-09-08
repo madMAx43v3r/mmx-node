@@ -22,6 +22,13 @@ namespace mmx {
 namespace contract {
 
 
+class Binary;
+class Binary_calc_cost;
+class Binary_calc_cost_return;
+class Binary_calc_hash;
+class Binary_calc_hash_return;
+class Binary_is_valid;
+class Binary_is_valid_return;
 class Data;
 class Data_calc_cost;
 class Data_calc_cost_return;
@@ -206,6 +213,13 @@ class WebData_validate;
 class WebData_validate_return;
 struct method_t;
 
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Binary; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Binary_calc_cost; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Binary_calc_cost_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Binary_calc_hash; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Binary_calc_hash_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Binary_is_valid; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Binary_is_valid_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Data; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Data_calc_cost; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Data_calc_cost_return; ///< \private
@@ -396,6 +410,13 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_metho
 
 namespace vnx {
 
+void read(TypeInput& in, ::mmx::contract::Binary& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::Binary_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::Binary_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::Binary_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::Binary_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::Binary_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::Binary_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Data& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Data_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Data_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -580,6 +601,13 @@ void read(TypeInput& in, ::mmx::contract::WebData_validate& value, const TypeCod
 void read(TypeInput& in, ::mmx::contract::WebData_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::method_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 
+void write(TypeOutput& out, const ::mmx::contract::Binary& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::Binary_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::Binary_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::Binary_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::Binary_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::Binary_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::Binary_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Data& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Data_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Data_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -764,6 +792,13 @@ void write(TypeOutput& out, const ::mmx::contract::WebData_validate& value, cons
 void write(TypeOutput& out, const ::mmx::contract::WebData_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::method_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 
+void read(std::istream& in, ::mmx::contract::Binary& value); ///< \private
+void read(std::istream& in, ::mmx::contract::Binary_calc_cost& value); ///< \private
+void read(std::istream& in, ::mmx::contract::Binary_calc_cost_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::Binary_calc_hash& value); ///< \private
+void read(std::istream& in, ::mmx::contract::Binary_calc_hash_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::Binary_is_valid& value); ///< \private
+void read(std::istream& in, ::mmx::contract::Binary_is_valid_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Data& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Data_calc_cost& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Data_calc_cost_return& value); ///< \private
@@ -948,6 +983,13 @@ void read(std::istream& in, ::mmx::contract::WebData_validate& value); ///< \pri
 void read(std::istream& in, ::mmx::contract::WebData_validate_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::method_t& value); ///< \private
 
+void write(std::ostream& out, const ::mmx::contract::Binary& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::Binary_calc_cost& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::Binary_calc_cost_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::Binary_calc_hash& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::Binary_calc_hash_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::Binary_is_valid& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::Binary_is_valid_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Data& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Data_calc_cost& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Data_calc_cost_return& value); ///< \private
@@ -1132,6 +1174,13 @@ void write(std::ostream& out, const ::mmx::contract::WebData_validate& value); /
 void write(std::ostream& out, const ::mmx::contract::WebData_validate_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::method_t& value); ///< \private
 
+void accept(Visitor& visitor, const ::mmx::contract::Binary& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::Binary_calc_cost& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::Binary_calc_cost_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::Binary_calc_hash& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::Binary_calc_hash_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::Binary_is_valid& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::Binary_is_valid_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Data& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Data_calc_cost& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Data_calc_cost_return& value); ///< \private
@@ -1315,6 +1364,167 @@ void accept(Visitor& visitor, const ::mmx::contract::WebData_update_return& valu
 void accept(Visitor& visitor, const ::mmx::contract::WebData_validate& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::WebData_validate_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::method_t& value); ///< \private
+
+/// \private
+template<>
+struct type<::mmx::contract::Binary> {
+	void read(TypeInput& in, ::mmx::contract::Binary& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::Binary& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::Binary& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::Binary& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::Binary& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Binary& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::Binary_calc_cost> {
+	void read(TypeInput& in, ::mmx::contract::Binary_calc_cost& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::Binary_calc_cost& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::Binary_calc_cost& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::Binary_calc_cost& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::Binary_calc_cost& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Binary_calc_cost& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::Binary_calc_cost_return> {
+	void read(TypeInput& in, ::mmx::contract::Binary_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::Binary_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::Binary_calc_cost_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::Binary_calc_cost_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::Binary_calc_cost_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Binary_calc_cost_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::Binary_calc_hash> {
+	void read(TypeInput& in, ::mmx::contract::Binary_calc_hash& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::Binary_calc_hash& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::Binary_calc_hash& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::Binary_calc_hash& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::Binary_calc_hash& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Binary_calc_hash& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::Binary_calc_hash_return> {
+	void read(TypeInput& in, ::mmx::contract::Binary_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::Binary_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::Binary_calc_hash_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::Binary_calc_hash_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::Binary_calc_hash_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Binary_calc_hash_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::Binary_is_valid> {
+	void read(TypeInput& in, ::mmx::contract::Binary_is_valid& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::Binary_is_valid& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::Binary_is_valid& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::Binary_is_valid& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::Binary_is_valid& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Binary_is_valid& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::Binary_is_valid_return> {
+	void read(TypeInput& in, ::mmx::contract::Binary_is_valid_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::Binary_is_valid_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::Binary_is_valid_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::Binary_is_valid_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::Binary_is_valid_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Binary_is_valid_return& value, bool special = false);
+};
 
 /// \private
 template<>

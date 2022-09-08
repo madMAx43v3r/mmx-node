@@ -5,7 +5,8 @@
 #define INCLUDE_mmx_txio_entry_t_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/txio_key_t.hxx>
+#include <mmx/hash_t.hpp>
+#include <mmx/tx_type_e.hxx>
 #include <mmx/txio_t.hxx>
 
 
@@ -14,8 +15,9 @@ namespace mmx {
 struct MMX_EXPORT txio_entry_t : ::mmx::txio_t {
 	
 	
-	::mmx::txio_key_t key;
+	::mmx::hash_t txid;
 	uint32_t height = 0;
+	::mmx::tx_type_e type;
 	
 	typedef ::mmx::txio_t Super;
 	
@@ -30,7 +32,7 @@ struct MMX_EXPORT txio_entry_t : ::mmx::txio_t {
 	std::string get_type_name() const;
 	const vnx::TypeCode* get_type_code() const;
 	
-	static ::mmx::txio_entry_t create_ex(const ::mmx::txio_key_t& key = ::mmx::txio_key_t(), const uint32_t& height = 0, const ::mmx::txio_t& txio = ::mmx::txio_t());
+	static ::mmx::txio_entry_t create_ex(const ::mmx::hash_t& txid = ::mmx::hash_t(), const uint32_t& height = 0, const ::mmx::tx_type_e& type = ::mmx::tx_type_e(), const ::mmx::txio_t& txio = ::mmx::txio_t());
 	
 	static std::shared_ptr<txio_entry_t> create();
 	std::shared_ptr<txio_entry_t> clone() const;
@@ -61,13 +63,14 @@ struct MMX_EXPORT txio_entry_t : ::mmx::txio_t {
 
 template<typename T>
 void txio_entry_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<txio_entry_t>(5);
+	_visitor.template type_begin<txio_entry_t>(6);
 	_visitor.type_field("address", 0); _visitor.accept(address);
 	_visitor.type_field("contract", 1); _visitor.accept(contract);
 	_visitor.type_field("amount", 2); _visitor.accept(amount);
-	_visitor.type_field("key", 3); _visitor.accept(key);
+	_visitor.type_field("txid", 3); _visitor.accept(txid);
 	_visitor.type_field("height", 4); _visitor.accept(height);
-	_visitor.template type_end<txio_entry_t>(5);
+	_visitor.type_field("type", 5); _visitor.accept(type);
+	_visitor.template type_end<txio_entry_t>(6);
 }
 
 

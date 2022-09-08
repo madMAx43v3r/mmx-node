@@ -16,7 +16,7 @@
 #include <mmx/Farmer_sign_block_return.hxx>
 #include <mmx/Farmer_sign_proof.hxx>
 #include <mmx/Farmer_sign_proof_return.hxx>
-#include <mmx/ProofOfSpace.hxx>
+#include <mmx/ProofResponse.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/bls_pubkey_t.hpp>
 #include <mmx/bls_signature_t.hpp>
@@ -319,7 +319,7 @@ std::shared_ptr<vnx::Value> FarmerBase::vnx_call_switch(std::shared_ptr<const vn
 		case 0x7c59d2761514b455ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Farmer_sign_proof>(_method);
 			auto _return_value = ::mmx::Farmer_sign_proof_return::create();
-			_return_value->_ret_0 = sign_proof(_args->proof);
+			_return_value->_ret_0 = sign_proof(_args->value);
 			return _return_value;
 		}
 		case 0xbbc7f1a01044d294ull: {

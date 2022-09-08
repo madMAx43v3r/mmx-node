@@ -23,9 +23,6 @@
 #include <mmx/operation/Mutate_calc_cost_return.hxx>
 #include <mmx/operation/Mutate_calc_hash.hxx>
 #include <mmx/operation/Mutate_calc_hash_return.hxx>
-#include <mmx/operation/Revoke.hxx>
-#include <mmx/operation/Revoke_calc_hash.hxx>
-#include <mmx/operation/Revoke_calc_hash_return.hxx>
 #include <mmx/operation/Spend.hxx>
 #include <mmx/operation/Spend_calc_hash.hxx>
 #include <mmx/operation/Spend_calc_hash_return.hxx>
@@ -306,42 +303,6 @@ void type<::mmx::operation::Mutate_calc_hash_return>::create_dynamic_code(std::v
 	code.push_back(CODE_OBJECT);
 }
 
-const TypeCode* type<::mmx::operation::Revoke>::get_type_code() {
-	return mmx::operation::vnx_native_type_code_Revoke;
-}
-
-void type<::mmx::operation::Revoke>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::operation::Revoke());
-}
-
-void type<::mmx::operation::Revoke>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Revoke& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::operation::Revoke_calc_hash>::get_type_code() {
-	return mmx::operation::vnx_native_type_code_Revoke_calc_hash;
-}
-
-void type<::mmx::operation::Revoke_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::operation::Revoke_calc_hash());
-}
-
-void type<::mmx::operation::Revoke_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Revoke_calc_hash& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::operation::Revoke_calc_hash_return>::get_type_code() {
-	return mmx::operation::vnx_native_type_code_Revoke_calc_hash_return;
-}
-
-void type<::mmx::operation::Revoke_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::operation::Revoke_calc_hash_return());
-}
-
-void type<::mmx::operation::Revoke_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Revoke_calc_hash_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
 const TypeCode* type<::mmx::operation::Spend>::get_type_code() {
 	return mmx::operation::vnx_native_type_code_Spend;
 }
@@ -469,9 +430,6 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::operation::Mutate_calc_cost_return::static_create_type_code());
 	vnx::register_type_code(::mmx::operation::Mutate_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::operation::Mutate_calc_hash_return::static_create_type_code());
-	vnx::register_type_code(::mmx::operation::Revoke::static_create_type_code());
-	vnx::register_type_code(::mmx::operation::Revoke_calc_hash::static_create_type_code());
-	vnx::register_type_code(::mmx::operation::Revoke_calc_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::operation::Spend::static_create_type_code());
 	vnx::register_type_code(::mmx::operation::Spend_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::operation::Spend_calc_hash_return::static_create_type_code());
@@ -510,9 +468,6 @@ const vnx::TypeCode* const vnx_native_type_code_Mutate_calc_cost = vnx::get_type
 const vnx::TypeCode* const vnx_native_type_code_Mutate_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xe9787d7e0426c7feull));
 const vnx::TypeCode* const vnx_native_type_code_Mutate_calc_hash = vnx::get_type_code(vnx::Hash64(0x77e4cc572eca1ff6ull));
 const vnx::TypeCode* const vnx_native_type_code_Mutate_calc_hash_return = vnx::get_type_code(vnx::Hash64(0x922e207282f9aa82ull));
-const vnx::TypeCode* const vnx_native_type_code_Revoke = vnx::get_type_code(vnx::Hash64(0xa8f48fce29a667d8ull));
-const vnx::TypeCode* const vnx_native_type_code_Revoke_calc_hash = vnx::get_type_code(vnx::Hash64(0x8449177cbcd7fc9cull));
-const vnx::TypeCode* const vnx_native_type_code_Revoke_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xf1b8f62d880c6b2cull));
 const vnx::TypeCode* const vnx_native_type_code_Spend = vnx::get_type_code(vnx::Hash64(0xfa01bec4331109c3ull));
 const vnx::TypeCode* const vnx_native_type_code_Spend_calc_hash = vnx::get_type_code(vnx::Hash64(0xb003cc8eafc55c09ull));
 const vnx::TypeCode* const vnx_native_type_code_Spend_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xbdcae3a6c3ba9dd8ull));

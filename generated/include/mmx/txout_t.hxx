@@ -5,7 +5,6 @@
 #define INCLUDE_mmx_txout_t_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/addr_t.hpp>
 #include <mmx/txio_t.hxx>
 
 
@@ -14,7 +13,6 @@ namespace mmx {
 struct MMX_EXPORT txout_t : ::mmx::txio_t {
 	
 	
-	vnx::optional<::mmx::addr_t> sender;
 	
 	typedef ::mmx::txio_t Super;
 	
@@ -58,12 +56,11 @@ struct MMX_EXPORT txout_t : ::mmx::txio_t {
 
 template<typename T>
 void txout_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<txout_t>(4);
+	_visitor.template type_begin<txout_t>(3);
 	_visitor.type_field("address", 0); _visitor.accept(address);
 	_visitor.type_field("contract", 1); _visitor.accept(contract);
 	_visitor.type_field("amount", 2); _visitor.accept(amount);
-	_visitor.type_field("sender", 3); _visitor.accept(sender);
-	_visitor.template type_end<txout_t>(4);
+	_visitor.template type_end<txout_t>(3);
 }
 
 

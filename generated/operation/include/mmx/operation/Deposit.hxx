@@ -18,7 +18,6 @@ public:
 	
 	::mmx::addr_t currency;
 	uint64_t amount = 0;
-	vnx::optional<::mmx::addr_t> sender;
 	
 	typedef ::mmx::operation::Execute Super;
 	
@@ -68,7 +67,7 @@ protected:
 
 template<typename T>
 void Deposit::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Deposit>(9);
+	_visitor.template type_begin<Deposit>(8);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("address", 1); _visitor.accept(address);
 	_visitor.type_field("solution", 2); _visitor.accept(solution);
@@ -77,8 +76,7 @@ void Deposit::accept_generic(T& _visitor) const {
 	_visitor.type_field("user", 5); _visitor.accept(user);
 	_visitor.type_field("currency", 6); _visitor.accept(currency);
 	_visitor.type_field("amount", 7); _visitor.accept(amount);
-	_visitor.type_field("sender", 8); _visitor.accept(sender);
-	_visitor.template type_end<Deposit>(9);
+	_visitor.template type_end<Deposit>(8);
 }
 
 

@@ -14,7 +14,7 @@ namespace mmx {
 class MMX_EXPORT ProofOfTime_calc_hash_return : public ::vnx::Value {
 public:
 	
-	::mmx::hash_t _ret_0;
+	std::pair<::mmx::hash_t, ::mmx::hash_t> _ret_0;
 	
 	typedef ::vnx::Value Super;
 	

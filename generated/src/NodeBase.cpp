@@ -151,7 +151,7 @@ namespace mmx {
 
 
 const vnx::Hash64 NodeBase::VNX_TYPE_HASH(0x289d7651582d76a3ull);
-const vnx::Hash64 NodeBase::VNX_CODE_HASH(0x7fc8e52df952d6f5ull);
+const vnx::Hash64 NodeBase::VNX_CODE_HASH(0x5eeaff905a72ffaaull);
 
 NodeBase::NodeBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -173,11 +173,11 @@ NodeBase::NodeBase(const std::string& _vnx_name)
 	vnx::read_config(vnx_name + ".output_challenges", output_challenges);
 	vnx::read_config(vnx_name + ".max_queue_ms", max_queue_ms);
 	vnx::read_config(vnx_name + ".update_interval_ms", update_interval_ms);
+	vnx::read_config(vnx_name + ".validate_interval_ms", validate_interval_ms);
 	vnx::read_config(vnx_name + ".sync_loss_delay", sync_loss_delay);
 	vnx::read_config(vnx_name + ".max_history", max_history);
 	vnx::read_config(vnx_name + ".max_fork_length", max_fork_length);
 	vnx::read_config(vnx_name + ".tx_pool_limit", tx_pool_limit);
-	vnx::read_config(vnx_name + ".tx_verify_interval", tx_verify_interval);
 	vnx::read_config(vnx_name + ".max_sync_jobs", max_sync_jobs);
 	vnx::read_config(vnx_name + ".max_sync_ahead", max_sync_ahead);
 	vnx::read_config(vnx_name + ".num_sync_retries", num_sync_retries);
@@ -226,11 +226,11 @@ void NodeBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[14], 14); vnx::accept(_visitor, output_challenges);
 	_visitor.type_field(_type_code->fields[15], 15); vnx::accept(_visitor, max_queue_ms);
 	_visitor.type_field(_type_code->fields[16], 16); vnx::accept(_visitor, update_interval_ms);
-	_visitor.type_field(_type_code->fields[17], 17); vnx::accept(_visitor, sync_loss_delay);
-	_visitor.type_field(_type_code->fields[18], 18); vnx::accept(_visitor, max_history);
-	_visitor.type_field(_type_code->fields[19], 19); vnx::accept(_visitor, max_fork_length);
-	_visitor.type_field(_type_code->fields[20], 20); vnx::accept(_visitor, tx_pool_limit);
-	_visitor.type_field(_type_code->fields[21], 21); vnx::accept(_visitor, tx_verify_interval);
+	_visitor.type_field(_type_code->fields[17], 17); vnx::accept(_visitor, validate_interval_ms);
+	_visitor.type_field(_type_code->fields[18], 18); vnx::accept(_visitor, sync_loss_delay);
+	_visitor.type_field(_type_code->fields[19], 19); vnx::accept(_visitor, max_history);
+	_visitor.type_field(_type_code->fields[20], 20); vnx::accept(_visitor, max_fork_length);
+	_visitor.type_field(_type_code->fields[21], 21); vnx::accept(_visitor, tx_pool_limit);
 	_visitor.type_field(_type_code->fields[22], 22); vnx::accept(_visitor, max_sync_jobs);
 	_visitor.type_field(_type_code->fields[23], 23); vnx::accept(_visitor, max_sync_ahead);
 	_visitor.type_field(_type_code->fields[24], 24); vnx::accept(_visitor, num_sync_retries);
@@ -267,11 +267,11 @@ void NodeBase::write(std::ostream& _out) const {
 	_out << ", \"output_challenges\": "; vnx::write(_out, output_challenges);
 	_out << ", \"max_queue_ms\": "; vnx::write(_out, max_queue_ms);
 	_out << ", \"update_interval_ms\": "; vnx::write(_out, update_interval_ms);
+	_out << ", \"validate_interval_ms\": "; vnx::write(_out, validate_interval_ms);
 	_out << ", \"sync_loss_delay\": "; vnx::write(_out, sync_loss_delay);
 	_out << ", \"max_history\": "; vnx::write(_out, max_history);
 	_out << ", \"max_fork_length\": "; vnx::write(_out, max_fork_length);
 	_out << ", \"tx_pool_limit\": "; vnx::write(_out, tx_pool_limit);
-	_out << ", \"tx_verify_interval\": "; vnx::write(_out, tx_verify_interval);
 	_out << ", \"max_sync_jobs\": "; vnx::write(_out, max_sync_jobs);
 	_out << ", \"max_sync_ahead\": "; vnx::write(_out, max_sync_ahead);
 	_out << ", \"num_sync_retries\": "; vnx::write(_out, num_sync_retries);
@@ -315,11 +315,11 @@ vnx::Object NodeBase::to_object() const {
 	_object["output_challenges"] = output_challenges;
 	_object["max_queue_ms"] = max_queue_ms;
 	_object["update_interval_ms"] = update_interval_ms;
+	_object["validate_interval_ms"] = validate_interval_ms;
 	_object["sync_loss_delay"] = sync_loss_delay;
 	_object["max_history"] = max_history;
 	_object["max_fork_length"] = max_fork_length;
 	_object["tx_pool_limit"] = tx_pool_limit;
-	_object["tx_verify_interval"] = tx_verify_interval;
 	_object["max_sync_jobs"] = max_sync_jobs;
 	_object["max_sync_ahead"] = max_sync_ahead;
 	_object["num_sync_retries"] = num_sync_retries;
@@ -403,10 +403,10 @@ void NodeBase::from_object(const vnx::Object& _object) {
 			_entry.second.to(timelord_name);
 		} else if(_entry.first == "tx_pool_limit") {
 			_entry.second.to(tx_pool_limit);
-		} else if(_entry.first == "tx_verify_interval") {
-			_entry.second.to(tx_verify_interval);
 		} else if(_entry.first == "update_interval_ms") {
 			_entry.second.to(update_interval_ms);
+		} else if(_entry.first == "validate_interval_ms") {
+			_entry.second.to(validate_interval_ms);
 		} else if(_entry.first == "vdf_check_divider") {
 			_entry.second.to(vdf_check_divider);
 		} else if(_entry.first == "vdf_verify_divider") {
@@ -467,6 +467,9 @@ vnx::Variant NodeBase::get_field(const std::string& _name) const {
 	if(_name == "update_interval_ms") {
 		return vnx::Variant(update_interval_ms);
 	}
+	if(_name == "validate_interval_ms") {
+		return vnx::Variant(validate_interval_ms);
+	}
 	if(_name == "sync_loss_delay") {
 		return vnx::Variant(sync_loss_delay);
 	}
@@ -478,9 +481,6 @@ vnx::Variant NodeBase::get_field(const std::string& _name) const {
 	}
 	if(_name == "tx_pool_limit") {
 		return vnx::Variant(tx_pool_limit);
-	}
-	if(_name == "tx_verify_interval") {
-		return vnx::Variant(tx_verify_interval);
 	}
 	if(_name == "max_sync_jobs") {
 		return vnx::Variant(max_sync_jobs);
@@ -562,6 +562,8 @@ void NodeBase::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(max_queue_ms);
 	} else if(_name == "update_interval_ms") {
 		_value.to(update_interval_ms);
+	} else if(_name == "validate_interval_ms") {
+		_value.to(validate_interval_ms);
 	} else if(_name == "sync_loss_delay") {
 		_value.to(sync_loss_delay);
 	} else if(_name == "max_history") {
@@ -570,8 +572,6 @@ void NodeBase::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(max_fork_length);
 	} else if(_name == "tx_pool_limit") {
 		_value.to(tx_pool_limit);
-	} else if(_name == "tx_verify_interval") {
-		_value.to(tx_verify_interval);
 	} else if(_name == "max_sync_jobs") {
 		_value.to(max_sync_jobs);
 	} else if(_name == "max_sync_ahead") {
@@ -627,7 +627,7 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node";
 	type_code->type_hash = vnx::Hash64(0x289d7651582d76a3ull);
-	type_code->code_hash = vnx::Hash64(0x7fc8e52df952d6f5ull);
+	type_code->code_hash = vnx::Hash64(0x5eeaff905a72ffaaull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::NodeBase);
 	type_code->methods.resize(57);
@@ -811,36 +811,36 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	{
 		auto& field = type_code->fields[17];
 		field.data_size = 4;
+		field.name = "validate_interval_ms";
+		field.value = vnx::to_string(500);
+		field.code = {7};
+	}
+	{
+		auto& field = type_code->fields[18];
+		field.data_size = 4;
 		field.name = "sync_loss_delay";
 		field.value = vnx::to_string(60);
 		field.code = {7};
 	}
 	{
-		auto& field = type_code->fields[18];
+		auto& field = type_code->fields[19];
 		field.data_size = 4;
 		field.name = "max_history";
 		field.value = vnx::to_string(1000);
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[19];
-		field.data_size = 4;
-		field.name = "max_fork_length";
-		field.value = vnx::to_string(20000);
-		field.code = {3};
-	}
-	{
 		auto& field = type_code->fields[20];
 		field.data_size = 4;
-		field.name = "tx_pool_limit";
-		field.value = vnx::to_string(100);
+		field.name = "max_fork_length";
+		field.value = vnx::to_string(10000);
 		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[21];
 		field.data_size = 4;
-		field.name = "tx_verify_interval";
-		field.value = vnx::to_string(1000);
+		field.name = "tx_pool_limit";
+		field.value = vnx::to_string(100);
 		field.code = {3};
 	}
 	{
@@ -1373,19 +1373,19 @@ void read(TypeInput& in, ::mmx::NodeBase& value, const TypeCode* type_code, cons
 			vnx::read_value(_buf + _field->offset, value.update_interval_ms, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[17]) {
-			vnx::read_value(_buf + _field->offset, value.sync_loss_delay, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.validate_interval_ms, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[18]) {
-			vnx::read_value(_buf + _field->offset, value.max_history, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.sync_loss_delay, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[19]) {
-			vnx::read_value(_buf + _field->offset, value.max_fork_length, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.max_history, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[20]) {
-			vnx::read_value(_buf + _field->offset, value.tx_pool_limit, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.max_fork_length, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[21]) {
-			vnx::read_value(_buf + _field->offset, value.tx_verify_interval, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.tx_pool_limit, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[22]) {
 			vnx::read_value(_buf + _field->offset, value.max_sync_jobs, _field->code.data());
@@ -1460,11 +1460,11 @@ void write(TypeOutput& out, const ::mmx::NodeBase& value, const TypeCode* type_c
 	char* const _buf = out.write(62);
 	vnx::write_value(_buf + 0, value.max_queue_ms);
 	vnx::write_value(_buf + 4, value.update_interval_ms);
-	vnx::write_value(_buf + 8, value.sync_loss_delay);
-	vnx::write_value(_buf + 12, value.max_history);
-	vnx::write_value(_buf + 16, value.max_fork_length);
-	vnx::write_value(_buf + 20, value.tx_pool_limit);
-	vnx::write_value(_buf + 24, value.tx_verify_interval);
+	vnx::write_value(_buf + 8, value.validate_interval_ms);
+	vnx::write_value(_buf + 12, value.sync_loss_delay);
+	vnx::write_value(_buf + 16, value.max_history);
+	vnx::write_value(_buf + 20, value.max_fork_length);
+	vnx::write_value(_buf + 24, value.tx_pool_limit);
 	vnx::write_value(_buf + 28, value.max_sync_jobs);
 	vnx::write_value(_buf + 32, value.max_sync_ahead);
 	vnx::write_value(_buf + 36, value.num_sync_retries);

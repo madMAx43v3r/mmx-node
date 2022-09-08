@@ -16,6 +16,7 @@ struct MMX_EXPORT offer_data_t {
 	
 	
 	uint32_t height = 0;
+	uint32_t close_height = -1;
 	::mmx::addr_t address;
 	std::shared_ptr<const ::mmx::Transaction> offer;
 	vnx::bool_t is_open = 0;
@@ -62,14 +63,15 @@ struct MMX_EXPORT offer_data_t {
 
 template<typename T>
 void offer_data_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<offer_data_t>(6);
+	_visitor.template type_begin<offer_data_t>(7);
 	_visitor.type_field("height", 0); _visitor.accept(height);
-	_visitor.type_field("address", 1); _visitor.accept(address);
-	_visitor.type_field("offer", 2); _visitor.accept(offer);
-	_visitor.type_field("is_open", 3); _visitor.accept(is_open);
-	_visitor.type_field("is_revoked", 4); _visitor.accept(is_revoked);
-	_visitor.type_field("is_covered", 5); _visitor.accept(is_covered);
-	_visitor.template type_end<offer_data_t>(6);
+	_visitor.type_field("close_height", 1); _visitor.accept(close_height);
+	_visitor.type_field("address", 2); _visitor.accept(address);
+	_visitor.type_field("offer", 3); _visitor.accept(offer);
+	_visitor.type_field("is_open", 4); _visitor.accept(is_open);
+	_visitor.type_field("is_revoked", 5); _visitor.accept(is_revoked);
+	_visitor.type_field("is_covered", 6); _visitor.accept(is_covered);
+	_visitor.template type_end<offer_data_t>(7);
 }
 
 

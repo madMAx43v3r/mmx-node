@@ -5,7 +5,7 @@
 #define INCLUDE_mmx_Farmer_sign_proof_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/ProofOfSpace.hxx>
+#include <mmx/ProofResponse.hxx>
 #include <vnx/Value.h>
 
 
@@ -14,7 +14,7 @@ namespace mmx {
 class MMX_EXPORT Farmer_sign_proof : public ::vnx::Value {
 public:
 	
-	std::shared_ptr<const ::mmx::ProofOfSpace> proof;
+	std::shared_ptr<const ::mmx::ProofResponse> value;
 	
 	typedef ::vnx::Value Super;
 	
@@ -59,7 +59,7 @@ public:
 template<typename T>
 void Farmer_sign_proof::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<Farmer_sign_proof>(1);
-	_visitor.type_field("proof", 0); _visitor.accept(proof);
+	_visitor.type_field("value", 0); _visitor.accept(value);
 	_visitor.template type_end<Farmer_sign_proof>(1);
 }
 

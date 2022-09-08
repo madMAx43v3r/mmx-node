@@ -3,6 +3,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Transaction_is_valid.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/Transaction_is_valid_return.hxx>
 #include <vnx/Value.h>
 
@@ -13,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Transaction_is_valid::VNX_TYPE_HASH(0x16386c874106028aull);
-const vnx::Hash64 Transaction_is_valid::VNX_CODE_HASH(0x941b6b764a1d62c4ull);
+const vnx::Hash64 Transaction_is_valid::VNX_CODE_HASH(0x704b934d7feaa3c3ull);
 
 vnx::Hash64 Transaction_is_valid::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -46,11 +47,13 @@ void Transaction_is_valid::write(vnx::TypeOutput& _out, const vnx::TypeCode* _ty
 void Transaction_is_valid::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Transaction_is_valid;
 	_visitor.type_begin(*_type_code);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, params);
 	_visitor.type_end(*_type_code);
 }
 
 void Transaction_is_valid::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Transaction.is_valid\"";
+	_out << ", \"params\": "; vnx::write(_out, params);
 	_out << "}";
 }
 
@@ -63,17 +66,29 @@ void Transaction_is_valid::read(std::istream& _in) {
 vnx::Object Transaction_is_valid::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Transaction.is_valid";
+	_object["params"] = params;
 	return _object;
 }
 
 void Transaction_is_valid::from_object(const vnx::Object& _object) {
+	for(const auto& _entry : _object.field) {
+		if(_entry.first == "params") {
+			_entry.second.to(params);
+		}
+	}
 }
 
 vnx::Variant Transaction_is_valid::get_field(const std::string& _name) const {
+	if(_name == "params") {
+		return vnx::Variant(params);
+	}
 	return vnx::Variant();
 }
 
 void Transaction_is_valid::set_field(const std::string& _name, const vnx::Variant& _value) {
+	if(_name == "params") {
+		_value.to(params);
+	}
 }
 
 /// \private
@@ -100,7 +115,7 @@ std::shared_ptr<vnx::TypeCode> Transaction_is_valid::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Transaction.is_valid";
 	type_code->type_hash = vnx::Hash64(0x16386c874106028aull);
-	type_code->code_hash = vnx::Hash64(0x941b6b764a1d62c4ull);
+	type_code->code_hash = vnx::Hash64(0x704b934d7feaa3c3ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -108,6 +123,13 @@ std::shared_ptr<vnx::TypeCode> Transaction_is_valid::static_create_type_code() {
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Transaction_is_valid>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Transaction_is_valid_return::static_get_type_code();
+	type_code->fields.resize(1);
+	{
+		auto& field = type_code->fields[0];
+		field.is_extended = true;
+		field.name = "params";
+		field.code = {16};
+	}
 	type_code->build();
 	return type_code;
 }
@@ -153,6 +175,7 @@ void read(TypeInput& in, ::mmx::Transaction_is_valid& value, const TypeCode* typ
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
+			case 0: vnx::read(in, value.params, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -171,6 +194,7 @@ void write(TypeOutput& out, const ::mmx::Transaction_is_valid& value, const Type
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
+	vnx::write(out, value.params, type_code, type_code->fields[0].code.data());
 }
 
 void read(std::istream& in, ::mmx::Transaction_is_valid& value) {

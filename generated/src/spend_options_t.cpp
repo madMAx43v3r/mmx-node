@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 spend_options_t::VNX_TYPE_HASH(0x37f7c6d377362e95ull);
-const vnx::Hash64 spend_options_t::VNX_CODE_HASH(0xdbb5fab72256e56aull);
+const vnx::Hash64 spend_options_t::VNX_CODE_HASH(0xd38f15fddf18c8d4ull);
 
 vnx::Hash64 spend_options_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,14 +49,13 @@ void spend_options_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, auto_send);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, min_confirm);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, fee_ratio);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, extra_fee);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, max_extra_cost);
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, expire_at);
 	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, expire_delta);
 	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, user);
 	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, sender);
-	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, tx_sender);
-	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, owner_map);
-	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, contract_map);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, owner_map);
+	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, contract_map);
 	_visitor.type_end(*_type_code);
 }
 
@@ -65,12 +64,11 @@ void spend_options_t::write(std::ostream& _out) const {
 	_out << "\"auto_send\": "; vnx::write(_out, auto_send);
 	_out << ", \"min_confirm\": "; vnx::write(_out, min_confirm);
 	_out << ", \"fee_ratio\": "; vnx::write(_out, fee_ratio);
-	_out << ", \"extra_fee\": "; vnx::write(_out, extra_fee);
+	_out << ", \"max_extra_cost\": "; vnx::write(_out, max_extra_cost);
 	_out << ", \"expire_at\": "; vnx::write(_out, expire_at);
 	_out << ", \"expire_delta\": "; vnx::write(_out, expire_delta);
 	_out << ", \"user\": "; vnx::write(_out, user);
 	_out << ", \"sender\": "; vnx::write(_out, sender);
-	_out << ", \"tx_sender\": "; vnx::write(_out, tx_sender);
 	_out << ", \"owner_map\": "; vnx::write(_out, owner_map);
 	_out << ", \"contract_map\": "; vnx::write(_out, contract_map);
 	_out << "}";
@@ -88,12 +86,11 @@ vnx::Object spend_options_t::to_object() const {
 	_object["auto_send"] = auto_send;
 	_object["min_confirm"] = min_confirm;
 	_object["fee_ratio"] = fee_ratio;
-	_object["extra_fee"] = extra_fee;
+	_object["max_extra_cost"] = max_extra_cost;
 	_object["expire_at"] = expire_at;
 	_object["expire_delta"] = expire_delta;
 	_object["user"] = user;
 	_object["sender"] = sender;
-	_object["tx_sender"] = tx_sender;
 	_object["owner_map"] = owner_map;
 	_object["contract_map"] = contract_map;
 	return _object;
@@ -109,18 +106,16 @@ void spend_options_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(expire_at);
 		} else if(_entry.first == "expire_delta") {
 			_entry.second.to(expire_delta);
-		} else if(_entry.first == "extra_fee") {
-			_entry.second.to(extra_fee);
 		} else if(_entry.first == "fee_ratio") {
 			_entry.second.to(fee_ratio);
+		} else if(_entry.first == "max_extra_cost") {
+			_entry.second.to(max_extra_cost);
 		} else if(_entry.first == "min_confirm") {
 			_entry.second.to(min_confirm);
 		} else if(_entry.first == "owner_map") {
 			_entry.second.to(owner_map);
 		} else if(_entry.first == "sender") {
 			_entry.second.to(sender);
-		} else if(_entry.first == "tx_sender") {
-			_entry.second.to(tx_sender);
 		} else if(_entry.first == "user") {
 			_entry.second.to(user);
 		}
@@ -137,8 +132,8 @@ vnx::Variant spend_options_t::get_field(const std::string& _name) const {
 	if(_name == "fee_ratio") {
 		return vnx::Variant(fee_ratio);
 	}
-	if(_name == "extra_fee") {
-		return vnx::Variant(extra_fee);
+	if(_name == "max_extra_cost") {
+		return vnx::Variant(max_extra_cost);
 	}
 	if(_name == "expire_at") {
 		return vnx::Variant(expire_at);
@@ -151,9 +146,6 @@ vnx::Variant spend_options_t::get_field(const std::string& _name) const {
 	}
 	if(_name == "sender") {
 		return vnx::Variant(sender);
-	}
-	if(_name == "tx_sender") {
-		return vnx::Variant(tx_sender);
 	}
 	if(_name == "owner_map") {
 		return vnx::Variant(owner_map);
@@ -171,8 +163,8 @@ void spend_options_t::set_field(const std::string& _name, const vnx::Variant& _v
 		_value.to(min_confirm);
 	} else if(_name == "fee_ratio") {
 		_value.to(fee_ratio);
-	} else if(_name == "extra_fee") {
-		_value.to(extra_fee);
+	} else if(_name == "max_extra_cost") {
+		_value.to(max_extra_cost);
 	} else if(_name == "expire_at") {
 		_value.to(expire_at);
 	} else if(_name == "expire_delta") {
@@ -181,8 +173,6 @@ void spend_options_t::set_field(const std::string& _name, const vnx::Variant& _v
 		_value.to(user);
 	} else if(_name == "sender") {
 		_value.to(sender);
-	} else if(_name == "tx_sender") {
-		_value.to(tx_sender);
 	} else if(_name == "owner_map") {
 		_value.to(owner_map);
 	} else if(_name == "contract_map") {
@@ -214,11 +204,11 @@ std::shared_ptr<vnx::TypeCode> spend_options_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.spend_options_t";
 	type_code->type_hash = vnx::Hash64(0x37f7c6d377362e95ull);
-	type_code->code_hash = vnx::Hash64(0xdbb5fab72256e56aull);
+	type_code->code_hash = vnx::Hash64(0xd38f15fddf18c8d4ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::spend_options_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<spend_options_t>>(); };
-	type_code->fields.resize(11);
+	type_code->fields.resize(10);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 1;
@@ -242,9 +232,10 @@ std::shared_ptr<vnx::TypeCode> spend_options_t::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[3];
-		field.data_size = 8;
-		field.name = "extra_fee";
-		field.code = {4};
+		field.data_size = 4;
+		field.name = "max_extra_cost";
+		field.value = vnx::to_string(1000000);
+		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[4];
@@ -273,17 +264,11 @@ std::shared_ptr<vnx::TypeCode> spend_options_t::static_create_type_code() {
 	{
 		auto& field = type_code->fields[8];
 		field.is_extended = true;
-		field.name = "tx_sender";
-		field.code = {33, 11, 32, 1};
-	}
-	{
-		auto& field = type_code->fields[9];
-		field.is_extended = true;
 		field.name = "owner_map";
 		field.code = {13, 5, 11, 32, 1, 11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[10];
+		auto& field = type_code->fields[9];
 		field.is_extended = true;
 		field.name = "contract_map";
 		field.code = {13, 5, 11, 32, 1, 16};
@@ -340,7 +325,7 @@ void read(TypeInput& in, ::mmx::spend_options_t& value, const TypeCode* type_cod
 			vnx::read_value(_buf + _field->offset, value.fee_ratio, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[3]) {
-			vnx::read_value(_buf + _field->offset, value.extra_fee, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.max_extra_cost, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
@@ -349,9 +334,8 @@ void read(TypeInput& in, ::mmx::spend_options_t& value, const TypeCode* type_cod
 			case 5: vnx::read(in, value.expire_delta, type_code, _field->code.data()); break;
 			case 6: vnx::read(in, value.user, type_code, _field->code.data()); break;
 			case 7: vnx::read(in, value.sender, type_code, _field->code.data()); break;
-			case 8: vnx::read(in, value.tx_sender, type_code, _field->code.data()); break;
-			case 9: vnx::read(in, value.owner_map, type_code, _field->code.data()); break;
-			case 10: vnx::read(in, value.contract_map, type_code, _field->code.data()); break;
+			case 8: vnx::read(in, value.owner_map, type_code, _field->code.data()); break;
+			case 9: vnx::read(in, value.contract_map, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -370,18 +354,17 @@ void write(TypeOutput& out, const ::mmx::spend_options_t& value, const TypeCode*
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(17);
+	char* const _buf = out.write(13);
 	vnx::write_value(_buf + 0, value.auto_send);
 	vnx::write_value(_buf + 1, value.min_confirm);
 	vnx::write_value(_buf + 5, value.fee_ratio);
-	vnx::write_value(_buf + 9, value.extra_fee);
+	vnx::write_value(_buf + 9, value.max_extra_cost);
 	vnx::write(out, value.expire_at, type_code, type_code->fields[4].code.data());
 	vnx::write(out, value.expire_delta, type_code, type_code->fields[5].code.data());
 	vnx::write(out, value.user, type_code, type_code->fields[6].code.data());
 	vnx::write(out, value.sender, type_code, type_code->fields[7].code.data());
-	vnx::write(out, value.tx_sender, type_code, type_code->fields[8].code.data());
-	vnx::write(out, value.owner_map, type_code, type_code->fields[9].code.data());
-	vnx::write(out, value.contract_map, type_code, type_code->fields[10].code.data());
+	vnx::write(out, value.owner_map, type_code, type_code->fields[8].code.data());
+	vnx::write(out, value.contract_map, type_code, type_code->fields[9].code.data());
 }
 
 void read(std::istream& in, ::mmx::spend_options_t& value) {

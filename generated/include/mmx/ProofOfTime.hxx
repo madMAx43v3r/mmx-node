@@ -45,8 +45,7 @@ public:
 	const vnx::TypeCode* get_type_code() const override;
 	
 	virtual vnx::bool_t is_valid(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
-	virtual ::mmx::hash_t calc_hash() const;
-	virtual ::mmx::hash_t get_full_hash() const;
+	virtual std::pair<::mmx::hash_t, ::mmx::hash_t> calc_hash() const;
 	virtual ::mmx::hash_t get_output(const uint32_t& chain = 0) const;
 	virtual uint64_t get_num_iters() const;
 	virtual uint64_t get_vdf_iters() const;

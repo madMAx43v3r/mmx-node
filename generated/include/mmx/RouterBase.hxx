@@ -64,7 +64,7 @@ public:
 	::mmx::node_type_e mode = ::mmx::node_type_e::FULL_NODE;
 	vnx::bool_t do_relay = true;
 	vnx::float64_t max_tx_upload = 2;
-	vnx::float64_t max_pending_cost = 0.1;
+	vnx::float64_t max_pending_cost = 0.2;
 	std::set<std::string> seed_peers;
 	std::set<std::string> fixed_peers;
 	std::set<std::string> block_peers;

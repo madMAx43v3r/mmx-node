@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_Transaction_is_valid_HXX_
 
 #include <mmx/package.hxx>
+#include <mmx/ChainParams.hxx>
 #include <vnx/Value.h>
 
 
@@ -13,6 +14,7 @@ namespace mmx {
 class MMX_EXPORT Transaction_is_valid : public ::vnx::Value {
 public:
 	
+	std::shared_ptr<const ::mmx::ChainParams> params;
 	
 	typedef ::vnx::Value Super;
 	
@@ -56,8 +58,9 @@ public:
 
 template<typename T>
 void Transaction_is_valid::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Transaction_is_valid>(0);
-	_visitor.template type_end<Transaction_is_valid>(0);
+	_visitor.template type_begin<Transaction_is_valid>(1);
+	_visitor.type_field("params", 0); _visitor.accept(params);
+	_visitor.template type_end<Transaction_is_valid>(1);
 }
 
 

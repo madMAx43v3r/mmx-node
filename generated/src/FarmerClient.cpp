@@ -15,7 +15,7 @@
 #include <mmx/Farmer_sign_block_return.hxx>
 #include <mmx/Farmer_sign_proof.hxx>
 #include <mmx/Farmer_sign_proof_return.hxx>
-#include <mmx/ProofOfSpace.hxx>
+#include <mmx/ProofResponse.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/bls_pubkey_t.hpp>
 #include <mmx/bls_signature_t.hpp>
@@ -93,9 +93,9 @@ std::shared_ptr<const ::mmx::FarmInfo> FarmerClient::get_farm_info() {
 	}
 }
 
-::mmx::bls_signature_t FarmerClient::sign_proof(std::shared_ptr<const ::mmx::ProofOfSpace> proof) {
+::mmx::bls_signature_t FarmerClient::sign_proof(std::shared_ptr<const ::mmx::ProofResponse> value) {
 	auto _method = ::mmx::Farmer_sign_proof::create();
-	_method->proof = proof;
+	_method->value = value;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Farmer_sign_proof_return>(_return_value)) {
 		return _result->_ret_0;

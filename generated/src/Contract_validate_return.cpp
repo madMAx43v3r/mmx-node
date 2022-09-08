@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Contract_validate_return::VNX_TYPE_HASH(0xe07266bd4062b8bbull);
-const vnx::Hash64 Contract_validate_return::VNX_CODE_HASH(0x3472952dbe35fb41ull);
+const vnx::Hash64 Contract_validate_return::VNX_CODE_HASH(0x4d417981903c02f1ull);
 
 vnx::Hash64 Contract_validate_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -114,7 +114,7 @@ std::shared_ptr<vnx::TypeCode> Contract_validate_return::static_create_type_code
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Contract.validate.return";
 	type_code->type_hash = vnx::Hash64(0xe07266bd4062b8bbull);
-	type_code->code_hash = vnx::Hash64(0x3472952dbe35fb41ull);
+	type_code->code_hash = vnx::Hash64(0x4d417981903c02f1ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;

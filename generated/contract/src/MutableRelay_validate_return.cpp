@@ -14,7 +14,7 @@ namespace contract {
 
 
 const vnx::Hash64 MutableRelay_validate_return::VNX_TYPE_HASH(0xd8b46935ca912219ull);
-const vnx::Hash64 MutableRelay_validate_return::VNX_CODE_HASH(0x7525ae3edcb9547eull);
+const vnx::Hash64 MutableRelay_validate_return::VNX_CODE_HASH(0xc164292f2b0adceull);
 
 vnx::Hash64 MutableRelay_validate_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -115,7 +115,7 @@ std::shared_ptr<vnx::TypeCode> MutableRelay_validate_return::static_create_type_
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.MutableRelay.validate.return";
 	type_code->type_hash = vnx::Hash64(0xd8b46935ca912219ull);
-	type_code->code_hash = vnx::Hash64(0x7525ae3edcb9547eull);
+	type_code->code_hash = vnx::Hash64(0xc164292f2b0adceull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;

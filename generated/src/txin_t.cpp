@@ -11,10 +11,10 @@
 namespace mmx {
 
 const uint8_t txin_t::IS_EXEC;
-const uint8_t txin_t::NO_SOLUTION;
+const uint16_t txin_t::NO_SOLUTION;
 
 const vnx::Hash64 txin_t::VNX_TYPE_HASH(0xda6587114a2413full);
-const vnx::Hash64 txin_t::VNX_CODE_HASH(0x6e9c15013d179cacull);
+const vnx::Hash64 txin_t::VNX_CODE_HASH(0x4cd28849c93fc1cbull);
 
 vnx::Hash64 txin_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -155,7 +155,7 @@ std::shared_ptr<vnx::TypeCode> txin_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.txin_t";
 	type_code->type_hash = vnx::Hash64(0xda6587114a2413full);
-	type_code->code_hash = vnx::Hash64(0x6e9c15013d179cacull);
+	type_code->code_hash = vnx::Hash64(0x4cd28849c93fc1cbull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::txin_t);
 	type_code->parents.resize(1);
@@ -182,10 +182,10 @@ std::shared_ptr<vnx::TypeCode> txin_t::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[3];
-		field.data_size = 1;
+		field.data_size = 2;
 		field.name = "solution";
 		field.value = vnx::to_string(-1);
-		field.code = {1};
+		field.code = {2};
 	}
 	{
 		auto& field = type_code->fields[4];
@@ -267,10 +267,10 @@ void write(TypeOutput& out, const ::mmx::txin_t& value, const TypeCode* type_cod
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(10);
+	char* const _buf = out.write(11);
 	vnx::write_value(_buf + 0, value.amount);
 	vnx::write_value(_buf + 8, value.solution);
-	vnx::write_value(_buf + 9, value.flags);
+	vnx::write_value(_buf + 10, value.flags);
 	vnx::write(out, value.address, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.contract, type_code, type_code->fields[1].code.data());
 }

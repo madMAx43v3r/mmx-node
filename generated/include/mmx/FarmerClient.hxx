@@ -7,7 +7,7 @@
 #include <vnx/Client.h>
 #include <mmx/BlockHeader.hxx>
 #include <mmx/FarmInfo.hxx>
-#include <mmx/ProofOfSpace.hxx>
+#include <mmx/ProofResponse.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/bls_pubkey_t.hpp>
 #include <mmx/bls_signature_t.hpp>
@@ -30,7 +30,7 @@ public:
 	
 	std::shared_ptr<const ::mmx::FarmInfo> get_farm_info();
 	
-	::mmx::bls_signature_t sign_proof(std::shared_ptr<const ::mmx::ProofOfSpace> proof = nullptr);
+	::mmx::bls_signature_t sign_proof(std::shared_ptr<const ::mmx::ProofResponse> value = nullptr);
 	
 	std::shared_ptr<const ::mmx::BlockHeader> sign_block(std::shared_ptr<const ::mmx::BlockHeader> block = nullptr, const uint64_t& reward_amount = 0);
 	
