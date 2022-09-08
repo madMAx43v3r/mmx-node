@@ -58,6 +58,7 @@ void show_history(const std::vector<mmx::tx_entry_t>& history, mmx::NodeClient& 
 		std::string arrow = "->";
 		switch(entry.type) {
 			case mmx::tx_type_e::SPEND:   std::cout << "SPEND   - "; arrow = "<-"; break;
+			case mmx::tx_type_e::TXFEE:   std::cout << "TXFEE   - "; arrow = "<-"; break;
 			case mmx::tx_type_e::RECEIVE: std::cout << "RECEIVE + "; break;
 			case mmx::tx_type_e::REWARD:  std::cout << "REWARD  + "; break;
 			default: std::cout << "????    "; break;

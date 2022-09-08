@@ -543,14 +543,16 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 		uint128_t recv = 0;
 		uint128_t spent = 0;
 	};
-	std::map<std::tuple<addr_t, hash_t, addr_t>, entry_t> delta_map;
+	std::map<std::tuple<addr_t, hash_t, addr_t, tx_type_e>, entry_t> delta_map;
 
 	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
 		{
 			std::vector<txio_entry_t> entries;
 			recv_log.find_range(std::make_tuple(address, min_height, 0), std::make_tuple(address, -1, -1), entries);
 			for(const auto& entry : entries) {
-				auto& delta = delta_map[std::make_tuple(entry.address, entry.txid, entry.contract)];
+				auto& delta = delta_map[std::make_tuple(
+						entry.address, entry.txid, entry.contract,
+						entry.type == tx_type_e::REWARD ? entry.type : tx_type_e())];
 				delta.height = entry.height;
 				delta.recv += entry.amount;
 			}
@@ -559,13 +561,15 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 			std::vector<txio_entry_t> entries;
 			spend_log.find_range(std::make_tuple(address, min_height, 0), std::make_tuple(address, -1, -1), entries);
 			for(const auto& entry : entries) {
-				auto& delta = delta_map[std::make_tuple(entry.address, entry.txid, entry.contract)];
+				auto& delta = delta_map[std::make_tuple(
+						entry.address, entry.txid, entry.contract,
+						entry.type == tx_type_e::TXFEE ? entry.type : tx_type_e())];
 				delta.height = entry.height;
 				delta.spent += entry.amount;
 			}
 		}
 	}
-	std::multimap<uint32_t, tx_entry_t> list;
+	std::vector<tx_entry_t> res;
 	for(const auto& entry : delta_map) {
 		const auto& delta = entry.second;
 		tx_entry_t out;
@@ -573,22 +577,26 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 		out.txid = std::get<1>(entry.first);
 		out.address = std::get<0>(entry.first);
 		out.contract = std::get<2>(entry.first);
+		out.type = std::get<3>(entry.first);
 		if(delta.recv > delta.spent) {
-			out.type = tx_type_e::RECEIVE;
+			if(!out.type) {
+				out.type = tx_type_e::RECEIVE;
+			}
 			out.amount = delta.recv - delta.spent;
 		}
 		if(delta.recv < delta.spent) {
-			out.type = tx_type_e::SPEND;
+			if(!out.type) {
+				out.type = tx_type_e::SPEND;
+			}
 			out.amount = delta.spent - delta.recv;
 		}
 		if(out.amount) {
-			list.emplace(out.height, out);
+			res.push_back(out);
 		}
 	}
-	std::vector<tx_entry_t> res;
-	for(const auto& entry : list) {
-		res.push_back(entry.second);
-	}
+	std::sort(res.begin(), res.end(), [](const tx_entry_t& L, const tx_entry_t& R) -> bool {
+		return L.height < R.height;
+	});
 	return res;
 }
 
