@@ -268,7 +268,7 @@ private:
 
 	std::shared_ptr<execution_context_t> validate(std::shared_ptr<const Block> block) const;
 
-	void validate(std::shared_ptr<const Transaction> tx) const;
+	std::shared_ptr<const exec_result_t> validate(std::shared_ptr<const Transaction> tx) const;
 
 	std::shared_ptr<execution_context_t> new_exec_context() const;
 

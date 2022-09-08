@@ -323,7 +323,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	return context;
 }
 
-void Node::validate(std::shared_ptr<const Transaction> tx) const
+std::shared_ptr<const exec_result_t> Node::validate(std::shared_ptr<const Transaction> tx) const
 {
 	auto context = new_exec_context();
 	{
@@ -333,7 +333,7 @@ void Node::validate(std::shared_ptr<const Transaction> tx) const
 	}
 	prepare_context(context, tx);
 
-	validate(tx, context);
+	return validate(tx, context);
 }
 
 void Node::execute(	std::shared_ptr<const Transaction> tx,
@@ -491,9 +491,6 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 	if(tx->expires < context->block->height) {
 		throw std::logic_error("tx expired");
 	}
-	if(tx->static_cost != tx->calc_cost(params)) {
-		throw std::logic_error("invalid static_cost");
-	}
 	if(tx->is_extendable) {
 		if(tx->deploy) {
 			throw std::logic_error("extendable tx cannot deploy");
@@ -590,24 +587,20 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				std::shared_ptr<const execution_context_t> context,
 				std::shared_ptr<const Block> base) const
 {
-	if(!tx->is_valid()) {
-		throw std::logic_error("invalid tx");
+	if(!tx->is_valid(params)) {
+		throw mmx::static_failure("invalid tx");
 	}
 	if(tx->is_extendable) {
-		throw std::logic_error("incomplete tx");
+		throw mmx::static_failure("incomplete tx");
 	}
-	uint64_t tx_cost = tx->calc_cost(params);
-
-	if(tx_cost > params->max_block_cost) {
-		throw std::logic_error("static_cost > max_block_cost");
-	}
-	if((uint128_t(tx_cost) * tx->fee_ratio) / 1024 > tx->max_fee_amount) {
-		throw std::logic_error("static tx fee > max_fee_amount");
+	if(tx->static_cost > params->max_block_cost) {
+		throw mmx::static_failure("static_cost > max_block_cost");
 	}
 	if(tx_index.find(tx->id)) {
-		throw std::logic_error("duplicate tx");
+		throw mmx::static_failure("duplicate tx");
 	}
 	uint64_t tx_fee = 0;
+	uint64_t tx_cost = tx->static_cost;
 	uint128_t base_amount = 0;
 	std::vector<txin_t> exec_inputs;
 	std::vector<txout_t> outputs;
@@ -616,12 +609,17 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 	std::unordered_map<addr_t, uint128> amounts;
 	std::exception_ptr failed_ex;
 
+	const auto static_fee = (uint64_t(tx->static_cost) * tx->fee_ratio) / 1024;
+
 	if(!base) {
+		if(static_fee > tx->max_fee_amount) {
+			throw mmx::static_failure("static tx fee > max_fee_amount: " + std::to_string(static_fee) + " > " + std::to_string(tx->max_fee_amount));
+		}
 		if(!tx->sender) {
-			throw std::logic_error("missing tx sender");
+			throw mmx::static_failure("missing tx sender");
 		}
 		if(tx->solutions.empty()) {
-			throw std::logic_error("missing sender signature");
+			throw mmx::static_failure("missing sender signature");
 		}
 		auto pubkey = contract::PubKey::create();
 		pubkey->address = *tx->sender;
@@ -631,11 +629,13 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 		spend->solution = tx->solutions[0];
 		spend->amount = tx->max_fee_amount;
 
-		const auto balance = balance_cache.find(*tx->sender, addr_t());
-		if(!balance || spend->amount > *balance) {
-			throw std::logic_error("insufficient funds for max_fee_amount");
-		}
 		pubkey->validate(spend, context->get_context_for(tx, pubkey));
+
+		const auto balance = balance_cache.find(*tx->sender, addr_t());
+		if(!balance || static_fee > *balance) {
+			throw mmx::static_failure("insufficient funds for static tx fee");
+		}
+		*balance -= static_fee;
 	}
 	auto storage_cache = std::make_shared<vm::StorageCache>(context->storage);
 
@@ -742,33 +742,40 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 
 		if(base) {
 			if(tx_cost > params->max_txbase_cost) {
-				throw std::logic_error("tx cost > max_txbase_cost");
+				throw mmx::static_failure("coin base tx cost > max_txbase_cost: " + std::to_string(tx_cost));
 			}
 			if(base_amount >> 32) {
-				throw std::logic_error("coin base output overflow");
+				throw mmx::static_failure("coin base output overflow");
 			}
 			tx_fee = base_amount;
 		}
 		else {
+			for(const auto& entry : amounts) {
+				if(entry.second) {
+					throw std::logic_error("left-over amount: " + entry.second.str(10) + " [" + entry.first.to_string() + "]");
+				}
+			}
 			if(tx_cost > params->max_block_cost) {
-				throw std::logic_error("tx cost > max_block_cost");
+				throw mmx::static_failure("tx cost > max_block_cost");
 			}
 			{
 				const auto amount = (uint128_t(tx_cost) * tx->fee_ratio) / 1024;
 				if(amount >> 32) {
-					throw std::logic_error("fee amount overflow");
+					throw mmx::static_failure("tx fee amount overflow: " + amount.str(10));
 				}
 				tx_fee = amount;
 			}
 			if(tx_fee > tx->max_fee_amount) {
-				throw std::logic_error("tx fee > max_fee_amount");
+				const auto prev = tx_fee;
+				tx_fee = tx->max_fee_amount;
+				throw std::logic_error("tx fee > max_fee_amount: " + std::to_string(prev) + " > " + std::to_string(tx->max_fee_amount));
 			}
-		}
-
-		for(const auto& entry : amounts) {
-			if(entry.second) {
-				throw std::logic_error("left-over amount");
+			const auto dynamic_fee = tx_fee - static_fee;
+			const auto balance = balance_cache.find(*tx->sender, addr_t());
+			if(!balance || dynamic_fee > *balance) {
+				throw mmx::static_failure("insufficient funds for tx fee");
 			}
+			*balance -= dynamic_fee;
 		}
 	} catch(const mmx::static_failure& ex) {
 		throw;

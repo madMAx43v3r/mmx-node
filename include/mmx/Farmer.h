@@ -44,6 +44,7 @@ private:
 
 private:
 	std::shared_ptr<vnx::Pipe> pipe;
+	std::shared_ptr<const ChainParams> params;
 	std::shared_ptr<WalletAsyncClient> wallet;
 
 	std::unordered_map<bls_pubkey_t, skey_t> key_map;

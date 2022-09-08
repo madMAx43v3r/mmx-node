@@ -244,55 +244,21 @@ public:
 		}
 	}
 
-	// TODO: obsolete ?
-	void gather_fee(std::shared_ptr<Transaction> tx,
-					std::map<std::pair<addr_t, addr_t>, uint128_t>& spent_map,
-					const spend_options_t& options = {}) const
-	{
-		tx->fee_ratio = std::max(tx->fee_ratio, options.fee_ratio);
-
-		uint64_t paid_fee = 0;
-		while(true) {
-			std::unordered_map<addr_t, uint64_t> spend_cost;
-			for(const auto& in : tx->inputs) {
-				if(in.solution == txin_t::NO_SOLUTION) {
-					addr_t owner = in.address;
-					auto iter = options.owner_map.find(owner);
-					if(iter != options.owner_map.end()) {
-						spend_cost[iter->second] += params->min_txfee_exec;
-					} else {
-						spend_cost.emplace(owner, 0);
-					}
-				}
-			}
-			// TODO: check for multi-sig via options.contract_map
-			uint64_t tx_fees = tx->calc_cost(params)
-					+ spend_cost.size() * params->min_txfee_sign
-					+ tx->execute.size() * params->min_txfee_sign
-					+ options.extra_fee;
-
-			for(const auto& entry : spend_cost) {
-				tx_fees += entry.second;	// spend execution cost
-			}
-			if(std::dynamic_pointer_cast<const contract::NFT>(tx->deploy)) {
-				tx_fees += params->min_txfee_sign;
-			}
-			tx_fees = (uint128_t(tx_fees) * tx->fee_ratio) / 1024;
-
-			if(paid_fee >= tx_fees) {
-				break;
-			}
-			const auto more = tx_fees - paid_fee;
-			gather_inputs(tx, spent_map, more, addr_t(), options);
-			paid_fee += more;
-		}
-	}
-
 	void sign_off(std::shared_ptr<Transaction> tx, const spend_options_t& options = {}) const
 	{
 		tx->finalize();
 
 		std::unordered_map<addr_t, uint32_t> solution_map;
+
+		// sign sender
+		if(tx->sender && tx->solutions.empty())
+		{
+			if(auto sol = sign_msg(*tx->sender, tx->id, options))
+			{
+				solution_map[*tx->sender] = tx->solutions.size();
+				tx->solutions.push_back(sol);
+			}
+		}
 
 		// sign all inputs
 		for(auto& in : tx->inputs)
@@ -364,6 +330,7 @@ public:
 		}
 
 		// compute final content hash
+		tx->static_cost = tx->calc_cost(params);
 		tx->content_hash = tx->calc_hash(true);
 	}
 
@@ -387,13 +354,13 @@ public:
 			tx->expires = std::min(tx->expires, height + *options.expire_delta);
 		}
 		if(!tx->sender) {
-			if(options.tx_sender) {
-				tx->sender = *options.tx_sender;
+			if(options.sender) {
+				tx->sender = *options.sender;
 			} else {
 				tx->sender = get_address(0);
 			}
 		}
-		tx->static_cost = tx->calc_cost(params);
+		tx->fee_ratio = std::max(tx->fee_ratio, options.fee_ratio);
 
 		std::map<addr_t, uint128_t> missing;
 		{
@@ -430,6 +397,8 @@ public:
 				gather_inputs(tx, spent_map, amount, entry.first, options);
 			}
 		}
+		tx->max_fee_amount = ((tx->calc_cost(params) + options.max_extra_cost) * tx->fee_ratio) / 1024;
+
 		sign_off(tx, options);
 	}
 

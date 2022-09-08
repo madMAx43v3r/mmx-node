@@ -216,6 +216,9 @@ void Node::main()
 		genesis->vdf_output[1] = hash_t(params->vdf_seed);
 		genesis->finalize();
 
+		if(!genesis->is_valid()) {
+			throw std::logic_error("genesis not valid");
+		}
 		apply(genesis, nullptr);
 		commit(genesis);
 	}
@@ -967,7 +970,8 @@ void Node::add_block(std::shared_ptr<const Block> block)
 
 	if(block->farmer_sig) {
 		pending_forks.push_back(fork);
-	} else {
+	}
+	else if(block->is_valid()) {
 		add_fork(fork);
 	}
 }
@@ -985,7 +989,11 @@ void Node::add_fork(std::shared_ptr<fork_t> fork)
 void Node::add_transaction(std::shared_ptr<const Transaction> tx, const vnx::bool_t& pre_validate)
 {
 	if(pre_validate) {
-		validate(tx);
+		if(auto res = validate(tx)) {
+			if(res->did_fail) {
+				throw std::runtime_error("tx failed with: " + res->message);
+			}
+		}
 	}
 	// Note: tx->is_valid() already checked by Router
 	pending_transactions[tx->content_hash] = tx;

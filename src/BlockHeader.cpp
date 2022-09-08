@@ -16,8 +16,8 @@ vnx::bool_t BlockHeader::is_valid() const
 	const auto all_hash = calc_hash();
 	return version == 0
 			&& (!proof || proof->is_valid())
-			&& (!tx_base || tx_base->is_valid())
-			&& all_hash.first == hash && all_hash.second == content_hash;
+			&& hash == all_hash.first
+			&& content_hash == all_hash.second;
 }
 
 std::pair<hash_t, hash_t> BlockHeader::calc_hash() const

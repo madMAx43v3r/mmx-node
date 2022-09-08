@@ -35,8 +35,11 @@ void Transaction::finalize()
 	id = calc_hash();
 }
 
-vnx::bool_t Transaction::is_valid() const
+vnx::bool_t Transaction::is_valid(std::shared_ptr<const ChainParams> params) const
 {
+	if(!params) {
+		throw std::logic_error("!params");
+	}
 	for(const auto& op : execute) {
 		if(!op) {
 			return false;
@@ -49,9 +52,11 @@ vnx::bool_t Transaction::is_valid() const
 	}
 	return version == 0 && fee_ratio >= 1024 && nonce
 			&& solutions.size() <= MAX_SOLUTIONS
-			&& (!parent || parent->is_valid())
+			&& (!parent || parent->is_valid(params))
 			&& (!exec_result || exec_result->is_valid())
-			&& calc_hash() == id && calc_hash(true) == content_hash;
+			&& static_cost == calc_cost(params)
+			&& id == calc_hash()
+			&& content_hash == calc_hash(true);
 }
 
 hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
@@ -66,7 +71,6 @@ hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "version", version);
 	write_field(out, "expires", expires);
 	write_field(out, "fee_ratio", fee_ratio);
-	write_field(out, "static_cost", static_cost);
 	write_field(out, "max_fee_amount", max_fee_amount);
 	write_field(out, "note", 	note);
 	write_field(out, "nonce", 	nonce);
@@ -84,6 +88,7 @@ hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "is_extendable", is_extendable);
 
 	if(full_hash) {
+		write_field(out, "static_cost", static_cost);
 		write_bytes(out, "solutions");
 		write_bytes(out, uint64_t(solutions.size()));
 		for(const auto& sol : solutions) {
@@ -219,7 +224,7 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 	if(parent) {
 		cost += parent->calc_cost(params);
 	}
-	if(cost.upper()) {
+	if(cost >> 64) {
 		throw std::logic_error("tx cost amount overflow");
 	}
 	return cost;

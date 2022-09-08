@@ -181,6 +181,7 @@ int main(int argc, char** argv)
 
 	mmx::spend_options_t spend_options;
 	spend_options.fee_ratio = fee_ratio * 1024;
+	spend_options.max_extra_cost = mmx::to_amount(gas_limit / fee_ratio, params);
 
 	mmx::NodeClient node("Node");
 
@@ -457,9 +458,6 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Failed to read contract from file: " << file_path;
 					goto failed;
 				}
-				if(std::dynamic_pointer_cast<const mmx::contract::Executable>(payload)) {
-					spend_options.extra_fee = gas_limit * 1e6;
-				}
 				const auto tx = wallet.deploy(index, payload, spend_options);
 				std::cout << "Deployed " << payload->get_type_name() << " as [" << mmx::addr_t(tx->id) << "]" << std::endl;
 				std::cout << "Transaction ID: " << tx->id << std::endl;
@@ -485,7 +483,6 @@ int main(int argc, char** argv)
 				vnx::read_config("$3", method);
 				vnx::read_config("$4", args);
 
-				spend_options.extra_fee = gas_limit * 1e6;
 				std::shared_ptr<const mmx::Transaction> tx;
 				if(command == "exec") {
 					tx = wallet.execute(index, contract, method, args, spend_options);

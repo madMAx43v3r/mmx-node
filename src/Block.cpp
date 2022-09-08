@@ -14,9 +14,19 @@ namespace mmx {
 
 vnx::bool_t Block::is_valid() const
 {
+	uint64_t total_cost = 0;
+	uint64_t total_fees = 0;
+	for(const auto& tx : tx_list) {
+		if(const auto& res = tx->exec_result) {
+			total_cost += res->total_cost;
+			total_fees += res->total_fee;
+		}
+	}
 	return BlockHeader::is_valid()
+			&& tx_cost == total_cost
+			&& tx_fees == total_fees
 			&& tx_count == tx_list.size()
-			&& calc_tx_hash() == tx_hash;
+			&& tx_hash == calc_tx_hash();
 }
 
 hash_t Block::calc_tx_hash() const
@@ -47,7 +57,9 @@ void Block::finalize()
 	}
 	tx_count = tx_list.size();
 	tx_hash = calc_tx_hash();
-	hash = calc_hash().first;
+	const auto all_hash = calc_hash();
+	hash = all_hash.first;
+	content_hash = all_hash.second;
 }
 
 std::shared_ptr<const BlockHeader> Block::get_header() const

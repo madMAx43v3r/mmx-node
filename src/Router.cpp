@@ -80,7 +80,7 @@ void Router::main()
 	max_pending_cost_value = max_pending_cost * to_value(params->max_block_cost, params);
 
 	log(INFO) << "Global TX upload limit: " << tx_upload_bandwidth << " MMX/s";
-	log(INFO) << "Peer TX upload pending limit: " << max_pending_cost_value << " MMX";
+	log(INFO) << "Peer TX pending limit: " << max_pending_cost_value << " MMX";
 
 	subscribe(input_vdfs, max_queue_ms);
 	subscribe(input_verified_vdfs, max_queue_ms);
@@ -1042,7 +1042,7 @@ void Router::on_proof(uint64_t client, std::shared_ptr<const ProofResponse> valu
 
 void Router::on_transaction(uint64_t client, std::shared_ptr<const Transaction> tx)
 {
-	if(!tx->is_valid() || tx->exec_result) {
+	if(!tx->is_valid(params) || tx->exec_result) {
 		return;
 	}
 	const auto hash = tx->content_hash;

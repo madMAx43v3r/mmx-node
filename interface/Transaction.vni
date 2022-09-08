@@ -49,7 +49,7 @@ class Transaction extends TransactionBase {
 	
 	void merge_sign(Transaction* tx);
 	
-	bool is_valid() const;
+	bool is_valid(ChainParams* params) const;
 	
 	bool is_signed() const;
 	

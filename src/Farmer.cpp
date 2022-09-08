@@ -7,6 +7,7 @@
 
 #include <mmx/Farmer.h>
 #include <mmx/Transaction.hxx>
+#include <mmx/utils.h>
 
 
 namespace mmx {
@@ -34,6 +35,8 @@ void Farmer::main()
 		}
 		log(INFO) << "Reward address: " << reward_addr->to_string();
 	}
+	params = get_params();
+
 	wallet = std::make_shared<WalletAsyncClient>(wallet_server);
 	wallet->vnx_set_non_blocking(true);
 	add_async_client(wallet);
@@ -187,12 +190,23 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& rew
 	}
 	base->finalize();
 
-	auto copy = vnx::clone(block);
-	copy->nonce = vnx::rand64();
-	copy->tx_base = base;
-	copy->hash = copy->calc_hash().first;
-	copy->farmer_sig = bls_signature_t::sign(farmer_sk, copy->hash);
-	return copy;
+	base->static_cost = base->calc_cost(params);
+	{
+		exec_result_t res;
+		res.total_cost = base->static_cost;
+		for(const auto& out : base->outputs) {
+			res.total_fee += out.amount;
+		}
+		base->exec_result = res;
+	}
+	base->content_hash = base->calc_hash(true);
+
+	auto out = vnx::clone(block);
+	out->nonce = vnx::rand64();
+	out->tx_base = base;
+	out->hash = out->calc_hash().first;
+	out->farmer_sig = bls_signature_t::sign(farmer_sk, out->hash);
+	return out;
 }
 
 

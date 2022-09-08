@@ -397,16 +397,16 @@ void Node::purge_tx_pool()
 
 	size_t num_purged = 0;
 	uint128_t total_pool_cost = 0;
-	std::unordered_map<addr_t, uint128_t> total_fee_map;		// [sender => total fee]
+	std::unordered_map<addr_t, uint64_t> total_fee_map;		// [sender => total fee]
 
 	const auto max_pool_cost = uint128_t(tx_pool_limit) * params->max_block_cost;
 
 	// purge transactions from pool if overflowing
 	for(const auto& entry : all_tx) {
 		const auto& tx = entry.tx;
-		uint128_t total_fee_spent = 0;
+		uint64_t total_fee_spent = 0;
 		if(tx->sender) {
-			total_fee_spent = (total_fee_map[*tx->sender] += tx->max_fee_amount);
+			total_fee_spent = (total_fee_map[*tx->sender] += entry.fee);
 		}
 		total_pool_cost += tx->static_cost;
 
@@ -419,7 +419,7 @@ void Node::purge_tx_pool()
 			min_pool_fee_ratio = tx->fee_ratio;
 		}
 	}
-	if(total_pool_cost < max_pool_cost || all_tx.empty()) {
+	if(total_pool_cost < max_pool_cost) {
 		min_pool_fee_ratio = 0;
 	}
 	if(total_pool_cost || num_purged) {
@@ -496,6 +496,8 @@ void Node::validate_new()
 		context->signal(tx->id);
 	}
 
+	// TODO: keep track of tx pool fees and reject if sender cannot cover additional fees
+
 	// update tx pool
 	size_t num_invalid = 0;
 	for(const auto& entry : tx_list) {
@@ -568,6 +570,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block(const uint64_t verify_limi
 				{
 					auto copy = vnx::clone(tx);
 					copy->exec_result = *res;
+					copy->content_hash = copy->calc_hash(true);
 					tx = copy;
 				}
 				entry.cost = res->total_cost;
@@ -582,7 +585,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block(const uint64_t verify_limi
 		context->signal(tx->id);
 	}
 
-	uint128_t total_cost = 0;
+	uint64_t total_cost = 0;
 	std::vector<tx_pool_t> result;
 	balance_cache_t balance_cache(&balance_map);
 
@@ -707,6 +710,8 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	}
 	block->BlockHeader::operator=(*result);
 	block->content_hash = block->calc_hash().second;
+
+	log(INFO) << block->to_string();
 
 	const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
 	log(INFO) << "Created block at height " << block->height << " with: ntx = " << block->tx_list.size()

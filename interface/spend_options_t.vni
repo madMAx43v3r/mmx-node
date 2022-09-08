@@ -8,14 +8,13 @@ struct spend_options_t {
 	
 	uint fee_ratio = 1024;
 	
-	ulong extra_fee;
+	uint max_extra_cost = 1000000;
 	
 	optional<uint> expire_at;					// overrides delta if set
 	optional<uint> expire_delta;				// expire at current height + delta
 	
 	optional<addr_t> user;
-	optional<addr_t> sender;					// for tx outputs
-	optional<addr_t> tx_sender;					// for tx itself
+	optional<addr_t> sender;					// for tx fee
 	
 	map<addr_t, addr_t> owner_map;
 	map<addr_t, Contract*> contract_map;

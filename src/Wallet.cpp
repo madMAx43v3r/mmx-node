@@ -467,7 +467,7 @@ std::shared_ptr<const Transaction> Wallet::complete(
 }
 
 std::shared_ptr<const Transaction> Wallet::sign_off(
-		const uint32_t& index, std::shared_ptr<const Transaction> tx, const vnx::bool_t& cover_fee, const spend_options_t& options) const
+		const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const
 {
 	if(!tx) {
 		return nullptr;
@@ -476,15 +476,6 @@ std::shared_ptr<const Transaction> Wallet::sign_off(
 	update_cache(index);
 
 	auto copy = vnx::clone(tx);
-	if(cover_fee) {
-		std::map<std::pair<addr_t, addr_t>, uint128_t> spent_map;
-		for(const auto& in : tx->get_all_inputs()) {
-			if(wallet->find_address(in.address) >= 0) {
-				spent_map[std::make_pair(in.address, in.contract)] += in.amount;
-			}
-		}
-		wallet->gather_fee(copy, spent_map, options);
-	}
 	wallet->sign_off(copy, options);
 	return copy;
 }

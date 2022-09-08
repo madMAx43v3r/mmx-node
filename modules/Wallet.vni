@@ -61,7 +61,7 @@ module Wallet implements vnx.addons.HttpComponent {
 	Transaction* complete(uint index, Transaction* tx, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
-	Transaction* sign_off(uint index, Transaction* tx, bool cover_fee, spend_options_t options) const;
+	Transaction* sign_off(uint index, Transaction* tx, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
 	Solution* sign_msg(uint index, addr_t address, hash_t msg) const;
