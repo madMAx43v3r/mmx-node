@@ -146,7 +146,7 @@ void Node::update()
 				fork->vdf_point = point;
 				fork->is_vdf_verified = true;
 			}
-			if(fork->vdf_point || !is_synced) {
+			if(fork->is_vdf_verified || !is_synced) {
 				to_verify.push_back(fork);
 			}
 		}
@@ -176,7 +176,6 @@ void Node::update()
 		}
 	}
 	const auto prev_peak = get_peak();
-
 	std::shared_ptr<const BlockHeader> forked_at;
 
 	// choose best fork

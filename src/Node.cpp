@@ -185,7 +185,11 @@ void Node::main()
 					const auto index = height - i;
 					if(i < params->commit_delay && index > 0) {
 						if(auto block = get_block_at(index)) {
-							add_block(block);
+							auto fork = std::make_shared<fork_t>();
+							fork->recv_time = vnx::get_wall_time_micros();
+							fork->block = block;
+							fork->is_vdf_verified = true;
+							add_fork(fork);
 						}
 					} else {
 						if(auto header = get_header_at(index)) {
@@ -426,9 +430,14 @@ vnx::optional<tx_info_t> Node::get_tx_info_for(std::shared_ptr<const Transaction
 		info.height = *height;
 		info.block = get_block_hash(*height);
 	}
+	if(tx->exec_result) {
+		info.fee = tx->exec_result->total_fee;
+		info.cost = tx->exec_result->total_cost;
+	} else {
+		info.cost = tx->static_cost;
+	}
 	info.note = tx->note;
 	info.sender = tx->sender;
-	info.cost = tx->calc_cost(params);
 	info.inputs = tx->get_all_inputs();
 	info.outputs = tx->get_all_outputs();
 	info.operations = tx->get_all_operations();
@@ -463,10 +472,6 @@ vnx::optional<tx_info_t> Node::get_tx_info_for(std::shared_ptr<const Transaction
 			info.contracts[addr] = contract;
 		}
 	}
-	auto iter = info.input_amounts.find(addr_t());
-	auto iter2 = info.output_amounts.find(addr_t());
-	info.fee = int64_t(iter != info.input_amounts.end() ? iter->second.lower() : 0)
-					- (iter2 != info.output_amounts.end() ? iter2->second.lower() : 0);
 	return info;
 }
 
@@ -595,7 +600,8 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 		}
 	}
 	std::sort(res.begin(), res.end(), [](const tx_entry_t& L, const tx_entry_t& R) -> bool {
-		return L.height < R.height;
+		return std::make_tuple(L.height, L.txid, L.type, L.contract, L.address) <
+			   std::make_tuple(R.height, R.txid, R.type, R.contract, R.address);
 	});
 	return res;
 }
@@ -978,9 +984,10 @@ void Node::add_block(std::shared_ptr<const Block> block)
 
 	if(block->farmer_sig) {
 		pending_forks.push_back(fork);
-	}
-	else if(block->is_valid()) {
+	} else if(block->is_valid()) {
 		add_fork(fork);
+	} else {
+		log(WARN) << "Got invalid block at height " << block->height;
 	}
 }
 
