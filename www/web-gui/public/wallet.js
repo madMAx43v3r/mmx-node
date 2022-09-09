@@ -1552,7 +1552,7 @@ Vue.component('create-locked-contract', {
 						class="d-inline-block">
 					</v-switch><br>
 
-					<v-btn @click="submit" outlined color="primary" :disabled="!valid">{{ $t('common.deploy') }}</v-btn>
+					<v-btn @click="submit" outlined color="primary" :disabled="!confirmed">{{ $t('common.deploy') }}</v-btn>
 
 				</v-card-text>
 			</v-card>
@@ -1671,7 +1671,7 @@ Vue.component('create-virtual-plot-contract', {
 						class="d-inline-block">
 					</v-switch><br>
 
-					<v-btn @click="submit" outlined color="primary" :disabled="!valid">{{ $t('common.deploy') }}</v-btn>
+					<v-btn @click="submit" outlined color="primary" :disabled="!confirmed">{{ $t('common.deploy') }}</v-btn>
 
 				</v-card-text>
 			</v-card>
