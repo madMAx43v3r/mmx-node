@@ -150,7 +150,7 @@ add_library(mmx_vm SHARED
 	src/vm/StorageProxy.cpp
 	src/vm/StorageRAM.cpp
 	src/vm/StorageCache.cpp
-	src/vm/StorageRocksDB.cpp
+	src/vm/StorageDB.cpp
 )
 
 add_library(mmx_db SHARED
