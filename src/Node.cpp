@@ -1104,7 +1104,8 @@ void Node::print_stats()
 		fclose(file);
 	}
 #endif
-	log(INFO) << balance_map.size() << " addresses, " << fork_tree.size() << " blocks in memory";
+	log(INFO) << balance_map.size() << " addresses, " << fork_tree.size() << " blocks in memory, "
+			<< tx_pool.size() << " tx pool, " << tx_pool_fees.size() << " tx pool senders";
 }
 
 void Node::on_stuck_timeout()
