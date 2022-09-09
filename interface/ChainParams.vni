@@ -45,7 +45,6 @@ class ChainParams {
 	
 	ulong max_txbase_cost = 10000;
 	ulong max_block_cost = 10000000;
-	ulong max_block_reward = 5000000;		// TODO
 	
 	double block_time = 10;					// [sec]
 	
