@@ -242,6 +242,10 @@ private:
 
 	void add_dummy_blocks(std::shared_ptr<const BlockHeader> prev);
 
+	bool tx_pool_update(const tx_pool_t& entry, const bool force_add = false);
+
+	void tx_pool_erase(const hash_t& txid);
+
 	void purge_tx_pool();
 
 	void validate_new();
@@ -403,6 +407,7 @@ private:
 	std::map<uint32_t, balance_log_t> balance_log;								// [height => log]
 
 	std::unordered_map<hash_t, tx_pool_t> tx_pool;									// [txid => transaction] (non-executed only)
+	std::unordered_map<addr_t, uint64_t> tx_pool_fees;								// [address => total pending fees]
 	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;					// [block hash => fork] (pending only)
 	std::multimap<uint32_t, std::shared_ptr<fork_t>> fork_index;					// [height => fork] (pending only)
 	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;					// [height => block header] (finalized only)
@@ -451,8 +456,6 @@ private:
 	std::unordered_set<uint32_t> vdf_verify_pending;		// height
 	std::shared_ptr<OCL_VDF> opencl_vdf[2];
 	std::shared_ptr<vnx::ThreadPool> vdf_threads;
-
-	int64_t total_pre_validate_time = 0;
 
 	friend class vnx::addons::HttpInterface<Node>;
 

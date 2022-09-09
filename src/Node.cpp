@@ -1269,11 +1269,12 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 
 			// add removed tx back to pool
 			for(const auto& tx : peak->block->tx_list) {
-				auto& entry = tx_pool[tx->id];
+				tx_pool_t entry;
 				entry.tx = tx;
 				entry.fee = tx->exec_result->total_fee;
 				entry.cost = tx->exec_result->total_cost;
 				entry.is_valid = true;
+				tx_pool_update(entry, true);
 			}
 			if(peak->block->prev == root->hash) {
 				forked_at = root;
@@ -1598,7 +1599,7 @@ void Node::apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Tran
 			}
 		}
 	}
-	tx_pool.erase(tx->id);
+	tx_pool_erase(tx->id);
 }
 
 void Node::revert(const uint32_t height)

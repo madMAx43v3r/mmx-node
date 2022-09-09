@@ -378,6 +378,56 @@ void Node::update()
 	}
 }
 
+bool Node::tx_pool_update(const tx_pool_t& entry, const bool force_add)
+{
+	if(const auto& tx = entry.tx)
+	{
+		const auto iter = tx_pool.find(tx->id);
+		if(const auto& sender = tx->sender)
+		{
+			const auto fees = tx_pool_fees.find(*sender);
+			auto new_total = fees != tx_pool_fees.end() ? fees->second : 0;
+			if(iter != tx_pool.end()) {
+				new_total -= iter->second.fee;
+			}
+			new_total += entry.fee;
+			if(!force_add && new_total > get_balance(*sender, addr_t())) {
+				return false;
+			}
+			if(fees != tx_pool_fees.end()) {
+				fees->second = new_total;
+			} else {
+				tx_pool_fees[*sender] = new_total;
+			}
+		}
+		if(iter != tx_pool.end()) {
+			iter->second = entry;
+		} else {
+			tx_pool[tx->id] = entry;
+		}
+		return true;
+	}
+	return false;
+}
+
+void Node::tx_pool_erase(const hash_t& txid)
+{
+	const auto iter = tx_pool.find(txid);
+	if(iter != tx_pool.end()) {
+		if(const auto& tx = iter->second.tx) {
+			if(const auto& sender = tx->sender) {
+				const auto iter2 = tx_pool_fees.find(*sender);
+				if(iter2 != tx_pool_fees.end()) {
+					if((iter2->second -= iter->second.fee) == 0) {
+						tx_pool_fees.erase(iter2);
+					}
+				}
+			}
+		}
+		tx_pool.erase(iter);
+	}
+}
+
 void Node::purge_tx_pool()
 {
 	const auto time_begin = vnx::get_wall_time_millis();
@@ -412,7 +462,7 @@ void Node::purge_tx_pool()
 		if(total_pool_cost > max_pool_cost
 			|| (tx->sender && total_fee_spent > get_balance(*tx->sender, addr_t())))
 		{
-			tx_pool.erase(tx->id);
+			tx_pool_erase(tx->id);
 			num_purged++;
 		} else {
 			min_pool_fee_ratio = tx->fee_ratio;
@@ -434,7 +484,6 @@ void Node::validate_new()
 	if(!peak || !is_synced) {
 		return;
 	}
-	const auto time_begin = vnx::get_wall_time_micros();
 
 	// drop anything with too low fee ratio
 	for(auto iter = pending_transactions.begin(); iter != pending_transactions.end();) {
@@ -495,21 +544,16 @@ void Node::validate_new()
 		context->signal(tx->id);
 	}
 
-	// TODO: keep track of tx pool fees and reject if sender cannot cover additional fees
-
 	// update tx pool
-	size_t num_invalid = 0;
 	for(const auto& entry : tx_list) {
 		const auto& tx = entry.tx;
 		if(entry.is_valid) {
-			tx_pool[tx->id] = entry;
-			publish(tx, output_verified_transactions);
-		} else {
-			num_invalid++;
+			if(tx_pool_update(entry)) {
+				publish(tx, output_verified_transactions);
+			}
 		}
 		pending_transactions.erase(tx->content_hash);
 	}
-	total_pre_validate_time += vnx::get_wall_time_micros() - time_begin;
 }
 
 std::vector<Node::tx_pool_t> Node::validate_for_block(const uint64_t verify_limit, const uint64_t select_limit)
@@ -592,7 +636,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block(const uint64_t verify_limi
 	for(auto& entry : tx_list)
 	{
 		if(!entry.is_valid) {
-			tx_pool.erase(entry.tx->id);
+			tx_pool_erase(entry.tx->id);
 			continue;
 		}
 		if(total_cost + entry.cost > select_limit) {
