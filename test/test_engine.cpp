@@ -6,9 +6,9 @@
  */
 
 #include <mmx/vm/Engine.h>
+#include <mmx/vm/StorageDB.h>
 #include <mmx/vm/StorageRAM.h>
 #include <mmx/vm/StorageCache.h>
-#include <mmx/vm/StorageRocksDB.h>
 
 #include <iostream>
 
@@ -19,7 +19,7 @@ int main(int arcv, char** argv)
 {
 	mmx::DataBase db;
 //	auto storage = std::make_shared<vm::StorageRAM>();
-	auto backend = std::make_shared<vm::StorageRocksDB>("tmp/", db);
+	auto backend = std::make_shared<vm::StorageDB>("tmp/", db);
 	db.revert(0);
 	auto storage = std::make_shared<vm::StorageCache>(backend);
 	{

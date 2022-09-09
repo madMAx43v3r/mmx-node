@@ -5,7 +5,7 @@
  *      Author: mad
  */
 
-#include <mmx/vm/StorageRocksDB.h>
+#include <mmx/vm/StorageDB.h>
 
 #include <vnx/Output.hpp>
 
@@ -69,7 +69,7 @@ std::shared_ptr<db_val_t> write_index_key(const addr_t& contract, const std::pai
 	return out;
 }
 
-StorageRocksDB::StorageRocksDB(const std::string& database_path, DataBase& db)
+StorageDB::StorageDB(const std::string& database_path, DataBase& db)
 {
 	table = std::make_shared<Table>(database_path + "storage");
 	table_entries = std::make_shared<Table>(database_path + "storage_entries");
@@ -79,11 +79,11 @@ StorageRocksDB::StorageRocksDB(const std::string& database_path, DataBase& db)
 	db.add(table_index);
 }
 
-StorageRocksDB::~StorageRocksDB()
+StorageDB::~StorageDB()
 {
 }
 
-var_t* StorageRocksDB::read(const addr_t& contract, const uint64_t src) const
+var_t* StorageDB::read(const addr_t& contract, const uint64_t src) const
 {
 	const auto key = get_key(contract, src);
 	if(auto value = table->find(key)) {
@@ -94,13 +94,13 @@ var_t* StorageRocksDB::read(const addr_t& contract, const uint64_t src) const
 	return nullptr;
 }
 
-var_t* StorageRocksDB::read_ex(const addr_t& contract, const uint64_t src, const uint32_t height) const
+var_t* StorageDB::read_ex(const addr_t& contract, const uint64_t src, const uint32_t height) const
 {
 	// TODO: consider height
 	return read(contract, src);
 }
 
-var_t* StorageRocksDB::read(const addr_t& contract, const uint64_t src, const uint64_t key) const
+var_t* StorageDB::read(const addr_t& contract, const uint64_t src, const uint64_t key) const
 {
 	const auto entry_key = get_entry_key(contract, src, key);
 	if(auto value = table_entries->find(entry_key)) {
@@ -111,7 +111,7 @@ var_t* StorageRocksDB::read(const addr_t& contract, const uint64_t src, const ui
 	return nullptr;
 }
 
-void StorageRocksDB::write(const addr_t& contract, const uint64_t dst, const var_t& value)
+void StorageDB::write(const addr_t& contract, const uint64_t dst, const var_t& value)
 {
 	const auto key = get_key(contract, dst);
 	const auto data = serialize(value);
@@ -123,14 +123,14 @@ void StorageRocksDB::write(const addr_t& contract, const uint64_t dst, const var
 	table->insert(key, std::make_shared<db_val_t>(data.first, data.second, false));
 }
 
-void StorageRocksDB::write(const addr_t& contract, const uint64_t dst, const uint64_t key, const var_t& value)
+void StorageDB::write(const addr_t& contract, const uint64_t dst, const uint64_t key, const var_t& value)
 {
 	const auto entry_key = get_entry_key(contract, dst, key);
 	const auto data = serialize(value, false);
 	table_entries->insert(entry_key, std::make_shared<db_val_t>(data.first, data.second, false));
 }
 
-uint64_t StorageRocksDB::lookup(const addr_t& contract, const var_t& value) const
+uint64_t StorageDB::lookup(const addr_t& contract, const var_t& value) const
 {
 	const auto data = serialize(value, false, false);
 	const auto key = write_index_key(contract, data);
@@ -146,7 +146,7 @@ uint64_t StorageRocksDB::lookup(const addr_t& contract, const var_t& value) cons
 	return out;
 }
 
-std::vector<std::pair<uint64_t, varptr_t>> StorageRocksDB::find_range(
+std::vector<std::pair<uint64_t, varptr_t>> StorageDB::find_range(
 		const addr_t& contract, const uint64_t begin, const uint64_t end, const uint32_t height) const
 {
 	// TODO: consider height argument
@@ -169,7 +169,7 @@ std::vector<std::pair<uint64_t, varptr_t>> StorageRocksDB::find_range(
 	return out;
 }
 
-std::vector<std::pair<uint64_t, varptr_t>> StorageRocksDB::find_entries(
+std::vector<std::pair<uint64_t, varptr_t>> StorageDB::find_entries(
 		const addr_t& contract, const uint64_t address, const uint32_t height) const
 {
 	// TODO: consider height argument
@@ -192,7 +192,7 @@ std::vector<std::pair<uint64_t, varptr_t>> StorageRocksDB::find_entries(
 	return out;
 }
 
-std::vector<varptr_t> StorageRocksDB::read_array(
+std::vector<varptr_t> StorageDB::read_array(
 		const addr_t& contract, const uint64_t address, const uint32_t height) const
 {
 	std::vector<varptr_t> out;

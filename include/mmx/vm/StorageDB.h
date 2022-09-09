@@ -1,28 +1,26 @@
 /*
- * StorageRocksDB.h
+ * StorageDB.h
  *
  *  Created on: Apr 22, 2022
  *      Author: mad
  */
 
-#ifndef INCLUDE_MMX_VM_STORAGEROCKSDB_H_
-#define INCLUDE_MMX_VM_STORAGEROCKSDB_H_
+#ifndef INCLUDE_MMX_VM_STORAGEDB_H_
+#define INCLUDE_MMX_VM_STORAGEDB_H_
 
 #include <mmx/vm/Storage.h>
 #include <mmx/vm/varptr_t.hpp>
 #include <mmx/DataBase.h>
 
-#include <map>
-
 
 namespace mmx {
 namespace vm {
 
-class StorageRocksDB : public Storage {
+class StorageDB : public Storage {
 public:
-	StorageRocksDB(const std::string& database_path, DataBase& db);
+	StorageDB(const std::string& database_path, DataBase& db);
 
-	~StorageRocksDB();
+	~StorageDB();
 
 	var_t* read(const addr_t& contract, const uint64_t src) const override;
 
@@ -56,4 +54,4 @@ private:
 } // vm
 } // mmx
 
-#endif /* INCLUDE_MMX_VM_STORAGEROCKSDB_H_ */
+#endif /* INCLUDE_MMX_VM_STORAGEDB_H_ */

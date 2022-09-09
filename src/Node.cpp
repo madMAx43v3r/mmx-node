@@ -100,7 +100,7 @@ void Node::main()
 		db.add(block_index.open(database_path + "block_index"));
 		db.add(balance_table.open(database_path + "balance_table"));
 	}
-	storage = std::make_shared<vm::StorageRocksDB>(database_path, db);
+	storage = std::make_shared<vm::StorageDB>(database_path, db);
 	{
 		const auto height = std::min(db.min_version(), replay_height);
 		revert(height);

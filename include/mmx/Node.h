@@ -23,8 +23,8 @@
 #include <mmx/multi_table.h>
 
 #include <mmx/vm/Engine.h>
+#include <mmx/vm/StorageDB.h>
 #include <mmx/vm/StorageCache.h>
-#include <mmx/vm/StorageRocksDB.h>
 
 #include <vnx/ThreadPool.h>
 #include <vnx/addons/HttpInterface.h>
@@ -419,7 +419,7 @@ private:
 	bool is_sync_fail = false;
 	uint32_t min_pool_fee_ratio = 0;
 	std::shared_ptr<vnx::File> block_chain;
-	std::shared_ptr<vm::StorageRocksDB> storage;
+	std::shared_ptr<vm::StorageDB> storage;
 	mutable hash_table<hash_t, uint32_t> hash_index;							// [block hash => height]
 	mutable hash_table<hash_t, std::pair<int64_t, uint32_t>> tx_index;			// [txid => [file offset, height]]
 	mutable uint_table<uint32_t, std::pair<int64_t, hash_t>> block_index;		// [height => [file offset, block hash]]
