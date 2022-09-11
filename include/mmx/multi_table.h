@@ -97,7 +97,7 @@ public:
 		iter.seek_prev(write(key_));
 		while(iter.is_valid() && values.size() < limit)
 		{
-			read(iter.key(), key_, super_t::key_type, super_t::key_code);
+			read(iter.key(), key_);
 			if(!(key_.first == key)) {
 				break;
 			}
@@ -174,6 +174,7 @@ public:
 	using super_t::flush;
 	using super_t::iterator;
 	using super_t::get_impl;
+	using super_t::get_path;
 
 };
 
