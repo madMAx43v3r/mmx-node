@@ -2,8 +2,9 @@ package mmx;
 
 class WalletFile {
 	
-	vector<addr_t> addresses;
+	bls_pubkey_t farmer_key;
+	bls_pubkey_t pool_key;
 	
-	optional<vnx.Buffer> encrypted_keyfile;
+	vector<addr_t> addresses;
 	
 }

@@ -747,9 +747,9 @@ void Wallet::add_account(const uint32_t& index, const account_t& config)
 
 	if(auto key_file = vnx::read_from_file<KeyFile>(key_path)) {
 		if(enable_bls) {
-			bls_wallets[index] = std::make_shared<BLS_Wallet>(key_file, 11337);
+			bls_wallets[index] = std::make_shared<BLS_Wallet>(key_file->seed_value, 11337);
 		}
-		wallets[index] = std::make_shared<ECDSA_Wallet>(key_file, config, params);
+		wallets[index] = std::make_shared<ECDSA_Wallet>(key_file->seed_value, nullptr, config, params);
 	} else {
 		throw std::runtime_error("failed to read key file: " + key_path);
 	}

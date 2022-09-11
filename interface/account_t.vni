@@ -10,4 +10,6 @@ struct account_t {
 	
 	string key_file;
 	
+	bool with_passphrase;
+	
 }

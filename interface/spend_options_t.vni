@@ -15,6 +15,7 @@ struct spend_options_t {
 	
 	optional<addr_t> user;
 	optional<addr_t> sender;					// for tx fee
+	optional<hash_t> passphrase;
 	
 	map<addr_t, addr_t> owner_map;
 	map<addr_t, Contract*> contract_map;

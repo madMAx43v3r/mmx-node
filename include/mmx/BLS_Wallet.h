@@ -16,14 +16,13 @@ namespace mmx {
 
 class BLS_Wallet {
 public:
-	BLS_Wallet(std::shared_ptr<const KeyFile> key_file, const int port)
+	BLS_Wallet(const hash_t& seed_value, const int port)
 	{
-		if(key_file->seed_value == hash_t()) {
+		if(seed_value == hash_t()) {
 			throw std::logic_error("seed == zero");
 		}
 		bls::AugSchemeMPL MPL;
-		const bls::PrivateKey master_sk = MPL.KeyGen(key_file->seed_value.to_vector());
-		this->master_sk = std::make_shared<bls::PrivateKey>(master_sk);
+		const bls::PrivateKey master_sk = MPL.KeyGen(seed_value.to_vector());
 
 		bls::PrivateKey pool_sk = master_sk;
 		bls::PrivateKey farmer_sk = master_sk;
@@ -47,8 +46,6 @@ public:
 	}
 
 private:
-	std::shared_ptr<bls::PrivateKey> master_sk;
-
 	std::shared_ptr<FarmerKeys> farmer_keys;
 
 };

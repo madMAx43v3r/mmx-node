@@ -8,7 +8,6 @@
 #ifndef INCLUDE_MMX_ECDSA_WALLET_H_
 #define INCLUDE_MMX_ECDSA_WALLET_H_
 
-#include <mmx/KeyFile.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/contract/NFT.hxx>
@@ -21,6 +20,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/pubkey_t.hpp>
 #include <mmx/account_t.hxx>
+#include <mmx/hmac_sha512.hpp>
 
 
 namespace mmx {
@@ -29,24 +29,69 @@ class ECDSA_Wallet {
 public:
 	const account_t config;
 
-	ECDSA_Wallet(	std::shared_ptr<const KeyFile> key_file, const account_t& config,
-					std::shared_ptr<const ChainParams> params)
-		:	config(config), params(params)
+	ECDSA_Wallet(	const hash_t& seed_value, const hash_t* passphrase,
+					const account_t& config, std::shared_ptr<const ChainParams> params)
+		:	config(config), seed_value(seed_value), params(params)
 	{
-		if(key_file->seed_value == hash_t()) {
+		if(seed_value == hash_t()) {
 			throw std::logic_error("seed == zero");
 		}
-		master_sk = hash_t(key_file->seed_value);
+		if(config.with_passphrase && !passphrase) {
+			throw std::logic_error("missing passphrase");
+		}
+		unlock(passphrase ? *passphrase : hash_t("MMX/seed/"));
+	}
+
+	ECDSA_Wallet(	const hash_t& seed_value, const std::vector<addr_t>& addresses,
+					const account_t& config, std::shared_ptr<const ChainParams> params)
+		:	config(config), seed_value(seed_value), params(params)
+	{
+		size_t i = 0;
+		for(const auto& addr : addresses) {
+			index_map[addr] = i++;
+		}
+		this->addresses = addresses;
+	}
+
+	void lock()
+	{
+		// clear memory
+		for(auto& entry : keypairs) {
+			entry.first = skey_t();
+			entry.second = pubkey_t();
+		}
+		keypairs.clear();
+		keypair_map.clear();
+	}
+
+	void unlock(const hash_t& passphrase)
+	{
+		keypairs.resize(config.num_addresses);
+		addresses.resize(config.num_addresses);
+
+		const auto master = pbkdf2_hmac_sha512(seed_value, passphrase, PBKDF2_ITERS);
+		const auto chain = hmac_sha512_n(master.first, master.second, 11337);	// TODO(mainnet): use params.port
+		const auto account = hmac_sha512_n(chain.first, chain.second, config.index);
 
 		for(size_t i = 0; i < config.num_addresses; ++i)
 		{
-			const auto keys = generate_keypair(config.index, i);
-			const auto addr = keys.second;
-			keypair_map[addr] = keys;
-			keypairs.push_back(keys);
-			addresses.push_back(addr);
+			std::pair<skey_t, pubkey_t> keys;
+			{
+				const auto tmp = hmac_sha512_n(account.first, account.second, i);
+				keys.first = tmp.first;
+				keys.second = pubkey_t::from_skey(tmp.first);
+			}
+			const addr_t addr = keys.second;
+			keypairs[i] = keys;
+			keypair_map[addr] = i;
+			addresses[i] = addr;
 			index_map[addr] = i;
 		}
+	}
+
+	bool is_locked() const
+	{
+		return keypairs.size() < addresses.size();
 	}
 
 	skey_t get_skey(const uint32_t index) const
@@ -87,31 +132,9 @@ public:
 	{
 		auto iter = keypair_map.find(addr);
 		if(iter != keypair_map.end()) {
-			return iter->second;
+			return keypairs[iter->second];
 		}
 		return nullptr;
-	}
-
-	skey_t generate_skey(const std::vector<uint32_t>& path) const
-	{
-		skey_t key = master_sk;
-		for(const uint32_t i : path) {
-			key = hash_t(hash_t(key + hash_t(&i, sizeof(i))) + hash_t(master_sk.bytes));
-		}
-		return key;
-	}
-
-	std::pair<skey_t, pubkey_t> generate_keypair(const std::vector<uint32_t>& path) const
-	{
-		std::pair<skey_t, pubkey_t> keys;
-		keys.first = generate_skey(path);
-		keys.second = pubkey_t::from_skey(keys.first);
-		return keys;
-	}
-
-	std::pair<skey_t, pubkey_t> generate_keypair(const uint32_t account, const uint32_t index) const
-	{
-		return generate_keypair({account, index});
 	}
 
 	void update_cache(	const std::map<std::pair<addr_t, addr_t>, uint128>& balances,
@@ -419,13 +442,15 @@ public:
 	std::unordered_map<hash_t, std::map<std::pair<addr_t, addr_t>, uint128_t>> pending_map;		// [txid => [[address, currency] => balance]]
 
 private:
-	skey_t master_sk;
+	const hash_t seed_value;
 	std::vector<addr_t> addresses;
 	std::unordered_map<addr_t, size_t> index_map;
 	std::vector<std::pair<skey_t, pubkey_t>> keypairs;
-	std::unordered_map<addr_t, std::pair<skey_t, pubkey_t>> keypair_map;
+	std::unordered_map<addr_t, size_t> keypair_map;
 
 	const std::shared_ptr<const ChainParams> params;
+
+	static constexpr size_t PBKDF2_ITERS = 4096;
 
 };
 
