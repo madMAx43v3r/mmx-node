@@ -754,13 +754,11 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	block->BlockHeader::operator=(*result);
 	block->content_hash = block->calc_hash().second;
 
-	log(INFO) << block->to_string();
-
 	const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
 	log(INFO) << "Created block at height " << block->height << " with: ntx = " << block->tx_list.size()
-			<< ", score = " << block->proof->score << ", reward = " << final_reward / pow(10, params->decimals) << " MMX"
-			<< ", nominal = " << block_reward / pow(10, params->decimals) << " MMX"
-			<< ", fees = " << total_fees / pow(10, params->decimals) << " MMX"
+			<< ", score = " << block->proof->score << ", reward = " << to_value(final_reward, params) << " MMX"
+			<< ", nominal = " << to_value(block_reward, params) << " MMX"
+			<< ", fees = " << to_value(total_fees, params) << " MMX"
 			<< ", took " << elapsed << " sec";
 	return block;
 }
