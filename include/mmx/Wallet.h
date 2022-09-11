@@ -13,8 +13,8 @@
 #include <mmx/ChainParams.hxx>
 #include <mmx/BLS_Wallet.h>
 #include <mmx/ECDSA_Wallet.h>
+#include <mmx/multi_table.h>
 
-#include <vnx/rocksdb/multi_table.h>
 #include <vnx/addons/HttpInterface.h>
 
 
@@ -153,7 +153,7 @@ private:
 	std::vector<std::shared_ptr<ECDSA_Wallet>> wallets;
 	std::vector<std::shared_ptr<BLS_Wallet>> bls_wallets;
 
-	mutable vnx::rocksdb::multi_table<addr_t, tx_log_entry_t> tx_log;
+	mutable mmx::hash_multi_table<addr_t, tx_log_entry_t> tx_log;
 
 	hash_t genesis_hash;
 	std::shared_ptr<const ChainParams> params;

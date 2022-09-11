@@ -46,16 +46,8 @@ void Wallet::main()
 	vnx::Directory(config_path).create();
 	vnx::Directory(storage_path).create();
 	vnx::Directory(database_path).create();
-	{
-		::rocksdb::Options options;
-		options.max_open_files = 4;
-		options.keep_log_file_num = 3;
-		options.target_file_size_multiplier = 4;
-		options.avoid_flush_during_recovery = true;
-		options.max_manifest_file_size = 8 * 1024 * 1024;
 
-		tx_log.open(database_path + "tx_log", options);
-	}
+	tx_log.open(database_path + "tx_log");
 
 	node = std::make_shared<NodeClient>(node_server);
 	http = std::make_shared<vnx::addons::HttpInterface<Wallet>>(this, vnx_name);
