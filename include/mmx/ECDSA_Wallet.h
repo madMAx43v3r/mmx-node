@@ -30,8 +30,8 @@ public:
 	const account_t config;
 
 	ECDSA_Wallet(	std::shared_ptr<const KeyFile> key_file, const account_t& config,
-					std::shared_ptr<const ChainParams> params, const addr_t& genesis_hash)
-		:	config(config), params(params), genesis_hash(genesis_hash)
+					std::shared_ptr<const ChainParams> params)
+		:	config(config), params(params)
 	{
 		if(key_file->seed_value == hash_t()) {
 			throw std::logic_error("seed == zero");
@@ -426,7 +426,6 @@ private:
 	std::unordered_map<addr_t, std::pair<skey_t, pubkey_t>> keypair_map;
 
 	const std::shared_ptr<const ChainParams> params;
-	const hash_t genesis_hash;
 
 };
 

@@ -22,16 +22,20 @@
 
 namespace mmx {
 
+void sync_type_codes(const std::string& file_path);
+
 template<typename K, typename V>
 class table {
 public:
-	table() {
+	table(bool disable_type_codes = true)
+		:	stream(disable_type_codes)
+	{
 		vnx::type<V>().create_dynamic_code(value_code);
 		value_type = vnx::type<V>().get_type_code();
 	}
 
-	table(const std::string& file_path)
-		:	table()
+	table(const std::string& file_path, bool disable_type_codes = true)
+		:	table(disable_type_codes)
 	{
 		open(file_path);
 	}
@@ -221,6 +225,10 @@ public:
 		}
 	}
 
+	void commit() {
+		db->commit(db->current_version() + 1);
+	}
+
 	void commit(const uint32_t new_version) {
 		db->commit(new_version);
 	}
@@ -251,8 +259,8 @@ protected:
 		vnx::Buffer buffer;
 		vnx::MemoryOutputStream stream;
 		vnx::TypeOutput out;
-		stream_t() : stream(&memory), out(&stream) {
-			out.disable_type_codes = true;
+		stream_t(bool disable_type_codes = true) : stream(&memory), out(&stream) {
+			out.disable_type_codes = disable_type_codes;
 		}
 	};
 
@@ -296,7 +304,7 @@ template<typename K, typename V>
 class uint_table : public table<K, V> {
 public:
 	uint_table() : table<K, V>() {}
-	uint_table(const std::string& file_path) : table<K, V>(file_path) {}
+	uint_table(const std::string& file_path, bool disable_type_codes = true) : table<K, V>(file_path, disable_type_codes) {}
 protected:
 	// TODO: use a to_big_endian() function
 	void read(std::shared_ptr<const db_val_t> entry, K& key) const override {

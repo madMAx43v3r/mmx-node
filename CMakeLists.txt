@@ -29,7 +29,6 @@ set(VNX_BUILD_TOOLS ON CACHE STRING "VNX_BUILD_TOOLS")
 
 add_subdirectory(vnx-base)
 add_subdirectory(vnx-addons)
-add_subdirectory(vnx-rocksdb)
 add_subdirectory(lib/libbech32)
 add_subdirectory(lib/bls-signatures)
 #add_subdirectory(exchange)
@@ -155,6 +154,7 @@ add_library(mmx_vm SHARED
 
 add_library(mmx_db SHARED
 	src/DataBase.cpp
+	src/table.cpp
 )
 
 add_library(mmx_modules SHARED
@@ -227,7 +227,7 @@ target_link_libraries(mmx_vm mmx_db mmx_iface)
 
 target_link_libraries(mmx_db uint256_t vnx_base)
 
-target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_vm mmx_db mmx_iface)
+target_link_libraries(mmx_modules mmx_chiapos mmx_vm mmx_db mmx_iface)
 
 if(NOT MSVC)
 	target_link_libraries(mmx_db OpenMP::OpenMP_CXX)
