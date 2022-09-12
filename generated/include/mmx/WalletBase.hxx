@@ -117,11 +117,12 @@ protected:
 	virtual std::map<uint32_t, ::mmx::account_t> get_all_accounts() const = 0;
 	virtual void add_account(const uint32_t& index, const ::mmx::account_t& config) = 0;
 	virtual void create_account(const ::mmx::account_t& config) = 0;
-	virtual void create_wallet(const ::mmx::account_t& config, const vnx::optional<::mmx::hash_t>& seed) = 0;
+	virtual void create_wallet(const ::mmx::account_t& config, const vnx::optional<::mmx::hash_t>& seed, const vnx::optional<std::string>& words) = 0;
 	virtual std::set<::mmx::addr_t> get_token_list() const = 0;
 	virtual void add_token(const ::mmx::addr_t& address) = 0;
 	virtual void rem_token(const ::mmx::addr_t& address) = 0;
 	virtual ::mmx::hash_t get_master_seed(const uint32_t& index) const = 0;
+	virtual std::vector<std::string> get_mnemonic_seed(const uint32_t& index) const = 0;
 	virtual std::shared_ptr<const ::mmx::FarmerKeys> get_farmer_keys(const uint32_t& index) const = 0;
 	virtual std::vector<std::shared_ptr<const ::mmx::FarmerKeys>> get_all_farmer_keys() const = 0;
 	virtual void http_request_async(std::shared_ptr<const ::vnx::addons::HttpRequest> request, const std::string& sub_path, const vnx::request_id_t& _request_id) const = 0;

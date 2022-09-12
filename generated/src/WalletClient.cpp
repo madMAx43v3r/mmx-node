@@ -55,6 +55,8 @@
 #include <mmx/Wallet_get_history_return.hxx>
 #include <mmx/Wallet_get_master_seed.hxx>
 #include <mmx/Wallet_get_master_seed_return.hxx>
+#include <mmx/Wallet_get_mnemonic_seed.hxx>
+#include <mmx/Wallet_get_mnemonic_seed_return.hxx>
 #include <mmx/Wallet_get_token_list.hxx>
 #include <mmx/Wallet_get_token_list_return.hxx>
 #include <mmx/Wallet_get_total_balances_for.hxx>
@@ -690,17 +692,19 @@ void WalletClient::create_account_async(const ::mmx::account_t& config) {
 	vnx_request(_method, true);
 }
 
-void WalletClient::create_wallet(const ::mmx::account_t& config, const vnx::optional<::mmx::hash_t>& seed) {
+void WalletClient::create_wallet(const ::mmx::account_t& config, const vnx::optional<::mmx::hash_t>& seed, const vnx::optional<std::string>& words) {
 	auto _method = ::mmx::Wallet_create_wallet::create();
 	_method->config = config;
 	_method->seed = seed;
+	_method->words = words;
 	vnx_request(_method, false);
 }
 
-void WalletClient::create_wallet_async(const ::mmx::account_t& config, const vnx::optional<::mmx::hash_t>& seed) {
+void WalletClient::create_wallet_async(const ::mmx::account_t& config, const vnx::optional<::mmx::hash_t>& seed, const vnx::optional<std::string>& words) {
 	auto _method = ::mmx::Wallet_create_wallet::create();
 	_method->config = config;
 	_method->seed = seed;
+	_method->words = words;
 	vnx_request(_method, true);
 }
 
@@ -748,6 +752,19 @@ void WalletClient::rem_token_async(const ::mmx::addr_t& address) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<::mmx::hash_t>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
+std::vector<std::string> WalletClient::get_mnemonic_seed(const uint32_t& index) {
+	auto _method = ::mmx::Wallet_get_mnemonic_seed::create();
+	_method->index = index;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_mnemonic_seed_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<std::string>>();
 	} else {
 		throw std::logic_error("WalletClient: invalid return value");
 	}

@@ -183,7 +183,7 @@ public:
 			const std::function<void()>& _callback = std::function<void()>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t create_wallet(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<::mmx::hash_t>& seed = nullptr, 
+	uint64_t create_wallet(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<::mmx::hash_t>& seed = nullptr, const vnx::optional<std::string>& words = nullptr, 
 			const std::function<void()>& _callback = std::function<void()>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
@@ -201,6 +201,10 @@ public:
 	
 	uint64_t get_master_seed(const uint32_t& index = 0, 
 			const std::function<void(const ::mmx::hash_t&)>& _callback = std::function<void(const ::mmx::hash_t&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t get_mnemonic_seed(const uint32_t& index = 0, 
+			const std::function<void(const std::vector<std::string>&)>& _callback = std::function<void(const std::vector<std::string>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_farmer_keys(const uint32_t& index = 0, 
@@ -303,6 +307,7 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_add_token;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_rem_token;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::hash_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_master_seed;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::string>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_mnemonic_seed;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::FarmerKeys>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_farmer_keys;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::shared_ptr<const ::mmx::FarmerKeys>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_all_farmer_keys;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::vnx::addons::HttpResponse>)>, std::function<void(const vnx::exception&)>>> vnx_queue_http_request;

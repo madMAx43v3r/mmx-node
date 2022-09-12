@@ -127,9 +127,9 @@ public:
 	
 	void create_account_async(const ::mmx::account_t& config = ::mmx::account_t());
 	
-	void create_wallet(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<::mmx::hash_t>& seed = nullptr);
+	void create_wallet(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<::mmx::hash_t>& seed = nullptr, const vnx::optional<std::string>& words = nullptr);
 	
-	void create_wallet_async(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<::mmx::hash_t>& seed = nullptr);
+	void create_wallet_async(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<::mmx::hash_t>& seed = nullptr, const vnx::optional<std::string>& words = nullptr);
 	
 	std::set<::mmx::addr_t> get_token_list();
 	
@@ -142,6 +142,8 @@ public:
 	void rem_token_async(const ::mmx::addr_t& address = ::mmx::addr_t());
 	
 	::mmx::hash_t get_master_seed(const uint32_t& index = 0);
+	
+	std::vector<std::string> get_mnemonic_seed(const uint32_t& index = 0);
 	
 	std::shared_ptr<const ::mmx::FarmerKeys> get_farmer_keys(const uint32_t& index = 0);
 	
