@@ -66,6 +66,10 @@ public:
 
 	void unlock(const hash_t& passphrase)
 	{
+		vnx::optional<addr_t> first_addr;
+		if(addresses.size()) {
+			first_addr = addresses[0];
+		}
 		keypairs.resize(config.num_addresses);
 		addresses.resize(config.num_addresses);
 
@@ -86,6 +90,10 @@ public:
 			keypair_map[addr] = i;
 			addresses[i] = addr;
 			index_map[addr] = i;
+
+			if(i == 0 && first_addr && addr != *first_addr) {
+				throw std::runtime_error("invalid passphrase");
+			}
 		}
 	}
 
