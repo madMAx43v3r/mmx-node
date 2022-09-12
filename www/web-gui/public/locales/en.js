@@ -269,8 +269,10 @@ const enLocale = {
     },
 
     "create_wallet": {
+        "account_name": "Account Name",
+        "number_of_addresses": "Number of Addresses",
         "use_custom_seed": "Use Custom Seed",
-        "seed_hash": "Seed Hash (optional, hex string, 64 chars)",
+        "seed_words": "Mnemonic Seed Words (optional, 24 words)",
         "placeholder": "<random>",
         "create_wallet": "Create Wallet"
     },

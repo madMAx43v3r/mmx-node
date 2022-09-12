@@ -866,11 +866,7 @@ Vue.component('create-wallet', {
 			req.config.name = this.name;
 			req.config.num_addresses = this.num_addresses;
 			if(this.with_seed) {
-				if(this.seed.length != 64) {
-					this.error = "invalid seed value";
-					return;
-				}
-				req.seed = this.seed;
+				req.words = this.seed;
 			}
 			fetch('/api/wallet/create_wallet', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
@@ -913,7 +909,7 @@ Vue.component('create-wallet', {
 
 					<v-text-field
 						v-model="seed"
-						:label="$t('create_wallet.seed_hash')"
+						:label="$t('create_wallet.seed_words')"
 						:placeholder="$t('create_wallet.placeholder')" 
 						:disabled="!with_seed">
 					</v-text-field>
