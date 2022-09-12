@@ -125,6 +125,8 @@ add_library(mmx_iface SHARED
 	src/sha256_ni.cpp
 	src/sha512.cpp
 	src/hmac_sha512.cpp
+	src/wordlist_en.cpp
+	src/mnemonic.cpp
 )
 
 if(MSVC)
@@ -173,8 +175,6 @@ add_library(mmx_modules SHARED
 	src/OCL_VDF.cpp
 	src/TimeLordRewards.cpp
 	src/vm_interface.cpp
-	src/wordlist_en.cpp
-	src/mnemonic.cpp
 )
 
 add_library(uint256_t STATIC

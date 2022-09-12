@@ -21,6 +21,7 @@
 #include <mmx/KeyFile.hxx>
 #include <mmx/secp256k1.hpp>
 #include <mmx/hash_t.hpp>
+#include <mmx/mnemonic.h>
 #include <mmx/utils.h>
 #include <mmx/vm/var_t.h>
 
@@ -378,7 +379,7 @@ int main(int argc, char** argv)
 				}
 				else if(subject == "seed")
 				{
-					std::cout << wallet.get_master_seed(index) << std::endl;
+					std::cout << mmx::mnemonic::words_to_string(wallet.get_mnemonic_seed(index)) << std::endl;
 				}
 				else {
 					std::cerr << "Help: mmx wallet get [address | balance | amount | contracts | seed]" << std::endl;

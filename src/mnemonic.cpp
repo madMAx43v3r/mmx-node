@@ -7,6 +7,7 @@
 
 #include <mmx/mnemonic.h>
 
+#include <vnx/Util.h>
 #include <algorithm>
 
 
@@ -74,6 +75,23 @@ hash_t words_to_seed(const std::vector<std::string>& words, const std::vector<st
 	return hash_t::from_bytes(seed);
 }
 
+std::string words_to_string(const std::vector<std::string>& words)
+{
+	std::string out;
+	for(size_t i = 0; i < words.size(); ++i) {
+		if(i) {
+			out += " ";
+		}
+		out += words[i];
+	}
+	return out;
+}
 
-} // menemonic
+std::vector<std::string> string_to_words(const std::string& phrase)
+{
+	return vnx::string_split(phrase, ' ', true);
+}
+
+
+} // mnemonic
 } // mmx

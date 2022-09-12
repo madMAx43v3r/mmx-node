@@ -11,6 +11,7 @@
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
 #include <mmx/solution/PubKey.hxx>
+#include <mmx/mnemonic.h>
 #include <mmx/utils.h>
 
 #include <vnx/vnx.h>
@@ -777,7 +778,7 @@ void Wallet::create_account(const account_t& config)
 	}
 }
 
-void Wallet::create_wallet(const account_t& config_, const vnx::optional<hash_t>& seed)
+void Wallet::create_wallet(const account_t& config_, const vnx::optional<hash_t>& seed, const vnx::optional<std::string>& words)
 {
 	mmx::KeyFile key_file;
 	if(seed) {
@@ -785,8 +786,10 @@ void Wallet::create_wallet(const account_t& config_, const vnx::optional<hash_t>
 			throw std::logic_error("seed cannot be all zeros");
 		}
 		key_file.seed_value = *seed;
+	} else if(words) {
+		key_file.seed_value = mnemonic::words_to_seed(mnemonic::string_to_words(*words));
 	} else {
-		key_file.seed_value = mmx::hash_t::random();
+		key_file.seed_value = hash_t::random();
 	}
 
 	auto config = config_;
@@ -859,6 +862,16 @@ hash_t Wallet::get_master_seed(const uint32_t& index) const
 
 	if(auto key_file = vnx::read_from_file<KeyFile>(storage_path + wallet->config.key_file)) {
 		return key_file->seed_value;
+	}
+	throw std::logic_error("failed to read key file");
+}
+
+std::vector<std::string> Wallet::get_mnemonic_seed(const uint32_t& index) const
+{
+	const auto wallet = get_wallet(index);
+
+	if(auto key_file = vnx::read_from_file<KeyFile>(storage_path + wallet->config.key_file)) {
+		return mnemonic::seed_to_words(key_file->seed_value);
 	}
 	throw std::logic_error("failed to read key file");
 }

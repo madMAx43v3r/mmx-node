@@ -8,6 +8,7 @@
 #include <mmx/WebAPI.h>
 //#include <mmx/exchange/trade_pair_t.hpp>
 #include <mmx/uint128.hpp>
+#include <mmx/mnemonic.h>
 #include <mmx/utils.h>
 
 #include <mmx/contract/Data.hxx>
@@ -1327,10 +1328,11 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const auto iter_index = query.find("index");
 		if(iter_index != query.end()) {
 			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
-			wallet->get_master_seed(index,
-				[this, request_id](const hash_t& seed) {
+			wallet->get_mnemonic_seed(index,
+				[this, request_id](const std::vector<std::string>& words) {
 					vnx::Object out;
-					out["hash"] = seed.to_string();
+					out["words"] = words;
+					out["string"] = mnemonic::words_to_string(words);
 					respond(request_id, out);
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));

@@ -23,6 +23,10 @@ std::vector<std::string> seed_to_words(const hash_t& seed, const std::vector<std
 
 hash_t words_to_seed(const std::vector<std::string>& words, const std::vector<std::string>& wordlist = wordlist_en);
 
+std::string words_to_string(const std::vector<std::string>& words);
+
+std::vector<std::string> string_to_words(const std::string& phrase);
+
 
 } // mnemonic
 } // mmx
