@@ -725,10 +725,9 @@ Vue.component('account-actions', {
 						</template>
 						<template v-slot:default="dialog">
 							<v-card>
-								<v-toolbar color="primary" dark></v-toolbar>
 								<v-card-text>
 									<v-container>
-										<object-table :data="seed"></object-table>
+										{{seed.string}}
 									</v-container>
 								</v-card-text>
 								<v-card-actions class="justify-end">
