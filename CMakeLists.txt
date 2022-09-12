@@ -15,6 +15,13 @@ if(MSVC)
 	add_library(secp256k1 INTERFACE IMPORTED)
 	set_target_properties(secp256k1 PROPERTIES INTERFACE_LINK_LIBRARIES ${secp256k1_LIBRARY})
 
+	get_filename_component(secp256k1_IMPORT_PREFIX "${secp256k1_LIBRARY}" PATH)
+	get_filename_component(secp256k1_IMPORT_PREFIX "${secp256k1_IMPORT_PREFIX}" PATH)
+
+	set_target_properties(secp256k1 PROPERTIES
+  		INTERFACE_INCLUDE_DIRECTORIES "${secp256k1_IMPORT_PREFIX}/include"
+	)
+
 	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
@@ -229,7 +236,7 @@ target_link_libraries(mmx_vm_iface uint256_t vnx_base)
 
 target_link_libraries(mmx_vm mmx_db mmx_iface)
 
-target_link_libraries(mmx_db uint256_t vnx_base)
+target_link_libraries(mmx_db uint256_t vnx_base secp256k1)
 
 target_link_libraries(mmx_modules mmx_chiapos mmx_vm mmx_db mmx_iface)
 
