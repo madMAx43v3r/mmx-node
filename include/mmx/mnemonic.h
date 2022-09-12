@@ -19,9 +19,9 @@ namespace mnemonic {
 
 extern const std::vector<std::string> wordlist_en;
 
-std::vector<std::string> seed_to_words_en(const hash_t& seed, const std::vector<std::string>& wordlist = wordlist_en);
+std::vector<std::string> seed_to_words(const hash_t& seed, const std::vector<std::string>& wordlist = wordlist_en);
 
-hash_t words_to_seed(const std::vector<std::string>& words, const std::vector<std::string>& wordlist);
+hash_t words_to_seed(const std::vector<std::string>& words, const std::vector<std::string>& wordlist = wordlist_en);
 
 
 } // mnemonic

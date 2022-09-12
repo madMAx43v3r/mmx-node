@@ -21,12 +21,18 @@ std::vector<std::string> seed_to_words(const hash_t& seed, const std::vector<std
 
 	std::vector<std::string> words;
 	for(int i = 0; i < 24; ++i) {
-		if(i == 23) {
-			bits |= (checksum << 3);
+		uint16_t index = 0;
+		if(i == 0) {
+			index = (bits & 0x7) << 8;
+			index |= (checksum & 0xFF);
+			bits >>= 3;
+		} else {
+			index = (bits & 0x7FF);
+			bits >>= 11;
 		}
-		words.push_back(wordlist[uint32_t(bits & 0x7FF)]);
-		bits >> 11;
+		words.push_back(wordlist[index]);
 	}
+	std::reverse(words.begin(), words.end());
 	return words;
 }
 
@@ -55,8 +61,8 @@ hash_t words_to_seed(const std::vector<std::string>& words, const std::vector<st
 			seed |= iter->second;
 		} else {
 			seed <<= 3;
-			seed |= (iter->second & 0x7);
-			checksum = (iter->second >> 3);
+			seed |= (iter->second >> 8);
+			checksum = (iter->second & 0xFF);
 		}
 	}
 	const auto expect = uint32_t(hash_t(&seed, sizeof(seed)).to_uint256()) & 0xFF;
