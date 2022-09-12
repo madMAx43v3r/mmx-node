@@ -173,6 +173,8 @@ add_library(mmx_modules SHARED
 	src/OCL_VDF.cpp
 	src/TimeLordRewards.cpp
 	src/vm_interface.cpp
+	src/wordlist_en.cpp
+	src/mnemonic.cpp
 )
 
 add_library(uint256_t STATIC
