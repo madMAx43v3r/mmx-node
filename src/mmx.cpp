@@ -128,6 +128,7 @@ int main(int argc, char** argv)
 	options["gas-limit"] = "MMX";
 	options["user"] = "mmx-admin";
 	options["passwd"] = "PASSWD";
+	options["mnemonic"] = "mnemonic";
 
 	vnx::write_config("log_level", 2);
 
@@ -633,11 +634,17 @@ int main(int argc, char** argv)
 					goto failed;
 				}
 				std::string seed_str;
+				std::vector<std::string> seed_words;
 				vnx::read_config("$3", seed_str);
+				vnx::read_config("mnemonic", seed_words);
 
 				mmx::KeyFile wallet;
 				if(seed_str.empty()) {
-					wallet.seed_value = mmx::hash_t::random();
+					if(seed_words.empty()) {
+						wallet.seed_value = mmx::hash_t::random();
+					} else {
+						wallet.seed_value = mmx::mnemonic::words_to_seed(seed_words);
+					}
 				} else {
 					if(seed_str.size() == 64) {
 						wallet.seed_value.from_string(seed_str);
