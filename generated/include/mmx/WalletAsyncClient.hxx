@@ -175,15 +175,15 @@ public:
 			const std::function<void(const std::map<uint32_t, ::mmx::account_t>&)>& _callback = std::function<void(const std::map<uint32_t, ::mmx::account_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t add_account(const uint32_t& index = 0, const ::mmx::account_t& config = ::mmx::account_t(), 
+	uint64_t add_account(const uint32_t& index = 0, const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<::mmx::hash_t>& passphrase = nullptr, 
 			const std::function<void()>& _callback = std::function<void()>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t create_account(const ::mmx::account_t& config = ::mmx::account_t(), 
+	uint64_t create_account(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<::mmx::hash_t>& passphrase = nullptr, 
 			const std::function<void()>& _callback = std::function<void()>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t create_wallet(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<::mmx::hash_t>& seed = nullptr, const vnx::optional<std::string>& words = nullptr, 
+	uint64_t create_wallet(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<std::string>& words = nullptr, const vnx::optional<::mmx::hash_t>& passphrase = nullptr, 
 			const std::function<void()>& _callback = std::function<void()>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	

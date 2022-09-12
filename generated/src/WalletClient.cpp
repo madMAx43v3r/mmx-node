@@ -666,45 +666,49 @@ std::map<uint32_t, ::mmx::account_t> WalletClient::get_all_accounts() {
 	}
 }
 
-void WalletClient::add_account(const uint32_t& index, const ::mmx::account_t& config) {
+void WalletClient::add_account(const uint32_t& index, const ::mmx::account_t& config, const vnx::optional<::mmx::hash_t>& passphrase) {
 	auto _method = ::mmx::Wallet_add_account::create();
 	_method->index = index;
 	_method->config = config;
+	_method->passphrase = passphrase;
 	vnx_request(_method, false);
 }
 
-void WalletClient::add_account_async(const uint32_t& index, const ::mmx::account_t& config) {
+void WalletClient::add_account_async(const uint32_t& index, const ::mmx::account_t& config, const vnx::optional<::mmx::hash_t>& passphrase) {
 	auto _method = ::mmx::Wallet_add_account::create();
 	_method->index = index;
 	_method->config = config;
+	_method->passphrase = passphrase;
 	vnx_request(_method, true);
 }
 
-void WalletClient::create_account(const ::mmx::account_t& config) {
+void WalletClient::create_account(const ::mmx::account_t& config, const vnx::optional<::mmx::hash_t>& passphrase) {
 	auto _method = ::mmx::Wallet_create_account::create();
 	_method->config = config;
+	_method->passphrase = passphrase;
 	vnx_request(_method, false);
 }
 
-void WalletClient::create_account_async(const ::mmx::account_t& config) {
+void WalletClient::create_account_async(const ::mmx::account_t& config, const vnx::optional<::mmx::hash_t>& passphrase) {
 	auto _method = ::mmx::Wallet_create_account::create();
 	_method->config = config;
+	_method->passphrase = passphrase;
 	vnx_request(_method, true);
 }
 
-void WalletClient::create_wallet(const ::mmx::account_t& config, const vnx::optional<::mmx::hash_t>& seed, const vnx::optional<std::string>& words) {
+void WalletClient::create_wallet(const ::mmx::account_t& config, const vnx::optional<std::string>& words, const vnx::optional<::mmx::hash_t>& passphrase) {
 	auto _method = ::mmx::Wallet_create_wallet::create();
 	_method->config = config;
-	_method->seed = seed;
 	_method->words = words;
+	_method->passphrase = passphrase;
 	vnx_request(_method, false);
 }
 
-void WalletClient::create_wallet_async(const ::mmx::account_t& config, const vnx::optional<::mmx::hash_t>& seed, const vnx::optional<std::string>& words) {
+void WalletClient::create_wallet_async(const ::mmx::account_t& config, const vnx::optional<std::string>& words, const vnx::optional<::mmx::hash_t>& passphrase) {
 	auto _method = ::mmx::Wallet_create_wallet::create();
 	_method->config = config;
-	_method->seed = seed;
 	_method->words = words;
+	_method->passphrase = passphrase;
 	vnx_request(_method, true);
 }
 

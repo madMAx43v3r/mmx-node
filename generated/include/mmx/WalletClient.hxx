@@ -119,17 +119,17 @@ public:
 	
 	std::map<uint32_t, ::mmx::account_t> get_all_accounts();
 	
-	void add_account(const uint32_t& index = 0, const ::mmx::account_t& config = ::mmx::account_t());
+	void add_account(const uint32_t& index = 0, const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<::mmx::hash_t>& passphrase = nullptr);
 	
-	void add_account_async(const uint32_t& index = 0, const ::mmx::account_t& config = ::mmx::account_t());
+	void add_account_async(const uint32_t& index = 0, const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<::mmx::hash_t>& passphrase = nullptr);
 	
-	void create_account(const ::mmx::account_t& config = ::mmx::account_t());
+	void create_account(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<::mmx::hash_t>& passphrase = nullptr);
 	
-	void create_account_async(const ::mmx::account_t& config = ::mmx::account_t());
+	void create_account_async(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<::mmx::hash_t>& passphrase = nullptr);
 	
-	void create_wallet(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<::mmx::hash_t>& seed = nullptr, const vnx::optional<std::string>& words = nullptr);
+	void create_wallet(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<std::string>& words = nullptr, const vnx::optional<::mmx::hash_t>& passphrase = nullptr);
 	
-	void create_wallet_async(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<::mmx::hash_t>& seed = nullptr, const vnx::optional<std::string>& words = nullptr);
+	void create_wallet_async(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<std::string>& words = nullptr, const vnx::optional<::mmx::hash_t>& passphrase = nullptr);
 	
 	std::set<::mmx::addr_t> get_token_list();
 	

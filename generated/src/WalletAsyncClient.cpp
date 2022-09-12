@@ -670,10 +670,11 @@ uint64_t WalletAsyncClient::get_all_accounts(const std::function<void(const std:
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::add_account(const uint32_t& index, const ::mmx::account_t& config, const std::function<void()>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::add_account(const uint32_t& index, const ::mmx::account_t& config, const vnx::optional<::mmx::hash_t>& passphrase, const std::function<void()>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_add_account::create();
 	_method->index = index;
 	_method->config = config;
+	_method->passphrase = passphrase;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
@@ -684,9 +685,10 @@ uint64_t WalletAsyncClient::add_account(const uint32_t& index, const ::mmx::acco
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::create_account(const ::mmx::account_t& config, const std::function<void()>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::create_account(const ::mmx::account_t& config, const vnx::optional<::mmx::hash_t>& passphrase, const std::function<void()>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_create_account::create();
 	_method->config = config;
+	_method->passphrase = passphrase;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
@@ -697,11 +699,11 @@ uint64_t WalletAsyncClient::create_account(const ::mmx::account_t& config, const
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::create_wallet(const ::mmx::account_t& config, const vnx::optional<::mmx::hash_t>& seed, const vnx::optional<std::string>& words, const std::function<void()>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::create_wallet(const ::mmx::account_t& config, const vnx::optional<std::string>& words, const vnx::optional<::mmx::hash_t>& passphrase, const std::function<void()>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_create_wallet::create();
 	_method->config = config;
-	_method->seed = seed;
 	_method->words = words;
+	_method->passphrase = passphrase;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);

@@ -524,7 +524,7 @@ std::shared_ptr<vnx::Value> WalletBase::vnx_call_switch(std::shared_ptr<const vn
 		case 0x92d2d3518d9c33aeull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Wallet_add_account>(_method);
 			auto _return_value = ::mmx::Wallet_add_account_return::create();
-			add_account(_args->index, _args->config);
+			add_account(_args->index, _args->config, _args->passphrase);
 			return _return_value;
 		}
 		case 0x15fcc67eabc550b6ull: {
@@ -542,13 +542,13 @@ std::shared_ptr<vnx::Value> WalletBase::vnx_call_switch(std::shared_ptr<const vn
 		case 0x11cd618b00e9e56cull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Wallet_create_account>(_method);
 			auto _return_value = ::mmx::Wallet_create_account_return::create();
-			create_account(_args->config);
+			create_account(_args->config, _args->passphrase);
 			return _return_value;
 		}
 		case 0xdcc08a3a1b171a19ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Wallet_create_wallet>(_method);
 			auto _return_value = ::mmx::Wallet_create_wallet_return::create();
-			create_wallet(_args->config, _args->seed, _args->words);
+			create_wallet(_args->config, _args->words, _args->passphrase);
 			return _return_value;
 		}
 		case 0xcd71b07853d17497ull: {
