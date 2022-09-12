@@ -7,6 +7,8 @@
 
 #include <mmx/mnemonic.h>
 
+#include <algorithm>
+
 
 namespace mmx {
 namespace mnemonic {
