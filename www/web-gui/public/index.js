@@ -532,7 +532,8 @@ Vue.component('status', {
 					.catch( () => this.peer_fails++ );
 			}
 
-			if(this.status == AppStatus.Syncing || this.status == AppStatus.Synced) {
+			if(this.status == AppStatus.Connecting || this.status == AppStatus.Syncing 
+				|| this.status == AppStatus.Synced) {
 				await fetch('/wapi/node/info')
 					.then( response => response.json() )
 					.then( data => {
@@ -580,9 +581,10 @@ Vue.component('status', {
 					result = AppStatus.Connecting;
 					if(this.connectedToNetwork) {
 						result = AppStatus.Syncing;
-						if(this.synced) {
-							result = AppStatus.Synced;
-						}
+					}
+
+					if(this.synced) {
+						result = AppStatus.Synced;
 					}
 				} else {
 					result = AppStatus.LoggedOff;
