@@ -108,11 +108,11 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	map<uint, account_t> get_all_accounts() const;
 	
-	void add_account(uint index, account_t config);
+	void add_account(uint index, account_t config, optional<hash_t> passphrase);
 	
-	void create_account(account_t config);
+	void create_account(account_t config, optional<hash_t> passphrase);
 	
-	void create_wallet(account_t config, optional<hash_t> seed, optional<string> words);
+	void create_wallet(account_t config, optional<string> words, optional<hash_t> passphrase);
 	
 	set<addr_t> get_token_list() const;
 	

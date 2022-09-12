@@ -29,7 +29,7 @@ class ECDSA_Wallet {
 public:
 	const account_t config;
 
-	ECDSA_Wallet(	const hash_t& seed_value, const hash_t* passphrase,
+	ECDSA_Wallet(	const hash_t& seed_value, const vnx::optional<hash_t>& passphrase,
 					const account_t& config, std::shared_ptr<const ChainParams> params)
 		:	config(config), seed_value(seed_value), params(params)
 	{

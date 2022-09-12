@@ -6,6 +6,8 @@
  */
 
 #include <mmx/Wallet.h>
+#include <mmx/KeyFile.hxx>
+#include <mmx/WalletFile.hxx>
 #include <mmx/contract/Token.hxx>
 #include <mmx/operation/Mutate.hxx>
 #include <mmx/operation/Execute.hxx>
@@ -20,6 +22,11 @@
 
 
 namespace mmx {
+
+inline uint32_t get_finger_print(const hash_t& seed_value) {
+	return uint32_t(hash_t(seed_value.bytes).to_uint256());
+}
+
 
 Wallet::Wallet(const std::string& _vnx_name)
 	:	WalletBase(_vnx_name)
@@ -60,14 +67,14 @@ void Wallet::main()
 		config.key_file = key_files[i];
 		config.num_addresses = num_addresses;
 		try {
-			add_account(i, config);
+			add_account(i, config, nullptr);
 		} catch(const std::exception& ex) {
 			log(WARN) << ex.what();
 		}
 	}
 	for(size_t i = 0; i < accounts.size(); ++i) {
 		try {
-			add_account(max_key_files + i, accounts[i]);
+			add_account(max_key_files + i, accounts[i], nullptr);
 		} catch(const std::exception& ex) {
 			log(WARN) << ex.what();
 		}
@@ -736,7 +743,7 @@ std::map<uint32_t, account_t> Wallet::get_all_accounts() const
 	return res;
 }
 
-void Wallet::add_account(const uint32_t& index, const account_t& config)
+void Wallet::add_account(const uint32_t& index, const account_t& config, const vnx::optional<hash_t>& passphrase)
 {
 	if(index >= wallets.size()) {
 		wallets.resize(index + 1);
@@ -746,26 +753,46 @@ void Wallet::add_account(const uint32_t& index, const account_t& config)
 	}
 	const auto key_path = storage_path + config.key_file;
 
-	if(auto key_file = vnx::read_from_file<KeyFile>(key_path)) {
+	if(auto key_file = vnx::read_from_file<KeyFile>(key_path))
+	{
+		const auto info_path = database_path + "info_" + std::to_string(get_finger_print(key_file->seed_value)) + ".dat";
+
+		auto info = WalletFile::create();
 		if(enable_bls) {
-			bls_wallets[index] = std::make_shared<BLS_Wallet>(key_file->seed_value, 11337);
+			auto wallet = std::make_shared<BLS_Wallet>(key_file->seed_value, 11337);
+			if(auto keys = wallet->get_farmer_keys()) {
+				info->farmer_key = keys->farmer_public_key;
+				info->pool_key = keys->pool_public_key;
+			}
+			bls_wallets[index] = wallet;
 		}
-		wallets[index] = std::make_shared<ECDSA_Wallet>(key_file->seed_value, nullptr, config, params);
+		if(config.with_passphrase && !passphrase) {
+			if(auto file = vnx::read_from_file<WalletFile>(info_path)) {
+				info = file;
+			}
+			wallets[index] = std::make_shared<ECDSA_Wallet>(key_file->seed_value, info->addresses, config, params);
+		} else {
+			auto wallet = std::make_shared<ECDSA_Wallet>(key_file->seed_value, config.with_passphrase ? passphrase : nullptr, config, params);
+			wallets[index] = wallet;
+
+			info->addresses = wallet->get_all_addresses();
+			vnx::write_to_file(info_path, info);
+		}
 	} else {
 		throw std::runtime_error("failed to read key file: " + key_path);
 	}
 	std::filesystem::permissions(key_path, std::filesystem::perms::owner_read | std::filesystem::perms::owner_write);
 }
 
-void Wallet::create_account(const account_t& config)
+void Wallet::create_account(const account_t& config, const vnx::optional<hash_t>& passphrase)
 {
 	if(config.name.empty()) {
 		throw std::logic_error("name cannot be empty");
 	}
-	if(config.num_addresses < 1) {
-		throw std::logic_error("num_addresses cannot be zero");
+	if(config.num_addresses <= 0) {
+		throw std::logic_error("num_addresses <= 0");
 	}
-	add_account(std::max<uint32_t>(max_key_files, wallets.size()), config);
+	add_account(std::max<uint32_t>(max_key_files, wallets.size()), config, passphrase);
 
 	const std::string path = config_path + "Wallet.json";
 	{
@@ -778,38 +805,28 @@ void Wallet::create_account(const account_t& config)
 	}
 }
 
-void Wallet::create_wallet(const account_t& config_, const vnx::optional<hash_t>& seed, const vnx::optional<std::string>& words)
+void Wallet::create_wallet(const account_t& config_, const vnx::optional<std::string>& words, const vnx::optional<hash_t>& passphrase)
 {
 	mmx::KeyFile key_file;
-	if(seed) {
-		if(*seed == hash_t()) {
-			throw std::logic_error("seed cannot be all zeros");
-		}
-		key_file.seed_value = *seed;
-	} else if(words) {
+	if(words) {
 		key_file.seed_value = mnemonic::words_to_seed(mnemonic::string_to_words(*words));
 	} else {
 		key_file.seed_value = hash_t::random();
 	}
-
 	auto config = config_;
-	if(config.name.empty()) {
-		throw std::logic_error("name cannot be empty");
-	}
-	if(config.num_addresses < 1) {
-		throw std::logic_error("num_addresses <= 0");
-	}
+	config.with_passphrase = passphrase;
+
 	if(config.key_file.empty()) {
-		config.key_file = "wallet_" + std::to_string(uint32_t(std::hash<hash_t>{}(key_file.seed_value))) + ".dat";
+		config.key_file = "wallet_" + std::to_string(get_finger_print(key_file.seed_value)) + ".dat";
 	}
 	if(vnx::File(config.key_file).exists()) {
 		throw std::logic_error("key file already exists");
 	}
+	create_account(config, passphrase);
+
 	const auto key_path = storage_path + config.key_file;
 	vnx::write_to_file(key_path, key_file);
 	std::filesystem::permissions(key_path, std::filesystem::perms::owner_read | std::filesystem::perms::owner_write);
-
-	create_account(config);
 }
 
 std::set<addr_t> Wallet::get_token_list() const
