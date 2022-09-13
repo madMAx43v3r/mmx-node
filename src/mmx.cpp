@@ -289,7 +289,8 @@ int main(int argc, char** argv)
 							std::cout << ", " << token->symbol << ", " << token->name;
 						}
 						else if(auto offer = std::dynamic_pointer_cast<const mmx::contract::Offer>(contract)) {
-							if(offer->base->sender && node.is_revoked(offer->base->id, *offer->base->sender)) {
+							if(false) {
+//							if(offer->base->sender && node.is_revoked(offer->base->id, *offer->base->sender)) {
 								std::cout << ", revoked";
 							} else if(auto height = node.get_tx_height(offer->base->id)) {
 								std::cout << ", accepted at height " << *height;

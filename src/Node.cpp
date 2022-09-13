@@ -86,7 +86,6 @@ void Node::main()
 		db.add(recv_log.open(database_path + "recv_log"));
 		db.add(spend_log.open(database_path + "spend_log"));
 		db.add(exec_log.open(database_path + "exec_log"));
-		db.add(revoke_map.open(database_path + "revoke_map"));
 
 		db.add(contract_cache.open(database_path + "contract_cache"));
 		db.add(mutate_log.open(database_path + "mutate_log"));
@@ -472,18 +471,6 @@ vnx::optional<tx_info_t> Node::get_tx_info_for(std::shared_ptr<const Transaction
 		}
 	}
 	return info;
-}
-
-vnx::optional<hash_t> Node::is_revoked(const hash_t& txid, const addr_t& sender) const
-{
-	std::vector<std::pair<addr_t, hash_t>> entries;
-	revoke_map.find(txid, entries);
-	for(const auto& entry : entries) {
-		if(entry.first == sender) {
-			return entry.second;
-		}
-	}
-	return nullptr;
 }
 
 std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id, const bool& include_pending) const
@@ -934,7 +921,7 @@ std::vector<offer_data_t> Node::get_offers(const uint32_t& since, const vnx::boo
 				data.address = address;
 				data.offer = tx;
 				if(tx->sender) {
-					data.is_revoked = is_revoked(tx->id, *tx->sender);
+//					data.is_revoked = is_revoked(tx->id, *tx->sender);
 				}
 				if(!data.is_revoked) {
 					if(auto height = get_tx_height(tx->id)) {

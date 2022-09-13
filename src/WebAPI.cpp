@@ -982,13 +982,13 @@ void WebAPI::render_offers(const vnx::request_id_t& request_id, const std::map<a
 				job->result[i]["height"] = height;
 			});
 		if(tx->sender) {
-			node->is_revoked(tx->id, *tx->sender,
-				[this, job, i](const vnx::optional<::mmx::hash_t>& txid) {
-					if(txid) {
-						job->result[i]["revoked_by"] = txid->to_string();
-					}
-					job->result[i]["revoked"] = bool(txid);
-				});
+//			node->is_revoked(tx->id, *tx->sender,
+//				[this, job, i](const vnx::optional<::mmx::hash_t>& txid) {
+//					if(txid) {
+//						job->result[i]["revoked_by"] = txid->to_string();
+//					}
+//					job->result[i]["revoked"] = bool(txid);
+//				});
 		}
 		node->get_tx_info_for(tx,
 			[this, job, i](const vnx::optional<tx_info_t>& info) {

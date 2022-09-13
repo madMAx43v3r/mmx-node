@@ -75,8 +75,6 @@ protected:
 
 	vnx::optional<tx_info_t> get_tx_info_for(std::shared_ptr<const Transaction> tx) const;
 
-	vnx::optional<hash_t> is_revoked(const hash_t& txid, const addr_t& sender) const override;
-
 	std::shared_ptr<const Transaction> get_transaction(const hash_t& id, const bool& include_pending = false) const override;
 
 	std::vector<std::shared_ptr<const Transaction>> get_transactions(const std::vector<hash_t>& ids) const override;
@@ -393,7 +391,6 @@ private:
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, txio_entry_t> recv_log;	// [[address, height, counter] => entry]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, txio_entry_t> spend_log;	// [[address, height, counter] => entry]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, exec_entry_t> exec_log;	// [[address, height, counter] => entry]
-	hash_multi_table<hash_t, std::pair<addr_t, hash_t>> revoke_map;				// TODO: obsolete [[org txid] => [address, txid]]
 
 	hash_table<addr_t, std::shared_ptr<const Contract>> contract_cache;			// [addr, contract]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, vnx::Object> mutate_log;	// [[addr, height] => method]
