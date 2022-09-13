@@ -124,11 +124,13 @@ protected:
 
 	std::map<uint32_t, account_t> get_all_accounts() const override;
 
-	void add_account(const uint32_t& index, const account_t& config, const vnx::optional<hash_t>& passphrase) override;
+	bool is_locked(const uint32_t& index) const override;
 
-	void create_account(const account_t& config, const vnx::optional<hash_t>& passphrase) override;
+	void add_account(const uint32_t& index, const account_t& config, const vnx::optional<std::string>& passphrase) override;
 
-	void create_wallet(const account_t& config, const vnx::optional<std::string>& words, const vnx::optional<hash_t>& passphrase) override;
+	void create_account(const account_t& config, const vnx::optional<std::string>& passphrase) override;
+
+	void create_wallet(const account_t& config, const vnx::optional<std::string>& words, const vnx::optional<std::string>& passphrase) override;
 
 	std::set<addr_t> get_token_list() const override;
 

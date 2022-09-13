@@ -728,8 +728,7 @@ std::vector<std::shared_ptr<const FarmerKeys>> Wallet::get_all_farmer_keys() con
 
 account_t Wallet::get_account(const uint32_t& index) const
 {
-	const auto wallet = get_wallet(index);
-	return wallet->config;
+	return get_wallet(index)->config;
 }
 
 std::map<uint32_t, account_t> Wallet::get_all_accounts() const
@@ -743,7 +742,12 @@ std::map<uint32_t, account_t> Wallet::get_all_accounts() const
 	return res;
 }
 
-void Wallet::add_account(const uint32_t& index, const account_t& config, const vnx::optional<hash_t>& passphrase)
+bool Wallet::is_locked(const uint32_t& index) const
+{
+	return get_wallet(index)->is_locked();
+}
+
+void Wallet::add_account(const uint32_t& index, const account_t& config, const vnx::optional<std::string>& passphrase)
 {
 	if(index >= wallets.size()) {
 		wallets.resize(index + 1);
@@ -772,10 +776,13 @@ void Wallet::add_account(const uint32_t& index, const account_t& config, const v
 			}
 			wallets[index] = std::make_shared<ECDSA_Wallet>(key_file->seed_value, info->addresses, config, params);
 		} else {
-			auto wallet = std::make_shared<ECDSA_Wallet>(key_file->seed_value, config.with_passphrase ? passphrase : nullptr, config, params);
+			auto wallet = std::make_shared<ECDSA_Wallet>(key_file->seed_value, passphrase, config, params);
+			info->addresses = wallet->get_all_addresses();
 			wallets[index] = wallet;
 
-			info->addresses = wallet->get_all_addresses();
+			if(config.with_passphrase) {
+				wallet->lock();
+			}
 			vnx::write_to_file(info_path, info);
 		}
 	} else {
@@ -784,7 +791,7 @@ void Wallet::add_account(const uint32_t& index, const account_t& config, const v
 	std::filesystem::permissions(key_path, std::filesystem::perms::owner_read | std::filesystem::perms::owner_write);
 }
 
-void Wallet::create_account(const account_t& config, const vnx::optional<hash_t>& passphrase)
+void Wallet::create_account(const account_t& config, const vnx::optional<std::string>& passphrase)
 {
 	if(config.name.empty()) {
 		throw std::logic_error("name cannot be empty");
@@ -805,7 +812,7 @@ void Wallet::create_account(const account_t& config, const vnx::optional<hash_t>
 	}
 }
 
-void Wallet::create_wallet(const account_t& config_, const vnx::optional<std::string>& words, const vnx::optional<hash_t>& passphrase)
+void Wallet::create_wallet(const account_t& config_, const vnx::optional<std::string>& words, const vnx::optional<std::string>& passphrase)
 {
 	mmx::KeyFile key_file;
 	if(words) {
@@ -822,10 +829,11 @@ void Wallet::create_wallet(const account_t& config_, const vnx::optional<std::st
 	if(vnx::File(config.key_file).exists()) {
 		throw std::logic_error("key file already exists");
 	}
-	create_account(config, passphrase);
-
 	const auto key_path = storage_path + config.key_file;
 	vnx::write_to_file(key_path, key_file);
+
+	create_account(config, passphrase);
+
 	std::filesystem::permissions(key_path, std::filesystem::perms::owner_read | std::filesystem::perms::owner_write);
 }
 

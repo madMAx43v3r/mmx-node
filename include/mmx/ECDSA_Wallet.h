@@ -29,7 +29,7 @@ class ECDSA_Wallet {
 public:
 	const account_t config;
 
-	ECDSA_Wallet(	const hash_t& seed_value, const vnx::optional<hash_t>& passphrase,
+	ECDSA_Wallet(	const hash_t& seed_value, const vnx::optional<std::string>& passphrase,
 					const account_t& config, std::shared_ptr<const ChainParams> params)
 		:	config(config), seed_value(seed_value), params(params)
 	{
@@ -39,7 +39,7 @@ public:
 		if(config.with_passphrase && !passphrase) {
 			throw std::logic_error("missing passphrase");
 		}
-		unlock(passphrase ? *passphrase : hash_t("MMX/seed/"));
+		unlock(passphrase ? *passphrase : "");
 	}
 
 	ECDSA_Wallet(	const hash_t& seed_value, const std::vector<addr_t>& addresses,
@@ -62,6 +62,11 @@ public:
 		}
 		keypairs.clear();
 		keypair_map.clear();
+	}
+
+	void unlock(const std::string& passphrase)
+	{
+		unlock(hash_t("MMX/seed/" + passphrase));
 	}
 
 	void unlock(const hash_t& passphrase)
@@ -277,6 +282,9 @@ public:
 
 	void sign_off(std::shared_ptr<Transaction> tx, const spend_options_t& options = {}) const
 	{
+		if(is_locked() && !options.passphrase) {
+			throw std::logic_error("wallet is locked");
+		}
 		tx->finalize();
 
 		std::unordered_map<addr_t, uint32_t> solution_map;

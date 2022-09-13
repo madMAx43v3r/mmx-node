@@ -114,7 +114,11 @@ const enLocale = {
         "n_spend": "N(Spend)",
         "last_recv": "Last Recv",
         "last_spend": "Last Spend"
-	},    
+	},
+	
+	"wallet_common": {
+		"enter_passphrase": "Passphrase required"
+	},
 
     "account_send_form": {
         "source_address": "Source Address",
@@ -272,7 +276,9 @@ const enLocale = {
         "account_name": "Account Name",
         "number_of_addresses": "Number of Addresses",
         "use_custom_seed": "Use Custom Seed",
+        "use_passphrase": "With Passphrase",
         "seed_words": "Mnemonic Seed Words (optional, 24 words)",
+        "passphrase": "Passphrase (secure password, 10+ characters)",
         "placeholder": "<random>",
         "create_wallet": "Create Wallet"
     },

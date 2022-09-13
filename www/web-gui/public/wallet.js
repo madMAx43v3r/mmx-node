@@ -855,7 +855,9 @@ Vue.component('create-wallet', {
 			name: null,
 			num_addresses: 100,
 			with_seed: false,
+			with_passphrase: false,
 			seed: null,
+			passphrase: null,
 			error: null
 		}
 	},
@@ -867,6 +869,9 @@ Vue.component('create-wallet', {
 			req.config.num_addresses = this.num_addresses;
 			if(this.with_seed) {
 				req.words = this.seed;
+			}
+			if(this.with_passphrase) {
+				req.passphrase = this.passphrase;
 			}
 			fetch('/api/wallet/create_wallet', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
@@ -913,6 +918,17 @@ Vue.component('create-wallet', {
 						:placeholder="$t('create_wallet.placeholder')" 
 						:disabled="!with_seed">
 					</v-text-field>
+					
+					<v-checkbox
+						v-model="with_passphrase"
+						:label="$t('create_wallet.use_passphrase')">
+					</v-checkbox>
+
+					<v-text-field
+						v-model="passphrase"
+						:label="$t('create_wallet.passphrase')"
+						:disabled="!with_passphrase">
+					</v-text-field>
 
 					<v-btn @click="submit" outlined color="primary">{{ $t('create_wallet.create_wallet') }}</v-btn>
 
@@ -934,6 +950,29 @@ Vue.component('create-wallet', {
 		</div>
 
 		`
+})
+
+Vue.component('passphrase-dialog', {
+	// TODO: missing functionality to make it work
+	data() {
+		return {
+			show: false,
+			passphrase: null
+		}
+	},
+	template: `
+		<v-dialog v-model="show" max-width="800">
+			<v-card>
+				<v-text-field
+					v-model="passphrase"
+					:label="$t('wallet_common.enter_passphrase')">
+				</v-text-field>
+				<v-card-actions>
+					<v-btn color="primary" flat @click.stop="show=false">Submit</v-btn>
+				</v-card-actions>
+			</v-card>
+		</v-dialog>
+	`
 })
 
 Vue.component('account-send-form', {
@@ -985,6 +1024,18 @@ Vue.component('account-send-form', {
 			}
 		},
 		submit() {
+			fetch('/api/wallet/is_locked?index=' + this.index)
+				.then(response => response.json())
+				.then(data => {
+					if(data) {
+						// TODO: open passphrase-dialog and call submit_ex(passphrase)
+						alert("TODO: passphrase dialog");
+					} else {
+						this.submit_ex(null);
+					}
+				});
+		},
+		submit_ex(passphrase) {
 			this.confirmed = false;
 			if(!validate_address(this.target)) {
 				this.error = "invalid destination address";
@@ -998,6 +1049,8 @@ Vue.component('account-send-form', {
 				req.src_addr = this.source;
 			}
 			req.dst_addr = this.target;
+			req.passphrase = passphrase;
+			
 			fetch('/wapi/wallet/send', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {

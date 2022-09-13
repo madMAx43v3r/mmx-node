@@ -37,6 +37,8 @@
 #include <vnx/vnx.h>
 #include <vnx/ProcessClient.hxx>
 
+#include <cmath>
+
 
 namespace mmx {
 
