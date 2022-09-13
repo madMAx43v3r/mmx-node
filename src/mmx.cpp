@@ -29,6 +29,7 @@
 #include <vnx/Proxy.h>
 #include <vnx/ProxyClient.hxx>
 
+#include <cmath>
 #include <filesystem>
 
 
@@ -399,6 +400,9 @@ int main(int argc, char** argv)
 				if(target == mmx::addr_t()) {
 					vnx::log_error() << "Missing destination address argument: -t | --target";
 					goto failed;
+				}
+				if(wallet.is_locked(index)) {
+					spend_options.passphrase = vnx::input_password("Passphrase: ");
 				}
 				const auto tx = wallet.send(index, mojo, target, contract, spend_options);
 				std::cout << "Sent " << mojo / pow(10, token->decimals) << " " << token->symbol << " (" << mojo << ") to " << target << std::endl;

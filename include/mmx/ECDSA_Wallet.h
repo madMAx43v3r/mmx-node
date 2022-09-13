@@ -75,9 +75,6 @@ public:
 		if(addresses.size()) {
 			first_addr = addresses[0];
 		}
-		keypairs.resize(config.num_addresses);
-		addresses.resize(config.num_addresses);
-
 		const auto master = pbkdf2_hmac_sha512(seed_value, passphrase, PBKDF2_ITERS);
 		const auto chain = hmac_sha512_n(master.first, master.second, 11337);	// TODO(mainnet): use params.port
 		const auto account = hmac_sha512_n(chain.first, chain.second, config.index);
@@ -91,14 +88,17 @@ public:
 				keys.second = pubkey_t::from_skey(tmp.first);
 			}
 			const addr_t addr = keys.second;
+			if(i == 0) {
+				if(first_addr && addr != *first_addr) {
+					throw std::runtime_error("invalid passphrase");
+				}
+				keypairs.resize(config.num_addresses);
+				addresses.resize(config.num_addresses);
+			}
 			keypairs[i] = keys;
 			keypair_map[addr] = i;
 			addresses[i] = addr;
 			index_map[addr] = i;
-
-			if(i == 0 && first_addr && addr != *first_addr) {
-				throw std::runtime_error("invalid passphrase");
-			}
 		}
 	}
 
@@ -280,97 +280,114 @@ public:
 		}
 	}
 
-	void sign_off(std::shared_ptr<Transaction> tx, const spend_options_t& options = {}) const
+	void sign_off(std::shared_ptr<Transaction> tx, const spend_options_t& options = {})
 	{
-		if(is_locked() && !options.passphrase) {
-			throw std::logic_error("wallet is locked");
-		}
-		tx->finalize();
-
-		std::unordered_map<addr_t, uint32_t> solution_map;
-
-		// sign sender
-		if(tx->sender && tx->solutions.empty())
-		{
-			if(auto sol = sign_msg(*tx->sender, tx->id, options))
-			{
-				solution_map[*tx->sender] = tx->solutions.size();
-				tx->solutions.push_back(sol);
-			}
-		}
-
-		// sign all inputs
-		for(auto& in : tx->inputs)
-		{
-			if(in.solution != txin_t::NO_SOLUTION) {
-				continue;
-			}
-			addr_t owner = in.address;
-			{
-				auto iter = options.owner_map.find(owner);
-				if(iter != options.owner_map.end()) {
-					in.flags |= txin_t::IS_EXEC;
-					owner = iter->second;
-				}
-			}
-			{
-				auto iter = solution_map.find(owner);
-				if(iter != solution_map.end()) {
-					// re-use solution
-					in.solution = iter->second;
-					continue;
-				}
-			}
-			if(auto sol = sign_msg(owner, tx->id, options))
-			{
-				in.solution = tx->solutions.size();
-				solution_map[owner] = in.solution;
-				tx->solutions.push_back(sol);
-			}
-		}
-
-		// sign all operations
-		for(auto& op : tx->execute)
-		{
-			if(op->solution) {
-				continue;
-			}
-			addr_t owner = op->address;
-
-			if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op)) {
-				if(exec->user) {
-					owner = *exec->user;
-				} else {
-					continue;
-				}
+		bool was_locked = false;
+		if(is_locked()) {
+			was_locked = true;
+			if(auto passphrase = options.passphrase) {
+				unlock(*passphrase);
 			} else {
-				auto iter = options.owner_map.find(op->address);
-				if(iter != options.owner_map.end()) {
-					owner = iter->second;
-				}
-			}
-			if(auto sol = sign_msg(owner, tx->id, options)) {
-				auto copy = vnx::clone(op);
-				copy->solution = sol;
-				op = copy;
+				throw std::logic_error("wallet is locked");
 			}
 		}
+		try {
+			tx->finalize();
 
-		// sign NFT mint
-		if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(tx->deploy))
-		{
-			if(!nft->solution) {
-				if(auto sol = sign_msg(nft->creator, tx->id, options)) {
-					auto copy = vnx::clone(nft);
+			std::unordered_map<addr_t, uint32_t> solution_map;
+
+			// sign sender
+			if(tx->sender && tx->solutions.empty())
+			{
+				if(auto sol = sign_msg(*tx->sender, tx->id, options))
+				{
+					solution_map[*tx->sender] = tx->solutions.size();
+					tx->solutions.push_back(sol);
+				}
+			}
+
+			// sign all inputs
+			for(auto& in : tx->inputs)
+			{
+				if(in.solution != txin_t::NO_SOLUTION) {
+					continue;
+				}
+				addr_t owner = in.address;
+				{
+					auto iter = options.owner_map.find(owner);
+					if(iter != options.owner_map.end()) {
+						in.flags |= txin_t::IS_EXEC;
+						owner = iter->second;
+					}
+				}
+				{
+					auto iter = solution_map.find(owner);
+					if(iter != solution_map.end()) {
+						// re-use solution
+						in.solution = iter->second;
+						continue;
+					}
+				}
+				if(auto sol = sign_msg(owner, tx->id, options))
+				{
+					in.solution = tx->solutions.size();
+					solution_map[owner] = in.solution;
+					tx->solutions.push_back(sol);
+				}
+			}
+
+			// sign all operations
+			for(auto& op : tx->execute)
+			{
+				if(op->solution) {
+					continue;
+				}
+				addr_t owner = op->address;
+
+				if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op)) {
+					if(exec->user) {
+						owner = *exec->user;
+					} else {
+						continue;
+					}
+				} else {
+					auto iter = options.owner_map.find(op->address);
+					if(iter != options.owner_map.end()) {
+						owner = iter->second;
+					}
+				}
+				if(auto sol = sign_msg(owner, tx->id, options)) {
+					auto copy = vnx::clone(op);
 					copy->solution = sol;
-					tx->deploy = copy;
+					op = copy;
 				}
 			}
-		}
 
-		// compute final content hash
-		tx->static_cost = tx->calc_cost(params);
-		tx->content_hash = tx->calc_hash(true);
+			// sign NFT mint
+			if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(tx->deploy))
+			{
+				if(!nft->solution) {
+					if(auto sol = sign_msg(nft->creator, tx->id, options)) {
+						auto copy = vnx::clone(nft);
+						copy->solution = sol;
+						tx->deploy = copy;
+					}
+				}
+			}
+
+			// compute final content hash
+			tx->static_cost = tx->calc_cost(params);
+			tx->content_hash = tx->calc_hash(true);
+		}
+		catch(...) {
+			if(was_locked) {
+				lock();
+			}
+			throw;
+		}
+		if(was_locked) {
+			lock();
+		}
 	}
 
 	std::shared_ptr<const Solution> sign_msg(const addr_t& address, const hash_t& msg, const spend_options_t& options = {}) const
@@ -385,7 +402,7 @@ public:
 		return nullptr;
 	}
 
-	void complete(std::shared_ptr<Transaction> tx, const spend_options_t& options = {}) const
+	void complete(std::shared_ptr<Transaction> tx, const spend_options_t& options = {})
 	{
 		if(options.expire_at) {
 			tx->expires = std::min(tx->expires, *options.expire_at);
