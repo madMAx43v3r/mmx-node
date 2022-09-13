@@ -153,8 +153,6 @@
 #include <mmx/Node_get_virtual_plot_balance_return.hxx>
 #include <mmx/Node_get_virtual_plots_for.hxx>
 #include <mmx/Node_get_virtual_plots_for_return.hxx>
-#include <mmx/Node_is_revoked.hxx>
-#include <mmx/Node_is_revoked_return.hxx>
 #include <mmx/Node_read_storage.hxx>
 #include <mmx/Node_read_storage_return.hxx>
 #include <mmx/Node_read_storage_array.hxx>
@@ -2214,30 +2212,6 @@ void type<::mmx::Node_get_virtual_plots_for_return>::create_dynamic_code(std::ve
 }
 
 void type<::mmx::Node_get_virtual_plots_for_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_virtual_plots_for_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::Node_is_revoked>::get_type_code() {
-	return mmx::vnx_native_type_code_Node_is_revoked;
-}
-
-void type<::mmx::Node_is_revoked>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::Node_is_revoked());
-}
-
-void type<::mmx::Node_is_revoked>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_is_revoked& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::Node_is_revoked_return>::get_type_code() {
-	return mmx::vnx_native_type_code_Node_is_revoked_return;
-}
-
-void type<::mmx::Node_is_revoked_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::Node_is_revoked_return());
-}
-
-void type<::mmx::Node_is_revoked_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_is_revoked_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -5549,8 +5523,6 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Node_get_virtual_plot_balance_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_virtual_plots_for::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_virtual_plots_for_return::static_create_type_code());
-	vnx::register_type_code(::mmx::Node_is_revoked::static_create_type_code());
-	vnx::register_type_code(::mmx::Node_is_revoked_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_read_storage::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_read_storage_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_read_storage_array::static_create_type_code());
@@ -5969,8 +5941,6 @@ const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plot_balance = 
 const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plot_balance_return = vnx::get_type_code(vnx::Hash64(0x5f8806b53d8c9742ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_for = vnx::get_type_code(vnx::Hash64(0x2dadcbd2c7c72b6eull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_for_return = vnx::get_type_code(vnx::Hash64(0x9564674e5dba5be1ull));
-const vnx::TypeCode* const vnx_native_type_code_Node_is_revoked = vnx::get_type_code(vnx::Hash64(0xd4d8744d29cf2e17ull));
-const vnx::TypeCode* const vnx_native_type_code_Node_is_revoked_return = vnx::get_type_code(vnx::Hash64(0xa08ed5c7b36ae954ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_read_storage = vnx::get_type_code(vnx::Hash64(0xd74cd2b291cb9cd6ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_return = vnx::get_type_code(vnx::Hash64(0xab73866ba23ed19aull));
 const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_array = vnx::get_type_code(vnx::Hash64(0xe5826950ca0a442bull));

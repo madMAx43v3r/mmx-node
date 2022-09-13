@@ -70,8 +70,6 @@ public:
 	
 	std::vector<::mmx::hash_t> get_tx_ids_since(const uint32_t& height = 0);
 	
-	vnx::optional<::mmx::hash_t> is_revoked(const ::mmx::hash_t& txid = ::mmx::hash_t(), const ::mmx::addr_t& sender = ::mmx::addr_t());
-	
 	void add_block(std::shared_ptr<const ::mmx::Block> block = nullptr);
 	
 	void add_block_async(std::shared_ptr<const ::mmx::Block> block = nullptr);

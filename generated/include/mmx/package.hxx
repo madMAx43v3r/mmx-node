@@ -174,8 +174,6 @@ class Node_get_virtual_plot_balance;
 class Node_get_virtual_plot_balance_return;
 class Node_get_virtual_plots_for;
 class Node_get_virtual_plots_for_return;
-class Node_is_revoked;
-class Node_is_revoked_return;
 class Node_read_storage;
 class Node_read_storage_return;
 class Node_read_storage_array;
@@ -595,8 +593,6 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_virtu
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plot_balance_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_for; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_for_return; ///< \private
-MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_is_revoked; ///< \private
-MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_is_revoked_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_read_storage; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_array; ///< \private
@@ -1013,8 +1009,6 @@ void read(TypeInput& in, ::mmx::Node_get_virtual_plot_balance& value, const Type
 void read(TypeInput& in, ::mmx::Node_get_virtual_plot_balance_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_virtual_plots_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_virtual_plots_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::Node_is_revoked& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::Node_is_revoked_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_read_storage& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_read_storage_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_read_storage_array& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1434,8 +1428,6 @@ void write(TypeOutput& out, const ::mmx::Node_get_virtual_plot_balance& value, c
 void write(TypeOutput& out, const ::mmx::Node_get_virtual_plot_balance_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_virtual_plots_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_virtual_plots_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::Node_is_revoked& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::Node_is_revoked_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_read_storage& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_read_storage_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_read_storage_array& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1855,8 +1847,6 @@ void read(std::istream& in, ::mmx::Node_get_virtual_plot_balance& value); ///< \
 void read(std::istream& in, ::mmx::Node_get_virtual_plot_balance_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_virtual_plots_for& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_virtual_plots_for_return& value); ///< \private
-void read(std::istream& in, ::mmx::Node_is_revoked& value); ///< \private
-void read(std::istream& in, ::mmx::Node_is_revoked_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_read_storage& value); ///< \private
 void read(std::istream& in, ::mmx::Node_read_storage_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_read_storage_array& value); ///< \private
@@ -2276,8 +2266,6 @@ void write(std::ostream& out, const ::mmx::Node_get_virtual_plot_balance& value)
 void write(std::ostream& out, const ::mmx::Node_get_virtual_plot_balance_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_virtual_plots_for& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_virtual_plots_for_return& value); ///< \private
-void write(std::ostream& out, const ::mmx::Node_is_revoked& value); ///< \private
-void write(std::ostream& out, const ::mmx::Node_is_revoked_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_read_storage& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_read_storage_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_read_storage_array& value); ///< \private
@@ -2697,8 +2685,6 @@ void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plot_balance& value)
 void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plot_balance_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plots_for& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plots_for_return& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::Node_is_revoked& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::Node_is_revoked_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_read_storage& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_read_storage_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_read_storage_array& value); ///< \private
@@ -6451,52 +6437,6 @@ struct type<::mmx::Node_get_virtual_plots_for_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_virtual_plots_for_return& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::Node_is_revoked> {
-	void read(TypeInput& in, ::mmx::Node_is_revoked& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::Node_is_revoked& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::Node_is_revoked& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::Node_is_revoked& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::Node_is_revoked& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_is_revoked& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::Node_is_revoked_return> {
-	void read(TypeInput& in, ::mmx::Node_is_revoked_return& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::Node_is_revoked_return& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::Node_is_revoked_return& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::Node_is_revoked_return& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::Node_is_revoked_return& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_is_revoked_return& value, bool special = false);
 };
 
 /// \private

@@ -86,8 +86,6 @@
 #include <mmx/Node_get_virtual_plot_balance_return.hxx>
 #include <mmx/Node_get_virtual_plots_for.hxx>
 #include <mmx/Node_get_virtual_plots_for_return.hxx>
-#include <mmx/Node_is_revoked.hxx>
-#include <mmx/Node_is_revoked_return.hxx>
 #include <mmx/Node_read_storage.hxx>
 #include <mmx/Node_read_storage_return.hxx>
 #include <mmx/Node_read_storage_array.hxx>
@@ -344,20 +342,6 @@ std::vector<::mmx::hash_t> NodeClient::get_tx_ids_since(const uint32_t& height) 
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::vector<::mmx::hash_t>>();
-	} else {
-		throw std::logic_error("NodeClient: invalid return value");
-	}
-}
-
-vnx::optional<::mmx::hash_t> NodeClient::is_revoked(const ::mmx::hash_t& txid, const ::mmx::addr_t& sender) {
-	auto _method = ::mmx::Node_is_revoked::create();
-	_method->txid = txid;
-	_method->sender = sender;
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_is_revoked_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<vnx::optional<::mmx::hash_t>>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}
