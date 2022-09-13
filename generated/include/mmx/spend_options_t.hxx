@@ -8,7 +8,6 @@
 #include <mmx/package.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/hash_t.hpp>
 
 
 namespace mmx {
@@ -24,7 +23,7 @@ struct MMX_EXPORT spend_options_t {
 	vnx::optional<uint32_t> expire_delta;
 	vnx::optional<::mmx::addr_t> user;
 	vnx::optional<::mmx::addr_t> sender;
-	vnx::optional<::mmx::hash_t> passphrase;
+	vnx::optional<std::string> passphrase;
 	std::map<::mmx::addr_t, ::mmx::addr_t> owner_map;
 	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> contract_map;
 	

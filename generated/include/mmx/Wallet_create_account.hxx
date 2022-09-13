@@ -6,7 +6,6 @@
 
 #include <mmx/package.hxx>
 #include <mmx/account_t.hxx>
-#include <mmx/hash_t.hpp>
 #include <vnx/Value.h>
 
 
@@ -16,7 +15,7 @@ class MMX_EXPORT Wallet_create_account : public ::vnx::Value {
 public:
 	
 	::mmx::account_t config;
-	vnx::optional<::mmx::hash_t> passphrase;
+	vnx::optional<std::string> passphrase;
 	
 	typedef ::vnx::Value Super;
 	

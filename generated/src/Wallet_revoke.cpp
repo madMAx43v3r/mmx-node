@@ -16,7 +16,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_revoke::VNX_TYPE_HASH(0x7470bb05bf1610caull);
-const vnx::Hash64 Wallet_revoke::VNX_CODE_HASH(0xcfe347839e35c358ull);
+const vnx::Hash64 Wallet_revoke::VNX_CODE_HASH(0x1ee13b24d6401fa9ull);
 
 vnx::Hash64 Wallet_revoke::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -147,7 +147,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_revoke::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.revoke";
 	type_code->type_hash = vnx::Hash64(0x7470bb05bf1610caull);
-	type_code->code_hash = vnx::Hash64(0xcfe347839e35c358ull);
+	type_code->code_hash = vnx::Hash64(0x1ee13b24d6401fa9ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;

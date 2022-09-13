@@ -5,7 +5,6 @@
 #include <mmx/Wallet_create_wallet.hxx>
 #include <mmx/Wallet_create_wallet_return.hxx>
 #include <mmx/account_t.hxx>
-#include <mmx/hash_t.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -15,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_create_wallet::VNX_TYPE_HASH(0xdcc08a3a1b171a19ull);
-const vnx::Hash64 Wallet_create_wallet::VNX_CODE_HASH(0x3aedd623e2e643abull);
+const vnx::Hash64 Wallet_create_wallet::VNX_CODE_HASH(0x7828a363f896e871ull);
 
 vnx::Hash64 Wallet_create_wallet::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -136,7 +135,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_create_wallet::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.create_wallet";
 	type_code->type_hash = vnx::Hash64(0xdcc08a3a1b171a19ull);
-	type_code->code_hash = vnx::Hash64(0x3aedd623e2e643abull);
+	type_code->code_hash = vnx::Hash64(0x7828a363f896e871ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -162,7 +161,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_create_wallet::static_create_type_code() {
 		auto& field = type_code->fields[2];
 		field.is_extended = true;
 		field.name = "passphrase";
-		field.code = {33, 11, 32, 1};
+		field.code = {33, 32};
 	}
 	type_code->build();
 	return type_code;
