@@ -425,6 +425,9 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Missing destination address argument: -t | --target";
 					goto failed;
 				}
+				if(wallet.is_locked(index)) {
+					spend_options.passphrase = vnx::input_password("Passphrase: ");
+				}
 				const auto tx = wallet.send_from(index, mojo, target, source, contract, spend_options);
 				std::cout << "Sent " << mojo / pow(10, token->decimals) << " " << token->symbol << " (" << mojo << ") to " << target << std::endl;
 				std::cout << "Transaction ID: " << tx->id << std::endl;
@@ -434,6 +437,9 @@ int main(int argc, char** argv)
 				if(target == mmx::addr_t()) {
 					vnx::log_error() << "Missing destination address argument: -t | --target";
 					goto failed;
+				}
+				if(wallet.is_locked(index)) {
+					spend_options.passphrase = vnx::input_password("Passphrase: ");
 				}
 				const auto tx = wallet.send(index, 1, target, contract, spend_options);
 				std::cout << "Sent " << contract << " to " << target << std::endl;
@@ -452,6 +458,9 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Missing destination address argument: -t | --target";
 					goto failed;
 				}
+				if(wallet.is_locked(index)) {
+					spend_options.passphrase = vnx::input_password("Passphrase: ");
+				}
 				const auto tx = wallet.mint(index, mojo, target, contract, spend_options);
 				std::cout << "Minted " << mojo / pow(10, token->decimals) << " (" << mojo << ") " << token->symbol << " to " << target << std::endl;
 				std::cout << "Transaction ID: " << tx->id << std::endl;
@@ -466,6 +475,9 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Failed to read contract from file: " << file_path;
 					goto failed;
 				}
+				if(wallet.is_locked(index)) {
+					spend_options.passphrase = vnx::input_password("Passphrase: ");
+				}
 				const auto tx = wallet.deploy(index, payload, spend_options);
 				std::cout << "Deployed " << payload->get_type_name() << " as [" << mmx::addr_t(tx->id) << "]" << std::endl;
 				std::cout << "Transaction ID: " << tx->id << std::endl;
@@ -477,6 +489,9 @@ int main(int argc, char** argv)
 				vnx::read_config("$3", method);
 				vnx::read_config("$4", args);
 
+				if(wallet.is_locked(index)) {
+					spend_options.passphrase = vnx::input_password("Passphrase: ");
+				}
 				args["__type"] = method;
 				const auto tx = wallet.mutate(index, contract, args, spend_options);
 				std::cout << "Executed " << method << " with:" << std::endl;
@@ -491,6 +506,9 @@ int main(int argc, char** argv)
 				vnx::read_config("$3", method);
 				vnx::read_config("$4", args);
 
+				if(wallet.is_locked(index)) {
+					spend_options.passphrase = vnx::input_password("Passphrase: ");
+				}
 				std::shared_ptr<const mmx::Transaction> tx;
 				if(command == "exec") {
 					tx = wallet.execute(index, contract, method, args, spend_options);
@@ -525,6 +543,9 @@ int main(int argc, char** argv)
 				if(bid_value == 0 || ask_value == 0) {
 					vnx::log_error() << "Invalid amount! (-a | -b)";
 					goto failed;
+				}
+				if(wallet.is_locked(index)) {
+					spend_options.passphrase = vnx::input_password("Passphrase: ");
 				}
 				std::cout << "Offering " << amount << " " << bid_token->symbol
 						<< " for " << ask_amount << " " << ask_token->symbol << std::endl;
@@ -596,6 +617,9 @@ int main(int argc, char** argv)
 					if(!spend_options.expire_delta) {
 						spend_options.expire_delta = 10;
 					}
+					if(wallet.is_locked(index)) {
+						spend_options.passphrase = vnx::input_password("Passphrase: ");
+					}
 					auto tx = wallet.accept_offer(index, offer, spend_options);
 					std::cout << "Transaction ID: " << tx->id << std::endl;
 				}
@@ -616,6 +640,9 @@ int main(int argc, char** argv)
 					prev = vnx::read_from_file<mmx::Transaction>(file_name);
 				}
 				if(prev && prev->sender) {
+					if(wallet.is_locked(index)) {
+						spend_options.passphrase = vnx::input_password("Passphrase: ");
+					}
 					auto tx = wallet.revoke(index, prev->id, *prev->sender, spend_options);
 					std::cout << "Transaction ID: " << tx->id << std::endl;
 				}
