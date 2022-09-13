@@ -92,7 +92,7 @@ void Node::main()
 		db.add(mutate_log.open(database_path + "mutate_log"));
 		db.add(deploy_map.open(database_path + "deploy_map"));
 		db.add(offer_log.open(database_path + "offer_log"));
-		db.add(vplot_log.open(database_path + "vplot_log"));
+		db.add(vplot_map.open(database_path + "vplot_map"));
 
 		db.add(tx_log.open(database_path + "tx_log"));
 		db.add(tx_index.open(database_path + "tx_index"));
@@ -908,17 +908,18 @@ address_info_t Node::get_address_info(const addr_t& address) const
 
 std::vector<std::pair<addr_t, std::shared_ptr<const Contract>>> Node::get_virtual_plots_for(const bls_pubkey_t& farmer_key) const
 {
-	std::unordered_map<addr_t, std::shared_ptr<const Contract>> out;
-	vplot_log.scan([this, &out, farmer_key](const std::pair<uint32_t, uint32_t>& key, const addr_t& address) {
-		if(auto contract = get_contract(address)) {
+	std::vector<addr_t> addrs;
+	vplot_map.find(farmer_key, addrs);
+
+	std::vector<std::pair<addr_t, std::shared_ptr<const Contract>>> out;
+	for(const auto& addr : addrs) {
+		if(auto contract = get_contract(addr)) {
 			if(auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(contract)) {
-				if(plot->farmer_key == farmer_key) {
-					out[address] = plot;
-				}
+				out.emplace_back(addr, plot);
 			}
 		}
-	});
-	return std::vector<std::pair<addr_t, std::shared_ptr<const Contract>>>(out.begin(), out.end());
+	}
+	return out;
 }
 
 std::vector<offer_data_t> Node::get_offers(const uint32_t& since, const vnx::bool_t& is_open, const vnx::bool_t& is_covered) const
@@ -1597,7 +1598,7 @@ void Node::apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Tran
 				offer_log.insert(std::make_pair(block->height, counter++), tx->id);
 			}
 			if(auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(contract)) {
-				vplot_log.insert(std::make_pair(block->height, counter++), tx->id);
+				vplot_map.insert(plot->farmer_key, tx->id);
 			}
 		}
 	}

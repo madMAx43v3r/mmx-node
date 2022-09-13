@@ -398,9 +398,9 @@ private:
 	hash_table<addr_t, std::shared_ptr<const Contract>> contract_cache;			// [addr, contract]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, vnx::Object> mutate_log;	// [[addr, height] => method]
 	hash_multi_table<addr_t, addr_t> deploy_map;								// [sender => contract]
+	hash_multi_table<bls_pubkey_t, addr_t> vplot_map;							// [farmer_key => contract]
+
 	uint_uint_table<uint32_t, uint32_t, addr_t> offer_log;						// [[height, counter] => contract]
-	uint_uint_table<uint32_t, uint32_t, addr_t> vplot_log;						// [[height, counter] => contract]
-	// TODO: hash_multi_table<bls_pubkey_t, addr_t> vplot_map;					// [farmer_key => contract]
 
 	balance_table_t<uint128> balance_table;										// [[addr, currency] => balance]
 	std::map<std::pair<addr_t, addr_t>, uint128> balance_map;					// [[addr, currency] => balance]
