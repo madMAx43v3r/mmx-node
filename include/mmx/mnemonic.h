@@ -13,11 +13,16 @@
 #include <string>
 #include <vector>
 
+#ifdef _MSC_VER
+#include <mmx_iface_export.h>
+#else
+#define MMX_IFACE_EXPORT
+#endif
 
 namespace mmx {
 namespace mnemonic {
 
-extern const std::vector<std::string> wordlist_en;
+MMX_IFACE_EXPORT extern const std::vector<std::string> wordlist_en;
 
 std::vector<std::string> seed_to_words(const hash_t& seed, const std::vector<std::string>& wordlist = wordlist_en);
 

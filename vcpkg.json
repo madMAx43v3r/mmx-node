@@ -5,7 +5,6 @@
         "gmp",
         "zlib",
         "opencl",
-        "rocksdb",
         "secp256k1"
     ]
 }
