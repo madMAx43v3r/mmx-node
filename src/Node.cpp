@@ -156,9 +156,10 @@ void Node::main()
 					db.commit(block->height + 1);
 
 					auto fork = std::make_shared<fork_t>();
+					fork->recv_time = vnx::get_wall_time_micros();
 					fork->block = block;
-					fork_tree[block->hash] = fork;
-					fork_index.emplace(block->height, fork);
+					fork->is_vdf_verified = true;
+					add_fork(fork);
 
 					history.push_back(block);
 					if(history.size() > params->commit_delay || block->height == 0) {
