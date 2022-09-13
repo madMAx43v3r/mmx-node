@@ -156,7 +156,6 @@ void Node::main()
 					db.commit(block->height + 1);
 
 					auto fork = std::make_shared<fork_t>();
-					fork->recv_time = vnx::get_wall_time_micros();
 					fork->block = block;
 					fork->is_vdf_verified = true;
 					add_fork(fork);
@@ -187,7 +186,6 @@ void Node::main()
 					if(i < params->commit_delay && index > 0) {
 						if(auto block = get_block_at(index)) {
 							auto fork = std::make_shared<fork_t>();
-							fork->recv_time = vnx::get_wall_time_micros();
 							fork->block = block;
 							fork->is_vdf_verified = true;
 							add_fork(fork);
@@ -995,6 +993,9 @@ void Node::add_block(std::shared_ptr<const Block> block)
 
 void Node::add_fork(std::shared_ptr<fork_t> fork)
 {
+	if(!fork->recv_time) {
+		fork->recv_time = vnx::get_wall_time_micros();
+	}
 	if(auto block = fork->block) {
 		if(fork_tree.emplace(block->hash, fork).second) {
 			fork_index.emplace(block->height, fork);
