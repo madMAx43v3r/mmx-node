@@ -251,6 +251,10 @@ int main(int argc, char** argv)
 				std::string subject;
 				vnx::read_config("$3", subject);
 
+				const auto config = wallet.get_account(index);
+				if(config.with_passphrase) {
+					std::cout << "Locked: " << (wallet.is_locked(index) ? "Yes" : "No") << std::endl;
+				}
 				if(subject.empty() || subject == "balance")
 				{
 					bool is_empty = true;
@@ -654,6 +658,14 @@ int main(int argc, char** argv)
 
 				show_history(wallet.get_history(index, since), node, params);
 			}
+			else if(command == "lock")
+			{
+				wallet.lock(index);
+			}
+			else if(command == "unlock")
+			{
+				wallet.unlock(index, vnx::input_password("Passphrase: "));
+			}
 			else if(command == "create")
 			{
 				if(file_name.empty()) {
@@ -694,7 +706,7 @@ int main(int argc, char** argv)
 						<< std::endl << wallet.seed_value << std::endl;
 			}
 			else {
-				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | transfer | make_offer | offer | accept | revoke | mint | deploy | mutate | exec | create | accounts | keys]" << std::endl;
+				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | transfer | make_offer | offer | accept | revoke | mint | deploy | mutate | exec | create | accounts | keys | lock | unlock]" << std::endl;
 			}
 		}
 		else if(module == "node")
