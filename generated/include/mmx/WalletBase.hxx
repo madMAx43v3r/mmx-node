@@ -116,9 +116,12 @@ protected:
 	virtual ::mmx::account_t get_account(const uint32_t& index) const = 0;
 	virtual std::map<uint32_t, ::mmx::account_t> get_all_accounts() const = 0;
 	virtual vnx::bool_t is_locked(const uint32_t& index) const = 0;
+	virtual void lock(const uint32_t& index) = 0;
+	virtual void unlock(const uint32_t& index, const std::string& passphrase) = 0;
 	virtual void add_account(const uint32_t& index, const ::mmx::account_t& config, const vnx::optional<std::string>& passphrase) = 0;
 	virtual void create_account(const ::mmx::account_t& config, const vnx::optional<std::string>& passphrase) = 0;
 	virtual void create_wallet(const ::mmx::account_t& config, const vnx::optional<std::string>& words, const vnx::optional<std::string>& passphrase) = 0;
+	virtual std::vector<std::string> get_mnemonic_wordlist(const std::string& lang) const = 0;
 	virtual std::set<::mmx::addr_t> get_token_list() const = 0;
 	virtual void add_token(const ::mmx::addr_t& address) = 0;
 	virtual void rem_token(const ::mmx::addr_t& address) = 0;

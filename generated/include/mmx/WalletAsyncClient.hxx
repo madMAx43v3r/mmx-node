@@ -179,6 +179,14 @@ public:
 			const std::function<void(const vnx::bool_t&)>& _callback = std::function<void(const vnx::bool_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
+	uint64_t lock(const uint32_t& index = 0, 
+			const std::function<void()>& _callback = std::function<void()>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t unlock(const uint32_t& index = 0, const std::string& passphrase = "", 
+			const std::function<void()>& _callback = std::function<void()>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
 	uint64_t add_account(const uint32_t& index = 0, const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<std::string>& passphrase = nullptr, 
 			const std::function<void()>& _callback = std::function<void()>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
@@ -189,6 +197,10 @@ public:
 	
 	uint64_t create_wallet(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<std::string>& words = nullptr, const vnx::optional<std::string>& passphrase = nullptr, 
 			const std::function<void()>& _callback = std::function<void()>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t get_mnemonic_wordlist(const std::string& lang = "en", 
+			const std::function<void(const std::vector<std::string>&)>& _callback = std::function<void(const std::vector<std::string>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_token_list(
@@ -305,9 +317,12 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::account_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_account;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<uint32_t, ::mmx::account_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_all_accounts;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const vnx::bool_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_is_locked;
+	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_lock;
+	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_unlock;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_add_account;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_create_account;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_create_wallet;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::string>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_mnemonic_wordlist;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::set<::mmx::addr_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_token_list;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_add_token;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_rem_token;

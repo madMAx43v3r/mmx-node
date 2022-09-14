@@ -57,6 +57,8 @@
 #include <mmx/Wallet_get_master_seed_return.hxx>
 #include <mmx/Wallet_get_mnemonic_seed.hxx>
 #include <mmx/Wallet_get_mnemonic_seed_return.hxx>
+#include <mmx/Wallet_get_mnemonic_wordlist.hxx>
+#include <mmx/Wallet_get_mnemonic_wordlist_return.hxx>
 #include <mmx/Wallet_get_token_list.hxx>
 #include <mmx/Wallet_get_token_list_return.hxx>
 #include <mmx/Wallet_get_total_balances_for.hxx>
@@ -65,6 +67,8 @@
 #include <mmx/Wallet_get_tx_history_return.hxx>
 #include <mmx/Wallet_is_locked.hxx>
 #include <mmx/Wallet_is_locked_return.hxx>
+#include <mmx/Wallet_lock.hxx>
+#include <mmx/Wallet_lock_return.hxx>
 #include <mmx/Wallet_make_offer.hxx>
 #include <mmx/Wallet_make_offer_return.hxx>
 #include <mmx/Wallet_mark_spent.hxx>
@@ -97,6 +101,8 @@
 #include <mmx/Wallet_sign_msg_return.hxx>
 #include <mmx/Wallet_sign_off.hxx>
 #include <mmx/Wallet_sign_off_return.hxx>
+#include <mmx/Wallet_unlock.hxx>
+#include <mmx/Wallet_unlock_return.hxx>
 #include <mmx/Wallet_update_cache.hxx>
 #include <mmx/Wallet_update_cache_return.hxx>
 #include <mmx/account_t.hxx>
@@ -681,6 +687,32 @@ vnx::bool_t WalletClient::is_locked(const uint32_t& index) {
 	}
 }
 
+void WalletClient::lock(const uint32_t& index) {
+	auto _method = ::mmx::Wallet_lock::create();
+	_method->index = index;
+	vnx_request(_method, false);
+}
+
+void WalletClient::lock_async(const uint32_t& index) {
+	auto _method = ::mmx::Wallet_lock::create();
+	_method->index = index;
+	vnx_request(_method, true);
+}
+
+void WalletClient::unlock(const uint32_t& index, const std::string& passphrase) {
+	auto _method = ::mmx::Wallet_unlock::create();
+	_method->index = index;
+	_method->passphrase = passphrase;
+	vnx_request(_method, false);
+}
+
+void WalletClient::unlock_async(const uint32_t& index, const std::string& passphrase) {
+	auto _method = ::mmx::Wallet_unlock::create();
+	_method->index = index;
+	_method->passphrase = passphrase;
+	vnx_request(_method, true);
+}
+
 void WalletClient::add_account(const uint32_t& index, const ::mmx::account_t& config, const vnx::optional<std::string>& passphrase) {
 	auto _method = ::mmx::Wallet_add_account::create();
 	_method->index = index;
@@ -725,6 +757,19 @@ void WalletClient::create_wallet_async(const ::mmx::account_t& config, const vnx
 	_method->words = words;
 	_method->passphrase = passphrase;
 	vnx_request(_method, true);
+}
+
+std::vector<std::string> WalletClient::get_mnemonic_wordlist(const std::string& lang) {
+	auto _method = ::mmx::Wallet_get_mnemonic_wordlist::create();
+	_method->lang = lang;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_mnemonic_wordlist_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<std::string>>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
 }
 
 std::set<::mmx::addr_t> WalletClient::get_token_list() {

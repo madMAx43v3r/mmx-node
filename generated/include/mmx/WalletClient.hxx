@@ -121,6 +121,14 @@ public:
 	
 	vnx::bool_t is_locked(const uint32_t& index = 0);
 	
+	void lock(const uint32_t& index = 0);
+	
+	void lock_async(const uint32_t& index = 0);
+	
+	void unlock(const uint32_t& index = 0, const std::string& passphrase = "");
+	
+	void unlock_async(const uint32_t& index = 0, const std::string& passphrase = "");
+	
 	void add_account(const uint32_t& index = 0, const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<std::string>& passphrase = nullptr);
 	
 	void add_account_async(const uint32_t& index = 0, const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<std::string>& passphrase = nullptr);
@@ -132,6 +140,8 @@ public:
 	void create_wallet(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<std::string>& words = nullptr, const vnx::optional<std::string>& passphrase = nullptr);
 	
 	void create_wallet_async(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<std::string>& words = nullptr, const vnx::optional<std::string>& passphrase = nullptr);
+	
+	std::vector<std::string> get_mnemonic_wordlist(const std::string& lang = "en");
 	
 	std::set<::mmx::addr_t> get_token_list();
 	
