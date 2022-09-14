@@ -232,7 +232,7 @@ if(NOT MSVC)
 	target_link_libraries(mmx_db OpenMP::OpenMP_CXX)
 	target_link_libraries(mmx_modules OpenMP::OpenMP_CXX)
 
-	target_compile_options(mmx_iface PRIVATE -mavx2)
+	set_source_files_properties(src/sha256_avx2.cpp PROPERTIES COMPILE_FLAGS -mavx2)
 endif()
 
 if(OpenCL_FOUND)
