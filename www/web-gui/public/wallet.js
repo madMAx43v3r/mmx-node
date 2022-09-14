@@ -968,6 +968,7 @@ Vue.component('passphrase-dialog', {
 	methods: {
 		onSubmit() {
 			this.$emit('submit', this.passphrase);
+			this.passphrase = null;
 			this.onClose();
 		},
 		onClose() {
@@ -1074,7 +1075,8 @@ Vue.component('account-send-form', {
 				req.src_addr = this.source;
 			}
 			req.dst_addr = this.target;
-			req.passphrase = passphrase;
+			req.options = {};
+			req.options.passphrase = passphrase;
 			
 			fetch('/wapi/wallet/send', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
