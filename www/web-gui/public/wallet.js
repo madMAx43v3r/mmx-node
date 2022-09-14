@@ -858,7 +858,8 @@ Vue.component('create-wallet', {
 			with_passphrase: false,
 			seed: null,
 			passphrase: null,
-			error: null
+			error: null,
+			show_passphrase: false
 		}
 	},
 	methods: {
@@ -927,7 +928,11 @@ Vue.component('create-wallet', {
 					<v-text-field
 						v-model="passphrase"
 						:label="$t('create_wallet.passphrase')"
-						:disabled="!with_passphrase">
+						:disabled="!with_passphrase"
+						autocomplete="new-password"
+						:type="show_passphrase ? 'text' : 'password'"
+						:append-icon="show_passphrase ? 'mdi-eye' : 'mdi-eye-off'"
+						@click:append="show_passphrase = !show_passphrase">
 					</v-text-field>
 
 					<v-btn @click="submit" outlined color="primary">{{ $t('create_wallet.create_wallet') }}</v-btn>
@@ -958,7 +963,8 @@ Vue.component('passphrase-dialog', {
 	},
 	data() {
 		return {
-			passphrase: null
+			passphrase: null,
+			show_passphrase: false
 		}
 	},	
 	model: {
@@ -987,8 +993,11 @@ Vue.component('passphrase-dialog', {
 							v-model="passphrase"
 							:label="$t('wallet_common.enter_passphrase')"
 							required
-							type="password"
-							autocomplete="new-password">
+							autocomplete="new-password"
+							:type="show_passphrase ? 'text' : 'password'"
+							:append-icon="show_passphrase ? 'mdi-eye' : 'mdi-eye-off'"
+							@click:append="show_passphrase = !show_passphrase"							
+							>
 						</v-text-field>
 					</v-card-text>
 					<v-card-actions class="justify-end">
