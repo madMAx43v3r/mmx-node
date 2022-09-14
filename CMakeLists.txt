@@ -231,6 +231,8 @@ target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_vm mmx_db mmx_ifac
 if(NOT MSVC)
 	target_link_libraries(mmx_db OpenMP::OpenMP_CXX)
 	target_link_libraries(mmx_modules OpenMP::OpenMP_CXX)
+
+	target_compile_options(mmx_iface PRIVATE -mavx2)
 endif()
 
 if(OpenCL_FOUND)
