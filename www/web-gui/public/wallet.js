@@ -66,9 +66,12 @@ Vue.component('account-header', {
 		return {
 			info: {
 				name: null,
-				index: null
+				index: null,
+				with_passphrase: null
 			},
-			address: null
+			address: null,
+			is_locked: null,
+			passphrase_dialog: false
 		}
 	},
 	methods: {
@@ -83,10 +86,37 @@ Vue.component('account-header', {
 			fetch('/wapi/wallet/address?index=' + this.index)
 				.then(response => response.json())
 				.then(data => this.address = data[0]);
+			fetch('/api/wallet/is_locked?index=' + this.index)
+				.then(response => response.json())
+				.then(data => this.is_locked = data);
+		},
+		toggle_lock() {
+			if(this.is_locked) {
+				this.passphrase_dialog = true;
+			} else {
+				const req = {};
+				req.index = this.index;
+				fetch('/api/wallet/lock', {body: JSON.stringify(req), method: "post"})
+					.then(() => this.update());
+			}
+		},
+		unlock(passphrase) {
+			const req = {};
+			req.index = this.index;
+			req.passphrase = passphrase;
+			fetch('/api/wallet/unlock', {body: JSON.stringify(req), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						this.update();
+					} else {
+						response.text().then(data => {
+							alert(data);
+						});
+					}
+				});
 		},
 		copyToClipboard(address) {
-			navigator.clipboard.writeText(address).then(() => {				
-			});
+			navigator.clipboard.writeText(address);
 		}
 	},
 	created() {
@@ -101,6 +131,10 @@ Vue.component('account-header', {
 					<v-icon small class="pr-0">mdi-content-copy</v-icon>
 				</btn>
 			</v-chip>
+			<v-btn v-if="info.with_passphrase && (is_locked != null)" @click="toggle_lock()" text icon>
+				<v-icon small class="pr-0">{{ is_locked ? "mdi-lock" : "mdi-lock-open-variant" }}</v-icon>
+			</btn>
+			<passphrase-dialog v-model="passphrase_dialog" @submit="p => unlock(p)"/>
 		</div>
 		`
 })
