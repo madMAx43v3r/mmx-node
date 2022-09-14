@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 if(NOT MSVC)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function -mavx2 -msha")
+	add_compile_options(-Wall -Wno-unused-function)
 endif()
 
 if(MSVC)
@@ -243,6 +243,9 @@ target_link_libraries(mmx_modules mmx_chiapos mmx_vm mmx_db mmx_iface)
 if(NOT MSVC)
 	target_link_libraries(mmx_db OpenMP::OpenMP_CXX)
 	target_link_libraries(mmx_modules OpenMP::OpenMP_CXX)
+	
+	set_source_files_properties(src/sha256_ni.cpp PROPERTIES COMPILE_FLAGS -msha)
+	set_source_files_properties(src/sha256_avx2.cpp PROPERTIES COMPILE_FLAGS -mavx2)
 endif()
 
 if(OpenCL_FOUND)
