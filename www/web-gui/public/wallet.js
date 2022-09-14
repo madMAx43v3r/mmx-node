@@ -953,24 +953,49 @@ Vue.component('create-wallet', {
 })
 
 Vue.component('passphrase-dialog', {
-	// TODO: missing functionality to make it work
+	props: {
+		show: Boolean
+	},
 	data() {
 		return {
-			show: false,
 			passphrase: null
 		}
+	},	
+	model: {
+		prop: 'show',
+		event: 'close'
 	},
+	methods: {
+		onSubmit() {
+			this.$emit('submit', this.passphrase);
+			this.onClose();
+		},
+		onClose() {
+			this.show = false
+			this.$emit('close');
+		}
+	},	
 	template: `
-		<v-dialog v-model="show" max-width="800">
-			<v-card>
-				<v-text-field
-					v-model="passphrase"
-					:label="$t('wallet_common.enter_passphrase')">
-				</v-text-field>
-				<v-card-actions>
-					<v-btn color="primary" flat @click.stop="show=false">Submit</v-btn>
-				</v-card-actions>
-			</v-card>
+		<v-dialog v-model="show" max-width="800" persistent>
+			<template v-slot:default="dialog">
+				<v-card>
+					<v-toolbar color="primary">
+					</v-toolbar>
+					<v-card-text>			
+						<v-text-field
+							v-model="passphrase"
+							:label="$t('wallet_common.enter_passphrase')"
+							required
+							type="password"
+							autocomplete="new-password">
+						</v-text-field>
+					</v-card-text>
+					<v-card-actions class="justify-end">
+						<v-btn text @click="onClose">Cancel</v-btn>
+						<v-btn color="primary" text @click="onSubmit">Submit</v-btn>
+					</v-card-actions>
+				</v-card>
+			</template>
 		</v-dialog>
 	`
 })
@@ -992,7 +1017,8 @@ Vue.component('account-send-form', {
 			currency: null,
 			confirmed: false,
 			result: null,
-			error: null
+			error: null,
+			passphrase_dialog: false
 		}
 	},
 	methods: {
@@ -1028,8 +1054,7 @@ Vue.component('account-send-form', {
 				.then(response => response.json())
 				.then(data => {
 					if(data) {
-						// TODO: open passphrase-dialog and call submit_ex(passphrase)
-						alert("TODO: passphrase dialog");
+						this.passphrase_dialog = true;
 					} else {
 						this.submit_ex(null);
 					}
@@ -1116,6 +1141,9 @@ Vue.component('account-send-form', {
 	},
 	template: `
 		<div>
+
+			<passphrase-dialog v-model="passphrase_dialog" @submit="p => submit_ex(p)"/>
+
 			<balance-table :address="source" :show_empty="true" v-if="source" ref="balance"></balance-table>
 			<account-balance :index="index" v-if="!source" ref="balance"></account-balance>
 
