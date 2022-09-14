@@ -110,11 +110,17 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	bool is_locked(uint index) const;
 	
+	void lock(uint index);
+	
+	void unlock(uint index, string passphrase);
+	
 	void add_account(uint index, account_t config, optional<string> passphrase);
 	
 	void create_account(account_t config, optional<string> passphrase);
 	
 	void create_wallet(account_t config, optional<string> words, optional<string> passphrase);
+	
+	vector<string> get_mnemonic_wordlist(string lang = "en") const;
 	
 	set<addr_t> get_token_list() const;
 	

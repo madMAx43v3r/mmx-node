@@ -126,6 +126,10 @@ protected:
 
 	bool is_locked(const uint32_t& index) const override;
 
+	void lock(const uint32_t& index) override;
+
+	void unlock(const uint32_t& index, const std::string& passphrase) override;
+
 	void add_account(const uint32_t& index, const account_t& config, const vnx::optional<std::string>& passphrase) override;
 
 	void create_account(const account_t& config, const vnx::optional<std::string>& passphrase) override;
@@ -141,6 +145,8 @@ protected:
 	hash_t get_master_seed(const uint32_t& index) const override;
 
 	std::vector<std::string> get_mnemonic_seed(const uint32_t& index) const override;
+
+	std::vector<std::string> get_mnemonic_wordlist(const std::string& lang) const override;
 
 	void http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
 							const vnx::request_id_t& request_id) const override;

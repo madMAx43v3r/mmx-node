@@ -747,6 +747,16 @@ bool Wallet::is_locked(const uint32_t& index) const
 	return get_wallet(index)->is_locked();
 }
 
+void Wallet::lock(const uint32_t& index)
+{
+	get_wallet(index)->lock();
+}
+
+void Wallet::unlock(const uint32_t& index, const std::string& passphrase)
+{
+	get_wallet(index)->unlock(passphrase);
+}
+
 void Wallet::add_account(const uint32_t& index, const account_t& config, const vnx::optional<std::string>& passphrase)
 {
 	if(index >= wallets.size()) {
@@ -899,6 +909,14 @@ std::vector<std::string> Wallet::get_mnemonic_seed(const uint32_t& index) const
 		return mnemonic::seed_to_words(key_file->seed_value);
 	}
 	throw std::logic_error("failed to read key file");
+}
+
+std::vector<std::string> Wallet::get_mnemonic_wordlist(const std::string& lang) const
+{
+	if(lang == "en") {
+		return mnemonic::wordlist_en;
+	}
+	throw std::logic_error("unknown language");
 }
 
 void Wallet::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
