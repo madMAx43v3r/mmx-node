@@ -26,6 +26,8 @@ protected:
 private:
 	std::shared_ptr<WalletClient> wallet;
 
+	uint32_t last_height = 0;
+
 };
 
 
