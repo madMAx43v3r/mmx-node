@@ -756,14 +756,15 @@ Vue.component('account-actions', {
 						<template v-slot:default="dialog">
 							<v-card>
 							<v-toolbar color="primary"></v-toolbar>
-								<v-card-text>
+								<v-card-text class="pb-0">
 									<v-container>					
 										<seed v-model="seed.string" readonly></seed>
 									</v-container>
 								</v-card-text>
-								<v-card-actions class="justify-end">
-								<v-btn text @click="copyToClipboard(seed.string)">Copy</v-btn>
-								<v-btn text @click="dialog.value = false">Close</v-btn>
+								<v-card-actions>
+									<v-spacer></v-spacer>
+									<v-btn text @click="copyToClipboard(seed.string)">Copy</v-btn>
+									<v-btn text @click="dialog.value = false">Close</v-btn>
 								</v-card-actions>
 							</v-card>
 						</template>
@@ -1023,7 +1024,7 @@ Vue.component('passphrase-dialog', {
 				<v-card>
 					<v-toolbar color="primary">
 					</v-toolbar>
-					<v-card-text>			
+					<v-card-text class="pb-0">			
 						<v-text-field
 							v-model="passphrase"
 							:label="$t('wallet_common.enter_passphrase')"
@@ -1032,7 +1033,8 @@ Vue.component('passphrase-dialog', {
 							autocomplete="new-password">
 						</v-text-field>
 					</v-card-text>
-					<v-card-actions class="justify-end">
+					<v-card-actions>
+						<v-spacer></v-spacer>
 						<v-btn text @click="onClose">Cancel</v-btn>
 						<v-btn color="primary" text @click="onSubmit">Submit</v-btn>
 					</v-card-actions>
