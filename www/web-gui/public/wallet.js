@@ -15,10 +15,6 @@ Vue.component('wallet-summary', {
 					this.loading = false;
 					this.data = data;
 				})
-				.catch(error => {
-					setTimeout(this.update, 1000);
-                    throw(error);
-                });
 		}
 	},
 	created() {
