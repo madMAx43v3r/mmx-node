@@ -71,8 +71,6 @@ static const u32 RC[] = {
     T1 = ADD32(SIGMA0_AVX(a), MAJ_AVX(a, b, c)); \
     h = ADD32(T0, T1);
 
-static const __m128i MASK = _mm_set_epi64x(0x0c0d0e0f08090a0b, 0x0405060700010203);
-
 
 inline uint32_t bswap_32(const uint32_t val) {
 	return ((val & 0xFF) << 24) | ((val & 0xFF00) << 8) | ((val & 0xFF0000) >> 8) | ((val & 0xFF000000) >> 24);
@@ -120,6 +118,7 @@ void sha256_avx2_64_x8(uint8_t* out, uint8_t* in, const uint64_t length)
 	}
 	const uint8_t end_bit = 0x80;
 	const uint64_t num_bits = bswap_64(length * 8);
+	const __m128i MASK = _mm_set_epi64x(0x0c0d0e0f08090a0b, 0x0405060700010203);
 
 	for(int i = 0; i < 8; ++i) {
 		::memset(in + i * 64 + length, 0, 64 - length);
