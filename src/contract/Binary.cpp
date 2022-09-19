@@ -5,7 +5,6 @@
  *      Author: mad
  */
 
-
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/contract/Binary.hxx>
 #include <mmx/operation/Execute.hxx>
@@ -55,9 +54,9 @@ uint64_t Binary::calc_cost(std::shared_ptr<const ChainParams> params) const
 	for(const auto& entry : methods) {
 		payload += 4 + entry.first.size() + entry.second.num_bytes();
 	}
-	payload += constant.size() + binary.size();
+	payload += name.size() + constant.size() + binary.size() + source.size() + compiler.size();
 
-	return Super::calc_cost(params) + payload * params->min_txfee_byte;
+	return payload * params->min_txfee_byte;
 }
 
 
