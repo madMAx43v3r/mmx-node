@@ -15,10 +15,6 @@ Vue.component('wallet-summary', {
 					this.loading = false;
 					this.data = data;
 				})
-				.catch(error => {
-					setTimeout(this.update, 1000);
-                    throw(error);
-                });
 		}
 	},
 	created() {
@@ -742,33 +738,33 @@ Vue.component('account-actions', {
 					this.seed = data;
 					this.dialog = true;
 				});
-		}
+		},
+		copyToClipboard(value) {
+			navigator.clipboard.writeText(value).then(() => {});
+		}		
 	},
 	template: `
-		<div>
+		<div>			
 			<v-card>
 				<v-card-text>
 					<v-btn outlined @click="reset_cache">{{ $t('account_actions.reset_cache') }}</v-btn>
 
-					<v-dialog v-model="dialog"
-						transition="dialog-top-transition"
-						max-width="800"
-					>
+					<v-dialog v-model="dialog" max-width="800">
 						<template v-slot:activator="{ on, attrs }">
 							<v-btn outlined @click="show_seed">{{ $t('account_actions.show_seed') }}</v-btn>
 						</template>
 						<template v-slot:default="dialog">
 							<v-card>
-								<v-card-text>
-									<v-container>
-										{{seed.string}}
+							<v-toolbar color="primary"></v-toolbar>
+								<v-card-text class="pb-0">
+									<v-container>					
+										<seed v-model="seed.string" readonly></seed>
 									</v-container>
 								</v-card-text>
-								<v-card-actions class="justify-end">
-									<v-btn
-										text
-										@click="dialog.value = false"
-									>Close</v-btn>
+								<v-card-actions>
+									<v-spacer></v-spacer>
+									<v-btn text @click="copyToClipboard(seed.string)">Copy</v-btn>
+									<v-btn text @click="dialog.value = false">Close</v-btn>
 								</v-card-actions>
 							</v-card>
 						</template>
@@ -947,13 +943,25 @@ Vue.component('create-wallet', {
 						:label="$t('create_wallet.use_custom_seed')">
 					</v-checkbox>
 
-					<v-text-field
+					<!--v-text-field
 						v-model="seed"
 						:label="$t('create_wallet.seed_words')"
 						:placeholder="$t('create_wallet.placeholder')" 
 						:disabled="!with_seed">
-					</v-text-field>
-					
+					</v-text-field-->
+
+					<v-expansion-panels      				
+						:value="with_seed?0:null"
+						:disabled="!with_seed"
+					>
+						<v-expansion-panel>
+							<v-expansion-panel-header>{{$t('create_wallet.seed_words')}}</v-expansion-panel-header>
+							<v-expansion-panel-content>
+								<seed v-model="seed" :disabled="!with_seed"/>
+							</v-expansion-panel-content>
+						</v-expansion-panel>
+					</v-expansion-panels>
+
 					<v-checkbox
 						v-model="with_passphrase"
 						:label="$t('create_wallet.use_passphrase')">
@@ -1022,7 +1030,7 @@ Vue.component('passphrase-dialog', {
 				<v-card>
 					<v-toolbar color="primary">
 					</v-toolbar>
-					<v-card-text>			
+					<v-card-text class="pb-0">			
 						<v-text-field
 							v-model="passphrase"
 							:label="$t('wallet_common.enter_passphrase')"
@@ -1034,7 +1042,8 @@ Vue.component('passphrase-dialog', {
 							>
 						</v-text-field>
 					</v-card-text>
-					<v-card-actions class="justify-end">
+					<v-card-actions>
+						<v-spacer></v-spacer>
 						<v-btn text @click="onClose">Cancel</v-btn>
 						<v-btn color="primary" text @click="onSubmit">Submit</v-btn>
 					</v-card-actions>
