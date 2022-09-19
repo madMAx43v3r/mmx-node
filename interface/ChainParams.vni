@@ -50,4 +50,6 @@ class ChainParams {
 	
 	string vdf_seed;
 	
+	addr_t offer_binary;
+	
 }

@@ -12,7 +12,6 @@
 #include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/ProofOfSpaceNFT.hxx>
 #include <mmx/contract/Token.hxx>
-#include <mmx/contract/Offer.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/contract/Binary.hxx>
 #include <mmx/contract/Executable.hxx>
@@ -907,45 +906,37 @@ std::vector<std::pair<addr_t, std::shared_ptr<const Contract>>> Node::get_virtua
 	return out;
 }
 
-std::vector<offer_data_t> Node::get_offers(const uint32_t& since, const vnx::bool_t& is_open, const vnx::bool_t& is_covered) const
+offer_data_t Node::get_offer(const addr_t& address) const
+{
+	auto data = read_storage(address, -1);
+
+	offer_data_t out;
+	out.address = address;
+	out.height = data["height_open"].to_uint();
+	out.bid_currency = data["bid_currency"].to_string();
+	out.ask_currency = data["ask_currency"].to_string();
+	out.bid_amount = data["bid_amount"].to_uint();
+	out.ask_amount = data["ask_amount"].to_uint();
+	out.state = data["state"].to_string();
+	{
+		auto iter = data.find("height_close");
+		if(iter != data.end()) {
+			out.close_height = iter->second.to_uint();
+		}
+	}
+	return out;
+}
+
+std::vector<offer_data_t> Node::get_offers(const uint32_t& since, const vnx::bool_t& is_open) const
 {
 	std::vector<addr_t> entries;
 	offer_log.find_range(std::make_pair(since, 0), std::make_pair(-1, -1), entries);
 
 	std::vector<offer_data_t> out;
 	for(const auto& address : entries) {
-		if(auto offer = std::dynamic_pointer_cast<const contract::Offer>(get_contract(address))) {
-			if(const auto& tx = offer->base) {
-				offer_data_t data;
-				data.height = *get_tx_height(address);
-				data.address = address;
-				data.offer = tx;
-				if(tx->sender) {
-//					data.is_revoked = is_revoked(tx->id, *tx->sender);
-				}
-				if(!data.is_revoked) {
-					if(auto height = get_tx_height(tx->id)) {
-						data.is_open = false;
-						data.close_height = *height;
-					}
-				}
-				if(data.is_open) {
-					data.is_covered = true;
-					std::map<std::pair<addr_t, addr_t>, uint128> inputs;
-					for(const auto& in : tx->get_all_inputs()) {
-						inputs[std::make_pair(in.address, in.contract)] += in.amount;
-					}
-					for(const auto& entry : inputs) {
-						auto iter = balance_map.find(entry.first);
-						if(iter == balance_map.end() || iter->second < entry.second) {
-							data.is_covered = false;
-						}
-					}
-				}
-				if(!is_open || (data.is_open && (!is_covered || data.is_covered))) {
-					out.push_back(data);
-				}
-			}
+		const auto data = get_offer(address);
+		if(!is_open || data.state == "OPEN") {
+			out.push_back(data);
 		}
 	}
 	return out;
@@ -1582,8 +1573,10 @@ void Node::apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Tran
 			if(tx->sender) {
 				deploy_map.insert(*tx->sender, tx->id);
 			}
-			if(std::dynamic_pointer_cast<const contract::Offer>(contract)) {
-				offer_log.insert(std::make_pair(block->height, counter++), tx->id);
+			if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(contract)) {
+				if(exec->binary == params->offer_binary) {
+					offer_log.insert(std::make_pair(block->height, counter++), tx->id);
+				}
 			}
 			if(auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(contract)) {
 				vplot_map.insert(plot->farmer_key, tx->id);

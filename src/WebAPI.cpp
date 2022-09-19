@@ -20,7 +20,6 @@
 #include <mmx/contract/PuzzleTimeLock.hxx>
 #include <mmx/contract/Executable.hxx>
 #include <mmx/contract/PlotNFT.hxx>
-#include <mmx/contract/Offer.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/operation/Mint.hxx>
 #include <mmx/operation/Spend.hxx>
@@ -384,6 +383,27 @@ public:
 		set(tmp);
 	}
 
+	void accept(const offer_data_t& value) {
+		auto tmp = render(value, context);
+		if(context) {
+			double bid_value = 0;
+			double ask_value = 0;
+			if(auto currency = context->find_currency(value.bid_currency)) {
+				bid_value = to_value(value.bid_amount, currency->decimals);
+				tmp["bid_value"] = bid_value;
+				tmp["bid_symbol"] = currency->symbol;
+			}
+			if(auto currency = context->find_currency(value.ask_currency)) {
+				ask_value = to_value(value.ask_amount, currency->decimals);
+				tmp["ask_value"] = ask_value;
+				tmp["ask_symbol"] = currency->symbol;
+			}
+			tmp["price"] = ask_value / bid_value;
+			tmp["time"] = context->get_time(value.height);
+		}
+		set(tmp);
+	}
+
 	void accept(std::shared_ptr<const Transaction> value) {
 		set(render(value, context));
 	}
@@ -442,8 +462,6 @@ public:
 		} else if(auto value = std::dynamic_pointer_cast<const contract::Executable>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::VirtualPlot>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::Offer>(base)) {
 			set(render(value, context));
 		} else {
 			set(base);
@@ -956,7 +974,7 @@ void WebAPI::render_tx_history(const vnx::request_id_t& request_id, const std::v
 	}
 }
 
-void WebAPI::render_offers(const vnx::request_id_t& request_id, const std::map<addr_t, std::shared_ptr<const contract::Offer>>& offers) const
+void WebAPI::render_offers(const vnx::request_id_t& request_id, const std::vector<addr_t>& offers) const
 {
 	struct job_t {
 		size_t num_left = 0;
@@ -973,37 +991,16 @@ void WebAPI::render_offers(const vnx::request_id_t& request_id, const std::map<a
 		return;
 	}
 	size_t i = 0;
-	for(const auto& entry : offers) {
-		const auto& tx = entry.second->base;
-		job->result[i]["id"] = entry.first.to_string();
-		node->get_tx_height(entry.first,
-			[this, job, i](const vnx::optional<uint32_t>& height) {
-				if(height) {
-					job->result[i]["time"] = get_context()->get_time(*height);
-				}
-				job->result[i]["height"] = height;
-			});
-		if(tx->sender) {
-//			node->is_revoked(tx->id, *tx->sender,
-//				[this, job, i](const vnx::optional<::mmx::hash_t>& txid) {
-//					if(txid) {
-//						job->result[i]["revoked_by"] = txid->to_string();
-//					}
-//					job->result[i]["revoked"] = bool(txid);
-//				});
-		}
-		node->get_tx_info_for(tx,
-			[this, job, i](const vnx::optional<tx_info_t>& info) {
-				if(info) {
-					auto context = get_context();
-					for(const auto& entry : info->contracts) {
-						context->add_contract(entry.first, entry.second);
-					}
-					job->result[i]["base"] = render_value(info, context);
-				}
-				if(--job->num_left == 0) {
-					respond(job->request_id, render_value(job->result));
-				}
+	for(const auto& address : offers) {
+		node->get_offer(address,
+			[this, request_id, job, i](const offer_data_t& data) {
+				get_context({data.bid_currency, data.ask_currency}, request_id,
+					[this, request_id, job, i, data](std::shared_ptr<RenderContext> context) {
+						job->result[i] = render(data, context);
+						if(--job->num_left == 0) {
+							respond(job->request_id, render_value(job->result));
+						}
+					});
 			});
 		i++;
 	}
@@ -1460,10 +1457,12 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			const uint32_t index = vnx::from_string_value<int64_t>(iter_index->second);
 			wallet->get_contracts(index,
 				[this, request_id](const std::map<addr_t, std::shared_ptr<const Contract>>& contracts) {
-					std::map<addr_t, std::shared_ptr<const contract::Offer>> out;
+					std::vector<addr_t> out;
 					for(const auto& entry : contracts) {
-						if(auto offer = std::dynamic_pointer_cast<const contract::Offer>(entry.second)) {
-							out.emplace(entry.first, offer);
+						if(auto offer = std::dynamic_pointer_cast<const contract::Executable>(entry.second)) {
+							if(offer->binary == params->offer_binary) {
+								out.push_back(entry.first);
+							}
 						}
 					}
 					render_offers(request_id, out);
@@ -1602,14 +1601,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 						}
 						const auto index = args["index"].to<uint32_t>();
 						wallet->make_offer(index, 0, bid_amount, bid_currency, ask_amount, ask_currency, {},
-							[this, request_id, index](std::shared_ptr<const Transaction> tx) {
-								auto offer = mmx::contract::Offer::create();
-								offer->base = tx;
-								wallet->deploy(index, offer, {},
-									[this, request_id](std::shared_ptr<const Transaction> tx) {
-										respond(request_id, vnx::Variant(tx->id.to_string()));
-									},
-									std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+							[this, request_id](std::shared_ptr<const Transaction> tx) {
+								respond(request_id, tx->to_object());
 							},
 							std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 					} catch(std::exception& ex) {
@@ -1620,21 +1613,20 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "POST wallet/offer {...}");
 		}
 	}
-	else if(sub_path == "/wallet/revoke") {
+	else if(sub_path == "/wallet/cancel") {
 		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
 		if(request->payload.size()) {
 			vnx::Object args;
 			vnx::from_string(request->payload.as_string(), args);
 			const auto index = args["index"].to<uint32_t>();
-			const auto txid = args["txid"].to<hash_t>();
 			const auto address = args["address"].to<addr_t>();
-			wallet->revoke(index, txid, address, {},
+			wallet->cancel_offer(index, address, {},
 				[this, request_id](std::shared_ptr<const Transaction> tx) {
-					respond(request_id, vnx::Variant(tx->id.to_string()));
+					respond(request_id, tx->to_object());
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "POST wallet/revoke {...}");
+			respond_status(request_id, 404, "POST wallet/cancel {...}");
 		}
 	}
 	else if(sub_path == "/wallet/accept") {
@@ -1644,19 +1636,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			vnx::from_string(request->payload.as_string(), args);
 			const auto index = args["index"].to<uint32_t>();
 			const auto address = args["address"].to<addr_t>();
-			node->get_contract(address,
-				[this, request_id, index](std::shared_ptr<const Contract> contract) {
-					if(auto offer = std::dynamic_pointer_cast<const contract::Offer>(contract)) {
-						spend_options_t options;
-						options.expire_delta = 10;
-						wallet->accept_offer(index, offer->base, options,
-							[this, request_id](std::shared_ptr<const Transaction> tx) {
-								respond(request_id, vnx::Variant(tx->id.to_string()));
-							},
-							std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
-					} else {
-						respond_ex(request_id, std::logic_error("no such offer"));
-					}
+			wallet->accept_offer(index, address, 0, {},
+				[this, request_id](std::shared_ptr<const Transaction> tx) {
+					respond(request_id, tx->to_object());
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
@@ -1681,7 +1663,6 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const auto iter_offset = query.find("offset");
 		const auto iter_since = query.find("since");
 		const auto iter_open = query.find("is_open");
-		const auto iter_covered = query.find("is_covered");
 		if(iter_bid != query.end()) {
 			bid = vnx::from_string_value<addr_t>(iter_bid->second);
 		}
@@ -1692,45 +1673,20 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
 		const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 		const bool is_open = iter_open != query.end() ? vnx::from_string<bool>(iter_open->second) : true;
-		const bool is_covered = iter_covered != query.end() ? vnx::from_string<bool>(iter_covered->second) : true;
-		node->get_offers(since, is_open, is_covered,
+		node->get_offers(since, is_open,
 			[this, request_id, bid, ask, limit, offset](const std::vector<offer_data_t>& offers) {
-				std::vector<std::pair<offer_data_t, double>> result;
 				std::unordered_set<addr_t> addr_set;
+				std::vector<std::pair<offer_data_t, double>> result;
 				for(const auto& entry : offers) {
-					bool is_match = true;
-					uint128_t bid_amount = 0;
-					uint128_t ask_amount = 0;
-					for(const auto& in : entry.offer->get_all_inputs()) {
-						if(bid) {
-							if(in.contract == *bid) {
-								bid_amount += in.amount;
-							} else {
-								is_match = false;
-							}
-						}
-						addr_set.insert(in.contract);
-					}
-					for(const auto& out : entry.offer->get_all_outputs()) {
-						if(ask) {
-							if(out.contract == *ask) {
-								ask_amount += out.amount;
-							} else {
-								is_match = false;
-							}
-						}
-						addr_set.insert(out.contract);
-					}
-					if(is_match) {
+					if((!bid || entry.bid_currency == *bid) && (!ask || entry.ask_currency == *ask))
+					{
 						double price = std::numeric_limits<double>::quiet_NaN();
-						if(ask_amount.upper()) {
-							price = std::numeric_limits<double>::infinity();
-						} else if(bid_amount.upper()) {
-							price = 0;
-						} else if(bid && ask) {
-							price = double(ask_amount.lower()) / bid_amount.lower();
+						if(bid && ask) {
+							price = double(entry.ask_amount) / entry.bid_amount;
 						}
 						result.emplace_back(entry, price);
+						addr_set.insert(entry.bid_currency);
+						addr_set.insert(entry.ask_currency);
 					}
 				}
 				if(bid && ask) {
@@ -1747,36 +1703,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					[this, request_id, result](std::shared_ptr<RenderContext> context) {
 						std::vector<vnx::Object> res;
 						for(const auto& entry : result) {
-							auto tmp = render(entry.first, context);
-							std::vector<txio_t> bids;
-							std::vector<txio_t> asks;
-							for(const auto& balance : entry.first.offer->get_balance()) {
-								txio_t entry;
-								entry.contract = balance.first.to_string();
-								if(balance.second.first > balance.second.second) {
-									const auto amount = balance.second.first - balance.second.second;
-									if(amount.upper()) {
-										continue;
-									}
-									entry.amount = amount.lower();
-									bids.push_back(entry);
-								}
-								if(balance.second.first < balance.second.second) {
-									const auto amount = balance.second.second - balance.second.first;
-									if(amount.upper()) {
-										continue;
-									}
-									entry.amount = amount.lower();
-									asks.push_back(entry);
-								}
-							}
-							if(entry.second != std::numeric_limits<double>::quiet_NaN()) {
-								tmp["price"] = entry.second;
-							}
-							tmp["bids"] = render_value(bids, context);
-							tmp["asks"] = render_value(asks, context);
-							tmp["time"] = context->get_time(entry.first.height);
-							res.push_back(tmp);
+							res.push_back(render(entry.first, context));
 						}
 						respond(request_id, render_value(res));
 					});
@@ -2151,7 +2078,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			"config/get", "config/set",
 			"node/info", "node/log", "header", "headers", "block", "blocks", "transaction", "transactions", "address", "contract",
 			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/coins", "wallet/history",
-			"wallet/send", "wallet/revoke", "wallet/accept", "farmer/info", "node/offers",
+			"wallet/send", "wallet/cancel", "wallet/accept", "farmer/info", "node/offers",
 			"exchange/offer", "exchange/place", "exchange/offers", "exchange/pairs", "exchange/orders", "exchange/price",
 			"exchange/trade", "exchange/history", "exchange/trades", "exchange/min_trade"
 		};

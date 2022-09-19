@@ -177,7 +177,10 @@ module Node implements vnx.addons.HttpComponent {
 	ulong get_virtual_plot_balance(addr_t plot_id, optional<hash_t> block_hash) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<offer_data_t> get_offers(uint since, bool is_open, bool is_covered) const;
+	offer_data_t get_offer(addr_t address) const;
+	
+	@Permission(permission_e.PUBLIC)
+	vector<offer_data_t> get_offers(uint since, bool is_open) const;
 	
 	@Permission(permission_e.PUBLIC)
 	uint128 get_total_supply(addr_t currency) const;

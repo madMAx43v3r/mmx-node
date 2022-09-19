@@ -349,14 +349,10 @@ std::string to_string(const var_t* var)
 			return "<0x" + vnx::to_hex_string(((const ref_t*)var)->address) + ">";
 		case TYPE_UINT:
 			return ((const uint_t*)var)->value.str(10);
-		case TYPE_STRING: {
-			auto bin = (const binary_t*)var;
-			return "\"" + std::string((const char*)bin->data(), bin->size) + "\"";
-		}
-		case TYPE_BINARY: {
-			auto bin = (const binary_t*)var;
-			return "0x" + vnx::to_hex_string(bin->data(), bin->size, false);
-		}
+		case TYPE_STRING:
+			return "\"" + ((const binary_t*)var)->to_string() + "\"";
+		case TYPE_BINARY:
+			return "0x" + ((const binary_t*)var)->to_hex_string();
 		case TYPE_ARRAY: {
 			auto array = (const array_t*)var;
 			return "[0x" + vnx::to_hex_string(array->address) + "," + std::to_string(array->size) + "]";
@@ -365,6 +361,47 @@ std::string to_string(const var_t* var)
 			return "{0x" + vnx::to_hex_string(((const map_t*)var)->address) + "}";
 		default:
 			return "?";
+	}
+}
+
+uint256_t to_uint(const var_t* var)
+{
+	if(!var) {
+		return 0;
+	}
+	switch(var->type) {
+		case TYPE_UINT:
+			return ((const uint_t*)var)->value;
+		default:
+			return 0;
+	}
+}
+
+hash_t to_mmx_hash(const var_t* var)
+{
+	if(!var) {
+		return hash_t();
+	}
+	switch(var->type) {
+		case TYPE_UINT:
+			return hash_t::from_bytes(((const uint_t*)var)->value);
+		default:
+			return hash_t();
+	}
+}
+
+addr_t to_mmx_addr(const var_t* var)
+{
+	if(!var) {
+		return addr_t();
+	}
+	switch(var->type) {
+		case TYPE_UINT:
+			return addr_t(((const uint_t*)var)->value);
+		case TYPE_STRING:
+			return addr_t(((const binary_t*)var)->to_string());
+		default:
+			return addr_t();
 	}
 }
 

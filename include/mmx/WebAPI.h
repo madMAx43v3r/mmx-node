@@ -12,7 +12,6 @@
 #include <mmx/NodeAsyncClient.hxx>
 #include <mmx/WalletAsyncClient.hxx>
 #include <mmx/FarmerAsyncClient.hxx>
-#include <mmx/contract/Offer.hxx>
 //#include <mmx/exchange/ClientAsyncClient.hxx>
 #include <mmx/Block.hxx>
 
@@ -72,7 +71,7 @@ private:
 
 	void render_tx_history(const vnx::request_id_t& request_id, const std::vector<tx_log_entry_t>& history) const;
 
-	void render_offers(const vnx::request_id_t& request_id, const std::map<addr_t, std::shared_ptr<const contract::Offer>>& offers) const;
+	void render_offers(const vnx::request_id_t& request_id, const std::vector<addr_t>& offers) const;
 
 	void render_block_graph(const vnx::request_id_t& request_id, size_t limit, const size_t step, const uint32_t height) const;
 

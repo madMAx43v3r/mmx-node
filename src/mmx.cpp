@@ -14,7 +14,6 @@
 #include <mmx/Contract.hxx>
 #include <mmx/contract/NFT.hxx>
 #include <mmx/contract/PlotNFT.hxx>
-#include <mmx/contract/Offer.hxx>
 #include <mmx/contract/TokenBase.hxx>
 #include <mmx/contract/Executable.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
@@ -293,14 +292,16 @@ int main(int argc, char** argv)
 						if(auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract)) {
 							std::cout << ", " << token->symbol << ", " << token->name;
 						}
-						else if(auto offer = std::dynamic_pointer_cast<const mmx::contract::Offer>(contract)) {
-							if(false) {
-//							if(offer->base->sender && node.is_revoked(offer->base->id, *offer->base->sender)) {
-								std::cout << ", revoked";
-							} else if(auto height = node.get_tx_height(offer->base->id)) {
-								std::cout << ", accepted at height " << *height;
-							} else {
-								std::cout << ", open";
+						else if(auto exec = std::dynamic_pointer_cast<const mmx::contract::Executable>(contract)) {
+							if(exec->binary == params->offer_binary) {
+								const auto data = node.get_offer(address);
+								if(data.state == "REVOKED") {
+									std::cout << ", revoked";
+								} else if(data.state == "CLOSED") {
+									std::cout << ", accepted at height " << data.close_height;
+								} else if(data.state == "OPEN") {
+									std::cout << ", open";
+								}
 							}
 						}
 						else if(auto plot = std::dynamic_pointer_cast<const mmx::contract::VirtualPlot>(contract)) {
@@ -515,6 +516,9 @@ int main(int argc, char** argv)
 				}
 				std::shared_ptr<const mmx::Transaction> tx;
 				if(command == "exec") {
+					if(!spend_options.user) {
+						spend_options.user = wallet.get_address(index, offset);
+					}
 					tx = wallet.execute(index, contract, method, args, spend_options);
 					std::cout << "Executed " << method << "() with ";
 				} else {
@@ -530,7 +534,7 @@ int main(int argc, char** argv)
 				vnx::accept(printer, args);
 				std::cout << std::endl << "Transaction ID: " << tx->id << std::endl;
 			}
-			else if(command == "offer" || command == "make_offer")
+			else if(command == "offer")
 			{
 				const auto bid = contract;
 				const auto ask = ask_currency;
@@ -554,102 +558,57 @@ int main(int argc, char** argv)
 				std::cout << "Offering " << amount << " " << bid_token->symbol
 						<< " for " << ask_amount << " " << ask_token->symbol << std::endl;
 
-				auto offer = wallet.make_offer(index, offset, bid_value, bid, ask_value, ask, spend_options);
-				if(command == "offer") {
-					auto contract = mmx::contract::Offer::create();
-					contract->base = offer;
-					auto tx = wallet.deploy(index, contract, spend_options);
-					std::cout << "Contract: " << mmx::addr_t(tx->id) << std::endl;
-					std::cout << "Transaction ID: " << tx->id << std::endl;
-				} else {
-					if(file_name.empty()) {
-						file_name = "offer_" + vnx::get_date_string_ex("%Y%m%d_%H%M%S", true) + ".dat";
-					}
-					std::cout << "Writing to file: " << file_name << std::endl;
-					vnx::write_to_file(file_name, offer);
-				}
+				auto tx = wallet.make_offer(index, offset, bid_value, bid, ask_value, ask, spend_options);
+				std::cout << "Contract: " << mmx::addr_t(tx->id) << std::endl;
+				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
 			else if(command == "accept")
 			{
 				mmx::addr_t address;
 				vnx::read_config("$3", address);
 
-				std::shared_ptr<const mmx::Transaction> offer;
-				if(address != mmx::addr_t()) {
-					if(auto contract = std::dynamic_pointer_cast<const mmx::contract::Offer>(node.get_contract(address))) {
-						offer = contract->base;
-					}
-					if(!offer) {
-						vnx::log_error() << "No such offer: " << address; goto failed;
-					}
+				const auto data = node.get_offer(address);
+
+				std::cout << "  You receive:   ";
+				if(auto token = get_token(node, data.bid_currency)) {
+					std::cout << mmx::to_value(data.bid_amount, token->decimals) << " " << token->symbol << " [" << data.bid_currency << "]";
 				} else {
-					if(file_name.empty()) {
-						vnx::log_error() << "Missing file name (-f) or address"; goto failed;
-					}
-					offer = vnx::read_from_file<mmx::Transaction>(file_name);
-					if(!offer) {
-						vnx::log_error() << "Failed to read from file: " << file_name; goto failed;
-					}
+					std::cout << data.bid_amount << " [" << data.bid_currency << "]";
 				}
-				for(const auto& entry : offer->get_balance()) {
-					const auto& input = entry.second.first;
-					const auto& output = entry.second.second;
-					if(input > output) {
-						const auto amount = input - output;
-						if(amount.upper()) {
-							throw std::logic_error("amount overflow");
-						}
-						const auto token = get_token(node, entry.first);
-						std::cout << "You receive:  " << amount.lower() / pow(10, token->decimals)
-								<< " " << token->symbol << " [" << entry.first << "]" << std::endl;
-					}
+				std::cout << std::endl;
+
+				std::cout << "  They ask for: ";
+				if(auto token = get_token(node, data.ask_currency)) {
+					std::cout << mmx::to_value(data.ask_amount, token->decimals) << " " << token->symbol << " [" << data.ask_currency << "]";
+				} else {
+					std::cout << data.ask_amount << " [" << data.ask_currency << "]";
 				}
-				for(const auto& entry : offer->get_balance()) {
-					const auto& input = entry.second.first;
-					const auto& output = entry.second.second;
-					if(input < output) {
-						const auto amount = output - input;
-						if(amount.upper()) {
-							throw std::logic_error("amount overflow");
-						}
-						const auto token = get_token(node, entry.first);
-						std::cout << "They ask for: " << amount.lower() / pow(10, token->decimals)
-								<< " " << token->symbol << " [" << entry.first << "]" << std::endl;
-					}
-				}
+				std::cout << std::endl;
+
 				if(pre_accept || accept_prompt()) {
-					if(!spend_options.expire_delta) {
-						spend_options.expire_delta = 10;
-					}
 					if(wallet.is_locked(index)) {
 						spend_options.passphrase = vnx::input_password("Passphrase: ");
 					}
-					auto tx = wallet.accept_offer(index, offer, spend_options);
+					auto tx = wallet.accept_offer(index, address, offset, spend_options);
 					std::cout << "Transaction ID: " << tx->id << std::endl;
 				}
 			}
-			else if(command == "revoke")
+			else if(command == "cancel")
 			{
 				mmx::addr_t address;
 				vnx::read_config("$3", address);
 
-				std::shared_ptr<const mmx::Transaction> prev;
-				if(address != mmx::addr_t()) {
-					if(auto contract = node.get_contract(address)) {
-						if(auto offer = std::dynamic_pointer_cast<const mmx::contract::Offer>(contract)) {
-							prev = offer->base;
-						}
-					}
-				} else if(!file_name.empty()) {
-					prev = vnx::read_from_file<mmx::Transaction>(file_name);
+				auto offer = std::dynamic_pointer_cast<const mmx::contract::Executable>(node.get_contract(address));
+				if(!offer || offer->binary != params->offer_binary) {
+					vnx::log_error() << "No such offer: " << address; goto failed;
 				}
-				if(prev && prev->sender) {
-					if(wallet.is_locked(index)) {
-						spend_options.passphrase = vnx::input_password("Passphrase: ");
-					}
-					auto tx = wallet.revoke(index, prev->id, *prev->sender, spend_options);
-					std::cout << "Transaction ID: " << tx->id << std::endl;
+				spend_options.user = node.read_storage_field(address, "owner").first.to_addr();
+
+				if(wallet.is_locked(index)) {
+					spend_options.passphrase = vnx::input_password("Passphrase: ");
 				}
+				auto tx = wallet.execute(index, address, "cancel", {}, spend_options);
+				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
 			else if(command == "log")
 			{
@@ -706,7 +665,7 @@ int main(int argc, char** argv)
 						<< std::endl << wallet.seed_value << std::endl;
 			}
 			else {
-				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | transfer | make_offer | offer | accept | revoke | mint | deploy | mutate | exec | create | accounts | keys | lock | unlock]" << std::endl;
+				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | transfer | offer | accept | cancel | mint | deploy | mutate | exec | create | accounts | keys | lock | unlock]" << std::endl;
 			}
 		}
 		else if(module == "node")
@@ -1090,19 +1049,16 @@ int main(int argc, char** argv)
 
 				for(const auto& data : node.get_offers())
 				{
-					if(data.is_revoked) {
+					if(data.state == "REVOKED") {
 						if(!filter.empty() && filter != "revoked") {
 							continue;
 						}
 						std::cout << "REVOKED";
-					} else if(data.is_open) {
+					} else if(data.state == "OPEN") {
 						if(!filter.empty() && filter != "open") {
 							continue;
 						}
 						std::cout << "OPEN";
-						if(!data.is_covered) {
-							std::cout << " NOT COVERED";
-						}
 					} else {
 						if(!filter.empty() && filter != "closed") {
 							continue;
@@ -1111,34 +1067,21 @@ int main(int argc, char** argv)
 					}
 					std::cout << " [" << data.address << "] [" << data.height << "] " << std::endl;
 
-					for(const auto& entry : data.offer->get_balance()) {
-						const auto& input = entry.second.first;
-						const auto& output = entry.second.second;
-						if(input > output) {
-							std::cout << "  They offer:   ";
-							const auto amount = (input - output).lower();
-							if(auto token = get_token(node, entry.first)) {
-								std::cout << amount / pow(10, token->decimals) << " " << token->symbol << " [" << entry.first << "]";
-							} else {
-								std::cout << amount << " [" << entry.first << "]";
-							}
-							std::cout << std::endl;
-						}
+					std::cout << "  They offer:   ";
+					if(auto token = get_token(node, data.bid_currency)) {
+						std::cout << mmx::to_value(data.bid_amount, token->decimals) << " " << token->symbol << " [" << data.bid_currency << "]";
+					} else {
+						std::cout << data.bid_amount << " [" << data.bid_currency << "]";
 					}
-					for(const auto& entry : data.offer->get_balance()) {
-						const auto& input = entry.second.first;
-						const auto& output = entry.second.second;
-						if(input < output) {
-							std::cout << "  They ask for: ";
-							const auto amount = (output - input).lower();
-							if(auto token = get_token(node, entry.first)) {
-								std::cout << amount / pow(10, token->decimals) << " " << token->symbol << " [" << entry.first << "]";
-							} else {
-								std::cout << amount << " [" << entry.first << "]";
-							}
-							std::cout << std::endl;
-						}
+					std::cout << std::endl;
+
+					std::cout << "  They ask for: ";
+					if(auto token = get_token(node, data.ask_currency)) {
+						std::cout << mmx::to_value(data.ask_amount, token->decimals) << " " << token->symbol << " [" << data.ask_currency << "]";
+					} else {
+						std::cout << data.ask_amount << " [" << data.ask_currency << "]";
 					}
+					std::cout << std::endl;
 				}
 			}
 			else {

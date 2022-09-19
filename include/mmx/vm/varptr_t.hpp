@@ -55,6 +55,18 @@ public:
 		return vm::to_string(ptr);
 	}
 
+	uint256_t to_uint() const {
+		return vm::to_uint(ptr);
+	}
+
+	hash_t to_hash() const {
+		return vm::to_mmx_hash(ptr);
+	}
+
+	addr_t to_addr() const {
+		return vm::to_mmx_addr(ptr);
+	}
+
 	operator bool() const {
 		return ptr;
 	}

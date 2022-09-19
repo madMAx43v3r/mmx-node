@@ -9,6 +9,7 @@
 #define INCLUDE_MMX_VM_VAR_T_H_
 
 #include <mmx/hash_t.hpp>
+#include <mmx/addr_t.hpp>
 
 #include <vnx/Util.h>
 #include <uint256_t.h>
@@ -228,6 +229,12 @@ std::pair<uint8_t*, size_t> serialize(const var_t& src, bool with_rc = true, boo
 size_t deserialize(var_t*& var, const void* data, const size_t length, bool with_rc = true, bool with_vf = true);
 
 std::string to_string(const var_t* var);
+
+uint256_t to_uint(const var_t* var);
+
+hash_t to_mmx_hash(const var_t* var);
+
+addr_t to_mmx_addr(const var_t* var);
 
 struct varptr_less_t {
 	bool operator()(const var_t* const& lhs, const var_t* const& rhs) const {

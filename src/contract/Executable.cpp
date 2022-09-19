@@ -16,7 +16,7 @@ namespace contract {
 
 bool Executable::is_valid() const
 {
-	return Super::is_valid();
+	return Super::is_valid() && binary != addr_t();
 }
 
 hash_t Executable::calc_hash(const vnx::bool_t& full_hash) const

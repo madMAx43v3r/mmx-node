@@ -131,7 +131,9 @@ protected:
 
 	uint64_t get_virtual_plot_balance(const addr_t& plot_id, const vnx::optional<hash_t>& block_hash) const override;
 
-	std::vector<offer_data_t> get_offers(const uint32_t& since, const vnx::bool_t& is_open, const vnx::bool_t& is_covered) const;
+	offer_data_t get_offer(const addr_t& address) const override;
+
+	std::vector<offer_data_t> get_offers(const uint32_t& since, const vnx::bool_t& is_open) const override;
 
 	void on_stuck_timeout();
 

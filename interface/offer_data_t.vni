@@ -7,10 +7,12 @@ struct offer_data_t {
 		
 	addr_t address;
 	
-	Transaction* offer;
+	addr_t bid_currency;
+	addr_t ask_currency;
 	
-	bool is_open;
-	bool is_revoked;
-	bool is_covered;
+	ulong bid_amount;
+	ulong ask_amount;
+	
+	string state;
 	
 }

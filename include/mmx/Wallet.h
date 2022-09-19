@@ -60,14 +60,14 @@ protected:
 			const uint64_t& amount, const addr_t& currency, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> make_offer(
-			const uint32_t& index, const uint32_t& address, const uint64_t& bid_amount, const addr_t& bid_currency,
+			const uint32_t& index, const uint32_t& owner, const uint64_t& bid_amount, const addr_t& bid_currency,
 			const uint64_t& ask_amount, const addr_t& ask_currency, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> accept_offer(
-			const uint32_t& index, std::shared_ptr<const Transaction> offer, const spend_options_t& options) const override;
+			const uint32_t& index, const addr_t& address, const uint32_t& dst_addr, const spend_options_t& options) const override;
 
-	std::shared_ptr<const Transaction> revoke(
-			const uint32_t& index, const hash_t& txid, const addr_t& address, const spend_options_t& options) const override;
+	std::shared_ptr<const Transaction> cancel_offer(
+			const uint32_t& index, const addr_t& address, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> complete(
 			const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const;
