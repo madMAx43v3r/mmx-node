@@ -15,7 +15,6 @@ public:
 	
 	uint32_t since = 0;
 	vnx::bool_t is_open = 0;
-	vnx::bool_t is_covered = 0;
 	
 	typedef ::vnx::Value Super;
 	
@@ -59,11 +58,10 @@ public:
 
 template<typename T>
 void Node_get_offers::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Node_get_offers>(3);
+	_visitor.template type_begin<Node_get_offers>(2);
 	_visitor.type_field("since", 0); _visitor.accept(since);
 	_visitor.type_field("is_open", 1); _visitor.accept(is_open);
-	_visitor.type_field("is_covered", 2); _visitor.accept(is_covered);
-	_visitor.template type_end<Node_get_offers>(3);
+	_visitor.template type_end<Node_get_offers>(2);
 }
 
 

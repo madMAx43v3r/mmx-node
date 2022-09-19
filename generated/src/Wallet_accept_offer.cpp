@@ -3,8 +3,8 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Wallet_accept_offer.hxx>
-#include <mmx/Transaction.hxx>
 #include <mmx/Wallet_accept_offer_return.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/spend_options_t.hxx>
 #include <vnx/Value.h>
 
@@ -15,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_accept_offer::VNX_TYPE_HASH(0x3299e81eb354b78full);
-const vnx::Hash64 Wallet_accept_offer::VNX_CODE_HASH(0xb2008b5908143893ull);
+const vnx::Hash64 Wallet_accept_offer::VNX_CODE_HASH(0x46918cd90dac70b2ull);
 
 vnx::Hash64 Wallet_accept_offer::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,15 +49,17 @@ void Wallet_accept_offer::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Wallet_accept_offer;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, index);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, offer);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, options);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, address);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, dst_addr);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, options);
 	_visitor.type_end(*_type_code);
 }
 
 void Wallet_accept_offer::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Wallet.accept_offer\"";
 	_out << ", \"index\": "; vnx::write(_out, index);
-	_out << ", \"offer\": "; vnx::write(_out, offer);
+	_out << ", \"address\": "; vnx::write(_out, address);
+	_out << ", \"dst_addr\": "; vnx::write(_out, dst_addr);
 	_out << ", \"options\": "; vnx::write(_out, options);
 	_out << "}";
 }
@@ -72,17 +74,20 @@ vnx::Object Wallet_accept_offer::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Wallet.accept_offer";
 	_object["index"] = index;
-	_object["offer"] = offer;
+	_object["address"] = address;
+	_object["dst_addr"] = dst_addr;
 	_object["options"] = options;
 	return _object;
 }
 
 void Wallet_accept_offer::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "index") {
+		if(_entry.first == "address") {
+			_entry.second.to(address);
+		} else if(_entry.first == "dst_addr") {
+			_entry.second.to(dst_addr);
+		} else if(_entry.first == "index") {
 			_entry.second.to(index);
-		} else if(_entry.first == "offer") {
-			_entry.second.to(offer);
 		} else if(_entry.first == "options") {
 			_entry.second.to(options);
 		}
@@ -93,8 +98,11 @@ vnx::Variant Wallet_accept_offer::get_field(const std::string& _name) const {
 	if(_name == "index") {
 		return vnx::Variant(index);
 	}
-	if(_name == "offer") {
-		return vnx::Variant(offer);
+	if(_name == "address") {
+		return vnx::Variant(address);
+	}
+	if(_name == "dst_addr") {
+		return vnx::Variant(dst_addr);
 	}
 	if(_name == "options") {
 		return vnx::Variant(options);
@@ -105,8 +113,10 @@ vnx::Variant Wallet_accept_offer::get_field(const std::string& _name) const {
 void Wallet_accept_offer::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "index") {
 		_value.to(index);
-	} else if(_name == "offer") {
-		_value.to(offer);
+	} else if(_name == "address") {
+		_value.to(address);
+	} else if(_name == "dst_addr") {
+		_value.to(dst_addr);
 	} else if(_name == "options") {
 		_value.to(options);
 	}
@@ -136,7 +146,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_accept_offer::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.accept_offer";
 	type_code->type_hash = vnx::Hash64(0x3299e81eb354b78full);
-	type_code->code_hash = vnx::Hash64(0xb2008b5908143893ull);
+	type_code->code_hash = vnx::Hash64(0x46918cd90dac70b2ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -146,7 +156,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_accept_offer::static_create_type_code() {
 	type_code->depends[0] = ::mmx::spend_options_t::static_get_type_code();
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Wallet_accept_offer_return::static_get_type_code();
-	type_code->fields.resize(3);
+	type_code->fields.resize(4);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -156,11 +166,17 @@ std::shared_ptr<vnx::TypeCode> Wallet_accept_offer::static_create_type_code() {
 	{
 		auto& field = type_code->fields[1];
 		field.is_extended = true;
-		field.name = "offer";
-		field.code = {16};
+		field.name = "address";
+		field.code = {11, 32, 1};
 	}
 	{
 		auto& field = type_code->fields[2];
+		field.data_size = 4;
+		field.name = "dst_addr";
+		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[3];
 		field.is_extended = true;
 		field.name = "options";
 		field.code = {19, 0};
@@ -211,11 +227,14 @@ void read(TypeInput& in, ::mmx::Wallet_accept_offer& value, const TypeCode* type
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.index, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[2]) {
+			vnx::read_value(_buf + _field->offset, value.dst_addr, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 1: vnx::read(in, value.offer, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.options, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.address, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.options, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -234,10 +253,11 @@ void write(TypeOutput& out, const ::mmx::Wallet_accept_offer& value, const TypeC
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
+	char* const _buf = out.write(8);
 	vnx::write_value(_buf + 0, value.index);
-	vnx::write(out, value.offer, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.options, type_code, type_code->fields[2].code.data());
+	vnx::write_value(_buf + 4, value.dst_addr);
+	vnx::write(out, value.address, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.options, type_code, type_code->fields[3].code.data());
 }
 
 void read(std::istream& in, ::mmx::Wallet_accept_offer& value) {

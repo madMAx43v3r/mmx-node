@@ -16,7 +16,7 @@ class MMX_EXPORT Wallet_make_offer : public ::vnx::Value {
 public:
 	
 	uint32_t index = 0;
-	uint32_t address = 0;
+	uint32_t owner = 0;
 	uint64_t bid_amount = 0;
 	::mmx::addr_t bid_currency;
 	uint64_t ask_amount = 0;
@@ -67,7 +67,7 @@ template<typename T>
 void Wallet_make_offer::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<Wallet_make_offer>(7);
 	_visitor.type_field("index", 0); _visitor.accept(index);
-	_visitor.type_field("address", 1); _visitor.accept(address);
+	_visitor.type_field("owner", 1); _visitor.accept(owner);
 	_visitor.type_field("bid_amount", 2); _visitor.accept(bid_amount);
 	_visitor.type_field("bid_currency", 3); _visitor.accept(bid_currency);
 	_visitor.type_field("ask_amount", 4); _visitor.accept(ask_amount);

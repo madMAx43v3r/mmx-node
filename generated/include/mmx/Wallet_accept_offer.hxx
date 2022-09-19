@@ -5,7 +5,7 @@
 #define INCLUDE_mmx_Wallet_accept_offer_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/Transaction.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/spend_options_t.hxx>
 #include <vnx/Value.h>
 
@@ -16,7 +16,8 @@ class MMX_EXPORT Wallet_accept_offer : public ::vnx::Value {
 public:
 	
 	uint32_t index = 0;
-	std::shared_ptr<const ::mmx::Transaction> offer;
+	::mmx::addr_t address;
+	uint32_t dst_addr = 0;
 	::mmx::spend_options_t options;
 	
 	typedef ::vnx::Value Super;
@@ -61,11 +62,12 @@ public:
 
 template<typename T>
 void Wallet_accept_offer::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Wallet_accept_offer>(3);
+	_visitor.template type_begin<Wallet_accept_offer>(4);
 	_visitor.type_field("index", 0); _visitor.accept(index);
-	_visitor.type_field("offer", 1); _visitor.accept(offer);
-	_visitor.type_field("options", 2); _visitor.accept(options);
-	_visitor.template type_end<Wallet_accept_offer>(3);
+	_visitor.type_field("address", 1); _visitor.accept(address);
+	_visitor.type_field("dst_addr", 2); _visitor.accept(dst_addr);
+	_visitor.type_field("options", 3); _visitor.accept(options);
+	_visitor.template type_end<Wallet_accept_offer>(4);
 }
 
 

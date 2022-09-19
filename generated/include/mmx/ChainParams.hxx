@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_ChainParams_HXX_
 
 #include <mmx/package.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/ulong_fraction_t.hxx>
 #include <vnx/Value.h>
 
@@ -50,6 +51,7 @@ public:
 	uint64_t max_block_cost = 10000000;
 	vnx::float64_t block_time = 10;
 	std::string vdf_seed;
+	::mmx::addr_t offer_binary;
 	
 	typedef ::vnx::Value Super;
 	
@@ -96,7 +98,7 @@ protected:
 
 template<typename T>
 void ChainParams::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ChainParams>(36);
+	_visitor.template type_begin<ChainParams>(37);
 	_visitor.type_field("port", 0); _visitor.accept(port);
 	_visitor.type_field("decimals", 1); _visitor.accept(decimals);
 	_visitor.type_field("min_ksize", 2); _visitor.accept(min_ksize);
@@ -133,7 +135,8 @@ void ChainParams::accept_generic(T& _visitor) const {
 	_visitor.type_field("max_block_cost", 33); _visitor.accept(max_block_cost);
 	_visitor.type_field("block_time", 34); _visitor.accept(block_time);
 	_visitor.type_field("vdf_seed", 35); _visitor.accept(vdf_seed);
-	_visitor.template type_end<ChainParams>(36);
+	_visitor.type_field("offer_binary", 36); _visitor.accept(offer_binary);
+	_visitor.template type_end<ChainParams>(37);
 }
 
 

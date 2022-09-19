@@ -6,7 +6,6 @@
 
 #include <vnx/Type.h>
 #include <mmx/package.hxx>
-#include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
 
 
@@ -18,10 +17,11 @@ struct MMX_EXPORT offer_data_t {
 	uint32_t height = 0;
 	uint32_t close_height = -1;
 	::mmx::addr_t address;
-	std::shared_ptr<const ::mmx::Transaction> offer;
-	vnx::bool_t is_open = 0;
-	vnx::bool_t is_revoked = 0;
-	vnx::bool_t is_covered = 0;
+	::mmx::addr_t bid_currency;
+	::mmx::addr_t ask_currency;
+	uint64_t bid_amount = 0;
+	uint64_t ask_amount = 0;
+	std::string state;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -63,15 +63,16 @@ struct MMX_EXPORT offer_data_t {
 
 template<typename T>
 void offer_data_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<offer_data_t>(7);
+	_visitor.template type_begin<offer_data_t>(8);
 	_visitor.type_field("height", 0); _visitor.accept(height);
 	_visitor.type_field("close_height", 1); _visitor.accept(close_height);
 	_visitor.type_field("address", 2); _visitor.accept(address);
-	_visitor.type_field("offer", 3); _visitor.accept(offer);
-	_visitor.type_field("is_open", 4); _visitor.accept(is_open);
-	_visitor.type_field("is_revoked", 5); _visitor.accept(is_revoked);
-	_visitor.type_field("is_covered", 6); _visitor.accept(is_covered);
-	_visitor.template type_end<offer_data_t>(7);
+	_visitor.type_field("bid_currency", 3); _visitor.accept(bid_currency);
+	_visitor.type_field("ask_currency", 4); _visitor.accept(ask_currency);
+	_visitor.type_field("bid_amount", 5); _visitor.accept(bid_amount);
+	_visitor.type_field("ask_amount", 6); _visitor.accept(ask_amount);
+	_visitor.type_field("state", 7); _visitor.accept(state);
+	_visitor.template type_end<offer_data_t>(8);
 }
 
 

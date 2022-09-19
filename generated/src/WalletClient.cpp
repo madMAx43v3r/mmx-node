@@ -13,6 +13,8 @@
 #include <mmx/Wallet_add_account_return.hxx>
 #include <mmx/Wallet_add_token.hxx>
 #include <mmx/Wallet_add_token_return.hxx>
+#include <mmx/Wallet_cancel_offer.hxx>
+#include <mmx/Wallet_cancel_offer_return.hxx>
 #include <mmx/Wallet_complete.hxx>
 #include <mmx/Wallet_complete_return.hxx>
 #include <mmx/Wallet_create_account.hxx>
@@ -87,8 +89,6 @@
 #include <mmx/Wallet_reserve_return.hxx>
 #include <mmx/Wallet_reset_cache.hxx>
 #include <mmx/Wallet_reset_cache_return.hxx>
-#include <mmx/Wallet_revoke.hxx>
-#include <mmx/Wallet_revoke_return.hxx>
 #include <mmx/Wallet_send.hxx>
 #include <mmx/Wallet_send_return.hxx>
 #include <mmx/Wallet_send_from.hxx>
@@ -295,10 +295,10 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::deposit(const uint32_t& 
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::make_offer(const uint32_t& index, const uint32_t& address, const uint64_t& bid_amount, const ::mmx::addr_t& bid_currency, const uint64_t& ask_amount, const ::mmx::addr_t& ask_currency, const ::mmx::spend_options_t& options) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::make_offer(const uint32_t& index, const uint32_t& owner, const uint64_t& bid_amount, const ::mmx::addr_t& bid_currency, const uint64_t& ask_amount, const ::mmx::addr_t& ask_currency, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_make_offer::create();
 	_method->index = index;
-	_method->address = address;
+	_method->owner = owner;
 	_method->bid_amount = bid_amount;
 	_method->bid_currency = bid_currency;
 	_method->ask_amount = ask_amount;
@@ -314,10 +314,11 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::make_offer(const uint32_
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::accept_offer(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> offer, const ::mmx::spend_options_t& options) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::accept_offer(const uint32_t& index, const ::mmx::addr_t& address, const uint32_t& dst_addr, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_accept_offer::create();
 	_method->index = index;
-	_method->offer = offer;
+	_method->address = address;
+	_method->dst_addr = dst_addr;
 	_method->options = options;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_accept_offer_return>(_return_value)) {
@@ -329,14 +330,13 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::accept_offer(const uint3
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::revoke(const uint32_t& index, const ::mmx::hash_t& txid, const ::mmx::addr_t& address, const ::mmx::spend_options_t& options) {
-	auto _method = ::mmx::Wallet_revoke::create();
+std::shared_ptr<const ::mmx::Transaction> WalletClient::cancel_offer(const uint32_t& index, const ::mmx::addr_t& address, const ::mmx::spend_options_t& options) {
+	auto _method = ::mmx::Wallet_cancel_offer::create();
 	_method->index = index;
-	_method->txid = txid;
 	_method->address = address;
 	_method->options = options;
 	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_revoke_return>(_return_value)) {
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_cancel_offer_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Transaction>>();

@@ -15,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_make_offer::VNX_TYPE_HASH(0x8b0cf597e8265a73ull);
-const vnx::Hash64 Wallet_make_offer::VNX_CODE_HASH(0xbe80eb0e23b8378full);
+const vnx::Hash64 Wallet_make_offer::VNX_CODE_HASH(0x8b953a4c326b66e2ull);
 
 vnx::Hash64 Wallet_make_offer::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,7 +49,7 @@ void Wallet_make_offer::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Wallet_make_offer;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, index);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, address);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, owner);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, bid_amount);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, bid_currency);
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, ask_amount);
@@ -61,7 +61,7 @@ void Wallet_make_offer::accept(vnx::Visitor& _visitor) const {
 void Wallet_make_offer::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Wallet.make_offer\"";
 	_out << ", \"index\": "; vnx::write(_out, index);
-	_out << ", \"address\": "; vnx::write(_out, address);
+	_out << ", \"owner\": "; vnx::write(_out, owner);
 	_out << ", \"bid_amount\": "; vnx::write(_out, bid_amount);
 	_out << ", \"bid_currency\": "; vnx::write(_out, bid_currency);
 	_out << ", \"ask_amount\": "; vnx::write(_out, ask_amount);
@@ -80,7 +80,7 @@ vnx::Object Wallet_make_offer::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Wallet.make_offer";
 	_object["index"] = index;
-	_object["address"] = address;
+	_object["owner"] = owner;
 	_object["bid_amount"] = bid_amount;
 	_object["bid_currency"] = bid_currency;
 	_object["ask_amount"] = ask_amount;
@@ -91,9 +91,7 @@ vnx::Object Wallet_make_offer::to_object() const {
 
 void Wallet_make_offer::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "address") {
-			_entry.second.to(address);
-		} else if(_entry.first == "ask_amount") {
+		if(_entry.first == "ask_amount") {
 			_entry.second.to(ask_amount);
 		} else if(_entry.first == "ask_currency") {
 			_entry.second.to(ask_currency);
@@ -105,6 +103,8 @@ void Wallet_make_offer::from_object(const vnx::Object& _object) {
 			_entry.second.to(index);
 		} else if(_entry.first == "options") {
 			_entry.second.to(options);
+		} else if(_entry.first == "owner") {
+			_entry.second.to(owner);
 		}
 	}
 }
@@ -113,8 +113,8 @@ vnx::Variant Wallet_make_offer::get_field(const std::string& _name) const {
 	if(_name == "index") {
 		return vnx::Variant(index);
 	}
-	if(_name == "address") {
-		return vnx::Variant(address);
+	if(_name == "owner") {
+		return vnx::Variant(owner);
 	}
 	if(_name == "bid_amount") {
 		return vnx::Variant(bid_amount);
@@ -137,8 +137,8 @@ vnx::Variant Wallet_make_offer::get_field(const std::string& _name) const {
 void Wallet_make_offer::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "index") {
 		_value.to(index);
-	} else if(_name == "address") {
-		_value.to(address);
+	} else if(_name == "owner") {
+		_value.to(owner);
 	} else if(_name == "bid_amount") {
 		_value.to(bid_amount);
 	} else if(_name == "bid_currency") {
@@ -176,7 +176,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_make_offer::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.make_offer";
 	type_code->type_hash = vnx::Hash64(0x8b0cf597e8265a73ull);
-	type_code->code_hash = vnx::Hash64(0xbe80eb0e23b8378full);
+	type_code->code_hash = vnx::Hash64(0x8b953a4c326b66e2ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -196,7 +196,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_make_offer::static_create_type_code() {
 	{
 		auto& field = type_code->fields[1];
 		field.data_size = 4;
-		field.name = "address";
+		field.name = "owner";
 		field.code = {3};
 	}
 	{
@@ -276,7 +276,7 @@ void read(TypeInput& in, ::mmx::Wallet_make_offer& value, const TypeCode* type_c
 			vnx::read_value(_buf + _field->offset, value.index, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[1]) {
-			vnx::read_value(_buf + _field->offset, value.address, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.owner, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[2]) {
 			vnx::read_value(_buf + _field->offset, value.bid_amount, _field->code.data());
@@ -310,7 +310,7 @@ void write(TypeOutput& out, const ::mmx::Wallet_make_offer& value, const TypeCod
 	}
 	char* const _buf = out.write(24);
 	vnx::write_value(_buf + 0, value.index);
-	vnx::write_value(_buf + 4, value.address);
+	vnx::write_value(_buf + 4, value.owner);
 	vnx::write_value(_buf + 8, value.bid_amount);
 	vnx::write_value(_buf + 16, value.ask_amount);
 	vnx::write(out, value.bid_currency, type_code, type_code->fields[3].code.data());

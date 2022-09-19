@@ -56,6 +56,8 @@
 #include <mmx/Node_get_history_return.hxx>
 #include <mmx/Node_get_network_info.hxx>
 #include <mmx/Node_get_network_info_return.hxx>
+#include <mmx/Node_get_offer.hxx>
+#include <mmx/Node_get_offer_return.hxx>
 #include <mmx/Node_get_offers.hxx>
 #include <mmx/Node_get_offers_return.hxx>
 #include <mmx/Node_get_params.hxx>
@@ -723,11 +725,23 @@ uint64_t NodeClient::get_virtual_plot_balance(const ::mmx::addr_t& plot_id, cons
 	}
 }
 
-std::vector<::mmx::offer_data_t> NodeClient::get_offers(const uint32_t& since, const vnx::bool_t& is_open, const vnx::bool_t& is_covered) {
+::mmx::offer_data_t NodeClient::get_offer(const ::mmx::addr_t& address) {
+	auto _method = ::mmx::Node_get_offer::create();
+	_method->address = address;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_offer_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<::mmx::offer_data_t>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::vector<::mmx::offer_data_t> NodeClient::get_offers(const uint32_t& since, const vnx::bool_t& is_open) {
 	auto _method = ::mmx::Node_get_offers::create();
 	_method->since = since;
 	_method->is_open = is_open;
-	_method->is_covered = is_covered;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_offers_return>(_return_value)) {
 		return _result->_ret_0;

@@ -13,6 +13,8 @@
 #include <mmx/Wallet_add_account_return.hxx>
 #include <mmx/Wallet_add_token.hxx>
 #include <mmx/Wallet_add_token_return.hxx>
+#include <mmx/Wallet_cancel_offer.hxx>
+#include <mmx/Wallet_cancel_offer_return.hxx>
 #include <mmx/Wallet_complete.hxx>
 #include <mmx/Wallet_complete_return.hxx>
 #include <mmx/Wallet_create_account.hxx>
@@ -87,8 +89,6 @@
 #include <mmx/Wallet_reserve_return.hxx>
 #include <mmx/Wallet_reset_cache.hxx>
 #include <mmx/Wallet_reset_cache_return.hxx>
-#include <mmx/Wallet_revoke.hxx>
-#include <mmx/Wallet_revoke_return.hxx>
 #include <mmx/Wallet_send.hxx>
 #include <mmx/Wallet_send_return.hxx>
 #include <mmx/Wallet_send_from.hxx>
@@ -295,10 +295,10 @@ uint64_t WalletAsyncClient::deposit(const uint32_t& index, const ::mmx::addr_t& 
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::make_offer(const uint32_t& index, const uint32_t& address, const uint64_t& bid_amount, const ::mmx::addr_t& bid_currency, const uint64_t& ask_amount, const ::mmx::addr_t& ask_currency, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::make_offer(const uint32_t& index, const uint32_t& owner, const uint64_t& bid_amount, const ::mmx::addr_t& bid_currency, const uint64_t& ask_amount, const ::mmx::addr_t& ask_currency, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_make_offer::create();
 	_method->index = index;
-	_method->address = address;
+	_method->owner = owner;
 	_method->bid_amount = bid_amount;
 	_method->bid_currency = bid_currency;
 	_method->ask_amount = ask_amount;
@@ -314,10 +314,11 @@ uint64_t WalletAsyncClient::make_offer(const uint32_t& index, const uint32_t& ad
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::accept_offer(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> offer, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::accept_offer(const uint32_t& index, const ::mmx::addr_t& address, const uint32_t& dst_addr, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_accept_offer::create();
 	_method->index = index;
-	_method->offer = offer;
+	_method->address = address;
+	_method->dst_addr = dst_addr;
 	_method->options = options;
 	const auto _request_id = ++vnx_next_id;
 	{
@@ -329,17 +330,16 @@ uint64_t WalletAsyncClient::accept_offer(const uint32_t& index, std::shared_ptr<
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::revoke(const uint32_t& index, const ::mmx::hash_t& txid, const ::mmx::addr_t& address, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
-	auto _method = ::mmx::Wallet_revoke::create();
+uint64_t WalletAsyncClient::cancel_offer(const uint32_t& index, const ::mmx::addr_t& address, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+	auto _method = ::mmx::Wallet_cancel_offer::create();
 	_method->index = index;
-	_method->txid = txid;
 	_method->address = address;
 	_method->options = options;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
 		vnx_pending[_request_id] = 10;
-		vnx_queue_revoke[_request_id] = std::make_pair(_callback, _error_callback);
+		vnx_queue_cancel_offer[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
 	return _request_id;
@@ -1136,10 +1136,10 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			break;
 		}
 		case 10: {
-			const auto _iter = vnx_queue_revoke.find(_request_id);
-			if(_iter != vnx_queue_revoke.end()) {
+			const auto _iter = vnx_queue_cancel_offer.find(_request_id);
+			if(_iter != vnx_queue_cancel_offer.end()) {
 				const auto _callback = std::move(_iter->second.second);
-				vnx_queue_revoke.erase(_iter);
+				vnx_queue_cancel_offer.erase(_iter);
 				_lock.unlock();
 				if(_callback) {
 					_callback(_ex);
@@ -1939,15 +1939,15 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			break;
 		}
 		case 10: {
-			const auto _iter = vnx_queue_revoke.find(_request_id);
-			if(_iter == vnx_queue_revoke.end()) {
+			const auto _iter = vnx_queue_cancel_offer.find(_request_id);
+			if(_iter == vnx_queue_cancel_offer.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
 			}
 			const auto _callback = std::move(_iter->second.first);
-			vnx_queue_revoke.erase(_iter);
+			vnx_queue_cancel_offer.erase(_iter);
 			_lock.unlock();
 			if(_callback) {
-				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_revoke_return>(_value)) {
+				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_cancel_offer_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
 					_callback(_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Transaction>>());

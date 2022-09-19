@@ -3,6 +3,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/ChainParams.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/ulong_fraction_t.hxx>
 #include <vnx/Value.h>
 
@@ -13,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 ChainParams::VNX_TYPE_HASH(0x51bba8d28881e8e7ull);
-const vnx::Hash64 ChainParams::VNX_CODE_HASH(0xd1949c9672e4f5faull);
+const vnx::Hash64 ChainParams::VNX_CODE_HASH(0x56824c7a7018fb72ull);
 
 vnx::Hash64 ChainParams::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -82,6 +83,7 @@ void ChainParams::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[33], 33); vnx::accept(_visitor, max_block_cost);
 	_visitor.type_field(_type_code->fields[34], 34); vnx::accept(_visitor, block_time);
 	_visitor.type_field(_type_code->fields[35], 35); vnx::accept(_visitor, vdf_seed);
+	_visitor.type_field(_type_code->fields[36], 36); vnx::accept(_visitor, offer_binary);
 	_visitor.type_end(*_type_code);
 }
 
@@ -123,6 +125,7 @@ void ChainParams::write(std::ostream& _out) const {
 	_out << ", \"max_block_cost\": "; vnx::write(_out, max_block_cost);
 	_out << ", \"block_time\": "; vnx::write(_out, block_time);
 	_out << ", \"vdf_seed\": "; vnx::write(_out, vdf_seed);
+	_out << ", \"offer_binary\": "; vnx::write(_out, offer_binary);
 	_out << "}";
 }
 
@@ -171,6 +174,7 @@ vnx::Object ChainParams::to_object() const {
 	_object["max_block_cost"] = max_block_cost;
 	_object["block_time"] = block_time;
 	_object["vdf_seed"] = vdf_seed;
+	_object["offer_binary"] = offer_binary;
 	return _object;
 }
 
@@ -226,6 +230,8 @@ void ChainParams::from_object(const vnx::Object& _object) {
 			_entry.second.to(min_vdf_segments);
 		} else if(_entry.first == "num_vdf_segments") {
 			_entry.second.to(num_vdf_segments);
+		} else if(_entry.first == "offer_binary") {
+			_entry.second.to(offer_binary);
 		} else if(_entry.first == "plot_filter") {
 			_entry.second.to(plot_filter);
 		} else if(_entry.first == "port") {
@@ -361,6 +367,9 @@ vnx::Variant ChainParams::get_field(const std::string& _name) const {
 	if(_name == "vdf_seed") {
 		return vnx::Variant(vdf_seed);
 	}
+	if(_name == "offer_binary") {
+		return vnx::Variant(offer_binary);
+	}
 	return vnx::Variant();
 }
 
@@ -437,6 +446,8 @@ void ChainParams::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(block_time);
 	} else if(_name == "vdf_seed") {
 		_value.to(vdf_seed);
+	} else if(_name == "offer_binary") {
+		_value.to(offer_binary);
 	}
 }
 
@@ -464,14 +475,14 @@ std::shared_ptr<vnx::TypeCode> ChainParams::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.ChainParams";
 	type_code->type_hash = vnx::Hash64(0x51bba8d28881e8e7ull);
-	type_code->code_hash = vnx::Hash64(0xd1949c9672e4f5faull);
+	type_code->code_hash = vnx::Hash64(0x56824c7a7018fb72ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ChainParams);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<ChainParams>(); };
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::ulong_fraction_t::static_get_type_code();
-	type_code->fields.resize(36);
+	type_code->fields.resize(37);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -721,6 +732,12 @@ std::shared_ptr<vnx::TypeCode> ChainParams::static_create_type_code() {
 		field.name = "vdf_seed";
 		field.code = {32};
 	}
+	{
+		auto& field = type_code->fields[36];
+		field.is_extended = true;
+		field.name = "offer_binary";
+		field.code = {11, 32, 1};
+	}
 	type_code->build();
 	return type_code;
 }
@@ -876,6 +893,7 @@ void read(TypeInput& in, ::mmx::ChainParams& value, const TypeCode* type_code, c
 		switch(_field->native_index) {
 			case 19: vnx::read(in, value.reward_factor, type_code, _field->code.data()); break;
 			case 35: vnx::read(in, value.vdf_seed, type_code, _field->code.data()); break;
+			case 36: vnx::read(in, value.offer_binary, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -931,6 +949,7 @@ void write(TypeOutput& out, const ::mmx::ChainParams& value, const TypeCode* typ
 	vnx::write_value(_buf + 192, value.block_time);
 	vnx::write(out, value.reward_factor, type_code, type_code->fields[19].code.data());
 	vnx::write(out, value.vdf_seed, type_code, type_code->fields[35].code.data());
+	vnx::write(out, value.offer_binary, type_code, type_code->fields[36].code.data());
 }
 
 void read(std::istream& in, ::mmx::ChainParams& value) {
