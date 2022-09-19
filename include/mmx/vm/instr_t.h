@@ -78,7 +78,6 @@ enum opcode_e : uint8_t {
 	OP_LOG = 0xC0,	// level, message
 	OP_SEND,		// address, amount, currency
 	OP_MINT,		// address, amount
-	OP_MINT_NFT,	// TODO: address, data
 	OP_EVENT,		// name, data
 	OP_FAIL,		// message
 	OP_RCALL,		// name, method, stack_ptr, nargs
