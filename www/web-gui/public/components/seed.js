@@ -149,6 +149,7 @@ Vue.component('seed', {
                             :value="words[row * cols + col]"
                             hide-details
                             outlined
+                            readonly
                             class="ma-1" />
                     </div>
 
