@@ -182,8 +182,22 @@ int main(int argc, char** argv)
 		::free(data.first);
 	}
 	{
-		auto data = serialize(code);
+		auto data = vm::serialize(code);
 		bin->binary = std::vector<uint8_t>(data.first, data.first + data.second);
+
+		std::vector<vm::instr_t> test;
+		auto length = vm::deserialize(test, data.first, data.second);
+		if(length != data.second) {
+			throw std::logic_error("length != data.second");
+		}
+		if(test.size() != code.size()) {
+			throw std::logic_error("test.size() != code.size()");
+		}
+		for(size_t i = 0; i < test.size(); ++i) {
+			if(test[i].code != code[i].code) {
+				throw std::logic_error("test[i].code != code[i].code");
+			}
+		}
 		::free(data.first);
 	}
 	vnx::write_to_file(argc > 1 ? argv[1] : "offer_binary.dat", bin);
