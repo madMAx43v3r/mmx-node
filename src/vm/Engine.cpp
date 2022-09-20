@@ -1508,7 +1508,7 @@ void Engine::exec(const instr_t& instr)
 				deref_value(instr.d, instr.flags & OPFLAG_REF_D));
 		break;
 	default:
-		throw std::logic_error("invalid op_code: 0x" + vnx::to_hex_string(uint8_t(instr.code)));
+		throw std::logic_error("invalid op_code: 0x" + vnx::to_hex_string(uint32_t(instr.code)));
 	}
 	get_frame().instr_ptr++;
 }

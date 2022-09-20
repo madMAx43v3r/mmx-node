@@ -796,8 +796,8 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				std::rethrow_exception(failed_ex);
 			} catch(const std::exception& ex) {
 				out->message = ex.what();
-				out->did_fail = true;
 			}
+			out->did_fail = true;
 		}
 	} else {
 		const auto result = tx->exec_result;

@@ -987,7 +987,7 @@ void Node::add_transaction(std::shared_ptr<const Transaction> tx, const vnx::boo
 	if(pre_validate) {
 		if(auto res = validate(tx)) {
 			if(res->did_fail) {
-				throw std::runtime_error("tx failed with: " + res->message);
+				throw std::runtime_error("tx failed with: " + (res->message ? *res->message : "?"));
 			}
 		}
 	}
