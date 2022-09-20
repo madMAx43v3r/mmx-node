@@ -432,7 +432,7 @@ std::shared_ptr<const Transaction> Wallet::accept_offer(
 	std::vector<vnx::Variant> args;
 	args.emplace_back(wallet->get_address(dst_addr).to_string());
 
-	const auto currency = node->read_storage_field(address, "ask_currency").first.to_addr();
+	const auto currency = vm::to_addr(node->read_storage_field(address, "ask_currency").first.get());
 	const auto amount = node->read_storage_field(address, "ask_amount").first.to_uint();
 	return deposit(index, address, "trade", args, amount, currency, options);
 }
@@ -440,7 +440,7 @@ std::shared_ptr<const Transaction> Wallet::accept_offer(
 std::shared_ptr<const Transaction> Wallet::cancel_offer(
 			const uint32_t& index, const addr_t& address, const spend_options_t& options) const
 {
-	const auto owner = node->read_storage_field(address, "owner").first.to_addr();
+	const auto owner = vm::to_addr(node->read_storage_field(address, "owner").first.get());
 
 	auto options_ = options;
 	options_.user = owner;

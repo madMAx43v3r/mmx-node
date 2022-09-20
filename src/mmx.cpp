@@ -602,7 +602,7 @@ int main(int argc, char** argv)
 				if(!offer || offer->binary != params->offer_binary) {
 					vnx::log_error() << "No such offer: " << address; goto failed;
 				}
-				spend_options.user = node.read_storage_field(address, "owner").first.to_addr();
+				spend_options.user = mmx::vm::to_addr(node.read_storage_field(address, "owner").first.get());
 
 				if(wallet.is_locked(index)) {
 					spend_options.passphrase = vnx::input_password("Passphrase: ");

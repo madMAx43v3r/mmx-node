@@ -122,6 +122,14 @@ hash_t hash_t::from_bytes(const void* data)
 	return res;
 }
 
+
+namespace vm {
+
+class var_t;
+
+hash_t to_hash(const var_t* var);
+
+} // vm
 } // mmx
 
 

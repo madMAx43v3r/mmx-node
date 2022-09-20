@@ -64,6 +64,14 @@ std::ostream& operator<<(std::ostream& out, const addr_t& addr) {
 	return out << addr.to_string();
 }
 
+
+namespace vm {
+
+class var_t;
+
+addr_t to_addr(const var_t* var);
+
+} // vm
 } //mmx
 
 

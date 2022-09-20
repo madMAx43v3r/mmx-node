@@ -25,7 +25,7 @@ void set_balance(std::shared_ptr<vm::Engine> engine, const std::map<addr_t, uint
 	const auto addr = vm::MEM_EXTERN + vm::EXTERN_BALANCE;
 	engine->assign(addr, new vm::map_t());
 	for(const auto& entry : balance) {
-		engine->write_key(addr, vm::uint_t(entry.first), vm::uint_t(entry.second));
+		engine->write_key(addr, vm::uint_t(entry.first.to_uint256()), vm::uint_t(entry.second));
 	}
 }
 
@@ -33,7 +33,7 @@ void set_deposit(std::shared_ptr<vm::Engine> engine, const txout_t& deposit)
 {
 	const auto addr = vm::MEM_EXTERN + vm::EXTERN_DEPOSIT;
 	engine->assign(addr, new vm::array_t());
-	engine->push_back(addr, vm::uint_t(deposit.contract));
+	engine->push_back(addr, vm::uint_t(deposit.contract.to_uint256()));
 	engine->push_back(addr, vm::uint_t(deposit.amount));
 }
 

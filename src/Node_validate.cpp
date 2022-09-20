@@ -357,9 +357,9 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		} else {
 			throw std::logic_error("no such user");
 		}
-		engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::uint_t(*exec->user));
+		engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::uint_t(exec->user->to_uint256()));
 	}
-	engine->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::uint_t(exec->address));
+	engine->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::uint_t(exec->address.to_uint256()));
 
 	if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(exec)) {
 		txout_t out;
@@ -436,8 +436,8 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		for(uint32_t i = 0; i < nargs; ++i) {
 			mmx::copy(child, engine, vm::MEM_STACK + 1 + i, vm::MEM_STACK + stack_ptr + 1 + i);
 		}
-		child->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::uint_t(engine->contract));
-		child->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::uint_t(address));
+		child->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::uint_t(engine->contract.to_uint256()));
+		child->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::uint_t(address.to_uint256()));
 
 		execute(tx, context, state, exec_inputs, exec_outputs, storage_cache, child, method, tx_cost, true);
 
@@ -450,7 +450,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	};
 
 	engine->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(context->block->height));
-	engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::uint_t(tx->id));
+	engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::uint_t(tx->id.to_uint256()));
 	mmx::set_balance(engine, state->balance);
 
 	mmx::execute(engine, *method);

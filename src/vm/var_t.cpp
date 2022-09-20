@@ -377,34 +377,6 @@ uint256_t to_uint(const var_t* var)
 	}
 }
 
-hash_t to_mmx_hash(const var_t* var)
-{
-	if(!var) {
-		return hash_t();
-	}
-	switch(var->type) {
-		case TYPE_UINT:
-			return hash_t::from_bytes(((const uint_t*)var)->value);
-		default:
-			return hash_t();
-	}
-}
-
-addr_t to_mmx_addr(const var_t* var)
-{
-	if(!var) {
-		return addr_t();
-	}
-	switch(var->type) {
-		case TYPE_UINT:
-			return addr_t(((const uint_t*)var)->value);
-		case TYPE_STRING:
-			return addr_t(((const binary_t*)var)->to_string());
-		default:
-			return addr_t();
-	}
-}
-
 
 } // vm
 } // mmx

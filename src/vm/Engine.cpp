@@ -901,7 +901,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 						default: throw std::logic_error("invalid conversion: STRING to UINT with base " + to_hex(sflags));
 					}
 					if(base == 32) {
-						write(dst, uint_t(addr_t(sstr.to_string())));
+						write(dst, uint_t(addr_t(sstr.to_string()).to_uint256()));
 					} else {
 						write(dst, uint_t(uint256_t(sstr.c_str(), base)));
 					}

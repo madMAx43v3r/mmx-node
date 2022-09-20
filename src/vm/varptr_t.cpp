@@ -7,6 +7,8 @@
 
 #include <mmx/vm/varptr_t.hpp>
 
+#include <vnx/vnx.h>
+
 
 namespace vnx {
 

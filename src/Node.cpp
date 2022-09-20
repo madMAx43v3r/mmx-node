@@ -848,7 +848,7 @@ vnx::Variant Node::call_contract(const addr_t& address, const std::string& metho
 			}
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::var_t());
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::var_t());
-			engine->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::uint_t(address));
+			engine->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::uint_t(address.to_uint256()));
 			mmx::set_balance(engine, get_balances(address));
 			mmx::set_args(engine, args);
 			mmx::execute(engine, *func);
