@@ -9,6 +9,7 @@
 
 #include <cstring>
 #include <stdexcept>
+#include <sstream>
 
 #define OPCODE_INFO(op, num) g_opcode_info[op] = {#op, num}
 
@@ -147,6 +148,36 @@ size_t deserialize(std::vector<instr_t>& code, const void* data_, const size_t l
 		code.push_back(instr);
 	}
 	return offset;
+}
+
+std::string to_string(const instr_t& instr)
+{
+	const auto info = get_opcode_info(instr.code);
+	std::stringstream ss;
+	ss << info.name << std::hex << "\t";
+	for(uint32_t i = 0; i < info.nargs; ++i) {
+		ss << " ";
+		bool ref = false;
+		switch(i) {
+			case 0: ref = instr.flags & OPFLAG_REF_A; break;
+			case 1: ref = instr.flags & OPFLAG_REF_B; break;
+			case 2: ref = instr.flags & OPFLAG_REF_C; break;
+			case 3: ref = instr.flags & OPFLAG_REF_D; break;
+		}
+		if(ref) {
+			ss << "[";
+		}
+		switch(i) {
+			case 0: ss << "0x" << instr.a; break;
+			case 1: ss << "0x" << instr.b; break;
+			case 2: ss << "0x" << instr.c; break;
+			case 3: ss << "0x" << instr.d; break;
+		}
+		if(ref) {
+			ss << "]";
+		}
+	}
+	return ss.str();
 }
 
 

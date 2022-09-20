@@ -22,7 +22,7 @@
 #include <mmx/hash_t.hpp>
 #include <mmx/mnemonic.h>
 #include <mmx/utils.h>
-#include <mmx/vm/var_t.h>
+#include <mmx/vm_interface.h>
 
 #include <vnx/vnx.h>
 #include <vnx/Proxy.h>
@@ -1006,6 +1006,58 @@ int main(int argc, char** argv)
 				vnx::accept(printer, res);
 				std::cout << std::endl;
 			}
+			else if(command == "dump_code")
+			{
+				std::string method;
+				vnx::read_config("$3", method);
+
+				auto value = node.get_contract(contract);
+				auto bin = std::dynamic_pointer_cast<const mmx::contract::Binary>(value);
+				if(!bin) {
+					if(auto exec = std::dynamic_pointer_cast<const mmx::contract::Executable>(value)) {
+						bin = std::dynamic_pointer_cast<const mmx::contract::Binary>(node.get_contract(exec->binary));
+						if(!bin) {
+							vnx::log_error() << "No such binary: " << exec->binary;
+							goto failed;
+						}
+					} else {
+						vnx::log_error() << "No such executable: " << contract;
+						goto failed;
+					}
+				}
+				if(bin) {
+					std::map<size_t, mmx::contract::method_t> method_table;
+					for(const auto& entry : bin->methods) {
+						method_table[entry.second.entry_point] = entry.second;
+					}
+					std::vector<mmx::vm::instr_t> code;
+					const auto length = mmx::vm::deserialize(code, bin->binary.data(), bin->binary.size());
+					size_t i = 0;
+					if(!method.empty()) {
+						auto iter = bin->methods.find(method);
+						if(iter == bin->methods.end()) {
+							vnx::log_error() << "No such method: " << method;
+							goto failed;
+						}
+						i = iter->second.entry_point;
+					}
+					for(; i < code.size(); ++i) {
+						auto iter = method_table.find(i);
+						if(iter != method_table.end()) {
+							std::cout << iter->second.name << " " << vnx::to_string(iter->second.args) << std::endl;
+						}
+						std::cout << "  [0x" << vnx::to_hex_string(i) << "] " << mmx::vm::to_string(code[i]) << std::endl;
+
+						if(!method.empty() && code[i].code == mmx::vm::OP_RET) {
+							break;
+						}
+					}
+					if(method.empty()) {
+						std::cout << "Total size: " << length << " bytes" << std::endl;
+						std::cout << "Total instructions: " << code.size() << std::endl;
+					}
+				}
+			}
 			else if(command == "fetch")
 			{
 				std::string subject;
@@ -1085,7 +1137,7 @@ int main(int argc, char** argv)
 				}
 			}
 			else {
-				std::cerr << "Help: mmx node [info | peers | tx | get | call | read | dump | fetch | balance | history | offers | sync]" << std::endl;
+				std::cerr << "Help: mmx node [info | peers | tx | get | call | read | dump | dump_code | fetch | balance | history | offers | sync]" << std::endl;
 			}
 		}
 		else if(module == "farm")
@@ -1418,7 +1470,7 @@ int main(int argc, char** argv)
 			std::cerr << "Help: mmx [node | wallet | farm | exch]" << std::endl;
 		}
 	}
-	catch(std::exception& ex) {
+	catch(const std::exception& ex) {
 		vnx::log_error() << "Failed with: " << ex.what();
 		goto failed;
 	}
