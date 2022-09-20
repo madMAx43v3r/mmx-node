@@ -1044,7 +1044,15 @@ int main(int argc, char** argv)
 					for(; i < code.size(); ++i) {
 						auto iter = method_table.find(i);
 						if(iter != method_table.end()) {
-							std::cout << iter->second.name << " " << vnx::to_string(iter->second.args) << std::endl;
+							std::cout << iter->second.name << " (";
+							int k = 0;
+							for(const auto& arg : iter->second.args) {
+								if(k++) {
+									std::cout << ", ";
+								}
+								std::cout << arg;
+							}
+							std::cout << ")" << std::endl;
 						}
 						std::cout << "  [0x" << vnx::to_hex_string(i) << "] " << mmx::vm::to_string(code[i]) << std::endl;
 
