@@ -15,7 +15,7 @@ add_custom_command(TARGET mmx PRE_BUILD
 
 if(NOT MMX_VERSION MATCHES "^v([0-9]+)\\.([0-9]+)\\.([0-9]+)$")
 	string(TIMESTAMP BUILD_TIMESTAMP "%Y%m%d")
-	set(MMX_VERSION "v0.6.0.${BUILD_TIMESTAMP}")
+	set(MMX_VERSION "v0.7.0.${BUILD_TIMESTAMP}")
 endif()
 
 message(STATUS "MMX_VERSION=${MMX_VERSION}")
