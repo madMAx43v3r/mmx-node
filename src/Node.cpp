@@ -1496,7 +1496,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		balance_table.insert(key, new_balance);
 	}
 	if(context) {
-		for(const auto& entry : context->contract_map) {
+		for(const auto& entry : context->contract_cache.state_map) {
 			const auto& state = entry.second;
 			if(state->is_mutated) {
 				contract_cache.insert(entry.first, state->data);

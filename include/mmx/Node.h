@@ -166,19 +166,28 @@ private:
 		std::shared_ptr<const Contract> data;
 	};
 
+	struct contract_cache_t {
+		contract_cache_t() = default;
+		contract_cache_t(contract_cache_t* parent) : parent(parent) {}
+		contract_cache_t* parent = nullptr;
+		std::unordered_map<addr_t, std::shared_ptr<contract_state_t>> state_map;
+		std::shared_ptr<contract_state_t> find_state(const addr_t& address);
+		std::shared_ptr<const Contract> find_contract(const addr_t& address);
+		void commit(const contract_cache_t& cache);
+	};
+
 	struct execution_context_t {
 		std::shared_ptr<const Context> block;
 		std::shared_ptr<vm::StorageCache> storage;
 		std::unordered_map<addr_t, std::vector<hash_t>> mutate_map;
 		std::unordered_map<hash_t, std::unordered_set<hash_t>> wait_map;
 		std::unordered_map<hash_t, std::shared_ptr<waitcond_t>> signal_map;
-		std::unordered_map<addr_t, std::shared_ptr<contract_state_t>> contract_map;
+		mutable contract_cache_t contract_cache;
 		void wait(const hash_t& txid) const;
 		void signal(const hash_t& txid) const;
 		void setup_wait(const hash_t& txid, const addr_t& address);
-		std::shared_ptr<contract_state_t> find_state(const addr_t& address) const;
-		std::shared_ptr<const Contract> find_contract(const addr_t& address) const;
-		std::shared_ptr<const Context> get_context_for(std::shared_ptr<const Transaction> tx, std::shared_ptr<const Contract> contract) const;
+		std::shared_ptr<const Context> get_context_for(
+				std::shared_ptr<const Transaction> tx, std::shared_ptr<const Contract> contract, contract_cache_t& cache) const;
 	};
 
 	struct vdf_point_t {
@@ -276,7 +285,7 @@ private:
 
 	std::shared_ptr<execution_context_t> new_exec_context() const;
 
-	std::shared_ptr<Node::contract_state_t> get_context_state(std::shared_ptr<execution_context_t> context, const addr_t& address) const;
+	std::shared_ptr<contract_state_t> get_contract_state(contract_cache_t& contract_cache, const addr_t& address) const;
 
 	void setup_context_wait(std::shared_ptr<execution_context_t> context, const hash_t& txid, const addr_t& address) const;
 
@@ -284,11 +293,12 @@ private:
 
 	void execute(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const execution_context_t> context,
-					std::shared_ptr<contract_state_t> state,
 					std::shared_ptr<const operation::Execute> exec,
+					std::shared_ptr<contract_state_t> state,
 					std::vector<txin_t>& exec_inputs,
 					std::vector<txout_t>& exec_outputs,
 					std::unordered_map<addr_t, uint128>& amounts,
+					contract_cache_t& contract_cache,
 					std::shared_ptr<vm::StorageCache> storage_cache,
 					uint64_t& tx_cost, const bool is_public) const;
 
@@ -297,6 +307,7 @@ private:
 					std::shared_ptr<contract_state_t> state,
 					std::vector<txin_t>& exec_inputs,
 					std::vector<txout_t>& exec_outputs,
+					contract_cache_t& contract_cache,
 					std::shared_ptr<vm::StorageCache> storage_cache,
 					std::shared_ptr<vm::Engine> engine,
 					const std::string& method_name,
@@ -308,6 +319,7 @@ private:
 					std::vector<txout_t>& outputs,
 					std::vector<txout_t>& exec_outputs,
 					balance_cache_t& balance_cache,
+					contract_cache_t& contract_cache,
 					std::unordered_map<addr_t, uint128>& amounts) const;
 
 	std::shared_ptr<const exec_result_t>
@@ -372,12 +384,12 @@ private:
 
 	bool find_vdf_challenge(std::shared_ptr<const BlockHeader> block, hash_t& vdf_challenge, uint32_t offset = 0) const;
 
-	std::shared_ptr<Node::vdf_point_t> find_vdf_point(const uint32_t height, const uint64_t vdf_start, const uint64_t vdf_iters,
+	std::shared_ptr<vdf_point_t> find_vdf_point(const uint32_t height, const uint64_t vdf_start, const uint64_t vdf_iters,
 			const std::array<hash_t, 2>& input, const std::array<hash_t, 2>& output) const;
 
-	std::shared_ptr<Node::vdf_point_t> find_next_vdf_point(std::shared_ptr<const BlockHeader> block) const;
+	std::shared_ptr<vdf_point_t> find_next_vdf_point(std::shared_ptr<const BlockHeader> block) const;
 
-	std::vector<std::pair<hash_t, Node::proof_data_t>> find_proof(const hash_t& challenge) const;
+	std::vector<std::pair<hash_t, proof_data_t>> find_proof(const hash_t& challenge) const;
 
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block) const;
 
