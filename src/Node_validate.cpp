@@ -346,7 +346,9 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<vm::StorageCache> storage_cache,
 					uint64_t& tx_cost, const bool is_public) const
 {
-	auto engine = std::make_shared<vm::Engine>(exec->address, storage_cache, false);
+	const auto address = exec->address == addr_t() ? tx->id : exec->address;
+
+	auto engine = std::make_shared<vm::Engine>(address, storage_cache, false);
 	{
 		const auto avail_gas = (uint64_t(tx->max_fee_amount) * 1024) / tx->fee_ratio;
 		engine->total_gas = std::min(avail_gas - std::min(tx_cost, avail_gas), params->max_block_cost);
@@ -359,11 +361,11 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		}
 		engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::uint_t(exec->user->to_uint256()));
 	}
-	engine->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::uint_t(exec->address.to_uint256()));
+	engine->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::uint_t(address.to_uint256()));
 
 	if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(exec)) {
 		txout_t out;
-		out.address = exec->address;
+		out.address = address;
 		out.contract = deposit->currency;
 		out.amount = deposit->amount;
 
@@ -694,7 +696,6 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				self_state = state;
 
 				auto exec = operation::Execute::create();
-				exec->address = tx->id;
 				exec->method = executable->init_method;
 				exec->args = executable->init_args;
 				execute(tx, context, state, exec, exec_inputs, exec_outputs, amounts, storage_cache, tx_cost, false);
