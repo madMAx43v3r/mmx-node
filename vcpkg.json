@@ -1,10 +1,14 @@
 {
     "name": "mmx-node",
-    "version-string": "0.6.0",
+    "version-string": "0.7.0",
     "dependencies": [
         "gmp",
         "zlib",
         "opencl",
         "secp256k1"
+    ],
+    "builtin-baseline":"acc3bcf76b84ae5041c86ab55fe138ae7b8255c7",
+    "overrides": [
+        { "name": "secp256k1", "version": "2017-19-10#4" }
     ]
 }
