@@ -8,7 +8,7 @@ on:
       - cron: "0 4 * * *"
 
 env:
-  VCPKG_COMMIT_ID: "14e7bb4ae24616ec54ff6b2f6ef4e8659434ea44"
+  VCPKG_COMMIT_ID: "acc3bcf76b84ae5041c86ab55fe138ae7b8255c7"
   CMAKE_BUILD_PRESET: "windows-release"
   MMX_VERSION: ${{ github.ref_name }}
   MMX_WIN_PACK: "TRUE"
