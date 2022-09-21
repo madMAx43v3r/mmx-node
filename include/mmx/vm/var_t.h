@@ -226,6 +226,8 @@ size_t deserialize(var_t*& var, const void* data, const size_t length, bool with
 
 std::string to_string(const var_t* var);
 
+std::string to_string_value(const var_t* var);
+
 uint256_t to_uint(const var_t* var);
 
 struct varptr_less_t {

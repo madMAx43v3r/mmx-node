@@ -364,6 +364,19 @@ std::string to_string(const var_t* var)
 	}
 }
 
+std::string to_string_value(const var_t* var)
+{
+	if(!var) {
+		return "nullptr";
+	}
+	switch(var->type) {
+		case TYPE_STRING:
+			return ((const binary_t*)var)->to_string();
+		default:
+			return to_string(var);
+	}
+}
+
 uint256_t to_uint(const var_t* var)
 {
 	if(!var) {

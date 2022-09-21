@@ -59,6 +59,10 @@ public:
 		return vm::to_string(ptr);
 	}
 
+	std::string to_string_value() const {
+		return vm::to_string_value(ptr);
+	}
+
 	uint256_t to_uint() const {
 		return vm::to_uint(ptr);
 	}

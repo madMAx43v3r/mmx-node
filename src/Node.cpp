@@ -913,11 +913,11 @@ offer_data_t Node::get_offer(const addr_t& address) const
 	offer_data_t out;
 	out.address = address;
 	out.height = data["height_open"].to_uint();
-	out.bid_currency = data["bid_currency"].to_string();
-	out.ask_currency = data["ask_currency"].to_string();
+	out.bid_currency = data["bid_currency"].to_uint();
+	out.ask_currency = data["ask_currency"].to_uint();
 	out.bid_amount = data["bid_amount"].to_uint();
 	out.ask_amount = data["ask_amount"].to_uint();
-	out.state = data["state"].to_string();
+	out.state = data["state"].to_string_value();
 	{
 		auto iter = data.find("height_close");
 		if(iter != data.end()) {
