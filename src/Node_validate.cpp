@@ -374,6 +374,8 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 			throw std::logic_error("no such user");
 		}
 		engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::uint_t(exec->user->to_uint256()));
+	} else {
+		engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::uint_t());
 	}
 	engine->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::uint_t(address.to_uint256()));
 
