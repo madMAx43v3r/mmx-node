@@ -160,6 +160,7 @@ add_library(mmx_vm SHARED
 	src/vm/StorageRAM.cpp
 	src/vm/StorageCache.cpp
 	src/vm/StorageDB.cpp
+	src/vm_interface.cpp
 )
 
 add_library(mmx_db SHARED
@@ -180,7 +181,6 @@ add_library(mmx_modules SHARED
 	src/WebAPI.cpp
 	src/OCL_VDF.cpp
 	src/TimeLordRewards.cpp
-	src/vm_interface.cpp
 )
 
 add_library(uint256_t STATIC
