@@ -104,7 +104,7 @@ public:
 
 	bool is_locked() const
 	{
-		return keypairs.size() < addresses.size();
+		return addresses.empty() || keypairs.size() < addresses.size();
 	}
 
 	skey_t get_skey(const uint32_t index) const
