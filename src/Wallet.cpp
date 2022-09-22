@@ -24,8 +24,12 @@
 
 namespace mmx {
 
-inline uint32_t get_finger_print(const hash_t& seed_value) {
-	return uint32_t(hash_t(seed_value.bytes).to_uint256());
+inline uint32_t get_finger_print(const hash_t& seed_value, const vnx::optional<std::string>& passphrase) {
+	auto bytes = seed_value.to_vector();
+	if(passphrase) {
+		bytes.insert(bytes.end(), passphrase->begin(), passphrase->end());
+	}
+	return uint32_t(hash_t(bytes).to_uint256());
 }
 
 
@@ -767,7 +771,7 @@ void Wallet::add_account(const uint32_t& index, const account_t& config, const v
 
 	if(auto key_file = vnx::read_from_file<KeyFile>(key_path))
 	{
-		const auto info_path = database_path + "info_" + std::to_string(get_finger_print(key_file->seed_value)) + ".dat";
+		const auto info_path = database_path + "info_" + std::to_string(get_finger_print(key_file->seed_value, passphrase)) + ".dat";
 
 		auto info = WalletFile::create();
 		if(enable_bls) {
@@ -832,7 +836,7 @@ void Wallet::create_wallet(const account_t& config_, const vnx::optional<std::st
 	config.with_passphrase = passphrase;
 
 	if(config.key_file.empty()) {
-		config.key_file = "wallet_" + std::to_string(get_finger_print(key_file.seed_value)) + ".dat";
+		config.key_file = "wallet_" + std::to_string(get_finger_print(key_file.seed_value, passphrase)) + ".dat";
 	}
 	if(vnx::File(config.key_file).exists()) {
 		throw std::logic_error("key file already exists");
