@@ -818,7 +818,7 @@ std::map<vm::varptr_t, vm::varptr_t> Node::read_storage_map(const addr_t& contra
 	if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(get_contract(contract))) {
 		if(auto bin = std::dynamic_pointer_cast<const contract::Binary>(get_contract(exec->binary))) {
 			auto engine = std::make_shared<vm::Engine>(contract, storage, true);
-			mmx::load(engine, bin);
+			vm::load(engine, bin);
 			for(const auto& entry : storage->find_entries(contract, address, height)) {
 				if(auto key = engine->read(entry.first)) {
 					out[vm::clone(key)] = entry.second;
@@ -833,7 +833,7 @@ vnx::Variant Node::call_contract(const addr_t& address, const std::string& metho
 {
 	if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(get_contract(address))) {
 		if(auto bin = std::dynamic_pointer_cast<const contract::Binary>(get_contract(exec->binary))) {
-			auto func = mmx::find_method(bin, method);
+			auto func = vm::find_method(bin, method);
 			if(!func) {
 				throw std::runtime_error("no such method: " + method);
 			}
@@ -842,18 +842,19 @@ vnx::Variant Node::call_contract(const addr_t& address, const std::string& metho
 			}
 			auto engine = std::make_shared<vm::Engine>(address, storage, true);
 			engine->total_gas = params->max_block_cost;
-			mmx::load(engine, bin);
+			vm::load(engine, bin);
 			if(auto peak = get_peak()) {
 				engine->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(peak->height));
 			}
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::var_t());
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::var_t());
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::uint_t(address.to_uint256()));
-			mmx::set_balance(engine, get_balances(address));
-			mmx::set_args(engine, args);
-			mmx::execute(engine, *func);
-			return mmx::read(engine, vm::MEM_STACK);
+			vm::set_balance(engine, get_balances(address));
+			vm::set_args(engine, args);
+			vm::execute(engine, *func);
+			return vm::read(engine, vm::MEM_STACK);
 		}
+		throw std::runtime_error("no such binary");
 	}
 	throw std::runtime_error("no such contract");
 }

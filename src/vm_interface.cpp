@@ -10,6 +10,7 @@
 
 
 namespace mmx {
+namespace vm {
 
 const contract::method_t* find_method(std::shared_ptr<const contract::Binary> binary, const std::string& method_name)
 {
@@ -357,4 +358,5 @@ void execute(std::shared_ptr<vm::Engine> engine, const contract::method_t& metho
 }
 
 
+} // vm
 } // mmx

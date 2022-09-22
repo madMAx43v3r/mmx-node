@@ -16,6 +16,7 @@
 
 
 namespace mmx {
+namespace vm {
 
 const contract::method_t* find_method(std::shared_ptr<const contract::Binary> binary, const std::string& method_name);
 
@@ -39,6 +40,7 @@ void set_args(std::shared_ptr<vm::Engine> engine, const std::vector<vnx::Variant
 void execute(std::shared_ptr<vm::Engine> engine, const contract::method_t& method);
 
 
+} // vm
 } // mmx
 
 #endif /* INCLUDE_MMX_VM_INTERFACE_H_ */

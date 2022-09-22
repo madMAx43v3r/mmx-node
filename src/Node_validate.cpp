@@ -393,10 +393,10 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		value -= out.amount;
 		state->balance[out.contract] += out.amount;
 
-		mmx::set_deposit(engine, out);
+		vm::set_deposit(engine, out);
 		exec_outputs.push_back(out);
 	}
-	mmx::set_args(engine, exec->args);
+	vm::set_args(engine, exec->args);
 	execute(tx, context, state, exec_inputs, exec_outputs, contract_cache, storage_cache, engine, exec->method, tx_cost, is_public);
 	tx_cost += engine->total_cost;
 }
@@ -423,7 +423,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	if(!executable) {
 		throw std::logic_error("no such binary: " + executable->binary.to_string());
 	}
-	auto method = mmx::find_method(binary, method_name);
+	auto method = vm::find_method(binary, method_name);
 	if(!method) {
 		throw std::logic_error("no such method: " + method_name);
 	}
@@ -433,7 +433,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	if(!is_public && method->is_public) {
 		throw std::logic_error("method is public: " + method_name);
 	}
-	mmx::load(engine, binary);
+	vm::load(engine, binary);
 
 	std::weak_ptr<vm::Engine> parent = engine;
 	engine->remote = [this, tx, context, executable, &contract_cache, storage_cache, parent, &exec_inputs, &exec_outputs, &tx_cost]
@@ -455,14 +455,14 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 
 		const auto stack_ptr = engine->get_frame().stack_ptr;
 		for(uint32_t i = 0; i < nargs; ++i) {
-			mmx::copy(child, engine, vm::MEM_STACK + 1 + i, vm::MEM_STACK + stack_ptr + 1 + i);
+			vm::copy(child, engine, vm::MEM_STACK + 1 + i, vm::MEM_STACK + stack_ptr + 1 + i);
 		}
 		child->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::uint_t(engine->contract.to_uint256()));
 		child->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::uint_t(address.to_uint256()));
 
 		execute(tx, context, state, exec_inputs, exec_outputs, contract_cache, storage_cache, child, method, tx_cost, true);
 
-		mmx::copy(engine, child, vm::MEM_STACK + stack_ptr, vm::MEM_STACK);
+		vm::copy(engine, child, vm::MEM_STACK + stack_ptr, vm::MEM_STACK);
 
 		const auto cost = child->total_cost + params->min_txfee_exec;
 		engine->total_gas -= std::min(cost, engine->total_gas);
@@ -472,9 +472,9 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 
 	engine->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(context->block->height));
 	engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::uint_t(tx->id.to_uint256()));
-	mmx::set_balance(engine, state->balance);
+	vm::set_balance(engine, state->balance);
 
-	mmx::execute(engine, *method);
+	vm::execute(engine, *method);
 
 	for(const auto& out : engine->outputs)
 	{
