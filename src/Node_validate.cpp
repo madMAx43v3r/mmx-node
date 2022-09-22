@@ -274,7 +274,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 			if(!tx->exec_result->did_fail) {
 				auto txi = tx;
 				while(txi) {
-					for(const auto& in : txi->get_inputs()) {
+					for(const auto& in : txi->inputs) {
 						const auto balance = balance_cache.find(in.address, in.contract);
 						if(!balance || in.amount > *balance) {
 							throw std::logic_error("insufficient funds to cover input");

@@ -359,9 +359,6 @@ std::shared_ptr<const Transaction> Wallet::deposit(
 	op->currency = currency;
 	op->user = options.user;
 
-	if(!op->user) {
-		op->user = wallet->get_address(0);
-	}
 	auto tx = Transaction::create();
 	tx->note = tx_note_e::DEPOSIT;
 	tx->execute.push_back(op);
@@ -444,7 +441,7 @@ std::shared_ptr<const Transaction> Wallet::cancel_offer(
 
 	auto options_ = options;
 	options_.user = owner;
-	return execute(index, address, "cancel", {}, options);
+	return execute(index, address, "cancel", {}, options_);
 }
 
 std::shared_ptr<const Transaction> Wallet::complete(

@@ -514,11 +514,11 @@ int main(int argc, char** argv)
 				if(wallet.is_locked(index)) {
 					spend_options.passphrase = vnx::input_password("Passphrase: ");
 				}
+				if(!spend_options.user) {
+					spend_options.user = wallet.get_address(index, offset);
+				}
 				std::shared_ptr<const mmx::Transaction> tx;
 				if(command == "exec") {
-					if(!spend_options.user) {
-						spend_options.user = wallet.get_address(index, offset);
-					}
 					tx = wallet.execute(index, contract, method, args, spend_options);
 					std::cout << "Executed " << method << "() with ";
 				} else {
@@ -569,7 +569,7 @@ int main(int argc, char** argv)
 
 				const auto data = node.get_offer(address);
 
-				std::cout << "  You receive:   ";
+				std::cout << "  You receive:  ";
 				if(auto token = get_token(node, data.bid_currency)) {
 					std::cout << mmx::to_value(data.bid_amount, token->decimals) << " " << token->symbol << " [" << data.bid_currency << "]";
 				} else {

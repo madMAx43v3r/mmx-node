@@ -909,7 +909,9 @@ std::vector<std::pair<addr_t, std::shared_ptr<const Contract>>> Node::get_virtua
 offer_data_t Node::get_offer(const addr_t& address) const
 {
 	auto data = read_storage(address, -1);
-
+	if(data.empty()) {
+		throw std::runtime_error("no such offer: " + address.to_string());
+	}
 	offer_data_t out;
 	out.address = address;
 	out.height = data["height_open"].to_uint();
@@ -922,6 +924,12 @@ offer_data_t Node::get_offer(const addr_t& address) const
 		auto iter = data.find("height_close");
 		if(iter != data.end()) {
 			out.close_height = iter->second.to_uint();
+		}
+	}
+	{
+		auto iter = data.find("trade_txid");
+		if(iter != data.end()) {
+			out.trade_txid = hash_t::from_bytes(iter->second.to_uint());
 		}
 	}
 	return out;

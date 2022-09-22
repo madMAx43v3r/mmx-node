@@ -3,7 +3,6 @@ package mmx;
 struct offer_data_t {
 	
 	uint height;
-	uint close_height = -1;
 		
 	addr_t address;
 	
@@ -14,5 +13,8 @@ struct offer_data_t {
 	ulong ask_amount;
 	
 	string state;
+
+	optional<uint> close_height;
+	optional<hash_t> trade_txid;
 	
 }

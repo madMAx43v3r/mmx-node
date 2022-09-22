@@ -11,6 +11,7 @@
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/operation/Mutate.hxx>
 #include <mmx/operation/Execute.hxx>
+#include <mmx/operation/Deposit.hxx>
 #include <mmx/utils.h>
 
 #include <vnx/vnx.h>
@@ -657,7 +658,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block(const uint64_t verify_limi
 			if(!tx->exec_result->did_fail) {
 				auto txi = tx;
 				while(txi) {
-					for(const auto& in : txi->get_inputs()) {
+					for(const auto& in : txi->inputs) {
 						const auto balance = tmp_cache.find(in.address, in.contract);
 						if(balance && in.amount <= *balance) {
 							*balance -= in.amount;
