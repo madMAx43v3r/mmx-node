@@ -24,7 +24,7 @@
 
 namespace mmx {
 
-inline uint32_t get_finger_print(const hash_t& seed_value, const vnx::optional<std::string>& passphrase)
+inline std::string get_finger_print(const hash_t& seed_value, const vnx::optional<std::string>& passphrase)
 {
 	hash_t pass_hash;
 	if(passphrase) {
@@ -34,7 +34,7 @@ inline uint32_t get_finger_print(const hash_t& seed_value, const vnx::optional<s
 	for(int i = 0; i < 16384; ++i) {
 		hash = hash_t(hash + seed_value + pass_hash);
 	}
-	return uint32_t(hash.to_uint256());
+	return std::to_string(uint32_t(hash.to_uint256()));
 }
 
 
@@ -761,7 +761,19 @@ void Wallet::lock(const uint32_t& index)
 
 void Wallet::unlock(const uint32_t& index, const std::string& passphrase)
 {
-	get_wallet(index)->unlock(passphrase);
+	auto wallet = get_wallet(index);
+	wallet->unlock(passphrase);
+
+	if(wallet->config.with_passphrase) {
+		const auto key_path = storage_path + wallet->config.key_file;
+		if(auto key_file = vnx::read_from_file<KeyFile>(storage_path + wallet->config.key_file)) {
+			auto info = WalletFile::create();
+			info->addresses = wallet->get_all_addresses();
+			vnx::write_to_file(database_path + "info_" + wallet->config.finger_print + ".dat", info);
+		} else {
+			log(WARN) << "Failed to read key file: " << key_path;
+		}
+	}
 }
 
 void Wallet::add_account(const uint32_t& index, const account_t& config, const vnx::optional<std::string>& passphrase)
@@ -774,33 +786,28 @@ void Wallet::add_account(const uint32_t& index, const account_t& config, const v
 	}
 	const auto key_path = storage_path + config.key_file;
 
-	if(auto key_file = vnx::read_from_file<KeyFile>(key_path))
-	{
-		const auto info_path = database_path + "info_" + std::to_string(get_finger_print(key_file->seed_value, passphrase)) + ".dat";
-
-		auto info = WalletFile::create();
+	if(auto key_file = vnx::read_from_file<KeyFile>(key_path)) {
 		if(enable_bls) {
-			auto wallet = std::make_shared<BLS_Wallet>(key_file->seed_value, 11337);
-			if(auto keys = wallet->get_farmer_keys()) {
-				info->farmer_key = keys->farmer_public_key;
-				info->pool_key = keys->pool_public_key;
-			}
-			bls_wallets[index] = wallet;
+			bls_wallets[index] = std::make_shared<BLS_Wallet>(key_file->seed_value, 11337);
 		}
 		if(config.with_passphrase && !passphrase) {
-			if(auto file = vnx::read_from_file<WalletFile>(info_path)) {
-				info = file;
+			const auto info_path = database_path + "info_" + config.finger_print + ".dat";
+			const auto info = vnx::read_from_file<WalletFile>(info_path);
+			if(!info) {
+				log(WARN) << "Missing info file: " << info_path;
 			}
-			wallets[index] = std::make_shared<ECDSA_Wallet>(key_file->seed_value, info->addresses, config, params);
+			wallets[index] = std::make_shared<ECDSA_Wallet>(
+					key_file->seed_value, (info ? info->addresses : std::vector<addr_t>()), config, params);
 		} else {
-			auto wallet = std::make_shared<ECDSA_Wallet>(key_file->seed_value, passphrase, config, params);
-			info->addresses = wallet->get_all_addresses();
+			auto wallet = std::make_shared<ECDSA_Wallet>(key_file->seed_value, config, params);
 			wallets[index] = wallet;
 
-			if(config.with_passphrase) {
+			if(passphrase) {
+				unlock(index, *passphrase);
 				wallet->lock();
+			} else {
+				unlock(index, "");
 			}
-			vnx::write_to_file(info_path, info);
 		}
 	} else {
 		throw std::runtime_error("failed to read key file: " + key_path);
@@ -839,9 +846,10 @@ void Wallet::create_wallet(const account_t& config_, const vnx::optional<std::st
 	}
 	auto config = config_;
 	config.with_passphrase = passphrase;
+	config.finger_print = get_finger_print(key_file.seed_value, passphrase);
 
 	if(config.key_file.empty()) {
-		config.key_file = "wallet_" + std::to_string(get_finger_print(key_file.seed_value, passphrase)) + ".dat";
+		config.key_file = "wallet_" + config.finger_print + ".dat";
 	}
 	if(vnx::File(config.key_file).exists()) {
 		throw std::logic_error("key file already exists");

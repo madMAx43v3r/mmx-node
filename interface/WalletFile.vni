@@ -2,9 +2,6 @@ package mmx;
 
 class WalletFile {
 	
-	bls_pubkey_t farmer_key;
-	bls_pubkey_t pool_key;
-	
 	vector<addr_t> addresses;
 	
 }

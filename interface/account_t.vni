@@ -10,6 +10,8 @@ struct account_t {
 	
 	string key_file;
 	
+	string finger_print;
+	
 	bool with_passphrase;
 	
 }

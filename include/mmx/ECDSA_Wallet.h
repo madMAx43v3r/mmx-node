@@ -29,23 +29,22 @@ class ECDSA_Wallet {
 public:
 	const account_t config;
 
-	ECDSA_Wallet(	const hash_t& seed_value, const vnx::optional<std::string>& passphrase,
+	ECDSA_Wallet(	const hash_t& seed_value,
 					const account_t& config, std::shared_ptr<const ChainParams> params)
 		:	config(config), seed_value(seed_value), params(params)
 	{
 		if(seed_value == hash_t()) {
 			throw std::logic_error("seed == zero");
 		}
-		if(config.with_passphrase && !passphrase) {
-			throw std::logic_error("missing passphrase");
-		}
-		unlock(passphrase ? *passphrase : "");
 	}
 
 	ECDSA_Wallet(	const hash_t& seed_value, const std::vector<addr_t>& addresses,
 					const account_t& config, std::shared_ptr<const ChainParams> params)
 		:	config(config), seed_value(seed_value), params(params)
 	{
+		if(seed_value == hash_t()) {
+			throw std::logic_error("seed == zero");
+		}
 		size_t i = 0;
 		for(const auto& addr : addresses) {
 			index_map[addr] = i++;
