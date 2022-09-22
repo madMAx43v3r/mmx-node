@@ -843,9 +843,7 @@ vnx::Variant Node::call_contract(const addr_t& address, const std::string& metho
 			auto engine = std::make_shared<vm::Engine>(address, storage, true);
 			engine->total_gas = params->max_block_cost;
 			vm::load(engine, bin);
-			if(auto peak = get_peak()) {
-				engine->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(peak->height));
-			}
+			engine->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(get_height()));
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::var_t());
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::var_t());
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::uint_t(address.to_uint256()));
