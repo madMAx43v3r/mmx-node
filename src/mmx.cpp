@@ -1026,6 +1026,14 @@ int main(int argc, char** argv)
 					}
 				}
 				if(bin) {
+					{
+						size_t i = 0;
+						std::cout << "constants:" << std::endl;
+						for(auto var : mmx::vm::read_constants(bin)) {
+							std::cout << "  [0x" << vnx::to_hex_string(i++) << "] " << mmx::vm::to_string(var) << std::endl;
+							delete var;
+						}
+					}
 					std::map<size_t, mmx::contract::method_t> method_table;
 					for(const auto& entry : bin->methods) {
 						method_table[entry.second.entry_point] = entry.second;
