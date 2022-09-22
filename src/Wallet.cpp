@@ -26,13 +26,13 @@ namespace mmx {
 
 inline uint32_t get_finger_print(const hash_t& seed_value, const vnx::optional<std::string>& passphrase)
 {
+	hash_t pass_hash;
+	if(passphrase) {
+		pass_hash = hash_t("MMX/fingerprint/" + *passphrase);
+	}
 	hash_t hash;
 	for(int i = 0; i < 16384; ++i) {
-		auto bytes = hash + seed_value;
-		if(passphrase) {
-			bytes.insert(bytes.end(), passphrase->begin(), passphrase->end());
-		}
-		hash = hash_t(bytes);
+		hash = hash_t(hash + seed_value + pass_hash);
 	}
 	return uint32_t(hash.to_uint256());
 }
