@@ -6,7 +6,6 @@
 
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/bls_pubkey_t.hpp>
 #include <vnx/Value.h>
 
 
@@ -15,8 +14,6 @@ namespace mmx {
 class MMX_EXPORT WalletFile : public ::vnx::Value {
 public:
 	
-	::mmx::bls_pubkey_t farmer_key;
-	::mmx::bls_pubkey_t pool_key;
 	std::vector<::mmx::addr_t> addresses;
 	
 	typedef ::vnx::Value Super;
@@ -64,11 +61,9 @@ protected:
 
 template<typename T>
 void WalletFile::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<WalletFile>(3);
-	_visitor.type_field("farmer_key", 0); _visitor.accept(farmer_key);
-	_visitor.type_field("pool_key", 1); _visitor.accept(pool_key);
-	_visitor.type_field("addresses", 2); _visitor.accept(addresses);
-	_visitor.template type_end<WalletFile>(3);
+	_visitor.template type_begin<WalletFile>(1);
+	_visitor.type_field("addresses", 0); _visitor.accept(addresses);
+	_visitor.template type_end<WalletFile>(1);
 }
 
 

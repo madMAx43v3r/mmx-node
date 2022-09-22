@@ -4,7 +4,6 @@
 #include <mmx/package.hxx>
 #include <mmx/WalletFile.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/bls_pubkey_t.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -14,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 WalletFile::VNX_TYPE_HASH(0xefcdc0f20fc4360eull);
-const vnx::Hash64 WalletFile::VNX_CODE_HASH(0xc5fa42d4bb261bbaull);
+const vnx::Hash64 WalletFile::VNX_CODE_HASH(0x82ac26e33ee406a0ull);
 
 vnx::Hash64 WalletFile::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -47,16 +46,12 @@ void WalletFile::write(vnx::TypeOutput& _out, const vnx::TypeCode* _type_code, c
 void WalletFile::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_WalletFile;
 	_visitor.type_begin(*_type_code);
-	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, farmer_key);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, pool_key);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, addresses);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, addresses);
 	_visitor.type_end(*_type_code);
 }
 
 void WalletFile::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.WalletFile\"";
-	_out << ", \"farmer_key\": "; vnx::write(_out, farmer_key);
-	_out << ", \"pool_key\": "; vnx::write(_out, pool_key);
 	_out << ", \"addresses\": "; vnx::write(_out, addresses);
 	_out << "}";
 }
@@ -70,8 +65,6 @@ void WalletFile::read(std::istream& _in) {
 vnx::Object WalletFile::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.WalletFile";
-	_object["farmer_key"] = farmer_key;
-	_object["pool_key"] = pool_key;
 	_object["addresses"] = addresses;
 	return _object;
 }
@@ -80,21 +73,11 @@ void WalletFile::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "addresses") {
 			_entry.second.to(addresses);
-		} else if(_entry.first == "farmer_key") {
-			_entry.second.to(farmer_key);
-		} else if(_entry.first == "pool_key") {
-			_entry.second.to(pool_key);
 		}
 	}
 }
 
 vnx::Variant WalletFile::get_field(const std::string& _name) const {
-	if(_name == "farmer_key") {
-		return vnx::Variant(farmer_key);
-	}
-	if(_name == "pool_key") {
-		return vnx::Variant(pool_key);
-	}
 	if(_name == "addresses") {
 		return vnx::Variant(addresses);
 	}
@@ -102,11 +85,7 @@ vnx::Variant WalletFile::get_field(const std::string& _name) const {
 }
 
 void WalletFile::set_field(const std::string& _name, const vnx::Variant& _value) {
-	if(_name == "farmer_key") {
-		_value.to(farmer_key);
-	} else if(_name == "pool_key") {
-		_value.to(pool_key);
-	} else if(_name == "addresses") {
+	if(_name == "addresses") {
 		_value.to(addresses);
 	}
 }
@@ -135,26 +114,14 @@ std::shared_ptr<vnx::TypeCode> WalletFile::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.WalletFile";
 	type_code->type_hash = vnx::Hash64(0xefcdc0f20fc4360eull);
-	type_code->code_hash = vnx::Hash64(0xc5fa42d4bb261bbaull);
+	type_code->code_hash = vnx::Hash64(0x82ac26e33ee406a0ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::WalletFile);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<WalletFile>(); };
-	type_code->fields.resize(3);
+	type_code->fields.resize(1);
 	{
 		auto& field = type_code->fields[0];
-		field.is_extended = true;
-		field.name = "farmer_key";
-		field.code = {11, 48, 1};
-	}
-	{
-		auto& field = type_code->fields[1];
-		field.is_extended = true;
-		field.name = "pool_key";
-		field.code = {11, 48, 1};
-	}
-	{
-		auto& field = type_code->fields[2];
 		field.is_extended = true;
 		field.name = "addresses";
 		field.code = {12, 11, 32, 1};
@@ -210,9 +177,7 @@ void read(TypeInput& in, ::mmx::WalletFile& value, const TypeCode* type_code, co
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 0: vnx::read(in, value.farmer_key, type_code, _field->code.data()); break;
-			case 1: vnx::read(in, value.pool_key, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.addresses, type_code, _field->code.data()); break;
+			case 0: vnx::read(in, value.addresses, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -231,9 +196,7 @@ void write(TypeOutput& out, const ::mmx::WalletFile& value, const TypeCode* type
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	vnx::write(out, value.farmer_key, type_code, type_code->fields[0].code.data());
-	vnx::write(out, value.pool_key, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.addresses, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.addresses, type_code, type_code->fields[0].code.data());
 }
 
 void read(std::istream& in, ::mmx::WalletFile& value) {

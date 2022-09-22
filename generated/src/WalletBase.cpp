@@ -152,7 +152,7 @@ namespace mmx {
 
 
 const vnx::Hash64 WalletBase::VNX_TYPE_HASH(0x62207fd96d3aead7ull);
-const vnx::Hash64 WalletBase::VNX_CODE_HASH(0xf2b15235b1379908ull);
+const vnx::Hash64 WalletBase::VNX_CODE_HASH(0x1bd03026448c5928ull);
 
 WalletBase::WalletBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -364,7 +364,7 @@ std::shared_ptr<vnx::TypeCode> WalletBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet";
 	type_code->type_hash = vnx::Hash64(0x62207fd96d3aead7ull);
-	type_code->code_hash = vnx::Hash64(0xf2b15235b1379908ull);
+	type_code->code_hash = vnx::Hash64(0x1bd03026448c5928ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::WalletBase);
 	type_code->depends.resize(1);
