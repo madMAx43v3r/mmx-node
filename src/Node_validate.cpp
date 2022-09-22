@@ -728,7 +728,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			}
 			const auto state = op->address == addr_t() ? self_state : contract_cache.find_state(op->address);
 			if(!state) {
-				throw std::logic_error("missing contract state");
+				throw std::logic_error("no such contract: " + op->address.to_string());
 			}
 			const auto contract = state->data;
 			if(!contract) {

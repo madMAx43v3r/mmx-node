@@ -109,7 +109,7 @@ struct ref_t : var_t {
 
 struct uint_t : var_t {
 
-	uint256_t value = uint256_0;
+	uint256_t value = 0;
 
 	uint_t() : var_t(TYPE_UINT) {}
 	uint_t(const uint_t&) = default;
