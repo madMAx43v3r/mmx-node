@@ -979,7 +979,7 @@ void WebAPI::render_offers(const vnx::request_id_t& request_id, const std::vecto
 	struct job_t {
 		size_t num_left = 0;
 		vnx::request_id_t request_id;
-		std::vector<vnx::Object> result;
+		std::vector<vnx::Variant> result;
 	};
 	auto job = std::make_shared<job_t>();
 	job->num_left = offers.size();
@@ -996,9 +996,9 @@ void WebAPI::render_offers(const vnx::request_id_t& request_id, const std::vecto
 			[this, request_id, job, i](const offer_data_t& data) {
 				get_context({data.bid_currency, data.ask_currency}, request_id,
 					[this, request_id, job, i, data](std::shared_ptr<RenderContext> context) {
-						job->result[i] = render(data, context);
+						job->result[i] = render_value(data, context);
 						if(--job->num_left == 0) {
-							respond(job->request_id, render_value(job->result));
+							respond(job->request_id, vnx::Variant(job->result));
 						}
 					});
 			});
@@ -1459,8 +1459,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				[this, request_id](const std::map<addr_t, std::shared_ptr<const Contract>>& contracts) {
 					std::vector<addr_t> out;
 					for(const auto& entry : contracts) {
-						if(auto offer = std::dynamic_pointer_cast<const contract::Executable>(entry.second)) {
-							if(offer->binary == params->offer_binary) {
+						if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(entry.second)) {
+							if(exec->binary == params->offer_binary) {
 								out.push_back(entry.first);
 							}
 						}
@@ -1497,17 +1497,13 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 							const auto src_addr = args["src_addr"].to<addr_t>();
 							wallet->send_from(index, amount, dst_addr, src_addr, currency, options,
 								[this, request_id](std::shared_ptr<const Transaction> tx) {
-									vnx::Variant res;
-									if(tx) { res = tx->id.to_string(); }
-									respond(request_id, res);
+									respond(request_id, render(tx));
 								},
 								std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 						} else {
 							wallet->send(index, amount, dst_addr, currency, options,
 								[this, request_id](std::shared_ptr<const Transaction> tx) {
-									vnx::Variant res;
-									if(tx) { res = tx->id.to_string(); }
-									respond(request_id, res);
+									respond(request_id, render(tx));
 								},
 								std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 						}
@@ -1545,9 +1541,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 						const auto options = args["options"].to<spend_options_t>();
 						wallet->send_many(index, amounts, currency, options,
 							[this, request_id](std::shared_ptr<const Transaction> tx) {
-								vnx::Variant res;
-								if(tx) { res = tx->id.to_string(); }
-								respond(request_id, res);
+								respond(request_id, render(tx));
 							},
 							std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 					} catch(std::exception& ex) {
@@ -1568,9 +1562,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			const auto index = vnx::from_string<uint32_t>(iter_index->second);
 			wallet->deploy(index, contract, {},
 				[this, request_id](std::shared_ptr<const Transaction> tx) {
-					vnx::Variant res;
-					if(tx) { res = addr_t(tx->id).to_string(); }
-					respond(request_id, res);
+					respond(request_id, vnx::Variant(addr_t(tx->id).to_string()));
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
@@ -1602,7 +1594,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 						const auto index = args["index"].to<uint32_t>();
 						wallet->make_offer(index, 0, bid_amount, bid_currency, ask_amount, ask_currency, {},
 							[this, request_id](std::shared_ptr<const Transaction> tx) {
-								respond(request_id, tx->to_object());
+								respond(request_id, render(tx));
 							},
 							std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 					} catch(std::exception& ex) {
@@ -1622,7 +1614,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			const auto address = args["address"].to<addr_t>();
 			wallet->cancel_offer(index, address, {},
 				[this, request_id](std::shared_ptr<const Transaction> tx) {
-					respond(request_id, tx->to_object());
+					respond(request_id, render(tx));
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
@@ -1638,7 +1630,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			const auto address = args["address"].to<addr_t>();
 			wallet->accept_offer(index, address, 0, {},
 				[this, request_id](std::shared_ptr<const Transaction> tx) {
-					respond(request_id, tx->to_object());
+					respond(request_id, render(tx));
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {

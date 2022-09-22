@@ -1261,7 +1261,7 @@ Vue.component('account-send-form', {
 				v-if="result"
 				class="my-2"
 			>
-				{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
+				{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result.id">{{result.id}}</router-link>
 			</v-alert>
 
 			<v-alert
@@ -1448,7 +1448,7 @@ Vue.component('account-offer-form', {
 				v-if="result"
 				class="my-2"
 			>
-			{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
+			{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result.id">{{result.id}}</router-link>
 			</v-alert>
 
 			<v-alert
@@ -1489,12 +1489,11 @@ Vue.component('account-offers', {
 				.then(response => response.json())
 				.then(data => this.data = data.sort((L, R) => R.height - L.height));
 		},
-		cancel(id, sender) {
+		cancel(address) {
 			const args = {};
 			args.index = this.index;
-			args.txid = id;
-			args.address = sender;
-			fetch('/wapi/wallet/revoke', {body: JSON.stringify(args), method: "post"})
+			args.address = address;
+			fetch('/wapi/wallet/cancel', {body: JSON.stringify(args), method: "post"})
 				.then(response => {
 					if(response.ok) {
 						response.json().then(data => this.result = data);
@@ -1540,32 +1539,32 @@ Vue.component('account-offers', {
 			</tr>
 			</thead>
 			<tbody>
-			<tr v-for="item in data" :key="item.id">
+			<tr v-for="item in data" :key="item.address">
 				<td>{{item.height}}</td>
-				<td class="collapsing"><b>{{item.base.input_amounts[0].value}}</b></td>
-				<td>{{item.base.input_amounts[0].symbol}}</td>
-				<td class="collapsing"><b>{{item.base.output_amounts[0].value}}</b></td>
-				<td>{{item.base.output_amounts[0].symbol}}</td>
-				<td><router-link :to="'/explore/address/' + item.id">{{item.id.substr(0, 16)}}...</router-link></td>
-				<td :class="{'green--text': !item.base.height && !item.revoked, 'red--text text--lighten-2': item.revoked}">
-					<template v-if="item.base.height">
-						<router-link :to="'/explore/transaction/' + item.base.id">{{ $t('account_offers.accepted') }}</router-link>
+				<td class="collapsing"><b>{{item.bid_value}}</b></td>
+				<td>{{item.bid_symbol}}</td>
+				<td class="collapsing"><b>{{item.ask_value}}</b></td>
+				<td>{{item.ask_symbol}}</td>
+				<td><router-link :to="'/explore/address/' + item.address">{{item.address.substr(0, 16)}}...</router-link></td>
+				<td :class="{'green--text': item.state == 'OPEN', 'red--text text--lighten-2': item.state == 'REVOKED'}">
+					<template v-if="item.state == 'CLOSED'">
+						<router-link :to="'/explore/transaction/' + item.trade_txid">{{ $t('account_offers.accepted') }}</router-link>
 					</template>
 					<template v-else>
-						{{item.revoked ? $t('account_offers.revoked') : $t('account_offers.open') }}
+						{{item.state == 'REVOKED' ? $t('account_offers.revoked') : $t('account_offers.open') }}
 					</template>
 				</td>
 				<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 				<td>
-					<template v-if="!item.revoked && !item.base.height">
-						<v-btn outlined text @click="cancel(item.base.id, item.base.sender)">{{ $t('account_offers.revoke') }}</v-btn>
+					<template v-if="item.state == 'OPEN'">
+						<v-btn outlined text @click="cancel(item.address)">{{ $t('account_offers.revoke') }}</v-btn>
 					</template>
 				</td>
 			</tr>
 			</tbody>
 		</v-simple-table>
 		<div class="ui message" :class="{hidden: !result}">
-			{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
+			{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result.id">{{result.id}}</router-link>
 		</div>
 		<div class="ui negative message" :class="{hidden: !error}">
 			{{ $t('common.failed_with') }}: <b>{{error}}</b>
