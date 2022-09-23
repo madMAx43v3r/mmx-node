@@ -5,6 +5,7 @@
 #include <mmx/spend_options_t.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/tx_note_e.hxx>
 
 #include <vnx/vnx.h>
 
@@ -13,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 spend_options_t::VNX_TYPE_HASH(0x37f7c6d377362e95ull);
-const vnx::Hash64 spend_options_t::VNX_CODE_HASH(0xa00eaba11aa1a4eeull);
+const vnx::Hash64 spend_options_t::VNX_CODE_HASH(0x4f09aeb582512ee4ull);
 
 vnx::Hash64 spend_options_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -55,8 +56,9 @@ void spend_options_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, user);
 	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, sender);
 	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, passphrase);
-	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, owner_map);
-	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, contract_map);
+	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, note);
+	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, owner_map);
+	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, contract_map);
 	_visitor.type_end(*_type_code);
 }
 
@@ -71,6 +73,7 @@ void spend_options_t::write(std::ostream& _out) const {
 	_out << ", \"user\": "; vnx::write(_out, user);
 	_out << ", \"sender\": "; vnx::write(_out, sender);
 	_out << ", \"passphrase\": "; vnx::write(_out, passphrase);
+	_out << ", \"note\": "; vnx::write(_out, note);
 	_out << ", \"owner_map\": "; vnx::write(_out, owner_map);
 	_out << ", \"contract_map\": "; vnx::write(_out, contract_map);
 	_out << "}";
@@ -94,6 +97,7 @@ vnx::Object spend_options_t::to_object() const {
 	_object["user"] = user;
 	_object["sender"] = sender;
 	_object["passphrase"] = passphrase;
+	_object["note"] = note;
 	_object["owner_map"] = owner_map;
 	_object["contract_map"] = contract_map;
 	return _object;
@@ -115,6 +119,8 @@ void spend_options_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(max_extra_cost);
 		} else if(_entry.first == "min_confirm") {
 			_entry.second.to(min_confirm);
+		} else if(_entry.first == "note") {
+			_entry.second.to(note);
 		} else if(_entry.first == "owner_map") {
 			_entry.second.to(owner_map);
 		} else if(_entry.first == "passphrase") {
@@ -155,6 +161,9 @@ vnx::Variant spend_options_t::get_field(const std::string& _name) const {
 	if(_name == "passphrase") {
 		return vnx::Variant(passphrase);
 	}
+	if(_name == "note") {
+		return vnx::Variant(note);
+	}
 	if(_name == "owner_map") {
 		return vnx::Variant(owner_map);
 	}
@@ -183,6 +192,8 @@ void spend_options_t::set_field(const std::string& _name, const vnx::Variant& _v
 		_value.to(sender);
 	} else if(_name == "passphrase") {
 		_value.to(passphrase);
+	} else if(_name == "note") {
+		_value.to(note);
 	} else if(_name == "owner_map") {
 		_value.to(owner_map);
 	} else if(_name == "contract_map") {
@@ -214,11 +225,13 @@ std::shared_ptr<vnx::TypeCode> spend_options_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.spend_options_t";
 	type_code->type_hash = vnx::Hash64(0x37f7c6d377362e95ull);
-	type_code->code_hash = vnx::Hash64(0xa00eaba11aa1a4eeull);
+	type_code->code_hash = vnx::Hash64(0x4f09aeb582512ee4ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::spend_options_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<spend_options_t>>(); };
-	type_code->fields.resize(11);
+	type_code->depends.resize(1);
+	type_code->depends[0] = ::mmx::tx_note_e::static_get_type_code();
+	type_code->fields.resize(12);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 1;
@@ -280,11 +293,17 @@ std::shared_ptr<vnx::TypeCode> spend_options_t::static_create_type_code() {
 	{
 		auto& field = type_code->fields[9];
 		field.is_extended = true;
+		field.name = "note";
+		field.code = {33, 19, 0};
+	}
+	{
+		auto& field = type_code->fields[10];
+		field.is_extended = true;
 		field.name = "owner_map";
 		field.code = {13, 5, 11, 32, 1, 11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[10];
+		auto& field = type_code->fields[11];
 		field.is_extended = true;
 		field.name = "contract_map";
 		field.code = {13, 5, 11, 32, 1, 16};
@@ -351,8 +370,9 @@ void read(TypeInput& in, ::mmx::spend_options_t& value, const TypeCode* type_cod
 			case 6: vnx::read(in, value.user, type_code, _field->code.data()); break;
 			case 7: vnx::read(in, value.sender, type_code, _field->code.data()); break;
 			case 8: vnx::read(in, value.passphrase, type_code, _field->code.data()); break;
-			case 9: vnx::read(in, value.owner_map, type_code, _field->code.data()); break;
-			case 10: vnx::read(in, value.contract_map, type_code, _field->code.data()); break;
+			case 9: vnx::read(in, value.note, type_code, _field->code.data()); break;
+			case 10: vnx::read(in, value.owner_map, type_code, _field->code.data()); break;
+			case 11: vnx::read(in, value.contract_map, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -381,8 +401,9 @@ void write(TypeOutput& out, const ::mmx::spend_options_t& value, const TypeCode*
 	vnx::write(out, value.user, type_code, type_code->fields[6].code.data());
 	vnx::write(out, value.sender, type_code, type_code->fields[7].code.data());
 	vnx::write(out, value.passphrase, type_code, type_code->fields[8].code.data());
-	vnx::write(out, value.owner_map, type_code, type_code->fields[9].code.data());
-	vnx::write(out, value.contract_map, type_code, type_code->fields[10].code.data());
+	vnx::write(out, value.note, type_code, type_code->fields[9].code.data());
+	vnx::write(out, value.owner_map, type_code, type_code->fields[10].code.data());
+	vnx::write(out, value.contract_map, type_code, type_code->fields[11].code.data());
 }
 
 void read(std::istream& in, ::mmx::spend_options_t& value) {

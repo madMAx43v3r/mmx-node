@@ -8,6 +8,7 @@
 #include <mmx/package.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/tx_note_e.hxx>
 
 
 namespace mmx {
@@ -24,6 +25,7 @@ struct MMX_EXPORT spend_options_t {
 	vnx::optional<::mmx::addr_t> user;
 	vnx::optional<::mmx::addr_t> sender;
 	vnx::optional<std::string> passphrase;
+	vnx::optional<::mmx::tx_note_e> note;
 	std::map<::mmx::addr_t, ::mmx::addr_t> owner_map;
 	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> contract_map;
 	
@@ -67,7 +69,7 @@ struct MMX_EXPORT spend_options_t {
 
 template<typename T>
 void spend_options_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<spend_options_t>(11);
+	_visitor.template type_begin<spend_options_t>(12);
 	_visitor.type_field("auto_send", 0); _visitor.accept(auto_send);
 	_visitor.type_field("min_confirm", 1); _visitor.accept(min_confirm);
 	_visitor.type_field("fee_ratio", 2); _visitor.accept(fee_ratio);
@@ -77,9 +79,10 @@ void spend_options_t::accept_generic(T& _visitor) const {
 	_visitor.type_field("user", 6); _visitor.accept(user);
 	_visitor.type_field("sender", 7); _visitor.accept(sender);
 	_visitor.type_field("passphrase", 8); _visitor.accept(passphrase);
-	_visitor.type_field("owner_map", 9); _visitor.accept(owner_map);
-	_visitor.type_field("contract_map", 10); _visitor.accept(contract_map);
-	_visitor.template type_end<spend_options_t>(11);
+	_visitor.type_field("note", 9); _visitor.accept(note);
+	_visitor.type_field("owner_map", 10); _visitor.accept(owner_map);
+	_visitor.type_field("contract_map", 11); _visitor.accept(contract_map);
+	_visitor.template type_end<spend_options_t>(12);
 }
 
 
