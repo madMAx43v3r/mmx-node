@@ -290,7 +290,12 @@ int main(int argc, char** argv)
 						const auto& contract = entry.second;
 						std::cout << "Contract: " << address << " (" << contract->get_type_name();
 						if(auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract)) {
-							std::cout << ", " << token->symbol << ", " << token->name;
+							if(!token->symbol.empty()) {
+								std::cout << ", " << token->symbol;
+								if(!token->name.empty()) {
+									std::cout << ", " << token->name;
+								}
+							}
 						}
 						else if(auto exec = std::dynamic_pointer_cast<const mmx::contract::Executable>(contract)) {
 							if(exec->binary == params->offer_binary) {
