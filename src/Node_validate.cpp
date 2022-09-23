@@ -704,13 +704,14 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			if(!op || !op->is_valid()) {
 				throw std::logic_error("invalid operation");
 			}
-			const auto state = contract_cache.get_state(op->address);
+			const auto address = op->address == addr_t() ? addr_t(tx->id) : op->address;
+			const auto state = contract_cache.get_state(address);
 			if(!state) {
-				throw std::logic_error("no such contract: " + op->address.to_string());
+				throw std::logic_error("missing contract state: " + address.to_string());
 			}
 			const auto contract = state->data;
 			if(!contract) {
-				throw std::logic_error("no such contract: " + op->address.to_string());
+				throw std::logic_error("no such contract: " + address.to_string());
 			}
 			{
 				const auto outputs = contract->validate(op, context->get_context_for(tx, contract, contract_cache));
@@ -793,7 +794,9 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			try {
 				std::rethrow_exception(failed_ex);
 			} catch(const std::exception& ex) {
-				out->message = ex.what();
+				std::string msg = ex.what();
+				msg.resize(std::min<size_t>(msg.size(), exec_result_t::MAX_MESSAGE_LENGTH));
+				out->message = msg;
 			}
 			out->did_fail = true;
 		}
