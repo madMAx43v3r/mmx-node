@@ -168,11 +168,13 @@ private:
 
 	struct contract_cache_t {
 		contract_cache_t() = default;
-		contract_cache_t(contract_cache_t* parent) : parent(parent) {}
-		contract_cache_t* parent = nullptr;
+		contract_cache_t(const contract_cache_t* parent) : parent(parent) {}
+		mutable std::mutex mutex;
+		const contract_cache_t* parent = nullptr;
 		std::unordered_map<addr_t, std::shared_ptr<contract_state_t>> state_map;
-		std::shared_ptr<contract_state_t> find_state(const addr_t& address);
-		std::shared_ptr<const Contract> find_contract(const addr_t& address);
+		std::shared_ptr<contract_state_t> get_state(const addr_t& address);
+		std::shared_ptr<contract_state_t> find_state(const addr_t& address) const;
+		std::shared_ptr<const Contract> find_contract(const addr_t& address) const;
 		void commit(const contract_cache_t& cache);
 	};
 
@@ -187,7 +189,7 @@ private:
 		void signal(const hash_t& txid) const;
 		void setup_wait(const hash_t& txid, const addr_t& address);
 		std::shared_ptr<const Context> get_context_for(
-				std::shared_ptr<const Transaction> tx, std::shared_ptr<const Contract> contract, contract_cache_t& cache) const;
+				std::shared_ptr<const Transaction> tx, std::shared_ptr<const Contract> contract, const contract_cache_t& cache) const;
 	};
 
 	struct vdf_point_t {

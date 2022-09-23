@@ -64,11 +64,29 @@ void Node::execution_context_t::setup_wait(const hash_t& txid, const addr_t& add
 	}
 }
 
-std::shared_ptr<Node::contract_state_t> Node::contract_cache_t::find_state(const addr_t& address)
+std::shared_ptr<Node::contract_state_t> Node::contract_cache_t::find_state(const addr_t& address) const
 {
-	auto iter = state_map.find(address);
-	if(iter != state_map.end()) {
-		return iter->second;
+	std::lock_guard<std::mutex> lock(mutex);
+	{
+		auto iter = state_map.find(address);
+		if(iter != state_map.end()) {
+			return iter->second;
+		}
+	}
+	if(parent) {
+		return parent->find_state(address);
+	}
+	return nullptr;
+}
+
+std::shared_ptr<Node::contract_state_t> Node::contract_cache_t::get_state(const addr_t& address)
+{
+	std::lock_guard<std::mutex> lock(mutex);
+	{
+		auto iter = state_map.find(address);
+		if(iter != state_map.end()) {
+			return iter->second;
+		}
 	}
 	if(parent) {
 		if(auto state = parent->find_state(address)) {
@@ -78,7 +96,7 @@ std::shared_ptr<Node::contract_state_t> Node::contract_cache_t::find_state(const
 	return nullptr;
 }
 
-std::shared_ptr<const Contract> Node::contract_cache_t::find_contract(const addr_t& address)
+std::shared_ptr<const Contract> Node::contract_cache_t::find_contract(const addr_t& address) const
 {
 	if(auto state = find_state(address)) {
 		return state->data;
@@ -88,6 +106,8 @@ std::shared_ptr<const Contract> Node::contract_cache_t::find_contract(const addr
 
 void Node::contract_cache_t::commit(const contract_cache_t& cache)
 {
+	std::lock_guard<std::mutex> lock(mutex);
+
 	for(const auto& entry : cache.state_map) {
 		state_map[entry.first] = entry.second;
 	}
@@ -95,7 +115,7 @@ void Node::contract_cache_t::commit(const contract_cache_t& cache)
 
 std::shared_ptr<const Context>
 Node::execution_context_t::get_context_for(
-		std::shared_ptr<const Transaction> tx, std::shared_ptr<const Contract> contract, contract_cache_t& cache) const
+		std::shared_ptr<const Transaction> tx, std::shared_ptr<const Contract> contract, const contract_cache_t& cache) const
 {
 	auto out = vnx::clone(block);
 	out->txid = tx->id;
@@ -449,7 +469,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		}
 		const auto& address = iter->second;
 
-		auto state = contract_cache.find_state(address);
+		auto state = contract_cache.get_state(address);
 		auto child = std::make_shared<vm::Engine>(address, storage_cache, false);
 		child->total_gas = engine->total_gas - std::min(engine->total_cost, engine->total_gas);
 
@@ -685,11 +705,14 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			}
 		}
 
-		std::shared_ptr<contract_state_t> self_state;
 		if(tx->deploy) {
 			if(!tx->deploy->is_valid()) {
 				throw std::logic_error("invalid contract");
 			}
+			auto state = std::make_shared<contract_state_t>();
+			state->data = tx->deploy;
+			contract_cache.state_map[tx->id] = state;
+
 			if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(tx->deploy))
 			{
 				const auto creator = contract_cache.find_contract(nft->creator);
@@ -712,10 +735,6 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			}
 			else if(auto executable = std::dynamic_pointer_cast<const contract::Executable>(tx->deploy))
 			{
-				auto state = std::make_shared<contract_state_t>();
-				state->data = executable;
-				self_state = state;
-
 				auto exec = operation::Execute::create();
 				exec->method = executable->init_method;
 				exec->args = executable->init_args;
@@ -728,7 +747,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			if(!op || !op->is_valid()) {
 				throw std::logic_error("invalid operation");
 			}
-			const auto state = op->address == addr_t() ? self_state : contract_cache.find_state(op->address);
+			const auto state = contract_cache.get_state(op->address);
 			if(!state) {
 				throw std::logic_error("no such contract: " + op->address.to_string());
 			}
