@@ -154,7 +154,7 @@ std::string to_string(const instr_t& instr)
 {
 	const auto info = get_opcode_info(instr.code);
 	std::stringstream ss;
-	ss << info.name << std::hex << "\t";
+	ss << info.name << std::uppercase << std::hex << "\t";
 	for(uint32_t i = 0; i < info.nargs; ++i) {
 		ss << " ";
 		bool ref = false;
