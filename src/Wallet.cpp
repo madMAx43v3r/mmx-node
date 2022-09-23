@@ -440,7 +440,10 @@ std::shared_ptr<const Transaction> Wallet::accept_offer(
 
 	const auto currency = vm::to_addr(node->read_storage_field(address, "ask_currency").first.get());
 	const auto amount = node->read_storage_field(address, "ask_amount").first.to_uint();
-	return deposit(index, address, "trade", args, amount, currency, options);
+
+	auto options_ = options;
+	options_.note = tx_note_e::TRADE;
+	return deposit(index, address, "trade", args, amount, currency, options_);
 }
 
 std::shared_ptr<const Transaction> Wallet::cancel_offer(
