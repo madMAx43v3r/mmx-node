@@ -399,7 +399,7 @@ private:
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, txio_entry_t> spend_log;	// [[address, height, counter] => entry]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, exec_entry_t> exec_log;	// [[address, height, counter] => entry]
 
-	hash_table<addr_t, std::shared_ptr<const Contract>> contract_cache;			// [addr, contract]
+	hash_table<addr_t, std::shared_ptr<const Contract>> contract_map;			// [addr, contract]
 	hash_multi_table<addr_t, addr_t> deploy_map;								// [sender => contract]
 	hash_multi_table<bls_pubkey_t, addr_t> vplot_map;							// [farmer_key => contract]
 

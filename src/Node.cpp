@@ -86,7 +86,7 @@ void Node::main()
 		db.add(spend_log.open(database_path + "spend_log"));
 		db.add(exec_log.open(database_path + "exec_log"));
 
-		db.add(contract_cache.open(database_path + "contract_cache"));
+		db.add(contract_map.open(database_path + "contract_map"));
 		db.add(deploy_map.open(database_path + "deploy_map"));
 		db.add(offer_log.open(database_path + "offer_log"));
 		db.add(vplot_map.open(database_path + "vplot_map"));
@@ -582,13 +582,8 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 
 std::shared_ptr<const Contract> Node::get_contract(const addr_t& address) const
 {
-	// THREAD SAFE
 	std::shared_ptr<const Contract> contract;
-	if(!contract_cache.find(address, contract)) {
-		if(auto tx = get_transaction(address)) {
-			contract = tx->deploy;
-		}
-	}
+	contract_map.find(address, contract);
 	return contract;
 }
 
@@ -611,11 +606,7 @@ std::shared_ptr<const Contract> Node::get_contract_at(const addr_t& address, con
 		throw std::logic_error("no such block");
 	}
 	std::shared_ptr<const Contract> contract;
-	if(!contract_cache.find(address, contract, std::min(root->height, block->height))) {
-		if(auto tx = get_transaction(address)) {
-			contract = tx->deploy;
-		}
-	}
+	contract_map.find(address, contract, std::min(root->height, block->height));
 
 	if(fork) {
 		for(const auto& fork_i : get_fork_line(fork)) {
@@ -1486,7 +1477,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		for(const auto& entry : context->contract_cache.state_map) {
 			const auto& state = entry.second;
 			if(state->is_mutated) {
-				contract_cache.insert(entry.first, state->data);
+				contract_map.insert(entry.first, state->data);
 			}
 		}
 		context->storage->commit();
@@ -1559,7 +1550,7 @@ void Node::apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Tran
 			if(auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(contract)) {
 				vplot_map.insert(plot->farmer_key, tx->id);
 			}
-			contract_cache.insert(tx->id, contract);
+			contract_map.insert(tx->id, contract);
 		}
 	}
 	tx_pool_erase(tx->id);
