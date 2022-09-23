@@ -192,7 +192,11 @@ Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 		throw std::logic_error("dst_addr cannot be zero");
 	}
 	auto tx = Transaction::create();
-	tx->note = tx_note_e::WITHDRAW;
+	if(options.note) {
+		tx->note = *options.note;
+	} else {
+		tx->note = tx_note_e::WITHDRAW;
+	}
 	tx->add_input(currency, src_addr, amount);
 	tx->add_output(currency, dst_addr, amount);
 
@@ -369,7 +373,11 @@ std::shared_ptr<const Transaction> Wallet::deposit(
 	op->user = options.user;
 
 	auto tx = Transaction::create();
-	tx->note = tx_note_e::DEPOSIT;
+	if(options.note) {
+		tx->note = *options.note;
+	} else {
+		tx->note = tx_note_e::DEPOSIT;
+	}
 	tx->execute.push_back(op);
 
 	auto options_ = options;
