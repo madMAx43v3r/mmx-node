@@ -39,8 +39,6 @@ public:
 	std::vector<std::shared_ptr<const ::mmx::Operation>> execute;
 	std::vector<std::shared_ptr<const ::mmx::Solution>> solutions;
 	std::shared_ptr<const ::mmx::Contract> deploy;
-	std::shared_ptr<const ::mmx::Transaction> parent;
-	vnx::bool_t is_extendable = 0;
 	vnx::optional<::mmx::exec_result_t> exec_result;
 	::mmx::hash_t content_hash;
 	
@@ -69,9 +67,7 @@ public:
 	virtual ::mmx::txout_t get_output(const uint32_t& index = 0) const;
 	virtual std::vector<::mmx::txin_t> get_inputs() const;
 	virtual std::vector<::mmx::txout_t> get_outputs() const;
-	virtual std::vector<::mmx::txin_t> get_all_inputs() const;
-	virtual std::vector<::mmx::txout_t> get_all_outputs() const;
-	virtual std::vector<std::shared_ptr<const ::mmx::Operation>> get_all_operations() const;
+	virtual std::vector<std::shared_ptr<const ::mmx::Operation>> get_operations() const;
 	virtual std::map<::mmx::addr_t, std::pair<::mmx::uint128, ::mmx::uint128>> get_balance() const;
 	
 	static std::shared_ptr<Transaction> create();
@@ -106,7 +102,7 @@ protected:
 
 template<typename T>
 void Transaction::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Transaction>(19);
+	_visitor.template type_begin<Transaction>(17);
 	_visitor.type_field("id", 0); _visitor.accept(id);
 	_visitor.type_field("version", 1); _visitor.accept(version);
 	_visitor.type_field("expires", 2); _visitor.accept(expires);
@@ -122,11 +118,9 @@ void Transaction::accept_generic(T& _visitor) const {
 	_visitor.type_field("execute", 12); _visitor.accept(execute);
 	_visitor.type_field("solutions", 13); _visitor.accept(solutions);
 	_visitor.type_field("deploy", 14); _visitor.accept(deploy);
-	_visitor.type_field("parent", 15); _visitor.accept(parent);
-	_visitor.type_field("is_extendable", 16); _visitor.accept(is_extendable);
-	_visitor.type_field("exec_result", 17); _visitor.accept(exec_result);
-	_visitor.type_field("content_hash", 18); _visitor.accept(content_hash);
-	_visitor.template type_end<Transaction>(19);
+	_visitor.type_field("exec_result", 15); _visitor.accept(exec_result);
+	_visitor.type_field("content_hash", 16); _visitor.accept(content_hash);
+	_visitor.template type_end<Transaction>(17);
 }
 
 
