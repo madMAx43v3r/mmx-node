@@ -87,7 +87,6 @@ void Node::main()
 		db.add(exec_log.open(database_path + "exec_log"));
 
 		db.add(contract_cache.open(database_path + "contract_cache"));
-		db.add(mutate_log.open(database_path + "mutate_log"));
 		db.add(deploy_map.open(database_path + "deploy_map"));
 		db.add(offer_log.open(database_path + "offer_log"));
 		db.add(vplot_map.open(database_path + "vplot_map"));
@@ -615,35 +614,26 @@ std::shared_ptr<const Contract> Node::get_contract_for(const addr_t& address) co
 
 std::shared_ptr<const Contract> Node::get_contract_at(const addr_t& address, const hash_t& block_hash) const
 {
-	auto fork = find_fork(block_hash);
-	auto block = fork ? fork->block : get_header(block_hash);
+	const auto root = get_root();
+	const auto fork = find_fork(block_hash);
+	const auto block = fork ? fork->block : get_header(block_hash);
 	if(!block) {
 		throw std::logic_error("no such block");
 	}
-	auto height = get_tx_height(address);
-	if(height && *height > block->height) {
-		return nullptr;
-	}
 	std::shared_ptr<const Contract> contract;
-	if(auto tx = get_transaction(address)) {
-		contract = tx->deploy;
-	}
-	if(contract) {
-		const auto root = get_root();
-		std::vector<vnx::Object> mutations;
-		if(mutate_log.find_range(std::make_tuple(address, 0, 0), std::make_tuple(address, std::min(root->height, block->height) + 1, -1), mutations)) {
-			auto copy = vnx::clone(contract);
-			for(const auto& method : mutations) {
-				copy->vnx_call(vnx::clone(method));
-			}
-			contract = copy;
+	if(!contract_cache.find(address, contract, std::min(root->height, block->height))) {
+		if(auto tx = get_transaction(address)) {
+			contract = tx->deploy;
 		}
 	}
 	for(const auto& fork_i : get_fork_line(fork)) {
-		const auto& block = fork_i->block;
-		for(const auto& tx : block->tx_list) {
+		const auto& block_i = fork_i->block;
+		for(const auto& tx : block_i->get_all_transactions()) {
+			if(tx->id == address) {
+				contract = tx->deploy;
+			}
 			for(const auto& op : tx->get_all_operations()) {
-				if(op->address == address && block->height > get_height()) {
+				if(op->address == address) {
 					if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op)) {
 						if(auto copy = vnx::clone(contract)) {
 							copy->vnx_call(vnx::clone(mutate->method));
@@ -651,9 +641,6 @@ std::shared_ptr<const Contract> Node::get_contract_at(const addr_t& address, con
 						}
 					}
 				}
-			}
-			if(tx->id == address) {
-				contract = tx->deploy;
 			}
 		}
 	}
@@ -1560,14 +1547,8 @@ void Node::apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Tran
 				clamped_sub_assign(*balance, in.amount);
 			}
 		}
-		for(const auto& op : tx->execute)
-		{
-			if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op))
-			{
-				mutate_log.insert(std::make_tuple(op->address, block->height, addr_count[op->address]++), mutate->method);
-			}
-			else if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op))
-			{
+		for(const auto& op : tx->execute) {
+			if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op)) {
 				exec_entry_t entry;
 				entry.height = block->height;
 				entry.txid = tx->id;
@@ -1588,6 +1569,7 @@ void Node::apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Tran
 			if(auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(contract)) {
 				vplot_map.insert(plot->farmer_key, tx->id);
 			}
+			contract_cache.insert(tx->id, contract);
 		}
 	}
 	tx_pool_erase(tx->id);
