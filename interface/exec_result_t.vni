@@ -14,7 +14,7 @@ struct exec_result_t {
 	
 	optional<string> message;
 	
-	static const uint MAX_MESSAGE_LENGTH = 128;
+	static const uint MAX_MESSAGE_LENGTH = 256;
 	
 	
 	bool is_valid() const;

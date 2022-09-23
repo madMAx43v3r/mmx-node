@@ -15,7 +15,7 @@ namespace mmx {
 
 struct MMX_EXPORT exec_result_t {
 	
-	static const uint32_t MAX_MESSAGE_LENGTH = 128;
+	static const uint32_t MAX_MESSAGE_LENGTH = 256;
 	
 	vnx::bool_t did_fail = 0;
 	uint32_t total_cost = 0;
