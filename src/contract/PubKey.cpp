@@ -49,11 +49,12 @@ std::vector<txout_t> PubKey::validate(std::shared_ptr<const Operation> operation
 {
 	if(auto solution = std::dynamic_pointer_cast<const solution::PubKey>(operation->solution))
 	{
-		if(solution->pubkey.get_addr() != address) {
-			throw mmx::invalid_solution("wrong pubkey");
+		const auto sol_address = solution->pubkey.get_addr();
+		if(sol_address != address) {
+			throw mmx::invalid_solution("wrong pubkey: " + sol_address.to_string() + " != " + address.to_string());
 		}
 		if(!solution->signature.verify(solution->pubkey, context->txid)) {
-			throw mmx::invalid_solution("invalid signature");
+			throw mmx::invalid_solution("invalid signature for " + address.to_string());
 		}
 		return {};
 	}
