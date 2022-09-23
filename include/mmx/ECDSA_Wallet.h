@@ -86,7 +86,7 @@ public:
 				keys.first = tmp.first;
 				keys.second = pubkey_t::from_skey(tmp.first);
 			}
-			const addr_t addr = keys.second;
+			const auto addr = keys.second.get_addr();
 			if(i == 0) {
 				if(first_addr && addr != *first_addr) {
 					throw std::runtime_error("invalid passphrase");

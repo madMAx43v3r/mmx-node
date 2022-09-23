@@ -9,6 +9,7 @@
 #define INCLUDE_MMX_TIMELORD_H_
 
 #include <mmx/TimeLordBase.hxx>
+#include <mmx/pubkey_t.hpp>
 
 
 namespace mmx {

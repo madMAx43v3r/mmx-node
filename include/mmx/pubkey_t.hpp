@@ -8,7 +8,7 @@
 #ifndef INCLUDE_MMX_PUBKEY_T_HPP_
 #define INCLUDE_MMX_PUBKEY_T_HPP_
 
-#include <mmx/hash_t.hpp>
+#include <mmx/addr_t.hpp>
 #include <mmx/skey_t.hpp>
 #include <mmx/secp256k1.hpp>
 
@@ -23,7 +23,7 @@ public:
 
 	pubkey_t(const secp256k1_pubkey& key);
 
-	hash_t get_addr() const;
+	addr_t get_addr() const;
 
 	secp256k1_pubkey to_secp256k1() const;
 
@@ -53,9 +53,9 @@ secp256k1_pubkey pubkey_t::to_secp256k1() const
 }
 
 inline
-hash_t pubkey_t::get_addr() const
+addr_t pubkey_t::get_addr() const
 {
-	return hash_t(bytes);
+	return addr_t(hash_t(bytes));
 }
 
 inline

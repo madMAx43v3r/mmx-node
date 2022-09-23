@@ -9,7 +9,6 @@
 #define INCLUDE_MMX_ADDR_T_HPP_
 
 #include <mmx/hash_t.hpp>
-#include <mmx/pubkey_t.hpp>
 
 
 namespace mmx {
@@ -21,8 +20,6 @@ public:
 	addr_t() = default;
 
 	addr_t(const hash_t& hash);
-
-	addr_t(const pubkey_t& key);
 
 	addr_t(const uint256_t& value);
 
@@ -38,12 +35,6 @@ public:
 inline
 addr_t::addr_t(const hash_t& hash)
 	:	super_t(hash)
-{
-}
-
-inline
-addr_t::addr_t(const pubkey_t& key)
-	:	super_t(key.get_addr())
 {
 }
 
