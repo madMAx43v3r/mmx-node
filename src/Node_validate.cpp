@@ -563,7 +563,7 @@ void Node::validate(std::shared_ptr<const Transaction> tx,
 			throw std::logic_error("invalid note: " + vnx::to_string(tx->note));
 		}
 	}
-	if(tx_index.find(tx->id)) {
+	if(tx_index.count(tx->id)) {
 		throw std::logic_error("duplicate parent tx");
 	}
 
@@ -618,7 +618,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 	if(tx->static_cost > params->max_block_cost) {
 		throw mmx::static_failure("static_cost > max_block_cost");
 	}
-	if(tx_index.find(tx->id)) {
+	if(tx_index.count(tx->id)) {
 		throw mmx::static_failure("duplicate tx");
 	}
 	uint64_t tx_fee = 0;

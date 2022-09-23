@@ -59,20 +59,20 @@ public:
 		db->insert(write(key), write(value, value_type, value_code));
 	}
 
-	bool find(const K& key) const
+	bool count(const K& key, const uint32_t max_version = -1) const
 	{
 		V dummy;
-		return find(key, dummy);
+		return find(key, dummy, max_version);
 	}
 
-	bool find(const K& key, V& value) const
+	bool find(const K& key, V& value, const uint32_t max_version = -1) const
 	{
-		const auto entry = db->find(write(key));
-		if(!entry) {
-			return false;
+		const auto entry = db->find(write(key), max_version);
+		if(entry) {
+			read(entry, value, value_type, value_code);
+			return true;
 		}
-		read(entry, value, value_type, value_code);
-		return true;
+		return false;
 	}
 
 	bool find_first(V& value) const
