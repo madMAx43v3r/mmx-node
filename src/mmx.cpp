@@ -814,7 +814,7 @@ int main(int argc, char** argv)
 					std::cout << "Confirmations: none yet" << std::endl;
 				}
 				size_t i = 0;
-				for(const auto& in : tx->get_all_inputs()) {
+				for(const auto& in : tx->get_inputs()) {
 					std::cout << "Input[" << i++ << "]: ";
 					if(auto token = get_token(node, in.contract, false)) {
 						std::cout << in.amount / pow(10, token->decimals) << " " << token->symbol << " (" << in.amount << ") <- " << in.address << std::endl;
@@ -823,7 +823,7 @@ int main(int argc, char** argv)
 					}
 				}
 				i = 0;
-				for(const auto& out : tx->get_all_outputs()) {
+				for(const auto& out : tx->get_outputs()) {
 					std::cout << "Output[" << i++ << "]: ";
 					if(auto token = get_token(node, out.contract, false)) {
 						std::cout << out.amount / pow(10, token->decimals) << " " << token->symbol << " (" << out.amount << ") -> " << out.address << std::endl;

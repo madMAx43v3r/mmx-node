@@ -736,15 +736,18 @@ void WebAPI::render_block(const vnx::request_id_t& request_id, std::shared_ptr<c
 	std::unordered_set<addr_t> addr_set;
 	for(const auto& base : block->tx_list) {
 		if(auto tx = std::dynamic_pointer_cast<const Transaction>(base)) {
-			for(const auto& in : tx->get_all_inputs()) {
+			for(const auto& in : tx->get_inputs()) {
 				addr_set.insert(in.contract);
 			}
-			for(const auto& out : tx->get_all_outputs()) {
+			for(const auto& out : tx->get_outputs()) {
 				addr_set.insert(out.contract);
 			}
 			for(const auto& op : tx->execute) {
 				if(op) {
 					addr_set.insert(op->address);
+				}
+				if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(op)) {
+					addr_set.insert(deposit->currency);
 				}
 			}
 			if(auto contract = tx->deploy) {

@@ -315,15 +315,6 @@ private:
 					const std::string& method_name,
 					uint64_t& tx_cost, const bool is_public) const;
 
-	void validate(	std::shared_ptr<const Transaction> tx,
-					std::shared_ptr<const execution_context_t> context,
-					std::shared_ptr<const Block> base,
-					std::vector<txout_t>& outputs,
-					std::vector<txout_t>& exec_outputs,
-					balance_cache_t& balance_cache,
-					contract_cache_t& contract_cache,
-					std::unordered_map<addr_t, uint128>& amounts) const;
-
 	std::shared_ptr<const exec_result_t>
 	validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const execution_context_t> context,
 				std::shared_ptr<const Block> base = nullptr) const;

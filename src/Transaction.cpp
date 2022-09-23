@@ -6,6 +6,7 @@
  */
 
 #include <mmx/Transaction.hxx>
+#include <mmx/operation/Deposit.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/write_bytes.h>
 
@@ -52,7 +53,6 @@ vnx::bool_t Transaction::is_valid(std::shared_ptr<const ChainParams> params) con
 	}
 	return version == 0 && fee_ratio >= 1024 && nonce
 			&& solutions.size() <= MAX_SOLUTIONS
-			&& (!parent || parent->is_valid(params))
 			&& (!exec_result || exec_result->is_valid())
 			&& static_cost == calc_cost(params)
 			&& id == calc_hash()
@@ -84,8 +84,6 @@ hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
 		write_bytes(out, op ? op->calc_hash(full_hash) : hash_t());
 	}
 	write_field(out, "deploy", deploy ? deploy->calc_hash(full_hash) : hash_t());
-	write_field(out, "parent", parent ? parent->calc_hash(full_hash) : hash_t());
-	write_field(out, "is_extendable", is_extendable);
 
 	if(full_hash) {
 		write_field(out, "static_cost", static_cost);
@@ -159,39 +157,9 @@ std::vector<txout_t> Transaction::get_outputs() const
 	return res;
 }
 
-std::vector<txin_t> Transaction::get_all_inputs() const
+std::vector<std::shared_ptr<const Operation>> Transaction::get_operations() const
 {
-	auto out = get_inputs();
-	auto txi = parent;
-	while(txi) {
-		const auto tmp = txi->get_inputs();
-		out.insert(out.begin(), tmp.begin(), tmp.end());
-		txi = txi->parent;
-	}
-	return out;
-}
-
-std::vector<txout_t> Transaction::get_all_outputs() const
-{
-	auto out = get_outputs();
-	auto txi = parent;
-	while(txi) {
-		const auto tmp = txi->get_outputs();
-		out.insert(out.begin(), tmp.begin(), tmp.end());
-		txi = txi->parent;
-	}
-	return out;
-}
-
-std::vector<std::shared_ptr<const Operation>> Transaction::get_all_operations() const
-{
-	auto out = execute;
-	auto tx = parent;
-	while(tx) {
-		out.insert(out.begin(), tx->execute.begin(), tx->execute.end());
-		tx = tx->parent;
-	}
-	return out;
+	return execute;
 }
 
 uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
@@ -220,9 +188,6 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 	}
 	if(deploy) {
 		cost += params->min_txfee_deploy + deploy->calc_cost(params);
-	}
-	if(parent) {
-		cost += parent->calc_cost(params);
 	}
 	if(cost >> 64) {
 		throw std::logic_error("tx cost amount overflow");
@@ -266,10 +231,10 @@ vnx::bool_t Transaction::is_signed() const
 std::map<addr_t, std::pair<uint128, uint128>> Transaction::get_balance() const
 {
 	std::map<addr_t, std::pair<uint128, uint128>> balance;
-	for(const auto& in : get_all_inputs()) {
+	for(const auto& in : get_inputs()) {
 		balance[in.contract].first += in.amount;
 	}
-	for(const auto& out : get_all_outputs()) {
+	for(const auto& out : get_outputs()) {
 		balance[out.contract].second += out.amount;
 	}
 	return balance;

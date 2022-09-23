@@ -14,16 +14,12 @@ class tx_info_t {
 	
 	tx_note_e note;
 	
-	bool is_extendable;
-	
 	optional<addr_t> sender;
 	
 	vector<txin_t> inputs;
 	vector<txout_t> outputs;
 	
 	vector<Operation*> operations;
-	
-	vector<hash_t> parents;
 	
 	Contract* deployed;
 	

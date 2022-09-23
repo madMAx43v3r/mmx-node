@@ -434,11 +434,10 @@ vnx::optional<tx_info_t> Node::get_tx_info_for(std::shared_ptr<const Transaction
 	}
 	info.note = tx->note;
 	info.sender = tx->sender;
-	info.inputs = tx->get_all_inputs();
-	info.outputs = tx->get_all_outputs();
-	info.operations = tx->get_all_operations();
+	info.inputs = tx->get_inputs();
+	info.outputs = tx->get_outputs();
+	info.operations = tx->get_operations();
 	info.deployed = tx->deploy;
-	info.is_extendable = tx->is_extendable;
 
 	std::unordered_set<addr_t> contracts;
 	for(const auto& in : info.inputs) {
@@ -452,15 +451,6 @@ vnx::optional<tx_info_t> Node::get_tx_info_for(std::shared_ptr<const Transaction
 	for(const auto& op : tx->execute) {
 		if(op) {
 			contracts.insert(op->address);
-		}
-	}
-	{
-		auto txi = tx;
-		while(txi) {
-			if(auto tx = txi->parent) {
-				info.parents.push_back(tx->id);
-			}
-			txi = txi->parent;
 		}
 	}
 	for(const auto& addr : contracts) {
@@ -632,7 +622,7 @@ std::shared_ptr<const Contract> Node::get_contract_at(const addr_t& address, con
 			if(tx->id == address) {
 				contract = tx->deploy;
 			}
-			for(const auto& op : tx->get_all_operations()) {
+			for(const auto& op : tx->get_operations()) {
 				if(op->address == address) {
 					if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op)) {
 						if(auto copy = vnx::clone(contract)) {
@@ -1524,9 +1514,6 @@ void Node::apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Tran
 	}
 	if(tx->exec_result && !tx->exec_result->did_fail)
 	{
-		if(tx->parent) {
-			apply(block, tx->parent, balance_cache, addr_count, counter);
-		}
 		const auto outputs = tx->get_outputs();
 		for(size_t i = 0; i < outputs.size(); ++i)
 		{
@@ -1805,11 +1792,7 @@ std::shared_ptr<const BlockHeader> Node::read_block(
 					if(auto value = vnx::read(in)) {
 						if(auto tx = std::dynamic_pointer_cast<const Transaction>(value)) {
 							if(tx_offsets) {
-								auto txi = tx;
-								while(txi) {
-									tx_offsets->emplace_back(txi->id, offset);
-									txi = txi->parent;
-								}
+								tx_offsets->emplace_back(tx->id, offset);
 							}
 							block->tx_list.push_back(tx);
 						} else {
@@ -1847,12 +1830,8 @@ void Node::write_block(std::shared_ptr<const Block> block, bool is_replay)
 
 	for(const auto& tx : block->tx_list) {
 		const auto offset = out.get_output_pos();
-		auto txi = tx;
-		while(txi) {
-			tx_ids.push_back(txi->id);
-			tx_list.emplace_back(txi->id, offset);
-			txi = txi->parent;
-		}
+		tx_ids.push_back(tx->id);
+		tx_list.emplace_back(tx->id, offset);
 		if(!is_replay) {
 			vnx::write(out, tx);
 		}

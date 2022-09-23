@@ -182,19 +182,14 @@ public:
 
 	void update_from(std::shared_ptr<const Transaction> tx)
 	{
-		if(tx) {
-			pending_tx[tx->id] = tx->expires;
-		}
-		while(tx) {
-			for(const auto& in : tx->inputs) {
-				if(find_address(in.address) >= 0) {
-					const auto key = std::make_pair(in.address, in.contract);
-					balance_map[key] -= in.amount;
-					pending_map[tx->id][key] += in.amount;
-				}
+		for(const auto& in : tx->inputs) {
+			if(find_address(in.address) >= 0) {
+				const auto key = std::make_pair(in.address, in.contract);
+				balance_map[key] -= in.amount;
+				pending_map[tx->id][key] += in.amount;
 			}
-			tx = tx->parent;
 		}
+		pending_tx[tx->id] = tx->expires;
 	}
 
 	void gather_inputs(	std::shared_ptr<Transaction> tx,
@@ -418,32 +413,20 @@ public:
 		tx->fee_ratio = std::max(tx->fee_ratio, options.fee_ratio);
 
 		std::map<addr_t, uint128_t> missing;
-		{
-			std::shared_ptr<const Transaction> txi = tx;
-			while(txi) {
-				for(const auto& out : txi->outputs) {
-					missing[out.contract] += out.amount;
-				}
-				for(const auto& op : txi->execute) {
-					if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(op)) {
-						missing[deposit->currency] += deposit->amount;
-					}
-				}
-				txi = txi->parent;
+		for(const auto& out : tx->outputs) {
+			missing[out.contract] += out.amount;
+		}
+		for(const auto& op : tx->execute) {
+			if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(op)) {
+				missing[deposit->currency] += deposit->amount;
 			}
 		}
-		{
-			std::shared_ptr<const Transaction> txi = tx;
-			while(txi) {
-				for(const auto& in : txi->inputs) {
-					auto& amount = missing[in.contract];
-					if(in.amount < amount) {
-						amount -= in.amount;
-					} else {
-						amount = 0;
-					}
-				}
-				txi = txi->parent;
+		for(const auto& in : tx->inputs) {
+			auto& amount = missing[in.contract];
+			if(in.amount < amount) {
+				amount -= in.amount;
+			} else {
+				amount = 0;
 			}
 		}
 		std::map<std::pair<addr_t, addr_t>, uint128_t> spent_map;

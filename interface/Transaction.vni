@@ -30,10 +30,6 @@ class Transaction extends TransactionBase {
 	
 	Contract* deploy;
 	
-	Transaction* parent;
-	
-	bool is_extendable;
-	
 	optional<exec_result_t> exec_result;
 	
 	hash_t content_hash;				// full hash including solutions and exec_result
@@ -65,11 +61,7 @@ class Transaction extends TransactionBase {
 	
 	vector<txout_t> get_outputs() const;
 	
-	vector<txin_t> get_all_inputs() const;
-	
-	vector<txout_t> get_all_outputs() const;
-	
-	vector<Operation*> get_all_operations() const;
+	vector<Operation*> get_operations() const;
 	
 	map<addr_t, pair<uint128, uint128>> get_balance() const;
 	

@@ -139,7 +139,7 @@ uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::option
 			break;
 		}
 		for(const auto& tx : block->get_all_transactions()) {
-			for(const auto& out : tx->get_all_outputs()) {
+			for(const auto& out : tx->get_outputs()) {
 				if(out.address == plot_id && out.contract == addr_t()) {
 					balance += out.amount;
 				}
@@ -186,7 +186,7 @@ void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t
 		if(!plot) {
 			throw std::logic_error("no such virtual plot: " + stake->contract.to_string());
 		}
-		// TODO: check reward address if set
+		// TODO: check reward_address if set
 		if(stake->farmer_key != plot->farmer_key) {
 			throw std::logic_error("invalid farmer key for virtual plot: " + stake->farmer_key.to_string());
 		}
