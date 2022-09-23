@@ -125,16 +125,13 @@ uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::option
 	const auto root = get_root();
 	const auto since = block->height - std::min(params->virtual_lifetime, block->height);
 
-	uint128_t balance = 0;
-	for(const auto& entry : get_history({plot_id}, since)) {
-		if(entry.contract == addr_t() && entry.height <= std::min(root->height, block->height)) {
-			switch(entry.type) {
-				case tx_type_e::REWARD:
-				case tx_type_e::RECEIVE:
-					balance += entry.amount; break;
-				default: break;
-			}
-		}
+	uint128 balance = 0;
+	balance_table.find(std::make_pair(plot_id, addr_t()), balance, std::min(root->height, block->height));
+
+	if(block->height > params->virtual_lifetime) {
+		uint128 offset = 0;
+		balance_table.find(std::make_pair(plot_id, addr_t()), offset, block->height - params->virtual_lifetime);
+		clamped_sub_assign(balance, offset);
 	}
 	while(fork) {
 		const auto& block = fork->block;
