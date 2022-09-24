@@ -5,9 +5,11 @@ class tx_info_t {
 	hash_t id;
 	
 	uint expires;
-	
+
+	bool did_fail;
 	optional<uint> height;
 	optional<hash_t> block;
+	optional<string> message;
 	
 	long fee;
 	ulong cost;

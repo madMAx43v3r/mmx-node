@@ -429,6 +429,8 @@ vnx::optional<tx_info_t> Node::get_tx_info_for(std::shared_ptr<const Transaction
 	if(tx->exec_result) {
 		info.fee = tx->exec_result->total_fee;
 		info.cost = tx->exec_result->total_cost;
+		info.did_fail = tx->exec_result->did_fail;
+		info.message = tx->exec_result->message;
 	} else {
 		info.cost = tx->static_cost;
 	}
