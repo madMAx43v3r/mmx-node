@@ -1439,12 +1439,11 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	}
 	uint32_t counter = 0;
 	std::unordered_set<hash_t> tx_set;
-	std::unordered_map<addr_t, uint32_t> addr_count;
 	balance_cache_t balance_cache(&balance_map);
 
 	for(const auto& tx : block->get_all_transactions()) {
 		tx_set.insert(tx->id);
-		apply(block, tx, balance_cache, addr_count, counter);
+		apply(block, tx, balance_cache, counter);
 	}
 	for(auto iter = pending_transactions.begin(); iter != pending_transactions.end();) {
 		if(tx_set.count(iter->second->id)) {
@@ -1494,7 +1493,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 }
 
 void Node::apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx,
-					balance_cache_t& balance_cache, std::unordered_map<addr_t, uint32_t>& addr_count, uint32_t& counter)
+					balance_cache_t& balance_cache, uint32_t& counter)
 {
 	if(tx->sender && tx->exec_result)
 	{
@@ -1502,7 +1501,7 @@ void Node::apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Tran
 		in.address = *tx->sender;
 		in.amount = tx->exec_result->total_fee;
 
-		spend_log.insert(std::make_tuple(in.address, block->height, addr_count[in.address]++),
+		spend_log.insert(std::make_tuple(in.address, block->height, counter++),
 				txio_entry_t::create_ex(tx->id, block->height, tx_type_e::TXFEE, in));
 
 		if(auto balance = balance_cache.find(*tx->sender, addr_t())) {
@@ -1515,7 +1514,7 @@ void Node::apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Tran
 		for(size_t i = 0; i < outputs.size(); ++i)
 		{
 			const auto& out = outputs[i];
-			recv_log.insert(std::make_tuple(out.address, block->height, addr_count[out.address]++),
+			recv_log.insert(std::make_tuple(out.address, block->height, counter++),
 					txio_entry_t::create_ex(tx->id, block->height, tx->sender ? tx_type_e::RECEIVE : tx_type_e::REWARD, out));
 
 			balance_cache.get(out.address, out.contract) += out.amount;
@@ -1524,7 +1523,7 @@ void Node::apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Tran
 		for(size_t i = 0; i < inputs.size(); ++i)
 		{
 			const auto& in = inputs[i];
-			spend_log.insert(std::make_tuple(in.address, block->height, addr_count[in.address]++),
+			spend_log.insert(std::make_tuple(in.address, block->height, counter++),
 					txio_entry_t::create_ex(tx->id, block->height, tx_type_e::SPEND, in));
 
 			if(auto balance = balance_cache.find(in.address, in.contract)) {
@@ -1541,7 +1540,7 @@ void Node::apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Tran
 				if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(exec)) {
 					entry.deposit = std::make_pair(deposit->currency, deposit->amount);
 				}
-				exec_log.insert(std::make_tuple(op->address, block->height, addr_count[op->address]++), entry);
+				exec_log.insert(std::make_tuple(op->address, block->height, counter++), entry);
 			}
 		}
 		if(auto contract = tx->deploy) {

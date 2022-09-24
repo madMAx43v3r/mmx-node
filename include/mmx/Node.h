@@ -350,7 +350,7 @@ private:
 				std::shared_ptr<const execution_context_t> context, bool is_replay = false);
 
 	void apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx,
-				balance_cache_t& balance_cache, std::unordered_map<addr_t, uint32_t>& addr_count, uint32_t& counter);
+				balance_cache_t& balance_cache, uint32_t& counter);
 
 	void revert(const uint32_t height);
 
