@@ -513,7 +513,8 @@ Vue.component('status', {
 	methods: {
 		async update() {
 
-			if(this.status == AppStatus.DisconnectedFromNode || this.status == AppStatus.Connecting) {
+			if(this.status = AppStatus.LoggedOff || this.status == AppStatus.DisconnectedFromNode 
+				|| this.status == AppStatus.Connecting) {
 				await fetch('/server/session')
 					.then( () => this.session_fails = 0 )
 					.catch( () => this.session_fails++ );
