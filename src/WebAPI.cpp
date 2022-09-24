@@ -961,14 +961,35 @@ void WebAPI::render_tx_history(const vnx::request_id_t& request_id, const std::v
 	}
 	for(size_t i = 0; i < history.size(); ++i) {
 		const auto& entry = history[i];
+		const auto& tx = entry.tx;
 		auto& out = job->result[i];
 		out["time"] = entry.time;
-		out["id"] = entry.tx->id.to_string();
-		node->get_tx_height(entry.tx->id,
-			[this, job, i](const vnx::optional<uint32_t>& height) {
-				if(height) {
-					job->result[i]["height"] = *height;
-					job->result[i]["confirm"] = curr_height >= *height ? 1 + curr_height - *height : 0;
+		out["id"] = tx->id.to_string();
+		node->get_tx_info(tx->id,
+			[this, job, tx, i](const vnx::optional<tx_info_t>& info) {
+				auto& out = job->result[i];
+				if(info) {
+					if(auto height = info->height) {
+						out["height"] = *height;
+						out["confirm"] = curr_height >= *height ? 1 + curr_height - *height : 0;
+					}
+					if(info->did_fail) {
+						out["state"] = "failed";
+					} else if(!info->height) {
+						if(curr_height > tx->expires) {
+							out["state"] = "expired";
+						} else {
+							out["state"] = "pending";
+						}
+					}
+					if(info->message) {
+						out["message"] = *info->message;
+					}
+					out["did_fail"] = info->did_fail;
+				} else if(curr_height > tx->expires) {
+					out["state"] = "expired";
+				} else {
+					out["state"] = "pending";
 				}
 				if(--job->num_left == 0) {
 					respond(job->request_id, render_value(job->result));
