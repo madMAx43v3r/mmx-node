@@ -576,7 +576,7 @@ Vue.component('account-contracts', {
 		return {
 			data: null,
 			loading: false,
-			contractFilter: null,
+			contractFilter: [],
 			contractFilterValues: []
 		}
 	},
