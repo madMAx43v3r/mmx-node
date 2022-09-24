@@ -99,6 +99,9 @@ void Node::update()
 			fork->is_invalid = true;
 			log(WARN) << "Pre-validation failed for a block at height " << block->height << " with: " << ex.what();
 		}
+		catch(...) {
+			fork->is_invalid = true;
+		}
 	}
 	for(const auto& fork : pending_forks) {
 		if(!fork->is_invalid) {
@@ -170,10 +173,11 @@ void Node::update()
 					add_proof(block->height, challenge, proof, vnx::Hash64());
 				}
 			}
-		}
-		catch(const std::exception& ex) {
+		} catch(const std::exception& ex) {
 			fork->is_invalid = true;
 			log(WARN) << "Proof verification failed for a block at height " << block->height << " with: " << ex.what();
+		} catch(...) {
+			fork->is_invalid = true;
 		}
 	}
 	const auto prev_peak = get_peak();
@@ -541,6 +545,8 @@ void Node::validate_new()
 			if(show_warnings) {
 				log(WARN) << "TX validation failed with: " << ex.what() << " (" << tx->id << ")";
 			}
+		} catch(...) {
+			// ignore
 		}
 		context->signal(tx->id);
 	}
@@ -625,6 +631,8 @@ std::vector<Node::tx_pool_t> Node::validate_for_block(const uint64_t verify_limi
 			if(show_warnings) {
 				log(WARN) << "TX validation failed with: " << ex.what() << " (" << tx->id << ")";
 			}
+		} catch(...) {
+			// ignore
 		}
 		context->signal(tx->id);
 	}
