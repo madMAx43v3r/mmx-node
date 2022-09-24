@@ -10,4 +10,6 @@ struct exec_entry_t {
 	
 	vector<vnx.Variant> args;
 	
+	optional<pair<addr_t, ulong>> deposit;
+	
 }

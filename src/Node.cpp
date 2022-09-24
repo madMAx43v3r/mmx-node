@@ -18,6 +18,7 @@
 #include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/operation/Mutate.hxx>
 #include <mmx/operation/Execute.hxx>
+#include <mmx/operation/Deposit.hxx>
 #include <mmx/utils.h>
 #include <mmx/vm/Engine.h>
 #include <mmx/vm_interface.h>
@@ -1537,6 +1538,9 @@ void Node::apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Tran
 				entry.txid = tx->id;
 				entry.method = exec->method;
 				entry.args = exec->args;
+				if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(exec)) {
+					entry.deposit = std::make_pair(deposit->currency, deposit->amount);
+				}
 				exec_log.insert(std::make_tuple(op->address, block->height, addr_count[op->address]++), entry);
 			}
 		}
