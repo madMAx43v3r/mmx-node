@@ -480,7 +480,7 @@ Vue.component('transaction-view', {
 		</v-alert>
 
 		<template v-if="data">
-			<v-card class="my-2">				
+			<v-card class="my-2">
 				<v-simple-table>
 					<tbody>
 					<tr>

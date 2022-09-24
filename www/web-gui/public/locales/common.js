@@ -110,7 +110,10 @@ const commonLocale = {
         "confirmed": "@:transaction_view.confirmed",
         "transaction_id": "@:explore_transactions.transaction_id",
         "time": "@:common.time",
-        "pending": "@:common.pending"
+        "status": "@:common.status",
+        "pending": "@:common.pending",
+        "expired": "@:common.expired",
+        "failed": "@:common.failed"
     },
 
     "account_offers": {

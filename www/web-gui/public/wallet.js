@@ -471,6 +471,7 @@ Vue.component('account-tx-history', {
 			return [
 				{ text: this.$t('account_tx_history.height'), value: 'height' },
 				{ text: this.$t('account_tx_history.confirmed'), value: 'confirmed' },
+				{ text: this.$t('account_tx_history.status'), value: 'state' },
 				{ text: this.$t('account_tx_history.transaction_id'), value: 'transaction_id' },
 				{ text: this.$t('account_tx_history.time'), value: 'time' },
 			]
@@ -515,9 +516,10 @@ Vue.component('account-tx-history', {
 				<template v-if="item.height">
 					<router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link>
 				</template>
-				<template v-else>
-					<i>{{ $t('account_tx_history.pending') }}</i>
-				</template>
+			</template>
+			
+			<template v-slot:item.state="{ item }">
+				<div :class="{'red--text': item.state == 'failed'}">{{ $t(item.state) }}</div>
 			</template>
 
 			<template v-slot:item.transaction_id="{ item }">
@@ -525,8 +527,8 @@ Vue.component('account-tx-history', {
 			</template>
 
 			<template v-slot:item.confirmed="{ item }">
-				{{item.confirm ? item.confirm > 1000 ? "> 1000" : item.confirm : 0}}
-			</template>								
+				{{item.confirm ? item.confirm > 1000 ? "> 1000" : item.confirm : null}}
+			</template>
 
 			<template v-slot:item.time="{ item }">
 				{{new Date(item.time).toLocaleString()}}

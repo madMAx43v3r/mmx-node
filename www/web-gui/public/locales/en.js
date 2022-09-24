@@ -19,8 +19,11 @@ const enLocale = {
         "contract": "Contract",
         "type": "Type",
         "time": "Time",
-        "fee": "Fee",        
+        "fee": "Fee",
+        "status": "Status",
         "pending": "pending",
+        "expired": "expired",
+        "failed": "failed",
         
         "confirm": "Confirm",
         "deploy": "Deploy",
