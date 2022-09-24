@@ -21,9 +21,9 @@ public:
 
 	addr_t(const hash_t& hash);
 
-	addr_t(const uint256_t& value);
-
 	addr_t(const std::string& addr);
+
+	explicit addr_t(const uint256_t& value);
 
 	std::string to_string() const;
 
