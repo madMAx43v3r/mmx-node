@@ -330,7 +330,7 @@ Vue.component('market-offers', {
 										</template>
 									</td>
 									<template v-if="bid && ask">
-										<td><b>{{item.price}}</b></td>
+										<td><b>{{item.price}}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
 									</template>
 									<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 									<td><router-link :to="'/explore/address/' + item.address">{{ $t('market_offers.address') }}</router-link></td>
