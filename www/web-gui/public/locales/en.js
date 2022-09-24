@@ -205,6 +205,7 @@ const enLocale = {
 
     "transaction_view": {
         "transaction": "Transaction",
+        "message": "Message",
         "confirmed": "Confirmed",
         "expires": "Expires",
         "note": "Note",

@@ -234,32 +234,14 @@ Vue.component('market-offers', {
 	},
 	template: `
 		<div>
-			<v-alert
-				border="left"
-				colored-border
-				type="success"
-				elevation="2"
-				v-if="result"
-				class="my-2"
-			>
-				{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
+			<v-alert border="left" colored-border type="success" elevation="2" v-if="result" class="my-2">
+				{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result.id">{{result.id}}</router-link>
 			</v-alert>
-
-			<v-alert
-				border="left"
-				colored-border
-				type="error"
-				elevation="2"
-				v-if="error"
-				class="my-2"
-			>
+			<v-alert border="left" colored-border type="error" elevation="2" v-if="error" class="my-2">
 				{{ $t('common.failed_with') }}: <b>{{error}}</b>
 			</v-alert>
 
-			<v-dialog v-model="dialog"
-				transition="dialog-top-transition"
-				max-width="800"
-			>
+			<v-dialog v-model="dialog" transition="dialog-top-transition" max-width="800">
 				<template v-slot:default="dialog">
 					<v-card>
 						<v-toolbar color="primary" dark>
@@ -274,26 +256,22 @@ Vue.component('market-offers', {
 										<td><router-link :to="'/explore/address/' + offer.address">{{offer.address}}</router-link></td>
 									</tr>
 									<tr>
-										<template v-for="entry in offer.bids">
-											<td>{{ $t('market_offers.you_receive') }}</td>
-											<td>
-												<b>{{entry.value}}</b> {{entry.symbol}} 
-												<template v-if="!entry.is_native">
-													- [<router-link :to="'/explore/address/' + entry.contract">{{entry.contract}}</router-link>]
-												</template>
-											</td>
-										</template>
+										<td>{{ $t('market_offers.you_receive') }}</td>
+										<td>
+											<b>{{offer.bid_value}}</b> {{offer.bid_symbol}}
+											<template v-if="offer.bid_symbol != 'MMX'">
+												- [<router-link :to="'/explore/address/' + offer.bid_currency">{{offer.bid_currency}}</router-link>]
+											</template>
+										</td>
 									</tr>
 									<tr>
-										<template v-for="entry in offer.asks">
-											<td>{{ $t('market_offers.you_pay') }}</td>
-											<td>
-												<b>{{entry.value}}</b> {{entry.symbol}} 
-												<template v-if="!entry.is_native">
-													- [<router-link :to="'/explore/address/' + entry.contract">{{entry.contract}}</router-link>]
-												</template>
-											</td>
-										</template>
+										<td>{{ $t('market_offers.you_pay') }}</td>
+										<td>
+											<b>{{offer.ask_value}}</b> {{offer.ask_symbol}}
+											<template v-if="offer.ask_symbol != 'MMX'">
+												- [<router-link :to="'/explore/address/' + offer.ask_currency">{{offer.ask_currency}}</router-link>]
+											</template>
+										</td>
 									</tr>
 									</tbody>					
 								</v-simple-table>
@@ -326,34 +304,29 @@ Vue.component('market-offers', {
 									</template>
 									<th>{{ $t('market_offers.time') }}</th>
 									<th>{{ $t('market_offers.link') }}</th>
-									
 									<th></th>
 								</tr>
 							</thead>
 							<tbody>
 								<tr v-for="item in data" :key="item.address" :class="{positive: accepted.has(item.address)}">
 									<td>
-										<template v-for="(entry, index) in item.bids">
-											<template v-if="index">, </template><b>{{entry.value}}</b>&nbsp;
-											<template v-if="entry.is_native">{{entry.symbol}}</template>
-											<template v-else>
-												<router-link :to="'/explore/address/' + entry.contract">
-													<template v-if="tokens.has(entry.contract)">{{entry.symbol}}</template>
-													<template v-else>{{entry.symbol}}?</template>
-												</router-link>
-											</template>
+										<b>{{item.bid_value}}</b>&nbsp;
+										<template v-if="item.bid_symbol == 'MMX'">MMX</template>
+										<template v-else>
+											<router-link :to="'/explore/address/' + item.bid_currency">
+												<template v-if="tokens.has(item.bid_currency)">{{item.bid_symbol}}</template>
+												<template v-else>{{item.bid_symbol}}?</template>
+											</router-link>
 										</template>
 									</td>
 									<td>
-										<template v-for="(entry, index) in item.asks">
-											<template v-if="index">, </template><b>{{entry.value}}</b>&nbsp;
-											<template v-if="entry.is_native">{{entry.symbol}}</template>
-											<template v-else>
-												<router-link :to="'/explore/address/' + entry.contract">
-													<template v-if="tokens.has(entry.contract)">{{entry.symbol}}</template>
-													<template v-else>{{entry.symbol}}?</template>
-												</router-link>
-											</template>
+										<b>{{item.ask_value}}</b>&nbsp;
+										<template v-if="item.ask_symbol == 'MMX'">MMX</template>
+										<template v-else>
+											<router-link :to="'/explore/address/' + item.ask_currency">
+												<template v-if="tokens.has(item.ask_currency)">{{item.ask_symbol}}</template>
+												<template v-else>{{item.ask_symbol}}?</template>
+											</router-link>
 										</template>
 									</td>
 									<template v-if="bid && ask">

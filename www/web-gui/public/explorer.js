@@ -404,8 +404,8 @@ Vue.component('block-view', {
 						<tbody>
 							<tr v-for="(item, index) in data.tx_list" :key="index">
 								<td class="key-cell">TX[{{index}}]</td>
-								<td>{{item.inputs.length}}</td>
-								<td>{{item.outputs.length + item.exec_outputs.length}}</td>
+								<td>{{item.inputs.length + item.exec_result.inputs.length}}</td>
+								<td>{{item.outputs.length + item.exec_result.outputs.length}}</td>
 								<td>{{item.execute.length}}</td>
 								<td><router-link :to="'/explore/transaction/' + item.id">{{item.id}}</router-link></td>
 							</tr>
@@ -491,6 +491,10 @@ Vue.component('transaction-view', {
 							</template>
 							<template v-if="!data.height"><i>pending</i></template>
 						</td>
+					</tr>
+					<tr v-if="data.did_fail" class="red--text">
+						<td class="key-cell">{{ $t('transaction_view.message') }}</td>
+						<td colspan="2">{{data.message}}</td>
 					</tr>
 					<tr v-if="data.confirm">
 						<td class="key-cell">{{ $t('transaction_view.confirmed') }}</td>
