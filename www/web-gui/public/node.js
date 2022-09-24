@@ -119,7 +119,7 @@ Vue.component('node-info', {
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
 									<v-row align="center" justify="space-around">
-										<div v-if="nodeInfo">{{ (nodeInfo.time_diff / 8 / Math.pow(10, 3)).toFixed(3) }} M/s</div>
+										<div v-if="nodeInfo">{{ (nodeInfo.time_diff / 10 / Math.pow(10, 3)).toFixed(3) }} M/s</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"/>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
