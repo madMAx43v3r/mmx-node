@@ -447,7 +447,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		throw std::logic_error("not an executable");
 	}
 	const auto binary = std::dynamic_pointer_cast<const contract::Binary>(get_contract(executable->binary));
-	if(!executable) {
+	if(!binary) {
 		throw std::logic_error("no such binary: " + executable->binary.to_string());
 	}
 	auto method = vm::find_method(binary, method_name);
