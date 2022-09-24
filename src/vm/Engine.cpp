@@ -1499,7 +1499,7 @@ void Engine::exec(const instr_t& instr)
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
 		break;
 	case OP_FAIL:
-		throw std::runtime_error("failed with: " + to_string(read(
+		throw std::runtime_error("failed with: " + to_string_value(read(
 				deref_addr(instr.a, instr.flags & OPFLAG_REF_A))));
 	case OP_RCALL:
 		rcall(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
