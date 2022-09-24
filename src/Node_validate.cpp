@@ -759,31 +759,42 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			tx_fee = base_amount;
 		}
 		else {
+			if(tx_cost > params->max_block_cost) {
+				throw mmx::static_failure("tx cost > max_block_cost");
+			}
 			for(const auto& entry : amounts) {
 				if(entry.second) {
 					throw std::logic_error("left-over amount: " + entry.second.str(10) + " [" + entry.first.to_string() + "]");
 				}
 			}
-			if(tx_cost > params->max_block_cost) {
-				throw mmx::static_failure("tx cost > max_block_cost");
-			}
+		}
+	} catch(const mmx::static_failure& ex) {
+		throw;
+	} catch(...) {
+		failed_ex = std::current_exception();
+	}
+
+	try {
+		if(!base) {
+			uint32_t total_fee = 0;
 			{
 				const auto amount = (uint128_t(tx_cost) * tx->fee_ratio) / 1024;
 				if(amount >> 32) {
 					throw mmx::static_failure("tx fee amount overflow: " + amount.str(10));
 				}
-				tx_fee = amount;
+				total_fee = amount;
 			}
-			const auto final_fee = std::min<uint64_t>(tx_fee, tx->max_fee_amount);
-			const auto dynamic_fee = final_fee - static_fee;
+			tx_fee = std::min(total_fee, tx->max_fee_amount);
+
+			const auto dynamic_fee = tx_fee - static_fee;
 			const auto balance = balance_cache.find(*tx->sender, addr_t());
 			if(!balance || dynamic_fee > *balance) {
 				throw mmx::static_failure("insufficient funds for tx fee");
 			}
 			*balance -= dynamic_fee;
 
-			if(tx_fee > tx->max_fee_amount) {
-				throw std::logic_error("tx fee > max_fee_amount: " + std::to_string(tx_fee) + " > " + std::to_string(tx->max_fee_amount));
+			if(total_fee > tx->max_fee_amount && !failed_ex) {
+				throw std::logic_error("tx fee > max_fee_amount: " + std::to_string(total_fee) + " > " + std::to_string(tx->max_fee_amount));
 			}
 		}
 	} catch(const mmx::static_failure& ex) {
