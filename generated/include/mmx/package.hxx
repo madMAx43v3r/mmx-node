@@ -220,6 +220,8 @@ class ProofOfSpaceOG_validate_return;
 class ProofOfStake;
 class ProofOfStake_calc_hash;
 class ProofOfStake_calc_hash_return;
+class ProofOfStake_validate;
+class ProofOfStake_validate_return;
 class ProofOfTime;
 class ProofOfTime_calc_hash;
 class ProofOfTime_calc_hash_return;
@@ -645,6 +647,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfSpaceOG
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfStake; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfStake_calc_hash; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfStake_calc_hash_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfStake_validate; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfStake_validate_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfTime; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfTime_calc_hash; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfTime_calc_hash_return; ///< \private
@@ -1067,6 +1071,8 @@ void read(TypeInput& in, ::mmx::ProofOfSpaceOG_validate_return& value, const Typ
 void read(TypeInput& in, ::mmx::ProofOfStake& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ProofOfStake_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ProofOfStake_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::ProofOfStake_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::ProofOfStake_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ProofOfTime& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ProofOfTime_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ProofOfTime_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1492,6 +1498,8 @@ void write(TypeOutput& out, const ::mmx::ProofOfSpaceOG_validate_return& value, 
 void write(TypeOutput& out, const ::mmx::ProofOfStake& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ProofOfStake_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ProofOfStake_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::ProofOfStake_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::ProofOfStake_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ProofOfTime& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ProofOfTime_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ProofOfTime_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1917,6 +1925,8 @@ void read(std::istream& in, ::mmx::ProofOfSpaceOG_validate_return& value); ///< 
 void read(std::istream& in, ::mmx::ProofOfStake& value); ///< \private
 void read(std::istream& in, ::mmx::ProofOfStake_calc_hash& value); ///< \private
 void read(std::istream& in, ::mmx::ProofOfStake_calc_hash_return& value); ///< \private
+void read(std::istream& in, ::mmx::ProofOfStake_validate& value); ///< \private
+void read(std::istream& in, ::mmx::ProofOfStake_validate_return& value); ///< \private
 void read(std::istream& in, ::mmx::ProofOfTime& value); ///< \private
 void read(std::istream& in, ::mmx::ProofOfTime_calc_hash& value); ///< \private
 void read(std::istream& in, ::mmx::ProofOfTime_calc_hash_return& value); ///< \private
@@ -2342,6 +2352,8 @@ void write(std::ostream& out, const ::mmx::ProofOfSpaceOG_validate_return& value
 void write(std::ostream& out, const ::mmx::ProofOfStake& value); ///< \private
 void write(std::ostream& out, const ::mmx::ProofOfStake_calc_hash& value); ///< \private
 void write(std::ostream& out, const ::mmx::ProofOfStake_calc_hash_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::ProofOfStake_validate& value); ///< \private
+void write(std::ostream& out, const ::mmx::ProofOfStake_validate_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::ProofOfTime& value); ///< \private
 void write(std::ostream& out, const ::mmx::ProofOfTime_calc_hash& value); ///< \private
 void write(std::ostream& out, const ::mmx::ProofOfTime_calc_hash_return& value); ///< \private
@@ -2767,6 +2779,8 @@ void accept(Visitor& visitor, const ::mmx::ProofOfSpaceOG_validate_return& value
 void accept(Visitor& visitor, const ::mmx::ProofOfStake& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ProofOfStake_calc_hash& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ProofOfStake_calc_hash_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::ProofOfStake_validate& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::ProofOfStake_validate_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ProofOfTime& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ProofOfTime_calc_hash& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ProofOfTime_calc_hash_return& value); ///< \private
@@ -7537,6 +7551,52 @@ struct type<::mmx::ProofOfStake_calc_hash_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofOfStake_calc_hash_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::ProofOfStake_validate> {
+	void read(TypeInput& in, ::mmx::ProofOfStake_validate& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::ProofOfStake_validate& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::ProofOfStake_validate& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::ProofOfStake_validate& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::ProofOfStake_validate& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofOfStake_validate& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::ProofOfStake_validate_return> {
+	void read(TypeInput& in, ::mmx::ProofOfStake_validate_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::ProofOfStake_validate_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::ProofOfStake_validate_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::ProofOfStake_validate_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::ProofOfStake_validate_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofOfStake_validate_return& value, bool special = false);
 };
 
 /// \private

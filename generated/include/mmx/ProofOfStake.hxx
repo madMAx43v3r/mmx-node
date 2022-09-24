@@ -31,6 +31,7 @@ public:
 	const vnx::TypeCode* get_type_code() const override;
 	
 	virtual ::mmx::hash_t calc_hash(const vnx::bool_t& full_hash = false) const override;
+	virtual void validate() const override;
 	
 	static std::shared_ptr<ProofOfStake> create();
 	std::shared_ptr<vnx::Value> clone() const override;

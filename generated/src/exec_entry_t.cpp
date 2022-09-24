@@ -3,6 +3,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/exec_entry_t.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <vnx/Variant.hpp>
 
@@ -13,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 exec_entry_t::VNX_TYPE_HASH(0xd30282844b1862a4ull);
-const vnx::Hash64 exec_entry_t::VNX_CODE_HASH(0xb90271e8cea017a2ull);
+const vnx::Hash64 exec_entry_t::VNX_CODE_HASH(0x80f51ee4873e58a5ull);
 
 vnx::Hash64 exec_entry_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -50,6 +51,7 @@ void exec_entry_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, txid);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, method);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, args);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, deposit);
 	_visitor.type_end(*_type_code);
 }
 
@@ -59,6 +61,7 @@ void exec_entry_t::write(std::ostream& _out) const {
 	_out << ", \"txid\": "; vnx::write(_out, txid);
 	_out << ", \"method\": "; vnx::write(_out, method);
 	_out << ", \"args\": "; vnx::write(_out, args);
+	_out << ", \"deposit\": "; vnx::write(_out, deposit);
 	_out << "}";
 }
 
@@ -75,6 +78,7 @@ vnx::Object exec_entry_t::to_object() const {
 	_object["txid"] = txid;
 	_object["method"] = method;
 	_object["args"] = args;
+	_object["deposit"] = deposit;
 	return _object;
 }
 
@@ -82,6 +86,8 @@ void exec_entry_t::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "args") {
 			_entry.second.to(args);
+		} else if(_entry.first == "deposit") {
+			_entry.second.to(deposit);
 		} else if(_entry.first == "height") {
 			_entry.second.to(height);
 		} else if(_entry.first == "method") {
@@ -105,6 +111,9 @@ vnx::Variant exec_entry_t::get_field(const std::string& _name) const {
 	if(_name == "args") {
 		return vnx::Variant(args);
 	}
+	if(_name == "deposit") {
+		return vnx::Variant(deposit);
+	}
 	return vnx::Variant();
 }
 
@@ -117,6 +126,8 @@ void exec_entry_t::set_field(const std::string& _name, const vnx::Variant& _valu
 		_value.to(method);
 	} else if(_name == "args") {
 		_value.to(args);
+	} else if(_name == "deposit") {
+		_value.to(deposit);
 	}
 }
 
@@ -144,11 +155,11 @@ std::shared_ptr<vnx::TypeCode> exec_entry_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exec_entry_t";
 	type_code->type_hash = vnx::Hash64(0xd30282844b1862a4ull);
-	type_code->code_hash = vnx::Hash64(0xb90271e8cea017a2ull);
+	type_code->code_hash = vnx::Hash64(0x80f51ee4873e58a5ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::exec_entry_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<exec_entry_t>>(); };
-	type_code->fields.resize(4);
+	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -172,6 +183,12 @@ std::shared_ptr<vnx::TypeCode> exec_entry_t::static_create_type_code() {
 		field.is_extended = true;
 		field.name = "args";
 		field.code = {12, 17};
+	}
+	{
+		auto& field = type_code->fields[4];
+		field.is_extended = true;
+		field.name = "deposit";
+		field.code = {33, 23, 2, 4, 7, 11, 32, 1, 4};
 	}
 	type_code->build();
 	return type_code;
@@ -224,6 +241,7 @@ void read(TypeInput& in, ::mmx::exec_entry_t& value, const TypeCode* type_code, 
 			case 1: vnx::read(in, value.txid, type_code, _field->code.data()); break;
 			case 2: vnx::read(in, value.method, type_code, _field->code.data()); break;
 			case 3: vnx::read(in, value.args, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.deposit, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -247,6 +265,7 @@ void write(TypeOutput& out, const ::mmx::exec_entry_t& value, const TypeCode* ty
 	vnx::write(out, value.txid, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.method, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.args, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.deposit, type_code, type_code->fields[4].code.data());
 }
 
 void read(std::istream& in, ::mmx::exec_entry_t& value) {

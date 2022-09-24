@@ -199,6 +199,8 @@
 #include <mmx/ProofOfStake.hxx>
 #include <mmx/ProofOfStake_calc_hash.hxx>
 #include <mmx/ProofOfStake_calc_hash_return.hxx>
+#include <mmx/ProofOfStake_validate.hxx>
+#include <mmx/ProofOfStake_validate_return.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofOfTime_calc_hash.hxx>
 #include <mmx/ProofOfTime_calc_hash_return.hxx>
@@ -2770,6 +2772,30 @@ void type<::mmx::ProofOfStake_calc_hash_return>::create_dynamic_code(std::vector
 }
 
 void type<::mmx::ProofOfStake_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofOfStake_calc_hash_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::ProofOfStake_validate>::get_type_code() {
+	return mmx::vnx_native_type_code_ProofOfStake_validate;
+}
+
+void type<::mmx::ProofOfStake_validate>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::ProofOfStake_validate());
+}
+
+void type<::mmx::ProofOfStake_validate>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofOfStake_validate& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::ProofOfStake_validate_return>::get_type_code() {
+	return mmx::vnx_native_type_code_ProofOfStake_validate_return;
+}
+
+void type<::mmx::ProofOfStake_validate_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::ProofOfStake_validate_return());
+}
+
+void type<::mmx::ProofOfStake_validate_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofOfStake_validate_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -5647,6 +5673,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::ProofOfStake::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofOfStake_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofOfStake_calc_hash_return::static_create_type_code());
+	vnx::register_type_code(::mmx::ProofOfStake_validate::static_create_type_code());
+	vnx::register_type_code(::mmx::ProofOfStake_validate_return::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofOfTime::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofOfTime_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofOfTime_calc_hash_return::static_create_type_code());
@@ -6071,6 +6099,8 @@ const vnx::TypeCode* const vnx_native_type_code_ProofOfSpaceOG_validate_return =
 const vnx::TypeCode* const vnx_native_type_code_ProofOfStake = vnx::get_type_code(vnx::Hash64(0xf5f1629c4ada2ccfull));
 const vnx::TypeCode* const vnx_native_type_code_ProofOfStake_calc_hash = vnx::get_type_code(vnx::Hash64(0xcf1c6e96bc600859ull));
 const vnx::TypeCode* const vnx_native_type_code_ProofOfStake_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xcd1eb534aac74ceull));
+const vnx::TypeCode* const vnx_native_type_code_ProofOfStake_validate = vnx::get_type_code(vnx::Hash64(0x2bcfbf7eadceda92ull));
+const vnx::TypeCode* const vnx_native_type_code_ProofOfStake_validate_return = vnx::get_type_code(vnx::Hash64(0xc46c6c7d93f32583ull));
 const vnx::TypeCode* const vnx_native_type_code_ProofOfTime = vnx::get_type_code(vnx::Hash64(0xa84a63942b8e5c6aull));
 const vnx::TypeCode* const vnx_native_type_code_ProofOfTime_calc_hash = vnx::get_type_code(vnx::Hash64(0xfbe7b8fb426a914full));
 const vnx::TypeCode* const vnx_native_type_code_ProofOfTime_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xa17fd72e3bcf8883ull));
