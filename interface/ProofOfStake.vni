@@ -7,4 +7,6 @@ class ProofOfStake extends ProofOfSpace {
 	
 	hash_t calc_hash(bool full_hash = false) const;
 	
+	void validate() const;
+	
 }

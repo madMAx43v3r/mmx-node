@@ -30,5 +30,10 @@ mmx::hash_t ProofOfStake::calc_hash(const vnx::bool_t& full_hash) const
 	return hash_t(buffer);
 }
 
+void ProofOfStake::validate() const
+{
+	// nothing to check
+}
+
 
 } // mmx
