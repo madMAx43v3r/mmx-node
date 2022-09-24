@@ -1696,9 +1696,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 
 				get_context(addr_set, request_id,
 					[this, request_id, result](std::shared_ptr<RenderContext> context) {
-						std::vector<vnx::Object> res;
+						std::vector<vnx::Variant> res;
 						for(const auto& entry : result) {
-							res.push_back(render(entry.first, context));
+							res.push_back(render_value(entry.first, context));
 						}
 						respond(request_id, render_value(res));
 					});
