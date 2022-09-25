@@ -7,6 +7,7 @@
 
 #include <mmx/vm/Engine.h>
 #include <mmx/vm/StorageProxy.h>
+#include <mmx/vm_interface.h>
 
 #include <iostream>
 

@@ -333,63 +333,6 @@ size_t deserialize(var_t*& out, const void* data_, const size_t length, bool wit
 	return offset;
 }
 
-std::string to_string(const var_t* var)
-{
-	if(!var) {
-		return "nullptr";
-	}
-	switch(var->type) {
-		case TYPE_NIL:
-			return "null";
-		case TYPE_TRUE:
-			return "true";
-		case TYPE_FALSE:
-			return "false";
-		case TYPE_REF:
-			return "<0x" + vnx::to_hex_string(((const ref_t*)var)->address) + ">";
-		case TYPE_UINT:
-			return ((const uint_t*)var)->value.str(10);
-		case TYPE_STRING:
-			return "\"" + ((const binary_t*)var)->to_string() + "\"";
-		case TYPE_BINARY:
-			return "0x" + ((const binary_t*)var)->to_hex_string();
-		case TYPE_ARRAY: {
-			auto array = (const array_t*)var;
-			return "[0x" + vnx::to_hex_string(array->address) + "," + std::to_string(array->size) + "]";
-		}
-		case TYPE_MAP:
-			return "{0x" + vnx::to_hex_string(((const map_t*)var)->address) + "}";
-		default:
-			return "?";
-	}
-}
-
-std::string to_string_value(const var_t* var)
-{
-	if(!var) {
-		return "nullptr";
-	}
-	switch(var->type) {
-		case TYPE_STRING:
-			return ((const binary_t*)var)->to_string();
-		default:
-			return to_string(var);
-	}
-}
-
-uint256_t to_uint(const var_t* var)
-{
-	if(!var) {
-		return 0;
-	}
-	switch(var->type) {
-		case TYPE_UINT:
-			return ((const uint_t*)var)->value;
-		default:
-			return 0;
-	}
-}
-
 
 } // vm
 } // mmx

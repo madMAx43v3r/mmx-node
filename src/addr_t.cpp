@@ -50,25 +50,6 @@ void addr_t::from_string(const std::string& addr)
 	::memcpy(data(), &bits, 32);
 }
 
-
-namespace vm {
-
-addr_t to_addr(const var_t* var)
-{
-	if(!var) {
-		return addr_t();
-	}
-	switch(var->type) {
-		case TYPE_UINT:
-			return addr_t(((const uint_t*)var)->value);
-		case TYPE_STRING:
-			return addr_t(((const binary_t*)var)->to_string());
-		default:
-			return addr_t();
-	}
-}
-
-} // vm
 } // mmx
 
 

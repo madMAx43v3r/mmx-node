@@ -8,7 +8,7 @@
 #ifndef INCLUDE_MMX_VM_INTERFACE_H_
 #define INCLUDE_MMX_VM_INTERFACE_H_
 
-#include <mmx/vm/Engine.h>
+#include <mmx/addr_t.hpp>
 #include <mmx/contract/Binary.hxx>
 
 #include <vnx/Visitor.h>
@@ -17,6 +17,8 @@
 
 namespace mmx {
 namespace vm {
+
+class Engine;
 
 const contract::method_t* find_method(std::shared_ptr<const contract::Binary> binary, const std::string& method_name);
 
@@ -38,6 +40,21 @@ vnx::Variant read(std::shared_ptr<vm::Engine> engine, const uint64_t address);
 void set_args(std::shared_ptr<vm::Engine> engine, const std::vector<vnx::Variant>& args);
 
 void execute(std::shared_ptr<vm::Engine> engine, const contract::method_t& method);
+
+std::string to_string(const var_t* var);
+std::string to_string(const varptr_t& var);
+
+std::string to_string_value(const var_t* var);
+std::string to_string_value(const varptr_t& var);
+
+uint256_t to_uint(const var_t* var);
+uint256_t to_uint(const varptr_t& var);
+
+hash_t to_hash(const var_t* var);
+hash_t to_hash(const varptr_t& var);
+
+addr_t to_addr(const var_t* var);
+addr_t to_addr(const varptr_t& var);
 
 
 } // vm

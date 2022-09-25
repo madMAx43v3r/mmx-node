@@ -887,22 +887,22 @@ offer_data_t Node::get_offer(const addr_t& address) const
 	}
 	offer_data_t out;
 	out.address = address;
-	out.height = data["height_open"].to_uint();
-	out.bid_currency = addr_t(data["bid_currency"].to_uint());
-	out.ask_currency = addr_t(data["ask_currency"].to_uint());
-	out.bid_amount = data["bid_amount"].to_uint();
-	out.ask_amount = data["ask_amount"].to_uint();
-	out.state = data["state"].to_string_value();
+	out.height = to_uint(data["height_open"]);
+	out.bid_currency = to_addr(data["bid_currency"]);
+	out.ask_currency = to_addr(data["ask_currency"]);
+	out.bid_amount = to_uint(data["bid_amount"]);
+	out.ask_amount = to_uint(data["ask_amount"]);
+	out.state = to_string_value(data["state"]);
 	{
 		auto iter = data.find("height_close");
 		if(iter != data.end()) {
-			out.close_height = iter->second.to_uint();
+			out.close_height = to_uint(iter->second);
 		}
 	}
 	{
 		auto iter = data.find("trade_txid");
 		if(iter != data.end()) {
-			out.trade_txid = hash_t::from_bytes(iter->second.to_uint());
+			out.trade_txid = to_hash(iter->second);
 		}
 	}
 	return out;

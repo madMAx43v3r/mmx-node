@@ -33,20 +33,4 @@ hash_t hash_t::random()
 }
 
 
-namespace vm {
-
-hash_t to_hash(const var_t* var)
-{
-	if(!var) {
-		return hash_t();
-	}
-	switch(var->type) {
-		case TYPE_UINT:
-			return hash_t::from_bytes(((const uint_t*)var)->value);
-		default:
-			return hash_t();
-	}
-}
-
-} // vm
 } // mmx

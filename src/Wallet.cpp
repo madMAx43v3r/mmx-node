@@ -16,6 +16,7 @@
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/mnemonic.h>
 #include <mmx/utils.h>
+#include <mmx/vm_interface.h>
 
 #include <vnx/vnx.h>
 #include <algorithm>
@@ -446,8 +447,8 @@ std::shared_ptr<const Transaction> Wallet::accept_offer(
 	std::vector<vnx::Variant> args;
 	args.emplace_back(wallet->get_address(dst_addr).to_string());
 
-	const auto currency = vm::to_addr(node->read_storage_field(address, "ask_currency").first.get());
-	const auto amount = node->read_storage_field(address, "ask_amount").first.to_uint();
+	const auto currency = to_addr(node->read_storage_field(address, "ask_currency").first);
+	const auto amount = to_uint(node->read_storage_field(address, "ask_amount").first);
 
 	auto options_ = options;
 	options_.note = tx_note_e::TRADE;
@@ -457,7 +458,7 @@ std::shared_ptr<const Transaction> Wallet::accept_offer(
 std::shared_ptr<const Transaction> Wallet::cancel_offer(
 			const uint32_t& index, const addr_t& address, const spend_options_t& options) const
 {
-	const auto owner = vm::to_addr(node->read_storage_field(address, "owner").first.get());
+	const auto owner = to_addr(node->read_storage_field(address, "owner").first);
 
 	auto options_ = options;
 	options_.user = owner;

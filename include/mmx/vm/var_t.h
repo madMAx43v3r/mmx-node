@@ -224,12 +224,6 @@ std::pair<uint8_t*, size_t> serialize(const var_t& src, bool with_rc = true, boo
 
 size_t deserialize(var_t*& var, const void* data, const size_t length, bool with_rc = true, bool with_vf = true);
 
-std::string to_string(const var_t* var);
-
-std::string to_string_value(const var_t* var);
-
-uint256_t to_uint(const var_t* var);
-
 struct varptr_less_t {
 	bool operator()(const var_t* const& lhs, const var_t* const& rhs) const {
 		return compare(lhs, rhs) < 0;

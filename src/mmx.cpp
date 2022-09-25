@@ -10,7 +10,6 @@
 #include <mmx/WalletClient.hxx>
 #include <mmx/FarmerClient.hxx>
 #include <mmx/HarvesterClient.hxx>
-//#include <mmx/exchange/ClientClient.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/contract/NFT.hxx>
 #include <mmx/contract/PlotNFT.hxx>
@@ -22,6 +21,7 @@
 #include <mmx/hash_t.hpp>
 #include <mmx/mnemonic.h>
 #include <mmx/utils.h>
+#include <mmx/vm/instr_t.h>
 #include <mmx/vm_interface.h>
 
 #include <vnx/vnx.h>
@@ -947,7 +947,7 @@ int main(int argc, char** argv)
 				if(address.empty()) {
 					std::cout << "{" << std::endl;
 					for(const auto& entry : node.read_storage(contract)) {
-						std::cout << "  \"" << entry.first << "\": " << entry.second.to_string() << "," << std::endl;
+						std::cout << "  \"" << entry.first << "\": " << to_string(entry.second) << "," << std::endl;
 					}
 					std::cout << "}" << std::endl;
 				} else {
@@ -973,7 +973,7 @@ int main(int argc, char** argv)
 									if(i++) {
 										std::cout << ", ";
 									}
-									std::cout << entry.to_string();
+									std::cout << to_string(entry);
 								}
 								std::cout << ']' << std::endl;
 								break;
@@ -981,22 +981,22 @@ int main(int argc, char** argv)
 							case mmx::vm::TYPE_MAP:
 								std::cout << '{' << std::endl;
 								for(const auto& entry : node.read_storage_map(contract, addr)) {
-									std::cout << "  " << entry.first.to_string() << ": " << entry.second.to_string() << ',' << std::endl;
+									std::cout << "  " << to_string(entry.first) << ": " << to_string(entry.second) << ',' << std::endl;
 								}
 								std::cout << '}' << std::endl;
 								break;
 							default:
-								std::cout << var.to_string() << std::endl;
+								std::cout << to_string(var) << std::endl;
 						}
 					} else {
-						std::cout << var.to_string() << std::endl;
+						std::cout << to_string(var) << std::endl;
 					}
 				}
 			}
 			else if(command == "dump")
 			{
 				for(const auto& entry : node.dump_storage(contract)) {
-					std::cout << "[0x" << std::hex << entry.first << std::dec << "] " << entry.second.to_string() << std::endl;
+					std::cout << "[0x" << std::hex << entry.first << std::dec << "] " << to_string(entry.second) << std::endl;
 				}
 			}
 			else if(command == "call")
@@ -1067,7 +1067,7 @@ int main(int argc, char** argv)
 							}
 							std::cout << ")" << std::endl;
 						}
-						std::cout << "  [0x" << vnx::to_hex_string(i) << "] " << mmx::vm::to_string(code[i]) << std::endl;
+						std::cout << "  [0x" << vnx::to_hex_string(i) << "] " << to_string(code[i]) << std::endl;
 
 						if(!method.empty() && code[i].code == mmx::vm::OP_RET) {
 							break;
