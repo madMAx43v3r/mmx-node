@@ -381,7 +381,7 @@ std::string to_string(const var_t* var)
 			if(value >> 128 == uint128_t(-1)) {
 				return std::to_string(int64_t(uint64_t(value)));
 			}
-			return hash_t::from_bytes(value).to_string() + " | " + addr_t(value).to_string();
+			return value.str(10) + " | " + hash_t::from_bytes(value).to_string() + " | " + addr_t(value).to_string();
 		}
 		case TYPE_STRING:
 			return "\"" + ((const binary_t*)var)->to_string() + "\"";
