@@ -85,19 +85,18 @@ StorageDB::~StorageDB()
 
 var_t* StorageDB::read(const addr_t& contract, const uint64_t src) const
 {
+	return read_ex(contract, src, -1);
+}
+
+var_t* StorageDB::read_ex(const addr_t& contract, const uint64_t src, const uint32_t height) const
+{
 	const auto key = get_key(contract, src);
-	if(auto value = table->find(key)) {
+	if(auto value = table->find(key, height)) {
 		var_t* var = nullptr;
 		deserialize(var, value->data, value->size);
 		return var;
 	}
 	return nullptr;
-}
-
-var_t* StorageDB::read_ex(const addr_t& contract, const uint64_t src, const uint32_t height) const
-{
-	// TODO: consider height
-	return read(contract, src);
 }
 
 var_t* StorageDB::read(const addr_t& contract, const uint64_t src, const uint64_t key) const
