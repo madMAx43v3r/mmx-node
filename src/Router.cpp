@@ -323,7 +323,9 @@ void Router::handle(std::shared_ptr<const Transaction> tx)
 {
 	const auto hash = tx->content_hash;
 	if(relay_msg_hash(hash)) {
-		broadcast(tx, hash, {node_type_e::FULL_NODE});
+		if(do_relay || vnx_sample->topic == input_transactions) {
+			broadcast(tx, hash, {node_type_e::FULL_NODE});
+		}
 		tx_counter++;
 	}
 }
@@ -1045,16 +1047,7 @@ void Router::on_transaction(uint64_t client, std::shared_ptr<const Transaction> 
 	if(!tx->is_valid(params) || tx->exec_result) {
 		return;
 	}
-	const auto hash = tx->content_hash;
-	const auto is_new = receive_msg_hash(hash, client);
-	// TODO: pre-validate via Node first
-	if(relay_msg_hash(hash)) {
-		if(do_relay) {
-			relay(client, tx, hash, {node_type_e::FULL_NODE});
-		}
-		tx_counter++;
-	}
-	if(is_new) {
+	if(receive_msg_hash(tx->content_hash, client)) {
 		publish(tx, output_transactions);
 	}
 }
