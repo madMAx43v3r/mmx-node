@@ -872,7 +872,9 @@ std::vector<std::pair<addr_t, std::shared_ptr<const Contract>>> Node::get_virtua
 	for(const auto& addr : addrs) {
 		if(auto contract = get_contract(addr)) {
 			if(auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(contract)) {
-				out.emplace_back(addr, plot);
+				if(plot->farmer_key == farmer_key) {
+					out.emplace_back(addr, plot);
+				}
 			}
 		}
 	}
@@ -1541,6 +1543,11 @@ void Node::apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Tran
 					entry.deposit = std::make_pair(deposit->currency, deposit->amount);
 				}
 				exec_log.insert(std::make_tuple(op->address, block->height, counter++), entry);
+			}
+			if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op)) {
+				if(mutate->method["__type"].to_string_value() == "mmx.contract.VirtualPlot.bls_transfer") {
+					vplot_map.insert(mutate->method["new_farmer_key"].to<bls_pubkey_t>(), op->address);
+				}
 			}
 		}
 		if(auto contract = tx->deploy) {
