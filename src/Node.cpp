@@ -1439,7 +1439,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 
 	for(const auto& tx : block->get_all_transactions()) {
 		tx_set.insert(tx->id);
-		apply(block, tx, balance_cache, counter);
+		apply(block, context, tx, balance_cache, counter);
 	}
 	for(auto iter = pending_transactions.begin(); iter != pending_transactions.end();) {
 		if(tx_set.count(iter->second->id)) {
@@ -1488,7 +1488,9 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	}
 }
 
-void Node::apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx,
+void Node::apply(	std::shared_ptr<const Block> block,
+					std::shared_ptr<const execution_context_t> context,
+					std::shared_ptr<const Transaction> tx,
 					balance_cache_t& balance_cache, uint32_t& counter)
 {
 	if(tx->sender && tx->exec_result)
@@ -1526,7 +1528,8 @@ void Node::apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Tran
 				clamped_sub_assign(*balance, in.amount);
 			}
 		}
-		for(const auto& op : tx->execute) {
+		for(const auto& op : tx->execute)
+		{
 			if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op)) {
 				exec_entry_t entry;
 				entry.height = block->height;
@@ -1537,6 +1540,15 @@ void Node::apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Tran
 					entry.deposit = std::make_pair(deposit->currency, deposit->amount);
 				}
 				exec_log.insert(std::make_tuple(op->address, block->height, counter++), entry);
+
+				auto contract = context->contract_cache.find_contract(op->address);
+				if(auto executable = std::dynamic_pointer_cast<const contract::Executable>(contract)) {
+					if(executable->binary == params->offer_binary) {
+						if(exec->method == "trade") {
+							trade_log.insert(std::make_pair(block->height, counter), op->address);
+						}
+					}
+				}
 			}
 			else if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op)) {
 				const auto method = mutate->method["__type"].to_string_value();
@@ -1545,7 +1557,8 @@ void Node::apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Tran
 				}
 			}
 		}
-		if(auto contract = tx->deploy) {
+		if(auto contract = tx->deploy)
+		{
 			if(tx->sender) {
 				deploy_map.insert(*tx->sender, tx->id);
 			}

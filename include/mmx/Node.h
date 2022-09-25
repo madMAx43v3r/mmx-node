@@ -349,7 +349,9 @@ private:
 	void apply(	std::shared_ptr<const Block> block,
 				std::shared_ptr<const execution_context_t> context, bool is_replay = false);
 
-	void apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Transaction> tx,
+	void apply(	std::shared_ptr<const Block> block,
+				std::shared_ptr<const execution_context_t> context,
+				std::shared_ptr<const Transaction> tx,
 				balance_cache_t& balance_cache, uint32_t& counter);
 
 	void revert(const uint32_t height);
@@ -404,6 +406,7 @@ private:
 	hash_multi_table<bls_pubkey_t, addr_t> vplot_map;							// [farmer_key => contract]
 
 	uint_uint_table<uint32_t, uint32_t, addr_t> offer_log;						// [[height, counter] => contract]
+	uint_uint_table<uint32_t, uint32_t, addr_t> trade_log;						// [[height, counter] => contract]
 
 	balance_table_t<uint128> balance_table;										// [[addr, currency] => balance]
 	std::map<std::pair<addr_t, addr_t>, uint128> balance_map;					// [[addr, currency] => balance]
