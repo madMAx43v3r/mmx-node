@@ -895,17 +895,11 @@ offer_data_t Node::get_offer(const addr_t& address) const
 	out.bid_amount = to_uint(data["bid_amount"]);
 	out.ask_amount = to_uint(data["ask_amount"]);
 	out.state = to_string_value(data["state"]);
-	{
-		auto iter = data.find("height_close");
-		if(iter != data.end()) {
-			out.close_height = to_uint(iter->second);
-		}
+	if(auto var = data["height_close"]) {
+		out.close_height = to_uint(var);
 	}
-	{
-		auto iter = data.find("trade_txid");
-		if(iter != data.end()) {
-			out.trade_txid = to_hash(iter->second);
-		}
+	if(auto var = data["trade_txid"]) {
+		out.trade_txid = to_hash(var);
 	}
 	return out;
 }
@@ -1544,8 +1538,9 @@ void Node::apply(	std::shared_ptr<const Block> block, std::shared_ptr<const Tran
 				}
 				exec_log.insert(std::make_tuple(op->address, block->height, counter++), entry);
 			}
-			if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op)) {
-				if(mutate->method["__type"].to_string_value() == "mmx.contract.VirtualPlot.bls_transfer") {
+			else if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op)) {
+				const auto method = mutate->method["__type"].to_string_value();
+				if(method == "mmx.contract.VirtualPlot.bls_transfer") {
 					vplot_map.insert(mutate->method["new_farmer_key"].to<bls_pubkey_t>(), op->address);
 				}
 			}
