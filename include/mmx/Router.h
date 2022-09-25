@@ -164,9 +164,9 @@ private:
 
 	void on_recv_note(uint64_t client, std::shared_ptr<const ReceiveNote> note);
 
-	void recv_notify(const hash_t& msg_hash, const uint64_t* source);
+	void recv_notify(const hash_t& msg_hash);
 
-	void relay(uint64_t source, std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter);
+	void relay(std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter);
 
 	void broadcast(std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter, bool reliable = true);
 
