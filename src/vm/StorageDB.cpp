@@ -148,8 +148,8 @@ uint64_t StorageDB::lookup(const addr_t& contract, const var_t& value) const
 std::vector<std::pair<uint64_t, varptr_t>> StorageDB::find_range(
 		const addr_t& contract, const uint64_t begin, const uint64_t end, const uint32_t height) const
 {
-	// TODO: consider height argument
 	std::vector<std::pair<uint64_t, varptr_t>> out;
+	std::vector<std::pair<std::shared_ptr<db_val_t>, uint64_t>> keys;
 
 	Table::Iterator iter(table);
 	iter.seek(get_key(contract, begin));
@@ -159,11 +159,15 @@ std::vector<std::pair<uint64_t, varptr_t>> StorageDB::find_range(
 		if(std::get<0>(key) != contract || address >= end) {
 			break;
 		}
-		var_t* var = nullptr;
-		const auto& value = iter.value();
-		deserialize(var, value->data, value->size);
-		out.emplace_back(address, var);
+		keys.emplace_back(iter.key(), address);
 		iter.next();
+	}
+	for(const auto& entry : keys) {
+		if(auto value = table->find(entry.first, height)) {
+			var_t* var = nullptr;
+			deserialize(var, value->data, value->size);
+			out.emplace_back(entry.second, var);
+		}
 	}
 	return out;
 }
@@ -171,8 +175,8 @@ std::vector<std::pair<uint64_t, varptr_t>> StorageDB::find_range(
 std::vector<std::pair<uint64_t, varptr_t>> StorageDB::find_entries(
 		const addr_t& contract, const uint64_t address, const uint32_t height) const
 {
-	// TODO: consider height argument
 	std::vector<std::pair<uint64_t, varptr_t>> out;
+	std::vector<std::pair<std::shared_ptr<db_val_t>, uint64_t>> keys;
 
 	Table::Iterator iter(table_entries);
 	iter.seek(get_entry_key(contract, address, 0));
@@ -181,12 +185,15 @@ std::vector<std::pair<uint64_t, varptr_t>> StorageDB::find_entries(
 		if(std::get<0>(key) != contract || std::get<1>(key) != address) {
 			break;
 		}
-		var_t* var = nullptr;
-		const auto entry = std::get<2>(key);
-		const auto& value = iter.value();
-		deserialize(var, value->data, value->size, false);
-		out.emplace_back(entry, var);
+		keys.emplace_back(iter.key(), std::get<2>(key));
 		iter.next();
+	}
+	for(const auto& entry : keys) {
+		if(auto value = table_entries->find(entry.first, height)) {
+			var_t* var = nullptr;
+			deserialize(var, value->data, value->size);
+			out.emplace_back(entry.second, var);
+		}
 	}
 	return out;
 }
