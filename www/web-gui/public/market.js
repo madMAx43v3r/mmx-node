@@ -164,7 +164,7 @@ Vue.component('market-offers', {
 		return {
 			data: null,
 			offer: {},
-			tokens: new Set(),
+			tokens: null,
 			accepted: new Set(),
 			timer: null,
 			result: null,
@@ -175,28 +175,32 @@ Vue.component('market-offers', {
 	},
 	methods: {
 		update() {
-			this.loading = true;
-			let query = '/wapi/node/offers?limit=' + this.limit;
-			if(this.bid) {
-				query += '&bid=' + this.bid;
+			if(this.tokens) {
+				this.loading = true;
+				let query = '/wapi/node/offers?limit=' + this.limit;
+				if(this.bid) {
+					query += '&bid=' + this.bid;
+				}
+				if(this.ask) {
+					query += '&ask=' + this.ask;
+				}
+				fetch(query)
+					.then(response => response.json())
+					.then(data => {
+						this.loading = false;
+						this.data = data;
+					});
+			} else {
+				fetch('/wapi/wallet/tokens')
+					.then(response => response.json())
+					.then(data => {
+						this.tokens = new Set();
+						for(const token of data) {
+							this.tokens.add(token.currency);
+						}
+						this.update();
+					});
 			}
-			if(this.ask) {
-				query += '&ask=' + this.ask;
-			}
-			fetch(query)
-				.then(response => response.json())
-				.then(data => {
-					this.loading = false;
-					this.data = data;
-				});
-			fetch('/wapi/wallet/tokens')
-				.then(response => response.json())
-				.then(data => {
-					this.tokens.clear();
-					for(const token of data) {
-						this.tokens.add(token.currency);
-					}
-				});
 		},
 		confirm(offer) {
 			this.offer = offer;
