@@ -1639,48 +1639,6 @@ void Node::apply(	std::shared_ptr<const Block> block,
 				clamped_sub_assign(*balance, in.amount);
 			}
 		}
-		for(const auto& op : tx->execute)
-		{
-			if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op)) {
-				exec_entry_t entry;
-				entry.height = block->height;
-				entry.txid = tx->id;
-				entry.method = exec->method;
-				entry.args = exec->args;
-				auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(exec);
-				if(deposit) {
-					entry.deposit = std::make_pair(deposit->currency, deposit->amount);
-				}
-				const auto ticket = counter++;
-				exec_log.insert(std::make_tuple(op->address, block->height, ticket), entry);
-
-				auto contract = context->contract_cache.find_contract(op->address);
-				if(auto executable = std::dynamic_pointer_cast<const contract::Executable>(contract)) {
-					if(executable->binary == params->offer_binary) {
-						if(exec->method == "open") {
-							if(deposit) {
-								offer_map.insert(std::make_tuple(deposit->currency, block->height, ticket), op->address);
-							}
-						} else if(exec->method == "trade") {
-							trade_log.insert(std::make_pair(block->height, ticket), op->address);
-							if(deposit) {
-								trade_history.insert(std::make_tuple(deposit->currency, block->height, ticket), op->address);
-							}
-							const auto res = read_storage_field(params->offer_binary, op->address, "bid_currency");
-							if(const auto& currency = res.first) {
-								trade_history.insert(std::make_tuple(to_addr(currency), block->height, ticket), op->address);
-							}
-						}
-					}
-				}
-			}
-			else if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op)) {
-				const auto method = mutate->method["__type"].to_string_value();
-				if(method == "mmx.contract.VirtualPlot.bls_transfer") {
-					vplot_map.insert(mutate->method["new_farmer_key"].to<bls_pubkey_t>(), op->address);
-				}
-			}
-		}
 		if(auto contract = tx->deploy)
 		{
 			if(tx->sender) {
@@ -1699,6 +1657,50 @@ void Node::apply(	std::shared_ptr<const Block> block,
 				vplot_map.insert(plot->farmer_key, tx->id);
 			}
 			contract_map.insert(tx->id, contract);
+		}
+		for(const auto& op : tx->execute)
+		{
+			const auto address = op->address == addr_t() ? addr_t(tx->id) : op->address;
+			const auto contract = op->address == addr_t() ? tx->deploy : context->contract_cache.find_contract(op->address);
+
+			if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op)) {
+				exec_entry_t entry;
+				entry.height = block->height;
+				entry.txid = tx->id;
+				entry.method = exec->method;
+				entry.args = exec->args;
+				auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(exec);
+				if(deposit) {
+					entry.deposit = std::make_pair(deposit->currency, deposit->amount);
+				}
+				const auto ticket = counter++;
+				exec_log.insert(std::make_tuple(address, block->height, ticket), entry);
+
+				if(auto executable = std::dynamic_pointer_cast<const contract::Executable>(contract)) {
+					if(executable->binary == params->offer_binary) {
+						if(exec->method == "open") {
+							if(deposit) {
+								offer_map.insert(std::make_tuple(deposit->currency, block->height, ticket), address);
+							}
+						} else if(exec->method == "trade") {
+							trade_log.insert(std::make_pair(block->height, ticket), address);
+							if(deposit) {
+								trade_history.insert(std::make_tuple(deposit->currency, block->height, ticket), address);
+							}
+							const auto res = read_storage_field(params->offer_binary, address, "bid_currency");
+							if(const auto& currency = res.first) {
+								trade_history.insert(std::make_tuple(to_addr(currency), block->height, ticket), address);
+							}
+						}
+					}
+				}
+			}
+			else if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op)) {
+				const auto method = mutate->method["__type"].to_string_value();
+				if(method == "mmx.contract.VirtualPlot.bls_transfer") {
+					vplot_map.insert(mutate->method["new_farmer_key"].to<bls_pubkey_t>(), address);
+				}
+			}
 		}
 	}
 	tx_pool_erase(tx->id);
