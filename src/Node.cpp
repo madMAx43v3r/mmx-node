@@ -293,13 +293,10 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 
 hash_t Node::get_genesis_hash() const
 {
-	if(!genesis) {
-		genesis = get_header_at(0);
-		if(!genesis) {
-			throw std::logic_error("have no genesis");
-		}
+	if(auto block = get_header_at(0)) {
+		return block->hash;
 	}
-	return genesis->hash;
+	throw std::logic_error("have no genesis");
 }
 
 uint32_t Node::get_height() const
@@ -585,8 +582,19 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 
 std::shared_ptr<const Contract> Node::get_contract(const addr_t& address) const
 {
+	if(address == params->offer_binary) {
+		std::lock_guard<std::mutex> lock(mutex);
+		if(offer_binary) {
+			return offer_binary;
+		}
+	}
 	std::shared_ptr<const Contract> contract;
 	contract_map.find(address, contract);
+
+	if(contract && address == params->offer_binary) {
+		std::lock_guard<std::mutex> lock(mutex);
+		offer_binary = std::dynamic_pointer_cast<const contract::Binary>(contract);
+	}
 	return contract;
 }
 

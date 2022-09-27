@@ -13,7 +13,8 @@
 #include <mmx/ChainParams.hxx>
 #include <mmx/RouterAsyncClient.hxx>
 #include <mmx/TimeLordAsyncClient.hxx>
-#include <mmx/operation/Mutate.hxx>
+#include <mmx/contract/Binary.hxx>
+#include <mmx/operation/Execute.hxx>
 #include <mmx/txio_entry_t.hpp>
 #include <mmx/OCL_VDF.h>
 #include <mmx/utils.h>
@@ -450,10 +451,11 @@ private:
 	std::shared_ptr<vnx::Timer> stuck_timer;
 	std::shared_ptr<vnx::Timer> update_timer;
 
-	std::shared_ptr<const ChainParams> params;
-	mutable std::shared_ptr<const BlockHeader> genesis;		// TODO: obsolete
+	mutable std::mutex mutex;
 	mutable std::shared_ptr<const NetworkInfo> network;
+	mutable std::shared_ptr<const contract::Binary> offer_binary;
 
+	std::shared_ptr<const ChainParams> params;
 	std::shared_ptr<RouterAsyncClient> router;
 	std::shared_ptr<TimeLordAsyncClient> timelord;
 	std::shared_ptr<vnx::addons::HttpInterface<Node>> http;
