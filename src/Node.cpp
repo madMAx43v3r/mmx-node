@@ -1539,13 +1539,14 @@ void Node::apply(	std::shared_ptr<const Block> block,
 				if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(exec)) {
 					entry.deposit = std::make_pair(deposit->currency, deposit->amount);
 				}
-				exec_log.insert(std::make_tuple(op->address, block->height, counter++), entry);
+				const auto ticket = counter++;
+				exec_log.insert(std::make_tuple(op->address, block->height, ticket), entry);
 
 				auto contract = context->contract_cache.find_contract(op->address);
 				if(auto executable = std::dynamic_pointer_cast<const contract::Executable>(contract)) {
 					if(executable->binary == params->offer_binary) {
 						if(exec->method == "trade") {
-							trade_log.insert(std::make_pair(block->height, counter), op->address);
+							trade_log.insert(std::make_pair(block->height, ticket), op->address);
 						}
 					}
 				}
