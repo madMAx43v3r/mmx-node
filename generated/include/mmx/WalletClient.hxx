@@ -17,6 +17,7 @@
 #include <mmx/spend_options_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_log_entry_t.hxx>
+#include <mmx/tx_type_e.hxx>
 #include <mmx/txin_t.hxx>
 #include <mmx/uint128.hpp>
 #include <vnx/Module.h>
@@ -91,7 +92,7 @@ public:
 	
 	void update_cache_async(const uint32_t& index = 0);
 	
-	std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index = 0, const int32_t& since = 0);
+	std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index = 0, const int32_t& since = 0, const vnx::optional<::mmx::tx_type_e>& type = nullptr, const vnx::optional<::mmx::addr_t>& currency = nullptr);
 	
 	std::vector<::mmx::tx_log_entry_t> get_tx_history(const uint32_t& index = 0, const int32_t& limit = -1, const uint32_t& offset = 0);
 	

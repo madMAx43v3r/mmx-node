@@ -5,6 +5,8 @@
 #define INCLUDE_mmx_Wallet_get_history_HXX_
 
 #include <mmx/package.hxx>
+#include <mmx/addr_t.hpp>
+#include <mmx/tx_type_e.hxx>
 #include <vnx/Value.h>
 
 
@@ -15,6 +17,8 @@ public:
 	
 	uint32_t index = 0;
 	int32_t since = 0;
+	vnx::optional<::mmx::tx_type_e> type;
+	vnx::optional<::mmx::addr_t> currency;
 	
 	typedef ::vnx::Value Super;
 	
@@ -58,10 +62,12 @@ public:
 
 template<typename T>
 void Wallet_get_history::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Wallet_get_history>(2);
+	_visitor.template type_begin<Wallet_get_history>(4);
 	_visitor.type_field("index", 0); _visitor.accept(index);
 	_visitor.type_field("since", 1); _visitor.accept(since);
-	_visitor.template type_end<Wallet_get_history>(2);
+	_visitor.type_field("type", 2); _visitor.accept(type);
+	_visitor.type_field("currency", 3); _visitor.accept(currency);
+	_visitor.template type_end<Wallet_get_history>(4);
 }
 
 

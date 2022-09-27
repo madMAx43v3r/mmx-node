@@ -113,6 +113,7 @@
 #include <mmx/spend_options_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_log_entry_t.hxx>
+#include <mmx/tx_type_e.hxx>
 #include <mmx/txin_t.hxx>
 #include <mmx/uint128.hpp>
 #include <vnx/Module.h>
@@ -480,10 +481,12 @@ void WalletClient::update_cache_async(const uint32_t& index) {
 	vnx_request(_method, true);
 }
 
-std::vector<::mmx::tx_entry_t> WalletClient::get_history(const uint32_t& index, const int32_t& since) {
+std::vector<::mmx::tx_entry_t> WalletClient::get_history(const uint32_t& index, const int32_t& since, const vnx::optional<::mmx::tx_type_e>& type, const vnx::optional<::mmx::addr_t>& currency) {
 	auto _method = ::mmx::Wallet_get_history::create();
 	_method->index = index;
 	_method->since = since;
+	_method->type = type;
+	_method->currency = currency;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_history_return>(_return_value)) {
 		return _result->_ret_0;

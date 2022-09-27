@@ -114,6 +114,7 @@
 #include <mmx/spend_options_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_log_entry_t.hxx>
+#include <mmx/tx_type_e.hxx>
 #include <mmx/txin_t.hxx>
 #include <mmx/uint128.hpp>
 #include <vnx/Module.h>
@@ -668,7 +669,7 @@ std::shared_ptr<vnx::Value> WalletBase::vnx_call_switch(std::shared_ptr<const vn
 		case 0x921f73f3d97d2d4dull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Wallet_get_history>(_method);
 			auto _return_value = ::mmx::Wallet_get_history_return::create();
-			_return_value->_ret_0 = get_history(_args->index, _args->since);
+			_return_value->_ret_0 = get_history(_args->index, _args->since, _args->type, _args->currency);
 			return _return_value;
 		}
 		case 0x8fddd77ece4d295bull: {
