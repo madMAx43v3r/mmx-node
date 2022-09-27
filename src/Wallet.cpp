@@ -582,12 +582,18 @@ std::vector<txin_t> Wallet::gather_inputs_for(	const uint32_t& index, const uint
 	return tx->inputs;
 }
 
-std::vector<tx_entry_t> Wallet::get_history(const uint32_t& index, const int32_t& since) const
+std::vector<tx_entry_t> Wallet::get_history(const uint32_t& index, const int32_t& since,
+											const vnx::optional<tx_type_e>& type, const vnx::optional<addr_t>& currency) const
 {
 	const auto wallet = get_wallet(index);
-	auto result = node->get_history(wallet->get_all_addresses(), since);
-	for(auto& entry : result) {
-		entry.is_validated = token_whitelist.count(entry.contract);
+
+	std::vector<tx_entry_t> result;
+	for(const auto& entry : node->get_history(wallet->get_all_addresses(), since)) {
+		if((!type || entry.type == *type) && (!currency || entry.contract == *currency)) {
+			auto tmp = entry;
+			tmp.is_validated = token_whitelist.count(entry.contract);
+			result.push_back(tmp);
+		}
 	}
 	return result;
 }

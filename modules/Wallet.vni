@@ -80,7 +80,7 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	void update_cache(uint index) const;
 	
-	vector<tx_entry_t> get_history(uint index, int since) const;
+	vector<tx_entry_t> get_history(uint index, int since, optional<tx_type_e> type, optional<addr_t> currency) const;
 	
 	vector<tx_log_entry_t> get_tx_history(uint index, int limit = -1, uint offset) const;
 	

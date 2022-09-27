@@ -100,7 +100,7 @@ const AccountHistory = {
 		index: Number
 	},
 	template: `
-		<account-history :index="index" :limit="200"></account-history>
+		<account-history-form :index="index" :limit="200"></account-history-form>
 	`
 }
 const AccountLog = {

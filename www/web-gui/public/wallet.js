@@ -363,7 +363,15 @@ Vue.component('nft-table', {
 Vue.component('account-history', {
 	props: {
 		index: Number,
-		limit: Number
+		limit: Number,
+		type: {
+			default: null,
+			type: String
+		},
+		currency: {
+			default: null,
+			type: String
+		}
 	},
 	data() {
 		return {
@@ -389,13 +397,21 @@ Vue.component('account-history', {
 	methods: {
 		update() {
 			this.loading = true;
-			fetch('/wapi/wallet/history?limit=' + this.limit + '&index=' + this.index)
+			fetch('/wapi/wallet/history?limit=' + this.limit + '&index=' + this.index + '&type=' + this.type + '&currency=' + this.currency)
 				.then(response => response.json())
 				.then(data => {
 					this.loading = false;
 					this.loaded = true;
 					this.data = data;
 				});
+		}
+	},
+	watch: {
+		type() {
+			this.update();
+		},
+		currency() {
+			this.update();
 		}
 	},
 	created() {
@@ -451,6 +467,73 @@ Vue.component('account-history', {
 
 		</v-data-table>
 		`
+})
+
+Vue.component('account-history-form', {
+	props: {
+		index: Number,
+		limit: Number
+	},
+	data() {
+		return {
+			type: null,
+			currency: null,
+			tokens: []
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/wallet/tokens')
+				.then(response => response.json())
+				.then(data => this.tokens = data);
+		}
+	},
+	computed: {
+		select_types() {
+			return [
+				{text: "Any", value: null},
+				{text: "Spend", value: "SPEND"},
+				{text: "Receive", value: "RECEIVE"},
+				{text: "Reward", value: "REWARD"},
+				{text: "TX Fee", value: "TXFEE"}
+			];
+		},
+		select_tokens() {
+			const res = [{text: "Any", value: null}];
+			for(const token of this.tokens) {
+				let text = token.symbol;
+				if(!token.is_native) {
+					text += " - [" + token.currency + "]";
+				}
+				res.push({text: text, value: token.currency});
+			}
+			return res;
+		}
+	},
+	created() {
+		this.update();
+	},
+	template: `
+		<div>
+			<v-card class="my-2">
+				<v-card-text>
+					<v-row>
+						<v-col cols="3">
+							<v-select v-model="type" label="Type"
+								:items="select_types" item-text="text" item-value="value">
+							</v-select>
+						</v-col>
+						<v-col>
+							<v-select v-model="currency" :label="$t('account_send_form.currency')"
+								:items="select_tokens" item-text="text" item-value="value">
+							</v-select>
+						</v-col>
+					</v-row>
+				</v-card-text>
+			</v-card>
+			<account-history :index="index" :limit="limit" :type="type" :currency="currency"></account-history>
+		</div>
+	`
 })
 
 Vue.component('account-tx-history', {
