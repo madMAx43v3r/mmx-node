@@ -167,10 +167,21 @@ const MarketOffers = {
 		ask: null,
 	},
 	template: `
-		<market-offers ref="orders" :wallet="wallet" :bid="bid" :ask="ask" :limit="200"></market-offers>
+		<market-offers :wallet="wallet" :bid="bid" :ask="ask" :limit="200"></market-offers>
 		`
 }
 
+const MarketHistory = {
+	props: {
+		bid: null,
+		ask: null,
+	},
+	template: `
+		<market-history :bid="bid" :ask="ask" :limit="200"></market-history>
+		`
+}
+
+// TODO: obsolete
 const Exchange = {
 	props: {
 		wallet: Number,

@@ -55,13 +55,13 @@ Vue.component('market-menu', {
 		this.update();
 	},
 	watch: {
-		wallet(value) {
+		wallet() {
 			this.submit();
 		},
-		bid(value) {
+		bid() {
 			this.submit();
 		},
-		ask(value) {
+		ask() {
 			this.submit();
 		}
 	},
@@ -136,13 +136,10 @@ Vue.component('market-menu', {
 					</v-card-text>
 				</v-card>
 
-				<v-btn-toggle
-					v-model="currentItem"
-					dense
-					class="my-2"
-				>
-					<v-btn @click="submit('offers')">{{ $t('market_menu.offers') }}</v-btn>
-				</v-btn-toggle>
+				<v-tabs>
+					<v-tab :to="'/market/offers/' + this.wallet + '/' + this.bid + '/' + this.ask">{{ $t('market_menu.offers') }}</v-tab>
+					<v-tab :to="'/market/history/' + this.wallet + '/' + this.bid + '/' + this.ask">History</v-tab>
+				</v-tabs>
 			</div>
 
 		</div>
@@ -351,4 +348,111 @@ Vue.component('market-offers', {
 			</v-card>
 		</div>
 		`
+})
+
+Vue.component('market-history', {
+	props: {
+		bid: null,
+		ask: null,
+		limit: Number
+	},
+	data() {
+		return {
+			data: null,
+			tokens: null,
+			timer: null,
+			loading: false
+		}
+	},
+	methods: {
+		update() {
+			if(this.tokens) {
+				this.loading = true;
+				let query = '/wapi/node/trade_history?limit=' + this.limit;
+				if(this.bid) {
+					query += '&bid=' + this.bid;
+				}
+				if(this.ask) {
+					query += '&ask=' + this.ask;
+				}
+				fetch(query)
+					.then(response => response.json())
+					.then(data => {
+						this.loading = false;
+						this.data = data;
+					});
+			} else {
+				fetch('/wapi/wallet/tokens')
+					.then(response => response.json())
+					.then(data => {
+						this.tokens = new Set();
+						for(const token of data) {
+							this.tokens.add(token.currency);
+						}
+						this.update();
+					});
+			}
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 60000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<div>
+			<v-card>
+				<v-card-text>
+					<div v-if="!data && loading">
+						<v-progress-linear indeterminate absolute top></v-progress-linear>
+						<v-skeleton-loader type="table-row-divider@6"/>
+					</div>
+
+					<template v-if="data">
+						<v-simple-table>
+							<thead>
+								<tr>
+									<th>{{ $t('market_offers.they_offer') }}</th>
+									<th>{{ $t('market_offers.they_ask') }}</th>
+									<th>{{ $t('market_offers.price') }}</th>
+									<th>{{ $t('market_offers.time') }}</th>
+									<th>{{ $t('market_offers.link') }}</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr v-for="item in data" :key="item.address">
+									<td>
+										<b>{{item.bid_value}}</b>&nbsp;
+										<template v-if="item.bid_symbol == 'MMX'">MMX</template>
+										<template v-else>
+											<router-link :to="'/explore/address/' + item.bid_currency">
+												<template v-if="tokens.has(item.bid_currency)">{{item.bid_symbol}}</template>
+												<template v-else>{{item.bid_symbol}}?</template>
+											</router-link>
+										</template>
+									</td>
+									<td>
+										<b>{{item.ask_value}}</b>&nbsp;
+										<template v-if="item.ask_symbol == 'MMX'">MMX</template>
+										<template v-else>
+											<router-link :to="'/explore/address/' + item.ask_currency">
+												<template v-if="tokens.has(item.ask_currency)">{{item.ask_symbol}}</template>
+												<template v-else>{{item.ask_symbol}}?</template>
+											</router-link>
+										</template>
+									</td>
+									<td><b>{{item.price}}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
+									<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
+									<td><router-link :to="'/explore/address/' + item.contract">TX</router-link></td>
+								</tr>
+							</tbody>
+						</v-simple-table>
+					</template>
+				</v-card-text>
+			</v-card>
+		</div>
+	`
 })

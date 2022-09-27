@@ -35,6 +35,7 @@ const routes = [
 		}),
 		children: [
 			{ path: 'offers/:wallet/:bid/:ask', component: MarketOffers, meta: { page: 'offers' } },
+			{ path: 'history/:wallet/:bid/:ask', component: MarketHistory, meta: { page: 'history' } },
 		]
 	},
 	{ path: '/exchange',
