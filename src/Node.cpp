@@ -965,30 +965,32 @@ std::vector<offer_data_t> Node::get_offers_for(const vnx::optional<addr_t>& bid,
 	std::vector<offer_data_t> out;
 	for(const auto& address : entries) {
 		const auto data = get_offer(address);
-		if(!is_open || data.state == "OPEN") {
-			out.push_back(data);
+		if((!bid || data.bid_currency == *bid) && (!ask || data.ask_currency == *ask)) {
+			if(!is_open || data.state == "OPEN") {
+				out.push_back(data);
+			}
 		}
 	}
 	return out;
 }
 
-std::vector<trade_data_t> Node::get_trade_history(const int32_t& since) const
+std::vector<trade_data_t> Node::get_trade_history(const int32_t& limit, const uint32_t& since) const
 {
 	std::vector<addr_t> entries;
-	trade_log.find_range(std::make_pair(since, 0), std::make_pair(-1, -1), entries);
+	trade_log.find_last_range(std::make_pair(since, 0), std::make_pair(-1, -1), entries, limit);
 
-	return get_trade_history_for(entries);
+	return get_trade_history_for(entries, nullptr, nullptr);
 }
 
-std::vector<trade_data_t> Node::get_trade_history_for(const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const int32_t& since) const
+std::vector<trade_data_t> Node::get_trade_history_for(const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const int32_t& limit, const uint32_t& since) const
 {
 	std::vector<addr_t> bid_list;
 	std::vector<addr_t> ask_list;
 	if(bid) {
-		trade_history.find_range(std::make_tuple(*bid, since, 0), std::make_tuple(*bid, -1, -1), bid_list);
+		trade_history.find_last_range(std::make_tuple(*bid, since, 0), std::make_tuple(*bid, -1, -1), bid_list, limit);
 	}
 	if(ask) {
-		trade_history.find_range(std::make_tuple(*ask, since, 0), std::make_tuple(*ask, -1, -1), ask_list);
+		trade_history.find_last_range(std::make_tuple(*ask, since, 0), std::make_tuple(*ask, -1, -1), ask_list, limit);
 	}
 	std::vector<addr_t> entries;
 	if(bid && ask) {
@@ -999,31 +1001,35 @@ std::vector<trade_data_t> Node::get_trade_history_for(const vnx::optional<addr_t
 			}
 		}
 	} else if(bid) {
-		return get_trade_history_for(bid_list);
+		entries = bid_list;
 	} else if(ask) {
-		return get_trade_history_for(ask_list);
+		entries = ask_list;
+	} else {
+		return get_trade_history(limit, since);
 	}
-	return get_trade_history(since);
+	return get_trade_history_for(entries, bid, ask);
 }
 
-std::vector<trade_data_t> Node::get_trade_history_for(const std::vector<addr_t>& offers) const
+std::vector<trade_data_t> Node::get_trade_history_for(const std::vector<addr_t>& offers, const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask) const
 {
 	std::vector<trade_data_t> out;
 	for(const auto& address : offers) {
 		const auto data = get_offer(address);
-		trade_data_t tmp;
-		tmp.contract = address;
-		tmp.bid_amount = data.bid_amount;
-		tmp.ask_amount = data.ask_amount;
-		tmp.bid_currency = data.bid_currency;
-		tmp.ask_currency = data.ask_currency;
-		if(data.close_height) {
-			tmp.height = *data.close_height;
+		if((!bid || data.bid_currency == *bid) && (!ask || data.ask_currency == *ask)) {
+			trade_data_t tmp;
+			tmp.contract = address;
+			tmp.bid_amount = data.bid_amount;
+			tmp.ask_amount = data.ask_amount;
+			tmp.bid_currency = data.bid_currency;
+			tmp.ask_currency = data.ask_currency;
+			if(data.close_height) {
+				tmp.height = *data.close_height;
+			}
+			if(data.trade_txid) {
+				tmp.txid = *data.trade_txid;
+			}
+			out.push_back(tmp);
 		}
-		if(data.trade_txid) {
-			tmp.txid = *data.trade_txid;
-		}
-		out.push_back(tmp);
 	}
 	return out;
 }

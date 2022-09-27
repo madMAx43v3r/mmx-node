@@ -139,10 +139,10 @@ protected:
 	std::vector<offer_data_t> get_offers_for(
 			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const uint32_t& since, const vnx::bool_t& is_open) const override;
 
-	std::vector<trade_data_t> get_trade_history(const int32_t& since) const override;
+	std::vector<trade_data_t> get_trade_history(const int32_t& limit = -1, const uint32_t& since = 0) const override;
 
 	std::vector<trade_data_t> get_trade_history_for(
-			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const int32_t& since) const override;
+			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const int32_t& limit = -1, const uint32_t& since = 0) const override;
 
 	void on_stuck_timeout();
 
@@ -274,7 +274,7 @@ private:
 
 	std::shared_ptr<const Block> make_block(std::shared_ptr<const BlockHeader> prev, const proof_data_t& proof_data);
 
-	std::vector<trade_data_t> get_trade_history_for(const std::vector<addr_t>& offers) const;
+	std::vector<trade_data_t> get_trade_history_for(const std::vector<addr_t>& offers, const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask) const;
 
 	std::pair<vm::varptr_t, uint64_t> read_storage_field(const addr_t& binary, const addr_t& contract, const std::string& name, const uint32_t& height = -1) const;
 

@@ -203,6 +203,55 @@ public:
 		return result.size();
 	}
 
+	size_t find_last_range(const K& begin, const K& end, std::vector<V>& result, const size_t limit) const
+	{
+		result.clear();
+
+		Table::Iterator iter(db);
+		iter.seek_prev(write(end));
+		while(iter.is_valid() && result.size() < limit) {
+			K key;
+			read(iter.key(), key);
+			if(!(begin < key || key == begin)) {
+				break;
+			}
+			try {
+				V value;
+				read(iter.value(), value, value_type, value_code);
+				result.push_back(std::move(value));
+			} catch(...) {
+				// ignore
+			}
+			iter.prev();
+		}
+		return result.size();
+	}
+
+	size_t find_last_range(const K& begin, const K& end, std::vector<std::pair<K, V>>& result, const size_t limit) const
+	{
+		result.clear();
+
+		Table::Iterator iter(db);
+		iter.seek_prev(write(end));
+		while(iter.is_valid() && result.size() < limit) {
+			K key;
+			read(iter.key(), key);
+			if(!(begin < key || key == begin)) {
+				break;
+			}
+			try {
+				std::pair<K, V> tmp;
+				tmp.first = key;
+				read(iter.value(), tmp.second, value_type, value_code);
+				result.push_back(std::move(tmp));
+			} catch(...) {
+				// ignore
+			}
+			iter.prev();
+		}
+		return result.size();
+	}
+
 	void scan(const std::function<void(const K&, const V&)>& callback) const
 	{
 		Table::Iterator iter(db);
