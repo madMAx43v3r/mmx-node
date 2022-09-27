@@ -519,12 +519,12 @@ Vue.component('account-history-form', {
 				<v-card-text>
 					<v-row>
 						<v-col cols="3">
-							<v-select v-model="type" label="Type"
+							<v-select v-model="type" :label="this.$t('account_history.type')"
 								:items="select_types" item-text="text" item-value="value">
 							</v-select>
 						</v-col>
 						<v-col>
-							<v-select v-model="currency" :label="$t('account_send_form.currency')"
+							<v-select v-model="currency" :label="$t('account_history.token')"
 								:items="select_tokens" item-text="text" item-value="value">
 							</v-select>
 						</v-col>
