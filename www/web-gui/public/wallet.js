@@ -1325,7 +1325,8 @@ Vue.component('account-send-form', {
 								item-value="contract">
 
 								<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">
-									{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
+									{{item.symbol + (item.is_validated ? '' : '?')}}
+									<template v-if="!item.is_native"> - [{{item.contract}}]</template>
 								</template>
 
 							</v-select>
@@ -1479,7 +1480,8 @@ Vue.component('account-offer-form', {
 								item-value="contract">
 
 								<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">
-									{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
+									{{item.symbol + (item.is_validated ? '' : '?')}}
+									<template v-if="!item.is_native"> - [{{item.contract}}]</template>
 								</template>
 
 							</v-select>
@@ -1510,7 +1512,8 @@ Vue.component('account-offer-form', {
 								item-value="currency">
 
 								<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">
-									{{item.symbol}}<template v-if="item.currency != MMX_ADDR"> - [{{item.currency}}]</template>
+									{{item.symbol}}
+									<template v-if="item.currency != MMX_ADDR"> - [{{item.currency}}]</template>
 								</template>
 
 							</v-select>
