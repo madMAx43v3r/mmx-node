@@ -1,20 +1,16 @@
 package mmx;
 
-struct offer_data_t {
+struct trade_data_t {
 	
 	uint height;
 	
-	addr_t address;
+	hash_t txid;
+	addr_t contract;
 	
 	addr_t bid_currency;
 	addr_t ask_currency;
 	
 	ulong bid_amount;
 	ulong ask_amount;
-	
-	string state;
-
-	optional<uint> close_height;
-	optional<hash_t> trade_txid;
 	
 }
