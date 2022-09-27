@@ -1174,13 +1174,13 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 		case 0x62736b035e3995cdull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_trade_history>(_method);
 			auto _return_value = ::mmx::Node_get_trade_history_return::create();
-			_return_value->_ret_0 = get_trade_history(_args->since);
+			_return_value->_ret_0 = get_trade_history(_args->limit, _args->since);
 			return _return_value;
 		}
 		case 0xd55cda633e3dd5b8ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_trade_history_for>(_method);
 			auto _return_value = ::mmx::Node_get_trade_history_for_return::create();
-			_return_value->_ret_0 = get_trade_history_for(_args->bid, _args->ask, _args->since);
+			_return_value->_ret_0 = get_trade_history_for(_args->bid, _args->ask, _args->limit, _args->since);
 			return _return_value;
 		}
 		case 0x9c76ca142292750full: {

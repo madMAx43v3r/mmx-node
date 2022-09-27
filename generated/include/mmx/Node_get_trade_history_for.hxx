@@ -16,7 +16,8 @@ public:
 	
 	vnx::optional<::mmx::addr_t> bid;
 	vnx::optional<::mmx::addr_t> ask;
-	int32_t since = 0;
+	int32_t limit = -1;
+	uint32_t since = 0;
 	
 	typedef ::vnx::Value Super;
 	
@@ -60,11 +61,12 @@ public:
 
 template<typename T>
 void Node_get_trade_history_for::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Node_get_trade_history_for>(3);
+	_visitor.template type_begin<Node_get_trade_history_for>(4);
 	_visitor.type_field("bid", 0); _visitor.accept(bid);
 	_visitor.type_field("ask", 1); _visitor.accept(ask);
-	_visitor.type_field("since", 2); _visitor.accept(since);
-	_visitor.template type_end<Node_get_trade_history_for>(3);
+	_visitor.type_field("limit", 2); _visitor.accept(limit);
+	_visitor.type_field("since", 3); _visitor.accept(since);
+	_visitor.template type_end<Node_get_trade_history_for>(4);
 }
 
 

@@ -776,8 +776,9 @@ uint64_t NodeAsyncClient::get_offers_for(const vnx::optional<::mmx::addr_t>& bid
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_trade_history(const int32_t& since, const std::function<void(const std::vector<::mmx::trade_data_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_trade_history(const int32_t& limit, const uint32_t& since, const std::function<void(const std::vector<::mmx::trade_data_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_trade_history::create();
+	_method->limit = limit;
 	_method->since = since;
 	const auto _request_id = ++vnx_next_id;
 	{
@@ -789,10 +790,11 @@ uint64_t NodeAsyncClient::get_trade_history(const int32_t& since, const std::fun
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_trade_history_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& since, const std::function<void(const std::vector<::mmx::trade_data_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_trade_history_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& limit, const uint32_t& since, const std::function<void(const std::vector<::mmx::trade_data_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_trade_history_for::create();
 	_method->bid = bid;
 	_method->ask = ask;
+	_method->limit = limit;
 	_method->since = since;
 	const auto _request_id = ++vnx_next_id;
 	{

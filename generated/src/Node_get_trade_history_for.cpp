@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_trade_history_for::VNX_TYPE_HASH(0xd55cda633e3dd5b8ull);
-const vnx::Hash64 Node_get_trade_history_for::VNX_CODE_HASH(0xfc74b543e4507751ull);
+const vnx::Hash64 Node_get_trade_history_for::VNX_CODE_HASH(0xe7ed7c602e4ade30ull);
 
 vnx::Hash64 Node_get_trade_history_for::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,7 +49,8 @@ void Node_get_trade_history_for::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, bid);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, ask);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, since);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, limit);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, since);
 	_visitor.type_end(*_type_code);
 }
 
@@ -57,6 +58,7 @@ void Node_get_trade_history_for::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Node.get_trade_history_for\"";
 	_out << ", \"bid\": "; vnx::write(_out, bid);
 	_out << ", \"ask\": "; vnx::write(_out, ask);
+	_out << ", \"limit\": "; vnx::write(_out, limit);
 	_out << ", \"since\": "; vnx::write(_out, since);
 	_out << "}";
 }
@@ -72,6 +74,7 @@ vnx::Object Node_get_trade_history_for::to_object() const {
 	_object["__type"] = "mmx.Node.get_trade_history_for";
 	_object["bid"] = bid;
 	_object["ask"] = ask;
+	_object["limit"] = limit;
 	_object["since"] = since;
 	return _object;
 }
@@ -82,6 +85,8 @@ void Node_get_trade_history_for::from_object(const vnx::Object& _object) {
 			_entry.second.to(ask);
 		} else if(_entry.first == "bid") {
 			_entry.second.to(bid);
+		} else if(_entry.first == "limit") {
+			_entry.second.to(limit);
 		} else if(_entry.first == "since") {
 			_entry.second.to(since);
 		}
@@ -95,6 +100,9 @@ vnx::Variant Node_get_trade_history_for::get_field(const std::string& _name) con
 	if(_name == "ask") {
 		return vnx::Variant(ask);
 	}
+	if(_name == "limit") {
+		return vnx::Variant(limit);
+	}
 	if(_name == "since") {
 		return vnx::Variant(since);
 	}
@@ -106,6 +114,8 @@ void Node_get_trade_history_for::set_field(const std::string& _name, const vnx::
 		_value.to(bid);
 	} else if(_name == "ask") {
 		_value.to(ask);
+	} else if(_name == "limit") {
+		_value.to(limit);
 	} else if(_name == "since") {
 		_value.to(since);
 	}
@@ -135,7 +145,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_trade_history_for::static_create_type_co
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_trade_history_for";
 	type_code->type_hash = vnx::Hash64(0xd55cda633e3dd5b8ull);
-	type_code->code_hash = vnx::Hash64(0xfc74b543e4507751ull);
+	type_code->code_hash = vnx::Hash64(0xe7ed7c602e4ade30ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -143,7 +153,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_trade_history_for::static_create_type_co
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Node_get_trade_history_for>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Node_get_trade_history_for_return::static_get_type_code();
-	type_code->fields.resize(3);
+	type_code->fields.resize(4);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -159,8 +169,15 @@ std::shared_ptr<vnx::TypeCode> Node_get_trade_history_for::static_create_type_co
 	{
 		auto& field = type_code->fields[2];
 		field.data_size = 4;
-		field.name = "since";
+		field.name = "limit";
+		field.value = vnx::to_string(-1);
 		field.code = {7};
+	}
+	{
+		auto& field = type_code->fields[3];
+		field.data_size = 4;
+		field.name = "since";
+		field.code = {3};
 	}
 	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();
@@ -206,6 +223,9 @@ void read(TypeInput& in, ::mmx::Node_get_trade_history_for& value, const TypeCod
 	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[2]) {
+			vnx::read_value(_buf + _field->offset, value.limit, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[3]) {
 			vnx::read_value(_buf + _field->offset, value.since, _field->code.data());
 		}
 	}
@@ -231,8 +251,9 @@ void write(TypeOutput& out, const ::mmx::Node_get_trade_history_for& value, cons
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
-	vnx::write_value(_buf + 0, value.since);
+	char* const _buf = out.write(8);
+	vnx::write_value(_buf + 0, value.limit);
+	vnx::write_value(_buf + 4, value.since);
 	vnx::write(out, value.bid, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.ask, type_code, type_code->fields[1].code.data());
 }

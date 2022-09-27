@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_trade_history::VNX_TYPE_HASH(0x62736b035e3995cdull);
-const vnx::Hash64 Node_get_trade_history::VNX_CODE_HASH(0x7941a59583968ca1ull);
+const vnx::Hash64 Node_get_trade_history::VNX_CODE_HASH(0x1ea90ff316475451ull);
 
 vnx::Hash64 Node_get_trade_history::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -46,12 +46,14 @@ void Node_get_trade_history::write(vnx::TypeOutput& _out, const vnx::TypeCode* _
 void Node_get_trade_history::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Node_get_trade_history;
 	_visitor.type_begin(*_type_code);
-	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, since);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, limit);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, since);
 	_visitor.type_end(*_type_code);
 }
 
 void Node_get_trade_history::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Node.get_trade_history\"";
+	_out << ", \"limit\": "; vnx::write(_out, limit);
 	_out << ", \"since\": "; vnx::write(_out, since);
 	_out << "}";
 }
@@ -65,19 +67,25 @@ void Node_get_trade_history::read(std::istream& _in) {
 vnx::Object Node_get_trade_history::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Node.get_trade_history";
+	_object["limit"] = limit;
 	_object["since"] = since;
 	return _object;
 }
 
 void Node_get_trade_history::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "since") {
+		if(_entry.first == "limit") {
+			_entry.second.to(limit);
+		} else if(_entry.first == "since") {
 			_entry.second.to(since);
 		}
 	}
 }
 
 vnx::Variant Node_get_trade_history::get_field(const std::string& _name) const {
+	if(_name == "limit") {
+		return vnx::Variant(limit);
+	}
 	if(_name == "since") {
 		return vnx::Variant(since);
 	}
@@ -85,7 +93,9 @@ vnx::Variant Node_get_trade_history::get_field(const std::string& _name) const {
 }
 
 void Node_get_trade_history::set_field(const std::string& _name, const vnx::Variant& _value) {
-	if(_name == "since") {
+	if(_name == "limit") {
+		_value.to(limit);
+	} else if(_name == "since") {
 		_value.to(since);
 	}
 }
@@ -114,7 +124,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_trade_history::static_create_type_code()
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_trade_history";
 	type_code->type_hash = vnx::Hash64(0x62736b035e3995cdull);
-	type_code->code_hash = vnx::Hash64(0x7941a59583968ca1ull);
+	type_code->code_hash = vnx::Hash64(0x1ea90ff316475451ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -122,12 +132,19 @@ std::shared_ptr<vnx::TypeCode> Node_get_trade_history::static_create_type_code()
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Node_get_trade_history>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Node_get_trade_history_return::static_get_type_code();
-	type_code->fields.resize(1);
+	type_code->fields.resize(2);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
-		field.name = "since";
+		field.name = "limit";
+		field.value = vnx::to_string(-1);
 		field.code = {7};
+	}
+	{
+		auto& field = type_code->fields[1];
+		field.data_size = 4;
+		field.name = "since";
+		field.code = {3};
 	}
 	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();
@@ -173,6 +190,9 @@ void read(TypeInput& in, ::mmx::Node_get_trade_history& value, const TypeCode* t
 	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[0]) {
+			vnx::read_value(_buf + _field->offset, value.limit, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[1]) {
 			vnx::read_value(_buf + _field->offset, value.since, _field->code.data());
 		}
 	}
@@ -196,8 +216,9 @@ void write(TypeOutput& out, const ::mmx::Node_get_trade_history& value, const Ty
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
-	vnx::write_value(_buf + 0, value.since);
+	char* const _buf = out.write(8);
+	vnx::write_value(_buf + 0, value.limit);
+	vnx::write_value(_buf + 4, value.since);
 }
 
 void read(std::istream& in, ::mmx::Node_get_trade_history& value) {

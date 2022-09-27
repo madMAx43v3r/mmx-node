@@ -775,8 +775,9 @@ std::vector<::mmx::offer_data_t> NodeClient::get_offers_for(const vnx::optional<
 	}
 }
 
-std::vector<::mmx::trade_data_t> NodeClient::get_trade_history(const int32_t& since) {
+std::vector<::mmx::trade_data_t> NodeClient::get_trade_history(const int32_t& limit, const uint32_t& since) {
 	auto _method = ::mmx::Node_get_trade_history::create();
+	_method->limit = limit;
 	_method->since = since;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_trade_history_return>(_return_value)) {
@@ -788,10 +789,11 @@ std::vector<::mmx::trade_data_t> NodeClient::get_trade_history(const int32_t& si
 	}
 }
 
-std::vector<::mmx::trade_data_t> NodeClient::get_trade_history_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& since) {
+std::vector<::mmx::trade_data_t> NodeClient::get_trade_history_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& limit, const uint32_t& since) {
 	auto _method = ::mmx::Node_get_trade_history_for::create();
 	_method->bid = bid;
 	_method->ask = ask;
+	_method->limit = limit;
 	_method->since = since;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_trade_history_for_return>(_return_value)) {

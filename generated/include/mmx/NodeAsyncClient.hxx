@@ -221,11 +221,11 @@ public:
 			const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback = std::function<void(const std::vector<::mmx::offer_data_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_trade_history(const int32_t& since = 0, 
+	uint64_t get_trade_history(const int32_t& limit = -1, const uint32_t& since = 0, 
 			const std::function<void(const std::vector<::mmx::trade_data_t>&)>& _callback = std::function<void(const std::vector<::mmx::trade_data_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_trade_history_for(const vnx::optional<::mmx::addr_t>& bid = nullptr, const vnx::optional<::mmx::addr_t>& ask = nullptr, const int32_t& since = 0, 
+	uint64_t get_trade_history_for(const vnx::optional<::mmx::addr_t>& bid = nullptr, const vnx::optional<::mmx::addr_t>& ask = nullptr, const int32_t& limit = -1, const uint32_t& since = 0, 
 			const std::function<void(const std::vector<::mmx::trade_data_t>&)>& _callback = std::function<void(const std::vector<::mmx::trade_data_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
