@@ -38,22 +38,6 @@ const routes = [
 			{ path: 'history/:wallet/:bid/:ask', component: MarketHistory, meta: { page: 'history' } },
 		]
 	},
-	{ path: '/exchange',
-		component: Exchange,
-		meta: { is_exchange: true },
-		props: route => ({
-			wallet: parseInt(route.params.wallet),
-			server: route.params.server,
-			bid: route.params.bid,
-			ask: route.params.ask
-		}),
-		children: [
-			{ path: 'market/:wallet/:server/:bid/:ask', component: ExchangeMarket, meta: { page: 'market' } },
-			{ path: 'trades/:wallet/:server/:bid/:ask', component: ExchangeTrades, meta: { page: 'trades' } },
-			{ path: 'history/:wallet/:server/:bid/:ask', component: ExchangeHistory, meta: { page: 'history' } },
-			{ path: 'offers/:wallet/:server/:bid/:ask', component: ExchangeOffers, meta: { page: 'offers' } },
-		]
-	},
 	{ path: '/explore',
 		component: Explore,
 		redirect: "/explore/blocks",
