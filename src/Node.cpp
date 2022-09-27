@@ -582,18 +582,19 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 
 std::shared_ptr<const Contract> Node::get_contract(const addr_t& address) const
 {
-	if(address == params->offer_binary) {
+	{
 		std::lock_guard<std::mutex> lock(mutex);
-		if(offer_binary) {
-			return offer_binary;
+		auto iter = contract_cache.find(address);
+		if(iter != contract_cache.end()) {
+			return iter->second;
 		}
 	}
 	std::shared_ptr<const Contract> contract;
 	contract_map.find(address, contract);
 
-	if(contract && address == params->offer_binary) {
+	if(std::dynamic_pointer_cast<const contract::Binary>(contract)) {
 		std::lock_guard<std::mutex> lock(mutex);
-		offer_binary = std::dynamic_pointer_cast<const contract::Binary>(contract);
+		contract_cache[address] = contract;
 	}
 	return contract;
 }

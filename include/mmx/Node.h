@@ -453,7 +453,7 @@ private:
 
 	mutable std::mutex mutex;
 	mutable std::shared_ptr<const NetworkInfo> network;
-	mutable std::shared_ptr<const contract::Binary> offer_binary;
+	mutable std::unordered_map<addr_t, std::shared_ptr<const Contract>> contract_cache;
 
 	std::shared_ptr<const ChainParams> params;
 	std::shared_ptr<RouterAsyncClient> router;
