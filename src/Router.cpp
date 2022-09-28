@@ -307,17 +307,15 @@ void Router::fetch_block_at_async(const uint32_t& height, const std::string& add
 
 void Router::handle(std::shared_ptr<const Block> block)
 {
+	if(block->farmer_sig) {
+		const auto& hash = block->content_hash;
+		if(relay_msg_hash(hash, block_credits)) {
+			log(INFO) << "Broadcasting block for height " << block->height;
+			broadcast(block, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
+			block_counter++;
+		}
+	}
 	verified_peak_height = block->height;
-
-	if(!block->farmer_sig) {
-		return;
-	}
-	const auto& hash = block->content_hash;
-	if(relay_msg_hash(hash, block_credits)) {
-		log(INFO) << "Broadcasting block for height " << block->height;
-		broadcast(block, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
-		block_counter++;
-	}
 }
 
 void Router::handle(std::shared_ptr<const Transaction> tx)
