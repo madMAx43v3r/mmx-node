@@ -64,6 +64,26 @@ int main(int argc, char** argv)
 	}
 	{
 		auto tx = Transaction::create();
+		tx->sender = wallet.get_address(0);
+		tx->fee_ratio = 0;
+		tx->max_fee_amount = 100000;
+		wallet.sign_off(tx);
+
+		std::cout << tx->to_string() << std::endl;
+		node.add_transaction(tx);
+	}
+	{
+		auto tx = Transaction::create();
+		tx->sender = wallet.get_address(0);
+		tx->fee_ratio = 10 * 1024;
+		tx->max_fee_amount = 100000;
+		wallet.sign_off(tx);
+
+		std::cout << tx->to_string() << std::endl;
+		node.add_transaction(tx);
+	}
+	{
+		auto tx = Transaction::create();
 		tx->sender = wallet.get_address(config.num_addresses - 1);
 		tx->max_fee_amount = 100000;
 		wallet.sign_off(tx);
