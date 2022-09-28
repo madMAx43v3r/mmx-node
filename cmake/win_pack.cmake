@@ -160,8 +160,6 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "MMX is a blockchain written from scratch 
 set(CPACK_RESOURCE_FILE_LICENSE ${PROJECT_SOURCE_DIR}/LICENSE)
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/madMAx43v3r/mmx-node")
 
-
-
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "MMX")
 
 # Define components and their display names
@@ -188,17 +186,23 @@ set(CPACK_ALL_INSTALL_TYPES Full Advanced)
 # set(CPACK_COMPONENT_PLOTTERS_INSTALL_TYPES Full Minimal Advanced)
 set(CPACK_COMPONENT_TOOLS_INSTALL_TYPES Advanced)
 
+
+set(CPACK_NSIS_PACKAGE_NAME ${CPACK_PACKAGE_NAME})
+
 set(CPACK_NSIS_MENU_LINKS
 "mmx_cmd.cmd" "MMX CMD"
-#"run_node.cmd" "MMX Node"
-#"run_light_node.cmd" "MMX Light Node"
 #"http://localhost:11380/gui/" "MMX Node WebGUI"
 "MmxGui.exe" "MMX Node"
 )
 set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
 
+set(MMX_GUI_EXE "MmxGui.exe")
+
 set(CPACK_NSIS_MUI_ICON ${MMX_ICON})
-set(CPACK_NSIS_INSTALLED_ICON_NAME "MmxGui.exe")
+set(CPACK_NSIS_INSTALLED_ICON_NAME ${MMX_GUI_EXE})
+
+set(CPACK_NSIS_EXECUTABLES_DIRECTORY ".")
+set(CPACK_NSIS_MUI_FINISHPAGE_RUN ${MMX_GUI_EXE})
 
 # Must be after the last CPACK macros
 include(CPack)
