@@ -231,6 +231,8 @@ int main(int argc, char** argv)
 			std::string node_url = ":11335";
 			vnx::read_config("node", node_url);
 
+			mmx::WalletClient wallet("Wallet");
+
 			if(command != "create") {
 				vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
 				proxy->forward_list = {"Wallet", "Node"};
@@ -240,12 +242,10 @@ int main(int argc, char** argv)
 				} catch(...) {
 					// ignore
 				}
-			}
-			mmx::WalletClient wallet("Wallet");
-
-			const auto accounts = wallet.get_all_accounts();
-			if(index == 0 && !accounts.empty() && accounts.find(index) == accounts.end()) {
-				index = accounts.begin()->first;
+				const auto accounts = wallet.get_all_accounts();
+				if(index == 0 && !accounts.empty() && accounts.find(index) == accounts.end()) {
+					index = accounts.begin()->first;
+				}
 			}
 
 			if(command == "show")
