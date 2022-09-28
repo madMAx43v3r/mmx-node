@@ -63,8 +63,11 @@ public:
 		keypair_map.clear();
 	}
 
-	void unlock(const std::string& passphrase)
-	{
+	void unlock() {
+		unlock(std::string());
+	}
+
+	void unlock(const std::string& passphrase) {
 		unlock(hash_t("MMX/seed/" + passphrase));
 	}
 
