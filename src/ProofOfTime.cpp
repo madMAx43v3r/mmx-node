@@ -13,6 +13,9 @@ namespace mmx {
 
 bool ProofOfTime::is_valid(std::shared_ptr<const ChainParams> params) const
 {
+	if(!params) {
+		throw std::logic_error("!params");
+	}
 	const auto all_hash = calc_hash();
 	return version == 0
 		&& segments.size() >= params->min_vdf_segments
