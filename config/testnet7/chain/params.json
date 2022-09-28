@@ -28,5 +28,6 @@
 	"initial_space_diff": 1,
 	"time_diff_constant": 1000,
 	"space_diff_constant": 100000000,
-	"virtual_space_constant": 2000
+	"virtual_space_constant": 2000,
+	"offer_binary": "mmx1g9vtdstryx6jtsm0axj5uwp52dkn7llau0uzytw39mepu25stn8q4t8xrh"
 }
