@@ -21,6 +21,7 @@
 #include <mmx/pubkey_t.hpp>
 #include <mmx/account_t.hxx>
 #include <mmx/hmac_sha512.hpp>
+#include <mmx/utils.h>
 
 
 namespace mmx {
@@ -174,21 +175,27 @@ public:
 			pending_map.erase(txid);
 		}
 		for(const auto& entry : reserved_map) {
-			balance_map[entry.first] -= entry.second;
+			clamped_sub_assign(balance_map[entry.first], entry.second);
 		}
 		for(const auto& entry : pending_map) {
 			for(const auto& pending : entry.second) {
-				balance_map[pending.first] -= pending.second;
+				clamped_sub_assign(balance_map[pending.first], pending.second);
 			}
 		}
 	}
 
 	void update_from(std::shared_ptr<const Transaction> tx)
 	{
+		if(tx->sender) {
+			const auto key = std::make_pair(*tx->sender, addr_t());
+			const auto static_fee = uint64_t(tx->static_cost) * tx->fee_ratio / 1024;
+			clamped_sub_assign(balance_map[key], static_fee);
+			pending_map[tx->id][key] += static_fee;
+		}
 		for(const auto& in : tx->inputs) {
 			if(find_address(in.address) >= 0) {
 				const auto key = std::make_pair(in.address, in.contract);
-				balance_map[key] -= in.amount;
+				clamped_sub_assign(balance_map[key], in.amount);
 				pending_map[tx->id][key] += in.amount;
 			}
 		}
