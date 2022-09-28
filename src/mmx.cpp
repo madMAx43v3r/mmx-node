@@ -243,7 +243,10 @@ int main(int argc, char** argv)
 			}
 			mmx::WalletClient wallet("Wallet");
 
-			// TODO: default to lowest available wallet index, not zero
+			const auto accounts = wallet.get_all_accounts();
+			if(index == 0 && !accounts.empty() && accounts.find(index) == accounts.end()) {
+				index = accounts.begin()->first;
+			}
 
 			if(command == "show")
 			{
