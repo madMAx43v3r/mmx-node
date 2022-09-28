@@ -1028,24 +1028,16 @@ Vue.component('create-wallet', {
 						:label="$t('create_wallet.use_custom_seed')">
 					</v-checkbox>
 
-					<!--v-text-field
-						v-model="seed"
-						:label="$t('create_wallet.seed_words')"
-						:placeholder="$t('create_wallet.placeholder')" 
-						:disabled="!with_seed">
-					</v-text-field-->
-
-					<v-expansion-panels      				
-						:value="with_seed?0:null"
-						:disabled="!with_seed"
-					>
-						<v-expansion-panel>
-							<v-expansion-panel-header>{{$t('create_wallet.seed_words')}}</v-expansion-panel-header>
-							<v-expansion-panel-content>
+					<v-card :disabled="!with_seed">
+						<v-card-title class="text-subtitle-1">
+							{{$t('create_wallet.seed_words')}}
+						</v-card-title>
+						<v-expand-transition>
+							<v-card-text v-show="with_seed">
 								<seed v-model="seed" :disabled="!with_seed"/>
-							</v-expansion-panel-content>
-						</v-expansion-panel>
-					</v-expansion-panels>
+							</v-card-text>
+						</v-expand-transition>
+					</v-card>
 
 					<v-checkbox
 						v-model="with_passphrase"

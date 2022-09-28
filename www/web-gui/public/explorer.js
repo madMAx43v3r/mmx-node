@@ -584,20 +584,23 @@ Vue.component('transaction-view', {
 					</tr>
 					</tbody>
 				</v-simple-table>
-				<template v-for="(op, index) in data.operations" :key="index">
-					<div>
-						<v-chip label>Operation[{{index}}]</v-chip>
-						<v-chip label>{{op.__type}}</v-chip>
-						<object-table :data="op"></object-table>
-					</div>
-				</template>
-				<template v-if="data.deployed">
-					<div>
-						<v-chip label>{{data.deployed.__type}}</v-chip>
-						<object-table :data="data.deployed"></object-table>
-					</div>
-				</template>
 			</v-card>
+
+			<div class="my-2" v-for="(op, index) in data.operations" :key="index">				
+				<v-chip label>Operation[{{index}}]</v-chip>
+				<v-chip label>{{op.__type}}</v-chip>
+				<v-card class="my-2">
+					<object-table :data="op"></object-table>
+				<v-card>
+			</div>
+
+			<div class="my-2" v-if="data.deployed">
+				<v-chip label>{{data.deployed.__type}}</v-chip>
+				<v-card class="my-2">
+					<object-table :data="data.deployed"></object-table>
+				</v-card>
+			</div>
+
 		</template>
 	</div>
 		`
@@ -774,8 +777,7 @@ Vue.component('object-table', {
 					<template v-for="(value, key) in data" :key="key">
 						<tr v-if="key != '__type'">
 							<td class="key-cell">{{ key }}</td>
-
-							<td v-if="value instanceof Object">
+							<td v-if="value instanceof Object && value.length > 0">
 
 									<v-btn-toggle v-model="tt[key]" class="float-right mr-n4">
 										<v-btn fab x-small> 
