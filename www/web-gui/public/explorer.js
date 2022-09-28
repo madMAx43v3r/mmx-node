@@ -202,7 +202,7 @@ Vue.component('explore-transactions', {
 			</template>
 
 			<template v-slot:item.fee="{ item }">
-				<b>{{item.fee.value}}</b>
+				<b :class="{'red--text': item.did_fail}">{{item.fee.value}}</b>
 			</template>
 
 			<template v-slot:item.transaction_id="{ item }">
