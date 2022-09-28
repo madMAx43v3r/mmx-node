@@ -73,6 +73,7 @@ bool Node::verify(std::shared_ptr<const ProofResponse> value)
 	}
 	catch(const std::exception& ex) {
 		log(WARN) << "Got invalid proof: " << ex.what();
+		return false;
 	}
 	return true;
 }
