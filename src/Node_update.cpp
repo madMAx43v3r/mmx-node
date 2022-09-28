@@ -74,6 +74,7 @@ void Node::update()
 
 	verify_vdfs();
 
+	// TODO: parallel for
 	// verify proof responses
 	for(auto iter = pending_proofs.begin(); iter != pending_proofs.end();) {
 		if(verify(*iter)) {
