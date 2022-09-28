@@ -773,8 +773,7 @@ Vue.component('object-table', {
 					<template v-for="(value, key) in data" :key="key">
 						<tr v-if="key != '__type'">
 							<td class="key-cell">{{ key }}</td>
-
-							<td v-if="value instanceof Object">
+							<td v-if="value instanceof Object && value.length > 0">
 
 									<v-btn-toggle v-model="tt[key]" class="float-right mr-n4">
 										<v-btn fab x-small> 
