@@ -55,6 +55,11 @@ Vue.component('market-menu', {
 		this.update();
 	},
 	watch: {
+		$route (to, from){				
+			if(to.path == '/market') {
+				this.submit();
+			}
+		},
 		wallet() {
 			this.submit();
 		},
