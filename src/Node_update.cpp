@@ -495,6 +495,9 @@ void Node::validate_new()
 	for(auto iter = pending_transactions.begin(); iter != pending_transactions.end();) {
 		const auto& tx = iter->second;
 		if(tx->fee_ratio <= min_pool_fee_ratio) {
+			if(show_warnings) {
+				log(WARN) << "TX invalid fee_ratio: " << tx->fee_ratio << " (" << tx->id << ")";
+			}
 			iter = pending_transactions.erase(iter);
 		} else {
 			iter++;
