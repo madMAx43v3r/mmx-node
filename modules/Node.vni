@@ -101,6 +101,8 @@ module Node implements vnx.addons.HttpComponent {
 	@Permission(PUBLISH)
 	void add_transaction(Transaction* tx, bool pre_validate);
 	
+	// TOOD: void await_transactions(vector<hash_t> tx_ids, uint min_confirm = 1) const;
+	
 	@Permission(permission_e.PUBLIC)
 	Contract* get_contract(addr_t address) const;
 	
