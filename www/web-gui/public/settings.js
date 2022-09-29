@@ -24,7 +24,8 @@ Vue.component('node-settings', {
 				.then(data => {
 					this.loading = false;
 					this.timelord = data.timelord ? true : false;
-					this.opencl_device = data.opencl_device ? data.opencl_device : 0;
+					this.opencl_device = data.opencl_device != null ? data.opencl_device :
+							(data.opencl_device_list && data.opencl_device_list.length ? 0 : -1);
 					this.opencl_device_list = [{name: "None", value: -1}];
 					let i = 0;
 					for(const name of data.opencl_device_list) {
