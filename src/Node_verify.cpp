@@ -18,6 +18,33 @@
 
 namespace mmx {
 
+bool Node::add_proof(	const uint32_t height, const hash_t& challenge,
+						std::shared_ptr<const ProofOfSpace> proof, const vnx::Hash64 farmer_mac)
+{
+	auto& map = proof_map[challenge];
+	const auto best_score = map.empty() ? params->score_threshold : map.begin()->second.proof->score;
+
+	if(proof->score > best_score) {
+		return false;
+	}
+	if(map.empty()) {
+		challenge_map.emplace(height, challenge);
+	} else if(proof->score < best_score) {
+		map.clear();
+	}
+	const auto hash = proof->calc_hash();
+	if(map.count(hash)) {
+		return true;
+	}
+	auto& data = map[hash];
+	data.height = height;
+	data.farmer_mac = farmer_mac;
+	data.proof = proof;
+
+	log(DEBUG) << "Got new best proof for height " << height << " with score " << proof->score;
+	return true;
+}
+
 bool Node::verify(std::shared_ptr<const ProofResponse> value)
 {
 	const auto request = value->request;
@@ -40,19 +67,8 @@ bool Node::verify(std::shared_ptr<const ProofResponse> value)
 		if(value->proof->score >= params->score_threshold) {
 			throw std::logic_error("invalid score");
 		}
-		auto iter = proof_map.find(challenge);
-		if(iter == proof_map.end() || value->proof->score <= iter->second->proof->score)
-		{
-			if(iter == proof_map.end()) {
-				challenge_map.emplace(request->height, challenge);
-			}
-			else if(value->proof->score < iter->second->proof->score) {
-				proof_map.erase(challenge);
-			}
-			proof_map.emplace(challenge, value);
+		add_proof(request->height, challenge, value->proof, value->farmer_addr);
 
-			log(DEBUG) << "Got new best proof for height " << request->height << " with score " << value->proof->score;
-		}
 		publish(value, output_verified_proof);
 	}
 	catch(const std::exception& ex) {
@@ -61,7 +77,7 @@ bool Node::verify(std::shared_ptr<const ProofResponse> value)
 	return true;
 }
 
-void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challenge) const
+void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& challenge) const
 {
 	const auto block = fork->block;
 	const auto prev = find_prev_header(block);
@@ -77,7 +93,6 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& vdf_challeng
 	// Note: vdf_output already verified to match vdf_iters
 
 	if(auto proof = block->proof) {
-		const auto challenge = get_challenge(block, vdf_challenge);
 		verify_proof(proof, challenge, diff_block);
 	}
 
@@ -110,16 +125,13 @@ uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::option
 	const auto root = get_root();
 	const auto since = block->height - std::min(params->virtual_lifetime, block->height);
 
-	uint128_t balance = 0;
-	for(const auto& entry : get_history({plot_id}, since)) {
-		if(entry.contract == addr_t() && entry.height <= std::min(root->height, block->height)) {
-			switch(entry.type) {
-				case tx_type_e::REWARD:
-				case tx_type_e::RECEIVE:
-					balance += entry.amount; break;
-				default: break;
-			}
-		}
+	uint128 balance = 0;
+	balance_table.find(std::make_pair(plot_id, addr_t()), balance, std::min(root->height, block->height));
+
+	if(block->height > params->virtual_lifetime) {
+		uint128 offset = 0;
+		balance_table.find(std::make_pair(plot_id, addr_t()), offset, block->height - params->virtual_lifetime);
+		clamped_sub_assign(balance, offset);
 	}
 	while(fork) {
 		const auto& block = fork->block;
@@ -127,7 +139,7 @@ uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::option
 			break;
 		}
 		for(const auto& tx : block->get_all_transactions()) {
-			for(const auto& out : tx->get_all_outputs()) {
+			for(const auto& out : tx->get_outputs()) {
 				if(out.address == plot_id && out.contract == addr_t()) {
 					balance += out.amount;
 				}
@@ -174,7 +186,7 @@ void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t
 		if(!plot) {
 			throw std::logic_error("no such virtual plot: " + stake->contract.to_string());
 		}
-		// TODO: check reward address if set
+		// TODO: check reward_address if set
 		if(stake->farmer_key != plot->farmer_key) {
 			throw std::logic_error("invalid farmer key for virtual plot: " + stake->farmer_key.to_string());
 		}
@@ -197,8 +209,8 @@ void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t
 
 void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof) const
 {
-	if(proof->version != 0) {
-		throw std::logic_error("invalid version");
+	if(!proof->is_valid(params)) {
+		throw std::logic_error("invalid vdf");
 	}
 	// check number of segments
 	if(proof->segments.size() < params->min_vdf_segments) {

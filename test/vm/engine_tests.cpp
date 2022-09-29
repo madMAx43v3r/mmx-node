@@ -6,9 +6,10 @@
  */
 
 #include <mmx/vm/Engine.h>
+#include <mmx/vm/StorageDB.h>
 #include <mmx/vm/StorageRAM.h>
 #include <mmx/vm/StorageCache.h>
-#include <mmx/vm/StorageRocksDB.h>
+#include <mmx/vm_interface.h>
 
 #include <vnx/vnx.h>
 #include <vnx/test/Test.h>

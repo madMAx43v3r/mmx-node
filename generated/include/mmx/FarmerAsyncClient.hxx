@@ -7,7 +7,7 @@
 #include <vnx/AsyncClient.h>
 #include <mmx/BlockHeader.hxx>
 #include <mmx/FarmInfo.hxx>
-#include <mmx/ProofOfSpace.hxx>
+#include <mmx/ProofResponse.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/bls_pubkey_t.hpp>
 #include <mmx/bls_signature_t.hpp>
@@ -36,7 +36,7 @@ public:
 			const std::function<void(std::shared_ptr<const ::mmx::FarmInfo>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::FarmInfo>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t sign_proof(std::shared_ptr<const ::mmx::ProofOfSpace> proof = nullptr, 
+	uint64_t sign_proof(std::shared_ptr<const ::mmx::ProofResponse> value = nullptr, 
 			const std::function<void(const ::mmx::bls_signature_t&)>& _callback = std::function<void(const ::mmx::bls_signature_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	

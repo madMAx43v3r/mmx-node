@@ -10,6 +10,10 @@
 
 #include <mmx/vm/var_t.h>
 
+#include <vnx/Input.h>
+#include <vnx/Output.h>
+#include <vnx/Visitor.h>
+
 
 namespace mmx {
 namespace vm {
@@ -49,10 +53,6 @@ public:
 
 	var_t* get() const {
 		return ptr;
-	}
-
-	std::string to_string() const {
-		return vm::to_string(ptr);
 	}
 
 	operator bool() const {

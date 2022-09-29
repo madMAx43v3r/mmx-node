@@ -25,17 +25,19 @@ class BlockHeader {
 	Transaction* tx_base;
 	
 	uint tx_count;
+	uint tx_cost;
+	uint tx_fees;
 	
 	hash_t tx_hash;
 	
 	optional<bls_signature_t> farmer_sig;
 	
+	hash_t content_hash;
+	
 	
 	bool is_valid() const;
 	
-	hash_t calc_hash() const;
-	
-	hash_t get_full_hash() const;
+	pair<hash_t, hash_t> calc_hash() const;
 	
 	void validate() const;
 	

@@ -8,21 +8,21 @@ class Transaction extends TransactionBase {
 	
 	uint fee_ratio = 1024;				// 1024 = 1.0
 	
+	uint static_cost;
+	
+	uint max_fee_amount;
+	
 	tx_note_e note;
 	
 	ulong nonce;
 	
-	hash_t salt;
+	optional<hash_t> salt;
 	
-	optional<addr_t> sender;			// to receive change from fee
+	optional<addr_t> sender;			// to pay for tx fee (first signature)
 	
 	vector<txin_t> inputs;
 	
 	vector<txout_t> outputs;
-	
-	vector<txin_t> exec_inputs;
-	
-	vector<txout_t> exec_outputs;
 	
 	vector<Operation*> execute;
 	
@@ -30,22 +30,22 @@ class Transaction extends TransactionBase {
 	
 	Contract* deploy;
 	
-	Transaction* parent;
+	optional<exec_result_t> exec_result;
 	
-	bool is_extendable;
+	hash_t content_hash;				// full hash including solutions and exec_result
 	
-	static const uint MAX_SOLUTIONS = 255;
+	static const uint MAX_SOLUTIONS = 65535;		// limit of 16-bit solution index
 	
 	
 	void finalize();
 	
 	void add_input(addr_t currency, addr_t address, ulong amount);
 	
-	void add_output(addr_t currency, addr_t address, ulong amount, optional<addr_t> sender);
+	void add_output(addr_t currency, addr_t address, ulong amount);
 	
 	void merge_sign(Transaction* tx);
 	
-	bool is_valid() const;
+	bool is_valid(ChainParams* params) const;
 	
 	bool is_signed() const;
 	
@@ -61,11 +61,7 @@ class Transaction extends TransactionBase {
 	
 	vector<txout_t> get_outputs() const;
 	
-	vector<txin_t> get_all_inputs() const;
-	
-	vector<txout_t> get_all_outputs() const;
-	
-	vector<Operation*> get_all_operations() const;
+	vector<Operation*> get_operations() const;
 	
 	map<addr_t, pair<uint128, uint128>> get_balance() const;
 	

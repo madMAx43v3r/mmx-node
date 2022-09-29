@@ -87,6 +87,7 @@ private:
 		int32_t ping_ms = 0;
 		int64_t last_receive_ms = 0;
 		int64_t connected_since_ms = 0;
+		double pending_cost = 0;
 		hash_t challenge;
 		node_info_t info;
 		std::string address;
@@ -94,6 +95,7 @@ private:
 		std::queue<hash_t> hash_queue;
 		std::unordered_set<hash_t> sent_hashes;
 		std::map<int64_t, send_item_t> send_queue;
+		std::unordered_map<hash_t, double> pending_map;
 	};
 
 	struct hash_info_t {
@@ -162,9 +164,9 @@ private:
 
 	void on_recv_note(uint64_t client, std::shared_ptr<const ReceiveNote> note);
 
-	void recv_notify(const hash_t& msg_hash, const uint64_t* source);
+	void recv_notify(const hash_t& msg_hash);
 
-	void relay(uint64_t source, std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter);
+	void relay(std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter);
 
 	void broadcast(std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter, bool reliable = true);
 
@@ -222,8 +224,9 @@ private:
 	std::queue<hash_t> hash_queue;
 	std::unordered_map<hash_t, hash_info_t> hash_info;
 
-	double tx_credits = 0;
-	double tx_bandwidth = 0;
+	double tx_upload_credits = 0;
+	double tx_upload_bandwidth = 0;
+	double max_pending_cost_value = 0;
 	std::map<hash_t, uint32_t> farmer_credits;
 
 	mutable std::unordered_map<vnx::request_id_t, std::shared_ptr<sync_job_t>> sync_jobs;

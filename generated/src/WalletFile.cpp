@@ -4,7 +4,6 @@
 #include <mmx/package.hxx>
 #include <mmx/WalletFile.hxx>
 #include <mmx/addr_t.hpp>
-#include <vnx/Buffer.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -14,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 WalletFile::VNX_TYPE_HASH(0xefcdc0f20fc4360eull);
-const vnx::Hash64 WalletFile::VNX_CODE_HASH(0xc0354476151b87b0ull);
+const vnx::Hash64 WalletFile::VNX_CODE_HASH(0x82ac26e33ee406a0ull);
 
 vnx::Hash64 WalletFile::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,14 +47,12 @@ void WalletFile::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_WalletFile;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, addresses);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, encrypted_keyfile);
 	_visitor.type_end(*_type_code);
 }
 
 void WalletFile::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.WalletFile\"";
 	_out << ", \"addresses\": "; vnx::write(_out, addresses);
-	_out << ", \"encrypted_keyfile\": "; vnx::write(_out, encrypted_keyfile);
 	_out << "}";
 }
 
@@ -69,7 +66,6 @@ vnx::Object WalletFile::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.WalletFile";
 	_object["addresses"] = addresses;
-	_object["encrypted_keyfile"] = encrypted_keyfile;
 	return _object;
 }
 
@@ -77,8 +73,6 @@ void WalletFile::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "addresses") {
 			_entry.second.to(addresses);
-		} else if(_entry.first == "encrypted_keyfile") {
-			_entry.second.to(encrypted_keyfile);
 		}
 	}
 }
@@ -87,17 +81,12 @@ vnx::Variant WalletFile::get_field(const std::string& _name) const {
 	if(_name == "addresses") {
 		return vnx::Variant(addresses);
 	}
-	if(_name == "encrypted_keyfile") {
-		return vnx::Variant(encrypted_keyfile);
-	}
 	return vnx::Variant();
 }
 
 void WalletFile::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "addresses") {
 		_value.to(addresses);
-	} else if(_name == "encrypted_keyfile") {
-		_value.to(encrypted_keyfile);
 	}
 }
 
@@ -125,23 +114,17 @@ std::shared_ptr<vnx::TypeCode> WalletFile::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.WalletFile";
 	type_code->type_hash = vnx::Hash64(0xefcdc0f20fc4360eull);
-	type_code->code_hash = vnx::Hash64(0xc0354476151b87b0ull);
+	type_code->code_hash = vnx::Hash64(0x82ac26e33ee406a0ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::WalletFile);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<WalletFile>(); };
-	type_code->fields.resize(2);
+	type_code->fields.resize(1);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "addresses";
 		field.code = {12, 11, 32, 1};
-	}
-	{
-		auto& field = type_code->fields[1];
-		field.is_extended = true;
-		field.name = "encrypted_keyfile";
-		field.code = {33, 12, 1};
 	}
 	type_code->build();
 	return type_code;
@@ -195,7 +178,6 @@ void read(TypeInput& in, ::mmx::WalletFile& value, const TypeCode* type_code, co
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.addresses, type_code, _field->code.data()); break;
-			case 1: vnx::read(in, value.encrypted_keyfile, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -215,7 +197,6 @@ void write(TypeOutput& out, const ::mmx::WalletFile& value, const TypeCode* type
 		type_code = type_code->depends[code[1]];
 	}
 	vnx::write(out, value.addresses, type_code, type_code->fields[0].code.data());
-	vnx::write(out, value.encrypted_keyfile, type_code, type_code->fields[1].code.data());
 }
 
 void read(std::istream& in, ::mmx::WalletFile& value) {

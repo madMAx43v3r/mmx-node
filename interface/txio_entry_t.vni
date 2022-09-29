@@ -2,11 +2,13 @@ package mmx;
 
 struct txio_entry_t extends txio_t {
 	
-	txio_key_t key;
+	hash_t txid;
 	
 	uint height;
 	
+	tx_type_e type;
 	
-	static txio_entry_t create_ex(txio_key_t key, uint height, txio_t txio);
+	
+	static txio_entry_t create_ex(hash_t txid, uint height, tx_type_e type, txio_t txio);
 	
 }

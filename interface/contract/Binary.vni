@@ -1,0 +1,29 @@
+package mmx.contract;
+
+import mmx.hash_t;
+import mmx.addr_t;
+
+class Binary extends mmx.Contract {
+	
+	string name;
+	
+	map<string, uint> fields;
+	
+	map<string, method_t> methods;
+	
+	vector<uchar> constant;
+	
+	vector<uchar> binary;
+	
+	string source;
+	
+	string compiler;
+	
+	
+	bool is_valid() const;
+	
+	hash_t calc_hash(bool full_hash) const;
+	
+	ulong calc_cost(mmx.ChainParams* params) const;
+	
+}

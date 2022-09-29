@@ -16,6 +16,7 @@ public:
 	
 	uint32_t index = 0;
 	::mmx::account_t config;
+	vnx::optional<std::string> passphrase;
 	
 	typedef ::vnx::Value Super;
 	
@@ -59,10 +60,11 @@ public:
 
 template<typename T>
 void Wallet_add_account::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Wallet_add_account>(2);
+	_visitor.template type_begin<Wallet_add_account>(3);
 	_visitor.type_field("index", 0); _visitor.accept(index);
 	_visitor.type_field("config", 1); _visitor.accept(config);
-	_visitor.template type_end<Wallet_add_account>(2);
+	_visitor.type_field("passphrase", 2); _visitor.accept(passphrase);
+	_visitor.template type_end<Wallet_add_account>(3);
 }
 
 

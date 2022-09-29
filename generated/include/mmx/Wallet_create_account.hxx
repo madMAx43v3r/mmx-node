@@ -15,6 +15,7 @@ class MMX_EXPORT Wallet_create_account : public ::vnx::Value {
 public:
 	
 	::mmx::account_t config;
+	vnx::optional<std::string> passphrase;
 	
 	typedef ::vnx::Value Super;
 	
@@ -58,9 +59,10 @@ public:
 
 template<typename T>
 void Wallet_create_account::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Wallet_create_account>(1);
+	_visitor.template type_begin<Wallet_create_account>(2);
 	_visitor.type_field("config", 0); _visitor.accept(config);
-	_visitor.template type_end<Wallet_create_account>(1);
+	_visitor.type_field("passphrase", 1); _visitor.accept(passphrase);
+	_visitor.template type_end<Wallet_create_account>(2);
 }
 
 

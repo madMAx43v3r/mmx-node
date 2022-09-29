@@ -333,41 +333,6 @@ size_t deserialize(var_t*& out, const void* data_, const size_t length, bool wit
 	return offset;
 }
 
-std::string to_string(const var_t* var)
-{
-	if(!var) {
-		return "nullptr";
-	}
-	switch(var->type) {
-		case TYPE_NIL:
-			return "null";
-		case TYPE_TRUE:
-			return "true";
-		case TYPE_FALSE:
-			return "false";
-		case TYPE_REF:
-			return "<0x" + vnx::to_hex_string(((const ref_t*)var)->address) + ">";
-		case TYPE_UINT:
-			return ((const uint_t*)var)->value.str(10);
-		case TYPE_STRING: {
-			auto bin = (const binary_t*)var;
-			return "\"" + std::string((const char*)bin->data(), bin->size) + "\"";
-		}
-		case TYPE_BINARY: {
-			auto bin = (const binary_t*)var;
-			return "0x" + vnx::to_hex_string(bin->data(), bin->size, false);
-		}
-		case TYPE_ARRAY: {
-			auto array = (const array_t*)var;
-			return "[0x" + vnx::to_hex_string(array->address) + "," + std::to_string(array->size) + "]";
-		}
-		case TYPE_MAP:
-			return "{0x" + vnx::to_hex_string(((const map_t*)var)->address) + "}";
-		default:
-			return "?";
-	}
-}
-
 
 } // vm
 } // mmx

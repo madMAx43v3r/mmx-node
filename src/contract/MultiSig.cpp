@@ -9,6 +9,7 @@
 #include <mmx/solution/MultiSig.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/write_bytes.h>
+#include <mmx/exception.h>
 
 
 namespace mmx {
@@ -43,26 +44,26 @@ std::vector<txout_t> MultiSig::validate(std::shared_ptr<const Operation> operati
 	if(auto solution = std::dynamic_pointer_cast<const solution::PubKey>(operation->solution))
 	{
 		if(num_required != 1) {
-			throw std::logic_error("invalid solution");
+			throw mmx::invalid_solution("num_required != 1");
 		}
 		const auto addr = solution->pubkey.get_addr();
 
 		for(const auto& owner : owners) {
 			if(addr == owner) {
 				if(!solution->signature.verify(solution->pubkey, context->txid)) {
-					throw std::logic_error("invalid signature");
+					throw mmx::invalid_solution("invalid signature");
 				}
 				return {};
 			}
 		}
-		throw std::logic_error("no such owner");
+		throw mmx::invalid_solution("no such owner");
 	}
 	if(auto solution = std::dynamic_pointer_cast<const solution::MultiSig>(operation->solution))
 	{
 		if(solution->solutions.size() != owners.size()) {
-			throw std::logic_error("solutions count mismatch");
+			throw mmx::invalid_solution("solutions count mismatch");
 		}
-		uint32_t count = 0;
+		size_t count = 0;
 		for(size_t i = 0; i < owners.size(); ++i)
 		{
 			if(const auto& sol = solution->solutions[i])
@@ -70,21 +71,21 @@ std::vector<txout_t> MultiSig::validate(std::shared_ptr<const Operation> operati
 				if(auto solution = std::dynamic_pointer_cast<const solution::PubKey>(sol))
 				{
 					if(solution->pubkey.get_addr() != owners[i]) {
-						throw std::logic_error("invalid pubkey at index " + std::to_string(i));
+						throw mmx::invalid_solution("wrong pubkey at index " + std::to_string(i));
 					}
 					if(!solution->signature.verify(solution->pubkey, context->txid)) {
-						throw std::logic_error("invalid signature at index " + std::to_string(i));
+						throw mmx::invalid_solution("invalid signature at index " + std::to_string(i));
 					}
 					count++;
 				}
 			}
 		}
 		if(count < num_required) {
-			throw std::logic_error("insufficient signatures: " + std::to_string(count) + " < " + std::to_string(num_required));
+			throw mmx::invalid_solution("insufficient signatures: " + std::to_string(count) + " < " + std::to_string(num_required));
 		}
 		return {};
 	}
-	throw std::logic_error("invalid solution");
+	throw mmx::invalid_solution("invalid type");
 }
 
 void MultiSig::add_owner(const addr_t& address)

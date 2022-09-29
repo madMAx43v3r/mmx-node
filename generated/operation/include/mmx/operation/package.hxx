@@ -44,9 +44,6 @@ class Mutate_calc_cost;
 class Mutate_calc_cost_return;
 class Mutate_calc_hash;
 class Mutate_calc_hash_return;
-class Revoke;
-class Revoke_calc_hash;
-class Revoke_calc_hash_return;
 class Spend;
 class Spend_calc_hash;
 class Spend_calc_hash_return;
@@ -78,9 +75,6 @@ MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Muta
 MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Mutate_calc_cost_return; ///< \private
 MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Mutate_calc_hash; ///< \private
 MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Mutate_calc_hash_return; ///< \private
-MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Revoke; ///< \private
-MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Revoke_calc_hash; ///< \private
-MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Revoke_calc_hash_return; ///< \private
 MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Spend; ///< \private
 MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Spend_calc_hash; ///< \private
 MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Spend_calc_hash_return; ///< \private
@@ -118,9 +112,6 @@ void read(TypeInput& in, ::mmx::operation::Mutate_calc_cost& value, const TypeCo
 void read(TypeInput& in, ::mmx::operation::Mutate_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::operation::Mutate_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::operation::Mutate_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::operation::Revoke& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::operation::Revoke_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::operation::Revoke_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::operation::Spend& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::operation::Spend_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::operation::Spend_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -152,9 +143,6 @@ void write(TypeOutput& out, const ::mmx::operation::Mutate_calc_cost& value, con
 void write(TypeOutput& out, const ::mmx::operation::Mutate_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::operation::Mutate_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::operation::Mutate_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::operation::Revoke& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::operation::Revoke_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::operation::Revoke_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::operation::Spend& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::operation::Spend_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::operation::Spend_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -186,9 +174,6 @@ void read(std::istream& in, ::mmx::operation::Mutate_calc_cost& value); ///< \pr
 void read(std::istream& in, ::mmx::operation::Mutate_calc_cost_return& value); ///< \private
 void read(std::istream& in, ::mmx::operation::Mutate_calc_hash& value); ///< \private
 void read(std::istream& in, ::mmx::operation::Mutate_calc_hash_return& value); ///< \private
-void read(std::istream& in, ::mmx::operation::Revoke& value); ///< \private
-void read(std::istream& in, ::mmx::operation::Revoke_calc_hash& value); ///< \private
-void read(std::istream& in, ::mmx::operation::Revoke_calc_hash_return& value); ///< \private
 void read(std::istream& in, ::mmx::operation::Spend& value); ///< \private
 void read(std::istream& in, ::mmx::operation::Spend_calc_hash& value); ///< \private
 void read(std::istream& in, ::mmx::operation::Spend_calc_hash_return& value); ///< \private
@@ -220,9 +205,6 @@ void write(std::ostream& out, const ::mmx::operation::Mutate_calc_cost& value); 
 void write(std::ostream& out, const ::mmx::operation::Mutate_calc_cost_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::operation::Mutate_calc_hash& value); ///< \private
 void write(std::ostream& out, const ::mmx::operation::Mutate_calc_hash_return& value); ///< \private
-void write(std::ostream& out, const ::mmx::operation::Revoke& value); ///< \private
-void write(std::ostream& out, const ::mmx::operation::Revoke_calc_hash& value); ///< \private
-void write(std::ostream& out, const ::mmx::operation::Revoke_calc_hash_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::operation::Spend& value); ///< \private
 void write(std::ostream& out, const ::mmx::operation::Spend_calc_hash& value); ///< \private
 void write(std::ostream& out, const ::mmx::operation::Spend_calc_hash_return& value); ///< \private
@@ -254,9 +236,6 @@ void accept(Visitor& visitor, const ::mmx::operation::Mutate_calc_cost& value); 
 void accept(Visitor& visitor, const ::mmx::operation::Mutate_calc_cost_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::operation::Mutate_calc_hash& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::operation::Mutate_calc_hash_return& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::operation::Revoke& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::operation::Revoke_calc_hash& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::operation::Revoke_calc_hash_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::operation::Spend& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::operation::Spend_calc_hash& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::operation::Spend_calc_hash_return& value); ///< \private
@@ -770,75 +749,6 @@ struct type<::mmx::operation::Mutate_calc_hash_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Mutate_calc_hash_return& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::operation::Revoke> {
-	void read(TypeInput& in, ::mmx::operation::Revoke& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::operation::Revoke& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::operation::Revoke& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::operation::Revoke& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::operation::Revoke& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Revoke& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::operation::Revoke_calc_hash> {
-	void read(TypeInput& in, ::mmx::operation::Revoke_calc_hash& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::operation::Revoke_calc_hash& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::operation::Revoke_calc_hash& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::operation::Revoke_calc_hash& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::operation::Revoke_calc_hash& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Revoke_calc_hash& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::operation::Revoke_calc_hash_return> {
-	void read(TypeInput& in, ::mmx::operation::Revoke_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::operation::Revoke_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::operation::Revoke_calc_hash_return& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::operation::Revoke_calc_hash_return& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::operation::Revoke_calc_hash_return& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Revoke_calc_hash_return& value, bool special = false);
 };
 
 /// \private

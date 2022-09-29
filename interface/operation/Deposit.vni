@@ -9,8 +9,6 @@ class Deposit extends Execute {
 	
 	ulong amount;
 	
-	optional<addr_t> sender;
-	
 	
 	bool is_valid() const;
 	

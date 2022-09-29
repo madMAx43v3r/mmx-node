@@ -76,8 +76,11 @@ void Router::main()
 			throw std::logic_error("min_sync_peers > max_connections");
 		}
 	}
-	tx_bandwidth = max_tx_upload * params->max_block_cost * pow(10, -params->decimals) / params->block_time;
-	log(INFO) << "TX upload limit: " << tx_bandwidth << " MMX/s";
+	tx_upload_bandwidth = max_tx_upload * to_value(params->max_block_cost, params) / params->block_time;
+	max_pending_cost_value = max_pending_cost * to_value(params->max_block_cost, params);
+
+	log(INFO) << "Global TX upload limit: " << tx_upload_bandwidth << " MMX/s";
+	log(INFO) << "Peer TX pending limit: " << max_pending_cost_value << " MMX";
 
 	subscribe(input_vdfs, max_queue_ms);
 	subscribe(input_verified_vdfs, max_queue_ms);
@@ -240,6 +243,7 @@ std::shared_ptr<const PeerInfo> Router::get_peer_info() const
 	for(const auto& entry : peer_map) {
 		const auto& state = entry.second;
 		peer_info_t peer;
+		peer.id = entry.first;
 		peer.type = state->info.type;
 		peer.address = state->address;
 		peer.height = state->height;
@@ -248,6 +252,7 @@ std::shared_ptr<const PeerInfo> Router::get_peer_info() const
 		peer.ping_ms = state->ping_ms;
 		peer.bytes_send = state->bytes_send;
 		peer.bytes_recv = state->bytes_recv;
+		peer.pending_cost = state->pending_cost;
 		peer.is_synced = state->is_synced;
 		peer.is_blocked = state->is_blocked;
 		peer.is_outbound = state->is_outbound;
@@ -302,24 +307,26 @@ void Router::fetch_block_at_async(const uint32_t& height, const std::string& add
 
 void Router::handle(std::shared_ptr<const Block> block)
 {
+	if(block->farmer_sig) {
+		const auto& hash = block->content_hash;
+		if(relay_msg_hash(hash, block_credits)) {
+			log(INFO) << "Broadcasting block for height " << block->height;
+			broadcast(block, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
+			block_counter++;
+		}
+	}
 	verified_peak_height = block->height;
-
-	if(!block->farmer_sig) {
-		return;
-	}
-	const auto hash = block->get_full_hash();
-	if(relay_msg_hash(hash, block_credits)) {
-		log(INFO) << "Broadcasting block for height " << block->height;
-		broadcast(block, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
-		block_counter++;
-	}
 }
 
 void Router::handle(std::shared_ptr<const Transaction> tx)
 {
-	const auto hash = tx->calc_hash(true);
+	const auto& hash = tx->content_hash;
 	if(relay_msg_hash(hash)) {
-		broadcast(tx, hash, {node_type_e::FULL_NODE});
+		if(vnx_sample->topic == input_transactions) {
+			broadcast(tx, hash, {node_type_e::FULL_NODE});
+		} else {
+			relay(tx, hash, {node_type_e::FULL_NODE});
+		}
 		tx_counter++;
 	}
 }
@@ -327,7 +334,7 @@ void Router::handle(std::shared_ptr<const Transaction> tx)
 void Router::handle(std::shared_ptr<const ProofOfTime> value)
 {
 	if(value->height > verified_peak_height) {
-		const auto hash = value->get_full_hash();
+		const auto& hash = value->content_hash;
 		if(relay_msg_hash(hash, vdf_credits)) {
 			if(vnx_sample && vnx_sample->topic == input_vdfs) {
 				log(INFO) << "Broadcasting VDF for height " << value->height;
@@ -340,7 +347,7 @@ void Router::handle(std::shared_ptr<const ProofOfTime> value)
 
 void Router::handle(std::shared_ptr<const ProofResponse> value)
 {
-	const auto hash = value->calc_hash(true);
+	const auto& hash = value->content_hash;
 	if(relay_msg_hash(hash, proof_credits)) {
 		if(vnx::get_pipe(value->farmer_addr)) {
 			log(INFO) << "Broadcasting proof for height " << value->request->height << " with score " << value->proof->score;
@@ -377,6 +384,7 @@ void Router::update()
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
 		peer->credits = std::min(peer->credits, max_node_credits);
+		peer->pending_cost = std::max<double>(peer->pending_cost, 0) * 0.99;
 
 		// clear old hashes
 		while(peer->sent_hashes.size() > max_sent_cache) {
@@ -478,7 +486,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				if(auto result = std::dynamic_pointer_cast<const Node_get_block_at_return>(ret->result)) {
 					if(auto block = result->_ret_0) {
 						if(block->is_valid()) {
-							job->blocks[block->get_full_hash()] = block;
+							job->blocks[block->content_hash] = block;
 							job->succeeded.insert(client);
 						} else {
 							ban_peer(client, "they sent us an invalid block");
@@ -526,13 +534,13 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				}
 			}
 		} else {
-			uint64_t max_block_size = 0;
+			uint32_t max_block_size = 0;
 			for(const auto& entry : job->blocks) {
-				max_block_size = std::max(entry.second->calc_cost(params), max_block_size);
+				max_block_size = std::max(entry.second->tx_cost, max_block_size);
 			}
 			log(DEBUG) << "Got " << job->blocks.size() << " blocks for height " << job->height << " by fetching "
 					<< job->succeeded.size() + job->failed.size() << " times, " << job->failed.size() << " failed"
-					<< ", size = " << max_block_size / pow(10, params->decimals) << " MMX"
+					<< ", size = " << to_value(max_block_size, params) << " MMX"
 					<< ", took " << (now_ms - job->start_time_ms) / 1e3 << " sec";
 			// we are done with the job
 			std::vector<std::shared_ptr<const Block>> blocks;
@@ -668,6 +676,8 @@ bool Router::process(std::shared_ptr<const Return> ret)
 
 void Router::connect()
 {
+	const auto now_ms = vnx::get_wall_time_millis();
+
 	for(const auto& address : fixed_peers)
 	{
 		bool connected = false;
@@ -683,16 +693,24 @@ void Router::connect()
 		}
 	}
 
+	size_t total_outbound = 0;
 	std::set<std::shared_ptr<peer_t>> outbound_synced;
+	std::set<std::shared_ptr<peer_t>> outbound_not_synced;
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
-		if(peer->is_outbound && peer->is_synced && !fixed_peers.count(peer->address)) {
-			outbound_synced.insert(peer);
+		if(peer->is_outbound) {
+			if(peer->is_synced) {
+				outbound_synced.insert(peer);
+			}
+			else if(now_ms - peer->connected_since_ms > connection_timeout_ms) {
+				outbound_not_synced.insert(peer);
+			}
+			total_outbound++;
 		}
 	}
 
 	// check if we want more peers
-	if(outbound_synced.size() < num_peers_out)
+	if(outbound_synced.size() < num_peers_out && total_outbound < 2 * num_peers_out)
 	{
 		std::set<std::string> peers;
 		peer_set.insert(seed_peers.begin(), seed_peers.end());
@@ -721,13 +739,27 @@ void Router::connect()
 	}
 
 	// disconnect if we have too many outbound synced peers
-	size_t num_disconnect = 0;
-	if(outbound_synced.size() > num_peers_out + 1) {
-		num_disconnect = outbound_synced.size() - num_peers_out;
+	{
+		size_t num_disconnect = 0;
+		if(outbound_synced.size() > num_peers_out + 1) {
+			num_disconnect = outbound_synced.size() - num_peers_out;
+		}
+		for(const auto& peer : get_subset(outbound_synced, num_disconnect, rand_engine)) {
+			log(INFO) << "Disconnecting from " << peer->address << " to reduce connections to synced peers";
+			disconnect(peer->client);
+		}
 	}
-	for(const auto& peer : get_subset(outbound_synced, num_disconnect, rand_engine)) {
-		log(INFO) << "Disconnecting from " << peer->address << " to reduce connections";
-		disconnect(peer->client);
+
+	// disconnect if we have too many outbound non-synced peers
+	{
+		size_t num_disconnect = 0;
+		if(outbound_not_synced.size() > num_peers_out) {
+			num_disconnect = outbound_not_synced.size() - num_peers_out;
+		}
+		for(const auto& peer : get_subset(outbound_not_synced, num_disconnect, rand_engine)) {
+			log(INFO) << "Disconnecting from " << peer->address << " to reduce connections to non-synced peers";
+			disconnect(peer->client);
+		}
 	}
 }
 
@@ -777,6 +809,7 @@ void Router::query()
 								req->height = height;
 								for(const auto& entry : peer_map) {
 									const auto& peer = entry.second;
+									// TODO: only consider outbound peers for mainnet
 									if(peer->is_synced && peer->info.type == node_type_e::FULL_NODE) {
 										const auto id = send_request(peer, req);
 										fork_check.request_map[id] = peer->client;
@@ -808,7 +841,7 @@ void Router::save_data()
 		vnx::File file(storage_path + "known_peers.dat");
 		try {
 			file.open("wb");
-			const auto peers = get_connected_peers();
+			const auto peers = get_known_peers();
 			vnx::write_generic(file.out, std::set<std::string>(peers.begin(), peers.end()));
 			file.close();
 		}
@@ -899,16 +932,10 @@ void Router::ban_peer(uint64_t client, const std::string& reason)
 
 void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> value)
 {
-	// TODO: remove after testnet6
-	if(value->hash == hash_t()) {
-		auto copy = vnx::clone(value);
-		copy->hash = copy->calc_hash();
-		value = copy;
-	}
 	if(!value->is_valid(params)) {
 		return;
 	}
-	const auto hash = value->get_full_hash();
+	const auto hash = value->content_hash;
 	const auto is_new = receive_msg_hash(hash, client);
 	if(is_new) {
 		try {
@@ -918,20 +945,16 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> value)
 			return;
 		}
 	}
-	if(do_relay) {
-		if(auto peer = find_peer(client)) {
-			if(peer->credits >= vdf_relay_cost) {
-				if(relay_msg_hash(hash)) {
-					peer->credits -= vdf_relay_cost;
-					relay(client, value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
-					vdf_counter++;
-				}
-			} else {
-				log(DEBUG) << "Peer " << peer->address << " has insufficient credits to relay VDF for height " << value->height << ", verifying first.";
+	if(auto peer = find_peer(client)) {
+		if(peer->credits >= vdf_relay_cost) {
+			if(relay_msg_hash(hash)) {
+				peer->credits -= vdf_relay_cost;
+				relay(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
+				vdf_counter++;
 			}
+		} else {
+			log(DEBUG) << "Peer " << peer->address << " has insufficient credits to relay VDF for height " << value->height << ", verifying first.";
 		}
-	} else {
-		relay_msg_hash(hash);
 	}
 	if(is_new) {
 		publish(value, output_vdfs);
@@ -940,10 +963,10 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> value)
 
 void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 {
-	if(!block->is_valid() || !block->proof || !block->farmer_sig) {
+	if(!block->is_valid() || !block->farmer_sig || block->tx_cost > params->max_block_cost) {
 		return;
 	}
-	const auto hash = block->get_full_hash();
+	const auto hash = block->content_hash;
 	const auto is_new = receive_msg_hash(hash, client);
 	if(is_new) {
 		try {
@@ -953,24 +976,20 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 			return;
 		}
 	}
-	if(do_relay) {
-		const auto farmer_id = hash_t(block->proof->farmer_key);
-		const auto iter = farmer_credits.find(farmer_id);
-		if(iter != farmer_credits.end()) {
-			if(iter->second >= block_relay_cost) {
-				if(relay_msg_hash(hash)) {
-					iter->second -= block_relay_cost;
-					relay(client, block, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
-					block_counter++;
-				}
-			} else {
-				log(DEBUG) << "A farmer has insufficient credits to relay block at height " << block->height << ", verifying first.";
+	const auto farmer_id = hash_t(block->proof->farmer_key);
+	const auto iter = farmer_credits.find(farmer_id);
+	if(iter != farmer_credits.end()) {
+		if(iter->second >= block_relay_cost) {
+			if(relay_msg_hash(hash)) {
+				iter->second -= block_relay_cost;
+				relay(block, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
+				block_counter++;
 			}
 		} else {
-			log(DEBUG) << "Got block from an unknown farmer at height " << block->height << ", verifying first.";
+			log(DEBUG) << "A farmer has insufficient credits to relay block at height " << block->height << ", verifying first.";
 		}
 	} else {
-		relay_msg_hash(hash);
+		log(DEBUG) << "Got block from an unknown farmer at height " << block->height << ", verifying first.";
 	}
 	if(is_new) {
 		publish(block, output_blocks);
@@ -979,45 +998,35 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 
 void Router::on_proof(uint64_t client, std::shared_ptr<const ProofResponse> value)
 {
-	// TODO: remove after testnet6
-	if(value->hash == hash_t()) {
-		auto copy = vnx::clone(value);
-		copy->hash = copy->calc_hash();
-		value = copy;
+	if(!value->is_valid()) {
+		return;
 	}
-	const auto hash = value->calc_hash(true);
+	const auto hash = value->content_hash;
 	const auto is_new = receive_msg_hash(hash, client);
 	if(is_new) {
 		try {
-			if(!value->is_valid()) {
-				throw std::logic_error("invalid response");
-			}
 			value->validate();
 		} catch(const std::exception& ex) {
 			ban_peer(client, std::string("they sent us invalid proof: ") + ex.what());
 			return;
 		}
 	}
-	if(do_relay) {
-		const auto farmer_id = hash_t(value->proof->farmer_key);
-		const auto iter = farmer_credits.find(farmer_id);
-		if(iter != farmer_credits.end()) {
-			if(iter->second >= proof_relay_cost) {
-				if(relay_msg_hash(hash)) {
-					iter->second -= proof_relay_cost;
-					relay(client, value, hash, {node_type_e::FULL_NODE});
-					proof_counter++;
-				}
-			} else {
-				log(DEBUG) << "A farmer has insufficient credits to relay proof for height "
-						<< value->request->height << " with score " << value->proof->score << ", verifying first.";
+	const auto farmer_id = hash_t(value->proof->farmer_key);
+	const auto iter = farmer_credits.find(farmer_id);
+	if(iter != farmer_credits.end()) {
+		if(iter->second >= proof_relay_cost) {
+			if(relay_msg_hash(hash)) {
+				iter->second -= proof_relay_cost;
+				relay(value, hash, {node_type_e::FULL_NODE});
+				proof_counter++;
 			}
 		} else {
-			log(DEBUG) << "Got proof from an unknown farmer at height " << value->request->height
-					<< " with score " << value->proof->score << ", verifying first.";
+			log(DEBUG) << "A farmer has insufficient credits to relay proof for height "
+					<< value->request->height << " with score " << value->proof->score << ", verifying first.";
 		}
 	} else {
-		relay_msg_hash(hash);
+		log(DEBUG) << "Got proof from an unknown farmer at height " << value->request->height
+				<< " with score " << value->proof->score << ", verifying first.";
 	}
 	if(is_new) {
 		publish(value, output_proof);
@@ -1026,17 +1035,10 @@ void Router::on_proof(uint64_t client, std::shared_ptr<const ProofResponse> valu
 
 void Router::on_transaction(uint64_t client, std::shared_ptr<const Transaction> tx)
 {
-	const auto hash = tx->calc_hash(true);
-	const auto is_new = receive_msg_hash(hash, client);
-	if(do_relay) {
-		if(relay_msg_hash(hash)) {
-			relay(client, tx, hash, {node_type_e::FULL_NODE});
-			tx_counter++;
-		}
-	} else {
-		relay_msg_hash(hash);
+	if(!tx->is_valid(params) || tx->exec_result) {
+		return;
 	}
-	if(is_new) {
+	if(receive_msg_hash(tx->content_hash, client)) {
 		publish(tx, output_transactions);
 	}
 }
@@ -1047,26 +1049,29 @@ void Router::on_recv_note(uint64_t client, std::shared_ptr<const ReceiveNote> no
 		if(peer->sent_hashes.insert(note->hash).second) {
 			peer->hash_queue.push(note->hash);
 		}
+		auto iter = peer->pending_map.find(note->hash);
+		if(iter != peer->pending_map.end()) {
+			peer->pending_cost -= iter->second;
+			peer->pending_map.erase(iter);
+		}
 	}
 }
 
-void Router::recv_notify(const hash_t& msg_hash, const uint64_t* source)
+void Router::recv_notify(const hash_t& msg_hash)
 {
 	auto note = ReceiveNote::create();
 	note->time = vnx::get_wall_time_micros();
 	note->hash = msg_hash;
 	for(const auto& entry : peer_map) {
-		if(!source || entry.first != *source) {
-			send_to(entry.second, note, true);
-		}
+		send_to(entry.second, note, true);
 	}
 }
 
 void Router::send()
 {
 	const auto now = vnx::get_wall_time_micros();
-	tx_credits += tx_bandwidth * send_interval_ms / 1000;
-	tx_credits = std::min(tx_credits, tx_bandwidth);
+	tx_upload_credits += tx_upload_bandwidth * send_interval_ms / 1000;
+	tx_upload_credits = std::min(tx_upload_credits, tx_upload_bandwidth);
 
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
@@ -1098,23 +1103,11 @@ void Router::send_to(std::vector<std::shared_ptr<peer_t>> peers, std::shared_ptr
 	}
 }
 
-void Router::relay(uint64_t source, std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter)
+void Router::relay(std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter)
 {
-	if(!do_relay) {
-		return;
+	if(do_relay) {
+		broadcast(msg, msg_hash, filter, false);
 	}
-	std::vector<std::shared_ptr<peer_t>> peers;
-	for(const auto& entry : peer_map) {
-		const auto& peer = entry.second;
-		if(entry.first != source) {
-			if(filter.empty() || filter.count(peer->info.type)) {
-				peers.push_back(peer);
-			}
-		} else if(peer->sent_hashes.insert(msg_hash).second) {
-			peer->hash_queue.push(msg_hash);
-		}
-	}
-	send_to(peers, msg, msg_hash, false);
 }
 
 void Router::broadcast(std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter, bool reliable)
@@ -1157,14 +1150,21 @@ bool Router::send_to(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Va
 	}
 	if(!reliable) {
 		if(auto tx = std::dynamic_pointer_cast<const Transaction>(msg)) {
-			std::uniform_real_distribution<double> dist(0, 1);
-			if(dist(rand_engine) > tx_credits / tx_bandwidth) {
+			if(peer->pending_cost >= max_pending_cost_value) {
 				tx_drop_counter++;
 				return false;
 			}
-			const auto cost = tx->calc_cost(params) * pow(10, -params->decimals);
-			tx_credits -= cost;
-			tx_credits = std::max(tx_credits, 0.);
+			std::uniform_real_distribution<double> dist(0, 1);
+			if(dist(rand_engine) > tx_upload_credits / tx_upload_bandwidth) {
+				tx_drop_counter++;
+				return false;
+			}
+			const auto cost = to_value(tx->static_cost, params);
+			peer->pending_cost += cost;
+			peer->pending_map[tx->content_hash] = cost;
+
+			tx_upload_credits -= cost;
+			tx_upload_credits = std::max(tx_upload_credits, 0.);
 			tx_upload_sum += cost;
 		}
 	}
@@ -1540,7 +1540,7 @@ bool Router::relay_msg_hash(const hash_t& hash, uint32_t credits)
 	}
 	auto& info = ret.first->second;
 	if(!info.did_notify) {
-		recv_notify(hash, nullptr);
+		recv_notify(hash);
 		info.did_notify = true;
 	}
 	info.is_valid = true;
@@ -1567,12 +1567,17 @@ bool Router::receive_msg_hash(const hash_t& hash, uint64_t client)
 	}
 	auto& info = ret.first->second;
 	if(!info.did_notify) {
-		recv_notify(hash, &client);
+		recv_notify(hash);
 		info.did_notify = true;
 	}
 	const bool is_new = info.received_from == uint64_t(-1);
 	if(is_new) {
 		info.received_from = client;
+	}
+	if(auto peer = find_peer(client)) {
+		if(peer->sent_hashes.insert(hash).second) {
+			peer->hash_queue.push(hash);
+		}
 	}
 	return is_new;
 }

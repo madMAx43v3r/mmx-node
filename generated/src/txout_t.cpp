@@ -3,7 +3,6 @@
 
 #include <mmx/package.hxx>
 #include <mmx/txout_t.hxx>
-#include <mmx/addr_t.hpp>
 #include <mmx/txio_t.hxx>
 
 #include <vnx/vnx.h>
@@ -13,7 +12,7 @@ namespace mmx {
 
 
 const vnx::Hash64 txout_t::VNX_TYPE_HASH(0xaa91772752216576ull);
-const vnx::Hash64 txout_t::VNX_CODE_HASH(0x75b7952a19135f7eull);
+const vnx::Hash64 txout_t::VNX_CODE_HASH(0x5e813ea89e014f29ull);
 
 vnx::Hash64 txout_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,7 +48,6 @@ void txout_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, address);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, contract);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, amount);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, sender);
 	_visitor.type_end(*_type_code);
 }
 
@@ -58,7 +56,6 @@ void txout_t::write(std::ostream& _out) const {
 	_out << "\"address\": "; vnx::write(_out, address);
 	_out << ", \"contract\": "; vnx::write(_out, contract);
 	_out << ", \"amount\": "; vnx::write(_out, amount);
-	_out << ", \"sender\": "; vnx::write(_out, sender);
 	_out << "}";
 }
 
@@ -74,7 +71,6 @@ vnx::Object txout_t::to_object() const {
 	_object["address"] = address;
 	_object["contract"] = contract;
 	_object["amount"] = amount;
-	_object["sender"] = sender;
 	return _object;
 }
 
@@ -86,8 +82,6 @@ void txout_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(amount);
 		} else if(_entry.first == "contract") {
 			_entry.second.to(contract);
-		} else if(_entry.first == "sender") {
-			_entry.second.to(sender);
 		}
 	}
 }
@@ -102,9 +96,6 @@ vnx::Variant txout_t::get_field(const std::string& _name) const {
 	if(_name == "amount") {
 		return vnx::Variant(amount);
 	}
-	if(_name == "sender") {
-		return vnx::Variant(sender);
-	}
 	return vnx::Variant();
 }
 
@@ -115,8 +106,6 @@ void txout_t::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(contract);
 	} else if(_name == "amount") {
 		_value.to(amount);
-	} else if(_name == "sender") {
-		_value.to(sender);
 	}
 }
 
@@ -144,13 +133,13 @@ std::shared_ptr<vnx::TypeCode> txout_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.txout_t";
 	type_code->type_hash = vnx::Hash64(0xaa91772752216576ull);
-	type_code->code_hash = vnx::Hash64(0x75b7952a19135f7eull);
+	type_code->code_hash = vnx::Hash64(0x5e813ea89e014f29ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::txout_t);
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::txio_t::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<txout_t>>(); };
-	type_code->fields.resize(4);
+	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -168,12 +157,6 @@ std::shared_ptr<vnx::TypeCode> txout_t::static_create_type_code() {
 		field.data_size = 8;
 		field.name = "amount";
 		field.code = {4};
-	}
-	{
-		auto& field = type_code->fields[3];
-		field.is_extended = true;
-		field.name = "sender";
-		field.code = {33, 11, 32, 1};
 	}
 	type_code->build();
 	return type_code;
@@ -225,7 +208,6 @@ void read(TypeInput& in, ::mmx::txout_t& value, const TypeCode* type_code, const
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.address, type_code, _field->code.data()); break;
 			case 1: vnx::read(in, value.contract, type_code, _field->code.data()); break;
-			case 3: vnx::read(in, value.sender, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -248,7 +230,6 @@ void write(TypeOutput& out, const ::mmx::txout_t& value, const TypeCode* type_co
 	vnx::write_value(_buf + 0, value.amount);
 	vnx::write(out, value.address, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.contract, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.sender, type_code, type_code->fields[3].code.data());
 }
 
 void read(std::istream& in, ::mmx::txout_t& value) {

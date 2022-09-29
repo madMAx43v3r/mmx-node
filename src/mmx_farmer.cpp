@@ -41,9 +41,13 @@ int main(int argc, char** argv)
 
 	std::string node_url = ":11330";
 	std::string endpoint = "0.0.0.0:11333";
+	bool with_wallet = true;
+	bool with_harvester = true;
 
 	vnx::read_config("node", node_url);
 	vnx::read_config("endpoint", endpoint);
+	vnx::read_config("wallet", with_wallet);
+	vnx::read_config("harvester", with_harvester);
 
 	vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
 	proxy->forward_list = {"Node", "Router"};
@@ -62,22 +66,27 @@ int main(int argc, char** argv)
 		vnx::Handle<vnx::Terminal> module = new vnx::Terminal("Terminal");
 		module.start_detached();
 	}
-	{
+	if(with_wallet) {
 		vnx::Handle<mmx::Wallet> module = new mmx::Wallet("Wallet");
 		module->config_path = mmx_home + module->config_path;
 		module->storage_path = mmx_home + module->storage_path;
 		module->database_path = root_path + module->database_path;
 		module.start_detached();
+	} else {
+		proxy->forward_list.push_back("Wallet");
 	}
 	{
 		vnx::Handle<mmx::Farmer> module = new mmx::Farmer("Farmer");
 		module.start_detached();
 	}
-	{
+	if(with_harvester) {
 		vnx::Handle<mmx::Harvester> module = new mmx::Harvester("Harvester");
 		proxy->import_list.push_back(module->input_challenges);
 		proxy->export_list.push_back(module->output_proofs);
 		module.start_detached();
+	} else {
+		proxy->import_list.push_back("harvester.challenges");
+		proxy->export_list.push_back("harvester.proof");
 	}
 
 	proxy.start();

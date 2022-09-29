@@ -7,7 +7,7 @@
 #include <mmx/package.hxx>
 #include <mmx/BlockHeader.hxx>
 #include <mmx/FarmInfo.hxx>
-#include <mmx/ProofOfSpace.hxx>
+#include <mmx/ProofResponse.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/bls_pubkey_t.hpp>
 #include <mmx/bls_signature_t.hpp>
@@ -67,7 +67,7 @@ protected:
 	virtual ::vnx::Hash64 get_mac_addr() const = 0;
 	virtual std::vector<::mmx::bls_pubkey_t> get_farmer_keys() const = 0;
 	virtual std::shared_ptr<const ::mmx::FarmInfo> get_farm_info() const = 0;
-	virtual ::mmx::bls_signature_t sign_proof(std::shared_ptr<const ::mmx::ProofOfSpace> proof) const = 0;
+	virtual ::mmx::bls_signature_t sign_proof(std::shared_ptr<const ::mmx::ProofResponse> value) const = 0;
 	virtual std::shared_ptr<const ::mmx::BlockHeader> sign_block(std::shared_ptr<const ::mmx::BlockHeader> block, const uint64_t& reward_amount) const = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::FarmInfo> _value) {}
 	

@@ -63,7 +63,7 @@ namespace contract {
 const uint32_t PlotNFT::MAX_UNLOCK_DELAY;
 
 const vnx::Hash64 PlotNFT::VNX_TYPE_HASH(0x7705f4da286543dull);
-const vnx::Hash64 PlotNFT::VNX_CODE_HASH(0x182490bd3ef9b843ull);
+const vnx::Hash64 PlotNFT::VNX_CODE_HASH(0x1d10663aee8fc69ull);
 
 vnx::Hash64 PlotNFT::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -103,6 +103,8 @@ void PlotNFT::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, unlock_delay);
 	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, name);
 	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, server_url);
+	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, reward_addr);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, partial_diff);
 	_visitor.type_end(*_type_code);
 }
 
@@ -115,6 +117,8 @@ void PlotNFT::write(std::ostream& _out) const {
 	_out << ", \"unlock_delay\": "; vnx::write(_out, unlock_delay);
 	_out << ", \"name\": "; vnx::write(_out, name);
 	_out << ", \"server_url\": "; vnx::write(_out, server_url);
+	_out << ", \"reward_addr\": "; vnx::write(_out, reward_addr);
+	_out << ", \"partial_diff\": "; vnx::write(_out, partial_diff);
 	_out << "}";
 }
 
@@ -134,6 +138,8 @@ vnx::Object PlotNFT::to_object() const {
 	_object["unlock_delay"] = unlock_delay;
 	_object["name"] = name;
 	_object["server_url"] = server_url;
+	_object["reward_addr"] = reward_addr;
+	_object["partial_diff"] = partial_diff;
 	return _object;
 }
 
@@ -143,6 +149,10 @@ void PlotNFT::from_object(const vnx::Object& _object) {
 			_entry.second.to(name);
 		} else if(_entry.first == "owner") {
 			_entry.second.to(owner);
+		} else if(_entry.first == "partial_diff") {
+			_entry.second.to(partial_diff);
+		} else if(_entry.first == "reward_addr") {
+			_entry.second.to(reward_addr);
 		} else if(_entry.first == "server_url") {
 			_entry.second.to(server_url);
 		} else if(_entry.first == "target") {
@@ -179,6 +189,12 @@ vnx::Variant PlotNFT::get_field(const std::string& _name) const {
 	if(_name == "server_url") {
 		return vnx::Variant(server_url);
 	}
+	if(_name == "reward_addr") {
+		return vnx::Variant(reward_addr);
+	}
+	if(_name == "partial_diff") {
+		return vnx::Variant(partial_diff);
+	}
 	return vnx::Variant();
 }
 
@@ -197,6 +213,10 @@ void PlotNFT::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(name);
 	} else if(_name == "server_url") {
 		_value.to(server_url);
+	} else if(_name == "reward_addr") {
+		_value.to(reward_addr);
+	} else if(_name == "partial_diff") {
+		_value.to(partial_diff);
 	}
 }
 
@@ -224,7 +244,7 @@ std::shared_ptr<vnx::TypeCode> PlotNFT::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.PlotNFT";
 	type_code->type_hash = vnx::Hash64(0x7705f4da286543dull);
-	type_code->code_hash = vnx::Hash64(0x182490bd3ef9b843ull);
+	type_code->code_hash = vnx::Hash64(0x1d10663aee8fc69ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::PlotNFT);
@@ -256,7 +276,7 @@ std::shared_ptr<vnx::TypeCode> PlotNFT::static_create_type_code() {
 	type_code->methods[20] = ::mmx::contract::PlotNFT_is_valid::static_get_type_code();
 	type_code->methods[21] = ::mmx::contract::PlotNFT_lock::static_get_type_code();
 	type_code->methods[22] = ::mmx::contract::PlotNFT_lock_pool::static_get_type_code();
-	type_code->fields.resize(7);
+	type_code->fields.resize(9);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -299,6 +319,18 @@ std::shared_ptr<vnx::TypeCode> PlotNFT::static_create_type_code() {
 		field.is_extended = true;
 		field.name = "server_url";
 		field.code = {33, 32};
+	}
+	{
+		auto& field = type_code->fields[7];
+		field.is_extended = true;
+		field.name = "reward_addr";
+		field.code = {33, 11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[8];
+		field.is_extended = true;
+		field.name = "partial_diff";
+		field.code = {33, 4};
 	}
 	type_code->build();
 	return type_code;
@@ -501,6 +533,8 @@ void read(TypeInput& in, ::mmx::contract::PlotNFT& value, const TypeCode* type_c
 			case 3: vnx::read(in, value.unlock_height, type_code, _field->code.data()); break;
 			case 5: vnx::read(in, value.name, type_code, _field->code.data()); break;
 			case 6: vnx::read(in, value.server_url, type_code, _field->code.data()); break;
+			case 7: vnx::read(in, value.reward_addr, type_code, _field->code.data()); break;
+			case 8: vnx::read(in, value.partial_diff, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -527,6 +561,8 @@ void write(TypeOutput& out, const ::mmx::contract::PlotNFT& value, const TypeCod
 	vnx::write(out, value.unlock_height, type_code, type_code->fields[3].code.data());
 	vnx::write(out, value.name, type_code, type_code->fields[5].code.data());
 	vnx::write(out, value.server_url, type_code, type_code->fields[6].code.data());
+	vnx::write(out, value.reward_addr, type_code, type_code->fields[7].code.data());
+	vnx::write(out, value.partial_diff, type_code, type_code->fields[8].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::PlotNFT& value) {

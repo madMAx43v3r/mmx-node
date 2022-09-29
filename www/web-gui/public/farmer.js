@@ -1,5 +1,5 @@
 
-app.component('farmer-info', {
+Vue.component('farmer-info', {
 	data() {
 		return {
 			data: null
@@ -16,29 +16,62 @@ app.component('farmer-info', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 10000);
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
-		<div class="ui segment" v-if="data">
-			<div class="ui four tiny statistics">
-				<div class="statistic">
-					<div class="value">{{(data.total_balance / 1e6).toFixed(2)}} MMX</div>
-					<div class="label">Virtual Balance</div>
-				</div>
-				<div class="statistic">
-					<div class="value">{{(data.total_virtual_bytes / Math.pow(1000, 4)).toFixed(3)}} TB</div>
-					<div class="label">Virtual Size</div>
-				</div>
-				<div class="statistic">
-					<div class="value">{{(data.total_bytes / Math.pow(1000, 4)).toFixed(3)}} TB</div>
-					<div class="label">Physical Size</div>
-				</div>
-				<div class="statistic">
-					<div class="value">{{((data.total_bytes + data.total_virtual_bytes) / Math.pow(1000, 4)).toFixed(3)}} TB</div>
-					<div class="label">Total Farm Size</div>
-				</div>
-			</div>
+		<div>
+			<v-row class="my-2 py-0">
+				<v-col cols="12" class="my-0 py-0">			
+					<v-card min-height="90">					
+						<v-card-title>
+							<v-row align="center" justify="space-around">
+
+								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">
+									<v-row align="center" justify="space-around">
+										<div v-if="data">{{ (data.total_balance / 1e6).toFixed(2) }} MMX</div>
+										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
+									</v-row>
+									<v-row align="center" justify="space-around" class="subtitle-1">
+										{{ $t('farmer_info.virtual_balance') }} 
+									</v-row>
+								</v-col>
+
+								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
+									<v-row align="center" justify="space-around">
+										<div v-if="data">{{ (data.total_virtual_bytes / Math.pow(1000, 4)).toFixed(3) }} TB</div>
+										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
+									</v-row>
+									<v-row align="center" justify="space-around" class="subtitle-1">
+										{{ $t('farmer_info.virtual_size') }}
+									</v-row>
+								</v-col>
+
+								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
+									<v-row align="center" justify="space-around">
+										<div v-if="data">{{ (data.total_bytes / Math.pow(1000, 4)).toFixed(3) }} TB</div>
+										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
+									</v-row>
+									<v-row align="center" justify="space-around" class="subtitle-1">
+										 {{ $t('farmer_info.physical_size') }}
+									</v-row>
+								</v-col>
+
+								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
+									<v-row align="center" justify="space-around">
+										<div v-if="data">{{ ((data.total_bytes + data.total_virtual_bytes) / Math.pow(1000, 4)).toFixed(3) }} TB</div>
+										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
+									</v-row>
+									<v-row align="center" justify="space-around" class="subtitle-1">
+										{{ $t('farmer_info.total_farm_size') }}
+									</v-row>
+								</v-col>															
+
+							</v-row>
+						</v-card-title>
+					</v-card>
+				</v-col>
+			</v-row>
 		</div>
 		`
 })

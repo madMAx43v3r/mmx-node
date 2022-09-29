@@ -13,6 +13,8 @@
 #include <mmx/Wallet_add_account_return.hxx>
 #include <mmx/Wallet_add_token.hxx>
 #include <mmx/Wallet_add_token_return.hxx>
+#include <mmx/Wallet_cancel_offer.hxx>
+#include <mmx/Wallet_cancel_offer_return.hxx>
 #include <mmx/Wallet_complete.hxx>
 #include <mmx/Wallet_complete_return.hxx>
 #include <mmx/Wallet_create_account.hxx>
@@ -55,12 +57,20 @@
 #include <mmx/Wallet_get_history_return.hxx>
 #include <mmx/Wallet_get_master_seed.hxx>
 #include <mmx/Wallet_get_master_seed_return.hxx>
+#include <mmx/Wallet_get_mnemonic_seed.hxx>
+#include <mmx/Wallet_get_mnemonic_seed_return.hxx>
+#include <mmx/Wallet_get_mnemonic_wordlist.hxx>
+#include <mmx/Wallet_get_mnemonic_wordlist_return.hxx>
 #include <mmx/Wallet_get_token_list.hxx>
 #include <mmx/Wallet_get_token_list_return.hxx>
 #include <mmx/Wallet_get_total_balances_for.hxx>
 #include <mmx/Wallet_get_total_balances_for_return.hxx>
 #include <mmx/Wallet_get_tx_history.hxx>
 #include <mmx/Wallet_get_tx_history_return.hxx>
+#include <mmx/Wallet_is_locked.hxx>
+#include <mmx/Wallet_is_locked_return.hxx>
+#include <mmx/Wallet_lock.hxx>
+#include <mmx/Wallet_lock_return.hxx>
 #include <mmx/Wallet_make_offer.hxx>
 #include <mmx/Wallet_make_offer_return.hxx>
 #include <mmx/Wallet_mark_spent.hxx>
@@ -79,8 +89,6 @@
 #include <mmx/Wallet_reserve_return.hxx>
 #include <mmx/Wallet_reset_cache.hxx>
 #include <mmx/Wallet_reset_cache_return.hxx>
-#include <mmx/Wallet_revoke.hxx>
-#include <mmx/Wallet_revoke_return.hxx>
 #include <mmx/Wallet_send.hxx>
 #include <mmx/Wallet_send_return.hxx>
 #include <mmx/Wallet_send_from.hxx>
@@ -93,6 +101,8 @@
 #include <mmx/Wallet_sign_msg_return.hxx>
 #include <mmx/Wallet_sign_off.hxx>
 #include <mmx/Wallet_sign_off_return.hxx>
+#include <mmx/Wallet_unlock.hxx>
+#include <mmx/Wallet_unlock_return.hxx>
 #include <mmx/Wallet_update_cache.hxx>
 #include <mmx/Wallet_update_cache_return.hxx>
 #include <mmx/account_t.hxx>
@@ -103,6 +113,7 @@
 #include <mmx/spend_options_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_log_entry_t.hxx>
+#include <mmx/tx_type_e.hxx>
 #include <mmx/txin_t.hxx>
 #include <mmx/uint128.hpp>
 #include <vnx/Module.h>
@@ -285,10 +296,10 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::deposit(const uint32_t& 
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::make_offer(const uint32_t& index, const uint32_t& address, const uint64_t& bid_amount, const ::mmx::addr_t& bid_currency, const uint64_t& ask_amount, const ::mmx::addr_t& ask_currency, const ::mmx::spend_options_t& options) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::make_offer(const uint32_t& index, const uint32_t& owner, const uint64_t& bid_amount, const ::mmx::addr_t& bid_currency, const uint64_t& ask_amount, const ::mmx::addr_t& ask_currency, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_make_offer::create();
 	_method->index = index;
-	_method->address = address;
+	_method->owner = owner;
 	_method->bid_amount = bid_amount;
 	_method->bid_currency = bid_currency;
 	_method->ask_amount = ask_amount;
@@ -304,10 +315,11 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::make_offer(const uint32_
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::accept_offer(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> offer, const ::mmx::spend_options_t& options) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::accept_offer(const uint32_t& index, const ::mmx::addr_t& address, const uint32_t& dst_addr, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_accept_offer::create();
 	_method->index = index;
-	_method->offer = offer;
+	_method->address = address;
+	_method->dst_addr = dst_addr;
 	_method->options = options;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_accept_offer_return>(_return_value)) {
@@ -319,14 +331,13 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::accept_offer(const uint3
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::revoke(const uint32_t& index, const ::mmx::hash_t& txid, const ::mmx::addr_t& address, const ::mmx::spend_options_t& options) {
-	auto _method = ::mmx::Wallet_revoke::create();
+std::shared_ptr<const ::mmx::Transaction> WalletClient::cancel_offer(const uint32_t& index, const ::mmx::addr_t& address, const ::mmx::spend_options_t& options) {
+	auto _method = ::mmx::Wallet_cancel_offer::create();
 	_method->index = index;
-	_method->txid = txid;
 	_method->address = address;
 	_method->options = options;
 	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_revoke_return>(_return_value)) {
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_cancel_offer_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Transaction>>();
@@ -350,11 +361,10 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::complete(const uint32_t&
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::sign_off(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx, const vnx::bool_t& cover_fee, const ::mmx::spend_options_t& options) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::sign_off(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_sign_off::create();
 	_method->index = index;
 	_method->tx = tx;
-	_method->cover_fee = cover_fee;
 	_method->options = options;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_sign_off_return>(_return_value)) {
@@ -471,10 +481,12 @@ void WalletClient::update_cache_async(const uint32_t& index) {
 	vnx_request(_method, true);
 }
 
-std::vector<::mmx::tx_entry_t> WalletClient::get_history(const uint32_t& index, const int32_t& since) {
+std::vector<::mmx::tx_entry_t> WalletClient::get_history(const uint32_t& index, const int32_t& since, const vnx::optional<::mmx::tx_type_e>& type, const vnx::optional<::mmx::addr_t>& currency) {
 	auto _method = ::mmx::Wallet_get_history::create();
 	_method->index = index;
 	_method->since = since;
+	_method->type = type;
+	_method->currency = currency;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_history_return>(_return_value)) {
 		return _result->_ret_0;
@@ -665,44 +677,102 @@ std::map<uint32_t, ::mmx::account_t> WalletClient::get_all_accounts() {
 	}
 }
 
-void WalletClient::add_account(const uint32_t& index, const ::mmx::account_t& config) {
+vnx::bool_t WalletClient::is_locked(const uint32_t& index) {
+	auto _method = ::mmx::Wallet_is_locked::create();
+	_method->index = index;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_is_locked_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<vnx::bool_t>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
+void WalletClient::lock(const uint32_t& index) {
+	auto _method = ::mmx::Wallet_lock::create();
+	_method->index = index;
+	vnx_request(_method, false);
+}
+
+void WalletClient::lock_async(const uint32_t& index) {
+	auto _method = ::mmx::Wallet_lock::create();
+	_method->index = index;
+	vnx_request(_method, true);
+}
+
+void WalletClient::unlock(const uint32_t& index, const std::string& passphrase) {
+	auto _method = ::mmx::Wallet_unlock::create();
+	_method->index = index;
+	_method->passphrase = passphrase;
+	vnx_request(_method, false);
+}
+
+void WalletClient::unlock_async(const uint32_t& index, const std::string& passphrase) {
+	auto _method = ::mmx::Wallet_unlock::create();
+	_method->index = index;
+	_method->passphrase = passphrase;
+	vnx_request(_method, true);
+}
+
+void WalletClient::add_account(const uint32_t& index, const ::mmx::account_t& config, const vnx::optional<std::string>& passphrase) {
 	auto _method = ::mmx::Wallet_add_account::create();
 	_method->index = index;
 	_method->config = config;
+	_method->passphrase = passphrase;
 	vnx_request(_method, false);
 }
 
-void WalletClient::add_account_async(const uint32_t& index, const ::mmx::account_t& config) {
+void WalletClient::add_account_async(const uint32_t& index, const ::mmx::account_t& config, const vnx::optional<std::string>& passphrase) {
 	auto _method = ::mmx::Wallet_add_account::create();
 	_method->index = index;
 	_method->config = config;
+	_method->passphrase = passphrase;
 	vnx_request(_method, true);
 }
 
-void WalletClient::create_account(const ::mmx::account_t& config) {
+void WalletClient::create_account(const ::mmx::account_t& config, const vnx::optional<std::string>& passphrase) {
 	auto _method = ::mmx::Wallet_create_account::create();
 	_method->config = config;
+	_method->passphrase = passphrase;
 	vnx_request(_method, false);
 }
 
-void WalletClient::create_account_async(const ::mmx::account_t& config) {
+void WalletClient::create_account_async(const ::mmx::account_t& config, const vnx::optional<std::string>& passphrase) {
 	auto _method = ::mmx::Wallet_create_account::create();
 	_method->config = config;
+	_method->passphrase = passphrase;
 	vnx_request(_method, true);
 }
 
-void WalletClient::create_wallet(const ::mmx::account_t& config, const vnx::optional<::mmx::hash_t>& seed) {
+void WalletClient::create_wallet(const ::mmx::account_t& config, const vnx::optional<std::string>& words, const vnx::optional<std::string>& passphrase) {
 	auto _method = ::mmx::Wallet_create_wallet::create();
 	_method->config = config;
-	_method->seed = seed;
+	_method->words = words;
+	_method->passphrase = passphrase;
 	vnx_request(_method, false);
 }
 
-void WalletClient::create_wallet_async(const ::mmx::account_t& config, const vnx::optional<::mmx::hash_t>& seed) {
+void WalletClient::create_wallet_async(const ::mmx::account_t& config, const vnx::optional<std::string>& words, const vnx::optional<std::string>& passphrase) {
 	auto _method = ::mmx::Wallet_create_wallet::create();
 	_method->config = config;
-	_method->seed = seed;
+	_method->words = words;
+	_method->passphrase = passphrase;
 	vnx_request(_method, true);
+}
+
+std::vector<std::string> WalletClient::get_mnemonic_wordlist(const std::string& lang) {
+	auto _method = ::mmx::Wallet_get_mnemonic_wordlist::create();
+	_method->lang = lang;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_mnemonic_wordlist_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<std::string>>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
 }
 
 std::set<::mmx::addr_t> WalletClient::get_token_list() {
@@ -749,6 +819,19 @@ void WalletClient::rem_token_async(const ::mmx::addr_t& address) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<::mmx::hash_t>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
+std::vector<std::string> WalletClient::get_mnemonic_seed(const uint32_t& index) {
+	auto _method = ::mmx::Wallet_get_mnemonic_seed::create();
+	_method->index = index;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_mnemonic_seed_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<std::string>>();
 	} else {
 		throw std::logic_error("WalletClient: invalid return value");
 	}

@@ -20,6 +20,7 @@
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
+#include <mmx/trade_data_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_info_t.hxx>
 #include <mmx/uint128.hpp>
@@ -54,17 +55,18 @@ public:
 	::vnx::TopicPtr output_challenges = "harvester.challenges";
 	int32_t max_queue_ms = 10000;
 	int32_t update_interval_ms = 1000;
+	int32_t validate_interval_ms = 500;
 	int32_t sync_loss_delay = 60;
 	uint32_t max_history = 1000;
-	uint32_t max_fork_length = 20000;
+	uint32_t max_fork_length = 10000;
 	uint32_t tx_pool_limit = 100;
-	uint32_t tx_verify_interval = 1000;
 	uint32_t max_sync_jobs = 64;
 	uint32_t max_sync_ahead = 1000;
 	uint32_t num_sync_retries = 3;
 	uint32_t replay_height = -1;
 	uint32_t num_vdf_threads = 8;
 	uint32_t vdf_check_divider = 5000;
+	uint32_t vdf_verify_divider = 1;
 	int32_t opencl_device = 0;
 	vnx::bool_t do_sync = true;
 	vnx::bool_t show_warnings = false;
@@ -123,7 +125,6 @@ protected:
 	virtual vnx::optional<::mmx::tx_info_t> get_tx_info_for(std::shared_ptr<const ::mmx::Transaction> tx) const = 0;
 	virtual std::vector<::mmx::hash_t> get_tx_ids_at(const uint32_t& height) const = 0;
 	virtual std::vector<::mmx::hash_t> get_tx_ids_since(const uint32_t& height) const = 0;
-	virtual vnx::optional<::mmx::hash_t> is_revoked(const ::mmx::hash_t& txid, const ::mmx::addr_t& sender) const = 0;
 	virtual void add_block(std::shared_ptr<const ::mmx::Block> block) = 0;
 	virtual void add_transaction(std::shared_ptr<const ::mmx::Transaction> tx, const vnx::bool_t& pre_validate) = 0;
 	virtual std::shared_ptr<const ::mmx::Contract> get_contract(const ::mmx::addr_t& address) const = 0;
@@ -151,7 +152,11 @@ protected:
 	virtual ::mmx::address_info_t get_address_info(const ::mmx::addr_t& address) const = 0;
 	virtual std::vector<std::pair<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>> get_virtual_plots_for(const ::mmx::bls_pubkey_t& farmer_key) const = 0;
 	virtual uint64_t get_virtual_plot_balance(const ::mmx::addr_t& plot_id, const vnx::optional<::mmx::hash_t>& block_hash) const = 0;
-	virtual std::vector<::mmx::offer_data_t> get_offers(const uint32_t& since, const vnx::bool_t& is_open, const vnx::bool_t& is_covered) const = 0;
+	virtual ::mmx::offer_data_t get_offer(const ::mmx::addr_t& address) const = 0;
+	virtual std::vector<::mmx::offer_data_t> get_offers(const uint32_t& since, const vnx::bool_t& is_open) const = 0;
+	virtual std::vector<::mmx::offer_data_t> get_offers_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const uint32_t& since, const vnx::bool_t& is_open) const = 0;
+	virtual std::vector<::mmx::trade_data_t> get_trade_history(const int32_t& limit, const uint32_t& since) const = 0;
+	virtual std::vector<::mmx::trade_data_t> get_trade_history_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& limit, const uint32_t& since) const = 0;
 	virtual ::mmx::uint128 get_total_supply(const ::mmx::addr_t& currency) const = 0;
 	virtual void start_sync(const vnx::bool_t& force) = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::Block> _value) {}
@@ -170,7 +175,7 @@ protected:
 
 template<typename T>
 void NodeBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<NodeBase>(35);
+	_visitor.template type_begin<NodeBase>(36);
 	_visitor.type_field("input_vdfs", 0); _visitor.accept(input_vdfs);
 	_visitor.type_field("input_proof", 1); _visitor.accept(input_proof);
 	_visitor.type_field("input_blocks", 2); _visitor.accept(input_blocks);
@@ -188,25 +193,26 @@ void NodeBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("output_challenges", 14); _visitor.accept(output_challenges);
 	_visitor.type_field("max_queue_ms", 15); _visitor.accept(max_queue_ms);
 	_visitor.type_field("update_interval_ms", 16); _visitor.accept(update_interval_ms);
-	_visitor.type_field("sync_loss_delay", 17); _visitor.accept(sync_loss_delay);
-	_visitor.type_field("max_history", 18); _visitor.accept(max_history);
-	_visitor.type_field("max_fork_length", 19); _visitor.accept(max_fork_length);
-	_visitor.type_field("tx_pool_limit", 20); _visitor.accept(tx_pool_limit);
-	_visitor.type_field("tx_verify_interval", 21); _visitor.accept(tx_verify_interval);
+	_visitor.type_field("validate_interval_ms", 17); _visitor.accept(validate_interval_ms);
+	_visitor.type_field("sync_loss_delay", 18); _visitor.accept(sync_loss_delay);
+	_visitor.type_field("max_history", 19); _visitor.accept(max_history);
+	_visitor.type_field("max_fork_length", 20); _visitor.accept(max_fork_length);
+	_visitor.type_field("tx_pool_limit", 21); _visitor.accept(tx_pool_limit);
 	_visitor.type_field("max_sync_jobs", 22); _visitor.accept(max_sync_jobs);
 	_visitor.type_field("max_sync_ahead", 23); _visitor.accept(max_sync_ahead);
 	_visitor.type_field("num_sync_retries", 24); _visitor.accept(num_sync_retries);
 	_visitor.type_field("replay_height", 25); _visitor.accept(replay_height);
 	_visitor.type_field("num_vdf_threads", 26); _visitor.accept(num_vdf_threads);
 	_visitor.type_field("vdf_check_divider", 27); _visitor.accept(vdf_check_divider);
-	_visitor.type_field("opencl_device", 28); _visitor.accept(opencl_device);
-	_visitor.type_field("do_sync", 29); _visitor.accept(do_sync);
-	_visitor.type_field("show_warnings", 30); _visitor.accept(show_warnings);
-	_visitor.type_field("storage_path", 31); _visitor.accept(storage_path);
-	_visitor.type_field("database_path", 32); _visitor.accept(database_path);
-	_visitor.type_field("router_name", 33); _visitor.accept(router_name);
-	_visitor.type_field("timelord_name", 34); _visitor.accept(timelord_name);
-	_visitor.template type_end<NodeBase>(35);
+	_visitor.type_field("vdf_verify_divider", 28); _visitor.accept(vdf_verify_divider);
+	_visitor.type_field("opencl_device", 29); _visitor.accept(opencl_device);
+	_visitor.type_field("do_sync", 30); _visitor.accept(do_sync);
+	_visitor.type_field("show_warnings", 31); _visitor.accept(show_warnings);
+	_visitor.type_field("storage_path", 32); _visitor.accept(storage_path);
+	_visitor.type_field("database_path", 33); _visitor.accept(database_path);
+	_visitor.type_field("router_name", 34); _visitor.accept(router_name);
+	_visitor.type_field("timelord_name", 35); _visitor.accept(timelord_name);
+	_visitor.template type_end<NodeBase>(36);
 }
 
 

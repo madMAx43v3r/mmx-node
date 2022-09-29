@@ -9,6 +9,10 @@ class PlotNFT extends MutableRelay {
 	
 	optional<string> server_url;
 	
+	optional<addr_t> reward_addr;	// TODO
+	
+	optional<ulong> partial_diff;	// TODO
+	
 	
 	static const uint MAX_UNLOCK_DELAY = 10000;
 	
@@ -22,5 +26,7 @@ class PlotNFT extends MutableRelay {
 	void lock(optional<addr_t> new_target, uint new_unlock_delay);
 	
 	void lock_pool(optional<addr_t> new_target, uint new_unlock_delay, optional<string> new_server_url);
+	
+// 	void set_reward_addr(optional<addr_t> new_reward_addr);
 	
 }

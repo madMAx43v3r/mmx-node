@@ -14,11 +14,12 @@
 namespace mmx {
 
 inline
-txio_entry_t txio_entry_t::create_ex(const txio_key_t& key, const uint32_t& height, const txio_t& txio)
+txio_entry_t txio_entry_t::create_ex(const hash_t& txid, const uint32_t& height, const tx_type_e& type, const txio_t& txio)
 {
 	txio_entry_t entry;
-	entry.key = key;
+	entry.txid = txid;
 	entry.height = height;
+	entry.type = type;
 	entry.txio_t::operator=(txio);
 	return entry;
 }

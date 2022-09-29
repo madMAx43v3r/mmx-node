@@ -33,7 +33,7 @@ class ChainParams {
 	ulong virtual_space_constant = 500;
 	
 	ulong min_time_diff = 10000;
-	ulong initial_time_diff = 10000;		// [iters/sec]
+	ulong initial_time_diff = 50000;		// [iters/sec]
 	ulong initial_space_diff = 10;
 	
 	ulong min_txfee = 100;					// per tx
@@ -42,11 +42,14 @@ class ChainParams {
 	ulong min_txfee_exec = 10000;			// per contract operation
 	ulong min_txfee_deploy = 100000;		// per contract
 	ulong min_txfee_byte = 10;				// per byte of data
+	
 	ulong max_txbase_cost = 10000;
 	ulong max_block_cost = 10000000;
 	
 	double block_time = 10;					// [sec]
 	
 	string vdf_seed;
+	
+	addr_t offer_binary;
 	
 }

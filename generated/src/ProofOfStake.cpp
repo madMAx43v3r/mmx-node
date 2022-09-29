@@ -15,7 +15,6 @@
 #include <mmx/ProofOfStake_validate.hxx>
 #include <mmx/ProofOfStake_validate_return.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/bls_signature_t.hpp>
 #include <mmx/hash_t.hpp>
 
 #include <vnx/vnx.h>
@@ -25,7 +24,7 @@ namespace mmx {
 
 
 const vnx::Hash64 ProofOfStake::VNX_TYPE_HASH(0xf5f1629c4ada2ccfull);
-const vnx::Hash64 ProofOfStake::VNX_CODE_HASH(0xe4e656e0047496b2ull);
+const vnx::Hash64 ProofOfStake::VNX_CODE_HASH(0xaad52054eb3dda66ull);
 
 vnx::Hash64 ProofOfStake::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -63,7 +62,6 @@ void ProofOfStake::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, plot_id);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, farmer_key);
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, contract);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, farmer_sig);
 	_visitor.type_end(*_type_code);
 }
 
@@ -74,7 +72,6 @@ void ProofOfStake::write(std::ostream& _out) const {
 	_out << ", \"plot_id\": "; vnx::write(_out, plot_id);
 	_out << ", \"farmer_key\": "; vnx::write(_out, farmer_key);
 	_out << ", \"contract\": "; vnx::write(_out, contract);
-	_out << ", \"farmer_sig\": "; vnx::write(_out, farmer_sig);
 	_out << "}";
 }
 
@@ -92,7 +89,6 @@ vnx::Object ProofOfStake::to_object() const {
 	_object["plot_id"] = plot_id;
 	_object["farmer_key"] = farmer_key;
 	_object["contract"] = contract;
-	_object["farmer_sig"] = farmer_sig;
 	return _object;
 }
 
@@ -102,8 +98,6 @@ void ProofOfStake::from_object(const vnx::Object& _object) {
 			_entry.second.to(contract);
 		} else if(_entry.first == "farmer_key") {
 			_entry.second.to(farmer_key);
-		} else if(_entry.first == "farmer_sig") {
-			_entry.second.to(farmer_sig);
 		} else if(_entry.first == "plot_id") {
 			_entry.second.to(plot_id);
 		} else if(_entry.first == "score") {
@@ -130,9 +124,6 @@ vnx::Variant ProofOfStake::get_field(const std::string& _name) const {
 	if(_name == "contract") {
 		return vnx::Variant(contract);
 	}
-	if(_name == "farmer_sig") {
-		return vnx::Variant(farmer_sig);
-	}
 	return vnx::Variant();
 }
 
@@ -147,8 +138,6 @@ void ProofOfStake::set_field(const std::string& _name, const vnx::Variant& _valu
 		_value.to(farmer_key);
 	} else if(_name == "contract") {
 		_value.to(contract);
-	} else if(_name == "farmer_sig") {
-		_value.to(farmer_sig);
 	}
 }
 
@@ -176,7 +165,7 @@ std::shared_ptr<vnx::TypeCode> ProofOfStake::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.ProofOfStake";
 	type_code->type_hash = vnx::Hash64(0xf5f1629c4ada2ccfull);
-	type_code->code_hash = vnx::Hash64(0xe4e656e0047496b2ull);
+	type_code->code_hash = vnx::Hash64(0xaad52054eb3dda66ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ProofOfStake);
@@ -189,7 +178,7 @@ std::shared_ptr<vnx::TypeCode> ProofOfStake::static_create_type_code() {
 	type_code->methods[2] = ::mmx::ProofOfSpace_validate::static_get_type_code();
 	type_code->methods[3] = ::mmx::ProofOfStake_calc_hash::static_get_type_code();
 	type_code->methods[4] = ::mmx::ProofOfStake_validate::static_get_type_code();
-	type_code->fields.resize(6);
+	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -219,12 +208,6 @@ std::shared_ptr<vnx::TypeCode> ProofOfStake::static_create_type_code() {
 		field.is_extended = true;
 		field.name = "contract";
 		field.code = {11, 32, 1};
-	}
-	{
-		auto& field = type_code->fields[5];
-		field.is_extended = true;
-		field.name = "farmer_sig";
-		field.code = {11, 96, 1};
 	}
 	type_code->build();
 	return type_code;
@@ -316,7 +299,6 @@ void read(TypeInput& in, ::mmx::ProofOfStake& value, const TypeCode* type_code, 
 			case 2: vnx::read(in, value.plot_id, type_code, _field->code.data()); break;
 			case 3: vnx::read(in, value.farmer_key, type_code, _field->code.data()); break;
 			case 4: vnx::read(in, value.contract, type_code, _field->code.data()); break;
-			case 5: vnx::read(in, value.farmer_sig, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -341,7 +323,6 @@ void write(TypeOutput& out, const ::mmx::ProofOfStake& value, const TypeCode* ty
 	vnx::write(out, value.plot_id, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.farmer_key, type_code, type_code->fields[3].code.data());
 	vnx::write(out, value.contract, type_code, type_code->fields[4].code.data());
-	vnx::write(out, value.farmer_sig, type_code, type_code->fields[5].code.data());
 }
 
 void read(std::istream& in, ::mmx::ProofOfStake& value) {

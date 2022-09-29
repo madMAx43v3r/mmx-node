@@ -17,6 +17,7 @@
 #include <mmx/spend_options_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_log_entry_t.hxx>
+#include <mmx/tx_type_e.hxx>
 #include <mmx/txin_t.hxx>
 #include <mmx/uint128.hpp>
 #include <vnx/Module.h>
@@ -88,11 +89,11 @@ protected:
 	virtual std::shared_ptr<const ::mmx::Transaction> mutate(const uint32_t& index, const ::mmx::addr_t& address, const ::vnx::Object& method, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> execute(const uint32_t& index, const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> deposit(const uint32_t& index, const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const uint64_t& amount, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
-	virtual std::shared_ptr<const ::mmx::Transaction> make_offer(const uint32_t& index, const uint32_t& address, const uint64_t& bid_amount, const ::mmx::addr_t& bid_currency, const uint64_t& ask_amount, const ::mmx::addr_t& ask_currency, const ::mmx::spend_options_t& options) const = 0;
-	virtual std::shared_ptr<const ::mmx::Transaction> accept_offer(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> offer, const ::mmx::spend_options_t& options) const = 0;
-	virtual std::shared_ptr<const ::mmx::Transaction> revoke(const uint32_t& index, const ::mmx::hash_t& txid, const ::mmx::addr_t& address, const ::mmx::spend_options_t& options) const = 0;
+	virtual std::shared_ptr<const ::mmx::Transaction> make_offer(const uint32_t& index, const uint32_t& owner, const uint64_t& bid_amount, const ::mmx::addr_t& bid_currency, const uint64_t& ask_amount, const ::mmx::addr_t& ask_currency, const ::mmx::spend_options_t& options) const = 0;
+	virtual std::shared_ptr<const ::mmx::Transaction> accept_offer(const uint32_t& index, const ::mmx::addr_t& address, const uint32_t& dst_addr, const ::mmx::spend_options_t& options) const = 0;
+	virtual std::shared_ptr<const ::mmx::Transaction> cancel_offer(const uint32_t& index, const ::mmx::addr_t& address, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> complete(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx, const ::mmx::spend_options_t& options) const = 0;
-	virtual std::shared_ptr<const ::mmx::Transaction> sign_off(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx, const vnx::bool_t& cover_fee, const ::mmx::spend_options_t& options) const = 0;
+	virtual std::shared_ptr<const ::mmx::Transaction> sign_off(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Solution> sign_msg(const uint32_t& index, const ::mmx::addr_t& address, const ::mmx::hash_t& msg) const = 0;
 	virtual void send_off(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx) const = 0;
 	virtual void mark_spent(const uint32_t& index, const std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128>& amounts) = 0;
@@ -101,7 +102,7 @@ protected:
 	virtual void release_all() = 0;
 	virtual void reset_cache(const uint32_t& index) = 0;
 	virtual void update_cache(const uint32_t& index) const = 0;
-	virtual std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index, const int32_t& since) const = 0;
+	virtual std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index, const int32_t& since, const vnx::optional<::mmx::tx_type_e>& type, const vnx::optional<::mmx::addr_t>& currency) const = 0;
 	virtual std::vector<::mmx::tx_log_entry_t> get_tx_history(const uint32_t& index, const int32_t& limit, const uint32_t& offset) const = 0;
 	virtual std::vector<::mmx::txin_t> gather_inputs_for(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
 	virtual ::mmx::balance_t get_balance(const uint32_t& index, const ::mmx::addr_t& currency, const uint32_t& min_confirm) const = 0;
@@ -115,13 +116,18 @@ protected:
 	virtual std::vector<::mmx::address_info_t> get_all_address_infos(const int32_t& index) const = 0;
 	virtual ::mmx::account_t get_account(const uint32_t& index) const = 0;
 	virtual std::map<uint32_t, ::mmx::account_t> get_all_accounts() const = 0;
-	virtual void add_account(const uint32_t& index, const ::mmx::account_t& config) = 0;
-	virtual void create_account(const ::mmx::account_t& config) = 0;
-	virtual void create_wallet(const ::mmx::account_t& config, const vnx::optional<::mmx::hash_t>& seed) = 0;
+	virtual vnx::bool_t is_locked(const uint32_t& index) const = 0;
+	virtual void lock(const uint32_t& index) = 0;
+	virtual void unlock(const uint32_t& index, const std::string& passphrase) = 0;
+	virtual void add_account(const uint32_t& index, const ::mmx::account_t& config, const vnx::optional<std::string>& passphrase) = 0;
+	virtual void create_account(const ::mmx::account_t& config, const vnx::optional<std::string>& passphrase) = 0;
+	virtual void create_wallet(const ::mmx::account_t& config, const vnx::optional<std::string>& words, const vnx::optional<std::string>& passphrase) = 0;
+	virtual std::vector<std::string> get_mnemonic_wordlist(const std::string& lang) const = 0;
 	virtual std::set<::mmx::addr_t> get_token_list() const = 0;
 	virtual void add_token(const ::mmx::addr_t& address) = 0;
 	virtual void rem_token(const ::mmx::addr_t& address) = 0;
 	virtual ::mmx::hash_t get_master_seed(const uint32_t& index) const = 0;
+	virtual std::vector<std::string> get_mnemonic_seed(const uint32_t& index) const = 0;
 	virtual std::shared_ptr<const ::mmx::FarmerKeys> get_farmer_keys(const uint32_t& index) const = 0;
 	virtual std::vector<std::shared_ptr<const ::mmx::FarmerKeys>> get_all_farmer_keys() const = 0;
 	virtual void http_request_async(std::shared_ptr<const ::vnx::addons::HttpRequest> request, const std::string& sub_path, const vnx::request_id_t& _request_id) const = 0;

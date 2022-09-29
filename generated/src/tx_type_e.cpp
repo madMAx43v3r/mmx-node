@@ -11,7 +11,7 @@ namespace mmx {
 
 
 const vnx::Hash64 tx_type_e::VNX_TYPE_HASH(0x3b7f577c2cfd4c91ull);
-const vnx::Hash64 tx_type_e::VNX_CODE_HASH(0xcaef97446a492b6aull);
+const vnx::Hash64 tx_type_e::VNX_CODE_HASH(0xa6b388d8faeef530ull);
 
 vnx::Hash64 tx_type_e::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -46,6 +46,7 @@ vnx::bool_t tx_type_e::is_valid() const {
 		case RECEIVE: return true;
 		case REWARD: return true;
 		case SPEND: return true;
+		case TXFEE: return true;
 	}
 	return false;
 }
@@ -55,6 +56,7 @@ std::string tx_type_e::to_string() const {
 		case RECEIVE: return "\"RECEIVE\"";
 		case REWARD: return "\"REWARD\"";
 		case SPEND: return "\"SPEND\"";
+		case TXFEE: return "\"TXFEE\"";
 	}
 	return std::to_string(value);
 }
@@ -64,6 +66,7 @@ std::string tx_type_e::to_string_value() const {
 		case RECEIVE: return "RECEIVE";
 		case REWARD: return "REWARD";
 		case SPEND: return "SPEND";
+		case TXFEE: return "TXFEE";
 	}
 	return std::to_string(value);
 }
@@ -73,6 +76,7 @@ std::string tx_type_e::to_string_value_full() const {
 		case RECEIVE: return "mmx.tx_type_e.RECEIVE";
 		case REWARD: return "mmx.tx_type_e.REWARD";
 		case SPEND: return "mmx.tx_type_e.SPEND";
+		case TXFEE: return "mmx.tx_type_e.TXFEE";
 	}
 	return std::to_string(value);
 }
@@ -90,6 +94,7 @@ void tx_type_e::from_string_value(const std::string& _name) {
 		if(_name == "RECEIVE") value = RECEIVE;
 		else if(_name == "REWARD") value = REWARD;
 		else if(_name == "SPEND") value = SPEND;
+		else if(_name == "TXFEE") value = TXFEE;
 		else value = enum_t(vnx::hash64(_name));
 	} else {
 		value = enum_t(std::stoul(_name.c_str(), nullptr, 0));
@@ -102,6 +107,7 @@ void tx_type_e::accept(vnx::Visitor& _visitor) const {
 		case RECEIVE: _name = "RECEIVE"; break;
 		case REWARD: _name = "REWARD"; break;
 		case SPEND: _name = "SPEND"; break;
+		case TXFEE: _name = "TXFEE"; break;
 	}
 	_visitor.enum_value(value, _name);
 }
@@ -111,6 +117,7 @@ void tx_type_e::write(std::ostream& _out) const {
 		case RECEIVE: _out << "\"RECEIVE\""; break;
 		case REWARD: _out << "\"REWARD\""; break;
 		case SPEND: _out << "\"SPEND\""; break;
+		case TXFEE: _out << "\"TXFEE\""; break;
 		default: _out << value;
 	}
 }
@@ -171,7 +178,7 @@ std::shared_ptr<vnx::TypeCode> tx_type_e::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.tx_type_e";
 	type_code->type_hash = vnx::Hash64(0x3b7f577c2cfd4c91ull);
-	type_code->code_hash = vnx::Hash64(0xcaef97446a492b6aull);
+	type_code->code_hash = vnx::Hash64(0xa6b388d8faeef530ull);
 	type_code->is_native = true;
 	type_code->is_enum = true;
 	type_code->native_size = sizeof(::mmx::tx_type_e);
@@ -186,6 +193,7 @@ std::shared_ptr<vnx::TypeCode> tx_type_e::static_create_type_code() {
 	type_code->enum_map[940023181] = "RECEIVE";
 	type_code->enum_map[3842121424] = "REWARD";
 	type_code->enum_map[2341768809] = "SPEND";
+	type_code->enum_map[3965595220] = "TXFEE";
 	type_code->build();
 	return type_code;
 }

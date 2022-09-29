@@ -7,6 +7,8 @@
 
 #include <mmx/vm/varptr_t.hpp>
 
+#include <vnx/vnx.h>
+
 
 namespace vnx {
 
@@ -48,11 +50,16 @@ void write(vnx::TypeOutput& out, const mmx::vm::varptr_t& value, const vnx::Type
 {
 	if(auto var = value.get()) {
 		const auto data = mmx::vm::serialize(*var, false, false);
-		write(out, (uint32_t)data.second);
-		out.write(data.first, data.second);
+		try {
+			write(out, uint32_t(data.second));
+			out.write(data.first, data.second);
+		} catch(...) {
+			::free(data.first);
+			throw;
+		}
 		::free(data.first);
 	} else {
-		write(out, (uint32_t)0);
+		write(out, uint32_t(0));
 	}
 }
 
@@ -77,7 +84,8 @@ void read(std::istream& in, mmx::vm::varptr_t& value)
 
 void write(std::ostream& out, const mmx::vm::varptr_t& value)
 {
-	vnx::write(out, mmx::vm::to_string(value.get()));
+	vnx::DefaultPrinter visitor(out);
+	vnx::accept(visitor, value);
 }
 
 void accept(vnx::Visitor& visitor, const mmx::vm::varptr_t& value)
@@ -93,8 +101,29 @@ void accept(vnx::Visitor& visitor, const mmx::vm::varptr_t& value)
 		case mmx::vm::TYPE_FALSE:
 			visitor.visit(false);
 			break;
+		case mmx::vm::TYPE_UINT: {
+			const auto& value = ((const mmx::vm::uint_t*)var)->value;
+			if(value >> 128 == 0) {
+				visitor.visit(value.str(10));
+			}
+			else if(value >> 128 == uint128_t(-1)) {
+				visitor.visit(int64_t(uint64_t(value)));
+			}
+			else {
+				visitor.visit(vnx::to_hex_string(&value, sizeof(value), false));
+			}
+			break;
+		}
+		case mmx::vm::TYPE_STRING: {
+			visitor.visit(((const mmx::vm::binary_t*)var)->to_string());
+			break;
+		}
+		case mmx::vm::TYPE_BINARY: {
+			visitor.visit("0x" + ((const mmx::vm::binary_t*)var)->to_hex_string());
+			break;
+		}
 		default:
-			visitor.visit(mmx::vm::to_string(var));
+			visitor.visit("vartype_e(" + std::to_string(int(var->type)) + ")");
 	}
 }
 

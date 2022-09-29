@@ -47,7 +47,7 @@ int main(int argc, char** argv)
 	std::string node_url = ":11330";
 	vnx::read_config("node", node_url);
 
-	vnx::rocksdb::sync_type_codes(root_path + "wallet/type_codes");
+	mmx::sync_type_codes(root_path + "wallet/type_codes");
 
 	vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
 	proxy->forward_list = {"Node", "Router"};

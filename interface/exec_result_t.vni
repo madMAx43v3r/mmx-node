@@ -1,0 +1,24 @@
+package mmx;
+
+struct exec_result_t {
+	
+	bool did_fail;
+	
+	uint total_cost;			// static cost + exec cost
+	
+	uint total_fee;
+	
+	vector<txin_t> inputs;
+	
+	vector<txout_t> outputs;
+	
+	optional<string> message;
+	
+	static const uint MAX_MESSAGE_LENGTH = 256;
+	
+	
+	bool is_valid() const;
+	
+	hash_t calc_hash() const;
+	
+}

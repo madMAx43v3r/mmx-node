@@ -19,7 +19,7 @@ cp "${PASSWD_PATH}" "${MMX_HOME}PASSWD"
 if [ -f "${MMX_HOME}NETWORK" ]; then
 	NETWORK=$(cat "${MMX_HOME}NETWORK")
 else
-	NETWORK=testnet6
+	NETWORK=testnet7
 	echo ${NETWORK} > "${MMX_HOME}NETWORK"
 fi
 
@@ -28,7 +28,7 @@ echo NETWORK=${NETWORK}
 NEW_DB_VERSION=MMX2
 DB_VERSION_PATH="${MMX_HOME}DB_VERSION"
 if [ ! -f "${DB_VERSION_PATH}" ] || [ $(cat "${DB_VERSION_PATH}") != ${NEW_DB_VERSION} ]; then
-	rm -r "${MMX_HOME}${NETWORK}/db"
+	rm -rf "${MMX_HOME}${NETWORK}/db"
 	echo "Deleted old DB"
 	echo ${NEW_DB_VERSION} > "${DB_VERSION_PATH}"
 fi

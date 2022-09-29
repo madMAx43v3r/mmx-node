@@ -21,7 +21,6 @@ hash_t Spend::calc_hash(const vnx::bool_t& full_hash) const
 	write_bytes(out, get_type_hash());
 	write_field(out, "version", version);
 	write_field(out, "address", address);
-	write_field(out, "balance", balance);
 	write_field(out, "amount", 	amount);
 
 	if(full_hash) {

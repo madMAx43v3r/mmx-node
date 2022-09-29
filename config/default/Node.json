@@ -1,5 +1,6 @@
 {
 	"num_sync_retries": 3,
 	"sync_loss_delay": 120,
-	"tx_verify_interval": 500
+	"max_fork_length": 5000,
+	"validate_interval_ms": 500
 }

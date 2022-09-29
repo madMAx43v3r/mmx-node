@@ -4,9 +4,6 @@ class ProofOfStake extends ProofOfSpace {
 	
 	addr_t contract;
 	
-	// TODO: obsolete
-	bls_signature_t farmer_sig;
-	
 	
 	hash_t calc_hash(bool full_hash = false) const;
 	

@@ -7,7 +7,6 @@
 #include <mmx/package.hxx>
 #include <mmx/ProofOfSpace.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/bls_signature_t.hpp>
 #include <mmx/hash_t.hpp>
 
 
@@ -17,7 +16,6 @@ class MMX_EXPORT ProofOfStake : public ::mmx::ProofOfSpace {
 public:
 	
 	::mmx::addr_t contract;
-	::mmx::bls_signature_t farmer_sig;
 	
 	typedef ::mmx::ProofOfSpace Super;
 	
@@ -67,14 +65,13 @@ protected:
 
 template<typename T>
 void ProofOfStake::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ProofOfStake>(6);
+	_visitor.template type_begin<ProofOfStake>(5);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("score", 1); _visitor.accept(score);
 	_visitor.type_field("plot_id", 2); _visitor.accept(plot_id);
 	_visitor.type_field("farmer_key", 3); _visitor.accept(farmer_key);
 	_visitor.type_field("contract", 4); _visitor.accept(contract);
-	_visitor.type_field("farmer_sig", 5); _visitor.accept(farmer_sig);
-	_visitor.template type_end<ProofOfStake>(6);
+	_visitor.template type_end<ProofOfStake>(5);
 }
 
 

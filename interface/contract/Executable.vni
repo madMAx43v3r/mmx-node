@@ -5,21 +5,13 @@ import mmx.addr_t;
 
 class Executable extends TokenBase {
 	
-	map<string, uint> fields;
-	
-	map<string, method_t> methods;
-	
-	map<string, addr_t> depends;
-	
-	vector<uchar> constant;
-	
-	vector<uchar> binary;
-	
-	optional<addr_t> source;
+	addr_t binary;
 	
 	string init_method;
 	
 	vector<vnx.Variant> init_args;
+	
+	map<string, addr_t> depends;
 	
 	
 	bool is_valid() const;

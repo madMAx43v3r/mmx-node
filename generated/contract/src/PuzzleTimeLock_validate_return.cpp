@@ -14,7 +14,7 @@ namespace contract {
 
 
 const vnx::Hash64 PuzzleTimeLock_validate_return::VNX_TYPE_HASH(0x89cdd8772f1e587cull);
-const vnx::Hash64 PuzzleTimeLock_validate_return::VNX_CODE_HASH(0x3f325c68410427e6ull);
+const vnx::Hash64 PuzzleTimeLock_validate_return::VNX_CODE_HASH(0x4601b0c46f0dde56ull);
 
 vnx::Hash64 PuzzleTimeLock_validate_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -115,7 +115,7 @@ std::shared_ptr<vnx::TypeCode> PuzzleTimeLock_validate_return::static_create_typ
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.PuzzleTimeLock.validate.return";
 	type_code->type_hash = vnx::Hash64(0x89cdd8772f1e587cull);
-	type_code->code_hash = vnx::Hash64(0x3f325c68410427e6ull);
+	type_code->code_hash = vnx::Hash64(0x4601b0c46f0dde56ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;

@@ -23,12 +23,12 @@ module Node implements vnx.addons.HttpComponent {
 	
 	int max_queue_ms = 10000;				// [ms]
 	int update_interval_ms = 1000;			// [ms]
+	int validate_interval_ms = 500;			// [ms]
 	int sync_loss_delay = 60;				// when to re-sync if stuck [sec]
 	
 	uint max_history = 1000;				// max block header history
-	uint max_fork_length = 20000;			// to keep in memory at most (during sync)
+	uint max_fork_length = 10000;			// to keep in memory at most (during sync)
 	uint tx_pool_limit = 100;				// number of full blocks
-	uint tx_verify_interval = 1000;			// number of blocks
 	
 	uint max_sync_jobs = 64;				// number of parallel requests
 	uint max_sync_ahead = 1000;				// how many blocks to fetch ahead at most
@@ -37,6 +37,7 @@ module Node implements vnx.addons.HttpComponent {
 	
 	uint num_vdf_threads = 8;
 	uint vdf_check_divider = 5000;			// how many VDFs to verify during sync
+	uint vdf_verify_divider = 1;			// TODO: how many VDFs to verify when synced
 	
 	int opencl_device = 0;					// device to use for VDF verification (-1 to disable)
 	
@@ -94,14 +95,13 @@ module Node implements vnx.addons.HttpComponent {
 	@Permission(permission_e.PUBLIC)
 	vector<hash_t> get_tx_ids_since(uint height) const;
 	
-	@Permission(permission_e.PUBLIC)
-	optional<hash_t> is_revoked(hash_t txid, addr_t sender) const;
-	
 	@Permission(PUBLISH)
 	void add_block(Block* block);
 	
 	@Permission(PUBLISH)
 	void add_transaction(Transaction* tx, bool pre_validate);
+	
+	// TOOD: void await_transactions(vector<hash_t> tx_ids, uint min_confirm = 1) const;
 	
 	@Permission(permission_e.PUBLIC)
 	Contract* get_contract(addr_t address) const;
@@ -179,7 +179,19 @@ module Node implements vnx.addons.HttpComponent {
 	ulong get_virtual_plot_balance(addr_t plot_id, optional<hash_t> block_hash) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<offer_data_t> get_offers(uint since, bool is_open, bool is_covered) const;
+	offer_data_t get_offer(addr_t address) const;
+	
+	@Permission(permission_e.PUBLIC)
+	vector<offer_data_t> get_offers(uint since, bool is_open) const;
+	
+	@Permission(permission_e.PUBLIC)
+	vector<offer_data_t> get_offers_for(optional<addr_t> bid, optional<addr_t> ask, uint since, bool is_open = true) const;
+	
+	@Permission(permission_e.PUBLIC)
+	vector<trade_data_t> get_trade_history(int limit = -1, uint since) const;
+	
+	@Permission(permission_e.PUBLIC)
+	vector<trade_data_t> get_trade_history_for(optional<addr_t> bid, optional<addr_t> ask, int limit = -1, uint since) const;
 	
 	@Permission(permission_e.PUBLIC)
 	uint128 get_total_supply(addr_t currency) const;

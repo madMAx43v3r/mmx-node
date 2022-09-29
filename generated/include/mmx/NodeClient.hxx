@@ -20,6 +20,7 @@
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
+#include <mmx/trade_data_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_info_t.hxx>
 #include <mmx/uint128.hpp>
@@ -69,8 +70,6 @@ public:
 	std::vector<::mmx::hash_t> get_tx_ids_at(const uint32_t& height = 0);
 	
 	std::vector<::mmx::hash_t> get_tx_ids_since(const uint32_t& height = 0);
-	
-	vnx::optional<::mmx::hash_t> is_revoked(const ::mmx::hash_t& txid = ::mmx::hash_t(), const ::mmx::addr_t& sender = ::mmx::addr_t());
 	
 	void add_block(std::shared_ptr<const ::mmx::Block> block = nullptr);
 	
@@ -130,7 +129,15 @@ public:
 	
 	uint64_t get_virtual_plot_balance(const ::mmx::addr_t& plot_id = ::mmx::addr_t(), const vnx::optional<::mmx::hash_t>& block_hash = nullptr);
 	
-	std::vector<::mmx::offer_data_t> get_offers(const uint32_t& since = 0, const vnx::bool_t& is_open = 0, const vnx::bool_t& is_covered = 0);
+	::mmx::offer_data_t get_offer(const ::mmx::addr_t& address = ::mmx::addr_t());
+	
+	std::vector<::mmx::offer_data_t> get_offers(const uint32_t& since = 0, const vnx::bool_t& is_open = 0);
+	
+	std::vector<::mmx::offer_data_t> get_offers_for(const vnx::optional<::mmx::addr_t>& bid = nullptr, const vnx::optional<::mmx::addr_t>& ask = nullptr, const uint32_t& since = 0, const vnx::bool_t& is_open = true);
+	
+	std::vector<::mmx::trade_data_t> get_trade_history(const int32_t& limit = -1, const uint32_t& since = 0);
+	
+	std::vector<::mmx::trade_data_t> get_trade_history_for(const vnx::optional<::mmx::addr_t>& bid = nullptr, const vnx::optional<::mmx::addr_t>& ask = nullptr, const int32_t& limit = -1, const uint32_t& since = 0);
 	
 	::mmx::uint128 get_total_supply(const ::mmx::addr_t& currency = ::mmx::addr_t());
 	

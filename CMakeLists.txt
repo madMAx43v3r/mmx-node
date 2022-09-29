@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 if(NOT MSVC)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function")
+	add_compile_options(-Wall -Wno-unused-function)
 endif()
 
 if(MSVC)
@@ -15,13 +15,20 @@ if(MSVC)
 	add_library(secp256k1 INTERFACE IMPORTED)
 	set_target_properties(secp256k1 PROPERTIES INTERFACE_LINK_LIBRARIES ${secp256k1_LIBRARY})
 
+	get_filename_component(secp256k1_IMPORT_PREFIX "${secp256k1_LIBRARY}" PATH)
+	get_filename_component(secp256k1_IMPORT_PREFIX "${secp256k1_IMPORT_PREFIX}" PATH)
+
+	set_target_properties(secp256k1 PROPERTIES
+  		INTERFACE_INCLUDE_DIRECTORIES "${secp256k1_IMPORT_PREFIX}/include"
+	)
+
 	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
 set(ARITH "easy" CACHE STRING "BLS ARITH")
-set(BUILD_BLS_PYTHON_BINDINGS OFF CACHE BOOL "BUILD_BLS_PYTHON_BINDINGS")
 set(BUILD_BLS_TESTS OFF CACHE BOOL "BUILD_BLS_TESTS")
 set(BUILD_BLS_BENCHMARKS OFF CACHE BOOL "BUILD_BLS_BENCHMARKS")
+set(BUILD_BLS_PYTHON_BINDINGS OFF CACHE BOOL "BUILD_BLS_PYTHON_BINDINGS")
 set(LIBBECH32_BUILD_TESTS OFF CACHE BOOL "LIBBECH32_BUILD_TESTS")
 set(LIBBECH32_BUILD_EXAMPLES OFF CACHE BOOL "LIBBECH32_BUILD_EXAMPLES")
 set(DIRENT_BUILD_TESTS OFF CACHE STRING "DIRENT_BUILD_TESTS")
@@ -29,10 +36,8 @@ set(VNX_BUILD_TOOLS ON CACHE STRING "VNX_BUILD_TOOLS")
 
 add_subdirectory(vnx-base)
 add_subdirectory(vnx-addons)
-add_subdirectory(vnx-rocksdb)
-add_subdirectory(libbech32)
-add_subdirectory(bls-signatures)
-#add_subdirectory(exchange)
+add_subdirectory(lib/libbech32)
+add_subdirectory(lib/bls-signatures)
 add_subdirectory(test)
 
 find_package(OpenCL)
@@ -59,8 +64,8 @@ endif()
 
 if(NOT MSVC AND WITH_SECP256K1)
 	message(STATUS "Using secp256k1")
-	include_directories(secp256k1/include)
-	link_directories(secp256k1/.libs)
+	include_directories(lib/secp256k1/include)
+	link_directories(lib/secp256k1/.libs)
 endif()
 
 file(GLOB GENERATED_SOURCE_FILES
@@ -91,15 +96,14 @@ add_library(mmx_iface SHARED
 	src/skey_t.cpp
 	src/hash_t.cpp
 	src/addr_t.cpp
-	src/txio_key_t.cpp
 	src/signature_t.cpp
 	src/bls_signature_t.cpp
+	src/exec_result_t.cpp
 	src/contract/NFT.cpp
 	src/contract/Data.cpp
 	src/contract/WebData.cpp
 	src/contract/PubKey.cpp
 	src/contract/MultiSig.cpp
-	src/contract/Offer.cpp
 	src/contract/Token.cpp
 	src/contract/TokenBase.cpp
 	src/contract/TimeLock.cpp
@@ -108,6 +112,7 @@ add_library(mmx_iface SHARED
 	src/contract/MutableRelay.cpp
 	src/contract/VirtualPlot.cpp
 	src/contract/VoteSheet.cpp
+	src/contract/Binary.cpp
 	src/contract/Executable.cpp
 	src/contract/method_t.cpp
 	src/solution/PubKey.cpp
@@ -117,12 +122,16 @@ add_library(mmx_iface SHARED
 	src/solution/BLS_PubKey.cpp
 	src/operation/Mint.cpp
 	src/operation/Spend.cpp
-	src/operation/Revoke.cpp
 	src/operation/Mutate.cpp
 	src/operation/Deposit.cpp
 	src/operation/Execute.cpp
 	src/operation/Vote.cpp
 	src/sha256_avx2.cpp
+	src/sha256_ni.cpp
+	src/sha512.cpp
+	src/hmac_sha512.cpp
+	src/wordlist_en.cpp
+	src/mnemonic.cpp
 )
 
 if(MSVC)
@@ -149,11 +158,13 @@ add_library(mmx_vm SHARED
 	src/vm/StorageProxy.cpp
 	src/vm/StorageRAM.cpp
 	src/vm/StorageCache.cpp
-	src/vm/StorageRocksDB.cpp
+	src/vm/StorageDB.cpp
+	src/vm_interface.cpp
 )
 
 add_library(mmx_db SHARED
 	src/DataBase.cpp
+	src/table.cpp
 )
 
 add_library(mmx_modules SHARED
@@ -169,7 +180,6 @@ add_library(mmx_modules SHARED
 	src/WebAPI.cpp
 	src/OCL_VDF.cpp
 	src/TimeLordRewards.cpp
-	src/vm_interface.cpp
 )
 
 add_library(uint256_t STATIC
@@ -224,15 +234,16 @@ target_link_libraries(mmx_vm_iface uint256_t vnx_base)
 
 target_link_libraries(mmx_vm mmx_db mmx_iface)
 
-target_link_libraries(mmx_db uint256_t vnx_base)
+target_link_libraries(mmx_db uint256_t vnx_base secp256k1)
 
-target_link_libraries(mmx_modules vnx_rocksdb mmx_chiapos mmx_vm mmx_db mmx_iface)
+target_link_libraries(mmx_modules mmx_chiapos mmx_vm mmx_db mmx_iface)
 
 if(NOT MSVC)
 	target_link_libraries(mmx_db OpenMP::OpenMP_CXX)
 	target_link_libraries(mmx_modules OpenMP::OpenMP_CXX)
-
-	set_source_files_properties(src/sha256_avx2.cpp PROPERTIES COMPILE_FLAGS -mavx2)
+	
+	set_source_files_properties(src/sha256_ni.cpp PROPERTIES COMPILE_FLAGS "-mavx2 -msha")
+	set_source_files_properties(src/sha256_avx2.cpp PROPERTIES COMPILE_FLAGS "-mavx2")
 endif()
 
 if(OpenCL_FOUND)
@@ -254,8 +265,9 @@ add_executable(mmx_timelord src/mmx_timelord.cpp)
 add_executable(mmx_harvester src/mmx_harvester.cpp)
 add_executable(mmx_timelord_rewards src/mmx_timelord_rewards.cpp)
 add_executable(generate_passwd src/generate_passwd.cpp)
+add_executable(create_offer_binary src/contract/create_offer_binary.cpp)
 
-target_link_libraries(mmx mmx_iface)
+target_link_libraries(mmx mmx_iface mmx_vm)
 target_link_libraries(mmx_node mmx_modules)
 target_link_libraries(mmx_farmer mmx_modules)
 target_link_libraries(mmx_wallet mmx_modules)
@@ -263,6 +275,7 @@ target_link_libraries(mmx_timelord mmx_modules)
 target_link_libraries(mmx_harvester mmx_modules)
 target_link_libraries(mmx_timelord_rewards mmx_modules)
 target_link_libraries(generate_passwd mmx_iface)
+target_link_libraries(create_offer_binary mmx_vm)
 
 add_executable(tx_bench src/tx_bench.cpp)
 

@@ -12,7 +12,6 @@
 #include <mmx/uint128.hpp>
 #include <mmx/txin_t.hxx>
 #include <mmx/txout_t.hxx>
-#include <mmx/txio_key_t.hxx>
 #include <mmx/ulong_fraction_t.hxx>
 #include <mmx/time_segment_t.hxx>
 #include <mmx/contract/method_t.hxx>
@@ -110,12 +109,6 @@ inline void write_bytes(vnx::OutputBuffer& out, const vnx::Object& value) {
 	write_bytes(out, value.field);
 }
 
-inline void write_bytes(vnx::OutputBuffer& out, const txio_key_t& value)
-{
-	write_bytes(out, value.txid);
-	write_bytes(out, value.index);
-}
-
 inline void write_bytes(vnx::OutputBuffer& out, const txio_t& value)
 {
 	write_bytes(out, value.address);
@@ -132,7 +125,6 @@ inline void write_bytes(vnx::OutputBuffer& out, const txout_t& value)
 	write_bytes(out, value.address);
 	write_bytes(out, value.contract);
 	write_bytes(out, value.amount);
-	write_bytes(out, value.sender);
 }
 
 inline void write_bytes(vnx::OutputBuffer& out, const ulong_fraction_t& value)

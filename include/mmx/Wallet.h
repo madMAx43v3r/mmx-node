@@ -13,9 +13,8 @@
 #include <mmx/ChainParams.hxx>
 #include <mmx/BLS_Wallet.h>
 #include <mmx/ECDSA_Wallet.h>
-#include <mmx/txio_key_t.hpp>
+#include <mmx/multi_table.h>
 
-#include <vnx/rocksdb/multi_table.h>
 #include <vnx/addons/HttpInterface.h>
 
 
@@ -61,20 +60,20 @@ protected:
 			const uint64_t& amount, const addr_t& currency, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> make_offer(
-			const uint32_t& index, const uint32_t& address, const uint64_t& bid_amount, const addr_t& bid_currency,
+			const uint32_t& index, const uint32_t& owner, const uint64_t& bid_amount, const addr_t& bid_currency,
 			const uint64_t& ask_amount, const addr_t& ask_currency, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> accept_offer(
-			const uint32_t& index, std::shared_ptr<const Transaction> offer, const spend_options_t& options) const override;
+			const uint32_t& index, const addr_t& address, const uint32_t& dst_addr, const spend_options_t& options) const override;
 
-	std::shared_ptr<const Transaction> revoke(
-			const uint32_t& index, const hash_t& txid, const addr_t& address, const spend_options_t& options) const override;
+	std::shared_ptr<const Transaction> cancel_offer(
+			const uint32_t& index, const addr_t& address, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> complete(
 			const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const;
 
 	std::shared_ptr<const Transaction> sign_off(
-			const uint32_t& index, std::shared_ptr<const Transaction> tx, const vnx::bool_t& cover_fee, const spend_options_t& options) const override;
+			const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Solution> sign_msg(const uint32_t& index, const addr_t& address, const hash_t& msg) const override;
 
@@ -95,7 +94,8 @@ protected:
 	std::vector<txin_t> gather_inputs_for(	const uint32_t& index, const uint64_t& amount,
 											const addr_t& currency, const spend_options_t& options) const override;
 
-	std::vector<tx_entry_t> get_history(const uint32_t& index, const int32_t& since) const override;
+	std::vector<tx_entry_t> get_history(const uint32_t& index, const int32_t& since,
+										const vnx::optional<tx_type_e>& type, const vnx::optional<addr_t>& currency) const override;
 
 	std::vector<tx_log_entry_t> get_tx_history(const uint32_t& index, const int32_t& limit, const uint32_t& offset) const override;
 
@@ -125,11 +125,17 @@ protected:
 
 	std::map<uint32_t, account_t> get_all_accounts() const override;
 
-	void add_account(const uint32_t& index, const account_t& config) override;
+	bool is_locked(const uint32_t& index) const override;
 
-	void create_account(const account_t& config) override;
+	void lock(const uint32_t& index) override;
 
-	void create_wallet(const account_t& config, const vnx::optional<hash_t>& seed) override;
+	void unlock(const uint32_t& index, const std::string& passphrase) override;
+
+	void add_account(const uint32_t& index, const account_t& config, const vnx::optional<std::string>& passphrase) override;
+
+	void create_account(const account_t& config, const vnx::optional<std::string>& passphrase) override;
+
+	void create_wallet(const account_t& config, const vnx::optional<std::string>& words, const vnx::optional<std::string>& passphrase) override;
 
 	std::set<addr_t> get_token_list() const override;
 
@@ -138,6 +144,10 @@ protected:
 	void rem_token(const addr_t& address) override;
 
 	hash_t get_master_seed(const uint32_t& index) const override;
+
+	std::vector<std::string> get_mnemonic_seed(const uint32_t& index) const override;
+
+	std::vector<std::string> get_mnemonic_wordlist(const std::string& lang) const override;
 
 	void http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
 							const vnx::request_id_t& request_id) const override;
@@ -154,9 +164,8 @@ private:
 	std::vector<std::shared_ptr<ECDSA_Wallet>> wallets;
 	std::vector<std::shared_ptr<BLS_Wallet>> bls_wallets;
 
-	mutable vnx::rocksdb::multi_table<addr_t, tx_log_entry_t> tx_log;
+	mutable mmx::hash_multi_table<addr_t, tx_log_entry_t> tx_log;
 
-	hash_t genesis_hash;
 	std::shared_ptr<const ChainParams> params;
 	std::shared_ptr<vnx::addons::HttpInterface<Wallet>> http;
 

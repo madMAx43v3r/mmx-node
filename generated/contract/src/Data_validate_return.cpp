@@ -14,7 +14,7 @@ namespace contract {
 
 
 const vnx::Hash64 Data_validate_return::VNX_TYPE_HASH(0x665ccb0bd661c914ull);
-const vnx::Hash64 Data_validate_return::VNX_CODE_HASH(0xef2b999fe1b7e046ull);
+const vnx::Hash64 Data_validate_return::VNX_CODE_HASH(0x96187533cfbe19f6ull);
 
 vnx::Hash64 Data_validate_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -115,7 +115,7 @@ std::shared_ptr<vnx::TypeCode> Data_validate_return::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.Data.validate.return";
 	type_code->type_hash = vnx::Hash64(0x665ccb0bd661c914ull);
-	type_code->code_hash = vnx::Hash64(0xef2b999fe1b7e046ull);
+	type_code->code_hash = vnx::Hash64(0x96187533cfbe19f6ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;

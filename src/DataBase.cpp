@@ -193,6 +193,7 @@ Table::Table(const std::string& root_path, const options_t& options)
 
 std::shared_ptr<Table::block_t> Table::read_block(const std::string& name) const
 {
+	// TODO: handle unexpected read errors here
 	auto block = std::make_shared<block_t>();
 	block->name = name;
 	block->file.open(root_path + '/' + name, "rb");
@@ -242,37 +243,70 @@ void Table::insert_entry(uint32_t version, std::shared_ptr<db_val_t> key, std::s
 	mem_block_size += key->size + value->size;
 }
 
-std::shared_ptr<db_val_t> Table::find(std::shared_ptr<db_val_t> key) const
+std::shared_ptr<db_val_t> Table::find(std::shared_ptr<db_val_t> key, const uint32_t max_version) const
 {
 	if(!key) {
 		return nullptr;
 	}
-	auto iter = mem_index.find(key);
-	if(iter != mem_index.end()) {
-		return iter->second.first;
+	{
+		auto iter = mem_index.find(key);
+		if(iter != mem_index.end()) {
+			if(iter->second.second <= max_version) {
+				return iter->second.first;
+			} else {
+				auto iter = mem_block.lower_bound(std::make_pair(key, max_version));
+				if(iter != mem_block.end() && *iter->first.first == *key) {
+					return iter->second;
+				}
+			}
+		}
 	}
-	for(auto block = blocks.rbegin(); block != blocks.rend(); ++block) {
-		if(auto value = find(*block, key)) {
-			return value;
+	for(auto iter = blocks.rbegin(); iter != blocks.rend(); ++iter) {
+		const auto& block = *iter;
+		if(block->min_version <= max_version) {
+			if(auto value = find(block, key, max_version)) {
+				return value;
+			}
 		}
 	}
 	return nullptr;
 }
 
-std::shared_ptr<db_val_t> Table::find(std::shared_ptr<block_t> block, std::shared_ptr<db_val_t> key) const
+std::shared_ptr<db_val_t> Table::find(std::shared_ptr<const block_t> block, std::shared_ptr<db_val_t> key, const uint32_t max_version) const
 {
 	auto res = key;
-	uint32_t version; bool is_match;
+	bool is_match = false;
+	uint32_t version = -1;
 	const auto pos = lower_bound(block, version, res, is_match);
 
 	std::shared_ptr<db_val_t> value;
 	if(is_match) {
-		read_value_at(block->file, block->index[pos], key, value);
+		const auto offset = block->index[pos] + 8 + key->size;
+		if(offset > block->index_offset) {
+			throw std::logic_error("offset > index_offset");
+		}
+		vnx::FileSectionInputStream stream(block->file.get_handle(), offset, block->index_offset - offset, 1024);
+		vnx::TypeInput in(&stream);
+		read_value(in, value);
+
+		while(version > max_version) {
+			try {
+				std::shared_ptr<db_val_t> key_;
+				read_entry(in, version, key_, value);
+				if(*key_ != *key) {
+					value = nullptr;
+					break;
+				}
+			} catch(const std::underflow_error& ex) {
+				value = nullptr;
+				break;
+			}
+		}
 	}
 	return value;
 }
 
-size_t Table::lower_bound(std::shared_ptr<block_t> block, uint32_t& version, std::shared_ptr<db_val_t>& key, bool& is_match) const
+size_t Table::lower_bound(std::shared_ptr<const block_t> block, uint32_t& version, std::shared_ptr<db_val_t>& key, bool& is_match) const
 {
 	if(!key) {
 		throw std::logic_error("!key");
@@ -319,6 +353,7 @@ void Table::commit(const uint32_t new_version)
 		throw std::logic_error("commit(): new version <= current version");
 	}
 	{
+		// TODO: these can accumulate to form large write_log.dat files
 		const std::string cmd = "commit";
 		write_entry(write_log.out, -1,
 				std::make_shared<db_val_t>(cmd.c_str(), cmd.size()),
@@ -372,7 +407,7 @@ void Table::revert(const uint32_t new_version)
 			dst.seek_to(block_header_size);
 
 			std::shared_ptr<db_val_t> prev;
-			for(size_t i = 0; i < block->total_count; ++i) {
+			for(uint64_t i = 0; i < block->total_count; ++i) {
 				uint32_t version;
 				std::shared_ptr<db_val_t> key;
 				std::shared_ptr<db_val_t> value;
@@ -414,17 +449,13 @@ void Table::revert(const uint32_t new_version)
 	for(auto iter = mem_index.begin(); iter != mem_index.end();) {
 		const auto& key = iter->first;
 		if(iter->second.second >= new_version) {
-			if(!mem_block.empty()) {
-				const auto found = mem_block.lower_bound(std::make_pair(key, -1));
-				if(found != mem_block.end()) {
-					if(*found->first.first == *key) {
-						iter->second = std::make_pair(found->second, found->first.second);
-						iter++;
-						continue;
-					}
-				}
+			const auto found = mem_block.lower_bound(std::make_pair(key, -1));
+			if(found != mem_block.end() && *found->first.first == *key) {
+				iter->second = std::make_pair(found->second, found->first.second);
+				iter++;
+			} else {
+				iter = mem_index.erase(iter);
 			}
-			iter = mem_index.erase(iter);
 		} else {
 			iter++;
 		}
@@ -602,7 +633,7 @@ void Table::check_rewrite()
 	check_rewrite();
 }
 
-void Table::write_block_header(vnx::TypeOutput& out, std::shared_ptr<block_t> block) const
+void Table::write_block_header(vnx::TypeOutput& out, std::shared_ptr<const block_t> block) const
 {
 	vnx::write(out, uint16_t(0));
 	vnx::write(out, block->level);
@@ -612,7 +643,7 @@ void Table::write_block_header(vnx::TypeOutput& out, std::shared_ptr<block_t> bl
 	vnx::write(out, block->index_offset);
 }
 
-void Table::write_block_index(vnx::TypeOutput& out, std::shared_ptr<block_t> block) const
+void Table::write_block_index(vnx::TypeOutput& out, std::shared_ptr<const block_t> block) const
 {
 	vnx::write(out, uint64_t(block->index.size()));
 	out.write(block->index.data(), block->index.size() * 8);

@@ -11,7 +11,7 @@ namespace mmx {
 
 
 const vnx::Hash64 account_t::VNX_TYPE_HASH(0xc0c163f453729a7ull);
-const vnx::Hash64 account_t::VNX_CODE_HASH(0xe195902e747bb62cull);
+const vnx::Hash64 account_t::VNX_CODE_HASH(0x4c7e161830e543a3ull);
 
 vnx::Hash64 account_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,6 +48,8 @@ void account_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, num_addresses);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, name);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, key_file);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, finger_print);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, with_passphrase);
 	_visitor.type_end(*_type_code);
 }
 
@@ -57,6 +59,8 @@ void account_t::write(std::ostream& _out) const {
 	_out << ", \"num_addresses\": "; vnx::write(_out, num_addresses);
 	_out << ", \"name\": "; vnx::write(_out, name);
 	_out << ", \"key_file\": "; vnx::write(_out, key_file);
+	_out << ", \"finger_print\": "; vnx::write(_out, finger_print);
+	_out << ", \"with_passphrase\": "; vnx::write(_out, with_passphrase);
 	_out << "}";
 }
 
@@ -73,12 +77,16 @@ vnx::Object account_t::to_object() const {
 	_object["num_addresses"] = num_addresses;
 	_object["name"] = name;
 	_object["key_file"] = key_file;
+	_object["finger_print"] = finger_print;
+	_object["with_passphrase"] = with_passphrase;
 	return _object;
 }
 
 void account_t::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "index") {
+		if(_entry.first == "finger_print") {
+			_entry.second.to(finger_print);
+		} else if(_entry.first == "index") {
 			_entry.second.to(index);
 		} else if(_entry.first == "key_file") {
 			_entry.second.to(key_file);
@@ -86,6 +94,8 @@ void account_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(name);
 		} else if(_entry.first == "num_addresses") {
 			_entry.second.to(num_addresses);
+		} else if(_entry.first == "with_passphrase") {
+			_entry.second.to(with_passphrase);
 		}
 	}
 }
@@ -103,6 +113,12 @@ vnx::Variant account_t::get_field(const std::string& _name) const {
 	if(_name == "key_file") {
 		return vnx::Variant(key_file);
 	}
+	if(_name == "finger_print") {
+		return vnx::Variant(finger_print);
+	}
+	if(_name == "with_passphrase") {
+		return vnx::Variant(with_passphrase);
+	}
 	return vnx::Variant();
 }
 
@@ -115,6 +131,10 @@ void account_t::set_field(const std::string& _name, const vnx::Variant& _value) 
 		_value.to(name);
 	} else if(_name == "key_file") {
 		_value.to(key_file);
+	} else if(_name == "finger_print") {
+		_value.to(finger_print);
+	} else if(_name == "with_passphrase") {
+		_value.to(with_passphrase);
 	}
 }
 
@@ -142,11 +162,11 @@ std::shared_ptr<vnx::TypeCode> account_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.account_t";
 	type_code->type_hash = vnx::Hash64(0xc0c163f453729a7ull);
-	type_code->code_hash = vnx::Hash64(0xe195902e747bb62cull);
+	type_code->code_hash = vnx::Hash64(0x4c7e161830e543a3ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::account_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<account_t>>(); };
-	type_code->fields.resize(4);
+	type_code->fields.resize(6);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -171,6 +191,18 @@ std::shared_ptr<vnx::TypeCode> account_t::static_create_type_code() {
 		field.is_extended = true;
 		field.name = "key_file";
 		field.code = {32};
+	}
+	{
+		auto& field = type_code->fields[4];
+		field.is_extended = true;
+		field.name = "finger_print";
+		field.code = {32};
+	}
+	{
+		auto& field = type_code->fields[5];
+		field.data_size = 1;
+		field.name = "with_passphrase";
+		field.code = {31};
 	}
 	type_code->build();
 	return type_code;
@@ -220,11 +252,15 @@ void read(TypeInput& in, ::mmx::account_t& value, const TypeCode* type_code, con
 		if(const auto* const _field = type_code->field_map[1]) {
 			vnx::read_value(_buf + _field->offset, value.num_addresses, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[5]) {
+			vnx::read_value(_buf + _field->offset, value.with_passphrase, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 2: vnx::read(in, value.name, type_code, _field->code.data()); break;
 			case 3: vnx::read(in, value.key_file, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.finger_print, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -243,11 +279,13 @@ void write(TypeOutput& out, const ::mmx::account_t& value, const TypeCode* type_
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(8);
+	char* const _buf = out.write(9);
 	vnx::write_value(_buf + 0, value.index);
 	vnx::write_value(_buf + 4, value.num_addresses);
+	vnx::write_value(_buf + 8, value.with_passphrase);
 	vnx::write(out, value.name, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.key_file, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.finger_print, type_code, type_code->fields[4].code.data());
 }
 
 void read(std::istream& in, ::mmx::account_t& value) {

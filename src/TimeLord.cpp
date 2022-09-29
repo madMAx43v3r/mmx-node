@@ -233,8 +233,9 @@ void TimeLord::update()
 
 				proof->timelord_reward = reward_addr;
 				proof->timelord_key = timelord_key;
-				proof->hash = proof->calc_hash();
+				proof->hash = proof->calc_hash().first;
 				proof->timelord_sig = signature_t::sign(timelord_sk, proof->hash);
+				proof->content_hash = proof->calc_hash().second;
 
 				publish(proof, output_proofs);
 

@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 		for(uint32_t i = 0; i < num_entries; ++i) {
 			vnx::test::expect(db_read<uint64_t>(table->find(db_write(uint32_t(i * 2)))), i);
 		}
-		if(false) {
+		{
 			auto iter = std::make_shared<mmx::Table::Iterator>(table);
 			iter->seek_begin();
 			uint32_t i = 0;
@@ -74,6 +74,21 @@ int main(int argc, char** argv)
 		}
 		table->flush();
 
+		for(uint32_t i = 0; i < num_entries; ++i) {
+			vnx::test::expect(db_read<uint64_t>(table->find(db_write(uint32_t(i * 2)))), i);
+		}
+		{
+			auto iter = std::make_shared<mmx::Table::Iterator>(table);
+			iter->seek_begin();
+			uint32_t i = 0;
+			while(iter->is_valid()) {
+				vnx::test::expect(db_read<uint32_t>(iter->key()), i * 2);
+				vnx::test::expect(db_read<uint64_t>(iter->value()), i);
+				iter->next();
+				i++;
+			}
+		}
+
 		for(uint32_t i = 2 * num_entries; i > 0; --i) {
 			table->insert(db_write(uint32_t((i - 1) * 2)), db_write(uint64_t(i)));
 		}
@@ -82,10 +97,16 @@ int main(int argc, char** argv)
 		for(uint32_t i = 0; i < 2 * num_entries; ++i) {
 			vnx::test::expect(db_read<uint64_t>(table->find(db_write(uint32_t(i * 2)))), i + 1);
 		}
+		for(uint32_t i = 0; i < num_entries; ++i) {
+			vnx::test::expect(db_read<uint64_t>(table->find(db_write(uint32_t(i * 2)), 0)), i);
+		}
 		table->flush();
 
 		for(uint32_t i = 0; i < 2 * num_entries; ++i) {
 			vnx::test::expect(db_read<uint64_t>(table->find(db_write(uint32_t(i * 2)))), i + 1);
+		}
+		for(uint32_t i = 0; i < num_entries; ++i) {
+			vnx::test::expect(db_read<uint64_t>(table->find(db_write(uint32_t(i * 2)), 0)), i);
 		}
 		if(table->find(db_write(uint32_t(5 * num_entries)))) {
 			throw std::logic_error("found something");

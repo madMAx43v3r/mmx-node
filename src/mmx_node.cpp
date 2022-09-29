@@ -16,6 +16,8 @@
 #include <mmx/WalletClient.hxx>
 #include <mmx/secp256k1.hpp>
 #include <mmx/utils.h>
+#include <sha256_ni.h>
+#include <sha256_avx2.h>
 
 #include <vnx/vnx.h>
 #include <vnx/Server.h>
@@ -53,8 +55,8 @@ int main(int argc, char** argv)
 
 	const auto params = mmx::get_params();
 
-	if(params->vdf_seed == "test1" || params->vdf_seed == "test2" || params->vdf_seed == "test3" || params->vdf_seed == "test4" || params->vdf_seed == "test5") {
-		vnx::log_error() << "This version is not compatible with testnet 1-5, please remove NETWORK file and try again to switch to testnet6.";
+	if(params->vdf_seed == "test1" || params->vdf_seed == "test2" || params->vdf_seed == "test3" || params->vdf_seed == "test4" || params->vdf_seed == "test5" || params->vdf_seed == "test6") {
+		std::cerr << "This version is not compatible with testnet 1-6, please remove NETWORK file and try again to switch to testnet7." << std::endl;
 		vnx::close();
 		return -1;
 	}
@@ -80,12 +82,15 @@ int main(int argc, char** argv)
 	}
 #endif
 
+	vnx::log_info() << "AVX2 support:   " << (avx2_available() ? "yes" : "no");
+	vnx::log_info() << "SHA-NI support: " << (sha256_ni_available() ? "yes" : "no");
+
 	if(with_farmer) {
 		with_wallet = true;
 	} else {
 		with_harvester = false;
 	}
-	vnx::rocksdb::sync_type_codes(root_path + "type_codes");
+	mmx::sync_type_codes(root_path + "type_codes");
 
 	{
 		vnx::Handle<vnx::Terminal> module = new vnx::Terminal("Terminal");

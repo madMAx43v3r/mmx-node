@@ -64,7 +64,7 @@ public:
 	::mmx::node_type_e mode = ::mmx::node_type_e::FULL_NODE;
 	vnx::bool_t do_relay = true;
 	vnx::float64_t max_tx_upload = 2;
-	vnx::float64_t max_tx_peer_upload = 0.25;
+	vnx::float64_t max_pending_cost = 0.2;
 	std::set<std::string> seed_peers;
 	std::set<std::string> fixed_peers;
 	std::set<std::string> block_peers;
@@ -187,7 +187,7 @@ void RouterBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("mode", 46); _visitor.accept(mode);
 	_visitor.type_field("do_relay", 47); _visitor.accept(do_relay);
 	_visitor.type_field("max_tx_upload", 48); _visitor.accept(max_tx_upload);
-	_visitor.type_field("max_tx_peer_upload", 49); _visitor.accept(max_tx_peer_upload);
+	_visitor.type_field("max_pending_cost", 49); _visitor.accept(max_pending_cost);
 	_visitor.type_field("seed_peers", 50); _visitor.accept(seed_peers);
 	_visitor.type_field("fixed_peers", 51); _visitor.accept(fixed_peers);
 	_visitor.type_field("block_peers", 52); _visitor.accept(block_peers);

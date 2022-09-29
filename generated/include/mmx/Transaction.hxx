@@ -11,6 +11,7 @@
 #include <mmx/Solution.hxx>
 #include <mmx/TransactionBase.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/exec_result_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/tx_note_e.hxx>
 #include <mmx/txin_t.hxx>
@@ -22,24 +23,24 @@ namespace mmx {
 
 class MMX_EXPORT Transaction : public ::mmx::TransactionBase {
 public:
-	static const uint32_t MAX_SOLUTIONS = 255;
+	static const uint32_t MAX_SOLUTIONS = 65535;
 	
 	uint32_t version = 0;
 	uint32_t expires = -1;
 	uint32_t fee_ratio = 1024;
+	uint32_t static_cost = 0;
+	uint32_t max_fee_amount = 0;
 	::mmx::tx_note_e note;
 	uint64_t nonce = 0;
-	::mmx::hash_t salt;
+	vnx::optional<::mmx::hash_t> salt;
 	vnx::optional<::mmx::addr_t> sender;
 	std::vector<::mmx::txin_t> inputs;
 	std::vector<::mmx::txout_t> outputs;
-	std::vector<::mmx::txin_t> exec_inputs;
-	std::vector<::mmx::txout_t> exec_outputs;
 	std::vector<std::shared_ptr<const ::mmx::Operation>> execute;
 	std::vector<std::shared_ptr<const ::mmx::Solution>> solutions;
 	std::shared_ptr<const ::mmx::Contract> deploy;
-	std::shared_ptr<const ::mmx::Transaction> parent;
-	vnx::bool_t is_extendable = 0;
+	vnx::optional<::mmx::exec_result_t> exec_result;
+	::mmx::hash_t content_hash;
 	
 	typedef ::mmx::TransactionBase Super;
 	
@@ -56,9 +57,9 @@ public:
 	
 	virtual void finalize();
 	virtual void add_input(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const uint64_t& amount = 0);
-	virtual void add_output(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const uint64_t& amount = 0, const vnx::optional<::mmx::addr_t>& sender = nullptr);
+	virtual void add_output(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const uint64_t& amount = 0);
 	virtual void merge_sign(std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
-	virtual vnx::bool_t is_valid() const;
+	virtual vnx::bool_t is_valid(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	virtual vnx::bool_t is_signed() const;
 	virtual ::mmx::hash_t calc_hash(const vnx::bool_t& full_hash = false) const override;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
@@ -66,9 +67,7 @@ public:
 	virtual ::mmx::txout_t get_output(const uint32_t& index = 0) const;
 	virtual std::vector<::mmx::txin_t> get_inputs() const;
 	virtual std::vector<::mmx::txout_t> get_outputs() const;
-	virtual std::vector<::mmx::txin_t> get_all_inputs() const;
-	virtual std::vector<::mmx::txout_t> get_all_outputs() const;
-	virtual std::vector<std::shared_ptr<const ::mmx::Operation>> get_all_operations() const;
+	virtual std::vector<std::shared_ptr<const ::mmx::Operation>> get_operations() const;
 	virtual std::map<::mmx::addr_t, std::pair<::mmx::uint128, ::mmx::uint128>> get_balance() const;
 	
 	static std::shared_ptr<Transaction> create();
@@ -108,19 +107,19 @@ void Transaction::accept_generic(T& _visitor) const {
 	_visitor.type_field("version", 1); _visitor.accept(version);
 	_visitor.type_field("expires", 2); _visitor.accept(expires);
 	_visitor.type_field("fee_ratio", 3); _visitor.accept(fee_ratio);
-	_visitor.type_field("note", 4); _visitor.accept(note);
-	_visitor.type_field("nonce", 5); _visitor.accept(nonce);
-	_visitor.type_field("salt", 6); _visitor.accept(salt);
-	_visitor.type_field("sender", 7); _visitor.accept(sender);
-	_visitor.type_field("inputs", 8); _visitor.accept(inputs);
-	_visitor.type_field("outputs", 9); _visitor.accept(outputs);
-	_visitor.type_field("exec_inputs", 10); _visitor.accept(exec_inputs);
-	_visitor.type_field("exec_outputs", 11); _visitor.accept(exec_outputs);
+	_visitor.type_field("static_cost", 4); _visitor.accept(static_cost);
+	_visitor.type_field("max_fee_amount", 5); _visitor.accept(max_fee_amount);
+	_visitor.type_field("note", 6); _visitor.accept(note);
+	_visitor.type_field("nonce", 7); _visitor.accept(nonce);
+	_visitor.type_field("salt", 8); _visitor.accept(salt);
+	_visitor.type_field("sender", 9); _visitor.accept(sender);
+	_visitor.type_field("inputs", 10); _visitor.accept(inputs);
+	_visitor.type_field("outputs", 11); _visitor.accept(outputs);
 	_visitor.type_field("execute", 12); _visitor.accept(execute);
 	_visitor.type_field("solutions", 13); _visitor.accept(solutions);
 	_visitor.type_field("deploy", 14); _visitor.accept(deploy);
-	_visitor.type_field("parent", 15); _visitor.accept(parent);
-	_visitor.type_field("is_extendable", 16); _visitor.accept(is_extendable);
+	_visitor.type_field("exec_result", 15); _visitor.accept(exec_result);
+	_visitor.type_field("content_hash", 16); _visitor.accept(content_hash);
 	_visitor.template type_end<Transaction>(17);
 }
 

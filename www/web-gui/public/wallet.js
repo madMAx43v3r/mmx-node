@@ -1,5 +1,5 @@
 
-app.component('wallet-summary', {
+Vue.component('wallet-summary', {
 	data() {
 		return {
 			data: null,
@@ -14,46 +14,46 @@ app.component('wallet-summary', {
 				.then(data => {
 					this.loading = false;
 					this.data = data;
-				});
+				})
 		}
 	},
 	created() {
 		this.update();
 	},
 	template: `
-		<template v-if="!data && loading">
-			<div class="ui basic loading placeholder segment"></div>
-		</template>
-		<div class="ui raised segment" v-for="item in data" :key="item[0]">
-			<account-summary :index="item[0]" :account="item[1]"></account-summary>
+		<div>
+			<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
+
+			<div v-for="item in data" :key="item[0]">
+				<account-summary :index="item[0]" :account="item[1]"></account-summary>
+			</div>
+
+			<v-btn to="/wallet/create" outlined color="primary" class="my-2">{{ $t('wallet_summary.new_wallet') }}</v-btn>
 		</div>
-		<router-link to="/wallet/create">
-			<button class="ui button">{{ $t('wallet_summary.new_wallet') }}</button>
-		</router-link>
 		`
 })
 
-app.component('account-menu', {
+Vue.component('account-menu', {
 	props: {
 		index: Number
 	},
 	template: `
-		<div class="ui large pointing menu">
-			<router-link class="item" :class="{active: $route.meta.page == 'balance'}" :to="'/wallet/account/' + index">{{ $t('account_menu.balance') }}</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'nfts'}" :to="'/wallet/account/' + index + '/nfts'">{{ $t('account_menu.nfts') }}</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'contracts'}" :to="'/wallet/account/' + index + '/contracts'">{{ $t('account_menu.contracts') }}</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'addresses'}" :to="'/wallet/account/' + index + '/addresses'">{{ $t('account_menu.addresses') }}</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'send'}" :to="'/wallet/account/' + index + '/send'">{{ $t('account_menu.send') }}</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'offer'}" :to="'/wallet/account/' + index + '/offer'">{{ $t('account_menu.offer') }}</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'history'}" :to="'/wallet/account/' + index + '/history'">{{ $t('account_menu.history') }}</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'log'}" :to="'/wallet/account/' + index + '/log'">{{ $t('account_menu.log') }}</router-link>
-			<router-link class="item" :class="{active: $route.meta.page == 'details'}" :to="'/wallet/account/' + index + '/details'">{{ $t('account_menu.details') }}</router-link>
-			<router-link class="right item" :class="{active: $route.meta.page == 'options'}" :to="'/wallet/account/' + index + '/options'"><i class="cog icon"></i></router-link>
-		</div>
+		<v-btn-toggle class="d-flex flex-wrap">
+			<v-btn :to="'/wallet/account/' + index" exact>{{ $t('account_menu.balance') }}</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/nfts'">{{ $t('account_menu.nfts') }}</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/contracts'">{{ $t('account_menu.contracts') }}</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/addresses'">{{ $t('account_menu.addresses') }}</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/send'">{{ $t('account_menu.send') }}</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/offer'">{{ $t('account_menu.offer') }}</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/history'">{{ $t('account_menu.history') }}</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/log'">{{ $t('account_menu.log') }}</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/details'">{{ $t('account_menu.details') }}</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/options'"><v-icon>mdi-cog</v-icon></v-btn>
+		</v-btn-toggle>
 		`
 })
 
-app.component('account-header', {
+Vue.component('account-header', {
 	props: {
 		index: Number,
 		account: Object
@@ -62,9 +62,12 @@ app.component('account-header', {
 		return {
 			info: {
 				name: null,
-				index: null
+				index: null,
+				with_passphrase: null
 			},
-			address: null
+			address: null,
+			is_locked: null,
+			passphrase_dialog: false
 		}
 	},
 	methods: {
@@ -79,42 +82,95 @@ app.component('account-header', {
 			fetch('/wapi/wallet/address?index=' + this.index)
 				.then(response => response.json())
 				.then(data => this.address = data[0]);
+			fetch('/api/wallet/is_locked?index=' + this.index)
+				.then(response => response.json())
+				.then(data => this.is_locked = data);
+		},
+		toggle_lock() {
+			if(this.is_locked) {
+				this.passphrase_dialog = true;
+			} else {
+				const req = {};
+				req.index = this.index;
+				fetch('/api/wallet/lock', {body: JSON.stringify(req), method: "post"})
+					.then(() => this.update());
+			}
+		},
+		unlock(passphrase) {
+			const req = {};
+			req.index = this.index;
+			req.passphrase = passphrase;
+			fetch('/api/wallet/unlock', {body: JSON.stringify(req), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						this.update();
+					} else {
+						response.text().then(data => {
+							alert(data);
+						});
+					}
+				});
+		},
+		copyToClipboard(address) {
+			navigator.clipboard.writeText(address);
 		}
 	},
 	created() {
 		this.update()
 	},
 	template: `
-		<div class="ui large labels">
-			<div class="ui horizontal label">{{ $t('account_header.wallet') }} #{{index}}</div>
-			<div class="ui horizontal label">{{address}}</div>
+		<div>
+			<v-chip label>{{ $t('account_header.wallet') }} #{{index}}</v-chip>
+			<v-chip label style="min-width: 500px" class="pr-0">
+				{{ address }}
+				<v-btn v-if="address" @click="copyToClipboard(address)" text icon>
+					<v-icon small class="pr-0">mdi-content-copy</v-icon>
+				</btn>
+			</v-chip>
+			<v-btn v-if="info.with_passphrase && (is_locked != null)" @click="toggle_lock()" text icon>
+				<v-icon small class="pr-0">{{ is_locked ? "mdi-lock" : "mdi-lock-open-variant" }}</v-icon>
+			</btn>
+			<passphrase-dialog v-model="passphrase_dialog" @submit="p => unlock(p)"/>
 		</div>
 		`
 })
 
-app.component('account-summary', {
+Vue.component('account-summary', {
 	props: {
 		index: Number,
 		account: Object
 	},
 	template: `
-		<div>
-			<account-header :index="index" :account="account"></account-header>
-			<account-menu :index="index"></account-menu>
-			<account-balance :index="index"></account-balance>
-		</div>
+		<v-card class="my-2">
+			<v-card-text>
+				<account-header :index="index" :account="account"></account-header>
+				<account-menu :index="index" class="my-2"></account-menu>				
+				<account-balance :index="index"></account-balance>
+			</v-card-text>
+		</v-card>
 		`
 })
 
-app.component('account-balance', {
+Vue.component('account-balance', {
 	props: {
 		index: Number
 	},
 	data() {
 		return {
-			data: null,
-			loading: false,
+			data: [],
+			loaded: false,
 			timer: null
+		}
+	},
+	computed: {
+		headers() {
+			return [
+				{ text: this.$t('account_balance.balance'), value: 'total' },
+				{ text: this.$t('account_balance.reserved'), value: 'reserved' },
+				{ text: this.$t('account_balance.spendable'), value: 'spendable' },
+				{ text: this.$t('account_balance.token'), value: 'token' },
+				{ text: this.$t('account_balance.contract'), value: 'contract' }
+			]
 		}
 	},
 	methods: {
@@ -123,7 +179,7 @@ app.component('account-balance', {
 			fetch('/wapi/wallet/balance?index=' + this.index)
 				.then(response => response.json())
 				.then(data => {
-					this.loading = false;
+					this.loaded = true;
 					this.data = data.balances;
 				});
 		}
@@ -132,46 +188,63 @@ app.component('account-balance', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 10000);
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
-		<template v-if="!data && loading">
-			<div class="ui basic loading placeholder segment"></div>
-		</template>
-		<table class="ui table" v-if="data">
-			<thead>
-			<tr>
-				<th class="two wide">{{ $t('account_balance.balance') }}</th>
-				<th class="two wide">{{ $t('account_balance.reserved') }}</th>
-				<th class="two wide">{{ $t('account_balance.spendable') }}</th>
-				<th class="two wide">{{ $t('account_balance.token') }}</th>
-				<th>{{ $t('account_balance.contract') }}</th>
-			</tr>
-			</thead>
-			<tbody>
-			<tr v-for="item in data" :key="item.contract">
-				<td>{{item.total}}</td>
-				<td>{{item.reserved}}</td>
-				<td><b>{{item.spendable}}</b></td>
-				<td :class="{disabled: !item.is_validated}">{{item.symbol}}</td>
-				<td><router-link :to="'/explore/address/' + item.contract">{{item.is_native ? '' : item.contract}}</router-link></td>
-			</tr>
-			</tbody>
-		</table>
+		<v-data-table
+			:headers="headers"
+			:items="data"
+			:loading="!loaded"
+			hide-default-footer
+			disable-sort
+			disable-pagination
+			class="elevation-2"
+		>
+
+			<template v-slot:progress>
+				<v-progress-linear indeterminate absolute top></v-progress-linear>
+				<v-skeleton-loader type="table-row-divider@3" />
+			</template>
+
+			<template v-slot:item.contract="{ item }">
+				<router-link :to="'/explore/address/' + item.contract">{{item.is_native ? '' : item.contract}}</router-link>
+			</template>
+
+			<template v-slot:item.spendable="{ item }">
+				<b>{{item.spendable}}</b>
+			</template>
+
+			<template v-slot:item.token="{ item }">
+				<div :class="{'text--disabled': !item.is_validated}">{{item.symbol}}</div>
+			</template>
+
+		</v-data-table>
 		`
 })
 
-app.component('balance-table', {
+Vue.component('balance-table', {
 	props: {
 		address: String,
 		show_empty: Boolean
 	},
 	data() {
 		return {
-			data: null,
+			data: [],
 			loading: false,
+			loaded: false,
 			timer: null
+		}
+	},
+	computed: {
+		headers() {
+			return [
+				{ text: this.$t('balance_table.balance'), value: 'total'},
+				{ text: this.$t('balance_table.locked'), value: 'locked'},
+				{ text: this.$t('balance_table.spendable'), value: 'spendable'},
+				{ text: this.$t('balance_table.token'), value: 'symbol'},
+				{ text: this.$t('balance_table.contract'), value: 'contract'},
+			]
 		}
 	},
 	methods: {
@@ -181,6 +254,7 @@ app.component('balance-table', {
 				.then(response => response.json())
 				.then(data => {
 					this.loading = false;
+					this.loaded = true;
 					this.data = data.balances;
 				});
 		}
@@ -194,13 +268,33 @@ app.component('balance-table', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 10000);
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
+		<v-data-table
+			:headers="headers"
+			:items="data"
+			:loading="!loaded"
+			hide-default-footer
+			disable-sort
+			disable-pagination
+			class="elevation-2"
+			v-if="!loaded || loaded && (data.length || show_empty)"
+		>
+			<template v-slot:item.spendable="{ item }">
+				<b>{{item.spendable}}</b>
+			</template>
+
+			<template v-slot:item.contract="{ item }">
+				<router-link :to="'/explore/address/' + item.contract">{{item.is_native ? '' : item.contract}}</router-link>
+			</template>
+		</v-data-table>
+
 		<template v-if="!data && loading">
 			<div class="ui basic loading placeholder segment"></div>
 		</template>
+
 		<table class="ui table" v-if="data && (data.length || show_empty)">
 			<thead>
 			<tr>
@@ -224,13 +318,20 @@ app.component('balance-table', {
 		`
 })
 
-app.component('nft-table', {
+Vue.component('nft-table', {
 	props: {
 		index: Number
 	},
 	data() {
 		return {
 			nfts: []
+		}
+	},
+	computed: {
+		headers() {
+			return [
+				{ text: 'NFT', value: 'item' },
+			]
 		}
 	},
 	methods: {
@@ -244,97 +345,219 @@ app.component('nft-table', {
 		this.update()
 	},
 	template: `
-		<table class="ui table">
-			<thead>
-			<tr>
-				<th>NFT</th>
-			</tr>
-			</thead>
-			<tbody>
-			<tr v-for="item in nfts" :key="item">
-				<td><router-link :to="'/explore/address/' + item">{{item}}</router-link></td>
-			</tr>
-			</tbody>
-		</table>
+		<v-data-table
+			:headers="headers"
+			:items="nfts"
+			hide-default-footer
+			disable-sort
+			disable-pagination
+			class="elevation-2"
+		>
+			<template v-slot:item.item="{ item }">
+				<router-link :to="'/explore/address/' + item">{{item}}</router-link>
+			</template>
+		</v-data-table>
 		`
 })
 
-app.component('account-history', {
+Vue.component('account-history', {
 	props: {
 		index: Number,
-		limit: Number
+		limit: Number,
+		type: {
+			default: null,
+			type: String
+		},
+		currency: {
+			default: null,
+			type: String
+		}
 	},
 	data() {
 		return {
-			data: null,
+			data: [],
 			loading: false,
-			timer: null
+			loaded: false,
+			timer: null 
+		}
+	},
+	computed: {
+		headers() {
+			return [
+				{ text: this.$t('account_history.height'), value: 'height' },
+				{ text: this.$t('account_history.type'), value: 'type' },
+				{ text: this.$t('account_history.amount'), value: 'value' },
+				{ text: this.$t('account_history.token'), value: 'token' },
+				{ text: this.$t('account_history.address'), value: 'address' },
+				{ text: this.$t('account_history.link'), value: 'link' },
+				{ text: this.$t('account_history.time'), value: 'time' },
+			]
 		}
 	},
 	methods: {
 		update() {
 			this.loading = true;
-			fetch('/wapi/wallet/history?limit=' + this.limit + '&index=' + this.index)
+			fetch('/wapi/wallet/history?limit=' + this.limit + '&index=' + this.index + '&type=' + this.type + '&currency=' + this.currency)
 				.then(response => response.json())
 				.then(data => {
 					this.loading = false;
+					this.loaded = true;
 					this.data = data;
 				});
+		}
+	},
+	watch: {
+		type() {
+			this.update();
+		},
+		currency() {
+			this.update();
 		}
 	},
 	created() {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 60000);
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
-		<template v-if="!data && loading">
-			<div class="ui basic loading placeholder segment"></div>
-		</template>
-		<table class="ui compact table striped" v-if="data">
-			<thead>
-			<tr>
-				<th>{{ $t('account_history.height') }}</th>
-				<th>{{ $t('account_history.type') }}</th>
-				<th>{{ $t('account_history.amount') }}</th>
-				<th>{{ $t('account_history.token') }}</th>
-				<th>{{ $t('account_history.address') }}</th>
-				<th>{{ $t('account_history.link') }}</th>
-				<th>{{ $t('account_history.time') }}</th>
-			</tr>
-			</thead>
-			<tbody>
-			<tr v-for="item in data">
-				<td><router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link></td>
-				<td>{{item.type}}</td>
-				<td><b>{{item.value}}</b></td>
+		<v-data-table
+			:headers="headers"
+			:items="data"
+			:loading="!loaded"
+			hide-default-footer
+			disable-sort
+			disable-pagination
+			class="elevation-2"
+		>
+			<template v-slot:progress>
+				<v-progress-linear indeterminate absolute top></v-progress-linear>
+				<v-skeleton-loader type="table-row-divider@6" />
+			</template>
+
+			<template v-slot:item.height="{ item }">
+				<router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link>
+			</template>	
+
+			<template v-slot:item.value="{ item }">
+				<b>{{item.value}}</b>
+			</template>
+
+			<template v-slot:item.token="{ item }">
 				<template v-if="item.is_native">
-					<td>{{item.symbol}}</td>
+					{{item.symbol}}
 				</template>
 				<template v-else>
-					<td><router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}{{item.is_validated ? "" : "?"}}</router-link></td>
+					<router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}{{item.is_validated ? "" : "?"}}</router-link>
 				</template>
-				<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
-				<td><router-link :to="'/explore/transaction/' + item.txid">TX</router-link></td>
-				<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
-			</tr>
-			</tbody>
-		</table>
+			</template>
+
+			<template v-slot:item.address="{ item }">
+				<router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link>
+			</template>
+			
+			<template v-slot:item.link="{ item }">
+				<router-link :to="'/explore/transaction/' + item.txid">TX</router-link>
+			</template>
+
+			<template v-slot:item.time="{ item }">
+				{{new Date(item.time * 1000).toLocaleString()}}
+			</template>
+
+		</v-data-table>
 		`
 })
 
-app.component('account-tx-history', {
+Vue.component('account-history-form', {
 	props: {
 		index: Number,
 		limit: Number
 	},
 	data() {
 		return {
-			data: null,
+			type: null,
+			currency: null,
+			tokens: []
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/wallet/tokens')
+				.then(response => response.json())
+				.then(data => this.tokens = data);
+		}
+	},
+	computed: {
+		select_types() {
+			return [
+				{text: "Any", value: null},
+				{text: "Spend", value: "SPEND"},
+				{text: "Receive", value: "RECEIVE"},
+				{text: "Reward", value: "REWARD"},
+				{text: "TX Fee", value: "TXFEE"}
+			];
+		},
+		select_tokens() {
+			const res = [{text: "Any", value: null}];
+			for(const token of this.tokens) {
+				let text = token.symbol;
+				if(!token.is_native) {
+					text += " - [" + token.currency + "]";
+				}
+				res.push({text: text, value: token.currency});
+			}
+			return res;
+		}
+	},
+	created() {
+		this.update();
+	},
+	template: `
+		<div>
+			<v-card class="my-2">
+				<v-card-text>
+					<v-row>
+						<v-col cols="3">
+							<v-select v-model="type" :label="$t('account_history.type')"
+								:items="select_types" item-text="text" item-value="value">
+							</v-select>
+						</v-col>
+						<v-col>
+							<v-select v-model="currency" :label="$t('account_history.token')"
+								:items="select_tokens" item-text="text" item-value="value">
+							</v-select>
+						</v-col>
+					</v-row>
+				</v-card-text>
+			</v-card>
+			<account-history :index="index" :limit="limit" :type="type" :currency="currency"></account-history>
+		</div>
+	`
+})
+
+Vue.component('account-tx-history', {
+	props: {
+		index: Number,
+		limit: Number
+	},
+	data() {
+		return {
+			data: [],
 			loading: false,
-			timer: null
+			loaded: false,
+			timer: null			
+		}
+	},
+	computed: {
+		headers() {
+			return [
+				{ text: this.$t('account_tx_history.height'), value: 'height' },
+				{ text: this.$t('account_tx_history.confirmed'), value: 'confirmed' },
+				{ text: this.$t('account_tx_history.status'), value: 'state' },
+				{ text: this.$t('account_tx_history.transaction_id'), value: 'transaction_id' },
+				{ text: this.$t('account_tx_history.time'), value: 'time' },
+			]
 		}
 	},
 	methods: {
@@ -344,6 +567,7 @@ app.component('account-tx-history', {
 				.then(response => response.json())
 				.then(data => {
 					this.loading = false;
+					this.loaded = true;
 					this.data = data;
 				});
 		}
@@ -352,40 +576,52 @@ app.component('account-tx-history', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 10000);
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
-		<template v-if="!data && loading">
-			<div class="ui basic loading placeholder segment"></div>
-		</template>
-		<table class="ui compact table striped" v-if="data">
-			<thead>
-			<tr>
-				<th>{{ $t('account_tx_history.height') }}</th>
-				<th>{{ $t('account_tx_history.confirmed') }}</th>
-				<th>{{ $t('account_tx_history.transaction_id') }}</th>
-				<th>{{ $t('account_tx_history.time') }}</th>
-			</tr>
-			</thead>
-			<tbody>
-			<tr v-for="item in data" :key="item.txid">
+		<v-data-table
+			:headers="headers"
+			:items="data"
+			:loading="!loaded"
+			hide-default-footer
+			disable-sort
+			disable-pagination
+			class="elevation-2"
+		>
+
+			<template v-slot:progress>
+				<v-progress-linear indeterminate absolute top></v-progress-linear>
+				<v-skeleton-loader type="table-row-divider@6" />
+			</template>
+
+			<template v-slot:item.height="{ item }">
 				<template v-if="item.height">
-					<td><router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link></td>
+					<router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link>
 				</template>
-				<template v-else>
-					<td><i>{{ $t('account_tx_history.pending') }}</i></td>
-				</template>
-				<td>{{item.confirm ? item.confirm > 1000 ? "> 1000" : item.confirm : 0}}</td>
-				<td><router-link :to="'/explore/transaction/' + item.id">{{item.id}}</router-link></td>
-				<td>{{new Date(item.time).toLocaleString()}}</td>
-			</tr>
-			</tbody>
-		</table>
+			</template>
+			
+			<template v-slot:item.state="{ item }">
+				<div :class="{'red--text': item.state == 'failed'}">{{ $t(item.state) }}</div>
+			</template>
+
+			<template v-slot:item.transaction_id="{ item }">
+				<router-link :to="'/explore/transaction/' + item.id">{{item.id}}</router-link>
+			</template>
+
+			<template v-slot:item.confirmed="{ item }">
+				{{item.confirm ? item.confirm > 1000 ? "> 1000" : item.confirm : null}}
+			</template>
+
+			<template v-slot:item.time="{ item }">
+				{{new Date(item.time).toLocaleString()}}
+			</template>
+
+		</v-data-table>
 		`
 })
 
-app.component('account-contract-summary', {
+Vue.component('account-contract-summary', {
 	props: {
 		index: Number,
 		address: String,
@@ -400,27 +636,31 @@ app.component('account-contract-summary', {
 		}
 	},
 	template: `
-		<div class="ui raised segment">
-			<div class="ui large labels">
-				<div class="ui horizontal label">{{contract.__type}}</div>
-				<div class="ui horizontal label">{{address}}</div>
-			</div>
-			<object-table :data="contract"></object-table>
-			<balance-table :address="address"></balance-table>
-			<div @click="deposit" class="ui submit button">{{ $t('account_contract_summary.deposit') }}</div>
-			<div @click="withdraw" class="ui submit button">{{ $t('account_contract_summary.withdraw') }}</div>
+		<v-card class="my-2">
+			<v-card-text>			
+				<v-chip label>{{contract.__type}}</v-chip>
+				<v-chip label>{{address}}</v-chip>
+				<object-table :data="contract" class="my-2"></object-table>
+				<balance-table :address="address"></balance-table>
+				<div class="mt-4">
+					<v-btn outlined @click="deposit">{{ $t('account_contract_summary.deposit') }}</v-btn>
+					<v-btn outlined @click="withdraw">{{ $t('account_contract_summary.withdraw') }}</v-btn>
+				</div>
+			</v-card-text>
 		</div>
 		`
 })
 
-app.component('account-contracts', {
+Vue.component('account-contracts', {
 	props: {
 		index: Number
 	},
 	data() {
 		return {
 			data: null,
-			loading: false
+			loading: false,
+			contractFilter: [],
+			contractFilterValues: []
 		}
 	},
 	methods: {
@@ -431,30 +671,55 @@ app.component('account-contracts', {
 				.then(data => {
 					this.loading = false;
 					this.data = data;
+					this.contractFilter = Array.from(Array(data.length).keys())
+					this.contractFilterValues = data.map(item => item[1].__type).filter((value, index, self) => self.indexOf(value) === index)
 				});
 		}
 	},
 	created() {
 		this.update();
 	},
+	computed: {
+		selectedContractFilterValues() {
+			return this.contractFilterValues.filter((value, index, self) => this.contractFilter.some( i => i === index) );
+		},
+		filteredData() {
+			return this.data?.filter( (item, index, self) => this.selectedContractFilterValues.some( r => item[1].__type == r) );
+		}
+	},
 	template: `
-		<template v-if="!data && loading">
-			<div class="ui basic loading placeholder segment"></div>
-		</template>
-		<template v-if="data">
-			<account-contract-summary v-for="item in data" :key="item[0]" :index="index" :address="item[0]" :contract="item[1]"></account-contract-summary>
-		</template>
+		<v-card outlined color="transparent">
+			<v-progress-linear  v-if="!data && loading" indeterminate absolute top></v-progress-linear>
+
+			<v-chip-group column multiple v-model="contractFilter">
+				<v-chip v-for="item in contractFilterValues" filter outlined>{{item}}</v-chip>
+			</v-chip-group>
+
+			<account-contract-summary v-if="filteredData" v-for="item in filteredData" :key="item[0]" :index="index" :address="item[0]" :contract="item[1]"></account-contract-summary>
+		</v-card>
 		`
 })
 
-app.component('account-addresses', {
+Vue.component('account-addresses', {
 	props: {
 		index: Number,
 		limit: Number
 	},
 	data() {
 		return {
-			data: []
+			data: [] 
+		}
+	},
+	computed: {
+		headers() {
+			return [
+				{ text: this.$t('account_addresses.index'), value: 'index' },
+				{ text: this.$t('account_addresses.address'), value: 'address' },
+				{ text: this.$t('account_addresses.n_recv'), value: 'n_recv' },
+				{ text: this.$t('account_addresses.n_spend'), value: 'n_spend' },
+				{ text: this.$t('account_addresses.last_recv'), value: 'last_recv' },
+				{ text: this.$t('account_addresses.last_spend'), value: 'last_spend' },
+			]
 		}
 	},
 	methods: {
@@ -468,32 +733,27 @@ app.component('account-addresses', {
 		this.update()
 	},
 	template: `
-		<table class="ui compact definition table striped">
-			<thead>
-			<tr>
-				<th>{{ $t('account_addresses.index') }}</th>
-				<th>{{ $t('account_addresses.address') }}</th>
-				<th>{{ $t('account_addresses.n_recv') }}</th>
-				<th>{{ $t('account_addresses.n_spend') }}</th>
-				<th>{{ $t('account_addresses.last_recv') }}</th>
-				<th>{{ $t('account_addresses.last_spend') }}</th>
-			</tr>
-			</thead>
-			<tbody>
-			<tr v-for="(item, index) in data" :key="index">
-				<td>{{index}}</td>
-				<td><router-link :to="'/explore/address/' + item">{{item}}</router-link></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-			</tr>
-			</tbody>
-		</table>
+		<v-data-table
+			:headers="headers"
+			:items="data"
+			hide-default-footer
+			disable-sort
+			disable-pagination
+			class="elevation-2"
+		>
+			<template v-slot:item.index="{ item, index }">
+				{{ index }}
+			</template>	
+
+			<template v-slot:item.address="{ item }">
+				<router-link :to="'/explore/address/' + item">{{item}}</router-link>
+			</template>				
+		
+		</v-data-table>
 		`
 })
 
-app.component('account-details', {
+Vue.component('account-details', {
 	props: {
 		index: Number
 	},
@@ -520,14 +780,16 @@ app.component('account-details', {
 		this.update();
 	},
 	template: `
-		<object-table :data="account"></object-table>
-		<object-table :data="keys"></object-table>
+		<div>
+			<object-table :data="account"></object-table>
+			<object-table :data="keys" class="my-2"></object-table>
 
-		<div v-if="isWinGUI && this.keys" @click="copyKeysToPlotter" class="ui submit primary button">{{ $t('account_details.copy_keys_to_plotter') }}</div>
+			<v-btn v-if="$isWinGUI && this.keys" @click="copyKeysToPlotter" color="primary">{{ $t('account_details.copy_keys_to_plotter') }}</v-btn>
+		</div>
 		`
 })
 
-app.component('account-actions', {
+Vue.component('account-actions', {
 	props: {
 		index: Number
 	},
@@ -535,7 +797,8 @@ app.component('account-actions', {
 		return {
 			seed: null,
 			info: null,
-			error: null
+			error: null,
+			dialog: false
 		}
 	},
 	methods: {
@@ -558,30 +821,70 @@ app.component('account-actions', {
 				.then(response => response.json())
 				.then(data => {
 					this.seed = data;
-					$(this.$refs.seed_modal).modal('show');
+					this.dialog = true;
 				});
-		}
+		},
+		copyToClipboard(value) {
+			navigator.clipboard.writeText(value).then(() => {});
+		}		
 	},
 	template: `
-		<div class="ui raised segment">
-			<div @click="reset_cache" class="ui button">{{ $t('account_actions.reset_cache') }}</div>
-			<div @click="show_seed" class="ui button">{{ $t('account_actions.show_seed') }}</div>
-		</div>
-		<div class="ui message" :class="{hidden: !info}">
-			<b>{{info}}</b>
-		</div>
-		<div class="ui negative message" :class="{hidden: !error}">
-			{{ $t('common.failed_with') }}: <b>{{error}}</b>
-		</div>
-		<div class="ui modal" ref="seed_modal">
-			<div class="content">
-				<object-table :data="seed"></object-table>
-			</div>
+		<div>			
+			<v-card>
+				<v-card-text>
+					<v-btn outlined @click="reset_cache">{{ $t('account_actions.reset_cache') }}</v-btn>
+
+					<v-dialog v-model="dialog" max-width="800">
+						<template v-slot:activator="{ on, attrs }">
+							<v-btn outlined @click="show_seed">{{ $t('account_actions.show_seed') }}</v-btn>
+						</template>
+						<template v-slot:default="dialog">
+							<v-card>
+							<v-toolbar color="primary"></v-toolbar>
+								<v-card-text class="pb-0">
+									<v-container>					
+										<seed v-model="seed.string" readonly></seed>
+									</v-container>
+								</v-card-text>
+								<v-card-actions>
+									<v-spacer></v-spacer>
+									<v-btn text @click="copyToClipboard(seed.string)">Copy</v-btn>
+									<v-btn text @click="dialog.value = false">Close</v-btn>
+								</v-card-actions>
+							</v-card>
+						</template>
+					</v-dialog>
+
+				</v-card-text>
+			</v-card>
+
+			<v-alert
+				border="left"
+				colored-border
+				type="success"
+				elevation="2"
+				v-if="info"
+				class="my-2"
+			>
+				{{info}}
+			</v-alert>
+
+			<v-alert
+				border="left"
+				colored-border
+				type="error"
+				elevation="2"
+				v-if="error"
+				class="my-2"
+			>
+				{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
+	
 		</div>
 		`
 })
 
-app.component('create-account', {
+Vue.component('create-account', {
 	props: {
 		index: Number
 	},
@@ -627,39 +930,51 @@ app.component('create-account', {
 		this.update();
 	},
 	template: `
-		<div class="ui raised segment">
-			<form class="ui form">
-				<div class="three fields">
-					<div class="three wide field">
-						<label>{{ $t('create_account.account_index') }}</label>
-						<input type="text" v-model.number="offset" style="text-align: right"/>
-					</div>
-					<div class="nine wide field">
-						<label>{{ $t('create_account.account_name') }}</label>
-						<input type="text" v-model="name"/>
-					</div>
-					<div class="four wide field">
-						<label>{{ $t('create_account.number_of_addresses') }}</label>
-						<input type="text" v-model.number="num_addresses" style="text-align: right"/>
-					</div>
-				</div>
-				<div @click="submit" class="ui submit primary button">{{ $t('create_account.create_account') }}</div>
-			</form>
+		<div>
+			<v-card>
+				<v-card-text>
+					<v-row >
+						<v-col>
+							<v-text-field type="text" :label="$t('create_account.account_index')" v-model.number="offset" class="text-align-right"/>
+						</v-col>
+						<v-col cols="6">							
+							<v-text-field type="text" :label="$t('create_account.account_name')" v-model="name"/>
+						</v-col>
+						<v-col>
+							<v-text-field type="text" :label="$t('create_account.number_of_addresses')" v-model.number="num_addresses"/>						
+						</v-col>
+					</v-row>
+					<v-btn outlined @click="submit">{{ $t('create_account.create_account') }}</v-btn>
+				</v-card-text>
+			</v-card>
+
+			<v-alert
+				border="left"
+				colored-border
+				type="error"
+				elevation="2"
+				v-if="error"
+				class="my-2"
+			>
+				{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
+
 		</div>
-		<div class="ui negative message" :class="{hidden: !error}">
-			{{ $t('common.failed_with') }}: <b>{{error}}</b>
-		</div>
+
 		`
 })
 
-app.component('create-wallet', {
+Vue.component('create-wallet', {
 	data() {
 		return {
 			name: null,
 			num_addresses: 100,
 			with_seed: false,
+			with_passphrase: false,
 			seed: null,
-			error: null
+			passphrase: null,
+			error: null,
+			show_passphrase: false
 		}
 	},
 	methods: {
@@ -669,11 +984,10 @@ app.component('create-wallet', {
 			req.config.name = this.name;
 			req.config.num_addresses = this.num_addresses;
 			if(this.with_seed) {
-				if(this.seed.length != 64) {
-					this.error = "invalid seed value";
-					return;
-				}
-				req.seed = this.seed;
+				req.words = this.seed;
+			}
+			if(this.with_passphrase) {
+				req.passphrase = this.passphrase;
 			}
 			fetch('/api/wallet/create_wallet', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
@@ -687,42 +1001,136 @@ app.component('create-wallet', {
 				});
 		}
 	},
-	mounted() {
-		$('.ui.checkbox').checkbox();
-	},
 	template: `
-		<div class="ui raised segment">
-			<form class="ui form">
-				<div class="two fields">
-					<div class="twelve wide field">
-						<label>{{ $t('create_wallet.account_name') }}</label>
-						<input type="text" v-model="name"/>
-					</div>
-					<div class="four wide field">
-						<label>{{ $t('create_wallet.number_of_addresses') }}</label>
-						<input type="text" v-model.number="num_addresses" style="text-align: right"/>
-					</div>
-				</div>
-				<div class="inline field">
-					<div class="ui toggle checkbox">
-						<input type="checkbox" class="hidden" v-model="with_seed">
-						<label>{{ $t('create_wallet.use_custom_seed') }}</label>
-					</div>
-				</div>
-				<div class="field">
-					<label>{{ $t('create_wallet.seed_hash') }}</label>
-					<input type="text" v-model="seed" :placeholder="$t('create_wallet.placeholder')" :disabled="!with_seed"/>
-				</div>
-				<div @click="submit" class="ui submit primary button">{{ $t('create_wallet.create_wallet') }}</div>
-			</form>
+		<div>
+			<v-card>
+				<v-card-text>
+
+					<v-row>
+						<v-col>
+							<v-text-field
+								v-model="name"
+								:label="$t('create_wallet.account_name')">
+							</v-text-field>
+						</v-col>
+						<v-col cols=4>
+
+							<v-text-field
+								v-model.number="num_addresses"
+								:label="$t('create_wallet.number_of_addresses')"
+								class="text-align-right">
+							</v-text-field>
+						</v-col>
+					</v-row>
+
+					<v-checkbox
+						v-model="with_seed"
+						:label="$t('create_wallet.use_custom_seed')">
+					</v-checkbox>
+
+					<v-card :disabled="!with_seed">
+						<v-card-title class="text-subtitle-1">
+							{{$t('create_wallet.seed_words')}}
+						</v-card-title>
+						<v-expand-transition>
+							<v-card-text v-show="with_seed">
+								<seed v-model="seed" :disabled="!with_seed"/>
+							</v-card-text>
+						</v-expand-transition>
+					</v-card>
+
+					<v-checkbox
+						v-model="with_passphrase"
+						:label="$t('create_wallet.use_passphrase')">
+					</v-checkbox>
+
+					<v-text-field
+						v-model="passphrase"
+						:label="$t('create_wallet.passphrase')"
+						:disabled="!with_passphrase"
+						autocomplete="new-password"
+						:type="show_passphrase ? 'text' : 'password'"
+						:append-icon="show_passphrase ? 'mdi-eye' : 'mdi-eye-off'"
+						@click:append="show_passphrase = !show_passphrase">
+					</v-text-field>
+
+					<v-btn @click="submit" outlined color="primary">{{ $t('create_wallet.create_wallet') }}</v-btn>
+
+				</v-card-text>
+
+			</v-card>
+							
+			<v-alert
+				border="left"
+				colored-border
+				type="error"
+				v-if="error"
+				elevation="2"
+				class="my-2"
+			>
+				{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
+
 		</div>
-		<div class="ui negative message" :class="{hidden: !error}">
-			{{ $t('common.failed_with') }}: <b>{{error}}</b>
-		</div>
+
 		`
 })
 
-app.component('account-send-form', {
+Vue.component('passphrase-dialog', {
+	props: {
+		show: Boolean
+	},
+	data() {
+		return {
+			passphrase: null,
+			show_passphrase: false
+		}
+	},	
+	model: {
+		prop: 'show',
+		event: 'close'
+	},
+	methods: {
+		onSubmit() {
+			this.$emit('submit', this.passphrase);
+			this.passphrase = null;
+			this.onClose();
+		},
+		onClose() {
+			this.show = false
+			this.$emit('close');
+		}
+	},	
+	template: `
+		<v-dialog v-model="show" max-width="800" persistent>
+			<template v-slot:default="dialog">
+				<v-card>
+					<v-toolbar color="primary">
+					</v-toolbar>
+					<v-card-text class="pb-0">			
+						<v-text-field
+							v-model="passphrase"
+							:label="$t('wallet_common.enter_passphrase')"
+							required
+							autocomplete="new-password"
+							:type="show_passphrase ? 'text' : 'password'"
+							:append-icon="show_passphrase ? 'mdi-eye' : 'mdi-eye-off'"
+							@click:append="show_passphrase = !show_passphrase"							
+							>
+						</v-text-field>
+					</v-card-text>
+					<v-card-actions>
+						<v-spacer></v-spacer>
+						<v-btn text @click="onClose">Cancel</v-btn>
+						<v-btn color="primary" text @click="onSubmit">Submit</v-btn>
+					</v-card-actions>
+				</v-card>
+			</template>
+		</v-dialog>
+	`
+})
+
+Vue.component('account-send-form', {
 	props: {
 		index: Number,
 		target_: String,
@@ -739,7 +1147,8 @@ app.component('account-send-form', {
 			currency: null,
 			confirmed: false,
 			result: null,
-			error: null
+			error: null,
+			passphrase_dialog: false
 		}
 	},
 	methods: {
@@ -771,6 +1180,17 @@ app.component('account-send-form', {
 			}
 		},
 		submit() {
+			fetch('/api/wallet/is_locked?index=' + this.index)
+				.then(response => response.json())
+				.then(data => {
+					if(data) {
+						this.passphrase_dialog = true;
+					} else {
+						this.submit_ex(null);
+					}
+				});
+		},
+		submit_ex(passphrase) {
 			this.confirmed = false;
 			if(!validate_address(this.target)) {
 				this.error = "invalid destination address";
@@ -784,6 +1204,9 @@ app.component('account-send-form', {
 				req.src_addr = this.source;
 			}
 			req.dst_addr = this.target;
+			req.options = {};
+			req.options.passphrase = passphrase;
+			
 			fetch('/wapi/wallet/send', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
@@ -807,9 +1230,6 @@ app.component('account-send-form', {
 		}
 		this.update();
 	},
-	mounted() {
-		$('.ui.checkbox').checkbox();
-	},
 	watch: {
 		address(value) {
 			if(value) {
@@ -831,63 +1251,114 @@ app.component('account-send-form', {
 				this.result = null;
 			}
 		}
+	},	
+	computed: {
+		selectAccounts() {
+			var result = [];
+			
+			result.push({ text: this.$t('account_send_form.address_input'), value: ""});
+
+			this.accounts.map(item => {
+				result.push(
+					{
+						text: `${this.$t('account_send_form.wallet') } #${item.account} (${item.address})`,
+						value: item.address
+					}
+				);
+			});
+
+			return result;
+		}
 	},
 	template: `
-		<balance-table :address="source" :show_empty="true" v-if="source" ref="balance"></balance-table>
-		<account-balance :index="index" v-if="!source" ref="balance"></account-balance>
-		<div class="ui raised segment">
-			<form class="ui form">
-				<div class="field" v-if="!!source">
-					<label>{{ $t('account_send_form.source_address') }}</label>
-					<input type="text" v-model="source" disabled/>
-				</div>
-				<div class="field">
-					<label>{{ $t('account_send_form.destination') }}</label>
-					<select v-model="address" :disabled="!!target_">
-						<option value="">{{ $t('account_send_form.address_input') }}</option>
-						<option v-for="item in accounts" :key="item.account" :value="item.address">
-						{{ $t('account_send_form.wallet') }} #{{item.account}} ({{item.address}})
-						</option>
-					</select>
-				</div>
-				<div class="field">
-					<label>{{ $t('account_send_form.destination_address') }}</label>
-					<input type="text" v-model="target" :disabled="!!address || !!target_" placeholder="mmx1..."/>
-				</div>
-				<div class="two fields">
-					<div class="four wide field">
-						<label>{{ $t('account_send_form.amount') }}</label>
-						<input type="text" v-model.number="amount" placeholder="1.23" style="text-align: right"/>
-					</div>
-					<div class="twelve wide field">
-						<label>{{ $t('account_send_form.currency') }}</label>
-						<select v-model="currency">
-							<option v-for="item in balances" :key="item.contract" :value="item.contract">
-								{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
-							</option>
-						</select>
-					</div>
-				</div>
-				<div class="inline field">
-					<div class="ui toggle checkbox">
-						<input type="checkbox" class="hidden" v-model="confirmed">
-						<label>{{ $t('account_send_form.confirm') }}</label>
-					</div>
-				</div>
-				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">{{ $t('account_send_form.send') }}</div>
-			</form>
+		<div>
+
+			<passphrase-dialog v-model="passphrase_dialog" @submit="p => submit_ex(p)"/>
+
+			<balance-table :address="source" :show_empty="true" v-if="source" ref="balance"></balance-table>
+			<account-balance :index="index" v-if="!source" ref="balance"></account-balance>
+
+			<v-card class="my-2">
+				<v-card-text>
+					<v-text-field 
+						v-if="!!source"
+						v-model="source" 
+						:label="$t('account_send_form.source_address')" disabled>
+					</v-text-field>
+
+					<v-select 
+						v-model="address"
+						:label="$t('account_send_form.destination')"
+						:items="selectAccounts"
+						item-text="text"
+						item-value="value"
+						:disabled="!!target_">
+					</v-select>
+
+					<v-text-field 
+						v-model="target"
+						:label="$t('account_send_form.destination_address')"
+						:disabled="!!address || !!target_" placeholder="mmx1...">
+					</v-text-field>
+
+					<v-row>
+						<v-col cols="3">
+							<v-text-field class="text-align-right"
+							:label="$t('account_send_form.amount')"
+							v-model.number="amount" placeholder="1.23"
+							></v-text-field>
+						</v-col>
+						<v-col>
+							<v-select
+								v-model="currency"
+								:label="$t('account_send_form.currency')"
+								:items="balances"
+								item-text="contract"
+								item-value="contract">
+
+								<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">
+									{{item.symbol + (item.is_validated ? '' : '?')}}
+									<template v-if="!item.is_native"> - [{{item.contract}}]</template>
+								</template>
+
+							</v-select>
+						</v-col>
+					</v-row>
+
+					<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')" class="d-inline-block"></v-switch><br>
+					<v-btn @click="submit" outlined color="primary" :disabled="!confirmed">{{ $t('account_send_form.send') }}</v-btn>
+
+				</v-card-text>
+			</v-card>
+
+			<v-alert
+				border="left"
+				colored-border
+				type="success"
+				elevation="2"
+				v-if="result"
+				class="my-2"
+			>
+				{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result.id">{{result.id}}</router-link>
+			</v-alert>
+
+			<v-alert
+				border="left"
+				colored-border
+				type="error"
+				elevation="2"
+				v-if="error"
+				class="my-2"
+			>
+				{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
+
+			<account-tx-history :index="index" :limit="10" ref="history"></account-tx-history>
 		</div>
-		<div class="ui message" :class="{hidden: !result}">
-			{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
-		</div>
-		<div class="ui negative message" :class="{hidden: !error}">
-			{{ $t('common.failed_with') }}: <b>{{error}}</b>
-		</div>
-		<account-tx-history :index="index" :limit="10" ref="history"></account-tx-history>
 		`
 })
 
-app.component('account-offer-form', {
+Vue.component('account-offer-form', {
 	props: {
 		index: Number
 	},
@@ -941,10 +1412,7 @@ app.component('account-offer-form', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 10000);
 	},
-	mounted() {
-		$('.ui.checkbox').checkbox();
-	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	watch: {
@@ -955,7 +1423,7 @@ app.component('account-offer-form', {
 			// TODO: validate
 		},
 		ask_currency(value) {
-			if(value) {
+			if(value && value !== MMX_ADDR) {
 				fetch('/wapi/contract?id=' + value)
 					.then(response => {
 						if(response.ok) {
@@ -983,61 +1451,82 @@ app.component('account-offer-form', {
 		}
 	},
 	template: `
-		<account-balance :index="index" ref="balance"></account-balance>
-		<div class="ui raised segment">
-			<form class="ui form" id="form">
-				<div class="three fields">
-					<div class="four wide field">
-						<label>{{ $t('account_offer_form.offer_amount') }}</label>
-						<input type="text" v-model.number="bid_amount" placeholder="1.23" style="text-align: right"/>
-					</div>
-					<div class="twelve wide field">
-						<label>{{ $t('account_offer_form.offer_currency') }}</label>
-						<select v-model="bid_currency">
-							<option v-for="item in balances" :key="item.contract" :value="item.contract">
-								{{item.symbol}} <template v-if="!item.is_native"> - [{{item.contract}}]</template>
-							</option>
-						</select>
-					</div>
-				</div>
-				<div class="two fields">
-					<div class="four wide field">
-						<label>{{ $t('account_offer_form.receive_amount') }}</label>
-						<input type="text" v-model.number="ask_amount" placeholder="1.23" style="text-align: right"/>
-					</div>
-					<div class="two wide field">
-						<label>{{ $t('account_offer_form.symbol') }}</label>
-						<input type="text" v-model="ask_symbol" disabled/>
-					</div>
-					<div class="ten wide field">
-						<label>{{ $t('account_offer_form.receive_currency_contract') }}</label>
-						<select v-model="ask_currency">
-							<option v-for="item in tokens" :key="item.currency" :value="item.currency">
-								{{item.symbol}}<template v-if="item.currency != 'mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev'"> - [{{item.currency}}]</template>
-							</option>
-						</select>
-					</div>
-				</div>
-				<div class="inline field">
-					<div class="ui toggle checkbox">
-						<input type="checkbox" class="hidden" v-model="confirmed">
-						<label>{{ $t('account_offer_form.confirm') }}</label>
-					</div>
-				</div>
-				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">{{ $t('account_offer_form.offer') }}</div>
-			</form>
+		<div>
+			<account-balance :index="index" ref="balance"></account-balance>
+			<v-card class="my-2">
+				<v-card-text>
+					<v-row>
+						<v-col cols="3">
+							<v-text-field class="text-align-right"
+								:label="$t('account_offer_form.offer_amount')"
+								placeholder="1.23"
+								v-model.number="bid_amount"	
+							></v-text-field>
+						</v-col>
+						<v-col>
+							<v-select
+								v-model="bid_currency"
+								:label="$t('account_offer_form.offer_currency')"
+								:items="balances" 
+								item-text="contract"
+								item-value="contract">
+
+								<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">
+									{{item.symbol + (item.is_validated ? '' : '?')}}
+									<template v-if="!item.is_native"> - [{{item.contract}}]</template>
+								</template>
+
+							</v-select>
+						</v-col>
+					</v-row>
+					<v-row>
+						<v-col cols="3">
+							<v-text-field class="text-align-right"
+								:label="$t('account_offer_form.receive_amount')"
+								placeholder="1.23"
+								v-model.number="ask_amount"	
+							></v-text-field>
+						</v-col>
+						<v-col cols="1">
+							<v-text-field
+								:label="$t('account_offer_form.symbol')"
+								placeholder="1.23"
+								v-model="ask_symbol"
+								disabled
+							></v-text-field>
+						</v-col>
+						<v-col>
+							<v-select
+								v-model="ask_currency"
+								:label="$t('account_offer_form.receive_currency_contract')"
+								:items="tokens" 
+								item-text="currency"
+								item-value="currency">
+
+								<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">
+									{{item.symbol}}
+									<template v-if="item.currency != MMX_ADDR"> - [{{item.currency}}]</template>
+								</template>
+
+							</v-select>
+						</v-col>
+					</v-row>
+					<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')" class="d-inline-block"></v-switch><br>
+					<v-btn @click="submit" outlined color="primary" :disabled="!confirmed">{{ $t('account_offer_form.offer') }}</v-btn>
+				</v-card-text>
+			</v-card>
+			<v-alert border="left" colored-border type="success" elevation="2" v-if="result" class="my-2">
+				{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result.id">{{result.id}}</router-link>
+			</v-alert>
+			<v-alert border="left" colored-border type="error" elevation="2" v-if="error" class="my-2">
+				{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
+			<account-offers :index="index" ref="offers"></account-offers>
 		</div>
-		<div class="ui message" :class="{hidden: !result}">
-			{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
-		</div>
-		<div class="ui negative message" :class="{hidden: !error}">
-			{{ $t('common.failed_with') }}: <b>{{error}}</b>
-		</div>
-		<account-offers :index="index" ref="offers"></account-offers>
 		`
 })
 
-app.component('account-offers', {
+Vue.component('account-offers', {
 	props: {
 		index: Number
 	},
@@ -1058,12 +1547,11 @@ app.component('account-offers', {
 				.then(response => response.json())
 				.then(data => this.data = data.sort((L, R) => R.height - L.height));
 		},
-		cancel(id, sender) {
+		cancel(address) {
 			const args = {};
 			args.index = this.index;
-			args.txid = id;
-			args.address = sender;
-			fetch('/wapi/wallet/revoke', {body: JSON.stringify(args), method: "post"})
+			args.address = address;
+			fetch('/wapi/wallet/cancel', {body: JSON.stringify(args), method: "post"})
 				.then(response => {
 					if(response.ok) {
 						response.json().then(data => this.result = data);
@@ -1092,63 +1580,69 @@ app.component('account-offers', {
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 30000);
 	},
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
-		<table class="ui table striped">
-			<thead>
-			<tr>
-				<th>{{ $t('account_offers.height') }}</th>
-				<th colspan="2">{{ $t('account_offers.offer') }}</th>
-				<th colspan="2">{{ $t('account_offers.receive') }}</th>
-				<th>{{ $t('account_offers.address') }}</th>
-				<th>{{ $t('account_offers.status') }}</th>
-				<th>{{ $t('account_offers.time') }}</th>
-				<th>{{ $t('account_offers.actions') }}</th>
-			</tr>
-			</thead>
-			<tbody>
-			<tr v-for="item in data" :key="item.id">
-				<td>{{item.height}}</td>
-				<td class="collapsing"><b>{{item.base.input_amounts[0].value}}</b></td>
-				<td>{{item.base.input_amounts[0].symbol}}</td>
-				<td class="collapsing"><b>{{item.base.output_amounts[0].value}}</b></td>
-				<td>{{item.base.output_amounts[0].symbol}}</td>
-				<td><router-link :to="'/explore/address/' + item.id">{{item.id.substr(0, 16)}}...</router-link></td>
-				<td :class="{positive: !item.base.height, negative: item.revoked}">
-					<template v-if="item.base.height">
-						<router-link :to="'/explore/transaction/' + item.base.id">{{ $t('account_offers.accepted') }}</router-link>
-					</template>
-					<template v-else>
-						{{item.revoked ? $t('account_offers.revoked') : $t('account_offers.open') }}
-					</template>
-				</td>
-				<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
-				<td>
-					<template v-if="!item.revoked && !item.base.height">
-						<div class="ui tiny compact button" @click="cancel(item.base.id, item.base.sender)">{{ $t('account_offers.revoke') }}</div>
-					</template>
-				</td>
-			</tr>
-			</tbody>
-		</table>
-		<div class="ui message" :class="{hidden: !result}">
-			{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result">{{result}}</router-link>
-		</div>
-		<div class="ui negative message" :class="{hidden: !error}">
-			{{ $t('common.failed_with') }}: <b>{{error}}</b>
+		<div>
+			<v-simple-table>
+				<thead>
+				<tr>
+					<th>{{ $t('account_offers.height') }}</th>
+					<th colspan="2">{{ $t('account_offers.offer') }}</th>
+					<th colspan="2">{{ $t('account_offers.receive') }}</th>
+					<th>{{ $t('account_offers.address') }}</th>
+					<th>{{ $t('account_offers.status') }}</th>
+					<th>{{ $t('account_offers.time') }}</th>
+					<th>{{ $t('account_offers.actions') }}</th>
+				</tr>
+				</thead>
+				<tbody>
+				<tr v-for="item in data" :key="item.address">
+					<td>{{item.height}}</td>
+					<td class="collapsing"><b>{{item.bid_value}}</b></td>
+					<td>{{item.bid_symbol}}</td>
+					<td class="collapsing"><b>{{item.ask_value}}</b></td>
+					<td>{{item.ask_symbol}}</td>
+					<td><router-link :to="'/explore/address/' + item.address">{{item.address.substr(0, 16)}}...</router-link></td>
+					<td :class="{'green--text': item.state == 'OPEN', 'red--text text--lighten-2': item.state == 'REVOKED'}">
+						<template v-if="item.state == 'CLOSED'">
+							<router-link :to="'/explore/transaction/' + item.trade_txid">{{ $t('account_offers.accepted') }}</router-link>
+						</template>
+						<template v-else>
+							{{item.state == 'REVOKED' ? $t('account_offers.revoked') : $t('account_offers.open') }}
+						</template>
+					</td>
+					<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
+					<td>
+						<template v-if="item.state == 'OPEN'">
+							<v-btn outlined text @click="cancel(item.address)">{{ $t('account_offers.revoke') }}</v-btn>
+						</template>
+					</td>
+				</tr>
+				</tbody>
+			</v-simple-table>
+			<v-alert border="left" colored-border type="success" elevation="2" v-if="result" class="my-2">
+				{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result.id">{{result.id}}</router-link>
+			</v-alert>
+			<v-alert border="left" colored-border type="error" elevation="2" v-if="error" class="my-2">
+				{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
 		</div>
 		`
 })
 
-app.component('create-contract-menu', {
+Vue.component('create-contract-menu', {
 	props: {
 		index: Number
 	},
 	data() {
 		return {
-			type: null
+			type: null,
+			types: [
+				{ value: "locked", text: "mmx.contract.TimeLock" },
+				{ value: "virtualplot", text: "mmx.contract.VirtualPlot" },
+			]
 		}
 	},
 	methods: {
@@ -1157,22 +1651,17 @@ app.component('create-contract-menu', {
 		}
 	},
 	template: `
-		<div class="ui raised segment">
-			<form class="ui form">
-				<div class="field">
-					<label>{{ $t('create_contract_menu.contract_type') }}</label>
-					<select v-model="type">
-						<option value="locked">mmx.contract.TimeLock</option>
-						<option value="virtualplot">mmx.contract.VirtualPlot</option>
-					</select>
-				</div>
-				<div @click="submit" class="ui submit button" :class="{disabled: !type}">{{ $t('common.create') }}</div>
-			</form>
-		</div>
+		<v-card>
+			<v-card-text>
+				<v-select v-model="type" :items="types" :label="$t('create_contract_menu.contract_type')">
+				</v-select>
+				<v-btn outlined @click="submit" :disabled="!type">{{ $t('common.create') }}</v-btn>
+			</v-card-text>
+		</v-card>
 		`
 })
 
-app.component('create-locked-contract', {
+Vue.component('create-locked-contract', {
 	props: {
 		index: Number
 	},
@@ -1209,9 +1698,6 @@ app.component('create-locked-contract', {
 				});
 		}
 	},
-	mounted() {
-		$('.ui.checkbox').checkbox();
-	},
 	watch: {
 		owner(value) {
 			this.check_valid();
@@ -1231,39 +1717,62 @@ app.component('create-locked-contract', {
 		}
 	},
 	template: `
-		<div class="ui large label">{{ $t('common.create') }}</div>
-		<div class="ui large label">mmx.contract.TimeLock</div>
-		<div class="ui raised segment">
-			<form class="ui form" id="form">
-				<div class="field">
-					<label>{{ $t('create_locked_contract.owner_address') }}</label>
-					<input type="text" v-model="owner" placeholder="mmx1..."/>
-				</div>
-				<div class="field">
-					<label>{{ $t('create_locked_contract.unlock_height') }}</label>
-					<input type="text" v-model.number="unlock_height"/>
-				</div>
-				<div class="inline field">
-					<div class="ui toggle checkbox" :class="{disabled: !valid}">
-						<input type="checkbox" class="hidden" v-model="confirmed">
-						<label>{{ $t('common.confirm') }}</label>
-					</div>
-				</div>
-				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">{{ $t('common.deploy') }}</div>
-			</form>
-		</div>
-		<div class="ui message" :class="{hidden: !result}">
-			<template v-if="result">
+		<div>
+			<v-chip label>{{ $t('common.create') }}</v-chip>
+			<v-chip label>mmx.contract.TimeLock</v-chip>
+
+			<v-card class="my-2">
+				<v-card-text>
+					<v-text-field 
+						:label="$t('create_locked_contract.owner_address')"
+						v-model="owner" 
+						placeholder="mmx1...">
+					</v-text-field>
+
+					<v-text-field 
+						:label="$t('create_locked_contract.unlock_height')"
+						v-model.number="unlock_height">
+					</v-text-field>
+
+					<v-switch 
+						v-model="confirmed"
+						:disabled="!valid"
+						:label="$t('common.confirm')"
+						class="d-inline-block">
+					</v-switch><br>
+
+					<v-btn @click="submit" outlined color="primary" :disabled="!confirmed">{{ $t('common.deploy') }}</v-btn>
+
+				</v-card-text>
+			</v-card>
+
+			<v-alert
+				border="left"
+				colored-border
+				type="success"
+				v-if="result"
+				elevation="2"
+				class="my-2"
+			>
 				{{ $t('common.deployed_as') }}: <b>{{result}}</b>
-			</template>
-		</div>
-		<div class="ui negative message" :class="{hidden: !error}">
-			{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
+
+			<v-alert
+				border="left"
+				colored-border
+				type="error"
+				v-if="error"
+				elevation="2"
+				class="my-2"
+			>
+				{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
+
 		</div>
 		`
 })
 
-app.component('create-virtual-plot-contract', {
+Vue.component('create-virtual-plot-contract', {
 	props: {
 		index: Number
 	},
@@ -1308,9 +1817,6 @@ app.component('create-virtual-plot-contract', {
 				.then(response => response.json())
 				.then(data => this.farmer_key = data.farmer_public_key);
 	},
-	mounted() {
-		$('.ui.checkbox').checkbox();
-	},
 	watch: {
 		farmer_key(value) {
 			this.check_valid();
@@ -1330,34 +1836,57 @@ app.component('create-virtual-plot-contract', {
 		}
 	},
 	template: `
-		<div class="ui large label">{{ $t('common.create') }}</div>
-		<div class="ui large label">mmx.contract.VirtualPlot</div>
-		<div class="ui raised segment">
-			<form class="ui form" id="form">
-				<div class="field">
-					<label>{{ $t('create_virtual_plot_contract.farmer_public_key') }}</label>
-					<input type="text" v-model="farmer_key"/>
-				</div>
-				<div class="field">
-					<label>{{ $t('create_virtual_plot_contract.reward_address') }}</label>
-					<input type="text" v-model="reward_address" :placeholder="$t('common.reward_address_placeholder')"/>
-				</div>
-				<div class="inline field">
-					<div class="ui toggle checkbox" :class="{disabled: !valid}">
-						<input type="checkbox" class="hidden" v-model="confirmed">
-						<label>{{ $t('common.confirm') }}</label>
-					</div>
-				</div>
-				<div @click="submit" class="ui submit primary button" :class="{disabled: !confirmed}">{{ $t('common.deploy') }}</div>
-			</form>
-		</div>
-		<div class="ui message" :class="{hidden: !result}">
-			<template v-if="result">
+		<div>
+			<v-chip label>{{ $t('common.create') }}</v-chip>
+			<v-chip label>mmx.contract.VirtualPlot</v-chip>
+
+			<v-card class="my-2">
+				<v-card-text>
+					<v-text-field 
+						:label="$t('create_virtual_plot_contract.farmer_public_key')"
+						v-model="farmer_key">
+					</v-text-field>
+
+					<v-text-field 
+						:label="$t('create_virtual_plot_contract.reward_address')"
+						v-model="reward_address" 
+						:placeholder="$t('common.reward_address_placeholder')">
+					</v-text-field>
+
+					<v-switch 
+						v-model="confirmed"
+						:disabled="!valid"
+						:label="$t('common.confirm')"
+						class="d-inline-block">
+					</v-switch><br>
+
+					<v-btn @click="submit" outlined color="primary" :disabled="!confirmed">{{ $t('common.deploy') }}</v-btn>
+
+				</v-card-text>
+			</v-card>
+
+			<v-alert
+				border="left"
+				colored-border
+				type="success"
+				v-if="result"
+				elevation="2"
+				class="my-2"
+			>
 				{{ $t('common.deployed_as') }}: <b>{{result}}</b>
-			</template>
-		</div>
-		<div class="ui negative message" :class="{hidden: !error}">
-			{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
+
+			<v-alert
+				border="left"
+				colored-border
+				type="error"
+				v-if="error"
+				elevation="2"
+				class="my-2"
+			>
+				{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
+
 		</div>
 		`
 })

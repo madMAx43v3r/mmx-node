@@ -20,6 +20,8 @@ public:
 	
 	std::string name;
 	vnx::optional<std::string> server_url;
+	vnx::optional<::mmx::addr_t> reward_addr;
+	vnx::optional<uint64_t> partial_diff;
 	
 	typedef ::mmx::contract::MutableRelay Super;
 	
@@ -72,7 +74,7 @@ protected:
 
 template<typename T>
 void PlotNFT::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<PlotNFT>(7);
+	_visitor.template type_begin<PlotNFT>(9);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("owner", 1); _visitor.accept(owner);
 	_visitor.type_field("target", 2); _visitor.accept(target);
@@ -80,7 +82,9 @@ void PlotNFT::accept_generic(T& _visitor) const {
 	_visitor.type_field("unlock_delay", 4); _visitor.accept(unlock_delay);
 	_visitor.type_field("name", 5); _visitor.accept(name);
 	_visitor.type_field("server_url", 6); _visitor.accept(server_url);
-	_visitor.template type_end<PlotNFT>(7);
+	_visitor.type_field("reward_addr", 7); _visitor.accept(reward_addr);
+	_visitor.type_field("partial_diff", 8); _visitor.accept(partial_diff);
+	_visitor.template type_end<PlotNFT>(9);
 }
 
 

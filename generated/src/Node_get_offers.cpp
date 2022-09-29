@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_offers::VNX_TYPE_HASH(0x62e5e37dd72d3175ull);
-const vnx::Hash64 Node_get_offers::VNX_CODE_HASH(0x709b133504c18761ull);
+const vnx::Hash64 Node_get_offers::VNX_CODE_HASH(0x77f1241d35cab14eull);
 
 vnx::Hash64 Node_get_offers::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,7 +48,6 @@ void Node_get_offers::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, since);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, is_open);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, is_covered);
 	_visitor.type_end(*_type_code);
 }
 
@@ -56,7 +55,6 @@ void Node_get_offers::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Node.get_offers\"";
 	_out << ", \"since\": "; vnx::write(_out, since);
 	_out << ", \"is_open\": "; vnx::write(_out, is_open);
-	_out << ", \"is_covered\": "; vnx::write(_out, is_covered);
 	_out << "}";
 }
 
@@ -71,15 +69,12 @@ vnx::Object Node_get_offers::to_object() const {
 	_object["__type"] = "mmx.Node.get_offers";
 	_object["since"] = since;
 	_object["is_open"] = is_open;
-	_object["is_covered"] = is_covered;
 	return _object;
 }
 
 void Node_get_offers::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "is_covered") {
-			_entry.second.to(is_covered);
-		} else if(_entry.first == "is_open") {
+		if(_entry.first == "is_open") {
 			_entry.second.to(is_open);
 		} else if(_entry.first == "since") {
 			_entry.second.to(since);
@@ -94,9 +89,6 @@ vnx::Variant Node_get_offers::get_field(const std::string& _name) const {
 	if(_name == "is_open") {
 		return vnx::Variant(is_open);
 	}
-	if(_name == "is_covered") {
-		return vnx::Variant(is_covered);
-	}
 	return vnx::Variant();
 }
 
@@ -105,8 +97,6 @@ void Node_get_offers::set_field(const std::string& _name, const vnx::Variant& _v
 		_value.to(since);
 	} else if(_name == "is_open") {
 		_value.to(is_open);
-	} else if(_name == "is_covered") {
-		_value.to(is_covered);
 	}
 }
 
@@ -134,7 +124,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_offers::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_offers";
 	type_code->type_hash = vnx::Hash64(0x62e5e37dd72d3175ull);
-	type_code->code_hash = vnx::Hash64(0x709b133504c18761ull);
+	type_code->code_hash = vnx::Hash64(0x77f1241d35cab14eull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -142,7 +132,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_offers::static_create_type_code() {
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Node_get_offers>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Node_get_offers_return::static_get_type_code();
-	type_code->fields.resize(3);
+	type_code->fields.resize(2);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -153,12 +143,6 @@ std::shared_ptr<vnx::TypeCode> Node_get_offers::static_create_type_code() {
 		auto& field = type_code->fields[1];
 		field.data_size = 1;
 		field.name = "is_open";
-		field.code = {31};
-	}
-	{
-		auto& field = type_code->fields[2];
-		field.data_size = 1;
-		field.name = "is_covered";
 		field.code = {31};
 	}
 	type_code->permission = "mmx.permission_e.PUBLIC";
@@ -210,9 +194,6 @@ void read(TypeInput& in, ::mmx::Node_get_offers& value, const TypeCode* type_cod
 		if(const auto* const _field = type_code->field_map[1]) {
 			vnx::read_value(_buf + _field->offset, value.is_open, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[2]) {
-			vnx::read_value(_buf + _field->offset, value.is_covered, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -234,10 +215,9 @@ void write(TypeOutput& out, const ::mmx::Node_get_offers& value, const TypeCode*
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(6);
+	char* const _buf = out.write(5);
 	vnx::write_value(_buf + 0, value.since);
 	vnx::write_value(_buf + 4, value.is_open);
-	vnx::write_value(_buf + 5, value.is_covered);
 }
 
 void read(std::istream& in, ::mmx::Node_get_offers& value) {

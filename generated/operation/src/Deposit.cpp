@@ -31,7 +31,7 @@ namespace operation {
 
 
 const vnx::Hash64 Deposit::VNX_TYPE_HASH(0xc23408cb7b04b0ecull);
-const vnx::Hash64 Deposit::VNX_CODE_HASH(0x5f22941e845c1a24ull);
+const vnx::Hash64 Deposit::VNX_CODE_HASH(0xe2b4bbd67233140ull);
 
 vnx::Hash64 Deposit::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -72,7 +72,6 @@ void Deposit::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, user);
 	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, currency);
 	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, amount);
-	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, sender);
 	_visitor.type_end(*_type_code);
 }
 
@@ -86,7 +85,6 @@ void Deposit::write(std::ostream& _out) const {
 	_out << ", \"user\": "; vnx::write(_out, user);
 	_out << ", \"currency\": "; vnx::write(_out, currency);
 	_out << ", \"amount\": "; vnx::write(_out, amount);
-	_out << ", \"sender\": "; vnx::write(_out, sender);
 	_out << "}";
 }
 
@@ -107,7 +105,6 @@ vnx::Object Deposit::to_object() const {
 	_object["user"] = user;
 	_object["currency"] = currency;
 	_object["amount"] = amount;
-	_object["sender"] = sender;
 	return _object;
 }
 
@@ -123,8 +120,6 @@ void Deposit::from_object(const vnx::Object& _object) {
 			_entry.second.to(currency);
 		} else if(_entry.first == "method") {
 			_entry.second.to(method);
-		} else if(_entry.first == "sender") {
-			_entry.second.to(sender);
 		} else if(_entry.first == "solution") {
 			_entry.second.to(solution);
 		} else if(_entry.first == "user") {
@@ -160,9 +155,6 @@ vnx::Variant Deposit::get_field(const std::string& _name) const {
 	if(_name == "amount") {
 		return vnx::Variant(amount);
 	}
-	if(_name == "sender") {
-		return vnx::Variant(sender);
-	}
 	return vnx::Variant();
 }
 
@@ -183,8 +175,6 @@ void Deposit::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(currency);
 	} else if(_name == "amount") {
 		_value.to(amount);
-	} else if(_name == "sender") {
-		_value.to(sender);
 	}
 }
 
@@ -212,7 +202,7 @@ std::shared_ptr<vnx::TypeCode> Deposit::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.operation.Deposit";
 	type_code->type_hash = vnx::Hash64(0xc23408cb7b04b0ecull);
-	type_code->code_hash = vnx::Hash64(0x5f22941e845c1a24ull);
+	type_code->code_hash = vnx::Hash64(0xe2b4bbd67233140ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::operation::Deposit);
@@ -229,7 +219,7 @@ std::shared_ptr<vnx::TypeCode> Deposit::static_create_type_code() {
 	type_code->methods[5] = ::mmx::operation::Execute_calc_cost::static_get_type_code();
 	type_code->methods[6] = ::mmx::operation::Execute_calc_hash::static_get_type_code();
 	type_code->methods[7] = ::mmx::operation::Execute_is_valid::static_get_type_code();
-	type_code->fields.resize(9);
+	type_code->fields.resize(8);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -277,12 +267,6 @@ std::shared_ptr<vnx::TypeCode> Deposit::static_create_type_code() {
 		field.data_size = 8;
 		field.name = "amount";
 		field.code = {4};
-	}
-	{
-		auto& field = type_code->fields[8];
-		field.is_extended = true;
-		field.name = "sender";
-		field.code = {33, 11, 32, 1};
 	}
 	type_code->build();
 	return type_code;
@@ -396,7 +380,6 @@ void read(TypeInput& in, ::mmx::operation::Deposit& value, const TypeCode* type_
 			case 4: vnx::read(in, value.args, type_code, _field->code.data()); break;
 			case 5: vnx::read(in, value.user, type_code, _field->code.data()); break;
 			case 6: vnx::read(in, value.currency, type_code, _field->code.data()); break;
-			case 8: vnx::read(in, value.sender, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -424,7 +407,6 @@ void write(TypeOutput& out, const ::mmx::operation::Deposit& value, const TypeCo
 	vnx::write(out, value.args, type_code, type_code->fields[4].code.data());
 	vnx::write(out, value.user, type_code, type_code->fields[5].code.data());
 	vnx::write(out, value.currency, type_code, type_code->fields[6].code.data());
-	vnx::write(out, value.sender, type_code, type_code->fields[8].code.data());
 }
 
 void read(std::istream& in, ::mmx::operation::Deposit& value) {

@@ -8,8 +8,6 @@ class Spend extends mmx.Operation {
 	
 	addr_t currency;
 	
-	uint128 balance;
-	
 	ulong amount;
 	
 	

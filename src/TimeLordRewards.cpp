@@ -26,6 +26,11 @@ void TimeLordRewards::main()
 
 void TimeLordRewards::handle(std::shared_ptr<const ProofOfTime> value)
 {
+	if(value->height <= last_height) {
+		return;
+	}
+	last_height = value->height;
+
 	if(vnx::rand64() % reward_divider) {
 		return;
 	}

@@ -5,7 +5,6 @@
 #include <mmx/Wallet_create_wallet.hxx>
 #include <mmx/Wallet_create_wallet_return.hxx>
 #include <mmx/account_t.hxx>
-#include <mmx/hash_t.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -15,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_create_wallet::VNX_TYPE_HASH(0xdcc08a3a1b171a19ull);
-const vnx::Hash64 Wallet_create_wallet::VNX_CODE_HASH(0x827e2d7912501f24ull);
+const vnx::Hash64 Wallet_create_wallet::VNX_CODE_HASH(0x7a39a1e280f48623ull);
 
 vnx::Hash64 Wallet_create_wallet::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,14 +48,16 @@ void Wallet_create_wallet::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Wallet_create_wallet;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, config);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, seed);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, words);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, passphrase);
 	_visitor.type_end(*_type_code);
 }
 
 void Wallet_create_wallet::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Wallet.create_wallet\"";
 	_out << ", \"config\": "; vnx::write(_out, config);
-	_out << ", \"seed\": "; vnx::write(_out, seed);
+	_out << ", \"words\": "; vnx::write(_out, words);
+	_out << ", \"passphrase\": "; vnx::write(_out, passphrase);
 	_out << "}";
 }
 
@@ -70,7 +71,8 @@ vnx::Object Wallet_create_wallet::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Wallet.create_wallet";
 	_object["config"] = config;
-	_object["seed"] = seed;
+	_object["words"] = words;
+	_object["passphrase"] = passphrase;
 	return _object;
 }
 
@@ -78,8 +80,10 @@ void Wallet_create_wallet::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "config") {
 			_entry.second.to(config);
-		} else if(_entry.first == "seed") {
-			_entry.second.to(seed);
+		} else if(_entry.first == "passphrase") {
+			_entry.second.to(passphrase);
+		} else if(_entry.first == "words") {
+			_entry.second.to(words);
 		}
 	}
 }
@@ -88,8 +92,11 @@ vnx::Variant Wallet_create_wallet::get_field(const std::string& _name) const {
 	if(_name == "config") {
 		return vnx::Variant(config);
 	}
-	if(_name == "seed") {
-		return vnx::Variant(seed);
+	if(_name == "words") {
+		return vnx::Variant(words);
+	}
+	if(_name == "passphrase") {
+		return vnx::Variant(passphrase);
 	}
 	return vnx::Variant();
 }
@@ -97,8 +104,10 @@ vnx::Variant Wallet_create_wallet::get_field(const std::string& _name) const {
 void Wallet_create_wallet::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "config") {
 		_value.to(config);
-	} else if(_name == "seed") {
-		_value.to(seed);
+	} else if(_name == "words") {
+		_value.to(words);
+	} else if(_name == "passphrase") {
+		_value.to(passphrase);
 	}
 }
 
@@ -126,7 +135,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_create_wallet::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.create_wallet";
 	type_code->type_hash = vnx::Hash64(0xdcc08a3a1b171a19ull);
-	type_code->code_hash = vnx::Hash64(0x827e2d7912501f24ull);
+	type_code->code_hash = vnx::Hash64(0x7a39a1e280f48623ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -135,7 +144,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_create_wallet::static_create_type_code() {
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::account_t::static_get_type_code();
 	type_code->return_type = ::mmx::Wallet_create_wallet_return::static_get_type_code();
-	type_code->fields.resize(2);
+	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -145,8 +154,14 @@ std::shared_ptr<vnx::TypeCode> Wallet_create_wallet::static_create_type_code() {
 	{
 		auto& field = type_code->fields[1];
 		field.is_extended = true;
-		field.name = "seed";
-		field.code = {33, 11, 32, 1};
+		field.name = "words";
+		field.code = {33, 32};
+	}
+	{
+		auto& field = type_code->fields[2];
+		field.is_extended = true;
+		field.name = "passphrase";
+		field.code = {33, 32};
 	}
 	type_code->build();
 	return type_code;
@@ -194,7 +209,8 @@ void read(TypeInput& in, ::mmx::Wallet_create_wallet& value, const TypeCode* typ
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.config, type_code, _field->code.data()); break;
-			case 1: vnx::read(in, value.seed, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.words, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.passphrase, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -214,7 +230,8 @@ void write(TypeOutput& out, const ::mmx::Wallet_create_wallet& value, const Type
 		type_code = type_code->depends[code[1]];
 	}
 	vnx::write(out, value.config, type_code, type_code->fields[0].code.data());
-	vnx::write(out, value.seed, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.words, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.passphrase, type_code, type_code->fields[2].code.data());
 }
 
 void read(std::istream& in, ::mmx::Wallet_create_wallet& value) {

@@ -12,7 +12,6 @@
 #include <mmx/NodeAsyncClient.hxx>
 #include <mmx/WalletAsyncClient.hxx>
 #include <mmx/FarmerAsyncClient.hxx>
-#include <mmx/contract/Offer.hxx>
 //#include <mmx/exchange/ClientAsyncClient.hxx>
 #include <mmx/Block.hxx>
 
@@ -72,7 +71,7 @@ private:
 
 	void render_tx_history(const vnx::request_id_t& request_id, const std::vector<tx_log_entry_t>& history) const;
 
-	void render_offers(const vnx::request_id_t& request_id, const std::map<addr_t, std::shared_ptr<const contract::Offer>>& offers) const;
+	void render_offers(const vnx::request_id_t& request_id, const std::vector<addr_t>& offers) const;
 
 	void render_block_graph(const vnx::request_id_t& request_id, size_t limit, const size_t step, const uint32_t height) const;
 
@@ -94,12 +93,13 @@ private:
 //	std::shared_ptr<exchange::ClientAsyncClient> exch_client;
 	std::shared_ptr<const ChainParams> params;
 
-	std::list<std::shared_ptr<const vnx::LogMsg>> log_history;
+	std::list<std::pair<std::shared_ptr<const vnx::LogMsg>, uint64_t>> log_history;
 
 //	mutable std::map<uint64_t, std::shared_ptr<const exchange::OfferBundle>> pending_offers;
 
 	int64_t time_offset = 0;		// [sec]
 	uint32_t curr_height = 0;
+	uint64_t log_counter = 0;
 
 };
 

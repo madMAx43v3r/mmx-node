@@ -48,20 +48,20 @@ module Wallet implements vnx.addons.HttpComponent {
 							ulong amount, addr_t currency, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
-	Transaction* make_offer(uint index, uint address, ulong bid_amount, addr_t bid_currency,
+	Transaction* make_offer(uint index, uint owner, ulong bid_amount, addr_t bid_currency,
 							ulong ask_amount, addr_t ask_currency, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
-	Transaction* accept_offer(uint index, Transaction* offer, spend_options_t options) const;
+	Transaction* accept_offer(uint index, addr_t address, uint dst_addr, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
-	Transaction* revoke(uint index, hash_t txid, addr_t address, spend_options_t options) const;
+	Transaction* cancel_offer(uint index, addr_t address, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
 	Transaction* complete(uint index, Transaction* tx, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
-	Transaction* sign_off(uint index, Transaction* tx, bool cover_fee, spend_options_t options) const;
+	Transaction* sign_off(uint index, Transaction* tx, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
 	Solution* sign_msg(uint index, addr_t address, hash_t msg) const;
@@ -80,7 +80,7 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	void update_cache(uint index) const;
 	
-	vector<tx_entry_t> get_history(uint index, int since) const;
+	vector<tx_entry_t> get_history(uint index, int since, optional<tx_type_e> type, optional<addr_t> currency) const;
 	
 	vector<tx_log_entry_t> get_tx_history(uint index, int limit = -1, uint offset) const;
 	
@@ -108,11 +108,19 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	map<uint, account_t> get_all_accounts() const;
 	
-	void add_account(uint index, account_t config);
+	bool is_locked(uint index) const;
 	
-	void create_account(account_t config);
+	void lock(uint index);
 	
-	void create_wallet(account_t config, optional<hash_t> seed);
+	void unlock(uint index, string passphrase);
+	
+	void add_account(uint index, account_t config, optional<string> passphrase);
+	
+	void create_account(account_t config, optional<string> passphrase);
+	
+	void create_wallet(account_t config, optional<string> words, optional<string> passphrase);
+	
+	vector<string> get_mnemonic_wordlist(string lang = "en") const;
 	
 	set<addr_t> get_token_list() const;
 	
@@ -122,6 +130,9 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	@Permission(permission_e.SPENDING)
 	hash_t get_master_seed(uint index) const;
+	
+	@Permission(permission_e.SPENDING)
+	vector<string> get_mnemonic_seed(uint index) const;
 	
 	
 	FarmerKeys* get_farmer_keys(uint index) const;

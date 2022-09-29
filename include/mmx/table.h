@@ -22,16 +22,20 @@
 
 namespace mmx {
 
+void sync_type_codes(const std::string& file_path);
+
 template<typename K, typename V>
 class table {
 public:
-	table() {
+	table(bool disable_type_codes = true)
+		:	stream(disable_type_codes)
+	{
 		vnx::type<V>().create_dynamic_code(value_code);
 		value_type = vnx::type<V>().get_type_code();
 	}
 
-	table(const std::string& file_path)
-		:	table()
+	table(const std::string& file_path, bool disable_type_codes = true)
+		:	table(disable_type_codes)
 	{
 		open(file_path);
 	}
@@ -55,20 +59,20 @@ public:
 		db->insert(write(key), write(value, value_type, value_code));
 	}
 
-	bool find(const K& key) const
+	bool count(const K& key, const uint32_t max_version = -1) const
 	{
 		V dummy;
-		return find(key, dummy);
+		return find(key, dummy, max_version);
 	}
 
-	bool find(const K& key, V& value) const
+	bool find(const K& key, V& value, const uint32_t max_version = -1) const
 	{
-		const auto entry = db->find(write(key));
-		if(!entry) {
-			return false;
+		const auto entry = db->find(write(key), max_version);
+		if(entry) {
+			read(entry, value, value_type, value_code);
+			return true;
 		}
-		read(entry, value, value_type, value_code);
-		return true;
+		return false;
 	}
 
 	bool find_first(V& value) const
@@ -199,6 +203,55 @@ public:
 		return result.size();
 	}
 
+	size_t find_last_range(const K& begin, const K& end, std::vector<V>& result, const size_t limit) const
+	{
+		result.clear();
+
+		Table::Iterator iter(db);
+		iter.seek_prev(write(end));
+		while(iter.is_valid() && result.size() < limit) {
+			K key;
+			read(iter.key(), key);
+			if(!(begin < key || key == begin)) {
+				break;
+			}
+			try {
+				V value;
+				read(iter.value(), value, value_type, value_code);
+				result.push_back(std::move(value));
+			} catch(...) {
+				// ignore
+			}
+			iter.prev();
+		}
+		return result.size();
+	}
+
+	size_t find_last_range(const K& begin, const K& end, std::vector<std::pair<K, V>>& result, const size_t limit) const
+	{
+		result.clear();
+
+		Table::Iterator iter(db);
+		iter.seek_prev(write(end));
+		while(iter.is_valid() && result.size() < limit) {
+			K key;
+			read(iter.key(), key);
+			if(!(begin < key || key == begin)) {
+				break;
+			}
+			try {
+				std::pair<K, V> tmp;
+				tmp.first = key;
+				read(iter.value(), tmp.second, value_type, value_code);
+				result.push_back(std::move(tmp));
+			} catch(...) {
+				// ignore
+			}
+			iter.prev();
+		}
+		return result.size();
+	}
+
 	void scan(const std::function<void(const K&, const V&)>& callback) const
 	{
 		Table::Iterator iter(db);
@@ -219,6 +272,10 @@ public:
 			}
 			iter.next();
 		}
+	}
+
+	void commit() {
+		db->commit(db->current_version() + 1);
 	}
 
 	void commit(const uint32_t new_version) {
@@ -251,8 +308,8 @@ protected:
 		vnx::Buffer buffer;
 		vnx::MemoryOutputStream stream;
 		vnx::TypeOutput out;
-		stream_t() : stream(&memory), out(&stream) {
-			out.disable_type_codes = true;
+		stream_t(bool disable_type_codes = true) : stream(&memory), out(&stream) {
+			out.disable_type_codes = disable_type_codes;
 		}
 	};
 
@@ -296,7 +353,7 @@ template<typename K, typename V>
 class uint_table : public table<K, V> {
 public:
 	uint_table() : table<K, V>() {}
-	uint_table(const std::string& file_path) : table<K, V>(file_path) {}
+	uint_table(const std::string& file_path, bool disable_type_codes = true) : table<K, V>(file_path, disable_type_codes) {}
 protected:
 	// TODO: use a to_big_endian() function
 	void read(std::shared_ptr<const db_val_t> entry, K& key) const override {

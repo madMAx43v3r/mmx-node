@@ -74,15 +74,13 @@ protected:
 
 template<typename T>
 void Token::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Token>(7);
+	_visitor.template type_begin<Token>(5);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("name", 1); _visitor.accept(name);
 	_visitor.type_field("symbol", 2); _visitor.accept(symbol);
-	_visitor.type_field("web_url", 3); _visitor.accept(web_url);
-	_visitor.type_field("icon_url", 4); _visitor.accept(icon_url);
-	_visitor.type_field("decimals", 5); _visitor.accept(decimals);
-	_visitor.type_field("owner", 6); _visitor.accept(owner);
-	_visitor.template type_end<Token>(7);
+	_visitor.type_field("decimals", 3); _visitor.accept(decimals);
+	_visitor.type_field("owner", 4); _visitor.accept(owner);
+	_visitor.template type_end<Token>(5);
 }
 
 

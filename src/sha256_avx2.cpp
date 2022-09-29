@@ -6,12 +6,32 @@
  */
 
 #include <sha256_avx2.h>
+#include <sha256_ni.h>
 #include <mmx/hash_t.hpp>
 
 #include <cstring>
 #include <stdexcept>
 #include <immintrin.h>
 
+#ifdef _WIN32
+#include <intrin.h>
+#define cpuid(info, x)    __cpuidex(info, x, 0)
+#else
+#include <cpuid.h>
+inline void cpuid(int info[4], int InfoType) {
+	__cpuid_count(InfoType, 0, info[0], info[1], info[2], info[3]);
+}
+#endif
+
+static uint64_t xgetbv() {
+#if defined(_MSC_VER)
+  return _xgetbv(0);
+#else
+  uint32_t eax = 0, edx = 0;
+  __asm__ __volatile__("xgetbv\n" : "=a"(eax), "=d"(edx) : "c"(0));
+  return ((uint64_t)edx << 32) | eax;
+#endif
+}
 
 #define u32 uint32_t
 #define u256 __m256i
@@ -291,26 +311,7 @@ void sha256_avx2_64_x8(uint8_t* out, uint8_t* in, const uint64_t length)
 	}
 }
 
-#ifdef _WIN32
-#define cpuid(info, x)    __cpuidex(info, x, 0)
-#else
-#include <cpuid.h>
-void cpuid(int info[4], int InfoType) {
-	__cpuid_count(InfoType, 0, info[0], info[1], info[2], info[3]);
-}
-#endif
-
-static uint64_t xgetbv() {
-#if defined(_MSC_VER)
-  return _xgetbv(0);
-#else
-  uint32_t eax = 0, edx = 0;
-  __asm__ __volatile__("xgetbv\n" : "=a"(eax), "=d"(edx) : "c"(0));
-  return ((uint64_t)edx << 32) | eax;
-#endif
-}
-
-inline bool avx2_support()
+bool avx2_available()
 {
 	bool HW_AVX2 = false;
 
@@ -334,9 +335,14 @@ inline bool avx2_support()
 
 void sha256_64_x8(uint8_t* out, uint8_t* in, const uint64_t length)
 {
-	static bool avx2 = avx2_support();
+	static bool have_avx2 = avx2_available();
+	static bool have_sha_ni = sha256_ni_available();
 
-	if (avx2) {
+	if(have_sha_ni) {
+		for(int i = 0; i < 8; ++i) {
+			sha256_ni(out + i * 32, in + i * 64, length);
+		}
+	} else if(have_avx2) {
 		sha256_avx2_64_x8(out, in, length);
 	} else {
 		for (int i = 0; i < 8; ++i) {

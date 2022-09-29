@@ -2,6 +2,8 @@ package mmx;
 
 struct peer_info_t {
 	
+	ulong id;
+	
 	string address;
 	
 	node_type_e type;
@@ -18,6 +20,8 @@ struct peer_info_t {
 	
 	ulong bytes_send;
 	ulong bytes_recv;
+	
+	double pending_cost;
 	
 	bool is_synced;
 	bool is_blocked;

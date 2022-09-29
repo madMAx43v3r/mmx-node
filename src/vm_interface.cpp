@@ -5,16 +5,19 @@
  *      Author: mad
  */
 
+#include <mmx/vm/Engine.h>
 #include <mmx/vm_interface.h>
 #include <mmx/uint128.hpp>
+#include <mmx/addr_t.hpp>
 
 
 namespace mmx {
+namespace vm {
 
-const contract::method_t* find_method(std::shared_ptr<const contract::Executable> executable, const std::string& method_name)
+const contract::method_t* find_method(std::shared_ptr<const contract::Binary> binary, const std::string& method_name)
 {
-	auto iter = executable->methods.find(method_name);
-	if(iter != executable->methods.end()) {
+	auto iter = binary->methods.find(method_name);
+	if(iter != binary->methods.end()) {
 		return &iter->second;
 	}
 	return nullptr;
@@ -25,7 +28,7 @@ void set_balance(std::shared_ptr<vm::Engine> engine, const std::map<addr_t, uint
 	const auto addr = vm::MEM_EXTERN + vm::EXTERN_BALANCE;
 	engine->assign(addr, new vm::map_t());
 	for(const auto& entry : balance) {
-		engine->write_key(addr, vm::uint_t(entry.first), vm::uint_t(entry.second));
+		engine->write_key(addr, vm::uint_t(entry.first.to_uint256()), vm::uint_t(entry.second));
 	}
 }
 
@@ -33,13 +36,8 @@ void set_deposit(std::shared_ptr<vm::Engine> engine, const txout_t& deposit)
 {
 	const auto addr = vm::MEM_EXTERN + vm::EXTERN_DEPOSIT;
 	engine->assign(addr, new vm::array_t());
-	engine->push_back(addr, vm::uint_t(deposit.contract));
+	engine->push_back(addr, vm::uint_t(deposit.contract.to_uint256()));
 	engine->push_back(addr, vm::uint_t(deposit.amount));
-	if(deposit.sender) {
-		engine->push_back(addr, vm::uint_t(*deposit.sender));
-	} else {
-		engine->push_back(addr, vm::var_t());
-	}
 }
 
 std::vector<vm::var_t*> read_constants(const void* constant, const size_t constant_size)
@@ -54,16 +52,16 @@ std::vector<vm::var_t*> read_constants(const void* constant, const size_t consta
 	return out;
 }
 
-std::vector<vm::var_t*> read_constants(std::shared_ptr<const contract::Executable> exec)
+std::vector<vm::var_t*> read_constants(std::shared_ptr<const contract::Binary> binary)
 {
-	return read_constants(exec->constant.data(), exec->constant.size());
+	return read_constants(binary->constant.data(), binary->constant.size());
 }
 
 void load(	std::shared_ptr<vm::Engine> engine,
-			std::shared_ptr<const contract::Executable> exec)
+			std::shared_ptr<const contract::Binary> binary)
 {
 	uint64_t dst = 0;
-	for(auto var : read_constants(exec)) {
+	for(auto var : read_constants(binary)) {
 		if(dst < vm::MEM_EXTERN) {
 			engine->assign(dst++, var);
 		} else {
@@ -73,7 +71,7 @@ void load(	std::shared_ptr<vm::Engine> engine,
 	if(dst >= vm::MEM_EXTERN) {
 		throw std::runtime_error("constant memory overflow");
 	}
-	vm::deserialize(engine->code, exec->binary.data(), exec->binary.size());
+	vm::deserialize(engine->code, binary->binary.data(), binary->binary.size());
 	engine->init();
 }
 
@@ -361,5 +359,119 @@ void execute(std::shared_ptr<vm::Engine> engine, const contract::method_t& metho
 	engine->check_gas();
 }
 
+std::string to_string(const var_t* var)
+{
+	if(!var) {
+		return "nullptr";
+	}
+	switch(var->type) {
+		case TYPE_NIL:
+			return "null";
+		case TYPE_TRUE:
+			return "true";
+		case TYPE_FALSE:
+			return "false";
+		case TYPE_REF:
+			return "<0x" + vnx::to_hex_string(((const ref_t*)var)->address) + ">";
+		case TYPE_UINT: {
+			const auto& value = ((const uint_t*)var)->value;
+			if(value >> 128 == 0) {
+				return value.str(10);
+			}
+			if(value >> 128 == uint128_t(-1)) {
+				return std::to_string(int64_t(uint64_t(value)));
+			}
+			return value.str(10) + " | " + hash_t::from_bytes(value).to_string() + " | " + addr_t(value).to_string();
+		}
+		case TYPE_STRING:
+			return "\"" + ((const binary_t*)var)->to_string() + "\"";
+		case TYPE_BINARY:
+			return "0x" + ((const binary_t*)var)->to_hex_string();
+		case TYPE_ARRAY: {
+			auto array = (const array_t*)var;
+			return "[0x" + vnx::to_hex_string(array->address) + "," + std::to_string(array->size) + "]";
+		}
+		case TYPE_MAP:
+			return "{0x" + vnx::to_hex_string(((const map_t*)var)->address) + "}";
+		default:
+			return "?";
+	}
+}
 
+std::string to_string(const varptr_t& var) {
+	return to_string(var.get());
+}
+
+std::string to_string_value(const var_t* var)
+{
+	if(!var) {
+		return "nullptr";
+	}
+	switch(var->type) {
+		case TYPE_STRING:
+			return ((const binary_t*)var)->to_string();
+		default:
+			return to_string(var);
+	}
+}
+
+std::string to_string_value(const varptr_t& var) {
+	return to_string_value(var.get());
+}
+
+uint256_t to_uint(const var_t* var)
+{
+	if(!var) {
+		return 0;
+	}
+	switch(var->type) {
+		case TYPE_UINT:
+			return ((const uint_t*)var)->value;
+		default:
+			return 0;
+	}
+}
+
+uint256_t to_uint(const varptr_t& var) {
+	return to_uint(var.get());
+}
+
+hash_t to_hash(const var_t* var)
+{
+	if(!var) {
+		return hash_t();
+	}
+	switch(var->type) {
+		case TYPE_UINT:
+			return hash_t::from_bytes(((const uint_t*)var)->value);
+		default:
+			return hash_t();
+	}
+}
+
+hash_t to_hash(const varptr_t& var) {
+	return to_hash(var.get());
+}
+
+addr_t to_addr(const var_t* var)
+{
+	if(!var) {
+		return addr_t();
+	}
+	switch(var->type) {
+		case TYPE_UINT:
+			return addr_t(((const uint_t*)var)->value);
+		case TYPE_STRING:
+			return addr_t(((const binary_t*)var)->to_string());
+		default:
+			return addr_t();
+	}
+}
+
+addr_t to_addr(const varptr_t& var) {
+	return to_addr(var.get());
+}
+
+
+} // vm
 } // mmx

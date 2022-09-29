@@ -6,7 +6,6 @@
 
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
-#include <vnx/Buffer.hpp>
 #include <vnx/Value.h>
 
 
@@ -16,7 +15,6 @@ class MMX_EXPORT WalletFile : public ::vnx::Value {
 public:
 	
 	std::vector<::mmx::addr_t> addresses;
-	vnx::optional<::vnx::Buffer> encrypted_keyfile;
 	
 	typedef ::vnx::Value Super;
 	
@@ -63,10 +61,9 @@ protected:
 
 template<typename T>
 void WalletFile::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<WalletFile>(2);
+	_visitor.template type_begin<WalletFile>(1);
 	_visitor.type_field("addresses", 0); _visitor.accept(addresses);
-	_visitor.type_field("encrypted_keyfile", 1); _visitor.accept(encrypted_keyfile);
-	_visitor.template type_end<WalletFile>(2);
+	_visitor.template type_end<WalletFile>(1);
 }
 
 

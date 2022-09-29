@@ -8,8 +8,6 @@
 #ifndef INCLUDE_MMX_VM_VAR_T_H_
 #define INCLUDE_MMX_VM_VAR_T_H_
 
-#include <mmx/hash_t.hpp>
-
 #include <vnx/Util.h>
 #include <uint256_t.h>
 
@@ -111,12 +109,11 @@ struct ref_t : var_t {
 
 struct uint_t : var_t {
 
-	uint256_t value = uint256_0;
+	uint256_t value = 0;
 
 	uint_t() : var_t(TYPE_UINT) {}
 	uint_t(const uint_t&) = default;
 	uint_t(const uint256_t& value) : uint_t() { this->value = value; }
-	uint_t(const hash_t& value) : uint_t(value.to_uint256()) {}
 
 };
 
@@ -226,8 +223,6 @@ int compare(const var_t* lhs, const var_t* rhs);
 std::pair<uint8_t*, size_t> serialize(const var_t& src, bool with_rc = true, bool with_vf = true);
 
 size_t deserialize(var_t*& var, const void* data, const size_t length, bool with_rc = true, bool with_vf = true);
-
-std::string to_string(const var_t* var);
 
 struct varptr_less_t {
 	bool operator()(const var_t* const& lhs, const var_t* const& rhs) const {

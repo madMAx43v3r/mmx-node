@@ -85,7 +85,7 @@ protected:
 		uint32_t min_version = 0;
 		uint32_t max_version = 0;
 		uint64_t total_count = 0;
-		uint64_t index_offset = 0;
+		int64_t index_offset = 0;
 		vnx::File file;
 		std::string name;
 		std::vector<int64_t> index;
@@ -127,7 +127,7 @@ public:
 
 	void insert(std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t> value);
 
-	std::shared_ptr<db_val_t> find(std::shared_ptr<db_val_t> key) const;
+	std::shared_ptr<db_val_t> find(std::shared_ptr<db_val_t> key, const uint32_t max_version = -1) const;
 
 	void commit(const uint32_t new_version);
 
@@ -162,7 +162,7 @@ public:
 	private:
 		struct pointer_t {
 			size_t pos = -1;
-			std::shared_ptr<block_t> block;
+			std::shared_ptr<const block_t> block;
 			std::shared_ptr<db_val_t> value;
 			std::map<std::shared_ptr<db_val_t>, std::pair<std::shared_ptr<db_val_t>, uint32_t>, key_compare_t>::const_iterator iter;
 		};
@@ -197,17 +197,17 @@ private:
 
 	std::shared_ptr<block_t> read_block(const std::string& name) const;
 
-	std::shared_ptr<db_val_t> find(std::shared_ptr<block_t> block, std::shared_ptr<db_val_t> key) const;
+	std::shared_ptr<db_val_t> find(std::shared_ptr<const block_t> block, std::shared_ptr<db_val_t> key, const uint32_t max_version = -1) const;
 
-	size_t lower_bound(std::shared_ptr<block_t> block, uint32_t& version, std::shared_ptr<db_val_t>& key, bool& is_match) const;
+	size_t lower_bound(std::shared_ptr<const block_t> block, uint32_t& version, std::shared_ptr<db_val_t>& key, bool& is_match) const;
 
 	std::shared_ptr<block_t> rewrite(std::list<std::shared_ptr<block_t>> blocks, const uint32_t level) const;
 
 	void check_rewrite();
 
-	void write_block_header(vnx::TypeOutput& out, std::shared_ptr<block_t> block) const;
+	void write_block_header(vnx::TypeOutput& out, std::shared_ptr<const block_t> block) const;
 
-	void write_block_index(vnx::TypeOutput& out, std::shared_ptr<block_t> block) const;
+	void write_block_index(vnx::TypeOutput& out, std::shared_ptr<const block_t> block) const;
 
 	std::shared_ptr<block_t> create_block(const uint32_t level, const std::string& name) const;
 

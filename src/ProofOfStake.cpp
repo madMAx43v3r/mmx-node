@@ -32,6 +32,7 @@ mmx::hash_t ProofOfStake::calc_hash(const vnx::bool_t& full_hash) const
 
 void ProofOfStake::validate() const
 {
+	// nothing to check
 }
 
 

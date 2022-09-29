@@ -20,6 +20,7 @@
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
+#include <mmx/trade_data_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_info_t.hxx>
 #include <mmx/uint128.hpp>
@@ -98,10 +99,6 @@ public:
 	
 	uint64_t get_tx_ids_since(const uint32_t& height = 0, 
 			const std::function<void(const std::vector<::mmx::hash_t>&)>& _callback = std::function<void(const std::vector<::mmx::hash_t>&)>(),
-			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
-	
-	uint64_t is_revoked(const ::mmx::hash_t& txid = ::mmx::hash_t(), const ::mmx::addr_t& sender = ::mmx::addr_t(), 
-			const std::function<void(const vnx::optional<::mmx::hash_t>&)>& _callback = std::function<void(const vnx::optional<::mmx::hash_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t add_block(std::shared_ptr<const ::mmx::Block> block = nullptr, 
@@ -212,8 +209,24 @@ public:
 			const std::function<void(const uint64_t&)>& _callback = std::function<void(const uint64_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_offers(const uint32_t& since = 0, const vnx::bool_t& is_open = 0, const vnx::bool_t& is_covered = 0, 
+	uint64_t get_offer(const ::mmx::addr_t& address = ::mmx::addr_t(), 
+			const std::function<void(const ::mmx::offer_data_t&)>& _callback = std::function<void(const ::mmx::offer_data_t&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t get_offers(const uint32_t& since = 0, const vnx::bool_t& is_open = 0, 
 			const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback = std::function<void(const std::vector<::mmx::offer_data_t>&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t get_offers_for(const vnx::optional<::mmx::addr_t>& bid = nullptr, const vnx::optional<::mmx::addr_t>& ask = nullptr, const uint32_t& since = 0, const vnx::bool_t& is_open = true, 
+			const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback = std::function<void(const std::vector<::mmx::offer_data_t>&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t get_trade_history(const int32_t& limit = -1, const uint32_t& since = 0, 
+			const std::function<void(const std::vector<::mmx::trade_data_t>&)>& _callback = std::function<void(const std::vector<::mmx::trade_data_t>&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t get_trade_history_for(const vnx::optional<::mmx::addr_t>& bid = nullptr, const vnx::optional<::mmx::addr_t>& ask = nullptr, const int32_t& limit = -1, const uint32_t& since = 0, 
+			const std::function<void(const std::vector<::mmx::trade_data_t>&)>& _callback = std::function<void(const std::vector<::mmx::trade_data_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_total_supply(const ::mmx::addr_t& currency = ::mmx::addr_t(), 
@@ -289,7 +302,6 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const vnx::optional<::mmx::tx_info_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_tx_info_for;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::hash_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_tx_ids_at;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::hash_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_tx_ids_since;
-	std::unordered_map<uint64_t, std::pair<std::function<void(const vnx::optional<::mmx::hash_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_is_revoked;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_add_block;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_add_transaction;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::Contract>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_contract;
@@ -317,7 +329,11 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::address_info_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_address_info;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::pair<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_virtual_plots_for;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const uint64_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_virtual_plot_balance;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::offer_data_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_offer;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::offer_data_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_offers;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::offer_data_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_offers_for;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::trade_data_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_trade_history;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::trade_data_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_trade_history_for;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::uint128&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_total_supply;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_start_sync;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::vnx::addons::HttpResponse>)>, std::function<void(const vnx::exception&)>>> vnx_queue_http_request;

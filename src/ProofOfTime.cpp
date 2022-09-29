@@ -13,13 +13,17 @@ namespace mmx {
 
 bool ProofOfTime::is_valid(std::shared_ptr<const ChainParams> params) const
 {
+	if(!params) {
+		throw std::logic_error("!params");
+	}
+	const auto all_hash = calc_hash();
 	return version == 0
 		&& segments.size() >= params->min_vdf_segments
 		&& segments.size() <= params->max_vdf_segments
-		&& calc_hash() == hash;
+		&& all_hash.first == hash && all_hash.second == content_hash;
 }
 
-hash_t ProofOfTime::calc_hash() const
+std::pair<hash_t, hash_t> ProofOfTime::calc_hash() const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
@@ -38,12 +42,13 @@ hash_t ProofOfTime::calc_hash() const
 	write_field(out, "timelord_key", 	timelord_key);
 	out.flush();
 
-	return hash_t(buffer);
-}
+	std::pair<hash_t, hash_t> res;
+	res.first = hash_t(buffer);
 
-hash_t ProofOfTime::get_full_hash() const
-{
-	return hash_t(hash + timelord_sig);
+	write_field(out, "timelord_sig", timelord_sig);
+	out.flush();
+	res.second = hash_t(buffer);
+	return res;
 }
 
 hash_t ProofOfTime::get_output(const uint32_t& chain) const
@@ -74,7 +79,7 @@ uint64_t ProofOfTime::get_vdf_iters() const
 
 void ProofOfTime::validate() const
 {
-	if(!timelord_sig.verify(timelord_key, calc_hash())) {
+	if(!timelord_sig.verify(timelord_key, hash)) {
 		throw std::logic_error("invalid timelord signature");
 	}
 }

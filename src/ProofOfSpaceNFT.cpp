@@ -8,6 +8,8 @@
 #include <mmx/ProofOfSpaceNFT.hxx>
 #include <mmx/write_bytes.h>
 
+#include <bls.hpp>
+
 
 namespace mmx {
 

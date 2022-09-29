@@ -9,10 +9,6 @@ class TokenBase extends mmx.Contract {
 	
 	string symbol;
 	
-	string web_url;
-	
-	string icon_url;
-	
 	int decimals = 6;
 	
 	// TODO: optional<addr_t> meta_data;

@@ -7,6 +7,7 @@
 
 #include <mmx/vm/Engine.h>
 #include <mmx/vm/StorageProxy.h>
+#include <mmx/vm_interface.h>
 
 #include <iostream>
 
@@ -901,7 +902,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 						default: throw std::logic_error("invalid conversion: STRING to UINT with base " + to_hex(sflags));
 					}
 					if(base == 32) {
-						write(dst, uint_t(addr_t(sstr.to_string())));
+						write(dst, uint_t(addr_t(sstr.to_string()).to_uint256()));
 					} else {
 						write(dst, uint_t(uint256_t(sstr.c_str(), base)));
 					}
@@ -988,10 +989,9 @@ void Engine::send(const uint64_t address, const uint64_t amount, const uint64_t 
 	balance->value -= value;
 
 	txout_t out;
-	out.contract = read_fail<uint_t>(currency, TYPE_UINT).value;
-	out.address = read_fail<uint_t>(address, TYPE_UINT).value;
+	out.contract = addr_t(read_fail<uint_t>(currency, TYPE_UINT).value);
+	out.address = addr_t(read_fail<uint_t>(address, TYPE_UINT).value);
 	out.amount = value;
-	out.sender = contract;
 	outputs.push_back(out);
 	total_cost += SEND_COST;
 }
@@ -1007,9 +1007,8 @@ void Engine::mint(const uint64_t address, const uint64_t amount)
 	}
 	txout_t out;
 	out.contract = contract;
-	out.address = read_fail<uint_t>(address, TYPE_UINT).value;
+	out.address = addr_t(read_fail<uint_t>(address, TYPE_UINT).value);
 	out.amount = value;
-	out.sender = contract;
 	mint_outputs.push_back(out);
 	total_cost += MINT_COST;
 }
@@ -1501,7 +1500,7 @@ void Engine::exec(const instr_t& instr)
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
 		break;
 	case OP_FAIL:
-		throw std::runtime_error("failed with: " + to_string(read(
+		throw std::runtime_error("failed with: " + to_string_value(read(
 				deref_addr(instr.a, instr.flags & OPFLAG_REF_A))));
 	case OP_RCALL:
 		rcall(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
@@ -1510,7 +1509,7 @@ void Engine::exec(const instr_t& instr)
 				deref_value(instr.d, instr.flags & OPFLAG_REF_D));
 		break;
 	default:
-		throw std::logic_error("invalid op_code: 0x" + vnx::to_hex_string(uint8_t(instr.code)));
+		throw std::logic_error("invalid op_code: 0x" + vnx::to_hex_string(uint32_t(instr.code)));
 	}
 	get_frame().instr_ptr++;
 }

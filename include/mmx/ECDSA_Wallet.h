@@ -8,7 +8,6 @@
 #ifndef INCLUDE_MMX_ECDSA_WALLET_H_
 #define INCLUDE_MMX_ECDSA_WALLET_H_
 
-#include <mmx/KeyFile.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/contract/NFT.hxx>
@@ -20,8 +19,9 @@
 #include <mmx/skey_t.hpp>
 #include <mmx/addr_t.hpp>
 #include <mmx/pubkey_t.hpp>
-#include <mmx/txio_key_t.hpp>
 #include <mmx/account_t.hxx>
+#include <mmx/hmac_sha512.hpp>
+#include <mmx/utils.h>
 
 
 namespace mmx {
@@ -30,24 +30,84 @@ class ECDSA_Wallet {
 public:
 	const account_t config;
 
-	ECDSA_Wallet(	std::shared_ptr<const KeyFile> key_file, const account_t& config,
-					std::shared_ptr<const ChainParams> params, const addr_t& genesis_hash)
-		:	config(config), params(params), genesis_hash(genesis_hash)
+	ECDSA_Wallet(	const hash_t& seed_value,
+					const account_t& config, std::shared_ptr<const ChainParams> params)
+		:	config(config), seed_value(seed_value), params(params)
 	{
-		if(key_file->seed_value == hash_t()) {
+		if(seed_value == hash_t()) {
 			throw std::logic_error("seed == zero");
 		}
-		master_sk = hash_t(key_file->seed_value);
+	}
+
+	ECDSA_Wallet(	const hash_t& seed_value, const std::vector<addr_t>& addresses,
+					const account_t& config, std::shared_ptr<const ChainParams> params)
+		:	config(config), seed_value(seed_value), params(params)
+	{
+		if(seed_value == hash_t()) {
+			throw std::logic_error("seed == zero");
+		}
+		size_t i = 0;
+		for(const auto& addr : addresses) {
+			index_map[addr] = i++;
+		}
+		this->addresses = addresses;
+	}
+
+	void lock()
+	{
+		// clear memory
+		for(auto& entry : keypairs) {
+			entry.first = skey_t();
+			entry.second = pubkey_t();
+		}
+		keypairs.clear();
+		keypair_map.clear();
+	}
+
+	void unlock() {
+		unlock(std::string());
+	}
+
+	void unlock(const std::string& passphrase) {
+		unlock(hash_t("MMX/seed/" + passphrase));
+	}
+
+	void unlock(const hash_t& passphrase)
+	{
+		vnx::optional<addr_t> first_addr;
+		if(addresses.size()) {
+			first_addr = addresses[0];
+		}
+		const auto master = pbkdf2_hmac_sha512(seed_value, passphrase, PBKDF2_ITERS);
+		const auto chain = hmac_sha512_n(master.first, master.second, 11337);	// TODO(mainnet): use params.port
+		const auto account = hmac_sha512_n(chain.first, chain.second, config.index);
 
 		for(size_t i = 0; i < config.num_addresses; ++i)
 		{
-			const auto keys = generate_keypair(config.index, i);
-			const auto addr = keys.second;
-			keypair_map[addr] = keys;
-			keypairs.push_back(keys);
-			addresses.push_back(addr);
+			std::pair<skey_t, pubkey_t> keys;
+			{
+				const auto tmp = hmac_sha512_n(account.first, account.second, i);
+				keys.first = tmp.first;
+				keys.second = pubkey_t::from_skey(tmp.first);
+			}
+			const auto addr = keys.second.get_addr();
+			if(i == 0) {
+				if(first_addr && addr != *first_addr) {
+					throw std::runtime_error("invalid passphrase");
+				}
+				keypairs.resize(config.num_addresses);
+				addresses.resize(config.num_addresses);
+			}
+			keypairs[i] = keys;
+			keypair_map[addr] = i;
+			addresses[i] = addr;
 			index_map[addr] = i;
 		}
+	}
+
+	bool is_locked() const
+	{
+		return addresses.empty() || keypairs.size() < addresses.size();
 	}
 
 	skey_t get_skey(const uint32_t index) const
@@ -88,31 +148,9 @@ public:
 	{
 		auto iter = keypair_map.find(addr);
 		if(iter != keypair_map.end()) {
-			return iter->second;
+			return keypairs[iter->second];
 		}
 		return nullptr;
-	}
-
-	skey_t generate_skey(const std::vector<uint32_t>& path) const
-	{
-		skey_t key = master_sk;
-		for(const uint32_t i : path) {
-			key = hash_t(hash_t(key + hash_t(&i, sizeof(i))) + hash_t(master_sk.bytes));
-		}
-		return key;
-	}
-
-	std::pair<skey_t, pubkey_t> generate_keypair(const std::vector<uint32_t>& path) const
-	{
-		std::pair<skey_t, pubkey_t> keys;
-		keys.first = generate_skey(path);
-		keys.second = pubkey_t::from_skey(keys.first);
-		return keys;
-	}
-
-	std::pair<skey_t, pubkey_t> generate_keypair(const uint32_t account, const uint32_t index) const
-	{
-		return generate_keypair({account, index});
 	}
 
 	void update_cache(	const std::map<std::pair<addr_t, addr_t>, uint128>& balances,
@@ -137,30 +175,31 @@ public:
 			pending_map.erase(txid);
 		}
 		for(const auto& entry : reserved_map) {
-			balance_map[entry.first] -= entry.second;
+			clamped_sub_assign(balance_map[entry.first], entry.second);
 		}
 		for(const auto& entry : pending_map) {
 			for(const auto& pending : entry.second) {
-				balance_map[pending.first] -= pending.second;
+				clamped_sub_assign(balance_map[pending.first], pending.second);
 			}
 		}
 	}
 
 	void update_from(std::shared_ptr<const Transaction> tx)
 	{
-		if(tx) {
-			pending_tx[tx->id] = tx->expires;
+		if(tx->sender) {
+			const auto key = std::make_pair(*tx->sender, addr_t());
+			const auto static_fee = uint64_t(tx->static_cost) * tx->fee_ratio / 1024;
+			clamped_sub_assign(balance_map[key], static_fee);
+			pending_map[tx->id][key] += static_fee;
 		}
-		while(tx) {
-			for(const auto& in : tx->inputs) {
-				if(find_address(in.address) >= 0) {
-					const auto key = std::make_pair(in.address, in.contract);
-					balance_map[key] -= in.amount;
-					pending_map[tx->id][key] += in.amount;
-				}
+		for(const auto& in : tx->inputs) {
+			if(find_address(in.address) >= 0) {
+				const auto key = std::make_pair(in.address, in.contract);
+				clamped_sub_assign(balance_map[key], in.amount);
+				pending_map[tx->id][key] += in.amount;
 			}
-			tx = tx->parent;
 		}
+		pending_tx[tx->id] = tx->expires;
 	}
 
 	void gather_inputs(	std::shared_ptr<Transaction> tx,
@@ -245,123 +284,113 @@ public:
 		}
 	}
 
-	void gather_fee(std::shared_ptr<Transaction> tx,
-					std::map<std::pair<addr_t, addr_t>, uint128_t>& spent_map,
-					const spend_options_t& options = {}) const
+	void sign_off(std::shared_ptr<Transaction> tx, const spend_options_t& options = {})
 	{
-		tx->fee_ratio = std::max(tx->fee_ratio, options.fee_ratio);
+		bool was_locked = false;
+		if(is_locked()) {
+			was_locked = true;
+			if(auto passphrase = options.passphrase) {
+				unlock(*passphrase);
+			} else {
+				throw std::logic_error("wallet is locked");
+			}
+		}
+		try {
+			tx->finalize();
 
-		uint64_t paid_fee = 0;
-		while(true) {
-			std::unordered_map<addr_t, uint64_t> spend_cost;
-			for(const auto& in : tx->inputs) {
-				if(in.solution == txin_t::NO_SOLUTION) {
-					addr_t owner = in.address;
+			std::unordered_map<addr_t, uint32_t> solution_map;
+
+			// sign sender
+			if(tx->sender && tx->solutions.empty())
+			{
+				if(auto sol = sign_msg(*tx->sender, tx->id, options))
+				{
+					solution_map[*tx->sender] = tx->solutions.size();
+					tx->solutions.push_back(sol);
+				}
+			}
+
+			// sign all inputs
+			for(auto& in : tx->inputs)
+			{
+				if(in.solution != txin_t::NO_SOLUTION) {
+					continue;
+				}
+				addr_t owner = in.address;
+				{
 					auto iter = options.owner_map.find(owner);
 					if(iter != options.owner_map.end()) {
-						spend_cost[iter->second] += params->min_txfee_exec;
+						in.flags |= txin_t::IS_EXEC;
+						owner = iter->second;
+					}
+				}
+				{
+					auto iter = solution_map.find(owner);
+					if(iter != solution_map.end()) {
+						// re-use solution
+						in.solution = iter->second;
+						continue;
+					}
+				}
+				if(auto sol = sign_msg(owner, tx->id, options))
+				{
+					in.solution = tx->solutions.size();
+					solution_map[owner] = in.solution;
+					tx->solutions.push_back(sol);
+				}
+			}
+
+			// sign all operations
+			for(auto& op : tx->execute)
+			{
+				if(op->solution) {
+					continue;
+				}
+				addr_t owner = op->address;
+
+				if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op)) {
+					if(exec->user) {
+						owner = *exec->user;
 					} else {
-						spend_cost.emplace(owner, 0);
+						continue;
+					}
+				} else {
+					auto iter = options.owner_map.find(op->address);
+					if(iter != options.owner_map.end()) {
+						owner = iter->second;
+					}
+				}
+				if(auto sol = sign_msg(owner, tx->id, options)) {
+					auto copy = vnx::clone(op);
+					copy->solution = sol;
+					op = copy;
+				}
+			}
+
+			// sign NFT mint
+			if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(tx->deploy))
+			{
+				if(!nft->solution) {
+					if(auto sol = sign_msg(nft->creator, tx->id, options)) {
+						auto copy = vnx::clone(nft);
+						copy->solution = sol;
+						tx->deploy = copy;
 					}
 				}
 			}
-			// TODO: check for multi-sig via options.contract_map
-			uint64_t tx_fees = tx->calc_cost(params)
-					+ spend_cost.size() * params->min_txfee_sign
-					+ tx->execute.size() * params->min_txfee_sign
-					+ options.extra_fee;
 
-			for(const auto& entry : spend_cost) {
-				tx_fees += entry.second;	// spend execution cost
-			}
-			if(std::dynamic_pointer_cast<const contract::NFT>(tx->deploy)) {
-				tx_fees += params->min_txfee_sign;
-			}
-			tx_fees = (uint128_t(tx_fees) * tx->fee_ratio) / 1024;
-
-			if(paid_fee >= tx_fees) {
-				break;
-			}
-			const auto more = tx_fees - paid_fee;
-			gather_inputs(tx, spent_map, more, addr_t(), options);
-			paid_fee += more;
+			// compute final content hash
+			tx->static_cost = tx->calc_cost(params);
+			tx->content_hash = tx->calc_hash(true);
 		}
-	}
-
-	void sign_off(std::shared_ptr<Transaction> tx, const spend_options_t& options = {}) const
-	{
-		tx->salt = genesis_hash;
-		tx->finalize();
-
-		std::unordered_map<addr_t, uint32_t> solution_map;
-
-		// sign all inputs
-		for(auto& in : tx->inputs)
-		{
-			if(in.solution != txin_t::NO_SOLUTION) {
-				continue;
+		catch(...) {
+			if(was_locked) {
+				lock();
 			}
-			addr_t owner = in.address;
-			{
-				auto iter = options.owner_map.find(owner);
-				if(iter != options.owner_map.end()) {
-					in.flags |= txin_t::IS_EXEC;
-					owner = iter->second;
-				}
-			}
-			{
-				auto iter = solution_map.find(owner);
-				if(iter != solution_map.end()) {
-					// re-use solution
-					in.solution = iter->second;
-					continue;
-				}
-			}
-			if(auto sol = sign_msg(owner, tx->id, options))
-			{
-				in.solution = tx->solutions.size();
-				solution_map[owner] = in.solution;
-				tx->solutions.push_back(sol);
-			}
+			throw;
 		}
-
-		// sign all operations
-		for(auto& op : tx->execute)
-		{
-			if(op->solution) {
-				continue;
-			}
-			addr_t owner = op->address;
-
-			if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op)) {
-				if(exec->user) {
-					owner = *exec->user;
-				} else {
-					continue;
-				}
-			} else {
-				auto iter = options.owner_map.find(op->address);
-				if(iter != options.owner_map.end()) {
-					owner = iter->second;
-				}
-			}
-			if(auto sol = sign_msg(owner, tx->id, options)) {
-				auto copy = vnx::clone(op);
-				copy->solution = sol;
-				op = copy;
-			}
-		}
-
-		// sign NFT mint
-		if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(tx->deploy))
-		{
-			if(!nft->solution) {
-				if(auto sol = sign_msg(nft->creator, tx->id, options)) {
-					auto copy = vnx::clone(nft);
-					copy->solution = sol;
-					tx->deploy = copy;
-				}
-			}
+		if(was_locked) {
+			lock();
 		}
 	}
 
@@ -377,7 +406,7 @@ public:
 		return nullptr;
 	}
 
-	void complete(std::shared_ptr<Transaction> tx, const spend_options_t& options = {}) const
+	void complete(std::shared_ptr<Transaction> tx, const spend_options_t& options = {})
 	{
 		if(options.expire_at) {
 			tx->expires = std::min(tx->expires, *options.expire_at);
@@ -385,40 +414,29 @@ public:
 			tx->expires = std::min(tx->expires, height + *options.expire_delta);
 		}
 		if(!tx->sender) {
-			if(options.tx_sender) {
-				tx->sender = *options.tx_sender;
+			if(options.sender) {
+				tx->sender = *options.sender;
 			} else {
 				tx->sender = get_address(0);
 			}
 		}
+		tx->fee_ratio = std::max(tx->fee_ratio, options.fee_ratio);
 
 		std::map<addr_t, uint128_t> missing;
-		{
-			std::shared_ptr<const Transaction> txi = tx;
-			while(txi) {
-				for(const auto& out : txi->outputs) {
-					missing[out.contract] += out.amount;
-				}
-				for(const auto& op : txi->execute) {
-					if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(op)) {
-						missing[deposit->currency] += deposit->amount;
-					}
-				}
-				txi = txi->parent;
+		for(const auto& out : tx->outputs) {
+			missing[out.contract] += out.amount;
+		}
+		for(const auto& op : tx->execute) {
+			if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(op)) {
+				missing[deposit->currency] += deposit->amount;
 			}
 		}
-		{
-			std::shared_ptr<const Transaction> txi = tx;
-			while(txi) {
-				for(const auto& in : txi->inputs) {
-					auto& amount = missing[in.contract];
-					if(in.amount < amount) {
-						amount -= in.amount;
-					} else {
-						amount = 0;
-					}
-				}
-				txi = txi->parent;
+		for(const auto& in : tx->inputs) {
+			auto& amount = missing[in.contract];
+			if(in.amount < amount) {
+				amount -= in.amount;
+			} else {
+				amount = 0;
 			}
 		}
 		std::map<std::pair<addr_t, addr_t>, uint128_t> spent_map;
@@ -427,7 +445,8 @@ public:
 				gather_inputs(tx, spent_map, amount, entry.first, options);
 			}
 		}
-		gather_fee(tx, spent_map, options);
+		tx->max_fee_amount = ((tx->calc_cost(params) + options.max_extra_cost) * tx->fee_ratio) / 1024;
+
 		sign_off(tx, options);
 	}
 
@@ -444,18 +463,19 @@ public:
 	int64_t last_update = 0;
 	std::map<std::pair<addr_t, addr_t>, uint128_t> balance_map;									// [[address, currency] => balance]
 	std::map<std::pair<addr_t, addr_t>, uint128_t> reserved_map;								// [[address, currency] => balance]
-	std::unordered_map<hash_t, uint32_t> pending_tx;											// [txid => height]
+	std::unordered_map<hash_t, uint32_t> pending_tx;											// [txid => expired height]
 	std::unordered_map<hash_t, std::map<std::pair<addr_t, addr_t>, uint128_t>> pending_map;		// [txid => [[address, currency] => balance]]
 
 private:
-	skey_t master_sk;
+	const hash_t seed_value;
 	std::vector<addr_t> addresses;
 	std::unordered_map<addr_t, size_t> index_map;
 	std::vector<std::pair<skey_t, pubkey_t>> keypairs;
-	std::unordered_map<addr_t, std::pair<skey_t, pubkey_t>> keypair_map;
+	std::unordered_map<addr_t, size_t> keypair_map;
 
 	const std::shared_ptr<const ChainParams> params;
-	const hash_t genesis_hash;
+
+	static constexpr size_t PBKDF2_ITERS = 4096;
 
 };
 

@@ -3,35 +3,7 @@ function validate_address(address) {
 	return address && address.length == 62 && address.startsWith("mmx1");
 }
 
-var app = Vue.createApp({
-	beforeMount() {
-		(async () => {
-
-			var locale = 'en';
-
-			if(this.isWinGUI) {
-				locale = window.mmx.locale;
-				setInterval( () => { 
-					locale = window.mmx.locale;	
-					if (i18n.locale != locale) {
-						loadLanguageAsync(locale);
-					}
-				}, 1000);
-			} else {
-				locale = localStorage.getItem('language')
-			}
-
-			if (locale) {
-				await loadLanguageAsync(locale);
-			} else {
-				setI18nLanguage('en');
-			}
-
-		})()
-	}
-});
-
-app.config.globalProperties.isWinGUI = navigator.userAgent.indexOf("mmx.gui.win") > 0;
+const MMX_ADDR = "mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev";
 
 const Wallet = {
 	template: '<wallet-summary></wallet-summary>'
@@ -44,9 +16,13 @@ const Account = {
 		index: Number
 	},
 	template: `
-		<account-header :index="index"></account-header>
-		<account-menu :index="index"></account-menu>
-		<router-view :index="index"></router-view>
+		<v-card>
+			<v-card-text>
+				<account-header :index="index"></account-header>
+				<account-menu :index="index" class="my-2"></account-menu>
+				<router-view :index="index"></router-view>
+			</v-card-text>
+		</v-card>
 	`
 }
 const AccountHome = {
@@ -54,8 +30,10 @@ const AccountHome = {
 		index: Number
 	},
 	template: `
-		<account-balance :index="index"></account-balance>
-		<account-history :index="index" :limit="50"></account-history>
+		<div>
+			<account-balance :index="index" class="my-2"></account-balance>
+			<account-history :index="index" :limit="50"></account-history>
+		</div>
 	`
 }
 const AccountNFTs = {
@@ -71,8 +49,10 @@ const AccountContracts = {
 		index: Number
 	},
 	template: `
-		<create-contract-menu :index="index"></create-contract-menu>
-		<account-contracts :index="index"></account-contracts>
+		<div>
+			<create-contract-menu :index="index"></create-contract-menu>
+			<account-contracts :index="index"></account-contracts>
+		</div>
 	`
 }
 const AccountAddresses = {
@@ -120,7 +100,7 @@ const AccountHistory = {
 		index: Number
 	},
 	template: `
-		<account-history :index="index" :limit="200"></account-history>
+		<account-history-form :index="index" :limit="200"></account-history-form>
 	`
 }
 const AccountLog = {
@@ -144,8 +124,10 @@ const AccountOptions = {
 		index: Number
 	},
 	template: `
-		<account-actions :index="index"></account-actions>
-		<create-account :index="index"></create-account>
+		<div>
+			<account-actions :index="index"></account-actions>
+			<create-account :index="index" class="my-2"></create-account>
+		</div>
 	`
 }
 const AccountCreateLocked = {
@@ -172,8 +154,10 @@ const Market = {
 		ask: null,
 	},
 	template: `
-		<market-menu :wallet_="wallet" :bid_="bid" :ask_="ask" :page="$route.meta.page"></market-menu>
-		<router-view :key="$route.path" :wallet="wallet" :bid="bid" :ask="ask"></router-view>
+		<div>
+			<market-menu :wallet_="wallet" :bid_="bid" :ask_="ask" :page="$route.meta.page"></market-menu>
+			<router-view :key="$route.path" :wallet="wallet" :bid="bid" :ask="ask"></router-view>
+		</div>
 		`
 }
 const MarketOffers = {
@@ -183,143 +167,28 @@ const MarketOffers = {
 		ask: null,
 	},
 	template: `
-		<market-offers ref="orders" :wallet="wallet" :bid="bid" :ask="ask" :limit="200"></market-offers>
+		<market-offers :wallet="wallet" :bid="bid" :ask="ask" :limit="200"></market-offers>
 		`
 }
 
-const Exchange = {
+const MarketHistory = {
 	props: {
-		wallet: Number,
-		server: String,
-		bid: String,
-		ask: String,
-	},
-	data() {
-		return {
-			bid_symbol: null,
-			ask_symbol: null
-		}
-	},
-	methods: {
-		update_bid_symbol(value) {
-			this.bid_symbol = value;
-		},
-		update_ask_symbol(value) {
-			this.ask_symbol = value;
-		}
+		bid: null,
+		ask: null,
 	},
 	template: `
-		<exchange-menu @update-bid-symbol="update_bid_symbol" @update-ask-symbol="update_ask_symbol"
-			:wallet_="wallet" :server_="server" :bid_="bid" :ask_="ask" :page="$route.meta.page">
-		</exchange-menu>
-		<router-view :key="$route.path" :wallet="wallet" :server="server" :bid="bid" :ask="ask" :bid_symbol="bid_symbol" :ask_symbol="ask_symbol"></router-view>
-		`
-}
-const ExchangeMarket = {
-	props: {
-		wallet: Number,
-		server: String,
-		bid: String,
-		ask: String,
-		bid_symbol: String,
-		ask_symbol: String
-	},
-	methods: {
-		update() {
-			this.$refs.orders.update();
-		}
-	},
-	template: `
-		<div class="ui two column grid">
-			<div class="column">
-				<exchange-trade-form @trade-executed="update"
-					:wallet="wallet" :server="server"
-					:bid_symbol="ask_symbol" :ask_symbol="bid_symbol"
-					:bid_currency="ask" :ask_currency="bid" :action="'Buy ' + bid_symbol">
-				</exchange-trade-form>
-			</div>
-			<div class="column">
-				<exchange-trade-form @trade-executed="update"
-					:wallet="wallet" :server="server"
-					:bid_symbol="bid_symbol" :ask_symbol="ask_symbol"
-					:bid_currency="bid" :ask_currency="ask" :action="'Sell ' + bid_symbol">
-				</exchange-trade-form>
-			</div>
-		</div>
-		<exchange-orders ref="orders" :server="server" :bid="bid" :ask="ask" :flip="false" :limit="100"></exchange-orders>
-		`
-}
-
-const ExchangeTrades = {
-	props: {
-		server: String,
-		bid: String,
-		ask: String,
-		bid_symbol: String,
-		ask_symbol: String
-	},
-	template: `
-		<exchange-trades :server="server" :bid="bid" :ask="ask" :limit="200"></exchange-trades>
-		`
-}
-const ExchangeHistory = {
-	props: {
-		server: String,
-		bid: String,
-		ask: String,
-		bid_symbol: String,
-		ask_symbol: String
-	},
-	template: `
-		<exchange-history :bid="bid" :ask="ask" :limit="200"></exchange-history>
-		`
-}
-const ExchangeOffers = {
-	props: {
-		wallet: Number,
-		server: String,
-		bid: String,
-		ask: String,
-		bid_symbol: String,
-		ask_symbol: String
-	},
-	methods: {
-		update_created() {
-			this.$refs.orders.update();
-			this.$refs.offers.update();
-		},
-		update_cancel() {
-			this.$refs.orders.update();
-			this.$refs.bid_form.update();
-			this.$refs.ask_form.update();
-		}
-	},
-	template: `
-		<div class="ui two column grid">
-			<div class="column">
-				<exchange-offer-form ref="bid_form" @offer-created="update_created"
-					:wallet="wallet" :server="server"
-					:bid_symbol="bid_symbol" :ask_symbol="ask_symbol" :flip="false"
-					:bid_currency="bid" :ask_currency="ask">
-				</exchange-offer-form>
-			</div>
-			<div class="column">
-				<exchange-offer-form ref="ask_form" @offer-created="update_created"
-					:wallet="wallet" :server="server"
-					:bid_symbol="ask_symbol" :ask_symbol="bid_symbol" :flip="true"
-					:bid_currency="ask" :ask_currency="bid">
-				</exchange-offer-form>
-			</div>
-		</div>
-		<exchange-orders ref="orders" :server="server" :bid="bid" :ask="ask" :flip="true" :limit="5"></exchange-orders>
-		<account-offers ref="offers" @offer-cancel="update_cancel" :index="wallet" :bid="bid" :ask="ask"></account-offers>
+		<market-history :bid="bid" :ask="ask" :limit="200"></market-history>
 		`
 }
 
 const Explore = {
 	template: `
-		<explore-menu></explore-menu>
-		<router-view></router-view>
+	<v-card class="my-2">
+		<v-card-text>
+			<explore-menu></explore-menu>
+			<router-view></router-view>
+		</v-card-text>
+	</v-card>
 	`
 }
 const ExploreBlocks = {
@@ -348,12 +217,14 @@ const ExploreTransaction = {
 	`
 }
 
-const Node = {
+const NodeView = {
 	template: `
-		<node-info></node-info>
-		<farmer-info></farmer-info>
-		<node-menu></node-menu>
-		<router-view></router-view>
+		<div>
+			<node-info></node-info>
+			<farmer-info></farmer-info>
+			<node-menu class="mt-4"></node-menu>
+			<router-view class="mt-2"></router-view>
+		</div>
 	`
 }
 const NodeBlocks = {
@@ -389,8 +260,10 @@ const NodeBlockReward = {
 
 const Settings = {
 	template: `
-		<node-settings></node-settings>
-		<wallet-settings></wallet-settings>
+		<div>
+			<node-settings></node-settings>
+			<wallet-settings></wallet-settings>
+		</div>
 	`
 }
 
@@ -415,120 +288,48 @@ const Login = {
 		}
 	},
 	template: `
-		<div class="ui raised segment">
-			<form class="ui form">
-				<div class="field">
-					<label>{{ $t('login.password_label') }}</label>
-					<input type="password" v-model="passwd">
-				</div>
-				<div @click="submit" class="ui submit button">{{ $t('login.login') }}</div>
-			</form>
-		</div>
-		<div class="ui negative message" :class="{hidden: !error}">
-			<b>{{error}}</b>
+		<div>
+			<v-card>
+				<v-card-text>
+					<!-- TODO add validation rulues -->
+					<v-text-field
+						v-model="passwd"
+						:label="$t('login.password_label')"
+						required
+						type="password"/>
+					<v-btn outlined color="primary" @click="submit">{{ $t('login.login') }}</v-btn>
+				</v-card-text>
+			</v-card>
+
+			<v-alert
+				border="left"
+				colored-border
+				type="error"
+				elevation="2"
+				v-if="error"
+				class="my-2"
+			>
+				{{ error }}
+			</v-alert>
 		</div>
 		`
 }
 
-const routes = [
-	{ path: '/', redirect: "/node" },
-	{ path: '/login', component: Login, meta: { is_login: true } },
-	{ path: '/wallet', component: Wallet, meta: { is_wallet: true } },
-	{ path: '/wallet/create', component: WalletCreate, meta: { is_wallet: true } },
-	{ path: '/wallet/account/:index',
-		component: Account,
-		meta: { is_wallet: true },
-		props: route => ({ index: parseInt(route.params.index) }),
-		children: [
-			{ path: '', component: AccountHome, meta: { page: 'balance' } },
-			{ path: 'nfts', component: AccountNFTs, meta: { page: 'nfts' } },
-			{ path: 'contracts', component: AccountContracts, meta: { page: 'contracts' } },
-			{ path: 'addresses', component: AccountAddresses, meta: { page: 'addresses' } },
-			{ path: 'send/:target?', component: AccountSend, meta: { page: 'send' } },
-			{ path: 'send_from/:source?', component: AccountSendFrom, meta: { page: 'send' } },
-			{ path: 'split', component: AccountSplit, meta: { page: 'split' } },
-			{ path: 'offer', component: AccountOffer, meta: { page: 'offer' } },
-			{ path: 'history', component: AccountHistory, meta: { page: 'history' } },
-			{ path: 'log', component: AccountLog, meta: { page: 'log' } },
-			{ path: 'details', component: AccountDetails, meta: { page: 'details' } },
-			{ path: 'options', component: AccountOptions, meta: { page: 'options' } },
-			{ path: 'create/locked', component: AccountCreateLocked },
-			{ path: 'create/virtualplot', component: AccountCreateVirtualPlot },
-		]
-	},
-	{ path: '/market',
-		component: Market,
-		meta: { is_market: true },
-		props: route => ({
-			wallet: parseInt(route.params.wallet),
-			bid: route.params.bid == 'null' ? null : route.params.bid,
-			ask: route.params.ask == 'null' ? null : route.params.ask,
-		}),
-		children: [
-			{ path: 'offers/:wallet/:bid/:ask', component: MarketOffers, meta: { page: 'offers' } },
-		]
-	},
-	{ path: '/exchange',
-		component: Exchange,
-		meta: { is_exchange: true },
-		props: route => ({
-			wallet: parseInt(route.params.wallet),
-			server: route.params.server,
-			bid: route.params.bid,
-			ask: route.params.ask
-		}),
-		children: [
-			{ path: 'market/:wallet/:server/:bid/:ask', component: ExchangeMarket, meta: { page: 'market' } },
-			{ path: 'trades/:wallet/:server/:bid/:ask', component: ExchangeTrades, meta: { page: 'trades' } },
-			{ path: 'history/:wallet/:server/:bid/:ask', component: ExchangeHistory, meta: { page: 'history' } },
-			{ path: 'offers/:wallet/:server/:bid/:ask', component: ExchangeOffers, meta: { page: 'offers' } },
-		]
-	},
-	{ path: '/explore',
-		component: Explore,
-		redirect: "/explore/blocks",
-		meta: { is_explorer: true },
-		children: [
-			{ path: 'blocks', component: ExploreBlocks, meta: { page: 'blocks' } },
-			{ path: 'transactions', component: ExploreTransactions, meta: { page: 'transactions' } },
-			{ path: 'block/hash/:hash', component: ExploreBlock, meta: { page: 'block' } },
-			{ path: 'block/height/:height', component: ExploreBlock, meta: { page: 'block' } },
-			{ path: 'address/:address', component: ExploreAddress, meta: { page: 'address' } },
-			{ path: 'transaction/:id', component: ExploreTransaction, meta: { page: 'transaction' } },
-		]
-	},
-	{ path: '/node',
-		component: Node,
-		redirect: "/node/log",
-		meta: { is_node: true },
-		children: [
-			{ path: 'log', component: NodeLog, meta: { page: 'log' } },
-			{ path: 'peers', component: NodePeers, meta: { page: 'peers' } },
-			{ path: 'blocks', component: NodeBlocks, meta: { page: 'blocks' } },
-			{ path: 'netspace', component: NodeNetspace, meta: { page: 'netspace' } },
-			{ path: 'vdf_speed', component: NodeVDFSpeed, meta: { page: 'vdf_speed' } },
-			{ path: 'reward', component: NodeBlockReward, meta: { page: 'reward' } },
-		]
-	},
-	{ path: '/settings', component: Settings, meta: { is_settings: true } },
-]
-
-const router = VueRouter.createRouter({
-	history: VueRouter.createWebHashHistory(),
-	routes,
-})
-
-app.use(router)
-
-app.component('main-menu', {
+Vue.component('main-menu', {
 	methods: {
+		data() {
+			return {
+				timer: null
+			}
+		},		
 		update() {
-			this.loading = true;
 			fetch('/server/session')
 				.then(response => response.json())
 				.then(data => {
 					if(!data.user) {
-						this.$router.push("/login");
+						if(this.$router.currentRoute.path != "/login") {
+							this.$router.push("/login");
+						}
 					}
 				});
 		},
@@ -542,39 +343,219 @@ app.component('main-menu', {
 		}
 	},
 	created() {
-		if(!this.isWinGUI) 
+		if(!this.$isWinGUI) 
 		{
 			this.update();
 			this.timer = setInterval(() => { this.update(); }, 5000);
 		}
 	},
-	mounted() {
-		if(this.isWinGUI) 
-		{
-			$("body").css("background-color", "#f2f2f2")
-			$('#content').css("padding", "10px 10px 100px 10px");
-			$('#content').css("float", "left");
-		}
-	},	
-	unmounted() {
+	beforeDestroy() {
 		clearInterval(this.timer);
 	},
 	template: `
-		<div class="ui large top menu">
-			<div class="ui container">
-				<router-link class="item" :class="{active: $route.meta.is_node}" to="/node/">{{ $t('main_menu.node') }}</router-link>
-				<router-link class="item" :class="{active: $route.meta.is_wallet}" to="/wallet/">{{ $t('main_menu.wallet') }}</router-link>
-				<router-link class="item" :class="{active: $route.meta.is_explorer}" to="/explore/">{{ $t('main_menu.explore') }}</router-link>
-				<router-link class="item" :class="{active: $route.meta.is_market}" to="/market/">{{ $t('main_menu.market') }}</router-link>
-				<!--<router-link class="item" :class="{active: $route.meta.is_exchange}" to="/exchange/">{{ $t('main_menu.exchange') }}</router-link>-->
-				<div class="right menu">
-					<router-link class="item" to="/settings/" :class="{active: $route.meta.is_settings}">{{ $t('main_menu.settings') }}</router-link>
-					<template v-if="!$route.meta.is_login && !isWinGUI">
-						<a class="item" @click="logout">{{ $t('main_menu.logout') }}</a>
-					</template>
-				</div>
-			</div>
+		<v-tabs>
+			<status/>
+			<v-tab to="/node">{{ $t('main_menu.node') }}</v-tab>
+			<v-tab to="/wallet">{{ $t('main_menu.wallet') }}</v-tab>
+			<v-tab to="/explore">{{ $t('main_menu.explore') }}</v-tab>
+			<v-tab to="/market">{{ $t('main_menu.market') }}</v-tab>
+			<v-spacer></v-spacer>
+			<v-tab to="/settings">{{ $t('main_menu.settings') }}</v-tab>
+			<template v-if="!$route.meta.is_login && !$isWinGUI">
+				<v-tab @click="logout">{{ $t('main_menu.logout') }}</v-tab>
+			</template>
+		</v-tabs>
+		`
+})
+
+const AppStatus = {
+	DisconnectedFromNode: "Disconnected from node",
+	LoggedOff: "Logged off",
+	Connecting: "Connecting",
+	Syncing: "Syncing",
+	Synced: "Synced"
+}
+
+Vue.component('status', {
+	data() {
+		return {
+			timer: null,
+			session_fails: 99,
+			peer_fails: 99,
+			synced_fails: 99,
+		}
+	},
+	methods: {
+		async update() {
+
+			if(this.status = AppStatus.LoggedOff || this.status == AppStatus.DisconnectedFromNode 
+				|| this.status == AppStatus.Connecting) {
+				await fetch('/server/session')
+					.then( () => this.session_fails = 0 )
+					.catch( () => this.session_fails++ );
+			}
+
+			if(this.status == AppStatus.Connecting || this.status == AppStatus.Syncing) {
+				await fetch('/api/router/get_peer_info')
+					.then( response => response.json() )
+					.then( data => {
+						if(data.peers && data.peers.length > 0) {
+							this.peer_fails = 0
+						} else {
+							this.peer_fails++
+						}
+					})
+					.catch( () => this.peer_fails++ );
+			}
+
+			if(this.status == AppStatus.Connecting || this.status == AppStatus.Syncing 
+				|| this.status == AppStatus.Synced) {
+				await fetch('/wapi/node/info')
+					.then( response => response.json() )
+					.then( data => {
+						this.$root.nodeInfo = data
+						if(data.is_synced) {
+							this.synced_fails = 0
+						} else {
+							this.synced_fails++
+						}
+					})
+					.catch( () => {
+						this.synced_fails++;
+						this.$root.nodeInfo = null;
+					} );				
+			}
+			
+			// console.log('--------------------------------');
+			// console.log('session_fails', this.session_fails);
+			// console.log('connectedToNode', this.connectedToNode);
+
+			// console.log('peer_fails', this.peer_fails);
+			// console.log('connectedToNetwork', this.connectedToNetwork);
+
+			// console.log('synced_fails', this.synced_fails);
+			// console.log('synced', this.synced);			
+		},
+	},
+	computed: {
+		connectedToNode() {
+			return this.session_fails < 1;
+		},
+		loggedIn() {
+			return !this.$route.meta.is_login || this.$isWinGUI;
+		},
+		connectedToNetwork() {
+			return this.peer_fails < 1;
+		},
+		synced() {
+			return this.synced_fails == 0;
+		},
+		status() {
+			let result = AppStatus.DisconnectedFromNode
+			if(this.connectedToNode) {
+				if(this.loggedIn) {					
+					result = AppStatus.Connecting;
+					if(this.connectedToNetwork) {
+						result = AppStatus.Syncing;
+					}
+
+					if(this.synced) {
+						result = AppStatus.Synced;
+					}
+				} else {
+					result = AppStatus.LoggedOff;
+				}
+			}
+			//console.log(result)
+			return result;
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 5000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<div class="d-flex align-center px-5">
+
+			<t-icon v-if="status == AppStatus.Connecting"
+				color="red"
+				:tooltip="AppStatus.Connecting">mdi-connection</t-icon>
+
+			<t-icon v-else-if="status == AppStatus.Syncing"
+				color="yellow darken-3" 
+				:tooltip="AppStatus.Syncing">mdi-sync</t-icon>
+
+			<t-icon v-else-if="status == AppStatus.Synced"
+				color="green" 
+				:tooltip="AppStatus.Synced">mdi-cloud-check</t-icon>
+
+			<t-icon v-else-if="status == AppStatus.LoggedOff" 
+				color="red" 
+				:tooltip="AppStatus.LoggedOff">mdi-shield-key</t-icon>
+
+			<t-icon v-else
+				color="red" 
+				:tooltip="AppStatus.DisconnectedFromNode">mdi-emoticon-dead</t-icon>
+
 		</div>
+		`
+})
+
+Vue.component('t-icon', {
+	props: {
+		color: String,
+		tooltip: String
+	},	
+	template: `
+		<v-tooltip bottom v-if="tooltip">
+			<template v-slot:activator="{ on, attrs }">
+				<v-icon :color="color" v-on="on"><slot /></v-icon>
+			</template>
+			<span>{{tooltip}}</span>
+		</v-tooltip>	
+		<v-icon :color="color" v-else><slot /></v-icon>		
+	`
+})
+
+Vue.component('app', {
+	computed: {
+		colClass(){
+			var result = '';
+			if(!this.$isWinGUI) {
+				result = 'cols-12 col-xl-8 offset-xl-2';
+			}
+			return result;
+		},
+		fluid() {
+			return this.$isWinGUI || !(this.$vuetify.breakpoint.xl || this.$vuetify.breakpoint.lg);
+		}
+	},
+	template: `
+		<v-app>
+			<v-app-bar app dense>
+				<v-container :fluid="fluid" class="main_container">
+					<v-row>
+						<v-col :class="colClass">
+							<main-menu></main-menu>
+						</v-col>
+					</v-row>
+				</v-container>
+			</v-app-bar>
+			<v-main>
+				<v-container :fluid="fluid" class="main_container">
+					<v-row>
+						<v-col :class="colClass">
+							<router-view></router-view>
+						</v-col>
+					</v-row>
+				</v-container>                
+			</v-main>
+			<!--v-footer app>
+			</v-footer-->
+		</v-app>
 		`
 })
 
