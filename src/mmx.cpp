@@ -285,30 +285,42 @@ int main(int argc, char** argv)
 						std::cout << "NFT: " << addr << std::endl;
 					}
 				}
-				if(subject.empty() || subject == "contracts")
+				if(subject.empty() || subject == "contracts" || subject == "offers")
 				{
 					for(const auto& entry : wallet.get_contracts(index))
 					{
 						const auto& address = entry.first;
 						const auto& contract = entry.second;
+						vnx::optional<mmx::offer_data_t> offer;
+						if(auto exec = std::dynamic_pointer_cast<const mmx::contract::Executable>(contract)) {
+							if(exec->binary == params->offer_binary) {
+								offer = node.get_offer(address);
+								if(subject.empty() && offer->state != "OPEN") {
+									continue;
+								}
+							} else if(subject == "offers") {
+								continue;
+							}
+						} else if(subject == "offers") {
+							continue;
+						}
 						std::cout << "Contract: " << address << " (" << contract->get_type_name();
-						if(auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract)) {
+						if(auto exec = std::dynamic_pointer_cast<const mmx::contract::Executable>(contract)) {
+							if(offer) {
+								if(offer->state == "REVOKED") {
+									std::cout << ", revoked offer";
+								} else if(offer->state == "CLOSED") {
+									std::cout << ", offer accepted at height " << *offer->close_height;
+								} else if(offer->state == "OPEN") {
+									std::cout << ", open offer";
+								}
+							}
+						}
+						else if(auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract)) {
 							if(!token->symbol.empty()) {
 								std::cout << ", " << token->symbol;
 								if(!token->name.empty()) {
 									std::cout << ", " << token->name;
-								}
-							}
-						}
-						else if(auto exec = std::dynamic_pointer_cast<const mmx::contract::Executable>(contract)) {
-							if(exec->binary == params->offer_binary) {
-								const auto data = node.get_offer(address);
-								if(data.state == "REVOKED") {
-									std::cout << ", revoked";
-								} else if(data.state == "CLOSED") {
-									std::cout << ", accepted at height " << data.close_height;
-								} else if(data.state == "OPEN") {
-									std::cout << ", open";
 								}
 							}
 						}
@@ -340,13 +352,25 @@ int main(int argc, char** argv)
 								std::cout << std::endl;
 							}
 						}
+						if(auto exec = std::dynamic_pointer_cast<const mmx::contract::Executable>(contract)) {
+							if(offer && offer->state == "OPEN" && subject == "offers") {
+								if(auto token = get_token(node, offer->ask_currency, false)) {
+									std::cout << "  Asking:  " << mmx::to_value(offer->ask_amount, token->decimals)
+											<< " " << token->symbol << " (" << offer->ask_amount << ")";
+									if(offer->ask_currency != mmx::addr_t()) {
+										std::cout << " [" << offer->ask_currency << "]";
+									}
+									std::cout << std::endl;
+								}
+							}
+						}
 					}
 				}
 				for(int i = 0; i < 1; ++i) {
 					std::cout << "Address[" << i << "]: " << wallet.get_address(index, i) << std::endl;
 				}
 				if(subject.empty()) {
-					std::cout << "Help: mmx wallet show [balance | contracts]" << std::endl;
+					std::cout << "Help: mmx wallet show [balance | contracts | offers]" << std::endl;
 				}
 			}
 			else if(command == "accounts")
