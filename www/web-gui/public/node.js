@@ -103,7 +103,7 @@ Vue.component('node-info', {
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"/>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
-										{{ $t('node_info.no_addresss') }}
+										{{ $t('node_info.no_addresses') }}
 									</v-row>
 								</v-col>
 

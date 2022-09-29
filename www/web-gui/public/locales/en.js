@@ -61,7 +61,7 @@ const enLocale = {
     "node_info": {
         "synced": "Synced",
         "supply": "Supply",
-        "no_addresss": "No. Addresss"
+        "no_addresses": "No. Addresses"
     },
 
     "farmer_info": {
