@@ -305,9 +305,8 @@ Vue.component('market-offers', {
 								<tr>
 									<th>{{ $t('market_offers.they_offer') }}</th>
 									<th>{{ $t('market_offers.they_ask') }}</th>
-									<template v-if="bid && ask">
-										<th>{{ $t('market_offers.price') }}</th>
-									</template>
+									<th>{{ $t('market_offers.price') }}</th>
+									<th>{{ $t('market_offers.price') }}</th>
 									<th>{{ $t('market_offers.time') }}</th>
 									<th>{{ $t('market_offers.link') }}</th>
 									<th></th>
@@ -335,9 +334,8 @@ Vue.component('market-offers', {
 											</router-link>
 										</template>
 									</td>
-									<template v-if="bid && ask">
-										<td><b>{{item.price}}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
-									</template>
+									<td><b>{{(item.price).toPrecision(3)}}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
+									<td><b>{{(1 / item.price).toPrecision(3)}}</b>&nbsp; {{item.bid_symbol}} / {{item.ask_symbol}}</td>
 									<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 									<td><router-link :to="'/explore/address/' + item.address">{{ $t('market_offers.address') }}</router-link></td>
 									<td>
@@ -450,8 +448,8 @@ Vue.component('market-history', {
 											</router-link>
 										</template>
 									</td>
-									<td><b>{{item.price}}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
-									<td><b>{{1 / item.price}}</b>&nbsp; {{item.bid_symbol}} / {{item.ask_symbol}}</td>
+									<td><b>{{(item.price).toPrecision(3)}}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
+									<td><b>{{(1 / item.price).toPrecision(3)}}</b>&nbsp; {{item.bid_symbol}} / {{item.ask_symbol}}</td>
 									<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 									<td><router-link :to="'/explore/address/' + item.contract">TX</router-link></td>
 								</tr>
