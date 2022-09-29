@@ -51,17 +51,20 @@ void Node::init()
 void Node::main()
 {
 #ifdef WITH_OPENCL
+	const auto devices = automy::basic_opencl::get_devices();
+	std::vector<std::string> device_names;
+	for(const auto id : devices) {
+		device_names.push_back(automy::basic_opencl::get_device_name(id));
+	}
+	vnx::write_config("opencl_device_list", device_names);
+
 	if(opencl_device >= 0) {
-		const auto devices = automy::basic_opencl::get_devices();
 		if(size_t(opencl_device) < devices.size()) {
 			for(int i = 0; i < 2; ++i) {
 				opencl_vdf[i] = std::make_shared<OCL_VDF>(opencl_device);
 			}
-			char dev_name[64] = {};
-			size_t dev_name_len = 0;
-			clGetDeviceInfo(devices[opencl_device], CL_DEVICE_NAME, sizeof(dev_name), dev_name, &dev_name_len);
-
-			log(INFO) << "Using OpenCL GPU device [" << opencl_device << "] " << std::string(dev_name, dev_name_len > 0 ? dev_name_len - 1 : 0)
+			log(INFO) << "Using OpenCL GPU device [" << opencl_device << "] "
+					<< automy::basic_opencl::get_device_name(devices[opencl_device])
 					<< " (total of " << devices.size() << " found)";
 		}
 		else if(devices.size()) {

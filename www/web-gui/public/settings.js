@@ -6,6 +6,8 @@ Vue.component('node-settings', {
 			result: null,
 			loading: true,
 			timelord: null,
+			opencl_device: null,
+			opencl_device_list: null,
 			farmer_reward_addr: "null",
 			timelord_reward_addr: "null",
 			availableLanguages: availableLanguages,
@@ -22,6 +24,12 @@ Vue.component('node-settings', {
 				.then(data => {
 					this.loading = false;
 					this.timelord = data.timelord ? true : false;
+					this.opencl_device = data.opencl_device ? data.opencl_device : 0;
+					this.opencl_device_list = [{name: "None", value: -1}];
+					let i = 0;
+					for(const name of data.opencl_device_list) {
+						this.opencl_device_list.push({name: name, value: i++});
+					}
 					this.farmer_reward_addr = data["Farmer.reward_addr"];
 					this.timelord_reward_addr = data["TimeLord.reward_addr"];
 				});
@@ -49,6 +57,11 @@ Vue.component('node-settings', {
 		timelord(value, prev) {
 			if(prev != null) {
 				this.set_config("timelord", value, true);
+			}
+		},
+		opencl_device(value, prev) {
+			if(prev != null) {
+				this.set_config("opencl_device", value, true);
 			}
 		},
 		farmer_reward_addr(value, prev) {
@@ -111,6 +124,14 @@ Vue.component('node-settings', {
 						v-model="timelord"
 						:label="$t('node_settings.enable_timelord')"
 					></v-checkbox>
+
+					<v-select
+						v-model="opencl_device"
+						label="OpenCL Device"
+						:items="opencl_device_list"
+						item-text="name"
+						item-value="value"
+					></v-select>
 
 					<v-text-field
 						:label="$t('node_settings.farmer_reward_address')"
