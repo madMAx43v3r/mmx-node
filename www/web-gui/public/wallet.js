@@ -715,16 +715,16 @@ Vue.component('account-addresses', {
 			return [
 				{ text: this.$t('account_addresses.index'), value: 'index' },
 				{ text: this.$t('account_addresses.address'), value: 'address' },
-				{ text: this.$t('account_addresses.n_recv'), value: 'n_recv' },
-				{ text: this.$t('account_addresses.n_spend'), value: 'n_spend' },
-				{ text: this.$t('account_addresses.last_recv'), value: 'last_recv' },
-				{ text: this.$t('account_addresses.last_spend'), value: 'last_spend' },
+				{ text: this.$t('account_addresses.n_recv'), value: 'num_receive' },
+				{ text: this.$t('account_addresses.n_spend'), value: 'num_spend' },
+				{ text: this.$t('account_addresses.last_recv'), value: 'last_receive_height' },
+				{ text: this.$t('account_addresses.last_spend'), value: 'last_spend_height' },
 			]
 		}
 	},
 	methods: {
 		update() {
-			fetch('/wapi/wallet/address?limit=' + this.limit + '&index=' + this.index)
+			fetch('/wapi/wallet/address_info?limit=' + this.limit + '&index=' + this.index)
 				.then(response => response.json())
 				.then(data => this.data = data);
 		}
@@ -743,12 +743,19 @@ Vue.component('account-addresses', {
 		>
 			<template v-slot:item.index="{ item, index }">
 				{{ index }}
-			</template>	
-
+			</template>
+			
 			<template v-slot:item.address="{ item }">
-				<router-link :to="'/explore/address/' + item">{{item}}</router-link>
-			</template>				
-		
+				<router-link :to="'/explore/address/' + item">{{item.address}}</router-link>
+			</template>
+			
+			<template v-slot:item.last_receive_height="{ item }">
+				{{item.num_receive || item.last_receive_height ? item.last_receive_height : null}}
+			</template>
+			
+			<template v-slot:item.last_spend_height="{ item }">
+				{{item.num_spend || item.last_spend_height ? item.last_spend_height : null}}
+			</template>
 		</v-data-table>
 		`
 })
