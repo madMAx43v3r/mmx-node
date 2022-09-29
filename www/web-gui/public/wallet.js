@@ -750,11 +750,15 @@ Vue.component('account-addresses', {
 			</template>
 			
 			<template v-slot:item.last_receive_height="{ item }">
-				{{item.num_receive || item.last_receive_height ? item.last_receive_height : null}}
+				<router-link :to="'/explore/block/height/' + item.last_receive_height">
+					{{item.num_receive || item.last_receive_height ? item.last_receive_height : null}}
+				</router-link>
 			</template>
 			
 			<template v-slot:item.last_spend_height="{ item }">
-				{{item.num_spend || item.last_spend_height ? item.last_spend_height : null}}
+				<router-link :to="'/explore/block/height/' + item.last_spend_height">
+					{{item.num_spend || item.last_spend_height ? item.last_spend_height : null}}
+				</router-link>
 			</template>
 		</v-data-table>
 		`
