@@ -397,6 +397,7 @@ bool Node::tx_pool_update(const tx_pool_t& entry, const bool force_add)
 				new_total -= iter->second.fee;
 			}
 			new_total += entry.fee;
+
 			if(!force_add && new_total > get_balance(*sender, addr_t())) {
 				return false;
 			}
