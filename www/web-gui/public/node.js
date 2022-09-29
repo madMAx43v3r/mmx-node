@@ -119,7 +119,7 @@ Vue.component('node-info', {
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
 									<v-row align="center" justify="space-around">
-										<div v-if="nodeInfo">{{ (nodeInfo.time_diff / 10 / Math.pow(10, 3)).toFixed(3) }} M/s</div>
+										<div v-if="nodeInfo">{{ (nodeInfo.time_diff / 10 / Math.pow(10, 3)).toFixed(3) }} MH/s</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"/>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
@@ -314,12 +314,12 @@ Vue.component('vdf-speed-graph', {
 		return {
 			data: null,
 			layout: {
-				title: this.$t('vdf_speed_graph.title', ['M/s']),
+				title: this.$t('vdf_speed_graph.title', ['MH/s']),
 				xaxis: {
 					title: this.$t('common.height')
 				},
 				yaxis: {
-					title: "M/s"
+					title: "MH/s"
 				}
 			},
 			timer: null,
