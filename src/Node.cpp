@@ -930,8 +930,10 @@ std::vector<offer_data_t> Node::get_offers(const uint32_t& since, const vnx::boo
 	std::vector<offer_data_t> out;
 	for(const auto& address : entries) {
 		const auto data = get_offer(address);
-		if(!is_open || data.state == "OPEN") {
-			out.push_back(data);
+		if(data.bid_currency != data.ask_currency || data.bid_amount >= data.ask_amount) {
+			if(!is_open || data.state == "OPEN") {
+				out.push_back(data);
+			}
 		}
 	}
 	return out;
