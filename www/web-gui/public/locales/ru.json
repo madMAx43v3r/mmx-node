@@ -16,7 +16,7 @@
         "reward": "Награда",
         "amount": "Сумма",
         "address": "Адрес",
-        "contract": "Контракт",        
+        "contract": "Контракт",
         "type": "Тип",
         "time": "Время",
         "fee": "Комиссия",
@@ -197,7 +197,7 @@
     },
 
     "create_contract_menu": {
-        "contract_type": "Тип контракта"     
+        "contract_type": "Тип контракта"
     },
 
     "account_contract_summary": {
@@ -273,7 +273,7 @@
 
         "accept_offer": "Принять оффер",
         "you_receive": "Вы получите",
-        "you_pay": "Вы платите"        
+        "you_pay": "Вы платите"
     },
 
     "login": {
@@ -287,5 +287,12 @@
         "receive": "Получено",
         "reward": "Награды",
         "tx_fee": "TX Комиссии"
+    },
+
+    "$vuetify": {
+        "dataIterator": {
+            "loadingText": "Данные загружаются..."
+        },
+        "noDataText": "Данные отсутствуют"
     }
 }

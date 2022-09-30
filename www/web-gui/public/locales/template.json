@@ -220,5 +220,11 @@
         "receive": "Receive",
         "reward": "Reward",
         "tx_fee": "TX Fee"
+    },
+    "$vuetify": {
+        "dataIterator": {
+            "loadingText": "Loading items..."
+        },
+        "noDataText": "No data available"
     }
 }
