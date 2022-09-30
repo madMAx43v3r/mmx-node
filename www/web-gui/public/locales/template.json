@@ -162,8 +162,12 @@
         "enable_timelord": "Enable TimeLord",
         "farmer_reward_address": "Farmer Reward Address",
         "timeLord_reward_address": "TimeLord Reward Address",
-        "reward_address_placeholder": "<по умолчанию>",
-        "restart_needed": "(restart needed to apply)"
+        "reward_address_placeholder": "<default>",
+        "restart_needed": "(restart needed to apply)",
+        "theme": "Theme",
+        "light": "Light",
+        "dark": "Dark",
+        "opencl_device": "OpenCL Device"
     },
     "create_locked_contract": {
         "owner_address": "Owner Address",

@@ -240,7 +240,8 @@ const enLocale = {
 
         "theme": "Theme",
         "light": "Light",
-        "dark": "Dark"
+        "dark": "Dark",
+        "opencl_device": "OpenCL Device"
     },
 
     "wallet_settings": {

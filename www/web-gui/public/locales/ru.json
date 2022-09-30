@@ -214,7 +214,9 @@
 
         "theme": "Тема",
         "light": "Светлая",
-        "dark": "Темная"        
+        "dark": "Темная",
+
+        "opencl_device": "Устройство OpenCL"
     },
 
     "wallet_settings": {
