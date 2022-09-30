@@ -308,5 +308,13 @@ const enLocale = {
     "login": {
         "password_label": "Password (see PASSWD file)",
         "login": "Login",
+    },
+
+    "account_history_form": {
+        "any": "Any",
+        "spend": "Spend",
+        "receive": "Receive",
+        "reward": "Reward",
+        "tx_fee": "TX Fee"
     }
 }

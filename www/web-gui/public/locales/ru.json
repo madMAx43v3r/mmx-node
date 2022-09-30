@@ -279,5 +279,13 @@
     "login": {
         "password_label": "Пароль (см. файл PASSWD)",
         "login": "Войти"
+    },
+
+    "account_history_form": {
+        "any": "Все",
+        "spend": "Отправлено",
+        "receive": "Получено",
+        "reward": "Награды",
+        "tx_fee": "TX Комиссии"
     }
 }
