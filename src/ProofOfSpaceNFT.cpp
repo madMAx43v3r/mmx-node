@@ -56,7 +56,7 @@ void ProofOfSpaceNFT::validate() const
 	const bls_pubkey_t plot_key = local_key_bls + farmer_key_bls + taproot_sk.GetG1Element();
 
 	const uint32_t port = 11337;
-	if(hash_t(hash_t(contract + plot_key) + bytes_t<4>(&port, 4)) != plot_id) {
+	if(hash_t(hash_t(contract + plot_key) + bytes_t<4>(&port, sizeof(port))) != plot_id) {
 		throw std::logic_error("invalid proof keys or port");
 	}
 	if(!local_sig.verify(local_key, calc_hash())) {

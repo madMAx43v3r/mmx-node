@@ -47,7 +47,7 @@ void ProofOfSpaceOG::validate() const
 	const bls_pubkey_t plot_key = local_key.to_bls() + farmer_key.to_bls();
 
 	const uint32_t port = 11337;
-	if(hash_t(hash_t(pool_key + plot_key) + bytes_t<4>(&port, 4)) != plot_id) {
+	if(hash_t(hash_t(pool_key + plot_key) + bytes_t<4>(&port, sizeof(port))) != plot_id) {
 		throw std::logic_error("invalid proof keys or port");
 	}
 	if(!local_sig.verify(local_key, calc_hash())) {
