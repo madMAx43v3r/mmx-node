@@ -397,6 +397,7 @@ Vue.component('account-history', {
 	methods: {
 		update() {
 			this.loading = true;
+			this.data = [];
 			fetch('/wapi/wallet/history?limit=' + this.limit + '&index=' + this.index + '&type=' + this.type + '&currency=' + this.currency)
 				.then(response => response.json())
 				.then(data => {
@@ -425,7 +426,7 @@ Vue.component('account-history', {
 		<v-data-table
 			:headers="headers"
 			:items="data"
-			:loading="!loaded"
+			:loading="loading"
 			hide-default-footer
 			disable-sort
 			disable-pagination
@@ -499,7 +500,7 @@ Vue.component('account-history-form', {
 			];
 		},
 		select_tokens() {
-			const res = [{text: "Any", value: null}];
+			const res = [{text: this.$t('account_history_form.any'), value: null}];
 			for(const token of this.tokens) {
 				let text = token.symbol;
 				if(!token.is_native) {
