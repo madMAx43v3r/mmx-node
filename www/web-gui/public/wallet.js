@@ -642,7 +642,7 @@ Vue.component('account-contract-summary', {
 				<v-chip label>{{address}}</v-chip>
 				<object-table :data="contract" class="my-2"></object-table>
 				<balance-table :address="address"></balance-table>
-				<div class="mt-4">
+				<div v-if="contract.__type != 'mmx.contract.Executable'" class="mt-4">
 					<v-btn outlined @click="deposit">{{ $t('account_contract_summary.deposit') }}</v-btn>
 					<v-btn outlined @click="withdraw">{{ $t('account_contract_summary.withdraw') }}</v-btn>
 				</div>
