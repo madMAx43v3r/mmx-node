@@ -45,7 +45,7 @@
     "node_info": {
         "synced": "已同步",
         "supply": "供应",
-        "no_addresss": "No. Addresss"
+        "no_addresses": "No. Addresses"
     },
     "node_log": {
         "terminal": "终端",

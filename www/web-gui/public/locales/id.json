@@ -45,7 +45,7 @@
     "node_info": {
         "synced": "Sinkronisasi",
         "supply": "Pasokan",
-        "no_addresss": "Jumlah Alamat"
+        "no_addresses": "Jumlah Alamat"
     },
     "node_log": {
         "terminal": "Terminal",

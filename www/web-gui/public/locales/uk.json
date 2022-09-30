@@ -44,7 +44,7 @@
     "node_info": {
         "synced": "Синхронізовано",
         "supply": "Емісія",
-        "no_addresss": "Кількість адрес"
+        "no_addresses": "Кількість адрес"
     },
     "node_log": {
         "terminal": "Термінал",

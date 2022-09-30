@@ -58,7 +58,7 @@
     "node_info": {
         "synced": "Синхронизировано",
         "supply": "Эмиссия",
-        "no_addresss": "Количество адресов"
+        "no_addresses": "Количество адресов"
     },
 
     "farmer_info": {
