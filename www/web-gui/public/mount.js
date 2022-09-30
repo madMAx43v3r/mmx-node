@@ -71,7 +71,11 @@ const router = new VueRouter({
 	routes
 })
 
-var vuetify = new Vuetify();
+var vuetify = new Vuetify({
+	lang: {
+		t: (key, ...params) => i18n.t(key, params),
+	},
+});
 
 Vue.prototype.$isWinGUI = typeof window.mmx !== 'undefined';
 
@@ -82,11 +86,11 @@ var app = new Vue({
 	el: '#app',
 	vuetify: vuetify,
 	router: router,
-    i18n: i18n,
+	i18n: i18n,
 
 	beforeMount() {
 		(async () => {
-					
+
 			var locale;
 
 			if(this.$isWinGUI) {

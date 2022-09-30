@@ -10,11 +10,7 @@ Vue.component('node-settings', {
 			opencl_device_list: null,
 			farmer_reward_addr: "null",
 			timelord_reward_addr: "null",
-			availableLanguages: availableLanguages,
-			themes: [
-				{ value: false, text: this.$t('node_settings.light') },
-				{ value: true, text: this.$t('node_settings.dark') }
-			]
+			availableLanguages: availableLanguages
 		}
 	},
 	methods: {
@@ -53,6 +49,14 @@ Vue.component('node-settings', {
 	},
 	created() {
 		this.update();
+	},
+	computed: {
+		themes() {
+			return [ 
+					{ value: false, text: this.$t('node_settings.light') },
+					{ value: true, text: this.$t('node_settings.dark') }
+				];
+		}						
 	},
 	watch: {
 		timelord(value, prev) {
@@ -128,7 +132,7 @@ Vue.component('node-settings', {
 
 					<v-select
 						v-model="opencl_device"
-						label="OpenCL Device"
+						:label="$t('node_settings.opencl_device')"
 						:items="opencl_device_list"
 						item-text="name"
 						item-value="value"

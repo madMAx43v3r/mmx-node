@@ -45,7 +45,7 @@
     "node_info": {
         "synced": "Sincronizado",
         "supply": "Suministro",
-        "no_addresss": "Numero de dirección"
+        "no_addresses": "Numero de dirección"
     },
     "node_log": {
         "terminal": "Terminal",

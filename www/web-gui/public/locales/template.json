@@ -45,7 +45,7 @@
     "node_info": {
         "synced": "Synced",
         "supply": "Supply",
-        "no_addresss": "No. Addresss"
+        "no_addresses": "No. Addresses"
     },
     "node_log": {
         "terminal": "Terminal",
@@ -162,8 +162,12 @@
         "enable_timelord": "Enable TimeLord",
         "farmer_reward_address": "Farmer Reward Address",
         "timeLord_reward_address": "TimeLord Reward Address",
-        "reward_address_placeholder": "<по умолчанию>",
-        "restart_needed": "(restart needed to apply)"
+        "reward_address_placeholder": "<default>",
+        "restart_needed": "(restart needed to apply)",
+        "theme": "Theme",
+        "light": "Light",
+        "dark": "Dark",
+        "opencl_device": "OpenCL Device"
     },
     "create_locked_contract": {
         "owner_address": "Owner Address",
@@ -209,5 +213,18 @@
     "login": {
         "password_label": "Password (see PASSWD file)",
         "login": "Login"
+    },
+    "account_history_form": {
+        "any": "Any",
+        "spend": "Spend",
+        "receive": "Receive",
+        "reward": "Reward",
+        "tx_fee": "TX Fee"
+    },
+    "$vuetify": {
+        "dataIterator": {
+            "loadingText": "Loading items..."
+        },
+        "noDataText": "No data available"
     }
 }

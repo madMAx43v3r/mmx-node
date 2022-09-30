@@ -44,7 +44,7 @@
     "node_info": {
         "synced": "Synchronisiert",
         "supply": "Ausgeliefert",
-        "no_addresss": "Anzahl Adressen"
+        "no_addresses": "Anzahl Adressen"
     },
     "node_log": {
         "terminal": "Terminal",

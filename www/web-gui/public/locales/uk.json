@@ -27,7 +27,7 @@
     },
     "main_menu": {
         "explore": "Провідник",
-        "market": "Ринок",
+        "market": "Торгівля",
         "exchange": "Біржа",
         "settings": "Налаштування",
         "logout": "Вийти"
@@ -44,7 +44,7 @@
     "node_info": {
         "synced": "Синхронізовано",
         "supply": "Емісія",
-        "no_addresss": "Кількість адрес"
+        "no_addresses": "Кількість адрес"
     },
     "node_log": {
         "terminal": "Термінал",
@@ -70,7 +70,7 @@
     },
     "account_menu": {
         "nfts": "NFT",
-        "contracts": "Контакти",
+        "contracts": "Контракти",
         "addresses": "Адреси",
         "send": "Відправити",
         "offer": "Пропозиція",
@@ -102,7 +102,7 @@
         "status": "Статус",
         "actions": "Дії",
         "revoke": "Відкликати",
-        "accepted": "Прийгято",
+        "accepted": "Прийнято",
         "revoked": "Скасовано",
         "open": "Відчинено"
     },
@@ -166,7 +166,7 @@
         "farmer_reward_address": "Адреса винагороди фермера",
         "timeLord_reward_address": "Адреса винагороди Таймлорда",
         "reward_address_placeholder": "<за умовчанням>",
-        "restart_needed": "(Для застосування, необхідне перезавантеження)"
+        "restart_needed": "(Для застосування необхідне перезавантеження)"
     },
     "create_locked_contract": {
         "owner_address": "Адреса власника",
@@ -181,17 +181,17 @@
     },
     "account_actions": {
         "reset_cache": "Скинути кеш",
-        "show_seed": "Показати насіння"
+        "show_seed": "Показати мнемоніку"
     },
     "create_account": {
-        "account_index": "Індекс аккаунту",
-        "account_name": "Ім'я аккаунту",
+        "account_index": "Індекс облікового запису",
+        "account_name": "Ім'я облікового запису",
         "number_of_addresses": "Кількість адрес",
         "create_account": "Створити аккаунт"
     },
     "create_wallet": {
-        "use_custom_seed": "Use Custom Seed",
-        "seed_hash": "Seed Hash (optional, hex string, 64 chars)",
+        "use_custom_seed": "Використовувати мнемоніку користувача",
+        "seed_hash": "Хеш мнемоніки (опціонально, шістнадцятирічний рядок, 64 символи)",
         "placeholder": "<Випадковий>",
         "create_wallet": "Створити гаманець"
     },

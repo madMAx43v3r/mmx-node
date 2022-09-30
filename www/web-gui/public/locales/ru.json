@@ -16,7 +16,7 @@
         "reward": "Награда",
         "amount": "Сумма",
         "address": "Адрес",
-        "contract": "Контракт",        
+        "contract": "Контракт",
         "type": "Тип",
         "time": "Время",
         "fee": "Комиссия",
@@ -58,7 +58,7 @@
     "node_info": {
         "synced": "Синхронизировано",
         "supply": "Эмиссия",
-        "no_addresss": "Количество адресов"
+        "no_addresses": "Количество адресов"
     },
 
     "farmer_info": {
@@ -197,7 +197,7 @@
     },
 
     "create_contract_menu": {
-        "contract_type": "Тип контракта"     
+        "contract_type": "Тип контракта"
     },
 
     "account_contract_summary": {
@@ -214,7 +214,9 @@
 
         "theme": "Тема",
         "light": "Светлая",
-        "dark": "Темная"        
+        "dark": "Темная",
+
+        "opencl_device": "Устройство OpenCL"
     },
 
     "wallet_settings": {
@@ -271,11 +273,26 @@
 
         "accept_offer": "Принять оффер",
         "you_receive": "Вы получите",
-        "you_pay": "Вы платите"        
+        "you_pay": "Вы платите"
     },
 
     "login": {
         "password_label": "Пароль (см. файл PASSWD)",
         "login": "Войти"
+    },
+
+    "account_history_form": {
+        "any": "Все",
+        "spend": "Отправлено",
+        "receive": "Получено",
+        "reward": "Награды",
+        "tx_fee": "TX Комиссии"
+    },
+
+    "$vuetify": {
+        "dataIterator": {
+            "loadingText": "Данные загружаются..."
+        },
+        "noDataText": "Данные отсутствуют"
     }
 }

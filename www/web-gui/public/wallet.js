@@ -397,6 +397,7 @@ Vue.component('account-history', {
 	methods: {
 		update() {
 			this.loading = true;
+			this.data = [];
 			fetch('/wapi/wallet/history?limit=' + this.limit + '&index=' + this.index + '&type=' + this.type + '&currency=' + this.currency)
 				.then(response => response.json())
 				.then(data => {
@@ -425,7 +426,7 @@ Vue.component('account-history', {
 		<v-data-table
 			:headers="headers"
 			:items="data"
-			:loading="!loaded"
+			:loading="loading"
 			hide-default-footer
 			disable-sort
 			disable-pagination
@@ -491,15 +492,15 @@ Vue.component('account-history-form', {
 	computed: {
 		select_types() {
 			return [
-				{text: "Any", value: null},
-				{text: "Spend", value: "SPEND"},
-				{text: "Receive", value: "RECEIVE"},
-				{text: "Reward", value: "REWARD"},
-				{text: "TX Fee", value: "TXFEE"}
+				{text: this.$t('account_history_form.any'), value: null},
+				{text: this.$t('account_history_form.spend'), value: "SPEND"},
+				{text: this.$t('account_history_form.receive'), value: "RECEIVE"},
+				{text: this.$t('account_history_form.reward'), value: "REWARD"},
+				{text: this.$t('account_history_form.tx_fee'), value: "TXFEE"}
 			];
 		},
 		select_tokens() {
-			const res = [{text: "Any", value: null}];
+			const res = [{text: this.$t('account_history_form.any'), value: null}];
 			for(const token of this.tokens) {
 				let text = token.symbol;
 				if(!token.is_native) {

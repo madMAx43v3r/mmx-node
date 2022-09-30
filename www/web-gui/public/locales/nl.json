@@ -44,7 +44,7 @@
     "node_info": {
         "synced": "Gesynchroniseerd",
         "supply": "Aanbod",
-        "no_addresss": "Nr. adressen"
+        "no_addresses": "Nr. adressen"
     },
     "node_log": {
         "terminal": "Terminal",
