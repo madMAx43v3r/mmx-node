@@ -34,6 +34,7 @@ Vue.component('explore-menu', {
 		<v-tabs class="mb-2">
 			<v-tab to="/explore/blocks">{{ $t('explore_menu.blocks') }}</v-tab>
 			<v-tab to="/explore/transactions">{{ $t('explore_menu.transactions') }}</v-tab>
+			<v-tab to="/explore/farmers">Farmers</v-tab>
 
 			<v-text-field class="mx-2"
 				v-model="input"
@@ -45,6 +46,67 @@ Vue.component('explore-menu', {
 		
 		</v-tabs>
 	`
+})
+
+Vue.component('blocks-table', {
+	props: {
+		data: [],
+		loaded: {
+			type: Boolean,
+			default: true
+		}
+	},
+	computed: {
+		headers() {
+			return [
+				{ text: this.$t('explore_blocks.height'), value: 'height', width: "5%"},
+				{ text: this.$t('explore_blocks.tx'), value: 'tx_count' },
+				{ text: this.$t('explore_blocks.k'), value: 'ksize' },
+				{ text: this.$t('explore_blocks.score'), value: 'score' },
+				{ text: this.$t('explore_blocks.reward'), value: 'reward' },
+				{ text: this.$t('explore_blocks.tdiff'), value: 'time_diff' },
+				{ text: this.$t('explore_blocks.sdiff'), value: 'space_diff' },
+				{ text: this.$t('explore_blocks.hash'), value: 'hash' },
+			]
+		}
+	},
+	template: `
+		<v-data-table
+			:headers="headers"
+			:items="data"
+			:loading="!loaded"
+			hide-default-footer
+			disable-sort
+			disable-pagination
+			class="elevation-2"
+		>
+			<template v-slot:progress>
+				<v-progress-linear indeterminate absolute top></v-progress-linear>
+				<v-skeleton-loader type="table-row-divider@6" />
+			</template>
+
+			<template v-slot:item.height="{ item }">
+				<router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link>
+			</template>
+
+			<template v-slot:item.ksize="{ item }">
+				{{item.proof ? item.proof.ksize : null}}
+			</template>
+
+			<template v-slot:item.score="{ item }">
+				{{item.proof ? item.proof.score : null}}
+			</template>
+
+			<template v-slot:item.reward="{ item }">
+				{{item.tx_base ? item.tx_base.exec_result.total_fee_value : null}}
+			</template>
+
+			<template v-slot:item.hash="{ item }">
+				<router-link :to="'/explore/block/hash/' + item.hash">{{item.hash}}</router-link>
+			</template>
+
+		</v-data-table>
+		`
 })
 
 Vue.component('explore-blocks', {
@@ -77,11 +139,6 @@ Vue.component('explore-blocks', {
 			fetch('/wapi/headers?limit=' + this.limit)
 				.then(response => response.json())
 				.then(data => {
-					for(const block of data) {
-						if(block.tx_base) {
-							block.reward = block.tx_base.exec_result.total_fee_value;
-						}
-					}
 					this.data = data;
 					this.loaded = true;
 				});
@@ -95,41 +152,7 @@ Vue.component('explore-blocks', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<v-data-table
-			:headers="headers"
-			:items="data"
-			:loading="!loaded"
-			hide-default-footer
-			disable-sort
-			disable-pagination
-			class="elevation-2"
-		>
-			<template v-slot:progress>
-				<v-progress-linear indeterminate absolute top></v-progress-linear>
-				<v-skeleton-loader type="table-row-divider@6" />
-			</template>
-
-			<template v-slot:item.height="{ item }">
-				<router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link>
-			</template>
-
-			<template v-slot:item.ksize="{ item }">
-				{{item.proof ? item.proof.ksize : null}}
-			</template>
-
-			<template v-slot:item.score="{ item }">
-				{{item.proof ? item.proof.score : null}}
-			</template>
-
-			<template v-slot:item.reward="{ item }">
-				{{item.reward != null ? item.reward.toFixed(3) : null}}
-			</template>
-
-			<template v-slot:item.hash="{ item }">
-				<router-link :to="'/explore/block/hash/' + item.hash">{{item.hash}}</router-link>
-			</template>
-
-		</v-data-table>
+		<blocks-table :data="data" :loaded="loaded"></blocks-table>
 		`
 })
 
@@ -223,14 +246,8 @@ Vue.component('explore-farmers', {
 	computed: {
 		headers() {
 			return [
-				{ text: this.$t('explore_blocks.height'), value: 'height', width: "5%"},
-				{ text: this.$t('explore_blocks.tx'), value: 'tx_count' },
-				{ text: this.$t('explore_blocks.k'), value: 'ksize' },
-				{ text: this.$t('explore_blocks.score'), value: 'score' },
-				{ text: this.$t('explore_blocks.reward'), value: 'reward' },
-				{ text: this.$t('explore_blocks.tdiff'), value: 'time_diff' },
-				{ text: this.$t('explore_blocks.sdiff'), value: 'space_diff' },
-				{ text: this.$t('explore_blocks.hash'), value: 'hash' },
+				{ text: "No. Blocks", value: 'block_count'},
+				{ text: "Farmer Key", value: 'farmer_key'},
 			]
 		}
 	},
@@ -246,7 +263,7 @@ Vue.component('explore-farmers', {
 	},
 	created() {
 		this.update();
-		this.timer = setInterval(() => { this.update(); }, 10000);
+		this.timer = setInterval(() => { this.update(); }, 30000);
 	},
 	beforeDestroy() {
 		clearInterval(this.timer);
@@ -265,27 +282,9 @@ Vue.component('explore-farmers', {
 				<v-progress-linear indeterminate absolute top></v-progress-linear>
 				<v-skeleton-loader type="table-row-divider@6" />
 			</template>
-
-			<template v-slot:item.height="{ item }">
-				<router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link>
+			<template v-slot:item.farmer_key="{ item }">
+				<router-link :to="'/explore/farmer/' + item.farmer_key">{{item.farmer_key}}</router-link>
 			</template>
-
-			<template v-slot:item.ksize="{ item }">
-				{{item.proof ? item.proof.ksize : null}}
-			</template>
-
-			<template v-slot:item.score="{ item }">
-				{{item.proof ? item.proof.score : null}}
-			</template>
-
-			<template v-slot:item.reward="{ item }">
-				{{item.reward != null ? item.reward.toFixed(3) : null}}
-			</template>
-
-			<template v-slot:item.hash="{ item }">
-				<router-link :to="'/explore/block/hash/' + item.hash">{{item.hash}}</router-link>
-			</template>
-
 		</v-data-table>
 		`
 })
@@ -680,6 +679,78 @@ Vue.component('transaction-view', {
 
 		</template>
 	</div>
+		`
+})
+
+Vue.component('farmer-view', {
+	props: {
+		farmer_key: String,
+		limit: Number
+	},
+	data() {
+		return {
+			data: null,
+			timer: null,
+			loaded: false
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/farmer?limit=' + this.limit + "&id=" + this.farmer_key)
+				.then(response => response.json())
+				.then(data => {
+					this.data = data;
+					this.loaded = true;
+				});
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 30000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<div>
+			<v-chip label>Farmer</v-chip>
+			<v-chip label>{{farmer_key}}</v-chip>
+			<template v-if="data">
+				<v-card class="my-2">
+					<v-simple-table>
+						<tbody>
+						<tr>
+							<td class="key-cell">No. Blocks</td>
+							<td>{{data.block_count}}</td>
+						</tr>
+						<tr>
+							<td class="key-cell">Total Rewards</td>
+							<td><b>{{data.total_reward_value}}</b>&nbsp; MMX</td>
+						</tr>
+						</tbody>
+					</v-simple-table>
+				</v-card>
+				<v-card class="my-2">
+					<v-simple-table>
+						<thead>
+						<tr>
+							<th>Reward</th>
+							<th></th>
+							<th>{{ $t('transaction_view.address') }}</th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr v-for="item in data.rewards" :key="item.address">
+							<td><b>{{item.value}}</b></td>
+							<td>MMX</td>
+							<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
+						</tr>
+						</tbody>
+					</v-simple-table>
+				</v-card>
+			</template>
+			<blocks-table :data="data ? data.blocks : []" :loaded="loaded"></blocks-table>
+		</div>
 		`
 })
 

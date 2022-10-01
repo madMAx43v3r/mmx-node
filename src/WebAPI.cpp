@@ -1278,28 +1278,44 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const auto iter = query.find("id");
 		if(iter != query.end()) {
 			const auto farmer_key = vnx::from_string<bls_pubkey_t>(iter->second);
+			const auto iter_limit = query.find("limit");
 			const auto iter_since = query.find("since");
 			const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
+			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 100;
 			node->get_farmed_blocks({farmer_key}, false, since,
-				[this, request_id, farmer_key](const std::vector<std::shared_ptr<const BlockHeader>>& blocks) {
+				[this, request_id, farmer_key, limit](const std::vector<std::shared_ptr<const BlockHeader>>& blocks) {
 					uint64_t total_reward = 0;
-					std::vector<uint32_t> height_list;
+					std::vector<std::shared_ptr<const BlockHeader>> recent;
 					std::map<addr_t, uint64_t> reward_map;
-					for(const auto& block : blocks) {
+					for(auto iter = blocks.rbegin(); iter != blocks.rend(); ++iter) {
+						const auto& block = *iter;
 						if(auto tx = block->tx_base) {
 							for(const auto& out : tx->outputs) {
 								total_reward += out.amount;
 								reward_map[out.address] += out.amount;
 							}
 						}
-						height_list.push_back(block->height);
+						if(recent.size() < limit) {
+							recent.push_back(block);
+						}
 					}
 					vnx::Object out;
 					out["farmer_key"] = farmer_key.to_string();
-					out["blocks"] = height_list;
+					out["blocks"] = render_value(recent, get_context());
 					out["block_count"] = blocks.size();
-					out["rewards"] = reward_map;
 					out["total_reward"] = total_reward;
+					out["total_reward_value"] = to_value(total_reward, params->decimals);
+					{
+						std::vector<vnx::Object> rewards;
+						for(const auto& entry : reward_map) {
+							vnx::Object tmp;
+							tmp["address"] = entry.first.to_string();
+							tmp["amount"] = entry.second;
+							tmp["value"] = to_value(entry.second, params->decimals);
+							rewards.push_back(tmp);
+						}
+						out["rewards"] = rewards;
+					}
 					respond(request_id, out);
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
@@ -1699,7 +1715,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	else if(sub_path == "/farmer/blocks") {
 		const auto iter_limit = query.find("limit");
 		const auto iter_since = query.find("since");
-		const size_t limit = iter_limit != query.end() ? std::max<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 0) : -1;
+		const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
 		const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 		farmer->get_farmer_keys(
 				[this, request_id, limit, since](const std::vector<bls_pubkey_t>& farmer_keys) {
@@ -1718,7 +1734,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else if(sub_path == "/farmer/proofs") {
 		const auto iter_limit = query.find("limit");
-		const size_t limit = iter_limit != query.end() ? std::max<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 0) : -1;
+		const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
 		std::vector<vnx::Object> res;
 		for(auto iter = proof_history.rbegin(); iter != proof_history.rend(); ++iter) {
 			if(res.size() >= limit) {

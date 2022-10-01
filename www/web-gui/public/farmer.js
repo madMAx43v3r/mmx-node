@@ -226,7 +226,7 @@ Vue.component('farmer-blocks', {
 	},
 	created() {
 		this.update();
-		this.timer = setInterval(() => { this.update(); }, 10000);
+		this.timer = setInterval(() => { this.update(); }, 30000);
 	},
 	beforeDestroy() {
 		clearInterval(this.timer);
@@ -250,7 +250,7 @@ Vue.component('farmer-blocks', {
 			</template>
 
 			<template v-slot:item.reward="{ item }">
-				<b>{{item.tx_base.exec_result.total_fee_value.toFixed(3)}}</b> MMX
+				<b>{{item.tx_base.exec_result.total_fee_value}}</b> MMX
 			</template>
 
 			<template v-slot:item.time="{ item }">
@@ -262,6 +262,9 @@ Vue.component('farmer-blocks', {
 })
 
 Vue.component('farmer-proofs', {
+	props: {
+		limit: Number
+	},
 	data() {
 		return {
 			loaded: false,
@@ -282,7 +285,7 @@ Vue.component('farmer-proofs', {
 	},
 	methods: {
 		update() {
-			fetch('/wapi/farmer/proofs')
+			fetch('/wapi/farmer/proofs?limit=' + this.limit)
 				.then(response => response.json())
 				.then(data => {
 					this.data = data;

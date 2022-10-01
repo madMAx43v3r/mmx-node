@@ -201,9 +201,19 @@ const ExploreTransactions = {
 		<explore-transactions :limit="100"></explore-transactions>
 	`
 }
+const ExploreFarmers = {
+	template: `
+		<explore-farmers :limit="100"></explore-farmers>
+	`
+}
 const ExploreBlock = {
 	template: `
 		<block-view :hash="$route.params.hash" :height="parseInt($route.params.height)"></block-view>
+	`
+}
+const ExploreFarmer = {
+	template: `
+		<farmer-view :farmer_key="$route.params.id" limit="100"></farmer-view>
 	`
 }
 const ExploreAddress = {

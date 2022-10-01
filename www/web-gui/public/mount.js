@@ -45,8 +45,10 @@ const routes = [
 		children: [
 			{ path: 'blocks', component: ExploreBlocks, meta: { page: 'blocks' } },
 			{ path: 'transactions', component: ExploreTransactions, meta: { page: 'transactions' } },
+			{ path: 'farmers', component: ExploreFarmers, meta: { page: 'farmers' } },
 			{ path: 'block/hash/:hash', component: ExploreBlock, meta: { page: 'block' } },
 			{ path: 'block/height/:height', component: ExploreBlock, meta: { page: 'block' } },
+			{ path: 'farmer/:id', component: ExploreFarmer, meta: { page: 'farmer' } },
 			{ path: 'address/:address', component: ExploreAddress, meta: { page: 'address' } },
 			{ path: 'transaction/:id', component: ExploreTransaction, meta: { page: 'transaction' } },
 		]
