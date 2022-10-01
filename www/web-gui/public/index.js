@@ -183,12 +183,10 @@ const MarketHistory = {
 
 const Explore = {
 	template: `
-	<v-card class="my-2">
-		<v-card-text>
+		<div>
 			<explore-menu></explore-menu>
 			<router-view></router-view>
-		</v-card-text>
-	</v-card>
+		<div>
 	`
 }
 const ExploreBlocks = {

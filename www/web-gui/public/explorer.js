@@ -31,11 +31,7 @@ Vue.component('explore-menu', {
 		}
 	},
 	template: `
-		<v-tabs class="mb-2">
-			<v-tab to="/explore/blocks">{{ $t('explore_menu.blocks') }}</v-tab>
-			<v-tab to="/explore/transactions">{{ $t('explore_menu.transactions') }}</v-tab>
-			<v-tab to="/explore/farmers">Farmers</v-tab>
-
+		<div>
 			<v-text-field class="mx-2"
 				v-model="input"
 				@keyup.enter="submit"
@@ -43,8 +39,13 @@ Vue.component('explore-menu', {
 				:error="error"
 				:placeholder="$t('explore_menu.placeholder')"
 				append-icon="mdi-magnify"></v-text-field>
-		
-		</v-tabs>
+
+			<v-tabs class="mb-2">
+				<v-tab to="/explore/blocks">{{ $t('explore_menu.blocks') }}</v-tab>
+				<v-tab to="/explore/transactions">{{ $t('explore_menu.transactions') }}</v-tab>
+				<v-tab to="/explore/farmers">Farmers</v-tab>
+			</v-tabs>
+		</div>
 	`
 })
 
@@ -340,7 +341,6 @@ Vue.component('block-view', {
 	},
 	template: `
 		<div>
-
 			<v-toolbar dense flat class="pa-0 no-padding">
 				<template v-if="data">
 					<v-btn outlined :to="'/explore/block/hash/' + data.prev"><v-icon>mdi-arrow-left</v-icon>{{ $t('block_view.previous') }}</v-btn>
@@ -358,139 +358,141 @@ Vue.component('block-view', {
 				<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
 			</v-toolbar>
 
-			<template v-if="data">
-				<v-chip label>{{ $t('block_view.block') }}</v-chip>
-				<v-chip label>{{ data.height }}</v-chip>
-				<v-chip label>{{ data.hash }}</v-chip>
-			</template>
-
-						
-			<v-alert
-				border="left"
-				colored-border
-				type="error"
-				v-if="!data && !loading"
-				elevation="2"
-				class="my-2"
-			>
-				{{ $t('block_view.no_such_block') }}
-			</v-alert>
-
-
-			<template v-if="data">
-				<v-card class="my-2">
-					<v-simple-table>
-						<template v-slot:default>
-							<tbody>
-								<tr>
-									<td class="key-cell">{{ $t('block_view.height') }}</td>
-									<td>{{data.height}}</td>
-								</tr>
-								<tr>
-									<td class="key-cell">{{ $t('block_view.hash') }}</td>
-									<td>{{data.hash}}</td>
-								</tr>
-								<tr>
-									<td class="key-cell">{{ $t('block_view.previous') }}</td>
-									<td>{{data.prev}}</td>
-								</tr>
-								<tr>
-									<td class="key-cell">{{ $t('block_view.time') }}</td>
-									<td>{{new Date(data.time * 1000).toLocaleString()}}</td>
-								</tr>
-								<tr>
-									<td class="key-cell">{{ $t('block_view.time_diff') }}</td>
-									<td>{{data.time_diff}}</td>
-								</tr>
-								<tr>
-									<td class="key-cell">{{ $t('block_view.space_diff') }}</td>
-									<td>{{data.space_diff}}</td>
-								</tr>
-								<tr>
-									<td class="key-cell">{{ $t('block_view.vdf_iterations') }}</td>
-									<td>{{data.vdf_iters}}</td>
-								</tr>
-								<template v-if="data.tx_base">
+			<v-card class="my-2">
+			<v-card-text>
+				<template v-if="data">
+					<v-chip label>{{ $t('block_view.block') }}</v-chip>
+					<v-chip label>{{ data.height }}</v-chip>
+					<v-chip label>{{ data.hash }}</v-chip>
+				</template>
+							
+				<v-alert
+					border="left"
+					colored-border
+					type="error"
+					v-if="!data && !loading"
+					elevation="2"
+					class="my-2"
+				>
+					{{ $t('block_view.no_such_block') }}
+				</v-alert>
+	
+				<template v-if="data">
+					<v-card class="my-2">
+						<v-simple-table>
+							<template v-slot:default>
+								<tbody>
 									<tr>
-										<td class="key-cell">{{ $t('block_view.tx_base') }}</td>
-										<td><router-link :to="'/explore/transaction/' + data.tx_base.id">{{data.tx_base.id}}</router-link></td>
-									</tr>
-								</template>
-								<template v-if="data.proof">
-									<tr>
-										<td class="key-cell">{{ $t('block_view.tx_count') }}</td>
-										<td>{{data.tx_count}}</td>
+										<td class="key-cell">{{ $t('block_view.height') }}</td>
+										<td>{{data.height}}</td>
 									</tr>
 									<tr>
-										<td class="key-cell">{{ $t('block_view.k_size') }}</td>
-										<td>{{data.proof.ksize}}</td>
+										<td class="key-cell">{{ $t('block_view.hash') }}</td>
+										<td>{{data.hash}}</td>
 									</tr>
 									<tr>
-										<td class="key-cell">{{ $t('block_view.proof_score') }}</td>
-										<td>{{data.proof.score}}</td>
+										<td class="key-cell">{{ $t('block_view.previous') }}</td>
+										<td>{{data.prev}}</td>
 									</tr>
 									<tr>
-										<td class="key-cell">{{ $t('block_view.plot_id') }}</td>
-										<td>{{data.proof.plot_id}}</td>
+										<td class="key-cell">{{ $t('block_view.time') }}</td>
+										<td>{{new Date(data.time * 1000).toLocaleString()}}</td>
 									</tr>
 									<tr>
-										<td class="key-cell">{{ $t('block_view.farmer_key') }}</td>
-										<td>{{data.proof.farmer_key}}</td>
+										<td class="key-cell">{{ $t('block_view.time_diff') }}</td>
+										<td>{{data.time_diff}}</td>
 									</tr>
-								</template>
-							</tbody>
-						</template>
-					</v-simple-table>
-				</v-card>
-
-				<v-card class="my-2">
-					<v-simple-table v-if="data.tx_base">
-						<template v-slot:default>
+									<tr>
+										<td class="key-cell">{{ $t('block_view.space_diff') }}</td>
+										<td>{{data.space_diff}}</td>
+									</tr>
+									<tr>
+										<td class="key-cell">{{ $t('block_view.vdf_iterations') }}</td>
+										<td>{{data.vdf_iters}}</td>
+									</tr>
+									<template v-if="data.tx_base">
+										<tr>
+											<td class="key-cell">{{ $t('block_view.tx_base') }}</td>
+											<td><router-link :to="'/explore/transaction/' + data.tx_base.id">{{data.tx_base.id}}</router-link></td>
+										</tr>
+									</template>
+									<template v-if="data.proof">
+										<tr>
+											<td class="key-cell">{{ $t('block_view.tx_count') }}</td>
+											<td>{{data.tx_count}}</td>
+										</tr>
+										<tr>
+											<td class="key-cell">{{ $t('block_view.k_size') }}</td>
+											<td>{{data.proof.ksize}}</td>
+										</tr>
+										<tr>
+											<td class="key-cell">{{ $t('block_view.proof_score') }}</td>
+											<td>{{data.proof.score}}</td>
+										</tr>
+										<tr>
+											<td class="key-cell">{{ $t('block_view.plot_id') }}</td>
+											<td>{{data.proof.plot_id}}</td>
+										</tr>
+										<tr>
+											<td class="key-cell">{{ $t('block_view.farmer_key') }}</td>
+											<td>{{data.proof.farmer_key}}</td>
+										</tr>
+									</template>
+								</tbody>
+							</template>
+						</v-simple-table>
+					</v-card>
+	
+					<v-card class="my-2">
+						<v-simple-table v-if="data.tx_base">
+							<template v-slot:default>
+								<thead>
+									<tr>
+										<th class="key-cell"></th>
+										<th>{{ $t('block_view.amount') }}</th>
+										<th></th>
+										<th>{{ $t('block_view.address') }}</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr v-for="(item, index) in data.tx_base.outputs" :key="index">
+										<td class="key-cell">{{ $t('block_view.reward') }}[{{index}}]</td>
+										<td><b>{{item.value}}</b></td>
+										<td>{{item.symbol}}</td>
+										<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
+									</tr>
+								</tbody>
+							</template>
+						</v-simple-table>
+					</v-card>
+	
+					<v-card class="my-2">
+						<v-simple-table v-if="data.tx_list.length">
 							<thead>
 								<tr>
 									<th class="key-cell"></th>
-									<th>{{ $t('block_view.amount') }}</th>
-									<th></th>
-									<th>{{ $t('block_view.address') }}</th>
+									<th>{{ $t('block_view.inputs') }}</th>
+									<th>{{ $t('block_view.outputs') }}</th>
+									<th>{{ $t('block_view.operations') }}</th>
+									<th>{{ $t('block_view.transaction_id') }}</th>
 								</tr>
 							</thead>
 							<tbody>
-								<tr v-for="(item, index) in data.tx_base.outputs" :key="index">
-									<td class="key-cell">{{ $t('block_view.reward') }}[{{index}}]</td>
-									<td><b>{{item.value}}</b></td>
-									<td>{{item.symbol}}</td>
-									<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
+								<tr v-for="(item, index) in data.tx_list" :key="index">
+									<td class="key-cell">TX[{{index}}]</td>
+									<td>{{item.inputs.length + item.exec_result.inputs.length}}</td>
+									<td>{{item.outputs.length + item.exec_result.outputs.length}}</td>
+									<td>{{item.execute.length}}</td>
+									<td><router-link :to="'/explore/transaction/' + item.id">{{item.id}}</router-link></td>
 								</tr>
 							</tbody>
-						</template>
-					</v-simple-table>
-				</v-card>
-
-				<v-card class="my-2">
-					<v-simple-table v-if="data.tx_list.length">
-						<thead>
-							<tr>
-								<th class="key-cell"></th>
-								<th>{{ $t('block_view.inputs') }}</th>
-								<th>{{ $t('block_view.outputs') }}</th>
-								<th>{{ $t('block_view.operations') }}</th>
-								<th>{{ $t('block_view.transaction_id') }}</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr v-for="(item, index) in data.tx_list" :key="index">
-								<td class="key-cell">TX[{{index}}]</td>
-								<td>{{item.inputs.length + item.exec_result.inputs.length}}</td>
-								<td>{{item.outputs.length + item.exec_result.outputs.length}}</td>
-								<td>{{item.execute.length}}</td>
-								<td><router-link :to="'/explore/transaction/' + item.id">{{item.id}}</router-link></td>
-							</tr>
-						</tbody>
-					</v-simple-table>
-				</v-card>
-			</template>
+						</v-simple-table>
+					</v-card>
+				</template>
+			</v-card-text>
+			</v-card>
 		</div>
-		`
+	`
 })
 
 Vue.component('transaction-view', {
@@ -540,146 +542,148 @@ Vue.component('transaction-view', {
 		clearInterval(this.timer);
 	},
 	template: `
-	<div>
-		<v-chip label>{{ $t('transaction_view.transaction') }}</v-chip>
-		<v-chip label>{{ id }}</v-chip>
-						
-		<v-alert
-			border="left"
-			colored-border
-			type="error"
-			v-if="!data && !loading"
-			elevation="2"
-			class="my-2"
-		>
-			{{ $t('transaction_view.no_such_transaction') }}
-		</v-alert>
-
-		<template v-if="data">
-			<v-card class="my-2">
-				<v-simple-table>
-					<tbody>
-					<tr>
-						<td class="key-cell">{{ $t('transaction_view.height') }}</td>
-						<td colspan="2">
-							<template v-if="data.height">
-								<router-link :to="'/explore/block/height/' + data.height">{{data.height}}</router-link>
-							</template>
-							<template v-if="!data.height"><i>pending</i></template>
-						</td>
-					</tr>
-					<tr v-if="data.did_fail" class="red--text">
-						<td class="key-cell">{{ $t('transaction_view.message') }}</td>
-						<td colspan="2">{{data.message}}</td>
-					</tr>
-					<tr v-if="data.confirm">
-						<td class="key-cell">{{ $t('transaction_view.confirmed') }}</td>
-						<td colspan="2">{{data.confirm}}</td>
-					</tr>
-					<tr v-if="data.expires != 4294967295">
-						<td class="key-cell">{{ $t('transaction_view.expires') }}</td>
-						<td colspan="2">{{data.expires}}</td>
-					</tr>
-					<tr>
-						<td class="key-cell">{{ $t('transaction_view.note') }}</td>
-						<td colspan="2">{{data.note}}</td>
-					</tr>
-					<tr v-if="data.time">
-						<td class="key-cell">{{ $t('transaction_view.time') }}</td>
-						<td colspan="2">{{new Date(data.time * 1000).toLocaleString()}}</td>
-					</tr>
-					<tr v-if="data.deployed">
-						<td class="key-cell">{{ $t('transaction_view.address') }}</td>
-						<td colspan="2"><router-link :to="'/explore/address/' + data.address">{{data.address}}</router-link></td>
-					</tr>
-					<tr v-if="data.sender">
-						<td class="key-cell">{{ $t('transaction_view.sender') }}</td>
-						<td colspan="2"><router-link :to="'/explore/address/' + data.sender">{{data.sender}}</router-link></td>
-					</tr>
-					<tr>
-						<td class="key-cell">{{ $t('transaction_view.cost') }}</td>
-						<td class="collapsing"><b>{{data.cost.value}}</b></td>
-						<td>MMX</td>
-					</tr>
-					<tr>
-						<td class="key-cell">{{ $t('transaction_view.fee') }}</td>
-						<td class="collapsing"><b>{{data.fee.value}}</b></td>
-						<td>MMX</td>
-					</tr>
-					</tbody>
-				</v-simple-table>
-			</v-card>
-
-			<v-card class="my-2">
-				<v-simple-table v-if="data.inputs.length">
-					<thead>
-					<tr>
-						<th class="key-cell"></th>
-						<th>{{ $t('transaction_view.amount') }}</th>
-						<th>{{ $t('transaction_view.token') }}</th>
-						<th>{{ $t('transaction_view.address') }}</th>
-					</tr>
-					</thead>
-					<tbody>
-					<tr v-for="(item, index) in data.inputs" :key="index">
-						<td class="key-cell">{{ $t('transaction_view.input') }}[{{index}}]</td>
-						<td><b>{{item.value}}</b></td>
-						<template v-if="item.is_native">
-							<td>{{item.symbol}}</td>
-						</template>
-						<template v-if="!item.is_native">
-							<td><router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}</router-link></td>
-						</template>
-						<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
-					</tr>
-					</tbody>
-				</v-simple-table>
-			</v-card>
-
-			<v-card class="my-2">
-				<v-simple-table v-if="data.outputs.length">
-					<thead>
-					<tr>
-						<th class="key-cell"></th>
-						<th>{{ $t('transaction_view.amount') }}</th>
-						<th>{{ $t('transaction_view.token') }}</th>
-						<th>{{ $t('transaction_view.address') }}</th>
-					</tr>
-					</thead>
-					<tbody>
-					<tr v-for="(item, index) in data.outputs" :key="index">
-						<td class="key-cell">{{ $t('transaction_view.output') }}[{{index}}]</td>
-						<td><b>{{item.value}}</b></td>
-						<template v-if="item.is_native">
-							<td>{{item.symbol}}</td>
-						</template>
-						<template v-if="!item.is_native">
-							<td><router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}</router-link></td>
-						</template>
-						<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
-					</tr>
-					</tbody>
-				</v-simple-table>
-			</v-card>
-
-			<div class="my-2" v-for="(op, index) in data.operations" :key="index">				
-				<v-chip label>Operation[{{index}}]</v-chip>
-				<v-chip label>{{op.__type}}</v-chip>
+		<v-card class="my-2">
+		<v-card-text>
+			<v-chip label>{{ $t('transaction_view.transaction') }}</v-chip>
+			<v-chip label>{{ id }}</v-chip>
+							
+			<v-alert
+				border="left"
+				colored-border
+				type="error"
+				v-if="!data && !loading"
+				elevation="2"
+				class="my-2"
+			>
+				{{ $t('transaction_view.no_such_transaction') }}
+			</v-alert>
+	
+			<template v-if="data">
 				<v-card class="my-2">
-					<object-table :data="op"></object-table>
-				<v-card>
-			</div>
-
-			<div class="my-2" v-if="data.deployed">
-				<v-chip label>{{data.deployed.__type}}</v-chip>
-				<v-card class="my-2">
-					<object-table :data="data.deployed"></object-table>
+					<v-simple-table>
+						<tbody>
+						<tr>
+							<td class="key-cell">{{ $t('transaction_view.height') }}</td>
+							<td colspan="2">
+								<template v-if="data.height">
+									<router-link :to="'/explore/block/height/' + data.height">{{data.height}}</router-link>
+								</template>
+								<template v-if="!data.height"><i>pending</i></template>
+							</td>
+						</tr>
+						<tr v-if="data.did_fail" class="red--text">
+							<td class="key-cell">{{ $t('transaction_view.message') }}</td>
+							<td colspan="2">{{data.message}}</td>
+						</tr>
+						<tr v-if="data.confirm">
+							<td class="key-cell">{{ $t('transaction_view.confirmed') }}</td>
+							<td colspan="2">{{data.confirm}}</td>
+						</tr>
+						<tr v-if="data.expires != 4294967295">
+							<td class="key-cell">{{ $t('transaction_view.expires') }}</td>
+							<td colspan="2">{{data.expires}}</td>
+						</tr>
+						<tr>
+							<td class="key-cell">{{ $t('transaction_view.note') }}</td>
+							<td colspan="2">{{data.note}}</td>
+						</tr>
+						<tr v-if="data.time">
+							<td class="key-cell">{{ $t('transaction_view.time') }}</td>
+							<td colspan="2">{{new Date(data.time * 1000).toLocaleString()}}</td>
+						</tr>
+						<tr v-if="data.deployed">
+							<td class="key-cell">{{ $t('transaction_view.address') }}</td>
+							<td colspan="2"><router-link :to="'/explore/address/' + data.address">{{data.address}}</router-link></td>
+						</tr>
+						<tr v-if="data.sender">
+							<td class="key-cell">{{ $t('transaction_view.sender') }}</td>
+							<td colspan="2"><router-link :to="'/explore/address/' + data.sender">{{data.sender}}</router-link></td>
+						</tr>
+						<tr>
+							<td class="key-cell">{{ $t('transaction_view.cost') }}</td>
+							<td class="collapsing"><b>{{data.cost.value}}</b></td>
+							<td>MMX</td>
+						</tr>
+						<tr>
+							<td class="key-cell">{{ $t('transaction_view.fee') }}</td>
+							<td class="collapsing"><b>{{data.fee.value}}</b></td>
+							<td>MMX</td>
+						</tr>
+						</tbody>
+					</v-simple-table>
 				</v-card>
-			</div>
-
-		</template>
-	</div>
-		`
+	
+				<v-card class="my-2">
+					<v-simple-table v-if="data.inputs.length">
+						<thead>
+						<tr>
+							<th class="key-cell"></th>
+							<th>{{ $t('transaction_view.amount') }}</th>
+							<th>{{ $t('transaction_view.token') }}</th>
+							<th>{{ $t('transaction_view.address') }}</th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr v-for="(item, index) in data.inputs" :key="index">
+							<td class="key-cell">{{ $t('transaction_view.input') }}[{{index}}]</td>
+							<td><b>{{item.value}}</b></td>
+							<template v-if="item.is_native">
+								<td>{{item.symbol}}</td>
+							</template>
+							<template v-if="!item.is_native">
+								<td><router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}</router-link></td>
+							</template>
+							<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
+						</tr>
+						</tbody>
+					</v-simple-table>
+				</v-card>
+	
+				<v-card class="my-2">
+					<v-simple-table v-if="data.outputs.length">
+						<thead>
+						<tr>
+							<th class="key-cell"></th>
+							<th>{{ $t('transaction_view.amount') }}</th>
+							<th>{{ $t('transaction_view.token') }}</th>
+							<th>{{ $t('transaction_view.address') }}</th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr v-for="(item, index) in data.outputs" :key="index">
+							<td class="key-cell">{{ $t('transaction_view.output') }}[{{index}}]</td>
+							<td><b>{{item.value}}</b></td>
+							<template v-if="item.is_native">
+								<td>{{item.symbol}}</td>
+							</template>
+							<template v-if="!item.is_native">
+								<td><router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}</router-link></td>
+							</template>
+							<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
+						</tr>
+						</tbody>
+					</v-simple-table>
+				</v-card>
+	
+				<div class="my-2" v-for="(op, index) in data.operations" :key="index">				
+					<v-chip label>Operation[{{index}}]</v-chip>
+					<v-chip label>{{op.__type}}</v-chip>
+					<v-card class="my-2">
+						<object-table :data="op"></object-table>
+					<v-card>
+				</div>
+	
+				<div class="my-2" v-if="data.deployed">
+					<v-chip label>{{data.deployed.__type}}</v-chip>
+					<v-card class="my-2">
+						<object-table :data="data.deployed"></object-table>
+					</v-card>
+				</div>
+	
+			</template>
+		</v-card-text>
+		</v-card>
+	`
 })
 
 Vue.component('farmer-view', {
@@ -712,7 +716,8 @@ Vue.component('farmer-view', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<div>
+		<v-card class="my-2">
+		<v-card-text>
 			<v-chip label>Farmer</v-chip>
 			<v-chip label>{{farmer_key}}</v-chip>
 			<template v-if="data">
@@ -750,8 +755,9 @@ Vue.component('farmer-view', {
 				</v-card>
 			</template>
 			<blocks-table :data="data ? data.blocks : []" :loaded="loaded"></blocks-table>
-		</div>
-		`
+		</v-card-text>
+		</v-card>
+	`
 })
 
 Vue.component('address-view', {
@@ -790,7 +796,8 @@ Vue.component('address-view', {
 		this.update();
 	},
 	template: `
-		<div>
+		<v-card class="my-2">
+		<v-card-text>
 			<v-chip label>{{ $t('common.address') }}</v-chip>
 			<v-chip label>{{ address }}</v-chip>
 
@@ -802,8 +809,9 @@ Vue.component('address-view', {
 			</div>
 
 			<address-history-table :address="address" :limit="200" :show_empty="false" class="my-2"></address-history-table>
-		</div>
-		`
+		</v-card-text>
+		</v-card>
+	`
 })
 
 Vue.component('address-history-table', {
