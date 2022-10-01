@@ -141,6 +141,12 @@ public:
 	
 	::mmx::uint128 get_total_supply(const ::mmx::addr_t& currency = ::mmx::addr_t());
 	
+	std::vector<std::shared_ptr<const ::mmx::BlockHeader>> get_farmed_blocks(const std::vector<::mmx::bls_pubkey_t>& farmer_keys = {}, const vnx::bool_t& full_blocks = 0, const uint32_t& since = 0);
+	
+	std::map<::mmx::bls_pubkey_t, uint32_t> get_farmed_block_count(const uint32_t& since = 0);
+	
+	uint32_t get_farmed_block_count_for(const std::vector<::mmx::bls_pubkey_t>& farmer_keys = {}, const uint32_t& since = 0);
+	
 	void start_sync(const vnx::bool_t& force = 0);
 	
 	void start_sync_async(const vnx::bool_t& force = 0);

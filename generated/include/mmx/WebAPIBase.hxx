@@ -6,6 +6,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Block.hxx>
+#include <mmx/ProofResponse.hxx>
 #include <vnx/LogMsg.hxx>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
@@ -20,6 +21,7 @@ class MMX_EXPORT WebAPIBase : public ::vnx::Module {
 public:
 	
 	::vnx::TopicPtr input_blocks = "node.verified_blocks";
+	::vnx::TopicPtr input_proofs = "harvester.proof";
 	std::string node_server = "Node";
 	std::string wallet_server = "Wallet";
 	std::string farmer_server = "Farmer";
@@ -64,6 +66,7 @@ protected:
 	
 	virtual void shutdown() = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::Block> _value) {}
+	virtual void handle(std::shared_ptr<const ::mmx::ProofResponse> _value) {}
 	virtual void handle(std::shared_ptr<const ::vnx::LogMsg> _value) {}
 	virtual void http_request_async(std::shared_ptr<const ::vnx::addons::HttpRequest> request, const std::string& sub_path, const vnx::request_id_t& _request_id) const = 0;
 	void http_request_async_return(const vnx::request_id_t& _request_id, const std::shared_ptr<const ::vnx::addons::HttpResponse>& _ret_0) const;
@@ -77,15 +80,16 @@ protected:
 
 template<typename T>
 void WebAPIBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<WebAPIBase>(7);
+	_visitor.template type_begin<WebAPIBase>(8);
 	_visitor.type_field("input_blocks", 0); _visitor.accept(input_blocks);
-	_visitor.type_field("node_server", 1); _visitor.accept(node_server);
-	_visitor.type_field("wallet_server", 2); _visitor.accept(wallet_server);
-	_visitor.type_field("farmer_server", 3); _visitor.accept(farmer_server);
-	_visitor.type_field("exchange_server", 4); _visitor.accept(exchange_server);
-	_visitor.type_field("config_path", 5); _visitor.accept(config_path);
-	_visitor.type_field("max_log_history", 6); _visitor.accept(max_log_history);
-	_visitor.template type_end<WebAPIBase>(7);
+	_visitor.type_field("input_proofs", 1); _visitor.accept(input_proofs);
+	_visitor.type_field("node_server", 2); _visitor.accept(node_server);
+	_visitor.type_field("wallet_server", 3); _visitor.accept(wallet_server);
+	_visitor.type_field("farmer_server", 4); _visitor.accept(farmer_server);
+	_visitor.type_field("exchange_server", 5); _visitor.accept(exchange_server);
+	_visitor.type_field("config_path", 6); _visitor.accept(config_path);
+	_visitor.type_field("max_log_history", 7); _visitor.accept(max_log_history);
+	_visitor.template type_end<WebAPIBase>(8);
 }
 
 

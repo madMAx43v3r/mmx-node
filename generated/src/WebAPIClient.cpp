@@ -4,6 +4,7 @@
 #include <mmx/package.hxx>
 #include <mmx/WebAPIClient.hxx>
 #include <mmx/Block.hxx>
+#include <mmx/ProofResponse.hxx>
 #include <mmx/WebAPI_shutdown.hxx>
 #include <mmx/WebAPI_shutdown_return.hxx>
 #include <vnx/LogMsg.hxx>

@@ -23,6 +23,8 @@ public:
 	std::shared_ptr<const ::mmx::ProofOfSpace> proof;
 	::mmx::bls_signature_t farmer_sig;
 	::vnx::Hash64 farmer_addr;
+	std::string harvester;
+	int64_t lookup_time_ms = 0;
 	::mmx::hash_t content_hash;
 	
 	typedef ::vnx::Value Super;
@@ -74,14 +76,16 @@ protected:
 
 template<typename T>
 void ProofResponse::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ProofResponse>(6);
+	_visitor.template type_begin<ProofResponse>(8);
 	_visitor.type_field("hash", 0); _visitor.accept(hash);
 	_visitor.type_field("request", 1); _visitor.accept(request);
 	_visitor.type_field("proof", 2); _visitor.accept(proof);
 	_visitor.type_field("farmer_sig", 3); _visitor.accept(farmer_sig);
 	_visitor.type_field("farmer_addr", 4); _visitor.accept(farmer_addr);
-	_visitor.type_field("content_hash", 5); _visitor.accept(content_hash);
-	_visitor.template type_end<ProofResponse>(6);
+	_visitor.type_field("harvester", 5); _visitor.accept(harvester);
+	_visitor.type_field("lookup_time_ms", 6); _visitor.accept(lookup_time_ms);
+	_visitor.type_field("content_hash", 7); _visitor.accept(content_hash);
+	_visitor.template type_end<ProofResponse>(8);
 }
 
 

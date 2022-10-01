@@ -6,6 +6,7 @@
 
 #include <vnx/AsyncClient.h>
 #include <mmx/Block.hxx>
+#include <mmx/ProofResponse.hxx>
 #include <vnx/LogMsg.hxx>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
