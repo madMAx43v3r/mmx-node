@@ -948,7 +948,8 @@ std::vector<offer_data_t> Node::get_offers(const uint32_t& since, const vnx::boo
 	return out;
 }
 
-std::vector<offer_data_t> Node::get_offers_for(const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const uint32_t& since, const vnx::bool_t& is_open) const
+std::vector<offer_data_t> Node::get_offers_for(
+		const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const uint32_t& since, const vnx::bool_t& is_open) const
 {
 	std::vector<addr_t> bid_list;
 	std::vector<addr_t> ask_list;
@@ -993,7 +994,8 @@ std::vector<trade_data_t> Node::get_trade_history(const int32_t& limit, const ui
 	return get_trade_history_for(entries, nullptr, nullptr);
 }
 
-std::vector<trade_data_t> Node::get_trade_history_for(const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const int32_t& limit, const uint32_t& since) const
+std::vector<trade_data_t> Node::get_trade_history_for(
+		const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const int32_t& limit, const uint32_t& since) const
 {
 	std::vector<addr_t> bid_list;
 	std::vector<addr_t> ask_list;
@@ -1021,7 +1023,8 @@ std::vector<trade_data_t> Node::get_trade_history_for(const vnx::optional<addr_t
 	return get_trade_history_for(entries, bid, ask);
 }
 
-std::vector<trade_data_t> Node::get_trade_history_for(const std::vector<addr_t>& offers, const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask) const
+std::vector<trade_data_t> Node::get_trade_history_for(
+		const std::vector<addr_t>& offers, const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask) const
 {
 	std::vector<trade_data_t> out;
 	for(const auto& address : offers) {
@@ -1043,6 +1046,50 @@ std::vector<trade_data_t> Node::get_trade_history_for(const std::vector<addr_t>&
 		}
 	}
 	return out;
+}
+
+std::vector<std::shared_ptr<const BlockHeader>> Node::get_farmed_blocks(
+		const std::vector<bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since) const
+{
+	std::vector<uint32_t> entries;
+	for(const auto& key : farmer_keys) {
+		std::vector<uint32_t> tmp;
+		farmer_block_map.find(key, tmp);
+		entries.insert(entries.end(), tmp.begin(), tmp.end());
+	}
+	std::sort(entries.begin(), entries.end());
+
+	std::vector<std::shared_ptr<const BlockHeader>> out;
+	for(const auto& height : entries) {
+		if(height >= since) {
+			out.push_back(get_block_at_ex(height, full_blocks));
+		}
+	}
+	return out;
+}
+
+std::map<bls_pubkey_t, uint32_t> Node::get_farmed_block_count(const uint32_t& since) const
+{
+	std::map<bls_pubkey_t, uint32_t> out;
+	farmer_block_map.scan([&out, since](const bls_pubkey_t& key, const uint32_t& height) {
+		if(height >= since) {
+			out[key]++;
+		}
+	});
+	return out;
+}
+
+uint32_t Node::get_farmed_block_count_for(const std::vector<bls_pubkey_t>& farmer_keys, const uint32_t& since) const
+{
+	size_t total = 0;
+	for(const auto& key : farmer_keys) {
+		std::vector<uint32_t> tmp;
+		farmer_block_map.find(key, tmp);
+		for(auto height : tmp) {
+			total += (height >= since);
+		}
+	}
+	return total;
 }
 
 void Node::http_request_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
@@ -1617,7 +1664,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		context->storage->commit();
 	}
 	if(auto proof = block->proof) {
-		farmer_block_map.insert(proof->farmer_key, block->hash);
+		farmer_block_map.insert(proof->farmer_key, block->height);
 	}
 	hash_index.insert(block->hash, block->height);
 

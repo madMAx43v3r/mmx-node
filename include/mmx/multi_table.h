@@ -64,6 +64,12 @@ public:
 		}
 	}
 
+	size_t count(const K& key) const
+	{
+		std::vector<V> values;
+		return find(key, values);
+	}
+
 	size_t find(const K& key, std::vector<V>& values, const bool greater_equal = false) const
 	{
 		values.clear();

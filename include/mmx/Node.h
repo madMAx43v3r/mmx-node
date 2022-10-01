@@ -144,6 +144,13 @@ protected:
 	std::vector<trade_data_t> get_trade_history_for(
 			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const int32_t& limit = -1, const uint32_t& since = 0) const override;
 
+	std::vector<std::shared_ptr<const BlockHeader>> get_farmed_blocks(
+			const std::vector<bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since = 0) const override;
+
+	std::map<bls_pubkey_t, uint32_t> get_farmed_block_count(const uint32_t& since) const override;
+
+	uint32_t get_farmed_block_count_for(const std::vector<bls_pubkey_t>& farmer_keys, const uint32_t& since = 0) const override;
+
 	void on_stuck_timeout();
 
 	void start_sync(const vnx::bool_t& force) override;
@@ -450,7 +457,7 @@ private:
 	hash_table<hash_t, std::pair<int64_t, uint32_t>> tx_index;					// [txid => [file offset, height]]
 	uint_table<uint32_t, std::pair<int64_t, hash_t>> block_index;				// [height => [file offset, block hash]]
 	uint_table<uint32_t, std::vector<hash_t>> tx_log;							// [height => txids]
-	hash_multi_table<bls_pubkey_t, hash_t> farmer_block_map;					// [farmer_key => block hash]
+	hash_multi_table<bls_pubkey_t, uint32_t> farmer_block_map;					// [farmer_key => block hash]
 
 	uint32_t sync_pos = 0;									// current sync height
 	uint32_t sync_retry = 0;
