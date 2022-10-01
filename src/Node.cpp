@@ -103,6 +103,7 @@ void Node::main()
 		db.add(hash_index.open(database_path + "hash_index"));
 		db.add(block_index.open(database_path + "block_index"));
 		db.add(balance_table.open(database_path + "balance_table"));
+		db.add(farmer_block_map.open(database_path + "farmer_block_map"));
 	}
 	storage = std::make_shared<vm::StorageDB>(database_path, db);
 	{
@@ -145,19 +146,24 @@ void Node::main()
 			std::vector<std::pair<hash_t, int64_t>> tx_offsets;
 			while(auto header = read_block(*block_chain, true, &block_offset, &tx_offsets))
 			{
-				if(auto block = std::dynamic_pointer_cast<const Block>(header)) {
-					try {
-						apply(block, block->height > 0 ? validate(block) : nullptr, true);
-					} catch(std::exception& ex) {
-						log(ERROR) << "Block validation at height " << block->height << " failed with: " << ex.what();
-						block_chain->seek_to(block_offset);
-						break;
+				if(auto block = std::dynamic_pointer_cast<const Block>(header))
+				{
+					std::shared_ptr<execution_context_t> result;
+					if(block->height) {
+						try {
+							result = validate(block);
+						} catch(std::exception& ex) {
+							log(ERROR) << "Block validation at height " << block->height << " failed with: " << ex.what();
+							block_chain->seek_to(block_offset);
+							break;
+						}
 					}
 					for(const auto& entry : tx_offsets) {
 						tx_index.insert(entry.first, std::make_pair(entry.second, block->height));
 					}
 					block_index.insert(block->height, std::make_pair(block_offset, block->hash));
-					db.commit(block->height + 1);
+
+					apply(block, result, true);
 
 					auto fork = std::make_shared<fork_t>();
 					fork->block = block;
@@ -1556,14 +1562,21 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	if(block->prev != state_hash) {
 		throw std::logic_error("block->prev != state_hash");
 	}
+	if(!is_replay) {
+		write_block(block);
+	}
 	uint32_t counter = 0;
+	std::vector<hash_t> tx_ids;
 	std::unordered_set<hash_t> tx_set;
 	balance_cache_t balance_cache(&balance_map);
 
 	for(const auto& tx : block->get_all_transactions()) {
 		tx_set.insert(tx->id);
+		tx_ids.push_back(tx->id);
 		apply(block, context, tx, balance_cache, counter);
 	}
+	tx_log.insert(block->height, tx_ids);
+
 	for(auto iter = pending_transactions.begin(); iter != pending_transactions.end();) {
 		if(tx_set.count(iter->second->id)) {
 			iter = pending_transactions.erase(iter);
@@ -1603,14 +1616,15 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		}
 		context->storage->commit();
 	}
-	write_block(block, is_replay);
+	if(auto proof = block->proof) {
+		farmer_block_map.insert(proof->farmer_key, block->hash);
+	}
+	hash_index.insert(block->hash, block->height);
 
 	state_hash = block->hash;
 	contract_cache.clear();
 
-	if(!is_replay) {
-		db.commit(block->height + 1);
-	}
+	db.commit(block->height + 1);
 }
 
 void Node::apply(	std::shared_ptr<const Block> block,
@@ -1972,43 +1986,31 @@ std::shared_ptr<const BlockHeader> Node::read_block(
 	return nullptr;
 }
 
-void Node::write_block(std::shared_ptr<const Block> block, bool is_replay)
+void Node::write_block(std::shared_ptr<const Block> block)
 {
 	auto& out = block_chain->out;
 	const auto offset = out.get_output_pos();
 
-	std::vector<hash_t> tx_ids;
 	std::vector<std::pair<hash_t, int64_t>> tx_list;
 	if(auto tx = block->tx_base) {
-		tx_ids.push_back(tx->id);
 		tx_list.emplace_back(tx->id, offset);
 	}
-	if(!is_replay) {
-		vnx::write(out, block->get_header());
-	}
+	vnx::write(out, block->get_header());
 
 	for(const auto& tx : block->tx_list) {
-		const auto offset = out.get_output_pos();
-		tx_ids.push_back(tx->id);
-		tx_list.emplace_back(tx->id, offset);
-		if(!is_replay) {
-			vnx::write(out, tx);
-		}
+		tx_list.emplace_back(tx->id, out.get_output_pos());
+		vnx::write(out, tx);
 	}
-	tx_log.insert(block->height, tx_ids);
+	for(const auto& entry : tx_list) {
+		tx_index.insert(entry.first, std::make_pair(entry.second, block->height));
+	}
+	vnx::write(out, nullptr);	// end of block
+	const auto end = out.get_output_pos();
+	vnx::write(out, nullptr);	// temporary end of block_chain.dat
+	block_chain->flush();
+	block_chain->seek_to(end);
 
-	if(!is_replay) {
-		for(const auto& entry : tx_list) {
-			tx_index.insert(entry.first, std::make_pair(entry.second, block->height));
-		}
-		vnx::write(out, nullptr);	// end of block
-		const auto end = out.get_output_pos();
-		vnx::write(out, nullptr);	// temporary end of block_chain.dat
-		block_chain->flush();
-		block_chain->seek_to(end);
-		block_index.insert(block->height, std::make_pair(offset, block->hash));
-	}
-	hash_index.insert(block->hash, block->height);
+	block_index.insert(block->height, std::make_pair(offset, block->hash));
 }
 
 

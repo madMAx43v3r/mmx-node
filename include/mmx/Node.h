@@ -404,7 +404,7 @@ private:
 	std::shared_ptr<const BlockHeader> read_block(vnx::File& file, bool full_block = true,
 			int64_t* block_offset = nullptr, std::vector<std::pair<hash_t, int64_t>>* tx_offsets = nullptr) const;
 
-	void write_block(std::shared_ptr<const Block> block, bool is_replay = false);
+	void write_block(std::shared_ptr<const Block> block);
 
 private:
 	DataBase db;
@@ -446,10 +446,11 @@ private:
 	uint32_t min_pool_fee_ratio = 0;
 	std::shared_ptr<vnx::File> block_chain;
 	std::shared_ptr<vm::StorageDB> storage;
-	mutable hash_table<hash_t, uint32_t> hash_index;							// [block hash => height]
-	mutable hash_table<hash_t, std::pair<int64_t, uint32_t>> tx_index;			// [txid => [file offset, height]]
-	mutable uint_table<uint32_t, std::pair<int64_t, hash_t>> block_index;		// [height => [file offset, block hash]]
-	mutable uint_table<uint32_t, std::vector<hash_t>> tx_log;					// [height => txids]
+	hash_table<hash_t, uint32_t> hash_index;									// [block hash => height]
+	hash_table<hash_t, std::pair<int64_t, uint32_t>> tx_index;					// [txid => [file offset, height]]
+	uint_table<uint32_t, std::pair<int64_t, hash_t>> block_index;				// [height => [file offset, block hash]]
+	uint_table<uint32_t, std::vector<hash_t>> tx_log;							// [height => txids]
+	hash_multi_table<bls_pubkey_t, hash_t> farmer_block_map;					// [farmer_key => block hash]
 
 	uint32_t sync_pos = 0;									// current sync height
 	uint32_t sync_retry = 0;
