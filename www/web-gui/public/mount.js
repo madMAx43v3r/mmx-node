@@ -64,6 +64,16 @@ const routes = [
 			{ path: 'reward', component: NodeBlockReward, meta: { page: 'reward' } },
 		]
 	},
+	{ path: '/farmer',
+		component: Farmer,
+		redirect: "/farmer/plots",
+		meta: { is_farmer: true },
+		children: [
+			{ path: 'plots', component: FarmerPlots, meta: { page: 'plots' } },
+			{ path: 'blocks', component: FarmerBlocks, meta: { page: 'blocks' } },
+			{ path: 'proofs', component: FarmerProofs, meta: { page: 'proofs' } },
+		]
+	},
 	{ path: '/settings', component: Settings, meta: { is_settings: true } },
 ]
 

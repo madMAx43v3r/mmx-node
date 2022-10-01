@@ -70,7 +70,9 @@ std::shared_ptr<const FarmInfo> Farmer::get_farm_info() const
 			for(const auto& entry : value->plot_count) {
 				info->plot_count[entry.first] += entry.second;
 			}
-			info->plot_dirs.insert(info->plot_dirs.end(), value->plot_dirs.begin(), value->plot_dirs.end());
+			for(const auto& dir : value->plot_dirs) {
+				info->plot_dirs.push_back((value->harvester ? *value->harvester + ":" : "") + dir);
+			}
 			info->total_bytes += value->total_bytes;
 			info->total_balance += value->total_balance;
 		}

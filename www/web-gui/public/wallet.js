@@ -175,7 +175,6 @@ Vue.component('account-balance', {
 	},
 	methods: {
 		update() {
-			this.loading = true;
 			fetch('/wapi/wallet/balance?index=' + this.index)
 				.then(response => response.json())
 				.then(data => {

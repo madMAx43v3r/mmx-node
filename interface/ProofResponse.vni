@@ -12,6 +12,10 @@ class ProofResponse {
 	
 	vnx.Hash64 farmer_addr;
 	
+	string harvester;
+	
+	long lookup_time_ms;
+	
 	hash_t content_hash;
 	
 	

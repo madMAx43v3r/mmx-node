@@ -258,6 +258,38 @@ const NodeBlockReward = {
 	`
 }
 
+const Farmer = {
+	template: `
+		<div>
+			<farmer-info></farmer-info>
+			<farmer-menu class="mt-4"></farmer-menu>
+			<router-view class="mt-2"></router-view>
+		</div>
+	`
+}
+const FarmerBlocks = {
+	template: `
+		<farmer-blocks limit="200"></farmer-blocks>
+	`
+}
+const FarmerProofs = {
+	template: `
+		<farmer-proofs limit="200"></farmer-proofs>
+	`
+}
+const FarmerPlots = {
+	template: `
+		<div>
+			<div class="my-2">
+				<farmer-plots></farmer-plots>
+			</div>
+			<div class="my-2">
+				<farmer-plot-dirs></farmer-plot-dirs>
+			</div>
+		</div>
+	`
+}
+
 const Settings = {
 	template: `
 		<div>
@@ -357,6 +389,7 @@ Vue.component('main-menu', {
 			<status/>
 			<v-tab to="/node">{{ $t('main_menu.node') }}</v-tab>
 			<v-tab to="/wallet">{{ $t('main_menu.wallet') }}</v-tab>
+			<v-tab to="/farmer">Farmer</v-tab>
 			<v-tab to="/explore">{{ $t('main_menu.explore') }}</v-tab>
 			<v-tab to="/market">{{ $t('main_menu.market') }}</v-tab>
 			<v-spacer></v-spacer>

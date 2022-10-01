@@ -345,8 +345,15 @@ void Router::handle(std::shared_ptr<const ProofOfTime> value)
 	}
 }
 
-void Router::handle(std::shared_ptr<const ProofResponse> value)
+void Router::handle(std::shared_ptr<const ProofResponse> value_)
 {
+	if(!value_->proof || !value_->request) {
+		return;
+	}
+	auto value = vnx::clone(value_);
+	value->harvester.clear();
+	value->content_hash = value->calc_hash(true);
+
 	const auto& hash = value->content_hash;
 	if(relay_msg_hash(hash, proof_credits)) {
 		if(vnx::get_pipe(value->farmer_addr)) {

@@ -77,17 +77,13 @@ Vue.component('explore-blocks', {
 			fetch('/wapi/headers?limit=' + this.limit)
 				.then(response => response.json())
 				.then(data => {
-					this.loaded = true;
 					for(const block of data) {
 						if(block.tx_base) {
-							block.reward = 0;
-							for(const out of block.tx_base.outputs) {
-								block.reward += out.amount;
-							}
-							block.reward /= 1000000;
+							block.reward = block.tx_base.exec_result.total_fee_value;
 						}
 					}
 					this.data = data;
+					this.loaded = true;
 				});
 		}
 	},
@@ -127,11 +123,11 @@ Vue.component('explore-blocks', {
 
 			<template v-slot:item.reward="{ item }">
 				{{item.reward != null ? item.reward.toFixed(3) : null}}
-			</template>			
+			</template>
 
 			<template v-slot:item.hash="{ item }">
 				<router-link :to="'/explore/block/hash/' + item.hash">{{item.hash}}</router-link>
-			</template>		
+			</template>
 
 		</v-data-table>
 		`
@@ -166,8 +162,8 @@ Vue.component('explore-transactions', {
 			fetch('/wapi/transactions?limit=' + this.limit)
 				.then(response => response.json())
 				.then(data => {
-					this.loaded = true;
 					this.data = data;
+					this.loaded = true;
 				});
 		}
 	},
@@ -207,6 +203,87 @@ Vue.component('explore-transactions', {
 
 			<template v-slot:item.transaction_id="{ item }">
 				<router-link :to="'/explore/transaction/' + item.id">{{item.id}}</router-link>
+			</template>
+
+		</v-data-table>
+		`
+})
+
+Vue.component('explore-farmers', {
+	props: {
+		limit: Number
+	},
+	data() {
+		return {
+			data: [],
+			timer: null,
+			loaded: false
+		}
+	},
+	computed: {
+		headers() {
+			return [
+				{ text: this.$t('explore_blocks.height'), value: 'height', width: "5%"},
+				{ text: this.$t('explore_blocks.tx'), value: 'tx_count' },
+				{ text: this.$t('explore_blocks.k'), value: 'ksize' },
+				{ text: this.$t('explore_blocks.score'), value: 'score' },
+				{ text: this.$t('explore_blocks.reward'), value: 'reward' },
+				{ text: this.$t('explore_blocks.tdiff'), value: 'time_diff' },
+				{ text: this.$t('explore_blocks.sdiff'), value: 'space_diff' },
+				{ text: this.$t('explore_blocks.hash'), value: 'hash' },
+			]
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/farmers?limit=' + this.limit)
+				.then(response => response.json())
+				.then(data => {
+					this.data = data;
+					this.loaded = true;
+				});
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 10000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<v-data-table
+			:headers="headers"
+			:items="data"
+			:loading="!loaded"
+			hide-default-footer
+			disable-sort
+			disable-pagination
+			class="elevation-2"
+		>
+			<template v-slot:progress>
+				<v-progress-linear indeterminate absolute top></v-progress-linear>
+				<v-skeleton-loader type="table-row-divider@6" />
+			</template>
+
+			<template v-slot:item.height="{ item }">
+				<router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link>
+			</template>
+
+			<template v-slot:item.ksize="{ item }">
+				{{item.proof ? item.proof.ksize : null}}
+			</template>
+
+			<template v-slot:item.score="{ item }">
+				{{item.proof ? item.proof.score : null}}
+			</template>
+
+			<template v-slot:item.reward="{ item }">
+				{{item.reward != null ? item.reward.toFixed(3) : null}}
+			</template>
+
+			<template v-slot:item.hash="{ item }">
+				<router-link :to="'/explore/block/hash/' + item.hash">{{item.hash}}</router-link>
 			</template>
 
 		</v-data-table>

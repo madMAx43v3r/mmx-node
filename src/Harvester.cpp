@@ -13,6 +13,7 @@
 #include <mmx/utils.h>
 
 #include <bls.hpp>
+#include <vnx/vnx.h>
 
 
 namespace mmx {
@@ -46,6 +47,7 @@ void Harvester::main()
 		num_threads = 16;
 	}
 	params = get_params();
+	host_name = vnx::get_host_name();
 
 	node = std::make_shared<NodeClient>(node_server);
 	farmer = std::make_shared<FarmerClient>(farmer_server);
@@ -153,10 +155,14 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 			log(WARN) << "Failed to fetch proof: " << ex.what() << " (" << best_plot->get_file_path() << ")";
 		}
 	}
+	const auto time_ms = vnx::get_wall_time_millis() - time_begin;
+
 	if(best_proof || best_vplot) {
 		auto out = ProofResponse::create();
 		out->request = value;
 		out->farmer_addr = farmer_addr;
+		out->harvester = host_name;
+		out->lookup_time_ms = time_ms;
 
 		if(best_proof) {
 			const auto local_sk = derive_local_key(best_proof->master_sk);
@@ -197,7 +203,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	if(!id_map.empty()) {
 		log(INFO) << plots.size() << " plots were eligible for height " << value->height
 				<< ", best score was " << (best_score != uint256_max ? best_score.str() : "N/A")
-				<< ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+				<< ", took " << time_ms / 1e3 << " sec";
 	}
 }
 
@@ -209,6 +215,7 @@ uint64_t Harvester::get_total_bytes() const
 std::shared_ptr<const FarmInfo> Harvester::get_farm_info() const
 {
 	auto info = FarmInfo::create();
+	info->harvester = host_name;
 	info->plot_dirs = std::vector<std::string>(plot_dirs.begin(), plot_dirs.end());
 	info->total_bytes = total_bytes;
 	for(const auto& entry : plot_map) {
@@ -377,7 +384,7 @@ void Harvester::reload()
 	// check challenges again
 	already_checked.clear();
 
-	log(INFO) << "Loaded " << plot_map.size() << " plots, " << virtual_map.size() << " virtual plots, "
+	log(INFO) << "[" << host_name << "] Loaded " << plot_map.size() << " plots, " << virtual_map.size() << " virtual plots, "
 			<< total_bytes / pow(1000, 4) << " TB total, " << total_balance / pow(10, params->decimals) << " MMX total, took "
 			<< (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 }

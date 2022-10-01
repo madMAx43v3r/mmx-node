@@ -3,6 +3,7 @@ package mmx;
 module WebAPI implements vnx.addons.HttpComponent {
 	
 	vnx.TopicPtr input_blocks = "node.verified_blocks";
+	vnx.TopicPtr input_proofs = "harvester.proof";
 	
 	string node_server = "Node";
 	string wallet_server = "Wallet";
@@ -17,6 +18,7 @@ module WebAPI implements vnx.addons.HttpComponent {
 	void shutdown();
 	
 	void handle(Block sample);
+	void handle(ProofResponse sample);
 	void handle(vnx.LogMsg sample);
 	
 }

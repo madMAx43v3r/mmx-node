@@ -10,4 +10,6 @@ class FarmInfo {
 	
 	ulong total_balance;					// virtual plots [MMX]
 	
+	optional<string> harvester;
+	
 }

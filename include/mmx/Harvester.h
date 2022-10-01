@@ -57,8 +57,10 @@ private:
 		bls_pubkey_t farmer_key;
 	};
 
+	std::string host_name;
 	uint64_t total_bytes = 0;
 	uint64_t total_balance = 0;
+
 	vnx::Hash64 farmer_addr;
 	std::shared_ptr<NodeClient> node;
 	std::shared_ptr<FarmerClient> farmer;

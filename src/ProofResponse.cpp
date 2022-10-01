@@ -28,6 +28,7 @@ mmx::hash_t ProofResponse::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "request",		request ? request->calc_hash() : hash_t());
 	write_field(out, "proof", 		proof ? proof->calc_hash(true) : hash_t());
 	write_field(out, "farmer_addr",	farmer_addr);
+	// TODO: harvester, lookup_time_ms
 
 	if(full_hash) {
 		write_field(out, "farmer_sig", farmer_sig);

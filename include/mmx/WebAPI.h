@@ -12,7 +12,6 @@
 #include <mmx/NodeAsyncClient.hxx>
 #include <mmx/WalletAsyncClient.hxx>
 #include <mmx/FarmerAsyncClient.hxx>
-//#include <mmx/exchange/ClientAsyncClient.hxx>
 #include <mmx/Block.hxx>
 
 #include <vnx/LogMsg.hxx>
@@ -40,6 +39,8 @@ protected:
 									const int64_t& offset, const int64_t& max_bytes, const vnx::request_id_t& request_id) const override;
 
 	void handle(std::shared_ptr<const Block> block) override;
+
+	void handle(std::shared_ptr<const ProofResponse> value) override;
 
 	void handle(std::shared_ptr<const vnx::LogMsg> value) override;
 
@@ -90,16 +91,15 @@ private:
 	std::shared_ptr<NodeAsyncClient> node;
 	std::shared_ptr<WalletAsyncClient> wallet;
 	std::shared_ptr<FarmerAsyncClient> farmer;
-//	std::shared_ptr<exchange::ClientAsyncClient> exch_client;
 	std::shared_ptr<const ChainParams> params;
 
 	std::list<std::pair<std::shared_ptr<const vnx::LogMsg>, uint64_t>> log_history;
-
-//	mutable std::map<uint64_t, std::shared_ptr<const exchange::OfferBundle>> pending_offers;
+	std::list<std::pair<std::shared_ptr<const ProofResponse>, uint64_t>> proof_history;
 
 	int64_t time_offset = 0;		// [sec]
 	uint32_t curr_height = 0;
 	uint64_t log_counter = 0;
+	uint64_t harvester_counter = 0;
 
 };
 

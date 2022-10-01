@@ -1,4 +1,14 @@
 
+Vue.component('farmer-menu', {
+	template: `
+		<v-tabs>
+			<v-tab to="/farmer/plots">Plots</v-tab>
+			<v-tab to="/farmer/blocks">Blocks</v-tab>
+			<v-tab to="/farmer/proofs">Proofs</v-tab>
+		</v-tabs>
+		`
+})
+
 Vue.component('farmer-info', {
 	data() {
 		return {
@@ -75,3 +85,241 @@ Vue.component('farmer-info', {
 		</div>
 		`
 })
+
+Vue.component('farmer-plots', {
+	data() {
+		return {
+			loaded: false,
+			data: []
+		}
+	},
+	computed: {
+		headers() {
+			return [
+				{ text: "Type", value: 'ksize', width: "10%" },
+				{ text: "Count", value: 'count' },
+			]
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/farmer/info')
+				.then(response => response.json())
+				.then(data => {
+					this.data = [];
+					for(const entry of data.plot_count) {
+						this.data.push({ksize: entry[0], count: entry[1]});
+					}
+					this.loaded = true;
+				});
+		},
+		reload() {
+			fetch('/api/harvester/reload').then(this.update());
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 10000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<div>
+			<v-data-table
+				:headers="headers"
+				:items="data"
+				:loading="!loaded"
+				hide-default-footer
+				disable-sort
+				disable-pagination
+				class="elevation-2"
+			>
+				<template v-slot:item.ksize="{ item }">
+					K{{item.ksize}}
+				</template>
+			</v-data-table>
+			<v-btn class="my-2" outlined @click="reload">Reload Plots</v-btn>
+		</div>
+		`
+})
+
+Vue.component('farmer-plot-dirs', {
+	data() {
+		return {
+			loaded: false,
+			data: []
+		}
+	},
+	computed: {
+		headers() {
+			return [
+				{ text: "Path", value: 'item' },
+			]
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/farmer/info')
+				.then(response => response.json())
+				.then(data => {
+					this.data = data.plot_dirs;
+					this.loaded = true;
+				});
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 10000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<v-data-table
+			:headers="headers"
+			:items="data"
+			:loading="!loaded"
+			hide-default-footer
+			disable-sort
+			disable-pagination
+			class="elevation-2"
+		>
+			<template v-slot:item.item="{ item }">
+				{{item}}
+			</template>
+		</v-data-table>
+		`
+})
+
+Vue.component('farmer-blocks', {
+	props: {
+		limit: Number
+	},
+	data() {
+		return {
+			loaded: false,
+			data: []
+		}
+	},
+	computed: {
+		headers() {
+			return [
+				{ text: "Height", value: 'height' },
+				{ text: "TX", value: 'tx_count' },
+				{ text: "K", value: 'proof.ksize' },
+				{ text: "Score", value: 'proof.score' },
+				{ text: "Reward", value: 'reward' },
+				{ text: "Time", value: 'time' },
+			]
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/farmer/blocks?limit=' + this.limit)
+				.then(response => response.json())
+				.then(data => {
+					this.data = data;
+					this.loaded = true;
+				});
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 10000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<v-data-table
+			:headers="headers"
+			:items="data"
+			:loading="!loaded"
+			hide-default-footer
+			disable-sort
+			disable-pagination
+			class="elevation-2"
+		>
+			<template v-slot:progress>
+				<v-progress-linear indeterminate absolute top></v-progress-linear>
+			</template>
+
+			<template v-slot:item.height="{ item }">
+				<router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link>
+			</template>
+
+			<template v-slot:item.reward="{ item }">
+				<b>{{item.tx_base.exec_result.total_fee_value.toFixed(3)}}</b> MMX
+			</template>
+
+			<template v-slot:item.time="{ item }">
+				{{new Date(item.time * 1000).toLocaleString()}}
+			</template>
+
+		</v-data-table>
+		`
+})
+
+Vue.component('farmer-proofs', {
+	data() {
+		return {
+			loaded: false,
+			data: []
+		}
+	},
+	computed: {
+		headers() {
+			return [
+				{ text: "Height", value: 'height' },
+				{ text: "Harvester", value: 'harvester' },
+				{ text: "Score", value: 'proof.score' },
+				{ text: "Difficulty", value: 'space_diff' },
+				{ text: "Time", value: 'lookup_time_ms' },
+				{ text: "Plot ID", value: 'proof.plot_id' },
+			]
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/farmer/proofs')
+				.then(response => response.json())
+				.then(data => {
+					this.data = data;
+					this.loaded = true;
+				});
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 10000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<v-data-table
+			:headers="headers"
+			:items="data"
+			:loading="!loaded"
+			hide-default-footer
+			disable-sort
+			disable-pagination
+			class="elevation-2"
+		>
+			<template v-slot:progress>
+				<v-progress-linear indeterminate absolute top></v-progress-linear>
+			</template>
+
+			<template v-slot:item.height="{ item }">
+				<router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link>
+			</template>	
+
+			<template v-slot:item.lookup_time_ms="{ item }">
+				{{(item.lookup_time_ms / 1000).toFixed(3)}} sec
+			</template>
+
+		</v-data-table>
+		`
+})
+
