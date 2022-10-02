@@ -11,6 +11,7 @@ module Harvester implements vnx.addons.HttpComponent {
 	
 	string node_server = "Node";
 	string farmer_server = "Farmer";
+	string config_path;
 	
 	int max_queue_ms = 10000;				// [ms]
 	

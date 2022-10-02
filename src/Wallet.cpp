@@ -841,7 +841,7 @@ void Wallet::create_account(const account_t& config, const vnx::optional<std::st
 	}
 	add_account(std::max<uint32_t>(max_key_files, wallets.size()), config, passphrase);
 
-	const std::string path = config_path + "Wallet.json";
+	const std::string path = config_path + vnx_name + ".json";
 	{
 		auto object = vnx::read_config_file(path);
 		auto& accounts = object["accounts+"];
@@ -885,7 +885,7 @@ std::set<addr_t> Wallet::get_token_list() const
 
 void Wallet::add_token(const addr_t& address)
 {
-	const std::string path = config_path + "Wallet.json";
+	const std::string path = config_path + vnx_name + ".json";
 	auto object = vnx::read_config_file(path);
 	{
 		auto& whitelist = object["token_whitelist+"];
@@ -902,7 +902,7 @@ void Wallet::add_token(const addr_t& address)
 
 void Wallet::rem_token(const addr_t& address)
 {
-	const std::string path = config_path + "Wallet.json";
+	const std::string path = config_path + vnx_name + ".json";
 	auto object = vnx::read_config_file(path);
 	{
 		auto& whitelist = object["token_whitelist+"];

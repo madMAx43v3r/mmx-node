@@ -10,6 +10,9 @@ Vue.component('node-settings', {
 			opencl_device_list: null,
 			farmer_reward_addr: "null",
 			timelord_reward_addr: "null",
+			reload_interval: null,
+			plot_dirs: [],
+			new_plot_dir: null,
 			availableLanguages: availableLanguages
 		}
 	},
@@ -29,6 +32,8 @@ Vue.component('node-settings', {
 					}
 					this.farmer_reward_addr = data["Farmer.reward_addr"];
 					this.timelord_reward_addr = data["TimeLord.reward_addr"];
+					this.reload_interval = data["Harvester.reload_interval"];
+					this.plot_dirs = data["Harvester.plot_dirs"];
 				});
 		},
 		set_config(key, value, restart) {
@@ -39,6 +44,36 @@ Vue.component('node-settings', {
 				.then(response => {
 					if(response.ok) {
 						this.result = {key: req.key, value: req.value, restart};
+					} else {
+						response.text().then(data => {
+							this.error = data;
+						});
+					}
+				});
+		},
+		add_plot_dir(path) {
+			var req = {};
+			req.path = path;
+			fetch('/api/harvester/add_plot_dir', {body: JSON.stringify(req), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						this.update();
+						this.result = {key: "Harvester.plot_dirs", value: "+ " + req.path, restart: false};
+					} else {
+						response.text().then(data => {
+							this.error = data;
+						});
+					}
+				});
+		},
+		rem_plot_dir(path) {
+			var req = {};
+			req.path = path;
+			fetch('/api/harvester/rem_plot_dir', {body: JSON.stringify(req), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						this.update();
+						this.result = {key: "Harvester.plot_dirs", value: "- " + req.path, restart: false};
 					} else {
 						response.text().then(data => {
 							this.error = data;
@@ -79,6 +114,11 @@ Vue.component('node-settings', {
 				this.set_config("TimeLord.reward_addr", value.length ? value : null, true);
 			}
 		},
+		reload_interval(value, prev) {
+			if(prev != null) {
+				this.set_config("Harvester.reload_interval", value, true);
+			}
+		},
 		result(value) {
 			if(value) {
 				this.error = null;
@@ -100,6 +140,7 @@ Vue.component('node-settings', {
 	template: `
 		<div>
 			<v-card v-if="!$isWinGUI">
+				<v-card-title>GUI</v-card-title>
 				<v-card-text>
 					<v-select
 						v-model="$i18n.locale"
@@ -121,8 +162,8 @@ Vue.component('node-settings', {
 			</v-card>
 
 			<v-card class="my-2">
+				<v-card-title>General</v-card-title>
 				<v-card-text>
-
 					<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
 
 					<v-checkbox
@@ -150,6 +191,41 @@ Vue.component('node-settings', {
 						:value="timelord_reward_addr" @change="value => timelord_reward_addr = value"					
 					></v-text-field>
 
+				</v-card-text>
+			</v-card>
+			
+			<v-card class="my-2">
+				<v-card-title>Harvester</v-card-title>
+				<v-card-text>
+					<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
+					
+					<v-text-field
+						label="Harvester Reload Interval (sec)"
+						:value="reload_interval" @change="value => reload_interval = parseInt(value)"
+					></v-text-field>
+					
+					<v-card class="my-2">
+						<v-simple-table>
+							<thead>
+								<tr>
+									<th>Plot Directory</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr v-for="item in plot_dirs" :key="item">
+									<td>{{item}}</td>
+									<td><v-btn outlined text @click="rem_plot_dir(item)">Remove</v-btn></td>
+								</tr>
+							</tbody>
+						</v-simple-table>
+					</v-card>
+					
+					<v-text-field
+						label="Plot Directory"
+						v-model="new_plot_dir"
+					></v-text-field>
+					<v-btn @click="add_plot_dir(new_plot_dir)" outlined color="primary">Add Directory</v-btn>
 				</v-card-text>
 			</v-card>
 							
@@ -245,33 +321,32 @@ Vue.component('wallet-settings', {
 				<v-card-title>{{ $t('wallet_settings.token_whitelist') }}</v-card-title>
 				<v-card-text>
 					<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
-					<v-simple-table>
-						<thead>
-						<tr>
-							<th>{{ $t('wallet_settings.name') }}</th>
-							<th>{{ $t('wallet_settings.symbol') }}</th>
-							<th>{{ $t('wallet_settings.contract') }}</th>
-							<th></th>
-						</tr>
-						</thead>
-						<tbody>
-						<template v-for="item in tokens" :key="item.currency">
-							<template v-if="!item.is_native">
-								<tr>
-									<td>{{item.name}}</td>
-									<td>{{item.symbol}}</td>
-									<td><router-link :to="'/explore/address/' + item.currency">{{item.currency}}</router-link></td>
-									<td><v-btn outlined text @click="rem_token(item.currency)">{{ $t('common.remove') }}</v-btn></td>
-								</tr>
+					
+					<v-card class="my-2">
+						<v-simple-table>
+							<thead>
+							<tr>
+								<th>{{ $t('wallet_settings.name') }}</th>
+								<th>{{ $t('wallet_settings.symbol') }}</th>
+								<th>{{ $t('wallet_settings.contract') }}</th>
+								<th></th>
+							</tr>
+							</thead>
+							<tbody>
+							<template v-for="item in tokens" :key="item.currency">
+								<template v-if="!item.is_native">
+									<tr>
+										<td>{{item.name}}</td>
+										<td>{{item.symbol}}</td>
+										<td><router-link :to="'/explore/address/' + item.currency">{{item.currency}}</router-link></td>
+										<td><v-btn outlined text @click="rem_token(item.currency)">{{ $t('common.remove') }}</v-btn></td>
+									</tr>
+								</template>
 							</template>
-						</template>
-						</tbody>
-					</v-simple-table>			
-				</v-card-text>
-			</v-card>
-
-			<v-card>
-				<v-card-text>
+							</tbody>
+						</v-simple-table>
+					</v-card>
+					
 					<v-text-field
 						:label="$t('wallet_settings.token_address')"
 						v-model="new_token_addr" 

@@ -391,12 +391,36 @@ void Harvester::reload()
 
 void Harvester::add_plot_dir(const std::string& path)
 {
+	const std::string cpath = config_path + vnx_name + ".json";
+	auto object = vnx::read_config_file(cpath);
+	{
+		auto& var = object["plot_dirs"];
+		auto tmp = var.to<std::set<std::string>>();
+		tmp.insert(path);
+		var = tmp;
+		vnx::write_config(vnx_name + ".plot_dirs", tmp);
+	}
+	vnx::write_config_file(cpath, object);
+
 	plot_dirs.insert(path);
+	reload();
 }
 
 void Harvester::rem_plot_dir(const std::string& path)
 {
+	const std::string cpath = config_path + vnx_name + ".json";
+	auto object = vnx::read_config_file(cpath);
+	{
+		auto& var = object["plot_dirs"];
+		auto tmp = var.to<std::set<std::string>>();
+		tmp.erase(path);
+		var = tmp;
+		vnx::write_config(vnx_name + ".plot_dirs", tmp);
+	}
+	vnx::write_config_file(cpath, object);
+
 	plot_dirs.erase(path);
+	reload();
 }
 
 void Harvester::update()

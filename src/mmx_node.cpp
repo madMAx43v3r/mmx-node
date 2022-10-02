@@ -174,6 +174,7 @@ int main(int argc, char** argv)
 	}
 	if(with_harvester) {
 		vnx::Handle<mmx::Harvester> module = new mmx::Harvester("Harvester");
+		module->config_path = mmx_home + module->config_path;
 		module.start_detached();
 	}
 
