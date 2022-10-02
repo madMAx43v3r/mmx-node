@@ -342,7 +342,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	}
 	if(auto tx = block->tx_base) {
 		if(validate(tx, context, block)) {
-			throw std::logic_error("invalid tx_base");
+			throw std::logic_error("missing exec_result");
 		}
 		const auto base_reward = calc_block_reward(block);
 		const auto base_allowed = calc_final_block_reward(params, base_reward, total_fees);
