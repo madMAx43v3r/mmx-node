@@ -293,6 +293,8 @@ void Harvester::reload()
 					}
 					catch(const std::exception& ex) {
 						log(WARN) << "Failed to load plot '" << file_name << "' due to: " << ex.what();
+					} catch(...) {
+						log(WARN) << "Failed to load plot '" << file_name << "'";
 					}
 				}
 			}
@@ -349,6 +351,8 @@ void Harvester::reload()
 		}
 		catch(const std::exception& ex) {
 			log(WARN) << "Invalid plot: " << entry.first << " (" << ex.what() << ")";
+		} catch(...) {
+			log(WARN) << "Invalid plot: " << entry.first;
 		}
 	}
 
