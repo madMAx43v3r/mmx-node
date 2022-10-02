@@ -99,7 +99,7 @@ private:
 	int64_t time_offset = 0;		// [sec]
 	uint32_t curr_height = 0;
 	uint64_t log_counter = 0;
-	uint64_t harvester_counter = 0;
+	uint64_t proof_counter = 0;
 
 };
 

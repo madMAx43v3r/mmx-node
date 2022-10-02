@@ -159,7 +159,7 @@ void WebAPI::handle(std::shared_ptr<const Block> block)
 
 void WebAPI::handle(std::shared_ptr<const ProofResponse> value)
 {
-	proof_history.emplace_back(value, harvester_counter++);
+	proof_history.emplace_back(value, proof_counter++);
 	while(proof_history.size() > max_log_history) {
 		proof_history.pop_front();
 	}
