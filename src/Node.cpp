@@ -1736,7 +1736,8 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		for(const auto& op : tx->execute)
 		{
 			const auto address = op->address == addr_t() ? addr_t(tx->id) : op->address;
-			const auto contract = op->address == addr_t() ? tx->deploy : context->contract_cache.find_contract(op->address);
+			const auto contract = op->address == addr_t() ? tx->deploy :
+					(context ? context->contract_cache.find_contract(op->address) : nullptr);
 
 			if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op)) {
 				exec_entry_t entry;
