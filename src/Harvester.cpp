@@ -275,10 +275,10 @@ void Harvester::reload()
 	std::vector<std::pair<std::string, std::shared_ptr<chiapos::DiskProver>>> plots;
 
 #pragma omp parallel for num_threads(num_threads)
-	for(int i = 0; i < int(dir_list.size()); ++i)
-	{
-		vnx::Directory dir(dir_list[i]);
+	for(int i = 0; i < int(dir_list.size()); ++i) {
 		try {
+			vnx::Directory dir(dir_list[i]);
+
 			for(const auto& file : dir.files())
 			{
 				const auto file_name = file->get_path();
