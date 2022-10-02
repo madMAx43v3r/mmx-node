@@ -1252,12 +1252,26 @@ int main(int argc, char** argv)
 					std::cerr << "Help: mmx farm get [space | dirs]" << std::endl;
 				}
 			}
+			else if(command == "add")
+			{
+				std::string path;
+				if(vnx::read_config("$3", path)) {
+					harvester.add_plot_dir(path);
+				}
+			}
+			else if(command == "remove")
+			{
+				std::string path;
+				if(vnx::read_config("$3", path)) {
+					harvester.rem_plot_dir(path);
+				}
+			}
 			else {
-				std::cerr << "Help: mmx farm [info | get | reload]" << std::endl;
+				std::cerr << "Help: mmx farm [info | get | add | remove | reload]" << std::endl;
 			}
 		}
 		else {
-			std::cerr << "Help: mmx [node | wallet | farm | exch]" << std::endl;
+			std::cerr << "Help: mmx [node | wallet | farm]" << std::endl;
 		}
 	}
 	catch(const std::exception& ex) {
