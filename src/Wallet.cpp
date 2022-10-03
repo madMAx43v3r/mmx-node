@@ -642,7 +642,6 @@ std::map<addr_t, balance_t> Wallet::get_balances(const uint32_t& index, const vn
 	const auto wallet = get_wallet(index);
 	update_cache(index);
 
-	// TODO: include open offers as reserved
 	std::map<addr_t, balance_t> amounts;
 	if(with_zero) {
 		for(const auto& currency : token_whitelist) {
