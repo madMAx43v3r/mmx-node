@@ -455,6 +455,7 @@ public:
 		last_update = 0;
 		balance_map.clear();
 		reserved_map.clear();
+		external_balance_map.clear();
 		pending_tx.clear();
 		pending_map.clear();
 	}
@@ -463,6 +464,7 @@ public:
 	int64_t last_update = 0;
 	std::map<std::pair<addr_t, addr_t>, uint128_t> balance_map;									// [[address, currency] => balance]
 	std::map<std::pair<addr_t, addr_t>, uint128_t> reserved_map;								// [[address, currency] => balance]
+	std::map<addr_t, uint128_t> external_balance_map;											// [currency => balance]
 	std::unordered_map<hash_t, uint32_t> pending_tx;											// [txid => expired height]
 	std::unordered_map<hash_t, std::map<std::pair<addr_t, addr_t>, uint128_t>> pending_map;		// [txid => [[address, currency] => balance]]
 
