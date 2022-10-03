@@ -1226,7 +1226,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				currency = vnx::from_string<addr_t>(iter_currency->second);
 			}
 			const auto address = vnx::from_string_value<addr_t>(iter_id->second);
-			node->get_contract_balances(address, 1,
+			node->get_contract_balances(address,
 				[this, currency, request_id](const std::map<addr_t, balance_t>& balances) {
 					render_balances(request_id, currency, balances);
 				},
