@@ -126,7 +126,7 @@ int main(int argc, char** argv)
 	options["gas-limit"] = "MMX";
 	options["user"] = "mmx-admin";
 	options["passwd"] = "PASSWD";
-	options["mnemonic"] = "mnemonic";
+	options["mnemonic"] = "words";
 
 	vnx::write_config("log_level", 2);
 
