@@ -63,8 +63,8 @@
 #include <mmx/Wallet_get_mnemonic_wordlist_return.hxx>
 #include <mmx/Wallet_get_token_list.hxx>
 #include <mmx/Wallet_get_token_list_return.hxx>
-#include <mmx/Wallet_get_total_balances_for.hxx>
-#include <mmx/Wallet_get_total_balances_for_return.hxx>
+#include <mmx/Wallet_get_total_balances.hxx>
+#include <mmx/Wallet_get_total_balances_return.hxx>
 #include <mmx/Wallet_get_tx_history.hxx>
 #include <mmx/Wallet_get_tx_history_return.hxx>
 #include <mmx/Wallet_is_locked.hxx>
@@ -528,11 +528,10 @@ std::vector<::mmx::txin_t> WalletClient::gather_inputs_for(const uint32_t& index
 	}
 }
 
-::mmx::balance_t WalletClient::get_balance(const uint32_t& index, const ::mmx::addr_t& currency, const uint32_t& min_confirm) {
+::mmx::balance_t WalletClient::get_balance(const uint32_t& index, const ::mmx::addr_t& currency) {
 	auto _method = ::mmx::Wallet_get_balance::create();
 	_method->index = index;
 	_method->currency = currency;
-	_method->min_confirm = min_confirm;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_balance_return>(_return_value)) {
 		return _result->_ret_0;
@@ -543,10 +542,10 @@ std::vector<::mmx::txin_t> WalletClient::gather_inputs_for(const uint32_t& index
 	}
 }
 
-std::map<::mmx::addr_t, ::mmx::balance_t> WalletClient::get_balances(const uint32_t& index, const uint32_t& min_confirm) {
+std::map<::mmx::addr_t, ::mmx::balance_t> WalletClient::get_balances(const uint32_t& index, const vnx::bool_t& with_zero) {
 	auto _method = ::mmx::Wallet_get_balances::create();
 	_method->index = index;
-	_method->min_confirm = min_confirm;
+	_method->with_zero = with_zero;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_balances_return>(_return_value)) {
 		return _result->_ret_0;
@@ -557,12 +556,11 @@ std::map<::mmx::addr_t, ::mmx::balance_t> WalletClient::get_balances(const uint3
 	}
 }
 
-std::map<::mmx::addr_t, ::mmx::balance_t> WalletClient::get_total_balances_for(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm) {
-	auto _method = ::mmx::Wallet_get_total_balances_for::create();
+std::map<::mmx::addr_t, ::mmx::balance_t> WalletClient::get_total_balances(const std::vector<::mmx::addr_t>& addresses) {
+	auto _method = ::mmx::Wallet_get_total_balances::create();
 	_method->addresses = addresses;
-	_method->min_confirm = min_confirm;
 	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_total_balances_for_return>(_return_value)) {
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_total_balances_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, ::mmx::balance_t>>();
@@ -571,10 +569,9 @@ std::map<::mmx::addr_t, ::mmx::balance_t> WalletClient::get_total_balances_for(c
 	}
 }
 
-std::map<::mmx::addr_t, ::mmx::balance_t> WalletClient::get_contract_balances(const ::mmx::addr_t& address, const uint32_t& min_confirm) {
+std::map<::mmx::addr_t, ::mmx::balance_t> WalletClient::get_contract_balances(const ::mmx::addr_t& address) {
 	auto _method = ::mmx::Wallet_get_contract_balances::create();
 	_method->address = address;
-	_method->min_confirm = min_confirm;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_contract_balances_return>(_return_value)) {
 		return _result->_ret_0;

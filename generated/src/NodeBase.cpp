@@ -1021,19 +1021,19 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 		case 0xe099ac5aea49433ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_all_balances>(_method);
 			auto _return_value = ::mmx::Node_get_all_balances_return::create();
-			_return_value->_ret_0 = get_all_balances(_args->addresses, _args->min_confirm);
+			_return_value->_ret_0 = get_all_balances(_args->addresses);
 			return _return_value;
 		}
 		case 0x2e00172d0470479ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_balance>(_method);
 			auto _return_value = ::mmx::Node_get_balance_return::create();
-			_return_value->_ret_0 = get_balance(_args->address, _args->currency, _args->min_confirm);
+			_return_value->_ret_0 = get_balance(_args->address, _args->currency);
 			return _return_value;
 		}
 		case 0x1c8af02c41e96460ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_balances>(_method);
 			auto _return_value = ::mmx::Node_get_balances_return::create();
-			_return_value->_ret_0 = get_balances(_args->address, _args->min_confirm);
+			_return_value->_ret_0 = get_balances(_args->address);
 			return _return_value;
 		}
 		case 0xeb3fabe56dec161aull: {
@@ -1069,7 +1069,7 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 		case 0xeb1e66155927b13aull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_contract_balances>(_method);
 			auto _return_value = ::mmx::Node_get_contract_balances_return::create();
-			_return_value->_ret_0 = get_contract_balances(_args->address, _args->min_confirm);
+			_return_value->_ret_0 = get_contract_balances(_args->address);
 			return _return_value;
 		}
 		case 0x6a953dcea83b9832ull: {
@@ -1183,13 +1183,13 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 		case 0x91e9019d224db4b0ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_total_balance>(_method);
 			auto _return_value = ::mmx::Node_get_total_balance_return::create();
-			_return_value->_ret_0 = get_total_balance(_args->addresses, _args->currency, _args->min_confirm);
+			_return_value->_ret_0 = get_total_balance(_args->addresses, _args->currency);
 			return _return_value;
 		}
 		case 0xf54c4ec46ee6053aull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_total_balances>(_method);
 			auto _return_value = ::mmx::Node_get_total_balances_return::create();
-			_return_value->_ret_0 = get_total_balances(_args->addresses, _args->min_confirm);
+			_return_value->_ret_0 = get_total_balances(_args->addresses);
 			return _return_value;
 		}
 		case 0x17d971db6900bd9dull: {

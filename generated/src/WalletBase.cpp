@@ -64,8 +64,8 @@
 #include <mmx/Wallet_get_mnemonic_wordlist_return.hxx>
 #include <mmx/Wallet_get_token_list.hxx>
 #include <mmx/Wallet_get_token_list_return.hxx>
-#include <mmx/Wallet_get_total_balances_for.hxx>
-#include <mmx/Wallet_get_total_balances_for_return.hxx>
+#include <mmx/Wallet_get_total_balances.hxx>
+#include <mmx/Wallet_get_total_balances_return.hxx>
 #include <mmx/Wallet_get_tx_history.hxx>
 #include <mmx/Wallet_get_tx_history_return.hxx>
 #include <mmx/Wallet_is_locked.hxx>
@@ -399,7 +399,7 @@ std::shared_ptr<vnx::TypeCode> WalletBase::static_create_type_code() {
 	type_code->methods[25] = ::mmx::Wallet_get_mnemonic_seed::static_get_type_code();
 	type_code->methods[26] = ::mmx::Wallet_get_mnemonic_wordlist::static_get_type_code();
 	type_code->methods[27] = ::mmx::Wallet_get_token_list::static_get_type_code();
-	type_code->methods[28] = ::mmx::Wallet_get_total_balances_for::static_get_type_code();
+	type_code->methods[28] = ::mmx::Wallet_get_total_balances::static_get_type_code();
 	type_code->methods[29] = ::mmx::Wallet_get_tx_history::static_get_type_code();
 	type_code->methods[30] = ::mmx::Wallet_is_locked::static_get_type_code();
 	type_code->methods[31] = ::mmx::Wallet_lock::static_get_type_code();
@@ -639,19 +639,19 @@ std::shared_ptr<vnx::Value> WalletBase::vnx_call_switch(std::shared_ptr<const vn
 		case 0x1bc2c2dd67ab2829ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Wallet_get_balance>(_method);
 			auto _return_value = ::mmx::Wallet_get_balance_return::create();
-			_return_value->_ret_0 = get_balance(_args->index, _args->currency, _args->min_confirm);
+			_return_value->_ret_0 = get_balance(_args->index, _args->currency);
 			return _return_value;
 		}
 		case 0x5be581d54ae69a4ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Wallet_get_balances>(_method);
 			auto _return_value = ::mmx::Wallet_get_balances_return::create();
-			_return_value->_ret_0 = get_balances(_args->index, _args->min_confirm);
+			_return_value->_ret_0 = get_balances(_args->index, _args->with_zero);
 			return _return_value;
 		}
 		case 0x4d6b36c0c2804d26ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Wallet_get_contract_balances>(_method);
 			auto _return_value = ::mmx::Wallet_get_contract_balances_return::create();
-			_return_value->_ret_0 = get_contract_balances(_args->address, _args->min_confirm);
+			_return_value->_ret_0 = get_contract_balances(_args->address);
 			return _return_value;
 		}
 		case 0x9ff1932bcec18d57ull: {
@@ -696,10 +696,10 @@ std::shared_ptr<vnx::Value> WalletBase::vnx_call_switch(std::shared_ptr<const vn
 			_return_value->_ret_0 = get_token_list();
 			return _return_value;
 		}
-		case 0x784998cd7be76f95ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Wallet_get_total_balances_for>(_method);
-			auto _return_value = ::mmx::Wallet_get_total_balances_for_return::create();
-			_return_value->_ret_0 = get_total_balances_for(_args->addresses, _args->min_confirm);
+		case 0xedd130caba2e2f04ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Wallet_get_total_balances>(_method);
+			auto _return_value = ::mmx::Wallet_get_total_balances_return::create();
+			_return_value->_ret_0 = get_total_balances(_args->addresses);
 			return _return_value;
 		}
 		case 0x131079bdc47685b2ull: {

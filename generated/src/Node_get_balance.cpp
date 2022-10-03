@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_balance::VNX_TYPE_HASH(0x2e00172d0470479ull);
-const vnx::Hash64 Node_get_balance::VNX_CODE_HASH(0x3e56e5611a8ddbf9ull);
+const vnx::Hash64 Node_get_balance::VNX_CODE_HASH(0x602c957f083c231eull);
 
 vnx::Hash64 Node_get_balance::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,7 +49,6 @@ void Node_get_balance::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, address);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, currency);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, min_confirm);
 	_visitor.type_end(*_type_code);
 }
 
@@ -57,7 +56,6 @@ void Node_get_balance::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Node.get_balance\"";
 	_out << ", \"address\": "; vnx::write(_out, address);
 	_out << ", \"currency\": "; vnx::write(_out, currency);
-	_out << ", \"min_confirm\": "; vnx::write(_out, min_confirm);
 	_out << "}";
 }
 
@@ -72,7 +70,6 @@ vnx::Object Node_get_balance::to_object() const {
 	_object["__type"] = "mmx.Node.get_balance";
 	_object["address"] = address;
 	_object["currency"] = currency;
-	_object["min_confirm"] = min_confirm;
 	return _object;
 }
 
@@ -82,8 +79,6 @@ void Node_get_balance::from_object(const vnx::Object& _object) {
 			_entry.second.to(address);
 		} else if(_entry.first == "currency") {
 			_entry.second.to(currency);
-		} else if(_entry.first == "min_confirm") {
-			_entry.second.to(min_confirm);
 		}
 	}
 }
@@ -95,9 +90,6 @@ vnx::Variant Node_get_balance::get_field(const std::string& _name) const {
 	if(_name == "currency") {
 		return vnx::Variant(currency);
 	}
-	if(_name == "min_confirm") {
-		return vnx::Variant(min_confirm);
-	}
 	return vnx::Variant();
 }
 
@@ -106,8 +98,6 @@ void Node_get_balance::set_field(const std::string& _name, const vnx::Variant& _
 		_value.to(address);
 	} else if(_name == "currency") {
 		_value.to(currency);
-	} else if(_name == "min_confirm") {
-		_value.to(min_confirm);
 	}
 }
 
@@ -135,7 +125,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_balance::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_balance";
 	type_code->type_hash = vnx::Hash64(0x2e00172d0470479ull);
-	type_code->code_hash = vnx::Hash64(0x3e56e5611a8ddbf9ull);
+	type_code->code_hash = vnx::Hash64(0x602c957f083c231eull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -143,7 +133,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_balance::static_create_type_code() {
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Node_get_balance>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Node_get_balance_return::static_get_type_code();
-	type_code->fields.resize(3);
+	type_code->fields.resize(2);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -155,13 +145,6 @@ std::shared_ptr<vnx::TypeCode> Node_get_balance::static_create_type_code() {
 		field.is_extended = true;
 		field.name = "currency";
 		field.code = {11, 32, 1};
-	}
-	{
-		auto& field = type_code->fields[2];
-		field.data_size = 4;
-		field.name = "min_confirm";
-		field.value = vnx::to_string(1);
-		field.code = {3};
 	}
 	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();
@@ -204,11 +187,8 @@ void read(TypeInput& in, ::mmx::Node_get_balance& value, const TypeCode* type_co
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
-		if(const auto* const _field = type_code->field_map[2]) {
-			vnx::read_value(_buf + _field->offset, value.min_confirm, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -232,8 +212,6 @@ void write(TypeOutput& out, const ::mmx::Node_get_balance& value, const TypeCode
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
-	vnx::write_value(_buf + 0, value.min_confirm);
 	vnx::write(out, value.address, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.currency, type_code, type_code->fields[1].code.data());
 }

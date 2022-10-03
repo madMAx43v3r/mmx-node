@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_get_contract_balances::VNX_TYPE_HASH(0x4d6b36c0c2804d26ull);
-const vnx::Hash64 Wallet_get_contract_balances::VNX_CODE_HASH(0x413154f29fcb95ffull);
+const vnx::Hash64 Wallet_get_contract_balances::VNX_CODE_HASH(0x115df438f8f9ea19ull);
 
 vnx::Hash64 Wallet_get_contract_balances::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,14 +48,12 @@ void Wallet_get_contract_balances::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Wallet_get_contract_balances;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, address);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, min_confirm);
 	_visitor.type_end(*_type_code);
 }
 
 void Wallet_get_contract_balances::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Wallet.get_contract_balances\"";
 	_out << ", \"address\": "; vnx::write(_out, address);
-	_out << ", \"min_confirm\": "; vnx::write(_out, min_confirm);
 	_out << "}";
 }
 
@@ -69,7 +67,6 @@ vnx::Object Wallet_get_contract_balances::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Wallet.get_contract_balances";
 	_object["address"] = address;
-	_object["min_confirm"] = min_confirm;
 	return _object;
 }
 
@@ -77,8 +74,6 @@ void Wallet_get_contract_balances::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "address") {
 			_entry.second.to(address);
-		} else if(_entry.first == "min_confirm") {
-			_entry.second.to(min_confirm);
 		}
 	}
 }
@@ -87,17 +82,12 @@ vnx::Variant Wallet_get_contract_balances::get_field(const std::string& _name) c
 	if(_name == "address") {
 		return vnx::Variant(address);
 	}
-	if(_name == "min_confirm") {
-		return vnx::Variant(min_confirm);
-	}
 	return vnx::Variant();
 }
 
 void Wallet_get_contract_balances::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "address") {
 		_value.to(address);
-	} else if(_name == "min_confirm") {
-		_value.to(min_confirm);
 	}
 }
 
@@ -125,7 +115,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_contract_balances::static_create_type_
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.get_contract_balances";
 	type_code->type_hash = vnx::Hash64(0x4d6b36c0c2804d26ull);
-	type_code->code_hash = vnx::Hash64(0x413154f29fcb95ffull);
+	type_code->code_hash = vnx::Hash64(0x115df438f8f9ea19ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -133,19 +123,12 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_contract_balances::static_create_type_
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Wallet_get_contract_balances>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Wallet_get_contract_balances_return::static_get_type_code();
-	type_code->fields.resize(2);
+	type_code->fields.resize(1);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "address";
 		field.code = {11, 32, 1};
-	}
-	{
-		auto& field = type_code->fields[1];
-		field.data_size = 4;
-		field.name = "min_confirm";
-		field.value = vnx::to_string(1);
-		field.code = {3};
 	}
 	type_code->build();
 	return type_code;
@@ -187,11 +170,8 @@ void read(TypeInput& in, ::mmx::Wallet_get_contract_balances& value, const TypeC
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
-		if(const auto* const _field = type_code->field_map[1]) {
-			vnx::read_value(_buf + _field->offset, value.min_confirm, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -214,8 +194,6 @@ void write(TypeOutput& out, const ::mmx::Wallet_get_contract_balances& value, co
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
-	vnx::write_value(_buf + 0, value.min_confirm);
 	vnx::write(out, value.address, type_code, type_code->fields[0].code.data());
 }
 

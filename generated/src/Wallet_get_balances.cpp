@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_get_balances::VNX_TYPE_HASH(0x5be581d54ae69a4ull);
-const vnx::Hash64 Wallet_get_balances::VNX_CODE_HASH(0x7979fc28e0acd3b7ull);
+const vnx::Hash64 Wallet_get_balances::VNX_CODE_HASH(0xd74125cc5725f322ull);
 
 vnx::Hash64 Wallet_get_balances::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -47,14 +47,14 @@ void Wallet_get_balances::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Wallet_get_balances;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, index);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, min_confirm);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, with_zero);
 	_visitor.type_end(*_type_code);
 }
 
 void Wallet_get_balances::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Wallet.get_balances\"";
 	_out << ", \"index\": "; vnx::write(_out, index);
-	_out << ", \"min_confirm\": "; vnx::write(_out, min_confirm);
+	_out << ", \"with_zero\": "; vnx::write(_out, with_zero);
 	_out << "}";
 }
 
@@ -68,7 +68,7 @@ vnx::Object Wallet_get_balances::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Wallet.get_balances";
 	_object["index"] = index;
-	_object["min_confirm"] = min_confirm;
+	_object["with_zero"] = with_zero;
 	return _object;
 }
 
@@ -76,8 +76,8 @@ void Wallet_get_balances::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "index") {
 			_entry.second.to(index);
-		} else if(_entry.first == "min_confirm") {
-			_entry.second.to(min_confirm);
+		} else if(_entry.first == "with_zero") {
+			_entry.second.to(with_zero);
 		}
 	}
 }
@@ -86,8 +86,8 @@ vnx::Variant Wallet_get_balances::get_field(const std::string& _name) const {
 	if(_name == "index") {
 		return vnx::Variant(index);
 	}
-	if(_name == "min_confirm") {
-		return vnx::Variant(min_confirm);
+	if(_name == "with_zero") {
+		return vnx::Variant(with_zero);
 	}
 	return vnx::Variant();
 }
@@ -95,8 +95,8 @@ vnx::Variant Wallet_get_balances::get_field(const std::string& _name) const {
 void Wallet_get_balances::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "index") {
 		_value.to(index);
-	} else if(_name == "min_confirm") {
-		_value.to(min_confirm);
+	} else if(_name == "with_zero") {
+		_value.to(with_zero);
 	}
 }
 
@@ -124,7 +124,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_balances::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.get_balances";
 	type_code->type_hash = vnx::Hash64(0x5be581d54ae69a4ull);
-	type_code->code_hash = vnx::Hash64(0x7979fc28e0acd3b7ull);
+	type_code->code_hash = vnx::Hash64(0xd74125cc5725f322ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -141,10 +141,9 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_balances::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[1];
-		field.data_size = 4;
-		field.name = "min_confirm";
-		field.value = vnx::to_string(0);
-		field.code = {3};
+		field.data_size = 1;
+		field.name = "with_zero";
+		field.code = {31};
 	}
 	type_code->build();
 	return type_code;
@@ -192,7 +191,7 @@ void read(TypeInput& in, ::mmx::Wallet_get_balances& value, const TypeCode* type
 			vnx::read_value(_buf + _field->offset, value.index, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[1]) {
-			vnx::read_value(_buf + _field->offset, value.min_confirm, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.with_zero, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
@@ -215,9 +214,9 @@ void write(TypeOutput& out, const ::mmx::Wallet_get_balances& value, const TypeC
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(8);
+	char* const _buf = out.write(5);
 	vnx::write_value(_buf + 0, value.index);
-	vnx::write_value(_buf + 4, value.min_confirm);
+	vnx::write_value(_buf + 4, value.with_zero);
 }
 
 void read(std::istream& in, ::mmx::Wallet_get_balances& value) {

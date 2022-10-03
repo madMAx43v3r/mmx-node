@@ -495,11 +495,10 @@ std::vector<::mmx::tx_entry_t> NodeClient::get_history(const std::vector<::mmx::
 	}
 }
 
-::mmx::uint128 NodeClient::get_balance(const ::mmx::addr_t& address, const ::mmx::addr_t& currency, const uint32_t& min_confirm) {
+::mmx::uint128 NodeClient::get_balance(const ::mmx::addr_t& address, const ::mmx::addr_t& currency) {
 	auto _method = ::mmx::Node_get_balance::create();
 	_method->address = address;
 	_method->currency = currency;
-	_method->min_confirm = min_confirm;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_balance_return>(_return_value)) {
 		return _result->_ret_0;
@@ -510,10 +509,9 @@ std::vector<::mmx::tx_entry_t> NodeClient::get_history(const std::vector<::mmx::
 	}
 }
 
-std::map<::mmx::addr_t, ::mmx::uint128> NodeClient::get_balances(const ::mmx::addr_t& address, const uint32_t& min_confirm) {
+std::map<::mmx::addr_t, ::mmx::uint128> NodeClient::get_balances(const ::mmx::addr_t& address) {
 	auto _method = ::mmx::Node_get_balances::create();
 	_method->address = address;
-	_method->min_confirm = min_confirm;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_balances_return>(_return_value)) {
 		return _result->_ret_0;
@@ -524,10 +522,9 @@ std::map<::mmx::addr_t, ::mmx::uint128> NodeClient::get_balances(const ::mmx::ad
 	}
 }
 
-std::map<::mmx::addr_t, ::mmx::balance_t> NodeClient::get_contract_balances(const ::mmx::addr_t& address, const uint32_t& min_confirm) {
+std::map<::mmx::addr_t, ::mmx::balance_t> NodeClient::get_contract_balances(const ::mmx::addr_t& address) {
 	auto _method = ::mmx::Node_get_contract_balances::create();
 	_method->address = address;
-	_method->min_confirm = min_confirm;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_contract_balances_return>(_return_value)) {
 		return _result->_ret_0;
@@ -538,11 +535,10 @@ std::map<::mmx::addr_t, ::mmx::balance_t> NodeClient::get_contract_balances(cons
 	}
 }
 
-::mmx::uint128 NodeClient::get_total_balance(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& currency, const uint32_t& min_confirm) {
+::mmx::uint128 NodeClient::get_total_balance(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& currency) {
 	auto _method = ::mmx::Node_get_total_balance::create();
 	_method->addresses = addresses;
 	_method->currency = currency;
-	_method->min_confirm = min_confirm;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_total_balance_return>(_return_value)) {
 		return _result->_ret_0;
@@ -553,10 +549,9 @@ std::map<::mmx::addr_t, ::mmx::balance_t> NodeClient::get_contract_balances(cons
 	}
 }
 
-std::map<::mmx::addr_t, ::mmx::uint128> NodeClient::get_total_balances(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm) {
+std::map<::mmx::addr_t, ::mmx::uint128> NodeClient::get_total_balances(const std::vector<::mmx::addr_t>& addresses) {
 	auto _method = ::mmx::Node_get_total_balances::create();
 	_method->addresses = addresses;
-	_method->min_confirm = min_confirm;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_total_balances_return>(_return_value)) {
 		return _result->_ret_0;
@@ -567,10 +562,9 @@ std::map<::mmx::addr_t, ::mmx::uint128> NodeClient::get_total_balances(const std
 	}
 }
 
-std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128> NodeClient::get_all_balances(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm) {
+std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128> NodeClient::get_all_balances(const std::vector<::mmx::addr_t>& addresses) {
 	auto _method = ::mmx::Node_get_all_balances::create();
 	_method->addresses = addresses;
-	_method->min_confirm = min_confirm;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_all_balances_return>(_return_value)) {
 		return _result->_ret_0;

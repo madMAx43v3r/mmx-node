@@ -63,8 +63,8 @@
 #include <mmx/Wallet_get_mnemonic_wordlist_return.hxx>
 #include <mmx/Wallet_get_token_list.hxx>
 #include <mmx/Wallet_get_token_list_return.hxx>
-#include <mmx/Wallet_get_total_balances_for.hxx>
-#include <mmx/Wallet_get_total_balances_for_return.hxx>
+#include <mmx/Wallet_get_total_balances.hxx>
+#include <mmx/Wallet_get_total_balances_return.hxx>
 #include <mmx/Wallet_get_tx_history.hxx>
 #include <mmx/Wallet_get_tx_history_return.hxx>
 #include <mmx/Wallet_is_locked.hxx>
@@ -532,11 +532,10 @@ uint64_t WalletAsyncClient::gather_inputs_for(const uint32_t& index, const uint6
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::get_balance(const uint32_t& index, const ::mmx::addr_t& currency, const uint32_t& min_confirm, const std::function<void(const ::mmx::balance_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::get_balance(const uint32_t& index, const ::mmx::addr_t& currency, const std::function<void(const ::mmx::balance_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_get_balance::create();
 	_method->index = index;
 	_method->currency = currency;
-	_method->min_confirm = min_confirm;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
@@ -547,10 +546,10 @@ uint64_t WalletAsyncClient::get_balance(const uint32_t& index, const ::mmx::addr
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::get_balances(const uint32_t& index, const uint32_t& min_confirm, const std::function<void(const std::map<::mmx::addr_t, ::mmx::balance_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::get_balances(const uint32_t& index, const vnx::bool_t& with_zero, const std::function<void(const std::map<::mmx::addr_t, ::mmx::balance_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_get_balances::create();
 	_method->index = index;
-	_method->min_confirm = min_confirm;
+	_method->with_zero = with_zero;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
@@ -561,24 +560,22 @@ uint64_t WalletAsyncClient::get_balances(const uint32_t& index, const uint32_t& 
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::get_total_balances_for(const std::vector<::mmx::addr_t>& addresses, const uint32_t& min_confirm, const std::function<void(const std::map<::mmx::addr_t, ::mmx::balance_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
-	auto _method = ::mmx::Wallet_get_total_balances_for::create();
+uint64_t WalletAsyncClient::get_total_balances(const std::vector<::mmx::addr_t>& addresses, const std::function<void(const std::map<::mmx::addr_t, ::mmx::balance_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+	auto _method = ::mmx::Wallet_get_total_balances::create();
 	_method->addresses = addresses;
-	_method->min_confirm = min_confirm;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
 		vnx_pending[_request_id] = 26;
-		vnx_queue_get_total_balances_for[_request_id] = std::make_pair(_callback, _error_callback);
+		vnx_queue_get_total_balances[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::get_contract_balances(const ::mmx::addr_t& address, const uint32_t& min_confirm, const std::function<void(const std::map<::mmx::addr_t, ::mmx::balance_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::get_contract_balances(const ::mmx::addr_t& address, const std::function<void(const std::map<::mmx::addr_t, ::mmx::balance_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_get_contract_balances::create();
 	_method->address = address;
-	_method->min_confirm = min_confirm;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
@@ -1331,10 +1328,10 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			break;
 		}
 		case 26: {
-			const auto _iter = vnx_queue_get_total_balances_for.find(_request_id);
-			if(_iter != vnx_queue_get_total_balances_for.end()) {
+			const auto _iter = vnx_queue_get_total_balances.find(_request_id);
+			if(_iter != vnx_queue_get_total_balances.end()) {
 				const auto _callback = std::move(_iter->second.second);
-				vnx_queue_get_total_balances_for.erase(_iter);
+				vnx_queue_get_total_balances.erase(_iter);
 				_lock.unlock();
 				if(_callback) {
 					_callback(_ex);
@@ -2204,15 +2201,15 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			break;
 		}
 		case 26: {
-			const auto _iter = vnx_queue_get_total_balances_for.find(_request_id);
-			if(_iter == vnx_queue_get_total_balances_for.end()) {
+			const auto _iter = vnx_queue_get_total_balances.find(_request_id);
+			if(_iter == vnx_queue_get_total_balances.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
 			}
 			const auto _callback = std::move(_iter->second.first);
-			vnx_queue_get_total_balances_for.erase(_iter);
+			vnx_queue_get_total_balances.erase(_iter);
 			_lock.unlock();
 			if(_callback) {
-				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_total_balances_for_return>(_value)) {
+				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_total_balances_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
 					_callback(_value->get_field_by_index(0).to<std::map<::mmx::addr_t, ::mmx::balance_t>>());

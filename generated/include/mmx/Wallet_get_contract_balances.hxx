@@ -15,7 +15,6 @@ class MMX_EXPORT Wallet_get_contract_balances : public ::vnx::Value {
 public:
 	
 	::mmx::addr_t address;
-	uint32_t min_confirm = 1;
 	
 	typedef ::vnx::Value Super;
 	
@@ -59,10 +58,9 @@ public:
 
 template<typename T>
 void Wallet_get_contract_balances::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Wallet_get_contract_balances>(2);
+	_visitor.template type_begin<Wallet_get_contract_balances>(1);
 	_visitor.type_field("address", 0); _visitor.accept(address);
-	_visitor.type_field("min_confirm", 1); _visitor.accept(min_confirm);
-	_visitor.template type_end<Wallet_get_contract_balances>(2);
+	_visitor.template type_end<Wallet_get_contract_balances>(1);
 }
 
 
