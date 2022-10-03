@@ -26,11 +26,12 @@ Roadmap
 | Release | Planned | Description |
 | :--- | :--- | :--- |
 | testnet7 | Sep 2022 | Currently active. <sup>[1]</sup> |
-| testnetx | Oct 2022 | First incentivized testnet. <sup>[2]</sup> |
+| testnet8 | Oct 2022 | First incentivized testnet. <sup>[2]</sup> |
+| testnetX | _tbd_ | As needed |
 | mainnet | _tbd_ | Incentivized testnets proven robust and complete. |
 
-_<sup>[1]</sup> Coins farmed on testnet7 and earlier are not worth anything, now or later._
-_<sup>[2]</sup> Future incentivized testnet coins, from block rewards only, will carry over to mainnet._
+_<sup>[1]</sup> Coins farmed on testnet7 and earlier are not worth anything, now or later._\
+_<sup>[2]</sup> Incentivized testnet coins, from block rewards only, will carry over to mainnet._
 
 See `#mmx-news` and `#mmx-general` on Discord: https://discord.gg/BswFhNkMzY
 
