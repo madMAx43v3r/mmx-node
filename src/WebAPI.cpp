@@ -1381,7 +1381,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const auto iter_with_zero = query.find("with_zero");
 		if(iter_index != query.end()) {
 			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
-			const bool with_zero = iter_with_zero != query.end() ? vnx::from_string<bool>(iter_with_zero->second) : true;
+			const bool with_zero = iter_with_zero != query.end() ? vnx::from_string<bool>(iter_with_zero->second) : false;
 			vnx::optional<addr_t> currency;
 			if(iter_currency != query.end()) {
 				currency = vnx::from_string<addr_t>(iter_currency->second);
