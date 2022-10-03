@@ -52,6 +52,9 @@ Vue.component('node-settings', {
 				});
 		},
 		add_plot_dir(path) {
+			if(path == null || path == "") {
+				return;
+			}
 			var req = {};
 			req.path = path;
 			fetch('/api/harvester/add_plot_dir', {body: JSON.stringify(req), method: "post"})

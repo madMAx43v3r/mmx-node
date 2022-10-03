@@ -99,7 +99,7 @@ Vue.component('blocks-table', {
 			</template>
 
 			<template v-slot:item.reward="{ item }">
-				{{item.tx_base ? item.tx_base.exec_result.total_fee_value : null}}
+				{{item.tx_base && item.tx_base.exec_result ? item.tx_base.exec_result.total_fee_value : null}}
 			</template>
 
 			<template v-slot:item.hash="{ item }">
@@ -480,8 +480,8 @@ Vue.component('block-view', {
 							<tbody>
 								<tr v-for="(item, index) in data.tx_list" :key="index">
 									<td class="key-cell">TX[{{index}}]</td>
-									<td>{{item.inputs.length + item.exec_result.inputs.length}}</td>
-									<td>{{item.outputs.length + item.exec_result.outputs.length}}</td>
+									<td>{{item.inputs.length + (item.exec_result ? item.exec_result.inputs.length : 0)}}</td>
+									<td>{{item.outputs.length + (item.exec_result ? item.exec_result.outputs.length : 0)}}</td>
 									<td>{{item.execute.length}}</td>
 									<td><router-link :to="'/explore/transaction/' + item.id">{{item.id}}</router-link></td>
 								</tr>

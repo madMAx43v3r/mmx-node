@@ -250,7 +250,7 @@ Vue.component('farmer-blocks', {
 			</template>
 
 			<template v-slot:item.reward="{ item }">
-				<b>{{item.tx_base.exec_result.total_fee_value}}</b> MMX
+				<b>{{item.tx_base && item.tx_base.exec_result ? item.tx_base.exec_result.total_fee_value : 0}}</b> MMX
 			</template>
 
 			<template v-slot:item.time="{ item }">
