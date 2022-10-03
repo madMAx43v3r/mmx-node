@@ -978,8 +978,10 @@ std::vector<offer_data_t> Node::get_offers_for(
 	for(const auto& address : entries) {
 		const auto data = get_offer(address);
 		if((!bid || data.bid_currency == *bid) && (!ask || data.ask_currency == *ask)) {
-			if(!is_open || data.state == "OPEN") {
-				out.push_back(data);
+			if(data.bid_currency != data.ask_currency || data.bid_amount >= data.ask_amount) {
+				if(!is_open || data.state == "OPEN") {
+					out.push_back(data);
+				}
 			}
 		}
 	}
