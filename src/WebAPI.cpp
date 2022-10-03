@@ -1210,7 +1210,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const auto iter = query.find("id");
 		if(iter != query.end()) {
 			const auto address = vnx::from_string_value<addr_t>(iter->second);
-			node->get_total_balances({address}, 1,
+			node->get_total_balances({address},
 				std::bind(&WebAPI::render_address, this, request_id, address, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
@@ -1377,16 +1377,16 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else if(sub_path == "/wallet/balance") {
 		const auto iter_index = query.find("index");
-		const auto iter_confirm = query.find("confirm");
 		const auto iter_currency = query.find("currency");
+		const auto iter_with_zero = query.find("with_zero");
 		if(iter_index != query.end()) {
 			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
-			const uint32_t min_confirm = iter_confirm != query.end() ? vnx::from_string<int64_t>(iter_confirm->second) : 0;
+			const bool with_zero = iter_with_zero != query.end() ? vnx::from_string<bool>(iter_with_zero->second) : true;
 			vnx::optional<addr_t> currency;
 			if(iter_currency != query.end()) {
 				currency = vnx::from_string<addr_t>(iter_currency->second);
 			}
-			wallet->get_balances(index, min_confirm,
+			wallet->get_balances(index, with_zero,
 				std::bind(&WebAPI::render_balances, this, request_id, currency, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {

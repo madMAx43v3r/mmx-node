@@ -128,22 +128,22 @@ module Node implements vnx.addons.HttpComponent {
 	vector<tx_entry_t> get_history(vector<addr_t> addresses, int since) const;
 	
 	@Permission(permission_e.PUBLIC)
-	uint128 get_balance(addr_t address, addr_t currency, uint min_confirm = 1) const;
+	uint128 get_balance(addr_t address, addr_t currency) const;
 	
 	@Permission(permission_e.PUBLIC)
-	map<addr_t, uint128> get_balances(addr_t address, uint min_confirm = 1) const;
+	map<addr_t, uint128> get_balances(addr_t address) const;
 	
 	@Permission(permission_e.PUBLIC)
-	map<addr_t, balance_t> get_contract_balances(addr_t address, uint min_confirm = 1) const;
+	map<addr_t, balance_t> get_contract_balances(addr_t address) const;
 	
 	@Permission(permission_e.PUBLIC)
-	uint128 get_total_balance(vector<addr_t> addresses, addr_t currency, uint min_confirm = 1) const;
+	uint128 get_total_balance(vector<addr_t> addresses, addr_t currency) const;
 	
 	@Permission(permission_e.PUBLIC)
-	map<addr_t, uint128> get_total_balances(vector<addr_t> addresses, uint min_confirm = 1) const;
+	map<addr_t, uint128> get_total_balances(vector<addr_t> addresses) const;
 	
 	@Permission(permission_e.PUBLIC)
-	map<pair<addr_t, addr_t>, uint128> get_all_balances(vector<addr_t> addresses, uint min_confirm = 1) const;
+	map<pair<addr_t, addr_t>, uint128> get_all_balances(vector<addr_t> addresses) const;
 	
 	@Permission(permission_e.PUBLIC)
 	vector<exec_entry_t> get_exec_history(addr_t address, int since) const;

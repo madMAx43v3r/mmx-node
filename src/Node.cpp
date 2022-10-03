@@ -679,7 +679,7 @@ std::map<addr_t, std::shared_ptr<const Contract>> Node::get_contracts_by(const s
 	return res;
 }
 
-uint128 Node::get_balance(const addr_t& address, const addr_t& currency, const uint32_t& min_confirm) const
+uint128 Node::get_balance(const addr_t& address, const addr_t& currency) const
 {
 	const auto iter = balance_map.find(std::make_pair(address, currency));
 	if(iter != balance_map.end()) {
@@ -688,7 +688,7 @@ uint128 Node::get_balance(const addr_t& address, const addr_t& currency, const u
 	return 0;
 }
 
-uint128 Node::get_total_balance(const std::vector<addr_t>& addresses, const addr_t& currency, const uint32_t& min_confirm) const
+uint128 Node::get_total_balance(const std::vector<addr_t>& addresses, const addr_t& currency) const
 {
 	uint128_t total = 0;
 	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
@@ -700,18 +700,18 @@ uint128 Node::get_total_balance(const std::vector<addr_t>& addresses, const addr
 	return total;
 }
 
-std::map<addr_t, uint128> Node::get_balances(const addr_t& address, const uint32_t& min_confirm) const
+std::map<addr_t, uint128> Node::get_balances(const addr_t& address) const
 {
-	return get_total_balances({address}, min_confirm);
+	return get_total_balances({address});
 }
 
-std::map<addr_t, balance_t> Node::get_contract_balances(const addr_t& address, const uint32_t& min_confirm) const
+std::map<addr_t, balance_t> Node::get_contract_balances(const addr_t& address) const
 {
 	std::map<addr_t, balance_t> out;
 	auto context = Context::create();
 	context->height = get_height() + 1;
 	auto contract = get_contract(address);
-	for(const auto& entry : get_total_balances({address}, min_confirm)) {
+	for(const auto& entry : get_total_balances({address})) {
 		auto& tmp = out[entry.first];
 		if(contract) {
 			if(contract->is_locked(context)) {
@@ -727,7 +727,7 @@ std::map<addr_t, balance_t> Node::get_contract_balances(const addr_t& address, c
 	return out;
 }
 
-std::map<addr_t, uint128> Node::get_total_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const
+std::map<addr_t, uint128> Node::get_total_balances(const std::vector<addr_t>& addresses) const
 {
 	std::map<addr_t, uint128> totals;
 	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
@@ -740,7 +740,7 @@ std::map<addr_t, uint128> Node::get_total_balances(const std::vector<addr_t>& ad
 	return totals;
 }
 
-std::map<std::pair<addr_t, addr_t>, uint128> Node::get_all_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const
+std::map<std::pair<addr_t, addr_t>, uint128> Node::get_all_balances(const std::vector<addr_t>& addresses) const
 {
 	std::map<std::pair<addr_t, addr_t>, uint128> totals;
 	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {

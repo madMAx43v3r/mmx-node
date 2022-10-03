@@ -96,17 +96,17 @@ protected:
 
 	void add_transaction(std::shared_ptr<const Transaction> tx, const vnx::bool_t& pre_validate = false) override;
 
-	uint128 get_balance(const addr_t& address, const addr_t& currency, const uint32_t& min_confirm = 1) const override;
+	uint128 get_balance(const addr_t& address, const addr_t& currency) const override;
 
-	uint128 get_total_balance(const std::vector<addr_t>& addresses, const addr_t& currency, const uint32_t& min_confirm = 1) const override;
+	uint128 get_total_balance(const std::vector<addr_t>& addresses, const addr_t& currency) const override;
 
-	std::map<addr_t, uint128> get_balances(const addr_t& address, const uint32_t& min_confirm = 1) const override;
+	std::map<addr_t, uint128> get_balances(const addr_t& address) const override;
 
-	std::map<addr_t, balance_t> get_contract_balances(const addr_t& address, const uint32_t& min_confirm) const;
+	std::map<addr_t, balance_t> get_contract_balances(const addr_t& address) const;
 
-	std::map<addr_t, uint128> get_total_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm = 1) const override;
+	std::map<addr_t, uint128> get_total_balances(const std::vector<addr_t>& addresses) const override;
 
-	std::map<std::pair<addr_t, addr_t>, uint128> get_all_balances(const std::vector<addr_t>& addresses, const uint32_t& min_confirm = 1) const override;
+	std::map<std::pair<addr_t, addr_t>, uint128> get_all_balances(const std::vector<addr_t>& addresses) const override;
 
 	std::vector<exec_entry_t> get_exec_history(const addr_t& address, const int32_t& since) const override;
 

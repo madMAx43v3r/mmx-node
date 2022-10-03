@@ -99,13 +99,13 @@ protected:
 
 	std::vector<tx_log_entry_t> get_tx_history(const uint32_t& index, const int32_t& limit, const uint32_t& offset) const override;
 
-	balance_t get_balance(const uint32_t& index, const addr_t& currency, const uint32_t& min_confirm) const override;
+	balance_t get_balance(const uint32_t& index, const addr_t& currency) const override;
 
-	std::map<addr_t, balance_t> get_balances(const uint32_t& index, const uint32_t& min_confirm) const override;
+	std::map<addr_t, balance_t> get_balances(const uint32_t& index, const vnx::bool_t& with_zero = false) const override;
 
-	std::map<addr_t, balance_t> get_total_balances_for(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const override;
+	std::map<addr_t, balance_t> get_total_balances(const std::vector<addr_t>& addresses) const override;
 
-	std::map<addr_t, balance_t> get_contract_balances(const addr_t& address, const uint32_t& min_confirm) const override;
+	std::map<addr_t, balance_t> get_contract_balances(const addr_t& address) const override;
 
 	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts(const uint32_t& index) const override;
 

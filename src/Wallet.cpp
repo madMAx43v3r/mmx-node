@@ -612,9 +612,9 @@ std::vector<tx_log_entry_t> Wallet::get_tx_history(const uint32_t& index, const 
 	return res;
 }
 
-balance_t Wallet::get_balance(const uint32_t& index, const addr_t& currency, const uint32_t& min_confirm) const
+balance_t Wallet::get_balance(const uint32_t& index, const addr_t& currency) const
 {
-	const auto balances = get_balances(index, min_confirm);
+	const auto balances = get_balances(index);
 
 	auto iter = balances.find(currency);
 	if(iter != balances.end()) {
@@ -623,12 +623,18 @@ balance_t Wallet::get_balance(const uint32_t& index, const addr_t& currency, con
 	return balance_t();
 }
 
-std::map<addr_t, balance_t> Wallet::get_balances(const uint32_t& index, const uint32_t& min_confirm) const
+std::map<addr_t, balance_t> Wallet::get_balances(const uint32_t& index, const vnx::bool_t& with_zero) const
 {
 	const auto wallet = get_wallet(index);
 	update_cache(index);
 
+	// TODO: include open offers as reserved
 	std::map<addr_t, balance_t> amounts;
+	if(with_zero) {
+		for(const auto& currency : token_whitelist) {
+			amounts[currency] = balance_t();
+		}
+	}
 	for(const auto& entry : wallet->balance_map) {
 		amounts[entry.first.second].spendable += entry.second;
 	}
@@ -647,10 +653,10 @@ std::map<addr_t, balance_t> Wallet::get_balances(const uint32_t& index, const ui
 	return amounts;
 }
 
-std::map<addr_t, balance_t> Wallet::get_total_balances_for(const std::vector<addr_t>& addresses, const uint32_t& min_confirm) const
+std::map<addr_t, balance_t> Wallet::get_total_balances(const std::vector<addr_t>& addresses) const
 {
 	std::map<addr_t, balance_t> amounts;
-	for(const auto& entry : node->get_total_balances(addresses, min_confirm)) {
+	for(const auto& entry : node->get_total_balances(addresses)) {
 		auto& balance = amounts[entry.first];
 		balance.total = entry.second;
 		balance.spendable = balance.total;
@@ -659,9 +665,9 @@ std::map<addr_t, balance_t> Wallet::get_total_balances_for(const std::vector<add
 	return amounts;
 }
 
-std::map<addr_t, balance_t> Wallet::get_contract_balances(const addr_t& address, const uint32_t& min_confirm) const
+std::map<addr_t, balance_t> Wallet::get_contract_balances(const addr_t& address) const
 {
-	auto amounts = node->get_contract_balances(address, min_confirm);
+	auto amounts = node->get_contract_balances(address);
 	for(auto& entry : amounts) {
 		entry.second.is_validated = token_whitelist.count(entry.first);
 	}

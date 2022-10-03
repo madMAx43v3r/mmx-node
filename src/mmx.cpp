@@ -261,7 +261,7 @@ int main(int argc, char** argv)
 				{
 					bool is_empty = true;
 					std::vector<mmx::addr_t> nfts;
-					for(const auto& entry : wallet.get_balances(index))
+					for(const auto& entry : wallet.get_balances(index, true))
 					{
 						const auto& balance = entry.second;
 						const auto contract = get_contract(node, entry.first);
@@ -340,7 +340,7 @@ int main(int argc, char** argv)
 						}
 						std::cout << ")" << std::endl;
 
-						for(const auto& entry : wallet.get_total_balances_for({address}))
+						for(const auto& entry : wallet.get_total_balances({address}))
 						{
 							const auto& balance = entry.second;
 							if(auto token = get_token(node, entry.first, false)) {
@@ -1119,7 +1119,7 @@ int main(int argc, char** argv)
 					vnx::read_config("$5", height);
 
 					if(from_peer.empty()) {
-						vnx::log_error() << "Missing peer argument: node fetch [block | header] <peer> [height]";
+						vnx::log_error() << "Missing peer argument: node fetch [block | header] <peer> <height>";
 						goto failed;
 					}
 					if(height < 0) {
