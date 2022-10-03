@@ -118,13 +118,11 @@ int main(int argc, char** argv)
 	options["index"] = "0..?";
 	options["offset"] = "0..?";
 	options["amount"] = "123.456";
-	options["bid"] = "123.456";
-	options["outputs"] = "count";
 	options["source"] = "address";
 	options["target"] = "address";
 	options["contract"] = "address";
 	options["ask-currency"] = "address";
-	options["fee-ratio"] = ">= 1";
+	options["fee-ratio"] = "1";
 	options["gas-limit"] = "MMX";
 	options["user"] = "mmx-admin";
 	options["passwd"] = "PASSWD";
