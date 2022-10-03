@@ -974,13 +974,17 @@ std::vector<offer_data_t> Node::get_offers_for(
 	} else {
 		return get_offers(since, is_open);
 	}
+
 	std::vector<offer_data_t> out;
+	std::unordered_set<addr_t> offer_set;
 	for(const auto& address : entries) {
-		const auto data = get_offer(address);
-		if((!bid || data.bid_currency == *bid) && (!ask || data.ask_currency == *ask)) {
-			if(data.bid_currency != data.ask_currency || data.bid_amount >= data.ask_amount) {
-				if(!is_open || data.state == "OPEN") {
-					out.push_back(data);
+		if(offer_set.insert(address).second) {
+			const auto data = get_offer(address);
+			if((!bid || data.bid_currency == *bid) && (!ask || data.ask_currency == *ask)) {
+				if(data.bid_currency != data.ask_currency || data.bid_amount >= data.ask_amount) {
+					if(!is_open || data.state == "OPEN") {
+						out.push_back(data);
+					}
 				}
 			}
 		}
