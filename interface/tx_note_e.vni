@@ -15,6 +15,6 @@ enum tx_note_e {
 	EXECUTE,
 	DEPOSIT,
 	REVOKE,
-	OTHER
+	TIMELORD_REWARD
 	
 }

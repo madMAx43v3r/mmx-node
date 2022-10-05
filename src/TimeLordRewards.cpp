@@ -36,7 +36,10 @@ void TimeLordRewards::handle(std::shared_ptr<const ProofOfTime> value)
 	}
 	if(auto address = value->timelord_reward)
 	{
-		wallet->send(wallet_index, reward, *address);
+		spend_options_t options;
+		options.note = tx_note_e::TIMELORD_REWARD;
+
+		wallet->send(wallet_index, reward, *address, addr_t(), options);
 
 		log(INFO) << "Sent reward for height " << value->height << " to " << *address;
 	}
