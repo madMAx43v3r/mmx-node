@@ -91,13 +91,11 @@ void StorageRAM::clear()
 	std::lock_guard lock(mutex);
 
 	key_map.clear();
-	for(auto& entry : memory) {
+	for(const auto& entry : memory) {
 		delete entry.second;
-		entry.second = nullptr;
 	}
-	for(auto& entry : entries) {
+	for(const auto& entry : entries) {
 		delete entry.second;
-		entry.second = nullptr;
 	}
 }
 

@@ -166,7 +166,6 @@ public:
 	void reset();
 	void commit();
 
-	void clear_extern(const uint64_t offset = 0);
 	void clear_stack(const uint64_t offset = 0);
 
 	std::map<uint64_t, const var_t*> find_entries(const uint64_t dst) const;

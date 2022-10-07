@@ -30,13 +30,11 @@ Engine::Engine(const addr_t& contract, std::shared_ptr<Storage> backend, bool re
 Engine::~Engine()
 {
 	key_map.clear();
-	for(auto& entry : memory) {
+	for(const auto& entry : memory) {
 		delete entry.second;
-		entry.second = nullptr;
 	}
-	for(auto& entry : entries) {
+	for(const auto& entry : entries) {
 		delete entry.second;
-		entry.second = nullptr;
 	}
 }
 
@@ -1514,15 +1512,6 @@ void Engine::exec(const instr_t& instr)
 	get_frame().instr_ptr++;
 }
 
-void Engine::clear_extern(const uint64_t offset)
-{
-	for(auto iter = memory.lower_bound(MEM_EXTERN + offset); iter != memory.lower_bound(MEM_STACK);) {
-		clear(iter->second);
-		delete iter->second;
-		iter = memory.erase(iter);
-	}
-}
-
 void Engine::clear_stack(const uint64_t offset)
 {
 	for(auto iter = memory.lower_bound(MEM_STACK + offset); iter != memory.lower_bound(MEM_STATIC);) {
@@ -1560,7 +1549,7 @@ void Engine::commit()
 			}
 		}
 	}
-	check_gas();
+	check_gas();	// check at the end is fine since writing to cache only at this point
 }
 
 std::map<uint64_t, const var_t*> Engine::find_entries(const uint64_t dst) const
