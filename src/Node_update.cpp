@@ -104,12 +104,16 @@ void Node::update()
 			fork->is_invalid = true;
 		}
 	}
-	for(const auto& fork : pending_forks) {
-		if(!fork->is_invalid) {
-			add_fork(fork);
+	{
+		const auto list = std::move(pending_forks);
+		pending_forks.clear();
+
+		for(const auto& fork : list) {
+			if(!fork->is_invalid) {
+				add_fork(fork);
+			}
 		}
 	}
-	pending_forks.clear();
 
 	// verify proof where possible
 	std::vector<std::shared_ptr<fork_t>> to_verify;
