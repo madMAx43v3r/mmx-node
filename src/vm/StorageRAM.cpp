@@ -97,6 +97,8 @@ void StorageRAM::clear()
 	for(const auto& entry : entries) {
 		delete entry.second;
 	}
+	memory.clear();
+	entries.clear();
 }
 
 
