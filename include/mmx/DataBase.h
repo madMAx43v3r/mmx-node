@@ -35,14 +35,6 @@ struct db_val_t {
 	db_val_t(const void* data, const uint32_t size) : db_val_t(size) {
 		::memcpy(this->data, data, size);
 	}
-	db_val_t(void* data, const uint32_t size, bool copy = true) : size(size) {
-		if(copy) {
-			this->data = (uint8_t*)::malloc(size);
-			::memcpy(this->data, data, size);
-		} else {
-			this->data = (uint8_t*)data;
-		}
-	}
 	db_val_t(const std::string& value) : db_val_t(value.c_str(), value.size()) {}
 
 	db_val_t(const db_val_t&) = delete;
