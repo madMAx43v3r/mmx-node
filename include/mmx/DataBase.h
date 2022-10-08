@@ -29,18 +29,26 @@ struct db_val_t {
 	db_val_t() = default;
 	db_val_t(const uint32_t size) : size(size) {
 		if(size) {
-			data = (uint8_t*)::malloc(size);
+			data = new uint8_t[size];
 		}
 	}
 	db_val_t(const void* data, const uint32_t size) : db_val_t(size) {
 		::memcpy(this->data, data, size);
+	}
+	db_val_t(void* data, const uint32_t size, bool copy = true) : size(size) {
+		if(copy) {
+			this->data = new uint8_t[size];
+			::memcpy(this->data, data, size);
+		} else {
+			this->data = (uint8_t*)data;
+		}
 	}
 	db_val_t(const std::string& value) : db_val_t(value.c_str(), value.size()) {}
 
 	db_val_t(const db_val_t&) = delete;
 
 	~db_val_t() {
-		::free(data);
+		delete [] data;
 		data = nullptr;
 		size = 0;
 	}
