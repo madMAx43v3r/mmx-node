@@ -37,10 +37,10 @@ void expect(vm::varptr_t got, vm::varptr_t want) {
 void test_serialize(vm::varptr_t var, bool with_rc, bool with_vf)
 {
 	auto data = serialize(*var.get(), with_rc, with_vf);
-	vm::var_t* res = nullptr;
+	std::unique_ptr<vm::var_t> res;
 	auto size = deserialize(res, data.first, data.second, with_rc, with_vf);
 	vnx::test::expect(size, data.second);
-	vnx::test::expect(compare(res, var.get()), 0);
+	vnx::test::expect(compare(res.get(), var.get()), 0);
 	if(with_rc) {
 		vnx::test::expect(res->ref_count, var->ref_count);
 	}
@@ -48,7 +48,6 @@ void test_serialize(vm::varptr_t var, bool with_rc, bool with_vf)
 		vnx::test::expect(res->flags, var->flags);
 	}
 	::free(data.first);
-	delete res;
 }
 
 void test_serialize(vm::varptr_t var) {
@@ -66,9 +65,8 @@ void test_compare_self(vm::varptr_t var) {
 }
 
 void test_clone(vm::varptr_t var) {
-	auto res = clone(var.get());
-	vnx::test::expect(compare(res, var.get()), 0);
-	delete res;
+	const auto res = clone(var.get());
+	vnx::test::expect(compare(res.get(), var.get()), 0);
 }
 
 
@@ -80,51 +78,51 @@ int main(int argc, char** argv) {
 
 	VNX_TEST_BEGIN("serialize")
 	{
-		test_serialize(new vm::var_t());
-		test_serialize(new vm::var_t(true));
-		test_serialize(new vm::var_t(false));
-		test_serialize(new vm::ref_t(uint64_t(-1)));
-		test_serialize(new vm::uint_t());
-		test_serialize(new vm::uint_t(uint64_t(1) << 8));
-		test_serialize(new vm::uint_t(uint64_t(1) << 16));
-		test_serialize(new vm::uint_t(uint64_t(1) << 32));
-		test_serialize(new vm::uint_t(uint128_t(1) << 64));
-		test_serialize(new vm::uint_t(uint256_t(1) << 128));
-		test_serialize(new vm::uint_t(uint256_max));
+		test_serialize(std::make_unique<vm::var_t>());
+		test_serialize(std::make_unique<vm::var_t>(true));
+		test_serialize(std::make_unique<vm::var_t>(false));
+		test_serialize(std::make_unique<vm::ref_t>(uint64_t(-1)));
+		test_serialize(std::make_unique<vm::uint_t>());
+		test_serialize(std::make_unique<vm::uint_t>(uint64_t(1) << 8));
+		test_serialize(std::make_unique<vm::uint_t>(uint64_t(1) << 16));
+		test_serialize(std::make_unique<vm::uint_t>(uint64_t(1) << 32));
+		test_serialize(std::make_unique<vm::uint_t>(uint128_t(1) << 64));
+		test_serialize(std::make_unique<vm::uint_t>(uint256_t(1) << 128));
+		test_serialize(std::make_unique<vm::uint_t>(uint256_max));
 		test_serialize(vm::binary_t::alloc("test"));
 		test_serialize(vm::binary_t::alloc(10, vm::TYPE_BINARY));
-		test_serialize(new vm::array_t(-1));
-		test_serialize(new vm::map_t());
+		test_serialize(std::make_unique<vm::array_t>(-1));
+		test_serialize(std::make_unique<vm::map_t>());
 	}
 	VNX_TEST_END()
 
 	VNX_TEST_BEGIN("clone")
 	{
 		test_clone(nullptr);
-		test_clone(new vm::var_t());
-		test_clone(new vm::var_t(true));
-		test_clone(new vm::var_t(false));
-		test_clone(new vm::ref_t(uint64_t(-1)));
-		test_clone(new vm::uint_t(uint256_max));
+		test_clone(std::make_unique<vm::var_t>());
+		test_clone(std::make_unique<vm::var_t>(true));
+		test_clone(std::make_unique<vm::var_t>(false));
+		test_clone(std::make_unique<vm::ref_t>(uint64_t(-1)));
+		test_clone(std::make_unique<vm::uint_t>(uint256_max));
 		test_clone(vm::binary_t::alloc("test"));
 		test_clone(vm::binary_t::alloc(10, vm::TYPE_BINARY));
-		test_clone(new vm::array_t(-1));
-		test_clone(new vm::map_t());
+		test_clone(std::make_unique<vm::array_t>(-1));
+		test_clone(std::make_unique<vm::map_t>());
 	}
 	VNX_TEST_END()
 
 	VNX_TEST_BEGIN("compare_func")
 	{
-		test_compare_self(new vm::var_t());
-		test_compare_self(new vm::var_t(true));
-		test_compare_self(new vm::var_t(false));
-		test_compare_self(new vm::ref_t(0));
-		test_compare_self(new vm::uint_t());
-		test_compare_self(new vm::uint_t(uint256_max));
+		test_compare_self(std::make_unique<vm::var_t>());
+		test_compare_self(std::make_unique<vm::var_t>(true));
+		test_compare_self(std::make_unique<vm::var_t>(false));
+		test_compare_self(std::make_unique<vm::ref_t>(0));
+		test_compare_self(std::make_unique<vm::uint_t>());
+		test_compare_self(std::make_unique<vm::uint_t>(uint256_max));
 		test_compare_self(vm::binary_t::alloc("test"));
 		test_compare_self(vm::binary_t::alloc(10, vm::TYPE_BINARY));
-		test_compare_self(new vm::array_t());
-		test_compare_self(new vm::map_t());
+		test_compare_self(std::make_unique<vm::array_t>());
+		test_compare_self(std::make_unique<vm::map_t>());
 		vnx::test::expect(compare(vm::var_t(), vm::var_t(false)), -1);
 		vnx::test::expect(compare(vm::var_t(false), vm::var_t(true)), -1);
 		vnx::test::expect(compare(vm::ref_t(0), vm::ref_t(1)), -1);

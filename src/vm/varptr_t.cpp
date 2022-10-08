@@ -68,13 +68,13 @@ void read(std::istream& in, mmx::vm::varptr_t& value)
 	vnx::Variant tmp;
 	vnx::read(in, tmp);
 	if(tmp.is_null()) {
-		value = new mmx::vm::var_t();
+		value = std::make_unique<mmx::vm::var_t>();
 	} else if(tmp.is_bool()) {
-		value = new mmx::vm::var_t(tmp.to<bool>() ? mmx::vm::TYPE_TRUE : mmx::vm::TYPE_FALSE);
+		value = std::make_unique<mmx::vm::var_t>(tmp.to<bool>() ? mmx::vm::TYPE_TRUE : mmx::vm::TYPE_FALSE);
 	} else if(tmp.is_ulong()) {
-		value = new mmx::vm::uint_t(tmp.to<uint64_t>());
+		value = std::make_unique<mmx::vm::uint_t>(tmp.to<uint64_t>());
 	} else if(tmp.is_long() || tmp.is_double()) {
-		value = new mmx::vm::uint_t(tmp.to<int64_t>());
+		value = std::make_unique<mmx::vm::uint_t>(tmp.to<int64_t>());
 	} else if(tmp.is_string()) {
 		value = mmx::vm::binary_t::alloc(tmp.to<std::string>());
 	} else {

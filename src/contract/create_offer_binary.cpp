@@ -24,16 +24,16 @@ int main(int argc, char** argv)
 	std::map<std::string, size_t> const_map;
 
 	const_map["null"] = constant.size();
-	constant.push_back(new vm::var_t());
+	constant.push_back(std::make_unique<vm::var_t>());
 
 	const_map["zero"] = constant.size();
-	constant.push_back(new vm::uint_t(0));
+	constant.push_back(std::make_unique<vm::uint_t>(0));
 
 	const_map["one"] = constant.size();
-	constant.push_back(new vm::uint_t(1));
+	constant.push_back(std::make_unique<vm::uint_t>(1));
 
 	const_map["TYPE_UINT"] = constant.size();
-	constant.push_back(new vm::uint_t(uint32_t(vm::TYPE_UINT)));
+	constant.push_back(std::make_unique<vm::uint_t>(uint32_t(vm::TYPE_UINT)));
 
 	const_map["INIT"] = constant.size();
 	constant.push_back(vm::binary_t::alloc("INIT"));

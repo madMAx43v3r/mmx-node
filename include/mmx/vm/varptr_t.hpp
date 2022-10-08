@@ -22,7 +22,9 @@ class varptr_t {
 public:
 	varptr_t() = default;
 
-	varptr_t(var_t* var)
+	varptr_t(const std::nullptr_t&) {}
+
+	explicit varptr_t(var_t* var)
 	{
 		ptr = var;
 		if(ptr) {

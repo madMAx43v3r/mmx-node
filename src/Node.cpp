@@ -770,7 +770,7 @@ std::map<std::string, vm::varptr_t> Node::read_storage(const addr_t& contract, c
 		if(auto bin = std::dynamic_pointer_cast<const contract::Binary>(get_contract(exec->binary))) {
 			for(const auto& entry : bin->fields) {
 				if(auto var = storage->read(contract, entry.second)) {
-					out[entry.first] = var;
+					out[entry.first] = std::move(var);
 				}
 			}
 		}

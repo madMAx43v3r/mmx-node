@@ -22,14 +22,14 @@ int main(int argc, char** argv)
 	auto exec = mmx::contract::Executable::create();
 
 	std::vector<vm::varptr_t> constant;
-	constant.push_back(new vm::var_t());
-	constant.push_back(new vm::var_t(vm::TYPE_TRUE));
-	constant.push_back(new vm::var_t(vm::TYPE_FALSE));
-	constant.push_back(new vm::uint_t(0));
-	constant.push_back(new vm::uint_t(1));					// 0x4
-	constant.push_back(new vm::array_t());
-	constant.push_back(new vm::map_t());
-	constant.push_back(new vm::uint_t(1337));
+	constant.push_back(std::make_unique<vm::var_t>());
+	constant.push_back(std::make_unique<vm::var_t>(vm::TYPE_TRUE));
+	constant.push_back(std::make_unique<vm::var_t>(vm::TYPE_FALSE));
+	constant.push_back(std::make_unique<vm::uint_t>(0));
+	constant.push_back(std::make_unique<vm::uint_t>(1));					// 0x4
+	constant.push_back(std::make_unique<vm::array_t>());
+	constant.push_back(std::make_unique<vm::map_t>());
+	constant.push_back(std::make_unique<vm::uint_t>(1337));
 	constant.push_back(vm::binary_t::alloc("test"));		// 0x8
 	constant.push_back(vm::binary_t::alloc("invalid user"));
 	constant.push_back(vm::binary_t::alloc("other"));
