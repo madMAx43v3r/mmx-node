@@ -44,7 +44,7 @@ double to_value(const uint64_t amount, const int decimals) {
 
 inline
 double to_value(const uint64_t amount, std::shared_ptr<const ChainParams> params) {
-	return amount * pow(10, -params->decimals);
+	return to_value(amount, params->decimals);
 }
 
 inline
@@ -53,8 +53,18 @@ uint64_t to_amount(const double value, const int decimals) {
 }
 
 inline
+uint64_t to_amount_exact(const double value, const int decimals) {
+	const auto amount = value * pow(10, decimals);
+	if(fmod(amount, 1)) {
+		throw std::invalid_argument("cannot represent value: "
+				+ std::to_string(value) + " -> " + std::to_string(to_value(amount, decimals)));
+	}
+	return amount;
+}
+
+inline
 uint64_t to_amount(const double value, std::shared_ptr<const ChainParams> params) {
-	return value * pow(10, params->decimals);
+	return to_amount(value, params->decimals);
 }
 
 inline
