@@ -46,6 +46,7 @@ struct db_val_t {
 	db_val_t(const std::string& value) : db_val_t(value.c_str(), value.size()) {}
 
 	db_val_t(const db_val_t&) = delete;
+	db_val_t& operator=(const db_val_t&) = delete;
 
 	~db_val_t() {
 		delete [] data;
