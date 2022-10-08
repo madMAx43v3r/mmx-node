@@ -324,7 +324,7 @@ size_t deserialize(std::unique_ptr<var_t>& out, const void* data_, const size_t 
 			break;
 		}
 		default:
-			throw std::runtime_error("invalid type");
+			throw std::runtime_error("invalid type: " + std::to_string(int(type)));
 	}
 	if(out) {
 		out->flags = flags;
