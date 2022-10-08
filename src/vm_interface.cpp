@@ -26,7 +26,7 @@ const contract::method_t* find_method(std::shared_ptr<const contract::Binary> bi
 void set_balance(std::shared_ptr<vm::Engine> engine, const std::map<addr_t, uint128>& balance)
 {
 	const auto addr = vm::MEM_EXTERN + vm::EXTERN_BALANCE;
-	engine->assign(addr, new vm::map_t());
+	engine->assign(addr, std::make_unique<vm::map_t>());
 	for(const auto& entry : balance) {
 		engine->write_key(addr, vm::uint_t(entry.first.to_uint256()), vm::uint_t(entry.second));
 	}
@@ -35,24 +35,24 @@ void set_balance(std::shared_ptr<vm::Engine> engine, const std::map<addr_t, uint
 void set_deposit(std::shared_ptr<vm::Engine> engine, const txout_t& deposit)
 {
 	const auto addr = vm::MEM_EXTERN + vm::EXTERN_DEPOSIT;
-	engine->assign(addr, new vm::array_t());
+	engine->assign(addr, std::make_unique<vm::array_t>());
 	engine->push_back(addr, vm::uint_t(deposit.contract.to_uint256()));
 	engine->push_back(addr, vm::uint_t(deposit.amount));
 }
 
-std::vector<vm::var_t*> read_constants(const void* constant, const size_t constant_size)
+std::vector<std::unique_ptr<vm::var_t>> read_constants(const void* constant, const size_t constant_size)
 {
 	size_t offset = 0;
-	std::vector<vm::var_t*> out;
+	std::vector<std::unique_ptr<vm::var_t>> out;
 	while(offset < constant_size) {
-		vm::var_t* var = nullptr;
+		std::unique_ptr<vm::var_t> var;
 		offset += vm::deserialize(var, ((const uint8_t*)constant) + offset, constant_size - offset, false, false);
-		out.push_back(var);
+		out.push_back(std::move(var));
 	}
 	return out;
 }
 
-std::vector<vm::var_t*> read_constants(std::shared_ptr<const contract::Binary> binary)
+std::vector<std::unique_ptr<vm::var_t>> read_constants(std::shared_ptr<const contract::Binary> binary)
 {
 	return read_constants(binary->constant.data(), binary->constant.size());
 }
@@ -61,11 +61,9 @@ void load(	std::shared_ptr<vm::Engine> engine,
 			std::shared_ptr<const contract::Binary> binary)
 {
 	uint64_t dst = 0;
-	for(auto var : read_constants(binary)) {
+	for(auto& var : read_constants(binary)) {
 		if(dst < vm::MEM_EXTERN) {
-			engine->assign(dst++, var);
-		} else {
-			delete var;
+			engine->assign(dst++, std::move(var));
 		}
 	}
 	if(dst >= vm::MEM_EXTERN) {
@@ -78,13 +76,13 @@ void load(	std::shared_ptr<vm::Engine> engine,
 void copy(	std::shared_ptr<vm::Engine> dst, std::shared_ptr<vm::Engine> src,
 			const uint64_t dst_addr, const uint64_t* dst_key, const vm::var_t* var)
 {
-	vm::var_t* out = nullptr;
+	std::unique_ptr<vm::var_t> out;
 	if(var) {
 		switch(var->type) {
 			case vm::TYPE_REF: {
 				const auto heap = dst->alloc();
 				copy(dst, src, heap, ((const vm::ref_t*)var)->address);
-				out = new vm::ref_t(heap);
+				out = std::make_unique<vm::ref_t>(heap);
 				break;
 			}
 			case vm::TYPE_ARRAY: {
@@ -92,7 +90,7 @@ void copy(	std::shared_ptr<vm::Engine> dst, std::shared_ptr<vm::Engine> src,
 				for(uint64_t i = 0; i < array->size; ++i) {
 					copy(dst, src, dst_addr, &i, src->read_entry(array->address, i));
 				}
-				out = new vm::array_t(array->size);
+				out = std::make_unique<vm::array_t>(array->size);
 				break;
 			}
 			case vm::TYPE_MAP: {
@@ -101,7 +99,7 @@ void copy(	std::shared_ptr<vm::Engine> dst, std::shared_ptr<vm::Engine> src,
 					const auto key = dst->lookup(src->read(entry.first), false);
 					copy(dst, src, dst_addr, &key, entry.second);
 				}
-				out = new vm::map_t();
+				out = std::make_unique<vm::map_t>();
 				break;
 			}
 			default:
@@ -109,12 +107,12 @@ void copy(	std::shared_ptr<vm::Engine> dst, std::shared_ptr<vm::Engine> src,
 		}
 	}
 	if(!out) {
-		out = new vm::var_t();
+		out = std::make_unique<vm::var_t>();
 	}
 	if(dst_key) {
-		dst->assign_entry(dst_addr, *dst_key, out);
+		dst->assign_entry(dst_addr, *dst_key, std::move(out));
 	} else {
-		dst->assign(dst_addr, out);
+		dst->assign(dst_addr, std::move(out));
 	}
 	dst->check_gas();
 }
@@ -196,12 +194,11 @@ public:
 		auto var = vm::binary_t::alloc(value);
 		auto& frame = stack.back();
 		if(frame.lookup) {
-			frame.key = engine->lookup(var, false);
-			delete var;
+			frame.key = engine->lookup(var.get(), false);
 		} else if(frame.key) {
-			engine->assign_entry(frame.dst, *frame.key, var);
+			engine->assign_entry(frame.dst, *frame.key, std::move(var));
 		} else {
-			engine->assign(frame.dst, var);
+			engine->assign(frame.dst, std::move(var));
 		}
 	}
 
@@ -219,7 +216,7 @@ public:
 
 	void list_begin(size_t size) override {
 		const auto addr = engine->alloc();
-		engine->assign(addr, new vm::array_t(size));
+		engine->assign(addr, std::make_unique<vm::array_t>(size));
 		stack.emplace_back(addr);
 	}
 	void list_element(size_t index) override {
@@ -241,7 +238,7 @@ public:
 
 	void map_begin(size_t size) override {
 		const auto addr = engine->alloc();
-		engine->assign(addr, new vm::map_t());
+		engine->assign(addr, std::make_unique<vm::map_t>());
 		stack.emplace_back(addr);
 	}
 	void map_key(size_t index) override {

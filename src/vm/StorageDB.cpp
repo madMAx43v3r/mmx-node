@@ -83,27 +83,27 @@ StorageDB::~StorageDB()
 {
 }
 
-var_t* StorageDB::read(const addr_t& contract, const uint64_t src) const
+std::unique_ptr<var_t> StorageDB::read(const addr_t& contract, const uint64_t src) const
 {
 	return read_ex(contract, src, -1);
 }
 
-var_t* StorageDB::read_ex(const addr_t& contract, const uint64_t src, const uint32_t height) const
+std::unique_ptr<var_t> StorageDB::read_ex(const addr_t& contract, const uint64_t src, const uint32_t height) const
 {
 	const auto key = get_key(contract, src);
 	if(auto value = table->find(key, height)) {
-		var_t* var = nullptr;
+		std::unique_ptr<var_t> var;
 		deserialize(var, value->data, value->size);
 		return var;
 	}
 	return nullptr;
 }
 
-var_t* StorageDB::read(const addr_t& contract, const uint64_t src, const uint64_t key) const
+std::unique_ptr<var_t> StorageDB::read(const addr_t& contract, const uint64_t src, const uint64_t key) const
 {
 	const auto entry_key = get_entry_key(contract, src, key);
 	if(auto value = table_entries->find(entry_key)) {
-		var_t* var = nullptr;
+		std::unique_ptr<var_t> var;
 		deserialize(var, value->data, value->size, false);
 		return var;
 	}
@@ -164,9 +164,9 @@ std::vector<std::pair<uint64_t, varptr_t>> StorageDB::find_range(
 	}
 	for(const auto& entry : keys) {
 		if(auto value = table->find(entry.first, height)) {
-			var_t* var = nullptr;
+			std::unique_ptr<var_t> var;
 			deserialize(var, value->data, value->size);
-			out.emplace_back(entry.second, var);
+			out.emplace_back(entry.second, std::move(var));
 		}
 	}
 	return out;
@@ -190,9 +190,9 @@ std::vector<std::pair<uint64_t, varptr_t>> StorageDB::find_entries(
 	}
 	for(const auto& entry : keys) {
 		if(auto value = table_entries->find(entry.first, height)) {
-			var_t* var = nullptr;
+			std::unique_ptr<var_t> var;
 			deserialize(var, value->data, value->size);
-			out.emplace_back(entry.second, var);
+			out.emplace_back(entry.second, std::move(var));
 		}
 	}
 	return out;

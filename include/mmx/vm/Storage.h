@@ -11,6 +11,8 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/vm/var_t.h>
 
+#include <memory>
+
 
 namespace mmx {
 namespace vm {
@@ -19,9 +21,9 @@ class Storage {
 public:
 	virtual ~Storage() {}
 
-	virtual var_t* read(const addr_t& contract, const uint64_t src) const = 0;
+	virtual std::unique_ptr<var_t> read(const addr_t& contract, const uint64_t src) const = 0;
 
-	virtual var_t* read(const addr_t& contract, const uint64_t src, const uint64_t key) const = 0;
+	virtual std::unique_ptr<var_t> read(const addr_t& contract, const uint64_t src, const uint64_t key) const = 0;
 
 	virtual void write(const addr_t& contract, const uint64_t dst, const var_t& value) = 0;
 

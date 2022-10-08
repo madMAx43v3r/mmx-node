@@ -19,9 +19,9 @@ void read(vnx::TypeInput& in, mmx::vm::varptr_t& value, const vnx::TypeCode* typ
 		case CODE_ALT_LIST: {
 			std::vector<uint8_t> data;
 			vnx::read(in, data, type_code, code);
-			mmx::vm::var_t* var = nullptr;
+			std::unique_ptr<mmx::vm::var_t> var;
 			deserialize(var, data.data(), data.size(), false, false);
-			value = var;
+			value = std::move(var);
 			break;
 		}
 		case CODE_STRING:
@@ -35,10 +35,10 @@ void read(vnx::TypeInput& in, mmx::vm::varptr_t& value, const vnx::TypeCode* typ
 		case CODE_ALT_DYNAMIC: {
 			vnx::Variant tmp;
 			vnx::read(in, tmp, type_code, code);
-			mmx::vm::var_t* var = nullptr;
+			std::unique_ptr<mmx::vm::var_t> var;
 			const auto data = tmp.to<std::vector<uint8_t>>();
 			deserialize(var, data.data(), data.size(), false, false);
-			value = var;
+			value = std::move(var);
 			break;
 		}
 		default:
