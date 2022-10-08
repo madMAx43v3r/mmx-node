@@ -36,9 +36,9 @@ void expect(vm::varptr_t got, vm::varptr_t want) {
 
 void test_serialize(vm::varptr_t var, bool with_rc, bool with_vf)
 {
-	auto data = serialize(*var.get(), with_rc, with_vf);
+	const auto data = serialize(*var.get(), with_rc, with_vf);
 	std::unique_ptr<vm::var_t> res;
-	auto size = deserialize(res, data.first, data.second, with_rc, with_vf);
+	auto size = deserialize(res, data.first.get(), data.second, with_rc, with_vf);
 	vnx::test::expect(size, data.second);
 	vnx::test::expect(compare(res.get(), var.get()), 0);
 	if(with_rc) {
@@ -47,7 +47,6 @@ void test_serialize(vm::varptr_t var, bool with_rc, bool with_vf)
 	if(with_vf) {
 		vnx::test::expect(res->flags, var->flags);
 	}
-	::free(data.first);
 }
 
 void test_serialize(vm::varptr_t var) {

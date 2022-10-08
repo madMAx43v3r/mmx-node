@@ -148,14 +148,12 @@ int main(int argc, char** argv)
 	}
 
 	for(const auto& var : constant) {
-		auto data = serialize(*var.get(), false, false);
-		bin->constant.insert(bin->constant.end(), data.first, data.first + data.second);
-		::free(data.first);
+		const auto data = serialize(*var.get(), false, false);
+		bin->constant.insert(bin->constant.end(), data.first.get(), data.first.get() + data.second);
 	}
 	{
-		auto data = serialize(code);
-		bin->binary = std::vector<uint8_t>(data.first, data.first + data.second);
-		::free(data.first);
+		const auto data = serialize(code);
+		bin->binary = std::vector<uint8_t>(data.first.get(), data.first.get() + data.second);
 	}
 	exec->symbol = "XYZ";
 	exec->name = "XYZ Coin";

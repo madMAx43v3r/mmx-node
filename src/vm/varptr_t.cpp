@@ -50,14 +50,8 @@ void write(vnx::TypeOutput& out, const mmx::vm::varptr_t& value, const vnx::Type
 {
 	if(auto var = value.get()) {
 		const auto data = mmx::vm::serialize(*var, false, false);
-		try {
-			write(out, uint32_t(data.second));
-			out.write(data.first, data.second);
-		} catch(...) {
-			::free(data.first);
-			throw;
-		}
-		::free(data.first);
+		write(out, uint32_t(data.second));
+		out.write(data.first.get(), data.second);
 	} else {
 		write(out, uint32_t(0));
 	}

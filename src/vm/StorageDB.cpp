@@ -116,24 +116,23 @@ void StorageDB::write(const addr_t& contract, const uint64_t dst, const var_t& v
 	const auto data = serialize(value);
 
 	if(value.flags & FLAG_KEY) {
-		const auto key = write_index_key(contract, std::make_pair(data.first + 5, data.second - 5));
+		const auto key = write_index_key(contract, std::make_pair(data.first.get() + 5, data.second - 5));
 		table_index->insert(key, std::make_shared<db_val_t>(&dst, sizeof(dst)));
 	}
-	table->insert(key, std::make_shared<db_val_t>(data.first, data.second, false));
+	table->insert(key, std::make_shared<db_val_t>(data.first.get(), data.second, false));
 }
 
 void StorageDB::write(const addr_t& contract, const uint64_t dst, const uint64_t key, const var_t& value)
 {
 	const auto entry_key = get_entry_key(contract, dst, key);
 	const auto data = serialize(value, false);
-	table_entries->insert(entry_key, std::make_shared<db_val_t>(data.first, data.second, false));
+	table_entries->insert(entry_key, std::make_shared<db_val_t>(data.first.get(), data.second, false));
 }
 
 uint64_t StorageDB::lookup(const addr_t& contract, const var_t& value) const
 {
 	const auto data = serialize(value, false, false);
-	const auto key = write_index_key(contract, data);
-	::free(data.first);
+	const auto key = write_index_key(contract, std::make_pair(data.first.get(), data.second));
 
 	uint64_t out = 0;
 	if(auto value = table_index->find(key)) {

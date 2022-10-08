@@ -111,7 +111,7 @@ int compare(const var_t* lhs, const var_t* rhs)
 	return rhs ? -1 : 1;
 }
 
-std::pair<uint8_t*, size_t> serialize(const var_t& src, bool with_rc, bool with_vf)
+std::pair<std::unique_ptr<uint8_t[]>, size_t> serialize(const var_t& src, bool with_rc, bool with_vf)
 {
 	size_t length = 1;
 	if(with_rc) {
@@ -134,7 +134,7 @@ std::pair<uint8_t*, size_t> serialize(const var_t& src, bool with_rc, bool with_
 			length += 8; break;
 		default: break;
 	}
-	auto data = (uint8_t*)::malloc(length);
+	auto data = new uint8_t[length];
 
 	size_t offset = 0;
 	if(with_rc) {
@@ -195,7 +195,7 @@ std::pair<uint8_t*, size_t> serialize(const var_t& src, bool with_rc, bool with_
 			break;
 		default: break;
 	}
-	return std::make_pair(data, offset);
+	return std::make_pair(std::unique_ptr<uint8_t[]>(data), offset);
 }
 
 size_t deserialize(std::unique_ptr<var_t>& out, const void* data_, const size_t length, bool with_rc, bool with_vf)

@@ -221,7 +221,7 @@ int compare(const var_t& lhs, const var_t& rhs);
 
 int compare(const var_t* lhs, const var_t* rhs);
 
-std::pair<uint8_t*, size_t> serialize(const var_t& src, bool with_rc = true, bool with_vf = true);
+std::pair<std::unique_ptr<uint8_t[]>, size_t> serialize(const var_t& src, bool with_rc = true, bool with_vf = true);
 
 size_t deserialize(std::unique_ptr<var_t>& var, const void* data, const size_t length, bool with_rc = true, bool with_vf = true);
 
