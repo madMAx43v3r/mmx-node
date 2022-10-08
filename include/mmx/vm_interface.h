@@ -26,7 +26,7 @@ void set_balance(std::shared_ptr<vm::Engine> engine, const std::map<addr_t, uint
 
 void set_deposit(std::shared_ptr<vm::Engine> engine, const txout_t& deposit);
 
-std::vector<vm::var_t*> read_constants(std::shared_ptr<const contract::Binary> binary);
+std::vector<std::unique_ptr<vm::var_t>> read_constants(std::shared_ptr<const contract::Binary> binary);
 
 void load(	std::shared_ptr<vm::Engine> engine,
 			std::shared_ptr<const contract::Binary> binary);

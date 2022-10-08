@@ -21,9 +21,9 @@ public:
 
 	StorageProxy(std::shared_ptr<Storage> backend, bool read_only);
 
-	var_t* read(const addr_t& contract, const uint64_t src) const override;
+	std::unique_ptr<var_t> read(const addr_t& contract, const uint64_t src) const override;
 
-	var_t* read(const addr_t& contract, const uint64_t src, const uint64_t key) const override;
+	std::unique_ptr<var_t> read(const addr_t& contract, const uint64_t src, const uint64_t key) const override;
 
 	void write(const addr_t& contract, const uint64_t dst, const var_t& value) override;
 
@@ -32,7 +32,7 @@ public:
 	uint64_t lookup(const addr_t& contract, const var_t& value) const override;
 
 private:
-	var_t* read_ex(var_t* var) const;
+	std::unique_ptr<var_t> read_ex(std::unique_ptr<var_t> var) const;
 
 };
 

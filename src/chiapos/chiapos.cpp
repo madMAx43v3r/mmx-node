@@ -17,34 +17,28 @@ namespace chiapos {
 
 DiskProver::DiskProver(const std::string& file_path)
 {
-	impl = new ::DiskProver(file_path);
+	prover = std::make_unique<::DiskProver>(file_path);
 }
 
 DiskProver::~DiskProver()
 {
-	delete (::DiskProver*)impl;
 }
 
 uint8_t DiskProver::get_ksize() const
 {
-	auto* prover = (::DiskProver*)impl;
 	return prover->GetSize();
 }
 
 std::string DiskProver::get_file_path() const {
-	auto* prover = (::DiskProver*)impl;
 	return prover->GetFilename();
 }
 
-std::vector<uint8_t> DiskProver::get_plot_id() const
-{
-	auto* prover = (::DiskProver*)impl;
+std::vector<uint8_t> DiskProver::get_plot_id() const {
 	return prover->GetId();
 }
 
 std::vector<uint8_t> DiskProver::get_farmer_key() const
 {
-	auto* prover = (::DiskProver*)impl;
 	const auto memo = prover->GetMemo();
 	if(memo.size() == 128) {
 		return std::vector<uint8_t>(memo.begin() + 48, memo.begin() + 96);
@@ -54,7 +48,6 @@ std::vector<uint8_t> DiskProver::get_farmer_key() const
 
 std::vector<uint8_t> DiskProver::get_pool_key() const
 {
-	auto* prover = (::DiskProver*)impl;
 	const auto memo = prover->GetMemo();
 	if(memo.size() == 128) {
 		return std::vector<uint8_t>(memo.begin(), memo.begin() + 48);
@@ -64,7 +57,6 @@ std::vector<uint8_t> DiskProver::get_pool_key() const
 
 std::vector<uint8_t> DiskProver::get_master_skey() const
 {
-	auto* prover = (::DiskProver*)impl;
 	const auto memo = prover->GetMemo();
 	if(memo.size() == 128) {
 		return std::vector<uint8_t>(memo.begin() + 96, memo.end());
@@ -74,7 +66,6 @@ std::vector<uint8_t> DiskProver::get_master_skey() const
 
 std::vector<std::array<uint8_t, 32>> DiskProver::get_qualities(const std::array<uint8_t, 32>& challenge) const
 {
-	auto* prover = (::DiskProver*)impl;
 	const auto tmp = prover->GetQualitiesForChallenge(challenge.data());
 
 	std::vector<std::array<uint8_t, 32>> res;
@@ -90,7 +81,6 @@ std::vector<std::array<uint8_t, 32>> DiskProver::get_qualities(const std::array<
 
 std::shared_ptr<Proof> DiskProver::get_full_proof(const std::array<uint8_t, 32>& challenge, const size_t index) const
 {
-	auto* prover = (::DiskProver*)impl;
 	const auto tmp = prover->GetFullProof(challenge.data(), index, true);
 	if(tmp.GetSize() == 0) {
 		return nullptr;

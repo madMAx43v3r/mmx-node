@@ -55,8 +55,8 @@ enum globalvar_e : uint32_t {
 	GLOBAL_HAVE_INIT,
 	GLOBAL_NEXT_ALLOC,
 	GLOBAL_LOG_HISTORY,
-	GLOBAL_SEND_HISTORY,
-	GLOBAL_MINT_HISTORY,
+	GLOBAL_SEND_HISTORY,	// TODO: obsolete
+	GLOBAL_MINT_HISTORY,	// TODO: obsolete
 	GLOBAL_EVENT_HISTORY,
 	GLOBAL_DYNAMIC_START = 0x1000
 
@@ -91,9 +91,9 @@ public:
 	void addref(const uint64_t dst);
 	void unref(const uint64_t dst);
 
-	var_t* assign(const uint64_t dst, var_t* value);
-	var_t* assign_entry(const uint64_t dst, const uint64_t key, var_t* value);
-	var_t* assign_key(const uint64_t dst, const uint64_t key, var_t* value);
+	var_t* assign(const uint64_t dst, std::unique_ptr<var_t> value);
+	var_t* assign_entry(const uint64_t dst, const uint64_t key, std::unique_ptr<var_t> value);
+	var_t* assign_key(const uint64_t dst, const uint64_t key, std::unique_ptr<var_t> value);
 
 	uint64_t lookup(const uint64_t src, const bool read_only);
 	uint64_t lookup(const var_t* var, const bool read_only);
@@ -131,8 +131,8 @@ public:
 	var_t* read_key(const uint64_t src, const uint64_t key);
 	var_t& read_key_fail(const uint64_t src, const uint64_t key);
 
-	array_t* clone_array(const uint64_t dst, const array_t& src);
-	map_t* clone_map(const uint64_t dst, const map_t& src);
+	std::unique_ptr<array_t> clone_array(const uint64_t dst, const array_t& src);
+	std::unique_ptr<map_t> clone_map(const uint64_t dst, const map_t& src);
 
 	void copy(const uint64_t dst, const uint64_t src);
 	void clone(const uint64_t dst, const uint64_t src);
@@ -166,7 +166,6 @@ public:
 	void reset();
 	void commit();
 
-	void clear_extern(const uint64_t offset = 0);
 	void clear_stack(const uint64_t offset = 0);
 
 	std::map<uint64_t, const var_t*> find_entries(const uint64_t dst) const;
@@ -183,11 +182,11 @@ public:
 	T& read_key_fail(const uint64_t src, const uint64_t key, const vartype_e& type);
 
 private:
-	var_t* assign(var_t*& var, var_t* value);
-	var_t* write(var_t*& var, const uint64_t* dst, const var_t& src);
+	var_t* assign(std::unique_ptr<var_t>& var, std::unique_ptr<var_t> value);
+	var_t* write(std::unique_ptr<var_t>& var, const uint64_t* dst, const var_t& src);
 
 	void clear(var_t* var);
-	void erase(var_t*& var);
+	void erase(std::unique_ptr<var_t>& var);
 	void erase_entries(const uint64_t dst);
 
 	uint64_t deref_addr(uint32_t src, const bool flag);
@@ -195,8 +194,8 @@ private:
 
 private:
 	bool have_init = false;
-	std::map<uint64_t, var_t*> memory;
-	std::map<std::pair<uint64_t, uint64_t>, var_t*> entries;
+	std::map<uint64_t, std::unique_ptr<var_t>> memory;
+	std::map<std::pair<uint64_t, uint64_t>, std::unique_ptr<var_t>> entries;
 	std::map<const var_t*, uint64_t, varptr_less_t> key_map;
 
 };

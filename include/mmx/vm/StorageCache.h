@@ -22,9 +22,9 @@ public:
 
 	~StorageCache();
 
-	var_t* read(const addr_t& contract, const uint64_t src) const override;
+	std::unique_ptr<var_t> read(const addr_t& contract, const uint64_t src) const override;
 
-	var_t* read(const addr_t& contract, const uint64_t src, const uint64_t key) const override;
+	std::unique_ptr<var_t> read(const addr_t& contract, const uint64_t src, const uint64_t key) const override;
 
 	uint64_t lookup(const addr_t& contract, const var_t& value) const override;
 

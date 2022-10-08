@@ -1059,9 +1059,8 @@ int main(int argc, char** argv)
 					{
 						size_t i = 0;
 						std::cout << "constants:" << std::endl;
-						for(auto var : mmx::vm::read_constants(bin)) {
-							std::cout << "  [0x" << vnx::to_hex_string(i++) << "] " << mmx::vm::to_string(var) << std::endl;
-							delete var;
+						for(const auto& var : mmx::vm::read_constants(bin)) {
+							std::cout << "  [0x" << vnx::to_hex_string(i++) << "] " << mmx::vm::to_string(var.get()) << std::endl;
 						}
 					}
 					std::map<size_t, mmx::contract::method_t> method_table;

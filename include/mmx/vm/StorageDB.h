@@ -22,11 +22,11 @@ public:
 
 	~StorageDB();
 
-	var_t* read(const addr_t& contract, const uint64_t src) const override;
+	std::unique_ptr<var_t> read(const addr_t& contract, const uint64_t src) const override;
 
-	var_t* read_ex(const addr_t& contract, const uint64_t src, const uint32_t height) const;
+	std::unique_ptr<var_t> read_ex(const addr_t& contract, const uint64_t src, const uint32_t height) const;
 
-	var_t* read(const addr_t& contract, const uint64_t src, const uint64_t key) const override;
+	std::unique_ptr<var_t> read(const addr_t& contract, const uint64_t src, const uint64_t key) const override;
 
 	void write(const addr_t& contract, const uint64_t dst, const var_t& value) override;
 

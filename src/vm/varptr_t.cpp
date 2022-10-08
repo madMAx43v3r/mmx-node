@@ -19,9 +19,9 @@ void read(vnx::TypeInput& in, mmx::vm::varptr_t& value, const vnx::TypeCode* typ
 		case CODE_ALT_LIST: {
 			std::vector<uint8_t> data;
 			vnx::read(in, data, type_code, code);
-			mmx::vm::var_t* var = nullptr;
+			std::unique_ptr<mmx::vm::var_t> var;
 			deserialize(var, data.data(), data.size(), false, false);
-			value = var;
+			value = std::move(var);
 			break;
 		}
 		case CODE_STRING:
@@ -35,10 +35,10 @@ void read(vnx::TypeInput& in, mmx::vm::varptr_t& value, const vnx::TypeCode* typ
 		case CODE_ALT_DYNAMIC: {
 			vnx::Variant tmp;
 			vnx::read(in, tmp, type_code, code);
-			mmx::vm::var_t* var = nullptr;
+			std::unique_ptr<mmx::vm::var_t> var;
 			const auto data = tmp.to<std::vector<uint8_t>>();
 			deserialize(var, data.data(), data.size(), false, false);
-			value = var;
+			value = std::move(var);
 			break;
 		}
 		default:
@@ -50,14 +50,8 @@ void write(vnx::TypeOutput& out, const mmx::vm::varptr_t& value, const vnx::Type
 {
 	if(auto var = value.get()) {
 		const auto data = mmx::vm::serialize(*var, false, false);
-		try {
-			write(out, uint32_t(data.second));
-			out.write(data.first, data.second);
-		} catch(...) {
-			::free(data.first);
-			throw;
-		}
-		::free(data.first);
+		write(out, uint32_t(data.second));
+		out.write(data.first.get(), data.second);
 	} else {
 		write(out, uint32_t(0));
 	}
@@ -68,13 +62,13 @@ void read(std::istream& in, mmx::vm::varptr_t& value)
 	vnx::Variant tmp;
 	vnx::read(in, tmp);
 	if(tmp.is_null()) {
-		value = new mmx::vm::var_t();
+		value = std::make_unique<mmx::vm::var_t>();
 	} else if(tmp.is_bool()) {
-		value = new mmx::vm::var_t(tmp.to<bool>() ? mmx::vm::TYPE_TRUE : mmx::vm::TYPE_FALSE);
+		value = std::make_unique<mmx::vm::var_t>(tmp.to<bool>() ? mmx::vm::TYPE_TRUE : mmx::vm::TYPE_FALSE);
 	} else if(tmp.is_ulong()) {
-		value = new mmx::vm::uint_t(tmp.to<uint64_t>());
+		value = std::make_unique<mmx::vm::uint_t>(tmp.to<uint64_t>());
 	} else if(tmp.is_long() || tmp.is_double()) {
-		value = new mmx::vm::uint_t(tmp.to<int64_t>());
+		value = std::make_unique<mmx::vm::uint_t>(tmp.to<int64_t>());
 	} else if(tmp.is_string()) {
 		value = mmx::vm::binary_t::alloc(tmp.to<std::string>());
 	} else {

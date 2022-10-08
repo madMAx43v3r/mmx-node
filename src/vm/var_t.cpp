@@ -13,30 +13,30 @@
 namespace mmx {
 namespace vm {
 
-var_t* clone(const var_t& src)
+std::unique_ptr<var_t> clone(const var_t& src)
 {
 	switch(src.type) {
 		case TYPE_NIL:
 		case TYPE_TRUE:
 		case TYPE_FALSE:
-			return new var_t(src);
+			return std::make_unique<var_t>(src);
 		case TYPE_REF:
-			return new ref_t((const ref_t&)src);
+			return std::make_unique<ref_t>((const ref_t&)src);
 		case TYPE_UINT:
-			return new uint_t((const uint_t&)src);
+			return std::make_unique<uint_t>((const uint_t&)src);
 		case TYPE_STRING:
 		case TYPE_BINARY:
 			return binary_t::clone((const binary_t&)src);
 		case TYPE_ARRAY:
-			return new array_t((const array_t&)src);
+			return std::make_unique<array_t>((const array_t&)src);
 		case TYPE_MAP:
-			return new map_t((const map_t&)src);
+			return std::make_unique<map_t>((const map_t&)src);
 		default:
 			return nullptr;
 	}
 }
 
-var_t* clone(const var_t* var)
+std::unique_ptr<var_t> clone(const var_t* var)
 {
 	if(var) {
 		return clone(*var);
@@ -111,7 +111,7 @@ int compare(const var_t* lhs, const var_t* rhs)
 	return rhs ? -1 : 1;
 }
 
-std::pair<uint8_t*, size_t> serialize(const var_t& src, bool with_rc, bool with_vf)
+std::pair<std::unique_ptr<uint8_t[]>, size_t> serialize(const var_t& src, bool with_rc, bool with_vf)
 {
 	size_t length = 1;
 	if(with_rc) {
@@ -134,7 +134,7 @@ std::pair<uint8_t*, size_t> serialize(const var_t& src, bool with_rc, bool with_
 			length += 8; break;
 		default: break;
 	}
-	auto data = (uint8_t*)::malloc(length);
+	auto data = new uint8_t[length];
 
 	size_t offset = 0;
 	if(with_rc) {
@@ -195,10 +195,10 @@ std::pair<uint8_t*, size_t> serialize(const var_t& src, bool with_rc, bool with_
 			break;
 		default: break;
 	}
-	return std::make_pair(data, offset);
+	return std::make_pair(std::unique_ptr<uint8_t[]>(data), offset);
 }
 
-size_t deserialize(var_t*& out, const void* data_, const size_t length, bool with_rc, bool with_vf)
+size_t deserialize(std::unique_ptr<var_t>& out, const void* data_, const size_t length, bool with_rc, bool with_vf)
 {
 	size_t offset = 0;
 	const uint8_t* data = (const uint8_t*)data_;
@@ -226,15 +226,15 @@ size_t deserialize(var_t*& out, const void* data_, const size_t length, bool wit
 		case TYPE_NIL:
 		case TYPE_TRUE:
 		case TYPE_FALSE:
-			out = new var_t(type);
+			out = std::make_unique<var_t>(type);
 			break;
 		case TYPE_REF: {
 			if(length < offset + 8) {
 				throw std::runtime_error("unexpected eof");
 			}
-			auto var = new ref_t();
+			auto var = std::make_unique<ref_t>();
 			::memcpy(&var->address, data + offset, 8); offset += 8;
-			out = var;
+			out = std::move(var);
 			break;
 		}
 		case TYPE_UINT:
@@ -254,7 +254,7 @@ size_t deserialize(var_t*& out, const void* data_, const size_t length, bool wit
 			if(length < offset + size) {
 				throw std::runtime_error("unexpected eof");
 			}
-			auto var = new uint_t();
+			auto var = std::make_unique<uint_t>();
 			switch(type) {
 				case TYPE_UINT16: {
 					uint16_t tmp = 0;
@@ -284,7 +284,7 @@ size_t deserialize(var_t*& out, const void* data_, const size_t length, bool wit
 					::memcpy(&var->value, data + offset, size);
 			}
 			offset += size;
-			out = var;
+			out = std::move(var);
 			break;
 		}
 		case TYPE_STRING:
@@ -301,30 +301,30 @@ size_t deserialize(var_t*& out, const void* data_, const size_t length, bool wit
 			bin->size = size;
 			::memcpy(bin->data(), data + offset, bin->size); offset += size;
 			::memset(bin->data(bin->size), 0, bin->capacity - bin->size);
-			out = bin;
+			out = std::move(bin);
 			break;
 		}
 		case TYPE_ARRAY: {
 			if(length < offset + 12) {
 				throw std::runtime_error("unexpected eof");
 			}
-			auto var = new array_t();
+			auto var = std::make_unique<array_t>();
 			::memcpy(&var->address, data + offset, 8); offset += 8;
 			::memcpy(&var->size, data + offset, 4); offset += 4;
-			out = var;
+			out = std::move(var);
 			break;
 		}
 		case TYPE_MAP: {
 			if(length < offset + 8) {
 				throw std::runtime_error("unexpected eof");
 			}
-			auto var = new map_t();
+			auto var = std::make_unique<map_t>();
 			::memcpy(&var->address, data + offset, 8); offset += 8;
-			out = var;
+			out = std::move(var);
 			break;
 		}
 		default:
-			throw std::runtime_error("invalid type");
+			throw std::runtime_error("invalid type: " + std::to_string(int(type)));
 	}
 	if(out) {
 		out->flags = flags;

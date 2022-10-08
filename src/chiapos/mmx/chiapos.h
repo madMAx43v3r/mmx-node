@@ -15,6 +15,8 @@
 #include <cstdint>
 
 
+class DiskProver;
+
 namespace mmx {
 namespace chiapos {
 
@@ -52,7 +54,7 @@ public:
 	std::shared_ptr<Proof> get_full_proof(const std::array<uint8_t, 32>& challenge, const size_t index) const;
 
 private:
-	void* impl = nullptr;
+	std::unique_ptr<::DiskProver> prover;
 
 };
 

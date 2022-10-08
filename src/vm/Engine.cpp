@@ -30,14 +30,6 @@ Engine::Engine(const addr_t& contract, std::shared_ptr<Storage> backend, bool re
 Engine::~Engine()
 {
 	key_map.clear();
-	for(auto& entry : memory) {
-		delete entry.second;
-		entry.second = nullptr;
-	}
-	for(auto& entry : entries) {
-		delete entry.second;
-		entry.second = nullptr;
-	}
 }
 
 void Engine::addref(const uint64_t dst)
@@ -56,21 +48,20 @@ void Engine::unref(const uint64_t dst)
 	}
 }
 
-var_t* Engine::assign(const uint64_t dst, var_t* value)
+var_t* Engine::assign(const uint64_t dst, std::unique_ptr<var_t> value)
 {
 	if(!value) {
 		return nullptr;
 	}
 	if(have_init && dst < MEM_EXTERN) {
-		delete value;
 		throw std::logic_error("already initialized");
 	}
 	switch(value->type) {
 		case TYPE_ARRAY:
-			((array_t*)value)->address = dst;
+			((array_t*)value.get())->address = dst;
 			break;
 		case TYPE_MAP:
-			((map_t*)value)->address = dst;
+			((map_t*)value.get())->address = dst;
 			break;
 		default:
 			break;
@@ -78,24 +69,22 @@ var_t* Engine::assign(const uint64_t dst, var_t* value)
 	auto& var = memory[dst];
 	if(!var && dst >= MEM_STATIC) {
 		var = storage->read(contract, dst);
-		total_cost += STOR_READ_COST + num_bytes(var) * STOR_READ_BYTE_COST;
+		total_cost += STOR_READ_COST + num_bytes(var.get()) * STOR_READ_BYTE_COST;
 	}
-	return assign(var, value);
+	return assign(var, std::move(value));
 }
 
-var_t* Engine::assign_entry(const uint64_t dst, const uint64_t key, var_t* value)
+var_t* Engine::assign_entry(const uint64_t dst, const uint64_t key, std::unique_ptr<var_t> value)
 {
 	if(!value) {
 		return nullptr;
 	}
 	if(have_init && dst < MEM_EXTERN) {
-		delete value;
 		throw std::logic_error("already initialized");
 	}
 	switch(value->type) {
 		case TYPE_ARRAY:
 		case TYPE_MAP:
-			delete value;
 			throw std::logic_error("cannot assign array or map as entry");
 		default:
 			break;
@@ -103,37 +92,31 @@ var_t* Engine::assign_entry(const uint64_t dst, const uint64_t key, var_t* value
 	auto& var = entries[std::make_pair(dst, key)];
 	if(!var && dst >= MEM_STATIC) {
 		var = storage->read(contract, dst, key);
-		total_cost += STOR_READ_COST + num_bytes(var) * STOR_READ_BYTE_COST;
+		total_cost += STOR_READ_COST + num_bytes(var.get()) * STOR_READ_BYTE_COST;
 	}
-	return assign(var, value);
+	return assign(var, std::move(value));
 }
 
-var_t* Engine::assign_key(const uint64_t dst, const uint64_t key, var_t* value)
+var_t* Engine::assign_key(const uint64_t dst, const uint64_t key, std::unique_ptr<var_t> value)
 {
-	return assign_entry(dst, lookup(key, false), value);
+	return assign_entry(dst, lookup(key, false), std::move(value));
 }
 
-var_t* Engine::assign(var_t*& var, var_t* value)
+var_t* Engine::assign(std::unique_ptr<var_t>& var, std::unique_ptr<var_t> value)
 {
 	if(var) {
 		if(var->flags & FLAG_CONST) {
-			delete value;
 			throw std::logic_error("read-only memory");
 		}
 		value->flags = var->flags;
 		value->ref_count = var->ref_count;
-		try {
-			clear(var);
-			delete var;
-		} catch(...) {
-			delete value; throw;
-		}
+		clear(var.get());
 	}
-	var = value;
+	var = std::move(value);
 	var->flags |= FLAG_DIRTY;
 	var->flags &= ~FLAG_DELETED;
-	total_cost += WRITE_COST + num_bytes(var) * WRITE_BYTE_COST;
-	return var;
+	total_cost += WRITE_COST + num_bytes(var.get()) * WRITE_BYTE_COST;
+	return var.get();
 }
 
 uint64_t Engine::lookup(const uint64_t src, const bool read_only)
@@ -203,7 +186,7 @@ var_t* Engine::write(const uint64_t dst, const var_t& src)
 	auto& var = memory[dst];
 	if(!var && dst >= MEM_STATIC) {
 		var = storage->read(contract, dst);
-		total_cost += STOR_READ_COST + num_bytes(var) * STOR_READ_BYTE_COST;
+		total_cost += STOR_READ_COST + num_bytes(var.get()) * STOR_READ_BYTE_COST;
 	}
 	return write(var, &dst, src);
 }
@@ -218,7 +201,7 @@ var_t* Engine::write(const uint64_t dst, const std::vector<varptr_t>& var)
 	if(var.size() >= MEM_HEAP) {
 		throw std::logic_error("array too large");
 	}
-	auto array = assign(dst, new array_t());
+	auto array = assign(dst, std::make_unique<array_t>());
 	for(const auto& entry : var) {
 		push_back(dst, entry);
 		check_gas();
@@ -228,7 +211,7 @@ var_t* Engine::write(const uint64_t dst, const std::vector<varptr_t>& var)
 
 var_t* Engine::write(const uint64_t dst, const std::map<varptr_t, varptr_t>& var)
 {
-	auto map = assign(dst, new map_t());
+	auto map = assign(dst, std::make_unique<map_t>());
 	for(const auto& entry : var) {
 		write_key(dst, entry.first, entry.second);
 		check_gas();
@@ -236,10 +219,10 @@ var_t* Engine::write(const uint64_t dst, const std::map<varptr_t, varptr_t>& var
 	return map;
 }
 
-var_t* Engine::write(var_t*& var, const uint64_t* dst, const var_t& src)
+var_t* Engine::write(std::unique_ptr<var_t>& var, const uint64_t* dst, const var_t& src)
 {
-	if(var == &src) {
-		return var;
+	if(var.get() == &src) {
+		return var.get();
 	}
 	if(var) {
 		if(var->flags & FLAG_CONST) {
@@ -261,24 +244,25 @@ var_t* Engine::write(var_t*& var, const uint64_t* dst, const var_t& src)
 					case TYPE_TRUE:
 					case TYPE_FALSE:
 						var->type = src.type;
-						return var;
+						return var.get();
 					default:
 						break;
 				}
 				break;
 			case TYPE_REF:
 				if(var->type == TYPE_REF) {
-					const auto ref = (ref_t*)var;
+					auto ref = (ref_t*)var.get();
 					unref(ref->address);
 					ref->address = ((const ref_t&)src).address;
 					addref(ref->address);
-					return var;
+					return ref;
 				}
 				break;
 			case TYPE_UINT:
 				if(var->type == TYPE_UINT) {
-					((uint_t*)var)->value = ((const uint_t&)src).value;
-					return var;
+					auto uint = (uint_t*)var.get();
+					uint->value = ((const uint_t&)src).value;
+					return uint;
 				}
 				break;
 			default:
@@ -289,16 +273,16 @@ var_t* Engine::write(var_t*& var, const uint64_t* dst, const var_t& src)
 		case TYPE_NIL:
 		case TYPE_TRUE:
 		case TYPE_FALSE:
-			assign(var, new var_t(src.type));
+			assign(var, std::make_unique<var_t>(src.type));
 			break;
 		case TYPE_REF: {
 			const auto address = ((const ref_t&)src).address;
 			addref(address);
-			assign(var, new ref_t(address));
+			assign(var, std::make_unique<ref_t>(address));
 			break;
 		}
 		case TYPE_UINT:
-			assign(var, new uint_t(((const uint_t&)src).value));
+			assign(var, std::make_unique<uint_t>(((const uint_t&)src).value));
 			break;
 		case TYPE_STRING:
 		case TYPE_BINARY:
@@ -317,9 +301,9 @@ var_t* Engine::write(var_t*& var, const uint64_t* dst, const var_t& src)
 			assign(var, clone_map(*dst, (const map_t&)src));
 			break;
 		default:
-			throw std::logic_error("invalid type");
+			throw invalid_type(src);
 	}
-	return var;
+	return var.get();
 }
 
 void Engine::push_back(const uint64_t dst, const var_t& var)
@@ -376,7 +360,7 @@ void Engine::pop_back(const uint64_t dst, const uint64_t& src)
 	array.flags |= FLAG_DIRTY;
 }
 
-array_t* Engine::clone_array(const uint64_t dst, const array_t& src)
+std::unique_ptr<array_t> Engine::clone_array(const uint64_t dst, const array_t& src)
 {
 	if(dst == src.address) {
 		throw std::logic_error("dst == src");
@@ -385,12 +369,12 @@ array_t* Engine::clone_array(const uint64_t dst, const array_t& src)
 		write_entry(dst, i, read_entry_fail(src.address, i));
 		check_gas();
 	}
-	auto var = new array_t(src.size);
+	auto var = std::make_unique<array_t>(src.size);
 	var->address = dst;
 	return var;
 }
 
-map_t* Engine::clone_map(const uint64_t dst, const map_t& src)
+std::unique_ptr<map_t> Engine::clone_map(const uint64_t dst, const map_t& src)
 {
 	if(dst == src.address) {
 		throw std::logic_error("dst == src");
@@ -400,12 +384,12 @@ map_t* Engine::clone_map(const uint64_t dst, const map_t& src)
 	}
 	const auto begin = entries.lower_bound(std::make_pair(src.address, 0));
 	for(auto iter = begin; iter != entries.end() && iter->first.first == src.address; ++iter) {
-		if(auto value = iter->second) {
+		if(auto value = iter->second.get()) {
 			write_entry(dst, iter->first.second, *value);
 			check_gas();
 		}
 	}
-	auto var = new map_t();
+	auto var = std::make_unique<map_t>();
 	var->address = dst;
 	return var;
 }
@@ -418,7 +402,7 @@ var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const var_t& 
 	auto& var = entries[std::make_pair(dst, key)];
 	if(!var && dst >= MEM_STATIC) {
 		var = storage->read(contract, dst, key);
-		total_cost += STOR_READ_COST + num_bytes(var) * STOR_READ_BYTE_COST;
+		total_cost += STOR_READ_COST + num_bytes(var.get()) * STOR_READ_BYTE_COST;
 	}
 	return write(var, nullptr, src);
 }
@@ -452,8 +436,8 @@ void Engine::erase_entry(const uint64_t dst, const uint64_t key)
 	auto iter = entries.find(mapkey);
 	if(iter == entries.end() && dst >= MEM_STATIC) {
 		if(auto var = storage->read(contract, dst, key)) {
-			iter = entries.emplace(mapkey, var).first;
-			total_cost += num_bytes(var) * STOR_READ_BYTE_COST;
+			total_cost += num_bytes(var.get()) * STOR_READ_BYTE_COST;
+			iter = entries.emplace(mapkey, std::move(var)).first;
 		}
 		total_cost += STOR_READ_COST;
 	}
@@ -486,14 +470,14 @@ void Engine::erase(const uint64_t dst)
 	}
 	else if(dst >= MEM_STATIC) {
 		if(auto var = storage->read(contract, dst)) {
-			erase(memory[dst] = var);
-			total_cost += num_bytes(var) * STOR_READ_BYTE_COST;
+			total_cost += num_bytes(var.get()) * STOR_READ_BYTE_COST;
+			erase(memory[dst] = std::move(var));
 		}
 		total_cost += STOR_READ_COST;
 	}
 }
 
-void Engine::erase(var_t*& var)
+void Engine::erase(std::unique_ptr<var_t>& var)
 {
 	if(!var) {
 		return;
@@ -504,17 +488,16 @@ void Engine::erase(var_t*& var)
 	if(var->ref_count) {
 		throw std::runtime_error("erase with ref_count " + std::to_string(var->ref_count));
 	}
-	clear(var);
+	clear(var.get());
 
-	auto prev = var;
-	var = new var_t();
+	const auto prev = std::move(var);
+	var = std::make_unique<var_t>();
 	if(prev->flags & FLAG_STORED) {
 		var->flags = (prev->flags | FLAG_DIRTY | FLAG_DELETED);
 	} else {
 		var->flags = FLAG_DELETED;
 	}
 	total_cost += WRITE_COST;
-	delete prev;
 }
 
 void Engine::clear(var_t* var)
@@ -524,19 +507,17 @@ void Engine::clear(var_t* var)
 			unref(((const ref_t*)var)->address);
 			break;
 		case TYPE_ARRAY: {
-			const auto dst = ((const array_t*)var)->address;
 			if(var->flags & FLAG_STORED) {
 				throw std::logic_error("cannot erase array in storage");
 			}
-			erase_entries(dst);
+			erase_entries(((const array_t*)var)->address);
 			break;
 		}
 		case TYPE_MAP: {
-			const auto dst = ((const map_t*)var)->address;
 			if(var->flags & FLAG_STORED) {
 				throw std::logic_error("cannot erase map in storage");
 			}
-			erase_entries(dst);
+			erase_entries(((const map_t*)var)->address);
 			break;
 		}
 		default:
@@ -548,18 +529,19 @@ var_t* Engine::read(const uint64_t src)
 {
 	auto iter = memory.find(src);
 	if(iter != memory.end()) {
-		if(auto var = iter->second) {
+		auto var = iter->second.get();
+		if(var) {
 			if(var->flags & FLAG_DELETED) {
 				return nullptr;
 			}
 		}
-		return iter->second;
+		return var;
 	}
 	if(src >= MEM_STATIC) {
 		total_cost += STOR_READ_COST;
 		if(auto var = storage->read(contract, src)) {
-			total_cost += num_bytes(var) * STOR_READ_BYTE_COST;
-			return memory[src] = var;
+			total_cost += num_bytes(var.get()) * STOR_READ_BYTE_COST;
+			return (memory[src] = std::move(var)).get();
 		}
 	}
 	return nullptr;
@@ -578,18 +560,19 @@ var_t* Engine::read_entry(const uint64_t src, const uint64_t key)
 	const auto mapkey = std::make_pair(src, key);
 	const auto iter = entries.find(mapkey);
 	if(iter != entries.end()) {
-		if(auto var = iter->second) {
+		auto var = iter->second.get();
+		if(var) {
 			if(var->flags & FLAG_DELETED) {
 				return nullptr;
 			}
 		}
-		return iter->second;
+		return var;
 	}
 	if(src >= MEM_STATIC) {
 		total_cost += STOR_READ_COST;
 		if(auto var = storage->read(contract, src, key)) {
-			total_cost += num_bytes(var) * STOR_READ_BYTE_COST;
-			return entries[mapkey] = var;
+			total_cost += num_bytes(var.get()) * STOR_READ_BYTE_COST;
+			return (entries[mapkey] = std::move(var)).get();
 		}
 	}
 	return nullptr;
@@ -635,15 +618,15 @@ void Engine::init()
 		throw std::logic_error("already initialized");
 	}
 	for(auto iter = memory.lower_bound(1); iter != memory.lower_bound(MEM_EXTERN); ++iter) {
-		key_map.emplace(iter->second, iter->first);
+		key_map.emplace(iter->second.get(), iter->first);
 	}
 	if(!read(MEM_HEAP + GLOBAL_HAVE_INIT)) {
-		assign(MEM_HEAP + GLOBAL_HAVE_INIT, new var_t(TYPE_TRUE))->pin();
-		assign(MEM_HEAP + GLOBAL_NEXT_ALLOC, new uint_t(MEM_HEAP + GLOBAL_DYNAMIC_START))->pin();
-		assign(MEM_HEAP + GLOBAL_LOG_HISTORY, new array_t())->pin();
-		assign(MEM_HEAP + GLOBAL_SEND_HISTORY, new array_t())->pin();
-		assign(MEM_HEAP + GLOBAL_MINT_HISTORY, new array_t())->pin();
-		assign(MEM_HEAP + GLOBAL_EVENT_HISTORY, new array_t())->pin();
+		assign(MEM_HEAP + GLOBAL_HAVE_INIT, std::make_unique<var_t>(TYPE_TRUE))->pin();
+		assign(MEM_HEAP + GLOBAL_NEXT_ALLOC, std::make_unique<uint_t>(MEM_HEAP + GLOBAL_DYNAMIC_START))->pin();
+		assign(MEM_HEAP + GLOBAL_LOG_HISTORY, std::make_unique<array_t>())->pin();
+		assign(MEM_HEAP + GLOBAL_SEND_HISTORY, std::make_unique<array_t>())->pin();
+		assign(MEM_HEAP + GLOBAL_MINT_HISTORY, std::make_unique<array_t>())->pin();
+		assign(MEM_HEAP + GLOBAL_EVENT_HISTORY, std::make_unique<array_t>())->pin();
 	}
 	have_init = true;
 }
@@ -653,7 +636,7 @@ void Engine::begin(const uint64_t instr_ptr)
 	call_stack.clear();
 
 	for(auto iter = memory.begin(); iter != memory.lower_bound(MEM_STACK); ++iter) {
-		if(auto var = iter->second) {
+		if(auto var = iter->second.get()) {
 			var->flags |= FLAG_CONST;
 			var->flags &= ~FLAG_DIRTY;
 		}
@@ -725,7 +708,7 @@ void Engine::get(const uint64_t dst, const uint64_t addr, const uint64_t key, co
 			break;
 		default:
 			if(flags & OPFLAG_HARD_FAIL) {
-				throw std::logic_error("invalid type");
+				throw invalid_type(var);
 			} else {
 				write(dst, var_t());
 			}
@@ -749,7 +732,7 @@ void Engine::set(const uint64_t addr, const uint64_t key, const uint64_t src, co
 			break;
 		default:
 			if(flags & OPFLAG_HARD_FAIL) {
-				throw std::logic_error("invalid type");
+				throw invalid_type(var);
 			}
 	}
 }
@@ -762,7 +745,7 @@ void Engine::erase(const uint64_t addr, const uint64_t key, const uint8_t flags)
 			erase_key(addr, key);
 			break;
 		default:
-			throw std::logic_error("invalid type");
+			throw invalid_type(var);
 	}
 }
 
@@ -783,10 +766,11 @@ void Engine::concat(const uint64_t dst, const uint64_t lhs, const uint64_t rhs)
 			::memcpy(res->data(), L.data(), L.size);
 			::memcpy(res->data(L.size), R.data(), R.size);
 			res->size = size;
-			assign(dst, res);
+			assign(dst, std::move(res));
 			break;
 		}
-		default: throw std::logic_error("invalid type");
+		default:
+			throw invalid_type(lvar);
 	}
 }
 
@@ -802,10 +786,11 @@ void Engine::memcpy(const uint64_t dst, const uint64_t src, const uint64_t count
 			}
 			auto res = binary_t::unsafe_alloc(count, svar.type);
 			::memcpy(res->data(), sbin.data(offset), count);
-			assign(dst, res);
+			assign(dst, std::move(res));
 			break;
 		}
-		default: throw std::logic_error("invalid type");
+		default:
+			throw invalid_type(svar);
 	}
 }
 
@@ -821,7 +806,8 @@ void Engine::sha256(const uint64_t dst, const uint64_t src)
 			write(dst, uint_t(hash_t(sbin.data(), sbin.size).to_uint256()));
 			break;
 		}
-		default: throw std::logic_error("invalid type");
+		default:
+			throw invalid_type(svar);
 	}
 }
 
@@ -1224,7 +1210,8 @@ void Engine::exec(const instr_t& instr)
 			case TYPE_UINT:
 				write(dst, uint_t(~((const uint_t&)var).value));
 				break;
-			default: throw std::runtime_error("invalid type");
+			default:
+				throw invalid_type(var);
 		}
 		break;
 	}
@@ -1256,7 +1243,8 @@ void Engine::exec(const instr_t& instr)
 					throw std::runtime_error("type mismatch");
 				}
 				break;
-			default: throw std::runtime_error("invalid type");
+			default:
+				throw invalid_type(L);
 		}
 		break;
 	}
@@ -1288,7 +1276,8 @@ void Engine::exec(const instr_t& instr)
 					throw std::runtime_error("type mismatch");
 				}
 				break;
-			default: throw std::runtime_error("invalid type");
+			default:
+				throw invalid_type(L);
 		}
 		break;
 	}
@@ -1320,7 +1309,8 @@ void Engine::exec(const instr_t& instr)
 					throw std::runtime_error("type mismatch");
 				}
 				break;
-			default: throw std::runtime_error("invalid type");
+			default:
+				throw invalid_type(L);
 		}
 		break;
 	}
@@ -1514,20 +1504,10 @@ void Engine::exec(const instr_t& instr)
 	get_frame().instr_ptr++;
 }
 
-void Engine::clear_extern(const uint64_t offset)
-{
-	for(auto iter = memory.lower_bound(MEM_EXTERN + offset); iter != memory.lower_bound(MEM_STACK);) {
-		clear(iter->second);
-		delete iter->second;
-		iter = memory.erase(iter);
-	}
-}
-
 void Engine::clear_stack(const uint64_t offset)
 {
 	for(auto iter = memory.lower_bound(MEM_STACK + offset); iter != memory.lower_bound(MEM_STATIC);) {
-		clear(iter->second);
-		delete iter->second;
+		clear(iter->second.get());
 		iter = memory.erase(iter);
 	}
 }
@@ -1542,7 +1522,7 @@ void Engine::commit()
 {
 	for(auto iter = memory.lower_bound(MEM_STATIC); iter != memory.end(); ++iter)
 	{
-		if(auto var = iter->second) {
+		if(auto var = iter->second.get()) {
 			if(var->flags & FLAG_DIRTY) {
 				storage->write(contract, iter->first, *var);
 				total_cost += (STOR_WRITE_COST + num_bytes(var) * STOR_WRITE_BYTE_COST) * (var->flags & FLAG_KEY ? 2 : 1);
@@ -1552,7 +1532,7 @@ void Engine::commit()
 	}
 	for(auto iter = entries.lower_bound(std::make_pair(MEM_STATIC, 0)); iter != entries.end(); ++iter)
 	{
-		if(auto var = iter->second) {
+		if(auto var = iter->second.get()) {
 			if(var->flags & FLAG_DIRTY) {
 				storage->write(contract, iter->first.first, iter->first.second, *var);
 				total_cost += STOR_WRITE_COST + num_bytes(var) * STOR_WRITE_BYTE_COST;
@@ -1560,7 +1540,7 @@ void Engine::commit()
 			}
 		}
 	}
-	check_gas();
+	check_gas();	// check at the end is fine since writing to cache only at this point
 }
 
 std::map<uint64_t, const var_t*> Engine::find_entries(const uint64_t dst) const
@@ -1568,7 +1548,7 @@ std::map<uint64_t, const var_t*> Engine::find_entries(const uint64_t dst) const
 	std::map<uint64_t, const var_t*> out;
 	const auto begin = entries.lower_bound(std::make_pair(dst, 0));
 	for(auto iter = begin; iter != entries.end() && iter->first.first == dst; ++iter) {
-		out[iter->first.second] = iter->second;
+		out[iter->first.second] = iter->second.get();
 	}
 	return out;
 }
@@ -1576,16 +1556,16 @@ std::map<uint64_t, const var_t*> Engine::find_entries(const uint64_t dst) const
 void Engine::dump_memory(const uint64_t begin, const uint64_t end)
 {
 	for(auto iter = memory.lower_bound(begin); iter != memory.lower_bound(end); ++iter) {
-		std::cout << "[" << to_hex(iter->first) << "] " << to_string(iter->second);
-		if(auto var = iter->second) {
+		std::cout << "[" << to_hex(iter->first) << "] " << to_string(iter->second.get());
+		if(auto var = iter->second.get()) {
 			std::cout << "\t\t(vf: " << to_hex(int(var->flags)) << ") (rc: " << var->ref_count << ")";
 		}
 		std::cout << std::endl;
 	}
 	for(auto iter = entries.lower_bound(std::make_pair(begin, 0)); iter != entries.lower_bound(std::make_pair(end, 0)); ++iter) {
 		std::cout << "[" << to_hex(iter->first.first) << "]"
-				<< "[" << to_hex(iter->first.second) << "] " << to_string(iter->second);
-		if(auto var = iter->second) {
+				<< "[" << to_hex(iter->first.second) << "] " << to_string(iter->second.get());
+		if(auto var = iter->second.get()) {
 			std::cout << "\t\t(vf: " << to_hex(int(var->flags)) << ")";
 		}
 		std::cout << std::endl;

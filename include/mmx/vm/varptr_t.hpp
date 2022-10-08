@@ -22,16 +22,23 @@ class varptr_t {
 public:
 	varptr_t() = default;
 
-	varptr_t(var_t* var) {
+	varptr_t(const std::nullptr_t&) {}
+
+	explicit varptr_t(var_t* var)
+	{
 		ptr = var;
 		if(ptr) {
 			ptr->addref();
 		}
 	}
 
+	template<typename T>
+	varptr_t(std::unique_ptr<T> var) : varptr_t(var.release()) {}
+
 	varptr_t(const varptr_t& other) : varptr_t(other.ptr) {}
 
-	~varptr_t() {
+	~varptr_t()
+	{
 		if(ptr) {
 			if(ptr->unref()) {
 				delete ptr;
@@ -40,9 +47,10 @@ public:
 		}
 	}
 
-	varptr_t& operator=(const varptr_t& other) {
-		if(ptr) {
-			ptr->unref();
+	varptr_t& operator=(const varptr_t& other)
+	{
+		if(ptr && ptr->unref()) {
+			delete ptr;
 		}
 		ptr = other.ptr;
 		if(ptr) {

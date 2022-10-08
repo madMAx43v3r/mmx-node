@@ -75,7 +75,7 @@ const opcode_info_t& get_opcode_info(opcode_e code)
 	return g_opcode_info[code];
 }
 
-std::pair<uint8_t*, size_t> serialize(const std::vector<instr_t>& code)
+std::pair<std::unique_ptr<uint8_t[]>, size_t> serialize(const std::vector<instr_t>& code)
 {
 	size_t length = 0;
 	for(const auto& instr : code) {
@@ -104,7 +104,7 @@ std::pair<uint8_t*, size_t> serialize(const std::vector<instr_t>& code)
 			::memcpy(data + offset, &instr.d, 4); offset += 4;
 		}
 	}
-	return std::make_pair(data, offset);
+	return std::make_pair(std::unique_ptr<uint8_t[]>(data), offset);
 }
 
 size_t deserialize(std::vector<instr_t>& code, const void* data_, const size_t length)

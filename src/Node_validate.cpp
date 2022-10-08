@@ -824,7 +824,13 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 	} else {
 		const auto result = tx->exec_result;
 		if(!result->did_fail && failed_ex) {
-			throw std::logic_error("unexpected execution failure");
+			try {
+				std::rethrow_exception(failed_ex);
+			} catch(const std::exception& ex) {
+				throw std::logic_error("unexpected execution failure: " + std::string(ex.what()));
+			} catch(...) {
+				throw std::logic_error("unexpected execution failure");
+			}
 		}
 		if(result->did_fail && !failed_ex) {
 			throw std::logic_error("expected failure but did not fail");

@@ -16,24 +16,24 @@ StorageRAM::~StorageRAM()
 	clear();
 }
 
-var_t* StorageRAM::read(const addr_t& contract, const uint64_t src) const
+std::unique_ptr<var_t> StorageRAM::read(const addr_t& contract, const uint64_t src) const
 {
 	std::lock_guard lock(mutex);
 
 	auto iter = memory.find(std::make_pair(contract, src));
 	if(iter != memory.end()) {
-		return clone(iter->second);
+		return clone(iter->second.get());
 	}
 	return nullptr;
 }
 
-var_t* StorageRAM::read(const addr_t& contract, const uint64_t src, const uint64_t key) const
+std::unique_ptr<var_t> StorageRAM::read(const addr_t& contract, const uint64_t src, const uint64_t key) const
 {
 	std::lock_guard lock(mutex);
 
 	auto iter = entries.find(std::make_tuple(contract, src, key));
 	if(iter != entries.end()) {
-		return clone(iter->second);
+		return clone(iter->second.get());
 	}
 	return nullptr;
 }
@@ -49,12 +49,11 @@ void StorageRAM::write(const addr_t& contract, const uint64_t dst, const var_t& 
 		if(var->flags & FLAG_KEY) {
 			throw std::logic_error("cannot overwrite key");
 		}
-		delete var;
 	}
 	var = clone(value);
 
 	if(value.flags & FLAG_KEY) {
-		key_map[contract][var] = dst;
+		key_map[contract][var.get()] = dst;
 	}
 }
 
@@ -64,11 +63,7 @@ void StorageRAM::write(const addr_t& contract, const uint64_t dst, const uint64_
 
 	std::lock_guard lock(mutex);
 
-	auto& var = entries[mapkey];
-	if(var) {
-		delete var;
-	}
-	var = clone(value);
+	entries[mapkey] = clone(value);
 }
 
 uint64_t StorageRAM::lookup(const addr_t& contract, const var_t& value) const
@@ -91,14 +86,8 @@ void StorageRAM::clear()
 	std::lock_guard lock(mutex);
 
 	key_map.clear();
-	for(auto& entry : memory) {
-		delete entry.second;
-		entry.second = nullptr;
-	}
-	for(auto& entry : entries) {
-		delete entry.second;
-		entry.second = nullptr;
-	}
+	memory.clear();
+	entries.clear();
 }
 
 

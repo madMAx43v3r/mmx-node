@@ -24,16 +24,16 @@ int main(int argc, char** argv)
 	std::map<std::string, size_t> const_map;
 
 	const_map["null"] = constant.size();
-	constant.push_back(new vm::var_t());
+	constant.push_back(std::make_unique<vm::var_t>());
 
 	const_map["zero"] = constant.size();
-	constant.push_back(new vm::uint_t(0));
+	constant.push_back(std::make_unique<vm::uint_t>(0));
 
 	const_map["one"] = constant.size();
-	constant.push_back(new vm::uint_t(1));
+	constant.push_back(std::make_unique<vm::uint_t>(1));
 
 	const_map["TYPE_UINT"] = constant.size();
-	constant.push_back(new vm::uint_t(uint32_t(vm::TYPE_UINT)));
+	constant.push_back(std::make_unique<vm::uint_t>(uint32_t(vm::TYPE_UINT)));
 
 	const_map["INIT"] = constant.size();
 	constant.push_back(vm::binary_t::alloc("INIT"));
@@ -182,16 +182,15 @@ int main(int argc, char** argv)
 	}
 
 	for(const auto& var : constant) {
-		auto data = serialize(*var.get(), false, false);
-		bin->constant.insert(bin->constant.end(), data.first, data.first + data.second);
-		::free(data.first);
+		const auto data = serialize(*var.get(), false, false);
+		bin->constant.insert(bin->constant.end(), data.first.get(), data.first.get() + data.second);
 	}
 	{
-		auto data = vm::serialize(code);
-		bin->binary = std::vector<uint8_t>(data.first, data.first + data.second);
+		const auto data = vm::serialize(code);
+		bin->binary = std::vector<uint8_t>(data.first.get(), data.first.get() + data.second);
 
 		std::vector<vm::instr_t> test;
-		auto length = vm::deserialize(test, data.first, data.second);
+		auto length = vm::deserialize(test, data.first.get(), data.second);
 		if(length != data.second) {
 			throw std::logic_error("length != data.second");
 		}
@@ -203,7 +202,6 @@ int main(int argc, char** argv)
 				throw std::logic_error("test[i].code != code[i].code");
 			}
 		}
-		::free(data.first);
 	}
 	vnx::write_to_file(argc > 1 ? argv[1] : "offer_binary.dat", bin);
 

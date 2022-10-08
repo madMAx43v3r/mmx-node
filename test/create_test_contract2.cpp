@@ -22,15 +22,15 @@ int main(int argc, char** argv)
 	auto exec = mmx::contract::Executable::create();
 
 	std::vector<vm::varptr_t> constant;
-	constant.push_back(new vm::var_t());
-	constant.push_back(new vm::var_t(true));
-	constant.push_back(new vm::var_t(false));
-	constant.push_back(new vm::uint_t());
-	constant.push_back(new vm::uint_t(1));					// [4]
-	constant.push_back(new vm::array_t());
-	constant.push_back(new vm::map_t());
-	constant.push_back(new vm::uint_t(100000));				// price change per height
-	constant.push_back(new vm::uint_t(1000000000));			// initial price values [8]
+	constant.push_back(std::make_unique<vm::var_t>());
+	constant.push_back(std::make_unique<vm::var_t>(true));
+	constant.push_back(std::make_unique<vm::var_t>(false));
+	constant.push_back(std::make_unique<vm::uint_t>());
+	constant.push_back(std::make_unique<vm::uint_t>(1));					// [4]
+	constant.push_back(std::make_unique<vm::array_t>());
+	constant.push_back(std::make_unique<vm::map_t>());
+	constant.push_back(std::make_unique<vm::uint_t>(100000));				// price change per height
+	constant.push_back(std::make_unique<vm::uint_t>(1000000000));			// initial price values [8]
 	constant.push_back(vm::binary_t::alloc("invalid token"));
 
 	bin->fields["price"] = vm::MEM_STATIC + 0;
@@ -107,14 +107,12 @@ int main(int argc, char** argv)
 	}
 
 	for(const auto& var : constant) {
-		auto data = serialize(*var.get(), false, false);
-		bin->constant.insert(bin->constant.end(), data.first, data.first + data.second);
-		::free(data.first);
+		const auto data = serialize(*var.get(), false, false);
+		bin->constant.insert(bin->constant.end(), data.first.get(), data.first.get() + data.second);
 	}
 	{
-		auto data = serialize(code);
-		bin->binary = std::vector<uint8_t>(data.first, data.first + data.second);
-		::free(data.first);
+		const auto data = serialize(code);
+		bin->binary = std::vector<uint8_t>(data.first.get(), data.first.get() + data.second);
 	}
 	exec->symbol = "MMT";
 	exec->name = "MMT Algo Token";

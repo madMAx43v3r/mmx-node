@@ -15,6 +15,8 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <memory>
+#include <stdexcept>
 
 
 namespace mmx {
@@ -138,42 +140,42 @@ struct binary_t : var_t {
 		return vnx::to_hex_string(c_str(), size, false);
 	}
 
-	static binary_t* clone(const binary_t& src) {
+	static std::unique_ptr<binary_t> clone(const binary_t& src) {
 		auto bin = alloc(src);
 		bin->ref_count = src.ref_count;
 		bin->flags = src.flags;
 		return bin;
 	}
-	static binary_t* alloc(const binary_t& src) {
+	static std::unique_ptr<binary_t> alloc(const binary_t& src) {
 		return alloc(src, src.type);
 	}
-	static binary_t* alloc(const binary_t& src, const vartype_e type) {
+	static std::unique_ptr<binary_t> alloc(const binary_t& src, const vartype_e type) {
 		auto bin = unsafe_alloc(src.size, type);
 		bin->size = src.size;
 		::memcpy(bin->data(), src.data(), bin->size);
 		::memset(bin->data(bin->size), 0, bin->capacity - bin->size);
 		return bin;
 	}
-	static binary_t* alloc(const std::string& src, const vartype_e type = TYPE_STRING) {
+	static std::unique_ptr<binary_t> alloc(const std::string& src, const vartype_e type = TYPE_STRING) {
 		auto bin = unsafe_alloc(src.size(), type);
 		bin->size = src.size();
 		::memcpy(bin->data(), src.c_str(), bin->size);
 		::memset(bin->data(bin->size), 0, bin->capacity - bin->size);
 		return bin;
 	}
-	static binary_t* alloc(const void* data, const size_t size, const vartype_e type = TYPE_BINARY) {
+	static std::unique_ptr<binary_t> alloc(const void* data, const size_t size, const vartype_e type = TYPE_BINARY) {
 		auto bin = unsafe_alloc(size, type);
 		bin->size = size;
 		::memcpy(bin->data(), data, bin->size);
 		::memset(bin->data(bin->size), 0, bin->capacity - bin->size);
 		return bin;
 	}
-	static binary_t* alloc(size_t size, const vartype_e type) {
+	static std::unique_ptr<binary_t> alloc(size_t size, const vartype_e type) {
 		auto bin = unsafe_alloc(size, type);
 		::memset(bin->data(), 0, bin->capacity);
 		return bin;
 	}
-	static binary_t* unsafe_alloc(size_t size, const vartype_e type) {
+	static std::unique_ptr<binary_t> unsafe_alloc(size_t size, const vartype_e type) {
 		if(size >= std::numeric_limits<uint32_t>::max()) {
 			throw std::logic_error("binary size overflow");
 		}
@@ -184,7 +186,7 @@ struct binary_t : var_t {
 		}
 		auto bin = new(::operator new(sizeof(binary_t) + size)) binary_t(type);
 		bin->capacity = size;
-		return bin;
+		return std::unique_ptr<binary_t>(bin);
 	}
 
 private:
@@ -212,17 +214,23 @@ struct map_t : var_t {
 
 };
 
-var_t* clone(const var_t& src);
+class invalid_type : public std::logic_error {
+public:
+	invalid_type(const var_t& var)
+		:	logic_error("invalid type: " + std::to_string(int(var.type))) {}
+};
 
-var_t* clone(const var_t* var);
+std::unique_ptr<var_t> clone(const var_t& src);
+
+std::unique_ptr<var_t> clone(const var_t* var);
 
 int compare(const var_t& lhs, const var_t& rhs);
 
 int compare(const var_t* lhs, const var_t* rhs);
 
-std::pair<uint8_t*, size_t> serialize(const var_t& src, bool with_rc = true, bool with_vf = true);
+std::pair<std::unique_ptr<uint8_t[]>, size_t> serialize(const var_t& src, bool with_rc = true, bool with_vf = true);
 
-size_t deserialize(var_t*& var, const void* data, const size_t length, bool with_rc = true, bool with_vf = true);
+size_t deserialize(std::unique_ptr<var_t>& var, const void* data, const size_t length, bool with_rc = true, bool with_vf = true);
 
 struct varptr_less_t {
 	bool operator()(const var_t* const& lhs, const var_t* const& rhs) const {
