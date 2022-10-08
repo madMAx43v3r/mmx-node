@@ -134,45 +134,45 @@ std::pair<std::unique_ptr<uint8_t[]>, size_t> serialize(const var_t& src, bool w
 			length += 8; break;
 		default: break;
 	}
-	auto data = new uint8_t[length];
+	auto data = std::make_unique<uint8_t[]>(length);
 
 	size_t offset = 0;
 	if(with_rc) {
-		::memcpy(data + offset, &src.ref_count, 4); offset += 4;
+		::memcpy(data.get() + offset, &src.ref_count, 4); offset += 4;
 	}
 	if(with_vf) {
-		::memcpy(data + offset, &src.flags, 1); offset += 1;
+		::memcpy(data.get() + offset, &src.flags, 1); offset += 1;
 	}
-	::memcpy(data + offset, &src.type, 1); offset += 1;
+	::memcpy(data.get() + offset, &src.type, 1); offset += 1;
 
 	switch(src.type) {
 		case TYPE_REF:
-			::memcpy(data + offset, &((const ref_t&)src).address, 8); offset += 8;
+			::memcpy(data.get() + offset, &((const ref_t&)src).address, 8); offset += 8;
 			break;
 		case TYPE_UINT: {
 			const auto& val_256 = ((const uint_t&)src).value;
 			if(val_256.upper()) {
 				data[offset - 1] = TYPE_UINT256;
-				::memcpy(data + offset, &val_256, 32); offset += 32;
+				::memcpy(data.get() + offset, &val_256, 32); offset += 32;
 			} else {
 				const auto& val_128 = val_256.lower();
 				if(val_128.upper()) {
 					data[offset - 1] = TYPE_UINT128;
-					::memcpy(data + offset, &val_128, 16); offset += 16;
+					::memcpy(data.get() + offset, &val_128, 16); offset += 16;
 				} else {
 					const auto& val_64 = val_128.lower();
 					if(val_64 >> 32) {
 						data[offset - 1] = TYPE_UINT64;
-						::memcpy(data + offset, &val_64, 8); offset += 8;
+						::memcpy(data.get() + offset, &val_64, 8); offset += 8;
 					} else {
 						const uint32_t val_32 = val_64;
 						if(val_32 >> 16) {
 							data[offset - 1] = TYPE_UINT32;
-							::memcpy(data + offset, &val_32, 4); offset += 4;
+							::memcpy(data.get() + offset, &val_32, 4); offset += 4;
 						} else {
 							const uint16_t val_16 = val_32;
 							data[offset - 1] = TYPE_UINT16;
-							::memcpy(data + offset, &val_16, 2); offset += 2;
+							::memcpy(data.get() + offset, &val_16, 2); offset += 2;
 						}
 					}
 				}
@@ -182,20 +182,21 @@ std::pair<std::unique_ptr<uint8_t[]>, size_t> serialize(const var_t& src, bool w
 		case TYPE_STRING:
 		case TYPE_BINARY: {
 			const auto& bin = (const binary_t&)src;
-			::memcpy(data + offset, &bin.size, 4); offset += 4;
-			::memcpy(data + offset, bin.data(), bin.size); offset += bin.size;
+			::memcpy(data.get() + offset, &bin.size, 4); offset += 4;
+			::memcpy(data.get() + offset, bin.data(), bin.size); offset += bin.size;
 			break;
 		}
 		case TYPE_ARRAY:
-			::memcpy(data + offset, &((const array_t&)src).address, 8); offset += 8;
-			::memcpy(data + offset, &((const array_t&)src).size, 4); offset += 4;
+			::memcpy(data.get() + offset, &((const array_t&)src).address, 8); offset += 8;
+			::memcpy(data.get() + offset, &((const array_t&)src).size, 4); offset += 4;
 			break;
 		case TYPE_MAP:
-			::memcpy(data + offset, &((const map_t&)src).address, 8); offset += 8;
+			::memcpy(data.get() + offset, &((const map_t&)src).address, 8); offset += 8;
 			break;
-		default: break;
+		default:
+			break;
 	}
-	return std::make_pair(std::unique_ptr<uint8_t[]>(data), offset);
+	return std::make_pair(std::move(data), offset);
 }
 
 size_t deserialize(std::unique_ptr<var_t>& out, const void* data_, const size_t length, bool with_rc, bool with_vf)
