@@ -210,6 +210,7 @@ Vue.component('farmer-blocks', {
 				{ text: "K", value: 'proof.ksize' },
 				{ text: "Score", value: 'proof.score' },
 				{ text: "Reward", value: 'reward' },
+				{ text: "TX Fees", value: 'tx_fees' },
 				{ text: "Time", value: 'time' },
 			]
 		}
@@ -251,6 +252,10 @@ Vue.component('farmer-blocks', {
 
 			<template v-slot:item.reward="{ item }">
 				<b>{{item.tx_base && item.tx_base.exec_result ? item.tx_base.exec_result.total_fee_value : 0}}</b> MMX
+			</template>
+			
+			<template v-slot:item.tx_fees="{ item }">
+				<b>{{item.tx_fees / 1e6}}</b> MMX
 			</template>
 
 			<template v-slot:item.time="{ item }">
