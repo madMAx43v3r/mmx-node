@@ -301,7 +301,7 @@ var_t* Engine::write(std::unique_ptr<var_t>& var, const uint64_t* dst, const var
 			assign(var, clone_map(*dst, (const map_t&)src));
 			break;
 		default:
-			throw std::logic_error("invalid type");
+			throw invalid_type(src);
 	}
 	return var.get();
 }
@@ -708,7 +708,7 @@ void Engine::get(const uint64_t dst, const uint64_t addr, const uint64_t key, co
 			break;
 		default:
 			if(flags & OPFLAG_HARD_FAIL) {
-				throw std::logic_error("invalid type");
+				throw invalid_type(var);
 			} else {
 				write(dst, var_t());
 			}
@@ -732,7 +732,7 @@ void Engine::set(const uint64_t addr, const uint64_t key, const uint64_t src, co
 			break;
 		default:
 			if(flags & OPFLAG_HARD_FAIL) {
-				throw std::logic_error("invalid type");
+				throw invalid_type(var);
 			}
 	}
 }
@@ -745,7 +745,7 @@ void Engine::erase(const uint64_t addr, const uint64_t key, const uint8_t flags)
 			erase_key(addr, key);
 			break;
 		default:
-			throw std::logic_error("invalid type");
+			throw invalid_type(var);
 	}
 }
 
@@ -769,7 +769,8 @@ void Engine::concat(const uint64_t dst, const uint64_t lhs, const uint64_t rhs)
 			assign(dst, std::move(res));
 			break;
 		}
-		default: throw std::logic_error("invalid type");
+		default:
+			throw invalid_type(lvar);
 	}
 }
 
@@ -788,7 +789,8 @@ void Engine::memcpy(const uint64_t dst, const uint64_t src, const uint64_t count
 			assign(dst, std::move(res));
 			break;
 		}
-		default: throw std::logic_error("invalid type");
+		default:
+			throw invalid_type(svar);
 	}
 }
 
@@ -804,7 +806,8 @@ void Engine::sha256(const uint64_t dst, const uint64_t src)
 			write(dst, uint_t(hash_t(sbin.data(), sbin.size).to_uint256()));
 			break;
 		}
-		default: throw std::logic_error("invalid type");
+		default:
+			throw invalid_type(svar);
 	}
 }
 
@@ -1207,7 +1210,8 @@ void Engine::exec(const instr_t& instr)
 			case TYPE_UINT:
 				write(dst, uint_t(~((const uint_t&)var).value));
 				break;
-			default: throw std::runtime_error("invalid type");
+			default:
+				throw invalid_type(var);
 		}
 		break;
 	}
@@ -1239,7 +1243,8 @@ void Engine::exec(const instr_t& instr)
 					throw std::runtime_error("type mismatch");
 				}
 				break;
-			default: throw std::runtime_error("invalid type");
+			default:
+				throw invalid_type(L);
 		}
 		break;
 	}
@@ -1271,7 +1276,8 @@ void Engine::exec(const instr_t& instr)
 					throw std::runtime_error("type mismatch");
 				}
 				break;
-			default: throw std::runtime_error("invalid type");
+			default:
+				throw invalid_type(L);
 		}
 		break;
 	}
@@ -1303,7 +1309,8 @@ void Engine::exec(const instr_t& instr)
 					throw std::runtime_error("type mismatch");
 				}
 				break;
-			default: throw std::runtime_error("invalid type");
+			default:
+				throw invalid_type(L);
 		}
 		break;
 	}

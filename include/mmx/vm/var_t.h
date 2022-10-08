@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <memory>
+#include <stdexcept>
 
 
 namespace mmx {
@@ -211,6 +212,12 @@ struct map_t : var_t {
 	map_t() : var_t(TYPE_MAP) {}
 	map_t(const map_t&) = default;
 
+};
+
+class invalid_type : public std::logic_error {
+public:
+	invalid_type(const var_t& var)
+		:	logic_error("invalid type: " + std::to_string(int(var.type))) {}
 };
 
 std::unique_ptr<var_t> clone(const var_t& src);
