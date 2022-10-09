@@ -136,6 +136,8 @@ protected:
 
 	std::vector<offer_data_t> get_offers(const uint32_t& since, const vnx::bool_t& is_open) const override;
 
+	std::vector<offer_data_t> get_recent_offers(const int32_t& limit, const vnx::bool_t& is_open) const override;
+
 	std::vector<offer_data_t> get_offers_for(
 			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const uint32_t& since, const vnx::bool_t& is_open) const override;
 
@@ -280,6 +282,8 @@ private:
 	std::vector<tx_pool_t> validate_for_block(const uint64_t verify_limit, const uint64_t select_limit);
 
 	std::shared_ptr<const Block> make_block(std::shared_ptr<const BlockHeader> prev, const proof_data_t& proof_data);
+
+	std::vector<offer_data_t> fetch_offers(const std::vector<addr_t>& entries, const bool is_open) const;
 
 	std::vector<trade_data_t> get_trade_history_for(const std::vector<addr_t>& offers, const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask) const;
 

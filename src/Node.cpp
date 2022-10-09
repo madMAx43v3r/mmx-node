@@ -931,21 +931,32 @@ offer_data_t Node::get_offer(const addr_t& address) const
 	return out;
 }
 
-std::vector<offer_data_t> Node::get_offers(const uint32_t& since, const vnx::bool_t& is_open) const
+std::vector<offer_data_t> Node::fetch_offers(const std::vector<addr_t>& entries, const bool is_open) const
 {
-	std::vector<addr_t> entries;
-	offer_log.find_range(std::make_pair(since, 0), std::make_pair(-1, -1), entries);
-
 	std::vector<offer_data_t> out;
 	for(const auto& address : entries) {
 		const auto data = get_offer(address);
-		if(data.bid_currency != data.ask_currency || data.bid_amount >= data.ask_amount) {
-			if(!is_open || data.state == "OPEN") {
+		if(!is_open || data.state == "OPEN") {
+			if(data.bid_currency != data.ask_currency || data.bid_amount >= data.ask_amount) {
 				out.push_back(data);
 			}
 		}
 	}
 	return out;
+}
+
+std::vector<offer_data_t> Node::get_offers(const uint32_t& since, const vnx::bool_t& is_open) const
+{
+	std::vector<addr_t> entries;
+	offer_log.find_range(std::make_pair(since, 0), std::make_pair(-1, -1), entries);
+	return fetch_offers(entries, is_open);
+}
+
+std::vector<offer_data_t> Node::get_recent_offers(const int32_t& limit, const vnx::bool_t& is_open) const
+{
+	std::vector<addr_t> entries;
+	offer_log.find_last_range(std::make_pair(0, 0), std::make_pair(-1, -1), entries, limit);
+	return fetch_offers(entries, is_open);
 }
 
 std::vector<offer_data_t> Node::get_offers_for(
@@ -980,9 +991,9 @@ std::vector<offer_data_t> Node::get_offers_for(
 	for(const auto& address : entries) {
 		if(offer_set.insert(address).second) {
 			const auto data = get_offer(address);
-			if((!bid || data.bid_currency == *bid) && (!ask || data.ask_currency == *ask)) {
-				if(data.bid_currency != data.ask_currency || data.bid_amount >= data.ask_amount) {
-					if(!is_open || data.state == "OPEN") {
+			if(!is_open || data.state == "OPEN") {
+				if((!bid || data.bid_currency == *bid) && (!ask || data.ask_currency == *ask)) {
+					if(data.bid_currency != data.ask_currency || data.bid_amount >= data.ask_amount) {
 						out.push_back(data);
 					}
 				}
