@@ -13,6 +13,7 @@
 namespace mmx {
 namespace vm {
 
+// TODO: use 20-byte hash as keys
 // TODO: use to_big_endian() function instead of flip_bytes()
 
 std::shared_ptr<db_val_t> get_key(const addr_t& contract, uint64_t dst)
