@@ -70,6 +70,8 @@
 #include <mmx/Node_get_offers_for_return.hxx>
 #include <mmx/Node_get_params.hxx>
 #include <mmx/Node_get_params_return.hxx>
+#include <mmx/Node_get_recent_offers.hxx>
+#include <mmx/Node_get_recent_offers_return.hxx>
 #include <mmx/Node_get_synced_height.hxx>
 #include <mmx/Node_get_synced_height_return.hxx>
 #include <mmx/Node_get_total_balance.hxx>
@@ -751,6 +753,20 @@ std::vector<::mmx::offer_data_t> NodeClient::get_offers(const uint32_t& since, c
 	_method->is_open = is_open;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_offers_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::offer_data_t>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::vector<::mmx::offer_data_t> NodeClient::get_recent_offers(const int32_t& limit, const vnx::bool_t& is_open) {
+	auto _method = ::mmx::Node_get_recent_offers::create();
+	_method->limit = limit;
+	_method->is_open = is_open;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_recent_offers_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::vector<::mmx::offer_data_t>>();

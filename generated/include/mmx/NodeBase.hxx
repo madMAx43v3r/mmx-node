@@ -154,6 +154,7 @@ protected:
 	virtual uint64_t get_virtual_plot_balance(const ::mmx::addr_t& plot_id, const vnx::optional<::mmx::hash_t>& block_hash) const = 0;
 	virtual ::mmx::offer_data_t get_offer(const ::mmx::addr_t& address) const = 0;
 	virtual std::vector<::mmx::offer_data_t> get_offers(const uint32_t& since, const vnx::bool_t& is_open) const = 0;
+	virtual std::vector<::mmx::offer_data_t> get_recent_offers(const int32_t& limit, const vnx::bool_t& is_open) const = 0;
 	virtual std::vector<::mmx::offer_data_t> get_offers_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const uint32_t& since, const vnx::bool_t& is_open) const = 0;
 	virtual std::vector<::mmx::trade_data_t> get_trade_history(const int32_t& limit, const uint32_t& since) const = 0;
 	virtual std::vector<::mmx::trade_data_t> get_trade_history_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& limit, const uint32_t& since) const = 0;

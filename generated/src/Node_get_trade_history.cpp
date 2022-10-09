@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_trade_history::VNX_TYPE_HASH(0x62736b035e3995cdull);
-const vnx::Hash64 Node_get_trade_history::VNX_CODE_HASH(0x1ea90ff316475451ull);
+const vnx::Hash64 Node_get_trade_history::VNX_CODE_HASH(0xd38814ee5dd93feeull);
 
 vnx::Hash64 Node_get_trade_history::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -124,7 +124,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_trade_history::static_create_type_code()
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_trade_history";
 	type_code->type_hash = vnx::Hash64(0x62736b035e3995cdull);
-	type_code->code_hash = vnx::Hash64(0x1ea90ff316475451ull);
+	type_code->code_hash = vnx::Hash64(0xd38814ee5dd93feeull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -137,7 +137,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_trade_history::static_create_type_code()
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
 		field.name = "limit";
-		field.value = vnx::to_string(-1);
+		field.value = vnx::to_string(100);
 		field.code = {7};
 	}
 	{
