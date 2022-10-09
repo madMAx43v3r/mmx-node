@@ -23,11 +23,11 @@ Vue.component('node-settings', {
 				.then(data => {
 					this.loading = false;
 					this.timelord = data.timelord ? true : false;
-					this.opencl_device = data.opencl_device != null ? data.opencl_device :
-							(data.opencl_device_list && data.opencl_device_list.length ? 0 : -1);
+					this.opencl_device = data["Node.opencl_device"] != null ? data["Node.opencl_device"] :
+							(data["Node.opencl_device_list"] && data["Node.opencl_device_list"].length ? 0 : -1);
 					this.opencl_device_list = [{name: "None", value: -1}];
 					let i = 0;
-					for(const name of data.opencl_device_list) {
+					for(const name of data["Node.opencl_device_list"]) {
 						this.opencl_device_list.push({name: name, value: i++});
 					}
 					this.farmer_reward_addr = data["Farmer.reward_addr"];
@@ -104,7 +104,7 @@ Vue.component('node-settings', {
 		},
 		opencl_device(value, prev) {
 			if(prev != null) {
-				this.set_config("opencl_device", value, true);
+				this.set_config("Node.opencl_device", value, true);
 			}
 		},
 		farmer_reward_addr(value, prev) {
