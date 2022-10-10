@@ -211,10 +211,10 @@ std::vector<T> get_subset(const std::set<T>& candidates, const size_t max_count,
 
 std::vector<std::string> Router::get_peers(const uint32_t& max_count) const
 {
-	std::set<std::string> peers = peer_set;
-	for(const auto& entry : peer_map) {
-		peers.insert(entry.second->address);
-	}
+	auto peers = get_known_peers();
+	const auto connected = get_connected_peers();
+	peers.insert(peers.end(), connected.begin(), connected.end());
+
 	std::set<std::string> valid;
 	for(const auto& addr : peers) {
 		if(is_public_address(addr)) {
@@ -869,18 +869,6 @@ void Router::save_data()
 		try {
 			file.open("wb");
 			const auto peers = get_known_peers();
-			vnx::write_generic(file.out, std::set<std::string>(peers.begin(), peers.end()));
-			file.close();
-		}
-		catch(const std::exception& ex) {
-			log(WARN) << "Failed to write peers to file: " << ex.what();
-		}
-	}
-	{
-		vnx::File file(storage_path + "connected_peers.dat");
-		try {
-			file.open("wb");
-			const auto peers = get_connected_peers();
 			vnx::write_generic(file.out, std::set<std::string>(peers.begin(), peers.end()));
 			file.close();
 		}
