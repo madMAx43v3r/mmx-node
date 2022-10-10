@@ -212,8 +212,7 @@ std::vector<T> get_subset(const std::set<T>& candidates, const size_t max_count,
 std::vector<std::string> Router::get_peers(const uint32_t& max_count) const
 {
 	std::set<std::string> valid;
-	for(const auto& entry : peer_map) {
-		const auto& addr = entry.second->address;
+	for(const auto& addr : peer_set) {
 		if(is_public_address(addr)) {
 			valid.insert(addr);
 		}
@@ -836,7 +835,7 @@ void Router::query()
 void Router::discover()
 {
 	auto method = Router_get_peers::create();
-	method->max_count = num_peers_out;
+	method->max_count = max_connect_threads;
 	auto req = Request::create();
 	req->id = next_request_id++;
 	req->method = method;
