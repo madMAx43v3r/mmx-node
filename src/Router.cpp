@@ -855,7 +855,7 @@ void Router::discover()
 		return;
 	}
 	auto method = Router_get_peers::create();
-	method->max_count = num_peers_out;
+	method->max_count = 4 * num_peers_out;
 	auto req = Request::create();
 	req->id = next_request_id++;
 	req->method = method;
