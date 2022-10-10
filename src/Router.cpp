@@ -106,22 +106,6 @@ void Router::main()
 		log(INFO) << "Loaded " << peer_set.size() << " known peers";
 	}
 	{
-		vnx::File file(storage_path + "connected_peers.dat");
-		if(file.exists()) {
-			std::vector<std::string> peers;
-			try {
-				file.open("rb");
-				vnx::read_generic(file.in, peers);
-				file.close();
-			}
-			catch(const std::exception& ex) {
-				log(WARN) << "Failed to read peers from file: " << ex.what();
-			}
-			last_peer_set.insert(peers.begin(), peers.end());
-		}
-		log(INFO) << "Loaded " << last_peer_set.size() << " previously connected peers";
-	}
-	{
 		vnx::File file(storage_path + "farmer_credits.dat");
 		if(file.exists()) {
 			try {
@@ -227,8 +211,12 @@ std::vector<T> get_subset(const std::set<T>& candidates, const size_t max_count,
 
 std::vector<std::string> Router::get_peers(const uint32_t& max_count) const
 {
+	std::set<std::string> peers = peer_set;
+	for(const auto& entry : peer_map) {
+		peers.insert(entry.second->address);
+	}
 	std::set<std::string> valid;
-	for(const auto& addr : peer_set) {
+	for(const auto& addr : peers) {
 		if(is_public_address(addr)) {
 			valid.insert(addr);
 		}
@@ -700,9 +688,10 @@ bool Router::process(std::shared_ptr<const Return> ret)
 void Router::connect()
 {
 	const auto now_ms = vnx::get_wall_time_millis();
+	const auto now_sec = now_ms / 1000;
 
-	for(const auto& address : fixed_peers)
-	{
+	// connect to fixed peers
+	for(const auto& address : fixed_peers) {
 		bool connected = false;
 		for(const auto& entry : peer_map) {
 			if(address == entry.second->address) {
@@ -715,28 +704,26 @@ void Router::connect()
 		}
 	}
 
-	size_t total_outbound = 0;
-	std::set<std::shared_ptr<peer_t>> outbound_synced;
-	std::set<std::shared_ptr<peer_t>> outbound_not_synced;
-	for(const auto& entry : peer_map) {
-		const auto& peer = entry.second;
-		if(peer->is_outbound) {
-			if(peer->is_synced) {
-				outbound_synced.insert(peer);
-			}
-			else if(now_ms - peer->connected_since_ms > connection_timeout_ms) {
-				outbound_not_synced.insert(peer);
-			}
-			total_outbound++;
-		}
-	}
-
-	// check if we want more peers
-	if(outbound_synced.size() < num_peers_out && total_outbound < 2 * num_peers_out)
+	// connect to new peers
 	{
-		std::set<std::string> peers;
-		peer_set.insert(seed_peers.begin(), seed_peers.end());
-		for(const auto& address : (last_peer_set.empty() ? peer_set : last_peer_set)) {
+		std::set<std::string> try_peers;
+		std::set<std::string> all_peers = peer_set;
+
+		for(const auto& entry : peer_retry_map) {
+			all_peers.insert(entry.first);
+		}
+		all_peers.insert(seed_peers.begin(), seed_peers.end());
+
+		for(const auto& address : all_peers)
+		{
+			if(synced_peers.size() >= num_peers_out) {
+				auto iter = peer_retry_map.find(address);
+				if(iter != peer_retry_map.end()) {
+					if(now_sec < iter->second) {
+						continue;	// wait before trying again
+					}
+				}
+			}
 			bool connected = false;
 			for(const auto& entry : peer_map) {
 				if(address == entry.second->address) {
@@ -744,21 +731,34 @@ void Router::connect()
 				}
 			}
 			if(!connected && !block_peers.count(address) && !connecting_peers.count(address)) {
-				peers.insert(address);
+				try_peers.insert(address);
 			}
 		}
-		last_peer_set.clear();
 
-		const auto num_connect = num_peers_out - outbound_synced.size();
-		for(const auto& address : get_subset(peers, num_connect, rand_engine))
+		for(const auto& address : get_subset(try_peers, num_peers_out, rand_engine))
 		{
-			if(connect_threads->get_num_running() >= max_connect_threads) {
+			if(connecting_peers.size() >= 4 * num_peers_out) {
 				break;
 			}
 			log(DEBUG) << "Trying to connect to " << address;
 
+			peer_retry_map.erase(address);
 			connecting_peers.insert(address);
 			connect_threads->add_task(std::bind(&Router::connect_task, this, address));
+		}
+	}
+
+	std::set<std::shared_ptr<peer_t>> outbound_synced;
+	std::set<std::shared_ptr<peer_t>> outbound_not_synced;
+	for(const auto& entry : peer_map) {
+		const auto& peer = entry.second;
+		if(peer->is_outbound && !fixed_peers.count(peer->address)) {
+			if(peer->is_synced) {
+				outbound_synced.insert(peer);
+			}
+			else if(now_ms - peer->connected_since_ms > connection_timeout_ms) {
+				outbound_not_synced.insert(peer);
+			}
 		}
 	}
 
@@ -769,7 +769,7 @@ void Router::connect()
 			num_disconnect = outbound_synced.size() - num_peers_out;
 		}
 		for(const auto& peer : get_subset(outbound_synced, num_disconnect, rand_engine)) {
-			log(INFO) << "Disconnecting from " << peer->address << " to reduce connections to synced peers";
+			log(DEBUG) << "Disconnecting from " << peer->address << " to reduce connections to synced peers";
 			disconnect(peer->client);
 		}
 	}
@@ -781,7 +781,7 @@ void Router::connect()
 			num_disconnect = outbound_not_synced.size() - num_peers_out;
 		}
 		for(const auto& peer : get_subset(outbound_not_synced, num_disconnect, rand_engine)) {
-			log(INFO) << "Disconnecting from " << peer->address << " to reduce connections to non-synced peers";
+			log(DEBUG) << "Disconnecting from " << peer->address << " to reduce connections to non-synced peers";
 			disconnect(peer->client);
 		}
 	}
@@ -851,8 +851,11 @@ void Router::query()
 
 void Router::discover()
 {
+	if(peer_set.size() >= max_peer_set) {
+		return;
+	}
 	auto method = Router_get_peers::create();
-	method->max_count = max_connect_threads;
+	method->max_count = max_peer_set / num_peers_out;
 	auto req = Request::create();
 	req->id = next_request_id++;
 	req->method = method;
@@ -907,8 +910,10 @@ void Router::add_peer(const std::string& address, const int sock)
 		if(auto peer = find_peer(client)) {
 			peer->is_outbound = true;
 		}
+		peer_set.insert(address);
 	} else {
 		peer_set.erase(address);
+		peer_retry_map[address] = vnx::get_wall_time_seconds() + peer_retry_interval * 60;
 	}
 }
 
@@ -1388,7 +1393,9 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 			break;
 		case Router_get_peers_return::VNX_TYPE_ID:
 			if(auto value = std::dynamic_pointer_cast<const Router_get_peers_return>(result)) {
-				peer_set.insert(value->_ret_0.begin(), value->_ret_0.end());
+				for(const auto& address : value->_ret_0) {
+					peer_retry_map.emplace(address, 0);
+				}
 			}
 			break;
 		case Node_get_height_return::VNX_TYPE_ID:
@@ -1522,7 +1529,6 @@ void Router::on_connect(uint64_t client, const std::string& address)
 	peer->challenge = hash_t(&seed, sizeof(seed));
 	peer->connected_since_ms = vnx::get_wall_time_millis();
 	peer_map[client] = peer;
-	peer_set.insert(address);
 
 	send_request(peer, Router_get_id::create());
 	send_request(peer, Router_get_info::create());
@@ -1539,6 +1545,7 @@ void Router::on_disconnect(uint64_t client)
 {
 	if(auto peer = find_peer(client)) {
 		log(INFO) << "Peer " << peer->address << " disconnected";
+		peer_retry_map[peer->address] = vnx::get_wall_time_seconds() + peer_retry_interval * 60;
 	}
 	synced_peers.erase(client);
 

@@ -215,9 +215,9 @@ private:
 	skey_t node_sk;
 	pubkey_t node_key;
 	std::set<std::string> peer_set;
-	std::set<std::string> last_peer_set;
-	std::set<std::string> self_addrs;
 	std::set<std::string> connecting_peers;
+	std::set<std::string> self_addrs;
+	std::map<std::string, int64_t> peer_retry_map;		// [address => when to try again [sec]]
 
 	std::set<uint64_t> synced_peers;
 	std::unordered_map<uint64_t, std::shared_ptr<peer_t>> peer_map;
