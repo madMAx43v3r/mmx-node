@@ -215,6 +215,7 @@ private:
 	skey_t node_sk;
 	pubkey_t node_key;
 	std::set<std::string> peer_set;
+	std::set<std::string> last_peer_set;
 	std::set<std::string> self_addrs;
 	std::set<std::string> connecting_peers;
 

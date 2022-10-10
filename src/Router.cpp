@@ -106,6 +106,22 @@ void Router::main()
 		log(INFO) << "Loaded " << peer_set.size() << " known peers";
 	}
 	{
+		vnx::File file(storage_path + "connected_peers.dat");
+		if(file.exists()) {
+			std::vector<std::string> peers;
+			try {
+				file.open("rb");
+				vnx::read_generic(file.in, peers);
+				file.close();
+			}
+			catch(const std::exception& ex) {
+				log(WARN) << "Failed to read peers from file: " << ex.what();
+			}
+			last_peer_set.insert(peers.begin(), peers.end());
+		}
+		log(INFO) << "Loaded " << last_peer_set.size() << " previously connected peers";
+	}
+	{
 		vnx::File file(storage_path + "farmer_credits.dat");
 		if(file.exists()) {
 			try {
@@ -693,8 +709,7 @@ void Router::connect()
 				connected = true;
 			}
 		}
-		if(!connected && !connecting_peers.count(address))
-		{
+		if(!connected && !connecting_peers.count(address)) {
 			connecting_peers.insert(address);
 			connect_threads->add_task(std::bind(&Router::connect_task, this, address));
 		}
@@ -721,7 +736,7 @@ void Router::connect()
 	{
 		std::set<std::string> peers;
 		peer_set.insert(seed_peers.begin(), seed_peers.end());
-		for(const auto& address : peer_set) {
+		for(const auto& address : (last_peer_set.empty() ? peer_set : last_peer_set)) {
 			bool connected = false;
 			for(const auto& entry : peer_map) {
 				if(address == entry.second->address) {
@@ -732,6 +747,8 @@ void Router::connect()
 				peers.insert(address);
 			}
 		}
+		last_peer_set.clear();
+
 		const auto num_connect = num_peers_out - outbound_synced.size();
 		for(const auto& address : get_subset(peers, num_connect, rand_engine))
 		{
@@ -849,6 +866,18 @@ void Router::save_data()
 		try {
 			file.open("wb");
 			const auto peers = get_known_peers();
+			vnx::write_generic(file.out, std::set<std::string>(peers.begin(), peers.end()));
+			file.close();
+		}
+		catch(const std::exception& ex) {
+			log(WARN) << "Failed to write peers to file: " << ex.what();
+		}
+	}
+	{
+		vnx::File file(storage_path + "connected_peers.dat");
+		try {
+			file.open("wb");
+			const auto peers = get_connected_peers();
 			vnx::write_generic(file.out, std::set<std::string>(peers.begin(), peers.end()));
 			file.close();
 		}
