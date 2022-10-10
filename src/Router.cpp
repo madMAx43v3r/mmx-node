@@ -431,11 +431,13 @@ void Router::update()
 			}
 		}
 		if(num_peers < min_sync_peers) {
-			if(is_connected) {
-				log(WARN) << "Lost sync with network due to timeout!";
-				is_connected = false;
-				node->start_sync();
-			}
+			node->get_synced_height([this](const vnx::optional<uint32_t>& height) {
+				if(is_connected && height) {
+					log(WARN) << "Lost sync with network due to lost peers!";
+					is_connected = false;
+					node->start_sync();
+				}
+			});
 		} else {
 			is_connected = true;
 		}
