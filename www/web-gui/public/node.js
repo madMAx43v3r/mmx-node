@@ -511,6 +511,10 @@ Vue.component('node-log-table', {
 				.then(response => response.json())
 				.then(data => {
 					this.data = data;
+					if(this.$isWinGUI) 
+					{
+						this.data = this.data.filter( item => item.module != 'HttpServer');
+					}
 					this.loaded = true;
 				});
 		},
@@ -525,7 +529,7 @@ Vue.component('node-log-table', {
 					result = 'warning';
 					break;
 				default:
-					result = '';				
+					result = '';
 			}
 
 			return result;
@@ -550,12 +554,12 @@ Vue.component('node-log-table', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<div>			
+		<div>
 			<v-data-table
 				:headers="headers"
 				:items="data"
 				:loading="!loaded"
-				:item-class="itemClass"				
+				:item-class="itemClass"
 				hide-default-footer
 				disable-sort
 				disable-pagination
@@ -571,7 +575,7 @@ Vue.component('node-log-table', {
 					{{ new Date(item.time / 1000).toLocaleTimeString() }}
 				</template>
 
-			</v-data-table>			
+			</v-data-table>
 		</div>
 		`
 })
