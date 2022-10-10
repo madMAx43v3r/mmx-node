@@ -247,7 +247,7 @@ Vue.component('market-offers', {
 				{{ $t('common.failed_with') }}: <b>{{error}}</b>
 			</v-alert>
 
-			<v-dialog v-model="dialog" transition="dialog-top-transition" max-width="800">
+			<v-dialog v-model="dialog" max-width="800">
 				<template v-slot:default="dialog">
 					<v-card>
 						<v-toolbar color="primary" dark>
