@@ -38,6 +38,7 @@ add_subdirectory(vnx-base)
 add_subdirectory(vnx-addons)
 add_subdirectory(lib/libbech32)
 add_subdirectory(lib/bls-signatures)
+add_subdirectory(tools)
 add_subdirectory(test)
 
 find_package(OpenCL)
