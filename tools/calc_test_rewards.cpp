@@ -48,7 +48,9 @@ int main(int argc, char** argv)
 	{
 		if(auto block = std::dynamic_pointer_cast<const BlockHeader>(value))
 		{
-			if(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof))
+			if(block->height >= start_height
+				&& block->height <= end_height
+				&& std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof))
 			{
 				if(auto tx = block->tx_base)
 				{
