@@ -705,6 +705,7 @@ void Router::connect()
 	}
 
 	// connect to new peers
+	if(synced_peers.size() < num_peers_out || peer_set.size() < max_peer_set)
 	{
 		std::set<std::string> try_peers;
 		std::set<std::string> all_peers = peer_set;
@@ -855,7 +856,7 @@ void Router::discover()
 		return;
 	}
 	auto method = Router_get_peers::create();
-	method->max_count = max_peer_set / num_peers_out;
+	method->max_count = num_peers_out;
 	auto req = Request::create();
 	req->id = next_request_id++;
 	req->method = method;
