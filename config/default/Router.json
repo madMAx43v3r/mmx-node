@@ -1,6 +1,7 @@
 {
 	"host": "0.0.0.0",
 	"min_sync_peers": 3,
+	"num_peers_out": 5,
 	"max_connections": 100,
 	"max_queue_ms": 5000,
 	"max_msg_size": 16777216,
