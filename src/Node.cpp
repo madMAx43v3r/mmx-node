@@ -971,6 +971,7 @@ std::vector<offer_data_t> Node::get_recent_offers(const int32_t& limit, const vn
 		const auto tmp = fetch_offers(list, is_open);
 		result.insert(result.end(), tmp.begin(), tmp.end());
 	}
+	result.resize(std::min(result.size(), size_t(limit)));
 	return result;
 }
 
