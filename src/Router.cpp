@@ -704,6 +704,20 @@ void Router::connect()
 		}
 	}
 
+	std::set<std::shared_ptr<peer_t>> outbound_synced;
+	std::set<std::shared_ptr<peer_t>> outbound_not_synced;
+	for(const auto& entry : peer_map) {
+		const auto& peer = entry.second;
+		if(peer->is_outbound && !fixed_peers.count(peer->address)) {
+			if(peer->is_synced) {
+				outbound_synced.insert(peer);
+			}
+			else if(now_ms - peer->connected_since_ms > connection_timeout_ms) {
+				outbound_not_synced.insert(peer);
+			}
+		}
+	}
+
 	// connect to new peers
 	{
 		std::set<std::string> try_peers;
@@ -716,7 +730,7 @@ void Router::connect()
 
 		for(const auto& address : all_peers)
 		{
-			if(synced_peers.size() >= num_peers_out) {
+			if(outbound_synced.size() >= num_peers_out) {
 				auto iter = peer_retry_map.find(address);
 				if(iter != peer_retry_map.end()) {
 					if(now_sec < iter->second) {
@@ -745,20 +759,6 @@ void Router::connect()
 			peer_retry_map.erase(address);
 			connecting_peers.insert(address);
 			connect_threads->add_task(std::bind(&Router::connect_task, this, address));
-		}
-	}
-
-	std::set<std::shared_ptr<peer_t>> outbound_synced;
-	std::set<std::shared_ptr<peer_t>> outbound_not_synced;
-	for(const auto& entry : peer_map) {
-		const auto& peer = entry.second;
-		if(peer->is_outbound && !fixed_peers.count(peer->address)) {
-			if(peer->is_synced) {
-				outbound_synced.insert(peer);
-			}
-			else if(now_ms - peer->connected_since_ms > connection_timeout_ms) {
-				outbound_not_synced.insert(peer);
-			}
 		}
 	}
 
