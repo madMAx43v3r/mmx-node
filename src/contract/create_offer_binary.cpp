@@ -80,9 +80,9 @@ int main(int argc, char** argv)
 		bin->fields["ask_currency"] = vm::MEM_STATIC + (off++);
 		bin->fields["ask_amount"] = vm::MEM_STATIC + (off++);
 		bin->fields["state"] = vm::MEM_STATIC + (off++);
-		bin->fields["height_open"] = vm::MEM_STATIC + (off++);
-		bin->fields["height_close"] = vm::MEM_STATIC + (off++);
-		bin->fields["trade_txid"] = vm::MEM_STATIC + (off++);
+		bin->fields["height_open"] = vm::MEM_STATIC + (off++);	// TODO: obsolete
+		bin->fields["height_close"] = vm::MEM_STATIC + (off++);	// TODO: obsolete
+		bin->fields["trade_txid"] = vm::MEM_STATIC + (off++);	// TODO: txid_close (for cancel too)
 	}
 
 	std::vector<vm::instr_t> code;
