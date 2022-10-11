@@ -954,9 +954,24 @@ std::vector<offer_data_t> Node::get_offers(const uint32_t& since, const vnx::boo
 
 std::vector<offer_data_t> Node::get_recent_offers(const int32_t& limit, const vnx::bool_t& is_open) const
 {
-	std::vector<addr_t> entries;
-	offer_log.find_last_range(std::make_pair(0, 0), std::make_pair(-1, -1), entries, limit);
-	return fetch_offers(entries, is_open);
+	std::vector<offer_data_t> result;
+	std::pair<uint32_t, uint32_t> offer_log_end(-1, -1);
+
+	while(result.size() < size_t(limit)) {
+		std::vector<std::pair<std::pair<uint32_t, uint32_t>, addr_t>> entries;
+		if(!offer_log.find_last_range(std::make_pair(0, 0), offer_log_end, entries, limit)) {
+			break;
+		}
+		offer_log_end = entries.front().first;
+
+		std::vector<addr_t> list;
+		for(const auto& entry : entries) {
+			list.push_back(entry.second);
+		}
+		const auto tmp = fetch_offers(list, is_open);
+		result.insert(result.end(), tmp.begin(), tmp.end());
+	}
+	return result;
 }
 
 std::vector<offer_data_t> Node::get_offers_for(
