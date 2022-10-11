@@ -126,10 +126,7 @@ uint64_t Engine::lookup(const uint64_t src, const bool read_only)
 
 uint64_t Engine::lookup(const var_t* var, const bool read_only)
 {
-	if(var) {
-		return lookup(*var, read_only);
-	}
-	return 0;
+	return var ? lookup(*var, read_only) : 0;
 }
 
 uint64_t Engine::lookup(const varptr_t& var, const bool read_only)
