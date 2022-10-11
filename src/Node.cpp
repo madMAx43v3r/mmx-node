@@ -1059,22 +1059,25 @@ std::vector<trade_data_t> Node::get_trade_history_for(
 		const std::vector<addr_t>& offers, const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask) const
 {
 	std::vector<trade_data_t> out;
+	std::unordered_set<addr_t> offer_set;
 	for(const auto& address : offers) {
-		const auto data = get_offer(address);
-		if((!bid || data.bid_currency == *bid) && (!ask || data.ask_currency == *ask)) {
-			trade_data_t tmp;
-			tmp.contract = address;
-			tmp.bid_amount = data.bid_amount;
-			tmp.ask_amount = data.ask_amount;
-			tmp.bid_currency = data.bid_currency;
-			tmp.ask_currency = data.ask_currency;
-			if(data.close_height) {
-				tmp.height = *data.close_height;
+		if(offer_set.insert(address).second) {
+			const auto data = get_offer(address);
+			if((!bid || data.bid_currency == *bid) && (!ask || data.ask_currency == *ask)) {
+				trade_data_t tmp;
+				tmp.contract = address;
+				tmp.bid_amount = data.bid_amount;
+				tmp.ask_amount = data.ask_amount;
+				tmp.bid_currency = data.bid_currency;
+				tmp.ask_currency = data.ask_currency;
+				if(data.close_height) {
+					tmp.height = *data.close_height;
+				}
+				if(data.trade_txid) {
+					tmp.txid = *data.trade_txid;
+				}
+				out.push_back(tmp);
 			}
-			if(data.trade_txid) {
-				tmp.txid = *data.trade_txid;
-			}
-			out.push_back(tmp);
 		}
 	}
 	return out;
