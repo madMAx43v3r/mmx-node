@@ -916,7 +916,9 @@ offer_data_t Node::get_offer(const addr_t& address) const
 	}
 	offer_data_t out;
 	out.address = address;
-	out.height = to_uint(data["height_open"]);
+	if(auto height = get_tx_height(address)) {
+		out.height = *height;
+	}
 	out.bid_currency = to_addr(data["bid_currency"]);
 	out.ask_currency = to_addr(data["ask_currency"]);
 	out.bid_amount = to_uint(data["bid_amount"]);
