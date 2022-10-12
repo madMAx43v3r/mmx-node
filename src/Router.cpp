@@ -736,6 +736,10 @@ void Router::connect()
 					if(now_sec < iter->second) {
 						continue;	// wait before trying again
 					}
+				} else {
+					// randomize re-checking
+					peer_retry_map[address] = now_sec + vnx::rand64() % (peer_retry_interval * 60);
+					continue;
 				}
 			}
 			bool connected = false;
