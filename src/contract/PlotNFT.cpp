@@ -31,6 +31,8 @@ hash_t PlotNFT::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "unlock_delay", 	unlock_delay);
 	write_field(out, "name", 	name);
 	write_field(out, "server_url", 		server_url);
+	write_field(out, "reward_addr", 	reward_addr);
+	write_field(out, "partial_diff", 	partial_diff);
 	out.flush();
 
 	return hash_t(buffer);
@@ -52,6 +54,16 @@ void PlotNFT::lock_pool(const vnx::optional<addr_t>& new_target, const uint32_t&
 {
 	Super::lock(new_target, new_unlock_delay);
 	server_url = new_server_url;
+}
+
+void PlotNFT::set_reward_addr(const vnx::optional<addr_t>& new_reward_addr)
+{
+	reward_addr = new_reward_addr;
+}
+
+void PlotNFT::set_partial_diff(const vnx::optional<addr_t>& new_partial_diff)
+{
+	partial_diff = new_partial_diff;
 }
 
 

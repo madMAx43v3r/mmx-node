@@ -25,6 +25,7 @@ hash_t MultiSig::calc_hash() const
 	for(const auto& sol : solutions) {
 		write_bytes(out, sol ? sol->calc_hash() : hash_t());
 	}
+	write_field(out, "num_required", num_required);
 	out.flush();
 
 	return hash_t(buffer);
