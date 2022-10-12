@@ -305,17 +305,6 @@ var_t* Engine::write(std::unique_ptr<var_t>& var, const uint64_t* dst, const var
 
 void Engine::push_back(const uint64_t dst, const var_t& var)
 {
-	if(var.type == TYPE_ARRAY) {
-		const auto& array = (const array_t&)var;
-		if(dst == array.address) {
-			throw std::logic_error("dst == src");
-		}
-		for(uint64_t i = 0; i < array.size; ++i) {
-			push_back(dst, read_entry_fail(array.address, i));
-			check_gas();
-		}
-		return;
-	}
 	auto& array = read_fail<array_t>(dst, TYPE_ARRAY);
 	if(array.size >= std::numeric_limits<uint32_t>::max()) {
 		throw std::runtime_error("push_back overflow at " + to_hex(dst));
@@ -760,6 +749,23 @@ void Engine::concat(const uint64_t dst, const uint64_t lhs, const uint64_t rhs)
 			::memcpy(res->data(L.size), R.data(), R.size);
 			res->size = size;
 			assign(dst, std::move(res));
+			break;
+		}
+		case TYPE_ARRAY: {
+			if(dst == lhs || dst == rhs) {
+				throw std::logic_error("dst == src");
+			}
+			const auto& L = (const array_t&)lvar;
+			const auto& R = (const array_t&)rvar;
+			assign(dst, std::make_unique<array_t>());
+			for(uint64_t i = 0; i < L.size; ++i) {
+				push_back(dst, read_entry_fail(L.address, i));
+				check_gas();
+			}
+			for(uint64_t i = 0; i < R.size; ++i) {
+				push_back(dst, read_entry_fail(R.address, i));
+				check_gas();
+			}
 			break;
 		}
 		default:
