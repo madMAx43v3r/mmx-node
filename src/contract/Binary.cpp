@@ -59,6 +59,24 @@ uint64_t Binary::calc_cost(std::shared_ptr<const ChainParams> params) const
 	return payload * params->min_txfee_byte;
 }
 
+vnx::optional<uint32_t> Binary::find_field(const std::string& name) const
+{
+	auto iter = fields.find(name);
+	if(iter != fields.end()) {
+		return iter->second;
+	}
+	return nullptr;
+}
+
+vnx::optional<method_t> Binary::find_method(const std::string& name) const
+{
+	auto iter = methods.find(name);
+	if(iter != methods.end()) {
+		return iter->second;
+	}
+	return nullptr;
+}
+
 
 } // contract
 } // mmx

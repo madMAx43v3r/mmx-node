@@ -15,6 +15,9 @@ struct offer_data_t {
 	string state;
 
 	optional<uint> close_height;
-	optional<hash_t> trade_txid;
+	optional<hash_t> trade_txid;	// TODO: close_txid
+	
+	
+	bool is_scam() const;
 	
 }

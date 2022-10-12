@@ -413,27 +413,9 @@ public:
 			}
 			tmp["price"] = ask_value / bid_value;
 			tmp["time"] = context->get_time(value.height);
-		}
-		set(tmp);
-	}
-
-	void accept(const trade_data_t& value) {
-		auto tmp = render(value, context);
-		if(context) {
-			double bid_value = 0;
-			double ask_value = 0;
-			if(auto currency = context->find_currency(value.bid_currency)) {
-				bid_value = to_value(value.bid_amount, currency->decimals);
-				tmp["bid_value"] = bid_value;
-				tmp["bid_symbol"] = currency->symbol;
+			if(auto height = value.close_height) {
+				tmp["close_time"] = context->get_time(*height);
 			}
-			if(auto currency = context->find_currency(value.ask_currency)) {
-				ask_value = to_value(value.ask_amount, currency->decimals);
-				tmp["ask_value"] = ask_value;
-				tmp["ask_symbol"] = currency->symbol;
-			}
-			tmp["price"] = ask_value / bid_value;
-			tmp["time"] = context->get_time(value.height);
 		}
 		set(tmp);
 	}
@@ -1754,7 +1736,6 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const auto iter_ask = query.find("ask");
 		const auto iter_limit = query.find("limit");
 		const auto iter_offset = query.find("offset");
-		const auto iter_since = query.find("since");
 		const auto iter_open = query.find("is_open");
 		if(iter_bid != query.end()) {
 			bid = vnx::from_string_value<addr_t>(iter_bid->second);
@@ -1764,61 +1745,39 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 		const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
 		const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
-		const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 		const bool is_open = iter_open != query.end() ? vnx::from_string<bool>(iter_open->second) : true;
-		if(bid || ask || since) {
-			node->get_offers_for(bid, ask, since, is_open,
-				[this, request_id, bid, ask, limit, offset](const std::vector<offer_data_t>& offers) {
-					std::unordered_set<addr_t> addr_set;
-					std::vector<std::pair<offer_data_t, double>> result;
-					for(const auto& entry : offers) {
-						double price = std::numeric_limits<double>::quiet_NaN();
-						if(bid && ask) {
-							price = double(entry.ask_amount) / entry.bid_amount;
-						}
-						result.emplace_back(entry, price);
-						addr_set.insert(entry.bid_currency);
-						addr_set.insert(entry.ask_currency);
-					}
-					if(bid && ask) {
-						std::sort(result.begin(), result.end(),
-							[](const std::pair<offer_data_t, double>& lhs, const std::pair<offer_data_t, double>& rhs) -> bool {
-								return lhs.second < rhs.second;
-							});
-					} else {
-						std::reverse(result.begin(), result.end());
-					}
-					result = get_page(result, limit, offset);
 
-					get_context(addr_set, request_id,
-						[this, request_id, result](std::shared_ptr<RenderContext> context) {
-							std::vector<vnx::Variant> res;
-							for(const auto& entry : result) {
-								res.push_back(render_value(entry.first, context));
-							}
-							respond(request_id, render_value(res));
-						});
-				},
-				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
-		} else {
-			node->get_recent_offers(limit, is_open,
-				[this, request_id, bid, ask, offset](const std::vector<offer_data_t>& offers) {
-					std::unordered_set<addr_t> addr_set;
-					for(const auto& entry : offers) {
-						addr_set.insert(entry.bid_currency);
-						addr_set.insert(entry.ask_currency);
+		node->get_recent_offers_for(bid, ask, bid && ask ? std::max<size_t>(1000, limit) : offset + limit, is_open,
+			[this, request_id, bid, ask, limit, offset](const std::vector<offer_data_t>& offers) {
+				std::unordered_set<addr_t> addr_set;
+				std::vector<std::pair<offer_data_t, double>> result;
+				for(const auto& entry : offers) {
+					double price = std::numeric_limits<double>::quiet_NaN();
+					if(bid && ask) {
+						price = double(entry.ask_amount) / entry.bid_amount;
 					}
-					get_context(addr_set, request_id,
-						[this, request_id, offers](std::shared_ptr<RenderContext> context) {
-							std::vector<vnx::Variant> res;
-							for(const auto& entry : offers) {
-								res.push_back(render_value(entry, context));
-							}
-							respond(request_id, render_value(res));
+					result.emplace_back(entry, price);
+					addr_set.insert(entry.bid_currency);
+					addr_set.insert(entry.ask_currency);
+				}
+				if(bid && ask) {
+					std::sort(result.begin(), result.end(),
+						[](const std::pair<offer_data_t, double>& lhs, const std::pair<offer_data_t, double>& rhs) -> bool {
+							return lhs.second < rhs.second;
 						});
-				},
-				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
-		}
+				}
+				result = get_page(result, limit, offset);
+
+				get_context(addr_set, request_id,
+					[this, request_id, result](std::shared_ptr<RenderContext> context) {
+						std::vector<vnx::Variant> res;
+						for(const auto& entry : result) {
+							res.push_back(render_value(entry.first, context));
+						}
+						respond(request_id, render_value(res));
+					});
+			},
+			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 	}
 	else if(sub_path == "/node/trade_history") {
 		vnx::optional<addr_t> bid;
@@ -1836,7 +1795,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const int32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
 		const int32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 		node->get_trade_history_for(bid, ask, limit, since,
-			[this, request_id, bid, ask, limit](const std::vector<trade_data_t>& result) {
+			[this, request_id, bid, ask, limit](const std::vector<offer_data_t>& result) {
 				std::unordered_set<addr_t> addr_set;
 				for(const auto& entry : result) {
 					addr_set.insert(entry.bid_currency);

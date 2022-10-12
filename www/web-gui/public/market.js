@@ -448,10 +448,11 @@ Vue.component('market-history', {
 											</router-link>
 										</template>
 									</td>
-									<td><b>{{(item.price).toPrecision(3)}}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
-									<td><b>{{(1 / item.price).toPrecision(3)}}</b>&nbsp; {{item.bid_symbol}} / {{item.ask_symbol}}</td>
-									<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
-									<td><router-link :to="'/explore/address/' + item.contract">TX</router-link></td>
+									<td><b>{{parseFloat((item.price).toPrecision(3))}}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
+									<td><b>{{parseFloat((1 / item.price).toPrecision(3))}}</b>&nbsp; {{item.bid_symbol}} / {{item.ask_symbol}}</td>
+									<td>{{new Date(item.close_time * 1000).toLocaleString()}}</td>
+									<td><router-link :to="'/explore/address/' + item.address">{{ $t('market_offers.address') }}</router-link></td>
+									<td><router-link :to="'/explore/transaction/' + item.trade_txid">TX</router-link></td>
 								</tr>
 							</tbody>
 						</v-simple-table>

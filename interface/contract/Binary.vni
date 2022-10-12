@@ -26,4 +26,8 @@ class Binary extends mmx.Contract {
 	
 	ulong calc_cost(mmx.ChainParams* params) const;
 	
+	optional<uint> find_field(string name) const;
+	
+	optional<method_t> find_method(string name) const;
+	
 }

@@ -138,13 +138,13 @@ protected:
 
 	std::vector<offer_data_t> get_recent_offers(const int32_t& limit, const vnx::bool_t& is_open) const override;
 
-	std::vector<offer_data_t> get_offers_for(
-			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const uint32_t& since, const vnx::bool_t& is_open) const override;
+	std::vector<offer_data_t> get_recent_offers_for(
+			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const int32_t& limit, const vnx::bool_t& is_open) const override;
 
-	std::vector<trade_data_t> get_trade_history(const int32_t& limit = -1, const uint32_t& since = 0) const override;
+	std::vector<offer_data_t> get_trade_history(const int32_t& limit, const uint32_t& since = 0) const override;
 
-	std::vector<trade_data_t> get_trade_history_for(
-			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const int32_t& limit = -1, const uint32_t& since = 0) const override;
+	std::vector<offer_data_t> get_trade_history_for(
+			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const int32_t& limit, const uint32_t& since = 0) const override;
 
 	std::vector<std::shared_ptr<const BlockHeader>> get_farmed_blocks(
 			const std::vector<bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since = 0) const override;
@@ -283,11 +283,16 @@ private:
 
 	std::shared_ptr<const Block> make_block(std::shared_ptr<const BlockHeader> prev, const proof_data_t& proof_data);
 
+	std::string get_offer_state(const addr_t& address) const;
+
 	std::vector<offer_data_t> fetch_offers(const std::vector<addr_t>& entries, const bool is_open) const;
 
-	std::vector<trade_data_t> get_trade_history_for(const std::vector<addr_t>& offers, const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask) const;
+	std::vector<offer_data_t> fetch_offers_for(
+			const std::vector<addr_t>& entries, const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask,
+			const bool is_open = false, const bool filter = false) const;
 
-	std::pair<vm::varptr_t, uint64_t> read_storage_field(const addr_t& binary, const addr_t& contract, const std::string& name, const uint32_t& height = -1) const;
+	std::pair<vm::varptr_t, uint64_t> read_storage_field(
+			const addr_t& binary, const addr_t& contract, const std::string& name, const uint32_t& height = -1) const;
 
 	void sync_more();
 
@@ -417,6 +422,9 @@ private:
 
 	void write_block(std::shared_ptr<const Block> block);
 
+	template<typename T>
+	std::shared_ptr<T> get_contract_as(const addr_t& address) const;
+
 private:
 	DataBase db;
 	hash_t state_hash;
@@ -429,10 +437,12 @@ private:
 	hash_multi_table<addr_t, addr_t> deploy_map;								// [sender => contract]
 	hash_multi_table<bls_pubkey_t, addr_t> vplot_map;							// [farmer_key => contract]
 
-	uint_uint_table<uint32_t, uint32_t, addr_t> offer_log;						// [[height, counter] => contract]
-	uint_uint_table<uint32_t, uint32_t, addr_t> trade_log;						// [[height, counter] => contract]
-	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> offer_map;			// [[currency, height, counter] => contract]
-	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> trade_history;		// [[currency, height, counter] => contract]
+	uint_uint_table<uint32_t, uint32_t, addr_t> offer_log;							// [[height, counter] => contract]
+	uint_uint_table<uint32_t, uint32_t, addr_t> trade_log;							// [[height, counter] => contract]
+	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> offer_bid_map;			// [[currency, height, counter] => contract]
+	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> offer_ask_map;			// [[currency, height, counter] => contract]
+	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> trade_bid_history;		// [[currency, height, counter] => contract]
+	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> trade_ask_history;		// [[currency, height, counter] => contract]
 
 	balance_table_t<uint128> balance_table;										// [[addr, currency] => balance]
 	std::map<std::pair<addr_t, addr_t>, uint128> balance_map;					// [[addr, currency] => balance]
@@ -494,6 +504,12 @@ private:
 	friend class vnx::addons::HttpInterface<Node>;
 
 };
+
+
+template<typename T>
+std::shared_ptr<T> Node::get_contract_as(const addr_t& address) const {
+	return std::dynamic_pointer_cast<T>(get_contract(address));
+}
 
 
 } // mmx
