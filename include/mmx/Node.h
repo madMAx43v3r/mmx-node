@@ -474,7 +474,7 @@ private:
 	hash_table<hash_t, std::pair<int64_t, uint32_t>> tx_index;					// [txid => [file offset, height]]
 	uint_table<uint32_t, std::pair<int64_t, hash_t>> block_index;				// [height => [file offset, block hash]]
 	uint_table<uint32_t, std::vector<hash_t>> tx_log;							// [height => txids]
-	hash_multi_table<bls_pubkey_t, uint32_t> farmer_block_map;					// [farmer_key => block hash]
+	hash_multi_table<bls_pubkey_t, uint32_t> farmer_block_map;					// [farmer_key => height]
 
 	uint32_t sync_pos = 0;									// current sync height
 	uint32_t sync_retry = 0;
