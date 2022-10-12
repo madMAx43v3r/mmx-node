@@ -503,6 +503,8 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 
 	vm::execute(engine, *method);
 
+	std::map<addr_t, uint128_t> spend_amounts;
+
 	for(const auto& out : engine->outputs)
 	{
 		auto& amount = state->balance[out.contract];
@@ -511,13 +513,27 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		}
 		amount -= out.amount;
 
-		// TODO: combine multiple inputs when possible
+		if(out.amount >> 48) {
+			txin_t in;
+			in.address = engine->contract;
+			in.contract = out.contract;
+			in.amount = out.amount;
+			exec_inputs.push_back(in);
+		} else {
+			spend_amounts[out.contract] += out.amount;
+		}
+		exec_outputs.push_back(out);
+	}
+	for(const auto& entry : spend_amounts)
+	{
+		if(entry.second >> 64) {
+			throw std::logic_error("contract spend amount overflow");
+		}
 		txin_t in;
 		in.address = engine->contract;
-		in.contract = out.contract;
-		in.amount = out.amount;
+		in.contract = entry.first;
+		in.amount = entry.second;
 		exec_inputs.push_back(in);
-		exec_outputs.push_back(out);
 	}
 	exec_outputs.insert(exec_outputs.end(), engine->mint_outputs.begin(), engine->mint_outputs.end());
 }
