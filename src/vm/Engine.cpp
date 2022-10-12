@@ -620,10 +620,6 @@ void Engine::init()
 	if(!read(MEM_HEAP + GLOBAL_HAVE_INIT)) {
 		assign(MEM_HEAP + GLOBAL_HAVE_INIT, std::make_unique<var_t>(TYPE_TRUE))->pin();
 		assign(MEM_HEAP + GLOBAL_NEXT_ALLOC, std::make_unique<uint_t>(MEM_HEAP + GLOBAL_DYNAMIC_START))->pin();
-		assign(MEM_HEAP + GLOBAL_LOG_HISTORY, std::make_unique<array_t>())->pin();
-		assign(MEM_HEAP + GLOBAL_SEND_HISTORY, std::make_unique<array_t>())->pin();
-		assign(MEM_HEAP + GLOBAL_MINT_HISTORY, std::make_unique<array_t>())->pin();
-		assign(MEM_HEAP + GLOBAL_EVENT_HISTORY, std::make_unique<array_t>())->pin();
 	}
 	have_init = true;
 }
@@ -938,8 +934,11 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 
 void Engine::log(const uint64_t level, const uint64_t msg)
 {
+	if(!read(MEM_HEAP + GLOBAL_LOG_HISTORY)) {
+		assign(MEM_HEAP + GLOBAL_LOG_HISTORY, std::make_unique<array_t>())->pin();
+	}
 	const auto entry = alloc();
-	write(entry, array_t());
+	assign(entry, std::make_unique<array_t>());
 	push_back(entry, MEM_EXTERN + EXTERN_TXID);
 	push_back(entry, uint_t(level));
 	push_back(entry, msg);
@@ -948,8 +947,11 @@ void Engine::log(const uint64_t level, const uint64_t msg)
 
 void Engine::event(const uint64_t name, const uint64_t data)
 {
+	if(!read(MEM_HEAP + GLOBAL_EVENT_HISTORY)) {
+		assign(MEM_HEAP + GLOBAL_EVENT_HISTORY, std::make_unique<array_t>())->pin();
+	}
 	const auto entry = alloc();
-	write(entry, array_t());
+	assign(entry, std::make_unique<array_t>());
 	push_back(entry, MEM_EXTERN + EXTERN_TXID);
 	push_back(entry, name);
 	push_back(entry, data);
