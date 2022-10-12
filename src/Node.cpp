@@ -1038,7 +1038,6 @@ std::vector<offer_data_t> Node::get_recent_offers_for(
 				ask_history_end = ask_list.back().first;
 			}
 		}
-		log(INFO) << bid_list.size() << " / " << ask_list.size();
 		std::vector<offer_data_t> tmp;
 		if(bid && ask) {
 			std::vector<addr_t> list;
