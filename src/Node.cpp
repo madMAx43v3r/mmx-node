@@ -926,11 +926,9 @@ offer_data_t Node::get_offer(const addr_t& address) const
 	out.bid_amount = to_uint(data["bid_amount"]);
 	out.ask_amount = to_uint(data["ask_amount"]);
 	out.state = to_string_value(data["state"]);
-	if(auto var = data["height_close"]) {
-		out.close_height = to_uint(var);	// TODO: use close_txid height
-	}
-	if(auto var = data["trade_txid"]) {
-		out.trade_txid = to_hash(var);
+	if(auto var = data["close_txid"]) {
+		out.close_txid = to_hash(var);
+		out.close_height = get_tx_height(*out.close_txid);
 	}
 	return out;
 }
