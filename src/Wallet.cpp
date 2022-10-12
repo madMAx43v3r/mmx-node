@@ -693,7 +693,14 @@ std::map<addr_t, balance_t> Wallet::get_contract_balances(const addr_t& address)
 std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts(const uint32_t& index) const
 {
 	const auto wallet = get_wallet(index);
-	return node->get_contracts_by(wallet->get_all_addresses());
+	const auto addresses = node->get_contracts_by(wallet->get_all_addresses());
+	const auto contracts = node->get_contracts(addresses);
+
+	std::map<addr_t, std::shared_ptr<const Contract>> result;
+	for(size_t i = 0; i < addresses.size() && i < contracts.size(); ++i) {
+		result[addresses[i]] = contracts[i];
+	}
+	return result;
 }
 
 addr_t Wallet::get_address(const uint32_t& index, const uint32_t& offset) const

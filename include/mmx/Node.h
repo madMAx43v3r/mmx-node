@@ -88,9 +88,9 @@ protected:
 
 	std::vector<std::shared_ptr<const Contract>> get_contracts(const std::vector<addr_t>& addresses) const override;
 
-	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts_by(const std::vector<addr_t>& addresses) const override;
+	std::vector<addr_t> get_contracts_by(const std::vector<addr_t>& addresses) const override;
 
-	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts_owned_by(const std::vector<addr_t>& addresses) const override;
+	std::vector<addr_t> get_contracts_owned_by(const std::vector<addr_t>& addresses) const override;
 
 	std::shared_ptr<const Contract> get_contract_at(const addr_t& address, const hash_t& block_hash) const override;
 

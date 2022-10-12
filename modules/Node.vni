@@ -116,10 +116,10 @@ module Node implements vnx.addons.HttpComponent {
 	vector<Contract*> get_contracts(vector<addr_t> addresses) const;
 	
 	@Permission(permission_e.PUBLIC)
-	map<addr_t, Contract*> get_contracts_by(vector<addr_t> addresses) const;
+	vector<addr_t> get_contracts_by(vector<addr_t> addresses) const;
 	
 	@Permission(permission_e.PUBLIC)
-	map<addr_t, Contract*> get_contracts_owned_by(vector<addr_t> addresses) const;
+	vector<addr_t> get_contracts_owned_by(vector<addr_t> addresses) const;
 	
 	@Permission(permission_e.PUBLIC)
 	Transaction* get_transaction(hash_t id, bool include_pending) const;
