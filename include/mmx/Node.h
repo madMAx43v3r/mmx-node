@@ -90,6 +90,8 @@ protected:
 
 	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts_by(const std::vector<addr_t>& addresses) const override;
 
+	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts_owned_by(const std::vector<addr_t>& addresses) const override;
+
 	std::shared_ptr<const Contract> get_contract_at(const addr_t& address, const hash_t& block_hash) const override;
 
 	void add_block(std::shared_ptr<const Block> block) override;
@@ -436,6 +438,7 @@ private:
 	hash_table<addr_t, std::shared_ptr<const Contract>> contract_map;			// [addr, contract]
 	hash_multi_table<addr_t, addr_t> deploy_map;								// [sender => contract]
 	hash_multi_table<bls_pubkey_t, addr_t> vplot_map;							// [farmer_key => contract]
+	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> owner_map;			// [[owner, height, counter] => contract]
 
 	uint_uint_table<uint32_t, uint32_t, addr_t> offer_log;							// [[height, counter] => contract]
 	uint_uint_table<uint32_t, uint32_t, addr_t> trade_log;							// [[height, counter] => contract]

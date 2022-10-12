@@ -93,6 +93,7 @@ void Node::main()
 		db.add(contract_map.open(database_path + "contract_map"));
 		db.add(deploy_map.open(database_path + "deploy_map"));
 		db.add(vplot_map.open(database_path + "vplot_map"));
+		db.add(owner_map.open(database_path + "owner_map"));
 		db.add(offer_log.open(database_path + "offer_log"));
 		db.add(offer_bid_map.open(database_path + "offer_bid_map"));
 		db.add(offer_ask_map.open(database_path + "offer_ask_map"));
@@ -672,6 +673,21 @@ std::map<addr_t, std::shared_ptr<const Contract>> Node::get_contracts_by(const s
 	for(const auto& address : addresses) {
 		std::vector<addr_t> list;
 		deploy_map.find(address, list);
+		for(const auto& addr : list) {
+			if(auto contract = get_contract(addr)) {
+				res.emplace(addr, contract);
+			}
+		}
+	}
+	return res;
+}
+
+std::map<addr_t, std::shared_ptr<const Contract>> Node::get_contracts_owned_by(const std::vector<addr_t>& addresses) const
+{
+	std::map<addr_t, std::shared_ptr<const Contract>> res;
+	for(const auto& address : addresses) {
+		std::vector<addr_t> list;
+		owner_map.find_range(std::make_tuple(address, 0, 0), std::make_tuple(address, -1, -1), list);
 		for(const auto& addr : list) {
 			if(auto contract = get_contract(addr)) {
 				res.emplace(addr, contract);
@@ -1850,10 +1866,13 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(contract)) {
 				if(exec->binary == params->offer_binary) {
 					const auto ticket = counter++;
-					offer_log.insert(std::make_pair(block->height, ticket), tx->id);
+					if(exec->init_args.size() > 0) {
+						owner_map.insert(std::make_tuple(exec->init_args[0].to<addr_t>(), block->height, ticket), tx->id);
+					}
 					if(exec->init_args.size() > 1) {
 						offer_ask_map.insert(std::make_tuple(exec->init_args[1].to<addr_t>(), block->height, ticket), tx->id);
 					}
+					offer_log.insert(std::make_pair(block->height, ticket), tx->id);
 				}
 			}
 			if(auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(contract)) {
