@@ -6,6 +6,10 @@
 #include <mmx/contract/Binary_calc_cost_return.hxx>
 #include <mmx/contract/Binary_calc_hash.hxx>
 #include <mmx/contract/Binary_calc_hash_return.hxx>
+#include <mmx/contract/Binary_find_field.hxx>
+#include <mmx/contract/Binary_find_field_return.hxx>
+#include <mmx/contract/Binary_find_method.hxx>
+#include <mmx/contract/Binary_find_method_return.hxx>
 #include <mmx/contract/Binary_is_valid.hxx>
 #include <mmx/contract/Binary_is_valid_return.hxx>
 #include <mmx/contract/Data.hxx>
@@ -249,6 +253,54 @@ void type<::mmx::contract::Binary_calc_hash_return>::create_dynamic_code(std::ve
 }
 
 void type<::mmx::contract::Binary_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Binary_calc_hash_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::Binary_find_field>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_Binary_find_field;
+}
+
+void type<::mmx::contract::Binary_find_field>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::Binary_find_field());
+}
+
+void type<::mmx::contract::Binary_find_field>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Binary_find_field& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::Binary_find_field_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_Binary_find_field_return;
+}
+
+void type<::mmx::contract::Binary_find_field_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::Binary_find_field_return());
+}
+
+void type<::mmx::contract::Binary_find_field_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Binary_find_field_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::Binary_find_method>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_Binary_find_method;
+}
+
+void type<::mmx::contract::Binary_find_method>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::Binary_find_method());
+}
+
+void type<::mmx::contract::Binary_find_method>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Binary_find_method& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::Binary_find_method_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_Binary_find_method_return;
+}
+
+void type<::mmx::contract::Binary_find_method_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::Binary_find_method_return());
+}
+
+void type<::mmx::contract::Binary_find_method_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Binary_find_method_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -2402,6 +2454,10 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::Binary_calc_cost_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Binary_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Binary_calc_hash_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::Binary_find_field::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::Binary_find_field_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::Binary_find_method::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::Binary_find_method_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Binary_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Binary_is_valid_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Data::static_create_type_code());
@@ -2593,6 +2649,10 @@ const vnx::TypeCode* const vnx_native_type_code_Binary_calc_cost = vnx::get_type
 const vnx::TypeCode* const vnx_native_type_code_Binary_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xc7b18ac0e1c3e24ull));
 const vnx::TypeCode* const vnx_native_type_code_Binary_calc_hash = vnx::get_type_code(vnx::Hash64(0xd4d1353e984d3350ull));
 const vnx::TypeCode* const vnx_native_type_code_Binary_calc_hash_return = vnx::get_type_code(vnx::Hash64(0x772d45a088c35358ull));
+const vnx::TypeCode* const vnx_native_type_code_Binary_find_field = vnx::get_type_code(vnx::Hash64(0xd452e90b79266ffdull));
+const vnx::TypeCode* const vnx_native_type_code_Binary_find_field_return = vnx::get_type_code(vnx::Hash64(0xb4983a712d6359e3ull));
+const vnx::TypeCode* const vnx_native_type_code_Binary_find_method = vnx::get_type_code(vnx::Hash64(0x909ccffe5a222b83ull));
+const vnx::TypeCode* const vnx_native_type_code_Binary_find_method_return = vnx::get_type_code(vnx::Hash64(0xc1c7b09dd1d78f46ull));
 const vnx::TypeCode* const vnx_native_type_code_Binary_is_valid = vnx::get_type_code(vnx::Hash64(0x5dc8876a8b68a708ull));
 const vnx::TypeCode* const vnx_native_type_code_Binary_is_valid_return = vnx::get_type_code(vnx::Hash64(0xf524a791bf75117cull));
 const vnx::TypeCode* const vnx_native_type_code_Data = vnx::get_type_code(vnx::Hash64(0xadfeee3822244f50ull));

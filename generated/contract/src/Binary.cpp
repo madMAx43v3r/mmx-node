@@ -26,6 +26,10 @@
 #include <mmx/contract/Binary_calc_cost_return.hxx>
 #include <mmx/contract/Binary_calc_hash.hxx>
 #include <mmx/contract/Binary_calc_hash_return.hxx>
+#include <mmx/contract/Binary_find_field.hxx>
+#include <mmx/contract/Binary_find_field_return.hxx>
+#include <mmx/contract/Binary_find_method.hxx>
+#include <mmx/contract/Binary_find_method_return.hxx>
 #include <mmx/contract/Binary_is_valid.hxx>
 #include <mmx/contract/Binary_is_valid_return.hxx>
 #include <mmx/contract/method_t.hxx>
@@ -219,7 +223,7 @@ std::shared_ptr<vnx::TypeCode> Binary::static_create_type_code() {
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Binary>(); };
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::contract::method_t::static_get_type_code();
-	type_code->methods.resize(11);
+	type_code->methods.resize(13);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_dependency::static_get_type_code();
@@ -230,7 +234,9 @@ std::shared_ptr<vnx::TypeCode> Binary::static_create_type_code() {
 	type_code->methods[7] = ::mmx::Contract_validate::static_get_type_code();
 	type_code->methods[8] = ::mmx::contract::Binary_calc_cost::static_get_type_code();
 	type_code->methods[9] = ::mmx::contract::Binary_calc_hash::static_get_type_code();
-	type_code->methods[10] = ::mmx::contract::Binary_is_valid::static_get_type_code();
+	type_code->methods[10] = ::mmx::contract::Binary_find_field::static_get_type_code();
+	type_code->methods[11] = ::mmx::contract::Binary_find_method::static_get_type_code();
+	type_code->methods[12] = ::mmx::contract::Binary_is_valid::static_get_type_code();
 	type_code->fields.resize(8);
 	{
 		auto& field = type_code->fields[0];
@@ -344,6 +350,18 @@ std::shared_ptr<vnx::Value> Binary::vnx_call_switch(std::shared_ptr<const vnx::V
 			auto _args = std::static_pointer_cast<const ::mmx::contract::Binary_calc_hash>(_method);
 			auto _return_value = ::mmx::contract::Binary_calc_hash_return::create();
 			_return_value->_ret_0 = calc_hash(_args->full_hash);
+			return _return_value;
+		}
+		case 0xd452e90b79266ffdull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::Binary_find_field>(_method);
+			auto _return_value = ::mmx::contract::Binary_find_field_return::create();
+			_return_value->_ret_0 = find_field(_args->name);
+			return _return_value;
+		}
+		case 0x909ccffe5a222b83ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::Binary_find_method>(_method);
+			auto _return_value = ::mmx::contract::Binary_find_method_return::create();
+			_return_value->_ret_0 = find_method(_args->name);
 			return _return_value;
 		}
 		case 0x5dc8876a8b68a708ull: {

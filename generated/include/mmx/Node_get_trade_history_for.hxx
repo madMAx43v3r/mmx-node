@@ -16,7 +16,7 @@ public:
 	
 	vnx::optional<::mmx::addr_t> bid;
 	vnx::optional<::mmx::addr_t> ask;
-	int32_t limit = -1;
+	int32_t limit = 100;
 	uint32_t since = 0;
 	
 	typedef ::vnx::Value Super;

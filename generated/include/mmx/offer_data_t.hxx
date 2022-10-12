@@ -36,6 +36,8 @@ struct MMX_EXPORT offer_data_t {
 	std::string get_type_name() const;
 	const vnx::TypeCode* get_type_code() const;
 	
+	vnx::bool_t is_scam() const;
+	
 	static std::shared_ptr<offer_data_t> create();
 	std::shared_ptr<offer_data_t> clone() const;
 	

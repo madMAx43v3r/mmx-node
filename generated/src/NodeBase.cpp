@@ -67,12 +67,12 @@
 #include <mmx/Node_get_offer_return.hxx>
 #include <mmx/Node_get_offers.hxx>
 #include <mmx/Node_get_offers_return.hxx>
-#include <mmx/Node_get_offers_for.hxx>
-#include <mmx/Node_get_offers_for_return.hxx>
 #include <mmx/Node_get_params.hxx>
 #include <mmx/Node_get_params_return.hxx>
 #include <mmx/Node_get_recent_offers.hxx>
 #include <mmx/Node_get_recent_offers_return.hxx>
+#include <mmx/Node_get_recent_offers_for.hxx>
+#include <mmx/Node_get_recent_offers_for_return.hxx>
 #include <mmx/Node_get_synced_height.hxx>
 #include <mmx/Node_get_synced_height_return.hxx>
 #include <mmx/Node_get_total_balance.hxx>
@@ -125,7 +125,6 @@
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
-#include <mmx/trade_data_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_info_t.hxx>
 #include <mmx/uint128.hpp>
@@ -675,9 +674,9 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	type_code->methods[26] = ::mmx::Node_get_network_info::static_get_type_code();
 	type_code->methods[27] = ::mmx::Node_get_offer::static_get_type_code();
 	type_code->methods[28] = ::mmx::Node_get_offers::static_get_type_code();
-	type_code->methods[29] = ::mmx::Node_get_offers_for::static_get_type_code();
-	type_code->methods[30] = ::mmx::Node_get_params::static_get_type_code();
-	type_code->methods[31] = ::mmx::Node_get_recent_offers::static_get_type_code();
+	type_code->methods[29] = ::mmx::Node_get_params::static_get_type_code();
+	type_code->methods[30] = ::mmx::Node_get_recent_offers::static_get_type_code();
+	type_code->methods[31] = ::mmx::Node_get_recent_offers_for::static_get_type_code();
 	type_code->methods[32] = ::mmx::Node_get_synced_height::static_get_type_code();
 	type_code->methods[33] = ::mmx::Node_get_total_balance::static_get_type_code();
 	type_code->methods[34] = ::mmx::Node_get_total_balances::static_get_type_code();
@@ -1165,12 +1164,6 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 			_return_value->_ret_0 = get_offers(_args->since, _args->is_open);
 			return _return_value;
 		}
-		case 0x73bacac57cd51363ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_get_offers_for>(_method);
-			auto _return_value = ::mmx::Node_get_offers_for_return::create();
-			_return_value->_ret_0 = get_offers_for(_args->bid, _args->ask, _args->since, _args->is_open);
-			return _return_value;
-		}
 		case 0x6384b34900c2e465ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_params>(_method);
 			auto _return_value = ::mmx::Node_get_params_return::create();
@@ -1181,6 +1174,12 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_recent_offers>(_method);
 			auto _return_value = ::mmx::Node_get_recent_offers_return::create();
 			_return_value->_ret_0 = get_recent_offers(_args->limit, _args->is_open);
+			return _return_value;
+		}
+		case 0xd89f845556eb17a0ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_recent_offers_for>(_method);
+			auto _return_value = ::mmx::Node_get_recent_offers_for_return::create();
+			_return_value->_ret_0 = get_recent_offers_for(_args->bid, _args->ask, _args->limit, _args->is_open);
 			return _return_value;
 		}
 		case 0xc4fb44ec3d1a8bb7ull: {

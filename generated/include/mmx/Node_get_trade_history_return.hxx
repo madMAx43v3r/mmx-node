@@ -5,7 +5,7 @@
 #define INCLUDE_mmx_Node_get_trade_history_return_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/trade_data_t.hxx>
+#include <mmx/offer_data_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -14,7 +14,7 @@ namespace mmx {
 class MMX_EXPORT Node_get_trade_history_return : public ::vnx::Value {
 public:
 	
-	std::vector<::mmx::trade_data_t> _ret_0;
+	std::vector<::mmx::offer_data_t> _ret_0;
 	
 	typedef ::vnx::Value Super;
 	

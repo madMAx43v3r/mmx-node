@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_recent_offers::VNX_TYPE_HASH(0xfcd729efd0504fdeull);
-const vnx::Hash64 Node_get_recent_offers::VNX_CODE_HASH(0x1bd73663d586dcfeull);
+const vnx::Hash64 Node_get_recent_offers::VNX_CODE_HASH(0x2ae79fe743ed6c04ull);
 
 vnx::Hash64 Node_get_recent_offers::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -124,7 +124,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_recent_offers::static_create_type_code()
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_recent_offers";
 	type_code->type_hash = vnx::Hash64(0xfcd729efd0504fdeull);
-	type_code->code_hash = vnx::Hash64(0x1bd73663d586dcfeull);
+	type_code->code_hash = vnx::Hash64(0x2ae79fe743ed6c04ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -144,6 +144,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_recent_offers::static_create_type_code()
 		auto& field = type_code->fields[1];
 		field.data_size = 1;
 		field.name = "is_open";
+		field.value = vnx::to_string(true);
 		field.code = {31};
 	}
 	type_code->permission = "mmx.permission_e.PUBLIC";

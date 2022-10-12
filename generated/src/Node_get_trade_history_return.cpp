@@ -3,7 +3,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Node_get_trade_history_return.hxx>
-#include <mmx/trade_data_t.hxx>
+#include <mmx/offer_data_t.hxx>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_trade_history_return::VNX_TYPE_HASH(0x4d3692b594dd7f9eull);
-const vnx::Hash64 Node_get_trade_history_return::VNX_CODE_HASH(0x883243cfd9d2faeull);
+const vnx::Hash64 Node_get_trade_history_return::VNX_CODE_HASH(0x3ec83a773f674ea9ull);
 
 vnx::Hash64 Node_get_trade_history_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -114,14 +114,14 @@ std::shared_ptr<vnx::TypeCode> Node_get_trade_history_return::static_create_type
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_trade_history.return";
 	type_code->type_hash = vnx::Hash64(0x4d3692b594dd7f9eull);
-	type_code->code_hash = vnx::Hash64(0x883243cfd9d2faeull);
+	type_code->code_hash = vnx::Hash64(0x3ec83a773f674ea9ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
 	type_code->native_size = sizeof(::mmx::Node_get_trade_history_return);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Node_get_trade_history_return>(); };
 	type_code->depends.resize(1);
-	type_code->depends[0] = ::mmx::trade_data_t::static_get_type_code();
+	type_code->depends[0] = ::mmx::offer_data_t::static_get_type_code();
 	type_code->fields.resize(1);
 	{
 		auto& field = type_code->fields[0];
