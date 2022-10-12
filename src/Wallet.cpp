@@ -564,22 +564,15 @@ void Wallet::update_cache(const uint32_t& index) const
 		const auto height = node->get_height();
 		const auto addresses = wallet->get_all_addresses();
 		const auto balances = node->get_all_balances(addresses);
-		const auto contracts = node->get_contracts_by(addresses);
+		const auto contracts = node->get_contracts_owned_by(addresses);
 		const auto history = wallet->pending_tx.empty() ? std::vector<hash_t>() :
 				node->get_tx_ids_since(wallet->height - std::min(params->commit_delay, wallet->height));
 
 		wallet->external_balance_map.clear();
-		wallet->update_cache(balances, history, height);
-
-		for(const auto& entries : contracts) {
-			if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(entries.second)) {
-				if(exec->binary == params->offer_binary) {
-					for(const auto& entry : node->get_balances(entries.first)) {
-						wallet->external_balance_map[entry.first] += entry.second;
-					}
-				}
-			}
+		for(const auto& entry : node->get_total_balances(contracts)) {
+			wallet->external_balance_map[entry.first] += entry.second;
 		}
+		wallet->update_cache(balances, history, height);
 		wallet->last_update = now;
 	}
 }
