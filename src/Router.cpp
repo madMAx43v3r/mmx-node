@@ -755,8 +755,7 @@ void Router::connect()
 
 		for(const auto& address : get_subset(try_peers, num_peers_out, rand_engine))
 		{
-			// TODO: reduce to 2 * num_peers_out
-			if(connecting_peers.size() >= 4 * num_peers_out) {
+			if(connecting_peers.size() >= 2 * num_peers_out) {
 				break;
 			}
 			log(DEBUG) << "Trying to connect to " << address;
