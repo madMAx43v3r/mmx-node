@@ -56,7 +56,6 @@ void StorageCache::commit()
 			backend->write(std::get<0>(entry.first), std::get<1>(entry.first), std::get<2>(entry.first), *var);
 		}
 	}
-	clear();
 }
 
 
