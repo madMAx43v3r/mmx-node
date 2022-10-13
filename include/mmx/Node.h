@@ -463,7 +463,6 @@ private:
 	std::unordered_set<hash_t> purged_blocks;
 
 	bool is_synced = false;
-	bool is_sync_fail = false;
 	uint32_t min_pool_fee_ratio = 0;
 	std::shared_ptr<vnx::File> block_chain;
 	std::shared_ptr<vm::StorageDB> storage;

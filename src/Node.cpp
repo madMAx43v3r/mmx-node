@@ -1386,7 +1386,6 @@ void Node::start_sync(const vnx::bool_t& force)
 	sync_peak = nullptr;
 	sync_retry = 0;
 	is_synced = false;
-	is_sync_fail = false;
 	purged_blocks.clear();
 
 	timelord->stop_vdf(
@@ -1398,7 +1397,7 @@ void Node::start_sync(const vnx::bool_t& force)
 
 void Node::sync_more()
 {
-	if(is_synced || is_sync_fail) {
+	if(is_synced) {
 		return;
 	}
 	if(!sync_pos) {
@@ -1408,15 +1407,7 @@ void Node::sync_more()
 	if(vdf_threads->get_num_pending()) {
 		return;
 	}
-	const auto peak_height = get_height();
-	if(peak_height + max_sync_ahead < sync_pos) {
-		if(sync_pending.empty()) {
-			if(!is_sync_fail) {
-				is_sync_fail = true;
-				log(ERROR) << "Sync failed, restarting ...";
-			}
-			set_timeout_millis(60 * 1000, std::bind(&Node::start_sync, this, true));
-		}
+	if(get_height() + max_sync_ahead < sync_pos) {
 		return;
 	}
 	const size_t max_pending = !sync_retry ? std::max(std::min<int>(max_sync_pending, max_sync_jobs), 2) : 2;
