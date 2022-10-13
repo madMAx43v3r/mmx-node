@@ -459,7 +459,7 @@ private:
 
 	std::unordered_map<hash_t, std::map<hash_t, proof_data_t>> proof_map;			// [challenge => best proofs]
 	std::unordered_multimap<uint32_t, hash_t> challenge_map;						// [height => challenge]
-	std::map<std::pair<hash_t, hash_t>, hash_t> created_blocks;						// [[prev hash, proof hash] => hash]
+	std::map<std::pair<uint32_t, hash_t>, hash_t> created_blocks;					// [[height, proof hash] => block hash]
 	std::unordered_set<hash_t> purged_blocks;
 
 	bool is_synced = false;
