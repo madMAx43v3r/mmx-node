@@ -136,12 +136,16 @@ protected:
 
 	offer_data_t get_offer(const addr_t& address) const override;
 
-	std::vector<offer_data_t> get_offers(const uint32_t& since, const vnx::bool_t& is_open) const override;
+	std::vector<offer_data_t> fetch_offers(const std::vector<addr_t>& addresses, const std::string& state) const override;
 
-	std::vector<offer_data_t> get_recent_offers(const int32_t& limit, const vnx::bool_t& is_open) const override;
+	std::vector<offer_data_t> get_offers(const uint32_t& since, const std::string& state) const override;
+
+	std::vector<offer_data_t> get_offers_by(const std::vector<addr_t>& owners, const std::string& state) const override;
+
+	std::vector<offer_data_t> get_recent_offers(const int32_t& limit, const std::string& state) const override;
 
 	std::vector<offer_data_t> get_recent_offers_for(
-			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const int32_t& limit, const vnx::bool_t& is_open) const override;
+			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const int32_t& limit, const std::string& state) const override;
 
 	std::vector<offer_data_t> get_trade_history(const int32_t& limit, const uint32_t& since = 0) const override;
 
@@ -287,11 +291,9 @@ private:
 
 	std::string get_offer_state(const addr_t& address) const;
 
-	std::vector<offer_data_t> fetch_offers(const std::vector<addr_t>& entries, const bool is_open) const;
-
 	std::vector<offer_data_t> fetch_offers_for(
-			const std::vector<addr_t>& entries, const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask,
-			const bool is_open = false, const bool filter = false) const;
+			const std::vector<addr_t>& addresses, const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask,
+			const std::string& state = "OPEN", const bool filter = false) const;
 
 	std::pair<vm::varptr_t, uint64_t> read_storage_field(
 			const addr_t& binary, const addr_t& contract, const std::string& name, const uint32_t& height = -1) const;
@@ -436,6 +438,7 @@ private:
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, exec_entry_t> exec_log;	// [[address, height, counter] => entry]
 
 	hash_table<addr_t, std::shared_ptr<const Contract>> contract_map;			// [addr, contract]
+	hash_table<addr_t, hash_t> contract_type_map;								// [addr, type hash]
 	hash_multi_table<addr_t, addr_t> deploy_map;								// [sender => contract]
 	hash_multi_table<bls_pubkey_t, addr_t> vplot_map;							// [farmer_key => contract]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> owner_map;			// [[owner, height, counter] => contract]

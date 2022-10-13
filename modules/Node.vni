@@ -185,13 +185,19 @@ module Node implements vnx.addons.HttpComponent {
 	offer_data_t get_offer(addr_t address) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<offer_data_t> get_offers(uint since, bool is_open) const;
+	vector<offer_data_t> get_offers(uint since, string state) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<offer_data_t> get_recent_offers(int limit = 100, bool is_open = true) const;
+	vector<offer_data_t> get_offers_by(vector<addr_t> owners, string state) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<offer_data_t> get_recent_offers_for(optional<addr_t> bid, optional<addr_t> ask, int limit = 100, bool is_open = true) const;
+	vector<offer_data_t> fetch_offers(vector<addr_t> addresses, string state) const;
+	
+	@Permission(permission_e.PUBLIC)
+	vector<offer_data_t> get_recent_offers(int limit = 100, string state = "OPEN") const;
+	
+	@Permission(permission_e.PUBLIC)
+	vector<offer_data_t> get_recent_offers_for(optional<addr_t> bid, optional<addr_t> ask, int limit = 100, string state = "OPEN") const;
 	
 	@Permission(permission_e.PUBLIC)
 	vector<offer_data_t> get_trade_history(int limit = 100, uint since) const;

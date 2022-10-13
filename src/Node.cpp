@@ -91,6 +91,7 @@ void Node::main()
 		db.add(exec_log.open(database_path + "exec_log"));
 
 		db.add(contract_map.open(database_path + "contract_map"));
+		db.add(contract_type_map.open(database_path + "contract_type_map"));
 		db.add(deploy_map.open(database_path + "deploy_map"));
 		db.add(vplot_map.open(database_path + "vplot_map"));
 		db.add(owner_map.open(database_path + "owner_map"));
@@ -959,11 +960,11 @@ std::string Node::get_offer_state(const addr_t& address) const
 	return "null";
 }
 
-std::vector<offer_data_t> Node::fetch_offers(const std::vector<addr_t>& entries, const bool is_open) const
+std::vector<offer_data_t> Node::fetch_offers(const std::vector<addr_t>& addresses, const std::string& state) const
 {
 	std::vector<offer_data_t> out;
-	for(const auto& address : entries) {
-		if(!is_open || get_offer_state(address) == "OPEN") {
+	for(const auto& address : addresses) {
+		if(state.empty() || get_offer_state(address) == state) {
 			const auto data = get_offer(address);
 			if(!data.is_scam()) {
 				out.push_back(data);
@@ -973,13 +974,13 @@ std::vector<offer_data_t> Node::fetch_offers(const std::vector<addr_t>& entries,
 	return out;
 }
 
-std::vector<offer_data_t> Node::fetch_offers_for(	const std::vector<addr_t>& entries,
+std::vector<offer_data_t> Node::fetch_offers_for(	const std::vector<addr_t>& addresses,
 													const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask,
-													const bool is_open, const bool filter) const
+													const std::string& state, const bool filter) const
 {
 	std::vector<offer_data_t> out;
-	for(const auto& address : entries) {
-		if(!is_open || get_offer_state(address) == "OPEN") {
+	for(const auto& address : addresses) {
+		if(state.empty() || get_offer_state(address) == state) {
 			const auto data = get_offer(address);
 			if((!bid || data.bid_currency == *bid) && (!ask || data.ask_currency == *ask)) {
 				if(!filter || !data.is_scam()) {
@@ -991,14 +992,26 @@ std::vector<offer_data_t> Node::fetch_offers_for(	const std::vector<addr_t>& ent
 	return out;
 }
 
-std::vector<offer_data_t> Node::get_offers(const uint32_t& since, const vnx::bool_t& is_open) const
+std::vector<offer_data_t> Node::get_offers(const uint32_t& since, const std::string& state) const
 {
 	std::vector<addr_t> entries;
 	offer_log.find_range(std::make_pair(since, 0), std::make_pair(-1, -1), entries);
-	return fetch_offers(entries, is_open);
+	return fetch_offers(entries, state);
 }
 
-std::vector<offer_data_t> Node::get_recent_offers(const int32_t& limit, const vnx::bool_t& is_open) const
+std::vector<offer_data_t> Node::get_offers_by(const std::vector<addr_t>& owners, const std::string& state) const
+{
+	std::vector<addr_t> list;
+	for(const auto& address : get_contracts_owned_by(owners)) {
+		hash_t type;
+		if(contract_type_map.find(address, type) && type == params->offer_binary) {
+			list.push_back(address);
+		}
+	}
+	return fetch_offers(list, state);
+}
+
+std::vector<offer_data_t> Node::get_recent_offers(const int32_t& limit, const std::string& state) const
 {
 	std::vector<offer_data_t> result;
 	std::pair<uint32_t, uint32_t> offer_log_end(-1, -1);
@@ -1014,7 +1027,7 @@ std::vector<offer_data_t> Node::get_recent_offers(const int32_t& limit, const vn
 		for(const auto& entry : entries) {
 			list.push_back(entry.second);
 		}
-		const auto tmp = fetch_offers(list, is_open);
+		const auto tmp = fetch_offers(list, state);
 		result.insert(result.end(), tmp.begin(), tmp.end());
 	}
 	result.resize(std::min(result.size(), size_t(limit)));
@@ -1022,7 +1035,7 @@ std::vector<offer_data_t> Node::get_recent_offers(const int32_t& limit, const vn
 }
 
 std::vector<offer_data_t> Node::get_recent_offers_for(
-		const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const int32_t& limit, const vnx::bool_t& is_open) const
+		const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const int32_t& limit, const std::string& state) const
 {
 	std::vector<offer_data_t> result;
 	std::unordered_set<addr_t> bid_set;
@@ -1062,24 +1075,24 @@ std::vector<offer_data_t> Node::get_recent_offers_for(
 				bid_set.erase(address);
 				ask_set.erase(address);
 			}
-			tmp = fetch_offers_for(list, bid, ask, is_open, true);
+			tmp = fetch_offers_for(list, bid, ask, state, true);
 		}
 		else if(bid) {
 			std::vector<addr_t> list;
 			for(const auto& entry : bid_list) {
 				list.push_back(entry.second);
 			}
-			tmp = fetch_offers_for(list, bid, ask, is_open, true);
+			tmp = fetch_offers_for(list, bid, ask, state, true);
 		}
 		else if(ask) {
 			std::vector<addr_t> list;
 			for(const auto& entry : ask_list) {
 				list.push_back(entry.second);
 			}
-			tmp = fetch_offers_for(list, bid, ask, is_open, true);
+			tmp = fetch_offers_for(list, bid, ask, state, true);
 		}
 		else {
-			tmp = get_recent_offers(limit, is_open);
+			tmp = get_recent_offers(limit, state);
 		}
 		for(const auto& entry : tmp) {
 			if(offer_set.insert(entry.address).second) {
@@ -1852,6 +1865,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		}
 		if(auto contract = tx->deploy)
 		{
+			auto type_hash = hash_t(contract->get_type_name());
 			if(tx->sender) {
 				deploy_map.insert(*tx->sender, tx->id);
 			}
@@ -1867,11 +1881,13 @@ void Node::apply(	std::shared_ptr<const Block> block,
 					}
 					offer_log.insert(std::make_pair(block->height, ticket), tx->id);
 				}
+				type_hash = exec->binary;
 			}
 			if(auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(contract)) {
 				vplot_map.insert(plot->farmer_key, tx->id);
 			}
 			contract_map.insert(tx->id, contract);
+			contract_type_map.insert(tx->id, type_hash);
 		}
 		for(const auto& op : tx->execute)
 		{

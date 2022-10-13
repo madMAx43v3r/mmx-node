@@ -917,38 +917,6 @@ void WebAPI::render_tx_history(const vnx::request_id_t& request_id, const std::v
 	}
 }
 
-void WebAPI::render_offers(const vnx::request_id_t& request_id, const std::vector<addr_t>& offers) const
-{
-	struct job_t {
-		size_t num_left = 0;
-		vnx::request_id_t request_id;
-		std::vector<vnx::Variant> result;
-	};
-	auto job = std::make_shared<job_t>();
-	job->num_left = offers.size();
-	job->request_id = request_id;
-	job->result.resize(offers.size());
-
-	if(!job->num_left) {
-		respond(request_id, render_value(job->result));
-		return;
-	}
-	size_t i = 0;
-	for(const auto& address : offers) {
-		node->get_offer(address,
-			[this, request_id, job, i](const offer_data_t& data) {
-				get_context({data.bid_currency, data.ask_currency}, request_id,
-					[this, request_id, job, i, data](std::shared_ptr<RenderContext> context) {
-						job->result[i] = render_value(data, context);
-						if(--job->num_left == 0) {
-							respond(job->request_id, vnx::Variant(job->result));
-						}
-					});
-			});
-		i++;
-	}
-}
-
 void WebAPI::shutdown()
 {
 	((WebAPI*)this)->set_timeout_millis(1000, [this]() {
@@ -1489,7 +1457,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			const uint32_t index = vnx::from_string_value<int64_t>(iter_index->second);
 			const int32_t  limit = iter_limit != query.end() ? vnx::from_string<int32_t>(iter_limit->second) : -1;
 			const uint32_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
-			wallet->get_tx_history(index, limit, offset,
+			wallet->get_tx_log(index, limit, offset,
 				std::bind(&WebAPI::render_tx_history, this, request_id, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
@@ -1499,18 +1467,24 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	else if(sub_path == "/wallet/offers") {
 		const auto iter_index = query.find("index");
 		if(iter_index != query.end()) {
+			const auto iter_state = query.find("state");
 			const uint32_t index = vnx::from_string_value<int64_t>(iter_index->second);
-			wallet->get_contracts(index,
-				[this, request_id](const std::map<addr_t, std::shared_ptr<const Contract>>& contracts) {
-					std::vector<addr_t> out;
-					for(const auto& entry : contracts) {
-						if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(entry.second)) {
-							if(exec->binary == params->offer_binary) {
-								out.push_back(entry.first);
-							}
-						}
+			const std::string state = iter_state != query.end() ? iter_state->second : std::string();
+			wallet->get_offers(index, state,
+				[this, request_id](const std::vector<offer_data_t>& offers) {
+					std::unordered_set<addr_t> addr_set;
+					for(const auto& entry : offers) {
+						addr_set.insert(entry.bid_currency);
+						addr_set.insert(entry.ask_currency);
 					}
-					render_offers(request_id, out);
+					get_context(addr_set, request_id,
+						[this, request_id, offers](std::shared_ptr<RenderContext> context) {
+							std::vector<vnx::Variant> res;
+							for(const auto& entry : offers) {
+								res.push_back(render_value(entry, context));
+							}
+							respond(request_id, render_value(res));
+						});
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
@@ -1736,7 +1710,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const auto iter_ask = query.find("ask");
 		const auto iter_limit = query.find("limit");
 		const auto iter_offset = query.find("offset");
-		const auto iter_open = query.find("is_open");
+		const auto iter_state = query.find("state");
 		if(iter_bid != query.end()) {
 			bid = vnx::from_string_value<addr_t>(iter_bid->second);
 		}
@@ -1745,9 +1719,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 		const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
 		const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
-		const bool is_open = iter_open != query.end() ? vnx::from_string<bool>(iter_open->second) : true;
+		const std::string state = iter_state != query.end() ? iter_state->second : "OPEN";
 
-		node->get_recent_offers_for(bid, ask, bid && ask ? std::max<size_t>(1000, limit) : offset + limit, is_open,
+		node->get_recent_offers_for(bid, ask, bid && ask ? std::max<size_t>(1000, limit) : offset + limit, state,
 			[this, request_id, bid, ask, limit, offset](const std::vector<offer_data_t>& offers) {
 				std::unordered_set<addr_t> addr_set;
 				std::vector<std::pair<offer_data_t, double>> result;

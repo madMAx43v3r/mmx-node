@@ -605,7 +605,7 @@ std::vector<tx_entry_t> Wallet::get_history(const uint32_t& index, const int32_t
 	return result;
 }
 
-std::vector<tx_log_entry_t> Wallet::get_tx_history(const uint32_t& index, const int32_t& limit_, const uint32_t& offset) const
+std::vector<tx_log_entry_t> Wallet::get_tx_log(const uint32_t& index, const int32_t& limit_, const uint32_t& offset) const
 {
 	const auto wallet = get_wallet(index);
 	const size_t limit = limit_ >= 0 ? limit_ : uint32_t(-1);
@@ -694,6 +694,25 @@ std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts(const ui
 		result[addresses[i]] = contracts[i];
 	}
 	return result;
+}
+
+std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts_owned(const uint32_t& index) const
+{
+	const auto wallet = get_wallet(index);
+	const auto addresses = node->get_contracts_owned_by(wallet->get_all_addresses());
+	const auto contracts = node->get_contracts(addresses);
+
+	std::map<addr_t, std::shared_ptr<const Contract>> result;
+	for(size_t i = 0; i < addresses.size() && i < contracts.size(); ++i) {
+		result[addresses[i]] = contracts[i];
+	}
+	return result;
+}
+
+vector<offer_data_t> Wallet::get_offers(const uint32_t& index, const std::string& state) const
+{
+	const auto wallet = get_wallet(index);
+	return node->get_offers_by(wallet->get_all_addresses(), state);
 }
 
 addr_t Wallet::get_address(const uint32_t& index, const uint32_t& offset) const
