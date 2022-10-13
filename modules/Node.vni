@@ -149,7 +149,7 @@ module Node implements vnx.addons.HttpComponent {
 	map<pair<addr_t, addr_t>, uint128> get_all_balances(vector<addr_t> addresses) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<exec_entry_t> get_exec_history(addr_t address, int since) const;
+	vector<exec_entry_t> get_exec_history(addr_t address, int limit, bool recent) const;
 	
 	@Permission(permission_e.PUBLIC)
 	map<string, varptr_t> read_storage(addr_t contract, uint height = -1) const;

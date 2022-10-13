@@ -673,7 +673,7 @@ std::vector<addr_t> Node::get_contracts_by(const std::vector<addr_t>& addresses)
 	std::vector<addr_t> result;
 	for(const auto& address : addresses) {
 		std::vector<addr_t> list;
-		deploy_map.find(address, list);
+		deploy_map.find_range(std::make_tuple(address, 0, 0), std::make_tuple(address, -1, -1), list);
 		result.insert(result.end(), list.begin(), list.end());
 	}
 	return result;
@@ -764,13 +764,14 @@ std::map<std::pair<addr_t, addr_t>, uint128> Node::get_all_balances(const std::v
 	return totals;
 }
 
-std::vector<exec_entry_t> Node::get_exec_history(const addr_t& address, const int32_t& since) const
+std::vector<exec_entry_t> Node::get_exec_history(const addr_t& address, const int32_t& limit, const vnx::bool_t& recent) const
 {
-	const uint32_t height = get_height();
-	const uint32_t min_height = since >= 0 ? since : std::max<int32_t>(height + since, 0);
-
 	std::vector<exec_entry_t> entries;
-	exec_log.find_range(std::make_tuple(address, min_height, 0), std::make_tuple(address, -1, -1), entries);
+	if(recent) {
+		exec_log.find_last_range(std::make_tuple(address, 0, 0), std::make_tuple(address, -1, -1), entries, limit);
+	} else {
+		exec_log.find_range(std::make_tuple(address, 0, 0), std::make_tuple(address, -1, -1), entries, limit);
+	}
 	return entries;
 }
 
@@ -1865,16 +1866,16 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		}
 		if(auto contract = tx->deploy)
 		{
+			const auto ticket = counter++;
 			auto type_hash = hash_t(contract->get_type_name());
 			if(tx->sender) {
-				deploy_map.insert(*tx->sender, tx->id);
+				deploy_map.insert(std::make_tuple(*tx->sender, block->height, ticket), tx->id);
 			}
 			if(auto owner = contract->get_owner()) {
-				owner_map.insert(std::make_tuple(*owner, block->height, counter++), tx->id);
+				owner_map.insert(std::make_tuple(*owner, block->height, ticket), tx->id);
 			}
 			if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(contract)) {
 				if(exec->binary == params->offer_binary) {
-					const auto ticket = counter++;
 					if(exec->init_args.size() >= 2) {
 						owner_map.insert(std::make_tuple(exec->init_args[0].to<addr_t>(), block->height, ticket), tx->id);
 						offer_ask_map.insert(std::make_tuple(exec->init_args[1].to<addr_t>(), block->height, ticket), tx->id);
@@ -1891,13 +1892,13 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		}
 		for(const auto& op : tx->execute)
 		{
+			const auto ticket = counter++;
 			const auto address = op->address == addr_t() ? addr_t(tx->id) : op->address;
 			const auto contract = op->address == addr_t() ? tx->deploy :
 					(context ? context->contract_cache.find_contract(op->address) : nullptr);
 
 			if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op)) {
 				exec_entry_t entry;
-				entry.height = block->height;
 				entry.txid = tx->id;
 				entry.method = exec->method;
 				entry.args = exec->args;
@@ -1905,7 +1906,6 @@ void Node::apply(	std::shared_ptr<const Block> block,
 				if(deposit) {
 					entry.deposit = std::make_pair(deposit->currency, deposit->amount);
 				}
-				const auto ticket = counter++;
 				exec_log.insert(std::make_tuple(address, block->height, ticket), entry);
 
 				if(auto executable = std::dynamic_pointer_cast<const contract::Executable>(contract)) {

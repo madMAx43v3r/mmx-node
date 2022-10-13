@@ -2,8 +2,6 @@ package mmx;
 
 struct exec_entry_t {
 	
-	uint height;
-	
 	hash_t txid;
 	
 	string method;

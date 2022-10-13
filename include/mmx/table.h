@@ -115,13 +115,13 @@ public:
 		return false;
 	}
 
-	size_t find_greater_equal(const K& key, std::vector<V>& values) const
+	size_t find_greater_equal(const K& key, std::vector<V>& values, const size_t limit = -1) const
 	{
 		values.clear();
 
 		Table::Iterator iter(db);
 		iter.seek(write(key));
-		while(iter.is_valid()) {
+		while(iter.is_valid() && values.size() < limit) {
 			try {
 				V value;
 				read(iter.value(), value, value_type, value_code);
@@ -134,42 +134,18 @@ public:
 		return values.size();
 	}
 
-	size_t find_greater_equal(const K& key, std::vector<std::pair<K, V>>& values) const
-	{
-		values.clear();
-
-		Table::Iterator iter(db);
-		iter.seek(write(key));
-		while(iter.is_valid()) {
-			try {
-				std::pair<K, V> tmp;
-				read(iter.key(), tmp.first);
-				read(iter.value(), tmp, value_type, value_code);
-				values.push_back(std::move(tmp));
-			} catch(...) {
-				// ignore
-			}
-			iter.next();
-		}
-		return values.size();
-	}
-
-	size_t find_range(const K& begin, const K& end, std::vector<V>& result) const
+	size_t find_greater_equal(const K& key, std::vector<std::pair<K, V>>& result, const size_t limit = -1) const
 	{
 		result.clear();
 
 		Table::Iterator iter(db);
-		iter.seek(write(begin));
-		while(iter.is_valid()) {
-			K key;
-			read(iter.key(), key);
-			if(!(key < end)) {
-				break;
-			}
+		iter.seek(write(key));
+		while(iter.is_valid() && result.size() < limit) {
 			try {
-				V value;
-				read(iter.value(), value, value_type, value_code);
-				result.push_back(std::move(value));
+				std::pair<K, V> tmp;
+				read(iter.key(), tmp.first);
+				read(iter.value(), tmp, value_type, value_code);
+				result.push_back(std::move(tmp));
 			} catch(...) {
 				// ignore
 			}
@@ -178,13 +154,37 @@ public:
 		return result.size();
 	}
 
-	size_t find_range(const K& begin, const K& end, std::vector<std::pair<K, V>>& result) const
+	size_t find_range(const K& begin, const K& end, std::vector<V>& values, const size_t limit = -1) const
+	{
+		values.clear();
+
+		Table::Iterator iter(db);
+		iter.seek(write(begin));
+		while(iter.is_valid() && values.size() < limit) {
+			K key;
+			read(iter.key(), key);
+			if(!(key < end)) {
+				break;
+			}
+			try {
+				V value;
+				read(iter.value(), value, value_type, value_code);
+				values.push_back(std::move(value));
+			} catch(...) {
+				// ignore
+			}
+			iter.next();
+		}
+		return values.size();
+	}
+
+	size_t find_range(const K& begin, const K& end, std::vector<std::pair<K, V>>& result, const size_t limit = -1) const
 	{
 		result.clear();
 
 		Table::Iterator iter(db);
 		iter.seek(write(begin));
-		while(iter.is_valid()) {
+		while(iter.is_valid() && result.size() < limit) {
 			K key;
 			read(iter.key(), key);
 			if(!(key < end)) {

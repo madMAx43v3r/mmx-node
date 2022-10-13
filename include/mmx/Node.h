@@ -110,7 +110,7 @@ protected:
 
 	std::map<std::pair<addr_t, addr_t>, uint128> get_all_balances(const std::vector<addr_t>& addresses) const override;
 
-	std::vector<exec_entry_t> get_exec_history(const addr_t& address, const int32_t& since) const override;
+	std::vector<exec_entry_t> get_exec_history(const addr_t& address, const int32_t& limit, const vnx::bool_t& recent) const override;
 
 	std::map<std::string, vm::varptr_t> read_storage(const addr_t& contract, const uint32_t& height = -1) const override;
 
@@ -437,11 +437,11 @@ private:
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, txio_entry_t> spend_log;	// [[address, height, counter] => entry]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, exec_entry_t> exec_log;	// [[address, height, counter] => entry]
 
-	hash_table<addr_t, std::shared_ptr<const Contract>> contract_map;			// [addr, contract]
 	hash_table<addr_t, hash_t> contract_type_map;								// [addr, type hash]
-	hash_multi_table<addr_t, addr_t> deploy_map;								// [sender => contract]
-	hash_multi_table<bls_pubkey_t, addr_t> vplot_map;							// [farmer_key => contract]
+	hash_table<addr_t, std::shared_ptr<const Contract>> contract_map;			// [addr, contract]
+	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> deploy_map;		// [[sender, height, counter] => contract]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> owner_map;			// [[owner, height, counter] => contract]
+	hash_multi_table<bls_pubkey_t, addr_t> vplot_map;							// [farmer_key => contract]
 
 	uint_uint_table<uint32_t, uint32_t, addr_t> offer_log;							// [[height, counter] => contract]
 	uint_uint_table<uint32_t, uint32_t, addr_t> trade_log;							// [[height, counter] => contract]
