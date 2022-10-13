@@ -50,7 +50,6 @@ bool Node::verify(std::shared_ptr<const ProofResponse> value)
 	const auto request = value->request;
 	const auto vdf_block = get_header_at(request->height - params->challenge_delay);
 	if(!vdf_block) {
-		log(DEBUG) << "Missing vdf_block for proof at height " << request->height << " with score " << value->proof->score;
 		return false;
 	}
 	try {
