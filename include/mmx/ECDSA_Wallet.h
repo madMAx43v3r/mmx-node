@@ -122,7 +122,10 @@ public:
 
 	addr_t get_address(const uint32_t index) const
 	{
-		return addresses.at(index);
+		if(index >= addresses.size()) {
+			throw std::logic_error("address index out of range: " + std::to_string(index) + " >= " + std::to_string(addresses.size()));
+		}
+		return addresses[index];
 	}
 
 	std::vector<addr_t> get_all_addresses() const
@@ -286,6 +289,9 @@ public:
 
 	void sign_off(std::shared_ptr<Transaction> tx, const spend_options_t& options = {})
 	{
+		if(is_locked()) {
+			throw std::logic_error("wallet is locked");
+		}
 		bool was_locked = false;
 		if(is_locked()) {
 			was_locked = true;
@@ -396,6 +402,9 @@ public:
 
 	std::shared_ptr<const Solution> sign_msg(const addr_t& address, const hash_t& msg, const spend_options_t& options = {}) const
 	{
+		if(is_locked()) {
+			throw std::logic_error("wallet is locked");
+		}
 		// TODO: check for multi-sig via options.contract_map
 		if(auto keys = find_keypair(address)) {
 			auto sol = solution::PubKey::create();
@@ -408,6 +417,9 @@ public:
 
 	void complete(std::shared_ptr<Transaction> tx, const spend_options_t& options = {})
 	{
+		if(is_locked()) {
+			throw std::logic_error("wallet is locked");
+		}
 		if(options.expire_at) {
 			tx->expires = std::min(tx->expires, *options.expire_at);
 		} else if(options.expire_delta) {
