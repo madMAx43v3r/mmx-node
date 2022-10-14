@@ -8,7 +8,7 @@
 	"max_msg_size": 16777216,
 	"stats_interval_ms": 60000,
 	"connect_interval_ms": 10000,
-	"connection_timeout_ms": 300000,
+	"connection_timeout_ms": 180000,
 	"fetch_timeout_ms": 180000,
 	"relay_target_ms": 2000,
 	"max_hash_cache": 200000,
