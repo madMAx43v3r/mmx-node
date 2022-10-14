@@ -1465,9 +1465,11 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 					if(auto hash = value->_ret_0) {
 						if(*hash != peer_check.our_hash) {
 							if(auto peer = find_peer(client)) {
-								log(INFO) << "Peer " << peer->address << " is on different chain at height " << peer_check.height;
+								if(peer->is_synced) {
+									log(INFO) << "Peer " << peer->address << " is on different chain at height " << peer_check.height;
+									disconnect(client);
+								}
 							}
-							disconnect(client);
 						}
 					}
 				}
