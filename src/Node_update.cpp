@@ -228,7 +228,8 @@ void Node::update()
 		}
 	}
 	const auto root = get_root();
-	const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
+	const auto now_ms = vnx::get_wall_time_millis();
+	const auto elapsed = (now_ms - time_begin) / 1e3;
 
 	if(!prev_peak || peak->hash != prev_peak->hash)
 	{
@@ -262,10 +263,13 @@ void Node::update()
 	if(!is_synced && sync_peak && sync_pending.empty() && !vdf_threads->get_num_running())
 	{
 		if(sync_retry < num_sync_retries) {
-			log(INFO) << "Reached sync peak at height " << *sync_peak - 1;
-			sync_pos = *sync_peak;
-			sync_peak = nullptr;
-			sync_retry++;
+			if(now_ms - sync_finish_ms > params->block_time * 500) {
+				log(INFO) << "Reached sync peak at height " << *sync_peak - 1;
+				sync_pos = *sync_peak;
+				sync_peak = nullptr;
+				sync_finish_ms = now_ms;
+				sync_retry++;
+			}
 		} else {
 			log(INFO) << "Finished sync at height " << peak->height;
 			is_synced = true;
