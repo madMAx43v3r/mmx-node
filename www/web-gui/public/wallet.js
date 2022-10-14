@@ -153,7 +153,11 @@ Vue.component('account-summary', {
 
 Vue.component('account-balance', {
 	props: {
-		index: Number
+		index: Number,
+		show_all: {
+			type: Boolean,
+			default: false
+		}
 	},
 	data() {
 		return {
@@ -175,7 +179,7 @@ Vue.component('account-balance', {
 	},
 	methods: {
 		update() {
-			fetch('/wapi/wallet/balance?index=' + this.index)
+			fetch('/wapi/wallet/balance?index=' + this.index + '&show_all=' + this.show_all)
 				.then(response => response.json())
 				.then(data => {
 					this.loaded = true;
