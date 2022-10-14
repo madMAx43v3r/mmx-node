@@ -100,7 +100,7 @@ public:
 	
 	::mmx::balance_t get_balance(const uint32_t& index = 0, const ::mmx::addr_t& currency = ::mmx::addr_t());
 	
-	std::map<::mmx::addr_t, ::mmx::balance_t> get_balances(const uint32_t& index = 0, const vnx::bool_t& with_zero = 0);
+	std::map<::mmx::addr_t, ::mmx::balance_t> get_balances(const uint32_t& index = 0, const vnx::bool_t& with_zero = 0, const vnx::bool_t& show_all = 0);
 	
 	std::map<::mmx::addr_t, ::mmx::balance_t> get_total_balances(const std::vector<::mmx::addr_t>& addresses = {});
 	

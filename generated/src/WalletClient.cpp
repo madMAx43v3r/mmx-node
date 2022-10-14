@@ -542,10 +542,11 @@ std::vector<::mmx::txin_t> WalletClient::gather_inputs_for(const uint32_t& index
 	}
 }
 
-std::map<::mmx::addr_t, ::mmx::balance_t> WalletClient::get_balances(const uint32_t& index, const vnx::bool_t& with_zero) {
+std::map<::mmx::addr_t, ::mmx::balance_t> WalletClient::get_balances(const uint32_t& index, const vnx::bool_t& with_zero, const vnx::bool_t& show_all) {
 	auto _method = ::mmx::Wallet_get_balances::create();
 	_method->index = index;
 	_method->with_zero = with_zero;
+	_method->show_all = show_all;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_balances_return>(_return_value)) {
 		return _result->_ret_0;

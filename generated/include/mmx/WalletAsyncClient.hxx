@@ -136,7 +136,7 @@ public:
 			const std::function<void(const ::mmx::balance_t&)>& _callback = std::function<void(const ::mmx::balance_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_balances(const uint32_t& index = 0, const vnx::bool_t& with_zero = 0, 
+	uint64_t get_balances(const uint32_t& index = 0, const vnx::bool_t& with_zero = 0, const vnx::bool_t& show_all = 0, 
 			const std::function<void(const std::map<::mmx::addr_t, ::mmx::balance_t>&)>& _callback = std::function<void(const std::map<::mmx::addr_t, ::mmx::balance_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
