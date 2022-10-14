@@ -856,15 +856,36 @@ void Router::query()
 
 void Router::discover()
 {
-	if(peer_set.size() >= max_peer_set) {
-		return;
+	if(peer_set.size() < max_peer_set) {
+		auto method = Router_get_peers::create();
+		method->max_count = 4 * num_peers_out;
+		auto req = Request::create();
+		req->id = next_request_id++;
+		req->method = method;
+		send_all(req, {node_type_e::FULL_NODE}, false);
 	}
-	auto method = Router_get_peers::create();
-	method->max_count = 4 * num_peers_out;
-	auto req = Request::create();
-	req->id = next_request_id++;
-	req->method = method;
-	send_all(req, {node_type_e::FULL_NODE}, false);
+
+	// check peers and disconnect forks
+	node->get_synced_height(
+		[this](const vnx::optional<uint32_t>& sync_height) {
+			if(sync_height) {
+				auto method = Node_get_block_hash::create();
+				method->height = *sync_height - 2 * params->commit_delay;
+				node->get_block_hash(method->height,
+					[this, method](const vnx::optional<hash_t>& hash) {
+						if(hash) {
+							auto req = Request::create();
+							req->id = next_request_id++;
+							req->method = method;
+							send_all(req, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE}, false);
+
+							peer_check.height = method->height;
+							peer_check.our_hash = *hash;
+							peer_check.request_id = req->id;
+						}
+					});
+			}
+		});
 }
 
 void Router::save_data()
@@ -1437,6 +1458,16 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 					if(iter->second == client) {
 						if(auto hash = value->_ret_0) {
 							fork_check.hash_count[*hash]++;
+						}
+					}
+				}
+				if(msg->id == peer_check.request_id) {
+					if(auto hash = value->_ret_0) {
+						if(*hash != peer_check.our_hash) {
+							if(auto peer = find_peer(client)) {
+								log(INFO) << "Peer " << peer->address << " is on different chain at height " << peer_check.height;
+							}
+							disconnect(client);
 						}
 					}
 				}

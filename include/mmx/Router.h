@@ -240,6 +240,12 @@ private:
 		std::unordered_map<uint32_t, uint64_t> request_map;
 	} fork_check;
 
+	struct {
+		uint32_t height = -1;
+		uint32_t request_id = 0;
+		hash_t our_hash;
+	} peer_check;
+
 	vnx::ThreadPool* connect_threads = nullptr;
 	std::shared_ptr<NodeAsyncClient> node;
 	std::shared_ptr<const ChainParams> params;
