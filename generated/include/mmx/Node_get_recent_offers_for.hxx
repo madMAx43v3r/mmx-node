@@ -17,7 +17,7 @@ public:
 	vnx::optional<::mmx::addr_t> bid;
 	vnx::optional<::mmx::addr_t> ask;
 	int32_t limit = 100;
-	vnx::bool_t is_open = true;
+	std::string state = "OPEN";
 	
 	typedef ::vnx::Value Super;
 	
@@ -65,7 +65,7 @@ void Node_get_recent_offers_for::accept_generic(T& _visitor) const {
 	_visitor.type_field("bid", 0); _visitor.accept(bid);
 	_visitor.type_field("ask", 1); _visitor.accept(ask);
 	_visitor.type_field("limit", 2); _visitor.accept(limit);
-	_visitor.type_field("is_open", 3); _visitor.accept(is_open);
+	_visitor.type_field("state", 3); _visitor.accept(state);
 	_visitor.template type_end<Node_get_recent_offers_for>(4);
 }
 

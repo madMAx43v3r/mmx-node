@@ -14,6 +14,7 @@
 #include <mmx/address_info_t.hxx>
 #include <mmx/balance_t.hxx>
 #include <mmx/hash_t.hpp>
+#include <mmx/offer_data_t.hxx>
 #include <mmx/spend_options_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_log_entry_t.hxx>
@@ -94,7 +95,7 @@ public:
 	
 	std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index = 0, const int32_t& since = 0, const vnx::optional<::mmx::tx_type_e>& type = nullptr, const vnx::optional<::mmx::addr_t>& currency = nullptr);
 	
-	std::vector<::mmx::tx_log_entry_t> get_tx_history(const uint32_t& index = 0, const int32_t& limit = -1, const uint32_t& offset = 0);
+	std::vector<::mmx::tx_log_entry_t> get_tx_log(const uint32_t& index = 0, const int32_t& limit = -1, const uint32_t& offset = 0);
 	
 	std::vector<::mmx::txin_t> gather_inputs_for(const uint32_t& index = 0, const uint64_t& amount = 0, const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
@@ -107,6 +108,10 @@ public:
 	std::map<::mmx::addr_t, ::mmx::balance_t> get_contract_balances(const ::mmx::addr_t& address = ::mmx::addr_t());
 	
 	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts(const uint32_t& index = 0);
+	
+	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts_owned(const uint32_t& index = 0);
+	
+	std::vector<::mmx::offer_data_t> get_offers(const uint32_t& index = 0, const std::string& state = "");
 	
 	::mmx::addr_t get_address(const uint32_t& index = 0, const uint32_t& offset = 0);
 	

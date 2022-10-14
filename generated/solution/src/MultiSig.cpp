@@ -23,7 +23,7 @@ namespace solution {
 
 
 const vnx::Hash64 MultiSig::VNX_TYPE_HASH(0x64ffa2f8fc8dffd1ull);
-const vnx::Hash64 MultiSig::VNX_CODE_HASH(0xce1b5fb0152dabd8ull);
+const vnx::Hash64 MultiSig::VNX_CODE_HASH(0x32889c89045a873bull);
 
 vnx::Hash64 MultiSig::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -58,6 +58,7 @@ void MultiSig::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, version);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, solutions);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, num_required);
 	_visitor.type_end(*_type_code);
 }
 
@@ -65,6 +66,7 @@ void MultiSig::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.solution.MultiSig\"";
 	_out << ", \"version\": "; vnx::write(_out, version);
 	_out << ", \"solutions\": "; vnx::write(_out, solutions);
+	_out << ", \"num_required\": "; vnx::write(_out, num_required);
 	_out << "}";
 }
 
@@ -79,12 +81,15 @@ vnx::Object MultiSig::to_object() const {
 	_object["__type"] = "mmx.solution.MultiSig";
 	_object["version"] = version;
 	_object["solutions"] = solutions;
+	_object["num_required"] = num_required;
 	return _object;
 }
 
 void MultiSig::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "solutions") {
+		if(_entry.first == "num_required") {
+			_entry.second.to(num_required);
+		} else if(_entry.first == "solutions") {
 			_entry.second.to(solutions);
 		} else if(_entry.first == "version") {
 			_entry.second.to(version);
@@ -99,6 +104,9 @@ vnx::Variant MultiSig::get_field(const std::string& _name) const {
 	if(_name == "solutions") {
 		return vnx::Variant(solutions);
 	}
+	if(_name == "num_required") {
+		return vnx::Variant(num_required);
+	}
 	return vnx::Variant();
 }
 
@@ -107,6 +115,8 @@ void MultiSig::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(version);
 	} else if(_name == "solutions") {
 		_value.to(solutions);
+	} else if(_name == "num_required") {
+		_value.to(num_required);
 	}
 }
 
@@ -134,7 +144,7 @@ std::shared_ptr<vnx::TypeCode> MultiSig::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.solution.MultiSig";
 	type_code->type_hash = vnx::Hash64(0x64ffa2f8fc8dffd1ull);
-	type_code->code_hash = vnx::Hash64(0xce1b5fb0152dabd8ull);
+	type_code->code_hash = vnx::Hash64(0x32889c89045a873bull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::solution::MultiSig);
@@ -146,7 +156,7 @@ std::shared_ptr<vnx::TypeCode> MultiSig::static_create_type_code() {
 	type_code->methods[1] = ::mmx::Solution_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::solution::MultiSig_calc_cost::static_get_type_code();
 	type_code->methods[3] = ::mmx::solution::MultiSig_calc_hash::static_get_type_code();
-	type_code->fields.resize(2);
+	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -158,6 +168,12 @@ std::shared_ptr<vnx::TypeCode> MultiSig::static_create_type_code() {
 		field.is_extended = true;
 		field.name = "solutions";
 		field.code = {12, 16};
+	}
+	{
+		auto& field = type_code->fields[2];
+		field.data_size = 4;
+		field.name = "num_required";
+		field.code = {3};
 	}
 	type_code->build();
 	return type_code;
@@ -235,6 +251,9 @@ void read(TypeInput& in, ::mmx::solution::MultiSig& value, const TypeCode* type_
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.version, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[2]) {
+			vnx::read_value(_buf + _field->offset, value.num_required, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -257,8 +276,9 @@ void write(TypeOutput& out, const ::mmx::solution::MultiSig& value, const TypeCo
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
+	char* const _buf = out.write(8);
 	vnx::write_value(_buf + 0, value.version);
+	vnx::write_value(_buf + 4, value.num_required);
 	vnx::write(out, value.solutions, type_code, type_code->fields[1].code.data());
 }
 

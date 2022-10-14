@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_recent_offers_for::VNX_TYPE_HASH(0xd89f845556eb17a0ull);
-const vnx::Hash64 Node_get_recent_offers_for::VNX_CODE_HASH(0xc9596d05dcea51e8ull);
+const vnx::Hash64 Node_get_recent_offers_for::VNX_CODE_HASH(0xae7b394b4e5bcb81ull);
 
 vnx::Hash64 Node_get_recent_offers_for::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -50,7 +50,7 @@ void Node_get_recent_offers_for::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, bid);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, ask);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, limit);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, is_open);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, state);
 	_visitor.type_end(*_type_code);
 }
 
@@ -59,7 +59,7 @@ void Node_get_recent_offers_for::write(std::ostream& _out) const {
 	_out << ", \"bid\": "; vnx::write(_out, bid);
 	_out << ", \"ask\": "; vnx::write(_out, ask);
 	_out << ", \"limit\": "; vnx::write(_out, limit);
-	_out << ", \"is_open\": "; vnx::write(_out, is_open);
+	_out << ", \"state\": "; vnx::write(_out, state);
 	_out << "}";
 }
 
@@ -75,7 +75,7 @@ vnx::Object Node_get_recent_offers_for::to_object() const {
 	_object["bid"] = bid;
 	_object["ask"] = ask;
 	_object["limit"] = limit;
-	_object["is_open"] = is_open;
+	_object["state"] = state;
 	return _object;
 }
 
@@ -85,10 +85,10 @@ void Node_get_recent_offers_for::from_object(const vnx::Object& _object) {
 			_entry.second.to(ask);
 		} else if(_entry.first == "bid") {
 			_entry.second.to(bid);
-		} else if(_entry.first == "is_open") {
-			_entry.second.to(is_open);
 		} else if(_entry.first == "limit") {
 			_entry.second.to(limit);
+		} else if(_entry.first == "state") {
+			_entry.second.to(state);
 		}
 	}
 }
@@ -103,8 +103,8 @@ vnx::Variant Node_get_recent_offers_for::get_field(const std::string& _name) con
 	if(_name == "limit") {
 		return vnx::Variant(limit);
 	}
-	if(_name == "is_open") {
-		return vnx::Variant(is_open);
+	if(_name == "state") {
+		return vnx::Variant(state);
 	}
 	return vnx::Variant();
 }
@@ -116,8 +116,8 @@ void Node_get_recent_offers_for::set_field(const std::string& _name, const vnx::
 		_value.to(ask);
 	} else if(_name == "limit") {
 		_value.to(limit);
-	} else if(_name == "is_open") {
-		_value.to(is_open);
+	} else if(_name == "state") {
+		_value.to(state);
 	}
 }
 
@@ -145,7 +145,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_recent_offers_for::static_create_type_co
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_recent_offers_for";
 	type_code->type_hash = vnx::Hash64(0xd89f845556eb17a0ull);
-	type_code->code_hash = vnx::Hash64(0xc9596d05dcea51e8ull);
+	type_code->code_hash = vnx::Hash64(0xae7b394b4e5bcb81ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -175,10 +175,10 @@ std::shared_ptr<vnx::TypeCode> Node_get_recent_offers_for::static_create_type_co
 	}
 	{
 		auto& field = type_code->fields[3];
-		field.data_size = 1;
-		field.name = "is_open";
-		field.value = vnx::to_string(true);
-		field.code = {31};
+		field.is_extended = true;
+		field.name = "state";
+		field.value = vnx::to_string("OPEN");
+		field.code = {32};
 	}
 	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();
@@ -226,14 +226,12 @@ void read(TypeInput& in, ::mmx::Node_get_recent_offers_for& value, const TypeCod
 		if(const auto* const _field = type_code->field_map[2]) {
 			vnx::read_value(_buf + _field->offset, value.limit, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[3]) {
-			vnx::read_value(_buf + _field->offset, value.is_open, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.bid, type_code, _field->code.data()); break;
 			case 1: vnx::read(in, value.ask, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.state, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -252,11 +250,11 @@ void write(TypeOutput& out, const ::mmx::Node_get_recent_offers_for& value, cons
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(5);
+	char* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.limit);
-	vnx::write_value(_buf + 4, value.is_open);
 	vnx::write(out, value.bid, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.ask, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.state, type_code, type_code->fields[3].code.data());
 }
 
 void read(std::istream& in, ::mmx::Node_get_recent_offers_for& value) {

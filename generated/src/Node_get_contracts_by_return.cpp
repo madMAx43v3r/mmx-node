@@ -3,7 +3,6 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Node_get_contracts_by_return.hxx>
-#include <mmx/Contract.hxx>
 #include <mmx/addr_t.hpp>
 #include <vnx/Value.h>
 
@@ -14,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_contracts_by_return::VNX_TYPE_HASH(0x9ad1099f1adf2565ull);
-const vnx::Hash64 Node_get_contracts_by_return::VNX_CODE_HASH(0x3d9350210f467edfull);
+const vnx::Hash64 Node_get_contracts_by_return::VNX_CODE_HASH(0xe941428eb0174d80ull);
 
 vnx::Hash64 Node_get_contracts_by_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -115,7 +114,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_contracts_by_return::static_create_type_
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_contracts_by.return";
 	type_code->type_hash = vnx::Hash64(0x9ad1099f1adf2565ull);
-	type_code->code_hash = vnx::Hash64(0x3d9350210f467edfull);
+	type_code->code_hash = vnx::Hash64(0xe941428eb0174d80ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
@@ -126,7 +125,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_contracts_by_return::static_create_type_
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "_ret_0";
-		field.code = {13, 5, 11, 32, 1, 16};
+		field.code = {12, 11, 32, 1};
 	}
 	type_code->build();
 	return type_code;

@@ -14,7 +14,7 @@ class MMX_EXPORT Node_get_offers : public ::vnx::Value {
 public:
 	
 	uint32_t since = 0;
-	vnx::bool_t is_open = 0;
+	std::string state;
 	
 	typedef ::vnx::Value Super;
 	
@@ -60,7 +60,7 @@ template<typename T>
 void Node_get_offers::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<Node_get_offers>(2);
 	_visitor.type_field("since", 0); _visitor.accept(since);
-	_visitor.type_field("is_open", 1); _visitor.accept(is_open);
+	_visitor.type_field("state", 1); _visitor.accept(state);
 	_visitor.template type_end<Node_get_offers>(2);
 }
 

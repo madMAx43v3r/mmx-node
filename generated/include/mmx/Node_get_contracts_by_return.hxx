@@ -5,7 +5,6 @@
 #define INCLUDE_mmx_Node_get_contracts_by_return_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/Contract.hxx>
 #include <mmx/addr_t.hpp>
 #include <vnx/Value.h>
 
@@ -15,7 +14,7 @@ namespace mmx {
 class MMX_EXPORT Node_get_contracts_by_return : public ::vnx::Value {
 public:
 	
-	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> _ret_0;
+	std::vector<::mmx::addr_t> _ret_0;
 	
 	typedef ::vnx::Value Super;
 	

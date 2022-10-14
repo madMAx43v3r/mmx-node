@@ -14,6 +14,7 @@
 #include <mmx/address_info_t.hxx>
 #include <mmx/balance_t.hxx>
 #include <mmx/hash_t.hpp>
+#include <mmx/offer_data_t.hxx>
 #include <mmx/spend_options_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_log_entry_t.hxx>
@@ -103,13 +104,15 @@ protected:
 	virtual void reset_cache(const uint32_t& index) = 0;
 	virtual void update_cache(const uint32_t& index) const = 0;
 	virtual std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index, const int32_t& since, const vnx::optional<::mmx::tx_type_e>& type, const vnx::optional<::mmx::addr_t>& currency) const = 0;
-	virtual std::vector<::mmx::tx_log_entry_t> get_tx_history(const uint32_t& index, const int32_t& limit, const uint32_t& offset) const = 0;
+	virtual std::vector<::mmx::tx_log_entry_t> get_tx_log(const uint32_t& index, const int32_t& limit, const uint32_t& offset) const = 0;
 	virtual std::vector<::mmx::txin_t> gather_inputs_for(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
 	virtual ::mmx::balance_t get_balance(const uint32_t& index, const ::mmx::addr_t& currency) const = 0;
 	virtual std::map<::mmx::addr_t, ::mmx::balance_t> get_balances(const uint32_t& index, const vnx::bool_t& with_zero) const = 0;
 	virtual std::map<::mmx::addr_t, ::mmx::balance_t> get_total_balances(const std::vector<::mmx::addr_t>& addresses) const = 0;
 	virtual std::map<::mmx::addr_t, ::mmx::balance_t> get_contract_balances(const ::mmx::addr_t& address) const = 0;
 	virtual std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts(const uint32_t& index) const = 0;
+	virtual std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts_owned(const uint32_t& index) const = 0;
+	virtual std::vector<::mmx::offer_data_t> get_offers(const uint32_t& index, const std::string& state) const = 0;
 	virtual ::mmx::addr_t get_address(const uint32_t& index, const uint32_t& offset) const = 0;
 	virtual std::vector<::mmx::addr_t> get_all_addresses(const int32_t& index) const = 0;
 	virtual ::mmx::address_info_t get_address_info(const uint32_t& index, const uint32_t& offset) const = 0;

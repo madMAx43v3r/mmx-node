@@ -52,6 +52,10 @@
 #include <mmx/contract/PlotNFT_lock_return.hxx>
 #include <mmx/contract/PlotNFT_lock_pool.hxx>
 #include <mmx/contract/PlotNFT_lock_pool_return.hxx>
+#include <mmx/contract/PlotNFT_set_partial_diff.hxx>
+#include <mmx/contract/PlotNFT_set_partial_diff_return.hxx>
+#include <mmx/contract/PlotNFT_set_reward_addr.hxx>
+#include <mmx/contract/PlotNFT_set_reward_addr_return.hxx>
 #include <mmx/hash_t.hpp>
 
 #include <vnx/vnx.h>
@@ -252,7 +256,7 @@ std::shared_ptr<vnx::TypeCode> PlotNFT::static_create_type_code() {
 	type_code->parents[0] = ::mmx::contract::MutableRelay::static_get_type_code();
 	type_code->parents[1] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<PlotNFT>(); };
-	type_code->methods.resize(23);
+	type_code->methods.resize(25);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_dependency::static_get_type_code();
@@ -276,6 +280,8 @@ std::shared_ptr<vnx::TypeCode> PlotNFT::static_create_type_code() {
 	type_code->methods[20] = ::mmx::contract::PlotNFT_is_valid::static_get_type_code();
 	type_code->methods[21] = ::mmx::contract::PlotNFT_lock::static_get_type_code();
 	type_code->methods[22] = ::mmx::contract::PlotNFT_lock_pool::static_get_type_code();
+	type_code->methods[23] = ::mmx::contract::PlotNFT_set_partial_diff::static_get_type_code();
+	type_code->methods[24] = ::mmx::contract::PlotNFT_set_reward_addr::static_get_type_code();
 	type_code->fields.resize(9);
 	{
 		auto& field = type_code->fields[0];
@@ -474,6 +480,18 @@ std::shared_ptr<vnx::Value> PlotNFT::vnx_call_switch(std::shared_ptr<const vnx::
 			auto _args = std::static_pointer_cast<const ::mmx::contract::PlotNFT_lock_pool>(_method);
 			auto _return_value = ::mmx::contract::PlotNFT_lock_pool_return::create();
 			lock_pool(_args->new_target, _args->new_unlock_delay, _args->new_server_url);
+			return _return_value;
+		}
+		case 0xe1401fa23c077c00ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::PlotNFT_set_partial_diff>(_method);
+			auto _return_value = ::mmx::contract::PlotNFT_set_partial_diff_return::create();
+			set_partial_diff(_args->new_partial_diff);
+			return _return_value;
+		}
+		case 0x5f62381f96e76ea9ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::PlotNFT_set_reward_addr>(_method);
+			auto _return_value = ::mmx::contract::PlotNFT_set_reward_addr_return::create();
+			set_reward_addr(_args->new_reward_addr);
 			return _return_value;
 		}
 	}

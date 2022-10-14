@@ -38,7 +38,7 @@ namespace contract {
 
 
 const vnx::Hash64 TokenBase::VNX_TYPE_HASH(0x5aeed4c96d232b5eull);
-const vnx::Hash64 TokenBase::VNX_CODE_HASH(0x823644def36fd649ull);
+const vnx::Hash64 TokenBase::VNX_CODE_HASH(0xdbdbef14d95d19a4ull);
 
 vnx::Hash64 TokenBase::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -75,6 +75,7 @@ void TokenBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, name);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, symbol);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, decimals);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, meta_data);
 	_visitor.type_end(*_type_code);
 }
 
@@ -84,6 +85,7 @@ void TokenBase::write(std::ostream& _out) const {
 	_out << ", \"name\": "; vnx::write(_out, name);
 	_out << ", \"symbol\": "; vnx::write(_out, symbol);
 	_out << ", \"decimals\": "; vnx::write(_out, decimals);
+	_out << ", \"meta_data\": "; vnx::write(_out, meta_data);
 	_out << "}";
 }
 
@@ -100,6 +102,7 @@ vnx::Object TokenBase::to_object() const {
 	_object["name"] = name;
 	_object["symbol"] = symbol;
 	_object["decimals"] = decimals;
+	_object["meta_data"] = meta_data;
 	return _object;
 }
 
@@ -107,6 +110,8 @@ void TokenBase::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "decimals") {
 			_entry.second.to(decimals);
+		} else if(_entry.first == "meta_data") {
+			_entry.second.to(meta_data);
 		} else if(_entry.first == "name") {
 			_entry.second.to(name);
 		} else if(_entry.first == "symbol") {
@@ -130,6 +135,9 @@ vnx::Variant TokenBase::get_field(const std::string& _name) const {
 	if(_name == "decimals") {
 		return vnx::Variant(decimals);
 	}
+	if(_name == "meta_data") {
+		return vnx::Variant(meta_data);
+	}
 	return vnx::Variant();
 }
 
@@ -142,6 +150,8 @@ void TokenBase::set_field(const std::string& _name, const vnx::Variant& _value) 
 		_value.to(symbol);
 	} else if(_name == "decimals") {
 		_value.to(decimals);
+	} else if(_name == "meta_data") {
+		_value.to(meta_data);
 	}
 }
 
@@ -169,7 +179,7 @@ std::shared_ptr<vnx::TypeCode> TokenBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.TokenBase";
 	type_code->type_hash = vnx::Hash64(0x5aeed4c96d232b5eull);
-	type_code->code_hash = vnx::Hash64(0x823644def36fd649ull);
+	type_code->code_hash = vnx::Hash64(0xdbdbef14d95d19a4ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::TokenBase);
@@ -188,7 +198,7 @@ std::shared_ptr<vnx::TypeCode> TokenBase::static_create_type_code() {
 	type_code->methods[8] = ::mmx::contract::TokenBase_calc_cost::static_get_type_code();
 	type_code->methods[9] = ::mmx::contract::TokenBase_calc_hash::static_get_type_code();
 	type_code->methods[10] = ::mmx::contract::TokenBase_is_valid::static_get_type_code();
-	type_code->fields.resize(4);
+	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -213,6 +223,12 @@ std::shared_ptr<vnx::TypeCode> TokenBase::static_create_type_code() {
 		field.name = "decimals";
 		field.value = vnx::to_string(6);
 		field.code = {7};
+	}
+	{
+		auto& field = type_code->fields[4];
+		field.is_extended = true;
+		field.name = "meta_data";
+		field.code = {33, 11, 32, 1};
 	}
 	type_code->build();
 	return type_code;
@@ -340,6 +356,7 @@ void read(TypeInput& in, ::mmx::contract::TokenBase& value, const TypeCode* type
 		switch(_field->native_index) {
 			case 1: vnx::read(in, value.name, type_code, _field->code.data()); break;
 			case 2: vnx::read(in, value.symbol, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.meta_data, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -363,6 +380,7 @@ void write(TypeOutput& out, const ::mmx::contract::TokenBase& value, const TypeC
 	vnx::write_value(_buf + 4, value.decimals);
 	vnx::write(out, value.name, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.symbol, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.meta_data, type_code, type_code->fields[4].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::TokenBase& value) {

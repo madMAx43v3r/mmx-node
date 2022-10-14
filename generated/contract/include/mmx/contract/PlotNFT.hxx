@@ -41,6 +41,8 @@ public:
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	virtual void lock(const vnx::optional<::mmx::addr_t>& new_target = nullptr, const uint32_t& new_unlock_delay = 0) override;
 	virtual void lock_pool(const vnx::optional<::mmx::addr_t>& new_target = nullptr, const uint32_t& new_unlock_delay = 0, const vnx::optional<std::string>& new_server_url = nullptr);
+	virtual void set_reward_addr(const vnx::optional<::mmx::addr_t>& new_reward_addr = nullptr);
+	virtual void set_partial_diff(const vnx::optional<::mmx::addr_t>& new_partial_diff = nullptr);
 	
 	static std::shared_ptr<PlotNFT> create();
 	std::shared_ptr<vnx::Value> clone() const override;
