@@ -1549,23 +1549,39 @@ Vue.component('account-offers', {
 			data: [],
 			error: null,
 			result: null,
-			timer: null
+			timer: null,
+			state: null,
+			canceled: new Set()
 		}
+	},
+	computed: {
+		select_states() {
+			return [
+				{text: this.$t('account_offers.any'), value: null},
+				{text: this.$t('account_offers.open'), value: 'OPEN'},
+				{text: this.$t('account_offers.accepted'), value: 'CLOSED'},
+				{text: this.$t('account_offers.revoked'), value: 'REVOKED'}
+			];
+		},
 	},
 	methods: {
 		update() {
-			fetch('/wapi/wallet/offers?index=' + this.index)
+			fetch('/wapi/wallet/offers?index=' + this.index + '&state=' + (this.state || ''))
 				.then(response => response.json())
 				.then(data => this.data = data.sort((L, R) => R.height - L.height));
 		},
-		cancel(address) {
+		cancel(item) {
 			const args = {};
 			args.index = this.index;
-			args.address = address;
+			args.address = item.address;
 			fetch('/wapi/wallet/cancel', {body: JSON.stringify(args), method: "post"})
 				.then(response => {
 					if(response.ok) {
-						response.json().then(data => this.result = data);
+						response.json().then(data => {
+							this.canceled.add(item.address);
+							item.state='REVOKED';
+							this.result = data;
+						});
 					} else {
 						response.text().then(data => this.error = data);
 					}
@@ -1573,6 +1589,9 @@ Vue.component('account-offers', {
 		}
 	},
 	watch: {
+		state(value) {
+			this.update();
+		},
 		index(value) {
 			this.update();
 		},
@@ -1595,51 +1614,61 @@ Vue.component('account-offers', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<div>
-			<v-simple-table>
-				<thead>
-				<tr>
-					<th>{{ $t('account_offers.height') }}</th>
-					<th colspan="2">{{ $t('account_offers.offer') }}</th>
-					<th colspan="2">{{ $t('account_offers.receive') }}</th>
-					<th>{{ $t('account_offers.address') }}</th>
-					<th>{{ $t('account_offers.status') }}</th>
-					<th>{{ $t('account_offers.time') }}</th>
-					<th>{{ $t('account_offers.actions') }}</th>
-				</tr>
-				</thead>
-				<tbody>
-				<tr v-for="item in data" :key="item.address">
-					<td>{{item.height}}</td>
-					<td class="collapsing"><b>{{item.bid_value}}</b></td>
-					<td>{{item.bid_symbol}}</td>
-					<td class="collapsing"><b>{{item.ask_value}}</b></td>
-					<td>{{item.ask_symbol}}</td>
-					<td><router-link :to="'/explore/address/' + item.address">{{item.address.substr(0, 16)}}...</router-link></td>
-					<td :class="{'green--text': item.state == 'OPEN', 'red--text text--lighten-2': item.state == 'REVOKED'}">
-						<template v-if="item.state == 'CLOSED'">
-							<router-link :to="'/explore/transaction/' + item.trade_txid">{{ $t('account_offers.accepted') }}</router-link>
-						</template>
-						<template v-else>
-							{{item.state == 'REVOKED' ? $t('account_offers.revoked') : $t('account_offers.open') }}
-						</template>
-					</td>
-					<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
-					<td>
-						<template v-if="item.state == 'OPEN'">
-							<v-btn outlined text @click="cancel(item.address)">{{ $t('account_offers.revoke') }}</v-btn>
-						</template>
-					</td>
-				</tr>
-				</tbody>
-			</v-simple-table>
-			<v-alert border="left" colored-border type="success" elevation="2" v-if="result" class="my-2">
-				{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result.id">{{result.id}}</router-link>
-			</v-alert>
-			<v-alert border="left" colored-border type="error" elevation="2" v-if="error" class="my-2">
-				{{ $t('common.failed_with') }}: <b>{{error}}</b>
-			</v-alert>
-		</div>
+		<v-card class="my-2">
+			<v-card-text>
+
+				<v-select v-model="state" :label="$t('account_offers.status')"
+					:items="select_states" item-text="text" item-value="value">
+				</v-select>
+
+				<v-simple-table>
+					<thead>
+					<tr>
+						<th>{{ $t('account_offers.height') }}</th>
+						<th colspan="2">{{ $t('account_offers.offer') }}</th>
+						<th colspan="2">{{ $t('account_offers.receive') }}</th>
+						<th>{{ $t('account_offers.address') }}</th>
+						<th>{{ $t('account_offers.status') }}</th>
+						<th>{{ $t('account_offers.time') }}</th>
+						<th>{{ $t('account_offers.actions') }}</th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr v-for="item in data" :key="item.address">
+						<td>{{item.height}}</td>
+						<td class="collapsing"><b>{{item.bid_value}}</b></td>
+						<td>{{item.bid_symbol}}</td>
+						<td class="collapsing"><b>{{item.ask_value}}</b></td>
+						<td>{{item.ask_symbol}}</td>
+						<td><router-link :to="'/explore/address/' + item.address">{{item.address.substr(0, 16)}}...</router-link></td>
+						<td :class="{'green--text': item.state == 'OPEN', 'red--text text--lighten-2': item.state == 'REVOKED'}">
+							<template v-if="item.state == 'CLOSED'">
+								<router-link :to="'/explore/transaction/' + item.trade_txid">{{ $t('account_offers.accepted') }}</router-link>
+							</template>
+							<template v-else>
+								{{item.state == 'REVOKED' ? $t('account_offers.revoked') : $t('account_offers.open') }}
+							</template>
+						</td>
+						<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
+						<td>
+							<template v-if="item.state == 'OPEN' && !canceled.has(item.address)">
+								<v-btn outlined text @click="cancel(item)">{{ $t('account_offers.revoke') }}</v-btn>
+							</template>
+						</td>
+					</tr>
+					</tbody>
+				</v-simple-table>
+
+				<v-alert border="left" colored-border type="success" elevation="2" v-if="result" class="my-2">
+					{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result.id">{{result.id}}</router-link>
+				</v-alert>
+
+				<v-alert border="left" colored-border type="error" elevation="2" v-if="error" class="my-2">
+					{{ $t('common.failed_with') }}: <b>{{error}}</b>
+				</v-alert>
+
+			</v-card-text>
+		</v-card>
 		`
 })
 

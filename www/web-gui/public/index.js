@@ -397,7 +397,7 @@ Vue.component('main-menu', {
 			<status/>
 			<v-tab to="/node">{{ $t('main_menu.node') }}</v-tab>
 			<v-tab to="/wallet">{{ $t('main_menu.wallet') }}</v-tab>
-			<v-tab to="/farmer">Farmer</v-tab>
+			<v-tab to="/farmer">{{ $t('main_menu.farmer') }}</v-tab>
 			<v-tab to="/explore">{{ $t('main_menu.explore') }}</v-tab>
 			<v-tab to="/market">{{ $t('main_menu.market') }}</v-tab>
 			<v-spacer></v-spacer>
