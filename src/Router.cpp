@@ -1398,13 +1398,15 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 			if(auto value = std::dynamic_pointer_cast<const Node_get_height_return>(result)) {
 				if(auto peer = find_peer(client)) {
 					peer->height = value->_ret_0;
-					peer->last_receive_ms = vnx::get_wall_time_millis();
 				}
 			}
 			break;
 		case Node_get_synced_height_return::VNX_TYPE_ID:
 			if(auto value = std::dynamic_pointer_cast<const Node_get_synced_height_return>(result)) {
 				if(auto peer = find_peer(client)) {
+					if(last_query_ms) {
+						peer->ping_ms = vnx::get_wall_time_millis() - last_query_ms;
+					}
 					if(auto height = value->_ret_0) {
 						if(!peer->is_synced) {
 							log(INFO) << "Peer " << peer->address << " is synced at height " << *height;
@@ -1425,11 +1427,6 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 						// check their height
 						send_request(client, Node_get_height::create());
 					}
-					const auto now_ms = vnx::get_wall_time_millis();
-					if(last_query_ms) {
-						peer->ping_ms = now_ms - last_query_ms;
-					}
-					peer->last_receive_ms = now_ms;
 				}
 			}
 			break;
@@ -1450,6 +1447,9 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 
 void Router::on_msg(uint64_t client, std::shared_ptr<const vnx::Value> msg)
 {
+	if(auto peer = find_peer(client)) {
+		peer->last_receive_ms = vnx::get_wall_time_millis();
+	}
 	switch(msg->get_type_hash())
 	{
 	case ProofOfTime::VNX_TYPE_ID:
