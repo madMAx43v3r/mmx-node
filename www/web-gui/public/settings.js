@@ -172,6 +172,7 @@ Vue.component('node-settings', {
 					<v-checkbox
 						v-model="timelord"
 						:label="$t('node_settings.enable_timelord')"
+						class="d-inline-block"
 					></v-checkbox>
 
 					<v-select
