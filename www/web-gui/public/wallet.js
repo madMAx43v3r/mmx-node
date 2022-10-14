@@ -1550,7 +1550,8 @@ Vue.component('account-offers', {
 			error: null,
 			result: null,
 			timer: null,
-			state: null
+			state: null,
+			canceled: new Set()
 		}
 	},
 	computed: {
@@ -1569,14 +1570,18 @@ Vue.component('account-offers', {
 				.then(response => response.json())
 				.then(data => this.data = data.sort((L, R) => R.height - L.height));
 		},
-		cancel(address) {
+		cancel(item) {
 			const args = {};
 			args.index = this.index;
-			args.address = address;
+			args.address = item.address;
 			fetch('/wapi/wallet/cancel', {body: JSON.stringify(args), method: "post"})
 				.then(response => {
 					if(response.ok) {
-						response.json().then(data => this.result = data);
+						response.json().then(data => {
+							this.canceled.add(item.address);
+							item.state='REVOKED';
+							this.result = data;
+						});
 					} else {
 						response.text().then(data => this.error = data);
 					}
@@ -1646,8 +1651,8 @@ Vue.component('account-offers', {
 						</td>
 						<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 						<td>
-							<template v-if="item.state == 'OPEN'">
-								<v-btn outlined text @click="cancel(item.address)">{{ $t('account_offers.revoke') }}</v-btn>
+							<template v-if="item.state == 'OPEN' && !canceled.has(item.address)">
+								<v-btn outlined text @click="cancel(item)">{{ $t('account_offers.revoke') }}</v-btn>
 							</template>
 						</td>
 					</tr>
@@ -1661,7 +1666,7 @@ Vue.component('account-offers', {
 				<v-alert border="left" colored-border type="error" elevation="2" v-if="error" class="my-2">
 					{{ $t('common.failed_with') }}: <b>{{error}}</b>
 				</v-alert>
-				
+
 			</v-card-text>
 		</v-card>
 		`

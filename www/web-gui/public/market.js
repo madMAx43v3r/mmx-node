@@ -219,7 +219,7 @@ Vue.component('market-offers', {
 							this.error = null;
 							this.result = data;
 							this.accepted.add(offer.address);
-							this.$emit('accept-offer', {offer: offer, result: data});							
+							this.$emit('accept-offer', {offer: offer, result: data});
 						});
 					} else {
 						response.text().then(data => {
@@ -279,7 +279,7 @@ Vue.component('market-offers', {
 											</template>
 										</td>
 									</tr>
-									</tbody>					
+									</tbody>
 								</v-simple-table>
 							</v-container>
 						</v-card-text>
@@ -289,7 +289,7 @@ Vue.component('market-offers', {
 						</v-card-actions>
 					</v-card>
 				</template>
-			</v-dialog>		
+			</v-dialog>
 
 			<v-card>
 				<v-card-text>
