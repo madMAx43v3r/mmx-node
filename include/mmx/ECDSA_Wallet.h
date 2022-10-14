@@ -425,13 +425,6 @@ public:
 		} else if(options.expire_delta) {
 			tx->expires = std::min(tx->expires, height + *options.expire_delta);
 		}
-		if(!tx->sender) {
-			if(options.sender) {
-				tx->sender = *options.sender;
-			} else {
-				tx->sender = get_address(0);
-			}
-		}
 		tx->fee_ratio = std::max(tx->fee_ratio, options.fee_ratio);
 
 		std::map<addr_t, uint128_t> missing;
@@ -457,8 +450,36 @@ public:
 				gather_inputs(tx, spent_map, amount, entry.first, options);
 			}
 		}
-		tx->max_fee_amount = ((tx->calc_cost(params) + options.max_extra_cost) * tx->fee_ratio) / 1024;
+		const auto static_cost = tx->calc_cost(params);
+		const auto static_fee = (static_cost * tx->fee_ratio) / 1024;
+		tx->max_fee_amount = ((static_cost + options.max_extra_cost) * tx->fee_ratio) / 1024;
 
+		if(!tx->sender) {
+			if(options.sender) {
+				tx->sender = *options.sender;
+			} else {
+				addr_t max_address;
+				uint128_t max_amount = 0;
+				for(const auto& entry : balance_map) {
+					if(entry.first.second == addr_t()) {
+						auto balance = entry.second;
+						auto iter = spent_map.find(entry.first);
+						if(iter != spent_map.end()) {
+							balance -= iter->second;
+						}
+						if(balance > max_amount) {
+							max_amount = balance;
+							max_address = entry.first.first;
+						}
+					}
+				}
+				if(max_amount >= static_fee) {
+					tx->sender = max_address;
+				} else {
+					throw std::logic_error("insufficient funds for tx fee");
+				}
+			}
+		}
 		sign_off(tx, options);
 	}
 
