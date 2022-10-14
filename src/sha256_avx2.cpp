@@ -11,6 +11,9 @@
 
 #include <cstring>
 #include <stdexcept>
+
+#ifdef __AVX2__
+
 #include <immintrin.h>
 
 #ifdef _WIN32
@@ -333,6 +336,20 @@ bool avx2_available()
 	return HW_AVX2;
 }
 
+
+
+#else
+
+void sha256_avx2_64_x8(uint8_t* out, uint8_t* in, const uint64_t length) {
+	throw std::logic_error("sha256_avx2() not available");
+}
+
+bool avx2_available() {
+	return false;
+}
+
+#endif // __AVX2__
+
 void sha256_64_x8(uint8_t* out, uint8_t* in, const uint64_t length)
 {
 	static bool have_avx2 = avx2_available();
@@ -351,4 +368,3 @@ void sha256_64_x8(uint8_t* out, uint8_t* in, const uint64_t length)
 		}
 	}
 }
-

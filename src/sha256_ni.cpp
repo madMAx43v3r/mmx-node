@@ -8,6 +8,10 @@
 #include <sha256_ni.h>
 
 #include <cstring>
+#include <stdexcept>
+
+#ifdef __SHA__
+
 #include <immintrin.h>
 
 #ifdef _WIN32
@@ -19,7 +23,6 @@ inline void cpuid(int info[4], int InfoType) {
 	__cpuid_count(InfoType, 0, info[0], info[1], info[2], info[3]);
 }
 #endif
-
 
 alignas(64)
 static const uint32_t K[] = {
@@ -280,5 +283,14 @@ bool sha256_ni_available()
 	return ((info[1] >> 29) & 1);
 }
 
+#else
 
+void sha256_ni(uint8_t* out, const uint8_t* in, const uint64_t length) {
+	throw std::logic_error("sha256_ni() not available");
+}
 
+bool sha256_ni_available() {
+	return false;
+}
+
+#endif // __SHA__

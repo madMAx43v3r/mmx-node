@@ -244,8 +244,10 @@ if(NOT MSVC)
 	target_link_libraries(mmx_db OpenMP::OpenMP_CXX)
 	target_link_libraries(mmx_modules OpenMP::OpenMP_CXX)
 	
-	set_source_files_properties(src/sha256_ni.cpp PROPERTIES COMPILE_FLAGS "-mavx2 -msha")
-	set_source_files_properties(src/sha256_avx2.cpp PROPERTIES COMPILE_FLAGS "-mavx2")
+	if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "amd64")
+		set_source_files_properties(src/sha256_ni.cpp PROPERTIES COMPILE_FLAGS "-mavx2 -msha")
+		set_source_files_properties(src/sha256_avx2.cpp PROPERTIES COMPILE_FLAGS "-mavx2")
+	endif()
 endif()
 
 if(OpenCL_FOUND)
