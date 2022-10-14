@@ -38,6 +38,7 @@
 
     "main_menu": {
         "explore": "Обозреватель",
+        "farmer": "Фермер",
         "market": "Торговля",
         "exchange": "Биржа",
         "settings": "Настройки",
@@ -289,6 +290,22 @@
         "receive": "Получено",
         "reward": "Награды",
         "tx_fee": "TX Комиссии"
+    },
+
+    "farmer_menu": {
+        "plots": "Плоты",
+        "blocks": "Блоки",
+        "proofs": "Доказательства"
+    },
+
+    "farmer_plots": {
+        "type": "Тип",
+        "count": "Кол-во",
+        "reload_plots": "Перезагрузить плоты"
+    },
+
+    "farmer_plot_dirs": {
+        "path": "Путь"
     },
 
     "$vuetify": {

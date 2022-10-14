@@ -2,9 +2,9 @@
 Vue.component('farmer-menu', {
 	template: `
 		<v-tabs>
-			<v-tab to="/farmer/plots">Plots</v-tab>
-			<v-tab to="/farmer/blocks">Blocks</v-tab>
-			<v-tab to="/farmer/proofs">Proofs</v-tab>
+			<v-tab to="/farmer/plots">{{ $t('farmer_menu.plots') }}</v-tab>
+			<v-tab to="/farmer/blocks">{{ $t('farmer_menu.blocks') }}</v-tab>
+			<v-tab to="/farmer/proofs">{{ $t('farmer_menu.proofs') }}</v-tab>
 		</v-tabs>
 		`
 })
@@ -32,8 +32,8 @@ Vue.component('farmer-info', {
 	template: `
 		<div>
 			<v-row class="my-2 py-0">
-				<v-col cols="12" class="my-0 py-0">			
-					<v-card min-height="90">					
+				<v-col cols="12" class="my-0 py-0">
+					<v-card min-height="90">
 						<v-card-title>
 							<v-row align="center" justify="space-around">
 
@@ -75,7 +75,7 @@ Vue.component('farmer-info', {
 									<v-row align="center" justify="space-around" class="subtitle-1">
 										{{ $t('farmer_info.total_farm_size') }}
 									</v-row>
-								</v-col>															
+								</v-col>
 
 							</v-row>
 						</v-card-title>
@@ -96,8 +96,8 @@ Vue.component('farmer-plots', {
 	computed: {
 		headers() {
 			return [
-				{ text: "Type", value: 'ksize', width: "10%" },
-				{ text: "Count", value: 'count' },
+				{ text: this.$t('farmer_plots.type'), value: 'ksize', width: "10%" },
+				{ text: this.$t('farmer_plots.count'), value: 'count' },
 			]
 		}
 	},
@@ -139,7 +139,7 @@ Vue.component('farmer-plots', {
 					K{{item.ksize}}
 				</template>
 			</v-data-table>
-			<v-btn class="my-2" outlined @click="reload">Reload Plots</v-btn>
+			<v-btn class="my-2" outlined @click="reload">{{ $t('farmer_plots.reload_plots') }}</v-btn>
 		</div>
 		`
 })
@@ -154,7 +154,7 @@ Vue.component('farmer-plot-dirs', {
 	computed: {
 		headers() {
 			return [
-				{ text: "Path", value: 'item' },
+				{ text: this.$t('farmer_plot_dirs.path'), value: 'item' },
 			]
 		}
 	},
@@ -205,13 +205,13 @@ Vue.component('farmer-blocks', {
 	computed: {
 		headers() {
 			return [
-				{ text: "Height", value: 'height' },
+				{ text: this.$t('farmer_blocks.height'), value: 'height' },
 				{ text: "TX", value: 'tx_count' },
 				{ text: "K", value: 'proof.ksize' },
-				{ text: "Score", value: 'proof.score' },
-				{ text: "Reward", value: 'reward' },
-				{ text: "TX Fees", value: 'tx_fees' },
-				{ text: "Time", value: 'time' },
+				{ text: this.$t('farmer_blocks.score'), value: 'proof.score' },
+				{ text: this.$t('farmer_blocks.reward'), value: 'reward' },
+				{ text: this.$t('farmer_blocks.tx_fees'), value: 'tx_fees' },
+				{ text: this.$t('farmer_blocks.time'), value: 'time' },
 			]
 		}
 	},
@@ -279,12 +279,12 @@ Vue.component('farmer-proofs', {
 	computed: {
 		headers() {
 			return [
-				{ text: "Height", value: 'height' },
-				{ text: "Harvester", value: 'harvester' },
-				{ text: "Score", value: 'proof.score' },
-				{ text: "Difficulty", value: 'space_diff' },
-				{ text: "Time", value: 'lookup_time_ms' },
-				{ text: "Plot ID", value: 'proof.plot_id' },
+				{ text: this.$t('farmer_proofs.height'), value: 'height' },
+				{ text: this.$t('farmer_proofs.harvester'), value: 'harvester' },
+				{ text: this.$t('farmer_proofs.score'), value: 'proof.score' },
+				{ text: this.$t('farmer_proofs.sdiff'), value: 'space_diff' },
+				{ text: this.$t('farmer_proofs.time'), value: 'lookup_time_ms' },
+				{ text: this.$t('farmer_proofs.plot_id'), value: 'proof.plot_id' },
 			]
 		}
 	},
