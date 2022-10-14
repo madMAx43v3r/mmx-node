@@ -34,6 +34,8 @@ const enLocale = {
         "failed_with": "Failed with",
         "deployed_as": "Deployed as",
 
+        "any": "Any",
+
         "link": "Link"
     },
 
@@ -311,7 +313,6 @@ const enLocale = {
     },
 
     "account_history_form": {
-        "any": "Any",
         "spend": "Spend",
         "receive": "Receive",
         "reward": "Reward",

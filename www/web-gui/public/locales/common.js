@@ -191,6 +191,14 @@ const commonLocale = {
         "time": "@:common.time",
         "link": "@:common.link",
         "address": "@:common.address"
+    },
+
+    "account_history_form": {
+        "any": "@:common.any"
+    },
+
+    "account_offers": {
+        "any": "@:common.any"
     }
 
 }
