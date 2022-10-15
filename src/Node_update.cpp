@@ -507,7 +507,7 @@ void Node::validate_new()
 		const auto& tx = iter->second;
 		if(tx->fee_ratio <= min_pool_fee_ratio) {
 			if(show_warnings) {
-				log(WARN) << "TX invalid fee_ratio: " << tx->fee_ratio << " (" << tx->id << ")";
+				log(WARN) << "TX too low fee_ratio for mem pool: " << tx->fee_ratio << " (" << tx->id << ")";
 			}
 			iter = pending_transactions.erase(iter);
 		} else {
