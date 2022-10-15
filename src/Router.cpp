@@ -1116,7 +1116,7 @@ void Router::on_recv_note(uint64_t client, std::shared_ptr<const ReceiveNote> no
 		}
 		auto iter = peer->pending_map.find(note->hash);
 		if(iter != peer->pending_map.end()) {
-			peer->pending_cost -= iter->second;
+			peer->pending_cost = std::max(peer->pending_cost - iter->second, 0.);
 			peer->pending_map.erase(iter);
 		}
 	}
