@@ -865,9 +865,6 @@ void Wallet::add_account(const uint32_t& index, const account_t& config, const v
 
 void Wallet::create_account(const account_t& config, const vnx::optional<std::string>& passphrase)
 {
-	if(config.name.empty()) {
-		throw std::logic_error("name cannot be empty");
-	}
 	if(config.num_addresses <= 0) {
 		throw std::logic_error("num_addresses <= 0");
 	}
@@ -904,9 +901,12 @@ void Wallet::create_wallet(const account_t& config_, const vnx::optional<std::st
 	}
 	const auto key_path = storage_path + config.key_file;
 	vnx::write_to_file(key_path, key_file);
-
-	create_account(config, passphrase);
-
+	try {
+		create_account(config, passphrase);
+	} catch(...) {
+		vnx::File(key_path).remove();
+		throw;
+	}
 	std::filesystem::permissions(key_path, std::filesystem::perms::owner_read | std::filesystem::perms::owner_write);
 }
 
