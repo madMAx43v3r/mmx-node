@@ -10,7 +10,7 @@
 #include <cstring>
 #include <stdexcept>
 
-#ifdef __SHA__
+#if defined(__SHA__) || defined(_WIN32)
 
 #include <immintrin.h>
 

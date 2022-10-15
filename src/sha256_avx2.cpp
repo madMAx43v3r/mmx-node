@@ -12,7 +12,7 @@
 #include <cstring>
 #include <stdexcept>
 
-#ifdef __AVX2__
+#if defined(__AVX2__) || defined(_WIN32)
 
 #include <immintrin.h>
 
