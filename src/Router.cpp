@@ -394,7 +394,7 @@ void Router::update()
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
 		peer->credits = std::min(peer->credits, max_node_credits);
-		peer->pending_cost = std::max<double>(peer->pending_cost, 0) * 0.99;
+		peer->pending_cost = std::max(peer->pending_cost, 0.) * 0.999;
 
 		// clear old hashes
 		while(peer->hash_queue.size() > max_sent_cache) {
@@ -1216,11 +1216,10 @@ bool Router::send_to(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Va
 				return false;
 			}
 			const auto cost = to_value(tx->static_cost, params);
-			peer->pending_cost += cost;
-			peer->pending_map[tx->content_hash] = cost;
-
-			tx_upload_credits -= cost;
-			tx_upload_credits = std::max(tx_upload_credits, 0.);
+			if(peer->pending_map.emplace(tx->content_hash, cost).second) {
+				peer->pending_cost += cost;
+			}
+			tx_upload_credits = std::max(tx_upload_credits - cost, 0.);
 			tx_upload_sum += cost;
 		}
 	}
