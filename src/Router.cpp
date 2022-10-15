@@ -312,9 +312,12 @@ void Router::handle(std::shared_ptr<const Block> block)
 {
 	if(block->farmer_sig) {
 		const auto& hash = block->content_hash;
+		const auto is_ours = !hash_info.count(hash);
 		if(relay_msg_hash(hash, block_credits)) {
-			log(INFO) << "Broadcasting block for height " << block->height;
-			broadcast(block, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
+			if(is_ours) {
+				log(INFO) << "Broadcasting block for height " << block->height;
+			}
+			broadcast(block, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE}, is_ours);
 			block_counter++;
 		}
 	}
@@ -326,7 +329,7 @@ void Router::handle(std::shared_ptr<const Transaction> tx)
 	const auto& hash = tx->content_hash;
 	if(relay_msg_hash(hash)) {
 		if(vnx_sample->topic == input_transactions) {
-			broadcast(tx, hash, {node_type_e::FULL_NODE});
+			broadcast(tx, hash, {node_type_e::FULL_NODE}, true, true);
 		} else {
 			relay(tx, hash, {node_type_e::FULL_NODE});
 		}
@@ -339,10 +342,12 @@ void Router::handle(std::shared_ptr<const ProofOfTime> value)
 	if(value->height > verified_peak_height) {
 		const auto& hash = value->content_hash;
 		if(relay_msg_hash(hash, vdf_credits)) {
+			bool is_ours = false;
 			if(vnx_sample && vnx_sample->topic == input_vdfs) {
+				is_ours = true;
 				log(INFO) << "Broadcasting VDF for height " << value->height;
 			}
-			broadcast(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
+			broadcast(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE}, is_ours);
 			vdf_counter++;
 		}
 	}
@@ -359,10 +364,12 @@ void Router::handle(std::shared_ptr<const ProofResponse> value_)
 
 	const auto& hash = value->content_hash;
 	if(relay_msg_hash(hash, proof_credits)) {
+		bool is_ours = false;
 		if(vnx::get_pipe(value->farmer_addr)) {
+			is_ours = true;
 			log(INFO) << "Broadcasting proof for height " << value->request->height << " with score " << value->proof->score;
 		}
-		broadcast(value, hash, {node_type_e::FULL_NODE});
+		broadcast(value, hash, {node_type_e::FULL_NODE}, is_ours);
 		proof_counter++;
 	}
 	const auto farmer_id = hash_t(value->proof->farmer_key);
@@ -1147,7 +1154,8 @@ void Router::send()
 	}
 }
 
-void Router::send_to(std::vector<std::shared_ptr<peer_t>> peers, std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, bool reliable)
+void Router::send_to(	std::vector<std::shared_ptr<peer_t>> peers, std::shared_ptr<const vnx::Value> msg,
+						const hash_t& msg_hash, bool reliable)
 {
 	std::shuffle(peers.begin(), peers.end(), rand_engine);
 
@@ -1169,13 +1177,16 @@ void Router::relay(std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash
 	}
 }
 
-void Router::broadcast(std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter, bool reliable)
+void Router::broadcast(	std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash,
+						const std::set<node_type_e>& filter, bool reliable, bool synced_only)
 {
 	std::vector<std::shared_ptr<peer_t>> peers;
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
-		if(filter.empty() || filter.count(peer->info.type)) {
-			peers.push_back(peer);
+		if(!synced_only || peer->is_synced) {
+			if(filter.empty() || filter.count(peer->info.type)) {
+				peers.push_back(peer);
+			}
 		}
 	}
 	send_to(peers, msg, msg_hash, reliable);
