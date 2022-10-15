@@ -138,9 +138,11 @@ uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::option
 			break;
 		}
 		for(const auto& tx : block->get_all_transactions()) {
-			for(const auto& out : tx->get_outputs()) {
-				if(out.address == plot_id && out.contract == addr_t()) {
-					balance += out.amount;
+			if(!tx->did_fail()) {
+				for(const auto& out : tx->get_outputs()) {
+					if(out.address == plot_id && out.contract == addr_t()) {
+						balance += out.amount;
+					}
 				}
 			}
 		}

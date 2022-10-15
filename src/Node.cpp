@@ -638,15 +638,17 @@ std::shared_ptr<const Contract> Node::get_contract_at(const addr_t& address, con
 		for(const auto& fork_i : get_fork_line(fork)) {
 			const auto& block_i = fork_i->block;
 			for(const auto& tx : block_i->get_all_transactions()) {
-				if(tx->id == address) {
-					contract = tx->deploy;
-				}
-				for(const auto& op : tx->get_operations()) {
-					if(op->address == address) {
-						if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op)) {
-							if(auto copy = vnx::clone(contract)) {
-								copy->vnx_call(vnx::clone(mutate->method));
-								contract = copy;
+				if(!tx->did_fail()) {
+					if(tx->id == address) {
+						contract = tx->deploy;
+					}
+					for(const auto& op : tx->get_operations()) {
+						if(op->address == address) {
+							if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op)) {
+								if(auto copy = vnx::clone(contract)) {
+									copy->vnx_call(vnx::clone(mutate->method));
+									contract = copy;
+								}
 							}
 						}
 					}
@@ -1800,7 +1802,10 @@ void Node::apply(	std::shared_ptr<const Block> block,
 					std::shared_ptr<const Transaction> tx,
 					balance_cache_t& balance_cache, uint32_t& counter)
 {
-	if(tx->sender && tx->exec_result)
+	if(!tx->exec_result) {
+		throw std::logic_error("apply(): exec_result missing");
+	}
+	if(tx->sender)
 	{
 		txin_t in;
 		in.address = *tx->sender;
@@ -1813,7 +1818,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			clamped_sub_assign(*balance, in.amount);
 		}
 	}
-	if(tx->exec_result && !tx->exec_result->did_fail)
+	if(!tx->exec_result->did_fail)
 	{
 		const auto outputs = tx->get_outputs();
 		for(size_t i = 0; i < outputs.size(); ++i)
