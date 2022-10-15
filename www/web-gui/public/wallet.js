@@ -295,6 +295,7 @@ Vue.component('balance-table', {
 		clearInterval(this.timer);
 	},
 	template: `
+		<div>
 		<v-data-table
 			:headers="headers"
 			:items="data"
@@ -317,27 +318,7 @@ Vue.component('balance-table', {
 		<template v-if="!data && loading">
 			<div class="ui basic loading placeholder segment"></div>
 		</template>
-
-		<table class="ui table" v-if="data && (data.length || show_empty)">
-			<thead>
-			<tr>
-				<th class="two wide">{{ $t('balance_table.balance') }}</th>
-				<th class="two wide">{{ $t('balance_table.locked') }}</th>
-				<th class="two wide">{{ $t('balance_table.spendable') }}</th>
-				<th class="two wide">{{ $t('balance_table.token') }}</th>
-				<th>{{ $t('balance_table.contract') }}</th>
-			</tr>
-			</thead>
-			<tbody>
-			<tr v-for="item in data" :key="item.contract">
-				<td>{{item.total}}</td>
-				<td>{{item.locked}}</td>
-				<td><b>{{item.spendable}}</b></td>
-				<td>{{item.symbol}}</td>
-				<td><router-link :to="'/explore/address/' + item.contract">{{item.is_native ? '' : item.contract}}</router-link></td>
-			</tr>
-			</tbody>
-		</table>
+		</div>
 		`
 })
 
@@ -569,7 +550,6 @@ Vue.component('account-tx-history', {
 		return {
 			data: [],
 			loading: false,
-			loaded: false,
 			timer: null			
 		}
 	},
@@ -591,7 +571,6 @@ Vue.component('account-tx-history', {
 				.then(response => response.json())
 				.then(data => {
 					this.loading = false;
-					this.loaded = true;
 					this.data = data;
 				});
 		}
@@ -607,7 +586,7 @@ Vue.component('account-tx-history', {
 		<v-data-table
 			:headers="headers"
 			:items="data"
-			:loading="!loaded"
+			:loading="loading"
 			hide-default-footer
 			disable-sort
 			disable-pagination
@@ -731,7 +710,8 @@ Vue.component('account-addresses', {
 	},
 	data() {
 		return {
-			data: [] 
+			data: [],
+			loading: false
 		}
 	},
 	computed: {
@@ -748,9 +728,13 @@ Vue.component('account-addresses', {
 	},
 	methods: {
 		update() {
+			this.loading = true;
 			fetch('/wapi/wallet/address_info?limit=' + this.limit + '&index=' + this.index)
 				.then(response => response.json())
-				.then(data => this.data = data);
+				.then(data => {
+					this.loading = false;
+					this.data = data;
+				});
 		}
 	},
 	created() {
@@ -760,11 +744,17 @@ Vue.component('account-addresses', {
 		<v-data-table
 			:headers="headers"
 			:items="data"
+			:loading="loading"
 			hide-default-footer
 			disable-sort
 			disable-pagination
 			class="elevation-2"
 		>
+			<template v-slot:progress>
+				<v-progress-linear indeterminate absolute top></v-progress-linear>
+				<v-skeleton-loader type="table-row-divider@6" />
+			</template>
+			
 			<template v-slot:item.index="{ item, index }">
 				{{ index }}
 			</template>
@@ -914,7 +904,6 @@ Vue.component('account-actions', {
 			>
 				{{ $t('common.failed_with') }}: <b>{{error}}</b>
 			</v-alert>
-	
 		</div>
 		`
 })
@@ -993,9 +982,7 @@ Vue.component('create-account', {
 			>
 				{{ $t('common.failed_with') }}: <b>{{error}}</b>
 			</v-alert>
-
 		</div>
-
 		`
 })
 
@@ -1105,9 +1092,7 @@ Vue.component('create-wallet', {
 			>
 				{{ $t('common.failed_with') }}: <b>{{error}}</b>
 			</v-alert>
-
 		</div>
-
 		`
 })
 
@@ -1307,7 +1292,6 @@ Vue.component('account-send-form', {
 	},
 	template: `
 		<div>
-
 			<passphrase-dialog v-model="passphrase_dialog" @submit="p => submit_ex(p)"/>
 
 			<balance-table :address="source" :show_empty="true" v-if="source" ref="balance"></balance-table>
@@ -1802,7 +1786,6 @@ Vue.component('create-locked-contract', {
 			>
 				{{ $t('common.failed_with') }}: <b>{{error}}</b>
 			</v-alert>
-
 		</div>
 		`
 })
@@ -1921,7 +1904,6 @@ Vue.component('create-virtual-plot-contract', {
 			>
 				{{ $t('common.failed_with') }}: <b>{{error}}</b>
 			</v-alert>
-
 		</div>
 		`
 })
