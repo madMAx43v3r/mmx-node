@@ -290,7 +290,7 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 			{
 				size_t num_blocks = 0;
 				for(const auto& fork : get_fork_line()) {
-					if(fork->block->proof) {
+					if(fork->block->farmer_sig) {
 						info->block_size += fork->block->tx_cost / double(params->max_block_cost);
 						num_blocks++;
 					}
