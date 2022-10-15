@@ -487,6 +487,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 	bool did_consume = false;
 	for(auto& entry : sync_jobs)
 	{
+		// TODO: re-design to avoid duplicate downloads
 		const auto& request_id = entry.first;
 		auto& job = entry.second;
 		const auto elapsed_ms = now_ms - job->start_time_ms;
@@ -536,6 +537,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				for(auto id : job->succeeded) {
 					clients.erase(id);
 				}
+				// TODO: prefer non-blocked peers
 				for(auto client : get_subset(clients, num_left, rand_engine))
 				{
 					auto req = Node_get_block_at::create();
