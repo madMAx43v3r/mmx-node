@@ -489,6 +489,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 	{
 		const auto& request_id = entry.first;
 		auto& job = entry.second;
+		const auto elapsed_ms = now_ms - job->start_time_ms;
 		if(ret) {
 			// check for any returns
 			auto iter = job->request_map.find(ret->id);
@@ -526,7 +527,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 		}
 		const auto num_returns = job->failed.size() + job->succeeded.size();
 		if(num_returns < min_sync_peers) {
-			const auto num_left = 1 + min_sync_peers - num_returns;
+			const auto num_left = (min_sync_peers + 1 + (elapsed_ms / 5000)) - num_returns;
 			if(job->pending.size() < num_left) {
 				auto clients = synced_peers;
 				for(auto id : job->failed) {
@@ -552,7 +553,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 			log(DEBUG) << "Got " << job->blocks.size() << " blocks for height " << job->height << " by fetching "
 					<< job->succeeded.size() + job->failed.size() << " times, " << job->failed.size() << " failed"
 					<< ", size = " << to_value(max_block_size, params) << " MMX"
-					<< ", took " << (now_ms - job->start_time_ms) / 1e3 << " sec";
+					<< ", took " << elapsed_ms / 1e3 << " sec";
 			// we are done with the job
 			std::vector<std::shared_ptr<const Block>> blocks;
 			for(const auto& entry : job->blocks) {
