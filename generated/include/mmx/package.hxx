@@ -303,6 +303,8 @@ class Transaction_calc_cost;
 class Transaction_calc_cost_return;
 class Transaction_calc_hash;
 class Transaction_calc_hash_return;
+class Transaction_did_fail;
+class Transaction_did_fail_return;
 class Transaction_finalize;
 class Transaction_finalize_return;
 class Transaction_get_balance;
@@ -744,6 +746,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Transaction_ca
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Transaction_calc_cost_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Transaction_calc_hash; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Transaction_calc_hash_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Transaction_did_fail; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Transaction_did_fail_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Transaction_finalize; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Transaction_finalize_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Transaction_get_balance; ///< \private
@@ -1182,6 +1186,8 @@ void read(TypeInput& in, ::mmx::Transaction_calc_cost& value, const TypeCode* ty
 void read(TypeInput& in, ::mmx::Transaction_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Transaction_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Transaction_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Transaction_did_fail& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Transaction_did_fail_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Transaction_finalize& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Transaction_finalize_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Transaction_get_balance& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1623,6 +1629,8 @@ void write(TypeOutput& out, const ::mmx::Transaction_calc_cost& value, const Typ
 void write(TypeOutput& out, const ::mmx::Transaction_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Transaction_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Transaction_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Transaction_did_fail& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Transaction_did_fail_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Transaction_finalize& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Transaction_finalize_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Transaction_get_balance& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -2064,6 +2072,8 @@ void read(std::istream& in, ::mmx::Transaction_calc_cost& value); ///< \private
 void read(std::istream& in, ::mmx::Transaction_calc_cost_return& value); ///< \private
 void read(std::istream& in, ::mmx::Transaction_calc_hash& value); ///< \private
 void read(std::istream& in, ::mmx::Transaction_calc_hash_return& value); ///< \private
+void read(std::istream& in, ::mmx::Transaction_did_fail& value); ///< \private
+void read(std::istream& in, ::mmx::Transaction_did_fail_return& value); ///< \private
 void read(std::istream& in, ::mmx::Transaction_finalize& value); ///< \private
 void read(std::istream& in, ::mmx::Transaction_finalize_return& value); ///< \private
 void read(std::istream& in, ::mmx::Transaction_get_balance& value); ///< \private
@@ -2505,6 +2515,8 @@ void write(std::ostream& out, const ::mmx::Transaction_calc_cost& value); ///< \
 void write(std::ostream& out, const ::mmx::Transaction_calc_cost_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Transaction_calc_hash& value); ///< \private
 void write(std::ostream& out, const ::mmx::Transaction_calc_hash_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Transaction_did_fail& value); ///< \private
+void write(std::ostream& out, const ::mmx::Transaction_did_fail_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Transaction_finalize& value); ///< \private
 void write(std::ostream& out, const ::mmx::Transaction_finalize_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Transaction_get_balance& value); ///< \private
@@ -2946,6 +2958,8 @@ void accept(Visitor& visitor, const ::mmx::Transaction_calc_cost& value); ///< \
 void accept(Visitor& visitor, const ::mmx::Transaction_calc_cost_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Transaction_calc_hash& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Transaction_calc_hash_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Transaction_did_fail& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Transaction_did_fail_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Transaction_finalize& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Transaction_finalize_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Transaction_get_balance& value); ///< \private
@@ -9549,6 +9563,52 @@ struct type<::mmx::Transaction_calc_hash_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Transaction_calc_hash_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Transaction_did_fail> {
+	void read(TypeInput& in, ::mmx::Transaction_did_fail& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Transaction_did_fail& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Transaction_did_fail& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Transaction_did_fail& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Transaction_did_fail& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Transaction_did_fail& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Transaction_did_fail_return> {
+	void read(TypeInput& in, ::mmx::Transaction_did_fail_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Transaction_did_fail_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Transaction_did_fail_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Transaction_did_fail_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Transaction_did_fail_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Transaction_did_fail_return& value, bool special = false);
 };
 
 /// \private

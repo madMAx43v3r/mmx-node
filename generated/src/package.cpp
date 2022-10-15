@@ -282,6 +282,8 @@
 #include <mmx/Transaction_calc_cost_return.hxx>
 #include <mmx/Transaction_calc_hash.hxx>
 #include <mmx/Transaction_calc_hash_return.hxx>
+#include <mmx/Transaction_did_fail.hxx>
+#include <mmx/Transaction_did_fail_return.hxx>
 #include <mmx/Transaction_finalize.hxx>
 #include <mmx/Transaction_finalize_return.hxx>
 #include <mmx/Transaction_get_balance.hxx>
@@ -3749,6 +3751,30 @@ void type<::mmx::Transaction_calc_hash_return>::create_dynamic_code(std::vector<
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Transaction_did_fail>::get_type_code() {
+	return mmx::vnx_native_type_code_Transaction_did_fail;
+}
+
+void type<::mmx::Transaction_did_fail>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Transaction_did_fail());
+}
+
+void type<::mmx::Transaction_did_fail>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Transaction_did_fail& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Transaction_did_fail_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Transaction_did_fail_return;
+}
+
+void type<::mmx::Transaction_did_fail_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Transaction_did_fail_return());
+}
+
+void type<::mmx::Transaction_did_fail_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Transaction_did_fail_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::Transaction_finalize>::get_type_code() {
 	return mmx::vnx_native_type_code_Transaction_finalize;
 }
@@ -5938,6 +5964,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Transaction_calc_cost_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Transaction_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::Transaction_calc_hash_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Transaction_did_fail::static_create_type_code());
+	vnx::register_type_code(::mmx::Transaction_did_fail_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Transaction_finalize::static_create_type_code());
 	vnx::register_type_code(::mmx::Transaction_finalize_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Transaction_get_balance::static_create_type_code());
@@ -6378,6 +6406,8 @@ const vnx::TypeCode* const vnx_native_type_code_Transaction_calc_cost = vnx::get
 const vnx::TypeCode* const vnx_native_type_code_Transaction_calc_cost_return = vnx::get_type_code(vnx::Hash64(0x2e88b0a52a9263f4ull));
 const vnx::TypeCode* const vnx_native_type_code_Transaction_calc_hash = vnx::get_type_code(vnx::Hash64(0xe972a4170a40f2ecull));
 const vnx::TypeCode* const vnx_native_type_code_Transaction_calc_hash_return = vnx::get_type_code(vnx::Hash64(0x55deeda9ac4d0e88ull));
+const vnx::TypeCode* const vnx_native_type_code_Transaction_did_fail = vnx::get_type_code(vnx::Hash64(0xf5a3e147c8d8485aull));
+const vnx::TypeCode* const vnx_native_type_code_Transaction_did_fail_return = vnx::get_type_code(vnx::Hash64(0xca4169a3d221ddb6ull));
 const vnx::TypeCode* const vnx_native_type_code_Transaction_finalize = vnx::get_type_code(vnx::Hash64(0x75a626fc20f09905ull));
 const vnx::TypeCode* const vnx_native_type_code_Transaction_finalize_return = vnx::get_type_code(vnx::Hash64(0x760c22650a057501ull));
 const vnx::TypeCode* const vnx_native_type_code_Transaction_get_balance = vnx::get_type_code(vnx::Hash64(0x74893cc5d1739496ull));
