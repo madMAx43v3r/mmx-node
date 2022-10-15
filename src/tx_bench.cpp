@@ -20,12 +20,14 @@ int main(int argc, char** argv)
 	options["j"] = "index";
 	options["a"] = "amount";
 	options["t"] = "target";
+	options["r"] = "fee-ratio";
 	options["x"] = "contract";
 	options["node"] = "address";
 	options["speed"] = "TPS";
 	options["index"] = "0";
 	options["amount"] = "1000";
 	options["target"] = "address";
+	options["fee-ratio"] = "1";
 	options["contract"] = "address";
 
 	vnx::write_config("log_level", 2);
@@ -38,11 +40,13 @@ int main(int argc, char** argv)
 	int64_t index = 0;
 	int64_t amount = 1000;
 	double speed = 1;
+	double fee_ratio = 1;
 	vnx::read_config("node", node_url);
 	vnx::read_config("speed", speed);
 	vnx::read_config("index", index);
 	vnx::read_config("amount", amount);
 	vnx::read_config("target", target_addr);
+	vnx::read_config("fee-ratio", fee_ratio);
 	vnx::read_config("contract", contract_addr);
 
 	const int64_t interval = 1e6 / speed;
@@ -65,6 +69,8 @@ int main(int argc, char** argv)
 		module->forward_list = {"Wallet", "Node"};
 		module.start_detached();
 	}
+	mmx::spend_options_t spend_options;
+	spend_options.fee_ratio = fee_ratio * 1024;
 
 	size_t total = 0;
 	size_t counter = 0;
@@ -73,7 +79,7 @@ int main(int argc, char** argv)
 	while(true)
 	{
 		try {
-			wallet.send(index, amount, target, contract);
+			wallet.send(index, amount, target, contract, spend_options);
 			counter++;
 			total++;
 		} catch(...) {
