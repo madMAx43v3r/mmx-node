@@ -127,6 +127,7 @@ add_library(mmx_iface SHARED
 	src/operation/Execute.cpp
 	src/operation/Vote.cpp
 	src/sha256_avx2.cpp
+	src/sha256_64_x8.cpp
 	src/sha256_ni.cpp
 	src/sha512.cpp
 	src/hmac_sha512.cpp
@@ -243,8 +244,11 @@ if(NOT MSVC)
 	target_link_libraries(mmx_db OpenMP::OpenMP_CXX)
 	target_link_libraries(mmx_modules OpenMP::OpenMP_CXX)
 	
-	set_source_files_properties(src/sha256_ni.cpp PROPERTIES COMPILE_FLAGS "-mavx2 -msha")
-	set_source_files_properties(src/sha256_avx2.cpp PROPERTIES COMPILE_FLAGS "-mavx2")
+	if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+		message(STATUS "Enabling -mavx2 -msha")
+		set_source_files_properties(src/sha256_ni.cpp PROPERTIES COMPILE_FLAGS "-mavx2 -msha")
+		set_source_files_properties(src/sha256_avx2.cpp PROPERTIES COMPILE_FLAGS "-mavx2")
+	endif()
 endif()
 
 if(OpenCL_FOUND)

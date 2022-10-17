@@ -292,7 +292,7 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 			{
 				size_t num_blocks = 0;
 				for(const auto& fork : get_fork_line()) {
-					if(fork->block->proof) {
+					if(fork->block->farmer_sig) {
 						info->block_size += fork->block->tx_cost / double(params->max_block_cost);
 						num_blocks++;
 					}
@@ -640,15 +640,17 @@ std::shared_ptr<const Contract> Node::get_contract_at(const addr_t& address, con
 		for(const auto& fork_i : get_fork_line(fork)) {
 			const auto& block_i = fork_i->block;
 			for(const auto& tx : block_i->get_all_transactions()) {
-				if(tx->id == address) {
-					contract = tx->deploy;
-				}
-				for(const auto& op : tx->get_operations()) {
-					if(op->address == address) {
-						if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op)) {
-							if(auto copy = vnx::clone(contract)) {
-								copy->vnx_call(vnx::clone(mutate->method));
-								contract = copy;
+				if(!tx->did_fail()) {
+					if(tx->id == address) {
+						contract = tx->deploy;
+					}
+					for(const auto& op : tx->get_operations()) {
+						if(op->address == address) {
+							if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op)) {
+								if(auto copy = vnx::clone(contract)) {
+									copy->vnx_call(vnx::clone(mutate->method));
+									contract = copy;
+								}
 							}
 						}
 					}
@@ -1406,7 +1408,6 @@ void Node::start_sync(const vnx::bool_t& force)
 	sync_peak = nullptr;
 	sync_retry = 0;
 	is_synced = false;
-	is_sync_fail = false;
 	purged_blocks.clear();
 
 	timelord->stop_vdf(
@@ -1418,7 +1419,7 @@ void Node::start_sync(const vnx::bool_t& force)
 
 void Node::sync_more()
 {
-	if(is_synced || is_sync_fail) {
+	if(is_synced) {
 		return;
 	}
 	if(!sync_pos) {
@@ -1428,18 +1429,10 @@ void Node::sync_more()
 	if(vdf_threads->get_num_pending()) {
 		return;
 	}
-	const auto peak_height = get_height();
-	if(peak_height + max_sync_ahead < sync_pos) {
-		if(sync_pending.empty()) {
-			if(!is_sync_fail) {
-				is_sync_fail = true;
-				log(ERROR) << "Sync failed, restarting ...";
-			}
-			set_timeout_millis(60 * 1000, std::bind(&Node::start_sync, this, true));
-		}
+	if(get_height() + max_sync_ahead < sync_pos) {
 		return;
 	}
-	const size_t max_pending = !sync_retry ? std::max(std::min<int>(max_sync_pending, max_sync_jobs), 2) : 2;
+	const size_t max_pending = !sync_retry ? std::max(std::min<int>(max_sync_pending, max_sync_jobs), 4) : 2;
 
 	while(sync_pending.size() < max_pending && (!sync_peak || sync_pos < *sync_peak))
 	{
@@ -1829,7 +1822,10 @@ void Node::apply(	std::shared_ptr<const Block> block,
 					std::shared_ptr<const Transaction> tx,
 					balance_cache_t& balance_cache, uint32_t& counter)
 {
-	if(tx->sender && tx->exec_result)
+	if(!tx->exec_result) {
+		throw std::logic_error("apply(): exec_result missing");
+	}
+	if(tx->sender)
 	{
 		txin_t in;
 		in.address = *tx->sender;
@@ -1842,7 +1838,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			clamped_sub_assign(*balance, in.amount);
 		}
 	}
-	if(tx->exec_result && !tx->exec_result->did_fail)
+	if(!tx->exec_result->did_fail)
 	{
 		const auto outputs = tx->get_outputs();
 		for(size_t i = 0; i < outputs.size(); ++i)

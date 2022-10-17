@@ -130,7 +130,7 @@ Wallet::send(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_a
 
 	if(tx->is_signed() && options_.auto_send) {
 		send_off(index, tx);
-		log(INFO) << "Sent " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
+		log(INFO) << "Sent " << amount << " with cost " << tx->static_cost << " to " << dst_addr << " (" << tx->id << ")";
 	}
 	return tx;
 }
@@ -162,7 +162,7 @@ Wallet::send_many(	const uint32_t& index, const std::map<addr_t, uint64_t>& amou
 
 	if(tx->is_signed() && options_.auto_send) {
 		send_off(index, tx);
-		log(INFO) << "Sent many with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
+		log(INFO) << "Sent many with cost " << tx->static_cost << " (" << tx->id << ")";
 	}
 	return tx;
 }
@@ -205,7 +205,7 @@ Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 
 	if(tx->is_signed() && options_.auto_send) {
 		send_off(index, tx);
-		log(INFO) << "Sent " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
+		log(INFO) << "Sent " << amount << " with cost " << tx->static_cost << " to " << dst_addr << " (" << tx->id << ")";
 	}
 	return tx;
 }
@@ -254,7 +254,7 @@ Wallet::mint(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_a
 
 	if(tx->is_signed() && options_.auto_send) {
 		send_off(index, tx);
-		log(INFO) << "Minted " << amount << " with fee " << tx->calc_cost(params) << " to " << dst_addr << " (" << tx->id << ")";
+		log(INFO) << "Minted " << amount << " with cost " << tx->static_cost << " to " << dst_addr << " (" << tx->id << ")";
 	}
 	return tx;
 }
@@ -283,7 +283,7 @@ Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, 
 
 	if(tx->is_signed() && options_.auto_send) {
 		send_off(index, tx);
-		log(INFO) << "Deployed " << contract->get_type_name() << " with fee " << tx->calc_cost(params) << " as " << addr_t(tx->id) << " (" << tx->id << ")";
+		log(INFO) << "Deployed " << contract->get_type_name() << " with cost " << tx->static_cost << " as " << addr_t(tx->id) << " (" << tx->id << ")";
 	}
 	return tx;
 }
@@ -323,7 +323,7 @@ Wallet::mutate(const uint32_t& index, const addr_t& address, const vnx::Object& 
 
 	if(tx->is_signed() && options_.auto_send) {
 		send_off(index, tx);
-		log(INFO) << "Mutated [" << address << "] via " << method["__type"] << " with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
+		log(INFO) << "Mutated [" << address << "] via " << method["__type"] << " with cost " << tx->static_cost << " (" << tx->id << ")";
 	}
 	return tx;
 }
@@ -353,7 +353,7 @@ std::shared_ptr<const Transaction> Wallet::execute(
 
 	if(tx->is_signed() && options_.auto_send) {
 		send_off(index, tx);
-		log(INFO) << "Executed " << method << "() on [" << address << "] with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
+		log(INFO) << "Executed " << method << "() on [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
 	}
 	return tx;
 }
@@ -389,7 +389,7 @@ std::shared_ptr<const Transaction> Wallet::deposit(
 
 	if(tx->is_signed() && options_.auto_send) {
 		send_off(index, tx);
-		log(INFO) << "Executed " << method << "() on [" << address << "] with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
+		log(INFO) << "Executed " << method << "() on [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
 	}
 	return tx;
 }
@@ -434,7 +434,7 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 	if(tx->is_signed() && options_.auto_send) {
 		send_off(index, tx);
 		log(INFO) << "Offering " << bid_amount << " [" << bid_currency << "] for " << ask_amount
-				<< " [" << ask_currency << "] with fee " << tx->calc_cost(params) << " (" << tx->id << ")";
+				<< " [" << ask_currency << "] with cost " << tx->static_cost << " (" << tx->id << ")";
 	}
 	return tx;
 }
@@ -630,7 +630,8 @@ balance_t Wallet::get_balance(const uint32_t& index, const addr_t& currency) con
 	return balance_t();
 }
 
-std::map<addr_t, balance_t> Wallet::get_balances(const uint32_t& index, const vnx::bool_t& with_zero) const
+std::map<addr_t, balance_t> Wallet::get_balances(
+		const uint32_t& index, const vnx::bool_t& with_zero, const vnx::bool_t& show_all) const
 {
 	const auto wallet = get_wallet(index);
 	update_cache(index);
@@ -658,6 +659,15 @@ std::map<addr_t, balance_t> Wallet::get_balances(const uint32_t& index, const vn
 	for(auto& entry : amounts) {
 		entry.second.total = entry.second.spendable + entry.second.reserved + entry.second.locked;
 		entry.second.is_validated = token_whitelist.count(entry.first);
+	}
+	if(!show_all) {
+		for(auto iter = amounts.begin(); iter != amounts.end();) {
+			if(!iter->second.is_validated) {
+				iter = amounts.erase(iter);
+			} else {
+				iter++;
+			}
+		}
 	}
 	return amounts;
 }
@@ -874,9 +884,6 @@ void Wallet::add_account(const uint32_t& index, const account_t& config, const v
 
 void Wallet::create_account(const account_t& config, const vnx::optional<std::string>& passphrase)
 {
-	if(config.name.empty()) {
-		throw std::logic_error("name cannot be empty");
-	}
 	if(config.num_addresses <= 0) {
 		throw std::logic_error("num_addresses <= 0");
 	}
@@ -913,9 +920,12 @@ void Wallet::create_wallet(const account_t& config_, const vnx::optional<std::st
 	}
 	const auto key_path = storage_path + config.key_file;
 	vnx::write_to_file(key_path, key_file);
-
-	create_account(config, passphrase);
-
+	try {
+		create_account(config, passphrase);
+	} catch(...) {
+		vnx::File(key_path).remove();
+		throw;
+	}
 	std::filesystem::permissions(key_path, std::filesystem::perms::owner_read | std::filesystem::perms::owner_write);
 }
 

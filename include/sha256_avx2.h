@@ -12,6 +12,8 @@
 
 void sha256_64_x8(uint8_t* out, uint8_t* in, const uint64_t length);
 
+void sha256_avx2_64_x8(uint8_t* out, uint8_t* in, const uint64_t length);
+
 bool avx2_available();
 
 

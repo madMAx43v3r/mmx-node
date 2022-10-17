@@ -15,6 +15,8 @@
 #include <mmx/Transaction_calc_cost_return.hxx>
 #include <mmx/Transaction_calc_hash.hxx>
 #include <mmx/Transaction_calc_hash_return.hxx>
+#include <mmx/Transaction_did_fail.hxx>
+#include <mmx/Transaction_did_fail_return.hxx>
 #include <mmx/Transaction_finalize.hxx>
 #include <mmx/Transaction_finalize_return.hxx>
 #include <mmx/Transaction_get_balance.hxx>
@@ -329,23 +331,24 @@ std::shared_ptr<vnx::TypeCode> Transaction::static_create_type_code() {
 	type_code->depends[1] = ::mmx::txin_t::static_get_type_code();
 	type_code->depends[2] = ::mmx::txout_t::static_get_type_code();
 	type_code->depends[3] = ::mmx::exec_result_t::static_get_type_code();
-	type_code->methods.resize(16);
+	type_code->methods.resize(17);
 	type_code->methods[0] = ::mmx::Transaction_add_input::static_get_type_code();
 	type_code->methods[1] = ::mmx::Transaction_add_output::static_get_type_code();
 	type_code->methods[2] = ::mmx::Transaction_calc_cost::static_get_type_code();
 	type_code->methods[3] = ::mmx::Transaction_calc_hash::static_get_type_code();
-	type_code->methods[4] = ::mmx::Transaction_finalize::static_get_type_code();
-	type_code->methods[5] = ::mmx::Transaction_get_balance::static_get_type_code();
-	type_code->methods[6] = ::mmx::Transaction_get_inputs::static_get_type_code();
-	type_code->methods[7] = ::mmx::Transaction_get_operations::static_get_type_code();
-	type_code->methods[8] = ::mmx::Transaction_get_output::static_get_type_code();
-	type_code->methods[9] = ::mmx::Transaction_get_outputs::static_get_type_code();
-	type_code->methods[10] = ::mmx::Transaction_get_solution::static_get_type_code();
-	type_code->methods[11] = ::mmx::Transaction_is_signed::static_get_type_code();
-	type_code->methods[12] = ::mmx::Transaction_is_valid::static_get_type_code();
-	type_code->methods[13] = ::mmx::Transaction_merge_sign::static_get_type_code();
-	type_code->methods[14] = ::mmx::TransactionBase_calc_cost::static_get_type_code();
-	type_code->methods[15] = ::mmx::TransactionBase_calc_hash::static_get_type_code();
+	type_code->methods[4] = ::mmx::Transaction_did_fail::static_get_type_code();
+	type_code->methods[5] = ::mmx::Transaction_finalize::static_get_type_code();
+	type_code->methods[6] = ::mmx::Transaction_get_balance::static_get_type_code();
+	type_code->methods[7] = ::mmx::Transaction_get_inputs::static_get_type_code();
+	type_code->methods[8] = ::mmx::Transaction_get_operations::static_get_type_code();
+	type_code->methods[9] = ::mmx::Transaction_get_output::static_get_type_code();
+	type_code->methods[10] = ::mmx::Transaction_get_outputs::static_get_type_code();
+	type_code->methods[11] = ::mmx::Transaction_get_solution::static_get_type_code();
+	type_code->methods[12] = ::mmx::Transaction_is_signed::static_get_type_code();
+	type_code->methods[13] = ::mmx::Transaction_is_valid::static_get_type_code();
+	type_code->methods[14] = ::mmx::Transaction_merge_sign::static_get_type_code();
+	type_code->methods[15] = ::mmx::TransactionBase_calc_cost::static_get_type_code();
+	type_code->methods[16] = ::mmx::TransactionBase_calc_hash::static_get_type_code();
 	type_code->fields.resize(17);
 	{
 		auto& field = type_code->fields[0];
@@ -479,6 +482,12 @@ std::shared_ptr<vnx::Value> Transaction::vnx_call_switch(std::shared_ptr<const v
 			auto _args = std::static_pointer_cast<const ::mmx::Transaction_calc_hash>(_method);
 			auto _return_value = ::mmx::Transaction_calc_hash_return::create();
 			_return_value->_ret_0 = calc_hash(_args->full_hash);
+			return _return_value;
+		}
+		case 0xf5a3e147c8d8485aull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Transaction_did_fail>(_method);
+			auto _return_value = ::mmx::Transaction_did_fail_return::create();
+			_return_value->_ret_0 = did_fail();
 			return _return_value;
 		}
 		case 0x75a626fc20f09905ull: {

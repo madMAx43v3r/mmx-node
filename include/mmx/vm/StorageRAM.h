@@ -23,6 +23,8 @@ class StorageRAM : public Storage {
 public:
 	~StorageRAM();
 
+	// all methods below are thread-safe
+
 	std::unique_ptr<var_t> read(const addr_t& contract, const uint64_t src) const override;
 
 	std::unique_ptr<var_t> read(const addr_t& contract, const uint64_t src, const uint64_t key) const override;

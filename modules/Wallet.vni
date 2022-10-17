@@ -88,7 +88,7 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	balance_t get_balance(uint index, addr_t currency) const;
 	
-	map<addr_t, balance_t> get_balances(uint index, bool with_zero) const;
+	map<addr_t, balance_t> get_balances(uint index, bool with_zero, bool show_all) const;
 	
 	map<addr_t, balance_t> get_total_balances(vector<addr_t> addresses) const;
 	

@@ -134,7 +134,6 @@ void Node::update()
 					const auto height = block->height - 1;
 					if(!purged_blocks.count(hash) && !fetch_pending.count(hash) && height > root->height) {
 						fetch_block(hash);
-						log(WARN) << "Fetching missed block at height " << height << " with hash " << hash;
 					}
 				}
 			}
@@ -229,7 +228,8 @@ void Node::update()
 		}
 	}
 	const auto root = get_root();
-	const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
+	const auto now_ms = vnx::get_wall_time_millis();
+	const auto elapsed = (now_ms - time_begin) / 1e3;
 
 	if(!prev_peak || peak->hash != prev_peak->hash)
 	{
@@ -263,10 +263,13 @@ void Node::update()
 	if(!is_synced && sync_peak && sync_pending.empty() && !vdf_threads->get_num_running())
 	{
 		if(sync_retry < num_sync_retries) {
-			log(INFO) << "Reached sync peak at height " << *sync_peak - 1;
-			sync_pos = *sync_peak;
-			sync_peak = nullptr;
-			sync_retry++;
+			if(now_ms - sync_finish_ms > params->block_time * 500) {
+				log(INFO) << "Reached sync peak at height " << *sync_peak - 1;
+				sync_pos = *sync_peak;
+				sync_peak = nullptr;
+				sync_finish_ms = now_ms;
+				sync_retry++;
+			}
 		} else {
 			log(INFO) << "Finished sync at height " << peak->height;
 			is_synced = true;
@@ -352,7 +355,7 @@ void Node::update()
 					// check if it's our proof
 					if(vnx::get_pipe(entry.second.farmer_mac))
 					{
-						const auto key = std::make_pair(prev->hash, entry.first);
+						const auto key = std::make_pair(prev->height + 1, entry.first);
 						if(!created_blocks.count(key)) {
 							try {
 								if(auto block = make_block(prev, entry.second)) {
@@ -504,7 +507,7 @@ void Node::validate_new()
 		const auto& tx = iter->second;
 		if(tx->fee_ratio <= min_pool_fee_ratio) {
 			if(show_warnings) {
-				log(WARN) << "TX invalid fee_ratio: " << tx->fee_ratio << " (" << tx->id << ")";
+				log(WARN) << "TX too low fee_ratio for mem pool: " << tx->fee_ratio << " (" << tx->id << ")";
 			}
 			iter = pending_transactions.erase(iter);
 		} else {

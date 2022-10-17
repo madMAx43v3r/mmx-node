@@ -28,7 +28,7 @@ public:
 
 	uint64_t lookup(const addr_t& contract, const var_t& value) const override;
 
-	void commit();
+	void commit() const;
 
 private:
 	std::shared_ptr<Storage> backend;

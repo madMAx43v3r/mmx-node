@@ -101,7 +101,8 @@ protected:
 
 	balance_t get_balance(const uint32_t& index, const addr_t& currency) const override;
 
-	std::map<addr_t, balance_t> get_balances(const uint32_t& index, const vnx::bool_t& with_zero = false) const override;
+	std::map<addr_t, balance_t> get_balances(
+			const uint32_t& index, const vnx::bool_t& with_zero = false, const vnx::bool_t& show_all = false) const override;
 
 	std::map<addr_t, balance_t> get_total_balances(const std::vector<addr_t>& addresses) const override;
 

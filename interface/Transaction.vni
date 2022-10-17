@@ -49,6 +49,8 @@ class Transaction extends TransactionBase {
 	
 	bool is_signed() const;
 	
+	bool did_fail() const;
+	
 	hash_t calc_hash(bool full_hash = false) const;
 	
 	ulong calc_cost(ChainParams* params) const;

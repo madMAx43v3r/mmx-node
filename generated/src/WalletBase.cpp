@@ -652,7 +652,7 @@ std::shared_ptr<vnx::Value> WalletBase::vnx_call_switch(std::shared_ptr<const vn
 		case 0x5be581d54ae69a4ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Wallet_get_balances>(_method);
 			auto _return_value = ::mmx::Wallet_get_balances_return::create();
-			_return_value->_ret_0 = get_balances(_args->index, _args->with_zero);
+			_return_value->_ret_0 = get_balances(_args->index, _args->with_zero, _args->show_all);
 			return _return_value;
 		}
 		case 0x4d6b36c0c2804d26ull: {

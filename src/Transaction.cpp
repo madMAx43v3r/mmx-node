@@ -59,6 +59,14 @@ vnx::bool_t Transaction::is_valid(std::shared_ptr<const ChainParams> params) con
 			&& content_hash == calc_hash(true);
 }
 
+vnx::bool_t Transaction::did_fail() const
+{
+	if(!exec_result) {
+		throw std::logic_error("tx not executed yet");
+	}
+	return exec_result->did_fail;
+}
+
 hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
 {
 	std::vector<uint8_t> buffer;

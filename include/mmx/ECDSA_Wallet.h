@@ -122,7 +122,10 @@ public:
 
 	addr_t get_address(const uint32_t index) const
 	{
-		return addresses.at(index);
+		if(index >= addresses.size()) {
+			throw std::logic_error("address index out of range: " + std::to_string(index) + " >= " + std::to_string(addresses.size()));
+		}
+		return addresses[index];
 	}
 
 	std::vector<addr_t> get_all_addresses() const
@@ -286,6 +289,9 @@ public:
 
 	void sign_off(std::shared_ptr<Transaction> tx, const spend_options_t& options = {})
 	{
+		if(is_locked()) {
+			throw std::logic_error("wallet is locked");
+		}
 		bool was_locked = false;
 		if(is_locked()) {
 			was_locked = true;
@@ -396,6 +402,9 @@ public:
 
 	std::shared_ptr<const Solution> sign_msg(const addr_t& address, const hash_t& msg, const spend_options_t& options = {}) const
 	{
+		if(is_locked()) {
+			throw std::logic_error("wallet is locked");
+		}
 		// TODO: check for multi-sig via options.contract_map
 		if(auto keys = find_keypair(address)) {
 			auto sol = solution::PubKey::create();
@@ -408,17 +417,13 @@ public:
 
 	void complete(std::shared_ptr<Transaction> tx, const spend_options_t& options = {})
 	{
+		if(is_locked()) {
+			throw std::logic_error("wallet is locked");
+		}
 		if(options.expire_at) {
 			tx->expires = std::min(tx->expires, *options.expire_at);
 		} else if(options.expire_delta) {
 			tx->expires = std::min(tx->expires, height + *options.expire_delta);
-		}
-		if(!tx->sender) {
-			if(options.sender) {
-				tx->sender = *options.sender;
-			} else {
-				tx->sender = get_address(0);
-			}
 		}
 		tx->fee_ratio = std::max(tx->fee_ratio, options.fee_ratio);
 
@@ -445,8 +450,36 @@ public:
 				gather_inputs(tx, spent_map, amount, entry.first, options);
 			}
 		}
-		tx->max_fee_amount = ((tx->calc_cost(params) + options.max_extra_cost) * tx->fee_ratio) / 1024;
+		const auto static_cost = tx->calc_cost(params);
+		const auto static_fee = (static_cost * tx->fee_ratio) / 1024;
+		tx->max_fee_amount = ((static_cost + options.max_extra_cost) * tx->fee_ratio) / 1024;
 
+		if(!tx->sender) {
+			if(options.sender) {
+				tx->sender = *options.sender;
+			} else {
+				addr_t max_address;
+				uint128_t max_amount = 0;
+				for(const auto& entry : balance_map) {
+					if(entry.first.second == addr_t()) {
+						auto balance = entry.second;
+						auto iter = spent_map.find(entry.first);
+						if(iter != spent_map.end()) {
+							balance -= iter->second;
+						}
+						if(balance > max_amount) {
+							max_amount = balance;
+							max_address = entry.first.first;
+						}
+					}
+				}
+				if(max_amount >= static_fee) {
+					tx->sender = max_address;
+				} else {
+					throw std::logic_error("insufficient funds for tx fee");
+				}
+			}
+		}
 		sign_off(tx, options);
 	}
 

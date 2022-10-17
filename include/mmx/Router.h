@@ -168,7 +168,8 @@ private:
 
 	void relay(std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter);
 
-	void broadcast(std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter, bool reliable = true);
+	void broadcast(	std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter,
+					bool reliable = true, bool synced_only = false);
 
 	void send_to(std::vector<std::shared_ptr<peer_t>> peers, std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, bool reliable);
 
@@ -239,6 +240,12 @@ private:
 		std::unordered_map<hash_t, size_t> hash_count;
 		std::unordered_map<uint32_t, uint64_t> request_map;
 	} fork_check;
+
+	struct {
+		uint32_t height = -1;
+		uint32_t request_id = 0;
+		hash_t our_hash;
+	} peer_check;
 
 	vnx::ThreadPool* connect_threads = nullptr;
 	std::shared_ptr<NodeAsyncClient> node;

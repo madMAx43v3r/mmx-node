@@ -508,6 +508,7 @@ public:
 		} else if(value && context) {
 			auto tmp = render(*value, context);
 			tmp["time"] = context->get_time(value->height);
+			tmp["tx_cost_ratio"] = double(value->tx_cost) / context->params->max_block_cost;
 			set(tmp);
 		} else {
 			set(render(value));
@@ -518,6 +519,7 @@ public:
 		if(value && context) {
 			auto tmp = render(*value, context);
 			tmp["time"] = context->get_time(value->height);
+			tmp["tx_cost_ratio"] = double(value->tx_cost) / context->params->max_block_cost;
 			set(tmp);
 		} else {
 			set(render(value));
@@ -1329,14 +1331,16 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const auto iter_index = query.find("index");
 		const auto iter_currency = query.find("currency");
 		const auto iter_with_zero = query.find("with_zero");
+		const auto iter_show_all = query.find("show_all");
 		if(iter_index != query.end()) {
 			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
 			const bool with_zero = iter_with_zero != query.end() ? vnx::from_string<bool>(iter_with_zero->second) : false;
+			const bool show_all = iter_show_all != query.end() ? vnx::from_string<bool>(iter_show_all->second) : false;
 			vnx::optional<addr_t> currency;
 			if(iter_currency != query.end()) {
 				currency = vnx::from_string<addr_t>(iter_currency->second);
 			}
-			wallet->get_balances(index, with_zero,
+			wallet->get_balances(index, with_zero, show_all,
 				std::bind(&WebAPI::render_balances, this, request_id, currency, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
@@ -1603,7 +1607,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 							throw std::logic_error("invalid ask currency");
 						}
 						const auto index = args["index"].to<uint32_t>();
-						wallet->make_offer(index, 0, bid_amount, bid_currency, ask_amount, ask_currency, {},
+						const auto options = args["options"].to<spend_options_t>();
+						wallet->make_offer(index, 0, bid_amount, bid_currency, ask_amount, ask_currency, options,
 							[this, request_id](std::shared_ptr<const Transaction> tx) {
 								respond(request_id, render(tx));
 							},
@@ -1623,7 +1628,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			vnx::from_string(request->payload.as_string(), args);
 			const auto index = args["index"].to<uint32_t>();
 			const auto address = args["address"].to<addr_t>();
-			wallet->cancel_offer(index, address, {},
+			const auto options = args["options"].to<spend_options_t>();
+			wallet->cancel_offer(index, address, options,
 				[this, request_id](std::shared_ptr<const Transaction> tx) {
 					respond(request_id, render(tx));
 				},
@@ -1639,7 +1645,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			vnx::from_string(request->payload.as_string(), args);
 			const auto index = args["index"].to<uint32_t>();
 			const auto address = args["address"].to<addr_t>();
-			wallet->accept_offer(index, address, 0, {},
+			const auto options = args["options"].to<spend_options_t>();
+			wallet->accept_offer(index, address, 0, options,
 				[this, request_id](std::shared_ptr<const Transaction> tx) {
 					respond(request_id, render(tx));
 				},

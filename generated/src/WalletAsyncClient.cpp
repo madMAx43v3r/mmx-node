@@ -551,10 +551,11 @@ uint64_t WalletAsyncClient::get_balance(const uint32_t& index, const ::mmx::addr
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::get_balances(const uint32_t& index, const vnx::bool_t& with_zero, const std::function<void(const std::map<::mmx::addr_t, ::mmx::balance_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::get_balances(const uint32_t& index, const vnx::bool_t& with_zero, const vnx::bool_t& show_all, const std::function<void(const std::map<::mmx::addr_t, ::mmx::balance_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_get_balances::create();
 	_method->index = index;
 	_method->with_zero = with_zero;
+	_method->show_all = show_all;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);

@@ -465,11 +465,10 @@ private:
 
 	std::unordered_map<hash_t, std::map<hash_t, proof_data_t>> proof_map;			// [challenge => best proofs]
 	std::unordered_multimap<uint32_t, hash_t> challenge_map;						// [height => challenge]
-	std::map<std::pair<hash_t, hash_t>, hash_t> created_blocks;						// [[prev hash, proof hash] => hash]
+	std::map<std::pair<uint32_t, hash_t>, hash_t> created_blocks;					// [[height, proof hash] => block hash]
 	std::unordered_set<hash_t> purged_blocks;
 
 	bool is_synced = false;
-	bool is_sync_fail = false;
 	uint32_t min_pool_fee_ratio = 0;
 	std::shared_ptr<vnx::File> block_chain;
 	std::shared_ptr<vm::StorageDB> storage;
@@ -481,6 +480,7 @@ private:
 
 	uint32_t sync_pos = 0;									// current sync height
 	uint32_t sync_retry = 0;
+	int64_t sync_finish_ms = 0;							// when peak was reached
 	double max_sync_pending = 0;
 	std::set<uint32_t> sync_pending;						// set of heights
 	vnx::optional<uint32_t> sync_peak;						// max height we can sync

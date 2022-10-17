@@ -1,18 +1,18 @@
 {
 	"host": "0.0.0.0",
 	"min_sync_peers": 3,
-	"num_peers_out": 5,
+	"num_peers_out": 8,
 	"max_peer_set": 100,
 	"max_connections": 100,
 	"max_queue_ms": 5000,
 	"max_msg_size": 16777216,
 	"stats_interval_ms": 60000,
 	"connect_interval_ms": 10000,
-	"connection_timeout_ms": 300000,
+	"connection_timeout_ms": 180000,
 	"fetch_timeout_ms": 180000,
 	"relay_target_ms": 2000,
 	"max_hash_cache": 200000,
 	"max_sent_cache": 20000,
-	"max_tx_upload" : 2,
+	"max_tx_upload" : 4,
 	"max_pending_cost": 0.2
 }

@@ -312,9 +312,12 @@ void Router::handle(std::shared_ptr<const Block> block)
 {
 	if(block->farmer_sig) {
 		const auto& hash = block->content_hash;
+		const auto is_ours = !hash_info.count(hash);
 		if(relay_msg_hash(hash, block_credits)) {
-			log(INFO) << "Broadcasting block for height " << block->height;
-			broadcast(block, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
+			if(is_ours) {
+				log(INFO) << "Broadcasting block for height " << block->height;
+			}
+			broadcast(block, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE}, is_ours);
 			block_counter++;
 		}
 	}
@@ -326,7 +329,7 @@ void Router::handle(std::shared_ptr<const Transaction> tx)
 	const auto& hash = tx->content_hash;
 	if(relay_msg_hash(hash)) {
 		if(vnx_sample->topic == input_transactions) {
-			broadcast(tx, hash, {node_type_e::FULL_NODE});
+			broadcast(tx, hash, {node_type_e::FULL_NODE}, true, true);
 		} else {
 			relay(tx, hash, {node_type_e::FULL_NODE});
 		}
@@ -339,10 +342,12 @@ void Router::handle(std::shared_ptr<const ProofOfTime> value)
 	if(value->height > verified_peak_height) {
 		const auto& hash = value->content_hash;
 		if(relay_msg_hash(hash, vdf_credits)) {
+			bool is_ours = false;
 			if(vnx_sample && vnx_sample->topic == input_vdfs) {
+				is_ours = true;
 				log(INFO) << "Broadcasting VDF for height " << value->height;
 			}
-			broadcast(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
+			broadcast(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE}, is_ours);
 			vdf_counter++;
 		}
 	}
@@ -359,10 +364,12 @@ void Router::handle(std::shared_ptr<const ProofResponse> value_)
 
 	const auto& hash = value->content_hash;
 	if(relay_msg_hash(hash, proof_credits)) {
+		bool is_ours = false;
 		if(vnx::get_pipe(value->farmer_addr)) {
+			is_ours = true;
 			log(INFO) << "Broadcasting proof for height " << value->request->height << " with score " << value->proof->score;
 		}
-		broadcast(value, hash, {node_type_e::FULL_NODE});
+		broadcast(value, hash, {node_type_e::FULL_NODE}, is_ours);
 		proof_counter++;
 	}
 	const auto farmer_id = hash_t(value->proof->farmer_key);
@@ -394,7 +401,7 @@ void Router::update()
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
 		peer->credits = std::min(peer->credits, max_node_credits);
-		peer->pending_cost = std::max<double>(peer->pending_cost, 0) * 0.99;
+		peer->pending_cost = std::max(peer->pending_cost, 0.) * 0.999;
 
 		// clear old hashes
 		while(peer->hash_queue.size() > max_sent_cache) {
@@ -487,8 +494,10 @@ bool Router::process(std::shared_ptr<const Return> ret)
 	bool did_consume = false;
 	for(auto& entry : sync_jobs)
 	{
+		// TODO: re-design to avoid duplicate downloads
 		const auto& request_id = entry.first;
 		auto& job = entry.second;
+		const auto elapsed_ms = now_ms - job->start_time_ms;
 		if(ret) {
 			// check for any returns
 			auto iter = job->request_map.find(ret->id);
@@ -526,7 +535,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 		}
 		const auto num_returns = job->failed.size() + job->succeeded.size();
 		if(num_returns < min_sync_peers) {
-			const auto num_left = 1 + min_sync_peers - num_returns;
+			const auto num_left = (min_sync_peers + 1 + (elapsed_ms / 5000)) - num_returns;
 			if(job->pending.size() < num_left) {
 				auto clients = synced_peers;
 				for(auto id : job->failed) {
@@ -535,6 +544,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				for(auto id : job->succeeded) {
 					clients.erase(id);
 				}
+				// TODO: prefer non-blocked peers
 				for(auto client : get_subset(clients, num_left, rand_engine))
 				{
 					auto req = Node_get_block_at::create();
@@ -552,7 +562,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 			log(DEBUG) << "Got " << job->blocks.size() << " blocks for height " << job->height << " by fetching "
 					<< job->succeeded.size() + job->failed.size() << " times, " << job->failed.size() << " failed"
 					<< ", size = " << to_value(max_block_size, params) << " MMX"
-					<< ", took " << (now_ms - job->start_time_ms) / 1e3 << " sec";
+					<< ", took " << elapsed_ms / 1e3 << " sec";
 			// we are done with the job
 			std::vector<std::shared_ptr<const Block>> blocks;
 			for(const auto& entry : job->blocks) {
@@ -825,7 +835,7 @@ void Router::query()
 					fork_check.hash_count.clear();
 				}
 				else {
-					const auto height = *sync_height - params->infuse_delay;
+					const auto height = *sync_height - params->commit_delay;
 					node->get_block_hash(height,
 						[this, height](const vnx::optional<hash_t>& hash) {
 							if(hash) {
@@ -855,15 +865,36 @@ void Router::query()
 
 void Router::discover()
 {
-	if(peer_set.size() >= max_peer_set) {
-		return;
+	if(peer_set.size() < max_peer_set) {
+		auto method = Router_get_peers::create();
+		method->max_count = 4 * num_peers_out;
+		auto req = Request::create();
+		req->id = next_request_id++;
+		req->method = method;
+		send_all(req, {node_type_e::FULL_NODE}, false);
 	}
-	auto method = Router_get_peers::create();
-	method->max_count = 4 * num_peers_out;
-	auto req = Request::create();
-	req->id = next_request_id++;
-	req->method = method;
-	send_all(req, {node_type_e::FULL_NODE}, false);
+
+	// check peers and disconnect forks
+	node->get_synced_height(
+		[this](const vnx::optional<uint32_t>& sync_height) {
+			if(sync_height) {
+				auto method = Node_get_block_hash::create();
+				method->height = *sync_height - 2 * params->commit_delay;
+				node->get_block_hash(method->height,
+					[this, method](const vnx::optional<hash_t>& hash) {
+						if(hash) {
+							auto req = Request::create();
+							req->id = next_request_id++;
+							req->method = method;
+							send_all(req, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE}, false);
+
+							peer_check.height = method->height;
+							peer_check.our_hash = *hash;
+							peer_check.request_id = req->id;
+						}
+					});
+			}
+		});
 }
 
 void Router::save_data()
@@ -1084,7 +1115,7 @@ void Router::on_recv_note(uint64_t client, std::shared_ptr<const ReceiveNote> no
 		}
 		auto iter = peer->pending_map.find(note->hash);
 		if(iter != peer->pending_map.end()) {
-			peer->pending_cost -= iter->second;
+			peer->pending_cost = std::max(peer->pending_cost - iter->second, 0.);
 			peer->pending_map.erase(iter);
 		}
 	}
@@ -1122,7 +1153,8 @@ void Router::send()
 	}
 }
 
-void Router::send_to(std::vector<std::shared_ptr<peer_t>> peers, std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, bool reliable)
+void Router::send_to(	std::vector<std::shared_ptr<peer_t>> peers, std::shared_ptr<const vnx::Value> msg,
+						const hash_t& msg_hash, bool reliable)
 {
 	std::shuffle(peers.begin(), peers.end(), rand_engine);
 
@@ -1144,13 +1176,16 @@ void Router::relay(std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash
 	}
 }
 
-void Router::broadcast(std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter, bool reliable)
+void Router::broadcast(	std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash,
+						const std::set<node_type_e>& filter, bool reliable, bool synced_only)
 {
 	std::vector<std::shared_ptr<peer_t>> peers;
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
-		if(filter.empty() || filter.count(peer->info.type)) {
-			peers.push_back(peer);
+		if(!synced_only || peer->is_synced) {
+			if(filter.empty() || filter.count(peer->info.type)) {
+				peers.push_back(peer);
+			}
 		}
 	}
 	send_to(peers, msg, msg_hash, reliable);
@@ -1194,11 +1229,10 @@ bool Router::send_to(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Va
 				return false;
 			}
 			const auto cost = to_value(tx->static_cost, params);
-			peer->pending_cost += cost;
-			peer->pending_map[tx->content_hash] = cost;
-
-			tx_upload_credits -= cost;
-			tx_upload_credits = std::max(tx_upload_credits, 0.);
+			if(peer->pending_map.emplace(tx->content_hash, cost).second) {
+				peer->pending_cost += cost;
+			}
+			tx_upload_credits = std::max(tx_upload_credits - cost, 0.);
 			tx_upload_sum += cost;
 		}
 	}
@@ -1368,6 +1402,9 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 			if(auto value = std::dynamic_pointer_cast<const Router_get_info_return>(result)) {
 				if(auto peer = find_peer(client)) {
 					peer->info = value->_ret_0;
+					if(peer->info.version < node_version) {
+						disconnect(client);		// TODO: temp fix for testnet7
+					}
 				}
 			}
 			break;
@@ -1394,13 +1431,15 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 			if(auto value = std::dynamic_pointer_cast<const Node_get_height_return>(result)) {
 				if(auto peer = find_peer(client)) {
 					peer->height = value->_ret_0;
-					peer->last_receive_ms = vnx::get_wall_time_millis();
 				}
 			}
 			break;
 		case Node_get_synced_height_return::VNX_TYPE_ID:
 			if(auto value = std::dynamic_pointer_cast<const Node_get_synced_height_return>(result)) {
 				if(auto peer = find_peer(client)) {
+					if(last_query_ms) {
+						peer->ping_ms = vnx::get_wall_time_millis() - last_query_ms;
+					}
 					if(auto height = value->_ret_0) {
 						if(!peer->is_synced) {
 							log(INFO) << "Peer " << peer->address << " is synced at height " << *height;
@@ -1421,11 +1460,6 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 						// check their height
 						send_request(client, Node_get_height::create());
 					}
-					const auto now_ms = vnx::get_wall_time_millis();
-					if(last_query_ms) {
-						peer->ping_ms = now_ms - last_query_ms;
-					}
-					peer->last_receive_ms = now_ms;
 				}
 			}
 			break;
@@ -1439,6 +1473,17 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 						}
 					}
 				}
+				if(msg->id == peer_check.request_id) {
+					const auto hash = value->_ret_0;
+					if(!hash || *hash != peer_check.our_hash) {
+						if(auto peer = find_peer(client)) {
+							if(peer->is_synced) {
+								log(INFO) << "Peer " << peer->address << " is on different chain at height " << peer_check.height;
+								disconnect(client);
+							}
+						}
+					}
+				}
 			}
 			break;
 	}
@@ -1446,6 +1491,9 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 
 void Router::on_msg(uint64_t client, std::shared_ptr<const vnx::Value> msg)
 {
+	if(auto peer = find_peer(client)) {
+		peer->last_receive_ms = vnx::get_wall_time_millis();
+	}
 	switch(msg->get_type_hash())
 	{
 	case ProofOfTime::VNX_TYPE_ID:

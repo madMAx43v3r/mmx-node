@@ -44,7 +44,7 @@ uint64_t StorageCache::lookup(const addr_t& contract, const var_t& value) const
 	return backend->lookup(contract, value);
 }
 
-void StorageCache::commit()
+void StorageCache::commit() const
 {
 	for(const auto& entry : memory) {
 		if(auto var = entry.second.get()) {
