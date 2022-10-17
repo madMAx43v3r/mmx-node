@@ -128,6 +128,7 @@ add_library(mmx_iface SHARED
 	src/operation/Execute.cpp
 	src/operation/Vote.cpp
 	src/sha256_avx2.cpp
+	src/sha256_64_x8.cpp
 	src/sha256_ni.cpp
 	src/sha512.cpp
 	src/hmac_sha512.cpp
