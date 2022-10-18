@@ -607,8 +607,7 @@ void Engine::init()
 	for(auto iter = memory.lower_bound(1); iter != memory.lower_bound(MEM_EXTERN); ++iter) {
 		key_map.emplace(iter->second.get(), iter->first);
 	}
-	if(!read(MEM_HEAP + GLOBAL_HAVE_INIT)) {
-		assign(MEM_HEAP + GLOBAL_HAVE_INIT, std::make_unique<var_t>(TYPE_TRUE))->pin();
+	if(!read(MEM_HEAP + GLOBAL_NEXT_ALLOC)) {
 		assign(MEM_HEAP + GLOBAL_NEXT_ALLOC, std::make_unique<uint_t>(MEM_HEAP + GLOBAL_DYNAMIC_START))->pin();
 	}
 	have_init = true;

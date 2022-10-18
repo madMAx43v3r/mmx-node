@@ -52,8 +52,7 @@ enum externvar_e : uint32_t {
 
 enum globalvar_e : uint32_t {
 
-	GLOBAL_HAVE_INIT,
-	GLOBAL_NEXT_ALLOC,
+	GLOBAL_NEXT_ALLOC = 1,
 	GLOBAL_LOG_HISTORY,
 	GLOBAL_EVENT_HISTORY,
 	GLOBAL_DYNAMIC_START = 0x1000
