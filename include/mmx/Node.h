@@ -293,7 +293,7 @@ private:
 
 	std::vector<offer_data_t> fetch_offers_for(
 			const std::vector<addr_t>& addresses, const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask,
-			const std::string& state = "OPEN", const bool filter = false) const;
+			const std::string& state = std::string(), const bool filter = false) const;
 
 	std::pair<vm::varptr_t, uint64_t> read_storage_field(
 			const addr_t& binary, const addr_t& contract, const std::string& name, const uint32_t& height = -1) const;
