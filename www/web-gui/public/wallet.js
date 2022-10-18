@@ -1619,61 +1619,62 @@ Vue.component('account-offers', {
 		clearInterval(this.timer);
 	},
 	template: `
+		<div>
 		<v-card class="my-2">
 			<v-card-text>
-
 				<v-select v-model="state" :label="$t('account_offers.status')"
 					:items="select_states" item-text="text" item-value="value">
 				</v-select>
-
-				<v-simple-table>
-					<thead>
-					<tr>
-						<th>{{ $t('account_offers.height') }}</th>
-						<th colspan="2">{{ $t('account_offers.offer') }}</th>
-						<th colspan="2">{{ $t('account_offers.receive') }}</th>
-						<th>{{ $t('account_offers.address') }}</th>
-						<th>{{ $t('account_offers.status') }}</th>
-						<th>{{ $t('account_offers.time') }}</th>
-						<th>{{ $t('account_offers.actions') }}</th>
-					</tr>
-					</thead>
-					<tbody>
-					<tr v-for="item in data" :key="item.address">
-						<td>{{item.height}}</td>
-						<td class="collapsing"><b>{{item.bid_value}}</b></td>
-						<td>{{item.bid_symbol}}</td>
-						<td class="collapsing"><b>{{item.ask_value}}</b></td>
-						<td>{{item.ask_symbol}}</td>
-						<td><router-link :to="'/explore/address/' + item.address">{{item.address.substr(0, 16)}}...</router-link></td>
-						<td :class="{'green--text': item.state == 'OPEN', 'red--text text--lighten-2': item.state == 'REVOKED'}">
-							<template v-if="item.state == 'CLOSED'">
-								<router-link :to="'/explore/transaction/' + item.close_txid">{{ $t('account_offers.accepted') }}</router-link>
-							</template>
-							<template v-else>
-								{{item.state == 'REVOKED' ? $t('account_offers.revoked') : $t('account_offers.open') }}
-							</template>
-						</td>
-						<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
-						<td>
-							<template v-if="item.state == 'OPEN' && !canceled.has(item.address)">
-								<v-btn outlined text @click="cancel(item)">{{ $t('account_offers.revoke') }}</v-btn>
-							</template>
-						</td>
-					</tr>
-					</tbody>
-				</v-simple-table>
-
-				<v-alert border="left" colored-border type="success" elevation="2" v-if="result" class="my-2">
-					{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result.id">{{result.id}}</router-link>
-				</v-alert>
-
-				<v-alert border="left" colored-border type="error" elevation="2" v-if="error" class="my-2">
-					{{ $t('common.failed_with') }}: <b>{{error}}</b>
-				</v-alert>
-
 			</v-card-text>
 		</v-card>
+		<v-card>
+			<v-simple-table>
+				<thead>
+				<tr>
+					<th>{{ $t('account_offers.height') }}</th>
+					<th colspan="2">{{ $t('account_offers.offer') }}</th>
+					<th colspan="2">{{ $t('account_offers.receive') }}</th>
+					<th>{{ $t('account_offers.address') }}</th>
+					<th>{{ $t('account_offers.status') }}</th>
+					<th>{{ $t('account_offers.time') }}</th>
+					<th>{{ $t('account_offers.actions') }}</th>
+				</tr>
+				</thead>
+				<tbody>
+				<tr v-for="item in data" :key="item.address">
+					<td>{{item.height}}</td>
+					<td class="collapsing"><b>{{item.bid_value}}</b></td>
+					<td>{{item.bid_symbol}}</td>
+					<td class="collapsing"><b>{{item.ask_value}}</b></td>
+					<td>{{item.ask_symbol}}</td>
+					<td><router-link :to="'/explore/address/' + item.address">{{item.address.substr(0, 16)}}...</router-link></td>
+					<td :class="{'green--text': item.state == 'OPEN', 'red--text text--lighten-2': item.state == 'REVOKED'}">
+						<template v-if="item.state == 'CLOSED'">
+							<router-link :to="'/explore/transaction/' + item.close_txid">{{ $t('account_offers.accepted') }}</router-link>
+						</template>
+						<template v-else>
+							{{item.state == 'REVOKED' ? $t('account_offers.revoked') : $t('account_offers.open') }}
+						</template>
+					</td>
+					<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
+					<td>
+						<template v-if="item.state == 'OPEN' && !canceled.has(item.address)">
+							<v-btn outlined text @click="cancel(item)">{{ $t('account_offers.revoke') }}</v-btn>
+						</template>
+					</td>
+				</tr>
+				</tbody>
+			</v-simple-table>
+		</v-card>
+		
+		<v-alert border="left" colored-border type="success" elevation="2" v-if="result" class="my-2">
+			{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result.id">{{result.id}}</router-link>
+		</v-alert>
+
+		<v-alert border="left" colored-border type="error" elevation="2" v-if="error" class="my-2">
+			{{ $t('common.failed_with') }}: <b>{{error}}</b>
+		</v-alert>
+		</div>
 		`
 })
 
