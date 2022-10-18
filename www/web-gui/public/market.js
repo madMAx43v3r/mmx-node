@@ -292,62 +292,59 @@ Vue.component('market-offers', {
 			</v-dialog>
 
 			<v-card>
-				<v-card-text>
+				<div v-if="!data && loading">
+					<v-progress-linear indeterminate absolute top></v-progress-linear>
+					<v-skeleton-loader type="table-row-divider@6"/>
+				</div>
 
-					<div v-if="!data && loading">
-						<v-progress-linear indeterminate absolute top></v-progress-linear>
-						<v-skeleton-loader type="table-row-divider@6"/>
-					</div>
-
-					<template v-if="data">
-						<v-simple-table>
-							<thead>
-								<tr>
-									<th>{{ $t('market_offers.they_offer') }}</th>
-									<th>{{ $t('market_offers.they_ask') }}</th>
-									<th>{{ $t('market_offers.price') }}</th>
-									<th>{{ $t('market_offers.price') }}</th>
-									<th>{{ $t('market_offers.time') }}</th>
-									<th>{{ $t('market_offers.link') }}</th>
-									<th></th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr v-for="item in data" :key="item.address" :class="{positive: accepted.has(item.address)}">
-									<td>
-										<b>{{item.bid_value}}</b>&nbsp;
-										<template v-if="item.bid_symbol == 'MMX'">MMX</template>
-										<template v-else>
-											<router-link :to="'/explore/address/' + item.bid_currency">
-												<template v-if="tokens.has(item.bid_currency)">{{item.bid_symbol}}</template>
-												<template v-else>{{item.bid_symbol}}?</template>
-											</router-link>
-										</template>
-									</td>
-									<td>
-										<b>{{item.ask_value}}</b>&nbsp;
-										<template v-if="item.ask_symbol == 'MMX'">MMX</template>
-										<template v-else>
-											<router-link :to="'/explore/address/' + item.ask_currency">
-												<template v-if="tokens.has(item.ask_currency)">{{item.ask_symbol}}</template>
-												<template v-else>{{item.ask_symbol}}?</template>
-											</router-link>
-										</template>
-									</td>
-									<td><b>{{ parseFloat( (item.price).toPrecision(3) ) }}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
-									<td><b>{{ parseFloat( (1 / item.price).toPrecision(3) ) }}</b>&nbsp; {{item.bid_symbol}} / {{item.ask_symbol}}</td>
-									<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
-									<td><router-link :to="'/explore/address/' + item.address">{{ $t('market_offers.address') }}</router-link></td>
-									<td>
-										<template v-if="!accepted.has(item.address)">
-											<v-btn outlined text @click="confirm(item)">{{ $t('market_offers.accept') }}</v-btn>
-										</template>
-									</td>
-								</tr>
-							</tbody>
-						</v-simple-table>
-					</template>
-				</v-card-text>
+				<template v-if="data">
+					<v-simple-table>
+						<thead>
+							<tr>
+								<th>{{ $t('market_offers.they_offer') }}</th>
+								<th>{{ $t('market_offers.they_ask') }}</th>
+								<th>{{ $t('market_offers.price') }}</th>
+								<th>{{ $t('market_offers.price') }}</th>
+								<th>{{ $t('market_offers.time') }}</th>
+								<th>{{ $t('market_offers.link') }}</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for="item in data" :key="item.address" :class="{positive: accepted.has(item.address)}">
+								<td>
+									<b>{{item.bid_value}}</b>&nbsp;
+									<template v-if="item.bid_symbol == 'MMX'">MMX</template>
+									<template v-else>
+										<router-link :to="'/explore/address/' + item.bid_currency">
+											<template v-if="tokens.has(item.bid_currency)">{{item.bid_symbol}}</template>
+											<template v-else>{{item.bid_symbol}}?</template>
+										</router-link>
+									</template>
+								</td>
+								<td>
+									<b>{{item.ask_value}}</b>&nbsp;
+									<template v-if="item.ask_symbol == 'MMX'">MMX</template>
+									<template v-else>
+										<router-link :to="'/explore/address/' + item.ask_currency">
+											<template v-if="tokens.has(item.ask_currency)">{{item.ask_symbol}}</template>
+											<template v-else>{{item.ask_symbol}}?</template>
+										</router-link>
+									</template>
+								</td>
+								<td><b>{{ parseFloat( (item.price).toPrecision(3) ) }}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
+								<td><b>{{ parseFloat( (1 / item.price).toPrecision(3) ) }}</b>&nbsp; {{item.bid_symbol}} / {{item.ask_symbol}}</td>
+								<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
+								<td><router-link :to="'/explore/address/' + item.address">{{ $t('market_offers.address') }}</router-link></td>
+								<td>
+									<template v-if="!accepted.has(item.address)">
+										<v-btn outlined text @click="confirm(item)">{{ $t('market_offers.accept') }}</v-btn>
+									</template>
+								</td>
+							</tr>
+						</tbody>
+					</v-simple-table>
+				</template>
 			</v-card>
 		</div>
 		`
@@ -407,57 +404,55 @@ Vue.component('market-history', {
 	template: `
 		<div>
 			<v-card>
-				<v-card-text>
-					<div v-if="!data && loading">
-						<v-progress-linear indeterminate absolute top></v-progress-linear>
-						<v-skeleton-loader type="table-row-divider@6"/>
-					</div>
+				<div v-if="!data && loading">
+					<v-progress-linear indeterminate absolute top></v-progress-linear>
+					<v-skeleton-loader type="table-row-divider@6"/>
+				</div>
 
-					<template v-if="data">
-						<v-simple-table>
-							<thead>
-								<tr>
-									<th>{{ $t('market_offers.they_offer') }}</th>
-									<th>{{ $t('market_offers.they_ask') }}</th>
-									<th>{{ $t('market_offers.price') }}</th>
-									<th>{{ $t('market_offers.price') }}</th>
-									<th>{{ $t('market_offers.time') }}</th>
-									<th>{{ $t('market_offers.link') }}</th>
-									<th></th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr v-for="item in data" :key="item.address">
-									<td>
-										<b>{{item.bid_value}}</b>&nbsp;
-										<template v-if="item.bid_symbol == 'MMX'">MMX</template>
-										<template v-else>
-											<router-link :to="'/explore/address/' + item.bid_currency">
-												<template v-if="tokens.has(item.bid_currency)">{{item.bid_symbol}}</template>
-												<template v-else>{{item.bid_symbol}}?</template>
-											</router-link>
-										</template>
-									</td>
-									<td>
-										<b>{{item.ask_value}}</b>&nbsp;
-										<template v-if="item.ask_symbol == 'MMX'">MMX</template>
-										<template v-else>
-											<router-link :to="'/explore/address/' + item.ask_currency">
-												<template v-if="tokens.has(item.ask_currency)">{{item.ask_symbol}}</template>
-												<template v-else>{{item.ask_symbol}}?</template>
-											</router-link>
-										</template>
-									</td>
-									<td><b>{{parseFloat((item.price).toPrecision(3))}}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
-									<td><b>{{parseFloat((1 / item.price).toPrecision(3))}}</b>&nbsp; {{item.bid_symbol}} / {{item.ask_symbol}}</td>
-									<td>{{new Date(item.close_time * 1000).toLocaleString()}}</td>
-									<td><router-link :to="'/explore/address/' + item.address">{{ $t('market_offers.address') }}</router-link></td>
-									<td><router-link :to="'/explore/transaction/' + item.close_txid">TX</router-link></td>
-								</tr>
-							</tbody>
-						</v-simple-table>
-					</template>
-				</v-card-text>
+				<template v-if="data">
+					<v-simple-table>
+						<thead>
+							<tr>
+								<th>{{ $t('market_offers.they_offer') }}</th>
+								<th>{{ $t('market_offers.they_ask') }}</th>
+								<th>{{ $t('market_offers.price') }}</th>
+								<th>{{ $t('market_offers.price') }}</th>
+								<th>{{ $t('market_offers.time') }}</th>
+								<th>{{ $t('market_offers.link') }}</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for="item in data" :key="item.address">
+								<td>
+									<b>{{item.bid_value}}</b>&nbsp;
+									<template v-if="item.bid_symbol == 'MMX'">MMX</template>
+									<template v-else>
+										<router-link :to="'/explore/address/' + item.bid_currency">
+											<template v-if="tokens.has(item.bid_currency)">{{item.bid_symbol}}</template>
+											<template v-else>{{item.bid_symbol}}?</template>
+										</router-link>
+									</template>
+								</td>
+								<td>
+									<b>{{item.ask_value}}</b>&nbsp;
+									<template v-if="item.ask_symbol == 'MMX'">MMX</template>
+									<template v-else>
+										<router-link :to="'/explore/address/' + item.ask_currency">
+											<template v-if="tokens.has(item.ask_currency)">{{item.ask_symbol}}</template>
+											<template v-else>{{item.ask_symbol}}?</template>
+										</router-link>
+									</template>
+								</td>
+								<td><b>{{parseFloat((item.price).toPrecision(3))}}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
+								<td><b>{{parseFloat((1 / item.price).toPrecision(3))}}</b>&nbsp; {{item.bid_symbol}} / {{item.ask_symbol}}</td>
+								<td>{{new Date(item.close_time * 1000).toLocaleString()}}</td>
+								<td><router-link :to="'/explore/address/' + item.address">{{ $t('market_offers.address') }}</router-link></td>
+								<td><router-link :to="'/explore/transaction/' + item.close_txid">TX</router-link></td>
+							</tr>
+						</tbody>
+					</v-simple-table>
+				</template>
 			</v-card>
 		</div>
 	`
