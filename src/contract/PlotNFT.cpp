@@ -61,7 +61,7 @@ void PlotNFT::set_reward_addr(const vnx::optional<addr_t>& new_reward_addr)
 	reward_addr = new_reward_addr;
 }
 
-void PlotNFT::set_partial_diff(const vnx::optional<addr_t>& new_partial_diff)
+void PlotNFT::set_partial_diff(const vnx::optional<uint64_t>& new_partial_diff)
 {
 	partial_diff = new_partial_diff;
 }

@@ -3,7 +3,6 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/contract/PlotNFT_set_partial_diff.hxx>
-#include <mmx/addr_t.hpp>
 #include <mmx/contract/PlotNFT_set_partial_diff_return.hxx>
 #include <vnx/Value.h>
 
@@ -15,7 +14,7 @@ namespace contract {
 
 
 const vnx::Hash64 PlotNFT_set_partial_diff::VNX_TYPE_HASH(0xe1401fa23c077c00ull);
-const vnx::Hash64 PlotNFT_set_partial_diff::VNX_CODE_HASH(0xabea39d38120cdbull);
+const vnx::Hash64 PlotNFT_set_partial_diff::VNX_CODE_HASH(0x2602eb77ce79ef65ull);
 
 vnx::Hash64 PlotNFT_set_partial_diff::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -116,7 +115,7 @@ std::shared_ptr<vnx::TypeCode> PlotNFT_set_partial_diff::static_create_type_code
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.PlotNFT.set_partial_diff";
 	type_code->type_hash = vnx::Hash64(0xe1401fa23c077c00ull);
-	type_code->code_hash = vnx::Hash64(0xabea39d38120cdbull);
+	type_code->code_hash = vnx::Hash64(0x2602eb77ce79ef65ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -128,7 +127,7 @@ std::shared_ptr<vnx::TypeCode> PlotNFT_set_partial_diff::static_create_type_code
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "new_partial_diff";
-		field.code = {33, 11, 32, 1};
+		field.code = {33, 4};
 	}
 	type_code->build();
 	return type_code;

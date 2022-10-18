@@ -29,6 +29,6 @@ class PlotNFT extends MutableRelay {
 	
 	void set_reward_addr(optional<addr_t> new_reward_addr);
 	
-	void set_partial_diff(optional<addr_t> new_partial_diff);
+	void set_partial_diff(optional<ulong> new_partial_diff);
 	
 }

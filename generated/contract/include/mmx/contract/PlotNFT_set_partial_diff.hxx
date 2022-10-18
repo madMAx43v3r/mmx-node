@@ -5,7 +5,6 @@
 #define INCLUDE_mmx_contract_PlotNFT_set_partial_diff_HXX_
 
 #include <mmx/contract/package.hxx>
-#include <mmx/addr_t.hpp>
 #include <vnx/Value.h>
 
 
@@ -15,7 +14,7 @@ namespace contract {
 class MMX_CONTRACT_EXPORT PlotNFT_set_partial_diff : public ::vnx::Value {
 public:
 	
-	vnx::optional<::mmx::addr_t> new_partial_diff;
+	vnx::optional<uint64_t> new_partial_diff;
 	
 	typedef ::vnx::Value Super;
 	
