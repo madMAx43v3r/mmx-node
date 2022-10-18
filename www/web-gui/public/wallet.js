@@ -1585,7 +1585,6 @@ Vue.component('account-offers', {
 					if(response.ok) {
 						response.json().then(data => {
 							this.canceled.add(item.address);
-							item.state='REVOKED';
 							this.result = data;
 						});
 					} else {
@@ -1649,7 +1648,7 @@ Vue.component('account-offers', {
 						<td><router-link :to="'/explore/address/' + item.address">{{item.address.substr(0, 16)}}...</router-link></td>
 						<td :class="{'green--text': item.state == 'OPEN', 'red--text text--lighten-2': item.state == 'REVOKED'}">
 							<template v-if="item.state == 'CLOSED'">
-								<router-link :to="'/explore/transaction/' + item.trade_txid">{{ $t('account_offers.accepted') }}</router-link>
+								<router-link :to="'/explore/transaction/' + item.close_txid">{{ $t('account_offers.accepted') }}</router-link>
 							</template>
 							<template v-else>
 								{{item.state == 'REVOKED' ? $t('account_offers.revoked') : $t('account_offers.open') }}
