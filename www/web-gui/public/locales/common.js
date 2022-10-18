@@ -117,6 +117,7 @@ const commonLocale = {
     },
 
     "account_offers": {
+        "any": "@:common.any",
         "height": "@:common.height",
         "address": "@:common.address",
         "time": "@:common.time",
@@ -194,10 +195,6 @@ const commonLocale = {
     },
 
     "account_history_form": {
-        "any": "@:common.any"
-    },
-
-    "account_offers": {
         "any": "@:common.any"
     },
 
