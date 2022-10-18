@@ -380,8 +380,7 @@ Vue.component('account-history', {
 	data() {
 		return {
 			data: [],
-			loading: false,
-			loaded: false,
+			loading: true,
 			timer: null 
 		}
 	},
@@ -399,24 +398,25 @@ Vue.component('account-history', {
 		}
 	},
 	methods: {
-		update() {
-			this.loading = true;
-			this.data = [];
+		update(reload) {
+			if(reload) {
+				this.data = [];
+				this.loading = true;
+			}
 			fetch('/wapi/wallet/history?limit=' + this.limit + '&index=' + this.index + '&type=' + this.type + '&currency=' + this.currency)
 				.then(response => response.json())
 				.then(data => {
 					this.loading = false;
-					this.loaded = true;
 					this.data = data;
 				});
 		}
 	},
 	watch: {
 		type() {
-			this.update();
+			this.update(true);
 		},
 		currency() {
-			this.update();
+			this.update(true);
 		}
 	},
 	created() {
@@ -549,7 +549,7 @@ Vue.component('account-tx-history', {
 	data() {
 		return {
 			data: [],
-			loading: false,
+			loading: true,
 			timer: null			
 		}
 	},
@@ -566,7 +566,6 @@ Vue.component('account-tx-history', {
 	},
 	methods: {
 		update() {
-			this.loading = true;
 			fetch('/wapi/wallet/tx_history?limit=' + this.limit + '&index=' + this.index)
 				.then(response => response.json())
 				.then(data => {
@@ -711,7 +710,7 @@ Vue.component('account-addresses', {
 	data() {
 		return {
 			data: [],
-			loading: false
+			loading: true
 		}
 	},
 	computed: {
@@ -728,7 +727,6 @@ Vue.component('account-addresses', {
 	},
 	methods: {
 		update() {
-			this.loading = true;
 			fetch('/wapi/wallet/address_info?limit=' + this.limit + '&index=' + this.index)
 				.then(response => response.json())
 				.then(data => {
