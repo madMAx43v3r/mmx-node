@@ -1556,7 +1556,7 @@ Vue.component('account-offers', {
 			error: null,
 			result: null,
 			timer: null,
-			state: null,
+			state: 'OPEN',
 			canceled: new Set()
 		}
 	},
