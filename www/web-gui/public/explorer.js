@@ -671,16 +671,12 @@ Vue.component('transaction-view', {
 				<div class="my-2" v-for="(op, index) in data.operations" :key="index">				
 					<v-chip label>Operation[{{index}}]</v-chip>
 					<v-chip label>{{op.__type}}</v-chip>
-					<v-card class="my-2">
-						<object-table :data="op"></object-table>
-					<v-card>
+					<object-table :data="op" class="my-2"></object-table>
 				</div>
 	
 				<div class="my-2" v-if="data.deployed">
 					<v-chip label>{{data.deployed.__type}}</v-chip>
-					<v-card class="my-2">
-						<object-table :data="data.deployed"></object-table>
-					</v-card>
+					<object-table :data="data.deployed" class="my-2"></object-table>
 				</div>
 	
 			</template>
