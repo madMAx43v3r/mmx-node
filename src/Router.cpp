@@ -1575,13 +1575,13 @@ void Router::on_connect(uint64_t client, const std::string& address)
 	req->msg = peer->challenge;
 	send_request(peer, req);
 
-	log(INFO) << "Connected to peer " << peer->address;
+	log(DEBUG) << "Connected to peer " << peer->address;
 }
 
 void Router::on_disconnect(uint64_t client)
 {
 	if(auto peer = find_peer(client)) {
-		log(INFO) << "Peer " << peer->address << " disconnected";
+		log(DEBUG) << "Peer " << peer->address << " disconnected";
 		peer_retry_map[peer->address] = vnx::get_wall_time_seconds() + peer_retry_interval * 60;
 	}
 	synced_peers.erase(client);
