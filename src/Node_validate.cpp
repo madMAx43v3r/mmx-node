@@ -849,7 +849,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			}
 		}
 		if(result->did_fail && !failed_ex) {
-			throw std::logic_error("expected failure but did not fail");
+			throw std::logic_error("expected execution failure: " + (result->message ? *result->message : std::string("?")));
 		}
 		if(result->total_cost != tx_cost) {
 			throw std::logic_error("tx cost mismatch: "
