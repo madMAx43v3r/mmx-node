@@ -17,7 +17,7 @@ module Harvester implements vnx.addons.HttpComponent {
 	
 	int reload_interval = 3600;				// (0 to disable) [sec]
 	
-	uint num_threads = 16;					// for plot lookups
+	uint num_threads = 32;					// for plot lookups
 	
 	bool recursive_search = true;
 	bool farm_virtual_plots = true;
