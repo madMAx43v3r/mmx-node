@@ -43,9 +43,6 @@ void Harvester::init()
 
 void Harvester::main()
 {
-	if(!num_threads) {
-		num_threads = 16;
-	}
 	params = get_params();
 	host_name = vnx::get_host_name();
 

@@ -51,7 +51,7 @@ namespace mmx {
 
 
 const vnx::Hash64 HarvesterBase::VNX_TYPE_HASH(0xc17118896cde1555ull);
-const vnx::Hash64 HarvesterBase::VNX_CODE_HASH(0xeaa6f20fef9d2eb0ull);
+const vnx::Hash64 HarvesterBase::VNX_CODE_HASH(0x6a305a6f2c806660ull);
 
 HarvesterBase::HarvesterBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -263,7 +263,7 @@ std::shared_ptr<vnx::TypeCode> HarvesterBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Harvester";
 	type_code->type_hash = vnx::Hash64(0xc17118896cde1555ull);
-	type_code->code_hash = vnx::Hash64(0xeaa6f20fef9d2eb0ull);
+	type_code->code_hash = vnx::Hash64(0x6a305a6f2c806660ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::HarvesterBase);
 	type_code->methods.resize(16);
@@ -349,7 +349,7 @@ std::shared_ptr<vnx::TypeCode> HarvesterBase::static_create_type_code() {
 		auto& field = type_code->fields[9];
 		field.data_size = 4;
 		field.name = "num_threads";
-		field.value = vnx::to_string(0);
+		field.value = vnx::to_string(16);
 		field.code = {3};
 	}
 	{
