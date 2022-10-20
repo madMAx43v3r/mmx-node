@@ -498,6 +498,8 @@ private:
 	mutable std::unordered_map<addr_t, std::shared_ptr<const Contract>> contract_cache;
 
 	std::shared_ptr<const ChainParams> params;
+	std::shared_ptr<const contract::Binary> offer_binary;
+	vnx::optional<uint32_t> offer_state_addr;
 	std::shared_ptr<RouterAsyncClient> router;
 	std::shared_ptr<TimeLordAsyncClient> timelord;
 	std::shared_ptr<vnx::addons::HttpInterface<Node>> http;

@@ -240,6 +240,11 @@ void Node::main()
 		commit(genesis);
 	}
 
+	offer_binary = get_contract_as<const contract::Binary>(params->offer_binary);
+	if(offer_binary) {
+		offer_state_addr = offer_binary->find_field("state");
+	}
+
 	subscribe(input_vdfs, max_queue_ms);
 	subscribe(input_proof, max_queue_ms);
 	subscribe(input_blocks, max_queue_ms);
@@ -947,18 +952,8 @@ offer_data_t Node::get_offer(const addr_t& address) const
 
 std::string Node::get_offer_state(const addr_t& address) const
 {
-	static std::mutex mutex;
-	static vnx::optional<uint32_t> state_addr;
-	if(!state_addr) {
-		std::lock_guard<std::mutex> lock(mutex);
-		if(!state_addr) {
-			if(const auto binary = get_contract_as<const contract::Binary>(params->offer_binary)) {
-				state_addr = binary->find_field("state");
-			}
-		}
-	}
-	if(state_addr) {
-		return to_string_value(read_storage_var(address, *state_addr));
+	if(offer_state_addr) {
+		return to_string_value(read_storage_var(address, *offer_state_addr));
 	}
 	return "null";
 }
