@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 offer_data_t::VNX_TYPE_HASH(0xc97a08a709a5f1efull);
-const vnx::Hash64 offer_data_t::VNX_CODE_HASH(0x54554dab6d753c26ull);
+const vnx::Hash64 offer_data_t::VNX_CODE_HASH(0x72b53b5390af5372ull);
 
 vnx::Hash64 offer_data_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -54,7 +54,7 @@ void offer_data_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, ask_amount);
 	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, state);
 	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, close_height);
-	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, trade_txid);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, close_txid);
 	_visitor.type_end(*_type_code);
 }
 
@@ -68,7 +68,7 @@ void offer_data_t::write(std::ostream& _out) const {
 	_out << ", \"ask_amount\": "; vnx::write(_out, ask_amount);
 	_out << ", \"state\": "; vnx::write(_out, state);
 	_out << ", \"close_height\": "; vnx::write(_out, close_height);
-	_out << ", \"trade_txid\": "; vnx::write(_out, trade_txid);
+	_out << ", \"close_txid\": "; vnx::write(_out, close_txid);
 	_out << "}";
 }
 
@@ -89,7 +89,7 @@ vnx::Object offer_data_t::to_object() const {
 	_object["ask_amount"] = ask_amount;
 	_object["state"] = state;
 	_object["close_height"] = close_height;
-	_object["trade_txid"] = trade_txid;
+	_object["close_txid"] = close_txid;
 	return _object;
 }
 
@@ -107,12 +107,12 @@ void offer_data_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(bid_currency);
 		} else if(_entry.first == "close_height") {
 			_entry.second.to(close_height);
+		} else if(_entry.first == "close_txid") {
+			_entry.second.to(close_txid);
 		} else if(_entry.first == "height") {
 			_entry.second.to(height);
 		} else if(_entry.first == "state") {
 			_entry.second.to(state);
-		} else if(_entry.first == "trade_txid") {
-			_entry.second.to(trade_txid);
 		}
 	}
 }
@@ -142,8 +142,8 @@ vnx::Variant offer_data_t::get_field(const std::string& _name) const {
 	if(_name == "close_height") {
 		return vnx::Variant(close_height);
 	}
-	if(_name == "trade_txid") {
-		return vnx::Variant(trade_txid);
+	if(_name == "close_txid") {
+		return vnx::Variant(close_txid);
 	}
 	return vnx::Variant();
 }
@@ -165,8 +165,8 @@ void offer_data_t::set_field(const std::string& _name, const vnx::Variant& _valu
 		_value.to(state);
 	} else if(_name == "close_height") {
 		_value.to(close_height);
-	} else if(_name == "trade_txid") {
-		_value.to(trade_txid);
+	} else if(_name == "close_txid") {
+		_value.to(close_txid);
 	}
 }
 
@@ -194,7 +194,7 @@ std::shared_ptr<vnx::TypeCode> offer_data_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.offer_data_t";
 	type_code->type_hash = vnx::Hash64(0xc97a08a709a5f1efull);
-	type_code->code_hash = vnx::Hash64(0x54554dab6d753c26ull);
+	type_code->code_hash = vnx::Hash64(0x72b53b5390af5372ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::offer_data_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<offer_data_t>>(); };
@@ -250,7 +250,7 @@ std::shared_ptr<vnx::TypeCode> offer_data_t::static_create_type_code() {
 	{
 		auto& field = type_code->fields[8];
 		field.is_extended = true;
-		field.name = "trade_txid";
+		field.name = "close_txid";
 		field.code = {33, 11, 32, 1};
 	}
 	type_code->build();
@@ -312,7 +312,7 @@ void read(TypeInput& in, ::mmx::offer_data_t& value, const TypeCode* type_code, 
 			case 3: vnx::read(in, value.ask_currency, type_code, _field->code.data()); break;
 			case 6: vnx::read(in, value.state, type_code, _field->code.data()); break;
 			case 7: vnx::read(in, value.close_height, type_code, _field->code.data()); break;
-			case 8: vnx::read(in, value.trade_txid, type_code, _field->code.data()); break;
+			case 8: vnx::read(in, value.close_txid, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -340,7 +340,7 @@ void write(TypeOutput& out, const ::mmx::offer_data_t& value, const TypeCode* ty
 	vnx::write(out, value.ask_currency, type_code, type_code->fields[3].code.data());
 	vnx::write(out, value.state, type_code, type_code->fields[6].code.data());
 	vnx::write(out, value.close_height, type_code, type_code->fields[7].code.data());
-	vnx::write(out, value.trade_txid, type_code, type_code->fields[8].code.data());
+	vnx::write(out, value.close_txid, type_code, type_code->fields[8].code.data());
 }
 
 void read(std::istream& in, ::mmx::offer_data_t& value) {

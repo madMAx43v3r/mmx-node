@@ -30,6 +30,7 @@ hash_t TokenBase::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "name", 		name);
 	write_field(out, "symbol", 		symbol);
 	write_field(out, "decimals", 	decimals);
+	write_field(out, "meta_data", 	meta_data);
 	out.flush();
 
 	return hash_t(buffer);

@@ -17,6 +17,7 @@ class MMX_SOLUTION_EXPORT MultiSig : public ::mmx::Solution {
 public:
 	
 	std::vector<std::shared_ptr<const ::mmx::Solution>> solutions;
+	uint32_t num_required = 0;
 	
 	typedef ::mmx::Solution Super;
 	
@@ -66,10 +67,11 @@ protected:
 
 template<typename T>
 void MultiSig::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<MultiSig>(2);
+	_visitor.template type_begin<MultiSig>(3);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("solutions", 1); _visitor.accept(solutions);
-	_visitor.template type_end<MultiSig>(2);
+	_visitor.type_field("num_required", 2); _visitor.accept(num_required);
+	_visitor.template type_end<MultiSig>(3);
 }
 
 

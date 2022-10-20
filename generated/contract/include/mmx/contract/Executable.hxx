@@ -76,16 +76,17 @@ protected:
 
 template<typename T>
 void Executable::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Executable>(8);
+	_visitor.template type_begin<Executable>(9);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("name", 1); _visitor.accept(name);
 	_visitor.type_field("symbol", 2); _visitor.accept(symbol);
 	_visitor.type_field("decimals", 3); _visitor.accept(decimals);
-	_visitor.type_field("binary", 4); _visitor.accept(binary);
-	_visitor.type_field("init_method", 5); _visitor.accept(init_method);
-	_visitor.type_field("init_args", 6); _visitor.accept(init_args);
-	_visitor.type_field("depends", 7); _visitor.accept(depends);
-	_visitor.template type_end<Executable>(8);
+	_visitor.type_field("meta_data", 4); _visitor.accept(meta_data);
+	_visitor.type_field("binary", 5); _visitor.accept(binary);
+	_visitor.type_field("init_method", 6); _visitor.accept(init_method);
+	_visitor.type_field("init_args", 7); _visitor.accept(init_args);
+	_visitor.type_field("depends", 8); _visitor.accept(depends);
+	_visitor.template type_end<Executable>(9);
 }
 
 

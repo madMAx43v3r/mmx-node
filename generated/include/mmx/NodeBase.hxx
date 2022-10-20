@@ -130,7 +130,8 @@ protected:
 	virtual std::shared_ptr<const ::mmx::Contract> get_contract_for(const ::mmx::addr_t& address) const = 0;
 	virtual std::shared_ptr<const ::mmx::Contract> get_contract_at(const ::mmx::addr_t& address, const ::mmx::hash_t& block_hash) const = 0;
 	virtual std::vector<std::shared_ptr<const ::mmx::Contract>> get_contracts(const std::vector<::mmx::addr_t>& addresses) const = 0;
-	virtual std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts_by(const std::vector<::mmx::addr_t>& addresses) const = 0;
+	virtual std::vector<::mmx::addr_t> get_contracts_by(const std::vector<::mmx::addr_t>& addresses) const = 0;
+	virtual std::vector<::mmx::addr_t> get_contracts_owned_by(const std::vector<::mmx::addr_t>& addresses) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> get_transaction(const ::mmx::hash_t& id, const vnx::bool_t& include_pending) const = 0;
 	virtual std::vector<std::shared_ptr<const ::mmx::Transaction>> get_transactions(const std::vector<::mmx::hash_t>& ids) const = 0;
 	virtual std::vector<::mmx::tx_entry_t> get_history(const std::vector<::mmx::addr_t>& addresses, const int32_t& since) const = 0;
@@ -140,7 +141,7 @@ protected:
 	virtual ::mmx::uint128 get_total_balance(const std::vector<::mmx::addr_t>& addresses, const ::mmx::addr_t& currency) const = 0;
 	virtual std::map<::mmx::addr_t, ::mmx::uint128> get_total_balances(const std::vector<::mmx::addr_t>& addresses) const = 0;
 	virtual std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128> get_all_balances(const std::vector<::mmx::addr_t>& addresses) const = 0;
-	virtual std::vector<::mmx::exec_entry_t> get_exec_history(const ::mmx::addr_t& address, const int32_t& since) const = 0;
+	virtual std::vector<::mmx::exec_entry_t> get_exec_history(const ::mmx::addr_t& address, const int32_t& limit, const vnx::bool_t& recent) const = 0;
 	virtual std::map<std::string, ::mmx::vm::varptr_t> read_storage(const ::mmx::addr_t& contract, const uint32_t& height) const = 0;
 	virtual std::map<uint64_t, ::mmx::vm::varptr_t> dump_storage(const ::mmx::addr_t& contract, const uint32_t& height) const = 0;
 	virtual ::mmx::vm::varptr_t read_storage_var(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) const = 0;
@@ -152,9 +153,11 @@ protected:
 	virtual std::vector<std::pair<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>> get_virtual_plots_for(const ::mmx::bls_pubkey_t& farmer_key) const = 0;
 	virtual uint64_t get_virtual_plot_balance(const ::mmx::addr_t& plot_id, const vnx::optional<::mmx::hash_t>& block_hash) const = 0;
 	virtual ::mmx::offer_data_t get_offer(const ::mmx::addr_t& address) const = 0;
-	virtual std::vector<::mmx::offer_data_t> get_offers(const uint32_t& since, const vnx::bool_t& is_open) const = 0;
-	virtual std::vector<::mmx::offer_data_t> get_recent_offers(const int32_t& limit, const vnx::bool_t& is_open) const = 0;
-	virtual std::vector<::mmx::offer_data_t> get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& limit, const vnx::bool_t& is_open) const = 0;
+	virtual std::vector<::mmx::offer_data_t> get_offers(const uint32_t& since, const std::string& state) const = 0;
+	virtual std::vector<::mmx::offer_data_t> get_offers_by(const std::vector<::mmx::addr_t>& owners, const std::string& state) const = 0;
+	virtual std::vector<::mmx::offer_data_t> fetch_offers(const std::vector<::mmx::addr_t>& addresses, const std::string& state) const = 0;
+	virtual std::vector<::mmx::offer_data_t> get_recent_offers(const int32_t& limit, const std::string& state) const = 0;
+	virtual std::vector<::mmx::offer_data_t> get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& limit, const std::string& state) const = 0;
 	virtual std::vector<::mmx::offer_data_t> get_trade_history(const int32_t& limit, const uint32_t& since) const = 0;
 	virtual std::vector<::mmx::offer_data_t> get_trade_history_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& limit, const uint32_t& since) const = 0;
 	virtual ::mmx::uint128 get_total_supply(const ::mmx::addr_t& currency) const = 0;

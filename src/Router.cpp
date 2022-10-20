@@ -765,8 +765,7 @@ void Router::connect()
 
 		for(const auto& address : get_subset(try_peers, num_peers_out, rand_engine))
 		{
-			// TODO: reduce to 2 * num_peers_out
-			if(connecting_peers.size() >= 4 * num_peers_out) {
+			if(connecting_peers.size() >= 2 * num_peers_out) {
 				break;
 			}
 			log(DEBUG) << "Trying to connect to " << address;
@@ -1403,9 +1402,6 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 			if(auto value = std::dynamic_pointer_cast<const Router_get_info_return>(result)) {
 				if(auto peer = find_peer(client)) {
 					peer->info = value->_ret_0;
-					if(peer->info.version < node_version) {
-						disconnect(client);		// TODO: temp fix for testnet7
-					}
 				}
 			}
 			break;
@@ -1579,13 +1575,13 @@ void Router::on_connect(uint64_t client, const std::string& address)
 	req->msg = peer->challenge;
 	send_request(peer, req);
 
-	log(INFO) << "Connected to peer " << peer->address;
+	log(DEBUG) << "Connected to peer " << peer->address;
 }
 
 void Router::on_disconnect(uint64_t client)
 {
 	if(auto peer = find_peer(client)) {
-		log(INFO) << "Peer " << peer->address << " disconnected";
+		log(DEBUG) << "Peer " << peer->address << " disconnected";
 		peer_retry_map[peer->address] = vnx::get_wall_time_seconds() + peer_retry_interval * 60;
 	}
 	synced_peers.erase(client);

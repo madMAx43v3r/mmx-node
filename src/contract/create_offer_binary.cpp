@@ -80,9 +80,7 @@ int main(int argc, char** argv)
 		bin->fields["ask_currency"] = vm::MEM_STATIC + (off++);
 		bin->fields["ask_amount"] = vm::MEM_STATIC + (off++);
 		bin->fields["state"] = vm::MEM_STATIC + (off++);
-		bin->fields["height_open"] = vm::MEM_STATIC + (off++);	// TODO: obsolete
-		bin->fields["height_close"] = vm::MEM_STATIC + (off++);	// TODO: obsolete
-		bin->fields["trade_txid"] = vm::MEM_STATIC + (off++);	// TODO: txid_close (for cancel too)
+		bin->fields["close_txid"] = vm::MEM_STATIC + (off++);
 	}
 
 	std::vector<vm::instr_t> code;
@@ -127,7 +125,6 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 11, vm::MEM_EXTERN + vm::EXTERN_DEPOSIT, const_map["one"]);
 		code.emplace_back(vm::OP_COPY, 0, bin->fields["bid_amount"], vm::MEM_STACK + 11);
 		code.emplace_back(vm::OP_COPY, 0, bin->fields["state"], const_map["OPEN"]);
-		code.emplace_back(vm::OP_COPY, 0, bin->fields["height_open"], vm::MEM_EXTERN + vm::EXTERN_HEIGHT);
 		code.emplace_back(vm::OP_RET);
 		bin->methods[method.name] = method;
 	}
@@ -144,7 +141,7 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_not_open"]);
 		code.emplace_back(vm::OP_SEND, 0, bin->fields["owner"], bin->fields["bid_amount"], bin->fields["bid_currency"]);
 		code.emplace_back(vm::OP_COPY, 0, bin->fields["state"], const_map["REVOKED"]);
-		code.emplace_back(vm::OP_COPY, 0, bin->fields["height_close"], vm::MEM_EXTERN + vm::EXTERN_HEIGHT);
+		code.emplace_back(vm::OP_COPY, 0, bin->fields["close_txid"], vm::MEM_EXTERN + vm::EXTERN_TXID);
 		code.emplace_back(vm::OP_RET);
 		bin->methods[method.name] = method;
 	}
@@ -175,8 +172,7 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_SEND, 0, vm::MEM_STACK + 11, bin->fields["bid_amount"], bin->fields["bid_currency"]);
 		code.emplace_back(vm::OP_SEND, 0, bin->fields["owner"], bin->fields["ask_amount"], bin->fields["ask_currency"]);
 		code.emplace_back(vm::OP_COPY, 0, bin->fields["state"], const_map["CLOSED"]);
-		code.emplace_back(vm::OP_COPY, 0, bin->fields["height_close"], vm::MEM_EXTERN + vm::EXTERN_HEIGHT);
-		code.emplace_back(vm::OP_COPY, 0, bin->fields["trade_txid"], vm::MEM_EXTERN + vm::EXTERN_TXID);
+		code.emplace_back(vm::OP_COPY, 0, bin->fields["close_txid"], vm::MEM_EXTERN + vm::EXTERN_TXID);
 		code.emplace_back(vm::OP_RET);
 		bin->methods[method.name] = method;
 	}

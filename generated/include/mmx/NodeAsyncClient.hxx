@@ -125,7 +125,11 @@ public:
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_contracts_by(const std::vector<::mmx::addr_t>& addresses = {}, 
-			const std::function<void(const std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>&)>& _callback = std::function<void(const std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>&)>(),
+			const std::function<void(const std::vector<::mmx::addr_t>&)>& _callback = std::function<void(const std::vector<::mmx::addr_t>&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t get_contracts_owned_by(const std::vector<::mmx::addr_t>& addresses = {}, 
+			const std::function<void(const std::vector<::mmx::addr_t>&)>& _callback = std::function<void(const std::vector<::mmx::addr_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_transaction(const ::mmx::hash_t& id = ::mmx::hash_t(), const vnx::bool_t& include_pending = 0, 
@@ -164,7 +168,7 @@ public:
 			const std::function<void(const std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128>&)>& _callback = std::function<void(const std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_exec_history(const ::mmx::addr_t& address = ::mmx::addr_t(), const int32_t& since = 0, 
+	uint64_t get_exec_history(const ::mmx::addr_t& address = ::mmx::addr_t(), const int32_t& limit = 0, const vnx::bool_t& recent = 0, 
 			const std::function<void(const std::vector<::mmx::exec_entry_t>&)>& _callback = std::function<void(const std::vector<::mmx::exec_entry_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
@@ -212,15 +216,23 @@ public:
 			const std::function<void(const ::mmx::offer_data_t&)>& _callback = std::function<void(const ::mmx::offer_data_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_offers(const uint32_t& since = 0, const vnx::bool_t& is_open = 0, 
+	uint64_t get_offers(const uint32_t& since = 0, const std::string& state = "", 
 			const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback = std::function<void(const std::vector<::mmx::offer_data_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_recent_offers(const int32_t& limit = 100, const vnx::bool_t& is_open = true, 
+	uint64_t get_offers_by(const std::vector<::mmx::addr_t>& owners = {}, const std::string& state = "", 
 			const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback = std::function<void(const std::vector<::mmx::offer_data_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid = nullptr, const vnx::optional<::mmx::addr_t>& ask = nullptr, const int32_t& limit = 100, const vnx::bool_t& is_open = true, 
+	uint64_t fetch_offers(const std::vector<::mmx::addr_t>& addresses = {}, const std::string& state = "", 
+			const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback = std::function<void(const std::vector<::mmx::offer_data_t>&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t get_recent_offers(const int32_t& limit = 100, const std::string& state = "OPEN", 
+			const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback = std::function<void(const std::vector<::mmx::offer_data_t>&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid = nullptr, const vnx::optional<::mmx::addr_t>& ask = nullptr, const int32_t& limit = 100, const std::string& state = "OPEN", 
 			const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback = std::function<void(const std::vector<::mmx::offer_data_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
@@ -323,7 +335,8 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::Contract>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_contract_for;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::Contract>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_contract_at;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::shared_ptr<const ::mmx::Contract>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_contracts;
-	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_contracts_by;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::addr_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_contracts_by;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::addr_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_contracts_owned_by;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::Transaction>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_transaction;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::shared_ptr<const ::mmx::Transaction>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_transactions;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::tx_entry_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_history;
@@ -346,6 +359,8 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const uint64_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_virtual_plot_balance;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::offer_data_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_offer;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::offer_data_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_offers;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::offer_data_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_offers_by;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::offer_data_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_fetch_offers;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::offer_data_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_recent_offers;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::offer_data_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_recent_offers_for;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::offer_data_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_trade_history;

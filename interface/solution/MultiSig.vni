@@ -7,7 +7,7 @@ class MultiSig extends mmx.Solution {
 	// TODO: map<addr_t, mmx.Solution*>
 	vector<mmx.Solution*> solutions;
 	
-	// TODO: uint required
+	uint num_required;
 	
 	
 	hash_t calc_hash() const;

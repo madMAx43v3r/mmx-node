@@ -117,6 +117,7 @@ const commonLocale = {
     },
 
     "account_offers": {
+        "any": "@:common.any",
         "height": "@:common.height",
         "address": "@:common.address",
         "time": "@:common.time",
@@ -191,6 +192,27 @@ const commonLocale = {
         "time": "@:common.time",
         "link": "@:common.link",
         "address": "@:common.address"
+    },
+
+    "account_history_form": {
+        "any": "@:common.any"
+    },
+
+    "farmer_blocks": {
+        "height": "@:common.height",
+        "reward": "@:common.reward",
+        "score": "@:explore_blocks.score",
+        "tx_fees": "@:node_common.tx_fees",
+        "time": "@:common.time"
+    },
+
+    "farmer_proofs": {
+        "height": "@:common.height",
+        "score": "@:explore_blocks.score",
+        "sdiff": "@:explore_blocks.sdiff",
+        "time": "@:common.time",
+        "plot_id": "@:block_view.plot_id",
+        "harvester": "@:node_log.harvester"
     }
 
 }

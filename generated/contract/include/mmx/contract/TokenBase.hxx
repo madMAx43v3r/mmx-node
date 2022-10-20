@@ -20,6 +20,7 @@ public:
 	std::string name;
 	std::string symbol;
 	int32_t decimals = 6;
+	vnx::optional<::mmx::addr_t> meta_data;
 	
 	typedef ::mmx::Contract Super;
 	
@@ -70,12 +71,13 @@ protected:
 
 template<typename T>
 void TokenBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<TokenBase>(4);
+	_visitor.template type_begin<TokenBase>(5);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("name", 1); _visitor.accept(name);
 	_visitor.type_field("symbol", 2); _visitor.accept(symbol);
 	_visitor.type_field("decimals", 3); _visitor.accept(decimals);
-	_visitor.template type_end<TokenBase>(4);
+	_visitor.type_field("meta_data", 4); _visitor.accept(meta_data);
+	_visitor.template type_end<TokenBase>(5);
 }
 
 

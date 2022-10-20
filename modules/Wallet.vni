@@ -82,7 +82,7 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	vector<tx_entry_t> get_history(uint index, int since, optional<tx_type_e> type, optional<addr_t> currency) const;
 	
-	vector<tx_log_entry_t> get_tx_history(uint index, int limit = -1, uint offset) const;
+	vector<tx_log_entry_t> get_tx_log(uint index, int limit = -1, uint offset) const;
 	
 	vector<txin_t> gather_inputs_for(uint index, ulong amount, addr_t currency, spend_options_t options) const;
 	
@@ -95,6 +95,10 @@ module Wallet implements vnx.addons.HttpComponent {
 	map<addr_t, balance_t> get_contract_balances(addr_t address) const;
 	
 	map<addr_t, Contract*> get_contracts(uint index) const;
+	
+	map<addr_t, Contract*> get_contracts_owned(uint index) const;
+	
+	vector<offer_data_t> get_offers(uint index, string state) const;
 	
 	addr_t get_address(uint index, uint offset) const;
 	

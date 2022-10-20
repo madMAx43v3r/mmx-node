@@ -11,7 +11,7 @@ class TokenBase extends mmx.Contract {
 	
 	int decimals = 6;
 	
-	// TODO: optional<addr_t> meta_data;
+	optional<addr_t> meta_data;
 	
 	
 	bool is_valid() const;

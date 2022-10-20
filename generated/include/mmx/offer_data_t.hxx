@@ -23,7 +23,7 @@ struct MMX_EXPORT offer_data_t {
 	uint64_t ask_amount = 0;
 	std::string state;
 	vnx::optional<uint32_t> close_height;
-	vnx::optional<::mmx::hash_t> trade_txid;
+	vnx::optional<::mmx::hash_t> close_txid;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -76,7 +76,7 @@ void offer_data_t::accept_generic(T& _visitor) const {
 	_visitor.type_field("ask_amount", 5); _visitor.accept(ask_amount);
 	_visitor.type_field("state", 6); _visitor.accept(state);
 	_visitor.type_field("close_height", 7); _visitor.accept(close_height);
-	_visitor.type_field("trade_txid", 8); _visitor.accept(trade_txid);
+	_visitor.type_field("close_txid", 8); _visitor.accept(close_txid);
 	_visitor.template type_end<offer_data_t>(9);
 }
 

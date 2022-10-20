@@ -112,7 +112,6 @@ add_library(mmx_iface SHARED
 	src/contract/PuzzleTimeLock.cpp
 	src/contract/MutableRelay.cpp
 	src/contract/VirtualPlot.cpp
-	src/contract/VoteSheet.cpp
 	src/contract/Binary.cpp
 	src/contract/Executable.cpp
 	src/contract/method_t.cpp

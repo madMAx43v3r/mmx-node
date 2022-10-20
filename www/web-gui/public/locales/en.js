@@ -34,16 +34,19 @@ const enLocale = {
         "failed_with": "Failed with",
         "deployed_as": "Deployed as",
 
+        "any": "Any",
+
         "link": "Link"
     },
 
     "main_menu": {
         "explore": "Explore",
         "market": "Market",
+        "farmer": "Farmer",
         "exchange": "Exchange",
         "settings": "Settings",
         "logout": "Logout"
-    },
+    },    
 
     "node_common": {
         "vdf_speed": "VDF Speed",
@@ -311,11 +314,26 @@ const enLocale = {
     },
 
     "account_history_form": {
-        "any": "Any",
         "spend": "Spend",
         "receive": "Receive",
         "reward": "Reward",
         "tx_fee": "TX Fee"
+    },
+
+    "farmer_menu": {
+        "plots": "Plots",
+        "blocks": "Blocks",
+        "proofs": "Proofs"
+    },
+
+    "farmer_plots": {
+        "type": "Type",
+        "count": "Count",
+        "reload_plots": "Reload Plots"
+    },
+
+    "farmer_plot_dirs": {
+        "path": "Path"
     },
 
     "$vuetify": {

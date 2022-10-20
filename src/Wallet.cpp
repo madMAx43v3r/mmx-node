@@ -564,22 +564,15 @@ void Wallet::update_cache(const uint32_t& index) const
 		const auto height = node->get_height();
 		const auto addresses = wallet->get_all_addresses();
 		const auto balances = node->get_all_balances(addresses);
-		const auto contracts = node->get_contracts_by(addresses);
+		const auto contracts = node->get_contracts_owned_by(addresses);
 		const auto history = wallet->pending_tx.empty() ? std::vector<hash_t>() :
 				node->get_tx_ids_since(wallet->height - std::min(params->commit_delay, wallet->height));
 
 		wallet->external_balance_map.clear();
-		wallet->update_cache(balances, history, height);
-
-		for(const auto& entries : contracts) {
-			if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(entries.second)) {
-				if(exec->binary == params->offer_binary) {
-					for(const auto& entry : node->get_balances(entries.first)) {
-						wallet->external_balance_map[entry.first] += entry.second;
-					}
-				}
-			}
+		for(const auto& entry : node->get_total_balances(contracts)) {
+			wallet->external_balance_map[entry.first] += entry.second;
 		}
+		wallet->update_cache(balances, history, height);
 		wallet->last_update = now;
 	}
 }
@@ -612,7 +605,7 @@ std::vector<tx_entry_t> Wallet::get_history(const uint32_t& index, const int32_t
 	return result;
 }
 
-std::vector<tx_log_entry_t> Wallet::get_tx_history(const uint32_t& index, const int32_t& limit_, const uint32_t& offset) const
+std::vector<tx_log_entry_t> Wallet::get_tx_log(const uint32_t& index, const int32_t& limit_, const uint32_t& offset) const
 {
 	const auto wallet = get_wallet(index);
 	const size_t limit = limit_ >= 0 ? limit_ : uint32_t(-1);
@@ -703,7 +696,33 @@ std::map<addr_t, balance_t> Wallet::get_contract_balances(const addr_t& address)
 std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts(const uint32_t& index) const
 {
 	const auto wallet = get_wallet(index);
-	return node->get_contracts_by(wallet->get_all_addresses());
+	const auto addresses = node->get_contracts_by(wallet->get_all_addresses());
+	const auto contracts = node->get_contracts(addresses);
+
+	std::map<addr_t, std::shared_ptr<const Contract>> result;
+	for(size_t i = 0; i < addresses.size() && i < contracts.size(); ++i) {
+		result[addresses[i]] = contracts[i];
+	}
+	return result;
+}
+
+std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts_owned(const uint32_t& index) const
+{
+	const auto wallet = get_wallet(index);
+	const auto addresses = node->get_contracts_owned_by(wallet->get_all_addresses());
+	const auto contracts = node->get_contracts(addresses);
+
+	std::map<addr_t, std::shared_ptr<const Contract>> result;
+	for(size_t i = 0; i < addresses.size() && i < contracts.size(); ++i) {
+		result[addresses[i]] = contracts[i];
+	}
+	return result;
+}
+
+vector<offer_data_t> Wallet::get_offers(const uint32_t& index, const std::string& state) const
+{
+	const auto wallet = get_wallet(index);
+	return node->get_offers_by(wallet->get_all_addresses(), state);
 }
 
 addr_t Wallet::get_address(const uint32_t& index, const uint32_t& offset) const

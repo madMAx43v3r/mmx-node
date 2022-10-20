@@ -13,50 +13,51 @@
 namespace mmx {
 namespace vm {
 
-// TODO: use 20-byte hash as keys
 // TODO: use to_big_endian() function instead of flip_bytes()
+
+constexpr int HASH_KEY_SIZE = 20;
 
 std::shared_ptr<db_val_t> get_key(const addr_t& contract, uint64_t dst)
 {
-	auto out = std::make_shared<db_val_t>(40);
-	::memcpy(out->data, contract.data(), contract.size());
+	auto out = std::make_shared<db_val_t>(HASH_KEY_SIZE + 8);
+	::memcpy(out->data, contract.data(), HASH_KEY_SIZE);
 	dst = vnx::flip_bytes(dst);
-	::memcpy(out->data + contract.size(), &dst, 8);
+	::memcpy(out->data + HASH_KEY_SIZE, &dst, 8);
 	return out;
 }
 
 std::tuple<addr_t, uint64_t> read_key(std::shared_ptr<const db_val_t> key)
 {
-	if(key->size < 40) {
+	if(key->size < HASH_KEY_SIZE + 8) {
 		throw std::runtime_error("key size underflow");
 	}
-	std::pair<addr_t, uint64_t> out;
-	::memcpy(std::get<0>(out).data(), key->data, 32);
-	::memcpy(&std::get<1>(out), key->data + 32, 8);
+	std::tuple<addr_t, uint64_t> out;
+	::memcpy(std::get<0>(out).data(), key->data, HASH_KEY_SIZE);
+	::memcpy(&std::get<1>(out), key->data + HASH_KEY_SIZE, 8);
 	std::get<1>(out) = vnx::flip_bytes(std::get<1>(out));
 	return out;
 }
 
 std::shared_ptr<db_val_t> get_entry_key(const addr_t& contract, uint64_t dst, uint64_t key)
 {
-	auto out = std::make_shared<db_val_t>(48);
-	::memcpy(out->data, contract.data(), contract.size());
+	auto out = std::make_shared<db_val_t>(HASH_KEY_SIZE + 16);
+	::memcpy(out->data, contract.data(), HASH_KEY_SIZE);
 	dst = vnx::flip_bytes(dst);
-	::memcpy(out->data + contract.size(), &dst, 8);
+	::memcpy(out->data + HASH_KEY_SIZE, &dst, 8);
 	key = vnx::flip_bytes(key);
-	::memcpy(out->data + contract.size() + 8, &key, 8);
+	::memcpy(out->data + HASH_KEY_SIZE + 8, &key, 8);
 	return out;
 }
 
 std::tuple<addr_t, uint64_t, uint64_t> read_entry_key(std::shared_ptr<const db_val_t> key)
 {
-	if(key->size < 48) {
-		throw std::runtime_error("key size underflow");
+	if(key->size < HASH_KEY_SIZE + 16) {
+		throw std::runtime_error("entry key size underflow");
 	}
 	std::tuple<addr_t, uint64_t, uint64_t> out;
-	::memcpy(&std::get<0>(out), key->data, 32);
-	::memcpy(&std::get<1>(out), key->data + 32, 8);
-	::memcpy(&std::get<2>(out), key->data + 40, 8);
+	::memcpy(std::get<0>(out).data(), key->data, HASH_KEY_SIZE);
+	::memcpy(&std::get<1>(out), key->data + HASH_KEY_SIZE, 8);
+	::memcpy(&std::get<2>(out), key->data + HASH_KEY_SIZE + 8, 8);
 	std::get<1>(out) = vnx::flip_bytes(std::get<1>(out));
 	std::get<2>(out) = vnx::flip_bytes(std::get<2>(out));
 	return out;
@@ -156,7 +157,7 @@ std::vector<std::pair<uint64_t, varptr_t>> StorageDB::find_range(
 	while(iter.is_valid()) {
 		const auto key = read_key(iter.key());
 		const auto address = std::get<1>(key);
-		if(std::get<0>(key) != contract || address >= end) {
+		if(::memcmp(std::get<0>(key).data(), contract.data(), HASH_KEY_SIZE) || address >= end) {
 			break;
 		}
 		keys.emplace_back(iter.key(), address);
@@ -182,7 +183,7 @@ std::vector<std::pair<uint64_t, varptr_t>> StorageDB::find_entries(
 	iter.seek(get_entry_key(contract, address, 0));
 	while(iter.is_valid()) {
 		const auto key = read_entry_key(iter.key());
-		if(std::get<0>(key) != contract || std::get<1>(key) != address) {
+		if(::memcmp(std::get<0>(key).data(), contract.data(), HASH_KEY_SIZE) || std::get<1>(key) != address) {
 			break;
 		}
 		keys.emplace_back(iter.key(), std::get<2>(key));

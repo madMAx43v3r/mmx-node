@@ -380,8 +380,7 @@ Vue.component('account-history', {
 	data() {
 		return {
 			data: [],
-			loading: false,
-			loaded: false,
+			loading: true,
 			timer: null 
 		}
 	},
@@ -399,24 +398,25 @@ Vue.component('account-history', {
 		}
 	},
 	methods: {
-		update() {
-			this.loading = true;
-			this.data = [];
+		update(reload) {
+			if(reload) {
+				this.data = [];
+				this.loading = true;
+			}
 			fetch('/wapi/wallet/history?limit=' + this.limit + '&index=' + this.index + '&type=' + this.type + '&currency=' + this.currency)
 				.then(response => response.json())
 				.then(data => {
 					this.loading = false;
-					this.loaded = true;
 					this.data = data;
 				});
 		}
 	},
 	watch: {
 		type() {
-			this.update();
+			this.update(true);
 		},
 		currency() {
-			this.update();
+			this.update(true);
 		}
 	},
 	created() {
@@ -549,7 +549,7 @@ Vue.component('account-tx-history', {
 	data() {
 		return {
 			data: [],
-			loading: false,
+			loading: true,
 			timer: null			
 		}
 	},
@@ -566,7 +566,6 @@ Vue.component('account-tx-history', {
 	},
 	methods: {
 		update() {
-			this.loading = true;
 			fetch('/wapi/wallet/tx_history?limit=' + this.limit + '&index=' + this.index)
 				.then(response => response.json())
 				.then(data => {
@@ -711,7 +710,7 @@ Vue.component('account-addresses', {
 	data() {
 		return {
 			data: [],
-			loading: false
+			loading: true
 		}
 	},
 	computed: {
@@ -728,7 +727,6 @@ Vue.component('account-addresses', {
 	},
 	methods: {
 		update() {
-			this.loading = true;
 			fetch('/wapi/wallet/address_info?limit=' + this.limit + '&index=' + this.index)
 				.then(response => response.json())
 				.then(data => {
@@ -1557,23 +1555,38 @@ Vue.component('account-offers', {
 			data: [],
 			error: null,
 			result: null,
-			timer: null
+			timer: null,
+			state: 'OPEN',
+			canceled: new Set()
 		}
+	},
+	computed: {
+		select_states() {
+			return [
+				{text: this.$t('account_offers.any'), value: null},
+				{text: this.$t('account_offers.open'), value: 'OPEN'},
+				{text: this.$t('account_offers.accepted'), value: 'CLOSED'},
+				{text: this.$t('account_offers.revoked'), value: 'REVOKED'}
+			];
+		},
 	},
 	methods: {
 		update() {
-			fetch('/wapi/wallet/offers?index=' + this.index)
+			fetch('/wapi/wallet/offers?index=' + this.index + '&state=' + (this.state || ''))
 				.then(response => response.json())
 				.then(data => this.data = data.sort((L, R) => R.height - L.height));
 		},
-		cancel(address) {
+		cancel(item) {
 			const args = {};
 			args.index = this.index;
-			args.address = address;
+			args.address = item.address;
 			fetch('/wapi/wallet/cancel', {body: JSON.stringify(args), method: "post"})
 				.then(response => {
 					if(response.ok) {
-						response.json().then(data => this.result = data);
+						response.json().then(data => {
+							this.canceled.add(item.address);
+							this.result = data;
+						});
 					} else {
 						response.text().then(data => this.error = data);
 					}
@@ -1581,6 +1594,9 @@ Vue.component('account-offers', {
 		}
 	},
 	watch: {
+		state(value) {
+			this.update();
+		},
 		index(value) {
 			this.update();
 		},
@@ -1604,6 +1620,14 @@ Vue.component('account-offers', {
 	},
 	template: `
 		<div>
+		<v-card class="my-2">
+			<v-card-text>
+				<v-select v-model="state" :label="$t('account_offers.status')"
+					:items="select_states" item-text="text" item-value="value">
+				</v-select>
+			</v-card-text>
+		</v-card>
+		<v-card>
 			<v-simple-table>
 				<thead>
 				<tr>
@@ -1626,7 +1650,7 @@ Vue.component('account-offers', {
 					<td><router-link :to="'/explore/address/' + item.address">{{item.address.substr(0, 16)}}...</router-link></td>
 					<td :class="{'green--text': item.state == 'OPEN', 'red--text text--lighten-2': item.state == 'REVOKED'}">
 						<template v-if="item.state == 'CLOSED'">
-							<router-link :to="'/explore/transaction/' + item.trade_txid">{{ $t('account_offers.accepted') }}</router-link>
+							<router-link :to="'/explore/transaction/' + item.close_txid">{{ $t('account_offers.accepted') }}</router-link>
 						</template>
 						<template v-else>
 							{{item.state == 'REVOKED' ? $t('account_offers.revoked') : $t('account_offers.open') }}
@@ -1634,19 +1658,22 @@ Vue.component('account-offers', {
 					</td>
 					<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 					<td>
-						<template v-if="item.state == 'OPEN'">
-							<v-btn outlined text @click="cancel(item.address)">{{ $t('account_offers.revoke') }}</v-btn>
+						<template v-if="item.state == 'OPEN' && !canceled.has(item.address)">
+							<v-btn outlined text @click="cancel(item)">{{ $t('account_offers.revoke') }}</v-btn>
 						</template>
 					</td>
 				</tr>
 				</tbody>
 			</v-simple-table>
-			<v-alert border="left" colored-border type="success" elevation="2" v-if="result" class="my-2">
-				{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result.id">{{result.id}}</router-link>
-			</v-alert>
-			<v-alert border="left" colored-border type="error" elevation="2" v-if="error" class="my-2">
-				{{ $t('common.failed_with') }}: <b>{{error}}</b>
-			</v-alert>
+		</v-card>
+		
+		<v-alert border="left" colored-border type="success" elevation="2" v-if="result" class="my-2">
+			{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result.id">{{result.id}}</router-link>
+		</v-alert>
+
+		<v-alert border="left" colored-border type="error" elevation="2" v-if="error" class="my-2">
+			{{ $t('common.failed_with') }}: <b>{{error}}</b>
+		</v-alert>
 		</div>
 		`
 })

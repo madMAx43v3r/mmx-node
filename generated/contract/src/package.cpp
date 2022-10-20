@@ -95,6 +95,10 @@
 #include <mmx/contract/PlotNFT_lock_return.hxx>
 #include <mmx/contract/PlotNFT_lock_pool.hxx>
 #include <mmx/contract/PlotNFT_lock_pool_return.hxx>
+#include <mmx/contract/PlotNFT_set_partial_diff.hxx>
+#include <mmx/contract/PlotNFT_set_partial_diff_return.hxx>
+#include <mmx/contract/PlotNFT_set_reward_addr.hxx>
+#include <mmx/contract/PlotNFT_set_reward_addr_return.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/contract/PubKey_calc_cost.hxx>
 #include <mmx/contract/PubKey_calc_cost_return.hxx>
@@ -165,9 +169,6 @@
 #include <mmx/contract/VirtualPlot_is_locked_return.hxx>
 #include <mmx/contract/VirtualPlot_is_valid.hxx>
 #include <mmx/contract/VirtualPlot_is_valid_return.hxx>
-#include <mmx/contract/VoteSheet.hxx>
-#include <mmx/contract/VoteSheet_is_valid.hxx>
-#include <mmx/contract/VoteSheet_is_valid_return.hxx>
 #include <mmx/contract/WebData.hxx>
 #include <mmx/contract/WebData_calc_cost.hxx>
 #include <mmx/contract/WebData_calc_cost_return.hxx>
@@ -1324,6 +1325,54 @@ void type<::mmx::contract::PlotNFT_lock_pool_return>::create_dynamic_code(std::v
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::contract::PlotNFT_set_partial_diff>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PlotNFT_set_partial_diff;
+}
+
+void type<::mmx::contract::PlotNFT_set_partial_diff>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PlotNFT_set_partial_diff());
+}
+
+void type<::mmx::contract::PlotNFT_set_partial_diff>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_set_partial_diff& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PlotNFT_set_partial_diff_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PlotNFT_set_partial_diff_return;
+}
+
+void type<::mmx::contract::PlotNFT_set_partial_diff_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PlotNFT_set_partial_diff_return());
+}
+
+void type<::mmx::contract::PlotNFT_set_partial_diff_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_set_partial_diff_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PlotNFT_set_reward_addr>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PlotNFT_set_reward_addr;
+}
+
+void type<::mmx::contract::PlotNFT_set_reward_addr>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PlotNFT_set_reward_addr());
+}
+
+void type<::mmx::contract::PlotNFT_set_reward_addr>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_set_reward_addr& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PlotNFT_set_reward_addr_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PlotNFT_set_reward_addr_return;
+}
+
+void type<::mmx::contract::PlotNFT_set_reward_addr_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PlotNFT_set_reward_addr_return());
+}
+
+void type<::mmx::contract::PlotNFT_set_reward_addr_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_set_reward_addr_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::contract::PubKey>::get_type_code() {
 	return mmx::contract::vnx_native_type_code_PubKey;
 }
@@ -2164,42 +2213,6 @@ void type<::mmx::contract::VirtualPlot_is_valid_return>::create_dynamic_code(std
 	code.push_back(CODE_OBJECT);
 }
 
-const TypeCode* type<::mmx::contract::VoteSheet>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_VoteSheet;
-}
-
-void type<::mmx::contract::VoteSheet>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::VoteSheet());
-}
-
-void type<::mmx::contract::VoteSheet>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VoteSheet& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::VoteSheet_is_valid>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_VoteSheet_is_valid;
-}
-
-void type<::mmx::contract::VoteSheet_is_valid>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::VoteSheet_is_valid());
-}
-
-void type<::mmx::contract::VoteSheet_is_valid>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VoteSheet_is_valid& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::VoteSheet_is_valid_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_VoteSheet_is_valid_return;
-}
-
-void type<::mmx::contract::VoteSheet_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::VoteSheet_is_valid_return());
-}
-
-void type<::mmx::contract::VoteSheet_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VoteSheet_is_valid_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
 const TypeCode* type<::mmx::contract::WebData>::get_type_code() {
 	return mmx::contract::vnx_native_type_code_WebData;
 }
@@ -2543,6 +2556,10 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::PlotNFT_lock_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PlotNFT_lock_pool::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PlotNFT_lock_pool_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PlotNFT_set_partial_diff::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PlotNFT_set_partial_diff_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PlotNFT_set_reward_addr::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PlotNFT_set_reward_addr_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey_calc_cost::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey_calc_cost_return::static_create_type_code());
@@ -2613,9 +2630,6 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::VirtualPlot_is_locked_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::VirtualPlot_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::VirtualPlot_is_valid_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::VoteSheet::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::VoteSheet_is_valid::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::VoteSheet_is_valid_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::WebData::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::WebData_calc_cost::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::WebData_calc_cost_return::static_create_type_code());
@@ -2738,6 +2752,10 @@ const vnx::TypeCode* const vnx_native_type_code_PlotNFT_lock = vnx::get_type_cod
 const vnx::TypeCode* const vnx_native_type_code_PlotNFT_lock_return = vnx::get_type_code(vnx::Hash64(0xb56527c854e45f09ull));
 const vnx::TypeCode* const vnx_native_type_code_PlotNFT_lock_pool = vnx::get_type_code(vnx::Hash64(0xb607c281c752c61aull));
 const vnx::TypeCode* const vnx_native_type_code_PlotNFT_lock_pool_return = vnx::get_type_code(vnx::Hash64(0x71c9624eb80fcd6full));
+const vnx::TypeCode* const vnx_native_type_code_PlotNFT_set_partial_diff = vnx::get_type_code(vnx::Hash64(0xe1401fa23c077c00ull));
+const vnx::TypeCode* const vnx_native_type_code_PlotNFT_set_partial_diff_return = vnx::get_type_code(vnx::Hash64(0xf001e7bcf024f54aull));
+const vnx::TypeCode* const vnx_native_type_code_PlotNFT_set_reward_addr = vnx::get_type_code(vnx::Hash64(0x5f62381f96e76ea9ull));
+const vnx::TypeCode* const vnx_native_type_code_PlotNFT_set_reward_addr_return = vnx::get_type_code(vnx::Hash64(0xdb326f129708ec2eull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey = vnx::get_type_code(vnx::Hash64(0x9b3cd508d7f41423ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_calc_cost = vnx::get_type_code(vnx::Hash64(0x502d1edce44719b3ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xc2f589dac0e8bcb0ull));
@@ -2808,9 +2826,6 @@ const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_locked = vnx::get
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_locked_return = vnx::get_type_code(vnx::Hash64(0x15fda7c95c9ffb8ull));
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_valid = vnx::get_type_code(vnx::Hash64(0xe97074988602acadull));
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_valid_return = vnx::get_type_code(vnx::Hash64(0xd5a16e6bb7e26611ull));
-const vnx::TypeCode* const vnx_native_type_code_VoteSheet = vnx::get_type_code(vnx::Hash64(0xdaac9a8f3f87ad6aull));
-const vnx::TypeCode* const vnx_native_type_code_VoteSheet_is_valid = vnx::get_type_code(vnx::Hash64(0x8ce2f9bd972e3147ull));
-const vnx::TypeCode* const vnx_native_type_code_VoteSheet_is_valid_return = vnx::get_type_code(vnx::Hash64(0xf5a70ae8dfe86db2ull));
 const vnx::TypeCode* const vnx_native_type_code_WebData = vnx::get_type_code(vnx::Hash64(0xf7c226b211c088c4ull));
 const vnx::TypeCode* const vnx_native_type_code_WebData_calc_cost = vnx::get_type_code(vnx::Hash64(0x3bbbd77da38a1013ull));
 const vnx::TypeCode* const vnx_native_type_code_WebData_calc_cost_return = vnx::get_type_code(vnx::Hash64(0x83c6569262ee4aa5ull));

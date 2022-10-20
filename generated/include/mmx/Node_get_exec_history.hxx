@@ -15,7 +15,8 @@ class MMX_EXPORT Node_get_exec_history : public ::vnx::Value {
 public:
 	
 	::mmx::addr_t address;
-	int32_t since = 0;
+	int32_t limit = 0;
+	vnx::bool_t recent = 0;
 	
 	typedef ::vnx::Value Super;
 	
@@ -59,10 +60,11 @@ public:
 
 template<typename T>
 void Node_get_exec_history::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Node_get_exec_history>(2);
+	_visitor.template type_begin<Node_get_exec_history>(3);
 	_visitor.type_field("address", 0); _visitor.accept(address);
-	_visitor.type_field("since", 1); _visitor.accept(since);
-	_visitor.template type_end<Node_get_exec_history>(2);
+	_visitor.type_field("limit", 1); _visitor.accept(limit);
+	_visitor.type_field("recent", 2); _visitor.accept(recent);
+	_visitor.template type_end<Node_get_exec_history>(3);
 }
 
 

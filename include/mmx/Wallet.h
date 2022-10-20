@@ -97,7 +97,7 @@ protected:
 	std::vector<tx_entry_t> get_history(const uint32_t& index, const int32_t& since,
 										const vnx::optional<tx_type_e>& type, const vnx::optional<addr_t>& currency) const override;
 
-	std::vector<tx_log_entry_t> get_tx_history(const uint32_t& index, const int32_t& limit, const uint32_t& offset) const override;
+	std::vector<tx_log_entry_t> get_tx_log(const uint32_t& index, const int32_t& limit, const uint32_t& offset) const override;
 
 	balance_t get_balance(const uint32_t& index, const addr_t& currency) const override;
 
@@ -109,6 +109,10 @@ protected:
 	std::map<addr_t, balance_t> get_contract_balances(const addr_t& address) const override;
 
 	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts(const uint32_t& index) const override;
+
+	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts_owned(const uint32_t& index) const override;
+
+	vector<offer_data_t> get_offers(const uint32_t& index, const std::string& state) const override;
 
 	addr_t get_address(const uint32_t& index, const uint32_t& offset) const override;
 

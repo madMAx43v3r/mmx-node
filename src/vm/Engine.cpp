@@ -305,17 +305,6 @@ var_t* Engine::write(std::unique_ptr<var_t>& var, const uint64_t* dst, const var
 
 void Engine::push_back(const uint64_t dst, const var_t& var)
 {
-	if(var.type == TYPE_ARRAY) {
-		const auto& array = (const array_t&)var;
-		if(dst == array.address) {
-			throw std::logic_error("dst == src");
-		}
-		for(uint64_t i = 0; i < array.size; ++i) {
-			push_back(dst, read_entry_fail(array.address, i));
-			check_gas();
-		}
-		return;
-	}
 	auto& array = read_fail<array_t>(dst, TYPE_ARRAY);
 	if(array.size >= std::numeric_limits<uint32_t>::max()) {
 		throw std::runtime_error("push_back overflow at " + to_hex(dst));
@@ -618,13 +607,8 @@ void Engine::init()
 	for(auto iter = memory.lower_bound(1); iter != memory.lower_bound(MEM_EXTERN); ++iter) {
 		key_map.emplace(iter->second.get(), iter->first);
 	}
-	if(!read(MEM_HEAP + GLOBAL_HAVE_INIT)) {
-		assign(MEM_HEAP + GLOBAL_HAVE_INIT, std::make_unique<var_t>(TYPE_TRUE))->pin();
+	if(!read(MEM_HEAP + GLOBAL_NEXT_ALLOC)) {
 		assign(MEM_HEAP + GLOBAL_NEXT_ALLOC, std::make_unique<uint_t>(MEM_HEAP + GLOBAL_DYNAMIC_START))->pin();
-		assign(MEM_HEAP + GLOBAL_LOG_HISTORY, std::make_unique<array_t>())->pin();
-		assign(MEM_HEAP + GLOBAL_SEND_HISTORY, std::make_unique<array_t>())->pin();
-		assign(MEM_HEAP + GLOBAL_MINT_HISTORY, std::make_unique<array_t>())->pin();
-		assign(MEM_HEAP + GLOBAL_EVENT_HISTORY, std::make_unique<array_t>())->pin();
 	}
 	have_init = true;
 }
@@ -765,6 +749,23 @@ void Engine::concat(const uint64_t dst, const uint64_t lhs, const uint64_t rhs)
 			::memcpy(res->data(L.size), R.data(), R.size);
 			res->size = size;
 			assign(dst, std::move(res));
+			break;
+		}
+		case TYPE_ARRAY: {
+			if(dst == lhs || dst == rhs) {
+				throw std::logic_error("dst == src");
+			}
+			const auto& L = (const array_t&)lvar;
+			const auto& R = (const array_t&)rvar;
+			assign(dst, std::make_unique<array_t>());
+			for(uint64_t i = 0; i < L.size; ++i) {
+				push_back(dst, read_entry_fail(L.address, i));
+				check_gas();
+			}
+			for(uint64_t i = 0; i < R.size; ++i) {
+				push_back(dst, read_entry_fail(R.address, i));
+				check_gas();
+			}
 			break;
 		}
 		default:
@@ -939,8 +940,11 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 
 void Engine::log(const uint64_t level, const uint64_t msg)
 {
+	if(!read(MEM_HEAP + GLOBAL_LOG_HISTORY)) {
+		assign(MEM_HEAP + GLOBAL_LOG_HISTORY, std::make_unique<array_t>())->pin();
+	}
 	const auto entry = alloc();
-	write(entry, array_t());
+	assign(entry, std::make_unique<array_t>());
 	push_back(entry, MEM_EXTERN + EXTERN_TXID);
 	push_back(entry, uint_t(level));
 	push_back(entry, msg);
@@ -949,8 +953,11 @@ void Engine::log(const uint64_t level, const uint64_t msg)
 
 void Engine::event(const uint64_t name, const uint64_t data)
 {
+	if(!read(MEM_HEAP + GLOBAL_EVENT_HISTORY)) {
+		assign(MEM_HEAP + GLOBAL_EVENT_HISTORY, std::make_unique<array_t>())->pin();
+	}
 	const auto entry = alloc();
-	write(entry, array_t());
+	assign(entry, std::make_unique<array_t>());
 	push_back(entry, MEM_EXTERN + EXTERN_TXID);
 	push_back(entry, name);
 	push_back(entry, data);

@@ -86,7 +86,9 @@ public:
 	
 	std::vector<std::shared_ptr<const ::mmx::Contract>> get_contracts(const std::vector<::mmx::addr_t>& addresses = {});
 	
-	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts_by(const std::vector<::mmx::addr_t>& addresses = {});
+	std::vector<::mmx::addr_t> get_contracts_by(const std::vector<::mmx::addr_t>& addresses = {});
+	
+	std::vector<::mmx::addr_t> get_contracts_owned_by(const std::vector<::mmx::addr_t>& addresses = {});
 	
 	std::shared_ptr<const ::mmx::Transaction> get_transaction(const ::mmx::hash_t& id = ::mmx::hash_t(), const vnx::bool_t& include_pending = 0);
 	
@@ -106,7 +108,7 @@ public:
 	
 	std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128> get_all_balances(const std::vector<::mmx::addr_t>& addresses = {});
 	
-	std::vector<::mmx::exec_entry_t> get_exec_history(const ::mmx::addr_t& address = ::mmx::addr_t(), const int32_t& since = 0);
+	std::vector<::mmx::exec_entry_t> get_exec_history(const ::mmx::addr_t& address = ::mmx::addr_t(), const int32_t& limit = 0, const vnx::bool_t& recent = 0);
 	
 	std::map<std::string, ::mmx::vm::varptr_t> read_storage(const ::mmx::addr_t& contract = ::mmx::addr_t(), const uint32_t& height = -1);
 	
@@ -130,11 +132,15 @@ public:
 	
 	::mmx::offer_data_t get_offer(const ::mmx::addr_t& address = ::mmx::addr_t());
 	
-	std::vector<::mmx::offer_data_t> get_offers(const uint32_t& since = 0, const vnx::bool_t& is_open = 0);
+	std::vector<::mmx::offer_data_t> get_offers(const uint32_t& since = 0, const std::string& state = "");
 	
-	std::vector<::mmx::offer_data_t> get_recent_offers(const int32_t& limit = 100, const vnx::bool_t& is_open = true);
+	std::vector<::mmx::offer_data_t> get_offers_by(const std::vector<::mmx::addr_t>& owners = {}, const std::string& state = "");
 	
-	std::vector<::mmx::offer_data_t> get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid = nullptr, const vnx::optional<::mmx::addr_t>& ask = nullptr, const int32_t& limit = 100, const vnx::bool_t& is_open = true);
+	std::vector<::mmx::offer_data_t> fetch_offers(const std::vector<::mmx::addr_t>& addresses = {}, const std::string& state = "");
+	
+	std::vector<::mmx::offer_data_t> get_recent_offers(const int32_t& limit = 100, const std::string& state = "OPEN");
+	
+	std::vector<::mmx::offer_data_t> get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid = nullptr, const vnx::optional<::mmx::addr_t>& ask = nullptr, const int32_t& limit = 100, const std::string& state = "OPEN");
 	
 	std::vector<::mmx::offer_data_t> get_trade_history(const int32_t& limit = 100, const uint32_t& since = 0);
 	

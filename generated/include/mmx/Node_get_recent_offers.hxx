@@ -14,7 +14,7 @@ class MMX_EXPORT Node_get_recent_offers : public ::vnx::Value {
 public:
 	
 	int32_t limit = 100;
-	vnx::bool_t is_open = true;
+	std::string state = "OPEN";
 	
 	typedef ::vnx::Value Super;
 	
@@ -60,7 +60,7 @@ template<typename T>
 void Node_get_recent_offers::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<Node_get_recent_offers>(2);
 	_visitor.type_field("limit", 0); _visitor.accept(limit);
-	_visitor.type_field("is_open", 1); _visitor.accept(is_open);
+	_visitor.type_field("state", 1); _visitor.accept(state);
 	_visitor.template type_end<Node_get_recent_offers>(2);
 }
 
