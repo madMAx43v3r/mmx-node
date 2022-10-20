@@ -46,7 +46,7 @@ const enLocale = {
         "exchange": "Exchange",
         "settings": "Settings",
         "logout": "Logout"
-    },    
+    },
 
     "node_common": {
         "vdf_speed": "VDF Speed",
@@ -74,7 +74,7 @@ const enLocale = {
         "total_farm_size": "Total Farm Size"
     },
 
-    "node_log": {   
+    "node_log": {
         "terminal": "Terminal",
         "router": "Router",
         "farmer": "Farmer",
@@ -132,7 +132,7 @@ const enLocale = {
         "destination_address": "Destination Address",
         "address_input": "Address Input",
         "currency": "Currency",
-        "send": "Send",
+        "send": "Send"
     },
 
     "balance_table": {
@@ -206,7 +206,7 @@ const enLocale = {
 
         "inputs": "Inputs",
         "outputs": "Outputs",
-        "operations": "Operations",
+        "operations": "Operations"
     },
 
     "transaction_view": {
@@ -226,7 +226,7 @@ const enLocale = {
     },
 
     "create_contract_menu": {
-        "contract_type": "Contract Type",
+        "contract_type": "Contract Type"
     },
 
     "account_contract_summary": {
@@ -310,7 +310,7 @@ const enLocale = {
 
     "login": {
         "password_label": "Password (see PASSWD file)",
-        "login": "Login",
+        "login": "Login"
     },
 
     "account_history_form": {

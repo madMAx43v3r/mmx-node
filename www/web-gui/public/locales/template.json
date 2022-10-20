@@ -9,25 +9,35 @@
         "blocks": "Blocks",
         "balance": "Balance",
         "token": "Token",
+        "symbol": "Symbol",
         "hash": "Hash",
         "reward": "Reward",
         "amount": "Amount",
         "address": "Address",
+        "contract": "Contract",
         "type": "Type",
         "time": "Time",
         "fee": "Fee",
+        "status": "Status",
         "pending": "pending",
+        "expired": "expired",
+        "failed": "failed",
+        
         "confirm": "Confirm",
         "deploy": "Deploy",
         "create": "Create",
+        "remove": "Remove",
+
         "transaction_has_been_sent": "Transaction has been sent",
         "failed_with": "Failed with",
         "deployed_as": "Deployed as",
+        "any": "Any",
         "link": "Link"
     },
     "main_menu": {
         "explore": "Explore",
         "market": "Market",
+        "farmer": "Farmer",
         "exchange": "Exchange",
         "settings": "Settings",
         "logout": "Logout"
@@ -35,6 +45,7 @@
     "node_common": {
         "vdf_speed": "VDF Speed",
         "block_reward": "Block Reward",
+        "block_size": "Block Size",
         "tx_fees": "Transaction Fees",
         "netspace": "Netspace"
     },
@@ -47,6 +58,14 @@
         "supply": "Supply",
         "no_addresses": "No. Addresses"
     },
+
+    "farmer_info": {
+        "virtual_balance": "Virtual Balance",
+        "virtual_size": "Virtual Size",
+        "physical_size": "Physical Size",
+        "total_farm_size": "Total Farm Size"
+    },
+
     "node_log": {
         "terminal": "Terminal",
         "router": "Router",
@@ -54,6 +73,12 @@
         "harvester": "Harvester",
         "timelord": "TimeLord"
     },
+
+    "node_log_table": {
+        "module": "Module",
+        "message": "Message"
+    },
+
     "node_peers": {
         "version": "Version",
         "received": "Received",
@@ -78,6 +103,19 @@
         "history": "History",
         "details": "Details"
     },
+
+    "account_addresses": {
+        "index": "#",
+        "n_recv": "N(Recv)",
+        "n_spend": "N(Spend)",
+        "last_recv": "Last Recv",
+        "last_spend": "Last Spend"
+	},
+	
+	"wallet_common": {
+		"enter_passphrase": "Passphrase required"
+	},
+
     "account_send_form": {
         "source_address": "Source Address",
         "destination": "Destination",
@@ -88,8 +126,7 @@
     },
     "balance_table": {
         "locked": "Locked",
-        "spendable": "Spendable",
-        "contract": "Contract"
+        "spendable": "Spendable"
     },
     "account_balance": {
         "reserved": "Reserved"
@@ -142,13 +179,16 @@
     },
     "transaction_view": {
         "transaction": "Transaction",
+        "message": "Message",
         "confirmed": "Confirmed",
         "expires": "Expires",
         "note": "Note",
         "sender": "Sender",
         "cost": "Cost",
         "input": "Input",
-        "output": "Output"
+        "output": "Output",
+
+        "no_such_transaction": "No such transaction!"
     },
     "create_contract_menu": {
         "contract_type": "Contract Type"
@@ -162,13 +202,20 @@
         "enable_timelord": "Enable TimeLord",
         "farmer_reward_address": "Farmer Reward Address",
         "timeLord_reward_address": "TimeLord Reward Address",
-        "reward_address_placeholder": "<default>",
         "restart_needed": "(restart needed to apply)",
         "theme": "Theme",
         "light": "Light",
         "dark": "Dark",
         "opencl_device": "OpenCL Device"
     },
+
+    "wallet_settings": {
+        "token_whitelist": "Token Whitelist",
+        "name": "Name",
+        "token_address": "Token Address",
+        "add_token": "Add Token"
+    },
+
     "create_locked_contract": {
         "owner_address": "Owner Address",
         "unlock_height": "Unlock at Chain Height"
@@ -191,8 +238,12 @@
         "create_account": "Create Account"
     },
     "create_wallet": {
+        "account_name": "Account Name",
+        "number_of_addresses": "Number of Addresses",
         "use_custom_seed": "Use Custom Seed",
-        "seed_hash": "Seed Hash (optional, hex string, 64 chars)",
+        "use_passphrase": "With Passphrase",
+        "seed_words": "Mnemonic Seed Words (optional, 24 words)",
+        "passphrase": "Passphrase (secure password, 10+ characters)",
         "placeholder": "<random>",
         "create_wallet": "Create Wallet"
     },
@@ -215,12 +266,28 @@
         "login": "Login"
     },
     "account_history_form": {
-        "any": "Any",
         "spend": "Spend",
         "receive": "Receive",
         "reward": "Reward",
         "tx_fee": "TX Fee"
     },
+
+    "farmer_menu": {
+        "plots": "Plots",
+        "blocks": "Blocks",
+        "proofs": "Proofs"
+    },
+
+    "farmer_plots": {
+        "type": "Type",
+        "count": "Count",
+        "reload_plots": "Reload Plots"
+    },
+
+    "farmer_plot_dirs": {
+        "path": "Path"
+    },
+
     "$vuetify": {
         "dataIterator": {
             "loadingText": "Loading items..."
