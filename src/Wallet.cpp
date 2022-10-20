@@ -25,20 +25,6 @@
 
 namespace mmx {
 
-inline std::string get_finger_print(const hash_t& seed_value, const vnx::optional<std::string>& passphrase)
-{
-	hash_t pass_hash;
-	if(passphrase) {
-		pass_hash = hash_t("MMX/fingerprint/" + *passphrase);
-	}
-	hash_t hash;
-	for(int i = 0; i < 16384; ++i) {
-		hash = hash_t(hash + seed_value + pass_hash);
-	}
-	return std::to_string(uint32_t(hash.to_uint256()));
-}
-
-
 Wallet::Wallet(const std::string& _vnx_name)
 	:	WalletBase(_vnx_name)
 {
@@ -828,18 +814,13 @@ void Wallet::lock(const uint32_t& index)
 
 void Wallet::unlock(const uint32_t& index, const std::string& passphrase)
 {
-	auto wallet = get_wallet(index);
+	const auto wallet = get_wallet(index);
 	wallet->unlock(passphrase);
 
 	if(wallet->config.with_passphrase) {
-		const auto key_path = storage_path + wallet->config.key_file;
-		if(auto key_file = vnx::read_from_file<KeyFile>(storage_path + wallet->config.key_file)) {
-			auto info = WalletFile::create();
-			info->addresses = wallet->get_all_addresses();
-			vnx::write_to_file(database_path + "info_" + wallet->config.finger_print + ".dat", info);
-		} else {
-			log(WARN) << "Failed to read key file: " << key_path;
-		}
+		auto info = WalletFile::create();
+		info->addresses = wallet->get_all_addresses();
+		vnx::write_to_file(database_path + "info_" + wallet->config.finger_print + ".dat", info);
 	}
 }
 

@@ -166,6 +166,20 @@ uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params, std::shar
 }
 
 inline
+std::string get_finger_print(const hash_t& seed_value, const vnx::optional<std::string>& passphrase)
+{
+	hash_t pass_hash;
+	if(passphrase) {
+		pass_hash = hash_t("MMX/fingerprint/" + *passphrase);
+	}
+	hash_t hash;
+	for(int i = 0; i < 16384; ++i) {
+		hash = hash_t(hash + seed_value + pass_hash);
+	}
+	return std::to_string(uint32_t(hash.to_uint256()));
+}
+
+inline
 void safe_acc(uint64_t& lhs, const uint64_t& rhs)
 {
 	const auto tmp = uint128_t(lhs) + rhs;

@@ -68,7 +68,14 @@ public:
 		unlock(std::string());
 	}
 
-	void unlock(const std::string& passphrase) {
+	void unlock(const std::string& passphrase)
+	{
+		if(config.with_passphrase) {
+			const auto finger_print = get_finger_print(seed_value, passphrase);
+			if(finger_print != config.finger_print) {
+				throw std::logic_error("invalid passphrase");
+			}
+		}
 		unlock(hash_t("MMX/seed/" + passphrase));
 	}
 
