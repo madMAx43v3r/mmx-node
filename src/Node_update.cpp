@@ -34,65 +34,26 @@ void Node::verify_vdfs()
 	}
 }
 
-void Node::add_dummy_blocks(std::shared_ptr<const BlockHeader> prev)
+void Node::verify_proofs()
 {
-	if(auto vdf_point = find_next_vdf_point(prev))
-	{
-		std::vector<std::shared_ptr<const ProofOfSpace>> proofs = {nullptr};
-		{
-			hash_t vdf_challenge;
-			if(find_vdf_challenge(prev, vdf_challenge, 1)) {
-				const auto challenge = get_challenge(prev, vdf_challenge, 1);
-				for(const auto& entry : find_proof(challenge)) {
-					proofs.push_back(entry.second.proof);
-				}
-			}
-		}
-		const auto diff_block = get_diff_header(prev, 1);
+	std::vector<std::shared_ptr<const ProofResponse>> try_again;
 
-		for(const auto& proof : proofs) {
-			auto block = Block::create();
-			block->version = 0;
-			block->prev = prev->hash;
-			block->height = prev->height + 1;
-			block->proof = proof;
-			block->time_diff = prev->time_diff;
-			block->space_diff = calc_new_space_diff(params, prev->space_diff, proof ? proof->score : params->score_threshold);
-			block->vdf_iters = vdf_point->vdf_iters;
-			block->vdf_output = vdf_point->output;
-			block->weight = calc_block_weight(params, diff_block, block, false);
-			block->total_weight = prev->total_weight + block->weight;
-			block->finalize();
-			add_block(block);
+	for(const auto& response : pending_proofs) {
+		try {
+			if(!verify(response)) {
+				try_again.push_back(response);
+			}
+		} catch(const std::exception& ex) {
+			log(WARN) << "Got invalid proof for height " << (response->request ? response->request->height : 0) << ": " << ex.what();
+		} catch(...) {
+			// ignore
 		}
 	}
+	pending_proofs = std::move(try_again);
 }
 
-void Node::update()
+void Node::pre_validate_blocks()
 {
-	const auto time_begin = vnx::get_wall_time_millis();
-
-	verify_vdfs();
-
-	// verify proof responses
-	{
-		std::vector<std::shared_ptr<const ProofResponse>> try_again;
-
-		for(const auto& response : pending_proofs) {
-			try {
-				if(!verify(response)) {
-					try_again.push_back(response);
-				}
-			} catch(const std::exception& ex) {
-				log(WARN) << "Got invalid proof for height " << (response->request ? response->request->height : 0) << ": " << ex.what();
-			} catch(...) {
-				// ignore
-			}
-		}
-		pending_proofs = std::move(try_again);
-	}
-
-	// pre-validate new blocks
 	for(const auto& fork : pending_forks)
 	{
 		const auto& block = fork->block;
@@ -110,18 +71,18 @@ void Node::update()
 			fork->is_invalid = true;
 		}
 	}
-	{
-		const auto list = std::move(pending_forks);
-		pending_forks.clear();
+	const auto list = std::move(pending_forks);
+	pending_forks.clear();
 
-		for(const auto& fork : list) {
-			if(!fork->is_invalid) {
-				add_fork(fork);
-			}
+	for(const auto& fork : list) {
+		if(!fork->is_invalid) {
+			add_fork(fork);
 		}
 	}
+}
 
-	// verify proof where possible
+void Node::verify_block_proofs()
+{
 	std::vector<std::shared_ptr<fork_t>> to_verify;
 	{
 		const auto root = get_root();
@@ -190,6 +151,54 @@ void Node::update()
 			fork->is_invalid = true;
 		}
 	}
+}
+
+void Node::add_dummy_blocks(std::shared_ptr<const BlockHeader> prev)
+{
+	if(auto vdf_point = find_next_vdf_point(prev))
+	{
+		std::vector<std::shared_ptr<const ProofOfSpace>> proofs = {nullptr};
+		{
+			hash_t vdf_challenge;
+			if(find_vdf_challenge(prev, vdf_challenge, 1)) {
+				const auto challenge = get_challenge(prev, vdf_challenge, 1);
+				for(const auto& entry : find_proof(challenge)) {
+					proofs.push_back(entry.second.proof);
+				}
+			}
+		}
+		const auto diff_block = get_diff_header(prev, 1);
+
+		for(const auto& proof : proofs) {
+			auto block = Block::create();
+			block->version = 0;
+			block->prev = prev->hash;
+			block->height = prev->height + 1;
+			block->proof = proof;
+			block->time_diff = prev->time_diff;
+			block->space_diff = calc_new_space_diff(params, prev->space_diff, proof ? proof->score : params->score_threshold);
+			block->vdf_iters = vdf_point->vdf_iters;
+			block->vdf_output = vdf_point->output;
+			block->weight = calc_block_weight(params, diff_block, block, false);
+			block->total_weight = prev->total_weight + block->weight;
+			block->finalize();
+			add_block(block);
+		}
+	}
+}
+
+void Node::update()
+{
+	const auto time_begin = vnx::get_wall_time_millis();
+
+	verify_vdfs();
+
+	verify_proofs();
+
+	pre_validate_blocks();
+
+	verify_block_proofs();
+
 	const auto prev_peak = get_peak();
 	std::shared_ptr<const BlockHeader> forked_at;
 

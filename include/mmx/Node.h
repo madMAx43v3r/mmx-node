@@ -268,6 +268,9 @@ private:
 	void update();
 
 	void verify_vdfs();
+	void verify_proofs();
+	void pre_validate_blocks();
+	void verify_block_proofs();
 
 	void print_stats();
 
