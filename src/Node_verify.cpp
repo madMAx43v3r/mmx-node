@@ -55,30 +55,25 @@ bool Node::verify(std::shared_ptr<const ProofResponse> value)
 	if(!vdf_block) {
 		return false;
 	}
-	try {
-		if(!value->is_valid()) {
-			throw std::logic_error("invalid response");
-		}
-		const auto diff_block = get_diff_header(vdf_block, params->challenge_delay);
-		const auto challenge = hash_t(diff_block->hash + vdf_block->vdf_output[1]);
-		if(request->challenge != challenge) {
-			throw std::logic_error("invalid challenge");
-		}
-		if(request->space_diff != diff_block->space_diff) {
-			throw std::logic_error("invalid space_diff");
-		}
-		verify_proof(value->proof, challenge, diff_block);
-
-		if(value->proof->score >= params->score_threshold) {
-			throw std::logic_error("invalid score");
-		}
-		add_proof(request->height, challenge, value->proof, value->farmer_addr);
-
-		publish(value, output_verified_proof);
+	if(!value->is_valid()) {
+		throw std::logic_error("invalid response");
 	}
-	catch(const std::exception& ex) {
-		log(WARN) << "Got invalid proof: " << ex.what();
+	const auto diff_block = get_diff_header(vdf_block, params->challenge_delay);
+	const auto challenge = hash_t(diff_block->hash + vdf_block->vdf_output[1]);
+	if(request->challenge != challenge) {
+		throw std::logic_error("invalid challenge");
 	}
+	if(request->space_diff != diff_block->space_diff) {
+		throw std::logic_error("invalid space_diff");
+	}
+	verify_proof(value->proof, challenge, diff_block);
+
+	if(value->proof->score >= params->score_threshold) {
+		throw std::logic_error("invalid score");
+	}
+	add_proof(request->height, challenge, value->proof, value->farmer_addr);
+
+	publish(value, output_verified_proof);
 	return true;
 }
 

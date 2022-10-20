@@ -74,21 +74,27 @@ void Node::update()
 
 	verify_vdfs();
 
-	// TODO: parallel for
 	// verify proof responses
-	for(auto iter = pending_proofs.begin(); iter != pending_proofs.end();) {
-		if(verify(*iter)) {
-			iter = pending_proofs.erase(iter);
-		} else {
-			iter++;
+	{
+		std::vector<std::shared_ptr<const ProofResponse>> try_again;
+
+		for(const auto& response : pending_proofs) {
+			try {
+				if(!verify(response)) {
+					try_again.push_back(response);
+				}
+			} catch(const std::exception& ex) {
+				log(WARN) << "Got invalid proof for height " << (response->request ? response->request->height : 0) << ": " << ex.what();
+			} catch(...) {
+				// ignore
+			}
 		}
+		pending_proofs = std::move(try_again);
 	}
 
 	// pre-validate new blocks
-#pragma omp parallel for if(!is_synced)
-	for(int i = 0; i < int(pending_forks.size()); ++i)
+	for(const auto& fork : pending_forks)
 	{
-		const auto& fork = pending_forks[i];
 		const auto& block = fork->block;
 		try {
 			if(!block->is_valid()) {
@@ -98,7 +104,7 @@ void Node::update()
 		}
 		catch(const std::exception& ex) {
 			fork->is_invalid = true;
-			log(WARN) << "Pre-validation failed for a block at height " << block->height << " with: " << ex.what();
+			log(WARN) << "Pre-validation failed for a block at height " << block->height << ": " << ex.what();
 		}
 		catch(...) {
 			fork->is_invalid = true;
@@ -179,7 +185,7 @@ void Node::update()
 			}
 		} catch(const std::exception& ex) {
 			fork->is_invalid = true;
-			log(WARN) << "Proof verification failed for a block at height " << block->height << " with: " << ex.what();
+			log(WARN) << "Proof verification failed for a block at height " << block->height << ": " << ex.what();
 		} catch(...) {
 			fork->is_invalid = true;
 		}
