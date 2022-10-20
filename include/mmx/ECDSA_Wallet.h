@@ -427,6 +427,9 @@ public:
 		if(is_locked()) {
 			throw std::logic_error("wallet is locked");
 		}
+		if(options.note) {
+			tx->note = *options.note;
+		}
 		if(options.expire_at) {
 			tx->expires = std::min(tx->expires, *options.expire_at);
 		} else if(options.expire_delta) {
