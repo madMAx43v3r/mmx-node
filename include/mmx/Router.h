@@ -247,7 +247,9 @@ private:
 		hash_t our_hash;
 	} peer_check;
 
+	std::shared_ptr<vnx::ThreadPool> threads;
 	vnx::ThreadPool* connect_threads = nullptr;
+
 	std::shared_ptr<NodeAsyncClient> node;
 	std::shared_ptr<const ChainParams> params;
 

@@ -154,6 +154,7 @@ void Router::main()
 	http = std::make_shared<vnx::addons::HttpInterface<Router>>(this, vnx_name);
 	add_async_client(http);
 
+	threads = std::make_shared<vnx::ThreadPool>(num_threads, 1000);
 	connect_threads = new vnx::ThreadPool(-1);
 
 	set_timer_millis(send_interval_ms, std::bind(&Router::send, this));
@@ -166,6 +167,8 @@ void Router::main()
 	connect();
 
 	Super::main();
+
+	threads->close();
 
 	save_data();
 }
@@ -996,115 +999,137 @@ void Router::ban_peer(uint64_t client, const std::string& reason)
 
 void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> value)
 {
-	if(!value->is_valid(params)) {
-		return;
-	}
 	const auto hash = value->content_hash;
 	const auto is_new = receive_msg_hash(hash, client);
-	if(is_new) {
+
+	threads->add_task([=]() {
+		if(!value->is_valid(params)) {
+			return;
+		}
 		try {
 			value->validate();
 		} catch(const std::exception& ex) {
-			ban_peer(client, std::string("they sent us an invalid VDF: ") + ex.what());
+			const auto msg = std::string("they sent us an invalid VDF: ") + ex.what();
+			add_task([=]() {
+				ban_peer(client, msg);
+			});
 			return;
 		}
-	}
-	if(auto peer = find_peer(client)) {
-		if(peer->credits >= vdf_relay_cost) {
-			if(relay_msg_hash(hash)) {
-				peer->credits -= vdf_relay_cost;
-				relay(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
-				vdf_counter++;
+		add_task([=]() {
+			if(auto peer = find_peer(client)) {
+				if(peer->credits >= vdf_relay_cost) {
+					if(relay_msg_hash(hash)) {
+						peer->credits -= vdf_relay_cost;
+						relay(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
+						vdf_counter++;
+					}
+				} else {
+					log(DEBUG) << "Peer " << peer->address << " has insufficient credits to relay VDF for height " << value->height << ", verifying first.";
+				}
 			}
-		} else {
-			log(DEBUG) << "Peer " << peer->address << " has insufficient credits to relay VDF for height " << value->height << ", verifying first.";
-		}
-	}
-	if(is_new) {
-		publish(value, output_vdfs);
-	}
+			if(is_new) {
+				publish(value, output_vdfs);
+			}
+		});
+	});
 }
 
 void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 {
-	if(!block->is_valid() || !block->farmer_sig || block->tx_cost > params->max_block_cost) {
-		return;
-	}
 	const auto hash = block->content_hash;
 	const auto is_new = receive_msg_hash(hash, client);
-	if(is_new) {
+
+	threads->add_task([=]() {
+		if(!block->is_valid() || !block->farmer_sig || block->tx_cost > params->max_block_cost) {
+			return;
+		}
 		try {
 			block->validate();
 		} catch(const std::exception& ex) {
-			ban_peer(client, std::string("they sent us an invalid block: ") + ex.what());
+			const auto msg = std::string("they sent us an invalid block: ") + ex.what();
+			add_task([=]() {
+				ban_peer(client, msg);
+			});
 			return;
 		}
-	}
-	const auto farmer_id = hash_t(block->proof->farmer_key);
-	const auto iter = farmer_credits.find(farmer_id);
-	if(iter != farmer_credits.end()) {
-		if(iter->second >= block_relay_cost) {
-			if(relay_msg_hash(hash)) {
-				iter->second -= block_relay_cost;
-				relay(block, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
-				block_counter++;
+		add_task([=]() {
+			const auto farmer_id = hash_t(block->proof->farmer_key);
+			const auto iter = farmer_credits.find(farmer_id);
+			if(iter != farmer_credits.end()) {
+				if(iter->second >= block_relay_cost) {
+					if(relay_msg_hash(hash)) {
+						iter->second -= block_relay_cost;
+						relay(block, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
+						block_counter++;
+					}
+				} else {
+					log(DEBUG) << "A farmer has insufficient credits to relay block at height " << block->height << ", verifying first.";
+				}
+			} else {
+				log(DEBUG) << "Got block from an unknown farmer at height " << block->height << ", verifying first.";
 			}
-		} else {
-			log(DEBUG) << "A farmer has insufficient credits to relay block at height " << block->height << ", verifying first.";
-		}
-	} else {
-		log(DEBUG) << "Got block from an unknown farmer at height " << block->height << ", verifying first.";
-	}
-	if(is_new) {
-		publish(block, output_blocks);
-	}
+			if(is_new) {
+				publish(block, output_blocks);
+			}
+		});
+	});
 }
 
 void Router::on_proof(uint64_t client, std::shared_ptr<const ProofResponse> value)
 {
-	if(!value->is_valid()) {
-		return;
-	}
 	const auto hash = value->content_hash;
 	const auto is_new = receive_msg_hash(hash, client);
-	if(is_new) {
+
+	threads->add_task([=]() {
+		if(!value->is_valid()) {
+			return;
+		}
 		try {
 			value->validate();
 		} catch(const std::exception& ex) {
-			ban_peer(client, std::string("they sent us invalid proof: ") + ex.what());
+			const auto msg = std::string("they sent us invalid proof: ") + ex.what();
+			add_task([=]() {
+				ban_peer(client, msg);
+			});
 			return;
 		}
-	}
-	const auto farmer_id = hash_t(value->proof->farmer_key);
-	const auto iter = farmer_credits.find(farmer_id);
-	if(iter != farmer_credits.end()) {
-		if(iter->second >= proof_relay_cost) {
-			if(relay_msg_hash(hash)) {
-				iter->second -= proof_relay_cost;
-				relay(value, hash, {node_type_e::FULL_NODE});
-				proof_counter++;
+		add_task([=]() {
+			const auto farmer_id = hash_t(value->proof->farmer_key);
+			const auto iter = farmer_credits.find(farmer_id);
+			if(iter != farmer_credits.end()) {
+				if(iter->second >= proof_relay_cost) {
+					if(relay_msg_hash(hash)) {
+						iter->second -= proof_relay_cost;
+						relay(value, hash, {node_type_e::FULL_NODE});
+						proof_counter++;
+					}
+				} else {
+					log(DEBUG) << "A farmer has insufficient credits to relay proof for height "
+							<< value->request->height << " with score " << value->proof->score << ", verifying first.";
+				}
+			} else {
+				log(DEBUG) << "Got proof from an unknown farmer at height " << value->request->height
+						<< " with score " << value->proof->score << ", verifying first.";
 			}
-		} else {
-			log(DEBUG) << "A farmer has insufficient credits to relay proof for height "
-					<< value->request->height << " with score " << value->proof->score << ", verifying first.";
-		}
-	} else {
-		log(DEBUG) << "Got proof from an unknown farmer at height " << value->request->height
-				<< " with score " << value->proof->score << ", verifying first.";
-	}
-	if(is_new) {
-		publish(value, output_proof);
-	}
+			if(is_new) {
+				publish(value, output_proof);
+			}
+		});
+	});
 }
 
 void Router::on_transaction(uint64_t client, std::shared_ptr<const Transaction> tx)
 {
-	if(!tx->is_valid(params) || tx->exec_result) {
-		return;
-	}
-	if(receive_msg_hash(tx->content_hash, client)) {
-		publish(tx, output_transactions);
-	}
+	const auto is_new = receive_msg_hash(tx->content_hash, client);
+
+	threads->add_task([=]() {
+		if(!tx->is_valid(params) || tx->exec_result) {
+			return;
+		}
+		if(is_new) {
+			publish(tx, output_transactions);
+		}
+	});
 }
 
 void Router::on_recv_note(uint64_t client, std::shared_ptr<const ReceiveNote> note)
