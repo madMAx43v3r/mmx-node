@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <memory>
+#include <atomic>
 #include <stdexcept>
 
 
@@ -61,13 +62,14 @@ enum vartype_e : uint8_t {
 
 struct var_t {
 
-	uint32_t ref_count = 0;
+	std::atomic<uint32_t> ref_count {0};
 
 	uint8_t flags = 0;
 
 	vartype_e type = TYPE_NIL;
 
 	var_t() = default;
+	var_t(const var_t& var) : ref_count(var.ref_count.load()), flags(var.flags), type(var.type) {}
 	var_t(const vartype_e& type) : type(type) {}
 	var_t(const vartype_e& type, const uint8_t& flags) : flags(flags), type(type) {}
 
@@ -75,19 +77,15 @@ struct var_t {
 		type = value ? TYPE_TRUE : TYPE_FALSE;
 	}
 	void addref() {
-		if(ref_count == std::numeric_limits<decltype(ref_count)>::max()) {
-			throw std::runtime_error("addref() overflow");
-		}
-		ref_count++;
 		flags |= FLAG_DIRTY;
+		ref_count++;
 	}
 	bool unref() {
 		if(!ref_count) {
-			throw std::logic_error("unref() underflow");
+			throw std::logic_error("var_t::unref() underflow");
 		}
-		ref_count--;
 		flags |= FLAG_DIRTY;
-		return ref_count == 0;
+		return (ref_count--) == 1;
 	}
 	var_t* pin() {
 		if(!ref_count) {
@@ -142,7 +140,7 @@ struct binary_t : var_t {
 
 	static std::unique_ptr<binary_t> clone(const binary_t& src) {
 		auto bin = alloc(src);
-		bin->ref_count = src.ref_count;
+		bin->ref_count = src.ref_count.load();
 		bin->flags = src.flags;
 		return bin;
 	}

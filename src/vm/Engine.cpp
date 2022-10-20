@@ -109,7 +109,7 @@ var_t* Engine::assign(std::unique_ptr<var_t>& var, std::unique_ptr<var_t> value)
 			throw std::logic_error("read-only memory");
 		}
 		value->flags = var->flags;
-		value->ref_count = var->ref_count;
+		value->ref_count = var->ref_count.load();
 		clear(var.get());
 	}
 	var = std::move(value);
