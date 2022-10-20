@@ -162,6 +162,7 @@ void Router::main()
 	set_timer_millis(update_interval_ms, std::bind(&Router::update, this));
 	set_timer_millis(connect_interval_ms, std::bind(&Router::connect, this));
 	set_timer_millis(discover_interval * 1000, std::bind(&Router::discover, this));
+	set_timer_millis(fork_check_interval * 1000, std::bind(&Router::exec_fork_check, this));
 	set_timer_millis(5 * 60 * 1000, std::bind(&Router::save_data, this));
 
 	connect();
@@ -814,8 +815,10 @@ void Router::query()
 		send_all(req, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE}, false);
 	}
 	last_query_ms = now_ms;
+}
 
-	// check if we forked off
+void Router::exec_fork_check()
+{
 	node->get_synced_height(
 		[this](const vnx::optional<uint32_t>& sync_height) {
 			if(sync_height) {

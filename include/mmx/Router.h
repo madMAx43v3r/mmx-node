@@ -140,6 +140,8 @@ private:
 
 	void query();
 
+	void exec_fork_check();
+
 	void save_data();
 
 	void add_peer(const std::string& address, const int sock);
