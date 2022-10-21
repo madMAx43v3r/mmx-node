@@ -297,6 +297,7 @@ void Router::fetch_block_async(const hash_t& hash, const vnx::optional<std::stri
 	auto job = std::make_shared<fetch_job_t>();
 	job->hash = hash;
 	job->from_peer = address;
+	job->callback = std::bind(&Router::fetch_block_async_return, this, request_id, std::placeholders::_1);
 	job->start_time_ms = vnx::get_wall_time_millis();
 	fetch_jobs[request_id] = job;
 	((Router*)this)->process();
@@ -307,6 +308,7 @@ void Router::fetch_block_at_async(const uint32_t& height, const std::string& add
 	auto job = std::make_shared<fetch_job_t>();
 	job->height = height;
 	job->from_peer = address;
+	job->callback = std::bind(&Router::fetch_block_at_async_return, this, request_id, std::placeholders::_1);
 	job->start_time_ms = vnx::get_wall_time_millis();
 	fetch_jobs[request_id] = job;
 	((Router*)this)->process();
@@ -596,13 +598,13 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				if(auto result = std::dynamic_pointer_cast<const Node_get_block_at_return>(ret->result)) {
 					if(job->height) {
 						job->is_done = true;
-						fetch_block_at_async_return(request_id, result->_ret_0);
+						job->callback(result->_ret_0);
 					}
 				} else if(auto result = std::dynamic_pointer_cast<const Node_get_block_return>(ret->result)) {
 					if(job->hash) {
 						if(result->_ret_0 || job->from_peer) {
 							job->is_done = true;
-							fetch_block_async_return(request_id, result->_ret_0);
+							job->callback(result->_ret_0);
 							log(DEBUG) << "Got block " << *job->hash << " by fetching "
 									<< job->pending.size() + job->failed.size() << " times, " << job->failed.size() << " failed, took"
 									<< (now_ms - job->start_time_ms) / 1e3 << " sec";
@@ -672,7 +674,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 			}
 			if(clients.empty() && job->pending.empty()) {
 				job->is_done = true;
-				fetch_block_async_return(request_id, nullptr);
+				job->callback(nullptr);
 				continue;
 			}
 			if(job->pending.size() < min_sync_peers) {

@@ -123,6 +123,7 @@ private:
 		vnx::optional<hash_t> hash;
 		vnx::optional<uint32_t> height;
 		vnx::optional<std::string> from_peer;
+		std::function<void(std::shared_ptr<const Block>)> callback;
 		int64_t start_time_ms = 0;
 		int64_t last_recv_ms = 0;
 		std::unordered_set<uint64_t> failed;
