@@ -72,11 +72,6 @@ int main(int argc, char** argv)
 		module->database_path = root_path + module->database_path;
 		module.start_detached();
 	}
-//	{
-//		vnx::Handle<mmx::exchange::Client> module = new mmx::exchange::Client("ExchClient");
-//		module->storage_path = root_path + module->storage_path;
-//		module.start_detached();
-//	}
 	{
 		vnx::Handle<vnx::addons::FileServer> module = new vnx::addons::FileServer("FileServer_1");
 		module->www_root = "www/web-gui/public/";
