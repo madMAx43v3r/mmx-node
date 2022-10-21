@@ -193,6 +193,7 @@ set(CPACK_NSIS_MENU_LINKS
 "mmx_cmd.cmd" "MMX CMD"
 #"http://localhost:11380/gui/" "MMX Node WebGUI"
 "MmxGui.exe" "MMX Node"
+"MmxPlotter.exe" "MMX Plotter"
 )
 set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
 
