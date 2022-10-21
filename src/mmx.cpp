@@ -1185,7 +1185,7 @@ int main(int argc, char** argv)
 				std::cerr << "Help: mmx node [info | peers | tx | get | call | read | dump | dump_code | fetch | balance | history | offers | sync]" << std::endl;
 			}
 		}
-		else if(module == "farm")
+		else if(module == "farm" || module == "harvester")
 		{
 			std::string node_url = ":11333";
 			vnx::read_config("node", node_url);
@@ -1206,13 +1206,13 @@ int main(int argc, char** argv)
 			mmx::HarvesterClient harvester("Harvester");
 
 			std::shared_ptr<const mmx::FarmInfo> info;
-			try {
+			if(module == "farm") {
 				info = farmer.get_farm_info();
-			} catch(...) {
-				// ignore
+			} else if(module == "harvester") {
+				info = harvester.get_farm_info();
 			}
 			if(!info) {
-				info = harvester.get_farm_info();
+				goto failed;
 			}
 
 			if(command == "info")
@@ -1264,11 +1264,11 @@ int main(int argc, char** argv)
 				}
 			}
 			else {
-				std::cerr << "Help: mmx farm [info | get | add | remove | reload]" << std::endl;
+				std::cerr << "Help: mmx " << module << " [info | get | add | remove | reload]" << std::endl;
 			}
 		}
 		else {
-			std::cerr << "Help: mmx [node | wallet | farm]" << std::endl;
+			std::cerr << "Help: mmx [node | wallet | farm | harvester]" << std::endl;
 		}
 	}
 	catch(const std::exception& ex) {
