@@ -42,6 +42,7 @@ int main(int argc, char** argv)
 	vnx::File block_chain(file_path);
 	block_chain.open("rb");
 
+	size_t block_count = 0;
 	std::map<addr_t, size_t> reward_count;
 
 	while(auto value = vnx::read(block_chain.in))
@@ -49,17 +50,20 @@ int main(int argc, char** argv)
 		if(auto block = std::dynamic_pointer_cast<const BlockHeader>(value))
 		{
 			if(block->height >= start_height
-				&& block->height <= end_height
-				&& std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof))
+				&& block->height <= end_height)
 			{
-				if(auto tx = block->tx_base)
-				{
-					if(tx->outputs.size() > 1) {
-						reward_count[tx->outputs[1].address]++;
+				block_count++;
+
+				if(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)) {
+					if(auto tx = block->tx_base) {
+						if(tx->outputs.size() > 1) {
+							reward_count[tx->outputs[1].address] += block_count;
+							block_count = 0;
+						}
 					}
 				}
 			}
-			while(auto value = vnx::read(block_chain.in));
+			while(vnx::read(block_chain.in));
 		}
 	}
 
