@@ -27,19 +27,3 @@ IF NOT EXIST "%MMX_HOME%\PASSWD" (
 
 	CALL vnxpasswd -c config\default\ %MMX_HOME%\config\local\ -u mmx-admin -p %%PASSWD%%
 )
-
-SET NEW_DB_VERSION=MMX2
-SET DB_VERSION_PATH=%MMX_HOME%\DB_VERSION
-
-IF NOT EXIST %DB_VERSION_PATH% GOTO DeleteDB
-SET /P DB_VERSION=<%DB_VERSION_PATH%
-IF %DB_VERSION% neq %NEW_DB_VERSION% GOTO DeleteDB
-GOTO afterDeleteDB
-
-:DeleteDB
-	RMDIR /s /q "%MMX_HOME%\%NETWORK%\db"
-	ECHO Deleted old DB
-	ECHO %NEW_DB_VERSION% > %DB_VERSION_PATH%
-:afterDeleteDB
-
-
