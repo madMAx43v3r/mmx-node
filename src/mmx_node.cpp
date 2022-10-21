@@ -41,7 +41,7 @@ int main(int argc, char** argv)
 		mmx_network = path;
 		std::cerr << "MMX_NETWORK = " << mmx_network << std::endl;
 	}
-	auto root_path = mmx_home + mmx_network;
+	const auto root_path = mmx_home + mmx_network;
 
 	if(!root_path.empty()) {
 		vnx::Directory(root_path).create();

@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 		mmx_network = path;
 		std::cerr << "MMX_NETWORK = " << mmx_network << std::endl;
 	}
-	auto root_path = mmx_home + mmx_network;
+	const auto root_path = mmx_home + mmx_network;
 
 	vnx::write_config("mmx_farmer.log_file_path", root_path + "logs/");
 
