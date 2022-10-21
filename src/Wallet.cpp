@@ -37,10 +37,12 @@ void Wallet::init()
 
 void Wallet::main()
 {
-	if(key_files.empty()) {
-		if(vnx::File(storage_path + "wallet.dat").exists()) {
-			key_files = {"wallet.dat"};
+	if(vnx::File(storage_path + "wallet.dat").exists()) {
+		if(key_files.empty()) {
+			key_files.push_back("wallet.dat");
 		}
+	} else if(key_files.size() == 1 && key_files[0] == "wallet.dat") {
+		key_files.clear();
 	}
 	if(key_files.size() > max_key_files) {
 		throw std::logic_error("too many key files");
@@ -60,7 +62,6 @@ void Wallet::main()
 
 	for(size_t i = 0; i < key_files.size(); ++i) {
 		account_t config;
-		config.name = "Default";
 		config.key_file = key_files[i];
 		config.num_addresses = num_addresses;
 		try {
