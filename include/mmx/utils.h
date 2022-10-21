@@ -80,6 +80,25 @@ bool check_plot_filter(	std::shared_ptr<const ChainParams> params,
 	return hash_t(challenge + plot_id).to_uint256() >> (256 - params->plot_filter) == 0;
 }
 
+
+inline
+uint64_t to_effective_space(const uint64_t& num_bytes)
+{
+	return (762 * uint128_t(num_bytes)) / 1000;
+}
+
+inline
+uint64_t calc_total_netspace_ideal(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
+{
+	return ((uint256_t(space_diff) * params->space_diff_constant) << (params->plot_filter + params->score_bits)) / params->score_target;
+}
+
+inline
+uint64_t calc_total_netspace(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
+{
+	return to_effective_space(calc_total_netspace_ideal(params, space_diff));
+}
+
 inline
 uint256_t calc_proof_score(	std::shared_ptr<const ChainParams> params,
 							const uint8_t ksize, const hash_t& quality, const uint64_t space_diff)
@@ -105,8 +124,7 @@ uint256_t calc_virtual_score(	std::shared_ptr<const ChainParams> params,
 inline
 uint64_t calc_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
 {
-	return ((uint256_t(space_diff) * params->space_diff_constant * params->reward_factor.value) << (params->plot_filter + params->score_bits))
-			/ params->score_target / params->reward_factor.inverse;
+	return (uint128_t(calc_total_netspace_ideal(params, space_diff)) * params->reward_factor.value) / params->reward_factor.inverse;
 }
 
 inline
@@ -120,16 +138,9 @@ uint64_t calc_final_block_reward(std::shared_ptr<const ChainParams> params, cons
 }
 
 inline
-uint64_t calc_total_netspace(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
-{
-	return 0.762 * uint64_t(
-			((uint256_t(space_diff) * params->space_diff_constant) << (params->plot_filter + params->score_bits)) / params->score_target);
-}
-
-inline
 uint64_t calc_virtual_plot_size(std::shared_ptr<const ChainParams> params, const uint64_t balance)
 {
-	return (762 * ((uint128_t(balance) * params->space_diff_constant) / (params->virtual_space_constant))) / 1000;
+	return to_effective_space((uint128_t(balance) * params->space_diff_constant) / (params->virtual_space_constant));
 }
 
 inline

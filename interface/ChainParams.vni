@@ -18,7 +18,8 @@ class ChainParams {
 	uint num_vdf_segments = 760;
 	uint max_vdf_segments = 1024;
 
-	uint virtual_lifetime = 15768000;		// number of blocks balance on virtual plots is valid
+	uint tby_factor = 1;					// how much TBY to create per physical space
+	uint virtual_lifetime = 12623040;		// number of blocks balance on virtual plots is valid
 	
 	uint score_bits = 16;
 	uint score_target = 8192;				// defines how many competing blocks are created (must be less than score_threshold)
@@ -47,9 +48,11 @@ class ChainParams {
 	ulong max_block_cost = 10000000;
 	
 	double block_time = 10;					// [sec]
+	uint blocks_per_year = 3155760;
 	
 	string vdf_seed;
 	
 	addr_t offer_binary;
+	addr_t tby_contract;
 	
 }

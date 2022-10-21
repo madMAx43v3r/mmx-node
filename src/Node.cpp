@@ -1769,6 +1769,13 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			iter++;
 		}
 	}
+
+	// mint new TBY
+	if(block->height >= 1000 && std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)) {
+		balance_cache.get(params->tby_contract, params->tby_contract) +=
+				(params->tby_factor * calc_total_netspace(params, block->space_diff)) / params->blocks_per_year;
+	}
+
 	auto& balance_delta = balance_log[block->height];
 	for(const auto& entry : balance_cache.balance) {
 		const auto& key = entry.first;
