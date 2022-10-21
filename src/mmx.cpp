@@ -259,14 +259,11 @@ int main(int argc, char** argv)
 				{
 					bool is_empty = true;
 					std::vector<mmx::addr_t> nfts;
-					for(const auto& entry : wallet.get_balances(index, true))
+					for(const auto& entry : wallet.get_balances(index))
 					{
 						const auto& balance = entry.second;
 						const auto contract = get_contract(node, entry.first);
-						if(std::dynamic_pointer_cast<const mmx::contract::NFT>(contract)) {
-							nfts.push_back(entry.first);
-						}
-						else if(auto token = get_token(node, entry.first, false)) {
+						if(auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract)) {
 							std::cout << "Balance: " << to_value_128(balance.total, token->decimals) << " " << token->symbol
 									<< (balance.is_validated ? "" : "?") << " (" << balance.total << ")";
 							if(entry.first != mmx::addr_t()) {
@@ -274,6 +271,9 @@ int main(int argc, char** argv)
 							}
 							std::cout << std::endl;
 							is_empty = false;
+						}
+						else if(std::dynamic_pointer_cast<const mmx::contract::NFT>(contract)) {
+							nfts.push_back(entry.first);
 						}
 					}
 					if(is_empty) {
