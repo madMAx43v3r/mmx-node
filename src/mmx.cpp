@@ -1217,6 +1217,9 @@ int main(int argc, char** argv)
 
 			if(command == "info")
 			{
+				if(info->harvester) {
+					std::cout << "[" << *info->harvester << "]" << std::endl;
+				}
 				std::cout << "Physical size: " << info->total_bytes / pow(1000, 4) << " TB" << std::endl;
 				const auto virtual_bytes = mmx::calc_virtual_plot_size(params, info->total_balance);
 				std::cout << "Virtual size:  " << info->total_balance / pow(10, params->decimals) << " MMX ("
@@ -1224,6 +1227,9 @@ int main(int argc, char** argv)
 				std::cout << "Total size:    " << (info->total_bytes + virtual_bytes) / pow(1000, 4) << " TB" << std::endl;
 				for(const auto& entry : info->plot_count) {
 					std::cout << "K" << int(entry.first) << ": " << entry.second << " plots" << std::endl;
+				}
+				for(const auto& entry : info->harvester_bytes) {
+					std::cout << "[" << entry.first << "] " << entry.second / pow(1000, 4) << " TB" << std::endl;
 				}
 			}
 			else if(command == "reload")

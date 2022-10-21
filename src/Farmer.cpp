@@ -67,6 +67,9 @@ std::shared_ptr<const FarmInfo> Farmer::get_farm_info() const
 	auto info = FarmInfo::create();
 	for(const auto& entry : info_map) {
 		if(auto value = std::dynamic_pointer_cast<const FarmInfo>(entry.second->value)) {
+			if(value->harvester) {
+				info->harvester_bytes[*value->harvester] += value->total_bytes;
+			}
 			for(const auto& entry : value->plot_count) {
 				info->plot_count[entry.first] += entry.second;
 			}
@@ -134,7 +137,11 @@ void Farmer::update()
 void Farmer::handle(std::shared_ptr<const FarmInfo> value)
 {
 	if(auto sample = vnx_sample) {
-		info_map[sample->src_mac] = sample;
+		if(value->harvester_id) {
+			info_map[*value->harvester_id] = sample;
+		} else if(value->harvester) {
+			info_map[hash_t(*value->harvester)] = sample;
+		}
 	}
 }
 

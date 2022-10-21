@@ -45,7 +45,28 @@ void Harvester::main()
 {
 	params = get_params();
 	host_name = vnx::get_host_name();
-
+	{
+		vnx::File file(storage_path + "harvester_id.dat");
+		if(file.exists()) {
+			try {
+				file.open("rb");
+				vnx::read_generic(file.in, harvester_id);
+				file.close();
+			} catch(...) {
+				// ignore
+			}
+		}
+		if(harvester_id == hash_t()) {
+			harvester_id = hash_t::random();
+			try {
+				file.open("wb");
+				vnx::write_generic(file.out, harvester_id);
+				file.close();
+			} catch(const std::exception& ex) {
+				log(WARN) << "Failed to write " << file.get_path() << ": " << ex.what();
+			}
+		}
+	}
 	node = std::make_shared<NodeClient>(node_server);
 	farmer = std::make_shared<FarmerClient>(farmer_server);
 
@@ -213,6 +234,7 @@ std::shared_ptr<const FarmInfo> Harvester::get_farm_info() const
 {
 	auto info = FarmInfo::create();
 	info->harvester = host_name;
+	info->harvester_id = harvester_id;
 	info->plot_dirs = std::vector<std::string>(plot_dirs.begin(), plot_dirs.end());
 	info->total_bytes = total_bytes;
 	for(const auto& entry : plot_map) {

@@ -81,6 +81,8 @@ int main(int argc, char** argv)
 	}
 	if(with_harvester) {
 		vnx::Handle<mmx::Harvester> module = new mmx::Harvester("Harvester");
+		module->config_path = mmx_home + module->config_path;
+		module->storage_path = root_path + module->storage_path;
 		proxy->import_list.push_back(module->input_challenges);
 		proxy->export_list.push_back(module->output_proofs);
 		module.start_detached();

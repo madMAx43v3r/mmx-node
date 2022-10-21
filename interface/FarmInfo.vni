@@ -6,10 +6,12 @@ class FarmInfo {
 	
 	map<uchar, uint> plot_count;			// [ksize => count]
 	
-	ulong total_bytes;
+	map<string, ulong> harvester_bytes;
 	
+	ulong total_bytes;
 	ulong total_balance;					// virtual plots [MMX]
 	
 	optional<string> harvester;
+	optional<hash_t> harvester_id;
 	
 }
