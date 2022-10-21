@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [[ -z "${MMX_HOME}" ]]; then
+	MMX_HOME="$(pwd)/"
+	export MMX_HOME=${MMX_HOME}
+fi
+
 if [ ! -d "${MMX_HOME}config/local" ]; then
 	mkdir -p "${MMX_HOME}config/"
 	cp -r config/local_init "${MMX_HOME}config/local"
