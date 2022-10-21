@@ -5,6 +5,8 @@ if [[ -z "${MMX_HOME}" ]]; then
 	export MMX_HOME=${MMX_HOME}
 fi
 
+rm "${MMX_HOME}DB_VERSION"
+
 if [ ! -d "${MMX_HOME}config/local" ]; then
 	mkdir -p "${MMX_HOME}config/"
 	cp -r config/local_init "${MMX_HOME}config/local"
@@ -29,14 +31,6 @@ else
 fi
 
 echo NETWORK=${NETWORK}
-
-NEW_DB_VERSION=MMX2
-DB_VERSION_PATH="${MMX_HOME}DB_VERSION"
-if [ ! -f "${DB_VERSION_PATH}" ] || [ $(cat "${DB_VERSION_PATH}") != ${NEW_DB_VERSION} ]; then
-	rm -rf "${MMX_HOME}${NETWORK}/db"
-	echo "Deleted old DB"
-	echo ${NEW_DB_VERSION} > "${DB_VERSION_PATH}"
-fi
 
 export MMX_NETWORK=${NETWORK}/
 export PATH=$PATH:$PWD/build:$PWD/build/exchange
