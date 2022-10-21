@@ -90,7 +90,8 @@ Vue.component('farmer-plots', {
 	data() {
 		return {
 			loaded: false,
-			data: []
+			plot_count: [],
+			harvester_bytes: []
 		}
 	},
 	computed: {
@@ -99,6 +100,12 @@ Vue.component('farmer-plots', {
 				{ text: this.$t('farmer_plots.type'), value: 'ksize', width: "10%" },
 				{ text: this.$t('farmer_plots.count'), value: 'count' },
 			]
+		},
+		headers2() {
+			return [
+				{ text: "Harvester", value: 'name' },
+				{ text: this.$t('farmer_info.physical_size'), value: 'bytes' },
+			]
 		}
 	},
 	methods: {
@@ -106,9 +113,13 @@ Vue.component('farmer-plots', {
 			fetch('/wapi/farmer/info')
 				.then(response => response.json())
 				.then(data => {
-					this.data = [];
+					this.plot_count = [];
 					for(const entry of data.plot_count) {
-						this.data.push({ksize: entry[0], count: entry[1]});
+						this.plot_count.push({ksize: entry[0], count: entry[1]});
+					}
+					this.harvester_bytes = [];
+					for(const entry of data.harvester_bytes) {
+						this.harvester_bytes.push({name: entry[0], bytes: entry[1]});
 					}
 					this.loaded = true;
 				});
@@ -128,17 +139,32 @@ Vue.component('farmer-plots', {
 		<div>
 			<v-data-table
 				:headers="headers"
-				:items="data"
+				:items="plot_count"
+				:loading="!loaded"
+				hide-default-footer
+				disable-sort
+				disable-pagination
+				class="elevation-2 my-2"
+			>
+				<template v-slot:item.ksize="{ item }">
+					K{{item.ksize}}
+				</template>
+			</v-data-table>
+
+			<v-data-table
+				:headers="headers2"
+				:items="harvester_bytes"
 				:loading="!loaded"
 				hide-default-footer
 				disable-sort
 				disable-pagination
 				class="elevation-2"
 			>
-				<template v-slot:item.ksize="{ item }">
-					K{{item.ksize}}
+				<template v-slot:item.bytes="{ item }">
+					{{(item.bytes / Math.pow(1000, 4)).toFixed(3)}} TB
 				</template>
 			</v-data-table>
+
 			<v-btn class="my-2" outlined @click="reload">{{ $t('farmer_plots.reload_plots') }}</v-btn>
 		</div>
 		`
