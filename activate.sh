@@ -1,11 +1,10 @@
 #!/bin/bash
 
 if [[ -z "${MMX_HOME}" ]]; then
-	MMX_HOME="$(pwd)/"
-	export MMX_HOME=${MMX_HOME}
+	export MMX_HOME="$(pwd)/"
 fi
 
-rm "${MMX_HOME}DB_VERSION"
+rm -f "${MMX_HOME}DB_VERSION"
 
 if [ ! -d "${MMX_HOME}config/local" ]; then
 	mkdir -p "${MMX_HOME}config/"
@@ -30,7 +29,18 @@ else
 	echo ${NETWORK} > "${MMX_HOME}NETWORK"
 fi
 
+if [[ -z "${MMX_DATA}" ]]; then
+	MMX_DATA=${MMX_HOME}
+fi
+
 echo NETWORK=${NETWORK}
 
-export MMX_NETWORK=${NETWORK}/
+if [ "${MMX_HOME}" != "$(pwd)/" ]; then
+	echo MMX_HOME=${MMX_HOME}
+fi
+if [ "${MMX_DATA}" != "${MMX_HOME}" ]; then
+	echo MMX_DATA=${MMX_DATA}
+fi
+
+export MMX_NETWORK=${MMX_DATA}${NETWORK}/
 export PATH=$PATH:$PWD/build:$PWD/build/exchange

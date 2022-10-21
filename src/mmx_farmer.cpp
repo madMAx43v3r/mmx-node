@@ -29,10 +29,9 @@ int main(int argc, char** argv)
 		mmx_network = path;
 		std::cerr << "MMX_NETWORK = " << mmx_network << std::endl;
 	}
-	const auto root_path = mmx_home + mmx_network;
+	vnx::Directory(mmx_network).create();
 
-	vnx::write_config("mmx_farmer.log_file_path", root_path + "logs/");
-
+	vnx::write_config("mmx_farmer.log_file_path", mmx_network + "logs/");
 
 	std::map<std::string, std::string> options;
 	options["n"] = "node";
@@ -71,7 +70,7 @@ int main(int argc, char** argv)
 		vnx::Handle<mmx::Wallet> module = new mmx::Wallet("Wallet");
 		module->config_path = mmx_home + module->config_path;
 		module->storage_path = mmx_home + module->storage_path;
-		module->database_path = root_path + module->database_path;
+		module->database_path = mmx_network + module->database_path;
 		module.start_detached();
 	} else {
 		proxy->forward_list.push_back("Wallet");
@@ -83,7 +82,7 @@ int main(int argc, char** argv)
 	if(with_harvester) {
 		vnx::Handle<mmx::Harvester> module = new mmx::Harvester("Harvester");
 		module->config_path = mmx_home + module->config_path;
-		module->storage_path = root_path + module->storage_path;
+		module->storage_path = mmx_network + module->storage_path;
 		proxy->import_list.push_back(module->input_challenges);
 		proxy->export_list.push_back(module->output_proofs);
 		module.start_detached();

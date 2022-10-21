@@ -32,11 +32,7 @@ int main(int argc, char** argv)
 		mmx_network = path;
 		std::cerr << "MMX_NETWORK = " << mmx_network << std::endl;
 	}
-	const auto root_path = mmx_home + mmx_network;
-
-	if(!root_path.empty()) {
-		vnx::Directory(root_path).create();
-	}
+	vnx::Directory(mmx_network).create();
 
 	std::map<std::string, std::string> options;
 	options["n"] = "node";
@@ -47,7 +43,7 @@ int main(int argc, char** argv)
 	std::string node_url = ":11330";
 	vnx::read_config("node", node_url);
 
-	mmx::sync_type_codes(root_path + "wallet/type_codes");
+	mmx::sync_type_codes(mmx_network + "wallet/type_codes");
 
 	vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
 	proxy->forward_list = {"Node", "Router"};
@@ -69,7 +65,7 @@ int main(int argc, char** argv)
 		vnx::Handle<mmx::Wallet> module = new mmx::Wallet("Wallet");
 		module->config_path = mmx_home + module->config_path;
 		module->storage_path = mmx_home + module->storage_path;
-		module->database_path = root_path + module->database_path;
+		module->database_path = mmx_network + module->database_path;
 		module.start_detached();
 	}
 	{
