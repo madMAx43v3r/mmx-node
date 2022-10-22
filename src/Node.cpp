@@ -110,6 +110,10 @@ void Node::main()
 		db.add(farmer_block_map.open(database_path + "farmer_block_map"));
 	}
 	storage = std::make_shared<vm::StorageDB>(database_path, db);
+
+	if(db_replay) {
+		replay_height = 0;
+	}
 	{
 		const auto height = std::min(db.min_version(), replay_height);
 		revert(height);
@@ -120,7 +124,7 @@ void Node::main()
 	}
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
 
-	if(block_chain->exists())
+	if(block_chain->exists() && (replay_height || db_replay))
 	{
 		block_chain->open("rb+");
 
