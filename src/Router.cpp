@@ -154,6 +154,9 @@ void Router::main()
 	http = std::make_shared<vnx::addons::HttpInterface<Router>>(this, vnx_name);
 	add_async_client(http);
 
+	if(open_port) {
+		upnp_mapper = upnp_start_mapping(port, "MMX Node");
+	}
 	threads = std::make_shared<vnx::ThreadPool>(num_threads, 1000);
 	connect_threads = new vnx::ThreadPool(-1);
 
@@ -169,6 +172,9 @@ void Router::main()
 
 	Super::main();
 
+	if(upnp_mapper) {
+		upnp_mapper->stop();
+	}
 	threads->close();
 
 	save_data();

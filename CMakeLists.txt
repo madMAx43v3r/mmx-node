@@ -6,6 +6,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 if(NOT MSVC)
 	add_compile_options(-Wall -Wno-unused-function)
+	
 	if(ENABLE_MEM_SANITIZE)
 		message(STATUS "Compiling with -fsanitize=address")
 		add_compile_options(-fsanitize=address)
@@ -54,6 +55,7 @@ find_package(Threads REQUIRED)
 if(NOT MSVC)
 	find_package(OpenMP REQUIRED)
 	find_library(JEMALLOC_LIB NAMES jemalloc)
+	find_library(MINIUPNPC_LIB NAMES miniupnpc)
 endif()
 
 include(cmake/chiapos.cmake)
@@ -63,11 +65,6 @@ if(OpenCL_FOUND)
 	target_compile_definitions(automy_basic_opencl
 		PUBLIC CL_TARGET_OPENCL_VERSION=120
 	)
-endif()
-
-if(SODIUM_FOUND)
-	message(STATUS "Found libsodium")
-	include_directories(${SODIUM_INCLUDE_DIR})
 endif()
 
 if(NOT MSVC AND WITH_SECP256K1)
@@ -189,6 +186,7 @@ add_library(mmx_modules SHARED
 	src/WebAPI.cpp
 	src/OCL_VDF.cpp
 	src/TimeLordRewards.cpp
+	src/upnp_mapper.cpp
 )
 
 add_library(uint256_t STATIC
@@ -267,6 +265,12 @@ if(JEMALLOC_LIB AND 0)
 	message(STATUS "Found jemalloc")
 	target_link_libraries(mmx_modules ${JEMALLOC_LIB})
 	target_compile_definitions(mmx_modules PUBLIC WITH_JEMALLOC)
+endif()
+
+if(MINIUPNPC_LIB)
+	message(STATUS "Found miniupnpc")
+	target_link_libraries(mmx_modules ${MINIUPNPC_LIB})
+	target_compile_definitions(mmx_modules PRIVATE WITH_MINIUPNPC)
 endif()
 
 add_executable(mmx src/mmx.cpp)

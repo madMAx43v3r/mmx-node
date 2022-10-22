@@ -11,6 +11,7 @@
 #include <mmx/RouterBase.hxx>
 #include <mmx/ReceiveNote.hxx>
 #include <mmx/NodeAsyncClient.hxx>
+#include <upnp_mapper.h>
 
 #include <vnx/Buffer.hpp>
 #include <vnx/Input.hpp>
@@ -274,6 +275,7 @@ private:
 	size_t proof_drop_counter = 0;
 	size_t block_drop_counter = 0;
 
+	std::shared_ptr<UPNP_Mapper> upnp_mapper;
 	std::shared_ptr<vnx::addons::HttpInterface<Router>> http;
 
 	friend class vnx::addons::HttpInterface<Router>;

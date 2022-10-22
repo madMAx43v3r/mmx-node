@@ -66,6 +66,7 @@ public:
 	uint32_t node_version = 102;
 	::mmx::node_type_e mode = ::mmx::node_type_e::FULL_NODE;
 	vnx::bool_t do_relay = true;
+	vnx::bool_t open_port = true;
 	vnx::float64_t max_tx_upload = 2;
 	vnx::float64_t max_pending_cost = 0.2;
 	std::set<std::string> seed_peers;
@@ -140,7 +141,7 @@ protected:
 
 template<typename T>
 void RouterBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<RouterBase>(58);
+	_visitor.template type_begin<RouterBase>(59);
 	_visitor.type_field("port", 0); _visitor.accept(port);
 	_visitor.type_field("host", 1); _visitor.accept(host);
 	_visitor.type_field("max_connections", 2); _visitor.accept(max_connections);
@@ -192,14 +193,15 @@ void RouterBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("node_version", 48); _visitor.accept(node_version);
 	_visitor.type_field("mode", 49); _visitor.accept(mode);
 	_visitor.type_field("do_relay", 50); _visitor.accept(do_relay);
-	_visitor.type_field("max_tx_upload", 51); _visitor.accept(max_tx_upload);
-	_visitor.type_field("max_pending_cost", 52); _visitor.accept(max_pending_cost);
-	_visitor.type_field("seed_peers", 53); _visitor.accept(seed_peers);
-	_visitor.type_field("fixed_peers", 54); _visitor.accept(fixed_peers);
-	_visitor.type_field("block_peers", 55); _visitor.accept(block_peers);
-	_visitor.type_field("storage_path", 56); _visitor.accept(storage_path);
-	_visitor.type_field("node_server", 57); _visitor.accept(node_server);
-	_visitor.template type_end<RouterBase>(58);
+	_visitor.type_field("open_port", 51); _visitor.accept(open_port);
+	_visitor.type_field("max_tx_upload", 52); _visitor.accept(max_tx_upload);
+	_visitor.type_field("max_pending_cost", 53); _visitor.accept(max_pending_cost);
+	_visitor.type_field("seed_peers", 54); _visitor.accept(seed_peers);
+	_visitor.type_field("fixed_peers", 55); _visitor.accept(fixed_peers);
+	_visitor.type_field("block_peers", 56); _visitor.accept(block_peers);
+	_visitor.type_field("storage_path", 57); _visitor.accept(storage_path);
+	_visitor.type_field("node_server", 58); _visitor.accept(node_server);
+	_visitor.template type_end<RouterBase>(59);
 }
 
 
