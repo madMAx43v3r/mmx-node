@@ -31,7 +31,7 @@ Roadmap
 | mainnet | _tbd_ | Expected Q1 2023. |
 
 _<sup>[1]</sup> Coins farmed on testnet7 and earlier are not worth anything, now or later._\
-_<sup>[2]</sup> Incentivized testnet coins, from block rewards only, will carry over to mainnet._
+_<sup>[2]</sup> A fixed reward of 0.25 MMX per block will be awared on mainnet genesis._
 
 See `#mmx-news` and `#mmx-general` on Discord: https://discord.gg/BswFhNkMzY
 
