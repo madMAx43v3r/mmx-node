@@ -813,6 +813,16 @@ int main(int argc, char** argv)
 					std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 				}
 			}
+			else if(command == "revert")
+			{
+				uint32_t height = 0;
+				if(!vnx::read_config("$3", height)) {
+					std::cout << "mmx node revert <height>" << std::endl;
+					goto failed;
+				}
+				std::cout << "Reverting to height " << height << " ..." << std::endl;
+				node.revert_sync_async(height);
+			}
 			else if(command == "discover")
 			{
 				router.discover();
@@ -1182,7 +1192,7 @@ int main(int argc, char** argv)
 				}
 			}
 			else {
-				std::cerr << "Help: mmx node [info | peers | tx | get | call | read | dump | dump_code | fetch | balance | history | offers | sync]" << std::endl;
+				std::cerr << "Help: mmx node [info | peers | tx | get | call | read | dump | dump_code | fetch | balance | history | offers | sync | revert]" << std::endl;
 			}
 		}
 		else if(module == "farm" || module == "harvester")

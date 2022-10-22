@@ -219,6 +219,8 @@ module Node implements vnx.addons.HttpComponent {
 	
 	void start_sync(bool force);
 	
+	void revert_sync(uint height);
+	
 	
 	void handle(Block value);
 	void handle(Transaction value);

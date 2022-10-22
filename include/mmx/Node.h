@@ -163,6 +163,8 @@ protected:
 
 	void start_sync(const vnx::bool_t& force) override;
 
+	void revert_sync(const uint32_t& height) override;
+
 	void http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
 							const vnx::request_id_t& request_id) const override;
 

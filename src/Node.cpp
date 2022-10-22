@@ -1413,6 +1413,14 @@ void Node::start_sync(const vnx::bool_t& force)
 	sync_more();
 }
 
+void Node::revert_sync(const uint32_t& height)
+{
+	do_restart = true;
+	log(WARN) << "Reverting to height " << height << " ...";
+	vnx::write_config(vnx_name + ".replay_height", height);
+	vnx_stop();
+}
+
 void Node::sync_more()
 {
 	if(is_synced) {
