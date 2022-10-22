@@ -60,6 +60,9 @@ public:
 			struct IGDdatas data;
 
 			const int ret = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
+			freeUPNPDevlist(devlist);
+			devlist = nullptr;
+
 			if(ret > 0) {
 				bool is_mapped = false;
 				while(do_run) {
@@ -103,8 +106,6 @@ public:
 			if(ret != 0) {
 				FreeUPNPUrls(&urls);
 			}
-			freeUPNPDevlist(devlist);
-			devlist = nullptr;
 		}
 	}
 
