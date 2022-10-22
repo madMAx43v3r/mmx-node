@@ -176,17 +176,22 @@ Vue.component('node-settings', {
 				<v-card-text>
 					<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
 
-					<v-checkbox
-						v-model="timelord"
-						:label="$t('node_settings.enable_timelord')"
-						class="d-inline-block"
-					></v-checkbox>
-
-					<v-checkbox
-						v-model="open_port"
-						label="Open network port to allow incoming connections (UPnP)"
-						class="d-inline-block"
-					></v-checkbox>
+					<v-row>
+						<v-col>
+							<v-checkbox
+								v-model="timelord"
+								:label="$t('node_settings.enable_timelord')"
+								class="d-inline-block"
+							></v-checkbox>
+						</v-col>
+						<v-col>
+							<v-checkbox
+								v-model="open_port"
+								label="Open network port to allow incoming connections (UPnP)"
+								class="d-inline-block"
+							></v-checkbox>
+						</v-col>
+					</v-row>
 
 					<v-select
 						v-model="opencl_device"
