@@ -40,55 +40,64 @@ public:
 		std::unique_lock<std::mutex> lock(mutex);
 
 		const auto port = std::to_string(listen_port);
-		const char* multicastif = nullptr;
-		const char* minissdpdpath = nullptr;
-		struct UPNPDev* devlist = nullptr;
-		char lanaddr[64] = {};
 
-		int error = 0;
+		while(do_run) {
+			const char* multicastif = nullptr;
+			const char* minissdpdpath = nullptr;
+			struct UPNPDev* devlist = nullptr;
+			char lanaddr[64] = {};
+
+			int error = 0;
 #if MINIUPNPC_API_VERSION < 14
-		devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, &error);
+			devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, &error);
 #else
-		devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, 2, &error);
+			devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, 2, &error);
 #endif
 
-		struct UPNPUrls urls;
-		struct IGDdatas data;
+			struct UPNPUrls urls;
+			struct IGDdatas data;
 
-		const int ret = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
-		if(ret > 0) {
-			bool is_mapped = false;
-			while(do_run) {
-				const int ret = UPNP_AddPortMapping(urls.controlURL, data.first.servicetype,
-						port.c_str(), port.c_str(), lanaddr, app_name.c_str(), "TCP", 0, "0");
+			const int ret = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
+			if(ret > 0) {
+				bool is_mapped = false;
+				while(do_run) {
+					const int ret = UPNP_AddPortMapping(urls.controlURL, data.first.servicetype,
+							port.c_str(), port.c_str(), lanaddr, app_name.c_str(), "TCP", 0, "0");
 
-				if(ret != UPNPCOMMAND_SUCCESS) {
-					is_mapped = false;
-					vnx::log_info() << "UPNP_AddPortMapping(" << port << ", " << port<< ", " << lanaddr
-							<< ") failed with code " << ret << " (" << strupnperror(ret) << ")";
-				} else {
-					is_mapped = true;
-					vnx::log_info() << "UPnP port mapping successful on " << listen_port << " (" << app_name << ")";
+					if(ret != UPNPCOMMAND_SUCCESS) {
+						is_mapped = false;
+						vnx::log_info() << "UPNP_AddPortMapping(" << port << ", " << port<< ", " << lanaddr
+								<< ") failed with code " << ret << " (" << strupnperror(ret) << ")";
+					} else {
+						is_mapped = true;
+						vnx::log_info() << "UPnP port mapping successful on " << listen_port << " (" << app_name << ")";
+					}
+					signal.wait_for(lock, PORT_MAPPING_REANNOUNCE_PERIOD);
+
+					if(!is_mapped) {
+						break;	// re-try everything
+					}
 				}
+				if(is_mapped) {
+					const int ret = UPNP_DeletePortMapping(urls.controlURL, data.first.servicetype, port.c_str(), "TCP", 0);
+
+					if(ret != UPNPCOMMAND_SUCCESS) {
+						vnx::log_info() << "UPNP_DeletePortMapping() failed with code " << ret << " (" << strupnperror(ret) << ")";
+					} else {
+						vnx::log_info() << "UPNP_DeletePortMapping() successful";
+					}
+				}
+			} else {
+				vnx::log_info() << "UPNP_GetValidIGD() found no UPnP IGDs";
+
 				signal.wait_for(lock, PORT_MAPPING_REANNOUNCE_PERIOD);
 			}
-			if(is_mapped) {
-				const int ret = UPNP_DeletePortMapping(urls.controlURL, data.first.servicetype, port.c_str(), "TCP", 0);
-
-				if(ret != UPNPCOMMAND_SUCCESS) {
-					vnx::log_info() << "UPNP_DeletePortMapping() failed with code " << ret << " (" << strupnperror(ret) << ")";
-				} else {
-					vnx::log_info() << "UPNP_DeletePortMapping() successful";
-				}
+			if(ret != 0) {
+				FreeUPNPUrls(&urls);
 			}
-		} else {
-			vnx::log_info() << "UPNP_GetValidIGD() found no UPnP IGDs";
+			freeUPNPDevlist(devlist);
+			devlist = nullptr;
 		}
-		if(ret != 0) {
-			FreeUPNPUrls(&urls);
-		}
-		freeUPNPDevlist(devlist);
-		devlist = nullptr;
 	}
 
 	void stop() override
