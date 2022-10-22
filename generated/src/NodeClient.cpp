@@ -118,6 +118,8 @@
 #include <mmx/Node_read_storage_map_return.hxx>
 #include <mmx/Node_read_storage_var.hxx>
 #include <mmx/Node_read_storage_var_return.hxx>
+#include <mmx/Node_revert_sync.hxx>
+#include <mmx/Node_revert_sync_return.hxx>
 #include <mmx/Node_start_sync.hxx>
 #include <mmx/Node_start_sync_return.hxx>
 #include <mmx/ProofOfTime.hxx>
@@ -932,6 +934,18 @@ void NodeClient::start_sync(const vnx::bool_t& force) {
 void NodeClient::start_sync_async(const vnx::bool_t& force) {
 	auto _method = ::mmx::Node_start_sync::create();
 	_method->force = force;
+	vnx_request(_method, true);
+}
+
+void NodeClient::revert_sync(const uint32_t& height) {
+	auto _method = ::mmx::Node_revert_sync::create();
+	_method->height = height;
+	vnx_request(_method, false);
+}
+
+void NodeClient::revert_sync_async(const uint32_t& height) {
+	auto _method = ::mmx::Node_revert_sync::create();
+	_method->height = height;
 	vnx_request(_method, true);
 }
 

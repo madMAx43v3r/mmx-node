@@ -119,6 +119,8 @@
 #include <mmx/Node_read_storage_map_return.hxx>
 #include <mmx/Node_read_storage_var.hxx>
 #include <mmx/Node_read_storage_var_return.hxx>
+#include <mmx/Node_revert_sync.hxx>
+#include <mmx/Node_revert_sync_return.hxx>
 #include <mmx/Node_start_sync.hxx>
 #include <mmx/Node_start_sync_return.hxx>
 #include <mmx/ProofOfTime.hxx>
@@ -650,7 +652,7 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	type_code->code_hash = vnx::Hash64(0x5eeaff905a72ffaaull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::NodeBase);
-	type_code->methods.resize(67);
+	type_code->methods.resize(68);
 	type_code->methods[0] = ::mmx::Node_add_block::static_get_type_code();
 	type_code->methods[1] = ::mmx::Node_add_transaction::static_get_type_code();
 	type_code->methods[2] = ::mmx::Node_call_contract::static_get_type_code();
@@ -706,18 +708,19 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	type_code->methods[52] = ::mmx::Node_read_storage_field::static_get_type_code();
 	type_code->methods[53] = ::mmx::Node_read_storage_map::static_get_type_code();
 	type_code->methods[54] = ::mmx::Node_read_storage_var::static_get_type_code();
-	type_code->methods[55] = ::mmx::Node_start_sync::static_get_type_code();
-	type_code->methods[56] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
-	type_code->methods[57] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
-	type_code->methods[58] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
-	type_code->methods[59] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
-	type_code->methods[60] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
-	type_code->methods[61] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
-	type_code->methods[62] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
-	type_code->methods[63] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
-	type_code->methods[64] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
-	type_code->methods[65] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
-	type_code->methods[66] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
+	type_code->methods[55] = ::mmx::Node_revert_sync::static_get_type_code();
+	type_code->methods[56] = ::mmx::Node_start_sync::static_get_type_code();
+	type_code->methods[57] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
+	type_code->methods[58] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
+	type_code->methods[59] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
+	type_code->methods[60] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
+	type_code->methods[61] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
+	type_code->methods[62] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
+	type_code->methods[63] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
+	type_code->methods[64] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
+	type_code->methods[65] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
+	type_code->methods[66] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
+	type_code->methods[67] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
 	type_code->fields.resize(36);
 	{
 		auto& field = type_code->fields[0];
@@ -1327,6 +1330,12 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 			auto _args = std::static_pointer_cast<const ::mmx::Node_read_storage_var>(_method);
 			auto _return_value = ::mmx::Node_read_storage_var_return::create();
 			_return_value->_ret_0 = read_storage_var(_args->contract, _args->address, _args->height);
+			return _return_value;
+		}
+		case 0x8c1cc38a7a8a6c1dull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_revert_sync>(_method);
+			auto _return_value = ::mmx::Node_revert_sync_return::create();
+			revert_sync(_args->height);
 			return _return_value;
 		}
 		case 0x6c5be8aeb25ef3c8ull: {

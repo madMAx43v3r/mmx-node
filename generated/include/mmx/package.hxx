@@ -206,6 +206,8 @@ class Node_read_storage_map;
 class Node_read_storage_map_return;
 class Node_read_storage_var;
 class Node_read_storage_var_return;
+class Node_revert_sync;
+class Node_revert_sync_return;
 class Node_start_sync;
 class Node_start_sync_return;
 class Operation;
@@ -659,6 +661,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_read_stor
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_map_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_var; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_var_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_revert_sync; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_revert_sync_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_start_sync; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_start_sync_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Operation; ///< \private
@@ -1109,6 +1113,8 @@ void read(TypeInput& in, ::mmx::Node_read_storage_map& value, const TypeCode* ty
 void read(TypeInput& in, ::mmx::Node_read_storage_map_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_read_storage_var& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_read_storage_var_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_revert_sync& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_revert_sync_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_start_sync& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_start_sync_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Operation& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1562,6 +1568,8 @@ void write(TypeOutput& out, const ::mmx::Node_read_storage_map& value, const Typ
 void write(TypeOutput& out, const ::mmx::Node_read_storage_map_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_read_storage_var& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_read_storage_var_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_revert_sync& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_revert_sync_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_start_sync& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_start_sync_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Operation& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -2015,6 +2023,8 @@ void read(std::istream& in, ::mmx::Node_read_storage_map& value); ///< \private
 void read(std::istream& in, ::mmx::Node_read_storage_map_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_read_storage_var& value); ///< \private
 void read(std::istream& in, ::mmx::Node_read_storage_var_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_revert_sync& value); ///< \private
+void read(std::istream& in, ::mmx::Node_revert_sync_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_start_sync& value); ///< \private
 void read(std::istream& in, ::mmx::Node_start_sync_return& value); ///< \private
 void read(std::istream& in, ::mmx::Operation& value); ///< \private
@@ -2468,6 +2478,8 @@ void write(std::ostream& out, const ::mmx::Node_read_storage_map& value); ///< \
 void write(std::ostream& out, const ::mmx::Node_read_storage_map_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_read_storage_var& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_read_storage_var_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_revert_sync& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_revert_sync_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_start_sync& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_start_sync_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Operation& value); ///< \private
@@ -2921,6 +2933,8 @@ void accept(Visitor& visitor, const ::mmx::Node_read_storage_map& value); ///< \
 void accept(Visitor& visitor, const ::mmx::Node_read_storage_map_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_read_storage_var& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_read_storage_var_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_revert_sync& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_revert_sync_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_start_sync& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_start_sync_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Operation& value); ///< \private
@@ -7411,6 +7425,52 @@ struct type<::mmx::Node_read_storage_var_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_read_storage_var_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_revert_sync> {
+	void read(TypeInput& in, ::mmx::Node_revert_sync& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_revert_sync& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_revert_sync& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_revert_sync& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_revert_sync& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_revert_sync& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_revert_sync_return> {
+	void read(TypeInput& in, ::mmx::Node_revert_sync_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_revert_sync_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_revert_sync_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_revert_sync_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_revert_sync_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_revert_sync_return& value, bool special = false);
 };
 
 /// \private
