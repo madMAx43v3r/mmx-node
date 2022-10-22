@@ -76,6 +76,10 @@ struct var_t {
 	explicit var_t(bool value) {
 		type = value ? TYPE_TRUE : TYPE_FALSE;
 	}
+
+	// needed to make delete work
+	virtual ~var_t() {}
+
 	void addref() {
 		flags |= FLAG_DIRTY;
 		ref_count++;
@@ -122,11 +126,17 @@ struct binary_t : var_t {
 	uint32_t size = 0;
 	uint32_t capacity = 0;
 
+	binary_t(const binary_t&) = delete;
+	binary_t& operator=(const binary_t&) = delete;
+
+	~binary_t() {
+		::free(p_data);
+	}
 	void* data(const size_t offset = 0) {
-		return ((char*)this) + sizeof(binary_t) + offset;
+		return ((char*)p_data) + offset;
 	}
 	const void* data(const size_t offset = 0) const {
-		return ((const char*)this) + sizeof(binary_t) + offset;
+		return ((const char*)p_data) + offset;
 	}
 	const char* c_str() const {
 		return (const char*)data();
@@ -182,13 +192,16 @@ struct binary_t : var_t {
 			case TYPE_STRING: size += 1; break;
 			default: throw std::logic_error("invalid binary type");
 		}
-		auto bin = new(::operator new(sizeof(binary_t) + size)) binary_t(type);
+		auto bin = new binary_t(type);
 		bin->capacity = size;
+		bin->p_data = ::malloc(size);
 		return std::unique_ptr<binary_t>(bin);
 	}
 
 private:
 	binary_t(const vartype_e& type) : var_t(type) {}
+
+	void* p_data = nullptr;
 
 };
 
