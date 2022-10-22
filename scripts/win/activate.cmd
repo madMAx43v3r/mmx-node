@@ -10,11 +10,18 @@ IF "%MMX_HOME%"=="" (
 
 SET "MMX_HOME=%MMX_HOME%\"
 
+IF "%MMX_DATA%"=="" (
+	SET "MMX_DATA=%MMX_HOME%"
+)
+
 SET "NETWORK=testnet8"
-SET "MMX_NETWORK=%NETWORK%\"
+SET "MMX_NETWORK=%MMX_DATA%%NETWORK%\"
 
 ECHO NETWORK=%NETWORK%
 ECHO MMX_HOME=%MMX_HOME%
+IF NOT "%MMX_DATA%"=="%MMX_HOME%" (
+	ECHO MMX_DATA=%MMX_DATA%
+)
 
 IF NOT EXIST "%MMX_HOME%config\local" (
 	XCopy "config\local_init" "%MMX_HOME%config\local\" /S /F /Y
