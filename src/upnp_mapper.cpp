@@ -37,10 +37,9 @@ public:
 
 	void run_loop()
 	{
-		bool first_run = true;
-
 		std::unique_lock<std::mutex> lock(mutex);
 
+		bool first_run = true;
 		const auto port = std::to_string(listen_port);
 
 		while(do_run) {
@@ -65,9 +64,10 @@ public:
 
 			if(ret > 0) {
 				bool is_mapped = false;
+
 				while(do_run) {
 
-					if (first_run) {
+					if(first_run) {
 						first_run = false;
 						UPNP_DeletePortMapping(urls.controlURL, data.first.servicetype, port.c_str(), "TCP", 0);
 					}
