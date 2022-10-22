@@ -57,25 +57,29 @@ public:
 
 		const int ret = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
 		if(ret == 1) {
+			bool is_mapped = false;
 			while(do_run) {
 				const int ret = UPNP_AddPortMapping(urls.controlURL, data.first.servicetype,
 						port.c_str(), port.c_str(), lanaddr, app_name.c_str(), "TCP", 0, "0");
 
 				if(ret != UPNPCOMMAND_SUCCESS) {
+					is_mapped = false;
 					vnx::log_info() << "UPNP_AddPortMapping(" << port << ", " << port<< ", " << lanaddr
 							<< ") failed with code " << ret << " (" << strupnperror(ret) << ")";
 				} else {
+					is_mapped = true;
 					vnx::log_info() << "UPnP port mapping successful on " << listen_port << " (" << app_name << ")";
 				}
 				signal.wait_for(lock, PORT_MAPPING_REANNOUNCE_PERIOD);
 			}
+			if(is_mapped) {
+				const int ret = UPNP_DeletePortMapping(urls.controlURL, data.first.servicetype, port.c_str(), "TCP", 0);
 
-			const int ret = UPNP_DeletePortMapping(urls.controlURL, data.first.servicetype, port.c_str(), "TCP", 0);
-
-			if(ret != UPNPCOMMAND_SUCCESS) {
-				vnx::log_info() << "UPNP_DeletePortMapping() failed with code " << ret << " (" << strupnperror(ret) << ")";
-			} else {
-				vnx::log_info() << "UPNP_DeletePortMapping() successful";
+				if(ret != UPNPCOMMAND_SUCCESS) {
+					vnx::log_info() << "UPNP_DeletePortMapping() failed with code " << ret << " (" << strupnperror(ret) << ")";
+				} else {
+					vnx::log_info() << "UPNP_DeletePortMapping() successful";
+				}
 			}
 		} else {
 			vnx::log_info() << "UPNP_GetValidIGD() found no valid UPnP IGDs";
