@@ -54,8 +54,10 @@ void Node::verify_proofs()
 
 void Node::pre_validate_blocks()
 {
-	for(const auto& fork : pending_forks)
+#pragma omp parallel for if(!is_synced)
+	for(int i = 0; i < int(pending_forks.size()); ++i)
 	{
+		const auto& fork = pending_forks[i];
 		const auto& block = fork->block;
 		try {
 			if(!block->is_valid()) {
