@@ -37,6 +37,8 @@ public:
 
 	void run_loop()
 	{
+		bool first_run = true;
+
 		std::unique_lock<std::mutex> lock(mutex);
 
 		const auto port = std::to_string(listen_port);
@@ -61,6 +63,12 @@ public:
 			if(ret > 0) {
 				bool is_mapped = false;
 				while(do_run) {
+
+					if (first_run) {
+						first_run = false;
+						UPNP_DeletePortMapping(urls.controlURL, data.first.servicetype, port.c_str(), "TCP", 0);
+					}
+
 					const int ret = UPNP_AddPortMapping(urls.controlURL, data.first.servicetype,
 							port.c_str(), port.c_str(), lanaddr, app_name.c_str(), "TCP", 0, "0");
 
