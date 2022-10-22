@@ -56,7 +56,7 @@ public:
 		struct IGDdatas data;
 
 		const int ret = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
-		if(ret == 1) {
+		if(ret > 0) {
 			bool is_mapped = false;
 			while(do_run) {
 				const int ret = UPNP_AddPortMapping(urls.controlURL, data.first.servicetype,
@@ -82,7 +82,7 @@ public:
 				}
 			}
 		} else {
-			vnx::log_info() << "UPNP_GetValidIGD() found no valid UPnP IGDs";
+			vnx::log_info() << "UPNP_GetValidIGD() found no UPnP IGDs";
 		}
 		if(ret != 0) {
 			FreeUPNPUrls(&urls);
