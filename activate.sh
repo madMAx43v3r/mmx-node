@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ -z "${MMX_HOME}" ]]; then
-	export MMX_HOME="$(pwd)/"
+	export MMX_HOME="$PWD/"
 fi
 
 rm -f "${MMX_HOME}DB_VERSION"
@@ -35,7 +35,7 @@ fi
 
 echo NETWORK=${NETWORK}
 
-if [ "${MMX_HOME}" != "$(pwd)/" ]; then
+if [ "${MMX_HOME}" != "$PWD/" ]; then
 	echo MMX_HOME=${MMX_HOME}
 fi
 if [ "${MMX_DATA}" != "${MMX_HOME}" ]; then
@@ -43,4 +43,4 @@ if [ "${MMX_DATA}" != "${MMX_HOME}" ]; then
 fi
 
 export MMX_NETWORK=${MMX_DATA}${NETWORK}/
-export PATH=$PATH:$PWD/build:$PWD/build/exchange
+export PATH=$PATH:$PWD/build:$PWD/build/vnx-base/tools
