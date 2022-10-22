@@ -39,7 +39,8 @@ public:
 	{
 		std::unique_lock<std::mutex> lock(mutex);
 
-		bool first_run = true;
+		bool first_delete = false;
+		bool only_permanent = false;
 		const auto port = std::to_string(listen_port);
 
 		while(do_run) {
@@ -67,15 +68,22 @@ public:
 
 				while(do_run) {
 
-					if(first_run) {
-						first_run = false;
-//						UPNP_DeletePortMapping(urls.controlURL, data.first.servicetype, port.c_str(), "TCP", 0);
+					if(!first_delete && only_permanent) {
+						first_delete = true;
+						UPNP_DeletePortMapping(urls.controlURL, data.first.servicetype, port.c_str(), "TCP", 0);
 					}
 
 					const int ret = UPNP_AddPortMapping(urls.controlURL, data.first.servicetype,
-							port.c_str(), port.c_str(), lanaddr, app_name.c_str(), "TCP", 0, "3600");
+							port.c_str(), port.c_str(), lanaddr, app_name.c_str(), "TCP", 0, only_permanent ? "0" : "3600");
 
-					if(ret != UPNPCOMMAND_SUCCESS) {
+					if(ret == 725) {
+						// OnlyPermanentLeasesSupported
+						const auto prev = only_permanent;
+						only_permanent = true;
+						if(!prev) {
+							continue;
+						}
+					} else if(ret != UPNPCOMMAND_SUCCESS) {
 						is_mapped = false;
 						vnx::log_info() << "UPNP_AddPortMapping(" << port << ", " << port<< ", " << lanaddr
 								<< ") failed with code " << ret << " (" << strupnperror(ret) << ")";
