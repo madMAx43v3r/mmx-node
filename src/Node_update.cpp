@@ -98,13 +98,6 @@ void Node::verify_block_proofs()
 			if(!fork->prev.lock()) {
 				if(auto prev = find_fork(block->prev)) {
 					fork->prev = prev;
-				} else if(is_synced) {
-					// fetch missing previous
-					const auto hash = block->prev;
-					const auto height = block->height - 1;
-					if(!purged_blocks.count(hash) && !fetch_pending.count(hash) && height > root->height) {
-						fetch_block(hash);
-					}
 				}
 			}
 			if(!fork->diff_block) {
