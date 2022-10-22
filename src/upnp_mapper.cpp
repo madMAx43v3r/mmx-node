@@ -73,7 +73,7 @@ public:
 					}
 
 					const int ret = UPNP_AddPortMapping(urls.controlURL, data.first.servicetype,
-							port.c_str(), port.c_str(), lanaddr, app_name.c_str(), "TCP", 0, "0");
+							port.c_str(), port.c_str(), lanaddr, app_name.c_str(), "TCP", 0, "3600");
 
 					if(ret != UPNPCOMMAND_SUCCESS) {
 						is_mapped = false;
@@ -128,7 +128,7 @@ private:
 	std::thread thread;
 	std::condition_variable signal;
 
-	static constexpr auto PORT_MAPPING_REANNOUNCE_PERIOD = std::chrono::seconds(3600);
+	static constexpr auto PORT_MAPPING_REANNOUNCE_PERIOD = std::chrono::seconds(1800);
 
 };
 
