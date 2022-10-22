@@ -69,7 +69,7 @@ public:
 
 					if(first_run) {
 						first_run = false;
-						UPNP_DeletePortMapping(urls.controlURL, data.first.servicetype, port.c_str(), "TCP", 0);
+//						UPNP_DeletePortMapping(urls.controlURL, data.first.servicetype, port.c_str(), "TCP", 0);
 					}
 
 					const int ret = UPNP_AddPortMapping(urls.controlURL, data.first.servicetype,
