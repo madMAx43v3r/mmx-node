@@ -156,7 +156,7 @@ void Router::main()
 
 	if(open_port) {
 		upnp_mapper = upnp_start_mapping(port, "MMX Node");
-		log(INFO) << "UPnP enabled: " << (upnp_mapper ? "yes" : "no");
+		log(upnp_mapper ? INFO : WARN) << "UPnP supported: " << (upnp_mapper ? "yes" : "no");
 	}
 	threads = std::make_shared<vnx::ThreadPool>(num_threads, 1000);
 	connect_threads = new vnx::ThreadPool(-1);
