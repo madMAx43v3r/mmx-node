@@ -1270,6 +1270,8 @@ int main(int argc, char** argv)
 				std::string path;
 				if(vnx::read_config("$3", path)) {
 					harvester.add_plot_dir(path);
+				} else {
+					std::cout << "mmx farm add <path>" << std::endl;
 				}
 			}
 			else if(command == "remove")
@@ -1277,6 +1279,8 @@ int main(int argc, char** argv)
 				std::string path;
 				if(vnx::read_config("$3", path)) {
 					harvester.rem_plot_dir(path);
+				} else {
+					std::cout << "mmx farm remove <path>" << std::endl;
 				}
 			}
 			else {
