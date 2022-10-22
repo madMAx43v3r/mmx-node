@@ -85,7 +85,7 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& challenge) c
 	if(!prev || !diff_block) {
 		throw std::logic_error("cannot verify");
 	}
-	// Note: block->is_valid() & block->validate() already called in pre-validate step
+	// Note: block->is_valid() already called in pre-validate step
 
 	if(block->vdf_iters != prev->vdf_iters + diff_block->time_diff * params->time_diff_constant) {
 		throw std::logic_error("invalid vdf_iters");

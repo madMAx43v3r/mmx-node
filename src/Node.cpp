@@ -1258,6 +1258,7 @@ void Node::add_block(std::shared_ptr<const Block> block)
 	fork->block = block;
 
 	if(block->farmer_sig) {
+		// need to verify farmer_sig first
 		pending_forks.push_back(fork);
 	} else if(block->is_valid()) {
 		add_fork(fork);

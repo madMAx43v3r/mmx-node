@@ -63,6 +63,7 @@ void Node::pre_validate_blocks()
 			if(!block->is_valid()) {
 				throw std::logic_error("invalid block");
 			}
+			// need to verify farmer_sig before adding to fork tree
 			block->validate();
 		}
 		catch(const std::exception& ex) {
