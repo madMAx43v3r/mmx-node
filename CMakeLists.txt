@@ -267,7 +267,7 @@ if(OpenCL_FOUND)
 	target_compile_definitions(mmx_modules PUBLIC WITH_OPENCL)
 endif()
 
-if(JEMALLOC_LIB AND 0)
+if(JEMALLOC_LIB)
 	message(STATUS "Found jemalloc")
 	target_link_libraries(mmx_modules ${JEMALLOC_LIB})
 	target_compile_definitions(mmx_modules PUBLIC WITH_JEMALLOC)
