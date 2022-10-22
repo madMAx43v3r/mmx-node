@@ -11,10 +11,12 @@ if(NOT MSVC)
 		message(STATUS "Compiling with -fsanitize=address")
 		add_compile_options(-fsanitize=address)
 		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
+		set(DISABLE_OPENCL 1)
 	elseif(ENABLE_THREAD_SANITIZE)
 		message(STATUS "Compiling with -fsanitize=thread")
 		add_compile_options(-fsanitize=thread)
 		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=thread")
+		set(DISABLE_OPENCL 1)
 	endif()
 else()
 	add_definitions(/openmp ${CUSTOM_ADD_DEFINITIONS})
@@ -49,7 +51,10 @@ add_subdirectory(lib/bls-signatures)
 add_subdirectory(tools)
 add_subdirectory(test)
 
-find_package(OpenCL)
+if(NOT DISABLE_OPENCL)
+	find_package(OpenCL)
+endif()
+
 find_package(Threads REQUIRED)
 
 if(NOT MSVC)
@@ -61,6 +66,7 @@ endif()
 include(cmake/chiapos.cmake)
 
 if(OpenCL_FOUND)
+	message(STATUS "Using OpenCL")
 	add_subdirectory(basic-opencl)
 	target_compile_definitions(automy_basic_opencl
 		PUBLIC CL_TARGET_OPENCL_VERSION=120
