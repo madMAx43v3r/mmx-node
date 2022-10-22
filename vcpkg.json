@@ -5,7 +5,8 @@
         "gmp",
         "zlib",
         "opencl",
-        "secp256k1"
+        "secp256k1",
+        "miniupnpc"
     ],
     "builtin-baseline":"acc3bcf76b84ae5041c86ab55fe138ae7b8255c7",
     "overrides": [
