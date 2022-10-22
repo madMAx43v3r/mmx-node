@@ -73,7 +73,7 @@ namespace mmx {
 
 
 const vnx::Hash64 RouterBase::VNX_TYPE_HASH(0x952c4ef2956f31c4ull);
-const vnx::Hash64 RouterBase::VNX_CODE_HASH(0x316e337d985b0f09ull);
+const vnx::Hash64 RouterBase::VNX_CODE_HASH(0xfe4ed987a70e8179ull);
 
 RouterBase::RouterBase(const std::string& _vnx_name)
 	:	MsgServer::MsgServer(_vnx_name)
@@ -790,7 +790,7 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Router";
 	type_code->type_hash = vnx::Hash64(0x952c4ef2956f31c4ull);
-	type_code->code_hash = vnx::Hash64(0x316e337d985b0f09ull);
+	type_code->code_hash = vnx::Hash64(0xfe4ed987a70e8179ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::RouterBase);
 	type_code->parents.resize(2);
@@ -1182,7 +1182,7 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 		auto& field = type_code->fields[51];
 		field.data_size = 1;
 		field.name = "open_port";
-		field.value = vnx::to_string(true);
+		field.value = vnx::to_string(false);
 		field.code = {31};
 	}
 	{

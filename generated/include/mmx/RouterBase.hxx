@@ -66,7 +66,7 @@ public:
 	uint32_t node_version = 102;
 	::mmx::node_type_e mode = ::mmx::node_type_e::FULL_NODE;
 	vnx::bool_t do_relay = true;
-	vnx::bool_t open_port = true;
+	vnx::bool_t open_port = false;
 	vnx::float64_t max_tx_upload = 2;
 	vnx::float64_t max_pending_cost = 0.2;
 	std::set<std::string> seed_peers;

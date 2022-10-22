@@ -6,6 +6,7 @@ Vue.component('node-settings', {
 			result: null,
 			loading: true,
 			timelord: null,
+			open_port: null,
 			opencl_device: null,
 			opencl_device_list: null,
 			farmer_reward_addr: "null",
@@ -23,6 +24,7 @@ Vue.component('node-settings', {
 				.then(data => {
 					this.loading = false;
 					this.timelord = data.timelord ? true : false;
+					this.open_port = data["Router.open_port"] ? true : false;
 					this.opencl_device = data["Node.opencl_device"] != null ? data["Node.opencl_device"] :
 							(data["Node.opencl_device_list"] && data["Node.opencl_device_list"].length ? 0 : -1);
 					this.opencl_device_list = [{name: "None", value: -1}];
@@ -102,6 +104,11 @@ Vue.component('node-settings', {
 				this.set_config("timelord", value, true);
 			}
 		},
+		open_port(value, prev) {
+			if(prev != null) {
+				this.set_config("Router.open_port", value, true);
+			}
+		},
 		opencl_device(value, prev) {
 			if(prev != null) {
 				this.set_config("Node.opencl_device", value, true);
@@ -172,6 +179,12 @@ Vue.component('node-settings', {
 					<v-checkbox
 						v-model="timelord"
 						:label="$t('node_settings.enable_timelord')"
+						class="d-inline-block"
+					></v-checkbox>
+
+					<v-checkbox
+						v-model="open_port"
+						label="Open network port to allow incoming connections (UPnP)"
 						class="d-inline-block"
 					></v-checkbox>
 
