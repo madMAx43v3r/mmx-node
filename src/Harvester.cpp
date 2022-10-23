@@ -219,7 +219,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	already_checked.insert(value->challenge);
 
 	if(!id_map.empty()) {
-		log(INFO) << plots.size() << " plots were eligible for height " << value->height
+		log(INFO) << "[" << host_name << "] " << plots.size() << " plots were eligible for height " << value->height
 				<< ", best score was " << (best_score != uint256_max ? best_score.str() : "N/A")
 				<< ", took " << time_ms / 1e3 << " sec";
 	}
