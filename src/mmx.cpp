@@ -821,7 +821,7 @@ int main(int argc, char** argv)
 					goto failed;
 				}
 				std::cout << "Reverting to height " << height << " ..." << std::endl;
-				node.revert_sync_async(height);
+				node.revert_sync(height);
 			}
 			else if(command == "discover")
 			{

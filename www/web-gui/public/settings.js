@@ -14,6 +14,7 @@ Vue.component('node-settings', {
 			reload_interval: null,
 			plot_dirs: [],
 			new_plot_dir: null,
+			revert_height: null,
 			availableLanguages: availableLanguages
 		}
 	},
@@ -84,6 +85,29 @@ Vue.component('node-settings', {
 							this.error = data;
 						});
 					}
+				});
+		},
+		revert_sync(height) {
+			if(height == null) {
+				return;
+			}
+			height = parseInt(height)
+			if(!(height >= 0)) {
+				this.error = "invalid height";
+				return;
+			}
+			var req = {};
+			req.height = parseInt(height);
+			fetch('/api/node/revert_sync', {body: JSON.stringify(req), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						this.result = {key: "Node.revert_sync", value: height, restart: false};
+					} else {
+						response.text().then(data => {
+							this.error = data;
+						});
+					}
+					this.revert_height = null;
 				});
 		}
 	},
@@ -213,6 +237,17 @@ Vue.component('node-settings', {
 						:value="timelord_reward_addr" @change="value => timelord_reward_addr = value"					
 					></v-text-field>
 
+				</v-card-text>
+			</v-card>
+			
+			<v-card class="my-2">
+				<v-card-title>Blockchain</v-card-title>
+				<v-card-text>
+					<v-text-field
+						label="Revert DB to height"
+						v-model="revert_height"
+					></v-text-field>
+					<v-btn @click="revert_sync(revert_height)" outlined color="error">Revert</v-btn>
 				</v-card-text>
 			</v-card>
 			
