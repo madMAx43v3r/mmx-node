@@ -32,26 +32,11 @@ int main(int argc, char** argv)
 	const_map["one"] = constant.size();
 	constant.push_back(std::make_unique<vm::uint_t>(1));
 
+	const_map["64"] = constant.size();
+	constant.push_back(std::make_unique<vm::uint_t>(64));
+
 	const_map["TYPE_UINT"] = constant.size();
 	constant.push_back(std::make_unique<vm::uint_t>(uint32_t(vm::TYPE_UINT)));
-
-	const_map["INIT"] = constant.size();
-	constant.push_back(vm::binary_t::alloc("INIT"));
-
-	const_map["OPEN"] = constant.size();
-	constant.push_back(vm::binary_t::alloc("OPEN"));
-
-	const_map["CLOSED"] = constant.size();
-	constant.push_back(vm::binary_t::alloc("CLOSED"));
-
-	const_map["REVOKED"] = constant.size();
-	constant.push_back(vm::binary_t::alloc("REVOKED"));
-
-	const_map["fail_not_init"] = constant.size();
-	constant.push_back(vm::binary_t::alloc("state != INIT"));
-
-	const_map["fail_not_open"] = constant.size();
-	constant.push_back(vm::binary_t::alloc("state != OPEN"));
 
 	const_map["fail_owner"] = constant.size();
 	constant.push_back(vm::binary_t::alloc("user != owner"));
@@ -59,14 +44,8 @@ int main(int argc, char** argv)
 	const_map["fail_partner"] = constant.size();
 	constant.push_back(vm::binary_t::alloc("user != partner"));
 
-	const_map["fail_ask_amount_type"] = constant.size();
-	constant.push_back(vm::binary_t::alloc("ask_amount != TYPE_UINT"));
-
-	const_map["fail_ask_amount_value"] = constant.size();
-	constant.push_back(vm::binary_t::alloc("ask_amount <= 0"));
-
-	const_map["fail_amount"] = constant.size();
-	constant.push_back(vm::binary_t::alloc("amount mismatch"));
+	const_map["fail_price_type"] = constant.size();
+	constant.push_back(vm::binary_t::alloc("inv_price != TYPE_UINT"));
 
 	const_map["fail_currency"] = constant.size();
 	constant.push_back(vm::binary_t::alloc("currency mismatch"));
@@ -76,55 +55,29 @@ int main(int argc, char** argv)
 		bin->fields["owner"] = vm::MEM_STATIC + (off++);
 		bin->fields["partner"] = vm::MEM_STATIC + (off++);
 		bin->fields["bid_currency"] = vm::MEM_STATIC + (off++);
-		bin->fields["bid_amount"] = vm::MEM_STATIC + (off++);
 		bin->fields["ask_currency"] = vm::MEM_STATIC + (off++);
-		bin->fields["ask_amount"] = vm::MEM_STATIC + (off++);
-		bin->fields["state"] = vm::MEM_STATIC + (off++);
-		bin->fields["close_txid"] = vm::MEM_STATIC + (off++);
+		bin->fields["inv_price"] = vm::MEM_STATIC + (off++);
 	}
 
 	std::vector<vm::instr_t> code;
 	{
 		mmx::contract::method_t method;
 		method.name = "init";
-		method.args = {"owner", "ask_currency", "ask_amount", "partner"};
+		method.args = {"owner", "bid_currency", "ask_currency", "inv_price", "partner"};
 		method.entry_point = code.size();
-		code.emplace_back(vm::OP_TYPE, 0, vm::MEM_STACK + 11, vm::MEM_STACK + 3);
+		code.emplace_back(vm::OP_TYPE, 0, vm::MEM_STACK + 11, vm::MEM_STACK + 4);
 		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 11, const_map["TYPE_UINT"]);
 		code.emplace_back(vm::OP_JUMPI, 0, code.size() + 2, vm::MEM_STACK + 10);
-		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_ask_amount_type"]);
-		code.emplace_back(vm::OP_CMP_GT, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 3, const_map["zero"]);
-		code.emplace_back(vm::OP_JUMPI, 0, code.size() + 2, vm::MEM_STACK + 10);
-		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_ask_amount_value"]);
+		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_price_type"]);
 		code.emplace_back(vm::OP_CONV, 0, bin->fields["owner"], vm::MEM_STACK + 1, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
-		code.emplace_back(vm::OP_CONV, 0, bin->fields["ask_currency"], vm::MEM_STACK + 2, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
-		code.emplace_back(vm::OP_COPY, 0, bin->fields["ask_amount"], vm::MEM_STACK + 3);
-		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 4, const_map["null"]);
+		code.emplace_back(vm::OP_CONV, 0, bin->fields["bid_currency"], vm::MEM_STACK + 2, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
+		code.emplace_back(vm::OP_CONV, 0, bin->fields["ask_currency"], vm::MEM_STACK + 3, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
+		code.emplace_back(vm::OP_COPY, 0, bin->fields["inv_price"], vm::MEM_STACK + 4);
+		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 5, const_map["null"]);
 		code.emplace_back(vm::OP_JUMPI, 0, code.size() + 3, vm::MEM_STACK + 10);
-		code.emplace_back(vm::OP_CONV, 0, bin->fields["partner"], vm::MEM_STACK + 4, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
+		code.emplace_back(vm::OP_CONV, 0, bin->fields["partner"], vm::MEM_STACK + 5, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
 		code.emplace_back(vm::OP_JUMP, 0, code.size() + 2);
 		code.emplace_back(vm::OP_COPY, 0, bin->fields["partner"], const_map["null"]);
-		code.emplace_back(vm::OP_COPY, 0, bin->fields["state"], const_map["INIT"]);
-		code.emplace_back(vm::OP_RET);
-		bin->methods[method.name] = method;
-	}
-	{
-		mmx::contract::method_t method;
-		method.name = "open";
-		method.is_public = true;
-		method.is_payable = true;
-		method.entry_point = code.size();
-		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, vm::MEM_EXTERN + vm::EXTERN_USER, bin->fields["owner"]);
-		code.emplace_back(vm::OP_JUMPI, 0, code.size() + 2, vm::MEM_STACK + 10);
-		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_owner"]);
-		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, bin->fields["state"], const_map["INIT"]);
-		code.emplace_back(vm::OP_JUMPI, 0, code.size() + 2, vm::MEM_STACK + 10);
-		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_not_init"]);
-		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 11, vm::MEM_EXTERN + vm::EXTERN_DEPOSIT, const_map["zero"]);
-		code.emplace_back(vm::OP_COPY, 0, bin->fields["bid_currency"], vm::MEM_STACK + 11);
-		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 11, vm::MEM_EXTERN + vm::EXTERN_DEPOSIT, const_map["one"]);
-		code.emplace_back(vm::OP_COPY, 0, bin->fields["bid_amount"], vm::MEM_STACK + 11);
-		code.emplace_back(vm::OP_COPY, 0, bin->fields["state"], const_map["OPEN"]);
 		code.emplace_back(vm::OP_RET);
 		bin->methods[method.name] = method;
 	}
@@ -136,12 +89,10 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, vm::MEM_EXTERN + vm::EXTERN_USER, bin->fields["owner"]);
 		code.emplace_back(vm::OP_JUMPI, 0, code.size() + 2, vm::MEM_STACK + 10);
 		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_owner"]);
-		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, bin->fields["state"], const_map["OPEN"]);
-		code.emplace_back(vm::OP_JUMPI, 0, code.size() + 2, vm::MEM_STACK + 10);
-		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_not_open"]);
-		code.emplace_back(vm::OP_SEND, 0, bin->fields["owner"], bin->fields["bid_amount"], bin->fields["bid_currency"]);
-		code.emplace_back(vm::OP_COPY, 0, bin->fields["state"], const_map["REVOKED"]);
-		code.emplace_back(vm::OP_COPY, 0, bin->fields["close_txid"], vm::MEM_EXTERN + vm::EXTERN_TXID);
+		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 11, vm::MEM_EXTERN + vm::EXTERN_BALANCE, bin->fields["bid_currency"]);
+		code.emplace_back(vm::OP_CMP_GT, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 11, const_map["zero"]);
+		code.emplace_back(vm::OP_JUMPN, 0, code.size() + 2, vm::MEM_STACK + 10);
+		code.emplace_back(vm::OP_SEND, 0, bin->fields["owner"], vm::MEM_STACK + 11, bin->fields["bid_currency"]);
 		code.emplace_back(vm::OP_RET);
 		bin->methods[method.name] = method;
 	}
@@ -152,32 +103,30 @@ int main(int argc, char** argv)
 		method.is_public = true;
 		method.is_payable = true;
 		method.entry_point = code.size();
-		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, bin->fields["state"], const_map["OPEN"]);
-		code.emplace_back(vm::OP_JUMPI, 0, code.size() + 2, vm::MEM_STACK + 10);
-		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_not_open"]);
+		// check partner if set
 		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, bin->fields["partner"], const_map["null"]);
 		code.emplace_back(vm::OP_JUMPI, 0, code.size() + 4, vm::MEM_STACK + 10);
 		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, bin->fields["partner"], vm::MEM_EXTERN + vm::EXTERN_USER);
 		code.emplace_back(vm::OP_JUMPI, 0, code.size() + 2, vm::MEM_STACK + 10);
 		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_partner"]);
+		// check ask_currency
 		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 11, vm::MEM_EXTERN + vm::EXTERN_DEPOSIT, const_map["zero"]);
 		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 11, bin->fields["ask_currency"]);
 		code.emplace_back(vm::OP_JUMPI, 0, code.size() + 2, vm::MEM_STACK + 10);
 		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_currency"]);
+		// get ask amount
 		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 11, vm::MEM_EXTERN + vm::EXTERN_DEPOSIT, const_map["one"]);
-		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 11, bin->fields["ask_amount"]);
-		code.emplace_back(vm::OP_JUMPI, 0, code.size() + 2, vm::MEM_STACK + 10);
-		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_amount"]);
-		code.emplace_back(vm::OP_CONV, 0, vm::MEM_STACK + 11, vm::MEM_STACK + 1, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
-		code.emplace_back(vm::OP_SEND, 0, vm::MEM_STACK + 11, bin->fields["bid_amount"], bin->fields["bid_currency"]);
-		code.emplace_back(vm::OP_SEND, 0, bin->fields["owner"], bin->fields["ask_amount"], bin->fields["ask_currency"]);
-		code.emplace_back(vm::OP_COPY, 0, bin->fields["state"], const_map["CLOSED"]);
-		code.emplace_back(vm::OP_COPY, 0, bin->fields["close_txid"], vm::MEM_EXTERN + vm::EXTERN_TXID);
+		// calc bid amount
+		code.emplace_back(vm::OP_MUL, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 12, vm::MEM_STACK + 11, const_map["inv_price"]);
+		code.emplace_back(vm::OP_SHR, 0, vm::MEM_STACK + 12, vm::MEM_STACK + 12, const_map["64"]);
+		// send bid amount to dst_addr
+		code.emplace_back(vm::OP_CONV, 0, vm::MEM_STACK + 13, vm::MEM_STACK + 1, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
+		code.emplace_back(vm::OP_SEND, 0, vm::MEM_STACK + 13, vm::MEM_STACK + 12, bin->fields["bid_currency"]);
+		// send ask amount to owner
+		code.emplace_back(vm::OP_SEND, 0, bin->fields["owner"], vm::MEM_STACK + 11, bin->fields["ask_currency"]);
 		code.emplace_back(vm::OP_RET);
 		bin->methods[method.name] = method;
 	}
-
-	// TODO: partial trade
 
 	for(const auto& var : constant) {
 		const auto data = serialize(*var.get(), false, false);
