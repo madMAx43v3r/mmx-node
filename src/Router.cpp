@@ -159,7 +159,7 @@ void Router::main()
 		log(upnp_mapper ? INFO : WARN) << "UPnP supported: " << (upnp_mapper ? "yes" : "no");
 	}
 	threads = std::make_shared<vnx::ThreadPool>(num_threads, 1000);
-	connect_threads = new vnx::ThreadPool(-1);
+	connect_threads = std::make_shared<vnx::ThreadPool>(-1);
 
 	set_timer_millis(send_interval_ms, std::bind(&Router::send, this));
 	set_timer_millis(query_interval_ms, std::bind(&Router::query, this));
@@ -173,12 +173,16 @@ void Router::main()
 
 	Super::main();
 
+	save_data();
+
+	for(const auto& entry : connect_tasks) {
+		vnx::TcpEndpoint().shutdown(entry.second, 2);
+	}
 	if(upnp_mapper) {
 		upnp_mapper->stop();
 	}
 	threads->close();
-
-	save_data();
+	connect_threads->close();
 }
 
 hash_t Router::get_id() const
@@ -708,6 +712,19 @@ bool Router::process(std::shared_ptr<const Return> ret)
 	return did_consume;
 }
 
+void Router::connect_to(const std::string& address)
+{
+	if(connect_tasks.count(address)) {
+		return;
+	}
+	vnx::TcpEndpoint peer;
+	peer.host_name = address;
+	peer.port = params->port;
+	const auto sock = peer.open();
+	connect_tasks[address] = sock;
+	connect_threads->add_task(std::bind(&Router::connect_task, this, peer, sock));
+}
+
 void Router::connect()
 {
 	const auto now_ms = vnx::get_wall_time_millis();
@@ -721,9 +738,8 @@ void Router::connect()
 				connected = true;
 			}
 		}
-		if(!connected && !connecting_peers.count(address)) {
-			connecting_peers.insert(address);
-			connect_threads->add_task(std::bind(&Router::connect_task, this, address));
+		if(!connected) {
+			connect_to(address);
 		}
 	}
 
@@ -771,21 +787,20 @@ void Router::connect()
 					connected = true; break;
 				}
 			}
-			if(!connected && !block_peers.count(address) && !connecting_peers.count(address)) {
+			if(!connected && !block_peers.count(address) && !connect_tasks.count(address)) {
 				try_peers.insert(address);
 			}
 		}
 
 		for(const auto& address : get_subset(try_peers, num_peers_out, rand_engine))
 		{
-			if(connecting_peers.size() >= 2 * num_peers_out) {
+			if(connect_tasks.size() >= 2 * num_peers_out) {
 				break;
 			}
 			log(DEBUG) << "Trying to connect to " << address;
 
+			connect_to(address);
 			peer_retry_map.erase(address);
-			connecting_peers.insert(address);
-			connect_threads->add_task(std::bind(&Router::connect_task, this, address));
 		}
 	}
 
@@ -941,7 +956,7 @@ void Router::save_data()
 
 void Router::add_peer(const std::string& address, const int sock)
 {
-	connecting_peers.erase(address);
+	connect_tasks.erase(address);
 
 	if(sock >= 0) {
 		const auto client = add_client(sock, address);
@@ -955,14 +970,9 @@ void Router::add_peer(const std::string& address, const int sock)
 	}
 }
 
-void Router::connect_task(const std::string& address) noexcept
+void Router::connect_task(const vnx::TcpEndpoint& peer, int sock) noexcept
 {
-	vnx::TcpEndpoint peer;
-	peer.host_name = address;
-	peer.port = params->port;
-	int sock = -1;
 	try {
-		sock = peer.open();
 		peer.connect(sock);
 	}
 	catch(const std::exception& ex) {
@@ -970,13 +980,11 @@ void Router::connect_task(const std::string& address) noexcept
 			peer.close(sock);
 			sock = -1;
 		}
-		if(show_warnings) {
-			log(WARN) << "Connecting to peer " << address << " failed with: " << ex.what();
+		if(show_warnings && vnx_do_run()) {
+			log(WARN) << "Connecting to peer " << peer.host_name << " failed with: " << ex.what();
 		}
 	}
-	if(vnx::do_run()) {
-		add_task(std::bind(&Router::add_peer, this, address, sock));
-	}
+	add_task(std::bind(&Router::add_peer, this, peer.host_name, sock));
 }
 
 void Router::print_stats()
