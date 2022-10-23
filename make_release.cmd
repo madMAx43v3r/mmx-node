@@ -1,4 +1,5 @@
 @ECHO OFF
+TITLE MMX Make Release Script
 
 IF "%VCPKG_ROOT%"=="" (
 	SET VCPKG_ROOT=C:/dev/vcpkg

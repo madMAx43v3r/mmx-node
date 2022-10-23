@@ -9,6 +9,7 @@
 #define INCLUDE_UPNP_MAPPER_H_
 
 #include <memory>
+#include <string>
 
 
 class UPNP_Mapper {
