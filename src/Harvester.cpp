@@ -131,7 +131,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 				scores[i][k] = calc_proof_score(params, prover->get_ksize(), hash_t::from_bytes(qualities[k]), value->space_diff);
 			}
 		} catch(const std::exception& ex) {
-			log(WARN) << "Failed to fetch qualities: " << ex.what() << " (" << prover->get_file_path() << ")";
+			log(WARN) << "[" << host_name << "] Failed to fetch qualities: " << ex.what() << " (" << prover->get_file_path() << ")";
 		}
 	}
 
@@ -170,7 +170,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 		try {
 			best_proof = best_plot->get_full_proof(value->challenge.bytes, best_index);
 		} catch(const std::exception& ex) {
-			log(WARN) << "Failed to fetch proof: " << ex.what() << " (" << best_plot->get_file_path() << ")";
+			log(WARN) << "[" << host_name << "] Failed to fetch proof: " << ex.what() << " (" << best_plot->get_file_path() << ")";
 		}
 	}
 	const auto time_ms = vnx::get_wall_time_millis() - time_begin;
@@ -267,7 +267,7 @@ void Harvester::find_plot_dirs(const std::set<std::string>& dirs, std::set<std::
 				}
 			}
 		} catch(const std::exception& ex) {
-			log(WARN) << ex.what();
+			log(WARN) << "[" << host_name << "] " << ex.what();
 		}
 	}
 	if(!sub_dirs.empty()) {
@@ -312,14 +312,14 @@ void Harvester::reload()
 						plots.emplace_back(file_name, prover);
 					}
 					catch(const std::exception& ex) {
-						log(WARN) << "Failed to load plot '" << file_name << "' due to: " << ex.what();
+						log(WARN) << "[" << host_name << "] Failed to load plot '" << file_name << "' due to: " << ex.what();
 					} catch(...) {
-						log(WARN) << "Failed to load plot '" << file_name << "'";
+						log(WARN) << "[" << host_name << "] Failed to load plot '" << file_name << "'";
 					}
 				}
 			}
 		} catch(const std::exception& ex) {
-			log(WARN) << ex.what();
+			log(WARN) << "[" << host_name << "] " << ex.what();
 		}
 	}
 
@@ -329,10 +329,10 @@ void Harvester::reload()
 	}
 
 	if(missing.size()) {
-		log(INFO) << "Lost " << missing.size() << " plots";
+		log(INFO) << "[" << host_name << "] Lost " << missing.size() << " plots";
 	}
 	if(plots.size() && plot_map.size()) {
-		log(INFO) << "Found " << plots.size() << " new plots";
+		log(INFO) << "[" << host_name << "] Found " << plots.size() << " new plots";
 	}
 
 	std::set<bls_pubkey_t> farmer_keys;
@@ -370,9 +370,9 @@ void Harvester::reload()
 			plot_map.insert(entry);
 		}
 		catch(const std::exception& ex) {
-			log(WARN) << "Invalid plot: " << entry.first << " (" << ex.what() << ")";
+			log(WARN) << "[" << host_name << "] Invalid plot: " << entry.first << " (" << ex.what() << ")";
 		} catch(...) {
-			log(WARN) << "Invalid plot: " << entry.first;
+			log(WARN) << "[" << host_name << "] Invalid plot: " << entry.first;
 		}
 	}
 
