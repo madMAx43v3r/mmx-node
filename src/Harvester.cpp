@@ -45,7 +45,28 @@ void Harvester::main()
 {
 	params = get_params();
 	host_name = vnx::get_host_name();
-
+	{
+		vnx::File file(storage_path + "harvester_id.dat");
+		if(file.exists()) {
+			try {
+				file.open("rb");
+				vnx::read_generic(file.in, harvester_id);
+				file.close();
+			} catch(...) {
+				// ignore
+			}
+		}
+		if(harvester_id == hash_t()) {
+			harvester_id = hash_t::random();
+			try {
+				file.open("wb");
+				vnx::write_generic(file.out, harvester_id);
+				file.close();
+			} catch(const std::exception& ex) {
+				log(WARN) << "Failed to write " << file.get_path() << ": " << ex.what();
+			}
+		}
+	}
 	node = std::make_shared<NodeClient>(node_server);
 	farmer = std::make_shared<FarmerClient>(farmer_server);
 
@@ -110,7 +131,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 				scores[i][k] = calc_proof_score(params, prover->get_ksize(), hash_t::from_bytes(qualities[k]), value->space_diff);
 			}
 		} catch(const std::exception& ex) {
-			log(WARN) << "Failed to fetch qualities: " << ex.what() << " (" << prover->get_file_path() << ")";
+			log(WARN) << "[" << host_name << "] Failed to fetch qualities: " << ex.what() << " (" << prover->get_file_path() << ")";
 		}
 	}
 
@@ -149,7 +170,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 		try {
 			best_proof = best_plot->get_full_proof(value->challenge.bytes, best_index);
 		} catch(const std::exception& ex) {
-			log(WARN) << "Failed to fetch proof: " << ex.what() << " (" << best_plot->get_file_path() << ")";
+			log(WARN) << "[" << host_name << "] Failed to fetch proof: " << ex.what() << " (" << best_plot->get_file_path() << ")";
 		}
 	}
 	const auto time_ms = vnx::get_wall_time_millis() - time_begin;
@@ -198,7 +219,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	already_checked.insert(value->challenge);
 
 	if(!id_map.empty()) {
-		log(INFO) << plots.size() << " plots were eligible for height " << value->height
+		log(INFO) << "[" << host_name << "] " << plots.size() << " plots were eligible for height " << value->height
 				<< ", best score was " << (best_score != uint256_max ? best_score.str() : "N/A")
 				<< ", took " << time_ms / 1e3 << " sec";
 	}
@@ -213,6 +234,7 @@ std::shared_ptr<const FarmInfo> Harvester::get_farm_info() const
 {
 	auto info = FarmInfo::create();
 	info->harvester = host_name;
+	info->harvester_id = harvester_id;
 	info->plot_dirs = std::vector<std::string>(plot_dirs.begin(), plot_dirs.end());
 	info->total_bytes = total_bytes;
 	for(const auto& entry : plot_map) {
@@ -245,7 +267,7 @@ void Harvester::find_plot_dirs(const std::set<std::string>& dirs, std::set<std::
 				}
 			}
 		} catch(const std::exception& ex) {
-			log(WARN) << ex.what();
+			log(WARN) << "[" << host_name << "] " << ex.what();
 		}
 	}
 	if(!sub_dirs.empty()) {
@@ -290,14 +312,14 @@ void Harvester::reload()
 						plots.emplace_back(file_name, prover);
 					}
 					catch(const std::exception& ex) {
-						log(WARN) << "Failed to load plot '" << file_name << "' due to: " << ex.what();
+						log(WARN) << "[" << host_name << "] Failed to load plot '" << file_name << "' due to: " << ex.what();
 					} catch(...) {
-						log(WARN) << "Failed to load plot '" << file_name << "'";
+						log(WARN) << "[" << host_name << "] Failed to load plot '" << file_name << "'";
 					}
 				}
 			}
 		} catch(const std::exception& ex) {
-			log(WARN) << ex.what();
+			log(WARN) << "[" << host_name << "] " << ex.what();
 		}
 	}
 
@@ -307,10 +329,10 @@ void Harvester::reload()
 	}
 
 	if(missing.size()) {
-		log(INFO) << "Lost " << missing.size() << " plots";
+		log(INFO) << "[" << host_name << "] Lost " << missing.size() << " plots";
 	}
 	if(plots.size() && plot_map.size()) {
-		log(INFO) << "Found " << plots.size() << " new plots";
+		log(INFO) << "[" << host_name << "] Found " << plots.size() << " new plots";
 	}
 
 	std::set<bls_pubkey_t> farmer_keys;
@@ -348,9 +370,9 @@ void Harvester::reload()
 			plot_map.insert(entry);
 		}
 		catch(const std::exception& ex) {
-			log(WARN) << "Invalid plot: " << entry.first << " (" << ex.what() << ")";
+			log(WARN) << "[" << host_name << "] Invalid plot: " << entry.first << " (" << ex.what() << ")";
 		} catch(...) {
-			log(WARN) << "Invalid plot: " << entry.first;
+			log(WARN) << "[" << host_name << "] Invalid plot: " << entry.first;
 		}
 	}
 
@@ -360,8 +382,10 @@ void Harvester::reload()
 		const auto& prover = entry.second;
 		const auto& file_name = entry.first;
 		const auto plot_id = hash_t::from_bytes(prover->get_plot_id());
-		// TODO: detect duplicates
-		id_map[plot_id] = file_name;
+
+		if(!id_map.emplace(plot_id, file_name).second) {
+			log(WARN) << "[" << host_name << "] Duplicate plot: " << entry.first;
+		}
 		total_bytes += vnx::File(file_name).file_size();
 	}
 

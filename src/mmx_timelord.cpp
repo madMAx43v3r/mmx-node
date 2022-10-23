@@ -28,7 +28,7 @@ int main(int argc, char** argv)
 		mmx_network = path;
 		std::cerr << "MMX_NETWORK = " << mmx_network << std::endl;
 	}
-	const auto root_path = mmx_home + mmx_network;
+	vnx::Directory(mmx_network).create();
 
 	std::map<std::string, std::string> options;
 	options["n"] = "node";
@@ -59,7 +59,7 @@ int main(int argc, char** argv)
 	}
 	{
 		vnx::Handle<mmx::TimeLord> module = new mmx::TimeLord("TimeLord");
-		module->storage_path = root_path + module->storage_path;
+		module->storage_path = mmx_network + module->storage_path;
 		proxy->import_list.push_back(module->input_infuse);
 		proxy->import_list.push_back(module->input_request);
 		proxy->export_list.push_back(module->output_proofs);

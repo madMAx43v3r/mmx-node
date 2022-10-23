@@ -57,6 +57,7 @@ private:
 		bls_pubkey_t farmer_key;
 	};
 
+	hash_t harvester_id;
 	std::string host_name;
 	uint64_t total_bytes = 0;
 	uint64_t total_balance = 0;

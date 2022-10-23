@@ -12,7 +12,6 @@
 #include <mmx/Harvester.h>
 #include <mmx/Router.h>
 #include <mmx/WebAPI.h>
-//#include <mmx/exchange/Client.h>
 #include <mmx/WalletClient.hxx>
 #include <mmx/secp256k1.hpp>
 #include <mmx/utils.h>
@@ -41,12 +40,9 @@ int main(int argc, char** argv)
 		mmx_network = path;
 		std::cerr << "MMX_NETWORK = " << mmx_network << std::endl;
 	}
-	auto root_path = mmx_home + mmx_network;
+	vnx::Directory(mmx_network).create();
 
-	if(!root_path.empty()) {
-		vnx::Directory(root_path).create();
-	}
-	vnx::write_config("mmx_node.log_file_path", root_path + "logs/");
+	vnx::write_config("mmx_node.log_file_path", mmx_network + "logs/");
 
 	std::map<std::string, std::string> options;
 	options["t"] = "timelord";
@@ -78,7 +74,7 @@ int main(int argc, char** argv)
 		automy::basic_opencl::create_context(CL_DEVICE_TYPE_GPU, platform_name);
 	}
 	catch(const std::exception& ex) {
-		vnx::log_info() << "No OpenCL GPU platform found: " << ex.what();
+		vnx::log_info() << "Failed to create OpenCL GPU context: " << ex.what();
 	}
 #endif
 
@@ -90,7 +86,7 @@ int main(int argc, char** argv)
 	} else {
 		with_harvester = false;
 	}
-	mmx::sync_type_codes(root_path + "type_codes");
+	mmx::sync_type_codes(mmx_network + "type_codes");
 
 	{
 		vnx::Handle<vnx::Terminal> module = new vnx::Terminal("Terminal");
@@ -116,14 +112,9 @@ int main(int argc, char** argv)
 			vnx::Handle<mmx::Wallet> module = new mmx::Wallet("Wallet");
 			module->config_path = mmx_home + module->config_path;
 			module->storage_path = mmx_home + module->storage_path;
-			module->database_path = root_path + module->database_path;
+			module->database_path = mmx_network + module->database_path;
 			module.start_detached();
 		}
-//		{
-//			vnx::Handle<mmx::exchange::Client> module = new mmx::exchange::Client("ExchClient");
-//			module->storage_path = root_path + module->storage_path;
-//			module.start_detached();
-//		}
 		{
 			vnx::Handle<vnx::Server> module = new vnx::Server("Server5", vnx::Endpoint::from_url(":11335"));
 			module.start_detached();
@@ -152,7 +143,7 @@ int main(int argc, char** argv)
 	if(with_timelord) {
 		{
 			vnx::Handle<mmx::TimeLord> module = new mmx::TimeLord("TimeLord");
-			module->storage_path = root_path + module->storage_path;
+			module->storage_path = mmx_network + module->storage_path;
 			module.start_detached();
 		}
 		{
@@ -175,14 +166,15 @@ int main(int argc, char** argv)
 	if(with_harvester) {
 		vnx::Handle<mmx::Harvester> module = new mmx::Harvester("Harvester");
 		module->config_path = mmx_home + module->config_path;
+		module->storage_path = mmx_network + module->storage_path;
 		module.start_detached();
 	}
 
 	while(vnx::do_run())
 	{
 		vnx::Handle<mmx::Node> module = new mmx::Node("Node");
-		module->storage_path = root_path + module->storage_path;
-		module->database_path = root_path + module->database_path;
+		module->storage_path = mmx_network + module->storage_path;
+		module->database_path = mmx_network + module->database_path;
 		module.start();
 		module.wait();
 		if(!module->do_restart) {

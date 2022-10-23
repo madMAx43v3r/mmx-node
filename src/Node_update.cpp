@@ -54,13 +54,16 @@ void Node::verify_proofs()
 
 void Node::pre_validate_blocks()
 {
-	for(const auto& fork : pending_forks)
+#pragma omp parallel for if(!is_synced)
+	for(int i = 0; i < int(pending_forks.size()); ++i)
 	{
+		const auto& fork = pending_forks[i];
 		const auto& block = fork->block;
 		try {
 			if(!block->is_valid()) {
 				throw std::logic_error("invalid block");
 			}
+			// need to verify farmer_sig before adding to fork tree
 			block->validate();
 		}
 		catch(const std::exception& ex) {
@@ -95,13 +98,6 @@ void Node::verify_block_proofs()
 			if(!fork->prev.lock()) {
 				if(auto prev = find_fork(block->prev)) {
 					fork->prev = prev;
-				} else if(is_synced) {
-					// fetch missing previous
-					const auto hash = block->prev;
-					const auto height = block->height - 1;
-					if(!purged_blocks.count(hash) && !fetch_pending.count(hash) && height > root->height) {
-						fetch_block(hash);
-					}
 				}
 			}
 			if(!fork->diff_block) {

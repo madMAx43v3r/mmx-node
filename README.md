@@ -25,13 +25,13 @@ Roadmap
 
 | Release | Planned | Description |
 | :--- | :--- | :--- |
-| testnet7 | Sep 2022 | Currently active. <sup>[1]</sup> |
-| testnet8 | Oct 2022 | First incentivized testnet. <sup>[2]</sup> |
+| testnet7 | Sep 2022 | Finished. <sup>[1]</sup> |
+| testnet8 | Oct 2022 | Active. Incentivized testnet. <sup>[2]</sup> |
 | testnetX | _tbd_ | As needed. <sup>[2]</sup> |
 | mainnet | _tbd_ | Expected Q1 2023. |
 
 _<sup>[1]</sup> Coins farmed on testnet7 and earlier are not worth anything, now or later._\
-_<sup>[2]</sup> Incentivized testnet coins, from block rewards only, will carry over to mainnet._
+_<sup>[2]</sup> A fixed reward of 0.25 MMX per block win (starting at height 25k) will be given on mainnet genesis.._
 
 See `#mmx-news` and `#mmx-general` on Discord: https://discord.gg/BswFhNkMzY
 

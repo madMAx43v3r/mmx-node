@@ -50,7 +50,8 @@ public:
 		return &iter->second;
 	}
 
-	uint128& get(const addr_t& address, const addr_t& contract) {
+	uint128& get(const addr_t& address, const addr_t& contract)
+	{
 		if(auto value = find(address, contract)) {
 			return *value;
 		}

@@ -11,6 +11,7 @@
 #include <mmx/RouterBase.hxx>
 #include <mmx/ReceiveNote.hxx>
 #include <mmx/NodeAsyncClient.hxx>
+#include <upnp_mapper.h>
 
 #include <vnx/Buffer.hpp>
 #include <vnx/Input.hpp>
@@ -123,6 +124,7 @@ private:
 		vnx::optional<hash_t> hash;
 		vnx::optional<uint32_t> height;
 		vnx::optional<std::string> from_peer;
+		std::function<void(std::shared_ptr<const Block>)> callback;
 		int64_t start_time_ms = 0;
 		int64_t last_recv_ms = 0;
 		std::unordered_set<uint64_t> failed;
@@ -148,7 +150,9 @@ private:
 
 	void ban_peer(uint64_t client, const std::string& reason);
 
-	void connect_task(const std::string& peer) noexcept;
+	void connect_to(const std::string& address);
+
+	void connect_task(const vnx::TcpEndpoint& peer, int sock) noexcept;
 
 	void print_stats() override;
 
@@ -218,9 +222,9 @@ private:
 	skey_t node_sk;
 	pubkey_t node_key;
 	std::set<std::string> peer_set;
-	std::set<std::string> connecting_peers;
 	std::set<std::string> self_addrs;
 	std::map<std::string, int64_t> peer_retry_map;		// [address => when to try again [sec]]
+	std::map<std::string, int> connect_tasks;
 
 	std::set<uint64_t> synced_peers;
 	std::unordered_map<uint64_t, std::shared_ptr<peer_t>> peer_map;
@@ -250,7 +254,7 @@ private:
 	} peer_check;
 
 	std::shared_ptr<vnx::ThreadPool> threads;
-	vnx::ThreadPool* connect_threads = nullptr;
+	std::shared_ptr<vnx::ThreadPool> connect_threads;
 
 	std::shared_ptr<NodeAsyncClient> node;
 	std::shared_ptr<const ChainParams> params;
@@ -273,6 +277,7 @@ private:
 	size_t proof_drop_counter = 0;
 	size_t block_drop_counter = 0;
 
+	std::shared_ptr<UPNP_Mapper> upnp_mapper;
 	std::shared_ptr<vnx::addons::HttpInterface<Router>> http;
 
 	friend class vnx::addons::HttpInterface<Router>;

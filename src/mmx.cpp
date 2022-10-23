@@ -259,14 +259,11 @@ int main(int argc, char** argv)
 				{
 					bool is_empty = true;
 					std::vector<mmx::addr_t> nfts;
-					for(const auto& entry : wallet.get_balances(index, true))
+					for(const auto& entry : wallet.get_balances(index))
 					{
 						const auto& balance = entry.second;
 						const auto contract = get_contract(node, entry.first);
-						if(std::dynamic_pointer_cast<const mmx::contract::NFT>(contract)) {
-							nfts.push_back(entry.first);
-						}
-						else if(auto token = get_token(node, entry.first, false)) {
+						if(auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract)) {
 							std::cout << "Balance: " << to_value_128(balance.total, token->decimals) << " " << token->symbol
 									<< (balance.is_validated ? "" : "?") << " (" << balance.total << ")";
 							if(entry.first != mmx::addr_t()) {
@@ -274,6 +271,9 @@ int main(int argc, char** argv)
 							}
 							std::cout << std::endl;
 							is_empty = false;
+						}
+						else if(std::dynamic_pointer_cast<const mmx::contract::NFT>(contract)) {
+							nfts.push_back(entry.first);
 						}
 					}
 					if(is_empty) {
@@ -813,6 +813,16 @@ int main(int argc, char** argv)
 					std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 				}
 			}
+			else if(command == "revert")
+			{
+				uint32_t height = 0;
+				if(!vnx::read_config("$3", height)) {
+					std::cout << "mmx node revert <height>" << std::endl;
+					goto failed;
+				}
+				std::cout << "Reverting to height " << height << " ..." << std::endl;
+				node.revert_sync(height);
+			}
 			else if(command == "discover")
 			{
 				router.discover();
@@ -1182,10 +1192,10 @@ int main(int argc, char** argv)
 				}
 			}
 			else {
-				std::cerr << "Help: mmx node [info | peers | tx | get | call | read | dump | dump_code | fetch | balance | history | offers | sync]" << std::endl;
+				std::cerr << "Help: mmx node [info | peers | tx | get | call | read | dump | dump_code | fetch | balance | history | offers | sync | revert]" << std::endl;
 			}
 		}
-		else if(module == "farm")
+		else if(module == "farm" || module == "harvester")
 		{
 			std::string node_url = ":11333";
 			vnx::read_config("node", node_url);
@@ -1206,17 +1216,20 @@ int main(int argc, char** argv)
 			mmx::HarvesterClient harvester("Harvester");
 
 			std::shared_ptr<const mmx::FarmInfo> info;
-			try {
+			if(module == "farm") {
 				info = farmer.get_farm_info();
-			} catch(...) {
-				// ignore
+			} else if(module == "harvester") {
+				info = harvester.get_farm_info();
 			}
 			if(!info) {
-				info = harvester.get_farm_info();
+				goto failed;
 			}
 
 			if(command == "info")
 			{
+				if(info->harvester) {
+					std::cout << "[" << *info->harvester << "]" << std::endl;
+				}
 				std::cout << "Physical size: " << info->total_bytes / pow(1000, 4) << " TB" << std::endl;
 				const auto virtual_bytes = mmx::calc_virtual_plot_size(params, info->total_balance);
 				std::cout << "Virtual size:  " << info->total_balance / pow(10, params->decimals) << " MMX ("
@@ -1224,6 +1237,9 @@ int main(int argc, char** argv)
 				std::cout << "Total size:    " << (info->total_bytes + virtual_bytes) / pow(1000, 4) << " TB" << std::endl;
 				for(const auto& entry : info->plot_count) {
 					std::cout << "K" << int(entry.first) << ": " << entry.second << " plots" << std::endl;
+				}
+				for(const auto& entry : info->harvester_bytes) {
+					std::cout << "[" << entry.first << "] " << entry.second / pow(1000, 4) << " TB" << std::endl;
 				}
 			}
 			else if(command == "reload")
@@ -1254,6 +1270,8 @@ int main(int argc, char** argv)
 				std::string path;
 				if(vnx::read_config("$3", path)) {
 					harvester.add_plot_dir(path);
+				} else {
+					std::cout << "mmx farm add <path>" << std::endl;
 				}
 			}
 			else if(command == "remove")
@@ -1261,14 +1279,16 @@ int main(int argc, char** argv)
 				std::string path;
 				if(vnx::read_config("$3", path)) {
 					harvester.rem_plot_dir(path);
+				} else {
+					std::cout << "mmx farm remove <path>" << std::endl;
 				}
 			}
 			else {
-				std::cerr << "Help: mmx farm [info | get | add | remove | reload]" << std::endl;
+				std::cerr << "Help: mmx " << module << " [info | get | add | remove | reload]" << std::endl;
 			}
 		}
 		else {
-			std::cerr << "Help: mmx [node | wallet | farm]" << std::endl;
+			std::cerr << "Help: mmx [node | wallet | farm | harvester]" << std::endl;
 		}
 	}
 	catch(const std::exception& ex) {

@@ -211,7 +211,8 @@ void Node::prepare_context(std::shared_ptr<execution_context_t> context, std::sh
 
 std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const Block> block) const
 {
-	// Note: block hash, tx_hash, tx_count already verified together with proof
+	// Note: hash, tx_hash, tx_count, tx_cost, tx_fees and proof already verified
+
 	const auto prev = find_prev_header(block);
 	if(!prev) {
 		throw std::logic_error("missing prev");
@@ -231,6 +232,8 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->time_diff < params->min_time_diff) {
 		throw std::logic_error("time_diff < min_time_diff");
 	}
+	block->validate();
+
 	if(block->farmer_sig) {
 		// Note: farmer_sig already verified together with proof
 		validate_diff_adjust(block->time_diff, prev->time_diff);
@@ -251,7 +254,6 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->total_weight != prev->total_weight + block->weight) {
 		throw std::logic_error("invalid block total_weight");
 	}
-	// TODO: maximum VP limit in recent blocks ?
 
 	auto context = new_exec_context();
 	{

@@ -48,7 +48,7 @@ private:
 	std::shared_ptr<WalletAsyncClient> wallet;
 
 	std::unordered_map<bls_pubkey_t, skey_t> key_map;
-	std::unordered_map<vnx::Hash64, std::shared_ptr<const vnx::Sample>> info_map;
+	std::map<hash_t, std::shared_ptr<const vnx::Sample>> info_map;
 
 };
 

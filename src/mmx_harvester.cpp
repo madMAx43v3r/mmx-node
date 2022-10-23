@@ -25,9 +25,9 @@ int main(int argc, char** argv)
 		mmx_network = path;
 		std::cerr << "MMX_NETWORK = " << mmx_network << std::endl;
 	}
-	auto root_path = mmx_home + mmx_network;
+	vnx::Directory(mmx_network).create();
 
-	vnx::write_config("mmx_harvester.log_file_path", root_path + "logs/");
+	vnx::write_config("mmx_harvester.log_file_path", mmx_network + "logs/");
 
 	std::map<std::string, std::string> options;
 	options["n"] = "node";
@@ -57,6 +57,7 @@ int main(int argc, char** argv)
 	{
 		vnx::Handle<mmx::Harvester> module = new mmx::Harvester("Harvester");
 		module->config_path = mmx_home + module->config_path;
+		module->storage_path = mmx_network + module->storage_path;
 		proxy->import_list.push_back(module->input_challenges);
 		proxy->export_list.push_back(module->output_info);
 		proxy->export_list.push_back(module->output_proofs);

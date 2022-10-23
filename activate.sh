@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [[ -z "${MMX_HOME}" ]]; then
+	export MMX_HOME="$PWD/"
+fi
+
+rm -f "${MMX_HOME}DB_VERSION"
+
 if [ ! -d "${MMX_HOME}config/local" ]; then
 	mkdir -p "${MMX_HOME}config/"
 	cp -r config/local_init "${MMX_HOME}config/local"
@@ -23,15 +29,18 @@ else
 	echo ${NETWORK} > "${MMX_HOME}NETWORK"
 fi
 
-echo NETWORK=${NETWORK}
-
-NEW_DB_VERSION=MMX2
-DB_VERSION_PATH="${MMX_HOME}DB_VERSION"
-if [ ! -f "${DB_VERSION_PATH}" ] || [ $(cat "${DB_VERSION_PATH}") != ${NEW_DB_VERSION} ]; then
-	rm -rf "${MMX_HOME}${NETWORK}/db"
-	echo "Deleted old DB"
-	echo ${NEW_DB_VERSION} > "${DB_VERSION_PATH}"
+if [[ -z "${MMX_DATA}" ]]; then
+	MMX_DATA=${MMX_HOME}
 fi
 
-export MMX_NETWORK=${NETWORK}/
-export PATH=$PATH:$PWD/build:$PWD/build/exchange
+echo NETWORK=${NETWORK}
+
+if [ "${MMX_HOME}" != "$PWD/" ]; then
+	echo MMX_HOME=${MMX_HOME}
+fi
+if [ "${MMX_DATA}" != "${MMX_HOME}" ]; then
+	echo MMX_DATA=${MMX_DATA}
+fi
+
+export MMX_NETWORK=${MMX_DATA}${NETWORK}/
+export PATH=$PATH:$PWD/build:$PWD/build/vnx-base/tools

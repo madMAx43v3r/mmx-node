@@ -6,6 +6,7 @@ Vue.component('node-settings', {
 			result: null,
 			loading: true,
 			timelord: null,
+			open_port: null,
 			opencl_device: null,
 			opencl_device_list: null,
 			farmer_reward_addr: "null",
@@ -13,6 +14,7 @@ Vue.component('node-settings', {
 			reload_interval: null,
 			plot_dirs: [],
 			new_plot_dir: null,
+			revert_height: null,
 			availableLanguages: availableLanguages
 		}
 	},
@@ -23,6 +25,7 @@ Vue.component('node-settings', {
 				.then(data => {
 					this.loading = false;
 					this.timelord = data.timelord ? true : false;
+					this.open_port = data["Router.open_port"] ? true : false;
 					this.opencl_device = data["Node.opencl_device"] != null ? data["Node.opencl_device"] :
 							(data["Node.opencl_device_list"] && data["Node.opencl_device_list"].length ? 0 : -1);
 					this.opencl_device_list = [{name: "None", value: -1}];
@@ -83,6 +86,29 @@ Vue.component('node-settings', {
 						});
 					}
 				});
+		},
+		revert_sync(height) {
+			if(height == null) {
+				return;
+			}
+			height = parseInt(height)
+			if(!(height >= 0)) {
+				this.error = "invalid height";
+				return;
+			}
+			var req = {};
+			req.height = parseInt(height);
+			fetch('/api/node/revert_sync', {body: JSON.stringify(req), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						this.result = {key: "Node.revert_sync", value: height, restart: false};
+					} else {
+						response.text().then(data => {
+							this.error = data;
+						});
+					}
+					this.revert_height = null;
+				});
 		}
 	},
 	created() {
@@ -100,6 +126,11 @@ Vue.component('node-settings', {
 		timelord(value, prev) {
 			if(prev != null) {
 				this.set_config("timelord", value, true);
+			}
+		},
+		open_port(value, prev) {
+			if(prev != null) {
+				this.set_config("Router.open_port", value, true);
 			}
 		},
 		opencl_device(value, prev) {
@@ -169,11 +200,22 @@ Vue.component('node-settings', {
 				<v-card-text>
 					<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
 
-					<v-checkbox
-						v-model="timelord"
-						:label="$t('node_settings.enable_timelord')"
-						class="d-inline-block"
-					></v-checkbox>
+					<v-row>
+						<v-col>
+							<v-checkbox
+								v-model="timelord"
+								:label="$t('node_settings.enable_timelord')"
+								class="d-inline-block"
+							></v-checkbox>
+						</v-col>
+						<v-col>
+							<v-checkbox
+								v-model="open_port"
+								label="Open network port to allow incoming connections (UPnP)"
+								class="d-inline-block"
+							></v-checkbox>
+						</v-col>
+					</v-row>
 
 					<v-select
 						v-model="opencl_device"
@@ -195,6 +237,17 @@ Vue.component('node-settings', {
 						:value="timelord_reward_addr" @change="value => timelord_reward_addr = value"					
 					></v-text-field>
 
+				</v-card-text>
+			</v-card>
+			
+			<v-card class="my-2">
+				<v-card-title>Blockchain</v-card-title>
+				<v-card-text>
+					<v-text-field
+						label="Revert DB to height"
+						v-model="revert_height"
+					></v-text-field>
+					<v-btn @click="revert_sync(revert_height)" outlined color="error">Revert</v-btn>
 				</v-card-text>
 			</v-card>
 			

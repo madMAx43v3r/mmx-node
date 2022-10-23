@@ -68,6 +68,7 @@ public:
 	uint32_t vdf_verify_divider = 1;
 	int32_t opencl_device = 0;
 	vnx::bool_t do_sync = true;
+	vnx::bool_t db_replay = false;
 	vnx::bool_t show_warnings = false;
 	std::string storage_path;
 	std::string database_path = "db/";
@@ -165,6 +166,7 @@ protected:
 	virtual std::map<::mmx::bls_pubkey_t, uint32_t> get_farmed_block_count(const uint32_t& since) const = 0;
 	virtual uint32_t get_farmed_block_count_for(const std::vector<::mmx::bls_pubkey_t>& farmer_keys, const uint32_t& since) const = 0;
 	virtual void start_sync(const vnx::bool_t& force) = 0;
+	virtual void revert_sync(const uint32_t& height) = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::Block> _value) {}
 	virtual void handle(std::shared_ptr<const ::mmx::Transaction> _value) {}
 	virtual void handle(std::shared_ptr<const ::mmx::ProofOfTime> _value) {}
@@ -181,7 +183,7 @@ protected:
 
 template<typename T>
 void NodeBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<NodeBase>(36);
+	_visitor.template type_begin<NodeBase>(37);
 	_visitor.type_field("input_vdfs", 0); _visitor.accept(input_vdfs);
 	_visitor.type_field("input_proof", 1); _visitor.accept(input_proof);
 	_visitor.type_field("input_blocks", 2); _visitor.accept(input_blocks);
@@ -213,12 +215,13 @@ void NodeBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("vdf_verify_divider", 28); _visitor.accept(vdf_verify_divider);
 	_visitor.type_field("opencl_device", 29); _visitor.accept(opencl_device);
 	_visitor.type_field("do_sync", 30); _visitor.accept(do_sync);
-	_visitor.type_field("show_warnings", 31); _visitor.accept(show_warnings);
-	_visitor.type_field("storage_path", 32); _visitor.accept(storage_path);
-	_visitor.type_field("database_path", 33); _visitor.accept(database_path);
-	_visitor.type_field("router_name", 34); _visitor.accept(router_name);
-	_visitor.type_field("timelord_name", 35); _visitor.accept(timelord_name);
-	_visitor.template type_end<NodeBase>(36);
+	_visitor.type_field("db_replay", 31); _visitor.accept(db_replay);
+	_visitor.type_field("show_warnings", 32); _visitor.accept(show_warnings);
+	_visitor.type_field("storage_path", 33); _visitor.accept(storage_path);
+	_visitor.type_field("database_path", 34); _visitor.accept(database_path);
+	_visitor.type_field("router_name", 35); _visitor.accept(router_name);
+	_visitor.type_field("timelord_name", 36); _visitor.accept(timelord_name);
+	_visitor.template type_end<NodeBase>(37);
 }
 
 

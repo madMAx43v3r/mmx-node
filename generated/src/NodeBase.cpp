@@ -119,6 +119,8 @@
 #include <mmx/Node_read_storage_map_return.hxx>
 #include <mmx/Node_read_storage_var.hxx>
 #include <mmx/Node_read_storage_var_return.hxx>
+#include <mmx/Node_revert_sync.hxx>
+#include <mmx/Node_revert_sync_return.hxx>
 #include <mmx/Node_start_sync.hxx>
 #include <mmx/Node_start_sync_return.hxx>
 #include <mmx/ProofOfTime.hxx>
@@ -171,7 +173,7 @@ namespace mmx {
 
 
 const vnx::Hash64 NodeBase::VNX_TYPE_HASH(0x289d7651582d76a3ull);
-const vnx::Hash64 NodeBase::VNX_CODE_HASH(0x5eeaff905a72ffaaull);
+const vnx::Hash64 NodeBase::VNX_CODE_HASH(0xdf2485646e7a4d39ull);
 
 NodeBase::NodeBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -207,6 +209,7 @@ NodeBase::NodeBase(const std::string& _vnx_name)
 	vnx::read_config(vnx_name + ".vdf_verify_divider", vdf_verify_divider);
 	vnx::read_config(vnx_name + ".opencl_device", opencl_device);
 	vnx::read_config(vnx_name + ".do_sync", do_sync);
+	vnx::read_config(vnx_name + ".db_replay", db_replay);
 	vnx::read_config(vnx_name + ".show_warnings", show_warnings);
 	vnx::read_config(vnx_name + ".storage_path", storage_path);
 	vnx::read_config(vnx_name + ".database_path", database_path);
@@ -260,11 +263,12 @@ void NodeBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[28], 28); vnx::accept(_visitor, vdf_verify_divider);
 	_visitor.type_field(_type_code->fields[29], 29); vnx::accept(_visitor, opencl_device);
 	_visitor.type_field(_type_code->fields[30], 30); vnx::accept(_visitor, do_sync);
-	_visitor.type_field(_type_code->fields[31], 31); vnx::accept(_visitor, show_warnings);
-	_visitor.type_field(_type_code->fields[32], 32); vnx::accept(_visitor, storage_path);
-	_visitor.type_field(_type_code->fields[33], 33); vnx::accept(_visitor, database_path);
-	_visitor.type_field(_type_code->fields[34], 34); vnx::accept(_visitor, router_name);
-	_visitor.type_field(_type_code->fields[35], 35); vnx::accept(_visitor, timelord_name);
+	_visitor.type_field(_type_code->fields[31], 31); vnx::accept(_visitor, db_replay);
+	_visitor.type_field(_type_code->fields[32], 32); vnx::accept(_visitor, show_warnings);
+	_visitor.type_field(_type_code->fields[33], 33); vnx::accept(_visitor, storage_path);
+	_visitor.type_field(_type_code->fields[34], 34); vnx::accept(_visitor, database_path);
+	_visitor.type_field(_type_code->fields[35], 35); vnx::accept(_visitor, router_name);
+	_visitor.type_field(_type_code->fields[36], 36); vnx::accept(_visitor, timelord_name);
 	_visitor.type_end(*_type_code);
 }
 
@@ -301,6 +305,7 @@ void NodeBase::write(std::ostream& _out) const {
 	_out << ", \"vdf_verify_divider\": "; vnx::write(_out, vdf_verify_divider);
 	_out << ", \"opencl_device\": "; vnx::write(_out, opencl_device);
 	_out << ", \"do_sync\": "; vnx::write(_out, do_sync);
+	_out << ", \"db_replay\": "; vnx::write(_out, db_replay);
 	_out << ", \"show_warnings\": "; vnx::write(_out, show_warnings);
 	_out << ", \"storage_path\": "; vnx::write(_out, storage_path);
 	_out << ", \"database_path\": "; vnx::write(_out, database_path);
@@ -349,6 +354,7 @@ vnx::Object NodeBase::to_object() const {
 	_object["vdf_verify_divider"] = vdf_verify_divider;
 	_object["opencl_device"] = opencl_device;
 	_object["do_sync"] = do_sync;
+	_object["db_replay"] = db_replay;
 	_object["show_warnings"] = show_warnings;
 	_object["storage_path"] = storage_path;
 	_object["database_path"] = database_path;
@@ -361,6 +367,8 @@ void NodeBase::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "database_path") {
 			_entry.second.to(database_path);
+		} else if(_entry.first == "db_replay") {
+			_entry.second.to(db_replay);
 		} else if(_entry.first == "do_sync") {
 			_entry.second.to(do_sync);
 		} else if(_entry.first == "input_blocks") {
@@ -529,6 +537,9 @@ vnx::Variant NodeBase::get_field(const std::string& _name) const {
 	if(_name == "do_sync") {
 		return vnx::Variant(do_sync);
 	}
+	if(_name == "db_replay") {
+		return vnx::Variant(db_replay);
+	}
 	if(_name == "show_warnings") {
 		return vnx::Variant(show_warnings);
 	}
@@ -610,6 +621,8 @@ void NodeBase::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(opencl_device);
 	} else if(_name == "do_sync") {
 		_value.to(do_sync);
+	} else if(_name == "db_replay") {
+		_value.to(db_replay);
 	} else if(_name == "show_warnings") {
 		_value.to(show_warnings);
 	} else if(_name == "storage_path") {
@@ -647,10 +660,10 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node";
 	type_code->type_hash = vnx::Hash64(0x289d7651582d76a3ull);
-	type_code->code_hash = vnx::Hash64(0x5eeaff905a72ffaaull);
+	type_code->code_hash = vnx::Hash64(0xdf2485646e7a4d39ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::NodeBase);
-	type_code->methods.resize(67);
+	type_code->methods.resize(68);
 	type_code->methods[0] = ::mmx::Node_add_block::static_get_type_code();
 	type_code->methods[1] = ::mmx::Node_add_transaction::static_get_type_code();
 	type_code->methods[2] = ::mmx::Node_call_contract::static_get_type_code();
@@ -706,19 +719,20 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	type_code->methods[52] = ::mmx::Node_read_storage_field::static_get_type_code();
 	type_code->methods[53] = ::mmx::Node_read_storage_map::static_get_type_code();
 	type_code->methods[54] = ::mmx::Node_read_storage_var::static_get_type_code();
-	type_code->methods[55] = ::mmx::Node_start_sync::static_get_type_code();
-	type_code->methods[56] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
-	type_code->methods[57] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
-	type_code->methods[58] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
-	type_code->methods[59] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
-	type_code->methods[60] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
-	type_code->methods[61] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
-	type_code->methods[62] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
-	type_code->methods[63] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
-	type_code->methods[64] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
-	type_code->methods[65] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
-	type_code->methods[66] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
-	type_code->fields.resize(36);
+	type_code->methods[55] = ::mmx::Node_revert_sync::static_get_type_code();
+	type_code->methods[56] = ::mmx::Node_start_sync::static_get_type_code();
+	type_code->methods[57] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
+	type_code->methods[58] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
+	type_code->methods[59] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
+	type_code->methods[60] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
+	type_code->methods[61] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
+	type_code->methods[62] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
+	type_code->methods[63] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
+	type_code->methods[64] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
+	type_code->methods[65] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
+	type_code->methods[66] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
+	type_code->methods[67] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
+	type_code->fields.resize(37);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -939,32 +953,39 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	{
 		auto& field = type_code->fields[31];
 		field.data_size = 1;
-		field.name = "show_warnings";
+		field.name = "db_replay";
 		field.value = vnx::to_string(false);
 		field.code = {31};
 	}
 	{
 		auto& field = type_code->fields[32];
+		field.data_size = 1;
+		field.name = "show_warnings";
+		field.value = vnx::to_string(false);
+		field.code = {31};
+	}
+	{
+		auto& field = type_code->fields[33];
 		field.is_extended = true;
 		field.name = "storage_path";
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[33];
+		auto& field = type_code->fields[34];
 		field.is_extended = true;
 		field.name = "database_path";
 		field.value = vnx::to_string("db/");
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[34];
+		auto& field = type_code->fields[35];
 		field.is_extended = true;
 		field.name = "router_name";
 		field.value = vnx::to_string("Router");
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[35];
+		auto& field = type_code->fields[36];
 		field.is_extended = true;
 		field.name = "timelord_name";
 		field.value = vnx::to_string("TimeLord");
@@ -1329,6 +1350,12 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 			_return_value->_ret_0 = read_storage_var(_args->contract, _args->address, _args->height);
 			return _return_value;
 		}
+		case 0x8c1cc38a7a8a6c1dull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_revert_sync>(_method);
+			auto _return_value = ::mmx::Node_revert_sync_return::create();
+			revert_sync(_args->height);
+			return _return_value;
+		}
 		case 0x6c5be8aeb25ef3c8ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_start_sync>(_method);
 			auto _return_value = ::mmx::Node_start_sync_return::create();
@@ -1505,6 +1532,9 @@ void read(TypeInput& in, ::mmx::NodeBase& value, const TypeCode* type_code, cons
 			vnx::read_value(_buf + _field->offset, value.do_sync, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[31]) {
+			vnx::read_value(_buf + _field->offset, value.db_replay, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[32]) {
 			vnx::read_value(_buf + _field->offset, value.show_warnings, _field->code.data());
 		}
 	}
@@ -1525,10 +1555,10 @@ void read(TypeInput& in, ::mmx::NodeBase& value, const TypeCode* type_code, cons
 			case 12: vnx::read(in, value.output_interval_request, type_code, _field->code.data()); break;
 			case 13: vnx::read(in, value.output_timelord_infuse, type_code, _field->code.data()); break;
 			case 14: vnx::read(in, value.output_challenges, type_code, _field->code.data()); break;
-			case 32: vnx::read(in, value.storage_path, type_code, _field->code.data()); break;
-			case 33: vnx::read(in, value.database_path, type_code, _field->code.data()); break;
-			case 34: vnx::read(in, value.router_name, type_code, _field->code.data()); break;
-			case 35: vnx::read(in, value.timelord_name, type_code, _field->code.data()); break;
+			case 33: vnx::read(in, value.storage_path, type_code, _field->code.data()); break;
+			case 34: vnx::read(in, value.database_path, type_code, _field->code.data()); break;
+			case 35: vnx::read(in, value.router_name, type_code, _field->code.data()); break;
+			case 36: vnx::read(in, value.timelord_name, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -1547,7 +1577,7 @@ void write(TypeOutput& out, const ::mmx::NodeBase& value, const TypeCode* type_c
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(62);
+	char* const _buf = out.write(63);
 	vnx::write_value(_buf + 0, value.max_queue_ms);
 	vnx::write_value(_buf + 4, value.update_interval_ms);
 	vnx::write_value(_buf + 8, value.validate_interval_ms);
@@ -1564,7 +1594,8 @@ void write(TypeOutput& out, const ::mmx::NodeBase& value, const TypeCode* type_c
 	vnx::write_value(_buf + 52, value.vdf_verify_divider);
 	vnx::write_value(_buf + 56, value.opencl_device);
 	vnx::write_value(_buf + 60, value.do_sync);
-	vnx::write_value(_buf + 61, value.show_warnings);
+	vnx::write_value(_buf + 61, value.db_replay);
+	vnx::write_value(_buf + 62, value.show_warnings);
 	vnx::write(out, value.input_vdfs, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.input_proof, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.input_blocks, type_code, type_code->fields[2].code.data());
@@ -1580,10 +1611,10 @@ void write(TypeOutput& out, const ::mmx::NodeBase& value, const TypeCode* type_c
 	vnx::write(out, value.output_interval_request, type_code, type_code->fields[12].code.data());
 	vnx::write(out, value.output_timelord_infuse, type_code, type_code->fields[13].code.data());
 	vnx::write(out, value.output_challenges, type_code, type_code->fields[14].code.data());
-	vnx::write(out, value.storage_path, type_code, type_code->fields[32].code.data());
-	vnx::write(out, value.database_path, type_code, type_code->fields[33].code.data());
-	vnx::write(out, value.router_name, type_code, type_code->fields[34].code.data());
-	vnx::write(out, value.timelord_name, type_code, type_code->fields[35].code.data());
+	vnx::write(out, value.storage_path, type_code, type_code->fields[33].code.data());
+	vnx::write(out, value.database_path, type_code, type_code->fields[34].code.data());
+	vnx::write(out, value.router_name, type_code, type_code->fields[35].code.data());
+	vnx::write(out, value.timelord_name, type_code, type_code->fields[36].code.data());
 }
 
 void read(std::istream& in, ::mmx::NodeBase& value) {
