@@ -177,6 +177,8 @@ int main(int argc, char** argv)
 		bin->methods[method.name] = method;
 	}
 
+	// TODO: partial trade
+
 	for(const auto& var : constant) {
 		const auto data = serialize(*var.get(), false, false);
 		bin->constant.insert(bin->constant.end(), data.first.get(), data.first.get() + data.second);
