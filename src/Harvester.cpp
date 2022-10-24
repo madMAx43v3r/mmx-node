@@ -387,7 +387,7 @@ void Harvester::reload()
 		const auto plot_id = hash_t::from_bytes(prover->get_plot_id());
 
 		if(!id_map.emplace(plot_id, file_name).second) {
-			log(WARN) << "[" << host_name << "] Duplicate plot: " << entry.first;
+			log(WARN) << "[" << host_name << "] Duplicate plot: " << entry.first << " (" << id_map[plot_id] << ")";
 		}
 		total_bytes += vnx::File(file_name).file_size();
 	}
