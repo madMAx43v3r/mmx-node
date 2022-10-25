@@ -6,6 +6,12 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 if(NOT MSVC)
 	add_compile_options(-Wall -Wno-unused-function)
+
+	if(WITH_SECP256K1)
+		message(STATUS "Using secp256k1")
+		include_directories(lib/secp256k1/include)
+		link_directories(lib/secp256k1/.libs)
+	endif()
 	
 	if(ENABLE_MEM_SANITIZE)
 		message(STATUS "Compiling with -fsanitize=address")
@@ -72,12 +78,6 @@ if(OpenCL_FOUND)
 	target_compile_definitions(automy_basic_opencl
 		PUBLIC CL_TARGET_OPENCL_VERSION=120
 	)
-endif()
-
-if(NOT MSVC AND WITH_SECP256K1)
-	message(STATUS "Using secp256k1")
-	include_directories(lib/secp256k1/include)
-	link_directories(lib/secp256k1/.libs)
 endif()
 
 file(GLOB GENERATED_SOURCE_FILES
