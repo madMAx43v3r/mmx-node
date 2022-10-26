@@ -1739,7 +1739,7 @@ void Node::purge_tree()
 			iter++;
 		}
 	}
-	if(purged_blocks.size() > 100000) {
+	if(purged_blocks.size() > 10000) {
 		purged_blocks.clear();
 	}
 }
