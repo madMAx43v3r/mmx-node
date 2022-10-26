@@ -156,6 +156,13 @@ uint64_t calc_new_space_diff(std::shared_ptr<const ChainParams> params, const ui
 }
 
 inline
+uint32_t calc_new_netspace_ratio(std::shared_ptr<const ChainParams> params, const uint32_t prev_ratio, const bool is_og_proof)
+{
+	const uint32_t value = is_og_proof ? 1 : 0;
+	return ((uint64_t(prev_ratio) * ((1 << params->max_diff_adjust) - 1)) + (value << params->max_diff_adjust)) >> params->max_diff_adjust;
+}
+
+inline
 uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> diff_block,
 							std::shared_ptr<const BlockHeader> block, const bool have_farmer_sig)
 {

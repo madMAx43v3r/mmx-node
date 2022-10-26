@@ -248,11 +248,17 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	}
 	const auto diff_block = get_diff_header(block);
 	const auto weight = calc_block_weight(params, diff_block, block, block->farmer_sig);
+	const auto total_weight = prev->total_weight + block->weight;
 	if(block->weight != weight) {
 		throw std::logic_error("invalid block weight: " + block->weight.str(10) + " != " + weight.str(10));
 	}
-	if(block->total_weight != prev->total_weight + block->weight) {
-		throw std::logic_error("invalid block total_weight");
+	if(block->total_weight != total_weight) {
+		throw std::logic_error("invalid total_weight: " + block->total_weight.str(10) + " != " + total_weight.str(10));
+	}
+	const auto netspace_ratio = calc_new_netspace_ratio(
+			params, prev->netspace_ratio, bool(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)));
+	if(block->netspace_ratio != netspace_ratio) {
+		throw std::logic_error("invalid netspace_ratio: " + std::to_string(block->netspace_ratio) + " != " + std::to_string(netspace_ratio));
 	}
 
 	auto context = new_exec_context();

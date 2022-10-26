@@ -177,6 +177,8 @@ void Node::add_dummy_blocks(std::shared_ptr<const BlockHeader> prev)
 			block->vdf_output = vdf_point->output;
 			block->weight = calc_block_weight(params, diff_block, block, false);
 			block->total_weight = prev->total_weight + block->weight;
+			block->netspace_ratio = calc_new_netspace_ratio(
+					params, prev->netspace_ratio, bool(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)));
 			block->finalize();
 			add_block(block);
 		}
@@ -732,6 +734,8 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	block->vdf_iters = vdf_point->vdf_iters;
 	block->vdf_output = vdf_point->output;
 	block->proof = proof_data.proof;
+	block->netspace_ratio = calc_new_netspace_ratio(
+			params, prev->netspace_ratio, bool(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)));
 
 	const auto tx_list = validate_for_block((3 * params->max_block_cost) / 2, params->max_block_cost);
 
