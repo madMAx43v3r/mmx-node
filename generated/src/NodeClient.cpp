@@ -20,6 +20,8 @@
 #include <mmx/Node_fetch_offers_return.hxx>
 #include <mmx/Node_get_address_info.hxx>
 #include <mmx/Node_get_address_info_return.hxx>
+#include <mmx/Node_get_address_infos.hxx>
+#include <mmx/Node_get_address_infos_return.hxx>
 #include <mmx/Node_get_all_balances.hxx>
 #include <mmx/Node_get_all_balances_return.hxx>
 #include <mmx/Node_get_balance.hxx>
@@ -723,6 +725,20 @@ std::map<::mmx::vm::varptr_t, ::mmx::vm::varptr_t> NodeClient::read_storage_map(
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<::mmx::address_info_t>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::vector<::mmx::address_info_t> NodeClient::get_address_infos(const std::vector<::mmx::addr_t>& address, const int32_t& since) {
+	auto _method = ::mmx::Node_get_address_infos::create();
+	_method->address = address;
+	_method->since = since;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_address_infos_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::address_info_t>>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}
