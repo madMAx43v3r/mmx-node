@@ -718,6 +718,7 @@ Vue.component('account-addresses', {
 			return [
 				{ text: this.$t('account_addresses.index'), value: 'index' },
 				{ text: this.$t('account_addresses.address'), value: 'address' },
+				{ text: "Active", value: 'num_active' },
 				{ text: this.$t('account_addresses.n_recv'), value: 'num_receive' },
 				{ text: this.$t('account_addresses.n_spend'), value: 'num_spend' },
 				{ text: this.$t('account_addresses.last_recv'), value: 'last_receive_height' },

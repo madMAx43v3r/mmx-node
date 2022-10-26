@@ -895,6 +895,9 @@ uint128 Node::get_total_supply(const addr_t& currency) const
 address_info_t Node::get_address_info(const addr_t& address) const
 {
 	address_info_t info;
+	for(const auto& entry : get_balances(address)) {
+		info.num_active++;
+	}
 	for(const auto& entry : get_history({address}, 0)) {
 		switch(entry.type) {
 			case tx_type_e::REWARD:
@@ -911,6 +914,39 @@ address_info_t Node::get_address_info(const addr_t& address) const
 		}
 	}
 	return info;
+}
+
+std::vector<address_info_t> Node::get_address_infos(const std::vector<addr_t>& addresses, const int32_t& since) const
+{
+	std::unordered_map<addr_t, size_t> index_map;
+	std::vector<address_info_t> result(addresses.size());
+	for(size_t i = 0; i < addresses.size(); ++i) {
+		auto& info = result[i];
+		info.address = addresses[i];
+		for(const auto& entry : get_balances(info.address)) {
+			info.num_active++;
+		}
+		index_map[addresses[i]] = i;
+	}
+	for(const auto& entry : get_history(addresses, since)) {
+		auto& info = result[index_map[entry.address]];
+		switch(entry.type) {
+			case tx_type_e::REWARD:
+			case tx_type_e::RECEIVE:
+				info.num_receive++;
+				info.total_receive[entry.contract] += entry.amount;
+				info.last_receive_height = std::max(info.last_receive_height, entry.height);
+				break;
+			case tx_type_e::SPEND:
+				info.num_spend++;
+				/* no break */
+			case tx_type_e::TXFEE:
+				info.total_spend[entry.contract] += entry.amount;
+				info.last_spend_height = std::max(info.last_spend_height, entry.height);
+				break;
+		}
+	}
+	return result;
 }
 
 std::vector<std::pair<addr_t, std::shared_ptr<const Contract>>> Node::get_virtual_plots_for(const bls_pubkey_t& farmer_key) const

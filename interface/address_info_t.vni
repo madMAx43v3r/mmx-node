@@ -4,6 +4,8 @@ struct address_info_t {
 	
 	addr_t address;
 	
+	uint num_active;	// number of non-zero balances
+	
 	uint num_spend;
 	uint num_receive;
 	

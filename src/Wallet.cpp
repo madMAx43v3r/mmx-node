@@ -732,32 +732,7 @@ address_info_t Wallet::get_address_info(const uint32_t& index, const uint32_t& o
 
 std::vector<address_info_t> Wallet::get_all_address_infos(const int32_t& index) const
 {
-	const auto addresses = get_all_addresses(index);
-	std::unordered_map<addr_t, size_t> index_map;
-	std::vector<address_info_t> result(addresses.size());
-	for(size_t i = 0; i < addresses.size(); ++i) {
-		index_map[addresses[i]] = i;
-		result[i].address = addresses[i];
-	}
-	for(const auto& entry : node->get_history(addresses)) {
-		auto& info = result[index_map[entry.address]];
-		switch(entry.type) {
-			case tx_type_e::REWARD:
-			case tx_type_e::RECEIVE:
-				info.num_receive++;
-				info.total_receive[entry.contract] += entry.amount;
-				info.last_receive_height = std::max(info.last_receive_height, entry.height);
-				break;
-			case tx_type_e::SPEND:
-				info.num_spend++;
-				/* no break */
-			case tx_type_e::TXFEE:
-				info.total_spend[entry.contract] += entry.amount;
-				info.last_spend_height = std::max(info.last_spend_height, entry.height);
-				break;
-		}
-	}
-	return result;
+	return node->get_address_infos(get_all_addresses(index));
 }
 
 std::shared_ptr<const FarmerKeys> Wallet::get_farmer_keys(const uint32_t& index) const
