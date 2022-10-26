@@ -896,7 +896,9 @@ address_info_t Node::get_address_info(const addr_t& address) const
 {
 	address_info_t info;
 	for(const auto& entry : get_balances(address)) {
-		info.num_active++;
+		if(entry.second) {
+			info.num_active++;
+		}
 	}
 	for(const auto& entry : get_history({address}, 0)) {
 		switch(entry.type) {
@@ -924,7 +926,9 @@ std::vector<address_info_t> Node::get_address_infos(const std::vector<addr_t>& a
 		auto& info = result[i];
 		info.address = addresses[i];
 		for(const auto& entry : get_balances(info.address)) {
-			info.num_active++;
+			if(entry.second) {
+				info.num_active++;
+			}
 		}
 		index_map[addresses[i]] = i;
 	}
