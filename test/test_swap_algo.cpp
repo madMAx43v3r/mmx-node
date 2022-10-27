@@ -18,6 +18,9 @@ public:
 	std::array<uint256_t, 2> wallet = {0, 0};
 	std::array<uint256_t, 2> balance = {0, 0};
 
+	std::array<uint256_t, 2> last_user_total = {0, 0};		// user total at last payout
+	std::array<uint256_t, 2> last_pool_volume = {0, 0};		// pool trade volume at last payout
+
 };
 
 class Swap {
@@ -103,12 +106,15 @@ public:
 	{
 		for(int i = 0; i < 2; ++i) {
 			if(user.balance[i]) {
-				const auto total_fees = ((trade_volume[i] * fee_rate) >> FRACT_BITS) - fees_claimed[i];
-				const auto user_share = (total_fees * user.balance[i]) / user_total[i];
+				const auto volume = trade_volume[i] - user.last_pool_volume[i];
+				const auto total_fees = (volume * fee_rate) >> FRACT_BITS;
+				const auto user_share = (2 * total_fees * user.balance[i]) / (user_total[i] + user.last_user_total[i]);
 				balance[i] -= user_share;
 				fees_claimed[i] += user_share;
 				user.wallet[i] += user_share;
 			}
+			user.last_user_total[i] = user_total[i];
+			user.last_pool_volume[i] = trade_volume[i];
 		}
 		update_ratio();
 	}
