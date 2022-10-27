@@ -1404,7 +1404,7 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 
 void Node::handle(std::shared_ptr<const ProofResponse> value)
 {
-	if(!is_synced || !recv_height(value->request->height)) {
+	if(!is_synced || !value->request || !recv_height(value->request->height)) {
 		return;
 	}
 	pending_proofs.push_back(value);
