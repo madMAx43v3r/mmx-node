@@ -253,7 +253,6 @@ private:
 		hash_t our_hash;
 	} peer_check;
 
-	std::shared_ptr<vnx::ThreadPool> threads;
 	std::shared_ptr<vnx::ThreadPool> connect_threads;
 
 	std::shared_ptr<NodeAsyncClient> node;
