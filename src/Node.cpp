@@ -1707,7 +1707,7 @@ std::vector<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<f
 		}
 		fork = fork->prev.lock();
 	}
-	return {};
+	throw std::logic_error("disconnected fork");
 }
 
 void Node::purge_tree()
