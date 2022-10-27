@@ -1699,6 +1699,9 @@ std::vector<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<f
 	const auto root = get_root();
 	std::vector<std::shared_ptr<fork_t>> line;
 	auto fork = fork_head ? fork_head : find_fork(state_hash);
+	if(!fork) {
+		return {};
+	}
 	while(fork && fork->block->height > root->height) {
 		line.push_back(fork);
 		if(fork->block->prev == root->hash) {
