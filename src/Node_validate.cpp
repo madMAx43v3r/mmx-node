@@ -6,6 +6,7 @@
  */
 
 #include <mmx/Node.h>
+#include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/contract/NFT.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/contract/Binary.hxx>

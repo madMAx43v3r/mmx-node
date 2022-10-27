@@ -9,6 +9,7 @@
 #include <mmx/FarmerClient.hxx>
 #include <mmx/TimeInfusion.hxx>
 #include <mmx/IntervalRequest.hxx>
+#include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/operation/Mutate.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
