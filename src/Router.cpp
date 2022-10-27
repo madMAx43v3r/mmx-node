@@ -1022,7 +1022,7 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> value)
 	const auto hash = value->content_hash;
 	const auto is_new = receive_msg_hash(hash, client);
 
-	threads->add_task([=]() {
+	threads->add_task([this, client, value, hash, is_new]() {
 		if(!value->is_valid(params)) {
 			return;
 		}
@@ -1030,12 +1030,12 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> value)
 			value->validate();
 		} catch(const std::exception& ex) {
 			const auto msg = std::string("they sent us an invalid VDF: ") + ex.what();
-			add_task([=]() {
+			add_task([this, client, msg]() {
 				ban_peer(client, msg);
 			});
 			return;
 		}
-		add_task([=]() {
+		add_task([this, client, value, hash, is_new]() {
 			if(auto peer = find_peer(client)) {
 				if(peer->credits >= vdf_relay_cost) {
 					if(relay_msg_hash(hash)) {
@@ -1059,7 +1059,7 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 	const auto hash = block->content_hash;
 	const auto is_new = receive_msg_hash(hash, client);
 
-	threads->add_task([=]() {
+	threads->add_task([this, client, block, hash, is_new]() {
 		if(!block->is_valid() || !block->farmer_sig || block->tx_cost > params->max_block_cost) {
 			return;
 		}
@@ -1067,12 +1067,12 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 			block->validate();
 		} catch(const std::exception& ex) {
 			const auto msg = std::string("they sent us an invalid block: ") + ex.what();
-			add_task([=]() {
+			add_task([this, client, msg]() {
 				ban_peer(client, msg);
 			});
 			return;
 		}
-		add_task([=]() {
+		add_task([this, client, block, hash, is_new]() {
 			const auto farmer_id = hash_t(block->proof->farmer_key);
 			const auto iter = farmer_credits.find(farmer_id);
 			if(iter != farmer_credits.end()) {
@@ -1100,7 +1100,7 @@ void Router::on_proof(uint64_t client, std::shared_ptr<const ProofResponse> valu
 	const auto hash = value->content_hash;
 	const auto is_new = receive_msg_hash(hash, client);
 
-	threads->add_task([=]() {
+	threads->add_task([this, client, value, hash, is_new]() {
 		if(!value->is_valid()) {
 			return;
 		}
@@ -1108,12 +1108,12 @@ void Router::on_proof(uint64_t client, std::shared_ptr<const ProofResponse> valu
 			value->validate();
 		} catch(const std::exception& ex) {
 			const auto msg = std::string("they sent us invalid proof: ") + ex.what();
-			add_task([=]() {
+			add_task([this, client, msg]() {
 				ban_peer(client, msg);
 			});
 			return;
 		}
-		add_task([=]() {
+		add_task([this, client, value, hash, is_new]() {
 			const auto farmer_id = hash_t(value->proof->farmer_key);
 			const auto iter = farmer_credits.find(farmer_id);
 			if(iter != farmer_credits.end()) {
@@ -1142,7 +1142,7 @@ void Router::on_transaction(uint64_t client, std::shared_ptr<const Transaction> 
 {
 	const auto is_new = receive_msg_hash(tx->content_hash, client);
 
-	threads->add_task([=]() {
+	threads->add_task([this, tx, is_new]() {
 		if(!tx->is_valid(params) || tx->exec_result) {
 			return;
 		}
