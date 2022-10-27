@@ -231,7 +231,7 @@ void Node::update()
 
 		size_t num_empty = 0;
 		for(const auto& fork : fork_line) {
-			if(!fork->block->proof) {
+			if(!fork->block->farmer_sig) {
 				num_empty++;
 			}
 		}
