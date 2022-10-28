@@ -6,6 +6,12 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 if(NOT MSVC)
 	add_compile_options(-Wall -Wno-unused-function)
+
+	if(WITH_SECP256K1)
+		message(STATUS "Using secp256k1")
+		include_directories(lib/secp256k1/include)
+		link_directories(lib/secp256k1/.libs)
+	endif()
 	
 	if(ENABLE_MEM_SANITIZE)
 		message(STATUS "Compiling with -fsanitize=address")
@@ -19,6 +25,7 @@ if(NOT MSVC)
 		set(DISABLE_OPENCL 1)
 	endif()
 else()
+	add_compile_definitions(TARGET_FILENAME=$(TargetName)$(TargetExt))
 	add_definitions(/openmp ${CUSTOM_ADD_DEFINITIONS})
 	
 	find_library(secp256k1_LIBRARY secp256k1 HINTS ${secp256k1_LIBRARIES})
@@ -56,11 +63,11 @@ if(NOT DISABLE_OPENCL)
 endif()
 
 find_package(Threads REQUIRED)
+find_library(MINIUPNPC_LIB NAMES miniupnpc)
 
 if(NOT MSVC)
 	find_package(OpenMP REQUIRED)
 	find_library(JEMALLOC_LIB NAMES jemalloc)
-	find_library(MINIUPNPC_LIB NAMES miniupnpc)
 endif()
 
 include(cmake/chiapos.cmake)
@@ -71,12 +78,6 @@ if(OpenCL_FOUND)
 	target_compile_definitions(automy_basic_opencl
 		PUBLIC CL_TARGET_OPENCL_VERSION=120
 	)
-endif()
-
-if(NOT MSVC AND WITH_SECP256K1)
-	message(STATUS "Using secp256k1")
-	include_directories(lib/secp256k1/include)
-	link_directories(lib/secp256k1/.libs)
 endif()
 
 file(GLOB GENERATED_SOURCE_FILES

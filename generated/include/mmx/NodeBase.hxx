@@ -151,6 +151,7 @@ protected:
 	virtual std::map<::mmx::vm::varptr_t, ::mmx::vm::varptr_t> read_storage_map(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) const = 0;
 	virtual ::vnx::Variant call_contract(const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args) const = 0;
 	virtual ::mmx::address_info_t get_address_info(const ::mmx::addr_t& address) const = 0;
+	virtual std::vector<::mmx::address_info_t> get_address_infos(const std::vector<::mmx::addr_t>& address, const int32_t& since) const = 0;
 	virtual std::vector<std::pair<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>> get_virtual_plots_for(const ::mmx::bls_pubkey_t& farmer_key) const = 0;
 	virtual uint64_t get_virtual_plot_balance(const ::mmx::addr_t& plot_id, const vnx::optional<::mmx::hash_t>& block_hash) const = 0;
 	virtual ::mmx::offer_data_t get_offer(const ::mmx::addr_t& address) const = 0;

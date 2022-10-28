@@ -895,6 +895,11 @@ uint128 Node::get_total_supply(const addr_t& currency) const
 address_info_t Node::get_address_info(const addr_t& address) const
 {
 	address_info_t info;
+	for(const auto& entry : get_balances(address)) {
+		if(entry.second) {
+			info.num_active++;
+		}
+	}
 	for(const auto& entry : get_history({address}, 0)) {
 		switch(entry.type) {
 			case tx_type_e::REWARD:
@@ -911,6 +916,41 @@ address_info_t Node::get_address_info(const addr_t& address) const
 		}
 	}
 	return info;
+}
+
+std::vector<address_info_t> Node::get_address_infos(const std::vector<addr_t>& addresses, const int32_t& since) const
+{
+	std::unordered_map<addr_t, size_t> index_map;
+	std::vector<address_info_t> result(addresses.size());
+	for(size_t i = 0; i < addresses.size(); ++i) {
+		auto& info = result[i];
+		info.address = addresses[i];
+		for(const auto& entry : get_balances(info.address)) {
+			if(entry.second) {
+				info.num_active++;
+			}
+		}
+		index_map[addresses[i]] = i;
+	}
+	for(const auto& entry : get_history(addresses, since)) {
+		auto& info = result[index_map[entry.address]];
+		switch(entry.type) {
+			case tx_type_e::REWARD:
+			case tx_type_e::RECEIVE:
+				info.num_receive++;
+				info.total_receive[entry.contract] += entry.amount;
+				info.last_receive_height = std::max(info.last_receive_height, entry.height);
+				break;
+			case tx_type_e::SPEND:
+				info.num_spend++;
+				/* no break */
+			case tx_type_e::TXFEE:
+				info.total_spend[entry.contract] += entry.amount;
+				info.last_spend_height = std::max(info.last_spend_height, entry.height);
+				break;
+		}
+	}
+	return result;
 }
 
 std::vector<std::pair<addr_t, std::shared_ptr<const Contract>>> Node::get_virtual_plots_for(const bls_pubkey_t& farmer_key) const
@@ -1364,7 +1404,7 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 
 void Node::handle(std::shared_ptr<const ProofResponse> value)
 {
-	if(!is_synced || !recv_height(value->request->height)) {
+	if(!is_synced || !value->request || !recv_height(value->request->height)) {
 		return;
 	}
 	pending_proofs.push_back(value);
@@ -1380,7 +1420,7 @@ void Node::print_stats()
 {
 #ifdef WITH_JEMALLOC
 	static size_t counter = 0;
-	if(counter++ % 15 == 0) {
+	if(counter++ % 3 == 0) {
 		const std::string path = storage_path + "node_malloc_info.txt";
 		FILE* file = fopen(path.c_str(), "w");
 		malloc_stats_print(&malloc_stats_callback, file, 0);
@@ -1659,6 +1699,9 @@ std::vector<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<f
 	const auto root = get_root();
 	std::vector<std::shared_ptr<fork_t>> line;
 	auto fork = fork_head ? fork_head : find_fork(state_hash);
+	if(!fork) {
+		return {};
+	}
 	while(fork && fork->block->height > root->height) {
 		line.push_back(fork);
 		if(fork->block->prev == root->hash) {
@@ -1667,7 +1710,7 @@ std::vector<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<f
 		}
 		fork = fork->prev.lock();
 	}
-	return {};
+	throw std::logic_error("disconnected fork");
 }
 
 void Node::purge_tree()
@@ -1699,7 +1742,7 @@ void Node::purge_tree()
 			iter++;
 		}
 	}
-	if(purged_blocks.size() > 100000) {
+	if(purged_blocks.size() > 10000) {
 		purged_blocks.clear();
 	}
 }

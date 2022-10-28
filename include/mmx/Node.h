@@ -128,6 +128,8 @@ protected:
 
 	address_info_t get_address_info(const addr_t& address) const override;
 
+	std::vector<address_info_t> get_address_infos(const std::vector<addr_t>& addresses, const int32_t& since) const override;
+
 	uint128 get_total_supply(const addr_t& currency) const override;
 
 	std::vector<std::pair<addr_t, std::shared_ptr<const Contract>>> get_virtual_plots_for(const bls_pubkey_t& farmer_key) const;

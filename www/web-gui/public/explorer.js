@@ -438,7 +438,7 @@ Vue.component('block-view', {
 										</tr>
 										<tr>
 											<td class="key-cell">{{ $t('block_view.farmer_key') }}</td>
-											<td>{{data.proof.farmer_key}}</td>
+											<td><router-link :to="'/explore/farmer/' + data.proof.farmer_key">{{data.proof.farmer_key}}</router-link></td>
 										</tr>
 									</template>
 								</tbody>

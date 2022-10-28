@@ -231,14 +231,24 @@ void Node::update()
 		// commit to disk
 		const auto fork_line = get_fork_line();
 		const auto commit_delay = is_synced || sync_retry ? params->commit_delay : max_fork_length;
-		for(size_t i = 0; i + commit_delay < fork_line.size(); ++i)
-		{
-			const auto& fork = fork_line[i];
-			const auto& block = fork->block;
-			if(!fork->is_vdf_verified) {
-				break;	// wait for VDF verify
+
+		size_t num_empty = 0;
+		for(const auto& fork : fork_line) {
+			if(!fork->block->farmer_sig) {
+				num_empty++;
 			}
-			commit(block);
+		}
+		if(num_empty < fork_line.size() / 2)
+		{
+			for(size_t i = 0; i + commit_delay < fork_line.size(); ++i)
+			{
+				const auto& fork = fork_line[i];
+				const auto& block = fork->block;
+				if(!fork->is_vdf_verified) {
+					break;	// wait for VDF verify
+				}
+				commit(block);
+			}
 		}
 	}
 	const auto root = get_root();

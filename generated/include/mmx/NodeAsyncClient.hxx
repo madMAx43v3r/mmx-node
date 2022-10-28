@@ -204,6 +204,10 @@ public:
 			const std::function<void(const ::mmx::address_info_t&)>& _callback = std::function<void(const ::mmx::address_info_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
+	uint64_t get_address_infos(const std::vector<::mmx::addr_t>& address = {}, const int32_t& since = 0, 
+			const std::function<void(const std::vector<::mmx::address_info_t>&)>& _callback = std::function<void(const std::vector<::mmx::address_info_t>&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
 	uint64_t get_virtual_plots_for(const ::mmx::bls_pubkey_t& farmer_key = ::mmx::bls_pubkey_t(), 
 			const std::function<void(const std::vector<std::pair<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>>&)>& _callback = std::function<void(const std::vector<std::pair<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
@@ -359,6 +363,7 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<::mmx::vm::varptr_t, ::mmx::vm::varptr_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_read_storage_map;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::vnx::Variant&)>, std::function<void(const vnx::exception&)>>> vnx_queue_call_contract;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::address_info_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_address_info;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::address_info_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_address_infos;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::pair<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_virtual_plots_for;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const uint64_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_virtual_plot_balance;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::offer_data_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_offer;

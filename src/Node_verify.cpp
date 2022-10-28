@@ -47,16 +47,13 @@ bool Node::add_proof(	const uint32_t height, const hash_t& challenge,
 
 bool Node::verify(std::shared_ptr<const ProofResponse> value)
 {
-	const auto request = value->request;
-	if(!request) {
-		return true;
+	if(!value->is_valid()) {
+		throw std::logic_error("invalid response");
 	}
+	const auto request = value->request;
 	const auto vdf_block = get_header_at(request->height - params->challenge_delay);
 	if(!vdf_block) {
 		return false;
-	}
-	if(!value->is_valid()) {
-		throw std::logic_error("invalid response");
 	}
 	const auto diff_block = get_diff_header(vdf_block, params->challenge_delay);
 	const auto challenge = hash_t(diff_block->hash + vdf_block->vdf_output[1]);

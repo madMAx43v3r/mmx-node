@@ -44,7 +44,6 @@ public:
 	int32_t connect_interval_ms = 10000;
 	int32_t fetch_timeout_ms = 10000;
 	int32_t relay_target_ms = 5000;
-	uint32_t num_threads = 4;
 	uint32_t sync_loss_delay = 60;
 	uint32_t discover_interval = 60;
 	uint32_t disconnect_interval = 0;
@@ -141,7 +140,7 @@ protected:
 
 template<typename T>
 void RouterBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<RouterBase>(59);
+	_visitor.template type_begin<RouterBase>(58);
 	_visitor.type_field("port", 0); _visitor.accept(port);
 	_visitor.type_field("host", 1); _visitor.accept(host);
 	_visitor.type_field("max_connections", 2); _visitor.accept(max_connections);
@@ -171,37 +170,36 @@ void RouterBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("connect_interval_ms", 26); _visitor.accept(connect_interval_ms);
 	_visitor.type_field("fetch_timeout_ms", 27); _visitor.accept(fetch_timeout_ms);
 	_visitor.type_field("relay_target_ms", 28); _visitor.accept(relay_target_ms);
-	_visitor.type_field("num_threads", 29); _visitor.accept(num_threads);
-	_visitor.type_field("sync_loss_delay", 30); _visitor.accept(sync_loss_delay);
-	_visitor.type_field("discover_interval", 31); _visitor.accept(discover_interval);
-	_visitor.type_field("disconnect_interval", 32); _visitor.accept(disconnect_interval);
-	_visitor.type_field("peer_retry_interval", 33); _visitor.accept(peer_retry_interval);
-	_visitor.type_field("fork_check_interval", 34); _visitor.accept(fork_check_interval);
-	_visitor.type_field("num_peers_out", 35); _visitor.accept(num_peers_out);
-	_visitor.type_field("min_sync_peers", 36); _visitor.accept(min_sync_peers);
-	_visitor.type_field("max_peer_set", 37); _visitor.accept(max_peer_set);
-	_visitor.type_field("max_sent_cache", 38); _visitor.accept(max_sent_cache);
-	_visitor.type_field("max_hash_cache", 39); _visitor.accept(max_hash_cache);
-	_visitor.type_field("vdf_credits", 40); _visitor.accept(vdf_credits);
-	_visitor.type_field("block_credits", 41); _visitor.accept(block_credits);
-	_visitor.type_field("proof_credits", 42); _visitor.accept(proof_credits);
-	_visitor.type_field("vdf_relay_cost", 43); _visitor.accept(vdf_relay_cost);
-	_visitor.type_field("proof_relay_cost", 44); _visitor.accept(proof_relay_cost);
-	_visitor.type_field("block_relay_cost", 45); _visitor.accept(block_relay_cost);
-	_visitor.type_field("max_node_credits", 46); _visitor.accept(max_node_credits);
-	_visitor.type_field("max_farmer_credits", 47); _visitor.accept(max_farmer_credits);
-	_visitor.type_field("node_version", 48); _visitor.accept(node_version);
-	_visitor.type_field("mode", 49); _visitor.accept(mode);
-	_visitor.type_field("do_relay", 50); _visitor.accept(do_relay);
-	_visitor.type_field("open_port", 51); _visitor.accept(open_port);
-	_visitor.type_field("max_tx_upload", 52); _visitor.accept(max_tx_upload);
-	_visitor.type_field("max_pending_cost", 53); _visitor.accept(max_pending_cost);
-	_visitor.type_field("seed_peers", 54); _visitor.accept(seed_peers);
-	_visitor.type_field("fixed_peers", 55); _visitor.accept(fixed_peers);
-	_visitor.type_field("block_peers", 56); _visitor.accept(block_peers);
-	_visitor.type_field("storage_path", 57); _visitor.accept(storage_path);
-	_visitor.type_field("node_server", 58); _visitor.accept(node_server);
-	_visitor.template type_end<RouterBase>(59);
+	_visitor.type_field("sync_loss_delay", 29); _visitor.accept(sync_loss_delay);
+	_visitor.type_field("discover_interval", 30); _visitor.accept(discover_interval);
+	_visitor.type_field("disconnect_interval", 31); _visitor.accept(disconnect_interval);
+	_visitor.type_field("peer_retry_interval", 32); _visitor.accept(peer_retry_interval);
+	_visitor.type_field("fork_check_interval", 33); _visitor.accept(fork_check_interval);
+	_visitor.type_field("num_peers_out", 34); _visitor.accept(num_peers_out);
+	_visitor.type_field("min_sync_peers", 35); _visitor.accept(min_sync_peers);
+	_visitor.type_field("max_peer_set", 36); _visitor.accept(max_peer_set);
+	_visitor.type_field("max_sent_cache", 37); _visitor.accept(max_sent_cache);
+	_visitor.type_field("max_hash_cache", 38); _visitor.accept(max_hash_cache);
+	_visitor.type_field("vdf_credits", 39); _visitor.accept(vdf_credits);
+	_visitor.type_field("block_credits", 40); _visitor.accept(block_credits);
+	_visitor.type_field("proof_credits", 41); _visitor.accept(proof_credits);
+	_visitor.type_field("vdf_relay_cost", 42); _visitor.accept(vdf_relay_cost);
+	_visitor.type_field("proof_relay_cost", 43); _visitor.accept(proof_relay_cost);
+	_visitor.type_field("block_relay_cost", 44); _visitor.accept(block_relay_cost);
+	_visitor.type_field("max_node_credits", 45); _visitor.accept(max_node_credits);
+	_visitor.type_field("max_farmer_credits", 46); _visitor.accept(max_farmer_credits);
+	_visitor.type_field("node_version", 47); _visitor.accept(node_version);
+	_visitor.type_field("mode", 48); _visitor.accept(mode);
+	_visitor.type_field("do_relay", 49); _visitor.accept(do_relay);
+	_visitor.type_field("open_port", 50); _visitor.accept(open_port);
+	_visitor.type_field("max_tx_upload", 51); _visitor.accept(max_tx_upload);
+	_visitor.type_field("max_pending_cost", 52); _visitor.accept(max_pending_cost);
+	_visitor.type_field("seed_peers", 53); _visitor.accept(seed_peers);
+	_visitor.type_field("fixed_peers", 54); _visitor.accept(fixed_peers);
+	_visitor.type_field("block_peers", 55); _visitor.accept(block_peers);
+	_visitor.type_field("storage_path", 56); _visitor.accept(storage_path);
+	_visitor.type_field("node_server", 57); _visitor.accept(node_server);
+	_visitor.template type_end<RouterBase>(58);
 }
 
 
