@@ -111,12 +111,15 @@ private:
 	struct sync_job_t {
 		bool is_done = false;
 		uint32_t height = 0;
+		uint32_t num_fetch = 0;
 		int64_t start_time_ms = 0;
 		int64_t last_recv_ms = 0;
 		std::unordered_set<uint64_t> failed;
 		std::unordered_set<uint64_t> pending;
 		std::unordered_set<uint64_t> succeeded;
+		std::unordered_map<uint64_t, hash_t> got_hash;
 		std::unordered_map<uint32_t, uint64_t> request_map;				// [request id, client]
+		std::unordered_map<hash_t, int64_t> pending_blocks;				// [hash, timeout]
 		std::unordered_map<hash_t, std::shared_ptr<const Block>> blocks;
 	};
 

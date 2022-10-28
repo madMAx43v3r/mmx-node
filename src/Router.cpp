@@ -493,7 +493,10 @@ void Router::update()
 					job->height = height;
 				}
 				job->start_time_ms = now_ms;
-				log(WARN) << "Timeout on sync job for height " << job->height << ", trying again ...";
+				log(WARN) << "Timeout on sync job for height " << job->height << ": "
+						<< job->got_hash.size() << " reply, " << job->num_fetch << " fetch, "
+						<< job->failed.size() << " failed, " << job->pending.size() << " pending, "
+						<< job->succeeded.size() << " succeeded";
 			}
 		}
 	}
@@ -519,7 +522,6 @@ bool Router::process(std::shared_ptr<const Return> ret)
 	bool did_consume = false;
 	for(auto& entry : sync_jobs)
 	{
-		// TODO: re-design to avoid duplicate downloads
 		const auto& request_id = entry.first;
 		auto& job = entry.second;
 		const auto elapsed_ms = now_ms - job->start_time_ms;
@@ -528,16 +530,40 @@ bool Router::process(std::shared_ptr<const Return> ret)
 			auto iter = job->request_map.find(ret->id);
 			if(iter != job->request_map.end()) {
 				const auto client = iter->second;
-				if(auto result = std::dynamic_pointer_cast<const Node_get_block_at_return>(ret->result)) {
-					if(auto block = result->_ret_0) {
-						if(block->is_valid()) {
-							job->blocks[block->content_hash] = block;
+				if(auto result = std::dynamic_pointer_cast<const Node_get_block_hash_return>(ret->result)) {
+					if(auto hash = result->_ret_0) {
+						if(job->blocks.count(*hash)) {
 							job->succeeded.insert(client);
+						}
+						job->got_hash[client] = *hash;
+					} else {
+						job->failed.insert(client);
+					}
+				}
+				else if(auto result = std::dynamic_pointer_cast<const Node_get_block_return>(ret->result)) {
+					if(auto block = result->_ret_0) {
+						const auto& hash = block->hash;
+						if(block->is_valid()) {
+							for(const auto& entry : job->got_hash) {
+								if(entry.second == hash) {
+									job->succeeded.insert(entry.first);
+								}
+							}
+							job->succeeded.insert(client);
+							job->blocks[hash] = block;
 						} else {
 							ban_peer(client, "they sent us an invalid block");
 						}
-					} else {
+						job->pending_blocks.erase(hash);
+					}
+					if(!job->succeeded.count(client)) {
 						job->failed.insert(client);
+					}
+				}
+				else if(auto result = std::dynamic_pointer_cast<const vnx::Exception>(ret->result)) {
+					auto got_hash = job->got_hash.find(client);
+					if(got_hash != job->got_hash.end()) {
+						job->pending_blocks.erase(got_hash->second);
 					}
 				}
 				job->pending.erase(client);
@@ -550,31 +576,64 @@ bool Router::process(std::shared_ptr<const Return> ret)
 		}
 		// check for disconnects
 		for(auto iter = job->pending.begin(); iter != job->pending.end();) {
-			if(synced_peers.count(*iter)) {
+			const auto client = *iter;
+			if(synced_peers.count(client)) {
 				iter++;
 			} else {
+				auto iter2 = job->got_hash.find(client);
+				if(iter2 != job->got_hash.end()) {
+					job->pending_blocks.erase(iter2->second);
+					job->got_hash.erase(iter2);
+				}
 				iter = job->pending.erase(iter);
 			}
 		}
 		const auto num_returns = job->failed.size() + job->succeeded.size();
 		if(num_returns < min_sync_peers) {
-			const auto num_left = (min_sync_peers + 1 + (elapsed_ms / 5000)) - num_returns;
-			if(job->pending.size() < num_left) {
-				auto clients = synced_peers;
-				for(auto id : job->failed) {
-					clients.erase(id);
+			// fetch block hashes
+			const auto max_pending = min_sync_peers + 3;
+			const auto num_pending = job->pending.size() + job->got_hash.size();
+			if(num_pending < max_pending) {
+				std::set<uint64_t> clients;
+				for(auto client : synced_peers) {
+					if(!job->failed.count(client) && !job->pending.count(client)
+						&& !job->succeeded.count(client) && !job->got_hash.count(client))
+					{
+						clients.insert(client);
+					}
 				}
-				for(auto id : job->succeeded) {
-					clients.erase(id);
-				}
-				// TODO: prefer non-blocked peers
-				for(auto client : get_subset(clients, num_left, rand_engine))
-				{
-					auto req = Node_get_block_at::create();
+				for(const auto client : get_subset(clients, max_pending - num_pending, rand_engine)) {
+					// TODO: Node_get_block_hash_ex
+					auto req = Node_get_block_hash::create();
 					req->height = job->height;
 					const auto id = send_request(client, req);
 					job->request_map[id] = client;
 					job->pending.insert(client);
+				}
+			}
+			// fetch blocks
+			std::set<std::pair<uint64_t, hash_t>> clients;
+			for(const auto& entry : job->got_hash) {
+				const auto& hash = entry.second;
+				if(!job->blocks.count(hash)) {
+					const auto client = entry.first;
+					if(!job->failed.count(client) && !job->pending.count(client) && !job->succeeded.count(client)) {
+						clients.emplace(client, hash);
+					}
+				}
+			}
+			for(const auto& entry : get_subset(clients, clients.size(), rand_engine)) {
+				const auto client = entry.first;
+				const auto& hash = entry.second;
+				auto pending = job->pending_blocks.find(hash);
+				if(pending == job->pending_blocks.end() || now_ms > pending->second) {
+					auto req = Node_get_block::create();
+					req->hash = hash;
+					const auto id = send_request(client, req);
+					job->request_map[id] = client;
+					job->pending.insert(client);
+					job->pending_blocks[hash] = now_ms + fetch_timeout_ms / 8;
+					job->num_fetch++;
 				}
 			}
 		} else {
@@ -583,9 +642,8 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				max_block_size = std::max(entry.second->tx_cost, max_block_size);
 			}
 			log(DEBUG) << "Got " << job->blocks.size() << " blocks for height " << job->height << " by fetching "
-					<< job->succeeded.size() + job->failed.size() << " times, " << job->failed.size() << " failed"
-					<< ", size = " << to_value(max_block_size, params) << " MMX"
-					<< ", took " << elapsed_ms / 1e3 << " sec";
+					<< job->num_fetch << " times, " << job->got_hash.size() << " reply, " << job->failed.size() << " failed"
+					<< ", size = " << to_value(max_block_size, params) << " MMX" << ", took " << elapsed_ms / 1e3 << " sec";
 			// we are done with the job
 			std::vector<std::shared_ptr<const Block>> blocks;
 			for(const auto& entry : job->blocks) {
