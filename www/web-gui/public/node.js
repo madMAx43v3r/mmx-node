@@ -207,11 +207,11 @@ Vue.component('node-peers', {
 			</template>
 			
 			<template v-slot:item.received="{ item }">
-				<b>{{(item.bytes_recv / item.connect_time_ms / 1.024).toFixed(1)}}</b> KB/s
+				<b>{{(item.bytes_recv / 1024 / 1024).toFixed(1)}}</b> MB
 			</template>
 			
 			<template v-slot:item.send="{ item }">
-				<b>{{(item.bytes_send / item.connect_time_ms / 1.024).toFixed(1)}}</b> KB/s
+				<b>{{(item.bytes_send / 1024 / 1024).toFixed(1)}}</b> MB
 			</template>	
 			
 			<template v-slot:item.ping="{ item }">

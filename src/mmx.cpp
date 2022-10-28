@@ -782,10 +782,8 @@ int main(int argc, char** argv)
 					}
 					std::cout << height;
 					std::cout << ", " << vnx::to_string_value(peer.type) << " (" << peer.version / 100 << "." << peer.version % 100 << ")";
-					const auto recv = (peer.bytes_recv * 1000) / peer.connect_time_ms;
-					const auto send = (peer.bytes_send * 1000) / peer.connect_time_ms;
-					std::cout << ", " << recv / 1024 << "." << (recv * 10 / 1024) % 10 << " KB/s recv";
-					std::cout << ", " << send / 1024 << "." << (send * 10 / 1024) % 10 << " KB/s send";
+					std::cout << ", " << peer.bytes_recv / 1024 / 1024 << " MB recv";
+					std::cout << ", " << peer.bytes_send / 1024 / 1024 << " MB sent";
 					std::cout << ", since " << (peer.connect_time_ms / 60000) << " min";
 					std::cout << ", " << peer.ping_ms << " ms ping";
 					std::cout << ", " << peer.credits << " credits";
