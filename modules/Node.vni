@@ -82,6 +82,9 @@ module Node implements vnx.addons.HttpComponent {
 	optional<hash_t> get_block_hash(uint height) const;
 	
 	@Permission(permission_e.PUBLIC)
+	optional<pair<hash_t, hash_t>> get_block_hash_ex(uint height) const;
+	
+	@Permission(permission_e.PUBLIC)
 	optional<uint> get_tx_height(hash_t id) const;
 	
 	@Permission(permission_e.PUBLIC)

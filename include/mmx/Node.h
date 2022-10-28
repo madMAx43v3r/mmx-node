@@ -66,6 +66,8 @@ protected:
 
 	vnx::optional<hash_t> get_block_hash(const uint32_t& height) const override;
 
+	vnx::optional<std::pair<hash_t, hash_t>> get_block_hash_ex(const uint32_t& height) const override;
+
 	vnx::optional<uint32_t> get_tx_height(const hash_t& id) const override;
 
 	std::vector<hash_t> get_tx_ids_at(const uint32_t& height) const override;
@@ -479,7 +481,7 @@ private:
 	uint32_t min_pool_fee_ratio = 0;
 	std::shared_ptr<vnx::File> block_chain;
 	std::shared_ptr<vm::StorageDB> storage;
-	hash_table<hash_t, uint32_t> hash_index;									// [block hash => height]
+	hash_table<hash_t, std::pair<uint32_t, hash_t>> hash_index;					// [block hash => [height, content hash]]
 	hash_table<hash_t, std::pair<int64_t, uint32_t>> tx_index;					// [txid => [file offset, height]]
 	uint_table<uint32_t, std::pair<int64_t, hash_t>> block_index;				// [height => [file offset, block hash]]
 	uint_table<uint32_t, std::vector<hash_t>> tx_log;							// [height => txids]
@@ -487,7 +489,7 @@ private:
 
 	uint32_t sync_pos = 0;									// current sync height
 	uint32_t sync_retry = 0;
-	int64_t sync_finish_ms = 0;							// when peak was reached
+	int64_t sync_finish_ms = 0;								// when peak was reached
 	double max_sync_pending = 0;
 	std::set<uint32_t> sync_pending;						// set of heights
 	vnx::optional<uint32_t> sync_peak;						// max height we can sync

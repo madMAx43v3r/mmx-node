@@ -35,6 +35,8 @@
 #include <mmx/Node_get_block_at_return.hxx>
 #include <mmx/Node_get_block_hash.hxx>
 #include <mmx/Node_get_block_hash_return.hxx>
+#include <mmx/Node_get_block_hash_ex.hxx>
+#include <mmx/Node_get_block_hash_ex_return.hxx>
 #include <mmx/Node_get_tx_ids_at.hxx>
 #include <mmx/Node_get_tx_ids_at_return.hxx>
 
@@ -530,9 +532,9 @@ bool Router::process(std::shared_ptr<const Return> ret)
 			auto iter = job->request_map.find(ret->id);
 			if(iter != job->request_map.end()) {
 				const auto client = iter->second;
-				if(auto result = std::dynamic_pointer_cast<const Node_get_block_hash_return>(ret->result)) {
+				if(auto result = std::dynamic_pointer_cast<const Node_get_block_hash_ex_return>(ret->result)) {
 					if(auto hash = result->_ret_0) {
-						if(job->blocks.count(*hash)) {
+						if(job->blocks.count(hash->second)) {
 							job->succeeded.insert(client);
 						}
 						job->got_hash[client] = *hash;
@@ -542,10 +544,10 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				}
 				else if(auto result = std::dynamic_pointer_cast<const Node_get_block_return>(ret->result)) {
 					if(auto block = result->_ret_0) {
-						const auto& hash = block->hash;
+						const auto& hash = block->content_hash;
 						if(block->is_valid()) {
 							for(const auto& entry : job->got_hash) {
-								if(entry.second == hash) {
+								if(entry.second.second == hash) {
 									job->succeeded.insert(entry.first);
 								}
 							}
@@ -563,7 +565,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				else if(auto result = std::dynamic_pointer_cast<const vnx::Exception>(ret->result)) {
 					auto got_hash = job->got_hash.find(client);
 					if(got_hash != job->got_hash.end()) {
-						job->pending_blocks.erase(got_hash->second);
+						job->pending_blocks.erase(got_hash->second.second);
 					}
 				}
 				job->pending.erase(client);
@@ -582,7 +584,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 			} else {
 				auto iter2 = job->got_hash.find(client);
 				if(iter2 != job->got_hash.end()) {
-					job->pending_blocks.erase(iter2->second);
+					job->pending_blocks.erase(iter2->second.second);
 					job->got_hash.erase(iter2);
 				}
 				iter = job->pending.erase(iter);
@@ -603,8 +605,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 					}
 				}
 				for(const auto client : get_subset(clients, max_pending - num_pending, rand_engine)) {
-					// TODO: Node_get_block_hash_ex
-					auto req = Node_get_block_hash::create();
+					auto req = Node_get_block_hash_ex::create();
 					req->height = job->height;
 					const auto id = send_request(client, req);
 					job->request_map[id] = client;
@@ -612,10 +613,10 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				}
 			}
 			// fetch blocks
-			std::set<std::pair<uint64_t, hash_t>> clients;
+			std::set<std::pair<uint64_t, std::pair<hash_t, hash_t>>> clients;
 			for(const auto& entry : job->got_hash) {
 				const auto& hash = entry.second;
-				if(!job->blocks.count(hash)) {
+				if(!job->blocks.count(hash.second)) {
 					const auto client = entry.first;
 					if(!job->failed.count(client) && !job->pending.count(client) && !job->succeeded.count(client)) {
 						clients.emplace(client, hash);
@@ -625,14 +626,14 @@ bool Router::process(std::shared_ptr<const Return> ret)
 			for(const auto& entry : get_subset(clients, clients.size(), rand_engine)) {
 				const auto client = entry.first;
 				const auto& hash = entry.second;
-				auto pending = job->pending_blocks.find(hash);
+				auto pending = job->pending_blocks.find(hash.second);
 				if(pending == job->pending_blocks.end() || now_ms > pending->second) {
 					auto req = Node_get_block::create();
-					req->hash = hash;
+					req->hash = hash.first;
 					const auto id = send_request(client, req);
 					job->request_map[id] = client;
 					job->pending.insert(client);
-					job->pending_blocks[hash] = now_ms + fetch_timeout_ms / 8;
+					job->pending_blocks[hash.second] = now_ms + fetch_timeout_ms / 8;
 					job->num_fetch++;
 				}
 			}
@@ -1432,6 +1433,15 @@ void Router::on_request(uint64_t client, std::shared_ptr<const Request> msg)
 				node->get_block_hash(value->height,
 						[=](const vnx::optional<hash_t>& hash) {
 							send_result<Node_get_block_hash_return>(client, msg->id, hash);
+						},
+						std::bind(&Router::on_error, this, client, msg->id, std::placeholders::_1));
+			}
+			break;
+		case Node_get_block_hash_ex::VNX_TYPE_ID:
+			if(auto value = std::dynamic_pointer_cast<const Node_get_block_hash_ex>(method)) {
+				node->get_block_hash_ex(value->height,
+						[=](const vnx::optional<std::pair<hash_t, hash_t>>& hash) {
+							send_result<Node_get_block_hash_ex_return>(client, msg->id, hash);
 						},
 						std::bind(&Router::on_error, this, client, msg->id, std::placeholders::_1));
 			}

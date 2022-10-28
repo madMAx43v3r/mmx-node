@@ -352,9 +352,9 @@ std::shared_ptr<const BlockHeader> Node::get_block_ex(const hash_t& hash, bool f
 		const auto& block = iter->second->block;
 		return full_block ? block : block->get_header();
 	}
-	uint32_t height = 0;
-	if(hash_index.find(hash, height)) {
-		return get_block_at_ex(height, full_block);
+	std::pair<uint32_t, hash_t> entry;
+	if(hash_index.find(hash, entry)) {
+		return get_block_at_ex(entry.first, full_block);
 	}
 	return nullptr;
 }
@@ -398,6 +398,17 @@ vnx::optional<hash_t> Node::get_block_hash(const uint32_t& height) const
 	std::pair<int64_t, hash_t> entry;
 	if(block_index.find(height, entry)) {
 		return entry.second;
+	}
+	return nullptr;
+}
+
+vnx::optional<std::pair<hash_t, hash_t>> Node::get_block_hash_ex(const uint32_t& height) const
+{
+	if(auto hash = get_block_hash(height)) {
+		std::pair<uint32_t, hash_t> entry;
+		if(hash_index.find(*hash, entry)) {
+			return std::make_pair(*hash, entry.second);
+		}
 	}
 	return nullptr;
 }
@@ -1869,7 +1880,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	if(auto proof = block->proof) {
 		farmer_block_map.insert(proof->farmer_key, block->height);
 	}
-	hash_index.insert(block->hash, block->height);
+	hash_index.insert(block->hash, std::make_pair(block->height, block->content_hash));
 
 	state_hash = block->hash;
 	contract_cache.clear();
