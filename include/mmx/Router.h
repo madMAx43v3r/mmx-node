@@ -81,6 +81,7 @@ private:
 
 	struct peer_t : Super::peer_t {
 		bool is_synced = false;
+		bool is_paused = false;
 		bool is_blocked = false;
 		bool is_outbound = false;
 		uint32_t height = 0;
@@ -110,12 +111,15 @@ private:
 	struct sync_job_t {
 		bool is_done = false;
 		uint32_t height = 0;
+		uint32_t num_fetch = 0;
 		int64_t start_time_ms = 0;
 		int64_t last_recv_ms = 0;
 		std::unordered_set<uint64_t> failed;
 		std::unordered_set<uint64_t> pending;
 		std::unordered_set<uint64_t> succeeded;
+		std::unordered_map<uint64_t, hash_t> got_hash;
 		std::unordered_map<uint32_t, uint64_t> request_map;				// [request id, client]
+		std::unordered_map<hash_t, int64_t> pending_blocks;				// [hash, timeout]
 		std::unordered_map<hash_t, std::shared_ptr<const Block>> blocks;
 	};
 
@@ -175,7 +179,7 @@ private:
 	void relay(std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter);
 
 	void broadcast(	std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter,
-					bool reliable = true, bool synced_only = false);
+					bool reliable, bool synced_only = false);
 
 	void send_to(std::vector<std::shared_ptr<peer_t>> peers, std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, bool reliable);
 
