@@ -1298,9 +1298,13 @@ void Router::on_request(uint64_t client, std::shared_ptr<const Request> msg)
 		return;
 	}
 	if(auto peer = find_peer(client)) {
-		if(peer->is_blocked && !peer->is_paused) {
-			pause(client);
+		if(peer->is_blocked) {
+			auto ret = Return::create();
+			ret->id = msg->id;
+			ret->result = vnx::OverflowException::create();
+			send_to(client, ret);
 			peer->is_paused = true;
+			return;
 		}
 	}
 	switch(method->get_type_hash())
