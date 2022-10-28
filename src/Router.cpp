@@ -203,9 +203,18 @@ std::pair<pubkey_t, signature_t> Router::sign_msg(const hash_t& msg) const
 }
 
 static
+bool is_valid_address(const std::string& addr)
+{
+	if(addr.substr(0, 4) == "127." || addr == "0.0.0.0") {
+		return false;
+	}
+	return true;
+}
+
+static
 bool is_public_address(const std::string& addr)
 {
-	if(addr.substr(0, 3) == "10." || addr.substr(0, 4) == "127." || addr.substr(0, 8) == "192.168.") {
+	if(!is_valid_address(addr) || addr.substr(0, 3) == "10." || addr.substr(0, 8) == "192.168.") {
 		return false;
 	}
 	return true;
@@ -1450,7 +1459,9 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 		case Router_get_peers_return::VNX_TYPE_ID:
 			if(auto value = std::dynamic_pointer_cast<const Router_get_peers_return>(result)) {
 				for(const auto& address : value->_ret_0) {
-					peer_retry_map.emplace(address, 0);
+					if(is_valid_address(address)) {
+						peer_retry_map.emplace(address, 0);
+					}
 				}
 			}
 			break;
