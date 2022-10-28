@@ -797,6 +797,9 @@ int main(int argc, char** argv)
 					if(peer.is_blocked) {
 						std::cout << ", blocked";
 					}
+					if(peer.is_paused) {
+						std::cout << ", paused";
+					}
 					std::cout << std::endl;
 				}
 			}

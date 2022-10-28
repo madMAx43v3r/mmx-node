@@ -24,6 +24,7 @@ struct peer_info_t {
 	double pending_cost;
 	
 	bool is_synced;
+	bool is_paused;
 	bool is_blocked;
 	bool is_outbound;
 	

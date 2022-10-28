@@ -81,10 +81,12 @@ private:
 
 	struct peer_t : Super::peer_t {
 		bool is_synced = false;
+		bool is_paused = false;
 		bool is_blocked = false;
 		bool is_outbound = false;
 		uint32_t height = 0;
 		uint32_t credits = 0;
+		uint32_t pending_requests = 0;
 		int32_t ping_ms = 0;
 		int64_t last_receive_ms = 0;
 		int64_t connected_since_ms = 0;
@@ -175,7 +177,7 @@ private:
 	void relay(std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter);
 
 	void broadcast(	std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, const std::set<node_type_e>& filter,
-					bool reliable = true, bool synced_only = false);
+					bool reliable, bool synced_only = false);
 
 	void send_to(std::vector<std::shared_ptr<peer_t>> peers, std::shared_ptr<const vnx::Value> msg, const hash_t& msg_hash, bool reliable);
 

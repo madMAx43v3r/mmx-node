@@ -270,6 +270,7 @@ std::shared_ptr<const PeerInfo> Router::get_peer_info() const
 		peer.bytes_recv = state->bytes_recv;
 		peer.pending_cost = state->pending_cost;
 		peer.is_synced = state->is_synced;
+		peer.is_paused = state->is_paused;
 		peer.is_blocked = state->is_blocked;
 		peer.is_outbound = state->is_outbound;
 		peer.recv_timeout_ms = now_ms - state->last_receive_ms;
@@ -1215,6 +1216,14 @@ void Router::broadcast(	std::shared_ptr<const vnx::Value> msg, const hash_t& msg
 bool Router::send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg, bool reliable)
 {
 	if(auto peer = find_peer(client)) {
+		if(std::dynamic_pointer_cast<const Return>(msg)) {
+			if(peer->pending_requests > 0) {
+				if(--peer->pending_requests < max_peer_requests && peer->is_paused) {
+					resume(client);
+					peer->is_paused = false;
+				}
+			}
+		}
 		return send_to(peer, msg, reliable);
 	}
 	return false;
@@ -1295,6 +1304,12 @@ void Router::on_request(uint64_t client, std::shared_ptr<const Request> msg)
 	const auto method = msg->method;
 	if(!method) {
 		return;
+	}
+	if(auto peer = find_peer(client)) {
+		if(++peer->pending_requests >= max_peer_requests && !peer->is_paused) {
+			pause(client);
+			peer->is_paused = true;
+		}
 	}
 	switch(method->get_type_hash())
 	{
@@ -1556,9 +1571,6 @@ void Router::on_pause(uint64_t client)
 {
 	if(auto peer = find_peer(client)) {
 		peer->is_blocked = true;
-		if(!peer->is_outbound) {
-			pause(client);		// pause incoming traffic
-		}
 	}
 }
 
@@ -1566,9 +1578,6 @@ void Router::on_resume(uint64_t client)
 {
 	if(auto peer = find_peer(client)) {
 		peer->is_blocked = false;
-		if(!peer->is_outbound) {
-			resume(client);		// resume incoming traffic
-		}
 	}
 }
 

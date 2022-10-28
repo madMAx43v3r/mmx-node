@@ -34,6 +34,7 @@ module Router extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	
 	uint max_sent_cache = 20000;
 	uint max_hash_cache = 100000;
+	uint max_peer_requests = 10;			// max pending requests
 	
 	uint vdf_credits = 1024;				// node reward for valid vdf
 	uint block_credits = 256;				// node reward for valid block

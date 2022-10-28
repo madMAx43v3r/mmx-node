@@ -27,6 +27,7 @@ struct MMX_EXPORT peer_info_t {
 	uint64_t bytes_recv = 0;
 	vnx::float64_t pending_cost = 0;
 	vnx::bool_t is_synced = 0;
+	vnx::bool_t is_paused = 0;
 	vnx::bool_t is_blocked = 0;
 	vnx::bool_t is_outbound = 0;
 	
@@ -70,7 +71,7 @@ struct MMX_EXPORT peer_info_t {
 
 template<typename T>
 void peer_info_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<peer_info_t>(15);
+	_visitor.template type_begin<peer_info_t>(16);
 	_visitor.type_field("id", 0); _visitor.accept(id);
 	_visitor.type_field("address", 1); _visitor.accept(address);
 	_visitor.type_field("type", 2); _visitor.accept(type);
@@ -84,9 +85,10 @@ void peer_info_t::accept_generic(T& _visitor) const {
 	_visitor.type_field("bytes_recv", 10); _visitor.accept(bytes_recv);
 	_visitor.type_field("pending_cost", 11); _visitor.accept(pending_cost);
 	_visitor.type_field("is_synced", 12); _visitor.accept(is_synced);
-	_visitor.type_field("is_blocked", 13); _visitor.accept(is_blocked);
-	_visitor.type_field("is_outbound", 14); _visitor.accept(is_outbound);
-	_visitor.template type_end<peer_info_t>(15);
+	_visitor.type_field("is_paused", 13); _visitor.accept(is_paused);
+	_visitor.type_field("is_blocked", 14); _visitor.accept(is_blocked);
+	_visitor.type_field("is_outbound", 15); _visitor.accept(is_outbound);
+	_visitor.template type_end<peer_info_t>(16);
 }
 
 
