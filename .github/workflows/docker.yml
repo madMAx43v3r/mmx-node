@@ -5,7 +5,7 @@ on:
     branches:
       - master
     tags:
-      - '*'
+      - '**'
 
 # Automatically cancel previous runs for the same ref (i.e. branch) and event type. The latter component prevents
 # manually dispatched events from being cancelled by pushes to the `master` branch.
