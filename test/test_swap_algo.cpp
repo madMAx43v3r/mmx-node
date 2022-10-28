@@ -19,7 +19,7 @@ public:
 	std::array<uint256_t, 2> balance = {0, 0};
 
 	std::array<uint256_t, 2> last_user_total = {0, 0};		// user total at last payout
-	std::array<uint256_t, 2> last_pool_volume = {0, 0};		// pool trade volume at last payout
+	std::array<uint256_t, 2> last_fees_paid = {0, 0};		// pool fees at last payout
 
 };
 
@@ -29,9 +29,11 @@ public:
 	std::array<uint256_t, 2> balance = {0, 0};
 	std::array<uint256_t, 2> user_total = {0, 0};
 	std::array<uint256_t, 2> trade_volume = {0, 0};
+	std::array<uint256_t, 2> fees_paid = {0, 0};
 	std::array<uint256_t, 2> fees_claimed = {0, 0};
 
-	const uint256_t fee_rate = (uint256_t(1) << FRACT_BITS) / 128;
+	const uint256_t max_fee_rate = (uint256_t(1) << FRACT_BITS) / 4;
+	const uint256_t min_fee_rate = (uint256_t(1) << FRACT_BITS) / 2048;
 
 	void add_liquid(User& user, std::array<uint256_t, 2> amount)
 	{
@@ -42,6 +44,7 @@ public:
 				balance[i] += amount[i];
 				user_total[i] += amount[i];
 				user.balance[i] += amount[i];
+				user.last_user_total[i] = user_total[i];
 			}
 		}
 		update_ratio();
@@ -80,11 +83,17 @@ public:
 		update_ratio();
 
 		const auto trade_amount = (amount * ratio[k]) / ratio[i];
-		const auto fee_amount = (trade_amount * fee_rate) >> FRACT_BITS;
-		const auto eff_amount = trade_amount - fee_amount;
-		user.wallet[k] += eff_amount;
+		if(trade_amount < 1) {
+			return;
+		}
+		const auto fee_rate = std::max((trade_amount * max_fee_rate) / balance[k], min_fee_rate);
+		const auto fee_amount = std::max((trade_amount * fee_rate) >> FRACT_BITS, uint256_t(1));
 
-		balance[k] -= eff_amount;
+		auto actual_amount = trade_amount - fee_amount;
+		actual_amount = std::min(actual_amount, balance[k]);
+		user.wallet[k] += actual_amount;
+		balance[k] -= actual_amount;
+		fees_paid[k] += fee_amount;
 		trade_volume[k] += trade_amount;
 		update_ratio();
 	}
@@ -106,15 +115,15 @@ public:
 	{
 		for(int i = 0; i < 2; ++i) {
 			if(user.balance[i]) {
-				const auto volume = trade_volume[i] - user.last_pool_volume[i];
-				const auto total_fees = (volume * fee_rate) >> FRACT_BITS;
-				const auto user_share = (2 * total_fees * user.balance[i]) / (user_total[i] + user.last_user_total[i]);
+				const auto total_fees = fees_paid[i] - user.last_fees_paid[i];
+				auto user_share = (2 * total_fees * user.balance[i]) / (user_total[i] + user.last_user_total[i]);
+				user_share = std::min(user_share, balance[i]);
 				balance[i] -= user_share;
 				fees_claimed[i] += user_share;
 				user.wallet[i] += user_share;
 			}
 			user.last_user_total[i] = user_total[i];
-			user.last_pool_volume[i] = trade_volume[i];
+			user.last_fees_paid[i] = fees_paid[i];
 		}
 		update_ratio();
 	}
@@ -139,11 +148,12 @@ int main()
 		std::cout << "B_balance = [" << B.balance[0] << ", " << B.balance[1] << "]" << std::endl;
 		std::cout << "balance =   [" << swap.balance[0] << ", " << swap.balance[1] << "]" << std::endl << std::endl;
 
-		swap.trade(C, 0, 2000);
+		swap.trade(C, 0, 1000);
 		std::cout << "balance = [" << swap.balance[0] << ", " << swap.balance[1] << "]" << std::endl;
 		std::cout << "wallet =  [" << C.wallet[0] << ", " << C.wallet[1] << "]" << std::endl << std::endl;
 
 		swap.payout(B);
+		std::cout << "fees_paid =    [" << swap.fees_paid[0] << ", " << swap.fees_paid[1] << "]" << std::endl;
 		std::cout << "fees_claimed = [" << swap.fees_claimed[0] << ", " << swap.fees_claimed[1] << "]" << std::endl << std::endl;
 
 		swap.rem_liquid(B, {0, 5000});
