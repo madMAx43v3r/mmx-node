@@ -86,7 +86,6 @@ private:
 		bool is_outbound = false;
 		uint32_t height = 0;
 		uint32_t credits = 0;
-		uint32_t pending_requests = 0;
 		int32_t ping_ms = 0;
 		int64_t last_receive_ms = 0;
 		int64_t connected_since_ms = 0;

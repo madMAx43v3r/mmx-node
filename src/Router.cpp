@@ -1216,14 +1216,6 @@ void Router::broadcast(	std::shared_ptr<const vnx::Value> msg, const hash_t& msg
 bool Router::send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg, bool reliable)
 {
 	if(auto peer = find_peer(client)) {
-		if(std::dynamic_pointer_cast<const Return>(msg)) {
-			if(peer->pending_requests > 0) {
-				if(--peer->pending_requests < max_peer_requests && peer->is_paused) {
-					resume(client);
-					peer->is_paused = false;
-				}
-			}
-		}
 		return send_to(peer, msg, reliable);
 	}
 	return false;
@@ -1306,7 +1298,7 @@ void Router::on_request(uint64_t client, std::shared_ptr<const Request> msg)
 		return;
 	}
 	if(auto peer = find_peer(client)) {
-		if(++peer->pending_requests >= max_peer_requests && !peer->is_paused) {
+		if(peer->is_blocked && !peer->is_paused) {
 			pause(client);
 			peer->is_paused = true;
 		}
@@ -1577,6 +1569,10 @@ void Router::on_pause(uint64_t client)
 void Router::on_resume(uint64_t client)
 {
 	if(auto peer = find_peer(client)) {
+		if(peer->is_paused) {
+			resume(client);		// continue receiving as well again
+			peer->is_paused = false;
+		}
 		peer->is_blocked = false;
 	}
 }
