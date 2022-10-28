@@ -226,24 +226,6 @@ Vue.component('node-peers', {
 				{{item.is_outbound ? $t('node_peers.outbound') : $t('node_peers.inbound') }}
 			</template>				
 		</v-data-table>	
-
-		<table class="ui compact definition table striped" v-if="data">
-
-			<tbody>
-			<tr v-for="item in data.peers">
-				<td>{{item.address}}</td>
-				<td>{{item.is_synced ? "" : "!"}}{{item.height}}</td>
-				<td>{{item.type}}</td>
-				<td>{{(item.version / 100).toFixed()}}.{{item.version % 100}}</td>
-				<td><b>{{(item.bytes_recv / item.connect_time_ms / 1.024).toFixed(1)}}</b> KB/s</td>
-				<td><b>{{(item.bytes_send / item.connect_time_ms / 1.024).toFixed(1)}}</b> KB/s</td>
-				<td><b>{{item.ping_ms}}</b> ms</td>
-				<td><b>{{(item.connect_time_ms / 1000 / 60).toFixed()}}</b> min</td>
-				<td>{{item.credits}}</td>
-				<td>{{item.is_outbound ? $t('node_peers.outbound') : $t('node_peers.inbound') }}</td>
-			</tr>
-			</tbody>
-		</table>
 		`
 })
 
