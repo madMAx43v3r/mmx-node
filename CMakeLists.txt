@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 if(NOT MSVC)
+	include(cmake/commit_hash_json.cmake)
+	
 	add_compile_options(-Wall -Wno-unused-function)
 
 	if(WITH_SECP256K1)

@@ -48,3 +48,4 @@ CMakeUserPresets.json
 /tmp
 /.idea
 /_deps
+/www/web-gui/public/GIT_COMMIT_HASH.json
