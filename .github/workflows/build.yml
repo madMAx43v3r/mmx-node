@@ -7,6 +7,10 @@ on:
   schedule:
       - cron: "0 4 * * *"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
 env:
   VCPKG_COMMIT_ID: "acc3bcf76b84ae5041c86ab55fe138ae7b8255c7"
   CMAKE_BUILD_PRESET: "windows-release"
