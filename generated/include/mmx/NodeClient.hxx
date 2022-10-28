@@ -60,6 +60,8 @@ public:
 	
 	vnx::optional<::mmx::hash_t> get_block_hash(const uint32_t& height = 0);
 	
+	vnx::optional<std::pair<::mmx::hash_t, ::mmx::hash_t>> get_block_hash_ex(const uint32_t& height = 0);
+	
 	vnx::optional<uint32_t> get_tx_height(const ::mmx::hash_t& id = ::mmx::hash_t());
 	
 	vnx::optional<::mmx::tx_info_t> get_tx_info(const ::mmx::hash_t& id = ::mmx::hash_t());

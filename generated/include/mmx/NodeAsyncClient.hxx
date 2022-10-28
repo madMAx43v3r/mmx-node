@@ -80,6 +80,10 @@ public:
 			const std::function<void(const vnx::optional<::mmx::hash_t>&)>& _callback = std::function<void(const vnx::optional<::mmx::hash_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
+	uint64_t get_block_hash_ex(const uint32_t& height = 0, 
+			const std::function<void(const vnx::optional<std::pair<::mmx::hash_t, ::mmx::hash_t>>&)>& _callback = std::function<void(const vnx::optional<std::pair<::mmx::hash_t, ::mmx::hash_t>>&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
 	uint64_t get_tx_height(const ::mmx::hash_t& id = ::mmx::hash_t(), 
 			const std::function<void(const vnx::optional<uint32_t>&)>& _callback = std::function<void(const vnx::optional<uint32_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
@@ -332,6 +336,7 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::BlockHeader>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_header;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::BlockHeader>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_header_at;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const vnx::optional<::mmx::hash_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_block_hash;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const vnx::optional<std::pair<::mmx::hash_t, ::mmx::hash_t>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_block_hash_ex;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const vnx::optional<uint32_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_tx_height;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const vnx::optional<::mmx::tx_info_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_tx_info;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const vnx::optional<::mmx::tx_info_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_tx_info_for;

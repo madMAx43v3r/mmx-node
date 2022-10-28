@@ -34,6 +34,8 @@
 #include <mmx/Node_get_block_at_return.hxx>
 #include <mmx/Node_get_block_hash.hxx>
 #include <mmx/Node_get_block_hash_return.hxx>
+#include <mmx/Node_get_block_hash_ex.hxx>
+#include <mmx/Node_get_block_hash_ex_return.hxx>
 #include <mmx/Node_get_contract.hxx>
 #include <mmx/Node_get_contract_return.hxx>
 #include <mmx/Node_get_contract_at.hxx>
@@ -303,6 +305,19 @@ vnx::optional<::mmx::hash_t> NodeClient::get_block_hash(const uint32_t& height) 
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<vnx::optional<::mmx::hash_t>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+vnx::optional<std::pair<::mmx::hash_t, ::mmx::hash_t>> NodeClient::get_block_hash_ex(const uint32_t& height) {
+	auto _method = ::mmx::Node_get_block_hash_ex::create();
+	_method->height = height;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_block_hash_ex_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<vnx::optional<std::pair<::mmx::hash_t, ::mmx::hash_t>>>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}

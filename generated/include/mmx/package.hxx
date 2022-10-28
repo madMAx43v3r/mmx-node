@@ -122,6 +122,8 @@ class Node_get_block_at;
 class Node_get_block_at_return;
 class Node_get_block_hash;
 class Node_get_block_hash_return;
+class Node_get_block_hash_ex;
+class Node_get_block_hash_ex_return;
 class Node_get_contract;
 class Node_get_contract_return;
 class Node_get_contract_at;
@@ -579,6 +581,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_block
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_block_at_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_block_hash; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_block_hash_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_block_hash_ex; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_block_hash_ex_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_contract; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_contract_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_contract_at; ///< \private
@@ -1033,6 +1037,8 @@ void read(TypeInput& in, ::mmx::Node_get_block_at& value, const TypeCode* type_c
 void read(TypeInput& in, ::mmx::Node_get_block_at_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_block_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_block_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_block_hash_ex& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_block_hash_ex_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_contract& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_contract_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_contract_at& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1490,6 +1496,8 @@ void write(TypeOutput& out, const ::mmx::Node_get_block_at& value, const TypeCod
 void write(TypeOutput& out, const ::mmx::Node_get_block_at_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_block_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_block_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_block_hash_ex& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_block_hash_ex_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_contract& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_contract_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_contract_at& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1947,6 +1955,8 @@ void read(std::istream& in, ::mmx::Node_get_block_at& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_block_at_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_block_hash& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_block_hash_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_block_hash_ex& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_block_hash_ex_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_contract& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_contract_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_contract_at& value); ///< \private
@@ -2404,6 +2414,8 @@ void write(std::ostream& out, const ::mmx::Node_get_block_at& value); ///< \priv
 void write(std::ostream& out, const ::mmx::Node_get_block_at_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_block_hash& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_block_hash_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_block_hash_ex& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_block_hash_ex_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_contract& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_contract_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_contract_at& value); ///< \private
@@ -2861,6 +2873,8 @@ void accept(Visitor& visitor, const ::mmx::Node_get_block_at& value); ///< \priv
 void accept(Visitor& visitor, const ::mmx::Node_get_block_at_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_block_hash& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_block_hash_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_block_hash_ex& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_block_hash_ex_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_contract& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_contract_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_contract_at& value); ///< \private
@@ -5507,6 +5521,52 @@ struct type<::mmx::Node_get_block_hash_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_block_hash_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_block_hash_ex> {
+	void read(TypeInput& in, ::mmx::Node_get_block_hash_ex& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_block_hash_ex& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_block_hash_ex& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_block_hash_ex& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_block_hash_ex& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_block_hash_ex& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_block_hash_ex_return> {
+	void read(TypeInput& in, ::mmx::Node_get_block_hash_ex_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_block_hash_ex_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_block_hash_ex_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_block_hash_ex_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_block_hash_ex_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_block_hash_ex_return& value, bool special = false);
 };
 
 /// \private
