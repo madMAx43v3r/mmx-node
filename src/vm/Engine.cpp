@@ -229,9 +229,10 @@ var_t* Engine::write(std::unique_ptr<var_t>& var, const uint64_t* dst, const var
 				throw std::logic_error("read-only memory");
 			}
 		}
-		var->flags |= FLAG_DIRTY;
-		var->flags &= ~FLAG_DELETED;
-
+		if(var->flags & FLAG_DELETED) {
+			var->flags |= FLAG_DIRTY;
+			var->flags &= ~FLAG_DELETED;
+		}
 		switch(src.type) {
 			case TYPE_NIL:
 			case TYPE_TRUE:
@@ -240,7 +241,10 @@ var_t* Engine::write(std::unique_ptr<var_t>& var, const uint64_t* dst, const var
 					case TYPE_NIL:
 					case TYPE_TRUE:
 					case TYPE_FALSE:
-						var->type = src.type;
+						if(var->type != src.type) {
+							var->flags |= FLAG_DIRTY;
+							var->type = src.type;
+						}
 						return var.get();
 					default:
 						break;
@@ -249,16 +253,24 @@ var_t* Engine::write(std::unique_ptr<var_t>& var, const uint64_t* dst, const var
 			case TYPE_REF:
 				if(var->type == TYPE_REF) {
 					auto ref = (ref_t*)var.get();
-					unref(ref->address);
-					ref->address = ((const ref_t&)src).address;
-					addref(ref->address);
+					const auto new_address = ((const ref_t&)src).address;
+					if(new_address != ref->address) {
+						unref(ref->address);
+						var->flags |= FLAG_DIRTY;
+						ref->address = new_address;
+						addref(ref->address);
+					}
 					return ref;
 				}
 				break;
 			case TYPE_UINT:
 				if(var->type == TYPE_UINT) {
 					auto uint = (uint_t*)var.get();
-					uint->value = ((const uint_t&)src).value;
+					const auto new_value = ((const uint_t&)src).value;
+					if(new_value != uint->value) {
+						var->flags |= FLAG_DIRTY;
+						uint->value = new_value;
+					}
 					return uint;
 				}
 				break;
