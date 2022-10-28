@@ -530,8 +530,6 @@ bool Router::process(std::shared_ptr<const Return> ret)
 					} else {
 						job->failed.insert(client);
 					}
-				} else if(auto result = std::dynamic_pointer_cast<const vnx::Exception>(ret->result)) {
-					synced_peers.erase(client);
 				}
 				job->pending.erase(client);
 				job->request_map.erase(iter);
