@@ -47,7 +47,6 @@ public:
 				user.last_user_total[i] = user_total[i];
 			}
 		}
-		update_ratio();
 	}
 
 	void rem_liquid(User& user, std::array<uint256_t, 2> amount)
@@ -70,7 +69,6 @@ public:
 				user_total[i] -= amount[i];
 			}
 		}
-		update_ratio();
 	}
 
 	void trade(User& user, const int i, uint256_t amount)
@@ -80,7 +78,17 @@ public:
 			throw std::logic_error("nothing to buy");
 		}
 		balance[i] += amount;
-		update_ratio();
+
+		uint256_t ratio[2];
+		const auto sum = balance[0] + balance[1];
+		if(sum) {
+			for(int i = 0; i < 2; ++i) {
+				ratio[i] = (balance[i] << FRACT_BITS) / sum;
+			}
+		} else {
+			ratio[0] = 0;
+			ratio[1] = 0;
+		}
 
 		const auto trade_amount = (amount * ratio[k]) / ratio[i];
 		if(trade_amount < 1) {
@@ -95,20 +103,6 @@ public:
 		balance[k] -= actual_amount;
 		fees_paid[k] += fee_amount;
 		trade_volume[k] += trade_amount;
-		update_ratio();
-	}
-
-	void update_ratio()
-	{
-		const auto sum = balance[0] + balance[1];
-		if(sum) {
-			for(int i = 0; i < 2; ++i) {
-				ratio[i] = (balance[i] << FRACT_BITS) / sum;
-			}
-		} else {
-			ratio[0] = 0;
-			ratio[1] = 0;
-		}
 	}
 
 	void payout(User& user)
@@ -125,7 +119,6 @@ public:
 			user.last_user_total[i] = user_total[i];
 			user.last_fees_paid[i] = fees_paid[i];
 		}
-		update_ratio();
 	}
 
 };
