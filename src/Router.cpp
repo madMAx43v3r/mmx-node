@@ -862,10 +862,11 @@ void Router::connect()
 			if(connect_tasks.size() >= 2 * num_peers_out) {
 				break;
 			}
-			log(DEBUG) << "Trying to connect to " << address;
-
-			connect_to(address);
-			peer_retry_map.erase(address);
+			if(is_valid_address(address)) {
+				log(DEBUG) << "Trying to connect to " << address;
+				connect_to(address);
+				peer_retry_map.erase(address);
+			}
 		}
 	}
 
