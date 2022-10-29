@@ -130,7 +130,7 @@ void Node::main()
 
 		bool is_replay = true;
 		uint32_t height = -1;
-		std::pair<int64_t, hash_t> entry;
+		std::pair<int64_t, std::pair<hash_t, hash_t>> entry;
 		// set state to last block
 		if(block_index.find_last(height, entry))
 		{
@@ -169,7 +169,7 @@ void Node::main()
 					for(const auto& entry : tx_offsets) {
 						tx_index.insert(entry.first, std::make_pair(entry.second, block->height));
 					}
-					block_index.insert(block->height, std::make_pair(block_offset, block->hash));
+					block_index.insert(block->height, std::make_pair(block_offset, std::make_pair(block->hash, block->content_hash)));
 
 					apply(block, result, true);
 
@@ -352,9 +352,9 @@ std::shared_ptr<const BlockHeader> Node::get_block_ex(const hash_t& hash, bool f
 		const auto& block = iter->second->block;
 		return full_block ? block : block->get_header();
 	}
-	std::pair<uint32_t, hash_t> entry;
-	if(hash_index.find(hash, entry)) {
-		return get_block_at_ex(entry.first, full_block);
+	uint32_t height = 0;
+	if(hash_index.find(hash, height)) {
+		return get_block_at_ex(height, full_block);
 	}
 	return nullptr;
 }
@@ -373,7 +373,7 @@ std::shared_ptr<const BlockHeader> Node::get_block_at_ex(const uint32_t& height,
 			return iter->second;
 		}
 	}
-	std::pair<int64_t, hash_t> entry;
+	std::pair<int64_t, std::pair<hash_t, hash_t>> entry;
 	if(block_index.find(height, entry)) {
 		vnx::File file(block_chain->get_path());
 		file.open("rb");
@@ -395,20 +395,17 @@ std::shared_ptr<const BlockHeader> Node::get_header_at(const uint32_t& height) c
 
 vnx::optional<hash_t> Node::get_block_hash(const uint32_t& height) const
 {
-	std::pair<int64_t, hash_t> entry;
-	if(block_index.find(height, entry)) {
-		return entry.second;
+	if(auto hash = get_block_hash_ex(height))  {
+		return hash->first;
 	}
 	return nullptr;
 }
 
 vnx::optional<std::pair<hash_t, hash_t>> Node::get_block_hash_ex(const uint32_t& height) const
 {
-	if(auto hash = get_block_hash(height)) {
-		std::pair<uint32_t, hash_t> entry;
-		if(hash_index.find(*hash, entry)) {
-			return std::make_pair(*hash, entry.second);
-		}
+	std::pair<int64_t, std::pair<hash_t, hash_t>> entry;
+	if(block_index.find(height, entry)) {
+		return entry.second;
 	}
 	return nullptr;
 }
@@ -1880,7 +1877,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	if(auto proof = block->proof) {
 		farmer_block_map.insert(proof->farmer_key, block->height);
 	}
-	hash_index.insert(block->hash, std::make_pair(block->height, block->content_hash));
+	hash_index.insert(block->hash, block->height);
 
 	state_hash = block->hash;
 	contract_cache.clear();
@@ -2009,7 +2006,7 @@ void Node::revert(const uint32_t height)
 {
 	const auto time_begin = vnx::get_wall_time_millis();
 	if(block_chain) {
-		std::pair<int64_t, hash_t> entry;
+		std::pair<int64_t, std::pair<hash_t, hash_t>> entry;
 		if(block_index.find(height, entry)) {
 			block_chain->seek_to(entry.first);
 		}
@@ -2061,9 +2058,9 @@ void Node::revert(const uint32_t height)
 		}
 	}
 
-	std::pair<int64_t, hash_t> entry;
+	std::pair<int64_t, std::pair<hash_t, hash_t>> entry;
 	if(block_index.find_last(entry)) {
-		state_hash = entry.second;
+		state_hash = entry.second.first;
 	} else {
 		state_hash = hash_t();
 	}
@@ -2281,7 +2278,7 @@ void Node::write_block(std::shared_ptr<const Block> block)
 	block_chain->flush();
 	block_chain->seek_to(end);
 
-	block_index.insert(block->height, std::make_pair(offset, block->hash));
+	block_index.insert(block->height, std::make_pair(offset, std::make_pair(block->hash, block->content_hash)));
 }
 
 
