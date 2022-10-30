@@ -619,6 +619,8 @@ void Engine::init()
 	if(have_init) {
 		throw std::logic_error("already initialized");
 	}
+	total_cost += code.size() * INSTR_READ_COST;
+
 	// Note: address 0 is not a valid key (used to denote "key not found")
 	for(auto iter = memory.lower_bound(1); iter != memory.lower_bound(MEM_EXTERN); ++iter) {
 		key_map.emplace(iter->second.get(), iter->first);
