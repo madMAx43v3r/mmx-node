@@ -602,12 +602,16 @@ var_t& Engine::read_key_fail(const uint64_t src, const uint64_t key)
 
 uint64_t Engine::alloc()
 {
-	auto& offset = read_fail<uint_t>(MEM_HEAP + GLOBAL_NEXT_ALLOC, TYPE_UINT);
-	offset.flags |= FLAG_DIRTY;
-	if(offset.value == 0) {
+	auto offset = read<uint_t>(MEM_HEAP + GLOBAL_NEXT_ALLOC, TYPE_UINT);
+	if(!offset) {
+		offset = (uint_t*)assign(MEM_HEAP + GLOBAL_NEXT_ALLOC, std::make_unique<uint_t>(MEM_HEAP + GLOBAL_DYNAMIC_START));
+		offset->pin();
+	}
+	if(offset->value == 0) {
 		throw std::runtime_error("out of memory");
 	}
-	return offset.value++;
+	offset->flags |= FLAG_DIRTY;
+	return offset->value++;
 }
 
 void Engine::init()
@@ -618,9 +622,6 @@ void Engine::init()
 	// Note: address 0 is not a valid key (used to denote "key not found")
 	for(auto iter = memory.lower_bound(1); iter != memory.lower_bound(MEM_EXTERN); ++iter) {
 		key_map.emplace(iter->second.get(), iter->first);
-	}
-	if(!read(MEM_HEAP + GLOBAL_NEXT_ALLOC)) {
-		assign(MEM_HEAP + GLOBAL_NEXT_ALLOC, std::make_unique<uint_t>(MEM_HEAP + GLOBAL_DYNAMIC_START))->pin();
 	}
 	have_init = true;
 }
