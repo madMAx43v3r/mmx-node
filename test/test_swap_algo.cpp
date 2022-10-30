@@ -25,7 +25,6 @@ public:
 
 class Swap {
 public:
-	std::array<uint256_t, 2> ratio = {0, 0};
 	std::array<uint256_t, 2> balance = {0, 0};
 	std::array<uint256_t, 2> user_total = {0, 0};
 	std::array<uint256_t, 2> trade_volume = {0, 0};
@@ -73,6 +72,9 @@ public:
 
 	void trade(User& user, const int i, uint256_t amount)
 	{
+		if(amount == 0) {
+			return;
+		}
 		const int k = (i + 1) % 2;
 		if(balance[k] == 0) {
 			throw std::logic_error("nothing to buy");
@@ -81,13 +83,8 @@ public:
 
 		uint256_t ratio[2];
 		const auto sum = balance[0] + balance[1];
-		if(sum) {
-			for(int i = 0; i < 2; ++i) {
-				ratio[i] = (balance[i] << FRACT_BITS) / sum;
-			}
-		} else {
-			ratio[0] = 0;
-			ratio[1] = 0;
+		for(int i = 0; i < 2; ++i) {
+			ratio[i] = (balance[i] << FRACT_BITS) / sum;
 		}
 
 		const auto trade_amount = (amount * ratio[k]) / ratio[i];
