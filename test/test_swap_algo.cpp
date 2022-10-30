@@ -49,24 +49,28 @@ public:
 		}
 	}
 
-	void rem_liquid(User& user, std::array<uint256_t, 2> amount)
+	void rem_liquid(User& user, const int i, uint256_t amount)
 	{
-		for(int i = 0; i < 2; ++i) {
-			if(amount[i] > user.balance[i]) {
-				throw std::logic_error("amount > user balance");
-			}
+		if(amount > user.balance[i]) {
+			throw std::logic_error("amount > user balance");
 		}
-		for(int i = 0; i < 2; ++i) {
-			if(amount[i]) {
-				const auto ret_amount =
-						(amount[i] * std::min(balance[i], wallet[i])) / user_total[i];
-				user.wallet[i] += ret_amount;
-				user.balance[i] -= amount[i];
-				wallet[i] -= ret_amount;
-				balance[i] -= ret_amount;
-				user_total[i] -= amount[i];
-			}
+		uint256_t ret_amount = 0;
+		if(balance[i] >= user_total[i]) {
+			ret_amount = amount;
+		} else {
+			ret_amount = (amount * balance[i]) / user_total[i];
+
+			const int k = (i + 1) % 2;
+			const auto trade_amount = ((amount - ret_amount) * balance[k]) / balance[i];
+			user.wallet[k] += trade_amount;
+			wallet[k] -= trade_amount;
+			balance[k] -= trade_amount;
 		}
+		user.wallet[i] += ret_amount;
+		user.balance[i] -= amount;
+		wallet[i] -= ret_amount;
+		balance[i] -= ret_amount;
+		user_total[i] -= amount;
 	}
 
 	void trade(User& user, const int i, uint256_t amount)
@@ -82,7 +86,6 @@ public:
 		balance[i] += amount;
 
 		auto trade_amount = (amount * balance[k]) / balance[i];
-		trade_amount = std::min(trade_amount, balance[k]);
 		if(trade_amount < 4) {
 			throw std::logic_error("trade_amount < 4");
 		}
@@ -155,14 +158,14 @@ int main()
 		std::cout << "fees_paid =    [" << swap.fees_paid[0] << ", " << swap.fees_paid[1] << "]" << std::endl;
 		std::cout << "fees_claimed = [" << swap.fees_claimed[0] << ", " << swap.fees_claimed[1] << "]" << std::endl << std::endl;
 
-		swap.rem_liquid(B, {0, 5000});
+		swap.rem_liquid(B, 1, 5000);
 		std::cout << "wallet =    [" << swap.wallet[0] << ", " << swap.wallet[1] << "]" << std::endl;
 		std::cout << "balance =   [" << swap.balance[0] << ", " << swap.balance[1] << "]" << std::endl;
 		std::cout << "B_balance = [" << B.balance[0] << ", " << B.balance[1] << "]" << std::endl;
 		std::cout << "B_wallet =  [" << B.wallet[0] << ", " << B.wallet[1] << "]" << std::endl << std::endl;
 
-		swap.rem_liquid(A, A.balance);
-		swap.rem_liquid(B, B.balance);
+		swap.rem_liquid(A, 0, A.balance[0]);
+		swap.rem_liquid(B, 1, B.balance[1]);
 		std::cout << "wallet =   [" << swap.wallet[0] << ", " << swap.wallet[1] << "]" << std::endl;
 		std::cout << "balance =  [" << swap.balance[0] << ", " << swap.balance[1] << "]" << std::endl;
 		std::cout << "A_wallet = [" << A.wallet[0] << ", " << A.wallet[1] << "]" << std::endl;
