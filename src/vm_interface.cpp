@@ -70,7 +70,10 @@ void load(	std::shared_ptr<vm::Engine> engine,
 		throw std::runtime_error("constant memory overflow");
 	}
 	vm::deserialize(engine->code, binary->binary.data(), binary->binary.size());
+
 	engine->init();
+	engine->total_cost += (binary->constant.size() + binary->binary.size()) * vm::STOR_READ_BYTE_COST;
+	engine->check_gas();
 }
 
 void copy(	std::shared_ptr<vm::Engine> dst, std::shared_ptr<vm::Engine> src,
