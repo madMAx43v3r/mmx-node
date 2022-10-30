@@ -289,6 +289,7 @@ add_executable(mmx_harvester src/mmx_harvester.cpp)
 add_executable(mmx_timelord_rewards src/mmx_timelord_rewards.cpp)
 add_executable(generate_passwd src/generate_passwd.cpp)
 add_executable(create_offer_binary src/contract/create_offer_binary.cpp)
+add_executable(create_swap_binary src/contract/create_swap_binary.cpp)
 
 target_link_libraries(mmx mmx_iface mmx_vm)
 target_link_libraries(mmx_node mmx_modules)
@@ -299,6 +300,7 @@ target_link_libraries(mmx_harvester mmx_modules)
 target_link_libraries(mmx_timelord_rewards mmx_modules)
 target_link_libraries(generate_passwd mmx_iface)
 target_link_libraries(create_offer_binary mmx_vm)
+target_link_libraries(create_swap_binary mmx_vm)
 
 add_executable(tx_bench src/tx_bench.cpp)
 

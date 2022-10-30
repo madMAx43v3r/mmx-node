@@ -28,7 +28,6 @@ public:
 	std::array<uint256_t, 2> wallet = {0, 0};
 	std::array<uint256_t, 2> balance = {0, 0};
 	std::array<uint256_t, 2> user_total = {0, 0};
-	std::array<uint256_t, 2> trade_volume = {0, 0};
 	std::array<uint256_t, 2> fees_paid = {0, 0};
 	std::array<uint256_t, 2> fees_claimed = {0, 0};
 
@@ -82,16 +81,10 @@ public:
 		wallet[i] += amount;
 		balance[i] += amount;
 
-		uint256_t ratio[2];
-		const auto sum = balance[0] + balance[1];
-		for(int i = 0; i < 2; ++i) {
-			ratio[i] = (balance[i] << FRACT_BITS) / sum;
-		}
-
-		auto trade_amount = (amount * ratio[k]) / ratio[i];
+		auto trade_amount = (amount * balance[k]) / balance[i];
 		trade_amount = std::min(trade_amount, balance[k]);
-		if(trade_amount < 1) {
-			return;
+		if(trade_amount < 4) {
+			throw std::logic_error("trade_amount < 4");
 		}
 		const auto fee_rate = std::max((trade_amount * max_fee_rate) / balance[k], min_fee_rate);
 		const auto fee_amount = std::max((trade_amount * fee_rate) >> FRACT_BITS, uint256_t(1));
@@ -102,7 +95,6 @@ public:
 		wallet[k] -= actual_amount;
 		balance[k] -= trade_amount;
 		fees_paid[k] += fee_amount;
-		trade_volume[k] += trade_amount;
 	}
 
 	void payout(User& user)
