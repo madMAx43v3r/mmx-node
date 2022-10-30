@@ -45,7 +45,7 @@ enum externvar_e : uint32_t {
 	EXTERN_TXID,
 	EXTERN_USER,
 	EXTERN_BALANCE,
-	EXTERN_DEPOSIT,
+	EXTERN_DEPOSIT,		// [currency, amount]
 	EXTERN_ADDRESS,
 
 };
