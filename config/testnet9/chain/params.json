@@ -29,5 +29,6 @@
 	"time_diff_constant": 1000,
 	"space_diff_constant": 100000000,
 	"virtual_space_constant": 2000,
+	"virtual_lifetime": 60480,
 	"offer_binary": null
 }
