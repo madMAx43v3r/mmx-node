@@ -73,6 +73,7 @@ int main(int argc, char** argv)
 	{
 		size_t off = 1;
 		bin->fields["tokens"] = vm::MEM_STATIC + (off++);
+		bin->fields["balance"] = vm::MEM_STATIC + (off++);
 		bin->fields["user_total"] = vm::MEM_STATIC + (off++);
 		bin->fields["trade_volume"] = vm::MEM_STATIC + (off++);
 		bin->fields["fees_paid"] = vm::MEM_STATIC + (off++);
@@ -91,6 +92,9 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_SET,  0, bin->fields["tokens"], const_map["0"], vm::MEM_STACK + 11);
 		code.emplace_back(vm::OP_CONV, 0, vm::MEM_STACK + 11, vm::MEM_STACK + 2, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
 		code.emplace_back(vm::OP_SET,  0, bin->fields["tokens"], const_map["1"], vm::MEM_STACK + 11);
+		code.emplace_back(vm::OP_COPY, 0, bin->fields["balance"], const_map["array"]);
+		code.emplace_back(vm::OP_SET,  0, bin->fields["balance"], const_map["0"], const_map["0"]);
+		code.emplace_back(vm::OP_SET,  0, bin->fields["balance"], const_map["1"], const_map["0"]);
 		code.emplace_back(vm::OP_COPY, 0, bin->fields["user_total"], const_map["array"]);
 		code.emplace_back(vm::OP_SET,  0, bin->fields["user_total"], const_map["0"], const_map["0"]);
 		code.emplace_back(vm::OP_SET,  0, bin->fields["user_total"], const_map["1"], const_map["0"]);
@@ -104,6 +108,101 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_SET,  0, bin->fields["fees_claimed"], const_map["0"], const_map["0"]);
 		code.emplace_back(vm::OP_SET,  0, bin->fields["fees_claimed"], const_map["1"], const_map["0"]);
 		code.emplace_back(vm::OP_COPY, 0, bin->fields["users"], const_map["map"]);
+		code.emplace_back(vm::OP_RET);
+		bin->methods[method.name] = method;
+	}
+	{
+		mmx::contract::method_t method;
+		method.is_const = true;
+		method.is_public = true;
+		method.name = "get_earned_fees";
+		method.args = {"user"};
+		method.entry_point = code.size();
+		code.emplace_back(vm::OP_GET,  0, vm::MEM_STACK + 12, bin->fields["users"], vm::MEM_STACK + 1);
+		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 12, const_map["null"]);
+		code.emplace_back(vm::OP_JUMPN,  0, code.size() + 2, vm::MEM_STACK + 10);
+		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_user"]);
+		// std::array<uint256_t, 2> user_share = {0, 0};
+		code.emplace_back(vm::OP_COPY, 0, vm::MEM_STACK + 0, const_map["array"]);
+		code.emplace_back(vm::OP_SET, 0, vm::MEM_STACK + 0, const_map["0"], const_map["0"]);
+		code.emplace_back(vm::OP_SET, 0, vm::MEM_STACK + 0, const_map["1"], const_map["0"]);
+		// for(int i = 0; i < 2; ++i) {
+		code.emplace_back(vm::OP_COPY, 0, vm::MEM_STACK + 13, const_map["0"]);
+		const auto for_begin = code.size();
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 14, vm::MEM_STACK + 12, const_map["balance"]);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 14, vm::MEM_STACK + 14, vm::MEM_STACK + 13);
+		// if(user.balance[i]) {
+		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 14, const_map["0"]);
+		const auto jump_base = code.size();
+		code.emplace_back(vm::OP_JUMPI, 0, 0, vm::MEM_STACK + 10);
+		// const auto total_fees = fees_paid[i] - user.last_fees_paid[i];
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 15, bin->fields["fees_paid"], vm::MEM_STACK + 13);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 16, vm::MEM_STACK + 12, const_map["last_fees_paid"]);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 16, vm::MEM_STACK + 16, vm::MEM_STACK + 13);
+		code.emplace_back(vm::OP_SUB, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 17, vm::MEM_STACK + 15, vm::MEM_STACK + 16);
+		// auto user_share = (2 * total_fees * user.balance[i]) / (user_total[i] + user.last_user_total[i]);
+		code.emplace_back(vm::OP_MUL, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 18, vm::MEM_STACK + 17, const_map["2"]);
+		code.emplace_back(vm::OP_MUL, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 18, vm::MEM_STACK + 18, vm::MEM_STACK + 14);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 19, bin->fields["user_total"], vm::MEM_STACK + 13);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 20, vm::MEM_STACK + 12, const_map["last_user_total"]);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 20, vm::MEM_STACK + 20, vm::MEM_STACK + 13);
+		code.emplace_back(vm::OP_ADD, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 19, vm::MEM_STACK + 19, vm::MEM_STACK + 20);
+		code.emplace_back(vm::OP_DIV, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 18, vm::MEM_STACK + 18, vm::MEM_STACK + 19);
+		// user_share = std::min(user_share, wallet[i] - balance[i]);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 20, bin->fields["tokens"], vm::MEM_STACK + 13);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 21, bin->fields["balance"], vm::MEM_STACK + 13);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 19, vm::MEM_EXTERN + vm::EXTERN_BALANCE, vm::MEM_STACK + 20);
+		code.emplace_back(vm::OP_SUB, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 19, vm::MEM_STACK + 19, vm::MEM_STACK + 21);
+		code.emplace_back(vm::OP_MIN, 0, vm::MEM_STACK + 18, vm::MEM_STACK + 18, vm::MEM_STACK + 19);
+		code.emplace_back(vm::OP_SET, 0, vm::MEM_STACK + 0, vm::MEM_STACK + 13, vm::MEM_STACK + 18);
+		// for(int i = 0; i < 2; ++i) {
+		code.emplace_back(vm::OP_ADD, 0, vm::MEM_STACK + 13, vm::MEM_STACK + 13, const_map["1"]);
+		code.emplace_back(vm::OP_CMP_LT, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 13, const_map["2"]);
+		code.emplace_back(vm::OP_JUMPI, 0, for_begin, vm::MEM_STACK + 10);
+		code.emplace_back(vm::OP_RET);
+		bin->methods[method.name] = method;
+	}
+	{
+		mmx::contract::method_t method;
+		method.is_public = true;
+		method.name = "payout";
+		method.entry_point = code.size();
+		// const auto user_share = get_earned_fees(user);
+		code.emplace_back(vm::OP_COPY, 0, vm::MEM_STACK + 2, vm::MEM_EXTERN + vm::EXTERN_USER);
+		code.emplace_back(vm::OP_CALL, 0, bin->methods["get_earned_fees"].entry_point, 1);
+		// get user
+		code.emplace_back(vm::OP_GET,  0, vm::MEM_STACK + 12, bin->fields["users"], vm::MEM_EXTERN + vm::EXTERN_USER);
+		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 12, const_map["null"]);
+		code.emplace_back(vm::OP_JUMPN,  0, code.size() + 2, vm::MEM_STACK + 10);
+		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_user"]);
+		// for(int i = 0; i < 2; ++i) {
+		code.emplace_back(vm::OP_COPY, 0, vm::MEM_STACK + 13, const_map["0"]);
+		const auto for_begin = code.size();
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 14, vm::MEM_STACK + 1, vm::MEM_STACK + 13);
+		// if(user_share[i]) {
+		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 14, const_map["0"]);
+		const auto jump_base = code.size();
+		code.emplace_back(vm::OP_JUMPI, 0, 0, vm::MEM_STACK + 10);
+		// send earned fees
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 15, bin->fields["tokens"], vm::MEM_STACK + 13);
+		code.emplace_back(vm::OP_SEND, 0, vm::MEM_EXTERN + vm::EXTERN_USER, vm::MEM_STACK + 14, vm::MEM_STACK + 15);
+		// fees_claimed[i] += user_share;
+		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 15, bin->fields["fees_claimed"], vm::MEM_STACK + 13);
+		code.emplace_back(vm::OP_ADD, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 15, vm::MEM_STACK + 15, vm::MEM_STACK + 14);
+		code.emplace_back(vm::OP_SET, 0, bin->fields["fees_claimed"], vm::MEM_STACK + 13, vm::MEM_STACK + 15);
+		code[jump_base].a = code.size();
+		// user.last_user_total[i] = user_total[i];
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 14, bin->fields["user_total"], vm::MEM_STACK + 13);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 15, vm::MEM_STACK + 12, const_map["last_user_total"]);
+		code.emplace_back(vm::OP_SET, vm::OPFLAG_REF_A, vm::MEM_STACK + 15, vm::MEM_STACK + 13, vm::MEM_STACK + 14);
+		// user.last_fees_paid[i] = fees_paid[i];
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 14, bin->fields["fees_paid"], vm::MEM_STACK + 13);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 15, vm::MEM_STACK + 12, const_map["last_fees_paid"]);
+		code.emplace_back(vm::OP_SET, vm::OPFLAG_REF_A, vm::MEM_STACK + 15, vm::MEM_STACK + 13, vm::MEM_STACK + 14);
+		// for(int i = 0; i < 2; ++i) {
+		code.emplace_back(vm::OP_ADD, 0, vm::MEM_STACK + 13, vm::MEM_STACK + 13, const_map["1"]);
+		code.emplace_back(vm::OP_CMP_LT, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 13, const_map["2"]);
+		code.emplace_back(vm::OP_JUMPI, 0, for_begin, vm::MEM_STACK + 10);
 		code.emplace_back(vm::OP_RET);
 		bin->methods[method.name] = method;
 	}
@@ -141,8 +240,13 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_SET, vm::OPFLAG_REF_A, vm::MEM_STACK + 12, const_map["last_fees_paid"], vm::MEM_STACK + 13);
 		code.emplace_back(vm::OP_SET, 0, bin->fields["users"], vm::MEM_EXTERN + vm::EXTERN_USER, vm::MEM_STACK + 12);
 		code[jump_base].a = code.size();
+		// TODO: call payout()
 		// get deposit amount
 		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 13, vm::MEM_EXTERN + vm::EXTERN_DEPOSIT, const_map["1"]);
+		// balance[i] += amount[i];
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 14, bin->fields["balance"], vm::MEM_STACK + 1);
+		code.emplace_back(vm::OP_ADD, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 14, vm::MEM_STACK + 14, vm::MEM_STACK + 13);
+		code.emplace_back(vm::OP_SET, 0, bin->fields["balance"], vm::MEM_STACK + 1, vm::MEM_STACK + 14);
 		// user_total[i] += amount[i];
 		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 14, bin->fields["user_total"], vm::MEM_STACK + 1);
 		code.emplace_back(vm::OP_ADD, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 14, vm::MEM_STACK + 14, vm::MEM_STACK + 13);
@@ -171,67 +275,11 @@ int main(int argc, char** argv)
 	{
 		mmx::contract::method_t method;
 		method.is_public = true;
+		method.is_payable = true;
 		method.name = "trade";
-		method.args = {"index", "amount"};
+		method.args = {"index", "address"};
 		method.entry_point = code.size();
 		// TODO
-		code.emplace_back(vm::OP_RET);
-		bin->methods[method.name] = method;
-	}
-	{
-		mmx::contract::method_t method;
-		method.is_public = true;
-		method.name = "payout";
-		method.entry_point = code.size();
-		code.emplace_back(vm::OP_GET,  0, vm::MEM_STACK + 12, bin->fields["users"], vm::MEM_EXTERN + vm::EXTERN_USER);
-		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 12, const_map["null"]);
-		code.emplace_back(vm::OP_JUMPN,  0, code.size() + 2, vm::MEM_STACK + 10);
-		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_user"]);
-		// for(int i = 0; i < 2; ++i) {
-		code.emplace_back(vm::OP_COPY, 0, vm::MEM_STACK + 13, const_map["0"]);
-		const auto for_begin = code.size();
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 14, vm::MEM_STACK + 12, const_map["balance"]);
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 14, vm::MEM_STACK + 14, vm::MEM_STACK + 13);
-		// if(user.balance[i]) {
-		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 14, const_map["0"]);
-		const auto jump_base = code.size();
-		code.emplace_back(vm::OP_JUMPI, 0, 0, vm::MEM_STACK + 10);
-		// const auto total_fees = fees_paid[i] - user.last_fees_paid[i];
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 15, bin->fields["fees_paid"], vm::MEM_STACK + 13);
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 16, vm::MEM_STACK + 12, const_map["last_fees_paid"]);
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 16, vm::MEM_STACK + 16, vm::MEM_STACK + 13);
-		code.emplace_back(vm::OP_SUB, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 17, vm::MEM_STACK + 15, vm::MEM_STACK + 16);
-		// auto user_share = (2 * total_fees * user.balance[i]) / (user_total[i] + user.last_user_total[i]);
-		code.emplace_back(vm::OP_MUL, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 18, vm::MEM_STACK + 17, const_map["2"]);
-		code.emplace_back(vm::OP_MUL, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 18, vm::MEM_STACK + 18, vm::MEM_STACK + 14);
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 19, bin->fields["user_total"], vm::MEM_STACK + 13);
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 20, vm::MEM_STACK + 12, const_map["last_user_total"]);
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 20, vm::MEM_STACK + 20, vm::MEM_STACK + 13);
-		code.emplace_back(vm::OP_ADD, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 19, vm::MEM_STACK + 19, vm::MEM_STACK + 20);
-		code.emplace_back(vm::OP_DIV, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 18, vm::MEM_STACK + 18, vm::MEM_STACK + 19);
-		// user_share = std::min(user_share, balance[i]);
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 20, bin->fields["tokens"], vm::MEM_STACK + 13);
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 19, vm::MEM_EXTERN + vm::EXTERN_BALANCE, vm::MEM_STACK + 20);
-		code.emplace_back(vm::OP_MIN, 0, vm::MEM_STACK + 18, vm::MEM_STACK + 18, vm::MEM_STACK + 19);
-		// send earned fees
-		code.emplace_back(vm::OP_SEND, 0, vm::MEM_EXTERN + vm::EXTERN_USER, vm::MEM_STACK + 18, vm::MEM_STACK + 20);
-		// fees_claimed[i] += user_share;
-		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 21, bin->fields["fees_claimed"], vm::MEM_STACK + 13);
-		code.emplace_back(vm::OP_ADD, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 21, vm::MEM_STACK + 21, vm::MEM_STACK + 18);
-		code.emplace_back(vm::OP_SET, 0, bin->fields["fees_claimed"], vm::MEM_STACK + 13, vm::MEM_STACK + 21);
-		code[jump_base].a = code.size();
-		// user.last_user_total[i] = user_total[i];
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 14, bin->fields["user_total"], vm::MEM_STACK + 13);
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 15, vm::MEM_STACK + 12, const_map["last_user_total"]);
-		code.emplace_back(vm::OP_SET, vm::OPFLAG_REF_A, vm::MEM_STACK + 15, vm::MEM_STACK + 13, vm::MEM_STACK + 14);
-		// user.last_fees_paid[i] = fees_paid[i];
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 14, bin->fields["fees_paid"], vm::MEM_STACK + 13);
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 15, vm::MEM_STACK + 12, const_map["last_fees_paid"]);
-		code.emplace_back(vm::OP_SET, vm::OPFLAG_REF_A, vm::MEM_STACK + 15, vm::MEM_STACK + 13, vm::MEM_STACK + 14);
-		// for(int i = 0; i < 2; ++i) {
-		code.emplace_back(vm::OP_ADD, 0, vm::MEM_STACK + 13, vm::MEM_STACK + 13, const_map["1"]);
-		code.emplace_back(vm::OP_CMP_LT, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 13, const_map["2"]);
-		code.emplace_back(vm::OP_JUMPI, 0, for_begin, vm::MEM_STACK + 10);
 		code.emplace_back(vm::OP_RET);
 		bin->methods[method.name] = method;
 	}
