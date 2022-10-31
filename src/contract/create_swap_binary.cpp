@@ -325,8 +325,8 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_SET, 0, bin->fields["balance"], vm::MEM_STACK + 18, vm::MEM_STACK + 20);
 		code[jump_base].a = code.size();
 		// send ret_amount
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 16, bin->fields["tokens"], vm::MEM_STACK + 1);
-		code.emplace_back(vm::OP_SEND, 0, vm::MEM_EXTERN + vm::EXTERN_USER, vm::MEM_STACK + 15, vm::MEM_STACK + 16);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 18, bin->fields["tokens"], vm::MEM_STACK + 1);
+		code.emplace_back(vm::OP_SEND, 0, vm::MEM_EXTERN + vm::EXTERN_USER, vm::MEM_STACK + 15, vm::MEM_STACK + 18);
 		// user.balance[i] -= amount[i];
 		code.emplace_back(vm::OP_SUB, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 14, vm::MEM_STACK + 14, vm::MEM_STACK + 2);
 		code.emplace_back(vm::OP_SET, vm::OPFLAG_REF_A, vm::MEM_STACK + 13, vm::MEM_STACK + 1, vm::MEM_STACK + 14);
