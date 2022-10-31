@@ -168,6 +168,7 @@ Vue.component('node-peers', {
 				{ text: this.$t('node_peers.duration'), value: 'duration', width: "10%" },
 				{ text: this.$t('node_peers.credits'), value: 'credits', width: "10%" },
 				{ text: this.$t('node_peers.connection'), value: 'connection', width: "10%" },
+				{ text: "Action", value: 'action'},
 			]
 		}
 	},
@@ -178,6 +179,16 @@ Vue.component('node-peers', {
 				.then(data => {
 					this.data = data; 
 					this.loaded = true;
+				});
+		},
+		kick_peer(address) {
+			const args = {};
+			args.address = address;
+			fetch('/api/router/kick_peer', {body: JSON.stringify(args), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						this.update();
+					}
 				});
 		}
 	},
@@ -224,7 +235,11 @@ Vue.component('node-peers', {
 
 			<template v-slot:item.connection="{ item }">
 				{{item.is_outbound ? $t('node_peers.outbound') : $t('node_peers.inbound') }}
-			</template>				
+			</template>
+			
+			<template v-slot:item.action="{ item }">
+				<v-btn @click="kick_peer(item.address)" outlined>Kick</v-btn>
+			</template>
 		</v-data-table>	
 		`
 })

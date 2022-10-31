@@ -293,6 +293,16 @@ std::shared_ptr<const PeerInfo> Router::get_peer_info() const
 	return info;
 }
 
+
+void Router::kick_peer(const std::string& address)
+{
+	for(const auto& entry : peer_map) {
+		if(entry.second->address == address) {
+			ban_peer(entry.first, "kicked manually");
+		}
+	}
+}
+
 std::vector<std::pair<std::string, uint32_t>> Router::get_farmer_credits() const
 {
 	std::vector<std::pair<std::string, uint32_t>> res;

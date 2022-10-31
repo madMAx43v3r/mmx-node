@@ -117,6 +117,7 @@ protected:
 	virtual std::vector<std::string> get_known_peers() const = 0;
 	virtual std::vector<std::string> get_connected_peers() const = 0;
 	virtual std::shared_ptr<const ::mmx::PeerInfo> get_peer_info() const = 0;
+	virtual void kick_peer(const std::string& address) = 0;
 	virtual std::vector<std::pair<std::string, uint32_t>> get_farmer_credits() const = 0;
 	virtual void get_blocks_at_async(const uint32_t& height, const vnx::request_id_t& _request_id) const = 0;
 	void get_blocks_at_async_return(const vnx::request_id_t& _request_id, const std::vector<std::shared_ptr<const ::mmx::Block>>& _ret_0) const;

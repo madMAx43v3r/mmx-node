@@ -50,6 +50,8 @@ protected:
 
 	std::shared_ptr<const PeerInfo> get_peer_info() const override;
 
+	void kick_peer(const std::string& address) override;
+
 	std::vector<std::pair<std::string, uint32_t>> get_farmer_credits() const override;
 
 	void get_blocks_at_async(const uint32_t& height, const vnx::request_id_t& request_id) const override;
