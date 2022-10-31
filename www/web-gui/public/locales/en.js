@@ -90,7 +90,7 @@ const enLocale = {
     "node_peers": {
         "version": "Version",
         "received": "Received",
-        "send": "Send",
+        "send": "Sent",
         "ping": "Ping",
         "duration": "Duration",
         "credits": "Credits",
