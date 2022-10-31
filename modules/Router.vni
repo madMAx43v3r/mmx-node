@@ -80,6 +80,8 @@ module Router extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	
 	PeerInfo* get_peer_info() const;
 	
+	void kick_peer(string address);
+	
 	vector<pair<string, uint>> get_farmer_credits() const;
 	
 	vector<Block*> get_blocks_at(uint height) const async;

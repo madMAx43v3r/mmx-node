@@ -30,6 +30,8 @@
 #include <mmx/Router_get_peer_info_return.hxx>
 #include <mmx/Router_get_peers.hxx>
 #include <mmx/Router_get_peers_return.hxx>
+#include <mmx/Router_kick_peer.hxx>
+#include <mmx/Router_kick_peer_return.hxx>
 #include <mmx/Router_sign_msg.hxx>
 #include <mmx/Router_sign_msg_return.hxx>
 #include <mmx/Transaction.hxx>
@@ -818,7 +820,7 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	type_code->parents[1] = ::vnx::addons::TcpServerBase::static_get_type_code();
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::node_type_e::static_get_type_code();
-	type_code->methods.resize(23);
+	type_code->methods.resize(24);
 	type_code->methods[0] = ::mmx::Router_discover::static_get_type_code();
 	type_code->methods[1] = ::mmx::Router_fetch_block::static_get_type_code();
 	type_code->methods[2] = ::mmx::Router_fetch_block_at::static_get_type_code();
@@ -830,18 +832,19 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	type_code->methods[8] = ::mmx::Router_get_known_peers::static_get_type_code();
 	type_code->methods[9] = ::mmx::Router_get_peer_info::static_get_type_code();
 	type_code->methods[10] = ::mmx::Router_get_peers::static_get_type_code();
-	type_code->methods[11] = ::mmx::Router_sign_msg::static_get_type_code();
-	type_code->methods[12] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
-	type_code->methods[13] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
-	type_code->methods[14] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
-	type_code->methods[15] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
-	type_code->methods[16] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
-	type_code->methods[17] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
-	type_code->methods[18] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
-	type_code->methods[19] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
-	type_code->methods[20] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
-	type_code->methods[21] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
-	type_code->methods[22] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
+	type_code->methods[11] = ::mmx::Router_kick_peer::static_get_type_code();
+	type_code->methods[12] = ::mmx::Router_sign_msg::static_get_type_code();
+	type_code->methods[13] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
+	type_code->methods[14] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
+	type_code->methods[15] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
+	type_code->methods[16] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
+	type_code->methods[17] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
+	type_code->methods[18] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
+	type_code->methods[19] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
+	type_code->methods[20] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
+	type_code->methods[21] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
+	type_code->methods[22] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
+	type_code->methods[23] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
 	type_code->fields.resize(61);
 	{
 		auto& field = type_code->fields[0];
@@ -1354,6 +1357,12 @@ std::shared_ptr<vnx::Value> RouterBase::vnx_call_switch(std::shared_ptr<const vn
 			auto _args = std::static_pointer_cast<const ::mmx::Router_get_peers>(_method);
 			auto _return_value = ::mmx::Router_get_peers_return::create();
 			_return_value->_ret_0 = get_peers(_args->max_count);
+			return _return_value;
+		}
+		case 0x359a21379021beedull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Router_kick_peer>(_method);
+			auto _return_value = ::mmx::Router_kick_peer_return::create();
+			kick_peer(_args->address);
 			return _return_value;
 		}
 		case 0x88ede2fbb99ab63eull: {

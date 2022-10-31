@@ -29,6 +29,8 @@
 #include <mmx/Router_get_peer_info_return.hxx>
 #include <mmx/Router_get_peers.hxx>
 #include <mmx/Router_get_peers_return.hxx>
+#include <mmx/Router_kick_peer.hxx>
+#include <mmx/Router_kick_peer_return.hxx>
 #include <mmx/Router_sign_msg.hxx>
 #include <mmx/Router_sign_msg_return.hxx>
 #include <mmx/Transaction.hxx>
@@ -175,6 +177,18 @@ std::shared_ptr<const ::mmx::PeerInfo> RouterClient::get_peer_info() {
 	} else {
 		throw std::logic_error("RouterClient: invalid return value");
 	}
+}
+
+void RouterClient::kick_peer(const std::string& address) {
+	auto _method = ::mmx::Router_kick_peer::create();
+	_method->address = address;
+	vnx_request(_method, false);
+}
+
+void RouterClient::kick_peer_async(const std::string& address) {
+	auto _method = ::mmx::Router_kick_peer::create();
+	_method->address = address;
+	vnx_request(_method, true);
 }
 
 std::vector<std::pair<std::string, uint32_t>> RouterClient::get_farmer_credits() {
