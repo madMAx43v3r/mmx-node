@@ -1293,20 +1293,31 @@ bool Router::send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg, boo
 bool Router::send_to(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Value> msg, bool reliable)
 {
 	if(!reliable && peer->is_blocked) {
+		bool drop = true;
 		switch(msg->get_type_hash()) {
-			case Block::VNX_TYPE_ID: block_drop_counter++; break;
-			case Transaction::VNX_TYPE_ID: tx_drop_counter++; break;
-			case ProofOfTime::VNX_TYPE_ID: vdf_drop_counter++; break;
-			case ProofResponse::VNX_TYPE_ID: proof_drop_counter++; break;
-			default:
-				if(auto req = std::dynamic_pointer_cast<const Request>(msg)) {
-					auto ret = Return::create();
-					ret->id = req->id;
-					ret->result = vnx::OverflowException::create();
-					add_task(std::bind(&Router::on_return, this, peer->client, ret));
+			case Block::VNX_TYPE_ID:
+			case ProofOfTime::VNX_TYPE_ID:
+			case ProofResponse::VNX_TYPE_ID:
+				if(peer->write_queue_size < priority_queue_size) {
+					drop = false;
 				}
 		}
-		return false;
+		if(drop) {
+			switch(msg->get_type_hash()) {
+				case Block::VNX_TYPE_ID: block_drop_counter++; break;
+				case Transaction::VNX_TYPE_ID: tx_drop_counter++; break;
+				case ProofOfTime::VNX_TYPE_ID: vdf_drop_counter++; break;
+				case ProofResponse::VNX_TYPE_ID: proof_drop_counter++; break;
+				default:
+					if(auto req = std::dynamic_pointer_cast<const Request>(msg)) {
+						auto ret = Return::create();
+						ret->id = req->id;
+						ret->result = vnx::OverflowException::create();
+						add_task(std::bind(&Router::on_return, this, peer->client, ret));
+					}
+			}
+			return false;
+		}
 	}
 	if(!reliable) {
 		if(auto tx = std::dynamic_pointer_cast<const Transaction>(msg)) {
@@ -1327,8 +1338,7 @@ bool Router::send_to(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Va
 			tx_upload_sum += cost;
 		}
 	}
-	Super::send_to(peer, msg);
-	return true;
+	return Super::send_to(peer, msg);
 }
 
 void Router::send_all(std::shared_ptr<const vnx::Value> msg, const std::set<node_type_e>& filter, bool reliable)

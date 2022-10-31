@@ -54,6 +54,7 @@ module Router extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	
 	double max_tx_upload = 2;				// relative to full block per block interval
 	double max_pending_cost = 0.2;			// relative to full block per peer
+	uint priority_queue_size = 262144;		// [bytes]
 	
 	set<string> seed_peers;
 	set<string> fixed_peers;
