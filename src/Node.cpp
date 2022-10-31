@@ -850,6 +850,7 @@ std::map<vm::varptr_t, vm::varptr_t> Node::read_storage_map(const addr_t& contra
 	if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(get_contract(contract))) {
 		if(auto bin = std::dynamic_pointer_cast<const contract::Binary>(get_contract(exec->binary))) {
 			auto engine = std::make_shared<vm::Engine>(contract, storage, true);
+			engine->total_gas = params->max_block_cost;
 			vm::load(engine, bin);
 			for(const auto& entry : storage->find_entries(contract, address, height)) {
 				if(auto key = engine->read(entry.first)) {

@@ -192,7 +192,7 @@ std::vector<std::pair<uint64_t, varptr_t>> StorageDB::find_entries(
 	for(const auto& entry : keys) {
 		if(auto value = table_entries->find(entry.first, height)) {
 			std::unique_ptr<var_t> var;
-			deserialize(var, value->data, value->size);
+			deserialize(var, value->data, value->size, false);
 			out.emplace_back(entry.second, std::move(var));
 		}
 	}
