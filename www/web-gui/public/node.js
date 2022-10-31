@@ -401,7 +401,7 @@ Vue.component('block-reward-graph', {
 						const tmp = {x: [], y: [], type: "scatter"};
 						for(const item of data) {
 							tmp.x.push(item.height);
-							tmp.y.push(item.base_reward);
+							tmp.y.push(item.reward);
 						}
 						this.base_data = [tmp];
 					}

@@ -632,16 +632,14 @@ void WebAPI::render_block_graph(const vnx::request_id_t& request_id, size_t limi
 						out["score"] = nullptr;
 					}
 					uint64_t total = 0;
-					if(auto tx = std::dynamic_pointer_cast<const Transaction>(block->tx_base)) {
+					if(auto tx = block->tx_base) {
 						for(const auto& out : tx->outputs) {
 							total += out.amount;
 						}
 					}
 					out["reward"] = total / pow(10, params->decimals);
-					const auto base_reward = calc_block_reward(params, block->space_diff);
-					// TODO: fix formula
-					out["tx_fees"] = (total - std::min(base_reward, total)) / pow(10, params->decimals);
-					out["base_reward"] = base_reward / pow(10, params->decimals);
+					out["tx_fees"] = block->tx_fees / pow(10, params->decimals);
+					out["base_reward"] = calc_block_reward(params, block->space_diff) / pow(10, params->decimals);
 				}
 				if(--job->num_left == 0) {
 					respond(job->request_id, render_value(job->result));
