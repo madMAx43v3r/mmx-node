@@ -54,10 +54,9 @@ public:
 		if(amount > user.balance[i]) {
 			throw std::logic_error("amount > user balance");
 		}
-		uint256_t ret_amount = 0;
-		if(balance[i] >= user_total[i]) {
-			ret_amount = amount;
-		} else {
+		uint256_t ret_amount = amount;
+
+		if(balance[i] < user_total[i]) {
 			ret_amount = (amount * balance[i]) / user_total[i];
 
 			const int k = (i + 1) % 2;
