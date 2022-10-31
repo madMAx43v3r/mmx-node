@@ -141,15 +141,23 @@ int main(int argc, char** argv) {
 		engine.write(vm::MEM_CONST + 2, vm::uint_t(1));
 		engine.write(vm::MEM_CONST + 3, vm::uint_t(1337));
 		engine.write(vm::MEM_CONST + 4, vm::uint_t(uint256_max));
+		engine.write(vm::MEM_CONST + 5, vm::uint_t(uint256_max >> 100));
+		engine.write(vm::MEM_CONST + 6, vm::uint_t(uint256_max >> 128));
+		engine.write(vm::MEM_CONST + 7, vm::uint_t(100));
+		engine.write(vm::MEM_CONST + 8, vm::uint_t(128));
 
 		auto& code = engine.code;
-		// TODO
+		code.emplace_back(vm::OP_COPY, 0, vm::MEM_STACK + 1, vm::MEM_CONST + 4);
+		code.emplace_back(vm::OP_SHR, 0, vm::MEM_STATIC + 1, vm::MEM_STACK + 1, 100);
+		code.emplace_back(vm::OP_SHR, vm::OPFLAG_REF_C, vm::MEM_STATIC + 2, vm::MEM_STACK + 1, vm::MEM_CONST + 8);
 		code.emplace_back(vm::OP_RET);
 
-		engine.total_gas = 100000;
+		engine.total_gas = 1000000;
 		engine.init();
 		engine.begin(0);
 		engine.run();
+		vnx::test::expect(compare(engine.read_fail(vm::MEM_STATIC + 1), vm::uint_t(uint256_max >> 100)), 0);
+		vnx::test::expect(compare(engine.read_fail(vm::MEM_STATIC + 2), vm::uint_t(uint256_max >> 128)), 0);
 		engine.commit();
 	}
 	VNX_TEST_END()
