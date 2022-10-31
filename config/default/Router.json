@@ -7,6 +7,7 @@
 	"max_connections": 100,
 	"max_queue_ms": 5000,
 	"max_msg_size": 16777216,
+	"max_list_size": 1048576,
 	"stats_interval_ms": 60000,
 	"connect_interval_ms": 10000,
 	"connection_timeout_ms": 180000,
