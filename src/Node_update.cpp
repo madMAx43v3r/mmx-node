@@ -506,7 +506,7 @@ void Node::purge_tx_pool()
 			min_pool_fee_ratio = tx->fee_ratio;
 		}
 	}
-	if(total_pool_cost < max_pool_cost) {
+	if(total_pool_cost < (9 * max_pool_cost) / 10) {
 		min_pool_fee_ratio = 0;
 	}
 	if(total_pool_cost || num_purged) {
