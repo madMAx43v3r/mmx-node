@@ -32,8 +32,9 @@ public:
 	std::array<::mmx::hash_t, 2> vdf_output = {};
 	std::shared_ptr<const ::mmx::ProofOfSpace> proof;
 	std::shared_ptr<const ::mmx::Transaction> tx_base;
+	uint32_t static_cost = 0;
+	uint32_t total_cost = 0;
 	uint32_t tx_count = 0;
-	uint32_t tx_cost = 0;
 	uint32_t tx_fees = 0;
 	::mmx::hash_t tx_hash;
 	vnx::optional<::mmx::bls_signature_t> farmer_sig;
@@ -89,7 +90,7 @@ protected:
 
 template<typename T>
 void BlockHeader::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<BlockHeader>(20);
+	_visitor.template type_begin<BlockHeader>(21);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("hash", 1); _visitor.accept(hash);
 	_visitor.type_field("prev", 2); _visitor.accept(prev);
@@ -104,13 +105,14 @@ void BlockHeader::accept_generic(T& _visitor) const {
 	_visitor.type_field("vdf_output", 11); _visitor.accept(vdf_output);
 	_visitor.type_field("proof", 12); _visitor.accept(proof);
 	_visitor.type_field("tx_base", 13); _visitor.accept(tx_base);
-	_visitor.type_field("tx_count", 14); _visitor.accept(tx_count);
-	_visitor.type_field("tx_cost", 15); _visitor.accept(tx_cost);
-	_visitor.type_field("tx_fees", 16); _visitor.accept(tx_fees);
-	_visitor.type_field("tx_hash", 17); _visitor.accept(tx_hash);
-	_visitor.type_field("farmer_sig", 18); _visitor.accept(farmer_sig);
-	_visitor.type_field("content_hash", 19); _visitor.accept(content_hash);
-	_visitor.template type_end<BlockHeader>(20);
+	_visitor.type_field("static_cost", 14); _visitor.accept(static_cost);
+	_visitor.type_field("total_cost", 15); _visitor.accept(total_cost);
+	_visitor.type_field("tx_count", 16); _visitor.accept(tx_count);
+	_visitor.type_field("tx_fees", 17); _visitor.accept(tx_fees);
+	_visitor.type_field("tx_hash", 18); _visitor.accept(tx_hash);
+	_visitor.type_field("farmer_sig", 19); _visitor.accept(farmer_sig);
+	_visitor.type_field("content_hash", 20); _visitor.accept(content_hash);
+	_visitor.template type_end<BlockHeader>(21);
 }
 
 

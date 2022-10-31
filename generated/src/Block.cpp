@@ -34,7 +34,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Block::VNX_TYPE_HASH(0x94965d816d328467ull);
-const vnx::Hash64 Block::VNX_CODE_HASH(0x87f071be0e1484b6ull);
+const vnx::Hash64 Block::VNX_CODE_HASH(0x6a8988c474e9f9dcull);
 
 vnx::Hash64 Block::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -81,13 +81,14 @@ void Block::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, vdf_output);
 	_visitor.type_field(_type_code->fields[12], 12); vnx::accept(_visitor, proof);
 	_visitor.type_field(_type_code->fields[13], 13); vnx::accept(_visitor, tx_base);
-	_visitor.type_field(_type_code->fields[14], 14); vnx::accept(_visitor, tx_count);
-	_visitor.type_field(_type_code->fields[15], 15); vnx::accept(_visitor, tx_cost);
-	_visitor.type_field(_type_code->fields[16], 16); vnx::accept(_visitor, tx_fees);
-	_visitor.type_field(_type_code->fields[17], 17); vnx::accept(_visitor, tx_hash);
-	_visitor.type_field(_type_code->fields[18], 18); vnx::accept(_visitor, farmer_sig);
-	_visitor.type_field(_type_code->fields[19], 19); vnx::accept(_visitor, content_hash);
-	_visitor.type_field(_type_code->fields[20], 20); vnx::accept(_visitor, tx_list);
+	_visitor.type_field(_type_code->fields[14], 14); vnx::accept(_visitor, static_cost);
+	_visitor.type_field(_type_code->fields[15], 15); vnx::accept(_visitor, total_cost);
+	_visitor.type_field(_type_code->fields[16], 16); vnx::accept(_visitor, tx_count);
+	_visitor.type_field(_type_code->fields[17], 17); vnx::accept(_visitor, tx_fees);
+	_visitor.type_field(_type_code->fields[18], 18); vnx::accept(_visitor, tx_hash);
+	_visitor.type_field(_type_code->fields[19], 19); vnx::accept(_visitor, farmer_sig);
+	_visitor.type_field(_type_code->fields[20], 20); vnx::accept(_visitor, content_hash);
+	_visitor.type_field(_type_code->fields[21], 21); vnx::accept(_visitor, tx_list);
 	_visitor.type_end(*_type_code);
 }
 
@@ -107,8 +108,9 @@ void Block::write(std::ostream& _out) const {
 	_out << ", \"vdf_output\": "; vnx::write(_out, vdf_output);
 	_out << ", \"proof\": "; vnx::write(_out, proof);
 	_out << ", \"tx_base\": "; vnx::write(_out, tx_base);
+	_out << ", \"static_cost\": "; vnx::write(_out, static_cost);
+	_out << ", \"total_cost\": "; vnx::write(_out, total_cost);
 	_out << ", \"tx_count\": "; vnx::write(_out, tx_count);
-	_out << ", \"tx_cost\": "; vnx::write(_out, tx_cost);
 	_out << ", \"tx_fees\": "; vnx::write(_out, tx_fees);
 	_out << ", \"tx_hash\": "; vnx::write(_out, tx_hash);
 	_out << ", \"farmer_sig\": "; vnx::write(_out, farmer_sig);
@@ -140,8 +142,9 @@ vnx::Object Block::to_object() const {
 	_object["vdf_output"] = vdf_output;
 	_object["proof"] = proof;
 	_object["tx_base"] = tx_base;
+	_object["static_cost"] = static_cost;
+	_object["total_cost"] = total_cost;
 	_object["tx_count"] = tx_count;
-	_object["tx_cost"] = tx_cost;
 	_object["tx_fees"] = tx_fees;
 	_object["tx_hash"] = tx_hash;
 	_object["farmer_sig"] = farmer_sig;
@@ -170,14 +173,16 @@ void Block::from_object(const vnx::Object& _object) {
 			_entry.second.to(proof);
 		} else if(_entry.first == "space_diff") {
 			_entry.second.to(space_diff);
+		} else if(_entry.first == "static_cost") {
+			_entry.second.to(static_cost);
 		} else if(_entry.first == "time_diff") {
 			_entry.second.to(time_diff);
+		} else if(_entry.first == "total_cost") {
+			_entry.second.to(total_cost);
 		} else if(_entry.first == "total_weight") {
 			_entry.second.to(total_weight);
 		} else if(_entry.first == "tx_base") {
 			_entry.second.to(tx_base);
-		} else if(_entry.first == "tx_cost") {
-			_entry.second.to(tx_cost);
 		} else if(_entry.first == "tx_count") {
 			_entry.second.to(tx_count);
 		} else if(_entry.first == "tx_fees") {
@@ -241,11 +246,14 @@ vnx::Variant Block::get_field(const std::string& _name) const {
 	if(_name == "tx_base") {
 		return vnx::Variant(tx_base);
 	}
+	if(_name == "static_cost") {
+		return vnx::Variant(static_cost);
+	}
+	if(_name == "total_cost") {
+		return vnx::Variant(total_cost);
+	}
 	if(_name == "tx_count") {
 		return vnx::Variant(tx_count);
-	}
-	if(_name == "tx_cost") {
-		return vnx::Variant(tx_cost);
 	}
 	if(_name == "tx_fees") {
 		return vnx::Variant(tx_fees);
@@ -294,10 +302,12 @@ void Block::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(proof);
 	} else if(_name == "tx_base") {
 		_value.to(tx_base);
+	} else if(_name == "static_cost") {
+		_value.to(static_cost);
+	} else if(_name == "total_cost") {
+		_value.to(total_cost);
 	} else if(_name == "tx_count") {
 		_value.to(tx_count);
-	} else if(_name == "tx_cost") {
-		_value.to(tx_cost);
 	} else if(_name == "tx_fees") {
 		_value.to(tx_fees);
 	} else if(_name == "tx_hash") {
@@ -335,7 +345,7 @@ std::shared_ptr<vnx::TypeCode> Block::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Block";
 	type_code->type_hash = vnx::Hash64(0x94965d816d328467ull);
-	type_code->code_hash = vnx::Hash64(0x87f071be0e1484b6ull);
+	type_code->code_hash = vnx::Hash64(0x6a8988c474e9f9dcull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::Block);
@@ -353,7 +363,7 @@ std::shared_ptr<vnx::TypeCode> Block::static_create_type_code() {
 	type_code->methods[7] = ::mmx::BlockHeader_get_header::static_get_type_code();
 	type_code->methods[8] = ::mmx::BlockHeader_is_valid::static_get_type_code();
 	type_code->methods[9] = ::mmx::BlockHeader_validate::static_get_type_code();
-	type_code->fields.resize(21);
+	type_code->fields.resize(22);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -441,41 +451,47 @@ std::shared_ptr<vnx::TypeCode> Block::static_create_type_code() {
 	{
 		auto& field = type_code->fields[14];
 		field.data_size = 4;
-		field.name = "tx_count";
+		field.name = "static_cost";
 		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[15];
 		field.data_size = 4;
-		field.name = "tx_cost";
+		field.name = "total_cost";
 		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[16];
 		field.data_size = 4;
-		field.name = "tx_fees";
+		field.name = "tx_count";
 		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[17];
+		field.data_size = 4;
+		field.name = "tx_fees";
+		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[18];
 		field.is_extended = true;
 		field.name = "tx_hash";
 		field.code = {11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[18];
+		auto& field = type_code->fields[19];
 		field.is_extended = true;
 		field.name = "farmer_sig";
 		field.code = {33, 11, 96, 1};
 	}
 	{
-		auto& field = type_code->fields[19];
+		auto& field = type_code->fields[20];
 		field.is_extended = true;
 		field.name = "content_hash";
 		field.code = {11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[20];
+		auto& field = type_code->fields[21];
 		field.is_extended = true;
 		field.name = "tx_list";
 		field.code = {12, 16};
@@ -610,12 +626,15 @@ void read(TypeInput& in, ::mmx::Block& value, const TypeCode* type_code, const u
 			vnx::read_value(_buf + _field->offset, value.vdf_iters, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[14]) {
-			vnx::read_value(_buf + _field->offset, value.tx_count, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.static_cost, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[15]) {
-			vnx::read_value(_buf + _field->offset, value.tx_cost, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.total_cost, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[16]) {
+			vnx::read_value(_buf + _field->offset, value.tx_count, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[17]) {
 			vnx::read_value(_buf + _field->offset, value.tx_fees, _field->code.data());
 		}
 	}
@@ -628,10 +647,10 @@ void read(TypeInput& in, ::mmx::Block& value, const TypeCode* type_code, const u
 			case 11: vnx::read(in, value.vdf_output, type_code, _field->code.data()); break;
 			case 12: vnx::read(in, value.proof, type_code, _field->code.data()); break;
 			case 13: vnx::read(in, value.tx_base, type_code, _field->code.data()); break;
-			case 17: vnx::read(in, value.tx_hash, type_code, _field->code.data()); break;
-			case 18: vnx::read(in, value.farmer_sig, type_code, _field->code.data()); break;
-			case 19: vnx::read(in, value.content_hash, type_code, _field->code.data()); break;
-			case 20: vnx::read(in, value.tx_list, type_code, _field->code.data()); break;
+			case 18: vnx::read(in, value.tx_hash, type_code, _field->code.data()); break;
+			case 19: vnx::read(in, value.farmer_sig, type_code, _field->code.data()); break;
+			case 20: vnx::read(in, value.content_hash, type_code, _field->code.data()); break;
+			case 21: vnx::read(in, value.tx_list, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -650,7 +669,7 @@ void write(TypeOutput& out, const ::mmx::Block& value, const TypeCode* type_code
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(56);
+	char* const _buf = out.write(60);
 	vnx::write_value(_buf + 0, value.version);
 	vnx::write_value(_buf + 4, value.height);
 	vnx::write_value(_buf + 8, value.nonce);
@@ -658,9 +677,10 @@ void write(TypeOutput& out, const ::mmx::Block& value, const TypeCode* type_code
 	vnx::write_value(_buf + 24, value.space_diff);
 	vnx::write_value(_buf + 32, value.netspace_ratio);
 	vnx::write_value(_buf + 36, value.vdf_iters);
-	vnx::write_value(_buf + 44, value.tx_count);
-	vnx::write_value(_buf + 48, value.tx_cost);
-	vnx::write_value(_buf + 52, value.tx_fees);
+	vnx::write_value(_buf + 44, value.static_cost);
+	vnx::write_value(_buf + 48, value.total_cost);
+	vnx::write_value(_buf + 52, value.tx_count);
+	vnx::write_value(_buf + 56, value.tx_fees);
 	vnx::write(out, value.hash, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.prev, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.weight, type_code, type_code->fields[7].code.data());
@@ -668,10 +688,10 @@ void write(TypeOutput& out, const ::mmx::Block& value, const TypeCode* type_code
 	vnx::write(out, value.vdf_output, type_code, type_code->fields[11].code.data());
 	vnx::write(out, value.proof, type_code, type_code->fields[12].code.data());
 	vnx::write(out, value.tx_base, type_code, type_code->fields[13].code.data());
-	vnx::write(out, value.tx_hash, type_code, type_code->fields[17].code.data());
-	vnx::write(out, value.farmer_sig, type_code, type_code->fields[18].code.data());
-	vnx::write(out, value.content_hash, type_code, type_code->fields[19].code.data());
-	vnx::write(out, value.tx_list, type_code, type_code->fields[20].code.data());
+	vnx::write(out, value.tx_hash, type_code, type_code->fields[18].code.data());
+	vnx::write(out, value.farmer_sig, type_code, type_code->fields[19].code.data());
+	vnx::write(out, value.content_hash, type_code, type_code->fields[20].code.data());
+	vnx::write(out, value.tx_list, type_code, type_code->fields[21].code.data());
 }
 
 void read(std::istream& in, ::mmx::Block& value) {
