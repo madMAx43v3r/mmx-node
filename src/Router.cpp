@@ -912,19 +912,21 @@ void Router::exec_fork_check()
 			if(sync_height) {
 				hash_t major_hash;
 				size_t major_count = 0;
+				size_t total_count = 0;
 				for(const auto& entry : fork_check.hash_count) {
 					if(entry.second > major_count) {
 						major_hash = entry.first;
 						major_count = entry.second;
 					}
+					total_count += entry.second;
 				}
 				if(major_count > 0 && major_hash == fork_check.our_hash) {
-					log(INFO) << "A majority of " << major_count << " / " << fork_check.request_map.size() << " peers agree at height " << fork_check.height;
+					log(INFO) << "A majority of " << major_count << " / " << total_count << " peers agree at height " << fork_check.height;
 				}
 				if(major_count >= min_sync_peers && major_hash != fork_check.our_hash)
 				{
 					log(WARN) << "We forked from the network, a majority of "
-							<< major_count << " / " << fork_check.request_map.size() << " peers disagree at height " << fork_check.height << "!";
+							<< major_count << " / " << total_count << " peers disagree at height " << fork_check.height << "!";
 					node->start_sync();
 					fork_check.hash_count.clear();
 				}
