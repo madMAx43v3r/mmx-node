@@ -694,7 +694,7 @@ void Engine::get(const uint64_t dst, const uint64_t addr, const uint64_t key, co
 			if(index.value < ((const array_t&)var).size) {
 				write(dst, read_entry_fail(addr, uint64_t(index.value)));
 			} else if(flags & OPFLAG_HARD_FAIL) {
-				throw std::runtime_error("index out of bounds");
+				throw std::runtime_error("array index out of bounds");
 			} else {
 				write(dst, var_t());
 			}
@@ -719,7 +719,7 @@ void Engine::set(const uint64_t addr, const uint64_t key, const uint64_t src, co
 		case TYPE_ARRAY: {
 			const auto& index = read_fail<uint_t>(key, TYPE_UINT);
 			if(index.value >= ((const array_t&)var).size) {
-				throw std::runtime_error("index out of bounds");
+				throw std::runtime_error("array index out of bounds");
 			}
 			write_entry(addr, uint64_t(index.value), read_fail(src));
 			break;
