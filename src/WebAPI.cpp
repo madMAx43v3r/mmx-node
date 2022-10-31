@@ -508,7 +508,8 @@ public:
 		} else if(value && context) {
 			auto tmp = render(*value, context);
 			tmp["time"] = context->get_time(value->height);
-			tmp["tx_cost_ratio"] = double(value->tx_cost) / context->params->max_block_cost;
+			tmp["static_cost_ratio"] = double(value->static_cost) / context->params->max_block_size;
+			tmp["total_cost_ratio"] = double(value->total_cost) / context->params->max_block_cost;
 			set(tmp);
 		} else {
 			set(render(value));
@@ -519,7 +520,8 @@ public:
 		if(value && context) {
 			auto tmp = render(*value, context);
 			tmp["time"] = context->get_time(value->height);
-			tmp["tx_cost_ratio"] = double(value->tx_cost) / context->params->max_block_cost;
+			tmp["static_cost_ratio"] = double(value->static_cost) / context->params->max_block_size;
+			tmp["total_cost_ratio"] = double(value->total_cost) / context->params->max_block_cost;
 			set(tmp);
 		} else {
 			set(render(value));

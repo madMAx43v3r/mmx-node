@@ -26,8 +26,10 @@ class BlockHeader {
 	
 	Transaction* tx_base;
 	
+	uint static_cost;
+	uint total_cost;
+	
 	uint tx_count;
-	uint tx_cost;
 	uint tx_fees;
 	
 	hash_t tx_hash;

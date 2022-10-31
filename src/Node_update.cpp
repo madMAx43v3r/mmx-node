@@ -420,11 +420,9 @@ void Node::update()
 
 bool Node::tx_pool_update(const tx_pool_t& entry, const bool force_add)
 {
-	if(const auto& tx = entry.tx)
-	{
+	if(const auto& tx = entry.tx) {
 		const auto iter = tx_pool.find(tx->id);
-		if(const auto& sender = tx->sender)
-		{
+		if(const auto& sender = tx->sender) {
 			const auto fees = tx_pool_fees.find(*sender);
 			auto new_total = fees != tx_pool_fees.end() ? fees->second : 0;
 			if(iter != tx_pool.end()) {
@@ -486,10 +484,10 @@ void Node::purge_tx_pool()
 		});
 
 	size_t num_purged = 0;
-	uint128_t total_pool_cost = 0;
+	uint128_t total_pool_size = 0;
 	std::unordered_map<addr_t, uint64_t> total_fee_map;		// [sender => total fee]
 
-	const auto max_pool_cost = uint128_t(tx_pool_limit) * params->max_block_cost;
+	const auto max_pool_size = uint128_t(tx_pool_limit) * params->max_block_size;
 
 	// purge transactions from pool if overflowing
 	for(const auto& entry : all_tx) {
@@ -498,9 +496,9 @@ void Node::purge_tx_pool()
 		if(tx->sender) {
 			total_fee_spent = (total_fee_map[*tx->sender] += entry.fee);
 		}
-		total_pool_cost += tx->static_cost;
+		total_pool_size += tx->static_cost;
 
-		if(total_pool_cost > max_pool_cost
+		if(total_pool_size > max_pool_size
 			|| (tx->sender && total_fee_spent > get_balance(*tx->sender, addr_t())))
 		{
 			tx_pool_erase(tx->id);
@@ -509,11 +507,11 @@ void Node::purge_tx_pool()
 			min_pool_fee_ratio = tx->fee_ratio;
 		}
 	}
-	if(total_pool_cost < (9 * max_pool_cost) / 10) {
+	if(total_pool_size < (9 * max_pool_size) / 10) {
 		min_pool_fee_ratio = 0;
 	}
-	if(total_pool_cost || num_purged) {
-		log(INFO) << uint64_t((total_pool_cost * 10000) / max_pool_cost) / 100. << " % mem pool, "
+	if(total_pool_size || num_purged) {
+		log(INFO) << uint64_t((total_pool_size * 10000) / max_pool_size) / 100. << " % mem pool, "
 				<< min_pool_fee_ratio / 1024. << " min free ratio, " << num_purged << " purged, took "
 				<< (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 	}
@@ -677,6 +675,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block(const uint64_t verify_limi
 	}
 
 	uint64_t total_cost = 0;
+	uint64_t static_cost = 0;
 	std::vector<tx_pool_t> result;
 	balance_cache_t balance_cache(&balance_map);
 
@@ -687,29 +686,28 @@ std::vector<Node::tx_pool_t> Node::validate_for_block(const uint64_t verify_limi
 			tx_pool_erase(entry.tx->id);
 			continue;
 		}
-		if(total_cost + entry.cost > select_limit) {
+		const auto tx = entry.tx;
+
+		if(static_cost + tx->static_cost > params->max_block_size || total_cost + entry.cost > select_limit) {
 			continue;
 		}
 		bool passed = true;
 		balance_cache_t tmp_cache(&balance_cache);
 		{
-			auto tx = entry.tx;
-			{
-				const auto balance = tmp_cache.find(*tx->sender, addr_t());
-				if(balance && entry.fee <= *balance) {
-					*balance -= entry.fee;
+			const auto balance = tmp_cache.find(*tx->sender, addr_t());
+			if(balance && entry.fee <= *balance) {
+				*balance -= entry.fee;
+			} else {
+				passed = false;
+			}
+		}
+		if(!tx->exec_result->did_fail) {
+			for(const auto& in : tx->inputs) {
+				const auto balance = tmp_cache.find(in.address, in.contract);
+				if(balance && in.amount <= *balance) {
+					*balance -= in.amount;
 				} else {
 					passed = false;
-				}
-			}
-			if(!tx->exec_result->did_fail) {
-				for(const auto& in : tx->inputs) {
-					const auto balance = tmp_cache.find(in.address, in.contract);
-					if(balance && in.amount <= *balance) {
-						*balance -= in.amount;
-					} else {
-						passed = false;
-					}
 				}
 			}
 		}
@@ -719,6 +717,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block(const uint64_t verify_limi
 		balance_cache.apply(tmp_cache);
 
 		total_cost += entry.cost;
+		static_cost += tx->static_cost;
 		result.push_back(entry);
 	}
 	return result;

@@ -302,7 +302,7 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 				size_t num_blocks = 0;
 				for(const auto& fork : get_fork_line()) {
 					if(fork->block->farmer_sig) {
-						info->block_size += fork->block->tx_cost / double(params->max_block_cost);
+						info->block_size += fork->block->static_cost / double(params->max_block_size);
 						num_blocks++;
 					}
 				}
@@ -1511,15 +1511,15 @@ void Node::sync_result(const uint32_t& height, const std::vector<std::shared_ptr
 {
 	sync_pending.erase(height);
 
-	uint64_t total_cost = 0;
+	uint64_t total_size = 0;
 	for(auto block : blocks) {
 		if(block) {
 			add_block(block);
-			total_cost += block->tx_cost;
+			total_size += block->static_cost;
 		}
 	}
 	{
-		const auto value = max_sync_jobs * (1 - std::min<double>(total_cost / double(params->max_block_cost), 1));
+		const auto value = max_sync_jobs * (1 - std::min<double>(total_size / double(params->max_block_size), 1));
 		max_sync_pending = value * 0.1 + max_sync_pending * 0.9;
 	}
 	if(!is_synced) {

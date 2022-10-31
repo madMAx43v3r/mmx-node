@@ -650,7 +650,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 		} else {
 			uint32_t max_block_size = 0;
 			for(const auto& entry : job->blocks) {
-				max_block_size = std::max(entry.second->tx_cost, max_block_size);
+				max_block_size = std::max(entry.second->static_cost, max_block_size);
 			}
 			log(DEBUG) << "Got " << job->blocks.size() << " blocks for height " << job->height << " by fetching "
 					<< job->num_fetch << " times, " << job->got_hash.size() << " reply, " << job->failed.size() << " failed"
@@ -1128,7 +1128,7 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> value)
 
 void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 {
-	if(!block->is_valid() || !block->farmer_sig || block->tx_cost > params->max_block_cost) {
+	if(!block->is_valid() || !block->farmer_sig || block->static_cost > params->max_block_size) {
 		return;
 	}
 	const auto hash = block->content_hash;

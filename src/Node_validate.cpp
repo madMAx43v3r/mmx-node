@@ -233,6 +233,12 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->time_diff < params->min_time_diff) {
 		throw std::logic_error("time_diff < min_time_diff");
 	}
+	if(block->static_cost > params->max_block_size) {
+		throw std::logic_error("block size too high: " + std::to_string(uint64_t(block->static_cost)));
+	}
+	if(block->total_cost > params->max_block_cost) {
+		throw std::logic_error("block cost too high: " + std::to_string(uint64_t(block->total_cost)));
+	}
 	block->validate();
 
 	if(block->farmer_sig) {
@@ -315,8 +321,6 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	}
 	hash_t failed_tx;
 	std::exception_ptr failed_ex;
-	std::atomic<uint64_t> total_fees {0};
-	std::atomic<uint64_t> total_cost {0};
 
 	const auto tx_count = block->tx_list.size();
 #pragma omp parallel for if(is_synced || tx_count >= 16)
@@ -328,8 +332,6 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 			if(validate(tx, context)) {
 				throw std::logic_error("missing exec_result");
 			}
-			total_fees += tx->exec_result->total_fee;
-			total_cost += tx->exec_result->total_cost;
 		} catch(...) {
 #pragma omp critical
 			{
@@ -346,15 +348,12 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 			throw std::logic_error(std::string(ex.what()) + " (" + failed_tx.to_string() + ")");
 		}
 	}
-	if(total_cost > params->max_block_cost) {
-		throw std::logic_error("block cost too high: " + std::to_string(uint64_t(total_cost)));
-	}
 	if(auto tx = block->tx_base) {
 		if(validate(tx, context, block)) {
 			throw std::logic_error("missing exec_result");
 		}
 		const auto base_reward = calc_block_reward(block);
-		const auto base_allowed = calc_final_block_reward(params, base_reward, total_fees);
+		const auto base_allowed = calc_final_block_reward(params, base_reward, block->tx_fees);
 		if(tx->exec_result->total_fee > base_allowed) {
 			throw std::logic_error("coin base over-spend");
 		}
@@ -555,8 +554,8 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 	if(!tx->is_valid(params)) {
 		throw mmx::static_failure("invalid tx");
 	}
-	if(tx->static_cost > params->max_block_cost) {
-		throw mmx::static_failure("static_cost > max_block_cost");
+	if(tx->static_cost > params->max_block_size) {
+		throw mmx::static_failure("static_cost > max_block_size");
 	}
 	if(tx_index.count(tx->id)) {
 		throw mmx::static_failure("duplicate tx");

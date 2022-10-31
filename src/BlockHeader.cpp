@@ -42,8 +42,9 @@ std::pair<hash_t, hash_t> BlockHeader::calc_hash() const
 	write_field(out, "proof", 		proof ? proof->calc_hash(true) : hash_t());
 	write_field(out, "tx_base", 	tx_base ? tx_base->calc_hash(true) : hash_t());
 	write_field(out, "tx_count", 	tx_count);
-	write_field(out, "tx_cost", 	tx_cost);
 	write_field(out, "tx_fees", 	tx_fees);
+	write_field(out, "static_cost",	static_cost);
+	write_field(out, "total_cost",	total_cost);
 	write_field(out, "tx_hash", 	tx_hash);
 	out.flush();
 
