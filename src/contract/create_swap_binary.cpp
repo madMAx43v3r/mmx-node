@@ -46,9 +46,6 @@ int main(int argc, char** argv)
 	const_map["4"] = constant.size();
 	constant.push_back(std::make_unique<vm::uint_t>(4));
 
-	const_map["FRACT_BITS"] = constant.size();
-	constant.push_back(std::make_unique<vm::uint_t>(FRACT_BITS));
-
 	const_map["balance"] = constant.size();
 	constant.push_back(vm::binary_t::alloc("balance"));
 
@@ -100,21 +97,21 @@ int main(int argc, char** argv)
 		method.entry_point = code.size();
 		code.emplace_back(vm::OP_COPY, 0, bin->fields["tokens"], const_map["array"]);
 		code.emplace_back(vm::OP_CONV, 0, vm::MEM_STACK + 11, vm::MEM_STACK + 1, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
-		code.emplace_back(vm::OP_SET,  0, bin->fields["tokens"], const_map["0"], vm::MEM_STACK + 11);
+		code.emplace_back(vm::OP_PUSH_BACK, 0, bin->fields["tokens"], vm::MEM_STACK + 11);
 		code.emplace_back(vm::OP_CONV, 0, vm::MEM_STACK + 11, vm::MEM_STACK + 2, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
-		code.emplace_back(vm::OP_SET,  0, bin->fields["tokens"], const_map["1"], vm::MEM_STACK + 11);
+		code.emplace_back(vm::OP_PUSH_BACK, 0, bin->fields["tokens"], vm::MEM_STACK + 11);
 		code.emplace_back(vm::OP_COPY, 0, bin->fields["balance"], const_map["array"]);
-		code.emplace_back(vm::OP_SET,  0, bin->fields["balance"], const_map["0"], const_map["0"]);
-		code.emplace_back(vm::OP_SET,  0, bin->fields["balance"], const_map["1"], const_map["0"]);
+		code.emplace_back(vm::OP_PUSH_BACK, 0, bin->fields["balance"], const_map["0"]);
+		code.emplace_back(vm::OP_PUSH_BACK, 0, bin->fields["balance"], const_map["0"]);
 		code.emplace_back(vm::OP_COPY, 0, bin->fields["user_total"], const_map["array"]);
-		code.emplace_back(vm::OP_SET,  0, bin->fields["user_total"], const_map["0"], const_map["0"]);
-		code.emplace_back(vm::OP_SET,  0, bin->fields["user_total"], const_map["1"], const_map["0"]);
+		code.emplace_back(vm::OP_PUSH_BACK, 0, bin->fields["user_total"], const_map["0"]);
+		code.emplace_back(vm::OP_PUSH_BACK, 0, bin->fields["user_total"], const_map["0"]);
 		code.emplace_back(vm::OP_COPY, 0, bin->fields["fees_paid"], const_map["array"]);
-		code.emplace_back(vm::OP_SET,  0, bin->fields["fees_paid"], const_map["0"], const_map["0"]);
-		code.emplace_back(vm::OP_SET,  0, bin->fields["fees_paid"], const_map["1"], const_map["0"]);
+		code.emplace_back(vm::OP_PUSH_BACK, 0, bin->fields["fees_paid"], const_map["0"]);
+		code.emplace_back(vm::OP_PUSH_BACK, 0, bin->fields["fees_paid"], const_map["0"]);
 		code.emplace_back(vm::OP_COPY, 0, bin->fields["fees_claimed"], const_map["array"]);
-		code.emplace_back(vm::OP_SET,  0, bin->fields["fees_claimed"], const_map["0"], const_map["0"]);
-		code.emplace_back(vm::OP_SET,  0, bin->fields["fees_claimed"], const_map["1"], const_map["0"]);
+		code.emplace_back(vm::OP_PUSH_BACK, 0, bin->fields["fees_claimed"], const_map["0"]);
+		code.emplace_back(vm::OP_PUSH_BACK, 0, bin->fields["fees_claimed"], const_map["0"]);
 		code.emplace_back(vm::OP_COPY, 0, bin->fields["users"], const_map["map"]);
 		code.emplace_back(vm::OP_RET);
 		bin->methods[method.name] = method;
@@ -133,28 +130,28 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_user"]);
 		// std::array<uint256_t, 2> user_share = {0, 0};
 		code.emplace_back(vm::OP_COPY, 0, vm::MEM_STACK + 0, const_map["array"]);
-		code.emplace_back(vm::OP_SET, 0, vm::MEM_STACK + 0, const_map["0"], const_map["0"]);
-		code.emplace_back(vm::OP_SET, 0, vm::MEM_STACK + 0, const_map["1"], const_map["0"]);
+		code.emplace_back(vm::OP_PUSH_BACK, 0, vm::MEM_STACK + 0, const_map["0"]);
+		code.emplace_back(vm::OP_PUSH_BACK, 0, vm::MEM_STACK + 0, const_map["0"]);
 		// for(int i = 0; i < 2; ++i) {
 		code.emplace_back(vm::OP_COPY, 0, vm::MEM_STACK + 13, const_map["0"]);
 		const auto for_begin = code.size();
 		code.emplace_back(vm::OP_GET, vm::OPFLAG_REF_B, vm::MEM_STACK + 14, vm::MEM_STACK + 12, const_map["balance"]);
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 14, vm::MEM_STACK + 14, vm::MEM_STACK + 13);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 14, vm::MEM_STACK + 14, vm::MEM_STACK + 13);
 		// if(user.balance[i]) {
 		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 14, const_map["0"]);
 		const auto jump_base = code.size();
 		code.emplace_back(vm::OP_JUMPI, 0, 0, vm::MEM_STACK + 10);
 		// const auto total_fees = fees_paid[i] - user.last_fees_paid[i];
 		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 15, bin->fields["fees_paid"], vm::MEM_STACK + 13);
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_REF_B, vm::MEM_STACK + 16, vm::MEM_STACK + 12, const_map["last_fees_paid"]);
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 16, vm::MEM_STACK + 16, vm::MEM_STACK + 13);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 16, vm::MEM_STACK + 12, const_map["last_fees_paid"]);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_REF_B, vm::MEM_STACK + 16, vm::MEM_STACK + 16, vm::MEM_STACK + 13);
 		code.emplace_back(vm::OP_SUB, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 17, vm::MEM_STACK + 15, vm::MEM_STACK + 16);
 		// auto user_share = (2 * total_fees * user.balance[i]) / (user_total[i] + user.last_user_total[i]);
 		code.emplace_back(vm::OP_MUL, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 18, vm::MEM_STACK + 17, const_map["2"]);
 		code.emplace_back(vm::OP_MUL, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 18, vm::MEM_STACK + 18, vm::MEM_STACK + 14);
 		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 19, bin->fields["user_total"], vm::MEM_STACK + 13);
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_REF_B, vm::MEM_STACK + 20, vm::MEM_STACK + 12, const_map["last_user_total"]);
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 20, vm::MEM_STACK + 20, vm::MEM_STACK + 13);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 20, vm::MEM_STACK + 12, const_map["last_user_total"]);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_REF_B, vm::MEM_STACK + 20, vm::MEM_STACK + 20, vm::MEM_STACK + 13);
 		code.emplace_back(vm::OP_ADD, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 19, vm::MEM_STACK + 19, vm::MEM_STACK + 20);
 		code.emplace_back(vm::OP_DIV, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 18, vm::MEM_STACK + 18, vm::MEM_STACK + 19);
 		// user_share = std::min(user_share, wallet[i] - balance[i]);
@@ -200,11 +197,11 @@ int main(int argc, char** argv)
 		code[jump_base].a = code.size();
 		// user.last_user_total[i] = user_total[i];
 		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 14, bin->fields["user_total"], vm::MEM_STACK + 13);
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_REF_B, vm::MEM_STACK + 15, vm::MEM_STACK + 12, const_map["last_user_total"]);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 15, vm::MEM_STACK + 12, const_map["last_user_total"]);
 		code.emplace_back(vm::OP_SET, vm::OPFLAG_REF_A, vm::MEM_STACK + 15, vm::MEM_STACK + 13, vm::MEM_STACK + 14);
 		// user.last_fees_paid[i] = fees_paid[i];
 		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 14, bin->fields["fees_paid"], vm::MEM_STACK + 13);
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_REF_B, vm::MEM_STACK + 15, vm::MEM_STACK + 12, const_map["last_fees_paid"]);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 15, vm::MEM_STACK + 12, const_map["last_fees_paid"]);
 		code.emplace_back(vm::OP_SET, vm::OPFLAG_REF_A, vm::MEM_STACK + 15, vm::MEM_STACK + 13, vm::MEM_STACK + 14);
 		// for(int i = 0; i < 2; ++i) {
 		code.emplace_back(vm::OP_ADD, 0, vm::MEM_STACK + 13, vm::MEM_STACK + 13, const_map["1"]);
@@ -234,16 +231,16 @@ int main(int argc, char** argv)
 		// create user
 		code.emplace_back(vm::OP_CLONE, 0, vm::MEM_STACK + 12, const_map["map"]);
 		code.emplace_back(vm::OP_CLONE, 0, vm::MEM_STACK + 13, const_map["array"]);
-		code.emplace_back(vm::OP_SET, vm::OPFLAG_REF_A, vm::MEM_STACK + 13, const_map["0"], const_map["0"]);
-		code.emplace_back(vm::OP_SET, vm::OPFLAG_REF_A, vm::MEM_STACK + 13, const_map["1"], const_map["0"]);
+		code.emplace_back(vm::OP_PUSH_BACK, vm::OPFLAG_REF_A, vm::MEM_STACK + 13, const_map["0"]);
+		code.emplace_back(vm::OP_PUSH_BACK, vm::OPFLAG_REF_A, vm::MEM_STACK + 13, const_map["0"]);
 		code.emplace_back(vm::OP_SET, vm::OPFLAG_REF_A, vm::MEM_STACK + 12, const_map["balance"], vm::MEM_STACK + 13);
 		code.emplace_back(vm::OP_CLONE, 0, vm::MEM_STACK + 13, const_map["array"]);
-		code.emplace_back(vm::OP_SET, vm::OPFLAG_REF_A, vm::MEM_STACK + 13, const_map["0"], const_map["0"]);
-		code.emplace_back(vm::OP_SET, vm::OPFLAG_REF_A, vm::MEM_STACK + 13, const_map["1"], const_map["0"]);
+		code.emplace_back(vm::OP_PUSH_BACK, vm::OPFLAG_REF_A, vm::MEM_STACK + 13, const_map["0"]);
+		code.emplace_back(vm::OP_PUSH_BACK, vm::OPFLAG_REF_A, vm::MEM_STACK + 13, const_map["0"]);
 		code.emplace_back(vm::OP_SET, vm::OPFLAG_REF_A, vm::MEM_STACK + 12, const_map["last_user_total"], vm::MEM_STACK + 13);
 		code.emplace_back(vm::OP_CLONE, 0, vm::MEM_STACK + 13, const_map["array"]);
-		code.emplace_back(vm::OP_SET, vm::OPFLAG_REF_A, vm::MEM_STACK + 13, const_map["0"], const_map["0"]);
-		code.emplace_back(vm::OP_SET, vm::OPFLAG_REF_A, vm::MEM_STACK + 13, const_map["1"], const_map["0"]);
+		code.emplace_back(vm::OP_PUSH_BACK, vm::OPFLAG_REF_A, vm::MEM_STACK + 13, const_map["0"]);
+		code.emplace_back(vm::OP_PUSH_BACK, vm::OPFLAG_REF_A, vm::MEM_STACK + 13, const_map["0"]);
 		code.emplace_back(vm::OP_SET, vm::OPFLAG_REF_A, vm::MEM_STACK + 12, const_map["last_fees_paid"], vm::MEM_STACK + 13);
 		code.emplace_back(vm::OP_SET, 0, bin->fields["users"], vm::MEM_EXTERN + vm::EXTERN_USER, vm::MEM_STACK + 12);
 		code[jump_base].a = code.size();
@@ -260,11 +257,11 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_ADD, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 14, vm::MEM_STACK + 14, vm::MEM_STACK + 13);
 		code.emplace_back(vm::OP_SET, 0, bin->fields["user_total"], vm::MEM_STACK + 1, vm::MEM_STACK + 14);
 		// user.last_user_total[i] = user_total[i];
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_REF_B, vm::MEM_STACK + 15, vm::MEM_STACK + 12, const_map["last_user_total"]);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 15, vm::MEM_STACK + 12, const_map["last_user_total"]);
 		code.emplace_back(vm::OP_SET, vm::OPFLAG_REF_A, vm::MEM_STACK + 15, vm::MEM_STACK + 1, vm::MEM_STACK + 14);
 		// user.balance[i] += amount[i];
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_REF_B, vm::MEM_STACK + 14, vm::MEM_STACK + 12, const_map["balance"]);
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 15, vm::MEM_STACK + 14, vm::MEM_STACK + 1);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 14, vm::MEM_STACK + 12, const_map["balance"]);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_REF_B, vm::MEM_STACK + 15, vm::MEM_STACK + 14, vm::MEM_STACK + 1);
 		code.emplace_back(vm::OP_ADD, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 15, vm::MEM_STACK + 15, vm::MEM_STACK + 13);
 		code.emplace_back(vm::OP_SET, vm::OPFLAG_REF_A, vm::MEM_STACK + 14, vm::MEM_STACK + 1, vm::MEM_STACK + 15);
 		// update unlock height
@@ -285,13 +282,13 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_JUMPN,  0, code.size() + 2, vm::MEM_STACK + 10);
 		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_user"]);
 		// check unlock_height
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_REF_B, vm::MEM_STACK + 13, vm::MEM_STACK + 12, const_map["unlock_height"]);
-		code.emplace_back(vm::OP_CMP_LT, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 13, vm::MEM_EXTERN + vm::EXTERN_HEIGHT);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 13, vm::MEM_STACK + 12, const_map["unlock_height"]);
+		code.emplace_back(vm::OP_CMP_LT, 0, vm::MEM_STACK + 10, vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::MEM_STACK + 13);
 		code.emplace_back(vm::OP_JUMPN,  0, code.size() + 2, vm::MEM_STACK + 10);
 		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_locked"]);
 		// get user balance
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_REF_B, vm::MEM_STACK + 13, vm::MEM_STACK + 12, const_map["balance"]);
-		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 14, vm::MEM_STACK + 13, vm::MEM_STACK + 1);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 13, vm::MEM_STACK + 12, const_map["balance"]);
+		code.emplace_back(vm::OP_GET, vm::OPFLAG_REF_B, vm::MEM_STACK + 14, vm::MEM_STACK + 13, vm::MEM_STACK + 1);
 		// if(amount[i] > user.balance[i]) {
 		code.emplace_back(vm::OP_CMP_GT, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 2, vm::MEM_STACK + 14);
 		code.emplace_back(vm::OP_JUMPN,  0, code.size() + 2, vm::MEM_STACK + 10);
@@ -310,7 +307,7 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_DIV, 0, vm::MEM_STACK + 15, vm::MEM_STACK + 15, vm::MEM_STACK + 17);
 		// const int k = (i + 1) % 2;
 		code.emplace_back(vm::OP_COPY, 0, vm::MEM_STACK + 18, vm::MEM_STACK + 1);
-		code.emplace_back(vm::OP_ADD, 0, vm::MEM_STACK + 18, const_map["1"]);
+		code.emplace_back(vm::OP_ADD, 0, vm::MEM_STACK + 18, vm::MEM_STACK + 18, const_map["1"]);
 		code.emplace_back(vm::OP_AND, 0, vm::MEM_STACK + 18, vm::MEM_STACK + 18, const_map["1"]);
 		// const auto trade_amount = ((amount - ret_amount) * balance[k]) / balance[i];
 		code.emplace_back(vm::OP_SUB, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 19, vm::MEM_STACK + 2, vm::MEM_STACK + 15);
@@ -352,9 +349,11 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 11, vm::MEM_STACK + 12);
 		code.emplace_back(vm::OP_JUMPI, 0, code.size() + 2, vm::MEM_STACK + 10);
 		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_currency"]);
+		// convert address
+		code.emplace_back(vm::OP_CONV, 0, vm::MEM_STACK + 2, vm::MEM_STACK + 2, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
 		// const int k = (i + 1) % 2;
 		code.emplace_back(vm::OP_COPY, 0, vm::MEM_STACK + 11, vm::MEM_STACK + 1);
-		code.emplace_back(vm::OP_ADD, 0, vm::MEM_STACK + 11, const_map["1"]);
+		code.emplace_back(vm::OP_ADD, 0, vm::MEM_STACK + 11, vm::MEM_STACK + 11, const_map["1"]);
 		code.emplace_back(vm::OP_AND, 0, vm::MEM_STACK + 11, vm::MEM_STACK + 11, const_map["1"]);
 		// balance[i] += amount;
 		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 12, vm::MEM_EXTERN + vm::EXTERN_DEPOSIT, const_map["1"]);
@@ -376,7 +375,7 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_MAX, 0, vm::MEM_STACK + 16, vm::MEM_STACK + 16, const_map["min_fee_rate"]);
 		// const auto fee_amount = std::max((trade_amount * fee_rate) >> FRACT_BITS, uint256_t(1));
 		code.emplace_back(vm::OP_MUL, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 17, vm::MEM_STACK + 15, vm::MEM_STACK + 16);
-		code.emplace_back(vm::OP_SHR, 0, vm::MEM_STACK + 17, vm::MEM_STACK + 17, const_map["FRACT_BITS"]);
+		code.emplace_back(vm::OP_SHR, 0, vm::MEM_STACK + 17, vm::MEM_STACK + 17, FRACT_BITS);
 		code.emplace_back(vm::OP_MAX, 0, vm::MEM_STACK + 17, vm::MEM_STACK + 17, const_map["1"]);
 		// auto actual_amount = trade_amount - fee_amount;
 		code.emplace_back(vm::OP_SUB, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 18, vm::MEM_STACK + 15, vm::MEM_STACK + 17);
@@ -389,7 +388,7 @@ int main(int argc, char** argv)
 		// fees_paid[k] += fee_amount;
 		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 20, bin->fields["fees_paid"], vm::MEM_STACK + 11);
 		code.emplace_back(vm::OP_ADD, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 20, vm::MEM_STACK + 20, vm::MEM_STACK + 17);
-		code.emplace_back(vm::OP_SET, bin->fields["fees_paid"], vm::MEM_STACK + 11, vm::MEM_STACK + 20);
+		code.emplace_back(vm::OP_SET, 0, bin->fields["fees_paid"], vm::MEM_STACK + 11, vm::MEM_STACK + 20);
 		code.emplace_back(vm::OP_RET);
 		bin->methods[method.name] = method;
 	}
