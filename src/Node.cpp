@@ -971,6 +971,7 @@ std::vector<std::pair<addr_t, std::shared_ptr<const Contract>>> Node::get_virtua
 	for(const auto& addr : addrs) {
 		if(auto contract = get_contract(addr)) {
 			if(auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(contract)) {
+				// need to double check with current owner
 				if(plot->farmer_key == farmer_key) {
 					out.emplace_back(addr, plot);
 				}
