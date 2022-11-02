@@ -80,7 +80,7 @@ enum opcode_e : uint8_t {
 	OP_SEND,		// address, amount, currency
 	OP_MINT,		// address, amount
 	OP_EVENT,		// name, data
-	OP_FAIL,		// message
+	OP_FAIL,		// message, code
 	OP_RCALL,		// name, method, stack_ptr, nargs
 	OP_DEPOSIT,		// TODO: name, method, stack_ptr, nargs
 

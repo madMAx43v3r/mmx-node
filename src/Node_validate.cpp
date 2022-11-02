@@ -383,7 +383,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 					std::unordered_map<addr_t, uint128>& amounts,
 					contract_cache_t& contract_cache,
 					std::shared_ptr<vm::StorageCache> storage_cache,
-					uint64_t& tx_cost, const bool is_public) const
+					uint64_t& tx_cost, uint32_t& error_code, const bool is_public) const
 {
 	const auto address = exec->address == addr_t() ? tx->id : exec->address;
 
@@ -427,6 +427,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	try {
 		execute(tx, context, state, exec_inputs, exec_outputs, contract_cache, storage_cache, engine, exec->method, tx_cost, is_public);
 	} catch(...) {
+		error_code = engine->error_code;
 		failed_ex = std::current_exception();
 	}
 	tx_cost += engine->total_cost;
@@ -571,6 +572,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 	contract_cache_t contract_cache(&context->contract_cache);
 	std::unordered_map<addr_t, uint128> amounts;
 	std::exception_ptr failed_ex;
+	uint32_t error_code = 0;
 
 	if(!base) {
 		if(static_fee > tx->max_fee_amount) {
@@ -729,7 +731,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				auto exec = operation::Execute::create();
 				exec->method = executable->init_method;
 				exec->args = executable->init_args;
-				execute(tx, context, exec, state, exec_inputs, exec_outputs, amounts, contract_cache, storage_cache, tx_cost, false);
+				execute(tx, context, exec, state, exec_inputs, exec_outputs, amounts, contract_cache, storage_cache, tx_cost, error_code, false);
 			}
 		}
 
@@ -769,7 +771,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			}
 			else if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op))
 			{
-				execute(tx, context, exec, state, exec_inputs, exec_outputs, amounts, contract_cache, storage_cache, tx_cost, true);
+				execute(tx, context, exec, state, exec_inputs, exec_outputs, amounts, contract_cache, storage_cache, tx_cost, error_code, true);
 			}
 		}
 
@@ -844,6 +846,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				out->message = msg;
 			}
 			out->did_fail = true;
+			out->error_code = error_code;
 		}
 	} else {
 		const auto result = tx->exec_result;
@@ -866,6 +869,10 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 		if(result->total_fee != tx_fee) {
 			throw std::logic_error("tx fee mismatch: "
 					+ std::to_string(result->total_fee) + " != " + std::to_string(tx_fee));
+		}
+		if(result->error_code != error_code) {
+			throw std::logic_error("error code mismatch: "
+					+ std::to_string(result->error_code) + " != " + std::to_string(error_code));
 		}
 		if(result->inputs.size() != exec_inputs.size()) {
 			throw std::logic_error("execution input count mismatch: "

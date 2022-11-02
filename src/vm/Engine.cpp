@@ -1510,6 +1510,7 @@ void Engine::exec(const instr_t& instr)
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
 		break;
 	case OP_FAIL:
+		error_code = instr.b;
 		throw std::runtime_error("failed with: " + to_string_value(read(
 				deref_addr(instr.a, instr.flags & OPFLAG_REF_A))));
 	case OP_RCALL:
@@ -1536,6 +1537,7 @@ void Engine::reset()
 {
 	clear_stack();
 	call_stack.clear();
+	error_code = 0;
 }
 
 void Engine::commit()

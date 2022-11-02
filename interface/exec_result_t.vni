@@ -8,6 +8,8 @@ struct exec_result_t {
 	
 	uint total_fee;
 	
+	uint error_code;			// in case of failure
+	
 	vector<txin_t> inputs;
 	
 	vector<txout_t> outputs;
