@@ -79,6 +79,9 @@ int main(int argc, char** argv)
 	const_map["fail_locked"] = constant.size();
 	constant.push_back(vm::binary_t::alloc("liquidity still locked"));
 
+	const_map["fail_min_amount"] = constant.size();
+	constant.push_back(vm::binary_t::alloc("minimum amount not reached"));
+
 	{
 		size_t off = 1;
 		bin->fields["tokens"] = vm::MEM_STATIC + (off++);
@@ -285,7 +288,7 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 13, vm::MEM_STACK + 12, const_map["unlock_height"]);
 		code.emplace_back(vm::OP_CMP_LT, 0, vm::MEM_STACK + 10, vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::MEM_STACK + 13);
 		code.emplace_back(vm::OP_JUMPN,  0, code.size() + 2, vm::MEM_STACK + 10);
-		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_locked"]);
+		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_locked"], 3);
 		// get user balance
 		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL | vm::OPFLAG_REF_B, vm::MEM_STACK + 13, vm::MEM_STACK + 12, const_map["balance"]);
 		code.emplace_back(vm::OP_GET, vm::OPFLAG_REF_B, vm::MEM_STACK + 14, vm::MEM_STACK + 13, vm::MEM_STACK + 1);
@@ -341,7 +344,7 @@ int main(int argc, char** argv)
 		method.is_public = true;
 		method.is_payable = true;
 		method.name = "trade";
-		method.args = {"index", "address"};
+		method.args = {"index", "address", "min_amount"};
 		method.entry_point = code.size();
 		// check deposit currency
 		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 11, bin->fields["tokens"], vm::MEM_STACK + 1);
@@ -368,7 +371,7 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_CMP_LT, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 15, const_map["4"]);
 		code.emplace_back(vm::OP_JUMPN, 0, code.size() + 2, vm::MEM_STACK + 10);
 		// throw std::logic_error("trade_amount < 4");
-		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_amount"]);
+		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_amount"], 2);
 		// const auto fee_rate = std::max((trade_amount * max_fee_rate) / balance[k], min_fee_rate);
 		code.emplace_back(vm::OP_MUL, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 16, vm::MEM_STACK + 15, const_map["max_fee_rate"]);
 		code.emplace_back(vm::OP_DIV, 0, vm::MEM_STACK + 16, vm::MEM_STACK + 16, vm::MEM_STACK + 14);
@@ -379,6 +382,14 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_MAX, 0, vm::MEM_STACK + 17, vm::MEM_STACK + 17, const_map["1"]);
 		// auto actual_amount = trade_amount - fee_amount;
 		code.emplace_back(vm::OP_SUB, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 18, vm::MEM_STACK + 15, vm::MEM_STACK + 17);
+		// check if actual_amount >= min_amount
+		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 3, const_map["null"]);
+		const auto jump_base = code.size();
+		code.emplace_back(vm::OP_JUMPI, 0, 0, vm::MEM_STACK + 10);
+		code.emplace_back(vm::OP_CMP_LT, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 18, vm::MEM_STACK + 3);
+		code.emplace_back(vm::OP_JUMPN, 0, code.size() + 2, vm::MEM_STACK + 10);
+		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_min_amount"], 1);
+		code[jump_base].a = code.size();
 		// send actual amount
 		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 19, bin->fields["tokens"], vm::MEM_STACK + 11);
 		code.emplace_back(vm::OP_SEND, 0, vm::MEM_STACK + 2, vm::MEM_STACK + 18, vm::MEM_STACK + 19);
