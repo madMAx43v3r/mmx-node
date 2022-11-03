@@ -1233,7 +1233,7 @@ int main(int argc, char** argv)
 				std::cout << "Price: " << data.get_price() << " " << symbols[1] << " / " << symbols[0] << std::endl;
 			}
 			else {
-				std::cerr << "Help: mmx node [info | peers | tx | get | call | read | dump | dump_code | fetch | balance | history | offers | swaps | swap | sync | revert]" << std::endl;
+				std::cerr << "Help: mmx node [info | peers | tx | get | fetch | balance | history | offers | swaps | swap | sync | revert | call | read | dump | dump_code]" << std::endl;
 			}
 		}
 		else if(module == "farm" || module == "harvester")
