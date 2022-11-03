@@ -417,6 +417,27 @@ std::string to_string_value(const varptr_t& var) {
 	return to_string_value(var.get());
 }
 
+uint64_t to_ref(const var_t* var)
+{
+	if(!var) {
+		return 0;
+	}
+	switch(var->type) {
+		case TYPE_REF:
+			return ((const ref_t*)var)->address;
+		case TYPE_ARRAY:
+			return ((const array_t*)var)->address;
+		case TYPE_MAP:
+			return ((const map_t*)var)->address;
+		default:
+			return 0;
+	}
+}
+
+uint64_t to_ref(const varptr_t& var) {
+	return to_ref(var.get());
+}
+
 uint256_t to_uint(const var_t* var)
 {
 	if(!var) {

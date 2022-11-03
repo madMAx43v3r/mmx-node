@@ -101,6 +101,8 @@ void Node::main()
 		db.add(trade_log.open(database_path + "trade_log"));
 		db.add(trade_bid_history.open(database_path + "trade_bid_history"));
 		db.add(trade_ask_history.open(database_path + "trade_ask_history"));
+		db.add(swap_log.open(database_path + "swap_log"));
+		db.add(swap_liquid_map.open(database_path + "swap_liquid_map"));
 
 		db.add(tx_log.open(database_path + "tx_log"));
 		db.add(tx_index.open(database_path + "tx_index"));
@@ -244,7 +246,11 @@ void Node::main()
 		commit(genesis);
 	}
 
+	swap_binary = get_contract_as<const contract::Binary>(params->swap_binary);
 	offer_binary = get_contract_as<const contract::Binary>(params->offer_binary);
+	if(swap_binary) {
+		swap_users_addr = swap_binary->find_field("users");
+	}
 	if(offer_binary) {
 		offer_state_addr = offer_binary->find_field("state");
 	}
@@ -862,6 +868,15 @@ std::map<vm::varptr_t, vm::varptr_t> Node::read_storage_map(const addr_t& contra
 	return out;
 }
 
+std::map<std::string, vm::varptr_t> Node::read_storage_object(const addr_t& contract, const uint64_t& address, const uint32_t& height) const
+{
+	std::map<std::string, vm::varptr_t> out;
+	for(const auto& entry : read_storage_map(contract, address, height)) {
+		out[to_string(entry.first)] = entry.second;
+	}
+	return out;
+}
+
 vnx::Variant Node::call_contract(const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args) const
 {
 	if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(get_contract(address))) {
@@ -1246,6 +1261,102 @@ std::vector<offer_data_t> Node::get_trade_history_for(
 		[](const offer_data_t& L, const offer_data_t& R) -> bool {
 			return (L.close_height ? *L.close_height : 0) > (R.close_height ? *R.close_height : 0);
 		});
+	return result;
+}
+
+std::vector<swap_info_t> Node::get_swaps(const uint32_t& since, const vnx::optional<addr_t>& token, const vnx::optional<addr_t>& currency) const
+{
+	std::vector<addr_t> entries;
+	swap_log.find_range(std::make_pair(since, 0), std::make_pair(-1, -1), entries);
+
+	std::vector<swap_info_t> result;
+	for(const auto& address : entries) {
+		const auto info = get_swap_info(address);
+		if((!token || info.tokens[0] == *token) && (!currency || info.tokens[1] == *currency)) {
+			result.push_back(info);
+		}
+	}
+	return result;
+}
+
+swap_info_t Node::get_swap_info(const addr_t& address) const
+{
+	auto data = read_storage(address);
+	if(data.empty()) {
+		throw std::runtime_error("no such swap: " + address.to_string());
+	}
+	swap_info_t out;
+	out.address = address;
+	const auto tokens = read_storage_array(address, to_ref(data["tokens"]));
+	const auto balance = read_storage_array(address, to_ref(data["balance"]));
+	const auto fees_paid = read_storage_array(address, to_ref(data["fees_paid"]));
+	const auto user_total = read_storage_array(address, to_ref(data["user_total"]));
+	for(size_t i = 0; i < 2 && i < tokens.size(); ++i) {
+		out.tokens[i] = to_addr(tokens[i]);
+		out.wallet[i] = get_balance(address, out.tokens[i]);
+	}
+	for(size_t i = 0; i < 2 && i < balance.size(); ++i) {
+		out.balance[i] = to_uint(balance[i]);
+	}
+	for(size_t i = 0; i < 2 && i < fees_paid.size(); ++i) {
+		out.fees_paid[i] = to_uint(fees_paid[i]);
+	}
+	for(size_t i = 0; i < 2 && i < user_total.size(); ++i) {
+		out.user_total[i] = to_uint(user_total[i]);
+	}
+	return out;
+}
+
+swap_user_info_t Node::get_swap_user_info(const addr_t& address, const addr_t& user) const
+{
+	if(!swap_users_addr) {
+		throw std::logic_error("no swaps");
+	}
+	const auto key = storage->lookup(address, vm::uint_t(user.to_uint256()));
+	const auto user_ref = storage->read(address, *swap_users_addr, key);
+	if(!user_ref) {
+		throw std::logic_error("no such user or swap");
+	}
+	auto data = read_storage_object(address, to_ref(user_ref.get()));
+
+	swap_user_info_t out;
+	out.unlock_height = to_uint(data["unlock_height"]);
+	const auto balance = read_storage_array(address, to_ref(data["balance"]));
+	const auto last_user_total = read_storage_array(address, to_ref(data["last_user_total"]));
+	const auto last_fees_paid = read_storage_array(address, to_ref(data["last_fees_paid"]));
+	for(size_t i = 0; i < 2 && i < balance.size(); ++i) {
+		out.balance[i] = to_uint(balance[i]);
+	}
+	for(size_t i = 0; i < 2 && i < last_user_total.size(); ++i) {
+		out.last_user_total[i] = to_uint(last_user_total[i]);
+	}
+	for(size_t i = 0; i < 2 && i < last_fees_paid.size(); ++i) {
+		out.last_fees_paid[i] = to_uint(last_fees_paid[i]);
+	}
+	return out;
+}
+
+std::map<addr_t, std::vector<std::pair<addr_t, uint128>>> Node::get_liquidity_by(const std::vector<addr_t>& addresses) const
+{
+	std::map<addr_t, std::array<uint128, 2>> swaps;
+	for(const auto& address : addresses) {
+		std::vector<std::pair<std::pair<addr_t, addr_t>, std::array<uint128, 2>>> entries;
+		swap_liquid_map.find_range(std::make_pair(address, addr_t()), std::make_pair(address, addr_t::ones()), entries);
+		for(const auto& entry : entries) {
+			auto& out = swaps[entry.first.second];
+			for(size_t i = 0; i < 2; ++i) {
+				out[i] += entry.second[i];
+			}
+		}
+	}
+	std::map<addr_t, std::vector<std::pair<addr_t, uint128>>> result;
+	for(const auto& entry : swaps) {
+		auto& out = result[entry.first];
+		const auto info = get_swap_info(entry.first);
+		for(size_t i = 0; i < 2; ++i) {
+			out.emplace_back(info.tokens[i], entry.second[i]);
+		}
+	}
 	return result;
 }
 
@@ -1935,6 +2046,9 @@ void Node::apply(	std::shared_ptr<const Block> block,
 				owner_map.insert(std::make_tuple(*owner, block->height, ticket), tx->id);
 			}
 			if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(contract)) {
+				if(exec->binary == params->swap_binary) {
+					swap_log.insert(std::make_pair(block->height, ticket), tx->id);
+				}
 				if(exec->binary == params->offer_binary) {
 					if(exec->init_args.size() >= 2) {
 						owner_map.insert(std::make_tuple(exec->init_args[0].to<addr_t>(), block->height, ticket), tx->id);
@@ -1969,6 +2083,23 @@ void Node::apply(	std::shared_ptr<const Block> block,
 				exec_log.insert(std::make_tuple(address, block->height, ticket), entry);
 
 				if(auto executable = std::dynamic_pointer_cast<const contract::Executable>(contract)) {
+					if(executable->binary == params->swap_binary) {
+						if(exec->user && entry.args.size() > 0) {
+							const auto key = std::make_pair(*exec->user, op->address);
+							const auto index = entry.args[0].to<uint32_t>();
+							if(index < 2) {
+								std::array<uint128, 2> balance;
+								swap_liquid_map.find(key, balance);
+								if(exec->method == "add_liquid" && deposit) {
+									balance[index] += deposit->amount;
+								}
+								if(exec->method == "rem_liquid" && entry.args.size() > 1) {
+									balance[index] -= entry.args[1].to<uint128>();
+								}
+								swap_liquid_map.insert(key, balance);
+							}
+						}
+					}
 					if(executable->binary == params->offer_binary) {
 						if(exec->method == "open") {
 							if(deposit) {

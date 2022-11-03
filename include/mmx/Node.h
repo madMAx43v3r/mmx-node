@@ -126,6 +126,8 @@ protected:
 
 	std::map<vm::varptr_t, vm::varptr_t> read_storage_map(const addr_t& contract, const uint64_t& address, const uint32_t& height = -1) const override;
 
+	std::map<std::string, vm::varptr_t> read_storage_object(const addr_t& contract, const uint64_t& address, const uint32_t& height = -1) const override;
+
 	vnx::Variant call_contract(const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args) const override;
 
 	address_info_t get_address_info(const addr_t& address) const override;
@@ -155,6 +157,14 @@ protected:
 
 	std::vector<offer_data_t> get_trade_history_for(
 			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const int32_t& limit, const uint32_t& since = 0) const override;
+
+	std::vector<swap_info_t> get_swaps(const uint32_t& since, const vnx::optional<addr_t>& token, const vnx::optional<addr_t>& currency) const override;
+
+	swap_info_t get_swap_info(const addr_t& address) const override;
+
+	swap_user_info_t get_swap_user_info(const addr_t& address, const addr_t& user) const override;
+
+	std::map<addr_t, std::vector<std::pair<addr_t, uint128>>> get_liquidity_by(const std::vector<addr_t>& addresses) const override;
 
 	std::vector<std::shared_ptr<const BlockHeader>> get_farmed_blocks(
 			const std::vector<bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since = 0) const override;
@@ -459,6 +469,9 @@ private:
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> trade_bid_history;		// [[currency, height, counter] => contract]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> trade_ask_history;		// [[currency, height, counter] => contract]
 
+	uint_uint_table<uint32_t, uint32_t, addr_t> swap_log;						// [[height, counter] => contract]
+	balance_table_t<std::array<uint128, 2>> swap_liquid_map;					// [[address, swap] => [amount, amount]]
+
 	balance_table_t<uint128> balance_table;										// [[addr, currency] => balance]
 	std::map<std::pair<addr_t, addr_t>, uint128> balance_map;					// [[addr, currency] => balance]
 	std::map<uint32_t, balance_log_t> balance_log;								// [height => log]
@@ -507,7 +520,9 @@ private:
 	mutable std::unordered_map<addr_t, std::shared_ptr<const Contract>> contract_cache;
 
 	std::shared_ptr<const ChainParams> params;
+	std::shared_ptr<const contract::Binary> swap_binary;
 	std::shared_ptr<const contract::Binary> offer_binary;
+	vnx::optional<uint32_t> swap_users_addr;
 	vnx::optional<uint32_t> offer_state_addr;
 	std::shared_ptr<RouterAsyncClient> router;
 	std::shared_ptr<TimeLordAsyncClient> timelord;

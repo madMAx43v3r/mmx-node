@@ -47,6 +47,9 @@ std::string to_string(const varptr_t& var);
 std::string to_string_value(const var_t* var);
 std::string to_string_value(const varptr_t& var);
 
+uint64_t to_ref(const var_t* var);
+uint64_t to_ref(const varptr_t& var);
+
 uint256_t to_uint(const var_t* var);
 uint256_t to_uint(const varptr_t& var);
 

@@ -30,5 +30,6 @@
 	"space_diff_constant": 100000000,
 	"virtual_space_constant": 2000,
 	"virtual_lifetime": 60480,
+	"swap_binary": "mmx1kzktf54adzgystak920rg7mfqkjjzjajzmvls0728ujfm2da92zq296wtc",
 	"offer_binary": null
 }

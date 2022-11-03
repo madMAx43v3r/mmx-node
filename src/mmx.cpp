@@ -1192,8 +1192,48 @@ int main(int argc, char** argv)
 					std::cout << std::endl;
 				}
 			}
+			else if(command == "swaps")
+			{
+				vnx::optional<mmx::addr_t> token;
+				vnx::read_config("$3", token);
+
+				for(const auto& data : node.get_swaps(0, token))
+				{
+					std::cout << "[" << data.address << "] ";
+					std::array<std::string, 2> symbols;
+					for(int i = 0; i < 2; ++i) {
+						if(auto token = get_token(node, data.tokens[i])) {
+							symbols[i] = token->symbol;
+							std::cout << mmx::to_value(data.balance[i], token->decimals) << " " << token->symbol << (i == 0 ? " / " : "");
+						}
+					}
+					std::cout << " (" << data.get_price() << " " << symbols[1] << " / " << symbols[0] << ")" << std::endl;
+				}
+			}
+			else if(command == "swap")
+			{
+				mmx::addr_t address;
+				if(!vnx::read_config("$3", address)) {
+					std::cerr << "node swap <address>" << std::endl;
+					goto failed;
+				}
+				const auto data = node.get_swap_info(address);
+
+				std::array<std::string, 2> symbols;
+				for(int i = 0; i < 2; ++i) {
+					if(auto token = get_token(node, data.tokens[i])) {
+						symbols[i] = token->symbol;
+						std::cout << (i ? "Currency" : "Token") << ": " << data.tokens[i] << std::endl;
+						std::cout << "  Pool Balance:   " << mmx::to_value(data.balance[i], token->decimals) << " " << token->symbol << std::endl;
+						std::cout << "  User Balance:   " << mmx::to_value(data.user_total[i], token->decimals) << " " << token->symbol << std::endl;
+						std::cout << "  Wallet Balance: " << mmx::to_value(data.wallet[i], token->decimals) << " " << token->symbol << std::endl;
+						std::cout << "  Total Fees:     " << mmx::to_value(data.fees_paid[i], token->decimals) << " " << token->symbol << std::endl;
+					}
+				}
+				std::cout << "Price: " << data.get_price() << " " << symbols[1] << " / " << symbols[0] << std::endl;
+			}
 			else {
-				std::cerr << "Help: mmx node [info | peers | tx | get | call | read | dump | dump_code | fetch | balance | history | offers | sync | revert]" << std::endl;
+				std::cerr << "Help: mmx node [info | peers | tx | get | call | read | dump | dump_code | fetch | balance | history | offers | swaps | swap | sync | revert]" << std::endl;
 			}
 		}
 		else if(module == "farm" || module == "harvester")

@@ -53,6 +53,7 @@ class ChainParams {
 	
 	string vdf_seed;
 	
+	addr_t swap_binary;
 	addr_t offer_binary;
 	addr_t tby_contract;
 	

@@ -16,6 +16,7 @@
 
 #include <uint128_t.h>
 #include <uint256_t.h>
+#include <cmath>
 
 
 namespace mmx {
@@ -40,6 +41,11 @@ std::shared_ptr<const ChainParams> get_params()
 inline
 double to_value(const uint64_t amount, const int decimals) {
 	return amount * pow(10, -decimals);
+}
+
+inline
+double to_value(const uint128_t amount, const int decimals) {
+	return (double(amount.upper()) * pow(2, 64) + double(amount.lower())) * pow(10, -decimals);
 }
 
 inline

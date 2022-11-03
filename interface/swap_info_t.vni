@@ -1,0 +1,17 @@
+package mmx;
+
+struct swap_info_t {
+	
+	addr_t address;
+	
+	addr_t tokens[2];
+	
+	uint128 wallet[2];
+	uint128 balance[2];
+	uint128 fees_paid[2];
+	uint128 user_total[2];
+	
+	
+	double get_price() const;
+	
+}
