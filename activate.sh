@@ -44,3 +44,4 @@ fi
 
 export MMX_NETWORK=${MMX_DATA}${NETWORK}/
 export PATH=$PATH:$PWD/build:$PWD/build/vnx-base/tools
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/build:$PWD/build/vnx-base:$PWD/build/vnx-addons:$PWD/build/basic-opencl
