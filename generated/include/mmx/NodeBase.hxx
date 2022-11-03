@@ -20,6 +20,8 @@
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
+#include <mmx/swap_info_t.hxx>
+#include <mmx/swap_user_info_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_info_t.hxx>
 #include <mmx/uint128.hpp>
@@ -150,6 +152,7 @@ protected:
 	virtual std::pair<::mmx::vm::varptr_t, uint64_t> read_storage_field(const ::mmx::addr_t& contract, const std::string& name, const uint32_t& height) const = 0;
 	virtual std::vector<::mmx::vm::varptr_t> read_storage_array(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) const = 0;
 	virtual std::map<::mmx::vm::varptr_t, ::mmx::vm::varptr_t> read_storage_map(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) const = 0;
+	virtual std::map<std::string, ::mmx::vm::varptr_t> read_storage_object(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) const = 0;
 	virtual ::vnx::Variant call_contract(const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args) const = 0;
 	virtual ::mmx::address_info_t get_address_info(const ::mmx::addr_t& address) const = 0;
 	virtual std::vector<::mmx::address_info_t> get_address_infos(const std::vector<::mmx::addr_t>& address, const int32_t& since) const = 0;
@@ -163,6 +166,10 @@ protected:
 	virtual std::vector<::mmx::offer_data_t> get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& limit, const std::string& state) const = 0;
 	virtual std::vector<::mmx::offer_data_t> get_trade_history(const int32_t& limit, const uint32_t& since) const = 0;
 	virtual std::vector<::mmx::offer_data_t> get_trade_history_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& limit, const uint32_t& since) const = 0;
+	virtual std::vector<::mmx::swap_info_t> get_swaps(const uint32_t& since, const vnx::optional<::mmx::addr_t>& token, const vnx::optional<::mmx::addr_t>& currency) const = 0;
+	virtual ::mmx::swap_info_t get_swap_info(const ::mmx::addr_t& address) const = 0;
+	virtual ::mmx::swap_user_info_t get_swap_user_info(const ::mmx::addr_t& address, const ::mmx::addr_t& user) const = 0;
+	virtual std::map<::mmx::addr_t, std::vector<std::pair<::mmx::addr_t, ::mmx::uint128>>> get_liquidity_by(const std::vector<::mmx::addr_t>& addresses) const = 0;
 	virtual ::mmx::uint128 get_total_supply(const ::mmx::addr_t& currency) const = 0;
 	virtual std::vector<std::shared_ptr<const ::mmx::BlockHeader>> get_farmed_blocks(const std::vector<::mmx::bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since) const = 0;
 	virtual std::map<::mmx::bls_pubkey_t, uint32_t> get_farmed_block_count(const uint32_t& since) const = 0;

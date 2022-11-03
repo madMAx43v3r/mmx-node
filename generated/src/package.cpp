@@ -135,6 +135,8 @@
 #include <mmx/Node_get_height_return.hxx>
 #include <mmx/Node_get_history.hxx>
 #include <mmx/Node_get_history_return.hxx>
+#include <mmx/Node_get_liquidity_by.hxx>
+#include <mmx/Node_get_liquidity_by_return.hxx>
 #include <mmx/Node_get_network_info.hxx>
 #include <mmx/Node_get_network_info_return.hxx>
 #include <mmx/Node_get_offer.hxx>
@@ -149,6 +151,12 @@
 #include <mmx/Node_get_recent_offers_return.hxx>
 #include <mmx/Node_get_recent_offers_for.hxx>
 #include <mmx/Node_get_recent_offers_for_return.hxx>
+#include <mmx/Node_get_swap_info.hxx>
+#include <mmx/Node_get_swap_info_return.hxx>
+#include <mmx/Node_get_swap_user_info.hxx>
+#include <mmx/Node_get_swap_user_info_return.hxx>
+#include <mmx/Node_get_swaps.hxx>
+#include <mmx/Node_get_swaps_return.hxx>
 #include <mmx/Node_get_synced_height.hxx>
 #include <mmx/Node_get_synced_height_return.hxx>
 #include <mmx/Node_get_total_balance.hxx>
@@ -187,6 +195,8 @@
 #include <mmx/Node_read_storage_field_return.hxx>
 #include <mmx/Node_read_storage_map.hxx>
 #include <mmx/Node_read_storage_map_return.hxx>
+#include <mmx/Node_read_storage_object.hxx>
+#include <mmx/Node_read_storage_object_return.hxx>
 #include <mmx/Node_read_storage_var.hxx>
 #include <mmx/Node_read_storage_var_return.hxx>
 #include <mmx/Node_revert_sync.hxx>
@@ -441,6 +451,8 @@
 #include <mmx/peer_info_t.hxx>
 #include <mmx/permission_e.hxx>
 #include <mmx/spend_options_t.hxx>
+#include <mmx/swap_info_t.hxx>
+#include <mmx/swap_user_info_t.hxx>
 #include <mmx/time_segment_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_info_t.hxx>
@@ -2041,6 +2053,30 @@ void type<::mmx::Node_get_history_return>::create_dynamic_code(std::vector<uint1
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_get_liquidity_by>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_liquidity_by;
+}
+
+void type<::mmx::Node_get_liquidity_by>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_liquidity_by());
+}
+
+void type<::mmx::Node_get_liquidity_by>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_liquidity_by& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_liquidity_by_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_liquidity_by_return;
+}
+
+void type<::mmx::Node_get_liquidity_by_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_liquidity_by_return());
+}
+
+void type<::mmx::Node_get_liquidity_by_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_liquidity_by_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::Node_get_network_info>::get_type_code() {
 	return mmx::vnx_native_type_code_Node_get_network_info;
 }
@@ -2206,6 +2242,78 @@ void type<::mmx::Node_get_recent_offers_for_return>::create_dynamic_code(std::ve
 }
 
 void type<::mmx::Node_get_recent_offers_for_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_recent_offers_for_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_swap_info>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_swap_info;
+}
+
+void type<::mmx::Node_get_swap_info>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_swap_info());
+}
+
+void type<::mmx::Node_get_swap_info>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_swap_info& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_swap_info_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_swap_info_return;
+}
+
+void type<::mmx::Node_get_swap_info_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_swap_info_return());
+}
+
+void type<::mmx::Node_get_swap_info_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_swap_info_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_swap_user_info>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_swap_user_info;
+}
+
+void type<::mmx::Node_get_swap_user_info>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_swap_user_info());
+}
+
+void type<::mmx::Node_get_swap_user_info>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_swap_user_info& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_swap_user_info_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_swap_user_info_return;
+}
+
+void type<::mmx::Node_get_swap_user_info_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_swap_user_info_return());
+}
+
+void type<::mmx::Node_get_swap_user_info_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_swap_user_info_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_swaps>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_swaps;
+}
+
+void type<::mmx::Node_get_swaps>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_swaps());
+}
+
+void type<::mmx::Node_get_swaps>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_swaps& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_swaps_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_swaps_return;
+}
+
+void type<::mmx::Node_get_swaps_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_swaps_return());
+}
+
+void type<::mmx::Node_get_swaps_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_swaps_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -2662,6 +2770,30 @@ void type<::mmx::Node_read_storage_map_return>::create_dynamic_code(std::vector<
 }
 
 void type<::mmx::Node_read_storage_map_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_read_storage_map_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_read_storage_object>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_read_storage_object;
+}
+
+void type<::mmx::Node_read_storage_object>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_read_storage_object());
+}
+
+void type<::mmx::Node_read_storage_object>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_read_storage_object& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_read_storage_object_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_read_storage_object_return;
+}
+
+void type<::mmx::Node_read_storage_object_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_read_storage_object_return());
+}
+
+void type<::mmx::Node_read_storage_object_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_read_storage_object_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -5745,6 +5877,30 @@ void type<::mmx::spend_options_t>::create_dynamic_code(std::vector<uint16_t>& co
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::swap_info_t>::get_type_code() {
+	return mmx::vnx_native_type_code_swap_info_t;
+}
+
+void type<::mmx::swap_info_t>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::swap_info_t());
+}
+
+void type<::mmx::swap_info_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::swap_info_t& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::swap_user_info_t>::get_type_code() {
+	return mmx::vnx_native_type_code_swap_user_info_t;
+}
+
+void type<::mmx::swap_user_info_t>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::swap_user_info_t());
+}
+
+void type<::mmx::swap_user_info_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::swap_user_info_t& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::time_segment_t>::get_type_code() {
 	return mmx::vnx_native_type_code_time_segment_t;
 }
@@ -6051,6 +6207,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Node_get_height_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_history::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_history_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_liquidity_by::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_liquidity_by_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_network_info::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_network_info_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_offer::static_create_type_code());
@@ -6065,6 +6223,12 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Node_get_recent_offers_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_recent_offers_for::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_recent_offers_for_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_swap_info::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_swap_info_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_swap_user_info::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_swap_user_info_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_swaps::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_swaps_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_synced_height::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_synced_height_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_total_balance::static_create_type_code());
@@ -6103,6 +6267,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Node_read_storage_field_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_read_storage_map::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_read_storage_map_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_read_storage_object::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_read_storage_object_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_read_storage_var::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_read_storage_var_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_revert_sync::static_create_type_code());
@@ -6357,6 +6523,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::peer_info_t::static_create_type_code());
 	vnx::register_type_code(::mmx::permission_e::static_create_type_code());
 	vnx::register_type_code(::mmx::spend_options_t::static_create_type_code());
+	vnx::register_type_code(::mmx::swap_info_t::static_create_type_code());
+	vnx::register_type_code(::mmx::swap_user_info_t::static_create_type_code());
 	vnx::register_type_code(::mmx::time_segment_t::static_create_type_code());
 	vnx::register_type_code(::mmx::tx_entry_t::static_create_type_code());
 	vnx::register_type_code(::mmx::tx_info_t::static_create_type_code());
@@ -6511,6 +6679,8 @@ const vnx::TypeCode* const vnx_native_type_code_Node_get_height = vnx::get_type_
 const vnx::TypeCode* const vnx_native_type_code_Node_get_height_return = vnx::get_type_code(vnx::Hash64(0x5fb0ff1e11add033ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_history = vnx::get_type_code(vnx::Hash64(0x8b3db05c6e91011dull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_history_return = vnx::get_type_code(vnx::Hash64(0xa925b7aa92603121ull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_liquidity_by = vnx::get_type_code(vnx::Hash64(0x37035f7178fc8afdull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_liquidity_by_return = vnx::get_type_code(vnx::Hash64(0x7b89c85edadfacd8ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_network_info = vnx::get_type_code(vnx::Hash64(0x79cedc8662eeb2e4ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_network_info_return = vnx::get_type_code(vnx::Hash64(0x28541acc5945ae0eull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_offer = vnx::get_type_code(vnx::Hash64(0xd3e336e279686563ull));
@@ -6525,6 +6695,12 @@ const vnx::TypeCode* const vnx_native_type_code_Node_get_recent_offers = vnx::ge
 const vnx::TypeCode* const vnx_native_type_code_Node_get_recent_offers_return = vnx::get_type_code(vnx::Hash64(0x15933813d284d584ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_recent_offers_for = vnx::get_type_code(vnx::Hash64(0xd89f845556eb17a0ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_recent_offers_for_return = vnx::get_type_code(vnx::Hash64(0x8fbaa054b954ea7bull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_info = vnx::get_type_code(vnx::Hash64(0x14f546a807fae18cull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_info_return = vnx::get_type_code(vnx::Hash64(0x302116742171428ull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_user_info = vnx::get_type_code(vnx::Hash64(0xb92b8fb7df56ec0full));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_user_info_return = vnx::get_type_code(vnx::Hash64(0x50fb0bab9551a420ull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_swaps = vnx::get_type_code(vnx::Hash64(0x219bbb3e5dcd19eaull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_swaps_return = vnx::get_type_code(vnx::Hash64(0x6c94172788fc0d28ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_synced_height = vnx::get_type_code(vnx::Hash64(0xc4fb44ec3d1a8bb7ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_synced_height_return = vnx::get_type_code(vnx::Hash64(0xd466ce92d1bbe9dbull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_total_balance = vnx::get_type_code(vnx::Hash64(0x91e9019d224db4b0ull));
@@ -6563,6 +6739,8 @@ const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_field = vnx::g
 const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_field_return = vnx::get_type_code(vnx::Hash64(0xf817bcace12b9ef3ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_map = vnx::get_type_code(vnx::Hash64(0x1cc0cc12bc2c1b4eull));
 const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_map_return = vnx::get_type_code(vnx::Hash64(0x1d56300164b3e79ull));
+const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_object = vnx::get_type_code(vnx::Hash64(0x5930cf36eeb662fbull));
+const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_object_return = vnx::get_type_code(vnx::Hash64(0x48c9a69123ef41afull));
 const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_var = vnx::get_type_code(vnx::Hash64(0x16d0361bcb359c2full));
 const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_var_return = vnx::get_type_code(vnx::Hash64(0xaaa6685b20943467ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_revert_sync = vnx::get_type_code(vnx::Hash64(0x8c1cc38a7a8a6c1dull));
@@ -6817,6 +6995,8 @@ const vnx::TypeCode* const vnx_native_type_code_offer_data_t = vnx::get_type_cod
 const vnx::TypeCode* const vnx_native_type_code_peer_info_t = vnx::get_type_code(vnx::Hash64(0xce0ff32e89625afbull));
 const vnx::TypeCode* const vnx_native_type_code_permission_e = vnx::get_type_code(vnx::Hash64(0x7d75a3f04c313898ull));
 const vnx::TypeCode* const vnx_native_type_code_spend_options_t = vnx::get_type_code(vnx::Hash64(0x37f7c6d377362e95ull));
+const vnx::TypeCode* const vnx_native_type_code_swap_info_t = vnx::get_type_code(vnx::Hash64(0x7586be908f15ae8ull));
+const vnx::TypeCode* const vnx_native_type_code_swap_user_info_t = vnx::get_type_code(vnx::Hash64(0x1b6c720bff2d638cull));
 const vnx::TypeCode* const vnx_native_type_code_time_segment_t = vnx::get_type_code(vnx::Hash64(0x344b7baf0798fe2aull));
 const vnx::TypeCode* const vnx_native_type_code_tx_entry_t = vnx::get_type_code(vnx::Hash64(0x438cda5719015870ull));
 const vnx::TypeCode* const vnx_native_type_code_tx_info_t = vnx::get_type_code(vnx::Hash64(0x44e4a710953f4785ull));
