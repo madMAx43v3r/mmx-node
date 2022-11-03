@@ -18,13 +18,11 @@ class ChainParams {
 	uint num_vdf_segments = 760;
 	uint max_vdf_segments = 1024;
 
-	uint tby_factor = 1;					// how much TBY to create per physical space
-	uint virtual_lifetime = 12623040;		// number of blocks balance on virtual plots is valid
-	
 	uint score_bits = 16;
 	uint score_target = 8192;				// defines how many competing blocks are created (must be less than score_threshold)
 	uint score_threshold = 65536;			// should be <= 2^score_bits
 	uint max_weight_buffer = 262144;
+	uint virtual_lifetime = 12623040;		// number of blocks balance on virtual plots is valid
 	
 	ulong min_reward = 200000;
 	ulong_fraction_t reward_factor;			// reward = (diff * value) / inverse;
