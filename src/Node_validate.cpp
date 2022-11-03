@@ -212,6 +212,7 @@ void Node::prepare_context(std::shared_ptr<execution_context_t> context, std::sh
 std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const Block> block) const
 {
 	// Note: hash, tx_hash, tx_count, tx_cost, tx_fees and proof already verified
+	// Note: block->validate() already called during pre_validate_blocks()
 
 	const auto prev = find_prev_header(block);
 	if(!prev) {
@@ -232,8 +233,6 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->time_diff < params->min_time_diff) {
 		throw std::logic_error("time_diff < min_time_diff");
 	}
-	block->validate();
-
 	if(block->farmer_sig) {
 		// Note: farmer_sig already verified together with proof
 		validate_diff_adjust(block->time_diff, prev->time_diff);
