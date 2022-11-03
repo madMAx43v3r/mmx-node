@@ -434,6 +434,28 @@ std::shared_ptr<const Transaction> Wallet::accept_offer(
 	return deposit(index, address, "trade", args, amount, currency, options_);
 }
 
+std::shared_ptr<const Transaction> Wallet::swap_trade(
+		const uint32_t& index, const addr_t& address, const uint64_t& amount, const addr_t& currency,
+		const vnx::optional<uint64_t>& min_trade, const spend_options_t& options) const
+{
+	const auto wallet = get_wallet(index);
+	const auto info = node->get_swap_info(address);
+	int token = -1;
+	for(int i = 0; i < 2; ++i) {
+		if(currency == info.tokens[i]) {
+			token = i;
+		}
+	}
+	if(token < 0) {
+		throw std::logic_error("invalid currency for swap");
+	}
+	std::vector<vnx::Variant> args;
+	args.emplace_back(token);
+	args.emplace_back(wallet->get_address(0).to_string());
+	args.emplace_back(min_trade);
+	return deposit(index, address, "trade", args, amount, currency, options);
+}
+
 std::shared_ptr<const Transaction> Wallet::cancel_offer(
 			const uint32_t& index, const addr_t& address, const spend_options_t& options) const
 {

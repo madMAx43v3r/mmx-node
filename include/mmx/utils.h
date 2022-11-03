@@ -55,7 +55,11 @@ double to_value(const uint64_t amount, std::shared_ptr<const ChainParams> params
 
 inline
 uint64_t to_amount(const double value, const int decimals) {
-	return value * pow(10, decimals);
+	const auto amount = value * pow(10, decimals);
+	if(amount < 0 || amount > pow(2, 64) - pow(2, 12)) {
+		throw std::runtime_error("amount out of range: " + std::to_string(amount));
+	}
+	return amount;
 }
 
 inline
