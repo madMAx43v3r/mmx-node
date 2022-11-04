@@ -811,9 +811,11 @@ int main(int argc, char** argv)
 					}
 					for(int i = 0; i < 2; ++i) {
 						const auto token = i ? token_1 : token_0;
-						const auto fees = (2 * (info.fees_paid[i] - user_info.last_fees_paid[i]) * user_info.balance[i])
-								/ (info.user_total[i] + user_info.last_user_total[i]);
-						std::cout << "Earned fees: " << mmx::to_value(fees, token->decimals) << " " << token->symbol << " (approximate)" << std::endl;
+						if(user_info.balance[i]) {
+							const auto fees = (2 * (info.fees_paid[i] - user_info.last_fees_paid[i]) * user_info.balance[i])
+									/ (info.user_total[i] + user_info.last_user_total[i]);
+							std::cout << "Earned fees: " << mmx::to_value(fees, token->decimals) << " " << token->symbol << " (approximate)" << std::endl;
+						}
 					}
 					std::cout << "Unlock height: " << user_info.unlock_height << std::endl;
 				}
