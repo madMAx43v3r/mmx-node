@@ -144,8 +144,8 @@ int main(int argc, char** argv)
 	int64_t index = 0;
 	int64_t offset = 0;
 	int64_t num_count = 0;
-	double amount = 0;
-	double ask_amount = 0;
+	double amount = -1;
+	double ask_amount = -1;
 	double fee_ratio = 1;
 	double gas_limit = 1;
 	bool pre_accept = false;
@@ -645,11 +645,11 @@ int main(int argc, char** argv)
 				}
 				if(action == "buy" || action == "sell")
 				{
-					if(ask_amount < 0 || ask_amount > 1) {
-						std::cerr << "Invalid ask amount: " << ask_amount << " (needs to be between 0 and 1, ie. 0 and 100%)" << std::endl;
+					if(ask_amount > 1) {
+						std::cerr << "Invalid ask amount: " << ask_amount << " (needs to be between 0 and 1, ie. between 0% and 100%)" << std::endl;
 						goto failed;
 					}
-					if(ask_amount == 0) {
+					if(ask_amount < 0) {
 						ask_amount = 0.95;
 					}
 					const auto i = (action == "sell" ? 0 : 1);
@@ -678,19 +678,147 @@ int main(int argc, char** argv)
 						std::cout << "Transaction ID: " << tx->id << std::endl;
 					}
 				}
-				else if(action == "add") {
-					// TODO
+				else if(action == "add")
+				{
+					const auto usage = "mmx wallet swap add -a <amount> -b <amount> -x <contract>";
+					std::array<uint64_t, 2> add_amount = {};
+					const auto info = node.get_swap_info(contract);
+					const auto token_0 = get_token(node, info.tokens[0]);
+					const auto token_1 = get_token(node, info.tokens[1]);
+					if(amount > 0) {
+						add_amount[0] = mmx::to_amount(amount, token_0->decimals);
+					} else if(amount < 0) {
+						if(ask_amount < 0) {
+							std::cerr << usage << std::endl;
+							goto failed;
+						}
+						if(info.balance[1]) {
+							add_amount[0] = (uint256_t(mmx::to_amount(ask_amount, token_1->decimals)) * info.balance[0]) / info.balance[1];
+						}
+					}
+					if(ask_amount > 0) {
+						add_amount[1] = mmx::to_amount(ask_amount, token_1->decimals);
+					} else if(ask_amount < 0) {
+						if(amount < 0) {
+							std::cerr << usage << std::endl;
+							goto failed;
+						}
+						if(info.balance[0]) {
+							add_amount[1] = (uint256_t(mmx::to_amount(amount, token_0->decimals)) * info.balance[1]) / info.balance[0];
+						}
+					}
+					if(add_amount[0]) {
+						std::cout << "You deposit: " << mmx::to_value(add_amount[0], token_0->decimals) << " " << token_0->symbol;
+						if(!add_amount[1]) {
+							std::cout << " (sell order)";
+						}
+						std::cout << std::endl;
+					}
+					if(add_amount[1]) {
+						std::cout << "You deposit: " << mmx::to_value(add_amount[1], token_1->decimals) << " " << token_1->symbol;
+						if(!add_amount[0]) {
+							std::cout << " (buy order)";
+						}
+						std::cout << std::endl;
+					}
+					if(!add_amount[0] && !add_amount[1]) {
+						std::cerr << usage << std::endl;
+						goto failed;
+					}
+					if(pre_accept || accept_prompt()) {
+						if(wallet.is_locked(index)) {
+							spend_options.passphrase = vnx::input_password("Passphrase: ");
+						}
+						auto tx = wallet.swap_add_liquid(index, contract, add_amount, spend_options);
+						std::cout << "Transaction ID: " << tx->id << std::endl;
+					}
 				}
-				else if(action == "remove") {
-					// TODO
+				else if(action == "remove")
+				{
+					std::array<uint64_t, 2> rem_amount = {};
+					const auto info = node.get_swap_info(contract);
+					const auto user_info = node.get_swap_user_info(contract, wallet.get_address(index, offset));
+					const auto token_0 = get_token(node, info.tokens[0]);
+					const auto token_1 = get_token(node, info.tokens[1]);
+					if(amount > 0) {
+						rem_amount[0] = mmx::to_amount(amount, token_0->decimals);
+					} else if(amount < 0) {
+						rem_amount[0] = user_info.balance[0];
+					}
+					if(ask_amount > 0) {
+						rem_amount[1] = mmx::to_amount(ask_amount, token_1->decimals);
+					} else if(ask_amount < 0) {
+						rem_amount[1] = user_info.balance[1];
+					}
+					if(!user_info.balance[0].upper()) {
+						rem_amount[0] = std::min(rem_amount[0], user_info.balance[0].lower());
+					}
+					if(!user_info.balance[1].upper()) {
+						rem_amount[1] = std::min(rem_amount[1], user_info.balance[1].lower());
+					}
+					uint128_t expected_amount[2] = {};
+					for(int i = 0; i < 2; ++i) {
+						const int k = (i + 1) % 2;
+						if(info.balance[i] >= info.user_total[i]) {
+							expected_amount[i] += rem_amount[i];
+						} else if(info.user_total[i]) {
+							expected_amount[i] += (uint256_t(rem_amount[i]) * info.balance[i]) / info.user_total[i];
+							expected_amount[k] += (uint256_t(info.balance[k] - info.user_total[k]) * rem_amount[i]) / info.user_total[i];
+						}
+					}
+					for(int i = 0; i < 2; ++i) {
+						const auto token = i ? token_1 : token_0;
+						if(rem_amount[i]) {
+							std::cout << "You remove:  " << mmx::to_value(rem_amount[i], token->decimals) << " " << token->symbol << std::endl;
+						}
+					}
+					for(int i = 0; i < 2; ++i) {
+						const auto token = i ? token_1 : token_0;
+						if(expected_amount[i]) {
+							std::cout << "You receive: " << mmx::to_value(expected_amount[i], token->decimals) << " " << token->symbol << " (approximate)" << std::endl;
+						}
+					}
+					if(!rem_amount[0] && !rem_amount[1]) {
+						std::cerr << "Nothing to remove." << std::endl;
+						goto failed;
+					}
+					if(pre_accept || accept_prompt()) {
+						if(wallet.is_locked(index)) {
+							spend_options.passphrase = vnx::input_password("Passphrase: ");
+						}
+						auto tx = wallet.swap_rem_liquid(index, contract, rem_amount, spend_options);
+						std::cout << "Transaction ID: " << tx->id << std::endl;
+					}
 				}
-				else if(action == "payout") {
+				else if(action == "payout")
+				{
 					if(wallet.is_locked(index)) {
 						spend_options.passphrase = vnx::input_password("Passphrase: ");
 					}
 					spend_options.user = wallet.get_address(index, offset);
 					auto tx = wallet.execute(index, contract, "payout", {}, spend_options);
 					std::cout << "Transaction ID: " << tx->id << std::endl;
+				}
+				else if(action == "info")
+				{
+					const auto info = node.get_swap_info(contract);
+					const auto user_info = node.get_swap_user_info(contract, wallet.get_address(index, offset));
+					const auto token_0 = get_token(node, info.tokens[0]);
+					const auto token_1 = get_token(node, info.tokens[1]);
+					for(int i = 0; i < 2; ++i) {
+						const auto token = i ? token_1 : token_0;
+						std::cout << "Balance: " << mmx::to_value(user_info.balance[i], token->decimals) << " " << token->symbol << std::endl;
+					}
+					for(int i = 0; i < 2; ++i) {
+						const auto token = i ? token_1 : token_0;
+						const auto fees = (2 * (info.fees_paid[i] - user_info.last_fees_paid[i]) * user_info.balance[i])
+								/ (info.user_total[i] + user_info.last_user_total[i]);
+						std::cout << "Earned fees: " << mmx::to_value(fees, token->decimals) << " " << token->symbol << " (approximate)" << std::endl;
+					}
+					std::cout << "Unlock height: " << user_info.unlock_height << std::endl;
+				}
+				else {
+					std::cerr << "mmx wallet swap [info | buy | sell | add | remove | payout] [-a <amount>] [-b <amount>] -x <contract>" << std::endl;
 				}
 			}
 			else if(command == "log")
