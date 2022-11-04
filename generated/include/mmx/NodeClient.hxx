@@ -160,7 +160,7 @@ public:
 	
 	::mmx::swap_user_info_t get_swap_user_info(const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::addr_t& user = ::mmx::addr_t());
 	
-	std::map<::mmx::addr_t, std::vector<std::pair<::mmx::addr_t, ::mmx::uint128>>> get_liquidity_by(const std::vector<::mmx::addr_t>& addresses = {});
+	std::map<::mmx::addr_t, std::vector<std::pair<::mmx::addr_t, ::mmx::uint128>>> get_swap_liquidity_by(const std::vector<::mmx::addr_t>& addresses = {});
 	
 	::mmx::uint128 get_total_supply(const ::mmx::addr_t& currency = ::mmx::addr_t());
 	

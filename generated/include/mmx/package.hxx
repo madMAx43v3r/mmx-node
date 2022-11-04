@@ -156,8 +156,6 @@ class Node_get_height;
 class Node_get_height_return;
 class Node_get_history;
 class Node_get_history_return;
-class Node_get_liquidity_by;
-class Node_get_liquidity_by_return;
 class Node_get_network_info;
 class Node_get_network_info_return;
 class Node_get_offer;
@@ -174,6 +172,8 @@ class Node_get_recent_offers_for;
 class Node_get_recent_offers_for_return;
 class Node_get_swap_info;
 class Node_get_swap_info_return;
+class Node_get_swap_liquidity_by;
+class Node_get_swap_liquidity_by_return;
 class Node_get_swap_user_info;
 class Node_get_swap_user_info_return;
 class Node_get_swaps;
@@ -635,8 +635,6 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_heigh
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_height_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_history; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_history_return; ///< \private
-MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_liquidity_by; ///< \private
-MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_liquidity_by_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_network_info; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_network_info_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_offer; ///< \private
@@ -653,6 +651,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_recen
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_recent_offers_for_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_info; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_info_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_liquidity_by; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_liquidity_by_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_user_info; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_user_info_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swaps; ///< \private
@@ -1111,8 +1111,6 @@ void read(TypeInput& in, ::mmx::Node_get_height& value, const TypeCode* type_cod
 void read(TypeInput& in, ::mmx::Node_get_height_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_history& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_history_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::Node_get_liquidity_by& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::Node_get_liquidity_by_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_network_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_network_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_offer& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1129,6 +1127,8 @@ void read(TypeInput& in, ::mmx::Node_get_recent_offers_for& value, const TypeCod
 void read(TypeInput& in, ::mmx::Node_get_recent_offers_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_swap_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_swap_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_swap_liquidity_by& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_swap_liquidity_by_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_swap_user_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_swap_user_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_swaps& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1590,8 +1590,6 @@ void write(TypeOutput& out, const ::mmx::Node_get_height& value, const TypeCode*
 void write(TypeOutput& out, const ::mmx::Node_get_height_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_history& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_history_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::Node_get_liquidity_by& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::Node_get_liquidity_by_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_network_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_network_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_offer& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1608,6 +1606,8 @@ void write(TypeOutput& out, const ::mmx::Node_get_recent_offers_for& value, cons
 void write(TypeOutput& out, const ::mmx::Node_get_recent_offers_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_swap_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_swap_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_swap_liquidity_by& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_swap_liquidity_by_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_swap_user_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_swap_user_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_swaps& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -2069,8 +2069,6 @@ void read(std::istream& in, ::mmx::Node_get_height& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_height_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_history& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_history_return& value); ///< \private
-void read(std::istream& in, ::mmx::Node_get_liquidity_by& value); ///< \private
-void read(std::istream& in, ::mmx::Node_get_liquidity_by_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_network_info& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_network_info_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_offer& value); ///< \private
@@ -2087,6 +2085,8 @@ void read(std::istream& in, ::mmx::Node_get_recent_offers_for& value); ///< \pri
 void read(std::istream& in, ::mmx::Node_get_recent_offers_for_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_swap_info& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_swap_info_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_swap_liquidity_by& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_swap_liquidity_by_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_swap_user_info& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_swap_user_info_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_swaps& value); ///< \private
@@ -2548,8 +2548,6 @@ void write(std::ostream& out, const ::mmx::Node_get_height& value); ///< \privat
 void write(std::ostream& out, const ::mmx::Node_get_height_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_history& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_history_return& value); ///< \private
-void write(std::ostream& out, const ::mmx::Node_get_liquidity_by& value); ///< \private
-void write(std::ostream& out, const ::mmx::Node_get_liquidity_by_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_network_info& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_network_info_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_offer& value); ///< \private
@@ -2566,6 +2564,8 @@ void write(std::ostream& out, const ::mmx::Node_get_recent_offers_for& value); /
 void write(std::ostream& out, const ::mmx::Node_get_recent_offers_for_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_swap_info& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_swap_info_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_swap_liquidity_by& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_swap_liquidity_by_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_swap_user_info& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_swap_user_info_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_swaps& value); ///< \private
@@ -3027,8 +3027,6 @@ void accept(Visitor& visitor, const ::mmx::Node_get_height& value); ///< \privat
 void accept(Visitor& visitor, const ::mmx::Node_get_height_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_history& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_history_return& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::Node_get_liquidity_by& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::Node_get_liquidity_by_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_network_info& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_network_info_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_offer& value); ///< \private
@@ -3045,6 +3043,8 @@ void accept(Visitor& visitor, const ::mmx::Node_get_recent_offers_for& value); /
 void accept(Visitor& visitor, const ::mmx::Node_get_recent_offers_for_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_swap_info& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_swap_info_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_swap_liquidity_by& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_swap_liquidity_by_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_swap_user_info& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_swap_user_info_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_swaps& value); ///< \private
@@ -6447,52 +6447,6 @@ struct type<::mmx::Node_get_history_return> {
 
 /// \private
 template<>
-struct type<::mmx::Node_get_liquidity_by> {
-	void read(TypeInput& in, ::mmx::Node_get_liquidity_by& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::Node_get_liquidity_by& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::Node_get_liquidity_by& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::Node_get_liquidity_by& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::Node_get_liquidity_by& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_liquidity_by& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::Node_get_liquidity_by_return> {
-	void read(TypeInput& in, ::mmx::Node_get_liquidity_by_return& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::Node_get_liquidity_by_return& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::Node_get_liquidity_by_return& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::Node_get_liquidity_by_return& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::Node_get_liquidity_by_return& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_liquidity_by_return& value, bool special = false);
-};
-
-/// \private
-template<>
 struct type<::mmx::Node_get_network_info> {
 	void read(TypeInput& in, ::mmx::Node_get_network_info& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
@@ -6857,6 +6811,52 @@ struct type<::mmx::Node_get_swap_info_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_swap_info_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_swap_liquidity_by> {
+	void read(TypeInput& in, ::mmx::Node_get_swap_liquidity_by& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_swap_liquidity_by& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_swap_liquidity_by& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_swap_liquidity_by& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_swap_liquidity_by& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_swap_liquidity_by& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_swap_liquidity_by_return> {
+	void read(TypeInput& in, ::mmx::Node_get_swap_liquidity_by_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_swap_liquidity_by_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_swap_liquidity_by_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_swap_liquidity_by_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_swap_liquidity_by_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_swap_liquidity_by_return& value, bool special = false);
 };
 
 /// \private

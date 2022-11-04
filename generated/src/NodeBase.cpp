@@ -69,8 +69,6 @@
 #include <mmx/Node_get_height_return.hxx>
 #include <mmx/Node_get_history.hxx>
 #include <mmx/Node_get_history_return.hxx>
-#include <mmx/Node_get_liquidity_by.hxx>
-#include <mmx/Node_get_liquidity_by_return.hxx>
 #include <mmx/Node_get_network_info.hxx>
 #include <mmx/Node_get_network_info_return.hxx>
 #include <mmx/Node_get_offer.hxx>
@@ -87,6 +85,8 @@
 #include <mmx/Node_get_recent_offers_for_return.hxx>
 #include <mmx/Node_get_swap_info.hxx>
 #include <mmx/Node_get_swap_info_return.hxx>
+#include <mmx/Node_get_swap_liquidity_by.hxx>
+#include <mmx/Node_get_swap_liquidity_by_return.hxx>
 #include <mmx/Node_get_swap_user_info.hxx>
 #include <mmx/Node_get_swap_user_info_return.hxx>
 #include <mmx/Node_get_swaps.hxx>
@@ -710,15 +710,15 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	type_code->methods[27] = ::mmx::Node_get_header_at::static_get_type_code();
 	type_code->methods[28] = ::mmx::Node_get_height::static_get_type_code();
 	type_code->methods[29] = ::mmx::Node_get_history::static_get_type_code();
-	type_code->methods[30] = ::mmx::Node_get_liquidity_by::static_get_type_code();
-	type_code->methods[31] = ::mmx::Node_get_network_info::static_get_type_code();
-	type_code->methods[32] = ::mmx::Node_get_offer::static_get_type_code();
-	type_code->methods[33] = ::mmx::Node_get_offers::static_get_type_code();
-	type_code->methods[34] = ::mmx::Node_get_offers_by::static_get_type_code();
-	type_code->methods[35] = ::mmx::Node_get_params::static_get_type_code();
-	type_code->methods[36] = ::mmx::Node_get_recent_offers::static_get_type_code();
-	type_code->methods[37] = ::mmx::Node_get_recent_offers_for::static_get_type_code();
-	type_code->methods[38] = ::mmx::Node_get_swap_info::static_get_type_code();
+	type_code->methods[30] = ::mmx::Node_get_network_info::static_get_type_code();
+	type_code->methods[31] = ::mmx::Node_get_offer::static_get_type_code();
+	type_code->methods[32] = ::mmx::Node_get_offers::static_get_type_code();
+	type_code->methods[33] = ::mmx::Node_get_offers_by::static_get_type_code();
+	type_code->methods[34] = ::mmx::Node_get_params::static_get_type_code();
+	type_code->methods[35] = ::mmx::Node_get_recent_offers::static_get_type_code();
+	type_code->methods[36] = ::mmx::Node_get_recent_offers_for::static_get_type_code();
+	type_code->methods[37] = ::mmx::Node_get_swap_info::static_get_type_code();
+	type_code->methods[38] = ::mmx::Node_get_swap_liquidity_by::static_get_type_code();
 	type_code->methods[39] = ::mmx::Node_get_swap_user_info::static_get_type_code();
 	type_code->methods[40] = ::mmx::Node_get_swaps::static_get_type_code();
 	type_code->methods[41] = ::mmx::Node_get_synced_height::static_get_type_code();
@@ -1223,12 +1223,6 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 			_return_value->_ret_0 = get_history(_args->addresses, _args->since);
 			return _return_value;
 		}
-		case 0x37035f7178fc8afdull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_get_liquidity_by>(_method);
-			auto _return_value = ::mmx::Node_get_liquidity_by_return::create();
-			_return_value->_ret_0 = get_liquidity_by(_args->addresses);
-			return _return_value;
-		}
 		case 0x79cedc8662eeb2e4ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_network_info>(_method);
 			auto _return_value = ::mmx::Node_get_network_info_return::create();
@@ -1275,6 +1269,12 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_swap_info>(_method);
 			auto _return_value = ::mmx::Node_get_swap_info_return::create();
 			_return_value->_ret_0 = get_swap_info(_args->address);
+			return _return_value;
+		}
+		case 0x426cded100da751eull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_swap_liquidity_by>(_method);
+			auto _return_value = ::mmx::Node_get_swap_liquidity_by_return::create();
+			_return_value->_ret_0 = get_swap_liquidity_by(_args->addresses);
 			return _return_value;
 		}
 		case 0xb92b8fb7df56ec0full: {

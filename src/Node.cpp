@@ -1336,7 +1336,7 @@ swap_user_info_t Node::get_swap_user_info(const addr_t& address, const addr_t& u
 	return out;
 }
 
-std::map<addr_t, std::vector<std::pair<addr_t, uint128>>> Node::get_liquidity_by(const std::vector<addr_t>& addresses) const
+std::map<addr_t, std::vector<std::pair<addr_t, uint128>>> Node::get_swap_liquidity_by(const std::vector<addr_t>& addresses) const
 {
 	std::map<addr_t, std::array<uint128, 2>> swaps;
 	for(const auto& address : addresses) {
