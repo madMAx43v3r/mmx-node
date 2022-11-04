@@ -282,6 +282,7 @@ private:
 	};
 
 	void update();
+	void trigger_update();
 
 	void verify_vdfs();
 	void verify_proofs();

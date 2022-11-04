@@ -1416,6 +1416,14 @@ void Node::http_request_chunk_async(std::shared_ptr<const vnx::addons::HttpReque
 	throw std::logic_error("not implemented");
 }
 
+void Node::trigger_update()
+{
+	if(!update_pending) {
+		update_pending = true;
+		add_task(std::bind(&Node::update, this));
+	}
+}
+
 void Node::add_block(std::shared_ptr<const Block> block)
 {
 	auto fork = std::make_shared<fork_t>();
@@ -1425,10 +1433,8 @@ void Node::add_block(std::shared_ptr<const Block> block)
 	if(block->farmer_sig) {
 		// need to verify farmer_sig first
 		pending_forks.push_back(fork);
-
-		if(is_synced && !update_pending) {
-			update_pending = true;
-			add_task(std::bind(&Node::update, this));
+		if(is_synced) {
+			trigger_update();
 		}
 	} else if(block->is_valid()) {
 		add_fork(fork);
