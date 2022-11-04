@@ -368,7 +368,7 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::sha
 	for(auto iter = range.first; iter != range.second; ++iter) {
 		add_dummy_blocks(iter->second->block);
 	}
-	add_task(std::bind(&Node::update, this));
+	trigger_update();
 }
 
 void Node::verify_vdf_failed(std::shared_ptr<const ProofOfTime> proof)
