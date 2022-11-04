@@ -591,12 +591,18 @@ void Wallet::update_cache(const uint32_t& index) const
 		const auto addresses = wallet->get_all_addresses();
 		const auto balances = node->get_all_balances(addresses);
 		const auto contracts = node->get_contracts_owned_by(addresses);
+		const auto liquidity = node->get_swap_liquidity_by(addresses);
 		const auto history = wallet->pending_tx.empty() ? std::vector<hash_t>() :
 				node->get_tx_ids_since(wallet->height - std::min(params->commit_delay, wallet->height));
 
 		wallet->external_balance_map.clear();
 		for(const auto& entry : node->get_total_balances(contracts)) {
 			wallet->external_balance_map[entry.first] += entry.second;
+		}
+		for(const auto& entry: liquidity) {
+			for(const auto& entry2 : entry.second) {
+				wallet->external_balance_map[entry2.first] += entry2.second;
+			}
 		}
 		wallet->update_cache(balances, history, height);
 		wallet->last_update = now;
