@@ -18,6 +18,8 @@
 #include <uint256_t.h>
 #include <cmath>
 
+static constexpr double UINT64_MAX_DOUBLE = 18446744073709549568.0;
+
 
 namespace mmx {
 
@@ -54,17 +56,34 @@ double to_value(const uint64_t amount, std::shared_ptr<const ChainParams> params
 }
 
 inline
-uint64_t to_amount(const double value, const int decimals) {
+uint64_t to_amount(const double value, const int decimals)
+{
 	const auto amount = value * pow(10, decimals);
-	if(amount < 0 || amount > pow(2, 64) - pow(2, 12)) {
-		throw std::runtime_error("amount out of range: " + std::to_string(amount));
+	if(amount < 0) {
+		throw std::runtime_error("negative amount: " + std::to_string(value));
+	}
+	if(amount > UINT64_MAX_DOUBLE) {
+		throw std::runtime_error("amount overflow: " + std::to_string(value));
+	}
+	if(amount == std::numeric_limits<double>::quiet_NaN()) {
+		throw std::runtime_error("invalid amount: " + std::to_string(value));
 	}
 	return amount;
 }
 
 inline
-uint64_t to_amount_exact(const double value, const int decimals) {
+uint64_t to_amount_exact(const double value, const int decimals)
+{
 	const auto amount = value * pow(10, decimals);
+	if(amount < 0) {
+		throw std::runtime_error("negative amount: " + std::to_string(value));
+	}
+	if(amount > UINT64_MAX_DOUBLE) {
+		throw std::runtime_error("amount overflow: " + std::to_string(value));
+	}
+	if(amount == std::numeric_limits<double>::quiet_NaN()) {
+		throw std::runtime_error("invalid amount: " + std::to_string(value));
+	}
 	if(fmod(amount, 1)) {
 		throw std::invalid_argument("cannot represent value: "
 				+ std::to_string(value) + " -> " + std::to_string(to_value(amount, decimals)));
