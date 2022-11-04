@@ -189,6 +189,7 @@ void Node::add_dummy_blocks(std::shared_ptr<const BlockHeader> prev)
 void Node::update()
 {
 	const auto time_begin = vnx::get_wall_time_millis();
+	update_pending = false;
 
 	verify_vdfs();
 
@@ -360,7 +361,6 @@ void Node::update()
 	}
 
 	// try to make a block
-	bool made_block = false;
 	for(uint32_t i = 0; i < params->infuse_delay && i <= peak->height; ++i)
 	{
 		const auto height = peak->height - i;
@@ -383,9 +383,8 @@ void Node::update()
 						if(!created_blocks.count(key)) {
 							try {
 								if(auto block = make_block(prev, entry.second)) {
-									add_block(block);
-									made_block = true;
 									created_blocks[key] = block->hash;
+									add_block(block);
 								}
 							}
 							catch(const std::exception& ex) {
@@ -398,10 +397,6 @@ void Node::update()
 				}
 			}
 		}
-	}
-	if(made_block) {
-		// update again right away
-		add_task(std::bind(&Node::update, this));
 	}
 
 	// publish challenges
