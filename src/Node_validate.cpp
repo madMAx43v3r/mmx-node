@@ -833,8 +833,6 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 		out = std::make_shared<exec_result_t>();
 		out->total_cost = tx_cost;
 		out->total_fee = tx_fee;
-		out->inputs = exec_inputs;
-		out->outputs = exec_outputs;
 
 		if(failed_ex) {
 			try {
@@ -846,6 +844,9 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			}
 			out->did_fail = true;
 			out->error_code = error_code;
+		} else {
+			out->inputs = exec_inputs;
+			out->outputs = exec_outputs;
 		}
 	} else {
 		const auto result = tx->exec_result;
@@ -873,13 +874,19 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			throw std::logic_error("error code mismatch: "
 					+ std::to_string(result->error_code) + " != " + std::to_string(error_code));
 		}
-		if(result->inputs.size() != exec_inputs.size()) {
-			throw std::logic_error("execution input count mismatch: "
-					+ std::to_string(result->inputs.size()) + " != " + std::to_string(exec_inputs.size()));
-		}
-		if(result->outputs.size() != exec_outputs.size()) {
-			throw std::logic_error("execution output count mismatch: "
-					+ std::to_string(result->outputs.size()) + " != " + std::to_string(exec_outputs.size()));
+		if(result->did_fail) {
+			if(result->inputs.size() || result->outputs.size()) {
+				throw std::logic_error("failed tx cannot have execution inputs / outputs");
+			}
+		} else {
+			if(result->inputs.size() != exec_inputs.size()) {
+				throw std::logic_error("execution input count mismatch: "
+						+ std::to_string(result->inputs.size()) + " != " + std::to_string(exec_inputs.size()));
+			}
+			if(result->outputs.size() != exec_outputs.size()) {
+				throw std::logic_error("execution output count mismatch: "
+						+ std::to_string(result->outputs.size()) + " != " + std::to_string(exec_outputs.size()));
+			}
 		}
 		for(size_t i = 0; i < exec_inputs.size(); ++i) {
 			const auto& lhs = exec_inputs[i];
