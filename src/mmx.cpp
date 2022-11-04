@@ -650,7 +650,7 @@ int main(int argc, char** argv)
 						goto failed;
 					}
 					if(ask_amount < 0) {
-						ask_amount = 0.9;
+						ask_amount = 0.95;
 					}
 					const auto i = (action == "sell" ? 0 : 1);
 					const auto k = (i + 1) % 2;
