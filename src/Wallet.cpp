@@ -109,11 +109,7 @@ Wallet::send(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_a
 	tx->note = tx_note_e::TRANSFER;
 	tx->add_output(currency, dst_addr, amount);
 
-	auto options_ = options;
-	if(!options_.expire_delta) {
-		options_.expire_delta = default_expire;
-	}
-	wallet->complete(tx, options_);
+	wallet->complete(tx, options);
 
 	if(tx->is_signed() && options.auto_send) {
 		send_off(index, tx);
@@ -141,11 +137,7 @@ Wallet::send_many(	const uint32_t& index, const std::map<addr_t, uint64_t>& amou
 		}
 		tx->add_output(currency, entry.first, entry.second);
 	}
-	auto options_ = options;
-	if(!options_.expire_delta) {
-		options_.expire_delta = default_expire;
-	}
-	wallet->complete(tx, options_);
+	wallet->complete(tx, options);
 
 	if(tx->is_signed() && options.auto_send) {
 		send_off(index, tx);
@@ -163,9 +155,6 @@ Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 	update_cache(index);
 
 	auto options_ = options;
-	if(!options_.expire_delta) {
-		options_.expire_delta = default_expire;
-	}
 	if(auto contract = node->get_contract(src_addr)) {
 		if(auto owner = contract->get_owner()) {
 			options_.owner_map.emplace(src_addr, *owner);
@@ -228,9 +217,6 @@ Wallet::mint(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_a
 	tx->execute.push_back(op);
 
 	auto options_ = options;
-	if(!options_.expire_delta) {
-		options_.expire_delta = default_expire;
-	}
 	options_.owner_map.emplace(currency, owner);
 
 	wallet->complete(tx, options_);
@@ -258,11 +244,7 @@ Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, 
 	tx->note = tx_note_e::DEPLOY;
 	tx->deploy = contract;
 
-	auto options_ = options;
-	if(!options_.expire_delta) {
-		options_.expire_delta = default_expire;
-	}
-	wallet->complete(tx, options_);
+	wallet->complete(tx, options);
 
 	if(tx->is_signed() && options.auto_send) {
 		send_off(index, tx);
@@ -297,9 +279,6 @@ Wallet::mutate(const uint32_t& index, const addr_t& address, const vnx::Object& 
 		throw std::logic_error("contract not owned by wallet");
 	}
 	auto options_ = options;
-	if(!options_.expire_delta) {
-		options_.expire_delta = default_expire;
-	}
 	options_.owner_map.emplace(address, *owner);
 
 	wallet->complete(tx, options_);
@@ -328,11 +307,7 @@ std::shared_ptr<const Transaction> Wallet::execute(
 	tx->note = tx_note_e::EXECUTE;
 	tx->execute.push_back(op);
 
-	auto options_ = options;
-	if(!options_.expire_delta) {
-		options_.expire_delta = default_expire;
-	}
-	wallet->complete(tx, options_);
+	wallet->complete(tx, options);
 
 	if(tx->is_signed() && options.auto_send) {
 		send_off(index, tx);
@@ -360,11 +335,7 @@ std::shared_ptr<const Transaction> Wallet::deposit(
 	tx->note = tx_note_e::DEPOSIT;
 	tx->execute.push_back(op);
 
-	auto options_ = options;
-	if(!options_.expire_delta) {
-		options_.expire_delta = default_expire;
-	}
-	wallet->complete(tx, options_);
+	wallet->complete(tx, options);
 
 	if(tx->is_signed() && options.auto_send) {
 		send_off(index, tx);
@@ -404,11 +375,7 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 	op->user = owner_addr;
 	tx->execute.push_back(op);
 
-	auto options_ = options;
-	if(!options_.expire_delta) {
-		options_.expire_delta = default_expire;
-	}
-	wallet->complete(tx, options_);
+	wallet->complete(tx, options);
 
 	if(tx->is_signed() && options.auto_send) {
 		send_off(index, tx);
@@ -475,12 +442,8 @@ std::shared_ptr<const Transaction> Wallet::complete(
 	const auto wallet = get_wallet(index);
 	update_cache(index);
 
-	auto options_ = options;
-	if(!options_.expire_delta) {
-		options_.expire_delta = default_expire;
-	}
 	auto copy = vnx::clone(tx);
-	wallet->complete(copy, options_);
+	wallet->complete(copy, options);
 	return copy;
 }
 
@@ -828,18 +791,17 @@ void Wallet::add_account(const uint32_t& index, const account_t& config, const v
 		if(enable_bls) {
 			bls_wallets[index] = std::make_shared<BLS_Wallet>(key_file->seed_value, 11337);
 		}
+		std::shared_ptr<ECDSA_Wallet> wallet;
 		if(config.with_passphrase && !passphrase) {
 			const auto info_path = database_path + "info_" + config.finger_print + ".dat";
 			const auto info = vnx::read_from_file<WalletFile>(info_path);
 			if(!info) {
 				log(WARN) << "Missing info file: " << info_path;
 			}
-			wallets[index] = std::make_shared<ECDSA_Wallet>(
+			wallet = std::make_shared<ECDSA_Wallet>(
 					key_file->seed_value, (info ? info->addresses : std::vector<addr_t>()), config, params);
 		} else {
-			auto wallet = std::make_shared<ECDSA_Wallet>(key_file->seed_value, config, params);
-			wallets[index] = wallet;
-
+			wallet = std::make_shared<ECDSA_Wallet>(key_file->seed_value, config, params);
 			if(passphrase) {
 				unlock(index, *passphrase);
 				wallet->lock();
@@ -847,6 +809,8 @@ void Wallet::add_account(const uint32_t& index, const account_t& config, const v
 				unlock(index, "");
 			}
 		}
+		wallet->default_expire = default_expire;
+		wallets[index] = wallet;
 	} else {
 		throw std::runtime_error("failed to read key file: " + key_path);
 	}
