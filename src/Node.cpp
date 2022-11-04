@@ -1304,6 +1304,9 @@ void Node::add_block(std::shared_ptr<const Block> block)
 	if(block->farmer_sig) {
 		// need to verify farmer_sig first
 		pending_forks.push_back(fork);
+		if(is_synced) {
+			add_task(std::bind(&Node::update, this));
+		}
 	} else if(block->is_valid()) {
 		add_fork(fork);
 	} else {
