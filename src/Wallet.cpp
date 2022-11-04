@@ -401,6 +401,16 @@ std::shared_ptr<const Transaction> Wallet::accept_offer(
 	return deposit(index, address, "trade", args, amount, currency, options_);
 }
 
+std::shared_ptr<const Transaction> Wallet::cancel_offer(
+			const uint32_t& index, const addr_t& address, const spend_options_t& options) const
+{
+	const auto owner = to_addr(node->read_storage_field(address, "owner").first);
+
+	auto options_ = options;
+	options_.user = owner;
+	return execute(index, address, "cancel", {}, options_);
+}
+
 std::shared_ptr<const Transaction> Wallet::swap_trade(
 		const uint32_t& index, const addr_t& address, const uint64_t& amount, const addr_t& currency,
 		const vnx::optional<uint64_t>& min_trade, const spend_options_t& options) const
@@ -448,7 +458,6 @@ std::shared_ptr<const Transaction> Wallet::swap_add_liquid(
 			tx->execute.push_back(op);
 		}
 	}
-
 	wallet->complete(tx, options);
 
 	if(tx->is_signed() && options.auto_send) {
@@ -477,7 +486,6 @@ std::shared_ptr<const Transaction> Wallet::swap_rem_liquid(
 			tx->execute.push_back(op);
 		}
 	}
-
 	wallet->complete(tx, options);
 
 	if(tx->is_signed() && options.auto_send) {
@@ -485,16 +493,6 @@ std::shared_ptr<const Transaction> Wallet::swap_rem_liquid(
 		log(INFO) << "Removed liquidity from [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
 	}
 	return tx;
-}
-
-std::shared_ptr<const Transaction> Wallet::cancel_offer(
-			const uint32_t& index, const addr_t& address, const spend_options_t& options) const
-{
-	const auto owner = to_addr(node->read_storage_field(address, "owner").first);
-
-	auto options_ = options;
-	options_.user = owner;
-	return execute(index, address, "cancel", {}, options_);
 }
 
 std::shared_ptr<const Transaction> Wallet::complete(
