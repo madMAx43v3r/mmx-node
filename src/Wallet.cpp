@@ -800,8 +800,10 @@ void Wallet::add_account(const uint32_t& index, const account_t& config, const v
 			}
 			wallet = std::make_shared<ECDSA_Wallet>(
 					key_file->seed_value, (info ? info->addresses : std::vector<addr_t>()), config, params);
+			wallets[index] = wallet;
 		} else {
 			wallet = std::make_shared<ECDSA_Wallet>(key_file->seed_value, config, params);
+			wallets[index] = wallet;
 			if(passphrase) {
 				unlock(index, *passphrase);
 				wallet->lock();
@@ -810,7 +812,6 @@ void Wallet::add_account(const uint32_t& index, const account_t& config, const v
 			}
 		}
 		wallet->default_expire = default_expire;
-		wallets[index] = wallet;
 	} else {
 		throw std::runtime_error("failed to read key file: " + key_path);
 	}
