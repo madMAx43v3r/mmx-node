@@ -1654,7 +1654,7 @@ Vue.component('account-offers', {
 					<td>{{item.bid_symbol}}</td>
 					<td class="collapsing"><b>{{item.ask_value}}</b></td>
 					<td>{{item.ask_symbol}}</td>
-					<td><router-link :to="'/explore/address/' + item.address">{{item.address.substr(0, 16)}}...</router-link></td>
+					<td><router-link :to="'/explore/address/' + item.address">{{item.address.substring(0, 10)}}...{{item.address.substring(55)}}</router-link></td>
 					<td :class="{'green--text': item.state == 'OPEN', 'red--text text--lighten-2': item.state == 'REVOKED'}">
 						<template v-if="item.state == 'CLOSED'">
 							<router-link :to="'/explore/transaction/' + item.close_txid">{{ $t('account_offers.accepted') }}</router-link>
