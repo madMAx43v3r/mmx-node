@@ -4,6 +4,7 @@
 #include <mmx/package.hxx>
 #include <mmx/swap_info_t.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/swap_user_info_t.hxx>
 #include <mmx/uint128.hpp>
 
 #include <vnx/vnx.h>

@@ -7,6 +7,7 @@
 #include <vnx/Type.h>
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/swap_user_info_t.hxx>
 #include <mmx/uint128.hpp>
 
 
@@ -34,6 +35,9 @@ struct MMX_EXPORT swap_info_t {
 	const vnx::TypeCode* get_type_code() const;
 	
 	vnx::float64_t get_price() const;
+	uint64_t get_trade_amount(const uint32_t& i = 0, const uint64_t& amount = 0) const;
+	std::array<uint64_t, 2> get_earned_fees(const ::mmx::swap_user_info_t& user = ::mmx::swap_user_info_t()) const;
+	std::array<uint64_t, 2> get_remove_amount(const ::mmx::swap_user_info_t& user = ::mmx::swap_user_info_t(), const std::array<uint64_t, 2>& amount = {}) const;
 	
 	static std::shared_ptr<swap_info_t> create();
 	std::shared_ptr<swap_info_t> clone() const;

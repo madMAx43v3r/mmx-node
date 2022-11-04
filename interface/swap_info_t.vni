@@ -14,4 +14,10 @@ struct swap_info_t {
 	
 	double get_price() const;
 	
+	ulong get_trade_amount(uint i, ulong amount) const;
+	
+	ulong[2] get_earned_fees(swap_user_info_t user) const;
+	
+	ulong[2] get_remove_amount(swap_user_info_t user, ulong amount[2]) const;
+	
 }
