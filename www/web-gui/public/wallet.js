@@ -557,6 +557,8 @@ Vue.component('account-tx-history', {
 		headers() {
 			return [
 				{ text: this.$t('account_tx_history.height'), value: 'height' },
+				{ text: "Type", value: 'note' },
+				{ text: "Fee", value: 'fee' },
 				{ text: this.$t('account_tx_history.confirmed'), value: 'confirmed' },
 				{ text: this.$t('account_tx_history.status'), value: 'state' },
 				{ text: this.$t('account_tx_history.transaction_id'), value: 'transaction_id' },
@@ -603,12 +605,16 @@ Vue.component('account-tx-history', {
 				</template>
 			</template>
 			
+			<template v-slot:item.fee="{ item }">
+				<b>{{(item.fee.value).toFixed(3)}}</b> MMX
+			</template>
+			
 			<template v-slot:item.state="{ item }">
 				<div :class="{'red--text': item.state == 'failed'}">{{ $t(item.state) }}</div>
 			</template>
 
 			<template v-slot:item.transaction_id="{ item }">
-				<router-link :to="'/explore/transaction/' + item.id">{{item.id}}</router-link>
+				<router-link :to="'/explore/transaction/' + item.id">{{item.id.substring(0,16)}}...{{item.id.substring(48)}}</router-link>
 			</template>
 
 			<template v-slot:item.confirmed="{ item }">

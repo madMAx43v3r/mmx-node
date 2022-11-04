@@ -557,6 +557,11 @@ vnx::Variant render_value(const T& value, std::shared_ptr<const RenderContext> c
 	return std::move(visitor.result);
 }
 
+template<typename T>
+vnx::Object render_object(const T& value, std::shared_ptr<const RenderContext> context = nullptr) {
+	return render_value(value, context).to_object();
+}
+
 std::shared_ptr<RenderContext> WebAPI::get_context() const
 {
 	auto context = std::make_shared<RenderContext>(params);
@@ -880,18 +885,17 @@ void WebAPI::render_tx_history(const vnx::request_id_t& request_id, const std::v
 		respond(request_id, render_value(job->result));
 		return;
 	}
+	const auto context = get_context();
+
 	for(size_t i = 0; i < history.size(); ++i) {
 		const auto& entry = history[i];
 		const auto& tx = entry.tx;
-		auto& out = job->result[i];
-		out["time"] = entry.time;
-		out["id"] = tx->id.to_string();
 		node->get_tx_info(tx->id,
-			[this, job, tx, i](const vnx::optional<tx_info_t>& info) {
+			[this, context, job, entry, tx, i](const vnx::optional<tx_info_t>& info) {
 				auto& out = job->result[i];
 				if(info) {
+					out = render_object(*info, context);
 					if(auto height = info->height) {
-						out["height"] = *height;
 						out["confirm"] = curr_height >= *height ? 1 + curr_height - *height : 0;
 					}
 					if(info->did_fail) {
@@ -903,15 +907,14 @@ void WebAPI::render_tx_history(const vnx::request_id_t& request_id, const std::v
 							out["state"] = "pending";
 						}
 					}
-					if(info->message) {
-						out["message"] = *info->message;
-					}
-					out["did_fail"] = info->did_fail;
 				} else if(curr_height > tx->expires) {
 					out["state"] = "expired";
 				} else {
 					out["state"] = "pending";
 				}
+				out["id"] = tx->id.to_string();
+				out["time"] = entry.time;
+
 				if(--job->num_left == 0) {
 					respond(job->request_id, render_value(job->result));
 				}
