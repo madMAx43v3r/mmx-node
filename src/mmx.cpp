@@ -658,17 +658,17 @@ int main(int argc, char** argv)
 					const auto token_i = get_token(node, info.tokens[i]);
 					const auto token_k = get_token(node, info.tokens[k]);
 					const uint64_t deposit_amount = mmx::to_amount(amount, token_i->decimals);
-					const uint128_t expected_amount = (uint256_t(deposit_amount) * info.balance[k]) / (info.balance[i] + deposit_amount);
+					const uint128_t expected_amount = info.get_trade_amount(i, deposit_amount);
 					if(expected_amount.upper()) {
 						throw std::logic_error("amount overflow");
 					}
 					const uint64_t min_trade_amount = expected_amount.lower() * ask_amount;
 
 					std::cout << "You send: " << mmx::to_value(deposit_amount, token_i->decimals) << " " << token_i->symbol << std::endl;
-					std::cout << "You receive at most:  " << mmx::to_value(expected_amount, token_k->decimals) << " " << token_k->symbol << " (approximately, without fee)" << std::endl;
-					std::cout << "You receive at least: " << mmx::to_value(min_trade_amount, token_k->decimals) << " " << token_k->symbol << " (including fee)" << std::endl;
+					std::cout << "You receive at least:  " << mmx::to_value(min_trade_amount, token_k->decimals) << " " << token_k->symbol << std::endl;
+					std::cout << "You expect to receive: " << mmx::to_value(expected_amount, token_k->decimals) << " " << token_k->symbol << " (approximately)" << std::endl;
 					std::cout << "Price: " << (action == "sell" ? double(expected_amount.lower()) / deposit_amount : double(deposit_amount) / expected_amount.lower())
-							<< " " << (action == "sell" ? token_k : token_i)->symbol << " / " << (action == "sell" ? token_i : token_k)->symbol << " (without fee)" << std::endl;
+							<< " " << (action == "sell" ? token_k : token_i)->symbol << " / " << (action == "sell" ? token_i : token_k)->symbol << std::endl;
 
 					if(pre_accept || accept_prompt()) {
 						if(wallet.is_locked(index)) {
@@ -750,21 +750,14 @@ int main(int argc, char** argv)
 					} else if(ask_amount < 0) {
 						rem_amount[1] = user_info.balance[1];
 					}
-					if(!user_info.balance[0].upper()) {
-						rem_amount[0] = std::min(rem_amount[0], user_info.balance[0].lower());
-					}
-					if(!user_info.balance[1].upper()) {
-						rem_amount[1] = std::min(rem_amount[1], user_info.balance[1].lower());
-					}
-					uint128_t expected_amount[2] = {};
 					for(int i = 0; i < 2; ++i) {
-						const int k = (i + 1) % 2;
-						if(info.balance[i] >= info.user_total[i]) {
-							expected_amount[i] += rem_amount[i];
-						} else if(info.user_total[i]) {
-							expected_amount[i] += (uint256_t(rem_amount[i]) * info.balance[i]) / info.user_total[i];
-							expected_amount[k] += (uint256_t(info.balance[k] - info.user_total[k]) * rem_amount[i]) / info.user_total[i];
+						if(!user_info.balance[i].upper()) {
+							rem_amount[i] = std::min(rem_amount[i], user_info.balance[i].lower());
 						}
+					}
+					if(!rem_amount[0] && !rem_amount[1]) {
+						std::cerr << "Nothing to remove." << std::endl;
+						goto failed;
 					}
 					for(int i = 0; i < 2; ++i) {
 						const auto token = i ? token_1 : token_0;
@@ -772,15 +765,12 @@ int main(int argc, char** argv)
 							std::cout << "You remove:  " << mmx::to_value(rem_amount[i], token->decimals) << " " << token->symbol << std::endl;
 						}
 					}
+					const auto expected_amount = info.get_remove_amount(user_info, rem_amount);
 					for(int i = 0; i < 2; ++i) {
 						const auto token = i ? token_1 : token_0;
 						if(expected_amount[i]) {
 							std::cout << "You receive: " << mmx::to_value(expected_amount[i], token->decimals) << " " << token->symbol << " (approximate)" << std::endl;
 						}
-					}
-					if(!rem_amount[0] && !rem_amount[1]) {
-						std::cerr << "Nothing to remove." << std::endl;
-						goto failed;
 					}
 					if(pre_accept || accept_prompt()) {
 						if(wallet.is_locked(index)) {
@@ -809,12 +799,11 @@ int main(int argc, char** argv)
 						const auto token = i ? token_1 : token_0;
 						std::cout << "Balance: " << mmx::to_value(user_info.balance[i], token->decimals) << " " << token->symbol << std::endl;
 					}
+					const auto earned_fees = info.get_earned_fees(user_info);
 					for(int i = 0; i < 2; ++i) {
 						const auto token = i ? token_1 : token_0;
 						if(user_info.balance[i]) {
-							const auto fees = (2 * (info.fees_paid[i] - user_info.last_fees_paid[i]) * user_info.balance[i])
-									/ (info.user_total[i] + user_info.last_user_total[i]);
-							std::cout << "Earned fees: " << mmx::to_value(fees, token->decimals) << " " << token->symbol << " (approximate)" << std::endl;
+							std::cout << "Earned fees: " << mmx::to_value(earned_fees[i], token->decimals) << " " << token->symbol << " (approximate)" << std::endl;
 						}
 					}
 					std::cout << "Unlock height: " << user_info.unlock_height << std::endl;
