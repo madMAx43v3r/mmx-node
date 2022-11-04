@@ -872,7 +872,7 @@ std::map<std::string, vm::varptr_t> Node::read_storage_object(const addr_t& cont
 {
 	std::map<std::string, vm::varptr_t> out;
 	for(const auto& entry : read_storage_map(contract, address, height)) {
-		out[to_string(entry.first)] = entry.second;
+		out[to_string_value(entry.first)] = entry.second;
 	}
 	return out;
 }
