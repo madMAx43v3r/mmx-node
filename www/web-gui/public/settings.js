@@ -192,7 +192,7 @@ Vue.component('node-settings', {
 						item-value="value">
 					</v-select>
 
-				</v-card-text>			
+				</v-card-text>
 			</v-card>
 
 			<v-card class="my-2">
@@ -234,7 +234,7 @@ Vue.component('node-settings', {
 					<v-text-field
 						:label="$t('node_settings.timeLord_reward_address')"
 						:placeholder="$t('common.reward_address_placeholder')"
-						:value="timelord_reward_addr" @change="value => timelord_reward_addr = value"					
+						:value="timelord_reward_addr" @change="value => timelord_reward_addr = value"
 					></v-text-field>
 
 				</v-card-text>
@@ -407,7 +407,7 @@ Vue.component('wallet-settings', {
 					<v-text-field
 						:label="$t('wallet_settings.token_address')"
 						v-model="new_token_addr" 
-						placeholder="mmx1..."					
+						placeholder="mmx1..."
 					></v-text-field>
 					<v-btn @click="add_token(new_token_addr)" outlined color="primary">{{ $t('wallet_settings.add_token') }}</v-btn>
 				</v-card-text>
