@@ -420,7 +420,71 @@ std::shared_ptr<const Transaction> Wallet::swap_trade(
 	args.emplace_back(token);
 	args.emplace_back(wallet->get_address(0).to_string());
 	args.emplace_back(min_trade);
-	return deposit(index, address, "trade", args, amount, currency, options);
+
+	auto options_ = options;
+	options_.note = tx_note_e::TRADE;
+	return deposit(index, address, "trade", args, amount, currency, options_);
+}
+
+std::shared_ptr<const Transaction> Wallet::swap_add_liquid(
+		const uint32_t& index, const addr_t& address, const std::array<uint64_t, 2>& amount, const spend_options_t& options) const
+{
+	const auto wallet = get_wallet(index);
+	update_cache(index);
+
+	auto tx = Transaction::create();
+	tx->note = tx_note_e::DEPOSIT;
+
+	const auto info = node->get_swap_info(address);
+	for(size_t i = 0; i < 2; ++i) {
+		if(amount[i]) {
+			auto op = operation::Deposit::create();
+			op->address = address;
+			op->method = "add_liquid";
+			op->args = {vnx::Variant(i)};
+			op->amount = amount[i];
+			op->currency = info.tokens[i];
+			op->user = wallet->get_address(0);
+			tx->execute.push_back(op);
+		}
+	}
+
+	wallet->complete(tx, options);
+
+	if(tx->is_signed() && options.auto_send) {
+		send_off(index, tx);
+		log(INFO) << "Added liquidity to [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+	}
+	return tx;
+}
+
+std::shared_ptr<const Transaction> Wallet::swap_rem_liquid(
+		const uint32_t& index, const addr_t& address, const std::array<uint64_t, 2>& amount, const spend_options_t& options) const
+{
+	const auto wallet = get_wallet(index);
+	update_cache(index);
+
+	auto tx = Transaction::create();
+	tx->note = tx_note_e::WITHDRAW;
+
+	for(size_t i = 0; i < 2; ++i) {
+		if(amount[i]) {
+			auto op = operation::Execute::create();
+			op->address = address;
+			op->method = "rem_liquid";
+			op->args = {vnx::Variant(i), vnx::Variant(amount[i])};
+			op->user = wallet->get_address(0);
+			tx->execute.push_back(op);
+		}
+	}
+
+	wallet->complete(tx, options);
+
+	if(tx->is_signed() && options.auto_send) {
+		send_off(index, tx);
+		log(INFO) << "Removed liquidity from [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+	}
+	return tx;
 }
 
 std::shared_ptr<const Transaction> Wallet::cancel_offer(

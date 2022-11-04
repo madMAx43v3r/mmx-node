@@ -55,10 +55,16 @@ module Wallet implements vnx.addons.HttpComponent {
 	Transaction* accept_offer(uint index, addr_t address, uint dst_addr, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
+	Transaction* cancel_offer(uint index, addr_t address, spend_options_t options) const;
+	
+	@Permission(permission_e.SPENDING)
 	Transaction* swap_trade(uint index, addr_t address, ulong amount, addr_t currency, optional<ulong> min_trade, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
-	Transaction* cancel_offer(uint index, addr_t address, spend_options_t options) const;
+	Transaction* swap_add_liquid(uint index, addr_t address, ulong amount[2], spend_options_t options) const;
+	
+	@Permission(permission_e.SPENDING)
+	Transaction* swap_rem_liquid(uint index, addr_t address, ulong amount[2], spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
 	Transaction* complete(uint index, Transaction* tx, spend_options_t options) const;
