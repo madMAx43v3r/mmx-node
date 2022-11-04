@@ -606,7 +606,9 @@ Vue.component('account-tx-history', {
 			</template>
 			
 			<template v-slot:item.fee="{ item }">
-				<b>{{(item.fee.value).toFixed(3)}}</b> MMX
+				<template v-if="item.height && item.fee">
+					<b>{{(item.fee.value).toFixed(3)}}</b> MMX
+				</template>
 			</template>
 			
 			<template v-slot:item.state="{ item }">

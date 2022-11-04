@@ -912,8 +912,9 @@ void WebAPI::render_tx_history(const vnx::request_id_t& request_id, const std::v
 				} else {
 					out["state"] = "pending";
 				}
-				out["id"] = tx->id.to_string();
 				out["time"] = entry.time;
+				out["id"] = tx->id.to_string();
+				out["note"] = tx->note.to_string_value();
 
 				if(--job->num_left == 0) {
 					respond(job->request_id, render_value(job->result));
