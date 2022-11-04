@@ -59,7 +59,7 @@ public:
 	uint32_t proof_credits = 10;
 	uint32_t vdf_relay_cost = 768;
 	uint32_t proof_relay_cost = 2;
-	uint32_t block_relay_cost = 8;
+	uint32_t block_relay_cost = 16;
 	uint32_t max_node_credits = 1024;
 	uint32_t max_farmer_credits = 32;
 	uint32_t node_version = 102;
