@@ -87,7 +87,7 @@ public:
 		wallet[i] += amount;
 		balance[i] += amount;
 
-		auto trade_amount = (amount * balance[k]) / balance[i];
+		const auto trade_amount = (amount * balance[k]) / balance[i];
 		if(trade_amount < 4) {
 			throw std::logic_error("trade_amount < 4");
 		}
