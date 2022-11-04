@@ -181,6 +181,15 @@ vnx::Object to_amount_object(const int64_t& value, const int decimals)
 	return res;
 }
 
+vnx::Object to_amount_object(const uint128& value, const int decimals)
+{
+	vnx::Object res;
+	res["value"] = value.to_double() * pow(10, -decimals);
+	res["amount"] = value.str();
+	return res;
+}
+
+
 template<typename T>
 vnx::Object render(const T& value, std::shared_ptr<const RenderContext> context = nullptr);
 
@@ -416,6 +425,37 @@ public:
 			if(auto height = value.close_height) {
 				tmp["close_time"] = context->get_time(*height);
 			}
+		}
+		set(tmp);
+	}
+
+	void accept(const swap_info_t& value) {
+		auto tmp = render(value, context);
+		if(context) {
+			const currency_t* tokens[2] = {};
+			for(int i = 0; i < 2; ++i) {
+				tokens[i] = context->find_currency(value.tokens[i]);
+			}
+			std::vector<std::string> symbols(2);
+			std::vector<vnx::Object> wallet(2);
+			std::vector<vnx::Object> balance(2);
+			std::vector<vnx::Object> fees_paid(2);
+			std::vector<vnx::Object> user_total(2);
+			for(int i = 0; i < 2; ++i) {
+				if(auto token = tokens[i]) {
+					symbols[i] = token->symbol;
+					wallet[i] = to_amount_object(value.wallet[i], token->decimals);
+					balance[i] = to_amount_object(value.balance[i], token->decimals);
+					fees_paid[i] = to_amount_object(value.fees_paid[i], token->decimals);
+					user_total[i] = to_amount_object(value.user_total[i], token->decimals);
+				}
+			}
+			tmp["symbols"] = symbols;
+			tmp["wallet"] = wallet;
+			tmp["balance"] = balance;
+			tmp["fees_paid"] = fees_paid;
+			tmp["user_total"] = user_total;
+			tmp["price"] = value.get_price();
 		}
 		set(tmp);
 	}
@@ -1202,6 +1242,62 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
 			respond_status(request_id, 404, "contract?id");
+		}
+	}
+	else if(sub_path == "/swap/info") {
+		const auto iter = query.find("id");
+		if(iter != query.end()) {
+			const auto address = vnx::from_string_value<addr_t>(iter->second);
+			node->get_swap_info(address,
+				[this, request_id](const swap_info_t& info) {
+					get_context({info.tokens[0], info.tokens[1]}, request_id,
+						[this, request_id, info](std::shared_ptr<RenderContext> context) {
+							respond(request_id, render_value(info, context));
+						});
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "swap/info?id");
+		}
+	}
+	else if(sub_path == "/swap/user_info") {
+		const auto iter_id = query.find("id");
+		const auto iter_user = query.find("user");
+		if(iter_id != query.end() && iter_user != query.end()) {
+			const auto address = vnx::from_string_value<addr_t>(iter_id->second);
+			const auto user = vnx::from_string_value<addr_t>(iter_user->second);
+			node->get_swap_info(address,
+				[this, request_id, address, user](const swap_info_t& info) {
+					get_context({info.tokens[0], info.tokens[1]}, request_id,
+						[this, request_id, address, info, user](std::shared_ptr<RenderContext> context) {
+							node->get_swap_user_info(address, user,
+								[this, request_id, info, context](const swap_user_info_t& user_info) {
+									vnx::Object out;
+									std::vector<vnx::Object> balance(2);
+									std::vector<vnx::Object> fees_earned(2);
+									std::vector<vnx::Object> remove_amount(2);
+									const auto fees_earned_ = info.get_earned_fees(user_info);
+									const auto remove_amount_ = info.get_remove_amount(user_info, {user_info.balance[0], user_info.balance[1]});
+									for(int i = 0; i < 2; ++i) {
+										if(auto token = context->find_currency(info.tokens[i])) {
+											balance[i] = to_amount_object(user_info.balance[i], token->decimals);
+											fees_earned[i] = to_amount_object(fees_earned_[i], token->decimals);
+											remove_amount[i] = to_amount_object(remove_amount_[i], token->decimals);
+										}
+									}
+									out["balance"] = balance;
+									out["fees_earned"] = fees_earned;
+									out["remove_amount"] = remove_amount;
+									out["unlock_height"] = user_info.unlock_height;
+									out["swap"] = render_value(info, context);
+									respond(request_id, out);
+								},
+								std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+						});
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "swap/user_info?id|user");
 		}
 	}
 	else if(sub_path == "/farmers") {
