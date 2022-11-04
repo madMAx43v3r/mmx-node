@@ -1172,6 +1172,7 @@ Vue.component('account-send-form', {
 			source: null,
 			address: "",
 			currency: null,
+			fee_ratio: 1,	// TODO
 			confirmed: false,
 			result: null,
 			error: null,
