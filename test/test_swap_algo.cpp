@@ -51,6 +51,9 @@ public:
 
 	void rem_liquid(User& user, const int i, uint256_t amount)
 	{
+		if(amount == 0) {
+			throw std::logic_error("amount == 0");
+		}
 		if(amount > user.balance[i]) {
 			throw std::logic_error("amount > user balance");
 		}
@@ -60,7 +63,7 @@ public:
 			ret_amount = (amount * balance[i]) / user_total[i];
 
 			const int k = (i + 1) % 2;
-			const auto trade_amount = ((amount - ret_amount) * balance[k]) / balance[i];
+			const auto trade_amount = ((balance[k] - user_total[k]) * amount) / user_total[i];
 			user.wallet[k] += trade_amount;
 			wallet[k] -= trade_amount;
 			balance[k] -= trade_amount;
