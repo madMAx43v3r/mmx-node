@@ -124,28 +124,26 @@ uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::option
 		throw std::logic_error("no such block");
 	}
 	const auto root = get_root();
-	const auto since = block->height - std::min(params->virtual_lifetime, block->height);
+	const auto key = std::make_pair(plot_id, addr_t());
 
 	uint128 balance = 0;
-	balance_table.find(std::make_pair(plot_id, addr_t()), balance, std::min(root->height, block->height));
+	balance_table.find(key, balance, std::min(root->height, block->height));
 
-	if(block->height > params->virtual_lifetime) {
-		uint128 offset = 0;
-		balance_table.find(std::make_pair(plot_id, addr_t()), offset, block->height - params->virtual_lifetime);
-		clamped_sub_assign(balance, offset);
-	}
 	while(fork) {
 		const auto& block = fork->block;
-		if(block->height <= root->height || block->height < since) {
+		if(block->height <= root->height) {
 			break;
 		}
-		for(const auto& tx : block->get_all_transactions()) {
-			if(!tx->did_fail()) {
-				for(const auto& out : tx->get_outputs()) {
-					if(out.address == plot_id && out.contract == addr_t()) {
-						balance += out.amount;
-					}
-				}
+		{
+			auto iter = fork->balance.added.find(key);
+			if(iter != fork->balance.added.end()) {
+				balance += iter->second;
+			}
+		}
+		{
+			auto iter = fork->balance.removed.find(key);
+			if(iter != fork->balance.removed.end()) {
+				clamped_sub_assign(balance, iter->second);
 			}
 		}
 		fork = fork->prev.lock();
