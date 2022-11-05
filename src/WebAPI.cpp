@@ -467,6 +467,22 @@ public:
 		set(render(value, context));
 	}
 
+	void accept(const exec_entry_t& value) {
+		auto tmp = render(value, context);
+		if(context) {
+			if(value.deposit) {
+				vnx::Object deposit;
+				const auto currency = value.deposit->first;
+				deposit["currency"] = currency.to_string();
+				if(auto token = context->find_currency(currency)) {
+					deposit["amount"] = to_amount_object(value.deposit->second, token->decimals);
+				}
+				tmp["deposit"] = deposit;
+			}
+		}
+		set(tmp);
+	}
+
 	void accept(std::shared_ptr<const Transaction> value) {
 		set(render(value, context));
 	}
@@ -1416,6 +1432,30 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "address/history?id|limit|offset|since");
 		}
 	}
+	else if(sub_path == "/address/exec_history") {
+		const auto iter_id = query.find("id");
+		const auto iter_limit = query.find("limit");
+		if(iter_id != query.end()) {
+			const auto address = vnx::from_string_value<addr_t>(iter_id->second);
+			const int32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
+			node->get_exec_history(address, limit, true,
+				[this, request_id](const std::vector<exec_entry_t>& history) {
+					std::unordered_set<addr_t> token_set;
+					for(const auto& entry : history) {
+						if(entry.deposit) {
+							token_set.insert(entry.deposit->first);
+						}
+					}
+					get_context(token_set, request_id,
+						[this, request_id, history](std::shared_ptr<const RenderContext> context) {
+							respond(request_id, render_value(history, context));
+						});
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "address/exec_history?id|limit");
+		}
+	}
 	else if(sub_path == "/wallet/keys") {
 		const auto iter_index = query.find("index");
 		if(iter_index != query.end()) {
@@ -1785,8 +1825,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const auto iter_offset = query.find("offset");
 		if(iter_index != query.end()) {
 			const uint32_t index = vnx::from_string_value<int64_t>(iter_index->second);
-			const size_t  limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
-			const uint32_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
+			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
+			const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
 			wallet->get_swap_liquidity(index,
 				[this, request_id, limit, offset](const std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>>& balance) {
 					std::unordered_set<addr_t> token_set;
@@ -1815,7 +1855,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 									i++;
 								}
 							}
-							respond(request_id, render_value(out));
+							respond(request_id, render_value(get_page(out, limit, offset)));
 						});
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
