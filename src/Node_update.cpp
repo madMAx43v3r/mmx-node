@@ -381,21 +381,24 @@ void Node::update()
 						const auto iter = created_blocks.find(key);
 						if(iter != created_blocks.end()) {
 							if(auto block = get_header(iter->second)) {
-								if(auto prev = find_fork(block->prev)) {
-									if(prev->block->farmer_sig) {
-										if(auto point = prev->vdf_point) {
-											const auto delay = (time_begin - (point->recv_time / 1000)) / 1e3;
-											if(delay < params->block_time) {
-												// do not create another block if previous block was already signed more than a block interval ago
-												// otherwise it would allow arbitrary re-orgs !!!
-												do_create = true;
-												log(WARN) << "Creating second block for a signed previous at height " << key.first << ", " << delay << " sec delay";
+								if(auto fork = find_fork(block->prev)) {
+									// check if different previous block
+									if(prev->hash != fork->block->hash) {
+										if(fork->block->farmer_sig) {
+											if(auto point = fork->vdf_point) {
+												const auto delay = (time_begin - (point->recv_time / 1000)) / 1e3;
+												if(delay < params->block_time) {
+													// do not create another block if previous block was already signed more than a block interval ago
+													// otherwise it would allow arbitrary re-orgs !!!
+													do_create = true;
+													log(WARN) << "Creating second block for a signed previous at height " << key.first << ", " << delay << " sec delay";
+												}
 											}
+										} else {
+											// previous block was a dummy
+											do_create = true;
+											log(INFO) << "Creating second block for a dummy previous at height " << key.first;
 										}
-									} else {
-										// previous block was a dummy
-										do_create = true;
-										log(INFO) << "Creating second block for a dummy previous at height " << key.first;
 									}
 								}
 							}
