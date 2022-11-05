@@ -276,6 +276,7 @@ private:
 	};
 
 	struct proof_data_t {
+		hash_t hash;
 		uint32_t height = 0;
 		vnx::Hash64 farmer_mac;
 		std::shared_ptr<const ProofOfSpace> proof;
@@ -295,7 +296,7 @@ private:
 
 	void add_fork(std::shared_ptr<fork_t> fork);
 
-	void add_dummy_blocks(std::shared_ptr<const BlockHeader> prev);
+	void add_dummy_block(std::shared_ptr<const BlockHeader> prev);
 
 	bool tx_pool_update(const tx_pool_t& entry, const bool force_add = false);
 
@@ -307,7 +308,7 @@ private:
 
 	std::vector<tx_pool_t> validate_for_block(const uint64_t verify_limit, const uint64_t select_limit);
 
-	std::shared_ptr<const Block> make_block(std::shared_ptr<const BlockHeader> prev, const proof_data_t& proof_data);
+	std::shared_ptr<const Block> make_block(std::shared_ptr<const BlockHeader> prev, const proof_data_t& proof, const bool dummy);
 
 	std::string get_offer_state(const addr_t& address) const;
 
@@ -330,7 +331,7 @@ private:
 
 	std::shared_ptr<const BlockHeader> fork_to(std::shared_ptr<fork_t> fork_head);
 
-	std::shared_ptr<fork_t> find_best_fork(const uint32_t height = -1) const;
+	std::shared_ptr<fork_t> find_best_fork(const uint32_t max_height = -1) const;
 
 	std::vector<std::shared_ptr<fork_t>> get_fork_line(std::shared_ptr<fork_t> fork_head = nullptr) const;
 
@@ -378,7 +379,7 @@ private:
 
 	void purge_tree();
 
-	bool add_proof(	const uint32_t height, const hash_t& challenge,
+	void add_proof(	const uint32_t height, const hash_t& challenge,
 					std::shared_ptr<const ProofOfSpace> proof, const vnx::Hash64 farmer_mac);
 
 	bool verify(std::shared_ptr<const ProofResponse> value);
@@ -437,7 +438,7 @@ private:
 
 	std::shared_ptr<vdf_point_t> find_next_vdf_point(std::shared_ptr<const BlockHeader> block) const;
 
-	std::vector<std::pair<hash_t, proof_data_t>> find_proof(const hash_t& challenge) const;
+	std::vector<proof_data_t> find_proof(const hash_t& challenge) const;
 
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block) const;
 
@@ -486,7 +487,7 @@ private:
 	std::multimap<uint32_t, std::shared_ptr<vdf_point_t>> verified_vdfs;			// [height => output]
 	std::multimap<uint32_t, std::shared_ptr<const ProofOfTime>> pending_vdfs;		// [height => proof]
 
-	std::unordered_map<hash_t, std::map<hash_t, proof_data_t>> proof_map;			// [challenge => best proofs]
+	std::unordered_map<hash_t, std::vector<proof_data_t>> proof_map;				// [challenge => best proofs]
 	std::unordered_multimap<uint32_t, hash_t> challenge_map;						// [height => challenge]
 	std::map<std::pair<uint32_t, hash_t>, hash_t> created_blocks;					// [[height, proof hash] => block hash]
 	std::unordered_set<hash_t> purged_blocks;

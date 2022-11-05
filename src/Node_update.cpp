@@ -150,39 +150,25 @@ void Node::verify_block_proofs()
 	}
 }
 
-void Node::add_dummy_blocks(std::shared_ptr<const BlockHeader> prev)
+void Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
 {
 	if(auto vdf_point = find_next_vdf_point(prev))
 	{
-		std::vector<std::shared_ptr<const ProofOfSpace>> proofs = {nullptr};
-		{
-			hash_t vdf_challenge;
-			if(find_vdf_challenge(prev, vdf_challenge, 1)) {
-				const auto challenge = get_challenge(prev, vdf_challenge, 1);
-				for(const auto& entry : find_proof(challenge)) {
-					proofs.push_back(entry.second.proof);
-				}
-			}
-		}
 		const auto diff_block = get_diff_header(prev, 1);
 
-		for(const auto& proof : proofs) {
-			auto block = Block::create();
-			block->version = 0;
-			block->prev = prev->hash;
-			block->height = prev->height + 1;
-			block->proof = proof;
-			block->time_diff = prev->time_diff;
-			block->space_diff = calc_new_space_diff(params, prev->space_diff, proof ? proof->score : params->score_threshold);
-			block->vdf_iters = vdf_point->vdf_iters;
-			block->vdf_output = vdf_point->output;
-			block->weight = calc_block_weight(params, diff_block, block, false);
-			block->total_weight = prev->total_weight + block->weight;
-			block->netspace_ratio = calc_new_netspace_ratio(
-					params, prev->netspace_ratio, bool(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)));
-			block->finalize();
-			add_block(block);
-		}
+		auto block = Block::create();
+		block->version = 0;
+		block->prev = prev->hash;
+		block->height = prev->height + 1;
+		block->time_diff = prev->time_diff;
+		block->space_diff = calc_new_space_diff(params, prev->space_diff, params->score_threshold);
+		block->vdf_iters = vdf_point->vdf_iters;
+		block->vdf_output = vdf_point->output;
+		block->weight = calc_block_weight(params, diff_block, block);
+		block->total_weight = prev->total_weight + block->weight;
+		block->netspace_ratio = prev->netspace_ratio;
+		block->finalize();
+		add_block(block);
 	}
 }
 
@@ -262,9 +248,11 @@ void Node::update()
 		{
 			const auto proof = fork->block->proof;
 			std::stringstream msg;
-			msg << "New peak at height " << peak->height << " with score " << (proof ? proof->score : params->score_threshold);
-			if(!peak->farmer_sig) {
-				msg << " (dummy)";
+			msg << "New peak at height " << peak->height << " with score ";
+			if(proof) {
+				msg << proof->score;
+			} else {
+				msg << "N/A";
 			}
 			if(is_synced) {
 				if(forked_at) {
@@ -361,12 +349,13 @@ void Node::update()
 	}
 
 	// try to make a block
-	for(uint32_t i = 0; i < params->infuse_delay && i <= peak->height; ++i)
+	for(uint32_t i = 0; i <= std::max(params->infuse_delay, 1u) && i <= peak->height; ++i)
 	{
 		const auto height = peak->height - i;
 		if(height < root->height) {
 			break;
 		}
+		// find best peak at this height
 		if(auto fork = find_best_fork(height))
 		{
 			const auto& prev = fork->block;
@@ -374,25 +363,37 @@ void Node::update()
 			if(find_vdf_challenge(prev, vdf_challenge, 1))
 			{
 				const auto challenge = get_challenge(prev, vdf_challenge, 1);
-				for(const auto& entry : find_proof(challenge))
+				const auto proof_list = find_proof(challenge);
+
+				for(size_t k = 0; k < proof_list.size(); ++k)
 				{
+					const auto& proof = proof_list[k];
 					// check if it's our proof
-					if(vnx::get_pipe(entry.second.farmer_mac))
+					if(vnx::get_pipe(proof.farmer_mac))
 					{
-						const auto key = std::make_pair(prev->height + 1, entry.first);
-						if(!created_blocks.count(key)) {
-							try {
-								if(auto block = make_block(prev, entry.second)) {
-									created_blocks[key] = block->hash;
-									add_block(block);
+						const auto key = std::make_pair(prev->height + 1, proof.hash);
+						const auto iter = created_blocks.find(key);
+						if(iter != created_blocks.end()) {
+							if(auto block = get_header(iter->second)) {
+								if(block->farmer_sig) {
+									// do not create another block if previous was already signed
+									// this would allow arbitrary re-orgs !!!
+									continue;
 								}
 							}
-							catch(const std::exception& ex) {
-								log(WARN) << "Failed to create a block: " << ex.what();
-							}
-							// revert back to peak
-							fork_to(peak->hash);
 						}
+						try {
+							// make a full block only if (we extend peak or replace a peak dummy) and (we got best score)
+							const auto full_block = (i == 0 || (i == 1 && !peak->farmer_sig)) && k == 0;
+							if(auto block = make_block(prev, proof, full_block)) {
+								created_blocks[key] = block->hash;
+								add_block(block);
+							}
+						} catch(const std::exception& ex) {
+							log(WARN) << "Failed to create a block: " << ex.what();
+						}
+						// revert back to peak
+						fork_to(peak->hash);
 					}
 				}
 			}
@@ -718,7 +719,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block(const uint64_t verify_limi
 	return result;
 }
 
-std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader> prev, const proof_data_t& proof_data)
+std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader> prev, const proof_data_t& proof, const bool full_block)
 {
 	const auto time_begin = vnx::get_wall_time_millis();
 
@@ -738,19 +739,19 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	block->space_diff = prev->space_diff;
 	block->vdf_iters = vdf_point->vdf_iters;
 	block->vdf_output = vdf_point->output;
-	block->proof = proof_data.proof;
+	block->proof = proof.proof;
 	block->netspace_ratio = calc_new_netspace_ratio(
 			params, prev->netspace_ratio, bool(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)));
 
-	const auto tx_list = validate_for_block((3 * params->max_block_cost) / 2, params->max_block_cost);
-
-	// select transactions
 	uint64_t total_fees = 0;
-	for(const auto& entry : tx_list) {
-		block->tx_list.push_back(entry.tx);
-		total_fees += entry.fee;
+	if(full_block) {
+		const auto tx_list = validate_for_block((3 * params->max_block_cost) / 2, params->max_block_cost);
+		// select transactions
+		for(const auto& entry : tx_list) {
+			block->tx_list.push_back(entry.tx);
+			total_fees += entry.fee;
+		}
 	}
-
 	const auto prev_fork = find_fork(prev->hash);
 
 	// set new time difficulty
@@ -779,11 +780,11 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 		block->space_diff = calc_new_space_diff(params, prev->space_diff, block->proof->score);
 	}
 	const auto diff_block = get_diff_header(prev, 1);
-	block->weight = calc_block_weight(params, diff_block, block, true);
+	block->weight = calc_block_weight(params, diff_block, block);
 	block->total_weight = prev->total_weight + block->weight;
 	block->finalize();
 
-	FarmerClient farmer(proof_data.farmer_mac);
+	FarmerClient farmer(proof.farmer_mac);
 	const auto block_reward = calc_block_reward(block);
 	const auto final_reward = calc_final_block_reward(params, block_reward, total_fees);
 	const auto result = farmer.sign_block(block, final_reward);
@@ -795,7 +796,8 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	block->content_hash = block->calc_hash().second;
 
 	const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
-	log(INFO) << "Created block at height " << block->height << " with: ntx = " << block->tx_list.size()
+	log(INFO) << "Created block at height " << block->height << " with: ntx = "
+			<< (full_block ? std::to_string(block->tx_list.size()) : "dummy")
 			<< ", score = " << block->proof->score << ", reward = " << to_value(final_reward, params) << " MMX"
 			<< ", nominal = " << to_value(block_reward, params) << " MMX"
 			<< ", fees = " << to_value(total_fees, params) << " MMX"

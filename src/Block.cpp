@@ -14,6 +14,17 @@ namespace mmx {
 
 vnx::bool_t Block::is_valid() const
 {
+	if(!farmer_sig) {
+		if(nonce) {
+			throw std::logic_error("invalid dummy block nonce");
+		}
+		if(proof) {
+			throw std::logic_error("dummy cannot have proof");
+		}
+		if(tx_base || tx_list.size()) {
+			throw std::logic_error("dummy cannot have transactions");
+		}
+	}
 	uint64_t static_cost_sum = 0;
 	uint64_t total_cost_sum = 0;
 	uint64_t tx_fees_sum = 0;
@@ -84,20 +95,6 @@ std::vector<std::shared_ptr<const Transaction>> Block::get_all_transactions() co
 	}
 	list.insert(list.end(), tx_list.begin(), tx_list.end());
 	return list;
-}
-
-void Block::validate() const
-{
-	Super::validate();
-
-	if(!farmer_sig) {
-		if(nonce) {
-			throw std::logic_error("invalid block nonce");
-		}
-		if(tx_base || tx_list.size()) {
-			throw std::logic_error("cannot have transactions");
-		}
-	}
 }
 
 

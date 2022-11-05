@@ -1144,9 +1144,10 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 	const auto farmer_id = hash_t(block->proof->farmer_key);
 	const auto iter = farmer_credits.find(farmer_id);
 	if(iter != farmer_credits.end()) {
-		if(iter->second >= block_relay_cost) {
+		const auto relay_cost = block->tx_list.empty() ? dummy_relay_cost : block_relay_cost;
+		if(iter->second >= relay_cost) {
 			if(relay_msg_hash(hash)) {
-				iter->second -= block_relay_cost;
+				iter->second -= relay_cost;
 				relay(block, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
 				block_counter++;
 			}

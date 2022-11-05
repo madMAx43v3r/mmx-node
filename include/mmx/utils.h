@@ -193,14 +193,11 @@ uint32_t calc_new_netspace_ratio(std::shared_ptr<const ChainParams> params, cons
 
 inline
 uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> diff_block,
-							std::shared_ptr<const BlockHeader> block, const bool have_farmer_sig)
+							std::shared_ptr<const BlockHeader> block)
 {
 	uint256_t weight = 0;
 	if(block->proof) {
-		if(have_farmer_sig) {
-			weight += params->score_threshold;
-		}
-		weight += params->score_threshold - block->proof->score;
+		weight += params->score_threshold + (params->score_threshold - block->proof->score);
 		weight *= diff_block->space_diff;
 	} else {
 		weight += 1;

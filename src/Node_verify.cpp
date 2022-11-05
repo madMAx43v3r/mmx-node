@@ -18,31 +18,35 @@
 
 namespace mmx {
 
-bool Node::add_proof(	const uint32_t height, const hash_t& challenge,
+void Node::add_proof(	const uint32_t height, const hash_t& challenge,
 						std::shared_ptr<const ProofOfSpace> proof, const vnx::Hash64 farmer_mac)
 {
-	auto& map = proof_map[challenge];
-	const auto best_score = map.empty() ? params->score_threshold : map.begin()->second.proof->score;
+	auto& list = proof_map[challenge];
 
-	if(proof->score > best_score) {
-		return false;
-	}
-	if(map.empty()) {
-		challenge_map.emplace(height, challenge);
-	} else if(proof->score < best_score) {
-		map.clear();
-	}
 	const auto hash = proof->calc_hash();
-	if(map.count(hash)) {
-		return true;
+	for(const auto& entry : list) {
+		if(hash == entry.hash) {
+			return;
+		}
 	}
-	auto& data = map[hash];
+	if(list.empty()) {
+		challenge_map.emplace(height, challenge);
+	}
+	proof_data_t data;
+	data.hash = hash;
 	data.height = height;
-	data.farmer_mac = farmer_mac;
 	data.proof = proof;
+	data.farmer_mac = farmer_mac;
+	list.push_back(data);
 
-	log(DEBUG) << "Got new best proof for height " << height << " with score " << proof->score;
-	return true;
+	std::sort(list.begin(), list.end(),
+		[](const proof_data_t& L, const proof_data_t& R) -> bool {
+			return L.proof->score < R.proof->score;
+		});
+
+	if(list.size() > max_blocks_per_height) {
+		list.resize(max_blocks_per_height);
+	}
 }
 
 bool Node::verify(std::shared_ptr<const ProofResponse> value)
@@ -362,11 +366,11 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::sha
 	// add dummy blocks
 	const auto root = get_root();
 	if(proof->height == root->height + 1) {
-		add_dummy_blocks(root);
+		add_dummy_block(root);
 	}
 	const auto range = fork_index.equal_range(proof->height - 1);
 	for(auto iter = range.first; iter != range.second; ++iter) {
-		add_dummy_blocks(iter->second->block);
+		add_dummy_block(iter->second->block);
 	}
 	trigger_update();
 }

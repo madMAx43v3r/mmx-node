@@ -50,6 +50,10 @@ void Node::init()
 
 void Node::main()
 {
+	if(max_blocks_per_height < 1) {
+		throw std::logic_error("max_blocks_per_height < 1");
+	}
+
 #ifdef WITH_OPENCL
 	const auto devices = automy::basic_opencl::get_devices();
 	std::vector<std::string> device_names;
@@ -72,6 +76,7 @@ void Node::main()
 		}
 	}
 #endif
+
 	vdf_threads = std::make_shared<vnx::ThreadPool>(num_vdf_threads);
 
 	router = std::make_shared<RouterAsyncClient>(router_name);
@@ -231,19 +236,19 @@ void Node::main()
 
 	if(state_hash == hash_t())
 	{
-		auto genesis = Block::create();
-		genesis->nonce = params->port;
-		genesis->time_diff = params->initial_time_diff;
-		genesis->space_diff = params->initial_space_diff;
-		genesis->vdf_output[0] = hash_t(params->vdf_seed);
-		genesis->vdf_output[1] = hash_t(params->vdf_seed);
-		genesis->finalize();
+		auto block = Block::create();
+		block->nonce = params->port;
+		block->time_diff = params->initial_time_diff;
+		block->space_diff = params->initial_space_diff;
+		block->vdf_output[0] = hash_t(params->vdf_seed);
+		block->vdf_output[1] = hash_t(params->vdf_seed);
+		block->finalize();
 
-		if(!genesis->is_valid()) {
+		if(!block->is_valid()) {
 			throw std::logic_error("genesis not valid");
 		}
-		apply(genesis, nullptr);
-		commit(genesis);
+		apply(block, nullptr);
+		commit(block);
 	}
 
 	swap_binary = get_contract_as<const contract::Binary>(params->swap_binary);
@@ -1451,7 +1456,7 @@ void Node::add_fork(std::shared_ptr<fork_t> fork)
 	if(auto block = fork->block) {
 		if(fork_tree.emplace(block->hash, fork).second) {
 			fork_index.emplace(block->height, fork);
-			add_dummy_blocks(block);
+			add_dummy_block(block);
 		}
 	}
 }
@@ -1795,13 +1800,13 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 	return did_fork ? forked_at : nullptr;
 }
 
-std::shared_ptr<Node::fork_t> Node::find_best_fork(const uint32_t height) const
+std::shared_ptr<Node::fork_t> Node::find_best_fork(const uint32_t max_height) const
 {
 	uint128_t max_weight = 0;
 	std::shared_ptr<fork_t> best_fork;
 	const auto root = get_root();
 	const auto begin = fork_index.upper_bound(root->height);
-	const auto end = fork_index.upper_bound(height);
+	const auto end = fork_index.upper_bound(max_height);
 	for(auto iter = begin; iter != end; ++iter)
 	{
 		const auto& fork = iter->second;
@@ -2323,16 +2328,13 @@ std::shared_ptr<Node::vdf_point_t> Node::find_next_vdf_point(std::shared_ptr<con
 	return nullptr;
 }
 
-std::vector<std::pair<hash_t, Node::proof_data_t>> Node::find_proof(const hash_t& challenge) const
+std::vector<Node::proof_data_t> Node::find_proof(const hash_t& challenge) const
 {
-	std::vector<std::pair<hash_t, Node::proof_data_t>> res;
 	const auto iter = proof_map.find(challenge);
 	if(iter != proof_map.end()) {
-		for(const auto& entry : iter->second) {
-			res.push_back(entry);
-		}
+		return iter->second;
 	}
-	return res;
+	return {};
 }
 
 uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block) const

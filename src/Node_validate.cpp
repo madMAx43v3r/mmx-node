@@ -243,9 +243,18 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->farmer_sig) {
 		// Note: farmer_sig already verified together with proof
 		validate_diff_adjust(block->time_diff, prev->time_diff);
+
+		const auto netspace_ratio = calc_new_netspace_ratio(
+				params, prev->netspace_ratio, bool(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)));
+		if(block->netspace_ratio != netspace_ratio) {
+			throw std::logic_error("invalid netspace_ratio: " + std::to_string(block->netspace_ratio) + " != " + std::to_string(netspace_ratio));
+		}
 	} else {
 		if(block->time_diff != prev->time_diff) {
 			throw std::logic_error("invalid time_diff adjust");
+		}
+		if(block->netspace_ratio != prev->netspace_ratio) {
+			throw std::logic_error("invalid netspace_ratio adjust");
 		}
 	}
 	const auto proof_score = block->proof ? block->proof->score : params->score_threshold;
@@ -253,18 +262,13 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		throw std::logic_error("invalid space_diff adjust");
 	}
 	const auto diff_block = get_diff_header(block);
-	const auto weight = calc_block_weight(params, diff_block, block, block->farmer_sig);
+	const auto weight = calc_block_weight(params, diff_block, block);
 	const auto total_weight = prev->total_weight + block->weight;
 	if(block->weight != weight) {
 		throw std::logic_error("invalid block weight: " + block->weight.str(10) + " != " + weight.str(10));
 	}
 	if(block->total_weight != total_weight) {
-		throw std::logic_error("invalid total_weight: " + block->total_weight.str(10) + " != " + total_weight.str(10));
-	}
-	const auto netspace_ratio = calc_new_netspace_ratio(
-			params, prev->netspace_ratio, bool(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)));
-	if(block->netspace_ratio != netspace_ratio) {
-		throw std::logic_error("invalid netspace_ratio: " + std::to_string(block->netspace_ratio) + " != " + std::to_string(netspace_ratio));
+		throw std::logic_error("invalid total weight: " + block->total_weight.str(10) + " != " + total_weight.str(10));
 	}
 
 	auto context = new_exec_context();
