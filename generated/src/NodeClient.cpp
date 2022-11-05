@@ -970,14 +970,14 @@ std::vector<::mmx::swap_info_t> NodeClient::get_swaps(const uint32_t& since, con
 	}
 }
 
-std::map<::mmx::addr_t, std::vector<std::pair<::mmx::addr_t, ::mmx::uint128>>> NodeClient::get_swap_liquidity_by(const std::vector<::mmx::addr_t>& addresses) {
+std::map<::mmx::addr_t, std::array<std::pair<::mmx::addr_t, ::mmx::uint128>, 2>> NodeClient::get_swap_liquidity_by(const std::vector<::mmx::addr_t>& addresses) {
 	auto _method = ::mmx::Node_get_swap_liquidity_by::create();
 	_method->addresses = addresses;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_swap_liquidity_by_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, std::vector<std::pair<::mmx::addr_t, ::mmx::uint128>>>>();
+		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, std::array<std::pair<::mmx::addr_t, ::mmx::uint128>, 2>>>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}

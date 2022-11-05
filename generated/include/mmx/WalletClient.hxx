@@ -119,6 +119,8 @@ public:
 	
 	std::vector<::mmx::offer_data_t> get_offers(const uint32_t& index = 0, const std::string& state = "");
 	
+	std::map<::mmx::addr_t, std::array<std::pair<::mmx::addr_t, ::mmx::uint128>, 2>> get_swap_liquidity(const uint32_t& index = 0);
+	
 	::mmx::addr_t get_address(const uint32_t& index = 0, const uint32_t& offset = 0);
 	
 	std::vector<::mmx::addr_t> get_all_addresses(const int32_t& index = 0);

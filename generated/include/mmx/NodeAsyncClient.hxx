@@ -271,7 +271,7 @@ public:
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_swap_liquidity_by(const std::vector<::mmx::addr_t>& addresses = {}, 
-			const std::function<void(const std::map<::mmx::addr_t, std::vector<std::pair<::mmx::addr_t, ::mmx::uint128>>>&)>& _callback = std::function<void(const std::map<::mmx::addr_t, std::vector<std::pair<::mmx::addr_t, ::mmx::uint128>>>&)>(),
+			const std::function<void(const std::map<::mmx::addr_t, std::array<std::pair<::mmx::addr_t, ::mmx::uint128>, 2>>&)>& _callback = std::function<void(const std::map<::mmx::addr_t, std::array<std::pair<::mmx::addr_t, ::mmx::uint128>, 2>>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_total_supply(const ::mmx::addr_t& currency = ::mmx::addr_t(), 
@@ -405,7 +405,7 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::swap_info_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_swaps;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::swap_info_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_swap_info;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::swap_user_info_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_swap_user_info;
-	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<::mmx::addr_t, std::vector<std::pair<::mmx::addr_t, ::mmx::uint128>>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_swap_liquidity_by;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<::mmx::addr_t, std::array<std::pair<::mmx::addr_t, ::mmx::uint128>, 2>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_swap_liquidity_by;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::uint128&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_total_supply;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::shared_ptr<const ::mmx::BlockHeader>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_farmed_blocks;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<::mmx::bls_pubkey_t, uint32_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_farmed_block_count;

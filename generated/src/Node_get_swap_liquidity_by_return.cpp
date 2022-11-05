@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_swap_liquidity_by_return::VNX_TYPE_HASH(0x8401973e1930a6c0ull);
-const vnx::Hash64 Node_get_swap_liquidity_by_return::VNX_CODE_HASH(0x512386df00e50898ull);
+const vnx::Hash64 Node_get_swap_liquidity_by_return::VNX_CODE_HASH(0xb684484e073bc385ull);
 
 vnx::Hash64 Node_get_swap_liquidity_by_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -115,7 +115,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_swap_liquidity_by_return::static_create_
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_swap_liquidity_by.return";
 	type_code->type_hash = vnx::Hash64(0x8401973e1930a6c0ull);
-	type_code->code_hash = vnx::Hash64(0x512386df00e50898ull);
+	type_code->code_hash = vnx::Hash64(0xb684484e073bc385ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
@@ -126,7 +126,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_swap_liquidity_by_return::static_create_
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "_ret_0";
-		field.code = {13, 5, 11, 32, 1, 12, 23, 2, 4, 7, 11, 32, 1, 11, 16, 1};
+		field.code = {13, 5, 11, 32, 1, 11, 2, 23, 2, 4, 7, 11, 32, 1, 11, 16, 1};
 	}
 	type_code->build();
 	return type_code;

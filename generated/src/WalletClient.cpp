@@ -65,6 +65,8 @@
 #include <mmx/Wallet_get_mnemonic_wordlist_return.hxx>
 #include <mmx/Wallet_get_offers.hxx>
 #include <mmx/Wallet_get_offers_return.hxx>
+#include <mmx/Wallet_get_swap_liquidity.hxx>
+#include <mmx/Wallet_get_swap_liquidity_return.hxx>
 #include <mmx/Wallet_get_token_list.hxx>
 #include <mmx/Wallet_get_token_list_return.hxx>
 #include <mmx/Wallet_get_total_balances.hxx>
@@ -679,6 +681,19 @@ std::vector<::mmx::offer_data_t> WalletClient::get_offers(const uint32_t& index,
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::vector<::mmx::offer_data_t>>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
+std::map<::mmx::addr_t, std::array<std::pair<::mmx::addr_t, ::mmx::uint128>, 2>> WalletClient::get_swap_liquidity(const uint32_t& index) {
+	auto _method = ::mmx::Wallet_get_swap_liquidity::create();
+	_method->index = index;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_swap_liquidity_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, std::array<std::pair<::mmx::addr_t, ::mmx::uint128>, 2>>>();
 	} else {
 		throw std::logic_error("WalletClient: invalid return value");
 	}

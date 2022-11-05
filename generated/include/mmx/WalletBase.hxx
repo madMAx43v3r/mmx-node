@@ -116,6 +116,7 @@ protected:
 	virtual std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts(const uint32_t& index) const = 0;
 	virtual std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts_owned(const uint32_t& index) const = 0;
 	virtual std::vector<::mmx::offer_data_t> get_offers(const uint32_t& index, const std::string& state) const = 0;
+	virtual std::map<::mmx::addr_t, std::array<std::pair<::mmx::addr_t, ::mmx::uint128>, 2>> get_swap_liquidity(const uint32_t& index) const = 0;
 	virtual ::mmx::addr_t get_address(const uint32_t& index, const uint32_t& offset) const = 0;
 	virtual std::vector<::mmx::addr_t> get_all_addresses(const int32_t& index) const = 0;
 	virtual ::mmx::address_info_t get_address_info(const uint32_t& index, const uint32_t& offset) const = 0;
