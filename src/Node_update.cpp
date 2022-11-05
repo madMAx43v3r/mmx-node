@@ -356,6 +356,8 @@ void Node::update()
 		std::shared_ptr<const BlockHeader> prev;
 		if(height < root->height) {
 			break;
+		} else if(i == 0) {
+			prev = peak;
 		} else if(height == root->height) {
 			prev = root;
 		} else if(auto fork = find_best_fork(height)) {
