@@ -479,6 +479,7 @@ public:
 				}
 				tmp["deposit"] = deposit;
 			}
+			tmp["time"] = context->get_time(value.height);
 		}
 		set(tmp);
 	}
@@ -1432,7 +1433,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "address/history?id|limit|offset|since");
 		}
 	}
-	else if(sub_path == "/address/exec_history") {
+	else if(sub_path == "/contract/exec_history") {
 		const auto iter_id = query.find("id");
 		const auto iter_limit = query.find("limit");
 		if(iter_id != query.end()) {
@@ -1453,7 +1454,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "address/exec_history?id|limit");
+			respond_status(request_id, 404, "contract/exec_history?id|limit");
 		}
 	}
 	else if(sub_path == "/wallet/keys") {

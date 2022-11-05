@@ -2092,6 +2092,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 
 			if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op)) {
 				exec_entry_t entry;
+				entry.height = block->height;
 				entry.txid = tx->id;
 				entry.method = exec->method;
 				entry.args = exec->args;
