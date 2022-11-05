@@ -385,8 +385,9 @@ void Node::update()
 							}
 						}
 						try {
-							// make a full block only if (we extend peak or replace a peak dummy) and (we got best score)
-							const auto full_block = (i == 0 || (i == 1 && !peak->farmer_sig)) && k == 0;
+							// make a full block only if (we extend peak or replace a dummy peak or replace a weaker peak) and (we got best score)
+							const bool is_better = (i == 1 && (!peak->proof || !peak->tx_count || proof.proof->score < peak->proof->score));
+							const bool full_block = (i == 0 || is_better) && k == 0;
 							if(auto block = make_block(prev, proof, full_block)) {
 								created_blocks[key] = block->hash;
 								add_block(block);
