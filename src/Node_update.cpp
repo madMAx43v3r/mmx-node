@@ -352,13 +352,16 @@ void Node::update()
 	for(uint32_t i = 0; i <= std::max(params->infuse_delay, 1u) && i <= peak->height; ++i)
 	{
 		const auto height = peak->height - i;
+		// find best peak at this height
+		std::shared_ptr<const BlockHeader> prev;
 		if(height < root->height) {
 			break;
+		} else if(height == root->height) {
+			prev = root;
+		} else if(auto fork = find_best_fork(height)) {
+			prev = fork->block;
 		}
-		// find best peak at this height
-		if(auto fork = find_best_fork(height))
-		{
-			const auto& prev = fork->block;
+		if(prev) {
 			hash_t vdf_challenge;
 			if(find_vdf_challenge(prev, vdf_challenge, 1))
 			{

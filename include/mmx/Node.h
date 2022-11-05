@@ -308,7 +308,7 @@ private:
 
 	std::vector<tx_pool_t> validate_for_block(const uint64_t verify_limit, const uint64_t select_limit);
 
-	std::shared_ptr<const Block> make_block(std::shared_ptr<const BlockHeader> prev, const proof_data_t& proof, const bool dummy);
+	std::shared_ptr<const Block> make_block(std::shared_ptr<const BlockHeader> prev, const proof_data_t& proof, const bool full_block);
 
 	std::string get_offer_state(const addr_t& address) const;
 
