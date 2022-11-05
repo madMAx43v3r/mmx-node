@@ -13,8 +13,6 @@
 #include <mmx/Block_get_header_return.hxx>
 #include <mmx/Block_is_valid.hxx>
 #include <mmx/Block_is_valid_return.hxx>
-#include <mmx/Block_validate.hxx>
-#include <mmx/Block_validate_return.hxx>
 #include <mmx/BlockHeader.hxx>
 #include <mmx/BlockHeader_calc_hash.hxx>
 #include <mmx/BlockHeader_calc_hash_return.hxx>
@@ -352,17 +350,16 @@ std::shared_ptr<vnx::TypeCode> Block::static_create_type_code() {
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::BlockHeader::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Block>(); };
-	type_code->methods.resize(10);
+	type_code->methods.resize(9);
 	type_code->methods[0] = ::mmx::Block_calc_tx_hash::static_get_type_code();
 	type_code->methods[1] = ::mmx::Block_finalize::static_get_type_code();
 	type_code->methods[2] = ::mmx::Block_get_all_transactions::static_get_type_code();
 	type_code->methods[3] = ::mmx::Block_get_header::static_get_type_code();
 	type_code->methods[4] = ::mmx::Block_is_valid::static_get_type_code();
-	type_code->methods[5] = ::mmx::Block_validate::static_get_type_code();
-	type_code->methods[6] = ::mmx::BlockHeader_calc_hash::static_get_type_code();
-	type_code->methods[7] = ::mmx::BlockHeader_get_header::static_get_type_code();
-	type_code->methods[8] = ::mmx::BlockHeader_is_valid::static_get_type_code();
-	type_code->methods[9] = ::mmx::BlockHeader_validate::static_get_type_code();
+	type_code->methods[5] = ::mmx::BlockHeader_calc_hash::static_get_type_code();
+	type_code->methods[6] = ::mmx::BlockHeader_get_header::static_get_type_code();
+	type_code->methods[7] = ::mmx::BlockHeader_is_valid::static_get_type_code();
+	type_code->methods[8] = ::mmx::BlockHeader_validate::static_get_type_code();
 	type_code->fields.resize(22);
 	{
 		auto& field = type_code->fields[0];
@@ -530,12 +527,6 @@ std::shared_ptr<vnx::Value> Block::vnx_call_switch(std::shared_ptr<const vnx::Va
 			auto _args = std::static_pointer_cast<const ::mmx::Block_is_valid>(_method);
 			auto _return_value = ::mmx::Block_is_valid_return::create();
 			_return_value->_ret_0 = is_valid();
-			return _return_value;
-		}
-		case 0x83bc272701f21cdeull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Block_validate>(_method);
-			auto _return_value = ::mmx::Block_validate_return::create();
-			validate();
 			return _return_value;
 		}
 		case 0xc525b15a3f7ee317ull: {

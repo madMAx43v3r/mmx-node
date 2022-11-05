@@ -31,7 +31,6 @@ public:
 	uint32_t score_bits = 16;
 	uint32_t score_target = 8192;
 	uint32_t score_threshold = 65536;
-	uint32_t max_weight_buffer = 262144;
 	uint32_t virtual_lifetime = 12623040;
 	uint64_t min_reward = 200000;
 	::mmx::ulong_fraction_t reward_factor;
@@ -51,11 +50,10 @@ public:
 	uint64_t max_block_size = 10000000;
 	uint64_t max_block_cost = 100000000;
 	vnx::float64_t block_time = 10;
-	uint32_t blocks_per_year = 3155760;
 	std::string vdf_seed;
+	::mmx::addr_t plot_binary;
 	::mmx::addr_t swap_binary;
 	::mmx::addr_t offer_binary;
-	::mmx::addr_t tby_contract;
 	
 	typedef ::vnx::Value Super;
 	
@@ -102,7 +100,7 @@ protected:
 
 template<typename T>
 void ChainParams::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ChainParams>(41);
+	_visitor.template type_begin<ChainParams>(39);
 	_visitor.type_field("port", 0); _visitor.accept(port);
 	_visitor.type_field("decimals", 1); _visitor.accept(decimals);
 	_visitor.type_field("min_ksize", 2); _visitor.accept(min_ksize);
@@ -119,32 +117,30 @@ void ChainParams::accept_generic(T& _visitor) const {
 	_visitor.type_field("score_bits", 13); _visitor.accept(score_bits);
 	_visitor.type_field("score_target", 14); _visitor.accept(score_target);
 	_visitor.type_field("score_threshold", 15); _visitor.accept(score_threshold);
-	_visitor.type_field("max_weight_buffer", 16); _visitor.accept(max_weight_buffer);
-	_visitor.type_field("virtual_lifetime", 17); _visitor.accept(virtual_lifetime);
-	_visitor.type_field("min_reward", 18); _visitor.accept(min_reward);
-	_visitor.type_field("reward_factor", 19); _visitor.accept(reward_factor);
-	_visitor.type_field("time_diff_constant", 20); _visitor.accept(time_diff_constant);
-	_visitor.type_field("space_diff_constant", 21); _visitor.accept(space_diff_constant);
-	_visitor.type_field("virtual_space_constant", 22); _visitor.accept(virtual_space_constant);
-	_visitor.type_field("min_time_diff", 23); _visitor.accept(min_time_diff);
-	_visitor.type_field("initial_time_diff", 24); _visitor.accept(initial_time_diff);
-	_visitor.type_field("initial_space_diff", 25); _visitor.accept(initial_space_diff);
-	_visitor.type_field("min_txfee", 26); _visitor.accept(min_txfee);
-	_visitor.type_field("min_txfee_io", 27); _visitor.accept(min_txfee_io);
-	_visitor.type_field("min_txfee_sign", 28); _visitor.accept(min_txfee_sign);
-	_visitor.type_field("min_txfee_exec", 29); _visitor.accept(min_txfee_exec);
-	_visitor.type_field("min_txfee_deploy", 30); _visitor.accept(min_txfee_deploy);
-	_visitor.type_field("min_txfee_byte", 31); _visitor.accept(min_txfee_byte);
-	_visitor.type_field("max_txbase_cost", 32); _visitor.accept(max_txbase_cost);
-	_visitor.type_field("max_block_size", 33); _visitor.accept(max_block_size);
-	_visitor.type_field("max_block_cost", 34); _visitor.accept(max_block_cost);
-	_visitor.type_field("block_time", 35); _visitor.accept(block_time);
-	_visitor.type_field("blocks_per_year", 36); _visitor.accept(blocks_per_year);
-	_visitor.type_field("vdf_seed", 37); _visitor.accept(vdf_seed);
-	_visitor.type_field("swap_binary", 38); _visitor.accept(swap_binary);
-	_visitor.type_field("offer_binary", 39); _visitor.accept(offer_binary);
-	_visitor.type_field("tby_contract", 40); _visitor.accept(tby_contract);
-	_visitor.template type_end<ChainParams>(41);
+	_visitor.type_field("virtual_lifetime", 16); _visitor.accept(virtual_lifetime);
+	_visitor.type_field("min_reward", 17); _visitor.accept(min_reward);
+	_visitor.type_field("reward_factor", 18); _visitor.accept(reward_factor);
+	_visitor.type_field("time_diff_constant", 19); _visitor.accept(time_diff_constant);
+	_visitor.type_field("space_diff_constant", 20); _visitor.accept(space_diff_constant);
+	_visitor.type_field("virtual_space_constant", 21); _visitor.accept(virtual_space_constant);
+	_visitor.type_field("min_time_diff", 22); _visitor.accept(min_time_diff);
+	_visitor.type_field("initial_time_diff", 23); _visitor.accept(initial_time_diff);
+	_visitor.type_field("initial_space_diff", 24); _visitor.accept(initial_space_diff);
+	_visitor.type_field("min_txfee", 25); _visitor.accept(min_txfee);
+	_visitor.type_field("min_txfee_io", 26); _visitor.accept(min_txfee_io);
+	_visitor.type_field("min_txfee_sign", 27); _visitor.accept(min_txfee_sign);
+	_visitor.type_field("min_txfee_exec", 28); _visitor.accept(min_txfee_exec);
+	_visitor.type_field("min_txfee_deploy", 29); _visitor.accept(min_txfee_deploy);
+	_visitor.type_field("min_txfee_byte", 30); _visitor.accept(min_txfee_byte);
+	_visitor.type_field("max_txbase_cost", 31); _visitor.accept(max_txbase_cost);
+	_visitor.type_field("max_block_size", 32); _visitor.accept(max_block_size);
+	_visitor.type_field("max_block_cost", 33); _visitor.accept(max_block_cost);
+	_visitor.type_field("block_time", 34); _visitor.accept(block_time);
+	_visitor.type_field("vdf_seed", 35); _visitor.accept(vdf_seed);
+	_visitor.type_field("plot_binary", 36); _visitor.accept(plot_binary);
+	_visitor.type_field("swap_binary", 37); _visitor.accept(swap_binary);
+	_visitor.type_field("offer_binary", 38); _visitor.accept(offer_binary);
+	_visitor.template type_end<ChainParams>(39);
 }
 
 

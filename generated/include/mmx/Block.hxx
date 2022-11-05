@@ -35,7 +35,6 @@ public:
 	virtual ::mmx::hash_t calc_tx_hash() const;
 	virtual std::shared_ptr<const ::mmx::BlockHeader> get_header() const override;
 	virtual std::vector<std::shared_ptr<const ::mmx::Transaction>> get_all_transactions() const;
-	virtual void validate() const override;
 	
 	static std::shared_ptr<Block> create();
 	std::shared_ptr<vnx::Value> clone() const override;
