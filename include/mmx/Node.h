@@ -243,6 +243,11 @@ private:
 		std::shared_ptr<const ProofOfTime> proof;
 	};
 
+	struct balance_log_t {
+		std::map<std::pair<addr_t, addr_t>, uint128> added;
+		std::map<std::pair<addr_t, addr_t>, uint128> removed;
+	};
+
 	struct fork_t {
 		bool is_invalid = false;
 		bool is_verified = false;
@@ -256,6 +261,7 @@ private:
 		std::shared_ptr<const vdf_point_t> vdf_point;
 		std::shared_ptr<const BlockHeader> diff_block;
 		std::shared_ptr<const execution_context_t> context;
+		balance_log_t balance;
 	};
 
 	struct tx_map_t {
@@ -268,11 +274,6 @@ private:
 		uint32_t cost = 0;
 		uint32_t fee = 0;
 		std::shared_ptr<const Transaction> tx;
-	};
-
-	struct balance_log_t {
-		std::map<std::pair<addr_t, addr_t>, uint128> added;
-		std::map<std::pair<addr_t, addr_t>, uint128> removed;
 	};
 
 	struct proof_data_t {
