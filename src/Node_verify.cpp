@@ -408,7 +408,6 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) const noexc
 		point->output[1] = proof->get_output(1);
 		point->infused = proof->infuse[0];
 		point->proof = proof;
-		// TODO: use actual receive time
 		point->recv_time = time_begin;
 
 		add_task([this, proof, point]() {

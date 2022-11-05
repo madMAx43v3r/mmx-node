@@ -376,32 +376,47 @@ void Node::update()
 					// check if it's our proof and farmer is still alive
 					if(vnx::get_pipe(proof.farmer_mac))
 					{
+						bool do_create = false;
 						const auto key = std::make_pair(prev->height + 1, proof.hash);
 						const auto iter = created_blocks.find(key);
 						if(iter != created_blocks.end()) {
 							if(auto block = get_header(iter->second)) {
-								if(auto prev = get_header(block->prev)) {
-									if(prev->farmer_sig) {
-										// do not create another block if previous was already signed
-										// this would allow arbitrary re-orgs !!!
-										continue;
+								if(auto prev = find_fork(block->prev)) {
+									if(prev->block->farmer_sig) {
+										if(auto point = prev->vdf_point) {
+											const auto delay = (time_begin - (point->recv_time / 1000)) / 1e3;
+											if(delay < params->block_time) {
+												// do not create another block if previous block was already signed more than a block interval ago
+												// otherwise it would allow arbitrary re-orgs !!!
+												do_create = true;
+												log(WARN) << "Creating second block for a signed previous at height " << key.first << ", " << delay << " sec delay";
+											}
+										}
+									} else {
+										// previous block was a dummy
+										do_create = true;
+										log(INFO) << "Creating second block for a dummy previous at height " << key.first;
 									}
 								}
 							}
+						} else {
+							do_create = true;
 						}
-						try {
-							// make a full block only if (we extend peak or replace a dummy peak or replace a weaker peak) and (we got best score)
-							const bool is_better = (i == 1 && (!peak->proof || !peak->tx_count || proof.proof->score < peak->proof->score));
-							const bool full_block = (i == 0 || is_better) && k == 0;
-							if(auto block = make_block(prev, proof, full_block)) {
-								created_blocks[key] = block->hash;
-								add_block(block);
+						if(do_create) {
+							try {
+								// make a full block only if (we extend peak or replace a dummy peak or replace a weaker peak) and (we got best score)
+								const bool is_better = (i == 1 && (!peak->proof || !peak->tx_count || proof.proof->score < peak->proof->score));
+								const bool full_block = (i == 0 || is_better) && k == 0;
+								if(auto block = make_block(prev, proof, full_block)) {
+									created_blocks[key] = block->hash;
+									add_block(block);
+								}
+							} catch(const std::exception& ex) {
+								log(WARN) << "Failed to create a block: " << ex.what();
 							}
-						} catch(const std::exception& ex) {
-							log(WARN) << "Failed to create a block: " << ex.what();
+							// revert back to peak
+							fork_to(peak->hash);
 						}
-						// revert back to peak
-						fork_to(peak->hash);
 					}
 				}
 			}
