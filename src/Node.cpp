@@ -1802,9 +1802,12 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 
 std::shared_ptr<Node::fork_t> Node::find_best_fork(const uint32_t max_height) const
 {
+	const auto root = get_root();
+	if(max_height <= root->height) {
+		return nullptr;
+	}
 	uint128_t max_weight = 0;
 	std::shared_ptr<fork_t> best_fork;
-	const auto root = get_root();
 	const auto begin = fork_index.upper_bound(root->height);
 	const auto end = fork_index.upper_bound(max_height);
 	for(auto iter = begin; iter != end; ++iter)
