@@ -1,7 +1,7 @@
 {
 	"port": 12339,
 	"block_time": 10,
-	"plot_filter": 9,
+	"plot_filter": 4,
 	"min_ksize": 26,
 	"infuse_delay": 3,
 	"challenge_delay": 6,
@@ -28,8 +28,5 @@
 	"initial_space_diff": 1,
 	"time_diff_constant": 1000,
 	"space_diff_constant": 100000000,
-	"virtual_space_constant": 2000,
-	"virtual_lifetime": 60480,
-	"swap_binary": "mmx1kzktf54adzgystak920rg7mfqkjjzjajzmvls0728ujfm2da92zq296wtc",
-	"offer_binary": null
+	"virtual_space_constant": 762
 }
