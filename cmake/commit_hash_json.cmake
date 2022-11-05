@@ -1,0 +1,10 @@
+
+find_package(Git)
+execute_process(
+  COMMAND ${GIT_EXECUTABLE} log -1 --format=%H
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_COMMIT_HASH
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+file(WRITE www/web-gui/public/GIT_COMMIT_HASH.json "{ \"GIT_COMMIT_HASH\": \"${GIT_COMMIT_HASH}\" }")
