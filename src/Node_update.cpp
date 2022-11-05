@@ -368,17 +368,19 @@ void Node::update()
 				for(size_t k = 0; k < proof_list.size(); ++k)
 				{
 					const auto& proof = proof_list[k];
-					// check if it's our proof
+					// check if it's our proof and farmer is still alive
 					if(vnx::get_pipe(proof.farmer_mac))
 					{
 						const auto key = std::make_pair(prev->height + 1, proof.hash);
 						const auto iter = created_blocks.find(key);
 						if(iter != created_blocks.end()) {
 							if(auto block = get_header(iter->second)) {
-								if(block->farmer_sig) {
-									// do not create another block if previous was already signed
-									// this would allow arbitrary re-orgs !!!
-									continue;
+								if(auto prev = get_header(block->prev)) {
+									if(prev->farmer_sig) {
+										// do not create another block if previous was already signed
+										// this would allow arbitrary re-orgs !!!
+										continue;
+									}
 								}
 							}
 						}
