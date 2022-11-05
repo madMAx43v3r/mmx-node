@@ -436,6 +436,7 @@ public:
 			for(int i = 0; i < 2; ++i) {
 				tokens[i] = context->find_currency(value.tokens[i]);
 			}
+			std::vector<int> decimals(2);
 			std::vector<std::string> symbols(2);
 			std::vector<vnx::Object> wallet(2);
 			std::vector<vnx::Object> balance(2);
@@ -444,6 +445,7 @@ public:
 			for(int i = 0; i < 2; ++i) {
 				if(auto token = tokens[i]) {
 					symbols[i] = token->symbol;
+					decimals[i] = token->decimals;
 					wallet[i] = to_amount_object(value.wallet[i], token->decimals);
 					balance[i] = to_amount_object(value.balance[i], token->decimals);
 					fees_paid[i] = to_amount_object(value.fees_paid[i], token->decimals);
@@ -451,6 +453,7 @@ public:
 				}
 			}
 			tmp["symbols"] = symbols;
+			tmp["decimals"] = decimals;
 			tmp["wallet"] = wallet;
 			tmp["balance"] = balance;
 			tmp["fees_paid"] = fees_paid;
@@ -1300,6 +1303,27 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "swap/user_info?id|user");
 		}
 	}
+	else if(sub_path == "/swap/trade_estimate") {
+		const auto iter_id = query.find("id");
+		const auto iter_index = query.find("index");
+		const auto iter_amount = query.find("amount");
+		if(iter_id != query.end() && iter_index != query.end() && iter_amount != query.end()) {
+			const auto address = vnx::from_string_value<addr_t>(iter_id->second);
+			const auto index = vnx::from_string_value<uint32_t>(iter_index->second);
+			const auto amount = vnx::from_string_value<uint64_t>(iter_amount->second);
+			node->get_swap_info(address,
+				[this, request_id, index, amount](const swap_info_t& info) {
+					vnx::Object out;
+					const auto trade_amount = info.get_trade_amount(index, amount);
+					out["price"] = index ? double(amount) / trade_amount : double(trade_amount) / amount;
+					out["trade_amount"] = trade_amount;
+					respond(request_id, render_value(out));
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "swap/trade_estimate?id|index|amount");
+		}
+	}
 	else if(sub_path == "/farmers") {
 		const auto iter_since = query.find("since");
 		const auto iter_limit = query.find("limit");
@@ -1753,6 +1777,71 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
 			respond_status(request_id, 404, "POST wallet/accept {...}");
+		}
+	}
+	else if(sub_path == "/wallet/swap/liquid") {
+		const auto iter_index = query.find("index");
+		const auto iter_limit = query.find("limit");
+		const auto iter_offset = query.find("offset");
+		if(iter_index != query.end()) {
+			const uint32_t index = vnx::from_string_value<int64_t>(iter_index->second);
+			const size_t  limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
+			const uint32_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
+			wallet->get_swap_liquidity(index,
+				[this, request_id, limit, offset](const std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>>& balance) {
+					std::unordered_set<addr_t> token_set;
+					for(const auto& entry : balance) {
+						for(const auto& entry2 : entry.second) {
+							token_set.insert(entry2.first);
+						}
+					}
+					get_context(token_set, request_id,
+						[this, request_id, limit, offset, balance](std::shared_ptr<RenderContext> context) {
+							std::vector<vnx::Object> out;
+							for(const auto& entry : balance) {
+								uint32_t i = 0;
+								for(const auto& entry2 : entry.second) {
+									if(entry2.second) {
+										vnx::Object tmp;
+										tmp["address"] = entry.first.to_string();
+										tmp["currency"] = entry2.first.to_string();
+										if(auto token = context->find_currency(entry2.first)) {
+											tmp["balance"] = to_amount_object(entry2.second, token->decimals);
+											tmp["symbol"] = token->symbol;
+										}
+										tmp["index"] = i;
+										out.push_back(tmp);
+									}
+									i++;
+								}
+							}
+							respond(request_id, render_value(out));
+						});
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "wallet/swap/liquid?index|limit|offset");
+		}
+	}
+	else if(sub_path == "/wallet/swap/trade") {
+		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
+		if(request->payload.size()) {
+			vnx::Object args;
+			vnx::from_string(request->payload.as_string(), args);
+			const auto index = args["index"].to<uint32_t>();
+			const auto address = args["address"].to<addr_t>();
+			const auto currency = args["currency"].to<addr_t>();
+			const auto amount = args["amount"].to<uint64_t>();
+			const auto min_amount = args["min_amount"].to<vnx::optional<uint64_t>>();
+			const auto options = args["options"].to<spend_options_t>();
+
+			wallet->swap_trade(index, address, amount, currency, min_amount, options,
+				[this, request_id](std::shared_ptr<const Transaction> tx) {
+					respond(request_id, render(tx));
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "POST wallet/swap/trade {...}");
 		}
 	}
 	else if(sub_path == "/farmer/info") {

@@ -1341,7 +1341,7 @@ swap_user_info_t Node::get_swap_user_info(const addr_t& address, const addr_t& u
 	return out;
 }
 
-std::map<addr_t, std::vector<std::pair<addr_t, uint128>>> Node::get_swap_liquidity_by(const std::vector<addr_t>& addresses) const
+std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>> Node::get_swap_liquidity_by(const std::vector<addr_t>& addresses) const
 {
 	std::map<addr_t, std::array<uint128, 2>> swaps;
 	for(const auto& address : addresses) {
@@ -1349,17 +1349,17 @@ std::map<addr_t, std::vector<std::pair<addr_t, uint128>>> Node::get_swap_liquidi
 		swap_liquid_map.find_range(std::make_pair(address, addr_t()), std::make_pair(address, addr_t::ones()), entries);
 		for(const auto& entry : entries) {
 			auto& out = swaps[entry.first.second];
-			for(size_t i = 0; i < 2; ++i) {
+			for(int i = 0; i < 2; ++i) {
 				out[i] += entry.second[i];
 			}
 		}
 	}
-	std::map<addr_t, std::vector<std::pair<addr_t, uint128>>> result;
+	std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>> result;
 	for(const auto& entry : swaps) {
 		auto& out = result[entry.first];
 		const auto info = get_swap_info(entry.first);
-		for(size_t i = 0; i < 2; ++i) {
-			out.emplace_back(info.tokens[i], entry.second[i]);
+		for(int i = 0; i < 2; ++i) {
+			out[i] = std::make_pair(info.tokens[i], entry.second[i]);
 		}
 	}
 	return result;

@@ -757,6 +757,12 @@ vector<offer_data_t> Wallet::get_offers(const uint32_t& index, const std::string
 	return node->get_offers_by(wallet->get_all_addresses(), state);
 }
 
+std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>> Wallet::get_swap_liquidity(const uint32_t& index) const
+{
+	const auto wallet = get_wallet(index);
+	return node->get_swap_liquidity_by(wallet->get_all_addresses());
+}
+
 addr_t Wallet::get_address(const uint32_t& index, const uint32_t& offset) const
 {
 	const auto wallet = get_wallet(index);

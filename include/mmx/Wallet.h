@@ -124,6 +124,8 @@ protected:
 
 	vector<offer_data_t> get_offers(const uint32_t& index, const std::string& state) const override;
 
+	std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>> get_swap_liquidity(const uint32_t& index) const override;
+
 	addr_t get_address(const uint32_t& index, const uint32_t& offset) const override;
 
 	std::vector<addr_t> get_all_addresses(const int32_t& index) const override;

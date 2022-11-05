@@ -164,7 +164,7 @@ protected:
 
 	swap_user_info_t get_swap_user_info(const addr_t& address, const addr_t& user) const override;
 
-	std::map<addr_t, std::vector<std::pair<addr_t, uint128>>> get_swap_liquidity_by(const std::vector<addr_t>& addresses) const override;
+	std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>> get_swap_liquidity_by(const std::vector<addr_t>& addresses) const override;
 
 	std::vector<std::shared_ptr<const BlockHeader>> get_farmed_blocks(
 			const std::vector<bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since = 0) const override;
