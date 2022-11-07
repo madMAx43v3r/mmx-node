@@ -2,9 +2,7 @@
 Vue.component('market-menu', {
 	props: {
 		wallet_: Number,
-		bid_: null,
-		ask_: null,
-		page: String, 
+		page: String,
 		loading: false
 	},
 	data() {
@@ -55,7 +53,7 @@ Vue.component('market-menu', {
 		this.update();
 	},
 	watch: {
-		$route (to, from){				
+		$route (to, from){
 			if(to.path == '/market') {
 				this.submit();
 			}
@@ -109,7 +107,7 @@ Vue.component('market-menu', {
 
 			<div v-if="!loading">
 				<v-card>
-					<v-card-text>					
+					<v-card-text>
 
 						<v-select
 							v-model="wallet"

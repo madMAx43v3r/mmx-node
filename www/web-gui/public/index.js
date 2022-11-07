@@ -155,7 +155,7 @@ const Market = {
 	},
 	template: `
 		<div>
-			<market-menu :wallet_="wallet" :bid_="bid" :ask_="ask" :page="$route.meta.page"></market-menu>
+			<market-menu :wallet_="wallet" :page="$route.meta.page"></market-menu>
 			<router-view :key="$route.path" :wallet="wallet" :bid="bid" :ask="ask"></router-view>
 		</div>
 		`
