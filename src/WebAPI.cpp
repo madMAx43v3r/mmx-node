@@ -1264,6 +1264,30 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "contract?id");
 		}
 	}
+	else if(sub_path == "/swap/list") {
+		const auto iter_token = query.find("token");
+		const auto iter_currency = query.find("currency");
+		const auto iter_limit = query.find("limit");
+		const auto iter_offset = query.find("offset");
+		const auto token = iter_token != query.end() ? vnx::from_string_value<vnx::optional<addr_t>>(iter_token->second) : vnx::optional<addr_t>();
+		const auto currency = iter_currency != query.end() ? vnx::from_string_value<vnx::optional<addr_t>>(iter_currency->second) : vnx::optional<addr_t>();
+		const size_t limit = iter_limit != query.end() ? vnx::from_string_value<int64_t>(iter_limit->second) : -1;
+		const size_t offset = iter_offset != query.end() ? vnx::from_string_value<int64_t>(iter_offset->second) : 0;
+		node->get_swaps(0, token, currency,
+			[this, request_id, limit, offset](const std::vector<swap_info_t>& list_) {
+				const auto list = get_page(list_, limit, offset);
+				std::unordered_set<addr_t> token_set;
+				for(const auto& entry : list) {
+					token_set.insert(entry.tokens[0]);
+					token_set.insert(entry.tokens[1]);
+				}
+				get_context(token_set, request_id,
+					[this, request_id, list](std::shared_ptr<RenderContext> context) {
+						respond(request_id, render_value(list, context));
+					});
+			},
+			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+	}
 	else if(sub_path == "/swap/info") {
 		const auto iter = query.find("id");
 		if(iter != query.end()) {

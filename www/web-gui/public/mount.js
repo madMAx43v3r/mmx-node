@@ -38,6 +38,25 @@ const routes = [
 			{ path: 'history/:wallet/:bid/:ask', component: MarketHistory, meta: { page: 'history' } },
 		]
 	},
+	{ path: '/swap_market/:token/:currency',
+		component: SwapMarket,
+		meta: { is_swap: true },
+		props: route => ({
+			token: route.params.token == 'null' ? null : route.params.token,
+			currency: route.params.currency == 'null' ? null : route.params.currency,
+		}),
+	},
+	{ path: '/swap',
+		component: Swap,
+		meta: { is_swap: true },
+		props: route => ({
+			wallet: parseInt(route.params.wallet),
+			address: route.params.address,
+		}),
+		children: [
+			{ path: 'trade/:address/:wallet', component: SwapTrade, meta: { page: 'trade' } },
+		]
+	},
 	{ path: '/explore',
 		component: Explore,
 		redirect: "/explore/blocks",

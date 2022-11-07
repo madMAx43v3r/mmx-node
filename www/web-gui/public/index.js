@@ -170,7 +170,6 @@ const MarketOffers = {
 		<market-offers :wallet="wallet" :bid="bid" :ask="ask" :limit="200"></market-offers>
 		`
 }
-
 const MarketHistory = {
 	props: {
 		bid: null,
@@ -179,6 +178,26 @@ const MarketHistory = {
 	template: `
 		<market-history :bid="bid" :ask="ask" :limit="200"></market-history>
 		`
+}
+
+const SwapMarket = {
+	props: {
+		token: null,
+		currency: null,
+	},
+	template: `
+		<div>
+			<swap-menu></swap-menu>
+			<swap-list :token="token" :currency="currency" :limit="200"></swap-list>
+		</div>
+		`
+}
+
+const Swap = {
+	// TODO
+}
+const SwapTrade = {
+	// TODO
 }
 
 const Explore = {
@@ -400,6 +419,7 @@ Vue.component('main-menu', {
 			<v-tab to="/farmer">{{ $t('main_menu.farmer') }}</v-tab>
 			<v-tab to="/explore">{{ $t('main_menu.explore') }}</v-tab>
 			<v-tab to="/market">{{ $t('main_menu.market') }}</v-tab>
+			<v-tab to="/swap_market/null/null">Swap</v-tab>
 			<v-spacer></v-spacer>
 			<v-tab to="/settings">{{ $t('main_menu.settings') }}</v-tab>
 			<template v-if="!$route.meta.is_login && !$isWinGUI">
