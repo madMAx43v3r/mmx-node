@@ -180,24 +180,39 @@ const MarketHistory = {
 		`
 }
 
-const SwapMarket = {
+const Swap = {
 	props: {
-		token: null,
-		currency: null,
+		address: null,
 	},
+	data() {
+		return {
+			wallet: null,
+		}
+	},
+	template: `
+		<v-card>
+			<v-card-text>
+				<wallet-menu @wallet-select="(i) => wallet=i"></wallet-menu>
+				<router-view :address="address" :wallet="wallet"></router-view>
+			</v-card-text>
+		</v-card>
+		`
+}
+const SwapMarket = {
 	template: `
 		<div>
 			<swap-menu></swap-menu>
-			<swap-list :token="token" :currency="currency" :limit="200"></swap-list>
+			<swap-list :token="$route.params.token" :currency="$route.params.currency" :limit="200"></swap-list>
 		</div>
 		`
 }
-
-const Swap = {
-	// TODO
-}
 const SwapTrade = {
-	// TODO
+	props: {
+		address: null,
+	},
+	template: `
+		<swap-trade :address="address"></swap-trade>
+		`
 }
 
 const Explore = {
@@ -419,7 +434,7 @@ Vue.component('main-menu', {
 			<v-tab to="/farmer">{{ $t('main_menu.farmer') }}</v-tab>
 			<v-tab to="/explore">{{ $t('main_menu.explore') }}</v-tab>
 			<v-tab to="/market">{{ $t('main_menu.market') }}</v-tab>
-			<v-tab to="/swap_market/null/null">Swap</v-tab>
+			<v-tab to="/swap">Swap</v-tab>
 			<v-spacer></v-spacer>
 			<v-tab to="/settings">{{ $t('main_menu.settings') }}</v-tab>
 			<template v-if="!$route.meta.is_login && !$isWinGUI">

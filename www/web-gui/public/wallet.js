@@ -1557,9 +1557,6 @@ Vue.component('account-offers', {
 	props: {
 		index: Number
 	},
-	emits: [
-		"offer-cancel"
-	],
 	data() {
 		return {
 			data: [],
@@ -1943,4 +1940,53 @@ Vue.component('create-virtual-plot-contract', {
 			</v-alert>
 		</div>
 		`
+})
+
+Vue.component('wallet-menu', {
+	data() {
+		return {
+			wallets: [],
+			wallet: null,
+			timer: null,
+		}
+	},
+	emits: [
+		"wallet-select"
+	],
+	methods: {
+		update() {
+			fetch('/api/wallet/get_all_accounts')
+				.then(response => response.json())
+				.then(data => {
+					this.wallets = data;
+					if(this.wallet == null && data.length > 0) {
+						this.wallet = data[0][0];
+					}
+				});
+		}
+	},
+	watch: {
+		wallet(value) {
+			this.$emit('wallet-select', this.wallet);
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 60000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<v-select
+			v-model="wallet"
+			:items="wallets"
+			:lablel="$t('market_menu.wallet')"
+			item-text="[0]"
+			item-value="[0]">
+			<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">
+				{{ $t('market_menu.wallet') }} #{{item[0]}}
+			</template>
+		</v-select>
+	`
 })

@@ -27,9 +27,10 @@ const routes = [
 	},
 	{ path: '/market',
 		component: Market,
+		redirect: '/market/offers/null/null/null',
 		meta: { is_market: true },
 		props: route => ({
-			wallet: parseInt(route.params.wallet),
+			wallet: route.params.wallet == 'null' ? null : parseInt(route.params.wallet),
 			bid: route.params.bid == 'null' ? null : route.params.bid,
 			ask: route.params.ask == 'null' ? null : route.params.ask,
 		}),
@@ -38,23 +39,16 @@ const routes = [
 			{ path: 'history/:wallet/:bid/:ask', component: MarketHistory, meta: { page: 'history' } },
 		]
 	},
-	{ path: '/swap_market/:token/:currency',
-		component: SwapMarket,
-		meta: { is_swap: true },
-		props: route => ({
-			token: route.params.token == 'null' ? null : route.params.token,
-			currency: route.params.currency == 'null' ? null : route.params.currency,
-		}),
-	},
 	{ path: '/swap',
 		component: Swap,
+		redirect: '/swap/market/null/null',
 		meta: { is_swap: true },
 		props: route => ({
-			wallet: parseInt(route.params.wallet),
-			address: route.params.address,
+			address: route.params.address
 		}),
 		children: [
-			{ path: 'trade/:address/:wallet', component: SwapTrade, meta: { page: 'trade' } },
+			{ path: 'market/:token/:currency', component: SwapMarket, meta: { page: 'market' } },
+			{ path: 'trade/:address', component: SwapTrade, meta: { page: 'trade' } },
 		]
 	},
 	{ path: '/explore',

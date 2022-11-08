@@ -21,7 +21,7 @@ Vue.component('swap-menu', {
 				});
 		},
 		submit() {
-			this.$router.push('/swap_market/' + this.token + '/' + this.currency).catch(()=>{});
+			this.$router.push('/swap/market/' + this.token + '/' + this.currency).catch(()=>{});
 		}
 	},
 	created() {
@@ -59,42 +59,25 @@ Vue.component('swap-menu', {
 		}
 	},
 	template: `
-		<div class="my-2">
-			<div v-if="loading">
-				<v-card>
-					<v-card-text>
-						<v-progress-linear indeterminate absolute top></v-progress-linear>
-						<v-skeleton-loader type="heading" class="my-6"/>
-						<v-skeleton-loader type="heading" class="my-6"/>
-					</v-card-text>
-				</v-card>
-			</div>
+		<div>
+			<v-select
+				v-model="token"
+				:items="selectItems"
+				label="Token"
+				item-text="text"
+				item-value="value"
+			></v-select>
 
-			<div v-if="!loading">
-				<v-card>
-					<v-card-text>
-						<v-select
-							v-model="token"
-							:items="selectItems"
-							label="Token"
-							item-text="text"
-							item-value="value"
-						></v-select>
-
-						<v-select
-							v-model="currency"
-							:items="selectItems"
-							label="Currency"
-							item-text="text"
-							item-value="value"
-						></v-select>
-					</v-card-text>
-				</v-card>
-			</div>
+			<v-select
+				v-model="currency"
+				:items="selectItems"
+				label="Currency"
+				item-text="text"
+				item-value="value"
+			></v-select>
 		</div>
 		`
 })
-
 
 Vue.component('swap-list', {
 	props: {
@@ -199,7 +182,7 @@ Vue.component('swap-list', {
 								<td><b>{{ parseFloat( (item.price).toPrecision(6) ) }}</b>&nbsp; {{item.symbols[1]}} / {{item.symbols[0]}}</td>
 								<td><b>{{ parseFloat( (item.balance[0].value).toPrecision(6) ) }}</b>&nbsp; {{item.symbols[0]}}</td>
 								<td><b>{{ parseFloat( (item.balance[1].value).toPrecision(6) ) }}</b>&nbsp; {{item.symbols[1]}}</td>
-								<td><router-link :to="'/swap/trade/' + item.address + '/null'">
+								<td><router-link :to="'/swap/trade/' + item.address">
 									<v-btn outlined text>Swap</v-btn>
 								</router-link></td>
 							</tr>
@@ -209,4 +192,88 @@ Vue.component('swap-list', {
 			</v-card>
 		</div>
 		`
+})
+
+Vue.component('swap-trade', {
+	props: {
+		address: String,
+		wallet: null
+	},
+	data() {
+		return {
+			data: null,
+			timer: null,
+			loading: false,
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/swap/info?id=' + this.address)
+				.then(response => response.json())
+				.then(data => {
+					this.data = data;
+					this.loading = false;
+				});
+		}
+	},
+	watch: {
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 60000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<div class="my-2">
+			<template v-if="data">
+				<v-chip label>Swap</v-chip>
+				<v-chip label>{{parseFloat((data.price).toPrecision(6))}}&nbsp; {{data.symbols[1]}} / {{data.symbols[0]}}</v-chip>
+				<v-chip label>{{data.address}}</v-chip>
+			</template>
+			
+			<v-card class="my-2">
+				<div v-if="!data && loading">
+					<v-progress-linear indeterminate absolute top></v-progress-linear>
+					<v-skeleton-loader type="table-row-divider@2"/>
+				</div>
+
+				<template v-if="data">
+					<v-simple-table>
+						<thead>
+							<tr>
+								<th></th>
+								<th>Pool Balance</th>
+								<th>Symbol</th>
+								<th>Contract</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td class="key-cell">Token</td>
+								<td><b>{{ parseFloat( (data.balance[0].value).toPrecision(6) ) }}</b></td>
+								<td>{{data.symbols[0]}}</td>
+								<td>
+									<template v-if="data.symbols[0] != 'MMX'">
+										<router-link :to="'/explore/address/' + data.tokens[0]">{{data.tokens[0]}}</router-link>
+									</template>
+								</td>
+							</tr>
+							<tr>
+								<td class="key-cell">Currency</td>
+								<td><b>{{ parseFloat( (data.balance[1].value).toPrecision(6) ) }}</b></td>
+								<td>{{data.symbols[1]}}</td>
+								<td>
+									<template v-if="data.symbols[1] != 'MMX'">
+										<router-link :to="'/explore/address/' + data.tokens[1]">{{data.tokens[1]}}</router-link>
+									</template>
+								</td>
+							</tr>
+						</tbody>
+					</v-simple-table>
+				</template>
+			</v-card>
+		</div>
+	`
 })
