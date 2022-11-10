@@ -14,6 +14,7 @@ namespace mmx {
 bool ProofResponse::is_valid() const
 {
 	return request
+			&& harvester.size() < 1024
 			&& proof && proof->is_valid()
 			&& calc_hash() == hash
 			&& calc_hash(true) == content_hash;
