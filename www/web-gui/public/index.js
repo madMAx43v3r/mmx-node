@@ -573,6 +573,8 @@ Vue.component('git-update-checker', {
 	},
 	methods: {
 		async update() {
+			this.commit_status_message = '';
+			this.show = false;
 			fetch('GIT_COMMIT_HASH.json')
 			.then( response => response.json() )
 			.then( data => {
