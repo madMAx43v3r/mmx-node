@@ -1967,7 +1967,7 @@ Vue.component('wallet-menu', {
 	},
 	watch: {
 		wallet(value) {
-			this.$emit('wallet-select', this.wallet);
+			this.$emit('wallet-select', value);
 		}
 	},
 	created() {
