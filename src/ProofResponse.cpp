@@ -14,7 +14,7 @@ namespace mmx {
 bool ProofResponse::is_valid() const
 {
 	return request
-			&& harvester.size() < 1024
+			&& harvester.size() < 256
 			&& proof && proof->is_valid()
 			&& calc_hash() == hash
 			&& calc_hash(true) == content_hash;
@@ -32,10 +32,8 @@ mmx::hash_t ProofResponse::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "request",		request ? request->calc_hash() : hash_t());
 	write_field(out, "proof", 		proof ? proof->calc_hash(true) : hash_t());
 	write_field(out, "farmer_addr",		farmer_addr);
-	write_field(out, "lookup_time_ms",	lookup_time_ms);
 
 	if(full_hash) {
-		write_field(out, "harvester", harvester);
 		write_field(out, "farmer_sig", farmer_sig);
 	}
 	out.flush();
