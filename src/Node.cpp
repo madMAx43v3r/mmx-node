@@ -138,27 +138,35 @@ void Node::main()
 		bool is_replay = true;
 		uint32_t height = -1;
 		std::pair<int64_t, std::pair<hash_t, hash_t>> entry;
-		// set state to last block
-		if(block_index.find_last(height, entry))
-		{
-			is_replay = false;
-			block_chain->seek_to(entry.first);
-			const auto block = std::dynamic_pointer_cast<const Block>(read_block(*block_chain, true));
-			if(!block) {
-				throw std::runtime_error("failed to read block " + std::to_string(height));
+		// set block_chain position to last readable block
+		while(block_index.find_last(height, entry)) {
+			try {
+				block_chain->seek_to(entry.first);
+				const auto block = std::dynamic_pointer_cast<const Block>(read_block(*block_chain, true));
+				if(!block) {
+					throw std::runtime_error("failed to read block " + std::to_string(height));
+				}
+				if(block->height != height) {
+					throw std::runtime_error("expected block height " + std::to_string(height) + " but got " + std::to_string(block->height));
+				}
+				if(block->hash != state_hash) {
+					throw std::runtime_error("expected block hash " + state_hash.to_string());
+				}
+				is_replay = false;
+				break;
 			}
-			if(block->height != height) {
-				throw std::runtime_error("expected block height " + std::to_string(height) + " but got " + std::to_string(block->height));
+			catch(const std::exception& ex) {
+				log(WARN) << ex.what();
 			}
-			if(block->hash != state_hash) {
-				throw std::runtime_error("expected block hash " + state_hash.to_string());
-			}
+			db.revert(height);
 		}
 		if(is_replay) {
 			log(INFO) << "Creating DB (this may take a while) ...";
 			int64_t block_offset = 0;
 			std::list<std::shared_ptr<const Block>> history;
 			std::vector<std::pair<hash_t, int64_t>> tx_offsets;
+
+			block_chain->seek_begin();
 			while(auto header = read_block(*block_chain, true, &block_offset, &tx_offsets))
 			{
 				if(auto block = std::dynamic_pointer_cast<const Block>(header))
