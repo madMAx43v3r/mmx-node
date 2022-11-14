@@ -138,7 +138,7 @@ void Node::main()
 		bool is_replay = true;
 		uint32_t height = -1;
 		std::pair<int64_t, std::pair<hash_t, hash_t>> entry;
-		// set block_chain position to last readable block
+		// set block_chain position past last readable and valid block
 		while(block_index.find_last(height, entry)) {
 			try {
 				block_chain->seek_to(entry.first);
