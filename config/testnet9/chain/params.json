@@ -28,5 +28,5 @@
 	"initial_space_diff": 1,
 	"time_diff_constant": 1000,
 	"space_diff_constant": 100000000,
-	"virtual_space_constant": 762
+	"virtual_space_constant": 1524
 }
