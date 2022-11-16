@@ -767,7 +767,7 @@ Vue.component('account-addresses', {
 			</template>
 			
 			<template v-slot:item.address="{ item }">
-				<router-link :to="'/explore/address/' + item">{{item.address}}</router-link>
+				<router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link>
 			</template>
 			
 			<template v-slot:item.last_receive_height="{ item }">
