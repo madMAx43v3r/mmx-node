@@ -1344,7 +1344,7 @@ Vue.component('account-send-form', {
 								item-value="contract">
 
 								<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">
-									{{item.symbol + (item.is_validated ? '' : '?')}}
+									{{item.symbol + (item.is_validated || source ? '' : '?')}}
 									<template v-if="!item.is_native"> - [{{item.contract}}]</template>
 								</template>
 
