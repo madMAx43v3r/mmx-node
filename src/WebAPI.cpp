@@ -539,9 +539,9 @@ public:
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::MultiSig>(base)) {
 			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::Executable>(base)) {
-			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::VirtualPlot>(base)) {
+			set(render(value, context));
+		} else if(auto value = std::dynamic_pointer_cast<const contract::Executable>(base)) {
 			set(render(value, context));
 		} else {
 			set(base);
