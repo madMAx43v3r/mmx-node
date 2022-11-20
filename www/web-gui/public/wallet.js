@@ -1830,6 +1830,8 @@ Vue.component('create-virtual-plot-contract', {
 	},
 	data() {
 		return {
+			binary: null,
+			owner: null,
 			farmer_key: null,
 			reward_address: null,
 			valid: false,
@@ -1840,7 +1842,8 @@ Vue.component('create-virtual-plot-contract', {
 	},
 	methods: {
 		check_valid() {
-			this.valid = (this.farmer_key && this.farmer_key.length == 96)
+			this.valid = validate_address(this.owner)
+						&& (this.farmer_key && this.farmer_key.length == 96)
 						&& (!this.reward_address || validate_address(this.reward_address));
 			if(!this.valid) {
 				this.confirmed = false;
@@ -1850,6 +1853,8 @@ Vue.component('create-virtual-plot-contract', {
 			this.confirmed = false;
 			const contract = {};
 			contract.__type = "mmx.contract.VirtualPlot";
+			contract.binary = this.binary;
+			contract.init_args = [this.owner];
 			contract.farmer_key = this.farmer_key;
 			if(this.reward_address) {
 				contract.reward_address = this.reward_address;
@@ -1865,11 +1870,20 @@ Vue.component('create-virtual-plot-contract', {
 		}
 	},
 	created() {
+		fetch('/wapi/config/get?key=chain.params.plot_binary')
+				.then(response => response.json())
+				.then(data => this.binary = data);
+		fetch('/wapi/wallet/address?index=' + this.index)
+				.then(response => response.json())
+				.then(data => this.owner = data);
 		fetch('/wapi/wallet/keys?index=' + this.index)
 				.then(response => response.json())
 				.then(data => this.farmer_key = data.farmer_public_key);
 	},
 	watch: {
+		owner(value) {
+			this.check_valid();
+		},
 		farmer_key(value) {
 			this.check_valid();
 		},
@@ -1894,6 +1908,12 @@ Vue.component('create-virtual-plot-contract', {
 
 			<v-card class="my-2">
 				<v-card-text>
+					<v-text-field
+						label="Owner"
+						v-model="owner"
+						:placeholder="$t('common.reward_address_placeholder')">
+					</v-text-field>
+
 					<v-text-field 
 						:label="$t('create_virtual_plot_contract.farmer_public_key')"
 						v-model="farmer_key">
