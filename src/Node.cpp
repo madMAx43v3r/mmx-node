@@ -2083,6 +2083,11 @@ void Node::apply(	std::shared_ptr<const Block> block,
 					}
 					offer_log.insert(std::make_pair(block->height, ticket), tx->id);
 				}
+				if(exec->binary == params->plot_binary) {
+					if(exec->init_args.size() >= 1) {
+						owner_map.insert(std::make_tuple(exec->init_args[0].to<addr_t>(), block->height, ticket), tx->id);
+					}
+				}
 				type_hash = exec->binary;
 			}
 			if(auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(contract)) {
