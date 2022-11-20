@@ -5,24 +5,22 @@
 #define INCLUDE_mmx_contract_VirtualPlot_HXX_
 
 #include <mmx/contract/package.hxx>
-#include <mmx/ChainParams.hxx>
-#include <mmx/Context.hxx>
-#include <mmx/Contract.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/bls_pubkey_t.hpp>
+#include <mmx/contract/Executable.hxx>
 #include <mmx/hash_t.hpp>
 
 
 namespace mmx {
 namespace contract {
 
-class MMX_CONTRACT_EXPORT VirtualPlot : public ::mmx::Contract {
+class MMX_CONTRACT_EXPORT VirtualPlot : public ::mmx::contract::Executable {
 public:
 	
 	::mmx::bls_pubkey_t farmer_key;
 	vnx::optional<::mmx::addr_t> reward_address;
 	
-	typedef ::mmx::Contract Super;
+	typedef ::mmx::contract::Executable Super;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -37,9 +35,6 @@ public:
 	
 	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_hash(const vnx::bool_t& full_hash = 0) const override;
-	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
-	virtual vnx::bool_t is_locked(std::shared_ptr<const ::mmx::Context> context = nullptr) const override;
-	virtual void bls_transfer(const ::mmx::bls_pubkey_t& new_farmer_key = ::mmx::bls_pubkey_t());
 	
 	static std::shared_ptr<VirtualPlot> create();
 	std::shared_ptr<vnx::Value> clone() const override;
@@ -73,11 +68,19 @@ protected:
 
 template<typename T>
 void VirtualPlot::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<VirtualPlot>(3);
+	_visitor.template type_begin<VirtualPlot>(11);
 	_visitor.type_field("version", 0); _visitor.accept(version);
-	_visitor.type_field("farmer_key", 1); _visitor.accept(farmer_key);
-	_visitor.type_field("reward_address", 2); _visitor.accept(reward_address);
-	_visitor.template type_end<VirtualPlot>(3);
+	_visitor.type_field("name", 1); _visitor.accept(name);
+	_visitor.type_field("symbol", 2); _visitor.accept(symbol);
+	_visitor.type_field("decimals", 3); _visitor.accept(decimals);
+	_visitor.type_field("meta_data", 4); _visitor.accept(meta_data);
+	_visitor.type_field("binary", 5); _visitor.accept(binary);
+	_visitor.type_field("init_method", 6); _visitor.accept(init_method);
+	_visitor.type_field("init_args", 7); _visitor.accept(init_args);
+	_visitor.type_field("depends", 8); _visitor.accept(depends);
+	_visitor.type_field("farmer_key", 9); _visitor.accept(farmer_key);
+	_visitor.type_field("reward_address", 10); _visitor.accept(reward_address);
+	_visitor.template type_end<VirtualPlot>(11);
 }
 
 

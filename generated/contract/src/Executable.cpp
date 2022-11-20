@@ -50,7 +50,7 @@ namespace contract {
 
 
 const vnx::Hash64 Executable::VNX_TYPE_HASH(0xfa6a3ac9103ebb12ull);
-const vnx::Hash64 Executable::VNX_CODE_HASH(0x31bd4969d2984bc9ull);
+const vnx::Hash64 Executable::VNX_CODE_HASH(0xf24517f2d84c183cull);
 
 vnx::Hash64 Executable::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -231,7 +231,7 @@ std::shared_ptr<vnx::TypeCode> Executable::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.Executable";
 	type_code->type_hash = vnx::Hash64(0xfa6a3ac9103ebb12ull);
-	type_code->code_hash = vnx::Hash64(0x31bd4969d2984bc9ull);
+	type_code->code_hash = vnx::Hash64(0xf24517f2d84c183cull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::Executable);
@@ -297,6 +297,7 @@ std::shared_ptr<vnx::TypeCode> Executable::static_create_type_code() {
 		auto& field = type_code->fields[6];
 		field.is_extended = true;
 		field.name = "init_method";
+		field.value = vnx::to_string("init");
 		field.code = {32};
 	}
 	{
