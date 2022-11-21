@@ -19,4 +19,6 @@ struct offer_data_t {
 	
 	bool is_scam() const;
 	
+	bool is_open() const;
+	
 }

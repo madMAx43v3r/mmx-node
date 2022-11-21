@@ -15,5 +15,10 @@ vnx::bool_t offer_data_t::is_scam() const
 	return bid_currency == ask_currency && inv_price < (uint128_t(1) << 64);
 }
 
+vnx::bool_t offer_data_t::is_open() const
+{
+	return bid_balance > 0;
+}
+
 
 } // mmx
