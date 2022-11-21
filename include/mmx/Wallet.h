@@ -63,8 +63,11 @@ protected:
 			const uint32_t& index, const uint32_t& owner, const uint64_t& bid_amount, const addr_t& bid_currency,
 			const uint64_t& ask_amount, const addr_t& ask_currency, const spend_options_t& options) const override;
 
-	std::shared_ptr<const Transaction> accept_offer(
-			const uint32_t& index, const addr_t& address, const uint32_t& dst_addr, const spend_options_t& options) const override;
+	std::shared_ptr<const Transaction> offer_trade(
+			const uint32_t& index, const addr_t& address, const uint64_t& amount, const uint32_t& dst_addr, const spend_options_t& options) const override;
+
+	std::shared_ptr<const Transaction> offer_withdraw(
+			const uint32_t& index, const addr_t& address, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> cancel_offer(
 			const uint32_t& index, const addr_t& address, const spend_options_t& options) const override;
@@ -122,7 +125,7 @@ protected:
 
 	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts_owned(const uint32_t& index) const override;
 
-	vector<offer_data_t> get_offers(const uint32_t& index, const std::string& state) const override;
+	vector<offer_data_t> get_offers(const uint32_t& index, const vnx::bool_t& state) const override;
 
 	std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>> get_swap_liquidity(const uint32_t& index) const override;
 

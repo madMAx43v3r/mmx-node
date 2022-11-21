@@ -12,7 +12,7 @@ namespace mmx {
 
 vnx::bool_t offer_data_t::is_scam() const
 {
-	return bid_currency == ask_currency && bid_amount < ask_amount;
+	return bid_currency == ask_currency && inv_price < (uint128_t(1) << 64);
 }
 
 

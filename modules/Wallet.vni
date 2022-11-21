@@ -52,7 +52,10 @@ module Wallet implements vnx.addons.HttpComponent {
 							ulong ask_amount, addr_t ask_currency, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
-	Transaction* accept_offer(uint index, addr_t address, uint dst_addr, spend_options_t options) const;
+	Transaction* offer_trade(uint index, addr_t address, ulong amount, uint dst_addr, spend_options_t options) const;
+	
+	@Permission(permission_e.SPENDING)
+	Transaction* offer_withdraw(uint index, addr_t address, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
 	Transaction* cancel_offer(uint index, addr_t address, spend_options_t options) const;
@@ -107,7 +110,7 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	map<addr_t, Contract*> get_contracts_owned(uint index) const;
 	
-	vector<offer_data_t> get_offers(uint index, string state) const;
+	vector<offer_data_t> get_offers(uint index, bool state) const;
 	
 	map<addr_t, pair<addr_t, uint128>[2]> get_swap_liquidity(uint index) const;
 	

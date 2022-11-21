@@ -408,23 +408,41 @@ public:
 	void accept(const offer_data_t& value) {
 		auto tmp = render(value, context);
 		if(context) {
-			double bid_value = 0;
-			double ask_value = 0;
-			if(auto currency = context->find_currency(value.bid_currency)) {
-				bid_value = to_value(value.bid_amount, currency->decimals);
-				tmp["bid_value"] = bid_value;
-				tmp["bid_symbol"] = currency->symbol;
+			const auto bid_currency = context->find_currency(value.bid_currency);
+			const auto ask_currency = context->find_currency(value.ask_currency);
+			if(bid_currency) {
+				tmp["bid_balance_value"] = to_value(value.bid_balance, bid_currency->decimals);
+				tmp["bid_symbol"] = bid_currency->symbol;
 			}
-			if(auto currency = context->find_currency(value.ask_currency)) {
-				ask_value = to_value(value.ask_amount, currency->decimals);
-				tmp["ask_value"] = ask_value;
-				tmp["ask_symbol"] = currency->symbol;
+			if(ask_currency) {
+				tmp["ask_balance_value"] = to_value(value.ask_balance, ask_currency->decimals);
+				tmp["ask_symbol"] = ask_currency->symbol;
 			}
-			tmp["price"] = ask_value / bid_value;
+			if(bid_currency && ask_currency) {
+				tmp["display_price"] = value.price * pow(2, ask_currency->decimals - bid_currency->decimals);
+			}
 			tmp["time"] = context->get_time(value.height);
-			if(auto height = value.close_height) {
-				tmp["close_time"] = context->get_time(*height);
+		}
+		set(tmp);
+	}
+
+	void accept(const trade_entry_t& value) {
+		auto tmp = render(value, context);
+		if(context) {
+			const auto bid_currency = context->find_currency(value.bid_currency);
+			const auto ask_currency = context->find_currency(value.ask_currency);
+			if(bid_currency) {
+				tmp["bid_value"] = to_value(value.bid_amount, bid_currency->decimals);
+				tmp["bid_symbol"] = bid_currency->symbol;
 			}
+			if(ask_currency) {
+				tmp["ask_value"] = to_value(value.ask_amount, ask_currency->decimals);
+				tmp["ask_symbol"] = ask_currency->symbol;
+			}
+			if(bid_currency && ask_currency) {
+				tmp["display_price"] = value.price * pow(2, ask_currency->decimals - bid_currency->decimals);
+			}
+			tmp["time"] = context->get_time(value.height);
 		}
 		set(tmp);
 	}
@@ -1629,11 +1647,11 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			const int32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 			vnx::optional<tx_type_e> type;
 			if(iter_type != query.end()) {
-				vnx::from_string(iter_type->second, type);
+				vnx::from_string_value(iter_type->second, type);
 			}
 			vnx::optional<addr_t> currency;
 			if(iter_currency != query.end()) {
-				vnx::from_string(iter_currency->second, currency);
+				vnx::from_string_value(iter_currency->second, currency);
 			}
 			wallet->get_history(index, since, type, currency,
 				std::bind(&WebAPI::render_history, this, request_id, limit, offset, std::placeholders::_1),
@@ -1662,7 +1680,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		if(iter_index != query.end()) {
 			const auto iter_state = query.find("state");
 			const uint32_t index = vnx::from_string_value<int64_t>(iter_index->second);
-			const std::string state = iter_state != query.end() ? iter_state->second : std::string();
+			const bool state = iter_state != query.end() ? vnx::from_string_value<bool>(iter_state->second) : false;
 			wallet->get_offers(index, state,
 				[this, request_id](const std::vector<offer_data_t>& offers) {
 					std::unordered_set<addr_t> addr_set;
@@ -1810,7 +1828,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "POST wallet/offer {...}");
 		}
 	}
-	else if(sub_path == "/wallet/cancel") {
+	else if(sub_path == "/wallet/cancel_offer") {
 		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
 		if(request->payload.size()) {
 			vnx::Object args;
@@ -1824,10 +1842,10 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "POST wallet/cancel {...}");
+			respond_status(request_id, 404, "POST wallet/cancel_offer {...}");
 		}
 	}
-	else if(sub_path == "/wallet/accept") {
+	else if(sub_path == "/wallet/offer_withdraw") {
 		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
 		if(request->payload.size()) {
 			vnx::Object args;
@@ -1835,13 +1853,31 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			const auto index = args["index"].to<uint32_t>();
 			const auto address = args["address"].to<addr_t>();
 			const auto options = args["options"].to<spend_options_t>();
-			wallet->accept_offer(index, address, 0, options,
+			wallet->offer_withdraw(index, address, options,
 				[this, request_id](std::shared_ptr<const Transaction> tx) {
 					respond(request_id, render(tx));
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "POST wallet/accept {...}");
+			respond_status(request_id, 404, "POST wallet/offer_withdraw {...}");
+		}
+	}
+	else if(sub_path == "/wallet/offer_trade") {
+		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
+		if(request->payload.size()) {
+			vnx::Object args;
+			vnx::from_string(request->payload.as_string(), args);
+			const auto index = args["index"].to<uint32_t>();
+			const auto address = args["address"].to<addr_t>();
+			const auto amount = args["amount"].to<uint64_t>();
+			const auto options = args["options"].to<spend_options_t>();
+			wallet->offer_trade(index, address, amount, 0, options,
+				[this, request_id](std::shared_ptr<const Transaction> tx) {
+					respond(request_id, render(tx));
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "POST wallet/offer_trade {...}");
 		}
 	}
 	else if(sub_path == "/wallet/swap/liquid") {
@@ -1980,18 +2016,14 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 		const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
 		const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
-		const std::string state = iter_state != query.end() ? iter_state->second : "OPEN";
+		const bool state = iter_state != query.end() ? vnx::from_string<bool>(iter_state->second) : true;
 
 		node->get_recent_offers_for(bid, ask, bid && ask ? std::max<size_t>(1000, limit) : offset + limit, state,
 			[this, request_id, bid, ask, limit, offset](const std::vector<offer_data_t>& offers) {
 				std::unordered_set<addr_t> addr_set;
 				std::vector<std::pair<offer_data_t, double>> result;
 				for(const auto& entry : offers) {
-					double price = std::numeric_limits<double>::quiet_NaN();
-					if(bid && ask) {
-						price = double(entry.ask_amount) / entry.bid_amount;
-					}
-					result.emplace_back(entry, price);
+					result.emplace_back(entry, entry.price);
 					addr_set.insert(entry.bid_currency);
 					addr_set.insert(entry.ask_currency);
 				}
@@ -2030,7 +2062,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const int32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
 		const int32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 		node->get_trade_history_for(bid, ask, limit, since,
-			[this, request_id, bid, ask, limit](const std::vector<offer_data_t>& result) {
+			[this, request_id, bid, ask, limit](const std::vector<trade_entry_t>& result) {
 				std::unordered_set<addr_t> addr_set;
 				for(const auto& entry : result) {
 					addr_set.insert(entry.bid_currency);
@@ -2052,7 +2084,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			"config/get", "config/set", "farmer", "farmers",
 			"node/info", "node/log", "header", "headers", "block", "blocks", "transaction", "transactions", "address", "contract",
 			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/address_info", "wallet/coins",
-			"wallet/history", "wallet/send", "wallet/cancel", "wallet/accept", "farmer/info", "farmer/blocks", "farmer/proofs",
+			"wallet/history", "wallet/send", "wallet/cancel_offer", "wallet/offer_withdraw", "wallet/offer_trade",
+			"wallet/swap/liquid", "wallet/swap_trade",
+			"farmer/info", "farmer/blocks", "farmer/proofs",
 			"node/offers", "node/trade_history"
 		};
 		respond_status(request_id, 404, vnx::to_string(options));

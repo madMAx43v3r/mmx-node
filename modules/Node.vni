@@ -196,25 +196,25 @@ module Node implements vnx.addons.HttpComponent {
 	offer_data_t get_offer(addr_t address) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<offer_data_t> get_offers(uint since, string state) const;
+	vector<offer_data_t> get_offers(uint since, bool state) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<offer_data_t> get_offers_by(vector<addr_t> owners, string state) const;
+	vector<offer_data_t> get_offers_by(vector<addr_t> owners, bool state) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<offer_data_t> fetch_offers(vector<addr_t> addresses, string state) const;
+	vector<offer_data_t> fetch_offers(vector<addr_t> addresses, bool state) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<offer_data_t> get_recent_offers(int limit = 100, string state = "OPEN") const;
+	vector<offer_data_t> get_recent_offers(int limit = 100, bool state = true) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<offer_data_t> get_recent_offers_for(optional<addr_t> bid, optional<addr_t> ask, int limit = 100, string state = "OPEN") const;
+	vector<offer_data_t> get_recent_offers_for(optional<addr_t> bid, optional<addr_t> ask, int limit = 100, bool state = true) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<offer_data_t> get_trade_history(int limit = 100, uint since) const;
+	vector<trade_entry_t> get_trade_history(int limit = 100, uint since) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<offer_data_t> get_trade_history_for(optional<addr_t> bid, optional<addr_t> ask, int limit = 100, uint since) const;
+	vector<trade_entry_t> get_trade_history_for(optional<addr_t> bid, optional<addr_t> ask, int limit = 100, uint since) const;
 	
 	@Permission(permission_e.PUBLIC)
 	vector<swap_info_t> get_swaps(uint since, optional<addr_t> token, optional<addr_t> currency) const;

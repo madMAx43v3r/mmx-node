@@ -72,12 +72,24 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_CONV, 0, bin->fields["owner"], vm::MEM_STACK + 1, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
 		code.emplace_back(vm::OP_CONV, 0, bin->fields["bid_currency"], vm::MEM_STACK + 2, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
 		code.emplace_back(vm::OP_CONV, 0, bin->fields["ask_currency"], vm::MEM_STACK + 3, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
-		code.emplace_back(vm::OP_COPY, 0, bin->fields["inv_price"], vm::MEM_STACK + 4);
+		code.emplace_back(vm::OP_CONV, 0, bin->fields["inv_price"], vm::MEM_STACK + 4, vm::CONVTYPE_UINT, vm::CONVTYPE_BASE_10);
 		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 5, const_map["null"]);
 		code.emplace_back(vm::OP_JUMPI, 0, code.size() + 3, vm::MEM_STACK + 10);
 		code.emplace_back(vm::OP_CONV, 0, bin->fields["partner"], vm::MEM_STACK + 5, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
 		code.emplace_back(vm::OP_JUMP, 0, code.size() + 2);
 		code.emplace_back(vm::OP_COPY, 0, bin->fields["partner"], const_map["null"]);
+		code.emplace_back(vm::OP_RET);
+		bin->methods[method.name] = method;
+	}
+	{
+		mmx::contract::method_t method;
+		method.name = "deposit";
+		method.is_public = true;
+		method.is_payable = true;
+		method.entry_point = code.size();
+		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, vm::MEM_EXTERN + vm::EXTERN_USER, bin->fields["owner"]);
+		code.emplace_back(vm::OP_JUMPI, 0, code.size() + 2, vm::MEM_STACK + 10);
+		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_owner"]);
 		code.emplace_back(vm::OP_RET);
 		bin->methods[method.name] = method;
 	}
@@ -93,6 +105,21 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_CMP_GT, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 11, const_map["zero"]);
 		code.emplace_back(vm::OP_JUMPN, 0, code.size() + 2, vm::MEM_STACK + 10);
 		code.emplace_back(vm::OP_SEND, 0, bin->fields["owner"], vm::MEM_STACK + 11, bin->fields["bid_currency"]);
+		code.emplace_back(vm::OP_RET);
+		bin->methods[method.name] = method;
+	}
+	{
+		mmx::contract::method_t method;
+		method.name = "withdraw";
+		method.is_public = true;
+		method.entry_point = code.size();
+		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, vm::MEM_EXTERN + vm::EXTERN_USER, bin->fields["owner"]);
+		code.emplace_back(vm::OP_JUMPI, 0, code.size() + 2, vm::MEM_STACK + 10);
+		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_owner"]);
+		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 11, vm::MEM_EXTERN + vm::EXTERN_BALANCE, bin->fields["ask_currency"]);
+		code.emplace_back(vm::OP_CMP_GT, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 11, const_map["zero"]);
+		code.emplace_back(vm::OP_JUMPN, 0, code.size() + 2, vm::MEM_STACK + 10);
+		code.emplace_back(vm::OP_SEND, 0, bin->fields["owner"], vm::MEM_STACK + 11, bin->fields["ask_currency"]);
 		code.emplace_back(vm::OP_RET);
 		bin->methods[method.name] = method;
 	}
@@ -122,8 +149,6 @@ int main(int argc, char** argv)
 		// send bid amount to dst_addr
 		code.emplace_back(vm::OP_CONV, 0, vm::MEM_STACK + 13, vm::MEM_STACK + 1, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
 		code.emplace_back(vm::OP_SEND, 0, vm::MEM_STACK + 13, vm::MEM_STACK + 12, bin->fields["bid_currency"]);
-		// send ask amount to owner
-		code.emplace_back(vm::OP_SEND, 0, bin->fields["owner"], vm::MEM_STACK + 11, bin->fields["ask_currency"]);
 		code.emplace_back(vm::OP_RET);
 		bin->methods[method.name] = method;
 	}

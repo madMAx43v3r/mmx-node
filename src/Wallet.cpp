@@ -360,8 +360,9 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 	offer->binary = params->offer_binary;
 	offer->init_method = "init";
 	offer->init_args.emplace_back(owner_addr.to_string());
+	offer->init_args.emplace_back(bid_currency.to_string());
 	offer->init_args.emplace_back(ask_currency.to_string());
-	offer->init_args.emplace_back(ask_amount);
+	offer->init_args.emplace_back(((uint128_t(bid_amount) << 64) / ask_amount).str());
 	offer->init_args.emplace_back();
 
 	auto tx = Transaction::create();
@@ -369,7 +370,7 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 	tx->deploy = offer;
 
 	auto op = operation::Deposit::create();
-	op->method = "open";
+	op->method = "deposit";
 	op->amount = bid_amount;
 	op->currency = bid_currency;
 	op->user = owner_addr;
@@ -385,8 +386,8 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 	return tx;
 }
 
-std::shared_ptr<const Transaction> Wallet::accept_offer(
-			const uint32_t& index, const addr_t& address, const uint32_t& dst_addr, const spend_options_t& options) const
+std::shared_ptr<const Transaction> Wallet::offer_trade(
+			const uint32_t& index, const addr_t& address, const uint64_t& amount, const uint32_t& dst_addr, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
 
@@ -394,7 +395,6 @@ std::shared_ptr<const Transaction> Wallet::accept_offer(
 	args.emplace_back(wallet->get_address(dst_addr).to_string());
 
 	const auto currency = to_addr(node->read_storage_field(address, "ask_currency").first);
-	const auto amount = to_uint(node->read_storage_field(address, "ask_amount").first);
 
 	auto options_ = options;
 	options_.note = tx_note_e::TRADE;
@@ -409,6 +409,16 @@ std::shared_ptr<const Transaction> Wallet::cancel_offer(
 	auto options_ = options;
 	options_.user = owner;
 	return execute(index, address, "cancel", {}, options_);
+}
+
+std::shared_ptr<const Transaction> Wallet::offer_withdraw(
+			const uint32_t& index, const addr_t& address, const spend_options_t& options) const
+{
+	const auto owner = to_addr(node->read_storage_field(address, "owner").first);
+
+	auto options_ = options;
+	options_.user = owner;
+	return execute(index, address, "withdraw", {}, options_);
 }
 
 std::shared_ptr<const Transaction> Wallet::swap_trade(
@@ -751,7 +761,7 @@ std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts_owned(co
 	return result;
 }
 
-vector<offer_data_t> Wallet::get_offers(const uint32_t& index, const std::string& state) const
+vector<offer_data_t> Wallet::get_offers(const uint32_t& index, const vnx::bool_t& state) const
 {
 	const auto wallet = get_wallet(index);
 	return node->get_offers_by(wallet->get_all_addresses(), state);

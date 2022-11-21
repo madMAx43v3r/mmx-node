@@ -142,20 +142,20 @@ protected:
 
 	offer_data_t get_offer(const addr_t& address) const override;
 
-	std::vector<offer_data_t> fetch_offers(const std::vector<addr_t>& addresses, const std::string& state) const override;
+	std::vector<offer_data_t> fetch_offers(const std::vector<addr_t>& addresses, const vnx::bool_t& state) const override;
 
-	std::vector<offer_data_t> get_offers(const uint32_t& since, const std::string& state) const override;
+	std::vector<offer_data_t> get_offers(const uint32_t& since, const vnx::bool_t& state) const override;
 
-	std::vector<offer_data_t> get_offers_by(const std::vector<addr_t>& owners, const std::string& state) const override;
+	std::vector<offer_data_t> get_offers_by(const std::vector<addr_t>& owners, const vnx::bool_t& state) const override;
 
-	std::vector<offer_data_t> get_recent_offers(const int32_t& limit, const std::string& state) const override;
+	std::vector<offer_data_t> get_recent_offers(const int32_t& limit, const vnx::bool_t& state) const override;
 
 	std::vector<offer_data_t> get_recent_offers_for(
-			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const int32_t& limit, const std::string& state) const override;
+			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const int32_t& limit, const vnx::bool_t& state) const override;
 
-	std::vector<offer_data_t> get_trade_history(const int32_t& limit, const uint32_t& since = 0) const override;
+	std::vector<trade_entry_t> get_trade_history(const int32_t& limit, const uint32_t& since = 0) const override;
 
-	std::vector<offer_data_t> get_trade_history_for(
+	std::vector<trade_entry_t> get_trade_history_for(
 			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const int32_t& limit, const uint32_t& since = 0) const override;
 
 	std::vector<swap_info_t> get_swaps(const uint32_t& since, const vnx::optional<addr_t>& token, const vnx::optional<addr_t>& currency) const override;
@@ -311,11 +311,11 @@ private:
 
 	std::shared_ptr<const Block> make_block(std::shared_ptr<const BlockHeader> prev, const proof_data_t& proof, const bool full_block);
 
-	std::string get_offer_state(const addr_t& address) const;
+	bool get_offer_state(const addr_t& address) const;
 
 	std::vector<offer_data_t> fetch_offers_for(
 			const std::vector<addr_t>& addresses, const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask,
-			const std::string& state = std::string(), const bool filter = false) const;
+			const vnx::bool_t& state = false, const bool filter = false) const;
 
 	std::pair<vm::varptr_t, uint64_t> read_storage_field(
 			const addr_t& binary, const addr_t& contract, const std::string& name, const uint32_t& height = -1) const;
@@ -466,11 +466,9 @@ private:
 	hash_multi_table<bls_pubkey_t, addr_t> vplot_map;							// [farmer_key => contract]
 
 	uint_uint_table<uint32_t, uint32_t, addr_t> offer_log;							// [[height, counter] => contract]
-	uint_uint_table<uint32_t, uint32_t, addr_t> trade_log;							// [[height, counter] => contract]
+	uint_uint_table<uint32_t, uint32_t, std::tuple<addr_t, hash_t, uint64_t>> trade_log;	// [[height, counter] => [contract, txid, amount]]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> offer_bid_map;			// [[currency, height, counter] => contract]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> offer_ask_map;			// [[currency, height, counter] => contract]
-	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> trade_bid_history;		// [[currency, height, counter] => contract]
-	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> trade_ask_history;		// [[currency, height, counter] => contract]
 
 	uint_uint_table<uint32_t, uint32_t, addr_t> swap_log;						// [[height, counter] => contract]
 	balance_table_t<std::array<uint128, 2>> swap_liquid_map;					// [[address, swap] => [amount, amount]]
@@ -527,7 +525,7 @@ private:
 	std::shared_ptr<const contract::Binary> swap_binary;
 	std::shared_ptr<const contract::Binary> offer_binary;
 	vnx::optional<uint32_t> swap_users_addr;
-	vnx::optional<uint32_t> offer_state_addr;
+	vnx::optional<uint32_t> offer_bid_currency_addr;
 	std::shared_ptr<RouterAsyncClient> router;
 	std::shared_ptr<TimeLordAsyncClient> timelord;
 	std::shared_ptr<vnx::addons::HttpInterface<Node>> http;

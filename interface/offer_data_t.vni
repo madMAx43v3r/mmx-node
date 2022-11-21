@@ -9,13 +9,12 @@ struct offer_data_t {
 	addr_t bid_currency;
 	addr_t ask_currency;
 	
-	ulong bid_amount;
-	ulong ask_amount;
+	ulong bid_balance;
+	ulong ask_balance;
 	
-	string state;
-
-	optional<uint> close_height;
-	optional<hash_t> close_txid;
+	uint128 inv_price;			// 64-bit fractional [bid / ask]
+	
+	double price;				// [ask / bid]
 	
 	
 	bool is_scam() const;
