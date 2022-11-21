@@ -22,6 +22,7 @@
 #include <mmx/offer_data_t.hxx>
 #include <mmx/swap_info_t.hxx>
 #include <mmx/swap_user_info_t.hxx>
+#include <mmx/trade_entry_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_info_t.hxx>
 #include <mmx/uint128.hpp>
@@ -140,19 +141,19 @@ public:
 	
 	::mmx::offer_data_t get_offer(const ::mmx::addr_t& address = ::mmx::addr_t());
 	
-	std::vector<::mmx::offer_data_t> get_offers(const uint32_t& since = 0, const std::string& state = "");
+	std::vector<::mmx::offer_data_t> get_offers(const uint32_t& since = 0, const vnx::bool_t& state = 0);
 	
-	std::vector<::mmx::offer_data_t> get_offers_by(const std::vector<::mmx::addr_t>& owners = {}, const std::string& state = "");
+	std::vector<::mmx::offer_data_t> get_offers_by(const std::vector<::mmx::addr_t>& owners = {}, const vnx::bool_t& state = 0);
 	
-	std::vector<::mmx::offer_data_t> fetch_offers(const std::vector<::mmx::addr_t>& addresses = {}, const std::string& state = "");
+	std::vector<::mmx::offer_data_t> fetch_offers(const std::vector<::mmx::addr_t>& addresses = {}, const vnx::bool_t& state = 0);
 	
-	std::vector<::mmx::offer_data_t> get_recent_offers(const int32_t& limit = 100, const std::string& state = "OPEN");
+	std::vector<::mmx::offer_data_t> get_recent_offers(const int32_t& limit = 100, const vnx::bool_t& state = true);
 	
-	std::vector<::mmx::offer_data_t> get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid = nullptr, const vnx::optional<::mmx::addr_t>& ask = nullptr, const int32_t& limit = 100, const std::string& state = "OPEN");
+	std::vector<::mmx::offer_data_t> get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid = nullptr, const vnx::optional<::mmx::addr_t>& ask = nullptr, const int32_t& limit = 100, const vnx::bool_t& state = true);
 	
-	std::vector<::mmx::offer_data_t> get_trade_history(const int32_t& limit = 100, const uint32_t& since = 0);
+	std::vector<::mmx::trade_entry_t> get_trade_history(const int32_t& limit = 100, const uint32_t& since = 0);
 	
-	std::vector<::mmx::offer_data_t> get_trade_history_for(const vnx::optional<::mmx::addr_t>& bid = nullptr, const vnx::optional<::mmx::addr_t>& ask = nullptr, const int32_t& limit = 100, const uint32_t& since = 0);
+	std::vector<::mmx::trade_entry_t> get_trade_history_for(const vnx::optional<::mmx::addr_t>& bid = nullptr, const vnx::optional<::mmx::addr_t>& ask = nullptr, const int32_t& limit = 100, const uint32_t& since = 0);
 	
 	std::vector<::mmx::swap_info_t> get_swaps(const uint32_t& since = 0, const vnx::optional<::mmx::addr_t>& token = nullptr, const vnx::optional<::mmx::addr_t>& currency = nullptr);
 	

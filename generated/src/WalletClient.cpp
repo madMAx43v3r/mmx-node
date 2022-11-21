@@ -7,8 +7,6 @@
 #include <mmx/FarmerKeys.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/Transaction.hxx>
-#include <mmx/Wallet_accept_offer.hxx>
-#include <mmx/Wallet_accept_offer_return.hxx>
 #include <mmx/Wallet_add_account.hxx>
 #include <mmx/Wallet_add_account_return.hxx>
 #include <mmx/Wallet_add_token.hxx>
@@ -85,6 +83,10 @@
 #include <mmx/Wallet_mint_return.hxx>
 #include <mmx/Wallet_mutate.hxx>
 #include <mmx/Wallet_mutate_return.hxx>
+#include <mmx/Wallet_offer_trade.hxx>
+#include <mmx/Wallet_offer_trade_return.hxx>
+#include <mmx/Wallet_offer_withdraw.hxx>
+#include <mmx/Wallet_offer_withdraw_return.hxx>
 #include <mmx/Wallet_release.hxx>
 #include <mmx/Wallet_release_return.hxx>
 #include <mmx/Wallet_release_all.hxx>
@@ -328,14 +330,30 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::make_offer(const uint32_
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::accept_offer(const uint32_t& index, const ::mmx::addr_t& address, const uint32_t& dst_addr, const ::mmx::spend_options_t& options) {
-	auto _method = ::mmx::Wallet_accept_offer::create();
+std::shared_ptr<const ::mmx::Transaction> WalletClient::offer_trade(const uint32_t& index, const ::mmx::addr_t& address, const uint64_t& amount, const uint32_t& dst_addr, const ::mmx::spend_options_t& options) {
+	auto _method = ::mmx::Wallet_offer_trade::create();
 	_method->index = index;
 	_method->address = address;
+	_method->amount = amount;
 	_method->dst_addr = dst_addr;
 	_method->options = options;
 	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_accept_offer_return>(_return_value)) {
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_offer_trade_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Transaction>>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
+std::shared_ptr<const ::mmx::Transaction> WalletClient::offer_withdraw(const uint32_t& index, const ::mmx::addr_t& address, const ::mmx::spend_options_t& options) {
+	auto _method = ::mmx::Wallet_offer_withdraw::create();
+	_method->index = index;
+	_method->address = address;
+	_method->options = options;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_offer_withdraw_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Transaction>>();
@@ -672,7 +690,7 @@ std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> WalletClient::ge
 	}
 }
 
-std::vector<::mmx::offer_data_t> WalletClient::get_offers(const uint32_t& index, const std::string& state) {
+std::vector<::mmx::offer_data_t> WalletClient::get_offers(const uint32_t& index, const vnx::bool_t& state) {
 	auto _method = ::mmx::Wallet_get_offers::create();
 	_method->index = index;
 	_method->state = state;

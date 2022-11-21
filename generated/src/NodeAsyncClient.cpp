@@ -148,6 +148,7 @@
 #include <mmx/offer_data_t.hxx>
 #include <mmx/swap_info_t.hxx>
 #include <mmx/swap_user_info_t.hxx>
+#include <mmx/trade_entry_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_info_t.hxx>
 #include <mmx/uint128.hpp>
@@ -827,7 +828,7 @@ uint64_t NodeAsyncClient::get_offer(const ::mmx::addr_t& address, const std::fun
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_offers(const uint32_t& since, const std::string& state, const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_offers(const uint32_t& since, const vnx::bool_t& state, const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_offers::create();
 	_method->since = since;
 	_method->state = state;
@@ -841,7 +842,7 @@ uint64_t NodeAsyncClient::get_offers(const uint32_t& since, const std::string& s
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_offers_by(const std::vector<::mmx::addr_t>& owners, const std::string& state, const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_offers_by(const std::vector<::mmx::addr_t>& owners, const vnx::bool_t& state, const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_offers_by::create();
 	_method->owners = owners;
 	_method->state = state;
@@ -855,7 +856,7 @@ uint64_t NodeAsyncClient::get_offers_by(const std::vector<::mmx::addr_t>& owners
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::fetch_offers(const std::vector<::mmx::addr_t>& addresses, const std::string& state, const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::fetch_offers(const std::vector<::mmx::addr_t>& addresses, const vnx::bool_t& state, const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_fetch_offers::create();
 	_method->addresses = addresses;
 	_method->state = state;
@@ -869,7 +870,7 @@ uint64_t NodeAsyncClient::fetch_offers(const std::vector<::mmx::addr_t>& address
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_recent_offers(const int32_t& limit, const std::string& state, const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_recent_offers(const int32_t& limit, const vnx::bool_t& state, const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_recent_offers::create();
 	_method->limit = limit;
 	_method->state = state;
@@ -883,7 +884,7 @@ uint64_t NodeAsyncClient::get_recent_offers(const int32_t& limit, const std::str
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& limit, const std::string& state, const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& limit, const vnx::bool_t& state, const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_recent_offers_for::create();
 	_method->bid = bid;
 	_method->ask = ask;
@@ -899,7 +900,7 @@ uint64_t NodeAsyncClient::get_recent_offers_for(const vnx::optional<::mmx::addr_
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_trade_history(const int32_t& limit, const uint32_t& since, const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_trade_history(const int32_t& limit, const uint32_t& since, const std::function<void(const std::vector<::mmx::trade_entry_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_trade_history::create();
 	_method->limit = limit;
 	_method->since = since;
@@ -913,7 +914,7 @@ uint64_t NodeAsyncClient::get_trade_history(const int32_t& limit, const uint32_t
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_trade_history_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& limit, const uint32_t& since, const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_trade_history_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& limit, const uint32_t& since, const std::function<void(const std::vector<::mmx::trade_entry_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_trade_history_for::create();
 	_method->bid = bid;
 	_method->ask = ask;
@@ -3117,7 +3118,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_trade_history_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<std::vector<::mmx::offer_data_t>>());
+					_callback(_value->get_field_by_index(0).to<std::vector<::mmx::trade_entry_t>>());
 				} else {
 					throw std::logic_error("NodeAsyncClient: invalid return value");
 				}
@@ -3136,7 +3137,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_trade_history_for_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<std::vector<::mmx::offer_data_t>>());
+					_callback(_value->get_field_by_index(0).to<std::vector<::mmx::trade_entry_t>>());
 				} else {
 					throw std::logic_error("NodeAsyncClient: invalid return value");
 				}

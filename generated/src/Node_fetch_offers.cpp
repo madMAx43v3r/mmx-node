@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_fetch_offers::VNX_TYPE_HASH(0xfca08ee41b997129ull);
-const vnx::Hash64 Node_fetch_offers::VNX_CODE_HASH(0x635f2cd8916df255ull);
+const vnx::Hash64 Node_fetch_offers::VNX_CODE_HASH(0x11eb3c0079efa127ull);
 
 vnx::Hash64 Node_fetch_offers::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -125,7 +125,7 @@ std::shared_ptr<vnx::TypeCode> Node_fetch_offers::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.fetch_offers";
 	type_code->type_hash = vnx::Hash64(0xfca08ee41b997129ull);
-	type_code->code_hash = vnx::Hash64(0x635f2cd8916df255ull);
+	type_code->code_hash = vnx::Hash64(0x11eb3c0079efa127ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -142,9 +142,9 @@ std::shared_ptr<vnx::TypeCode> Node_fetch_offers::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[1];
-		field.is_extended = true;
+		field.data_size = 1;
 		field.name = "state";
-		field.code = {32};
+		field.code = {31};
 	}
 	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();
@@ -187,13 +187,15 @@ void read(TypeInput& in, ::mmx::Node_fetch_offers& value, const TypeCode* type_c
 			}
 		}
 	}
-	in.read(type_code->total_field_size);
+	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
+		if(const auto* const _field = type_code->field_map[1]) {
+			vnx::read_value(_buf + _field->offset, value.state, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.addresses, type_code, _field->code.data()); break;
-			case 1: vnx::read(in, value.state, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -212,8 +214,9 @@ void write(TypeOutput& out, const ::mmx::Node_fetch_offers& value, const TypeCod
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
+	char* const _buf = out.write(1);
+	vnx::write_value(_buf + 0, value.state);
 	vnx::write(out, value.addresses, type_code, type_code->fields[0].code.data());
-	vnx::write(out, value.state, type_code, type_code->fields[1].code.data());
 }
 
 void read(std::istream& in, ::mmx::Node_fetch_offers& value) {

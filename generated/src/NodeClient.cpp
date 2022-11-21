@@ -148,6 +148,7 @@
 #include <mmx/offer_data_t.hxx>
 #include <mmx/swap_info_t.hxx>
 #include <mmx/swap_user_info_t.hxx>
+#include <mmx/trade_entry_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_info_t.hxx>
 #include <mmx/uint128.hpp>
@@ -826,7 +827,7 @@ uint64_t NodeClient::get_virtual_plot_balance(const ::mmx::addr_t& plot_id, cons
 	}
 }
 
-std::vector<::mmx::offer_data_t> NodeClient::get_offers(const uint32_t& since, const std::string& state) {
+std::vector<::mmx::offer_data_t> NodeClient::get_offers(const uint32_t& since, const vnx::bool_t& state) {
 	auto _method = ::mmx::Node_get_offers::create();
 	_method->since = since;
 	_method->state = state;
@@ -840,7 +841,7 @@ std::vector<::mmx::offer_data_t> NodeClient::get_offers(const uint32_t& since, c
 	}
 }
 
-std::vector<::mmx::offer_data_t> NodeClient::get_offers_by(const std::vector<::mmx::addr_t>& owners, const std::string& state) {
+std::vector<::mmx::offer_data_t> NodeClient::get_offers_by(const std::vector<::mmx::addr_t>& owners, const vnx::bool_t& state) {
 	auto _method = ::mmx::Node_get_offers_by::create();
 	_method->owners = owners;
 	_method->state = state;
@@ -854,7 +855,7 @@ std::vector<::mmx::offer_data_t> NodeClient::get_offers_by(const std::vector<::m
 	}
 }
 
-std::vector<::mmx::offer_data_t> NodeClient::fetch_offers(const std::vector<::mmx::addr_t>& addresses, const std::string& state) {
+std::vector<::mmx::offer_data_t> NodeClient::fetch_offers(const std::vector<::mmx::addr_t>& addresses, const vnx::bool_t& state) {
 	auto _method = ::mmx::Node_fetch_offers::create();
 	_method->addresses = addresses;
 	_method->state = state;
@@ -868,7 +869,7 @@ std::vector<::mmx::offer_data_t> NodeClient::fetch_offers(const std::vector<::mm
 	}
 }
 
-std::vector<::mmx::offer_data_t> NodeClient::get_recent_offers(const int32_t& limit, const std::string& state) {
+std::vector<::mmx::offer_data_t> NodeClient::get_recent_offers(const int32_t& limit, const vnx::bool_t& state) {
 	auto _method = ::mmx::Node_get_recent_offers::create();
 	_method->limit = limit;
 	_method->state = state;
@@ -882,7 +883,7 @@ std::vector<::mmx::offer_data_t> NodeClient::get_recent_offers(const int32_t& li
 	}
 }
 
-std::vector<::mmx::offer_data_t> NodeClient::get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& limit, const std::string& state) {
+std::vector<::mmx::offer_data_t> NodeClient::get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& limit, const vnx::bool_t& state) {
 	auto _method = ::mmx::Node_get_recent_offers_for::create();
 	_method->bid = bid;
 	_method->ask = ask;
@@ -898,7 +899,7 @@ std::vector<::mmx::offer_data_t> NodeClient::get_recent_offers_for(const vnx::op
 	}
 }
 
-std::vector<::mmx::offer_data_t> NodeClient::get_trade_history(const int32_t& limit, const uint32_t& since) {
+std::vector<::mmx::trade_entry_t> NodeClient::get_trade_history(const int32_t& limit, const uint32_t& since) {
 	auto _method = ::mmx::Node_get_trade_history::create();
 	_method->limit = limit;
 	_method->since = since;
@@ -906,13 +907,13 @@ std::vector<::mmx::offer_data_t> NodeClient::get_trade_history(const int32_t& li
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_trade_history_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::vector<::mmx::offer_data_t>>();
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::trade_entry_t>>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}
 }
 
-std::vector<::mmx::offer_data_t> NodeClient::get_trade_history_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& limit, const uint32_t& since) {
+std::vector<::mmx::trade_entry_t> NodeClient::get_trade_history_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& limit, const uint32_t& since) {
 	auto _method = ::mmx::Node_get_trade_history_for::create();
 	_method->bid = bid;
 	_method->ask = ask;
@@ -922,7 +923,7 @@ std::vector<::mmx::offer_data_t> NodeClient::get_trade_history_for(const vnx::op
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_trade_history_for_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::vector<::mmx::offer_data_t>>();
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::trade_entry_t>>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}

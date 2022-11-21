@@ -14,7 +14,7 @@ class MMX_EXPORT Node_get_recent_offers : public ::vnx::Value {
 public:
 	
 	int32_t limit = 100;
-	std::string state = "OPEN";
+	vnx::bool_t state = true;
 	
 	typedef ::vnx::Value Super;
 	

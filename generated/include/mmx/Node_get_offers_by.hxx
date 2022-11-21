@@ -15,7 +15,7 @@ class MMX_EXPORT Node_get_offers_by : public ::vnx::Value {
 public:
 	
 	std::vector<::mmx::addr_t> owners;
-	std::string state;
+	vnx::bool_t state = 0;
 	
 	typedef ::vnx::Value Super;
 	

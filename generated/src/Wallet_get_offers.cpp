@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_get_offers::VNX_TYPE_HASH(0x6dacbe70cbe08925ull);
-const vnx::Hash64 Wallet_get_offers::VNX_CODE_HASH(0x43d296404587356dull);
+const vnx::Hash64 Wallet_get_offers::VNX_CODE_HASH(0x31668698ad05661full);
 
 vnx::Hash64 Wallet_get_offers::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -124,7 +124,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_offers::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.get_offers";
 	type_code->type_hash = vnx::Hash64(0x6dacbe70cbe08925ull);
-	type_code->code_hash = vnx::Hash64(0x43d296404587356dull);
+	type_code->code_hash = vnx::Hash64(0x31668698ad05661full);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -141,9 +141,9 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_offers::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[1];
-		field.is_extended = true;
+		field.data_size = 1;
 		field.name = "state";
-		field.code = {32};
+		field.code = {31};
 	}
 	type_code->build();
 	return type_code;
@@ -190,10 +190,12 @@ void read(TypeInput& in, ::mmx::Wallet_get_offers& value, const TypeCode* type_c
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.index, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[1]) {
+			vnx::read_value(_buf + _field->offset, value.state, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 1: vnx::read(in, value.state, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -212,9 +214,9 @@ void write(TypeOutput& out, const ::mmx::Wallet_get_offers& value, const TypeCod
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
+	char* const _buf = out.write(5);
 	vnx::write_value(_buf + 0, value.index);
-	vnx::write(out, value.state, type_code, type_code->fields[1].code.data());
+	vnx::write_value(_buf + 4, value.state);
 }
 
 void read(std::istream& in, ::mmx::Wallet_get_offers& value) {
