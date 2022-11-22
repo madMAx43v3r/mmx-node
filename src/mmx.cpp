@@ -348,7 +348,7 @@ int main(int argc, char** argv)
 								std::cout << std::endl;
 							}
 						}
-						if(offer && offer->is_open() && subject == "offers") {
+						if(offer && (offer->is_open() || subject == "offers")) {
 							if(auto bid_token = get_token(node, offer->bid_currency, false)) {
 								if(auto ask_token = get_token(node, offer->ask_currency, false)) {
 									std::cout << "  Price: " << offer->price
@@ -595,7 +595,7 @@ int main(int argc, char** argv)
 				}
 				else if(subject == "cancel") {
 					mmx::addr_t address;
-					vnx::read_config("$3", address);
+					vnx::read_config("$4", address);
 
 					auto offer = std::dynamic_pointer_cast<const mmx::contract::Executable>(node.get_contract(address));
 					if(!offer || offer->binary != params->offer_binary) {
@@ -608,10 +608,10 @@ int main(int argc, char** argv)
 						std::cout << "Transaction ID: " << tx->id << std::endl;
 					}
 				}
-				else if(command == "withdraw")
+				else if(subject == "withdraw")
 				{
 					mmx::addr_t address;
-					vnx::read_config("$3", address);
+					vnx::read_config("$4", address);
 
 					auto offer = std::dynamic_pointer_cast<const mmx::contract::Executable>(node.get_contract(address));
 					if(!offer || offer->binary != params->offer_binary) {
@@ -639,9 +639,9 @@ int main(int argc, char** argv)
 				const uint64_t ask_amount = amount * pow(10, ask_token->decimals);
 				const uint64_t bid_amount = (uint256_t(ask_amount) * data.inv_price) >> 64;
 
-				std::cout << "  You pay:     "
+				std::cout << "You pay:     "
 						<< mmx::to_value(ask_amount, ask_token->decimals) << " " << ask_token->symbol << " [" << data.ask_currency << "]" << std::endl;
-				std::cout << "  You receive: "
+				std::cout << "You receive: "
 						<< mmx::to_value(bid_amount, bid_token->decimals) << " " << bid_token->symbol << " [" << data.bid_currency << "]" << std::endl;
 
 				if(pre_accept || accept_prompt()) {

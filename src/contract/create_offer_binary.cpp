@@ -12,6 +12,8 @@
 
 #include <mmx/contract/Binary.hxx>
 
+static constexpr int FRACT_BITS = 64;
+
 using namespace mmx;
 
 
@@ -32,9 +34,6 @@ int main(int argc, char** argv)
 	const_map["one"] = constant.size();
 	constant.push_back(std::make_unique<vm::uint_t>(1));
 
-	const_map["64"] = constant.size();
-	constant.push_back(std::make_unique<vm::uint_t>(64));
-
 	const_map["TYPE_UINT"] = constant.size();
 	constant.push_back(std::make_unique<vm::uint_t>(uint32_t(vm::TYPE_UINT)));
 
@@ -43,9 +42,6 @@ int main(int argc, char** argv)
 
 	const_map["fail_partner"] = constant.size();
 	constant.push_back(vm::binary_t::alloc("user != partner"));
-
-	const_map["fail_price_type"] = constant.size();
-	constant.push_back(vm::binary_t::alloc("inv_price != TYPE_UINT"));
 
 	const_map["fail_currency"] = constant.size();
 	constant.push_back(vm::binary_t::alloc("currency mismatch"));
@@ -65,10 +61,6 @@ int main(int argc, char** argv)
 		method.name = "init";
 		method.args = {"owner", "bid_currency", "ask_currency", "inv_price", "partner"};
 		method.entry_point = code.size();
-		code.emplace_back(vm::OP_TYPE, 0, vm::MEM_STACK + 11, vm::MEM_STACK + 4);
-		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 11, const_map["TYPE_UINT"]);
-		code.emplace_back(vm::OP_JUMPI, 0, code.size() + 2, vm::MEM_STACK + 10);
-		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_price_type"]);
 		code.emplace_back(vm::OP_CONV, 0, bin->fields["owner"], vm::MEM_STACK + 1, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
 		code.emplace_back(vm::OP_CONV, 0, bin->fields["bid_currency"], vm::MEM_STACK + 2, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
 		code.emplace_back(vm::OP_CONV, 0, bin->fields["ask_currency"], vm::MEM_STACK + 3, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
@@ -144,8 +136,8 @@ int main(int argc, char** argv)
 		// get ask amount
 		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 11, vm::MEM_EXTERN + vm::EXTERN_DEPOSIT, const_map["one"]);
 		// calc bid amount
-		code.emplace_back(vm::OP_MUL, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 12, vm::MEM_STACK + 11, const_map["inv_price"]);
-		code.emplace_back(vm::OP_SHR, 0, vm::MEM_STACK + 12, vm::MEM_STACK + 12, const_map["64"]);
+		code.emplace_back(vm::OP_MUL, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 12, vm::MEM_STACK + 11, bin->fields["inv_price"]);
+		code.emplace_back(vm::OP_SHR, 0, vm::MEM_STACK + 12, vm::MEM_STACK + 12, FRACT_BITS);
 		// send bid amount to dst_addr
 		code.emplace_back(vm::OP_CONV, 0, vm::MEM_STACK + 13, vm::MEM_STACK + 1, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
 		code.emplace_back(vm::OP_SEND, 0, vm::MEM_STACK + 13, vm::MEM_STACK + 12, bin->fields["bid_currency"]);
