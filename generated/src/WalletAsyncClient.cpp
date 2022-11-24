@@ -668,9 +668,10 @@ uint64_t WalletAsyncClient::get_contract_balances(const ::mmx::addr_t& address, 
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::get_contracts(const uint32_t& index, const std::function<void(const std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::get_contracts(const uint32_t& index, const vnx::optional<std::string>& type_name, const std::function<void(const std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_get_contracts::create();
 	_method->index = index;
+	_method->type_name = type_name;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
@@ -681,9 +682,10 @@ uint64_t WalletAsyncClient::get_contracts(const uint32_t& index, const std::func
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::get_contracts_owned(const uint32_t& index, const std::function<void(const std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::get_contracts_owned(const uint32_t& index, const vnx::optional<std::string>& type_name, const std::function<void(const std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_get_contracts_owned::create();
 	_method->index = index;
+	_method->type_name = type_name;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);

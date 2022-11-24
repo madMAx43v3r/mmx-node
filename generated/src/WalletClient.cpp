@@ -664,9 +664,10 @@ std::map<::mmx::addr_t, ::mmx::balance_t> WalletClient::get_contract_balances(co
 	}
 }
 
-std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> WalletClient::get_contracts(const uint32_t& index) {
+std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> WalletClient::get_contracts(const uint32_t& index, const vnx::optional<std::string>& type_name) {
 	auto _method = ::mmx::Wallet_get_contracts::create();
 	_method->index = index;
+	_method->type_name = type_name;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_contracts_return>(_return_value)) {
 		return _result->_ret_0;
@@ -677,9 +678,10 @@ std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> WalletClient::ge
 	}
 }
 
-std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> WalletClient::get_contracts_owned(const uint32_t& index) {
+std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> WalletClient::get_contracts_owned(const uint32_t& index, const vnx::optional<std::string>& type_name) {
 	auto _method = ::mmx::Wallet_get_contracts_owned::create();
 	_method->index = index;
+	_method->type_name = type_name;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_contracts_owned_return>(_return_value)) {
 		return _result->_ret_0;

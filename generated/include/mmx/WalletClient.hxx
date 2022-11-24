@@ -115,9 +115,9 @@ public:
 	
 	std::map<::mmx::addr_t, ::mmx::balance_t> get_contract_balances(const ::mmx::addr_t& address = ::mmx::addr_t());
 	
-	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts(const uint32_t& index = 0);
+	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts(const uint32_t& index = 0, const vnx::optional<std::string>& type_name = nullptr);
 	
-	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts_owned(const uint32_t& index = 0);
+	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts_owned(const uint32_t& index = 0, const vnx::optional<std::string>& type_name = nullptr);
 	
 	std::vector<::mmx::offer_data_t> get_offers(const uint32_t& index = 0, const vnx::bool_t& state = 0);
 	
