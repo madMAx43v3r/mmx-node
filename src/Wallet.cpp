@@ -735,7 +735,8 @@ std::map<addr_t, balance_t> Wallet::get_contract_balances(const addr_t& address)
 	return amounts;
 }
 
-std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts(const uint32_t& index) const
+std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts(
+		const uint32_t& index, const vnx::optional<std::string>& type_name) const
 {
 	const auto wallet = get_wallet(index);
 	const auto addresses = node->get_contracts_by(wallet->get_all_addresses());
@@ -743,12 +744,17 @@ std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts(const ui
 
 	std::map<addr_t, std::shared_ptr<const Contract>> result;
 	for(size_t i = 0; i < addresses.size() && i < contracts.size(); ++i) {
-		result[addresses[i]] = contracts[i];
+		if(auto contract = contracts[i]) {
+			if(!type_name || contract->get_type_name() == *type_name) {
+				result[addresses[i]] = contract;
+			}
+		}
 	}
 	return result;
 }
 
-std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts_owned(const uint32_t& index) const
+std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts_owned(
+		const uint32_t& index, const vnx::optional<std::string>& type_name) const
 {
 	const auto wallet = get_wallet(index);
 	const auto addresses = node->get_contracts_owned_by(wallet->get_all_addresses());
@@ -756,7 +762,11 @@ std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts_owned(co
 
 	std::map<addr_t, std::shared_ptr<const Contract>> result;
 	for(size_t i = 0; i < addresses.size() && i < contracts.size(); ++i) {
-		result[addresses[i]] = contracts[i];
+		if(auto contract = contracts[i]) {
+			if(!type_name || contract->get_type_name() == *type_name) {
+				result[addresses[i]] = contract;
+			}
+		}
 	}
 	return result;
 }

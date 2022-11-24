@@ -47,6 +47,7 @@ Vue.component('account-menu', {
 			<v-btn :to="'/wallet/account/' + index + '/offer'">{{ $t('account_menu.offer') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/history'">{{ $t('account_menu.history') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/log'">{{ $t('account_menu.log') }}</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/plots'">Plots</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/details'">{{ $t('account_menu.details') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/options'"><v-icon>mdi-cog</v-icon></v-btn>
 		</v-btn-toggle>
@@ -694,7 +695,7 @@ Vue.component('account-contracts', {
 			return this.contractFilterValues.filter((value, index, self) => this.contractFilter.some( i => i === index) );
 		},
 		filteredData() {
-			return this.data?.filter( (item, index, self) => this.selectedContractFilterValues.some( r => item[1].__type == r) );
+			return this.data?.filter( (item, index, self) => this.selectedContractFilterValues.some( r => item.__type == r) );
 		}
 	},
 	template: `
@@ -705,7 +706,8 @@ Vue.component('account-contracts', {
 				<v-chip v-for="item in contractFilterValues" filter outlined>{{item}}</v-chip>
 			</v-chip-group>
 
-			<account-contract-summary v-if="filteredData" v-for="item in filteredData" :key="item[0]" :index="index" :address="item[0]" :contract="item[1]"></account-contract-summary>
+			<account-contract-summary v-if="filteredData" v-for="item in filteredData" :key="item.address" :index="index" :address="item.address" :contract="item">
+			</account-contract-summary>
 		</v-card>
 		`
 })
@@ -780,6 +782,74 @@ Vue.component('account-addresses', {
 				<router-link :to="'/explore/block/height/' + item.last_spend_height">
 					{{item.num_spend || item.last_spend_height ? item.last_spend_height : null}}
 				</router-link>
+			</template>
+		</v-data-table>
+		`
+})
+
+Vue.component('account-plots', {
+	props: {
+		index: Number,
+		limit: Number
+	},
+	data() {
+		return {
+			data: [],
+			loading: true
+		}
+	},
+	computed: {
+		headers() {
+			return [
+				{ text: "Balance", value: 'balance' },
+				{ text: "Size", value: 'size_bytes' },
+				{ text: "Address", value: 'address' },
+				{ text: "", value: 'actions' },
+			]
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/wallet/plots?index=' + this.index)
+				.then(response => response.json())
+				.then(data => {
+					this.loading = false;
+					this.data = data;
+				});
+		}
+	},
+	created() {
+		this.update()
+	},
+	template: `
+		<v-data-table
+			:headers="headers"
+			:items="data"
+			:loading="loading"
+			hide-default-footer
+			disable-sort
+			disable-pagination
+			class="elevation-2"
+		>
+			<template v-slot:progress>
+				<v-progress-linear indeterminate absolute top></v-progress-linear>
+				<v-skeleton-loader type="table-row-divider@6" />
+			</template>
+			
+			<template v-slot:item.balance="{ item }">
+				<b>{{item.balance.value}}</b>&nbsp;&nbsp;MMX
+			</template>
+			
+			<template v-slot:item.size_bytes="{ item }">
+				<b>{{(item.size_bytes / Math.pow(1000,4)).toFixed(2)}}</b>&nbsp;&nbsp;TB
+			</template>
+			
+			<template v-slot:item.address="{ item }">
+				<router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link>
+			</template>
+			
+			<template v-slot:item.actions="{ item }">
+				TODO
 			</template>
 		</v-data-table>
 		`

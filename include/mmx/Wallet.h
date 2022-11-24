@@ -121,9 +121,11 @@ protected:
 
 	std::map<addr_t, balance_t> get_contract_balances(const addr_t& address) const override;
 
-	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts(const uint32_t& index) const override;
+	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts(
+			const uint32_t& index, const vnx::optional<std::string>& type_name) const override;
 
-	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts_owned(const uint32_t& index) const override;
+	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts_owned(
+			const uint32_t& index, const vnx::optional<std::string>& type_name) const override;
 
 	vector<offer_data_t> get_offers(const uint32_t& index, const vnx::bool_t& state) const override;
 

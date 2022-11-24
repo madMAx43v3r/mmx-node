@@ -1001,6 +1001,46 @@ void WebAPI::render_tx_history(const vnx::request_id_t& request_id, const std::v
 	}
 }
 
+void WebAPI::render_virtual_plots(const vnx::request_id_t& request_id, const std::map<addr_t, std::shared_ptr<const Contract>>& map) const
+{
+	struct job_t {
+		size_t num_left = 0;
+		vnx::request_id_t request_id;
+		std::vector<vnx::Object> result;
+	};
+	auto job = std::make_shared<job_t>();
+	job->num_left = map.size();
+	job->request_id = request_id;
+	job->result.resize(map.size());
+
+	if(!job->num_left) {
+		respond(request_id, render_value(job->result));
+		return;
+	}
+	const auto context = get_context();
+
+	size_t i = 0;
+	for(const auto& entry : map) {
+		const auto& address = entry.first;
+		const auto& contract = entry.second;
+		node->get_balance(address, addr_t(),
+			[this, context, job, address, contract, i](const uint128& balance) {
+				auto& out = job->result[i];
+				if(contract) {
+					out = render(*contract, context);
+				}
+				out["address"] = address.to_string();
+				out["balance"] = to_amount_object(balance, params->decimals);
+				out["size_bytes"] = calc_virtual_plot_size(params, balance.lower());
+
+				if(--job->num_left == 0) {
+					respond(job->request_id, render_value(job->result));
+				}
+			});
+		i++;
+	}
+}
+
 void WebAPI::shutdown()
 {
 	((WebAPI*)this)->set_timeout_millis(1000, [this]() {
@@ -1556,20 +1596,46 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else if(sub_path == "/wallet/contracts") {
 		const auto iter_index = query.find("index");
+		const auto iter_type = query.find("type");
+		const auto iter_owned = query.find("owned");
 		if(iter_index != query.end()) {
 			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
-			wallet->get_contracts(index,
-				[this, request_id](const std::map<addr_t, std::shared_ptr<const Contract>>& map) {
-					auto context = get_context();
-					std::map<std::string, vnx::Variant> res;
-					for(const auto& entry : map) {
-						res.emplace(entry.first.to_string(), render_value(entry.second, context));
+			vnx::optional<std::string> type_name;
+			if(iter_type != query.end()) {
+				vnx::from_string(iter_type->second, type_name);
+			}
+			const auto callback = [this, request_id](const std::map<addr_t, std::shared_ptr<const Contract>>& map) {
+				auto context = get_context();
+				std::vector<vnx::Object> res;
+				for(const auto& entry : map) {
+					if(auto contract = entry.second) {
+						auto tmp = render(*contract, context);
+						tmp["address"] = entry.first.to_string();
+						res.push_back(tmp);
 					}
-					respond(request_id, vnx::Variant(res));
-				},
-				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+				}
+				respond(request_id, vnx::Variant(res));
+			};
+			if(iter_owned != query.end() && vnx::from_string<bool>(iter_owned->second)) {
+				wallet->get_contracts_owned(index, type_name,
+					callback, std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+			} else {
+				wallet->get_contracts(index, type_name,
+					callback, std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+			}
 		} else {
 			respond_status(request_id, 404, "wallet/contracts?index");
+		}
+	}
+	else if(sub_path == "/wallet/plots") {
+		const auto iter_index = query.find("index");
+		if(iter_index != query.end()) {
+			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
+			wallet->get_contracts_owned(index, std::string("mmx.contract.VirtualPlot"),
+				std::bind(&WebAPI::render_virtual_plots, this, request_id, std::placeholders::_1),
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "wallet/plots?index");
 		}
 	}
 	else if(sub_path == "/wallet/address") {

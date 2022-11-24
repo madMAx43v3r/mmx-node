@@ -111,6 +111,14 @@ const AccountLog = {
 		<account-tx-history :index="index" :limit="200"></account-tx-history>
 	`
 }
+const AccountPlots = {
+	props: {
+		index: Number
+	},
+	template: `
+		<account-plots :index="index"></account-plots>
+	`
+}
 const AccountDetails = {
 	props: {
 		index: Number
