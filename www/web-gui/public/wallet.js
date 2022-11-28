@@ -1017,8 +1017,10 @@ Vue.component('account-actions', {
 				.then(response => {
 					if(response.ok) {
 						this.info = "Success";
+						this.error = null;
 					} else {
 						response.text().then(data => {
+							this.info = null;
 							this.error = data;
 						});
 					}
