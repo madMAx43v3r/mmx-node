@@ -32,6 +32,7 @@
 #include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/ProofOfSpaceNFT.hxx>
 #include <mmx/ProofOfStake.hxx>
+#include <mmx/vm_interface.h>
 
 #include <vnx/vnx.h>
 #include <vnx/ProcessClient.hxx>
@@ -1022,20 +1023,23 @@ void WebAPI::render_virtual_plots(const vnx::request_id_t& request_id, const std
 	size_t i = 0;
 	for(const auto& entry : map) {
 		const auto& address = entry.first;
-		const auto& contract = entry.second;
+		if(auto contract = entry.second) {
+			job->result[i] = render(*contract, context);
+		}
 		node->get_balance(address, addr_t(),
-			[this, context, job, address, contract, i](const uint128& balance) {
+			[this, job, address, i](const uint128& balance) {
 				auto& out = job->result[i];
-				if(contract) {
-					out = render(*contract, context);
-				}
 				out["address"] = address.to_string();
 				out["balance"] = to_amount_object(balance, params->decimals);
 				out["size_bytes"] = calc_virtual_plot_size(params, balance.lower());
 
-				if(--job->num_left == 0) {
-					respond(job->request_id, render_value(job->result));
-				}
+				node->read_storage_field(address, "owner", -1,
+					[this, job, i](const std::pair<vm::varptr_t, uint64_t>& ret) {
+						job->result[i]["owner"] = to_addr(ret.first).to_string();
+						if(--job->num_left == 0) {
+							respond(job->request_id, render_value(job->result));
+						}
+					});
 			});
 		i++;
 	}
@@ -1855,6 +1859,25 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
 			respond_status(request_id, 404, "POST wallet/deploy?index {...}");
+		}
+	}
+	else if(sub_path == "/wallet/execute") {
+		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
+		if(request->payload.size()) {
+			vnx::Object args;
+			vnx::from_string(request->payload.as_string(), args);
+			const auto index = args["index"].to<uint32_t>();
+			const auto address = args["address"].to<addr_t>();
+			const auto method = args["method"].to<std::string>();
+			const auto params = args["args"].to<std::vector<vnx::Variant>>();
+			const auto options = args["options"].to<spend_options_t>();
+			wallet->execute(index, address, method, params, options,
+				[this, request_id](std::shared_ptr<const Transaction> tx) {
+					respond(request_id, render(tx));
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "POST wallet/execute {...}");
 		}
 	}
 	else if(sub_path == "/wallet/offer") {
