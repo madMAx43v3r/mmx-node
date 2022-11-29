@@ -202,6 +202,10 @@ Vue.component('swap-trade', {
 	data() {
 		return {
 			data: null,
+			buy_amount: null,
+			buy_estimate: null,
+			sell_amount: null,
+			sell_estimate: null,
 			timer: null,
 			loading: false,
 		}
@@ -214,9 +218,28 @@ Vue.component('swap-trade', {
 					this.data = data;
 					this.loading = false;
 				});
+		},
+		buy_submit() {
+			// TODO
 		}
 	},
 	watch: {
+		buy_amount(value) {
+			this.buy_estimate = null;
+			fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=1' + '&amount=' + value)
+				.then(response => response.json())
+				.then(data => {
+					this.buy_estimate = data.trade_amount;
+				});
+		},
+		sell_amount(value) {
+			this.sell_estimate = null;
+			fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=0' + '&amount=' + value)
+				.then(response => response.json())
+				.then(data => {
+					this.sell_estimate = data.trade_amount;
+				});
+		}
 	},
 	created() {
 		this.update();
@@ -239,41 +262,76 @@ Vue.component('swap-trade', {
 					<v-skeleton-loader type="table-row-divider@2"/>
 				</div>
 
-				<template v-if="data">
-					<v-simple-table>
-						<thead>
-							<tr>
-								<th></th>
-								<th>Pool Balance</th>
-								<th>Symbol</th>
-								<th>Contract</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td class="key-cell">Token</td>
-								<td><b>{{ parseFloat( (data.balance[0].value).toPrecision(6) ) }}</b></td>
-								<td>{{data.symbols[0]}}</td>
-								<td>
-									<template v-if="data.symbols[0] != 'MMX'">
-										<router-link :to="'/explore/address/' + data.tokens[0]">{{data.tokens[0]}}</router-link>
-									</template>
-								</td>
-							</tr>
-							<tr>
-								<td class="key-cell">Currency</td>
-								<td><b>{{ parseFloat( (data.balance[1].value).toPrecision(6) ) }}</b></td>
-								<td>{{data.symbols[1]}}</td>
-								<td>
-									<template v-if="data.symbols[1] != 'MMX'">
-										<router-link :to="'/explore/address/' + data.tokens[1]">{{data.tokens[1]}}</router-link>
-									</template>
-								</td>
-							</tr>
-						</tbody>
-					</v-simple-table>
-				</template>
+				<v-simple-table v-if="data">
+					<thead>
+						<tr>
+							<th></th>
+							<th>Pool Balance</th>
+							<th>Symbol</th>
+							<th>Contract</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="key-cell">Token</td>
+							<td><b>{{ parseFloat( (data.balance[0].value).toPrecision(6) ) }}</b></td>
+							<td>{{data.symbols[0]}}</td>
+							<td>
+								<template v-if="data.symbols[0] != 'MMX'">
+									<router-link :to="'/explore/address/' + data.tokens[0]">{{data.tokens[0]}}</router-link>
+								</template>
+							</td>
+						</tr>
+						<tr>
+							<td class="key-cell">Currency</td>
+							<td><b>{{ parseFloat( (data.balance[1].value).toPrecision(6) ) }}</b></td>
+							<td>{{data.symbols[1]}}</td>
+							<td>
+								<template v-if="data.symbols[1] != 'MMX'">
+									<router-link :to="'/explore/address/' + data.tokens[1]">{{data.tokens[1]}}</router-link>
+								</template>
+							</td>
+						</tr>
+					</tbody>
+				</v-simple-table>
 			</v-card>
+			
+			<v-container v-if="data">
+				<v-row>
+					<v-col>
+						<v-card class="my-2">
+							<v-card-text>
+								<v-text-field class="text-align-right"
+									v-model="buy_amount"
+									label="Buy Amount"
+									:suffix="data.symbols[1]">
+								</v-text-field>
+								<v-text-field class="text-align-right"
+									v-model="buy_estimate"
+									label="You receive (estimated)"
+									:suffix="data.symbols[0]" disabled>
+								</v-text-field>
+							</v-card-text>
+						</v-card>
+					</v-col>
+					<v-col>
+						<v-card class="my-2">
+							<v-card-text>
+								<v-text-field class="text-align-right"
+									v-model="sell_amount"
+									label="Sell Amount"
+									:suffix="data.symbols[0]">
+								</v-text-field>
+								<v-text-field class="text-align-right"
+									v-model="sell_estimate"
+									label="You receive (estimated)"
+									:suffix="data.symbols[1]" disabled>
+								</v-text-field>
+							</v-card-text>
+						</v-card>
+					</v-col>
+				</v-row>
+			</v-container>
 		</div>
 	`
 })

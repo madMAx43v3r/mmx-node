@@ -1416,11 +1416,20 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			const auto amount = vnx::from_string_value<uint64_t>(iter_amount->second);
 			node->get_swap_info(address,
 				[this, request_id, index, amount](const swap_info_t& info) {
-					vnx::Object out;
-					const auto trade_amount = info.get_trade_amount(index, amount);
-					out["price"] = index ? double(amount) / trade_amount : double(trade_amount) / amount;
-					out["trade_amount"] = trade_amount;
-					respond(request_id, render_value(out));
+					get_context({info.tokens[0], info.tokens[1]}, request_id,
+						[this, request_id, index, info, amount](std::shared_ptr<RenderContext> context) {
+							vnx::Object out;
+							const auto token = context->find_currency(info.tokens[index]);
+							const auto currency = context->find_currency(info.tokens[(index + 1) % 2]);
+							if(token && currency) {
+								const auto value = to_amount_exact(amount, token->decimals);
+								const auto trade_amount = info.get_trade_amount(index, value);
+								const auto trade_value = to_value(trade_amount, currency->decimals);
+								out["price"] = index ? value / trade_value : trade_value / value;
+								out["trade_amount"] = trade_value;
+							}
+							respond(request_id, render_value(out));
+					});
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
@@ -2198,7 +2207,11 @@ void WebAPI::get_context(	const std::unordered_set<addr_t>& addr_set, const vnx:
 			for(size_t i = 0; i < list.size() && i < values.size(); ++i) {
 				context->add_contract(list[i], values[i]);
 			}
-			callback(context);
+			try {
+				callback(context);
+			} catch(const std::exception& ex) {
+				respond_ex(request_id, ex);
+			}
 		},
 		std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 }
