@@ -206,6 +206,8 @@ Vue.component('swap-trade', {
 			buy_estimate: null,
 			sell_amount: null,
 			sell_estimate: null,
+			result: null,
+			error: null,
 			timer: null,
 			loading: false,
 		}
@@ -219,8 +221,20 @@ Vue.component('swap-trade', {
 					this.loading = false;
 				});
 		},
-		buy_submit() {
-			// TODO
+		submit(index, amount) {
+			const req = {};
+			req.wallet = this.wallet;
+			req.address = this.address;
+			req.index = index;
+			req.amount = parseFloat(amount);
+			fetch('/wapi/wallet/swap/trade', {body: JSON.stringify(req), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						response.json().then(data => this.result = data);
+					} else {
+						response.text().then(data => this.error = data);
+					}
+				});
 		}
 	},
 	watch: {
@@ -296,42 +310,46 @@ Vue.component('swap-trade', {
 				</v-simple-table>
 			</v-card>
 			
-			<v-container v-if="data">
-				<v-row>
-					<v-col>
-						<v-card class="my-2">
-							<v-card-text>
-								<v-text-field class="text-align-right"
-									v-model="buy_amount"
-									label="Buy Amount"
-									:suffix="data.symbols[1]">
-								</v-text-field>
-								<v-text-field class="text-align-right"
-									v-model="buy_estimate"
-									label="You receive (estimated)"
-									:suffix="data.symbols[0]" disabled>
-								</v-text-field>
-							</v-card-text>
-						</v-card>
-					</v-col>
-					<v-col>
-						<v-card class="my-2">
-							<v-card-text>
-								<v-text-field class="text-align-right"
-									v-model="sell_amount"
-									label="Sell Amount"
-									:suffix="data.symbols[0]">
-								</v-text-field>
-								<v-text-field class="text-align-right"
-									v-model="sell_estimate"
-									label="You receive (estimated)"
-									:suffix="data.symbols[1]" disabled>
-								</v-text-field>
-							</v-card-text>
-						</v-card>
-					</v-col>
-				</v-row>
-			</v-container>
+			<v-row v-if="data">
+				<v-col>
+					<v-card>
+						<v-card-text>
+							<v-text-field class="text-align-right"
+								v-model="buy_amount"
+								label="Buy Amount"
+								:suffix="data.symbols[1]">
+							</v-text-field>
+							<v-text-field class="text-align-right"
+								v-model="buy_estimate"
+								label="You receive (estimated)"
+								:suffix="data.symbols[0]" disabled>
+							</v-text-field>
+						</v-card-text>
+						<v-card-actions>
+							<v-btn @click="submit(1, buy_amount)">Buy</v-btn>
+						</v-card-actions>
+					</v-card>
+				</v-col>
+				<v-col>
+					<v-card>
+						<v-card-text>
+							<v-text-field class="text-align-right"
+								v-model="sell_amount"
+								label="Sell Amount"
+								:suffix="data.symbols[0]">
+							</v-text-field>
+							<v-text-field class="text-align-right"
+								v-model="sell_estimate"
+								label="You receive (estimated)"
+								:suffix="data.symbols[1]" disabled>
+							</v-text-field>
+						</v-card-text>
+						<v-card-actions>
+							<v-btn @click="submit(0, sell_amount)">Sell</v-btn>
+						</v-card-actions>
+					</v-card>
+				</v-col>
+			</v-row>
 		</div>
 	`
 })

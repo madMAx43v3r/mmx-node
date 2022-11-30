@@ -216,10 +216,11 @@ const SwapMarket = {
 }
 const SwapTrade = {
 	props: {
+		wallet: null,
 		address: null,
 	},
 	template: `
-		<swap-trade :address="address"></swap-trade>
+		<swap-trade :wallet="wallet" :address="address"></swap-trade>
 		`
 }
 

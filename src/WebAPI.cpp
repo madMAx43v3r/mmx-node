@@ -2027,16 +2027,34 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		if(request->payload.size()) {
 			vnx::Object args;
 			vnx::from_string(request->payload.as_string(), args);
-			const auto index = args["index"].to<uint32_t>();
 			const auto address = args["address"].to<addr_t>();
-			const auto currency = args["currency"].to<addr_t>();
-			const auto amount = args["amount"].to<uint64_t>();
-			const auto min_amount = args["min_amount"].to<vnx::optional<uint64_t>>();
-			const auto options = args["options"].to<spend_options_t>();
+			node->get_swap_info(address,
+				[this, request_id, address, args](const swap_info_t& info) {
+					get_context({info.tokens[0], info.tokens[1]}, request_id,
+						[this, request_id, address, args, info](std::shared_ptr<RenderContext> context) {
+							const auto wallet_i = args["wallet"].to<uint32_t>();
+							const auto index = args["index"].to<uint32_t>();
+							const auto value = args["amount"].to<double>();
+							const auto min_value = args["min_amount"].to<vnx::optional<double>>();
+							const auto options = args["options"].to<spend_options_t>();
 
-			wallet->swap_trade(index, address, amount, currency, min_amount, options,
-				[this, request_id](std::shared_ptr<const Transaction> tx) {
-					respond(request_id, render(tx));
+							const auto token_i = context->find_currency(info.tokens[index % 2]);
+							const auto token_k = context->find_currency(info.tokens[(index + 1) % 2]);
+							if(!token_i || !token_k) {
+								throw std::logic_error("invalid token or currency");
+							}
+							const auto amount = to_amount_exact(value, token_i->decimals);
+
+							vnx::optional<uint64_t> min_amount;
+							if(min_value) {
+								min_amount = to_amount(min_value, token_k->decimals);
+							}
+							wallet->swap_trade(wallet_i, address, amount, info.tokens[index % 2], min_amount, options,
+								[this, request_id](std::shared_ptr<const Transaction> tx) {
+									respond(request_id, render(tx));
+								},
+								std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+						});
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
