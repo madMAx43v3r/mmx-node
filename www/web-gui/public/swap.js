@@ -335,8 +335,8 @@ Vue.component('swap-user-info', {
 				<thead>
 					<tr>
 						<th></th>
-						<th>Balance</th>
-						<th>Liquidity</th>
+						<th>Your Balance</th>
+						<th>Your Liquidity</th>
 						<th>Fees Earned</th>
 						<th>Symbol</th>
 						<th>Unlock Height</th>
