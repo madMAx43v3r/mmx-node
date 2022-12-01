@@ -336,11 +336,10 @@ Vue.component('swap-user-info', {
 					<tr>
 						<th></th>
 						<th>Balance</th>
-						<th>Equivalent</th>
+						<th>Liquidity</th>
 						<th>Fees Earned</th>
 						<th>Symbol</th>
-						<th>Contract</th>
-						<th>Unlock</th>
+						<th>Unlock Height</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -350,11 +349,6 @@ Vue.component('swap-user-info', {
 						<td>{{ parseFloat( (data.remove_amount[0].value).toPrecision(6) ) }}</td>
 						<td>{{ parseFloat( (data.fees_earned[0].value).toPrecision(6) ) }}</td>
 						<td>{{data.symbols[0]}}</td>
-						<td>
-							<template v-if="data.symbols[0] != 'MMX'">
-								<router-link :to="'/explore/address/' + data.tokens[0]">{{data.tokens[0]}}</router-link>
-							</template>
-						</td>
 						<td>{{data.unlock_height}}</td>
 					</tr>
 					<tr>
@@ -363,11 +357,6 @@ Vue.component('swap-user-info', {
 						<td>{{ parseFloat( (data.remove_amount[1].value).toPrecision(6) ) }}</td>
 						<td>{{ parseFloat( (data.fees_earned[1].value).toPrecision(6) ) }}</td>
 						<td>{{data.symbols[1]}}</td>
-						<td>
-							<template v-if="data.symbols[1] != 'MMX'">
-								<router-link :to="'/explore/address/' + data.tokens[1]">{{data.tokens[1]}}</router-link>
-							</template>
-						</td>
 						<td>{{data.unlock_height}}</td>
 					</tr>
 				</tbody>

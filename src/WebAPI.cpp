@@ -6,7 +6,6 @@
  */
 
 #include <mmx/WebAPI.h>
-//#include <mmx/exchange/trade_pair_t.hpp>
 #include <mmx/uint128.hpp>
 #include <mmx/mnemonic.h>
 #include <mmx/utils.h>
@@ -1399,7 +1398,6 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 								[this, request_id, info, context](const swap_user_info_t& user_info) {
 									vnx::Object out;
 									std::vector<std::string> symbols(2);
-									std::vector<int> decimals(2);
 									std::vector<vnx::Object> balance(2);
 									std::vector<vnx::Object> fees_earned(2);
 									std::vector<vnx::Object> remove_amount(2);
@@ -1408,7 +1406,6 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 									for(int i = 0; i < 2; ++i) {
 										if(auto token = context->find_currency(info.tokens[i])) {
 											symbols[i] = token->symbol;
-											decimals[i] = token->decimals;
 											balance[i] = to_amount_object(user_info.balance[i], token->decimals);
 											fees_earned[i] = to_amount_object(fees_earned_[i], token->decimals);
 											remove_amount[i] = to_amount_object(remove_amount_[i], token->decimals);
@@ -1416,7 +1413,6 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 									}
 									out["tokens"] = render_value(info.tokens);
 									out["symbols"] = symbols;
-									out["decimals"] = decimals;
 									out["balance"] = balance;
 									out["fees_earned"] = fees_earned;
 									out["remove_amount"] = remove_amount;
