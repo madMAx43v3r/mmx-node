@@ -135,8 +135,8 @@ Vue.component('market-menu', {
 				</v-card>
 
 				<v-tabs>
-					<v-tab :to="'/market/offers/' + this.wallet + '/' + this.bid + '/' + this.ask">{{ $t('market_menu.offers') }}</v-tab>
-					<v-tab :to="'/market/history/' + this.wallet + '/' + this.bid + '/' + this.ask">History</v-tab>
+					<v-tab :to="'/market/offers/' + wallet + '/' + bid + '/' + ask">{{ $t('market_menu.offers') }}</v-tab>
+					<v-tab :to="'/market/history/' + wallet + '/' + bid + '/' + ask">History</v-tab>
 				</v-tabs>
 			</div>
 
