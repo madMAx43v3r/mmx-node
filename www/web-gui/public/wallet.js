@@ -803,7 +803,7 @@ Vue.component('account-plots', {
 			dialog_mode: null,
 			dialog_owner: null,
 			dialog_address: null,
-			dialog_amount: 0,
+			dialog_amount: null,
 		}
 	},
 	computed: {
@@ -956,7 +956,7 @@ Vue.component('account-plots', {
 						</v-card-text>
 						<v-card-actions>
 							<v-spacer></v-spacer>
-							<v-btn @click="submit()" color="primary">{{dialog_mode}}</v-btn>
+							<v-btn @click="submit()" color="primary" :disabled="!(dialog_amount > 0)">{{dialog_mode}}</v-btn>
 							<v-btn @click="dialog.value = false">Abort</v-btn>
 						</v-card-actions>
 					</v-card>
