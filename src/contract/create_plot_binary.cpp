@@ -56,6 +56,15 @@ int main(int argc, char** argv)
 	}
 	{
 		mmx::contract::method_t method;
+		method.name = "deposit";
+		method.is_public = true;
+		method.is_payable = true;
+		method.entry_point = code.size();
+		code.emplace_back(vm::OP_RET);
+		bin->methods[method.name] = method;
+	}
+	{
+		mmx::contract::method_t method;
 		method.name = "withdraw";
 		method.args = {"amount"};
 		method.is_public = true;
