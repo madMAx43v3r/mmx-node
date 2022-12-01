@@ -1637,7 +1637,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::vector<vnx::Object> res;
 				for(const auto& entry : map) {
 					if(auto contract = entry.second) {
-						auto tmp = render(*contract, context);
+						auto tmp = render_object(contract, context);
 						tmp["address"] = entry.first.to_string();
 						res.push_back(tmp);
 					}

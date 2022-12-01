@@ -683,7 +683,7 @@ Vue.component('account-contracts', {
 					this.loading = false;
 					this.data = data;
 					this.contractFilter = Array.from(Array(data.length).keys())
-					this.contractFilterValues = data.map(item => item[1].__type).filter((value, index, self) => self.indexOf(value) === index)
+					this.contractFilterValues = data.map(item => item.__type).filter((value, index, self) => self.indexOf(value) === index)
 				});
 		}
 	},
