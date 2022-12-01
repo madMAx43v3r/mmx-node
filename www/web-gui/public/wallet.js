@@ -1709,23 +1709,6 @@ Vue.component('account-offer-form', {
 		bid_amount(value) {
 			// TODO: validate
 		},
-		ask_currency(value) {
-			if(value && value !== MMX_ADDR) {
-				fetch('/wapi/contract?id=' + value)
-					.then(response => {
-						if(response.ok) {
-							response.json()
-								.then(data => {
-									this.ask_symbol = data.symbol;
-								});
-						} else {
-							this.ask_symbol = "???";
-						}
-					});
-			} else {
-				this.ask_symbol = "MMX";
-			}
-		},
 		result(value) {
 			if(value) {
 				this.error = null;
@@ -1772,14 +1755,6 @@ Vue.component('account-offer-form', {
 								:label="$t('account_offer_form.receive_amount')"
 								placeholder="1.23"
 								v-model.number="ask_amount"	
-							></v-text-field>
-						</v-col>
-						<v-col cols="1">
-							<v-text-field
-								:label="$t('account_offer_form.symbol')"
-								placeholder="1.23"
-								v-model="ask_symbol"
-								disabled
 							></v-text-field>
 						</v-col>
 						<v-col>
