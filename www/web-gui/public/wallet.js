@@ -1760,7 +1760,7 @@ Vue.component('account-offer-form', {
 						<v-col>
 							<v-select
 								v-model="ask_currency"
-								:label="$t('account_offer_form.receive_currency_contract')"
+								label="Receive Currency"
 								:items="tokens" 
 								item-text="currency"
 								item-value="currency">
