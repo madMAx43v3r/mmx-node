@@ -1321,9 +1321,13 @@ std::vector<swap_entry_t> Node::get_swap_history(const addr_t& address, const in
 			}
 		} else if(entry.method == "add_liquid" || entry.method == "rem_liquid") {
 			out.type = (entry.method == "add_liquid") ? "ADD" : "REMOVE";
-			if(entry.deposit && entry.args.size() >= 1) {
+			if(entry.args.size() >= 1) {
 				out.index = entry.args[0].to<uint32_t>();
-				out.amount = entry.deposit->second;
+				if(entry.deposit) {
+					out.amount = entry.deposit->second;
+				} else if(entry.args.size() >= 2) {
+					out.amount = entry.args[1].to<uint64_t>();
+				}
 			}
 		} else if(entry.method == "payout") {
 			out.type = "PAYOUT";
