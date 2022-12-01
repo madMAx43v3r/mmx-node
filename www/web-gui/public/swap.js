@@ -291,6 +291,9 @@ Vue.component('swap-user-info', {
 		address: String,
 		user: String
 	},
+	emits: [
+		"user-update"
+	],
 	data() {
 		return {
 			data: null,
@@ -305,12 +308,13 @@ Vue.component('swap-user-info', {
 				.then(data => {
 					this.data = data;
 					this.loading = false;
+					this.$emit('user-update', data);
 				});
 		}
 	},
 	watch: {
-		user() {
-			update();
+		user(value) {
+			this.update();
 		}
 	},
 	created() {
@@ -331,7 +335,9 @@ Vue.component('swap-user-info', {
 				<thead>
 					<tr>
 						<th></th>
-						<th>User Balance</th>
+						<th>Balance</th>
+						<th>Equivalent</th>
+						<th>Fees Earned</th>
 						<th>Symbol</th>
 						<th>Contract</th>
 						<th>Unlock</th>
@@ -341,6 +347,8 @@ Vue.component('swap-user-info', {
 					<tr>
 						<td class="key-cell">Token</td>
 						<td><b>{{ parseFloat( (data.balance[0].value).toPrecision(6) ) }}</b></td>
+						<td>{{ parseFloat( (data.remove_amount[0].value).toPrecision(6) ) }}</td>
+						<td>{{ parseFloat( (data.fees_earned[0].value).toPrecision(6) ) }}</td>
 						<td>{{data.symbols[0]}}</td>
 						<td>
 							<template v-if="data.symbols[0] != 'MMX'">
@@ -352,6 +360,8 @@ Vue.component('swap-user-info', {
 					<tr>
 						<td class="key-cell">Currency</td>
 						<td><b>{{ parseFloat( (data.balance[1].value).toPrecision(6) ) }}</b></td>
+						<td>{{ parseFloat( (data.remove_amount[1].value).toPrecision(6) ) }}</td>
+						<td>{{ parseFloat( (data.fees_earned[1].value).toPrecision(6) ) }}</td>
 						<td>{{data.symbols[1]}}</td>
 						<td>
 							<template v-if="data.symbols[1] != 'MMX'">
@@ -408,24 +418,30 @@ Vue.component('swap-trade', {
 						});
 					}
 				});
+			this.buy_amount = null;
+			this.sell_amount = null;
 		}
 	},
 	watch: {
 		buy_amount(value) {
 			this.buy_estimate = null;
-			fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=1' + '&amount=' + value)
-				.then(response => response.json())
-				.then(data => {
-					this.buy_estimate = data.trade_amount;
-				});
+			if(value > 0) {
+				fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=1' + '&amount=' + value)
+					.then(response => response.json())
+					.then(data => {
+						this.buy_estimate = data.trade_amount;
+					});
+			}
 		},
 		sell_amount(value) {
 			this.sell_estimate = null;
-			fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=0' + '&amount=' + value)
-				.then(response => response.json())
-				.then(data => {
-					this.sell_estimate = data.trade_amount;
-				});
+			if(value > 0) {
+				fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=0' + '&amount=' + value)
+					.then(response => response.json())
+					.then(data => {
+						this.sell_estimate = data.trade_amount;
+					});
+			}
 		}
 	},
 	created() {
@@ -453,7 +469,7 @@ Vue.component('swap-trade', {
 							</v-text-field>
 						</v-card-text>
 						<v-card-actions>
-							<v-btn color="green" @click="submit(1, buy_amount)">Buy</v-btn>
+							<v-btn color="green" @click="submit(1, buy_amount)" :disabled="!(buy_amount > 0)">Buy</v-btn>
 						</v-card-actions>
 					</v-card>
 				</v-col>
@@ -472,7 +488,7 @@ Vue.component('swap-trade', {
 							</v-text-field>
 						</v-card-text>
 						<v-card-actions>
-							<v-btn color="red" @click="submit(0, sell_amount)">Sell</v-btn>
+							<v-btn color="red" @click="submit(0, sell_amount)" :disabled="!(sell_amount > 0)">Sell</v-btn>
 						</v-card-actions>
 					</v-card>
 				</v-col>
@@ -511,6 +527,7 @@ Vue.component('swap-liquid', {
 	data() {
 		return {
 			data: null,
+			user: null,
 			user_address: null,
 			amount_0: null,
 			amount_1: null,
@@ -520,17 +537,45 @@ Vue.component('swap-liquid', {
 	},
 	methods: {
 		update() {
+			if(this.wallet != null) {
+				this.update_user();
+			}
 			fetch('/wapi/swap/info?id=' + this.address)
 				.then(response => response.json())
 				.then(data => this.data = data);
+		},
+		update_user() {
+			fetch('/wapi/wallet/address?index=' + this.wallet)
+				.then(response => response.json())
+				.then(data => this.user_address = data[0]);
 		},
 		submit(mode) {
 			const req = {};
 			req.index = this.wallet;
 			req.address = this.address;
-			req.amount = [	parseFloat(amount_0) * Math.pow(10, data.decimals[0]),
-							parseFloat(amount_1) * Math.pow(10, data.decimals[1])];
-			fetch('/api/wallet/swap_' + (mode ? "add" : "rem") + "_liquid", {body: JSON.stringify(req), method: "post"})
+			req.amount = [parseFloat(this.amount_0), parseFloat(this.amount_1)];
+			fetch('/wapi/wallet/swap/' + (mode ? "add" : "rem") + "_liquid", {body: JSON.stringify(req), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						response.json().then(data => {
+							this.result = data;
+							this.error = null;
+						});
+					} else {
+						response.text().then(data => {
+							this.result = null;
+							this.error = data;
+						});
+					}
+				});
+			this.amount_0 = null;
+			this.amount_1 = null;
+		},
+		payout() {
+			const req = {};
+			req.index = this.wallet;
+			req.address = this.address;
+			fetch('/wapi/wallet/swap/payout', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
 						response.json().then(data => {
@@ -547,10 +592,8 @@ Vue.component('swap-liquid', {
 		}
 	},
 	watch: {
-		wallet(value) {
-			fetch('/wapi/wallet/address?index=' + value)
-				.then(response => response.json())
-				.then(data => this.user_address = data[0]);
+		wallet() {
+			this.update_user();
 		}
 	},
 	created() {
@@ -562,7 +605,7 @@ Vue.component('swap-liquid', {
 	},
 	template: `
 		<div>
-			<swap-user-info v-if="user_address" :address="address" :user="user_address"></swap-user-info>
+			<swap-user-info v-if="user_address" :address="address" :user="user_address" @user-update="arg => this.user = arg"></swap-user-info>
 			
 			<v-card v-if="data" class="my-2">
 				<v-card-text>
@@ -578,8 +621,9 @@ Vue.component('swap-liquid', {
 					</v-text-field>
 				</v-card-text>
 				<v-card-actions>
-					<v-btn color="green" @click="submit(true)">Add Liquidity</v-btn>
-					<v-btn color="red" @click="submit(false)">Remove Liquidity</v-btn>
+					<v-btn color="green" @click="submit(true)" :disabled="!(amount_0 || amount_1)">Add Liquidity</v-btn>
+					<v-btn color="red" @click="submit(false)" :disabled="!(amount_0 || amount_1)">Remove Liquidity</v-btn>
+					<v-btn @click="payout()" :disabled="!user || !(user.fees_earned[0].amount || user.fees_earned[1].amount)">Payout</v-btn>
 				</v-card-actions>
 			</v-card>
 			

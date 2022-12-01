@@ -1403,6 +1403,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 											remove_amount[i] = to_amount_object(remove_amount_[i], token->decimals);
 										}
 									}
+									out["tokens"] = render_value(info.tokens);
 									out["symbols"] = symbols;
 									out["decimals"] = decimals;
 									out["balance"] = balance;
@@ -2073,6 +2074,69 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
 			respond_status(request_id, 404, "POST wallet/swap/trade {...}");
+		}
+	}
+	else if(sub_path == "/wallet/swap/add_liquid" || sub_path == "/wallet/swap/rem_liquid") {
+		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
+		if(request->payload.size()) {
+			vnx::Object args;
+			vnx::from_string(request->payload.as_string(), args);
+			const auto address = args["address"].to<addr_t>();
+			const auto mode = (sub_path == "/wallet/swap/add_liquid");
+			node->get_swap_info(address,
+				[this, request_id, mode, address, args](const swap_info_t& info) {
+					get_context({info.tokens[0], info.tokens[1]}, request_id,
+						[this, request_id, mode, address, args, info](std::shared_ptr<RenderContext> context) {
+							const auto index = args["index"].to<uint32_t>();
+							const auto value = args["amount"].to<std::array<double, 2>>();
+							const auto options = args["options"].to<spend_options_t>();
+
+							std::array<uint64_t, 2> amount = {};
+							for(int i = 0; i < 2; ++i) {
+								if(const auto token = context->find_currency(info.tokens[i])) {
+									amount[i] = to_amount_exact(value[i], token->decimals);
+								}
+							}
+							const auto callback =
+								[this, request_id](std::shared_ptr<const Transaction> tx) {
+									respond(request_id, render(tx));
+								};
+							if(mode) {
+								wallet->swap_add_liquid(index, address, amount, options, callback,
+									std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+							} else {
+								wallet->swap_rem_liquid(index, address, amount, options, callback,
+									std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+							}
+						});
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "POST wallet/swap/[add/rem]_liquid {...}");
+		}
+	}
+	else if(sub_path == "/wallet/swap/payout") {
+		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
+		if(request->payload.size()) {
+			vnx::Object args;
+			vnx::from_string(request->payload.as_string(), args);
+			const auto index = args["index"].to<uint32_t>();
+			const auto offset = args["offset"].to<uint32_t>();
+			const auto address = args["address"].to<addr_t>();
+			const auto options = args["options"].to<spend_options_t>();
+			wallet->get_address(index, offset,
+				[this, request_id, index, address, options](const addr_t& user) {
+					auto options_ = options;
+					options_.user = user;
+					wallet->execute(index, address, "payout", {}, options_,
+						[this, request_id](std::shared_ptr<const Transaction> tx) {
+							respond(request_id, render(tx));
+						},
+						std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "POST wallet/swap/payout {...}");
 		}
 	}
 	else if(sub_path == "/farmer/info") {

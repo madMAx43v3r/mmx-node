@@ -1271,14 +1271,15 @@ swap_user_info_t Node::get_swap_user_info(const addr_t& address, const addr_t& u
 	if(!swap_users_addr) {
 		throw std::logic_error("no swaps");
 	}
+	swap_user_info_t out;
+
 	const auto key = storage->lookup(address, vm::uint_t(user.to_uint256()));
 	const auto user_ref = storage->read(address, *swap_users_addr, key);
 	if(!user_ref) {
-		throw std::logic_error("no such user or swap");
+		return out;
 	}
 	auto data = read_storage_object(address, to_ref(user_ref.get()));
 
-	swap_user_info_t out;
 	out.unlock_height = to_uint(data["unlock_height"]);
 	const auto balance = read_storage_array(address, to_ref(data["balance"]));
 	const auto last_user_total = read_storage_array(address, to_ref(data["last_user_total"]));
