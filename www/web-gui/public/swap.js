@@ -194,22 +194,28 @@ Vue.component('swap-list', {
 		`
 })
 
-Vue.component('swap-trade', {
+Vue.component('swap-sub-menu', {
 	props: {
-		address: String,
-		wallet: null
+		address: String
+	},
+	template: `
+		<v-tabs>
+			<v-tab :to="'/swap/trade/' + address">Trade</v-tab>
+			<v-tab :to="'/swap/history/' + address">History</v-tab>
+			<v-tab :to="'/swap/liquid/' + address">Liquidity</v-tab>
+		</v-tabs>
+	`
+})
+
+Vue.component('swap-info', {
+	props: {
+		address: String
 	},
 	data() {
 		return {
 			data: null,
-			buy_amount: null,
-			buy_estimate: null,
-			sell_amount: null,
-			sell_estimate: null,
-			result: null,
-			error: null,
 			timer: null,
-			loading: false,
+			loading: true,
 		}
 	},
 	methods: {
@@ -219,45 +225,6 @@ Vue.component('swap-trade', {
 				.then(data => {
 					this.data = data;
 					this.loading = false;
-				});
-		},
-		submit(index, amount) {
-			const req = {};
-			req.wallet = this.wallet;
-			req.address = this.address;
-			req.index = index;
-			req.amount = parseFloat(amount);
-			fetch('/wapi/wallet/swap/trade', {body: JSON.stringify(req), method: "post"})
-				.then(response => {
-					if(response.ok) {
-						response.json().then(data => {
-							this.result = data;
-							this.error = null;
-						});
-					} else {
-						response.text().then(data => {
-							this.result = null;
-							this.error = data;
-						});
-					}
-				});
-		}
-	},
-	watch: {
-		buy_amount(value) {
-			this.buy_estimate = null;
-			fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=1' + '&amount=' + value)
-				.then(response => response.json())
-				.then(data => {
-					this.buy_estimate = data.trade_amount;
-				});
-		},
-		sell_amount(value) {
-			this.sell_estimate = null;
-			fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=0' + '&amount=' + value)
-				.then(response => response.json())
-				.then(data => {
-					this.sell_estimate = data.trade_amount;
 				});
 		}
 	},
@@ -269,7 +236,7 @@ Vue.component('swap-trade', {
 		clearInterval(this.timer);
 	},
 	template: `
-		<div class="my-2">
+		<div>
 			<template v-if="data">
 				<v-chip label>Swap</v-chip>
 				<v-chip label>{{parseFloat((data.price).toPrecision(6))}}&nbsp; {{data.symbols[1]}} / {{data.symbols[0]}}</v-chip>
@@ -315,7 +282,81 @@ Vue.component('swap-trade', {
 					</tbody>
 				</v-simple-table>
 			</v-card>
-			
+		</div>
+	`
+})
+
+Vue.component('swap-trade', {
+	props: {
+		address: String,
+		wallet: null
+	},
+	data() {
+		return {
+			data: null,
+			buy_amount: null,
+			buy_estimate: null,
+			sell_amount: null,
+			sell_estimate: null,
+			result: null,
+			error: null,
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/swap/info?id=' + this.address)
+				.then(response => response.json())
+				.then(data => this.data = data);
+		},
+		submit(index, amount) {
+			const req = {};
+			req.wallet = this.wallet;
+			req.address = this.address;
+			req.index = index;
+			req.amount = parseFloat(amount);
+			fetch('/wapi/wallet/swap/trade', {body: JSON.stringify(req), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						response.json().then(data => {
+							this.result = data;
+							this.error = null;
+						});
+					} else {
+						response.text().then(data => {
+							this.result = null;
+							this.error = data;
+						});
+					}
+				});
+		}
+	},
+	watch: {
+		buy_amount(value) {
+			this.buy_estimate = null;
+			fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=1' + '&amount=' + value)
+				.then(response => response.json())
+				.then(data => {
+					this.buy_estimate = data.trade_amount;
+				});
+		},
+		sell_amount(value) {
+			this.sell_estimate = null;
+			fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=0' + '&amount=' + value)
+				.then(response => response.json())
+				.then(data => {
+					this.sell_estimate = data.trade_amount;
+				});
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 30000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<div>
 			<v-row v-if="data">
 				<v-col>
 					<v-card>

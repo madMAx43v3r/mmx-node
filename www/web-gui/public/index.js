@@ -201,7 +201,13 @@ const Swap = {
 		<v-card>
 			<v-card-text>
 				<wallet-menu @wallet-select="(i) => wallet=i"></wallet-menu>
-				<router-view :address="address" :wallet="wallet"></router-view>
+				<template v-if="address">
+					<swap-info :address="address"></swap-info>
+					<swap-sub-menu :address="address"></swap-sub-menu>
+				</template>
+				<div class="my-2">
+					<router-view :address="address" :wallet="wallet"></router-view>
+				</div>
 			</v-card-text>
 		</v-card>
 		`
