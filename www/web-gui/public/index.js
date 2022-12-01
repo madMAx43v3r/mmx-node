@@ -116,7 +116,12 @@ const AccountPlots = {
 		index: Number
 	},
 	template: `
-		<account-plots :index="index"></account-plots>
+		<div>
+			<router-link :to="'/wallet/account/' + index + '/create/virtualplot'">
+				<v-btn outlined>New Plot</v-btn>
+			</router-link>
+			<account-plots class="my-2" :index="index"></account-plots>
+		</div>
 	`
 }
 const AccountLiquid = {
