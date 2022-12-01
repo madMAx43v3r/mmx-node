@@ -1296,6 +1296,52 @@ swap_user_info_t Node::get_swap_user_info(const addr_t& address, const addr_t& u
 	return out;
 }
 
+std::vector<swap_entry_t> Node::get_swap_history(const addr_t& address, const int32_t& limit) const
+{
+	const auto info = get_swap_info(address);
+	std::array<std::shared_ptr<const contract::TokenBase>, 2> tokens;
+	for(int i = 0; i < 2; ++i) {
+		tokens[i] = get_contract_as<const contract::TokenBase>(info.tokens[i]);
+	}
+
+	std::vector<swap_entry_t> result;
+	for(const auto& entry : get_exec_history(address, limit, true)) {
+		swap_entry_t out;
+		out.height = entry.height;
+		out.txid = entry.txid;
+		out.user = entry.user;
+		out.index = -1;
+		if(entry.method == "trade") {
+			if(entry.deposit && entry.args.size() >= 2) {
+				const auto index = entry.args[0].to<uint32_t>();
+				out.type = (index ? "BUY" : "SELL");
+				out.index = index;
+				out.amount = entry.deposit->second;
+				out.user = entry.args[1].to<addr_t>();
+			}
+		} else if(entry.method == "add_liquid" || entry.method == "rem_liquid") {
+			out.type = (entry.method == "add_liquid") ? "ADD" : "REMOVE";
+			if(entry.deposit && entry.args.size() >= 1) {
+				out.index = entry.args[0].to<uint32_t>();
+				out.amount = entry.deposit->second;
+			}
+		} else if(entry.method == "payout") {
+			out.type = "PAYOUT";
+		}
+		if(out.index < 2) {
+			if(auto token = tokens[out.index]) {
+				out.value = to_value(out.amount, token->decimals);
+				out.symbol = token->symbol;
+			} else if(info.tokens[out.index] == addr_t()) {
+				out.value = to_value(out.amount, params->decimals);
+				out.symbol = "MMX";
+			}
+		}
+		result.push_back(out);
+	}
+	return result;
+}
+
 std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>> Node::get_swap_liquidity_by(const std::vector<addr_t>& addresses) const
 {
 	std::map<addr_t, std::array<uint128, 2>> swaps;
@@ -2057,6 +2103,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 				entry.txid = tx->id;
 				entry.method = exec->method;
 				entry.args = exec->args;
+				entry.user = exec->user;
 				auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(exec);
 				if(deposit) {
 					entry.deposit = std::make_pair(deposit->currency, deposit->amount);

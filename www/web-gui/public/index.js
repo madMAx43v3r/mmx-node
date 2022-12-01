@@ -119,6 +119,14 @@ const AccountPlots = {
 		<account-plots :index="index"></account-plots>
 	`
 }
+const AccountLiquid = {
+	props: {
+		index: Number
+	},
+	template: `
+		<account-liquid :index="index" :limit="1000"></account-liquid>
+	`
+}
 const AccountDetails = {
 	props: {
 		index: Number
@@ -234,7 +242,7 @@ const SwapHistory = {
 		address: null
 	},
 	template: `
-		<div>TODO</div>
+		<swap-history :address="address" :limit="200"></swap-history>
 		`
 }
 const SwapLiquid = {

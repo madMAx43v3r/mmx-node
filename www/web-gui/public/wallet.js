@@ -48,6 +48,7 @@ Vue.component('account-menu', {
 			<v-btn :to="'/wallet/account/' + index + '/history'">{{ $t('account_menu.history') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/log'">{{ $t('account_menu.log') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/plots'">Plots</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/liquid'">Liquid</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/details'">{{ $t('account_menu.details') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/options'"><v-icon>mdi-cog</v-icon></v-btn>
 		</v-btn-toggle>
@@ -844,7 +845,7 @@ Vue.component('account-plots', {
 			if(this.dialog_mode == "Deposit") {
 				url = "/wapi/wallet/send";
 				req.currency = null;
-				req.amount = 1 * this.dialog_amount;
+				req.amount = parseFloat(this.dialog_amount);
 				req.dst_addr = this.dialog_address;
 			} else {
 				url = "/wapi/wallet/execute";
@@ -961,7 +962,7 @@ Vue.component('account-plots', {
 		`
 })
 
-Vue.component('account-swap-liquid', {
+Vue.component('account-liquid', {
 	props: {
 		index: Number,
 		limit: Number
@@ -976,7 +977,7 @@ Vue.component('account-swap-liquid', {
 		headers() {
 			return [
 				{ text: "Balance", value: 'balance' },
-				{ text: "Size", value: 'size_bytes' },
+				{ text: "Symbol", value: 'symbol' },
 				{ text: "Address", value: 'address' },
 				{ text: "", value: 'actions' },
 			]
@@ -984,85 +985,19 @@ Vue.component('account-swap-liquid', {
 	},
 	methods: {
 		update() {
-			fetch('/wapi/wallet/plots?index=' + this.index)
+			fetch('/wapi/wallet/swap/liquid?index=' + this.index)
 				.then(response => response.json())
 				.then(data => {
 					this.loading = false;
 					this.data = data;
 				});
 		},
-		deposit(address, owner) {
-			this.dialog_mode = "Deposit";
-			this.dialog_owner = owner;
-			this.dialog_address = address;
-			this.dialog = true;
-		},
-		withdraw(address, owner) {
-			this.dialog_mode = "Withdraw";
-			this.dialog_owner = owner;
-			this.dialog_address = address;
-			this.dialog = true;
-		},
-		submit() {
-			let url = "";
-			const req = {};
-			req.index = this.index;
-			req.options = {user: this.dialog_owner};
-			if(this.dialog_mode == "Deposit") {
-				url = "/wapi/wallet/send";
-				req.currency = null;
-				req.amount = 1 * this.dialog_amount;
-				req.dst_addr = this.dialog_address;
-			} else {
-				url = "/wapi/wallet/execute";
-				req.address = this.dialog_address;
-				req.method = "withdraw";
-				req.args = [this.dialog_amount * 1e6];
-			}
-			fetch(url, {body: JSON.stringify(req), method: "post"})
-				.then(response => {
-					if(response.ok) {
-						response.json().then(data => {
-							this.result = data;
-							this.error = null;
-						});
-					} else {
-						response.text().then(data => {
-							this.result = null;
-							this.error = data;
-						});
-					}
-				});
-			this.dialog = false;
-		}
 	},
 	created() {
 		this.update()
 	},
 	template: `
 		<div>
-			<v-alert
-				border="left"
-				colored-border
-				type="success"
-				elevation="2"
-				v-if="result"
-				class="my-2"
-			>
-				{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result.id">{{result.id}}</router-link>
-			</v-alert>
-
-			<v-alert
-				border="left"
-				colored-border
-				type="error"
-				elevation="2"
-				v-if="error"
-				class="my-2"
-			>
-				{{ $t('common.failed_with') }}: <b>{{error}}</b>
-			</v-alert>
-			
 			<v-data-table
 				:headers="headers"
 				:items="data"
@@ -1078,52 +1013,28 @@ Vue.component('account-swap-liquid', {
 				</template>
 				
 				<template v-slot:item.balance="{ item }">
-					<b>{{item.balance.value}}</b>&nbsp;&nbsp;MMX
+					<b>{{item.balance.value}}</b>
 				</template>
 				
-				<template v-slot:item.size_bytes="{ item }">
-					<b>{{(item.size_bytes / Math.pow(1000,4)).toFixed(2)}}</b>&nbsp;&nbsp;TB
+				<template v-slot:item.symbol="{ item }">
+					<template v-if="item.symbol != 'MMX'">
+						<router-link :to="'/explore/address/' + item.currency">{{item.symbol}}</router-link>
+					</template>
+					<template v-else>
+						{{item.symbol}}
+					</template>
 				</template>
 				
 				<template v-slot:item.address="{ item }">
-					<router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link>
+					<router-link :to="'/swap/trade/' + item.address">{{item.address}}</router-link>
 				</template>
 				
 				<template v-slot:item.actions="{ item }">
-					<v-btn @click="deposit(item.address, item.owner)" outlined>Deposit</v-btn>
-					<v-btn @click="withdraw(item.address, item.owner)" outlined>Withdraw</v-btn>
+					<router-link :to="'/swap/liquid/' + item.address">
+						<v-btn outlined>Manage</v-btn>
+					</router-link>
 				</template>
 			</v-data-table>
-			
-			<v-dialog v-model="dialog" max-width="1000">
-				<template v-slot:default="dialog">
-					<v-card>
-						<v-toolbar color="primary"></v-toolbar>
-						<v-card-title>{{dialog_mode}} {{dialog_mode == "Deposit" ? "to" : "from"}} {{dialog_address}}</v-card-title>
-						<v-card-text class="pb-0">
-							<v-text-field
-								v-model="dialog_amount"
-								label="Amount (MMX)">
-							</v-text-field>
-							<v-alert
-								border="left"
-								colored-border
-								type="error"
-								elevation="2"
-								v-if="dialog_mode == 'Withdraw'"
-								class="my-2"
-							>
-								Only 90% of the amount will be returned, the rest is burned.
-							</v-alert>
-						</v-card-text>
-						<v-card-actions>
-							<v-spacer></v-spacer>
-							<v-btn @click="submit()" color="primary">{{dialog_mode}}</v-btn>
-							<v-btn @click="dialog.value = false">Abort</v-btn>
-						</v-card-actions>
-					</v-card>
-				</template>
-			</v-dialog>
 		</div>
 		`
 })

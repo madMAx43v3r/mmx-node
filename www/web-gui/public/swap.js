@@ -179,7 +179,7 @@ Vue.component('swap-list', {
 										</router-link>
 									</template>
 								</td>
-								<td><b>{{ parseFloat( (item.price).toPrecision(6) ) }}</b>&nbsp; {{item.symbols[1]}} / {{item.symbols[0]}}</td>
+								<td><b>{{ item.price ? parseFloat( (item.price).toPrecision(6) ) : "N/A" }}</b>&nbsp; {{item.symbols[1]}} / {{item.symbols[0]}}</td>
 								<td><b>{{ parseFloat( (item.balance[0].value).toPrecision(6) ) }}</b>&nbsp; {{item.symbols[0]}}</td>
 								<td><b>{{ parseFloat( (item.balance[1].value).toPrecision(6) ) }}</b>&nbsp; {{item.symbols[1]}}</td>
 								<td><router-link :to="'/swap/trade/' + item.address">
@@ -239,7 +239,7 @@ Vue.component('swap-info', {
 		<div>
 			<template v-if="data">
 				<v-chip label>Swap</v-chip>
-				<v-chip label>{{parseFloat((data.price).toPrecision(6))}}&nbsp; {{data.symbols[1]}} / {{data.symbols[0]}}</v-chip>
+				<v-chip label>{{data.price ? parseFloat((data.price).toPrecision(6)) : "N/A"}}&nbsp; {{data.symbols[1]}} / {{data.symbols[0]}}</v-chip>
 				<v-chip label>{{data.address}}</v-chip>
 			</template>
 			
@@ -374,6 +374,83 @@ Vue.component('swap-user-info', {
 			</v-simple-table>
 		</v-card>
 	`
+})
+
+Vue.component('swap-history', {
+	props: {
+		address: String,
+		limit: Number
+	},
+	data() {
+		return {
+			data: [],
+			loading: true,
+		}
+	},
+	computed: {
+		headers() {
+			return [
+				{ text: "Height", value: 'height' },
+				{ text: "Type", value: 'type' },
+				{ text: "Amount", value: 'value' },
+				{ text: "Symbol", value: 'symbol' },
+				{ text: "User", value: 'user' },
+				{ text: "Link", value: 'txid' },
+				{ text: "Time", value: 'time' },
+			]
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/swap/history?id=' + this.address + '&limit=' + this.limit)
+				.then(response => response.json())
+				.then(data => {
+					this.data = data;
+					this.loading = false;
+				});
+		},
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 10000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<div>
+			<v-data-table
+				:headers="headers"
+				:items="data"
+				:loading="loading"
+				hide-default-footer
+				disable-sort
+				disable-pagination
+				class="elevation-2"
+			>
+				<template v-slot:progress>
+					<v-progress-linear indeterminate absolute top></v-progress-linear>
+					<v-skeleton-loader type="table-row-divider@6" />
+				</template>
+				
+				<template v-slot:item.value="{ item }">
+					<b>{{item.value}}</b>
+				</template>
+				
+				<template v-slot:item.user="{ item }">
+					<router-link :to="'/explore/address/' + item.user">{{item.user}}</router-link>
+				</template>
+				
+				<template v-slot:item.txid="{ item }">
+					<router-link :to="'/explore/transaction/' + item.txid">TX</router-link>
+				</template>
+	
+				<template v-slot:item.time="{ item }">
+					{{new Date(item.time * 1000).toLocaleString()}}
+				</template>
+			</v-data-table>
+		</div>
+		`
 })
 
 Vue.component('swap-trade', {

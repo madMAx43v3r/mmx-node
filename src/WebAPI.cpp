@@ -482,6 +482,14 @@ public:
 		set(tmp);
 	}
 
+	void accept(const swap_entry_t& value) {
+		auto tmp = render(value, context);
+		if(context) {
+			tmp["time"] = context->get_time(value.height);
+		}
+		set(tmp);
+	}
+
 	void accept(const address_info_t& value) {
 		set(render(value, context));
 	}
@@ -1360,11 +1368,14 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 						[this, request_id, info](std::shared_ptr<RenderContext> context) {
 							auto out = render_object(info, context);
 							std::vector<int> decimals(2);
+							std::vector<std::string> symbols(2);
 							for(int i = 0; i < 2; ++i) {
 								if(auto token = context->find_currency(info.tokens[i])) {
 									decimals[i] = token->decimals;
+									symbols[i] = token->symbol;
 								}
 							}
+							out["symbols"] = symbols;
 							out["decimals"] = decimals;
 							respond(request_id, out);
 						});
@@ -1419,6 +1430,23 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
 			respond_status(request_id, 404, "swap/user_info?id|user");
+		}
+	}
+	else if(sub_path == "/swap/history") {
+		const auto iter = query.find("id");
+		const auto iter_limit = query.find("limit");
+		const auto iter_offset = query.find("offset");
+		if(iter != query.end()) {
+			const int32_t limit = iter_limit != query.end() ? vnx::from_string_value<int64_t>(iter_limit->second) : -1;
+			const size_t offset = iter_offset != query.end() ? vnx::from_string_value<int64_t>(iter_offset->second) : 0;
+			const auto address = vnx::from_string_value<addr_t>(iter->second);
+			node->get_swap_history(address, limit >= 0 ? offset + limit : limit,
+				[this, request_id, limit, offset](const std::vector<swap_entry_t>& history) {
+					respond(request_id, render_value(get_page(history, limit, offset), get_context()));
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "swap/history?id|limit|offset");
 		}
 	}
 	else if(sub_path == "/swap/trade_estimate") {

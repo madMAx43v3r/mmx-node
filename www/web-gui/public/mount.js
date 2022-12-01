@@ -20,6 +20,7 @@ const routes = [
 			{ path: 'history', component: AccountHistory, meta: { page: 'history' } },
 			{ path: 'log', component: AccountLog, meta: { page: 'log' } },
 			{ path: 'plots', component: AccountPlots, meta: { page: 'plots' } },
+			{ path: 'liquid', component: AccountLiquid, meta: { page: 'liquid' } },
 			{ path: 'details', component: AccountDetails, meta: { page: 'details' } },
 			{ path: 'options', component: AccountOptions, meta: { page: 'options' } },
 			{ path: 'create/locked', component: AccountCreateLocked },

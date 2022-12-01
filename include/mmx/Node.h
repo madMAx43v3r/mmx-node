@@ -164,6 +164,8 @@ protected:
 
 	swap_user_info_t get_swap_user_info(const addr_t& address, const addr_t& user) const override;
 
+	std::vector<swap_entry_t> get_swap_history(const addr_t& address, const int32_t& limit) const override;
+
 	std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>> get_swap_liquidity_by(const std::vector<addr_t>& addresses) const override;
 
 	std::vector<std::shared_ptr<const BlockHeader>> get_farmed_blocks(
