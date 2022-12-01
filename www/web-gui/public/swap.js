@@ -543,7 +543,7 @@ Vue.component('swap-trade', {
 								:suffix="data.symbols[0]" disabled>
 							</v-text-field>
 						</v-card-text>
-						<v-card-actions>
+						<v-card-actions class="justify-end">
 							<v-btn color="green lighten-1" @click="submit(1, buy_amount)" :disabled="!(buy_amount > 0)">Buy</v-btn>
 						</v-card-actions>
 					</v-card>
@@ -563,7 +563,7 @@ Vue.component('swap-trade', {
 								:suffix="data.symbols[1]" disabled>
 							</v-text-field>
 						</v-card-text>
-						<v-card-actions>
+						<v-card-actions class="justify-end">
 							<v-btn color="red lighten-1" @click="submit(0, sell_amount)" :disabled="!(sell_amount > 0)">Sell</v-btn>
 						</v-card-actions>
 					</v-card>
@@ -696,7 +696,7 @@ Vue.component('swap-liquid', {
 						:suffix="data.symbols[1]">
 					</v-text-field>
 				</v-card-text>
-				<v-card-actions>
+				<v-card-actions class="justify-end">
 					<v-btn color="green lighten-1" @click="submit(true)" :disabled="!(amount_0 || amount_1)">Add Liquidity</v-btn>
 					<v-btn color="red lighten-1" @click="submit(false)" :disabled="!(amount_0 || amount_1)">Remove Liquidity</v-btn>
 					<v-btn @click="payout()" :disabled="!user || !(user.fees_earned[0].amount || user.fees_earned[1].amount)">Payout</v-btn>
