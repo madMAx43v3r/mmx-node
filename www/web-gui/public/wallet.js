@@ -49,7 +49,7 @@ Vue.component('account-menu', {
 			<v-btn :to="'/wallet/account/' + index + '/log'">{{ $t('account_menu.log') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/plots'">Plots</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/liquid'">Liquidity</v-btn>
-			<v-btn :to="'/wallet/account/' + index + '/details'">{{ $t('account_menu.details') }}</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/details'">Info</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/options'"><v-icon>mdi-cog</v-icon></v-btn>
 		</v-btn-toggle>
 		`
