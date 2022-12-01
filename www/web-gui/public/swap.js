@@ -384,6 +384,10 @@ Vue.component('swap-history', {
 	data() {
 		return {
 			data: [],
+			color_map: new Map([
+				["BUY", "green"],
+				["SELL", "red"],
+			]),
 			loading: true,
 		}
 	},
@@ -431,6 +435,10 @@ Vue.component('swap-history', {
 				<template v-slot:progress>
 					<v-progress-linear indeterminate absolute top></v-progress-linear>
 					<v-skeleton-loader type="table-row-divider@6" />
+				</template>
+				
+				<template v-slot:item.type="{ item }">
+					<div :class="color_map.get(item.type) + '--text'">{{item.type}}</div>
 				</template>
 				
 				<template v-slot:item.value="{ item }">
