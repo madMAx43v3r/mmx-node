@@ -871,7 +871,11 @@ Vue.component('account-plots', {
 		}
 	},
 	created() {
-		this.update()
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 10000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
 	},
 	template: `
 		<div>
