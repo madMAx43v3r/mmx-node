@@ -20,6 +20,7 @@
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
+#include <mmx/swap_entry_t.hxx>
 #include <mmx/swap_info_t.hxx>
 #include <mmx/swap_user_info_t.hxx>
 #include <mmx/trade_entry_t.hxx>
@@ -160,6 +161,8 @@ public:
 	::mmx::swap_info_t get_swap_info(const ::mmx::addr_t& address = ::mmx::addr_t());
 	
 	::mmx::swap_user_info_t get_swap_user_info(const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::addr_t& user = ::mmx::addr_t());
+	
+	std::vector<::mmx::swap_entry_t> get_swap_history(const ::mmx::addr_t& address = ::mmx::addr_t(), const int32_t& limit = 100);
 	
 	std::map<::mmx::addr_t, std::array<std::pair<::mmx::addr_t, ::mmx::uint128>, 2>> get_swap_liquidity_by(const std::vector<::mmx::addr_t>& addresses = {});
 	

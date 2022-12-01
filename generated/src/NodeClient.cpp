@@ -82,6 +82,8 @@
 #include <mmx/Node_get_recent_offers_return.hxx>
 #include <mmx/Node_get_recent_offers_for.hxx>
 #include <mmx/Node_get_recent_offers_for_return.hxx>
+#include <mmx/Node_get_swap_history.hxx>
+#include <mmx/Node_get_swap_history_return.hxx>
 #include <mmx/Node_get_swap_info.hxx>
 #include <mmx/Node_get_swap_info_return.hxx>
 #include <mmx/Node_get_swap_liquidity_by.hxx>
@@ -146,6 +148,7 @@
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
+#include <mmx/swap_entry_t.hxx>
 #include <mmx/swap_info_t.hxx>
 #include <mmx/swap_user_info_t.hxx>
 #include <mmx/trade_entry_t.hxx>
@@ -966,6 +969,20 @@ std::vector<::mmx::swap_info_t> NodeClient::get_swaps(const uint32_t& since, con
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<::mmx::swap_user_info_t>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::vector<::mmx::swap_entry_t> NodeClient::get_swap_history(const ::mmx::addr_t& address, const int32_t& limit) {
+	auto _method = ::mmx::Node_get_swap_history::create();
+	_method->address = address;
+	_method->limit = limit;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_swap_history_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::swap_entry_t>>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}
