@@ -230,9 +230,15 @@ Vue.component('swap-trade', {
 			fetch('/wapi/wallet/swap/trade', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
-						response.json().then(data => this.result = data);
+						response.json().then(data => {
+							this.result = data;
+							this.error = null;
+						});
 					} else {
-						response.text().then(data => this.error = data);
+						response.text().then(data => {
+							this.result = null;
+							this.error = data;
+						});
 					}
 				});
 		}
@@ -257,7 +263,7 @@ Vue.component('swap-trade', {
 	},
 	created() {
 		this.update();
-		this.timer = setInterval(() => { this.update(); }, 60000);
+		this.timer = setInterval(() => { this.update(); }, 5000);
 	},
 	beforeDestroy() {
 		clearInterval(this.timer);
@@ -326,7 +332,7 @@ Vue.component('swap-trade', {
 							</v-text-field>
 						</v-card-text>
 						<v-card-actions>
-							<v-btn @click="submit(1, buy_amount)">Buy</v-btn>
+							<v-btn color="green" @click="submit(1, buy_amount)">Buy</v-btn>
 						</v-card-actions>
 					</v-card>
 				</v-col>
@@ -345,11 +351,33 @@ Vue.component('swap-trade', {
 							</v-text-field>
 						</v-card-text>
 						<v-card-actions>
-							<v-btn @click="submit(0, sell_amount)">Sell</v-btn>
+							<v-btn color="red" @click="submit(0, sell_amount)">Sell</v-btn>
 						</v-card-actions>
 					</v-card>
 				</v-col>
 			</v-row>
+			
+			<v-alert
+				border="left"
+				colored-border
+				type="success"
+				elevation="2"
+				v-if="result"
+				class="my-2"
+			>
+				{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result.id">{{result.id}}</router-link>
+			</v-alert>
+
+			<v-alert
+				border="left"
+				colored-border
+				type="error"
+				elevation="2"
+				v-if="error"
+				class="my-2"
+			>
+				{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
 		</div>
 	`
 })
