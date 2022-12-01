@@ -50,6 +50,8 @@ const routes = [
 		children: [
 			{ path: 'market/:token/:currency', component: SwapMarket, meta: { page: 'market' } },
 			{ path: 'trade/:address', component: SwapTrade, meta: { page: 'trade' } },
+			{ path: 'history/:address', component: SwapHistory, meta: { page: 'history' } },
+			{ path: 'liquid/:address', component: SwapLiquid, meta: { page: 'liquid' } },
 		]
 	},
 	{ path: '/explore',

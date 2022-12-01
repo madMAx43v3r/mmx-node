@@ -223,10 +223,27 @@ const SwapMarket = {
 const SwapTrade = {
 	props: {
 		wallet: null,
-		address: null,
+		address: null
 	},
 	template: `
 		<swap-trade :wallet="wallet" :address="address"></swap-trade>
+		`
+}
+const SwapHistory = {
+	props: {
+		address: null
+	},
+	template: `
+		<div>TODO</div>
+		`
+}
+const SwapLiquid = {
+	props: {
+		wallet: null,
+		address: null
+	},
+	template: `
+		<swap-liquid :wallet="wallet" :address="address"></swap-liquid>
 		`
 }
 

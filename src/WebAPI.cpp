@@ -1358,7 +1358,15 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				[this, request_id](const swap_info_t& info) {
 					get_context({info.tokens[0], info.tokens[1]}, request_id,
 						[this, request_id, info](std::shared_ptr<RenderContext> context) {
-							respond(request_id, render_value(info, context));
+							auto out = render_object(info, context);
+							std::vector<int> decimals(2);
+							for(int i = 0; i < 2; ++i) {
+								if(auto token = context->find_currency(info.tokens[i])) {
+									decimals[i] = token->decimals;
+								}
+							}
+							out["decimals"] = decimals;
+							respond(request_id, out);
 						});
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
@@ -1379,6 +1387,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 							node->get_swap_user_info(address, user,
 								[this, request_id, info, context](const swap_user_info_t& user_info) {
 									vnx::Object out;
+									std::vector<std::string> symbols(2);
+									std::vector<int> decimals(2);
 									std::vector<vnx::Object> balance(2);
 									std::vector<vnx::Object> fees_earned(2);
 									std::vector<vnx::Object> remove_amount(2);
@@ -1386,11 +1396,15 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 									const auto remove_amount_ = info.get_remove_amount(user_info, {user_info.balance[0], user_info.balance[1]});
 									for(int i = 0; i < 2; ++i) {
 										if(auto token = context->find_currency(info.tokens[i])) {
+											symbols[i] = token->symbol;
+											decimals[i] = token->decimals;
 											balance[i] = to_amount_object(user_info.balance[i], token->decimals);
 											fees_earned[i] = to_amount_object(fees_earned_[i], token->decimals);
 											remove_amount[i] = to_amount_object(remove_amount_[i], token->decimals);
 										}
 									}
+									out["symbols"] = symbols;
+									out["decimals"] = decimals;
 									out["balance"] = balance;
 									out["fees_earned"] = fees_earned;
 									out["remove_amount"] = remove_amount;
