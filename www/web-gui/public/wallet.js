@@ -48,7 +48,7 @@ Vue.component('account-menu', {
 			<v-btn :to="'/wallet/account/' + index + '/history'">{{ $t('account_menu.history') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/log'">{{ $t('account_menu.log') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/plots'">Plots</v-btn>
-			<v-btn :to="'/wallet/account/' + index + '/liquid'">Liquid</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/liquid'">Liquidity</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/details'">{{ $t('account_menu.details') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/options'"><v-icon>mdi-cog</v-icon></v-btn>
 		</v-btn-toggle>
